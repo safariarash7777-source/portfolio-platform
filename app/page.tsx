@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function LandingPage() {
   const [email, setEmail] = useState("");
@@ -91,6 +92,15 @@ export default function LandingPage() {
           {status === "success" && <p className="text-sm text-green-400">سپاسگزاریم! به محض آماده شدن پلتفرم خبرتان می‌دهیم.</p>}
           {status === "error" && <p className="text-sm text-red-400">{errorMessage}</p>}
         </div>
+
+        <div className="mt-6">
+          <Link
+            href="/risk-profile"
+            className="text-sm text-blue-400/70 hover:text-blue-400 transition-colors"
+          >
+            یا همین الان آزمون ریسک را شروع کنید ←
+          </Link>
+        </div>
       </section>
 
       {/* Social Proof */}
@@ -116,7 +126,7 @@ export default function LandingPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { num: "۰۱", title: "سنجش ریسک علمی", desc: "آزمون ۱۵ مرحله‌ای برای تحلیل دقیق افق زمانی، تحمل ریسک و اهداف مالی شما." },
+            { num: "۰۱", title: "سنجش ریسک علمی", desc: "آزمون ۱۵ مرحله‌ای برای تحلیل دقیق افق زمانی، تحمل ریسک و اهداف مالی شما.", href: "/risk-profile" },
             { num: "۰۲", title: "موتور ساخت پرتفوی", desc: "تخصیص دارایی مبتنی بر MPT با هوش مصنوعی برای بازار بورس تهران." },
             { num: "۰۳", title: "ریبالانس ماهانه", desc: "پایش مداوم و هشدارهای دقیق برای تنظیم وزن دارایی‌ها در سبد شما." },
           ].map((f, i) => (
@@ -124,6 +134,11 @@ export default function LandingPage() {
               <div className="text-blue-400/40 text-xs font-black mb-4 tracking-widest">{f.num}</div>
               <h3 className="text-base font-bold mb-2">{f.title}</h3>
               <p className="text-white/50 text-sm leading-relaxed">{f.desc}</p>
+              {"href" in f && (
+                <Link href={f.href} className="inline-block mt-4 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                  شروع آزمون ←
+                </Link>
+              )}
             </div>
           ))}
         </div>
