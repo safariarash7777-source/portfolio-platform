@@ -135,7 +135,7 @@ export default function LandingPage() {
               <h3 className="text-base font-bold mb-2">{f.title}</h3>
               <p className="text-white/50 text-sm leading-relaxed">{f.desc}</p>
               {"href" in f && (
-                <Link href={f.href} className="inline-block mt-4 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                <Link href={f.href!} className="inline-block mt-4 text-xs text-blue-400 hover:text-blue-300 transition-colors">
                   شروع آزمون ←
                 </Link>
               )}
