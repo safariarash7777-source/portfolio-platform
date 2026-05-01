@@ -14,7 +14,7 @@ export default async function AdminPage() {
         .order("created_at", { ascending: false }),
       supabase
         .from("risk_assessments")
-        .select("user_id, risk_category, created_at")
+        .select("user_id, risk_category, total_score, created_at")
         .order("created_at", { ascending: false }),
       supabase.from("portfolios").select("user_id"),
       supabase
@@ -23,10 +23,14 @@ export default async function AdminPage() {
         .order("created_at", { ascending: false }),
     ]);
 
-  const latestAssessments = new Map<string, string>();
+  const latestAssessments = new Map<string, { category: string; score: number | null; date: string }>();
   for (const a of assessmentsRes.data ?? []) {
     if (!latestAssessments.has(a.user_id)) {
-      latestAssessments.set(a.user_id, a.risk_category);
+      latestAssessments.set(a.user_id, {
+        category: a.risk_category,
+        score: a.total_score ?? null,
+        date: a.created_at,
+      });
     }
   }
 
@@ -34,11 +38,16 @@ export default async function AdminPage() {
     (portfoliosRes.data ?? []).map((p) => p.user_id)
   );
 
-  const users = (profilesRes.data ?? []).map((p) => ({
-    ...p,
-    risk_category: latestAssessments.get(p.id) ?? null,
-    has_portfolio: portfolioUserIds.has(p.id),
-  }));
+  const users = (profilesRes.data ?? []).map((p) => {
+    const assessment = latestAssessments.get(p.id) ?? null;
+    return {
+      ...p,
+      risk_category: assessment?.category ?? null,
+      risk_score: assessment?.score ?? null,
+      risk_date: assessment?.date ?? null,
+      has_portfolio: portfolioUserIds.has(p.id),
+    };
+  });
 
   return (
     <>

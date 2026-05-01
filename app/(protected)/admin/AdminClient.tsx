@@ -23,6 +23,8 @@ interface UserRow {
   email: string;
   role: string;
   risk_category: string | null;
+  risk_score: number | null;
+  risk_date: string | null;
   has_portfolio: boolean;
 }
 
@@ -39,17 +41,17 @@ interface Allocation {
 }
 
 const RISK_LABELS: Record<string, string> = {
-  conservative: "محافظه‌کار",
-  balanced: "متعادل",
-  aggressive: "تهاجمی",
-  very_aggressive: "بسیار تهاجمی",
+  "محافظه‌کار": "محافظه‌کار",
+  "متعادل": "متعادل",
+  "تهاجمی": "تهاجمی",
+  "بسیار تهاجمی": "بسیار تهاجمی",
 };
 
 const RISK_COLORS: Record<string, string> = {
-  conservative: "#15803D",
-  balanced: "#1E3A8A",
-  aggressive: "#B45309",
-  very_aggressive: "#B91C1C",
+  "محافظه‌کار": "#15803D",
+  "متعادل": "#1E3A8A",
+  "تهاجمی": "#B45309",
+  "بسیار تهاجمی": "#B91C1C",
 };
 
 type Tab = "users" | "portfolio" | "waitlist";
@@ -182,7 +184,7 @@ function UsersTab({ users }: { users: UserRow[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr style={{ color: "var(--text-3)" }}>
-              {["نام و نام خانوادگی", "کد ملی", "موبایل", "ایمیل", "پروفایل ریسک", "پرتفوی"].map(
+              {["نام و نام خانوادگی", "کد ملی", "موبایل", "ایمیل", "پروفایل ریسک", "امتیاز", "تاریخ آزمون", "پرتفوی"].map(
                 (h) => (
                   <th
                     key={h}
@@ -199,7 +201,7 @@ function UsersTab({ users }: { users: UserRow[] }) {
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={8}
                   className="py-10 text-center text-sm"
                   style={{ color: "var(--text-3)" }}
                 >
@@ -240,6 +242,22 @@ function UsersTab({ users }: { users: UserRow[] }) {
                       <span className="text-xs" style={{ color: "var(--text-3)" }}>
                         ارزیابی نشده
                       </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-3 text-center" dir="ltr" style={{ color: "var(--text-2)" }}>
+                    {u.risk_score != null ? (
+                      <span className="font-bold" style={{ color: "var(--navy)" }}>
+                        {u.risk_score}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--text-3)" }}>—</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-3" style={{ color: "var(--text-2)" }}>
+                    {u.risk_date ? (
+                      new Date(u.risk_date).toLocaleDateString("fa-IR")
+                    ) : (
+                      <span style={{ color: "var(--text-3)" }}>—</span>
                     )}
                   </td>
                   <td className="py-3 px-3">
