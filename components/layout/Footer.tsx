@@ -43,7 +43,7 @@ export default function Footer() {
               className="mt-5 text-sm leading-7"
               style={{ color: "var(--text-2)" }}
             >
-              تحلیل علمی پروفایل ریسک و طراحی سبد سرمایه‌گذاری اختصاصی برای بازار سرمایه ایران.
+              تحلیل علمی، پروفایل ریسک و طراحی سبد سرمایه‌گذاری اختصاصی
             </p>
           </div>
 

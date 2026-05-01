@@ -23,13 +23,13 @@ import {
 } from "./quizData";
 import RiskProfileResult from "./RiskProfileResult";
 
-// â”€â”€â”€ Supabase (logic preserved exactly) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Supabase (logic preserved exactly) ─────────────────────────────────
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase =
   supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
-// â”€â”€â”€ Section icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Section icons ──────────────────────────────────────────────────────
 const SECTION_ICONS = [
   <User key={0} size={16} />,
   <Wallet key={1} size={16} />,
@@ -41,10 +41,10 @@ const SECTION_ICONS = [
 
 interface RiskProfileQuizProps {
   userId?: string;
-  onComplete?: (score: number, category: any, answers: Record<number, number>) => void;
+  onComplete?: (score: number, category: RiskCategory, answers: Record<number, number>) => void;
 }
 
-export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
+export default function RiskProfileQuiz({ userId, onComplete }: RiskProfileQuizProps) {
   const [currentStep, setCurrentStep] = useState(0); // 0 = intro, 1..22 = questions
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [isFinished, setIsFinished] = useState(false);
@@ -63,7 +63,7 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
     [isIntro, currentStep, totalQuestions]
   );
 
-  // â”€â”€ Selection (auto-advance) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Selection (auto-advance) ──────────────────────────────────────────
   const selectAnswer = useCallback(
     (questionId: number, score: number) => {
       const next = { ...answers, [questionId]: score };
@@ -78,10 +78,11 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
           setTotalScore(total);
           setRiskCategory(cat);
           setIsFinished(true);
+          onComplete?.(total, cat, next);
         }
       }, 350);
     },
-    [answers, currentStep, totalQuestions]
+    [answers, currentStep, totalQuestions, onComplete]
   );
 
   const goNext = useCallback(() => {
@@ -97,16 +98,17 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
       setTotalScore(total);
       setRiskCategory(cat);
       setIsFinished(true);
+      onComplete?.(total, cat, answers);
       return;
     }
     setCurrentStep((s) => s + 1);
-  }, [isIntro, currentAnswer, currentStep, totalQuestions, answers]);
+  }, [isIntro, currentAnswer, currentStep, totalQuestions, answers, onComplete]);
 
   const goBack = useCallback(() => {
     if (currentStep > 0) setCurrentStep((s) => s - 1);
   }, [currentStep]);
 
-  // â”€â”€ Persist to Supabase (logic preserved) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Persist to Supabase (logic preserved) ─────────────────────────────
   const saveToSupabase = useCallback(async () => {
     if (!riskCategory || !supabase) {
       setSaveSuccess(true); // graceful demo when env not configured
@@ -139,7 +141,7 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
     setSaveSuccess(false);
   }, []);
 
-  // â”€â”€ Result view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Result view ───────────────────────────────────────────────────────
   if (isFinished && riskCategory) {
     return (
       <RiskProfileResult
@@ -153,7 +155,7 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
     );
   }
 
-  // â”€â”€ Intro screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Intro screen ──────────────────────────────────────────────────────
   if (isIntro) {
     return (
       <div className="card-elevated p-8 md:p-10 text-right">
@@ -170,12 +172,12 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
             <BarChart3 size={26} />
           </div>
           <div>
-            <span className="eyebrow">Ø¢Ø±Ø´ ØµÙØ±ÛŒ Â· ØªØ­Ù„ÛŒÙ„Ú¯Ø± Ø³Ø±Ù…Ø§ÛŒÙ‡â€ŒÚ¯Ø°Ø§Ø±ÛŒ</span>
+            <span className="eyebrow">آرش صفری · تحلیلگر سرمایه‌گذاری</span>
             <h2
               className="font-display text-2xl md:text-3xl font-bold mt-1"
               style={{ color: "var(--navy-deep)" }}
             >
-              Ø§Ø±Ø²ÛŒØ§Ø¨ÛŒ Ù¾Ø±ÙˆÙØ§ÛŒÙ„ Ø±ÛŒØ³Ú© Ø³Ø±Ù…Ø§ÛŒÙ‡â€ŒÚ¯Ø°Ø§Ø±ÛŒ
+              ارزیابی پروفایل ریسک سرمایه‌گذاری
             </h2>
           </div>
         </div>
@@ -184,17 +186,17 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
           className="text-base leading-8 mb-7"
           style={{ color: "var(--text-2)" }}
         >
-          Ú©Ø§Ø±Ø¨Ø± Ú¯Ø±Ø§Ù…ÛŒØŒ Ø´Ù†Ø§Ø®Øª Ø¯Ù‚ÛŒÙ‚ Ù…ÛŒØ²Ø§Ù† ØªØ­Ù…Ù„ Ø±ÛŒØ³Ú©ØŒ Ù†Ø®Ø³ØªÛŒÙ† Ùˆ Ù…Ù‡Ù…â€ŒØªØ±ÛŒÙ† Ú¯Ø§Ù… Ø¯Ø± Ø·Ø±Ø§Ø­ÛŒ
-          ÛŒÚ© Ø§Ø³ØªØ±Ø§ØªÚ˜ÛŒ Ø³Ø±Ù…Ø§ÛŒÙ‡â€ŒÚ¯Ø°Ø§Ø±ÛŒ Ù…ÙˆÙÙ‚ Ø§Ø³Øª. Ù¾Ø§Ø³Ø®â€ŒÙ‡Ø§ÛŒ Ø´Ù…Ø§ Ú©Ø§Ù…Ù„Ø§Ù‹ Ù…Ø­Ø±Ù…Ø§Ù†Ù‡ Ø§Ø³Øª Ùˆ
-          ØªÙ†Ù‡Ø§ Ø¨Ø±Ø§ÛŒ ØªØ­Ù„ÛŒÙ„ Ø´Ø®ØµÛŒ Ø´Ù…Ø§ Ø¨Ù‡ Ú©Ø§Ø± Ù…ÛŒâ€ŒØ±ÙˆØ¯.
+          کاربر گرامی، شناخت دقیق میزان تحمل ریسک، نخستین و مهم‌ترین گام در طراحی
+          یک استراتژی سرمایه‌گذاری موفق است. پاسخ‌های شما کاملاً محرمانه است و
+          تنها برای تحلیل شخصی شما به کار می‌رود.
         </p>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-7">
           {[
-            { v: "Û²Û²", l: "ØªØ¹Ø¯Ø§Ø¯ Ø³Ø¤Ø§Ù„" },
-            { v: "Û±Û°", l: "Ø¯Ù‚ÛŒÙ‚Ù‡" },
-            { v: "Û¶",  l: "Ø¨Ø®Ø´ Ø§ØµÙ„ÛŒ" },
+            { v: "۲۲", l: "تعداد سؤال" },
+            { v: "۱۰", l: "دقیقه" },
+            { v: "۶",  l: "بخش اصلی" },
           ].map((s) => (
             <div
               key={s.l}
@@ -228,7 +230,7 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
               <span style={{ color: "var(--gold)" }}>{SECTION_ICONS[i]}</span>
               <span>
                 <strong style={{ color: "var(--navy-deep)" }}>
-                  Ø¨Ø®Ø´ {["Ø§ÙˆÙ„", "Ø¯ÙˆÙ…", "Ø³ÙˆÙ…", "Ú†Ù‡Ø§Ø±Ù…", "Ù¾Ù†Ø¬Ù…", "Ø´Ø´Ù…"][i]}:
+                  بخش {["اول", "دوم", "سوم", "چهارم", "پنجم", "ششم"][i]}:
                 </strong>{" "}
                 {s}
               </span>
@@ -241,14 +243,14 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
           onClick={() => setCurrentStep(1)}
           className="btn btn-gold w-full"
         >
-          Ø´Ø±ÙˆØ¹ Ù¾Ø±Ø³Ø´Ù†Ø§Ù…Ù‡
+          شروع پرسشنامه
           <ChevronLeft size={16} />
         </button>
       </div>
     );
   }
 
-  // â”€â”€ Question screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Question screen ───────────────────────────────────────────────────
   return (
     <div className="card-elevated p-6 md:p-8">
       {/* Header bar */}
@@ -268,14 +270,14 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
             <span>{currentQuestion?.section}</span>
           </div>
           <span className="text-sm" style={{ color: "var(--text-3)" }}>
-            Ø³Ø¤Ø§Ù„{" "}
+            سؤال{" "}
             <span
               className="font-bold"
               style={{ color: "var(--navy)" }}
             >
               {currentStep}
             </span>{" "}
-            Ø§Ø² <span style={{ color: "var(--text)" }}>{totalQuestions}</span>
+            از <span style={{ color: "var(--text)" }}>{totalQuestions}</span>
           </span>
         </div>
 
@@ -387,7 +389,7 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
           }}
         >
           <AlertCircle size={16} />
-          <span>Ù„Ø·ÙØ§Ù‹ ÛŒÚ© Ú¯Ø²ÛŒÙ†Ù‡ Ø§Ù†ØªØ®Ø§Ø¨ Ú©Ù†ÛŒØ¯.</span>
+          <span>لطفاً یک گزینه انتخاب کنید.</span>
         </div>
       )}
 
@@ -400,14 +402,14 @@ export default function RiskProfileQuiz({ userId }: RiskProfileQuizProps) {
           className="btn btn-outline"
         >
           <ChevronRight size={16} />
-          Ù‚Ø¨Ù„ÛŒ
+          قبلی
         </button>
         <button
           type="button"
           onClick={goNext}
           className="btn btn-primary flex-1"
         >
-          {currentStep === totalQuestions ? "Ù…Ø´Ø§Ù‡Ø¯Ù‡ Ù†ØªÛŒØ¬Ù‡" : "Ø¨Ø¹Ø¯ÛŒ"}
+          {currentStep === totalQuestions ? "مشاهده نتیجه" : "بعدی"}
           {currentStep < totalQuestions ? (
             <ChevronLeft size={16} />
           ) : (

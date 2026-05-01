@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -6,7 +6,7 @@ import DashboardClient from "./DashboardClient";
 
 export const metadata = {
   title: "داشبورد",
-  description: "داشبورد کاربری برای ارزیابی ریسک و مدیریت سبد سرمایهگذاری.",
+  description: "داشبورد کاربری برای ارزیابی ریسک و مدیریت سبد سرمایه‌گذاری.",
 };
 
 export default async function DashboardPage() {
@@ -26,7 +26,11 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
-    supabase.from("portfolios").select("*").eq("user_id", user.id).maybeSingle(),
+    supabase
+      .from("portfolios")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle(),
   ]);
 
   return (
@@ -36,7 +40,8 @@ export default async function DashboardPage() {
         <DashboardClient
           userId={user.id}
           userEmail={user.email ?? ""}
-          userName={profileRes.data?.full_name ?? "سرمایهگذار"}
+          userName={profileRes.data?.full_name ?? "سرمایه‌گذار"}
+          userRole={profileRes.data?.role ?? "user"}
           assessment={assessmentRes.data ?? null}
           portfolio={portfolioRes.data ?? null}
         />

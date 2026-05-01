@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
@@ -37,7 +37,7 @@ function validate(f: FormFields): Partial<Record<keyof FormFields, string>> {
 
 function supabaseError(msg: string): string {
   if (msg.includes("already registered") || msg.includes("already exists"))
-    return "این ایمیل قبلاً ثبتنام شده است";
+    return "این ایمیل قبلاً ثبت‌نام شده است";
   if (msg.includes("weak password")) return "رمز عبور بسیار ضعیف است";
   return "خطایی رخ داد. لطفاً دوباره تلاش کنید";
 }
@@ -109,7 +109,7 @@ export default function RegisterPage() {
             <CheckCircle size={32} />
           </div>
           <h2 className="font-display text-2xl font-bold mb-3" style={{ color: "var(--navy-deep)" }}>
-            ثبتنام موفق
+            ثبت‌نام موفق
           </h2>
           <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
             ایمیل تأیید ارسال شد. لطفاً صندوق ورودی خود را بررسی کرده و ایمیل خود را تأیید کنید.
@@ -137,77 +137,157 @@ export default function RegisterPage() {
             className="font-display text-2xl font-bold mt-2"
             style={{ color: "var(--navy-deep)" }}
           >
-            ثبتنام در پلتفرم
+            ثبت‌نام در پلتفرم
           </h1>
         </div>
 
         <div className="card-elevated p-8">
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
-            <Field label="نام و نام خانوادگی" required error={errors.full_name}>
-              <input type="text" className="input" placeholder="علی رضایی"
-                value={fields.full_name} onChange={set("full_name")} disabled={loading} />
+            {/* full_name */}
+            <Field
+              label="نام و نام خانوادگی"
+              required
+              error={errors.full_name}
+            >
+              <input
+                type="text"
+                className="input"
+                placeholder="علی رضایی"
+                value={fields.full_name}
+                onChange={set("full_name")}
+                disabled={loading}
+              />
             </Field>
 
+            {/* national_id */}
             <Field label="کد ملی" required error={errors.national_id}>
-              <input type="text" inputMode="numeric" maxLength={10} className="input"
-                placeholder="۱۲۳۴۵۶۷۸۹۰" value={fields.national_id}
-                onChange={set("national_id")} disabled={loading} dir="ltr" />
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={10}
+                className="input"
+                placeholder="۱۲۳۴۵۶۷۸۹۰"
+                value={fields.national_id}
+                onChange={set("national_id")}
+                disabled={loading}
+                dir="ltr"
+              />
             </Field>
 
+            {/* phone */}
             <Field label="شماره موبایل" required error={errors.phone}>
-              <input type="tel" inputMode="numeric" maxLength={11} className="input"
-                placeholder="09121234567" value={fields.phone}
-                onChange={set("phone")} disabled={loading} dir="ltr" />
+              <input
+                type="tel"
+                inputMode="numeric"
+                maxLength={11}
+                className="input"
+                placeholder="09121234567"
+                value={fields.phone}
+                onChange={set("phone")}
+                disabled={loading}
+                dir="ltr"
+              />
             </Field>
 
+            {/* email */}
             <Field label="آدرس ایمیل" required error={errors.email}>
-              <input type="email" className="input" placeholder="email@example.com"
-                value={fields.email} onChange={set("email")} disabled={loading} dir="ltr" />
+              <input
+                type="email"
+                className="input"
+                placeholder="email@example.com"
+                value={fields.email}
+                onChange={set("email")}
+                disabled={loading}
+                dir="ltr"
+              />
             </Field>
 
+            {/* password */}
             <Field label="رمز عبور" required error={errors.password}>
               <div className="relative">
-                <input type={showPass ? "text" : "password"} className="input"
-                  placeholder="حداقل ۸ کاراکتر" value={fields.password}
-                  onChange={set("password")} disabled={loading} dir="ltr"
-                  style={{ paddingLeft: "2.75rem" }} />
-                <button type="button" onClick={() => setShowPass((s) => !s)}
+                <input
+                  type={showPass ? "text" : "password"}
+                  className="input"
+                  placeholder="حداقل ۸ کاراکتر"
+                  value={fields.password}
+                  onChange={set("password")}
+                  disabled={loading}
+                  dir="ltr"
+                  style={{ paddingLeft: "2.75rem" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass((s) => !s)}
                   className="absolute left-3 top-1/2 -translate-y-1/2"
-                  style={{ color: "var(--text-3)" }} tabIndex={-1}>
+                  style={{ color: "var(--text-3)" }}
+                  tabIndex={-1}
+                >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </Field>
 
+            {/* confirm_password */}
             <Field label="تکرار رمز عبور" required error={errors.confirm_password}>
               <div className="relative">
-                <input type={showConfirm ? "text" : "password"} className="input"
-                  placeholder="رمز عبور را تکرار کنید" value={fields.confirm_password}
-                  onChange={set("confirm_password")} disabled={loading} dir="ltr"
-                  style={{ paddingLeft: "2.75rem" }} />
-                <button type="button" onClick={() => setShowConfirm((s) => !s)}
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  className="input"
+                  placeholder="رمز عبور را تکرار کنید"
+                  value={fields.confirm_password}
+                  onChange={set("confirm_password")}
+                  disabled={loading}
+                  dir="ltr"
+                  style={{ paddingLeft: "2.75rem" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((s) => !s)}
                   className="absolute left-3 top-1/2 -translate-y-1/2"
-                  style={{ color: "var(--text-3)" }} tabIndex={-1}>
+                  style={{ color: "var(--text-3)" }}
+                  tabIndex={-1}
+                >
                   {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </Field>
 
             {serverError && (
-              <div className="rounded-xl px-4 py-3 text-sm"
-                style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.25)", color: "var(--danger)" }}>
+              <div
+                className="rounded-xl px-4 py-3 text-sm"
+                style={{
+                  background: "rgba(185,28,28,0.08)",
+                  border: "1px solid rgba(185,28,28,0.25)",
+                  color: "var(--danger)",
+                }}
+              >
                 {serverError}
               </div>
             )}
 
-            <button type="submit" className="btn btn-gold w-full" disabled={loading}>
-              {loading ? "در حال ثبتنام..." : <><UserPlus size={16} />ایجاد حساب کاربری</>}
+            <button
+              type="submit"
+              className="btn btn-gold w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                "در حال ثبت‌نام..."
+              ) : (
+                <>
+                  <UserPlus size={16} />
+                  ایجاد حساب کاربری
+                </>
+              )}
             </button>
           </form>
 
           <div className="mt-6 text-center text-sm" style={{ color: "var(--text-3)" }}>
-            قبلاً ثبتنام کردهاید{" "}
-            <Link href="/login" className="font-bold" style={{ color: "var(--navy)" }}>
+            قبلاً ثبت‌نام کرده‌اید؟{" "}
+            <Link
+              href="/login"
+              className="font-bold"
+              style={{ color: "var(--navy)" }}
+            >
               وارد شوید
             </Link>
           </div>
@@ -217,17 +297,31 @@ export default function RegisterPage() {
   );
 }
 
-function Field({ label, required, error, children }: {
-  label: string; required?: boolean; error?: string; children: React.ReactNode;
+function Field({
+  label,
+  required,
+  error,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
 }) {
   return (
     <div className="space-y-1.5">
       <label className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
         {label}
-        {required && <span className="mr-1" style={{ color: "var(--danger)" }}>*</span>}
+        {required && (
+          <span className="mr-1" style={{ color: "var(--danger)" }}>*</span>
+        )}
       </label>
       {children}
-      {error && <p className="text-xs" style={{ color: "var(--danger)" }}>{error}</p>}
+      {error && (
+        <p className="text-xs" style={{ color: "var(--danger)" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

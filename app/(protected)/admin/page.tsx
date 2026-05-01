@@ -1,4 +1,4 @@
-﻿import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AdminClient from "./AdminClient";
@@ -8,10 +8,19 @@ export default async function AdminPage() {
 
   const [profilesRes, assessmentsRes, portfoliosRes, waitlistRes] =
     await Promise.all([
-      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-      supabase.from("risk_assessments").select("user_id, risk_category, created_at").order("created_at", { ascending: false }),
+      supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("risk_assessments")
+        .select("user_id, risk_category, created_at")
+        .order("created_at", { ascending: false }),
       supabase.from("portfolios").select("user_id"),
-      supabase.from("waitlist").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("waitlist")
+        .select("*")
+        .order("created_at", { ascending: false }),
     ]);
 
   const latestAssessments = new Map<string, string>();
@@ -21,7 +30,9 @@ export default async function AdminPage() {
     }
   }
 
-  const portfolioUserIds = new Set((portfoliosRes.data ?? []).map((p) => p.user_id));
+  const portfolioUserIds = new Set(
+    (portfoliosRes.data ?? []).map((p) => p.user_id)
+  );
 
   const users = (profilesRes.data ?? []).map((p) => ({
     ...p,
@@ -33,7 +44,10 @@ export default async function AdminPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <AdminClient users={users} waitlist={waitlistRes.data ?? []} />
+        <AdminClient
+          users={users}
+          waitlist={waitlistRes.data ?? []}
+        />
       </main>
       <Footer />
     </>

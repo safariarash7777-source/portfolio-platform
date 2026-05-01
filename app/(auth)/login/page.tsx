@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import Logo from "@/components/ui/Logo";
 function supabaseError(msg: string): string {
   if (msg.includes("Invalid login credentials")) return "ایمیل یا رمز عبور اشتباه است";
   if (msg.includes("Email not confirmed")) return "لطفاً ابتدا ایمیل خود را تأیید کنید";
-  if (msg.includes("Too many requests")) return "تعداد تلاشها زیاد است. لطفاً چند دقیقه صبر کنید";
+  if (msg.includes("Too many requests")) return "تعداد تلاش‌ها زیاد است. لطفاً چند دقیقه صبر کنید";
   return "خطا در ورود. لطفاً دوباره تلاش کنید";
 }
 
@@ -72,6 +72,7 @@ export default function LoginPage() {
 
         <div className="card-elevated p-8">
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            {/* Email */}
             <div className="space-y-1.5">
               <label className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
                 آدرس ایمیل
@@ -91,6 +92,7 @@ export default function LoginPage() {
               )}
             </div>
 
+            {/* Password */}
             <div className="space-y-1.5">
               <label className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
                 رمز عبور
@@ -152,9 +154,13 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm" style={{ color: "var(--text-3)" }}>
-            حساب کاربری ندارید{" "}
-            <Link href="/register" className="font-bold" style={{ color: "var(--navy)" }}>
-              ثبتنام کنید
+            حساب کاربری ندارید؟{" "}
+            <Link
+              href="/register"
+              className="font-bold"
+              style={{ color: "var(--navy)" }}
+            >
+              ثبت‌نام کنید
             </Link>
           </div>
         </div>
