@@ -148,9 +148,6 @@ export default function RiskProfileQuiz({ userId, onComplete }: RiskProfileQuizP
         profile={RISK_PROFILES[riskCategory]}
         totalScore={totalScore}
         onRestart={restart}
-        onSave={saveToSupabase}
-        isSaving={isSaving}
-        saveSuccess={saveSuccess}
       />
     );
   }
