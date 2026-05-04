@@ -4,8 +4,6 @@ import { useCallback } from "react";
 import {
   CheckCircle,
   RotateCcw,
-  Save,
-  Loader2,
   TrendingUp,
   Package,
   CreditCard,
@@ -17,9 +15,6 @@ interface Props {
   profile: RiskProfile;
   totalScore: number;
   onRestart: () => void;
-  onSave: () => Promise<void> | void;
-  isSaving: boolean;
-  saveSuccess: boolean;
 }
 
 const PORTFOLIO_COLORS = [
@@ -81,9 +76,6 @@ export default function RiskProfileResult({
   profile,
   totalScore,
   onRestart,
-  onSave,
-  isSaving,
-  saveSuccess,
 }: Props) {
   const handlePrint = useCallback(() => window.print(), []);
 
@@ -274,29 +266,6 @@ export default function RiskProfileResult({
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 no-print">
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={isSaving || saveSuccess}
-          className={saveSuccess ? "btn btn-outline flex-1" : "btn btn-primary flex-1"}
-        >
-          {isSaving ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              در حال ذخیره...
-            </>
-          ) : saveSuccess ? (
-            <>
-              <CheckCircle size={16} />
-              ذخیره شد
-            </>
-          ) : (
-            <>
-              <Save size={16} />
-              ذخیره نتیجه
-            </>
-          )}
-        </button>
         <button type="button" onClick={handlePrint} className="btn btn-outline flex-1">
           چاپ نتیجه
         </button>

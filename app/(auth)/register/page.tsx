@@ -76,15 +76,11 @@ export default function RegisterPage() {
 
       const userId = data.user?.id;
       if (userId) {
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: userId,
-          full_name: fields.full_name,
-          national_id: fields.national_id,
-          phone: fields.phone,
-          email: fields.email,
-          role: "user",
-        });
-        if (profileError) console.error("Profile insert error:", profileError.message);
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ national_id: fields.national_id, phone: fields.phone })
+          .eq("id", userId);
+        if (profileError) console.error("Profile update error:", profileError.message);
       }
 
       setSuccess(true);
