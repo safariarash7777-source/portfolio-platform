@@ -13,7 +13,6 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
 import {
   QUESTIONS,
   SECTIONS,
@@ -22,12 +21,6 @@ import {
   type RiskCategory,
 } from "./quizData";
 import RiskProfileResult from "./RiskProfileResult";
-
-// ─── Supabase (logic preserved exactly) ─────────────────────────────────
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase =
-  supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
 // ─── Section icons ──────────────────────────────────────────────────────
 const SECTION_ICONS = [
@@ -51,8 +44,6 @@ export default function RiskProfileQuiz({ userId, onComplete }: RiskProfileQuizP
   const [totalScore, setTotalScore] = useState(0);
   const [riskCategory, setRiskCategory] = useState<RiskCategory | null>(null);
   const [showError, setShowError] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const totalQuestions = QUESTIONS.length;
   const isIntro = currentStep === 0;
@@ -108,37 +99,12 @@ export default function RiskProfileQuiz({ userId, onComplete }: RiskProfileQuizP
     if (currentStep > 0) setCurrentStep((s) => s - 1);
   }, [currentStep]);
 
-  // ── Persist to Supabase (logic preserved) ─────────────────────────────
-  const saveToSupabase = useCallback(async () => {
-    if (!riskCategory || !supabase) {
-      setSaveSuccess(true); // graceful demo when env not configured
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const { error } = await supabase.from("risk_profiles").insert({
-        user_id: userId ?? null,
-        total_score: totalScore,
-        risk_category: riskCategory,
-        answers_json: answers,
-        created_at: new Date().toISOString(),
-      });
-      if (error) throw error;
-      setSaveSuccess(true);
-    } catch (err) {
-      console.error("Supabase save error:", err);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [riskCategory, totalScore, answers, userId]);
-
   const restart = useCallback(() => {
     setCurrentStep(0);
     setAnswers({});
     setIsFinished(false);
     setTotalScore(0);
     setRiskCategory(null);
-    setSaveSuccess(false);
   }, []);
 
   // ── Result view ───────────────────────────────────────────────────────
