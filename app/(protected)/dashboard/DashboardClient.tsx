@@ -18,6 +18,10 @@ import { createClient } from "@/lib/supabase/client";
 import RiskProfileQuiz from "@/components/quiz/RiskProfileQuiz";
 import { RISK_PROFILES } from "@/components/quiz/quizData";
 import type { RiskCategory } from "@/components/quiz/quizData";
+import LivePortfolio from "@/components/dashboard/LivePortfolio";
+import type { HoldingDB, SnapshotDB, TxDB } from "@/components/dashboard/LivePortfolio";
+import AllocationDonut from "@/components/dashboard/AllocationDonut";
+import { formatJalali } from "@/lib/format";
 
 interface Assessment {
   id: string;
@@ -47,6 +51,9 @@ interface Props {
   userRole?: string;
   assessment: Assessment | null;
   portfolio: Portfolio | null;
+  holdings: HoldingDB[];
+  snapshots: SnapshotDB[];
+  transactions: TxDB[];
 }
 
 
@@ -57,6 +64,9 @@ export default function DashboardClient({
   userRole,
   assessment: initialAssessment,
   portfolio,
+  holdings,
+  snapshots,
+  transactions,
 }: Props) {
   const isAdmin = userRole === "admin";
   const router = useRouter();
@@ -181,6 +191,11 @@ export default function DashboardClient({
       ) : (
         <NoAssessment onStart={() => setShowQuiz(true)} />
       )}
+
+      {/* Live portfolio overview — KPIs, allocation donut, performance, holdings */}
+      <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
+        <LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} />
+      </div>
     </div>
   );
 }
@@ -290,7 +305,7 @@ function WithAssessment({
   const pct = Math.round((assessment.total_score / maxScore) * 100);
   const circumference = 2 * Math.PI * 52;
   const dashOffset = circumference - (pct / 100) * circumference;
-  const assessmentDate = new Date(assessment.created_at).toLocaleDateString("fa-IR");
+  const assessmentDate = formatJalali(assessment.created_at);
 
   return (
     <div className="space-y-6">
@@ -386,8 +401,7 @@ function WithAssessment({
 
 // ─── Admin-assigned portfolio ─────────────────────────────────────────────
 function AdminPortfolio({ portfolio }: { portfolio: Portfolio }) {
-  const total = portfolio.allocations.reduce((s, a) => s + a.pct, 0);
-  const portfolioDate = new Date(portfolio.created_at).toLocaleDateString("fa-IR");
+  const portfolioDate = formatJalali(portfolio.created_at);
 
   return (
     <div className="card-elevated p-6" style={{ borderTop: "4px solid var(--gold)" }}>
@@ -407,37 +421,12 @@ function AdminPortfolio({ portfolio }: { portfolio: Portfolio }) {
         </span>
       </div>
 
-      <div className="space-y-3 mb-5">
-        {portfolio.allocations.map((a, i) => (
-          <div key={i} className="flex items-center gap-4">
-            <div
-              className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
-              style={{ background: "var(--navy-deep)", color: "var(--gold-soft)" }}
-            >
-              {a.pct}٪
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="font-bold" style={{ color: "var(--text)" }}>{a.asset}</span>
-                {a.note && (
-                  <span className="text-xs" style={{ color: "var(--text-3)" }}>{a.note}</span>
-                )}
-              </div>
-              <div
-                className="h-2 rounded-full overflow-hidden"
-                style={{ background: "var(--surface-2)" }}
-              >
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${(a.pct / total) * 100}%`,
-                    background: `linear-gradient(90deg, var(--navy-deep) 0%, var(--navy-soft) 100%)`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="mb-5">
+        <AllocationDonut
+          data={portfolio.allocations.map((a) => ({ label: a.asset, value: a.pct }))}
+          centerLabel="سبد"
+          centerValue="پیشنهادی"
+        />
       </div>
 
       {portfolio.notes && (

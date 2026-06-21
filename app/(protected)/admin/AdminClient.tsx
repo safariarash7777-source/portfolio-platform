@@ -317,12 +317,13 @@ function PortfolioTab({ users }: { users: UserRow[] }) {
     setSaving(true);
     try {
       const supabase = createClient();
-      const { error: dbErr } = await supabase.from("portfolios").upsert({
-        user_id: selectedUserId,
-        allocations,
-        notes: notes.trim() || null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "user_id" });
+      // Versioned, audited save: records a new immutable version + audit entry
+      // and updates the current row — all atomically in one DB transaction.
+      const { error: dbErr } = await supabase.rpc("save_portfolio", {
+        p_user_id: selectedUserId,
+        p_allocations: allocations,
+        p_notes: notes.trim() || null,
+      });
 
       if (dbErr) throw dbErr;
       setSuccess(true);
@@ -372,8 +373,8 @@ function PortfolioTab({ users }: { users: UserRow[] }) {
           />
         </div>
         {selectedUser?.has_portfolio && (
-          <p className="text-xs" style={{ color: "var(--warning)" }}>
-            این کاربر از قبل پرتفوی دارد. ذخیره، اطلاعات قبلی را بازنویسی می‌کند.
+          <p className="text-xs" style={{ color: "var(--text-3)" }}>
+            این کاربر از قبل پرتفوی دارد. ذخیره، نسخهٔ جدیدی ثبت می‌کند و نسخهٔ قبلی در تاریخچه حفظ می‌شود.
           </p>
         )}
       </div>

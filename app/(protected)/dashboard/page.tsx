@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [profileRes, assessmentRes, portfolioRes] = await Promise.all([
+  const [profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase
       .from("risk_assessments")
@@ -31,6 +31,22 @@ export default async function DashboardPage() {
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle(),
+    supabase
+      .from("holdings")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("portfolio_snapshots")
+      .select("as_of, value")
+      .eq("user_id", user.id)
+      .order("as_of", { ascending: true }),
+    supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("occurred_at", { ascending: false })
+      .limit(5),
   ]);
 
   return (
@@ -44,6 +60,9 @@ export default async function DashboardPage() {
           userRole={profileRes.data?.role ?? "user"}
           assessment={assessmentRes.data ?? null}
           portfolio={portfolioRes.data ?? null}
+          holdings={holdingsRes.data ?? []}
+          snapshots={snapshotsRes.data ?? []}
+          transactions={txRes.data ?? []}
         />
       </main>
       <Footer />
