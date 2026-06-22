@@ -10,6 +10,7 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
     default: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری",
     template: "%s · آرش صفری",

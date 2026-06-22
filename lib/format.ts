@@ -10,6 +10,17 @@ export function toPersianDigits(input: string | number): string {
   return String(input).replace(/\d/g, (d) => FA_DIGITS[Number(d)]);
 }
 
+const FA_AR_DIGITS = /[۰-۹٠-٩]/g;
+const TO_LATIN: Record<string, string> = {
+  "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4", "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9",
+  "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4", "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+};
+
+/** Convert Persian/Arabic digits to Latin — use before parsing or validating user input. */
+export function toLatinDigits(input: string): string {
+  return input.replace(FA_AR_DIGITS, (d) => TO_LATIN[d] ?? d);
+}
+
 function groupThousands(n: number): string {
   return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "٬");
 }

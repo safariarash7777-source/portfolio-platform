@@ -22,6 +22,7 @@
   --surface-2:   #F1F5F9;   /* subtle surface */
   --line:        #E2E8F0;   /* borders / dividers */
   --line-strong: #CBD5E1;   /* emphasized borders */
+  --nav-bg:      rgba(248,250,252,0.85);  /* sticky navbar (theme-aware) */
 
   /* ─── Text scale ────────────────────────────────────────── */
   --text:        #0F172A;   /* primary text — institutional dark */
@@ -60,6 +61,7 @@
   --surface-2:   #1A2540;
   --line:        #1E2A47;
   --line-strong: #2C3B5E;
+  --nav-bg:      rgba(11,18,32,0.85);
 
   --text:        #F1F5F9;
   --text-2:      #CBD5E1;

@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { toLatinDigits } from "@/lib/format";
 import Logo from "@/components/ui/Logo";
 
 interface FormFields {
@@ -52,7 +53,11 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const set = (k: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFields((f) => ({ ...f, [k]: e.target.value }));
+    // Normalize Persian/Arabic digits to Latin for numeric fields so validation
+    // and storage are consistent regardless of the user's keyboard.
+    const value =
+      k === "national_id" || k === "phone" ? toLatinDigits(e.target.value) : e.target.value;
+    setFields((f) => ({ ...f, [k]: value }));
     setErrors((er) => ({ ...er, [k]: undefined }));
   };
 
@@ -66,22 +71,24 @@ export default function RegisterPage() {
     try {
       const supabase = createClient();
 
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // Pass all profile fields through signUp metadata. The handle_new_user()
+      // trigger persists them — a post-signup .update() would run unauthenticated
+      // (email confirmation = no session yet) and be blocked by RLS, silently
+      // dropping national_id/phone.
+      const { error: signUpError } = await supabase.auth.signUp({
         email: fields.email,
         password: fields.password,
-        options: { data: { role: "user", full_name: fields.full_name } },
+        options: {
+          data: {
+            role: "user",
+            full_name: fields.full_name,
+            national_id: fields.national_id,
+            phone: fields.phone,
+          },
+        },
       });
 
       if (signUpError) { setServerError(supabaseError(signUpError.message)); return; }
-
-      const userId = data.user?.id;
-      if (userId) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({ national_id: fields.national_id, phone: fields.phone })
-          .eq("id", userId);
-        if (profileError) console.error("Profile update error:", profileError.message);
-      }
 
       setSuccess(true);
     } catch {
@@ -217,6 +224,7 @@ export default function RegisterPage() {
                   className="absolute left-3 top-1/2 -translate-y-1/2"
                   style={{ color: "var(--text-3)" }}
                   tabIndex={-1}
+                  aria-label={showPass ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -242,6 +250,7 @@ export default function RegisterPage() {
                   className="absolute left-3 top-1/2 -translate-y-1/2"
                   style={{ color: "var(--text-3)" }}
                   tabIndex={-1}
+                  aria-label={showConfirm ? "پنهان کردن تکرار رمز" : "نمایش تکرار رمز"}
                 >
                   {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -306,13 +315,15 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
-        {label}
-        {required && (
-          <span className="mr-1" style={{ color: "var(--danger)" }}>*</span>
-        )}
+      <label className="block">
+        <span className="block text-sm font-bold mb-1.5" style={{ color: "var(--text-2)" }}>
+          {label}
+          {required && (
+            <span className="mr-1" style={{ color: "var(--danger)" }}>*</span>
+          )}
+        </span>
+        {children}
       </label>
-      {children}
       {error && (
         <p className="text-xs" style={{ color: "var(--danger)" }}>
           {error}
