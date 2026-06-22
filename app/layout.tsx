@@ -10,6 +10,7 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
     default: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری",
     template: "%s · آرش صفری",
@@ -66,7 +67,7 @@ const themeScript = `
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fa" dir="rtl" className={vazirmatn.variable} suppressHydrationWarning>
+    <html lang="fa" dir="rtl" data-scroll-behavior="smooth" className={vazirmatn.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

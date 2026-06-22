@@ -74,11 +74,12 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
+              <label htmlFor="login-email" className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
                 آدرس ایمیل
                 <span className="mr-1" style={{ color: "var(--danger)" }}>*</span>
               </label>
               <input
+                id="login-email"
                 type="email"
                 className="input"
                 placeholder="email@example.com"
@@ -94,12 +95,13 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
+              <label htmlFor="login-password" className="block text-sm font-bold" style={{ color: "var(--text-2)" }}>
                 رمز عبور
                 <span className="mr-1" style={{ color: "var(--danger)" }}>*</span>
               </label>
               <div className="relative">
                 <input
+                  id="login-password"
                   type={showPass ? "text" : "password"}
                   className="input"
                   placeholder="رمز عبور خود را وارد کنید"
@@ -115,6 +117,7 @@ export default function LoginPage() {
                   className="absolute left-3 top-1/2 -translate-y-1/2"
                   style={{ color: "var(--text-3)" }}
                   tabIndex={-1}
+                  aria-label={showPass ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

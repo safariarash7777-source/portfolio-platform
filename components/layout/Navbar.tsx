@@ -27,7 +27,7 @@ export default function Navbar() {
     <header
       className="sticky top-0 z-50 transition-all"
       style={{
-        background: "rgba(248,250,252,0.85)",
+        background: "var(--nav-bg)",
         backdropFilter: "saturate(180%) blur(12px)",
         WebkitBackdropFilter: "saturate(180%) blur(12px)",
         borderBottom: scrolled ? "1px solid var(--line)" : "1px solid transparent",
@@ -64,7 +64,9 @@ export default function Navbar() {
           <button
             type="button"
             className="md:hidden btn btn-ghost"
-            aria-label="منو"
+            aria-label={open ? "بستن منو" : "باز کردن منو"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -79,6 +81,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {open && (
         <div
+          id="mobile-menu"
           className="md:hidden border-t"
           style={{ borderColor: "var(--line)", background: "var(--surface)" }}
         >
