@@ -20,11 +20,11 @@ const nextConfig = {
           { key: "X-DNS-Prefetch-Control", value: "on" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
-          // Report-Only first (safe rollout): observe violations, then promote to
-          // "Content-Security-Policy" once verified. Inline script/style are allowed
-          // for the theme bootstrap + Tailwind; tighten with a nonce when enforcing.
+          // Enforcing. Inline script/style are allowed for the theme bootstrap +
+          // inline styles; 'unsafe-eval' is needed for the Next dev runtime.
+          // Tighten further with a per-request nonce if you drop 'unsafe-inline'.
           {
-            key: "Content-Security-Policy-Report-Only",
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               "base-uri 'self'",
