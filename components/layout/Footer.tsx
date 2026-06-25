@@ -6,7 +6,6 @@ const FOOTER_GROUPS = [
     title: "محصول",
     links: [
       { href: "/#features", label: "خدمات و امکانات" },
-      { href: "/#pricing",  label: "تعرفه‌ها" },
       { href: "/dashboard", label: "داشبورد کاربری" },
     ],
   },
@@ -91,7 +90,7 @@ export default function Footer() {
           style={{ borderColor: "var(--line)" }}
         >
           <p className="text-xs" style={{ color: "var(--text-3)" }}>
-            © ۱۴۰۴ آرش صفری — تمامی حقوق محفوظ است.
+            © ۱۴۰۵ آرش صفری — تمامی حقوق محفوظ است.
           </p>
           <p className="text-xs" style={{ color: "var(--text-3)" }}>
             آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری · Investment Analyst &amp; Advisor

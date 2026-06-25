@@ -127,6 +127,12 @@ export default function LoginPage() {
               )}
             </div>
 
+            <div className="text-start -mt-2">
+              <Link href="/forgot-password" className="text-sm font-bold" style={{ color: "var(--navy)" }}>
+                رمز عبور را فراموش کرده‌اید؟
+              </Link>
+            </div>
+
             {serverError && (
               <div
                 className="rounded-xl px-4 py-3 text-sm"

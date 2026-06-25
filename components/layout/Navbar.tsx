@@ -7,7 +7,6 @@ import ThemeToggle from "../ui/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/#features", label: "خدمات" },
-  { href: "/#pricing",  label: "تعرفه" },
   { href: "/#faq",      label: "سؤالات متداول" },
   { href: "/dashboard", label: "داشبورد" },
 ];
