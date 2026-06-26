@@ -21,6 +21,7 @@ import type { RiskCategory } from "@/components/quiz/quizData";
 import LivePortfolio from "@/components/dashboard/LivePortfolio";
 import type { HoldingDB, SnapshotDB, TxDB } from "@/components/dashboard/LivePortfolio";
 import AllocationDonut from "@/components/dashboard/AllocationDonut";
+import AdvisorChat from "@/components/advisor/AdvisorChat";
 import { formatJalali } from "@/lib/format";
 
 interface Assessment {
@@ -195,6 +196,11 @@ export default function DashboardClient({
       {/* Live portfolio overview — KPIs, allocation donut, performance, holdings */}
       <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
         <LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} />
+      </div>
+
+      {/* AI Advisor (Phase 1) — temporarily mounted here */}
+      <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
+        <AdvisorChat />
       </div>
     </div>
   );

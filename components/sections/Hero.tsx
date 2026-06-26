@@ -41,19 +41,25 @@ export default function Hero() {
       className="relative overflow-hidden"
       style={{
         background:
-          "linear-gradient(180deg, var(--bg) 0%, var(--surface-2) 100%)",
+          "linear-gradient(160deg, var(--navy-deep) 0%, var(--navy) 58%, var(--navy-soft) 100%)",
+        color: "#fff",
       }}
     >
-      {/* Subtle institutional grid */}
+      {/* Brand signature — radial gold glows */}
       <div
         aria-hidden
-        className="absolute inset-0 pointer-events-none opacity-[0.35]"
+        className="absolute pointer-events-none"
         style={{
-          backgroundImage:
-            "linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-          maskImage:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 80%)",
+          top: "-180px", right: "-160px", width: 520, height: 520, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(245,208,122,0.18) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          bottom: "-200px", left: "-180px", width: 440, height: 440, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(245,208,122,0.10) 0%, transparent 70%)",
         }}
       />
 
@@ -65,9 +71,9 @@ export default function Hero() {
             <div
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-6"
               style={{
-                background: "var(--gold-tint)",
-                color: "var(--navy-deep)",
-                border: "1px solid rgba(184,134,11,0.3)",
+                background: "rgba(245,208,122,0.12)",
+                color: "var(--gold-soft)",
+                border: "1px solid rgba(245,208,122,0.35)",
               }}
             >
               <ShieldCheck size={14} />
@@ -77,7 +83,7 @@ export default function Hero() {
             <h1
               className="font-display"
               style={{
-                color: "var(--navy-deep)",
+                color: "#fff",
                 fontSize: "clamp(2rem, 4.6vw, 3.5rem)",
                 lineHeight: 1.2,
                 fontWeight: 800,
@@ -87,29 +93,25 @@ export default function Hero() {
             >
               تصمیم سرمایه‌گذاری شما،
               <br />
-              <span style={{ color: "var(--navy)" }}>بر پایه‌ی </span>
-              <span style={{ color: "var(--gold)" }}>داده و تحلیل علمی</span>
+              <span style={{ color: "rgba(255,255,255,0.92)" }}>بر پایه‌ی </span>
+              <span style={{ color: "var(--gold-soft)" }}>داده و تحلیل علمی</span>
             </h1>
 
             <p
               className="text-base sm:text-lg leading-8 max-w-xl"
-              style={{ color: "var(--text-2)", marginBottom: "2rem" }}
+              style={{ color: "rgba(255,255,255,0.75)", marginBottom: "2rem" }}
             >
-              <strong style={{ color: "var(--navy-deep)" }}>آرش صفری</strong>،
+              <strong style={{ color: "#fff" }}>آرش صفری</strong>،
               تحلیلگر و مشاور سرمایه‌گذاری — پروفایل ریسک شخصی شما را با دقت علمی
               ارزیابی می‌کند و سبدی متناسب با اهداف، افق زمانی و توان مالی شما طراحی می‌کند.
             </p>
 
-            {/* Waitlist form */}
+            {/* Waitlist form (white card pops on navy) */}
             <div id="waitlist" className="mb-6 max-w-lg">
               <form
                 onSubmit={handleSubmit}
                 className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--line)",
-                  boxShadow: "var(--shadow-sm)",
-                }}
+                style={{ background: "var(--surface)", boxShadow: "var(--shadow-lg)" }}
               >
                 <input
                   type="email"
@@ -138,17 +140,17 @@ export default function Hero() {
 
               <div className="h-6 mt-2 px-1">
                 {status === "success" && (
-                  <p className="text-sm" style={{ color: "var(--success)" }}>
+                  <p className="text-sm" style={{ color: "var(--gold-soft)" }}>
                     سپاسگزاریم! به محض آماده شدن پلتفرم، اطلاع‌رسانی می‌شود.
                   </p>
                 )}
                 {status === "error" && (
-                  <p className="text-sm" style={{ color: "var(--danger)" }}>
+                  <p className="text-sm" style={{ color: "#FCA5A5" }}>
                     {errorMessage}
                   </p>
                 )}
                 {status === "idle" && (
-                  <p className="text-xs" style={{ color: "var(--text-3)" }}>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
                     اطلاعات شما محرمانه است و فروخته نمی‌شود.
                   </p>
                 )}
@@ -156,47 +158,37 @@ export default function Hero() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/dashboard" className="btn btn-primary">
+              <Link href="/dashboard" className="btn btn-gold">
                 <BarChart3 size={16} />
                 ورود به داشبورد
               </Link>
-              <Link href="/#features" className="btn btn-outline">
+              <Link
+                href="/#features"
+                className="btn"
+                style={{ background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.4)" }}
+              >
                 مشاهده خدمات
                 <ArrowLeft size={16} />
               </Link>
             </div>
           </div>
 
-          {/* Left column — visual */}
+          {/* Left column — visual (light card so the navy logo stays visible) */}
           <div className="lg:col-span-5">
             <div
-              className="relative rounded-2xl overflow-hidden card-elevated p-8"
-              style={{ background: "var(--surface)" }}
+              className="relative rounded-2xl overflow-hidden p-8"
+              style={{ background: "var(--surface)", boxShadow: "var(--shadow-lg)" }}
             >
-              {/* Logo lockup hero card */}
               <div className="flex flex-col items-center text-center gap-5">
                 <div
                   className="rounded-2xl p-6"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%)",
-                    boxShadow: "var(--shadow-lg)",
-                  }}
+                  style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
                 >
-                  <Image
-                    src="/logo.png"
-                    alt="نشان آرش صفری"
-                    width={96}
-                    height={96}
-                    priority
-                  />
+                  <Image src="/logo.png" alt="نشان آرش صفری" width={96} height={96} priority />
                 </div>
 
                 <div>
-                  <p
-                    className="font-display text-xl font-bold"
-                    style={{ color: "var(--navy-deep)" }}
-                  >
+                  <p className="font-display text-xl font-bold" style={{ color: "var(--navy-deep)" }}>
                     آرش صفری
                   </p>
                   <p className="text-sm mt-1" style={{ color: "var(--gold)" }}>
@@ -204,20 +196,14 @@ export default function Hero() {
                   </p>
                 </div>
 
-                <div
-                  className="grid grid-cols-3 w-full pt-5 border-t"
-                  style={{ borderColor: "var(--line)" }}
-                >
+                <div className="grid grid-cols-3 w-full pt-5 border-t" style={{ borderColor: "var(--line)" }}>
                   {[
                     { v: "۲۲", l: "سؤال" },
-                    { v: "۶",  l: "بخش تحلیل" },
+                    { v: "۶", l: "بخش تحلیل" },
                     { v: "۱۰", l: "دقیقه" },
                   ].map((s) => (
                     <div key={s.l} className="text-center">
-                      <div
-                        className="font-display text-2xl font-bold"
-                        style={{ color: "var(--navy)" }}
-                      >
+                      <div className="font-display text-2xl font-bold" style={{ color: "var(--navy)" }}>
                         {s.v}
                       </div>
                       <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>
@@ -227,10 +213,7 @@ export default function Hero() {
                   ))}
                 </div>
 
-                <Link
-                  href="/dashboard"
-                  className="btn btn-gold w-full mt-2"
-                >
+                <Link href="/dashboard" className="btn btn-gold w-full mt-2">
                   شروع سنجش پروفایل ریسک
                 </Link>
               </div>

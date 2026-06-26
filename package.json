@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.106.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.39.0",
     "lucide-react": "^0.408.0",

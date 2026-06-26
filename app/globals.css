@@ -9,27 +9,27 @@
 
 :root {
   /* ─── Brand palette (canonical) ─────────────────────────── */
-  --navy:        #1E3A8A;   /* primary brand */
-  --navy-deep:   #172554;   /* deep institutional navy */
-  --navy-soft:   #2748A6;   /* hover / interactive */
-  --gold:        #B8860B;   /* primary gold accent */
-  --gold-soft:   #D4A22B;   /* gold on dark / hover */
+  --navy:        #1E3A8A;   /* primary brand (سرمه‌ای اصلی) */
+  --navy-deep:   #0D1F4A;   /* deep navy (سرمه‌ای عمیق) */
+  --navy-soft:   #2D4DB0;   /* hover / interactive */
+  --gold:        #B8860B;   /* antique gold accent (طلایی عتیقه) — use sparingly (≤10%) */
+  --gold-soft:   #F5D07A;   /* light gold (طلایی روشن) — gold on dark / hover */
   --gold-tint:   #F5E6B8;   /* gold background tint */
 
   /* ─── Surface system (light theme — default) ────────────── */
-  --bg:          #F8FAFC;   /* page background */
+  --bg:          #F8F7F4;   /* warm off-white page background */
   --surface:     #FFFFFF;   /* card surface */
-  --surface-2:   #F1F5F9;   /* subtle surface */
-  --line:        #E2E8F0;   /* borders / dividers */
-  --line-strong: #CBD5E1;   /* emphasized borders */
-  --nav-bg:      rgba(248,250,252,0.85);  /* sticky navbar (theme-aware) */
+  --surface-2:   #F2F0E8;   /* warm cream (کرمی گرم) subtle surface */
+  --line:        #E5E3DC;   /* warm borders / dividers */
+  --line-strong: #D9D6CC;   /* emphasized warm borders */
+  --nav-bg:      rgba(248,247,244,0.85);  /* sticky navbar (theme-aware) */
 
   /* ─── Text scale ────────────────────────────────────────── */
-  --text:        #0F172A;   /* primary text — institutional dark */
-  --text-2:      #334155;   /* secondary text */
-  --text-3:      #64748B;   /* muted / metadata */
-  --text-on-navy:#F8FAFC;   /* text on navy surface */
-  --text-on-gold:#172554;   /* text on gold surface */
+  --text:        #1A1A1A;   /* primary text — warm near-black */
+  --text-2:      #44403C;   /* secondary text (warm) */
+  --text-3:      #6B6B6B;   /* muted / metadata (warm) */
+  --text-on-navy:#FFFFFF;   /* text on navy surface */
+  --text-on-gold:#0D1F4A;   /* text on gold surface */
 
   /* ─── Semantic ──────────────────────────────────────────── */
   --success:     #15803D;
@@ -56,16 +56,16 @@
 
 /* ─── Dark mode overrides (toggled via .dark on <html>) ────── */
 .dark {
-  --bg:          #0B1220;
-  --surface:     #131C30;
-  --surface-2:   #1A2540;
-  --line:        #1E2A47;
-  --line-strong: #2C3B5E;
-  --nav-bg:      rgba(11,18,32,0.85);
+  --bg:          #081226;
+  --surface:     #0D1F4A;
+  --surface-2:   #122A5C;
+  --line:        #21386E;
+  --line-strong: #314A82;
+  --nav-bg:      rgba(8,18,38,0.85);
 
-  --text:        #F1F5F9;
-  --text-2:      #CBD5E1;
-  --text-3:      #94A3B8;
+  --text:        #F4F2EC;
+  --text-2:      #C9D2E3;
+  --text-3:      #8EA0BE;
 
   --shadow-sm:   0 1px 2px 0 rgba(0,0,0,0.4);
   --shadow:      0 6px 16px -4px rgba(0,0,0,0.5), 0 2px 4px -1px rgba(0,0,0,0.3);
