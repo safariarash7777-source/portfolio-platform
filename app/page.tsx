@@ -1,19 +1,23 @@
-import Navbar from "@/components/layout/Navbar";
+import LandingNav from "@/components/landing/LandingNav";
+import Hero from "@/components/landing/Hero";
+import ThreeSteps from "@/components/landing/ThreeSteps";
+import Capabilities from "@/components/landing/Capabilities";
+import WhyArash from "@/components/landing/WhyArash";
+import LandingFAQ from "@/components/landing/LandingFAQ";
+import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/layout/Footer";
-import Hero from "@/components/sections/Hero";
-import Features from "@/components/sections/Features";
-import Quote from "@/components/sections/Quote";
-import FAQ from "@/components/sections/FAQ";
 
 export default function LandingPage() {
   return (
     <>
-      <Navbar />
+      <LandingNav />
       <main>
         <Hero />
-        <Features />
-        <Quote />
-        <FAQ />
+        <ThreeSteps />
+        <Capabilities />
+        <WhyArash />
+        <LandingFAQ />
+        <FinalCTA />
       </main>
       <Footer />
     </>
