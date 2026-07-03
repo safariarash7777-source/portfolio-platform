@@ -5,6 +5,7 @@ import {
   Users,
   PieChart,
   Mail,
+  CreditCard,
   Search,
   PlusCircle,
   Trash2,
@@ -14,6 +15,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { formatToman, toPersianDigits } from "@/lib/format";
 
 interface UserRow {
   id: string;
@@ -32,6 +34,17 @@ interface WaitlistRow {
   id: string;
   email: string;
   created_at: string;
+}
+
+interface PaymentRow {
+  id: string;
+  user_name: string | null;
+  user_email: string | null;
+  amount: number;
+  ref_id: string | null;
+  status: string;
+  created_at: string;
+  verified_at: string | null;
 }
 
 interface Allocation {
@@ -54,11 +67,12 @@ const RISK_COLORS: Record<string, string> = {
   "بسیار تهاجمی": "#B91C1C",
 };
 
-type Tab = "users" | "portfolio" | "waitlist";
+type Tab = "users" | "portfolio" | "waitlist" | "payments";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "users", label: "کاربران", icon: <Users size={16} /> },
   { id: "portfolio", label: "تخصیص پرتفوی", icon: <PieChart size={16} /> },
+  { id: "payments", label: "پرداخت‌ها", icon: <CreditCard size={16} /> },
   { id: "waitlist", label: "لیست انتظار", icon: <Mail size={16} /> },
 ];
 
@@ -67,10 +81,12 @@ const EMPTY_ALLOC: Allocation = { asset: "", pct: 0, note: "" };
 export default function AdminClient({
   users,
   waitlist,
+  payments = [],
   initialTab = "users",
 }: {
   users: UserRow[];
   waitlist: WaitlistRow[];
+  payments?: PaymentRow[];
   initialTab?: Tab;
 }) {
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -142,6 +158,7 @@ export default function AdminClient({
       {/* Content */}
       {tab === "users" && <UsersTab users={users} />}
       {tab === "portfolio" && <PortfolioTab users={users} />}
+      {tab === "payments" && <PaymentsTab payments={payments} />}
       {tab === "waitlist" && <WaitlistTab waitlist={waitlist} />}
     </div>
   );
@@ -532,6 +549,128 @@ function PortfolioTab({ users }: { users: UserRow[] }) {
         <Save size={16} />
         {saving ? "در حال ذخیره..." : "ذخیره پرتفوی"}
       </button>
+    </div>
+  );
+}
+
+// ─── Tab: Payments (read-only) ────────────────────────────────────────────
+const PAYMENT_STATUS: Record<string, { label: string; color: string; bg: string }> = {
+  paid: { label: "پرداخت‌شده", color: "var(--success)", bg: "rgba(21,128,61,0.1)" },
+  pending: { label: "در انتظار", color: "var(--warning)", bg: "rgba(180,83,9,0.1)" },
+  failed: { label: "ناموفق", color: "var(--danger)", bg: "rgba(185,28,28,0.1)" },
+};
+
+function PaymentsTab({ payments }: { payments: PaymentRow[] }) {
+  const [status, setStatus] = useState<"all" | "paid" | "pending" | "failed">("all");
+  const filtered = status === "all" ? payments : payments.filter((p) => p.status === status);
+
+  const FILTERS: { id: "all" | "paid" | "pending" | "failed"; label: string }[] = [
+    { id: "all", label: "همه" },
+    { id: "paid", label: "پرداخت‌شده" },
+    { id: "pending", label: "در انتظار" },
+    { id: "failed", label: "ناموفق" },
+  ];
+
+  return (
+    <div className="card-elevated p-6">
+      <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+        <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
+          پرداخت‌ها
+        </h3>
+        <div
+          className="flex items-center gap-1 p-1 rounded-xl"
+          style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
+        >
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setStatus(f.id)}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              style={{
+                background: status === f.id ? "var(--surface)" : "transparent",
+                color: status === f.id ? "var(--navy-deep)" : "var(--text-3)",
+                boxShadow: status === f.id ? "var(--shadow-sm)" : "none",
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr style={{ color: "var(--text-3)" }}>
+              {["کاربر", "مبلغ", "وضعیت", "کد رهگیری", "تاریخ ثبت", "تاریخ تأیید"].map((h) => (
+                <th
+                  key={h}
+                  className="text-right py-3 px-3 text-xs font-bold border-b"
+                  style={{ borderColor: "var(--line)" }}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-10 text-center text-sm" style={{ color: "var(--text-3)" }}>
+                  {payments.length === 0 ? "هنوز پرداختی ثبت نشده است." : "نتیجه‌ای یافت نشد."}
+                </td>
+              </tr>
+            ) : (
+              filtered.map((p) => {
+                const st = PAYMENT_STATUS[p.status] ?? {
+                  label: p.status,
+                  color: "var(--text-3)",
+                  bg: "var(--surface-2)",
+                };
+                return (
+                  <tr
+                    key={p.id}
+                    className="border-b hover:bg-[var(--surface-2)] transition-colors"
+                    style={{ borderColor: "var(--line)" }}
+                  >
+                    <td className="py-3 px-3" style={{ color: "var(--text)" }}>
+                      <div className="font-bold">{p.user_name ?? "—"}</div>
+                      <div className="text-xs" dir="ltr" style={{ color: "var(--text-3)" }}>
+                        {p.user_email ?? "—"}
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 font-bold" style={{ color: "var(--navy)" }}>
+                      {formatToman(p.amount)}
+                    </td>
+                    <td className="py-3 px-3">
+                      <span
+                        className="inline-block text-xs font-bold px-2.5 py-1 rounded-full"
+                        style={{ background: st.bg, color: st.color }}
+                      >
+                        {st.label}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3" dir="ltr" style={{ color: "var(--text-2)" }}>
+                      {p.ref_id ? toPersianDigits(p.ref_id) : "—"}
+                    </td>
+                    <td className="py-3 px-3" style={{ color: "var(--text-2)" }}>
+                      {new Date(p.created_at).toLocaleDateString("fa-IR")}
+                    </td>
+                    <td className="py-3 px-3" style={{ color: "var(--text-2)" }}>
+                      {p.verified_at ? new Date(p.verified_at).toLocaleDateString("fa-IR") : "—"}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="text-xs mt-4" style={{ color: "var(--text-3)" }}>
+        مجموع {toPersianDigits(filtered.length)} پرداخت نمایش داده شد
+      </p>
     </div>
   );
 }

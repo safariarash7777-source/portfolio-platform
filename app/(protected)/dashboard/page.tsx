@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes] = await Promise.all([
+  const [profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes, telegramRes, paymentRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase
       .from("risk_assessments")
@@ -47,6 +47,19 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .order("occurred_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("telegram_links")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("payments")
+      .select("status, invite_link, ref_id")
+      .eq("user_id", user.id)
+      .eq("status", "paid")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   return (
@@ -63,6 +76,8 @@ export default async function DashboardPage() {
           holdings={holdingsRes.data ?? []}
           snapshots={snapshotsRes.data ?? []}
           transactions={txRes.data ?? []}
+          telegramLinked={Boolean(telegramRes.data)}
+          payment={paymentRes.data ?? null}
         />
       </main>
       <Footer />
