@@ -27,7 +27,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { key: "dashboard", label: "داشبورد", href: "/admin", icon: <LayoutDashboard size={18} /> },
-  { key: "users", label: "کاربران", href: "/admin/manage?tab=users", icon: <Users size={18} /> },
+  { key: "users", label: "کاربران", href: "/admin/users", icon: <Users size={18} /> },
   { key: "portfolio", label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio", icon: <PieChart size={18} /> },
   { key: "waitlist", label: "لیست انتظار", href: "/admin/manage?tab=waitlist", icon: <Mail size={18} /> },
   { key: "market", label: "رصد بازار", icon: <LineChart size={18} />, soon: true },
@@ -50,10 +50,10 @@ export default function AdminShell({
   const isActive = (item: NavItem) => {
     if (item.soon) return false;
     if (item.key === "dashboard") return pathname === "/admin";
+    if (item.key === "users") return pathname.startsWith("/admin/users");
     if (pathname.startsWith("/admin/manage")) {
       if (item.key === "portfolio") return tab === "portfolio";
       if (item.key === "waitlist") return tab === "waitlist";
-      if (item.key === "users") return tab !== "portfolio" && tab !== "waitlist";
     }
     return false;
   };
