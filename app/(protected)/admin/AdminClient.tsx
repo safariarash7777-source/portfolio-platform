@@ -67,11 +67,13 @@ const EMPTY_ALLOC: Allocation = { asset: "", pct: 0, note: "" };
 export default function AdminClient({
   users,
   waitlist,
+  initialTab = "users",
 }: {
   users: UserRow[];
   waitlist: WaitlistRow[];
+  initialTab?: Tab;
 }) {
-  const [tab, setTab] = useState<Tab>("users");
+  const [tab, setTab] = useState<Tab>(initialTab);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-10 space-y-6">
@@ -83,7 +85,7 @@ export default function AdminClient({
             className="font-display text-2xl md:text-3xl font-bold mt-1"
             style={{ color: "var(--navy-deep)" }}
           >
-            داشبورد مدیریت پلتفرم
+            مدیریت پلتفرم
           </h1>
           <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
             مدیریت کاربران، تخصیص پرتفوی و پیگیری لیست انتظار.
