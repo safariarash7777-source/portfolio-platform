@@ -1,5 +1,12 @@
 import Link from "next/link";
+import { Instagram, Send, Linkedin } from "lucide-react";
 import Logo from "../ui/Logo";
+
+const SOCIAL_LINKS = [
+  { href: "https://instagram.com/arashsafari",   label: "اینستاگرام", icon: <Instagram size={18} /> },
+  { href: "https://t.me/arashsafari",            label: "تلگرام",     icon: <Send size={18} /> },
+  { href: "https://linkedin.com/in/arashsafari", label: "لینکدین",    icon: <Linkedin size={18} /> },
+];
 
 const FOOTER_GROUPS = [
   {
@@ -44,6 +51,29 @@ export default function Footer() {
             >
               تحلیل علمی، پروفایل ریسک و طراحی سبد سرمایه‌گذاری اختصاصی
             </p>
+
+            <div className="mt-5 flex items-center gap-3">
+              {SOCIAL_LINKS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  title={s.label}
+                  className="flex items-center justify-center rounded-lg transition-colors hover:opacity-80"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--line)",
+                    color: "var(--text-2)",
+                  }}
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
           </div>
 
           {FOOTER_GROUPS.map((g) => (

@@ -1,64 +1,26 @@
-import { createClient } from "@/lib/supabase/server";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import AdminClient from "./AdminClient";
+import DashboardOverview from "@/components/admin/DashboardOverview";
 
-export default async function AdminPage() {
-  const supabase = await createClient();
+export const metadata = {
+  title: "داشبورد مدیریت",
+};
 
-  const [profilesRes, assessmentsRes, portfoliosRes, waitlistRes] =
-    await Promise.all([
-      supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("risk_assessments")
-        .select("user_id, risk_category, total_score, created_at")
-        .order("created_at", { ascending: false }),
-      supabase.from("portfolios").select("user_id"),
-      supabase
-        .from("waitlist")
-        .select("*")
-        .order("created_at", { ascending: false }),
-    ]);
-
-  const latestAssessments = new Map<string, { category: string; score: number | null; date: string }>();
-  for (const a of assessmentsRes.data ?? []) {
-    if (!latestAssessments.has(a.user_id)) {
-      latestAssessments.set(a.user_id, {
-        category: a.risk_category,
-        score: a.total_score ?? null,
-        date: a.created_at,
-      });
-    }
-  }
-
-  const portfolioUserIds = new Set(
-    (portfoliosRes.data ?? []).map((p) => p.user_id)
-  );
-
-  const users = (profilesRes.data ?? []).map((p) => {
-    const assessment = latestAssessments.get(p.id) ?? null;
-    return {
-      ...p,
-      risk_category: assessment?.category ?? null,
-      risk_score: assessment?.score ?? null,
-      risk_date: assessment?.date ?? null,
-      has_portfolio: portfolioUserIds.has(p.id),
-    };
-  });
-
+export default function AdminDashboardPage() {
   return (
-    <>
-      <Navbar />
-      <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <AdminClient
-          users={users}
-          waitlist={waitlistRes.data ?? []}
-        />
-      </main>
-      <Footer />
-    </>
+    <div className="space-y-6">
+      <header>
+        <span className="eyebrow">پنل مدیریت</span>
+        <h1
+          className="font-display text-2xl md:text-3xl font-bold mt-1"
+          style={{ color: "var(--navy-deep)" }}
+        >
+          داشبورد
+        </h1>
+        <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
+          نمای کلی پلتفرم — کاربران، آزمون ریسک، پوشش پرتفوی و لیست انتظار.
+        </p>
+      </header>
+
+      <DashboardOverview />
+    </div>
   );
 }

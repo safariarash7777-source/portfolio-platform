@@ -127,6 +127,10 @@ body { min-height: 100vh; }
 .btn-ghost { background: transparent; color: var(--text-2); border-color: transparent; }
 .btn-ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
 
+/* Outline button placed on a dark navy band (Hero / final CTA) */
+.btn-on-navy { background: transparent; color: var(--gold-soft); border-color: rgba(255,255,255,0.22); }
+.btn-on-navy:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.42); color: var(--gold-soft); }
+
 /* ─── Cards & surfaces ──────────────────────────────────────── */
 .card {
   background: var(--surface);
@@ -173,6 +177,22 @@ body { min-height: 100vh; }
 .divider-gold { height: 2px; width: 48px; background: var(--gold); border-radius: 2px; }
 
 .trust-row { color: var(--text-3); font-weight: 700; }
+
+/* ─── Scroll reveal (landing) ───────────────────────────────────
+   کلاسِ .reveal فقط با JS و تنها وقتی حرکت مجاز است اعمال می‌شود
+   (رجوع به components/landing/Reveal.tsx). بنابراین در حالتِ
+   بدون‌JS یا reduced-motion، محتوا هرگز مخفی نمی‌ماند. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s cubic-bezier(0.2, 0.6, 0.2, 1),
+              transform 0.55s cubic-bezier(0.2, 0.6, 0.2, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
 
 @media print {
   body { background: #FFFFFF; color: #000000; }

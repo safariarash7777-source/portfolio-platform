@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import AdminShell from "@/components/admin/AdminShell";
 
 export const metadata = {
   title: "پنل مدیریت",
@@ -26,5 +27,5 @@ export default async function AdminLayout({
 
   if (profile?.role !== "admin") redirect("/dashboard");
 
-  return <>{children}</>;
+  return <AdminShell userEmail={user.email ?? ""}>{children}</AdminShell>;
 }
