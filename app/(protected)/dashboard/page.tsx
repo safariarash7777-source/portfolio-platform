@@ -17,7 +17,10 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes, telegramRes, paymentRes] = await Promise.all([
+  const [
+    profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes,
+    telegramRes, paymentRes, scoreHistoryRes, revalidationRes, announcementsRes, seenRes,
+  ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase
       .from("risk_assessments")
@@ -60,7 +63,37 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("risk_assessments")
+      .select("total_score, risk_category, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("risk_revalidations")
+      .select("expired_at")
+      .eq("user_id", user.id)
+      .order("expired_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("announcements")
+      .select("id, title, body_md, published_at")
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("announcement_deliveries")
+      .select("announcement_id")
+      .eq("user_id", user.id)
+      .eq("channel", "in_app")
+      .eq("status", "seen"),
   ]);
+
+  const seenSet = new Set((seenRes.data ?? []).map((d) => d.announcement_id));
+  const announcements = (announcementsRes.data ?? []).map((a) => ({
+    ...a,
+    seen: seenSet.has(a.id),
+  }));
 
   return (
     <>
@@ -78,6 +111,9 @@ export default async function DashboardPage() {
           transactions={txRes.data ?? []}
           telegramLinked={Boolean(telegramRes.data)}
           payment={paymentRes.data ?? null}
+          scoreHistory={scoreHistoryRes.data ?? []}
+          revalidationExpiredAt={revalidationRes.data?.expired_at ?? null}
+          announcements={announcements}
         />
       </main>
       <Footer />

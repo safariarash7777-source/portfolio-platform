@@ -28,6 +28,7 @@ interface UserRow {
   risk_score: number | null;
   risk_date: string | null;
   has_portfolio: boolean;
+  risk_expired?: boolean;
 }
 
 interface WaitlistRow {
@@ -395,6 +396,18 @@ function PortfolioTab({ users }: { users: UserRow[] }) {
           <p className="text-xs" style={{ color: "var(--text-3)" }}>
             این کاربر از قبل پرتفوی دارد. ذخیره، نسخهٔ جدیدی ثبت می‌کند و نسخهٔ قبلی در تاریخچه حفظ می‌شود.
           </p>
+        )}
+        {selectedUser?.risk_expired && (
+          <div
+            className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs leading-6"
+            style={{ background: "rgba(180,83,9,0.08)", border: "1px solid rgba(180,83,9,0.3)", color: "var(--warning)" }}
+          >
+            <AlertCircle size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+            <span>
+              پروفایل ریسک این کاربر منقضی شده است (بیش از ۱۸۰ روز یا انقضای دستی). تخصیص همچنان ممکن است،
+              ولی بهتر است ابتدا کاربر کوییز را به‌روز کند. تصمیم نهایی با مشاور است.
+            </span>
+          </div>
         )}
       </div>
 

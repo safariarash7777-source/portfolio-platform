@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { X, Settings2, FileText } from "lucide-react";
+import { X, Settings2, FileText, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { faNum, faDateLabel } from "./adminFormat";
 import type { AdminUserRow } from "./usersCsv";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const VALIDITY_DAYS = 180;
 
 type Assessment = { total_score: number | null; risk_category: string; created_at: string };
 type Allocation = { asset?: string; pct?: number; note?: string };
@@ -32,10 +36,13 @@ export default function UserDetailDrawer({
   user: AdminUserRow | null;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<Assessment[]>([]);
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [versions, setVersions] = useState<Version[] | null>(null); // null = table not installed
+  const [forcedExpiredAt, setForcedExpiredAt] = useState<string | null>(null);
+  const [expiring, setExpiring] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -44,10 +51,11 @@ export default function UserDetailDrawer({
     setHistory([]);
     setPortfolio(null);
     setVersions(null);
+    setForcedExpiredAt(null);
 
     (async () => {
       const supabase = createClient();
-      const [hRes, pRes, vRes] = await Promise.all([
+      const [hRes, pRes, vRes, rRes] = await Promise.all([
         supabase
           .from("risk_assessments")
           .select("total_score, risk_category, created_at")
@@ -63,6 +71,13 @@ export default function UserDetailDrawer({
           .select("version, created_at")
           .eq("user_id", user.id)
           .order("version", { ascending: false }),
+        supabase
+          .from("risk_revalidations")
+          .select("expired_at")
+          .eq("user_id", user.id)
+          .order("expired_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
       if (!alive) return;
 
@@ -70,6 +85,7 @@ export default function UserDetailDrawer({
       setPortfolio((pRes.data as Portfolio) ?? null);
       // versions table is optional; if it's not installed, keep null and show an honest note
       setVersions(isMissingRelation(vRes.error) ? null : ((vRes.data as Version[]) ?? []));
+      setForcedExpiredAt(isMissingRelation(rRes.error) ? null : ((rRes.data?.expired_at as string) ?? null));
       setLoading(false);
     })();
 
@@ -77,6 +93,21 @@ export default function UserDetailDrawer({
       alive = false;
     };
   }, [user]);
+
+  const handleForceExpire = async () => {
+    if (!user) return;
+    setExpiring(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.rpc("force_expire_risk", { p_user: user.id, p_reason: null });
+      if (!error) {
+        setForcedExpiredAt(new Date().toISOString());
+        router.refresh();
+      }
+    } finally {
+      setExpiring(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -153,6 +184,55 @@ export default function UserDetailDrawer({
                   </li>
                 ))}
               </ul>
+            )}
+          </Section>
+
+          {/* Revalidation status + force-expire */}
+          <Section title="اعتبارسنجی پروفایل ریسک">
+            {loading ? (
+              <SkeletonRows n={1} />
+            ) : (
+              (() => {
+                const last = history[0]?.created_at ?? null;
+                if (!last) return <Empty msg="بدون ارزیابی — چیزی برای انقضا نیست." />;
+                const now = Date.now();
+                const expiresAt = new Date(last).getTime() + VALIDITY_DAYS * DAY_MS;
+                const forced =
+                  forcedExpiredAt != null &&
+                  new Date(forcedExpiredAt).getTime() > new Date(last).getTime() &&
+                  new Date(forcedExpiredAt).getTime() <= now;
+                const isExpired = forced || now > expiresAt;
+                return (
+                  <div className="space-y-3">
+                    <div
+                      className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold"
+                      style={{
+                        background: isExpired ? "rgba(185,28,28,0.08)" : "rgba(21,128,61,0.08)",
+                        color: isExpired ? "var(--danger)" : "var(--success)",
+                      }}
+                    >
+                      {isExpired ? <ShieldAlert size={15} /> : <CheckCircle2 size={15} />}
+                      {isExpired
+                        ? forced
+                          ? "منقضی‌شده (دستیِ مدیر)"
+                          : "منقضی‌شده (بیش از ۱۸۰ روز)"
+                        : `معتبر تا ${faDateLabel(new Date(expiresAt).toISOString())}`}
+                    </div>
+                    {!isExpired && (
+                      <button
+                        type="button"
+                        onClick={handleForceExpire}
+                        disabled={expiring}
+                        className="btn btn-outline w-full"
+                        style={{ fontSize: "0.8rem", color: "var(--danger)", borderColor: "rgba(185,28,28,0.4)" }}
+                      >
+                        <ShieldAlert size={14} />
+                        {expiring ? "در حال انقضا..." : "انقضای دستی پروفایل"}
+                      </button>
+                    )}
+                  </div>
+                );
+              })()
             )}
           </Section>
 

@@ -18,7 +18,7 @@ export default async function AdminManagePage({
   const { tab } = await searchParams;
   const supabase = await createClient();
 
-  const [profilesRes, assessmentsRes, portfoliosRes, waitlistRes, paymentsRes] =
+  const [profilesRes, assessmentsRes, portfoliosRes, waitlistRes, paymentsRes, revalidationsRes] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -37,6 +37,10 @@ export default async function AdminManagePage({
         .from("payments")
         .select("id, user_id, amount, ref_id, status, created_at, verified_at")
         .order("created_at", { ascending: false }),
+      supabase
+        .from("risk_revalidations")
+        .select("user_id, expired_at")
+        .order("expired_at", { ascending: false }),
     ]);
 
   const latestAssessments = new Map<
@@ -57,6 +61,22 @@ export default async function AdminManagePage({
     (portfoliosRes.data ?? []).map((p) => p.user_id)
   );
 
+  // آخرین رویدادِ انقضای دستی برای هر کاربر
+  const latestRevalidation = new Map<string, string>();
+  for (const r of revalidationsRes.data ?? []) {
+    if (!latestRevalidation.has(r.user_id)) latestRevalidation.set(r.user_id, r.expired_at);
+  }
+
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const isRiskExpired = (lastDate: string | null, userId: string): boolean => {
+    if (!lastDate) return false;
+    const last = new Date(lastDate).getTime();
+    const forced = latestRevalidation.get(userId);
+    const forcedExpired = forced != null && new Date(forced).getTime() > last && new Date(forced).getTime() <= now;
+    return forcedExpired || now > last + 180 * DAY_MS;
+  };
+
   const users = (profilesRes.data ?? []).map((p) => {
     const assessment = latestAssessments.get(p.id) ?? null;
     return {
@@ -65,6 +85,7 @@ export default async function AdminManagePage({
       risk_score: assessment?.score ?? null,
       risk_date: assessment?.date ?? null,
       has_portfolio: portfolioUserIds.has(p.id),
+      risk_expired: isRiskExpired(assessment?.date ?? null, p.id),
     };
   });
 
