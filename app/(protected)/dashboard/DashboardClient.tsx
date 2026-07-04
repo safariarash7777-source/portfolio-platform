@@ -21,6 +21,8 @@ import type { RiskCategory } from "@/components/quiz/quizData";
 import LivePortfolio from "@/components/dashboard/LivePortfolio";
 import type { HoldingDB, SnapshotDB, TxDB } from "@/components/dashboard/LivePortfolio";
 import AllocationDonut from "@/components/dashboard/AllocationDonut";
+import AccessCards from "@/components/dashboard/AccessCards";
+import type { PaidPayment } from "@/components/dashboard/AccessCards";
 import { formatJalali } from "@/lib/format";
 
 interface Assessment {
@@ -54,6 +56,8 @@ interface Props {
   holdings: HoldingDB[];
   snapshots: SnapshotDB[];
   transactions: TxDB[];
+  telegramLinked: boolean;
+  payment: PaidPayment | null;
 }
 
 
@@ -67,6 +71,8 @@ export default function DashboardClient({
   holdings,
   snapshots,
   transactions,
+  telegramLinked,
+  payment,
 }: Props) {
   const isAdmin = userRole === "admin";
   const router = useRouter();
@@ -191,6 +197,11 @@ export default function DashboardClient({
       ) : (
         <NoAssessment onStart={() => setShowQuiz(true)} />
       )}
+
+      {/* Telegram connection + channel access (payment) */}
+      <div className="mt-8">
+        <AccessCards telegramLinked={telegramLinked} payment={payment} />
+      </div>
 
       {/* Live portfolio overview — KPIs, allocation donut, performance, holdings */}
       <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
