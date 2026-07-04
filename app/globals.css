@@ -176,6 +176,21 @@ body { min-height: 100vh; }
 
 .divider-gold { height: 2px; width: 48px; background: var(--gold); border-radius: 2px; }
 
+/* ─── Rendered Markdown (announcements) ─────────────────────────── */
+.markdown-body { color: var(--text-2); font-size: 0.9rem; line-height: 1.9; }
+.markdown-body h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--navy-deep); margin: 0.75rem 0 0.4rem; }
+.markdown-body h4 { font-weight: 700; font-size: 0.95rem; color: var(--navy-deep); margin: 0.6rem 0 0.35rem; }
+.markdown-body h5 { font-weight: 700; font-size: 0.9rem; color: var(--text); margin: 0.5rem 0 0.3rem; }
+.markdown-body p { margin: 0 0 0.6rem; }
+.markdown-body ul, .markdown-body ol { margin: 0 0 0.6rem; padding-inline-start: 1.4rem; }
+.markdown-body li { margin: 0.2rem 0; }
+.markdown-body a { color: var(--navy); font-weight: 700; text-decoration: underline; }
+.dark .markdown-body a { color: var(--gold-soft); }
+.markdown-body strong { color: var(--text); font-weight: 800; }
+.markdown-body code { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 0.05rem 0.35rem; font-size: 0.85em; }
+.markdown-body :first-child { margin-top: 0; }
+.markdown-body :last-child { margin-bottom: 0; }
+
 .trust-row { color: var(--text-3); font-weight: 700; }
 
 /* ─── Scroll reveal (landing) ───────────────────────────────────

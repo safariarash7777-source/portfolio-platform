@@ -23,7 +23,36 @@ import type { HoldingDB, SnapshotDB, TxDB } from "@/components/dashboard/LivePor
 import AllocationDonut from "@/components/dashboard/AllocationDonut";
 import AccessCards from "@/components/dashboard/AccessCards";
 import type { PaidPayment } from "@/components/dashboard/AccessCards";
+import Announcements from "@/components/dashboard/Announcements";
+import type { UserAnnouncement } from "@/components/dashboard/Announcements";
+import ScoreEvolution from "@/components/dashboard/ScoreEvolution";
+import type { ScorePoint } from "@/components/dashboard/ScoreEvolution";
+import RiskRevalidationBanner from "@/components/dashboard/RiskRevalidationBanner";
 import { formatJalali } from "@/lib/format";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const VALIDITY_DAYS = 180;
+
+/** وضعیت اعتبارسنجی: منقضی/روزهای باقی‌مانده، بر پایهٔ آخرین ارزیابی و رویدادِ force-expire. */
+function computeRevalidation(
+  lastCompleted: string | null,
+  forceExpiredAt: string | null
+): { isExpired: boolean; daysLeft: number | null } {
+  if (!lastCompleted) return { isExpired: false, daysLeft: null };
+  const now = Date.now();
+  const completed = new Date(lastCompleted).getTime();
+  const expiresAt = completed + VALIDITY_DAYS * DAY_MS;
+
+  // force-expire فقط اگر بعد از آخرین ارزیابی و در گذشته ثبت شده باشد
+  const forced =
+    forceExpiredAt != null &&
+    new Date(forceExpiredAt).getTime() > completed &&
+    new Date(forceExpiredAt).getTime() <= now;
+
+  const isExpired = forced || now > expiresAt;
+  const daysLeft = Math.ceil((expiresAt - now) / DAY_MS);
+  return { isExpired, daysLeft };
+}
 
 interface Assessment {
   id: string;
@@ -58,6 +87,9 @@ interface Props {
   transactions: TxDB[];
   telegramLinked: boolean;
   payment: PaidPayment | null;
+  scoreHistory: ScorePoint[];
+  revalidationExpiredAt: string | null;
+  announcements: UserAnnouncement[];
 }
 
 
@@ -73,8 +105,15 @@ export default function DashboardClient({
   transactions,
   telegramLinked,
   payment,
+  scoreHistory,
+  revalidationExpiredAt,
+  announcements,
 }: Props) {
   const isAdmin = userRole === "admin";
+  const { isExpired, daysLeft } = computeRevalidation(
+    initialAssessment?.created_at ?? null,
+    revalidationExpiredAt
+  );
   const router = useRouter();
   const [assessment, setAssessment] = useState<Assessment | null>(initialAssessment);
   const [showQuiz, setShowQuiz] = useState(false);
@@ -188,6 +227,24 @@ export default function DashboardClient({
         </div>
       </div>
 
+      {/* Risk-profile 180-day revalidation banner */}
+      {assessment && (
+        <div className="mb-6">
+          <RiskRevalidationBanner
+            isExpired={isExpired}
+            daysLeft={daysLeft}
+            onRetake={() => setShowQuiz(true)}
+          />
+        </div>
+      )}
+
+      {/* Targeted announcements */}
+      {announcements.length > 0 && (
+        <div className="mb-6">
+          <Announcements items={announcements} />
+        </div>
+      )}
+
       {assessment ? (
         <WithAssessment
           assessment={assessment}
@@ -196,6 +253,13 @@ export default function DashboardClient({
         />
       ) : (
         <NoAssessment onStart={() => setShowQuiz(true)} />
+      )}
+
+      {/* Risk score evolution over time */}
+      {scoreHistory.length > 0 && (
+        <div className="mt-6">
+          <ScoreEvolution history={scoreHistory} />
+        </div>
       )}
 
       {/* Telegram connection + channel access (payment) */}

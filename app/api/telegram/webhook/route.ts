@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
+import { markdownToPlain } from "@/lib/markdown";
 import { toPersianDigits } from "@/lib/format";
 
 export const runtime = "nodejs";
@@ -46,7 +47,7 @@ async function handle(text: string, tgUserId: number, chatId: number) {
   if (text === "/start") {
     await sendMessage(
       chatId,
-      "به بات مشاورهٔ سرمایه‌گذاری آرش صفری خوش آمدید. 👋\n\nبرای اتصال حساب، کد ۶رقمی‌ای را که در داشبورد وب می‌بینید همین‌جا ارسال کنید.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/help — راهنما"
+      "به بات مشاورهٔ سرمایه‌گذاری آرش صفری خوش آمدید. 👋\n\nبرای اتصال حساب، کد ۶رقمی‌ای را که در داشبورد وب می‌بینید همین‌جا ارسال کنید.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — آخرین اعلامیه‌ها\n/help — راهنما"
     );
     return;
   }
@@ -54,13 +55,18 @@ async function handle(text: string, tgUserId: number, chatId: number) {
   if (text === "/help") {
     await sendMessage(
       chatId,
-      "راهنما:\n\n۱) در داشبورد وب، کارت «اتصال تلگرام» → دکمهٔ دریافت کد.\n۲) کد ۶رقمی را همین‌جا برای بات بفرستید (اعتبار ۱۰ دقیقه).\n۳) پس از پرداخت موفق، لینک دعوت کانال به‌صورت خصوصی برایتان ارسال می‌شود.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/help — همین راهنما"
+      "راهنما:\n\n۱) در داشبورد وب، کارت «اتصال تلگرام» → دکمهٔ دریافت کد.\n۲) کد ۶رقمی را همین‌جا برای بات بفرستید (اعتبار ۱۰ دقیقه).\n۳) پس از پرداخت موفق، لینک دعوت کانال به‌صورت خصوصی برایتان ارسال می‌شود.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — سه اعلامیهٔ آخر\n/help — همین راهنما"
     );
     return;
   }
 
   if (text === "/portfolio") {
     await handlePortfolio(admin, tgUserId, chatId);
+    return;
+  }
+
+  if (text === "/announcements") {
+    await handleAnnouncements(admin, tgUserId, chatId);
     return;
   }
 
@@ -126,6 +132,68 @@ async function handlePortfolio(
   }
 
   await sendMessage(chatId, formatPortfolio(version));
+}
+
+async function handleAnnouncements(
+  admin: ReturnType<typeof createAdminClient>,
+  tgUserId: number,
+  chatId: number
+) {
+  const { data: link } = await admin
+    .from("telegram_links")
+    .select("user_id")
+    .eq("telegram_user_id", tgUserId)
+    .maybeSingle();
+
+  if (!link) {
+    await sendMessage(
+      chatId,
+      "حساب تلگرام شما هنوز متصل نشده است. لطفاً از داشبورد وب کد ۶رقمی بگیرید و همین‌جا ارسال کنید."
+    );
+    return;
+  }
+
+  // آخرین دستهٔ ریسکِ کاربر (برای هدف‌گذاریِ risk:)
+  const { data: assess } = await admin
+    .from("risk_assessments")
+    .select("risk_category")
+    .eq("user_id", link.user_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const cat = assess?.risk_category ?? null;
+
+  const { data: anns } = await admin
+    .from("announcements")
+    .select("title, body_md, target, published_at")
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(50);
+
+  const matched = (anns ?? [])
+    .filter((a) => {
+      if (a.target === "all") return true;
+      if (a.target === `user:${link.user_id}`) return true;
+      if (cat && a.target === `risk:${cat}`) return true;
+      return false;
+    })
+    .slice(0, 3);
+
+  if (matched.length === 0) {
+    await sendMessage(chatId, "در حال حاضر اعلامیه‌ای برای شما وجود ندارد.");
+    return;
+  }
+
+  const blocks = matched.map((a) => {
+    const body = markdownToPlain(a.body_md);
+    const trimmed = body.length > 500 ? body.slice(0, 500) + "…" : body;
+    return `📢 <b>${escapeHtml(a.title)}</b>\n${escapeHtml(trimmed)}`;
+  });
+  await sendMessage(chatId, blocks.join("\n\n———\n\n"));
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 interface AllocationRow {
