@@ -71,7 +71,7 @@ export default function Capabilities() {
             <Reveal key={c.title} delay={(i % 3) * 80}>
               <div className="flex gap-4">
                 <div
-                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
+                  className="u-lift flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
                   style={{
                     background: "var(--gold-tint)",
                     color: "var(--navy-deep)",
