@@ -131,6 +131,11 @@ body { min-height: 100vh; }
 .btn-on-navy { background: transparent; color: var(--gold-soft); border-color: rgba(255,255,255,0.22); }
 .btn-on-navy:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.42); color: var(--gold-soft); }
 
+/* Primary CTAs get a subtle lift + elevation on hover (state clarity, on-brand) */
+.btn-gold:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px -8px rgba(184,134,11,0.55); }
+.btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn-gold:active:not(:disabled), .btn-primary:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+
 /* ─── Cards & surfaces ──────────────────────────────────────── */
 .card {
   background: var(--surface);
@@ -207,6 +212,32 @@ body { min-height: 100vh; }
 .reveal.is-visible {
   opacity: 1;
   transform: none;
+}
+
+/* ─── Interaction & entrance utilities (landing punch) ──────────────
+   حرکت فقط با transform/opacity (بدون CLS)، ۱۵۰–۳۰۰ms، و با احترام به
+   prefers-reduced-motion. */
+.u-lift { transition: transform 0.2s cubic-bezier(0.2,0.6,0.2,1), box-shadow 0.2s ease, border-color 0.2s ease; }
+.u-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+/* One considered entrance per hero element — pure CSS, no JS dependency */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.anim-rise { opacity: 0; animation: riseIn 0.7s cubic-bezier(0.2,0.6,0.2,1) forwards; }
+.anim-d1 { animation-delay: 0.04s; }
+.anim-d2 { animation-delay: 0.12s; }
+.anim-d3 { animation-delay: 0.20s; }
+.anim-d4 { animation-delay: 0.28s; }
+.anim-d5 { animation-delay: 0.36s; }
+
+/* Faint brand "enso arc" — decorative background echo, gold, very low opacity */
+.enso-arc { position: absolute; pointer-events: none; opacity: 0.07; }
+
+@media (prefers-reduced-motion: reduce) {
+  .u-lift:hover { transform: none; }
+  .anim-rise { opacity: 1; animation: none; }
 }
 
 @media print {
