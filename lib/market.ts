@@ -134,7 +134,10 @@ export async function getOhlc(id: string): Promise<Candle[]> {
 }
 
 // ── ارزیابیِ هشدارها ─────────────────────────────────────────────────────
-async function evaluateAlerts(crypto: CryptoRow[]) {
+// export شده تا cron هم بتواند صریحاً و تضمینی همان منطق را اجرا کند (بدون
+// duplicate). idempotent است: غیرفعال‌سازیِ اتمیک (claim_alert) قبل از DM،
+// پس اجرای هم‌زمانِ cron و ترافیک هرگز DMِ تکراری نمی‌فرستد.
+export async function evaluateAlerts(crypto: CryptoRow[]) {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return; // بدون service role نمی‌شود
   const priceMap = new Map(crypto.map((c) => [c.id, c.price]));
   const admin = createAdminClient();
