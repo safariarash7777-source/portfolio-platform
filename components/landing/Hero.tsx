@@ -31,12 +31,37 @@ export default function Hero() {
         }}
       />
 
+      {/* warm gold glow — very subtle, within palette */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          top: "-12%",
+          insetInlineStart: "-8%",
+          width: 620,
+          height: 620,
+          background: "radial-gradient(circle, rgba(212,162,43,0.16) 0%, transparent 62%)",
+        }}
+      />
+
+      {/* faint brand "enso arc" — decorative echo, not clutter */}
+      <svg
+        aria-hidden
+        className="enso-arc hidden sm:block"
+        style={{ width: 520, height: 520, top: -70, insetInlineEnd: -110 }}
+        viewBox="0 0 200 200"
+        fill="none"
+      >
+        <path d="M100 22 A78 78 0 1 1 44 56" stroke="var(--gold-soft)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M44 56 l-9 -21 l24 6 z" fill="var(--gold-soft)" />
+      </svg>
+
       <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:pt-20 sm:pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
           {/* content — right in RTL */}
           <div className="lg:col-span-7 text-right">
             <span
-              className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold mb-7"
+              className="anim-rise anim-d1 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold mb-7"
               style={{
                 background: "rgba(212,162,43,0.12)",
                 color: "var(--gold-soft)",
@@ -48,14 +73,14 @@ export default function Hero() {
             </span>
 
             <h1
-              className="font-display"
+              className="font-display anim-rise anim-d2"
               style={{
                 color: "var(--text-on-navy)",
-                fontSize: "clamp(2.4rem, 6vw, 4.25rem)",
+                fontSize: "clamp(2.6rem, 6.5vw, 4.75rem)",
                 fontWeight: 900,
-                lineHeight: 1.08,
+                lineHeight: 1.06,
                 letterSpacing: "-0.03em",
-                marginBottom: "1.25rem",
+                marginBottom: "1.5rem",
               }}
             >
               تصمیمِ سرمایه‌گذاری،
@@ -64,18 +89,18 @@ export default function Hero() {
             </h1>
 
             <p
-              className="text-base sm:text-lg max-w-xl mb-8"
+              className="text-base sm:text-lg max-w-xl mb-8 anim-rise anim-d3"
               style={{ color: "rgba(248,250,252,0.82)", lineHeight: 1.85 }}
             >
               آرش صفری، تحلیلگر و مشاور سرمایه‌گذاری — پروفایل ریسک شما را علمی
               می‌سنجد و سبدی متناسب با هدف، افق زمانی و توان مالی شما طراحی می‌کند.
             </p>
 
-            <div id="waitlist" className="scroll-mt-24">
+            <div id="waitlist" className="scroll-mt-24 anim-rise anim-d4">
               <WaitlistForm tone="onNavy" />
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3 anim-rise anim-d5">
               <Link href="/dashboard" className="btn btn-on-navy">
                 <BarChart3 size={16} />
                 ورود به داشبورد
@@ -84,7 +109,7 @@ export default function Hero() {
           </div>
 
           {/* signature */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 anim-rise anim-d4">
             <PortfolioPreviewCard />
           </div>
         </div>

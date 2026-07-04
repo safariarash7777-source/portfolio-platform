@@ -57,7 +57,7 @@ export default function ThreeSteps() {
             <Reveal key={s.num} delay={i * 90}>
               <div className="relative flex flex-col items-center text-center">
                 <div
-                  className="relative z-10 flex h-14 w-14 items-center justify-center rounded-2xl mb-5"
+                  className="u-lift relative z-10 flex h-14 w-14 items-center justify-center rounded-2xl mb-5"
                   style={{
                     background: "var(--surface)",
                     border: "1px solid var(--line)",

@@ -12,7 +12,30 @@ export default function FinalCTA() {
           "linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%)",
       }}
     >
-      <div className="mx-auto w-full max-w-4xl px-5 py-20 text-center">
+      {/* subtle gold glow + brand enso echo (mirror of hero) */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          bottom: "-30%",
+          insetInlineEnd: "-6%",
+          width: 560,
+          height: 560,
+          background: "radial-gradient(circle, rgba(212,162,43,0.14) 0%, transparent 62%)",
+        }}
+      />
+      <svg
+        aria-hidden
+        className="enso-arc hidden sm:block"
+        style={{ width: 420, height: 420, bottom: -120, insetInlineStart: -90 }}
+        viewBox="0 0 200 200"
+        fill="none"
+      >
+        <path d="M100 22 A78 78 0 1 1 44 56" stroke="var(--gold-soft)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M44 56 l-9 -21 l24 6 z" fill="var(--gold-soft)" />
+      </svg>
+
+      <div className="relative mx-auto w-full max-w-4xl px-5 py-20 text-center">
         <Reveal>
           <h2
             className="font-display mb-4"

@@ -52,7 +52,7 @@ export default function WhyArash() {
           {PILLARS.map((p, i) => (
             <Reveal key={p.title} delay={(i % 2) * 90}>
               <div
-                className="h-full rounded-2xl p-6 transition-transform hover:-translate-y-0.5"
+                className="u-lift h-full rounded-2xl p-6"
                 style={{
                   background: "var(--surface)",
                   border: "1px solid var(--line)",
