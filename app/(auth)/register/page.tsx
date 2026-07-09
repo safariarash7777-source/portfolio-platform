@@ -80,7 +80,7 @@ export default function RegisterPage() {
         password: fields.password,
         options: {
           data: {
-            role: "user",
+            // SECURITY: role عمداً ارسال نمی‌شود — تریگر handle_new_user همیشه 'user' درج می‌کند
             full_name: fields.full_name,
             national_id: fields.national_id,
             phone: fields.phone,

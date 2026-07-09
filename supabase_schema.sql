@@ -68,7 +68,7 @@ BEGIN
   VALUES (
     NEW.id, NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'user')
+    'user'  -- SECURITY: نقش هرگز از metadata کلاینت خوانده نمی‌شود (جلوگیری از privilege escalation)
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;

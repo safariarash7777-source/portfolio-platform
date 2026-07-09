@@ -28,3 +28,7 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# deploy artifacts
+deploy.bundle
+*.bundle
