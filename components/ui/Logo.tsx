@@ -11,7 +11,8 @@ interface LogoProps {
 
 /**
  * Logo lockup — نشان + نام + عنوان حرفه‌ای
- * نشان از /public/logo.png بارگذاری می‌شود (next/image).
+ * نشان (تیر آرش + حلقهٔ Enso) از /public/brand/mark.png بارگذاری می‌شود.
+ * نشان عمودی است (نسبت ~365:723)، پس عرضش نصفِ ارتفاع نگه داشته می‌شود تا کج/کشیده نشود.
  * نام و عنوان با Flexbox نسبت به نشان به‌صورت عمودی هم‌تراز هستند.
  */
 export default function Logo({
@@ -21,22 +22,23 @@ export default function Logo({
 }: LogoProps) {
   const nameColor = textVariant === "navy" ? "var(--navy-deep)" : "var(--text-on-navy)";
   const subColor  = textVariant === "navy" ? "var(--text-3)"   : "rgba(248,250,252,0.7)";
+  const markW = Math.round(size * 0.505); // preserve the mark's 365×723 aspect
 
   return (
     <div className="flex items-center gap-3 select-none">
       {/* Logo mark — perfectly centered to text via flex */}
       <div
         className="relative flex-shrink-0 flex items-center justify-center"
-        style={{ width: size, height: size }}
+        style={{ width: markW, height: size }}
       >
         <Image
-          src="/logo.png"
+          src="/brand/mark.png"
           alt="نشان آرش صفری"
-          width={size}
+          width={markW}
           height={size}
           priority
           className="object-contain"
-          style={{ width: size, height: size }}
+          style={{ width: markW, height: size }}
         />
       </div>
 
