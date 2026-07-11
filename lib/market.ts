@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
 import { toPersianDigits } from "@/lib/format";
+import { getIrMarketData, type IrMarketData } from "@/lib/market-ir";
 
 // رصد بازار — منبعِ دادهٔ کریپتو: CoinGecko (کیلید نمی‌خواهد، قیمتِ واقعی دلاری).
 // کشِ ۵دقیقه در سطح ماژول (per warm instance، مثل الگوی rate-limitِ waitlist).
@@ -19,6 +20,7 @@ export interface CryptoRow {
 
 export interface MarketData {
   crypto: CryptoRow[];
+  ir: IrMarketData | null; // داده بازار ایران (طلا/ارز/صندوق) — null اگر رله پیکربندی نشده
   fetchedAt: number;
   ok: boolean; // false → منبع پاسخ نداد؛ UI حالتِ خالی نشان می‌دهد
 }
@@ -50,7 +52,12 @@ export async function getMarketData(): Promise<MarketData> {
   if (inflight) return inflight;
 
   inflight = (async () => {
-    const fresh = await fetchCrypto();
+    // Fetch crypto and Iran market data in parallel
+    const [cryptoData, irData] = await Promise.all([
+      fetchCrypto(),
+      getIrMarketData(),
+    ]);
+    const fresh: MarketData = { ...cryptoData, ir: irData };
     cache = fresh;
     // ارزیابیِ هشدارها فقط روی داده‌ی معتبر و در همان چرخهٔ کش.
     if (fresh.ok) {
@@ -75,7 +82,7 @@ async function fetchCrypto(): Promise<MarketData> {
   const url = `${COINGECKO}/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&sparkline=false&price_change_percentage=24h`;
   try {
     const res = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-    if (!res.ok) return { crypto: [], fetchedAt: Date.now(), ok: false };
+    if (!res.ok) return { crypto: [], ir: null, fetchedAt: Date.now(), ok: false };
     const json = (await res.json()) as Array<{
       id: string;
       symbol: string;
@@ -91,9 +98,9 @@ async function fetchCrypto(): Promise<MarketData> {
       change24h: c.price_change_percentage_24h ?? null,
       image: c.image ?? null,
     }));
-    return { crypto, fetchedAt: Date.now(), ok: crypto.length > 0 };
+    return { crypto, ir: null, fetchedAt: Date.now(), ok: crypto.length > 0 };
   } catch {
-    return { crypto: [], fetchedAt: Date.now(), ok: false };
+    return { crypto: [], ir: null, fetchedAt: Date.now(), ok: false };
   }
 }
 

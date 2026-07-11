@@ -1,0 +1,16 @@
+{
+  "name": "iran-market-relay",
+  "version": "1.0.0",
+  "description": "Lightweight relay service for fetching Iran market data (gold, currency, funds) from domestic sources",
+  "main": "server.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["relay", "market", "iran", "tgju", "fipiran"],
+  "license": "UNLICENSED",
+  "private": true
+}
