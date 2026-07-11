@@ -7,6 +7,10 @@ import { toPersianDigits } from "@/lib/format";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const MINI_APP_URL =
+  process.env.NEXT_PUBLIC_MINIAPP_URL ||
+  "https://arash-teleapp-7shs2egu.manus.space";
+
 // POST /api/telegram/webhook — وبهوکِ بات (نه polling). با هدرِ
 // X-Telegram-Bot-Api-Secret-Token اعتبارسنجی می‌شود. همیشه سریع ۲۰۰ برمی‌گرداند.
 export async function POST(req: NextRequest) {
@@ -27,13 +31,14 @@ export async function POST(req: NextRequest) {
   const text = msg?.text?.trim();
   const tgUserId = msg?.from?.id;
   const chatId = msg?.chat?.id;
+  const firstName = msg?.from?.first_name ?? "";
 
   if (!msg || !text || !tgUserId || !chatId) {
     return NextResponse.json({ ok: true });
   }
 
   try {
-    await handle(text, tgUserId, chatId);
+    await handle(text, tgUserId, chatId, firstName);
   } catch (e) {
     console.error("telegram webhook error:", e instanceof Error ? e.message : "unknown");
   }
@@ -41,21 +46,26 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-async function handle(text: string, tgUserId: number, chatId: number) {
+async function handle(text: string, tgUserId: number, chatId: number, firstName: string) {
   const admin = createAdminClient();
 
-  if (text === "/start") {
-    await sendMessage(
-      chatId,
-      "به بات مشاورهٔ سرمایه‌گذاری آرش صفری خوش آمدید. 👋\n\nبرای اتصال حساب، کد ۶رقمی‌ای را که در داشبورد وب می‌بینید همین‌جا ارسال کنید.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — آخرین اعلامیه‌ها\n/help — راهنما"
-    );
+  if (text === "/start" || text.startsWith("/start ")) {
+    // پیام خوش‌آمدگویی + دکمه مینی‌اپ + راهنمای اتصال حساب
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const welcomeMsg = `👋 سلام ${firstName} عزیز!\n\nبه بات <b>آرش صفری</b> — مشاور سرمایه‌گذاری خوش آمدید.\n\n📊 <b>امکانات مینی‌اپ:</b>\n• قیمت زنده طلا، سکه، ارز و بورس\n• ماشین‌حساب سرمایه‌گذاری\n• تحلیل‌های اقتصادی\n• درخواست مشاوره\n\n🔗 <b>اتصال حساب وب:</b>\nبرای اتصال حساب داشبورد، کد ۶رقمی‌ای را که در داشبورد وب می‌بینید همین‌جا ارسال کنید.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — آخرین اعلامیه‌ها\n/help — راهنما`;
+
+    if (token && MINI_APP_URL) {
+      await sendMessageWithMiniApp(token, chatId, welcomeMsg, MINI_APP_URL);
+    } else {
+      await sendMessage(chatId, welcomeMsg);
+    }
     return;
   }
 
   if (text === "/help") {
     await sendMessage(
       chatId,
-      "راهنما:\n\n۱) در داشبورد وب، کارت «اتصال تلگرام» → دکمهٔ دریافت کد.\n۲) کد ۶رقمی را همین‌جا برای بات بفرستید (اعتبار ۱۰ دقیقه).\n۳) پس از پرداخت موفق، لینک دعوت کانال به‌صورت خصوصی برایتان ارسال می‌شود.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — سه اعلامیهٔ آخر\n/help — همین راهنما"
+      "راهنما:\n\n۱) در داشبورد وب، کارت «اتصال تلگرام» → دکمهٔ دریافت کد.\n۲) کد ۶رقمی را همین‌جا برای بات بفرستید (اعتبار ۱۰ دقیقه).\n۳) پس از پرداخت موفق، لینک دعوت کانال به‌صورت خصوصی برایتان ارسال می‌شود.\n\n📊 برای ابزارهای مالی، دکمهٔ «مینی‌اپ» را بزنید.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — سه اعلامیهٔ آخر\n/help — همین راهنما"
     );
     return;
   }
@@ -90,10 +100,45 @@ async function handle(text: string, tgUserId: number, chatId: number) {
     return;
   }
 
-  await sendMessage(
-    chatId,
-    "دستور شناخته‌نشده. برای دیدن راهنما /help را بفرستید یا برای اتصال حساب، کد ۶رقمیِ داشبورد را ارسال کنید."
-  );
+  // پیام ناشناخته → راهنمایی + دکمه مینی‌اپ
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (token && MINI_APP_URL) {
+    await sendMessageWithMiniApp(
+      token,
+      chatId,
+      `سلام ${firstName}!\n\nبرای استفاده از ابزارهای مالی، مینی‌اپ را باز کنید 👇\n\nیا برای اتصال حساب، کد ۶رقمیِ داشبورد را ارسال کنید.\n/help — راهنما`,
+      MINI_APP_URL
+    );
+  } else {
+    await sendMessage(
+      chatId,
+      "دستور شناخته‌نشده. برای دیدن راهنما /help را بفرستید یا برای اتصال حساب، کد ۶رقمیِ داشبورد را ارسال کنید."
+    );
+  }
+}
+
+/** ارسال پیام با دکمه inline مینی‌اپ */
+async function sendMessageWithMiniApp(
+  token: string,
+  chatId: number,
+  text: string,
+  miniAppUrl: string
+) {
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "📊 باز کردن مینی‌اپ", web_app: { url: miniAppUrl } }],
+        ],
+      },
+    }),
+  });
 }
 
 async function handlePortfolio(
@@ -153,7 +198,6 @@ async function handleAnnouncements(
     return;
   }
 
-  // آخرین دستهٔ ریسکِ کاربر (برای هدف‌گذاریِ risk:)
   const { data: assess } = await admin
     .from("risk_assessments")
     .select("risk_category")
@@ -230,7 +274,7 @@ function formatPortfolio(v: VersionRow): string {
 interface TelegramUpdate {
   message?: {
     text?: string;
-    from?: { id?: number };
+    from?: { id?: number; first_name?: string };
     chat?: { id?: number };
   };
 }
