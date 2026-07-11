@@ -1,25 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatUsd, formatSignedPercent, deltaColor, toPersianDigits } from "@/lib/format";
+import {
+  formatToman, formatUsd, formatSignedPercent, deltaColor, toPersianDigits,
+} from "@/lib/format";
 
-interface Row {
-  id: string;
-  faName: string;
-  price: number;
-  change24h: number | null;
-}
+interface GlobalRow { id: string; faName: string; price: number; change24h: number | null }
+interface IrRow { id: string; faName: string; price: number; unit: "toman" | "usd"; change?: number | null }
+interface Item { id: string; faName: string; priceText: string; change: number | null }
 
 const REFRESH_MS = 5 * 60 * 1000; // هم‌گام با کشِ سرور
 
 /**
- * نوارِ قیمتِ زنده — دادهٔ واقعی از /api/market (کشِ ۵دقیقه).
- * اگر منبع در دسترس نباشد چیزی رندر نمی‌شود (هیچ عددِ ساختگی).
- * حرکتِ marquee فقط transform است و زیر reduced-motion خاموش می‌شود؛
- * hover مکث می‌کند. لیست دوبار تکرار می‌شود تا حلقه بی‌درز باشد.
+ * نوارِ قیمتِ زنده — دادهٔ واقعی از /api/market: اولْ بازارِ ایران (طلا/ارز از
+ * رلهٔ داخلی، اگر وصل باشد)، بعد انسِ جهانی و کریپتو. منبعْ قطع → اصلاً رندر
+ * نمی‌شود (هیچ عددِ ساختگی، بدون CLS). حرکت فقط transform؛ hover مکث؛
+ * reduced-motion خاموش.
  */
 export default function MarketTicker() {
-  const [rows, setRows] = useState<Row[] | null>(null);
+  const [items, setItems] = useState<Item[] | null>(null);
   const [fetchedAt, setFetchedAt] = useState<number | null>(null);
 
   useEffect(() => {
@@ -29,14 +28,26 @@ export default function MarketTicker() {
         const res = await fetch("/api/market");
         const json = await res.json();
         if (!alive) return;
-        if (json?.ok && Array.isArray(json.crypto) && json.crypto.length > 0) {
-          setRows(json.crypto);
-          setFetchedAt(json.fetchedAt ?? Date.now());
-        } else {
-          setRows([]);
-        }
+        const ir = json?.ir;
+        const irItems: Item[] = [...(ir?.gold ?? []), ...(ir?.currency ?? [])].map((r: IrRow) => ({
+          id: r.id,
+          faName: r.faName,
+          priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
+          change: r.change ?? null,
+        }));
+        const globalItems: Item[] = [...(json?.goldGlobal ?? []), ...(json?.crypto ?? [])].map(
+          (r: GlobalRow) => ({
+            id: r.id,
+            faName: r.faName,
+            priceText: formatUsd(r.price),
+            change: r.change24h,
+          })
+        );
+        const all = [...irItems, ...globalItems];
+        setItems(all);
+        setFetchedAt(all.length > 0 ? json.fetchedAt ?? Date.now() : null);
       } catch {
-        if (alive) setRows([]);
+        if (alive) setItems([]);
       }
     };
     load();
@@ -45,19 +56,19 @@ export default function MarketTicker() {
   }, []);
 
   // لودینگ یا شکستِ منبع → نوار اصلاً ظاهر نمی‌شود (بدون CLS: ارتفاعِ صفر از ابتدا)
-  if (!rows || rows.length === 0) return null;
+  if (!items || items.length === 0) return null;
 
   const ageMin = fetchedAt ? Math.max(0, Math.round((Date.now() - fetchedAt) / 60000)) : null;
 
-  const items = rows.map((r) => (
+  const nodes = items.map((r) => (
     <span key={r.id} className="inline-flex items-center gap-2 px-5 text-xs whitespace-nowrap">
       <span className="font-bold" style={{ color: "var(--text)" }}>{r.faName}</span>
       <span style={{ color: "var(--text-2)", fontVariantNumeric: "tabular-nums" }}>
-        {formatUsd(r.price)}
+        {r.priceText}
       </span>
-      {r.change24h != null && (
-        <span className="font-bold" style={{ color: deltaColor(r.change24h), fontVariantNumeric: "tabular-nums" }}>
-          {formatSignedPercent(r.change24h)}
+      {r.change != null && (
+        <span className="font-bold" style={{ color: deltaColor(r.change), fontVariantNumeric: "tabular-nums" }}>
+          {formatSignedPercent(r.change)}
         </span>
       )}
     </span>
@@ -65,7 +76,7 @@ export default function MarketTicker() {
 
   return (
     <div
-      className="ticker-wrap border-y"
+      className="border-y"
       style={{ background: "var(--surface)", borderColor: "var(--line)" }}
       aria-label="نوار قیمت لحظه‌ای بازار"
     >
@@ -85,8 +96,8 @@ export default function MarketTicker() {
         </div>
         <div className="ticker-wrap flex-1 py-2.5" dir="rtl">
           <div className="ticker-track">
-            {items}
-            {items}
+            {nodes}
+            {nodes}
           </div>
         </div>
       </div>
