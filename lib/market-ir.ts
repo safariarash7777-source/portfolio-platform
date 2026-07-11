@@ -1,69 +1,73 @@
 import "server-only";
 
-/**
- * کلاینت رلهٔ بازار ایران
- *
- * اگر env های IR_MARKET_RELAY_URL و IR_MARKET_RELAY_TOKEN ست شده باشند،
- * داده بازار ایران (طلا، ارز، صندوق‌ها) را از رله می‌گیرد.
- * در غیر این صورت، null برمی‌گرداند و سایت فقط داده کریپتو نشان می‌دهد.
- */
+// دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام) از «رلهٔ داخل ایران».
+// چرا رله؟ همهٔ منابعِ ایرانی (tgju، brsapi، navasan، …) درخواستِ IPِ خارجی را
+// ۴۰۳ می‌دهند؛ سرورهای Vercel خارج از ایران‌اند، پس یک سرویسِ کوچک داخل ایران
+// (پوشهٔ relay/ همین ریپو) داده را می‌کشد و اینجا فقط از آن می‌خوانیم.
+// بدون IR_MARKET_RELAY_URL این ماژول ساکت null برمی‌گرداند — هیچ عدد ساختگی.
 
-export interface IrMarketItem {
+export interface IrRow {
   id: string;
   faName: string;
-  price: number;
-  unit: "toman";
-  change: number;
+  price: number;           // تومان، مگر unit چیز دیگری بگوید
+  unit: "toman" | "usd";
+  change?: number | null;  // درصد (روزانه/۲۴ساعته)
 }
 
-export interface IrMarketData {
-  gold: IrMarketItem[];
-  currency: IrMarketItem[];
-  funds: IrMarketItem[];
-  stocks: IrMarketItem[];
+export interface IrMarket {
+  gold: IrRow[];
+  currency: IrRow[];
+  funds: IrRow[];
+  stocks: IrRow[];
   fetchedAt: number;
+  ok: boolean;
 }
 
-const RELAY_URL = process.env.IR_MARKET_RELAY_URL || "";
-const RELAY_TOKEN = process.env.IR_MARKET_RELAY_TOKEN || "";
 const CACHE_MS = 5 * 60 * 1000;
+let cache: IrMarket | null = null;
 
-let cache: { data: IrMarketData; at: number } | null = null;
-
-/** آیا رله پیکربندی شده؟ */
-export function isRelayConfigured(): boolean {
-  return Boolean(RELAY_URL && RELAY_TOKEN);
+function asRows(v: unknown): IrRow[] {
+  if (!Array.isArray(v)) return [];
+  return v.filter(
+    (r): r is IrRow =>
+      !!r &&
+      typeof r.id === "string" &&
+      typeof r.faName === "string" &&
+      typeof r.price === "number" &&
+      isFinite(r.price) &&
+      (r.unit === "toman" || r.unit === "usd")
+  );
 }
 
-/**
- * دریافت داده بازار ایران از رله.
- * اگر رله پیکربندی نشده باشد → null
- * اگر خطا بخورد → null (سایت graceful degrade می‌کند)
- */
-export async function getIrMarketData(): Promise<IrMarketData | null> {
-  if (!RELAY_URL || !RELAY_TOKEN) return null;
-
-  // Cache check
-  if (cache && Date.now() - cache.at < CACHE_MS) return cache.data;
+/** دادهٔ بازار ایران از رله؛ بدون env یا در خطا → null (UI آن بخش را نشان نمی‌دهد). */
+export async function getIrMarket(): Promise<IrMarket | null> {
+  const base = process.env.IR_MARKET_RELAY_URL;
+  if (!base) return null;
+  if (cache && Date.now() - cache.fetchedAt < CACHE_MS) return cache;
 
   try {
-    const res = await fetch(`${RELAY_URL}/market.json`, {
-      headers: { Authorization: `Bearer ${RELAY_TOKEN}` },
+    const headers: Record<string, string> = { Accept: "application/json" };
+    const token = process.env.IR_MARKET_RELAY_TOKEN;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${base.replace(/\/+$/, "")}/market.json`, {
+      headers,
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
     });
-
-    if (!res.ok) {
-      console.error(`[market-ir] relay responded ${res.status}`);
-      return cache?.data ?? null;
-    }
-
-    const data = (await res.json()) as IrMarketData;
-    cache = { data, at: Date.now() };
-    return data;
-  } catch (e) {
-    console.error("[market-ir] relay fetch error:", e instanceof Error ? e.message : "unknown");
-    // Return stale cache if available
-    return cache?.data ?? null;
+    if (!res.ok) return cache; // کشِ کهنه بهتر از هیچ؛ اگر نبود، null
+    const json = await res.json();
+    const data: IrMarket = {
+      gold: asRows(json.gold),
+      currency: asRows(json.currency),
+      funds: asRows(json.funds),
+      stocks: asRows(json.stocks),
+      fetchedAt: Date.now(),
+      ok: true,
+    };
+    data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length > 0;
+    if (data.ok) cache = data;
+    return data.ok ? data : cache;
+  } catch {
+    return cache;
   }
 }

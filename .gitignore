@@ -29,6 +29,10 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# python (ui-ux-pro-max skill scripts)
+__pycache__/
+*.pyc
+
 # deploy artifacts
 deploy.bundle
 *.bundle

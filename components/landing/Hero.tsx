@@ -52,8 +52,8 @@ export default function Hero() {
         viewBox="0 0 200 200"
         fill="none"
       >
-        <path d="M100 22 A78 78 0 1 1 44 56" stroke="var(--gold-soft)" strokeWidth="5" strokeLinecap="round" />
-        <path d="M44 56 l-9 -21 l24 6 z" fill="var(--gold-soft)" />
+        <path d="M100 22 A78 78 0 1 1 44 56" stroke="var(--gold-light)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M44 56 l-9 -21 l24 6 z" fill="var(--gold-light)" />
       </svg>
 
       <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:pt-20 sm:pb-24">
@@ -64,7 +64,7 @@ export default function Hero() {
               className="anim-rise anim-d1 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold mb-7"
               style={{
                 background: "rgba(212,162,43,0.12)",
-                color: "var(--gold-soft)",
+                color: "var(--gold-light)",
                 border: "1px solid rgba(212,162,43,0.30)",
               }}
             >
@@ -76,16 +76,15 @@ export default function Hero() {
               className="font-display anim-rise anim-d2"
               style={{
                 color: "var(--text-on-navy)",
-                fontSize: "clamp(2.6rem, 6.5vw, 4.75rem)",
+                fontSize: "clamp(2.1rem, 5.2vw, 4rem)",
                 fontWeight: 900,
-                lineHeight: 1.06,
-                letterSpacing: "-0.03em",
-                marginBottom: "1.5rem",
+                lineHeight: 1.12,
+                letterSpacing: "-0.02em",
+                marginBottom: "1.25rem",
               }}
             >
-              تصمیمِ سرمایه‌گذاری،
-              <br />
-              بر پایهٔ <span style={{ color: "var(--gold-soft)" }}>داده و تحلیل علمی</span>
+              تصمیمِ سرمایه‌گذاری، بر پایهٔ{" "}
+              <span style={{ color: "var(--gold-light)" }}>داده و تحلیل علمی</span>
             </h1>
 
             <p

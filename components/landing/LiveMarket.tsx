@@ -1,0 +1,262 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import Reveal from "./Reveal";
+import {
+  formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor, toPersianDigits,
+} from "@/lib/format";
+
+interface GlobalRow {
+  id: string;
+  faName: string;
+  symbol: string;
+  price: number;
+  change24h: number | null;
+}
+interface IrRow {
+  id: string;
+  faName: string;
+  price: number;
+  unit: "toman" | "usd";
+  change?: number | null;
+}
+interface MarketPayload {
+  crypto: GlobalRow[];
+  goldGlobal?: GlobalRow[];
+  fetchedAt: number;
+  ok: boolean;
+  ir?: {
+    gold: IrRow[];
+    currency: IrRow[];
+    funds: IrRow[];
+    stocks: IrRow[];
+    ok: boolean;
+  } | null;
+}
+
+interface DisplayRow {
+  id: string;
+  faName: string;
+  sub?: string;
+  priceText: string;
+  change: number | null;
+}
+
+const REFRESH_MS = 5 * 60 * 1000;
+const SHOW = 8;
+
+const toDisplay = {
+  global: (r: GlobalRow): DisplayRow => ({
+    id: r.id, faName: r.faName, sub: r.symbol, priceText: formatUsd(r.price), change: r.change24h,
+  }),
+  ir: (r: IrRow): DisplayRow => ({
+    id: r.id, faName: r.faName,
+    priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
+    change: r.change ?? null,
+  }),
+};
+
+/**
+ * پنلِ زندهٔ بازار — تب‌های دسته‌ای (طلا/ارز/صندوق/سهام/کریپتو). هر تب فقط وقتی
+ * ظاهر می‌شود که منبعش واقعاً داده داده باشد: دادهٔ ایران از رلهٔ داخلی
+ * (lib/market-ir.ts + relay/)، دادهٔ جهانی از CoinGecko. لودینگ = اسکلتون،
+ * شکستِ کامل = حالتِ خالیِ صادقانه. هیچ عددِ ساختگی.
+ */
+export default function LiveMarket() {
+  const [data, setData] = useState<MarketPayload | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [tab, setTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/market");
+        const json = (await res.json()) as MarketPayload;
+        if (!alive) return;
+        const any =
+          (json?.crypto?.length ?? 0) + (json?.goldGlobal?.length ?? 0) +
+          (json?.ir ? json.ir.gold.length + json.ir.currency.length + json.ir.funds.length + json.ir.stocks.length : 0);
+        if (any > 0) { setData(json); setFailed(false); }
+        else setFailed(true);
+      } catch {
+        if (alive) setFailed(true);
+      }
+    };
+    load();
+    const t = setInterval(load, REFRESH_MS);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+
+  const cats = useMemo(() => {
+    if (!data) return [];
+    const ir = data.ir;
+    const list: { key: string; label: string; rows: DisplayRow[]; note?: string }[] = [
+      {
+        key: "gold",
+        label: "طلا و سکه",
+        rows: [...(ir?.gold ?? []).map(toDisplay.ir), ...(data.goldGlobal ?? []).map(toDisplay.global)],
+      },
+      { key: "currency", label: "ارز", rows: (ir?.currency ?? []).map(toDisplay.ir) },
+      {
+        key: "funds",
+        label: "صندوق‌ها",
+        rows: (ir?.funds ?? []).map(toDisplay.ir),
+        note: "NAV و بازدهِ روزانهٔ صندوق‌های طلا",
+      },
+      { key: "stocks", label: "سهام", rows: (ir?.stocks ?? []).map(toDisplay.ir) },
+      { key: "crypto", label: "کریپتو", rows: data.crypto.map(toDisplay.global) },
+    ];
+    return list.filter((c) => c.rows.length > 0);
+  }, [data]);
+
+  const active = cats.find((c) => c.key === tab) ?? cats[0];
+  const ageMin = data ? Math.max(0, Math.round((Date.now() - data.fetchedAt) / 60000)) : null;
+
+  return (
+    <section id="market" className="section" style={{ background: "var(--bg)" }}>
+      <div className="mx-auto w-full max-w-6xl px-5">
+        <Reveal className="flex flex-col items-center text-center gap-3 mb-10">
+          <span className="eyebrow">رصد بازار</span>
+          <h2
+            className="font-display"
+            style={{
+              color: "var(--navy-deep)",
+              fontSize: "clamp(1.6rem, 3.2vw, 2.4rem)",
+              fontWeight: 800,
+              lineHeight: 1.25,
+            }}
+          >
+            بازار، همین حالا — زنده
+          </h2>
+          <div className="divider-gold" />
+        </Reveal>
+
+        <Reveal>
+          <div className="card-elevated overflow-hidden max-w-3xl mx-auto">
+            {/* هدر + تب‌ها */}
+            <div
+              className="flex items-center justify-between gap-3 px-5 py-3 flex-wrap"
+              style={{ borderBottom: "1px solid var(--line)", background: "var(--surface-2)" }}
+            >
+              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--navy-deep)" }}>
+                <span className="live-dot" aria-hidden />
+                قیمت‌های لحظه‌ای
+              </span>
+              <span className="text-xs" style={{ color: "var(--text-3)" }}>
+                {ageMin != null
+                  ? `به‌روزرسانی: ${ageMin === 0 ? "هم‌اکنون" : `${toPersianDigits(ageMin)} دقیقه پیش`}`
+                  : failed ? "" : "در حال دریافت…"}
+              </span>
+            </div>
+
+            {cats.length > 1 && (
+              <div
+                className="flex gap-1 px-3 py-2 overflow-x-auto"
+                style={{ borderBottom: "1px solid var(--line)" }}
+                role="tablist"
+                aria-label="دسته‌های بازار"
+              >
+                {cats.map((c) => (
+                  <button
+                    key={c.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active?.key === c.key}
+                    onClick={() => setTab(c.key)}
+                    className="rounded-lg px-3.5 text-xs font-bold whitespace-nowrap transition-colors"
+                    style={{
+                      minHeight: 40,
+                      ...(active?.key === c.key
+                        ? { background: "var(--navy)", color: "var(--text-on-navy)" }
+                        : { color: "var(--text-2)", background: "var(--surface-2)" }),
+                    }}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* بدنه */}
+            {failed ? (
+              <div className="px-5 py-12 text-center text-sm" style={{ color: "var(--text-3)" }}>
+                دادهٔ بازار هم‌اکنون در دسترس نیست. چند دقیقهٔ دیگر دوباره سر بزنید.
+              </div>
+            ) : !active ? (
+              <ul aria-hidden>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <li key={i} className="flex items-center justify-between gap-4 px-5 py-3.5"
+                      style={{ borderTop: i ? "1px solid var(--line)" : "none" }}>
+                    <span className="skeleton" style={{ width: 120, height: 14 }} />
+                    <span className="skeleton" style={{ width: 90, height: 14 }} />
+                    <span className="skeleton" style={{ width: 56, height: 20 }} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ul>
+                {active.rows.slice(0, SHOW).map((r, i) => (
+                  <li
+                    key={r.id}
+                    className="flex items-center justify-between gap-4 px-5 py-3.5 transition-colors hover:bg-[color:var(--surface-2)]"
+                    style={{ borderTop: i ? "1px solid var(--line)" : "none" }}
+                  >
+                    <span className="flex items-baseline gap-2 min-w-0">
+                      <span className="font-bold text-sm truncate" style={{ color: "var(--text)" }}>
+                        {r.faName}
+                      </span>
+                      {r.sub && (
+                        <span className="text-[11px] uppercase" style={{ color: "var(--text-3)" }} dir="ltr">
+                          {r.sub}
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-4 flex-shrink-0">
+                      <span className="text-sm font-bold" style={{ color: "var(--text-2)", fontVariantNumeric: "tabular-nums" }}>
+                        {r.priceText}
+                      </span>
+                      {r.change != null && (
+                        <span
+                          className="inline-flex justify-center rounded-full px-2 py-0.5 text-xs font-bold min-w-[72px]"
+                          style={{
+                            color: deltaColor(r.change),
+                            background: r.change > 0
+                              ? "rgba(21,128,61,0.09)"
+                              : r.change < 0
+                                ? "rgba(185,28,28,0.08)"
+                                : "var(--surface-2)",
+                            fontVariantNumeric: "tabular-nums",
+                          }}
+                        >
+                          <span aria-hidden="true">{formatSignedPercent(r.change)}</span>
+                          <span className="sr-only">{describeDelta(r.change)}</span>
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* فوتر پنل */}
+            <div
+              className="flex items-center justify-between gap-3 px-5 py-3.5"
+              style={{ borderTop: "1px solid var(--line)" }}
+            >
+              <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
+                {active?.note ?? "قیمت‌ها صرفاً اطلاع‌رسانی‌اند؛ توصیهٔ خرید/فروش نیستند."}
+              </span>
+              <Link href="/market" className="btn btn-outline" style={{ fontSize: "0.8rem", padding: "0.5rem 1rem" }}>
+                مشاهدهٔ کامل بازار
+                <ArrowLeft size={14} />
+              </Link>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}

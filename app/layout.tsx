@@ -50,8 +50,8 @@ export const metadata: Metadata = {
     siteName: "Arash Safari",
   },
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/brand/mark.png",
+    apple: "/brand/mark.png",
   },
 };
 

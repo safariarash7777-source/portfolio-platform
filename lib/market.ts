@@ -2,7 +2,6 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
 import { toPersianDigits } from "@/lib/format";
-import { getIrMarketData, type IrMarketData } from "@/lib/market-ir";
 
 // رصد بازار — منبعِ دادهٔ کریپتو: CoinGecko (کیلید نمی‌خواهد، قیمتِ واقعی دلاری).
 // کشِ ۵دقیقه در سطح ماژول (per warm instance، مثل الگوی rate-limitِ waitlist).
@@ -20,7 +19,7 @@ export interface CryptoRow {
 
 export interface MarketData {
   crypto: CryptoRow[];
-  ir: IrMarketData | null; // داده بازار ایران (طلا/ارز/صندوق) — null اگر رله پیکربندی نشده
+  goldGlobal: CryptoRow[]; // انس طلا از توکنِ طلا-پشتوانه (دلاری)
   fetchedAt: number;
   ok: boolean; // false → منبع پاسخ نداد؛ UI حالتِ خالی نشان می‌دهد
 }
@@ -38,7 +37,13 @@ const CRYPTO: { id: string; faName: string }[] = [
   { id: "tron", faName: "ترون" },
   { id: "the-open-network", faName: "تون" },
 ];
-const FA_BY_ID = new Map(CRYPTO.map((c) => [c.id, c.faName]));
+// طلای جهانی از توکنِ طلا-پشتوانهٔ PAXG (هر توکن = یک انسِ طلای واقعی؛ قیمتِ
+// واقعیِ بازار، منبعِ جهانیِ در دسترس از سرورهای خارج). برچسبِ UI صریح است.
+const GOLD_TOKENS: { id: string; faName: string }[] = [
+  { id: "pax-gold", faName: "انس طلا (PAXG)" },
+];
+const FA_BY_ID = new Map([...CRYPTO, ...GOLD_TOKENS].map((c) => [c.id, c.faName]));
+const GOLD_IDS = new Set(GOLD_TOKENS.map((g) => g.id));
 
 const CACHE_MS = 5 * 60 * 1000;
 const COINGECKO = "https://api.coingecko.com/api/v3";
@@ -52,12 +57,7 @@ export async function getMarketData(): Promise<MarketData> {
   if (inflight) return inflight;
 
   inflight = (async () => {
-    // Fetch crypto and Iran market data in parallel
-    const [cryptoData, irData] = await Promise.all([
-      fetchCrypto(),
-      getIrMarketData(),
-    ]);
-    const fresh: MarketData = { ...cryptoData, ir: irData };
+    const fresh = await fetchCrypto();
     cache = fresh;
     // ارزیابیِ هشدارها فقط روی داده‌ی معتبر و در همان چرخهٔ کش.
     if (fresh.ok) {
@@ -78,11 +78,11 @@ export async function getMarketData(): Promise<MarketData> {
 }
 
 async function fetchCrypto(): Promise<MarketData> {
-  const ids = CRYPTO.map((c) => c.id).join(",");
+  const ids = [...CRYPTO, ...GOLD_TOKENS].map((c) => c.id).join(",");
   const url = `${COINGECKO}/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&sparkline=false&price_change_percentage=24h`;
   try {
     const res = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-    if (!res.ok) return { crypto: [], ir: null, fetchedAt: Date.now(), ok: false };
+    if (!res.ok) return { crypto: [], goldGlobal: [], fetchedAt: Date.now(), ok: false };
     const json = (await res.json()) as Array<{
       id: string;
       symbol: string;
@@ -90,7 +90,7 @@ async function fetchCrypto(): Promise<MarketData> {
       price_change_percentage_24h: number | null;
       image: string | null;
     }>;
-    const crypto: CryptoRow[] = json.map((c) => ({
+    const rows: CryptoRow[] = json.map((c) => ({
       id: c.id,
       faName: FA_BY_ID.get(c.id) ?? c.id,
       symbol: (c.symbol ?? "").toUpperCase(),
@@ -98,9 +98,11 @@ async function fetchCrypto(): Promise<MarketData> {
       change24h: c.price_change_percentage_24h ?? null,
       image: c.image ?? null,
     }));
-    return { crypto, ir: null, fetchedAt: Date.now(), ok: crypto.length > 0 };
+    const crypto = rows.filter((r) => !GOLD_IDS.has(r.id));
+    const goldGlobal = rows.filter((r) => GOLD_IDS.has(r.id));
+    return { crypto, goldGlobal, fetchedAt: Date.now(), ok: crypto.length > 0 };
   } catch {
-    return { crypto: [], ir: null, fetchedAt: Date.now(), ok: false };
+    return { crypto: [], goldGlobal: [], fetchedAt: Date.now(), ok: false };
   }
 }
 
