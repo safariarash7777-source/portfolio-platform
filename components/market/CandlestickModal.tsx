@@ -12,16 +12,19 @@ interface Candle {
   close: number;
 }
 
-// پالتِ برند (hex، چون canvas متغیرِ CSS نمی‌گیرد). تم روشن/تیره خوانده می‌شود.
+// پالتِ برند از توکن‌های زندهٔ CSS خوانده می‌شود (canvas مقدارِ CSS var نمی‌گیرد،
+// ولی مقدارِ محاسبه‌شده‌اش را با getComputedStyle می‌گیریم). این‌طور سبز/قرمزِ کندل
+// و رنگِ خطوط دقیقاً همان توکن‌های semantic‌اند و با روشن/تیره و پالتِ گرم هماهنگ می‌مانند.
 function palette() {
-  const dark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
+  const cs = typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
+  const v = (name: string, fallback: string) => cs?.getPropertyValue(name).trim() || fallback;
   return {
-    bg: dark ? "#131C30" : "#FFFFFF",
-    text: dark ? "#CBD5E1" : "#334155",
-    line: dark ? "#1E2A47" : "#E2E8F0",
-    up: "#15803D", // success
-    down: "#B91C1C", // danger
-    navy: "#1E3A8A",
+    bg:   v("--surface", "#FFFFFF"),
+    text: v("--text-2", "#334155"),
+    line: v("--line", "#E5E3DC"),
+    up:   v("--success", "#15803D"),
+    down: v("--danger", "#B91C1C"),
+    navy: v("--navy", "#1E3A8A"),
   };
 }
 
