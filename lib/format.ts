@@ -69,6 +69,12 @@ export function describeDelta(value: number): string {
   return "بدون تغییر";
 }
 
+/** Dollar price with Persian digits, e.g. 67250.3 → "۶۷٬۲۵۰ دلار"; sub-1 keeps 3 significant digits. */
+export function formatUsd(value: number): string {
+  const s = value >= 1 ? Math.round(value).toLocaleString("en-US") : value.toPrecision(3);
+  return `${toPersianDigits(s).replace(/,/g, "٬").replace(".", "٫")} دلار`;
+}
+
 /** CSS-variable color for a financial delta (matches the project's tokens). */
 export function deltaColor(value: number): string {
   if (value > 0) return "var(--success)";

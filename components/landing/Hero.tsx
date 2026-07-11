@@ -76,16 +76,15 @@ export default function Hero() {
               className="font-display anim-rise anim-d2"
               style={{
                 color: "var(--text-on-navy)",
-                fontSize: "clamp(2.6rem, 6.5vw, 4.75rem)",
+                fontSize: "clamp(2.1rem, 5.2vw, 4rem)",
                 fontWeight: 900,
-                lineHeight: 1.06,
-                letterSpacing: "-0.03em",
-                marginBottom: "1.5rem",
+                lineHeight: 1.12,
+                letterSpacing: "-0.02em",
+                marginBottom: "1.25rem",
               }}
             >
-              تصمیمِ سرمایه‌گذاری،
-              <br />
-              بر پایهٔ <span style={{ color: "var(--gold-light)" }}>داده و تحلیل علمی</span>
+              تصمیمِ سرمایه‌گذاری، بر پایهٔ{" "}
+              <span style={{ color: "var(--gold-light)" }}>داده و تحلیل علمی</span>
             </h1>
 
             <p
