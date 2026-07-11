@@ -124,8 +124,22 @@ export default function MarketClient({
         </h1>
         <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
           قیمت‌های زندهٔ بازار کریپتو (دلاری، منبع: CoinGecko).
-          {isLoggedIn ? " نمادها را ستاره‌دار کنید و هشدار قیمتی بسازید." : " برای واچ‌لیست و هشدار وارد شوید."}
+          {isLoggedIn ? " نمادها را ستاره‌دار کنید و هشدار قیمتی بسازید." : ""}
         </p>
+        {!isLoggedIn && (
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link
+              href="/register"
+              className="btn btn-primary"
+              style={{ minHeight: 44, paddingInline: "1.5rem" }}
+            >
+              ثبت‌نام رایگان
+            </Link>
+            <span className="text-xs" style={{ color: "var(--text-3)" }}>
+              واچ‌لیست و هشدار قیمتی فقط برای اعضا فعال است.
+            </span>
+          </div>
+        )}
       </div>
 
       {error && (

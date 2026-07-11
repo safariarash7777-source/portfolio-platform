@@ -20,6 +20,7 @@ export default async function DashboardPage() {
   const [
     profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes,
     telegramRes, paymentRes, scoreHistoryRes, revalidationRes, announcementsRes, seenRes,
+    portfolioVersionsRes,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase
@@ -33,6 +34,8 @@ export default async function DashboardPage() {
       .from("portfolios")
       .select("*")
       .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle(),
     supabase
       .from("holdings")
@@ -87,6 +90,12 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .eq("channel", "in_app")
       .eq("status", "seen"),
+    // All portfolio versions for history display
+    supabase
+      .from("portfolios")
+      .select("id, allocations, notes, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
   ]);
 
   const seenSet = new Set((seenRes.data ?? []).map((d) => d.announcement_id));
@@ -114,6 +123,7 @@ export default async function DashboardPage() {
           scoreHistory={scoreHistoryRes.data ?? []}
           revalidationExpiredAt={revalidationRes.data?.expired_at ?? null}
           announcements={announcements}
+          portfolioVersions={portfolioVersionsRes.data ?? []}
         />
       </main>
       <Footer />

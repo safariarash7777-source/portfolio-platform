@@ -50,8 +50,8 @@
   --r-xl: 20px;
 
   /* ─── Type stack ────────────────────────────────────────── */
-  --font-display: "Pelak", "Vazirmatn", "IRANSansX", "Tahoma", sans-serif;
-  --font-body:    "Vazirmatn", "IRANSansX", "Pelak", "Tahoma", sans-serif;
+  --font-display: var(--font-pelak), "Vazirmatn", "IRANSansX", "Tahoma", sans-serif;
+  --font-body:    var(--font-vazirmatn), "IRANSansX", "Pelak", "Tahoma", sans-serif;
 }
 
 /* ─── Dark mode overrides (toggled via .dark on <html>) ────── */
@@ -99,6 +99,7 @@ body { min-height: 100vh; }
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
+  min-height: 44px; /* WCAG touch target */
   border-radius: var(--r);
   font-family: var(--font-body);
   font-weight: 700;
