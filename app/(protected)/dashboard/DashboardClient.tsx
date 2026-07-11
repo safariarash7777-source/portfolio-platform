@@ -28,6 +28,8 @@ import type { UserAnnouncement } from "@/components/dashboard/Announcements";
 import ScoreEvolution from "@/components/dashboard/ScoreEvolution";
 import type { ScorePoint } from "@/components/dashboard/ScoreEvolution";
 import RiskRevalidationBanner from "@/components/dashboard/RiskRevalidationBanner";
+import RiskPlanCard from "@/components/dashboard/RiskPlanCard";
+import PortfolioVersionHistory from "@/components/dashboard/PortfolioVersionHistory";
 import { formatJalali } from "@/lib/format";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -90,6 +92,7 @@ interface Props {
   scoreHistory: ScorePoint[];
   revalidationExpiredAt: string | null;
   announcements: UserAnnouncement[];
+  portfolioVersions: Portfolio[];
 }
 
 
@@ -108,6 +111,7 @@ export default function DashboardClient({
   scoreHistory,
   revalidationExpiredAt,
   announcements,
+  portfolioVersions,
 }: Props) {
   const isAdmin = userRole === "admin";
   const { isExpired, daysLeft } = computeRevalidation(
@@ -255,10 +259,24 @@ export default function DashboardClient({
         <NoAssessment onStart={() => setShowQuiz(true)} />
       )}
 
+      {/* Risk plan & products — based on assessed profile */}
+      {assessment && RISK_PROFILES[assessment.risk_category as RiskCategory] && (
+        <div className="mt-6">
+          <RiskPlanCard profile={RISK_PROFILES[assessment.risk_category as RiskCategory]} />
+        </div>
+      )}
+
       {/* Risk score evolution over time */}
       {scoreHistory.length > 0 && (
         <div className="mt-6">
           <ScoreEvolution history={scoreHistory} />
+        </div>
+      )}
+
+      {/* Portfolio version history */}
+      {portfolioVersions.length > 1 && (
+        <div className="mt-6">
+          <PortfolioVersionHistory versions={portfolioVersions} />
         </div>
       )}
 
