@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPayment } from "@/lib/zarinpal";
 import { createSingleUseInvite, sendMessage } from "@/lib/telegram";
+import { sendAnnouncementEmail } from "@/lib/resend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -90,6 +91,20 @@ export async function GET(req: NextRequest) {
         after: { delivered: true },
       });
     }
+  }
+
+  // ایمیل تأیید پرداخت — best-effort (شکست ایمیل مانع redirect نمی‌شود).
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("email")
+    .eq("id", payment.user_id)
+    .maybeSingle();
+  if (profile?.email) {
+    await sendAnnouncementEmail(
+      profile.email,
+      "پرداخت شما با موفقیت تأیید شد",
+      `با سلام،\n\nپرداخت شما به مبلغ **${payment.amount.toLocaleString("fa-IR")} تومان** با موفقیت تأیید شد.\n\nکد پیگیری: \`${verify.refId ?? "—"}\`\n\n${inviteLink ? "لینک دعوت کانال خصوصی نیز از طریق تلگرام برای شما ارسال شده است." : "برای دریافت لینک دعوت کانال، ابتدا حساب تلگرام خود را از داشبورد متصل کنید."}\n\nبا تشکر،\nتیم آرش صفری`
+    );
   }
 
   return NextResponse.redirect(
