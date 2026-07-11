@@ -10,19 +10,21 @@ module.exports = {
       colors: {
         navy: {
           DEFAULT: "#1E3A8A",
-          deep:    "#172554",
+          deep:    "#0D1F4A",
           soft:    "#2748A6",
         },
         gold: {
           DEFAULT: "#B8860B",
           soft:    "#D4A22B",
+          light:   "#F5D07A",
           tint:    "#F5E6B8",
         },
-        bg:      "#F8FAFC",
+        bg:      "#F8F7F4",
         surface: "#FFFFFF",
+        cream:   "#F2F0E8",
         ink:     "#0F172A",
         muted:   "#64748B",
-        line:    "#E2E8F0",
+        line:    "#E5E3DC",
       },
       fontFamily: {
         display: ["var(--font-display)", "Vazirmatn", "Tahoma", "sans-serif"],

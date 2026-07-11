@@ -9,7 +9,9 @@ export interface ScorePoint {
   created_at: string;
 }
 
-// نمودار سادهٔ خطیِ تکاملِ امتیاز ریسک + فهرست تاریخ‌دار. رنگ‌ها از توکن‌ها.
+// نمودار پله‌ایِ (step) تکاملِ امتیاز ریسک + فهرست تاریخ‌دار. رنگ‌ها از توکن‌ها.
+// چرا step و نه خطیِ نرم: امتیاز ریسک بینِ دو ارزیابیِ ۱۸۰روزه ثابت می‌ماند و
+// در هر ارزیابیِ جدید پله‌ای می‌پرد؛ خطِ اریب القای تغییرِ پیوسته می‌کند که واقعی نیست.
 export default function ScoreEvolution({ history }: { history: ScorePoint[] }) {
   if (!history || history.length === 0) return null;
 
@@ -25,7 +27,14 @@ export default function ScoreEvolution({ history }: { history: ScorePoint[] }) {
     const y = h - pad - (Math.min(p.total_score, maxScore) / maxScore) * (h - 2 * pad);
     return { x, y, p };
   });
-  const path = pts.map((pt, i) => `${i === 0 ? "M" : "L"}${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).join(" ");
+  // step (stepAfter): امتیاز را تا ارزیابیِ بعدی افقی نگه دار، بعد عمودی بپر.
+  const path = pts
+    .map((pt, i) =>
+      i === 0
+        ? `M${pt.x.toFixed(1)},${pt.y.toFixed(1)}`
+        : `H${pt.x.toFixed(1)} V${pt.y.toFixed(1)}`
+    )
+    .join(" ");
   const latest = history[history.length - 1];
   const first = history[0];
   const delta = latest.total_score - first.total_score;

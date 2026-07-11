@@ -10,19 +10,21 @@
 :root {
   /* ─── Brand palette (canonical) ─────────────────────────── */
   --navy:        #1E3A8A;   /* primary brand */
-  --navy-deep:   #172554;   /* deep institutional navy */
+  --navy-deep:   #0D1F4A;   /* deep institutional navy (brand book) */
   --navy-soft:   #2748A6;   /* hover / interactive */
   --gold:        #B8860B;   /* primary gold accent */
   --gold-soft:   #D4A22B;   /* gold on dark / hover */
+  --gold-light:  #F5D07A;   /* bright gold on navy (brand book) */
   --gold-tint:   #F5E6B8;   /* gold background tint */
 
-  /* ─── Surface system (light theme — default) ────────────── */
-  --bg:          #F8FAFC;   /* page background */
+  /* ─── Surface system (light theme — warm brand palette) ─── */
+  --bg:          #F8F7F4;   /* page background — warm off-white */
   --surface:     #FFFFFF;   /* card surface */
-  --surface-2:   #F1F5F9;   /* subtle surface */
-  --line:        #E2E8F0;   /* borders / dividers */
-  --line-strong: #CBD5E1;   /* emphasized borders */
-  --nav-bg:      rgba(248,250,252,0.85);  /* sticky navbar (theme-aware) */
+  --surface-2:   #F2F0E8;   /* subtle surface — brand cream */
+  --cream:       #F2F0E8;   /* brand cream (breathing space) */
+  --line:        #E5E3DC;   /* borders / dividers — warm */
+  --line-strong: #D6D2C6;   /* emphasized borders — warm */
+  --nav-bg:      rgba(248,247,244,0.85);  /* sticky navbar (theme-aware) */
 
   /* ─── Text scale ────────────────────────────────────────── */
   --text:        #0F172A;   /* primary text — institutional dark */
@@ -129,8 +131,8 @@ body { min-height: 100vh; }
 .btn-ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
 
 /* Outline button placed on a dark navy band (Hero / final CTA) */
-.btn-on-navy { background: transparent; color: var(--gold-soft); border-color: rgba(255,255,255,0.22); }
-.btn-on-navy:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.42); color: var(--gold-soft); }
+.btn-on-navy { background: transparent; color: var(--gold-light); border-color: rgba(255,255,255,0.22); }
+.btn-on-navy:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.42); color: var(--gold-light); }
 
 /* Primary CTAs get a subtle lift + elevation on hover (state clarity, on-brand) */
 .btn-gold:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px -8px rgba(184,134,11,0.55); }
