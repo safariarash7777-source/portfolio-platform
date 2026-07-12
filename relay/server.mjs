@@ -30,6 +30,13 @@ const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
 
 let cache = null; // { body: string, at: number }
 
+// انتشار به Supabase: رله بعد از هر رفرشِ موفق، اسنپ‌شات را به جدولِ
+// ir_market_snapshots «می‌فرستد» (خروجی از سمتِ ایران). سایت (روی Vercel) از
+// همان‌جا می‌خواند — چون لینکِ مستقیمِ Vercel→ایران به‌خاطرِ قطعیِ بین‌الملل کار
+// نمی‌کند. با ستِ دو env فعال می‌شود؛ کلیدِ سرویس‌رول فقط در env لیارا (هرگز در کد).
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
 // وضعیتِ تشخیصیِ هر منبع — برای /debug. هیچ سکرتی اینجا نیست (نه توکن، نه کلید).
 const status = {
   lastRefresh: 0,
@@ -39,6 +46,7 @@ const status = {
     fipiran: { ok: false, funds: 0, error: null },
     brsapi: { enabled: false, ok: false, stocks: 0, error: null },
   },
+  supabase: { enabled: Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY), ok: false, status: null, at: 0, error: null },
 };
 const errMsg = (e) => (e && e.name === "TimeoutError" ? "timeout" : e?.message ?? String(e));
 
@@ -259,8 +267,42 @@ async function buildPayload() {
   });
 }
 
+// انتشارِ اسنپ‌شات به Supabase (upsert روی key='latest'). با کلیدِ سرویس‌رول که
+// RLS را دور می‌زند؛ فقط همین یک جدول را می‌نویسد. خطا رفرش را نمی‌ترکاند —
+// اسنپ‌شاتِ قبلیِ Supabase سرِ جایش می‌ماند تا دفعهٔ بعد که خروجیِ ایران وصل شد.
+async function pushToSupabase(body) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    status.supabase = { enabled: false, ok: false, status: null, at: 0, error: "SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY ست نشده" };
+    return;
+  }
+  try {
+    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?on_conflict=key`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify([{ key: "latest", payload: JSON.parse(body), updated_at: new Date().toISOString() }]),
+      signal: AbortSignal.timeout(15000),
+    });
+    status.supabase = {
+      enabled: true,
+      ok: res.ok,
+      status: res.status,
+      at: Date.now(),
+      error: res.ok ? null : `HTTP ${res.status}`,
+    };
+    if (!res.ok) console.error(`supabase push: HTTP ${res.status}`);
+  } catch (e) {
+    status.supabase = { enabled: true, ok: false, status: null, at: Date.now(), error: errMsg(e) };
+    console.error("supabase push error:", status.supabase.error);
+  }
+}
+
 // رفرشِ کش در پس‌زمینه — هم‌زمان فقط یک‌بار اجرا می‌شود. خطاها کش را نمی‌ترکانند؛
-// کشِ قبلی سرِ جایش می‌ماند تا رفرشِ بعدی موفق شود.
+// کشِ قبلی سرِ جایش می‌ماند تا رفرشِ بعدی موفق شود. بعد از build، به Supabase می‌فرستد.
 let refreshing = null;
 function refresh() {
   if (refreshing) return refreshing;
@@ -270,6 +312,7 @@ function refresh() {
       cache = { body, at: Date.now() };
       status.lastRefresh = Date.now();
       status.lastError = null;
+      await pushToSupabase(body); // خروجی به Supabase تا سایت از خارج بخواند
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);
@@ -297,6 +340,7 @@ function debugPayload() {
     tokenRequired: Boolean(TOKEN),
     counts,
     sources: status.sources,
+    supabase: status.supabase, // وضعیتِ آخرین انتشار به Supabase (منبعِ سایت)
   }, null, 2);
 }
 
