@@ -28,7 +28,6 @@ export interface MarketData {
 const CRYPTO: { id: string; faName: string }[] = [
   { id: "bitcoin", faName: "بیت‌کوین" },
   { id: "ethereum", faName: "اتریوم" },
-  { id: "tether", faName: "تتر" },
   { id: "binancecoin", faName: "بایننس‌کوین" },
   { id: "solana", faName: "سولانا" },
   { id: "ripple", faName: "ریپل" },

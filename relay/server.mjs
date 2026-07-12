@@ -38,12 +38,17 @@ const TGJU_GOLD = [
 ];
 const TGJU_ONS = ["ons", "انس جهانی طلا"]; // USD
 const TGJU_CURRENCY = [
-  ["price_dollar_rl", "دلار آمریکا"],
+  ["price_dollar_rl", "دلار آمریکا (آزاد)"],
   ["price_eur", "یورو"],
   ["price_gbp", "پوند انگلیس"],
   ["price_aed", "درهم امارات"],
   ["price_try", "لیر ترکیه"],
 ];
+// تترِ تومانی (قیمتِ تتر در بازارِ ایران — نه ۱ دلارِ CoinGecko). کلیدِ tgju
+// بین نسخه‌ها فرق دارد؛ چند کاندید را امتحان می‌کنیم و اولین معتبر را می‌گیریم.
+// اگر هیچ‌کدام نبود، ردیف نمی‌آید (بدونِ عددِ ساختگی) — کلید را با دادهٔ زندهٔ
+// tgju تأیید کنید یا از endpoint ارزِ brsapi استفاده کنید.
+const TGJU_TETHER_KEYS = ["crypto-tether-irr", "tether-irr", "price_tether", "tether"];
 
 function tgjuNum(v) {
   const n = Number(String(v ?? "").replace(/,/g, ""));
@@ -78,6 +83,12 @@ async function fetchTgju() {
         row(TGJU_ONS[0], TGJU_ONS[1], "usd"),
       ].filter(Boolean);
       const currency = TGJU_CURRENCY.map(([k, fa]) => row(k, fa, "toman")).filter(Boolean);
+      // تترِ تومانی — اولین کلیدِ کاندید که در پاسخ باشد.
+      const tetherKey = TGJU_TETHER_KEYS.find((k) => cur[k] && tgjuNum(cur[k].p) != null);
+      if (tetherKey) {
+        const t = row(tetherKey, "تتر (تومان)", "toman");
+        if (t) currency.unshift(t);
+      }
       return { gold, currency };
     } catch {
       /* try next url */
