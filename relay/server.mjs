@@ -17,6 +17,13 @@ const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
 const CACHE_MS = 5 * 60 * 1000;
 
+// User-Agent مرورگر برای همهٔ درخواست‌های خروجی. فایروالِ brsapi (و بعضی
+// WAFهای ایرانی) UA پیش‌فرضِ زبان‌ها را می‌بندند و IP را حداقل ۲ ساعت بن
+// می‌کنند — پس همیشه UA معتبرِ مرورگر می‌فرستیم.
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
+
 let cache = null; // { body: string, at: number }
 
 // ── tgju: طلا/سکه + ارزِ بازارِ آزاد ────────────────────────────────────────
@@ -51,7 +58,7 @@ function tgjuChange(item) {
 async function fetchTgju() {
   for (const url of TGJU_URLS) {
     try {
-      const res = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) });
+      const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
       if (!res.ok) continue;
       const json = await res.json();
       const cur = json?.current;
@@ -83,7 +90,7 @@ async function fetchTgju() {
 async function fetchFunds() {
   try {
     const res = await fetch("https://fund.fipiran.ir/api/v1/fund/fundcompare", {
-      headers: { Accept: "application/json" },
+      headers: HDRS,
       signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) return [];
@@ -110,10 +117,69 @@ async function fetchFunds() {
   }
 }
 
-// ── سهام: در نسخهٔ ۱ خالی است (منبعِ پایدارِ نمادها کلیدِ brsapi می‌خواهد؛
-//    رجوع به README برای فعال‌سازی). آرایهٔ خالی = حالتِ صادقانه در UI. ──────
+// ── سهام (بورس تهران) از brsapi.ir — فقط وقتی هر دو env ست باشند فعال است ──
+// BRSAPI_KEY        = کلیدِ وب‌سرویس (فقط env؛ هرگز در کد/ریپو نوشته نشود)
+// BRSAPI_STOCKS_URL = آدرسِ endpoint بورس، عیناً از مستندات/نمونه‌کدِ خودِ
+//                     brsapi.ir کپی شود (بدون key؛ اینجا اضافه می‌شود).
+// چرا URL از env؟ فایروالِ brsapi درخواستِ غلط/حدسی را با بنِ ≥۲ساعتهٔ IP
+// جواب می‌دهد؛ پس endpoint را حدس نمی‌زنیم — از مستندات کپی می‌شود.
+// پارسر عمداً تحمل‌پذیر است (نام‌گذاری‌های رایجِ tsetmc-محور: l18/l30، pl/plp،
+// pc/pcp، last/close/changePercent…). قیمت ریال → تومان.
+const BRSAPI_KEY = process.env.BRSAPI_KEY || "";
+const BRSAPI_STOCKS_URL = process.env.BRSAPI_STOCKS_URL || "";
+const STOCKS_MAX = 10;
+
+function pickNum(o, keys, { allowZero = false } = {}) {
+  for (const k of keys) {
+    if (o?.[k] == null || o[k] === "") continue;
+    const n = Number(String(o[k]).replace(/,/g, ""));
+    if (Number.isFinite(n) && (allowZero || n !== 0)) return n;
+  }
+  return null;
+}
+function pickStr(o, keys) {
+  for (const k of keys) {
+    const s = String(o?.[k] ?? "").trim();
+    if (s) return s;
+  }
+  return "";
+}
+
 async function fetchStocks() {
-  return [];
+  if (!BRSAPI_KEY || !BRSAPI_STOCKS_URL) return [];
+  try {
+    const sep = BRSAPI_STOCKS_URL.includes("?") ? "&" : "?";
+    const res = await fetch(`${BRSAPI_STOCKS_URL}${sep}key=${encodeURIComponent(BRSAPI_KEY)}`, {
+      headers: HDRS, // UA مرورگر — الزامِ فایروالِ brsapi
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) {
+      console.error(`brsapi stocks: HTTP ${res.status}`);
+      return [];
+    }
+    const json = await res.json();
+    const list = Array.isArray(json) ? json
+      : Array.isArray(json?.data) ? json.data
+      : Array.isArray(json?.items) ? json.items
+      : Array.isArray(json?.result) ? json.result
+      : [];
+    return list.slice(0, STOCKS_MAX * 3).flatMap((s) => {
+      const name = pickStr(s, ["l18", "symbol", "namad", "name", "l30"]);
+      const priceRial = pickNum(s, ["pl", "pc", "last", "close", "price", "p"]);
+      if (!name || priceRial == null || priceRial <= 0) return [];
+      const change = pickNum(s, ["plp", "pcp", "changePercent", "change_percent", "dp"], { allowZero: true });
+      return [{
+        id: `stock-${pickStr(s, ["l18", "symbol", "insCode", "name"]) || name}`,
+        faName: name,
+        price: Math.round(priceRial / 10), // ریال → تومان
+        unit: "toman",
+        change: change,
+      }];
+    }).slice(0, STOCKS_MAX);
+  } catch (e) {
+    console.error("brsapi stocks error:", e?.message ?? e);
+    return [];
+  }
 }
 
 async function buildPayload() {
