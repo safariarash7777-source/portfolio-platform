@@ -1,14 +1,19 @@
 import "server-only";
 
-// دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام) از «رلهٔ داخل ایران».
-// چرا رله؟ همهٔ منابعِ ایرانی (tgju، brsapi، navasan، …) درخواستِ IPِ خارجی را
-// ۴۰۳ می‌دهند؛ سرورهای Vercel خارج از ایران‌اند، پس یک سرویسِ کوچک داخل ایران
-// (پوشهٔ relay/ همین ریپو) داده را می‌کشد و اینجا فقط از آن می‌خوانیم.
-// بدون IR_MARKET_RELAY_URL این ماژول ساکت null برمی‌گرداند — هیچ عدد ساختگی.
+// دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام).
 //
-// عیب‌یابی: هر تلاشِ اتصال در lastDiag ثبت می‌شود (بدونِ هیچ سکرت). با
-// GET /api/market?diag=1 آن را ببین تا بفهمی کدام حلقه شکسته (env؟ توکن؟ رلهٔ
-// خاموش؟ منبعِ خالی؟ تایم‌اوت؟). getLastIrDiag() همان را برمی‌گرداند.
+// معماری (چرا این‌طوری): منابعِ ایرانی به IPِ خارجی ۴۰۳ می‌دهند، پس یک «رلهٔ
+// داخل ایران» (پوشهٔ relay/) داده را می‌کشد. اما به‌خاطرِ قطعیِ اینترنتِ بین‌الملل،
+// سرورِ Vercel (خارج) نمی‌تواند زنده به رله وصل شود. راه‌حل: رله داده را به
+// Supabase «می‌فرستد» (خروجی از سمتِ ایران، که تحمل‌پذیرتر است) و سایت از
+// Supabase — که از همه‌جای دنیا در دسترس است — «می‌خواند». این‌طوری سایت به
+// اتصالِ لحظه‌ایِ ایران↔خارج وابسته نیست و همیشه آخرین اسنپ‌شاتِ موفق را نشان می‌دهد.
+//
+// منبعِ اول: اسنپ‌شاتِ Supabase (جدولِ ir_market_snapshots، key='latest').
+// منبعِ دوم (فقط اگر Supabase تنظیم/پر نباشد): fetchِ زندهٔ رله (کارِ قدیمی؛ وقتی
+// لینک بالا باشد). بدونِ هیچ‌کدام → null و UI آن بخش را نشان نمی‌دهد (هیچ عددِ ساختگی).
+//
+// عیب‌یابی: هر تلاش در lastDiag ثبت می‌شود (بدونِ سکرت). با /api/market?diag=1 ببین.
 
 export interface IrRow {
   id: string;
@@ -29,31 +34,35 @@ export interface IrMarket {
   ok: boolean;
 }
 
-// خلاصهٔ تشخیصیِ آخرین تلاشِ اتصال به رله — امن برای نمایشِ عمومی (هیچ توکن/سکرتی).
+// خلاصهٔ تشخیصیِ آخرین تلاش — امن برای نمایشِ عمومی (هیچ توکن/کلیدی).
 export interface IrDiag {
-  at: number;                 // زمانِ تلاش
-  urlConfigured: boolean;     // IR_MARKET_RELAY_URL ست شده؟
-  tokenConfigured: boolean;   // IR_MARKET_RELAY_TOKEN ست شده؟
-  reachedRelay: boolean;      // پاسخِ HTTP از رله گرفتیم؟
-  status: number | null;      // کدِ HTTPِ رله (401=توکن، 404=مسیر، …)؛ null اگر اصلاً نرسید
-  ok: boolean;                // دادهٔ قابل‌استفاده گرفتیم؟
-  fromCache: boolean;         // کشِ کهنه سرو شد
+  at: number;
+  source: "supabase" | "relay" | null; // کدام منبع داده داد
+  supabaseConfigured: boolean;          // NEXT_PUBLIC_SUPABASE_URL/ANON_KEY ست؟
+  relayUrlConfigured: boolean;          // IR_MARKET_RELAY_URL ست؟
+  reached: boolean;                     // پاسخِ HTTP از منبع گرفتیم؟
+  status: number | null;                // کدِ HTTPِ منبع
+  ok: boolean;                          // دادهٔ قابل‌استفاده گرفتیم؟
+  fromCache: boolean;                   // کشِ درون‌حافظه‌ایِ سایت
+  ageSec: number | null;                // سنِ اسنپ‌شات از لحظهٔ کشیده‌شدن در رله
   counts: { gold: number; currency: number; funds: number; stocks: number } | null;
-  error: string | null;      // نوعِ خطا اگر fetch ترکید (TimeoutError/…)، بدونِ سکرت
-  ms: number;                 // مدتِ تلاش
+  error: string | null;                 // نوعِ خطا (بدونِ سکرت)
+  ms: number;
 }
 
-const CACHE_MS = 5 * 60 * 1000;
-const RELAY_TIMEOUT_MS = 9000; // کمی بیشتر از ۸ثانیه برای تحملِ تأخیرِ مرزیِ ایران→خارج
+const CACHE_MS = 60 * 1000; // کشِ کوتاهِ سایت؛ رله هر ~۵دقیقه به Supabase می‌نویسد.
+const READ_TIMEOUT_MS = 8000;
 let cache: IrMarket | null = null;
+let cacheAt = 0;                                    // مهرِ کشِ سایت (جدا از cache.fetchedAt که زمانِ رله است)
+let cacheSource: "supabase" | "relay" | null = null;
 let lastDiag: IrDiag | null = null;
 
-/** آخرین خلاصهٔ تشخیصیِ اتصال به رله (برای /api/market?diag=1). بدونِ سکرت. */
+/** آخرین خلاصهٔ تشخیصی (برای /api/market?diag=1). بدونِ سکرت. */
 export function getLastIrDiag(): IrDiag | null {
   return lastDiag;
 }
 
-function countsOf(m: IrMarket): IrDiag["counts"] {
+function countsOf(m: IrMarket): NonNullable<IrDiag["counts"]> {
   return { gold: m.gold.length, currency: m.currency.length, funds: m.funds.length, stocks: m.stocks.length };
 }
 
@@ -80,82 +89,136 @@ function asRows(v: unknown): IrRow[] {
     }));
 }
 
-/** دادهٔ بازار ایران از رله؛ بدون env یا در خطا → null (UI آن بخش را نشان نمی‌دهد). */
+/** payload خام (از Supabase یا رله) → IrMarket با اعتبارسنجیِ سخت‌گیرانه. */
+function toMarket(payload: unknown): IrMarket {
+  const p = (payload ?? {}) as Record<string, unknown>;
+  const fetchedAt = Number(p.fetchedAt);
+  const data: IrMarket = {
+    gold: asRows(p.gold),
+    currency: asRows(p.currency),
+    funds: asRows(p.funds),
+    stocks: asRows(p.stocks),
+    fetchedAt: Number.isFinite(fetchedAt) ? fetchedAt : Date.now(),
+    ok: false,
+  };
+  data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length > 0;
+  return data;
+}
+
+/** منبعِ اول: آخرین اسنپ‌شاتِ بازار از Supabase (از همه‌جای دنیا در دسترس). */
+async function readSupabase(diag: IrDiag): Promise<IrMarket | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) return null;
+  diag.supabaseConfigured = true;
+  const res = await fetch(
+    `${url.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?key=eq.latest&select=payload`,
+    {
+      headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+    }
+  );
+  diag.reached = true;
+  diag.status = res.status;
+  if (!res.ok) return null;
+  const rows = (await res.json()) as Array<{ payload?: unknown }>;
+  const payload = Array.isArray(rows) && rows[0] ? rows[0].payload : null;
+  if (!payload) return null; // هنوز رله چیزی ننوشته
+  const data = toMarket(payload);
+  return data.ok ? data : null;
+}
+
+/** منبعِ دوم (فقط وقتی Supabase نبود/خالی بود): fetchِ زندهٔ رله. */
+async function readRelay(diag: IrDiag): Promise<IrMarket | null> {
+  const base = process.env.IR_MARKET_RELAY_URL;
+  if (!base) return null;
+  diag.relayUrlConfigured = true;
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const token = process.env.IR_MARKET_RELAY_TOKEN;
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${base.replace(/\/+$/, "")}/market.json`, {
+    headers,
+    cache: "no-store",
+    signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+  });
+  diag.reached = true;
+  diag.status = res.status;
+  if (!res.ok) return null;
+  const data = toMarket(await res.json());
+  return data.ok ? data : null;
+}
+
+/** دادهٔ بازار ایران؛ Supabase (اول) → رله (دوم) → null. در خطا کشِ کهنه یا null. */
 export async function getIrMarket(): Promise<IrMarket | null> {
   const started = Date.now();
-  const base = process.env.IR_MARKET_RELAY_URL;
-  const token = process.env.IR_MARKET_RELAY_TOKEN;
-
-  // پایهٔ رکوردِ تشخیصی؛ در هر مسیرِ خروج کامل و ثبت می‌شود.
   const diag: IrDiag = {
     at: started,
-    urlConfigured: Boolean(base),
-    tokenConfigured: Boolean(token),
-    reachedRelay: false,
+    source: null,
+    supabaseConfigured: false,
+    relayUrlConfigured: false,
+    reached: false,
     status: null,
     ok: false,
     fromCache: false,
+    ageSec: null,
     counts: null,
     error: null,
     ms: 0,
   };
   const finish = <T>(value: T): T => {
+    if (cache) diag.ageSec = Math.round((Date.now() - cache.fetchedAt) / 1000);
     diag.ms = Date.now() - started;
     lastDiag = diag;
     return value;
   };
 
-  if (!base) return finish(null); // urlConfigured=false → env روی Vercel ست/Redeploy نشده
-  if (cache && Date.now() - cache.fetchedAt < CACHE_MS) {
-    diag.ok = true;
+  if (cache && cacheAt && Date.now() - cacheAt < CACHE_MS) {
+    diag.source = cacheSource;
     diag.fromCache = true;
+    diag.ok = true;
     diag.counts = countsOf(cache);
     return finish(cache);
   }
 
+  // منبعِ اول: Supabase
   try {
-    const headers: Record<string, string> = { Accept: "application/json" };
-    if (token) headers.Authorization = `Bearer ${token}`;
-    const res = await fetch(`${base.replace(/\/+$/, "")}/market.json`, {
-      headers,
-      cache: "no-store",
-      signal: AbortSignal.timeout(RELAY_TIMEOUT_MS),
-    });
-    diag.reachedRelay = true;
-    diag.status = res.status;
-    if (!res.ok) {
-      // 401=توکنِ ناهماهنگ · 404=URLِ اشتباه · 5xx=رله مشکل دارد. کشِ کهنه بهتر از هیچ.
-      diag.fromCache = Boolean(cache);
-      diag.counts = cache ? countsOf(cache) : null;
-      diag.ok = Boolean(cache);
-      return finish(cache);
-    }
-    const json = await res.json();
-    const data: IrMarket = {
-      gold: asRows(json.gold),
-      currency: asRows(json.currency),
-      funds: asRows(json.funds),
-      stocks: asRows(json.stocks),
-      fetchedAt: Date.now(),
-      ok: true,
-    };
-    data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length > 0;
-    diag.counts = countsOf(data);
-    if (data.ok) {
-      cache = data;
+    const fromSupabase = await readSupabase(diag);
+    if (fromSupabase) {
+      diag.source = "supabase";
       diag.ok = true;
-      return finish(data);
+      diag.counts = countsOf(fromSupabase);
+      cache = fromSupabase;
+      cacheAt = Date.now();
+      cacheSource = "supabase";
+      return finish(fromSupabase);
     }
-    // پاسخِ ۲۰۰ ولی همه‌چیز خالی → منابعِ رله جواب نداده‌اند (رلهٔ /debug را ببین).
-    diag.fromCache = Boolean(cache);
-    diag.ok = Boolean(cache);
-    return finish(cache);
   } catch (e) {
-    // معمولاً TimeoutError (رله دیر جواب داد/در دسترس نیست) یا خطای شبکه.
     diag.error = e instanceof Error ? e.name || e.message : String(e);
-    diag.fromCache = Boolean(cache);
-    diag.ok = Boolean(cache);
-    diag.counts = cache ? countsOf(cache) : null;
-    return finish(cache);
   }
+
+  // منبعِ دوم: رلهٔ زنده (وقتی لینکِ بین‌الملل بالا باشد)
+  try {
+    const fromRelay = await readRelay(diag);
+    if (fromRelay) {
+      diag.source = "relay";
+      diag.ok = true;
+      diag.counts = countsOf(fromRelay);
+      cache = fromRelay;
+      cacheAt = Date.now();
+      cacheSource = "relay";
+      return finish(fromRelay);
+    }
+  } catch (e) {
+    if (!diag.error) diag.error = e instanceof Error ? e.name || e.message : String(e);
+  }
+
+  // هیچ منبعی نداد → کشِ کهنه بهتر از هیچ؛ اگر کش هم نبود، null.
+  if (cache) {
+    diag.source = cacheSource;
+    diag.fromCache = true;
+    diag.ok = true;
+    diag.counts = countsOf(cache);
+  }
+  return finish(cache);
 }
