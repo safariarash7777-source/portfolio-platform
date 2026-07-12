@@ -1,15 +1,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // رلهٔ بازارِ ایران — باید روی هاستِ «داخل ایران» اجرا شود (لیارا/آروان/پارس‌پک).
-// چرا: منابعِ ایرانی (tgju، fipiran، …) به IPِ خارجی ۴۰۳ می‌دهند؛ این سرویسِ
-// کوچک داده را از داخل می‌کشد و به سایت (روی Vercel) تحویل می‌دهد.
+// چرا: منابعِ ایرانی (BrsApi) به IPِ خارجی ۴۰۳ می‌دهند؛ این سرویسِ
+// کوچک داده را از داخل می‌کشد و به Supabase تحویل می‌دهد (push).
 //
 // اجرا:  node server.mjs        (Node 18+ ، بدون هیچ وابستگی)
-// env:   PORT (پیش‌فرض 3400) · RELAY_TOKEN (اختیاری — اگر ست شود، هدر
-//        Authorization: Bearer <token> برای /market.json الزامی می‌شود)
-// خروجی: GET /market.json → { gold[], currency[], funds[], stocks[], fetchedAt }
+// env:   PORT (پیش‌فرض 3400)
+//        RELAY_TOKEN (اختیاری — اگر ست شود، هدر Authorization: Bearer <token>
+//                     برای /market.json الزامی می‌شود)
+//        BRSAPI_KEY (الزامی — کلید وب‌سرویس BrsApi.ir)
+//        SUPABASE_URL (اختیاری — URL پروژه Supabase برای push)
+//        SUPABASE_SERVICE_ROLE_KEY (اختیاری — کلید service-role برای push)
+//
+// خروجی: GET /market.json → { gold[], currency[], funds[], stocks[], indices, fetchedAt }
 //        GET /healthz     → ok
 //        GET /debug       → وضعیتِ هر منبع + شمارِ ردیف‌ها + آخرین خطا (بدونِ سکرت)
-// هر ردیف: { id, faName, price, unit: "toman"|"usd", change }
+//        GET /            → راهنمای ساده
+//
+// هر ردیف: { id, faName, price, unit: "toman"|"usd"|"rial", change, changePercent }
 // اگر منبعی پاسخ ندهد، بخشِ مربوطه آرایهٔ خالی می‌ماند — هیچ عددِ ساختگی.
 //
 // کش در پس‌زمینه رفرش می‌شود (بوت + هر ۵ دقیقه)، پس /market.json همیشه فوری
@@ -19,260 +26,243 @@ import http from "node:http";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
-const CACHE_MS = 5 * 60 * 1000;
+const BRSAPI_KEY = process.env.BRSAPI_KEY || "";
+const CACHE_MS = 5 * 60 * 1000; // 5 minutes
 
-// User-Agent مرورگر برای همهٔ درخواست‌های خروجی. فایروالِ brsapi (و بعضی
-// WAFهای ایرانی) UA پیش‌فرضِ زبان‌ها را می‌بندند و IP را حداقل ۲ ساعت بن
-// می‌کنند — پس همیشه UA معتبرِ مرورگر می‌فرستیم.
+// انتشار به Supabase
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+// User-Agent مرورگر — فایروال BrsApi UA غیرمرورگر را بن می‌کند (حداقل ۲ ساعت).
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
 
 let cache = null; // { body: string, at: number }
 
-// انتشار به Supabase: رله بعد از هر رفرشِ موفق، اسنپ‌شات را به جدولِ
-// ir_market_snapshots «می‌فرستد» (خروجی از سمتِ ایران). سایت (روی Vercel) از
-// همان‌جا می‌خواند — چون لینکِ مستقیمِ Vercel→ایران به‌خاطرِ قطعیِ بین‌الملل کار
-// نمی‌کند. با ستِ دو env فعال می‌شود؛ کلیدِ سرویس‌رول فقط در env لیارا (هرگز در کد).
-const SUPABASE_URL = process.env.SUPABASE_URL || "";
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-
-// وضعیتِ تشخیصیِ هر منبع — برای /debug. هیچ سکرتی اینجا نیست (نه توکن، نه کلید).
+// وضعیتِ تشخیصی — برای /debug. هیچ سکرتی اینجا نیست.
 const status = {
   lastRefresh: 0,
   lastError: null,
   sources: {
-    tgju: { ok: false, gold: 0, currency: 0, error: null },
-    fipiran: { ok: false, funds: 0, error: null },
-    brsapi: { enabled: false, ok: false, stocks: 0, error: null },
+    brsapi_gold_currency: { ok: false, gold: 0, currency: 0, error: null },
+    brsapi_stocks: { ok: false, funds: 0, stocks: 0, error: null },
+    brsapi_index: { ok: false, error: null },
   },
-  supabase: { enabled: Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY), ok: false, status: null, at: 0, error: null },
+  supabase: { enabled: false, ok: false, status: null, at: 0, error: null },
 };
+
 const errMsg = (e) => (e && e.name === "TimeoutError" ? "timeout" : e?.message ?? String(e));
 
-// ── tgju: طلا/سکه + ارزِ بازارِ آزاد ────────────────────────────────────────
-// ajax.json عمومیِ tgju؛ قیمت‌ها ریال‌اند (جز ons که دلاری است) → تبدیل به تومان.
-const TGJU_URLS = ["https://call1.tgju.org/ajax.json", "https://www.tgju.org/ajax.json"];
-const TGJU_GOLD = [
-  ["geram18", "طلای ۱۸ عیار"],
-  ["sekee", "سکهٔ امامی"],
-  ["sekeb", "سکهٔ بهار آزادی"],
-  ["nim", "نیم‌سکه"],
-  ["rob", "ربع‌سکه"],
-];
-const TGJU_ONS = ["ons", "انس جهانی طلا"]; // USD
-const TGJU_CURRENCY = [
-  ["price_dollar_rl", "دلار آمریکا (آزاد)"],
-  ["price_eur", "یورو"],
-  ["price_gbp", "پوند انگلیس"],
-  ["price_aed", "درهم امارات"],
-  ["price_try", "لیر ترکیه"],
-];
-// تترِ تومانی (قیمتِ تتر در بازارِ ایران — نه ۱ دلارِ CoinGecko). کلیدِ tgju
-// بین نسخه‌ها فرق دارد؛ چند کاندید را امتحان می‌کنیم و اولین معتبر را می‌گیریم.
-// اگر هیچ‌کدام نبود، ردیف نمی‌آید (بدونِ عددِ ساختگی) — کلید را با دادهٔ زندهٔ
-// tgju تأیید کنید یا از endpoint ارزِ brsapi استفاده کنید.
-const TGJU_TETHER_KEYS = ["crypto-tether-irr", "tether-irr", "price_tether", "tether"];
+// ── BrsApi: طلا/سکه + ارز + کریپتو ──────────────────────────────────────────
+async function fetchGoldCurrency() {
+  if (!BRSAPI_KEY) {
+    status.sources.brsapi_gold_currency = { ok: false, gold: 0, currency: 0, error: "BRSAPI_KEY ست نشده" };
+    return { gold: [], currency: [], crypto: [] };
+  }
+  const url = `https://Api.BrsApi.ir/Market/Gold_Currency.php?key=${BRSAPI_KEY}`;
+  try {
+    const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(15000) });
+    if (!res.ok) {
+      const err = `HTTP ${res.status}`;
+      status.sources.brsapi_gold_currency = { ok: false, gold: 0, currency: 0, error: err };
+      return { gold: [], currency: [], crypto: [] };
+    }
+    const json = await res.json();
 
-function tgjuNum(v) {
-  const n = Number(String(v ?? "").replace(/,/g, ""));
-  return Number.isFinite(n) ? n : null;
+    // Gold items
+    const gold = (json.gold || []).map((item) => ({
+      id: item.symbol,
+      faName: item.name,
+      price: Number(item.price) || 0,
+      unit: (item.unit || "").includes("دلار") ? "usd" : "toman",
+      change: Number(item.change_value) || null,
+      changePercent: Number(item.change_percent) || null,
+    })).filter((r) => r.price > 0);
+
+    // Currency items (includes tether)
+    const currency = (json.currency || []).map((item) => ({
+      id: item.symbol,
+      faName: item.name,
+      price: Number(item.price) || 0,
+      unit: "toman",
+      change: Number(item.change_value) || null,
+      changePercent: Number(item.change_percent) || null,
+    })).filter((r) => r.price > 0);
+
+    // Crypto items
+    const crypto = (json.cryptocurrency || []).map((item) => ({
+      id: item.symbol,
+      faName: item.name,
+      nameEn: item.name_en,
+      price: Number(item.price) || 0,
+      unit: "usd",
+      changePercent: Number(item.change_percent) || null,
+      marketCap: Number(item.market_cap) || null,
+      description: item.description || null,
+    })).filter((r) => r.price > 0);
+
+    status.sources.brsapi_gold_currency = {
+      ok: gold.length + currency.length > 0,
+      gold: gold.length,
+      currency: currency.length,
+      crypto: crypto.length,
+      error: null,
+    };
+    return { gold, currency, crypto };
+  } catch (e) {
+    const err = errMsg(e);
+    status.sources.brsapi_gold_currency = { ok: false, gold: 0, currency: 0, error: err };
+    console.error("brsapi gold/currency error:", err);
+    return { gold: [], currency: [], crypto: [] };
+  }
 }
-function tgjuChange(item) {
-  const dp = Number(item?.dp);
-  if (!Number.isFinite(dp)) return null;
-  return item?.dt === "low" ? -dp : dp;
-}
 
-async function fetchTgju() {
-  let lastErr = "no source responded";
-  for (const url of TGJU_URLS) {
-    try {
-      const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
-      if (!res.ok) { lastErr = `HTTP ${res.status}`; continue; }
-      const json = await res.json();
-      const cur = json?.current;
-      if (!cur) { lastErr = "no `current` field (ساختارِ tgju عوض شده)"; continue; }
+// ── BrsApi: سهام + صندوق‌ها (AllSymbols type=1) ──────────────────────────────
+async function fetchStocksAndFunds() {
+  if (!BRSAPI_KEY) {
+    status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: "BRSAPI_KEY ست نشده" };
+    return { funds: [], stocks: [] };
+  }
+  const url = `https://Api.BrsApi.ir/Tsetmc/AllSymbols.php?key=${BRSAPI_KEY}&type=1`;
+  try {
+    const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(20000) });
+    if (!res.ok) {
+      const err = `HTTP ${res.status}`;
+      status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: err };
+      return { funds: [], stocks: [] };
+    }
+    const items = await res.json();
+    if (!Array.isArray(items)) {
+      status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: "response is not array" };
+      return { funds: [], stocks: [] };
+    }
 
-      const row = (key, faName, unit) => {
-        const item = cur[key];
-        const raw = tgjuNum(item?.p);
-        if (raw == null) return null;
-        // ریال → تومان برای اقلامِ داخلی؛ ons دلاری می‌ماند
-        const price = unit === "toman" ? Math.round(raw / 10) : raw;
-        return { id: key, faName, price, unit, change: tgjuChange(item) };
+    const funds = [];
+    const stocks = [];
+
+    for (const item of items) {
+      // قیمت‌ها ریال هستند — تبدیل به تومان
+      const lastPrice = Number(item.pl) || 0;
+      if (lastPrice <= 0) continue;
+      const priceToman = Math.round(lastPrice / 10);
+      const closingPrice = Number(item.pc) || 0;
+      const closingToman = closingPrice > 0 ? Math.round(closingPrice / 10) : priceToman;
+
+      const row = {
+        id: item.l18,
+        faName: item.l30 || item.l18,
+        price: priceToman,
+        unit: "toman",
+        change: Number(item.plc) ? Math.round(Number(item.plc) / 10) : null,
+        changePercent: Number(item.plp) || null,
+        closingPrice: closingToman,
+        closingChangePercent: Number(item.pcp) || null,
+        volume: Number(item.tvol) || 0,
+        value: Number(item.tval) || 0,
+        marketValue: Number(item.mv) || null,
+        industry: item.cs || null,
+        industryId: Number(item.cs_id) || null,
+        eps: Number(item.eps) || null,
+        pe: Number(item.pe) || null,
+        buyI: Number(item.Buy_I_Volume) || 0,
+        buyN: Number(item.Buy_N_Volume) || 0,
+        sellI: Number(item.Sell_I_Volume) || 0,
+        sellN: Number(item.Sell_N_Volume) || 0,
       };
 
-      const gold = [
-        ...TGJU_GOLD.map(([k, fa]) => row(k, fa, "toman")),
-        row(TGJU_ONS[0], TGJU_ONS[1], "usd"),
-      ].filter(Boolean);
-      const currency = TGJU_CURRENCY.map(([k, fa]) => row(k, fa, "toman")).filter(Boolean);
-      // تترِ تومانی — اولین کلیدِ کاندید که در پاسخ باشد.
-      const tetherKey = TGJU_TETHER_KEYS.find((k) => cur[k] && tgjuNum(cur[k].p) != null);
-      if (tetherKey) {
-        const t = row(tetherKey, "تتر (تومان)", "toman");
-        if (t) currency.unshift(t);
+      // cs_id === 68 → صندوق ETF
+      if (Number(item.cs_id) === 68) {
+        funds.push(row);
+      } else {
+        stocks.push(row);
       }
-      status.sources.tgju = { ok: gold.length + currency.length > 0, gold: gold.length, currency: currency.length, error: null };
-      return { gold, currency };
-    } catch (e) {
-      lastErr = errMsg(e);
     }
+
+    // مرتب‌سازی بر اساس ارزش معاملات (نزولی)
+    stocks.sort((a, b) => (b.value || 0) - (a.value || 0));
+    funds.sort((a, b) => (b.value || 0) - (a.value || 0));
+
+    status.sources.brsapi_stocks = {
+      ok: funds.length + stocks.length > 0,
+      funds: funds.length,
+      stocks: stocks.length,
+      error: null,
+    };
+    return { funds, stocks };
+  } catch (e) {
+    const err = errMsg(e);
+    status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: err };
+    console.error("brsapi stocks/funds error:", err);
+    return { funds: [], stocks: [] };
   }
-  status.sources.tgju = { ok: false, gold: 0, currency: 0, error: lastErr };
-  return { gold: [], currency: [] };
 }
 
-// ── fipiran: صندوق‌های سرمایه‌گذاری (تمرکز: صندوق‌های طلا) ───────────────────
-// دستهٔ فارسیِ صندوق از روی typeOfInvest/fundType/نام (دفاعی؛ ناشناخته → «سایر»).
-function fundTypeFa(f) {
-  const t = String(f?.typeOfInvest ?? f?.fundType ?? "").toLowerCase();
-  const n = String(f?.name ?? "");
-  if (t.includes("gold") || /طلا|سکه|نقره/.test(n)) return /نقره/.test(n) ? "نقره" : "طلا";
-  if (/اهرم/.test(n)) return "اهرمی";
-  if (/شاخص/.test(n)) return "شاخصی";
-  if (/املاک|مستغلات/.test(n)) return "املاک";
-  if (t.includes("fixed") || /درآمد ثابت/.test(n)) return "درآمد ثابت";
-  if (t.includes("mixed") || /مختلط/.test(n)) return "مختلط";
-  if (t.includes("stock") || t.includes("equity") || /سهام/.test(n)) return "سهامی";
-  if (/کالا/.test(n)) return "کالایی";
-  if (/بخش/.test(n)) return "بخشی";
-  return "سایر";
-}
-
-// صندوق‌ها از fipiran (fundcompare). خروجی غنی‌شده برای «دیده‌بان صندوق‌ها»:
-// price(NAV تومان)، change(بازده روز ٪)، type(دستهٔ فا)، assetB(خالص دارایی، میلیارد تومان).
-// netAsset ریال → میلیارد تومان = /1e10. تا ۴۰ صندوقِ بزرگ (بر اساس دارایی) از همهٔ انواع.
-async function fetchFunds() {
+// ── BrsApi: شاخص بورس ────────────────────────────────────────────────────────
+async function fetchIndex() {
+  if (!BRSAPI_KEY) {
+    status.sources.brsapi_index = { ok: false, error: "BRSAPI_KEY ست نشده" };
+    return null;
+  }
+  const url = `https://Api.BrsApi.ir/Tsetmc/Index.php?key=${BRSAPI_KEY}&type=1`;
   try {
-    const res = await fetch("https://fund.fipiran.ir/api/v1/fund/fundcompare", {
-      headers: HDRS,
-      signal: AbortSignal.timeout(15000),
-    });
+    const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
     if (!res.ok) {
-      status.sources.fipiran = { ok: false, funds: 0, error: `HTTP ${res.status}` };
-      return [];
+      status.sources.brsapi_index = { ok: false, error: `HTTP ${res.status}` };
+      return null;
     }
     const json = await res.json();
-    const items = Array.isArray(json?.items) ? json.items : Array.isArray(json) ? json : [];
-    const funds = items
-      .map((f) => {
-        const nav = Number(f?.navPerUnit ?? f?.issueNav);
-        const net = Number(f?.netAsset);
-        if (!Number.isFinite(nav) || nav <= 0) return null;
-        const change = Number(f?.dailyEfficiency);
-        return {
-          id: `fund-${f?.regNo ?? f?.name}`,
-          faName: String(f?.name ?? "").trim(),
-          type: fundTypeFa(f),
-          price: Math.round(nav / 10),                       // NAV ریال → تومان
-          unit: "toman",
-          change: Number.isFinite(change) ? change : null,
-          assetB: Number.isFinite(net) && net > 0 ? Math.round(net / 1e10) : null, // میلیارد تومان
-        };
-      })
-      .filter((f) => f && f.faName)
-      .sort((a, b) => (b.assetB ?? 0) - (a.assetB ?? 0))
-      .slice(0, 40);
-    status.sources.fipiran = { ok: funds.length > 0, funds: funds.length, error: funds.length ? null : "پاسخِ خالی/ساختارِ ناشناخته" };
-    return funds;
-  } catch (e) {
-    status.sources.fipiran = { ok: false, funds: 0, error: errMsg(e) };
-    return [];
-  }
-}
-
-// ── سهام (بورس تهران) از brsapi.ir — فقط وقتی هر دو env ست باشند فعال است ──
-// BRSAPI_KEY        = کلیدِ وب‌سرویس (فقط env؛ هرگز در کد/ریپو نوشته نشود)
-// BRSAPI_STOCKS_URL = آدرسِ endpoint بورس، عیناً از مستندات/نمونه‌کدِ خودِ
-//                     brsapi.ir کپی شود (بدون key؛ اینجا اضافه می‌شود).
-// چرا URL از env؟ فایروالِ brsapi درخواستِ غلط/حدسی را با بنِ ≥۲ساعتهٔ IP
-// جواب می‌دهد؛ پس endpoint را حدس نمی‌زنیم — از مستندات کپی می‌شود.
-// پارسر عمداً تحمل‌پذیر است (نام‌گذاری‌های رایجِ tsetmc-محور: l18/l30، pl/plp،
-// pc/pcp، last/close/changePercent…). قیمت ریال → تومان.
-const BRSAPI_KEY = process.env.BRSAPI_KEY || "";
-const BRSAPI_STOCKS_URL = process.env.BRSAPI_STOCKS_URL || "";
-const STOCKS_MAX = 10;
-
-function pickNum(o, keys, { allowZero = false } = {}) {
-  for (const k of keys) {
-    if (o?.[k] == null || o[k] === "") continue;
-    const n = Number(String(o[k]).replace(/,/g, ""));
-    if (Number.isFinite(n) && (allowZero || n !== 0)) return n;
-  }
-  return null;
-}
-function pickStr(o, keys) {
-  for (const k of keys) {
-    const s = String(o?.[k] ?? "").trim();
-    if (s) return s;
-  }
-  return "";
-}
-
-async function fetchStocks() {
-  status.sources.brsapi.enabled = Boolean(BRSAPI_KEY && BRSAPI_STOCKS_URL);
-  if (!status.sources.brsapi.enabled) {
-    status.sources.brsapi = { enabled: false, ok: false, stocks: 0, error: "BRSAPI_KEY/BRSAPI_STOCKS_URL ست نشده" };
-    return [];
-  }
-  try {
-    const sep = BRSAPI_STOCKS_URL.includes("?") ? "&" : "?";
-    const res = await fetch(`${BRSAPI_STOCKS_URL}${sep}key=${encodeURIComponent(BRSAPI_KEY)}`, {
-      headers: HDRS, // UA مرورگر — الزامِ فایروالِ brsapi
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok) {
-      console.error(`brsapi stocks: HTTP ${res.status}`);
-      status.sources.brsapi = { enabled: true, ok: false, stocks: 0, error: `HTTP ${res.status}` };
-      return [];
+    const data = Array.isArray(json) ? json[0] : json;
+    if (!data || !data.index) {
+      status.sources.brsapi_index = { ok: false, error: "no index field" };
+      return null;
     }
-    const json = await res.json();
-    const list = Array.isArray(json) ? json
-      : Array.isArray(json?.data) ? json.data
-      : Array.isArray(json?.items) ? json.items
-      : Array.isArray(json?.result) ? json.result
-      : [];
-    const stocks = list.slice(0, STOCKS_MAX * 3).flatMap((s) => {
-      const name = pickStr(s, ["l18", "symbol", "namad", "name", "l30"]);
-      const priceRial = pickNum(s, ["pl", "pc", "last", "close", "price", "p"]);
-      if (!name || priceRial == null || priceRial <= 0) return [];
-      const change = pickNum(s, ["plp", "pcp", "changePercent", "change_percent", "dp"], { allowZero: true });
-      return [{
-        id: `stock-${pickStr(s, ["l18", "symbol", "insCode", "name"]) || name}`,
-        faName: name,
-        price: Math.round(priceRial / 10), // ریال → تومان
-        unit: "toman",
-        change: change,
-      }];
-    }).slice(0, STOCKS_MAX);
-    status.sources.brsapi = { enabled: true, ok: stocks.length > 0, stocks: stocks.length, error: stocks.length ? null : "پاسخِ خالی/ساختارِ ناشناخته" };
-    return stocks;
+    const indices = {
+      total: Number(data.index) || 0,
+      totalChange: Number(data.index_change) || 0,
+      equalWeight: Number(data.index_equalWeight) || 0,
+      equalWeightChange: Number(data.index_equalWeight_change) || 0,
+      marketValue: Number(data.mv) || 0,
+      trades: Number(data.tno) || 0,
+      volume: Number(data.tvol) || 0,
+      value: Number(data.tval) || 0,
+      state: data.state || null,
+      date: data.date || null,
+      time: data.time || null,
+    };
+    status.sources.brsapi_index = { ok: true, error: null };
+    return indices;
   } catch (e) {
-    console.error("brsapi stocks error:", e?.message ?? e);
-    status.sources.brsapi = { enabled: true, ok: false, stocks: 0, error: errMsg(e) };
-    return [];
+    const err = errMsg(e);
+    status.sources.brsapi_index = { ok: false, error: err };
+    console.error("brsapi index error:", err);
+    return null;
   }
 }
 
+// ── ساختِ payload نهایی ───────────────────────────────────────────────────────
 async function buildPayload() {
-  const [tgju, funds, stocks] = await Promise.all([fetchTgju(), fetchFunds(), fetchStocks()]);
-  return JSON.stringify({
-    gold: tgju.gold,
-    currency: tgju.currency,
-    funds,
-    stocks,
+  const [gc, sf, indices] = await Promise.all([
+    fetchGoldCurrency(),
+    fetchStocksAndFunds(),
+    fetchIndex(),
+  ]);
+  const payload = {
+    gold: gc.gold,
+    currency: gc.currency,
+    crypto: gc.crypto,
+    funds: sf.funds,
+    stocks: sf.stocks,
+    indices,
     fetchedAt: Date.now(),
-  });
+  };
+  return JSON.stringify(payload);
 }
 
-// انتشارِ اسنپ‌شات به Supabase (upsert روی key='latest'). با کلیدِ سرویس‌رول که
-// RLS را دور می‌زند؛ فقط همین یک جدول را می‌نویسد. خطا رفرش را نمی‌ترکاند —
-// اسنپ‌شاتِ قبلیِ Supabase سرِ جایش می‌ماند تا دفعهٔ بعد که خروجیِ ایران وصل شد.
+// ── Push به Supabase ──────────────────────────────────────────────────────────
 async function pushToSupabase(body) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    status.supabase = { enabled: false, ok: false, status: null, at: 0, error: "SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY ست نشده" };
+    status.supabase = { enabled: false, ok: false, status: null, at: 0, error: null };
     return;
   }
   try {
@@ -301,8 +291,7 @@ async function pushToSupabase(body) {
   }
 }
 
-// رفرشِ کش در پس‌زمینه — هم‌زمان فقط یک‌بار اجرا می‌شود. خطاها کش را نمی‌ترکانند؛
-// کشِ قبلی سرِ جایش می‌ماند تا رفرشِ بعدی موفق شود. بعد از build، به Supabase می‌فرستد.
+// ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
 let refreshing = null;
 function refresh() {
   if (refreshing) return refreshing;
@@ -312,7 +301,7 @@ function refresh() {
       cache = { body, at: Date.now() };
       status.lastRefresh = Date.now();
       status.lastError = null;
-      await pushToSupabase(body); // خروجی به Supabase تا سایت از خارج بخواند
+      await pushToSupabase(body);
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);
@@ -323,12 +312,19 @@ function refresh() {
   return refreshing;
 }
 
+// ── Debug payload ─────────────────────────────────────────────────────────────
 function debugPayload() {
   let counts = null;
   if (cache) {
     try {
       const p = JSON.parse(cache.body);
-      counts = { gold: p.gold.length, currency: p.currency.length, funds: p.funds.length, stocks: p.stocks.length };
+      counts = {
+        gold: p.gold?.length ?? 0,
+        currency: p.currency?.length ?? 0,
+        crypto: p.crypto?.length ?? 0,
+        funds: p.funds?.length ?? 0,
+        stocks: p.stocks?.length ?? 0,
+      };
     } catch { /* ignore */ }
   }
   return JSON.stringify({
@@ -337,41 +333,46 @@ function debugPayload() {
     ageSec: cache ? Math.round((Date.now() - cache.at) / 1000) : null,
     lastRefresh: status.lastRefresh,
     lastError: status.lastError,
+    brsapiKeyConfigured: Boolean(BRSAPI_KEY),
     tokenRequired: Boolean(TOKEN),
     counts,
     sources: status.sources,
-    supabase: status.supabase, // وضعیتِ آخرین انتشار به Supabase (منبعِ سایت)
+    supabase: status.supabase,
   }, null, 2);
 }
 
+// ── HTTP Server ───────────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Authorization");
-
   if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
+
   if (url.pathname === "/healthz") { res.writeHead(200); return res.end("ok"); }
-  // ریشه: پاسخِ ۲۰۰ ساده تا health-checkِ پلتفرم (که معمولاً / را می‌زند) سبز بماند.
+
   if (url.pathname === "/") {
     res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
-    return res.end("ir-market relay: /healthz | /market.json | /debug");
+    return res.end("ir-market relay v2 (BrsApi): /healthz | /market.json | /debug");
   }
-  // /debug عمومی است اما هیچ سکرتی ندارد؛ فقط وضعیتِ منابع و شمارِ ردیف‌ها.
+
   if (url.pathname === "/debug") {
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     return res.end(debugPayload());
   }
+
   if (url.pathname !== "/market.json") { res.writeHead(404); return res.end("not found"); }
+
   if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
     res.writeHead(401); return res.end("unauthorized");
   }
 
   try {
-    // در حالتِ عادی کش گرم است (رفرشِ بوت/تایمر) و فوری جواب می‌دهد. فقط اگر
-    // هنوز هیچ داده‌ای نیست (اولین لحظاتِ بوت) یک رفرش را همین‌جا await می‌کنیم.
     if (!cache) await refresh();
-    if (Date.now() - cache.at > CACHE_MS) refresh(); // کهنه شد → رفرشِ پس‌زمینه، بدونِ بلاک
-    if (!cache) { res.writeHead(503, { "Content-Type": "application/json; charset=utf-8" }); return res.end('{"error":"warming up"}'); }
+    if (cache && Date.now() - cache.at > CACHE_MS) refresh(); // کهنه → رفرش پس‌زمینه
+    if (!cache) {
+      res.writeHead(503, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end('{"error":"warming up"}');
+    }
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(cache.body);
   } catch (e) {
@@ -382,7 +383,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`ir-market relay on :${PORT}`);
-  refresh(); // گرم‌کردنِ کش هنگامِ بوت تا اولین درخواستِ سایت فوری جواب بگیرد.
-  setInterval(refresh, CACHE_MS).unref(); // رفرشِ دوره‌ای در پس‌زمینه.
+  console.log(`ir-market relay v2 (BrsApi) on :${PORT}`);
+  refresh();
+  setInterval(refresh, CACHE_MS).unref();
 });
