@@ -87,6 +87,25 @@ async function fetchTgju() {
 }
 
 // ── fipiran: صندوق‌های سرمایه‌گذاری (تمرکز: صندوق‌های طلا) ───────────────────
+// دستهٔ فارسیِ صندوق از روی typeOfInvest/fundType/نام (دفاعی؛ ناشناخته → «سایر»).
+function fundTypeFa(f) {
+  const t = String(f?.typeOfInvest ?? f?.fundType ?? "").toLowerCase();
+  const n = String(f?.name ?? "");
+  if (t.includes("gold") || /طلا|سکه|نقره/.test(n)) return /نقره/.test(n) ? "نقره" : "طلا";
+  if (/اهرم/.test(n)) return "اهرمی";
+  if (/شاخص/.test(n)) return "شاخصی";
+  if (/املاک|مستغلات/.test(n)) return "املاک";
+  if (t.includes("fixed") || /درآمد ثابت/.test(n)) return "درآمد ثابت";
+  if (t.includes("mixed") || /مختلط/.test(n)) return "مختلط";
+  if (t.includes("stock") || t.includes("equity") || /سهام/.test(n)) return "سهامی";
+  if (/کالا/.test(n)) return "کالایی";
+  if (/بخش/.test(n)) return "بخشی";
+  return "سایر";
+}
+
+// صندوق‌ها از fipiran (fundcompare). خروجی غنی‌شده برای «دیده‌بان صندوق‌ها»:
+// price(NAV تومان)، change(بازده روز ٪)، type(دستهٔ فا)، assetB(خالص دارایی، میلیارد تومان).
+// netAsset ریال → میلیارد تومان = /1e10. تا ۴۰ صندوقِ بزرگ (بر اساس دارایی) از همهٔ انواع.
 async function fetchFunds() {
   try {
     const res = await fetch("https://fund.fipiran.ir/api/v1/fund/fundcompare", {
@@ -96,22 +115,25 @@ async function fetchFunds() {
     if (!res.ok) return [];
     const json = await res.json();
     const items = Array.isArray(json?.items) ? json.items : Array.isArray(json) ? json : [];
-    const goldish = items.filter(
-      (f) => f?.typeOfInvest === "InGold" || /طلا|سکه/.test(String(f?.name ?? ""))
-    );
-    goldish.sort((a, b) => (Number(b?.netAsset) || 0) - (Number(a?.netAsset) || 0));
-    return goldish.slice(0, 8).flatMap((f) => {
-      const nav = Number(f?.navPerUnit ?? f?.issueNav);
-      if (!Number.isFinite(nav) || nav <= 0) return [];
-      const change = Number(f?.dailyEfficiency);
-      return [{
-        id: `fund-${f?.regNo ?? f?.name}`,
-        faName: String(f?.name ?? "").trim(),
-        price: Math.round(nav / 10), // NAV ریال → تومان
-        unit: "toman",
-        change: Number.isFinite(change) ? change : null,
-      }];
-    });
+    return items
+      .map((f) => {
+        const nav = Number(f?.navPerUnit ?? f?.issueNav);
+        const net = Number(f?.netAsset);
+        if (!Number.isFinite(nav) || nav <= 0) return null;
+        const change = Number(f?.dailyEfficiency);
+        return {
+          id: `fund-${f?.regNo ?? f?.name}`,
+          faName: String(f?.name ?? "").trim(),
+          type: fundTypeFa(f),
+          price: Math.round(nav / 10),                       // NAV ریال → تومان
+          unit: "toman",
+          change: Number.isFinite(change) ? change : null,
+          assetB: Number.isFinite(net) && net > 0 ? Math.round(net / 1e10) : null, // میلیارد تومان
+        };
+      })
+      .filter((f) => f && f.faName)
+      .sort((a, b) => (b.assetB ?? 0) - (a.assetB ?? 0))
+      .slice(0, 40);
   } catch {
     return [];
   }

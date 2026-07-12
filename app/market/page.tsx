@@ -2,7 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MarketClient from "@/components/market/MarketClient";
+import FundsBoard from "@/components/market/FundsBoard";
 import { getMarketData } from "@/lib/market";
+import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +15,10 @@ export const metadata = {
 
 export default async function MarketPage() {
   const supabase = await createClient();
-  const [{ data: { user } }, market] = await Promise.all([
+  const [{ data: { user } }, market, ir] = await Promise.all([
     supabase.auth.getUser(),
     getMarketData(),
+    getIrMarket(),
   ]);
 
   let watchlist: string[] = [];
@@ -47,6 +50,11 @@ export default async function MarketPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
+        {ir && (
+          <div className="mx-auto w-full max-w-6xl px-5 pt-8">
+            <FundsBoard funds={ir.funds} />
+          </div>
+        )}
         <MarketClient
           crypto={market.crypto}
           sourceOk={market.ok}
