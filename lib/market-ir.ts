@@ -12,6 +12,8 @@ export interface IrRow {
   price: number;           // تومان، مگر unit چیز دیگری بگوید
   unit: "toman" | "usd";
   change?: number | null;  // درصد (روزانه/۲۴ساعته)
+  type?: string;           // دستهٔ فارسیِ صندوق (طلا/سهامی/اهرمی/…) — فقط برای funds
+  assetB?: number | null;  // خالص دارایی، میلیارد تومان — فقط برای funds (نقشهٔ بازار)
 }
 
 export interface IrMarket {
@@ -28,15 +30,25 @@ let cache: IrMarket | null = null;
 
 function asRows(v: unknown): IrRow[] {
   if (!Array.isArray(v)) return [];
-  return v.filter(
-    (r): r is IrRow =>
-      !!r &&
-      typeof r.id === "string" &&
-      typeof r.faName === "string" &&
-      typeof r.price === "number" &&
-      isFinite(r.price) &&
-      (r.unit === "toman" || r.unit === "usd")
-  );
+  return v
+    .filter(
+      (r): r is IrRow =>
+        !!r &&
+        typeof r.id === "string" &&
+        typeof r.faName === "string" &&
+        typeof r.price === "number" &&
+        isFinite(r.price) &&
+        (r.unit === "toman" || r.unit === "usd")
+    )
+    .map((r) => ({
+      id: r.id,
+      faName: r.faName,
+      price: r.price,
+      unit: r.unit,
+      change: typeof r.change === "number" && isFinite(r.change) ? r.change : null,
+      ...(typeof r.type === "string" ? { type: r.type } : {}),
+      ...(typeof r.assetB === "number" && isFinite(r.assetB) ? { assetB: r.assetB } : {}),
+    }));
 }
 
 /** دادهٔ بازار ایران از رله؛ بدون env یا در خطا → null (UI آن بخش را نشان نمی‌دهد). */
