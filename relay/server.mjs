@@ -5,11 +5,15 @@
 //
 // اجرا:  node server.mjs        (Node 18+ ، بدون هیچ وابستگی)
 // env:   PORT (پیش‌فرض 3400) · RELAY_TOKEN (اختیاری — اگر ست شود، هدر
-//        Authorization: Bearer <token> الزامی می‌شود)
+//        Authorization: Bearer <token> برای /market.json الزامی می‌شود)
 // خروجی: GET /market.json → { gold[], currency[], funds[], stocks[], fetchedAt }
 //        GET /healthz     → ok
+//        GET /debug       → وضعیتِ هر منبع + شمارِ ردیف‌ها + آخرین خطا (بدونِ سکرت)
 // هر ردیف: { id, faName, price, unit: "toman"|"usd", change }
 // اگر منبعی پاسخ ندهد، بخشِ مربوطه آرایهٔ خالی می‌ماند — هیچ عددِ ساختگی.
+//
+// کش در پس‌زمینه رفرش می‌شود (بوت + هر ۵ دقیقه)، پس /market.json همیشه فوری
+// جواب می‌دهد و درخواستِ سایت روی build کندِ منبع تایم‌اوت نمی‌شود.
 // ─────────────────────────────────────────────────────────────────────────────
 import http from "node:http";
 
@@ -25,6 +29,18 @@ const BROWSER_UA =
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
 
 let cache = null; // { body: string, at: number }
+
+// وضعیتِ تشخیصیِ هر منبع — برای /debug. هیچ سکرتی اینجا نیست (نه توکن، نه کلید).
+const status = {
+  lastRefresh: 0,
+  lastError: null,
+  sources: {
+    tgju: { ok: false, gold: 0, currency: 0, error: null },
+    fipiran: { ok: false, funds: 0, error: null },
+    brsapi: { enabled: false, ok: false, stocks: 0, error: null },
+  },
+};
+const errMsg = (e) => (e && e.name === "TimeoutError" ? "timeout" : e?.message ?? String(e));
 
 // ── tgju: طلا/سکه + ارزِ بازارِ آزاد ────────────────────────────────────────
 // ajax.json عمومیِ tgju؛ قیمت‌ها ریال‌اند (جز ons که دلاری است) → تبدیل به تومان.
@@ -61,13 +77,14 @@ function tgjuChange(item) {
 }
 
 async function fetchTgju() {
+  let lastErr = "no source responded";
   for (const url of TGJU_URLS) {
     try {
       const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
-      if (!res.ok) continue;
+      if (!res.ok) { lastErr = `HTTP ${res.status}`; continue; }
       const json = await res.json();
       const cur = json?.current;
-      if (!cur) continue;
+      if (!cur) { lastErr = "no `current` field (ساختارِ tgju عوض شده)"; continue; }
 
       const row = (key, faName, unit) => {
         const item = cur[key];
@@ -89,11 +106,13 @@ async function fetchTgju() {
         const t = row(tetherKey, "تتر (تومان)", "toman");
         if (t) currency.unshift(t);
       }
+      status.sources.tgju = { ok: gold.length + currency.length > 0, gold: gold.length, currency: currency.length, error: null };
       return { gold, currency };
-    } catch {
-      /* try next url */
+    } catch (e) {
+      lastErr = errMsg(e);
     }
   }
+  status.sources.tgju = { ok: false, gold: 0, currency: 0, error: lastErr };
   return { gold: [], currency: [] };
 }
 
@@ -123,10 +142,13 @@ async function fetchFunds() {
       headers: HDRS,
       signal: AbortSignal.timeout(15000),
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      status.sources.fipiran = { ok: false, funds: 0, error: `HTTP ${res.status}` };
+      return [];
+    }
     const json = await res.json();
     const items = Array.isArray(json?.items) ? json.items : Array.isArray(json) ? json : [];
-    return items
+    const funds = items
       .map((f) => {
         const nav = Number(f?.navPerUnit ?? f?.issueNav);
         const net = Number(f?.netAsset);
@@ -145,7 +167,10 @@ async function fetchFunds() {
       .filter((f) => f && f.faName)
       .sort((a, b) => (b.assetB ?? 0) - (a.assetB ?? 0))
       .slice(0, 40);
-  } catch {
+    status.sources.fipiran = { ok: funds.length > 0, funds: funds.length, error: funds.length ? null : "پاسخِ خالی/ساختارِ ناشناخته" };
+    return funds;
+  } catch (e) {
+    status.sources.fipiran = { ok: false, funds: 0, error: errMsg(e) };
     return [];
   }
 }
@@ -179,7 +204,11 @@ function pickStr(o, keys) {
 }
 
 async function fetchStocks() {
-  if (!BRSAPI_KEY || !BRSAPI_STOCKS_URL) return [];
+  status.sources.brsapi.enabled = Boolean(BRSAPI_KEY && BRSAPI_STOCKS_URL);
+  if (!status.sources.brsapi.enabled) {
+    status.sources.brsapi = { enabled: false, ok: false, stocks: 0, error: "BRSAPI_KEY/BRSAPI_STOCKS_URL ست نشده" };
+    return [];
+  }
   try {
     const sep = BRSAPI_STOCKS_URL.includes("?") ? "&" : "?";
     const res = await fetch(`${BRSAPI_STOCKS_URL}${sep}key=${encodeURIComponent(BRSAPI_KEY)}`, {
@@ -188,6 +217,7 @@ async function fetchStocks() {
     });
     if (!res.ok) {
       console.error(`brsapi stocks: HTTP ${res.status}`);
+      status.sources.brsapi = { enabled: true, ok: false, stocks: 0, error: `HTTP ${res.status}` };
       return [];
     }
     const json = await res.json();
@@ -196,7 +226,7 @@ async function fetchStocks() {
       : Array.isArray(json?.items) ? json.items
       : Array.isArray(json?.result) ? json.result
       : [];
-    return list.slice(0, STOCKS_MAX * 3).flatMap((s) => {
+    const stocks = list.slice(0, STOCKS_MAX * 3).flatMap((s) => {
       const name = pickStr(s, ["l18", "symbol", "namad", "name", "l30"]);
       const priceRial = pickNum(s, ["pl", "pc", "last", "close", "price", "p"]);
       if (!name || priceRial == null || priceRial <= 0) return [];
@@ -209,8 +239,11 @@ async function fetchStocks() {
         change: change,
       }];
     }).slice(0, STOCKS_MAX);
+    status.sources.brsapi = { enabled: true, ok: stocks.length > 0, stocks: stocks.length, error: stocks.length ? null : "پاسخِ خالی/ساختارِ ناشناخته" };
+    return stocks;
   } catch (e) {
     console.error("brsapi stocks error:", e?.message ?? e);
+    status.sources.brsapi = { enabled: true, ok: false, stocks: 0, error: errMsg(e) };
     return [];
   }
 }
@@ -226,6 +259,47 @@ async function buildPayload() {
   });
 }
 
+// رفرشِ کش در پس‌زمینه — هم‌زمان فقط یک‌بار اجرا می‌شود. خطاها کش را نمی‌ترکانند؛
+// کشِ قبلی سرِ جایش می‌ماند تا رفرشِ بعدی موفق شود.
+let refreshing = null;
+function refresh() {
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    try {
+      const body = await buildPayload();
+      cache = { body, at: Date.now() };
+      status.lastRefresh = Date.now();
+      status.lastError = null;
+    } catch (e) {
+      status.lastError = errMsg(e);
+      console.error("relay refresh error:", status.lastError);
+    } finally {
+      refreshing = null;
+    }
+  })();
+  return refreshing;
+}
+
+function debugPayload() {
+  let counts = null;
+  if (cache) {
+    try {
+      const p = JSON.parse(cache.body);
+      counts = { gold: p.gold.length, currency: p.currency.length, funds: p.funds.length, stocks: p.stocks.length };
+    } catch { /* ignore */ }
+  }
+  return JSON.stringify({
+    now: Date.now(),
+    warmedUp: Boolean(cache),
+    ageSec: cache ? Math.round((Date.now() - cache.at) / 1000) : null,
+    lastRefresh: status.lastRefresh,
+    lastError: status.lastError,
+    tokenRequired: Boolean(TOKEN),
+    counts,
+    sources: status.sources,
+  }, null, 2);
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -233,15 +307,27 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }
   if (url.pathname === "/healthz") { res.writeHead(200); return res.end("ok"); }
+  // ریشه: پاسخِ ۲۰۰ ساده تا health-checkِ پلتفرم (که معمولاً / را می‌زند) سبز بماند.
+  if (url.pathname === "/") {
+    res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+    return res.end("ir-market relay: /healthz | /market.json | /debug");
+  }
+  // /debug عمومی است اما هیچ سکرتی ندارد؛ فقط وضعیتِ منابع و شمارِ ردیف‌ها.
+  if (url.pathname === "/debug") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    return res.end(debugPayload());
+  }
   if (url.pathname !== "/market.json") { res.writeHead(404); return res.end("not found"); }
   if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
     res.writeHead(401); return res.end("unauthorized");
   }
 
   try {
-    if (!cache || Date.now() - cache.at > CACHE_MS) {
-      cache = { body: await buildPayload(), at: Date.now() };
-    }
+    // در حالتِ عادی کش گرم است (رفرشِ بوت/تایمر) و فوری جواب می‌دهد. فقط اگر
+    // هنوز هیچ داده‌ای نیست (اولین لحظاتِ بوت) یک رفرش را همین‌جا await می‌کنیم.
+    if (!cache) await refresh();
+    if (Date.now() - cache.at > CACHE_MS) refresh(); // کهنه شد → رفرشِ پس‌زمینه، بدونِ بلاک
+    if (!cache) { res.writeHead(503, { "Content-Type": "application/json; charset=utf-8" }); return res.end('{"error":"warming up"}'); }
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(cache.body);
   } catch (e) {
@@ -251,4 +337,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log(`ir-market relay on :${PORT}`));
+server.listen(PORT, () => {
+  console.log(`ir-market relay on :${PORT}`);
+  refresh(); // گرم‌کردنِ کش هنگامِ بوت تا اولین درخواستِ سایت فوری جواب بگیرد.
+  setInterval(refresh, CACHE_MS).unref(); // رفرشِ دوره‌ای در پس‌زمینه.
+});
