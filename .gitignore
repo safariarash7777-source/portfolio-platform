@@ -28,6 +28,7 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< HEAD
 
 # python (ui-ux-pro-max skill scripts)
 __pycache__/
@@ -36,3 +37,10 @@ __pycache__/
 # deploy artifacts
 deploy.bundle
 *.bundle
+=======
+
+# deploy artifacts
+deploy.bundle
+*.bundle
+.env.deploy
+>>>>>>> 4d2c68b (feat: secure deploy script — reads secrets from .env.deploy)
