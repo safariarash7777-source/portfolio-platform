@@ -291,6 +291,42 @@ async function pushToSupabase(body) {
   }
 }
 
+// ── تاریخچه (append-only) — هر ۳۰ دقیقه یک نمونه ─────────────────────────────
+const HISTORY_INTERVAL_MS = 30 * 60 * 1000;
+let lastHistoryPush = 0;
+
+async function pushHistory(body) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  if (Date.now() - lastHistoryPush < HISTORY_INTERVAL_MS) return;
+  const p = typeof body === "string" ? JSON.parse(body) : body;
+  const sections = ["gold", "currency", "funds", "stocks"];
+  const rows = sections
+    .filter((s) => Array.isArray(p[s]) && p[s].length > 0)
+    .map((s) => ({ section: s, payload: p[s] }));
+  if (rows.length === 0) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/ir_market_history`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(rows),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (res.ok) {
+      lastHistoryPush = Date.now();
+      console.log("history push ok:", rows.length, "sections");
+    } else {
+      console.error(`history push: HTTP ${res.status}`);
+    }
+  } catch (e) {
+    console.error("history push error:", errMsg(e));
+  }
+}
+
 // ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
 let refreshing = null;
 function refresh() {
@@ -302,6 +338,7 @@ function refresh() {
       status.lastRefresh = Date.now();
       status.lastError = null;
       await pushToSupabase(body);
+      await pushHistory(body);
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);

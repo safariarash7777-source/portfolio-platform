@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MarketClient from "@/components/market/MarketClient";
+import GoldCurrencyBoard from "@/components/market/GoldCurrencyBoard";
 import FundsBoard from "@/components/market/FundsBoard";
 import { getMarketData } from "@/lib/market";
 import { getIrMarket } from "@/lib/market-ir";
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "رصد بازار",
-  description: "قیمت لحظه‌ای بازار کریپتو، واچ‌لیست شخصی و هشدار قیمتی.",
+  description: "قیمت لحظه‌ای بازار کریپتو، طلا، ارز، صندوق‌ها و سهام.",
 };
 
 export default async function MarketPage() {
@@ -50,11 +51,23 @@ export default async function MarketPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        {ir && (
-          <div className="mx-auto w-full max-w-6xl px-5 pt-8">
+        <div className="mx-auto w-full max-w-6xl px-5 pt-8 space-y-8">
+          {/* طلا و ارز */}
+          {ir && (ir.gold.length > 0 || ir.currency.length > 0) && (
+            <GoldCurrencyBoard
+              gold={ir.gold}
+              currency={ir.currency}
+              fetchedAt={ir.fetchedAt}
+            />
+          )}
+
+          {/* صندوق‌ها (خلاصه) */}
+          {ir && ir.funds.length > 0 && (
             <FundsBoard funds={ir.funds} />
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* کریپتو + واچ‌لیست + هشدار */}
         <MarketClient
           crypto={market.crypto}
           sourceOk={market.ok}

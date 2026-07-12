@@ -244,10 +244,10 @@ export default function MarketClient({
         </section>
       )}
 
-      {/* Honest empty states for markets without a data source yet */}
+      {/* لینک به صفحات تخصصی بازار */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <EmptyMarket title="بورس تهران" note="اتصال منبع داده (Brsapi) هنوز پیکربندی نشده است." />
-        <EmptyMarket title="طلا و ارز" note="اتصال منبع داده (Brsapi) هنوز پیکربندی نشده است." />
+        <MarketLink href="/market/stocks" title="بورس تهران" note="شاخص‌ها، جدول نمادها و نقشهٔ بازار" />
+        <MarketLink href="/market/funds" title="صندوق‌های سرمایه‌گذاری" note="NAV، بازده روز، نقشهٔ بازار و فیلتر نوع" />
       </section>
 
       {/* Modals */}
@@ -440,16 +440,16 @@ function EmptyState({ msg }: { msg: string }) {
   );
 }
 
-function EmptyMarket({ title, note }: { title: string; note: string }) {
+function MarketLink({ href, title, note }: { href: string; title: string; note: string }) {
   return (
-    <div className="card p-6" style={{ opacity: 0.85 }}>
+    <Link href={href} className="card p-6 group transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-display font-bold text-base" style={{ color: "var(--navy-deep)" }}>{title}</h3>
-        <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: "var(--surface-2)", color: "var(--text-3)" }}>
-          به‌زودی
+        <span className="text-[11px] px-2 py-0.5 rounded-full transition-colors group-hover:bg-[var(--gold-tint)]" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
+          مشاهده ←
         </span>
       </div>
       <p className="text-xs leading-6" style={{ color: "var(--text-3)" }}>{note}</p>
-    </div>
+    </Link>
   );
 }
