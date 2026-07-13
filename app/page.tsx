@@ -4,6 +4,7 @@ import MarketTicker from "@/components/market/MarketTicker";
 import ProductFacts from "@/components/landing/ProductFacts";
 import ThreeSteps from "@/components/landing/ThreeSteps";
 import LiveMarket from "@/components/landing/LiveMarket";
+import InsightsPreview from "@/components/landing/InsightsPreview";
 import Capabilities from "@/components/landing/Capabilities";
 import WhyArash from "@/components/landing/WhyArash";
 import LandingFAQ from "@/components/landing/LandingFAQ";
@@ -21,6 +22,7 @@ export default function LandingPage() {
         <ProductFacts />
         <ThreeSteps />
         <LiveMarket />
+        <InsightsPreview />
         <Capabilities />
         <WhyArash />
         <LandingFAQ />

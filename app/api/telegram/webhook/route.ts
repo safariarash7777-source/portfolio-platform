@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
 import { markdownToPlain } from "@/lib/markdown";
 import { toPersianDigits } from "@/lib/format";
+import { detectPlatform, guessKind, firstUrl, PLATFORM_META } from "@/lib/content-hub";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +11,15 @@ export const dynamic = "force-dynamic";
 const MINI_APP_URL =
   process.env.NEXT_PUBLIC_MINIAPP_URL ||
   "https://arash-teleapp-7shs2egu.manus.space";
+
+// نامِ کاربریِ کانالِ عمومی (بدونِ @) که پست‌هایش خودکار در هابِ محتوا منتشر
+// می‌شود. از env؛ اگر تنظیم نشده باشد، کانالِ عمومیِ آرش. این *کانالِ عمومی* است،
+// نه کانالِ خصوصیِ پولی (TELEGRAM_CHANNEL_ID) — تا محتوای خصوصی عمومی نشود.
+const PUBLIC_CHANNEL_USERNAME = (
+  process.env.TELEGRAM_PUBLIC_CHANNEL_USERNAME || "arashsafariiiiiiii"
+)
+  .replace(/^@/, "")
+  .toLowerCase();
 
 // POST /api/telegram/webhook — وبهوکِ بات (نه polling). با هدرِ
 // X-Telegram-Bot-Api-Secret-Token اعتبارسنجی می‌شود. همیشه سریع ۲۰۰ برمی‌گرداند.
@@ -27,8 +37,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  // پستِ کانال (خودکار): هر پستِ کانالِ عمومی → درجِ خودکار در هابِ محتوا.
+  if (update.channel_post) {
+    try {
+      await handleChannelPost(update.channel_post);
+    } catch (e) {
+      console.error("channel_post error:", e instanceof Error ? e.message : "unknown");
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   const msg = update.message;
-  const text = msg?.text?.trim();
+  // متنِ پیام یا کپشنِ عکس/ویدیو (برای پیستِ لینک با رسانه).
+  const text = (msg?.text ?? msg?.caption)?.trim();
   const tgUserId = msg?.from?.id;
   const chatId = msg?.chat?.id;
   const firstName = msg?.from?.first_name ?? "";
@@ -99,6 +120,9 @@ async function handle(text: string, tgUserId: number, chatId: number, firstName:
     }
     return;
   }
+
+  // لینکِ شبکهٔ اجتماعی از سمتِ ادمین؟ → افزودنِ خودکار به هابِ محتوا.
+  if (await tryIngestContent(admin, text, tgUserId, chatId)) return;
 
   // پیام ناشناخته → راهنمایی + دکمه مینی‌اپ
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -236,6 +260,131 @@ async function handleAnnouncements(
   await sendMessage(chatId, blocks.join("\n\n———\n\n"));
 }
 
+/**
+ * افزودنِ خودکارِ محتوا از راهِ بات: اگر پیام حاویِ لینکِ تلگرام/اینستاگرام/
+ * توییتر باشد و فرستنده «ادمین» باشد، آن را در هابِ محتوا درج می‌کند. اولین خطِ
+ * متن (به‌جز لینک) = عنوان، بقیه = توضیح. با سرویس‌رول درج می‌شود (RLS دور زده
+ * می‌شود؛ نگهبانِ ادمین اینجا سمتِ کد است). true = پیام رسیدگی شد.
+ */
+async function tryIngestContent(
+  admin: ReturnType<typeof createAdminClient>,
+  text: string,
+  tgUserId: number,
+  chatId: number
+): Promise<boolean> {
+  const url = firstUrl(text);
+  if (!url) return false;
+  const platform = detectPlatform(url);
+  if (!platform) return false; // لینک هست ولی شبکهٔ شناخته‌شده نیست → رسیدگی نشد
+
+  // نگهبانِ ادمین: تلگرامِ فرستنده باید به یک حسابِ admin وصل باشد.
+  const { data: link } = await admin
+    .from("telegram_links")
+    .select("user_id")
+    .eq("telegram_user_id", tgUserId)
+    .maybeSingle();
+  if (!link) {
+    await sendMessage(
+      chatId,
+      "برای افزودن محتوا به سایت، ابتدا باید حسابِ تلگرامتان به حسابِ مدیر وصل باشد (کدِ ۶رقمیِ داشبورد)."
+    );
+    return true;
+  }
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("id", link.user_id)
+    .maybeSingle();
+  if (profile?.role !== "admin") {
+    await sendMessage(chatId, "فقط مدیر می‌تواند محتوا به سایت اضافه کند.");
+    return true;
+  }
+
+  // عنوان/توضیح از متنِ پیام منهای لینک.
+  const rest = text.replace(url, "").trim();
+  const lines = rest.split("\n").map((s) => s.trim()).filter(Boolean);
+  const title = lines[0] ?? null;
+  const description = lines.slice(1).join("\n") || null;
+
+  const { data: inserted, error } = await admin
+    .from("content_hub")
+    .insert({
+      platform,
+      kind: guessKind(url),
+      content_url: url,
+      title,
+      description,
+      created_by: link.user_id,
+    })
+    .select("id")
+    .single();
+
+  if (error || !inserted) {
+    console.error("content_hub insert error:", error?.message);
+    await sendMessage(chatId, "خطا در افزودنِ محتوا. کمی بعد دوباره امتحان کنید.");
+    return true;
+  }
+
+  await admin.from("audit_log").insert({
+    actor_id: link.user_id,
+    action: "content.add",
+    entity: "content_hub",
+    after: { id: inserted.id, platform, url, source: "telegram" },
+  });
+
+  await sendMessage(
+    chatId,
+    `✅ به هابِ محتوا اضافه شد (${PLATFORM_META[platform].label}).\nدر صفحهٔ «آخرین تحلیل‌ها» نمایش داده می‌شود.`
+  );
+  return true;
+}
+
+/**
+ * درجِ خودکارِ پستِ کانالِ عمومی در هابِ محتوا. فقط پست‌های همان کانالِ عمومیِ
+ * تعیین‌شده (PUBLIC_CHANNEL_USERNAME) پذیرفته می‌شوند تا محتوای کانالِ خصوصیِ
+ * پولی عمومی نشود. تکراری (بر اساسِ لینک) دوباره درج نمی‌شود.
+ */
+async function handleChannelPost(post: ChannelPost): Promise<void> {
+  const username = post.chat?.username?.toLowerCase();
+  if (!username || username !== PUBLIC_CHANNEL_USERNAME) return; // فقط کانالِ عمومیِ مشخص
+  if (!post.message_id) return;
+
+  const url = `https://t.me/${post.chat!.username}/${post.message_id}`;
+  const admin = createAdminClient();
+
+  // جلوگیری از تکرار (وبهوک ممکن است دوباره ارسال شود).
+  const { data: existing } = await admin
+    .from("content_hub")
+    .select("id")
+    .eq("content_url", url)
+    .maybeSingle();
+  if (existing) return;
+
+  const body = (post.text ?? post.caption ?? "").trim();
+  const lines = body.split("\n").map((s) => s.trim()).filter(Boolean);
+  const title = lines[0] ?? null;
+  const description = lines.slice(1).join("\n") || null;
+  const kind = post.video ? "video" : "post";
+
+  const { data: inserted, error } = await admin
+    .from("content_hub")
+    .insert({ platform: "telegram", kind, content_url: url, title, description })
+    .select("id")
+    .single();
+
+  if (error || !inserted) {
+    console.error("content_hub channel insert error:", error?.message);
+    return;
+  }
+
+  await admin.from("audit_log").insert({
+    actor_id: null,
+    action: "content.add",
+    entity: "content_hub",
+    after: { id: inserted.id, platform: "telegram", url, source: "channel_post" },
+  });
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -271,10 +420,20 @@ function formatPortfolio(v: VersionRow): string {
 }
 
 // ── Minimal Telegram update typings ──────────────────────────────────────
+interface ChannelPost {
+  message_id?: number;
+  text?: string;
+  caption?: string;
+  video?: unknown;
+  chat?: { id?: number; username?: string; type?: string };
+}
+
 interface TelegramUpdate {
   message?: {
     text?: string;
+    caption?: string;
     from?: { id?: number; first_name?: string };
     chat?: { id?: number };
   };
+  channel_post?: ChannelPost;
 }

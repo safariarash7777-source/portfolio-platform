@@ -43,7 +43,8 @@ async function main() {
     body: JSON.stringify({
       url: WEBHOOK_URL,
       secret_token: SECRET,
-      allowed_updates: ["message"],
+      // channel_post برای درجِ خودکارِ پستِ کانالِ عمومی در هابِ محتوا لازم است.
+      allowed_updates: ["message", "channel_post"],
       drop_pending_updates: true,
     }),
   });
