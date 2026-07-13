@@ -1,6 +1,4 @@
-import "server-only";
-
-// دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام).
+// دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
 //
 // معماری (چرا این‌طوری): منابعِ ایرانی به IPِ خارجی ۴۰۳ می‌دهند، پس یک «رلهٔ
 // داخل ایران» (پوشهٔ relay/) داده را می‌کشد. اما به‌خاطرِ قطعیِ اینترنتِ بین‌الملل،
@@ -10,7 +8,7 @@ import "server-only";
 // اتصالِ لحظه‌ایِ ایران↔خارج وابسته نیست و همیشه آخرین اسنپ‌شاتِ موفق را نشان می‌دهد.
 //
 // منبعِ اول: اسنپ‌شاتِ Supabase (جدولِ ir_market_snapshots، key='latest').
-// منبعِ دوم (فقط اگر Supabase تنظیم/پر نباشد): fetchِ زندهٔ رله (کارِ قدیمی؛ وقتی
+// منبعِ دوم (فقط اگر Supabase نبود/خالی بود): fetchِ زندهٔ رله (کارِ قدیمی؛ وقتی
 // لینک بالا باشد). بدونِ هیچ‌کدام → null و UI آن بخش را نشان نمی‌دهد (هیچ عددِ ساختگی).
 //
 // عیب‌یابی: هر تلاش در lastDiag ثبت می‌شود (بدونِ سکرت). با /api/market?diag=1 ببین.
@@ -20,16 +18,63 @@ export interface IrRow {
   faName: string;
   price: number;           // تومان، مگر unit چیز دیگری بگوید
   unit: "toman" | "usd";
-  change?: number | null;  // درصد (روزانه/۲۴ساعته)
+  change?: number | null;  // مقدار تغییر (تومان/دلار)
+  changePercent?: number | null; // درصد تغییر
   type?: string;           // دستهٔ فارسیِ صندوق (طلا/سهامی/اهرمی/…) — فقط برای funds
-  assetB?: number | null;  // خالص دارایی، میلیارد تومان — فقط برای funds (نقشهٔ بازار)
+  assetB?: number | null;  // خالص دارایی، میلیارد تومان — فقط برای funds
+}
+
+/** ردیفِ غنی‌شدهٔ سهام/صندوق — شامل اطلاعات معاملاتی */
+export interface IrStockRow extends IrRow {
+  closingPrice?: number;
+  closingChangePercent?: number | null;
+  volume?: number;
+  value?: number;
+  marketValue?: number | null;
+  industry?: string | null;
+  industryId?: number | null;
+  eps?: number | null;
+  pe?: number | null;
+  buyI?: number;
+  buyN?: number;
+  sellI?: number;
+  sellN?: number;
+}
+
+/** ردیفِ کریپتو (از BrsApi) */
+export interface IrCryptoRow {
+  id: string;
+  faName: string;
+  nameEn?: string;
+  price: number;
+  unit: "usd";
+  changePercent?: number | null;
+  marketCap?: number | null;
+  description?: string | null;
+}
+
+/** شاخص بورس */
+export interface IrIndices {
+  total: number;
+  totalChange: number;
+  equalWeight: number;
+  equalWeightChange: number;
+  marketValue: number;
+  trades: number;
+  volume: number;
+  value: number;
+  state: string | null;
+  date: string | null;
+  time: string | null;
 }
 
 export interface IrMarket {
   gold: IrRow[];
   currency: IrRow[];
-  funds: IrRow[];
-  stocks: IrRow[];
+  funds: IrStockRow[];
+  stocks: IrStockRow[];
+  crypto: IrCryptoRow[];
+  indices: IrIndices | null;
   fetchedAt: number;
   ok: boolean;
 }
@@ -37,23 +82,23 @@ export interface IrMarket {
 // خلاصهٔ تشخیصیِ آخرین تلاش — امن برای نمایشِ عمومی (هیچ توکن/کلیدی).
 export interface IrDiag {
   at: number;
-  source: "supabase" | "relay" | null; // کدام منبع داده داد
-  supabaseConfigured: boolean;          // NEXT_PUBLIC_SUPABASE_URL/ANON_KEY ست؟
-  relayUrlConfigured: boolean;          // IR_MARKET_RELAY_URL ست؟
-  reached: boolean;                     // پاسخِ HTTP از منبع گرفتیم؟
-  status: number | null;                // کدِ HTTPِ منبع
-  ok: boolean;                          // دادهٔ قابل‌استفاده گرفتیم؟
-  fromCache: boolean;                   // کشِ درون‌حافظه‌ایِ سایت
-  ageSec: number | null;                // سنِ اسنپ‌شات از لحظهٔ کشیده‌شدن در رله
-  counts: { gold: number; currency: number; funds: number; stocks: number } | null;
-  error: string | null;                 // نوعِ خطا (بدونِ سکرت)
+  source: "supabase" | "relay" | null;
+  supabaseConfigured: boolean;
+  relayUrlConfigured: boolean;
+  reached: boolean;
+  status: number | null;
+  ok: boolean;
+  fromCache: boolean;
+  ageSec: number | null;
+  counts: { gold: number; currency: number; funds: number; stocks: number; crypto: number } | null;
+  error: string | null;
   ms: number;
 }
 
 const CACHE_MS = 60 * 1000; // کشِ کوتاهِ سایت؛ رله هر ~۵دقیقه به Supabase می‌نویسد.
 const READ_TIMEOUT_MS = 8000;
 let cache: IrMarket | null = null;
-let cacheAt = 0;                                    // مهرِ کشِ سایت (جدا از cache.fetchedAt که زمانِ رله است)
+let cacheAt = 0;
 let cacheSource: "supabase" | "relay" | null = null;
 let lastDiag: IrDiag | null = null;
 
@@ -63,7 +108,13 @@ export function getLastIrDiag(): IrDiag | null {
 }
 
 function countsOf(m: IrMarket): NonNullable<IrDiag["counts"]> {
-  return { gold: m.gold.length, currency: m.currency.length, funds: m.funds.length, stocks: m.stocks.length };
+  return {
+    gold: m.gold.length,
+    currency: m.currency.length,
+    funds: m.funds.length,
+    stocks: m.stocks.length,
+    crypto: m.crypto.length,
+  };
 }
 
 function asRows(v: unknown): IrRow[] {
@@ -84,9 +135,88 @@ function asRows(v: unknown): IrRow[] {
       price: r.price,
       unit: r.unit,
       change: typeof r.change === "number" && isFinite(r.change) ? r.change : null,
+      changePercent: typeof r.changePercent === "number" && isFinite(r.changePercent) ? r.changePercent : null,
       ...(typeof r.type === "string" ? { type: r.type } : {}),
       ...(typeof r.assetB === "number" && isFinite(r.assetB) ? { assetB: r.assetB } : {}),
     }));
+}
+
+function asStockRows(v: unknown): IrStockRow[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter(
+      (r): r is IrStockRow =>
+        !!r &&
+        typeof r.id === "string" &&
+        typeof r.faName === "string" &&
+        typeof r.price === "number" &&
+        isFinite(r.price)
+    )
+    .map((r) => ({
+      id: r.id,
+      faName: r.faName,
+      price: r.price,
+      unit: (r.unit === "usd" ? "usd" : "toman") as "toman" | "usd",
+      change: typeof r.change === "number" && isFinite(r.change) ? r.change : null,
+      changePercent: typeof r.changePercent === "number" && isFinite(r.changePercent) ? r.changePercent : null,
+      closingPrice: typeof r.closingPrice === "number" ? r.closingPrice : undefined,
+      closingChangePercent: typeof r.closingChangePercent === "number" ? r.closingChangePercent : null,
+      volume: typeof r.volume === "number" ? r.volume : 0,
+      value: typeof r.value === "number" ? r.value : 0,
+      marketValue: typeof r.marketValue === "number" ? r.marketValue : null,
+      industry: typeof r.industry === "string" ? r.industry : null,
+      industryId: typeof r.industryId === "number" ? r.industryId : null,
+      eps: typeof r.eps === "number" ? r.eps : null,
+      pe: typeof r.pe === "number" ? r.pe : null,
+      buyI: typeof r.buyI === "number" ? r.buyI : 0,
+      buyN: typeof r.buyN === "number" ? r.buyN : 0,
+      sellI: typeof r.sellI === "number" ? r.sellI : 0,
+      sellN: typeof r.sellN === "number" ? r.sellN : 0,
+    }));
+}
+
+function asCryptoRows(v: unknown): IrCryptoRow[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter(
+      (r): r is IrCryptoRow =>
+        !!r &&
+        typeof r.id === "string" &&
+        typeof r.faName === "string" &&
+        typeof r.price === "number" &&
+        isFinite(r.price) &&
+        r.price > 0
+    )
+    .map((r) => ({
+      id: r.id,
+      faName: r.faName,
+      nameEn: typeof r.nameEn === "string" ? r.nameEn : undefined,
+      price: r.price,
+      unit: "usd" as const,
+      changePercent: typeof r.changePercent === "number" && isFinite(r.changePercent) ? r.changePercent : null,
+      marketCap: typeof r.marketCap === "number" ? r.marketCap : null,
+      description: typeof r.description === "string" ? r.description : null,
+    }));
+}
+
+function asIndices(v: unknown): IrIndices | null {
+  if (!v || typeof v !== "object") return null;
+  const d = v as Record<string, unknown>;
+  const total = Number(d.total);
+  if (!isFinite(total) || total <= 0) return null;
+  return {
+    total,
+    totalChange: Number(d.totalChange) || 0,
+    equalWeight: Number(d.equalWeight) || 0,
+    equalWeightChange: Number(d.equalWeightChange) || 0,
+    marketValue: Number(d.marketValue) || 0,
+    trades: Number(d.trades) || 0,
+    volume: Number(d.volume) || 0,
+    value: Number(d.value) || 0,
+    state: typeof d.state === "string" ? d.state : null,
+    date: typeof d.date === "string" ? d.date : null,
+    time: typeof d.time === "string" ? d.time : null,
+  };
 }
 
 /** payload خام (از Supabase یا رله) → IrMarket با اعتبارسنجیِ سخت‌گیرانه. */
@@ -96,8 +226,10 @@ function toMarket(payload: unknown): IrMarket {
   const data: IrMarket = {
     gold: asRows(p.gold),
     currency: asRows(p.currency),
-    funds: asRows(p.funds),
-    stocks: asRows(p.stocks),
+    funds: asStockRows(p.funds),
+    stocks: asStockRows(p.stocks),
+    crypto: asCryptoRows(p.crypto),
+    indices: asIndices(p.indices),
     fetchedAt: Number.isFinite(fetchedAt) ? fetchedAt : Date.now(),
     ok: false,
   };
@@ -124,7 +256,7 @@ async function readSupabase(diag: IrDiag): Promise<IrMarket | null> {
   if (!res.ok) return null;
   const rows = (await res.json()) as Array<{ payload?: unknown }>;
   const payload = Array.isArray(rows) && rows[0] ? rows[0].payload : null;
-  if (!payload) return null; // هنوز رله چیزی ننوشته
+  if (!payload) return null;
   const data = toMarket(payload);
   return data.ok ? data : null;
 }
@@ -172,7 +304,6 @@ export async function getIrMarket(): Promise<IrMarket | null> {
     lastDiag = diag;
     return value;
   };
-
   if (cache && cacheAt && Date.now() - cacheAt < CACHE_MS) {
     diag.source = cacheSource;
     diag.fromCache = true;
@@ -180,7 +311,6 @@ export async function getIrMarket(): Promise<IrMarket | null> {
     diag.counts = countsOf(cache);
     return finish(cache);
   }
-
   // منبعِ اول: Supabase
   try {
     const fromSupabase = await readSupabase(diag);
@@ -196,7 +326,6 @@ export async function getIrMarket(): Promise<IrMarket | null> {
   } catch (e) {
     diag.error = e instanceof Error ? e.name || e.message : String(e);
   }
-
   // منبعِ دوم: رلهٔ زنده (وقتی لینکِ بین‌الملل بالا باشد)
   try {
     const fromRelay = await readRelay(diag);
@@ -212,7 +341,6 @@ export async function getIrMarket(): Promise<IrMarket | null> {
   } catch (e) {
     if (!diag.error) diag.error = e instanceof Error ? e.name || e.message : String(e);
   }
-
   // هیچ منبعی نداد → کشِ کهنه بهتر از هیچ؛ اگر کش هم نبود، null.
   if (cache) {
     diag.source = cacheSource;

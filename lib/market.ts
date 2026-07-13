@@ -24,17 +24,12 @@ export interface MarketData {
   ok: boolean; // false → منبع پاسخ نداد؛ UI حالتِ خالی نشان می‌دهد
 }
 
-// نمادهای کریپتوی رصدشده (id از CoinGecko).
+// نمادهای کریپتوی رصدشده (id از CoinGecko) — فقط ۳ نماد اصلی.
+// بقیه از BrsApi (relay) می‌آید و در ir.crypto قرار می‌گیرد.
 const CRYPTO: { id: string; faName: string }[] = [
   { id: "bitcoin", faName: "بیت‌کوین" },
   { id: "ethereum", faName: "اتریوم" },
-  { id: "binancecoin", faName: "بایننس‌کوین" },
   { id: "solana", faName: "سولانا" },
-  { id: "ripple", faName: "ریپل" },
-  { id: "cardano", faName: "کاردانو" },
-  { id: "dogecoin", faName: "دوج‌کوین" },
-  { id: "tron", faName: "ترون" },
-  { id: "the-open-network", faName: "تون" },
 ];
 // طلای جهانی از توکنِ طلا-پشتوانهٔ PAXG (هر توکن = یک انسِ طلای واقعی؛ قیمتِ
 // واقعیِ بازار، منبعِ جهانیِ در دسترس از سرورهای خارج). برچسبِ UI صریح است.
