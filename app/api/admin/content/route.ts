@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isPlatform, isKind, detectPlatform } from "@/lib/content-hub";
+import { runTelegramFeedSync } from "@/lib/telegram-sync";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +67,24 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ id });
+}
+
+// PUT /api/admin/content — همگام‌سازیِ دستیِ هابِ محتوا با فیدِ عمومیِ تلگرام.
+// ادمین اینجا احراز می‌شود؛ سپس منطقِ مشترک (سرویس‌رول) اجرا می‌شود. نتیجه به
+// کاربر برمی‌گردد تا خودتشخیص باشد (چند پست پیدا/اضافه شد یا خطا).
+export async function PUT(req: NextRequest) {
+  const { error } = await requireAdmin(req);
+  if (error) return error;
+
+  const result = await runTelegramFeedSync();
+  if (!result.ok) {
+    const reason =
+      result.reason === "feed_unreachable" || result.reason === "fetch_failed"
+        ? "فیدِ عمومیِ کانال خوانده نشد. مطمئن شوید کانال عمومی است و نمایشِ عمومی‌اش فعال است."
+        : "خطا در ذخیرهٔ پست‌ها.";
+    return NextResponse.json({ ...result, error: reason }, { status: 502 });
+  }
+  return NextResponse.json(result);
 }
 
 export async function PATCH(req: NextRequest) {
