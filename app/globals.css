@@ -39,6 +39,18 @@
   --danger:      #B91C1C;
   --info:        var(--navy);
 
+  /* ─── Social platform accents (توکنِ متمرکزِ برندِ شبکه‌ها) ──
+     فقط برای آیکون/هالهٔ ظریفِ کارت‌های هابِ محتوا؛ بدنهٔ کارت هم‌چنان
+     با توکن‌های برند. tint‌ها نیمه‌شفاف‌اند تا روی هر دو تم بنشینند. */
+  --brand-telegram:       #229ED9;
+  --brand-telegram-tint:  rgba(34,158,217,0.10);
+  --brand-instagram-a:    #F58529;
+  --brand-instagram-b:    #DD2A7B;
+  --brand-instagram-c:    #8134AF;
+  --brand-instagram-tint: rgba(221,42,123,0.09);
+  --brand-x:              #0F1419;
+  --brand-x-tint:         rgba(15,20,25,0.07);
+
   /* ─── Elevation (institutional, not glow) ───────────────── */
   --shadow-sm:   0 1px 2px 0 rgba(15,23,42,0.05);
   --shadow:      0 4px 12px -2px rgba(15,23,42,0.08), 0 2px 4px -1px rgba(15,23,42,0.04);
@@ -72,6 +84,10 @@
   --shadow-sm:   0 1px 2px 0 rgba(0,0,0,0.4);
   --shadow:      0 6px 16px -4px rgba(0,0,0,0.5), 0 2px 4px -1px rgba(0,0,0,0.3);
   --shadow-lg:   0 16px 36px -10px rgba(0,0,0,0.6);
+
+  /* X روی تمِ تیره باید روشن دیده شود */
+  --brand-x:              #E7E9EA;
+  --brand-x-tint:         rgba(231,233,234,0.10);
 }
 
 /* ─── Reset & base ──────────────────────────────────────────── */
