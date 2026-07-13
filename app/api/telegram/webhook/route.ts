@@ -12,6 +12,15 @@ const MINI_APP_URL =
   process.env.NEXT_PUBLIC_MINIAPP_URL ||
   "https://arash-teleapp-7shs2egu.manus.space";
 
+// نامِ کاربریِ کانالِ عمومی (بدونِ @) که پست‌هایش خودکار در هابِ محتوا منتشر
+// می‌شود. از env؛ اگر تنظیم نشده باشد، کانالِ عمومیِ آرش. این *کانالِ عمومی* است،
+// نه کانالِ خصوصیِ پولی (TELEGRAM_CHANNEL_ID) — تا محتوای خصوصی عمومی نشود.
+const PUBLIC_CHANNEL_USERNAME = (
+  process.env.TELEGRAM_PUBLIC_CHANNEL_USERNAME || "arashsafariiiiiiii"
+)
+  .replace(/^@/, "")
+  .toLowerCase();
+
 // POST /api/telegram/webhook — وبهوکِ بات (نه polling). با هدرِ
 // X-Telegram-Bot-Api-Secret-Token اعتبارسنجی می‌شود. همیشه سریع ۲۰۰ برمی‌گرداند.
 export async function POST(req: NextRequest) {
@@ -25,6 +34,16 @@ export async function POST(req: NextRequest) {
   try {
     update = (await req.json()) as TelegramUpdate;
   } catch {
+    return NextResponse.json({ ok: true });
+  }
+
+  // پستِ کانال (خودکار): هر پستِ کانالِ عمومی → درجِ خودکار در هابِ محتوا.
+  if (update.channel_post) {
+    try {
+      await handleChannelPost(update.channel_post);
+    } catch (e) {
+      console.error("channel_post error:", e instanceof Error ? e.message : "unknown");
+    }
     return NextResponse.json({ ok: true });
   }
 
@@ -320,6 +339,52 @@ async function tryIngestContent(
   return true;
 }
 
+/**
+ * درجِ خودکارِ پستِ کانالِ عمومی در هابِ محتوا. فقط پست‌های همان کانالِ عمومیِ
+ * تعیین‌شده (PUBLIC_CHANNEL_USERNAME) پذیرفته می‌شوند تا محتوای کانالِ خصوصیِ
+ * پولی عمومی نشود. تکراری (بر اساسِ لینک) دوباره درج نمی‌شود.
+ */
+async function handleChannelPost(post: ChannelPost): Promise<void> {
+  const username = post.chat?.username?.toLowerCase();
+  if (!username || username !== PUBLIC_CHANNEL_USERNAME) return; // فقط کانالِ عمومیِ مشخص
+  if (!post.message_id) return;
+
+  const url = `https://t.me/${post.chat!.username}/${post.message_id}`;
+  const admin = createAdminClient();
+
+  // جلوگیری از تکرار (وبهوک ممکن است دوباره ارسال شود).
+  const { data: existing } = await admin
+    .from("content_hub")
+    .select("id")
+    .eq("content_url", url)
+    .maybeSingle();
+  if (existing) return;
+
+  const body = (post.text ?? post.caption ?? "").trim();
+  const lines = body.split("\n").map((s) => s.trim()).filter(Boolean);
+  const title = lines[0] ?? null;
+  const description = lines.slice(1).join("\n") || null;
+  const kind = post.video ? "video" : "post";
+
+  const { data: inserted, error } = await admin
+    .from("content_hub")
+    .insert({ platform: "telegram", kind, content_url: url, title, description })
+    .select("id")
+    .single();
+
+  if (error || !inserted) {
+    console.error("content_hub channel insert error:", error?.message);
+    return;
+  }
+
+  await admin.from("audit_log").insert({
+    actor_id: null,
+    action: "content.add",
+    entity: "content_hub",
+    after: { id: inserted.id, platform: "telegram", url, source: "channel_post" },
+  });
+}
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -355,6 +420,14 @@ function formatPortfolio(v: VersionRow): string {
 }
 
 // ── Minimal Telegram update typings ──────────────────────────────────────
+interface ChannelPost {
+  message_id?: number;
+  text?: string;
+  caption?: string;
+  video?: unknown;
+  chat?: { id?: number; username?: string; type?: string };
+}
+
 interface TelegramUpdate {
   message?: {
     text?: string;
@@ -362,4 +435,5 @@ interface TelegramUpdate {
     from?: { id?: number; first_name?: string };
     chat?: { id?: number };
   };
+  channel_post?: ChannelPost;
 }
