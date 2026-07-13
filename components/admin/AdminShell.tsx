@@ -11,6 +11,7 @@ import {
   Mail,
   LineChart,
   Bell,
+  NotebookPen,
   Video,
   LogOut,
   Menu,
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
   { key: "payments", label: "پرداخت‌ها", href: "/admin/manage?tab=payments", icon: <CreditCard size={18} /> },
   { key: "waitlist", label: "لیست انتظار", href: "/admin/manage?tab=waitlist", icon: <Mail size={18} /> },
   { key: "news", label: "اطلاعیه‌ها", href: "/admin/announcements", icon: <Bell size={18} /> },
+  { key: "notes", label: "یادداشت بازار", href: "/admin/notes", icon: <NotebookPen size={18} /> },
   { key: "webinars", label: "وبینارها", href: "/admin/webinars", icon: <Video size={18} /> },
   { key: "market", label: "رصد بازار", icon: <LineChart size={18} />, soon: true },
 ];
@@ -56,6 +58,7 @@ export default function AdminShell({
     if (item.key === "dashboard") return pathname === "/admin";
     if (item.key === "users") return pathname.startsWith("/admin/users");
     if (item.key === "news") return pathname.startsWith("/admin/announcements");
+    if (item.key === "notes") return pathname.startsWith("/admin/notes");
     if (item.key === "webinars") return pathname.startsWith("/admin/webinars");
     if (pathname.startsWith("/admin/manage")) {
       if (item.key === "portfolio") return tab === "portfolio";
