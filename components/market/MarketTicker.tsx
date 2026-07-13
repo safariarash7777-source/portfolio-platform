@@ -6,7 +6,7 @@ import {
 } from "@/lib/format";
 
 interface GlobalRow { id: string; faName: string; price: number; change24h: number | null }
-interface IrRow { id: string; faName: string; price: number; unit: "toman" | "usd"; change?: number | null }
+interface IrRow { id: string; faName: string; price: number; unit: "toman" | "usd"; change?: number | null; changePercent?: number | null }
 interface Item { id: string; faName: string; priceText: string; change: number | null }
 
 const REFRESH_MS = 5 * 60 * 1000; // هم‌گام با کشِ سرور
@@ -33,7 +33,7 @@ export default function MarketTicker() {
           id: r.id,
           faName: r.faName,
           priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
-          change: r.change ?? null,
+          change: r.changePercent ?? null, // درصد (نه مقدارِ مطلقِ تومان)
         }));
         const globalItems: Item[] = [...(json?.goldGlobal ?? []), ...(json?.crypto ?? [])].map(
           (r: GlobalRow) => ({

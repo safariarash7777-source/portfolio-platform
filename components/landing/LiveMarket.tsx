@@ -21,6 +21,7 @@ interface IrRow {
   price: number;
   unit: "toman" | "usd";
   change?: number | null;
+  changePercent?: number | null;
 }
 interface MarketPayload {
   crypto: GlobalRow[];
@@ -54,7 +55,7 @@ const toDisplay = {
   ir: (r: IrRow): DisplayRow => ({
     id: r.id, faName: r.faName,
     priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
-    change: r.change ?? null,
+    change: r.changePercent ?? null, // درصد (نه مقدارِ مطلقِ تومان)
   }),
 };
 
