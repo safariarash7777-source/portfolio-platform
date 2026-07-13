@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Sparkles, Send, Instagram, Twitter, Link2, CheckCircle2, AlertCircle, EyeOff, ExternalLink,
+  Sparkles, Send, Instagram, Twitter, Link2, CheckCircle2, AlertCircle, EyeOff, ExternalLink, RefreshCw,
 } from "lucide-react";
 import { formatJalali } from "@/lib/format";
 import {
@@ -39,6 +39,33 @@ export default function ContentHubManager({ items }: { items: Row[] }) {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [hiding, setHiding] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const [syncErr, setSyncErr] = useState("");
+
+  // همگام‌سازیِ دستی: همهٔ پست‌های کانالِ عمومیِ تلگرام را یک‌جا می‌آورد.
+  const sync = async () => {
+    setSyncErr("");
+    setSyncMsg(null);
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/admin/content", { method: "PUT" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "همگام‌سازی ناموفق بود.");
+      setSyncMsg(
+        json.inserted > 0
+          ? `${json.inserted} پستِ جدید از تلگرام اضافه شد (از ${json.found} پستِ کانال).`
+          : json.found > 0
+            ? `همه‌چیز به‌روز است — ${json.found} پستِ کانال از قبل موجود بود.`
+            : "پستی در فیدِ عمومیِ کانال پیدا نشد."
+      );
+      router.refresh();
+    } catch (e) {
+      setSyncErr(e instanceof Error ? e.message : "همگام‌سازی ناموفق بود.");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // با پیست‌شدنِ لینک، شبکه و نوع را خودکار حدس بزن (کاربر می‌تواند تغییر دهد).
   const onUrlChange = (v: string) => {
@@ -112,10 +139,39 @@ export default function ContentHubManager({ items }: { items: Row[] }) {
           هابِ محتوا
         </h1>
         <p className="text-sm mt-2 leading-7" style={{ color: "var(--text-2)" }}>
-          لینکِ تحلیل/ویدیو/پستِ خود را اضافه کنید تا در صفحهٔ عمومی <span dir="ltr">/insights</span> نمایش
-          داده شود. راهِ سریع‌تر: همان لینک را در تلگرام برای بات بفرستید — خودکار اضافه می‌شود.
+          پست‌های کانالِ عمومیِ تلگرام خودکار این‌جا می‌آیند (هر ۶ ساعت). برای آوردنِ فوریِ همهٔ
+          پست‌ها، دکمهٔ «همگام‌سازی با تلگرام» را بزنید. لینکِ اینستاگرام/توییتر را هم می‌توانید دستی
+          اضافه کنید یا در تلگرام برای بات بفرستید.
         </p>
       </header>
+
+      {/* همگام‌سازیِ تلگرام */}
+      <div className="card-elevated p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Send size={18} style={{ color: "var(--brand-telegram)" }} />
+          <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
+            همگام‌سازی با کانالِ تلگرام
+          </h3>
+        </div>
+        <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>
+          همهٔ پست‌های کانالِ عمومی (قدیمی و جدید) را از فیدِ عمومیِ تلگرام می‌خواند و به صفحهٔ
+          «آخرین تحلیل‌ها» اضافه می‌کند — که برای هر بازدیدکننده‌ای نمایش داده می‌شود.
+        </p>
+        {syncErr && (
+          <p className="flex items-center gap-1.5 text-sm font-bold" style={{ color: "var(--danger)" }}>
+            <AlertCircle size={15} /> {syncErr}
+          </p>
+        )}
+        {syncMsg && (
+          <p className="flex items-center gap-1.5 text-sm font-bold" style={{ color: "var(--success)" }}>
+            <CheckCircle2 size={15} /> {syncMsg}
+          </p>
+        )}
+        <button type="button" onClick={sync} disabled={syncing} className="btn btn-primary">
+          <RefreshCw size={16} className={syncing ? "animate-spin" : undefined} />
+          {syncing ? "در حال همگام‌سازی…" : "همگام‌سازی با تلگرام"}
+        </button>
+      </div>
 
       {/* فرمِ افزودن */}
       <div className="card-elevated p-6 space-y-5">
