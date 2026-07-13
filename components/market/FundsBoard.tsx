@@ -8,7 +8,7 @@ export interface FundRow {
   id: string;
   faName: string;
   type?: string;
-  change?: number | null;
+  changePercent?: number | null; // درصد بازده روز (رله: plp)
   assetB?: number | null; // خالص دارایی، میلیارد تومان
 }
 
@@ -50,10 +50,10 @@ export default function FundsBoard({ funds }: { funds: FundRow[] }) {
   );
 
   const stats = useMemo(() => {
-    const withChange = rows.filter((f) => typeof f.change === "number") as Required<Pick<FundRow, "change">>[] & FundRow[];
+    const withChange = rows.filter((f) => typeof f.changePercent === "number") as Required<Pick<FundRow, "changePercent">>[] & FundRow[];
     const totalAsset = rows.reduce((s, f) => s + (f.assetB ?? 0), 0);
-    const avg = withChange.length ? withChange.reduce((s, f) => s + (f.change as number), 0) / withChange.length : null;
-    const pos = withChange.filter((f) => (f.change as number) > 0).length;
+    const avg = withChange.length ? withChange.reduce((s, f) => s + (f.changePercent as number), 0) / withChange.length : null;
+    const pos = withChange.filter((f) => (f.changePercent as number) > 0).length;
     const posRatio = withChange.length ? Math.round((pos / withChange.length) * 100) : null;
     return { count: rows.length, totalAsset, avg, posRatio, rated: withChange.length };
   }, [rows]);
@@ -158,19 +158,19 @@ export default function FundsBoard({ funds }: { funds: FundRow[] }) {
             {rowsOf(mapCells, 4).map((r, ri) => (
               <div key={ri} className="flex gap-1.5">
                 {r.map((f) => {
-                  const t = tile(f.change ?? null);
+                  const t = tile(f.changePercent ?? null);
                   return (
                     <div
                       key={f.id}
                       className="rounded-md px-2 py-2 min-w-0 flex flex-col justify-center"
                       style={{ flexGrow: Math.max(f.assetB ?? 1, 1), flexBasis: 0, background: t.bg, minWidth: 64, minHeight: 56 }}
-                      title={`${f.faName} — ${f.change != null ? formatSignedPercent(f.change) : "—"}`}
+                      title={`${f.faName} — ${f.changePercent != null ? formatSignedPercent(f.changePercent) : "—"}`}
                     >
                       <span className="text-[11px] font-bold truncate" style={{ color: t.fg }}>{f.faName}</span>
-                      {f.change != null && (
+                      {f.changePercent != null && (
                         <span className="text-[11px]" style={{ color: t.fg, fontVariantNumeric: "tabular-nums" }}>
-                          <span aria-hidden="true">{formatSignedPercent(f.change)}</span>
-                          <span className="sr-only">{describeDelta(f.change)}</span>
+                          <span aria-hidden="true">{formatSignedPercent(f.changePercent)}</span>
+                          <span className="sr-only">{describeDelta(f.changePercent)}</span>
                         </span>
                       )}
                     </div>
@@ -195,10 +195,10 @@ export default function FundsBoard({ funds }: { funds: FundRow[] }) {
                     <span className="text-[11px]" style={{ color: "var(--text-3)" }}>{fmtAssetB(f.assetB)}</span>
                   )}
                 </span>
-                {f.change != null && (
-                  <span className="text-sm font-bold flex-shrink-0" style={{ color: deltaColor(f.change), fontVariantNumeric: "tabular-nums" }}>
-                    <span aria-hidden="true">{formatSignedPercent(f.change)}</span>
-                    <span className="sr-only">{describeDelta(f.change)}</span>
+                {f.changePercent != null && (
+                  <span className="text-sm font-bold flex-shrink-0" style={{ color: deltaColor(f.changePercent), fontVariantNumeric: "tabular-nums" }}>
+                    <span aria-hidden="true">{formatSignedPercent(f.changePercent)}</span>
+                    <span className="sr-only">{describeDelta(f.changePercent)}</span>
                   </span>
                 )}
               </li>
