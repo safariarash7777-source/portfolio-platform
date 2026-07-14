@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BarChart3, Search, ArrowUpDown, ChevronDown, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import {
@@ -329,7 +330,14 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
               return (
                 <tr key={s.id} className="hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--line)" }}>
                   <td className="py-3 px-4">
-                    <span className="font-bold">{s.id}</span>
+                    <Link
+                      href={`/symbol/${encodeURIComponent(s.id)}`}
+                      className="font-bold hover:underline"
+                      style={{ color: "var(--navy-deep)" }}
+                      title={`صفحهٔ نماد ${s.id}`}
+                    >
+                      {s.id}
+                    </Link>
                     <span className="block text-[11px] mt-0.5" style={{ color: "var(--text-3)" }}>
                       {s.faName}
                       {s.industry && ` · ${s.industry}`}
@@ -375,9 +383,13 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
             <div key={s.id} className="card p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                  <span className="font-bold text-sm" style={{ color: "var(--text)" }}>
+                  <Link
+                    href={`/symbol/${encodeURIComponent(s.id)}`}
+                    className="font-bold text-sm hover:underline"
+                    style={{ color: "var(--navy-deep)" }}
+                  >
                     {s.id}
-                  </span>
+                  </Link>
                   <span className="text-[11px] ms-2" style={{ color: "var(--text-3)" }}>
                     {s.faName}
                   </span>
