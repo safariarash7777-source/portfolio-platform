@@ -23,13 +23,13 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin')
+  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/terminal')
   if (isProtected && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Admin gate — DB-backed (single source of truth)
-  if (pathname.startsWith('/admin') && user) {
+  if ((pathname.startsWith('/admin') || pathname.startsWith('/terminal')) && user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -44,5 +44,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/terminal/:path*'],
 }
