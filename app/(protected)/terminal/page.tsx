@@ -19,13 +19,22 @@ export default async function TerminalIndexPage() {
           <h1 className="text-2xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
             ترمینال تحلیلگر
           </h1>
-          <Link
-            href="/terminal/watchlist"
-            className="rounded-full px-4 py-2 text-[13px] font-bold"
-            style={{ background: "var(--navy)", color: "#fff" }}
-          >
-            واچ‌لیست و رژیم بازار ←
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/terminal/watchlist"
+              className="rounded-full px-4 py-2 text-[13px] font-bold"
+              style={{ background: "var(--navy)", color: "#fff" }}
+            >
+              واچ‌لیست و رژیم بازار ←
+            </Link>
+            <Link
+              href="/terminal/allocation"
+              className="rounded-full px-4 py-2 text-[13px] font-bold"
+              style={{ background: "var(--gold)", color: "var(--navy-deep)" }}
+            >
+              تخصیص دارایی ←
+            </Link>
+          </div>
         </div>
         <p className="mt-2 text-[13px] leading-6" style={{ color: "var(--text-2)" }}>
           کارت امتیاز سه‌محوره، بازهٔ ارزش‌گذاری سناریویی و جریان پول برای هر نماد — همه از یک
