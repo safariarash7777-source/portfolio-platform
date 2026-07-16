@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 import Logo from "../ui/Logo";
 import ThemeToggle from "../ui/ThemeToggle";
 
+// لندینگ هم باید به سطوح اصلی محصول لینک بدهد، نه فقط انکرهای بازاریابی.
 const NAV_LINKS = [
-  { href: "/#steps",    label: "مسیر" },
+  { href: "/market",    label: "رصد بازار" },
+  { href: "/data",      label: "بانک داده" },
+  { href: "/webinars",  label: "وبینارها" },
   { href: "/#features", label: "قابلیت‌ها" },
-  { href: "/#why",      label: "چرا ما" },
   { href: "/#faq",      label: "سؤالات" },
 ];
 

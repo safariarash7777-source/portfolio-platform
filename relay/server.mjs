@@ -54,6 +54,7 @@ const status = {
     brsapi_index: { ok: false, error: null },
     brsapi_nav: { ok: false, mode: null, cached: 0, updated: 0, failed: 0, error: null },
     brsapi_fund_meta: { ok: false, cached: 0, updated: 0, failed: 0, error: null },
+    history_daily: { ok: false, lastJdate: null, lastPushAt: 0, rows: 0, error: null },
   },
   supabase: { enabled: false, ok: false, status: null, at: 0, error: null },
 };
@@ -151,6 +152,7 @@ async function fetchStocksAndFunds() {
       status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: "response is not array" };
       return { funds: [], stocks: [] };
     }
+    lastAllSymbolsRaw = items; // برای درجِ روزانهٔ تاریخچه (ریالِ خام، بدون تبدیل)
 
     const funds = [];
     const stocks = [];
@@ -395,6 +397,169 @@ function applyFundTypes(funds) {
   }
 }
 
+// ── درجِ روزانهٔ تاریخچه در symbol_history (append-only) ─────────────────────
+// چرا: کل لایهٔ کوانت (ترمینال/واچ‌لیست/رژیم) از symbol_history می‌خوانَد؛ بدون
+// درجِ خودکارِ روزانه، داده در بک‌فیل می‌ماند و بی‌صدا کهنه می‌شود.
+// قواعد صداقت داده:
+//  - واحدها ریالِ خام (هم‌سان با بک‌فیل موجود؛ شبندر close=10780 ریال).
+//  - فقط وقتی فیدِ شاخص تأیید کند «امروزِ تهران روزِ معاملاتی است» (تطبیق تاریخ
+//    جلالی فید با امروز) — در تعطیلی هیچ ردیفی نوشته نمی‌شود (تکرارِ دادهٔ کهنه ممنوع).
+//  - ارزش خرید/فروش حقیقی فقط اگر خودِ فید بدهد؛ هرگز تخمین‌زده نمی‌شود (null).
+//  - ضدتکرار دولایه: state پایدار در Supabase + چکِ وجودِ ردیفِ امروز قبل از درج.
+let lastAllSymbolsRaw = null;      // آخرین پاسخ خامِ AllSymbols (ریال)
+let historyDailyJdate = null;      // آخرین تاریخ جلالیِ درج‌شده (state پایدار)
+let historyStateLoaded = false;
+const HISTORY_STATE_KEY = "history_daily_state";
+const HISTORY_PUSH_AFTER_MIN = 15 * 60 + 30; // ۱۵:۳۰ تهران به بعد (بازار بسته)
+
+function tehranParts(opts) {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tehran", ...opts }).formatToParts(new Date());
+}
+function tehranJdate() {
+  const p = new Intl.DateTimeFormat("en-US-u-ca-persian", {
+    timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const g = (t) => p.find((x) => x.type === t)?.value ?? "";
+  return `${g("year")}-${g("month")}-${g("day")}`;
+}
+function tehranGregorianDate() {
+  const p = tehranParts({ year: "numeric", month: "2-digit", day: "2-digit" });
+  const g = (t) => p.find((x) => x.type === t)?.value ?? "";
+  return `${g("year")}-${g("month")}-${g("day")}`;
+}
+function tehranMinutesOfDay() {
+  const p = tehranParts({ hour: "2-digit", minute: "2-digit", hour12: false });
+  const g = (t) => Number(p.find((x) => x.type === t)?.value ?? 0);
+  return g("hour") * 60 + g("minute");
+}
+// «1404/04/25» یا «۱۴۰۴-۰۴-۲۵» → [1404,4,25] برای مقایسهٔ مقاوم
+function jdateNums(s) {
+  const latin = String(s ?? "").replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+  const m = latin.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+}
+function sameJdate(a, b) {
+  const x = jdateNums(a);
+  const y = jdateNums(b);
+  return !!x && !!y && x[0] === y[0] && x[1] === y[1] && x[2] === y[2];
+}
+
+async function sbFetch(path, init) {
+  return fetch(`${SUPABASE_URL.replace(/\/+$/, "")}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      ...(init?.headers || {}),
+    },
+    signal: AbortSignal.timeout(20000),
+  });
+}
+
+async function loadHistoryState() {
+  if (historyStateLoaded || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  try {
+    const res = await sbFetch(`/rest/v1/ir_market_snapshots?key=eq.${HISTORY_STATE_KEY}&select=payload`);
+    if (res.ok) {
+      const rows = await res.json();
+      historyDailyJdate = rows?.[0]?.payload?.lastJdate ?? null;
+      status.sources.history_daily.lastJdate = historyDailyJdate;
+    }
+    historyStateLoaded = true;
+  } catch { /* دفعهٔ بعد */ }
+}
+
+async function saveHistoryState() {
+  try {
+    await sbFetch(`/rest/v1/ir_market_snapshots?on_conflict=key`, {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify([{
+        key: HISTORY_STATE_KEY,
+        payload: { lastJdate: historyDailyJdate },
+        updated_at: new Date().toISOString(),
+      }]),
+    });
+  } catch { /* state دفعهٔ بعد ذخیره می‌شود؛ چکِ وجودِ ردیف جلوی تکرار را می‌گیرد */ }
+}
+
+async function pushDailyHistory(indices) {
+  const st = status.sources.history_daily;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  if (!Array.isArray(lastAllSymbolsRaw) || lastAllSymbolsRaw.length === 0) return;
+  if (!indices?.date) return;                          // بدون تأیید تاریخِ فید، درج نمی‌کنیم
+  if (tehranMinutesOfDay() < HISTORY_PUSH_AFTER_MIN) return; // فقط بعد از بستنِ بازار
+  const todayJ = tehranJdate();
+  if (!sameJdate(indices.date, todayJ)) return;        // امروز روزِ معاملاتی نبوده (تعطیلی)
+  await loadHistoryState();
+  if (historyDailyJdate && sameJdate(historyDailyJdate, todayJ)) return; // امروز درج شده
+
+  const tradeDate = tehranGregorianDate();
+  try {
+    // ضدتکرارِ لایهٔ دوم: اگر ردیفِ امروز از همین منبع هست، فقط state را همگام کن
+    const chk = await sbFetch(
+      `/rest/v1/symbol_history?select=id&trade_date=eq.${tradeDate}&source=eq.brsapi_allsymbols&limit=1`
+    );
+    if (chk.ok && (await chk.json()).length > 0) {
+      historyDailyJdate = todayJ;
+      st.lastJdate = todayJ;
+      await saveHistoryState();
+      return;
+    }
+
+    const num = (v) => (Number(v) > 0 ? Number(v) : null);
+    const rows = [];
+    for (const it of lastAllSymbolsRaw) {
+      if (!it?.l18) continue;
+      if (!(Number(it.tvol) > 0)) continue; // فقط نمادهایی که امروز معامله شدند
+      rows.push({
+        symbol: it.l18,
+        trade_date: tradeDate,
+        close: num(it.pc),
+        last_price: num(it.pl),
+        volume: num(it.tvol),
+        value_traded: num(it.tval),
+        // ارزشِ حقیقی فقط اگر خودِ فید بدهد — تخمین ممنوع
+        individual_buy_value: num(it.Buy_I_Value ?? it.buy_i_value),
+        individual_sell_value: num(it.Sell_I_Value ?? it.sell_i_value),
+        individual_buy_count: num(it.Buy_CountI ?? it.buy_count_i),
+        individual_sell_count: num(it.Sell_CountI ?? it.sell_count_i),
+        legal_buy_value: num(it.Buy_N_Value ?? it.buy_n_value),
+        legal_sell_value: num(it.Sell_N_Value ?? it.sell_n_value),
+        raw: {
+          pl: it.pl, pc: it.pc, plp: it.plp, pcp: it.pcp, tvol: it.tvol, tval: it.tval,
+          mv: it.mv, cs_id: it.cs_id, eps: it.eps, pe: it.pe,
+          buy_i_volume: it.Buy_I_Volume, buy_n_volume: it.Buy_N_Volume,
+          sell_i_volume: it.Sell_I_Volume, sell_n_volume: it.Sell_N_Volume,
+          jdate: indices.date,
+        },
+        source: "brsapi_allsymbols",
+      });
+    }
+    if (rows.length === 0) return;
+
+    // درجِ تکه‌تکه (۵۰۰تایی) تا بدنهٔ درخواست سبک بماند
+    for (let i = 0; i < rows.length; i += 500) {
+      const res = await sbFetch(`/rest/v1/symbol_history`, {
+        method: "POST",
+        headers: { Prefer: "return=minimal" },
+        body: JSON.stringify(rows.slice(i, i + 500)),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    }
+
+    historyDailyJdate = todayJ;
+    Object.assign(st, { ok: true, lastJdate: todayJ, lastPushAt: Date.now(), rows: rows.length, error: null });
+    await saveHistoryState();
+    console.log(`history daily push ok: ${rows.length} rows for ${tradeDate}`);
+  } catch (e) {
+    st.ok = false;
+    st.error = errMsg(e);
+    console.error("history daily push error:", st.error);
+  }
+}
+
 // ── BrsApi: شاخص بورس ────────────────────────────────────────────────────────
 async function fetchIndex() {
   if (!BRSAPI_KEY) {
@@ -450,6 +615,8 @@ async function buildPayload() {
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
   applyNav(sf.funds);
   applyFundTypes(sf.funds);
+  // درجِ روزانهٔ تاریخچه (خودش گاردهای زمان/تعطیلی/تکرار دارد؛ پس‌زمینه)
+  pushDailyHistory(indices).catch((e) => console.error("history daily error:", errMsg(e)));
   const payload = {
     gold: gc.gold,
     currency: gc.currency,
