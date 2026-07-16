@@ -12,24 +12,26 @@ const FOOTER_GROUPS = [
   {
     title: "محصول",
     links: [
-      { href: "/#features", label: "خدمات و امکانات" },
+      { href: "/market",    label: "رصد بازار" },
+      { href: "/data",      label: "بانک داده" },
+      { href: "/webinars",  label: "وبینار فصلی" },
       { href: "/dashboard", label: "داشبورد کاربری" },
     ],
   },
   {
     title: "منابع",
     links: [
-      { href: "/#faq",  label: "سؤالات متداول" },
-      { href: "#",      label: "وبلاگ" },
-      { href: "#",      label: "راهنمای سرمایه‌گذاری" },
+      { href: "/#faq",     label: "سؤالات متداول" },
+      { href: "/insights", label: "تحلیل‌ها" },
+      { href: "/notes",    label: "یادداشت روزانه" },
     ],
   },
   {
     title: "حقوقی",
     links: [
-      { href: "#", label: "حریم خصوصی" },
-      { href: "#", label: "شرایط استفاده" },
-      { href: "#", label: "سلب مسئولیت" },
+      { href: "/legal/privacy",    label: "حریم خصوصی" },
+      { href: "/legal/terms",      label: "شرایط استفاده" },
+      { href: "/legal/disclaimer", label: "سلب مسئولیت" },
     ],
   },
 ];
