@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/market",    label: "رصد بازار" },
   { href: "/data",      label: "بانک داده" },
   { href: "/insights",  label: "تحلیل‌ها" },
+  { href: "/analyses",  label: "کارنامه" },
   { href: "/notes",     label: "یادداشت روزانه" },
   { href: "/webinars",  label: "وبینار" },
   { href: "/terminal",  label: "ترمینال" },
