@@ -23,6 +23,7 @@
 // جواب می‌دهد و درخواستِ سایت روی build کندِ منبع تایم‌اوت نمی‌شود.
 // ─────────────────────────────────────────────────────────────────────────────
 import http from "node:http";
+import { runCodalJob, codalStatus, codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./codal.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -593,6 +594,7 @@ function debugPayload() {
     counts,
     sources: status.sources,
     supabase: status.supabase,
+    codal: codalStatus,
   }, null, 2);
 }
 
@@ -613,6 +615,38 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === "/debug") {
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     return res.end(debugPayload());
+  }
+
+  // دریافت خام اکسل کدال از داخل ایران — فقط برای توسعه، محافظت‌شده با RELAY_TOKEN.
+  if (url.pathname === "/codal-raw") {
+    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
+      res.writeHead(401); return res.end("unauthorized");
+    }
+    const u = url.searchParams.get("url") || "";
+    try {
+      const html = await codalRawExcel(u);
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      return res.end(html);
+    } catch (e) {
+      res.writeHead(502, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(JSON.stringify({ error: e?.message ?? String(e) }));
+    }
+  }
+
+  // تست زندهٔ پارسر کدال (بدون درج در دیتابیس) — محافظت‌شده با RELAY_TOKEN.
+  if (url.pathname === "/codal-test") {
+    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
+      res.writeHead(401); return res.end("unauthorized");
+    }
+    const sym = url.searchParams.get("symbol") || "فملی";
+    try {
+      const r = await codalTest(sym);
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(JSON.stringify(r, null, 2));
+    } catch (e) {
+      res.writeHead(502, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(JSON.stringify({ error: e?.message ?? String(e) }));
+    }
   }
 
   if (url.pathname !== "/market.json") { res.writeHead(404); return res.end("not found"); }
@@ -638,7 +672,28 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`ir-market relay v2 (BrsApi) on :${PORT}`);
+  console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   refresh();
   setInterval(refresh, CACHE_MS).unref();
+  // دامپ تشخیصی ساختار اکسل کدال (فقط وقتی CODAL_DEBUG_EXCEL_URL ست باشد) — هر ۳ دقیقه تا موفقیت.
+  if (process.env.CODAL_DEBUG_EXCEL_URL) {
+    let dumped = false;
+    const tryDump = async () => {
+      if (dumped) return;
+      dumped = await codalDebugDump().then((ok) => !!ok).catch(() => false);
+    };
+    setTimeout(tryDump, 20 * 1000).unref();
+    setInterval(tryDump, 3 * 60 * 1000).unref();
+  }
+  // کدال — فعلاً خاموش تا صحت پارسر روی دادهٔ واقعی تأیید شود (CODAL_ENABLED=1 برای فعال‌سازی).
+  if (process.env.CODAL_ENABLED === "1") {
+    console.log("codal job armed: first run in 90s");
+    setTimeout(() => {
+      console.log("codal job starting");
+      runCodalJob().catch((e) => console.error("codal job error:", e?.message ?? e));
+    }, 90 * 1000).unref();
+    setInterval(() => {
+      runCodalJob().catch((e) => console.error("codal job error:", e?.message ?? e));
+    }, CODAL_INTERVAL_MS).unref();
+  }
 });
