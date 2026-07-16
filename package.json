@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:calc": "tsx --test lib/fundamental/calc.test.ts"
+    "test:calc": "tsx --test lib/fundamental/calc.test.ts",
+    "test:core": "tsx --test lib/core/engine.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
