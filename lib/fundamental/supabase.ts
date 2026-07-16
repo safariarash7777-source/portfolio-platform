@@ -145,11 +145,13 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
         .filter((t) => t.fy > 0 && t.revenue > 0)
         .sort((x, y) => x.fy - y.fy);
     }
-    const periodLabel = d.period_months === 12 ? "۱۲ماههٔ" : `${d.period_months}ماههٔ`;
+    const faDigits = (v: number | string) =>
+      String(v).replace(/\d/g, (c) => "۰۱۲۳۴۵۶۷۸۹"[Number(c)]);
+    const periodLabel = d.period_months === 12 ? "۱۲ماههٔ" : `${faDigits(d.period_months)}ماههٔ`;
     n10 = {
       data: d,
       source: {
-        title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${fyOf(d)} (کدال)`,
+        title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${faDigits(fyOf(d))} (کدال)`,
         source_url: cleanUrl(main),
         verified: true,
         verification_note: "استخراج خودکار از اکسل رسمی کدال با اعتبارسنجی حسابی (ناخالص = فروش − بها)",
