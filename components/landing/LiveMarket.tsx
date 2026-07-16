@@ -250,10 +250,16 @@ export default function LiveMarket() {
               <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
                 {active?.note ?? "قیمت‌ها صرفاً اطلاع‌رسانی‌اند؛ توصیهٔ خرید/فروش نیستند."}
               </span>
-              <Link href="/market" className="btn btn-outline" style={{ fontSize: "0.8rem", padding: "0.5rem 1rem" }}>
-                مشاهدهٔ کامل بازار
-                <ArrowLeft size={14} />
-              </Link>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Link href="/data" className="btn btn-outline" style={{ fontSize: "0.8rem", padding: "0.5rem 1rem" }}>
+                  بانک دادهٔ نمادها
+                  <ArrowLeft size={14} />
+                </Link>
+                <Link href="/market" className="btn btn-outline" style={{ fontSize: "0.8rem", padding: "0.5rem 1rem" }}>
+                  مشاهدهٔ کامل بازار
+                  <ArrowLeft size={14} />
+                </Link>
+              </div>
             </div>
           </div>
         </Reveal>
