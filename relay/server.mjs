@@ -27,6 +27,8 @@ import http from "node:http";
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
 const BRSAPI_KEY = process.env.BRSAPI_KEY || "";
+// آدرس پایهٔ BrsApi — قابل تغییر با env بدون deploy مجدد کد (اطلاعیهٔ تغییر لینک ۱۴۰۵/۰۲/۰۵).
+const BRSAPI_BASE = (process.env.BRSAPI_BASE || "https://Api.BrsApi.ir").replace(/\/+$/, "");
 const CACHE_MS = 5 * 60 * 1000; // 5 minutes
 
 // انتشار به Supabase
@@ -56,13 +58,21 @@ const status = {
 
 const errMsg = (e) => (e && e.name === "TimeoutError" ? "timeout" : e?.message ?? String(e));
 
+// ردیابیِ گذارِ «خطا → سالم» برای لاگِ بازیابی (بدونِ شلوغ‌کردنِ لاگ در حالت پایدار).
+const wasFailing = { stocks: false, push: false };
+function recoveredFrom(k) {
+  const r = wasFailing[k];
+  wasFailing[k] = false;
+  return r;
+}
+
 // ── BrsApi: طلا/سکه + ارز + کریپتو ──────────────────────────────────────────
 async function fetchGoldCurrency() {
   if (!BRSAPI_KEY) {
     status.sources.brsapi_gold_currency = { ok: false, gold: 0, currency: 0, error: "BRSAPI_KEY ست نشده" };
     return { gold: [], currency: [], crypto: [] };
   }
-  const url = `https://Api.BrsApi.ir/Market/Gold_Currency.php?key=${BRSAPI_KEY}`;
+  const url = `${BRSAPI_BASE}/Market/Gold_Currency.php?key=${BRSAPI_KEY}`;
   try {
     const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(15000) });
     if (!res.ok) {
@@ -126,7 +136,7 @@ async function fetchStocksAndFunds() {
     status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: "BRSAPI_KEY ست نشده" };
     return { funds: [], stocks: [] };
   }
-  const url = `https://Api.BrsApi.ir/Tsetmc/AllSymbols.php?key=${BRSAPI_KEY}&type=1`;
+  const url = `${BRSAPI_BASE}/Tsetmc/AllSymbols.php?key=${BRSAPI_KEY}&type=1`;
   try {
     const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(20000) });
     if (!res.ok) {
@@ -191,10 +201,13 @@ async function fetchStocksAndFunds() {
       stocks: stocks.length,
       error: null,
     };
+    // لاگِ موفقیت — فقط در گذار «خطا → سالم» تا لاگ شلوغ نشود.
+    if (recoveredFrom("stocks")) console.log(`brsapi stocks/funds recovered: ${stocks.length} stocks, ${funds.length} funds`);
     return { funds, stocks };
   } catch (e) {
     const err = errMsg(e);
     status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: err };
+    wasFailing.stocks = true;
     console.error("brsapi stocks/funds error:", err);
     return { funds: [], stocks: [] };
   }
@@ -231,7 +244,7 @@ async function refreshNavs(funds) {
   if (!BRSAPI_KEY || funds.length === 0) return;
   if (Date.now() - lastNavRound < NAV_REFRESH_MS) return;
   lastNavRound = Date.now(); // اول ست می‌شود تا دورِ موازی شروع نشود
-  const base = `https://Api.BrsApi.ir/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
+  const base = `${BRSAPI_BASE}/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
 
   // ۱) تلاش bulk
   if (navBulkMode !== false) {
@@ -343,7 +356,7 @@ async function refreshFundMeta(funds) {
       if (!f) return;
       try {
         const res = await fetch(
-          `https://Api.BrsApi.ir/Tsetmc/Symbol.php?key=${BRSAPI_KEY}&l18=${encodeURIComponent(f.id)}`,
+          `${BRSAPI_BASE}/Tsetmc/Symbol.php?key=${BRSAPI_KEY}&l18=${encodeURIComponent(f.id)}`,
           { headers: HDRS, signal: AbortSignal.timeout(15000) }
         );
         if (!res.ok) { failed++; continue; }
@@ -386,7 +399,7 @@ async function fetchIndex() {
     status.sources.brsapi_index = { ok: false, error: "BRSAPI_KEY ست نشده" };
     return null;
   }
-  const url = `https://Api.BrsApi.ir/Tsetmc/Index.php?key=${BRSAPI_KEY}&type=1`;
+  const url = `${BRSAPI_BASE}/Tsetmc/Index.php?key=${BRSAPI_KEY}&type=1`;
   try {
     const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
     if (!res.ok) {
@@ -448,35 +461,52 @@ async function buildPayload() {
 }
 
 // ── Push به Supabase ──────────────────────────────────────────────────────────
+// شبکهٔ بین‌المللِ هاستِ داخل ایران گاهی ناپایدار است (قطعی/کندی)؛ push تا
+// PUSH_RETRIES بار با فاصلهٔ فزاینده تکرار می‌شود تا اسنپ‌شات از دست نرود.
+const PUSH_RETRIES = 3;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function pushToSupabase(body) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     status.supabase = { enabled: false, ok: false, status: null, at: 0, error: null };
     return;
   }
-  try {
-    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?on_conflict=key`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        Prefer: "resolution=merge-duplicates,return=minimal",
-      },
-      body: JSON.stringify([{ key: "latest", payload: JSON.parse(body), updated_at: new Date().toISOString() }]),
-      signal: AbortSignal.timeout(15000),
-    });
-    status.supabase = {
-      enabled: true,
-      ok: res.ok,
-      status: res.status,
-      at: Date.now(),
-      error: res.ok ? null : `HTTP ${res.status}`,
-    };
-    if (!res.ok) console.error(`supabase push: HTTP ${res.status}`);
-  } catch (e) {
-    status.supabase = { enabled: true, ok: false, status: null, at: Date.now(), error: errMsg(e) };
-    console.error("supabase push error:", status.supabase.error);
+  let lastErr = null;
+  for (let attempt = 1; attempt <= PUSH_RETRIES; attempt++) {
+    try {
+      const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?on_conflict=key`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        },
+        body: JSON.stringify([{ key: "latest", payload: JSON.parse(body), updated_at: new Date().toISOString() }]),
+        signal: AbortSignal.timeout(15000),
+      });
+      status.supabase = {
+        enabled: true,
+        ok: res.ok,
+        status: res.status,
+        at: Date.now(),
+        error: res.ok ? null : `HTTP ${res.status}`,
+      };
+      if (res.ok) {
+        if (recoveredFrom("push") || attempt > 1) console.log(`supabase push ok (attempt ${attempt})`);
+        return;
+      }
+      lastErr = `HTTP ${res.status}`;
+      // خطای 4xx تکرار نمی‌شود — مشکل از درخواست است نه شبکه.
+      if (res.status >= 400 && res.status < 500) break;
+    } catch (e) {
+      lastErr = errMsg(e);
+    }
+    if (attempt < PUSH_RETRIES) await sleep(2000 * attempt);
   }
+  status.supabase = { enabled: true, ok: false, status: null, at: Date.now(), error: lastErr };
+  wasFailing.push = true;
+  console.error("supabase push error:", lastErr);
 }
 
 // ── تاریخچه (append-only) — هر ۳۰ دقیقه یک نمونه ─────────────────────────────
