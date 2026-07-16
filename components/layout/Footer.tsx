@@ -23,6 +23,7 @@ const FOOTER_GROUPS = [
     links: [
       { href: "/#faq",     label: "سؤالات متداول" },
       { href: "/insights", label: "تحلیل‌ها" },
+      { href: "/analyses", label: "کارنامهٔ قابل راستی‌آزمایی" },
       { href: "/notes",    label: "یادداشت روزانه" },
     ],
   },
