@@ -47,7 +47,7 @@ export async function getSymbolHistory(
     select: SELECT_COLS,
     symbol: `eq.${symbol}`,
     order: "trade_date.desc,id.desc",
-    limit: String(Math.min(days * 2, 4000)),
+    limit: String(Math.min(days * 2, 12000)),
   });
 
   let rows: HistoryRow[] = [];

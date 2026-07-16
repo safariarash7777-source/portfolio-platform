@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DashboardClient from "./DashboardClient";
+import AccessStatusCard from "@/components/dashboard/AccessStatusCard";
+import { getAccess } from "@/lib/access";
 
 export const metadata = {
   title: "داشبورد",
@@ -98,6 +100,8 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false }),
   ]);
 
+  const access = await getAccess();
+
   const seenSet = new Set((seenRes.data ?? []).map((d) => d.announcement_id));
   const announcements = (announcementsRes.data ?? []).map((a) => ({
     ...a,
@@ -108,6 +112,9 @@ export default async function DashboardPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
+        <div className="mx-auto w-full max-w-6xl px-5 pt-6">
+          <AccessStatusCard access={access} />
+        </div>
         <DashboardClient
           userId={user.id}
           userEmail={user.email ?? ""}
