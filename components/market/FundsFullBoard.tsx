@@ -25,9 +25,14 @@ export interface FundRow {
   value?: number;
   marketValue?: number | null;
   industry?: string | null;
+  nav?: number | null;
+  navIssue?: number | null;
+  navDate?: string | null;
+  navTime?: string | null;
+  bubblePercent?: number | null;
 }
 
-type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue";
+type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | "bubblePercent";
 type SortDir = "asc" | "desc";
 
 /** میلیارد تومان → متن فارسی */
@@ -45,6 +50,13 @@ function fmtValue(v: number): string {
   if (b >= 1) return `${toPersianDigits(b.toFixed(1)).replace(".", "٫")} میلیارد`;
   const m = v / 1_000_000;
   return `${toPersianDigits(Math.round(m).toLocaleString("en-US")).replace(/,/g, "٬")} میلیون`;
+}
+
+/** رنگ حباب: مثبت (گران‌تر از NAV) = هشدار، منفی (زیر NAV) = سبز */
+function bubbleColor(b: number): string {
+  if (b > 0.05) return "var(--danger)";
+  if (b < -0.05) return "var(--success)";
+  return "var(--text-3)";
 }
 
 /** پس‌زمینه/متنِ کاشیِ نقشهٔ بازار */
@@ -113,6 +125,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           av = a.value ?? 0; bv = b.value ?? 0; break;
         case "marketValue":
           av = a.marketValue ?? 0; bv = b.marketValue ?? 0; break;
+        case "bubblePercent": {
+          // صندوق‌های بدون NAV همیشه انتهای فهرست
+          const an = a.bubblePercent;
+          const bn = b.bubblePercent;
+          if (an == null && bn == null) return 0;
+          if (an == null) return 1;
+          if (bn == null) return -1;
+          return sortDir === "asc" ? an - bn : bn - an;
+        }
         default:
           av = 0; bv = 0;
       }
@@ -120,6 +141,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     });
     return arr;
   }, [filtered, sortKey, sortDir]);
+
+  // آیا دست‌کم یک صندوق NAV دارد؟ (ستون‌های NAV/حباب فقط در این حالت)
+  const hasNav = useMemo(() => funds.some((f) => f.nav != null), [funds]);
 
   // Stats
   const stats = useMemo(() => {
@@ -132,7 +156,11 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       : null;
     const pos = withChange.filter((f) => ((f.changePercent ?? f.closingChangePercent) as number) > 0).length;
     const posRatio = withChange.length ? Math.round((pos / withChange.length) * 100) : null;
-    return { count: filtered.length, totalMarketValue, avg, posRatio, rated: withChange.length };
+    const withNav = filtered.filter((f) => typeof f.bubblePercent === "number");
+    const avgBubble = withNav.length
+      ? withNav.reduce((s, f) => s + (f.bubblePercent as number), 0) / withNav.length
+      : null;
+    return { count: filtered.length, totalMarketValue, avg, posRatio, rated: withChange.length, avgBubble, navCount: withNav.length };
   }, [filtered]);
 
   const toggleSort = (key: SortKey) => {
@@ -197,7 +225,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className={hasNav ? "grid grid-cols-2 md:grid-cols-5 gap-3" : "grid grid-cols-2 md:grid-cols-4 gap-3"}>
         <Kpi label="تعداد صندوق" value={toPersianDigits(stats.count)} />
         <Kpi
           label="ارزش کل بازار"
@@ -213,6 +241,13 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           value={stats.posRatio == null ? "—" : `٪${toPersianDigits(stats.posRatio)}`}
           color={stats.posRatio == null ? undefined : stats.posRatio >= 50 ? "var(--success)" : "var(--danger)"}
         />
+        {hasNav && (
+          <Kpi
+            label={`میانگین حباب (${toPersianDigits(stats.navCount)} صندوق)`}
+            value={stats.avgBubble == null ? "—" : formatSignedPercent(stats.avgBubble)}
+            color={stats.avgBubble == null ? undefined : bubbleColor(stats.avgBubble)}
+          />
+        )}
       </div>
 
       {/* Positive/Negative ratio bar */}
@@ -332,8 +367,16 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           <thead>
             <tr style={{ borderBottom: "1px solid var(--line)" }}>
               <SortTh label="نام" sortKey="faName" current={sortKey} dir={sortDir} onSort={toggleSort} />
-              <SortTh label="NAV (تومان)" sortKey="price" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+              <SortTh label="قیمت (تومان)" sortKey="price" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
               <SortTh label="تغییر" sortKey="changePercent" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+              {hasNav && (
+                <>
+                  <th className="py-3 px-4 font-bold whitespace-nowrap text-left" style={{ color: "var(--text-3)" }}>
+                    NAV ابطال
+                  </th>
+                  <SortTh label="حباب" sortKey="bubblePercent" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+                </>
+              )}
               <SortTh label="ارزش معاملات" sortKey="value" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
               <SortTh label="ارزش بازار" sortKey="marketValue" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
             </tr>
@@ -357,6 +400,22 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <td className="py-3 px-4 text-left font-bold" style={{ color: pct != null ? deltaColor(pct) : "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
                     {pct != null ? formatSignedPercent(pct) : "—"}
                   </td>
+                  {hasNav && (
+                    <>
+                      <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
+                        {f.nav != null ? formatToman(f.nav) : "—"}
+                      </td>
+                      <td
+                        className="py-3 px-4 text-left font-bold"
+                        style={{
+                          color: f.bubblePercent != null ? bubbleColor(f.bubblePercent) : "var(--text-3)",
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {f.bubblePercent != null ? formatSignedPercent(f.bubblePercent) : "—"}
+                      </td>
+                    </>
+                  )}
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
                     {f.value ? fmtValue(f.value) : "—"}
                   </td>
@@ -405,6 +464,16 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                 <span>{formatToman(f.price)}</span>
                 {f.value ? <span>ارزش: {fmtValue(f.value)}</span> : null}
               </div>
+              {f.nav != null && (
+                <div className="flex items-center justify-between mt-1.5 text-xs" style={{ color: "var(--text-2)" }}>
+                  <span>NAV ابطال: {formatToman(f.nav)}</span>
+                  {f.bubblePercent != null && (
+                    <span className="font-bold" style={{ color: bubbleColor(f.bubblePercent), fontVariantNumeric: "tabular-nums" }}>
+                      حباب: {formatSignedPercent(f.bubblePercent)}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -425,6 +494,12 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       {/* Disclaimer */}
       <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
         داده از صندوق‌های سرمایه‌گذاری (منبع رسمی)؛ صرفاً اطلاع‌رسانی و بدون توصیهٔ خرید/فروش.
+        {hasNav && (
+          <>
+            {" "}حباب = (قیمت − NAV ابطال) ÷ NAV ابطال؛ NAV ابطال از سامانهٔ رسمی بازار (به‌روزرسانی حدوداً
+            ساعتی) و ممکن است چند دقیقه با قیمت لحظه‌ای فاصله داشته باشد.
+          </>
+        )}
       </p>
     </div>
   );

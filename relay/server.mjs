@@ -48,6 +48,8 @@ const status = {
     brsapi_gold_currency: { ok: false, gold: 0, currency: 0, error: null },
     brsapi_stocks: { ok: false, funds: 0, stocks: 0, error: null },
     brsapi_index: { ok: false, error: null },
+    brsapi_nav: { ok: false, mode: null, cached: 0, updated: 0, failed: 0, error: null },
+    brsapi_fund_meta: { ok: false, cached: 0, updated: 0, failed: 0, error: null },
   },
   supabase: { enabled: false, ok: false, status: null, at: 0, error: null },
 };
@@ -198,6 +200,186 @@ async function fetchStocksAndFunds() {
   }
 }
 
+// ── BrsApi: NAV صندوق‌ها (Tsetmc/Nav.php — صدور psubtran / ابطال predtran، ریال) ──
+// مستندات BrsApi این endpoint را «تک‌نمادی» تعریف کرده (پارامتر l18)؛ برای رعایت
+// سهمیهٔ روزانهٔ کلید (۱۰هزار درخواست) NAV هر NAV_REFRESH_MS یک‌بار و فقط برای
+// NAV_TOP صندوقِ پرمعامله تازه می‌شود و بین دورها کشِ نمادی می‌ماند.
+// در شروعِ هر دور یک‌بار حالتِ bulk (بدون l18) امتحان می‌شود؛ اگر آرایهٔ چندنماده
+// برگردد از همان استفاده می‌کنیم (یک درخواست به‌جای صدها).
+const NAV_REFRESH_MS = 60 * 60 * 1000; // هر ساعت
+const NAV_TOP = 150;                   // سقف صندوق‌ها در حالت تک‌نمادی
+const NAV_CONCURRENCY = 4;
+const NAV_STALE_MS = 24 * 60 * 60 * 1000; // NAV کهنه‌تر از یک روز منتشر نمی‌شود
+const navCache = new Map(); // l18 → { nav, navIssue, navDate, navTime, at } (ریال)
+let lastNavRound = 0;
+let navBulkMode = null; // null = هنوز نامشخص
+
+function cacheNavRow(l18, d, now) {
+  const nav = Number(d?.predtran);
+  if (!l18 || !isFinite(nav) || nav <= 0) return false;
+  navCache.set(l18, {
+    nav,
+    navIssue: Number(d.psubtran) > 0 ? Number(d.psubtran) : null,
+    navDate: typeof d.date === "string" ? d.date : null,
+    navTime: typeof d.time === "string" ? d.time : null,
+    at: now,
+  });
+  return true;
+}
+
+async function refreshNavs(funds) {
+  if (!BRSAPI_KEY || funds.length === 0) return;
+  if (Date.now() - lastNavRound < NAV_REFRESH_MS) return;
+  lastNavRound = Date.now(); // اول ست می‌شود تا دورِ موازی شروع نشود
+  const base = `https://Api.BrsApi.ir/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
+
+  // ۱) تلاش bulk
+  if (navBulkMode !== false) {
+    try {
+      const res = await fetch(base, { headers: HDRS, signal: AbortSignal.timeout(20000) });
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json) && json.length > 1 && json[0] && json[0].l18) {
+          navBulkMode = true;
+          const now = Date.now();
+          let updated = 0;
+          for (const it of json) if (cacheNavRow(it.l18, it, now)) updated++;
+          status.sources.brsapi_nav = { ok: updated > 0, mode: "bulk", cached: navCache.size, updated, failed: 0, error: null };
+          return;
+        }
+      }
+      navBulkMode = false;
+    } catch {
+      navBulkMode = false;
+    }
+  }
+
+  // ۲) تک‌نمادی برای پرمعامله‌ترین‌ها
+  const top = [...funds].sort((a, b) => (b.value || 0) - (a.value || 0)).slice(0, NAV_TOP);
+  let updated = 0;
+  let failed = 0;
+  const queue = [...top];
+  async function worker() {
+    while (queue.length) {
+      const f = queue.shift();
+      if (!f) return;
+      try {
+        const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
+          headers: HDRS,
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!res.ok) { failed++; continue; }
+        const j = await res.json();
+        const d = Array.isArray(j) ? j[0] : j;
+        if (cacheNavRow(f.id, d, Date.now())) updated++;
+        else failed++;
+      } catch {
+        failed++;
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: NAV_CONCURRENCY }, worker));
+  status.sources.brsapi_nav = {
+    ok: updated > 0,
+    mode: "per-symbol",
+    cached: navCache.size,
+    updated,
+    failed,
+    error: updated === 0 && top.length > 0 ? "no nav fetched" : null,
+  };
+}
+
+// NAV کش‌شده را روی ردیف‌های صندوق سوار می‌کند (ریال → تومان) + حباب.
+// نگهبان: اگر نسبت قیمت/NAV خارج از بازهٔ منطقی بود (ناهماهنگیِ واحد یا دادهٔ
+// خراب)، هیچ NAV/حبابی منتشر نمی‌شود — عدد مشکوک بهتر است غایب باشد.
+function applyNav(funds) {
+  const now = Date.now();
+  for (const f of funds) {
+    const c = navCache.get(f.id);
+    if (!c || now - c.at > NAV_STALE_MS) continue;
+    const navToman = c.nav / 10;
+    if (navToman <= 0 || !isFinite(navToman)) continue;
+    const ratio = f.price / navToman;
+    if (ratio < 0.5 || ratio > 2) continue;
+    f.nav = Math.round(navToman);
+    f.navIssue = c.navIssue ? Math.round(c.navIssue / 10) : null;
+    f.navDate = c.navDate;
+    f.navTime = c.navTime;
+    f.bubblePercent = Number((((f.price - navToman) / navToman) * 100).toFixed(2));
+  }
+}
+
+// ── BrsApi: نوع صندوق از دیتای جامع نماد (Tsetmc/Symbol.php → cs_sub) ────────
+// نوع صندوق (زیرگروه صنعت) تقریباً ثابت است؛ یک‌بار برای هر صندوق گرفته و
+// هفته‌ای یک‌بار تازه می‌شود. در هر دورِ ساعتی حداکثر META_BATCH درخواست —
+// بعد از چند ساعت همهٔ صندوق‌ها برچسبِ نوعِ منبع را دارند (بدون هیچ نگاشتِ حدسی).
+const META_REFRESH_MS = 7 * 24 * 60 * 60 * 1000; // هفتگی
+const META_ROUND_MS = 60 * 60 * 1000;            // هر ساعت یک دسته
+const META_BATCH = 50;
+const META_CONCURRENCY = 4;
+const fundMetaCache = new Map(); // l18 → { type, at }
+let lastMetaRound = 0;
+
+async function refreshFundMeta(funds) {
+  if (!BRSAPI_KEY || funds.length === 0) return;
+  if (Date.now() - lastMetaRound < META_ROUND_MS) return;
+  lastMetaRound = Date.now();
+  const now = Date.now();
+  const pending = funds
+    .filter((f) => {
+      const c = fundMetaCache.get(f.id);
+      return !c || now - c.at > META_REFRESH_MS;
+    })
+    .sort((a, b) => (b.value || 0) - (a.value || 0))
+    .slice(0, META_BATCH);
+  if (pending.length === 0) return;
+
+  let updated = 0;
+  let failed = 0;
+  const queue = [...pending];
+  async function worker() {
+    while (queue.length) {
+      const f = queue.shift();
+      if (!f) return;
+      try {
+        const res = await fetch(
+          `https://Api.BrsApi.ir/Tsetmc/Symbol.php?key=${BRSAPI_KEY}&l18=${encodeURIComponent(f.id)}`,
+          { headers: HDRS, signal: AbortSignal.timeout(15000) }
+        );
+        if (!res.ok) { failed++; continue; }
+        const j = await res.json();
+        const d = Array.isArray(j) ? j[0] : j;
+        const type = typeof d?.cs_sub === "string" && d.cs_sub.trim() ? d.cs_sub.trim() : null;
+        if (type) {
+          fundMetaCache.set(f.id, { type, at: Date.now() });
+          updated++;
+        } else {
+          // پاسخ بدون cs_sub → دوبارهٔ زودهنگام نخواهیم؛ برچسبِ خالی ثبت می‌شود
+          fundMetaCache.set(f.id, { type: null, at: Date.now() });
+          failed++;
+        }
+      } catch {
+        failed++;
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: META_CONCURRENCY }, worker));
+  status.sources.brsapi_fund_meta = {
+    ok: updated > 0,
+    cached: fundMetaCache.size,
+    updated,
+    failed,
+    error: updated === 0 && pending.length > 0 ? "no meta fetched" : null,
+  };
+}
+
+function applyFundTypes(funds) {
+  for (const f of funds) {
+    const c = fundMetaCache.get(f.id);
+    if (c?.type) f.type = c.type;
+  }
+}
+
 // ── BrsApi: شاخص بورس ────────────────────────────────────────────────────────
 async function fetchIndex() {
   if (!BRSAPI_KEY) {
@@ -247,6 +429,12 @@ async function buildPayload() {
     fetchStocksAndFunds(),
     fetchIndex(),
   ]);
+  // دورهای NAV و نوعِ صندوق در پس‌زمینه (ساعتی؛ درونشان سهمیه‌بندی شده) —
+  // payload فعلی از کشِ موجود پر می‌شود و دورِ بعدی نتیجهٔ تازه را برمی‌دارد.
+  refreshNavs(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
+  refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
+  applyNav(sf.funds);
+  applyFundTypes(sf.funds);
   const payload = {
     gold: gc.gold,
     currency: gc.currency,

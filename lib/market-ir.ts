@@ -39,6 +39,14 @@ export interface IrStockRow extends IrRow {
   buyN?: number;
   sellI?: number;
   sellN?: number;
+  /** فقط صندوق‌ها — NAV ابطال (تومان)؛ رله ساعتی از Tsetmc/Nav می‌گیرد */
+  nav?: number | null;
+  /** NAV صدور (تومان) */
+  navIssue?: number | null;
+  navDate?: string | null;
+  navTime?: string | null;
+  /** حباب ٪ = (قیمت − NAV ابطال) ÷ NAV ابطال × ۱۰۰ — محاسبهٔ قطعیِ رله */
+  bubblePercent?: number | null;
 }
 
 /** ردیفِ کریپتو (از BrsApi) */
@@ -159,6 +167,7 @@ function asStockRows(v: unknown): IrStockRow[] {
       unit: (r.unit === "usd" ? "usd" : "toman") as "toman" | "usd",
       change: typeof r.change === "number" && isFinite(r.change) ? r.change : null,
       changePercent: typeof r.changePercent === "number" && isFinite(r.changePercent) ? r.changePercent : null,
+      ...(typeof r.type === "string" && r.type ? { type: r.type } : {}),
       closingPrice: typeof r.closingPrice === "number" ? r.closingPrice : undefined,
       closingChangePercent: typeof r.closingChangePercent === "number" ? r.closingChangePercent : null,
       volume: typeof r.volume === "number" ? r.volume : 0,
@@ -172,6 +181,13 @@ function asStockRows(v: unknown): IrStockRow[] {
       buyN: typeof r.buyN === "number" ? r.buyN : 0,
       sellI: typeof r.sellI === "number" ? r.sellI : 0,
       sellN: typeof r.sellN === "number" ? r.sellN : 0,
+      nav: typeof r.nav === "number" && isFinite(r.nav) && r.nav > 0 ? r.nav : null,
+      navIssue:
+        typeof r.navIssue === "number" && isFinite(r.navIssue) && r.navIssue > 0 ? r.navIssue : null,
+      navDate: typeof r.navDate === "string" ? r.navDate : null,
+      navTime: typeof r.navTime === "string" ? r.navTime : null,
+      bubblePercent:
+        typeof r.bubblePercent === "number" && isFinite(r.bubblePercent) ? r.bubblePercent : null,
     }));
 }
 
