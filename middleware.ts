@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Admin gate — DB-backed (single source of truth)
-  if ((pathname.startsWith('/admin') || (pathname.startsWith('/terminal') && !terminalPreviewOpen)) && user) {
+  if (pathname.startsWith('/admin') && user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -39,6 +39,36 @@ export async function middleware(request: NextRequest) {
       .maybeSingle()
     if (profile?.role !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
+
+  // Terminal gate — دسترسی کامل: ادمین یا entitlement فعّال (مشاوره/وبینار)
+  // هم‌خوان با lib/access.ts و layout ترمینال؛ مشتری «۳ ماه دسترسی کامل» باید عبور کند
+  if (pathname.startsWith('/terminal') && !terminalPreviewOpen && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role !== 'admin') {
+      let entitled = false
+      try {
+        const nowIso = new Date().toISOString()
+        const { data: ents, error } = await supabase
+          .from('entitlements')
+          .select('id')
+          .eq('user_id', user.id)
+          .is('revoked_at', null)
+          .lte('starts_at', nowIso)
+          .gt('expires_at', nowIso)
+          .limit(1)
+        entitled = !error && !!ents && ents.length > 0
+      } catch {
+        entitled = false
+      }
+      if (!entitled) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
     }
   }
 

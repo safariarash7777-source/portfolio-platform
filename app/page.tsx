@@ -1,4 +1,4 @@
-import LandingNav from "@/components/landing/LandingNav";
+import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/landing/Hero";
 import MarketTicker from "@/components/market/MarketTicker";
 import ProductFacts from "@/components/landing/ProductFacts";
@@ -15,7 +15,7 @@ import Footer from "@/components/layout/Footer";
 export default function LandingPage() {
   return (
     <>
-      <LandingNav />
+      <Navbar />
       <main>
         <Hero />
         {/* نبضِ صفحه: نوارِ قیمتِ زنده بلافاصله زیر هیرو */}

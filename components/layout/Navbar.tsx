@@ -6,12 +6,12 @@ import Logo from "../ui/Logo";
 import ThemeToggle from "../ui/ThemeToggle";
 
 const NAV_LINKS = [
-  { href: "/#features", label: "خدمات" },
   { href: "/market",    label: "رصد بازار" },
   { href: "/data",      label: "بانک داده" },
-  { href: "/insights",  label: "آخرین تحلیل‌ها" },
+  { href: "/insights",  label: "تحلیل‌ها" },
   { href: "/notes",     label: "یادداشت روزانه" },
-  { href: "/#faq",      label: "سؤالات متداول" },
+  { href: "/webinars",  label: "وبینار" },
+  { href: "/terminal",  label: "ترمینال" },
   { href: "/dashboard", label: "داشبورد" },
 ];
 

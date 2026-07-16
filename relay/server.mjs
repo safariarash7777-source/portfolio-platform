@@ -547,6 +547,97 @@ async function pushHistory(body) {
   }
 }
 
+// ── تاریخچهٔ روزانهٔ نمادها (symbol_history، append-only، روزی یک‌بار بعد از بستن بازار) ──
+// منبع: اسنپ‌شات جاری. قیمت‌های اسنپ‌شات تومان است → ×۱۰ ریال تا با بک‌فیل (ریال)
+// یکدست بماند. صداقت داده: اسنپ‌شات فقط حجم حقیقی/حقوقی دارد (نه ارزش)، پس
+// ستون‌های ارزش null می‌ماند و حجم‌ها در raw ثبت می‌شود. OHLC هم نیست → null.
+const EOD_AFTER_HOUR = Number(process.env.EOD_AFTER_HOUR || 14); // ساعت تهران
+let eodStatus = { lastRun: null, lastDate: null, rows: 0, skipped: null, error: null };
+
+function tehranNow() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", hour12: false, weekday: "short",
+  }).formatToParts(new Date());
+  const get = (t) => parts.find((p) => p.type === t)?.value;
+  return { date: `${get("year")}-${get("month")}-${get("day")}`, hour: Number(get("hour")), weekday: get("weekday") };
+}
+
+async function pushDailyHistory(body) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  const t = tehranNow();
+  // فقط بعد از بسته‌شدن بازار و فقط روزهای معاملاتی (شنبه–چهارشنبه)
+  if (t.hour < EOD_AFTER_HOUR) return;
+  if (t.weekday === "Thu" || t.weekday === "Fri") return;
+  if (eodStatus.lastDate === t.date) return; // امروز نوشته شده
+  const base = SUPABASE_URL.replace(/\/+$/, "");
+  const H = {
+    "Content-Type": "application/json",
+    apikey: SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+  };
+  try {
+    // دفع تکرار بعد از ری‌دیپلوی: اگر برای امروز ردیف relay_eod هست، رد شو
+    const chk = await fetch(
+      `${base}/rest/v1/symbol_history?select=id&trade_date=eq.${t.date}&source=eq.relay_eod&limit=1`,
+      { headers: H, signal: AbortSignal.timeout(10000) },
+    );
+    if (chk.ok) {
+      const ex = await chk.json();
+      if (Array.isArray(ex) && ex.length > 0) {
+        eodStatus = { ...eodStatus, lastDate: t.date, skipped: "already written today" };
+        return;
+      }
+    }
+    const p = typeof body === "string" ? JSON.parse(body) : body;
+    const all = [...(p.stocks || []), ...(p.funds || [])];
+    const rows = [];
+    for (const r of all) {
+      if (!r?.id || !(Number(r.value) > 0)) continue; // فقط نمادهای معامله‌شدهٔ امروز
+      const raw = {
+        eod: true,
+        buy_i_vol: Number(r.buyI) || null,
+        sell_i_vol: Number(r.sellI) || null,
+        buy_n_vol: Number(r.buyN) || null,
+        sell_n_vol: Number(r.sellN) || null,
+        change_percent: typeof r.changePercent === "number" ? r.changePercent : null,
+      };
+      if (Number(r.nav) > 0) raw.nav_toman = Number(r.nav);
+      if (typeof r.bubblePercent === "number") raw.bubble_percent = r.bubblePercent;
+      rows.push({
+        symbol: r.id,
+        trade_date: t.date,
+        close: r.closingPrice > 0 ? r.closingPrice * 10 : null, // تومان → ریال
+        last_price: r.price > 0 ? r.price * 10 : null,
+        volume: Number(r.volume) || null,
+        value_traded: Number(r.value) || null,
+        raw,
+        source: "relay_eod",
+      });
+    }
+    if (rows.length === 0) {
+      eodStatus = { ...eodStatus, skipped: `no traded rows ${t.date}` };
+      return;
+    }
+    let inserted = 0;
+    for (let i = 0; i < rows.length; i += 500) {
+      const res = await fetch(`${base}/rest/v1/symbol_history`, {
+        method: "POST",
+        headers: { ...H, Prefer: "return=minimal" },
+        body: JSON.stringify(rows.slice(i, i + 500)),
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status} @batch ${i}`);
+      inserted += Math.min(500, rows.length - i);
+    }
+    eodStatus = { lastRun: Date.now(), lastDate: t.date, rows: inserted, skipped: null, error: null };
+    console.log(`eod history ok: ${inserted} rows for ${t.date}`);
+  } catch (e) {
+    eodStatus = { ...eodStatus, error: errMsg(e) };
+    console.error("eod history error:", eodStatus.error);
+  }
+}
+
 // ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
 let refreshing = null;
 function refresh() {
@@ -559,6 +650,7 @@ function refresh() {
       status.lastError = null;
       await pushToSupabase(body);
       await pushHistory(body);
+      await pushDailyHistory(body);
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);
@@ -597,6 +689,7 @@ function debugPayload() {
     supabase: status.supabase,
     codal: codalStatus,
     codalEngine: engineStatus,
+    eodHistory: eodStatus,
   }, null, 2);
 }
 
