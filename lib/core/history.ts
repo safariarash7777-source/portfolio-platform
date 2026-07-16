@@ -101,15 +101,16 @@ export async function getHistorySymbols(): Promise<string[]> {
   const e = env();
   if (!e) return [];
   try {
-    // PostgREST: select distinct از طریق group by با select=symbol
+    // فقط ۳۰ روز اخیر — هر نماد فعال حتماً در این بازه ردیف دارد و حجم پاسخ کوچک می‌ماند
+    const since = new Date(Date.now() - 30 * 24 * 3600 * 1000)
+      .toISOString()
+      .slice(0, 10);
     const res = await fetch(
-      `${e.url}/rest/v1/symbol_history?select=symbol&order=symbol.asc&limit=10000`,
+      `${e.url}/rest/v1/symbol_history?select=symbol&trade_date=gte.${since}&limit=10000`,
       {
         headers: {
           apikey: e.anon,
           Authorization: `Bearer ${e.anon}`,
-          // فقط تاریخ‌های اخیر تا حجم پاسخ کوچک بماند
-          Range: "0-9999",
         },
         signal: AbortSignal.timeout(10000),
         next: { revalidate: 600 },

@@ -23,13 +23,15 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/terminal')
+  // پیش‌نمایش محلی ترمینال — فقط با TERMINAL_PREVIEW_OPEN=1 (هرگز روی Vercel ست نمی‌شود)
+  const terminalPreviewOpen = process.env.TERMINAL_PREVIEW_OPEN === '1'
+  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || (pathname.startsWith('/terminal') && !terminalPreviewOpen)
   if (isProtected && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Admin gate — DB-backed (single source of truth)
-  if ((pathname.startsWith('/admin') || pathname.startsWith('/terminal')) && user) {
+  if ((pathname.startsWith('/admin') || (pathname.startsWith('/terminal') && !terminalPreviewOpen)) && user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
