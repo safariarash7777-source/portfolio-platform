@@ -24,6 +24,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import http from "node:http";
 import { runCodalJob, codalStatus, codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./codal.mjs";
+import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -595,6 +596,7 @@ function debugPayload() {
     sources: status.sources,
     supabase: status.supabase,
     codal: codalStatus,
+    codalEngine: engineStatus,
   }, null, 2);
 }
 
@@ -685,15 +687,19 @@ server.listen(PORT, () => {
     setTimeout(tryDump, 20 * 1000).unref();
     setInterval(tryDump, 3 * 60 * 1000).unref();
   }
-  // کدال — فعلاً خاموش تا صحت پارسر روی دادهٔ واقعی تأیید شود (CODAL_ENABLED=1 برای فعال‌سازی).
+  // کدال — CODAL_ENABLED=1 برای فعال‌سازی. پیش‌فرض: موتور v3 (فید سراسری +
+  // بک‌فیل اولویت‌دار)؛ CODAL_LEGACY=1 برای بازگشت به حالت قدیمی نمادبه‌نماد.
   if (process.env.CODAL_ENABLED === "1") {
-    console.log("codal job armed: first run in 90s");
+    const legacy = process.env.CODAL_LEGACY === "1";
+    const job = legacy ? runCodalJob : runEngineCycle;
+    const name = legacy ? "codal legacy job" : "codal engine v3";
+    console.log(`${name} armed: first run in 90s`);
     setTimeout(() => {
-      console.log("codal job starting");
-      runCodalJob().catch((e) => console.error("codal job error:", e?.message ?? e));
+      console.log(`${name} starting`);
+      job().catch((e) => console.error(`${name} error:`, e?.message ?? e));
     }, 90 * 1000).unref();
     setInterval(() => {
-      runCodalJob().catch((e) => console.error("codal job error:", e?.message ?? e));
+      job().catch((e) => console.error(`${name} error:`, e?.message ?? e));
     }, CODAL_INTERVAL_MS).unref();
   }
 });

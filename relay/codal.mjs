@@ -454,6 +454,71 @@ function metaFrom(a, kind) {
 
 /* ── Job اصلی ───────────────────────────────────────────────────────────────── */
 
+/* ── پل موتور v3 (codal-engine.mjs) ───────────────────────────────────────────────
+ * موتور کشف سراسری به همین کمکی‌های آزموده تکیه می‌کند تا منطق پارس/درج
+ * فقط یک‌جا بماند. */
+export const codalEnv = { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY };
+export const faToEn = faToEnDigits;
+export const classifyAnnouncement = classify;
+export const metaFromAnnouncement = metaFrom;
+export const existingUrlsFor = existingUrls;
+
+/** دریافت یک صفحهٔ اطلاعیه — بدون l18، فید سراسری کل بازار را می‌دهد
+ * (جدیدترین‌ها اول، ۲۰تایی). موتور v3 برای واترمارک فید و بک‌فیل نمادی
+ * از همین استفاده می‌کند. */
+export async function fetchAnnouncementsPage({ l18, category, page = 1 } = {}) {
+  const qs = new URLSearchParams({
+    key: BRSAPI_KEY, page: String(page),
+    only_main_company: "true", only_subsidiaries: "false",
+  });
+  if (l18) qs.set("l18", l18);
+  if (category) qs.set("category", String(category));
+  const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
+    headers: HDRS, signal: AbortSignal.timeout(25000),
+  });
+  if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
+  const json = await res.json();
+  return Array.isArray(json?.announcement) ? json.announcement : [];
+}
+
+/** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
+export async function downloadAndParse(a, kind) {
+  const html = await downloadExcelHtml(a.link_excel);
+  const tables = parseHtmlTables(html);
+  const meta = metaFrom(a, kind);
+  return kind === "ن-۱۰" ? normalizeN10(tables, meta) : normalizeN30(tables, meta);
+}
+
+/** درج ردیف پارس‌شده — دقیقاً همان قرارداد درج processSymbol
+ * (source_url نسخه‌دار، dedup روی on_conflict، raw کامل). */
+export async function insertParsedReport(a, kind, data) {
+  const meta = metaFrom(a, kind);
+  const row = {
+    symbol: a.l18,
+    company_name: meta.company_name,
+    report_kind: kind,
+    period_end: jalaliStrToGregorian(meta.period_end),
+    title: a.title || null,
+    source_url: versionedUrl(a.link),
+    published_at: null,
+    data,
+    raw: {
+      date_publish: a.date_publish ?? null,
+      time_publish: a.time_publish ?? null,
+      link_pdf: a.link_pdf ?? null,
+      link_excel: a.link_excel ?? null,
+      code: a.code ?? null,
+      period_end_jalali: meta.period_end,
+      audited: meta.audited,
+      period_months: meta.period_months,
+      parser_version: PARSER_VERSION,
+      announcement_link: a.link,
+      discovered_by: "engine-v3",
+    },
+  };
+  await insertReport(row);
+}
+
 /** پردازش یک نماد: اطلاعیه‌ها → دانلود اکسل‌های تازه → نرمال‌سازی → درج. */
 async function processSymbol(symbol) {
   const [fs, monthly] = await Promise.all([
