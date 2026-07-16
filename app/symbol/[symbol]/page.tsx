@@ -57,7 +57,7 @@ export default async function SymbolPage({ params }: PageProps) {
   const quote = all.find((r) => r.id === sym) ?? null;
   const pct = quote?.changePercent ?? quote?.closingChangePercent ?? null;
 
-  const fundamentals = getFundamentals(sym);
+  const fundamentals = await getFundamentals(sym);
 
   return (
     <>
