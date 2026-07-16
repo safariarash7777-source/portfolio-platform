@@ -1,7 +1,7 @@
-// ترمینال تحلیلگر — فقط ادمین (همان گیت DB-سطح پنل مدیریت).
-// نکته: middleware مسیر /terminal را هم باید بگیرد؛ matcher به‌روزرسانی شده است.
+// ترمینال تحلیلگر — دسترسی «کامل» (ادمین یا مشاوره/وبینار فعال — سند مانیتایز فاز ۱۱).
+// نکته: middleware مسیر /terminal را هم می‌گیرد؛ گیت دولایه است.
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getAccess } from "@/lib/access";
 
 export const metadata = {
   title: "ترمینال تحلیلگر — قطب‌نمای بازار",
@@ -17,16 +17,10 @@ export default async function TerminalLayout({
   if (process.env.TERMINAL_PREVIEW_OPEN === "1") {
     return <div className="min-h-screen" style={{ background: "var(--bg)" }}>{children}</div>;
   }
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profile?.role !== "admin") redirect("/dashboard");
+
+  const access = await getAccess();
+  if (access.level === "visitor") redirect("/login");
+  if (access.level !== "full") redirect("/dashboard?upgrade=terminal");
+
   return <div className="min-h-screen" style={{ background: "var(--bg)" }}>{children}</div>;
 }

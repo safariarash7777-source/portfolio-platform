@@ -15,9 +15,18 @@ export default async function TerminalIndexPage() {
         <p className="text-[12px] font-bold tracking-wide" style={{ color: "var(--gold)" }}>
           قطب‌نمای بازار · محیط تحلیلگر
         </p>
-        <h1 className="mt-1 text-2xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
-          ترمینال تحلیلگر
-        </h1>
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
+            ترمینال تحلیلگر
+          </h1>
+          <Link
+            href="/terminal/watchlist"
+            className="rounded-full px-4 py-2 text-[13px] font-bold"
+            style={{ background: "var(--navy)", color: "#fff" }}
+          >
+            واچ‌لیست و رژیم بازار ←
+          </Link>
+        </div>
         <p className="mt-2 text-[13px] leading-6" style={{ color: "var(--text-2)" }}>
           کارت امتیاز سه‌محوره، بازهٔ ارزش‌گذاری سناریویی و جریان پول برای هر نماد — همه از یک
           موتور محاسباتی واحد و دادهٔ رسمی کدال/بازار. این محیط چارچوب تحلیلی داخلی است، نه
