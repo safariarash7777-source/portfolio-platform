@@ -610,7 +610,16 @@ export async function runCodalJob() {
     const sym = CODAL_SYMBOLS[codalStatus.cursor % CODAL_SYMBOLS.length];
     codalStatus.cursor++;
     try {
-      const r = await processSymbol(sym);
+      // مهلت سخت هر نماد — تجربه نشان داد fetch به excel.codal.ir گاه با وجود
+      // AbortSignal هم معلق می‌ماند (سوکت نیمه‌باز)؛ کل چرخه نباید قفل شود.
+      const r = await Promise.race([
+        processSymbol(sym),
+        new Promise((_, rej) => {
+          const t = setTimeout(
+            () => rej(new Error("per-symbol hard timeout (8min)")), 8 * 60 * 1000);
+          if (t.unref) t.unref();
+        }),
+      ]);
       totals.processed += r.processed;
       totals.inserted += r.inserted;
       totals.skipped += r.skipped;
