@@ -37,7 +37,7 @@ export default function RiskPlanCard({ profile }: Props) {
         <div className="flex items-center gap-2 mb-3">
           <Package size={14} style={{ color: "var(--gold)" }} />
           <span className="text-xs font-bold" style={{ color: "var(--text-3)" }}>
-            محصولات پیشنهادی
+            ابزارهای رایج این پروفایل
           </span>
         </div>
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
