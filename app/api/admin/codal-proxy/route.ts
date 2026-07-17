@@ -13,39 +13,22 @@ const RELAY_BASE =
   process.env.IR_MARKET_RELAY_URL?.replace(/\/+$/, "") || "https://arsadata.liara.run";
 
 export async function GET(req: NextRequest) {
-  const secret =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-  if (!secret) {
-    // تشخیصی: فقط وجود/عدم وجود envها (نه مقدار) — برای دیباگ استقرار.
-    return NextResponse.json(
-      {
-        error: "server not configured",
-        env: {
-          srk: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
-          relayUrl: Boolean(process.env.IR_MARKET_RELAY_URL),
-          relayToken: Boolean(process.env.IR_MARKET_RELAY_TOKEN),
-          anon: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-        },
-      },
-      { status: 503 }
-    );
-  }
-  const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${secret}`) {
+  // احراز به عهدهٔ خود رله است: Bearer ورودی عیناً به رله فوروارد می‌شود و
+  // رله بدون RELAY_TOKEN معتبر 401 می‌دهد. این مسیر سکرتی نگه نمی‌دارد و
+  // فقط دامنهٔ excel.codal.ir را از طریق رلهٔ خودمان عبور می‌دهد (بدون SSRF باز).
+  const auth = req.headers.get("authorization") || "";
+  if (!auth.startsWith("Bearer ")) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const target = req.nextUrl.searchParams.get("url") || "";
   if (!/^https:\/\/excel\.codal\.ir\//.test(target)) {
     return NextResponse.json({ error: "only excel.codal.ir urls" }, { status: 400 });
   }
-  // توکن رله: env در اولویت؛ وگرنه هدر x-relay-token (خود مسیر با سکرت سرور قفل است).
-  const relayToken =
-    process.env.IR_MARKET_RELAY_TOKEN || req.headers.get("x-relay-token") || "";
   try {
     const res = await fetch(
       `${RELAY_BASE}/codal-raw?url=${encodeURIComponent(target)}`,
       {
-        headers: relayToken ? { Authorization: `Bearer ${relayToken}` } : {},
+        headers: { Authorization: auth },
         cache: "no-store",
         signal: AbortSignal.timeout(55000),
       }
