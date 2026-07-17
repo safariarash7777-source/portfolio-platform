@@ -52,11 +52,11 @@ function formatPrice(toman: number) {
 
 function statusLabel(status: string) {
   const map: Record<string, { color: string; label: string }> = {
-    published: { color: "#1d4ed8", label: "ثبت‌نام باز" },
-    live: { color: "#16a34a", label: "در حال برگزاری" },
-    ended: { color: "#6b7280", label: "پایان‌یافته" },
+    published: { color: "var(--info)", label: "ثبت‌نام باز" },
+    live: { color: "var(--success)", label: "در حال برگزاری" },
+    ended: { color: "var(--text-3)", label: "پایان‌یافته" },
   };
-  const s = map[status] ?? { color: "#6b7280", label: status };
+  const s = map[status] ?? { color: "var(--text-3)", label: status };
   return (
     <span className="text-xs font-bold" style={{ color: s.color }}>
       {s.label}
@@ -167,8 +167,8 @@ function WebinarsContent() {
           <div
             className="mb-6 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2"
             style={{
-              background: message.type === "success" ? "#dcfce7" : "#fee2e2",
-              color: message.type === "success" ? "#16a34a" : "#dc2626",
+              background: message.type === "success" ? "color-mix(in srgb, var(--success) 12%, transparent)" : "color-mix(in srgb, var(--danger) 12%, transparent)",
+              color: message.type === "success" ? "var(--success)" : "var(--danger)",
             }}
           >
             {message.type === "success" ? <CheckCircle size={16} /> : <XCircle size={16} />}
@@ -212,7 +212,7 @@ function WebinarsContent() {
                     style={{
                       background:
                         w.status === "live"
-                          ? "#16a34a"
+                          ? "var(--success)"
                           : w.status === "published"
                           ? "var(--navy)"
                           : "var(--line)",
@@ -301,7 +301,7 @@ function WebinarsContent() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold"
-                          style={{ background: "#dcfce7", color: "#16a34a" }}
+                          style={{ background: "color-mix(in srgb, var(--success) 12%, transparent)", color: "var(--success)" }}
                         >
                           <ExternalLink size={14} />
                           ورود به جلسه

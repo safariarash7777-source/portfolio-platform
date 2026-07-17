@@ -220,7 +220,7 @@ export default function AnalysesManager({ analyses, weekly, weeklyTableMissing, 
 
   const inputCls =
     "w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--navy)]";
-  const inputStyle = { borderColor: "var(--line, #e5e0d5)", background: "var(--card, #fff)", color: "var(--ink, #1c2733)" };
+  const inputStyle = { borderColor: "var(--line)", background: "var(--surface)", color: "var(--text)" };
 
   return (
     <div className="space-y-8">
@@ -237,12 +237,12 @@ export default function AnalysesManager({ analyses, weekly, weeklyTableMissing, 
       </header>
 
       {msg ? (
-        <div className="card p-3 flex items-center gap-2 text-sm" style={{ color: "var(--green, #1a7f4b)" }}>
+        <div className="card p-3 flex items-center gap-2 text-sm" style={{ color: "var(--success)" }}>
           <CheckCircle2 size={16} /> {msg}
         </div>
       ) : null}
       {err ? (
-        <div className="card p-3 flex items-center gap-2 text-sm" style={{ color: "var(--red, #b3363b)" }}>
+        <div className="card p-3 flex items-center gap-2 text-sm" style={{ color: "var(--danger)" }}>
           <AlertCircle size={16} /> {err}
         </div>
       ) : null}
@@ -306,7 +306,7 @@ export default function AnalysesManager({ analyses, weekly, weeklyTableMissing, 
           <CalendarRange size={18} /> چشم‌انداز هفتگی بازار
         </h2>
         {weeklyTableMissing ? (
-          <p className="mt-3 text-sm leading-7" style={{ color: "var(--red, #b3363b)" }}>
+          <p className="mt-3 text-sm leading-7" style={{ color: "var(--danger)" }}>
             جدول چشم‌انداز هفتگی هنوز در دیتابیس ساخته نشده است — یک‌بار{" "}
             <code dir="ltr">sql/phase12_weekly_outlook.sql</code> را در Supabase SQL Editor اجرا کنید.
           </p>
@@ -362,7 +362,7 @@ export default function AnalysesManager({ analyses, weekly, weeklyTableMissing, 
               </thead>
               <tbody>
                 {weekly.map((w) => (
-                  <tr key={w.id} style={{ borderTop: "1px solid var(--line, #e5e0d5)" }}>
+                  <tr key={w.id} style={{ borderTop: "1px solid var(--line)" }}>
                     <td className="px-3 py-2 whitespace-nowrap">{formatJalaliShort(w.week_start)}</td>
                     <td className="px-3 py-2 font-bold">{w.label}</td>
                     <td className="px-3 py-2">{pd(w.score)}</td>
@@ -406,7 +406,7 @@ export default function AnalysesManager({ analyses, weekly, weeklyTableMissing, 
               </thead>
               <tbody>
                 {analyses.map((a) => (
-                  <tr key={a.id} style={{ borderTop: "1px solid var(--line, #e5e0d5)" }}>
+                  <tr key={a.id} style={{ borderTop: "1px solid var(--line)" }}>
                     <td className="px-3 py-2 font-bold" style={{ color: "var(--navy-deep)" }}>{a.symbol}</td>
                     <td className="px-3 py-2">{a.direction === "buy" ? "صعودی" : "نزولی"}</td>
                     <td className="px-3 py-2">{pd(a.entry_price)}</td>

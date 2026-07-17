@@ -175,7 +175,7 @@ export default function DataExplorer({
               className="rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
               style={
                 tab === t.key
-                  ? { background: "var(--navy)", color: "#fff" }
+                  ? { background: "var(--navy)", color: "var(--text-on-navy)" }
                   : { color: "var(--text-3)" }
               }
             >

@@ -91,7 +91,7 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
           </p>
         )}
         {status === "error" && (
-          <p className="text-sm" style={{ color: onNavy ? "#FCA5A5" : "var(--danger)" }}>
+          <p className="text-sm" style={{ color: onNavy ? "color-mix(in srgb, var(--danger) 45%, white)" : "var(--danger)" }}>
             {errorMessage}
           </p>
         )}

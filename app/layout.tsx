@@ -56,6 +56,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // استثنای مستند C4: themeColor متادیتای مرورگر است و پیش از لود CSS خوانده می‌شود؛ CSS var ممکن نیست.
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#F8FAFC" },
     { media: "(prefers-color-scheme: dark)",  color: "#0B1220" },

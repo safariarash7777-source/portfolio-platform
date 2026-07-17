@@ -61,11 +61,12 @@ const RISK_LABELS: Record<string, string> = {
   "بسیار تهاجمی": "بسیار تهاجمی",
 };
 
+// رنگ‌ها فقط از توکن‌های برند (C4)؛ پس‌زمینهٔ نشان با color-mix از همان توکن ساخته می‌شود.
 const RISK_COLORS: Record<string, string> = {
-  "محافظه‌کار": "#15803D",
-  "متعادل": "#1E3A8A",
-  "تهاجمی": "#B45309",
-  "بسیار تهاجمی": "#B91C1C",
+  "محافظه‌کار": "var(--success)",
+  "متعادل": "var(--navy)",
+  "تهاجمی": "var(--warning)",
+  "بسیار تهاجمی": "var(--danger)",
 };
 
 type Tab = "users" | "portfolio" | "waitlist" | "payments";
@@ -252,7 +253,7 @@ function UsersTab({ users }: { users: UserRow[] }) {
                       <span
                         className="inline-block text-xs font-bold px-2.5 py-1 rounded-full"
                         style={{
-                          background: `${RISK_COLORS[u.risk_category] ?? "#64748B"}18`,
+                          background: `color-mix(in srgb, ${RISK_COLORS[u.risk_category] ?? "var(--text-3)"} 10%, transparent)`,
                           color: RISK_COLORS[u.risk_category] ?? "var(--text-3)",
                         }}
                       >
@@ -284,7 +285,7 @@ function UsersTab({ users }: { users: UserRow[] }) {
                     {u.has_portfolio ? (
                       <span
                         className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full"
-                        style={{ background: "rgba(21,128,61,0.1)", color: "var(--success)" }}
+                        style={{ background: "color-mix(in srgb, var(--success) 10%, transparent)", color: "var(--success)" }}
                       >
                         <CheckCircle2 size={11} />
                         دارد

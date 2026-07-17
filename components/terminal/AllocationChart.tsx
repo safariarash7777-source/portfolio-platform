@@ -15,6 +15,8 @@ export interface AllocationChartPoint {
   holdValue: number; // بدون ریبالانس (پایه ۱۰۰)
 }
 
+// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
+// این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
 function palette() {
   const cs =
     typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;

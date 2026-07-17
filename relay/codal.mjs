@@ -20,14 +20,7 @@ const BRSAPI_BASE = (process.env.BRSAPI_BASE || "https://Api.BrsApi.ir").replace
 const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/+$/, "");
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-// نمادهای هدف نسخهٔ اول — قابل تغییر با env بدون deploy مجدد.
-const DEFAULT_SYMBOLS = "فملی,فولاد,شبندر,شپنا,وبملت,خودرو,شستا,فارس,کگل,کچاد,پارسان,حکشتی";
-const CODAL_SYMBOLS = (process.env.CODAL_SYMBOLS || DEFAULT_SYMBOLS)
-  .split(",").map((s) => s.trim()).filter(Boolean);
-
-// هر چرخه چند نماد پردازش شود (سهمیهٔ BrsApi و بار CPU لیارا محدود است).
-const PER_CYCLE = Number(process.env.CODAL_PER_CYCLE || 3);
-// فاصلهٔ اجرای job — پیش‌فرض ۳ ساعت؛ گزارش کدال روزی چند بار بیشتر عوض نمی‌شود.
+// فاصلهٔ اجرای چرخهٔ موتور v3 — پیش‌فرض ۳ ساعت؛ گزارش کدال روزی چند بار بیشتر عوض نمی‌شود.
 export const CODAL_INTERVAL_MS = Number(process.env.CODAL_INTERVAL_MS || 3 * 60 * 60 * 1000);
 
 const BROWSER_UA =
@@ -36,19 +29,6 @@ const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
 
 const errMsg = (e) => (e && e.name === "TimeoutError" ? "timeout" : e?.message ?? String(e));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-// وضعیت تشخیصی برای /debug — بدون سکرت.
-export const codalStatus = {
-  ok: false,
-  lastRun: 0,
-  lastError: null,
-  processed: 0,   // اطلاعیه‌های پردازش‌شده در آخرین اجرا
-  inserted: 0,    // ردیف‌های تازه درج‌شده در آخرین اجرا
-  skipped: 0,     // تکراری‌ها (source_url موجود)
-  parseFailed: 0, // اکسل‌هایی که پارس کامل نشدند (فقط متادیتا ثبت شد)
-  cursor: 0,      // ایندکس نماد بعدی در چرخهٔ round-robin
-  symbols: CODAL_SYMBOLS.length,
-};
 
 /* ── ابزار اعداد و تاریخ فارسی ─────────────────────────────────────────────── */
 
@@ -624,76 +604,6 @@ export async function insertParsedReport(a, kind, data) {
   await insertReport(row);
 }
 
-/** پردازش یک نماد: اطلاعیه‌ها → دانلود اکسل‌های تازه → نرمال‌سازی → درج. */
-async function processSymbol(symbol) {
-  const [fs, monthly] = await Promise.all([
-    fetchAnnouncements(symbol, 1),
-    fetchAnnouncements(symbol, 3),
-  ]);
-  const known = await existingUrls(symbol);
-
-  // جدیدترین‌ها اول؛ سقف دانلود هر نماد در هر اجرا برای مهار بار و سهمیه.
-  const MAX_DL = 6;
-  let dl = 0;
-  const out = { processed: 0, inserted: 0, skipped: 0, parseFailed: 0 };
-
-  for (const a of [...fs, ...monthly]) {
-    const kind = classify(a);
-    if (!kind || !a.link) continue;
-    out.processed++;
-    if (known.has(a.link)) { out.skipped++; continue; }
-    if (!a.link_excel) continue;
-    if (dl >= MAX_DL) break;
-    dl++;
-
-    let data = null;
-    try {
-      const html = await downloadExcelHtml(a.link_excel);
-      const tables = parseHtmlTables(html);
-      const meta = metaFrom(a, kind);
-            data = kind === "ن-۱۰" ? normalizeN10(tables, meta) : normalizeN30(tables, meta);
-      if (!data) out.parseFailed++;
-    } catch (e) {
-      out.parseFailed++;
-      console.error(`codal excel ${symbol}: ${errMsg(e)}`);
-    }
-    // درج فقط برای پارس موفق — جدول append-only است و ردیف خراب قابل حذف نیست;
-    // اطلاعیهٔ ناموفق در چرخهٔ بعد دوباره تلاش می‌شود.
-    if (!data) continue;
-    const meta = metaFrom(a, kind);
-    const row = {
-      symbol,
-      company_name: meta.company_name,
-      report_kind: kind,
-      period_end: jalaliStrToGregorian(meta.period_end),
-      title: a.title || null,
-      source_url: versionedUrl(a.link),
-      published_at: null, // تاریخ جلالی متنی در raw هست؛ تبدیل دقیق زمان لازم نیست.
-      data,
-      raw: {
-        date_publish: a.date_publish ?? null,
-        time_publish: a.time_publish ?? null,
-        link_pdf: a.link_pdf ?? null,
-        link_excel: a.link_excel ?? null,
-        code: a.code ?? null,
-        period_end_jalali: meta.period_end,
-        audited: meta.audited,
-        period_months: meta.period_months,
-        parser_version: PARSER_VERSION,
-        announcement_link: a.link,
-      },
-    };
-    try {
-      await insertReport(row);
-      out.inserted++;
-    } catch (e) {
-      console.error(`codal insert ${symbol}: ${errMsg(e)}`);
-    }
-    await sleep(1500); // فاصلهٔ مودبانه بین دانلودها
-  }
-  return out;
-}
-
 /** دامپ تشخیصی ساختار جدول‌های یک اکسل واقعی به Supabase — وقتی لبهٔ لیارا از خارج در دسترس نیست.
  * فعال‌سازی: CODAL_DEBUG_EXCEL_URL را ست کنید؛ خروجی در ir_market_snapshots (key='codal_debug'). */
 export async function codalDebugDump() {
@@ -766,42 +676,4 @@ export async function codalTest(symbol) {
     out.samples.push(s);
   }
   return out;
-}
-
-/** اجرای دوره‌ای: در هر چرخه PER_CYCLE نماد (round-robin روی فهرست). */
-export async function runCodalJob() {
-  if (!BRSAPI_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    codalStatus.lastError = "env ناقص (BRSAPI_KEY/SUPABASE)";
-    return;
-  }
-  const totals = { processed: 0, inserted: 0, skipped: 0, parseFailed: 0 };
-  const n = Math.min(PER_CYCLE, CODAL_SYMBOLS.length);
-  for (let i = 0; i < n; i++) {
-    const sym = CODAL_SYMBOLS[codalStatus.cursor % CODAL_SYMBOLS.length];
-    codalStatus.cursor++;
-    try {
-      // مهلت سخت هر نماد — تجربه نشان داد fetch به excel.codal.ir گاه با وجود
-      // AbortSignal هم معلق می‌ماند (سوکت نیمه‌باز)؛ کل چرخه نباید قفل شود.
-      const r = await Promise.race([
-        processSymbol(sym),
-        new Promise((_, rej) => {
-          const t = setTimeout(
-            () => rej(new Error("per-symbol hard timeout (8min)")), 8 * 60 * 1000);
-          if (t.unref) t.unref();
-        }),
-      ]);
-      totals.processed += r.processed;
-      totals.inserted += r.inserted;
-      totals.skipped += r.skipped;
-      totals.parseFailed += r.parseFailed;
-      console.log(`codal ${sym}: processed=${r.processed} inserted=${r.inserted} skipped=${r.skipped} parseFailed=${r.parseFailed}`);
-    } catch (e) {
-      codalStatus.lastError = `${sym}: ${errMsg(e)}`;
-      console.error(`codal ${sym} error:`, errMsg(e));
-    }
-    await sleep(2000);
-  }
-  codalStatus.ok = totals.inserted > 0 || totals.skipped > 0;
-  codalStatus.lastRun = Date.now();
-  Object.assign(codalStatus, totals);
 }

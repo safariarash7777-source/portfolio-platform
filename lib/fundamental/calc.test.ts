@@ -1,6 +1,6 @@
 // تست واحد ماژول محاسبات بنیادی (الزام پذیرش WP4).
 // اجرا: npm run test:calc  (node:test از طریق tsx — بدون وابستگی جدید)
-// اعداد مرجع از docs/i1-fameli-1404.md — گزارش رسمی حسابرسی‌شدهٔ فملی ۱۴۰۴.
+// اعداد مرجع از docs/archive/i1-fameli-1404.md — گزارش رسمی حسابرسی‌شدهٔ فملی ۱۴۰۴.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -16,7 +16,7 @@ import {
   narrativeConsecutiveGrowth,
   narrativeFxShare,
 } from "./calc";
-import { FAMELI_N10_1404 } from "./data/fameli-1404";
+import { FAMELI_N10_1404 } from "./fixtures/fameli-1404.fixture";
 
 test("pct: حالت عادی و تقسیم بر صفر", () => {
   assert.equal(pct(50, 200), 25);

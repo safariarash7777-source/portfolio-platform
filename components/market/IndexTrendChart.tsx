@@ -7,6 +7,8 @@ import { createChart, LineSeries, type IChartApi, type UTCTimestamp } from "ligh
 import type { IndexSeries } from "@/lib/core/indexTrend";
 import { toPersianDigits } from "@/lib/format";
 
+// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
+// این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
 function palette() {
   const cs = typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
   const v = (name: string, fallback: string) => cs?.getPropertyValue(name).trim() || fallback;
@@ -79,7 +81,7 @@ export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
             className="rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors"
             style={
               i === active
-                ? { background: "var(--navy)", color: "#FFFFFF" }
+                ? { background: "var(--navy)", color: "var(--text-on-navy)" }
                 : { background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
             }
           >

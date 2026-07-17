@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
   }
 
   const email = (body.email ?? "").trim().toLowerCase();
-  if (!email || !EMAIL_RE.test(email)) {
+  // سقف طول استاندارد ایمیل (RFC 5321) — جلوگیری از ورودی حجیم (C2)
+  if (email.length > 254 || !email || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "ایمیل معتبر وارد کنید." }, { status: 400 });
   }
 

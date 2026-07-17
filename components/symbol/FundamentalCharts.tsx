@@ -394,7 +394,17 @@ function faMonthLabel(month: string): string {
   return `${FA_MONTHS[m - 1]} ${toPersianDigits(String(y).slice(2))}`;
 }
 
-const MIX_COLORS = ["#0f3a5f", "#b8860b", "#4a7ba6", "#8c6d1f", "#7195b5", "#c9a227", "#a3bdd3", "#94a3b8"];
+// C4: رمپ چارت از توکن‌های برند (navy/gold) با color-mix — بدون hex خام.
+const MIX_COLORS = [
+  "var(--navy-deep)",
+  "var(--gold)",
+  "color-mix(in srgb, var(--navy) 70%, white)",
+  "color-mix(in srgb, var(--gold) 70%, black)",
+  "color-mix(in srgb, var(--navy) 50%, white)",
+  "var(--gold-soft)",
+  "color-mix(in srgb, var(--navy) 30%, white)",
+  "var(--text-3)",
+];
 
 /** چارت ۴ — ترکیب فروش: سهم محصولات (میلهٔ افقی) در بازهٔ ماه‌های موجود. */
 function SalesMixChart({ d30 }: { d30: N30Derived }) {
@@ -452,8 +462,8 @@ function ProductRateChart({ d30 }: { d30: N30Derived }) {
             }
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar yAxisId="qty" dataKey="qty" name="مقدار فروش" fill="var(--chart-bar, #4a7ba6)" radius={[4, 4, 0, 0]} barSize={22} />
-          <Line yAxisId="rate" dataKey="rate" name="نرخ فروش (ریال)" stroke="#b8860b" strokeWidth={2} dot={{ r: 3 }} />
+          <Bar yAxisId="qty" dataKey="qty" name="مقدار فروش" fill="color-mix(in srgb, var(--navy) 70%, white)" radius={[4, 4, 0, 0]} barSize={22} />
+          <Line yAxisId="rate" dataKey="rate" name="نرخ فروش (ریال)" stroke="var(--gold)" strokeWidth={2} dot={{ r: 3 }} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
@@ -476,8 +486,8 @@ function ProdVsSalesChart({ d30 }: { d30: N30Derived }) {
           <YAxis tick={TICK} tickFormatter={(v) => toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬")} />
           <Tooltip formatter={(v: unknown, name) => [toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬"), name]} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="production" name="تولید" fill="#0f3a5f" radius={[4, 4, 0, 0]} barSize={16} />
-          <Bar dataKey="sales" name="فروش" fill="#b8860b" radius={[4, 4, 0, 0]} barSize={16} />
+          <Bar dataKey="production" name="تولید" fill="var(--navy-deep)" radius={[4, 4, 0, 0]} barSize={16} />
+          <Bar dataKey="sales" name="فروش" fill="var(--gold)" radius={[4, 4, 0, 0]} barSize={16} />
         </BarChart>
       </ResponsiveContainer>
     </div>
