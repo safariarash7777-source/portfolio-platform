@@ -13,9 +13,22 @@ const RELAY_BASE =
   process.env.IR_MARKET_RELAY_URL?.replace(/\/+$/, "") || "https://arsadata.liara.run";
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const secret =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
   if (!secret) {
-    return NextResponse.json({ error: "server not configured" }, { status: 503 });
+    // تشخیصی: فقط وجود/عدم وجود envها (نه مقدار) — برای دیباگ استقرار.
+    return NextResponse.json(
+      {
+        error: "server not configured",
+        env: {
+          srk: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+          relayUrl: Boolean(process.env.IR_MARKET_RELAY_URL),
+          relayToken: Boolean(process.env.IR_MARKET_RELAY_TOKEN),
+          anon: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+        },
+      },
+      { status: 503 }
+    );
   }
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${secret}`) {
