@@ -53,12 +53,12 @@ export default function FinalCTA() {
             className="mx-auto max-w-xl mb-8 text-base"
             style={{ color: "rgba(248,250,252,0.78)", lineHeight: 1.85 }}
           >
-            به لیست انتظار بپیوندید تا به‌محض آماده‌شدن پلتفرم، پیش از دیگران
-            دسترسی داشته باشید.
+            رصد بازار و بانک داده برای همه رایگان است. برای مشاورهٔ اختصاصی و
+            دسترسی کامل به ترمینال تحلیلگر، درخواست خود را ثبت کنید.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/#waitlist" className="btn btn-gold">
-              عضویت در لیست انتظار
+              ثبت درخواست مشاوره
               <ArrowLeft size={16} />
             </Link>
             <Link href="/dashboard" className="btn btn-on-navy">

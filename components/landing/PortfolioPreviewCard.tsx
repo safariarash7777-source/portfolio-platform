@@ -78,7 +78,7 @@ export default function PortfolioPreviewCard() {
           className="inline-flex items-center gap-1.5 text-xs font-bold"
           style={{ color: "var(--navy)" }}
         >
-          سبد پیشنهادی
+          نمونهٔ ساختار سبد
           <ArrowLeft size={14} />
         </span>
         <div className="h-px flex-1" style={{ background: "var(--line)" }} />

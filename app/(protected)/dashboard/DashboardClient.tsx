@@ -360,7 +360,7 @@ function NoAssessment({ onStart }: { onStart: () => void }) {
         <ol className="space-y-3">
           {[
             { n: "۱", t: "تکمیل ارزیابی ریسک", d: "پاسخ به ۲۲ سؤال برای تعیین سطح تحمل ریسک شما." },
-            { n: "۲", t: "دریافت پرتفوی پیشنهادی", d: "مشاور ما بر اساس پروفایل شما، تخصیص دارایی متناسب طراحی می‌کند." },
+            { n: "۲", t: "دریافت سبد طراحی‌شده", d: "مشاور بر اساس پروفایل شما، تخصیص دارایی متناسب طراحی می‌کند." },
             { n: "۳", t: "مدیریت سرمایه‌گذاری", d: "پیگیری عملکرد سبد و دریافت گزارش‌های ادواری." },
           ].map((s) => (
             <li key={s.n} className="flex items-start gap-4">
@@ -460,7 +460,7 @@ function WithAssessment({
           {profile?.portfolio && (
             <div>
               <div className="text-xs font-bold mb-3" style={{ color: "var(--text-3)" }}>
-                تخصیص پیشنهادی دارایی
+                نمونهٔ ساختار دارایی این پروفایل
               </div>
               <ul className="space-y-2">
                 {profile.portfolio.map((item) => (
@@ -502,7 +502,7 @@ function AdminPortfolio({ portfolio }: { portfolio: Portfolio }) {
         <div>
           <span className="eyebrow">پرتفوی اختصاصی</span>
           <h3 className="font-display text-xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
-            سبد سرمایه‌گذاری پیشنهادی مشاور
+            سبد طراحی‌شده توسط مشاور
           </h3>
         </div>
         <span
@@ -518,7 +518,7 @@ function AdminPortfolio({ portfolio }: { portfolio: Portfolio }) {
         <AllocationDonut
           data={portfolio.allocations.map((a) => ({ label: a.asset, value: a.pct }))}
           centerLabel="سبد"
-          centerValue="پیشنهادی"
+          centerValue="اختصاصی"
         />
       </div>
 

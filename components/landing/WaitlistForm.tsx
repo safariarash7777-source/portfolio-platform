@@ -79,7 +79,7 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
             ? "در حال ثبت..."
             : status === "success"
             ? "ثبت شدید ✓"
-            : "عضویت در لیست انتظار"}
+            : "ثبت درخواست"}
           {status === "idle" && <ArrowLeft size={16} />}
         </button>
       </form>
@@ -87,7 +87,7 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
       <div className="h-6 mt-2 px-1">
         {status === "success" && (
           <p className="text-sm" style={{ color: onNavy ? "var(--gold-soft)" : "var(--success)" }}>
-            سپاسگزاریم! به محض آماده شدن پلتفرم، اطلاع‌رسانی می‌شود.
+            ثبت شد! برای هماهنگی مشاوره و خبرهای مهم، از همین ایمیل با شما در تماس خواهیم بود.
           </p>
         )}
         {status === "error" && (

@@ -149,7 +149,7 @@ export default function RiskProfileResult({
               <TrendingUp size={16} />
             </div>
             <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
-              ترکیب پیشنهادی سبد
+              نمونهٔ ساختار سبد این پروفایل
             </h3>
           </div>
           <div className="space-y-4">
@@ -191,7 +191,7 @@ export default function RiskProfileResult({
               <Package size={16} />
             </div>
             <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
-              محصولات پیشنهادی
+              ابزارهای رایج این پروفایل
             </h3>
           </div>
           <ul className="space-y-3">
@@ -261,8 +261,9 @@ export default function RiskProfileResult({
         className="text-xs leading-7 text-center px-4 py-3 rounded-xl"
         style={{ color: "var(--text-3)", background: "var(--surface-2)", border: "1px solid var(--line)" }}
       >
-        پروفایل ریسک شما ثابت نیست؛ بهتر است هر ۶ تا ۱۲ ماه یک‌بار این پرسشنامه را مجدداً تکمیل کنید.
-        برای مشاوره تخصصی، از داشبورد کاربری خود اقدام کنید.
+        ساختار و ابزارهای نمایش‌داده‌شده، نمونهٔ آموزشی برای آشنایی با این پروفایل‌اند و توصیهٔ خرید یا
+        فروش هیچ دارایی مشخصی نیستند. پروفایل ریسک شما ثابت نیست؛ بهتر است هر ۶ تا ۱۲ ماه یک‌بار این
+        پرسشنامه را مجدداً تکمیل کنید. برای طراحی سبد اختصاصی، از داشبورد درخواست مشاوره بدهید.
       </p>
 
       {/* Actions */}
