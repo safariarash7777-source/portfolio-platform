@@ -25,6 +25,7 @@ export default function Hero() {
             "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
           backgroundSize: "52px 52px",
           maskImage:
+            // استثنای مستند C4: #000 اینجا آلفای ماسک CSS است نه رنگ نمایشی.
             "radial-gradient(ellipse 85% 65% at 70% 0%, #000 25%, transparent 78%)",
           WebkitMaskImage:
             "radial-gradient(ellipse 85% 65% at 70% 0%, #000 25%, transparent 78%)",

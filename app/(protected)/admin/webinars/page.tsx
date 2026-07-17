@@ -64,10 +64,10 @@ const STATUSES = [
 function statusBadge(status: string) {
   const map: Record<string, { bg: string; color: string; label: string }> = {
     draft: { bg: "var(--surface-2)", color: "var(--text-3)", label: "پیش‌نویس" },
-    published: { bg: "#dbeafe", color: "#1d4ed8", label: "منتشرشده" },
-    live: { bg: "#dcfce7", color: "#16a34a", label: "در حال برگزاری" },
-    ended: { bg: "#f3f4f6", color: "#6b7280", label: "پایان‌یافته" },
-    cancelled: { bg: "#fee2e2", color: "#dc2626", label: "لغوشده" },
+    published: { bg: "color-mix(in srgb, var(--info) 12%, transparent)", color: "var(--info)", label: "منتشرشده" },
+    live: { bg: "color-mix(in srgb, var(--success) 12%, transparent)", color: "var(--success)", label: "در حال برگزاری" },
+    ended: { bg: "color-mix(in srgb, var(--text-3) 12%, transparent)", color: "var(--text-3)", label: "پایان‌یافته" },
+    cancelled: { bg: "color-mix(in srgb, var(--danger) 12%, transparent)", color: "var(--danger)", label: "لغوشده" },
   };
   const s = map[status] ?? map.draft;
   return (
@@ -283,7 +283,7 @@ export default function AdminWebinarsPage() {
       {error && (
         <div
           className="mb-4 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2"
-          style={{ background: "#fee2e2", color: "#dc2626" }}
+          style={{ background: "color-mix(in srgb, var(--danger) 12%, transparent)", color: "var(--danger)" }}
         >
           <XCircle size={16} />
           {error}
@@ -295,7 +295,7 @@ export default function AdminWebinarsPage() {
       {success && (
         <div
           className="mb-4 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2"
-          style={{ background: "#dcfce7", color: "#16a34a" }}
+          style={{ background: "color-mix(in srgb, var(--success) 12%, transparent)", color: "var(--success)" }}
         >
           <CheckCircle size={16} />
           {success}
@@ -556,7 +556,7 @@ export default function AdminWebinarsPage() {
                       onClick={() => toggleRegistration(w)}
                       title={w.registration_open ? "بستن ثبت‌نام" : "باز کردن ثبت‌نام"}
                       className="p-2 rounded-lg transition-colors"
-                      style={{ color: w.registration_open ? "#16a34a" : "var(--text-3)" }}
+                      style={{ color: w.registration_open ? "var(--success)" : "var(--text-3)" }}
                     >
                       {w.registration_open ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
@@ -574,7 +574,7 @@ export default function AdminWebinarsPage() {
                         disabled={sendingInvites === w.id}
                         title="ارسال دعوت‌نامه کانال"
                         className="p-2 rounded-lg"
-                        style={{ color: "#1d4ed8" }}
+                        style={{ color: "var(--info)" }}
                       >
                         {sendingInvites === w.id ? (
                           <Loader2 size={16} className="animate-spin" />
@@ -585,7 +585,7 @@ export default function AdminWebinarsPage() {
                     )}
                     {w.invites_sent && (
                       <span title="دعوت‌ها ارسال شده" className="p-2">
-                        <CheckCircle size={16} style={{ color: "#16a34a" }} />
+                        <CheckCircle size={16} style={{ color: "var(--success)" }} />
                       </span>
                     )}
                     <button

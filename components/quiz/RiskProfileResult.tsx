@@ -17,13 +17,14 @@ interface Props {
   onRestart: () => void;
 }
 
+// C4: فقط توکن‌های برند؛ گام‌های میانی با color-mix از همان توکن‌ها ساخته می‌شود.
 const PORTFOLIO_COLORS = [
-  "#1E3A8A", // navy
-  "#B8860B", // gold
-  "#15803D", // success
-  "#0EA5E9", // sky
-  "#7C3AED", // violet
-  "#EA580C", // orange
+  "var(--navy)",
+  "var(--gold)",
+  "var(--success)",
+  "var(--navy-soft)",
+  "color-mix(in srgb, var(--navy) 55%, var(--gold))",
+  "var(--warning)",
 ];
 
 function extractPct(text: string): number {
@@ -246,7 +247,7 @@ export default function RiskProfileResult({
           </div>
           <div>
             <p className="text-xs font-bold mb-1" style={{ color: "var(--navy-deep)" }}>
-              توصیه مشاور — آرش صفری
+              یادداشت تحلیلگر — آرش صفری
             </p>
             <p className="text-sm leading-7" style={{ color: "var(--navy-deep)" }}>
               {profile.tip}
@@ -260,7 +261,7 @@ export default function RiskProfileResult({
         className="text-xs leading-7 text-center px-4 py-3 rounded-xl"
         style={{ color: "var(--text-3)", background: "var(--surface-2)", border: "1px solid var(--line)" }}
       >
-        پروفایل ریسک شما ثابت نیست. توصیه می‌شود هر ۶ تا ۱۲ ماه یک‌بار این پرسشنامه را مجدداً تکمیل کنید.
+        پروفایل ریسک شما ثابت نیست؛ بهتر است هر ۶ تا ۱۲ ماه یک‌بار این پرسشنامه را مجدداً تکمیل کنید.
         برای مشاوره تخصصی، از داشبورد کاربری خود اقدام کنید.
       </p>
 

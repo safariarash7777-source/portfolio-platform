@@ -39,7 +39,7 @@ export interface RiskProfile {
   plan: string;
   planDetail: string;
   tip: string;
-  accent: string; // hex for visual accent
+  accent: string; // CSS color token (C4: no raw hex)
 }
 
 export const SECTIONS = [
@@ -258,7 +258,7 @@ export const QUESTIONS: Question[] = [
 export const RISK_PROFILES: Record<RiskCategory, RiskProfile> = {
   "محافظه‌کار": {
     category: "محافظه‌کار",
-    accent: "#15803D",
+    accent: "var(--success)",
     scoreRange: "۲۲ تا ۴۴",
     description:
       "شما فردی محافظه‌کار هستید و حفظ اصل سرمایه برایتان مهم‌تر از کسب سودهای بالاست. نوسانات بازار شما را نگران می‌کند و ترجیح می‌دهید با بازدهی متعادل اما مطمئن، ارزش دارایی خود را در برابر تورم حفظ کنید.",
@@ -280,7 +280,7 @@ export const RISK_PROFILES: Record<RiskCategory, RiskProfile> = {
   },
   "متعادل": {
     category: "متعادل",
-    accent: "#1E3A8A",
+    accent: "var(--navy)",
     scoreRange: "۴۵ تا ۶۷",
     description:
       "شما شخصیت مالی متعادلی دارید. آمادگی پذیرش ریسک محدود در ازای بازدهی بهتر از ابزارهای بدون ریسک را دارید، اما از نوسانات شدید پرهیز می‌کنید. تنوع‌بخشی در سبد سرمایه‌گذاری، کلید موفقیت شما در بازار است.",
@@ -304,7 +304,7 @@ export const RISK_PROFILES: Record<RiskCategory, RiskProfile> = {
   },
   "تهاجمی": {
     category: "تهاجمی",
-    accent: "#B45309",
+    accent: "var(--warning)",
     scoreRange: "۶۸ تا ۹۰",
     description:
       "شما سرمایه‌گذاری ریسک‌پذیر و هدفمند هستید. با پذیرش نوسانات نسبتاً بالا، به دنبال رشد قابل‌توجه سرمایه در میان‌مدت و بلندمدت هستید. دانش مالی و تجربه عملی شما امکان تصمیم‌گیری در بازارهای پرنوسان را فراهم می‌کند.",
@@ -323,12 +323,12 @@ export const RISK_PROFILES: Record<RiskCategory, RiskProfile> = {
       "سرمایه‌گذاری در استارتاپ‌ها",
     ],
     plan: "پلن «حرفه‌ای»",
-    planDetail: "سیگنال‌های تحلیلی هفتگی، مشاوره دو هفته‌ای و دسترسی به وبینارهای تخصصی",
+    planDetail: "تحلیل‌های هفتگی بازار، مشاوره دو هفته‌ای و دسترسی به وبینارهای تخصصی",
     tip: "مدیریت ریسک فعال را جدی بگیرید؛ تعیین حد ضرر و سود در هر معامله ضروری است.",
   },
   "بسیار تهاجمی": {
     category: "بسیار تهاجمی",
-    accent: "#B91C1C",
+    accent: "var(--danger)",
     scoreRange: "۹۱ تا ۱۱۰",
     description:
       "شما سرمایه‌گذاری به‌شدت ریسک‌پذیر و فرصت‌محور هستید. با هدف کسب بازدهی حداکثری، آمادگی پذیرش نوسانات بسیار بالا و حتی زیان‌های قابل‌توجه را دارید. این پروفایل معمولاً برای افراد دارای دانش تخصصی، سرمایه مازاد و افق زمانی بلندمدت مناسب است.",

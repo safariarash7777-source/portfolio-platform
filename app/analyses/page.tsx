@@ -56,9 +56,9 @@ const OUTCOME_FA: Record<string, string> = {
 };
 
 const LABEL_COLOR: Record<string, string> = {
-  سازنده: "var(--green, #1a7f4b)",
+  سازنده: "var(--success)",
   خنثی: "var(--gold)",
-  فرسایشی: "var(--red, #b3363b)",
+  فرسایشی: "var(--danger)",
 };
 
 function HashBadge({ hash }: { hash: string }) {
@@ -67,7 +67,7 @@ function HashBadge({ hash }: { hash: string }) {
       dir="ltr"
       title={hash}
       className="inline-block rounded px-1.5 py-0.5 text-[11px] font-mono tracking-tight"
-      style={{ background: "var(--bg)", color: "var(--text-3)", border: "1px solid var(--line, #e5e0d5)" }}
+      style={{ background: "var(--bg)", color: "var(--text-3)", border: "1px solid var(--line)" }}
     >
       {hash.slice(0, 10)}…{hash.slice(-6)}
     </span>
@@ -132,14 +132,14 @@ export default async function AnalysesPage() {
             <div className="mt-3 flex flex-wrap gap-4 text-[12.5px]" style={{ color: "var(--text-3)" }}>
               <span>
                 وضعیت زنجیرهٔ تحلیل‌ها:{" "}
-                <b style={{ color: chainAnalyses.ok ? "var(--green, #1a7f4b)" : "var(--red, #b3363b)" }}>
+                <b style={{ color: chainAnalyses.ok ? "var(--success)" : "var(--danger)" }}>
                   {chainAnalyses.ok ? "سالم و پیوسته" : "نیازمند بررسی"}
                 </b>{" "}
                 ({pd(chainAnalyses.length)} رکورد)
               </span>
               <span>
                 وضعیت زنجیرهٔ چشم‌انداز هفتگی:{" "}
-                <b style={{ color: chainWeekly.ok ? "var(--green, #1a7f4b)" : "var(--red, #b3363b)" }}>
+                <b style={{ color: chainWeekly.ok ? "var(--success)" : "var(--danger)" }}>
                   {chainWeekly.ok ? "سالم و پیوسته" : "نیازمند بررسی"}
                 </b>{" "}
                 ({pd(chainWeekly.length)} رکورد)
@@ -201,7 +201,7 @@ export default async function AnalysesPage() {
                   </thead>
                   <tbody>
                     {weekly.map((w: WeeklyOutlookRecord) => (
-                      <tr key={w.id} style={{ borderTop: "1px solid var(--line, #e5e0d5)" }}>
+                      <tr key={w.id} style={{ borderTop: "1px solid var(--line)" }}>
                         <td className="px-4 py-3 whitespace-nowrap">{formatJalaliShort(w.week_start)}</td>
                         <td className="px-4 py-3 font-bold" style={{ color: LABEL_COLOR[w.label] }}>
                           {w.label}
@@ -218,9 +218,9 @@ export default async function AnalysesPage() {
                         </td>
                         <td className="px-4 py-3">
                           {w.result == null ? "—" : w.result.correct ? (
-                            <b style={{ color: "var(--green, #1a7f4b)" }}>درست</b>
+                            <b style={{ color: "var(--success)" }}>درست</b>
                           ) : (
-                            <b style={{ color: "var(--red, #b3363b)" }}>نادرست</b>
+                            <b style={{ color: "var(--danger)" }}>نادرست</b>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -301,7 +301,7 @@ function AnalysisCard({ a }: { a: AnalysisRecord }) {
             className="rounded-full px-2.5 py-0.5 text-[12px] font-bold"
             style={{
               background: a.direction === "buy" ? "rgba(26,127,75,.08)" : "rgba(179,54,59,.08)",
-              color: a.direction === "buy" ? "var(--green, #1a7f4b)" : "var(--red, #b3363b)",
+              color: a.direction === "buy" ? "var(--success)" : "var(--danger)",
             }}
           >
             {DIRECTION_FA[a.direction]}
@@ -337,7 +337,7 @@ function AnalysisCard({ a }: { a: AnalysisRecord }) {
           {a.outcome == null ? (
             <div className="font-bold">باز</div>
           ) : (
-            <div className="font-bold" style={{ color: ret != null && ret > 0 ? "var(--green, #1a7f4b)" : "var(--red, #b3363b)" }}>
+            <div className="font-bold" style={{ color: ret != null && ret > 0 ? "var(--success)" : "var(--danger)" }}>
               {OUTCOME_FA[a.outcome.outcome]} · {pctFa(ret)}
             </div>
           )}
@@ -356,7 +356,7 @@ function AnalysisCard({ a }: { a: AnalysisRecord }) {
             <span
               key={i}
               className="rounded-full px-2 py-0.5 text-[11.5px]"
-              style={{ background: "var(--bg)", color: "var(--text-3)", border: "1px solid var(--line, #e5e0d5)" }}
+              style={{ background: "var(--bg)", color: "var(--text-3)", border: "1px solid var(--line)" }}
             >
               {s}
             </span>

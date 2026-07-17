@@ -23,7 +23,7 @@
 // جواب می‌دهد و درخواستِ سایت روی build کندِ منبع تایم‌اوت نمی‌شود.
 // ─────────────────────────────────────────────────────────────────────────────
 import http from "node:http";
-import { runCodalJob, codalStatus, codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./codal.mjs";
+import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
@@ -872,7 +872,6 @@ function debugPayload() {
     counts,
     sources: status.sources,
     supabase: status.supabase,
-    codal: codalStatus,
     codalEngine: engineStatus,
     eodHistory: eodStatus,
     indexHistory: indexHistStatus,
@@ -971,12 +970,11 @@ server.listen(PORT, () => {
     setTimeout(tryDump, 20 * 1000).unref();
     setInterval(tryDump, 3 * 60 * 1000).unref();
   }
-  // کدال — CODAL_ENABLED=1 برای فعال‌سازی. پیش‌فرض: موتور v3 (فید سراسری +
-  // بک‌فیل اولویت‌دار)؛ CODAL_LEGACY=1 برای بازگشت به حالت قدیمی نمادبه‌نماد.
+  // کدال — CODAL_ENABLED=1 برای فعال‌سازی موتور v3 (فید سراسری + بک‌فیل اولویت‌دار).
+  // مسیر legacy نمادبه‌نماد در پاک‌سازی C3 حذف شد (موتور v3 از ۱۶ تیر سالم، ۱۶۵ گزارش).
   if (process.env.CODAL_ENABLED === "1") {
-    const legacy = process.env.CODAL_LEGACY === "1";
-    const job = legacy ? runCodalJob : runEngineCycle;
-    const name = legacy ? "codal legacy job" : "codal engine v3";
+    const job = runEngineCycle;
+    const name = "codal engine v3";
     console.log(`${name} armed: first run in 90s`);
     setTimeout(() => {
       console.log(`${name} starting`);

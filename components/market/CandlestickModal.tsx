@@ -15,6 +15,8 @@ interface Candle {
 // پالتِ برند از توکن‌های زندهٔ CSS خوانده می‌شود (canvas مقدارِ CSS var نمی‌گیرد،
 // ولی مقدارِ محاسبه‌شده‌اش را با getComputedStyle می‌گیریم). این‌طور سبز/قرمزِ کندل
 // و رنگِ خطوط دقیقاً همان توکن‌های semantic‌اند و با روشن/تیره و پالتِ گرم هماهنگ می‌مانند.
+// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
+// این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
 function palette() {
   const cs = typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
   const v = (name: string, fallback: string) => cs?.getPropertyValue(name).trim() || fallback;

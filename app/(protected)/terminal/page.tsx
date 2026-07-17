@@ -23,7 +23,7 @@ export default async function TerminalIndexPage() {
             <Link
               href="/terminal/watchlist"
               className="rounded-full px-4 py-2 text-[13px] font-bold"
-              style={{ background: "var(--navy)", color: "#fff" }}
+              style={{ background: "var(--navy)", color: "var(--text-on-navy)" }}
             >
               دیده‌بان تکنیکال و رژیم بازار ←
             </Link>

@@ -11,6 +11,8 @@ import {
 import type { TrendSeries } from "@/lib/core/trend";
 import { toPersianDigits } from "@/lib/format";
 
+// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
+// این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
 function palette() {
   const cs =
     typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
@@ -77,7 +79,7 @@ export default function TrendChart({ series }: { series: TrendSeries[] }) {
             className="rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors"
             style={
               i === active
-                ? { background: "var(--navy)", color: "#FFFFFF" }
+                ? { background: "var(--navy)", color: "var(--text-on-navy)" }
                 : { background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
             }
           >

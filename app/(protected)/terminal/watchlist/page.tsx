@@ -18,9 +18,9 @@ function pd(x: number | null | undefined, suffix = ""): string {
 
 function scoreColor(s: number | null): string {
   if (s == null) return "var(--text-3)";
-  if (s >= 65) return "var(--green, #1a7f4b)";
+  if (s >= 65) return "var(--success)";
   if (s >= 45) return "var(--gold)";
-  return "var(--red, #b3363b)";
+  return "var(--danger)";
 }
 
 export default async function WatchlistPage() {
@@ -70,9 +70,9 @@ export default async function WatchlistPage() {
                   style={{
                     background:
                       d.effect === "positive"
-                        ? "var(--green, #1a7f4b)"
+                        ? "var(--success)"
                         : d.effect === "negative"
-                          ? "var(--red, #b3363b)"
+                          ? "var(--danger)"
                           : "var(--text-3)",
                   }}
                 />

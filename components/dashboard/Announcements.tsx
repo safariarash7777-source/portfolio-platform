@@ -48,7 +48,7 @@ export default function Announcements({ items }: { items: UserAnnouncement[] }) 
         {unread > 0 && (
           <span
             className="text-xs font-bold px-2 py-0.5 rounded-full"
-            style={{ background: "var(--danger)", color: "#fff" }}
+            style={{ background: "var(--danger)", color: "var(--text-on-navy)" }}
           >
             {toFa(unread)} خوانده‌نشده
           </span>
