@@ -12,6 +12,7 @@ import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryCh
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
+import { getFxRates, latestRate } from "@/lib/core/fx";
 import { netIndividualFlow } from "@/lib/core/engine";
 import {
   toPersianDigits,
@@ -62,11 +63,13 @@ export default async function SymbolPage({ params }: PageProps) {
   const { symbol } = await params;
   const sym = decodeURIComponent(symbol);
 
-  const [ir, history, fundamentals] = await Promise.all([
+  const [ir, history, fundamentals, fxRates] = await Promise.all([
     getIrMarket(),
     getSymbolHistory(sym, 400),
     getFundamentals(sym),
+    getFxRates(),
   ]);
+  const fx = latestRate(fxRates);
 
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
   const quote = all.find((r) => r.id === sym) ?? null;
@@ -261,7 +264,11 @@ export default async function SymbolPage({ params }: PageProps) {
             <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
               تحلیل بنیادی (گزارش‌های کدال)
             </h2>
-            <FundamentalCharts fundamentals={fundamentals ?? { symbol: sym, n10: null, n30: null }} />
+            <FundamentalCharts
+              fundamentals={fundamentals ?? { symbol: sym, n10: null, n30: null }}
+              fxRate={fx?.usd_toman ?? null}
+              fxRateDate={fx?.rate_date ?? null}
+            />
           </section>
 
           {/* سلب مسئولیت — الزام قانون ۶ */}

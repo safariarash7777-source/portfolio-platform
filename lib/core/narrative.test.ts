@@ -26,10 +26,10 @@ function regime(partial: Partial<RegimeResult>): RegimeResult {
   };
 }
 
-test("computeFlowAggregates: پوشش < ۵۰ نماد → netFlowRial=null (بدون عدد با دادهٔ ناکافی)", () => {
+test("computeFlowAggregates: پوشش < ۵۰ نماد → netFlowToman=null (بدون عدد با دادهٔ ناکافی)", () => {
   const agg = computeFlowAggregates([stock("الف", 100, 50, 1000)]);
-  assert.equal(agg.netFlowRial, null);
-  assert.equal(agg.totalValueRial, null);
+  assert.equal(agg.netFlowToman, null);
+  assert.equal(agg.totalValueToman, null);
   // ولی شمارش‌ها و قهرمان‌ها همچنان معتبرند
   assert.equal(agg.inflowCount, 1);
   assert.equal(agg.topInflow?.symbol, "الف");
@@ -44,12 +44,12 @@ test("computeFlowAggregates: با پوشش کافی جمع خالص و قهرم�
   stocks.push(stock("قهرمان", 10000, 0, 1000)); // +1e7
   const agg = computeFlowAggregates(stocks);
   const expected = 40 * (1000 * 100) + 20 * (-1000 * 200) + 10000 * 1000;
-  assert.equal(agg.netFlowRial, expected);
+  assert.equal(agg.netFlowToman, expected);
   assert.equal(agg.inflowCount, 41);
   assert.equal(agg.outflowCount, 20);
   assert.equal(agg.topInflow?.symbol, "قهرمان");
   assert.equal(agg.topOutflow?.symbol, "out0");
-  assert.ok(agg.totalValueRial != null && agg.totalValueRial > 0);
+  assert.ok(agg.totalValueToman != null && agg.totalValueToman > 0);
 });
 
 test("computeFlowAggregates: فیلدهای null نادیده گرفته می‌شوند (هیچ NaN)", () => {
@@ -64,10 +64,10 @@ test("computeFlowAggregates: فیلدهای null نادیده گرفته می‌
 
 test("buildNarratives: رژیم بدون data_ok → جملهٔ رژیم ساخته نمی‌شود", () => {
   const sentences = buildNarratives(regime({ data_ok: false, score: null }), {
-    netFlowRial: null,
+    netFlowToman: null,
     inflowCount: 0,
     outflowCount: 0,
-    totalValueRial: null,
+    totalValueToman: null,
     topInflow: null,
     topOutflow: null,
   });
@@ -82,12 +82,12 @@ test("buildNarratives: دادهٔ کامل → حداکثر ۵ جمله شامل
     breadthAboveSma50Pct: 68.5,
   });
   const sentences = buildNarratives(r, {
-    netFlowRial: 250e9,
+    netFlowToman: 250e9,
     inflowCount: 120,
     outflowCount: 80,
-    totalValueRial: 5e12,
-    topInflow: { symbol: "فولاد", flowRial: 40e9 },
-    topOutflow: { symbol: "خودرو", flowRial: -35e9 },
+    totalValueToman: 5e12,
+    topInflow: { symbol: "فولاد", flowToman: 40e9 },
+    topOutflow: { symbol: "خودرو", flowToman: -35e9 },
   });
   assert.equal(sentences.length, 5);
   assert.ok(sentences[0].includes("سازنده"));
@@ -102,10 +102,10 @@ test("buildNarratives: دادهٔ کامل → حداکثر ۵ جمله شامل
 test("buildNarratives: خروج خالص منفی → واژهٔ «خروج» در جملهٔ جریان", () => {
   const r = regime({ data_ok: true, score: 35, label: "فرسایشی" });
   const sentences = buildNarratives(r, {
-    netFlowRial: -120e9,
+    netFlowToman: -120e9,
     inflowCount: 40,
     outflowCount: 160,
-    totalValueRial: 3e12,
+    totalValueToman: 3e12,
     topInflow: null,
     topOutflow: null,
   });

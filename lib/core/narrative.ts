@@ -6,18 +6,18 @@ import type { RegimeResult } from "./regime";
 import { toPersianDigits, formatTomanShort } from "@/lib/format";
 
 export interface FlowAggregates {
-  /** خالص ورود پول حقیقی کل سهام (ریال)؛ null اگر داده ناکافی */
-  netFlowRial: number | null;
+  /** خالص ورود پول حقیقی کل سهام (تومان)؛ null اگر داده ناکافی */
+  netFlowToman: number | null;
   /** تعداد نمادهای دارای ورود خالص مثبت */
   inflowCount: number;
   /** تعداد نمادهای دارای خروج خالص */
   outflowCount: number;
-  /** جمع ارزش معاملات سهام (ریال)؛ null اگر ناموجود */
-  totalValueRial: number | null;
+  /** جمع ارزش معاملات سهام (تومان)؛ null اگر ناموجود */
+  totalValueToman: number | null;
   /** نماد با بیشترین ورود خالص حقیقی */
-  topInflow: { symbol: string; flowRial: number } | null;
+  topInflow: { symbol: string; flowToman: number } | null;
   /** نماد با بیشترین خروج خالص حقیقی */
-  topOutflow: { symbol: string; flowRial: number } | null;
+  topOutflow: { symbol: string; flowToman: number } | null;
 }
 
 export interface SnapshotStockLike {
@@ -59,19 +59,19 @@ export function computeFlowAggregates(stocks: SnapshotStockLike[]): FlowAggregat
     covered++;
     if (flow > 0) inflowCount++;
     else if (flow < 0) outflowCount++;
-    if (flow > 0 && (!topInflow || flow > topInflow.flowRial) && s.id) {
-      topInflow = { symbol: s.id, flowRial: flow };
+    if (flow > 0 && (!topInflow || flow > topInflow.flowToman) && s.id) {
+      topInflow = { symbol: s.id, flowToman: flow };
     }
-    if (flow < 0 && (!topOutflow || flow < topOutflow.flowRial) && s.id) {
-      topOutflow = { symbol: s.id, flowRial: flow };
+    if (flow < 0 && (!topOutflow || flow < topOutflow.flowToman) && s.id) {
+      topOutflow = { symbol: s.id, flowToman: flow };
     }
   }
 
   return {
-    netFlowRial: covered >= 50 ? net : null, // پوشش ناکافی = بدون عدد
+    netFlowToman: covered >= 50 ? net : null, // پوشش ناکافی = بدون عدد
     inflowCount,
     outflowCount,
-    totalValueRial: totalValueN >= 50 ? totalValue : null,
+    totalValueToman: totalValueN >= 50 ? totalValue : null,
     topInflow,
     topOutflow,
   };
@@ -105,22 +105,22 @@ export function buildNarratives(regime: RegimeResult, flow: FlowAggregates): str
   }
 
   // ۳) جریان پول کل روز
-  if (flow.netFlowRial != null) {
-    const dir = flow.netFlowRial >= 0 ? "ورود" : "خروج";
+  if (flow.netFlowToman != null) {
+    const dir = flow.netFlowToman >= 0 ? "ورود" : "خروج";
     out.push(
-      `برآیند پول حقیقی امروز ${dir} خالص ${formatTomanShort(Math.abs(flow.netFlowRial))} بود (${toPersianDigits(flow.inflowCount)} نماد ورود، ${toPersianDigits(flow.outflowCount)} نماد خروج).`
+      `برآیند پول حقیقی امروز ${dir} خالص ${formatTomanShort(Math.abs(flow.netFlowToman))} بود (${toPersianDigits(flow.inflowCount)} نماد ورود، ${toPersianDigits(flow.outflowCount)} نماد خروج).`
     );
   }
 
   // ۴) قهرمان ورود/خروج
   if (flow.topInflow) {
     out.push(
-      `بیشترین ورود پول حقیقی به «${flow.topInflow.symbol}» با ${formatTomanShort(flow.topInflow.flowRial)} رسید.`
+      `بیشترین ورود پول حقیقی به «${flow.topInflow.symbol}» با ${formatTomanShort(flow.topInflow.flowToman)} رسید.`
     );
   }
   if (out.length < 5 && flow.topOutflow) {
     out.push(
-      `سنگین‌ترین خروج پول حقیقی از «${flow.topOutflow.symbol}» با ${formatTomanShort(Math.abs(flow.topOutflow.flowRial))} ثبت شد.`
+      `سنگین‌ترین خروج پول حقیقی از «${flow.topOutflow.symbol}» با ${formatTomanShort(Math.abs(flow.topOutflow.flowToman))} ثبت شد.`
     );
   }
 

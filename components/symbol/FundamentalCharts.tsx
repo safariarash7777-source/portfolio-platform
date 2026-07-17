@@ -64,6 +64,21 @@ function fmtLabelMillionRial(label: unknown): string {
   return isFinite(n) ? fmtMillionRial(n) : "";
 }
 
+/** میلیون ریال → دلار (با نرخ تومان) — فقط وقتی نرخ رسمی fx_rates موجود است. */
+function millionRialToUsd(v: number, usdToman: number): number {
+  // v میلیون ریال = v × 10^5 تومان
+  return (v * 100_000) / usdToman;
+}
+
+function fmtUsd(v: number): string {
+  const abs = Math.abs(v);
+  let body: string;
+  if (abs >= 1e9) body = `${(v / 1e9).toFixed(1)} میلیارد`;
+  else if (abs >= 1e6) body = `${(v / 1e6).toFixed(1)} میلیون`;
+  else body = Math.round(v).toLocaleString("en-US");
+  return `${toPersianDigits(body).replace(".", "٫")} دلار`;
+}
+
 /* ------------------------------ اجزای مشترک ------------------------------ */
 
 function Narrative({ text }: { text: string | null }) {
@@ -103,9 +118,31 @@ function ShareButton({ anchor }: { anchor: string }) {
   );
 }
 
-function CurrencyToggle() {
-  // سوییچ ریالی/دلاری (WP4-۵): فید fx_rates هنوز فعال نیست → دکمهٔ دلاری
-  // غیرفعال با تولتیپ «به‌زودی». هیچ تبدیل تقریبی انجام نمی‌شود.
+function CurrencyToggle({
+  usd,
+  onChange,
+  enabled,
+}: {
+  usd: boolean;
+  onChange: (v: boolean) => void;
+  enabled: boolean;
+}) {
+  // سوییچ ریالی/دلاری (WP4-۵ / T6): با فید fx_rates فعال می‌شود؛
+  // بدون نرخ رسمی دکمهٔ دلاری غیرفعال می‌ماند — هیچ تبدیل تقریبی بی‌منبع.
+  const seg = (label: string, active: boolean, props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button
+      type="button"
+      className="px-2 py-1 transition-colors"
+      style={
+        active
+          ? { background: "var(--navy)", color: "var(--text-on-navy)", fontWeight: 600 }
+          : { color: "var(--text-3)" }
+      }
+      {...props}
+    >
+      {label}
+    </button>
+  );
   return (
     <div
       className="inline-flex items-center overflow-hidden rounded-md text-[12px]"
@@ -113,17 +150,19 @@ function CurrencyToggle() {
       role="group"
       aria-label="واحد نمایش"
     >
-      <span className="px-2 py-1 font-medium" style={{ background: "var(--navy)", color: "var(--text-on-navy)" }}>
-        ریالی
-      </span>
-      <span
-        className="cursor-not-allowed px-2 py-1"
-        style={{ color: "var(--text-3)" }}
-        title="به‌زودی — پس از فعال‌شدن فید رسمی نرخ دلار (fx_rates)"
-        aria-disabled
-      >
-        دلاری
-      </span>
+      {seg("ریالی", !usd, { onClick: () => onChange(false) })}
+      {enabled
+        ? seg("دلاری", usd, { onClick: () => onChange(true), title: "تبدیل با آخرین نرخ دلار بازار آزاد (fx_rates)" })
+        : (
+          <span
+            className="cursor-not-allowed px-2 py-1"
+            style={{ color: "var(--text-3)" }}
+            title="به‌زودی — پس از جمع‌شدن نرخ رسمی دلار (fx_rates)"
+            aria-disabled
+          >
+            دلاری
+          </span>
+        )}
     </div>
   );
 }
@@ -134,14 +173,14 @@ function ChartCard({
   subtitle,
   children,
   narrative,
-  withCurrencyToggle,
+  currencyToggle,
 }: {
   id: string;
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   narrative?: string | null;
-  withCurrencyToggle?: boolean;
+  currencyToggle?: React.ReactNode;
 }) {
   return (
     <section
@@ -160,7 +199,7 @@ function ChartCard({
           ) : null}
         </div>
         <div className="flex items-center gap-2">
-          {withCurrencyToggle ? <CurrencyToggle /> : null}
+          {currencyToggle}
           <ShareButton anchor={id} />
         </div>
       </header>
@@ -210,10 +249,11 @@ function faTick(v: number): string {
 }
 
 /** چارت روند فروش و حاشیهٔ ناخالص ۵ساله — دادهٔ واقعی جدول رسمی گزارش. */
-function TrendChart({ derived }: { derived: N10Derived }) {
+function TrendChart({ derived, usdRate }: { derived: N10Derived; usdRate: number | null }) {
+  const fmtVal = usdRate ? fmtUsd : fmtMillionRial;
   const data = derived.trend.map((t) => ({
     fy: toPersianDigits(String(t.fy)),
-    revenue: t.revenue,
+    revenue: usdRate ? millionRialToUsd(t.revenue, usdRate) : t.revenue,
     grossMargin: t.grossMarginPct,
   }));
   return (
@@ -225,7 +265,7 @@ function TrendChart({ derived }: { derived: N10Derived }) {
           <YAxis
             yAxisId="rev"
             tick={TICK}
-            tickFormatter={(v: number) => fmtMillionRial(v)}
+            tickFormatter={(v: number) => fmtVal(v)}
             width={80}
           />
           <YAxis
@@ -240,7 +280,7 @@ function TrendChart({ derived }: { derived: N10Derived }) {
             formatter={(value, name) =>
               name === "حاشیهٔ ناخالص"
                 ? [fmtPctFa(Number(value)), name]
-                : [fmtMillionRial(Number(value)), name]
+                : [fmtVal(Number(value)), name]
             }
             contentStyle={{ direction: "rtl", fontSize: 12, borderColor: "var(--line)" }}
           />
@@ -301,15 +341,22 @@ function NetProfitChart({
   prior,
   fyLabel,
   priorLabel,
+  usdRate,
 }: {
   cur: number;
   prior: number;
   fyLabel: string;
   priorLabel: string;
+  usdRate: number | null;
 }) {
+  const fmtVal = usdRate ? fmtUsd : fmtMillionRial;
+  const fmtLabel = (label: unknown) => {
+    const n = Number(label);
+    return isFinite(n) ? fmtVal(n) : "";
+  };
   const rows = [
-    { name: priorLabel, value: prior, key: "prior" },
-    { name: fyLabel, value: cur, key: "cur" },
+    { name: priorLabel, value: usdRate ? millionRialToUsd(prior, usdRate) : prior, key: "prior" },
+    { name: fyLabel, value: usdRate ? millionRialToUsd(cur, usdRate) : cur, key: "cur" },
   ];
   return (
     <div dir="ltr" className="h-64 w-full">
@@ -317,13 +364,13 @@ function NetProfitChart({
         <BarChart data={rows} margin={{ top: 20, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="name" tick={{ ...TICK, fontSize: 12 }} />
-          <YAxis tick={TICK} tickFormatter={(v: number) => fmtMillionRial(v)} width={80} />
+          <YAxis tick={TICK} tickFormatter={(v: number) => fmtVal(v)} width={80} />
           <Tooltip
-            formatter={(value) => [fmtMillionRial(Number(value)), "سود خالص"]}
+            formatter={(value) => [fmtVal(Number(value)), "سود خالص"]}
             contentStyle={{ direction: "rtl", fontSize: 12, borderColor: "var(--line)" }}
           />
           <Bar dataKey="value" name="سود خالص" radius={[4, 4, 0, 0]}>
-            <LabelList dataKey="value" position="top" formatter={fmtLabelMillionRial} style={{ fontSize: 11, fill: "var(--navy)" }} />
+            <LabelList dataKey="value" position="top" formatter={fmtLabel} style={{ fontSize: 11, fill: "var(--navy)" }} />
             {rows.map((r) => (
               <Cell key={r.key} fill={r.key === "cur" ? "var(--navy)" : "var(--line)"} />
             ))}
@@ -336,9 +383,24 @@ function NetProfitChart({
 
 /* ------------------------------- کامپوننت اصلی ------------------------------- */
 
-export default function FundamentalCharts({ fundamentals }: { fundamentals: SymbolFundamentals }) {
+export default function FundamentalCharts({
+  fundamentals,
+  fxRate = null,
+  fxRateDate = null,
+}: {
+  fundamentals: SymbolFundamentals;
+  /** آخرین نرخ دلار بازار آزاد (تومان) از fx_rates — null یعنی فید هنوز داده ندارد. */
+  fxRate?: number | null;
+  fxRateDate?: string | null;
+}) {
   const n10 = fundamentals.n10;
   const derived = useMemo(() => (n10 ? deriveN10(n10.data) : null), [n10]);
+  const [usd, setUsd] = useState(false);
+  const fxEnabled = typeof fxRate === "number" && fxRate > 0;
+  const usdRate = usd && fxEnabled ? fxRate : null;
+  const currencyToggle = (
+    <CurrencyToggle usd={usd && fxEnabled} onChange={setUsd} enabled={fxEnabled} />
+  );
 
   if (!n10 || !derived) {
     return (
@@ -400,7 +462,7 @@ export default function FundamentalCharts({ fundamentals }: { fundamentals: Symb
           title="۳) سود خالص"
           subtitle={`سال ${fyLabel} در برابر ${priorLabel} · نمای فصلی ۳ساله پس از گزارش‌های میان‌دوره‌ای`}
           narrative={narrativeNetProfit(derived, fyLabel)}
-          withCurrencyToggle
+          currencyToggle={currencyToggle}
         >
           {s.prior ? (
             <NetProfitChart
@@ -408,7 +470,13 @@ export default function FundamentalCharts({ fundamentals }: { fundamentals: Symb
               prior={s.prior.net_profit}
               fyLabel={fyLabel}
               priorLabel={priorLabel}
+              usdRate={usdRate}
             />
+          ) : null}
+          {usdRate && fxRateDate ? (
+            <p className="mt-1 text-[11px]" style={{ color: "var(--text-3)" }}>
+              تبدیل با نرخ {toPersianDigits(Math.round(usdRate).toLocaleString("en-US")).replace(/,/g, "٬")} تومان (آخرین نرخ ثبت‌شده {toPersianDigits(fxRateDate)}) — تقریبی و صرفاً برای مقیاس.
+            </p>
           ) : null}
         </ChartCard>
 
@@ -442,9 +510,14 @@ export default function FundamentalCharts({ fundamentals }: { fundamentals: Symb
         narrative={[narrativeRevenueGrowth(derived, fyLabel), narrativeConsecutiveGrowth(derived)]
           .filter(Boolean)
           .join(" ") || null}
-        withCurrencyToggle
+        currencyToggle={currencyToggle}
       >
-        <TrendChart derived={derived} />
+        <TrendChart derived={derived} usdRate={usdRate} />
+        {usdRate && fxRateDate ? (
+          <p className="mt-1 text-[11px]" style={{ color: "var(--text-3)" }}>
+            تبدیل همهٔ سال‌ها با نرخ روز {toPersianDigits(Math.round(usdRate).toLocaleString("en-US")).replace(/,/g, "٬")} تومان ({toPersianDigits(fxRateDate)}) — برای مقایسهٔ تاریخی دقیق، میانگین نرخ هر سال پس از تجمیع دادهٔ تاریخی fx_rates فعال می‌شود.
+          </p>
+        ) : null}
       </ChartCard>
 
       {/* کیفیت سود — روایت تسعیر ارز (شفافیت، نه توصیه) */}
