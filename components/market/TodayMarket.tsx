@@ -8,9 +8,9 @@ import type { IrStockRow } from "@/lib/market-ir";
 import { toPersianDigits, formatJalali } from "@/lib/format";
 
 const LABEL_COLOR: Record<string, string> = {
-  "سازنده": "var(--green, #16a34a)",
-  "خنثی": "var(--gold, #b98a00)",
-  "فرسایشی": "var(--red, #dc2626)",
+  "سازنده": "var(--success)",
+  "خنثی": "var(--gold)",
+  "فرسایشی": "var(--danger)",
 };
 
 export default async function TodayMarket({

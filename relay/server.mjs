@@ -539,11 +539,46 @@ async function pushHistory(body) {
     if (res.ok) {
       lastHistoryPush = Date.now();
       console.log("history push ok:", rows.length, "sections");
+      pruneHistory(); // نگهداشت ۱۸۰ روز — تصمیم T8
     } else {
       console.error(`history push: HTTP ${res.status}`);
     }
   } catch (e) {
     console.error("history push error:", errMsg(e));
+  }
+}
+
+// ── نگهداشت ir_market_history — حذف ردیف‌های کهنه‌تر از ۱۸۰ روز (روزی یک‌بار) ──
+const HISTORY_RETENTION_DAYS = Number(process.env.HISTORY_RETENTION_DAYS || 180);
+let lastHistoryPrune = 0;
+let pruneStatus = { lastRun: null, error: null };
+async function pruneHistory() {
+  if (Date.now() - lastHistoryPrune < 24 * 3600 * 1000) return;
+  const cutoff = new Date(Date.now() - HISTORY_RETENTION_DAYS * 24 * 3600 * 1000).toISOString();
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/ir_market_history?captured_at=lt.${encodeURIComponent(cutoff)}`,
+      {
+        method: "DELETE",
+        headers: {
+          apikey: SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          Prefer: "return=minimal",
+        },
+        signal: AbortSignal.timeout(20000),
+      }
+    );
+    if (res.ok) {
+      lastHistoryPrune = Date.now();
+      pruneStatus = { lastRun: new Date().toISOString(), error: null };
+      console.log(`history prune ok (retention ${HISTORY_RETENTION_DAYS}d)`);
+    } else {
+      pruneStatus = { lastRun: null, error: `HTTP ${res.status}` };
+      console.error(`history prune: HTTP ${res.status}`);
+    }
+  } catch (e) {
+    pruneStatus = { lastRun: null, error: errMsg(e) };
+    console.error("history prune error:", errMsg(e));
   }
 }
 
@@ -638,6 +673,100 @@ async function pushDailyHistory(body) {
   }
 }
 
+// ── نرخ دلار روزانه (fx_rates، append-only، روزی یک‌بار بعد از ساعت بازار) — T6 ──
+// منبع: ردیف USD بخش currency اسنپ‌شات (تومان). درج فقط وقتی نرخ معتبر هست.
+// جدول append-only است — روزی یک ردیف؛ تکرار (409 به دلیل unique rate_date) بی‌خطر رد می‌شود.
+let fxStatus = { lastDate: null, lastRate: null, error: null };
+async function pushDailyFx(body) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  const t = tehranNow();
+  if (t.hour < EOD_AFTER_HOUR) return; // بعد از ساعت بازار — نرخ پایان روز
+  if (fxStatus.lastDate === t.date) return;
+  const p = typeof body === "string" ? JSON.parse(body) : body;
+  const usd = (p.currency || []).find((r) => r?.id === "USD");
+  const rate = Number(usd?.price);
+  if (!isFinite(rate) || rate <= 0) return; // نرخ نامعتبر → هیچ درجی
+  try {
+    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/fx_rates`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify([{ rate_date: t.date, usd_toman: rate, source: "brsapi" }]),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (res.ok || res.status === 409) {
+      // 409 = امروز قبلاً درج شده (مثلاً بعد از ری‌دیپلوی) — هدف محقق است.
+      fxStatus = { lastDate: t.date, lastRate: rate, error: null };
+      if (res.ok) console.log(`fx push ok: ${rate} toman for ${t.date}`);
+    } else if (res.status === 404) {
+      // جدول هنوز ساخته نشده (phase13 اجرا نشده) — بی‌صدا ولی در /debug پیداست.
+      fxStatus = { ...fxStatus, error: "fx_rates table missing (run phase13)" };
+    } else {
+      fxStatus = { ...fxStatus, error: `HTTP ${res.status}` };
+      console.error(`fx push: HTTP ${res.status}`);
+    }
+  } catch (e) {
+    fxStatus = { ...fxStatus, error: errMsg(e) };
+    console.error("fx push error:", fxStatus.error);
+  }
+}
+
+// ── پل دریافت اکسل کدال از طریق Supabase (برای توسعه از خارج ایران) ──────────────
+// sandbox درخواست را در ir_market_snapshots (key='codal_fetch_request') می‌نویسد؛
+// رله هر ۴۵ ثانیه چک می‌کند، اکسل را از excel.codal.ir می‌گیرد و نتیجه را در
+// key='codal_fetch_result' می‌نویسد (HTML در payload.html، مطابقت با payload.id).
+let bridgeStatus = { lastId: null, lastError: null, lastAt: 0 };
+async function codalFetchBridge() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  try {
+    const qs = "key=eq.codal_fetch_request&select=payload";
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) return;
+    const rows = await r.json();
+    const req0 = rows?.[0]?.payload;
+    if (!req0?.id || !req0?.url) return;
+    if (req0.id === bridgeStatus.lastId) return; // قبلاً پردازش شد
+    if (!/^https:\/\/excel\.codal\.ir\//.test(req0.url)) return;
+    console.log(`codal bridge: fetching ${req0.id}`);
+    let result;
+    try {
+      const html = await codalRawExcel(req0.url);
+      result = { id: req0.id, url: req0.url, ok: true, bytes: html.length, html, at: Date.now() };
+    } catch (e) {
+      result = { id: req0.id, url: req0.url, ok: false, error: errMsg(e), at: Date.now() };
+    }
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?on_conflict=key`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify([{ key: "codal_fetch_result", payload: result }]),
+      signal: AbortSignal.timeout(60000),
+    });
+    if (res.ok) {
+      bridgeStatus = { lastId: req0.id, lastError: null, lastAt: Date.now() };
+      console.log(`codal bridge: result pushed for ${req0.id} (ok=${result.ok})`);
+    } else {
+      bridgeStatus = { ...bridgeStatus, lastError: `push HTTP ${res.status}` };
+    }
+  } catch (e) {
+    bridgeStatus = { ...bridgeStatus, lastError: errMsg(e) };
+  }
+}
+
 // ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
 let refreshing = null;
 function refresh() {
@@ -651,6 +780,7 @@ function refresh() {
       await pushToSupabase(body);
       await pushHistory(body);
       await pushDailyHistory(body);
+      await pushDailyFx(body);
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);
@@ -690,6 +820,8 @@ function debugPayload() {
     codal: codalStatus,
     codalEngine: engineStatus,
     eodHistory: eodStatus,
+    historyPrune: pruneStatus,
+    fxRates: fxStatus,
   }, null, 2);
 }
 
@@ -770,6 +902,9 @@ server.listen(PORT, () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   refresh();
   setInterval(refresh, CACHE_MS).unref();
+  // پل دریافت اکسل کدال — هر ۴۵ ثانیه (سبک؛ فقط یک SELECT کوچک وقتی درخواستی نیست).
+  setInterval(() => { codalFetchBridge().catch(() => {}); }, 45 * 1000).unref();
+  setTimeout(() => { codalFetchBridge().catch(() => {}); }, 15 * 1000).unref();
   // دامپ تشخیصی ساختار اکسل کدال (فقط وقتی CODAL_DEBUG_EXCEL_URL ست باشد) — هر ۳ دقیقه تا موفقیت.
   if (process.env.CODAL_DEBUG_EXCEL_URL) {
     let dumped = false;

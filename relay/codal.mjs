@@ -174,11 +174,116 @@ function findIncomeTable(tables) {
 
 /* ── نرمال‌سازی ن-۱۰ (صورت‌های مالی) ────────────────────────────────────────── */
 
+/** جدول سود و زیان بانک/بیمه: به جای «درآمدهای عملیاتی»، «درآمد تسهیلات اعطایی»
+ * (بانک) یا «درآمد حق بیمه» (بیمه) + «درآمد عملیاتی» + «سود(زیان)خالص» دارد.
+ * (تأییدشده با اکسل واقعی ونوین FY1404 — جدول ۳۵سطری پس از عنوان «صورت سود و زیان».) */
+function findBankIncomeTable(tables) {
+  for (const t of tables) {
+    let hasCoreRevenue = false, hasNet = false, hasOpIncome = false;
+    for (const row of t) {
+      const l = normLabel(row[0]);
+      if (l.startsWith(normLabel("درآمد تسهیلات اعطایی")) || l.startsWith(normLabel("درآمد حق بیمه"))) hasCoreRevenue = true;
+      if (l === normLabel("درآمد عملیاتی") || l === normLabel("جمع درآمدهای عملیاتی")) hasOpIncome = true;
+      if (l === normLabel("سود(زیان)خالص") || l === normLabel("سود (زيان) خالص")) hasNet = true;
+    }
+    if (hasCoreRevenue && hasOpIncome && hasNet) return t;
+  }
+  return null;
+}
+
+/** نرمال‌سازی صورت سود و زیان بانک/بیمه به همان قرارداد IncomeStatement:
+ * revenue=درآمد عملیاتی، cogs=هزینه سود سپرده‌ها (بانک) / هزینه خسارت (بیمه)،
+ * gross/op/net/eps مطابق سطرهای استاندارد. اعتبارسنجی: ناخالص ≈ درآمد+هزینه ±۲٪.
+ * اگر رد شد null (هیچ عدد ساختگی — قانون ۳). */
+export function normalizeN10Bank(tables, meta) {
+  const inc = findBankIncomeTable(tables);
+  if (!inc) return null;
+
+  const isInsurance = inc.some((r) => normLabel(r[0]).startsWith(normLabel("درآمد حق بیمه")));
+  const revenue = rowIn(inc, ["درآمد عملیاتی", "جمع درآمدهای عملیاتی"]);
+  const cogs = isInsurance
+    ? rowIn(inc, ["هزینه خسارت", "هزینه‌های بیمه‌ای", "هزینه های بیمه ای"])
+    : rowIn(inc, ["هزینه سود سپرده", "هزينه سود سپرده"]);
+  const gross = rowIn(inc, ["سود(زیان) ناخالص", "سود (زيان) ناخالص"]);
+  const op = rowIn(inc, ["سود(زیان) عملیاتی", "سود (زيان) عملياتى"]);
+
+  // سود خالص نهایی — تطبیق دقیق (نه «عملیات در حال تداوم» و نه «هر سهم»).
+  let net = null;
+  for (const row of inc) {
+    const l = normLabel(row[0]);
+    if (l === normLabel("سود(زیان) خالص") || l === normLabel("سود (زيان) خالص")) {
+      net = { value: cellNum(row[1]), prior: cellNum(row[2]) };
+    }
+  }
+  if (!net) net = rowIn(inc, ["سود(زیان) خالص عملیات در حال تداوم"]);
+
+  // EPS — اولویت با «سود (زیان) خالص هر سهم» (رقم رسمی نهایی؛ ونوین: ۷۷۳)،
+  // سپس «ناشی از عملیات در حال تداوم»/«پایه هر سهم» — فقط سطر عدددار و غیرصفر
+  // (در بانک‌ها سطر «سود(زیان) پایه هر سهم» گاه ۰ است — ونوین).
+  const epsFind = (labels) => {
+    for (const row of inc) {
+      const l = normLabel(row[0]);
+      if (!l || !labels.some((w) => l.includes(normLabel(w)) || l.startsWith(normLabel(w)))) continue;
+      const v = cellNum(row[1]);
+      if (v !== null && v !== 0) return { value: v, prior: cellNum(row[2]) };
+    }
+    return null;
+  };
+  const eps = epsFind(["خالص هر سهم"]) ?? epsFind(["ناشی از عملیات در حال تداوم", "پایه هر سهم"]);
+
+  if (!revenue || revenue.value === null || !net || net.value === null) return null;
+
+  // اعتبارسنجی حسابی: ناخالص ≈ درآمد عملیاتی + هزینه (در اکسل منفی) با تلورانس ۲٪.
+  if (gross && gross.value !== null && cogs && cogs.value !== null) {
+    const calc = revenue.value + cogs.value;
+    const tol = Math.max(Math.abs(gross.value) * 0.02, 10);
+    if (Math.abs(calc - gross.value) > tol) return null; // جدول اشتباه — درج نکن
+  }
+
+  const mkIncome = (which) => ({
+    revenue: which === "cur" ? revenue.value : revenue.prior,
+    cogs: cogs && cogs[which === "cur" ? "value" : "prior"] !== null ? Math.abs(cogs[which === "cur" ? "value" : "prior"]) : 0,
+    gross_profit: gross && gross[which === "cur" ? "value" : "prior"] !== null ? gross[which === "cur" ? "value" : "prior"] : 0,
+    operating_profit: op && op[which === "cur" ? "value" : "prior"] !== null ? op[which === "cur" ? "value" : "prior"] : 0,
+    net_profit: which === "cur" ? net.value : net.prior,
+    ...(eps && eps[which === "cur" ? "value" : "prior"] !== null ? { eps_rial: eps[which === "cur" ? "value" : "prior"] } : {}),
+  });
+
+  const cur = mkIncome("cur");
+  let prior;
+  if (revenue.prior !== null && net.prior !== null) prior = mkIncome("prior");
+
+  // سرمایه: سطر «سرمایه» در انتهای همین جدول (ساختار تأییدشدهٔ ونوین).
+  let capital = 0;
+  for (const row of inc) {
+    const l = normLabel(row[0]);
+    if (l === normLabel("سرمایه") || l === normLabel("سرمايه")) {
+      const v = cellNum(row[1]);
+      if (v !== null && v > 0) capital = v;
+    }
+  }
+
+  return {
+    symbol: meta.symbol,
+    company_name: meta.company_name,
+    report_kind: "ن-۱۰",
+    statement_type: isInsurance ? "insurance" : "bank",
+    period_end: meta.period_end,
+    period_months: meta.period_months,
+    audited: meta.audited,
+    restated_prior: false,
+    unit: "میلیون ریال",
+    capital,
+    standalone: prior ? { ...cur, prior } : cur,
+  };
+}
+
 /** از جدول‌های اکسل ن-۱۰، CodalN10Data می‌سازد؛ فقط از جدول صورت سود و زیان،
  * با اعتبارسنجی حسابی سخت‌گیرانه؛ اگر رد شد null (هیچ عدد ساختگی). */
 export function normalizeN10(tables, meta) {
   const inc = findIncomeTable(tables);
-  if (!inc) return null;
+  // بانک/بیمه صورت سود و زیان متفاوتی دارند (بدون «بهای تمام‌شده»/«ناخالص» صنعتی) — مسیر جدا.
+  if (!inc) return normalizeN10Bank(tables, meta);
 
   const revenue = rowIn(inc, ["درآمدهای عملیاتی"]);
   const cogs = rowIn(inc, ["بهای تمام شده درآمد", "بهاى تمام شده درآمد", "بهای تمام‌شده"]);

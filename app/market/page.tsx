@@ -5,6 +5,7 @@ import MarketClient from "@/components/market/MarketClient";
 import GoldCurrencyBoard from "@/components/market/GoldCurrencyBoard";
 import TodayMarket from "@/components/market/TodayMarket";
 import FundsBoard from "@/components/market/FundsBoard";
+import GoldUsdTrend from "@/components/market/GoldUsdTrend";
 import { getMarketData } from "@/lib/market";
 import { getIrMarket } from "@/lib/market-ir";
 
@@ -64,6 +65,9 @@ export default async function MarketPage() {
               fetchedAt={ir.fetchedAt}
             />
           )}
+
+          {/* روند طلا و دلار — منبع: ir_market_history (تصمیم T8) */}
+          <GoldUsdTrend />
 
           {/* صندوق‌ها (خلاصه) */}
           {ir && ir.funds.length > 0 && (
