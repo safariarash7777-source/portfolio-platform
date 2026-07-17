@@ -26,12 +26,14 @@ import { toPersianDigits } from "@/lib/format";
 import type { SymbolFundamentals } from "@/lib/fundamental/types";
 import {
   deriveN10,
+  deriveN30,
   narrativeConsecutiveGrowth,
   narrativeFxShare,
   narrativeGrossMargin,
   narrativeNetProfit,
   narrativeRevenueGrowth,
   type N10Derived,
+  type N30Derived,
 } from "@/lib/fundamental/calc";
 
 /* ---------- ابزارهای نمایش (فقط فرمت؛ محاسبه در lib/fundamental/calc) ---------- */
@@ -381,6 +383,107 @@ function NetProfitChart({
   );
 }
 
+/* ------------------------------ چارت‌های ن-۳۰ (۴–۶) ------------------------------ */
+
+const FA_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+
+/** "1404-10" ← «دی ۰۴» — برچسب کوتاه محور ماهانه. */
+function faMonthLabel(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  if (!y || !m || m < 1 || m > 12) return toPersianDigits(month);
+  return `${FA_MONTHS[m - 1]} ${toPersianDigits(String(y).slice(2))}`;
+}
+
+const MIX_COLORS = ["#0f3a5f", "#b8860b", "#4a7ba6", "#8c6d1f", "#7195b5", "#c9a227", "#a3bdd3", "#94a3b8"];
+
+/** چارت ۴ — ترکیب فروش: سهم محصولات (میلهٔ افقی) در بازهٔ ماه‌های موجود. */
+function SalesMixChart({ d30 }: { d30: N30Derived }) {
+  const data = d30.productMix.map((p) => ({
+    name: p.name,
+    share: p.sharePct ?? 0,
+    amount: p.amount,
+  }));
+  return (
+    <div style={{ width: "100%", height: 260 }}>
+      <ResponsiveContainer>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 44, left: 8, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" horizontal={false} />
+          <XAxis type="number" tick={TICK} tickFormatter={(v) => `٪${faTick(v as number)}`} domain={[0, "dataMax"]} />
+          <YAxis type="category" dataKey="name" width={110} tick={{ ...TICK, fontSize: 11 }} />
+          <Tooltip
+            formatter={(v: unknown, _n, item) => [
+              `٪${toPersianDigits(String(v))} (${fmtMillionRial((item?.payload as { amount: number })?.amount ?? 0)})`,
+              "سهم از فروش",
+            ]}
+            labelFormatter={(l) => String(l)}
+          />
+          <Bar dataKey="share" radius={[0, 4, 4, 0]} barSize={18}>
+            {data.map((_, i) => (
+              <Cell key={i} fill={MIX_COLORS[i % MIX_COLORS.length]} />
+            ))}
+            <LabelList dataKey="share" position="right" formatter={(v: unknown) => `٪${toPersianDigits(String(v))}`} style={{ fontSize: 11, fill: "var(--text-2)" }} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** چارت ۵ — نرخ فروش محصول پرفروش (خط) + مقدار فروش (میله) به تفکیک ماه. */
+function ProductRateChart({ d30 }: { d30: N30Derived }) {
+  const data = d30.topProductMonths.map((m) => ({
+    month: faMonthLabel(m.month),
+    rate: m.rate,
+    qty: m.salesQty,
+  }));
+  return (
+    <div style={{ width: "100%", height: 260 }}>
+      <ResponsiveContainer>
+        <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+          <XAxis dataKey="month" tick={TICK} />
+          <YAxis yAxisId="qty" tick={TICK} tickFormatter={(v) => toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬")} />
+          <YAxis yAxisId="rate" orientation="left" hide />
+          <Tooltip
+            formatter={(v: unknown, name) =>
+              name === "نرخ فروش (ریال)"
+                ? [toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬") + " ریال", name]
+                : [toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬"), name]
+            }
+          />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Bar yAxisId="qty" dataKey="qty" name="مقدار فروش" fill="var(--chart-bar, #4a7ba6)" radius={[4, 4, 0, 0]} barSize={22} />
+          <Line yAxisId="rate" dataKey="rate" name="نرخ فروش (ریال)" stroke="#b8860b" strokeWidth={2} dot={{ r: 3 }} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** چارت ۶ — تولید در برابر فروش (مقدار، ماهانه) — تشخیص انبارش/تخلیه. */
+function ProdVsSalesChart({ d30 }: { d30: N30Derived }) {
+  const data = d30.prodVsSales.map((m) => ({
+    month: faMonthLabel(m.month),
+    production: m.production,
+    sales: m.sales,
+  }));
+  return (
+    <div style={{ width: "100%", height: 260 }}>
+      <ResponsiveContainer>
+        <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+          <XAxis dataKey="month" tick={TICK} />
+          <YAxis tick={TICK} tickFormatter={(v) => toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬")} />
+          <Tooltip formatter={(v: unknown, name) => [toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬"), name]} />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Bar dataKey="production" name="تولید" fill="#0f3a5f" radius={[4, 4, 0, 0]} barSize={16} />
+          <Bar dataKey="sales" name="فروش" fill="#b8860b" radius={[4, 4, 0, 0]} barSize={16} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 /* ------------------------------- کامپوننت اصلی ------------------------------- */
 
 export default function FundamentalCharts({
@@ -395,6 +498,8 @@ export default function FundamentalCharts({
 }) {
   const n10 = fundamentals.n10;
   const derived = useMemo(() => (n10 ? deriveN10(n10.data) : null), [n10]);
+  const n30 = fundamentals.n30;
+  const n30d = useMemo(() => (n30 ? deriveN30(n30.data) : null), [n30]);
   const [usd, setUsd] = useState(false);
   const fxEnabled = typeof fxRate === "number" && fxRate > 0;
   const usdRate = usd && fxEnabled ? fxRate : null;
@@ -480,26 +585,56 @@ export default function FundamentalCharts({
           ) : null}
         </ChartCard>
 
-        {/* چارت ۴ — پای فروش داخلی/صادراتی + سهم محصولات: نیازمند ن-۳۰ */}
-        <ComingSoon
-          id="chart-sales-mix"
-          title="۴) ترکیب فروش داخلی/صادراتی و سهم محصولات"
-          waitingFor="نیازمند جدول «فروش به تفکیک محصول» از اکسل گزارش‌های ماهانهٔ ن-۳۰ است (در PDF درهم استخراج می‌شود)."
-        />
+        {/* چارت ۴ — ترکیب فروش و سهم محصولات — از ن-۳۰ واقعی (T5) */}
+        {n30d && n30d.productMix.length > 0 ? (
+          <ChartCard
+            id="chart-sales-mix"
+            title="۴) سهم محصولات از فروش"
+            subtitle={`جمع ${toPersianDigits(String(n30d.months.length))} ماه گزارش فعالیت ماهانه (ن-۳۰) کدال${n30d.exportSharePct !== null && n30d.exportSharePct > 0 ? ` · سهم صادرات ٪${toPersianDigits(String(n30d.exportSharePct))}` : " · در این بازه فروش صادراتی گزارش نشده"}`}
+          >
+            <SalesMixChart d30={n30d} />
+          </ChartCard>
+        ) : (
+          <ComingSoon
+            id="chart-sales-mix"
+            title="۴) ترکیب فروش داخلی/صادراتی و سهم محصولات"
+            waitingFor="نیازمند جدول «فروش به تفکیک محصول» از اکسل گزارش‌های ماهانهٔ ن-۳۰ است — برای این نماد هنوز گزارش ن-۳۰ پردازش نشده است."
+          />
+        )}
 
-        {/* چارت ۵ — نرخ و مقدار فروش هر محصول: نیازمند ن-۳۰ */}
-        <ComingSoon
-          id="chart-product-rates"
-          title="۵) نرخ و مقدار فروش هر محصول (ماهانه)"
-          waitingFor="نیازمند سری ماهانهٔ ن-۳۰ به تفکیک محصول (کاتد/مفتول × داخلی/صادراتی) است."
-        />
+        {/* چارت ۵ — نرخ و مقدار فروش محصول پرفروش — از ن-۳۰ واقعی (T5) */}
+        {n30d && n30d.topProductName && n30d.topProductMonths.some((m) => m.rate !== null) ? (
+          <ChartCard
+            id="chart-product-rates"
+            title={`۵) نرخ و مقدار فروش ماهانه — ${n30d.topProductName}`}
+            subtitle="پرفروش‌ترین محصول بازه · میله: مقدار فروش · خط: نرخ فروش (ریال) — منبع: ن-۳۰ کدال"
+          >
+            <ProductRateChart d30={n30d} />
+          </ChartCard>
+        ) : (
+          <ComingSoon
+            id="chart-product-rates"
+            title="۵) نرخ و مقدار فروش هر محصول (ماهانه)"
+            waitingFor="نیازمند سری ماهانهٔ ن-۳۰ به تفکیک محصول است — برای این نماد هنوز گزارش ن-۳۰ پردازش نشده است."
+          />
+        )}
 
-        {/* چارت ۶ — تولید در برابر فروش: نیازمند ن-۳۰ */}
-        <ComingSoon
-          id="chart-prod-vs-sales"
-          title="۶) مقدار تولید در برابر مقدار فروش"
-          waitingFor="نیازمند مقادیر تولید و فروش ماهانه از ن-۳۰ است — برای تشخیص انبارش یا تخلیهٔ موجودی."
-        />
+        {/* چارت ۶ — تولید در برابر فروش — از ن-۳۰ واقعی (T5) */}
+        {n30d && n30d.prodVsSales.length > 0 ? (
+          <ChartCard
+            id="chart-prod-vs-sales"
+            title="۶) مقدار تولید در برابر مقدار فروش (ماهانه)"
+            subtitle="جمع مقادیر همهٔ محصولات هر ماه — تولید بیشتر از فروش یعنی انبارش، کمتر یعنی تخلیهٔ موجودی — منبع: ن-۳۰ کدال"
+          >
+            <ProdVsSalesChart d30={n30d} />
+          </ChartCard>
+        ) : (
+          <ComingSoon
+            id="chart-prod-vs-sales"
+            title="۶) مقدار تولید در برابر مقدار فروش"
+            waitingFor="نیازمند مقادیر تولید و فروش ماهانه از ن-۳۰ است — برای این نماد هنوز گزارش ن-۳۰ پردازش نشده است."
+          />
+        )}
       </div>
 
       {/* روند ۵ساله — دادهٔ واقعی جدول رسمی خود گزارش (مکمل چارت‌های بالا) */}
