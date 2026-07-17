@@ -9,9 +9,11 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundamentalCharts from "@/components/symbol/FundamentalCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
+import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavChart";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
+import { getNavHistory } from "@/lib/core/navHistory";
 import { getFxRates, latestRate } from "@/lib/core/fx";
 import { netIndividualFlow } from "@/lib/core/engine";
 import {
@@ -63,11 +65,12 @@ export default async function SymbolPage({ params }: PageProps) {
   const { symbol } = await params;
   const sym = decodeURIComponent(symbol);
 
-  const [ir, history, fundamentals, fxRates] = await Promise.all([
+  const [ir, history, fundamentals, fxRates, navHistory] = await Promise.all([
     getIrMarket(),
     getSymbolHistory(sym, 400),
     getFundamentals(sym),
     getFxRates(),
+    getNavHistory(sym, 400),
   ]);
   const fx = latestRate(fxRates);
 
@@ -88,6 +91,13 @@ export default async function SymbolPage({ params }: PageProps) {
     time: Math.floor(new Date(`${d.trade_date}T00:00:00Z`).getTime() / 1000),
     close: d.close,
     netFlow: netIndividualFlow(d),
+  }));
+
+  // M6: نمودار قیمت در برابر NAV — فقط روزهای دارای NAV ثبت‌شده (هیچ درون‌یابی)
+  const navPoints: PriceNavPoint[] = navHistory.map((d) => ({
+    time: Math.floor(new Date(`${d.trade_date}T00:00:00Z`).getTime() / 1000),
+    nav: d.nav,
+    close: d.close,
   }));
 
   return (
@@ -217,6 +227,16 @@ export default async function SymbolPage({ params }: PageProps) {
                 }
               />
             </div>
+          )}
+
+          {/* M6: قیمت در برابر NAV — فقط برای صندوق‌ها */}
+          {isFund && (
+            <section>
+              <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                قیمت در برابر NAV ابطال
+              </h2>
+              <PriceNavChart points={navPoints} />
+            </section>
           )}
 
           {/* تاریخچهٔ قیمت و جریان پول (ادغام‌شده از /data/[symbol]) */}

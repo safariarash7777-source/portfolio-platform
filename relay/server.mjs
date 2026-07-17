@@ -25,6 +25,8 @@
 import http from "node:http";
 import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
+import { fetchOptions, optionsStatus } from "./options.mjs";
+import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -43,6 +45,8 @@ const BROWSER_UA =
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
 
 let cache = null; // { body: string, at: number }
+// فهرست نمادهای آخرین اسنپ‌شات (سهام+صندوق) — ورودی صف بک‌فیل کندل (M8-الف).
+let latestSnapshotSymbols = [];
 
 // وضعیتِ تشخیصی — برای /debug. هیچ سکرتی اینجا نیست.
 const status = {
@@ -184,6 +188,18 @@ async function fetchStocksAndFunds() {
         sellI: Number(item.Sell_I_Volume) || 0,
         sellN: Number(item.Sell_N_Volume) || 0,
       };
+
+      // M7 — فیلدهای best-effort: سقف/کف روز و تعداد معامله‌گران حقیقی.
+      // نام فیلد در پاسخ BrsApi ممکن است سبک tsetmc (pmax/pmin) یا سبک مستندات (PriceMax/PriceMin) باشد؛
+      // هر دو چک می‌شود. اگر هیچ‌کدام نبود، کلید در payload درج نمی‌شود — هیچ عدد ساختگی.
+      const dayHighRial = Number(item.pmax ?? item.PriceMax ?? item.tmax);
+      const dayLowRial = Number(item.pmin ?? item.PriceMin ?? item.tmin);
+      if (isFinite(dayHighRial) && dayHighRial > 0) row.dayHigh = Math.round(dayHighRial / 10);
+      if (isFinite(dayLowRial) && dayLowRial > 0) row.dayLow = Math.round(dayLowRial / 10);
+      const buyCountI = Number(item.Buy_CountI ?? item.Buy_I_Count);
+      const sellCountI = Number(item.Sell_CountI ?? item.Sell_I_Count);
+      if (isFinite(buyCountI) && buyCountI > 0) row.buyCountI = buyCountI;
+      if (isFinite(sellCountI) && sellCountI > 0) row.sellCountI = sellCountI;
 
       // cs_id === 68 → صندوق ETF
       if (Number(item.cs_id) === 68) {
@@ -439,10 +455,12 @@ async function fetchIndex() {
 
 // ── ساختِ payload نهایی ───────────────────────────────────────────────────────
 async function buildPayload() {
-  const [gc, sf, indices] = await Promise.all([
+  const [gc, sf, indices, options] = await Promise.all([
     fetchGoldCurrency(),
     fetchStocksAndFunds(),
     fetchIndex(),
+    // M8-ب: تابلوی آپشن — یک درخواست در هر چرخه (~۲۸۸/روز)
+    fetchOptions(BRSAPI_BASE, BRSAPI_KEY),
   ]);
   // دورهای NAV و نوعِ صندوق در پس‌زمینه (ساعتی؛ درونشان سهمیه‌بندی شده) —
   // payload فعلی از کشِ موجود پر می‌شود و دورِ بعدی نتیجهٔ تازه را برمی‌دارد.
@@ -456,9 +474,12 @@ async function buildPayload() {
     crypto: gc.crypto,
     funds: sf.funds,
     stocks: sf.stocks,
+    options,
     indices,
     fetchedAt: Date.now(),
   };
+  // صف بک‌فیل کندل (M8-الف) از همین فهرست نمادهای زنده تغذیه می‌شود.
+  latestSnapshotSymbols = [...sf.stocks, ...sf.funds];
   return JSON.stringify(payload);
 }
 
@@ -858,6 +879,7 @@ function debugPayload() {
         crypto: p.crypto?.length ?? 0,
         funds: p.funds?.length ?? 0,
         stocks: p.stocks?.length ?? 0,
+        options: p.options?.length ?? 0,
       };
     } catch { /* ignore */ }
   }
@@ -877,6 +899,8 @@ function debugPayload() {
     indexHistory: indexHistStatus,
     historyPrune: pruneStatus,
     fxRates: fxStatus,
+    options: optionsStatus,
+    candleBackfill: candleStatus,
   }, null, 2);
 }
 
@@ -960,6 +984,12 @@ server.listen(PORT, () => {
   // پل دریافت اکسل کدال — هر ۴۵ ثانیه (سبک؛ فقط یک SELECT کوچک وقتی درخواستی نیست).
   setInterval(() => { codalFetchBridge().catch(() => {}); }, 45 * 1000).unref();
   setTimeout(() => { codalFetchBridge().catch(() => {}); }, 15 * 1000).unref();
+  // بک‌فیل کندل (M8-الف) — هر ۱۰ دقیقه یک دسته؛ سقف ساعتی/روزانه درون ماژول اعمال می‌شود.
+  // اولین اجرا ۳ دقیقه بعد از بوت تا اسنپ‌شات اول آماده باشد.
+  if (process.env.CANDLE_BACKFILL_ENABLED !== "0") {
+    setTimeout(() => { runCandleBackfill(latestSnapshotSymbols).catch((e) => console.error("candle backfill:", errMsg(e))); }, 3 * 60 * 1000).unref();
+    setInterval(() => { runCandleBackfill(latestSnapshotSymbols).catch((e) => console.error("candle backfill:", errMsg(e))); }, 10 * 60 * 1000).unref();
+  }
   // دامپ تشخیصی ساختار اکسل کدال (فقط وقتی CODAL_DEBUG_EXCEL_URL ست باشد) — هر ۳ دقیقه تا موفقیت.
   if (process.env.CODAL_DEBUG_EXCEL_URL) {
     let dumped = false;

@@ -47,6 +47,39 @@ export interface IrStockRow extends IrRow {
   navTime?: string | null;
   /** حباب ٪ = (قیمت − NAV ابطال) ÷ NAV ابطال × ۱۰۰ — محاسبهٔ قطعیِ رله */
   bubblePercent?: number | null;
+  /** سقف قیمت امروز (تومان) — best-effort رله (M7)؛ نبودن داده = null */
+  dayHigh?: number | null;
+  /** کف قیمت امروز (تومان) */
+  dayLow?: number | null;
+  /** تعداد خریداران حقیقی — best-effort رله (M7) */
+  buyCountI?: number | null;
+  /** تعداد فروشندگان حقیقی */
+  sellCountI?: number | null;
+}
+
+/** ردیف قرارداد اختیار معامله (M8-ب) — قیمت‌ها تومان */
+export interface IrOptionRow {
+  id: string;
+  faName: string;
+  /** نماد پایه (مثلاً وبملت) */
+  baseId: string;
+  type: "call" | "put";
+  /** قیمت اعمال (تومان) */
+  strike: number | null;
+  /** سررسید (جلالی YYYY-MM-DD) */
+  dateEnd: string | null;
+  /** روز باقیمانده تا سررسید */
+  dayRemain: number | null;
+  /** موقعیت‌های باز */
+  openInterest: number | null;
+  /** آخرین قیمت (تومان) */
+  price: number | null;
+  /** قیمت پایانی (تومان) */
+  closingPrice: number | null;
+  volume: number | null;
+  /** ارزش معاملات (تومان) */
+  value: number | null;
+  trades: number | null;
 }
 
 /** ردیفِ کریپتو (از BrsApi) */
@@ -82,6 +115,8 @@ export interface IrMarket {
   funds: IrStockRow[];
   stocks: IrStockRow[];
   crypto: IrCryptoRow[];
+  /** تابلوی اختیار معامله (M8-ب) — خالی اگر رله هنوز نفرستاده */
+  options: IrOptionRow[];
   indices: IrIndices | null;
   fetchedAt: number;
   ok: boolean;
@@ -188,6 +223,39 @@ function asStockRows(v: unknown): IrStockRow[] {
       navTime: typeof r.navTime === "string" ? r.navTime : null,
       bubblePercent:
         typeof r.bubblePercent === "number" && isFinite(r.bubblePercent) ? r.bubblePercent : null,
+      dayHigh: typeof r.dayHigh === "number" && isFinite(r.dayHigh) && r.dayHigh > 0 ? r.dayHigh : null,
+      dayLow: typeof r.dayLow === "number" && isFinite(r.dayLow) && r.dayLow > 0 ? r.dayLow : null,
+      buyCountI:
+        typeof r.buyCountI === "number" && isFinite(r.buyCountI) && r.buyCountI > 0 ? r.buyCountI : null,
+      sellCountI:
+        typeof r.sellCountI === "number" && isFinite(r.sellCountI) && r.sellCountI > 0 ? r.sellCountI : null,
+    }));
+}
+
+function asOptionRows(v: unknown): IrOptionRow[] {
+  if (!Array.isArray(v)) return [];
+  const numOrNull = (x: unknown): number | null =>
+    typeof x === "number" && isFinite(x) ? x : null;
+  return v
+    .filter(
+      (r): r is Record<string, unknown> =>
+        !!r && typeof (r as Record<string, unknown>).id === "string" &&
+        ((r as Record<string, unknown>).type === "call" || (r as Record<string, unknown>).type === "put")
+    )
+    .map((r) => ({
+      id: String(r.id),
+      faName: typeof r.faName === "string" ? r.faName : String(r.id),
+      baseId: typeof r.baseId === "string" ? r.baseId : "",
+      type: r.type as "call" | "put",
+      strike: numOrNull(r.strike),
+      dateEnd: typeof r.dateEnd === "string" ? r.dateEnd : null,
+      dayRemain: numOrNull(r.dayRemain),
+      openInterest: numOrNull(r.openInterest),
+      price: numOrNull(r.price),
+      closingPrice: numOrNull(r.closingPrice),
+      volume: numOrNull(r.volume),
+      value: numOrNull(r.value),
+      trades: numOrNull(r.trades),
     }));
 }
 
@@ -245,6 +313,7 @@ function toMarket(payload: unknown): IrMarket {
     funds: asStockRows(p.funds),
     stocks: asStockRows(p.stocks),
     crypto: asCryptoRows(p.crypto),
+    options: asOptionRows(p.options),
     indices: asIndices(p.indices),
     fetchedAt: Number.isFinite(fetchedAt) ? fetchedAt : Date.now(),
     ok: false,

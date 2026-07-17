@@ -30,9 +30,13 @@ export interface FundRow {
   navDate?: string | null;
   navTime?: string | null;
   bubblePercent?: number | null;
+  /** بازدهٔ دوره‌ای از symbol_history (M6) — null = دادهٔ کافی نیست */
+  ret1w?: number | null;
+  ret1m?: number | null;
+  ret3m?: number | null;
 }
 
-type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | "bubblePercent";
+type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | "bubblePercent" | "ret1w" | "ret1m" | "ret3m";
 type SortDir = "asc" | "desc";
 
 /** میلیارد تومان → متن فارسی */
@@ -134,6 +138,17 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           if (bn == null) return -1;
           return sortDir === "asc" ? an - bn : bn - an;
         }
+        case "ret1w":
+        case "ret1m":
+        case "ret3m": {
+          // nulls-last — پذیرش M6: نماد بدون داده همیشه انتهای فهرست
+          const an = a[sortKey];
+          const bn = b[sortKey];
+          if (an == null && bn == null) return 0;
+          if (an == null) return 1;
+          if (bn == null) return -1;
+          return sortDir === "asc" ? an - bn : bn - an;
+        }
         default:
           av = 0; bv = 0;
       }
@@ -144,6 +159,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 
   // آیا دست‌کم یک صندوق NAV دارد؟ (ستون‌های NAV/حباب فقط در این حالت)
   const hasNav = useMemo(() => funds.some((f) => f.nav != null), [funds]);
+  // آیا دست‌کم یک صندوق بازدهٔ دوره‌ای دارد؟ (M6 — ستون‌ها فقط وقتی داده هست)
+  const hasReturns = useMemo(
+    () => funds.some((f) => f.ret1w != null || f.ret1m != null || f.ret3m != null),
+    [funds]
+  );
+  const retCovered = useMemo(
+    () => funds.filter((f) => f.ret1w != null || f.ret1m != null || f.ret3m != null).length,
+    [funds]
+  );
 
   // Stats
   const stats = useMemo(() => {
@@ -377,6 +401,13 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <SortTh label="حباب" sortKey="bubblePercent" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
                 </>
               )}
+              {hasReturns && (
+                <>
+                  <SortTh label="بازده ۱ه" sortKey="ret1w" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+                  <SortTh label="بازده ۱م" sortKey="ret1m" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+                  <SortTh label="بازده ۳م" sortKey="ret3m" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+                </>
+              )}
               <SortTh label="ارزش معاملات" sortKey="value" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
               <SortTh label="ارزش بازار" sortKey="marketValue" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
             </tr>
@@ -414,6 +445,13 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                       >
                         {f.bubblePercent != null ? formatSignedPercent(f.bubblePercent) : "—"}
                       </td>
+                    </>
+                  )}
+                  {hasReturns && (
+                    <>
+                      <RetCell v={f.ret1w} />
+                      <RetCell v={f.ret1m} />
+                      <RetCell v={f.ret3m} />
                     </>
                   )}
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
@@ -474,6 +512,13 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   )}
                 </div>
               )}
+              {(f.ret1w != null || f.ret1m != null || f.ret3m != null) && (
+                <div className="flex items-center gap-3 mt-1.5 text-xs" style={{ color: "var(--text-2)" }}>
+                  <span>بازده ۱ه: <b style={{ color: f.ret1w != null ? deltaColor(f.ret1w) : "var(--text-3)" }}>{f.ret1w != null ? formatSignedPercent(f.ret1w) : "—"}</b></span>
+                  <span>۱م: <b style={{ color: f.ret1m != null ? deltaColor(f.ret1m) : "var(--text-3)" }}>{f.ret1m != null ? formatSignedPercent(f.ret1m) : "—"}</b></span>
+                  <span>۳م: <b style={{ color: f.ret3m != null ? deltaColor(f.ret3m) : "var(--text-3)" }}>{f.ret3m != null ? formatSignedPercent(f.ret3m) : "—"}</b></span>
+                </div>
+              )}
             </div>
           );
         })}
@@ -484,12 +529,19 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
         )}
       </div>
 
-      {/* History placeholder */}
-      <div className="card p-5 text-center">
-        <p className="text-sm" style={{ color: "var(--text-3)" }}>
-          نمودار روند NAV و بازده — داده در حال جمع‌آوری است. پس از ۲–۳ هفته نمایش داده می‌شود.
+      {/* پوشش بازدهٔ دوره‌ای (M6) — صادقانه: فقط نمادهای دارای تاریخچه */}
+      {hasReturns ? (
+        <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
+          بازدهٔ دوره‌ای از تاریخچهٔ ثبت‌شدهٔ قیمت پایانی محاسبه می‌شود و فعلاً برای {toPersianDigits(retCovered)} صندوق از {toPersianDigits(funds.length)} موجود است؛
+          بقیه با انباشت تدریجی داده تکمیل می‌شوند. «—» یعنی دادهٔ کافی برای آن پنجره هنوز نیست — هیچ بازدهی از دادهٔ ناقص ساخته نمی‌شود.
         </p>
-      </div>
+      ) : (
+        <div className="card p-5 text-center">
+          <p className="text-sm" style={{ color: "var(--text-3)" }}>
+            نمودار روند NAV و بازده — داده در حال جمع‌آوری است. پس از ۲–۳ هفته نمایش داده می‌شود.
+          </p>
+        </div>
+      )}
 
       {/* Disclaimer */}
       <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
@@ -506,6 +558,21 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 }
 
 // ── Helper Components ────────────────────────────────────────────────────────
+
+/** سلول بازدهٔ دوره‌ای — null = «—» (دادهٔ کافی نیست) */
+function RetCell({ v }: { v: number | null | undefined }) {
+  return (
+    <td
+      className="py-3 px-4 text-left"
+      style={{
+        color: v != null ? deltaColor(v) : "var(--text-3)",
+        fontVariantNumeric: "tabular-nums",
+      }}
+    >
+      {v != null ? formatSignedPercent(v) : "—"}
+    </td>
+  );
+}
 
 function Kpi({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
