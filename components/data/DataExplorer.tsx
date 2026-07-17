@@ -8,6 +8,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Search, Database, ArrowUpDown, Clock } from "lucide-react";
+import ScreenerPanel, { type ScreenerPresetConfig } from "@/components/data/ScreenerPanel";
+import { runFilter, SCREENER_FILTERS } from "@/lib/core/screener";
 import {
   toPersianDigits,
   formatToman,
@@ -63,12 +65,15 @@ export default function DataExplorer({
   gold,
   currency,
   fetchedAt,
+  avgVolume30,
 }: {
   stocks: IrStockRow[];
   funds: IrStockRow[];
   gold: IrRow[];
   currency: IrRow[];
   fetchedAt: number | null;
+  /** میانگین حجم ۳۰روزه هر نماد (از سرور) — پایهٔ فیلتر حجم مشکوک */
+  avgVolume30: Array<[string, number]>;
 }) {
   const [tab, setTab] = useState<Tab>("stocks");
   const [q, setQ] = useState("");
@@ -76,6 +81,9 @@ export default function DataExplorer({
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDesc, setSortDesc] = useState(true);
   const [limit, setLimit] = useState(100);
+  const [screenerFilter, setScreenerFilter] = useState<string | null>(null);
+
+  const avgVolMap = useMemo(() => new Map(avgVolume30), [avgVolume30]);
 
   const fundTypes = useMemo(() => {
     const s = new Set<string>();
@@ -88,6 +96,9 @@ export default function DataExplorer({
       tab === "stocks" ? stocks : tab === "funds" ? funds : [];
     if (tab === "funds" && fundType !== "همه") {
       base = base.filter((f) => f.type === fundType);
+    }
+    if (tab === "stocks" && screenerFilter) {
+      base = runFilter(base, screenerFilter, { avgVolume30: avgVolMap });
     }
     const qq = q.trim();
     if (qq) {
@@ -107,7 +118,7 @@ export default function DataExplorer({
       return (val(b) - val(a)) * (sortDesc ? 1 : -1);
     });
     return sorted;
-  }, [tab, stocks, funds, q, fundType, sortKey, sortDesc]);
+  }, [tab, stocks, funds, q, fundType, sortKey, sortDesc, screenerFilter, avgVolMap]);
 
   const simpleRows: IrRow[] = useMemo(() => {
     const base = tab === "gold" ? gold : tab === "currency" ? currency : [];
@@ -224,6 +235,32 @@ export default function DataExplorer({
           </select>
         ) : null}
       </div>
+
+      {tab === "stocks" ? (
+        <ScreenerPanel
+          activeFilter={screenerFilter}
+          onFilterChange={(k) => {
+            setScreenerFilter(k);
+            setLimit(100);
+          }}
+          matchCount={screenerFilter ? rows.length : null}
+          historyCoverage={{
+            covered: stocks.filter((s) => avgVolMap.has(s.id)).length,
+            total: stocks.length,
+          }}
+          currentConfig={{ filterKey: screenerFilter, q, sortKey, sortDesc }}
+          onApplyPreset={(c: ScreenerPresetConfig) => {
+            setTab("stocks");
+            setScreenerFilter(
+              c.filterKey && SCREENER_FILTERS.some((f) => f.key === c.filterKey) ? c.filterKey : null
+            );
+            if (typeof c.q === "string") setQ(c.q);
+            if (typeof c.sortKey === "string") setSortKey(c.sortKey as SortKey);
+            if (typeof c.sortDesc === "boolean") setSortDesc(c.sortDesc);
+            setLimit(100);
+          }}
+        />
+      ) : null}
 
       {isTable ? (
         <div

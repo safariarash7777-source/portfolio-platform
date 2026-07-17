@@ -544,6 +544,9 @@ function metaFrom(a, kind) {
  * فقط یک‌جا بماند. */
 export const codalEnv = { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY };
 export const faToEn = faToEnDigits;
+// تبدیل تاریخ جلالی → میلادی — بک‌فیل کندل (M8-الف) هم به همین نیاز دارد (تاریخ Candlestick.php جلالی است).
+export const jalaliYmdToGregorian = jalaliToGregorian;
+export const jalaliTextToIso = jalaliStr;
 export const classifyAnnouncement = classify;
 export const metaFromAnnouncement = metaFrom;
 export const existingUrlsFor = existingUrls;
