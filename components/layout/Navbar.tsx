@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { href: "/insights",  label: "تحلیل‌ها" },
   { href: "/analyses",  label: "کارنامه" },
   { href: "/notes",     label: "یادداشت روزانه" },
+  { href: "/codal",     label: "کدال" },
   { href: "/webinars",  label: "وبینار" },
   { href: "/terminal",  label: "ترمینال" },
   { href: "/dashboard", label: "داشبورد" },

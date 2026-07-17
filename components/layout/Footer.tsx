@@ -25,6 +25,7 @@ const FOOTER_GROUPS = [
       { href: "/insights", label: "تحلیل‌ها" },
       { href: "/analyses", label: "کارنامهٔ قابل راستی‌آزمایی" },
       { href: "/notes",    label: "یادداشت روزانه" },
+      { href: "/codal",    label: "فید اطلاعیه‌های کدال" },
     ],
   },
   {

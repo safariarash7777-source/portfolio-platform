@@ -715,6 +715,60 @@ async function pushDailyFx(body) {
   }
 }
 
+// ── تاریخچهٔ روزانهٔ شاخص (M5 رصد بازار) ─────────────────────────────────────────────
+// روزی یک ردیف EOD از بخش indices اسنپ‌شات (شاخص کل/هم‌وزن + ارزش/حجم بازار).
+// کلید dedup: jdate unique (تاریخ جلالی خود منبع) — روز تعطیل درج نمی‌شود چون
+// indices.date همان آخرین روز معاملاتی می‌ماند و یونیک رد می‌کند (409 بی‌خطر).
+let indexHistStatus = { lastJdate: null, error: null };
+async function pushDailyIndex(body) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
+  const t = tehranNow();
+  if (t.hour < EOD_AFTER_HOUR) return; // پس از ساعت بازار — رقم پایان روز
+  const p = typeof body === "string" ? JSON.parse(body) : body;
+  const ix = p.indices;
+  const jdate = ix?.date ? String(ix.date).trim() : null;
+  if (!jdate || !isFinite(Number(ix.total)) || Number(ix.total) <= 0) return; // بدون دادهٔ معتبر → هیچ درجی
+  if (indexHistStatus.lastJdate === jdate) return; // همین روز قبلاً درج شد
+  const row = {
+    jdate,
+    total_index: Number(ix.total),
+    total_change: isFinite(Number(ix.totalChange)) ? Number(ix.totalChange) : null,
+    equal_weight_index: Number(ix.equalWeight) > 0 ? Number(ix.equalWeight) : null,
+    equal_weight_change: isFinite(Number(ix.equalWeightChange)) ? Number(ix.equalWeightChange) : null,
+    market_value: Number(ix.marketValue) > 0 ? Number(ix.marketValue) : null,
+    trade_value: Number(ix.value) > 0 ? Number(ix.value) : null,
+    trade_volume: Number(ix.volume) > 0 ? Number(ix.volume) : null,
+    trades: Number(ix.trades) > 0 ? Number(ix.trades) : null,
+    source: "relay_eod",
+  };
+  try {
+    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/index_history`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify([row]),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (res.ok || res.status === 409) {
+      // 409 = این روز قبلاً درج شده (مثلاً پس از ری‌دیپلوی یا روز تعطیل) — هدف محقق است.
+      indexHistStatus = { lastJdate: jdate, error: null };
+      if (res.ok) console.log(`index history push ok: ${jdate} total=${row.total_index}`);
+    } else if (res.status === 404) {
+      indexHistStatus = { ...indexHistStatus, error: "index_history table missing (run phase14)" };
+    } else {
+      indexHistStatus = { ...indexHistStatus, error: `HTTP ${res.status}` };
+      console.error(`index history push: HTTP ${res.status}`);
+    }
+  } catch (e) {
+    indexHistStatus = { ...indexHistStatus, error: errMsg(e) };
+    console.error("index history push error:", indexHistStatus.error);
+  }
+}
+
 // ── پل دریافت اکسل کدال از طریق Supabase (برای توسعه از خارج ایران) ──────────────
 // sandbox درخواست را در ir_market_snapshots (key='codal_fetch_request') می‌نویسد؛
 // رله هر ۴۵ ثانیه چک می‌کند، اکسل را از excel.codal.ir می‌گیرد و نتیجه را در
@@ -781,6 +835,7 @@ function refresh() {
       await pushHistory(body);
       await pushDailyHistory(body);
       await pushDailyFx(body);
+      await pushDailyIndex(body);
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);
@@ -820,6 +875,7 @@ function debugPayload() {
     codal: codalStatus,
     codalEngine: engineStatus,
     eodHistory: eodStatus,
+    indexHistory: indexHistStatus,
     historyPrune: pruneStatus,
     fxRates: fxStatus,
   }, null, 2);

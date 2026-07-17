@@ -6,6 +6,7 @@ import GoldCurrencyBoard from "@/components/market/GoldCurrencyBoard";
 import TodayMarket from "@/components/market/TodayMarket";
 import FundsBoard from "@/components/market/FundsBoard";
 import GoldUsdTrend from "@/components/market/GoldUsdTrend";
+import IndexTrend from "@/components/market/IndexTrend";
 import { getMarketData } from "@/lib/market";
 import { getIrMarket } from "@/lib/market-ir";
 
@@ -68,6 +69,9 @@ export default async function MarketPage() {
 
           {/* روند طلا و دلار — منبع: ir_market_history (تصمیم T8) */}
           <GoldUsdTrend />
+
+          {/* روند شاخص کل/هم‌وزن — M5 رصد بازار (تا داده جمع نشود رندر نمی‌شود) */}
+          <IndexTrend />
 
           {/* صندوق‌ها (خلاصه) */}
           {ir && ir.funds.length > 0 && (
