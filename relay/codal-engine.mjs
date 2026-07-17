@@ -51,6 +51,7 @@ export const engineStatus = {
   lastRun: 0,
   lastError: null,
   feed: { pages: 0, seen: 0, matched: 0, downloaded: 0, inserted: 0, parseFailed: 0, watermark: null },
+  feedTable: { attempted: 0, inserted: 0, lastError: null }, // جدول codal_feed (M4 رصد بازار)
   backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, parseFailed: 0, skippedCovered: 0 },
   ledgerSize: 0,
 };
@@ -121,6 +122,61 @@ function recordFail(url) {
 const isBlocked = (url) => (state.fails[url] || 0) >= MAX_FAILS;
 
 /* ── مسیر ۱: فید سراسری ────────────────────────────────────────────────────── */
+/** دستهٔ اطلاعیه برای فیلتر صفحهٔ /codal (M4) — فقط از کد/عنوان رسمی خود اطلاعیه. */
+export function feedCategory(a) {
+  const code = String(a?.code || "");
+  const title = String(a?.title || "");
+  if (code.includes("ن-۳۰") || title.includes("گزارش فعالیت ماهانه")) return "ماهانه";
+  if (
+    code.includes("ن-۱۰") || title.includes("صورت‌های مالی") ||
+    title.includes("صورتهای مالی") || title.includes("صورت های مالی")
+  ) return "صورت مالی";
+  if (code.includes("ن-۲۰") || title.includes("شفاف سازی") || title.includes("شفاف‌سازی")) return "شفاف‌سازی";
+  if (code.includes("ن-۴") || title.includes("مجمع")) return "مجمع";
+  return "سایر";
+}
+
+/**
+ * M4: درج متادیتای اطلاعیه‌های تازهٔ چرخه در codal_feed (append-only، dedup با link unique).
+ * تکراری‌ها با Prefer: resolution=ignore-duplicates بی‌صدا رد می‌شوند.
+ * جدول نساخته (قبل از اجرای phase14) → فقط ثبت خطا در /debug، بدون شکستن چرخه.
+ */
+async function pushFeedRows(items) {
+  const st = engineStatus.feedTable;
+  if (!items.length) return;
+  const rows = items
+    .map((a) => ({
+      symbol: String(a.l18 || "").trim() || "نامشخص",
+      company_name: a.l30 || null,
+      title: String(a.title || "").trim() || "(بدون عنوان)",
+      report_code: a.code || null,
+      category: feedCategory(a),
+      sent_date: a.date_send || null,
+      sent_time: a.time_send || null,
+      publish_date: a.date_title || null,
+      link: a.link,
+      link_pdf: a.link_pdf || null,
+      link_excel: a.link_excel || null,
+    }))
+    .filter((r) => r.link);
+  if (!rows.length) return;
+  st.attempted += rows.length;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_feed?on_conflict=link`, {
+      method: "POST",
+      headers: { ...SB_HDRS(), Prefer: "resolution=ignore-duplicates,return=minimal" },
+      body: JSON.stringify(rows),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`codal_feed HTTP ${res.status}: ${(await res.text()).slice(0, 120)}`);
+    st.inserted += rows.length; // سقف تقریبی — تکراری‌ها بی‌صدا رد شده‌اند
+    st.lastError = null;
+  } catch (e) {
+    st.lastError = String(e?.message ?? e);
+    console.error("codal_feed push:", st.lastError);
+  }
+}
+
 /** یک صفحه با یک تلاش مجدد — BrsApi گاه اتصال را گذرا قطع می‌کند. */
 async function fetchPageWithRetry(params) {
   try { return await fetchAnnouncementsPage(params); }
@@ -134,6 +190,7 @@ async function pollGlobalFeed() {
   const wm = state.watermark; // { key: number, links: string[] } — links برای هم‌زمان‌های هم‌کلید
   const newestSeen = { key: 0, links: [] };
   const candidates = [];
+  const feedItems = []; // M4: متادیتای همهٔ اطلاعیه‌های تازه، نه فقط ن-۱۰/ن-۳۰
 
   outer:
   for (let page = 1; page <= FEED_MAX_PAGES; page++) {
@@ -147,12 +204,16 @@ async function pollGlobalFeed() {
       else if (k === newestSeen.key) newestSeen.links.push(a.link);
       // به واترمارک رسیدیم → تمام
       if (wm && (k < wm.key || (k === wm.key && wm.links?.includes(a.link)))) break outer;
+      if (a.link) feedItems.push(a); // M4
       const kind = classifyAnnouncement(a);
       if (!kind || !a.link || !a.link_excel) continue;
       st.matched++;
       candidates.push({ a, kind });
     }
   }
+
+  // M4: فید عمومی کدال — متادیتا قبل از دانلودها درج می‌شود تا فید عقب نماند
+  await pushFeedRows(feedItems);
 
   // دانلود و درج (جدیدترین‌ها اول)
   let dl = 0;

@@ -2,6 +2,7 @@
 // اجرا: node relay/codal-engine.test.mjs   (بدون درج در دیتابیس)
 import assert from "node:assert";
 import { classifyAnnouncement, faToEn, fetchAnnouncementsPage } from "./codal.mjs";
+import { feedCategory } from "./codal-engine.mjs";
 
 // sentKey از codal-engine.mjs خصوصی است — همان منطق را این‌جا بازتولید و
 // روی نمونه‌های واقعی صحت‌سنجی می‌کنیم (اگر منطق موتور عوض شود این تست باید همگام شود).
@@ -50,6 +51,23 @@ t("classify: پورتفوی رد می‌شود", () => {
 });
 t("classify: مجمع/آگهی رد می‌شود", () => {
   assert.equal(classifyAnnouncement({ title: "آگهی دعوت به مجمع عمومی عادی سالیانه" }), null);
+});
+
+// M4 — دستهٔ فید عمومی کدال (codal_feed.category)
+t("feedCategory: ن-۳۰ → ماهانه", () => {
+  assert.equal(feedCategory({ code: "ن-۳۰", title: "گزارش فعالیت ماهانه" }), "ماهانه");
+});
+t("feedCategory: ن-۱۰ → صورت مالی", () => {
+  assert.equal(feedCategory({ code: "ن-۱۰", title: "صورت‌های مالی سال مالی منتهی به ۱۴۰۴/۱۲/۲۹" }), "صورت مالی");
+});
+t("feedCategory: شفاف‌سازی از عنوان", () => {
+  assert.equal(feedCategory({ code: "ن-۲۰", title: "شفاف سازی در خصوص نوسان قیمت سهام" }), "شفاف‌سازی");
+});
+t("feedCategory: مجمع", () => {
+  assert.equal(feedCategory({ code: "ن-۴۱", title: "آگهی دعوت به مجمع عمومی عادی سالیانه" }), "مجمع");
+});
+t("feedCategory: ناشناخته → سایر", () => {
+  assert.equal(feedCategory({ code: "", title: "معرفی یا تغییر در ترکیب اعضای هیئت مدیره" }), "سایر");
 });
 
 // دراى‌ران فید واقعی (فقط خواندن؛ بدون دانلود اکسل و بدون درج)

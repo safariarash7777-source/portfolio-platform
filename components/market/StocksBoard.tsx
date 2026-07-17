@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import IndustryDesk from "./IndustryDesk";
 import { BarChart3, Search, ArrowUpDown, ChevronDown, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import {
   toPersianDigits,
@@ -77,6 +78,13 @@ interface Props {
 export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
   const [search, setSearch] = useState("");
   const [industryFilter, setIndustryFilter] = useState("همه");
+  const tableAnchorRef = useRef<HTMLDivElement | null>(null);
+
+  /** کلیک روی صنعت در نقشه/میز → فیلتر جدول نمادها (M2/M3) */
+  const selectIndustry = (industry: string) => {
+    setIndustryFilter((cur) => (cur === industry ? "همه" : industry));
+    tableAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -265,8 +273,15 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
         </div>
       )}
 
+      {/* نقشهٔ صنایع + میز صنایع (M2/M3 — رصد بازار) */}
+      <IndustryDesk
+        stocks={stocks}
+        onSelectIndustry={selectIndustry}
+        selectedIndustry={industryFilter !== "همه" ? industryFilter : undefined}
+      />
+
       {/* Search + Filter */}
-      <div className="flex flex-wrap gap-3">
+      <div ref={tableAnchorRef} className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search
             size={16}
