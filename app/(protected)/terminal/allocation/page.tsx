@@ -98,7 +98,7 @@ export default async function AllocationPage() {
             ترمینال
           </Link>
           <Link href="/terminal/watchlist" className="btn btn-outline" style={{ fontSize: "0.8rem" }}>
-            واچ‌لیست
+            دیده‌بان تکنیکال
           </Link>
         </div>
       </div>

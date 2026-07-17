@@ -7,7 +7,7 @@ import { toPersianDigits, formatJalali } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "واچ‌لیست و رژیم بازار — قطب‌نمای بازار",
+  title: "دیده‌بان تکنیکال و رژیم بازار — قطب‌نمای بازار",
   robots: { index: false, follow: false },
 };
 
@@ -34,7 +34,7 @@ export default async function WatchlistPage() {
         </p>
         <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
-            واچ‌لیست و رژیم بازار
+            دیده‌بان تکنیکال و رژیم بازار
           </h1>
           <Link
             href="/terminal"
@@ -95,7 +95,7 @@ export default async function WatchlistPage() {
         </details>
       </section>
 
-      {/* ── جدول واچ‌لیست ── */}
+      {/* ── جدول دیده‌بان تکنیکال ── */}
       <section className="mt-6">
         <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>
           امتیاز تکنیکال-جریانی = روند ۵۵٪ + نقدینگی ۴۵٪ · ستون بک‌تست: قاعدهٔ میانگین ۲۰/۶۰
