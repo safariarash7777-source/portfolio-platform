@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MarketClient from "@/components/market/MarketClient";
 import GoldCurrencyBoard from "@/components/market/GoldCurrencyBoard";
+import TodayMarket from "@/components/market/TodayMarket";
 import FundsBoard from "@/components/market/FundsBoard";
 import { getMarketData } from "@/lib/market";
 import { getIrMarket } from "@/lib/market-ir";
@@ -52,6 +53,9 @@ export default async function MarketPage() {
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-8 space-y-8">
+          {/* امروز بازار — چشم‌انداز آماری (T3) */}
+          <TodayMarket stocks={ir?.stocks ?? []} fetchedAt={ir?.fetchedAt ?? null} />
+
           {/* طلا و ارز */}
           {ir && (ir.gold.length > 0 || ir.currency.length > 0) && (
             <GoldCurrencyBoard

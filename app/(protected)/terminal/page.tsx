@@ -25,7 +25,7 @@ export default async function TerminalIndexPage() {
               className="rounded-full px-4 py-2 text-[13px] font-bold"
               style={{ background: "var(--navy)", color: "#fff" }}
             >
-              واچ‌لیست و رژیم بازار ←
+              دیده‌بان تکنیکال و رژیم بازار ←
             </Link>
             <Link
               href="/terminal/allocation"

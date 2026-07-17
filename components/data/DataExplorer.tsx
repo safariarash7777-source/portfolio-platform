@@ -268,7 +268,7 @@ export default function DataExplorer({
                   >
                     <td className="px-4 py-2.5">
                       <Link
-                        href={`/data/${encodeURIComponent(r.id)}`}
+                        href={`/symbol/${encodeURIComponent(r.id)}`}
                         className="font-bold hover:underline"
                         style={{ color: "var(--navy-deep)" }}
                       >
