@@ -125,8 +125,10 @@ function QueueList({
                 href={`/symbol/${encodeURIComponent(x.id)}`}
                 className="text-[12.5px] font-medium hover:underline flex-shrink-0"
                 style={{ color: "var(--navy-deep)", width: 76 }}
+                title={x.faName || x.id}
               >
-                {x.faName || x.id}
+                {/* C1 — UI نمادمحور: فقط نماد */}
+                {x.id}
               </Link>
               <div className="flex-1 h-4 rounded overflow-hidden" style={{ background: "var(--surface-2)" }} dir="rtl">
                 <div
@@ -171,8 +173,10 @@ function TopList({
                   href={`/symbol/${encodeURIComponent(x.id)}`}
                   className="font-medium truncate hover:underline"
                   style={{ color: "var(--navy-deep)" }}
+                  title={x.faName || x.id}
                 >
-                  {x.faName || x.id}
+                  {/* C1 — UI نمادمحور: فقط نماد */}
+                  {x.id}
                 </Link>
                 <span className="whitespace-nowrap font-bold" style={{ color: r.color, fontVariantNumeric: "tabular-nums" }}>
                   {r.text}

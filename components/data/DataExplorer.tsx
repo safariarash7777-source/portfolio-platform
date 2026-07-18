@@ -350,9 +350,7 @@ export default function DataExplorer({
                       >
                         {r.id}
                       </Link>
-                      <span className="mr-2 hidden text-xs sm:inline" style={{ color: "var(--text-3)" }}>
-                        {r.faName}
-                      </span>
+                      {/* C1 — UI نمادمحور: نام کامل حذف شد */}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
                       {num(r.closingPrice) != null

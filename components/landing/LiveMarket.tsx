@@ -57,6 +57,12 @@ const toDisplay = {
     priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
     change: r.changePercent ?? null, // درصد (نه مقدارِ مطلقِ تومان)
   }),
+  // C1 — UI نمادمحور: سهام/صندوق فقط نماد (طلا/ارز/کریپتو نماد بورسی نیستند — نام می‌ماند).
+  irTicker: (r: IrRow): DisplayRow => ({
+    id: r.id, faName: r.id,
+    priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
+    change: r.changePercent ?? null,
+  }),
 };
 
 /**
@@ -104,10 +110,10 @@ export default function LiveMarket() {
       {
         key: "funds",
         label: "صندوق‌ها",
-        rows: (ir?.funds ?? []).map(toDisplay.ir),
+        rows: (ir?.funds ?? []).map(toDisplay.irTicker),
         note: "NAV و بازدهِ روزانهٔ صندوق‌های طلا",
       },
-      { key: "stocks", label: "سهام", rows: (ir?.stocks ?? []).map(toDisplay.ir) },
+      { key: "stocks", label: "سهام", rows: (ir?.stocks ?? []).map(toDisplay.irTicker) },
       { key: "crypto", label: "کریپتو", rows: data.crypto.map(toDisplay.global) },
     ];
     return list.filter((c) => c.rows.length > 0);

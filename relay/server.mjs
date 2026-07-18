@@ -33,6 +33,9 @@ import { pushDailyBreadth, breadthStatus } from "./breadth.mjs";
 import { getSymbolDetail, symbolDetailStatus, refreshSymbolDetailsRotation, symbolRotationStatus } from "./symbol-detail.mjs";
 import { refreshCertificates, certificatesForPayload, pushCertEod, runPhysicalDaily, imeStatus } from "./ime.mjs";
 import { refreshCommodities, commoditiesForPayload, commodityStatus } from "./commodity.mjs";
+// C1 — قرنطینهٔ زیرنمادها و فهرست سیاه NAV (اخطار رسمی BrsApi)
+import { isSubTicker, isRightsIssue } from "./symbols-util.mjs";
+import { isNavBlacklisted, recordNavResult, loadNavBlacklist, saveNavBlacklist, navBlacklistStatus } from "./nav-blacklist.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -223,8 +226,13 @@ async function fetchStocksAndFunds() {
       if (isFinite(askP) && askP > 0) row.bestAskPrice = Math.round(askP / 10);
       if (isFinite(askQ) && askQ >= 0) row.bestAskVolume = askQ;
 
-      // cs_id === 68 → صندوق ETF
-      if (Number(item.cs_id) === 68) {
+      // C1 — فیلتر در مبدأ ingest: زیرنماد رقم‌دار (فملی2، آوند4، …) اصلاً وارد
+      // خروجی stocks/funds نمی‌شود (نه اسنپ‌شات، نه UI، نه هیچ صفی).
+      if (isSubTicker(row.id)) continue;
+
+      // cs_id === 68 → صندوق ETF — حق تقدم هرگز صندوق نیست؛ حق‌تقدم‌ها فقط
+      // در تابلوی لحظه‌ای سهام می‌مانند (تصمیم C1).
+      if (Number(item.cs_id) === 68 && !isRightsIssue(row.id)) {
         funds.push(row);
       } else {
         stocks.push(row);
@@ -308,7 +316,11 @@ async function refreshNavs(funds) {
   }
 
   // ۲) تک‌نمادی برای پرمعامله‌ترین‌ها
-  const top = [...funds].sort((a, b) => (b.value || 0) - (a.value || 0)).slice(0, NAV_TOP);
+  // C1 — قبل از صف‌کردن: زیرنماد، حق تقدم و بلک‌لیست دائمی NAV حذف می‌شوند.
+  const top = funds
+    .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
+    .sort((a, b) => (b.value || 0) - (a.value || 0))
+    .slice(0, NAV_TOP);
   let updated = 0;
   let failed = 0;
   const queue = [...top];
@@ -321,13 +333,14 @@ async function refreshNavs(funds) {
           headers: HDRS,
           signal: AbortSignal.timeout(15000),
         });
-        if (!res.ok) { failed++; continue; }
+        if (!res.ok) { failed++; recordNavResult(f.id, false); continue; }
         const j = await res.json();
         const d = Array.isArray(j) ? j[0] : j;
-        if (cacheNavRow(f.id, d, Date.now())) updated++;
-        else failed++;
+        if (cacheNavRow(f.id, d, Date.now())) { updated++; recordNavResult(f.id, true); }
+        else { failed++; recordNavResult(f.id, false); }
       } catch {
         failed++;
+        // خطای شبکه/timeout تقصیر نماد نیست — در بلک‌لیست ثبت نمی‌شود.
       }
     }
   }
@@ -340,6 +353,8 @@ async function refreshNavs(funds) {
     failed,
     error: updated === 0 && top.length > 0 ? "no nav fetched" : null,
   };
+  // C1 — ذخیرهٔ دائمی بلک‌لیست بعد از هر دور
+  saveNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch(() => {});
 }
 
 // T5-3 — دور تکمیلی NAV: ۲ بار در روز فقط برای صندوق‌هایی که NAV ندارند
@@ -358,7 +373,10 @@ async function refreshNavCompletion(funds) {
   lastCompletionRound = Date.now();
   const now = Date.now();
   // فقط صندوق‌هایی که NAV تازه ندارند (خارج از کش یا کهنه)
+  // C1 — زیرنماد، حق تقدم و بلک‌لیست دائمی هرگز وارد دور تکمیلی نمی‌شوند
+  // (ریشهٔ اخطار BrsApi: ریکوئست NAV برای نمادهای فاقد NAV مثل آوند4).
   const missing = funds
+    .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
     .filter((f) => { const c = navCache.get(f.id); return !c || now - c.at > NAV_STALE_MS; })
     .slice(0, NAV_COMPLETION_CAP);
   navCompletionState = { lastRoundAt: now, targeted: missing.length, updated: 0, failed: 0, skipped: null };
@@ -371,17 +389,20 @@ async function refreshNavCompletion(funds) {
       if (!f) return;
       try {
         const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, { headers: HDRS, signal: AbortSignal.timeout(15000) });
-        if (!res.ok) { navCompletionState.failed++; continue; }
+        if (!res.ok) { navCompletionState.failed++; recordNavResult(f.id, false); continue; }
         const j = await res.json();
         const d = Array.isArray(j) ? j[0] : j;
-        if (cacheNavRow(f.id, d, Date.now())) navCompletionState.updated++;
-        else navCompletionState.failed++;
+        if (cacheNavRow(f.id, d, Date.now())) { navCompletionState.updated++; recordNavResult(f.id, true); }
+        else { navCompletionState.failed++; recordNavResult(f.id, false); }
       } catch {
         navCompletionState.failed++;
+        // خطای شبکه — در بلک‌لیست ثبت نمی‌شود.
       }
     }
   }
   await Promise.all(Array.from({ length: NAV_CONCURRENCY }, worker));
+  // C1 — ذخیرهٔ دائمی بلک‌لیست بعد از دور تکمیلی
+  saveNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch(() => {});
 }
 
 // NAV کش‌شده را روی ردیف‌های صندوق سوار می‌کند (ریال → تومان) + حباب.
@@ -721,6 +742,8 @@ async function pushDailyHistory(body) {
     const rows = [];
     for (const r of all) {
       if (!r?.id || !(Number(r.value) > 0)) continue; // فقط نمادهای معامله‌شدهٔ امروز
+      // C1 — زیرنماد و حق تقدم هرگز وارد symbol_history نمی‌شوند.
+      if (isSubTicker(r.id) || isRightsIssue(r.id)) continue;
       const raw = {
         eod: true,
         buy_i_vol: Number(r.buyI) || null,
@@ -995,6 +1018,7 @@ function debugPayload() {
     candleBackfill: candleStatus,
     symbolDetail: symbolDetailStatus(), // T5-1
     symbolRotation: symbolRotationStatus(), // T5-1 فیکس معماری — چرخش Supabase
+    navBlacklist: navBlacklistStatus(),  // C1 — فهرست سیاه دائمی NAV
     navCompletion: navCompletionState,  // T5-3
     ime: imeStatus(),                   // T5-4/5
     commodity: commodityStatus(),       // T5-6
@@ -1118,7 +1142,10 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
-  refresh();
+  // C1 — بارگذاری بلک‌لیست دائمی NAV قبل از اولین رفرش (تا با ریاستارت پاک نشود)
+  loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY })
+    .catch(() => {})
+    .finally(() => refresh());
   setInterval(refresh, CACHE_MS).unref();
   // پل دریافت اکسل کدال — هر ۴۵ ثانیه (سبک؛ فقط یک SELECT کوچک وقتی درخواستی نیست).
   setInterval(() => { codalFetchBridge().catch(() => {}); }, 45 * 1000).unref();

@@ -11,7 +11,7 @@
 //     (حتی کهنه) برمی‌گردد یا 429. شمارنده هر روز (تهران) صفر می‌شود.
 //   - هیچ تبدیل واحدی انجام نمی‌شود — پاسخ خام BrsApi (ریال) برگردانده می‌شود و
 //     تبدیل/گارد در سایت انجام می‌شود تا رله سادهٔ ساده بماند.
-
+import { isMainTicker } from "./symbols-util.mjs"; // C1 — قرنطینهٔ زیرنماد/حق‌تقدم
 const TTL_MS = 3 * 60 * 1000; // ۳ دقیقه
 const DAILY_CAP = Number(process.env.SYMBOL_DETAIL_DAILY_CAP || 500);
 
@@ -67,7 +67,8 @@ export function symbolRotationStatus() {
 // و کل کش موجود را یک‌جا در Supabase آپسرت می‌کند. symbols: آرایهٔ l18 مرتب به ارزش.
 export async function refreshSymbolDetailsRotation({ base, key, headers, supabaseUrl, serviceKey, symbols }) {
   try {
-    const top = (symbols || []).slice(0, ROTATION_TOP_N);
+    // C1 — فقط نمادهای اصلی وارد چرخش دیتای جامع می‌شوند (نه زیرنماد، نه حق تقدم).
+    const top = (symbols || []).filter((s) => isMainTicker(s)).slice(0, ROTATION_TOP_N);
     if (!top.length || !supabaseUrl || !serviceKey) return;
     const picked = [];
     for (let i = 0; i < ROTATION_PER_CYCLE && top.length; i++) {
