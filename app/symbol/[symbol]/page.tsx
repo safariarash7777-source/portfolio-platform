@@ -12,6 +12,9 @@ import MonthlySalesCharts from "@/components/symbol/MonthlySalesCharts";
 import QuarterlyCharts from "@/components/symbol/QuarterlyCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
 import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavChart";
+import SymbolTabs from "@/components/symbol/SymbolTabs";
+import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
+import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
@@ -148,6 +151,85 @@ export default async function SymbolPage({ params }: PageProps) {
     close: d.close,
   }));
 
+  // T5-2: فهرست گزارش‌های ذخیره‌شده (codal_reports) برای تب گزارش‌ها
+  const storedReports: StoredReport[] = [];
+  if (fundamentals?.n30) {
+    storedReports.push({
+      kind: "ن-۳۰",
+      title: fundamentals.n30.source.title,
+      jdate: fundamentals.n30.data[0]?.period_end ?? null,
+      url: fundamentals.n30.source.source_url ?? null,
+    });
+  }
+  if (fundamentals?.n10) {
+    storedReports.push({
+      kind: "ن-۱۰",
+      title: fundamentals.n10.source.title,
+      jdate: fundamentals.n10.data.period_end ?? null,
+      url: fundamentals.n10.source.source_url ?? null,
+    });
+  }
+
+  // T6: محتوای تب بنیادی (T1 + T3 + WP4 + کارت امتیاز آتی)
+  const fundamentalTab = (
+    <>
+      <section
+        className="rounded-xl px-4 py-4"
+        style={{ background: "var(--surface-2)", border: "1px dashed var(--line-strong)" }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-[15px] font-bold" style={{ color: "var(--text-2)" }}>
+            کارت امتیاز سه‌محوره (بنیادی · روند · کیفیت گزارش)
+          </h2>
+          <span
+            className="rounded-full px-2 py-0.5 text-[11px] font-medium"
+            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+          >
+            به‌زودی
+          </span>
+        </div>
+        <p className="mt-2 text-[13px] leading-6" style={{ color: "var(--text-3)" }}>
+          هر امتیاز با فرمول شفاف و توضیحِ «چرا» ارائه خواهد شد؛ تا تصویب منطق امتیازدهی،
+          هیچ نمرهٔ موقتی نمایش داده نمی‌شود.
+        </p>
+      </section>
+
+      {/* T1 — شناسنامهٔ بنیادی: فروش ماهانهٔ ن-۳۰ — فقط وقتی داده هست (قانون ۲) */}
+      {fundamentals?.n30 && fundamentals.n30.data.length > 0 ? (
+        <section>
+          <MonthlySalesCharts
+            reports={fundamentals.n30.data}
+            sourceTitle={fundamentals.n30.source.title}
+            sourceUrl={fundamentals.n30.source.source_url}
+          />
+        </section>
+      ) : null}
+
+      {/* T3 — تحلیل فصلی ن-۱۰: فقط وقتی حداقل یک فصل مشتق شده (قانون ۲) */}
+      {quarters.length > 0 ? (
+        <QuarterlyCharts
+          quarters={quarters}
+          ttm={ttm}
+          peSeries={peSeries}
+          currentPe={currentPe}
+          sourceTitle={fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال"}
+        />
+      ) : null}
+
+      {/* نمودارهای بنیادی WP4 */}
+      <section>
+        <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+          تحلیل بنیادی (گزارش‌های کدال)
+        </h2>
+        <FundamentalCharts
+          fundamentals={fundamentals ?? { symbol: sym, n10: null, n30: null }}
+          fxRate={fx?.usd_toman ?? null}
+          fxRateDate={fx?.rate_date ?? null}
+        />
+      </section>
+    </>
+  );
+
   return (
     <>
       <Navbar />
@@ -277,89 +359,55 @@ export default async function SymbolPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* M6: قیمت در برابر NAV — فقط برای صندوق‌ها */}
-          {isFund && (
-            <section>
-              <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
-                قیمت در برابر NAV ابطال
-              </h2>
-              <PriceNavChart points={navPoints} />
-            </section>
-          )}
+          {/* T6 — هاب نماد با تب‌ها: نمای کلی · بنیادی · گزارش‌ها · مجامع */}
+          <SymbolTabs
+            overview={
+              <div className="space-y-6">
+                {/* M6: قیمت در برابر NAV — فقط برای صندوق‌ها */}
+                {isFund && (
+                  <section>
+                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                      قیمت در برابر NAV ابطال
+                    </h2>
+                    <PriceNavChart points={navPoints} />
+                  </section>
+                )}
 
-          {/* تاریخچهٔ قیمت و جریان پول (ادغام‌شده از /data/[symbol]) */}
-          <section>
-            <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
-              تاریخچهٔ قیمت و جریان پول
-            </h2>
-            {points.length > 0 ? (
-              <HistoryChart points={points} />
-            ) : (
-              <div
-                className="rounded-xl border border-dashed p-6 text-center text-sm"
-                style={{ borderColor: "var(--line-strong)", color: "var(--text-3)" }}
-              >
-                تاریخچهٔ این نماد هنوز در سامانه ثبت نشده است. پوشش تاریخچه به‌تدریج برای همهٔ
-                نمادها گسترش می‌یابد.
+                {/* تاریخچهٔ قیمت و جریان پول */}
+                <section>
+                  <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                    تاریخچهٔ قیمت و جریان پول
+                  </h2>
+                  {points.length > 0 ? (
+                    <HistoryChart points={points} />
+                  ) : (
+                    <div
+                      className="rounded-xl border border-dashed p-6 text-center text-sm"
+                      style={{ borderColor: "var(--line-strong)", color: "var(--text-3)" }}
+                    >
+                      تاریخچهٔ این نماد هنوز در سامانه ثبت نشده است. پوشش تاریخچه به‌تدریج برای همهٔ
+                      نمادها گسترش می‌یابد.
+                    </div>
+                  )}
+                </section>
+
+                {/* T5-1 — دادهٔ زنده: عمق ۵سطحی، جریان حقیقی/حقوقی، کارت‌های ارزش‌گذاری */}
+                {!isFund && (
+                  <section>
+                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                      تابلوی زندهٔ نماد
+                    </h2>
+                    <SymbolLiveDetail symbol={sym} sections="market" />
+                  </section>
+                )}
               </div>
-            )}
-          </section>
-
-          {/* کارت امتیاز سه‌محوره (WP5) — به‌زودی؛ بدون امتیاز موقت */}
-          <section
-            className="rounded-xl px-4 py-4"
-            style={{ background: "var(--surface-2)", border: "1px dashed var(--line-strong)" }}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-[15px] font-bold" style={{ color: "var(--text-2)" }}>
-                کارت امتیاز سه‌محوره (بنیادی · روند · کیفیت گزارش)
-              </h2>
-              <span
-                className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-                style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
-              >
-                به‌زودی
-              </span>
-            </div>
-            <p className="mt-2 text-[13px] leading-6" style={{ color: "var(--text-3)" }}>
-              هر امتیاز با فرمول شفاف و توضیحِ «چرا» ارائه خواهد شد؛ تا تصویب منطق امتیازدهی،
-              هیچ نمرهٔ موقتی نمایش داده نمی‌شود.
-            </p>
-          </section>
-
-          {/* T1 — شناسنامهٔ بنیادی: فروش ماهانهٔ ن-۳۰ — فقط وقتی داده هست (قانون ۲) */}
-          {fundamentals?.n30 && fundamentals.n30.data.length > 0 ? (
-            <section>
-              <MonthlySalesCharts
-                reports={fundamentals.n30.data}
-                sourceTitle={fundamentals.n30.source.title}
-                sourceUrl={fundamentals.n30.source.source_url}
-              />
-            </section>
-          ) : null}
-
-          {/* T3 — تحلیل فصلی ن-۱۰: فقط وقتی حداقل یک فصل مشتق شده (قانون ۲) */}
-          {quarters.length > 0 ? (
-            <QuarterlyCharts
-              quarters={quarters}
-              ttm={ttm}
-              peSeries={peSeries}
-              currentPe={currentPe}
-              sourceTitle={fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال"}
-            />
-          ) : null}
-
-          {/* نمودارهای بنیادی WP4 */}
-          <section>
-            <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
-              تحلیل بنیادی (گزارش‌های کدال)
-            </h2>
-            <FundamentalCharts
-              fundamentals={fundamentals ?? { symbol: sym, n10: null, n30: null }}
-              fxRate={fx?.usd_toman ?? null}
-              fxRateDate={fx?.rate_date ?? null}
-            />
-          </section>
+            }
+            fundamental={
+              <div className="space-y-6">{fundamentalTab}</div>
+            }
+            reports={<CodalReportsTab symbol={sym} stored={storedReports} />}
+            assembly={<SymbolLiveDetail symbol={sym} sections="assembly" />}
+          />
 
           {/* سلب مسئولیت — الزام قانون ۶ */}
           <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
@@ -373,3 +421,5 @@ export default async function SymbolPage({ params }: PageProps) {
     </>
   );
 }
+
+
