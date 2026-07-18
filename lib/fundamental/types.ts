@@ -96,4 +96,6 @@ export interface SymbolFundamentals {
   symbol: string;
   n10: { data: CodalN10Data; source: ReportSource } | null;
   n30: { data: CodalN30Data[]; source: ReportSource } | null;
+  /** T3: همهٔ دوره‌های ن-۱۰ پس از dedup نسخه‌ها (با id ردیف برای تقدم اصلاحیه) — ورودی فصل‌سازی. */
+  n10Periods?: Array<{ id: number; data: CodalN10Data }>;
 }

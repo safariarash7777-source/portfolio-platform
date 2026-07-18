@@ -171,7 +171,13 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
     };
   }
 
-  return { symbol, n10, n30 };
+  // T3: همهٔ دوره‌های ن-۱۰ برای فصل‌سازی تفاضلی (dedup نسخهٔ پارسر قبلاً انجام شده؛
+  // تقدم حسابرسی‌شده/اصلاحیه در خود lib/core/quarterly با id انجام می‌شود).
+  const n10Periods = fresh
+    .filter((r) => r.report_kind === "ن-۱۰" && (r.data as CodalN10Data).standalone)
+    .map((r) => ({ id: r.id, data: r.data as CodalN10Data }));
+
+  return { symbol, n10, n30, n10Periods: n10Periods.length > 0 ? n10Periods : undefined };
 }
 
 /** دادهٔ بنیادی نماد از Supabase؛ نبودِ داده یا خطا → null (بدون عدد ساختگی). */
