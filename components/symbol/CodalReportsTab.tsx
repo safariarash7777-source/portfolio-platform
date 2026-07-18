@@ -1,8 +1,10 @@
 "use client";
 
 // T5-2 — تب «گزارش‌های کدال» نماد:
-// ۱) فهرست گزارش‌های موجود (codal_reports — از سرور به‌صورت prop می‌آید).
-// ۲) دکمهٔ «همهٔ اطلاعیه‌ها» → لود زنده از /api/codal-list (رله، کش ۱۰دقیقه‌ای).
+// ۱) فهرست گزارش‌های پردازش‌شده (codal_reports — از سرور به‌صورت prop می‌آید).
+// ۲) دکمهٔ «دریافت فهرست» → /api/codal-list که از Supabase (جدول codal_reports) می‌خواند؛
+//    Vercel→Liara مسدود است، پس فراخوانی زندهٔ رله حذف شد (فیکس معماری T5).
+// ۳) لینک جست‌وجوی رسمی codal.ir همیشه نمایش داده می‌شود — صادقانه و بدون دادهٔ ساختگی.
 // لینک‌ها به codal.ir؛ هیچ واژهٔ تجویزی.
 
 import { useState } from "react";
@@ -15,34 +17,23 @@ export type StoredReport = {
 };
 
 type LiveItem = {
-  title: string | null;
-  symbol: string | null;
+  title: string;
+  kind: string | null;
   date: string | null;
-  time: string | null;
   url: string | null;
-  excel: string | null;
-  pdf: string | null;
 };
 
 function normalizeLive(j: unknown): LiveItem[] {
   const root = (j && typeof j === "object" ? (j as Record<string, unknown>) : {});
-  const arr = Array.isArray(root.data) ? root.data : Array.isArray(j) ? (j as unknown[]) : [];
+  const arr = Array.isArray(root.data) ? root.data : [];
   return arr
     .map((a): LiveItem | null => {
       if (!a || typeof a !== "object") return null;
       const o = a as Record<string, unknown>;
       const s = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
-      const title = s(o.title) ?? s(o.Title);
+      const title = s(o.title);
       if (!title) return null;
-      return {
-        title,
-        symbol: s(o.symbol) ?? s(o.Symbol),
-        date: s(o.date_publish) ?? s(o.PublishDateTime) ?? s(o.date),
-        time: s(o.time_publish) ?? null,
-        url: s(o.link) ?? s(o.Url) ?? s(o.url),
-        excel: s(o.link_excel) ?? s(o.ExcelUrl),
-        pdf: s(o.link_pdf) ?? s(o.PdfUrl),
-      };
+      return { title, kind: s(o.kind), date: s(o.date), url: s(o.url) };
     })
     .filter((x): x is LiveItem => x !== null);
 }
@@ -62,6 +53,8 @@ export default function CodalReportsTab({
 }) {
   const [live, setLive] = useState<LiveItem[] | null>(null);
   const [liveState, setLiveState] = useState<"idle" | "loading" | "error">("idle");
+
+  const codalSearchUrl = `https://codal.ir/ReportList.aspx?search&Symbol=${encodeURIComponent(symbol)}`;
 
   const loadAll = () => {
     setLiveState("loading");
@@ -121,7 +114,7 @@ export default function CodalReportsTab({
               disabled={liveState === "loading"}
               className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted disabled:opacity-50"
             >
-              {liveState === "loading" ? "در حال دریافت…" : "دریافت فهرست زنده"}
+              {liveState === "loading" ? "در حال دریافت…" : "دریافت فهرست"}
             </button>
           )}
         </div>
@@ -136,36 +129,35 @@ export default function CodalReportsTab({
               {live.map((a, i) => (
                 <li key={i} className="py-2 text-xs">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="min-w-0 font-medium">{a.title}</span>
-                    <span className="shrink-0 text-muted-foreground">
-                      {a.date ?? ""}{a.time ? ` ${a.time}` : ""}
-                    </span>
-                  </div>
-                  <div className="mt-1 flex gap-3 text-[11px]">
-                    {codalHref(a.url) && (
-                      <a href={codalHref(a.url)!} target="_blank" rel="noopener noreferrer" className="text-[var(--gold)] hover:underline">
-                        صفحهٔ اطلاعیه
-                      </a>
-                    )}
-                    {codalHref(a.pdf) && (
-                      <a href={codalHref(a.pdf)!} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:underline">
-                        PDF
-                      </a>
-                    )}
-                    {codalHref(a.excel) && (
-                      <a href={codalHref(a.excel)!} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:underline">
-                        اکسل
-                      </a>
-                    )}
+                    <div className="min-w-0">
+                      {a.kind && (
+                        <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{a.kind}</span>
+                      )}
+                      {codalHref(a.url) ? (
+                        <a href={codalHref(a.url)!} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline">
+                          {a.title}
+                        </a>
+                      ) : (
+                        <span className="font-medium">{a.title}</span>
+                      )}
+                    </div>
+                    <span className="shrink-0 text-muted-foreground">{a.date ?? ""}</span>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-xs text-muted-foreground">اطلاعیه‌ای از کدال دریافت نشد.</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              هنوز اطلاعیهٔ ذخیره‌شده‌ای برای این نماد نداریم؛ فهرست کامل را در خود کدال ببینید.
+            </p>
           )
         )}
-        <p className="mt-2 text-[11px] text-muted-foreground">منبع: codal.ir — لینک‌ها به سایت رسمی کدال باز می‌شود.</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          منبع: codal.ir —{" "}
+          <a href={codalSearchUrl} target="_blank" rel="noopener noreferrer" className="text-[var(--gold)] hover:underline">
+            مشاهدهٔ همهٔ اطلاعیه‌های «{symbol}» در سایت کدال
+          </a>
+        </p>
       </div>
     </div>
   );

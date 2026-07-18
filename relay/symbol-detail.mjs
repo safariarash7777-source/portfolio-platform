@@ -41,6 +41,70 @@ export function symbolDetailStatus() {
 
 // دیتای جامع یک نماد — از کش ۳دقیقه‌ای یا با یک درخواست به BrsApi.
 // خروجی: { ok, data?, stale?, error? }
+// --- چرخش Supabase-transport (T5-1 فیکس معماری) ---
+// Vercel→Liara inbound کار نمی‌کند (بن‌بست ثبت‌شده)؛ پس رله دیتای جامع نمادهای
+// پرارزش را چرخشی می‌گیرد و در ir_market_snapshots (key='symbol_details') آپسرت می‌کند؛
+// سایت فقط از Supabase می‌خواند. بودجه همان سقف روزانهٔ موجود است.
+const ROTATION_TOP_N = Number(process.env.SYMBOL_DETAIL_ROTATION_N || 60);
+const ROTATION_PER_CYCLE = Number(process.env.SYMBOL_DETAIL_PER_CYCLE || 6);
+let rotationCursor = 0;
+let lastRotationAt = 0;
+let lastRotationPushed = 0;
+let lastRotationError = null;
+
+export function symbolRotationStatus() {
+  return {
+    topN: ROTATION_TOP_N,
+    perCycle: ROTATION_PER_CYCLE,
+    cursor: rotationCursor,
+    lastRunAt: lastRotationAt || null,
+    lastPushed: lastRotationPushed,
+    lastError: lastRotationError,
+  };
+}
+
+// یک قدم چرخش: K نماد بعدی از فهرست پرارزش‌ترین‌ها را تازه می‌کند
+// و کل کش موجود را یک‌جا در Supabase آپسرت می‌کند. symbols: آرایهٔ l18 مرتب به ارزش.
+export async function refreshSymbolDetailsRotation({ base, key, headers, supabaseUrl, serviceKey, symbols }) {
+  try {
+    const top = (symbols || []).slice(0, ROTATION_TOP_N);
+    if (!top.length || !supabaseUrl || !serviceKey) return;
+    const picked = [];
+    for (let i = 0; i < ROTATION_PER_CYCLE && top.length; i++) {
+      picked.push(top[rotationCursor % top.length]);
+      rotationCursor = (rotationCursor + 1) % top.length;
+    }
+    for (const l18 of picked) {
+      await getSymbolDetail(l18, { base, key, headers });
+    }
+    // آپسرت کل کش (فقط نمادهای داخل فهرست چرخش + هر نماد تازهٔ دیگر در کش)
+    const details = {};
+    for (const [l18, c] of cache) details[l18] = { at: c.at, data: c.data };
+    const body = JSON.stringify({
+      key: "symbol_details",
+      payload: { at: Date.now(), count: Object.keys(details).length, details },
+      updated_at: new Date().toISOString(),
+    });
+    const res = await fetch(`${supabaseUrl}/rest/v1/ir_market_snapshots?on_conflict=key`, {
+      method: "POST",
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body,
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`supabase ${res.status}`);
+    lastRotationAt = Date.now();
+    lastRotationPushed = Object.keys(details).length;
+    lastRotationError = null;
+  } catch (e) {
+    lastRotationError = e?.message ?? String(e);
+  }
+}
+
 export async function getSymbolDetail(l18, { base, key, headers }) {
   rollDay();
   const now = Date.now();
