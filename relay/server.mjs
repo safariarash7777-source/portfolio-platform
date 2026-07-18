@@ -955,10 +955,11 @@ function refresh() {
       // T5-1 فیکس معماری: چرخش دیتای جامع نمادهای پرارزش ← Supabase (ترانسپورت به سایت)
       try {
         const p = JSON.parse(body);
+        // ردیف‌های payload نماد را در `id` دارند (mapStock: id = item.l18)
         const topSymbols = (p.stocks || [])
-          .filter((s) => s && s.l18 && Number.isFinite(Number(s.value)))
+          .filter((s) => s && s.id && Number.isFinite(Number(s.value)))
           .sort((a, b) => Number(b.value) - Number(a.value))
-          .map((s) => s.l18);
+          .map((s) => s.id);
         await refreshSymbolDetailsRotation({
           base: BRSAPI_BASE,
           key: BRSAPI_KEY,
