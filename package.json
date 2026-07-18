@@ -9,7 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/core/vocab.test.ts",
-    "test:core": "tsx --test lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/fundamental/n30.test.ts lib/core/vocab.test.ts"
+    "test:core": "tsx --test lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/vocab.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

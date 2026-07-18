@@ -27,6 +27,7 @@ import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./c
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
 import { fetchOptions, optionsStatus } from "./options.mjs";
 import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
+import { pushDailyBreadth, breadthStatus } from "./breadth.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -200,6 +201,20 @@ async function fetchStocksAndFunds() {
       const sellCountI = Number(item.Sell_CountI ?? item.Sell_I_Count);
       if (isFinite(buyCountI) && buyCountI > 0) row.buyCountI = buyCountI;
       if (isFinite(sellCountI) && sellCountI > 0) row.sellCountI = sellCountI;
+
+      // داشبورد «امروز بازار» — فیلدهای تشخیص صف (best-effort، مستند brsapi.ir):
+      // tmin/tmax = آستانهٔ مجاز دامنه؛ pd1/qd1 = قیمت/حجم بهترین تقاضا؛ po1/qo1 = بهترین عرضه.
+      // قیمت‌ها ریال → تومان (همان قاعدهٔ موجود). غایب → کلید درج نمی‌شود — هیچ عدد ساختگی.
+      const bandLow = Number(item.tmin);
+      const bandHigh = Number(item.tmax);
+      if (isFinite(bandHigh) && bandHigh > 0) row.bandHigh = Math.round(bandHigh / 10);
+      if (isFinite(bandLow) && bandLow > 0) row.bandLow = Math.round(bandLow / 10);
+      const bidP = Number(item.pd1), bidQ = Number(item.qd1);
+      const askP = Number(item.po1), askQ = Number(item.qo1);
+      if (isFinite(bidP) && bidP > 0) row.bestBidPrice = Math.round(bidP / 10);
+      if (isFinite(bidQ) && bidQ >= 0) row.bestBidVolume = bidQ;
+      if (isFinite(askP) && askP > 0) row.bestAskPrice = Math.round(askP / 10);
+      if (isFinite(askQ) && askQ >= 0) row.bestAskVolume = askQ;
 
       // cs_id === 68 → صندوق ETF
       if (Number(item.cs_id) === 68) {
@@ -857,6 +872,7 @@ function refresh() {
       await pushDailyHistory(body);
       await pushDailyFx(body);
       await pushDailyIndex(body);
+      await pushDailyBreadth({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, EOD_AFTER_HOUR }, body);
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);
@@ -897,6 +913,7 @@ function debugPayload() {
     codalEngine: engineStatus,
     eodHistory: eodStatus,
     indexHistory: indexHistStatus,
+    marketBreadth: breadthStatus,
     historyPrune: pruneStatus,
     fxRates: fxStatus,
     options: optionsStatus,
