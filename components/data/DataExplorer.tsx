@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { Search, Database, ArrowUpDown, Clock } from "lucide-react";
 import ScreenerPanel, { type ScreenerPresetConfig } from "@/components/data/ScreenerPanel";
 import { runFilter, SCREENER_FILTERS } from "@/lib/core/screener";
+import { FUNDAMENTAL_PRESETS } from "@/lib/core/fundamentalPresets";
 import {
   toPersianDigits,
   formatToman,
@@ -66,6 +67,7 @@ export default function DataExplorer({
   currency,
   fetchedAt,
   avgVolume30,
+  fundamentalYoY,
 }: {
   stocks: IrStockRow[];
   funds: IrStockRow[];
@@ -74,6 +76,8 @@ export default function DataExplorer({
   fetchedAt: number | null;
   /** میانگین حجم ۳۰روزه هر نماد (از سرور) — پایهٔ فیلتر حجم مشکوک */
   avgVolume30: Array<[string, number]>;
+  /** رشد YoY بنیادی هر نماد (از سرور، codal_reports) — پایهٔ پرست‌های بنیادی T2 */
+  fundamentalYoY?: { monthly: Record<string, number>; quarterly: Record<string, number> };
 }) {
   const [tab, setTab] = useState<Tab>("stocks");
   const [q, setQ] = useState("");
@@ -98,7 +102,31 @@ export default function DataExplorer({
       base = base.filter((f) => f.type === fundType);
     }
     if (tab === "stocks" && screenerFilter) {
-      base = runFilter(base, screenerFilter, { avgVolume30: avgVolMap });
+      if (screenerFilter === "monthly_rev_yoy" || screenerFilter === "quarterly_rev_yoy") {
+        // پرست بنیادی: فقط نمادهای دارای رشد محاسبه‌پذیر، نزولی بر اساس رشد
+        const m =
+          screenerFilter === "monthly_rev_yoy"
+            ? fundamentalYoY?.monthly
+            : fundamentalYoY?.quarterly;
+        if (m) {
+          base = base
+            .filter((r) => typeof m[r.id] === "number")
+            .sort((a, b) => (m[b.id] ?? 0) - (m[a.id] ?? 0))
+            .slice(0, 50);
+        } else {
+          base = [];
+        }
+      } else if (screenerFilter === "fund_low_pnav") {
+        base = []; // فقط در تب صندوق‌ها معنا دارد
+      } else {
+        base = runFilter(base, screenerFilter, { avgVolume30: avgVolMap });
+      }
+    }
+    if (tab === "funds" && screenerFilter === "fund_low_pnav") {
+      base = base
+        .filter((r) => num(r.price) != null && num(r.nav) != null && (r.nav as number) > 0 && (r.price as number) > 0)
+        .sort((a, b) => (a.price as number) / (a.nav as number) - (b.price as number) / (b.nav as number))
+        .slice(0, 50);
     }
     const qq = q.trim();
     if (qq) {
@@ -118,7 +146,7 @@ export default function DataExplorer({
       return (val(b) - val(a)) * (sortDesc ? 1 : -1);
     });
     return sorted;
-  }, [tab, stocks, funds, q, fundType, sortKey, sortDesc, screenerFilter, avgVolMap]);
+  }, [tab, stocks, funds, q, fundType, sortKey, sortDesc, screenerFilter, avgVolMap, fundamentalYoY]);
 
   const simpleRows: IrRow[] = useMemo(() => {
     const base = tab === "gold" ? gold : tab === "currency" ? currency : [];
@@ -236,11 +264,13 @@ export default function DataExplorer({
         ) : null}
       </div>
 
-      {tab === "stocks" ? (
+      {tab === "stocks" || tab === "funds" ? (
         <ScreenerPanel
           activeFilter={screenerFilter}
           onFilterChange={(k) => {
             setScreenerFilter(k);
+            if (k === "fund_low_pnav") setTab("funds");
+            else if (k && k !== null) setTab("stocks");
             setLimit(100);
           }}
           matchCount={screenerFilter ? rows.length : null}
@@ -248,12 +278,21 @@ export default function DataExplorer({
             covered: stocks.filter((s) => avgVolMap.has(s.id)).length,
             total: stocks.length,
           }}
+          fundamentalCoverage={{
+            monthly_rev_yoy: Object.keys(fundamentalYoY?.monthly ?? {}).length,
+            quarterly_rev_yoy: Object.keys(fundamentalYoY?.quarterly ?? {}).length,
+            fund_low_pnav: funds.filter(
+              (f) => num(f.price) != null && num(f.nav) != null && (f.nav as number) > 0
+            ).length,
+          }}
           currentConfig={{ filterKey: screenerFilter, q, sortKey, sortDesc }}
           onApplyPreset={(c: ScreenerPresetConfig) => {
-            setTab("stocks");
-            setScreenerFilter(
-              c.filterKey && SCREENER_FILTERS.some((f) => f.key === c.filterKey) ? c.filterKey : null
-            );
+            const known =
+              c.filterKey &&
+              (SCREENER_FILTERS.some((f) => f.key === c.filterKey) ||
+                FUNDAMENTAL_PRESETS.some((p) => p.key === c.filterKey));
+            setTab(c.filterKey === "fund_low_pnav" ? "funds" : "stocks");
+            setScreenerFilter(known ? c.filterKey : null);
             if (typeof c.q === "string") setQ(c.q);
             if (typeof c.sortKey === "string") setSortKey(c.sortKey as SortKey);
             if (typeof c.sortDesc === "boolean") setSortDesc(c.sortDesc);

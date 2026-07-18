@@ -245,10 +245,11 @@ export default function MarketClient({
       )}
 
       {/* لینک به صفحات تخصصی بازار */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MarketLink href="/market/stocks" title="بورس تهران" note="شاخص‌ها، جدول نمادها و نقشهٔ بازار" />
         <MarketLink href="/market/funds" title="صندوق‌های سرمایه‌گذاری" note="NAV، بازده روز، نقشهٔ بازار و فیلتر نوع" />
         <MarketLink href="/market/options" title="اختیار معامله" note="قیمت اعمال، سررسید، موقعیت‌های باز و ارزش معاملات" />
+        <MarketLink href="/market/map" title="نقشهٔ بازار" note="نمای یک‌نگاهی سهام و صندوق‌ها — اندازه و رنگ بر اساس دادهٔ روز" />
       </section>
 
       {/* Modals */}

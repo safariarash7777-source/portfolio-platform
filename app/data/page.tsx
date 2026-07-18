@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import DataExplorer from "@/components/data/DataExplorer";
 import { getIrMarket } from "@/lib/market-ir";
 import { getAvgVolume30 } from "@/lib/core/avgVolume";
+import { getFundamentalYoY } from "@/lib/core/fundamentalData";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,11 @@ export const metadata = {
 };
 
 export default async function DataBankPage() {
-  const [ir, avgVol] = await Promise.all([getIrMarket(), getAvgVolume30()]);
+  const [ir, avgVol, fundamentalYoY] = await Promise.all([
+    getIrMarket(),
+    getAvgVolume30(),
+    getFundamentalYoY(),
+  ]);
   return (
     <>
       <Navbar />
@@ -26,6 +31,7 @@ export default async function DataBankPage() {
             currency={ir?.currency ?? []}
             fetchedAt={ir?.fetchedAt ?? null}
             avgVolume30={[...avgVol.entries()]}
+            fundamentalYoY={fundamentalYoY}
           />
         </div>
       </main>
