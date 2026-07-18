@@ -25,6 +25,7 @@
 import http from "node:http";
 import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
+import { runArchiveCycle, archiveStatus } from "./codal-archive.mjs";
 import { fetchOptions, optionsStatus } from "./options.mjs";
 import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
 import { pushDailyBreadth, breadthStatus } from "./breadth.mjs";
@@ -911,6 +912,7 @@ function debugPayload() {
     sources: status.sources,
     supabase: status.supabase,
     codalEngine: engineStatus,
+    codalArchive: archiveStatus, // T4 — بک‌فیل آرشیو + پوشش لحظه‌ای n30/n10
     eodHistory: eodStatus,
     indexHistory: indexHistStatus,
     marketBreadth: breadthStatus,
@@ -1030,5 +1032,17 @@ server.listen(PORT, () => {
     setInterval(() => {
       job().catch((e) => console.error(`${name} error:`, e?.message ?? e));
     }, CODAL_INTERVAL_MS).unref();
+
+    // T4 — بک‌فیل آرشیو کدال (صفحه‌گردی تا ۱۴۰۲/۱۴۰۱، سقف صریح ۲۰۰ درخواست/روز).
+    // با فاصله از چرخهٔ موتور اجرا می‌شود تا هم‌زمان فشار نیاورند.
+    if (process.env.CODAL_ARCHIVE_ENABLED !== "0") {
+      console.log("codal archive (T4) armed: first run in 6m");
+      setTimeout(() => {
+        runArchiveCycle().catch((e) => console.error("codal archive error:", e?.message ?? e));
+      }, 6 * 60 * 1000).unref();
+      setInterval(() => {
+        runArchiveCycle().catch((e) => console.error("codal archive error:", e?.message ?? e));
+      }, 45 * 60 * 1000).unref();
+    }
   }
 });
