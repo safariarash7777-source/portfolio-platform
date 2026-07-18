@@ -30,7 +30,7 @@ import { fetchOptions, optionsStatus } from "./options.mjs";
 import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
 import { pushDailyBreadth, breadthStatus } from "./breadth.mjs";
 // T5 — سرویس‌های تکمیلی BrsApi
-import { getSymbolDetail, symbolDetailStatus } from "./symbol-detail.mjs";
+import { getSymbolDetail, symbolDetailStatus, refreshSymbolDetailsRotation, symbolRotationStatus } from "./symbol-detail.mjs";
 import { refreshCertificates, certificatesForPayload, pushCertEod, runPhysicalDaily, imeStatus } from "./ime.mjs";
 import { refreshCommodities, commoditiesForPayload, commodityStatus } from "./commodity.mjs";
 
@@ -929,6 +929,24 @@ function refresh() {
       await pushDailyFx(body);
       await pushDailyIndex(body);
       await pushDailyBreadth({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, EOD_AFTER_HOUR }, body);
+      // T5-1 فیکس معماری: چرخش دیتای جامع نمادهای پرارزش ← Supabase (ترانسپورت به سایت)
+      try {
+        const p = JSON.parse(body);
+        const topSymbols = (p.stocks || [])
+          .filter((s) => s && s.l18 && Number.isFinite(Number(s.value)))
+          .sort((a, b) => Number(b.value) - Number(a.value))
+          .map((s) => s.l18);
+        await refreshSymbolDetailsRotation({
+          base: BRSAPI_BASE,
+          key: BRSAPI_KEY,
+          headers: HDRS,
+          supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""),
+          serviceKey: SUPABASE_SERVICE_ROLE_KEY,
+          symbols: topSymbols,
+        });
+      } catch (e) {
+        console.error("symbol rotation:", errMsg(e));
+      }
     } catch (e) {
       status.lastError = errMsg(e);
       console.error("relay refresh error:", status.lastError);
@@ -976,6 +994,7 @@ function debugPayload() {
     options: optionsStatus,
     candleBackfill: candleStatus,
     symbolDetail: symbolDetailStatus(), // T5-1
+    symbolRotation: symbolRotationStatus(), // T5-1 فیکس معماری — چرخش Supabase
     navCompletion: navCompletionState,  // T5-3
     ime: imeStatus(),                   // T5-4/5
     commodity: commodityStatus(),       // T5-6

@@ -1,6 +1,7 @@
 "use client";
 
-// T5-1 — جزئیات زندهٔ نماد از /api/symbol-detail (رله: Tsetmc/Symbol.php، کش ۳دقیقه‌ای)
+// T5-1 — جزئیات زندهٔ نماد از /api/symbol-detail
+// (فیکس معماری: رله دیتا را چرخشی در Supabase می‌نویسد؛ سایت از Supabase می‌خواند)
 // چهار بخش: عمق ۵سطحی، جریان حقیقی/حقوقی امروز، کارت‌های ارزش‌گذاری روز، مجامع.
 // همهٔ قیمت‌های خام ریال است → نمایش تومان (÷۱۰). دادهٔ ناموجود → حالت خالی صادق.
 
@@ -53,28 +54,45 @@ export default function SymbolLiveDetail({
 }) {
   const [data, setData] = useState<Raw | null>(null);
   const [stale, setStale] = useState(false);
-  const [state, setState] = useState<"loading" | "ok" | "unavailable">("loading");
+  const [state, setState] = useState<"loading" | "ok" | "unavailable" | "notInRotation">("loading");
   const [openAssembly, setOpenAssembly] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
     fetch(`/api/symbol-detail?l18=${encodeURIComponent(symbol)}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((j: { stale?: boolean; data?: Raw }) => {
+      .then((r) => {
+        if (r.ok) return r.json();
+        return Promise.reject(new Error(String(r.status)));
+      })
+      .then((j: { stale?: boolean; data?: Raw; at?: number | null }) => {
         if (!alive) return;
         if (j && j.data && typeof j.data === "object") {
           setData(j.data);
-          setStale(Boolean(j.stale));
+          // دادهٔ چرخشی قدیمی‌تر از ۱۵ دقیقه ← برچسب «آخرین اسنپ‌شات» (صادقانه)
+          const at = typeof j.at === "number" ? j.at : null;
+          setStale(Boolean(j.stale) || (at !== null && Date.now() - at > 15 * 60 * 1000));
           setState("ok");
         } else setState("unavailable");
       })
-      .catch(() => { if (alive) setState("unavailable"); });
+      .catch((e: Error) => {
+        if (!alive) return;
+        setState(e.message === "404" ? "notInRotation" : "unavailable");
+      });
     return () => { alive = false; };
   }, [symbol]);
 
   if (state === "loading") {
     return (
       <div className="card p-6 text-sm text-muted-foreground">در حال دریافت دادهٔ زندهٔ نماد…</div>
+    );
+  }
+  if (state === "notInRotation") {
+    return (
+      <div className="card p-6 text-sm text-muted-foreground">
+        {sections === "assembly"
+          ? "اطلاعات مجامع این نماد هنوز در چرخهٔ به‌روزرسانی نیست. پوشش به نمادهای پرمعاملهٔ بازار محدود است و به‌تدریج گسترش می‌یابد."
+          : "دادهٔ زندهٔ این نماد هنوز در چرخهٔ به‌روزرسانی نیست. پوشش به نمادهای پرمعاملهٔ بازار محدود است و به‌تدریج گسترش می‌یابد."}
+      </div>
     );
   }
   if (state === "unavailable" || !data) {
