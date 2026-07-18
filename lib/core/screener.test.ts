@@ -11,6 +11,11 @@ import {
   runFilter,
   SCREENER_FILTERS,
   THRESHOLDS,
+  rangePosition,
+  distanceToBandHigh,
+  distanceToBandLow,
+  closeLastDivergence,
+  dailyRangeVolatility,
 } from "./screener";
 import type { IrStockRow } from "@/lib/market-ir";
 
@@ -111,4 +116,101 @@ test("همهٔ فیلترها تعریف عمومی غیرتجویزی دارن�
 
 test("فیلتر ناشناخته → فهرست خالی (بدون خطا)", () => {
   assert.deepEqual(runFilter([row({})], "nonexistent"), []);
+});
+
+/* ── تست‌های پرست‌های T2-الف ─────────────────────────────────────── */
+
+test("جایگاه در دامنهٔ روز: ۰=کف، ۱=سقف؛ دامنهٔ صفر/غایب → null", () => {
+  assert.equal(rangePosition(row({ price: 1000, dayHigh: 1000, dayLow: 900 })), 1);
+  assert.equal(rangePosition(row({ price: 900, dayHigh: 1000, dayLow: 900 })), 0);
+  assert.equal(rangePosition(row({ price: 950, dayHigh: 1000, dayLow: 900 })), 0.5);
+  assert.equal(rangePosition(row({ price: 950, dayHigh: 950, dayLow: 950 })), null);
+  assert.equal(rangePosition(row({ price: 950 })), null);
+});
+
+test("گارد صعودی: ۲۰٪ بالایی دامنه + سرانهٔ خرید > فروش؛ بی‌داده حذف", () => {
+  const hit = row({
+    id: "گارد", price: 990, dayHigh: 1000, dayLow: 900, closingPrice: 980,
+    buyI: 1_000_000, buyCountI: 10, sellI: 1_000_000, sellCountI: 100,
+  }); // pos=0.9، سرانه خرید ۱۰× فروش
+  const lowPos = row({
+    id: "پایین", price: 920, dayHigh: 1000, dayLow: 900, closingPrice: 950,
+    buyI: 1_000_000, buyCountI: 10, sellI: 1_000_000, sellCountI: 100,
+  }); // pos=0.2 → رد
+  const noCounts = row({ id: "بی‌داده", price: 990, dayHigh: 1000, dayLow: 900 });
+  const out = runFilter([hit, lowPos, noCounts], "bullish_guard");
+  assert.deepEqual(out.map((r) => r.id), ["گارد"]);
+});
+
+test("گارد نزولی: ۲۰٪ پایینی دامنه + سرانهٔ فروش > خرید", () => {
+  const hit = row({
+    id: "نزول", price: 910, dayHigh: 1000, dayLow: 900, closingPrice: 930,
+    buyI: 1_000_000, buyCountI: 100, sellI: 1_000_000, sellCountI: 10,
+  }); // pos=0.1، سرانه فروش ۱۰× خرید
+  const buyStronger = row({
+    id: "خریدقوی", price: 910, dayHigh: 1000, dayLow: 900, closingPrice: 930,
+    buyI: 1_000_000, buyCountI: 10, sellI: 1_000_000, sellCountI: 100,
+  }); // سرانه خرید بیشتر → رد
+  const out = runFilter([hit, buyStronger], "bearish_guard");
+  assert.deepEqual(out.map((r) => r.id), ["نزول"]);
+});
+
+test("فاصله تا سقف/کف دامنهٔ مجاز: محاسبه و null بدون داده", () => {
+  const r = row({ price: 990, bandHigh: 1000, bandLow: 900 });
+  const dh = distanceToBandHigh(r);
+  const dl = distanceToBandLow(r);
+  assert.ok(dh != null && Math.abs(dh - 1) < 1e-9);
+  assert.ok(dl != null && Math.abs(dl - 10) < 1e-9);
+  assert.equal(distanceToBandHigh(row({ price: 990 })), null);
+  assert.equal(distanceToBandLow(row({ price: 990 })), null);
+});
+
+test("آستانهٔ صف خرید: نزدیک سقف ولی نرسیده؛ روی سقف (صفـشده) حذف", () => {
+  const near = row({ id: "نزدیک", price: 995, bandHigh: 1000 });        // 0.5%
+  const atCeil = row({ id: "صفـشده", price: 1000, bandHigh: 1000 });   // فاصله ۰ → حذف
+  const far = row({ id: "دور", price: 950, bandHigh: 1000 });            // 5%
+  const noBand = row({ id: "بی‌دامنه", price: 995 });
+  const out = runFilter([near, atCeil, far, noBand], "near_buy_queue");
+  assert.deepEqual(out.map((r) => r.id), ["نزدیک"]);
+});
+
+test("آستانهٔ صف فروش: نزدیک کف ولی نرسیده", () => {
+  const near = row({ id: "نزدیک", price: 905, bandLow: 900 });   // ~0.56%
+  const atFloor = row({ id: "کف", price: 900, bandLow: 900 });     // ۰ → حذف
+  const out = runFilter([near, atFloor], "near_sell_queue");
+  assert.deepEqual(out.map((r) => r.id), ["نزدیک"]);
+});
+
+test("اختلاف پایانی/آخرین: دو جهت جدا + null بدون داده", () => {
+  // آخرین بالاتر از پایانی: plp=+3، pcp=+1 → divergence = −2
+  const up = row({ id: "بالا", changePercent: 3, closingChangePercent: 1 });
+  // آخرین پایین‌تر از پایانی: plp=−1، pcp=+2 → divergence = +3
+  const down = row({ id: "پایین", changePercent: -1, closingChangePercent: 2 });
+  const small = row({ id: "کم", changePercent: 1, closingChangePercent: 0.5 });
+  const noData = row({ id: "بی‌داده" });
+  assert.equal(closeLastDivergence(up), -2);
+  assert.equal(closeLastDivergence(noData), null);
+  assert.deepEqual(runFilter([up, down, small, noData], "divergence_up").map((r) => r.id), ["بالا"]);
+  assert.deepEqual(runFilter([up, down, small, noData], "divergence_down").map((r) => r.id), ["پایین"]);
+});
+
+test("نوسان روزانه: (سقف−کف)÷پایانی×۱۰۰؛ آستانهٔ ۴٪؛ بی‌داده حذف", () => {
+  const wild = row({ id: "پرنوسان", dayHigh: 1050, dayLow: 1000, closingPrice: 1000 }); // 5%
+  const calm = row({ id: "آرام", dayHigh: 1010, dayLow: 1000, closingPrice: 1000 });    // 1%
+  const noData = row({ id: "بی‌داده" });
+  const v = dailyRangeVolatility(wild);
+  assert.ok(v != null && Math.abs(v - 5) < 1e-9);
+  assert.equal(dailyRangeVolatility(noData), null);
+  assert.deepEqual(
+    runFilter([wild, calm, noData], "high_range_volatility").map((r) => r.id),
+    ["پرنوسان"]
+  );
+});
+
+test("پرست‌های جدید هم تعریف عمومی دارند (کل فهرست = ۱۱)", () => {
+  assert.equal(SCREENER_FILTERS.length, 11);
+  const keys = SCREENER_FILTERS.map((f) => f.key);
+  for (const k of ["bullish_guard", "bearish_guard", "near_buy_queue", "near_sell_queue", "divergence_up", "divergence_down", "high_range_volatility"]) {
+    assert.ok(keys.includes(k), `پرست غایب: ${k}`);
+  }
 });
