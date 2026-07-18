@@ -23,12 +23,16 @@
 // جواب می‌دهد و درخواستِ سایت روی build کندِ منبع تایم‌اوت نمی‌شود.
 // ─────────────────────────────────────────────────────────────────────────────
 import http from "node:http";
-import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS } from "./codal.mjs";
+import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS, fetchAnnouncementsPage } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
 import { runArchiveCycle, archiveStatus } from "./codal-archive.mjs";
 import { fetchOptions, optionsStatus } from "./options.mjs";
 import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
 import { pushDailyBreadth, breadthStatus } from "./breadth.mjs";
+// T5 — سرویس‌های تکمیلی BrsApi
+import { getSymbolDetail, symbolDetailStatus } from "./symbol-detail.mjs";
+import { refreshCertificates, certificatesForPayload, pushCertEod, runPhysicalDaily, imeStatus } from "./ime.mjs";
+import { refreshCommodities, commoditiesForPayload, commodityStatus } from "./commodity.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -47,6 +51,8 @@ const BROWSER_UA =
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
 
 let cache = null; // { body: string, at: number }
+// T5-2 — کش ۱۰دقیقه‌ای فهرست اطلاعیه‌های کدال (هر نماد یک entry)
+const codalListCache = new Map(); // symbol → { body, at }
 // فهرست نمادهای آخرین اسنپ‌شات (سهام+صندوق) — ورودی صف بک‌فیل کندل (M8-الف).
 let latestSnapshotSymbols = [];
 
@@ -336,6 +342,48 @@ async function refreshNavs(funds) {
   };
 }
 
+// T5-3 — دور تکمیلی NAV: ۲ بار در روز فقط برای صندوق‌هایی که NAV ندارند
+// (خارج از NAV_TOP پرمعامله). هدف: پوشش حباب از ~۱۵۰ به کل صندوق‌ها (~۳۹۰).
+// اگر حالت bulk فعال باشد همه را یک‌جا می‌گیرد و این دور لازم نیست.
+// بودجه: حداکثر NAV_COMPLETION_CAP درخواست در هر دور × ۲ دور/روز ≤ ۸۰۰/روز.
+const NAV_COMPLETION_MS = 12 * 60 * 60 * 1000; // هر ۱۲ ساعت
+const NAV_COMPLETION_CAP = 400;
+let lastCompletionRound = 0;
+let navCompletionState = { lastRoundAt: null, targeted: 0, updated: 0, failed: 0, skipped: null };
+
+async function refreshNavCompletion(funds) {
+  if (!BRSAPI_KEY || funds.length === 0) return;
+  if (navBulkMode === true) { navCompletionState.skipped = "bulk mode covers all funds"; return; }
+  if (Date.now() - lastCompletionRound < NAV_COMPLETION_MS) return;
+  lastCompletionRound = Date.now();
+  const now = Date.now();
+  // فقط صندوق‌هایی که NAV تازه ندارند (خارج از کش یا کهنه)
+  const missing = funds
+    .filter((f) => { const c = navCache.get(f.id); return !c || now - c.at > NAV_STALE_MS; })
+    .slice(0, NAV_COMPLETION_CAP);
+  navCompletionState = { lastRoundAt: now, targeted: missing.length, updated: 0, failed: 0, skipped: null };
+  if (missing.length === 0) return;
+  const base = `${BRSAPI_BASE}/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
+  const queue = [...missing];
+  async function worker() {
+    while (queue.length) {
+      const f = queue.shift();
+      if (!f) return;
+      try {
+        const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, { headers: HDRS, signal: AbortSignal.timeout(15000) });
+        if (!res.ok) { navCompletionState.failed++; continue; }
+        const j = await res.json();
+        const d = Array.isArray(j) ? j[0] : j;
+        if (cacheNavRow(f.id, d, Date.now())) navCompletionState.updated++;
+        else navCompletionState.failed++;
+      } catch {
+        navCompletionState.failed++;
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: NAV_CONCURRENCY }, worker));
+}
+
 // NAV کش‌شده را روی ردیف‌های صندوق سوار می‌کند (ریال → تومان) + حباب.
 // نگهبان: اگر نسبت قیمت/NAV خارج از بازهٔ منطقی بود (ناهماهنگیِ واحد یا دادهٔ
 // خراب)، هیچ NAV/حبابی منتشر نمی‌شود — عدد مشکوک بهتر است غایب باشد.
@@ -481,7 +529,12 @@ async function buildPayload() {
   // دورهای NAV و نوعِ صندوق در پس‌زمینه (ساعتی؛ درونشان سهمیه‌بندی شده) —
   // payload فعلی از کشِ موجود پر می‌شود و دورِ بعدی نتیجهٔ تازه را برمی‌دارد.
   refreshNavs(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
+  // T5-3 — دور تکمیلی NAV برای صندوق‌های فاقد NAV (۲ بار در روز)
+  refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
+  // T5-4/6 — گواهی کالایی (هر ۳۰ دقیقه در ساعات بازار) و کامودیتی جهانی (کلید جدا)
+  refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS }).catch((e) => console.error("ime cert error:", errMsg(e)));
+  refreshCommodities(HDRS).catch((e) => console.error("commodity error:", errMsg(e)));
   applyNav(sf.funds);
   applyFundTypes(sf.funds);
   const payload = {
@@ -491,6 +544,8 @@ async function buildPayload() {
     funds: sf.funds,
     stocks: sf.stocks,
     options,
+    imeCertificates: certificatesForPayload(), // T5-4 — گواهی سپردهٔ کالایی (تومان)
+    commodities: commoditiesForPayload(),      // T5-6 — کامودیتی جهانی (دلار، کلید جدا)
     indices,
     fetchedAt: Date.now(),
   };
@@ -920,6 +975,10 @@ function debugPayload() {
     fxRates: fxStatus,
     options: optionsStatus,
     candleBackfill: candleStatus,
+    symbolDetail: symbolDetailStatus(), // T5-1
+    navCompletion: navCompletionState,  // T5-3
+    ime: imeStatus(),                   // T5-4/5
+    commodity: commodityStatus(),       // T5-6
   }, null, 2);
 }
 
@@ -952,6 +1011,48 @@ const server = http.createServer(async (req, res) => {
       const html = await codalRawExcel(u);
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       return res.end(html);
+    } catch (e) {
+      res.writeHead(502, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(JSON.stringify({ error: e?.message ?? String(e) }));
+    }
+  }
+
+  // T5-1 — دیتای جامع نماد (کش ۳دقیقه‌ای، سقف روزانه درون ماژول) — محافظت‌شده با RELAY_TOKEN.
+  if (url.pathname === "/symbol.json") {
+    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
+      res.writeHead(401); return res.end("unauthorized");
+    }
+    const l18 = (url.searchParams.get("l18") || "").trim();
+    if (!l18) { res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" }); return res.end('{"error":"l18 required"}'); }
+    const r = await getSymbolDetail(l18, { base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS });
+    if (!r.ok) {
+      res.writeHead(502, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(JSON.stringify({ error: r.error }));
+    }
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    return res.end(JSON.stringify({ stale: r.stale, data: r.data }));
+  }
+
+  // T5-2 — فهرست زندهٔ اطلاعیه‌های کدال یک نماد (کش ۱۰دقیقه‌ای) — محافظت‌شده با RELAY_TOKEN.
+  if (url.pathname === "/codal-list") {
+    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
+      res.writeHead(401); return res.end("unauthorized");
+    }
+    const sym = (url.searchParams.get("symbol") || "").trim();
+    if (!sym) { res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" }); return res.end('{"error":"symbol required"}'); }
+    const cacheKey = sym;
+    const c = codalListCache.get(cacheKey);
+    if (c && Date.now() - c.at < 10 * 60 * 1000) {
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(c.body);
+    }
+    try {
+      const page = await fetchAnnouncementsPage({ l18: sym });
+      const body = JSON.stringify({ at: Date.now(), items: page?.data ?? page ?? [] });
+      codalListCache.set(cacheKey, { body, at: Date.now() });
+      if (codalListCache.size > 200) { const k = codalListCache.keys().next().value; codalListCache.delete(k); }
+      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+      return res.end(body);
     } catch (e) {
       res.writeHead(502, { "Content-Type": "application/json; charset=utf-8" });
       return res.end(JSON.stringify({ error: e?.message ?? String(e) }));
@@ -1008,6 +1109,13 @@ server.listen(PORT, () => {
   if (process.env.CANDLE_BACKFILL_ENABLED !== "0") {
     setTimeout(() => { runCandleBackfill(latestSnapshotSymbols).catch((e) => console.error("candle backfill:", errMsg(e))); }, 3 * 60 * 1000).unref();
     setInterval(() => { runCandleBackfill(latestSnapshotSymbols).catch((e) => console.error("candle backfill:", errMsg(e))); }, 10 * 60 * 1000).unref();
+  }
+  // T5-4/5 — بورس کالا: append پایان‌روز گواهی‌ها + فیزیکی روزانه (گیت زمانی درون ماژول‌ها)
+  if (process.env.IME_ENABLED !== "0") {
+    setInterval(() => {
+      pushCertEod({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch((e) => console.error("ime cert eod:", errMsg(e)));
+      runPhysicalDaily({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch((e) => console.error("ime physical:", errMsg(e)));
+    }, 20 * 60 * 1000).unref();
   }
   // دامپ تشخیصی ساختار اکسل کدال (فقط وقتی CODAL_DEBUG_EXCEL_URL ست باشد) — هر ۳ دقیقه تا موفقیت.
   if (process.env.CODAL_DEBUG_EXCEL_URL) {
