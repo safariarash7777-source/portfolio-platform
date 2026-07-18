@@ -62,16 +62,25 @@ t("کندل با تاریخ نامعتبر حذف می‌شود", () => {
   const rows = mapLike([{ date: "bad-date", close: 1000 }]);
   assert.equal(rows.length, 0);
 });
-t("dedup تاریخ‌های غایب: فقط ردیف‌های نبوده درج می‌شوند", () => {
-  const fetched = mapLike([
-    { date: "1404/04/25", close: 100 },
-    { date: "1404/04/24", close: 90 },
-    { date: "1404/04/23", close: 80 },
-  ]);
-  const have = new Set(["2025-07-16"]); // ۲۵ تیر قبلاً هست
-  const missing = fetched.filter((r) => !have.has(r.trade_date));
-  assert.equal(missing.length, 2);
-  assert.ok(!missing.some((r) => r.trade_date === "2025-07-16"));
+// ضدتکرار دیگر با diff سمت کلاینت نیست — مکانیزم خود PostgREST + ایندکس یکتا (فاز ۱۶).
+// شکل درخواست درج را از سورس ماژول راستی‌آزمایی می‌کنیم تا رگرسیون نگیرد.
+import { readFileSync } from "node:fs";
+const src = readFileSync(new URL("./candle-backfill.mjs", import.meta.url), "utf8");
+
+t("درج با on_conflict=symbol,trade_date انجام می‌شود", () => {
+  assert.ok(src.includes("symbol_history?on_conflict=symbol,trade_date"));
+});
+t("هدر Prefer شامل resolution=ignore-duplicates و return=minimal است", () => {
+  assert.ok(src.includes("resolution=ignore-duplicates,return=minimal"));
+});
+t("existingDates حذف شده (باگ Max Rows دیگر ممکن نیست)", () => {
+  assert.ok(!src.includes("existingDates("));
+});
+t("کد رله فقط INSERT دارد — هیچ UPDATE/DELETE به symbol_history", () => {
+  assert.ok(!/method:\s*"(PATCH|DELETE|PUT)"/.test(src));
+});
+t("مهاجرت v4: پاک کردن failed برای رد دوباره از مسیر ignore-duplicates", () => {
+  assert.ok(src.includes("state.schemaV = 4"));
 });
 
 console.log(`\n${pass} passed, ${fail} failed`);

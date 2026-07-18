@@ -90,6 +90,12 @@ async function loadState() {
     }
     state.schemaV = 3;
   }
+  // مهاجرت یک‌باره (v4): بعد از ساخت ایندکس یکتا (فاز ۱۶)، نمادهایی که با برخورد
+  // به ایندکس fail خورده بودند پاک می‌شوند تا یک بار دیگر از مسیر ignore-duplicates رد شوند.
+  if ((state.schemaV || 1) < 4) {
+    state.failed = {};
+    state.schemaV = 4;
+  }
   return state;
 }
 async function saveState() {
@@ -197,22 +203,12 @@ function jalaliToG(jy, jm, jd) {
   try { return jalaliYmdToGregorian(jy, jm, jd); } catch { return null; }
 }
 
-/** تاریخ‌های موجود نماد در symbol_history (همهٔ سورس‌ها) — برای درج فقط غایب‌ها. */
-async function existingDates(symbol) {
-  const qs = new URLSearchParams({
-    select: "trade_date",
-    symbol: `eq.${symbol}`,
-    limit: "12000",
-  });
-  const res = await fetch(`${SB()}/rest/v1/symbol_history?${qs}`, {
-    headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
-  });
-  if (!res.ok) throw new Error(`existing HTTP ${res.status}`);
-  const rows = await res.json();
-  return new Set(rows.map((r) => r.trade_date));
-}
-
-/** بک‌فیل یک نماد: fetch کندل → diff → درج غایب‌ها. خروجی: تعداد درج‌شده. */
+/** بک‌فیل یک نماد: fetch کندل → درج ضدتکرار با on_conflict. خروجی: تعداد ردیف‌های ارسال‌شده.
+ * ضدتکرار در سطح دیتابیس: ایندکس یکتای symbol_history_symbol_trade_date_key (فاز ۱۶) +
+ * on_conflict=symbol,trade_date + Prefer: resolution=ignore-duplicates → تکراری‌ها بی‌صدا نادیده
+ * گرفته می‌شوند (ردیف موجود دست‌نخورده می‌ماند — همچنان فقط INSERT، هیچ UPDATE/DELETE).
+ * دیگر SELECT «تاریخ‌های موجود» لازم نیست (existingDates حذف شد — با Max Rows پستگرست ناقص می‌شد).
+ */
 async function backfillSymbol(symbol) {
   const url = `${BRSAPI_BASE}/Tsetmc/Candlestick.php?key=${BRSAPI_KEY}&type=2&l18=${encodeURIComponent(symbol)}`;
   const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(25000) });
@@ -226,21 +222,20 @@ async function backfillSymbol(symbol) {
     state.lastEmptySample = { symbol, at: new Date().toISOString(), body: JSON.stringify(json).slice(0, 400) };
     return 0;
   }
-  const have = await existingDates(symbol);
-  const missing = rows.filter((r) => !have.has(r.trade_date));
-  if (missing.length === 0) return 0;
-  let inserted = 0;
-  for (let i = 0; i < missing.length; i += 500) {
-    const r2 = await fetch(`${SB()}/rest/v1/symbol_history`, {
+  let sent = 0;
+  for (let i = 0; i < rows.length; i += 500) {
+    const r2 = await fetch(`${SB()}/rest/v1/symbol_history?on_conflict=symbol,trade_date`, {
       method: "POST",
-      headers: { ...SB_HDRS(), Prefer: "return=minimal" },
-      body: JSON.stringify(missing.slice(i, i + 500)),
+      headers: { ...SB_HDRS(), Prefer: "resolution=ignore-duplicates,return=minimal" },
+      body: JSON.stringify(rows.slice(i, i + 500)),
       signal: AbortSignal.timeout(25000),
     });
     if (!r2.ok) throw new Error(`insert HTTP ${r2.status} @${i}`);
-    inserted += Math.min(500, missing.length - i);
+    sent += Math.min(500, rows.length - i);
   }
-  return inserted;
+  // توجه: با ignore-duplicates تعداد «واقعاً درج‌شده» از PostgREST برنمی‌گردد؛
+  // این عدد «ارسال‌شده» است (سقف بالا). پوشش واقعی از خود دیتابیس چک می‌شود.
+  return sent;
 }
 
 /* ── یک دور اجرا (از server.mjs هر ۱۰ دقیقه صدا زده می‌شود) ────────────────── */
