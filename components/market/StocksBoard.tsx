@@ -353,10 +353,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
                     >
                       {s.id}
                     </Link>
-                    <span className="block text-[11px] mt-0.5" style={{ color: "var(--text-3)" }}>
-                      {s.faName}
-                      {s.industry && ` · ${s.industry}`}
-                    </span>
+                    {/* C1 — UI نمادمحور: فقط نماد؛ نام کامل فقط در هدر صفحهٔ نماد */}
+                    {s.industry && (
+                      <span className="block text-[11px] mt-0.5" style={{ color: "var(--text-3)" }}>
+                        {s.industry}
+                      </span>
+                    )}
                   </td>
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums" }}>
                     {formatToman(s.price)}
@@ -405,9 +407,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
                   >
                     {s.id}
                   </Link>
-                  <span className="text-[11px] ms-2" style={{ color: "var(--text-3)" }}>
-                    {s.faName}
-                  </span>
+                  {/* C1 — UI نمادمحور: نام کامل حذف شد */}
                 </div>
                 {pct != null && (
                   <span

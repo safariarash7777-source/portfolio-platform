@@ -20,6 +20,7 @@
 // هیچ endpoint حدسی — فقط Candlestick.php طبق مستندات پلن AIO (سند آرش، ۲۷ تیر ۱۴۰۵).
 // ─────────────────────────────────────────────────────────────────────────────
 import { codalEnv, jalaliTextToIso, jalaliYmdToGregorian } from "./codal.mjs";
+import { isMainTicker } from "./symbols-util.mjs"; // C1 — قرنطینهٔ زیرنماد/حق‌تقدم
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 const BRSAPI_BASE = (process.env.BRSAPI_BASE || "https://Api.BrsApi.ir").replace(/\/+$/, "");
@@ -254,9 +255,11 @@ export async function runCandleBackfill(snapshotSymbols) {
   try {
     await loadState();
     // صف: نمادهای اسنپ‌شات که هنوز done نیستند و ≥MAX_FAILS شکست نخورده‌اند.
+    // C1 — زیرنماد رقم‌دار و حق تقدم هرگز وارد صف کندل/‌symbol_history نمی‌شوند
+    // (دفاع دولایه — ingest هم فیلتر می‌کند).
     const queue = snapshotSymbols
       .map((s) => s.id)
-      .filter((id) => id && state.done[id] == null && (state.failed[id] || 0) < 3);
+      .filter((id) => id && isMainTicker(id) && state.done[id] == null && (state.failed[id] || 0) < 3);
     candleStatus.queueRemaining = queue.length;
     candleStatus.doneCount = Object.keys(state.done).length;
     candleStatus.insertedTotal = state.insertedTotal;

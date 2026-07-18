@@ -164,9 +164,10 @@ export default function FundsBoard({ funds }: { funds: FundRow[] }) {
                       key={f.id}
                       className="rounded-md px-2 py-2 min-w-0 flex flex-col justify-center"
                       style={{ flexGrow: Math.max(f.assetB ?? 1, 1), flexBasis: 0, background: t.bg, minWidth: 64, minHeight: 56 }}
-                      title={`${f.faName} — ${f.changePercent != null ? formatSignedPercent(f.changePercent) : "—"}`}
+                      title={`${f.id} ${f.faName} — ${f.changePercent != null ? formatSignedPercent(f.changePercent) : "—"}`}
                     >
-                      <span className="text-[11px] font-bold truncate" style={{ color: t.fg }}>{f.faName}</span>
+                      {/* C1 — UI نمادمحور: فقط نماد (نام کامل در title) */}
+                      <span className="text-[11px] font-bold truncate" style={{ color: t.fg }}>{f.id}</span>
                       {f.changePercent != null && (
                         <span className="text-[11px]" style={{ color: t.fg, fontVariantNumeric: "tabular-nums" }}>
                           <span aria-hidden="true">{formatSignedPercent(f.changePercent)}</span>
@@ -190,7 +191,8 @@ export default function FundsBoard({ funds }: { funds: FundRow[] }) {
             {list.map((f) => (
               <li key={f.id} className="flex items-center justify-between gap-3">
                 <span className="min-w-0">
-                  <span className="text-sm font-bold truncate block" style={{ color: "var(--text)" }}>{f.faName}</span>
+                  {/* C1 — UI نمادمحور: فقط نماد */}
+                  <span className="text-sm font-bold truncate block" style={{ color: "var(--text)" }} title={f.faName}>{f.id}</span>
                   {f.assetB != null && (
                     <span className="text-[11px]" style={{ color: "var(--text-3)" }}>{fmtAssetB(f.assetB)}</span>
                   )}

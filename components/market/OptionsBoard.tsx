@@ -201,12 +201,10 @@ export default function OptionsBoard({
                   style={{ borderColor: "var(--line)" }}
                 >
                   <td className="px-4 py-2.5">
-                    <span className="font-bold" style={{ color: "var(--navy-deep)" }}>
+                    <span className="font-bold" style={{ color: "var(--navy-deep)" }} title={o.faName}>
                       {o.id}
                     </span>
-                    <span className="mr-2 hidden max-w-56 truncate text-xs lg:inline" style={{ color: "var(--text-3)" }}>
-                      {o.faName}
-                    </span>
+                    {/* C1 — UI نمادمحور: نام کامل حذف شد (در title) */}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
                     {o.baseId || "—"}

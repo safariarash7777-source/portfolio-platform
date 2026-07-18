@@ -19,6 +19,7 @@ import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
+import { isMainTicker } from "./symbols-util.mjs"; // C1 — قاعدهٔ یگانهٔ زیرنماد/حق‌تقدم
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -120,12 +121,12 @@ async function priorityQueue() {
     if (!res.ok) return [];
     const rows = await res.json();
     const stocks = rows[0]?.payload?.stocks || [];
-    const isDerivative = (id) => /[0-9۰-۹]$/.test(id) || /ح$/.test(id);
+    // C1 — قاعدهٔ یگانهٔ پروژه (symbols-util): فقط نمادهای اصلی — رقم عربی هم پوشش داده می‌شود.
     const fromEnv = String(process.env.CODAL_ARCHIVE_EXTRA || "")
       .split(",").map((s) => s.trim()).filter(Boolean); // «هرچه آرش اضافه کند»
     const top = stocks
       .map((s) => ({ ...s, id: String(s?.id || "").trim() }))
-      .filter((s) => s.id && (s.value || 0) > 0 && !isDerivative(s.id))
+      .filter((s) => s.id && (s.value || 0) > 0 && isMainTicker(s.id))
       .sort((x, y) => (y.value || 0) - (x.value || 0))
       .map((s) => s.id);
     return [...new Set([...fromEnv, ...top])].slice(0, 300);

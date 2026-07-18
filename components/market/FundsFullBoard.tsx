@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock } from "lucide-react";
 import {
@@ -319,10 +320,11 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                         minWidth: 64,
                         minHeight: 56,
                       }}
-                      title={`${f.faName} — ${pct != null ? formatSignedPercent(pct) : "—"}`}
+                      title={`${f.id} ${f.faName} — ${pct != null ? formatSignedPercent(pct) : "—"}`}
                     >
+                      {/* C1 — UI نمادمحور: فقط نماد (نام کامل در title) */}
                       <span className="text-[11px] font-bold truncate" style={{ color: t.fg }}>
-                        {f.faName}
+                        {f.id}
                       </span>
                       {pct != null && (
                         <span className="text-[11px]" style={{ color: t.fg, fontVariantNumeric: "tabular-nums" }}>
@@ -418,7 +420,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               return (
                 <tr key={f.id} className="hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--line)" }}>
                   <td className="py-3 px-4">
-                    <span className="font-bold">{f.faName}</span>
+                    {/* C1 — UI نمادمحور: فقط نماد؛ نام کامل فقط در هدر صفحهٔ نماد */}
+                    <Link
+                      href={`/symbol/${encodeURIComponent(f.id)}`}
+                      className="font-bold hover:underline"
+                      style={{ color: "var(--navy-deep)" }}
+                      title={`صفحهٔ نماد ${f.id}`}
+                    >
+                      {f.id}
+                    </Link>
                     {(f.type || f.industry) && (
                       <span className="block text-[11px] mt-0.5" style={{ color: "var(--text-3)" }}>
                         {f.type || f.industry}
@@ -480,9 +490,14 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             <div key={f.id} className="card p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                  <span className="font-bold text-sm block truncate" style={{ color: "var(--text)" }}>
-                    {f.faName}
-                  </span>
+                  {/* C1 — UI نمادمحور: فقط نماد */}
+                  <Link
+                    href={`/symbol/${encodeURIComponent(f.id)}`}
+                    className="font-bold text-sm block truncate hover:underline"
+                    style={{ color: "var(--navy-deep)" }}
+                  >
+                    {f.id}
+                  </Link>
                   {(f.type || f.industry) && (
                     <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
                       {f.type || f.industry}
