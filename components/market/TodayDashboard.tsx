@@ -211,7 +211,16 @@ export default async function TodayDashboard({ ir }: { ir: IrMarket | null }) {
   // مقادیر لحظه‌ای نوار وضعیت از اسنپ‌شات
   const usdNow = ir?.currency?.find((c) => c.id === "USD") ?? null;
   const goldNow = ir?.gold?.find((g) => g.id === "IR_GOLD_18K") ?? null;
-  const idx = ir?.indices ?? null; // IrIndices — totalChange درصد تغییر شاخص کل است
+  const idx = ir?.indices ?? null;
+  // totalChange تغییر شاخص به واحد «امتیاز» است (index_change خام tsetmc) — درصد را از مبنای دیروز حساب می‌کنیم
+  const idxChangePct = (() => {
+    if (!idx || !isFinite(idx.totalChange) || idx.totalChange === 0 || !(idx.total > 0)) return null;
+    const base = idx.total - idx.totalChange;
+    if (!(base > 0)) return null;
+    const pct = (idx.totalChange / base) * 100;
+    // محافظ: تغییر روزانهٔ بیش از ۲۵٪ برای شاخص کل نامعقول است — به‌جای عدد غلط، چیزی نشان نده
+    return Math.abs(pct) <= 25 ? Math.round(pct * 100) / 100 : null;
+  })();
 
   // ارزش معاملات امروز (مجموع ارزش نمادهای سهام؛ ریال)
   const totalValueRial = stocks.reduce((s, r) => s + (Number(r.value) > 0 ? Number(r.value) : 0), 0);
@@ -245,7 +254,7 @@ export default async function TodayDashboard({ ir }: { ir: IrMarket | null }) {
           title="شاخص کل بورس"
           value={idx && idx.total > 0 ? fmtPrice(idx.total) : idxSpark.length > 0 ? fmtPrice(idxSpark[idxSpark.length - 1]) : null}
           sub={idx?.state ? `وضعیت بازار: ${idx.state}` : idxSpark.length > 0 ? "آخرین ثبت روزانه" : "پس از اولین ثبت روزانه نمایش داده می‌شود"}
-          changePercent={idx && isFinite(idx.totalChange) && idx.totalChange !== 0 ? idx.totalChange : null}
+          changePercent={idxChangePct}
           spark={idxSpark}
           sparkNote="روند روزهای اخیر"
         />
