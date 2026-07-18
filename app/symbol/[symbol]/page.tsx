@@ -9,11 +9,19 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundamentalCharts from "@/components/symbol/FundamentalCharts";
 import MonthlySalesCharts from "@/components/symbol/MonthlySalesCharts";
+import QuarterlyCharts from "@/components/symbol/QuarterlyCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
 import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavChart";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
+import {
+  deriveQuarters,
+  ttmSeries,
+  peOf,
+  type QuarterInput,
+} from "@/lib/core/quarterly";
+import { jalaliYmdToGregorian } from "@/lib/core/jalali";
 import { getNavHistory } from "@/lib/core/navHistory";
 import { getFxRates, latestRate } from "@/lib/core/fx";
 import { netIndividualFlow } from "@/lib/core/engine";
@@ -93,6 +101,45 @@ export default async function SymbolPage({ params }: PageProps) {
     close: d.close,
     netFlow: netIndividualFlow(d),
   }));
+
+  // T3: فصل‌سازی ن-۱۰ با تفاضل زنجیره‌ای + P/E دوازده‌ماهه
+  const quarterInputs: QuarterInput[] = (fundamentals?.n10Periods ?? []).map((p) => ({
+    id: p.id,
+    period_end: p.data.period_end,
+    period_months: p.data.period_months,
+    audited: p.data.audited,
+    capital: p.data.capital,
+    revenue: p.data.standalone.revenue,
+    gross_profit: p.data.standalone.gross_profit,
+    operating_profit: p.data.standalone.operating_profit,
+    net_profit: p.data.standalone.net_profit,
+  }));
+  const quarters = deriveQuarters(quarterInputs);
+  const ttm = ttmSeries(quarters);
+
+  // قیمت پایان فصل: تاریخچهٔ بلندتر فقط وقتی فصلی داریم (close به ریال است)
+  const peHistory = ttm.length > 0 ? await getSymbolHistory(sym, 1500) : [];
+  const peSeries = ttm.map((t) => {
+    const g = jalaliYmdToGregorian(t.periodEnd);
+    let pe: number | null = null;
+    if (g) {
+      const from = new Date(new Date(`${g}T00:00:00Z`).getTime() - 14 * 86400_000)
+        .toISOString()
+        .slice(0, 10);
+      // آخرین روز معاملاتی در بازهٔ [g-14روز, g] — بدون درون‌یابی
+      const inRange = peHistory.filter((d) => d.trade_date <= g && d.trade_date >= from);
+      inRange.sort((a, b) => (a.trade_date < b.trade_date ? -1 : 1));
+      const closeRial = inRange.length > 0 ? inRange[inRange.length - 1].close : null;
+      pe = closeRial != null ? peOf(closeRial, t.epsTtm) : null;
+    }
+    return { label: t.label, pe };
+  });
+
+  // P/E جاری: قیمت روز (تومان) ×۱۰ = ریال ÷ آخرین EPS TTM
+  const lastTtm = ttm.length > 0 ? ttm[ttm.length - 1] : null;
+  const priceTomanNow = num(quote?.closingPrice) ?? num(quote?.price);
+  const currentPe =
+    lastTtm && priceTomanNow != null ? peOf(priceTomanNow * 10, lastTtm.epsTtm) : null;
 
   // M6: نمودار قیمت در برابر NAV — فقط روزهای دارای NAV ثبت‌شده (هیچ درون‌یابی)
   const navPoints: PriceNavPoint[] = navHistory.map((d) => ({
@@ -289,6 +336,17 @@ export default async function SymbolPage({ params }: PageProps) {
                 sourceUrl={fundamentals.n30.source.source_url}
               />
             </section>
+          ) : null}
+
+          {/* T3 — تحلیل فصلی ن-۱۰: فقط وقتی حداقل یک فصل مشتق شده (قانون ۲) */}
+          {quarters.length > 0 ? (
+            <QuarterlyCharts
+              quarters={quarters}
+              ttm={ttm}
+              peSeries={peSeries}
+              currentPe={currentPe}
+              sourceTitle={fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال"}
+            />
           ) : null}
 
           {/* نمودارهای بنیادی WP4 */}
