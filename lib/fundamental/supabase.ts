@@ -50,7 +50,7 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
     symbol: `eq.${symbol}`,
     data: "not.is.null",
     order: "id.desc",
-    limit: "80",
+    limit: "120", // T1: جا برای ۲۶ گزارش ن-۳۰ + نسخه‌های تکراری/اصلاحیه + ن-۱۰ها
   });
   try {
     const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
@@ -128,7 +128,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
     .sort((a, b) =>
       (b.data as CodalN30Data).period_end.localeCompare((a.data as CodalN30Data).period_end),
     )
-    .slice(0, 12);
+    .slice(0, 26); // T1: تا ۲۶ گزارش ماهانه — پوشش سال مالی جاری + سال قبل برای مقایسه
 
   if (!main && n30rows.length === 0) return null;
 

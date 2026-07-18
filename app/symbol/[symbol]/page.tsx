@@ -8,6 +8,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundamentalCharts from "@/components/symbol/FundamentalCharts";
+import MonthlySalesCharts from "@/components/symbol/MonthlySalesCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
 import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavChart";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
@@ -278,6 +279,17 @@ export default async function SymbolPage({ params }: PageProps) {
               هیچ نمرهٔ موقتی نمایش داده نمی‌شود.
             </p>
           </section>
+
+          {/* T1 — شناسنامهٔ بنیادی: فروش ماهانهٔ ن-۳۰ — فقط وقتی داده هست (قانون ۲) */}
+          {fundamentals?.n30 && fundamentals.n30.data.length > 0 ? (
+            <section>
+              <MonthlySalesCharts
+                reports={fundamentals.n30.data}
+                sourceTitle={fundamentals.n30.source.title}
+                sourceUrl={fundamentals.n30.source.source_url}
+              />
+            </section>
+          ) : null}
 
           {/* نمودارهای بنیادی WP4 */}
           <section>
