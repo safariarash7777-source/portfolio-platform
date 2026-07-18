@@ -55,6 +55,18 @@ export interface IrStockRow extends IrRow {
   buyCountI?: number | null;
   /** تعداد فروشندگان حقیقی */
   sellCountI?: number | null;
+  /** آستانهٔ مجاز بالای دامنه (تومان) — best-effort رله (داشبورد «امروز بازار») */
+  bandHigh?: number | null;
+  /** آستانهٔ مجاز پایین دامنه (تومان) */
+  bandLow?: number | null;
+  /** قیمت بهترین تقاضا — سطر اول دفتر سفارش (تومان) */
+  bestBidPrice?: number | null;
+  /** حجم بهترین تقاضا — سطر اول (صفر معنادار است) */
+  bestBidVolume?: number | null;
+  /** قیمت بهترین عرضه — سطر اول (تومان) */
+  bestAskPrice?: number | null;
+  /** حجم بهترین عرضه — سطر اول (صفر معنادار است) */
+  bestAskVolume?: number | null;
 }
 
 /** ردیف قرارداد اختیار معامله (M8-ب) — قیمت‌ها تومان */
@@ -229,6 +241,17 @@ function asStockRows(v: unknown): IrStockRow[] {
         typeof r.buyCountI === "number" && isFinite(r.buyCountI) && r.buyCountI > 0 ? r.buyCountI : null,
       sellCountI:
         typeof r.sellCountI === "number" && isFinite(r.sellCountI) && r.sellCountI > 0 ? r.sellCountI : null,
+      // فیلدهای تشخیص صف — حجم صفر معنادار است (عرضهٔ صفر = شرط صف خرید)، پس >=0 پذیرفته می‌شود.
+      bandHigh: typeof r.bandHigh === "number" && isFinite(r.bandHigh) && r.bandHigh > 0 ? r.bandHigh : null,
+      bandLow: typeof r.bandLow === "number" && isFinite(r.bandLow) && r.bandLow > 0 ? r.bandLow : null,
+      bestBidPrice:
+        typeof r.bestBidPrice === "number" && isFinite(r.bestBidPrice) && r.bestBidPrice > 0 ? r.bestBidPrice : null,
+      bestBidVolume:
+        typeof r.bestBidVolume === "number" && isFinite(r.bestBidVolume) && r.bestBidVolume >= 0 ? r.bestBidVolume : null,
+      bestAskPrice:
+        typeof r.bestAskPrice === "number" && isFinite(r.bestAskPrice) && r.bestAskPrice > 0 ? r.bestAskPrice : null,
+      bestAskVolume:
+        typeof r.bestAskVolume === "number" && isFinite(r.bestAskVolume) && r.bestAskVolume >= 0 ? r.bestAskVolume : null,
     }));
 }
 

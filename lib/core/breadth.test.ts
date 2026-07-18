@@ -55,7 +55,8 @@ test("computeDailyBreadth: پوشش ≥ ۵۰ → خالص جریان جمع دق
   // هر نماد: (100-50) × 1000 = 50,000 تومان ورود
   const b = computeDailyBreadth(Array.from({ length: 50 }, () => stock()));
   assert.equal(b.netFlowToman, 50 * 50_000);
-  assert.equal(b.totalValueToman, 50 * 5_000_000);
+  // value در اسنپ‌شات ریال است → تومان = ÷۱۰ (اصلاح باگ واحد)
+  assert.equal(b.totalValueToman, (50 * 5_000_000) / 10);
 });
 
 test("computeDailyBreadth: صنایع با بیشترین ورود پول — فقط مثبت‌ها و حداکثر ۳", () => {
@@ -90,7 +91,7 @@ test("computeIndustryDesk: جمع ارزش صنایع = جمع کل بازار (
   const sumRows = d.rows.reduce((s, r) => s + r.valueToman, 0);
   assert.equal(sumRows, d.totalValueToman);
   assert.equal(d.totalValueToman, d.marketTotalValueToman); // بدون نماد بی‌صنعت
-  assert.equal(sumRows, 600);
+  assert.equal(sumRows, 60); // ۶۰۰ ریال → ۶۰ تومان
 });
 
 test("computeIndustryDesk: نماد بی‌صنعت حذف صادقانه ولی در کل بازار حساب می‌شود", () => {
@@ -101,8 +102,8 @@ test("computeIndustryDesk: نماد بی‌صنعت حذف صادقانه ولی
   ];
   const d = computeIndustryDesk(rows);
   assert.equal(d.excludedNoIndustry, 2);
-  assert.equal(d.totalValueToman, 100);
-  assert.equal(d.marketTotalValueToman, 1050);
+  assert.equal(d.totalValueToman, 10); // ۱۰۰ ریال → ۱۰ تومان
+  assert.equal(d.marketTotalValueToman, 105); // ۱۰۵۰ ریال → ۱۰۵ تومان
   // سهم از کل باید نسبت به کل بازار (شامل بی‌صنعت‌ها) باشد
   assert.equal(d.rows[0].valueSharePct, Math.round((100 / 1050) * 1000) / 10);
 });

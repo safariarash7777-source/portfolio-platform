@@ -78,9 +78,10 @@ export function computeDailyBreadth(stocks: BreadthStockLike[]): DailyBreadth {
     else if (p > 0) up++;
     else down++;
 
+    // s.value در اسنپ‌شات رله به ریال است (tval خام tsetmc) — تبدیل به تومان (اصلاح باگ واحد ۱۰×)
     const v = num(s.value);
     if (v != null) {
-      totalValue += v;
+      totalValue += v / 10;
       valueCovered++;
     }
 
@@ -169,7 +170,8 @@ export function computeIndustryDesk(stocks: BreadthStockLike[]): IndustryDesk {
   let excluded = 0;
 
   for (const s of stocks) {
-    const v = num(s.value) ?? 0;
+    // s.value ریال است — تبدیل به تومان (همان اصلاح باگ واحد computeDailyBreadth)
+    const v = (num(s.value) ?? 0) / 10;
     marketTotalValue += v;
 
     const ind = typeof s.industry === "string" && s.industry.trim() ? s.industry.trim() : null;
