@@ -41,7 +41,7 @@ const NAV: NavItem[] = [
   { key: "analyses", label: "کارنامه", href: "/admin/analyses", icon: <ClipboardCheck size={18} /> },
   { key: "content", label: "هابِ محتوا", href: "/admin/content", icon: <Sparkles size={18} /> },
   { key: "webinars", label: "وبینارها", href: "/admin/webinars", icon: <Video size={18} /> },
-  { key: "market", label: "رصد بازار", icon: <LineChart size={18} />, soon: true },
+  { key: "market", label: "رصد بازار", href: "/admin/radar", icon: <LineChart size={18} /> },
 ];
 
 export default function AdminShell({
@@ -66,6 +66,7 @@ export default function AdminShell({
     if (item.key === "analyses") return pathname.startsWith("/admin/analyses");
     if (item.key === "content") return pathname.startsWith("/admin/content");
     if (item.key === "webinars") return pathname.startsWith("/admin/webinars");
+    if (item.key === "market") return pathname.startsWith("/admin/radar");
     if (pathname.startsWith("/admin/manage")) {
       if (item.key === "portfolio") return tab === "portfolio";
       if (item.key === "payments") return tab === "payments";
