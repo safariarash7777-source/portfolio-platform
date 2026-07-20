@@ -27,6 +27,8 @@ const FOOTER_GROUPS = [
       { href: "/analyses",  label: "کارنامهٔ قابل راستی‌آزمایی" },
       { href: "/insights",  label: "تحلیل‌های اجتماعی" },
       { href: "/notes",     label: "یادداشت روزانه" },
+      { href: "/learn",     label: "مسیر یادگیری" },
+      { href: "/learn/glossary", label: "واژه‌نامهٔ اصطلاحات" },
       { href: "/webinars",  label: "وبینار فصلی" },
       { href: "/#faq",      label: "سؤالات متداول" },
       { href: "/terminal",  label: "ترمینال تحلیلگر" },
