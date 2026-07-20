@@ -5,8 +5,9 @@ import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "نمای بازار سهام",
-  description: "شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس.",
+  title: "تابلوی زندهٔ بازار سهام",
+  description:
+    "دیده‌بانی لحظه‌ای بازار: شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس؛ تاریخچه و خروجی داده در بانک داده.",
 };
 
 export default async function StocksPage() {

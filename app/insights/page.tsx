@@ -2,13 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import InsightsGrid from "@/components/insights/InsightsGrid";
+import Link from "next/link";
 import { Send, Instagram } from "lucide-react";
 import { type ContentItem, isPlatform, isKind, PLATFORM_META } from "@/lib/content-hub";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "آخرین تحلیل‌ها",
+  title: "تحلیل‌های اجتماعی",
   description:
     "تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر در یک صفحه.",
 };
@@ -42,16 +43,24 @@ export default async function InsightsPage() {
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-10 pb-16">
           <header className="mb-8">
-            <span className="eyebrow">هابِ محتوا</span>
+            <span className="eyebrow">ناحیهٔ تحلیل‌ها · شبکه‌های اجتماعی</span>
             <h1
               className="font-display text-3xl md:text-4xl font-bold mt-2"
               style={{ color: "var(--navy-deep)" }}
             >
-              آخرین تحلیل‌ها
+              تحلیل‌های اجتماعی
             </h1>
             <p className="text-sm md:text-base mt-3 leading-8 max-w-2xl" style={{ color: "var(--text-2)" }}>
-              جدیدترین تحلیل‌ها، ویدیوها و یادداشت‌های آرش صفری از شبکه‌های اجتماعی، یک‌جا. برای دیدنِ
-              کاملِ هر مطلب روی کارت بزنید تا به منبعِ اصلی بروید.
+              تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از شبکه‌های اجتماعی، یک‌جا. برای دیدنِ
+              کاملِ هر مطلب روی کارت بزنید تا به منبعِ اصلی بروید. در همین ناحیه،{" "}
+              <Link href="/notes" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
+                یادداشت روزانهٔ بازار
+              </Link>{" "}
+              (نگاه کوتاه روزانهٔ خود سایت) و{" "}
+              <Link href="/analyses" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
+                کارنامهٔ قابل راستی‌آزمایی
+              </Link>{" "}
+              را هم ببینید.
             </p>
 
             {/* دکمه‌های دنبال‌کردن */}
