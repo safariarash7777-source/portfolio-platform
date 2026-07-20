@@ -6,10 +6,6 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // پیش‌نمایش محلی ترمینال — فقط با TERMINAL_PREVIEW_OPEN=1 (هرگز روی Vercel ست نمی‌شود)
-  if (process.env.TERMINAL_PREVIEW_OPEN === "1") {
-    return <>{children}</>;
-  }
   const supabase = await createClient();
   const {
     data: { user },
