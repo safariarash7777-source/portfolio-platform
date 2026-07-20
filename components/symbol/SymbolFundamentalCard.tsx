@@ -8,6 +8,7 @@
 import { useState } from "react";
 import type { FundamentalCardData } from "@/lib/core/fundamentalCard";
 import { toPersianDigits } from "@/lib/format";
+import Term from "@/components/learn/Term";
 
 function fa(x: string | number): string {
   return toPersianDigits(String(x));
@@ -53,7 +54,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
-          کارت بنیادی — فعالیت ماهانه (ن-۳۰)
+          کارت بنیادی — فعالیت ماهانه (<Term id="n10-n30">ن-۳۰</Term>)
         </h2>
         {card.sourceUrl ? (
           <a

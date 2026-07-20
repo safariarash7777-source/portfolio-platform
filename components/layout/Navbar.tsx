@@ -44,7 +44,9 @@ const NAV_GROUPS: NavGroup[] = [
     key: "learn",
     label: "یادگیری",
     items: [
-      { href: "/webinars", label: "وبینار", desc: "وبینارهای فصلی" },
+      { href: "/learn",          label: "مسیر یادگیری", desc: "سواد مالی از صفر، گام‌به‌گام" },
+      { href: "/learn/glossary", label: "واژه‌نامه",     desc: "اصطلاحات بازار به زبان ساده" },
+      { href: "/webinars",       label: "وبینار",       desc: "وبینارهای فصلی" },
     ],
   },
   {
