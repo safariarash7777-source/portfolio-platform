@@ -13,11 +13,6 @@ export default async function TerminalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // پیش‌نمایش محلی: فقط وقتی TERMINAL_PREVIEW_OPEN=1 (هرگز روی Vercel ست نمی‌شود)
-  if (process.env.TERMINAL_PREVIEW_OPEN === "1") {
-    return <div className="min-h-screen" style={{ background: "var(--bg)" }}>{children}</div>;
-  }
-
   const access = await getAccess();
   if (access.level === "visitor") redirect("/login");
   if (access.level !== "full") redirect("/dashboard?upgrade=terminal");

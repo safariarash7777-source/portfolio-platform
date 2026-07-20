@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import Term from "@/components/learn/Term";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock } from "lucide-react";
 import {
   toPersianDigits,
@@ -398,7 +399,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               {hasNav && (
                 <>
                   <th className="py-3 px-4 font-bold whitespace-nowrap text-left" style={{ color: "var(--text-3)" }}>
-                    NAV ابطال
+                    <Term id="nav">NAV ابطال</Term>
                   </th>
                   <SortTh label="حباب" sortKey="bubblePercent" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
                 </>

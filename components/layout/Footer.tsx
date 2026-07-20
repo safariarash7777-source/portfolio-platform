@@ -8,24 +8,31 @@ const SOCIAL_LINKS = [
   { href: "https://linkedin.com/in/arashsafari", label: "لینکدین",    icon: <Linkedin size={18} /> },
 ];
 
+// گروه‌های فوتر هم‌راستا با ناوبری ۵-ناحیه‌ای (WP-A)
 const FOOTER_GROUPS = [
   {
-    title: "محصول",
+    title: "بازار و نماد",
     links: [
-      { href: "/market",    label: "رصد بازار" },
-      { href: "/data",      label: "بانک داده" },
-      { href: "/webinars",  label: "وبینار فصلی" },
-      { href: "/dashboard", label: "داشبورد کاربری" },
+      { href: "/market",        label: "رصد بازار" },
+      { href: "/market/map",    label: "نقشهٔ بازار" },
+      { href: "/market/funds",  label: "صندوق‌ها" },
+      { href: "/market/stocks", label: "تابلوی سهام" },
+      { href: "/data",          label: "بانک داده" },
+      { href: "/codal",         label: "فید اطلاعیه‌های کدال" },
     ],
   },
   {
-    title: "منابع",
+    title: "تحلیل و یادگیری",
     links: [
-      { href: "/#faq",     label: "سؤالات متداول" },
-      { href: "/insights", label: "تحلیل‌ها" },
-      { href: "/analyses", label: "کارنامهٔ قابل راستی‌آزمایی" },
-      { href: "/notes",    label: "یادداشت روزانه" },
-      { href: "/codal",    label: "فید اطلاعیه‌های کدال" },
+      { href: "/analyses",  label: "کارنامهٔ قابل راستی‌آزمایی" },
+      { href: "/insights",  label: "تحلیل‌های اجتماعی" },
+      { href: "/notes",     label: "یادداشت روزانه" },
+      { href: "/learn",     label: "مسیر یادگیری" },
+      { href: "/learn/glossary", label: "واژه‌نامهٔ اصطلاحات" },
+      { href: "/webinars",  label: "وبینار فصلی" },
+      { href: "/#faq",      label: "سؤالات متداول" },
+      { href: "/terminal",  label: "ترمینال تحلیلگر" },
+      { href: "/dashboard", label: "داشبورد کاربری" },
     ],
   },
   {

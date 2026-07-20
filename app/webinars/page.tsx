@@ -12,6 +12,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import Navbar from "@/components/layout/Navbar";
 
 interface Webinar {
   id: string;
@@ -137,6 +138,8 @@ function WebinarsContent() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+      {/* ناوبری سراسری یکسان (WP-A) */}
+      <Navbar />
       {/* Header */}
       <header
         className="border-b"
