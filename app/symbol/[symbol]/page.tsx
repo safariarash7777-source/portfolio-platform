@@ -15,6 +15,8 @@ import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavC
 import SymbolTabs from "@/components/symbol/SymbolTabs";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
+import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
+import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
@@ -170,9 +172,22 @@ export default async function SymbolPage({ params }: PageProps) {
     });
   }
 
-  // T6: محتوای تب بنیادی (T1 + T3 + WP4 + کارت امتیاز آتی)
+  // WP-F: کارت بنیادی نمادمحور — موتور خالص lib/core/fundamentalCard (فقط وقتی ن-۳۰ هست)
+  const fundamentalCard =
+    fundamentals?.n30 && fundamentals.n30.data.length > 0
+      ? buildFundamentalCard(sym, fundamentals.n30.data, {
+          title: fundamentals.n30.source.title,
+          url: fundamentals.n30.source.source_url,
+        })
+      : null;
+
+  // T6: محتوای تب بنیادی (T1 + T3 + WP4 + کارت بنیادی WP-F + کارت امتیاز آتی)
   const fundamentalTab = (
     <>
+      {/* WP-F — کارت بنیادی سه‌لایه: روایت یک‌خطی + روند + دادهٔ خام (قبل از نمودارها) */}
+      {fundamentalCard && fundamentalCard.narrative ? (
+        <SymbolFundamentalCard card={fundamentalCard} />
+      ) : null}
       <section
         className="rounded-xl px-4 py-4"
         style={{ background: "var(--surface-2)", border: "1px dashed var(--line-strong)" }}
