@@ -23,9 +23,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
-  // پیش‌نمایش محلی ترمینال — فقط با TERMINAL_PREVIEW_OPEN=1 (هرگز روی Vercel ست نمی‌شود)
-  const terminalPreviewOpen = process.env.TERMINAL_PREVIEW_OPEN === '1'
-  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || (pathname.startsWith('/terminal') && !terminalPreviewOpen)
+  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/terminal')
   if (isProtected && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -44,7 +42,7 @@ export async function middleware(request: NextRequest) {
 
   // Terminal gate — دسترسی کامل: ادمین یا entitlement فعّال (مشاوره/وبینار)
   // هم‌خوان با lib/access.ts و layout ترمینال؛ مشتری «۳ ماه دسترسی کامل» باید عبور کند
-  if (pathname.startsWith('/terminal') && !terminalPreviewOpen && user) {
+  if (pathname.startsWith('/terminal') && user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
