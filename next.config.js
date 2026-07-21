@@ -1,3 +1,14 @@
+// داشبوردِ نرخ ارز روی دامنهٔ دیگری (لیارا، داخلِ ایران) اجرا می‌شود و در
+// /admin/fx داخلِ iframe می‌آید. CSP هیچ frame-src نداشت، پس به default-src
+// 'self' می‌افتاد و قاب را بلاک می‌کرد. فقط همان مبدأ را اجازه می‌دهیم — نه '*'.
+const FX_ORIGIN = (() => {
+  try {
+    return process.env.FX_DASHBOARD_URL ? new URL(process.env.FX_DASHBOARD_URL).origin : "";
+  } catch {
+    return "";
+  }
+})();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -30,6 +41,7 @@ const nextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'self'",
+              `frame-src 'self'${FX_ORIGIN ? ` ${FX_ORIGIN}` : ""}`,
               "object-src 'none'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",

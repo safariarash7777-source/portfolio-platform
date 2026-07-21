@@ -1,0 +1,21 @@
+# محرمانه‌ها — هرگز کامیت نشوند
+.streamlit/secrets.toml
+*.key
+.env
+
+# پایتون
+__pycache__/
+*.pyc
+
+# لاگ‌ها و خروجی‌های موقت
+*.log
+streamlit.err
+streamlit.out
+etfbaz_dump.json
+
+# کشِ مقادیر بحرانیِ PSY — بازتولیدش چند ثانیه است، کامیت لازم ندارد
+.psy_cache/
+
+# خروجی‌های تولیدی
+_docgen/
+*.docx

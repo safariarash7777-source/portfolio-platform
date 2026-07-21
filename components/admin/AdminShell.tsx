@@ -15,6 +15,7 @@ import {
   ClipboardCheck,
   Sparkles,
   Video,
+  Banknote,
   LogOut,
   Menu,
   X,
@@ -42,6 +43,7 @@ const NAV: NavItem[] = [
   { key: "content", label: "هابِ محتوا", href: "/admin/content", icon: <Sparkles size={18} /> },
   { key: "webinars", label: "وبینارها", href: "/admin/webinars", icon: <Video size={18} /> },
   { key: "market", label: "رصد بازار", href: "/admin/radar", icon: <LineChart size={18} /> },
+  { key: "fx", label: "داشبورد نرخ ارز", href: "/admin/fx", icon: <Banknote size={18} /> },
 ];
 
 export default function AdminShell({
@@ -67,6 +69,7 @@ export default function AdminShell({
     if (item.key === "content") return pathname.startsWith("/admin/content");
     if (item.key === "webinars") return pathname.startsWith("/admin/webinars");
     if (item.key === "market") return pathname.startsWith("/admin/radar");
+    if (item.key === "fx") return pathname.startsWith("/admin/fx");
     if (pathname.startsWith("/admin/manage")) {
       if (item.key === "portfolio") return tab === "portfolio";
       if (item.key === "payments") return tab === "payments";

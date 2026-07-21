@@ -1,0 +1,27 @@
+# هرگز داخل ایمیج نرود — کلیدِ Gemini روی لیارا با متغیرِ محیطیِ
+# GEMINI_API_KEY ست می‌شود (gemini.py:33 خودش از env می‌خواند).
+.streamlit/secrets.toml
+
+# آشغال‌های اجرای محلی
+__pycache__/
+*.pyc
+.psy_cache/
+*.log
+*.err
+*.out
+dashboard_run.log
+dashboard_run.err.log
+streamlit*.log
+stream_*.log
+st2.log
+
+# ابزارِ ویندوز و توسعه — روی سرور بی‌مصرف‌اند
+*.ps1
+*.vbs
+.claude/
+.git/
+.gitignore
+
+# فایل‌های تولیدی که در ایمیج لازم نیستند
+_docgen/
+*.docx

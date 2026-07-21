@@ -36,6 +36,11 @@ Next.js 15 (App Router) · React 18 · TypeScript · Tailwind 3 · Supabase (`@s
 - **`admin.ts` را هرگز در کامپوننت کلاینت import نکن** (کلید سرویس‌رول لو می‌رود).
 - Auth در `middleware.ts`: مسیرهای `/dashboard` و `/admin` گیت می‌شوند؛ نقشِ admin از `profiles.role` در دیتابیس خوانده می‌شود (منبعِ واحدِ حقیقت).
 
+## سرویس‌های جانبی (روی لیارا، نه Vercel)
+هر دو باید **داخلِ ایران** اجرا شوند چون tgju/fipiran به درخواستِ خارج از ایران ۴۰۳ می‌دهند. هر دو در `.vercelignore` هستند.
+- `relay/` — قیمتِ بازار را می‌کشد و به Supabase push می‌کند (اپِ لیارا: `arsadata`). رجوع: `relay/README.md`.
+- `fx-dashboard/` — داشبوردِ Streamlit نرخ ارز، در `/admin/fx` داخلِ iframe. **iframe محافظت نیست**: `middleware.ts` فقط دامنهٔ خودمان را گیت می‌کند، پس یک توکنِ HMAC کوتاه‌عمر رد و بدل می‌شود — `lib/fxToken.ts` می‌سازد، `fx-dashboard/auth_gate.py` می‌سنجد. **قالبِ توکن در دو فایل باید یکی بماند.** `frame-src` در `next.config.js` از `FX_DASHBOARD_URL` در **زمانِ بیلد** ساخته می‌شود ⇒ تغییرِ آن env بدونِ Redeploy یعنی قابِ سفید و فقط یک خطای CSP در کنسول. رجوع: `fx-dashboard/DEPLOY.md`.
+
 ## هنگام تغییر پوسته
 منطقِ endpointهای فرم (مثل `/api/waitlist`) را عیناً حفظ کن؛ فقط ظاهر را عوض کن.
 
