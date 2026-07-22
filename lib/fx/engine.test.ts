@@ -293,7 +293,7 @@ test("tornadoData returns 4 factors sorted by descending range", () => {
 // واگرایی در مرز سال یا سال کبیسه فوراً تست را قرمز کند.
 test("gregorianToJalali reconciles with canonical jalaliYmdToGregorian day-by-day 1400..1410", async () => {
   const { jalaliYmdToGregorian } = await import("../core/jalali");
-  const { gregorianToJalali, gregorianYmdToJalali } = await import("./dataLoader");
+  const { gregorianToJalali, gregorianYmdToJalali } = await import("./jalaliConvert");
 
   // جهت تست: میلادی ← شمسی ← میلادی (هر روز میلادی قطعاً معتبر است؛
   // جهت برعکس می‌تواند روز نامعتبر مثل ۳۰ اسفند غیرکبیسه بسازد که کانونی آن را
@@ -339,4 +339,55 @@ test("Emami coin intrinsic uses net gold content (8.133g gross × 0.900 fineness
   // فرمول قدیمی (نادرست) دقیقاً 1/0.9 برابر بود → اثبات جهت و اندازهٔ خطا
   const wrong = gold18 * gross * (24 / 18);
   assertClose(wrong / (gold18 * pure24 * (24 / 18)), 1 / fineness, 1e-9, "old formula ratio");
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// بک‌تست گذشته‌نگر (lib/fx/backtest.ts) — مقادیر طلایی راستی‌آزمایی‌شده
+// با اجرای مستقل پایتون روی همان seed ها (ppp/monetary از لنگر ۱۳۹۵=۳٬۶۴۴).
+test("backtestRun ppp 1395 horizon-3 matches independent Python replay", async () => {
+  const { backtestRun } = await import("./backtest");
+  const macro = (await import("./data/macro_annual.json")).default as unknown as import("./engine").MacroRow[];
+  const baseRates = (await import("./data/base_rates.json")).default as Record<string, number>;
+  const actual: Record<number, number> = {};
+  for (const [k, v] of Object.entries(baseRates)) actual[Number(k)] = v;
+
+  const run = backtestRun(macro, actual, "ppp", 1395, 3);
+  assert.ok(run, "run must exist");
+  assert.equal(run!.anchorRate, 3644);
+  assert.equal(run!.points.length, 3);
+  // مقادیر طلایی از پایتون مستقل: rate *= (1+infl_cbi/100)/(1+usa_infl/100)
+  const goldPred = [3910.525505021868, 5008.278098296, 6945.815899258566];
+  const goldActual = [4045, 10338, 12918];
+  run!.points.forEach((p, i) => {
+    assert.ok(Math.abs(p.predicted - goldPred[i]) < 1e-6, `ppp pred h${i + 1}`);
+    assert.equal(p.actual, goldActual[i]);
+    const expErr = ((goldPred[i] - goldActual[i]) / goldActual[i]) * 100;
+    assert.ok(Math.abs(p.errorPct - expErr) < 1e-9, `ppp err h${i + 1}`);
+  });
+
+  const mon = backtestRun(macro, actual, "monetary", 1395, 3);
+  const goldMon = [4254.326831142938, 5285.369022649853, 6757.674906903549];
+  mon!.points.forEach((p, i) => {
+    assert.ok(Math.abs(p.predicted - goldMon[i]) < 1e-6, `mon pred h${i + 1}`);
+  });
+});
+
+test("accuracyByHorizon aggregates MAPE/bias across all start years", async () => {
+  const { accuracyByHorizon, validStartYears } = await import("./backtest");
+  const macro = (await import("./data/macro_annual.json")).default as unknown as import("./engine").MacroRow[];
+  const baseRates = (await import("./data/base_rates.json")).default as Record<string, number>;
+  const actual: Record<number, number> = {};
+  for (const [k, v] of Object.entries(baseRates)) actual[Number(k)] = v;
+
+  const starts = validStartYears(actual);
+  assert.ok(starts.length >= 60, "should have 60+ valid start years");
+  const acc = accuracyByHorizon(macro, actual, "ppp", starts, 5);
+  assert.equal(acc.length, 5);
+  // مقادیر طلایی (گرد به ۲ رقم) از اجرای مرجع — قفل رفتار
+  assert.equal(acc[0].mape, 10.92);
+  assert.equal(acc[0].n, 67);
+  assert.equal(acc[4].mape, 26.95);
+  assert.equal(acc[4].n, 63);
+  // MAPE باید با افق افزایش یابد (خطای تجمعی) — خاصیت ساختاری
+  for (let i = 1; i < acc.length; i++) assert.ok(acc[i].mape >= acc[i - 1].mape);
 });
