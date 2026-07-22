@@ -224,8 +224,12 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
   /* ── حباب طلا (اونس جهانی معادل) ── */
   const gold18 = data.gold.find((g) => g.id === "IR_GOLD_18K") ?? null;
   const coinEmami = data.gold.find((g) => g.id === "IR_COIN_EMAMI") ?? null;
-  // ارزش ذاتی سکهٔ امامی: ۸.۱۳۳ گرم طلای ۲۴ (معادل ۱۰.۸۴۴ گرم ۱۸ عیار)
-  const coinIntrinsic = gold18 ? gold18.priceToman * (8.133 * (24 / 18)) : null;
+  // ارزش ذاتی سکهٔ امامی: وزن ناخالص ۸.۱۳۳ گرم با عیار ۹۰۰ → طلای خالص ۷.۳۱۹۷ گرم (۲۴ عیار)
+  // = معادل ۹.۷۵۹۶ گرم ۱۸ عیار (×24/18). قبلاً به‌اشتباه کل ۸.۱۳۳ گرم، ۲۴ عیار فرض شده بود.
+  const COIN_GROSS_GRAMS = 8.133;
+  const COIN_FINENESS = 0.9; // عیار ۹۰۰ سکهٔ بهار آزادی/امامی
+  const coinPureGold24 = COIN_GROSS_GRAMS * COIN_FINENESS; // 7.3197 گرم طلای خالص
+  const coinIntrinsic = gold18 ? gold18.priceToman * (coinPureGold24 * (24 / 18)) : null;
   const coinGap = coinEmami && coinIntrinsic ? bubbleGap(coinEmami.priceToman, coinIntrinsic) : null;
 
   const heatColor = (v: number, min: number, max: number) => {
@@ -264,6 +268,16 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
         ))}
       </div>
 
+      {/* بنر دامنهٔ پوشش — شفافیت نیمهٔ سبک/سنگین */}
+      <div
+        className="rounded-lg border px-3 py-2 text-[12px]"
+        style={{ borderColor: "var(--line)", background: "var(--surface)", color: "var(--text-3)" }}
+      >
+        پوشش فعلی = نیمهٔ سبک (زنده): PPP چندپایه · مدل پولی · حساسیت · پیش‌بینی رو به جلو · حباب سکه.
+        آزمون آماری حباب (PSY/GSADF)، GARCH و مونت‌کارلو هنوز زنده نیستند — مرحلهٔ ۲ (پیش‌محاسبهٔ پایتون + Supabase).
+        همهٔ سنجه‌ها توصیفی‌اند، نه توصیه — این کارت‌ها بدون حذف رنگ‌بندی/قضاوت نباید به صفحات عمومی منتقل شوند.
+      </div>
+
       {/* ── تب ۱: نرخ زنده + مقایسهٔ مدل‌ها ── */}
       {tab === "models" && (
         <div className="space-y-6">
@@ -276,20 +290,17 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
             <Card
               title={`PPP چندپایه (${toPersianDigits(String(valuation.lastYear))})`}
               value={valuation.ppp != null ? fa(valuation.ppp) : "—"}
-              sub={valuation.gapPpp != null ? `شکاف بازار: ${faPct(valuation.gapPpp)}` : undefined}
-              tone={valuation.gapPpp != null ? (valuation.gapPpp > 0 ? "neg" : "pos") : null}
+              sub={valuation.gapPpp != null ? `شکاف بازار: ${faPct(valuation.gapPpp)} (توصیفی)` : undefined}
             />
             <Card
               title={`مدل پولی (${toPersianDigits(String(valuation.lastYear))})`}
               value={valuation.mon != null ? fa(valuation.mon) : "—"}
-              sub={valuation.gapMon != null ? `شکاف بازار: ${faPct(valuation.gapMon)}` : undefined}
-              tone={valuation.gapMon != null ? (valuation.gapMon > 0 ? "neg" : "pos") : null}
+              sub={valuation.gapMon != null ? `شکاف بازار: ${faPct(valuation.gapMon)} (توصیفی)` : undefined}
             />
             <Card
               title="میانگین هندسی مدل‌ها"
               value={valuation.ens != null ? fa(valuation.ens) : "—"}
-              sub={valuation.gapEns != null ? `شکاف بازار: ${faPct(valuation.gapEns)}` : undefined}
-              tone={valuation.gapEns != null ? (valuation.gapEns > 0 ? "neg" : "pos") : null}
+              sub={valuation.gapEns != null ? `شکاف بازار: ${faPct(valuation.gapEns)} (توصیفی)` : undefined}
             />
           </div>
 
@@ -303,6 +314,8 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
             <p className="text-[11px] mb-3" style={{ color: "var(--text-3)" }}>
               PPP چندپایه (میانگین هندسی پایه‌های ۱۳۸۱/۱۳۹۰/۱۳۹۶) · مدل پولی (پایهٔ ۱۳۸۱) ·
               بازار = میانگین سالانهٔ fx_rates + نرخ‌های پایهٔ تاریخی. منبع: اکسل کلان آرش + رلهٔ زنده.
+              توجه: دنبالهٔ زندهٔ fx_rates هنوز کم‌عمق است (رله روزانه یک ردیف می‌افزاید و به‌مرور عمیق می‌شود)؛
+              سال‌های گذشتهٔ خط «بازار» عمدتاً از نرخ‌های پایهٔ تاریخی (seed) است.
             </p>
             <div dir="ltr" style={{ width: "100%", height: 340 }}>
               <ResponsiveContainer>
@@ -503,11 +516,11 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card title="طلای ۱۸ عیار (گرم)" value={gold18 ? fa(gold18.priceToman) : "—"} sub={gold18?.changePercent != null ? `تغییر: ${faPct(gold18.changePercent)}` : undefined} />
             <Card title="سکهٔ امامی (بازار)" value={coinEmami ? fa(coinEmami.priceToman) : "—"} />
-            <Card title="ارزش ذاتی سکه (از گرم ۱۸)" value={coinIntrinsic != null ? fa(coinIntrinsic) : "—"} sub="۸.۱۳۳ گرم طلای ۲۴ عیار" />
+            <Card title="ارزش ذاتی سکه (از گرم ۱۸)" value={coinIntrinsic != null ? fa(coinIntrinsic) : "—"} sub="۸.۱۳۳ گرم ناخالص × عیار ۹۰۰ = ۷.۳۲ گرم طلای خالص" />
             <Card
               title="حباب سکهٔ امامی"
               value={coinGap != null ? faPct(coinGap) : "—"}
-              tone={coinGap != null ? (coinGap > 0 ? "neg" : "pos") : null}
+              sub="سنجهٔ توصیفی — نه توصیه"
             />
           </div>
 

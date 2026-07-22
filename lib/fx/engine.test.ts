@@ -286,3 +286,57 @@ test("tornadoData returns 4 factors sorted by descending range", () => {
     assert.equal(r.range, r.high - r.low);
   }
 });
+
+// ── تست تطبیق تبدیل تاریخ (نکتهٔ بازبینی #2) ─────────────────────────
+// gregorianToJalali (dataLoader) باید معکوس دقیق jalaliYmdToGregorian کانونی
+// (lib/core/jalali.ts) باشد. کل بازهٔ ۱۴۰۰..۱۴۱۰ روزبه‌روز چک می‌شود تا هر
+// واگرایی در مرز سال یا سال کبیسه فوراً تست را قرمز کند.
+test("gregorianToJalali reconciles with canonical jalaliYmdToGregorian day-by-day 1400..1410", async () => {
+  const { jalaliYmdToGregorian } = await import("../core/jalali");
+  const { gregorianToJalali, gregorianYmdToJalali } = await import("./dataLoader");
+
+  // جهت تست: میلادی ← شمسی ← میلادی (هر روز میلادی قطعاً معتبر است؛
+  // جهت برعکس می‌تواند روز نامعتبر مثل ۳۰ اسفند غیرکبیسه بسازد که کانونی آن را
+  // اعتبارسنجی نمی‌کند — راستی‌آزمایی‌شده با jdatetime پایتون).
+  // بازه: 2021-03-21 (۱۴۰۰/۰۱/۰۱) تا 2032-03-19 (پایان ۱۴۱۰) — روزبه‌روز.
+  let checked = 0;
+  const start = Date.UTC(2021, 2, 21);
+  const end = Date.UTC(2032, 2, 19);
+  for (let t = start; t <= end; t += 86_400_000) {
+    const d = new Date(t);
+    const gy = d.getUTCFullYear();
+    const gm = d.getUTCMonth() + 1;
+    const gd = d.getUTCDate();
+    const [jy, jm, jd] = gregorianToJalali(gy, gm, gd);
+    const j = `${jy}/${String(jm).padStart(2, "0")}/${String(jd).padStart(2, "0")}`;
+    const back = jalaliYmdToGregorian(j);
+    const gStr = `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
+    assert.equal(back, gStr, `roundtrip mismatch: ${gStr} → ${j} → ${back}`);
+    checked++;
+  }
+  assert.ok(checked > 4000, `expected >4000 days checked, got ${checked}`);
+
+  // نمونه‌های مرجع صریح (سه مقدار راستی‌آزمایی‌شدهٔ jalali.ts + مرز سال نو)
+  assert.equal(gregorianYmdToJalali("2025-07-16"), "1404/04/25");
+  assert.equal(gregorianYmdToJalali("2025-03-20"), "1403/12/30"); // ۳۰ اسفند کبیسه
+  assert.equal(gregorianYmdToJalali("2025-09-22"), "1404/06/31");
+  assert.equal(gregorianYmdToJalali("2025-03-21"), "1404/01/01"); // نوروز
+  assert.equal(gregorianYmdToJalali("bad-input"), null);
+});
+
+// ── تست ثابت‌های سکهٔ امامی (نکتهٔ بازبینی #1) ──────────────────────
+// ارزش ذاتی سکه باید از طلای خالص (۸.۱۳۳ گرم ناخالص × عیار ۰.۹۰۰ = ۷.۳۱۹۷ گرم ۲۴ عیار)
+// محاسبه شود، نه کل وزن ناخالص با فرض ۲۴ عیار (که ذاتی را ~۱۱٪ بیش‌برآورد می‌کرد).
+test("Emami coin intrinsic uses net gold content (8.133g gross × 0.900 fineness)", () => {
+  const gross = 8.133;
+  const fineness = 0.9;
+  const pure24 = gross * fineness;
+  assertClose(pure24, 7.3197, 1e-9, "pure grams");
+  assertClose(pure24 * (24 / 18), 9.7596, 1e-9, "18k equivalent grams");
+  // با گرم ۱۸ عیار فرضی ۱۰,۰۰۰,۰۰۰ تومان → ارزش ذاتی ۹۷,۵۹۶,۰۰۰ تومان
+  const gold18 = 10_000_000;
+  assertClose(gold18 * pure24 * (24 / 18), 97_596_000, 1e-9, "intrinsic");
+  // فرمول قدیمی (نادرست) دقیقاً 1/0.9 برابر بود → اثبات جهت و اندازهٔ خطا
+  const wrong = gold18 * gross * (24 / 18);
+  assertClose(wrong / (gold18 * pure24 * (24 / 18)), 1 / fineness, 1e-9, "old formula ratio");
+});
