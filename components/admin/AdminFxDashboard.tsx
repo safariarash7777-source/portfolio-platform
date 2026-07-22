@@ -36,6 +36,8 @@ import {
   type SensitivityBase,
 } from "@/lib/fx/engine";
 import type { FxDashboardData } from "@/lib/fx/dataLoader";
+import FxSeedManager from "./FxSeedManager";
+import FxBacktestTab from "./FxBacktestTab";
 import { toPersianDigits } from "@/lib/format";
 
 /* ── فرمت‌کننده‌ها ── */
@@ -55,6 +57,7 @@ const TABS = [
   { key: "sensitivity", label: "تحلیل حساسیت" },
   { key: "gold", label: "حباب طلا و سکه" },
   { key: "watch", label: "رصد بازار" },
+  { key: "backtest", label: "صحت پیش‌بینی" },
   { key: "data", label: "به‌روزرسانی دیتا" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
@@ -242,6 +245,12 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
   };
 
   const liveDateFa = data.liveRateShamsi ? toPersianDigits(data.liveRateShamsi) : "—";
+
+  /* برچسب منبع هر seed در جدول وضعیت — override زنده یا seed ریپو */
+  const srcLabel = (kind: string): string => {
+    const s = data.seedSources?.find((x) => x.kind === kind);
+    return s?.source === "supabase" ? "آپلود زنده (Supabase)" : "seed در ریپو — از همین تب قابل به‌روزرسانی";
+  };
 
   return (
     <div className="space-y-6">
@@ -597,7 +606,12 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
         </div>
       )}
 
-      {/* ── تب ۶: به‌روزرسانی دیتا ── */}
+      {/* ── تب ۶: صحت پیش‌بینی (بک‌تست گذشته‌نگر) ── */}
+      {tab === "backtest" && (
+        <FxBacktestTab macro={data.macro} baseRates={data.baseRates} marketAnnual={data.marketAnnual} />
+      )}
+
+      {/* ── تب ۷: به‌روزرسانی دیتا ── */}
       {tab === "data" && (
         <div className="space-y-4">
           <div className="rounded-xl border p-6" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
@@ -624,33 +638,44 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
                 <tr className="border-t" style={{ borderColor: "var(--line)" }}>
                   <td className="p-2">دادهٔ کلان سالانه (macro_annual)</td>
                   <td className="p-2">{fa(data.macro.length)} سال — تا {toPersianDigits(String(Math.max(...data.macro.map((m) => m.year_shamsi))))}</td>
-                  <td className="p-2">دستی (seed در ریپو)</td>
+                  <td className="p-2">{srcLabel("macro_annual")}</td>
                 </tr>
                 <tr className="border-t" style={{ borderColor: "var(--line)" }}>
-                  <td className="p-2">تورم ماهانه (CPI)</td>
+                  <td className="p-2">تورم ماهانه (CPI — مرکز آمار، نقطه‌به‌نقطه)</td>
                   <td className="p-2">{fa(data.cpiMonthly.length)} ماه — تا {toPersianDigits(data.cpiMonthly[data.cpiMonthly.length - 1]?.ym ?? "—")}</td>
-                  <td className="p-2">دستی (seed در ریپو)</td>
+                  <td className="p-2">{srcLabel("cpi_monthly")}</td>
                 </tr>
                 <tr className="border-t" style={{ borderColor: "var(--line)" }}>
                   <td className="p-2">بازده اخزا (YTM)</td>
                   <td className="p-2">{fa(data.ytmMonthly.length)} ماه — تا {toPersianDigits(data.ytmMonthly[data.ytmMonthly.length - 1]?.ym ?? "—")}</td>
-                  <td className="p-2">دستی (seed در ریپو)</td>
+                  <td className="p-2">{srcLabel("ytm_monthly")}</td>
+                </tr>
+                <tr className="border-t" style={{ borderColor: "var(--line)" }}>
+                  <td className="p-2">نرخ‌های پایهٔ تاریخی دلار (base_rates)</td>
+                  <td className="p-2">{fa(Object.keys(data.baseRates).length)} سال</td>
+                  <td className="p-2">{srcLabel("base_rates")}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div className="rounded-xl border p-6 text-sm space-y-3" style={{ borderColor: "var(--line)", background: "var(--surface)", color: "var(--text-2)" }}>
-            <h3 className="text-base font-bold" style={{ color: "var(--navy-deep)" }}>راهنمای به‌روزرسانی seed ها (مستقل از هر سرویس خارجی)</h3>
-            <p>
-              داده‌های کلان سالانه و ماهانه از فایل‌های JSON داخل ریپو
-              (<code dir="ltr">lib/fx/data/*.json</code>) خوانده می‌شوند. برای به‌روزرسانی:
+          <div className="rounded-xl border p-6" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+            <h3 className="text-base font-bold mb-1" style={{ color: "var(--navy-deep)" }}>به‌روزرسانی از همین‌جا — آپلود اکسل (بدون نیاز به deploy)</h3>
+            <p className="text-[12px] mb-3" style={{ color: "var(--text-3)" }}>
+              همان اکسل‌های همیشگی‌ات را اینجا آپلود کن؛ سرور با همان منطق اسکریپت پایتون پارس می‌کند،
+              در Supabase ذخیره می‌شود و داشبورد بلافاصله از دادهٔ جدید استفاده می‌کند. مسیر جایگزین
+              (استقلال کامل): <code dir="ltr">scripts/fx-refresh-seeds.py</code> روی PC + commit + push.
             </p>
-            <ol className="list-decimal pr-5 space-y-1">
-              <li>اکسل کلان را ویرایش کن (شیت Data و شیت‌های CPI/YTM).</li>
-              <li>اسکریپت <code dir="ltr">scripts/fx-refresh-seeds.py</code> را روی PC خودت اجرا کن تا JSON ها بازتولید شوند.</li>
-              <li>تغییرات را کامیت و push کن — دیپلوی Vercel خودکار است.</li>
-            </ol>
+            <FxSeedManager seedSources={data.seedSources} />
+          </div>
+
+          <div className="rounded-xl border p-6 text-sm space-y-2" style={{ borderColor: "var(--line)", background: "var(--surface)", color: "var(--text-2)" }}>
+            <h3 className="text-base font-bold" style={{ color: "var(--navy-deep)" }}>یادداشت‌های ممیزی دیتا</h3>
+            <p className="text-[12px]">
+              سال‌های آینده در دادهٔ کلان (مثل ۱۴۰۵/۱۴۰۶) برآورد/فرض سناریوی اکسل خودت هستند، نه دادهٔ قطعی.
+              تورم ماهانه (مرکز آمار، نقطه‌به‌نقطه/سالانهٔ پایان دوره) با تورم متوسط سالانهٔ CBI در دادهٔ کلان
+              تعریف متفاوتی دارد — اختلاف چند واحد درصدی طبیعی است و خطا نیست.
+            </p>
             <p className="text-[12px]" style={{ color: "var(--text-3)" }}>
               مدل‌های سنگین (PSY/GSADF، GARCH، مونت‌کارلو) در مرحلهٔ ۲ به‌صورت پیش‌محاسبهٔ پایتون روی PC و
               آپسرت به Supabase اضافه می‌شوند — طبق تصمیم معماری سه‌جانبه.
