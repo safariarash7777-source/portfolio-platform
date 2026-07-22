@@ -62,7 +62,9 @@ export interface FxDashboardData {
   gold: GoldQuote[];
 }
 
-// ── میلادی → شمسی (معکوس الگوریتم jalaali — راستی‌آزمایی با jalali.ts) ──
+// ── میلادی ← شمسی — معکوس دقیق الگوریتم کانونی lib/core/jalali.ts ──
+// محافظ: تست تطبیق رفت‌وبرگشتی در lib/fx/engine.test.ts روزبه‌روز کل بازهٔ ۱۴۰۰..۱۴۱۰ را
+// با jalaliYmdToGregorian کانونی چک می‌کند تا دو نسخه هرگز واگرا نشوند (مرز سال/کبیسه).
 export function gregorianToJalali(gy: number, gm: number, gd: number): [number, number, number] {
   const gdm = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
   const gy2 = gm > 2 ? gy + 1 : gy;
