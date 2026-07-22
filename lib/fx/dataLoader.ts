@@ -9,6 +9,7 @@
 
 import { getFxRates, latestRate, type FxRate } from "@/lib/core/fx";
 import { getIrMarket, type IrRow } from "@/lib/market-ir";
+import { createClient } from "@/lib/supabase/server";
 import { readAllSeedOverrides, type SeedKind, type SeedMeta } from "./seedStore";
 import type { MacroRow } from "./engine";
 import macroJson from "./data/macro_annual.json";
@@ -151,4 +152,109 @@ export async function getFxDashboardData(): Promise<FxDashboardData> {
     gold: toGoldQuotes(ir?.gold ?? []),
     seedSources,
   };
+}
+
+// ── مدل‌های سنگین (پیش‌محاسبهٔ پایتون → جدول fx_heavy_analytics) ──────────
+// اسکریپت scripts/fx-precompute-heavy.py روی PC اجرا می‌شود و ردیف append-only
+// درج می‌کند؛ اینجا فقط آخرین ردیف خوانده و در تب «آزمون‌های آماری» نمایش داده می‌شود.
+// دادهٔ ناموجود → null صادق (نه عدد ساختگی، نه بازسازیِ زندهٔ اشتباه).
+
+export interface PsyResult {
+  available: boolean;
+  reason?: string;
+  frequency?: string;
+  series?: string;
+  n_obs?: number;
+  lag?: number;
+  r0?: number;
+  gsadf_stat?: number | null;
+  sadf_stat?: number | null;
+  crit?: { "90": number; "95": number; "99": number } | null;
+  sim_reps?: number;
+  verdict?: string | null;
+  note?: string | null;
+}
+
+export interface GarchResult {
+  available: boolean;
+  reason?: string;
+  n_obs?: number;
+  omega?: number;
+  alpha?: number;
+  beta?: number;
+  persistence?: number;
+  annualized_vol_pct?: number | null;
+  current_cond_vol_pct?: number;
+  loglik?: number;
+  dist?: string;
+  note?: string;
+}
+
+export interface MonteCarloResult {
+  available: boolean;
+  start_rate?: number;
+  start_date_shamsi?: string;
+  horizon_months?: number;
+  n_sims?: number;
+  seed?: number;
+  months?: string[];
+  p05?: number[];
+  p50?: number[];
+  p95?: number[];
+  assumptions?: {
+    drift_model?: string;
+    infl_iran_annual?: number;
+    infl_usa_annual?: number;
+    annual_vol?: number;
+    vol_source?: string;
+  };
+  note?: string;
+}
+
+export interface CointegrationResult {
+  available: boolean;
+  reason?: string;
+  method?: string;
+  n_obs?: number;
+  tstat?: number;
+  pvalue?: number;
+  verdict?: string;
+  note?: string;
+}
+
+export interface HeavyResults {
+  psy?: PsyResult;
+  garch?: GarchResult;
+  montecarlo?: MonteCarloResult;
+  cointegration?: CointegrationResult;
+  warnings?: string[];
+}
+
+export interface HeavyAnalytics {
+  id: number;
+  computed_at: string;
+  as_of_date: string | null;
+  data_range: string | null;
+  frequency: string | null;
+  n_obs: number | null;
+  mc_seed: number | null;
+  lib_versions: Record<string, string | null> | null;
+  results: HeavyResults;
+  created_by: string | null;
+}
+
+/** آخرین ردیفِ نتایجِ سنگین (یا null اگر هنوز محاسبه‌ای ثبت نشده / خطای شبکه). */
+export async function getFxHeavyAnalytics(): Promise<HeavyAnalytics | null> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("fx_heavy_analytics")
+      .select("*")
+      .order("computed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return (data as HeavyAnalytics | null) ?? null;
+  } catch {
+    return null;
+  }
 }

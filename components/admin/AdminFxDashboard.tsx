@@ -35,7 +35,8 @@ import {
   tornadoData,
   type SensitivityBase,
 } from "@/lib/fx/engine";
-import type { FxDashboardData } from "@/lib/fx/dataLoader";
+import type { FxDashboardData, HeavyAnalytics } from "@/lib/fx/dataLoader";
+import { gregorianYmdToJalali } from "@/lib/fx/jalaliConvert";
 import FxSeedManager from "./FxSeedManager";
 import FxBacktestTab from "./FxBacktestTab";
 import { toPersianDigits } from "@/lib/format";
@@ -55,6 +56,7 @@ const TABS = [
   { key: "models", label: "نرخ زنده و مدل‌ها" },
   { key: "forecast", label: "پیش‌بینی رو به جلو" },
   { key: "sensitivity", label: "تحلیل حساسیت" },
+  { key: "stats", label: "آزمون‌های آماری" },
   { key: "gold", label: "حباب طلا و سکه" },
   { key: "watch", label: "رصد بازار" },
   { key: "backtest", label: "صحت پیش‌بینی" },
@@ -133,7 +135,7 @@ function SliderRow({
   );
 }
 
-export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
+export default function AdminFxDashboard({ data, heavy }: { data: FxDashboardData; heavy: HeavyAnalytics | null }) {
   const [tab, setTab] = useState<TabKey>("models");
 
   /* ── سری‌های مدل (یک‌بار محاسبه) ── */
@@ -512,6 +514,152 @@ export default function AdminFxDashboard({ data }: { data: FxDashboardData }) {
                       </table>
                     );
                   })()}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── تب: آزمون‌های آماری (مدل‌های سنگین — پیش‌محاسبهٔ پایتون) ── */}
+      {tab === "stats" && (
+        <div className="space-y-6">
+          {!heavy ? (
+            <div className="rounded-xl border p-8 text-center text-sm" style={{ borderColor: "var(--line)", background: "var(--surface)", color: "var(--text-3)" }}>
+              هنوز هیچ محاسبهٔ سنگینی ثبت نشده است. اسکریپت{" "}
+              <code dir="ltr">scripts/fx-precompute-heavy.py</code>{" "}
+              را روی PC اجرا کن تا آزمون حباب (PSY)، نوسان (GARCH) و بازهٔ احتمالاتی (مونت‌کارلو) اینجا نمایش داده شود.
+            </div>
+          ) : (
+            <>
+              {/* بنر تازگی — این نتایج «زنده» نیستند */}
+              <div
+                className="rounded-xl border p-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs"
+                style={{ borderColor: "var(--gold)", background: "var(--surface)", color: "var(--text-2)" }}
+              >
+                <span>محاسبه‌شده در: <b style={{ color: "var(--navy-deep)" }}>{toPersianDigits(gregorianYmdToJalali(heavy.computed_at.slice(0, 10)) ?? heavy.computed_at.slice(0, 10))}</b></span>
+                <span>فرکانس داده: <b style={{ color: "var(--navy-deep)" }}>{heavy.frequency === "monthly" ? "ماهانه" : heavy.frequency === "daily" ? "روزانه" : "سالانه"}</b></span>
+                <span>مشاهده: <b style={{ color: "var(--navy-deep)" }}>{heavy.n_obs != null ? toPersianDigits(String(heavy.n_obs)) : "—"}</b></span>
+                <span>seed: <b dir="ltr" style={{ color: "var(--navy-deep)" }}>{heavy.mc_seed ?? "—"}</b></span>
+                <span style={{ color: "var(--text-3)" }}>— پیش‌محاسبهٔ پایتون؛ توصیفی، نه توصیه.</span>
+              </div>
+
+              {/* PSY / GSADF */}
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+                <h3 className="text-sm font-bold mb-3" style={{ color: "var(--navy-deep)" }}>
+                  آزمون حباب PSY / GSADF — {heavy.results.psy?.series ?? "—"}
+                </h3>
+                {heavy.results.psy?.available ? (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <Card title="آمارهٔ GSADF" value={heavy.results.psy.gsadf_stat != null ? fa(heavy.results.psy.gsadf_stat, 3) : "—"} />
+                      <Card title="مقدار بحرانی ۹۵٪" value={heavy.results.psy.crit ? fa(heavy.results.psy.crit["95"], 3) : "—"} />
+                      <Card title="مقدار بحرانی ۹۹٪" value={heavy.results.psy.crit ? fa(heavy.results.psy.crit["99"], 3) : "—"} />
+                      <Card title="مشاهده / شبیه‌سازی" value={`${toPersianDigits(String(heavy.results.psy.n_obs ?? "—"))} / ${toPersianDigits(String(heavy.results.psy.sim_reps ?? "—"))}`} />
+                    </div>
+                    {heavy.results.psy.verdict && (
+                      <p className="mt-3 text-sm" style={{ color: "var(--text-1)" }}>
+                        <b style={{ color: "var(--navy-deep)" }}>نتیجه:</b> {heavy.results.psy.verdict}
+                      </p>
+                    )}
+                    {heavy.results.psy.note && (
+                      <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>{heavy.results.psy.note}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm" style={{ color: "var(--text-3)" }}>غیرفعال — {heavy.results.psy?.reason}</p>
+                )}
+              </div>
+
+              {/* GARCH(1,1) */}
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+                <h3 className="text-sm font-bold mb-3" style={{ color: "var(--navy-deep)" }}>نوسان GARCH(1,1)</h3>
+                {heavy.results.garch?.available ? (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <Card title="پایداری (α+β)" value={heavy.results.garch.persistence != null ? fa(heavy.results.garch.persistence, 3) : "—"} />
+                      <Card title="نوسان سالانه" value={heavy.results.garch.annualized_vol_pct != null ? faPct(heavy.results.garch.annualized_vol_pct) : "—"} />
+                      <Card title="α (اثر شوک)" value={heavy.results.garch.alpha != null ? fa(heavy.results.garch.alpha, 3) : "—"} />
+                      <Card title="β (پایداری واریانس)" value={heavy.results.garch.beta != null ? fa(heavy.results.garch.beta, 3) : "—"} />
+                    </div>
+                    {heavy.results.garch.note && (
+                      <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>{heavy.results.garch.note}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm" style={{ color: "var(--text-3)" }}>غیرفعال — {heavy.results.garch?.reason}</p>
+                )}
+              </div>
+
+              {/* مونت‌کارلو */}
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+                <h3 className="text-sm font-bold mb-1" style={{ color: "var(--navy-deep)" }}>مونت‌کارلو — بازهٔ احتمالاتیِ نرخ دلار</h3>
+                {heavy.results.montecarlo?.available && heavy.results.montecarlo.months ? (
+                  (() => {
+                    const mc = heavy.results.montecarlo!;
+                    const rows = (mc.months ?? []).map((m, i) => ({
+                      month: m,
+                      p05: mc.p05?.[i] ?? null,
+                      p50: mc.p50?.[i] ?? null,
+                      p95: mc.p95?.[i] ?? null,
+                    }));
+                    const a = mc.assumptions ?? {};
+                    return (
+                      <>
+                        <p className="text-[11px] mb-3" style={{ color: "var(--text-3)" }}>
+                          شروع {mc.start_rate != null ? fa(mc.start_rate) : "—"} تومان · افق {toPersianDigits(String(mc.horizon_months ?? "—"))} ماه ·{" "}
+                          {toPersianDigits(String(mc.n_sims ?? "—"))} مسیر · دریفت: {a.drift_model ?? "—"} · نوسان{" "}
+                          {a.vol_source === "estimated" ? "برآوردی" : "فرضیِ"} {a.annual_vol != null ? faPct(a.annual_vol * 100, 0) : "—"}
+                        </p>
+                        <div dir="ltr" style={{ width: "100%", height: 300 }}>
+                          <ResponsiveContainer>
+                            <LineChart data={rows} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
+                              <XAxis dataKey="month" tick={{ fill: "var(--text-3)", fontSize: 10 }} interval="preserveStartEnd" />
+                              <YAxis orientation="right" domain={["auto", "auto"]} tick={{ fill: "var(--text-3)", fontSize: 11 }} tickFormatter={(v) => fa(Number(v))} width={70} />
+                              <Tooltip formatter={(v) => (typeof v === "number" ? `${fa(v)} تومان` : "—")} />
+                              <Legend />
+                              <Line type="monotone" dataKey="p95" name="صدک ۹۵" stroke={CHART_COLORS.ppp} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls />
+                              <Line type="monotone" dataKey="p50" name="میانه" stroke={CHART_COLORS.market} strokeWidth={2} dot={false} connectNulls />
+                              <Line type="monotone" dataKey="p05" name="صدک ۵" stroke={CHART_COLORS.monetary} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                        {mc.note && <p className="mt-2 text-[12px]" style={{ color: "var(--text-3)" }}>{mc.note}</p>}
+                      </>
+                    );
+                  })()
+                ) : (
+                  <p className="text-sm" style={{ color: "var(--text-3)" }}>غیرفعال — داده کافی نیست.</p>
+                )}
+              </div>
+
+              {/* هم‌جمعی */}
+              <div className="rounded-xl border p-4" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+                <h3 className="text-sm font-bold mb-3" style={{ color: "var(--navy-deep)" }}>هم‌جمعی PPP (اعتبار بلندمدت)</h3>
+                {heavy.results.cointegration?.available ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <Card title="آمارهٔ آزمون" value={heavy.results.cointegration.tstat != null ? fa(heavy.results.cointegration.tstat, 3) : "—"} />
+                    <Card title="p-value" value={heavy.results.cointegration.pvalue != null ? fa(heavy.results.cointegration.pvalue, 3) : "—"} />
+                    <div className="md:col-span-2 rounded-xl border p-4 flex flex-col justify-center" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+                      <span className="text-xs" style={{ color: "var(--text-3)" }}>{heavy.results.cointegration.method}</span>
+                      <span className="text-sm font-medium mt-1" style={{ color: "var(--navy-deep)" }}>{heavy.results.cointegration.verdict}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm" style={{ color: "var(--text-3)" }}>غیرفعال — {heavy.results.cointegration?.reason}</p>
+                )}
+              </div>
+
+              {/* یادداشت‌های صداقتِ داده */}
+              {heavy.results.warnings && heavy.results.warnings.length > 0 && (
+                <div className="rounded-xl border p-4 text-[12px]" style={{ borderColor: "var(--line)", background: "var(--surface)", color: "var(--text-3)" }}>
+                  <b style={{ color: "var(--navy-deep)" }}>یادداشت‌های صداقتِ داده:</b>
+                  <ul className="list-disc pr-5 mt-1 space-y-1">
+                    {heavy.results.warnings.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </>

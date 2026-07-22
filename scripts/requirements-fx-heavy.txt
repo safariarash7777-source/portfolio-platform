@@ -1,0 +1,7 @@
+# نیازمندی‌های اسکریپت پیش‌محاسبهٔ سنگین ارز (scripts/fx-precompute-heavy.py).
+# روی PC خودت:  pip install -r scripts/requirements-fx-heavy.txt
+# نسخهٔ دقیقِ اجراشده در هر بار، در ستونِ lib_versions جدول ثبت می‌شود (ممیزی‌پذیری).
+numpy>=1.26,<3
+scipy>=1.11
+statsmodels>=0.14
+arch>=6.3
