@@ -577,8 +577,12 @@ export default function AdminFxDashboard({ data, heavy }: { data: FxDashboardDat
                 {heavy.results.garch?.available ? (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <Card
+                        title="نوسان جاری (سالانه)"
+                        value={heavy.results.garch.current_cond_vol_annual_pct != null ? faPct(heavy.results.garch.current_cond_vol_annual_pct) : (heavy.results.garch.annualized_vol_pct != null ? faPct(heavy.results.garch.annualized_vol_pct) : "—")}
+                        sub="از σ ماهانهٔ آخر ×√۱۲"
+                      />
                       <Card title="پایداری (α+β)" value={heavy.results.garch.persistence != null ? fa(heavy.results.garch.persistence, 3) : "—"} />
-                      <Card title="نوسان سالانه" value={heavy.results.garch.annualized_vol_pct != null ? faPct(heavy.results.garch.annualized_vol_pct) : "—"} />
                       <Card title="α (اثر شوک)" value={heavy.results.garch.alpha != null ? fa(heavy.results.garch.alpha, 3) : "—"} />
                       <Card title="β (پایداری واریانس)" value={heavy.results.garch.beta != null ? fa(heavy.results.garch.beta, 3) : "—"} />
                     </div>
@@ -619,9 +623,9 @@ export default function AdminFxDashboard({ data, heavy }: { data: FxDashboardDat
                               <YAxis orientation="right" domain={["auto", "auto"]} tick={{ fill: "var(--text-3)", fontSize: 11 }} tickFormatter={(v) => fa(Number(v))} width={70} />
                               <Tooltip formatter={(v) => (typeof v === "number" ? `${fa(v)} تومان` : "—")} />
                               <Legend />
-                              <Line type="monotone" dataKey="p95" name="صدک ۹۵" stroke={CHART_COLORS.ppp} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls />
-                              <Line type="monotone" dataKey="p50" name="میانه" stroke={CHART_COLORS.market} strokeWidth={2} dot={false} connectNulls />
-                              <Line type="monotone" dataKey="p05" name="صدک ۵" stroke={CHART_COLORS.monetary} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls />
+                              <Line type="monotone" dataKey="p95" name="صدک ۹۵" stroke={CHART_COLORS.ppp} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls isAnimationActive={false} />
+                              <Line type="monotone" dataKey="p50" name="میانه" stroke={CHART_COLORS.market} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
+                              <Line type="monotone" dataKey="p05" name="صدک ۵" stroke={CHART_COLORS.monetary} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls isAnimationActive={false} />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>

@@ -195,6 +195,24 @@ def adf_tstat(y: np.ndarray, lag: int = 0) -> float:
     dy = np.diff(y)
     if len(dy) - lag < lag + 4:
         return np.nan
+    if lag == 0:
+        # مسیرِ سریعِ بسته برای رگرسیونِ سادهٔ Δy ~ 1 + y_{t-1} (عددِ یکسان با lstsq)
+        x = y[:-1]
+        dep0 = dy
+        n = len(dep0)
+        sx = x.sum(); sy = dep0.sum()
+        denom = n * (x * x).sum() - sx * sx
+        if denom == 0:
+            return np.nan
+        b = (n * (x * dep0).sum() - sx * sy) / denom
+        a = (sy - b * sx) / n
+        resid = dep0 - a - b * x
+        dof = n - 2
+        if dof <= 0:
+            return np.nan
+        s2 = float(resid @ resid) / dof
+        var_b = s2 * n / denom
+        return float(b / math.sqrt(var_b)) if var_b > 0 else np.nan
     dep = dy[lag:]
     cols = [np.ones(len(dep)), y[lag:-1]]
     for i in range(1, lag + 1):
@@ -352,7 +370,11 @@ def run_garch(usd_monthly: list | None):
     omega, alpha, beta = float(p["omega"]), float(p["alpha[1]"]), float(p["beta[1]"])
     persistence = alpha + beta
     uncond_var = omega / (1 - persistence) if persistence < 1 else float("nan")
-    cond_vol_month = math.sqrt(res.conditional_volatility[-1] ** 2)
+    cond_vol_month = abs(float(res.conditional_volatility[-1]))
+    near_igarch = persistence >= 0.99
+    note = "نوسانِ برآوردی از دادهٔ واقعی؛ خوشه‌بندیِ واریانس مدل‌سازی شده."
+    if near_igarch:
+        note += " پایداریِ بالا (نزدیک به IGARCH): واریانسِ بلندمدت تعریف‌نشده؛ نوسانِ جاری گزارش می‌شود."
     return {
         "available": True,
         "n_obs": len(rets),
@@ -360,11 +382,14 @@ def run_garch(usd_monthly: list | None):
         "alpha": round(alpha, 6),
         "beta": round(beta, 6),
         "persistence": round(persistence, 6),
-        "annualized_vol_pct": None if math.isnan(uncond_var) else round(math.sqrt(uncond_var) * math.sqrt(12), 4),
+        # واریانسِ بلندمدت (تنها اگر پایداری<۱ متناهی است)
+        "annualized_vol_pct": None if (math.isnan(uncond_var) or uncond_var <= 0) else round(math.sqrt(uncond_var) * math.sqrt(12), 4),
+        # نوسانِ جاری (همیشه تعریف‌شده): σ_ماهانهٔ آخر × √۱۲
         "current_cond_vol_pct": round(cond_vol_month, 4),
+        "current_cond_vol_annual_pct": round(cond_vol_month * math.sqrt(12), 4),
         "loglik": round(float(res.loglikelihood), 4),
         "dist": "normal",
-        "note": "نوسانِ برآوردی از دادهٔ واقعی؛ خوشه‌بندیِ واریانس مدل‌سازی شده.",
+        "note": note,
     }
 
 

@@ -185,6 +185,7 @@ export interface GarchResult {
   persistence?: number;
   annualized_vol_pct?: number | null;
   current_cond_vol_pct?: number;
+  current_cond_vol_annual_pct?: number;
   loglik?: number;
   dist?: string;
   note?: string;
