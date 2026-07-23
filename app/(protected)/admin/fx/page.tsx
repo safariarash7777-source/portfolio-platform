@@ -4,7 +4,7 @@
 // مدل‌های سنگین (PSY/GARCH/MC) در مرحلهٔ ۲ پیش‌محاسبه می‌شوند.
 
 import AdminFxDashboard from "@/components/admin/AdminFxDashboard";
-import { getFxDashboardData } from "@/lib/fx/dataLoader";
+import { getFxDashboardData, getFxHeavyAnalytics } from "@/lib/fx/dataLoader";
 
 export const metadata = {
   title: "ابر داشبورد ارز — پنل مدیریت",
@@ -13,7 +13,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminFxPage() {
-  const data = await getFxDashboardData();
+  const [data, heavy] = await Promise.all([getFxDashboardData(), getFxHeavyAnalytics()]);
 
   return (
     <div className="space-y-6">
@@ -31,7 +31,7 @@ export default async function AdminFxPage() {
           هم‌پوشانی دارد (صندوق‌های طلا، رصد بازار) به همان‌ها متصل می‌شود — دوباره‌سازی نمی‌شود.
         </p>
       </header>
-      <AdminFxDashboard data={data} />
+      <AdminFxDashboard data={data} heavy={heavy} />
     </div>
   );
 }
