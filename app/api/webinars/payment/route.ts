@@ -6,7 +6,19 @@ import { requestPayment } from "@/lib/zarinpal";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// POST /api/webinars/payment — شروع پرداخت برای ثبت‌نام وبینار
+// callbackِ اختصاصیِ وبینار (نه callbackِ خریدِ دوره). زرین‌پال Authority/Status
+// را به این نشانی برمی‌گرداند و ما ثبت‌نام را از روی همان authority پیدا می‌کنیم.
+function webinarCallbackUrl(): string {
+  const site = (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    ""
+  ).replace(/\/$/, "");
+  return `${site}/api/webinars/payment/callback`;
+}
+
+// POST /api/webinars/payment — شروع پرداخت برای ثبت‌نام وبینار.
+// مبلغ فقط سمت سرور (از قیمتِ وبینار) تعیین می‌شود؛ به بدنهٔ درخواست اعتماد نمی‌کنیم.
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const {
@@ -17,7 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
   }
 
-  const { registration_id } = await req.json();
+  const { registration_id } = await req.json().catch(() => ({}));
   if (!registration_id) {
     return NextResponse.json(
       { error: "registration_id الزامی است." },
@@ -27,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  // دریافت اطلاعات ثبت‌نام و وبینار
+  // ثبت‌نام باید متعلقِ همین کاربر باشد (بایندِ مالکیت).
   const { data: reg, error: regErr } = await admin
     .from("webinar_registrations")
     .select("id, webinar_id, user_id, payment_status, webinars(title, price_toman)")
@@ -36,12 +48,8 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (regErr || !reg) {
-    return NextResponse.json(
-      { error: "ثبت‌نام یافت نشد." },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "ثبت‌نام یافت نشد." }, { status: 404 });
   }
-
   if (reg.payment_status === "paid") {
     return NextResponse.json(
       { error: "این ثبت‌نام قبلاً پرداخت شده." },
@@ -49,52 +57,49 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const webinar = (reg as any).webinars;
-  if (!webinar || webinar.price_toman <= 0) {
+  const webinar = (reg as { webinars?: { title?: string; price_toman?: number } }).webinars;
+  const price = webinar?.price_toman ?? 0;
+  if (!webinar || price <= 0) {
     return NextResponse.json(
       { error: "این وبینار رایگان است و نیاز به پرداخت ندارد." },
       { status: 400 }
     );
   }
 
-  // ساخت رکورد پرداخت
-  const { data: payment, error: payErr } = await admin
-    .from("payments")
-    .insert({
-      user_id: user.id,
-      amount_toman: webinar.price_toman,
-      status: "pending",
-      description: `ثبت‌نام وبینار: ${webinar.title}`,
-    })
-    .select("id")
-    .single();
+  // authority را پیش از ثبتِ رکورد می‌گیریم تا در همان رکورد ذخیره شود
+  // (بایندِ authority ↔ payment ↔ کاربر؛ الگوی امنِ callbackِ اصلی).
+  const zp = await requestPayment(
+    price,
+    `ثبت‌نام وبینار: ${webinar.title ?? ""}`,
+    webinarCallbackUrl()
+  );
+  if (!zp.ok || !zp.authority || !zp.startPayUrl) {
+    return NextResponse.json(
+      { error: zp.message || "خطا در اتصال به درگاه پرداخت." },
+      { status: 502 }
+    );
+  }
 
-  if (payErr || !payment) {
+  // ردیفِ pending از طریقِ تابعِ SECURITY DEFINER (append-only + auth.uid + audit).
+  const { data: paymentId, error: payErr } = await supabase.rpc("create_payment", {
+    p_amount: price,
+    p_authority: zp.authority,
+  });
+  if (payErr || !paymentId) {
+    console.error("create_payment (webinar) error:", payErr?.message);
     return NextResponse.json(
       { error: "خطا در ساخت رکورد پرداخت." },
       { status: 500 }
     );
   }
 
-  // لینک‌کردن پرداخت به ثبت‌نام
+  // اتصالِ پرداخت به ثبت‌نام تا callback بتواند از روی authority→payment→registration
+  // ثبت‌نامِ درست را بیابد. (نوشتنِ registrations فقط از سرویس‌رول/تابع مجاز است.)
   await admin
     .from("webinar_registrations")
-    .update({ payment_id: payment.id })
-    .eq("id", registration_id);
+    .update({ payment_id: paymentId })
+    .eq("id", reg.id)
+    .eq("user_id", user.id);
 
-  // درخواست پرداخت از زرین‌پال
-  // requestPayment(amountToman, description) → ZarinpalRequestResult
-  const result = await requestPayment(
-    webinar.price_toman,
-    `ثبت‌نام وبینار: ${webinar.title}`
-  );
-
-  if (!result.ok || !result.startPayUrl) {
-    return NextResponse.json(
-      { error: result.message || "خطا در اتصال به درگاه پرداخت." },
-      { status: 502 }
-    );
-  }
-
-  return NextResponse.json({ payment_url: result.startPayUrl });
+  return NextResponse.json({ payment_url: zp.startPayUrl });
 }

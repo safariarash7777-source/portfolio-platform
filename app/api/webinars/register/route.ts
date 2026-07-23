@@ -36,6 +36,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  // اگر وبینار پولی باشد، needs_payment = true → فرانت باید به صفحه پرداخت هدایت کند
-  return NextResponse.json({ registration: data });
+  // RPC کلیدِ `registration_id` می‌دهد؛ فرانت `registration.id` می‌خواند →
+  // به شکلِ پایدار نرمال می‌کنیم تا زنجیرهٔ ثبت‌نام→پرداخت درست وصل شود.
+  const r = (data ?? {}) as {
+    registration_id?: string;
+    already_registered?: boolean;
+    needs_payment?: boolean;
+  };
+  return NextResponse.json({
+    registration: {
+      id: r.registration_id ?? null,
+      already_registered: r.already_registered ?? false,
+      needs_payment: r.needs_payment ?? false,
+    },
+  });
 }
