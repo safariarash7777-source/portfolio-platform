@@ -159,19 +159,36 @@ export async function getFxDashboardData(): Promise<FxDashboardData> {
 // درج می‌کند؛ اینجا فقط آخرین ردیف خوانده و در تب «آزمون‌های آماری» نمایش داده می‌شود.
 // دادهٔ ناموجود → null صادق (نه عدد ساختگی، نه بازسازیِ زندهٔ اشتباه).
 
+export interface PsyBsadfPoint {
+  /** برچسب ماه «yyyy/mm» */
+  m: string;
+  /** آمارهٔ BSADF در آن نقطه */
+  b: number;
+  /** مقدار بحرانیِ ۹۵٪ دنباله‌ای در آن نقطه (یا null) */
+  cv: number | null;
+}
+
 export interface PsyResult {
   available: boolean;
   reason?: string;
   frequency?: string;
   series?: string;
   n_obs?: number;
+  /** وقفهٔ انتخاب‌شده با BIC */
   lag?: number;
   r0?: number;
+  min_window?: number;
   gsadf_stat?: number | null;
-  sadf_stat?: number | null;
-  crit?: { "90": number; "95": number; "99": number } | null;
+  /** مقدار بحرانیِ ۹۵٪ آمارهٔ GSADF (شبیه‌سازی) */
+  gsadf_cv95?: number | null;
+  gsadf_pvalue?: number;
   sim_reps?: number;
+  seed?: number;
   verdict?: string | null;
+  /** دنبالهٔ BSADF برای نمودارِ زمانی */
+  bsadf?: PsyBsadfPoint[];
+  /** ماه‌هایی که رفتارِ انفجاریِ معتبر داشتند (قاعدهٔ حداقل‌مدت) */
+  explosive_months?: string[];
   note?: string | null;
 }
 

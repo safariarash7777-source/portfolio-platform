@@ -552,18 +552,42 @@ export default function AdminFxDashboard({ data, heavy }: { data: FxDashboardDat
                 {heavy.results.psy?.available ? (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <Card title="آمارهٔ GSADF" value={heavy.results.psy.gsadf_stat != null ? fa(heavy.results.psy.gsadf_stat, 3) : "—"} />
-                      <Card title="مقدار بحرانی ۹۵٪" value={heavy.results.psy.crit ? fa(heavy.results.psy.crit["95"], 3) : "—"} />
-                      <Card title="مقدار بحرانی ۹۹٪" value={heavy.results.psy.crit ? fa(heavy.results.psy.crit["99"], 3) : "—"} />
-                      <Card title="مشاهده / شبیه‌سازی" value={`${toPersianDigits(String(heavy.results.psy.n_obs ?? "—"))} / ${toPersianDigits(String(heavy.results.psy.sim_reps ?? "—"))}`} />
+                      <Card
+                        title="آمارهٔ GSADF"
+                        value={heavy.results.psy.gsadf_stat != null ? fa(heavy.results.psy.gsadf_stat, 3) : "—"}
+                        sub={heavy.results.psy.gsadf_cv95 != null ? `بحرانی ۹۵٪: ${fa(heavy.results.psy.gsadf_cv95, 3)}` : undefined}
+                      />
+                      <Card title="p-value" value={heavy.results.psy.gsadf_pvalue != null ? fa(heavy.results.psy.gsadf_pvalue, 3) : "—"} />
+                      <Card title="وقفهٔ BIC" value={heavy.results.psy.lag != null ? toPersianDigits(String(heavy.results.psy.lag)) : "—"} />
+                      <Card title="مشاهده · شبیه‌سازی" value={`${toPersianDigits(String(heavy.results.psy.n_obs ?? "—"))} · ${toPersianDigits(String(heavy.results.psy.sim_reps ?? "—"))}`} />
                     </div>
                     {heavy.results.psy.verdict && (
                       <p className="mt-3 text-sm" style={{ color: "var(--text-1)" }}>
                         <b style={{ color: "var(--navy-deep)" }}>نتیجه:</b> {heavy.results.psy.verdict}
                       </p>
                     )}
+                    {heavy.results.psy.bsadf && heavy.results.psy.bsadf.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="text-[12px] mb-2" style={{ color: "var(--text-3)" }}>
+                          دنبالهٔ BSADF در برابر مقدار بحرانیِ ۹۵٪ — هرجا BSADF بالای خطِ بحرانی باشد، آن دوره «انفجاری» است
+                        </h4>
+                        <div dir="ltr" style={{ width: "100%", height: 260 }}>
+                          <ResponsiveContainer>
+                            <LineChart data={heavy.results.psy.bsadf} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
+                              <XAxis dataKey="m" tick={{ fill: "var(--text-3)", fontSize: 9 }} interval="preserveStartEnd" minTickGap={40} />
+                              <YAxis orientation="right" domain={["auto", "auto"]} tick={{ fill: "var(--text-3)", fontSize: 11 }} width={44} />
+                              <Tooltip formatter={(v, n) => [typeof v === "number" ? fa(Number(v), 2) : "—", n === "b" ? "BSADF" : "بحرانی ۹۵٪"]} />
+                              <Legend />
+                              <Line type="monotone" dataKey="cv" name="بحرانی ۹۵٪" stroke={CHART_COLORS.ppp} strokeWidth={1} strokeDasharray="5 4" dot={false} isAnimationActive={false} connectNulls />
+                              <Line type="monotone" dataKey="b" name="BSADF" stroke={CHART_COLORS.market} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
                     {heavy.results.psy.note && (
-                      <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>{heavy.results.psy.note}</p>
+                      <p className="mt-2 text-[12px]" style={{ color: "var(--text-3)" }}>{heavy.results.psy.note}</p>
                     )}
                   </>
                 ) : (
