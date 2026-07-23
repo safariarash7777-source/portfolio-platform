@@ -42,6 +42,7 @@ ENGINE_VERSION = "v1"
 DEFAULT_MC_SEED = 20260722
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DATA_DIR = os.path.join(HERE, "..", "lib", "fx", "data")
+sys.path.insert(0, HERE)  # تا fx_psy (پورتِ psy.py آرش) قابلِ import باشد
 
 FA_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
              "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"]
@@ -195,6 +196,24 @@ def adf_tstat(y: np.ndarray, lag: int = 0) -> float:
     dy = np.diff(y)
     if len(dy) - lag < lag + 4:
         return np.nan
+    if lag == 0:
+        # مسیرِ سریعِ بسته برای رگرسیونِ سادهٔ Δy ~ 1 + y_{t-1} (عددِ یکسان با lstsq)
+        x = y[:-1]
+        dep0 = dy
+        n = len(dep0)
+        sx = x.sum(); sy = dep0.sum()
+        denom = n * (x * x).sum() - sx * sx
+        if denom == 0:
+            return np.nan
+        b = (n * (x * dep0).sum() - sx * sy) / denom
+        a = (sy - b * sx) / n
+        resid = dep0 - a - b * x
+        dof = n - 2
+        if dof <= 0:
+            return np.nan
+        s2 = float(resid @ resid) / dof
+        var_b = s2 * n / denom
+        return float(b / math.sqrt(var_b)) if var_b > 0 else np.nan
     dep = dy[lag:]
     cols = [np.ones(len(dep)), y[lag:-1]]
     for i in range(1, lag + 1):
@@ -257,41 +276,70 @@ def simulate_gsadf_crit(T: int, r0: float, lag: int, reps: int, seed: int):
             "99": float(np.percentile(stats, 99))}
 
 
-def run_psy(series_vals: np.ndarray, freq: str, series_name: str, reps: int, seed: int):
-    n = len(series_vals)
-    lag = 0
-    r0 = 0.01 + 1.8 / math.sqrt(n) if n > 0 else 1.0
-    r0 = min(max(r0, 0.15), 0.9)
-    if n < 12:
-        return {"available": False,
-                "reason": f"نمونه بسیار کوچک (n={n}) — آزمون PSY نامعتبر است.",
-                "n_obs": n, "frequency": freq, "series": series_name}
-    y = np.log(series_vals)  # آزمون روی لگاریتم
-    sadf, gsadf = sadf_gsadf(y, r0, lag)
-    crit = simulate_gsadf_crit(n, r0, lag, reps, seed)
-    verdict = None
-    if crit and np.isfinite(gsadf):
-        if gsadf > crit["95"]:
-            verdict = "شواهدِ رفتارِ انفجاری (حباب) در سطحِ معناداریِ ۵٪ رد نمی‌شود"
-        elif gsadf > crit["90"]:
-            verdict = "شواهدِ ضعیف (فقط در سطحِ ۱۰٪)"
-        else:
-            verdict = "فرضِ عدمِ‌رفتارِ انفجاری در سطحِ ۵٪ رد نمی‌شود"
-    low_power = freq == "annual"
+def build_monthly_ppp(ppp_annual: dict, months: list) -> dict:
+    """PPP ماهانه با درون‌یابیِ لگاریتمیِ PPP سالانه (هم‌فرکانس با دلارِ ماهانه)."""
+    out = {}
+    for ym in months:
+        y, m = int(ym[:4]), int(ym[5:7])
+        if y not in ppp_annual:
+            continue
+        p0 = ppp_annual[y]
+        p1 = ppp_annual.get(y + 1, p0)
+        if p0 > 0 and p1 > 0:
+            out[ym] = p0 * (p1 / p0) ** ((m - 1) / 12)
+    return out
+
+
+def run_psy_fundamental(market_map: dict, ppp_map: dict, freq: str, series_name: str,
+                        seed: int, n_sim: int = 299):
+    """آزمون حباب PSY روی «نسبتِ بازار به PPP» — پورتِ مستقیمِ psy.py آرش
+    (misalignment_target + انتخابِ وقفه با BIC + مقدار بحرانیِ دنباله‌ای)."""
+    import pandas as pd
+    import fx_psy
+    idx = sorted(set(market_map) & set(ppp_map))
+    if len(idx) < 20:
+        return {"available": False, "frequency": freq, "series": series_name,
+                "reason": f"هم‌پوشانیِ ناکافیِ بازار/فاندامنتال (n={len(idx)})."}
+    mk = pd.Series({k: market_map[k] for k in idx})
+    fd = pd.Series({k: ppp_map[k] for k in idx})
+    try:
+        target = fx_psy.misalignment_target(mk, fd, how="log_ratio")
+        res = fx_psy.psy_test(target, n_sim=n_sim, seed=seed)
+    except Exception as e:  # noqa: BLE001
+        return {"available": False, "frequency": freq, "series": series_name,
+                "reason": f"خطا در PSY: {e}"}
+    tab = res.table
+    labels = [str(x) for x in target.index]
+    bsadf = []
+    for i, lab in enumerate(labels):
+        b = tab["bsadf"].iloc[i]
+        c = tab["cv95"].iloc[i]
+        if np.isfinite(b):
+            bsadf.append({"m": lab, "b": round(float(b), 4),
+                          "cv": round(float(c), 4) if np.isfinite(c) else None})
+    exploded = [labels[i] for i in range(len(labels)) if bool(tab["is_explosive"].iloc[i])]
+    cv95 = float(res.gsadf_cv.get(0.95, float("nan")))
+    verdict = ("شواهدِ رفتارِ انفجاری (حباب فراتر از فاندامنتال) در سطحِ ۵٪ رد نمی‌شود"
+               if res.significant else
+               "فرضِ نبودِ حباب (فراتر از فاندامنتال) در سطحِ ۵٪ رد نمی‌شود")
     return {
         "available": True,
         "frequency": freq,
         "series": series_name,
-        "n_obs": n,
-        "lag": lag,
-        "r0": round(r0, 4),
-        "gsadf_stat": None if not np.isfinite(gsadf) else round(gsadf, 4),
-        "sadf_stat": None if not np.isfinite(sadf) else round(sadf, 4),
-        "crit": crit,
-        "sim_reps": reps,
+        "n_obs": int(target.size),
+        "lag": int(res.k),
+        "r0": round(float(res.r0), 4),
+        "min_window": int(res.min_window),
+        "gsadf_stat": None if not np.isfinite(res.gsadf) else round(float(res.gsadf), 4),
+        "gsadf_cv95": None if not np.isfinite(cv95) else round(cv95, 4),
+        "gsadf_pvalue": round(float(res.gsadf_pvalue), 4),
+        "sim_reps": int(res.n_sim),
+        "seed": int(res.seed),
         "verdict": verdict,
-        "note": ("دادهٔ سالانه و کم — آزمون کم‌توان و صرفاً نمایه‌ای؛ برای نتیجهٔ "
-                 "معتبر سریِ ماهانه/روزانه لازم است." if low_power else None),
+        "bsadf": bsadf,
+        "explosive_months": exploded,
+        "note": ("آزمون روی نسبتِ بازار به PPP (نه نرخِ اسمی)؛ وقفه با BIC انتخاب شده. "
+                 "عددِ بزرگ عمدتاً از جهشِ سطحِ گذشته (مثلاً ۱۳۹۷) می‌آید، نه لزوماً وضعیتِ جاری."),
     }
 
 
@@ -352,7 +400,11 @@ def run_garch(usd_monthly: list | None):
     omega, alpha, beta = float(p["omega"]), float(p["alpha[1]"]), float(p["beta[1]"])
     persistence = alpha + beta
     uncond_var = omega / (1 - persistence) if persistence < 1 else float("nan")
-    cond_vol_month = math.sqrt(res.conditional_volatility[-1] ** 2)
+    cond_vol_month = abs(float(res.conditional_volatility[-1]))
+    near_igarch = persistence >= 0.99
+    note = "نوسانِ برآوردی از دادهٔ واقعی؛ خوشه‌بندیِ واریانس مدل‌سازی شده."
+    if near_igarch:
+        note += " پایداریِ بالا (نزدیک به IGARCH): واریانسِ بلندمدت تعریف‌نشده؛ نوسانِ جاری گزارش می‌شود."
     return {
         "available": True,
         "n_obs": len(rets),
@@ -360,11 +412,14 @@ def run_garch(usd_monthly: list | None):
         "alpha": round(alpha, 6),
         "beta": round(beta, 6),
         "persistence": round(persistence, 6),
-        "annualized_vol_pct": None if math.isnan(uncond_var) else round(math.sqrt(uncond_var) * math.sqrt(12), 4),
+        # واریانسِ بلندمدت (تنها اگر پایداری<۱ متناهی است)
+        "annualized_vol_pct": None if (math.isnan(uncond_var) or uncond_var <= 0) else round(math.sqrt(uncond_var) * math.sqrt(12), 4),
+        # نوسانِ جاری (همیشه تعریف‌شده): σ_ماهانهٔ آخر × √۱۲
         "current_cond_vol_pct": round(cond_vol_month, 4),
+        "current_cond_vol_annual_pct": round(cond_vol_month * math.sqrt(12), 4),
         "loglik": round(float(res.loglikelihood), 4),
         "dist": "normal",
-        "note": "نوسانِ برآوردی از دادهٔ واقعی؛ خوشه‌بندیِ واریانس مدل‌سازی شده.",
+        "note": note,
     }
 
 
@@ -468,12 +523,16 @@ def main():
         annual_vol = args.mc_annual_vol
         vol_source = "assumed"
 
-    print("• PSY/GSADF …")
-    if usd_monthly and len(usd_monthly) >= 60:
-        psy = run_psy(np.array([r["usd_toman"] for r in usd_monthly], float),
-                      "monthly", "قیمتِ ماهانهٔ دلار (log)", args.psy_reps, args.mc_seed)
+    print("• PSY/GSADF (نسبتِ بازار/PPP) …")
+    if usd_monthly and len(usd_monthly) >= 40:
+        months = [r["date"] for r in usd_monthly]  # «yyyy/mm»
+        market_m = {r["date"]: r["usd_toman"] for r in usd_monthly}
+        ppp_m = build_monthly_ppp(ppp, months)
+        psy = run_psy_fundamental(market_m, ppp_m, "monthly", "log(بازار ÷ PPP) ماهانه", args.mc_seed)
     else:
-        psy = run_psy(ratio_vals, "annual", "نسبتِ بازار/PPP سالانه (log)", args.psy_reps, args.mc_seed)
+        psy = run_psy_fundamental({y: market[y] for y in ratio_years},
+                                  {y: ppp[y] for y in ratio_years},
+                                  "annual", "log(بازار ÷ PPP) سالانه", args.mc_seed)
 
     print("• GARCH …")
     garch = run_garch(usd_monthly)
@@ -543,7 +602,7 @@ def _print_summary(row):
     print("\n──────── خلاصه ────────")
     print(f"as_of: {row['as_of_date']} | فرکانس: {row['frequency']} | n={row['n_obs']}")
     if r["psy"].get("available"):
-        print(f"PSY GSADF={r['psy']['gsadf_stat']} crit95={r['psy']['crit']['95'] if r['psy'].get('crit') else '—'} → {r['psy'].get('verdict')}")
+        print(f"PSY GSADF={r['psy'].get('gsadf_stat')} crit95={r['psy'].get('gsadf_cv95')} p={r['psy'].get('gsadf_pvalue')} k={r['psy'].get('lag')} → {r['psy'].get('verdict')}")
     else:
         print(f"PSY: — ({r['psy'].get('reason')})")
     if r["garch"].get("available"):

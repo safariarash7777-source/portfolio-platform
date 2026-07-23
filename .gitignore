@@ -44,3 +44,6 @@ deploy.bundle
 *.bundle
 .env.deploy
 >>>>>>> 4d2c68b (feat: secure deploy script — reads secrets from .env.deploy)
+
+# PSY critical-value cache (runtime)
+scripts/.psy_cache/

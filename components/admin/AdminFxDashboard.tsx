@@ -552,18 +552,42 @@ export default function AdminFxDashboard({ data, heavy }: { data: FxDashboardDat
                 {heavy.results.psy?.available ? (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <Card title="آمارهٔ GSADF" value={heavy.results.psy.gsadf_stat != null ? fa(heavy.results.psy.gsadf_stat, 3) : "—"} />
-                      <Card title="مقدار بحرانی ۹۵٪" value={heavy.results.psy.crit ? fa(heavy.results.psy.crit["95"], 3) : "—"} />
-                      <Card title="مقدار بحرانی ۹۹٪" value={heavy.results.psy.crit ? fa(heavy.results.psy.crit["99"], 3) : "—"} />
-                      <Card title="مشاهده / شبیه‌سازی" value={`${toPersianDigits(String(heavy.results.psy.n_obs ?? "—"))} / ${toPersianDigits(String(heavy.results.psy.sim_reps ?? "—"))}`} />
+                      <Card
+                        title="آمارهٔ GSADF"
+                        value={heavy.results.psy.gsadf_stat != null ? fa(heavy.results.psy.gsadf_stat, 3) : "—"}
+                        sub={heavy.results.psy.gsadf_cv95 != null ? `بحرانی ۹۵٪: ${fa(heavy.results.psy.gsadf_cv95, 3)}` : undefined}
+                      />
+                      <Card title="p-value" value={heavy.results.psy.gsadf_pvalue != null ? fa(heavy.results.psy.gsadf_pvalue, 3) : "—"} />
+                      <Card title="وقفهٔ BIC" value={heavy.results.psy.lag != null ? toPersianDigits(String(heavy.results.psy.lag)) : "—"} />
+                      <Card title="مشاهده · شبیه‌سازی" value={`${toPersianDigits(String(heavy.results.psy.n_obs ?? "—"))} · ${toPersianDigits(String(heavy.results.psy.sim_reps ?? "—"))}`} />
                     </div>
                     {heavy.results.psy.verdict && (
                       <p className="mt-3 text-sm" style={{ color: "var(--text-1)" }}>
                         <b style={{ color: "var(--navy-deep)" }}>نتیجه:</b> {heavy.results.psy.verdict}
                       </p>
                     )}
+                    {heavy.results.psy.bsadf && heavy.results.psy.bsadf.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="text-[12px] mb-2" style={{ color: "var(--text-3)" }}>
+                          دنبالهٔ BSADF در برابر مقدار بحرانیِ ۹۵٪ — هرجا BSADF بالای خطِ بحرانی باشد، آن دوره «انفجاری» است
+                        </h4>
+                        <div dir="ltr" style={{ width: "100%", height: 260 }}>
+                          <ResponsiveContainer>
+                            <LineChart data={heavy.results.psy.bsadf} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
+                              <XAxis dataKey="m" tick={{ fill: "var(--text-3)", fontSize: 9 }} interval="preserveStartEnd" minTickGap={40} />
+                              <YAxis orientation="right" domain={["auto", "auto"]} tick={{ fill: "var(--text-3)", fontSize: 11 }} width={44} />
+                              <Tooltip formatter={(v, n) => [typeof v === "number" ? fa(Number(v), 2) : "—", n === "b" ? "BSADF" : "بحرانی ۹۵٪"]} />
+                              <Legend />
+                              <Line type="monotone" dataKey="cv" name="بحرانی ۹۵٪" stroke={CHART_COLORS.ppp} strokeWidth={1} strokeDasharray="5 4" dot={false} isAnimationActive={false} connectNulls />
+                              <Line type="monotone" dataKey="b" name="BSADF" stroke={CHART_COLORS.market} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    )}
                     {heavy.results.psy.note && (
-                      <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>{heavy.results.psy.note}</p>
+                      <p className="mt-2 text-[12px]" style={{ color: "var(--text-3)" }}>{heavy.results.psy.note}</p>
                     )}
                   </>
                 ) : (
@@ -577,8 +601,12 @@ export default function AdminFxDashboard({ data, heavy }: { data: FxDashboardDat
                 {heavy.results.garch?.available ? (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <Card
+                        title="نوسان جاری (سالانه)"
+                        value={heavy.results.garch.current_cond_vol_annual_pct != null ? faPct(heavy.results.garch.current_cond_vol_annual_pct) : (heavy.results.garch.annualized_vol_pct != null ? faPct(heavy.results.garch.annualized_vol_pct) : "—")}
+                        sub="از σ ماهانهٔ آخر ×√۱۲"
+                      />
                       <Card title="پایداری (α+β)" value={heavy.results.garch.persistence != null ? fa(heavy.results.garch.persistence, 3) : "—"} />
-                      <Card title="نوسان سالانه" value={heavy.results.garch.annualized_vol_pct != null ? faPct(heavy.results.garch.annualized_vol_pct) : "—"} />
                       <Card title="α (اثر شوک)" value={heavy.results.garch.alpha != null ? fa(heavy.results.garch.alpha, 3) : "—"} />
                       <Card title="β (پایداری واریانس)" value={heavy.results.garch.beta != null ? fa(heavy.results.garch.beta, 3) : "—"} />
                     </div>
@@ -619,9 +647,9 @@ export default function AdminFxDashboard({ data, heavy }: { data: FxDashboardDat
                               <YAxis orientation="right" domain={["auto", "auto"]} tick={{ fill: "var(--text-3)", fontSize: 11 }} tickFormatter={(v) => fa(Number(v))} width={70} />
                               <Tooltip formatter={(v) => (typeof v === "number" ? `${fa(v)} تومان` : "—")} />
                               <Legend />
-                              <Line type="monotone" dataKey="p95" name="صدک ۹۵" stroke={CHART_COLORS.ppp} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls />
-                              <Line type="monotone" dataKey="p50" name="میانه" stroke={CHART_COLORS.market} strokeWidth={2} dot={false} connectNulls />
-                              <Line type="monotone" dataKey="p05" name="صدک ۵" stroke={CHART_COLORS.monetary} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls />
+                              <Line type="monotone" dataKey="p95" name="صدک ۹۵" stroke={CHART_COLORS.ppp} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls isAnimationActive={false} />
+                              <Line type="monotone" dataKey="p50" name="میانه" stroke={CHART_COLORS.market} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
+                              <Line type="monotone" dataKey="p05" name="صدک ۵" stroke={CHART_COLORS.monetary} strokeWidth={1} strokeDasharray="4 4" dot={false} connectNulls isAnimationActive={false} />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
