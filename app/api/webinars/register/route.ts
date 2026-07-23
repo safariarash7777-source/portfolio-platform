@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,10 +23,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = createAdminClient();
-
-  // استفاده از RPC امن
-  const { data, error } = await admin.rpc("register_for_webinar", {
+  // RPC امن (SECURITY DEFINER). با کلاینتِ کاربر صدا زده می‌شود تا auth.uid()
+  // داخل تابع همان کاربرِ احرازشده باشد؛ سرویس‌رول اینجا لازم نیست و ثبت‌نام را
+  // به کاربرِ اشتباه/NULL می‌بندد.
+  const { data, error } = await supabase.rpc("register_for_webinar", {
     p_webinar_id: webinar_id,
   });
 
