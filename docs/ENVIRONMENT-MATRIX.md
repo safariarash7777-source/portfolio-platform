@@ -15,7 +15,7 @@
 | `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_BASE_URL` / `NEXT_PUBLIC_APP_URL` | عمومی | ساختِ URLِ callback و لینک‌ها |
 | `NEXT_PUBLIC_MINIAPP_URL` | عمومی | لینک به Mini App |
 | `NEXT_PUBLIC_COURSE_PRICE_TOMAN` | عمومی | قیمتِ دوره (نمایش) |
-| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` / `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | عمومی | نامِ باتِ تلگرام |
+| `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | عمومی | نامِ باتِ تلگرام |
 | `ZARINPAL_MERCHANT_ID` | سرور | درگاهِ پرداخت |
 | `ZARINPAL_SANDBOX` | سرور | حالتِ تستِ زرین‌پال |
 | `TELEGRAM_BOT_TOKEN` | سرور | باتِ تلگرام |
