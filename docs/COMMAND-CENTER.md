@@ -18,7 +18,7 @@
 | **Current Phase** | P1 — پاکسازی و تثبیت (Cleanup & Stabilization) | VERIFIED |
 | **Current Gate** | G-002 · Portfolio PR #77 Review Gate | VERIFIED |
 | **Last Verified Date** | **2026-07-25** | — |
-| **Portfolio main SHA** | `57100c50c1c2fd027ee9d336b3af573691398de2` (پس از merge شدنِ PR #76؛ baselineِ قبلی `aaf9974`) | VERIFIED (`git rev-parse origin/main`، 2026-07-25) |
+| **Portfolio main SHA** | `1261383cb46308d3c15d08534d65b3171a1dba66` (پس از merge شدنِ PR #76 و #77؛ مسیر: `aaf9974` → `57100c5` → `1261383`) | VERIFIED (`git rev-parse origin/main`، 2026-07-25) |
 | **Mini App main SHA** | `b88f9353bbc2bf776c20d4dc3790fb0cd7a1d4db` | VERIFIED (GitHub API، `telegram-miniapp`) |
 | **Active Supabase Ref** | `uooeygybrniptzdxuzhj` | VERIFIED (فهرست‌کردنِ فقط‌خواندنیِ جدول‌ها) |
 | **Deprecated Supabase Ref** | `lqfcyihuthdoqybwptxh` — **استفاده نشود** | VERIFIED (فقط یک ارجاعِ برچسب‌خوردهٔ تاریخی در اسناد) |
@@ -36,7 +36,7 @@
 | Gate ID | Gate | Scope | Entry Criteria | Exit Criteria | Status | Owner | Blocking Items |
 |---|---|---|---|---|---|---|---|
 | **G-001** | Portfolio PR #76 Review Gate | Portfolio | PR باز، diff محدود به حذفِ دو workflow | بازبینی PASS · mergeable=clean · تأییدِ آرش · merge | ✅ **CLOSED** — merge شد (squash `57100c5`، 2026-07-25) | ARASH | — |
-| **G-002** | Portfolio PR #77 Review Gate | Portfolio | PR باز، فقط docs | بازبینی PASS · اسناد منطبق بر واقعیت · تأییدِ آرش · merge | **IN_REVIEW** — هنوز merge نشده | ARASH | B-012 |
+| **G-002** | Portfolio PR #77 Review Gate | Portfolio | PR باز، فقط docs | بازبینی PASS · اسناد منطبق بر واقعیت · تأییدِ آرش · merge | ✅ **CLOSED** — merge شد (squash `1261383`، 2026-07-25) | ARASH | — |
 | **G-003** | Mini App Staging Readiness | Mini App | کدِ فاز ۰ در `main` (انجام شد) | محیطِ staging بالا · migrationها اجرا · تستِ دود سبز | **NOT_STARTED** | OWNER_UNASSIGNED | B-004، B-005، B-006، B-007، B-008 |
 | **G-004** | Database Migration Readiness | هر دو | فهرستِ migrationهای NOT_APPLIED مشخص باشد (انجام شد) | تصمیمِ آرش برای هر migration · اجرا با شواهد · به‌روزرسانیِ MIGRATION-LEDGER | **BLOCKED** | ARASH | B-001، B-004، D-001، D-002 |
 | **G-005** | Coolify Environment Readiness | Mini App | VPS تهیه شده باشد | Coolify نصب · متغیرها ست · دیتابیس MySQL بالا · healthcheck سبز | **NOT_STARTED** | OWNER_UNASSIGNED | B-005، B-006، B-007، B-008 |
@@ -64,7 +64,7 @@
 | **B-009** | اجرای واقعیِ Vercel Cron مستقلاً راستی‌آزمایی نشده | 🟡 MEDIUM | Portfolio | OWNER_UNASSIGNED | 2026-07-24 | اعتماد به زمان‌بندی | بررسیِ لاگ‌های اجرای cron در داشبوردِ Vercel و ثبتِ شواهد | `vercel.json` مسیرها را تعریف می‌کند، ولی «تعریف‌شده» ≠ «اجرا شده». دسترسیِ عملیاتی به Vercel در این سشن نبود | **OPEN** · UNKNOWN |
 | **B-010** | وجودِ `CRON_SECRET` روی Vercel مستقلاً راستی‌آزمایی نشده | 🟡 MEDIUM | Portfolio / Env | OWNER_UNASSIGNED | 2026-07-24 | B-009 | تأییدِ ست‌بودنِ متغیر در Vercel (فقط نام، بدون افشای مقدار) | کد بدونِ آن **۴۰۱** می‌دهد (`app/api/cron/*/route.ts`)؛ ست‌بودنش راستی‌آزمایی نشد | **OPEN** · UNKNOWN |
 | ~~**B-011**~~ | ~~PR #76 هنوز merge نشده~~ | 🟢 LOW | Portfolio | ARASH | 2026-07-24 | — | — | GitHub: `merged=true`، `state=closed`، `merged_at=2026-07-25T09:46:17Z`، squash SHA `57100c5` | ✅ **CLOSED 2026-07-25** |
-| **B-012** | PR #77 هنوز merge نشده | 🟢 LOW | Portfolio | ARASH | 2026-07-24 | G-002 | تأیید و merge توسط آرش | GitHub: state=open، mergeable_state=clean | **OPEN** · VERIFIED |
+| ~~**B-012**~~ | ~~PR #77 هنوز merge نشده~~ | 🟢 LOW | Portfolio | ARASH | 2026-07-24 | — | — | GitHub: `merged=true`، `state=closed`، `merged_at=2026-07-25T09:51:20Z`، squash SHA `1261383` | ✅ **CLOSED 2026-07-25** |
 | **B-013** | `npm ci` می‌شکند چون `package-lock.json` ناهم‌گام است | 🟠 HIGH | Portfolio / Build | ENGINEERING | 2026-07-25 | بازتولیدپذیریِ build | بازسازیِ لاک‌فایل (`npm install` + کامیتِ لاک) در یک PR جدا | `npm ci` → `Missing: frac@1.1.2 from lock file` روی `main` در 2026-07-25 | **OPEN** · VERIFIED |
 | **B-014** | `npm run lint` غیرتعاملی اجرا نمی‌شود | 🟡 MEDIUM | Portfolio / CI | ENGINEERING | 2026-07-25 | کیفیتِ کد | مهاجرت از `next lint` به ESLint CLI | `next lint` منسوخ شده و promptِ تعاملیِ پیکربندیِ ESLint می‌دهد | **OPEN** · VERIFIED |
 | **B-015** | مخزن **هیچ GitHub Actions workflowی ندارد** (پس از merge شدنِ PR #76 محقق شد) | 🟡 MEDIUM | Portfolio / CI | ARASH | 2026-07-25 | پوششِ CI | تصمیم: آیا یک workflowِ واقعیِ CI (build/typecheck/test) اضافه شود؟ | `git ls-tree origin/main .github/workflows/` پس از merge → خروجیِ خالی. تنها چک‌های PR، اینتگریشن‌های بیرونیِ Vercel/Supabase هستند | **OPEN (محقق‌شده)** · VERIFIED |
@@ -109,7 +109,7 @@
 | portfolio-platform | **#74** | feat(fx): فعال‌سازی GARCH و PSYِ ماهانه | `6aaadc587f76d9a6eddcbb7a9972aab38dec46ef` | YES | `clean` | باز، base=`develop` | D-008 | **دست نزن** — خارج از دامنهٔ P1؛ منتظرِ تصمیمِ آرش |
 | portfolio-platform | **#75** | fix(security): وبینار RPC + یافته‌های بازبینیِ امنیتی | `2bd82eb9753b56456f445caa2d1b09594c721e57` | YES | `clean` | باز، base=`main` | D-009 | **دست نزن** — اصلاحِ امنیتی؛ اولویتِ بازبینیِ جداگانه |
 | portfolio-platform | **#76** | chore: remove misleading duplicate cron workflows | `8dd0f6d6bc7e82b56c6b1a2cbb1ed9b15270d6c4` → squash `57100c50c1c2fd027ee9d336b3af573691398de2` | NO | — | ✅ **MERGED** 2026-07-25T09:46:17Z (P1-007) | — | بسته — برنچ حذف نشد |
-| portfolio-platform | **#77** | docs: establish production architecture baseline | **متغیر** — این سند خودش داخلِ همین PR است، پس head SHA با هر کامیتِ جدید عوض می‌شود؛ همیشه از GitHub بخوان. در 2026-07-25 پس از rebase روی mainِ جدید بازنویسی شد | YES | `clean` | **PENDING MERGE** (P1-007) — هنوز merge نشده | B-012، G-002 | merge پس از راستی‌آزماییِ نهایی |
+| portfolio-platform | **#77** | docs: establish production architecture baseline | `2c4f1e92b0856d11e7290294d9176471bc6036a4` (پس از rebase) → squash `1261383cb46308d3c15d08534d65b3171a1dba66` | NO | — | ✅ **MERGED** 2026-07-25T09:51:20Z (P1-007) | — | بسته — برنچ حذف نشد |
 | telegram-miniapp | **#2** | فاز ۰: امنیت + استقلال از Manus + Coolify | `e80edf7e01dfa13a703e1fe7d0e507ef2d4d3f66` | NO | — | **MERGED** 2026-07-24 | — | بسته — کارِ باقی‌مانده استقرار است، نه کد |
 
 > ⚠️ **merge شدنِ PR #2 یعنی «کد در `main` است»، نه «مستقر شده».** استقرار و cutover
@@ -186,6 +186,10 @@
 | **بلاکرِ B-011** | **CLOSED** — با merge شدنِ PR #76 | همان بالا | 2026-07-25 |
 | **تصمیمِ DD-008** | از `APPROVED_PENDING_MERGE` به **`DECIDED / IMPLEMENTED`** رفت | `DECISION-LOG.md` → `DD-008` | 2026-07-25 |
 | **گیتِ G-001 (PR #76 Review Gate)** | **CLOSED** | همان بالا | 2026-07-25 |
+| **PR #77 — لایهٔ اسناد و حاکمیت** | **MERGED** (squash) — `main` از `57100c5` به `1261383` رفت؛ هر ۱۰ سند حالا روی `main` هستند | GitHub: `merged=true`، `merged_at=2026-07-25T09:51:20Z`؛ کامیت +۱۰۹۷ افزوده، ۰ حذف، فقط زیر `docs/` | 2026-07-25 |
+| **بلاکرِ B-012** | **CLOSED** — با merge شدنِ PR #77 | همان بالا | 2026-07-25 |
+| **گیتِ G-002 (PR #77 Review Gate)** | **CLOSED** | همان بالا | 2026-07-25 |
+| **Governance Documentation Gate** | **CLOSED** — COMMAND-CENTER و DECISION-LOG حالا روی `main` هستند و منبعِ رسمیِ وضعیت و تصمیم‌اند | `git cat-file -e origin/main:docs/COMMAND-CENTER.md` و `…:docs/DECISION-LOG.md` | 2026-07-25 |
 
 ---
 
