@@ -23,7 +23,7 @@
 
 | مورد | وضعیت واقعیِ DB | تصمیم |
 |---|---|---|
-| جدولِ `leads` | **missing** (`to_regclass=null`) | **NOT_APPLIED / REQUIRED** — کدِ وبهوکِ leads به آن می‌نویسد؛ یا `sql/phase8b_leads.sql` اجرا شود یا کد حذف. ADR-003 |
+| جدولِ `leads` | **missing** (`to_regclass=null`؛ بازتأییدِ فقط‌خواندنی ۲۰۲۶-۰۷-۲۵ در P1-009 — ۴۱ جدولِ `public` فهرست شد، `leads` نبود) | **NOT_APPLIED / READY_FOR_STAGING** — `sql/phase8b_leads.sql` در P1-009 **بازنویسی** شد (idempotent، غیرمخرب، دارای rollback و پرس‌وجوهای راستی‌آزمایی) ولی **اجرا نشده**. ADR-003 |
 | جدول‌های `phase19` IME (`ime_certificate_history`, `ime_physical_trades`) | **missing** | **DECISION_REQUIRED** — به‌جایش `ime_snapshots` وجود دارد (طرحِ متفاوت) |
 | ستون/جدولِ `screener_starred` | **missing** (نه ستونِ `starred`، نه جدول) | **NOT_APPLIED / FEATURE_BLOCKED** — تا عرضهٔ UIِ «منتخب» |
 | `ime_snapshots` | **existing** ولی نه در migrations نه در `sql/` | **UNTRACKED** — باید در migrationِ ردیابی‌شده رسمی شود |
@@ -36,7 +36,7 @@
 | فایل `sql/` | وضعیت | شواهد |
 |---|---|---|
 | phase5_payments_telegram, phase6, phase7, phase8_webinars, phase9, phase10, phase11, phase12, phase13_fx_rates, phase14_rosad, phase15_security (+15b), phase16_symbol_history_dedup, phase17_market_breadth, phase18_purge_subtickers, terminal_t0, admin_dashboard_stats, admin_users_module | **APPLIED** | ۲۹ migrationِ ثبت‌شده منطبق |
-| `phase8b_leads.sql` | **NOT_APPLIED** | جدولِ `leads` وجود ندارد |
+| `phase8b_leads.sql` | **NOT_APPLIED / READY_FOR_STAGING** | جدولِ `leads` وجود ندارد. فایل در P1-009 **در همان مسیر بازنویسی شد** (نه فایلِ جدید — تا طرحِ رقیبِ دوم ساخته نشود). چون نسخهٔ قبلی هرگز اجرا نشده بود، بازنویسی drift تولید نمی‌کند. تفاوت‌ها: idempotent (`DROP POLICY IF EXISTS`)، `NOT NULL` روی timestampها، تریگرِ `updated_at`، CHECKهای طول/وضعیت، دو ایندکسِ تازه، `REVOKE ALL … FROM anon`، بلوکِ rollback و ۷ پرس‌وجوی راستی‌آزمایی. **هنوز اجرا نشده — هیچ SQLای اجرا نشد.** |
 | `phase18_screener_starred.sql` | **NOT_APPLIED** | نه ستونِ `starred`، نه جدولِ `screener_starred` |
 | `phase19_ime_tables.sql` | **NOT_APPLIED / SUPERSEDED** | جدول‌هایش نیستند؛ `ime_snapshots` (طرحِ دیگر) هست |
 | `archive/*.sql` | **SUPERSEDED** | نسخه‌های اولیهٔ portfolio |
