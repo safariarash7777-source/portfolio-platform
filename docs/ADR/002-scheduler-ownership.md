@@ -1,8 +1,10 @@
 # ADR-002 — مالکیتِ Scheduler
 
 - **تاریخ:** ۱۴۰۵/۰۵/۰۲ (2026-07-24)
-- **وضعیت:** پذیرفته‌شده (Accepted)
+- **وضعیت:** پذیرفته‌شده (Accepted) — بند ۳ **هنوز اجرا نشده** (PR #76 merge نشده)
 - **Review Date:** 2026-08-23 (۳۰ روز بعد)
+- **Decision Log:** `DD-009` (Vercel Cron منبعِ اصلی)، `DD-008` (**APPROVED_PENDING_MERGE** — حذفِ workflowها)، `SD-001` (تصمیمِ منسوخ‌شده) · تصمیم‌های باز: **`D-005`**، **`D-006`** — [`DECISION-LOG.md`](../DECISION-LOG.md)
+- **Blockers:** `B-009`، `B-010`، `B-011`، `B-015`، `B-016`، `B-017` · Gate: `G-001` — [`COMMAND-CENTER.md`](../COMMAND-CENTER.md)
 
 ## Context
 سه مسیرِ زمان‌بندی هم‌زمان وجود داشت: **Vercel Cron** (`vercel.json`)، **Relay Scheduler** (داخلِ رله روی Liara)، و **GitHub Actions Cron** (`cron-alerts.yml`, `cron-telegram-sync.yml`). دو workflowِ گیت‌هاب به‌خاطرِ نبودِ سکرت‌های `CRON_SECRET`/`SITE_URL` با `exit 0` **skip** می‌شدند و **سبزِ کاذب** تولید می‌کردند — این توهمِ «کران سالم است» را می‌ساخت درحالی‌که endpointِ واقعی هرگز صدا زده نمی‌شد.

@@ -3,6 +3,8 @@
 - **تاریخ:** ۱۴۰۵/۰۵/۰۲ (2026-07-24)
 - **وضعیت:** پذیرفته‌شده (Accepted) — اجرا نشده
 - **Review Date:** 2026-08-23 (۳۰ روز بعد)
+- **Decision Log:** `DD-002` (Manus موقت)، `DD-003` (Docker/Coolify هدف) · تصمیمِ باز: **`D-003`** (زمانِ مجازِ cutover) — [`DECISION-LOG.md`](../DECISION-LOG.md)
+- **Blockers:** `B-005`، `B-006`، `B-007`، `B-008` · Gate: `G-005`، `G-006` — [`COMMAND-CENTER.md`](../COMMAND-CENTER.md)
 
 ## Context
 نسخهٔ زندهٔ Mini App روی **Manus** میزبانی می‌شود (`arash-teleapp-7shs2egu.manus.space`) و **قدیمی‌تر از `main`** است (drift بین زنده و مخزن). وابستگی به Manus باعثِ قفلِ پلتفرم و نبودِ کنترلِ کاملِ استقرار می‌شود. PR #2ِ مخزنِ `telegram-miniapp` مسیرِ استقلال از Manus + Docker + Coolify را تعریف می‌کند.

@@ -3,6 +3,12 @@
 > منبع: ممیزیِ فقط‌خواندنیِ P0-002 روی `uooeygybrniptzdxuzhj` + مقایسه با `sql/` ریپو.
 > **هیچ Migration در تولیدِ این سند اجرا نشد.**
 >
+> **این سند منبعِ حقیقتِ migrationهاست.** بخشِ ۶ در
+> [`COMMAND-CENTER.md`](./COMMAND-CENTER.md) فقط یک **نمای خلاصهٔ drift** است و عمداً
+> ناقص؛ در هر اختلاف، **همین دفتر معتبر است**. تصمیم‌های مرتبط:
+> `D-001` (سرنوشتِ `leads`) و `D-002` (migrationهای مینی‌اپ) در
+> [`DECISION-LOG.md`](./DECISION-LOG.md).
+>
 > وضعیت‌ها: `APPLIED` · `NOT_APPLIED` · `SUPERSEDED` · `UNTRACKED` · `DECISION_REQUIRED`
 >
 > **بازبینیِ مجددِ P1-005 (۲۰۲۶-۰۷-۲۵) — فقط فهرست‌کردنِ جدول‌ها، بدونِ اجرای هیچ SQL:**
