@@ -16,7 +16,7 @@
 | مورد | مقدار | برچسب |
 |---|---|---|
 | **Current Phase** | P1 — پاکسازی و تثبیت (Cleanup & Stabilization) | VERIFIED |
-| **Current Gate** | G-002 · Portfolio PR #77 Review Gate | VERIFIED |
+| **Current Gate** | **G-004 · Database Migration Readiness** (BLOCKED) — گیت‌های حاکمیتِ `G-001`/`G-002` بسته شدند | VERIFIED |
 | **Last Verified Date** | **2026-07-25** | — |
 | **Portfolio main SHA** | `1261383cb46308d3c15d08534d65b3171a1dba66` (پس از merge شدنِ PR #76 و #77؛ مسیر: `aaf9974` → `57100c5` → `1261383`) | VERIFIED (`git rev-parse origin/main`، 2026-07-25) |
 | **Mini App main SHA** | `b88f9353bbc2bf776c20d4dc3790fb0cd7a1d4db` | VERIFIED (GitHub API، `telegram-miniapp`) |
@@ -159,16 +159,17 @@
 
 | Priority | Action | Owner | Dependency | Expected Output | Gate |
 |---|---|---|---|---|---|
-| **1** | بازبینی و merge کردنِ PR #76 | ARASH | — | حذفِ دو workflowِ گمراه‌کننده از `main` | G-001 |
-| **2** | بازبینی و merge کردنِ PR #77 | ARASH | اقدام ۱ | ورودِ لایهٔ اسناد و حاکمیت به `main` | G-002 |
-| **3** | تصمیم دربارهٔ D-001 (سرنوشتِ `leads`) | ARASH | — | یا اجرای migration یا حذفِ کدِ وبهوک | G-004 |
-| **4** | یکی‌سازیِ نامِ سکرتِ وبهوکِ لید (B-002) | ENGINEERING | اقدام ۳ | یک PRِ کوچکِ کد + به‌روزرسانیِ `.env.example` | G-004 |
-| **5** | بازبینیِ PR #75 (اصلاحِ امنیتیِ پرداخت) | ARASH | — | تصمیمِ D-009 | — |
-| **6** | بازسازیِ `package-lock.json` تا `npm ci` کار کند (B-013) | ENGINEERING | اقدام ۲ | buildِ بازتولیدپذیر | — |
-| **7** | تعیینِ مالک برای سه ردیفِ `OWNER_UNASSIGNED` (B-018) | ARASH | — | `SERVICE-OWNERSHIP.md` بدونِ خانهٔ خالی | — |
-| **8** | راستی‌آزماییِ اجرای Vercel Cron و وجودِ `CRON_SECRET` (B-009، B-010) | ARASH | — | شواهدِ ثبت‌شده در همین سند | — |
-| **9** | تهیهٔ VPS و نصبِ Coolify (B-005) | OWNER_UNASSIGNED | اقدام ۷ | محیطِ staging بالا | G-005 |
-| **10** | اجرای migrationهای مینی‌اپ در staging (B-004، D-002) | OWNER_UNASSIGNED | اقدام ۹ | schemaِ به‌روز + تستِ دودِ سبز | G-003 |
+| ~~۱~~ | ~~بازبینی و merge کردنِ PR #76~~ | ARASH | — | ✅ **انجام شد** 2026-07-25 (squash `57100c5`) | G-001 ✅ |
+| ~~۲~~ | ~~بازبینی و merge کردنِ PR #77~~ | ARASH | — | ✅ **انجام شد** 2026-07-25 (squash `1261383`) | G-002 ✅ |
+| **1** | تصمیم دربارهٔ D-001 (سرنوشتِ `leads`) — **بالاترین ریسکِ باز** | ARASH | — | یا اجرای migration یا حذفِ کدِ وبهوک | G-004 |
+| **2** | یکی‌سازیِ نامِ سکرتِ وبهوکِ لید (B-002) | ENGINEERING | اقدام ۱ | یک PRِ کوچکِ کد + به‌روزرسانیِ `.env.example` | G-004 |
+| **3** | بازبینیِ PR #75 (اصلاحِ امنیتیِ پرداخت) | ARASH | — | تصمیمِ D-009 | — |
+| **4** | بازسازیِ `package-lock.json` تا `npm ci` کار کند (B-013) | ENGINEERING | — | buildِ بازتولیدپذیر | — |
+| **5** | تعیینِ مالک برای سه ردیفِ `OWNER_UNASSIGNED` (B-018) | ARASH | — | `SERVICE-OWNERSHIP.md` بدونِ خانهٔ خالی | — |
+| **6** | راستی‌آزماییِ اجرای Vercel Cron و وجودِ `CRON_SECRET` (B-009، B-010) | ARASH | — | شواهدِ ثبت‌شده در همین سند | — |
+| **7** | تصمیم دربارهٔ افزودنِ یک workflowِ واقعیِ CI (B-015) | ARASH | اقدام ۴ | build/typecheck/test روی هر PR | — |
+| **8** | تهیهٔ VPS و نصبِ Coolify (B-005) | OWNER_UNASSIGNED | اقدام ۵ | محیطِ staging بالا | G-005 |
+| **9** | اجرای migrationهای مینی‌اپ در staging (B-004، D-002) | OWNER_UNASSIGNED | اقدام ۸ | schemaِ به‌روز + تستِ دودِ سبز | G-003 |
 
 ---
 
