@@ -4,6 +4,14 @@
 > **هیچ Migration در تولیدِ این سند اجرا نشد.**
 >
 > وضعیت‌ها: `APPLIED` · `NOT_APPLIED` · `SUPERSEDED` · `UNTRACKED` · `DECISION_REQUIRED`
+>
+> **بازبینیِ مجددِ P1-005 (۲۰۲۶-۰۷-۲۵) — فقط فهرست‌کردنِ جدول‌ها، بدونِ اجرای هیچ SQL:**
+> ردیف‌های زیر دوباره تأیید شدند و **تغییری نکرده‌اند** →
+> `leads` **missing** (NOT_APPLIED) · `screener_starred` **missing** (NOT_APPLIED) ·
+> `ime_certificate_history` / `ime_physical_trades` **missing** (NOT_APPLIED/SUPERSEDED) ·
+> `ime_snapshots` **موجود** (UNTRACKED) · `payments`, `entitlements`, `symbol_history`,
+> `codal_reports`, `codal_feed`, `fx_rates`, `index_history`, `market_breadth`,
+> `fx_heavy_analytics` **موجود** (APPLIED). همهٔ جدول‌های موجود `rls_enabled=true` بودند.
 
 ## خلاصهٔ تصمیم‌محور
 

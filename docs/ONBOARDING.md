@@ -65,7 +65,8 @@
 **الف) «یک موتور، دو نما».** همهٔ محاسباتِ هسته فقط در `lib/core/engine.ts` (و دوستانش در
 `lib/core/`) است. ترمینالِ ادمین و صفحاتِ عمومی **هر دو از همان می‌خوانند** — منطق دوباره
 نوشته نمی‌شود. هر تابعِ هسته **قبل از UI تست دارد**: `npm run test:core` و `npm run test:calc`
-(node:test + tsx). الان **۵۱+ تست** سبز است.
+(node:test + tsx). **VERIFIED (2026-07-25، روی `main`):** `test:core` = ۲۳۸ تست سبز،
+`test:calc` = ۶۵ تست سبز (مجموع ۳۰۳)، هر دو با ۰ شکست.
 
 **ب) سه‌گانهٔ Supabase (اشتباه نگیر):**
 - `lib/supabase/client.ts` → کامپوننتِ کلاینت (مرورگر، کلیدِ anon).
@@ -133,7 +134,9 @@ middleware.ts        گیتِ auth
 **قواعدِ کامیتِ ما:** هویت `Claude <noreply@anthropic.com>`؛ کامیت‌ها بدونِ امضای GPG
 «Unverified» نشان داده می‌شوند (محدودیتِ محیط، عادی است). **push فقط با اجازهٔ آرش.**
 
-**PRهای باز:** #74 (feat/fx-heavy-monthly → develop، پیش‌نویس). #73 مرج شد.
+**PRهای باز (اسنپ‌شات ۲۰۲۶-۰۷-۲۵ — این جدول سریعاً کهنه می‌شود؛ همیشه با GitHub چک کن):**
+#74 (feat/fx-heavy-monthly → develop، پیش‌نویس)، #76 (chore/remove-duplicate-cron-workflows → main،
+پیش‌نویس)، #77 (docs/production-architecture-baseline → main، پیش‌نویس). #73 مرج شد.
 
 ---
 
@@ -174,8 +177,13 @@ Streamlit پایتونیِ آرش. هدف: بدونِ سرورِ جدید و ب�
 - **نیمهٔ سنگین (پیش‌محاسبه) — درحالِ ساخت.** مدل‌هایی که در TS کتابخانه ندارند
   (PSY/GSADF، GARCH، مونت‌کارلو، هم‌جمعی). **معماری:** پایتون روی PC حساب می‌کند →
   ردیف در `fx_heavy_analytics` می‌گذارد → تبِ «آزمون‌های آماری» نمایش می‌دهد.
-  - اسکریپت: `scripts/fx-precompute-heavy.py` (+ `scripts/requirements-fx-heavy.txt`, `scripts/README-fx-heavy.md`).
-  - **`scripts/fx_psy.py` = پورتِ بایت‌به‌بایتِ `psy.py`ِ آرش** (PSY 2015 صحیح: BSADF،
+  - > ⚠️ **این اسکریپت‌ها روی `main` نیستند** (VERIFIED 2026-07-25). روی `main` پوشهٔ `scripts/`
+    > فقط `fx-refresh-seeds.py` و `set-telegram-webhook.ts` را دارد. پس اگر روی `main` هستی،
+    > دستورها و مسیرهای زیر اجرا نمی‌شوند — اول به برنچِ مربوطه سوییچ کن.
+  - اسکریپت: `scripts/fx-precompute-heavy.py` (+ `scripts/requirements-fx-heavy.txt`,
+    `scripts/README-fx-heavy.md`) — **روی `develop` و `feat/fx-heavy-monthly`**.
+  - **`scripts/fx_psy.py` = پورتِ بایت‌به‌بایتِ `psy.py`ِ آرش** (**فقط روی `feat/fx-heavy-monthly`،
+    PR #74 — نه روی `develop`، نه روی `main`**) (PSY 2015 صحیح: BSADF،
     انتخابِ وقفه با BIC، مقدارِ بحرانیِ دنباله‌ایِ شبیه‌سازی‌شده، قاعدهٔ حداقل‌مدت).
   - خودآزمونِ PPP قبل از هر اجرا مقابلِ `engine.ts` → **عدمِ واگراییِ محاسبات با سایت**.
   - GARCH و MC و هم‌جمعی: سالم و درج‌شده (نوسانِ جاریِ سالانه ~۲۱٪؛ IGARCH یادداشت شده).
@@ -209,7 +217,16 @@ npm run typecheck  # اگر تایپ‌ها را لمس کردی
 npm run lint
 npm run test:core  # موتورِ هسته
 npm run test:calc  # محاسبات بنیادی/تقویم/…
-# پایتونِ سنگینِ ارز (روی PC):
+```
+
+> ⚠️ `npm run lint` روی این ریپو **غیرتعاملی اجرا نمی‌شود**: `next lint` منسوخ شده و
+> پیکربندیِ ESLint را به‌صورت تعاملی می‌پرسد (VERIFIED 2026-07-25). تا وقتی به ESLint CLI
+> مهاجرت نکرده‌ایم، `typecheck` + `build` + `test:*` معیارِ سبزبودن‌اند.
+
+پایتونِ سنگینِ ارز (روی PC) — **فقط پس از سوییچ به برنچی که این فایل‌ها را دارد**
+(`develop` یا `feat/fx-heavy-monthly`)؛ روی `main` وجود ندارند:
+
+```bash
 pip install -r scripts/requirements-fx-heavy.txt
 python scripts/fx-precompute-heavy.py --usd-csv dollar_monthly.csv   # + .env با service_role
 ```
@@ -257,7 +274,11 @@ python scripts/fx-precompute-heavy.py --usd-csv dollar_monthly.csv   # + .env ب
 2. `docs/DSS-STATE.md` و `docs/PRODUCT-BLUEPRINT.md` را بخوان (چشم‌انداز و وضعیتِ زنده).
 3. اسکیلِ `.claude/skills/iran-market-data/SKILL.md` را بخوان (قواعدِ سختِ داده).
 4. `npm i && npm run build && npm run test:core` — همه باید سبز شوند.
-5. برای داشبورد ارز: `scripts/README-fx-heavy.md` را بخوان.
+   (**`npm ci` روی `main` شکست می‌خورد**: `package-lock.json` با `package.json` هم‌گام نیست —
+   `Missing: frac@1.1.2 from lock file`. VERIFIED 2026-07-25؛ فعلاً `npm i` بزن. رفعِ لاک‌فایل
+   خارج از دامنهٔ این سند است.)
+5. برای داشبورد ارز: `scripts/README-fx-heavy.md` را بخوان — **این فایل روی `main` نیست**؛
+   اول به `develop` یا `feat/fx-heavy-monthly` سوییچ کن (بخش ۸).
 6. قبل از هر تغییر: مطمئن شو کدام برنچ (`develop`-محور) و کدام مالک (بخش ۱۲).
 7. **push/PR/deploy نکن مگر آرش صریحاً بگوید.**
 

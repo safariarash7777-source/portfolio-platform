@@ -43,6 +43,16 @@ Mini App @ Manus (Legacy)  ──►  (لید/تعامل تلگرام)  ──�
 | **Relay Scheduler** | Relay @ Liara (مستقل) | چرخه‌های فید بازار/کدال/کندل/IME داخلِ خودِ رله |
 | **GitHub Actions Cron** | ~~duplicate~~ (درحالِ حذف) | `cron-alerts.yml` + `cron-telegram-sync.yml` — بدونِ سکرت skip می‌شدند (سبزِ کاذب). ADR-002 |
 
+> **درفتِ کامنتِ کد ↔ `vercel.json` (VERIFIED 2026-07-25):** کامنتِ بالای
+> `app/api/cron/alerts/route.ts` می‌گوید «هر ۵ دقیقه (Vercel Cron)»، اما `vercel.json`
+> این مسیر را **روزانه `0 6 * * *`** زمان‌بندی کرده است. **`vercel.json` منبعِ حقیقت است**؛
+> کامنت کهنه است. همین درفت در `docs/archive/content-hub.md` هم هست («هر ۶ ساعت» برای
+> `telegram-sync` درحالی‌که واقعیت `0 3 * * *` روزانه است).
+> پیامدِ عملی: **هشدارهای قیمت روزی یک‌بار ارزیابی می‌شوند، نه هر ۵ دقیقه** — اگر انتظار
+> رفتارِ ۵دقیقه‌ای هست، این یک بلاکرِ محصولی است، نه یک اشتباهِ تایپی.
+> علتِ محتمل: محدودیتِ پلنِ Hobbyِ Vercel (حداکثر کرانِ روزانه) — **INFERRED**، از این سشن
+> راستی‌آزمایی نشد. اصلاحِ کامنت/ارتقای پلن خارج از دامنهٔ P1-005 بود. **DECISION_REQUIRED**
+
 ## ۴) دامنه‌ها (خلاصه)
 - Portfolio: دامنهٔ Vercel (production).
 - Relay: `arsadata.liara.run` (endpointِ عمومیِ `/debug` بدونِ سکرت وضعیت می‌دهد).

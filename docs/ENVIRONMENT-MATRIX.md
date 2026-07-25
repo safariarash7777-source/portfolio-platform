@@ -3,6 +3,10 @@
 > **فقط نامِ متغیرها و محلِ استفاده. هیچ مقدارِ Secret اینجا نوشته نمی‌شود.**
 > منبع: grep روی کد (`process.env.*`) در تاریخ ۱۴۰۵/۰۵/۰۲. ست‌بودنِ واقعیِ مقادیر روی
 > پلتفرم‌ها از این سشن راستی‌آزمایی نشد (تغییرِ env در P1-001 ممنوع بود).
+>
+> **بازبینیِ P1-005 (۲۰۲۶-۰۷-۲۵):** نامِ هر متغیر دوباره با grep روی کدِ `main` تطبیق داده شد.
+> ردیف‌هایی که در کد پیدا نشدند با `UNKNOWN` / `DECISION_REQUIRED` علامت خورده‌اند تا
+> «نوشته‌شده در سند» با «واقعاً استفاده‌شده در کد» اشتباه گرفته نشود.
 
 ## Portfolio (Vercel / Next.js)
 
@@ -11,7 +15,7 @@
 | `NEXT_PUBLIC_SUPABASE_URL` | عمومی | اتصالِ کلاینت/سرور به Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | عمومی | کلیدِ anon (RLS اعمال) |
 | `SUPABASE_SERVICE_ROLE_KEY` | سرور | `admin.ts` — verify پرداخت، وبهوکِ تلگرام (RLS دور می‌زند) |
-| `SUPABASE_SECRET_KEY` | سرور | کلیدِ سرورِ Supabase (در صورت استفاده) |
+| `SUPABASE_SECRET_KEY` | سرور | **UNKNOWN** — در بازبینیِ ۲۰۲۶-۰۷-۲۵ هیچ ارجاعی به این نام در کدِ ریپو پیدا نشد. یا روی پلتفرم ست شده و بی‌استفاده است، یا باید از این جدول حذف شود. **DECISION_REQUIRED** |
 | `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_BASE_URL` / `NEXT_PUBLIC_APP_URL` | عمومی | ساختِ URLِ callback و لینک‌ها |
 | `NEXT_PUBLIC_MINIAPP_URL` | عمومی | لینک به Mini App |
 | `NEXT_PUBLIC_COURSE_PRICE_TOMAN` | عمومی | قیمتِ دوره (نمایش) |
@@ -24,8 +28,9 @@
 | `RESEND_API_KEY` / `RESEND_FROM` | سرور | ارسالِ ایمیل (Resend) |
 | `CRON_SECRET` | سرور | مجوزِ endpointهای `/api/cron/*` (Vercel Cron) |
 | `IR_MARKET_RELAY_URL` / `IR_MARKET_RELAY_TOKEN` / `RELAY_TOKEN` | سرور | ارتباط با رله |
-| `PLATFORM_WEBHOOK_SECRET` | سرور | وبهوکِ leads (miniapp→سایت) |
-| `ICEBERG_TOKEN` | سرور | (سرویسِ جانبی) |
+| `PLATFORM_WEBHOOK_SECRET` | سرور | وبهوکِ leads (miniapp→سایت) — **VERIFIED**: `app/api/leads/webhook/route.ts` همین نام را می‌خواند |
+| `LEADS_WEBHOOK_SECRET` | سرور | **DRIFT / DECISION_REQUIRED** — این نام در `.env.example` هست ولی **در هیچ کدی خوانده نمی‌شود**؛ کد `PLATFORM_WEBHOOK_SECRET` می‌خواهد. اگر روی Vercel فقط `LEADS_WEBHOOK_SECRET` ست شده باشد، وبهوکِ leads **همیشه ۴۰۱** می‌دهد. باید یکی‌سازی شود (ADR-003) |
+| `ICEBERG_TOKEN` | سرور | **UNKNOWN** — در بازبینیِ ۲۰۲۶-۰۷-۲۵ هیچ ارجاعی در کدِ ریپو پیدا نشد. **DECISION_REQUIRED** |
 
 ## Relay (Liara / Node)
 
