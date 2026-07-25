@@ -109,7 +109,7 @@
 | portfolio-platform | **#74** | feat(fx): فعال‌سازی GARCH و PSYِ ماهانه | `6aaadc587f76d9a6eddcbb7a9972aab38dec46ef` | YES | `clean` | باز، base=`develop` | D-008 | **دست نزن** — خارج از دامنهٔ P1؛ منتظرِ تصمیمِ آرش |
 | portfolio-platform | **#75** | fix(security): وبینار RPC + یافته‌های بازبینیِ امنیتی | `2bd82eb9753b56456f445caa2d1b09594c721e57` | YES | `clean` | باز، base=`main` | D-009 | **دست نزن** — اصلاحِ امنیتی؛ اولویتِ بازبینیِ جداگانه |
 | portfolio-platform | **#76** | chore: remove misleading duplicate cron workflows | `8dd0f6d6bc7e82b56c6b1a2cbb1ed9b15270d6c4` | YES | `clean` | **READY_FOR_MERGE** (P1-005) | B-011، G-001 | merge پس از تأییدِ آرش — **اول** |
-| portfolio-platform | **#77** | docs: establish production architecture baseline | *(بخش ۱۱ — پس از این کامیت به‌روزرسانی شود)* | YES | `clean` | **IN_REVIEW** (P1-006) | B-012، G-002 | merge پس از #76 |
+| portfolio-platform | **#77** | docs: establish production architecture baseline | **متغیر** — این سند خودش داخلِ همین PR است، پس head SHA با هر کامیتِ جدید عوض می‌شود؛ همیشه از GitHub بخوان (در 2026-07-25 برابرِ `f79f14e` + کامیتِ همین لایهٔ حاکمیت) | YES | `clean` | **IN_REVIEW** (P1-006) | B-012، G-002 | merge پس از #76 |
 | telegram-miniapp | **#2** | فاز ۰: امنیت + استقلال از Manus + Coolify | `e80edf7e01dfa13a703e1fe7d0e507ef2d4d3f66` | NO | — | **MERGED** 2026-07-24 | — | بسته — کارِ باقی‌مانده استقرار است، نه کد |
 
 > ⚠️ **merge شدنِ PR #2 یعنی «کد در `main` است»، نه «مستقر شده».** استقرار و cutover
