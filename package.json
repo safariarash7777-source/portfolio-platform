@@ -6,10 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
+    "lint:ci": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts",
-    "test:core": "tsx --test lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/fx/engine.test.ts"
+    "test:core": "tsx --test lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/fx/engine.test.ts",
+    "scan:secrets": "node scripts/scan-secrets.mjs",
+    "validate:sql": "node scripts/validate-sql.mjs",
+    "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
@@ -23,11 +27,14 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.0",
     "dotenv": "^17.4.2",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.20",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.23.0",

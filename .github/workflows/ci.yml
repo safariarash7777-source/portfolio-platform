@@ -1,0 +1,129 @@
+name: CI
+
+# دروازهٔ کیفیتِ هر PR. تا پیش از این، مخزن **هیچ** workflowی نداشت (بلاکرِ B-015)
+# و PRها بدونِ هیچ تأییدِ خودکاری merge می‌شدند.
+#
+# قانونِ سخت: این workflow **هرگز** به دیتابیس وصل نمی‌شود، هیچ migration اجرا
+# نمی‌کند و به هیچ سکرتی نیاز ندارد. اعتبارسنجیِ SQL کاملاً ایستا است.
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# اجراهای قدیمیِ همان شاخه لغو می‌شوند تا دقیقهٔ رایگان هدر نرود.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  # ── ۱) وابستگی‌ها ──────────────────────────────────────────────────────────
+  # هم‌گامیِ package.json با package-lock.json را اثبات می‌کند: اگر lock عقب
+  # باشد `npm ci` مردود می‌شود (همان چیزی که B-013 بود).
+  dependencies:
+    name: Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: npm ci (اثباتِ هم‌گامیِ lockfile)
+        run: npm ci
+      - name: audit — سطحِ critical مسدودکننده است
+        run: npm audit --audit-level=critical
+      - name: audit — گزارشِ high (مسدودکننده نیست، ولی پنهان هم نمی‌شود)
+        if: always()
+        run: npm audit --audit-level=high || true
+
+  # ── ۲) کیفیتِ کد ──────────────────────────────────────────────────────────
+  quality:
+    name: Typecheck · Lint · Tests · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # `next lint` تعاملی بود و در CI هنگ می‌کرد (B-014). حالا ESLint CLI با
+      # flat config است و هر warning هم مردود حساب می‌شود.
+      - name: Lint
+        run: npm run lint:ci
+
+      - name: Core tests
+        run: npm run test:core
+
+      - name: Calc tests
+        run: npm run test:calc
+
+      # build آخر است: گران‌ترین گام، بعد از ارزان‌ترین بازخوردها.
+      - name: Build
+        run: npm run build
+        env:
+          # مقادیرِ ساختگیِ زمانِ build — هیچ‌کدام سکرتِ واقعی نیستند و به هیچ
+          # سرویسی وصل نمی‌شوند؛ فقط برای اینکه build روی env خالی نشکند.
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key-for-build-only
+
+  # ── ۳) امنیت و migration (بدونِ اتصال به دیتابیس) ─────────────────────────
+  security-and-sql:
+    name: Secret scan · SQL validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: اسکنِ الگوی سکرت
+        run: node scripts/scan-secrets.mjs
+
+      - name: اعتبارسنجیِ سیاستیِ SQL
+        run: node scripts/validate-sql.mjs
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: نصبِ پارسرِ Postgres
+        run: pip install "pglast==8.4"
+      - name: اعتبارسنجیِ گرامرِ SQL (libpg_query — بدونِ اجرا)
+        run: python3 scripts/validate-sql-grammar.py
+
+  # ── ۴) دروازهٔ نهایی ──────────────────────────────────────────────────────
+  # یک چکِ واحد برای required status check، تا لازم نباشد هر بار که jobی اضافه
+  # می‌شود تنظیماتِ branch protection دست بخورد.
+  ci:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    needs: [dependencies, quality, security-and-sql]
+    if: always()
+    steps:
+      - name: بررسیِ نتیجهٔ همهٔ jobها
+        run: |
+          echo "dependencies:     ${{ needs.dependencies.result }}"
+          echo "quality:          ${{ needs.quality.result }}"
+          echo "security-and-sql: ${{ needs.security-and-sql.result }}"
+          if [ "${{ needs.dependencies.result }}" != "success" ] \
+            || [ "${{ needs.quality.result }}" != "success" ] \
+            || [ "${{ needs.security-and-sql.result }}" != "success" ]; then
+            echo "::error::CI مردود شد."
+            exit 1
+          fi
+          echo "همهٔ گیت‌ها سبز."
