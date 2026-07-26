@@ -1,6 +1,12 @@
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { FlatCompat } from "@eslint/eslintrc";
 
-const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
+// عمداً `import.meta.dirname` استفاده نمی‌شود: آن از Node 20.11 به بعد وجود دارد،
+// ولی ESLint 9 روی Node ^18.18 هم اجرا می‌شود. اگر محیطِ build نودِ قدیمی‌تری
+// داشته باشد، `import.meta.dirname` برابرِ undefined می‌شود و FlatCompat استثنا
+// می‌دهد. این شکل روی هر نسخه‌ای کار می‌کند.
+const compat = new FlatCompat({ baseDirectory: dirname(fileURLToPath(import.meta.url)) });
 
 /**
  * ESLint flat config.
