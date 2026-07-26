@@ -2,6 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  eslint: {
+    // لینت کارِ CI است، نه کارِ build. تا پیش از افزودنِ ESLint به این مخزن،
+    // `next build` بی‌سروصدا از لینت رد می‌شد (چون ESLint نصب نبود)؛ به‌محضِ نصب،
+    // build شروع به اجرای لینت کرد و به نسخهٔ Node و ابزارِ لینتِ محیطِ build
+    // گره خورد — که استقرار را شکست.
+    // لینت در `.github/workflows/ci.yml` با `--max-warnings=0` و نودِ پین‌شده
+    // اجرا می‌شود، پس اینجا چیزی از دست نمی‌رود؛ فقط build و لینت از هم جدا
+    // می‌شوند. (P1-011)
+    ignoreDuringBuilds: true,
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [],
