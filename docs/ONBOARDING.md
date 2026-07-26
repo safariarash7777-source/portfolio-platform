@@ -232,14 +232,25 @@ Streamlit پایتونیِ آرش. هدف: بدونِ سرورِ جدید و ب�
 npm run dev        # توسعهٔ محلی
 npm run build      # باید سبز باشد — پایانِ هر کار
 npm run typecheck  # اگر تایپ‌ها را لمس کردی
-npm run lint
+npm run lint:setup # یک‌بار: نصبِ موقتِ ابزارِ لینت (در devDependencies نیست)
+npm run lint       # ESLint CLI — غیرتعاملی
 npm run test:core  # موتورِ هسته
 npm run test:calc  # محاسبات بنیادی/تقویم/…
+
+npm run lint:ci            # همان lint ولی warning هم مردود است
+npm run scan:secrets       # اسکنِ الگوی سکرت
+npm run validate:sql       # بررسیِ سیاستیِ فایل‌های sql/ (بدونِ اجرا)
+npm run validate:sql:grammar  # گرامرِ واقعیِ Postgres (نیازمندِ `pip install pglast`)
 ```
 
-> ⚠️ `npm run lint` روی این ریپو **غیرتعاملی اجرا نمی‌شود**: `next lint` منسوخ شده و
-> پیکربندیِ ESLint را به‌صورت تعاملی می‌پرسد (VERIFIED 2026-07-25). تا وقتی به ESLint CLI
-> مهاجرت نکرده‌ایم، `typecheck` + `build` + `test:*` معیارِ سبزبودن‌اند.
+> ⚠️ **ابزارِ لینت عمداً در `devDependencies` نیست.** افزودنش درختِ وابستگی را از
+> ۲۳۲ به ۵۰۷ بسته می‌بُرد و **استقرارِ Vercel را می‌شکست** (با bisect ثابت شد — `B-023`).
+> پیش از لینتِ محلی یک‌بار `npm run lint:setup` بزن؛ CI خودش این کار را می‌کند.
+>
+> ✅ **رفع شد (2026-07-25، P1-010):** `npm run lint` دیگر تعاملی نیست. `next lint`
+> منسوخ با **ESLint CLI + flat config** (`eslint.config.mjs`) جایگزین شد و `eslint`
+> و `eslint-config-next` به devDependencies اضافه شدند. کدِ فعلی **۰ خطا** می‌دهد.
+> همهٔ این دستورها حالا در CI روی هر PR اجرا می‌شوند (`.github/workflows/ci.yml`).
 
 پایتونِ سنگینِ ارز (روی PC) — **فقط پس از سوییچ به برنچی که این فایل‌ها را دارد**
 (`develop` یا `feat/fx-heavy-monthly`)؛ روی `main` وجود ندارند:
@@ -293,10 +304,10 @@ python scripts/fx-precompute-heavy.py --usd-csv dollar_monthly.csv   # + .env ب
 1. این سند + بخشِ ۲ (قوانین) + `CLAUDE.md`ِ ریپو + `~/.claude/CLAUDE.md`ِ آرش را بخوان.
 2. `docs/DSS-STATE.md` و `docs/PRODUCT-BLUEPRINT.md` را بخوان (چشم‌انداز و وضعیتِ زنده).
 3. اسکیلِ `.claude/skills/iran-market-data/SKILL.md` را بخوان (قواعدِ سختِ داده).
-4. `npm i && npm run build && npm run test:core` — همه باید سبز شوند.
-   (**`npm ci` روی `main` شکست می‌خورد**: `package-lock.json` با `package.json` هم‌گام نیست —
-   `Missing: frac@1.1.2 from lock file`. VERIFIED 2026-07-25؛ فعلاً `npm i` بزن. رفعِ لاک‌فایل
-   خارج از دامنهٔ این سند است.)
+4. `npm ci && npm run build && npm run test:core` — همه باید سبز شوند.
+   (**`npm ci` از P1-010 کار می‌کند.** پیش‌تر با `Missing: xlsx@0.18.5 …` می‌شکست چون
+   `xlsx` و ۸ وابستگیِ فرعی‌اش در `package-lock.json` نبودند؛ لاک‌فایل بازتولید شد.
+   از این پس **`npm ci` بزن نه `npm i`** — همان چیزی که CI اجرا می‌کند.)
 5. برای داشبورد ارز: `scripts/README-fx-heavy.md` را بخوان — **این فایل روی `main` نیست**؛
    اول به `develop` یا `feat/fx-heavy-monthly` سوییچ کن (بخش ۸).
 6. قبل از هر تغییر: مطمئن شو کدام برنچ (`develop`-محور) و کدام مالک (بخش ۱۲).
