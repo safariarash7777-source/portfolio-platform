@@ -232,6 +232,7 @@ Streamlit پایتونیِ آرش. هدف: بدونِ سرورِ جدید و ب�
 npm run dev        # توسعهٔ محلی
 npm run build      # باید سبز باشد — پایانِ هر کار
 npm run typecheck  # اگر تایپ‌ها را لمس کردی
+npm run lint:setup # یک‌بار: نصبِ موقتِ ابزارِ لینت (در devDependencies نیست)
 npm run lint       # ESLint CLI — غیرتعاملی
 npm run test:core  # موتورِ هسته
 npm run test:calc  # محاسبات بنیادی/تقویم/…
@@ -242,6 +243,10 @@ npm run validate:sql       # بررسیِ سیاستیِ فایل‌های sql/ 
 npm run validate:sql:grammar  # گرامرِ واقعیِ Postgres (نیازمندِ `pip install pglast`)
 ```
 
+> ⚠️ **ابزارِ لینت عمداً در `devDependencies` نیست.** افزودنش درختِ وابستگی را از
+> ۲۳۲ به ۵۰۷ بسته می‌بُرد و **استقرارِ Vercel را می‌شکست** (با bisect ثابت شد — `B-023`).
+> پیش از لینتِ محلی یک‌بار `npm run lint:setup` بزن؛ CI خودش این کار را می‌کند.
+>
 > ✅ **رفع شد (2026-07-25، P1-010):** `npm run lint` دیگر تعاملی نیست. `next lint`
 > منسوخ با **ESLint CLI + flat config** (`eslint.config.mjs`) جایگزین شد و `eslint`
 > و `eslint-config-next` به devDependencies اضافه شدند. کدِ فعلی **۰ خطا** می‌دهد.
