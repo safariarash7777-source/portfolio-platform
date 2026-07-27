@@ -8,6 +8,10 @@
 >
 > هر ادعا یکی از این برچسب‌ها را دارد: `VERIFIED` · `INFERRED` · `UNKNOWN` · `DECISION_REQUIRED`.
 > تعریف‌ها در بخش ۱۰.
+>
+> **جهتِ محصول اینجا نیست** — «چه می‌سازیم و چرا» در
+> [`PRODUCT-BLUEPRINT.md`](./PRODUCT-BLUEPRINT.md) است. فهرستِ کاملِ اسناد و
+> نقشِ هر کدام: [`README.md`](./README.md).
 
 ---
 
