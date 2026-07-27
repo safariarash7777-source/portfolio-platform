@@ -79,7 +79,7 @@ BrsApi + excel.codal.ir  →  رلهٔ Liara (اپ arsadata، داخل ایرا�
 | `app/symbol/[symbol]/page.tsx` | صفحهٔ عمومی نماد (یکپارچه با داده‌های روز، تاریخچه و بنیادین) |
 | `sql/phase*.sql` | اسکریپت‌های مهاجرت پایگاه داده (الگوی append-only) |
 | `docs/PRODUCT-MAP.md` | نقشهٔ جامع محصول و منابع داده |
-| `docs/BUGS.md` | گزارش QA و باگ‌های شناخته‌شده |
+| `docs/archive/BUGS.md` | گزارش QA تیر ۱۴۰۵ — **آرشیو**؛ باگ‌های زنده در `COMMAND-CENTER` §۳ |
 
 ## ۷) کارهای فوری بعدی (مرحلهٔ بعد)
 
