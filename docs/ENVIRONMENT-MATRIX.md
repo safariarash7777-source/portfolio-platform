@@ -34,9 +34,19 @@
 | `RESEND_API_KEY` / `RESEND_FROM` | سرور | ارسالِ ایمیل (Resend) |
 | `CRON_SECRET` | سرور | مجوزِ endpointهای `/api/cron/*` (Vercel Cron) |
 | `IR_MARKET_RELAY_URL` / `IR_MARKET_RELAY_TOKEN` / `RELAY_TOKEN` | سرور | ارتباط با رله |
-| `PLATFORM_WEBHOOK_SECRET` | سرور | وبهوکِ leads (miniapp→سایت) — **VERIFIED**: `app/api/leads/webhook/route.ts` همین نام را می‌خواند |
-| `LEADS_WEBHOOK_SECRET` | سرور | **DRIFT / DECISION_REQUIRED** — این نام در `.env.example` هست ولی **در هیچ کدی خوانده نمی‌شود**؛ کد `PLATFORM_WEBHOOK_SECRET` می‌خواهد. اگر روی Vercel فقط `LEADS_WEBHOOK_SECRET` ست شده باشد، وبهوکِ leads **همیشه ۴۰۱** می‌دهد. باید یکی‌سازی شود (ADR-003) |
+| `PLATFORM_WEBHOOK_SECRET` | سرور | **نامِ متعارف (CANONICAL)** برای وبهوکِ leads (miniapp→سایت). **VERIFIED در هر دو سمت:** سایت `lib/leads/webhook.ts` و مینی‌اپ `server/routers.ts:196` هر دو همین نام را می‌خوانند. باید در **هر دو سرویس مقدارِ یکسان** داشته باشد. ست‌بودنِ واقعی روی Vercel همچنان **UNKNOWN** |
+| `LEADS_WEBHOOK_SECRET` | سرور | **DEPRECATED** — نامِ قدیمی که فقط در `.env.example` بود و هیچ‌گاه خوانده نمی‌شد. از P1-009 به‌عنوانِ **fallbackِ موقت** پذیرفته می‌شود (نامِ متعارف اولویت دارد؛ استفاده از این نام هشدارِ منسوخ لاگ می‌کند) تا اگر اپراتور همین را ست کرده باشد مسیر نشکند. پس از تأییدِ staging حذف می‌شود — ADR-003 §Decision (P1-009) |
 | `ICEBERG_TOKEN` | سرور | **UNKNOWN** — در بازبینیِ ۲۰۲۶-۰۷-۲۵ هیچ ارجاعی در کدِ ریپو پیدا نشد. **DECISION_REQUIRED** |
+
+## سمتِ فرستندهٔ لید — Mini App (فقط‌خواندنی، مخزنِ `telegram-miniapp`)
+
+> این دو متغیر در **مخزنِ دیگری** خوانده می‌شوند ولی مستقیماً تعیین می‌کنند که وبهوکِ
+> لیدِ همین سایت کار می‌کند یا نه؛ برای همین اینجا ثبت شده‌اند. **فقط نام.**
+
+| متغیر | جایی که خوانده می‌شود | وضعیت |
+|---|---|---|
+| `PLATFORM_WEBHOOK_SECRET` | `server/routers.ts:196` — هدرِ `X-Webhook-Secret` | **VERIFIED در کد** ولی در `.env.example`ِ مینی‌اپ **مستند نشده**؛ کد `|| ""` می‌گذارد → اگر ست نباشد هدر خالی می‌رود و سایت ۴۰۱ می‌دهد (**B-020**) |
+| `PLATFORM_WEBHOOK_URL` | `server/routers.ts:193` — مقصدِ وبهوک | **VERIFIED در کد**، در `.env.example` مستند نشده. اگر ست نباشد یک دامنهٔ `*.vercel.app` به‌صورتِ hardcode fallback می‌شود (**B-020**) |
 
 ## Relay (Liara / Node)
 

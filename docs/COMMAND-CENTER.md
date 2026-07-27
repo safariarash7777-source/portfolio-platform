@@ -52,9 +52,9 @@
 
 | Blocker ID | Blocker | Severity | Scope | Owner | Open Since | Blocks | Next Action | Evidence | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| **B-001** | جدولِ `public.leads` در Supabase وجود ندارد | 🔴 CRITICAL | Portfolio / DB | ARASH | 2026-07-24 | B-003، G-004، D-001 | تصمیم دربارهٔ اجرای `sql/phase8b_leads.sql` (یا حذفِ کدِ وبهوک) | فهرست‌کردنِ فقط‌خواندنیِ جدول‌های `public` روی `uooeygybrniptzdxuzhj` در 2026-07-25 → `leads` نیست | **OPEN** · VERIFIED |
-| **B-002** | ناهم‌گامیِ نامِ سکرتِ لید: کد `PLATFORM_WEBHOOK_SECRET` می‌خواند، `.env.example` نامِ `LEADS_WEBHOOK_SECRET` را دارد | 🔴 CRITICAL | Portfolio | ENGINEERING | 2026-07-25 | B-003، D-001 | یکی‌سازیِ نام در کد و `.env.example` (تغییرِ کد، خارج از دامنهٔ P1-006) | `app/api/leads/webhook/route.ts:12` در برابر `.env.example`؛ `LEADS_WEBHOOK_SECRET` در هیچ کدی خوانده نمی‌شود | **OPEN** · VERIFIED |
-| **B-003** | جریانِ لید عملیاتی نیست — هر لیدِ miniapp در سطحِ DB شکست می‌خورد | 🔴 CRITICAL | Portfolio ↔ Mini App | ARASH | 2026-07-24 | درآمد/CRM | رفعِ B-001 و B-002 با هم؛ تا آن زمان لید از مسیرِ دیگری جمع شود | نتیجهٔ مستقیمِ B-001 + B-002؛ ADR-003 | **OPEN** · VERIFIED |
+| **B-001** | جدولِ `public.leads` در Supabase وجود ندارد | 🔴 CRITICAL | Portfolio / DB | ARASH | 2026-07-24 | B-003، G-004، D-001 | تصمیمِ D-001، سپس اجرای `sql/phase8b_leads.sql` روی staging. **migration در P1-009 آماده شد ولی اجرا نشده.** | فهرست‌کردنِ فقط‌خواندنیِ جدول‌های `public` روی `uooeygybrniptzdxuzhj` — بازتأیید در P1-009 (۲۰۲۶-۰۷-۲۵، ۴۱ جدول، `leads` نبود) | **OPEN** · VERIFIED |
+| **B-002** | ناهم‌گامیِ نامِ سکرتِ لید: کد `PLATFORM_WEBHOOK_SECRET` می‌خواند، `.env.example` نامِ `LEADS_WEBHOOK_SECRET` را دارد | 🔴 CRITICAL | Portfolio | ENGINEERING | 2026-07-25 | B-003، D-001 | **در کد رفع شد** (DD-012: نامِ متعارف `PLATFORM_WEBHOOK_SECRET` + fallbackِ موقت + اصلاحِ `.env.example`). باز می‌ماند تا اپراتور متغیر را در هر دو سرویس ست کند و staging تأیید کند | هر دو سمت `PLATFORM_WEBHOOK_SECRET` می‌خوانند: `lib/leads/webhook.ts` و `telegram-miniapp` `server/routers.ts:196` | **OPEN** · کد VERIFIED / ست‌بودنِ متغیر UNKNOWN |
+| **B-003** | جریانِ لید عملیاتی نیست — هر لیدِ miniapp در سطحِ DB شکست می‌خورد | 🔴 CRITICAL | Portfolio ↔ Mini App | ARASH | 2026-07-24 | درآمد/CRM | رفعِ B-001 + B-002 + B-020 با هم و تأییدِ staging؛ تا آن زمان لید از مسیرِ دیگری جمع شود | نتیجهٔ مستقیمِ B-001 + B-002 + B-020؛ ADR-003. **نکتهٔ P1-009:** حتی امروز هم لید در مینی‌اپ (MySQL) و اعلانِ تلگرام ثبت می‌شود؛ آنچه از دست می‌رود، نسخهٔ Supabase است | **OPEN** · VERIFIED |
 | **B-004** | migrationِ نقش/ایندکسِ مینی‌اپ اجرا نشده است | 🟠 HIGH | Mini App / DB | OWNER_UNASSIGNED | 2026-07-24 | G-003، G-004، G-006 | اجرای `drizzle-kit migrate` روی دیتابیسِ staging پس از آماده‌شدنِ محیط | `drizzle/0002_perpetual_sally_floyd.sql` (افزودنِ `role` به `telegram_users` + دو ایندکس روی `telegramId`) در `main` هست ولی فقط هنگامِ اجرای کانتینر اعمال می‌شود؛ کانتینر مستقر نشده | **OPEN** · فایل VERIFIED / اعمال‌نشدن INFERRED |
 | **B-004a** | اجرای migration در `docker-entrypoint.sh` **best-effort و غیرمهلک** است | 🟠 HIGH | Mini App | ENGINEERING | 2026-07-25 | G-003، G-006 | تصمیم: آیا شکستِ migration باید استارتِ سرور را متوقف کند؟ | `docker-entrypoint.sh` — پس از ۵ تلاشِ ناموفق `break` می‌کند و سرور را بالا می‌آورد؛ یعنی اپ می‌تواند روی schemaِ قدیمی بالا بیاید و چکِ نقشِ ادمین در زمانِ اجرا بشکند | **OPEN** · VERIFIED |
 | **B-005** | آمادگیِ محیطِ Coolify نامعلوم/ناتمام است | 🟠 HIGH | Mini App / Infra | OWNER_UNASSIGNED | 2026-07-24 | G-005، G-006 | تهیهٔ VPS و نصبِ Coolify؛ سپس ثبتِ شواهد اینجا | VPS هنوز provision نشده (ADR-001)؛ در این سشن دسترسی به Coolify نداشتیم | **OPEN** · UNKNOWN |
@@ -74,6 +74,8 @@
 | **B-021** | `build` به **Google Fonts** وابسته است و بدونِ دسترسی به آن شکست می‌خورد | 🟠 HIGH | Portfolio / Build | ENGINEERING | 2026-07-25 | build روی شبکهٔ ایران، استقلالِ CI | vendor کردنِ فایل‌های Vazirmatn و مهاجرت از `next/font/google` به `next/font/local` | `app/layout.tsx:2` → `import { Vazirmatn } from "next/font/google"`. با env تمیز و بدونِ پراکسی: ``` `next/font` error: Failed to fetch `Vazirmatn` from Google Fonts ``` و `exit 1`. **با قانونِ صریحِ `CLAUDE.md` («فونت از CDN لود نکن») در تضاد است.** روی رانرِ گیت‌هاب سبز است، پس CI را قرمز نمی‌کند | **OPEN** · VERIFIED |
 | **B-022** | ۴ آسیب‌پذیریِ **high** در وابستگی‌ها بدونِ رفعِ در دسترس | 🟠 HIGH | Portfolio / Supply chain | ARASH | 2026-07-25 | امنیتِ زنجیرهٔ تأمین | تصمیمِ `D-011`: منبعِ `xlsx` عوض شود یا حذف؟ برای `sharp`/`postcss` ارتقای next لازم است | `npm audit`: `xlsx@*` (Prototype Pollution + ReDoS — **No fix available** روی رجیستریِ npm) و `sharp<0.35.0`/`postcss` (رفع نیازمندِ `next@15.5.21`، خارج از رنجِ اعلام‌شده). critical = **۰** | **OPEN** · VERIFIED |
 | **B-023** | افزودنِ ابزارِ ESLint به `devDependencies` **استقرارِ Vercel را می‌شکند** | 🔴 CRITICAL | Portfolio / Deploy | ENGINEERING | 2026-07-26 | هر PRی که وابستگی اضافه کند | دورزده شد (نصبِ موقتِ ابزارِ لینت فقط در CI). علتِ دقیقِ شکست در سمتِ Vercel **هنوز خوانده نشده** — نیازمندِ `npx vercel inspect <dpl> --logs` توسط آرش | **bisect چهارمرحله‌ای، همه روی همان پروژهٔ Vercel:** `main`+docs (۲۲۳ بسته) → ✅ · `main`+رفعِ lockfile (۲۳۲) → ✅ · `+`ابزارِ ESLint (۵۰۷) → ❌ · PR #80ِ کامل (۵۰۷) → ❌ دو بار. GitHub Actions در هر چهار حالت سبز بود، پس buildِ اپ سالم است و مشکل در مرحلهٔ نصب/استقرارِ Vercel است | **OPEN** · VERIFIED (علت‌یابیِ دقیق UNKNOWN) |
+| **B-019** | فراخوانندهٔ لید در Mini App fire-and-forget است: `fetch` بدونِ `await`، فقط `.catch(console.error)` — بدونِ صف، تلاشِ مجدد یا نشانهٔ ماندگار | 🔴 CRITICAL | Mini App | OWNER_UNASSIGNED | 2026-07-25 | B-003، G-003 | افزودنِ ثبتِ ماندگارِ شکست (یا صفِ تلاشِ مجدد) در `telegram-miniapp`؛ خارج از دامنهٔ این مخزن | `telegram-miniapp@b88f935` `server/routers.ts:192-208` (خوانده‌شده فقط‌خواندنی) | **OPEN** · VERIFIED |
+| **B-020** | `.env.example`ِ مینی‌اپ نه `PLATFORM_WEBHOOK_SECRET` را مستند می‌کند نه `PLATFORM_WEBHOOK_URL`؛ کد `\|\| ""` می‌گذارد → هدرِ خالی → **همیشه ۴۰۱** | 🔴 CRITICAL | Mini App | OWNER_UNASSIGNED | 2026-07-25 | B-003، B-002 | افزودنِ هر دو متغیر به `.env.example`ِ مینی‌اپ و ست‌کردنشان در Coolify/Manus | `telegram-miniapp@b88f935` `.env.example` (هیچ‌کدام نیست) در برابر `server/routers.ts:193,196` | **OPEN** · VERIFIED |
 
 **قانون:** هیچ مالکی جعل نمی‌شود. جایی که مالکِ واقعی معلوم نیست، `OWNER_UNASSIGNED` می‌ماند
 تا آرش تعیین کند.
@@ -129,7 +131,7 @@
 
 | System | Expected State | Verified State | Drift | Evidence | Required Action | Owner | Status |
 |---|---|---|---|---|---|---|---|
-| Supabase / `leads` | جدول موجود باشد (کد به آن می‌نویسد) | **جدول وجود ندارد** | 🔴 بله | فهرستِ فقط‌خواندنیِ جدول‌ها 2026-07-25 | تصمیمِ D-001، سپس اجرای `sql/phase8b_leads.sql` | ARASH | **NOT_APPLIED** |
+| Supabase / `leads` | جدول موجود باشد (کد به آن می‌نویسد) | **جدول وجود ندارد** | 🔴 بله | فهرستِ فقط‌خواندنیِ جدول‌ها — بازتأیید 2026-07-25 (P1-009) | تصمیمِ D-001، سپس اجرای `sql/phase8b_leads.sql` روی staging طبقِ runbook | ARASH | **NOT_APPLIED / READY_FOR_STAGING** |
 | Supabase / `screener_starred` | فایل `sql/phase18_screener_starred.sql` موجود | نه ستون، نه جدول | 🟡 بله | همان فهرست | تا عرضهٔ UIِ «منتخب» بلاک بماند | ENGINEERING | **NOT_APPLIED** |
 | Supabase / phase19 IME | `ime_certificate_history`, `ime_physical_trades` | هیچ‌کدام نیست؛ به‌جایش `ime_snapshots` با طرحِ متفاوت | 🟡 بله | همان فهرست | تصمیم: طرحِ کدام یک درست است؟ | ENGINEERING | **NOT_APPLIED / SUPERSEDED** |
 | Supabase / `ime_snapshots` | باید در migrationِ ردیابی‌شده باشد | جدول هست، فایل/migration ندارد | 🟡 بله | همان فهرست | رسمی‌کردن در یک migrationِ ردیابی‌شده | ENGINEERING | **UNTRACKED** |
@@ -148,7 +150,7 @@
 | Service | Environment | Required Variables | Verified Presence | Missing/Unknown | Blocks | Status |
 |---|---|---|---|---|---|---|
 | Portfolio | Vercel (production) | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `ZARINPAL_MERCHANT_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `PLATFORM_WEBHOOK_SECRET` | **هیچ‌کدام مستقلاً تأیید نشد** (دسترسیِ عملیاتی به Vercel نداشتیم) | همه UNKNOWN؛ به‌ویژه `CRON_SECRET` (B-010) و `PLATFORM_WEBHOOK_SECRET` (B-002) | B-009، B-010، B-003 | **UNKNOWN** |
-| Portfolio | محلی (`.env`) | همان‌ها از `.env.example` | نام‌ها VERIFIED | `.env.example` نامِ اشتباهِ `LEADS_WEBHOOK_SECRET` را دارد | B-002 | **DRIFT** |
+| Portfolio | محلی (`.env`) | همان‌ها از `.env.example` | نام‌ها VERIFIED | drift در P1-009 رفع شد: `.env.example` حالا `PLATFORM_WEBHOOK_SECRET` را به‌عنوانِ نامِ متعارف دارد و نامِ قدیمی «منسوخ» برچسب خورده | B-002 (ست‌بودن در Vercel همچنان UNKNOWN) | **ALIGNED** |
 | Supabase | پروژهٔ `uooeygybrniptzdxuzhj` | — (پیکربندی سمتِ پلتفرم) | ref و جدول‌ها VERIFIED | — | — | **OK** |
 | Relay | Liara | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `BRSAPI_KEY`, `RELAY_TOKEN` (+ گروه‌های `CODAL_*`, `CANDLE_*`) | نام‌ها VERIFIED از کدِ رله | ست‌بودنِ مقادیر UNKNOWN | — | **UNKNOWN** |
 | Mini App | Manus (Legacy، فعلی) | — | UNKNOWN | کلِ پیکربندیِ Manus راستی‌آزمایی نشد | G-006 | **UNKNOWN** |
@@ -173,6 +175,17 @@
 | ~~۷~~ | ~~افزودنِ workflowِ واقعیِ CI (B-015)~~ | ARASH | — | ✅ **انجام شد** 2026-07-25 (P1-010) — می‌مانَد: روشن‌کردنِ branch protection با چکِ لازمِ `CI Gate` | — |
 | **8** | تهیهٔ VPS و نصبِ Coolify (B-005) | OWNER_UNASSIGNED | اقدام ۵ | محیطِ staging بالا | G-005 |
 | **9** | اجرای migrationهای مینی‌اپ در staging (B-004، D-002) | OWNER_UNASSIGNED | اقدام ۸ | schemaِ به‌روز + تستِ دودِ سبز | G-003 |
+| **1** | تصمیم دربارهٔ D-001 (سرنوشتِ `leads`) — **بالاترین ریسکِ باز** | ARASH | — | یا اجرای migration یا حذفِ کدِ وبهوک. **کارِ ساختش آماده است** (PR `fix/lead-recovery`)؛ فقط تصمیم لازم است | G-004 |
+| **2** | اجرای `sql/phase8b_leads.sql` روی **staging** طبقِ runbookِ PR، سپس تستِ لیدِ مصنوعی | ARASH | اقدام ۱ | جدول + ایندکس‌ها موجود، یک ردیفِ لیدِ تست، لاگِ بدونِ نشتِ سکرت | G-004 |
+| **3** | ست‌کردنِ `PLATFORM_WEBHOOK_SECRET` با مقدارِ **یکسان** در Portfolio و Mini App | ARASH | اقدام ۲ | وبهوک به‌جای ۴۰۱، ۲۰۰ برگرداند | G-004 |
+| **4** | رفعِ fire-and-forgetِ سمتِ Mini App (B-019) و مستندسازیِ متغیرهایش (B-020) | OWNER_UNASSIGNED | اقدام ۳ | PR در مخزنِ `telegram-miniapp` | G-003 |
+| **5** | بازبینیِ PR #75 (اصلاحِ امنیتیِ پرداخت) | ARASH | — | تصمیمِ D-009 | — |
+| **6** | بازسازیِ `package-lock.json` تا `npm ci` کار کند (B-013) | ENGINEERING | — | buildِ بازتولیدپذیر | — |
+| **7** | تعیینِ مالک برای سه ردیفِ `OWNER_UNASSIGNED` (B-018) | ARASH | — | `SERVICE-OWNERSHIP.md` بدونِ خانهٔ خالی | — |
+| **8** | راستی‌آزماییِ اجرای Vercel Cron و وجودِ `CRON_SECRET` (B-009، B-010) | ARASH | — | شواهدِ ثبت‌شده در همین سند | — |
+| **9** | تصمیم دربارهٔ افزودنِ یک workflowِ واقعیِ CI (B-015) | ARASH | اقدام ۶ | build/typecheck/test روی هر PR | — |
+| **10** | تهیهٔ VPS و نصبِ Coolify (B-005) | OWNER_UNASSIGNED | اقدام ۷ | محیطِ staging بالا | G-005 |
+| **11** | اجرای migrationهای مینی‌اپ در staging (B-004، D-002) | OWNER_UNASSIGNED | اقدام ۱۰ | schemaِ به‌روز + تستِ دودِ سبز | G-003 |
 
 ---
 
