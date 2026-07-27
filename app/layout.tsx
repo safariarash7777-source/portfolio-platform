@@ -1,11 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Vazirmatn } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
-const vazirmatn = Vazirmatn({
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+/**
+ * Vazirmatn — سلف‌هاست، طبقِ قانونِ `CLAUDE.md`: «فونت از CDN لود نکن».
+ *
+ * پیش‌تر از `next/font/google` می‌آمد که هرچند فونت را در زمانِ اجرا سلف‌هاست
+ * می‌کند، در زمانِ **build** آن را از Google دانلود می‌کند. نتیجه‌اش این بود که
+ * روی هر شبکه‌ای که به `fonts.googleapis.com` دسترسی ندارد — از جمله شبکهٔ ایران —
+ * `next build` با «Failed to fetch Vazirmatn from Google Fonts» شکست می‌خورد.
+ * (بلاکرِ B-021)
+ *
+ * حالا فایلِ variable رسماً از انتشارِ npmِ خودِ پروژه (v33.0.3، مجوزِ SIL OFL 1.1،
+ * متنِ مجوز کنارش) داخلِ مخزن است: یک فایلِ ۱۱۱KB برای کلِ بازهٔ ۱۰۰–۹۰۰، به‌جای
+ * شش وزنِ جدا. build دیگر به هیچ شبکهٔ بیرونی وابسته نیست.
+ *
+ * عمداً نسخهٔ استاندارد انتخاب شده، نه «Farsi-Digits»: تبدیلِ رقم در این پروژه
+ * کارِ `toPersianDigits` در `lib/format.ts` است و فونتی که خودش رقم را عوض کند
+ * باعثِ تبدیلِ دوباره و ناهماهنگیِ hydration می‌شود.
+ */
+const vazirmatn = localFont({
+  src: [{ path: "../public/fonts/Vazirmatn-Variable.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-vazirmatn",
   display: "swap",
 });
