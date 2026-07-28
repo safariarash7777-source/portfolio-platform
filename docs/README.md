@@ -3,10 +3,11 @@
 > **این تنها فهرستِ معتبرِ اسناد است.** اگر سندی اینجا نیست، یا آرشیو است یا باید
 > اینجا اضافه شود.
 >
-> آخرین به‌روزرسانی: ۱۴۰۵/۰۵/۰۵ (2026-07-27)
+> آخرین به‌روزرسانی: ۱۴۰۵/۰۵/۰۶ (2026-07-28)
 >
-> **شمارشِ فعلی:** ۲۰ سندِ فعال در `docs/` (۱۰ هسته + ۹ مرجعِ فنی + ۱ runbook) ·
-> ۳ ADR · ۱۲ آرشیو. پیش از این پاکسازی، ۲۵ سند در `docs/` بود بدونِ نقشِ روشن.
+> **شمارشِ فعلی:** ۲۱ سندِ فعال در `docs/` (۱۰ هسته + ۹ مرجعِ فنی + ۲ runbook) ·
+> ۴ ADR · ۱۲ آرشیو. پیش از این پاکسازی، ۲۵ سند در `docs/` بود بدونِ نقشِ روشن.
+> (‏`RUNBOOK-branch-protection` و `ADR/004` با merge شدنِ PR #84 اضافه شدند.)
 
 ## سه سؤال، سه سند
 
@@ -45,14 +46,14 @@
 | [`ADR/001`](./ADR/001-miniapp-hosting.md) | میزبانیِ Mini App — Manus در برابر Coolify |
 | [`ADR/002`](./ADR/002-scheduler-ownership.md) | مالکیتِ زمان‌بندی — Vercel Cron در برابر GitHub Actions |
 | [`ADR/003`](./ADR/003-lead-source-of-truth.md) | منبعِ حقیقتِ Lead |
-| `ADR/004` | زنجیرهٔ تأمینِ `xlsx` — **در PR #84، هنوز روی `main` نیست** |
+| [`ADR/004`](./ADR/004-xlsx-supply-chain.md) | زنجیرهٔ تأمینِ `xlsx` — **`DECISION_REQUIRED`**، تصمیمِ `D-011` |
 
 ### دستورالعمل‌های اجرا (Runbook)
 
 | Runbook | کِی لازم می‌شود |
 |---|---|
 | [`RUNBOOK-lead-staging.md`](./RUNBOOK-lead-staging.md) | فعال‌کردنِ مسیرِ لید روی staging |
-| `RUNBOOK-branch-protection.md` | اجباری‌کردنِ CI روی `main` — **در PR #84، هنوز روی `main` نیست** |
+| [`RUNBOOK-branch-protection.md`](./RUNBOOK-branch-protection.md) | اجباری‌کردنِ CI روی `main` — **هنوز اجرا نشده** (`B-015` باز) |
 
 ---
 
