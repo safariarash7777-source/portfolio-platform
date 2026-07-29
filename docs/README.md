@@ -48,6 +48,12 @@
 | [`ADR/003`](./ADR/003-lead-source-of-truth.md) | منبعِ حقیقتِ Lead |
 | [`ADR/004`](./ADR/004-xlsx-supply-chain.md) | زنجیرهٔ تأمینِ `xlsx` — **`DECISION_REQUIRED`**، تصمیمِ `D-011` |
 
+### پیوستِ تصمیم‌های باز
+
+| سند | تصمیم |
+|---|---|
+| [`DECISION-D-024-access-matrix.md`](./DECISION-D-024-access-matrix.md) | `D-024` — سطح و مدتِ دسترسیِ هر محصول · **`Authority=ARASH`، باز** |
+
 ### دستورالعمل‌های اجرا (Runbook)
 
 | Runbook | کِی لازم می‌شود |

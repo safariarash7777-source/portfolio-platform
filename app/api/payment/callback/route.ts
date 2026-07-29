@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPayment } from "@/lib/zarinpal";
 import { createSingleUseInvite, sendMessage } from "@/lib/telegram";
 import { sendAnnouncementEmail } from "@/lib/resend";
+import { grantEntitlement, entitlementSource, recordGrantFailure } from "@/lib/entitlements";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -76,6 +77,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(resultUrl(req, { status: "failed" }));
   }
 
+  // اعطای دسترسی — بدونِ این، کاربرِ پرداخت‌کرده `registered` می‌ماند چون
+  // `lib/access.ts` سطح را از `entitlements` می‌خواند نه از `payments`.
+  // idempotent نسبت به authority، و شکستش redirect را نمی‌شکند (پول گرفته شده).
+  const grantInput = {
+    userId: payment.user_id as string,
+    kind: "consulting" as const,
+    source: entitlementSource("consulting", authority),
+  };
+  const grant = await grantEntitlement(admin, grantInput);
+  if (!grant.ok) {
+    // پول گرفته شده ولی دسترسی داده نشده. این نباید در لاگ گم شود.
+    console.error("grantEntitlement (consulting) failed:", grant.reason, grant.message);
+    await recordGrantFailure(admin, grantInput, grant);
+  }
+
   // تلگرام لینک شده → DM دعوت. در غیر این صورت لینک در داشبورد نشان داده می‌شود.
   if (link?.telegram_user_id && inviteLink) {
     const sent = await sendMessage(
@@ -107,7 +123,13 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // اگر اعطای دسترسی نشد، مشتری باید بداند دسترسی «در حالِ فعال‌سازی» است —
+  // نه اینکه صفحهٔ موفقیت ببیند، بعد وارد شود و بفهمد هنوز دسترسی ندارد.
   return NextResponse.redirect(
-    resultUrl(req, { status: "success", ref: verify.refId ?? "" })
+    resultUrl(req, {
+      status: "success",
+      ref: verify.refId ?? "",
+      ...(grant.ok ? {} : { access: "pending" }),
+    })
   );
 }

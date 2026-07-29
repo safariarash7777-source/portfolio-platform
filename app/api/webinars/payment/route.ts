@@ -6,7 +6,15 @@ import { requestPayment } from "@/lib/zarinpal";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// POST /api/webinars/payment — شروع پرداخت برای ثبت‌نام وبینار
+/** callbackِ اختصاصیِ وبینار — جدا از جریانِ دوره/مشاوره. */
+const WEBINAR_CALLBACK_PATH = "/api/webinars/payment/callback";
+
+// POST /api/webinars/payment — شروع پرداخت برای ثبت‌نام وبینار.
+//
+// ترتیب عمداً این است: اول تراکنشِ زرین‌پال ساخته می‌شود تا `authority` به‌دست
+// آید، بعد ردیفِ pending با همان authority درج می‌شود. جدولِ `payments` ستون
+// `authority` را UNIQUE و تغییرناپذیر می‌داند و callback تنها از همین راه
+// پرداخت را پیدا می‌کند؛ اگر authority ذخیره نشود، پرداخت هرگز نهایی نمی‌شود.
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const {
@@ -27,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  // دریافت اطلاعات ثبت‌نام و وبینار
+  // ثبت‌نام با بایندِ مالکیت خوانده می‌شود — قیمت از دیتابیس می‌آید، نه از کلاینت.
   const { data: reg, error: regErr } = await admin
     .from("webinar_registrations")
     .select("id, webinar_id, user_id, payment_status, webinars(title, price_toman)")
@@ -36,10 +44,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (regErr || !reg) {
-    return NextResponse.json(
-      { error: "ثبت‌نام یافت نشد." },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "ثبت‌نام یافت نشد." }, { status: 404 });
   }
 
   if (reg.payment_status === "paid") {
@@ -49,7 +54,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const webinar = (reg as any).webinars;
+  const webinar = (reg as unknown as {
+    webinars: { title: string; price_toman: number } | null;
+  }).webinars;
+
   if (!webinar || webinar.price_toman <= 0) {
     return NextResponse.json(
       { error: "این وبینار رایگان است و نیاز به پرداخت ندارد." },
@@ -57,44 +65,43 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ساخت رکورد پرداخت
-  const { data: payment, error: payErr } = await admin
-    .from("payments")
-    .insert({
-      user_id: user.id,
-      amount_toman: webinar.price_toman,
-      status: "pending",
-      description: `ثبت‌نام وبینار: ${webinar.title}`,
-    })
-    .select("id")
-    .single();
+  const description = `ثبت‌نام وبینار: ${webinar.title}`;
 
-  if (payErr || !payment) {
+  // ۱) تراکنش زرین‌پال با callbackِ وبینار (نه callbackِ دوره).
+  const result = await requestPayment(
+    webinar.price_toman,
+    description,
+    WEBINAR_CALLBACK_PATH
+  );
+
+  if (!result.ok || !result.startPayUrl || !result.authority) {
+    return NextResponse.json(
+      { error: result.message || "خطا در اتصال به درگاه پرداخت." },
+      { status: 502 }
+    );
+  }
+
+  // ۲) ردیفِ pending از راه RPC ساخته می‌شود — با کلاینتِ **کاربر**، چون
+  // `create_payment` به `auth.uid()` تکیه دارد و ممیزی را هم خودش می‌نویسد.
+  const { data: paymentId, error: payErr } = await supabase.rpc("create_payment", {
+    p_amount: webinar.price_toman,
+    p_authority: result.authority,
+  });
+
+  if (payErr || !paymentId) {
+    console.error("create_payment (webinar) failed:", payErr?.message);
     return NextResponse.json(
       { error: "خطا در ساخت رکورد پرداخت." },
       { status: 500 }
     );
   }
 
-  // لینک‌کردن پرداخت به ثبت‌نام
+  // ۳) اتصالِ پرداخت به ثبت‌نام تا callback بتواند ثبت‌نام را پیدا کند.
   await admin
     .from("webinar_registrations")
-    .update({ payment_id: payment.id })
-    .eq("id", registration_id);
-
-  // درخواست پرداخت از زرین‌پال
-  // requestPayment(amountToman, description) → ZarinpalRequestResult
-  const result = await requestPayment(
-    webinar.price_toman,
-    `ثبت‌نام وبینار: ${webinar.title}`
-  );
-
-  if (!result.ok || !result.startPayUrl) {
-    return NextResponse.json(
-      { error: result.message || "خطا در اتصال به درگاه پرداخت." },
-      { status: 502 }
-    );
-  }
+    .update({ payment_id: paymentId })
+    .eq("id", registration_id)
+    .eq("user_id", user.id);
 
   return NextResponse.json({ payment_url: result.startPayUrl });
 }
