@@ -19,10 +19,10 @@
 
 | مورد | مقدار | برچسب |
 |---|---|---|
-| **Current Phase** | P1 — پاکسازی و تثبیت (Cleanup & Stabilization) | VERIFIED |
-| **Current Gate** | **G-004 · Database Migration Readiness** (BLOCKED) — گیت‌های حاکمیتِ `G-001`/`G-002` بسته شدند | VERIFIED |
-| **Last Verified Date** | **2026-07-25** | — |
-| **Portfolio main SHA** | `1acc18e07e4bc192cfd3805e8daea1a35f76c29f` — **verified as of 2026-07-28**. این مقدار ذاتاً کهنه می‌شود؛ منبعِ حقیقت `git rev-parse origin/main` است، نه این خانه. مسیر: `aaf9974` → `57100c5` (#76) → `1261383` (#77) → `b606176` (#78) → `0023f6f` (#80) → `51ac8aa` (#79) → `1acc18e` (#84) | VERIFIED |
+| **Current Phase** | **P2 — بازتعریفِ محصول و مسیرِ رونماییِ عمومی** | VERIFIED |
+| **Current Gate** | **Gate 2 · Operational Foundation** (`G2-001`…`G2-009`) — **فعال**. **Gate 1 بسته شد**: `PRODUCT-BLUEPRINT` با تأییدِ نهاییِ آرش تصویب شد (`DD-025`)، معماریِ **Arash Intelligence Desk** پیش‌تر تأیید شده بود (`DD-024`) | VERIFIED |
+| **Last Verified Date** | **2026-07-29** | — |
+| **Portfolio main SHA** | `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c` — **verified as of 2026-07-28**. منبعِ حقیقت `git rev-parse origin/main` است، نه این خانه. مسیر: `51ac8aa` (#79) → `1acc18e` (#84) → `def602f` (#85) → `7ad084e` (planning) | VERIFIED |
 | **Mini App main SHA** | `b88f9353bbc2bf776c20d4dc3790fb0cd7a1d4db` | VERIFIED (GitHub API، `telegram-miniapp`) |
 | **Active Supabase Ref** | `uooeygybrniptzdxuzhj` | VERIFIED (فهرست‌کردنِ فقط‌خواندنیِ جدول‌ها) |
 | **Deprecated Supabase Ref** | `lqfcyihuthdoqybwptxh` — **استفاده نشود** | VERIFIED (فقط یک ارجاعِ برچسب‌خوردهٔ تاریخی در اسناد) |
@@ -30,8 +30,36 @@
 | **Current Mini App hosting** | **Manus (Legacy)** — `arash-teleapp-7shs2egu.manus.space` | INFERRED (در این سشن دوباره راستی‌آزمایی نشد؛ خلافش هم مدرکی ندارد) |
 | **Mini App target hosting** | **Docker + Coolify روی VPS** | VERIFIED (کدِ هدف در `main` مینی‌اپ merge شده: `Dockerfile`, `docker-entrypoint.sh`, `DEPLOYMENT.md`) |
 | **Mini App deployment state** | نسخهٔ جدید **مستقر نشده و cutover نشده** | VERIFIED (هیچ مدرکی بر استقرار نیست؛ ADR-001) |
-| **Overall Health** | 🟠 **DEGRADED** — سایت بالاست، ولی مسیرِ لید شکسته و چند مجهولِ عملیاتی باز است | VERIFIED |
-| **Highest Active Risk** | **B-003** — جریانِ لید عملیاتی نیست (ازدست‌رفتنِ بی‌صدای لید) | VERIFIED |
+| **Overall Health** | 🔴 **IMPAIRED** — سایت بالاست، ولی **دو مسیرِ درآمد و یک مسیرِ لید شکسته‌اند**: خطای `SUPABASE_SERVICE_ROLE_KEY` در Production (وبینار + همگام‌سازیِ تلگرام)، پرداختِ وبینار خطا می‌دهد، پرداخت به `entitlement` وصل نیست، و جدولِ `leads` وجود ندارد | VERIFIED |
+| **Highest Active Risk** | **B-024** — خطای `SUPABASE_SERVICE_ROLE_KEY` در Production؛ سپس **B-025** (پرداخت دسترسی نمی‌دهد) و **B-003** (لید عملیاتی نیست) | VERIFIED |
+
+---
+
+## 1′. Capability States — چهار حالتِ متفاوت
+
+> **«کد merge شد» ≠ «مستقر شد» ≠ «عملیاتی است» ≠ «اثبات شد».**
+> هر ادعای این سند باید یکی از این چهار را صریح بگوید.
+
+| حالت | تعریف |
+|---|---|
+| **BUILT** | کد در `main` هست و تست دارد |
+| **DEPLOYED** | روی Production اجرا می‌شود |
+| **OPERATIONAL** | مسیرِ واقعیِ کسب‌وکار سرتاسر کار می‌کند |
+| **PROVEN** | با شواهدِ اجرای واقعی راستی‌آزمایی شده |
+
+| قابلیت | BUILT | DEPLOYED | OPERATIONAL | PROVEN |
+|---|:---:|:---:|:---:|:---:|
+| صفحاتِ بازار / نماد / صندوق / کدال | ✅ | ✅ | ✅ | ✅ |
+| رلهٔ داده (TSETMC/کدال/IME) | ✅ | ✅ | ✅ | ✅ |
+| موتورهای `lib/core` (کوانت/رژیم/بک‌تست/تخصیص) | ✅ | ✅ | ✅ | ⚠️ فقط با تستِ واحد |
+| احراز هویت · نقش · `entitlements` | ✅ | ✅ | ✅ | ✅ |
+| همگام‌سازیِ تلگرام → `content_hub` | ✅ | ✅ | ⚠️ `B-024` | ❌ |
+| کارنامه (`/analyses` + زنجیرهٔ هش) | ✅ | ✅ | ⚠️ محتوا تقریباً خالی | ❌ |
+| پرداخت (زرین‌پال) | ✅ | ✅ | ⚠️ وبینار خطا می‌دهد (`B-026`) | ❌ |
+| **پرداخت → دسترسیِ خودکار** | ❌ | ❌ | ❌ | ❌ |
+| مسیرِ لید | ✅ | ✅ | ❌ جدول وجود ندارد (`B-001`) | ❌ |
+| CI (‏۴ job) | ✅ | ✅ | ⚠️ اجباری نیست (`B-015`) | ✅ |
+| میزِ آرش · مدلِ دادهٔ هوشمندی · ورودیِ خبر · AI | ❌ | ❌ | ❌ | ❌ |
 
 ---
 
@@ -45,10 +73,58 @@
 | **G-004** | Database Migration Readiness | هر دو | فهرستِ migrationهای NOT_APPLIED مشخص باشد (انجام شد) | تصمیمِ آرش برای هر migration · اجرا با شواهد · به‌روزرسانیِ MIGRATION-LEDGER | **BLOCKED** | ARASH | B-001، B-004، D-001، D-002 |
 | **G-005** | Coolify Environment Readiness | Mini App | VPS تهیه شده باشد | Coolify نصب · متغیرها ست · دیتابیس MySQL بالا · healthcheck سبز | **NOT_STARTED** | OWNER_UNASSIGNED | B-005، B-006، B-007، B-008 |
 | **G-006** | Mini App Cutover Gate | Mini App | G-003 و G-005 هر دو PASS | نسخهٔ Docker پایدار · `setWebhook` به دامنهٔ جدید · اجرای موازی · تأییدِ آرش | **NOT_STARTED** | ARASH | G-003، G-005، D-003 |
-| **G-007** | Product Definition Gate | هر دو | پایانِ پاکسازی و تثبیت (P1/P2) | تعریفِ نهاییِ محصولِ Portfolio و Mini App توسط آرش | **DEFERRED / NOT STARTED** | ARASH | تمامِ گیت‌های بالا · D-007 |
+| **G-007** | Product Definition Gate | **فقط Portfolio** | بازتعریفِ محصول نوشته شود | تأییدِ صریحِ آرش روی `PRODUCT-BLUEPRINT` بازنویسی‌شده | ✅ **SUPERSEDED توسطِ نقشهٔ ۷ گیتِ زیر** — دامنه‌اش به Portfolio محدود شد و از گیت‌های مینی‌اپ جدا شد (`DD-021`/`SD-008`) | ARASH | D-007 |
 
-> **قانون سخت:** `G-007` تا وقتی پاکسازی و تثبیت تمام نشده **باز نمی‌شود**. هیچ کارِ
-> فیچری قبل از آن آغاز نمی‌شود (`DECISION-LOG.md` → `DD-004`).
+> ⚠️ **قانونِ قبلی تغییر کرد.** پیش‌تر `G-007` پشتِ «تمامِ گیت‌های بالا» — از جمله
+> `G-003`/`G-005`/`G-006`ِ مینی‌اپ که هر سه `OWNER_UNASSIGNED`اند — قفل بود. یعنی
+> تعریفِ محصولِ اصلی پشتِ مهاجرتی قفل شده بود که مالک ندارد. طبقِ **`DD-021`**
+> (`SD-008`) این وابستگی برداشته شد: **گیت‌های مینی‌اپ مسیرِ مستقلِ خود را دارند و
+> پیش‌شرطِ هیچ‌کدام از گیت‌های ۱ تا ۷ نیستند.**
+>
+> بقیهٔ `DD-004` معتبر می‌ماند: کارِ فیچری همچنان نیازمندِ تعریفِ محصول است — و آن
+> تعریف در `Gate 1` نوشته شد و منتظرِ تأییدِ Command Center و آرش است.
+
+### نقشهٔ ۷ گیتِ مسیرِ رونمایی (Portfolio)
+
+| Gate | نام | Work Packages | Exit Criteria (خلاصه) | Status | Owner |
+|---|---|---|---|---|---|
+| **Gate 1** | Product Rebaseline | — | `PRODUCT-BLUEPRINT` بازنویسی‌شده · تصمیم‌های قدیمی superseded · مینی‌اپ جدا · PRِ فقط‌مستندات | ✅ **COMPLETE** (`DD-025`، PR #86) | COMMAND_CENTER → ARASH |
+| **Gate 2** | Operational Foundation | `G2-001`…`G2-009` | package manager واحد · `B-024` رفع · پرداخت→entitlement طراحی+تست · لید سرتاسر · پاکسازیِ ادعاهای نادرست | 🔵 **ACTIVE** | ENGINEERING · ARASH (D-024) |
+| **Gate 3** | Manual Intelligence Workflow | `G3-001`…`G3-007` | مدلِ دادهٔ هوشمندی · میزِ آرش (MVP) · **≥۱۰ روزِ کاریِ واقعیِ اجرای خصوصی** | ⚪ NOT_STARTED | ARASH |
+| **Gate 4** | Assisted Intelligence | `Research & Market Monitoring Agent` (تک‌ایجنت) | ۷ معیارِ اجباری (منبع · confidence · Fact/Inference/Scenario · تأییدِ انسانی · ثبتِ اصلاح · عدمِ انتشارِ خودکارِ حساس · ردیابی) | ⚪ NOT_STARTED | ARASH (D-022، D-023) |
+| **Gate 5** | Public Intelligence Experience | — | صفحهٔ اولِ هوشمندی‌محور · بدونِ دادهٔ ساختگی · RTL/موبایل · SEO حفظ‌شده | ⚪ NOT_STARTED | ARASH |
+| **Gate 6** | Compliance, Security & Reliability | — | ۱۰ معیارِ اجباری (پرداخت/RLS/Language Guard/حریمِ خصوصی/رصدپذیری/خطا و دادهٔ بیات/rollback/تستِ درآمد/تمرینِ migration/branch protection) | ⚪ NOT_STARTED | ENGINEERING · ARASH |
+| **Gate 7** | Controlled Public Launch | — | همهٔ گیت‌های قبلی PASS · تأییدِ صریحِ آرش برای cutover | ⚪ NOT_STARTED | ARASH |
+
+> معیارهای کامل: `.planning/2026-07-28-public-intelligence-launch/acceptance_criteria.md`
+>
+> **گیت‌های `G-003`/`G-005`/`G-006` (مینی‌اپ) باز می‌مانند ولی دیگر مسدودکنندهٔ این نقشه نیستند.**
+
+### ترتیبِ قطعیِ توسعه
+
+```text
+بسته‌شده:
+Gate 1 — Product Rebaseline  ✅  (DD-025)
+
+اکنون:
+Gate 2 — Operational Foundation  ←  G2-001 نقطهٔ شروع است
+
+سپس:
+Gate 3 — Arash Desk + Manual Workflow
+Gate 4 — First Assisted Agent
+Gate 5 — Public Experience
+Gate 6 — Hardening
+Gate 7 — Controlled Launch
+```
+
+> ⚠️ **قاعدهٔ سخت: Arash Desk (`G3-002`) پیش از رفعِ ریسک‌های Gate 2 وارد توسعهٔ اجرایی
+> نمی‌شود.** معماری‌اش تأیید شده (`DD-024`) ولی ساختش نه. میزِ فرماندهی روی پایه‌ای که
+> پرداختش دسترسی نمی‌دهد (`B-025`)، سرویس‌رولش خطا می‌دهد (`B-024`) و لیدش ثبت نمی‌شود
+> (`B-001`)، فقط نمای زیبایی روی دادهٔ غیرقابل‌اعتماد است.
+>
+> **تفکیک با Gate 6 تا تناقض نشود:** `G2-003` سلامت را **قابلِ مشاهده** می‌کند و
+> `G2-009` branch protection را **روشن** می‌کند؛ Gate 6 آستانه، هشدار، رفتارِ
+> اثبات‌شدهٔ دادهٔ بیات و **اثباتِ اینکه گیت هنوز اجباری است** را می‌خواهد.
 
 ---
 
@@ -59,6 +135,11 @@
 | **B-001** | جدولِ `public.leads` در Supabase وجود ندارد | 🔴 CRITICAL | Portfolio / DB | ARASH | 2026-07-24 | B-003، G-004، D-001 | تصمیمِ D-001، سپس اجرای `sql/phase8b_leads.sql` روی staging. **migration در P1-009 آماده شد ولی اجرا نشده.** | فهرست‌کردنِ فقط‌خواندنیِ جدول‌های `public` روی `uooeygybrniptzdxuzhj` — بازتأیید در P1-009 (۲۰۲۶-۰۷-۲۵، ۴۱ جدول، `leads` نبود) | **OPEN** · VERIFIED |
 | **B-002** | ناهم‌گامیِ نامِ سکرتِ لید: کد `PLATFORM_WEBHOOK_SECRET` می‌خواند، `.env.example` نامِ `LEADS_WEBHOOK_SECRET` را دارد | 🔴 CRITICAL | Portfolio | ENGINEERING | 2026-07-25 | B-003، D-001 | **در کد رفع شد** (DD-012: نامِ متعارف `PLATFORM_WEBHOOK_SECRET` + fallbackِ موقت + اصلاحِ `.env.example`). باز می‌ماند تا اپراتور متغیر را در هر دو سرویس ست کند و staging تأیید کند | هر دو سمت `PLATFORM_WEBHOOK_SECRET` می‌خوانند: `lib/leads/webhook.ts` و `telegram-miniapp` `server/routers.ts:196` | **OPEN** · کد VERIFIED / ست‌بودنِ متغیر UNKNOWN |
 | **B-003** | جریانِ لید عملیاتی نیست — هر لیدِ miniapp در سطحِ DB شکست می‌خورد | 🔴 CRITICAL | Portfolio ↔ Mini App | ARASH | 2026-07-24 | درآمد/CRM | رفعِ B-001 + B-002 + B-020 با هم و تأییدِ staging؛ تا آن زمان لید از مسیرِ دیگری جمع شود | نتیجهٔ مستقیمِ B-001 + B-002 + B-020؛ ADR-003. **نکتهٔ P1-009:** حتی امروز هم لید در مینی‌اپ (MySQL) و اعلانِ تلگرام ثبت می‌شود؛ آنچه از دست می‌رود، نسخهٔ Supabase است | **OPEN** · VERIFIED |
+| **B-024** | **خطای `SUPABASE_SERVICE_ROLE_KEY` در Production** — وبینار و همگام‌سازیِ تلگرام را می‌شکند | 🔴 CRITICAL | Portfolio / Env | **ARASH** | 2026-07-28 | مسیرِ درآمدِ وبینار · `content_hub` · Gate 2 | راستی‌آزماییِ وجود و درستیِ متغیر در محیطِ Vercel (**بدونِ افشای مقدار**)، سپس یک تستِ دودِ کنترل‌شده | گزارشِ عملیاتی در مأموریتِ `P2-G1-001` (واقعیت‌های قطعیِ فعلی). `lib/supabase/admin.ts` سرویس‌رول را لازم دارد و `runTelegramFeedSync` و مسیرهای وبینار از آن استفاده می‌کنند | **OPEN** · گزارشِ عملیاتی VERIFIED / علتِ دقیق UNKNOWN |
+| **B-025** | **پرداخت به `entitlement` وصل نیست** — مشتریِ پرداخت‌کرده خودکار دسترسی نمی‌گیرد | 🔴 CRITICAL | Portfolio / Revenue | **ARASH** (نگاشت) + ENGINEERING (پیاده‌سازی) | 2026-07-28 | مسیرِ درآمد · Gate 2 · Gate 6 | تصمیمِ `D-024` (هر محصول چه سطح و چه مدت)، سپس طراحی + تستِ پل. **هیچ اصلاحِ پرداختی در این مأموریت انجام نشد.** | هیچ‌کدام از `app/api/payment/callback/route.ts` و `app/api/webinars/payment/callback/route.ts` به `entitlements` نمی‌نویسند؛ تنها نویسنده `app/api/admin/entitlements/route.ts` (فقط‌ادمین) است. گیتِ `/terminal` در `middleware.ts` و `lib/access.ts` به همین جدول نگاه می‌کند | **OPEN** · VERIFIED |
+| **B-026** | **پرداختِ وبینار در Production خطا می‌دهد** | 🔴 CRITICAL | Portfolio / Revenue | **ARASH** | 2026-07-28 | مسیرِ درآمد · Gate 2 · D-009 | بازتولیدِ خطا با شواهد، سپس تصمیمِ `D-009` دربارهٔ PR #75. **PR #75 پایهٔ کهنه دارد و مستقیم merge نمی‌شود.** | گزارشِ عملیاتی در `P2-G1-001`. احتمالاً با `B-024` هم‌ریشه است ولی **این ادعا راستی‌آزمایی نشده** | **OPEN** · گزارشِ عملیاتی VERIFIED / علت UNKNOWN |
+| **B-027** | **`ProductFacts` عددِ نادرست نمایش می‌دهد** — «۵ دقیقه، چرخهٔ پایش قیمت و هشدار» در حالی که cron روزانه است | 🟠 HIGH | Portfolio / Truthfulness | ENGINEERING | 2026-07-28 | Gate 2 · Gate 5 | اصلاحِ عدد یا حذفِ ردیف. **در این مأموریت هیچ کدی تغییر نکرد.** | `components/landing/ProductFacts.tsx:15` مقدارِ `5` با برچسبِ «دقیقه» دارد و هدرِ فایل ادعا می‌کند «فقط اعدادِ واقعیِ قابل‌اثبات»؛ `vercel.json` زمان‌بندیِ `/api/cron/alerts` را `0 6 * * *` (روزانه) می‌گذارد | **OPEN** · VERIFIED |
+| **B-028** | **`/learn` شش درسِ منتشرنشده را عمومی نشان می‌دهد** | 🟡 MEDIUM | Portfolio / Truthfulness | ARASH (محتوا) | 2026-07-28 | Gate 5 | یا انتشارِ حداقلِ محتوا یا پنهان‌کردنِ ناحیه تا انتشار | `lib/learn.ts` — هر شش درس `published: false`؛ `app/learn/[slug]/page.tsx` بدنه‌اش صریحاً placeholder است | **OPEN** · VERIFIED |
 | **B-004** | migrationِ نقش/ایندکسِ مینی‌اپ اجرا نشده است | 🟠 HIGH | Mini App / DB | OWNER_UNASSIGNED | 2026-07-24 | G-003، G-004، G-006 | اجرای `drizzle-kit migrate` روی دیتابیسِ staging پس از آماده‌شدنِ محیط | `drizzle/0002_perpetual_sally_floyd.sql` (افزودنِ `role` به `telegram_users` + دو ایندکس روی `telegramId`) در `main` هست ولی فقط هنگامِ اجرای کانتینر اعمال می‌شود؛ کانتینر مستقر نشده | **OPEN** · فایل VERIFIED / اعمال‌نشدن INFERRED |
 | **B-004a** | اجرای migration در `docker-entrypoint.sh` **best-effort و غیرمهلک** است | 🟠 HIGH | Mini App | ENGINEERING | 2026-07-25 | G-003، G-006 | تصمیم: آیا شکستِ migration باید استارتِ سرور را متوقف کند؟ | `docker-entrypoint.sh` — پس از ۵ تلاشِ ناموفق `break` می‌کند و سرور را بالا می‌آورد؛ یعنی اپ می‌تواند روی schemaِ قدیمی بالا بیاید و چکِ نقشِ ادمین در زمانِ اجرا بشکند | **OPEN** · VERIFIED |
 | **B-005** | آمادگیِ محیطِ Coolify نامعلوم/ناتمام است | 🟠 HIGH | Mini App / Infra | OWNER_UNASSIGNED | 2026-07-24 | G-005، G-006 | تهیهٔ VPS و نصبِ Coolify؛ سپس ثبتِ شواهد اینجا | VPS هنوز provision نشده (ADR-001)؛ در این سشن دسترسی به Coolify نداشتیم | **OPEN** · UNKNOWN |
@@ -102,6 +183,11 @@
 | **D-008** | تکلیفِ PR #74 چیست؟ | ARASH | 2026-07-23 | شاخهٔ `develop` | merge به develop / نگه‌داشتن تا اعتبارِ PSY / بستن | پس از رفعِ بلاکرِ CPI ماهانه | **OPEN** |
 | **D-009** | تکلیفِ PR #75 و پیش‌نویسِ schemaِ پرداخت چیست؟ | ARASH | 2026-07-23 | امنیتِ پرداختِ وبینار | merge / بازبینیِ بیشتر / merge همراه با سخت‌سازیِ CSP | زودتر از بقیه (اصلاحِ امنیتی است) | **OPEN** |
 | **D-010** | Portfolio و Mini App بلندمدت دیتابیسِ مشترک، یکپارچگیِ محدود، یا bounded contextهای جدا؟ | ARASH | 2026-07-24 | معماریِ بلندمدت، D-001 | مشترک / یکپارچگیِ محدود از راهِ وبهوک (وضعِ فعلی) / کاملاً جدا | همراه با D-007 | **OPEN** |
+| **D-021** | مرزِ رایگان/پرمیومِ نسخهٔ اول کجاست؟ | **ARASH** | 2026-07-28 | Gate 5، Gate 7 | بریفِ رایگان+عمقِ پرمیوم / همه رایگان تا رونمایی / ترکیب | پیش از `Gate 5` | **OPEN** — جانشینِ `D-015` |
+| **D-022** | منابعِ خبریِ مجاز، و مجاز بودنِ خلاصهٔ خودکار زیرِ نامِ آرش | **ARASH** | 2026-07-28 | Gate 3، Gate 4 | فهرستِ محدودِ رسمی / فقط منابعِ داخلی / ترکیب | پیش از `Gate 3` | **OPEN** |
+| **D-023** | تأمین‌کنندهٔ LLM و مسیرِ دسترسی زیرِ تحریم/شبکه | **ARASH** | 2026-07-28 | Gate 4 | از Vercel / از رله / واسط / بدونِ LLM | پیش از `Gate 4` | **OPEN** |
+| **D-024** | هر محصولِ پولی چه سطح و چه مدت دسترسی می‌دهد؟ | **ARASH** | 2026-07-28 | Gate 2، مسیرِ درآمد | نگاشتِ صریح / نگاشتِ دیگر | **فوری** — پیش‌نیازِ رفعِ `B-025` | **OPEN** |
+| ~~**D-012**~~ · ~~**D-013**~~ · ~~**D-014**~~ · ~~**D-015**~~ · ~~**D-016**~~ | تصمیم‌های محصولیِ نسخهٔ قبلیِ بلوپرینت | ARASH | 2026-07-20 | — | — | — | **SUPERSEDED** در `P2-G1-001` → `D-019`، `D-020`، `DD-019`، `D-021`، `DD-020` (نگاشت: `SD-003`…`SD-007`) |
 
 > **نکتهٔ مهمِ فنی برای D-010:** مینی‌اپ روی **MySQL** با Drizzle کار می‌کند
 > (`DATABASE_URL=mysql://…`)، درحالی‌که Portfolio روی **Postgres/Supabase** است. یعنی
@@ -111,7 +197,9 @@
 
 ## 5. Pull Request Status
 
-> وضعیت از GitHub در **2026-07-25** خوانده شد. حدس زده نشده.
+> وضعیت از GitHub در **2026-07-28** خوانده شد. حدس زده نشده.
+>
+> **#84 و #85 merge شدند** (`1acc18e` و `def602f`). **#74 و #75 در این مأموریت لمس نشدند.**
 
 | Repository | PR | Title | Head SHA | Draft | Mergeable | Review State | Blocks | Recommended Action |
 |---|---|---|---|---|---|---|---|---|
@@ -166,30 +254,27 @@
 
 ## 8. Immediate Next Actions
 
-| Priority | Action | Owner | Dependency | Expected Output | Gate |
+> ترتیب از **`PRODUCT-BLUEPRINT` §۲۰** می‌آید. این جدول قبلاً دو بلوکِ تکراری داشت؛
+> در `P2-G1-001` با یک فهرستِ واحدِ گیت‌محور جایگزین شد.
+
+| # | Action | Owner | Dependency | Expected Output | Gate |
 |---|---|---|---|---|---|
-| ~~۱~~ | ~~بازبینی و merge کردنِ PR #76~~ | ARASH | — | ✅ **انجام شد** 2026-07-25 (squash `57100c5`) | G-001 ✅ |
-| ~~۲~~ | ~~بازبینی و merge کردنِ PR #77~~ | ARASH | — | ✅ **انجام شد** 2026-07-25 (squash `1261383`) | G-002 ✅ |
-| **1** | تصمیم دربارهٔ D-001 (سرنوشتِ `leads`) — **بالاترین ریسکِ باز** | ARASH | — | یا اجرای migration یا حذفِ کدِ وبهوک | G-004 |
-| **2** | یکی‌سازیِ نامِ سکرتِ وبهوکِ لید (B-002) | ENGINEERING | اقدام ۱ | یک PRِ کوچکِ کد + به‌روزرسانیِ `.env.example` | G-004 |
-| **3** | بازبینیِ PR #75 (اصلاحِ امنیتیِ پرداخت) | ARASH | — | تصمیمِ D-009 | — |
-| ~~۴~~ | ~~بازسازیِ `package-lock.json` (B-013)~~ | ENGINEERING | — | ✅ **انجام شد** 2026-07-25 (P1-010) | — |
-| **5** | تعیینِ مالک برای سه ردیفِ `OWNER_UNASSIGNED` (B-018) | ARASH | — | `SERVICE-OWNERSHIP.md` بدونِ خانهٔ خالی | — |
-| **6** | راستی‌آزماییِ اجرای Vercel Cron و وجودِ `CRON_SECRET` (B-009، B-010) | ARASH | — | شواهدِ ثبت‌شده در همین سند | — |
-| ~~۷~~ | ~~افزودنِ workflowِ واقعیِ CI (B-015)~~ | ARASH | — | ✅ **انجام شد** 2026-07-25 (P1-010) — می‌مانَد: روشن‌کردنِ branch protection با چکِ لازمِ `CI Gate` | — |
-| **8** | تهیهٔ VPS و نصبِ Coolify (B-005) | OWNER_UNASSIGNED | اقدام ۵ | محیطِ staging بالا | G-005 |
-| **9** | اجرای migrationهای مینی‌اپ در staging (B-004، D-002) | OWNER_UNASSIGNED | اقدام ۸ | schemaِ به‌روز + تستِ دودِ سبز | G-003 |
-| **1** | تصمیم دربارهٔ D-001 (سرنوشتِ `leads`) — **بالاترین ریسکِ باز** | ARASH | — | یا اجرای migration یا حذفِ کدِ وبهوک. **کارِ ساختش آماده است** (PR `fix/lead-recovery`)؛ فقط تصمیم لازم است | G-004 |
-| **2** | اجرای `sql/phase8b_leads.sql` روی **staging** طبقِ runbookِ PR، سپس تستِ لیدِ مصنوعی | ARASH | اقدام ۱ | جدول + ایندکس‌ها موجود، یک ردیفِ لیدِ تست، لاگِ بدونِ نشتِ سکرت | G-004 |
-| **3** | ست‌کردنِ `PLATFORM_WEBHOOK_SECRET` با مقدارِ **یکسان** در Portfolio و Mini App | ARASH | اقدام ۲ | وبهوک به‌جای ۴۰۱، ۲۰۰ برگرداند | G-004 |
-| **4** | رفعِ fire-and-forgetِ سمتِ Mini App (B-019) و مستندسازیِ متغیرهایش (B-020) | OWNER_UNASSIGNED | اقدام ۳ | PR در مخزنِ `telegram-miniapp` | G-003 |
-| **5** | بازبینیِ PR #75 (اصلاحِ امنیتیِ پرداخت) | ARASH | — | تصمیمِ D-009 | — |
-| **6** | بازسازیِ `package-lock.json` تا `npm ci` کار کند (B-013) | ENGINEERING | — | buildِ بازتولیدپذیر | — |
-| **7** | تعیینِ مالک برای سه ردیفِ `OWNER_UNASSIGNED` (B-018) | ARASH | — | `SERVICE-OWNERSHIP.md` بدونِ خانهٔ خالی | — |
-| **8** | راستی‌آزماییِ اجرای Vercel Cron و وجودِ `CRON_SECRET` (B-009، B-010) | ARASH | — | شواهدِ ثبت‌شده در همین سند | — |
-| **9** | تصمیم دربارهٔ افزودنِ یک workflowِ واقعیِ CI (B-015) | ARASH | اقدام ۶ | build/typecheck/test روی هر PR | — |
-| **10** | تهیهٔ VPS و نصبِ Coolify (B-005) | OWNER_UNASSIGNED | اقدام ۷ | محیطِ staging بالا | G-005 |
-| **11** | اجرای migrationهای مینی‌اپ در staging (B-004، D-002) | OWNER_UNASSIGNED | اقدام ۱۰ | schemaِ به‌روز + تستِ دودِ سبز | G-003 |
+| **۱** | تأییدِ `PRODUCT-BLUEPRINT` بازنویسی‌شده | COMMAND_CENTER → **ARASH** | — | تأییدِ صریح یا CHANGES_REQUIRED | Gate 1 |
+| **۲** | یکسان‌سازیِ package manager (`D-018` — npm، حذفِ `pnpm-lock.yaml`) | ENGINEERING | اقدام ۱ | یک PRِ مستقل + استقرارِ سبزِ Vercel روی PRی که وابستگی اضافه می‌کند | Gate 2 |
+| **۳** | ترمیمِ `SUPABASE_SERVICE_ROLE_KEY` در Production (`B-024`) | **ARASH** | — | وبینار و همگام‌سازیِ تلگرام دوباره کار کنند (با شواهد) | Gate 2 |
+| **۴** | تصمیمِ `D-024` — هر محصولِ پولی چه سطح و چه مدت دسترسی می‌دهد | **ARASH** | — | جدولِ مکتوبِ «محصول → سطح → مدت» | Gate 2 |
+| **۵** | طراحی و تستِ پلِ پرداخت → `entitlement` (`B-025`) | ENGINEERING | اقدام ۳، ۴ | PR با تستِ رگرسیون؛ **بدونِ پرداختِ واقعی** | Gate 2 |
+| **۶** | تصمیمِ `D-009` دربارهٔ PR #75 و رفعِ `B-026` | **ARASH** | اقدام ۳ | مسیرِ پرداختِ وبینار سالم | Gate 2 |
+| **۷** | تصمیمِ `D-001` و اجرای `sql/phase8b_leads.sql` روی **staging** | **ARASH** | — | جدولِ `leads` + تستِ لیدِ مصنوعیِ سرتاسر | Gate 2 |
+| **۸** | ست‌کردنِ `PLATFORM_WEBHOOK_SECRET` یکسان در هر دو سرویس (`B-002`) | **ARASH** | اقدام ۷ | وبهوک به‌جای ۴۰۱، ۲۰۰ بدهد | Gate 2 |
+| **۹** | پاکسازیِ ادعاهای نادرست (`B-027` عددِ ۵ دقیقه · `B-028` دروسِ منتشرنشده) | ENGINEERING · ARASH | — | هیچ عددِ اثبات‌ناپذیری در مسیرِ عمومی | Gate 2 |
+| **۱۰** | روشن‌کردنِ branch protection طبقِ `RUNBOOK-branch-protection.md` (`B-015`) | **ARASH** | — | چکِ لازمِ `CI Gate` روی `main` | Gate 6 |
+| **۱۱** | تعیینِ مالک برای سه ردیفِ `OWNER_UNASSIGNED` (`B-018`) | **ARASH** | — | `SERVICE-OWNERSHIP.md` بدونِ خانهٔ خالی | Gate 6 |
+| **۱۲** | تصمیم‌های `D-022` (منابعِ خبری) و `D-023` (مسیرِ LLM) | **ARASH** | اقدام ۱ | بدونِ این‌ها `Gate 4` شروع نمی‌شود | Gate 4 |
+| **۱۳** | راستی‌آزماییِ Vercel Cron و `CRON_SECRET` (`B-009`، `B-010`) | **ARASH** | — | شواهدِ ثبت‌شده در همین سند | Gate 6 |
+
+**مسیرِ مستقلِ Mini App** (دیگر مسدودکنندهٔ بالا نیست): تعیینِ مالک → تهیهٔ VPS و
+Coolify (`B-005`) → اجرای migrationها در staging (`B-004`، `D-002`) → cutover (`D-003`).
 
 ---
 
