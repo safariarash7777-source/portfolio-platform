@@ -119,7 +119,14 @@
 
 ## C. Database Tables
 
-### Active Tables (SQL migrations applied)
+### Tables with a migration FILE in `sql/` — **file exists ≠ applied**
+
+> ⚠️ **Corrected 2026-07-28.** The previous heading read "SQL migrations applied",
+> which conflated *a migration file exists* with *it ran in Production*.
+> `docs/MIGRATION-LEDGER.md` is the authority. Per its read-only verification
+> (2026-07-25, 41 `public` tables listed): **`leads` is missing**,
+> **`ime_physical_trades` and `ime_certificate_history` are missing**
+> (`phase19` is `NOT_APPLIED / SUPERSEDED`), and `ime_snapshots` exists but is `UNTRACKED`.
 
 | Table | Migration | Purpose |
 |---|---|---|
@@ -137,14 +144,14 @@
 | `watchlist_items` | phase7_watchlist_alerts.sql | User watchlists |
 | `webinars` | phase8_webinars.sql | Webinar catalog |
 | `webinar_registrations` | phase8_webinars.sql | Webinar registrations |
-| `leads` | phase8b_leads.sql | Lead capture |
+| `leads` | phase8b_leads.sql | Lead capture — ❌ **NOT_APPLIED, table absent in Production** (`B-001`) |
 | `market_notes` | phase9_market_notes.sql | Market notes |
 | `content_hub` | phase10_content_hub.sql | Telegram/social content |
 | `entitlements` | phase11_access_tiers.sql | Access control (append-only) |
 | `weekly_outlooks` | phase12_weekly_outlook.sql | Weekly market outlook |
 | `ir_market_snapshots` | phase13_fx_rates.sql | Market snapshots |
-| `ime_physical_trades` | phase19_ime_tables.sql | IME trade data |
-| `ime_certificate_history` | phase19_ime_tables.sql | IME certificates |
+| `ime_physical_trades` | phase19_ime_tables.sql | ❌ **NOT_APPLIED** — absent |
+| `ime_certificate_history` | phase19_ime_tables.sql | ❌ **NOT_APPLIED / SUPERSEDED** — absent; `ime_snapshots` (different schema) exists but is UNTRACKED |
 
 ### Tables Referenced in Code but NOT in Local SQL
 
@@ -247,3 +254,69 @@
 | Intelligence data model | P2 | No `events`, `scenarios` tables |
 | Arash Desk MVP | P3 | Not built |
 | Public homepage redesign | P3 | Current landing is product-marketing, not intelligence-first |
+
+
+---
+
+# Findings — Gate 1 (`P2-G1-001`, 2026-07-28)
+
+**Baseline:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
+
+## Corrections to the Gate 0 audit
+
+**C-01 — table status was overstated.** The "Active Tables (SQL migrations applied)"
+heading listed `leads`, `ime_physical_trades` and `ime_certificate_history` as applied.
+`MIGRATION-LEDGER.md` records all three as **absent from Production**. Heading and rows
+corrected above. This is exactly the Built/Deployed/Operational confusion Gate 1 exists
+to eliminate.
+
+**C-02 — `PortfolioPreviewCard` is correctly labelled.** An earlier independent review
+claimed it showed unlabelled demo data and violated `CLAUDE.md`. **That claim was wrong.**
+`components/landing/PortfolioPreviewCard.tsx:5` documents the intent and `:40` renders an
+explicit «نمونهٔ نمایشی» badge. The Gate 0 audit was right; the later review was not.
+Recorded here so the incorrect claim does not propagate.
+
+**C-03 — `ProductFacts` gap confirmed independently.** `components/landing/ProductFacts.tsx:7`
+claims "only real, provable numbers from the product itself", while `:15` renders
+`{ value: 5, label: "دقیقه، چرخهٔ پایش قیمت و هشدار" }`. `vercel.json` schedules
+`/api/cron/alerts` at `0 6 * * *` — **daily, not every five minutes**. Tracked as `B-027`.
+
+## New findings
+
+**F-11 — `SUPABASE_SERVICE_ROLE_KEY` fails in Production.** Reported operationally in
+the `P2-G1-001` brief; breaks webinar paths and Telegram sync, both of which go through
+`lib/supabase/admin.ts`. **Root cause not yet read** — reproducing it requires Vercel
+access this session does not have. Tracked as `B-024`, the highest active risk.
+Status: report VERIFIED · cause UNKNOWN.
+
+**F-12 — webinar payment fails in Production.** Reported operationally. Plausibly the
+same root cause as `F-11`, but **that link is unverified and must not be assumed**.
+Tracked as `B-026`.
+
+**F-13 — the product-definition gate was locked behind an unowned migration.** `G-007`
+listed "all gates above" as blockers, including `G-003`/`G-005`/`G-006`, and all three
+carry `OWNER_UNASSIGNED`. The main product's definition was therefore blocked on a
+Telegram Mini App server migration nobody owns. Resolved by `DD-021` / `SD-008`.
+
+**F-14 — Language Guard is narrower than `CLAUDE.md` claims.** `lib/core/vocab.test.ts:12`
+forbids exactly two words — «توصیه» and «سیگنال» — scanning only `app/` and `components/`.
+`CLAUDE.md` line 12 claims «سیگنال/خرید/فروش/توصیه/پیشنهاد» are all banned. The gap
+matters more under the new product direction, which explicitly produces scenarios and
+asset-effect statements under a licensed advisor's name. Folded into Gate 6 criteria.
+
+**F-15 — no verified LLM access path exists.** Zero LLM dependencies, and no documented
+route from this architecture (relay inside Iran, Vercel outside) to any provider under
+sanctions and network constraints. This is a **prerequisite for Gate 4**, opened as `D-023`.
+
+**F-16 — the track record is the product's proof, and it is reportedly near-empty.**
+Under the rebaselined direction the public track record stops being one section among
+many and becomes the evidence the whole product rests on. `PRODUCT-BLUEPRINT` (previous
+revision) stated the weekly-outlook table is "ready and empty". **This session did not
+query the database**, so the claim is `INFERRED` from project documentation, not
+verified. It must be confirmed by one read before it drives any launch decision.
+
+## Unchanged from Gate 0
+
+Route inventory, data sources, cron schedules, payment→entitlement gap (`E-01`),
+package-manager root cause (`G-01`), LLM absence (`H-01`), RTL/mobile (`I-01`),
+PR #75 staleness (`J-01`), and the confirmed-working capability list (§K) all stand.

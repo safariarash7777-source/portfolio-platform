@@ -1,58 +1,98 @@
-# Task Plan — P2-MEGA-001
-## Arash Safari Market Intelligence Platform
-### From Product Rebaseline to Controlled Public Launch
+# Task Plan — Arash Safari Market Intelligence Platform
+## From Product Rebaseline to Controlled Public Launch
 
 **Mission Start:** 2026-07-28
-**Baseline SHA:** `def602f5f596c42b1499106e21655cb979075232` (post PR #85 merge)
+**Current baseline SHA:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
 **Repository:** `safariarash7777-source/portfolio-platform`
+**Last updated:** 2026-07-28 (mission `P2-G1-001`)
+
+> **Only one gate may be `IN_PROGRESS` at a time.**
+> Plan lives here · evidence in `findings.md` · criteria in `acceptance_criteria.md` ·
+> running log in `progress.md`.
 
 ---
 
-## Phase Map
+## Product direction (rebaselined 2026-07-28)
 
-| Phase | Title | Gate | Status |
+Portfolio Platform is **not** a general-purpose public tool site. It is the
+**Arash Safari market-intelligence and investment-guidance system**: it watches news,
+macro, politics, geopolitics, companies and markets, and turns them into **analysis,
+scenarios and probable effect on assets** — in Arash's voice and under his judgment.
+
+Existing market/symbol/fund/codal pages and quant engines are **retained** as data,
+SEO and acquisition assets, reclassified under the new architecture — not discarded.
+
+Full definition: [`docs/PRODUCT-BLUEPRINT.md`](../../docs/PRODUCT-BLUEPRINT.md).
+
+## Architecture — one brain, several interfaces
+
+```
+Sources              Intelligence engine      Editorial gate        Interfaces
+───────              ───────────────────      ──────────────        ──────────
+market (relay ✓)  →  lib/core/ ✓           →  Arash approval    →  Arash Desk (raw)
+codal  (relay ✓)     + enrichment             low-risk: auto       Public (qualitative)
+news   (ABSENT)      + linking                sensitive: manual    Members (deep)
+Arash archive (½)    + scenarios
+```
+
+---
+
+## Gate map
+
+| Gate | Title | Status |
+|---|---|---|
+| **0** | Baseline Stabilization & Merge Docs | ✅ COMPLETE (`def602f`, then `7ad084e`) |
+| **1** | Product Rebaseline | 🔵 **IN_REVIEW** — this PR |
+| **2** | Operational Foundation | ⚪ NOT_STARTED |
+| **3** | Manual Intelligence Workflow | ⚪ NOT_STARTED |
+| **4** | Assisted Intelligence | ⚪ NOT_STARTED |
+| **5** | Public Intelligence Experience | ⚪ NOT_STARTED |
+| **6** | Compliance, Security & Reliability | ⚪ NOT_STARTED |
+| **7** | Controlled Public Launch | ⚪ NOT_STARTED |
+
+Mini App gates (`G-003`, `G-005`, `G-006`) now run on an **independent track** and are
+**no longer prerequisites** for any gate above (`DD-021` / `SD-008`). Previously
+`G-007` was blocked by all three, each of which is `OWNER_UNASSIGNED` — meaning the
+main product's definition was locked behind a migration nobody owns.
+
+---
+
+## Execution order
+
+| # | Work | Gate | Blocking decision |
 |---|---|---|---|
-| 0 | Baseline Stabilization & Merge Docs | Gate 0 | ✅ COMPLETE |
-| 1 | Product Rebaseline & Governance | Gate 1 | ⏳ PENDING CC |
-| 2 | Operational Foundation | Gate 2 | ⏳ PENDING |
-| 3 | Manual Intelligence Workflow | Gate 3 (Private Rehearsal) | ⏳ PENDING |
-| 4 | Assisted Intelligence | Gate 4 | ⏳ PENDING |
-| 5 | Public Intelligence Experience | Gate 5 | ⏳ PENDING |
-| 6 | Compliance, Security, Launch Hardening | Gate 6 | ⏳ PENDING |
-| 7 | Public Launch Gate | Production | ⏳ PENDING |
+| 1 | Package manager normalization (npm) | 2 | `D-018` ✅ decided, execution pending |
+| 2 | Production environment repair (service-role) | 2 | — (`B-024`) |
+| 3 | Payment → Entitlement design and tests | 2 | **`D-024`** (Arash) |
+| 4 | Lead staging and end-to-end verification | 2 | **`D-001`** (Arash) |
+| 5 | Truthfulness cleanup | 2 | `B-028` needs Arash on content |
+| 6 | Intelligence data model | 3 | — |
+| 7 | Arash Desk MVP | 3 | — |
+| 8 | Private rehearsal — **≥10 real working days** | 3 | — (`DD-022`) |
+| 9 | Assisted intelligence | 4 | **`D-022`, `D-023`** (Arash) |
+| 10 | Public homepage | 5 | **`D-019`, `D-020`, `D-021`** (Arash) |
+| 11 | Launch hardening | 6 | — |
+| 12 | Controlled release | 7 | Arash cutover approval |
+
+## PR strategy
+
+One PR per row above. No auto-merge. No self-merge. Each requires Command Center
+review, and every gate transition requires an explicit approval.
 
 ---
 
-## Phase 0 — Completed Actions
+## Hard rules
 
-1. **PR #85 Merge** — Squash merged `def602f` with title `docs: establish governed product and project documentation`. CI: 6/6 green. Vercel: green. Branch preserved.
-2. **Baseline Audit** — Full audit of routes, data sources, tables, crons, payment flow, and placeholders completed. See `findings.md`.
-
----
+- "code merged" ≠ "deployed" ≠ "operational" ≠ "proven"
+- No result reported PASS without a real execution
+- **No gate declared PASS with fabricated or sample data**
+- Sensitive analysis is never published without Arash's approval (`DD-023`)
+- An agent never closes a decision whose `Authority` is `ARASH`
+- No commercial, legal, pricing or Production decision is made by the execution arm
 
 ## Roles
 
-- **Arash Safari:** Founder, product owner, final decision maker
-- **Command Center (ChatGPT/Codex):** System architect, gate authority
-- **MANUS:** Principal Product Engineer, execution arm
-
-MANUS may not make business, legal, or content decisions on behalf of Arash.
-
----
-
-## PR Strategy (Planned)
-
-1. Documentation and Governance Rebaseline
-2. Package Manager Normalization
-3. Payment and Entitlement Security
-4. Lead Operational Readiness
-5. Truthfulness and Placeholder Cleanup
-6. Intelligence Data Model and Source Registry
-7. Arash Desk MVP
-8. Telegram Historical Import and Analysis Ledger
-9. Assisted Intelligence Prototype
-10. Public Homepage and Navigation
-11. Compliance and Language Guard
-12. Launch Reliability and Observability
-
-No PR auto-merges. Each PR requires Command Center review.
+- **Arash Safari** — founder, product owner, final decision maker
+- **Command Center** — system architect, gate authority
+- **Execution arm (agent)** — documentation and implementation only; **no authority**
+  over product, legal, pricing or Production decisions
