@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPayment } from "@/lib/zarinpal";
 import { createSingleUseInvite, sendMessage } from "@/lib/telegram";
 import { sendAnnouncementEmail } from "@/lib/resend";
+import { grantEntitlement } from "@/lib/entitlements";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,6 +75,18 @@ export async function GET(req: NextRequest) {
   if (verifyErr) {
     console.error("verify_payment error:", verifyErr.message);
     return NextResponse.redirect(resultUrl(req, { status: "failed" }));
+  }
+
+  // اعطای دسترسی — بدونِ این، کاربرِ پرداخت‌کرده `registered` می‌ماند چون
+  // `lib/access.ts` سطح را از `entitlements` می‌خواند نه از `payments`.
+  // idempotent نسبت به authority، و شکستش redirect را نمی‌شکند (پول گرفته شده).
+  const grant = await grantEntitlement(admin, {
+    userId: payment.user_id,
+    kind: "consulting",
+    source: `payment:${authority}`,
+  });
+  if (!grant.ok) {
+    console.error("grantEntitlement (consulting) failed:", grant.reason, grant.message);
   }
 
   // تلگرام لینک شده → DM دعوت. در غیر این صورت لینک در داشبورد نشان داده می‌شود.
