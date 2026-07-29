@@ -37,6 +37,23 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+      # `.gitignore` جلوی commitِ تصادفی را می‌گیرد ولی `git add -f` را نه، و
+      # لاکی که از قبل tracked باشد را هم پاک نمی‌کند. این گیت روی چیزی که
+      # واقعاً در درختِ گیت است کار می‌کند — همان چیزی که Vercel می‌بیند.
+      # علتِ B-023 دقیقاً همین بود: وجودِ `pnpm-lock.yaml` باعث می‌شد Vercel با
+      # pnpm بیلد کند و هر تغییرِ `package.json` استقرار را با
+      # ERR_PNPM_OUTDATED_LOCKFILE بشکند، در حالی که CI با npm سبز می‌ماند.
+      - name: فقط یک package manager — لاکِ pnpm/yarn نباید برگردد
+        run: |
+          found=$(git ls-files -- pnpm-lock.yaml yarn.lock 'npm-shrinkwrap.json')
+          if [ -n "$found" ]; then
+            echo "::error::لاک‌فایلِ غیرمجاز در درختِ گیت: $found"
+            echo "npm تنها package managerِ این مخزن است (packageManager در package.json)."
+            exit 1
+          fi
+          test -f package-lock.json || { echo "::error::package-lock.json نیست"; exit 1; }
+          echo "✅ فقط package-lock.json"
+
       - name: npm ci (اثباتِ هم‌گامیِ lockfile)
         run: npm ci
       - name: audit — سطحِ critical مسدودکننده است
@@ -60,15 +77,13 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      # ابزارِ لینت **عمداً** در devDependencies نیست: افزودنش درختِ وابستگی را
-      # از ۲۳۲ به ۵۰۷ بسته می‌بُرد و استقرارِ Vercel را می‌شکست (با bisect ثابت شد،
-      # `B-023`). اینجا موقت و با نسخهٔ پین‌شده نصب می‌شود تا نه lockfile آلوده شود
-      # و نه چیزی به محیطِ استقرار برسد.
-      - name: نصبِ موقتِ ابزارِ لینت
-        run: npm run lint:setup
-
       # `next lint` تعاملی بود و در CI هنگ می‌کرد (B-014). حالا ESLint CLI با
       # flat config است و هر warning هم مردود حساب می‌شود.
+      #
+      # ابزارِ لینت قبلاً موقت نصب می‌شد چون افزودنش به devDependencies استقرارِ
+      # Vercel را می‌شکست. علتِ واقعی اندازهٔ درختِ وابستگی نبود، بلکه `pnpm-lock.yaml`ِ
+      # ناهم‌گام بود (B-023): Vercel با pnpm بیلد می‌کرد و آن لاک هرگز بازتولید
+      # نمی‌شد. با حذفِ آن لاک و تثبیتِ npm، ابزار حالا وابستگیِ عادی است.
       - name: Lint
         run: npm run lint:ci
 
