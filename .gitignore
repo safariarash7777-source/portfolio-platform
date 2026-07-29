@@ -28,7 +28,6 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-<<<<<<< HEAD
 
 # python (ui-ux-pro-max skill scripts)
 __pycache__/
@@ -37,10 +36,10 @@ __pycache__/
 # deploy artifacts
 deploy.bundle
 *.bundle
-=======
-
-# deploy artifacts
-deploy.bundle
-*.bundle
 .env.deploy
->>>>>>> 4d2c68b (feat: secure deploy script — reads secrets from .env.deploy)
+
+# package manager — npm است (packageManager در package.json). لاکِ pnpm/yarn
+# نباید برگردد: وجودِ هم‌زمانِ دو لاک باعث می‌شد Vercel با pnpm بیلد کند و هر
+# تغییرِ package.json استقرار را با ERR_PNPM_OUTDATED_LOCKFILE بشکند.
+pnpm-lock.yaml
+yarn.lock
