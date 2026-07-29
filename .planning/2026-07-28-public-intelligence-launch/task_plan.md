@@ -4,7 +4,7 @@
 **Mission Start:** 2026-07-28
 **Current baseline SHA:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
 **Repository:** `safariarash7777-source/portfolio-platform`
-**Last updated:** 2026-07-28 (mission `P2-G1-001`)
+**Last updated:** 2026-07-29 (mission `P2-G1-002`)
 
 > **Only one gate may be `IN_PROGRESS` at a time.**
 > Plan lives here · evidence in `findings.md` · criteria in `acceptance_criteria.md` ·
@@ -23,6 +23,17 @@ Existing market/symbol/fund/codal pages and quant engines are **retained** as da
 SEO and acquisition assets, reclassified under the new architecture — not discarded.
 
 Full definition: [`docs/PRODUCT-BLUEPRINT.md`](../../docs/PRODUCT-BLUEPRINT.md).
+
+## Arash Intelligence Desk (ratified `DD-024`, 2026-07-29)
+
+The internal command layer **above** existing dashboards — radar, FX, terminal, codal,
+portfolio, analyses and content remain as the specialist engines beneath it. Five
+internal areas: Today · Market Intelligence · Decisions & Scenarios · Clients &
+Products · Operations & System Health. **No dashboard is removed, and no island
+dashboard is ever built.** Structure and per-surface mapping: `PRODUCT-BLUEPRINT` §11.
+
+Ratification covers **architecture and development order only** — not pricing, news
+sources, LLM provider or access duration (`D-021`…`D-024` remain open).
 
 ## Architecture — one brain, several interfaces
 
@@ -59,20 +70,33 @@ main product's definition was locked behind a migration nobody owns.
 
 ## Execution order
 
-| # | Work | Gate | Blocking decision |
-|---|---|---|---|
-| 1 | Package manager normalization (npm) | 2 | `D-018` ✅ decided, execution pending |
-| 2 | Production environment repair (service-role) | 2 | — (`B-024`) |
-| 3 | Payment → Entitlement design and tests | 2 | **`D-024`** (Arash) |
-| 4 | Lead staging and end-to-end verification | 2 | **`D-001`** (Arash) |
-| 5 | Truthfulness cleanup | 2 | `B-028` needs Arash on content |
-| 6 | Intelligence data model | 3 | — |
-| 7 | Arash Desk MVP | 3 | — |
-| 8 | Private rehearsal — **≥10 real working days** | 3 | — (`DD-022`) |
-| 9 | Assisted intelligence | 4 | **`D-022`, `D-023`** (Arash) |
-| 10 | Public homepage | 5 | **`D-019`, `D-020`, `D-021`** (Arash) |
-| 11 | Launch hardening | 6 | — |
-| 12 | Controlled release | 7 | Arash cutover approval |
+| # | Work | WP | Gate | Blocking decision |
+|---|---|---|---|---|
+| 1 | Package manager normalization (npm) | `G2-001` | 2 | `D-018` ✅ decided, execution pending |
+| 2 | Production environment repair (service-role) | `G2-002` | 2 | — (`B-024`) |
+| 3 | System health view + last successful runs | `G2-003` | 2 | — (`B-009`, `B-010`) |
+| 4 | Fresh review of PR #75 / webinar payment security | `G2-004` | 2 | **`D-009`** (Arash) |
+| 5 | Payment → Entitlement design and tests | `G2-005` | 2 | **`D-024`** (Arash) |
+| 6 | Lead migration, staging, end-to-end | `G2-006` | 2 | **`D-001`** (Arash) |
+| 7 | Cron schedule vs. public claims | `G2-007` | 2 | — |
+| 8 | Unprovable claims and placeholders | `G2-008` | 2 | `B-028` needs Arash on content |
+| 9 | Branch Protection and Release Gate | `G2-009` | 2 | — (`B-015`, Arash console action) |
+| 10 | Intelligence data model | `G3-001` | 3 | — |
+| 11 | Arash Desk MVP | `G3-002` | 3 | ⚠️ **gated on Gate 2 exit** |
+| 12 | Manual Daily Brief | `G3-003` | 3 | — |
+| 13 | Scenario Board | `G3-004` | 3 | — |
+| 14 | Approval Inbox | `G3-005` | 3 | — |
+| 15 | Reference portfolio ↔ events/scenarios | `G3-006` | 3 | — |
+| 16 | Private rehearsal — **≥10 real working days** | `G3-007` | 3 | — (`DD-022`) |
+| 17 | `Research & Market Monitoring Agent` (one agent only) | — | 4 | **`D-022`, `D-023`** (Arash) |
+| 18 | Public homepage | — | 5 | **`D-019`, `D-020`, `D-021`** (Arash) |
+| 19 | Launch hardening | — | 6 | — |
+| 20 | Controlled release | — | 7 | Arash cutover approval |
+
+> ⚠️ **Arash Desk (`G3-002`) is architecturally approved (`DD-024`) but does not enter
+> execution before Gate 2 risks are cleared.** A command desk built on a base where
+> payment grants no access, the service role errors, and leads are never stored is a
+> pretty view over data nobody can trust.
 
 ## PR strategy
 

@@ -75,3 +75,50 @@ The rest of `DD-004` remains in force.
 
 **Next:** Command Center review of Gate 1, then Gate 2 — starting with package manager
 normalization and the Production service-role repair.
+
+---
+
+## 2026-07-29 · Gate 1 — Arash Desk architecture ratified  (`P2-G1-002`)
+
+**Baseline:** PR #86 head verified `655e7cf20973e32a300ce281377006be7592fef6` — open,
+draft, mergeable clean, docs/planning only, worktree clean, `origin/main` untouched at
+`7ad084e`. Second commit on the same branch; PR stays draft.
+
+### Done
+
+- ✅ **`DD-024` recorded** — Arash Intelligence Desk architecture, `Authority=ARASH`,
+  the five ratified points. Scope of the ratification stated explicitly: **architecture
+  and development order only**, not pricing, news sources, LLM or access duration.
+- ✅ **`PRODUCT-BLUEPRINT` §11 rewritten** — role (eight questions), the nine-item
+  structure, the five internal areas, the layering principle, and a **13-row matrix**
+  placing every existing dashboard.
+- ✅ **No dashboard removed.** The matrix assigns a future role to each surface; the only
+  new build is `Agent Inbox`, and it is explicitly conditional on Gate 3 rehearsal.
+- ✅ **Work packages** `G2-001`…`G2-009` and `G3-001`…`G3-007` defined in the Blueprint,
+  Command Center gate table, acceptance criteria and task plan — consistently.
+- ✅ **Gate 4 scoped to exactly one agent** (`Research & Market Monitoring Agent`) with
+  its seven duties and five prohibitions.
+- ✅ **Definitive development order** recorded in `COMMAND-CENTER` §2, with the hard rule
+  that **Arash Desk does not enter execution before Gate 2 risks are cleared**.
+
+### One contradiction resolved rather than duplicated
+
+The mission places Branch Protection (`G2-009`) and the health view (`G2-003`) in
+Gate 2, while the existing criteria had both in Gate 6. Copying them verbatim into both
+would have left three documents disagreeing. Split instead:
+
+- **Gate 2** — turn branch protection *on*; make health *visible*.
+- **Gate 6** — prove the gate is *still enforced*; thresholds, alerting and proven
+  stale-data behaviour.
+
+Recorded in both `PRODUCT-BLUEPRINT` §15 and `acceptance_criteria.md`.
+
+### Deliberately not done
+
+- ❌ No product code · no UI · no dashboard deleted
+- ❌ No SQL, migration, Supabase, Vercel, environment variable or secret change
+- ❌ No agent started
+- ❌ PR #74 and PR #75 untouched · PR #86 not merged, still draft
+- ❌ `D-021`…`D-024` all still `OPEN` with `Authority=ARASH`
+
+**Next:** Command Center final review of Gate 1, then Gate 2 starting at `G2-001`.

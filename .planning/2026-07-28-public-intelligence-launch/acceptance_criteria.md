@@ -1,6 +1,6 @@
 # Acceptance Criteria — Gates 1 → 7
 
-**Last updated:** 2026-07-28 (mission `P2-G1-001`)
+**Last updated:** 2026-07-29 (mission `P2-G1-002` — Arash Desk architecture ratified)
 **Baseline:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
 
 > A gate is PASS only when **every** box is ticked with **real evidence**.
@@ -38,28 +38,113 @@
 
 ## Gate 2 — Operational Foundation
 
-- [ ] Single package manager (npm); second lockfile removed in **its own PR**
-- [ ] A PR that deliberately adds a dependency deploys **green on Vercel**
+Nine work packages. A gate is PASS only when every package has an owner and a result.
+
+### `G2-001` — Package manager normalization
+- [ ] Single package manager (npm) chosen and enforced; second lockfile removed in **its own PR**
+- [ ] `packageManager` field present in `package.json`
+- [ ] A PR that deliberately adds a dependency deploys **green on Vercel** (closes `B-023`)
+
+### `G2-002` — Production Service Role repair
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` corrected in Production, with evidence — **no secret value ever printed**
 - [ ] Telegram sync runs successfully again (real, dated run)
-- [ ] Webinar payment failure reproduced and fixed; PR #75 findings ported after fresh review
+- [ ] Webinar admin paths reachable again (closes `B-024`)
+
+### `G2-003` — System health view
+- [ ] Existing `/api/admin/health` **extended, not replaced**
+- [ ] Shows: version/commit, DB reachability, market-snapshot freshness, relay freshness
+- [ ] Shows **last successful run** per scheduled service (`B-009`, `B-010`)
+- [ ] Honest limits: anything not independently verifiable is labelled self-reported
+- [ ] Visible from the admin surface — this is the seed of Desk area 5
+
+### `G2-004` — Fresh review of PR #75 / webinar payment security
+- [ ] PR #75 reviewed line by line against **current** `main`; **not merged directly** (stale base)
+- [ ] Still-valid findings re-implemented on a fresh branch
+- [ ] Webinar payment failure reproduced and fixed (`B-026`)
+- [ ] `D-009` answered by Arash
+
+### `G2-005` — Payment → Entitlement
 - [ ] `D-024` answered by Arash in writing: product → access level → duration
-- [ ] Payment → Entitlement bridge implemented **with regression tests**; no real payment
-- [ ] Lead: `leads` table exists on staging · synthetic lead succeeds end-to-end
+- [ ] Bridge implemented **with regression tests**; idempotent and replay-safe
+- [ ] **No real payment executed** at any point
+- [ ] Closes `B-025`
+
+### `G2-006` — Lead migration, staging, end-to-end
+- [ ] `D-001` answered by Arash
+- [ ] `sql/phase8b_leads.sql` applied to **staging** per the runbook
 - [ ] `PLATFORM_WEBHOOK_SECRET` identical in both services; webhook returns 200, not 401
-- [ ] Truthfulness: no unprovable number on any public path (`B-027`, `B-028`)
+- [ ] Synthetic lead succeeds end-to-end with evidence (closes `B-001`, `B-002`, `B-003`)
+
+### `G2-007` — Cron schedule vs. public claims
+- [ ] Real Vercel Cron schedule verified against `vercel.json`
+- [ ] Code comment claiming "every 5 minutes" corrected (`B-016`)
+- [ ] Any public number describing cadence matches reality (`B-027`)
+
+### `G2-008` — Unprovable claims and placeholders
+- [ ] `ProductFacts` shows only numbers provable from the product itself
+- [ ] `/learn` resolved: minimum content published **or** the area hidden until it is (`B-028`)
+- [ ] Any sample data anywhere carries an explicit «نمونهٔ نمایشی» badge
+
+### `G2-009` — Branch Protection and Release Gate
+- [ ] Branch protection **enabled** on `main` per `RUNBOOK-branch-protection.md` (`B-015`)
+- [ ] Required check is `CI Gate` only — not `Vercel`, not `Supabase Preview` (skipped never passes)
+- [ ] Release gate documented
+
+### Gate 2 exit
+- [ ] **No operational P1 left without a plan and an owner**
+- [ ] Payment, lead and access all exercised **on staging**
+- [ ] Health and freshness **visible**
+- [ ] **No false public claim remains**
 - [ ] No production change without explicit Arash approval
+
+> **Boundary with Gate 6 — deliberately not duplicated.** Gate 2 makes health *visible*
+> (`G2-003`) and turns branch protection *on* (`G2-009`). Gate 6 requires something
+> different: thresholds, alerting, proven stale-data behaviour, and proof the gate is
+> still enforced.
 
 ## Gate 3 — Manual Intelligence Workflow  (Arash must pass this)
 
-- [ ] Intelligence data model exists (event · evidence · analysis · scenario · effect)
-- [ ] Arash Desk MVP usable: event stream · market radar · approval inbox · data freshness · open/closed record
+Seven work packages. **Arash Desk is architecturally approved (`DD-024`) but does not
+enter execution until Gate 2 risks are cleared.**
+
+### `G3-001` — Intelligence data model
+- [ ] Event · evidence · analysis · scenario · effect modelled
+- [ ] Append-only where history matters; corrections recorded, never erased
+- [ ] Every claim can carry `FACT` / `INFERENCE` / `SCENARIO` and a source
+
+### `G3-002` — Arash Desk MVP
+- [ ] Five internal areas present: Today · Market Intelligence · Decisions & Scenarios · Clients & Products · Operations & System Health
+- [ ] Built as an **aggregation layer over existing engines**, not new engines
+- [ ] **No existing dashboard removed** — radar, FX, terminal, codal, portfolio, analyses, content all still reachable
+- [ ] Admin overview evolves toward the Desk **gradually**, not in one cut
+
+### `G3-003` — Manual Daily Brief
+- [ ] Arash can compose and publish a brief without engineering help
+- [ ] Draft → review → publish flow works end to end
+
+### `G3-004` — Scenario Board
+- [ ] Regime changes and scenarios visible and editable
+- [ ] Assumptions explicit; ranges not single price targets
+
+### `G3-005` — Approval Inbox
+- [ ] Drafts queue for Arash; nothing sensitive publishes without his approval (`DD-023`)
+
+### `G3-006` — Reference portfolio linked to events and scenarios
+- [ ] Effect of an event on the reference portfolio expressible and recorded
+- [ ] Weight changes append-only with a stated reason
+
+### `G3-007` — Private rehearsal
 - [ ] **≥10 real working days** of internal daily workflow, dated and recorded
 - [ ] Daily brief achievable on **≥80%** of working days
 - [ ] Arash's minutes-per-brief measured, and trending down
 - [ ] Draft correction rate recorded
 - [ ] **≥5–10 real analyses** exist in the track record
 - [ ] Open vs closed positions labelled correctly
+
+### Gate 3 exit
+- [ ] Arash can produce a brief on ≥80% of working days
+- [ ] ≥5–10 real analyses recorded
+- [ ] Production time and correction rate measured
 - [ ] **PASS may NOT be declared with sample or fabricated data**
 
 ## Gate 4 — Assisted Intelligence
@@ -74,12 +159,30 @@ Seven mandatory criteria — all required:
 - [ ] **No automatic publication of sensitive analysis** (`DD-023`)
 - [ ] **Output traceability** — which input, which model/version, when
 
+### Scope — exactly one agent
+
+**`Research & Market Monitoring Agent`** — no second agent in this gate.
+
+Duties: gather news and events · extract evidence · separate Fact/Inference/Scenario ·
+produce a draft · propose probable effect on markets and the reference portfolio ·
+record confidence · send to the Approval Inbox.
+
+Forbidden:
+- [ ] Automatic publication of sensitive analysis
+- [ ] **Direct buy/sell recommendation**
+- [ ] Erasing correction history
+- [ ] Using a source without recording it
+- [ ] Making the final decision in Arash's place
+
 Prerequisites: `D-022` (approved news sources) and `D-023` (LLM access path under
 sanctions and network constraints) both answered by Arash. Existing repo rules still
 bind: raw financial numbers never reach an LLM — only `qualitativeMask`.
 
 ## Gate 5 — Public Intelligence Experience
 
+- [ ] Homepage redesigned around **Arash's persona and analytical method**
+- [ ] Daily / Weekly Intelligence displayed
+- [ ] Linked to track record, notes and market pages
 - [ ] Homepage is the intelligence desk, visible on a Preview deployment
 - [ ] Mobile and RTL healthy
 - [ ] **No fabricated data**; any sample explicitly badged
