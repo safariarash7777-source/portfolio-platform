@@ -175,3 +175,70 @@ gate status and merge.
 **Next:** Gate 2 · Operational Foundation, starting at `G2-001` (package manager
 normalization, `D-018` already decided), then `G2-002` — the Production service-role
 repair, which remains the highest active risk (`B-024`).
+
+---
+
+## 2026-07-29 · Gate 2 — Operational Foundation, waves 1–4  (`P2-G2-MEGA-001`) 🔵
+
+**Baseline:** `505f1862dce480473cdfa1f9388fa3a0af885dec` → **main پس از موج ۱:**
+`ecfc21a349e94aa8b172546b47ab6ec5b3e64fc0`
+
+### موج ۱ — merge شد
+
+- ✅ **`G2-001`** (PR #88) — npm تنها package manager. `pnpm-lock.yaml` حذفِ ردیابی،
+  `packageManager`+`engines`، گیتِ CI با `git ls-files` (چون `.gitignore` جلوی
+  `git add -f` را نمی‌گیرد و لاکِ tracked را پاک نمی‌کند)، ESLint به devDependencyِ
+  عادی برگشت، و مارکرهای merge conflictِ کامیت‌شده در `.gitignore` ادغام شد.
+  **`B-023` بسته · `D-018` اجرا شد** — شواهدش استقرارِ سبزِ همین PR است که عمداً
+  سه وابستگی اضافه می‌کند.
+- ✅ **`G2-008`** (PR #89) — دامنه‌اش از ثبتِ اولیه بیشتر بود: `Capabilities.tsx:46`
+  همان ادعای «هر ۵ دقیقه» را داشت و دیده نشده بود. آن ۵ دقیقه اصلاً دورهٔ پایش نبود
+  (`CACHE_MS` است و فقط با ترافیک اجرا می‌شود). `B-016`+`B-027` بسته.
+  `/learn` بیشترش درست بود؛ فقط صداقتِ سطحِ سکشن اضافه شد. `B-028` (محتوا) باز ماند.
+- ❌ **Branch Protection روشن نشد** — `main` هنوز `protected: false`. MCP ابزارش را
+  ندارد، `gh` نیست، API مسدود است. `B-015` با دستورالعملِ دقیقِ اپراتور باز ماند.
+- ✅ **PR #87 بسته شد** پس از اینکه **هر ۱۵ فایلش** ردیابی شد. برنچ حذف نشد.
+
+### موج ۲ — PR #90، merge نشد
+
+- **`B-024` مکانیزم VERIFIED، اسکوپ UNKNOWN.** خطا `throw` در
+  `lib/supabase/admin.ts:11` است. ۸ رخداد · ۳ کاربر · ۲۰۲۶-۰۷-۱۱ تا ۲۰۲۶-۰۷-۲۹.
+  در پنجرهٔ نگهداریِ لاگ همهٔ خطاها از استقرارِ **Preview**ِ PR #87 بودند — ولی لاگِ
+  Production در همان پنجره **خالی** است، پس نبودِ خطا دلیلِ سلامت نیست.
+  **عمداً VERIFIED اعلام نشد.**
+- **`G2-003`** — `lib/health/status.ts` موتورِ خالص با ۲۳ تست، و `/admin/health`.
+  `unknown` از `failed` جدا نگه داشته شد.
+
+### موج ۳ — PR #91، merge نشد
+
+- زنجیرهٔ وبینار (هر سه حلقه) + پلِ پرداخت→دسترسی، از PR #87 پورت و راستی‌آزمایی شد.
+- **قالبِ `entitlements.source` قطعی شد** — `{prefix}:{authority}` است نه
+  `payments.id`. فرضِ اشتباه یک هشدارِ کاذبِ دائمی می‌ساخت؛ در همان روز در کدِ
+  نمای سلامت هم گرفته و اصلاح شد.
+- **مسیرِ بازیابی** که در #75 و #87 نبود: `recordGrantFailure` → `audit_log` ·
+  `access=pending` برای مشتری · `/api/admin/entitlements/reconcile` (GET dry-run،
+  POST idempotent). بدونِ migration.
+- **`D-024` باز** — `docs/DECISION-D-024-access-matrix.md`. عددِ ۳ ماه از کامنتِ SQL
+  آمده و تصمیمِ تجاری نیست.
+
+### موج ۴
+
+- **`telegram-miniapp` PR #3** — `B-019`/`B-020`. outbox عمداً اضافه نشد.
+- **تمرینِ staging آماده و متوقف** — `docs/RUNBOOK-gate2-staging-rehearsal.md`.
+  مجوزِ `AUTHORIZE_GATE2_STAGING` **داده نشد**، پس هیچ SQLای اجرا نشد.
+
+### Gate 2 — وضعیتِ صادقانه: **PARTIALLY_READY**
+
+| WP | وضعیت |
+|---|---|
+| `G2-001` | ✅ merged |
+| `G2-008` | ✅ merged (بخشِ محتوایی `B-028` با ARASH) |
+| `G2-002` | ⚠️ تشخیص شد، **رفع نشد** — نیازمندِ اقدامِ اپراتور |
+| `G2-003` | 🔵 PR #90، merge نشده |
+| `G2-005` | 🔵 PR #91، منتظرِ `D-024` |
+| `G2-006` | 🔵 مینی‌اپ PR #3 + تمرینِ اجرانشده؛ `D-001` باز |
+| `G2-009` | ❌ اقدامِ انسانی |
+| `G2-004` · `G2-007` | ⏸ شروع نشد |
+
+**Gate 2 PASS اعلام نمی‌شود.**
+

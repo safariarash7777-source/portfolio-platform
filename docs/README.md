@@ -54,6 +54,7 @@
 |---|---|
 | [`RUNBOOK-lead-staging.md`](./RUNBOOK-lead-staging.md) | فعال‌کردنِ مسیرِ لید روی staging |
 | [`RUNBOOK-branch-protection.md`](./RUNBOOK-branch-protection.md) | اجباری‌کردنِ CI روی `main` — **هنوز اجرا نشده** (`B-015` باز) |
+| [`RUNBOOK-gate2-staging-rehearsal.md`](./RUNBOOK-gate2-staging-rehearsal.md) | تمرینِ stagingِ مسیرِ لید — **متوقف پیش از اجرا**، منتظرِ `AUTHORIZE_GATE2_STAGING` |
 
 ---
 
