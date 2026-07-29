@@ -192,23 +192,35 @@ export async function GET() {
     try {
       const { data: paid, error: pErr } = await admin
         .from("payments")
-        .select("id")
+        .select("id,authority")
         .eq("status", "paid");
       if (pErr) throw new Error(pErr.message);
-      const ids = (paid ?? []).map((r) => r.id as string);
-      if (ids.length === 0) {
+      const rows = (paid ?? []) as { id: string; authority: string | null }[];
+      if (rows.length === 0) {
         paymentCounts = { paidCount: 0, paidWithoutEntitlement: 0 };
       } else {
-        // `entitlements.source` شناسهٔ پرداخت را نگه می‌دارد (phase11).
+        // ⚠️ قرارداد: `entitlements.source` شناسهٔ پرداخت **نیست** — رشته‌ای با
+        // پیشوندِ محصول است، مثلِ `payment:{authority}` یا
+        // `webinar_payment:{authority}`. تطبیقِ ساده با `id` هر پرداختِ موفق را
+        // «بدونِ دسترسی» گزارش می‌کرد و کلِ این شاخص را به هشدارِ کاذب تبدیل
+        // می‌کرد. پس هم پسوندِ authority و هم خودِ id پذیرفته می‌شود تا این
+        // بررسی به قالبِ پیشوند وابسته نماند.
         const { data: ents, error: eErr } = await admin
           .from("entitlements")
           .select("source")
-          .in("source", ids);
+          .not("source", "is", null);
         if (eErr) throw new Error(eErr.message);
-        const covered = new Set((ents ?? []).map((r) => r.source as string));
+        const sources = (ents ?? []).map((r) => String(r.source));
+        const exact = new Set(sources);
+        const bySuffix = new Set(
+          sources.map((s) => (s.includes(":") ? s.slice(s.lastIndexOf(":") + 1) : s))
+        );
+        const uncovered = rows.filter(
+          (p) => !exact.has(p.id) && !(p.authority ? bySuffix.has(p.authority) : false)
+        );
         paymentCounts = {
-          paidCount: ids.length,
-          paidWithoutEntitlement: ids.filter((id) => !covered.has(id)).length,
+          paidCount: rows.length,
+          paidWithoutEntitlement: uncovered.length,
         };
       }
     } catch {
