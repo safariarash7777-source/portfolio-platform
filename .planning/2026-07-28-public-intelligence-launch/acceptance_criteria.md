@@ -1,6 +1,6 @@
 # Acceptance Criteria — Gates 1 → 7
 
-**Last updated:** 2026-07-29 (mission `P2-G1-002` — Arash Desk architecture ratified)
+**Last updated:** 2026-07-29 (mission `P2-G1-003` — Gate 1 closed, Gate 2 active)
 **Baseline:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
 
 > A gate is PASS only when **every** box is ticked with **real evidence**.
@@ -20,23 +20,35 @@
 
 ---
 
-## Gate 1 — Product Rebaseline  🔵 IN_REVIEW
+## Gate 1 — Product Rebaseline  ✅ COMPLETE
 
-- [ ] `PRODUCT-BLUEPRINT.md` **rewritten** (not patched) around the intelligence product
-- [ ] Old "complete home for the retail investor" and "free floor for 7 needs" retired as
+Closed 2026-07-29 by `DD-025` — Arash's explicit approval. PR #86 squash-merged into `main`.
+
+- [x] `PRODUCT-BLUEPRINT.md` **rewritten** (not patched) around the intelligence product
+- [x] Old "complete home for the retail investor" and "free floor for 7 needs" retired as
       the primary destination — recorded as `SUPERSEDED`, **not deleted**
-- [ ] Existing market / quant / relay assets **preserved and reclassified**, none discarded
-- [ ] `DECISION-LOG.md`: no ID deleted · no duplicate ID · every superseded row mapped to a successor
-- [ ] `COMMAND-CENTER.md`: current SHA recorded · Gate 1 current · Gate 2 recorded as next
-- [ ] Built / Deployed / Operational / Proven distinguished explicitly
-- [ ] Mini App decoupled from the Portfolio product-definition gate
-- [ ] Service-role error, payment, entitlement, lead and PR #75 all remain **open**
-- [ ] No claim that lead or payment is operational
-- [ ] Path to launch understandable at a glance
-- [ ] Diff is documentation + planning only · no feature · no migration · no lockfile
-- [ ] PR stays **draft** until Command Center review
+- [x] Existing market / quant / relay assets **preserved and reclassified**, none discarded
+- [x] `DECISION-LOG.md`: no ID deleted · no duplicate ID · every superseded row mapped to a successor
+- [x] `COMMAND-CENTER.md`: SHA recorded · Gate 1 recorded **COMPLETE** · Gate 2 recorded **ACTIVE**
+- [x] Built / Deployed / Operational / Proven distinguished explicitly
+- [x] Mini App decoupled from the Portfolio product-definition gate
+- [x] Service-role error, payment, entitlement, lead and PR #75 all remain **open**
+- [x] No claim that lead or payment is operational
+- [x] Path to launch understandable at a glance
+- [x] Diff is documentation + planning only · no feature · no migration · no lockfile
+- [x] PR held **draft** through Command Center review; taken out of draft only at merge
 
-## Gate 2 — Operational Foundation
+### Added during review, on Arash's own commit `bdd8802e`
+
+- [x] **Dual destination** recorded — internal leverage for Arash **and** a different
+      experience for the audience/customer (`PRODUCT-BLUEPRINT` §1′)
+- [x] **Three experience levels** — public · member (Masir-e Rah / webinar) · private client,
+      all reading from **one engine and one memory** (§3′)
+- [x] **Business loop** recorded — data/news → analysis → Arash's judgement → product →
+      customer → feedback/track record, and every product must attach to it
+- [x] Commercial decisions **not** closed by this approval — `D-021`…`D-024` still `OPEN`
+
+## Gate 2 — Operational Foundation  🔵 ACTIVE
 
 Nine work packages. A gate is PASS only when every package has an owner and a result.
 

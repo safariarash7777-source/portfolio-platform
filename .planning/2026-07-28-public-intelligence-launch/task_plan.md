@@ -4,7 +4,7 @@
 **Mission Start:** 2026-07-28
 **Current baseline SHA:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
 **Repository:** `safariarash7777-source/portfolio-platform`
-**Last updated:** 2026-07-29 (mission `P2-G1-002`)
+**Last updated:** 2026-07-29 (mission `P2-G1-003` — Gate 1 closed, Gate 2 active)
 
 > **Only one gate may be `IN_PROGRESS` at a time.**
 > Plan lives here · evidence in `findings.md` · criteria in `acceptance_criteria.md` ·
@@ -23,6 +23,16 @@ Existing market/symbol/fund/codal pages and quant engines are **retained** as da
 SEO and acquisition assets, reclassified under the new architecture — not discarded.
 
 Full definition: [`docs/PRODUCT-BLUEPRINT.md`](../../docs/PRODUCT-BLUEPRINT.md).
+
+## Product direction approved (`DD-025`, 2026-07-29)
+
+Arash approved the Blueprint and closed Gate 1. Four things are now settled and would need a
+new decision to reopen: the **product definition**; the **dual destination** (internal
+leverage for Arash *and* a different experience for the audience); the **three experience
+levels** (public · member · private client) reading from **one engine and one memory**; and
+the **business loop** — data/news → analysis → Arash's judgement → product → customer →
+feedback/track record, which every product must attach to. Commercial questions stay open:
+`D-021`…`D-024`.
 
 ## Arash Intelligence Desk (ratified `DD-024`, 2026-07-29)
 
@@ -53,8 +63,8 @@ Arash archive (½)    + scenarios
 | Gate | Title | Status |
 |---|---|---|
 | **0** | Baseline Stabilization & Merge Docs | ✅ COMPLETE (`def602f`, then `7ad084e`) |
-| **1** | Product Rebaseline | 🔵 **IN_REVIEW** — this PR |
-| **2** | Operational Foundation | ⚪ NOT_STARTED |
+| **1** | Product Rebaseline | ✅ **COMPLETE** — `DD-025`, PR #86 squash-merged |
+| **2** | Operational Foundation | 🔵 **IN_PROGRESS** — starts at `G2-001` |
 | **3** | Manual Intelligence Workflow | ⚪ NOT_STARTED |
 | **4** | Assisted Intelligence | ⚪ NOT_STARTED |
 | **5** | Public Intelligence Experience | ⚪ NOT_STARTED |

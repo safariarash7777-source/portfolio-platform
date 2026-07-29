@@ -20,7 +20,7 @@
 | مورد | مقدار | برچسب |
 |---|---|---|
 | **Current Phase** | **P2 — بازتعریفِ محصول و مسیرِ رونماییِ عمومی** | VERIFIED |
-| **Current Gate** | **Gate 1 · Product Rebaseline — Final Review**. معماریِ **Arash Intelligence Desk** تأیید شد (`DD-024`). گیتِ بعدی: **Gate 2 · Operational Foundation** (`G2-001`…`G2-009`) | VERIFIED |
+| **Current Gate** | **Gate 2 · Operational Foundation** (`G2-001`…`G2-009`) — **فعال**. **Gate 1 بسته شد**: `PRODUCT-BLUEPRINT` با تأییدِ نهاییِ آرش تصویب شد (`DD-025`)، معماریِ **Arash Intelligence Desk** پیش‌تر تأیید شده بود (`DD-024`) | VERIFIED |
 | **Last Verified Date** | **2026-07-29** | — |
 | **Portfolio main SHA** | `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c` — **verified as of 2026-07-28**. منبعِ حقیقت `git rev-parse origin/main` است، نه این خانه. مسیر: `51ac8aa` (#79) → `1acc18e` (#84) → `def602f` (#85) → `7ad084e` (planning) | VERIFIED |
 | **Mini App main SHA** | `b88f9353bbc2bf776c20d4dc3790fb0cd7a1d4db` | VERIFIED (GitHub API، `telegram-miniapp`) |
@@ -88,8 +88,8 @@
 
 | Gate | نام | Work Packages | Exit Criteria (خلاصه) | Status | Owner |
 |---|---|---|---|---|---|
-| **Gate 1** | Product Rebaseline | — | `PRODUCT-BLUEPRINT` بازنویسی‌شده · تصمیم‌های قدیمی superseded · مینی‌اپ جدا · PRِ فقط‌مستندات | 🔵 **IN_REVIEW** | COMMAND_CENTER → ARASH |
-| **Gate 2** | Operational Foundation | `G2-001`…`G2-009` | package manager واحد · `B-024` رفع · پرداخت→entitlement طراحی+تست · لید سرتاسر · پاکسازیِ ادعاهای نادرست | ⚪ NOT_STARTED | ENGINEERING · ARASH (D-024) |
+| **Gate 1** | Product Rebaseline | — | `PRODUCT-BLUEPRINT` بازنویسی‌شده · تصمیم‌های قدیمی superseded · مینی‌اپ جدا · PRِ فقط‌مستندات | ✅ **COMPLETE** (`DD-025`، PR #86) | COMMAND_CENTER → ARASH |
+| **Gate 2** | Operational Foundation | `G2-001`…`G2-009` | package manager واحد · `B-024` رفع · پرداخت→entitlement طراحی+تست · لید سرتاسر · پاکسازیِ ادعاهای نادرست | 🔵 **ACTIVE** | ENGINEERING · ARASH (D-024) |
 | **Gate 3** | Manual Intelligence Workflow | `G3-001`…`G3-007` | مدلِ دادهٔ هوشمندی · میزِ آرش (MVP) · **≥۱۰ روزِ کاریِ واقعیِ اجرای خصوصی** | ⚪ NOT_STARTED | ARASH |
 | **Gate 4** | Assisted Intelligence | `Research & Market Monitoring Agent` (تک‌ایجنت) | ۷ معیارِ اجباری (منبع · confidence · Fact/Inference/Scenario · تأییدِ انسانی · ثبتِ اصلاح · عدمِ انتشارِ خودکارِ حساس · ردیابی) | ⚪ NOT_STARTED | ARASH (D-022، D-023) |
 | **Gate 5** | Public Intelligence Experience | — | صفحهٔ اولِ هوشمندی‌محور · بدونِ دادهٔ ساختگی · RTL/موبایل · SEO حفظ‌شده | ⚪ NOT_STARTED | ARASH |
@@ -103,11 +103,11 @@
 ### ترتیبِ قطعیِ توسعه
 
 ```text
-اکنون:
-Gate 1 — Final Review
+بسته‌شده:
+Gate 1 — Product Rebaseline  ✅  (DD-025)
 
-بعد:
-Gate 2 — Operational Foundation
+اکنون:
+Gate 2 — Operational Foundation  ←  G2-001 نقطهٔ شروع است
 
 سپس:
 Gate 3 — Arash Desk + Manual Workflow

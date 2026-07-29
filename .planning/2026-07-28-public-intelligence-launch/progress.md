@@ -78,7 +78,7 @@ normalization and the Production service-role repair.
 
 ---
 
-## 2026-07-29 · Gate 1 — Arash Desk architecture ratified  (`P2-G1-002`)
+## 2026-07-29 · Gate 1 — Arash Desk architecture ratified  (`P2-G1-002`) ✅
 
 **Baseline:** PR #86 head verified `655e7cf20973e32a300ce281377006be7592fef6` — open,
 draft, mergeable clean, docs/planning only, worktree clean, `origin/main` untouched at
@@ -122,3 +122,56 @@ Recorded in both `PRODUCT-BLUEPRINT` §15 and `acceptance_criteria.md`.
 - ❌ `D-021`…`D-024` all still `OPEN` with `Authority=ARASH`
 
 **Next:** Command Center final review of Gate 1, then Gate 2 starting at `G2-001`.
+
+---
+
+## 2026-07-29 · Gate 1 CLOSED — Blueprint approved and merged  (`P2-G1-003`) ✅
+
+**Baseline:** PR #86 head `bdd8802e0760fedcbad43ddde8469914881ce700` — matched the declared
+SHA exactly. `origin/main` still `7ad084e` at mission start.
+
+### The head had moved — and it mattered
+
+A **third commit, authored by Arash himself**, had landed on the branch between missions:
+`bdd8802e` "docs: connect intelligence product to business and customer experience"
+(48+/1−, `docs/PRODUCT-BLUEPRINT.md` only). It supplied exactly the three items this
+mission's checklist asked for and the previous mission had not written:
+
+- **§1′ dual destination** — internal leverage for Arash **and** a different experience for
+  the audience/customer; webinar, Masir-e Rah, membership and advisory are **outputs and
+  access levels of one brain**, not separate projects
+- **§3′ three experience levels** — public · member (Masir-e Rah / webinar) · private
+  client, all reading from **one engine and one memory**
+- **the business loop** — data/news → quant & analysis → Arash's judgement → brief,
+  analysis, reference portfolio and products → audience → member → customer → feedback and
+  track record → back into the brain
+
+So the content checklist was already satisfied on arrival. This mission only had to record
+gate status and merge.
+
+### Done
+
+- ✅ **`DD-025` recorded** — Blueprint approved by Arash, Gate 1 closed. `Authority=ARASH`.
+  Consequences state explicitly that the approval settles the product definition, the dual
+  destination, the three levels and the business loop — and closes **no** commercial
+  decision and **no** operational blocker.
+- ✅ **Gate 1 → COMPLETE, Gate 2 → ACTIVE** in Command Center, acceptance criteria and task
+  plan. Development order block updated: Gate 2 starts at `G2-001`.
+- ✅ **Blueprint banner** marks the document as the approved product direction, with the
+  four still-open commercial decisions named inline so approval is not read as broader
+  than it is.
+- ✅ **PR #86 taken out of draft and squash-merged** into `main` with the exact title
+  `docs: ratify product blueprint and controlled launch roadmap`. Branch **not** deleted.
+
+### Deliberately not done
+
+- ❌ No product code · no feature · no UI · no dashboard deleted
+- ❌ No SQL, migration, database, Supabase, Vercel, environment variable or secret change
+- ❌ No manual deployment — Vercel deployed `main` automatically via its GitHub integration
+- ❌ PR #74 and PR #75 untouched
+- ❌ **`G2-001` not started** — this mission closes a gate, it does not open work
+- ❌ `D-021`…`D-024` still `OPEN` with `Authority=ARASH`
+
+**Next:** Gate 2 · Operational Foundation, starting at `G2-001` (package manager
+normalization, `D-018` already decided), then `G2-002` — the Production service-role
+repair, which remains the highest active risk (`B-024`).
