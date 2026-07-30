@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   ageMinutes,
   classifyFreshness,
+  classifyQueryError,
   rollup,
   classifyEnv,
   classifyPaymentConsistency,
@@ -167,4 +168,30 @@ test("هر چهار حالت برچسبِ فارسی دارند", () => {
   for (const k of ["ok", "stale", "failed", "unknown"] as const) {
     assert.ok(STATE_LABEL[k].length > 0);
   }
+});
+
+// ── طبقه‌بندیِ خطای پرس‌وجو — `P2-G2-011` ────────────────────────────────────
+
+test("کدِ 42P01 جدولِ ناموجود است و 42703 ستونِ ناموجود", () => {
+  assert.equal(classifyQueryError("42P01", "relation ... does not exist"), "missing_table");
+  assert.equal(classifyQueryError("42703", "column ... does not exist"), "missing_column");
+});
+
+test("بدونِ کد هم ستونِ ناموجود با جدولِ ناموجود اشتباه نمی‌شود", () => {
+  // این همان باگ بود: هر دو پیام شاملِ «does not exist»‌اند، و تشخیصِ قبلی
+  // فقط همان عبارت را می‌دید. پس ستونِ اشتباهِ کدِ خودمان «جدول پیدا نشد»
+  // گزارش می‌شد و اپراتور را دنبالِ مشکلی می‌فرستاد که وجود نداشت.
+  assert.equal(
+    classifyQueryError(null, 'column ir_market_snapshots.created_at does not exist'),
+    "missing_column"
+  );
+  assert.equal(
+    classifyQueryError(null, 'relation "public.leads" does not exist'),
+    "missing_table"
+  );
+});
+
+test("خطای نامرتبط هیچ‌کدام از آن دو نیست", () => {
+  assert.equal(classifyQueryError("57014", "canceling statement due to statement timeout"), "other");
+  assert.equal(classifyQueryError(null, null), "other");
 });

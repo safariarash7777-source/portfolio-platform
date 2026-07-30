@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   classifyEnv,
   classifyFreshness,
+  classifyQueryError,
   classifyLeadReadiness,
   classifyPaymentConsistency,
   rollup,
@@ -59,7 +60,7 @@ async function latestTimestamp(
   admin: Admin,
   table: string,
   column: string
-): Promise<{ at: string | null; missing: boolean }> {
+): Promise<{ at: string | null; missing: boolean; badColumn: boolean }> {
   const { data, error } = await admin
     .from(table)
     .select(column)
@@ -67,13 +68,15 @@ async function latestTimestamp(
     .limit(1)
     .maybeSingle();
   if (error) {
-    // 42P01 = undefined_table. «جدول نیست» با «پرس‌وجو شکست خورد» فرق دارد.
-    const missing = error.code === "42P01" || /does not exist/i.test(error.message);
-    return { at: null, missing };
+    // «جدول نیست» ≠ «ستون نیست» ≠ «پرس‌وجو شکست خورد». تفکیکشان لازم است،
+    // وگرنه یک ستونِ اشتباه در کدِ خودمان مثلِ یک جدولِ غایب به‌نظر می‌رسد و
+    // اپراتور دنبالِ مشکلی می‌گردد که وجود ندارد (`P2-G2-011`).
+    const kind = classifyQueryError(error.code, error.message);
+    return { at: null, missing: kind === "missing_table", badColumn: kind === "missing_column" };
   }
   const row = data as Record<string, unknown> | null;
   const v = row?.[column];
-  return { at: typeof v === "string" ? v : null, missing: false };
+  return { at: typeof v === "string" ? v : null, missing: false, badColumn: false };
 }
 
 /** یک سیگنالِ تازگی، با مهارِ کاملِ خطا. */
@@ -89,9 +92,18 @@ async function freshnessSignal(
   now: Date
 ): Promise<HealthSignal> {
   try {
-    const { at, missing } = await latestTimestamp(admin, table, column);
+    const { at, missing, badColumn } = await latestTimestamp(admin, table, column);
     if (missing) {
       return { key, label, state: "unknown", detail: `جدولِ \`${table}\` پیدا نشد` };
+    }
+    if (badColumn) {
+      // این حالتِ محیط نیست، **باگِ خودِ ماست**: جدول هست و ستون نیست. پس
+      // `failed` است نه `unknown` — یک شاخصِ خراب باید سر و صدا کند، نه اینکه
+      // بی‌سر و صدا کنارِ «نامعلوم»های عادی بنشیند.
+      return {
+        key, label, state: "failed",
+        detail: `ستونِ \`${column}\` در جدولِ \`${table}\` وجود ندارد — این شاخص اشتباه پیکربندی شده`,
+      };
     }
     const { state, age } = classifyFreshness(at, { okWithinMinutes, staleWithinMinutes }, now);
     return {
@@ -165,7 +177,7 @@ export async function GET() {
     signals.push(
       await freshnessSignal(
         admin, "relay", "تازگیِ رلهٔ بازارِ ایران",
-        "ir_market_snapshots", "created_at",
+        "ir_market_snapshots", "updated_at",
         60, 24 * 60, "هیچ اسنپ‌شاتی ثبت نشده", now
       )
     );
