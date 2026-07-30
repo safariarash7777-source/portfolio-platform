@@ -196,6 +196,45 @@ export function classifyLeadReadiness(tableExists: boolean | null): HealthSignal
   };
 }
 
+// ── طبقه‌بندیِ خطای پرس‌وجو ──────────────────────────────────────────────────
+
+/**
+ * چرا یک پرس‌وجوی تازگی شکست خورد.
+ *
+ * `missing_table` یعنی واقعاً جدولی نیست (مثلاً `leads` که هنوز اجرا نشده).
+ * `missing_column` یعنی جدول هست ولی **کدِ ما ستونِ اشتباه می‌خواهد** — یک
+ * باگ در خودمان، نه یک واقعیتِ محیط.
+ */
+export type QueryErrorKind = "missing_table" | "missing_column" | "other";
+
+/**
+ * تفکیکِ این دو، درسِ `P2-G2-011` است.
+ *
+ * سیگنالِ «تازگیِ رلهٔ بازارِ ایران» روی `ir_market_snapshots.created_at`
+ * پرس‌وجو می‌کرد، در حالی که آن جدول فقط `key`, `payload`, `updated_at` دارد.
+ * تشخیصِ قبلی فقط `/does not exist/` را می‌دید، و پیامِ Postgres برای **ستونِ**
+ * ناموجود هم همان عبارت را دارد. نتیجه: مهم‌ترین شاخصِ عملیاتی (آیا رلهٔ داخلِ
+ * ایران هنوز داده می‌دهد؟) برای همیشه «جدول پیدا نشد» گزارش می‌کرد —
+ * یعنی نه‌فقط کور بود، **دلیلِ غلط** هم می‌داد و اپراتور را دنبالِ نخود سیاه
+ * می‌فرستاد.
+ *
+ * کدهای Postgres: `42P01` undefined_table · `42703` undefined_column.
+ */
+export function classifyQueryError(
+  code: string | null | undefined,
+  message: string | null | undefined
+): QueryErrorKind {
+  if (code === "42P01") return "missing_table";
+  if (code === "42703") return "missing_column";
+
+  // برخی مسیرها کد نمی‌دهند؛ آن‌وقت باید از متن تشخیص داد. ترتیب مهم است:
+  // «column … does not exist» هم شاملِ «does not exist» است.
+  const m = (message ?? "").toLowerCase();
+  if (/column .* does not exist|column .* of relation/.test(m)) return "missing_column";
+  if (/relation .* does not exist|table .* does not exist/.test(m)) return "missing_table";
+  return "other";
+}
+
 /** توضیحِ فارسیِ هر حالت — یک جا، تا UI و API یک زبان داشته باشند. */
 export const STATE_LABEL: Record<HealthState, string> = {
   ok: "سالم",
