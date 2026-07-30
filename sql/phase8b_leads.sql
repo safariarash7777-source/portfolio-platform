@@ -132,7 +132,44 @@ CREATE POLICY "Admin can manage leads" ON public.leads
   WITH CHECK (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin'));
 
 -- هیچ سیاستی برای anon یا کاربرِ عادی وجود ندارد → دادهٔ شخصیِ لید خوانده نمی‌شود.
+
+-- ── ۶) گرنت‌ها — کمینه‌ترین امتیاز ──────────────────────────────────────────
+-- ⚠️ درسِ تمرینِ staging (`G2-006`، ۱۴۰۵/۰۵/۰۸): نسخهٔ قبلیِ این فایل فقط
+-- `REVOKE ALL … FROM anon` داشت. اندازه‌گیریِ واقعی روی پروژهٔ staging نشان داد
+-- که این کافی نیست: Supabase به‌صورتِ پیش‌فرض روی هر جدولِ تازهٔ `public`،
+-- `ALL` را به `authenticated` هم می‌دهد. خروجیِ واقعی پیش از اصلاح:
+--
+--   authenticated → DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE
+--
+-- چرا این فقط «نظافت» نیست: **RLS روی `TRUNCATE` اعمال نمی‌شود.** سیاست‌های
+-- بالا ردیف‌ها را برای کاربرِ عادی صفر می‌کنند، ولی `TRUNCATE` از کنارِ RLS
+-- رد می‌شود. یعنی هر کاربرِ لاگین‌کردهٔ معمولی — نه ادمین — امتیازِ پاک‌کردنِ
+-- کلِ جدولِ لید را داشت. محرمانگی برقرار بود، یکپارچگی نه.
+--
+-- Security Advisor این را نگرفت (فقط `rls_enabled_no_policy` را می‌بیند)؛
+-- پس گرنت‌ها باید جدا از RLS بررسی شوند.
+REVOKE ALL ON public.leads FROM PUBLIC;
 REVOKE ALL ON public.leads FROM anon;
+REVOKE ALL ON public.leads FROM authenticated;
+
+-- نویسندهٔ لید فقط سرور است (`/api/leads/webhook` با service-role).
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.leads TO service_role;
+
+-- ادمین از نشستِ کاربر می‌خوانَد، پس نقشِ `authenticated` به امتیازِ جدولی نیاز
+-- دارد تا سیاستِ «Admin can manage leads» زنده بماند؛ ولی فقط خواندن و
+-- به‌روزرسانی (چرخهٔ حیات/یادداشتِ CRM). درج و حذف و **TRUNCATE** داده نمی‌شود.
+-- ردیف‌ها همچنان با RLS به ادمین محدودند — این گرنت به‌تنهایی چیزی را باز نمی‌کند.
+GRANT SELECT, UPDATE ON public.leads TO authenticated;
+
+-- تابعِ تریگر نیازی به EXECUTEِ عمومی ندارد؛ مجوزِ آن هنگامِ ساختِ تریگر بررسی
+-- می‌شود، نه در هر شلیک. پیش از این `anon` هم می‌توانست صدایش بزند.
+--
+-- ⚠️ فقط `FROM PUBLIC` کافی نیست: Supabase علاوه بر PUBLIC، مستقیماً هم به
+-- `anon`/`authenticated` گرنت می‌دهد. اندازه‌گیریِ staging پس از REVOKE از PUBLIC
+-- هنوز `has_function_privilege('anon', …) = true` می‌داد. هر سه باید صریح باشند.
+REVOKE ALL ON FUNCTION public.leads_set_updated_at() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.leads_set_updated_at() FROM anon;
+REVOKE ALL ON FUNCTION public.leads_set_updated_at() FROM authenticated;
 
 COMMIT;
 
@@ -156,6 +193,11 @@ COMMIT;
 --     WHERE tgrelid='public.leads'::regclass AND NOT tgisinternal;
 -- ۷) anon واقعاً دسترسی ندارد؟
 --    SELECT has_table_privilege('anon','public.leads','SELECT');  -- f
+-- ۸) کاربرِ عادی امتیازِ خطرناک ندارد؟ (RLS جلوی TRUNCATE را نمی‌گیرد)
+--    SELECT has_table_privilege('authenticated','public.leads','TRUNCATE'); -- f
+--    SELECT has_table_privilege('authenticated','public.leads','INSERT');   -- f
+--    SELECT has_table_privilege('authenticated','public.leads','DELETE');   -- f
+--    SELECT has_table_privilege('authenticated','public.leads','SELECT');   -- t (با RLS محدود)
 --
 -- =============================================================================
 -- برگشت (Rollback / Reversal)
