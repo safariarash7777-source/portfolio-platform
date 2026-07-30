@@ -68,3 +68,22 @@ export const LESSONS: Lesson[] = [
 export function getLesson(slug: string): Lesson | null {
   return LESSONS.find((l) => l.slug === slug) ?? null;
 }
+
+/**
+ * درس‌هایی که واقعاً متن دارند و می‌شود عمومی نشانشان داد.
+ *
+ * `B-028` / `P2-G2-010`: سرفصل‌ها **حذف نمی‌شوند** — پیش‌نویس‌ها همین‌جا می‌مانند
+ * تا وقتی آرش متن را تأیید کند. ولی تا آن لحظه یک سرفصلِ بی‌متن نباید مثلِ
+ * محتوای قابل‌استفاده رفتار کند: کارتِ کلیک‌پذیری که به صفحهٔ خالی می‌رسد،
+ * برچسبِ «به‌زودی» هم که داشته باشد، باز هم وعده‌ای می‌دهد که پشتش چیزی نیست.
+ *
+ * هر دو تابع از روی همین `published` کار می‌کنند، پس با انتشارِ اولین درس
+ * رفتارِ صفحه **خودبه‌خود** برمی‌گردد و نیازی به تغییرِ کد نیست.
+ */
+export function publishedLessons(): Lesson[] {
+  return LESSONS.filter((l) => l.published);
+}
+
+export function hasPublishedLessons(): boolean {
+  return LESSONS.some((l) => l.published);
+}

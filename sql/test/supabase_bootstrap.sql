@@ -2,19 +2,34 @@
 -- شبیه‌سازیِ محیطِ Supabase روی یک Postgresِ محلی — فقط برای **تست**.
 --
 -- چرا لازم است: تمرینِ stagingِ `G2-006` نتوانست هاپِ آخر را اثبات کند، چون
--- شبکهٔ محیطِ اجرا `*.supabase.co` را می‌بندد (`B-030`). ولی همان چیزی که آنجا
+-- شبکهٔ محیطِ اجرا `*.supabase.co` را می‌بندد (`B-030`). ولی چیزی که آنجا
 -- می‌خواستیم بسنجیم — رفتارِ واقعیِ RLS و گرنت‌ها روی `public.leads` — بدونِ
--- هیچ شبکه‌ای هم قابلِ سنجش است، اگر نقش‌ها و امتیازهای پیش‌فرضِ Supabase را
--- درست بازتولید کنیم. این فایل همان بازتولید است.
+-- هیچ شبکه‌ای هم قابلِ سنجش است، اگر نقش‌ها را درست بازتولید کنیم.
 --
 -- ⚠️ این فایل **هرگز روی Production یا Staging اجرا نمی‌شود.** فقط
 -- `lib/leads/leads.integration.test.ts` آن را روی یک Postgresِ یک‌بارمصرف اجرا
--- می‌کند. `scripts/validate-sql.mjs` هم آن را به‌عنوانِ migration نمی‌شناسد.
+-- می‌کند.
 --
--- منبعِ رفتارها: مستنداتِ Supabase دربارهٔ نقش‌های `anon`/`authenticated`/
--- `service_role`، توابعِ `auth.uid()`/`auth.role()`، و مهم‌تر از همه
--- `ALTER DEFAULT PRIVILEGES … GRANT ALL ON TABLES TO anon, authenticated` که
--- دقیقاً همان چیزی است که باگِ `TRUNCATE` را می‌ساخت.
+-- ── این فایل «پروفایلِ امتیاز» را تعیین نمی‌کند ───────────────────────────────
+-- اینجا فقط نقش‌ها، اسکیمای `auth` و پیش‌نیازِ `profiles` ساخته می‌شود.
+-- **امتیازهای پایه** در یکی از دو فایلِ جداگانه اعمال می‌شوند و تست migration را
+-- مقابلِ **هر دو** اجرا می‌کند:
+--
+--   • `profile_legacy_default_privileges.sql` — پروفایلِ بدترین‌حالت
+--   • `profile_explicit_grants.sql`           — پروفایلِ سخت‌گیرانه
+--
+-- چرا این تفکیک مهم است (اصلاحِ `P2-G2-010`): نسخهٔ اولِ این فایل می‌گفت دارد
+-- «پیش‌فرضِ Supabase» را بازتولید می‌کند. آن ادعا **بیش از شواهد** بود. آنچه
+-- واقعاً می‌دانیم این است: روی **پروژهٔ stagingِ خودمان** (`oqjcvkzyvhqnphopedpn`،
+-- ساخته‌شده ۲۰۲۶-۰۷-۳۰) پس از اجرای `phase8b_leads.sql` اندازه‌گیری کردیم و
+-- دیدیم `authenticated` این امتیازها را داشت:
+--
+--     DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE
+--
+-- این یک **مشاهدهٔ نقطه‌ای روی یک پروژهٔ مشخص در یک تاریخِ مشخص** است، نه قانونی
+-- ابدی دربارهٔ هر پروژهٔ Supabase. Supabase می‌تواند پیش‌فرض‌ها را عوض کند و
+-- پروژه‌های تازه ممکن است سخت‌گیرانه‌تر باشند. برای همین migration باید مقابلِ
+-- هر دو پروفایل درست کار کند، و تست هر دو را می‌سنجد.
 -- =============================================================================
 
 -- ── ۱) نقش‌ها ────────────────────────────────────────────────────────────────
@@ -44,6 +59,7 @@ CREATE TABLE IF NOT EXISTS auth.users (
 
 -- در Supabase این‌ها از claimsِ JWT خوانده می‌شوند. تست با
 -- `set_config('request.jwt.claims', …)` همان نقش/کاربر را جعل می‌کند.
+--
 -- توجه: وقتی claim ست نشده، `current_setting(…, true)` رشتهٔ خالی می‌دهد نه
 -- NULL؛ کستِ مستقیمِ آن به json خطا می‌دهد. پس اول `nullif` روی خودِ رشته.
 CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
@@ -78,17 +94,10 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- کاربر باید ردیفِ خودش را ببیند، وگرنه زیرپرس‌وجوی سیاستِ ادمین روی leads
--- همیشه false می‌شود. این همان تله‌ای است که در staging هم بالقوه وجود داشت.
+-- همیشه false می‌شود و ادمین بی‌صدا قفل می‌ماند. این همان تله‌ای است که در
+-- staging هم بالقوه وجود داشت.
 DROP POLICY IF EXISTS "own profile readable" ON public.profiles;
 CREATE POLICY "own profile readable" ON public.profiles
   FOR SELECT USING (id = auth.uid());
 
 GRANT SELECT ON public.profiles TO authenticated;
-
--- ── ۴) امتیازهای پیش‌فرضِ Supabase — همان چیزی که باگ را می‌ساخت ────────────
--- این خط عمداً اینجاست. بدونِ آن، تستِ گرنت بی‌معنا می‌شود: جدولِ تازه دیگر
--- امتیازِ اضافه نمی‌گیرد و `REVOKE`های migration چیزی برای پس‌گرفتن ندارند.
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT ALL ON TABLES TO anon, authenticated, service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;

@@ -1,6 +1,6 @@
 # Acceptance Criteria — Gates 1 → 7
 
-**Last updated:** 2026-07-30 (mission `P2-G2-NEXT-001` — G2-001/003/007/008 merged; payment track HOLD_BY_OWNER)
+**Last updated:** 2026-07-30 (mission `P2-G2-010` — truth reconciliation; lead DB gate hardened)
 **Baseline:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
 
 > A gate is PASS only when **every** box is ticked with **real evidence**.
@@ -52,10 +52,12 @@ Closed 2026-07-29 by `DD-025` — Arash's explicit approval. PR #86 squash-merge
 
 Nine work packages. A gate is PASS only when every package has an owner and a result.
 
-### `G2-001` — Package manager normalization
-- [ ] Single package manager (npm) chosen and enforced; second lockfile removed in **its own PR**
-- [ ] `packageManager` field present in `package.json`
-- [ ] A PR that deliberately adds a dependency deploys **green on Vercel** (closes `B-023`)
+### `G2-001` — Package manager normalization ✅ DONE
+- [x] Single package manager (npm) chosen and enforced; second lockfile removed in its own PR.
+      Verified 2026-07-30: `git ls-files` shows **only** `package-lock.json`, and a CI guard
+      fails the build if a pnpm/yarn lock ever returns to the git tree
+- [x] `packageManager: npm@10.9.7` present, plus `engines.node >= 20`
+- [x] A PR that deliberately added three dependencies deployed **green on Vercel** — closes `B-023`
 
 ### `G2-002` — Production Service Role repair
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` corrected in Production, with evidence — **no secret value ever printed**
@@ -115,14 +117,22 @@ Nine work packages. A gate is PASS only when every package has an owner and a re
       the database-behaviour half moved from "measured once on staging" to "enforced on
       every PR"
 
-### `G2-007` — Cron schedule vs. public claims
-- [ ] Real Vercel Cron schedule verified against `vercel.json`
-- [ ] Code comment claiming "every 5 minutes" corrected (`B-016`)
-- [ ] Any public number describing cadence matches reality (`B-027`)
+### `G2-007` — Cron schedule vs. public claims ✅ DONE (with one honest limit)
+- [x] `vercel.json` established as the single source of truth for cadence
+- [x] Code comment claiming "every 5 minutes" corrected (`B-016` closed)
+- [x] Public cadence claims match reality — the audit found a **second** instance
+      (`Capabilities.tsx`) the first pass missed (`B-027` closed)
+- [x] Machine-checkable guard `lib/core/cadence.test.ts`, proven able to fail
+- [ ] ⚠️ **Makes no claim that cron actually runs.** No dated successful run has been
+      observed, so real execution stays `UNVERIFIED` — a separate question from cadence honesty
 
 ### `G2-008` — Unprovable claims and placeholders
-- [ ] `ProductFacts` shows only numbers provable from the product itself
-- [ ] `/learn` resolved: minimum content published **or** the area hidden until it is (`B-028`)
+- [x] `ProductFacts` shows only numbers provable from the product itself
+- [x] `/learn` **display** resolved (`P2-G2-010`): unpublished lessons are no longer
+      clickable cards leading to empty pages, and their detail pages are `noindex`.
+      **No draft was deleted** and the behaviour is driven by the `published` flag, so it
+      reverts by itself on publication. Guarded by `lib/learn.test.ts`
+- [ ] **Publishing the content itself stays with Arash** — `B-028` remains open on content
 - [ ] Any sample data anywhere carries an explicit «نمونهٔ نمایشی» badge
 
 ### `G2-009` — Branch Protection and Release Gate
