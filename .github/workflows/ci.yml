@@ -3,8 +3,14 @@ name: CI
 # دروازهٔ کیفیتِ هر PR. تا پیش از این، مخزن **هیچ** workflowی نداشت (بلاکرِ B-015)
 # و PRها بدونِ هیچ تأییدِ خودکاری merge می‌شدند.
 #
-# قانونِ سخت: این workflow **هرگز** به دیتابیس وصل نمی‌شود، هیچ migration اجرا
-# نمی‌کند و به هیچ سکرتی نیاز ندارد. اعتبارسنجیِ SQL کاملاً ایستا است.
+# قانونِ سخت: این workflow **هرگز** به دیتابیسِ Supabase (Production یا Staging)
+# وصل نمی‌شود، هیچ migrationی روی آن‌ها اجرا نمی‌کند و به هیچ سکرتی نیاز ندارد.
+#
+# ⚠️ این جمله در `G2-006` دقیق‌تر شد. پیش‌تر نوشته بود «هرگز به دیتابیس وصل
+# نمی‌شود» و jobِ `leads-db` آن را نقض می‌کرد. نیتِ اصلی «به دیتابیسِ ما وصل
+# نشو» بود، نه «هیچ Postgresی را اجرا نکن». `leads-db` یک Postgresِ
+# **یک‌بارمصرفِ داخلِ runner** بالا می‌آورد که هیچ داده‌ای از ما ندارد، هیچ سکرتی
+# نمی‌خواهد و با پایانِ job نابود می‌شود. متن اصلاح شد تا سند با واقعیت یکی بماند.
 
 on:
   pull_request:
@@ -128,13 +134,56 @@ jobs:
       - name: اعتبارسنجیِ گرامرِ SQL (libpg_query — بدونِ اجرا)
         run: python3 scripts/validate-sql-grammar.py
 
-  # ── ۴) دروازهٔ نهایی ──────────────────────────────────────────────────────
+  # ── ۴) رفتارِ واقعیِ RLS و گرنت‌های جدولِ لید ──────────────────────────────
+  # چرا جدا از `quality`: این تنها jobی است که یک Postgres لازم دارد.
+  #
+  # چه چیزی را می‌گیرد که تستِ ایستا نمی‌گیرد: `lib/leads/grants.test.ts` فقط
+  # **متنِ** `sql/phase8b_leads.sql` را می‌خوانَد. این job همان فایل را روی یک
+  # Postgresِ واقعی اجرا می‌کند و **رفتار** را می‌سنجد — با نقش‌های واقعیِ
+  # `anon`/`authenticated`/`service_role` و امتیازهای پیش‌فرضِ Supabase.
+  #
+  # ریشه‌اش یافتهٔ `G2-006` است: `authenticated` امتیازِ `TRUNCATE` داشت و **RLS
+  # روی `TRUNCATE` اعمال نمی‌شود**. Security Advisorِ Supabase هم آن را نگرفت.
+  # آخرین تستِ این فایل عمداً نسخهٔ معیوب را می‌سازد و ثابت می‌کند تست پوچ نیست.
+  leads-db:
+    name: Lead RLS · Grants (Postgres)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        # Postgresِ یک‌بارمصرفِ داخلِ runner. نه Supabase، نه دادهٔ واقعی، نه سکرت.
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
+      - name: نصبِ کلاینتِ psql
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: تستِ یکپارچگیِ leads
+        run: npm run test:db
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5433"
+          PGUSER: postgres
+          PGPASSWORD: postgres
+
+  # ── ۵) دروازهٔ نهایی ──────────────────────────────────────────────────────
   # یک چکِ واحد برای required status check، تا لازم نباشد هر بار که jobی اضافه
   # می‌شود تنظیماتِ branch protection دست بخورد.
   ci:
     name: CI Gate
     runs-on: ubuntu-latest
-    needs: [dependencies, quality, security-and-sql]
+    needs: [dependencies, quality, security-and-sql, leads-db]
     if: always()
     steps:
       - name: بررسیِ نتیجهٔ همهٔ jobها
@@ -142,9 +191,11 @@ jobs:
           echo "dependencies:     ${{ needs.dependencies.result }}"
           echo "quality:          ${{ needs.quality.result }}"
           echo "security-and-sql: ${{ needs.security-and-sql.result }}"
+          echo "leads-db:         ${{ needs.leads-db.result }}"
           if [ "${{ needs.dependencies.result }}" != "success" ] \
             || [ "${{ needs.quality.result }}" != "success" ] \
-            || [ "${{ needs.security-and-sql.result }}" != "success" ]; then
+            || [ "${{ needs.security-and-sql.result }}" != "success" ] \
+            || [ "${{ needs.leads-db.result }}" != "success" ]; then
             echo "::error::CI مردود شد."
             exit 1
           fi
