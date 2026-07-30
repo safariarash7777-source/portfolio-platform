@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
     "test:core": "tsx --test lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/cron/ledger.test.ts lib/core/cadence.test.ts",
-    "test:db": "tsx --test --test-concurrency=1 lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts",
+    "test:db": "tsx --test --test-concurrency=1 lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "validate:sql": "node scripts/validate-sql.mjs",
     "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
@@ -46,3 +46,4 @@
     "typescript": "^5"
   }
 }
+
