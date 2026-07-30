@@ -30,7 +30,10 @@ test("confidence and scenario-label rules are explicit", () => {
 
 test("multi-source evidence is relational and publication is controlled", () => {
   assert.match(statements, /CREATE TABLE IF NOT EXISTS public\.intel_claim_evidence/i);
-  assert.doesNotMatch(statements, /published_signal_ids|evidence_id\s+uuid\s+not null\s+references public\.intel_evidence/i);
+  const claimTable = statements.match(/CREATE TABLE IF NOT EXISTS public\.intel_claims\s*\(([\s\S]*?)\n\);/i)?.[1] ?? "";
+  assert.ok(claimTable, "intel_claims DDL was not found");
+  assert.doesNotMatch(claimTable, /evidence_id/i, "evidence belongs in the join table, not on a claim");
+  assert.doesNotMatch(statements, /published_signal_ids/i);
   assert.match(statements, /CREATE OR REPLACE FUNCTION public\.publish_intel_analysis/i);
   const claims = [{ id: "c1" }, { id: "c2" }] as IntelClaim[];
   assert.ok(hasCompleteEvidence(claims, [{ claimId: "c1", evidenceId: "e1" }, { claimId: "c2", evidenceId: "e1" }]));
