@@ -19,6 +19,7 @@ import {
   LogOut,
   Menu,
   X,
+  Activity,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { createClient } from "@/lib/supabase/client";
@@ -44,6 +45,7 @@ const NAV: NavItem[] = [
   { key: "webinars", label: "وبینارها", href: "/admin/webinars", icon: <Video size={18} /> },
   { key: "market", label: "رصد بازار", href: "/admin/radar", icon: <LineChart size={18} /> },
   { key: "fx", label: "ابر داشبورد ارز", href: "/admin/fx", icon: <Landmark size={18} /> },
+  { key: "health", label: "سلامتِ سامانه", href: "/admin/health", icon: <Activity size={18} /> },
 ];
 
 export default function AdminShell({
