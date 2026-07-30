@@ -151,7 +151,7 @@ jobs:
   # روی `TRUNCATE` اعمال نمی‌شود**. Security Advisorِ Supabase هم آن را نگرفت.
   # یک تستِ جداگانه عمداً نسخهٔ معیوب را می‌سازد و ثابت می‌کند گارد پوچ نیست.
   leads-db:
-    name: Lead RLS · Grants (Postgres)
+    name: DB behaviour · RLS · Grants (Postgres)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -176,7 +176,7 @@ jobs:
 
       # `CI=true` را خودِ GitHub Actions ست می‌کند و تست روی همان تکیه می‌کند:
       # اگر Postgres یا psql نباشد، به‌جای skip **خطا می‌دهد**.
-      - name: تستِ یکپارچگیِ leads
+      - name: تستِ یکپارچگیِ leads و دفترِ cron
         run: npm run test:db 2>&1 | tee /tmp/leads-db.log
         env:
           PGHOST: 127.0.0.1
@@ -197,7 +197,7 @@ jobs:
           suites=$(grep -oP '^# suites \K\d+' /tmp/leads-db.log | head -1)
           echo "pass=$pass fail=$fail skipped=$skip suites=$suites"
           {
-            echo "### Lead RLS · Grants (Postgres)"
+            echo "### DB behaviour · RLS · Grants (Postgres)"
             echo ""
             echo "| متریک | مقدار |"
             echo "|---|---|"
@@ -207,7 +207,7 @@ jobs:
             echo "| suites | $suites |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          MIN_PASS=31
+          MIN_PASS=59
           [ "${fail:-1}" = "0" ] || { echo "::error::تستِ leads مردود شد (fail=$fail)"; exit 1; }
           [ "${skip:-1}" = "0" ] || { echo "::error::اسکیپ در CI مجاز نیست (skipped=$skip)"; exit 1; }
           if [ "${pass:-0}" -lt "$MIN_PASS" ]; then
@@ -215,7 +215,7 @@ jobs:
             echo "::error::یا تست‌ها اسکیپ شده‌اند یا حذف شده‌اند — هر دو یعنی این گیت دیگر چیزی را نمی‌سنجد."
             exit 1
           fi
-          echo "✅ $pass تستِ واقعی روی Postgres اجرا شد (۲ پروفایلِ امتیاز + گاردِ failability)."
+          echo "✅ $pass تستِ واقعی روی Postgres اجرا شد (leads + cron_runs، هر کدام ۲ پروفایلِ امتیاز + گاردِ failability)."
 
   # ── ۵) دروازهٔ نهایی ──────────────────────────────────────────────────────
   # یک چکِ واحد برای required status check، تا لازم نباشد هر بار که jobی اضافه
