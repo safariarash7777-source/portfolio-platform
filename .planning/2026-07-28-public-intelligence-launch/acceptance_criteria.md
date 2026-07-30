@@ -99,10 +99,21 @@ Nine work packages. A gate is PASS only when every package has an owner and a re
       no name/phone/message/secret in either service's logs
 - [x] Controlled failure rehearsed: wrong staging secret → 401, lead retained, recovery
       on restore. Three observable states (401 / 500 / success) are distinguishable
+- [x] **RLS and grant behaviour proven against a real Postgres, in CI, with no network** —
+      `lib/leads/leads.integration.test.ts` + `sql/test/supabase_bootstrap.sql` reproduce
+      Supabase's roles and default privileges, apply the real migration, and assert:
+      `anon` denied outright · plain `authenticated` user sees **0 rows** (RLS) and cannot
+      `TRUNCATE`/`INSERT`/`DELETE` · admin sees rows · constraints and trigger correct.
+      The final test deliberately builds the **pre-fix** migration and shows a plain user
+      *can* wipe the table — so the guard is proven non-vacuous. CI job `Lead RLS · Grants
+      (Postgres)`, required via `CI Gate`
 - [ ] **Synthetic lead does NOT yet reach `public.leads` end-to-end** — the final hop is
       unproven. Blocked by environment, not by code: the Staging service-role key is not
       obtainable through available tooling, and the sandbox network policy denies
-      `*.supabase.co`. `B-001`, `B-002`, `B-003` stay **open**
+      `*.supabase.co`, `api.supabase.com`, `api.vercel.com` and `*.vercel.app`.
+      `B-001`, `B-002`, `B-003` stay **open**. Note this is now the *only* unproven part:
+      the database-behaviour half moved from "measured once on staging" to "enforced on
+      every PR"
 
 ### `G2-007` — Cron schedule vs. public claims
 - [ ] Real Vercel Cron schedule verified against `vercel.json`

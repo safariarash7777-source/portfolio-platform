@@ -1,0 +1,94 @@
+-- =============================================================================
+-- شبیه‌سازیِ محیطِ Supabase روی یک Postgresِ محلی — فقط برای **تست**.
+--
+-- چرا لازم است: تمرینِ stagingِ `G2-006` نتوانست هاپِ آخر را اثبات کند، چون
+-- شبکهٔ محیطِ اجرا `*.supabase.co` را می‌بندد (`B-030`). ولی همان چیزی که آنجا
+-- می‌خواستیم بسنجیم — رفتارِ واقعیِ RLS و گرنت‌ها روی `public.leads` — بدونِ
+-- هیچ شبکه‌ای هم قابلِ سنجش است، اگر نقش‌ها و امتیازهای پیش‌فرضِ Supabase را
+-- درست بازتولید کنیم. این فایل همان بازتولید است.
+--
+-- ⚠️ این فایل **هرگز روی Production یا Staging اجرا نمی‌شود.** فقط
+-- `lib/leads/leads.integration.test.ts` آن را روی یک Postgresِ یک‌بارمصرف اجرا
+-- می‌کند. `scripts/validate-sql.mjs` هم آن را به‌عنوانِ migration نمی‌شناسد.
+--
+-- منبعِ رفتارها: مستنداتِ Supabase دربارهٔ نقش‌های `anon`/`authenticated`/
+-- `service_role`، توابعِ `auth.uid()`/`auth.role()`، و مهم‌تر از همه
+-- `ALTER DEFAULT PRIVILEGES … GRANT ALL ON TABLES TO anon, authenticated` که
+-- دقیقاً همان چیزی است که باگِ `TRUNCATE` را می‌ساخت.
+-- =============================================================================
+
+-- ── ۱) نقش‌ها ────────────────────────────────────────────────────────────────
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    CREATE ROLE anon NOLOGIN NOINHERIT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    CREATE ROLE authenticated NOLOGIN NOINHERIT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+    -- در Supabase این نقش BYPASSRLS دارد؛ همان‌جا هم سیاست‌ها را دور می‌زند.
+    CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
+  END IF;
+END $$;
+
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+-- ── ۲) اسکیمای auth و توابعش ────────────────────────────────────────────────
+CREATE SCHEMA IF NOT EXISTS auth;
+GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role;
+
+CREATE TABLE IF NOT EXISTS auth.users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid()
+);
+
+-- در Supabase این‌ها از claimsِ JWT خوانده می‌شوند. تست با
+-- `set_config('request.jwt.claims', …)` همان نقش/کاربر را جعل می‌کند.
+-- توجه: وقتی claim ست نشده، `current_setting(…, true)` رشتهٔ خالی می‌دهد نه
+-- NULL؛ کستِ مستقیمِ آن به json خطا می‌دهد. پس اول `nullif` روی خودِ رشته.
+CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid
+LANGUAGE sql STABLE AS $$
+  SELECT nullif(
+    nullif(current_setting('request.jwt.claims', true), '')::json ->> 'sub',
+    ''
+  )::uuid;
+$$;
+
+CREATE OR REPLACE FUNCTION auth.role() RETURNS text
+LANGUAGE sql STABLE AS $$
+  SELECT coalesce(
+    nullif(nullif(current_setting('request.jwt.claims', true), '')::json ->> 'role', ''),
+    current_user
+  );
+$$;
+
+-- ── ۳) پیش‌نیازِ phase8b: جدولِ profiles ─────────────────────────────────────
+-- عیناً از `sql/archive/supabase_schema.sql` (همان تعریفی که Production دارد).
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id           uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name    text,
+  national_id  text,
+  phone        text,
+  email        text,
+  role         text NOT NULL DEFAULT 'user' CHECK (role IN ('user','admin')),
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- کاربر باید ردیفِ خودش را ببیند، وگرنه زیرپرس‌وجوی سیاستِ ادمین روی leads
+-- همیشه false می‌شود. این همان تله‌ای است که در staging هم بالقوه وجود داشت.
+DROP POLICY IF EXISTS "own profile readable" ON public.profiles;
+CREATE POLICY "own profile readable" ON public.profiles
+  FOR SELECT USING (id = auth.uid());
+
+GRANT SELECT ON public.profiles TO authenticated;
+
+-- ── ۴) امتیازهای پیش‌فرضِ Supabase — همان چیزی که باگ را می‌ساخت ────────────
+-- این خط عمداً اینجاست. بدونِ آن، تستِ گرنت بی‌معنا می‌شود: جدولِ تازه دیگر
+-- امتیازِ اضافه نمی‌گیرد و `REVOKE`های migration چیزی برای پس‌گرفتن ندارند.
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;
