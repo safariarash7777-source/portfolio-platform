@@ -22,8 +22,8 @@
 | **Current Phase** | **P2 — بازتعریفِ محصول و مسیرِ رونماییِ عمومی** | VERIFIED |
 | **Current Gate** | **Gate 2 · Operational Foundation** (`G2-001`…`G2-009`) — **فعال**. **Gate 1 بسته شد**: `PRODUCT-BLUEPRINT` با تأییدِ نهاییِ آرش تصویب شد (`DD-025`)، معماریِ **Arash Intelligence Desk** پیش‌تر تأیید شده بود (`DD-024`) | VERIFIED |
 | **Last Verified Date** | **2026-07-30** | — |
-| **Portfolio main SHA** | `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c` — **verified as of 2026-07-28**. منبعِ حقیقت `git rev-parse origin/main` است، نه این خانه. مسیر: `51ac8aa` (#79) → `1acc18e` (#84) → `def602f` (#85) → `7ad084e` (planning) | VERIFIED |
-| **Mini App main SHA** | `b88f9353bbc2bf776c20d4dc3790fb0cd7a1d4db` | VERIFIED (GitHub API، `telegram-miniapp`) |
+| **Portfolio main SHA** | `c1bc5c91ec7b8ac924336454038d74373c2484fe` — **verified 2026-07-30**. منبعِ حقیقت `git rev-parse origin/main` است، نه این خانه. مسیر: `7ad084e` → `bdd8802`/#86 (Gate 1) → `ecfc21a` → `16ba381` (#92) → `f68f815` (#94، گرنت‌های لید) → `c1bc5c9` (#95، تستِ Postgres) | VERIFIED |
+| **Mini App main SHA** | `8cd1e023167a0102d173eb7a751fe188ed428928` — **verified 2026-07-30**. ⚠️ این خانه تا `P2-G2-010` روی `b88f935` مانده بود در حالی که PR #3ِ مینی‌اپ merge شده بود | VERIFIED (`git rev-parse origin/main` روی `telegram-miniapp`) |
 | **Active Supabase Ref** | `uooeygybrniptzdxuzhj` | VERIFIED (فهرست‌کردنِ فقط‌خواندنیِ جدول‌ها) |
 | **Staging Supabase Ref** | `oqjcvkzyvhqnphopedpn` — پروژهٔ **ایزولهٔ رایگان**، ساخته‌شده در `G2-006` (۱۴۰۵/۰۵/۰۸). فقط دادهٔ مصنوعی؛ هیچ دادهٔ Production واردش نشد. جدولِ `leads` **فقط اینجا** اجرا شده | VERIFIED (ساخت + اجرای migration + پرس‌وجوهای راستی‌آزمایی) |
 | **Deprecated Supabase Ref** | `lqfcyihuthdoqybwptxh` — **استفاده نشود**. ⚠️ این ref **Production نیست** (`SD-002`) — اگر جایی به‌عنوانِ Production معرفی شد، غلط است | VERIFIED (فقط یک ارجاعِ برچسب‌خوردهٔ تاریخی در اسناد) |
@@ -58,8 +58,11 @@
 | کارنامه (`/analyses` + زنجیرهٔ هش) | ✅ | ✅ | ⚠️ محتوا تقریباً خالی | ❌ |
 | پرداخت (زرین‌پال) | ✅ | ✅ | ⚠️ وبینار خطا می‌دهد (`B-026`) | ❌ |
 | **پرداخت → دسترسیِ خودکار** | ❌ | ❌ | ❌ | ❌ |
-| مسیرِ لید | ✅ | ✅ | ❌ جدول وجود ندارد (`B-001`) | ❌ |
-| CI (‏۴ job) | ✅ | ✅ | ⚠️ اجباری نیست (`B-015`) | ✅ |
+| مسیرِ لید — نیمهٔ مینی‌اپ | ✅ | ✅ | ✅ MySQL + اعلانِ تلگرام | ✅ روی staging |
+| مسیرِ لید — احرازِ وبهوک | ✅ | ✅ | ✅ روی staging (نه ۴۰۱) | ✅ روی staging |
+| مسیرِ لید — نوشتن در `public.leads` | ✅ | ✅ | ❌ جدول در Production نیست (`B-001`) | ❌ عبورِ واقعی اثبات نشده (`B-030`) |
+| امنیتِ جدولِ لید (RLS + گرنت) | ✅ | — | ✅ | ✅ **در CI روی Postgresِ واقعی** (`G2-006`) |
+| CI (‏۵ job) | ✅ | ✅ | ⚠️ اجباری نیست (`B-015`) | ✅ |
 | میزِ آرش · مدلِ دادهٔ هوشمندی · ورودیِ خبر · AI | ❌ | ❌ | ❌ | ❌ |
 
 ---
@@ -127,6 +130,25 @@ Gate 7 — Controlled Launch
 > `G2-009` branch protection را **روشن** می‌کند؛ Gate 6 آستانه، هشدار، رفتارِ
 > اثبات‌شدهٔ دادهٔ بیات و **اثباتِ اینکه گیت هنوز اجباری است** را می‌خواهد.
 
+### ۲′. وضعیتِ واقعیِ نه بستهٔ Gate 2 (بازبینیِ `P2-G2-010`، ۲۰۲۶-۰۷-۳۰)
+
+> این جدول **تنها** جای معتبرِ وضعیتِ بسته‌هاست. اگر جایی از این سند یا اسنادِ
+> planning چیزِ دیگری گفت، همین جدول معتبر است.
+
+| بسته | وضعیت | چه چیزی واقعاً اثبات شده | چه چیزی نشده |
+|---|---|---|---|
+| `G2-001` package manager | ✅ **DONE** | npm رسمی است (`packageManager: npm@10.9.7`)، `engines.node >= 20`، **تنها لاک‌فایلِ tracked** `package-lock.json` است، و گاردِ CI برگشتِ لاکِ pnpm/yarn را می‌شکند. `B-023` بسته شد | — |
+| `G2-002` service role | ⚠️ **DIAGNOSED, NOT FIXED** | مکانیزمِ خطا شناخته شد | اسکوپِ واقعیِ متغیر در Production راستی‌آزمایی نشده — **اقدامِ اپراتور** (`B-024`) |
+| `G2-003` نمای سلامت | ✅ **BUILT & DEPLOYED** | `/admin/health` + `/api/admin/health`، گیتِ دوگانهٔ ادمین، env فقط `present: boolean`، هشدارِ اسکوپِ محیط | «آخرین اجرای موفقِ واقعی» هنوز مشاهدهٔ تاریخ‌دار ندارد → `OPERATIONAL` بله، `PROVEN` نه |
+| `G2-004` بازبینیِ PR #75 | ⏸ **در دامنهٔ توقفِ پرداخت** | — | `D-009` باز |
+| `G2-005` پرداخت→دسترسی | ⏸ **`HOLD_BY_OWNER`** | طراحی و تست در PR #91 | `D-024` باز · PR #91 دست‌نخورده |
+| `G2-006` لید | ⚠️ **DB PROVEN, E2E NOT** | migration روی staging سالم اجرا شد · **RLS و گرنت‌ها روی Postgresِ واقعی در CI اجباری‌اند** · نیمهٔ مینی‌اپ و احرازِ وبهوک روی staging کار کرد · تمرینِ شکست و بازیابی انجام شد | **عبورِ واقعیِ یک ردیف از اپلیکیشن به `public.leads` اثبات نشده** (`B-029`, `B-030`) · `D-001` باز |
+| `G2-007` زمان‌بندی | ✅ **DONE** | `vercel.json` منبعِ حقیقت شد؛ `B-016` و `B-027` بسته؛ گاردِ `lib/core/cadence.test.ts` | ادعایی دربارهٔ **اجرای واقعیِ** cron نمی‌کند — آن `UNVERIFIED` است |
+| `G2-008` ادعاهای اثبات‌ناپذیر | ⚠️ **PARTIAL** | `ProductFacts` و `Capabilities` اصلاح شدند؛ `B-016`/`B-027` بسته | `B-028` (`/learn`) — انتشارِ محتوا تصمیمِ آرش است |
+| `G2-009` branch protection | ❌ **NOT DONE** | runbook آماده است و `CI Gate` سبز است | روشن‌کردنش اقدامِ انسانی در تنظیماتِ GitHub است (`B-015`) |
+
+**Gate 2 = `PARTIALLY_READY`. PASS اعلام نشده و نمی‌شود.**
+
 ---
 
 ## 3. Active Blockers
@@ -140,7 +162,7 @@ Gate 7 — Controlled Launch
 | **B-025** | **پرداخت به `entitlement` وصل نیست** — مشتریِ پرداخت‌کرده خودکار دسترسی نمی‌گیرد | 🔴 CRITICAL | Portfolio / Revenue | **ARASH** (نگاشت) + ENGINEERING (پیاده‌سازی) | 2026-07-28 | مسیرِ درآمد · Gate 2 · Gate 6 | تصمیمِ `D-024` (هر محصول چه سطح و چه مدت)، سپس طراحی + تستِ پل. **هیچ اصلاحِ پرداختی در این مأموریت انجام نشد.** | هیچ‌کدام از `app/api/payment/callback/route.ts` و `app/api/webinars/payment/callback/route.ts` به `entitlements` نمی‌نویسند؛ تنها نویسنده `app/api/admin/entitlements/route.ts` (فقط‌ادمین) است. گیتِ `/terminal` در `middleware.ts` و `lib/access.ts` به همین جدول نگاه می‌کند | **OPEN — ⏸ `HOLD_BY_OWNER` (2026-07-30)**: آرش مسیرِ پرداخت/سیاستِ دسترسی را متوقف کرد. کدِ رفع در PR #91 آماده و **دست‌نخورده** منتظر است؛ نه تمام‌شده، نه لغوشده · VERIFIED |
 | **B-026** | **پرداختِ وبینار در Production خطا می‌دهد** | 🔴 CRITICAL | Portfolio / Revenue | **ARASH** | 2026-07-28 | مسیرِ درآمد · Gate 2 · D-009 | بازتولیدِ خطا با شواهد، سپس تصمیمِ `D-009` دربارهٔ PR #75. **PR #75 پایهٔ کهنه دارد و مستقیم merge نمی‌شود.** | گزارشِ عملیاتی در `P2-G1-001`. احتمالاً با `B-024` هم‌ریشه است ولی **این ادعا راستی‌آزمایی نشده** | **OPEN** · گزارشِ عملیاتی VERIFIED / علت UNKNOWN |
 | ~~**B-027**~~ | ~~**`ProductFacts` عددِ نادرست نمایش می‌دهد**~~ — «۵ دقیقه، چرخهٔ پایش قیمت و هشدار» در حالی که cron روزانه است | 🟠 HIGH | Portfolio / Truthfulness | ENGINEERING | 2026-07-28 | — | — | **متن به واقعیت اصلاح شد، زمان‌بندی دست نخورد** (متراکم‌کردنِ cron ارتقای پلنِ Vercel می‌خواهد و تصمیمِ جداست). دامنه از یک فایل بیشتر بود: `ProductFacts.tsx` به «۱ بار در روز» رفت و **`Capabilities.tsx:46` هم همان ادعای «هر ۵ دقیقه پایش می‌شود» را داشت** که در ممیزیِ اولیه دیده نشده بود. آن ۵ دقیقه اصلاً دورهٔ پایش نبود — `CACHE_MS` در `lib/market.ts:42` است، و مسیرِ `lib/market.ts:59` فقط با رسیدنِ ترافیک اجرا می‌شود. تنها پایشِ **تضمین‌شده** cronِ روزانه است | ✅ **CLOSED 2026-07-29** (`G2-008`) |
-| **B-028** | **`/learn` شش درسِ منتشرنشده را عمومی نشان می‌دهد** | 🟡 MEDIUM | Portfolio / Truthfulness | ARASH (محتوا) | 2026-07-28 | Gate 5 | انتشارِ محتوا **تصمیمِ آرش است و باز می‌ماند**. تا آن زمان صداقتِ نمایش تأمین شد | هر شش درس `published: false`. کارت‌ها از قبل برچسبِ «به‌زودی» داشتند و `app/learn/[slug]` بدنه را صریحاً placeholder اعلام می‌کند — این بخش **درست بود**. آنچه کم بود، صداقتِ **سطحِ سکشن** بود: عنوانِ «مسیر یادگیری گام‌به‌گام» بالای شش کارت، وقتی هیچ درسی منتشر نشده، وعده‌ای می‌داد که پشتش چیزی نبود. یک خطِ صریح اضافه شد که تا انتشارِ اولین درس نمایش داده می‌شود | **OPEN (محتوا · ARASH)** · نمایش دیگر گمراه‌کننده نیست (`G2-008`) |
+| **B-028** | **`/learn` شش درسِ منتشرنشده را عمومی نشان می‌دهد** | 🟡 MEDIUM | Portfolio / Truthfulness | ARASH (محتوا) | 2026-07-28 | Gate 5 | انتشارِ محتوا **تصمیمِ آرش است و باز می‌ماند**. تا آن زمان نمایش با واقعیت خوانده می‌شود | هر شش درس `published: false`. **`G2-008`** خطِ صریحِ سطحِ سکشن را اضافه کرد. **`P2-G2-010`** یک قدم جلوتر رفت: تا انتشارِ اولین درس، سرفصل‌ها دیگر **کارتِ کلیک‌پذیر** نیستند (چیزی که کلیک می‌شود و صفحه باز می‌کند در عمل «محتوای در دسترس» خوانده می‌شود) و صفحهٔ درسِ منتشرنشده `noindex` شد. **هیچ پیش‌نویسی حذف نشد** و رفتار به `published` گره خورده، پس با انتشار خودبه‌خود برمی‌گردد. گاردِ `lib/learn.test.ts` | **OPEN (محتوا · ARASH)** · نمایش دیگر گمراه‌کننده نیست |
 | **B-029** | **کلیدِ service-roleِ Staging با هیچ ابزارِ در دسترسی قابلِ دریافت نیست** | 🟠 HIGH | Ops / Staging | ARASH (اپراتور) | 2026-07-30 | B-003، G2-006 | آرش یک **Supabase Personal Access Token** به‌عنوانِ متغیرِ محیطیِ سشن (`SUPABASE_ACCESS_TOKEN`) بدهد **و** خروجیِ شبکه به `api.supabase.com` و `*.supabase.co` باز شود. آن‌وقت کلید بدونِ نمایش خوانده و مستقیم استفاده می‌شود | چهار مسیر واقعاً امتحان شد و هر چهار بسته بود: `get_publishable_keys` فقط `anon` و `sb_publishable_…` می‌دهد · `SUPABASE_ACCESS_TOKEN` در محیط نیست · `api.supabase.com` از پراکسی **403** می‌گیرد · روی خودِ DB: `jwt_secret_available=false` و `vault_secret_count=0` | **OPEN** · VERIFIED |
 | **B-030** | **خروجیِ شبکهٔ محیطِ اجرا میزبان‌های Supabase و Vercel را مسدود می‌کند** — پس نه می‌توان کلید را گرفت، نه از اینجا به Supabase نوشت، نه Preview را پیکربندی کرد | 🟠 HIGH | Ops / Tooling | ARASH (اپراتور) | 2026-07-30 | B-029، G2-006 | باز کردنِ egress برای `*.supabase.co`, `api.supabase.com`, `api.vercel.com` در تنظیماتِ محیط. **دور زدنِ پراکسی ممنوع است** (دستورِ صریحِ `/root/.ccr/README.md`) | آزمونِ واقعی: هر شش میزبانِ `supabase.com`, `api.supabase.com`, `*.supabase.co`, `db.*.supabase.co`, `vercel.com`, `api.vercel.com` کدِ `000` (CONNECT 403) دادند · لاگِ خودِ اپلیکیشن: `Host not in allowlist: …` | **OPEN** · VERIFIED |
 | **B-031** | **MCPِ Vercel هیچ ابزارِ متغیرِ محیطی ندارد** — نه خواندن، نه نوشتن. پس تنظیمِ `SUPABASE_SERVICE_ROLE_KEY` روی Preview از اینجا ممکن نیست حتی اگر کلید را داشتیم | 🟡 MEDIUM | Ops / Tooling | ARASH (اپراتور) | 2026-07-30 | B-029، B-030 | یا آرش متغیرها را یک‌بار در پنلِ Vercel روی اسکوپِ **Preview** ست کند، یا ابزارِ env به MCP اضافه شود | فهرستِ کاملِ ابزارهای Vercelِ این سشن: `list_teams`, `list_projects`, `get_project`, `get_/update_project_deployment_protection`, `list_deployments`, `get_deployment*`, `get_runtime_logs/errors`, `deploy_to_vercel`, خرید/آنالیتیکس — **هیچ ابزارِ env**. `list_teams` و `list_projects` واقعاً کار کردند، پس این محدودیتِ ابزار است نه دسترسی | **OPEN** · VERIFIED |

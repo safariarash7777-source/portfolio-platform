@@ -6,31 +6,31 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 /**
- * تستِ یکپارچگیِ `public.leads` روی **Postgresِ واقعی** — `G2-006`.
+ * تستِ یکپارچگیِ `public.leads` روی **Postgresِ واقعی** — `G2-006` / `P2-G2-010`.
  *
  * ## چرا این فایل وجود دارد
  *
  * تمرینِ stagingِ `G2-006` یک نقصِ واقعی پیدا کرد: فایلِ migration فقط
- * `REVOKE ALL … FROM anon` داشت، پس نقشِ `authenticated` امتیازِ پیش‌فرضِ
- * Supabase را نگه می‌داشت — از جمله `TRUNCATE`. و **RLS روی `TRUNCATE` اعمال
- * نمی‌شود**، یعنی هر کاربرِ لاگین‌کردهٔ عادی می‌توانست کلِ جدولِ لید را خالی کند.
+ * `REVOKE ALL … FROM anon` داشت، پس `authenticated` امتیازِ `TRUNCATE` را نگه
+ * می‌داشت. و **RLS روی `TRUNCATE` اعمال نمی‌شود** — یعنی هر کاربرِ لاگین‌کردهٔ
+ * عادی می‌توانست کلِ جدولِ لید را خالی کند.
  *
- * آن نقص با اندازه‌گیریِ دستی روی staging پیدا شد. `lib/leads/grants.test.ts`
- * جلوی برگشتنش را می‌گیرد، ولی آن تست فقط **متنِ فایل** را می‌خوانَد. این فایل
- * چیزِ قوی‌تری می‌سنجد: **رفتارِ واقعیِ دیتابیس**.
+ * `lib/leads/grants.test.ts` فقط **متنِ فایل** را می‌خوانَد. این فایل چیزِ
+ * قوی‌تری می‌سنجد: **رفتارِ واقعیِ دیتابیس**.
  *
- * ## چرا بدونِ شبکه ممکن است
+ * ## دو پروفایلِ امتیاز
  *
- * هاپِ آخرِ تمرین (نوشتنِ ردیف از مسیرِ اپلیکیشن) به‌خاطرِ `B-030` بسته ماند —
- * شبکهٔ محیطِ اجرا `*.supabase.co` را می‌بندد. ولی چیزی که واقعاً می‌خواستیم
- * اثبات کنیم رفتارِ RLS و گرنت‌ها بود، و آن را می‌شود روی هر Postgresی سنجید،
- * به‌شرطی که نقش‌ها و امتیازهای پیش‌فرضِ Supabase درست بازتولید شوند —
- * کارِ `sql/test/supabase_bootstrap.sql`.
+ * migration مقابلِ **هر دو** اجرا می‌شود:
+ *   • `legacy`   — بدترین‌حالتی که روی stagingِ خودمان اندازه گرفتیم
+ *   • `explicit` — محیطی که هیچ امتیازِ خودکاری نمی‌دهد
+ *
+ * نتیجهٔ نهایی باید در هر دو یکسان باشد. اگر نبود، یعنی migration به یک فرضِ
+ * محیطیِ نانوشته تکیه کرده.
  *
  * ## این تست چه چیزی را اثبات **نمی‌کند**
  *
- * اینجا PostgREST نیست. پس «کلاینتِ مرورگر چه می‌بیند» سنجیده نمی‌شود؛ فقط
- * لایهٔ Postgres. آن هاپ همچنان `UNPROVEN` است.
+ * اینجا PostgREST نیست. «کلاینتِ مرورگر چه می‌بیند» سنجیده نمی‌شود؛ فقط لایهٔ
+ * Postgres. آن هاپ همچنان `UNPROVEN` است (`B-030`).
  */
 
 const PSQL_ENV = {
@@ -44,6 +44,10 @@ const PSQL_ENV = {
 const ROOT = process.cwd();
 const BOOTSTRAP = join(ROOT, "sql", "test", "supabase_bootstrap.sql");
 const MIGRATION = join(ROOT, "sql", "phase8b_leads.sql");
+const PROFILES = {
+  legacy: join(ROOT, "sql", "test", "profile_legacy_default_privileges.sql"),
+  explicit: join(ROOT, "sql", "test", "profile_explicit_grants.sql"),
+} as const;
 
 const ADMIN_ID = "11111111-1111-1111-1111-111111111111";
 const USER_ID = "22222222-2222-2222-2222-222222222222";
@@ -75,27 +79,20 @@ function psqlExpectError(db: string, sql: string): string {
   return "";
 }
 
-/** اجرا با نقش و claimهای جعلی، در یک تراکنش تا نشت نکند. */
-function asRole(db: string, role: string, sub: string | null, sql: string): string {
+function wrap(role: string, sub: string | null, sql: string): string {
   const claims = sub === null ? `{"role":"${role}"}` : `{"sub":"${sub}","role":"${role}"}`;
-  return psql(
-    db,
-    `BEGIN; SELECT set_config('request.jwt.claims', '${claims}', true); SET LOCAL ROLE ${role}; ${sql}; COMMIT;`
-  );
+  return `BEGIN; SELECT set_config('request.jwt.claims', '${claims}', true); SET LOCAL ROLE ${role}; ${sql}; COMMIT;`;
 }
 
-function asRoleExpectError(db: string, role: string, sub: string | null, sql: string): string {
-  const claims = sub === null ? `{"role":"${role}"}` : `{"sub":"${sub}","role":"${role}"}`;
-  return psqlExpectError(
-    db,
-    `BEGIN; SELECT set_config('request.jwt.claims', '${claims}', true); SET LOCAL ROLE ${role}; ${sql}; COMMIT;`
-  );
-}
+const asRole = (db: string, role: string, sub: string | null, sql: string) => psql(db, wrap(role, sub, sql));
+const asRoleExpectError = (db: string, role: string, sub: string | null, sql: string) =>
+  psqlExpectError(db, wrap(role, sub, sql));
 
-function createDb(name: string, migrationPath = MIGRATION): void {
+function createDb(name: string, profile: string, migrationPath = MIGRATION): void {
   psql("postgres", `DROP DATABASE IF EXISTS ${name}`);
   psql("postgres", `CREATE DATABASE ${name}`);
   psqlFile(name, BOOTSTRAP);
+  psqlFile(name, profile);
   psqlFile(name, migrationPath);
   psql(
     name,
@@ -104,123 +101,171 @@ function createDb(name: string, migrationPath = MIGRATION): void {
   );
 }
 
-let available = false;
+// ── در دسترس بودنِ Postgres ─────────────────────────────────────────────────
+//
+// قاعدهٔ `P2-G2-010`: در CI **نبودنِ Postgres یا psql باید تست را بشکند**، نه
+// اینکه بی‌صدا skip کند و گیت را سبز نگه دارد. یک گیتِ سبزی که هیچ چیز اجرا
+// نکرده از نداشتنِ گیت بدتر است، چون اعتماد کاذب می‌سازد.
+const REQUIRE_DB = process.env.CI === "true" || process.env.REQUIRE_DB === "1";
+
+let dbError: string | null = null;
 try {
-  execFileSync("psql", ["-d", "postgres", "-X", "-q", "-c", "select 1"], {
-    env: PSQL_ENV,
-    stdio: "ignore",
-  });
-  available = true;
-} catch {
-  available = false;
+  execFileSync("psql", ["-d", "postgres", "-X", "-q", "-c", "select 1"], { env: PSQL_ENV, stdio: "ignore" });
+} catch (e) {
+  dbError = e instanceof Error ? e.message : String(e);
 }
 
-describe("public.leads روی Postgresِ واقعی", { skip: available ? false : "Postgres در دسترس نیست" }, () => {
-  const DB = "leads_it";
+if (dbError !== null && REQUIRE_DB) {
+  throw new Error(
+    `[G2-006] Postgres در دسترس نیست و این محیط CI است، پس skip مجاز نیست.\n` +
+      `PGHOST=${PSQL_ENV.PGHOST} PGPORT=${PSQL_ENV.PGPORT} PGUSER=${PSQL_ENV.PGUSER}\n` +
+      `علت: ${dbError}`
+  );
+}
 
-  before(() => {
-    createDb(DB);
-    // یک لیدِ مصنوعی، نوشته‌شده از راهِ نقشی که در تولید می‌نویسد.
-    asRole(DB, "service_role", null, `INSERT INTO public.leads (name, phone, topic) VALUES ('SYNTHETIC LEAD','07700900123','other')`);
+const skipReason = dbError === null ? false : "Postgres در دسترس نیست (خارج از CI)";
+
+for (const [profileName, profileFile] of Object.entries(PROFILES)) {
+  describe(`public.leads — پروفایلِ امتیازِ «${profileName}»`, { skip: skipReason }, () => {
+    const DB = `leads_it_${profileName}`;
+
+    before(() => {
+      createDb(DB, profileFile);
+      asRole(DB, "service_role", null, `INSERT INTO public.leads (name, phone, topic) VALUES ('SYNTHETIC LEAD','07700900123','other')`);
+    });
+
+    // ── نویسنده ─────────────────────────────────────────────────────────────
+
+    test("service_role می‌تواند لید درج کند — تنها نویسندهٔ مجاز", () => {
+      asRole(DB, "service_role", null, `INSERT INTO public.leads (name, phone, topic) VALUES ('SERVICE ROLE WRITE','07700900555','gold')`);
+      const n = asRole(DB, "service_role", null, `SELECT count(*)::text FROM public.leads WHERE name='SERVICE ROLE WRITE'`);
+      assert.equal(n.split("\n").pop(), "1");
+      asRole(DB, "service_role", null, `DELETE FROM public.leads WHERE name='SERVICE ROLE WRITE'`);
+    });
+
+    // ── محرمانگی ────────────────────────────────────────────────────────────
+
+    test("anon اصلاً امتیازِ خواندن ندارد", () => {
+      assert.match(asRoleExpectError(DB, "anon", null, `SELECT count(*) FROM public.leads`), /permission denied/i);
+    });
+
+    test("anon امتیازِ درج ندارد", () => {
+      assert.match(asRoleExpectError(DB, "anon", null, `INSERT INTO public.leads (name) VALUES ('x')`), /permission denied/i);
+    });
+
+    test("کاربرِ عادیِ لاگین‌کرده هیچ لیدی نمی‌بیند — RLS کار می‌کند", () => {
+      // خطا نمی‌گیریم، صفر ردیف می‌گیریم. تفاوتش مهم است: امتیازِ SELECT هست
+      // (تا ادمین بتواند بخوانَد) ولی سیاست ردیف‌ها را صفر می‌کند.
+      assert.equal(asRole(DB, "authenticated", USER_ID, `SELECT count(*) FROM public.leads`).split("\n").pop(), "0");
+    });
+
+    test("ادمین لیدها را می‌بیند — سیاست و زیرپرس‌وجوی profiles هر دو کار می‌کنند", () => {
+      // اگر `profiles` سیاستِ «ردیفِ خودم را ببینم» نداشته باشد، این زیرپرس‌وجو
+      // بی‌صدا false می‌شود و ادمین هم چیزی نمی‌بیند. این تست آن تله را می‌گیرد.
+      assert.equal(asRole(DB, "authenticated", ADMIN_ID, `SELECT count(*) FROM public.leads`).split("\n").pop(), "1");
+    });
+
+    // ── یکپارچگی ────────────────────────────────────────────────────────────
+
+    test("کاربرِ عادی نمی‌تواند TRUNCATE کند — RLS اینجا محافظت نمی‌کند، گرنت می‌کند", () => {
+      assert.match(asRoleExpectError(DB, "authenticated", USER_ID, `TRUNCATE public.leads`), /permission denied/i);
+    });
+
+    test("کاربرِ عادی امتیازِ INSERT و DELETE ندارد", () => {
+      for (const stmt of [`INSERT INTO public.leads (name) VALUES ('x')`, `DELETE FROM public.leads`]) {
+        assert.match(asRoleExpectError(DB, "authenticated", USER_ID, stmt), /permission denied/i, `باید رد می‌شد: ${stmt}`);
+      }
+    });
+
+    test("کاربرِ عادی هیچ لیدی را UPDATE نمی‌کند — نه خطا، صفر ردیف", () => {
+      // نکتهٔ ظریف: `authenticated` عمداً امتیازِ UPDATE دارد تا ادمین بتواند
+      // چرخهٔ حیات را عوض کند. چیزی که کاربرِ عادی را متوقف می‌کند **RLS** است،
+      // نه گرنت. پس انتظارِ درست «صفر ردیفِ تغییریافته» است، نه permission denied.
+      const updated = asRole(
+        DB,
+        "authenticated",
+        USER_ID,
+        `WITH u AS (UPDATE public.leads SET status='archived' RETURNING 1) SELECT count(*)::text FROM u`
+      );
+      assert.equal(updated.split("\n").pop(), "0", "کاربرِ عادی نباید هیچ ردیفی را عوض کند");
+
+      const stillNew = asRole(DB, "service_role", null, `SELECT count(*)::text FROM public.leads WHERE status='new'`);
+      assert.equal(stillNew.split("\n").pop(), "1", "ردیف باید دست‌نخورده مانده باشد");
+    });
+
+    test("ادمین می‌تواند status و notes را به‌روزرسانی کند", () => {
+      const updated = asRole(
+        DB,
+        "authenticated",
+        ADMIN_ID,
+        `WITH u AS (UPDATE public.leads SET status='contacted', notes='CRM note' RETURNING 1) SELECT count(*)::text FROM u`
+      );
+      assert.equal(updated.split("\n").pop(), "1");
+
+      const row = asRole(DB, "service_role", null, `SELECT status || '|' || coalesce(notes,'') FROM public.leads`);
+      assert.equal(row.split("\n").pop(), "contacted|CRM note");
+    });
+
+    test("به‌روزرسانیِ ادمین تریگرِ updated_at را شلیک می‌کند", () => {
+      // در یک تراکنش `now()` ثابت است، پس UPDATE باید تراکنشِ جدا باشد — که
+      // `asRole` هم همین کار را می‌کند.
+      asRole(DB, "authenticated", ADMIN_ID, `UPDATE public.leads SET status='converted'`);
+      const bumped = asRole(DB, "service_role", null, `SELECT (updated_at > created_at)::text FROM public.leads`);
+      assert.equal(bumped.split("\n").pop(), "true");
+      asRole(DB, "service_role", null, `UPDATE public.leads SET status='new', notes=NULL`);
+    });
+
+    test("جدولِ امتیازها دقیقاً کمینه است — و در هر دو پروفایل یکسان", () => {
+      const rows = psql(
+        DB,
+        `SELECT grantee || '=' || string_agg(privilege_type, ',' ORDER BY privilege_type)
+           FROM information_schema.role_table_grants
+          WHERE table_schema='public' AND table_name='leads'
+            AND grantee IN ('anon','authenticated','service_role')
+          GROUP BY grantee ORDER BY grantee`
+      );
+      const map = Object.fromEntries(rows.split("\n").filter(Boolean).map((r) => r.split("=")));
+      assert.equal(map.anon, undefined, "anon نباید هیچ امتیازی داشته باشد");
+      assert.equal(map.authenticated, "SELECT,UPDATE");
+      assert.match(map.service_role ?? "", /INSERT/);
+    });
+
+    test("EXECUTEِ تابعِ تریگر از anon و authenticated گرفته شده", () => {
+      const out = psql(
+        DB,
+        `SELECT has_function_privilege('anon','public.leads_set_updated_at()','EXECUTE')::text
+             || ',' || has_function_privilege('authenticated','public.leads_set_updated_at()','EXECUTE')::text`
+      );
+      assert.equal(out, "false,false");
+    });
+
+    // ── قیدها ───────────────────────────────────────────────────────────────
+
+    test("قیدِ status مقدارِ نامعتبر را رد می‌کند", () => {
+      assert.match(psqlExpectError(DB, `INSERT INTO public.leads (name, status) VALUES ('x','bogus')`), /leads_status_check/);
+    });
+
+    test("قیدِ طول با LEAD_LIMITS هم‌خوان است", () => {
+      assert.match(psqlExpectError(DB, `INSERT INTO public.leads (name) VALUES (repeat('a', 201))`), /leads_name_len_check/);
+    });
+
+    test("migration idempotent است — اجرای دوباره نمی‌شکند", () => {
+      psqlFile(DB, MIGRATION);
+      assert.equal(psql(DB, `SELECT count(*)::text FROM public.leads`), "1", "اجرای دوباره نباید داده را از بین ببرد");
+    });
   });
+}
 
-  // ── محرمانگی ──────────────────────────────────────────────────────────────
+// ── اثباتِ اینکه این تست پوچ نیست ────────────────────────────────────────────
 
-  test("anon اصلاً امتیازِ خواندن ندارد", () => {
-    const err = asRoleExpectError(DB, "anon", null, `SELECT count(*) FROM public.leads`);
-    assert.match(err, /permission denied/i);
-  });
-
-  test("anon امتیازِ درج ندارد", () => {
-    const err = asRoleExpectError(DB, "anon", null, `INSERT INTO public.leads (name) VALUES ('x')`);
-    assert.match(err, /permission denied/i);
-  });
-
-  test("کاربرِ عادیِ لاگین‌کرده هیچ لیدی نمی‌بیند — RLS کار می‌کند", () => {
-    // نکته: اینجا خطا نمی‌گیریم، صفر ردیف می‌گیریم. تفاوتش مهم است: امتیازِ
-    // SELECT هست (تا ادمین بتواند بخوانَد) ولی سیاست ردیف‌ها را صفر می‌کند.
-    const out = asRole(DB, "authenticated", USER_ID, `SELECT count(*) FROM public.leads`);
-    assert.equal(out.split("\n").pop(), "0");
-  });
-
-  test("ادمین لیدها را می‌بیند — سیاست و زیرپرس‌وجوی profiles هر دو کار می‌کنند", () => {
-    // اگر `profiles` سیاستِ «ردیفِ خودم را ببینم» نداشته باشد، این زیرپرس‌وجو
-    // بی‌صدا false می‌شود و ادمین هم چیزی نمی‌بیند. این تست آن تله را می‌گیرد.
-    const out = asRole(DB, "authenticated", ADMIN_ID, `SELECT count(*) FROM public.leads`);
-    assert.equal(out.split("\n").pop(), "1");
-  });
-
-  // ── یکپارچگی — هستهٔ یافتهٔ `G2-006` ───────────────────────────────────────
-
-  test("کاربرِ عادی نمی‌تواند TRUNCATE کند — RLS اینجا محافظت نمی‌کند، گرنت می‌کند", () => {
-    const err = asRoleExpectError(DB, "authenticated", USER_ID, `TRUNCATE public.leads`);
-    assert.match(err, /permission denied/i);
-  });
-
-  test("کاربرِ عادی امتیازِ INSERT و DELETE ندارد", () => {
-    for (const stmt of [`INSERT INTO public.leads (name) VALUES ('x')`, `DELETE FROM public.leads`]) {
-      const err = asRoleExpectError(DB, "authenticated", USER_ID, stmt);
-      assert.match(err, /permission denied/i, `باید رد می‌شد: ${stmt}`);
-    }
-  });
-
-  test("جدولِ امتیازها دقیقاً کمینه است", () => {
-    const rows = psql(
-      DB,
-      `SELECT grantee || '=' || string_agg(privilege_type, ',' ORDER BY privilege_type)
-         FROM information_schema.role_table_grants
-        WHERE table_schema='public' AND table_name='leads'
-          AND grantee IN ('anon','authenticated','service_role')
-        GROUP BY grantee ORDER BY grantee`
-    );
-    const map = Object.fromEntries(rows.split("\n").filter(Boolean).map((r) => r.split("=")));
-    assert.equal(map.anon, undefined, "anon نباید هیچ امتیازی داشته باشد");
-    assert.equal(map.authenticated, "SELECT,UPDATE");
-    assert.match(map.service_role, /INSERT/);
-  });
-
-  test("EXECUTEِ تابعِ تریگر از anon و authenticated گرفته شده", () => {
-    const out = psql(
-      DB,
-      `SELECT has_function_privilege('anon','public.leads_set_updated_at()','EXECUTE')::text
-           || ',' || has_function_privilege('authenticated','public.leads_set_updated_at()','EXECUTE')::text`
-    );
-    assert.equal(out, "false,false");
-  });
-
-  // ── قیدها و تریگر ─────────────────────────────────────────────────────────
-
-  test("قیدِ status مقدارِ نامعتبر را رد می‌کند", () => {
-    const err = psqlExpectError(DB, `INSERT INTO public.leads (name, status) VALUES ('x','bogus')`);
-    assert.match(err, /leads_status_check/);
-  });
-
-  test("قیدِ طول با LEAD_LIMITS هم‌خوان است", () => {
-    const err = psqlExpectError(DB, `INSERT INTO public.leads (name) VALUES (repeat('a', 201))`);
-    assert.match(err, /leads_name_len_check/);
-  });
-
-  test("تریگر updated_at را جلو می‌برد", () => {
-    // در یک تراکنش `now()` ثابت است، پس UPDATE باید جدا اجرا شود.
-    psql(DB, `INSERT INTO public.leads (name) VALUES ('TRIGGER PROBE')`);
-    psql(DB, `UPDATE public.leads SET status='contacted' WHERE name='TRIGGER PROBE'`);
-    const out = psql(DB, `SELECT (updated_at > created_at)::text FROM public.leads WHERE name='TRIGGER PROBE'`);
-    assert.equal(out, "true");
-    psql(DB, `DELETE FROM public.leads WHERE name='TRIGGER PROBE'`);
-  });
-
-  test("migration idempotent است — اجرای دوباره نمی‌شکند", () => {
-    psqlFile(DB, MIGRATION);
-    const out = psql(DB, `SELECT count(*)::text FROM public.leads`);
-    assert.equal(out, "1", "اجرای دوباره نباید داده را از بین ببرد");
-  });
-
-  // ── اثباتِ اینکه این تست پوچ نیست ─────────────────────────────────────────
-
+describe("گاردِ failability", { skip: skipReason }, () => {
   test("بدونِ خطِ REVOKE، کاربرِ عادی واقعاً می‌تواند کلِ جدول را TRUNCATE کند", () => {
-    // این همان باگی است که در staging پیدا شد. اگر این تست روزی سبز بماند در
-    // حالی که خطِ REVOKE حذف شده، یعنی کلِ این فایل بی‌ارزش است. پس همین‌جا
+    // این همان باگی است که در staging پیدا شد. اگر تست‌های بالا روزی سبز بمانند
+    // در حالی که خطِ REVOKE حذف شده، یعنی کلِ این فایل بی‌ارزش است. پس همین‌جا
     // نسخهٔ معیوب ساخته و رفتارِ خطرناکش اثبات می‌شود.
+    //
+    // فقط روی پروفایلِ `legacy` معنا دارد: در پروفایلِ `explicit` جدولِ تازه
+    // اصلاً امتیازِ موروثی نمی‌گیرد، پس حذفِ REVOKE هم چیزی را باز نمی‌کند.
     const dir = mkdtempSync(join(tmpdir(), "leads-regression-"));
     const broken = join(dir, "phase8b_leads_without_revoke.sql");
     writeFileSync(
@@ -233,16 +278,16 @@ describe("public.leads روی Postgresِ واقعی", { skip: available ? false 
     );
 
     const BROKEN_DB = "leads_it_broken";
-    createDb(BROKEN_DB, broken);
+    createDb(BROKEN_DB, PROFILES.legacy, broken);
     asRole(BROKEN_DB, "service_role", null, `INSERT INTO public.leads (name) VALUES ('WILL BE WIPED')`);
+    assert.equal(psql(BROKEN_DB, `SELECT count(*)::text FROM public.leads`), "1");
 
-    const before = psql(BROKEN_DB, `SELECT count(*)::text FROM public.leads`);
-    assert.equal(before, "1");
-
-    // بدونِ REVOKE این کار موفق می‌شود — یعنی تستِ بالا واقعاً چیزی می‌سنجد.
     asRole(BROKEN_DB, "authenticated", USER_ID, `TRUNCATE public.leads`);
-    const after = psql(BROKEN_DB, `SELECT count(*)::text FROM public.leads`);
-    assert.equal(after, "0", "انتظار می‌رفت نسخهٔ معیوب اجازهٔ TRUNCATE بدهد");
+    assert.equal(
+      psql(BROKEN_DB, `SELECT count(*)::text FROM public.leads`),
+      "0",
+      "انتظار می‌رفت نسخهٔ معیوب اجازهٔ TRUNCATE بدهد — اگر نداد، این گارد دیگر چیزی را نمی‌سنجد"
+    );
 
     psql("postgres", `DROP DATABASE IF EXISTS ${BROKEN_DB}`);
   });

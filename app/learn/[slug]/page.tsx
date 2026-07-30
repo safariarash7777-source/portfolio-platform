@@ -24,6 +24,11 @@ export async function generateMetadata({
   return {
     title: `${lesson.title} | یادگیری — قطب‌نمای بازار`,
     description: lesson.summary,
+    // `B-028`: بدنهٔ درسِ منتشرنشده placeholder است. صفحه **حذف نمی‌شود** (تا
+    // پیش‌نویس و مسیر بمانند) ولی ایندکس‌شدنش هم درست نیست: صفحهٔ نازکی که
+    // محتوایی ندارد نباید در نتایج جست‌وجو به‌عنوان درس ظاهر شود. با
+    // `published: true` این قید خودبه‌خود برداشته می‌شود.
+    robots: lesson.published ? undefined : { index: false, follow: true },
   };
 }
 
