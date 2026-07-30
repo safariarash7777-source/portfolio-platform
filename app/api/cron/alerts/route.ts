@@ -4,7 +4,9 @@ import { getMarketData, evaluateAlerts } from "@/lib/market";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/cron/alerts — ارزیابیِ تضمینیِ هشدارها هر ۵ دقیقه (Vercel Cron).
+// GET /api/cron/alerts — ارزیابیِ تضمینیِ هشدارها، **روزانه** (Vercel Cron).
+// زمان‌بندیِ مرجع در `vercel.json` است: `0 6 * * *`. کامنتِ قبلی «هر ۵ دقیقه»
+// می‌گفت که با هیچ اجرایی مطابقت نداشت.
 // با CRON_SECRET محافظت می‌شود؛ اعتبارسنجی پیش از هر خواندن/نوشتنِ داده انجام
 // می‌شود. منطقِ ارزیابی از lib/market (همان مسیرِ ترافیک) reuse می‌شود، نه
 // duplicate؛ غیرفعال‌سازیِ اتمیک قبل از DM تضمین می‌کند هشدار دوبار ارسال نشود.

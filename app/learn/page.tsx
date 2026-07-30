@@ -33,6 +33,16 @@ export default function LearnPage() {
         <h2 className="font-display mt-8 text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
           مسیر یادگیری گام‌به‌گام
         </h2>
+        {/* هر کارت برچسبِ «به‌زودی» دارد، ولی وقتی **هیچ** درسی منتشر نشده،
+            عنوانِ «مسیر یادگیری» به‌تنهایی وعده‌ای می‌دهد که پشتش چیزی نیست.
+            این خط سطحِ سکشن را صادق می‌کند. با انتشارِ اولین درس باید برداشته شود. */}
+        {LESSONS.every((l) => !l.published) ? (
+          <p className="mt-2 text-[12px] leading-6" style={{ color: "var(--text-3)" }}>
+            سرفصل‌های این مسیر نهایی شده‌اند، ولی <strong>هنوز هیچ درسی منتشر نشده</strong> —
+            متن‌ها در بازبینی‌اند. آنچه همین حالا در دسترس است، واژه‌نامهٔ اصطلاحاتِ پایین همین
+            صفحه است.
+          </p>
+        ) : null}
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {LESSONS.map((l) => (
             <Link
