@@ -83,9 +83,26 @@ Nine work packages. A gate is PASS only when every package has an owner and a re
 
 ### `G2-006` — Lead migration, staging, end-to-end
 - [ ] `D-001` answered by Arash
-- [ ] `sql/phase8b_leads.sql` applied to **staging** per the runbook
-- [ ] `PLATFORM_WEBHOOK_SECRET` identical in both services; webhook returns 200, not 401
-- [ ] Synthetic lead succeeds end-to-end with evidence (closes `B-001`, `B-002`, `B-003`)
+- [x] `sql/phase8b_leads.sql` applied to **staging** per the runbook — staging project
+      `oqjcvkzyvhqnphopedpn`, isolated from Production `uooeygybrniptzdxuzhj`.
+      Verified: table present · RLS on · 2 policies · 5 indexes · 4 constraints ·
+      `updated_at` trigger fires · `anon` has no privilege
+- [x] **Least-privilege defect found and corrected before Production** — the measured
+      grant set gave `authenticated` `TRUNCATE`/`INSERT`/`DELETE`, and **RLS does not
+      apply to `TRUNCATE`**. Security Advisor did not catch it. Guarded by
+      `lib/leads/grants.test.ts`
+- [x] `PLATFORM_WEBHOOK_SECRET` identical in both staging services; webhook **does not**
+      return 401 — authentication proven by reaching `db_insert_failed` instead
+      (`B-020` behaviour reproduced and cleared on staging)
+- [x] Mini App half proven on staging: MySQL row is authoritative and survives webhook
+      failure · exactly one outbound attempt · non-2xx logged as failure (`B-019`) ·
+      no name/phone/message/secret in either service's logs
+- [x] Controlled failure rehearsed: wrong staging secret → 401, lead retained, recovery
+      on restore. Three observable states (401 / 500 / success) are distinguishable
+- [ ] **Synthetic lead does NOT yet reach `public.leads` end-to-end** — the final hop is
+      unproven. Blocked by environment, not by code: the Staging service-role key is not
+      obtainable through available tooling, and the sandbox network policy denies
+      `*.supabase.co`. `B-001`, `B-002`, `B-003` stay **open**
 
 ### `G2-007` — Cron schedule vs. public claims
 - [ ] Real Vercel Cron schedule verified against `vercel.json`

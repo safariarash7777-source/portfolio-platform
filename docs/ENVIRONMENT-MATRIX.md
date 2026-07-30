@@ -7,6 +7,24 @@
 > [`DECISION-LOG.md`](./DECISION-LOG.md).
 >
 > **فقط نامِ متغیرها و محلِ استفاده. هیچ مقدارِ Secret اینجا نوشته نمی‌شود.**
+>
+> ## محیطِ Staging (`G2-006`، ۲۰۲۶-۰۷-۳۰)
+>
+> تمرینِ لید روی یک محیطِ **کاملاً ایزوله** اجرا شد. مقادیر فقط در همان محیطِ
+> اجرا زندگی کردند و **هیچ‌کدام commit، چاپ یا گزارش نشدند**؛ فقط وضعیتشان:
+>
+> | متغیر | سرویس | وضعیتِ staging |
+> |---|---|---|
+> | `NEXT_PUBLIC_SUPABASE_URL` | Portfolio | `PRESENT` (پروژهٔ staging) |
+> | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Portfolio | `PRESENT` |
+> | `SUPABASE_SERVICE_ROLE_KEY` | Portfolio | **`MISSING`** — قابلِ دریافت نبود (`B-029`) |
+> | `PLATFORM_WEBHOOK_SECRET` | Portfolio | `PRESENT` (فقط staging، تازه‌تولیدشده) |
+> | `PLATFORM_WEBHOOK_SECRET` | Mini App | `MATCH_CONFIRMED` با سمتِ Portfolio |
+> | `PLATFORM_WEBHOOK_URL` | Mini App | `PRESENT` (به Portfolioِ staging) |
+> | `DATABASE_URL` (MySQL) | Mini App | `PRESENT` — نمونهٔ محلیِ ایزوله، بدونِ دادهٔ واقعی |
+>
+> **هیچ سکرتِ Production بازاستفاده نشد و هیچ متغیرِ Production تغییر نکرد.**
+> سکرتِ وبهوکِ staging تازه ساخته شد و فقط در همان دو سرویسِ staging نشست.
 > منبع: grep روی کد (`process.env.*`) در تاریخ ۱۴۰۵/۰۵/۰۲. ست‌بودنِ واقعیِ مقادیر روی
 > پلتفرم‌ها از این سشن راستی‌آزمایی نشد (تغییرِ env در P1-001 ممنوع بود).
 >
