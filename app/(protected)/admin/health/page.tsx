@@ -26,6 +26,20 @@ export default function AdminHealthPage() {
           این صفحه هیچ سکرت، توکن، آدرسِ دیتابیس یا دادهٔ شخصیِ کاربر نشان نمی‌دهد؛ از
           متغیرهای محیطی فقط <strong>حاضر/غایب</strong> گزارش می‌شود.
         </p>
+        {/* درسِ B-024: متغیرهای محیطی در Vercel اسکوپِ جداگانه دارند
+            (Production / Preview / Development). خواندنِ این صفحه روی Preview
+            چیزی دربارهٔ Production ثابت نمی‌کند و برعکس — همان اشتباهی که اگر
+            مراقب نبودیم از لاگ‌ها نتیجه می‌گرفتیم. کارتِ «استقرارِ در حالِ اجرا»
+            پایین صفحه می‌گوید این خوانش مالِ کدام محیط است. */}
+        <p
+          className="mt-2 rounded-lg px-3 py-2 text-[12px] leading-6"
+          style={{ background: "var(--gold-tint)", color: "var(--text-2)" }}
+        >
+          ⚠️ این خوانش فقط مربوط به <strong>همان محیطی است که این صفحه رویش اجرا می‌شود</strong>.
+          متغیرهای محیطی در Vercel اسکوپِ جدا دارند (Production · Preview · Development)، پس
+          سبزبودن روی Preview چیزی دربارهٔ Production ثابت نمی‌کند و برعکس. محیطِ جاری در
+          کارتِ «استقرارِ در حالِ اجرا» پایینِ همین صفحه آمده.
+        </p>
       </div>
       <HealthBoard />
     </div>
