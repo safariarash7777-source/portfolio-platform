@@ -1,6 +1,6 @@
 # Acceptance Criteria — Gates 1 → 7
 
-**Last updated:** 2026-07-29 (mission `P2-G1-003` — Gate 1 closed, Gate 2 active)
+**Last updated:** 2026-07-30 (mission `P2-G2-NEXT-001` — G2-001/003/007/008 merged; payment track HOLD_BY_OWNER)
 **Baseline:** `7ad084eb54f4e2d5c274d4df2bdbe571d2b09b8c`
 
 > A gate is PASS only when **every** box is ticked with **real evidence**.
