@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { classifyCronRun, type LastRun } from "@/lib/cron/health";
+import { CRON_JOB_KEYS } from "@/lib/cron/ledger";
 import {
   classifyEnv,
   classifyFreshness,
@@ -200,6 +202,63 @@ export async function GET() {
       )
     );
 
+    // ── ۵′) آخرین اجرای واقعیِ هر cron — `P2-G2-012` ──
+    // این جایگزینِ حدس‌زدن از روی ردیفِ محصول است. `audit_log` و `content_hub`
+    // فقط می‌گویند «کاری انجام شد»؛ دفتر می‌گوید «job اجرا شد»، حتی اگر کاری
+    // برای انجام نبوده باشد.
+    for (const jobKey of CRON_JOB_KEYS) {
+      const label = `آخرین اجرای cron: ${jobKey}`;
+      try {
+        const { data, error } = await admin
+          .from("cron_runs")
+          .select("status,started_at,finished_at,processed_count,error_code,duration_ms")
+          .eq("job_key", jobKey)
+          .order("started_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          // جدول هنوز اجرا نشده (`phase21` وضعیتش NOT_APPLIED) → نامعلوم، نه خراب.
+          const kind = classifyQueryError(error.code, error.message);
+          signals.push({
+            key: `cron:${jobKey}`,
+            label,
+            state: "unknown",
+            detail:
+              kind === "missing_table"
+                ? "جدولِ `cron_runs` هنوز اجرا نشده — `sql/phase21_cron_runs.sql` آماده ولی NOT_APPLIED"
+                : "پرس‌وجوی دفترِ اجرا مردود شد",
+          });
+          continue;
+        }
+
+        const row = data as {
+          status: string; started_at: string; finished_at: string | null;
+          processed_count: number | null; error_code: string | null; duration_ms: number | null;
+        } | null;
+
+        const lastRun: LastRun | null = row
+          ? {
+              status: row.status as LastRun["status"],
+              startedAt: row.started_at,
+              finishedAt: row.finished_at,
+              processedCount: row.processed_count,
+              errorCode: row.error_code,
+              durationMs: row.duration_ms,
+            }
+          : null;
+
+        signals.push(
+          classifyCronRun(
+            { jobKey, label, lastRun, okWithinMinutes: 26 * 60, staleWithinMinutes: 72 * 60, stuckAfterMinutes: 60 },
+            now
+          )
+        );
+      } catch {
+        signals.push({ key: `cron:${jobKey}`, label, state: "unknown", detail: "پرس‌وجوی دفترِ اجرا مردود شد" });
+      }
+    }
+
     // ── ۶) سازگاریِ پرداخت ↔ دسترسی — فقط شمارش، بدونِ دادهٔ شخصی ──
     try {
       const { data: paid, error: pErr } = await admin
@@ -262,6 +321,12 @@ export async function GET() {
       ["audit", "آخرین رخدادِ ثبت‌شده در audit_log"],
     ] as const) {
       signals.push({ key, label, state: "unknown", detail: "بدونِ اتصالِ service-role قابلِ بررسی نیست" });
+    }
+    for (const jobKey of CRON_JOB_KEYS) {
+      signals.push({
+        key: `cron:${jobKey}`, label: `آخرین اجرای cron: ${jobKey}`,
+        state: "unknown", detail: "بدونِ اتصالِ service-role قابلِ بررسی نیست",
+      });
     }
     signals.push(classifyPaymentConsistency(null));
     signals.push(classifyLeadReadiness(null));
