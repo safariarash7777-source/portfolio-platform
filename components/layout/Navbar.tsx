@@ -1,7 +1,15 @@
 "use client";
 
-// ناوبری ۵-گروهی بر پایهٔ ۵ ناحیهٔ Blueprint (WP-A):
-// بازار · نماد · تحلیل‌ها · یادگیری · ترمینال — همهٔ ۹ مقصد قبلی حفظ شده‌اند.
+/**
+ * ناوبری بازطراحی‌شده — P2-PUBLIC-MEGA-001
+ * ساختار: امروز (لینک مستقیم) | بازارها | تحلیل‌ها | محصولات | درباره آرش
+ * تغییرات:
+ *  - «یادگیری» حذف شد (دروس هنوز منتشر نشده‌اند — همه published=false)
+ *  - «ترمینال» حذف شد از nav عمومی (صفحهٔ protected)
+ *  - «امروز» اضافه شد (لینک مستقیم به رصد بازار)
+ *  - «درباره آرش» اضافه شد
+ *  - «بازار» + «نماد» ادغام شدند در «بازارها»
+ */
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
@@ -9,53 +17,47 @@ import Logo from "../ui/Logo";
 import ThemeToggle from "../ui/ThemeToggle";
 
 type NavItem = { href: string; label: string; desc?: string };
-type NavGroup = { key: string; label: string; items: NavItem[] };
+type NavGroup = { key: string; label: string; href?: string; items?: NavItem[] };
 
-// ۵ گروهِ ناحیه‌ای — ترتیب طبق Blueprint
 const NAV_GROUPS: NavGroup[] = [
   {
-    key: "market",
-    label: "بازار",
-    items: [
-      { href: "/market",       label: "رصد بازار",  desc: "نبض امروز بازار" },
-      { href: "/market/map",   label: "نقشهٔ بازار", desc: "نمای کاشی‌ای صنایع" },
-      { href: "/market/funds", label: "صندوق‌ها",    desc: "NAV و حباب صندوق‌ها" },
-      { href: "/codal",        label: "کدال",        desc: "فید اطلاعیه‌های رسمی" },
-    ],
+    key: "today",
+    label: "امروز",
+    href: "/market",
   },
   {
-    key: "symbol",
-    label: "نماد",
+    key: "markets",
+    label: "بازارها",
     items: [
-      { href: "/data",          label: "بانک داده",    desc: "همهٔ دارایی‌ها + خروجی CSV" },
+      { href: "/market",        label: "رصد بازار",    desc: "نبض امروز بازار" },
+      { href: "/market/map",    label: "نقشهٔ بازار",  desc: "نمای کاشی‌ای صنایع" },
+      { href: "/market/funds",  label: "صندوق‌ها",     desc: "NAV و حباب صندوق‌ها" },
       { href: "/market/stocks", label: "تابلوی سهام",  desc: "دیده‌بانی لحظه‌ای سهام" },
+      { href: "/codal",         label: "کدال",         desc: "فید اطلاعیه‌های رسمی" },
+      { href: "/data",          label: "بانک داده",    desc: "همهٔ دارایی‌ها + خروجی CSV" },
     ],
   },
   {
     key: "analyses",
     label: "تحلیل‌ها",
     items: [
-      { href: "/analyses", label: "کارنامه",            desc: "کارنامهٔ قابل راستی‌آزمایی" },
-      { href: "/insights", label: "تحلیل‌های اجتماعی",  desc: "تجمیع تلگرام و اینستاگرام" },
-      { href: "/notes",    label: "یادداشت روزانه",     desc: "یادداشت‌های روزانهٔ سایت" },
+      { href: "/analyses",  label: "کارنامه",              desc: "کارنامهٔ قابل راستی‌آزمایی" },
+      { href: "/notes",     label: "یادداشت روزانه",       desc: "یادداشت‌های روزانهٔ بازار" },
+      { href: "/insights",  label: "تحلیل‌های اجتماعی",   desc: "تجمیع تلگرام و اینستاگرام" },
     ],
   },
   {
-    key: "learn",
-    label: "یادگیری",
+    key: "products",
+    label: "محصولات",
     items: [
-      { href: "/learn",          label: "مسیر یادگیری", desc: "سواد مالی از صفر، گام‌به‌گام" },
-      { href: "/learn/glossary", label: "واژه‌نامه",     desc: "اصطلاحات بازار به زبان ساده" },
-      { href: "/webinars",       label: "وبینار",       desc: "وبینارهای فصلی" },
+      { href: "/webinars",   label: "وبینار",               desc: "وبینارهای فصلی تحلیل بازار" },
+      { href: "/#waitlist",  label: "مشاورهٔ اختصاصی",     desc: "جلسهٔ شخصی + ۳ ماه دسترسی کامل" },
     ],
   },
   {
-    key: "terminal",
-    label: "ترمینال",
-    items: [
-      { href: "/terminal",  label: "ترمینال تحلیلگر", desc: "ابزار تصمیم حرفه‌ای" },
-      { href: "/dashboard", label: "داشبورد",         desc: "حساب کاربری شما" },
-    ],
+    key: "about",
+    label: "درباره آرش",
+    href: "/about",
   },
 ];
 
@@ -105,67 +107,85 @@ export default function Navbar() {
           <Logo size={44} showText textVariant="navy" />
         </Link>
 
-        {/* Desktop nav — ۵ گروه با دراپ‌داون */}
+        {/* Desktop nav */}
         <nav ref={navRef} className="hidden md:flex items-center gap-1" aria-label="ناوبری اصلی">
-          {NAV_GROUPS.map((g) => (
-            <div key={g.key} className="relative">
-              <button
-                type="button"
-                className="px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center gap-1"
-                style={{ color: openGroup === g.key ? "var(--navy)" : "var(--text-2)" }}
-                aria-expanded={openGroup === g.key}
-                aria-haspopup="menu"
-                onClick={() => setOpenGroup((v) => (v === g.key ? null : g.key))}
-              >
-                {g.label}
-                <ChevronDown
-                  size={14}
-                  style={{
-                    transition: "transform 150ms",
-                    transform: openGroup === g.key ? "rotate(180deg)" : "none",
-                  }}
-                />
-              </button>
-
-              {openGroup === g.key && (
-                <div
-                  role="menu"
-                  className="absolute top-full mt-1 min-w-[220px] rounded-xl p-2 z-50"
-                  style={{
-                    insetInlineStart: 0,
-                    background: "var(--surface)",
-                    border: "1px solid var(--line)",
-                    boxShadow: "var(--shadow-md, var(--shadow-sm))",
-                  }}
+          {NAV_GROUPS.map((g) => {
+            // لینک مستقیم (بدون دراپ‌داون)
+            if (g.href) {
+              return (
+                <Link
+                  key={g.key}
+                  href={g.href}
+                  className="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  style={{ color: "var(--text-2)" }}
                 >
-                  {g.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      role="menuitem"
-                      href={item.href}
-                      onClick={() => setOpenGroup(null)}
-                      className="block rounded-lg px-3 py-2.5 transition-colors hover:bg-[color:var(--surface-2)]"
-                    >
-                      <span className="block text-sm font-medium" style={{ color: "var(--text)" }}>
-                        {item.label}
-                      </span>
-                      {item.desc && (
-                        <span className="block text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-                          {item.desc}
+                  {g.label}
+                </Link>
+              );
+            }
+            return (
+              <div key={g.key} className="relative">
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-md text-sm font-medium transition-colors inline-flex items-center gap-1"
+                  style={{ color: openGroup === g.key ? "var(--navy)" : "var(--text-2)" }}
+                  aria-expanded={openGroup === g.key}
+                  aria-haspopup="menu"
+                  onClick={() => setOpenGroup((v) => (v === g.key ? null : g.key))}
+                >
+                  {g.label}
+                  <ChevronDown
+                    size={14}
+                    style={{
+                      transition: "transform 150ms",
+                      transform: openGroup === g.key ? "rotate(180deg)" : "none",
+                    }}
+                  />
+                </button>
+
+                {openGroup === g.key && g.items && (
+                  <div
+                    role="menu"
+                    className="absolute top-full mt-1 min-w-[220px] rounded-xl p-2 z-50"
+                    style={{
+                      insetInlineStart: 0,
+                      background: "var(--surface)",
+                      border: "1px solid var(--line)",
+                      boxShadow: "var(--shadow-md, var(--shadow-sm))",
+                    }}
+                  >
+                    {g.items.map((item) => (
+                      <Link
+                        key={item.href}
+                        role="menuitem"
+                        href={item.href}
+                        onClick={() => setOpenGroup(null)}
+                        className="block rounded-lg px-3 py-2.5 transition-colors hover:bg-[color:var(--surface-2)]"
+                      >
+                        <span className="block text-sm font-medium" style={{ color: "var(--text)" }}>
+                          {item.label}
                         </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                        {item.desc && (
+                          <span className="block text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
+                            {item.desc}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Link href="/#waitlist" className="btn btn-gold hidden sm:inline-flex">
-            عضویت در لیست انتظار
+            مشاوره
+          </Link>
+          <Link href="/dashboard" className="btn btn-outline hidden sm:inline-flex" style={{ fontSize: "0.85rem" }}>
+            ورود
           </Link>
 
           {/* Mobile toggle */}
@@ -199,26 +219,38 @@ export default function Navbar() {
                 <div className="py-1 text-xs font-bold" style={{ color: "var(--text-3)" }}>
                   {g.label}
                 </div>
-                {g.items.map((item) => (
+                {g.href ? (
                   <Link
-                    key={item.href}
-                    href={item.href}
+                    href={g.href}
                     onClick={() => setOpen(false)}
                     className="block py-2.5 text-sm font-medium"
                     style={{ color: "var(--text)" }}
                   >
-                    {item.label}
+                    {g.key === "today" ? "رصد بازار امروز" : g.label}
                   </Link>
-                ))}
+                ) : (
+                  g.items?.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="block py-2.5 text-sm font-medium"
+                      style={{ color: "var(--text)" }}
+                    >
+                      {item.label}
+                    </Link>
+                  ))
+                )}
               </div>
             ))}
-            <Link
-              href="/#waitlist"
-              onClick={() => setOpen(false)}
-              className="btn btn-gold mt-3 w-full"
-            >
-              عضویت در لیست انتظار
-            </Link>
+            <div className="flex flex-col gap-2 mt-3">
+              <Link href="/#waitlist" onClick={() => setOpen(false)} className="btn btn-gold w-full">
+                درخواست مشاوره
+              </Link>
+              <Link href="/dashboard" onClick={() => setOpen(false)} className="btn btn-outline w-full">
+                ورود به داشبورد
+              </Link>
+            </div>
           </div>
         </div>
       )}

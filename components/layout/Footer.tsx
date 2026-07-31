@@ -8,10 +8,14 @@ const SOCIAL_LINKS = [
   { href: "https://linkedin.com/in/arashsafari", label: "لینکدین",    icon: <Linkedin size={18} /> },
 ];
 
-// گروه‌های فوتر هم‌راستا با ناوبری ۵-ناحیه‌ای (WP-A)
+/**
+ * گروه‌های فوتر — P2-PUBLIC-MEGA-001
+ * هم‌راستا با ناوبری جدید: بازارها | تحلیل‌ها | محصولات | درباره آرش
+ * تغییر: /learn حذف شد (همه published=false)، /about اضافه شد
+ */
 const FOOTER_GROUPS = [
   {
-    title: "بازار و نماد",
+    title: "بازارها",
     links: [
       { href: "/market",        label: "رصد بازار" },
       { href: "/market/map",    label: "نقشهٔ بازار" },
@@ -22,22 +26,26 @@ const FOOTER_GROUPS = [
     ],
   },
   {
-    title: "تحلیل و یادگیری",
+    title: "تحلیل‌ها",
     links: [
       { href: "/analyses",  label: "کارنامهٔ قابل راستی‌آزمایی" },
-      { href: "/insights",  label: "تحلیل‌های اجتماعی" },
       { href: "/notes",     label: "یادداشت روزانه" },
-      { href: "/learn",     label: "مسیر یادگیری" },
-      { href: "/learn/glossary", label: "واژه‌نامهٔ اصطلاحات" },
-      { href: "/webinars",  label: "وبینار فصلی" },
-      { href: "/#faq",      label: "سؤالات متداول" },
-      { href: "/terminal",  label: "ترمینال تحلیلگر" },
-      { href: "/dashboard", label: "داشبورد کاربری" },
+      { href: "/insights",  label: "تحلیل‌های اجتماعی" },
     ],
   },
   {
-    title: "حقوقی",
+    title: "محصولات",
     links: [
+      { href: "/webinars",  label: "وبینار فصلی" },
+      { href: "/#waitlist", label: "مشاورهٔ اختصاصی" },
+      { href: "/dashboard", label: "ورود به داشبورد" },
+    ],
+  },
+  {
+    title: "درباره آرش و حقوقی",
+    links: [
+      { href: "/about",            label: "درباره آرش صفری" },
+      { href: "/#faq",             label: "سؤالات متداول" },
       { href: "/legal/privacy",    label: "حریم خصوصی" },
       { href: "/legal/terms",      label: "شرایط استفاده" },
       { href: "/legal/disclaimer", label: "سلب مسئولیت" },
