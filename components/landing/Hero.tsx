@@ -3,13 +3,12 @@ import { ShieldCheck, BarChart3, ArrowLeft } from "lucide-react";
 import WaitlistForm from "./WaitlistForm";
 
 /**
- * Hero — P2-PUBLIC-MEGA-001 — بازطراحی هویت‌محور
+ * Hero — P2-PUBLIC-MEGA-002 — Truthfulness Audit
  *
  * تغییرات:
- *  - PortfolioPreviewCard (اعداد ساختگی) حذف شد
- *  - هویت آرش صفری در مرکز توجه
- *  - سه ستون اعتماد (مجوز رسمی، کارنامه عمومی، بدون وعده سود)
- *  - CTA اصلی: مشاوره (waitlist) | CTA ثانوی: مشاهده کارنامه
+ *  - «مجوز رسمی» از عنوان TRUST_PILLARS حذف شد (Owner Decision OD-001)
+ *  - «کارنامهٔ عمومی» فقط در صورت وجود داده واقعی نمایش داده می‌شود
+ *  - AnalysesPreview موقتاً پنهان است تا Backend فیلد is_public را اضافه کند
  */
 
 const TRUST_PILLARS = [
@@ -20,8 +19,8 @@ const TRUST_PILLARS = [
         <polyline points="9 12 11 14 15 10" />
       </svg>
     ),
-    title: "مشاور دارای مجوز رسمی",
-    desc: "تحلیل و مشاوره با مسئولیت حرفه‌ای مشخص — نه پیج بی‌نام.",
+    title: "مسئولیت‌پذیری حرفه‌ای",
+    desc: "تحلیل و مشاوره با نام مشخص و مسئولیت حرفه‌ای — نه پیج بی‌نام.",
   },
   {
     icon: (
@@ -32,8 +31,8 @@ const TRUST_PILLARS = [
         <line x1="16" y1="17" x2="8" y2="17" />
       </svg>
     ),
-    title: "کارنامهٔ عمومی قابل راستی‌آزمایی",
-    desc: "هر تحلیل با ذکر فروض، قیمت ورود و نتیجه — در دسترس همه.",
+    title: "شفافیت کامل روش",
+    desc: "هر تحلیل با ذکر فروض و دادهٔ پشتوانه — در کارنامهٔ عمومی قابل پیگیری.",
   },
   {
     icon: (

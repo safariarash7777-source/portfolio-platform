@@ -1,20 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, FileText, ShieldOff, Lock, ArrowLeft } from "lucide-react";
+import { BadgeCheck, FileText, ShieldOff, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "درباره آرش صفری",
   description:
-    "آرش صفری — تحلیلگر و مشاور سرمایه‌گذاری با مجوز رسمی. آشنایی با رویکرد، روش کار و اصول حرفه‌ای.",
+    "آرش صفری — تحلیلگر و مشاور سرمایه‌گذاری. آشنایی با رویکرد، روش کار و اصول حرفه‌ای.",
 };
 
+/**
+ * Truthfulness Audit — P2-PUBLIC-MEGA-002
+ * حذف‌شده‌ها:
+ *  - ادعای «مجوز رسمی» از PILLARS (نیاز به تأیید مالک — Owner Decision OD-001)
+ *  - ادعای «داده‌ها رمزنگاری می‌شود / به شخص ثالث فروخته نمی‌شود / قابل حذف کامل» (ادعای حقوقی/امنیتی بدون مدرک)
+ *  - «هیچ‌کس نمی‌تواند تاریخچه را تغییر دهد» (ادعای فنی مطلق — جایگزین با توضیح دقیق‌تر)
+ *  - «۲۲ سؤال در ۶ بخش» (عدد مشخص بدون تأیید — Owner Decision OD-002)
+ *  - «۳ ماه دسترسی کامل» (وعده مدت بدون تأیید — Owner Decision OD-003)
+ */
 const PILLARS = [
   {
     icon: <BadgeCheck size={22} />,
-    title: "مشاور دارای مجوز رسمی",
-    desc: "تحلیل و مشاوره توسط آرش صفری، تحلیلگر و مشاور سرمایه‌گذاری — با مسئولیت حرفه‌ای مشخص.",
+    title: "مسئولیت‌پذیری حرفه‌ای",
+    desc: "تحلیل و مشاوره توسط آرش صفری — با نام مشخص، نه پیج بی‌نام.",
   },
   {
     icon: <FileText size={22} />,
@@ -24,12 +33,7 @@ const PILLARS = [
   {
     icon: <ShieldOff size={22} />,
     title: "بدون وعدهٔ سود",
-    desc: "هیچ بازدهی تضمین نمی‌شود. تمرکز ما بر تصمیم‌گیریِ منطقی و کاهش ریسک‌های شناختی است، نه وعدهٔ سود.",
-  },
-  {
-    icon: <Lock size={22} />,
-    title: "حریم خصوصی و امنیت",
-    desc: "داده‌های شما رمزنگاری می‌شود، به شخص ثالث فروخته نمی‌شود و در هر زمان قابل حذف کامل است.",
+    desc: "هیچ بازدهی تضمین نمی‌شود. تمرکز بر تصمیم‌گیریِ منطقی و کاهش ریسک‌های شناختی است، نه وعدهٔ سود.",
   },
 ];
 
@@ -107,7 +111,7 @@ export default function AboutPage() {
               </h2>
               <div className="divider-gold mx-auto mt-4" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {PILLARS.map((p) => (
                 <div
                   key={p.title}
@@ -174,13 +178,12 @@ export default function AboutPage() {
               </p>
               <p className="text-base leading-8 mb-5" style={{ color: "var(--text-2)" }}>
                 کارنامهٔ عمومی این پلتفرم هر تحلیل را با قیمت ورود، تاریخ و
-                نتیجه ثبت می‌کند — با هش زنجیره‌ای که هیچ‌کس نمی‌تواند
-                تاریخچه را تغییر دهد. این شفافیت، پایهٔ اعتماد است.
+                نتیجه ثبت می‌کند — با هش زنجیره‌ای برای حفظ یکپارچگی داده.
+                این شفافیت، پایهٔ اعتماد است.
               </p>
               <p className="text-base leading-8" style={{ color: "var(--text-2)" }}>
-                مشاورهٔ اختصاصی شامل ارزیابی پروفایل ریسک (۲۲ سؤال در ۶ بخش)،
-                طراحی سبد متناسب با شرایط شما، و ۳ ماه دسترسی کامل به پلتفرم
-                برای پیگیری و بازبینی است.
+                مشاورهٔ اختصاصی شامل ارزیابی پروفایل ریسک، طراحی سبد متناسب
+                با شرایط شما، و دسترسی به پلتفرم برای پیگیری و بازبینی است.
               </p>
             </div>
           </div>

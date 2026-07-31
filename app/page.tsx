@@ -6,7 +6,8 @@ import ThreeSteps from "@/components/landing/ThreeSteps";
 import LiveMarket from "@/components/landing/LiveMarket";
 import TwoProducts from "@/components/landing/TwoProducts";
 import InsightsPreview from "@/components/landing/InsightsPreview";
-import AnalysesPreview from "@/components/landing/AnalysesPreview";
+// TODO(B-001): AnalysesPreview موقتاً غیرفعال — منتظر اضافه شدن فیلد is_public به جدول signals توسط Backend
+// import AnalysesPreview from "@/components/landing/AnalysesPreview";
 import Capabilities from "@/components/landing/Capabilities";
 import WhyArash from "@/components/landing/WhyArash";
 import LandingFAQ from "@/components/landing/LandingFAQ";
@@ -14,12 +15,12 @@ import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/layout/Footer";
 
 /**
- * صفحهٔ اصلی — P2-PUBLIC-MEGA-001
- * ترتیب جدید:
+ * صفحهٔ اصلی — P2-PUBLIC-MEGA-002 (Truthfulness Audit)
+ * ترتیب:
  *  1. Hero (هویت‌محور، بدون PortfolioPreviewCard ساختگی)
  *  2. MarketTicker
  *  3. LiveMarket (بازارهای لحظه‌ای)
- *  4. AnalysesPreview (کارنامه واقعی — اگر داده باشد)
+ *  4. [B-001] AnalysesPreview — غیرفعال تا Backend فیلد is_public را اضافه کند
  *  5. TwoProducts
  *  6. ProductFacts
  *  7. ThreeSteps
@@ -39,8 +40,8 @@ export default function LandingPage() {
         <MarketTicker />
         {/* بازار-اول: طلا/ارز/صندوق/سهام */}
         <LiveMarket />
-        {/* کارنامهٔ واقعی — اگر هیچ تحلیلی وجود نداشت، سکشن ظاهر نمی‌شود */}
-        <AnalysesPreview />
+        {/* B-001: AnalysesPreview غیرفعال — منتظر is_public field در signals */}
+        {/* <AnalysesPreview /> */}
         {/* دو محصول اصلی: وبینار فصلی + مشاورهٔ اختصاصی */}
         <TwoProducts />
         <ProductFacts />
