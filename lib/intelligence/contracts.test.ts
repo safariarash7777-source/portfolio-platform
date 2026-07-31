@@ -85,3 +85,17 @@ test("authenticated never receives ALL, TRUNCATE or broad schema grants", () => 
   }
 });
 
+// service_role is the role the server actually runs as. TRUNCATE does not fire
+// triggers, so `GRANT ALL` to it would silently undo every append-only guard in
+// this migration — which is precisely what the staging rehearsal measured.
+test("service_role is revoked before it is granted, and never receives ALL", () => {
+  assert.match(statements, /REVOKE ALL ON TABLE public\.%I FROM service_role/i);
+  const grants = statements.match(/GRANT[^;]*TO service_role/gi) ?? [];
+  assert.ok(grants.length > 0);
+  for (const grant of grants) {
+    if (/ON FUNCTION|EXECUTE/i.test(grant)) continue;
+    assert.doesNotMatch(grant, /\bALL\b|\bTRUNCATE\b|\bDELETE\b|ALL TABLES IN SCHEMA/i,
+      `service_role grant is too broad: ${grant}`);
+  }
+});
+
