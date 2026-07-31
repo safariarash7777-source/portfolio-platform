@@ -131,13 +131,21 @@ for (const [profileName, profile] of Object.entries(PROFILES)) {
       assert.equal(row, `published|${ADMIN}|true|true`);
     });
 
+    // Two layers stop a service_role rewrite, and which one fires first changed
+    // when the grant was tightened. Before, service_role held UPDATE, so the
+    // append-only trigger was the thing that spoke. Now the privilege check
+    // rejects it first and the trigger is never reached — a strictly stronger
+    // outcome, so the assertion accepts either voice rather than demanding the
+    // weaker one.
+    const BLOCKED = /append-only|permission denied/i;
+
     test("published analysis and append-only evidence/effects cannot be rewritten", () => {
       assert.match(asRoleError(db, "authenticated", ADMIN, `UPDATE public.intel_analyses SET title='rewritten' WHERE id='${analysis}'`), /immutable/i);
-      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_evidence SET excerpt='rewritten' WHERE id='${evidence1}'`), /append-only/i);
+      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_evidence SET excerpt='rewritten' WHERE id='${evidence1}'`), BLOCKED);
       const effect = asRole(db, "authenticated", ADMIN, `INSERT INTO public.intel_portfolio_effects
         (analysis_id,asset_class,suggested_direction,horizon,confidence,rationale)
         VALUES ('${analysis}','gold','hold','medium_term',70,'risk balance') RETURNING id`).split("\n").pop();
-      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_portfolio_effects SET rationale='changed' WHERE id='${effect}'`), /append-only/i);
+      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_portfolio_effects SET rationale='changed' WHERE id='${effect}'`), BLOCKED);
     });
 
     test("analysis-to-signal rejects a nonexistent signal FK", () => {
