@@ -431,9 +431,23 @@ BEGIN
       'intel_admin_all', table_name
     );
     EXECUTE format('REVOKE ALL ON TABLE public.%I FROM PUBLIC, anon, authenticated', table_name);
-    EXECUTE format('GRANT ALL ON TABLE public.%I TO service_role', table_name);
+    -- ⚠️ `service_role` must be revoked explicitly too, not only the public
+    -- roles. Measured on staging in `P2-G3-002`: with `GRANT ALL`, service_role
+    -- held TRUNCATE and DELETE on all 15 tables — and **TRUNCATE does not fire
+    -- triggers**, so every append-only guard above was bypassable. `cron_runs`
+    -- (phase21) rejected the same probe because it already carried this revoke;
+    -- the two tables differed only in this line.
+    EXECUTE format('REVOKE ALL ON TABLE public.%I FROM service_role', table_name);
+    EXECUTE format('GRANT SELECT, INSERT ON TABLE public.%I TO service_role', table_name);
   END LOOP;
 END $$;
+
+-- The server updates only the tables whose lifecycle genuinely has a second
+-- step (publication, finalization, run completion). Everything else is
+-- insert-once, so UPDATE is not granted at all.
+GRANT UPDATE ON public.intel_sources, public.intel_analyses,
+  public.intel_runs, public.intel_reference_portfolios,
+  public.intel_reference_versions, public.intel_reference_positions TO service_role;
 
 DROP POLICY IF EXISTS intel_public_read_published ON public.intel_analyses;
 CREATE POLICY intel_public_read_published ON public.intel_analyses

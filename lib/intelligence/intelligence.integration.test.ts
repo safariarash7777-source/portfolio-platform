@@ -17,6 +17,13 @@ const PROFILES = {
   legacy: join(ROOT, "sql", "test", "profile_legacy_default_privileges.sql"),
   explicit: join(ROOT, "sql", "test", "profile_explicit_grants.sql"),
 } as const;
+const INTEL_TABLES = [
+  "intel_sources", "intel_evidence", "intel_events", "intel_analyses", "intel_claims",
+  "intel_claim_evidence", "intel_effects", "intel_portfolio_effects",
+  "intel_analysis_signals", "intel_runs", "intel_run_inputs",
+  "intel_reference_portfolios", "intel_reference_versions",
+  "intel_reference_positions", "intel_corrections",
+] as const;
 const ADMIN = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 const USER = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 const SIGNAL = "cccccccc-cccc-cccc-cccc-cccccccccccc";
@@ -124,13 +131,21 @@ for (const [profileName, profile] of Object.entries(PROFILES)) {
       assert.equal(row, `published|${ADMIN}|true|true`);
     });
 
+    // Two layers stop a service_role rewrite, and which one fires first changed
+    // when the grant was tightened. Before, service_role held UPDATE, so the
+    // append-only trigger was the thing that spoke. Now the privilege check
+    // rejects it first and the trigger is never reached — a strictly stronger
+    // outcome, so the assertion accepts either voice rather than demanding the
+    // weaker one.
+    const BLOCKED = /append-only|permission denied/i;
+
     test("published analysis and append-only evidence/effects cannot be rewritten", () => {
       assert.match(asRoleError(db, "authenticated", ADMIN, `UPDATE public.intel_analyses SET title='rewritten' WHERE id='${analysis}'`), /immutable/i);
-      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_evidence SET excerpt='rewritten' WHERE id='${evidence1}'`), /append-only/i);
+      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_evidence SET excerpt='rewritten' WHERE id='${evidence1}'`), BLOCKED);
       const effect = asRole(db, "authenticated", ADMIN, `INSERT INTO public.intel_portfolio_effects
         (analysis_id,asset_class,suggested_direction,horizon,confidence,rationale)
         VALUES ('${analysis}','gold','hold','medium_term',70,'risk balance') RETURNING id`).split("\n").pop();
-      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_portfolio_effects SET rationale='changed' WHERE id='${effect}'`), /append-only/i);
+      assert.match(asRoleError(db, "service_role", null, `UPDATE public.intel_portfolio_effects SET rationale='changed' WHERE id='${effect}'`), BLOCKED);
     });
 
     test("analysis-to-signal rejects a nonexistent signal FK", () => {
@@ -166,6 +181,26 @@ for (const [profileName, profile] of Object.entries(PROFILES)) {
         assert.match(asRoleError(db, "authenticated", USER, `TRUNCATE public.${table}`), /permission denied/i);
         assert.match(asRoleError(db, "authenticated", USER, `DELETE FROM public.${table}`), /permission denied|row-level security/i);
       }
+    });
+
+    // The test above covered only `authenticated`, which is why the staging
+    // rehearsal in `P2-G3-002` still found service_role holding TRUNCATE on all
+    // fifteen tables. TRUNCATE does not fire triggers, so that one grant made
+    // every append-only guard in this file decorative. Checking the role that
+    // actually runs server-side is the whole point.
+    test("service_role cannot TRUNCATE or DELETE any intelligence table", () => {
+      for (const table of INTEL_TABLES) {
+        assert.match(asRoleError(db, "service_role", null, `TRUNCATE public.${table}`),
+          /permission denied/i, `service_role can TRUNCATE ${table}`);
+        assert.match(asRoleError(db, "service_role", null, `DELETE FROM public.${table}`),
+          /permission denied|append-only|cannot be deleted|immutable/i, `service_role can DELETE ${table}`);
+      }
+    });
+
+    test("failability control proves the service_role revoke is material", () => {
+      const granted = expectError(db, `BEGIN; GRANT TRUNCATE ON public.intel_corrections TO service_role;
+        SET LOCAL ROLE service_role; TRUNCATE public.intel_corrections; ROLLBACK;`);
+      assert.equal(granted, "", "granting TRUNCATE back must make the same statement succeed");
     });
 
     test("failability control proves the immutable trigger is material", () => {
