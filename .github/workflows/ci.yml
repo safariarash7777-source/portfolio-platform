@@ -215,9 +215,14 @@ jobs:
             echo "| suites | $suites |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          # مقدارِ اندازه‌گیری‌شده روی اجرای واقعی دو suite: leads + intelligence.
-          # هر دو profile و failability در همین ۴۲ pass حضور دارند؛ صفر skip جداگانه اجباری است.
-          MIN_PASS=__TBD__
+          # مقدارِ **اندازه‌گیری‌شده** روی اجرای واقعیِ هر سه suite:
+          # leads (۳۱) + cron_runs (۲۸) + intelligence (۲۶) = ۸۵.
+          # هر سه با دو پروفایلِ امتیاز و گاردهای failability اجرا می‌شوند.
+          #
+          # ⚠️ این عدد حدس نیست و نباید حدسی به‌روز شود: پس از rebaseِ `P2-G2-013`
+          # کفِ ۵۹ (main) و کفِ ۴۲ (PR #97) هیچ‌کدام دیگر درست نبودند، چون هر دو
+          # فقط زیرمجموعه‌ای از suiteها را می‌شمردند. عدد از اجرای واقعی آمد.
+          MIN_PASS=85
           [ "${fail:-1}" = "0" ] || { echo "::error::تستِ دیتابیس مردود شد (fail=$fail)"; exit 1; }
           [ "${skip:-1}" = "0" ] || { echo "::error::اسکیپ در CI مجاز نیست (skipped=$skip)"; exit 1; }
           if [ "${pass:-0}" -lt "$MIN_PASS" ]; then
