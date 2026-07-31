@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   Activity,
+  CalendarDays,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { createClient } from "@/lib/supabase/client";
@@ -34,6 +35,9 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { key: "dashboard", label: "داشبورد", href: "/admin", icon: <LayoutDashboard size={18} /> },
+  // میز بالای فهرست می‌نشیند چون نقطهٔ شروعِ کارِ روزانه است، ولی هیچ‌کدام از
+  // ورودی‌های زیر را جایگزین نمی‌کند — همه سرِ جای خودشان می‌مانند.
+  { key: "desk", label: "میزِ آرش", href: "/admin/desk", icon: <CalendarDays size={18} /> },
   { key: "users", label: "کاربران", href: "/admin/users", icon: <Users size={18} /> },
   { key: "portfolio", label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio", icon: <PieChart size={18} /> },
   { key: "payments", label: "پرداخت‌ها", href: "/admin/manage?tab=payments", icon: <CreditCard size={18} /> },
