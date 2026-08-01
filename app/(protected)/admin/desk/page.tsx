@@ -14,7 +14,7 @@ export default function AdminDeskPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="font-display text-xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
+        <h1 className="font-display text-xl font-extrabold" style={{ color: "var(--text)" }}>
           میزِ آرش
         </h1>
         <p className="mt-1.5 max-w-2xl text-[13px] leading-7" style={{ color: "var(--text-2)" }}>

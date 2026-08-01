@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Activity,
+  ArrowLeft,
   CalendarDays,
   CheckCircle2,
   CircleSlash,
@@ -23,10 +25,10 @@ import {
 
 /** رنگ فقط از توکن — هیچ رنگِ خام. */
 const TONE: Record<DataState, { fg: string; bg: string; icon: React.ReactNode }> = {
-  ready: { fg: "var(--success)", bg: "rgba(21,128,61,0.10)", icon: <CheckCircle2 size={15} /> },
-  stale: { fg: "var(--gold)", bg: "var(--gold-tint)", icon: <Clock size={15} /> },
-  empty: { fg: "var(--text-3)", bg: "var(--surface-2)", icon: <CircleSlash size={15} /> },
-  unavailable: { fg: "var(--danger)", bg: "rgba(185,28,28,0.10)", icon: <HelpCircle size={15} /> },
+  ready: { fg: "var(--success)", bg: "rgba(21,128,61,0.10)", icon: <CheckCircle2 size={14} /> },
+  stale: { fg: "var(--gold)", bg: "var(--gold-tint)", icon: <Clock size={14} /> },
+  empty: { fg: "var(--text-3)", bg: "var(--surface-2)", icon: <CircleSlash size={14} /> },
+  unavailable: { fg: "var(--danger)", bg: "rgba(185,28,28,0.10)", icon: <HelpCircle size={14} /> },
 };
 
 const SECTION_ICON: Record<DeskSectionKey, React.ReactNode> = {
@@ -37,11 +39,13 @@ const SECTION_ICON: Record<DeskSectionKey, React.ReactNode> = {
   operations: <Activity size={17} />,
 };
 
-function StateBadge({ state }: { state: DataState }) {
+function StateBadge({ state, small }: { state: DataState; small?: boolean }) {
   const t = TONE[state];
   return (
     <span
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold"
+      className={`inline-flex shrink-0 items-center gap-1.5 self-start rounded-full font-bold ${
+        small ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-[11px]"
+      }`}
       style={{ color: t.fg, background: t.bg }}
     >
       {t.icon}
@@ -99,7 +103,7 @@ export default function DeskBoard() {
           type="button"
           onClick={() => void load()}
           className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-bold"
-          style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text-1)" }}
+          style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text)" }}
         >
           <RefreshCw size={14} />
           تلاشِ دوباره
@@ -124,28 +128,39 @@ export default function DeskBoard() {
           onClick={() => void load()}
           disabled={loading}
           className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-bold disabled:opacity-60"
-          style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text-1)" }}
+          style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text)" }}
         >
           <RefreshCw size={14} />
           به‌روزرسانی
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      {/* `items-start` تا هر کارت به اندازهٔ محتوای خودش باشد؛ وگرنه بخشِ
+          کم‌منبع تا قدِ همسایه‌اش کش می‌آید و فضای خالیِ بی‌معنا می‌سازد. */}
+      <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2">
         {data.panels.map((panel) => (
           <section
             key={panel.key}
-            className="rounded-xl border p-4"
+            className="flex flex-col rounded-xl border p-4"
             style={{ borderColor: "var(--line)", background: "var(--surface)" }}
           >
             <header className="flex items-start justify-between gap-3">
-              <h2
-                className="flex items-center gap-2 font-display text-[15px] font-extrabold"
-                style={{ color: "var(--navy-deep)" }}
-              >
-                <span style={{ color: "var(--gold)" }}>{SECTION_ICON[panel.key]}</span>
-                {panel.label}
-              </h2>
+              <div className="min-w-0">
+                <h2
+                  className="flex items-center gap-2 font-display text-[15px] font-extrabold"
+                  /* `--text` و نه `--navy-deep`: تمِ تیره `--navy-deep` را
+                     بازنویسی نمی‌کند، پس عنوان روی پس‌زمینهٔ تیره تقریباً
+                     نامرئی می‌شد. */
+                  style={{ color: "var(--text)" }}
+                >
+                  <span style={{ color: "var(--gold)" }}>{SECTION_ICON[panel.key]}</span>
+                  {panel.label}
+                </h2>
+                {/* پرسشی که این بخش جواب می‌دهد — تا میز فهرستِ شمارشِ جدول نباشد. */}
+                <p className="mt-1 text-[11px] leading-5" style={{ color: "var(--text-3)" }}>
+                  {panel.question}
+                </p>
+              </div>
               <StateBadge state={panel.state} />
             </header>
 
@@ -153,39 +168,59 @@ export default function DeskBoard() {
               {toPersianDigits(panel.detail)}
             </p>
 
-            {panel.metrics.length > 0 && (
-              <dl className="mt-3 grid grid-cols-2 gap-2">
-                {panel.metrics.map((metric) => (
-                  <div
-                    key={metric.key}
-                    className="rounded-lg px-3 py-2"
-                    style={{ background: "var(--surface-2)" }}
-                  >
-                    <dt className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                      {metric.label}
-                    </dt>
-                    {/* مقدارِ `null` یعنی «نداریم». صفر یا خط تیره ننویس — از
-                        دور شبیهِ داده به‌نظر می‌رسد و همان اشتباهی است که
-                        شاخص‌های قبلی را بی‌فایده کرد. */}
-                    <dd
-                      className="mt-0.5 text-[14px] font-extrabold"
-                      style={{ color: metric.value === null ? "var(--text-3)" : "var(--text-1)" }}
-                    >
-                      {metric.value === null ? "نامعلوم" : metric.value}
-                    </dd>
-                    {metric.hint && (
-                      <p className="mt-1 text-[10px] leading-5" style={{ color: "var(--text-3)" }}>
-                        {metric.hint}
+            {/* هر منبع ردیفِ خودش را دارد: شمارش، حالت و دلیل کنارِ هم. یک
+                منبعِ مرده دیگر پشتِ منبعِ سالمِ همسایه پنهان نمی‌شود. */}
+            <ul className="mt-3 space-y-2">
+              {panel.sources.map((source) => (
+                <li
+                  key={source.table}
+                  className="rounded-lg px-3 py-2"
+                  style={{ background: "var(--surface-2)" }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-bold" style={{ color: "var(--text)" }}>
+                        {source.label}
                       </p>
-                    )}
+                      <p className="mt-0.5 font-mono text-[10px]" style={{ color: "var(--text-3)" }}>
+                        {source.table}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      {/* `null` یعنی «نتوانستیم بشماریم». صفر ننویس — از دور
+                          شبیهِ داده به‌نظر می‌رسد و همان اشتباهی است که
+                          شاخص‌های قبلی را بی‌فایده کرد. */}
+                      <span
+                        className="text-[14px] font-extrabold"
+                        style={{ color: source.count === null ? "var(--text-3)" : "var(--text)" }}
+                      >
+                        {source.count === null ? "نامعلوم" : toPersianDigits(String(source.count))}
+                      </span>
+                      <StateBadge state={source.state} small />
+                    </div>
                   </div>
-                ))}
-              </dl>
-            )}
+                  <p className="mt-1.5 text-[10px] leading-5" style={{ color: "var(--text-3)" }}>
+                    {toPersianDigits(source.detail)}
+                  </p>
+                </li>
+              ))}
+            </ul>
 
-            <p className="mt-3 text-[11px] leading-5" style={{ color: "var(--text-3)" }}>
-              می‌خوانَد از: {panel.sources.join(" · ")}
-            </p>
+            {panel.links.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+                {panel.links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold"
+                    style={{ background: "var(--surface-2)", color: "var(--text)" }}
+                  >
+                    {link.label}
+                    <ArrowLeft size={12} />
+                  </Link>
+                ))}
+              </div>
+            )}
           </section>
         ))}
       </div>

@@ -3,61 +3,97 @@ import assert from "node:assert/strict";
 import {
   DESK_SECTIONS,
   DESK_SECTION_LABEL,
+  DESK_SECTION_QUESTION,
   briefPublishBlockReason,
   buildDeskView,
   buildPanel,
   canPublishBrief,
-  classifyPanel,
+  classifySource,
   deskAgeMinutes,
   rollupDeskState,
+  summarise,
+  worstState,
+  type DataState,
   type DeskPanel,
-  type PanelSpec,
+  type DeskSource,
+  type SourceSpec,
 } from "@/lib/desk/contracts";
 
 const NOW = new Date("2026-07-31T12:00:00Z");
 const ago = (minutes: number) => new Date(NOW.getTime() - minutes * 60_000).toISOString();
 const RULE = { okWithinMinutes: 60, staleWithinMinutes: 24 * 60 };
+const SPEC: SourceSpec = { table: "ir_market_snapshots", label: "اسنپ‌شات", rule: RULE };
+const NO_RULE: SourceSpec = { table: "intel_reference_positions", label: "موقعیت", rule: null };
 
-test("every declared section has a label", () => {
+test("every declared section has a label and a question it answers", () => {
   assert.equal(DESK_SECTIONS.length, 5);
   for (const key of DESK_SECTIONS) {
     assert.ok(DESK_SECTION_LABEL[key], `${key} has no label`);
+    assert.ok(DESK_SECTION_QUESTION[key]?.includes("؟"), `${key} names no question`);
   }
 });
 
 // The whole reason this module exists: an unavailable source and an empty
 // source must never collapse into the same state.
 test("unavailable and empty are distinct states, never merged", () => {
-  const unavailable = classifyPanel({ available: false, count: 0 }, RULE, NOW);
-  const empty = classifyPanel({ available: true, count: 0 }, RULE, NOW);
+  const unavailable = classifySource(SPEC, { available: false, count: 0 }, NOW);
+  const empty = classifySource(SPEC, { available: true, count: 0 }, NOW);
   assert.equal(unavailable.state, "unavailable");
   assert.equal(empty.state, "empty");
   assert.notEqual(unavailable.state, empty.state);
   assert.match(empty.detail, /خالی|صفر|هیچ رکورد/);
 });
 
-test("an unavailable panel keeps its stated reason", () => {
-  const result = classifyPanel(
+test("an unavailable source reports no count at all, while an empty one reports a real zero", () => {
+  const unavailable = classifySource(SPEC, { available: false, count: 0 }, NOW);
+  const empty = classifySource(SPEC, { available: true, count: 0 }, NOW);
+  assert.equal(unavailable.count, null, "«نمی‌توانم بپرسم» نباید صفر شود");
+  assert.equal(empty.count, 0, "صفرِ واقعی باید دیده شود");
+});
+
+test("an unavailable source keeps its stated reason", () => {
+  const result = classifySource(
+    SPEC,
     { available: false, count: 0, unavailableReason: "جدول اجرا نشده" },
-    RULE,
     NOW
   );
   assert.equal(result.detail, "جدول اجرا نشده");
 });
 
 test("freshness splits ready from stale, and age is reported either way", () => {
-  const fresh = classifyPanel({ available: true, count: 3, lastAt: ago(10) }, RULE, NOW);
-  const old = classifyPanel({ available: true, count: 3, lastAt: ago(600) }, RULE, NOW);
+  const fresh = classifySource(SPEC, { available: true, count: 3, lastAt: ago(10) }, NOW);
+  const old = classifySource(SPEC, { available: true, count: 3, lastAt: ago(600) }, NOW);
   assert.equal(fresh.state, "ready");
   assert.equal(fresh.ageMinutes, 10);
   assert.equal(old.state, "stale");
   assert.equal(old.ageMinutes, 600);
 });
 
-test("a section with records but no time dimension is ready, not stale", () => {
-  const result = classifyPanel({ available: true, count: 4 }, null, NOW);
+test("a source with records but genuinely no time dimension is ready, not stale", () => {
+  const result = classifySource(NO_RULE, { available: true, count: 4 }, NOW);
   assert.equal(result.state, "ready");
   assert.equal(result.ageMinutes, null);
+});
+
+/**
+ * نقصِ نسخهٔ اول، حالا بسته: آستانه تعریف شده بود ولی زمانی خوانده نشد، و
+ * تابع مؤدبانه «به‌روز» برمی‌گرداند. یک شاخصِ مرده که سبز است از نبودنِ
+ * شاخص بدتر است.
+ */
+test("a source that has a freshness rule but no timestamp is never called ready", () => {
+  const result = classifySource(SPEC, { available: true, count: 4, lastAt: null }, NOW);
+  assert.equal(result.state, "unavailable");
+  assert.equal(result.ageMinutes, null);
+  assert.equal(result.count, 4, "شمارشِ معتبر باید حفظ شود");
+});
+
+test("a broken timestamp column is reported as a misconfiguration, not as freshness", () => {
+  const result = classifySource(SPEC, { available: true, count: 9, timestampBroken: true }, NOW);
+  assert.equal(result.state, "unavailable");
+  assert.equal(result.ageMinutes, null);
+  assert.equal(result.count, 9);
+  assert.match(result.detail, /اشتباه پیکربندی/);
+  assert.match(result.detail, /ir_market_snapshots/);
 });
 
 test("a future timestamp is clamped to zero rather than reported as negative", () => {
@@ -69,46 +105,66 @@ test("a future timestamp is clamped to zero rather than reported as negative", (
 // Deliberately not the intuitive order: empty outranks stale because stale data
 // existed at least once, and unavailable outranks both because it says nothing
 // about reality at all.
-test("rollup takes the worst state, ranking unavailable above empty above stale", () => {
-  const panel = (state: DeskPanel["state"]): DeskPanel => ({
-    key: "today", label: "x", state, detail: "", sources: [], metrics: [], ageMinutes: null,
+test("worst-state ranking puts unavailable above empty above stale above ready", () => {
+  assert.equal(worstState(["ready", "stale"]), "stale");
+  assert.equal(worstState(["stale", "empty"]), "empty");
+  assert.equal(worstState(["empty", "unavailable"]), "unavailable");
+  assert.equal(worstState(["ready", "ready"]), "ready");
+  assert.equal(worstState([]), "unavailable");
+});
+
+test("rollup takes the worst panel", () => {
+  const panel = (state: DataState): DeskPanel => ({
+    key: "today", label: "x", question: "?", state, detail: "", sources: [], links: [],
   });
-  assert.equal(rollupDeskState([panel("ready"), panel("stale")]), "stale");
-  assert.equal(rollupDeskState([panel("stale"), panel("empty")]), "empty");
-  assert.equal(rollupDeskState([panel("empty"), panel("unavailable")]), "unavailable");
-  assert.equal(rollupDeskState([panel("ready"), panel("ready")]), "ready");
+  assert.equal(rollupDeskState([panel("ready"), panel("unavailable")]), "unavailable");
   assert.equal(rollupDeskState([]), "unavailable");
 });
 
-test("an unavailable panel shows no metrics that could be mistaken for data", () => {
-  const spec: PanelSpec = {
-    key: "reference",
-    sources: ["intel_reference_positions"],
-    rule: null,
-    metrics: [{ key: "weight", label: "وزن", value: "۴۵٪" }],
-  };
-  const unavailable = buildPanel(spec, { available: false, count: 0 }, NOW);
-  const ready = buildPanel(spec, { available: true, count: 1 }, NOW);
-  assert.deepEqual(unavailable.metrics, []);
-  assert.equal(ready.metrics.length, 1);
+/**
+ * درسِ اصلیِ `P2-G3-MEGA-004`: بخش نباید تازه‌ترین زمانِ منابعش را بردارد.
+ * وگرنه یک منبعِ مرده پشتِ همسایهٔ سالمش پنهان می‌شود.
+ */
+test("a panel takes the worst of its sources, so a dead source is never masked", () => {
+  const dead = classifySource(SPEC, { available: true, count: 5, lastAt: ago(3000) }, NOW);
+  const alive = classifySource(
+    { table: "fx_rates", label: "ارز", rule: RULE },
+    { available: true, count: 5, lastAt: ago(5) },
+    NOW
+  );
+  const panel = buildPanel({ key: "today", links: [{ label: "رصد", href: "/admin/radar" }] }, [dead, alive]);
+  assert.equal(dead.state, "stale");
+  assert.equal(alive.state, "ready");
+  assert.equal(panel.state, "stale", "بخش نباید به‌خاطرِ یک منبعِ سالم سبز شود");
 });
 
-test("every panel names the existing asset it reads from", () => {
-  const spec: PanelSpec = {
-    key: "today",
-    sources: ["ir_market_snapshots", "fx_rates"],
-    rule: RULE,
-    metrics: [],
-  };
-  const panel = buildPanel(spec, { available: true, count: 2, lastAt: ago(5) }, NOW);
-  assert.deepEqual(panel.sources, ["ir_market_snapshots", "fx_rates"]);
-  assert.ok(panel.detail.length > 0, "a ready panel still explains itself");
+test("a panel names every asset it read from and always explains itself", () => {
+  const sources: DeskSource[] = [
+    classifySource(SPEC, { available: true, count: 2, lastAt: ago(5) }, NOW),
+    classifySource({ table: "fx_rates", label: "ارز", rule: RULE }, { available: true, count: 0 }, NOW),
+  ];
+  const panel = buildPanel({ key: "today", links: [] }, sources);
+  assert.deepEqual(panel.sources.map((s) => s.table), ["ir_market_snapshots", "fx_rates"]);
+  assert.ok(panel.detail.length > 0, "a panel still explains itself");
+  assert.ok(panel.sources.every((s) => s.detail.length > 0), "each source explains itself too");
+});
+
+test("the summary counts each state separately rather than reporting one verdict", () => {
+  const make = (state: DataState): DeskSource => ({
+    table: "t", label: "l", state, detail: "", count: null, ageMinutes: null,
+  });
+  const text = summarise([make("ready"), make("stale"), make("empty"), make("unavailable")]);
+  assert.match(text, /در دسترس نیست/);
+  assert.match(text, /کهنه/);
+  assert.match(text, /خالی/);
+  assert.match(text, /به‌روز/);
+  assert.equal(summarise([]), "هیچ منبعی برای این بخش تعریف نشده");
 });
 
 test("the view stamps its own generation time and rolls up its panels", () => {
   const panels: DeskPanel[] = [
-    { key: "today", label: "a", state: "ready", detail: "", sources: [], metrics: [], ageMinutes: 1 },
-    { key: "reference", label: "b", state: "unavailable", detail: "", sources: [], metrics: [], ageMinutes: null },
+    { key: "today", label: "a", question: "?", state: "ready", detail: "", sources: [], links: [] },
+    { key: "reference", label: "b", question: "?", state: "unavailable", detail: "", sources: [], links: [] },
   ];
   const view = buildDeskView(panels, NOW);
   assert.equal(view.generatedAt, NOW.toISOString());
