@@ -6,8 +6,7 @@ import ThreeSteps from "@/components/landing/ThreeSteps";
 import LiveMarket from "@/components/landing/LiveMarket";
 import TwoProducts from "@/components/landing/TwoProducts";
 import InsightsPreview from "@/components/landing/InsightsPreview";
-// TODO(B-001): AnalysesPreview موقتاً غیرفعال — منتظر اضافه شدن فیلد is_public به جدول signals توسط Backend
-// import AnalysesPreview from "@/components/landing/AnalysesPreview";
+// B-001: AnalysesPreview حذف شد — بازگشت به PR مجزا پس از اضافه فیلد is_public به جدول signals (Backend dependency)
 import Capabilities from "@/components/landing/Capabilities";
 import WhyArash from "@/components/landing/WhyArash";
 import LandingFAQ from "@/components/landing/LandingFAQ";
@@ -40,8 +39,6 @@ export default function LandingPage() {
         <MarketTicker />
         {/* بازار-اول: طلا/ارز/صندوق/سهام */}
         <LiveMarket />
-        {/* B-001: AnalysesPreview غیرفعال — منتظر is_public field در signals */}
-        {/* <AnalysesPreview /> */}
         {/* دو محصول اصلی: وبینار فصلی + مشاورهٔ اختصاصی */}
         <TwoProducts />
         <ProductFacts />

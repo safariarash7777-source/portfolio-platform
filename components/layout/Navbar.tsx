@@ -2,7 +2,7 @@
 
 /**
  * ناوبری بازطراحی‌شده — P2-PUBLIC-MEGA-001
- * ساختار: امروز (لینک مستقیم) | بازارها | تحلیل‌ها | محصولات | درباره آرش
+ * ساختار: بازار امروز (لینک مستقیم) | بازارها | تحلیل‌ها | محصولات | درباره آرش
  * تغییرات:
  *  - «یادگیری» حذف شد (دروس هنوز منتشر نشده‌اند — همه published=false)
  *  - «ترمینال» حذف شد از nav عمومی (صفحهٔ protected)
@@ -22,7 +22,7 @@ type NavGroup = { key: string; label: string; href?: string; items?: NavItem[] }
 const NAV_GROUPS: NavGroup[] = [
   {
     key: "today",
-    label: "امروز",
+    label: "بازار امروز",
     href: "/market",
   },
   {
@@ -52,7 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "محصولات",
     items: [
       { href: "/webinars",   label: "وبینار",               desc: "وبینارهای فصلی تحلیل بازار" },
-      { href: "/#waitlist",  label: "مشاورهٔ اختصاصی",     desc: "جلسهٔ شخصی + دسترسی به پلتفرم" },
+      { href: "/#waitlist",  label: "مشاورهٔ اختصاصی",     desc: "جلسهٔ شخصی با آرش صفری" },
     ],
   },
   {
