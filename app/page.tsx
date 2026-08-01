@@ -6,7 +6,6 @@ import ThreeSteps from "@/components/landing/ThreeSteps";
 import LiveMarket from "@/components/landing/LiveMarket";
 import TwoProducts from "@/components/landing/TwoProducts";
 import InsightsPreview from "@/components/landing/InsightsPreview";
-// B-001: AnalysesPreview حذف شد — بازگشت به PR مجزا پس از اضافه فیلد is_public به جدول signals (Backend dependency)
 import Capabilities from "@/components/landing/Capabilities";
 import WhyArash from "@/components/landing/WhyArash";
 import LandingFAQ from "@/components/landing/LandingFAQ";
@@ -19,12 +18,11 @@ import Footer from "@/components/layout/Footer";
  *  1. Hero (هویت‌محور، بدون PortfolioPreviewCard ساختگی)
  *  2. MarketTicker
  *  3. LiveMarket (بازارهای لحظه‌ای)
- *  4. [B-001] AnalysesPreview — غیرفعال تا Backend فیلد is_public را اضافه کند
- *  5. TwoProducts
- *  6. ProductFacts
- *  7. ThreeSteps
- *  8. InsightsPreview
- *  9. Capabilities
+ *  4. TwoProducts
+ *  5. ProductFacts
+ *  6. ThreeSteps
+ *  7. InsightsPreview
+ *  8. Capabilities
  * 10. WhyArash
  * 11. LandingFAQ
  * 12. FinalCTA

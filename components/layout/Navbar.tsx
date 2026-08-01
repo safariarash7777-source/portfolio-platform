@@ -42,7 +42,7 @@ const NAV_GROUPS: NavGroup[] = [
     key: "analyses",
     label: "تحلیل‌ها",
     items: [
-      { href: "/analyses",  label: "کارنامه",              desc: "کارنامهٔ قابل راستی‌آزمایی" },
+      { href: "/analyses",  label: "کارنامه",              desc: "کارنامهٔ تحلیل‌های منتشرشده" },
       { href: "/notes",     label: "یادداشت روزانه",       desc: "یادداشت‌های روزانهٔ بازار" },
       { href: "/insights",  label: "تحلیل‌های اجتماعی",   desc: "تجمیع تلگرام و اینستاگرام" },
     ],

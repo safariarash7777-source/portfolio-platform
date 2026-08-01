@@ -28,7 +28,7 @@ const FOOTER_GROUPS = [
   {
     title: "تحلیل‌ها",
     links: [
-      { href: "/analyses",       label: "کارنامهٔ قابل راستی‌آزمایی" },
+      { href: "/analyses",       label: "کارنامهٔ تحلیل‌ها" },
       { href: "/notes",          label: "یادداشت روزانه" },
       { href: "/insights",       label: "تحلیل‌های اجتماعی" },
       { href: "/learn/glossary", label: "واژه‌نامهٔ مالی" },

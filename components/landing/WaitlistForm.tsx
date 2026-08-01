@@ -97,7 +97,7 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
         )}
         {status === "idle" && (
           <p className="text-xs" style={{ color: hintColor }}>
-            اطلاعات شما محرمانه است و فروخته نمی‌شود.
+            اطلاعات شما فقط برای ارتباط با شما استفاده می‌شود.
           </p>
         )}
       </div>
