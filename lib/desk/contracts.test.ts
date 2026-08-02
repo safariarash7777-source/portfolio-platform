@@ -21,7 +21,7 @@ import {
 
 const NOW = new Date("2026-07-31T12:00:00Z");
 const ago = (minutes: number) => new Date(NOW.getTime() - minutes * 60_000).toISOString();
-const RULE = { okWithinMinutes: 60, staleWithinMinutes: 24 * 60 };
+const RULE = { freshWithinMinutes: 60 };
 const SPEC: SourceSpec = { table: "ir_market_snapshots", label: "اسنپ‌شات", rule: RULE };
 const NO_RULE: SourceSpec = { table: "intel_reference_positions", label: "موقعیت", rule: null };
 

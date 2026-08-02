@@ -157,9 +157,25 @@ export function deskAgeMinutes(
   return Math.max(0, Math.floor((now.getTime() - ms) / 60000));
 }
 
+/**
+ * آستانهٔ تازگی — **دقیقاً یک عدد**.
+ *
+ * نسخهٔ قبلی `okWithinMinutes` و `staleWithinMinutes` داشت، ولی
+ * `classifySource` فقط اولی را می‌خواند. مدلِ میز چهار حالت دارد و بینِ
+ * `stale` و بدتر از آن هیچ مرزی نیست، پس عددِ دوم **هیچ اثرِ اجرایی
+ * نداشت** — یک ۳۰ روزِ تزیینی که در گزارش‌ها هم تکرار می‌شد.
+ *
+ * این دقیقاً همان چیزی است که کلِ این ماژول علیه‌اش ساخته شده: عددی که
+ * شبیهِ پیکربندی است ولی هیچ کاری نمی‌کند. یک آستانه، یک مرز:
+ *
+ *   • `age <= freshWithinMinutes` → `ready`
+ *   • `age >  freshWithinMinutes` → `stale`
+ *
+ * (نمای سلامت در `lib/health/status.ts` نوعِ جداگانهٔ خودش را دارد و آنجا
+ * آستانهٔ دوم **واقعاً** استفاده می‌شود، چون آن مدل حالتِ `failed` هم دارد.)
+ */
 export interface FreshnessRule {
-  okWithinMinutes: number;
-  staleWithinMinutes: number;
+  freshWithinMinutes: number;
 }
 
 /**
@@ -255,14 +271,14 @@ export function classifySource(
     };
   }
 
-  if (age <= spec.rule.okWithinMinutes) {
+  if (age <= spec.rule.freshWithinMinutes) {
     return { ...base, state: "ready", detail: `آخرین به‌روزرسانی ${age} دقیقه پیش`, count: input.count, ageMinutes: age };
   }
 
   return {
     ...base,
     state: "stale",
-    detail: `آخرین به‌روزرسانی ${age} دقیقه پیش بوده — از آستانهٔ ${spec.rule.okWithinMinutes} دقیقه گذشته`,
+    detail: `آخرین به‌روزرسانی ${age} دقیقه پیش بوده — از آستانهٔ ${spec.rule.freshWithinMinutes} دقیقه گذشته`,
     count: input.count,
     ageMinutes: age,
   };

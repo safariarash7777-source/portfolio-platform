@@ -31,13 +31,15 @@ export interface DeskSourceSpec {
 }
 
 /** ۲۶ ساعت = یک نوبتِ روزانه + ۲ ساعت تحمل. همان عددی که نمای سلامت دارد. */
-const DAILY: FreshnessRule = { okWithinMinutes: 26 * 60, staleWithinMinutes: 72 * 60 };
+const DAILY: FreshnessRule = { freshWithinMinutes: 26 * 60 };
 
 /**
- * کفِ محافظه‌کارانه برای منابعی که **زمان‌بندی‌شان در این مخزن نیست**.
- * ادعای دوره نمی‌کند؛ فقط منبعِ کاملاً مرده را می‌گیرد.
+ * آستانهٔ **موقت و محافظه‌کارانه** برای منابعی که زمان‌بندی‌شان در این مخزن
+ * نیست. ۷ روز **دورهٔ واقعیِ این منابع نیست** و چنین ادعایی نمی‌کند؛ فقط
+ * منبعِ کاملاً مرده را می‌گیرد. **پس از مشخص‌شدنِ قراردادِ رله باید بازبینی
+ * شود.**
  */
-const FLOOR_WEEKLY: FreshnessRule = { okWithinMinutes: 7 * 24 * 60, staleWithinMinutes: 30 * 24 * 60 };
+const PROVISIONAL_WEEKLY: FreshnessRule = { freshWithinMinutes: 7 * 24 * 60 };
 
 export const DESK_SOURCES = {
   today: [
@@ -45,7 +47,7 @@ export const DESK_SOURCES = {
       table: "ir_market_snapshots",
       label: "اسنپ‌شاتِ بازار",
       timeColumn: "updated_at",
-      rule: { okWithinMinutes: 60, staleWithinMinutes: 24 * 60 },
+      rule: { freshWithinMinutes: 60 },
       basis:
         "همان آستانه‌ای که `/api/admin/health` از `G2-003` برای همین جدول دارد — یک منبع، یک آستانه. رله بیرون از این مخزن می‌نویسد؛ دوره‌اش اینجا تضمین‌شده نیست.",
     },
@@ -92,17 +94,17 @@ export const DESK_SOURCES = {
       table: "codal_feed",
       label: "فیدِ کدال",
       timeColumn: "created_at",
-      rule: FLOOR_WEEKLY,
+      rule: PROVISIONAL_WEEKLY,
       basis:
-        "منبعِ صفحهٔ عمومی `/codal`. هیچ زمان‌بندی‌ای در `vercel.json` برایش نیست — رله می‌نویسد. عدد **کف** است، نه ادعای دوره.",
+        "منبعِ صفحهٔ عمومی `/codal`. هیچ زمان‌بندی‌ای در `vercel.json` برایش نیست — رله می‌نویسد. **آستانهٔ ۷ روز موقت و محافظه‌کارانه است و دورهٔ واقعی نیست؛ پس از مشخص‌شدنِ قراردادِ رله باید بازبینی شود.**",
     },
     {
       table: "codal_reports",
       label: "گزارشِ کدال (ماژول I1)",
       timeColumn: "captured_at",
-      rule: FLOOR_WEEKLY,
+      rule: PROVISIONAL_WEEKLY,
       basis:
-        "ورودیِ ماژولِ تحلیلیِ I1، جدا از فیدِ عمومی. باز هم بدونِ زمان‌بندی در این مخزن — عدد **کف** است.",
+        "ورودیِ ماژولِ تحلیلیِ I1، جدا از فیدِ عمومی. باز هم بدونِ زمان‌بندی در این مخزن. **آستانهٔ ۷ روز موقت و محافظه‌کارانه است و دورهٔ واقعی نیست؛ پس از مشخص‌شدنِ قراردادِ رله باید بازبینی شود.**",
     },
   ],
   decisions: [
@@ -110,7 +112,7 @@ export const DESK_SOURCES = {
       table: "weekly_outlooks",
       label: "چشم‌اندازِ هفتگی",
       timeColumn: "published_at",
-      rule: { okWithinMinutes: 10 * 24 * 60, staleWithinMinutes: 30 * 24 * 60 },
+      rule: { freshWithinMinutes: 10 * 24 * 60 },
       basis:
         "`week_start` در DDL یکتا و هفتگی است؛ ۱۰ روز یعنی یک هفته به‌علاوهٔ تحمل. جدول ستونِ `created_at` ندارد — `published_at` تنها زمانِ موجود است.",
     },

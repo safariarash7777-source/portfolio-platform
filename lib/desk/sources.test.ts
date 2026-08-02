@@ -124,6 +124,65 @@ test("the five historically wrong columns are not silently back", () => {
   }
 });
 
+/**
+ * ── چرا این سه تست وجود دارند ───────────────────────────────────────────
+ * قرارداد قبلاً `okWithinMinutes` **و** `staleWithinMinutes` داشت، ولی
+ * `classifySource` فقط اولی را می‌خواند. عددِ دوم در کد، در رجیستری و در
+ * گزارش‌ها تکرار می‌شد و **هیچ کاری نمی‌کرد** — یک پیکربندیِ تزیینی.
+ *
+ * این دقیقاً همان دسته از دروغی است که کلِ این ماژول علیه‌اش ساخته شده:
+ * چیزی که شبیهِ تنظیم است ولی روی رفتار اثر ندارد. پس مرزِ آستانه دقیقاً
+ * یک عدد است و همین‌جا قفل می‌شود.
+ */
+test("a freshness rule carries exactly one knob and no decorative extras", () => {
+  for (const spec of ALL_DESK_SOURCES) {
+    if (spec.rule === null) continue;
+    assert.deepEqual(
+      Object.keys(spec.rule).sort(),
+      ["freshWithinMinutes"],
+      `منبعِ \`${spec.table}\` تنظیمِ اضافه دارد — هر کلیدی که رفتار را عوض نکند ممنوع است`
+    );
+    assert.ok(
+      Number.isFinite(spec.rule.freshWithinMinutes) && spec.rule.freshWithinMinutes > 0,
+      `آستانهٔ \`${spec.table}\` عددِ معتبر نیست`
+    );
+  }
+});
+
+test("the retired two-threshold vocabulary is gone from the desk contract", () => {
+  const contracts = readFileSync(join(process.cwd(), "lib", "desk", "contracts.ts"), "utf8");
+  const registry = readFileSync(join(process.cwd(), "lib", "desk", "sources.ts"), "utf8");
+  // کامنتِ توضیحیِ خودِ contracts نامِ قدیمی را برای ثبتِ تاریخچه دارد؛ پس
+  // فقط کدِ اجراشونده سنجیده می‌شود.
+  const code = (src: string) =>
+    src.split("\n").filter((l) => {
+      const t = l.trim();
+      return !(t.startsWith("//") || t.startsWith("*") || t.startsWith("/*"));
+    }).join("\n");
+  for (const [name, src] of Object.entries({ contracts, registry })) {
+    assert.doesNotMatch(code(src), /staleWithinMinutes|okWithinMinutes/,
+      `${name} هنوز واژگانِ دو-آستانه‌ای را دارد`);
+  }
+});
+
+/**
+ * مرز باید **رفتاری** اثبات شود، نه فقط تایپی: دقیقاً روی آستانه `ready`
+ * است و یک دقیقه بعدش `stale`. اگر روزی آستانهٔ دومی برگردد، این تست
+ * همچنان می‌گوید کدام عدد واقعاً مرز است.
+ */
+test("the single threshold is the only boundary that exists", async () => {
+  const { classifySource } = await import("@/lib/desk/contracts");
+  const now = new Date("2026-08-01T12:00:00Z");
+  const at = (m: number) => new Date(now.getTime() - m * 60_000).toISOString();
+  const spec = { table: "t", label: "l", rule: { freshWithinMinutes: 100 } };
+
+  assert.equal(classifySource(spec, { available: true, count: 1, lastAt: at(99) }, now).state, "ready");
+  assert.equal(classifySource(spec, { available: true, count: 1, lastAt: at(100) }, now).state, "ready");
+  assert.equal(classifySource(spec, { available: true, count: 1, lastAt: at(101) }, now).state, "stale");
+  // و هرچه کهنه‌تر، همچنان `stale` — هیچ مرزِ سومی در کار نیست.
+  assert.equal(classifySource(spec, { available: true, count: 1, lastAt: at(100000) }, now).state, "stale");
+});
+
 test("every source states the evidence for its freshness threshold", () => {
   for (const spec of ALL_DESK_SOURCES) {
     assert.ok(
