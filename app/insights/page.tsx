@@ -5,14 +5,17 @@ import InsightsGrid from "@/components/insights/InsightsGrid";
 import Link from "next/link";
 import { Send, Instagram } from "lucide-react";
 import { type ContentItem, isPlatform, isKind, PLATFORM_META } from "@/lib/content-hub";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "تحلیل‌های اجتماعی",
   description:
-    "تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر در یک صفحه.",
-};
+    "بازنشر محتوای کانال تلگرام آرش صفری — تحلیل‌ها و دیدگاه‌های منتشرشده، بدون ویرایش. توصیهٔ خرید یا فروش نیست.",
+  path: "/insights",
+});
 
 export default async function InsightsPage() {
   const supabase = await createClient();
