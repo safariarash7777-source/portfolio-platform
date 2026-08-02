@@ -11,6 +11,12 @@ export const metadata = {
   title: "نقشهٔ بازار — نمای یک‌نگاهی سهام و صندوق‌ها",
   description:
     "نقشهٔ حرارتی بازار سهام و صندوق‌های ایران: اندازهٔ هر کاشی ارزش معاملات یا ارزش بازار، رنگ آن درصد تغییر روز. کلیک روی هر نماد، صفحهٔ جزئیات آن را باز می‌کند.",
+  openGraph: {
+    title: "نقشهٔ بازار · آرش صفری",
+    description: "نقشهٔ حرارتی بازار سهام و صندوق‌های ایران — اندازه: ارزش معاملات، رنگ: درصد تغییر روز.",
+    url: "https://arashsafari.ir/market/map",
+    type: "website",
+  },
 };
 
 export default async function MarketMapPage() {

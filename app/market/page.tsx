@@ -14,8 +14,14 @@ import { getIrMarket } from "@/lib/market-ir";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "رصد بازار",
-  description: "قیمت لحظه‌ای بازار کریپتو، طلا، ارز، صندوق‌ها و سهام.",
+  title: "رصد بازار — سهام، طلا، ارز و صندوق‌ها",
+  description: "داشبورد رصد بازار ایران: آخرین اسنپ‌شات طلا، ارز، سهام، صندوق‌ها و کریپتو — به‌روزرسانی روزانه از رلهٔ داخلی.",
+  openGraph: {
+    title: "رصد بازار — سهام، طلا، ارز و صندوق‌ها · آرش صفری",
+    description: "داشبورد رصد بازار ایران: آخرین اسنپ‌شات طلا، ارز، سهام، صندوق‌ها و کریپتو — به‌روزرسانی روزانه از رلهٔ داخلی.",
+    url: "https://arashsafari.ir/market",
+    type: "website",
+  },
 };
 
 export default async function MarketPage() {

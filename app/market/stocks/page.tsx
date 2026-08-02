@@ -5,9 +5,15 @@ import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "تابلوی زندهٔ بازار سهام",
+  title: "تابلوی بازار سهام",
   description:
-    "دیده‌بانی لحظه‌ای بازار: شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس؛ تاریخچه و خروجی داده در بانک داده.",
+    "رصد بازار سهام: شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس؛ تاریخچه و خروجی داده در بانک داده.",
+  openGraph: {
+    title: "تابلوی بازار سهام · آرش صفری",
+    description: "رصد بازار سهام: شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس.",
+    url: "https://arashsafari.ir/market/stocks",
+    type: "website",
+  },
 };
 
 export default async function StocksPage() {

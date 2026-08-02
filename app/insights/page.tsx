@@ -12,6 +12,12 @@ export const metadata = {
   title: "تحلیل‌های اجتماعی",
   description:
     "تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر در یک صفحه.",
+  openGraph: {
+    title: "تحلیل‌های اجتماعی · آرش صفری",
+    description: "تجمیع جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر.",
+    url: "https://arashsafari.ir/insights",
+    type: "website",
+  },
 };
 
 export default async function InsightsPage() {

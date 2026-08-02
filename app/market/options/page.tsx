@@ -9,6 +9,12 @@ export const metadata = {
   title: "تابلوی اختیار معامله — قراردادهای اختیار خرید و فروش",
   description:
     "دادهٔ همهٔ قراردادهای اختیار معاملهٔ بازار: قیمت اعمال، سررسید، موقعیت‌های باز، حجم و ارزش معاملات — با فیلتر نماد پایه و نوع قرارداد.",
+  openGraph: {
+    title: "تابلوی اختیار معامله · آرش صفری",
+    description: "قراردادهای اختیار معامله: قیمت اعمال، سررسید، موقعیت‌های باز، حجم و ارزش معاملات.",
+    url: "https://arashsafari.ir/market/options",
+    type: "website",
+  },
 };
 
 export default async function OptionsPage() {

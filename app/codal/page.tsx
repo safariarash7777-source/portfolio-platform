@@ -12,6 +12,12 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "فید اطلاعیه‌های کدال",
   description: "آخرین اطلاعیه‌های منتشرشده در کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع، با لینک مستقیم به codal.ir.",
+  openGraph: {
+    title: "فید اطلاعیه‌های کدال · آرش صفری",
+    description: "آخرین اطلاعیه‌های منتشرشده در کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع.",
+    url: "https://arashsafari.ir/codal",
+    type: "website",
+  },
 };
 
 const CATEGORIES = ["همه", "ماهانه", "صورت مالی", "شفاف‌سازی", "مجمع", "سایر"] as const;

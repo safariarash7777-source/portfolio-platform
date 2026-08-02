@@ -25,6 +25,12 @@ export const metadata = {
   title: "کارنامهٔ قابل راستی‌آزمایی — قطب‌نمای بازار",
   description:
     "کارنامهٔ شفاف تحلیل‌های آرش صفری و چشم‌انداز هفتگی بازار — هر رکورد با هش زنجیره‌ای ثبت می‌شود و پس از انتشار قابل ویرایش یا حذف نیست.",
+  openGraph: {
+    title: "کارنامهٔ قابل راستی‌آزمایی · آرش صفری",
+    description: "کارنامهٔ شفاف تحلیل‌های آرش صفری — هر رکورد با هش زنجیره‌ای ثبت می‌شود و قابل ویرایش نیست.",
+    url: "https://arashsafari.ir/analyses",
+    type: "website",
+  },
 };
 
 function pd(x: number | string | null | undefined, suffix = ""): string {

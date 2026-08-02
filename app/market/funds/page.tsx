@@ -8,6 +8,12 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "دیده‌بان صندوق‌ها",
   description: "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
+  openGraph: {
+    title: "دیده‌بان صندوق‌ها · آرش صفری",
+    description: "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
+    url: "https://arashsafari.ir/market/funds",
+    type: "website",
+  },
 };
 
 export default async function FundsPage() {
