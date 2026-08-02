@@ -6,6 +6,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  Telescope,
   PieChart,
   CreditCard,
   Mail,
@@ -38,6 +39,9 @@ const NAV: NavItem[] = [
   // میز بالای فهرست می‌نشیند چون نقطهٔ شروعِ کارِ روزانه است، ولی هیچ‌کدام از
   // ورودی‌های زیر را جایگزین نمی‌کند — همه سرِ جای خودشان می‌مانند.
   { key: "desk", label: "میزِ آرش", href: "/admin/desk", icon: <CalendarDays size={18} /> },
+  // موتورِ دستیِ هوشمندی زیرِ میز می‌نشیند: میز وضعیت را نشان می‌دهد، این یکی
+  // گردشِ ثبت و بازبینی است. هیچ‌کدام جای دیگری را نمی‌گیرد.
+  { key: "intelligence", label: "هوشمندی دستی", href: "/admin/intelligence", icon: <Telescope size={18} /> },
   { key: "users", label: "کاربران", href: "/admin/users", icon: <Users size={18} /> },
   { key: "portfolio", label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio", icon: <PieChart size={18} /> },
   { key: "payments", label: "پرداخت‌ها", href: "/admin/manage?tab=payments", icon: <CreditCard size={18} /> },

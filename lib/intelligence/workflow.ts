@@ -150,6 +150,24 @@ export function isScenarioLabelValid(kind: ClaimKind, label: ScenarioLabel | nul
   return (kind === "SCENARIO") === (label !== null);
 }
 
+export const HORIZONS = ["intraday", "short_term", "medium_term", "long_term", "structural"] as const;
+export type IntelHorizon = (typeof HORIZONS)[number];
+
+/** UI کاملاً فارسی است؛ کلیدِ خامِ انگلیسی نباید به کاربر نشان داده شود. */
+export const HORIZON_LABEL: Record<IntelHorizon, string> = {
+  intraday: "درون‌روز",
+  short_term: "کوتاه‌مدت",
+  medium_term: "میان‌مدت",
+  long_term: "بلندمدت",
+  structural: "ساختاری",
+};
+
+export const DIRECTION_LABEL = {
+  increase: "افزایشی",
+  decrease: "کاهشی",
+  hold: "بدون تغییر",
+} as const;
+
 // ── سنجه‌های تمرین ──────────────────────────────────────────────────────────
 
 export interface RehearsalDay {

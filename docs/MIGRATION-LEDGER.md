@@ -31,6 +31,22 @@
 > `codal_reports`, `codal_feed`, `fx_rates`, `index_history`, `market_breadth`,
 > `fx_heavy_analytics` **موجود** (APPLIED). همهٔ جدول‌های موجود `rls_enabled=true` بودند.
 
+## `phase22_manual_intelligence_workflow` — `G3-003`
+
+| محیط | وضعیت | شاهد |
+|---|---|---|
+| Staging `oqjcvkzyvhqnphopedpn` | **APPLIED** ۱۴۰۵/۰۵/۱۱ | جدول‌های `intel_*` ۱۵ → **۱۷** · سیاست ۱۶ → **۱۸** · تریگر ۱۲ → **۱۵** · گرنت ۱۷۸ → **۲۰۲** · سطرها **۰ → ۰**. باتریِ ۲۰ کنترلِ رفتاری داخلِ زیرتراکنشِ rollback، هر ۲۰ پاس |
+| Production `uooeygybrniptzdxuzhj` | **NOT_APPLIED** | و پیش‌نیازهایش هم اجرا نشده‌اند: `phase20` و `phase21` هر دو روی Production **غایب**‌اند (۰ جدولِ `intel_*`، `cron_runs` وجود ندارد) |
+
+این migration **افزایشی** است: `phase20` را بازنویسی نمی‌کند، آن را **تنگ‌تر**
+می‌کند. دو حالتِ `approved_internal` و `rejected` اضافه می‌شوند و مسیرِ
+`pending_approval → published` که در `phase20` وجود داشت **بسته می‌شود**.
+
+⚠️ چون `phase22` تابعِ `intel_guard_analysis_mutation` و `publish_intel_analysis`
+را با `CREATE OR REPLACE` بازنویسی می‌کند، **ترتیب اجباری است**: `phase20` →
+`phase21` → `phase22`. اجرای `phase20` پس از `phase22` بی‌صدا محدودیت‌ها را
+برمی‌گرداند.
+
 ## خلاصهٔ تصمیم‌محور
 
 | مورد | وضعیت واقعیِ DB | تصمیم |
