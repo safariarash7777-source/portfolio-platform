@@ -21,13 +21,11 @@ import { toPersianDigits, formatJalaliShort } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
+export const metadata = {
   title: "کارنامهٔ قابل راستی‌آزمایی — قطب‌نمای بازار",
   description:
-    "کارنامهٔ شفاف تحلیل‌های آرش صفری و چشم‌انداز هفتگی بازار — هر رکورد با هش زنجیره‌ای SHA-256 ثبت می‌شود و پس از انتشار قابل ویرایش یا حذف نیست.",
-  path: "/analyses",
-});
+    "کارنامهٔ شفاف تحلیل‌های آرش صفری و چشم‌انداز هفتگی بازار — هر رکورد با هش زنجیره‌ای ثبت می‌شود و پس از انتشار قابل ویرایش یا حذف نیست.",
+};
 
 function pd(x: number | string | null | undefined, suffix = ""): string {
   if (x == null) return "—";

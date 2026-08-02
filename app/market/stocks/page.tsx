@@ -4,13 +4,11 @@ import StocksBoard from "@/components/market/StocksBoard";
 import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
-  title: "تابلوی سهام",
+export const metadata = {
+  title: "تابلوی زندهٔ بازار سهام",
   description:
-    "تابلوی زندهٔ بازار سهام ایران — قیمت، تغییر، ورود پول حقیقی، ارزش معاملات و شاخص‌های بنیادی برای همهٔ نمادهای بورس و فرابورس.",
-  path: "/market/stocks",
-});
+    "دیده‌بانی لحظه‌ای بازار: شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس؛ تاریخچه و خروجی داده در بانک داده.",
+};
 
 export default async function StocksPage() {
   const ir = await getIrMarket();

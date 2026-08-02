@@ -5,13 +5,11 @@ import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
 
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
-  title: "اختیار معامله",
+export const metadata = {
+  title: "تابلوی اختیار معامله — قراردادهای اختیار خرید و فروش",
   description:
-    "تابلوی اختیار معامله بازار سرمایهٔ ایران — قرارداد اختیار خرید و فروش، پریمیوم، سررسید و موقعیت باز.",
-  path: "/market/options",
-});
+    "دادهٔ همهٔ قراردادهای اختیار معاملهٔ بازار: قیمت اعمال، سررسید، موقعیت‌های باز، حجم و ارزش معاملات — با فیلتر نماد پایه و نوع قرارداد.",
+};
 
 export default async function OptionsPage() {
   const ir = await getIrMarket();

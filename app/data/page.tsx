@@ -7,13 +7,11 @@ import { getFundamentalYoY } from "@/lib/core/fundamentalData";
 
 export const dynamic = "force-dynamic";
 
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
+export const metadata = {
   title: "بانک دادهٔ بازار — سهام، صندوق‌ها، طلا و ارز",
   description:
-    "دسترسی آزاد به دادهٔ همهٔ نمادهای بورس و فرابورس، صندوق‌های سرمایه‌گذاری (طلا، اهرمی، درآمد ثابت، کالایی)، طلا و ارز — با جستجو، مرتب‌سازی و خروجی CSV.",
-  path: "/data",
-});
+    "دسترسی آزاد به دادهٔ همهٔ نمادهای بورس و فرابورس، صندوق‌های سرمایه‌گذاری (طلا، اهرمی، درآمد ثابت، کالایی)، طلا و ارز — با جستجو، مرتب‌سازی و خروجی داده.",
+};
 
 export default async function DataBankPage() {
   const [ir, avgVol, fundamentalYoY] = await Promise.all([

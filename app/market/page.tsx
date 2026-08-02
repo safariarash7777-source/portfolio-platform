@@ -13,16 +13,10 @@ import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
 
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
-  title: "رصد بازار — سهام، طلا، ارز و صندوق‌ها",
-  description:
-    "رصد روزانهٔ بازار سرمایهٔ ایران: آخرین اسنپ‌شات سهام، طلا، ارز، صندوق‌های سرمایه‌گذاری و اختیار معامله — داده‌های روزانه با منبع مشخص.",
-  path: "/market",
-  ogTitle: "رصد بازار — سهام، طلا، ارز و صندوق‌ها · آرش صفری",
-  ogDescription:
-    "رصد روزانهٔ بازار سرمایهٔ ایران: آخرین اسنپ‌شات سهام، طلا، ارز، صندوق‌های سرمایه‌گذاری و اختیار معامله.",
-});
+export const metadata = {
+  title: "رصد بازار",
+  description: "قیمت لحظه‌ای بازار کریپتو، طلا، ارز، صندوق‌ها و سهام.",
+};
 
 export default async function MarketPage() {
   const supabase = await createClient();

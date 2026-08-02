@@ -7,13 +7,11 @@ import { Map as MapIcon, Clock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
-  title: "نقشهٔ بازار",
+export const metadata = {
+  title: "نقشهٔ بازار — نمای یک‌نگاهی سهام و صندوق‌ها",
   description:
-    "نقشهٔ حرارتی بازار سرمایهٔ ایران — نمایش بصری عملکرد نمادها بر اساس صنعت، ارزش بازار و تغییر روزانه.",
-  path: "/market/map",
-});
+    "نقشهٔ حرارتی بازار سهام و صندوق‌های ایران: اندازهٔ هر کاشی ارزش معاملات یا ارزش بازار، رنگ آن درصد تغییر روز. کلیک روی هر نماد، صفحهٔ جزئیات آن را باز می‌کند.",
+};
 
 export default async function MarketMapPage() {
   const ir = await getIrMarket();

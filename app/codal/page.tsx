@@ -9,13 +9,10 @@ import Footer from "@/components/layout/Footer";
 import { toPersianDigits } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
+export const metadata = {
   title: "فید اطلاعیه‌های کدال",
-  description:
-    "آخرین اطلاعیه‌های منتشرشده در سامانهٔ کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع — به‌محض دیده‌شدن توسط موتور پایش فهرست می‌شود.",
-  path: "/codal",
-});
+  description: "آخرین اطلاعیه‌های منتشرشده در کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع، با لینک مستقیم به codal.ir.",
+};
 
 const CATEGORIES = ["همه", "ماهانه", "صورت مالی", "شفاف‌سازی", "مجمع", "سایر"] as const;
 

@@ -63,16 +63,6 @@ export const metadata: Metadata = {
     locale: "fa_IR",
     type: "website",
     siteName: "Arash Safari",
-    // Pre-rendered static PNG — Chromium + Vazirmatn, verified RTL Persian, 1200×630
-    // QA evidence: docs/assets/public-experience/og-image-qa.png
-    images: [
-      {
-        url: "/og-default.png", // relative — metadataBase resolves to full URL
-        width: 1200,
-        height: 630,
-        alt: "آرش صفری — تحلیلگر و مشاور سرمایه‌گذاری",
-      },
-    ],
   },
   icons: {
     icon: "/brand/mark.png",

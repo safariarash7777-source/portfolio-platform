@@ -5,13 +5,10 @@ import { getIrMarket } from "@/lib/market-ir";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
 
 export const dynamic = "force-dynamic";
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
+export const metadata = {
   title: "دیده‌بان صندوق‌ها",
-  description:
-    "دیده‌بان صندوق‌های سرمایه‌گذاری ایران — صندوق‌های طلا، اهرمی، درآمد ثابت، کالایی و سهامی با NAV، بازدهی و مقایسهٔ کامل.",
-  path: "/market/funds",
-});
+  description: "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
+};
 
 export default async function FundsPage() {
   const [ir, returns] = await Promise.all([getIrMarket(), getBulkReturns()]);

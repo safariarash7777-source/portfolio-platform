@@ -8,13 +8,11 @@ import { type ContentItem, isPlatform, isKind, PLATFORM_META } from "@/lib/conte
 
 export const dynamic = "force-dynamic";
 
-import { pageMetadata } from "@/lib/metadata";
-export const metadata = pageMetadata({
+export const metadata = {
   title: "تحلیل‌های اجتماعی",
   description:
-    "تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر در یک صفحه — صرفاً اطلاع‌رسانی، توصیهٔ خرید/فروش نیست.",
-  path: "/insights",
-});
+    "تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر در یک صفحه.",
+};
 
 export default async function InsightsPage() {
   const supabase = await createClient();
