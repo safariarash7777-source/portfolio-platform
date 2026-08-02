@@ -7,11 +7,14 @@ import { toPersianDigits } from "@/lib/format";
  * نوارِ حقایقِ محصول — فقط اعدادِ واقعیِ قابل‌اثبات از خودِ محصول
  * (نه آمارِ کاربر/بازده — الزامِ صداقتِ داده). شمارشِ اعداد هنگامِ دیده‌شدن؛
  * زیر reduced-motion یا بدونِ JS عددِ نهایی مستقیم نمایش داده می‌شود.
+ *
+ * OD-003: اعدادِ «۲۲ سؤال»، «۶ بخش» و «۱۸۰ روز» تا تأییدِ مالک حذف شدند.
+ * «۱ بار در روز» قابل‌اثبات است (vercel.json: `0 6 * * *`) — باقی می‌ماند.
  */
 const FACTS = [
-  { value: 22, label: "سؤالِ آزمون ریسک" },
-  { value: 6, label: "بخشِ ارزیابی رفتاری و مالی" },
-  { value: 180, label: "روز اعتبار هر پروفایل" },
+  // OD-003: «۲۲ سؤالِ آزمون ریسک» — حذف تا تأیید مالک
+  // OD-003: «۶ بخشِ ارزیابی رفتاری و مالی» — حذف تا تأیید مالک
+  // OD-003: «۱۸۰ روز اعتبار هر پروفایل» — حذف تا تأیید مالک
   // زمان‌بندیِ واقعی در `vercel.json` است: `0 6 * * *` (روزانه). این عدد قبلاً
   // «۵ دقیقه» بود که با هیچ اجرایی مطابقت نداشت — همان ادعای صداقتِ بالای فایل
   // را نقض می‌کرد. هر تغییرِ زمان‌بندی باید همین‌جا هم به‌روز شود.
@@ -62,7 +65,7 @@ export default function ProductFacts() {
       style={{ background: "var(--surface)", borderColor: "var(--line)" }}
     >
       <div className="mx-auto w-full max-w-6xl px-5 py-10 md:py-12">
-        <dl className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 justify-items-center">
           {FACTS.map((f, i) => (
             <div
               key={f.label}
