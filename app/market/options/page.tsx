@@ -5,17 +5,13 @@ import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "تابلوی اختیار معامله — قراردادهای اختیار خرید و فروش",
+import { pageMetadata } from "@/lib/metadata";
+export const metadata = pageMetadata({
+  title: "اختیار معامله",
   description:
-    "دادهٔ همهٔ قراردادهای اختیار معاملهٔ بازار: قیمت اعمال، سررسید، موقعیت‌های باز، حجم و ارزش معاملات — با فیلتر نماد پایه و نوع قرارداد.",
-  openGraph: {
-    title: "تابلوی اختیار معامله · آرش صفری",
-    description: "قراردادهای اختیار معامله: قیمت اعمال، سررسید، موقعیت‌های باز، حجم و ارزش معاملات.",
-    url: "https://arashsafari.ir/market/options",
-    type: "website",
-  },
-};
+    "تابلوی اختیار معامله بازار سرمایهٔ ایران — قرارداد اختیار خرید و فروش، پریمیوم، سررسید و موقعیت باز.",
+  path: "/market/options",
+});
 
 export default async function OptionsPage() {
   const ir = await getIrMarket();

@@ -4,17 +4,13 @@ import StocksBoard from "@/components/market/StocksBoard";
 import { getIrMarket } from "@/lib/market-ir";
 
 export const dynamic = "force-dynamic";
-export const metadata = {
-  title: "تابلوی بازار سهام",
+import { pageMetadata } from "@/lib/metadata";
+export const metadata = pageMetadata({
+  title: "تابلوی سهام",
   description:
-    "رصد بازار سهام: شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس؛ تاریخچه و خروجی داده در بانک داده.",
-  openGraph: {
-    title: "تابلوی بازار سهام · آرش صفری",
-    description: "رصد بازار سهام: شاخص‌ها، جدول نمادها، نقشهٔ بازار و جستجوی سهام بورس و فرابورس.",
-    url: "https://arashsafari.ir/market/stocks",
-    type: "website",
-  },
-};
+    "تابلوی زندهٔ بازار سهام ایران — قیمت، تغییر، ورود پول حقیقی، ارزش معاملات و شاخص‌های بنیادی برای همهٔ نمادهای بورس و فرابورس.",
+  path: "/market/stocks",
+});
 
 export default async function StocksPage() {
   const ir = await getIrMarket();

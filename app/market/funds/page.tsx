@@ -5,16 +5,13 @@ import { getIrMarket } from "@/lib/market-ir";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
 
 export const dynamic = "force-dynamic";
-export const metadata = {
+import { pageMetadata } from "@/lib/metadata";
+export const metadata = pageMetadata({
   title: "دیده‌بان صندوق‌ها",
-  description: "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
-  openGraph: {
-    title: "دیده‌بان صندوق‌ها · آرش صفری",
-    description: "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
-    url: "https://arashsafari.ir/market/funds",
-    type: "website",
-  },
-};
+  description:
+    "دیده‌بان صندوق‌های سرمایه‌گذاری ایران — صندوق‌های طلا، اهرمی، درآمد ثابت، کالایی و سهامی با NAV، بازدهی و مقایسهٔ کامل.",
+  path: "/market/funds",
+});
 
 export default async function FundsPage() {
   const [ir, returns] = await Promise.all([getIrMarket(), getBulkReturns()]);

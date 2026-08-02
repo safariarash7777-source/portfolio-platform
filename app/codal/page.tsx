@@ -9,16 +9,13 @@ import Footer from "@/components/layout/Footer";
 import { toPersianDigits } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-export const metadata = {
+import { pageMetadata } from "@/lib/metadata";
+export const metadata = pageMetadata({
   title: "فید اطلاعیه‌های کدال",
-  description: "آخرین اطلاعیه‌های منتشرشده در کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع، با لینک مستقیم به codal.ir.",
-  openGraph: {
-    title: "فید اطلاعیه‌های کدال · آرش صفری",
-    description: "آخرین اطلاعیه‌های منتشرشده در کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع.",
-    url: "https://arashsafari.ir/codal",
-    type: "website",
-  },
-};
+  description:
+    "آخرین اطلاعیه‌های منتشرشده در سامانهٔ کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع — به‌محض دیده‌شدن توسط موتور پایش فهرست می‌شود.",
+  path: "/codal",
+});
 
 const CATEGORIES = ["همه", "ماهانه", "صورت مالی", "شفاف‌سازی", "مجمع", "سایر"] as const;
 

@@ -8,17 +8,13 @@ import { type ContentItem, isPlatform, isKind, PLATFORM_META } from "@/lib/conte
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+import { pageMetadata } from "@/lib/metadata";
+export const metadata = pageMetadata({
   title: "تحلیل‌های اجتماعی",
   description:
-    "تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر در یک صفحه.",
-  openGraph: {
-    title: "تحلیل‌های اجتماعی · آرش صفری",
-    description: "تجمیع جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر.",
-    url: "https://arashsafari.ir/insights",
-    type: "website",
-  },
-};
+    "تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از تلگرام، اینستاگرام و توییتر در یک صفحه — صرفاً اطلاع‌رسانی، توصیهٔ خرید/فروش نیست.",
+  path: "/insights",
+});
 
 export default async function InsightsPage() {
   const supabase = await createClient();
