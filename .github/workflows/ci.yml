@@ -177,7 +177,11 @@ jobs:
       # `CI=true` را خودِ GitHub Actions ست می‌کند و تست روی همان تکیه می‌کند:
       # اگر Postgres یا psql نباشد، به‌جای skip **خطا می‌دهد**.
       - name: تستِ یکپارچگیِ leads و intelligence
-        run: npm run test:db 2>&1 | tee /tmp/leads-db.log
+        # `set -o pipefail` لازم است چون خروجی از `tee` رد می‌شود و بدونِ آن کدِ
+        # خروجیِ `tee` (همیشه ۰) گزارش می‌شود، نه کدِ خروجیِ تست.
+        run: |
+          set -o pipefail
+          npm run test:db 2>&1 | tee /tmp/leads-db.log
         env:
           PGHOST: 127.0.0.1
           PGPORT: "5433"
@@ -226,7 +230,24 @@ jobs:
           # ۸۵ → ۸۹ در `P2-G3-002`: چهار تستِ تازهٔ `service_role` (دو تست × دو
           # پروفایل). عمداً **پس از** سبزشدن به‌روز شد، نه با جمعِ ۸۷+۲ از اجرای
           # قرمز — کفی که از حساب می‌آید همان چیزی است که این کامنت منع می‌کند.
-          MIN_PASS=89
+          #
+          # ۸۹ → ۱۶۵ در `P2-CLAUDE-MEGA-003`: `workflow.integration.test.ts`
+          # (۳۸ تست × ۲ پروفایل) به `test:db` اضافه شد. باز هم از اجرای واقعیِ
+          # کاملاً سبز خوانده شد — `pass=165 fail=0 skipped=0 suites=9` — نه از
+          # جمعِ ۸۹+۷۶.
+          #
+          # ۱۶۵ → ۱۸۷ در `P2-CLAUDE-MEGA-004`: `grants.integration.test.ts`
+          # (گاردِ `B-044`) به `test:db` اضافه شد. مثلِ دفعاتِ قبل از اجرای واقعیِ
+          # سبز خوانده شد — `pass=187 fail=0 skipped=0 suites=14`.
+          MIN_PASS=187
+
+          # ⚠️ `# fail` همهٔ شکست‌ها را نمی‌شمارد. وقتی یک هوکِ `before` بترکد،
+          # node:test کلِ suite را با `not ok` علامت می‌زند ولی `# fail` همچنان
+          # **۰** می‌ماند. این با یک migrationِ عمداً معیوب سنجیده شد:
+          # `pass 22 → 10`، سه suite با `not ok`، و `# fail 0`.
+          # پس علاوه بر `# fail`، خودِ نشانگرِ `not ok` هم بررسی می‌شود.
+          notok=$(grep -cE '^not ok ' /tmp/leads-db.log || true)
+          [ "${notok:-0}" = "0" ] || { echo "::error::$notok مورد 'not ok' در خروجی تست — احتمالاً هوکِ before شکسته"; exit 1; }
           [ "${fail:-1}" = "0" ] || { echo "::error::تستِ دیتابیس مردود شد (fail=$fail)"; exit 1; }
           [ "${skip:-1}" = "0" ] || { echo "::error::اسکیپ در CI مجاز نیست (skipped=$skip)"; exit 1; }
           if [ "${pass:-0}" -lt "$MIN_PASS" ]; then
