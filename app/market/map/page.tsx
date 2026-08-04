@@ -4,14 +4,17 @@ import MarketTreemap from "@/components/market/MarketTreemap";
 import { getIrMarket } from "@/lib/market-ir";
 import { formatJalali } from "@/lib/format";
 import { Map as MapIcon, Clock } from "lucide-react";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "نقشهٔ بازار — نمای یک‌نگاهی سهام و صندوق‌ها",
+export const metadata = pageMetadata({
+  title: "نقشهٔ بازار",
   description:
-    "نقشهٔ حرارتی بازار سهام و صندوق‌های ایران: اندازهٔ هر کاشی ارزش معاملات یا ارزش بازار، رنگ آن درصد تغییر روز. کلیک روی هر نماد، صفحهٔ جزئیات آن را باز می‌کند.",
-};
+    "نمای یک‌نگاهی سهام و صندوق‌های سرمایه‌گذاری — بزرگی هر سلول نشان‌دهندهٔ ارزش بازار است.",
+  path: "/market/map",
+});
 
 export default async function MarketMapPage() {
   const ir = await getIrMarket();

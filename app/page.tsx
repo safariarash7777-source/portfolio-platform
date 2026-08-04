@@ -17,7 +17,7 @@ import Footer from "@/components/layout/Footer";
  * ترتیب:
  *  1. Hero (هویت‌محور، بدون PortfolioPreviewCard ساختگی)
  *  2. MarketTicker
- *  3. LiveMarket (بازارهای لحظه‌ای)
+ *  3. LiveMarket (آخرین وضعیت بازار)
  *  4. TwoProducts
  *  5. ProductFacts
  *  6. ThreeSteps

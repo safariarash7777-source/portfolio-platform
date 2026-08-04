@@ -18,14 +18,17 @@ import {
   type WeeklyOutlookRecord,
 } from "@/lib/track/analyses";
 import { toPersianDigits, formatJalaliShort } from "@/lib/format";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "کارنامهٔ قابل راستی‌آزمایی — قطب‌نمای بازار",
+export const metadata = pageMetadata({
+  title: "کارنامهٔ تحلیل‌ها — شفاف و غیرقابل دستکاری",
   description:
-    "کارنامهٔ شفاف تحلیل‌های آرش صفری و چشم‌انداز هفتگی بازار — هر رکورد با هش زنجیره‌ای ثبت می‌شود و پس از انتشار قابل ویرایش یا حذف نیست.",
-};
+    "کارنامهٔ قابل راستی‌آزمایی تحلیل‌های آرش صفری — هر رکورد با هش SHA-256 زنجیره‌ای ثبت شده و پس از انتشار قابل ویرایش نیست.",
+  path: "/analyses",
+});
 
 function pd(x: number | string | null | undefined, suffix = ""): string {
   if (x == null) return "—";

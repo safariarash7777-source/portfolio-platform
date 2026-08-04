@@ -63,6 +63,7 @@ export const metadata: Metadata = {
     locale: "fa_IR",
     type: "website",
     siteName: "Arash Safari",
+    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری" }],
   },
   icons: {
     icon: "/brand/mark.png",

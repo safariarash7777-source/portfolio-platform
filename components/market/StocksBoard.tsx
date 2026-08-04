@@ -184,10 +184,10 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           </span>
           <div>
             <h1 className="font-display font-bold text-xl" style={{ color: "var(--navy-deep)" }}>
-              تابلوی زندهٔ بازار سهام
+              تابلوی بازار سهام
             </h1>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-              دیده‌بانی لحظه‌ای تابلو، نقشه و شاخص‌ها · {toPersianDigits(stocks.length)} نماد فعال
+              دیده‌بانی تابلو، نقشه و شاخص‌ها · {toPersianDigits(stocks.length)} نماد فعال
               {indices?.state && ` · ${indices.state}`}
               {" · "}
               <Link href="/data" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>

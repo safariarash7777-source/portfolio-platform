@@ -2,6 +2,12 @@ import Link from "next/link";
 import { Instagram, Send, Linkedin } from "lucide-react";
 import Logo from "../ui/Logo";
 
+// SHA badge — فقط در محیط‌های غیر Production (Preview / Development)
+const PREVIEW_SHA = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
+  ? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)
+  : null;
+const IS_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+
 const SOCIAL_LINKS = [
   { href: "https://instagram.com/arashsafari",   label: "اینستاگرام", icon: <Instagram size={18} /> },
   { href: "https://t.me/arashsafari",            label: "تلگرام",     icon: <Send size={18} /> },
@@ -20,8 +26,9 @@ const FOOTER_GROUPS = [
       { href: "/market",        label: "رصد بازار" },
       { href: "/market/map",    label: "نقشهٔ بازار" },
       { href: "/market/funds",  label: "صندوق‌ها" },
-      { href: "/market/stocks", label: "تابلوی سهام" },
-      { href: "/data",          label: "بانک داده" },
+      { href: "/market/stocks",   label: "تابلوی سهام" },
+      { href: "/market/options",  label: "اختیار معامله" },
+      { href: "/data",            label: "بانک داده" },
       { href: "/codal",         label: "فید اطلاعیه‌های کدال" },
     ],
   },
@@ -145,6 +152,22 @@ export default function Footer() {
           <p className="text-xs" style={{ color: "var(--text-3)" }}>
             آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری · Investment Analyst &amp; Advisor
           </p>
+          {PREVIEW_SHA && !IS_PRODUCTION && (
+            <a
+              href={`https://github.com/safariarash7777-source/portfolio-platform/commit/${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-mono px-2 py-0.5 rounded"
+              style={{
+                background: "var(--surface-2)",
+                border: "1px solid var(--line)",
+                color: "var(--text-3)",
+              }}
+              title="Preview build — نسخهٔ آزمایشی، نه Production"
+            >
+              preview · {PREVIEW_SHA}
+            </a>
+          )}
         </div>
       </div>
     </footer>

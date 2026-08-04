@@ -10,13 +10,17 @@ import GoldUsdTrend from "@/components/market/GoldUsdTrend";
 import IndexTrend from "@/components/market/IndexTrend";
 import { getMarketData } from "@/lib/market";
 import { getIrMarket } from "@/lib/market-ir";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: "رصد بازار",
-  description: "قیمت لحظه‌ای بازار کریپتو، طلا، ارز، صندوق‌ها و سهام.",
-};
+  description:
+    "قیمت روزانهٔ بازار کریپتو، طلا، ارز، صندوق‌ها و سهام — داده‌های snapshot از منابع رسمی.",
+  path: "/market",
+});
 
 export default async function MarketPage() {
   const supabase = await createClient();

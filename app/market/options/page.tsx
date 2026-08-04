@@ -2,14 +2,17 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import OptionsBoard from "@/components/market/OptionsBoard";
 import { getIrMarket } from "@/lib/market-ir";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "تابلوی اختیار معامله — قراردادهای اختیار خرید و فروش",
+export const metadata = pageMetadata({
+  title: "تابلوی اختیار معامله",
   description:
-    "دادهٔ همهٔ قراردادهای اختیار معاملهٔ بازار: قیمت اعمال، سررسید، موقعیت‌های باز، حجم و ارزش معاملات — با فیلتر نماد پایه و نوع قرارداد.",
-};
+    "قراردادهای اختیار خرید و فروش بازار بورس ایران — نماد، قیمت اعمال، سررسید و موقعیت باز.",
+  path: "/market/options",
+});
 
 export default async function OptionsPage() {
   const ir = await getIrMarket();

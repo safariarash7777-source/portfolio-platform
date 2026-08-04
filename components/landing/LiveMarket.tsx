@@ -136,7 +136,7 @@ export default function LiveMarket() {
               lineHeight: 1.25,
             }}
           >
-            بازار، همین حالا — زنده
+            بازار در یک نگاه
           </h2>
           <div className="divider-gold" />
         </Reveal>
@@ -150,7 +150,7 @@ export default function LiveMarket() {
             >
               <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--navy-deep)" }}>
                 <span className="live-dot" aria-hidden />
-                قیمت‌های لحظه‌ای
+                آخرین وضعیت بازار
               </span>
               <span className="text-xs" style={{ color: "var(--text-3)" }}>
                 {ageMin != null

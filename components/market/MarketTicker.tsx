@@ -78,7 +78,7 @@ export default function MarketTicker() {
     <div
       className="border-y"
       style={{ background: "var(--surface)", borderColor: "var(--line)" }}
-      aria-label="نوار قیمت لحظه‌ای بازار"
+      aria-label="نوار وضعیت بازار"
     >
       <div className="flex items-center">
         {/* برچسبِ ثابتِ «زنده» — سمتِ راست در RTL */}
@@ -87,7 +87,7 @@ export default function MarketTicker() {
           style={{ background: "var(--surface)", color: "var(--navy-deep)", borderInlineEnd: "1px solid var(--line)" }}
         >
           <span className="live-dot" aria-hidden />
-          بازار · زنده
+          وضعیت بازار
           {ageMin != null && (
             <span className="font-normal hidden sm:inline" style={{ color: "var(--text-3)" }}>
               · به‌روزرسانی {ageMin === 0 ? "هم‌اکنون" : `${toPersianDigits(ageMin)} دقیقه پیش`}

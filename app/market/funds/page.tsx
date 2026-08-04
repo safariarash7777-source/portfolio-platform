@@ -3,12 +3,16 @@ import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
 import { getIrMarket } from "@/lib/market-ir";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
-export const metadata = {
+export const metadata = pageMetadata({
   title: "دیده‌بان صندوق‌ها",
-  description: "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
-};
+  description:
+    "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
+  path: "/market/funds",
+});
 
 export default async function FundsPage() {
   const [ir, returns] = await Promise.all([getIrMarket(), getBulkReturns()]);

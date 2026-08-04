@@ -7,12 +7,16 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toPersianDigits } from "@/lib/format";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
-export const metadata = {
+export const metadata = pageMetadata({
   title: "فید اطلاعیه‌های کدال",
-  description: "آخرین اطلاعیه‌های منتشرشده در کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع، با لینک مستقیم به codal.ir.",
-};
+  description:
+    "آخرین اطلاعیه‌های منتشرشده در کدال — گزارش ماهانه، صورت مالی، شفاف‌سازی و مجمع، با لینک مستقیم به codal.ir.",
+  path: "/codal",
+});
 
 const CATEGORIES = ["همه", "ماهانه", "صورت مالی", "شفاف‌سازی", "مجمع", "سایر"] as const;
 

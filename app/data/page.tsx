@@ -4,14 +4,17 @@ import DataExplorer from "@/components/data/DataExplorer";
 import { getIrMarket } from "@/lib/market-ir";
 import { getAvgVolume30 } from "@/lib/core/avgVolume";
 import { getFundamentalYoY } from "@/lib/core/fundamentalData";
+import { pageMetadata } from "@/lib/metadata";
+
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "بانک دادهٔ بازار — سهام، صندوق‌ها، طلا و ارز",
+export const metadata = pageMetadata({
+  title: "بانک دادهٔ بازار",
   description:
-    "دسترسی آزاد به دادهٔ همهٔ نمادهای بورس و فرابورس، صندوق‌های سرمایه‌گذاری (طلا، اهرمی، درآمد ثابت، کالایی)، طلا و ارز — با جستجو، مرتب‌سازی و خروجی داده.",
-};
+    "داده‌های تاریخی سهام، صندوق‌ها، طلا و ارز — قابل دانلود برای تحلیل و پژوهش.",
+  path: "/data",
+});
 
 export default async function DataBankPage() {
   const [ir, avgVol, fundamentalYoY] = await Promise.all([
