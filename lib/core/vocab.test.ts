@@ -69,3 +69,46 @@ test("قرارداد واژگان: هیچ کاربرد مثبت «توصیه/س�
     `کاربرد مثبت واژهٔ ممنوع پیدا شد:\n${offenders.join("\n")}`
   );
 });
+
+// ── ادعای «زنده/لحظه‌ای» در تیترها ──────────────────────────────────────────
+//
+// چرا این گارد وجود دارد: `P2-MANUS-MEGA-002` همهٔ «لحظه‌ای»ها را از مسیرهای
+// عمومی برداشت، ولی **تیترها را جا انداخت**. نتیجه یک صفحهٔ متناقض بود:
+//
+//     <h2>بازار، همین حالا — زنده</h2>
+//     <span>آخرین وضعیت بازار</span>  ← همین PR این را درست کرده بود
+//     <span>به‌روزرسانی: ۷ دقیقه پیش</span>
+//
+// تیترِ درشت ادعای real-time می‌کرد و دو خط پایین‌تر خودش تکذیبش می‌کرد. همین
+// الگو در `/market/stocks` هم بود: `<h1>تابلوی زندهٔ بازار سهام</h1>` در حالی
+// که `metadata.title` همان PR «تابلوی بازار سهام» شده بود.
+//
+// دادهٔ این صفحات snapshot است، نه جریانِ زنده. تیتر بلندترین ادعای صفحه است و
+// کاربر معمولاً فقط همان را می‌خواند.
+//
+// دامنه عمداً محدود است به `components/landing` و `components/market` — یعنی
+// همان سطحِ عمومیِ بازار. `components/symbol` و داشبورد بیرون‌اند چون آنجا
+// دادهٔ واقعاً زنده از رله می‌آید و ادعا درست است.
+const REALTIME_CLAIMS = ["زنده", "زندهٔ", "لحظه‌ای", "لحظه ای"];
+const HEADING_DIRS = [join("components", "landing"), join("components", "market")];
+
+test("قرارداد واژگان: هیچ تیتری در سطح عمومیِ بازار ادعای «زنده/لحظه‌ای» نمی‌کند", () => {
+  const offenders: string[] = [];
+  for (const dir of HEADING_DIRS) {
+    for (const file of walk(join(ROOT, dir))) {
+      const src = readFileSync(file, "utf8");
+      // متنِ داخلِ <h1>…</h1> تا <h4>…</h4>، شاملِ حالتِ چندخطی.
+      for (const m of src.matchAll(/<h([1-4])\b[^>]*>([\s\S]*?)<\/h\1>/g)) {
+        const text = m[2];
+        if (!REALTIME_CLAIMS.some((w) => text.includes(w))) continue;
+        const line = src.slice(0, m.index).split("\n").length;
+        offenders.push(`${file.replace(ROOT + "/", "")}:${line}: ${text.trim().slice(0, 80)}`);
+      }
+    }
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    `تیتر با ادعای real-time روی دادهٔ snapshot:\n${offenders.join("\n")}`
+  );
+});

@@ -184,7 +184,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           </span>
           <div>
             <h1 className="font-display font-bold text-xl" style={{ color: "var(--navy-deep)" }}>
-              تابلوی زندهٔ بازار سهام
+              تابلوی بازار سهام
             </h1>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
               دیده‌بانی تابلو، نقشه و شاخص‌ها · {toPersianDigits(stocks.length)} نماد فعال

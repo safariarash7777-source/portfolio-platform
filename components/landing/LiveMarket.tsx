@@ -136,7 +136,7 @@ export default function LiveMarket() {
               lineHeight: 1.25,
             }}
           >
-            بازار، همین حالا — زنده
+            بازار در یک نگاه
           </h2>
           <div className="divider-gold" />
         </Reveal>
