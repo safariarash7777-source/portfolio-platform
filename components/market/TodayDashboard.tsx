@@ -75,7 +75,7 @@ function StatusCard({
               {value}
             </p>
           ) : (
-            <p className="text-[12px]" style={{ color: "var(--text-3)" }}>دادهٔ لحظه‌ای موجود نیست</p>
+            <p className="text-[12px]" style={{ color: "var(--text-3)" }}>دادهٔ به‌روز موجود نیست</p>
           )}
           {sub ? <p className="text-[10.5px] mt-0.5" style={{ color: "var(--text-3)" }}>{sub}</p> : null}
         </div>
@@ -212,7 +212,7 @@ export default async function TodayDashboard({ ir }: { ir: IrMarket | null }) {
   const goldSeries = goldUsd.find((s) => s.id === "IR_GOLD_18K");
   const totalIndex = indexSeries.find((s) => s.id === "total");
 
-  // مقادیر لحظه‌ای نوار وضعیت از اسنپ‌شات
+  // مقادیر جاری نوار وضعیت از اسنپ‌شات
   const usdNow = ir?.currency?.find((c) => c.id === "USD") ?? null;
   const goldNow = ir?.gold?.find((g) => g.id === "IR_GOLD_18K") ?? null;
   const idx = ir?.indices ?? null;
@@ -450,7 +450,7 @@ export default async function TodayDashboard({ ir }: { ir: IrMarket | null }) {
       </div>
 
       <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
-        همهٔ ارقام از اسنپ‌شات لحظه‌ای بازار و تاریخچهٔ ثبت‌شدهٔ سامانه محاسبه می‌شوند. این صفحه صرفاً
+        همهٔ ارقام از آخرین اسنپ‌شات بازار و تاریخچهٔ ثبت‌شدهٔ سامانه محاسبه می‌شوند. این صفحه صرفاً
         اطلاع‌رسانی است و هیچ‌کدام از بخش‌های آن توصیهٔ خرید یا فروش نیست.
       </p>
     </section>

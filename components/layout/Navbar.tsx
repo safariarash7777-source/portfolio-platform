@@ -32,7 +32,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/market",        label: "رصد بازار",    desc: "نبض امروز بازار" },
       { href: "/market/map",    label: "نقشهٔ بازار",  desc: "نمای کاشی‌ای صنایع" },
       { href: "/market/funds",  label: "صندوق‌ها",     desc: "NAV و حباب صندوق‌ها" },
-      { href: "/market/stocks",   label: "تابلوی سهام",    desc: "دیده‌بانی لحظه‌ای سهام" },
+      { href: "/market/stocks",   label: "تابلوی سهام",    desc: "تابلوی سهام · داده‌های روزانه" },
       { href: "/market/options",  label: "اختیار معامله",  desc: "قراردادهای اختیار خرید و فروش" },
       { href: "/codal",           label: "کدال",           desc: "فید اطلاعیه‌های رسمی" },
       { href: "/data",          label: "بانک داده",    desc: "همهٔ دارایی‌ها + خروجی CSV" },

@@ -120,10 +120,10 @@ export default function MarketClient({
       <div>
         <span className="eyebrow">رصد بازار</span>
         <h1 className="font-display text-2xl md:text-3xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
-          بازار لحظه‌ای
+          رصد بازار کریپتو
         </h1>
         <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
-          قیمت‌های زندهٔ بازار کریپتو (دلاری، منبع: CoinGecko).
+          آخرین قیمت‌های بازار کریپتو (دلاری، منبع: CoinGecko — به‌روزرسانی دوره‌ای).
           {isLoggedIn ? " نمادها را ستاره‌دار کنید و هشدار قیمتی بسازید." : ""}
         </p>
         {!isLoggedIn && (
