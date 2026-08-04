@@ -18,6 +18,9 @@ import {
   isScenarioLabelValid,
   summarizeRehearsal,
   REQUIRED_REHEARSAL_DAYS,
+  HORIZONS,
+  HORIZON_LABEL,
+  DIRECTION_LABEL,
   type AnalysisState,
   type RehearsalDay,
 } from "./workflow";
@@ -328,4 +331,29 @@ const _exhaustive: Record<AnalysisState, true> = {
 };
 test("the state union is exhaustively handled", () => {
   assert.equal(Object.keys(_exhaustive).length, ANALYSIS_STATES.length);
+});
+
+// ── فارسی‌بودنِ کاملِ UI ─────────────────────────────────────────────────────
+
+/**
+ * از یک اسکرین‌شاتِ واقعی آمد: ستونِ «افق» کلیدِ خامِ `short_term` را نشان
+ * می‌داد. در یک UI کاملاً فارسی، هر مقدارِ شمارشی باید برچسبِ فارسی داشته باشد.
+ */
+test("every horizon and direction has a Persian label", () => {
+  for (const h of HORIZONS) {
+    assert.ok(HORIZON_LABEL[h]?.length, `افق بدون برچسب: ${h}`);
+    assert.doesNotMatch(HORIZON_LABEL[h], /[a-z_]/i, `برچسبِ افق لاتین است: ${h}`);
+  }
+  for (const [k, v] of Object.entries(DIRECTION_LABEL)) {
+    assert.ok(v.length, `جهت بدون برچسب: ${k}`);
+    assert.doesNotMatch(v, /[a-z_]/i);
+  }
+});
+
+test("the horizon list matches the one phase20 declares", () => {
+  const phase20 = readFileSync(join(process.cwd(), "sql", "phase20_intelligence_model.sql"), "utf8");
+  const m = phase20.match(/horizon\s+text NOT NULL CHECK \(horizon IN \(([^)]+)\)\)/);
+  assert.ok(m, "قیدِ horizon در phase20 پیدا نشد");
+  const inSql = [...m[1].matchAll(/'([a-z_]+)'/g)].map((x) => x[1]).sort();
+  assert.deepEqual(inSql, [...HORIZONS].sort());
 });

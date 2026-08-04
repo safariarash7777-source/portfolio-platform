@@ -55,6 +55,7 @@
 | [`RUNBOOK-lead-staging.md`](./RUNBOOK-lead-staging.md) | فعال‌کردنِ مسیرِ لید روی staging |
 | [`RUNBOOK-branch-protection.md`](./RUNBOOK-branch-protection.md) | اجباری‌کردنِ CI روی `main` — **هنوز اجرا نشده** (`B-015` باز) |
 | [`RUNBOOK-gate2-staging-rehearsal.md`](./RUNBOOK-gate2-staging-rehearsal.md) | تمرینِ stagingِ مسیرِ لید — **متوقف پیش از اجرا**، منتظرِ `AUTHORIZE_GATE2_STAGING` |
+| [`PRODUCTION-ACTIVATION.md`](./PRODUCTION-ACTIVATION.md) | اجرای پنج migrationِ باقی‌مانده روی Production — **منتظرِ تصمیمِ صریحِ آرش**، تنها گلوگاهِ Gate 2 |
 
 ---
 
@@ -65,6 +66,7 @@
 
 | سند | موضوع |
 |---|---|
+| [`SPEC-agent-research-monitoring.md`](./SPEC-agent-research-monitoring.md) | مشخصاتِ Agent شمارهٔ ۱ و بستهٔ ارزیابی‌اش (`Gate 4`) + وضعیتِ آمادگیِ Gateهای ۵ تا ۷ — **`SPEC_READY`، هیچ Agentی ساخته نشده** |
 | [`TERMINAL-ANALYST-RULES.md`](./TERMINAL-ANALYST-RULES.md) | قواعدِ تحلیل‌گرِ ترمینال |
 | [`CODAL-ENGINE-V3.md`](./CODAL-ENGINE-V3.md) | طراحیِ موتورِ کدال |
 | [`codal-ingestion-notes.md`](./codal-ingestion-notes.md) | یادداشت‌های دریافتِ کدال |
