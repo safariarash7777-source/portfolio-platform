@@ -43,3 +43,13 @@ deploy.bundle
 # تغییرِ package.json استقرار را با ERR_PNPM_OUTDATED_LOCKFILE بشکند.
 pnpm-lock.yaml
 yarn.lock
+
+# بکاپ‌های دیتابیس — **هرگز** واردِ مخزن نمی‌شوند. دادهٔ واقعیِ کاربر دارند
+# (auth.users، profiles، payments) و این مخزن عمومی است.
+# `scripts/backup-production.sh` عمداً بیرون از ریپو می‌نویسد؛ این‌ها فقط
+# لایهٔ دومِ محافظت‌اند برای وقتی کسی دستی فایل را اینجا کپی می‌کند.
+roles.sql
+schema.sql
+data.sql
+*.dump
+supabase-backups/
