@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { resolveAppUrl } from "@/lib/site-url";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -36,7 +37,7 @@ const pelak = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(resolveAppUrl()),
   title: {
     default: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری",
     template: "%s · آرش صفری",
