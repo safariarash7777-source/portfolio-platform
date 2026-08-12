@@ -5,8 +5,8 @@
 //
 // اجرا:  node server.mjs        (Node 18+ ، بدون هیچ وابستگی)
 // env:   PORT (پیش‌فرض 3400)
-//        RELAY_TOKEN (اختیاری — اگر ست شود، هدر Authorization: Bearer <token>
-//                     برای /market.json الزامی می‌شود)
+//        RELAY_TOKEN (برای همهٔ endpointها به‌جز /healthz الزامی؛ هدر
+//                     Authorization: Bearer <token> لازم است)
 //        BRSAPI_KEY (الزامی — کلید وب‌سرویس BrsApi.ir)
 //        SUPABASE_URL (اختیاری — URL پروژه Supabase برای push)
 //        SUPABASE_SERVICE_ROLE_KEY (اختیاری — کلید service-role برای push)
@@ -23,6 +23,8 @@
 // جواب می‌دهد و درخواستِ سایت روی build کندِ منبع تایم‌اوت نمی‌شود.
 // ─────────────────────────────────────────────────────────────────────────────
 import http from "node:http";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS, fetchAnnouncementsPage } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
 import { runArchiveCycle, archiveStatus } from "./codal-archive.mjs";
@@ -1035,6 +1037,10 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === "/healthz") { res.writeHead(200); return res.end("ok"); }
 
+  if (!TOKEN || req.headers.authorization !== `Bearer ${TOKEN}`) {
+    res.writeHead(401); return res.end("unauthorized");
+  }
+
   if (url.pathname === "/") {
     res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
     return res.end("ir-market relay v2 (BrsApi): /healthz | /market.json | /debug");
@@ -1047,9 +1053,6 @@ const server = http.createServer(async (req, res) => {
 
   // دریافت خام اکسل کدال از داخل ایران — فقط برای توسعه، محافظت‌شده با RELAY_TOKEN.
   if (url.pathname === "/codal-raw") {
-    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
-      res.writeHead(401); return res.end("unauthorized");
-    }
     const u = url.searchParams.get("url") || "";
     try {
       const html = await codalRawExcel(u);
@@ -1063,9 +1066,6 @@ const server = http.createServer(async (req, res) => {
 
   // T5-1 — دیتای جامع نماد (کش ۳دقیقه‌ای، سقف روزانه درون ماژول) — محافظت‌شده با RELAY_TOKEN.
   if (url.pathname === "/symbol.json") {
-    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
-      res.writeHead(401); return res.end("unauthorized");
-    }
     const l18 = (url.searchParams.get("l18") || "").trim();
     if (!l18) { res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" }); return res.end('{"error":"l18 required"}'); }
     const r = await getSymbolDetail(l18, { base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS });
@@ -1079,9 +1079,6 @@ const server = http.createServer(async (req, res) => {
 
   // T5-2 — فهرست زندهٔ اطلاعیه‌های کدال یک نماد (کش ۱۰دقیقه‌ای) — محافظت‌شده با RELAY_TOKEN.
   if (url.pathname === "/codal-list") {
-    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
-      res.writeHead(401); return res.end("unauthorized");
-    }
     const sym = (url.searchParams.get("symbol") || "").trim();
     if (!sym) { res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" }); return res.end('{"error":"symbol required"}'); }
     const cacheKey = sym;
@@ -1105,9 +1102,6 @@ const server = http.createServer(async (req, res) => {
 
   // تست زندهٔ پارسر کدال (بدون درج در دیتابیس) — محافظت‌شده با RELAY_TOKEN.
   if (url.pathname === "/codal-test") {
-    if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
-      res.writeHead(401); return res.end("unauthorized");
-    }
     const sym = url.searchParams.get("symbol") || "فملی";
     try {
       const r = await codalTest(sym);
@@ -1120,10 +1114,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (url.pathname !== "/market.json") { res.writeHead(404); return res.end("not found"); }
-
-  if (TOKEN && req.headers.authorization !== `Bearer ${TOKEN}`) {
-    res.writeHead(401); return res.end("unauthorized");
-  }
 
   try {
     if (!cache) await refresh();
@@ -1141,7 +1131,9 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
+export { server };
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) server.listen(PORT, () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   // C1 — بارگذاری بلک‌لیست دائمی NAV قبل از اولین رفرش (تا با ریاستارت پاک نشود)
   loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY })
