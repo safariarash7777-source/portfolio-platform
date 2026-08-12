@@ -99,6 +99,9 @@ jobs:
       - name: Calc tests
         run: npm run test:calc
 
+      - name: Relay tests (no external services)
+        run: npm run test:relay
+
       # build آخر است: گران‌ترین گام، بعد از ارزان‌ترین بازخوردها.
       - name: Build
         run: npm run build

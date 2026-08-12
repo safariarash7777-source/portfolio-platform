@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 
 /**
  * گاردِ صداقتِ زمان‌بندی — `G2-007`.
@@ -51,7 +51,7 @@ function walk(dir: string, out: string[] = []): string[] {
 
 test("هر مسیرِ cron در vercel.json یک route handlerِ واقعی دارد", () => {
   for (const c of crons()) {
-    const route = join(ROOT, "app", c.path, "route.ts");
+    const route = join(ROOT, "app", ...c.path.split("/").filter(Boolean), "route.ts");
     assert.ok(existsSync(route), `مسیرِ cron «${c.path}» روتی ندارد: ${route}`);
   }
 });
@@ -60,7 +60,8 @@ test("هیچ روتِ cronی بدونِ زمان‌بندی رها نشده", ()
   const scheduled = new Set(crons().map((c) => c.path));
   const dir = join(ROOT, "app", "api", "cron");
   for (const f of walk(dir)) {
-    const rel = "/" + f.slice(ROOT.length + 1).replace(/^app\//, "").replace(/\/route\.ts$/, "");
+    const relPath = relative(ROOT, f).split(sep).join("/");
+    const rel = "/" + relPath.replace(/^app\//, "").replace(/\/route\.ts$/, "");
     assert.ok(
       scheduled.has(rel),
       `روتِ cron «${rel}» در vercel.json زمان‌بندی نشده — یا اضافه‌اش کن یا حذفش کن`
