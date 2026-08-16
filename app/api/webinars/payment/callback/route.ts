@@ -1,108 +1,71 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { verifyPayment } from "@/lib/zarinpal";
+import { finalizePaidAccess } from "@/lib/payments/finalize";
+import { createSupabaseFinalizePorts } from "@/lib/payments/adapter";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/webinars/payment/callback — بازگشت از درگاه زرین‌پال
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const authority = searchParams.get("Authority");
-  const status = searchParams.get("Status");
-  const registrationId = searchParams.get("registration_id");
-  const paymentId = searchParams.get("payment_id");
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    "https://portfolio-platform-fawn.vercel.app";
-
-  if (!authority || !registrationId || !paymentId) {
-    return NextResponse.redirect(`${baseUrl}/webinars?error=invalid_callback`);
+// GET /api/webinars/payment/callback — بازگشت از زرین‌پال برای ثبت‌نامِ وبینار.
+//
+// این مسیر **ماشینِ حالتِ خودش را ندارد**. دقیقاً همان `finalizePaidAccess` را
+// صدا می‌زند که callbackِ دوره/مشاوره صدا می‌زند؛ تنها تفاوت `product` است.
+//
+// پیش‌تر اینجا مستقیماً روی `payments` مقدار نوشته می‌شد (`status:'verified'`،
+// ستون‌های `amount_toman`/`description`) — وضعیت و ستون‌هایی که در اسکیما وجود
+// ندارند. علاوه بر نادرستی، همان ساختار یعنی هر گاردِ جدید باید دو بار نوشته
+// می‌شد.
+function webinarsUrl(base: string, params: Record<string, string>): string {
+  const url = new URL("/webinars", base);
+  for (const [k, v] of Object.entries(params)) {
+    if (v) url.searchParams.set(k, v);
   }
+  return url.toString();
+}
+
+export async function GET(req: NextRequest) {
+  const authority = req.nextUrl.searchParams.get("Authority") ?? "";
+  const gatewayStatus = req.nextUrl.searchParams.get("Status") ?? "";
+
+  const base = (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    req.nextUrl.origin
+  ).replace(/\/$/, "");
 
   const admin = createAdminClient();
+  const ports = createSupabaseFinalizePorts(admin);
 
-  // دریافت اطلاعات ثبت‌نام و وبینار
-  const { data: reg } = await admin
-    .from("webinar_registrations")
-    .select("id, webinar_id, user_id, webinars(price_toman, title)")
-    .eq("id", registrationId)
-    .maybeSingle();
-
-  if (!reg) {
-    return NextResponse.redirect(`${baseUrl}/webinars?error=not_found`);
-  }
-
-  const webinar = (reg as any).webinars;
-  const amount = webinar?.price_toman ?? 0;
-
-  if (status !== "OK") {
-    // پرداخت ناموفق
-    await admin
-      .from("payments")
-      .update({ status: "failed" })
-      .eq("id", paymentId);
-
-    await admin
-      .from("audit_log")
-      .insert({
-        actor_id: reg.user_id,
-        action: "webinar.payment_failed",
-        entity: "webinar_registration",
-        target_user_id: reg.user_id,
-        after: { webinar_id: reg.webinar_id, registration_id: registrationId },
-      });
-
-    return NextResponse.redirect(
-      `${baseUrl}/webinars?status=failed&webinar_id=${reg.webinar_id}`
-    );
-  }
-
-  // تأیید پرداخت با زرین‌پال
-  const verification = await verifyPayment(authority, amount);
-
-  if (!verification.ok) {
-    await admin
-      .from("payments")
-      .update({ status: "failed" })
-      .eq("id", paymentId);
-
-    return NextResponse.redirect(
-      `${baseUrl}/webinars?status=failed&webinar_id=${reg.webinar_id}`
-    );
-  }
-
-  // پرداخت موفق → آپدیت payment + registration
-  await admin
-    .from("payments")
-    .update({
-      status: "verified",
-      ref_id: String(verification.refId),
-      verified_at: new Date().toISOString(),
-    })
-    .eq("id", paymentId);
-
-  await admin
-    .from("webinar_registrations")
-    .update({ payment_status: "paid" })
-    .eq("id", registrationId);
-
-  // audit log
-  await admin.from("audit_log").insert({
-    actor_id: reg.user_id,
-    action: "webinar.payment_success",
-    entity: "webinar_registration",
-    target_user_id: reg.user_id,
-    after: {
-      webinar_id: reg.webinar_id,
-      registration_id: registrationId,
-      ref_id: verification.refId,
-      amount_toman: amount,
-    },
+  const outcome = await finalizePaidAccess({
+    authority,
+    gatewayStatus,
+    product: "webinar",
+    ports,
   });
 
+  if (outcome.status === "failed") {
+    return NextResponse.redirect(
+      webinarsUrl(base, {
+        status: "failed",
+        webinar_id: outcome.webinarId ?? "",
+      })
+    );
+  }
+
+  if (outcome.status === "access_pending") {
+    return NextResponse.redirect(
+      webinarsUrl(base, {
+        status: "success",
+        webinar_id: outcome.webinarId ?? "",
+        access: "pending",
+      })
+    );
+  }
+
   return NextResponse.redirect(
-    `${baseUrl}/webinars?status=success&webinar_id=${reg.webinar_id}`
+    webinarsUrl(base, {
+      status: "success",
+      webinar_id: outcome.webinarId ?? "",
+    })
   );
 }

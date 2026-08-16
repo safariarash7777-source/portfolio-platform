@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,10 +23,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = createAdminClient();
-
-  // استفاده از RPC امن
-  const { data, error } = await admin.rpc("register_for_webinar", {
+  // با کلاینتِ **کاربر** صدا زده می‌شود، نه service-role. تابع SECURITY DEFINER
+  // است و ثبت‌نام را به `auth.uid()` می‌بندد؛ با کلاینتِ service-role این مقدار
+  // NULL می‌شد و تابع «دسترسی غیرمجاز» می‌داد — یعنی هر ثبت‌نام شکست می‌خورد.
+  const { data, error } = await supabase.rpc("register_for_webinar", {
     p_webinar_id: webinar_id,
   });
 
@@ -37,6 +36,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  // اگر وبینار پولی باشد، needs_payment = true → فرانت باید به صفحه پرداخت هدایت کند
-  return NextResponse.json({ registration: data });
+  // RPC مقدارِ `registration_id` برمی‌گرداند؛ مصرف‌کننده (مسیرِ پرداخت) با
+  // `registration.id` کار می‌کند، پس همین‌جا نرمال می‌شود.
+  const raw = (data ?? {}) as { registration_id?: string; already_registered?: boolean };
+  return NextResponse.json({
+    registration: {
+      id: raw.registration_id ?? null,
+      already_registered: raw.already_registered ?? false,
+    },
+  });
 }
