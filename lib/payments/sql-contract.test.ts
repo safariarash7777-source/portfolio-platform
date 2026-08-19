@@ -31,17 +31,50 @@ const EXEC24 = executable(PHASE24);
 const EXEC5 = executable(PHASE5);
 
 describe("idempotency در سطحِ دیتابیس", () => {
-  test("قیدِ یکتا روی (user_id, source) وجود دارد", () => {
-    // بدونِ این، «اول SELECT بعد INSERT» یک TOCTOU است: دو callbackِ هم‌زمان
-    // هر دو خالی می‌بینند و هر دو درج می‌کنند.
+  test("قیدِ یکتا روی payment_id — یک پرداخت ⇒ حداکثر یک دسترسی", () => {
+    // این قیدِ **اصلی** است. قالبِ رشتهٔ source دیگر کلیدِ یکتایی نیست، چون
+    // وقتی هر محصول پیشوندِ خودش را داشت، یک authority می‌توانست دو دسترسی
+    // بسازد و قیدِ (user_id, source) جلویش را نمی‌گرفت.
     assert.match(
       EXEC24,
-      /CREATE\s+UNIQUE\s+INDEX\s+IF\s+NOT\s+EXISTS\s+uq_entitlements_user_source[\s\S]*?ON\s+public\.entitlements\s*\(\s*user_id\s*,\s*source\s*\)/i
+      /CREATE\s+UNIQUE\s+INDEX\s+IF\s+NOT\s+EXISTS\s+uq_entitlements_payment[\s\S]*?ON\s+public\.entitlements\s*\(\s*payment_id\s*\)/i
     );
   });
 
-  test("درجِ دسترسی از ON CONFLICT DO NOTHING استفاده می‌کند", () => {
-    assert.match(EXEC24, /ON\s+CONFLICT\s*\([^)]*user_id[^)]*source[^)]*\)[\s\S]{0,80}DO\s+NOTHING/i);
+  test("قیدِ یکتا روی webinar_registrations.payment_id", () => {
+    assert.match(
+      EXEC24,
+      /CREATE\s+UNIQUE\s+INDEX\s+IF\s+NOT\s+EXISTS\s+uq_webinar_registrations_payment[\s\S]*?ON\s+public\.webinar_registrations\s*\(\s*payment_id\s*\)/i
+    );
+  });
+
+  test("درجِ دسترسی از ON CONFLICT DO NOTHING روی payment_id استفاده می‌کند", () => {
+    assert.match(EXEC24, /ON\s+CONFLICT\s*\(\s*payment_id\s*\)[\s\S]{0,60}DO\s+NOTHING/i);
+  });
+
+  test("نوعِ محصول روی ردیفِ پرداخت ثبت و تغییرناپذیر می‌شود", () => {
+    assert.match(EXEC24, /ALTER\s+TABLE\s+public\.payments[\s\S]{0,80}ADD\s+COLUMN\s+IF\s+NOT\s+EXISTS\s+purpose/i);
+    assert.match(EXEC24, /NEW\.purpose\s+IS\s+DISTINCT\s+FROM\s+OLD\.purpose/i);
+  });
+
+  test("finalizer نوعِ callback را با purposeِ ذخیره‌شده می‌سنجد", () => {
+    assert.match(EXEC24, /v_purpose\s*<>\s*p_kind[\s\S]{0,200}RAISE\s+EXCEPTION/i);
+    assert.match(EXEC24, /v_purpose\s+IS\s+NULL[\s\S]{0,160}RAISE\s+EXCEPTION/i);
+  });
+
+  test("پرداختِ وبینار بدونِ ثبت‌نامِ متصل رد می‌شود", () => {
+    assert.match(EXEC24, /v_reg_id\s+IS\s+NULL[\s\S]{0,180}RAISE\s+EXCEPTION/i);
+  });
+
+  test("ساخت و اتصالِ پرداختِ وبینار در یک تابع اتمیک است", () => {
+    assert.match(EXEC24, /CREATE\s+OR\s+REPLACE\s+FUNCTION\s+public\.create_webinar_payment/i);
+    assert.match(EXEC24, /UPDATE\s+public\.webinar_registrations[\s\S]{0,120}SET\s+payment_id\s*=\s*v_payment/i);
+  });
+
+  test("مدتِ دسترسی از جدولِ پیکربندی خوانده می‌شود، نه از ورودی", () => {
+    assert.match(EXEC24, /CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+public\.entitlement_durations/i);
+    assert.match(EXEC24, /FROM\s+public\.entitlement_durations\s+WHERE\s+purpose\s*=\s*v_purpose/i);
+    assert.doesNotMatch(EXEC24, /p_expires_at/i, "انقضا نباید پارامترِ ورودی باشد");
   });
 });
 
@@ -95,13 +128,11 @@ describe("بایندِ اقتدار و مالکیت", () => {
 
 describe("شکستِ اعطای دسترسی کلِ تراکنش را برمی‌گرداند", () => {
   test("اگر ردیفِ دسترسی ساخته نشد، تابع می‌شکند", () => {
-    // این مهم‌ترین خطِ فایل است: «پول گرفته شد ولی دسترسی داده نشد» نباید
-    // بتواند کامیت شود.
     assert.match(EXEC24, /IF\s+v_ent_id\s+IS\s+NULL\s+THEN[\s\S]{0,160}RAISE\s+EXCEPTION/i);
   });
 
-  test("انقضای گذشته پذیرفته نمی‌شود", () => {
-    assert.match(EXEC24, /p_expires_at\s*<=\s*now\(\)[\s\S]{0,140}RAISE\s+EXCEPTION/i);
+  test("مدتِ تعریف‌نشده باعثِ شکست می‌شود، نه دسترسیِ بی‌انقضا", () => {
+    assert.match(EXEC24, /v_months\s+IS\s+NULL[\s\S]{0,140}RAISE\s+EXCEPTION/i);
   });
 });
 

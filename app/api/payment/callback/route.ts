@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   const outcome = await finalizePaidAccess({
     authority,
     gatewayStatus,
-    product: "consulting",
+    product: "consulting" as const,
     ports,
   });
 
@@ -42,9 +42,16 @@ export async function GET(req: NextRequest) {
 
   // پول گرفته شده ولی سمتِ ما نهایی نشده. مشتری نباید صفحهٔ «خریدِ موفق» ببیند،
   // بعد وارد شود و بفهمد دسترسی ندارد.
+  // پول گرفته شده ولی دسترسی ساخته نشده. `status` عمداً `pending` است، نه
+  // `success`: صفحهٔ نتیجه نباید خریدِ کامل نشان دهد.
   if (outcome.status === "access_pending") {
     return NextResponse.redirect(
-      resultUrl(req, { status: "success", ref: outcome.refId, access: "pending" })
+      resultUrl(req, {
+        status: "pending",
+        ref: outcome.refId,
+        access: "pending",
+        recorded: outcome.failureRecorded ? "1" : "0",
+      })
     );
   }
 

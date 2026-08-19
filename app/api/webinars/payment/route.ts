@@ -11,10 +11,17 @@ const WEBINAR_CALLBACK_PATH = "/api/webinars/payment/callback";
 
 // POST /api/webinars/payment — شروع پرداخت برای ثبت‌نام وبینار.
 //
-// ترتیب عمداً این است: اول تراکنشِ زرین‌پال ساخته می‌شود تا `authority` به‌دست
-// آید، بعد ردیفِ pending با همان authority درج می‌شود. جدولِ `payments` ستون
-// `authority` را UNIQUE و تغییرناپذیر می‌داند و callback تنها از همین راه
-// پرداخت را پیدا می‌کند؛ اگر authority ذخیره نشود، پرداخت هرگز نهایی نمی‌شود.
+// ── ترتیب و دلیلش ───────────────────────────────────────────────────────────
+//
+// اول تراکنشِ زرین‌پال ساخته می‌شود تا `authority` به‌دست آید، بعد رکوردِ pending
+// با همان authority ثبت **و در همان تراکنش به ثبت‌نام وصل** می‌شود.
+//
+// نسخهٔ قبل، پرداخت را می‌ساخت و بعد در یک دستورِ جدا `payment_id` را روی
+// ثبت‌نام می‌نوشت و **نتیجه‌اش را نمی‌خواند**. اگر آن نوشتن شکست می‌خورد، کاربر
+// باز هم به درگاه می‌رفت و پولش را می‌داد، ولی پرداخت به هیچ ثبت‌نامی وصل نبود و
+// callback نمی‌توانست نهایی‌اش کند. حالا هر دو داخلِ `create_webinar_payment`
+// اتفاق می‌افتند — یک تراکنش، یا هر دو یا هیچ‌کدام — و **تا وقتی این تابع موفق
+// نشود، هیچ URLی به کاربر برنمی‌گردد.**
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const {
@@ -25,7 +32,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
   }
 
-  const { registration_id } = await req.json();
+  const { registration_id } = await req.json().catch(() => ({}));
   if (!registration_id) {
     return NextResponse.json(
       { error: "registration_id الزامی است." },
@@ -46,7 +53,6 @@ export async function POST(req: NextRequest) {
   if (regErr || !reg) {
     return NextResponse.json({ error: "ثبت‌نام یافت نشد." }, { status: 404 });
   }
-
   if (reg.payment_status === "paid") {
     return NextResponse.json(
       { error: "این ثبت‌نام قبلاً پرداخت شده." },
@@ -65,12 +71,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const description = `ثبت‌نام وبینار: ${webinar.title}`;
-
   // ۱) تراکنش زرین‌پال با callbackِ وبینار (نه callbackِ دوره).
   const result = await requestPayment(
     webinar.price_toman,
-    description,
+    `ثبت‌نام وبینار: ${webinar.title}`,
     WEBINAR_CALLBACK_PATH
   );
 
@@ -81,27 +85,41 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ۲) ردیفِ pending از راه RPC ساخته می‌شود — با کلاینتِ **کاربر**، چون
-  // `create_payment` به `auth.uid()` تکیه دارد و ممیزی را هم خودش می‌نویسد.
-  const { data: paymentId, error: payErr } = await supabase.rpc("create_payment", {
-    p_amount: webinar.price_toman,
-    p_authority: result.authority,
-  });
+  // ۲) ساختِ پرداخت **و** اتصالش به ثبت‌نام، اتمیک، با کلاینتِ کاربر چون تابع
+  //    به `auth.uid()` تکیه دارد و مالکیت را خودش بررسی می‌کند.
+  const { data: paymentId, error: payErr } = await supabase.rpc(
+    "create_webinar_payment",
+    {
+      p_registration_id: reg.id,
+      p_amount: webinar.price_toman,
+      p_authority: result.authority,
+    }
+  );
 
   if (payErr || !paymentId) {
-    console.error("create_payment (webinar) failed:", payErr?.message);
+    // ثبتِ ماندگار: یک authorityِ زرین‌پال ساخته شده که هرگز استفاده نخواهد شد.
+    // بدونِ این رد، تنها نشانه یک خطای گذرا در لاگ بود.
+    console.error("create_webinar_payment failed:", payErr?.message);
+    await admin.from("audit_log").insert({
+      actor_id: user.id,
+      action: "payment.link_failed",
+      entity: "payment",
+      target_user_id: user.id,
+      after: {
+        registration_id: reg.id,
+        webinar_id: reg.webinar_id,
+        authority: result.authority,
+        reason: payErr?.message?.slice(0, 500) ?? "unknown",
+      },
+    });
+
+    // ⚠️ هیچ URLی برنمی‌گردد. اگر برمی‌گشت، کاربر پول می‌داد و پرداختش به
+    // هیچ ثبت‌نامی وصل نبود.
     return NextResponse.json(
-      { error: "خطا در ساخت رکورد پرداخت." },
+      { error: "خطا در ثبت پرداخت. لطفاً دوباره تلاش کنید." },
       { status: 500 }
     );
   }
-
-  // ۳) اتصالِ پرداخت به ثبت‌نام تا callback بتواند ثبت‌نام را پیدا کند.
-  await admin
-    .from("webinar_registrations")
-    .update({ payment_id: paymentId })
-    .eq("id", registration_id)
-    .eq("user_id", user.id);
 
   return NextResponse.json({ payment_url: result.startPayUrl });
 }

@@ -34,9 +34,13 @@ export async function POST() {
   }
 
   // ثبت ردیفِ pending (append-only، از طریق تابع SECURITY DEFINER).
+  // `p_purpose` الزامی است: نوعِ محصول در همان لحظه به ردیفِ پرداخت بسته
+  // می‌شود و دیگر قابلِ تغییر نیست، پس callbackِ وبینار نمی‌تواند این پرداخت
+  // را نهایی کند.
   const { error: dbErr } = await supabase.rpc("create_payment", {
     p_amount: amount,
     p_authority: zp.authority,
+    p_purpose: "consulting",
   });
   if (dbErr) {
     console.error("create_payment error:", dbErr.message);

@@ -1,51 +1,42 @@
-// مدت و شناسهٔ دسترسیِ پولی — توابعِ **خالص**، بدونِ I/O.
+// شناسه و نوعِ محصولِ دسترسیِ پولی — توابعِ **خالص**، بدونِ I/O.
 //
-// نوشتنِ واقعیِ ردیفِ `entitlements` اینجا انجام نمی‌شود؛ کارِ
-// `public.finalize_paid_access` است (`sql/phase24_payment_entitlement.sql`) تا
-// نهایی‌سازیِ پرداخت و اعطای دسترسی در **یک تراکنش** بمانند. این فایل فقط
-// مقادیری را می‌سازد که آن تابع مصرف می‌کند.
+// ⚠️ مدتِ دسترسی عمداً **اینجا نیست**. پیش از بازنگریِ Command Center، عددِ
+// «۳ ماه برای همه» در همین فایل هاردکد بود و به SQL پاس داده می‌شد. آن یک
+// پیش‌فرضِ فنی بود که خودش را جای تصمیمِ محصول جا زده بود.
 //
-// چرا مدت اینجاست و در SQL نیست: اگر در هر دو جا تعریف می‌شد، روزی یکی عوض
-// می‌شد و دیگری نه. یک عدد، یک جا.
+// حالا مدت در جدولِ `public.entitlement_durations` است: سمتِ سرور، به ازای هر
+// محصول، و قابلِ تغییر توسطِ ادمین بدونِ استقرارِ کد. هیچ کلاینتی — و هیچ
+// callbackی — نمی‌تواند آن را تعیین کند.
 
-/**
- * مدتِ دسترسیِ `full` به ازای هر محصول، برحسب ماه.
- *
- * هم‌خوان با کامنتِ طراحیِ `sql/phase11_access_tiers.sql`:
- * مشاوره ۳ ماه · وبینار تا وبینارِ فصلیِ بعدی ≈ ۳ ماه.
- */
-export const ENTITLEMENT_MONTHS = {
-  consulting: 3,
-  webinar: 3,
-  manual: 3,
-} as const;
+/** محصولاتی که دسترسیِ پولی تولید می‌کنند. هم‌راستا با CHECK جدولِ payments. */
+export const PAID_PRODUCTS = ["consulting", "webinar"] as const;
 
-export type EntitlementKind = keyof typeof ENTITLEMENT_MONTHS;
+export type PaidProduct = (typeof PAID_PRODUCTS)[number];
 
-/** آیا این رشته یک نوعِ دسترسیِ معتبر است؟ (هم‌راستا با CHECK جدول) */
+/** انواعِ دسترسی در جدولِ entitlements — شاملِ اعطای دستیِ ادمین. */
+export type EntitlementKind = PaidProduct | "manual";
+
+export function isPaidProduct(value: unknown): value is PaidProduct {
+  return typeof value === "string" && (PAID_PRODUCTS as readonly string[]).includes(value);
+}
+
 export function isEntitlementKind(value: unknown): value is EntitlementKind {
-  return typeof value === "string" && value in ENTITLEMENT_MONTHS;
+  return isPaidProduct(value) || value === "manual";
 }
 
 /**
- * قالبِ **قطعیِ** `entitlements.source`.
+ * قالبِ `entitlements.source` — فقط برای **خوانایی و ممیزی**.
  *
- * این تنها جایی است که قالب ساخته و خوانده می‌شود. اگر هر فراخواننده رشته را
- * دستی بسازد، مصرف‌کننده‌ای که فرض می‌کند `source` برابرِ `payments.id` است هر
- * پرداختِ موفق را «بدونِ دسترسی» می‌بیند — یک هشدارِ کاذبِ دائمی.
+ * ⚠️ این رشته دیگر کلیدِ idempotency نیست. یکتاییِ واقعی روی
+ * `entitlements.payment_id` بسته شده (`uq_entitlements_payment`). دلیلش یک
+ * نقصِ واقعی بود: وقتی هر محصول پیشوندِ خودش را داشت، یک authorityِ
+ * پرداخت‌شده می‌توانست هم `consulting:` و هم `webinar:` بسازد و قیدِ
+ * `(user_id, source)` جلویش را نمی‌گرفت، چون دو رشتهٔ متفاوت بودند.
  *
- * ⚠️ این قالب کلیدِ idempotency است: ایندکسِ یکتای
- * `uq_entitlements_user_source` روی `(user_id, source)` بسته شده. تغییرِ قالب
- * یعنی replayهای قدیمی دیگر تشخیص داده نمی‌شوند.
+ * خودِ رشته را هم SQL می‌سازد؛ این تابع برای تست و نمایش است.
  */
-export const SOURCE_PREFIX: Record<EntitlementKind, string> = {
-  consulting: "payment",
-  webinar: "webinar_payment",
-  manual: "manual",
-};
-
-export function entitlementSource(kind: EntitlementKind, authority: string): string {
-  return `${SOURCE_PREFIX[kind]}:${authority}`;
+export function entitlementSource(product: PaidProduct, authority: string): string {
+  return `${product}:${authority}`;
 }
 
 /** authorityِ درونِ یک `source`، یا `null` اگر قالب نخورد. */
@@ -55,26 +46,11 @@ export function authorityFromSource(source: string | null | undefined): string |
   return i === -1 ? null : source.slice(i + 1) || null;
 }
 
-/**
- * افزودنِ ماه با کلمپِ روزِ ماه.
- *
- * `Date.prototype.setMonth` روزِ سرریز را به ماهِ بعد می‌برد (۳۱ ژانویه + ۱ ماه
- * → ۳ مارس). برای دسترسیِ پولی این سرریز یعنی چند روز دسترسیِ اضافه یا کم؛
- * پس روز را به آخرین روزِ ماهِ مقصد کلمپ می‌کنیم.
- */
-export function addMonthsClamped(from: Date, months: number): Date {
-  const result = new Date(from.getTime());
-  const day = result.getUTCDate();
-  result.setUTCDate(1);
-  result.setUTCMonth(result.getUTCMonth() + months);
-  const lastDay = new Date(
-    Date.UTC(result.getUTCFullYear(), result.getUTCMonth() + 1, 0)
-  ).getUTCDate();
-  result.setUTCDate(Math.min(day, lastDay));
-  return result;
-}
-
-/** تاریخِ انقضای دسترسی برای یک محصول، از لحظهٔ `from`. */
-export function entitlementExpiry(kind: EntitlementKind, from: Date = new Date()): Date {
-  return addMonthsClamped(from, ENTITLEMENT_MONTHS[kind]);
+/** محصولِ درونِ یک `source`، یا `null`. */
+export function productFromSource(source: string | null | undefined): PaidProduct | null {
+  if (!source) return null;
+  const i = source.indexOf(":");
+  if (i === -1) return null;
+  const head = source.slice(0, i);
+  return isPaidProduct(head) ? head : null;
 }

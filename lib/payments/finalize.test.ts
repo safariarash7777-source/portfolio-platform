@@ -8,21 +8,18 @@ import {
   type PaymentRow,
   type RegistrationRow,
 } from "./finalize";
-import { entitlementSource } from "@/lib/entitlements";
+import { entitlementSource, productFromSource, isPaidProduct } from "@/lib/entitlements";
 
 /**
  * مسیرِ واحدِ نهایی‌سازیِ پرداخت — هر شاخهٔ شکست.
  *
- * ── چرا این تست‌ها با پورتِ جعلی نوشته شده‌اند ──────────────────────────────
- * مسیرِ واقعی به زرین‌پال و Postgres وصل است. آزمودنِ «پاسخِ جعلیِ درگاه» ارزشی
- * ندارد و توهمِ پوشش می‌سازد؛ چیزی که واقعاً باید اثبات شود این است که **منطقِ
- * تصمیمِ ما** در هر شکستِ ممکن حالتِ درست را برمی‌گرداند. پس پورت‌ها جعل
- * می‌شوند و خودِ تصمیم سنجیده می‌شود.
+ * ── چرا با پورتِ جعلی ────────────────────────────────────────────────────────
+ * مسیرِ واقعی به زرین‌پال و Postgres وصل است. آنچه باید اثبات شود این است که
+ * **منطقِ تصمیمِ ما** در هر شکستِ ممکن حالتِ درست را برمی‌گرداند.
  *
- * چیزی که این‌ها اثبات **نمی‌کنند**: اتمیک‌بودنِ تراکنش و قیدِ یکتای دیتابیس.
- * آن‌ها در SQL هستند و فقط با اجرای واقعیِ migration اثبات می‌شوند —
- * `lib/payments/sql-contract.test.ts` وجودشان را در فایل می‌سنجد و بخشِ
- * «آزمونِ دود» در `docs/RUNBOOK-payment-activation.md` رفتارشان را.
+ * ── بازنگریِ Command Center ──────────────────────────────────────────────────
+ * نسخهٔ اولِ همین فایل صریحاً انتظار داشت پرداختِ وبینار **بدونِ ثبت‌نام** موفق
+ * شود. آن تست، باگ را تثبیت می‌کرد نه اینکه بگیردش. حالا همان حالت باید رد شود.
  */
 
 const AUTHORITY = "A00000000000000000000000000000000001";
@@ -39,10 +36,10 @@ interface FakeOptions {
   registrationError?: unknown;
   gatewayOk?: boolean;
   gatewayRefId?: string | null;
-  /** خطای شبیه‌سازی‌شدهٔ RPC — نمایندهٔ شکستِ اعطای دسترسی یا هر گاردِ دیگر. */
   rpcError?: unknown;
-  /** رفتارِ سفارشیِ RPC، برای سناریوی هم‌زمانی. */
   rpc?: (input: FinalizeRpcInput) => Promise<{ result: FinalizeRpcResult | null; error: unknown }>;
+  failPaymentError?: unknown;
+  recordFailurePersisted?: boolean;
   inviteLink?: string | null;
 }
 
@@ -55,30 +52,28 @@ interface FakeState {
   inviteLinkCalls: number;
 }
 
+function payment(over: Partial<PaymentRow> = {}): PaymentRow {
+  return {
+    id: PAYMENT_ID,
+    user_id: USER,
+    amount: 5_000_000,
+    status: "pending",
+    ref_id: null,
+    purpose: "consulting",
+    ...over,
+  };
+}
+
 function makePorts(opts: FakeOptions = {}): FakeState {
   const state: FakeState = {
-    rpcCalls: [],
-    gatewayCalls: [],
-    failPaymentCalls: [],
-    failures: [],
-    inviteLinkCalls: 0,
-    ports: null as unknown as FinalizePorts,
+    rpcCalls: [], gatewayCalls: [], failPaymentCalls: [], failures: [],
+    inviteLinkCalls: 0, ports: null as unknown as FinalizePorts,
   };
-
-  const payment =
-    opts.payment === undefined
-      ? ({
-          id: PAYMENT_ID,
-          user_id: USER,
-          amount: 5_000_000,
-          status: "pending",
-          ref_id: null,
-        } as PaymentRow)
-      : opts.payment;
+  const row = opts.payment === undefined ? payment() : opts.payment;
 
   state.ports = {
     async loadPaymentByAuthority() {
-      return { payment: opts.paymentError ? null : payment, error: opts.paymentError ?? null };
+      return { payment: opts.paymentError ? null : row, error: opts.paymentError ?? null };
     },
     async loadRegistrationByPaymentId() {
       return {
@@ -95,7 +90,7 @@ function makePorts(opts: FakeOptions = {}): FakeState {
     },
     async failPayment(authority) {
       state.failPaymentCalls.push(authority);
-      return { error: null };
+      return { error: opts.failPaymentError ?? null };
     },
     async finalizePaidAccess(input) {
       state.rpcCalls.push(input);
@@ -103,22 +98,21 @@ function makePorts(opts: FakeOptions = {}): FakeState {
       if (opts.rpcError) return { result: null, error: opts.rpcError };
       return {
         result: {
-          user_id: payment?.user_id ?? USER,
+          user_id: row?.user_id ?? USER,
           payment_id: PAYMENT_ID,
           entitlement_id: "ent-1",
-          expires_at: input.expiresAt,
-          already_finalized: payment?.status === "paid",
+          expires_at: "2026-11-16T00:00:00.000Z",
+          already_finalized: row?.status === "paid",
           registration_id: input.registrationId,
+          purpose: input.kind,
         },
         error: null,
       };
     },
     async recordFailure(entry) {
-      state.failures.push({
-        stage: entry.stage,
-        message: entry.message,
-        userId: entry.userId,
-      });
+      state.failures.push({ stage: entry.stage, message: entry.message, userId: entry.userId });
+      const persisted = opts.recordFailurePersisted !== false;
+      return { persisted, error: persisted ? null : { message: "audit_log unreachable" } };
     },
     createInviteLink: async () => {
       state.inviteLinkCalls += 1;
@@ -126,524 +120,306 @@ function makePorts(opts: FakeOptions = {}): FakeState {
     },
     now: () => new Date("2026-08-16T00:00:00.000Z"),
   };
-
   return state;
 }
 
 const REG: RegistrationRow = { id: REG_ID, webinar_id: WEBINAR_ID, user_id: USER };
 
+const run = (ports: FinalizePorts, product: "consulting" | "webinar", gatewayStatus = "OK", authority = AUTHORITY) =>
+  finalizePaidAccess({ authority, gatewayStatus, product, ports });
+
 // ══════════════════════════════════════════════════════════════════════════
-// ۱. authority نامعتبر
+// بند ۱ و ۳ — نوعِ محصول به پرداخت بسته است؛ callbackِ اشتباه رد می‌شود
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("authority نامعتبر", () => {
-  test("authorityِ تهی → شکست، بدونِ هیچ تماسِ بیرونی", async () => {
-    const s = makePorts();
-    const out = await finalizePaidAccess({
-      authority: "",
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
+describe("بایندِ نوعِ محصول به ردیفِ پرداخت", () => {
+  test("callbackِ وبینار نمی‌تواند پرداختِ مشاوره را نهایی کند", async () => {
+    const s = makePorts({ payment: payment({ purpose: "consulting" }) });
+    const out = await run(s.ports, "webinar");
     assert.equal(out.status, "failed");
-    assert.equal(out.status === "failed" && out.reason, "missing_authority");
-    assert.equal(s.gatewayCalls.length, 0, "درگاه نباید صدا زده شود");
-    assert.equal(s.rpcCalls.length, 0, "RPC نباید صدا زده شود");
+    assert.equal(out.status === "failed" && out.reason, "product_mismatch");
+    assert.equal(s.rpcCalls.length, 0, "نباید حتی به RPC برسد");
+    assert.equal(s.gatewayCalls.length, 0);
   });
 
-  test("authorityِ ناشناخته → پرداختی پیدا نمی‌شود، هیچ چیزی نهایی نمی‌شود", async () => {
-    const s = makePorts({ payment: null });
-    const out = await finalizePaidAccess({
-      authority: "AUTHORITY-JAALI",
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
+  test("callbackِ مشاوره نمی‌تواند پرداختِ وبینار را نهایی کند", async () => {
+    const s = makePorts({ payment: payment({ purpose: "webinar" }) });
+    const out = await run(s.ports, "consulting");
     assert.equal(out.status, "failed");
-    assert.equal(out.status === "failed" && out.reason, "payment_not_found");
+    assert.equal(out.status === "failed" && out.reason, "product_mismatch");
     assert.equal(s.rpcCalls.length, 0);
-    assert.equal(s.failPaymentCalls.length, 0, "پرداختِ ناموجود نباید failed شود");
   });
 
-  test("خطای خواندنِ پرداخت به‌جای موفقیتِ کاذب، شکست می‌دهد و ثبت می‌شود", async () => {
-    // اگر خطای دیتابیس مثلِ «پرداخت پیدا نشد» رفتار می‌کرد، یک قطعیِ گذرای
-    // Supabase تبدیل می‌شد به «پرداخت شما ناموفق بود» بدونِ هیچ ردی.
-    const s = makePorts({ paymentError: { message: "connection reset" } });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
+  test("پرداختِ بدونِ purpose (رکوردِ قدیمی) نهایی نمی‌شود", async () => {
+    const s = makePorts({ payment: payment({ purpose: null }) });
+    const out = await run(s.ports, "consulting");
     assert.equal(out.status, "failed");
-    assert.equal(out.status === "failed" && out.reason, "payment_lookup_failed");
+    assert.equal(out.status === "failed" && out.reason, "product_mismatch");
+  });
+
+  test("عدمِ تطابقِ نوع ماندگار ثبت می‌شود", async () => {
+    const s = makePorts({ payment: payment({ purpose: "consulting" }) });
+    await run(s.ports, "webinar");
     assert.equal(s.failures.length, 1);
-    assert.equal(s.failures[0].stage, "payment_lookup");
+    assert.equal(s.failures[0].stage, "product_mismatch");
+    assert.equal(s.failures[0].userId, USER);
+  });
+
+  test("نوعی که به RPC می‌رود همان نوعِ ردیفِ پرداخت است، نه ادعای فراخواننده", async () => {
+    const s = makePorts({ payment: payment({ purpose: "webinar" }), registration: REG });
+    await run(s.ports, "webinar");
+    assert.equal(s.rpcCalls[0].kind, "webinar");
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════
-// ۲. عدمِ تطابقِ پرداخت/ثبت‌نام و کاربر
+// بند ۲ — یک authority نمی‌تواند دو نوع دسترسی بسازد
 // ══════════════════════════════════════════════════════════════════════════
 
-describe("بایندِ پرداخت ↔ ثبت‌نام ↔ کاربر", () => {
-  test("ثبت‌نام فقط از راهِ payment_id پیدا می‌شود، نه از query", async () => {
-    const s = makePorts({ registration: REG });
-    await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
-    // شناسه‌ای که به RPC می‌رود همان ثبت‌نامِ متصل به رکوردِ پرداخت است.
-    assert.equal(s.rpcCalls[0].registrationId, REG_ID);
+describe("یک authority ⇒ یک محصول", () => {
+  test("همان authority از دو callback: دقیقاً یکی می‌گذرد", async () => {
+    // این دقیقاً همان سناریوی گزارشِ Command Center است.
+    const row = payment({ purpose: "consulting" });
+    const a = makePorts({ payment: row });
+    const b = makePorts({ payment: row });
+
+    const viaConsulting = await run(a.ports, "consulting");
+    const viaWebinar = await run(b.ports, "webinar");
+
+    assert.equal(viaConsulting.status, "success");
+    assert.equal(viaWebinar.status, "failed");
+    assert.equal(viaWebinar.status === "failed" && viaWebinar.reason, "product_mismatch");
+
+    const totalRpc = a.rpcCalls.length + b.rpcCalls.length;
+    assert.equal(totalRpc, 1, "فقط یک نهایی‌سازی، نه دو تا");
   });
 
-  test("پرداختِ وبینار بدونِ ثبت‌نامِ متصل → registrationId تهی می‌ماند", async () => {
-    // RPC خودش این حالت را می‌پذیرد (فقط دسترسی می‌دهد)؛ چیزی که نباید رخ دهد
-    // این است که شناسه‌ای از جای دیگر حدس زده شود.
-    const s = makePorts({ registration: null });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
-    assert.equal(s.rpcCalls[0].registrationId, null);
-    assert.equal(out.status, "success");
-    assert.equal(out.status === "success" && out.webinarId, null);
+  test("قالبِ source دیگر دو پیشوندِ متفاوت برای یک authority نمی‌سازد", () => {
+    // منبع حالا از خودِ purpose ساخته می‌شود و purpose یکتاست، پس دو رشتهٔ
+    // متفاوت برای یک authority ممکن نیست مگر purpose عوض شود — که تغییرناپذیر است.
+    assert.equal(entitlementSource("consulting", AUTHORITY), `consulting:${AUTHORITY}`);
+    assert.equal(entitlementSource("webinar", AUTHORITY), `webinar:${AUTHORITY}`);
+    assert.equal(productFromSource(`webinar:${AUTHORITY}`), "webinar");
+    assert.equal(productFromSource(`manual:${AUTHORITY}`), null);
+    assert.ok(isPaidProduct("consulting") && !isPaidProduct("manual"));
   });
+});
 
-  test("خطای خواندنِ ثبت‌نام مسیر را متوقف می‌کند و پرداخت را نهایی نمی‌کند", async () => {
-    const s = makePorts({ registrationError: { message: "relation does not exist" } });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
+// ══════════════════════════════════════════════════════════════════════════
+// بند ۴ — وبینار بدونِ ثبت‌نامِ متصل رد می‌شود
+// ══════════════════════════════════════════════════════════════════════════
+
+describe("ثبت‌نامِ وبینار الزامی است", () => {
+  test("پرداختِ وبینار بدونِ ثبت‌نام → رد، نه موفقیت", async () => {
+    // ⚠️ نسخهٔ قبلیِ همین تست عکسِ این را ادعا می‌کرد.
+    const s = makePorts({ payment: payment({ purpose: "webinar" }), registration: null });
+    const out = await run(s.ports, "webinar");
     assert.equal(out.status, "failed");
-    assert.equal(out.status === "failed" && out.reason, "registration_lookup_failed");
-    assert.equal(s.rpcCalls.length, 0, "با ثبت‌نامِ نامعلوم نباید نهایی شود");
-    assert.equal(s.failures[0].stage, "registration_lookup");
+    assert.equal(out.status === "failed" && out.reason, "registration_missing");
+    assert.equal(s.rpcCalls.length, 0, "بدونِ ثبت‌نام نباید نهایی شود");
+    assert.equal(s.failures[0].stage, "registration_missing");
   });
 
-  test("کاربرِ ناهمخوان: RPC رد می‌کند و نتیجه «موفق» نیست", async () => {
-    // بایندِ واقعی در SQL است (`ثبت‌نام به کاربرِ دیگری تعلق دارد`). اینجا
-    // اثبات می‌شود که ردِ RPC هرگز به صفحهٔ موفقیتِ کامل نمی‌رسد.
+  test("ثبت‌نامِ متعلق به کاربرِ دیگر رد می‌شود", async () => {
     const s = makePorts({
+      payment: payment({ purpose: "webinar" }),
       registration: { id: REG_ID, webinar_id: WEBINAR_ID, user_id: OTHER_USER },
-      rpcError: { message: "ثبت‌نام به کاربرِ دیگری تعلق دارد." },
     });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
-    assert.equal(out.status, "access_pending");
-    assert.equal(s.failures[0].stage, "finalize_rpc");
-    assert.match(s.failures[0].message, /کاربرِ دیگری/);
-  });
-
-  test("پرداختِ متصل به ثبت‌نامِ دیگر: ردِ RPC موفقیت تولید نمی‌کند", async () => {
-    const s = makePorts({
-      registration: REG,
-      rpcError: { message: "ثبت‌نام به این پرداخت متصل نیست." },
-    });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
-    assert.notEqual(out.status, "success");
-    assert.equal(out.status, "access_pending");
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════════
-// ۳. مبلغ
-// ══════════════════════════════════════════════════════════════════════════
-
-describe("مبلغ", () => {
-  test("مبلغ از رکوردِ خودمان می‌رود، نه از query یا قیمتِ فعلیِ محصول", async () => {
-    const s = makePorts({
-      payment: {
-        id: PAYMENT_ID,
-        user_id: USER,
-        amount: 7_500_000,
-        status: "pending",
-        ref_id: null,
-      },
-    });
-    await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
-    assert.equal(s.gatewayCalls[0].amount, 7_500_000, "verify با مبلغِ رکوردِ ما");
-    assert.equal(s.rpcCalls[0].amount, 7_500_000, "RPC با همان مبلغ");
-  });
-
-  test("عدمِ تطبیقِ مبلغ در RPC → موفقیتِ کامل اعلام نمی‌شود", async () => {
-    const s = makePorts({ rpcError: { message: "عدم تطبیق مبلغ پرداخت." } });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-    assert.equal(out.status, "access_pending");
-    assert.match(s.failures[0].message, /عدم تطبیق مبلغ/);
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════════
-// ۴. لغو و شکستِ verify
-// ══════════════════════════════════════════════════════════════════════════
-
-describe("لغو و شکستِ تأیید", () => {
-  test("لغوِ کاربر (Status ≠ OK) → fail_payment، بدونِ تماس با verify", async () => {
-    const s = makePorts();
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "NOK",
-      product: "consulting",
-      ports: s.ports,
-    });
+    const out = await run(s.ports, "webinar");
     assert.equal(out.status, "failed");
+    assert.equal(out.status === "failed" && out.reason, "registration_missing");
+    assert.equal(s.rpcCalls.length, 0);
+  });
+
+  test("خطای خواندنِ ثبت‌نام مسیر را متوقف می‌کند", async () => {
+    const s = makePorts({
+      payment: payment({ purpose: "webinar" }),
+      registrationError: { message: "relation does not exist" },
+    });
+    const out = await run(s.ports, "webinar");
+    assert.equal(out.status === "failed" && out.reason, "registration_lookup_failed");
+    assert.equal(s.rpcCalls.length, 0);
+  });
+
+  test("مشاوره ثبت‌نام لازم ندارد و اصلاً دنبالش نمی‌گردد", async () => {
+    const s = makePorts({ payment: payment({ purpose: "consulting" }) });
+    const out = await run(s.ports, "consulting");
+    assert.equal(out.status, "success");
+    assert.equal(s.rpcCalls[0].registrationId, null);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// بند ۹ — خطاهای failPayment و ثبتِ ممیزی واقعاً بررسی می‌شوند
+// ══════════════════════════════════════════════════════════════════════════
+
+describe("شکستِ نوشتن دیده می‌شود", () => {
+  test("خطای failPayment هنگام لغو، ماندگار ثبت می‌شود", async () => {
+    const s = makePorts({ failPaymentError: { message: "deadlock" } });
+    const out = await run(s.ports, "consulting", "NOK");
     assert.equal(out.status === "failed" && out.reason, "cancelled");
     assert.deepEqual(s.failPaymentCalls, [AUTHORITY]);
-    assert.equal(s.gatewayCalls.length, 0, "پرداختِ لغوشده نباید verify شود");
-    assert.equal(s.rpcCalls.length, 0, "و قطعاً نباید دسترسی بگیرد");
+    assert.ok(
+      s.failures.some((f) => f.stage === "fail_payment"),
+      "پرداخت روی pending مانده و باید ردی داشته باشد"
+    );
   });
 
-  test("شکستِ verifyِ درگاه → fail_payment و هیچ دسترسی‌ای", async () => {
-    const s = makePorts({ gatewayOk: false });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-    assert.equal(out.status, "failed");
+  test("خطای failPayment پس از شکستِ verify هم ثبت می‌شود", async () => {
+    const s = makePorts({ gatewayOk: false, failPaymentError: { message: "timeout" } });
+    const out = await run(s.ports, "consulting");
     assert.equal(out.status === "failed" && out.reason, "gateway_verify_failed");
-    assert.deepEqual(s.failPaymentCalls, [AUTHORITY]);
-    assert.equal(s.rpcCalls.length, 0);
+    assert.ok(s.failures.some((f) => f.stage === "fail_payment"));
   });
 
-  test("پرداختی که قبلاً failed شده دوباره نهایی نمی‌شود", async () => {
-    // گذارِ مجاز فقط pending → paid|failed است؛ failed → paid وجود ندارد.
-    const s = makePorts({
-      payment: {
-        id: PAYMENT_ID,
-        user_id: USER,
-        amount: 5_000_000,
-        status: "failed",
-        ref_id: null,
-      },
-    });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-    assert.equal(out.status, "failed");
-    assert.equal(out.status === "failed" && out.reason, "already_failed");
+  test("failPaymentِ موفق ردِ اضافه نمی‌سازد", async () => {
+    const s = makePorts();
+    await run(s.ports, "consulting", "NOK");
+    assert.equal(s.failures.length, 0);
+  });
+
+  test("اگر ثبتِ شکست هم شکست بخورد، خروجی صادقانه می‌گوید ردی نیست", async () => {
+    const s = makePorts({ rpcError: { message: "boom" }, recordFailurePersisted: false });
+    const out = await run(s.ports, "consulting");
+    assert.equal(out.status, "access_pending");
+    assert.equal(
+      out.status === "access_pending" && out.failureRecorded,
+      false,
+      "UI نباید وعدهٔ پیگیری بدهد وقتی هیچ ردی ثبت نشده"
+    );
+  });
+
+  test("ثبتِ موفقِ شکست، failureRecorded=true می‌دهد", async () => {
+    const s = makePorts({ rpcError: { message: "boom" } });
+    const out = await run(s.ports, "consulting");
+    assert.equal(out.status === "access_pending" && out.failureRecorded, true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// حالت‌های پایه‌ای که باید حفظ می‌شدند
+// ══════════════════════════════════════════════════════════════════════════
+
+describe("گاردهای پیشین", () => {
+  test("authorityِ تهی → هیچ تماسِ بیرونی", async () => {
+    const s = makePorts();
+    const out = await run(s.ports, "consulting", "OK", "");
+    assert.equal(out.status === "failed" && out.reason, "missing_authority");
+    assert.equal(s.gatewayCalls.length + s.rpcCalls.length, 0);
+  });
+
+  test("authorityِ ناشناخته رد می‌شود", async () => {
+    const s = makePorts({ payment: null });
+    const out = await run(s.ports, "consulting");
+    assert.equal(out.status === "failed" && out.reason, "payment_not_found");
+    assert.equal(s.failPaymentCalls.length, 0);
+  });
+
+  test("خطای خواندنِ پرداخت با «پیدا نشد» یکی نیست", async () => {
+    const s = makePorts({ paymentError: { message: "connection reset" } });
+    const out = await run(s.ports, "consulting");
+    assert.equal(out.status === "failed" && out.reason, "payment_lookup_failed");
+    assert.equal(s.failures[0].stage, "payment_lookup");
+  });
+
+  test("مبلغ از رکوردِ خودمان می‌رود", async () => {
+    const s = makePorts({ payment: payment({ amount: 7_500_000 }) });
+    await run(s.ports, "consulting");
+    assert.equal(s.gatewayCalls[0].amount, 7_500_000);
+    assert.equal(s.rpcCalls[0].amount, 7_500_000);
+  });
+
+  test("لغو → fail_payment، بدونِ verify و بدونِ دسترسی", async () => {
+    const s = makePorts();
+    const out = await run(s.ports, "consulting", "NOK");
+    assert.equal(out.status === "failed" && out.reason, "cancelled");
     assert.equal(s.gatewayCalls.length, 0);
     assert.equal(s.rpcCalls.length, 0);
   });
-});
 
-// ══════════════════════════════════════════════════════════════════════════
-// ۵. replay و callbackِ تکراری
-// ══════════════════════════════════════════════════════════════════════════
+  test("پرداختِ failed دوباره نهایی نمی‌شود", async () => {
+    const s = makePorts({ payment: payment({ status: "failed" }) });
+    const out = await run(s.ports, "consulting");
+    assert.equal(out.status === "failed" && out.reason, "already_failed");
+    assert.equal(s.rpcCalls.length, 0);
+  });
 
-describe("replay و تکرار", () => {
-  const paidPayment: PaymentRow = {
-    id: PAYMENT_ID,
-    user_id: USER,
-    amount: 5_000_000,
-    status: "paid",
-    ref_id: "REF-123",
-  };
-
-  test("callbackِ replay شده روی پرداختِ نهایی‌شده، درگاه را دوباره صدا نمی‌زند", async () => {
-    // کدِ ۱۰۱ زرین‌پال («قبلاً تأیید شده») مقدارِ ok می‌دهد؛ بدونِ این گارد
-    // هر بار بازکردنِ لینکِ بازگشت یک verifyِ تازه بود.
-    const s = makePorts({ payment: paidPayment });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
+  test("replay: درگاه دوباره صدا زده نمی‌شود و دعوتِ تازه ساخته نمی‌شود", async () => {
+    const s = makePorts({ payment: payment({ status: "paid", ref_id: "REF-123" }) });
+    const out = await run(s.ports, "consulting");
     assert.equal(out.status, "success");
     assert.equal(out.status === "success" && out.alreadyFinalized, true);
     assert.equal(s.gatewayCalls.length, 0);
+    assert.equal(s.inviteLinkCalls, 0);
   });
 
-  test("replay دسترسیِ دوم نمی‌سازد — همان source می‌رود", async () => {
-    const s = makePorts({ payment: paidPayment });
-    await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-    assert.equal(s.rpcCalls.length, 1);
-    assert.equal(s.rpcCalls[0].source, entitlementSource("consulting", AUTHORITY));
-    // idempotency واقعی روی همین کلید در دیتابیس بسته شده
-    // (uq_entitlements_user_source).
-  });
-
-  test("replay با registration_idِ بی‌ربط، ثبت‌نامِ دیگری را پرداخت‌شده نمی‌کند", async () => {
-    // شناسه هرگز از query خوانده نمی‌شود؛ همیشه از رکوردِ پرداخت می‌آید.
-    const s = makePorts({ payment: paidPayment, registration: null });
-    await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
-    assert.equal(s.rpcCalls[0].registrationId, null);
-  });
-
-  test("دو callbackِ پشتِ سرِ هم، دو بار اثرِ جانبی تولید نمی‌کنند", async () => {
-    const s1 = makePorts();
-    const first = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s1.ports,
-    });
-    assert.equal(first.status === "success" && first.alreadyFinalized, false);
-
-    const s2 = makePorts({ payment: paidPayment });
-    const second = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s2.ports,
-    });
-    assert.equal(second.status === "success" && second.alreadyFinalized, true);
-    assert.equal(
-      s2.inviteLinkCalls,
-      0,
-      "بارِ دوم نباید لینکِ دعوتِ تازه بسازد"
-    );
-  });
-
-  test("هم‌زمانی: بازندهٔ مسابقه هم نتیجهٔ درست می‌گیرد، نه دسترسیِ دوم", async () => {
-    // شبیه‌سازیِ سریالی‌شدنِ `FOR UPDATE`: اولین RPC نهایی می‌کند، دومی همان
-    // ردیف را می‌بیند و `already_finalized` برمی‌گرداند.
-    let calls = 0;
-    const rpc = async (input: FinalizeRpcInput) => {
-      calls += 1;
-      return {
-        result: {
-          user_id: USER,
-          payment_id: PAYMENT_ID,
-          entitlement_id: "ent-1", // همان ردیف در هر دو بار
-          expires_at: input.expiresAt,
-          already_finalized: calls > 1,
-          registration_id: input.registrationId,
-        },
-        error: null,
-      };
-    };
-    const a = makePorts({ rpc });
-    const b = makePorts({ rpc });
-    const [r1, r2] = await Promise.all([
-      finalizePaidAccess({
-        authority: AUTHORITY,
-        gatewayStatus: "OK",
-        product: "consulting",
-        ports: a.ports,
-      }),
-      finalizePaidAccess({
-        authority: AUTHORITY,
-        gatewayStatus: "OK",
-        product: "consulting",
-        ports: b.ports,
-      }),
-    ]);
-    assert.equal(r1.status, "success");
-    assert.equal(r2.status, "success");
-    assert.equal(calls, 2, "هر دو RPC را صدا زدند");
-    // نکتهٔ اصلی: دقیقاً یکی از دو نتیجه «تازه» است.
-    const fresh = [r1, r2].filter(
-      (r) => r.status === "success" && !r.alreadyFinalized
-    );
-    assert.equal(fresh.length, 1, "فقط یک نهایی‌سازیِ تازه");
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════════
-// ۶. شکستِ نوشتن — RPC و اعطای دسترسی
-// ══════════════════════════════════════════════════════════════════════════
-
-describe("شکستِ نوشتن", () => {
-  test("شکستِ RPC هرگز به‌عنوانِ خریدِ کاملِ موفق نشان داده نمی‌شود", async () => {
+  test("شکستِ RPC هرگز موفقیتِ کامل نشان داده نمی‌شود", async () => {
     const s = makePorts({ rpcError: { message: "deadlock detected" } });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
+    const out = await run(s.ports, "consulting");
     assert.equal(out.status, "access_pending");
-    assert.notEqual(out.status, "success");
-  });
-
-  test("شکستِ اعطای دسترسی ماندگار ثبت می‌شود، نه فقط console", async () => {
-    const s = makePorts({ rpcError: { message: "اعطای دسترسی انجام نشد." } });
-    await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-    assert.equal(s.failures.length, 1);
-    assert.equal(s.failures[0].stage, "finalize_rpc");
-    assert.equal(s.failures[0].userId, USER, "کاربر باید قابلِ پیدا کردن باشد");
-    assert.match(s.failures[0].message, /اعطای دسترسی/);
   });
 
   test("نتیجهٔ تهی از RPC مثلِ خطا رفتار می‌کند", async () => {
-    // اگر `result` تهی و `error` هم تهی باشد، «موفق» فرض کردن یعنی مشتری
-    // صفحهٔ سبز می‌بیند و دسترسی ندارد.
     const s = makePorts({ rpc: async () => ({ result: null, error: null }) });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
+    const out = await run(s.ports, "consulting");
     assert.equal(out.status, "access_pending");
-    assert.equal(s.failures.length, 1);
   });
 
-  test("replayِ پرداختِ نهایی‌شده با RPCِ خراب هم access_pending می‌دهد", async () => {
-    const s = makePorts({
-      payment: {
-        id: PAYMENT_ID,
-        user_id: USER,
-        amount: 5_000_000,
-        status: "paid",
-        ref_id: "REF-123",
-      },
-      rpcError: { message: "timeout" },
+  test("مسیرِ وبینار لینکِ دعوتِ کانال نمی‌سازد", async () => {
+    const s = makePorts({ payment: payment({ purpose: "webinar" }), registration: REG });
+    await run(s.ports, "webinar");
+    assert.equal(s.rpcCalls[0].inviteLink, null);
+    assert.equal(s.inviteLinkCalls, 0);
+  });
+
+  test("مشاوره لینکِ دعوت می‌سازد و به RPC می‌دهد", async () => {
+    const s = makePorts();
+    await run(s.ports, "consulting");
+    assert.equal(s.rpcCalls[0].inviteLink, "https://t.me/+invite");
+  });
+
+  test("مدتِ دسترسی از سمتِ TypeScript فرستاده نمی‌شود", () => {
+    // بند ۱۰: هیچ فیلدی برای مدت/انقضا در قراردادِ RPC نیست، پس هیچ
+    // فراخواننده‌ای نمی‌تواند دسترسیِ طولانی‌تر بخرد.
+    const s = makePorts();
+    return run(s.ports, "consulting").then(() => {
+      const keys = Object.keys(s.rpcCalls[0]);
+      assert.ok(!keys.includes("expiresAt"), "expiresAt نباید در ورودی باشد");
+      assert.ok(!keys.includes("source"), "source را SQL می‌سازد");
     });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-    assert.equal(out.status, "access_pending");
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════
-// ۷. مسیرِ موفق — دسترسیِ درست
-// ══════════════════════════════════════════════════════════════════════════
-
-describe("پرداختِ موفق → دسترسیِ درست", () => {
-  test("مشاوره: نوع، منبع و انقضای درست به RPC می‌رود", async () => {
-    const s = makePorts();
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-
-    assert.equal(out.status, "success");
-    const call = s.rpcCalls[0];
-    assert.equal(call.kind, "consulting");
-    assert.equal(call.source, `payment:${AUTHORITY}`);
-    assert.equal(call.refId, "REF-123");
-    // ۱۶ مرداد ۱۴۰۵ = 2026-08-16 → سه ماه بعد
-    assert.equal(call.expiresAt, "2026-11-16T00:00:00.000Z");
-    assert.equal(call.inviteLink, "https://t.me/+invite");
-  });
-
-  test("وبینار: نوع و منبعِ مخصوصِ خودش، بدونِ لینکِ دعوت", async () => {
-    const s = makePorts({ registration: REG });
-    const out = await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "webinar",
-      ports: s.ports,
-    });
-
-    assert.equal(out.status, "success");
-    assert.equal(out.status === "success" && out.webinarId, WEBINAR_ID);
-    const call = s.rpcCalls[0];
-    assert.equal(call.kind, "webinar");
-    assert.equal(call.source, `webinar_payment:${AUTHORITY}`);
-    assert.equal(call.registrationId, REG_ID);
-    assert.equal(call.inviteLink, null, "مسیرِ وبینار لینکِ کانال نمی‌سازد");
-  });
-
-  test("دو محصول منبعِ متفاوت می‌سازند حتی با authorityِ یکسان", async () => {
-    // اگر قالبِ `source` مشترک بود، خریدِ وبینار می‌توانست دسترسیِ مشاوره را
-    // «قبلاً اعطا شده» ببیند و هیچ‌کدام ساخته نشود.
-    assert.notEqual(
-      entitlementSource("consulting", AUTHORITY),
-      entitlementSource("webinar", AUTHORITY)
-    );
-  });
-
-  test("انقضا همیشه در آینده است و به RPC می‌رسد", async () => {
-    const s = makePorts();
-    await finalizePaidAccess({
-      authority: AUTHORITY,
-      gatewayStatus: "OK",
-      product: "consulting",
-      ports: s.ports,
-    });
-    const expires = new Date(s.rpcCalls[0].expiresAt).getTime();
-    assert.ok(expires > new Date("2026-08-16T00:00:00.000Z").getTime());
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════════
-// ۸. گاردِ ساختاری — یک ماشینِ حالت، نه دو تا
+// گاردِ ساختاری
 // ══════════════════════════════════════════════════════════════════════════
 
 test("هیچ مسیرِ APIای مستقیماً روی payments نمی‌نویسد", async () => {
-  // این تست علتِ اصلیِ باگ را قفل می‌کند. اگر روزی کسی دوباره در یک route
-  // مستقیم `from("payments").update(...)` بنویسد، همان ماشینِ حالتِ دوم
-  // برمی‌گردد و این تست قرمز می‌شود.
   const { readdirSync, readFileSync, statSync } = await import("node:fs");
   const { join } = await import("node:path");
-
   const offenders: string[] = [];
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir)) {
       const full = join(dir, entry);
-      if (statSync(full).isDirectory()) {
-        walk(full);
-        continue;
-      }
+      if (statSync(full).isDirectory()) { walk(full); continue; }
       if (!entry.endsWith(".ts") && !entry.endsWith(".tsx")) continue;
       const src = readFileSync(full, "utf8");
-      // `.from("payments")` که به update/insert/upsert/delete ختم شود.
       if (/from\(\s*["']payments["']\s*\)[\s\S]{0,200}?\.(update|insert|upsert|delete)\(/.test(src)) {
         offenders.push(full);
       }
     }
   };
   walk(join(process.cwd(), "app", "api"));
+  assert.deepEqual(offenders, [], `نوشتنِ مستقیم روی payments ممنوع:\n${offenders.join("\n")}`);
+});
 
-  assert.deepEqual(
-    offenders,
-    [],
-    `نوشتنِ مستقیم روی payments فقط از راهِ RPC مجاز است:\n${offenders.join("\n")}`
-  );
+test("هیچ‌جا مدتِ دسترسی هاردکد نشده", async () => {
+  // بند ۱۰: عددِ «۳ ماه» نباید در کدِ TypeScript برگردد.
+  const { readFileSync, existsSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const p = join(process.cwd(), "lib", "entitlements.ts");
+  assert.ok(existsSync(p));
+  const src = readFileSync(p, "utf8");
+  assert.doesNotMatch(src, /ENTITLEMENT_MONTHS/, "ثابتِ مدت باید حذف شده باشد");
+  assert.doesNotMatch(src, /addMonthsClamped/, "محاسبهٔ مدت باید در SQL باشد");
 });

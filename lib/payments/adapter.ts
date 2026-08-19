@@ -28,7 +28,7 @@ export function createSupabaseFinalizePorts(
     async loadPaymentByAuthority(authority) {
       const { data, error } = await admin
         .from("payments")
-        .select("id, user_id, amount, status, ref_id")
+        .select("id, user_id, amount, status, ref_id, purpose")
         .eq("authority", authority)
         .maybeSingle();
       return { payment: (data as PaymentRow | null) ?? null, error };
@@ -55,13 +55,14 @@ export function createSupabaseFinalizePorts(
     },
 
     async finalizePaidAccess(input) {
+      // نه `p_source` و نه `p_expires_at` فرستاده نمی‌شوند: هر دو را SQL
+      // می‌سازد. مدت از `entitlement_durations` می‌آید تا کلاینت نتواند
+      // دسترسیِ طولانی‌تر بخرد.
       const { data, error } = await admin.rpc("finalize_paid_access", {
         p_authority: input.authority,
         p_ref_id: input.refId,
         p_amount: input.amount,
         p_kind: input.kind,
-        p_source: input.source,
-        p_expires_at: input.expiresAt,
         p_invite_link: input.inviteLink,
         p_registration_id: input.registrationId,
       });
@@ -72,11 +73,15 @@ export function createSupabaseFinalizePorts(
       // چرا در `audit_log` و نه فقط `console.error`: لاگِ Vercel چند روز بعد
       // پاک می‌شود. اگر مشتری پول داده و دسترسی نگرفته، باید ماه‌ها بعد هم
       // بتوان همان authority را پیدا کرد.
+      //
+      // ⚠️ نتیجه **برگردانده** می‌شود. پیش از این خطای درج داخلِ catch بلعیده
+      // می‌شد، یعنی «شکست ثبت شد» و «ثبتِ شکست هم شکست خورد» یکسان به‌نظر
+      // می‌رسیدند — دقیقاً همان چیزی که این ثبت برای جلوگیری از آن هست.
       console.error(
         `payment finalize failed [${entry.stage}] authority=${entry.authority}: ${entry.message}`
       );
       try {
-        await admin.from("audit_log").insert({
+        const { error } = await admin.from("audit_log").insert({
           actor_id: entry.userId,
           action: "payment.finalize_failed",
           entity: "payment",
@@ -88,9 +93,16 @@ export function createSupabaseFinalizePorts(
             message: entry.message.slice(0, 500),
           },
         });
-      } catch {
-        // آخرین حلقهٔ زنجیره؛ اگر audit_log هم در دسترس نباشد کارِ دیگری
-        // از دست‌مان برنمی‌آید و نباید مسیرِ کاربر را بشکنیم.
+        if (error) {
+          console.error("audit_log insert failed while recording payment failure:", error.message);
+          return { persisted: false, error };
+        }
+        return { persisted: true, error: null };
+      } catch (e) {
+        // آخرین حلقهٔ زنجیره؛ نباید مسیرِ کاربر را بشکنیم، ولی باید صادق
+        // بمانیم که هیچ ردی ثبت نشد.
+        console.error("audit_log unreachable while recording payment failure:", e);
+        return { persisted: false, error: e };
       }
     },
 

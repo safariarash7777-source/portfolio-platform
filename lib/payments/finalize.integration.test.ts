@@ -43,6 +43,16 @@ const SQL_FILES = {
 const USER = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 const OTHER = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 const AMOUNT = 5_000_000;
+let WEBINAR_FOR_CROSS = "";
+let webinarSeq = 0;
+/** هر ثبت‌نام وبینارِ خودش را می‌خواهد: UNIQUE(webinar_id,user_id) روی جدول هست. */
+const freshWebinar = () =>
+  psql(
+    DB,
+    `INSERT INTO public.webinars (title, starts_at, price_toman, status, registration_open)
+     VALUES ('webinar-' || ${++webinarSeq}, now() + interval '30 days', ${AMOUNT}, 'published', true)
+     RETURNING id`
+  );
 
 function psql(db: string, sql: string): string {
   return execFileSync(
@@ -126,39 +136,49 @@ function createDb(): void {
 
 /** یک پرداختِ pending با authorityِ دلخواه می‌سازد. */
 function seedPayment(authority: string, user = USER, amount = AMOUNT): string {
-  return psql(
-    DB,
-    `INSERT INTO public.payments (user_id, amount, authority, status)
-     VALUES ('${user}', ${amount}, '${authority}', 'pending') RETURNING id`
-  );
+  return seedPaymentWithPurpose(authority, "consulting", user, amount);
 }
 
 function finalizeSql(
   authority: string,
-  opts: {
-    kind?: string;
-    amount?: number;
-    source?: string;
-    expires?: string;
-    registrationId?: string | null;
-  } = {}
+  opts: { kind?: string; amount?: number; registrationId?: string | null } = {}
 ): string {
   const kind = opts.kind ?? "consulting";
-  const source = opts.source ?? `payment:${authority}`;
-  const expires = opts.expires ?? "now() + interval '3 months'";
   const reg = opts.registrationId ? `'${opts.registrationId}'` : "NULL";
   return `SELECT public.finalize_paid_access('${authority}', 'REF-1', ${
     opts.amount ?? AMOUNT
-  }, '${kind}', '${source}', ${expires}, NULL, ${reg})`;
+  }, '${kind}', NULL, ${reg})`;
+}
+
+/** پرداختِ pending با نوعِ محصولِ مشخص. */
+function seedPaymentWithPurpose(authority: string, purpose: string, user = USER, amount = AMOUNT): string {
+  return psql(
+    DB,
+    `INSERT INTO public.payments (user_id, amount, authority, status, purpose)
+     VALUES ('${user}', ${amount}, '${authority}', 'pending', '${purpose}') RETURNING id`
+  );
 }
 
 const entCount = (source: string) =>
   Number(psql(DB, `SELECT count(*) FROM public.entitlements WHERE source = '${source}'`));
+/** شمارشِ دسترسی‌های ساخته‌شده برای یک authority — **بدونِ توجه به نوع**. */
+const entCountForAuthority = (authority: string) =>
+  Number(psql(DB, `SELECT count(*) FROM public.entitlements e
+                     JOIN public.payments p ON p.id = e.payment_id
+                    WHERE p.authority = '${authority}'`));
 const paymentStatus = (authority: string) =>
   psql(DB, `SELECT status FROM public.payments WHERE authority = '${authority}'`);
 
 describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres در دسترس نیست: ${dbError}` : false }, () => {
-  before(createDb);
+  before(() => {
+    createDb();
+    WEBINAR_FOR_CROSS = psql(
+      DB,
+      `INSERT INTO public.webinars (title, starts_at, price_toman, status, registration_open)
+       VALUES ('وبینارِ مشترکِ تست', now() + interval '30 days', ${AMOUNT}, 'published', true)
+       RETURNING id`
+    );
+  });
 
   // ── مسیرِ موفق ────────────────────────────────────────────────────────────
 
@@ -168,9 +188,9 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     psql(DB, finalizeSql(a));
 
     assert.equal(paymentStatus(a), "paid");
-    assert.equal(entCount(`payment:${a}`), 1);
+    assert.equal(entCountForAuthority(a), 1);
     assert.equal(
-      psql(DB, `SELECT kind FROM public.entitlements WHERE source = 'payment:${a}'`),
+      psql(DB, `SELECT kind FROM public.entitlements WHERE source = 'consulting:${a}'`),
       "consulting"
     );
   });
@@ -201,7 +221,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     psql(DB, finalizeSql(a));
     psql(DB, finalizeSql(a));
 
-    assert.equal(entCount(`payment:${a}`), 1, "سه بار فراخوانی، یک دسترسی");
+    assert.equal(entCountForAuthority(a), 1, "سه بار فراخوانی، یک دسترسی");
     assert.equal(paymentStatus(a), "paid");
   });
 
@@ -211,7 +231,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
         DB,
         `SELECT count(*) FROM public.audit_log
           WHERE action = 'entitlement.granted'
-            AND after->>'source' = 'payment:AUTH-REPLAY'`
+            AND after->>'source' = 'consulting:AUTH-REPLAY'`
       ),
       "1"
     );
@@ -222,7 +242,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     const err = expectError(
       DB,
       `INSERT INTO public.entitlements (user_id, kind, source, expires_at)
-       VALUES ('${USER}', 'consulting', 'payment:AUTH-REPLAY', now() + interval '1 month')`
+       VALUES ('${USER}', 'consulting', 'consulting:AUTH-REPLAY', now() + interval '1 month')`
     );
     assert.match(err, /duplicate key|uq_entitlements_user_source/i);
   });
@@ -230,10 +250,14 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
   test("دو محصولِ متفاوت با یک کاربر هر دو دسترسی می‌گیرند", () => {
     // اگر قالبِ source مشترک بود، خریدِ دوم بی‌صدا نادیده گرفته می‌شد.
     const a = "AUTH-TWO-PRODUCTS";
-    seedPayment(a);
-    psql(DB, finalizeSql(a, { kind: "webinar", source: `webinar_payment:${a}` }));
-    assert.equal(entCount(`webinar_payment:${a}`), 1);
-    assert.equal(entCount(`payment:AUTH-REPLAY`), 1, "دسترسیِ قبلی دست‌نخورده");
+    seedPaymentWithPurpose(a, "webinar");
+    const regTwo = psql(DB, `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status, payment_id)
+      VALUES ('${freshWebinar()}', '${USER}', 'pending',
+              (SELECT id FROM public.payments WHERE authority='${a}')) RETURNING id`);
+    assert.ok(regTwo.length > 0);
+    psql(DB, finalizeSql(a, { kind: "webinar" }));
+    assert.equal(entCountForAuthority(a), 1);
+    assert.equal(entCountForAuthority('AUTH-REPLAY'), 1, "دسترسیِ قبلی دست‌نخورده");
   });
 
   // ── هم‌زمانی واقعی ────────────────────────────────────────────────────────
@@ -270,13 +294,13 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
         .map((r) => String((r as PromiseRejectedResult).reason?.stderr ?? ""))
         .join(" | ")}`
     );
-    assert.equal(entCount(`payment:${a}`), 1, "زیرِ هم‌زمانی هم دقیقاً یک دسترسی");
+    assert.equal(entCountForAuthority(a), 1, "زیرِ هم‌زمانی هم دقیقاً یک دسترسی");
     assert.equal(paymentStatus(a), "paid");
     assert.equal(
       psql(
         DB,
         `SELECT count(*) FROM public.audit_log
-          WHERE action = 'entitlement.granted' AND after->>'source' = 'payment:${a}'`
+          WHERE action = 'entitlement.granted' AND after->>'source' = 'consulting:${a}'`
       ),
       "1",
       "ممیزی هم باید یکتا بماند"
@@ -296,7 +320,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     const err = expectError(DB, finalizeSql(a, { amount: AMOUNT + 1 }));
     assert.match(err, /عدم تطبیق مبلغ/);
     assert.equal(paymentStatus(a), "pending", "پرداخت نباید دست بخورد");
-    assert.equal(entCount(`payment:${a}`), 0);
+    assert.equal(entCountForAuthority(a), 0);
   });
 
   test("پرداختِ failed دوباره نهایی نمی‌شود", () => {
@@ -307,15 +331,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
 
     const err = expectError(DB, finalizeSql(a));
     assert.match(err, /ناموفق ثبت شده/);
-    assert.equal(entCount(`payment:${a}`), 0);
-  });
-
-  test("انقضای گذشته رد می‌شود", () => {
-    const a = "AUTH-PAST-EXPIRY";
-    seedPayment(a);
-    const err = expectError(DB, finalizeSql(a, { expires: "now() - interval '1 day'" }));
-    assert.match(err, /در آینده/);
-    assert.equal(paymentStatus(a), "pending");
+    assert.equal(entCountForAuthority(a), 0);
   });
 
   test("نوعِ دسترسیِ نامعتبر رد می‌شود", () => {
@@ -324,13 +340,6 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     const err = expectError(DB, finalizeSql(a, { kind: "admin" }));
     assert.match(err, /نوعِ دسترسی نامعتبر/);
     assert.equal(paymentStatus(a), "pending");
-  });
-
-  test("منبعِ تهی رد می‌شود — بدونِ آن idempotency ممکن نیست", () => {
-    const a = "AUTH-EMPTY-SOURCE";
-    seedPayment(a);
-    const err = expectError(DB, finalizeSql(a, { source: "" }));
-    assert.match(err, /منبعِ دسترسی تهی/);
   });
 
   // ── بایندِ ثبت‌نامِ وبینار ──────────────────────────────────────────────────
@@ -349,7 +358,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
          RETURNING id`
       );
       paidAuthority = "AUTH-WEBINAR-OK";
-      const paymentId = seedPayment(paidAuthority);
+      const paymentId = seedPaymentWithPurpose(paidAuthority, "webinar");
       regOfUser = psql(
         DB,
         `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status, payment_id)
@@ -367,7 +376,6 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
         DB,
         finalizeSql(paidAuthority, {
           kind: "webinar",
-          source: `webinar_payment:${paidAuthority}`,
           registrationId: regOfUser,
         })
       );
@@ -375,23 +383,22 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
         psql(DB, `SELECT payment_status FROM public.webinar_registrations WHERE id = '${regOfUser}'`),
         "paid"
       );
-      assert.equal(entCount(`webinar_payment:${paidAuthority}`), 1);
+      assert.equal(entCountForAuthority(paidAuthority), 1);
     });
 
     test("ثبت‌نامِ کاربرِ دیگر رد می‌شود و هیچ اثری نمی‌گذارد", () => {
       const a = "AUTH-WRONG-USER";
-      seedPayment(a);
+      seedPaymentWithPurpose(a, "webinar");
       const err = expectError(
         DB,
         finalizeSql(a, {
           kind: "webinar",
-          source: `webinar_payment:${a}`,
           registrationId: regOfOther,
         })
       );
-      assert.match(err, /کاربرِ دیگری/);
+      assert.match(err, /بدونِ ثبت‌نامِ متصل|کاربرِ دیگری/);
       assert.equal(paymentStatus(a), "pending");
-      assert.equal(entCount(`webinar_payment:${a}`), 0);
+      assert.equal(entCountForAuthority(a), 0);
       assert.equal(
         psql(DB, `SELECT payment_status FROM public.webinar_registrations WHERE id = '${regOfOther}'`),
         "pending",
@@ -401,7 +408,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
 
     test("ثبت‌نامی که به این پرداخت متصل نیست رد می‌شود (replayِ متقاطع)", () => {
       const a = "AUTH-UNLINKED-REG";
-      seedPayment(a);
+      seedPaymentWithPurpose(a, "webinar");
       const orphan = psql(
         DB,
         `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status)
@@ -413,11 +420,10 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
         DB,
         finalizeSql(a, {
           kind: "webinar",
-          source: `webinar_payment:${a}`,
           registrationId: orphan,
         })
       );
-      assert.match(err, /متصل نیست|کاربرِ دیگری/);
+      assert.match(err, /بدونِ ثبت‌نامِ متصل|متصل نیست|کاربرِ دیگری/);
       assert.equal(paymentStatus(a), "pending");
     });
   });
@@ -446,7 +452,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
       "pending",
       "پرداخت نباید paid بماند وقتی دسترسی ساخته نشد"
     );
-    assert.equal(entCount(`payment:${a}`), 0);
+    assert.equal(entCountForAuthority(a), 0);
 
     psql(DB, `DROP TRIGGER ent_boom ON public.entitlements; DROP FUNCTION public.boom();`);
   });
@@ -474,7 +480,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     const err = expectError(DB, finalizeSql(a));
     assert.match(err, /اعطای دسترسی انجام نشد/, "باید صریحاً بشکند، نه موفق برگردد");
     assert.equal(paymentStatus(a), "pending", "پرداخت نباید paid بماند");
-    assert.equal(entCount(`payment:${a}`), 0);
+    assert.equal(entCountForAuthority(a), 0);
 
     psql(DB, `DROP TRIGGER ent_skip ON public.entitlements; DROP FUNCTION public.skip_insert();`);
   });
@@ -484,14 +490,165 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     const a = "AUTH-GRANT-EXPLODES";
     psql(DB, finalizeSql(a));
     assert.equal(paymentStatus(a), "paid");
-    assert.equal(entCount(`payment:${a}`), 1);
+    assert.equal(entCountForAuthority(a), 1);
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  // بازنگریِ Command Center — اثباتِ روی Postgresِ واقعی
+  // ══════════════════════════════════════════════════════════════════════
+
+  describe("یک authority ⇒ حداکثر یک دسترسی", () => {
+    test("همان authorityِ پرداخت‌شده از callbackِ دوم رد می‌شود", () => {
+      // ⚠️ دقیقاً سناریوی گزارشِ P1. پیش از بایندِ purpose، اجرای دوم با
+      // kind='webinar' یک دسترسیِ دومِ کاملاً معتبر می‌ساخت.
+      const a = "AUTH-CROSS-CALLBACK";
+      seedPaymentWithPurpose(a, "consulting");
+
+      psql(DB, finalizeSql(a, { kind: "consulting" }));
+      assert.equal(entCountForAuthority(a), 1);
+
+      const err = expectError(DB, finalizeSql(a, { kind: "webinar" }));
+      assert.match(err, /نمی‌خواند/, "callbackِ وبینار باید رد شود");
+      assert.equal(entCountForAuthority(a), 1, "هنوز فقط یک دسترسی");
+    });
+
+    test("جهتِ معکوس: پرداختِ وبینار از callbackِ مشاوره رد می‌شود", () => {
+      const a = "AUTH-CROSS-REVERSE";
+      const pid = seedPaymentWithPurpose(a, "webinar");
+      psql(DB, `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status, payment_id)
+                VALUES ('${freshWebinar()}', '${OTHER}', 'pending', '${pid}')`);
+      const err = expectError(DB, finalizeSql(a, { kind: "consulting" }));
+      assert.match(err, /نمی‌خواند/);
+      assert.equal(entCountForAuthority(a), 0);
+    });
+
+    test("قیدِ یکتای payment_id مستقیماً درجِ دوم را می‌بندد", () => {
+      const a = "AUTH-CROSS-CALLBACK";
+      const pid = psql(DB, `SELECT id FROM public.payments WHERE authority='${a}'`);
+      const err = expectError(
+        DB,
+        `INSERT INTO public.entitlements (user_id, kind, source, expires_at, payment_id)
+         VALUES ('${USER}', 'webinar', 'webinar:${a}', now() + interval '1 month', '${pid}')`
+      );
+      assert.match(err, /duplicate key|uq_entitlements_payment/i);
+    });
+
+    test("پرداختِ بدونِ purpose قابلِ نهایی‌سازی نیست", () => {
+      const a = "AUTH-NO-PURPOSE";
+      psql(DB, `INSERT INTO public.payments (user_id, amount, authority, status)
+                VALUES ('${USER}', ${AMOUNT}, '${a}', 'pending')`);
+      const err = expectError(DB, finalizeSql(a));
+      assert.match(err, /نوعِ محصول ندارد/);
+      assert.equal(entCountForAuthority(a), 0);
+    });
+
+    test("purpose پس از ساخت تغییرناپذیر است", () => {
+      const a = "AUTH-CROSS-REVERSE";
+      const err = expectError(
+        DB,
+        `UPDATE public.payments SET purpose='consulting' WHERE authority='${a}'`
+      );
+      assert.match(err, /تغییرناپذیر|نهایی‌شده|گذارِ وضعیت/);
+    });
+  });
+
+  describe("وبینار بدونِ ثبت‌نامِ متصل", () => {
+    test("نهایی‌سازی رد می‌شود و پرداخت pending می‌ماند", () => {
+      const a = "AUTH-WEBINAR-NO-REG";
+      seedPaymentWithPurpose(a, "webinar");
+      const err = expectError(DB, finalizeSql(a, { kind: "webinar" }));
+      assert.match(err, /بدونِ ثبت‌نامِ متصل/);
+      assert.equal(paymentStatus(a), "pending");
+      assert.equal(entCountForAuthority(a), 0);
+    });
+
+    test("یک ثبت‌نام نمی‌تواند به دو پرداخت وصل شود", () => {
+      const a1 = "AUTH-REG-LINK-1";
+      const a2 = "AUTH-REG-LINK-2";
+      const p1 = seedPaymentWithPurpose(a1, "webinar");
+      const p2 = seedPaymentWithPurpose(a2, "webinar");
+      const reg = psql(DB, `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status, payment_id)
+                            VALUES ('${freshWebinar()}', '${USER}', 'pending', '${p1}') RETURNING id`);
+      assert.ok(reg.length > 0);
+      const err = expectError(
+        DB,
+        `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status, payment_id)
+         VALUES ('${freshWebinar()}', '${OTHER}', 'pending', '${p1}')`
+      );
+      assert.match(err, /duplicate key|uq_webinar_registrations_payment/i, "دو ثبت‌نام روی یک پرداخت");
+      assert.ok(p2.length > 0);
+    });
+  });
+
+  describe("مدتِ دسترسی سمتِ سرور و به‌ازای محصول", () => {
+    test("مدت از جدولِ پیکربندی می‌آید، نه از فراخواننده", () => {
+      psql(DB, `UPDATE public.entitlement_durations SET months = 7 WHERE purpose = 'consulting'`);
+      const a = "AUTH-DURATION";
+      seedPaymentWithPurpose(a, "consulting");
+      psql(DB, finalizeSql(a));
+      const months = psql(
+        DB,
+        `SELECT round(extract(epoch FROM (e.expires_at - now())) / 2629746.0)::int
+           FROM public.entitlements e JOIN public.payments p ON p.id = e.payment_id
+          WHERE p.authority = '${a}'`
+      );
+      assert.equal(months, "7", "مدت باید از جدول خوانده شود");
+      psql(DB, `UPDATE public.entitlement_durations SET months = 3 WHERE purpose = 'consulting'`);
+    });
+
+    test("محصولات می‌توانند مدتِ متفاوت داشته باشند", () => {
+      const rows = psql(DB, `SELECT count(DISTINCT purpose) FROM public.entitlement_durations`);
+      assert.equal(rows, "2");
+    });
+
+    test("مدتِ حذف‌شده باعثِ شکست می‌شود، نه دسترسیِ بی‌انقضا", () => {
+      psql(DB, `DELETE FROM public.entitlement_durations WHERE purpose='consulting'`);
+      const a = "AUTH-NO-DURATION";
+      seedPaymentWithPurpose(a, "consulting");
+      const err = expectError(DB, finalizeSql(a));
+      assert.match(err, /مدتِ دسترسی برای محصول/);
+      assert.equal(paymentStatus(a), "pending");
+      psql(DB, `INSERT INTO public.entitlement_durations (purpose, months) VALUES ('consulting', 3)`);
+    });
+  });
+
+  describe("ساختِ اتمیکِ پرداختِ وبینار", () => {
+    test("create_webinar_payment پرداخت و اتصال را با هم می‌سازد", () => {
+      const reg = psql(DB, `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status)
+                            VALUES ('${freshWebinar()}', '${USER}', 'pending') RETURNING id`);
+      const pid = psql(
+        DB,
+        `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
+         SELECT public.create_webinar_payment('${reg}', ${AMOUNT}, 'AUTH-ATOMIC-LINK'); COMMIT;`
+      ).split("\n").pop()!.trim();
+      assert.ok(pid.length > 0);
+      assert.equal(
+        psql(DB, `SELECT payment_id::text FROM public.webinar_registrations WHERE id='${reg}'`),
+        pid,
+        "اتصال باید در همان تراکنش نوشته شده باشد"
+      );
+      assert.equal(psql(DB, `SELECT purpose FROM public.payments WHERE authority='AUTH-ATOMIC-LINK'`), "webinar");
+    });
+
+    test("ثبت‌نامِ کاربرِ دیگر رد می‌شود و هیچ پرداختی ساخته نمی‌شود", () => {
+      const reg = psql(DB, `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status)
+                            VALUES ('${freshWebinar()}', '${OTHER}', 'pending') RETURNING id`);
+      const err = expectError(
+        DB,
+        `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
+         SELECT public.create_webinar_payment('${reg}', ${AMOUNT}, 'AUTH-ATOMIC-DENY'); COMMIT;`
+      );
+      assert.match(err, /متعلقِ شما نیست/);
+      assert.equal(psql(DB, `SELECT count(*) FROM public.payments WHERE authority='AUTH-ATOMIC-DENY'`), "0",
+        "شکستِ اتصال نباید پرداختِ یتیم بسازد");
+    });
   });
 
   // ── امتیازها ──────────────────────────────────────────────────────────────
 
   describe("امتیازها", () => {
     const SIG =
-      "public.finalize_paid_access(text,text,integer,text,text,timestamptz,text,uuid)";
+      "public.finalize_paid_access(text,text,integer,text,text,uuid)";
 
     test("anon اجازهٔ اجرا ندارد", () => {
       assert.equal(psql(DB, `SELECT has_function_privilege('anon','${SIG}','EXECUTE')`), "f");
@@ -527,11 +684,11 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
          SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
          SET LOCAL ROLE authenticated;
          INSERT INTO public.entitlements (user_id, kind, source, expires_at)
-         VALUES ('${USER}','consulting','payment:SELF-GRANT', now() + interval '99 years');
+         VALUES ('${USER}','consulting','consulting:SELF-GRANT', now() + interval '99 years');
          COMMIT;`
       );
       assert.notEqual(err, "", "درجِ مستقیم باید رد شود");
-      assert.equal(entCount("payment:SELF-GRANT"), 0);
+      assert.equal(entCount('consulting:SELF-GRANT'), 0);
     });
   });
 });

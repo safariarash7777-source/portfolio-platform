@@ -13,7 +13,7 @@
 
 | فایل | اثر |
 |---|---|
-| `sql/phase24_payment_entitlement.sql` | ایندکسِ یکتای `entitlements(user_id, source)` + تابعِ `finalize_paid_access` |
+| `sql/phase24_payment_entitlement.sql` | ستونِ `payments.purpose` · قیدِ یکتای `entitlements.payment_id` · قیدِ یکتای `webinar_registrations.payment_id` · جدولِ `entitlement_durations` · توابعِ `create_payment/3`، `create_webinar_payment`، `finalize_paid_access` |
 | `lib/payments/finalize.ts` | تنها ماشینِ حالتِ پرداخت |
 | دو `callback` | هر دو همان تابع را صدا می‌زنند |
 
@@ -61,6 +61,11 @@ Postgresِ یک‌بارمصرف در CI اجرا می‌کند و **رفتار*
 | ادعا | چطور اثبات می‌شود |
 |---|---|
 | اعطای دسترسی idempotent است | سه بار فراخوانی → دقیقاً یک ردیف |
+| **یک authority دو دسترسی نمی‌سازد** | همان پرداخت از callbackِ دوم → خطای «نمی‌خواند» |
+| **نوعِ محصول تغییرناپذیر است** | `UPDATE payments SET purpose` → رد |
+| **وبینار بدونِ ثبت‌نام رد می‌شود** | خطای «بدونِ ثبت‌نامِ متصل» و پرداخت روی `pending` |
+| **اتصالِ پرداخت↔ثبت‌نام اتمیک است** | شکستِ مالکیت → هیچ پرداختی ساخته نمی‌شود |
+| **مدت از جدول می‌آید** | تغییر به ۷ ماه → انقضا ۷ ماه |
 | هم‌زمانی امن است | چهار تراکنشِ **واقعاً موازی** → یک ردیف، بدونِ خطا |
 | شکستِ اعطا پرداخت را برمی‌گرداند | تریگرِ ساختگی → `payments` روی `pending` می‌ماند |
 | نوشتنِ بی‌صدا بی‌اثر هم می‌شکند | تریگری که `NULL` برمی‌گرداند → خطای صریح |
@@ -116,6 +121,7 @@ SELECT has_function_privilege('anon',
    ```sql
    SELECT count(*) FROM public.payments;
    SELECT count(*) FROM public.entitlements;
+   SELECT count(*) FROM public.entitlement_durations;   -- پس از migration باید ۲ باشد
    SELECT count(*) FROM public.webinar_registrations;
    ```
 2. کلِ `sql/phase24_payment_entitlement.sql` را یک‌جا اجرا کن.

@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   const outcome = await finalizePaidAccess({
     authority,
     gatewayStatus,
-    product: "webinar",
+    product: "webinar" as const,
     ports,
   });
 
@@ -52,12 +52,17 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // ⚠️ `status=success` عمداً فرستاده **نمی‌شود**. پول گرفته شده ولی دسترسی
+  // ساخته نشده؛ اگر صفحه «ثبت‌نام تأیید شد» بگوید، دروغ گفته‌ایم.
+  // `recorded` می‌گوید آیا ردِ ماندگاری برای پیگیری هست یا نه.
   if (outcome.status === "access_pending") {
     return NextResponse.redirect(
       webinarsUrl(base, {
-        status: "success",
+        status: "pending",
         webinar_id: outcome.webinarId ?? "",
         access: "pending",
+        ref: outcome.refId,
+        recorded: outcome.failureRecorded ? "1" : "0",
       })
     );
   }
