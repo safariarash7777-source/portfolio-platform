@@ -89,6 +89,11 @@ SELECT format('%s=%s', t, n) FROM (
   UNION ALL SELECT 'codal_feed',      count(*) FROM public.codal_feed
   UNION ALL SELECT 'audit_log',       count(*) FROM public.audit_log
   UNION ALL SELECT 'content_hub',     count(*) FROM public.content_hub
+  UNION ALL SELECT 'obj:tables',    count(*) FROM pg_tables WHERE schemaname='public'
+  UNION ALL SELECT 'obj:policies',  count(*) FROM pg_policies WHERE schemaname='public'
+  UNION ALL SELECT 'obj:indexes',   count(*) FROM pg_indexes WHERE schemaname='public'
+  UNION ALL SELECT 'obj:functions', count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'
+  UNION ALL SELECT 'obj:triggers',  count(*) FROM pg_trigger WHERE NOT tgisinternal
 ) s ORDER BY 1;
 SQL
 
@@ -103,7 +108,7 @@ sed 's/^/    /' "$OUT_DIR/expected-counts.txt"
 say "۲/۵ — گرفتنِ بکاپ (roles · schema · data)"
 "${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/roles.sql"  --role-only
 "${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/schema.sql"
-"${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/data.sql"   --use-copy --data-only
+"${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/data.sql"   --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
 
 for f in roles schema data; do
   [ -s "$OUT_DIR/$f.sql" ] || die "$f.sql خالی است — بکاپ ناقص است."
@@ -131,9 +136,21 @@ say "۴/۵ — بازگردانی در محیطِ موقت"
 # ندارند؛ خطای «نقش هست/نیست» اینجا طبیعی است و متوقف‌کننده نیست. آنچه اهمیت
 # دارد شمارشِ نهایی است، نه بی‌خطا بودنِ لاگ.
 for f in roles schema data; do
+  # `session_replication_role = replica` طبقِ مستندِ رسمیِ Supabase: تریگرها حینِ
+  # بازگردانیِ داده خاموش می‌شوند. بدونِ آن، گاردهای append-only این مخزن ممکن
+  # است ردیف‌های بازگردانده‌شده را رد کنند و شمارش را خراب کنند.
+  PRE=""
+  [ "$f" = "data" ] && PRE="SET session_replication_role = replica;"
   docker exec -i "$VERIFY_CONTAINER" psql -U postgres -d postgres -q \
-    < "$OUT_DIR/$f.sql" > "$OUT_DIR/restore-$f.log" 2>&1 || true
-  printf '    %-7s → %s خطا در لاگ\n' "$f.sql" "$(grep -ci '^ERROR' "$OUT_DIR/restore-$f.log" || true)"
+    ${PRE:+-c "$PRE"} < "$OUT_DIR/$f.sql" > "$OUT_DIR/restore-$f.log" 2>&1 || true
+  ERRS=$(grep -ci '^ERROR' "$OUT_DIR/restore-$f.log" || true)
+  printf '    %-7s → %s خطا در لاگ\n' "$f.sql" "$ERRS"
+  # خطای roles روی Postgresِ ساده طبیعی است (نقش‌های Supabase وجود ندارند).
+  # خطای schema یا data طبیعی **نیست**. پیش از این این عدد فقط چاپ می‌شد و
+  # هیچ چیزی را متوقف نمی‌کرد — نشانگری که هرگز نمی‌توانست شکست بدهد.
+  if [ "$f" != "roles" ] && [ "${ERRS:-0}" -gt 0 ]; then
+    die "بازگردانیِ $f.sql با $ERRS خطا مواجه شد. جزئیات: $OUT_DIR/restore-$f.log"
+  fi
 done
 
 say "۵/۵ — مقایسهٔ شمارشِ بازگردانده‌شده با Production"

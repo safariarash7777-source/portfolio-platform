@@ -102,6 +102,25 @@ const CAPABILITIES: Array<{ name: string; bash: RegExp; ps1: RegExp }> = [
     bash: /expected-counts\.txt/,
     ps1: /expected-counts\.txt/,
   },
+  {
+    // فقط شمردنِ ردیف کافی نیست: بکاپی که همهٔ سیاست‌ها، تریگرها و توابع را از
+    // دست بدهد ولی ردیف‌ها را نگه دارد، با سنجهٔ ردیف‌محور «سالم» خوانده می‌شد.
+    name: "ساختار (جدول/سیاست/تریگر/تابع/ایندکس) هم مقایسه می‌شود، نه فقط ردیف",
+    bash: /obj:policies[\s\S]*obj:functions[\s\S]*obj:triggers/,
+    ps1: /obj:policies[\s\S]*obj:functions[\s\S]*obj:triggers/,
+  },
+  {
+    // مستندِ رسمیِ Supabase این را برای بازگردانیِ داده تجویز می‌کند.
+    name: "تریگرها حینِ بازگردانیِ داده خاموش می‌شوند",
+    bash: /session_replication_role = replica/,
+    ps1: /session_replication_role = replica/,
+  },
+  {
+    // پیش از این، شمارشِ خطا فقط چاپ می‌شد و هیچ چیزی را متوقف نمی‌کرد.
+    name: "خطای بازگردانیِ schema/data اسکریپت را متوقف می‌کند",
+    bash: /\[ "\$f" != "roles" \][\s\S]{0,120}die /,
+    ps1: /\$name -ne 'roles'[\s\S]{0,160}Fail /,
+  },
 ];
 
 test("هر گاردِ ایمنی در هر دو نسخه وجود دارد", () => {
@@ -115,7 +134,7 @@ test("هر گاردِ ایمنی در هر دو نسخه وجود دارد", () 
 
 test("فهرستِ گاردها پوچ نیست", () => {
   // اگر روزی کسی CAPABILITIES را خالی کند، تستِ بالا بی‌صدا سبز می‌شود.
-  assert.ok(CAPABILITIES.length >= 12, `فقط ${CAPABILITIES.length} گارد سنجیده می‌شود`);
+  assert.ok(CAPABILITIES.length >= 16, `فقط ${CAPABILITIES.length} گارد سنجیده می‌شود`);
 });
 
 // ── هیچ سکرتی داخلِ خودِ اسکریپت‌ها ─────────────────────────────────────────

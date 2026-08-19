@@ -121,6 +121,11 @@ SELECT format('%s=%s', t, n) FROM (
   UNION ALL SELECT 'codal_feed',      count(*) FROM public.codal_feed
   UNION ALL SELECT 'audit_log',       count(*) FROM public.audit_log
   UNION ALL SELECT 'content_hub',     count(*) FROM public.content_hub
+  UNION ALL SELECT 'obj:tables',    count(*) FROM pg_tables WHERE schemaname='public'
+  UNION ALL SELECT 'obj:policies',  count(*) FROM pg_policies WHERE schemaname='public'
+  UNION ALL SELECT 'obj:indexes',   count(*) FROM pg_indexes WHERE schemaname='public'
+  UNION ALL SELECT 'obj:functions', count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'
+  UNION ALL SELECT 'obj:triggers',  count(*) FROM pg_trigger WHERE NOT tgisinternal
 ) s ORDER BY 1;
 '@
 
@@ -151,7 +156,7 @@ try {
     if ($LASTEXITCODE -ne 0) { Fail 'گرفتنِ roles.sql شکست خورد.' }
     & $SupaExe @SupaArgs db dump --db-url $env:DB_URL -f $schemaPath
     if ($LASTEXITCODE -ne 0) { Fail 'گرفتنِ schema.sql شکست خورد.' }
-    & $SupaExe @SupaArgs db dump --db-url $env:DB_URL -f $dataPath --use-copy --data-only
+    & $SupaExe @SupaArgs db dump --db-url $env:DB_URL -f $dataPath --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
     if ($LASTEXITCODE -ne 0) { Fail 'گرفتنِ data.sql شکست خورد.' }
 
     foreach ($f in @($rolesPath, $schemaPath, $dataPath)) {
@@ -184,9 +189,22 @@ try {
         $log = Join-Path $BackupDir "restore-$name.log"
         # خطای «نقش از قبل هست/نیست» هنگامِ بازگردانیِ roles روی Postgresِ ساده
         # طبیعی است و متوقف‌کننده نیست. آنچه اهمیت دارد شمارشِ نهایی است.
-        docker exec $VerifyContainer psql -U postgres -d postgres -q -f "/tmp/$name.sql" *> $log
+        # `session_replication_role = replica` طبقِ مستندِ رسمیِ Supabase: تریگرها
+        # حینِ بازگردانیِ داده خاموش می‌شوند. بدونِ آن، گاردهای append-only این
+        # مخزن ممکن است ردیف‌های بازگردانده‌شده را رد کنند و شمارش را خراب کنند.
+        $pre = if ($name -eq 'data') { "SET session_replication_role = replica;" } else { "" }
+        docker exec $VerifyContainer psql -U postgres -d postgres -q `
+            -v ON_ERROR_STOP=0 -c $pre -f "/tmp/$name.sql" *> $log
         $errCount = @(Select-String -Path $log -Pattern '^ERROR' -ErrorAction SilentlyContinue).Count
         Write-Host ("    {0,-10} → {1} خطا در لاگ" -f "$name.sql", $errCount)
+
+        # خطای roles روی Postgresِ ساده طبیعی است (نقش‌های Supabase وجود ندارند).
+        # خطای schema یا data طبیعی **نیست** و بکاپ را غیرقابل‌اتکا می‌کند.
+        # پیش از این، $errCount فقط چاپ می‌شد و هیچ چیزی را متوقف نمی‌کرد —
+        # یعنی نشانگری که هرگز نمی‌توانست شکست بدهد.
+        if ($name -ne 'roles' -and $errCount -gt 0) {
+            Fail "بازگردانیِ $name.sql با $errCount خطا مواجه شد. جزئیات: $log"
+        }
     }
 
     Write-Step '۵/۵ — مقایسهٔ شمارشِ بازگردانده‌شده با Production'
