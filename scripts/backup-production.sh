@@ -28,6 +28,7 @@
 
 set -euo pipefail
 
+PG_IMAGE="postgres:17-alpine"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 OUT_DIR="${BACKUP_DIR:-$HOME/supabase-backups/prod-$STAMP}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -82,8 +83,27 @@ cat <<'EOS'
 EOS
 read -rsp "connection string: " DB_URL
 echo
-export DB_URL
 [ -n "${DB_URL:-}" ] || die "چیزی وارد نشد."
+DB_URL="$(printf '%s' "$DB_URL" | tr -d '[:space:]')"
+case "$DB_URL" in
+  postgres://*|postgresql://*) : ;;
+  *) die "این رشتهٔ اتصال به نظر نمی‌آید. باید با postgresql:// یا postgres:// شروع شود." ;;
+esac
+
+# ── رشتهٔ اتصال از stdin به کانتینر می‌رود ──────────────────────────────────
+#
+# نسخهٔ قبل از پاس‌ترویِ `docker run -e DB_URL` استفاده می‌کرد. روی دستگاهِ آرش
+# مقدار **نرسید**: psql رشتهٔ تهی دید و بی‌صدا سراغِ سوکتِ محلی رفت، و خطایی
+# داد که هیچ شباهتی به علتِ واقعی نداشت.
+#
+# stdin این سؤال را کاملاً حذف می‌کند. ضمناً مقدار نه در argv می‌ماند و نه در
+# `docker inspect` — که متغیرِ محیطی هر دو را نگه می‌داشت.
+psql_with_url() {
+  local psql_args="$1"; shift
+  printf '%s\n' "$DB_URL" | docker run --rm -i "$@" \
+    --entrypoint sh "$PG_IMAGE" \
+    -c "read -r PGURL; exec psql \"\$PGURL\" $psql_args"
+}
 
 # ── پاکسازی، روی هر مسیرِ خروج ───────────────────────────────────────────────
 # شاملِ موفقیت، خطا، استارتِ ناقص و Ctrl-C. استکِ رهاشده هم پورت می‌گیرد و هم
@@ -105,11 +125,16 @@ say "۱/۵ — خواندنِ اثرِ انگشتِ Production (فقط خوان�
 # واردِ argv میزبان و خروجیِ `ps` نمی‌شود. فایلِ SQL هم mount می‌شود، نه
 # pipe؛ pipe کردنِ متنِ فارسی به یک پروسهٔ native روی PowerShell 5.1 خراب
 # می‌شود و این دو اسکریپت باید یک رفتار داشته باشند.
-docker run --rm -e DB_URL -v "$REPO_ROOT/scripts/backup:/sql:ro" \
-  --entrypoint sh postgres:17-alpine \
-  -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
+# اول یک بررسیِ ارزان و صریح، پیش از هر کارِ سنگین.
+PROBE="$(psql_with_url '-X -q -t -A -c "SELECT 1"' 2>/dev/null | tr -d '[:space:]')" || true
+[ "$PROBE" = "1" ] || die "با این رشتهٔ اتصال نمی‌شود به Production وصل شد.
+در Supabase Dashboard → Connect دوباره بررسی‌اش کن. هیچ چیزی نوشته نشد."
+echo "    اتصال برقرار است."
+
+psql_with_url '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
+  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
   > "$OUT_DIR/inventory-source.txt" \
-  || die "اتصال به Production برقرار نشد یا اثرِ انگشت خوانده نشد."
+  || die "وصل شدیم ولی اثرِ انگشتِ Production خوانده نشد."
 printf '    %s سطرِ فهرست ثبت شد\n' "$(wc -l < "$OUT_DIR/inventory-source.txt" | tr -d ' ')"
 
 # ── ۴) سه فایلِ بکاپ، طبقِ روشِ رسمیِ Supabase ────────────────────────────────

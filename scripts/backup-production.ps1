@@ -152,8 +152,36 @@ try {
 }
 if ([string]::IsNullOrWhiteSpace($DbUrl)) { Die 'Nothing was entered.' }
 
-# The value is passed to containers through the environment, never on argv.
-$env:DB_URL = $DbUrl
+# Windows PowerShell 5.1 encodes pipeline text to a native process using
+# $OutputEncoding, which defaults to ASCII. The connection string travels by
+# stdin, so make that encoding explicit rather than assumed.
+$OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+
+$DbUrl = $DbUrl.Trim()
+if ($DbUrl -notmatch '^postgres(ql)?://') {
+    Die 'That does not look like a connection string. It must start with postgresql:// or postgres://'
+}
+
+# ---- How the secret reaches psql ------------------------------------------
+# Through the container's STDIN, read into a shell variable, and nowhere else.
+#
+# The previous version used `docker run -e DB_URL` passthrough. On the owner's
+# machine the variable did not arrive: psql saw an empty conninfo and silently
+# fell back to the local unix socket, producing a "connection to server on
+# socket /var/run/postgresql/.s.PGSQL.5432 failed" that looks nothing like the
+# real cause.
+#
+# stdin removes the question entirely. It also keeps the value out of argv AND
+# out of `docker inspect`, which an environment variable would not.
+function Invoke-PsqlWithUrl {
+    param(
+        [Parameter(Mandatory = $true)][string]$Url,
+        [Parameter(Mandatory = $true)][string]$PsqlArgs,
+        [string[]]$DockerArgs = @()
+    )
+    $inner = 'read -r PGURL; exec psql "$PGURL" ' + $PsqlArgs
+    $Url | & docker run --rm -i @DockerArgs --entrypoint sh $PgImage -c $inner
+}
 
 # ---- cleanup on every exit path --------------------------------------------
 # Success, ordinary failure, partial startup and Ctrl-C all land here. A
@@ -177,11 +205,19 @@ try {
     # rather than piped: Windows PowerShell 5.1 encodes pipeline text to a
     # native process using $OutputEncoding, which defaults to ASCII, and
     # inventory.sql contains Persian comments. Piping it would corrupt them.
-    Say '1/5 - reading the production fingerprint (read only)'
-    & docker run --rm -e DB_URL -v "${SqlDir}:/sql:ro" --entrypoint sh $PgImage `
-        -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' |
+    # Fail fast and unambiguously before anything expensive happens.
+    Say '1/5 - checking the connection, then reading the production fingerprint'
+    $probe = Invoke-PsqlWithUrl -Url $DbUrl -PsqlArgs '-X -q -t -A -c "SELECT 1"'
+    if ($LASTEXITCODE -ne 0 -or ("$probe".Trim() -ne '1')) {
+        Die "Could not connect to production with that connection string.`nCheck it in Supabase Dashboard -> Connect. Nothing was written."
+    }
+    Write-Host '    connection OK'
+
+    Invoke-PsqlWithUrl -Url $DbUrl `
+        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' `
+        -DockerArgs @('-v', "${SqlDir}:/sql:ro") |
         Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-source.txt')
-    if ($LASTEXITCODE -ne 0) { Die 'Could not connect to production or read the fingerprint.' }
+    if ($LASTEXITCODE -ne 0) { Die 'Connected, but could not read the production fingerprint.' }
     $sourceRows = (Get-Content (Join-Path $OutDir 'inventory-source.txt')).Count
     Write-Host "    $sourceRows inventory rows recorded"
 

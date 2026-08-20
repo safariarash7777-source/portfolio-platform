@@ -298,9 +298,26 @@ describe("سکرت و مقصدِ بکاپ", () => {
     assert.match(ps1, /Read-Host[^\n]*-AsSecureString/);
   });
 
-  test("رشتهٔ اتصال داخلِ کانتینر بسط داده می‌شود، نه در argvِ میزبان", () => {
-    assert.match(bash, /--entrypoint sh[\s\S]{0,120}psql "\$DB_URL"/);
-    assert.match(ps1, /--entrypoint sh[\s\S]{0,160}psql "\$DB_URL"/);
+  test("رشتهٔ اتصال از stdin می‌رود، نه از argv و نه از متغیرِ محیطی", () => {
+    // پاس‌ترویِ `-e DB_URL` روی دستگاهِ آرش نرسید و psql بی‌صدا سراغِ سوکتِ
+    // محلی رفت. متغیرِ محیطی ضمناً در `docker inspect` هم دیده می‌شود.
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.match(code, /read -r PGURL/, `${label} باید از stdin بخواند`);
+      assert.doesNotMatch(code, /docker run --rm -e DB_URL\b/, `${label} هنوز پاس‌ترو دارد`);
+      assert.doesNotMatch(code, /-e DB_URL=\$DbUrl/, `${label} سکرت را در argv می‌گذارد`);
+    }
+  });
+
+  test("شکلِ رشتهٔ اتصال پیش از هر کارِ سنگین بررسی می‌شود", () => {
+    assert.match(bashCode, /postgres:\/\/\*\|postgresql:\/\/\*/);
+    assert.match(ps1Code, /notmatch '\^postgres\(ql\)\?:\/\/'/);
+  });
+
+  test("اتصال قبل از dump با یک probe تأیید می‌شود", () => {
+    // بدونِ این، اولین نشانهٔ خرابی یک خطای گمراه‌کنندهٔ psql بعد از دانلودِ
+    // چند گیگابایت image بود.
+    assert.match(bashCode, /SELECT 1/);
+    assert.match(ps1Code, /SELECT 1/);
   });
 
   test("نشتِ باقی‌مانده صادقانه مستند شده است", () => {
