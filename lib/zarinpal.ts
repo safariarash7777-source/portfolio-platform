@@ -29,10 +29,15 @@ export interface ZarinpalRequestResult {
   message?: string;
 }
 
-/** ساخت تراکنش. amount به تومان؛ زرین‌پال به ریال می‌گیرد (×۱۰). */
+/**
+ * ساخت تراکنش. amount به تومان؛ زرین‌پال به ریال می‌گیرد (×۱۰).
+ * callbackOverride: برای جریان‌هایی که callbackِ اختصاصی دارند (مثلِ وبینار).
+ * پیش‌فرض = callbackِ خریدِ دوره (`/api/payment/callback`).
+ */
 export async function requestPayment(
   amountToman: number,
-  description: string
+  description: string,
+  callbackOverride?: string
 ): Promise<ZarinpalRequestResult> {
   const merchant_id = process.env.ZARINPAL_MERCHANT_ID;
   if (!merchant_id) return { ok: false, message: "درگاه پرداخت پیکربندی نشده است." };
@@ -43,7 +48,7 @@ export async function requestPayment(
     body: JSON.stringify({
       merchant_id,
       amount: amountToman * 10,
-      callback_url: callbackUrl(),
+      callback_url: callbackOverride || callbackUrl(),
       description,
     }),
   });
