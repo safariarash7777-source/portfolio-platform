@@ -12,32 +12,41 @@
 #
 # ── قواعدی که این اسکریپت رعایت می‌کند ───────────────────────────────────────
 #   • رشتهٔ اتصال **هرگز** روی دیسک، در تاریخچهٔ شل، یا در خروجی نوشته نمی‌شود.
-#     با `read -rs` پرسیده می‌شود و فقط داخلِ همین پروسه زندگی می‌کند.
 #   • فایل‌های بکاپ **بیرون از مخزن** ساخته می‌شوند و اسکریپت اگر ببیند مقصد
 #     داخلِ یک ریپوی گیت است، اجرا نمی‌شود.
-#   • بکاپ فقط وقتی «سالم» اعلام می‌شود که واقعاً در یک Postgresِ یک‌بارمصرف
-#     **بازگردانده** شده باشد و شمارشِ ردیف‌هایش با Production بخواند.
+#   • بازگردانی در **یک تراکنش** و با `ON_ERROR_STOP=1` انجام می‌شود؛ معیارِ
+#     موفقیت **کدِ خروجیِ psql** است، نه grep روی لاگ.
+#   • مقصدِ بازگردانی یک استکِ **Supabaseِ محلیِ ایزوله** است، نه Postgresِ ساده.
+#   • مقایسه با `scripts/backup/inventory.sql` + `compare.mjs` انجام می‌شود:
+#     شمارشِ دقیقِ همهٔ جدول‌ها و اثرِ انگشتِ ساختاری، **دوطرفه**.
 #
 # ⚠️ تنها نشتِ باقی‌مانده: `supabase db dump` رشتهٔ اتصال را به‌صورتِ آرگومان
 #    می‌گیرد، پس تا لحظهٔ اجرا در خروجیِ `ps` دیده می‌شود. روی لپ‌تاپِ شخصی
 #    اهمیتِ عملی ندارد، ولی روی ماشینِ مشترک این اسکریپت را اجرا نکن.
 #
-# پیش‌نیاز: Docker (خودِ CLI هم `pg_dump` را داخلِ کانتینر اجرا می‌کند) و
-#           Supabase CLI (`npx supabase` هم کافی است).
+# پیش‌نیاز: Docker (Supabase CLI کانتینر بالا می‌آورد) · Supabase CLI · Node.
 
 set -euo pipefail
 
-PG_IMAGE="postgres:17-alpine"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 OUT_DIR="${BACKUP_DIR:-$HOME/supabase-backups/prod-$STAMP}"
-VERIFY_CONTAINER="prodbackup-verify-$STAMP"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INVENTORY_SQL="$REPO_ROOT/scripts/backup/inventory.sql"
+COMPARE_JS="$REPO_ROOT/scripts/backup/compare.mjs"
+
+# استکِ راستی‌آزمایی: نامِ یکتا و پورت‌های یکتا، تا هیچ پروژهٔ محلیِ موجودی
+# لمس نشود. نامِ پوشه همان project id در Supabase CLI است.
+VERIFY_ID="prodverify$STAMP"
+VERIFY_WORKDIR="${TMPDIR:-/tmp}/$VERIFY_ID"
+# پایهٔ پورت از STAMP مشتق می‌شود تا دو اجرای هم‌زمان هم برخورد نکنند.
+PORT_BASE=$(( 55000 + (10#${STAMP: -4} % 900) * 10 ))
 
 say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 die() { printf '\n❌ %s\n' "$*" >&2; exit 1; }
 
 # ── ۰) مقصد باید بیرونِ هر مخزنِ گیت باشد ────────────────────────────────────
 # عمداً **اولین** بررسی است: ارزان‌ترین است و اگر مقصد غلط باشد، بهتر است کاربر
-# قبل از هر کارِ دیگری بفهمد، نه بعد از راه‌اندازیِ Docker.
+# قبل از هر کارِ دیگری بفهمد.
 mkdir -p "$OUT_DIR"
 if git -C "$OUT_DIR" rev-parse --git-dir >/dev/null 2>&1; then
   rmdir "$OUT_DIR" 2>/dev/null || true
@@ -47,8 +56,11 @@ fi
 chmod 700 "$OUT_DIR"
 
 # ── ۱) پیش‌نیازها ────────────────────────────────────────────────────────────
-command -v docker >/dev/null 2>&1 || die "Docker نصب نیست. لازم است — هم CLI و هم مرحلهٔ راستی‌آزمایی به آن نیاز دارند."
+command -v docker >/dev/null 2>&1 || die "Docker نصب نیست. Supabase CLI بدونِ آن استک بالا نمی‌آورد."
 docker info >/dev/null 2>&1 || die "Docker نصب هست ولی در حال اجرا نیست. Docker Desktop را باز کن."
+command -v node >/dev/null 2>&1 || die "Node نصب نیست. مقایسهٔ ساختاری به آن نیاز دارد."
+[ -f "$INVENTORY_SQL" ] || die "فایلِ $INVENTORY_SQL پیدا نشد."
+[ -f "$COMPARE_JS" ] || die "فایلِ $COMPARE_JS پیدا نشد."
 
 if command -v supabase >/dev/null 2>&1; then
   SUPA=(supabase)
@@ -73,133 +85,167 @@ echo
 export DB_URL
 [ -n "${DB_URL:-}" ] || die "چیزی وارد نشد."
 
-# ── ۳) شمارشِ واقعیِ Production، پیش از بکاپ ─────────────────────────────────
-# مبنای مقایسه از خودِ دیتابیس گرفته می‌شود، نه از عددی که در این فایل نوشته
-# باشیم — وگرنه با رشدِ داده بی‌صدا کهنه می‌شد و راستی‌آزمایی بی‌معنا.
-say "۱/۵ — شمارشِ ردیف‌های Production (فقط خواندن)"
-read -r -d '' COUNT_SQL <<'SQL' || true
-SELECT format('%s=%s', t, n) FROM (
-  SELECT 'auth.users' t, count(*) n FROM auth.users
-  UNION ALL SELECT 'profiles',        count(*) FROM public.profiles
-  UNION ALL SELECT 'waitlist',        count(*) FROM public.waitlist
-  UNION ALL SELECT 'payments',        count(*) FROM public.payments
-  UNION ALL SELECT 'entitlements',    count(*) FROM public.entitlements
-  UNION ALL SELECT 'symbol_history',  count(*) FROM public.symbol_history
-  UNION ALL SELECT 'codal_reports',   count(*) FROM public.codal_reports
-  UNION ALL SELECT 'codal_feed',      count(*) FROM public.codal_feed
-  UNION ALL SELECT 'audit_log',       count(*) FROM public.audit_log
-  UNION ALL SELECT 'content_hub',     count(*) FROM public.content_hub
-  UNION ALL SELECT 'obj:tables',    count(*) FROM pg_tables WHERE schemaname='public'
-  UNION ALL SELECT 'obj:policies',  count(*) FROM pg_policies WHERE schemaname='public'
-  UNION ALL SELECT 'obj:indexes',   count(*) FROM pg_indexes WHERE schemaname='public'
-  UNION ALL SELECT 'obj:functions', count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public'
-  UNION ALL SELECT 'obj:triggers',  count(*) FROM pg_trigger WHERE NOT tgisinternal
-) s ORDER BY 1;
-SQL
+# ── پاکسازی، روی هر مسیرِ خروج ───────────────────────────────────────────────
+# شاملِ موفقیت، خطا، استارتِ ناقص و Ctrl-C. استکِ رهاشده هم پورت می‌گیرد و هم
+# دادهٔ Production را روی دیسک نگه می‌دارد.
+cleanup() {
+  local rc=$?
+  if [ -d "$VERIFY_WORKDIR" ]; then
+    say "پاکسازیِ استکِ موقت"
+    "${SUPA[@]}" stop --workdir "$VERIFY_WORKDIR" --no-backup >/dev/null 2>&1 || true
+    rm -rf "$VERIFY_WORKDIR"
+  fi
+  exit $rc
+}
+trap cleanup EXIT INT TERM
 
-# `-e DB_URL` بدونِ `=` یعنی مقدار از محیط منتقل می‌شود و واردِ argv نمی‌شود.
-docker run --rm -e DB_URL -i "$PG_IMAGE" \
-  psql "$DB_URL" -X -q -A -t -c "$COUNT_SQL" > "$OUT_DIR/expected-counts.txt" \
-  || die "اتصال به Production برقرار نشد. رشتهٔ اتصال را بررسی کن."
-echo "شمارشِ مرجع ثبت شد:"
-sed 's/^/    /' "$OUT_DIR/expected-counts.txt"
+# ── ۳) اثرِ انگشتِ مبدأ، پیش از بکاپ ─────────────────────────────────────────
+say "۱/۵ — خواندنِ اثرِ انگشتِ Production (فقط خواندن)"
+# ⚠️ رشتهٔ اتصال **داخلِ کانتینر** بسط داده می‌شود، نه در شلِ میزبان — پس
+# واردِ argv میزبان و خروجیِ `ps` نمی‌شود. فایلِ SQL هم mount می‌شود، نه
+# pipe؛ pipe کردنِ متنِ فارسی به یک پروسهٔ native روی PowerShell 5.1 خراب
+# می‌شود و این دو اسکریپت باید یک رفتار داشته باشند.
+docker run --rm -e DB_URL -v "$REPO_ROOT/scripts/backup:/sql:ro" \
+  --entrypoint sh postgres:17-alpine \
+  -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
+  > "$OUT_DIR/inventory-source.txt" \
+  || die "اتصال به Production برقرار نشد یا اثرِ انگشت خوانده نشد."
+printf '    %s سطرِ فهرست ثبت شد\n' "$(wc -l < "$OUT_DIR/inventory-source.txt" | tr -d ' ')"
 
 # ── ۴) سه فایلِ بکاپ، طبقِ روشِ رسمیِ Supabase ────────────────────────────────
 say "۲/۵ — گرفتنِ بکاپ (roles · schema · data)"
 "${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/roles.sql"  --role-only
 "${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/schema.sql"
-"${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/data.sql"   --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
+"${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/data.sql"   --use-copy --data-only \
+  -x "storage.buckets_vectors" -x "storage.vector_indexes"
 
 for f in roles schema data; do
   [ -s "$OUT_DIR/$f.sql" ] || die "$f.sql خالی است — بکاپ ناقص است."
 done
 
-# ── ۵) راستی‌آزمایی: بازگرداندن در یک Postgresِ یک‌بارمصرف ────────────────────
-# این مرحله همان چیزی است که «فایل ساخته شد» را به «بکاپ قابلِ بازیابی است»
-# تبدیل می‌کند. Production در این مرحله اصلاً لمس نمی‌شود.
-say "۳/۵ — بالا آوردنِ یک Postgresِ موقت برای آزمونِ بازگردانی"
-cleanup() { docker rm -f "$VERIFY_CONTAINER" >/dev/null 2>&1 || true; }
-trap cleanup EXIT
+# ── ۵) استکِ Supabaseِ محلیِ ایزوله ──────────────────────────────────────────
+# ⚠️ Postgresِ سادهٔ `postgres:17-alpine` مقصدِ درستی **نیست**: dumpِ schema
+# اسکیماهای مدیریت‌شده مثلِ `auth` و `storage` را ندارد، ولی dumpِ data
+# دادهٔ همان‌ها (مثلِ `auth.users`) را دارد. روی Postgresِ ساده آن جدول‌ها
+# وجود ندارند، پس یا بازگردانی می‌شکند یا شکستش پنهان می‌شود.
+say "۳/۵ — بالا آوردنِ استکِ Supabaseِ محلیِ ایزوله ($VERIFY_ID)"
+mkdir -p "$VERIFY_WORKDIR"
+"${SUPA[@]}" init --workdir "$VERIFY_WORKDIR" >/dev/null 2>&1 \
+  || die "supabase init روی پوشهٔ موقت شکست خورد."
 
-docker run -d --name "$VERIFY_CONTAINER" \
-  -e POSTGRES_PASSWORD=verify -e POSTGRES_DB=postgres \
-  "$PG_IMAGE" >/dev/null
-for _ in $(seq 1 60); do
-  docker exec "$VERIFY_CONTAINER" pg_isready -U postgres >/dev/null 2>&1 && break
-  sleep 1
-done
-docker exec "$VERIFY_CONTAINER" pg_isready -U postgres >/dev/null 2>&1 \
-  || die "Postgresِ موقت بالا نیامد."
+# پورت‌های یکتا تا پروژهٔ محلیِ خودِ آرش دست‌نخورده بماند.
+CONFIG="$VERIFY_WORKDIR/supabase/config.toml"
+[ -f "$CONFIG" ] || die "config.toml ساخته نشد."
+python3 - "$CONFIG" "$PORT_BASE" <<'PY'
+import re, sys
+path, base = sys.argv[1], int(sys.argv[2])
+text = open(path, encoding='utf-8').read()
+seen = {}
+def bump(match):
+    original = int(match.group(1))
+    if original not in seen:
+        seen[original] = base + len(seen)
+    return 'port = %d' % seen[original]
+open(path, 'w', encoding='utf-8').write(re.sub(r'port = (\d+)', bump, text))
+PY
 
-say "۴/۵ — بازگردانی در محیطِ موقت"
-# `roles.sql` نقش‌های مدیریتیِ Supabase را می‌سازد که در Postgresِ ساده وجود
-# ندارند؛ خطای «نقش هست/نیست» اینجا طبیعی است و متوقف‌کننده نیست. آنچه اهمیت
-# دارد شمارشِ نهایی است، نه بی‌خطا بودنِ لاگ.
-for f in roles schema data; do
-  # `session_replication_role = replica` طبقِ مستندِ رسمیِ Supabase: تریگرها حینِ
-  # بازگردانیِ داده خاموش می‌شوند. بدونِ آن، گاردهای append-only این مخزن ممکن
-  # است ردیف‌های بازگردانده‌شده را رد کنند و شمارش را خراب کنند.
-  PRE=""
-  [ "$f" = "data" ] && PRE="SET session_replication_role = replica;"
-  docker exec -i "$VERIFY_CONTAINER" psql -U postgres -d postgres -q \
-    ${PRE:+-c "$PRE"} < "$OUT_DIR/$f.sql" > "$OUT_DIR/restore-$f.log" 2>&1 || true
-  ERRS=$(grep -ci '^ERROR' "$OUT_DIR/restore-$f.log" || true)
-  printf '    %-7s → %s خطا در لاگ\n' "$f.sql" "$ERRS"
-  # خطای roles روی Postgresِ ساده طبیعی است (نقش‌های Supabase وجود ندارند).
-  # خطای schema یا data طبیعی **نیست**. پیش از این این عدد فقط چاپ می‌شد و
-  # هیچ چیزی را متوقف نمی‌کرد — نشانگری که هرگز نمی‌توانست شکست بدهد.
-  if [ "$f" != "roles" ] && [ "${ERRS:-0}" -gt 0 ]; then
-    die "بازگردانیِ $f.sql با $ERRS خطا مواجه شد. جزئیات: $OUT_DIR/restore-$f.log"
-  fi
-done
+"${SUPA[@]}" start --workdir "$VERIFY_WORKDIR" >/dev/null \
+  || die "استکِ Supabaseِ محلی بالا نیامد."
 
-say "۵/۵ — مقایسهٔ شمارشِ بازگردانده‌شده با Production"
-RESTORED="$OUT_DIR/restored-counts.txt"
-docker exec -i "$VERIFY_CONTAINER" psql -U postgres -d postgres -X -q -A -t \
-  -c "$COUNT_SQL" > "$RESTORED" 2>/dev/null || true
+VERIFY_URL="$("${SUPA[@]}" status --workdir "$VERIFY_WORKDIR" -o env 2>/dev/null \
+  | sed -n 's/^DB_URL="\(.*\)"$/\1/p')"
+[ -n "$VERIFY_URL" ] || die "آدرسِ دیتابیسِ استکِ محلی خوانده نشد."
 
-MISMATCH=0
-while IFS= read -r line; do
-  key="${line%%=*}"
-  want="${line#*=}"
-  got="$(grep -E "^${key}=" "$RESTORED" | head -1 | cut -d= -f2 || true)"
-  if [ "${got:-MISSING}" = "$want" ]; then
-    printf '    ✅ %-16s %s\n' "$key" "$want"
-  else
-    printf '    ❌ %-16s انتظار %s ولی %s\n' "$key" "$want" "${got:-غایب}"
-    MISMATCH=$((MISMATCH + 1))
-  fi
-done < "$OUT_DIR/expected-counts.txt"
+# اسکیماهای مدیریت‌شده باید **پیش از** بازگردانی موجود باشند، وگرنه مقصد
+# فاقدِ چیزی است که dumpِ data به آن نیاز دارد.
+docker run --rm --network host -e DB_URL="$VERIFY_URL" \
+  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
+  --entrypoint sh postgres:17-alpine \
+  -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/assert-managed-schemas.sql' \
+  || die "مقصدِ بازگردانی اسکیماهای مدیریت‌شده را ندارد.
+یعنی مقصد وفادار نیست و آزمونِ بازگردانی چیزی را اثبات نمی‌کند."
 
-# ── ۶) اثرِ انگشتِ فایل‌ها ────────────────────────────────────────────────────
-say "فایل‌های بکاپ"
+# ── ۶) بازگردانیِ اتمیک ──────────────────────────────────────────────────────
+# یک فراخوانیِ psql، یک تراکنش، `ON_ERROR_STOP=1`، ترتیبِ رسمی:
+# roles → schema → `session_replication_role=replica` → data.
+#
+# ⚠️ معیارِ موفقیت **کدِ خروجی** است. نسخهٔ قبل `|| true` می‌گذاشت و بعد در
+# لاگ دنبالِ `^ERROR` می‌گشت — ولی خطاهای فایل‌محورِ psql با
+# `psql:/tmp/schema.sql:123: ERROR:` شروع می‌شوند، نه با `ERROR`. یعنی
+# نشانگری که هرگز نمی‌توانست قرمز شود.
+say "۴/۵ — بازگردانی در یک تراکنش (ON_ERROR_STOP=1)"
+set +e
+docker run --rm --network host -e DB_URL="$VERIFY_URL" \
+  -v "$OUT_DIR:/backup:ro" --entrypoint sh postgres:17-alpine \
+  -c 'psql --single-transaction --variable ON_ERROR_STOP=1 \
+       --file /backup/roles.sql \
+       --file /backup/schema.sql \
+       --command "SET session_replication_role = replica" \
+       --file /backup/data.sql \
+       --dbname "$DB_URL"' > "$OUT_DIR/restore.log" 2>&1
+RESTORE_RC=$?
+set -e
+if [ "$RESTORE_RC" -ne 0 ]; then
+  printf '    آخرین خطوطِ لاگ:\n'
+  tail -20 "$OUT_DIR/restore.log" | sed 's/^/      /'
+  die "بازگردانی با کدِ $RESTORE_RC شکست خورد. کلِ تراکنش برگشت.
+لاگ: $OUT_DIR/restore.log
+بکاپ **قابلِ اتکا نیست**. هیچ migrationی روی Production اجرا نمی‌شود."
+fi
+echo "    بازگردانی با کدِ ۰ تمام شد."
+
+# ── ۷) مقایسهٔ دوطرفه ────────────────────────────────────────────────────────
+say "۵/۵ — مقایسهٔ شمارشِ ردیف‌ها و اثرِ انگشتِ ساختاری"
+docker run --rm --network host -e DB_URL="$VERIFY_URL" \
+  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
+  --entrypoint sh postgres:17-alpine \
+  -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
+  > "$OUT_DIR/inventory-restored.txt" \
+  || die "اثرِ انگشتِ مقصد خوانده نشد."
+
+set +e
+node "$COMPARE_JS" "$OUT_DIR/inventory-source.txt" "$OUT_DIR/inventory-restored.txt" \
+  --report "$OUT_DIR/comparison.txt"
+COMPARE_RC=$?
+set -e
+
+# ── ۸) manifest — فقط غیرحساس ────────────────────────────────────────────────
+VERDICT=$([ "$COMPARE_RC" -eq 0 ] && echo PASS || echo FAIL)
 {
-  echo "backup taken: $(date -u '+%Y-%m-%dT%H:%M:%SZ') UTC"
-  echo "project:      uooeygybrniptzdxuzhj (production)"
+  echo "backup taken:   $(date -u '+%Y-%m-%dT%H:%M:%SZ') UTC"
+  echo "project ref:    uooeygybrniptzdxuzhj (production)"
+  echo "supabase cli:   $("${SUPA[@]}" --version 2>/dev/null | tail -1)"
+  echo "verify target:  isolated local Supabase stack ($VERIFY_ID)"
+  echo "restore method: single psql invocation, --single-transaction, ON_ERROR_STOP=1"
+  echo "restore exit:   $RESTORE_RC"
+  echo "verification:   dynamic row counts (public+auth+storage) + structural fingerprint, both directions"
+  echo "exclusions:     storage.buckets_vectors, storage.vector_indexes (documented)"
+  echo "inventory rows: $(wc -l < "$OUT_DIR/inventory-source.txt" | tr -d ' ')"
+  echo "result:         $VERDICT"
   echo
   for f in roles schema data; do
     p="$OUT_DIR/$f.sql"
-    printf '%-10s %10s bytes  sha256=%s\n' "$f.sql" "$(wc -c <"$p" | tr -d ' ')" "$(sha256sum "$p" | cut -d' ' -f1)"
+    printf '%-10s %12s bytes  sha256=%s\n' "$f.sql" \
+      "$(wc -c <"$p" | tr -d ' ')" "$(sha256sum "$p" | cut -d' ' -f1)"
   done
-} | tee "$OUT_DIR/MANIFEST.txt"
+} > "$OUT_DIR/MANIFEST.txt"
+cat "$OUT_DIR/MANIFEST.txt"
 
 echo
-if [ "$MISMATCH" -eq 0 ]; then
+if [ "$COMPARE_RC" -eq 0 ]; then
   cat <<EOS
 ✅ بکاپ ساخته شد و **آزمونِ بازگردانی را پاس کرد**.
 
 مسیر: $OUT_DIR
 
-قدمِ بعد — فقط این دو خط را برای Claude بفرست (هیچ‌کدام حساس نیستند):
-
-    $(sed -n '1p' "$OUT_DIR/MANIFEST.txt")
-$(tail -3 "$OUT_DIR/MANIFEST.txt" | sed 's/^/    /')
+قدمِ بعد — فقط MANIFEST.txt را برای Claude بفرست. هیچ‌کدام از خطوطش حساس
+نیست: نه رشتهٔ اتصال دارد، نه رمز، نه دادهٔ کاربر.
 
 ⚠️ این پوشه را جای امنی نگه دار. دادهٔ واقعیِ کاربران داخلش است.
    واردِ مخزن، GitHub، تلگرام یا ایمیل نکن.
 EOS
 else
-  die "بکاپ ساخته شد ولی $MISMATCH جدول در بازگردانی نخواند.
-این یعنی بکاپ قابلِ اتکا **نیست**. لاگ‌ها: $OUT_DIR/restore-*.log
+  die "بکاپ ساخته شد ولی مقایسه نخواند. جزئیات: $OUT_DIR/comparison.txt
+این یعنی بکاپ قابلِ اتکا **نیست**.
 تا رفعِ این مشکل هیچ migrationی روی Production اجرا نمی‌شود."
 fi

@@ -242,7 +242,11 @@ jobs:
           # ۱۶۵ → ۱۸۷ در `P2-CLAUDE-MEGA-004`: `grants.integration.test.ts`
           # (گاردِ `B-044`) به `test:db` اضافه شد. مثلِ دفعاتِ قبل از اجرای واقعیِ
           # سبز خوانده شد — `pass=187 fail=0 skipped=0 suites=14`.
-          MIN_PASS=187
+          # ۱۸۷ → ۲۰۴ در `P2-OPS-MEGA-005`: `backup-restore.integration.test.ts`
+          # به `test:db` اضافه شد — بازگردانیِ اتمیک، تزریقِ خطای عمدی و
+          # حساسیتِ اثرِ انگشت روی Postgresِ واقعی. از اجرای واقعیِ سبز خوانده
+          # شد: `pass=204 fail=0 skipped=0 suites=19`.
+          MIN_PASS=204
 
           # ⚠️ `# fail` همهٔ شکست‌ها را نمی‌شمارد. وقتی یک هوکِ `before` بترکد،
           # node:test کلِ suite را با `not ok` علامت می‌زند ولی `# fail` همچنان
