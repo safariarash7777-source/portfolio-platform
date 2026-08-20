@@ -323,8 +323,21 @@ describe("سکرت و مقصدِ بکاپ", () => {
   });
 
   test("مقصد داخلِ هیچ مخزنِ گیتی نیست", () => {
-    assert.match(bash, /rev-parse --git-dir/);
-    assert.match(ps1, /rev-parse --git-dir/);
+    assert.match(bashCode, /rev-parse --git-dir/);
+    // ⚠️ نسخهٔ ویندوزی عمداً به git شل‌اوت **نمی‌کند**. در PowerShell 5.1 هر
+    // خطِ stderr از یک برنامهٔ خارجی زیرِ ErrorActionPreference='Stop' اسکریپت
+    // را می‌کشد — و همین در اولین اجرای واقعی اتفاق افتاد، دقیقاً وقتی گارد
+    // درست کار می‌کرد. پیمایشِ خالصِ پوشه‌ها نه به git وابسته است نه به stderr.
+    assert.match(ps1Code, /function Test-InsideGitRepo/);
+    assert.match(ps1Code, /Test-InsideGitRepo -Path \$OutDir/);
+  });
+
+  test("stderrِ برنامه‌های خارجی اسکریپتِ ویندوزی را نمی‌کشد", () => {
+    // git/docker/supabase همگی روی stderr پیام می‌دهند. 'Stop' هرگز چیزی را
+    // ایمن نکرده بود؛ بررسیِ صریحِ $LASTEXITCODE این کار را می‌کند.
+    assert.match(ps1Code, /\$ErrorActionPreference = 'Continue'/);
+    assert.doesNotMatch(ps1Code, /\$ErrorActionPreference = 'Stop'/);
+    assert.match(ps1Code, /\$LASTEXITCODE/);
   });
 
   test("گاردِ مقصد پیش از هر کارِ دیگری اجرا می‌شود", () => {
@@ -335,7 +348,7 @@ describe("سکرت و مقصدِ بکاپ", () => {
       "bash: گاردِ مقصد باید قبل از بررسیِ Docker باشد"
     );
     assert.ok(
-      ps1.indexOf("rev-parse --git-dir") < ps1.indexOf("Test-Command 'docker'"),
+      ps1.indexOf("Test-InsideGitRepo -Path $OutDir") < ps1.indexOf("Test-Command 'docker'"),
       "ps1: گاردِ مقصد باید قبل از بررسیِ Docker باشد"
     );
   });

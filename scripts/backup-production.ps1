@@ -45,7 +45,22 @@
 #>
 
 Set-StrictMode -Version 2.0
-$ErrorActionPreference = 'Stop'
+
+# ---- Why this is 'Continue' and not 'Stop' ---------------------------------
+# On Windows PowerShell 5.1, ANY stderr output from an external program is
+# turned into an ErrorRecord, and with $ErrorActionPreference = 'Stop' that
+# record TERMINATES the script - even when the program succeeded and even
+# when the stream was redirected with 2>$null.
+#
+# git, docker and the Supabase CLI all write ordinary progress and diagnostics
+# to stderr. With 'Stop' this script died on its very first real run, inside
+# the destination guard, on a `git rev-parse` that was behaving exactly as
+# intended.
+#
+# Every external call below already checks $LASTEXITCODE explicitly and calls
+# Die on failure, so 'Stop' was never what made this script safe. The exit
+# codes are. Cleanup is guaranteed by the try/finally instead.
+$ErrorActionPreference = 'Continue'
 
 $Stamp      = Get-Date -Format 'yyyyMMdd-HHmmss'
 $OutDir     = if ($env:BACKUP_DIR) { $env:BACKUP_DIR } else { Join-Path $HOME "supabase-backups\prod-$Stamp" }
@@ -67,12 +82,22 @@ function Die  { param([string]$Text) Write-Host "`n[FAIL] $Text" -ForegroundColo
 # ---- 0) destination must be outside every git repository --------------------
 # Deliberately the first check: it is the cheapest, and a wrong destination
 # should be caught before Docker is started.
+# Walk the directory chain looking for a .git entry. This used to shell out to
+# `git rev-parse --git-dir`, which is the more thorough check, but it meant the
+# guard depended on git being installed AND on git's stderr behaviour. Pure
+# PowerShell has neither problem and cannot be killed by a stderr line.
+function Test-InsideGitRepo {
+    param([string]$Path)
+    $dir = Get-Item -LiteralPath $Path -ErrorAction SilentlyContinue
+    while ($null -ne $dir) {
+        if (Test-Path -LiteralPath (Join-Path $dir.FullName '.git')) { return $true }
+        $dir = $dir.Parent
+    }
+    return $false
+}
+
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
-Push-Location $OutDir
-& git rev-parse --git-dir 2>$null | Out-Null
-$insideRepo = ($LASTEXITCODE -eq 0)
-Pop-Location
-if ($insideRepo) {
+if (Test-InsideGitRepo -Path $OutDir) {
     Die "Destination is inside a git repository: $OutDir`nA backup must never enter the repo. Set BACKUP_DIR to another path."
 }
 
