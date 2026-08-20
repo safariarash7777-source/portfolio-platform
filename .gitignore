@@ -53,3 +53,8 @@ schema.sql
 data.sql
 *.dump
 supabase-backups/
+inventory-source.txt
+inventory-restored.txt
+comparison.txt
+restore.log
+MANIFEST.txt
