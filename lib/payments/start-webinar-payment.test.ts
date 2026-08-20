@@ -35,7 +35,7 @@ function registration(over: Partial<RegistrationRow> = {}): RegistrationRow {
 
 interface Spy {
   gatewayCalls: number;
-  rpcCalls: Array<{ expectedAmount: number; replace: boolean; authority: string }>;
+  rpcCalls: Array<{ expectedAmount: number; authority: string }>;
   auditCalls: number;
 }
 
@@ -52,8 +52,8 @@ function ports(
     async loadPayment() {
       return { payment, error: null };
     },
-    async loadStaleMinutes() {
-      return 60;
+    async loadResumeHintMinutes() {
+      return 15;
     },
     async requestGatewayPayment() {
       spy.gatewayCalls += 1;
@@ -62,7 +62,6 @@ function ports(
     async createWebinarPayment(input) {
       spy.rpcCalls.push({
         expectedAmount: input.expectedAmount,
-        replace: input.replace,
         authority: input.authority,
       });
       return { paymentId: "pay-new", error: null };
@@ -77,11 +76,10 @@ function ports(
   return { ports: { ...base, ...over }, spy };
 }
 
-const run = (p: StartPorts, replace = false) =>
+const run = (p: StartPorts) =>
   startWebinarPayment({
     userId: USER,
     registrationId: REG,
-    replaceRequested: replace,
     callbackPath: "/api/webinars/payment/callback",
     ports: p,
   });
@@ -92,7 +90,7 @@ describe("مسیرِ عادی", () => {
     const out = await run(p);
     assert.equal(out.status, "created");
     assert.equal(spy.gatewayCalls, 1);
-    assert.equal(spy.rpcCalls[0].replace, false);
+    assert.equal(spy.rpcCalls.length, 1);
   });
 
   test("مبلغِ ارسالی به RPC از ردیفِ وبینار می‌آید، نه از کلاینت", async () => {
@@ -120,7 +118,7 @@ describe("مسیرِ عادی", () => {
   });
 });
 
-describe("تلاشِ دوباره — لینکِ اول یتیم نمی‌شود", () => {
+describe("تلاشِ دوباره — هیچ پرداختِ موفقی یتیم نمی‌شود", () => {
   const pendingPay: ExistingPayment = {
     id: "pay-old",
     status: "pending",
@@ -133,33 +131,39 @@ describe("تلاشِ دوباره — لینکِ اول یتیم نمی‌شود
     const out = await run(p);
     assert.equal(out.status, "resumed");
     assert.equal(out.status === "resumed" && out.paymentUrl, "https://gw/StartPay/OLD-AUTH");
-    assert.equal(spy.gatewayCalls, 0, "⚠️ اگر اینجا تراکنشی ساخته شود، همان باگِ اصلی است");
+    assert.equal(spy.gatewayCalls, 0, "⚠️ ساختِ تراکنشِ دوم همان باگِ اصلی است");
     assert.equal(spy.rpcCalls.length, 0);
   });
 
-  test("درخواستِ جایگزینی پیش از پنجره رد می‌شود، بدونِ تماس با درگاه", async () => {
-    const { ports: p, spy } = ports({}, registration({ payment_id: "pay-old" }), pendingPay);
-    const out = await run(p, true);
-    assert.equal(out.status === "rejected" && out.httpStatus, 409);
-    assert.equal(out.status === "rejected" && out.reason, "not_stale_yet");
+  test("پرداختِ خیلی قدیمی هم جایگزین نمی‌شود", async () => {
+    // پیش از این، گذشتِ زمان اجازهٔ جایگزینی می‌داد. آن فرض سند نداشت.
+    const ancient: ExistingPayment = { ...pendingPay, created_at: "2025-01-01T00:00:00Z" };
+    const { ports: p, spy } = ports({}, registration({ payment_id: "pay-old" }), ancient);
+    const out = await run(p);
+    assert.equal(out.status, "resumed");
     assert.equal(spy.gatewayCalls, 0);
   });
 
-  test("جایگزینیِ پرداختِ کهنه با پرچمِ صریح به RPC می‌رسد", async () => {
-    const stale: ExistingPayment = { ...pendingPay, created_at: "2026-08-20T10:00:00Z" };
-    const { ports: p, spy } = ports({}, registration({ payment_id: "pay-old" }), stale);
-    const out = await run(p, true);
+  test("پس از پنجرهٔ راهنما، فقط پرچمِ کمک روشن می‌شود — نه جایگزینی", async () => {
+    const old: ExistingPayment = { ...pendingPay, created_at: "2026-08-20T11:00:00Z" };
+    const { ports: p, spy } = ports({}, registration({ payment_id: "pay-old" }), old);
+    const out = await run(p);
+    assert.equal(out.status, "resumed");
+    assert.equal(out.status === "resumed" && out.offerHelp, true);
+    assert.equal(spy.gatewayCalls, 0, "پرچمِ راهنما نباید تراکنشِ تازه بسازد");
+  });
+
+  test("پس از بازیابیِ حاکمیتیِ ادمین (failed)، تلاشِ تازه مجاز است", async () => {
+    const cancelled: ExistingPayment = { ...pendingPay, status: "failed" };
+    const { ports: p, spy } = ports({}, registration({ payment_id: "pay-old" }), cancelled);
+    const out = await run(p);
     assert.equal(out.status, "created");
-    assert.equal(spy.rpcCalls[0].replace, true);
+    assert.equal(spy.gatewayCalls, 1);
   });
 
   test("اگر وضعیتِ پرداختِ قبلی خوانده نشد، لینکِ تازه ساخته نمی‌شود", async () => {
     const { ports: p, spy } = ports(
-      {
-        async loadPayment() {
-          return { payment: null, error: new Error("boom") };
-        },
-      },
+      { async loadPayment() { return { payment: null, error: new Error("boom") }; } },
       registration({ payment_id: "pay-old" })
     );
     const out = await run(p);
@@ -167,19 +171,20 @@ describe("تلاشِ دوباره — لینکِ اول یتیم نمی‌شود
     assert.equal(spy.gatewayCalls, 0, "در ابهام نباید لینکِ دوم ساخت");
   });
 
-  test("نبودِ تنظیمِ پنجره باعثِ جایگزینیِ زودهنگام نمی‌شود", async () => {
-    const { ports: p } = ports(
-      { async loadStaleMinutes() { return null; } },
+  test("نبودِ تنظیمِ راهنما هیچ تصمیمی را عوض نمی‌کند", async () => {
+    const { ports: p, spy } = ports(
+      { async loadResumeHintMinutes() { return null; } },
       registration({ payment_id: "pay-old" }),
       pendingPay
     );
-    const out = await run(p, true);
-    assert.equal(out.status, "rejected", "پیش‌فرضِ نبودِ تنظیم باید محافظه‌کارانه باشد");
+    const out = await run(p);
+    assert.equal(out.status, "resumed");
+    assert.equal(spy.gatewayCalls, 0);
   });
 
   test("ثبت‌نامِ پرداخت‌شده هیچ لینکی نمی‌گیرد", async () => {
     const { ports: p, spy } = ports({}, registration({ payment_status: "paid" }));
-    const out = await run(p, true);
+    const out = await run(p);
     assert.equal(out.status === "rejected" && out.httpStatus, 400);
     assert.equal(spy.gatewayCalls, 0);
   });

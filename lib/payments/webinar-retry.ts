@@ -13,16 +13,23 @@
 //
 // `FOR UPDATE` جلوی این را نمی‌گیرد؛ مسئله هم‌زمانی نیست، ترتیب است.
 //
-// ── سیاست ───────────────────────────────────────────────────────────────────
+// ── سیاست (پس از بازبینیِ Command Center) ───────────────────────────────────
 //
-// پیش‌فرض **از سرگیری** است، نه ساختِ لینکِ تازه: تا وقتی پرداختِ قبلی ممکن
-// است قابلِ پرداخت باشد، همان لینکِ اول برگردانده می‌شود. پس هرگز دو لینکِ
-// زندهٔ هم‌زمان وجود ندارد و لینکِ اول یتیم نمی‌شود.
+// **پرداختِ در جریان همیشه از سر گرفته می‌شود.** هیچ authorityِ تازه‌ای ساخته
+// نمی‌شود تا وقتی پرداختِ قبلی به وضعیتِ نهایی برسد.
 //
-// جایگزینی فقط وقتی مجاز است که **هر دو** شرط برقرار باشد: کاربر صریحاً
-// خواسته باشد، و پرداختِ قبلی از پنجرهٔ `webinar_retry_stale_minutes` قدیمی‌تر
-// باشد. آن پنجره باید از اعتبارِ لینکِ درگاه بزرگ‌تر باشد، وگرنه دقیقاً همان
-// حفره را از راهِ دیگری باز می‌کنیم.
+// نسخهٔ قبل اجازه می‌داد کاربر پس از یک پنجرهٔ زمانی، پرداختِ قبلی را عمداً
+// جایگزین کند. آن طراحی رد شد و درست هم رد شد: پنجره بر پایهٔ فرضی دربارهٔ
+// انقضای لینکِ درگاه بود که **هیچ سندی برایش نداریم**. اگر فرض غلط باشد،
+// کاربری که لینکِ قدیمی را پرداخت می‌کند پولش به هیچ ثبت‌نامی نمی‌رسد — یعنی
+// همان حفره‌ای که قرار بود بسته شود، از راهِ دیگری باز می‌ماند.
+//
+// حالا فقط دو راهِ خروج از حالتِ pending وجود دارد و هر دو نهایی‌اند:
+//   • callbackِ درگاه پرداخت را `paid` یا `failed` می‌کند؛
+//   • ادمین با `admin_cancel_pending_payment` بازیابیِ حاکمیتی انجام می‌دهد.
+//
+// چون هیچ لینکِ دومی ساخته نمی‌شود، هر پولی که پرداخت شود روی پرداختی می‌نشیند
+// که هنوز pending است و callback می‌تواند نهایی‌اش کند.
 //
 // این ماژول تصمیم را می‌گیرد؛ **اجرایش** را دیتابیس مستقلاً دوباره بررسی
 // می‌کند (`create_webinar_payment`). دو لایه، چون مسیرِ API مرزِ امنیتی نیست.
@@ -39,26 +46,26 @@ export type RetryDecision =
   | { action: "create" }
   /** پرداختِ در جریان هست — همان لینک را برگردان، لینکِ تازه نساز. */
   | { action: "resume"; paymentId: string; authority: string }
-  /** کاربر صریحاً خواسته و پرداختِ قبلی کهنه است — ابطال و جایگزینی. */
-  | { action: "replace"; previousPaymentId: string }
   | {
       action: "reject";
-      reason: "already_paid" | "not_stale_yet" | "broken_link";
+      reason: "already_paid" | "broken_link";
       message: string;
-      retryAfterMinutes?: number;
     };
 
 export interface RetryInput {
   registrationPaymentStatus: string | null;
   existingPayment: ExistingPayment | null;
-  replaceRequested: boolean;
-  staleMinutes: number;
-  now: Date;
+  /**
+   * فقط برای **رابط کاربری**: بعد از این چند دقیقه، گزینهٔ «کمک می‌خواهم» به
+   * کاربر نشان داده می‌شود. هیچ تصمیمی اینجا بر اساسش گرفته نمی‌شود و هیچ
+   * ادعایی دربارهٔ اعتبارِ لینکِ درگاه نمی‌کند.
+   */
+  resumeHintMinutes?: number;
+  now?: Date;
 }
 
 export function decideWebinarRetry(input: RetryInput): RetryDecision {
-  const { registrationPaymentStatus, existingPayment, replaceRequested, staleMinutes, now } =
-    input;
+  const { registrationPaymentStatus, existingPayment } = input;
 
   if (registrationPaymentStatus === "paid") {
     return {
@@ -93,25 +100,23 @@ export function decideWebinarRetry(input: RetryInput): RetryDecision {
     };
   }
 
-  if (!replaceRequested) {
-    return {
-      action: "resume",
-      paymentId: existingPayment.id,
-      authority: existingPayment.authority,
-    };
-  }
+  // ⚠️ بدونِ شرط. این تنها خروجیِ ممکن برای پرداختِ pending است.
+  return {
+    action: "resume",
+    paymentId: existingPayment.id,
+    authority: existingPayment.authority,
+  };
+}
 
-  const ageMinutes = (now.getTime() - new Date(existingPayment.created_at).getTime()) / 60000;
-  if (!Number.isFinite(ageMinutes) || ageMinutes < staleMinutes) {
-    const remaining = Math.max(1, Math.ceil(staleMinutes - (Number.isFinite(ageMinutes) ? ageMinutes : 0)));
-    return {
-      action: "reject",
-      reason: "not_stale_yet",
-      message:
-        "پرداختِ قبلی هنوز معتبر است. اگر صفحهٔ درگاه را بسته‌اید، از همان لینکِ قبلی ادامه دهید.",
-      retryAfterMinutes: remaining,
-    };
-  }
-
-  return { action: "replace", previousPaymentId: existingPayment.id };
+/**
+ * آیا زمانِ نشان‌دادنِ گزینهٔ کمک رسیده؟ **فقط تزئینِ رابط**؛ روی هیچ تصمیمی
+ * اثر ندارد و هیچ ادعایی دربارهٔ منقضی‌شدنِ لینک نمی‌کند.
+ */
+export function shouldOfferHelp(
+  payment: ExistingPayment,
+  hintMinutes: number,
+  now: Date = new Date()
+): boolean {
+  const age = (now.getTime() - new Date(payment.created_at).getTime()) / 60000;
+  return Number.isFinite(age) && age >= hintMinutes;
 }

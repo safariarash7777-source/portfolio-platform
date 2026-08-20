@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}));
   const registrationId = body?.registration_id;
-  const replaceRequested = body?.replace === true;
 
   if (!registrationId) {
     return NextResponse.json({ error: "registration_id الزامی است." }, { status: 400 });
@@ -83,11 +82,11 @@ export async function POST(req: NextRequest) {
       return { payment: (data as ExistingPayment | null) ?? null, error };
     },
 
-    async loadStaleMinutes() {
+    async loadResumeHintMinutes() {
       const { data } = await admin
         .from("payment_settings")
         .select("value")
-        .eq("key", "webinar_retry_stale_minutes")
+        .eq("key", "webinar_resume_hint_minutes")
         .maybeSingle();
       return data?.value ?? null;
     },
@@ -110,7 +109,6 @@ export async function POST(req: NextRequest) {
         p_registration_id: input.registrationId,
         p_authority: input.authority,
         p_expected_amount: input.expectedAmount,
-        p_replace: input.replace,
       });
       return { paymentId: (data as string | null) ?? null, error };
     },
@@ -144,7 +142,6 @@ export async function POST(req: NextRequest) {
   const outcome = await startWebinarPayment({
     userId: user.id,
     registrationId,
-    replaceRequested,
     callbackPath: WEBINAR_CALLBACK_PATH,
     ports,
   });
@@ -155,16 +152,17 @@ export async function POST(req: NextRequest) {
 
     case "resumed":
       // ⚠️ هیچ تراکنشِ تازه‌ای ساخته نشد. همان لینکِ اول، پس نمی‌تواند یتیم شود.
-      return NextResponse.json({ payment_url: outcome.paymentUrl, resumed: true });
+      return NextResponse.json({
+        payment_url: outcome.paymentUrl,
+        resumed: true,
+        offer_help: outcome.offerHelp,
+      });
 
     case "rejected":
       return NextResponse.json(
         {
           error: outcome.message,
           reason: outcome.reason,
-          ...(outcome.retryAfterMinutes
-            ? { retry_after_minutes: outcome.retryAfterMinutes }
-            : {}),
         },
         { status: outcome.httpStatus }
       );

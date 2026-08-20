@@ -183,10 +183,16 @@ CREATE POLICY "durations_admin_write" ON public.entitlement_durations
 
 -- ── ۴.۱ تنظیماتِ عملیاتیِ پرداخت ────────────────────────────────────────────
 --
--- پنجرهٔ «کهنه‌شدن» برای پرداختِ pending. تا وقتی یک پرداختِ pending از این
--- پنجره جوان‌تر است، لینکِ درگاهش ممکن است هنوز قابلِ پرداخت باشد؛ پس **باطل
--- کردنش خطرناک است** — کاربر می‌تواند همان لینک را پرداخت کند و پولش به هیچ
--- ثبت‌نامی نرسد. مقدار باید از پنجرهٔ اعتبارِ StartPay درگاه بزرگ‌تر باشد.
+-- ── بازبینیِ Command Center: این عدد **هیچ چیزی را اجرا نمی‌کند** ────────────
+--
+-- نسخهٔ قبل با همین عدد تصمیم می‌گرفت که یک پرداختِ pending «کهنه» شده و
+-- می‌شود باطلش کرد. آن تصمیم بر پایهٔ فرضی دربارهٔ مدتِ اعتبارِ لینکِ StartPay
+-- بود که **هیچ سندی برایش نداریم**. اگر آن فرض غلط باشد، کاربری که لینکِ
+-- قدیمی را پرداخت می‌کند پولش به هیچ ثبت‌نامی نمی‌رسد.
+--
+-- حالا این عدد فقط یک **راهنمای رابط کاربری** است: بعد از این چند دقیقه،
+-- گزینهٔ «لینک دیگری می‌خواهم» به کاربر نشان داده می‌شود. هیچ‌جای دیتابیس بر
+-- اساسش پرداختی را باطل نمی‌کند و هیچ ادعایی دربارهٔ اعتبارِ درگاه نمی‌کند.
 CREATE TABLE IF NOT EXISTS public.payment_settings (
   key        text PRIMARY KEY,
   value      integer NOT NULL CHECK (value > 0),
@@ -195,7 +201,7 @@ CREATE TABLE IF NOT EXISTS public.payment_settings (
 );
 
 INSERT INTO public.payment_settings (key, value) VALUES
-  ('webinar_retry_stale_minutes', 15)
+  ('webinar_resume_hint_minutes', 15)
 ON CONFLICT (key) DO NOTHING;
 
 ALTER TABLE public.payment_settings ENABLE ROW LEVEL SECURITY;
@@ -280,28 +286,26 @@ END $$;
 --   PT409 → پرداختِ در جریان (قابلِ از سرگیری)
 --   PT425 → پرداخت هنوز کهنه نشده، جایگزینی مجاز نیست
 DROP FUNCTION IF EXISTS public.create_webinar_payment(uuid, integer, text);
+DROP FUNCTION IF EXISTS public.create_webinar_payment(uuid, text, integer, boolean);
 
 CREATE OR REPLACE FUNCTION public.create_webinar_payment(
   p_registration_id uuid,
   p_authority       text,
-  p_expected_amount integer,
-  p_replace         boolean DEFAULT false
+  p_expected_amount integer
 ) RETURNS uuid
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
-  v_user       uuid := auth.uid();
-  v_reg        record;
-  v_price      integer;
-  v_old        record;
-  v_stale_min  integer;
-  v_payment    uuid;
+  v_user    uuid := auth.uid();
+  v_reg     record;
+  v_price   integer;
+  v_old     record;
+  v_payment uuid;
 BEGIN
   IF v_user IS NULL THEN
     RAISE EXCEPTION 'دسترسی غیرمجاز.';
   END IF;
 
-  -- ثبت‌نام و وبینارش با هم قفل می‌شوند؛ قیمت از همین‌جا می‌آید.
   SELECT r.id, r.user_id, r.payment_status, r.payment_id, w.price_toman
     INTO v_reg
     FROM public.webinar_registrations r
@@ -324,24 +328,33 @@ BEGIN
     RAISE EXCEPTION 'این وبینار قیمتِ معتبر ندارد.';
   END IF;
 
-  -- مبلغِ ارسالی فقط تطبیق داده می‌شود؛ چیزی که ذخیره می‌شود v_price است.
   IF p_expected_amount IS DISTINCT FROM v_price THEN
     RAISE EXCEPTION
       'مبلغِ درخواست (%) با قیمتِ ثبت‌شدهٔ وبینار (%) نمی‌خواند.',
       p_expected_amount, v_price;
   END IF;
 
-  -- ── اتصالِ موجود ────────────────────────────────────────────────────────
+  -- ── اتصالِ موجود: پرداختِ در جریان **همیشه** از سر گرفته می‌شود ──────────
+  --
+  -- نسخهٔ قبل اجازه می‌داد پرداختِ pending پس از یک پنجرهٔ زمانی جایگزین شود.
+  -- Command Center درست رد کرد: آن پنجره بر پایهٔ فرضی دربارهٔ انقضای لینکِ
+  -- درگاه بود که سندی ندارد. اگر لینکِ قدیمی هنوز قابلِ پرداخت باشد، کاربر
+  -- پول می‌دهد و پرداختش به ثبت‌نامی نمی‌رسد.
+  --
+  -- قاعدهٔ جدید ساده و اثبات‌پذیر است: **تا وقتی پرداختی pending است، هیچ
+  -- authorityِ تازه‌ای ساخته نمی‌شود.** تنها راهِ بیرون‌آمدن، رسیدنِ آن پرداخت
+  -- به وضعیتِ نهایی است — یا از راهِ callbackِ درگاه، یا با بازیابیِ حاکمیتیِ
+  -- ادمین (`admin_cancel_pending_payment`) که ردِ ممیزی دارد.
+  --
+  -- نتیجه: هر پولی که پرداخت شود، پرداختش هنوز pending است و callback
+  -- می‌تواند نهایی‌اش کند. هیچ پرداختِ موفقی یتیم نمی‌شود.
   IF v_reg.payment_id IS NOT NULL THEN
-    SELECT id, status, authority, created_at
-      INTO v_old
+    SELECT id, status, authority INTO v_old
       FROM public.payments
      WHERE id = v_reg.payment_id
        FOR UPDATE;
 
     IF v_old.id IS NULL THEN
-      -- اتصال به ردیفی که وجود ندارد. نباید ممکن باشد (کلیدِ خارجی)، ولی
-      -- اگر شد، خاموش ردش نمی‌کنیم.
       RAISE EXCEPTION 'اتصالِ پرداختِ این ثبت‌نام معتبر نیست.';
     END IF;
 
@@ -350,38 +363,13 @@ BEGIN
     END IF;
 
     IF v_old.status = 'pending' THEN
-      SELECT value INTO v_stale_min
-        FROM public.payment_settings
-       WHERE key = 'webinar_retry_stale_minutes';
-      IF v_stale_min IS NULL THEN
-        RAISE EXCEPTION 'تنظیمِ webinar_retry_stale_minutes موجود نیست.';
-      END IF;
-
-      IF NOT p_replace THEN
-        RAISE EXCEPTION
-          'برای این ثبت‌نام یک پرداختِ در جریان وجود دارد.'
-          USING ERRCODE = 'PT409';
-      END IF;
-
-      IF v_old.created_at > now() - make_interval(mins => v_stale_min) THEN
-        RAISE EXCEPTION
-          'پرداختِ قبلی هنوز معتبر است؛ تا % دقیقه پس از شروع جایگزین نمی‌شود.',
-          v_stale_min
-          USING ERRCODE = 'PT425';
-      END IF;
-
-      -- ابطالِ عمدی و ثبت‌شده. `fail_payment` تنها نویسندهٔ مجازِ status است.
-      PERFORM public.fail_payment(v_old.authority);
-
-      INSERT INTO public.audit_log (actor_id, action, entity, target_user_id, after)
-      VALUES (v_user, 'payment.replaced', 'payment', v_user,
-              jsonb_build_object('registration_id', p_registration_id,
-                                 'replaced_payment_id', v_old.id,
-                                 'stale_after_minutes', v_stale_min));
+      RAISE EXCEPTION
+        'برای این ثبت‌نام یک پرداختِ در جریان وجود دارد.'
+        USING ERRCODE = 'PT409';
     END IF;
-    -- status = 'failed' → پرداختِ قبلی در وضعیتِ نهایی است و لینکش دیگر
-    -- قابلِ پرداخت نیست (تریگرِ payments_guard از failed→paid جلو می‌گیرد).
-    -- جایگزینی بی‌خطر است.
+    -- status = 'failed' → وضعیتِ نهایی. تریگرِ payments_guard گذارِ
+    -- failed→paid را می‌بندد، پس لینکِ قبلی دیگر نمی‌تواند موفق شود و
+    -- ساختنِ پرداختِ تازه بی‌خطر است.
   END IF;
 
   v_payment := public.create_payment(v_user, v_price, p_authority, 'webinar');
@@ -391,6 +379,47 @@ BEGIN
    WHERE id = p_registration_id;
 
   RETURN v_payment;
+END $$;
+
+-- ── ۶.۱ بازیابیِ حاکمیتی — تنها راهِ خروج از پرداختِ در جریان ───────────────
+--
+-- ادمین پس از بررسیِ وضعیتِ واقعیِ تراکنش در پنلِ درگاه، پرداختِ معلق را
+-- **صریحاً** باطل می‌کند. دلیل الزامی است و در `audit_log` می‌ماند.
+--
+-- ⚠️ این کار ذاتاً ریسک دارد: اگر لینکِ قدیمی هنوز قابلِ پرداخت باشد و کاربر
+-- بعداً پرداختش کند، آن پول به ثبت‌نامی نمی‌رسد. برای همین **دستِ کاربر نیست**
+-- و خودکار هم اتفاق نمی‌افتد — یک انسان با دیدنِ وضعیتِ درگاه تصمیم می‌گیرد و
+-- نامش ثبت می‌شود.
+CREATE OR REPLACE FUNCTION public.admin_cancel_pending_payment(
+  p_payment_id uuid,
+  p_reason     text
+) RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE v_pay record;
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'فقط ادمین می‌تواند پرداختِ معلق را باطل کند.';
+  END IF;
+  IF p_reason IS NULL OR length(trim(p_reason)) < 10 THEN
+    RAISE EXCEPTION 'دلیلِ ابطال الزامی است (حداقل ۱۰ نویسه).';
+  END IF;
+
+  SELECT id, user_id, status, authority INTO v_pay
+    FROM public.payments WHERE id = p_payment_id FOR UPDATE;
+
+  IF v_pay.id IS NULL THEN
+    RAISE EXCEPTION 'پرداخت یافت نشد.';
+  END IF;
+  IF v_pay.status <> 'pending' THEN
+    RAISE EXCEPTION 'فقط پرداختِ pending قابلِ ابطال است (وضعیتِ فعلی: %).', v_pay.status;
+  END IF;
+
+  PERFORM public.fail_payment(v_pay.authority);
+
+  INSERT INTO public.audit_log (actor_id, action, entity, target_user_id, after)
+  VALUES (auth.uid(), 'payment.admin_cancelled', 'payment', v_pay.user_id,
+          jsonb_build_object('payment_id', v_pay.id, 'reason', left(p_reason, 500)));
 END $$;
 
 -- ── ۷. تابعِ واحدِ نهایی‌سازی ────────────────────────────────────────────────
@@ -572,8 +601,13 @@ GRANT EXECUTE ON FUNCTION public.create_payment(uuid, integer, text, text) TO se
 -- پرداختِ وبینار برای کاربرِ واردشده می‌ماند: مالکیت با `auth.uid()` بررسی
 -- می‌شود و دیگر هیچ ورودیِ قابلِ جعلی وجود ندارد — مبلغ از ردیفِ وبینار
 -- استخراج می‌شود و purpose داخلِ تابع ثابت است.
-REVOKE ALL ON FUNCTION public.create_webinar_payment(uuid, text, integer, boolean) FROM public, anon;
-GRANT EXECUTE ON FUNCTION public.create_webinar_payment(uuid, text, integer, boolean) TO authenticated;
+REVOKE ALL ON FUNCTION public.create_webinar_payment(uuid, text, integer) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.create_webinar_payment(uuid, text, integer) TO authenticated;
+
+-- بازیابیِ حاکمیتی: نه anon، نه کاربرِ عادی. تابع خودش هم `is_admin()` را
+-- بررسی می‌کند، ولی امتیاز هم صریح گرفته می‌شود — یک لایه کافی نیست.
+REVOKE ALL ON FUNCTION public.admin_cancel_pending_payment(uuid, text) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.admin_cancel_pending_payment(uuid, text) TO authenticated, service_role;
 
 -- امضاهای قدیمی نباید باقی بمانند: هر کدام یک تابعِ SECURITY DEFINER است که
 -- مبلغ را از فراخواننده می‌گیرد. شرطی، چون این فایل باید روی محیطی که هرگز
@@ -656,12 +690,19 @@ BEGIN
 
   -- پرداختِ وبینار برای کاربر باز است، ولی برای anon نه.
   IF has_function_privilege('anon',
-       'public.create_webinar_payment(uuid, text, integer, boolean)', 'EXECUTE') THEN
+       'public.create_webinar_payment(uuid, text, integer)', 'EXECUTE') THEN
     RAISE EXCEPTION 'تأیید شکست خورد: anon هنوز می‌تواند پرداختِ وبینار بسازد.';
+  END IF;
+  IF to_regprocedure('public.create_webinar_payment(uuid, text, integer, boolean)') IS NOT NULL THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: امضای جایگزینی‌پذیرِ create_webinar_payment هنوز وجود دارد.';
+  END IF;
+  IF has_function_privilege('anon',
+       'public.admin_cancel_pending_payment(uuid, text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: anon به بازیابیِ حاکمیتی دسترسی دارد.';
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM public.payment_settings
-                  WHERE key = 'webinar_retry_stale_minutes') THEN
+                  WHERE key = 'webinar_resume_hint_minutes') THEN
     RAISE EXCEPTION 'تأیید شکست خورد: تنظیمِ پنجرهٔ کهنه‌شدنِ پرداخت مقداردهی نشد.';
   END IF;
 END $$;

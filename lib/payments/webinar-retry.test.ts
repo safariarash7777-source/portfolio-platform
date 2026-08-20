@@ -1,39 +1,39 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { decideWebinarRetry, type ExistingPayment } from "./webinar-retry";
+import {
+  decideWebinarRetry,
+  shouldOfferHelp,
+  type ExistingPayment,
+} from "./webinar-retry";
 
 /**
- * سیاستِ تلاشِ دوباره.
+ * سیاستِ تلاشِ دوباره — نسخهٔ پس از بازبینیِ Command Center.
  *
- * سناریوی اصلی که این تست‌ها می‌بندند، همانی است که Command Center در کامنت
- * ۵۳۵۳۳۰۹۳۲۹ توصیف کرد: کاربر دکمهٔ پرداخت را دوباره می‌زند، لینکِ دوم جای
- * لینکِ اول را می‌گیرد، بعد کاربر **لینکِ اول** را پرداخت می‌کند و پولش به
- * هیچ ثبت‌نامی نمی‌رسد.
+ * قاعده یک جمله است: **تا وقتی پرداختی pending است، لینکِ تازه ساخته
+ * نمی‌شود.** طراحیِ قبلی اجازه می‌داد پس از یک پنجرهٔ زمانی جایگزینی انجام
+ * شود؛ آن پنجره بر فرضی دربارهٔ انقضای لینکِ درگاه بنا شده بود که سندی
+ * نداشت، و اگر فرض غلط بود پولِ پرداخت‌شده به هیچ ثبت‌نامی نمی‌رسید.
  */
 
 const NOW = new Date("2026-08-20T12:00:00Z");
-const STALE = 60;
 
-function pending(overrides: Partial<ExistingPayment> = {}): ExistingPayment {
+function pending(over: Partial<ExistingPayment> = {}): ExistingPayment {
   return {
     id: "pay-1",
     status: "pending",
-    authority: "A00000000000000000000000000000000001",
+    authority: "A0000000000000000000000000000000001",
     created_at: NOW.toISOString(),
-    ...overrides,
+    ...over,
   };
 }
 
-function decide(input: Partial<Parameters<typeof decideWebinarRetry>[0]> = {}) {
-  return decideWebinarRetry({
-    registrationPaymentStatus: "unpaid",
+const decide = (over: Partial<Parameters<typeof decideWebinarRetry>[0]> = {}) =>
+  decideWebinarRetry({
+    registrationPaymentStatus: "pending",
     existingPayment: null,
-    replaceRequested: false,
-    staleMinutes: STALE,
     now: NOW,
-    ...input,
+    ...over,
   });
-}
 
 describe("بدونِ پرداختِ قبلی", () => {
   test("لینکِ تازه ساخته می‌شود", () => {
@@ -41,77 +41,48 @@ describe("بدونِ پرداختِ قبلی", () => {
   });
 });
 
-describe("پرداختِ در جریان — پیش‌فرض از سرگیری است", () => {
-  test("همان authorityِ اول برمی‌گردد، نه لینکِ تازه", () => {
+describe("پرداختِ در جریان — همیشه از سرگیری", () => {
+  test("همان authorityِ اول برمی‌گردد", () => {
     const d = decide({ existingPayment: pending() });
     assert.equal(d.action, "resume");
     assert.equal(d.action === "resume" && d.authority, pending().authority);
   });
 
-  test("سناریوی Command Center: لینکِ اول یتیم نمی‌شود", () => {
-    // درخواستِ دوم، ۵ دقیقه بعد، بدونِ replace.
-    const d = decide({
-      existingPayment: pending({ created_at: "2026-08-20T11:55:00Z" }),
-      now: NOW,
-    });
-    // هیچ‌وقت "create" برنمی‌گردد ⇒ authorityِ دومی ساخته نمی‌شود.
-    assert.notEqual(d.action, "create");
+  test("گذشتِ زمان چیزی را عوض نمی‌کند — حتی بعد از یک سال", () => {
+    // ⚠️ این قلبِ اصلاح است. هیچ مقدارِ زمانی نباید مسیر را از resume خارج کند.
+    for (const created of [
+      "2026-08-20T11:59:00Z",
+      "2026-08-20T11:00:00Z",
+      "2026-08-19T12:00:00Z",
+      "2025-08-20T12:00:00Z",
+    ]) {
+      const d = decide({ existingPayment: pending({ created_at: created }) });
+      assert.equal(d.action, "resume", `created_at=${created} نباید جایگزینی بدهد`);
+    }
+  });
+
+  test("هیچ خروجیِ «جایگزینی» در قرارداد وجود ندارد", () => {
+    const actions = new Set<string>();
+    for (const created of ["2026-08-20T12:00:00Z", "2020-01-01T00:00:00Z"]) {
+      actions.add(decide({ existingPayment: pending({ created_at: created }) }).action);
+    }
+    assert.deepEqual([...actions], ["resume"]);
+  });
+
+  test("created_atِ نامعتبر هم به resume ختم می‌شود", () => {
+    const d = decide({ existingPayment: pending({ created_at: "not-a-date" }) });
     assert.equal(d.action, "resume");
   });
 
-  test("درخواستِ جایگزینی پیش از پنجرهٔ کهنه‌شدن رد می‌شود", () => {
-    const d = decide({
-      existingPayment: pending({ created_at: "2026-08-20T11:30:00Z" }), // ۳۰ دقیقه
-      replaceRequested: true,
-    });
-    assert.equal(d.action, "reject");
-    assert.equal(d.action === "reject" && d.reason, "not_stale_yet");
-    assert.equal(d.action === "reject" && d.retryAfterMinutes, 30);
-  });
-
-  test("درست روی مرزِ پنجره هنوز رد می‌شود", () => {
-    const d = decide({
-      existingPayment: pending({ created_at: "2026-08-20T11:00:00.001Z" }),
-      replaceRequested: true,
-    });
-    assert.equal(d.action, "reject");
-  });
-
-  test("بعد از پنجره و با درخواستِ صریح، جایگزینی مجاز است", () => {
-    const d = decide({
-      existingPayment: pending({ created_at: "2026-08-20T10:30:00Z" }), // ۹۰ دقیقه
-      replaceRequested: true,
-    });
-    assert.equal(d.action, "replace");
-    assert.equal(d.action === "replace" && d.previousPaymentId, "pay-1");
-  });
-
-  test("کهنه بودن به‌تنهایی کافی نیست — جایگزینیِ خاموش ممنوع است", () => {
-    const d = decide({
-      existingPayment: pending({ created_at: "2026-08-20T10:00:00Z" }),
-      replaceRequested: false,
-    });
-    assert.equal(d.action, "resume");
-  });
-
-  test("pendingِ بدونِ authority خاموش جایگزین نمی‌شود", () => {
+  test("pendingِ بدونِ authority قابلِ از سرگیری نیست و خاموش رد نمی‌شود", () => {
     const d = decide({ existingPayment: pending({ authority: null }) });
     assert.equal(d.action, "reject");
     assert.equal(d.action === "reject" && d.reason, "broken_link");
   });
-
-  test("created_atِ نامعتبر باعثِ جایگزینی نمی‌شود", () => {
-    const d = decide({
-      existingPayment: pending({ created_at: "not-a-date" }),
-      replaceRequested: true,
-    });
-    assert.equal(d.action, "reject");
-    assert.equal(d.action === "reject" && d.reason, "not_stale_yet");
-  });
 });
 
 describe("وضعیت‌های نهایی", () => {
-  test("ثبت‌نامِ پرداخت‌شده هیچ پرداختِ تازه‌ای نمی‌گیرد", () => {
+  test("ثبت‌نامِ پرداخت‌شده لینکِ تازه نمی‌گیرد", () => {
     const d = decide({ registrationPaymentStatus: "paid" });
     assert.equal(d.action, "reject");
     assert.equal(d.action === "reject" && d.reason, "already_paid");
@@ -123,10 +94,26 @@ describe("وضعیت‌های نهایی", () => {
     assert.equal(d.action === "reject" && d.reason, "already_paid");
   });
 
-  test("پرداختِ failed مانعِ تلاشِ دوباره نیست", () => {
-    // گذارِ failed→paid را تریگرِ payments_guard می‌بندد، پس لینکِ قبلی
-    // دیگر قابلِ پرداخت نیست و جایگزینی بی‌خطر است.
+  test("پرداختِ failed (پس از بازیابیِ ادمین) اجازهٔ تلاشِ دوباره می‌دهد", () => {
+    // تنها راهِ خروج از pending، رسیدن به وضعیتِ نهایی است.
     const d = decide({ existingPayment: pending({ status: "failed" }) });
     assert.deepEqual(d, { action: "create" });
+  });
+});
+
+describe("راهنمای رابط کاربری — تزئینی و بی‌اثر", () => {
+  test("پیش از پنجره، کمکی پیشنهاد نمی‌شود", () => {
+    assert.equal(shouldOfferHelp(pending({ created_at: "2026-08-20T11:50:00Z" }), 15, NOW), false);
+  });
+
+  test("پس از پنجره، پیشنهاد می‌شود", () => {
+    assert.equal(shouldOfferHelp(pending({ created_at: "2026-08-20T11:40:00Z" }), 15, NOW), true);
+  });
+
+  test("این پرچم روی تصمیم اثر ندارد", () => {
+    // همان پرداختی که «کمک» برایش پیشنهاد می‌شود، باز هم resume می‌گیرد.
+    const old = pending({ created_at: "2026-08-20T10:00:00Z" });
+    assert.equal(shouldOfferHelp(old, 15, NOW), true);
+    assert.equal(decide({ existingPayment: old }).action, "resume");
   });
 });

@@ -10,7 +10,11 @@
 // اینجا همان الگوی `lib/payments/finalize.ts` تکرار می‌شود: هر تماسِ بیرونی
 // یک پورت است و در تست جایگزین می‌شود.
 
-import { decideWebinarRetry, type ExistingPayment } from "./webinar-retry";
+import {
+  decideWebinarRetry,
+  shouldOfferHelp,
+  type ExistingPayment,
+} from "./webinar-retry";
 
 export interface RegistrationRow {
   id: string;
@@ -37,8 +41,8 @@ export interface StartPorts {
     paymentId: string
   ): Promise<{ payment: ExistingPayment | null; error: unknown }>;
 
-  /** `null` یعنی تنظیم خوانده نشد؛ تصمیم‌گیر مقدارِ محافظه‌کارانه می‌گیرد. */
-  loadStaleMinutes(): Promise<number | null>;
+  /** فقط راهنمای رابط کاربری؛ روی هیچ تصمیمی اثر ندارد. */
+  loadResumeHintMinutes(): Promise<number | null>;
 
   requestGatewayPayment(
     amountToman: number,
@@ -49,7 +53,6 @@ export interface StartPorts {
     registrationId: string;
     authority: string;
     expectedAmount: number;
-    replace: boolean;
   }): Promise<{ paymentId: string | null; error: unknown }>;
 
   /**
@@ -71,14 +74,16 @@ export interface StartPorts {
 
 export type StartOutcome =
   | { status: "created"; paymentUrl: string }
-  /** پرداختِ در جریان — همان لینکِ اول، بدونِ ساختِ authorityِ تازه. */
-  | { status: "resumed"; paymentUrl: string }
+  /**
+   * پرداختِ در جریان — همان لینکِ اول، بدونِ ساختِ authorityِ تازه.
+   * `offerHelp` فقط می‌گوید رابط گزینهٔ تماس با پشتیبانی را نشان بدهد یا نه.
+   */
+  | { status: "resumed"; paymentUrl: string; offerHelp: boolean }
   | {
       status: "rejected";
       reason: string;
       message: string;
       httpStatus: 400 | 404 | 409 | 503;
-      retryAfterMinutes?: number;
     }
   | { status: "gateway_failed"; message: string }
   /**
@@ -88,13 +93,12 @@ export type StartOutcome =
    */
   | { status: "link_failed"; evidenceRecorded: boolean; message: string };
 
-/** وقتی تنظیمِ پنجره خوانده نشد. سخت‌گیرانه‌تر، نه شل‌تر. */
-export const FALLBACK_STALE_MINUTES = 60;
+/** وقتی راهنمای رابط خوانده نشد. تصمیمی به آن وابسته نیست. */
+export const FALLBACK_HINT_MINUTES = 15;
 
 export interface StartArgs {
   userId: string;
   registrationId: string;
-  replaceRequested: boolean;
   callbackPath: string;
   ports: StartPorts;
 }
@@ -108,7 +112,7 @@ function message(error: unknown): string {
 }
 
 export async function startWebinarPayment(args: StartArgs): Promise<StartOutcome> {
-  const { userId, registrationId, replaceRequested, ports } = args;
+  const { userId, registrationId, ports } = args;
 
   const { registration, error: regErr } = await ports.loadRegistration(registrationId, userId);
   if (regErr || !registration) {
@@ -146,13 +150,12 @@ export async function startWebinarPayment(args: StartArgs): Promise<StartOutcome
     existing = payment;
   }
 
-  const staleMinutes = (await ports.loadStaleMinutes()) ?? FALLBACK_STALE_MINUTES;
+  const hintMinutes = (await ports.loadResumeHintMinutes()) ?? FALLBACK_HINT_MINUTES;
 
   const decision = decideWebinarRetry({
     registrationPaymentStatus: registration.payment_status,
     existingPayment: existing,
-    replaceRequested,
-    staleMinutes,
+    resumeHintMinutes: hintMinutes,
     now: ports.now?.() ?? new Date(),
   });
 
@@ -162,12 +165,21 @@ export async function startWebinarPayment(args: StartArgs): Promise<StartOutcome
       reason: decision.reason,
       message: decision.message,
       httpStatus: decision.reason === "already_paid" ? 400 : 409,
-      ...(decision.retryAfterMinutes ? { retryAfterMinutes: decision.retryAfterMinutes } : {}),
     };
   }
 
   if (decision.action === "resume") {
-    return { status: "resumed", paymentUrl: ports.resumeUrl(decision.authority) };
+    // تنها مسیرِ ممکن برای پرداختِ pending. هیچ تراکنشِ تازه‌ای ساخته نمی‌شود،
+    // پس هیچ لینکی نمی‌تواند یتیم شود.
+    return {
+      status: "resumed",
+      paymentUrl: ports.resumeUrl(decision.authority),
+      offerHelp: shouldOfferHelp(
+        existing as ExistingPayment,
+        hintMinutes,
+        ports.now?.() ?? new Date()
+      ),
+    };
   }
 
   // ── از اینجا به بعد authorityِ تازه لازم است ─────────────────────────────
@@ -187,7 +199,6 @@ export async function startWebinarPayment(args: StartArgs): Promise<StartOutcome
     registrationId: registration.id,
     authority: gateway.authority,
     expectedAmount: registration.priceToman,
-    replace: decision.action === "replace",
   });
 
   if (linkErr || !paymentId) {

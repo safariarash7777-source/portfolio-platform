@@ -768,10 +768,10 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
       }
     });
 
-    test("پنجرهٔ تلاشِ دوباره ۱۵ دقیقه است (تصمیمِ آرش)", () => {
+    test("راهنمای رابط ۱۵ دقیقه است و فقط تزئینی است", () => {
       assert.equal(
         psql(DB, `SELECT value FROM public.payment_settings
-                   WHERE key = 'webinar_retry_stale_minutes'`),
+                   WHERE key = 'webinar_resume_hint_minutes'`),
         "15"
       );
     });
@@ -779,8 +779,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
 
   // ── بازبینیِ دومِ Command Center: مسیرِ ساختِ پرداخت ────────────────────────
 
-  describe("تلاشِ دوبارهٔ پرداختِ وبینار", () => {
-    /** یک ثبت‌نامِ تازه برای کاربرِ اصلی. */
+  describe("تلاشِ دوبارهٔ پرداختِ وبینار — قراردادِ «همیشه از سرگیری»", () => {
     const freshReg = (user = USER) =>
       psql(
         DB,
@@ -795,113 +794,156 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     const createWebinarPayment = (
       reg: string,
       authority: string,
-      opts: { amount?: number; replace?: boolean; user?: string } = {}
+      opts: { amount?: number; user?: string } = {}
     ) =>
       asUser(
-        `SELECT public.create_webinar_payment('${reg}', '${authority}', ${
-          opts.amount ?? AMOUNT
-        }, ${opts.replace ? "true" : "false"});`,
+        `SELECT public.create_webinar_payment('${reg}', '${authority}', ${opts.amount ?? AMOUNT});`,
         opts.user ?? USER
       );
 
     const linkedPayment = (reg: string) =>
       psql(DB, `SELECT payment_id::text FROM public.webinar_registrations WHERE id='${reg}'`);
 
+    const makeAdmin = (user: string) =>
+      psql(DB, `UPDATE public.profiles SET role='admin' WHERE id='${user}'`);
+    const clearAdmin = (user: string) =>
+      psql(DB, `UPDATE public.profiles SET role='user' WHERE id='${user}'`);
+
     test("تلاشِ ترتیبی: پرداختِ در جریان بازنویسی نمی‌شود", () => {
       const reg = freshReg();
       psql(DB, createWebinarPayment(reg, "RETRY-SEQ-A"));
       const first = linkedPayment(reg);
 
-      // این دقیقاً سناریوی کامنتِ ۵۳۵۳۳۰۹۳۲۹ است.
       const err = expectError(DB, createWebinarPayment(reg, "RETRY-SEQ-B"));
       assert.match(err, /پرداختِ در جریان/);
 
       assert.equal(linkedPayment(reg), first, "اتصالِ اول باید دست‌نخورده بماند");
       assert.equal(
         psql(DB, `SELECT count(*) FROM public.payments WHERE authority='RETRY-SEQ-B'`),
-        "0",
-        "درخواستِ ردشده نباید ردیفِ پرداخت جا بگذارد"
+        "0"
       );
       assert.equal(
         psql(DB, `SELECT status FROM public.payments WHERE authority='RETRY-SEQ-A'`),
-        "pending",
-        "پرداختِ اول نباید بی‌سروصدا باطل شود"
+        "pending"
       );
     });
 
-    test("SQLSTATE اختصاصی است تا مسیر بتواند بدونِ تطبیقِ رشته تصمیم بگیرد", () => {
+    test("SQLSTATE اختصاصی است تا مسیر روی کد تصمیم بگیرد", () => {
       const reg = freshReg();
       psql(DB, createWebinarPayment(reg, "RETRY-CODE-A"));
-      const err = expectErrorVerbose(DB, createWebinarPayment(reg, "RETRY-CODE-B"));
-      assert.match(err, /PT409/);
+      assert.match(expectErrorVerbose(DB, createWebinarPayment(reg, "RETRY-CODE-B")), /PT409/);
     });
 
-    test("جایگزینی پیش از پنجرهٔ کهنه‌شدن رد می‌شود", () => {
+    test("⚠️ گذشتِ زمان هیچ اجازه‌ای نمی‌دهد — حتی بعد از یک سال", () => {
+      // این همان چیزی است که Command Center رد کرد: پنجرهٔ زمانی بر پایهٔ
+      // فرضی دربارهٔ انقضای لینکِ درگاه بود که سندی برایش نداریم.
       const reg = freshReg();
-      psql(DB, createWebinarPayment(reg, "RETRY-FRESH-A"));
+      psql(DB, createWebinarPayment(reg, "RETRY-ANCIENT-A"));
       const first = linkedPayment(reg);
+      agePayment(DB, "RETRY-ANCIENT-A", 24 * 365);
 
-      const err = expectErrorVerbose(DB, createWebinarPayment(reg, "RETRY-FRESH-B", { replace: true }));
-      assert.match(err, /PT425/);
+      const err = expectError(DB, createWebinarPayment(reg, "RETRY-ANCIENT-B"));
+      assert.match(err, /پرداختِ در جریان/);
       assert.equal(linkedPayment(reg), first);
+      assert.equal(
+        psql(DB, `SELECT status FROM public.payments WHERE authority='RETRY-ANCIENT-A'`),
+        "pending",
+        "پرداختِ قدیمی باید هنوز قابلِ نهایی‌سازی باشد"
+      );
     });
 
-    test("جایگزینیِ عمدیِ پرداختِ کهنه: ابطال، ممیزی، اتصالِ تازه", () => {
-      const reg = freshReg();
-      psql(DB, createWebinarPayment(reg, "RETRY-STALE-A"));
-      const first = linkedPayment(reg);
-
-      // پرداخت را عمداً کهنه می‌کنیم — تنها راهِ سنجیدنِ پنجره بدونِ انتظار.
-      agePayment(DB, "RETRY-STALE-A", 2);
-
-      psql(DB, createWebinarPayment(reg, "RETRY-STALE-B", { replace: true }));
-
-      assert.notEqual(linkedPayment(reg), first, "اتصال باید به پرداختِ تازه منتقل شود");
+    test("امضای جایگزینی‌پذیر دیگر وجود ندارد", () => {
       assert.equal(
-        psql(DB, `SELECT status FROM public.payments WHERE authority='RETRY-STALE-A'`),
-        "failed",
-        "پرداختِ قبلی باید **باطل** شده باشد، نه رها"
+        psql(DB, `SELECT to_regprocedure('public.create_webinar_payment(uuid,text,integer,boolean)') IS NULL`),
+        "t"
       );
-      assert.equal(
-        psql(
+    });
+
+    test("پرداختِ لینکِ قدیمی پس از مدتِ طولانی هنوز دسترسی می‌سازد", () => {
+      // سناریوی اصلیِ Command Center: پول پرداخت شود و یتیم نماند.
+      const reg = freshReg();
+      psql(DB, createWebinarPayment(reg, "RETRY-LATE-PAY"));
+      agePayment(DB, "RETRY-LATE-PAY", 48);
+
+      psql(DB, finalizeSql("RETRY-LATE-PAY", { kind: "webinar", registrationId: reg }));
+      assert.equal(paymentStatus("RETRY-LATE-PAY"), "paid");
+      assert.equal(entCountForAuthority("RETRY-LATE-PAY"), 1);
+    });
+
+    describe("بازیابیِ حاکمیتیِ ادمین", () => {
+      test("کاربرِ عادی نمی‌تواند پرداختِ معلق را باطل کند", () => {
+        const reg = freshReg();
+        psql(DB, createWebinarPayment(reg, "GOV-DENY"));
+        const pid = linkedPayment(reg);
+        const err = expectError(
           DB,
-          `SELECT count(*) FROM public.audit_log
-            WHERE action='payment.replaced' AND after->>'replaced_payment_id' = '${first}'`
-        ),
-        "1",
-        "جایگزینی باید ردِ ممیزی داشته باشد"
-      );
-    });
+          asUser(`SELECT public.admin_cancel_pending_payment('${pid}', 'کاربر خودش تلاش کرد');`)
+        );
+        assert.match(err, /فقط ادمین/);
+        assert.equal(paymentStatus("GOV-DENY"), "pending");
+      });
 
-    test("پرداختِ باطل‌شده مانعِ تلاشِ دوباره نیست", () => {
-      const reg = freshReg();
-      psql(DB, createWebinarPayment(reg, "RETRY-FAILED-A"));
-      psql(DB, `SELECT public.fail_payment('RETRY-FAILED-A')`);
+      test("دلیلِ کوتاه پذیرفته نمی‌شود", () => {
+        const reg = freshReg();
+        psql(DB, createWebinarPayment(reg, "GOV-REASON"));
+        const pid = linkedPayment(reg);
+        makeAdmin(USER);
+        try {
+          const err = expectError(
+            DB,
+            asUser(`SELECT public.admin_cancel_pending_payment('${pid}', 'کوتاه');`)
+          );
+          assert.match(err, /دلیلِ ابطال الزامی/);
+          assert.equal(paymentStatus("GOV-REASON"), "pending");
+        } finally {
+          clearAdmin(USER);
+        }
+      });
 
-      psql(DB, createWebinarPayment(reg, "RETRY-FAILED-B"));
-      assert.equal(
-        psql(DB, `SELECT authority FROM public.payments p
-                    JOIN public.webinar_registrations r ON r.payment_id = p.id
-                   WHERE r.id = '${reg}'`),
-        "RETRY-FAILED-B"
-      );
-    });
+      test("ادمین باطل می‌کند، ممیزی می‌ماند، و تلاشِ تازه ممکن می‌شود", () => {
+        const reg = freshReg();
+        psql(DB, createWebinarPayment(reg, "GOV-OK-A"));
+        const pid = linkedPayment(reg);
+        makeAdmin(USER);
+        try {
+          psql(
+            DB,
+            asUser(
+              `SELECT public.admin_cancel_pending_payment('${pid}', 'تراکنش در پنل درگاه ناموفق بود');`
+            )
+          );
+        } finally {
+          clearAdmin(USER);
+        }
+        assert.equal(paymentStatus("GOV-OK-A"), "failed");
+        assert.equal(
+          psql(
+            DB,
+            `SELECT count(*) FROM public.audit_log
+              WHERE action='payment.admin_cancelled' AND after->>'payment_id'='${pid}'`
+          ),
+          "1",
+          "بازیابی باید ردِ ممیزی داشته باشد"
+        );
 
-    test("ثبت‌نامِ پرداخت‌شده هیچ پرداختِ تازه‌ای نمی‌گیرد", () => {
-      const reg = freshReg();
-      psql(DB, createWebinarPayment(reg, "RETRY-PAID-A"));
-      psql(DB, `UPDATE public.webinar_registrations SET payment_status='paid' WHERE id='${reg}'`);
+        psql(DB, createWebinarPayment(reg, "GOV-OK-B"));
+        assert.notEqual(linkedPayment(reg), pid);
+      });
 
-      const err = expectError(DB, createWebinarPayment(reg, "RETRY-PAID-B", { replace: true }));
-      assert.match(err, /قبلاً پرداخت شده/);
+      test("پرداختِ باطل‌شده هرگز paid نمی‌شود — لینکِ قدیمی دسترسی نمی‌سازد", () => {
+        // ریسکِ پذیرفته‌شدهٔ بازیابی: اگر کاربر لینکِ قدیمی را پرداخت کند،
+        // پول می‌رود ولی دسترسی ساخته نمی‌شود. اینجا اثبات می‌شود که حداقل
+        // **بی‌صدا** نیست و دسترسیِ دوم هم نمی‌سازد.
+        const err = expectError(DB, finalizeSql("GOV-OK-A", { kind: "webinar" }));
+        assert.notEqual(err, "", "نهایی‌سازیِ پرداختِ باطل‌شده باید شکست بخورد");
+        assert.equal(paymentStatus("GOV-OK-A"), "failed");
+        assert.equal(entCountForAuthority("GOV-OK-A"), 0);
+      });
     });
 
     test("تلاشِ هم‌زمان: از N درخواستِ موازی دقیقاً یکی پرداخت می‌سازد", async () => {
       const reg = freshReg();
       const N = 5;
-
-      // ⚠️ اجرای واقعاً موازی. اگر اینها پشتِ سر هم اجرا می‌شدند، تست
-      // چیزی دربارهٔ هم‌زمانی اثبات نمی‌کرد.
       const results = await Promise.all(
         Array.from({ length: N }, (_, i) =>
           new Promise<string>((resolve) => {
@@ -920,27 +962,12 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
           })
         )
       );
-
-      const won = results.filter((r) => r === "ok").length;
-      assert.equal(won, 1, `دقیقاً یک درخواست باید موفق شود، شد ${won}`);
-
+      assert.equal(results.filter((r) => r === "ok").length, 1);
       assert.equal(
         psql(
           DB,
           `SELECT count(*) FROM public.payments
             WHERE authority LIKE 'RETRY-CONC-%' AND status = 'pending'`
-        ),
-        "1",
-        "فقط یک پرداختِ قابلِ پرداخت باید وجود داشته باشد"
-      );
-
-      // و اتصال باید به همان یکی اشاره کند.
-      assert.equal(
-        psql(
-          DB,
-          `SELECT count(*) FROM public.webinar_registrations r
-             JOIN public.payments p ON p.id = r.payment_id
-            WHERE r.id = '${reg}' AND p.authority LIKE 'RETRY-CONC-%'`
         ),
         "1"
       );

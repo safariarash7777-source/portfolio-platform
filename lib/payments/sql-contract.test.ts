@@ -198,28 +198,36 @@ describe("اتصالِ پرداختِ وبینار بازنویسیِ خاموش
   });
 
   test("پرداختِ در جریان با SQLSTATE اختصاصی رد می‌شود", () => {
-    assert.match(EXEC24, /IF NOT p_replace THEN[\s\S]{0,220}ERRCODE = 'PT409'/);
+    assert.match(EXEC24, /ERRCODE = 'PT409'/);
   });
 
-  test("جایگزینی بدونِ درخواستِ صریح ممکن نیست", () => {
-    // `p_replace` باید پیش‌فرضِ false داشته باشد، وگرنه هر فراخوانیِ ساده
-    // دوباره همان بازنویسیِ خاموش می‌شود.
-    assert.match(EXEC24, /p_replace\s+boolean DEFAULT false/);
+  test("⚠️ هیچ مسیرِ جایگزینیِ زمان‌محوری باقی نمانده", () => {
+    // پنجرهٔ کهنه‌شدن بر فرضی دربارهٔ انقضای لینکِ درگاه بنا شده بود که سندی
+    // برایش نداریم. Command Center آن را رد کرد.
+    assert.doesNotMatch(EXEC24, /p_replace/);
+    assert.doesNotMatch(EXEC24, /ERRCODE = 'PT425'/);
+    assert.doesNotMatch(EXEC24, /make_interval\(mins =>/);
+    assert.doesNotMatch(EXEC24, /'payment\.replaced'/);
   });
 
-  test("جایگزینی پیش از کهنه‌شدنِ پرداختِ قبلی رد می‌شود", () => {
-    assert.match(EXEC24, /created_at > now\(\) - make_interval\(mins => v_stale_min\)/);
-    assert.match(EXEC24, /ERRCODE = 'PT425'/);
+  test("تنها راهِ خروج از pending، بازیابیِ حاکمیتیِ ادمین است", () => {
+    assert.match(EXEC24, /CREATE OR REPLACE FUNCTION public\.admin_cancel_pending_payment/);
+    assert.match(EXEC24, /IF NOT public\.is_admin\(\) THEN[\s\S]{0,120}RAISE EXCEPTION/);
+    assert.match(EXEC24, /PERFORM public\.fail_payment\(v_pay\.authority\)/);
+    assert.match(EXEC24, /'payment\.admin_cancelled'/);
+    assert.match(EXEC24, /length\(trim\(p_reason\)\) < 10/);
   });
 
-  test("ابطال از fail_payment می‌گذرد، نه UPDATE مستقیم", () => {
-    assert.match(EXEC24, /PERFORM public\.fail_payment\(v_old\.authority\)/);
-    assert.match(EXEC24, /'payment\.replaced'/);
+  test("بازیابیِ حاکمیتی از anon گرفته شده است", () => {
+    assert.match(
+      EXEC24,
+      /REVOKE ALL ON FUNCTION public\.admin_cancel_pending_payment\(uuid, text\) FROM public, anon/
+    );
   });
 
-  test("پنجرهٔ کهنه‌شدن سمتِ سرور و از دسترسِ کلاینت خارج است", () => {
-    assert.match(EXEC24, /CREATE TABLE IF NOT EXISTS public\.payment_settings/);
-    assert.match(EXEC24, /'webinar_retry_stale_minutes'/);
+  test("عددِ راهنما فقط تزئینِ رابط است و چیزی را اجرا نمی‌کند", () => {
+    assert.match(EXEC24, /'webinar_resume_hint_minutes'/);
+    assert.doesNotMatch(EXEC24, /webinar_retry_stale_minutes/);
     assert.match(
       EXEC24,
       /REVOKE ALL ON TABLE public\.payment_settings FROM public, anon, authenticated/
