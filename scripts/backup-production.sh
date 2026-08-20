@@ -92,7 +92,7 @@ cleanup() {
   local rc=$?
   if [ -d "$VERIFY_WORKDIR" ]; then
     say "پاکسازیِ استکِ موقت"
-    "${SUPA[@]}" stop --workdir "$VERIFY_WORKDIR" --no-backup >/dev/null 2>&1 || true
+    "${SUPA[@]}" stop --workdir "$VERIFY_WORKDIR" --no-backup --yes >/dev/null 2>&1 || true
     rm -rf "$VERIFY_WORKDIR"
   fi
   exit $rc
@@ -130,7 +130,7 @@ done
 # وجود ندارند، پس یا بازگردانی می‌شکند یا شکستش پنهان می‌شود.
 say "۳/۵ — بالا آوردنِ استکِ Supabaseِ محلیِ ایزوله ($VERIFY_ID)"
 mkdir -p "$VERIFY_WORKDIR"
-"${SUPA[@]}" init --workdir "$VERIFY_WORKDIR" >/dev/null 2>&1 \
+"${SUPA[@]}" init --workdir "$VERIFY_WORKDIR" --yes >/dev/null 2>&1 \
   || die "supabase init روی پوشهٔ موقت شکست خورد."
 
 # پورت‌های یکتا تا پروژهٔ محلیِ خودِ آرش دست‌نخورده بماند.

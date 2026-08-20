@@ -196,10 +196,10 @@ describe("بازگردانی بر پایهٔ کدِ خروجی", () => {
 describe("مقصدِ بازگردانی", () => {
   test("استکِ Supabaseِ محلیِ ایزوله، نه Postgresِ ساده", () => {
     assert.match(bashCode, /"\$\{SUPA\[@\]\}" init --workdir "\$VERIFY_WORKDIR"/);
-    assert.match(ps1Code, /@\('init', '--workdir', \$VerifyWorkdir\)/);
+    assert.match(ps1Code, /@\('init', '--workdir', \$VerifyWorkdir/);
     // مقصد دیگر یک Postgresِ سادهٔ خالی نیست؛ استکِ Supabase بالا می‌آید.
     assert.match(bashCode, /"\$\{SUPA\[@\]\}" start --workdir/);
-    assert.match(ps1Code, /@\('start', '--workdir', \$VerifyWorkdir\)/);
+    assert.match(ps1Code, /@\('start', '--workdir', \$VerifyWorkdir/);
   });
 
   test("شناسه و پورت‌ها یکتا هستند", () => {
@@ -215,6 +215,10 @@ describe("مقصدِ بازگردانی", () => {
     assert.doesNotMatch(bashCode, /supabase" stop(?![\s\S]{0,60}--workdir)/);
     assert.match(bash, /stop --workdir "\$VERIFY_WORKDIR" --no-backup/);
     assert.match(ps1, /'stop', '--workdir', \$VerifyWorkdir, '--no-backup'/);
+    // هیچ فراخوانیِ CLI نباید منتظرِ پاسخِ تعاملی بماند — اسکریپت بدونِ کاربر
+    // جلوی صفحه هم باید تمام شود.
+    assert.match(ps1Code, /'--yes'/);
+    assert.match(bashCode, /--yes/);
   });
 
   test("وفاداریِ مقصد پیش از بازگردانی تأیید می‌شود", () => {

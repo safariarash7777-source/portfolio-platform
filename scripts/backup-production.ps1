@@ -136,7 +136,7 @@ $env:DB_URL = $DbUrl
 function Invoke-Cleanup {
     if (Test-Path $VerifyWorkdir) {
         Say 'Cleaning up the temporary stack'
-        Invoke-Supabase @('stop', '--workdir', $VerifyWorkdir, '--no-backup') | Out-Null
+        Invoke-Supabase @('stop', '--workdir', $VerifyWorkdir, '--no-backup', '--yes') | Out-Null
         Remove-Item -Recurse -Force $VerifyWorkdir -ErrorAction SilentlyContinue
     }
     $env:DB_URL = $null
@@ -178,7 +178,7 @@ try {
     # not exist, so the restore either breaks or hides the breakage.
     Say "3/5 - starting an isolated local Supabase stack ($VerifyId)"
     New-Item -ItemType Directory -Force -Path $VerifyWorkdir | Out-Null
-    if ((Invoke-Supabase @('init', '--workdir', $VerifyWorkdir)) -ne 0) { Die 'supabase init failed in the temp workdir.' }
+    if ((Invoke-Supabase @('init', '--workdir', $VerifyWorkdir, '--yes')) -ne 0) { Die 'supabase init failed in the temp workdir.' }
 
     # Unique ports, so the owner's own local project is never touched.
     $config = Join-Path $VerifyWorkdir 'supabase\config.toml'
