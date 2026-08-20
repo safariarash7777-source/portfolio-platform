@@ -131,8 +131,24 @@ describe("شکستِ اعطای دسترسی کلِ تراکنش را برمی�
     assert.match(EXEC24, /IF\s+v_ent_id\s+IS\s+NULL\s+THEN[\s\S]{0,160}RAISE\s+EXCEPTION/i);
   });
 
-  test("مدتِ تعریف‌نشده باعثِ شکست می‌شود، نه دسترسیِ بی‌انقضا", () => {
-    assert.match(EXEC24, /v_months\s+IS\s+NULL[\s\S]{0,140}RAISE\s+EXCEPTION/i);
+  test("پیکربندیِ **گم‌شده** باعثِ شکست می‌شود، نه دسترسیِ ابدی", () => {
+    // ⚠️ `SELECT ... INTO` هم برای «ردیفی نیست» و هم برای «months تهی است»
+    // مقدارِ NULL می‌دهد. اگر تابع فقط `v_months IS NULL` را ببیند، یک جدولِ
+    // خالی به هر مشتری دسترسیِ همیشگی می‌دهد. پس تشخیص باید با FOUND باشد.
+    assert.match(EXEC24, /IF NOT FOUND THEN[\s\S]{0,160}RAISE EXCEPTION/);
+    assert.doesNotMatch(
+      EXEC24,
+      /IF v_months IS NULL THEN[\s\S]{0,140}RAISE EXCEPTION/,
+      "تشخیص نباید به تهی‌بودنِ months تکیه کند"
+    );
+  });
+
+  test("months تهی یعنی دسترسیِ بدونِ انقضا، نه خطا", () => {
+    assert.match(EXEC24, /WHEN v_months IS NULL THEN NULL/);
+  });
+
+  test("انقضا می‌تواند تهی باشد و خواننده‌ها همین را می‌فهمند", () => {
+    assert.match(EXEC24, /ALTER TABLE public\.entitlements ALTER COLUMN expires_at DROP NOT NULL/);
   });
 });
 

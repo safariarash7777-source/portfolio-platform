@@ -679,6 +679,104 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
     });
   });
 
+  describe("مدتِ دسترسی — عدد یا «همیشگی»", () => {
+    /** مدتِ یک محصول را موقتاً عوض می‌کند و بعد برمی‌گرداند. */
+    function withMonths<T>(purpose: string, months: string, body: () => T): T {
+      const before = psql(
+        DB,
+        `SELECT coalesce(months::text, 'NULL') FROM public.entitlement_durations
+          WHERE purpose = '${purpose}'`
+      );
+      psql(DB, `UPDATE public.entitlement_durations SET months = ${months}
+                 WHERE purpose = '${purpose}'`);
+      try {
+        return body();
+      } finally {
+        psql(DB, `UPDATE public.entitlement_durations SET months = ${before}
+                   WHERE purpose = '${purpose}'`);
+      }
+    }
+
+    test("months تهی ⇒ دسترسیِ بدونِ انقضا", () => {
+      withMonths("consulting", "NULL", () => {
+        const a = "AUTH-LIFETIME";
+        seedPayment(a);
+        psql(DB, finalizeSql(a));
+        assert.equal(
+          psql(DB, `SELECT expires_at IS NULL FROM public.entitlements e
+                      JOIN public.payments p ON p.id = e.payment_id
+                     WHERE p.authority = '${a}'`),
+          "t",
+          "دسترسیِ همیشگی باید expires_at تهی داشته باشد"
+        );
+      });
+    });
+
+    test("عددِ بزرگ هم پذیرفته می‌شود (تا ۱۲۰۰ ماه)", () => {
+      withMonths("consulting", "1200", () => {
+        const a = "AUTH-LONG";
+        seedPayment(a);
+        psql(DB, finalizeSql(a));
+        assert.equal(
+          psql(DB, `SELECT expires_at > now() + interval '99 years'
+                      FROM public.entitlements e
+                      JOIN public.payments p ON p.id = e.payment_id
+                     WHERE p.authority = '${a}'`),
+          "t"
+        );
+      });
+    });
+
+    test("عددِ خارج از بازه رد می‌شود", () => {
+      assert.notEqual(
+        expectError(DB, `UPDATE public.entitlement_durations SET months = 0
+                          WHERE purpose = 'consulting'`),
+        "",
+        "صفر نباید پذیرفته شود"
+      );
+      assert.notEqual(
+        expectError(DB, `UPDATE public.entitlement_durations SET months = 1201
+                          WHERE purpose = 'consulting'`),
+        ""
+      );
+    });
+
+    test("⚠️ نبودِ ردیف با «همیشگی» یکی گرفته نمی‌شود", () => {
+      // این خطرناک‌ترین حالت است: اگر تابع فقط `v_months IS NULL` را ببیند،
+      // یک جدولِ خالی به **همه** دسترسیِ ابدی می‌دهد.
+      const row = psql(
+        DB,
+        `SELECT coalesce(months::text, 'NULL') FROM public.entitlement_durations
+          WHERE purpose = 'consulting'`
+      );
+      psql(DB, `DELETE FROM public.entitlement_durations WHERE purpose = 'consulting'`);
+      try {
+        const a = "AUTH-NOCONFIG";
+        seedPayment(a);
+        const err = expectError(DB, finalizeSql(a));
+        assert.match(err, /مدتِ دسترسی برای محصولِ/);
+        assert.equal(paymentStatus(a), "pending", "پرداخت نباید نهایی شده باشد");
+        assert.equal(
+          psql(DB, `SELECT count(*) FROM public.entitlements e
+                      JOIN public.payments p ON p.id = e.payment_id
+                     WHERE p.authority = '${a}'`),
+          "0"
+        );
+      } finally {
+        psql(DB, `INSERT INTO public.entitlement_durations (purpose, months)
+                  VALUES ('consulting', ${row})`);
+      }
+    });
+
+    test("پنجرهٔ تلاشِ دوباره ۱۵ دقیقه است (تصمیمِ آرش)", () => {
+      assert.equal(
+        psql(DB, `SELECT value FROM public.payment_settings
+                   WHERE key = 'webinar_retry_stale_minutes'`),
+        "15"
+      );
+    });
+  });
+
   // ── بازبینیِ دومِ Command Center: مسیرِ ساختِ پرداخت ────────────────────────
 
   describe("تلاشِ دوبارهٔ پرداختِ وبینار", () => {

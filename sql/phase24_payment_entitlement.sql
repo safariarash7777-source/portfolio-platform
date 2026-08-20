@@ -118,6 +118,17 @@ BEGIN
   RETURN NEW;
 END $$;
 
+-- ── ۲.۱ دسترسیِ بدونِ انقضا باید قابلِ بیان باشد ────────────────────────────
+--
+-- `expires_at` در phase11 با NOT NULL ساخته شده بود، پس «همیشگی» اصلاً
+-- نمایش‌دادنی نبود. حالا NULL یعنی بدونِ انقضا.
+--
+-- ⚠️ این تغییر بی‌خطر نیست مگر **همهٔ** خواننده‌ها هم به‌روز شوند: فیلترِ
+-- `.gt('expires_at', now)` روی NULL **false** می‌دهد، یعنی دسترسیِ همیشگی
+-- بی‌صدا به «هیچ دسترسی» تبدیل می‌شد. `lib/access.ts` و `middleware.ts` هر دو
+-- در همین تغییر اصلاح شده‌اند و تست دارند.
+ALTER TABLE public.entitlements ALTER COLUMN expires_at DROP NOT NULL;
+
 -- ── ۳. یک ثبت‌نامِ وبینار ⇒ حداکثر یک پرداخت ───────────────────────────────
 CREATE UNIQUE INDEX IF NOT EXISTS uq_webinar_registrations_payment
   ON public.webinar_registrations(payment_id)
@@ -130,7 +141,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_webinar_registrations_payment
 -- نتواند آن را تعیین کند.
 CREATE TABLE IF NOT EXISTS public.entitlement_durations (
   purpose    text PRIMARY KEY CHECK (purpose IN ('consulting', 'webinar')),
-  months     integer NOT NULL CHECK (months > 0 AND months <= 120),
+  -- NULL = دسترسیِ **بدونِ انقضا**. تصمیمِ آرش: مدت باید هر عددی بتواند باشد،
+  -- «و تا هر زمان که بخواهم». پس «همیشگی» باید قابلِ بیان باشد، نه اینکه با
+  -- تاریخی در سالِ ۲۱۲۶ تقلید شود — آن عدد در UI به کاربر دروغ می‌گفت.
+  months     integer CHECK (months IS NULL OR (months > 0 AND months <= 1200)),
   updated_at timestamptz NOT NULL DEFAULT now(),
   updated_by uuid
 );
@@ -141,6 +155,21 @@ INSERT INTO public.entitlement_durations (purpose, months) VALUES
   ('consulting', 3),
   ('webinar', 3)
 ON CONFLICT (purpose) DO NOTHING;
+
+-- اگر جدول از اجرای قبلی مانده باشد، ستون باید nullable شود.
+ALTER TABLE public.entitlement_durations ALTER COLUMN months DROP NOT NULL;
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_constraint
+              WHERE conname = 'entitlement_durations_months_check') THEN
+    ALTER TABLE public.entitlement_durations
+      DROP CONSTRAINT entitlement_durations_months_check;
+  END IF;
+  ALTER TABLE public.entitlement_durations
+    ADD CONSTRAINT entitlement_durations_months_check
+    CHECK (months IS NULL OR (months > 0 AND months <= 1200));
+END $$;
 
 ALTER TABLE public.entitlement_durations ENABLE ROW LEVEL SECURITY;
 
@@ -166,7 +195,7 @@ CREATE TABLE IF NOT EXISTS public.payment_settings (
 );
 
 INSERT INTO public.payment_settings (key, value) VALUES
-  ('webinar_retry_stale_minutes', 60)
+  ('webinar_retry_stale_minutes', 15)
 ON CONFLICT (key) DO NOTHING;
 
 ALTER TABLE public.payment_settings ENABLE ROW LEVEL SECURITY;
@@ -472,12 +501,21 @@ BEGIN
   END IF;
 
   -- ── مدتِ دسترسی از جدولِ پیکربندی، نه از ورودی ────────────────────────────
+  -- ⚠️ تفاوتِ حیاتی: «ردیفی وجود ندارد» با «ردیف هست و months تهی است» یکی
+  -- نیست. اولی یعنی پیکربندی گم شده و باید بشکند؛ دومی تصمیمِ صریحِ آرش برای
+  -- دسترسیِ همیشگی است. `SELECT ... INTO` برای هر دو حالت NULL می‌دهد، پس
+  -- وجودِ ردیف جداگانه بررسی می‌شود — وگرنه یک جدولِ خالی به همه دسترسیِ
+  -- ابدی می‌داد.
   SELECT months INTO v_months
     FROM public.entitlement_durations WHERE purpose = v_purpose;
-  IF v_months IS NULL THEN
+  IF NOT FOUND THEN
     RAISE EXCEPTION 'مدتِ دسترسی برای محصولِ % تعریف نشده است.', v_purpose;
   END IF;
-  v_expires := now() + make_interval(months => v_months);
+
+  v_expires := CASE
+                 WHEN v_months IS NULL THEN NULL
+                 ELSE now() + make_interval(months => v_months)
+               END;
   v_source  := v_purpose || ':' || p_authority;
 
   -- ── اعطای دسترسی ─────────────────────────────────────────────────────────

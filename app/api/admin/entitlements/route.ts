@@ -32,7 +32,8 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as {
     email?: string;
     kind?: string;
-    months?: number;
+    /** `null` صریح یعنی دسترسیِ بدونِ انقضا. نبودنش یعنی پیش‌فرضِ ۳ ماه. */
+    months?: number | null;
     note?: string;
   } | null;
   if (!body?.email || !["consulting", "webinar", "manual"].includes(body.kind ?? "")) {
@@ -47,9 +48,21 @@ export async function POST(req: Request) {
     .maybeSingle();
   if (!target) return NextResponse.json({ error: "user_not_found" }, { status: 404 });
 
-  const months = Math.min(Math.max(body.months ?? 3, 1), 24);
-  const expires = new Date();
-  expires.setMonth(expires.getMonth() + months);
+  // ── مدت: عدد، یا «همیشگی» ────────────────────────────────────────────────
+  //
+  // تصمیمِ آرش: مدت باید هر عددی بتواند باشد، «و تا هر زمان که بخواهم». پس
+  // `months: null` صریح یعنی بدونِ انقضا. `undefined` (یعنی اصلاً نفرستادن)
+  // همان پیش‌فرضِ ۳ ماه می‌ماند تا فراخوانی‌های قبلی تغییر رفتار ندهند —
+  // فرقِ «نگفتم» و «گفتم همیشگی» نباید گم شود.
+  const unlimited = body.months === null;
+  const months = unlimited ? null : Math.min(Math.max(body.months ?? 3, 1), 1200);
+
+  let expiresAt: string | null = null;
+  if (months !== null) {
+    const expires = new Date();
+    expires.setMonth(expires.getMonth() + months);
+    expiresAt = expires.toISOString();
+  }
 
   const { data, error } = await svc
     .from("entitlements")
@@ -57,7 +70,7 @@ export async function POST(req: Request) {
       user_id: target.id,
       kind: body.kind,
       source: "admin_grant",
-      expires_at: expires.toISOString(),
+      expires_at: expiresAt,
       granted_by: admin.id,
       note: body.note ?? null,
     })
