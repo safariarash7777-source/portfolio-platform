@@ -26,6 +26,16 @@ export function callbackUrl(path: string = "/api/payment/callback"): string {
   return `${site}${path}`;
 }
 
+/**
+ * آدرسِ صفحهٔ پرداختِ یک authorityِ موجود.
+ *
+ * برای **از سرگیریِ** یک پرداختِ در جریان لازم است: به‌جای ساختنِ تراکنشِ
+ * تازه (که لینکِ قبلی را یتیم می‌کند) همان لینک دوباره داده می‌شود.
+ */
+export function startPayUrl(authority: string): string {
+  return `${BASE}/pg/StartPay/${authority}`;
+}
+
 export interface ZarinpalRequestResult {
   ok: boolean;
   authority?: string;
@@ -64,7 +74,7 @@ export async function requestPayment(
   const code = json?.data?.code;
   const authority = json?.data?.authority;
   if (code === 100 && authority) {
-    return { ok: true, authority, startPayUrl: `${BASE}/pg/StartPay/${authority}`, code };
+    return { ok: true, authority, startPayUrl: startPayUrl(authority), code };
   }
   const errMsg = Array.isArray(json?.errors) ? undefined : json?.errors?.message;
   return { ok: false, code, message: errMsg ?? "خطا در ایجاد تراکنش." };

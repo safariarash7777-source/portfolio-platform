@@ -80,6 +80,41 @@ function expectError(db: string, sql: string): string {
   return "";
 }
 
+/**
+ * مثلِ `expectError` ولی با `VERBOSITY=verbose` تا **SQLSTATE** هم چاپ شود.
+ * مسیرِ API روی همین کد تصمیم می‌گیرد، نه روی متنِ فارسیِ پیام؛ پس همین کد
+ * باید تست شود، نه صرفاً پیام.
+ */
+function expectErrorVerbose(db: string, sql: string): string {
+  try {
+    execFileSync(
+      "psql",
+      ["-d", db, "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=verbose", "-c", sql],
+      { env: ENV, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
+    );
+  } catch (error) {
+    return String((error as { stderr?: Buffer | string }).stderr ?? "");
+  }
+  return "";
+}
+
+/**
+ * پرداخت را عمداً «کهنه» می‌کند.
+ *
+ * `created_at` را نمی‌شود با UPDATE معمولی عوض کرد چون تریگرِ append-onlyِ
+ * `payments_guard` جلویش را می‌گیرد — که خودش نشانهٔ خوبی است. برای سنجیدنِ
+ * پنجرهٔ زمانی، تریگر موقتاً غیرفعال می‌شود.
+ */
+function agePayment(db: string, authority: string, hours: number): void {
+  psql(
+    db,
+    `SET session_replication_role = replica;
+     UPDATE public.payments SET created_at = now() - interval '${hours} hours'
+      WHERE authority = '${authority}';
+     SET session_replication_role = origin;`
+  );
+}
+
 const requireDb = process.env.CI === "true" || process.env.REQUIRE_DB === "1";
 let dbError = "";
 try {
@@ -619,7 +654,7 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
       const pid = psql(
         DB,
         `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
-         SELECT public.create_webinar_payment('${reg}', ${AMOUNT}, 'AUTH-ATOMIC-LINK'); COMMIT;`
+         SELECT public.create_webinar_payment('${reg}', 'AUTH-ATOMIC-LINK', ${AMOUNT}); COMMIT;`
       ).split("\n").pop()!.trim();
       assert.ok(pid.length > 0);
       assert.equal(
@@ -636,11 +671,331 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
       const err = expectError(
         DB,
         `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
-         SELECT public.create_webinar_payment('${reg}', ${AMOUNT}, 'AUTH-ATOMIC-DENY'); COMMIT;`
+         SELECT public.create_webinar_payment('${reg}', 'AUTH-ATOMIC-DENY', ${AMOUNT}); COMMIT;`
       );
       assert.match(err, /متعلقِ شما نیست/);
       assert.equal(psql(DB, `SELECT count(*) FROM public.payments WHERE authority='AUTH-ATOMIC-DENY'`), "0",
         "شکستِ اتصال نباید پرداختِ یتیم بسازد");
+    });
+  });
+
+  // ── بازبینیِ دومِ Command Center: مسیرِ ساختِ پرداخت ────────────────────────
+
+  describe("تلاشِ دوبارهٔ پرداختِ وبینار", () => {
+    /** یک ثبت‌نامِ تازه برای کاربرِ اصلی. */
+    const freshReg = (user = USER) =>
+      psql(
+        DB,
+        `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status)
+         VALUES ('${freshWebinar()}', '${user}', 'pending') RETURNING id`
+      );
+
+    const asUser = (sql: string, user = USER) =>
+      `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${user}","role":"authenticated"}',true);
+       ${sql} COMMIT;`;
+
+    const createWebinarPayment = (
+      reg: string,
+      authority: string,
+      opts: { amount?: number; replace?: boolean; user?: string } = {}
+    ) =>
+      asUser(
+        `SELECT public.create_webinar_payment('${reg}', '${authority}', ${
+          opts.amount ?? AMOUNT
+        }, ${opts.replace ? "true" : "false"});`,
+        opts.user ?? USER
+      );
+
+    const linkedPayment = (reg: string) =>
+      psql(DB, `SELECT payment_id::text FROM public.webinar_registrations WHERE id='${reg}'`);
+
+    test("تلاشِ ترتیبی: پرداختِ در جریان بازنویسی نمی‌شود", () => {
+      const reg = freshReg();
+      psql(DB, createWebinarPayment(reg, "RETRY-SEQ-A"));
+      const first = linkedPayment(reg);
+
+      // این دقیقاً سناریوی کامنتِ ۵۳۵۳۳۰۹۳۲۹ است.
+      const err = expectError(DB, createWebinarPayment(reg, "RETRY-SEQ-B"));
+      assert.match(err, /پرداختِ در جریان/);
+
+      assert.equal(linkedPayment(reg), first, "اتصالِ اول باید دست‌نخورده بماند");
+      assert.equal(
+        psql(DB, `SELECT count(*) FROM public.payments WHERE authority='RETRY-SEQ-B'`),
+        "0",
+        "درخواستِ ردشده نباید ردیفِ پرداخت جا بگذارد"
+      );
+      assert.equal(
+        psql(DB, `SELECT status FROM public.payments WHERE authority='RETRY-SEQ-A'`),
+        "pending",
+        "پرداختِ اول نباید بی‌سروصدا باطل شود"
+      );
+    });
+
+    test("SQLSTATE اختصاصی است تا مسیر بتواند بدونِ تطبیقِ رشته تصمیم بگیرد", () => {
+      const reg = freshReg();
+      psql(DB, createWebinarPayment(reg, "RETRY-CODE-A"));
+      const err = expectErrorVerbose(DB, createWebinarPayment(reg, "RETRY-CODE-B"));
+      assert.match(err, /PT409/);
+    });
+
+    test("جایگزینی پیش از پنجرهٔ کهنه‌شدن رد می‌شود", () => {
+      const reg = freshReg();
+      psql(DB, createWebinarPayment(reg, "RETRY-FRESH-A"));
+      const first = linkedPayment(reg);
+
+      const err = expectErrorVerbose(DB, createWebinarPayment(reg, "RETRY-FRESH-B", { replace: true }));
+      assert.match(err, /PT425/);
+      assert.equal(linkedPayment(reg), first);
+    });
+
+    test("جایگزینیِ عمدیِ پرداختِ کهنه: ابطال، ممیزی، اتصالِ تازه", () => {
+      const reg = freshReg();
+      psql(DB, createWebinarPayment(reg, "RETRY-STALE-A"));
+      const first = linkedPayment(reg);
+
+      // پرداخت را عمداً کهنه می‌کنیم — تنها راهِ سنجیدنِ پنجره بدونِ انتظار.
+      agePayment(DB, "RETRY-STALE-A", 2);
+
+      psql(DB, createWebinarPayment(reg, "RETRY-STALE-B", { replace: true }));
+
+      assert.notEqual(linkedPayment(reg), first, "اتصال باید به پرداختِ تازه منتقل شود");
+      assert.equal(
+        psql(DB, `SELECT status FROM public.payments WHERE authority='RETRY-STALE-A'`),
+        "failed",
+        "پرداختِ قبلی باید **باطل** شده باشد، نه رها"
+      );
+      assert.equal(
+        psql(
+          DB,
+          `SELECT count(*) FROM public.audit_log
+            WHERE action='payment.replaced' AND after->>'replaced_payment_id' = '${first}'`
+        ),
+        "1",
+        "جایگزینی باید ردِ ممیزی داشته باشد"
+      );
+    });
+
+    test("پرداختِ باطل‌شده مانعِ تلاشِ دوباره نیست", () => {
+      const reg = freshReg();
+      psql(DB, createWebinarPayment(reg, "RETRY-FAILED-A"));
+      psql(DB, `SELECT public.fail_payment('RETRY-FAILED-A')`);
+
+      psql(DB, createWebinarPayment(reg, "RETRY-FAILED-B"));
+      assert.equal(
+        psql(DB, `SELECT authority FROM public.payments p
+                    JOIN public.webinar_registrations r ON r.payment_id = p.id
+                   WHERE r.id = '${reg}'`),
+        "RETRY-FAILED-B"
+      );
+    });
+
+    test("ثبت‌نامِ پرداخت‌شده هیچ پرداختِ تازه‌ای نمی‌گیرد", () => {
+      const reg = freshReg();
+      psql(DB, createWebinarPayment(reg, "RETRY-PAID-A"));
+      psql(DB, `UPDATE public.webinar_registrations SET payment_status='paid' WHERE id='${reg}'`);
+
+      const err = expectError(DB, createWebinarPayment(reg, "RETRY-PAID-B", { replace: true }));
+      assert.match(err, /قبلاً پرداخت شده/);
+    });
+
+    test("تلاشِ هم‌زمان: از N درخواستِ موازی دقیقاً یکی پرداخت می‌سازد", async () => {
+      const reg = freshReg();
+      const N = 5;
+
+      // ⚠️ اجرای واقعاً موازی. اگر اینها پشتِ سر هم اجرا می‌شدند، تست
+      // چیزی دربارهٔ هم‌زمانی اثبات نمی‌کرد.
+      const results = await Promise.all(
+        Array.from({ length: N }, (_, i) =>
+          new Promise<string>((resolve) => {
+            try {
+              psql(
+                DB,
+                asUser(
+                  `SELECT pg_sleep(0.05);
+                   SELECT public.create_webinar_payment('${reg}', 'RETRY-CONC-${i}', ${AMOUNT});`
+                )
+              );
+              resolve("ok");
+            } catch (error) {
+              resolve(String((error as { stderr?: Buffer | string }).stderr ?? "err"));
+            }
+          })
+        )
+      );
+
+      const won = results.filter((r) => r === "ok").length;
+      assert.equal(won, 1, `دقیقاً یک درخواست باید موفق شود، شد ${won}`);
+
+      assert.equal(
+        psql(
+          DB,
+          `SELECT count(*) FROM public.payments
+            WHERE authority LIKE 'RETRY-CONC-%' AND status = 'pending'`
+        ),
+        "1",
+        "فقط یک پرداختِ قابلِ پرداخت باید وجود داشته باشد"
+      );
+
+      // و اتصال باید به همان یکی اشاره کند.
+      assert.equal(
+        psql(
+          DB,
+          `SELECT count(*) FROM public.webinar_registrations r
+             JOIN public.payments p ON p.id = r.payment_id
+            WHERE r.id = '${reg}' AND p.authority LIKE 'RETRY-CONC-%'`
+        ),
+        "1"
+      );
+    });
+  });
+
+  describe("مبلغ از فراخواننده گرفته نمی‌شود", () => {
+    const freshReg = () =>
+      psql(
+        DB,
+        `INSERT INTO public.webinar_registrations (webinar_id, user_id, payment_status)
+         VALUES ('${freshWebinar()}', '${USER}', 'pending') RETURNING id`
+      );
+
+    const attempt = (reg: string, authority: string, amount: number) =>
+      expectError(
+        DB,
+        `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
+         SELECT public.create_webinar_payment('${reg}', '${authority}', ${amount}); COMMIT;`
+      );
+
+    /** هیچ اثری نباید باقی مانده باشد: نه پرداخت، نه اتصال، نه ممیزیِ موفق. */
+    function assertNoTrace(reg: string, authority: string) {
+      assert.equal(
+        psql(DB, `SELECT count(*) FROM public.payments WHERE authority='${authority}'`),
+        "0",
+        "پرداختی نباید ساخته شده باشد"
+      );
+      assert.equal(
+        psql(DB, `SELECT count(*) FROM public.webinar_registrations
+                   WHERE id='${reg}' AND payment_id IS NOT NULL`),
+        "0",
+        "ثبت‌نام نباید تغییر کرده باشد"
+      );
+      assert.equal(
+        psql(
+          DB,
+          `SELECT count(*) FROM public.audit_log
+            WHERE action='payment.request' AND after->>'authority' = '${authority}'`
+        ),
+        "0",
+        "ممیزیِ موفق نباید ثبت شده باشد"
+      );
+    }
+
+    test("مبلغِ کمتر رد می‌شود و هیچ اثری نمی‌گذارد", () => {
+      const reg = freshReg();
+      const err = attempt(reg, "AMOUNT-LOW", 1000);
+      assert.match(err, /با قیمتِ ثبت‌شدهٔ وبینار/);
+      assertNoTrace(reg, "AMOUNT-LOW");
+    });
+
+    test("مبلغِ بیشتر هم رد می‌شود", () => {
+      const reg = freshReg();
+      const err = attempt(reg, "AMOUNT-HIGH", AMOUNT * 3);
+      assert.match(err, /با قیمتِ ثبت‌شدهٔ وبینار/);
+      assertNoTrace(reg, "AMOUNT-HIGH");
+    });
+
+    test("مبلغِ صفر یا منفی رد می‌شود", () => {
+      const reg = freshReg();
+      assert.match(attempt(reg, "AMOUNT-ZERO", 0), /با قیمتِ ثبت‌شدهٔ وبینار/);
+      assertNoTrace(reg, "AMOUNT-ZERO");
+    });
+
+    test("مبلغِ ذخیره‌شده از ردیفِ وبینار می‌آید، نه از ورودی", () => {
+      const reg = freshReg();
+      psql(
+        DB,
+        `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
+         SELECT public.create_webinar_payment('${reg}', 'AMOUNT-BOUND', ${AMOUNT}); COMMIT;`
+      );
+      assert.equal(
+        psql(DB, `SELECT amount FROM public.payments WHERE authority='AMOUNT-BOUND'`),
+        String(AMOUNT)
+      );
+      assert.equal(
+        psql(DB, `SELECT p.amount = w.price_toman FROM public.payments p
+                    JOIN public.webinar_registrations r ON r.payment_id = p.id
+                    JOIN public.webinars w ON w.id = r.webinar_id
+                   WHERE p.authority = 'AMOUNT-BOUND'`),
+        "t"
+      );
+    });
+
+    test("کاربرِ واردشده نمی‌تواند مستقیماً پرداختِ مشاوره بسازد", () => {
+      // این همان بندِ P1 است: مسیرِ Next.js مرزِ امنیتی نیست.
+      assert.equal(
+        psql(
+          DB,
+          `SELECT has_function_privilege('authenticated',
+             'public.create_payment(uuid,integer,text,text)','EXECUTE')`
+        ),
+        "f"
+      );
+      assert.equal(
+        psql(
+          DB,
+          `SELECT has_function_privilege('anon',
+             'public.create_payment(uuid,integer,text,text)','EXECUTE')`
+        ),
+        "f"
+      );
+      assert.equal(
+        psql(
+          DB,
+          `SELECT has_function_privilege('service_role',
+             'public.create_payment(uuid,integer,text,text)','EXECUTE')`
+        ),
+        "t"
+      );
+    });
+
+    test("فراخوانیِ مستقیم با نقشِ authenticated واقعاً رد می‌شود", () => {
+      // امتیاز را نه فقط در کاتالوگ، بلکه با **اجرا** می‌سنجیم.
+      const err = expectError(
+        DB,
+        `BEGIN; SET LOCAL ROLE authenticated;
+         SELECT public.create_payment('${USER}', 1000, 'DIRECT-CHEAP', 'consulting'); COMMIT;`
+      );
+      assert.match(err, /permission denied|دسترسی/i);
+      assert.equal(
+        psql(DB, `SELECT count(*) FROM public.payments WHERE authority='DIRECT-CHEAP'`),
+        "0"
+      );
+    });
+
+    test("هیچ امضای قدیمیِ مبلغ‌پذیری زنده نمانده", () => {
+      for (const sig of [
+        "public.create_payment(integer,text)",
+        "public.create_payment(integer,text,text)",
+        "public.create_webinar_payment(uuid,integer,text)",
+      ]) {
+        assert.equal(
+          psql(DB, `SELECT to_regprocedure('${sig}') IS NULL`),
+          "t",
+          `${sig} هنوز وجود دارد`
+        );
+      }
+    });
+
+    test("نوعِ محصول از ورودیِ آزاد تعیین نمی‌شود", () => {
+      const reg = freshReg();
+      psql(
+        DB,
+        `BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${USER}","role":"authenticated"}',true);
+         SELECT public.create_webinar_payment('${reg}', 'PURPOSE-FIXED', ${AMOUNT}); COMMIT;`
+      );
+      // تابعِ وبینار purpose را ثابت می‌نویسد؛ پارامتری برایش وجود ندارد.
+      assert.equal(
+        psql(DB, `SELECT purpose FROM public.payments WHERE authority='PURPOSE-FIXED'`),
+        "webinar"
+      );
     });
   });
 

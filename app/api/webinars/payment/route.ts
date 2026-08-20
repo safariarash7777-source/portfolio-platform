@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requestPayment } from "@/lib/zarinpal";
+import { requestPayment, startPayUrl } from "@/lib/zarinpal";
+import {
+  startWebinarPayment,
+  type RegistrationRow,
+  type StartPorts,
+} from "@/lib/payments/start-webinar-payment";
+import type { ExistingPayment } from "@/lib/payments/webinar-retry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,19 +15,13 @@ export const dynamic = "force-dynamic";
 /** callbackِ اختصاصیِ وبینار — جدا از جریانِ دوره/مشاوره. */
 const WEBINAR_CALLBACK_PATH = "/api/webinars/payment/callback";
 
-// POST /api/webinars/payment — شروع پرداخت برای ثبت‌نام وبینار.
+// POST /api/webinars/payment — شروع (یا از سرگیریِ) پرداخت برای ثبت‌نام وبینار.
 //
-// ── ترتیب و دلیلش ───────────────────────────────────────────────────────────
+// بدنه: { registration_id: string, replace?: boolean }
 //
-// اول تراکنشِ زرین‌پال ساخته می‌شود تا `authority` به‌دست آید، بعد رکوردِ pending
-// با همان authority ثبت **و در همان تراکنش به ثبت‌نام وصل** می‌شود.
-//
-// نسخهٔ قبل، پرداخت را می‌ساخت و بعد در یک دستورِ جدا `payment_id` را روی
-// ثبت‌نام می‌نوشت و **نتیجه‌اش را نمی‌خواند**. اگر آن نوشتن شکست می‌خورد، کاربر
-// باز هم به درگاه می‌رفت و پولش را می‌داد، ولی پرداخت به هیچ ثبت‌نامی وصل نبود و
-// callback نمی‌توانست نهایی‌اش کند. حالا هر دو داخلِ `create_webinar_payment`
-// اتفاق می‌افتند — یک تراکنش، یا هر دو یا هیچ‌کدام — و **تا وقتی این تابع موفق
-// نشود، هیچ URLی به کاربر برنمی‌گردد.**
+// تصمیم‌گیری در `lib/payments/start-webinar-payment.ts` است؛ اینجا فقط
+// آداپتور است. دلیلش این است که شاخه‌های شکست — اتصالِ موجود، مبلغِ ناهماهنگ،
+// شکستِ ثبتِ ممیزی — بدونِ شبکه و دیتابیس قابلِ تست باشند.
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const {
@@ -32,94 +32,150 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
   }
 
-  const { registration_id } = await req.json().catch(() => ({}));
-  if (!registration_id) {
-    return NextResponse.json(
-      { error: "registration_id الزامی است." },
-      { status: 400 }
-    );
+  const body = await req.json().catch(() => ({}));
+  const registrationId = body?.registration_id;
+  const replaceRequested = body?.replace === true;
+
+  if (!registrationId) {
+    return NextResponse.json({ error: "registration_id الزامی است." }, { status: 400 });
   }
 
   const admin = createAdminClient();
 
-  // ثبت‌نام با بایندِ مالکیت خوانده می‌شود — قیمت از دیتابیس می‌آید، نه از کلاینت.
-  const { data: reg, error: regErr } = await admin
-    .from("webinar_registrations")
-    .select("id, webinar_id, user_id, payment_status, webinars(title, price_toman)")
-    .eq("id", registration_id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const ports: StartPorts = {
+    async loadRegistration(id, userId) {
+      const { data, error } = await admin
+        .from("webinar_registrations")
+        .select(
+          "id, webinar_id, user_id, payment_status, payment_id, webinars(title, price_toman)"
+        )
+        .eq("id", id)
+        .eq("user_id", userId)
+        .maybeSingle();
 
-  if (regErr || !reg) {
-    return NextResponse.json({ error: "ثبت‌نام یافت نشد." }, { status: 404 });
+      if (error || !data) return { registration: null, error };
+
+      const row = data as unknown as {
+        id: string;
+        webinar_id: string | null;
+        payment_status: string | null;
+        payment_id: string | null;
+        webinars: { title: string; price_toman: number } | null;
+      };
+
+      const registration: RegistrationRow = {
+        id: row.id,
+        webinar_id: row.webinar_id,
+        payment_status: row.payment_status,
+        payment_id: row.payment_id,
+        webinarTitle: row.webinars?.title ?? null,
+        priceToman: row.webinars?.price_toman ?? null,
+      };
+      return { registration, error: null };
+    },
+
+    async loadPayment(paymentId) {
+      const { data, error } = await admin
+        .from("payments")
+        .select("id, status, authority, created_at")
+        .eq("id", paymentId)
+        .maybeSingle();
+      return { payment: (data as ExistingPayment | null) ?? null, error };
+    },
+
+    async loadStaleMinutes() {
+      const { data } = await admin
+        .from("payment_settings")
+        .select("value")
+        .eq("key", "webinar_retry_stale_minutes")
+        .maybeSingle();
+      return data?.value ?? null;
+    },
+
+    async requestGatewayPayment(amount, description) {
+      const r = await requestPayment(amount, description, WEBINAR_CALLBACK_PATH);
+      return {
+        ok: r.ok,
+        authority: r.authority ?? null,
+        startPayUrl: r.startPayUrl ?? null,
+        message: r.message,
+      };
+    },
+
+    async createWebinarPayment(input) {
+      // کلاینتِ **کاربر**، چون تابع به `auth.uid()` تکیه دارد و مالکیت را
+      // خودش بررسی می‌کند. `expectedAmount` مبلغ را تعیین نمی‌کند — تابع
+      // قیمت را از ردیفِ قفل‌شدهٔ وبینار می‌خواند و فقط تطبیق می‌دهد.
+      const { data, error } = await supabase.rpc("create_webinar_payment", {
+        p_registration_id: input.registrationId,
+        p_authority: input.authority,
+        p_expected_amount: input.expectedAmount,
+        p_replace: input.replace,
+      });
+      return { paymentId: (data as string | null) ?? null, error };
+    },
+
+    async recordLinkFailure(entry) {
+      const { error } = await admin.from("audit_log").insert({
+        actor_id: entry.userId,
+        action: "payment.link_failed",
+        entity: "payment",
+        target_user_id: entry.userId,
+        after: {
+          registration_id: entry.registrationId,
+          webinar_id: entry.webinarId,
+          authority: entry.authority,
+          reason: entry.reason,
+        },
+      });
+      if (error) {
+        // تنها ردی که باقی می‌ماند همین خط است، پس باید صریح باشد.
+        console.error(
+          "payment.link_failed audit insert FAILED — no durable trace exists:",
+          error.message
+        );
+      }
+      return { persisted: !error, error };
+    },
+
+    resumeUrl: startPayUrl,
+  };
+
+  const outcome = await startWebinarPayment({
+    userId: user.id,
+    registrationId,
+    replaceRequested,
+    callbackPath: WEBINAR_CALLBACK_PATH,
+    ports,
+  });
+
+  switch (outcome.status) {
+    case "created":
+      return NextResponse.json({ payment_url: outcome.paymentUrl });
+
+    case "resumed":
+      // ⚠️ هیچ تراکنشِ تازه‌ای ساخته نشد. همان لینکِ اول، پس نمی‌تواند یتیم شود.
+      return NextResponse.json({ payment_url: outcome.paymentUrl, resumed: true });
+
+    case "rejected":
+      return NextResponse.json(
+        {
+          error: outcome.message,
+          reason: outcome.reason,
+          ...(outcome.retryAfterMinutes
+            ? { retry_after_minutes: outcome.retryAfterMinutes }
+            : {}),
+        },
+        { status: outcome.httpStatus }
+      );
+
+    case "gateway_failed":
+      return NextResponse.json({ error: outcome.message }, { status: 502 });
+
+    case "link_failed":
+      return NextResponse.json(
+        { error: outcome.message, evidence_recorded: outcome.evidenceRecorded },
+        { status: 500 }
+      );
   }
-  if (reg.payment_status === "paid") {
-    return NextResponse.json(
-      { error: "این ثبت‌نام قبلاً پرداخت شده." },
-      { status: 400 }
-    );
-  }
-
-  const webinar = (reg as unknown as {
-    webinars: { title: string; price_toman: number } | null;
-  }).webinars;
-
-  if (!webinar || webinar.price_toman <= 0) {
-    return NextResponse.json(
-      { error: "این وبینار رایگان است و نیاز به پرداخت ندارد." },
-      { status: 400 }
-    );
-  }
-
-  // ۱) تراکنش زرین‌پال با callbackِ وبینار (نه callbackِ دوره).
-  const result = await requestPayment(
-    webinar.price_toman,
-    `ثبت‌نام وبینار: ${webinar.title}`,
-    WEBINAR_CALLBACK_PATH
-  );
-
-  if (!result.ok || !result.startPayUrl || !result.authority) {
-    return NextResponse.json(
-      { error: result.message || "خطا در اتصال به درگاه پرداخت." },
-      { status: 502 }
-    );
-  }
-
-  // ۲) ساختِ پرداخت **و** اتصالش به ثبت‌نام، اتمیک، با کلاینتِ کاربر چون تابع
-  //    به `auth.uid()` تکیه دارد و مالکیت را خودش بررسی می‌کند.
-  const { data: paymentId, error: payErr } = await supabase.rpc(
-    "create_webinar_payment",
-    {
-      p_registration_id: reg.id,
-      p_amount: webinar.price_toman,
-      p_authority: result.authority,
-    }
-  );
-
-  if (payErr || !paymentId) {
-    // ثبتِ ماندگار: یک authorityِ زرین‌پال ساخته شده که هرگز استفاده نخواهد شد.
-    // بدونِ این رد، تنها نشانه یک خطای گذرا در لاگ بود.
-    console.error("create_webinar_payment failed:", payErr?.message);
-    await admin.from("audit_log").insert({
-      actor_id: user.id,
-      action: "payment.link_failed",
-      entity: "payment",
-      target_user_id: user.id,
-      after: {
-        registration_id: reg.id,
-        webinar_id: reg.webinar_id,
-        authority: result.authority,
-        reason: payErr?.message?.slice(0, 500) ?? "unknown",
-      },
-    });
-
-    // ⚠️ هیچ URLی برنمی‌گردد. اگر برمی‌گشت، کاربر پول می‌داد و پرداختش به
-    // هیچ ثبت‌نامی وصل نبود.
-    return NextResponse.json(
-      { error: "خطا در ثبت پرداخت. لطفاً دوباره تلاش کنید." },
-      { status: 500 }
-    );
-  }
-
-  return NextResponse.json({ payment_url: result.startPayUrl });
 }

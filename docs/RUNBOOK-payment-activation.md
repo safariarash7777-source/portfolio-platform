@@ -13,12 +13,20 @@
 
 | فایل | اثر |
 |---|---|
-| `sql/phase24_payment_entitlement.sql` | ستونِ `payments.purpose` · قیدِ یکتای `entitlements.payment_id` · قیدِ یکتای `webinar_registrations.payment_id` · جدولِ `entitlement_durations` · توابعِ `create_payment/3`، `create_webinar_payment`، `finalize_paid_access` |
+| `sql/phase24_payment_entitlement.sql` | ستونِ `payments.purpose` · قیدِ یکتای `entitlements.payment_id` · قیدِ یکتای `webinar_registrations.payment_id` · جدولِ `entitlement_durations` · جدولِ `payment_settings` · توابعِ `create_payment/4` (فقط service_role)، `create_webinar_payment/4`، `finalize_paid_access` |
 | `lib/payments/finalize.ts` | تنها ماشینِ حالتِ پرداخت |
 | دو `callback` | هر دو همان تابع را صدا می‌زنند |
 
 **اضافه‌شونده است، نه مخرب.** هیچ جدول، ستون، سیاست یا داده‌ای حذف یا بازنویسی
-نمی‌شود. `verify_payment` / `fail_payment` / `create_payment` دست‌نخورده‌اند.
+نمی‌شود. `verify_payment` و `fail_payment` دست‌نخورده‌اند.
+
+> ⚠️ **`create_payment` تغییرِ شکسته دارد.** امضاهای قدیمی
+> (`create_payment(integer,text)` و `create_payment(integer,text,text)`) و
+> `create_webinar_payment(uuid,integer,text)` در این migration **حذف** می‌شوند،
+> چون هر سه مبلغ را از فراخواننده می‌گرفتند و برای `authenticated` باز بودند.
+> این تنها بخشِ غیرِ افزایشیِ فایل است. روی Production صفر ردیفِ پرداخت وجود
+> دارد و هیچ کدِ مستقری این امضاها را صدا نمی‌زند، ولی باید **پیش از** استقرارِ
+> کدِ PR #113 اجرا شود، نه بعد از آن.
 
 ---
 
@@ -122,6 +130,17 @@ SELECT has_function_privilege('anon',
    SELECT count(*) FROM public.payments;
    SELECT count(*) FROM public.entitlements;
    SELECT count(*) FROM public.entitlement_durations;   -- پس از migration باید ۲ باشد
+   SELECT value FROM public.payment_settings
+    WHERE key = 'webinar_retry_stale_minutes';                -- باید ۶۰ باشد
+
+   -- امضاهای قدیمی نباید مانده باشند (هر سه باید t برگردانند)
+   SELECT to_regprocedure('public.create_payment(integer,text)') IS NULL,
+          to_regprocedure('public.create_payment(integer,text,text)') IS NULL,
+          to_regprocedure('public.create_webinar_payment(uuid,integer,text)') IS NULL;
+
+   -- کاربرِ واردشده نباید بتواند پرداخت بسازد (باید f برگرداند)
+   SELECT has_function_privilege('authenticated',
+            'public.create_payment(uuid,integer,text,text)','EXECUTE');
    SELECT count(*) FROM public.webinar_registrations;
    ```
 2. کلِ `sql/phase24_payment_entitlement.sql` را یک‌جا اجرا کن.

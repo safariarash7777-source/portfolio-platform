@@ -172,3 +172,81 @@ describe("ممیزی", () => {
     assert.match(EXEC5, /'payment\.failed'/);
   });
 });
+
+// ── بازبینیِ دومِ Command Center (کامنت ۵۳۵۳۳۰۹۳۲۹) ──────────────────────────
+
+describe("اتصالِ پرداختِ وبینار بازنویسیِ خاموش نمی‌شود", () => {
+  test("اتصالِ موجود قفل و بررسی می‌شود، نه اینکه رویش نوشته شود", () => {
+    assert.match(EXEC24, /IF v_reg\.payment_id IS NOT NULL THEN/);
+    assert.match(EXEC24, /WHERE id = v_reg\.payment_id\s*\n\s*FOR UPDATE/);
+  });
+
+  test("پرداختِ در جریان با SQLSTATE اختصاصی رد می‌شود", () => {
+    assert.match(EXEC24, /IF NOT p_replace THEN[\s\S]{0,220}ERRCODE = 'PT409'/);
+  });
+
+  test("جایگزینی بدونِ درخواستِ صریح ممکن نیست", () => {
+    // `p_replace` باید پیش‌فرضِ false داشته باشد، وگرنه هر فراخوانیِ ساده
+    // دوباره همان بازنویسیِ خاموش می‌شود.
+    assert.match(EXEC24, /p_replace\s+boolean DEFAULT false/);
+  });
+
+  test("جایگزینی پیش از کهنه‌شدنِ پرداختِ قبلی رد می‌شود", () => {
+    assert.match(EXEC24, /created_at > now\(\) - make_interval\(mins => v_stale_min\)/);
+    assert.match(EXEC24, /ERRCODE = 'PT425'/);
+  });
+
+  test("ابطال از fail_payment می‌گذرد، نه UPDATE مستقیم", () => {
+    assert.match(EXEC24, /PERFORM public\.fail_payment\(v_old\.authority\)/);
+    assert.match(EXEC24, /'payment\.replaced'/);
+  });
+
+  test("پنجرهٔ کهنه‌شدن سمتِ سرور و از دسترسِ کلاینت خارج است", () => {
+    assert.match(EXEC24, /CREATE TABLE IF NOT EXISTS public\.payment_settings/);
+    assert.match(EXEC24, /'webinar_retry_stale_minutes'/);
+    assert.match(
+      EXEC24,
+      /REVOKE ALL ON TABLE public\.payment_settings FROM public, anon, authenticated/
+    );
+  });
+});
+
+describe("مبلغ از فراخواننده گرفته نمی‌شود", () => {
+  test("قیمتِ وبینار داخلِ SQL از ردیفِ قفل‌شده استخراج می‌شود", () => {
+    assert.match(EXEC24, /JOIN public\.webinars w ON w\.id = r\.webinar_id/);
+    assert.match(EXEC24, /v_price := v_reg\.price_toman/);
+  });
+
+  test("مبلغِ ارسالی فقط تطبیق داده می‌شود و مبنای ذخیره نیست", () => {
+    assert.match(EXEC24, /p_expected_amount IS DISTINCT FROM v_price/);
+    // چیزی که به create_payment می‌رود v_price است، نه ورودیِ فراخواننده.
+    assert.match(EXEC24, /create_payment\(v_user, v_price, p_authority, 'webinar'\)/);
+    assert.doesNotMatch(EXEC24, /create_payment\([^)]*p_expected_amount/);
+  });
+
+  test("ساختِ پرداختِ مشاوره از authenticated گرفته شده است", () => {
+    assert.match(
+      EXEC24,
+      /REVOKE ALL ON FUNCTION public\.create_payment\(uuid, integer, text, text\) FROM public, anon, authenticated/
+    );
+    assert.match(
+      EXEC24,
+      /GRANT EXECUTE ON FUNCTION public\.create_payment\(uuid, integer, text, text\) TO service_role/
+    );
+    assert.doesNotMatch(
+      EXEC24,
+      /GRANT EXECUTE ON FUNCTION public\.create_payment\([^)]*\) TO authenticated/
+    );
+  });
+
+  test("هیچ امضای قدیمیِ مبلغ‌پذیر باقی نمی‌ماند", () => {
+    assert.match(EXEC24, /DROP FUNCTION IF EXISTS public\.create_payment\(integer, text, text\)/);
+    assert.match(EXEC24, /DROP FUNCTION IF EXISTS public\.create_webinar_payment\(uuid, integer, text\)/);
+    assert.match(EXEC24, /DROP FUNCTION public\.create_payment\(integer, text\)/);
+  });
+
+  test("migration خودش نبودِ امضاهای قدیمی را تأیید می‌کند", () => {
+    assert.match(EXEC24, /to_regprocedure\('public\.create_payment\(integer, text\)'\) IS NOT NULL THEN\s*\n\s*RAISE EXCEPTION/);
+    assert.match(EXEC24, /has_function_privilege\('authenticated',\s*\n?\s*'public\.create_payment\(uuid, integer, text, text\)', 'EXECUTE'\)/);
+  });
+});

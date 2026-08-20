@@ -152,11 +152,50 @@ DROP POLICY IF EXISTS "durations_admin_write" ON public.entitlement_durations;
 CREATE POLICY "durations_admin_write" ON public.entitlement_durations
   FOR UPDATE USING (public.is_admin());
 
--- ── ۵. ساختِ پرداخت با نوعِ محصولِ الزامی ───────────────────────────────────
+-- ── ۴.۱ تنظیماتِ عملیاتیِ پرداخت ────────────────────────────────────────────
 --
--- نسخهٔ دوآرگومانیِ phase5 هنوز وجود دارد ولی در بخشِ Grants از
--- `authenticated` گرفته می‌شود، تا هیچ پرداختِ بی‌purpose ساخته نشود.
+-- پنجرهٔ «کهنه‌شدن» برای پرداختِ pending. تا وقتی یک پرداختِ pending از این
+-- پنجره جوان‌تر است، لینکِ درگاهش ممکن است هنوز قابلِ پرداخت باشد؛ پس **باطل
+-- کردنش خطرناک است** — کاربر می‌تواند همان لینک را پرداخت کند و پولش به هیچ
+-- ثبت‌نامی نرسد. مقدار باید از پنجرهٔ اعتبارِ StartPay درگاه بزرگ‌تر باشد.
+CREATE TABLE IF NOT EXISTS public.payment_settings (
+  key        text PRIMARY KEY,
+  value      integer NOT NULL CHECK (value > 0),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid
+);
+
+INSERT INTO public.payment_settings (key, value) VALUES
+  ('webinar_retry_stale_minutes', 60)
+ON CONFLICT (key) DO NOTHING;
+
+ALTER TABLE public.payment_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "payment_settings_admin_read" ON public.payment_settings;
+CREATE POLICY "payment_settings_admin_read" ON public.payment_settings
+  FOR SELECT USING (public.is_admin());
+
+DROP POLICY IF EXISTS "payment_settings_admin_write" ON public.payment_settings;
+CREATE POLICY "payment_settings_admin_write" ON public.payment_settings
+  FOR UPDATE USING (public.is_admin());
+
+-- ── ۵. ساختِ پرداختِ مشاوره — فقط service_role ──────────────────────────────
+--
+-- ── بازنگریِ دومِ Command Center ─────────────────────────────────────────────
+--
+-- نسخهٔ قبل `create_payment(amount, authority, purpose)` را به `authenticated`
+-- می‌داد. مسیرِ Next.js قیمت را درست می‌خواند، ولی **مسیرِ Next.js مرزِ امنیتی
+-- نیست**: کاربر می‌تواند مستقیماً RPC را صدا بزند و پرداختی با مبلغِ دلخواه و
+-- purposeِ دلخواه بسازد. آن‌وقت `verify_payment` مبلغِ ذخیره‌شده را با درگاه
+-- می‌سنجد و همان مبلغِ جعلی «تأیید» می‌شود.
+--
+-- حالا این تابع فقط با service_role اجرا می‌شود و کاربر را **صریح** می‌گیرد،
+-- چون `auth.uid()` زیرِ service_role تهی است. قیمتِ مشاوره سمتِ سرور در env
+-- می‌ماند (منبعِ واحد)؛ دیتابیس منبعِ دومی نمی‌سازد که با آن واگرا شود.
+DROP FUNCTION IF EXISTS public.create_payment(integer, text, text);
+
 CREATE OR REPLACE FUNCTION public.create_payment(
+  p_user_id   uuid,
   p_amount    integer,
   p_authority text,
   p_purpose   text
@@ -165,22 +204,25 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE v_id uuid;
 BEGIN
-  IF auth.uid() IS NULL THEN
-    RAISE EXCEPTION 'دسترسی غیرمجاز.';
+  IF p_user_id IS NULL THEN
+    RAISE EXCEPTION 'کاربرِ پرداخت مشخص نیست.';
   END IF;
   IF p_amount IS NULL OR p_amount <= 0 THEN
     RAISE EXCEPTION 'مبلغ نامعتبر.';
+  END IF;
+  IF p_authority IS NULL OR length(trim(p_authority)) = 0 THEN
+    RAISE EXCEPTION 'شناسهٔ درگاه نامعتبر.';
   END IF;
   IF p_purpose IS NULL OR p_purpose NOT IN ('consulting', 'webinar') THEN
     RAISE EXCEPTION 'نوعِ محصولِ پرداخت نامعتبر است: %', p_purpose;
   END IF;
 
   INSERT INTO public.payments (user_id, amount, authority, status, purpose)
-  VALUES (auth.uid(), p_amount, p_authority, 'pending', p_purpose)
+  VALUES (p_user_id, p_amount, p_authority, 'pending', p_purpose)
   RETURNING id INTO v_id;
 
   INSERT INTO public.audit_log (actor_id, action, entity, target_user_id, after)
-  VALUES (auth.uid(), 'payment.request', 'payment', auth.uid(),
+  VALUES (p_user_id, 'payment.request', 'payment', p_user_id,
           jsonb_build_object('amount', p_amount, 'authority', p_authority,
                              'purpose', p_purpose));
 
@@ -189,31 +231,54 @@ END $$;
 
 -- ── ۶. پرداختِ وبینار: ساخت و اتصال در **یک** تراکنش ───────────────────────
 --
--- پیش از این، مسیرِ API ابتدا پرداخت را می‌ساخت و بعد در یک دستورِ جدا
--- `payment_id` را روی ثبت‌نام می‌نوشت **بدونِ بررسیِ نتیجه**. اگر آن نوشتن
--- شکست می‌خورد، کاربر به درگاه می‌رفت و پرداختش هرگز به ثبت‌نامی وصل نمی‌شد.
--- حالا هر دو در یک تابع و یک تراکنش انجام می‌شوند: یا هر دو، یا هیچ‌کدام.
+-- سه چیز اینجا اثبات می‌شود و هر سه با تستِ Postgresِ واقعی پوشش دارند:
+--
+--   ۱. **مبلغ از کلاینت گرفته نمی‌شود.** از ردیفِ قفل‌شدهٔ وبینار استخراج
+--      می‌شود. `p_expected_amount` فقط برای *تطبیق* است: اگر مسیرِ API قیمتی
+--      قدیمی به درگاه داده باشد، اینجا می‌شکند و پرداختی ساخته نمی‌شود.
+--   ۲. **اتصال بازنویسیِ خاموش نمی‌شود.** اگر ثبت‌نام از قبل پرداختی دارد،
+--      تابع می‌شکند مگر آن پرداخت در وضعیتِ نهاییِ `failed` باشد.
+--   ۳. **جایگزینی فقط عمدی و فقط بعد از کهنه‌شدن.** `p_replace => true`
+--      لازم است **و** پرداختِ قبلی باید از پنجرهٔ `webinar_retry_stale_minutes`
+--      قدیمی‌تر باشد. آن‌وقت با `fail_payment` باطل می‌شود — ردِ ممیزی دارد.
+--
+-- چرا «رد کن و از سر بگیر» پیش‌فرض است: تا وقتی لینکِ اول ممکن است قابلِ
+-- پرداخت باشد، ساختنِ لینکِ دوم یعنی یکی از دو لینک یتیم می‌شود. سناریوی
+-- Command Center دقیقاً همین بود. پس مسیرِ API **قبل از ساختِ authorityِ
+-- جدید** وضعیت را می‌بیند و همان لینکِ اول را برمی‌گرداند.
+--
+-- SQLSTATE‌های اختصاصی تا مسیر بتواند بدونِ تطبیقِ رشته تصمیم بگیرد:
+--   PT409 → پرداختِ در جریان (قابلِ از سرگیری)
+--   PT425 → پرداخت هنوز کهنه نشده، جایگزینی مجاز نیست
+DROP FUNCTION IF EXISTS public.create_webinar_payment(uuid, integer, text);
+
 CREATE OR REPLACE FUNCTION public.create_webinar_payment(
   p_registration_id uuid,
-  p_amount          integer,
-  p_authority       text
+  p_authority       text,
+  p_expected_amount integer,
+  p_replace         boolean DEFAULT false
 ) RETURNS uuid
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
-  v_user    uuid := auth.uid();
-  v_reg     record;
-  v_payment uuid;
+  v_user       uuid := auth.uid();
+  v_reg        record;
+  v_price      integer;
+  v_old        record;
+  v_stale_min  integer;
+  v_payment    uuid;
 BEGIN
   IF v_user IS NULL THEN
     RAISE EXCEPTION 'دسترسی غیرمجاز.';
   END IF;
 
-  SELECT id, user_id, payment_status, payment_id
+  -- ثبت‌نام و وبینارش با هم قفل می‌شوند؛ قیمت از همین‌جا می‌آید.
+  SELECT r.id, r.user_id, r.payment_status, r.payment_id, w.price_toman
     INTO v_reg
-    FROM public.webinar_registrations
-   WHERE id = p_registration_id
-     FOR UPDATE;
+    FROM public.webinar_registrations r
+    JOIN public.webinars w ON w.id = r.webinar_id
+   WHERE r.id = p_registration_id
+     FOR UPDATE OF r;
 
   IF v_reg.id IS NULL THEN
     RAISE EXCEPTION 'ثبت‌نام یافت نشد.';
@@ -225,7 +290,72 @@ BEGIN
     RAISE EXCEPTION 'این ثبت‌نام قبلاً پرداخت شده.';
   END IF;
 
-  v_payment := public.create_payment(p_amount, p_authority, 'webinar');
+  v_price := v_reg.price_toman;
+  IF v_price IS NULL OR v_price <= 0 THEN
+    RAISE EXCEPTION 'این وبینار قیمتِ معتبر ندارد.';
+  END IF;
+
+  -- مبلغِ ارسالی فقط تطبیق داده می‌شود؛ چیزی که ذخیره می‌شود v_price است.
+  IF p_expected_amount IS DISTINCT FROM v_price THEN
+    RAISE EXCEPTION
+      'مبلغِ درخواست (%) با قیمتِ ثبت‌شدهٔ وبینار (%) نمی‌خواند.',
+      p_expected_amount, v_price;
+  END IF;
+
+  -- ── اتصالِ موجود ────────────────────────────────────────────────────────
+  IF v_reg.payment_id IS NOT NULL THEN
+    SELECT id, status, authority, created_at
+      INTO v_old
+      FROM public.payments
+     WHERE id = v_reg.payment_id
+       FOR UPDATE;
+
+    IF v_old.id IS NULL THEN
+      -- اتصال به ردیفی که وجود ندارد. نباید ممکن باشد (کلیدِ خارجی)، ولی
+      -- اگر شد، خاموش ردش نمی‌کنیم.
+      RAISE EXCEPTION 'اتصالِ پرداختِ این ثبت‌نام معتبر نیست.';
+    END IF;
+
+    IF v_old.status = 'paid' THEN
+      RAISE EXCEPTION 'این ثبت‌نام قبلاً پرداخت شده.';
+    END IF;
+
+    IF v_old.status = 'pending' THEN
+      SELECT value INTO v_stale_min
+        FROM public.payment_settings
+       WHERE key = 'webinar_retry_stale_minutes';
+      IF v_stale_min IS NULL THEN
+        RAISE EXCEPTION 'تنظیمِ webinar_retry_stale_minutes موجود نیست.';
+      END IF;
+
+      IF NOT p_replace THEN
+        RAISE EXCEPTION
+          'برای این ثبت‌نام یک پرداختِ در جریان وجود دارد.'
+          USING ERRCODE = 'PT409';
+      END IF;
+
+      IF v_old.created_at > now() - make_interval(mins => v_stale_min) THEN
+        RAISE EXCEPTION
+          'پرداختِ قبلی هنوز معتبر است؛ تا % دقیقه پس از شروع جایگزین نمی‌شود.',
+          v_stale_min
+          USING ERRCODE = 'PT425';
+      END IF;
+
+      -- ابطالِ عمدی و ثبت‌شده. `fail_payment` تنها نویسندهٔ مجازِ status است.
+      PERFORM public.fail_payment(v_old.authority);
+
+      INSERT INTO public.audit_log (actor_id, action, entity, target_user_id, after)
+      VALUES (v_user, 'payment.replaced', 'payment', v_user,
+              jsonb_build_object('registration_id', p_registration_id,
+                                 'replaced_payment_id', v_old.id,
+                                 'stale_after_minutes', v_stale_min));
+    END IF;
+    -- status = 'failed' → پرداختِ قبلی در وضعیتِ نهایی است و لینکش دیگر
+    -- قابلِ پرداخت نیست (تریگرِ payments_guard از failed→paid جلو می‌گیرد).
+    -- جایگزینی بی‌خطر است.
+  END IF;
+
+  v_payment := public.create_payment(v_user, v_price, p_authority, 'webinar');
 
   UPDATE public.webinar_registrations
      SET payment_id = v_payment
@@ -395,25 +525,35 @@ REVOKE ALL ON FUNCTION public.finalize_paid_access(text, text, integer, text, te
 REVOKE ALL ON FUNCTION public.finalize_paid_access(text, text, integer, text, text, uuid) FROM authenticated;
 GRANT EXECUTE ON FUNCTION public.finalize_paid_access(text, text, integer, text, text, uuid) TO service_role;
 
-REVOKE ALL ON FUNCTION public.create_payment(integer, text, text) FROM public, anon;
-GRANT EXECUTE ON FUNCTION public.create_payment(integer, text, text) TO authenticated;
+-- ساختِ پرداختِ مشاوره **فقط** service_role. این همان بندِ P1 دومِ بازبینی
+-- است: مادامی که `authenticated` می‌توانست این تابع را با مبلغِ دلخواه صدا
+-- بزند، درست‌بودنِ مسیرِ Next.js بی‌اثر بود.
+REVOKE ALL ON FUNCTION public.create_payment(uuid, integer, text, text) FROM public, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_payment(uuid, integer, text, text) TO service_role;
 
-REVOKE ALL ON FUNCTION public.create_webinar_payment(uuid, integer, text) FROM public, anon;
-GRANT EXECUTE ON FUNCTION public.create_webinar_payment(uuid, integer, text) TO authenticated;
+-- پرداختِ وبینار برای کاربرِ واردشده می‌ماند: مالکیت با `auth.uid()` بررسی
+-- می‌شود و دیگر هیچ ورودیِ قابلِ جعلی وجود ندارد — مبلغ از ردیفِ وبینار
+-- استخراج می‌شود و purpose داخلِ تابع ثابت است.
+REVOKE ALL ON FUNCTION public.create_webinar_payment(uuid, text, integer, boolean) FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.create_webinar_payment(uuid, text, integer, boolean) TO authenticated;
 
--- نسخهٔ دوآرگومانیِ phase5 دیگر نباید قابلِ فراخوانی باشد: پرداختِ بدونِ
--- purpose در finalizer رد می‌شود، پس ساختنش فقط ردیفِ مرده تولید می‌کند.
--- شرطی است تا این فایل روی محیطی که phase5 ندارد هم اجرا شود (idempotency).
+-- امضاهای قدیمی نباید باقی بمانند: هر کدام یک تابعِ SECURITY DEFINER است که
+-- مبلغ را از فراخواننده می‌گیرد. شرطی، چون این فایل باید روی محیطی که هرگز
+-- نسخهٔ قبلی را ندیده هم اجرا شود.
 DO $$
 BEGIN
   IF to_regprocedure('public.create_payment(integer, text)') IS NOT NULL THEN
     REVOKE ALL ON FUNCTION public.create_payment(integer, text) FROM public, anon, authenticated;
+    DROP FUNCTION public.create_payment(integer, text);
   END IF;
 END $$;
 
 REVOKE ALL ON TABLE public.entitlement_durations FROM public, anon;
 GRANT SELECT ON TABLE public.entitlement_durations TO authenticated;
 GRANT SELECT, UPDATE ON TABLE public.entitlement_durations TO service_role;
+
+REVOKE ALL ON TABLE public.payment_settings FROM public, anon, authenticated;
+GRANT SELECT, UPDATE ON TABLE public.payment_settings TO service_role;
 
 -- ── ۹. تأییدِ خودکارِ پس از اجرا ─────────────────────────────────────────────
 DO $$
@@ -450,10 +590,41 @@ BEGIN
        'public.finalize_paid_access(text, text, integer, text, text, uuid)', 'EXECUTE') THEN
     RAISE EXCEPTION 'تأیید شکست خورد: service_role اجازهٔ اجرای نهایی‌سازی را ندارد.';
   END IF;
-  IF to_regprocedure('public.create_payment(integer, text)') IS NOT NULL
-     AND has_function_privilege('authenticated',
-           'public.create_payment(integer, text)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'تأیید شکست خورد: نسخهٔ بدونِ purposeِ create_payment هنوز باز است.';
+  -- هیچ امضای قدیمیِ create_payment نباید زنده مانده باشد؛ هر کدام یک راهِ
+  -- ساختِ پرداخت با مبلغِ دلخواه بود.
+  IF to_regprocedure('public.create_payment(integer, text)') IS NOT NULL THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: امضای create_payment(integer, text) هنوز وجود دارد.';
+  END IF;
+  IF to_regprocedure('public.create_payment(integer, text, text)') IS NOT NULL THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: امضای create_payment(integer, text, text) هنوز وجود دارد.';
+  END IF;
+  IF to_regprocedure('public.create_webinar_payment(uuid, integer, text)') IS NOT NULL THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: امضای قدیمیِ create_webinar_payment هنوز وجود دارد.';
+  END IF;
+
+  -- ساختِ پرداختِ مشاوره باید از دسترسِ کاربر خارج باشد.
+  IF has_function_privilege('authenticated',
+       'public.create_payment(uuid, integer, text, text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: authenticated هنوز می‌تواند پرداخت بسازد.';
+  END IF;
+  IF has_function_privilege('anon',
+       'public.create_payment(uuid, integer, text, text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: anon هنوز می‌تواند پرداخت بسازد.';
+  END IF;
+  IF NOT has_function_privilege('service_role',
+       'public.create_payment(uuid, integer, text, text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: service_role نمی‌تواند پرداخت بسازد.';
+  END IF;
+
+  -- پرداختِ وبینار برای کاربر باز است، ولی برای anon نه.
+  IF has_function_privilege('anon',
+       'public.create_webinar_payment(uuid, text, integer, boolean)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: anon هنوز می‌تواند پرداختِ وبینار بسازد.';
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM public.payment_settings
+                  WHERE key = 'webinar_retry_stale_minutes') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: تنظیمِ پنجرهٔ کهنه‌شدنِ پرداخت مقداردهی نشد.';
   END IF;
 END $$;
 

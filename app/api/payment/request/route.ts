@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requestPayment, coursePriceToman } from "@/lib/zarinpal";
 
 export const runtime = "nodejs";
@@ -34,10 +35,21 @@ export async function POST() {
   }
 
   // ثبت ردیفِ pending (append-only، از طریق تابع SECURITY DEFINER).
+  //
   // `p_purpose` الزامی است: نوعِ محصول در همان لحظه به ردیفِ پرداخت بسته
   // می‌شود و دیگر قابلِ تغییر نیست، پس callbackِ وبینار نمی‌تواند این پرداخت
   // را نهایی کند.
-  const { error: dbErr } = await supabase.rpc("create_payment", {
+  //
+  // ── چرا با کلاینتِ ادمین ────────────────────────────────────────────────
+  //
+  // `create_payment` دیگر برای `authenticated` قابلِ اجرا نیست. تا وقتی بود،
+  // درست‌بودنِ این مسیر بی‌اثر بود: کاربر می‌توانست خودش RPC را با مبلغِ
+  // دلخواه صدا بزند و `verify_payment` همان مبلغِ جعلی را تأیید می‌کرد.
+  // مبلغ از env می‌آید (منبعِ واحدِ سمتِ سرور) و کاربر **صریح** پاس می‌شود،
+  // چون زیرِ service_role مقدارِ `auth.uid()` تهی است.
+  const admin = createAdminClient();
+  const { error: dbErr } = await admin.rpc("create_payment", {
+    p_user_id: user.id,
     p_amount: amount,
     p_authority: zp.authority,
     p_purpose: "consulting",
