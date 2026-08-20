@@ -116,6 +116,91 @@ BEGIN
   END IF;
 END $$;
 
+-- ── اثرِ سناریومحور — جدولِ جدا ───────────────────────────────────────────────
+--
+-- «مسیرِ اثر» (`impact_path`) می‌گوید **از چه راهی** اثر می‌گذارد. اثرِ سناریویی
+-- می‌گوید **در کدام حالت، روی چه چیزی، در چه جهتی**. یک ستونِ واحد این دو را
+-- قاطی می‌کرد.
+--
+-- قاعدهٔ سختِ محصول: ارزش‌گذاری همیشه **بازه + فروض**، هرگز یک عدد. پس اینجا
+-- هم بزرگیِ اثر یک **باندِ کیفی** است، نه درصد. عددِ ساختگی بدتر از نبودِ عدد
+-- است، چون قابلِ استناد به نظر می‌رسد.
+CREATE TABLE IF NOT EXISTS public.geopolitical_scenario_impacts (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id     uuid NOT NULL REFERENCES public.geopolitical_events(id) ON DELETE CASCADE,
+
+  scenario     text NOT NULL CHECK (scenario IN ('adverse', 'base', 'favorable')),
+
+  -- چه چیزی متأثر می‌شود: یک sleeve یا یک بازار. نامِ ابزار عمداً اینجا نیست —
+  -- نگاشتِ sleeve به ابزار در نسخهٔ سبد تعیین می‌شود، نه در رویداد.
+  affected     text NOT NULL CHECK (length(trim(affected)) > 0),
+
+  direction    text NOT NULL CHECK (direction IN ('down', 'neutral', 'up', 'unclear')),
+
+  -- باندِ کیفی، نه عدد.
+  magnitude    text NOT NULL DEFAULT 'unknown'
+                 CHECK (magnitude IN ('unknown', 'limited', 'moderate', 'material')),
+
+  assumptions  text NOT NULL CHECK (length(trim(assumptions)) >= 10),
+  confidence   text NOT NULL DEFAULT 'low'
+                 CHECK (confidence IN ('low', 'medium', 'high')),
+
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  created_by   uuid REFERENCES public.profiles(id),
+
+  -- یک سناریو، یک بار، برای هر چیزِ متأثر.
+  CONSTRAINT uq_geo_scenario UNIQUE (event_id, scenario, affected)
+);
+
+CREATE INDEX IF NOT EXISTS idx_geo_scenario_event
+  ON public.geopolitical_scenario_impacts(event_id);
+
+ALTER TABLE public.geopolitical_scenario_impacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.geopolitical_scenario_impacts FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "geo_impact_admin_all" ON public.geopolitical_scenario_impacts;
+CREATE POLICY "geo_impact_admin_all" ON public.geopolitical_scenario_impacts
+  FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- اثر فقط وقتی دیده می‌شود که **رویدادِ والدش** بازبینی‌شده و عمومی باشد.
+DROP POLICY IF EXISTS "geo_impact_public_read" ON public.geopolitical_scenario_impacts;
+CREATE POLICY "geo_impact_public_read" ON public.geopolitical_scenario_impacts
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.geopolitical_events e
+       WHERE e.id = event_id
+         AND e.visibility = 'public'
+         AND e.review_state = 'reviewed'
+    )
+  );
+
+REVOKE ALL ON TABLE public.geopolitical_scenario_impacts FROM public, anon, authenticated;
+GRANT SELECT ON TABLE public.geopolitical_scenario_impacts TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.geopolitical_scenario_impacts TO service_role;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                  WHERE n.nspname='public' AND c.relname='geopolitical_scenario_impacts'
+                    AND c.relrowsecurity AND c.relforcerowsecurity) THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: RLS روی geopolitical_scenario_impacts فعال/اجباری نیست.';
+  END IF;
+  IF has_table_privilege('anon', 'public.geopolitical_scenario_impacts', 'SELECT')
+     OR has_table_privilege('anon', 'public.geopolitical_scenario_impacts', 'TRUNCATE')
+     OR has_table_privilege('anon', 'public.geopolitical_scenario_impacts', 'INSERT') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: anon به اثرهای سناریویی دسترسی دارد.';
+  END IF;
+  IF has_table_privilege('authenticated', 'public.geopolitical_scenario_impacts', 'INSERT')
+     OR has_table_privilege('authenticated', 'public.geopolitical_scenario_impacts', 'UPDATE')
+     OR has_table_privilege('authenticated', 'public.geopolitical_scenario_impacts', 'DELETE')
+     OR has_table_privilege('authenticated', 'public.geopolitical_scenario_impacts', 'TRUNCATE') THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: کاربرِ عادی می‌تواند اثرِ سناریویی بنویسد.';
+  END IF;
+END $$;
+
+COMMENT ON TABLE public.geopolitical_scenario_impacts IS
+  'اثرِ سناریومحورِ هر رویداد. بزرگیِ اثر باندِ کیفی است، نه عدد. فقط با رویدادِ بازبینی‌شدهٔ عمومی دیده می‌شود.';
+
 COMMENT ON TABLE public.geopolitical_events IS
   'ورودیِ دستیِ رویدادهای سیاسی/ژئوپلیتیک. هیچ منبعِ خودکاری ندارد (قاعدهٔ S1). خصوصی به‌صورتِ پیش‌فرض؛ انتشار فقط پس از بازبینیِ انسانی.';
 COMMENT ON COLUMN public.geopolitical_events.fact_summary IS

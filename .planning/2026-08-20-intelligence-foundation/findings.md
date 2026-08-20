@@ -13,17 +13,43 @@ project `uooeygybrniptzdxuzhj` and the repository. Nothing was mutated.
 | class | source today | stored where | verdict |
 |---|---|---|---|
 | **equities** | BrsApi symbol webservice → `relay/server.mjs` | `symbol_history` (~2.08M), `index_history`, `market_breadth`, `ir_market_history` | **real and flowing** |
-| **gold / commodity** | BrsApi `free-api-commodity-webservice` → `relay/commodity.mjs` | ⚠️ **nowhere — in-process memory only** (`rows` module variable, served into the live payload) | **no history exists** |
+| **gold / commodity** | BrsApi commodity feed → `relay/commodity.mjs` (spot metal, in-memory) **and** the gold ETFs `طلا` / `عیار` via the symbol feed | spot: nowhere · **ETFs: `symbol_history`, 2211 and 1973 rows** | **history exists — see the correction below** |
 | **FX** | market relay | `fx_rates` (~35 rows, USD free-market only) | thin; USD only |
-| **fixed income** | — | — | **no source, no table, no ingest** |
+| **fixed income** | fixed-income ETFs via the symbol feed | **`symbol_history`** — `اعتماد` 2754 rows since 2015-03 | **history exists — see the correction below** |
 | **commodity instruments (IME)** | `relay/ime.mjs` | `ime_snapshots` — **0 rows** | schema only |
 | **Codal** | codal engine v3 | `codal_feed` (~6.4k), `codal_reports` (~5.2k) | **real and flowing** |
 | **macro** | — | `macro_first_print` / `macro_revisions` — **0 rows each** | schema only, write-once design is right |
 | **political / geopolitical** | — | — | **nothing exists at any layer** |
 
-## The finding that matters most
+## ⛔ CORRECTION — the section below was wrong
 
-**Gold has no persisted price series.** `relay/commodity.mjs` fetches, maps and
+**Retracted 2026-08-20.** Everything from here to the end of this section is a
+mistake I made and Command Center caught.
+
+I traced the *commodity relay* — which fetches spot metal prices and holds them
+in a module variable — found no persistence, and concluded gold had no history.
+I never checked whether gold was already covered as an **ETF** inside
+`symbol_history`. It was, and so was fixed income:
+
+| symbol | rows | first | last |
+|---|---|---|---|
+| `طلا` | 2211 | 2017-06-10 | 2026-08-19 |
+| `عیار` | 1973 | 2018-06-02 | 2026-08-19 |
+| `اعتماد` | 2754 | 2015-03-14 | 2026-08-19 |
+
+Zero duplicate dates, zero null/non-positive closes, all current to the previous
+trading day. The allocation page already reads these six symbols and computes all
+three presets from real production history.
+
+**Wave C was never blocked by missing ingest.** Full evidence in
+[`series-profile.md`](./series-profile.md).
+
+The paragraph below is kept, struck through, because deleting a wrong claim hides
+that it was made.
+
+---
+
+~~**Gold has no persisted price series.**~~ `relay/commodity.mjs` fetches, maps and
 holds the rows in a module-level variable, exposes them through
 `commoditiesForPayload()` and a `/debug` status block, and that is all. Restart the
 relay and the history is gone; there was never any history to begin with.
@@ -36,7 +62,11 @@ until gold is persisted the way `symbol_history` already is.
 The same applies in weaker form to the 15% fixed-income sleeve: there is no source
 at all, so its instrument mapping cannot even be named yet.
 
-So Wave C is **not** blocked on engine design. It is blocked on two ingest gaps.
+~~So Wave C is not blocked on engine design. It is blocked on two ingest gaps.~~
+
+**That conclusion was wrong.** The spot-metal relay genuinely has no persistence,
+but nothing needs it: the sleeve instruments are exchange-traded funds already in
+`symbol_history`. No new ingest path and no new table are required.
 
 ## What already exists and should not be rebuilt
 
