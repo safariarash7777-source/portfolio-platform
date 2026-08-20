@@ -54,7 +54,17 @@ function StateBadge({ state, small }: { state: DataState; small?: boolean }) {
   );
 }
 
-export default function DeskBoard() {
+export interface DeskBoardSnapshot {
+  data: DeskView | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export default function DeskBoard({
+  onSnapshot,
+}: {
+  onSnapshot?: (snapshot: DeskBoardSnapshot) => void;
+}) {
   const [data, setData] = useState<DeskView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +91,10 @@ export default function DeskBoard() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    onSnapshot?.({ data, loading, error });
+  }, [data, error, loading, onSnapshot]);
+
   if (loading && !data) {
     return (
       <p className="text-[13px]" style={{ color: "var(--text-3)" }}>
@@ -102,7 +116,7 @@ export default function DeskBoard() {
         <button
           type="button"
           onClick={() => void load()}
-          className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-bold"
+          className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-bold focus-visible:outline-none focus-visible:ring-2"
           style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text)" }}
         >
           <RefreshCw size={14} />
@@ -127,7 +141,7 @@ export default function DeskBoard() {
           type="button"
           onClick={() => void load()}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-bold disabled:opacity-60"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-bold disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2"
           style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text)" }}
         >
           <RefreshCw size={14} />
