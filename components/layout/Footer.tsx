@@ -1,61 +1,69 @@
 import Link from "next/link";
-import { Instagram, Send, Linkedin } from "lucide-react";
+import { Instagram, Send } from "lucide-react";
 import Logo from "../ui/Logo";
+import { PLATFORM_META } from "@/lib/content-hub";
 
-// SHA badge — فقط در محیط‌های غیر Production (Preview / Development)
+/**
+ * فوتر — P2-PUBLIC-EXPERIENCE-REBASELINE-001
+ *
+ * اصلاحِ باگِ واقعی: سه لینکِ شبکهٔ اجتماعی دستگیرهٔ **حدسی** بودند و با
+ * `lib/content-hub.ts` — که خودش را «منبعِ واحدِ حقیقت» اعلام می‌کند — نمی‌خواندند:
+ *   t.me/arashsafari ✗ در برابر t.me/arashsafariiiiiiii ✓
+ *   instagram.com/arashsafari ✗ در برابر instagram.com/arash_safariiiiiii/ ✓
+ *   linkedin.com/in/arashsafari ✗ — هیچ‌جای مخزن تأیید نشده ⇒ حذف شد
+ * حالا مستقیم از `PLATFORM_META` خوانده می‌شود تا دوباره واگرا نشود.
+ *
+ * بقیهٔ تغییرات: خطِ هویت دو بار تکرار شده بود (یکی شد) · لینکِ `/#faq` حذف شد
+ * (سکشنِ FAQ حذف شده) · جعبهٔ سلبِ مسئولیت به یک بندِ ساده تبدیل شد.
+ *
+ * مسیرهای بازار عمداً همگی اینجا مانده‌اند: چون از ناوبری برداشته شدند، این
+ * فوتر تنها ورودیِ سراسریِ آن‌هاست و حذفشان به SEO آسیب می‌زد.
+ */
 const PREVIEW_SHA = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
   ? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)
   : null;
 const IS_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 
-const SOCIAL_LINKS = [
-  { href: "https://instagram.com/arashsafari",   label: "اینستاگرام", icon: <Instagram size={18} /> },
-  { href: "https://t.me/arashsafari",            label: "تلگرام",     icon: <Send size={18} /> },
-  { href: "https://linkedin.com/in/arashsafari", label: "لینکدین",    icon: <Linkedin size={18} /> },
-];
+const SOCIAL = [
+  { href: PLATFORM_META.telegram.followUrl, label: PLATFORM_META.telegram.label, icon: Send },
+  { href: PLATFORM_META.instagram.followUrl, label: PLATFORM_META.instagram.label, icon: Instagram },
+].filter((s): s is { href: string; label: string; icon: typeof Send } => Boolean(s.href));
 
-/**
- * گروه‌های فوتر — P2-PUBLIC-MEGA-001
- * هم‌راستا با ناوبری جدید: بازارها | تحلیل‌ها | محصولات | درباره آرش
- * تغییر: /learn حذف شد (همه published=false)، /about اضافه شد
- */
-const FOOTER_GROUPS = [
+const GROUPS = [
   {
     title: "بازارها",
     links: [
-      { href: "/market",        label: "رصد بازار" },
-      { href: "/market/map",    label: "نقشهٔ بازار" },
-      { href: "/market/funds",  label: "صندوق‌ها" },
-      { href: "/market/stocks",   label: "تابلوی سهام" },
-      { href: "/market/options",  label: "اختیار معامله" },
-      { href: "/data",            label: "بانک داده" },
-      { href: "/codal",         label: "فید اطلاعیه‌های کدال" },
+      { href: "/market", label: "رصد بازار" },
+      { href: "/market/map", label: "نقشهٔ بازار" },
+      { href: "/market/funds", label: "صندوق‌ها" },
+      { href: "/market/stocks", label: "تابلوی سهام" },
+      { href: "/market/options", label: "اختیار معامله" },
+      { href: "/codal", label: "کدال" },
+      { href: "/data", label: "بانک داده" },
     ],
   },
   {
     title: "تحلیل‌ها",
     links: [
-      { href: "/analyses",       label: "کارنامهٔ تحلیل‌ها" },
-      { href: "/notes",          label: "یادداشت روزانه" },
-      { href: "/insights",       label: "تحلیل‌های اجتماعی" },
+      { href: "/analyses", label: "کارنامه" },
+      { href: "/notes", label: "یادداشت روزانه" },
+      { href: "/insights", label: "تحلیل‌های اجتماعی" },
       { href: "/learn/glossary", label: "واژه‌نامهٔ مالی" },
     ],
   },
   {
     title: "محصولات",
     links: [
-      { href: "/webinars",  label: "وبینار فصلی" },
+      { href: "/webinars", label: "وبینار" },
       { href: "/#waitlist", label: "مشاورهٔ اختصاصی" },
-      { href: "/dashboard", label: "ورود به داشبورد" },
     ],
   },
   {
-    title: "درباره آرش و حقوقی",
+    title: "درباره و قوانین",
     links: [
-      { href: "/about",            label: "درباره آرش صفری" },
-      { href: "/#faq",             label: "سؤالات متداول" },
-      { href: "/legal/privacy",    label: "حریم خصوصی" },
-      { href: "/legal/terms",      label: "شرایط استفاده" },
+      { href: "/about", label: "دربارهٔ آرش صفری" },
+      { href: "/legal/privacy", label: "حریم خصوصی" },
+      { href: "/legal/terms", label: "شرایط استفاده" },
       { href: "/legal/disclaimer", label: "سلب مسئولیت" },
     ],
   },
@@ -63,61 +71,49 @@ const FOOTER_GROUPS = [
 
 export default function Footer() {
   return (
-    <footer
-      className="mt-16 border-t"
-      style={{ background: "var(--surface)", borderColor: "var(--line)" }}
-    >
+    <footer className="border-t" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
       <div className="mx-auto w-full max-w-6xl px-5 py-14">
-        {/* Top: brand + link groups */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
-          <div className="md:col-span-1">
-            <Logo size={48} showText textVariant="navy" />
-            <p
-              className="mt-5 text-sm leading-7"
-              style={{ color: "var(--text-2)" }}
-            >
-              تحلیل علمی، پروفایل ریسک و طراحی سبد سرمایه‌گذاری اختصاصی
-            </p>
-
-            <div className="mt-5 flex items-center gap-3">
-              {SOCIAL_LINKS.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  title={s.label}
-                  className="flex items-center justify-center rounded-lg transition-colors hover:opacity-80"
-                  style={{
-                    width: 36,
-                    height: 36,
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--line)",
-                    color: "var(--text-2)",
-                  }}
-                >
-                  {s.icon}
-                </a>
-              ))}
-            </div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5">
+          <div className="col-span-2 md:col-span-1">
+            {/* عنوانِ حرفه‌ای را خودِ Logo رندر می‌کند — تکرارش اینجا حذف شد. */}
+            <Logo size={44} showText textVariant="navy" />
+            {SOCIAL.length > 0 && (
+              <div className="mt-6 flex items-center gap-2">
+                {SOCIAL.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    title={s.label}
+                    className="flex items-center justify-center rounded-lg transition-colors hover:bg-[color:var(--surface-2)]"
+                    style={{
+                      width: 44,
+                      height: 44,
+                      border: "1px solid var(--line)",
+                      color: "var(--text-2)",
+                    }}
+                  >
+                    <s.icon size={18} aria-hidden />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
-          {FOOTER_GROUPS.map((g) => (
+          {GROUPS.map((g) => (
             <div key={g.title}>
-              <h4
-                className="font-display mb-4 text-sm font-bold"
-                style={{ color: "var(--navy-deep)" }}
-              >
+              <h4 className="font-display mb-4 text-sm font-bold" style={{ color: "var(--heading)" }}>
                 {g.title}
               </h4>
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col">
                 {g.links.map((l) => (
-                  <li key={l.label}>
+                  <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="text-sm transition-colors hover:underline"
-                      style={{ color: "var(--text-2)" }}
+                      className="flex items-center text-sm transition-colors hover:underline"
+                      style={{ color: "var(--text-2)", minHeight: 44 }}
                     >
                       {l.label}
                     </Link>
@@ -128,46 +124,31 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Disclaimer */}
         <div
-          className="rounded-xl p-5 mb-8 text-xs leading-7 text-justify"
-          style={{
-            background: "var(--surface-2)",
-            border: "1px solid var(--line)",
-            color: "var(--text-2)",
-          }}
-        >
-          <strong style={{ color: "var(--navy-deep)" }}>سلب مسئولیت رسمی: </strong>
-          این پلتفرم صرفاً ابزاری برای پشتیبانی از تصمیم‌گیری مالی است. هیچ‌گونه تضمینی برای کسب سود وجود ندارد و سرمایه‌گذاری در بازارهای مالی همواره با ریسک از دست رفتن اصل سرمایه همراه است. مسئولیت نهایی تمامی تصمیمات سرمایه‌گذاری بر عهده خود کاربر است.
-        </div>
-
-        {/* Bottom row */}
-        <div
-          className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t"
+          className="mt-12 flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between"
           style={{ borderColor: "var(--line)" }}
         >
-          <p className="text-xs" style={{ color: "var(--text-3)" }}>
-            © ۱۴۰۵ آرش صفری — تمامی حقوق محفوظ است.
+          <p className="text-xs" style={{ color: "var(--text-3)", lineHeight: 1.9 }}>
+            سرمایه‌گذاری در بازارهای مالی با ریسکِ از دست رفتنِ اصلِ سرمایه همراه است.
+            هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ سرمایه‌گذار است.
           </p>
-          <p className="text-xs" style={{ color: "var(--text-3)" }}>
-            آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری · Investment Analyst &amp; Advisor
-          </p>
-          {PREVIEW_SHA && !IS_PRODUCTION && (
-            <a
-              href={`https://github.com/safariarash7777-source/portfolio-platform/commit/${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-mono px-2 py-0.5 rounded"
-              style={{
-                background: "var(--surface-2)",
-                border: "1px solid var(--line)",
-                color: "var(--text-3)",
-              }}
-              title="Preview build — نسخهٔ آزمایشی، نه Production"
-            >
-              preview · {PREVIEW_SHA}
-            </a>
-          )}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <p className="text-xs whitespace-nowrap" style={{ color: "var(--text-3)" }}>
+              © ۱۴۰۵ آرش صفری
+            </p>
+            {PREVIEW_SHA && !IS_PRODUCTION && (
+              <a
+                href={`https://github.com/safariarash7777-source/portfolio-platform/commit/${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded px-2 py-0.5 font-mono text-xs"
+                style={{ background: "var(--surface-2)", border: "1px solid var(--line)", color: "var(--text-3)" }}
+                title="Preview build — نسخهٔ آزمایشی، نه Production"
+              >
+                preview · {PREVIEW_SHA}
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </footer>

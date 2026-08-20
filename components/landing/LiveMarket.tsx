@@ -125,37 +125,41 @@ export default function LiveMarket() {
   return (
     <section id="market" className="section" style={{ background: "var(--bg)" }}>
       <div className="mx-auto w-full max-w-6xl px-5">
-        <Reveal className="flex flex-col items-center text-center gap-3 mb-10">
-          <span className="eyebrow">رصد بازار</span>
+        <Reveal className="mb-10">
           <h2
             className="font-display"
             style={{
-              color: "var(--navy-deep)",
-              fontSize: "clamp(1.6rem, 3.2vw, 2.4rem)",
+              color: "var(--heading)",
+              fontSize: "clamp(1.6rem, 3.4vw, 2.4rem)",
               fontWeight: 800,
-              lineHeight: 1.25,
+              lineHeight: 1.3,
+              letterSpacing: "-0.02em",
             }}
           >
-            بازار در یک نگاه
+            وضعیت امروز بازار
           </h2>
-          <div className="divider-gold" />
+          <div aria-hidden className="divider-gold mt-4" />
         </Reveal>
 
         <Reveal>
-          <div className="card-elevated overflow-hidden max-w-3xl mx-auto">
+          <div className="card-elevated overflow-hidden">
             {/* هدر + تب‌ها */}
             <div
               className="flex items-center justify-between gap-3 px-5 py-3 flex-wrap"
               style={{ borderBottom: "1px solid var(--line)", background: "var(--surface-2)" }}
             >
-              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--navy-deep)" }}>
-                <span className="live-dot" aria-hidden />
-                آخرین وضعیت بازار
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-3)" }}>
+              {/*
+                عنوانِ «آخرین وضعیت بازار» عیناً تیترِ H2ِ همین سکشن را تکرار می‌کرد.
+                حذف شد و جایش وضعیتِ تازگیِ داده — که باید حفظ شود — به برچسبِ
+                اصلیِ پنل تبدیل شد.
+              */}
+              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--heading)" }}>
+                {!failed && <span className="live-dot" aria-hidden />}
                 {ageMin != null
                   ? `به‌روزرسانی: ${ageMin === 0 ? "هم‌اکنون" : `${toPersianDigits(ageMin)} دقیقه پیش`}`
-                  : failed ? "" : "در حال دریافت…"}
+                  : failed
+                    ? "داده در دسترس نیست"
+                    : "در حال دریافت…"}
               </span>
             </div>
 
