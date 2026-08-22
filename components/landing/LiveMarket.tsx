@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Reveal from "./Reveal";
+import { hasRealPrice } from "@/lib/market-price";
 import {
   formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor, toPersianDigits,
 } from "@/lib/format";
@@ -44,6 +45,9 @@ interface DisplayRow {
   priceText: string;
   change: number | null;
 }
+
+/** بعد از این مدت، دادهٔ بازار «کهنه» علامت می‌خورد. */
+const STALE_AFTER_MIN = 30;
 
 const REFRESH_MS = 5 * 60 * 1000;
 const SHOW = 8;
@@ -104,23 +108,41 @@ export default function LiveMarket() {
       {
         key: "gold",
         label: "طلا و سکه",
-        rows: [...(ir?.gold ?? []).map(toDisplay.ir), ...(data.goldGlobal ?? []).map(toDisplay.global)],
+        rows: [
+          ...(ir?.gold ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.ir),
+          ...(data.goldGlobal ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.global),
+        ],
       },
-      { key: "currency", label: "ارز", rows: (ir?.currency ?? []).map(toDisplay.ir) },
+      {
+        key: "currency",
+        label: "ارز",
+        rows: (ir?.currency ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.ir),
+      },
       {
         key: "funds",
         label: "صندوق‌ها",
-        rows: (ir?.funds ?? []).map(toDisplay.irTicker),
+        rows: (ir?.funds ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.irTicker),
         note: "NAV و بازدهِ روزانهٔ صندوق‌های طلا",
       },
-      { key: "stocks", label: "سهام", rows: (ir?.stocks ?? []).map(toDisplay.irTicker) },
-      { key: "crypto", label: "کریپتو", rows: data.crypto.map(toDisplay.global) },
+      {
+        key: "stocks",
+        label: "سهام",
+        rows: (ir?.stocks ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.irTicker),
+      },
+      {
+        key: "crypto",
+        label: "کریپتو",
+        rows: data.crypto.filter((r) => hasRealPrice(r.price)).map(toDisplay.global),
+      },
     ];
     return list.filter((c) => c.rows.length > 0);
   }, [data]);
 
   const active = cats.find((c) => c.key === tab) ?? cats[0];
   const ageMin = data ? Math.max(0, Math.round((Date.now() - data.fetchedAt) / 60000)) : null;
+  // «کهنه» حالتِ سومی است بینِ سالم و در دسترس نبودن. بدونِ آن، دادهٔ دو ساعته
+  // دقیقاً مثلِ دادهٔ لحظه‌ای به نظر می‌رسید.
+  const isStale = ageMin != null && ageMin >= STALE_AFTER_MIN;
 
   return (
     <section id="market" className="section" style={{ background: "var(--bg)" }}>
@@ -153,10 +175,17 @@ export default function LiveMarket() {
                 حذف شد و جایش وضعیتِ تازگیِ داده — که باید حفظ شود — به برچسبِ
                 اصلیِ پنل تبدیل شد.
               */}
-              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--heading)" }}>
-                {!failed && <span className="live-dot" aria-hidden />}
+              <span
+                className="flex items-center gap-2 text-sm font-bold"
+                style={{ color: isStale ? "var(--gold)" : "var(--heading)" }}
+              >
+                {/* نقطهٔ «زنده» فقط وقتی دادهٔ تازه داریم. روی دادهٔ کهنه یا
+                    قطع‌شده، نشانهٔ زنده‌بودن یک ادعای غلط است. */}
+                {!failed && !isStale && <span className="live-dot" aria-hidden />}
                 {ageMin != null
-                  ? `به‌روزرسانی: ${ageMin === 0 ? "هم‌اکنون" : `${toPersianDigits(ageMin)} دقیقه پیش`}`
+                  ? isStale
+                    ? `دادهٔ کهنه — ${toPersianDigits(ageMin)} دقیقه پیش`
+                    : `به‌روزرسانی: ${ageMin === 0 ? "هم‌اکنون" : `${toPersianDigits(ageMin)} دقیقه پیش`}`
                   : failed
                     ? "داده در دسترس نیست"
                     : "در حال دریافت…"}
@@ -197,8 +226,11 @@ export default function LiveMarket() {
                 دادهٔ بازار هم‌اکنون در دسترس نیست. چند دقیقهٔ دیگر دوباره سر بزنید.
               </div>
             ) : !active ? (
+              /* سه ردیف، نه شش. اسکلتونِ بلند اولین برداشتِ بازدیدکننده را به یک
+                 صفحهٔ نیمه‌ساخته تبدیل می‌کرد؛ ارتفاعِ کمتر همان اطلاع را می‌دهد
+                 بدونِ آنکه صفحه را اشغال کند. */
               <ul aria-hidden>
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: 3 }).map((_, i) => (
                   <li key={i} className="flex items-center justify-between gap-4 px-5 py-3.5"
                       style={{ borderTop: i ? "1px solid var(--line)" : "none" }}>
                     <span className="skeleton" style={{ width: 120, height: 14 }} />

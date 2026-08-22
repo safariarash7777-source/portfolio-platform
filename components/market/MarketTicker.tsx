@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   formatToman, formatUsd, formatSignedPercent, deltaColor, toPersianDigits,
 } from "@/lib/format";
+import { hasRealPrice } from "@/lib/market-price";
 
 interface GlobalRow { id: string; faName: string; price: number; change24h: number | null }
 interface IrRow { id: string; faName: string; price: number; unit: "toman" | "usd"; change?: number | null; changePercent?: number | null }
@@ -29,13 +30,20 @@ export default function MarketTicker() {
         const json = await res.json();
         if (!alive) return;
         const ir = json?.ir;
-        const irItems: Item[] = [...(ir?.gold ?? []), ...(ir?.currency ?? [])].map((r: IrRow) => ({
+        // ⚠️ همان گاردِ LiveMarket. تیکر هم همان پاسخ را رندر می‌کند، پس
+        // بدونِ این، ردیفی که منبعش صفر داده «۰ تومان» در نوارِ بالای صفحه
+        // ظاهر می‌شد — دقیقاً همان چیزی که در LiveMarket بسته شد.
+        const irItems: Item[] = [...(ir?.gold ?? []), ...(ir?.currency ?? [])]
+          .filter((r: IrRow) => hasRealPrice(r.price))
+          .map((r: IrRow) => ({
           id: r.id,
           faName: r.faName,
           priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
           change: r.changePercent ?? null, // درصد (نه مقدارِ مطلقِ تومان)
         }));
-        const globalItems: Item[] = [...(json?.goldGlobal ?? []), ...(json?.crypto ?? [])].map(
+        const globalItems: Item[] = [...(json?.goldGlobal ?? []), ...(json?.crypto ?? [])]
+          .filter((r: GlobalRow) => hasRealPrice(r.price))
+          .map(
           (r: GlobalRow) => ({
             id: r.id,
             faName: r.faName,
