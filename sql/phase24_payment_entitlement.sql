@@ -172,6 +172,8 @@ BEGIN
 END $$;
 
 ALTER TABLE public.entitlement_durations ENABLE ROW LEVEL SECURITY;
+-- FORCE تا مالکِ جدول هم از سیاست‌ها معاف نباشد.
+ALTER TABLE public.entitlement_durations FORCE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "durations_admin_read" ON public.entitlement_durations;
 CREATE POLICY "durations_admin_read" ON public.entitlement_durations
@@ -205,6 +207,7 @@ INSERT INTO public.payment_settings (key, value) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 ALTER TABLE public.payment_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_settings FORCE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "payment_settings_admin_read" ON public.payment_settings;
 CREATE POLICY "payment_settings_admin_read" ON public.payment_settings
@@ -620,7 +623,17 @@ BEGIN
   END IF;
 END $$;
 
-REVOKE ALL ON TABLE public.entitlement_durations FROM public, anon;
+-- ⚠️ `authenticated` هم باید اینجا باشد.
+--
+-- نسخهٔ قبل فقط از `public, anon` پس می‌گرفت. زیرِ پیش‌فرض‌های تاریخیِ Supabase
+-- (`ALTER DEFAULT PRIVILEGES`) نقشِ `authenticated` روی جدولِ تازه امتیازِ
+-- نوشتن می‌گیرد، پس **UPDATE روی جدولِ مدتِ دسترسی برایش باقی می‌ماند** —
+-- اندازه‌گیری شد، حدس نیست.
+--
+-- امروز RLS جلویش را می‌گیرد (`durations_admin_write` با `is_admin()`)، ولی
+-- درسِ `B-044` همین بود: گرنت لایهٔ دوم است و تکیه به یک لایه یعنی نقطهٔ شکستِ
+-- واحد. ضمناً RLS اصلاً `TRUNCATE` را فیلتر نمی‌کند.
+REVOKE ALL ON TABLE public.entitlement_durations FROM public, anon, authenticated;
 GRANT SELECT ON TABLE public.entitlement_durations TO authenticated;
 GRANT SELECT, UPDATE ON TABLE public.entitlement_durations TO service_role;
 
@@ -699,6 +712,28 @@ BEGIN
   IF has_function_privilege('anon',
        'public.admin_cancel_pending_payment(uuid, text)', 'EXECUTE') THEN
     RAISE EXCEPTION 'تأیید شکست خورد: anon به بازیابیِ حاکمیتی دسترسی دارد.';
+  END IF;
+
+  -- جدول‌های پیکربندی نباید هیچ امتیازِ نوشتنی برای anon/authenticated داشته
+  -- باشند. این حلقه همان چیزی را می‌سنجد که یک بار از قلم افتاد.
+  IF EXISTS (
+    SELECT 1 FROM information_schema.role_table_grants
+     WHERE table_schema = 'public'
+       AND table_name IN ('entitlement_durations', 'payment_settings')
+       AND grantee IN ('anon', 'authenticated')
+       AND privilege_type IN ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE')
+  ) THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: جدولِ پیکربندی هنوز امتیازِ نوشتن دارد.';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+     WHERE n.nspname = 'public'
+       AND c.relname IN ('entitlement_durations', 'payment_settings')
+       AND c.relrowsecurity AND c.relforcerowsecurity
+     HAVING count(*) = 2
+  ) THEN
+    RAISE EXCEPTION 'تأیید شکست خورد: RLS روی جدول‌های پیکربندی فعال/اجباری نیست.';
   END IF;
 
   IF NOT EXISTS (SELECT 1 FROM public.payment_settings
