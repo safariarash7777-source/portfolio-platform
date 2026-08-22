@@ -50,7 +50,7 @@ export default async function TrackRecordStrip() {
               کارنامه
             </h2>
             <p className="mt-3 max-w-md text-sm" style={{ color: "var(--text-2)", lineHeight: 1.9 }}>
-              هر تحلیل پس از انتشار قابل ویرایش نیست. نتیجه‌اش — هرچه باشد — ثبت می‌ماند.
+              آنچه در کارنامه ثبت می‌شود، پس از انتشار قابل ویرایش نیست. نتیجه‌اش — هرچه باشد — می‌ماند.
             </p>
           </div>
           <Link href="/analyses" className="btn btn-outline">

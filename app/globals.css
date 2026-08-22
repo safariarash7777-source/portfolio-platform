@@ -274,6 +274,11 @@ body { min-height: 100vh; }
    همه فقط transform/opacity/background-position؛ زیر reduced-motion به‌طور
    سراسری خاموش می‌شوند (قانونِ انتهای همین فایل). */
 .ticker-wrap { position: relative; overflow: hidden; }
+/* ردیفِ نوار — دو کپیِ کنارِ هم؛ دومی aria-hidden است (MarketTicker.tsx). */
+.ticker-row { display: flex; align-items: center; width: max-content; list-style: none; margin: 0; padding: 0; }
+/* زیرِ prefers-reduced-motion نوار حرکت نمی‌کند، پس محتوای بیرونِ کادر باید
+   با اسکرولِ افقیِ خودِ نوار در دسترس باشد — نه اینکه برای همیشه پنهان بماند. */
+.ticker-wrap--static { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
 .ticker-track {
   display: flex;
   width: max-content;

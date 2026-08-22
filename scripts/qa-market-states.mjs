@@ -1,15 +1,29 @@
-import { chromium } from 'playwright';
+// `playwright` وابستگیِ این مخزن نیست؛ `playwright-core` هم قبول است تا این
+// اسکریپت روی محیطی که فقط مرورگرِ از پیش نصب‌شده دارد هم اجرا شود.
+const { chromium } = await (async () => {
+  for (const m of ['playwright', 'playwright-core']) {
+    try { return await import(m); } catch { /* بعدی */ }
+  }
+  throw new Error('نه playwright نصب است نه playwright-core');
+})();
 
 const OUT = 'docs/assets/public-rebaseline/states';
 const BASE = process.env.QA_BASE_URL || 'http://127.0.0.1:3111';
 
 // ⚠️ فیکسچر — عددها ساختگی و صرفاً برای دیدنِ «حالتِ رابط»اند.
 // هیچ‌کدام ادعای دادهٔ واقعیِ بازار نیستند و هیچ‌جای محصول استفاده نمی‌شوند.
-const fixture = (ageMinutes) => ({
-  fetchedAt: Date.now() - ageMinutes * 60000,
+//
+// ⚠️ `ir.fetchedAt` عمداً جدا از `fetchedAt`ِ بالا است — چون در پاسخِ واقعی هم
+// جداست: بالایی ساعتِ CoinGecko است و `ir.fetchedAt` ساعتِ رله. فیکسچرِ نسخهٔ
+// قبل فقط بالایی را داشت، و چون UI حالا مهرِ زمانیِ **منبعِ درست** را می‌خواند،
+// آن فیکسچر دیگر «کهنه» را نشان نمی‌داد. فیکسچری که شکلِ پاسخِ واقعی را ندارد،
+// حالتِ واقعی را هم اثبات نمی‌کند.
+const fixture = (ageMinutes, globalAgeMinutes = ageMinutes) => ({
+  fetchedAt: Date.now() - globalAgeMinutes * 60000,
   crypto: [],
   goldGlobal: [],
   ir: {
+    fetchedAt: Date.now() - ageMinutes * 60000,
     // `faName` لازم است، وگرنه ستونِ نام خالی رندر می‌شود و تصویر شبیه باگ
     // به نظر می‌رسد. اعداد عمداً تکراری‌اند تا با قیمتِ واقعی اشتباه نشوند.
     gold:     [{ id: 'g1', faName: 'سکهٔ نمونه (فیکسچر)', price: 111111111, changePercent: 0.4, unit: 'toman' }],
@@ -118,6 +132,22 @@ const run = async () => {
     const zeroVisible = await page.locator('text=قیمتِ صفر').count();
     console.log('  zero-price row rendered:', zeroVisible, '(expect 0)');
     await shotMarket(page, '06-market-zero-price-filtered');
+    await ctx.close();
+  }
+
+  // 7) رلهٔ خوابیده، CoinGeckoی سالم — باگی که اصلاح شد.
+  //    قبلاً UI فقط `fetchedAt`ِ بالا را می‌خواند، پس با رلهٔ سه‌ساعته هم
+  //    «به‌روزرسانی: هم‌اکنون» می‌نوشت. حالا باید «کهنه» بگوید.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+    await page.route('**/api/market', (r) =>
+      r.fulfill({ contentType: 'application/json', body: JSON.stringify(fixture(180, 0)) }));
+    await page.goto(BASE, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(600);
+    const header = (await page.locator('#market .card-elevated').first().innerText()).split('\n')[0];
+    console.log('  ir=180min global=0min → header:', JSON.stringify(header), '(expect «کهنه»)');
+    await shotMarket(page, '07-market-ir-stale-global-fresh');
     await ctx.close();
   }
 

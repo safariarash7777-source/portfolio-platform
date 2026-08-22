@@ -133,7 +133,9 @@ export default function Footer() {
             هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ سرمایه‌گذار است.
           </p>
           <div className="flex items-center gap-3 flex-shrink-0">
-            <p className="text-xs whitespace-nowrap" style={{ color: "var(--text-3)" }}>
+            {/* بدونِ whitespace-nowrap: ظرفِ بیرونی flex-shrink-0 است و خودش
+                نگهش می‌دارد؛ nowrap فقط یک خطرِ سرریزِ بی‌فایده اضافه می‌کرد. */}
+            <p className="text-xs" style={{ color: "var(--text-3)" }}>
               © ۱۴۰۵ آرش صفری
             </p>
             {PREVIEW_SHA && !IS_PRODUCTION && (

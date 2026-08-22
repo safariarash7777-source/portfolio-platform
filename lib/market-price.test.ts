@@ -41,18 +41,41 @@ describe("hasRealPrice", () => {
   });
 });
 
-describe("هر دو سطحِ عمومی از همین تعریف استفاده می‌کنند", () => {
-  // این بخش عمداً ساختاری است: اگر کسی یک سطحِ سومِ بازار اضافه کند و گارد را
-  // فراموش کند، این تست چیزی نمی‌گوید — ولی اگر یکی از این دو سطح تعریفِ
-  // مشترک را رها کند، همین‌جا قرمز می‌شود.
-  for (const file of [
-    "components/landing/LiveMarket.tsx",
-    "components/market/MarketTicker.tsx",
-  ]) {
-    test(`${file} گاردِ مشترک را وارد و استفاده می‌کند`, () => {
-      const src = readFileSync(file, "utf8");
-      assert.match(src, /from "@\/lib\/market-price"/, "import گم شده");
-      assert.match(src, /hasRealPrice\(/, "گارد فراخوانی نمی‌شود");
-    });
-  }
+describe("هر سطحِ عمومیِ بازار از یک مسیرِ گاردشده رد می‌شود", () => {
+  // ساختاری و عمدی. دو سطحِ عمومی دو معماریِ متفاوت دارند و نباید یک ادعای
+  // یکسان برایشان نوشت:
+  //
+  //   LiveMarket   ردیف‌های خامِ پاسخ را خودش رندر می‌کند ⇒ باید گاردها را
+  //                مستقیم صدا بزند.
+  //   MarketTicker فقط خروجیِ `selectTickerAssets` را رندر می‌کند ⇒ گارد
+  //                داخلِ همان تابع است (و در market-ticker-select.test.ts
+  //                رفتاری تست شده). ادعای درست اینجا این است که تیکر واقعاً
+  //                از آن مسیر رد می‌شود و آرایه‌های خام را دور نمی‌زند.
+
+  test("LiveMarket گاردِ قیمت و گاردِ درصد را مستقیم استفاده می‌کند", () => {
+    const src = readFileSync("components/landing/LiveMarket.tsx", "utf8");
+    assert.match(src, /from "@\/lib\/market-price"/, "import گاردِ قیمت گم شده");
+    assert.match(src, /hasRealPrice\(/, "گاردِ قیمت فراخوانی نمی‌شود");
+    assert.match(src, /hasRealChange/, "گاردِ درصدِ تغییر فراخوانی نمی‌شود");
+  });
+
+  test("MarketTicker فقط از انتخابِ گاردشده می‌خواند", () => {
+    const src = readFileSync("components/market/MarketTicker.tsx", "utf8");
+    assert.match(src, /selectTickerAssets\(/, "از انتخابِ گاردشده استفاده نمی‌کند");
+  });
+
+  test("MarketTicker آرایه‌های خامِ پاسخ را دور نمی‌زند", () => {
+    // اگر روزی کسی `json.crypto.map(...)` را مستقیم به تیکر برگرداند، گارد
+    // بی‌اثر می‌شود بدونِ اینکه هیچ تستِ دیگری قرمز شود.
+    const src = readFileSync("components/market/MarketTicker.tsx", "utf8");
+    for (const raw of ["json.crypto", "json.goldGlobal", "json.ir.gold", "json.ir.currency", "json?.ir?.gold", "json?.ir?.currency"]) {
+      assert.ok(!src.includes(raw), `تیکر نباید مستقیم ${raw} را بخواند`);
+    }
+  });
+
+  test("انتخابِ تیکر خودش گاردِ مشترک را وارد می‌کند", () => {
+    const src = readFileSync("lib/market-ticker-select.ts", "utf8");
+    assert.match(src, /from "\.\/market-price"/, "انتخاب باید از تعریفِ مشترک بخواند");
+    assert.match(src, /hasRealPrice\(/, "انتخاب گاردِ قیمت را صدا نمی‌زند");
+  });
 });
