@@ -10,6 +10,7 @@ import {
   XCircle,
   Loader2,
   ExternalLink,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -70,12 +71,34 @@ function WebinarsContent() {
   const [webinars, setWebinars] = useState<Webinar[]>([]);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error" | "pending";
+    text: string;
+  } | null>(null);
 
-  // بررسی پارامترهای callback پرداخت
+  // بررسی پارامترهای callback پرداخت.
+  //
+  // ⚠️ سه حالت، نه دو تا. حالتِ سوم — پرداخت گرفته شده ولی دسترسی ساخته نشده —
+  // پیش از این «ثبت‌نام شما تأیید شد» نشان می‌داد. آن پیام دروغ بود: مشتری پول
+  // داده بود و دسترسی نداشت. هیچ وعدهٔ «خودکار فعال می‌شود» هم داده نمی‌شود،
+  // چون هیچ reconcilerی وجود ندارد که آن وعده را نگه دارد.
   useEffect(() => {
     const status = searchParams.get("status");
-    if (status === "success") {
+    const access = searchParams.get("access");
+    const ref = searchParams.get("ref");
+    const recorded = searchParams.get("recorded") === "1";
+
+    if (status === "pending" || access === "pending") {
+      setMessage({
+        type: "pending",
+        text:
+          `پرداخت شما دریافت و تأیید شد${ref ? ` (کد رهگیری: ${ref})` : ""}، ولی فعال‌سازی دسترسی کامل نشد. ` +
+          (recorded
+            ? "این مورد ثبت شده و پشتیبانی آن را پیگیری می‌کند. "
+            : "لطفاً همین صفحه را برای پشتیبانی بفرستید. ") +
+          "پرداخت شما از بین نمی‌رود.",
+      });
+    } else if (status === "success") {
       setMessage({ type: "success", text: "پرداخت موفق! ثبت‌نام شما تأیید شد." });
     } else if (status === "failed") {
       setMessage({ type: "error", text: "پرداخت ناموفق بود. لطفاً دوباره تلاش کنید." });
@@ -170,11 +193,27 @@ function WebinarsContent() {
           <div
             className="mb-6 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2"
             style={{
-              background: message.type === "success" ? "color-mix(in srgb, var(--success) 12%, transparent)" : "color-mix(in srgb, var(--danger) 12%, transparent)",
-              color: message.type === "success" ? "var(--success)" : "var(--danger)",
+              background:
+                message.type === "success"
+                  ? "color-mix(in srgb, var(--success) 12%, transparent)"
+                  : message.type === "pending"
+                    ? "var(--gold-tint)"
+                    : "color-mix(in srgb, var(--danger) 12%, transparent)",
+              color:
+                message.type === "success"
+                  ? "var(--success)"
+                  : message.type === "pending"
+                    ? "var(--gold)"
+                    : "var(--danger)",
             }}
           >
-            {message.type === "success" ? <CheckCircle size={16} /> : <XCircle size={16} />}
+            {message.type === "success" ? (
+              <CheckCircle size={16} />
+            ) : message.type === "pending" ? (
+              <Clock size={16} />
+            ) : (
+              <XCircle size={16} />
+            )}
             {message.text}
           </div>
         )}

@@ -57,6 +57,7 @@
 | [`RUNBOOK-gate2-staging-rehearsal.md`](./RUNBOOK-gate2-staging-rehearsal.md) | تمرینِ stagingِ مسیرِ لید — **متوقف پیش از اجرا**، منتظرِ `AUTHORIZE_GATE2_STAGING` |
 | [`PRODUCTION-ACTIVATION.md`](./PRODUCTION-ACTIVATION.md) | اجرای پنج migrationِ باقی‌مانده روی Production — **منتظرِ تصمیمِ صریحِ آرش**، تنها گلوگاهِ Gate 2 |
 | [`RUNBOOK-backup-windows.md`](./RUNBOOK-backup-windows.md) | **گرفتنِ بکاپ از Production روی ویندوز** — یک دستور، پیش‌نیازِ اجباریِ هر migration |
+| [`RUNBOOK-payment-activation.md`](./RUNBOOK-payment-activation.md) | فعال‌سازیِ مسیرِ «پرداخت → دسترسی» (`phase24`) + آزمونِ دودِ Production — **هنوز اجرا نشده** |
 
 ---
 
