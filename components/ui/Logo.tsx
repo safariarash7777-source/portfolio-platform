@@ -20,8 +20,11 @@ export default function Logo({
   showText = true,
   textVariant = "navy",
 }: LogoProps) {
-  const nameColor = textVariant === "navy" ? "var(--navy-deep)" : "var(--text-on-navy)";
-  const subColor  = textVariant === "navy" ? "var(--text-3)"   : "rgba(248,250,252,0.7)";
+  // `--heading` (نه `--navy-deep`) تا نامِ برند در تمِ تیره هم خوانا بماند؛
+  // `--navy-deep` رنگِ برند است و با تم نمی‌چرخد.
+  const nameColor = textVariant === "navy" ? "var(--heading)" : "var(--text-on-navy)";
+  // `--text-3` روی نوارِ ناوبری فقط ۴٫۴۴:۱ می‌داد (کمتر از ۴٫۵ لازم برای متنِ ریز).
+  const subColor  = textVariant === "navy" ? "var(--text-2)"   : "rgba(248,250,252,0.78)";
   const markW = Math.round(size * 0.505); // preserve the mark's 365×723 aspect
 
   return (

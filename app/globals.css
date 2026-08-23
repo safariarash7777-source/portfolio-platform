@@ -32,6 +32,15 @@
   --text-3:      #64748B;   /* muted / metadata */
   --text-on-navy:#F8FAFC;   /* text on navy surface */
   --text-on-gold:#172554;   /* text on gold surface */
+  /* عنوان‌ها: در تمِ روشن سرمه‌ایِ برند، در تمِ تیره روشن.
+     `--navy-deep` یک رنگِ **برند** است و در `.dark` عوض نمی‌شود (چون پس‌زمینهٔ
+     هیرو هم هست)، پس استفاده از آن به‌عنوان رنگِ متن، عنوان‌ها را در تمِ تیره
+     ناخوانا می‌کرد. این توکن همان نقش را دارد ولی با تم می‌چرخد. */
+  --heading:     #0D1F4A;
+  /* طلاییِ متن روی سطحِ روشن: `--gold` (#B8860B) روی کرمِ برند فقط ۲٫۸۵:۱
+     می‌دهد و برای متنِ ریز مردود است. این تُنِ تیره‌تر ۵٫۶:۱ می‌دهد و همان
+     شخصیتِ طلایی را نگه می‌دارد. روی تمِ تیره به طلاییِ روشن می‌چرخد. */
+  --gold-ink:    #7A5A08;
 
   /* ─── Semantic ──────────────────────────────────────────── */
   --success:     #15803D;
@@ -80,6 +89,8 @@
   --text:        #F1F5F9;
   --text-2:      #CBD5E1;
   --text-3:      #94A3B8;
+  --heading:     #F1F5F9;
+  --gold-ink:    var(--gold-light);
 
   --shadow-sm:   0 1px 2px 0 rgba(0,0,0,0.4);
   --shadow:      0 6px 16px -4px rgba(0,0,0,0.5), 0 2px 4px -1px rgba(0,0,0,0.3);
@@ -263,6 +274,11 @@ body { min-height: 100vh; }
    همه فقط transform/opacity/background-position؛ زیر reduced-motion به‌طور
    سراسری خاموش می‌شوند (قانونِ انتهای همین فایل). */
 .ticker-wrap { position: relative; overflow: hidden; }
+/* ردیفِ نوار — دو کپیِ کنارِ هم؛ دومی aria-hidden است (MarketTicker.tsx). */
+.ticker-row { display: flex; align-items: center; width: max-content; list-style: none; margin: 0; padding: 0; }
+/* زیرِ prefers-reduced-motion نوار حرکت نمی‌کند، پس محتوای بیرونِ کادر باید
+   با اسکرولِ افقیِ خودِ نوار در دسترس باشد — نه اینکه برای همیشه پنهان بماند. */
+.ticker-wrap--static { overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
 .ticker-track {
   display: flex;
   width: max-content;

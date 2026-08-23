@@ -43,14 +43,24 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
 
   return (
     <div className="w-full max-w-lg">
+      {/*
+        حلقهٔ فوکوس روی خودِ گروهِ ورودی است، نه روی input.
+        دلیل: input عمداً بی‌مرز و شفاف است و استایلِ inlineِ آن
+        (`boxShadow: "none"`) قاعدهٔ `.input:focus` را خنثی می‌کرد — یعنی فیلدِ
+        ایمیل هیچ نشانهٔ فوکوسِ دیداری نداشت. حالا کلِ کادر با `focus-within`
+        حلقه می‌گیرد. رنگ از توکن می‌آید و `boxShadow`ِ inline حذف شد تا
+        `ring` بتواند اعمال شود.
+      */}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl"
-        style={{
-          background: onNavy ? "rgba(255,255,255,0.06)" : "var(--surface)",
-          border: `1px solid ${onNavy ? "rgba(255,255,255,0.16)" : "var(--line)"}`,
-          boxShadow: onNavy ? "none" : "var(--shadow-sm)",
-        }}
+        className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl border transition-shadow focus-within:ring-2"
+        style={
+          {
+            background: onNavy ? "rgba(255,255,255,0.06)" : "var(--surface)",
+            borderColor: onNavy ? "rgba(255,255,255,0.16)" : "var(--line)",
+            "--tw-ring-color": onNavy ? "var(--gold-light)" : "var(--navy)",
+          } as React.CSSProperties
+        }
       >
         <input
           type="email"

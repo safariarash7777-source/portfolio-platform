@@ -25,13 +25,29 @@ export default async function InsightsPreview() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("content_hub")
-    .select("id, platform, kind, content_url, title, description, published_at")
+    // ⚠️ `description` عمداً خوانده نمی‌شود.
+    //
+    // این کارت فقط عنوان، پلتفرم و تاریخِ **واقعیِ** رکورد را نشان می‌دهد و
+    // لینک می‌دهد به خودِ منبع. متنی که خوانده شود ولی رندر نشود، دیر یا زود
+    // یک نفر رندرش می‌کند — و آن‌وقت متنی که آرش تأییدش نکرده زیرِ نامِ او
+    // به‌عنوان «چرا مهم است» ظاهر می‌شود. راهِ نرسیدن به آنجا، نخواندنش است.
+    .select("id, platform, kind, content_url, title, published_at")
     .is("deleted_at", null)
     .not("published_at", "is", null)
     .order("published_at", { ascending: false })
     .limit(4);
 
-  const items: ContentItem[] = (data ?? [])
+  /**
+   * فقط میدان‌هایی که این کارت واقعاً رندر می‌کند. `ContentItem` کاملِ
+   * `lib/content-hub.ts` دست‌نخورده می‌ماند چون مصرف‌کننده‌های دیگری دارد؛
+   * اینجا عمداً باریک‌تر است.
+   */
+  type PreviewItem = Pick<
+    ContentItem,
+    "id" | "platform" | "kind" | "content_url" | "title" | "published_at"
+  >;
+
+  const items: PreviewItem[] = (data ?? [])
     .filter((r) => isPlatform(r.platform) && isKind(r.kind))
     .map((r) => ({
       id: r.id,
@@ -39,7 +55,6 @@ export default async function InsightsPreview() {
       kind: r.kind,
       content_url: r.content_url,
       title: r.title,
-      description: r.description,
       published_at: r.published_at,
     }));
 
@@ -50,13 +65,19 @@ export default async function InsightsPreview() {
       <div className="mx-auto w-full max-w-6xl px-5">
         <div className="flex items-end justify-between gap-4 flex-wrap mb-8">
           <div>
-            <span className="eyebrow">هابِ محتوا</span>
             <h2
-              className="font-display font-bold mt-1"
-              style={{ color: "var(--navy-deep)", fontSize: "clamp(1.5rem, 3vw, 2.2rem)" }}
+              className="font-display"
+              style={{
+                color: "var(--heading)",
+                fontSize: "clamp(1.6rem, 3.4vw, 2.4rem)",
+                fontWeight: 800,
+                lineHeight: 1.3,
+                letterSpacing: "-0.02em",
+              }}
             >
               آخرین تحلیل‌ها
             </h2>
+            <div aria-hidden className="divider-gold mt-4" />
           </div>
           <Link href="/insights" className="btn btn-outline" style={{ fontSize: "0.8rem" }}>
             مشاهدهٔ همه
@@ -100,7 +121,7 @@ export default async function InsightsPreview() {
                   {item.title && (
                     <h3
                       className="font-display font-bold text-sm leading-6"
-                      style={{ color: "var(--navy-deep)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+                      style={{ color: "var(--heading)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
                     >
                       {item.title}
                     </h3>
