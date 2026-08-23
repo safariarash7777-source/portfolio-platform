@@ -111,3 +111,66 @@
 - Secret / environment: **NO**
 - Agent / LLM: **NO**
 - Public-route redesign: **NO**
+
+---
+
+# تکمیلِ ماتریس — `P2-INTELLIGENCE-DESK-MEGA-001`
+
+Waveهای A تا D مسیرهای `/admin/*` را پوشش دادند. این بخش سطوحی را اضافه می‌کند که
+هنوز نقشِ مکتوب نداشتند، و ستون‌های «سطح دسترسی»، «تازگی/منشأ» و «ریسکِ صداقت» را
+به ماتریس می‌افزاید.
+
+## سطحِ دسترسی — سنجیده‌شده، نه فرض‌شده
+
+`middleware.ts` مسیرهای `/dashboard`، `/admin` و `/terminal` را گیت می‌کند.
+`/admin` و `/terminal` هر دو `profiles.role === 'admin'` می‌خواهند.
+`app/(protected)/admin/layout.tsx` همان بررسی را **دوباره** انجام می‌دهد —
+دفاع در عمق؛ اگر middleware دور زده شود، لایه هم redirect می‌کند.
+
+| سطح | مسیرها | گیت |
+|---|---|---|
+| عمومی | `/`, `/market/*`, `/analyses`, `/insights`, `/codal`, `/data`, `/webinars`, `/about`, `/legal/*` | ندارد |
+| کاربرِ واردشده | `/dashboard` | فقط session |
+| **ادمین** | `/admin/*`, `/terminal/*` | session + `role='admin'` (دو لایه) |
+
+## سطوحِ افزوده به ماتریس
+
+| مسیر / کامپوننت | سؤالِ کاربر | منبعِ داده | سطح | ریسکِ صداقت | تصمیم | نقشِ نهایی |
+|---|---|---|---|---|---|---|
+| `/terminal` | نمای تحلیلگرِ عمیق | `lib/core/terminal.ts` | ادمین | کم | **DRILL-DOWN** | موتورِ بررسیِ عمیق زیرِ ناحیهٔ ۲ |
+| `/terminal/[symbol]` | این نماد چه وضعی دارد؟ | engine + `symbol_history` | ادمین | کم | **DRILL-DOWN** | عمقِ نماد از رادار و کدال |
+| `/terminal/allocation` | ساختارِ دارایی چه باشد؟ | `lib/core/allocation.ts` | ادمین | **متوسط** — سه سبدِ ثابت است، نه سبدِ مرجعِ نسخه‌دار | **UPGRADE → ناحیهٔ ۴** | ورودیِ مستقیمِ Wave 6؛ تا نگاشتِ ابزار نیامده، سبدِ مرجع `پیکربندی نشده` می‌ماند |
+| `/terminal/watchlist` | چه چیزی را زیرِ نظر دارم؟ | `watchlist_items` | ادمین | کم | **DRILL-DOWN** | پیگیریِ شخصی |
+| `/dashboard` | مشتری چه می‌بیند؟ | پرتفوی/دسترسیِ کاربر | کاربر | کم | **KEEP — خارج از دامنه** | رابطِ مشتری؛ نه میزِ داخلی |
+| `app/api/admin/desk` | سلامتِ منابع | `lib/desk/sources.ts` | ادمین | کم | **KEEP AS ENGINE** | تغذیهٔ ناحیهٔ ۶ |
+| `app/api/admin/intelligence` | گردشِ دستی | `intel_*` | ادمین | کم | **KEEP AS ENGINE** | تغذیهٔ ناحیه‌های ۱ و ۳ |
+| `app/api/admin/health` | سلامتِ اجرایی | health + cron ledger | ادمین | **متوسط** — «جدول هست» نباید سبز تعبیر شود | **KEEP + سخت‌گیری** | Wave 8 |
+| `app/api/admin/{analyses,notes,content,announcements,webinars}` | نوشتنِ محتوا | جدول‌های مربوطه | ادمین | کم | **KEEP AS ENGINE** | drill-downها |
+| `app/api/admin/entitlements` | دسترسیِ مشتری | entitlement | ادمین | — | **دست‌نخورده** | مالکِ #113 |
+| `app/api/admin/codal-proxy` | اطلاعیهٔ شرکت | رله/کدال | ادمین | کم | **KEEP AS ENGINE** | شاهدِ شرکتی، ناحیهٔ ۲ |
+| `app/api/admin/fx/seeds` | بذرِ مدلِ ارز | جدولِ FX | ادمین | کم | **KEEP AS ENGINE** | آزمایشگاهِ ارز |
+| `components/dashboard/*` (۱۲) | نمای مشتری | پرتفوی کاربر | کاربر | کم | **KEEP — خارج از دامنه** | تغییر نمی‌کند |
+| `components/terminal/*` (۳) | نمودار و کارتِ امتیاز | engine | ادمین | کم | **KEEP AS ENGINE** | drill-down |
+| `components/admin/*` (۲۰) | — | — | ادمین | — | **همه ارجاع‌دار — هیچ یتیمی نیست** | رجوع به `findings.md` §F-02 |
+
+## آنچه در این Wave حذف **نشد**
+
+هیچ فایلی. `DEMOTE` یعنی جایگاهِ ناوبری، نه حذفِ قابلیت. هیچ نامزدِ حذفی بدونِ
+اثباتِ جایگزین، redirect و مسیرِ برگشت مطرح نمی‌شود (Wave 9).
+
+## شکافِ واژگانِ حالت — ورودیِ Wave 2
+
+امروز دو واژگانِ متفاوت وجود دارد:
+
+```
+lib/desk/contracts.ts        ready | stale | empty | unavailable          (۴)
+lib/intelligence/command-desk.ts  ready | attention | empty | loading | unavailable (۵)
+```
+
+دو حالتِ لازمِ مأموریت در **هیچ‌کدام** نیست:
+
+- `unconfigured` — تصمیمِ مالک نیامده. با «داده نداریم» یکی نیست.
+- `awaiting_review` — منتظرِ قضاوتِ انسان. با «آماده» یکی نیست.
+
+اثرِ امروزی: نبودِ نسخهٔ رسمیِ سبد `attention` می‌شود و شبیهِ خرابیِ داده به نظر
+می‌رسد، در حالی که یک گلوگاهِ تصمیم است.
