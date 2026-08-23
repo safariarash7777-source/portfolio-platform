@@ -31,6 +31,10 @@ import {
   type DeskTriage,
 } from "@/lib/intelligence/command-desk";
 import { DATA_STATE_LABEL } from "@/lib/desk/contracts";
+import {
+  describeReferencePortfolio,
+  REFERENCE_CONTRACT_V1,
+} from "@/lib/intelligence/reference-portfolio";
 import type { IntelligenceDeskViewModel } from "@/lib/intelligence/board";
 
 const QUESTION_ICON: Record<CommandQuestionKey, ReactNode> = {
@@ -170,7 +174,7 @@ const ZONE_LINKS = [
   { href: "#six-questions", label: "۱ امروز" },
   { href: "#six-questions", label: "۲ بازارها" },
   { href: "#intelligence-workflow", label: "۳ سناریوها" },
-  { href: "#intelligence-workflow", label: "۴ سبدِ مرجع" },
+  { href: "#reference-portfolio", label: "۴ سبدِ مرجع" },
   { href: "#clients", label: "۵ مشتری و محصول" },
   { href: "#source-health", label: "۶ عملیات" },
 ] as const;
@@ -238,6 +242,82 @@ function TriageStrip({ triage }: { triage: DeskTriage }) {
           </ul>
         )}
       </div>
+    </section>
+  );
+}
+
+/**
+ * ناحیهٔ «سبدِ مرجع».
+ *
+ * تخصیصِ هدف را **به‌عنوانِ هدف** نشان می‌دهد و صریح می‌گوید که هنوز وضعیتِ
+ * زندهٔ سبد نیست. تا وقتی مالک نگاشتِ ابزار را نداده، حالت `پیکربندی نشده`
+ * است و دقیقاً همان پرسش‌هایی که معطل‌اند فهرست می‌شوند — نه یک پیامِ مبهم.
+ */
+function ReferencePortfolioZone() {
+  const view = describeReferencePortfolio(REFERENCE_CONTRACT_V1, []);
+  const tone = STATE_TONE[view.state];
+
+  return (
+    <section id="reference-portfolio" aria-labelledby="reference-title" className="scroll-mt-20 space-y-3">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>ناحیهٔ چهارم</p>
+          <h2 id="reference-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
+            سبدِ مرجع
+          </h2>
+        </div>
+        <span
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold"
+          style={{ color: tone.color, background: tone.background }}
+        >
+          {tone.icon}
+          {tone.label} · نسخهٔ {view.version}
+        </span>
+      </div>
+
+      <p className="text-[12px] leading-6" style={{ color: "var(--text-2)" }}>{view.summary}</p>
+
+      <ul className="grid gap-2 sm:grid-cols-3">
+        {view.sleeves.map((sleeve) => (
+          <li
+            key={sleeve.key}
+            className="rounded-xl border p-3"
+            style={{ borderColor: "var(--line)", background: "var(--surface)" }}
+          >
+            <p className="text-[12px] font-extrabold" style={{ color: "var(--text)" }}>{sleeve.label}</p>
+            <p className="mt-1 font-display text-xl font-extrabold" style={{ color: "var(--text)", fontVariantNumeric: "tabular-nums" }}>
+              {toPersianDigits(sleeve.targetPct)}٪
+              <span className="ms-1 text-[10px] font-bold" style={{ color: "var(--text-3)" }}>هدف</span>
+            </p>
+            <p className="mt-1 text-[10px] leading-5" style={{ color: "var(--text-3)" }}>
+              {sleeve.instruments.length === 0
+                ? "ابزارِ نماینده تعیین نشده"
+                : sleeve.instruments.join("، ")}
+            </p>
+          </li>
+        ))}
+      </ul>
+
+      {view.pendingDecisions.length > 0 && (
+        <div className="rounded-xl border p-3.5" style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}>
+          <p className="text-[11px] font-extrabold" style={{ color: "var(--text)" }}>
+            برای محاسبه‌پذیرشدنِ سبد، این تصمیم‌ها لازم است:
+          </p>
+          <ul className="mt-2 space-y-1.5">
+            {view.pendingDecisions.map((decision) => (
+              <li key={decision.key} className="flex items-start gap-2 text-[11px] leading-5" style={{ color: "var(--text-2)" }}>
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ background: "var(--navy)" }} aria-hidden />
+                <span>
+                  {decision.question}
+                  {decision.detail && (
+                    <span style={{ color: "var(--text-3)" }}> — {decision.detail}</span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
@@ -407,6 +487,8 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
         </div>
         <IntelligenceDesk {...view} />
       </section>
+
+      <ReferencePortfolioZone />
 
       <ClientsZone snapshot={sourceStatus} />
 
