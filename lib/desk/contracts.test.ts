@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  DATA_STATE_LABEL,
   DESK_SECTIONS,
   DESK_SECTION_LABEL,
   DESK_SECTION_QUESTION,
@@ -10,6 +11,7 @@ import {
   canPublishBrief,
   classifySource,
   deskAgeMinutes,
+  isDataFault,
   rollupDeskState,
   summarise,
   worstState,
@@ -26,7 +28,9 @@ const SPEC: SourceSpec = { table: "ir_market_snapshots", label: "اسنپ‌شا
 const NO_RULE: SourceSpec = { table: "intel_reference_positions", label: "موقعیت", rule: null };
 
 test("every declared section has a label and a question it answers", () => {
-  assert.equal(DESK_SECTIONS.length, 5);
+  // ۶ از ۱۴۰۵/۰۶/۰۱: ناحیهٔ «مشتری و محصول» اضافه شد تا سؤالِ پنجمِ روزِ آرش
+  // («چه کسی منتظرِ اقدامِ من است؟») ناحیهٔ خودش را داشته باشد.
+  assert.equal(DESK_SECTIONS.length, 6);
   for (const key of DESK_SECTIONS) {
     assert.ok(DESK_SECTION_LABEL[key], `${key} has no label`);
     assert.ok(DESK_SECTION_QUESTION[key]?.includes("؟"), `${key} names no question`);
@@ -152,6 +156,7 @@ test("a panel names every asset it read from and always explains itself", () => 
 test("the summary counts each state separately rather than reporting one verdict", () => {
   const make = (state: DataState): DeskSource => ({
     table: "t", label: "l", state, detail: "", count: null, ageMinutes: null,
+    observedAt: null, fetchedAt: "2026-08-23T00:00:00.000Z",
   });
   const text = summarise([make("ready"), make("stale"), make("empty"), make("unavailable")]);
   assert.match(text, /در دسترس نیست/);
@@ -184,4 +189,98 @@ test("the publish block always states a reason a human can act on", () => {
   assert.match(briefPublishBlockReason("internal_draft", true) ?? "", /تأیید/);
   assert.match(briefPublishBlockReason("pending_approval", false) ?? "", /ادمین/);
   assert.equal(briefPublishBlockReason("pending_approval", true), null);
+});
+
+/* ── واژگانِ متعارفِ هفت‌حالته — P2-INTELLIGENCE-DESK-MEGA-001 ─────────────── */
+
+test("شش ناحیهٔ میز کامل‌اند و «مشتری و محصول» جا افتاده است", () => {
+  assert.ok(DESK_SECTIONS.includes("clients"), "ناحیهٔ مشتری و محصول باید وجود داشته باشد");
+  for (const key of DESK_SECTIONS) {
+    assert.ok(DESK_SECTION_LABEL[key], `برچسبِ ${key}`);
+    assert.ok(DESK_SECTION_QUESTION[key], `پرسشِ ${key}`);
+  }
+});
+
+test("هر هفت حالت برچسبِ فارسی دارند", () => {
+  const states: DataState[] = [
+    "loading", "ready", "awaiting_review", "unconfigured", "stale", "empty", "unavailable",
+  ];
+  for (const s of states) {
+    assert.ok(DATA_STATE_LABEL[s] && DATA_STATE_LABEL[s].length > 0, s);
+  }
+});
+
+test("تصمیمِ نگرفته و بازبینیِ نشده خرابیِ داده حساب نمی‌شوند", () => {
+  // این تفکیک کلِ دلیلِ وجودِ دو حالتِ تازه است: یک تصمیمِ مالک نباید در نوارِ
+  // سلامت مثلِ یک فیدِ خراب دیده شود.
+  assert.equal(isDataFault("unconfigured"), false);
+  assert.equal(isDataFault("awaiting_review"), false);
+  assert.equal(isDataFault("ready"), false);
+  assert.equal(isDataFault("loading"), false);
+
+  assert.equal(isDataFault("stale"), true);
+  assert.equal(isDataFault("empty"), true);
+  assert.equal(isDataFault("unavailable"), true);
+});
+
+test("خرابیِ واقعی روی حالتِ انسانی غالب می‌شود، نه برعکس", () => {
+  // اگر ترتیب برعکس بود، یک فیدِ مرده پشتِ «منتظرِ بازبینی» پنهان می‌شد.
+  assert.equal(worstState(["awaiting_review", "unavailable"]), "unavailable");
+  assert.equal(worstState(["unconfigured", "stale"]), "stale");
+  assert.equal(worstState(["unconfigured", "empty"]), "empty");
+  assert.equal(worstState(["ready", "awaiting_review"]), "awaiting_review");
+  assert.equal(worstState(["ready", "unconfigured"]), "unconfigured");
+});
+
+test("«در حال دریافت» گذراست و خرابیِ واقعی را نمی‌پوشاند", () => {
+  assert.equal(worstState(["loading", "unavailable"]), "unavailable");
+  assert.equal(worstState(["loading", "stale"]), "stale");
+  assert.equal(worstState(["loading", "ready"]), "loading");
+});
+
+test("هر منبع ساعتِ خودش را حمل می‌کند", () => {
+  const now = new Date("2026-08-23T10:00:00.000Z");
+  const src = classifySource(
+    { table: "ir_market_snapshots", label: "اسنپ‌شات", rule: { freshWithinMinutes: 60 } },
+    { available: true, count: 5, lastAt: "2026-08-23T09:30:00.000Z" },
+    now
+  );
+  assert.equal(src.observedAt, "2026-08-23T09:30:00.000Z", "زمانِ خودِ داده");
+  assert.equal(src.fetchedAt, "2026-08-23T10:00:00.000Z", "زمانِ پرسیدنِ ما");
+  assert.notEqual(src.observedAt, src.fetchedAt, "این دو یک چیز نیستند");
+});
+
+test("منبعِ بی‌زمان «اکنون» را جعل نمی‌کند", () => {
+  const now = new Date("2026-08-23T10:00:00.000Z");
+  const src = classifySource(
+    { table: "leads", label: "لید", rule: null },
+    { available: true, count: 3, lastAt: null },
+    now
+  );
+  assert.equal(src.observedAt, null, "نبودِ زمان یعنی null، نه اکنون");
+  assert.equal(src.fetchedAt, "2026-08-23T10:00:00.000Z");
+});
+
+test("ستونِ زمانیِ شکسته، زمانِ مشاهده را جعل نمی‌کند", () => {
+  const now = new Date("2026-08-23T10:00:00.000Z");
+  const src = classifySource(
+    { table: "t", label: "l", rule: { freshWithinMinutes: 60 } },
+    { available: true, count: 9, lastAt: "2026-08-23T09:00:00.000Z", timestampBroken: true },
+    now
+  );
+  assert.equal(src.state, "unavailable");
+  assert.equal(src.observedAt, null, "وقتی ستون خوانده نشد، زمان قابلِ دانستن نیست");
+  assert.equal(src.count, 9, "شمارشِ معتبر حفظ می‌شود");
+});
+
+test("منبعِ در دسترس نبودن، هیچ زمانی ادعا نمی‌کند", () => {
+  const now = new Date("2026-08-23T10:00:00.000Z");
+  const src = classifySource(
+    { table: "leads", label: "لید", rule: null },
+    { available: false, count: 0, unavailableReason: "جدول وجود ندارد" },
+    now
+  );
+  assert.equal(src.state, "unavailable");
+  assert.equal(src.observedAt, null);
+  assert.equal(src.count, null, "شمارشِ نخوانده null است، نه صفر");
 });

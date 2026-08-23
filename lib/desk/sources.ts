@@ -155,6 +155,32 @@ export const DESK_SOURCES = {
       basis: "وزنِ اولیهٔ سبد یک تصمیمِ باز است و مهندسی آن را حدس نمی‌زند.",
     },
   ],
+  clients: [
+    {
+      table: "webinar_registrations",
+      label: "ثبت‌نامِ وبینار",
+      // `registered_at` است نه `created_at` — تستِ DDLِ مخزن این را گرفت.
+      timeColumn: "registered_at",
+      rule: null,
+      basis: "ثبت‌نام رویدادمحور است؛ آستانهٔ تازگی برایش معنا ندارد.",
+    },
+    {
+      table: "entitlements",
+      label: "دسترسیِ محصول",
+      timeColumn: "created_at",
+      rule: null,
+      basis:
+        "فقط **خواندن** برای دیدنِ وضعیتِ دسترسی. مسیرِ نوشتنِ پرداخت→دسترسی مالکِ جداگانه‌ای دارد (PR #113) و این میز به آن دست نمی‌زند.",
+    },
+    {
+      table: "leads",
+      label: "لید",
+      timeColumn: "created_at",
+      rule: null,
+      basis:
+        "طبقِ `MIGRATION-LEDGER` این جدول روی Production **اجرا نشده** (`B-001`). انتظار می‌رود «در دسترس نیست» باشد — و همین درست است: میز باید بلاکرِ شناخته‌شده را نشان دهد، نه پنهانش کند.",
+    },
+  ],
   operations: [
     {
       table: "cron_runs",

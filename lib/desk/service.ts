@@ -64,10 +64,21 @@ const PANEL_LINKS: Record<DeskSectionKey, DeskLink[]> = {
     { label: "یادداشت بازار", href: "/admin/notes" },
   ],
   reference: [{ label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio" }],
+  clients: [
+    { label: "کاربران", href: "/admin/users" },
+    { label: "وبینارها", href: "/admin/webinars" },
+  ],
   operations: [{ label: "سلامتِ سامانه", href: "/admin/health" }],
 };
 
-const GROUPS: DeskSectionKey[] = ["today", "intelligence", "decisions", "reference", "operations"];
+const GROUPS: DeskSectionKey[] = [
+  "today",
+  "intelligence",
+  "decisions",
+  "reference",
+  "clients",
+  "operations",
+];
 
 /**
  * یک منبع را می‌خواند و **هرگز پرتاب نمی‌کند**.

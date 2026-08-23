@@ -67,14 +67,14 @@ test("authenticated non-admin is rejected with 403", async () => {
   }
 });
 
-test("admin is allowed and receives the five approved areas", async () => {
+test("admin is allowed and receives the six approved areas", async () => {
   const { gateway } = gatewayWith();
   const res = await buildDesk(gateway, NOW);
   assert.equal(res.status, 200);
   assert.ok("panels" in res.body);
   assert.deepEqual(
     res.body.panels.map((p) => p.key),
-    ["today", "intelligence", "decisions", "reference", "operations"]
+    ["today", "intelligence", "decisions", "reference", "clients", "operations"]
   );
 });
 
@@ -322,6 +322,8 @@ test("every panel links only to destinations that exist in this repository", asy
     "/admin/analyses",
     "/admin/notes",
     "/admin/manage?tab=portfolio",
+    "/admin/users",
+    "/admin/webinars",
     "/admin/health",
   ];
   for (const panel of res.body.panels) {

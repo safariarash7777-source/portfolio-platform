@@ -40,6 +40,7 @@ export const DESK_SECTIONS = [
   "intelligence",
   "decisions",
   "reference",
+  "clients",
   "operations",
 ] as const;
 
@@ -50,6 +51,7 @@ export const DESK_SECTION_LABEL: Record<DeskSectionKey, string> = {
   intelligence: "هوشمندیِ بازار",
   decisions: "تصمیم‌ها و سناریوها",
   reference: "سبدِ مرجع",
+  clients: "مشتری و محصول",
   operations: "عملیات و سلامت",
 };
 
@@ -62,18 +64,54 @@ export const DESK_SECTION_QUESTION: Record<DeskSectionKey, string> = {
   intelligence: "چه رخداد و گزارشی ثبت شده که باید ببینم؟",
   decisions: "چه چیزی در صفِ تصمیم یا تأییدِ من است؟",
   reference: "سبدِ مرجع در چه وضعیتی است؟",
+  clients: "چه کسی یا چه محصولی منتظرِ اقدامِ من است؟",
   operations: "خطِ لولهٔ داده و cronها سالم‌اند؟",
 };
 
-/** ترتیبِ نمایش عمداً همان ترتیبِ کارِ روزانه است، نه ترتیبِ الفبا. */
-export type DataState = "ready" | "stale" | "empty" | "unavailable";
+/**
+ * هفت حالتِ متعارف — تنها واژگانِ مجازِ وضعیت در کلِ میز.
+ *
+ * پیش از این دو واژگانِ رقیب وجود داشت: اینجا چهار حالت و در
+ * `lib/intelligence/command-desk.ts` پنج حالت با یک نگاشتِ دستی وسطشان. دو
+ * واژگان یعنی دو حقیقتِ ممکن برای یک چیز.
+ *
+ * دو حالتِ تازه، دو چیزِ متفاوت را از هم جدا می‌کنند که قبلاً هر دو
+ * «مشکلِ داده» به نظر می‌رسیدند:
+ *
+ *   `unconfigured`    مالک هنوز تصمیم نگرفته. دادهٔ خراب نیست — تصمیم نیامده.
+ *                     نبودِ نسخهٔ رسمیِ سبد قبلاً شبیهِ خرابیِ فید دیده می‌شد.
+ *   `awaiting_review` دادهٔ سالم، منتظرِ قضاوتِ انسان. «آماده» نیست، چون هنوز
+ *                     کسی تأییدش نکرده؛ «خراب» هم نیست.
+ */
+export type DataState =
+  | "loading"
+  | "ready"
+  | "awaiting_review"
+  | "unconfigured"
+  | "stale"
+  | "empty"
+  | "unavailable";
 
 export const DATA_STATE_LABEL: Record<DataState, string> = {
+  loading: "در حال دریافت",
   ready: "به‌روز",
+  awaiting_review: "منتظرِ بازبینی",
+  unconfigured: "پیکربندی نشده",
   stale: "کهنه",
   empty: "خالی",
   unavailable: "در دسترس نیست",
 };
+
+/**
+ * آیا این حالت یک **خرابیِ داده** است؟
+ *
+ * `unconfigured` و `awaiting_review` نیستند: در هر دو، خطِ داده سالم است و
+ * توپ در زمینِ انسان است. اگر این تفکیک نباشد، یک تصمیمِ نگرفته در نوارِ
+ * سلامت قرمز می‌شود و خرابیِ واقعیِ فید را بی‌ارزش می‌کند.
+ */
+export function isDataFault(state: DataState): boolean {
+  return state === "stale" || state === "empty" || state === "unavailable";
+}
 
 /**
  * یک منبعِ واقعی در میز — یک جدولِ مشخص، با حالت و شمارشِ خودش.
@@ -90,6 +128,21 @@ export interface DeskSource {
   detail: string;
   count: number | null;
   ageMinutes: number | null;
+  /**
+   * دو زمانِ **متفاوت** که قبلاً به یک `ageMinutes` تقلیل می‌شدند:
+   *
+   *   `observedAt` جدیدترین لحظه‌ای که خودِ داده دربارهٔ جهان ادعا می‌کند
+   *                (بیشینهٔ ستونِ زمانیِ همان جدول)
+   *   `fetchedAt`  لحظه‌ای که ما پرسیدیم
+   *
+   * جدا نگه‌داشتنشان قاعدهٔ «مهرِ زمانیِ سراسری برچسبِ فیدِ دیگر نمی‌شود» را
+   * در سطحِ تایپ اجرا می‌کند: هر منبع ساعتِ خودش را حمل می‌کند و هیچ منبعی
+   * نمی‌تواند تازگیِ منبعِ دیگر را قرض بگیرد.
+   *
+   * هر دو `string | null`‌اند. `null` یعنی **نمی‌دانیم** — نه «اکنون».
+   */
+  observedAt: string | null;
+  fetchedAt: string;
 }
 
 /** مقصدِ موجود برای ادامهٔ کار. میز جای آن‌ها را نمی‌گیرد، به آن‌ها راه می‌دهد. */
@@ -120,9 +173,12 @@ export interface DeskView {
 
 const RANK: Record<DataState, number> = {
   ready: 0,
-  stale: 1,
-  empty: 2,
-  unavailable: 3,
+  awaiting_review: 1,
+  unconfigured: 2,
+  loading: 3,
+  stale: 4,
+  empty: 5,
+  unavailable: 6,
 };
 
 /**
@@ -131,6 +187,11 @@ const RANK: Record<DataState, number> = {
  * ترتیب عمدی است و با شهودِ اول فرق دارد: `empty` از `stale` بدتر حساب
  * می‌شود، چون دادهٔ کهنه دستِ‌کم یک‌بار وجود داشته؛ و `unavailable` از هر دو
  * بدتر است، چون دربارهٔ واقعیت **هیچ** نمی‌گوید.
+ *
+ * دو حالتِ انسانی زیرِ همهٔ خرابی‌ها می‌نشینند: یک تصمیمِ نگرفته
+ * (`unconfigured`) یا یک بازبینیِ انجام‌نشده (`awaiting_review`) نباید یک فیدِ
+ * واقعاً خراب را بپوشاند. `loading` هم زیرِ خرابی‌هاست چون گذراست و خودش
+ * حل می‌شود — ولی بالای حالت‌های انسانی است، چون هنوز **نمی‌دانیم**.
  */
 export function worstState(states: readonly DataState[]): DataState {
   if (states.length === 0) return "unavailable";
@@ -206,12 +267,26 @@ export interface SourceSpec {
   rule: FreshnessRule | null;
 }
 
+/** زمانِ منبع به ISO — ورودیِ نامعتبر `null` می‌شود، نه «اکنون». */
+function toIso(value: string | Date | null | undefined): string | null {
+  if (!value) return null;
+  const d = value instanceof Date ? value : new Date(value);
+  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+}
+
 export function classifySource(
   spec: SourceSpec,
   input: SourceInput,
   now: Date
 ): DeskSource {
-  const base = { table: spec.table, label: spec.label };
+  // `fetchedAt` همیشه واقعی است: همین لحظه پرسیدیم. `observedAt` فقط وقتی پر
+  // می‌شود که خودِ منبع زمانی داده باشد.
+  const base = {
+    table: spec.table,
+    label: spec.label,
+    fetchedAt: now.toISOString(),
+    observedAt: toIso(input.lastAt),
+  };
 
   if (!input.available) {
     return {
@@ -234,6 +309,8 @@ export function classifySource(
       detail: `شمارش خوانده شد ولی ستونِ زمانیِ این شاخص در جدول \`${spec.table}\` وجود ندارد — شاخص اشتباه پیکربندی شده`,
       count: input.count,
       ageMinutes: null,
+      // ستونِ زمانی خوانده نشد، پس زمانِ مشاهده **قابلِ دانستن نیست**.
+      observedAt: null,
     };
   }
 

@@ -3,8 +3,8 @@
 | Wave | وضعیت | SHA | شواهد |
 |---|---|---|---|
 | 0 — baseline و rebase | ✅ انجام شد | `a1c71e9` → `236f1ef` روی `1b4ca75` | گیتِ کامل سبز؛ بدونِ drift |
-| 1 — فهرست و ماتریس | 🔄 در جریان | — | `findings.md` + `docs/INTELLIGENCE-DESK-RATIONALIZATION.md` |
-| 2 — قراردادِ مشترک | ⏳ | — | — |
+| 1 — فهرست و ماتریس | ✅ انجام شد | `ec86f97` | `findings.md` + ماتریسِ تکمیلی در `INTELLIGENCE-DESK-RATIONALIZATION.md` |
+| 2 — قراردادِ مشترک | ✅ انجام شد | — | ۷ حالتِ متعارف · ۶ ناحیه · `observedAt`/`fetchedAt` هر منبع · ۱۰ تستِ تازه |
 | 3 — پوسته و سلسله‌مراتب | ⏳ | — | — |
 | 4 — Today | ⏳ | — | — |
 | 5 — سناریو و حافظه | ⏳ | — | — |

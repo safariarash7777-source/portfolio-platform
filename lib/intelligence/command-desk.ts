@@ -1,5 +1,5 @@
 import { toPersianDigits } from "@/lib/format";
-import { DATA_STATE_LABEL, type DeskView } from "@/lib/desk/contracts";
+import { DATA_STATE_LABEL, type DataState, type DeskView } from "@/lib/desk/contracts";
 import { DIRECTION_LABEL } from "@/lib/intelligence/workflow";
 import type { IntelligenceDeskViewModel } from "@/lib/intelligence/board";
 
@@ -13,7 +13,15 @@ export const COMMAND_QUESTION_KEYS = [
 ] as const;
 
 export type CommandQuestionKey = (typeof COMMAND_QUESTION_KEYS)[number];
-export type CommandQuestionState = "ready" | "attention" | "empty" | "loading" | "unavailable";
+
+/**
+ * وضعیتِ هر پاسخ همان واژگانِ متعارفِ میز است — نه یک مجموعهٔ موازی.
+ *
+ * قبلاً اینجا `"attention"` وجود داشت که سه چیزِ متفاوت را یکی می‌کرد: دادهٔ
+ * کهنه، شاهدِ ناقص، و نسخهٔ سبدِ ثبت‌نشده. هر سه زردِ یکسان می‌شدند، پس یک
+ * تصمیمِ نگرفتهٔ مالک از یک فیدِ کهنه قابلِ تشخیص نبود.
+ */
+export type CommandQuestionState = DataState;
 
 export interface CommandQuestion {
   key: CommandQuestionKey;
@@ -64,7 +72,7 @@ export function buildCommandQuestions(
           key: "happened", order: 1, question: "امروز چه اتفاقی افتاده؟",
           answer: view.today.brief.title,
           detail: `بریف ${view.todayJalali} با وضعیت «${view.today.statusLabel}» ثبت شده است.`,
-          state: view.today.unsupportedClaims > 0 ? "attention" : "ready",
+          state: view.today.unsupportedClaims > 0 ? "awaiting_review" : "ready",
           facts: [], href: "#intelligence-workflow", linkLabel: "بازکردن بریف امروز",
         }
       : {
@@ -101,7 +109,7 @@ export function buildCommandQuestions(
               ? `${fa(view.today.unsupportedClaims)} گزاره هنوز شاهد کامل ندارد`
               : `${fa(supportedClaims.length)} گزاره با شاهد ثبت شده است`,
             detail: "این‌ها گزاره‌های ثبت‌شدهٔ امروزند؛ متن تازه یا نتیجه‌گیری خودکار تولید نشده است.",
-            state: view.today.unsupportedClaims > 0 ? "attention" : "ready",
+            state: view.today.unsupportedClaims > 0 ? "awaiting_review" : "ready",
             facts: todayClaims.slice(0, 3).map((claim) => claim.statement),
             href: "#intelligence-workflow", linkLabel: "بازبینی گزاره‌ها",
           };
@@ -131,11 +139,9 @@ export function buildCommandQuestions(
           detail: portfolioEffects.length > 0
             ? `${fa(portfolioEffects.length)} اثرِ دارایی نیز در گردش هوشمندی ثبت شده است.`
             : "برای دارایی‌های سبد هنوز اثر تازه‌ای ثبت نشده است.",
-          state: marketPanel.state === "ready"
-            ? "ready"
-            : marketPanel.state === "stale"
-              ? "attention"
-              : marketPanel.state,
+          // حالتِ منبع همان‌طور که هست عبور می‌کند: «کهنه» کهنه می‌ماند و به
+          // یک زردِ عمومی تبدیل نمی‌شود.
+          state: marketPanel.state,
           facts: marketFacts, href: "#source-health", linkLabel: "جزئیات منابع بازار",
         };
 
@@ -159,7 +165,7 @@ export function buildCommandQuestions(
           detail: unsupportedScenarios > 0
             ? `${fa(unsupportedScenarios)} گزارهٔ سناریویی هنوز شاهد کامل ندارد.`
             : "تمام گزاره‌های سناریوییِ موجود شاهد دارند.",
-          state: unsupportedScenarios > 0 ? "attention" : "ready",
+          state: unsupportedScenarios > 0 ? "awaiting_review" : "ready",
           facts: view.scenarios
             .filter((scenario) => scenario.claims.length > 0)
             .map((scenario) => `${scenario.labelFa}: ${fa(scenario.claims.length)} گزاره`),
@@ -178,7 +184,8 @@ export function buildCommandQuestions(
           key: "portfolio", order: 5, question: "اثر احتمالی بر سبد مرجع چیست؟",
           answer: "نسخهٔ نهایی سبد در سامانه ثبت نشده",
           detail: "وزن مصوب یا اثر دارایی با عدد جایگزین ساخته نمی‌شود؛ نسخه باید صریحاً نهایی شود.",
-          state: "attention",
+          // تصمیمِ مالک است، نه خرابیِ داده — و باید از یک فیدِ خراب قابلِ تفکیک بماند.
+          state: "unconfigured",
           facts: portfolioEffects.slice(0, 3).map((row) => `${row.label}: ${DIRECTION_LABEL[row.direction!]}`),
           href: "#intelligence-workflow", linkLabel: "بازبینی اثر سبد",
         }
@@ -218,7 +225,7 @@ export function buildCommandQuestions(
           detail: blockedDecisions.length > 0
             ? `${fa(blockedDecisions.length)} مورد پیش از تصمیم به تکمیل شاهد نیاز دارد.`
             : "همهٔ موارد صف از نظر شاهد آمادهٔ بازبینی انسانی‌اند.",
-          state: "attention",
+          state: "awaiting_review",
           facts: view.inbox.slice(0, 3).map((item) => item.brief.title),
           href: "#intelligence-workflow", linkLabel: "رسیدگی به صف",
         };

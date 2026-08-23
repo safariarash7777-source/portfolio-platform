@@ -10,10 +10,14 @@ import {
   CircleSlash,
   Clock,
   HelpCircle,
+  Loader2,
   PieChart,
   RefreshCw,
   Route,
+  Settings2,
   Telescope,
+  UserCheck,
+  Users,
 } from "lucide-react";
 import { toPersianDigits } from "@/lib/format";
 import {
@@ -25,7 +29,12 @@ import {
 
 /** رنگ فقط از توکن — هیچ رنگِ خام. */
 const TONE: Record<DataState, { fg: string; bg: string; icon: React.ReactNode }> = {
+  loading: { fg: "var(--text-3)", bg: "var(--surface-2)", icon: <Loader2 size={14} /> },
   ready: { fg: "var(--success)", bg: "rgba(21,128,61,0.10)", icon: <CheckCircle2 size={14} /> },
+  // منتظرِ انسان و پیکربندی‌نشده عمداً **آبیِ برند**اند، نه زرد: این‌ها خرابیِ
+  // داده نیستند و نباید در کنارِ «کهنه» یک‌جور دیده شوند.
+  awaiting_review: { fg: "var(--navy)", bg: "rgba(30,58,138,0.10)", icon: <UserCheck size={14} /> },
+  unconfigured: { fg: "var(--navy)", bg: "rgba(30,58,138,0.08)", icon: <Settings2 size={14} /> },
   stale: { fg: "var(--gold)", bg: "var(--gold-tint)", icon: <Clock size={14} /> },
   empty: { fg: "var(--text-3)", bg: "var(--surface-2)", icon: <CircleSlash size={14} /> },
   unavailable: { fg: "var(--danger)", bg: "rgba(185,28,28,0.10)", icon: <HelpCircle size={14} /> },
@@ -36,6 +45,7 @@ const SECTION_ICON: Record<DeskSectionKey, React.ReactNode> = {
   intelligence: <Telescope size={17} />,
   decisions: <Route size={17} />,
   reference: <PieChart size={17} />,
+  clients: <Users size={17} />,
   operations: <Activity size={17} />,
 };
 

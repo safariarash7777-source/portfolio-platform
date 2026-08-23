@@ -21,6 +21,8 @@ const source: DeskSource = {
   detail: "آخرین به‌روزرسانی ۱۰ دقیقه پیش",
   count: 1,
   ageMinutes: 10,
+  observedAt: "2026-08-23T09:50:00.000Z",
+  fetchedAt: "2026-08-23T10:00:00.000Z",
 };
 
 const desk = () => ({
@@ -55,7 +57,9 @@ test("market source failure is unavailable, never a healthy zero", () => {
 
 test("missing finalized portfolio is explicit and does not invent 70/15/15", () => {
   const portfolio = buildCommandQuestions(view(), desk()).find((item) => item.key === "portfolio")!;
-  assert.equal(portfolio.state, "attention");
+  // «پیکربندی نشده»، نه یک هشدارِ عمومی: نبودِ نسخهٔ مصوب یک تصمیمِ نگرفتهٔ
+  // مالک است و باید از دادهٔ کهنه یا خراب قابلِ تفکیک بماند.
+  assert.equal(portfolio.state, "unconfigured");
   assert.match(portfolio.answer, /نهایی.*ثبت نشده/);
   assert.doesNotMatch(JSON.stringify(portfolio), /70|15|۷۰|۱۵/);
 });

@@ -14,8 +14,10 @@ import {
   Landmark,
   Loader2,
   PieChart,
+  Settings2,
   ShieldCheck,
   Telescope,
+  UserCheck,
 } from "lucide-react";
 import DeskBoard, { type DeskBoardSnapshot } from "@/components/admin/DeskBoard";
 import IntelligenceDesk from "@/components/admin/IntelligenceDesk";
@@ -47,8 +49,23 @@ const STATE_TONE: Record<
     background: "var(--surface-2)",
     icon: <CheckCircle2 size={13} />,
   },
-  attention: {
-    label: "نیازمند توجه",
+  // «نیازمند توجه» سه چیزِ متفاوت را یک‌کاسه می‌کرد. حالا هر کدام برچسب و
+  // رنگِ خودش را دارد: انتظارِ انسان و پیکربندی‌نشده آبیِ برند (تصمیم)، کهنه
+  // طلایی (دادهٔ سالمِ قدیمی).
+  awaiting_review: {
+    label: "منتظرِ بازبینی",
+    color: "var(--navy)",
+    background: "rgba(30,58,138,0.10)",
+    icon: <UserCheck size={13} />,
+  },
+  unconfigured: {
+    label: "پیکربندی نشده",
+    color: "var(--navy)",
+    background: "rgba(30,58,138,0.08)",
+    icon: <Settings2 size={13} />,
+  },
+  stale: {
+    label: "کهنه",
     color: "var(--gold)",
     background: "var(--gold-tint)",
     icon: <Clock3 size={13} />,
