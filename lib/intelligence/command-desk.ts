@@ -1,5 +1,5 @@
 import { toPersianDigits } from "@/lib/format";
-import { DATA_STATE_LABEL, type DataState, type DeskView } from "@/lib/desk/contracts";
+import { DATA_STATE_LABEL, isDataFault, type DataState, type DeskView } from "@/lib/desk/contracts";
 import { DIRECTION_LABEL } from "@/lib/intelligence/workflow";
 import type { IntelligenceDeskViewModel } from "@/lib/intelligence/board";
 
@@ -232,3 +232,66 @@ export function buildCommandQuestions(
 
   return [happened, meaning, markets, scenarios, portfolio, decisions];
 }
+
+/* ── تریاژِ روز ────────────────────────────────────────────────────────────── */
+
+export interface DeskTriage {
+  /** موردهایی که منتظرِ قضاوتِ انسان‌اند. */
+  awaitingReview: number;
+  /** موردهایی که منتظرِ تصمیمِ پیکربندیِ مالک‌اند. */
+  unconfigured: number;
+  /** خرابیِ واقعیِ داده — کهنه، خالی یا در دسترس نبودن. */
+  dataFaults: number;
+  /** هنوز در حالِ خواندن. */
+  loading: number;
+  /** اولین چیزی که باید نگاه شود — یا `null` وقتی هیچ اولویتی نیست. */
+  firstLook: CommandQuestion | null;
+  /** یک جملهٔ فارسی که وضعیتِ روز را می‌گوید. */
+  headline: string;
+}
+
+/**
+ * از شش پاسخ، «امروز از کجا شروع کنم؟» را می‌سازد.
+ *
+ * هیچ عددِ تازه‌ای تولید نمی‌شود — فقط همان حالت‌هایی شمرده می‌شوند که
+ * `buildCommandQuestions` از دادهٔ واقعی ساخته است.
+ *
+ * ترتیبِ اولویت عمدی است: **خرابیِ داده اول**. اگر فید خراب باشد، بقیهٔ
+ * پاسخ‌ها ممکن است بر پایهٔ چیزِ غلطی ساخته شده باشند، پس رسیدگی به آن مقدم بر
+ * تصمیم‌گیری است. بعد بازبینیِ انسانی، و آخر پیکربندیِ مالک که فوریتِ روزانه
+ * ندارد.
+ */
+export function buildDeskTriage(questions: readonly CommandQuestion[]): DeskTriage {
+  const faults = questions.filter((q) => isDataFault(q.state));
+  const awaiting = questions.filter((q) => q.state === "awaiting_review");
+  const unconfigured = questions.filter((q) => q.state === "unconfigured");
+  const loading = questions.filter((q) => q.state === "loading");
+
+  const byFaultSeverity = [...faults].sort(
+    (a, b) => FAULT_ORDER.indexOf(a.state) - FAULT_ORDER.indexOf(b.state)
+  );
+  const firstLook = byFaultSeverity[0] ?? awaiting[0] ?? unconfigured[0] ?? null;
+
+  const headline =
+    faults.length > 0
+      ? `${fa(faults.length)} پاسخ به دادهٔ ناسالم تکیه دارد — اول همان را ببینید.`
+      : awaiting.length > 0
+        ? `${fa(awaiting.length)} مورد منتظرِ بازبینیِ شماست.`
+        : unconfigured.length > 0
+          ? `${fa(unconfigured.length)} مورد منتظرِ تصمیمِ پیکربندیِ شماست.`
+          : loading.length > 0
+            ? "هنوز در حالِ خواندنِ منابع."
+            : "هیچ خرابی و هیچ صفِ بازبینیِ بازی نیست.";
+
+  return {
+    awaitingReview: awaiting.length,
+    unconfigured: unconfigured.length,
+    dataFaults: faults.length,
+    loading: loading.length,
+    firstLook,
+    headline,
+  };
+}
+
+/** بدترین اول: «هیچ نمی‌دانیم» از «داده نیامده» و آن از «کهنه» فوری‌تر است. */
+const FAULT_ORDER: readonly DataState[] = ["unavailable", "empty", "stale"];

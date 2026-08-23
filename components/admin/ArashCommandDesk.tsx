@@ -24,10 +24,13 @@ import IntelligenceDesk from "@/components/admin/IntelligenceDesk";
 import { toPersianDigits } from "@/lib/format";
 import {
   buildCommandQuestions,
+  buildDeskTriage,
   type CommandQuestion,
   type CommandQuestionKey,
   type CommandQuestionState,
+  type DeskTriage,
 } from "@/lib/intelligence/command-desk";
+import { DATA_STATE_LABEL } from "@/lib/desk/contracts";
 import type { IntelligenceDeskViewModel } from "@/lib/intelligence/board";
 
 const QUESTION_ICON: Record<CommandQuestionKey, ReactNode> = {
@@ -162,12 +165,149 @@ function QuestionCard({ item }: { item: CommandQuestion }) {
   );
 }
 
+/** شش ناحیهٔ مصوب — همان ترتیبِ کارِ روزانه. */
+const ZONE_LINKS = [
+  { href: "#six-questions", label: "۱ امروز" },
+  { href: "#six-questions", label: "۲ بازارها" },
+  { href: "#intelligence-workflow", label: "۳ سناریوها" },
+  { href: "#intelligence-workflow", label: "۴ سبدِ مرجع" },
+  { href: "#clients", label: "۵ مشتری و محصول" },
+  { href: "#source-health", label: "۶ عملیات" },
+] as const;
+
 const SPECIALIST_ENGINES = [
   { href: "/admin/radar", label: "رادار بازار", detail: "پهنا، جریان پول و نقاط غیرعادی" },
   { href: "/admin/fx", label: "موتور ارز", detail: "سناریوها و مدل‌های تخصصی ارز" },
   { href: "/codal", label: "کدال", detail: "اطلاعیه و گزارش‌های شرکت‌ها" },
   { href: "/admin/manage?tab=portfolio", label: "پرتفوی", detail: "نسخه‌ها، موقعیت‌ها و پیگیری" },
 ] as const;
+
+/**
+ * نوارِ تریاژ — «امروز از کجا شروع کنم؟»
+ *
+ * این نوار جای شش کارتِ هم‌وزن را نمی‌گیرد؛ **بالای** آن‌ها می‌نشیند تا
+ * فوریت پیش از جزئیات دیده شود. تعدادها از همان حالت‌های واقعیِ پاسخ‌ها
+ * شمرده می‌شوند و هیچ عددِ تازه‌ای ساخته نمی‌شود.
+ */
+function TriageStrip({ triage }: { triage: DeskTriage }) {
+  const chips: { label: string; value: number; color: string; background: string }[] = [
+    { label: "خرابیِ داده", value: triage.dataFaults, color: "var(--danger)", background: "rgba(185,28,28,0.10)" },
+    { label: "منتظرِ بازبینی", value: triage.awaitingReview, color: "var(--navy)", background: "rgba(30,58,138,0.10)" },
+    { label: "پیکربندی نشده", value: triage.unconfigured, color: "var(--navy)", background: "rgba(30,58,138,0.08)" },
+  ].filter((chip) => chip.value > 0);
+
+  return (
+    <section
+      aria-labelledby="triage-title"
+      className="rounded-2xl border p-4 shadow-institutional sm:p-5"
+      style={{
+        borderColor: "var(--line)",
+        background: "var(--surface)",
+        borderInlineStartWidth: 4,
+        borderInlineStartColor:
+          triage.dataFaults > 0 ? "var(--danger)" : triage.firstLook ? "var(--navy)" : "var(--success)",
+      }}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p id="triage-title" className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>
+            از کجا شروع کنم
+          </p>
+          <p className="mt-1 text-[14px] font-extrabold leading-7" style={{ color: "var(--text)" }}>
+            {triage.headline}
+          </p>
+          {triage.firstLook && (
+            <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-2)" }}>
+              نگاهِ اول: <span className="font-bold">{triage.firstLook.question}</span> — {triage.firstLook.answer}
+            </p>
+          )}
+        </div>
+
+        {chips.length > 0 && (
+          <ul className="flex flex-wrap gap-2">
+            {chips.map((chip) => (
+              <li
+                key={chip.label}
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold"
+                style={{ color: chip.color, background: chip.background }}
+              >
+                <span style={{ fontVariantNumeric: "tabular-nums" }}>{toPersianDigits(chip.value)}</span>
+                {chip.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * ناحیهٔ «مشتری و محصول».
+ *
+ * ناحیهٔ ششمِ مصوب، از پنلِ واقعیِ `clients` در پاسخِ سلامتِ منابع ساخته
+ * می‌شود — نه یک CRMِ دوم. اگر پنل نرسیده باشد، همان را می‌گوید و ردیفِ
+ * ساختگی نمی‌سازد.
+ *
+ * ⚠️ اینجا عمداً هیچ ردیفِ مشتری، ایمیل یا نامی رندر نمی‌شود؛ فقط شمارش و
+ * وضعیتِ منبع. جزئیاتِ شخصی جای خودش در `/admin/users` است و نباید در
+ * اسکرین‌شاتِ میز بیفتد.
+ */
+function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
+  const panel = snapshot.data?.panels.find((p) => p.key === "clients") ?? null;
+
+  return (
+    <section id="clients" aria-labelledby="clients-title" className="scroll-mt-20 space-y-3">
+      <div>
+        <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>
+          ناحیهٔ پنجم
+        </p>
+        <h2 id="clients-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
+          مشتری و محصول
+        </h2>
+      </div>
+
+      {snapshot.loading && !snapshot.data ? (
+        <p className="text-[12px]" style={{ color: "var(--text-3)" }}>در حال خواندنِ وضعیتِ مشتری…</p>
+      ) : !panel ? (
+        <p className="text-[12px]" style={{ color: "var(--text-3)" }}>
+          {snapshot.error ?? "پنلِ مشتری در پاسخِ سلامتِ منابع نیست."}
+        </p>
+      ) : (
+        <>
+          <p className="text-[12px] leading-6" style={{ color: "var(--text-2)" }}>{panel.detail}</p>
+          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            {panel.sources.map((source) => (
+              <li
+                key={source.table}
+                className="rounded-xl border p-3"
+                style={{ borderColor: "var(--line)", background: "var(--surface)" }}
+              >
+                <p className="text-[12px] font-extrabold" style={{ color: "var(--text)" }}>{source.label}</p>
+                <p className="mt-1 text-[10px]" style={{ color: "var(--text-3)" }}>
+                  {DATA_STATE_LABEL[source.state]}
+                  {source.count !== null && ` · ${toPersianDigits(source.count)} رکورد`}
+                </p>
+                <p className="mt-1.5 text-[10px] leading-5" style={{ color: "var(--text-3)" }}>{source.detail}</p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <Link href="/admin/users" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold)" }}>
+          کاربران
+          <ArrowLeft size={13} />
+        </Link>
+        <Link href="/admin/webinars" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold)" }}>
+          وبینارها
+          <ArrowLeft size={13} />
+        </Link>
+      </div>
+    </section>
+  );
+}
 
 /**
  * نقطهٔ شروعِ روزانهٔ آرش: شش پاسخ، سپس دو لایهٔ جزئیات.
@@ -187,6 +327,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
     () => buildCommandQuestions(view, sourceStatus),
     [sourceStatus, view]
   );
+  const triage = useMemo(() => buildDeskTriage(questions), [questions]);
 
   return (
     <div className="space-y-7">
@@ -218,18 +359,21 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
           </div>
 
           <nav aria-label="بخش‌های میز" className="flex flex-wrap gap-2">
-            <a href="#six-questions" className="inline-flex min-h-11 items-center rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--text)" }}>
-              شش پرسش امروز
-            </a>
-            <a href="#intelligence-workflow" className="inline-flex min-h-11 items-center rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--text)" }}>
-              کارِ تصمیم
-            </a>
-            <a href="#source-health" className="inline-flex min-h-11 items-center rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--text)" }}>
-              سلامت منابع
-            </a>
+            {ZONE_LINKS.map((zone) => (
+              <a
+                key={zone.href}
+                href={zone.href}
+                className="inline-flex min-h-11 items-center rounded-lg px-3 text-[11px] font-bold"
+                style={{ background: "var(--surface-2)", color: "var(--text)" }}
+              >
+                {zone.label}
+              </a>
+            ))}
           </nav>
         </div>
       </header>
+
+      <TriageStrip triage={triage} />
 
       <section id="six-questions" aria-labelledby="six-questions-title" className="scroll-mt-20">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
@@ -263,6 +407,8 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
         </div>
         <IntelligenceDesk {...view} />
       </section>
+
+      <ClientsZone snapshot={sourceStatus} />
 
       <section aria-labelledby="engines-title" className="space-y-3">
         <div>

@@ -1,8 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildCommandQuestions, COMMAND_QUESTION_KEYS } from "./command-desk";
+import {
+  buildCommandQuestions,
+  buildDeskTriage,
+  COMMAND_QUESTION_KEYS,
+  type CommandQuestion,
+  type CommandQuestionKey,
+} from "./command-desk";
 import { buildToday, buildInbox, buildScenarioBoard, buildPortfolioImpact, buildRehearsalView } from "./board";
-import { buildDeskView, buildPanel, type DeskSource } from "@/lib/desk/contracts";
+import { buildDeskView, buildPanel, type DataState, type DeskSource } from "@/lib/desk/contracts";
 
 const view = () => ({
   today: buildToday("2026-08-20", [], []),
@@ -73,4 +79,54 @@ test("an empty review inbox is not proof that monitoring was complete", () => {
 test("the command overview never introduces forbidden execution language", () => {
   const text = JSON.stringify(buildCommandQuestions(view(), desk()));
   assert.doesNotMatch(text, /سیگنال|توصیه|بخرید|بفروشید|قیمت هدف/);
+});
+
+/* ── تریاژِ روز ────────────────────────────────────────────────────────────── */
+
+const q = (key: CommandQuestionKey, state: DataState): CommandQuestion => ({
+  key, order: 1, question: "س", answer: "پ", detail: "ج",
+  state, facts: [], href: "#x", linkLabel: "ل",
+});
+
+test("خرابیِ داده بر بازبینیِ انسانی مقدم است", () => {
+  // اگر فید خراب باشد، بقیهٔ پاسخ‌ها ممکن است بر پایهٔ چیزِ غلط ساخته شده باشند.
+  const t = buildDeskTriage([q("markets", "unavailable"), q("decisions", "awaiting_review")]);
+  assert.equal(t.firstLook?.key, "markets");
+  assert.match(t.headline, /دادهٔ ناسالم/);
+});
+
+test("بینِ خرابی‌ها، «هیچ نمی‌دانیم» فوری‌تر از «کهنه» است", () => {
+  const t = buildDeskTriage([q("scenarios", "stale"), q("markets", "unavailable"), q("meaning", "empty")]);
+  assert.equal(t.firstLook?.key, "markets");
+  assert.equal(t.dataFaults, 3);
+});
+
+test("بدونِ خرابی، صفِ بازبینی اول می‌آید", () => {
+  const t = buildDeskTriage([q("portfolio", "unconfigured"), q("decisions", "awaiting_review")]);
+  assert.equal(t.firstLook?.key, "decisions");
+  assert.match(t.headline, /بازبینی/);
+});
+
+test("پیکربندیِ مالک فوریتِ روزانه ندارد ولی گم نمی‌شود", () => {
+  const t = buildDeskTriage([q("portfolio", "unconfigured"), q("markets", "ready")]);
+  assert.equal(t.unconfigured, 1);
+  assert.equal(t.dataFaults, 0);
+  assert.equal(t.firstLook?.key, "portfolio");
+  assert.match(t.headline, /پیکربندی/);
+});
+
+test("روزِ تمیز چیزی برای نگاهِ اول ندارد و ادعای اضافه نمی‌کند", () => {
+  const t = buildDeskTriage([q("markets", "ready"), q("decisions", "ready")]);
+  assert.equal(t.firstLook, null);
+  assert.equal(t.dataFaults, 0);
+  assert.equal(t.awaitingReview, 0);
+  // «هیچ خرابی نیست» — نه «همه‌چیز بررسی شد».
+  assert.match(t.headline, /هیچ خرابی/);
+  assert.doesNotMatch(t.headline, /کامل|همه‌چیز بررسی/);
+});
+
+test("تریاژ فقط می‌شمارد و عددِ تازه نمی‌سازد", () => {
+  const items = [q("markets", "stale"), q("decisions", "awaiting_review"), q("portfolio", "unconfigured")];
+  const t = buildDeskTriage(items);
+  assert.equal(t.dataFaults + t.awaitingReview + t.unconfigured + t.loading, items.length);
 });
