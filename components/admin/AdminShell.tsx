@@ -79,7 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
     key: "operations",
     label: "عملیات سامانه",
     items: [
-      { key: "dashboard", label: "نمای مدیریتی", href: "/admin", icon: <LayoutDashboard size={18} /> },
+      { key: "dashboard", label: "نمای مدیریتی", href: "/admin/overview", icon: <LayoutDashboard size={18} /> },
       { key: "news", label: "اطلاعیه‌ها", href: "/admin/announcements", icon: <Bell size={18} /> },
       { key: "health", label: "سلامت سامانه", href: "/admin/health", icon: <Activity size={18} /> },
     ],
@@ -101,7 +101,7 @@ export default function AdminShell({
 
   const isActive = (item: NavItem) => {
     if (item.soon) return false;
-    if (item.key === "dashboard") return pathname === "/admin";
+    if (item.key === "dashboard") return pathname.startsWith("/admin/overview");
     if (item.key === "desk") return pathname.startsWith("/admin/desk");
     if (item.key === "intelligence") return pathname.startsWith("/admin/intelligence");
     if (item.key === "health") return pathname.startsWith("/admin/health");
