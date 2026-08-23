@@ -119,7 +119,7 @@ export default function DeskBoard({
         className="rounded-xl border p-4 text-[13px] leading-7"
         style={{ borderColor: "var(--line)", background: "var(--surface-2)", color: "var(--text-2)" }}
       >
-        <p className="font-bold" style={{ color: "var(--danger)" }}>
+        <p className="font-bold" style={{ color: "var(--danger-ink)" }}>
           میز خوانده نشد
         </p>
         <p className="mt-1">{error}</p>
@@ -177,7 +177,7 @@ export default function DeskBoard({
                      نامرئی می‌شد. */
                   style={{ color: "var(--text)" }}
                 >
-                  <span style={{ color: "var(--gold)" }}>{SECTION_ICON[panel.key]}</span>
+                  <span style={{ color: "var(--gold-ink)" }}>{SECTION_ICON[panel.key]}</span>
                   {panel.label}
                 </h2>
                 {/* پرسشی که این بخش جواب می‌دهد — تا میز فهرستِ شمارشِ جدول نباشد. */}

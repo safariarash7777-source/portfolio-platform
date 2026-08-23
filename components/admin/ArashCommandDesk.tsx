@@ -73,7 +73,7 @@ const STATE_TONE: Record<
   },
   stale: {
     label: "کهنه",
-    color: "var(--gold)",
+    color: "var(--gold-ink)",
     background: "var(--gold-tint)",
     icon: <Clock3 size={13} />,
   },
@@ -116,7 +116,7 @@ function QuestionCard({ item }: { item: CommandQuestion }) {
         <div className="flex min-w-0 items-start gap-2.5">
           <span
             className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
-            style={{ background: "var(--surface-2)", color: "var(--gold)" }}
+            style={{ background: "var(--surface-2)", color: "var(--gold-ink)" }}
             aria-hidden
           >
             {QUESTION_ICON[item.key]}
@@ -160,7 +160,7 @@ function QuestionCard({ item }: { item: CommandQuestion }) {
       <a
         href={item.href}
         className="mt-auto inline-flex min-h-11 items-center gap-1.5 self-start pt-3 text-[11px] font-bold focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2"
-        style={{ color: "var(--gold)" }}
+        style={{ color: "var(--gold-ink)" }}
       >
         {item.linkLabel}
         <ArrowLeft size={13} aria-hidden />
@@ -214,7 +214,7 @@ function TriageStrip({ triage }: { triage: DeskTriage }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p id="triage-title" className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>
+          <p id="triage-title" className="text-[10px] font-bold" style={{ color: "var(--gold-ink)" }}>
             از کجا شروع کنم
           </p>
           <p className="mt-1 text-[14px] font-extrabold leading-7" style={{ color: "var(--text)" }}>
@@ -261,7 +261,7 @@ function ReferencePortfolioZone() {
     <section id="reference-portfolio" aria-labelledby="reference-title" className="scroll-mt-20 space-y-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>ناحیهٔ چهارم</p>
+          <p className="text-[10px] font-bold" style={{ color: "var(--gold-ink)" }}>ناحیهٔ چهارم</p>
           <h2 id="reference-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
             سبدِ مرجع
           </h2>
@@ -310,7 +310,7 @@ function ReferencePortfolioZone() {
                 <span>
                   {decision.question}
                   {decision.detail && (
-                    <span style={{ color: "var(--text-3)" }}> — {decision.detail}</span>
+                    <span style={{ color: "var(--text-2)" }}> — {decision.detail}</span>
                   )}
                 </span>
               </li>
@@ -339,7 +339,7 @@ function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
   return (
     <section id="clients" aria-labelledby="clients-title" className="scroll-mt-20 space-y-3">
       <div>
-        <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>
+        <p className="text-[10px] font-bold" style={{ color: "var(--gold-ink)" }}>
           ناحیهٔ پنجم
         </p>
         <h2 id="clients-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
@@ -348,9 +348,9 @@ function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
       </div>
 
       {snapshot.loading && !snapshot.data ? (
-        <p className="text-[12px]" style={{ color: "var(--text-3)" }}>در حال خواندنِ وضعیتِ مشتری…</p>
+        <p className="text-[12px]" style={{ color: "var(--text-2)" }}>در حال خواندنِ وضعیتِ مشتری…</p>
       ) : !panel ? (
-        <p className="text-[12px]" style={{ color: "var(--text-3)" }}>
+        <p className="text-[12px]" style={{ color: "var(--text-2)" }}>
           {snapshot.error ?? "پنلِ مشتری در پاسخِ سلامتِ منابع نیست."}
         </p>
       ) : (
@@ -376,11 +376,11 @@ function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Link href="/admin/users" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold)" }}>
+        <Link href="/admin/users" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold-ink)" }}>
           کاربران
           <ArrowLeft size={13} />
         </Link>
-        <Link href="/admin/webinars" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold)" }}>
+        <Link href="/admin/webinars" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold-ink)" }}>
           وبینارها
           <ArrowLeft size={13} />
         </Link>
@@ -420,7 +420,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
             <div className="flex flex-wrap items-center gap-2">
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold"
-                style={{ background: "var(--gold-tint)", color: "var(--gold)" }}
+                style={{ background: "var(--gold-tint)", color: "var(--gold-on-tint)" }}
               >
                 <ShieldCheck size={13} />
                 داخلی و تحت تأیید انسان
@@ -458,12 +458,12 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
       <section id="six-questions" aria-labelledby="six-questions-title" className="scroll-mt-20">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
-            <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>خلاصهٔ تصمیم‌محور</p>
+            <p className="text-[10px] font-bold" style={{ color: "var(--gold-ink)" }}>خلاصهٔ تصمیم‌محور</p>
             <h2 id="six-questions-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
               شش پرسش امروز
             </h2>
           </div>
-          <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
+          <p className="text-[11px]" style={{ color: "var(--text-2)" }}>
             «ثبت نشده» با «اتفاقی نیفتاده» یکسان نیست.
           </p>
         </div>
@@ -475,12 +475,12 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
       <section id="intelligence-workflow" aria-labelledby="workflow-title" className="scroll-mt-20 space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>لایهٔ بررسی و اقدام انسانی</p>
+            <p className="text-[10px] font-bold" style={{ color: "var(--gold-ink)" }}>لایهٔ بررسی و اقدام انسانی</p>
             <h2 id="workflow-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
               کارِ تصمیم امروز
             </h2>
           </div>
-          <Link href="/admin/intelligence" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold)" }}>
+          <Link href="/admin/intelligence" className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold" style={{ background: "var(--surface-2)", color: "var(--gold-ink)" }}>
             نمای تخصصی و تاریخچه
             <ArrowLeft size={13} />
           </Link>
@@ -494,7 +494,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
 
       <section aria-labelledby="engines-title" className="space-y-3">
         <div>
-          <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>جزئیات، نه صفحهٔ شروع</p>
+          <p className="text-[10px] font-bold" style={{ color: "var(--gold-ink)" }}>جزئیات، نه صفحهٔ شروع</p>
           <h2 id="engines-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
             موتورهای تخصصی
           </h2>
@@ -509,7 +509,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
             >
               <span className="flex items-center justify-between gap-2 text-[12px] font-extrabold" style={{ color: "var(--text)" }}>
                 {engine.label}
-                <ArrowLeft size={14} style={{ color: "var(--gold)" }} />
+                <ArrowLeft size={14} style={{ color: "var(--gold-ink)" }} />
               </span>
               <span className="mt-1.5 block text-[10px] leading-5" style={{ color: "var(--text-3)" }}>
                 {engine.detail}
@@ -521,7 +521,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
 
       <section id="source-health" aria-labelledby="source-health-title" className="scroll-mt-20 space-y-3">
         <div>
-          <p className="text-[10px] font-bold" style={{ color: "var(--gold)" }}>پشت صحنهٔ اعتماد</p>
+          <p className="text-[10px] font-bold" style={{ color: "var(--gold-ink)" }}>پشت صحنهٔ اعتماد</p>
           <h2 id="source-health-title" className="mt-1 font-display text-lg font-extrabold" style={{ color: "var(--text)" }}>
             سلامت منابع و عملیات
           </h2>
