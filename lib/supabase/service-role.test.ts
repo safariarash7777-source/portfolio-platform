@@ -151,33 +151,71 @@ test("the gap response names the missing variable and the broken feature", () =>
 
 /**
  * تابعِ SECURITY DEFINER که خودش با `auth.uid()` احراز می‌کند، با کلاینتِ
- * service-role **همیشه** رد می‌شود چون آن کلاینت نشستی حمل نمی‌کند. این دقیقاً
- * چیزی بود که `register_for_webinar` و `capture_intel_package` را از کار
- * انداخته بود — حتی وقتی کلید موجود بود.
+ * service-role **همیشه** رد می‌شود چون آن کلاینت نشستی حمل نمی‌کند.
+ *
+ * `register_for_webinar` و `capture_intel_package` دقیقاً همین‌طور از کار
+ * افتاده بودند: کاربرِ واردشده «دسترسی غیرمجاز.» می‌گرفت، حتی وقتی کلیدِ
+ * سرویس‌رول موجود بود. با یک متغیرِ غایب قابلِ تشخیص نبود، چون هر دو مسیر
+ * شکست می‌خوردند.
+ *
+ * فهرست از خودِ دیتابیس درآمده: هر تابعی در `public` که `auth.uid()` را در
+ * بدنه‌اش دارد. `is_admin` و `can_see_announcement` نیامده‌اند چون از داخلِ
+ * سیاست‌ها صدا زده می‌شوند، نه از کد.
  */
-test("no RPC that authenticates through auth.uid() is called with the service-role client", () => {
-  const SESSION_RPCS = [
-    "register_for_webinar",
-    "capture_intel_package",
-    "publish_intel_analysis",
-    "seal_rehearsal_day",
-    "publish_market_note",
-  ];
+const SESSION_RPCS = [
+  "add_content_item",
+  "capture_intel_package",
+  "create_payment",
+  "force_expire_risk",
+  "generate_telegram_link_code",
+  "hide_content_item",
+  "mark_announcement_seen",
+  "publish_announcement",
+  "publish_intel_analysis",
+  "publish_market_note",
+  "register_for_webinar",
+  "save_portfolio",
+  "seal_rehearsal_day",
+];
+
+/**
+ * نامِ متغیرهایی که در این فایل از کارخانهٔ service-role مقدار گرفته‌اند.
+ *
+ * صرفِ importِ سکرت در یک فایل تخلف نیست:
+ * `app/api/admin/announcements/route.ts` هم سکرت دارد و هم
+ * `publish_announcement` را صدا می‌زند — ولی **درست**، با کلاینتِ نشست، و
+ * سکرت را فقط برای حلِ گیرنده‌ها به کار می‌برد. گاردی که فقط هم‌حضوری را
+ * ببیند روی آن فایل قرمزِ کاذب می‌دهد و بعد خاموش می‌شود.
+ */
+function serviceRoleVars(code: string): Set<string> {
+  const names = new Set<string>();
+  const re = /(?:const|let|var)\s+(\w+)\s*(?::[^=]+)?=\s*(?:await\s+)?(?:try)?[cC]reateAdminClient\(\)/g;
+  for (const m of code.matchAll(re)) names.add(m[1]);
+  return names;
+}
+
+test("no RPC that authenticates through auth.uid() is called on the service-role client", () => {
   const offenders: string[] = [];
   for (const dir of SOURCE_DIRS) {
     for (const file of walk(join(ROOT, dir))) {
-      const text = codeOnly(readFileSync(file, "utf8"));
-      const usesRpc = SESSION_RPCS.some((rpc) => text.includes(`"${rpc}"`));
-      if (usesRpc && /from "@\/lib\/supabase\/admin"/.test(text)) {
-        offenders.push(relative(ROOT, file).split(sep).join("/"));
+      const code = codeOnly(readFileSync(file, "utf8"));
+      const vars = serviceRoleVars(code);
+      if (vars.size === 0) continue;
+      for (const v of vars) {
+        for (const rpc of SESSION_RPCS) {
+          if (code.includes(`${v}.rpc("${rpc}"`)) {
+            offenders.push(`${relative(ROOT, file).split(sep).join("/")}: ${v}.rpc("${rpc}")`);
+          }
+        }
       }
     }
   }
   assert.deepEqual(
     offenders,
     [],
-    `این فایل‌ها هم RPCِ نشست‌محور صدا می‌زنند و هم سکرتِ سرور را import می‌کنند؛ ` +
-      `اگر RPC با آن کلاینت صدا زده شود «auth.uid() IS NULL» می‌شود و همیشه رد می‌شود: ${offenders.join(", ")}`
+    "این فراخوان‌ها یک RPCِ نشست‌محور را روی کلاینتِ بی‌نشست می‌زنند؛ " +
+      "درونِ تابع، auth.uid() برابرِ NULL می‌شود و احراز همیشه رد می‌شود: " +
+      offenders.join(", ")
   );
 });
 
