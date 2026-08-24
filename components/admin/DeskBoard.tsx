@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   CircleSlash,
   Clock,
+  Database,
   HelpCircle,
   Loader2,
   PieChart,
@@ -24,13 +25,19 @@ import {
   DATA_STATE_LABEL,
   type DataState,
   type DeskSectionKey,
+  type DeskSource,
   type DeskView,
 } from "@/lib/desk/contracts";
+import { UNKNOWN_TIME, clockTime, sourceClocks } from "@/lib/desk/clock";
 
 /** رنگ فقط از توکن — هیچ رنگِ خام. */
 const TONE: Record<DataState, { fg: string; bg: string; icon: React.ReactNode }> = {
   loading: { fg: "var(--text-3)", bg: "var(--surface-2)", icon: <Loader2 size={14} /> },
   ready: { fg: "var(--success)", bg: "rgba(21,128,61,0.10)", icon: <CheckCircle2 size={14} /> },
+  // خنثی و عمداً **نه سبز**: «رکورد دارد» یک واقعیتِ ساده است، نه گواهیِ
+  // تازگی. اگر هم‌رنگِ `ready` شود، همان سبزِ کسب‌نشده‌ای برمی‌گردد که این
+  // حالت برای حذفش ساخته شد.
+  present: { fg: "var(--text-2)", bg: "var(--surface-2)", icon: <Database size={14} /> },
   // منتظرِ انسان و پیکربندی‌نشده عمداً **آبیِ برند**اند، نه زرد: این‌ها خرابیِ
   // داده نیستند و نباید در کنارِ «کهنه» یک‌جور دیده شوند.
   awaiting_review: { fg: "var(--navy)", bg: "rgba(30,58,138,0.10)", icon: <UserCheck size={14} /> },
@@ -61,6 +68,37 @@ function StateBadge({ state, small }: { state: DataState; small?: boolean }) {
       {t.icon}
       {DATA_STATE_LABEL[state]}
     </span>
+  );
+}
+
+/**
+ * ساعتِ هر منبع، کنارِ خودش.
+ *
+ * تا پیش از این، تنها زمانِ روی میز یک مهرِ سراسری در پایینِ صفحه بود؛ هجده
+ * فید زیرِ یک ساعت. حالا هر ردیف می‌گوید دادهٔ **خودش** از کِی است، و
+ * «نامعلوم» یک مقدارِ واقعی است که با ساعتِ خواندنِ ما پر نمی‌شود.
+ */
+function SourceClockRow({ source }: { source: DeskSource }) {
+  const clocks = sourceClocks(source);
+  const unknown = clocks.observedValue === UNKNOWN_TIME;
+  return (
+    <dl className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px]">
+      <div className="flex items-center gap-1">
+        <dt style={{ color: "var(--text-3)" }}>{clocks.observedLabel}:</dt>
+        <dd
+          className="font-bold"
+          /* «نامعلوم» عمداً کم‌رنگ‌تر از یک زمانِ واقعی است تا از دور با
+             یک مقدارِ معتبر اشتباه نشود. */
+          style={{ color: unknown ? "var(--text-3)" : "var(--text)" }}
+        >
+          {clocks.observedValue}
+        </dd>
+      </div>
+      <div className="flex items-center gap-1">
+        <dt style={{ color: "var(--text-3)" }}>{clocks.fetchedLabel}:</dt>
+        <dd style={{ color: "var(--text-3)" }}>{clocks.fetchedValue}</dd>
+      </div>
+    </dl>
   );
 }
 
@@ -197,7 +235,7 @@ export default function DeskBoard({
             <ul className="mt-3 space-y-2">
               {panel.sources.map((source) => (
                 <li
-                  key={source.table}
+                  key={source.key}
                   className="rounded-lg px-3 py-2"
                   style={{ background: "var(--surface-2)" }}
                 >
@@ -223,9 +261,13 @@ export default function DeskBoard({
                       <StateBadge state={source.state} small />
                     </div>
                   </div>
-                  <p className="mt-1.5 text-[10px] leading-5" style={{ color: "var(--text-3)" }}>
+                  <p className="mt-1.5 text-[10px] leading-5" style={{ color: "var(--text-2)" }}>
                     {toPersianDigits(source.detail)}
                   </p>
+                  {/* دو ساعتِ جدا، هر کدام با برچسبِ خودش. بدونِ جداکنندهٔ
+                      «·» — آن نویسهٔ دوطرفه در متنِ راست‌به‌چپ کنارِ رقم
+                      می‌نشیند و دو عدد را شبیهِ یک عدد نشان می‌دهد. */}
+                  <SourceClockRow source={source} />
                 </li>
               ))}
             </ul>
@@ -249,8 +291,13 @@ export default function DeskBoard({
         ))}
       </div>
 
-      <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
-        زمانِ تولید: {toPersianDigits(new Date(data.generatedAt).toLocaleString("fa-IR"))}
+      {/* این ساعت **فقط** زمانِ ساختنِ همین نماست و دربارهٔ تازگیِ هیچ فیدی
+          چیزی نمی‌گوید؛ هر منبع ساعتِ خودش را بالا دارد. جملهٔ صریح عمدی
+          است: یک مهرِ زمانیِ تنها در پایینِ صفحه، بی‌آنکه بگوید چیست، به
+          برچسبِ همهٔ چیزهای بالایش تبدیل می‌شود. */}
+      <p className="text-[11px] leading-6" style={{ color: "var(--text-2)" }}>
+        این نما در ساعتِ {clockTime(data.generatedAt)} ساخته شد — این زمانِ
+        ساختِ نماست، نه زمانِ دادهٔ منابع.
       </p>
     </div>
   );

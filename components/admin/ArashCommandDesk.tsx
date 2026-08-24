@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   CircleSlash,
   Clock3,
+  Database,
   FileQuestion,
   GitBranch,
   Landmark,
@@ -55,6 +56,12 @@ const STATE_TONE: Record<
     color: "var(--success)",
     background: "var(--surface-2)",
     icon: <CheckCircle2 size={13} />,
+  },
+  present: {
+    label: "رکورد دارد",
+    color: "var(--text-2)",
+    background: "var(--surface-2)",
+    icon: <Database size={13} />,
   },
   // «نیازمند توجه» سه چیزِ متفاوت را یک‌کاسه می‌کرد. حالا هر کدام برچسب و
   // رنگِ خودش را دارد: انتظارِ انسان و پیکربندی‌نشده آبیِ برند (تصمیم)، کهنه

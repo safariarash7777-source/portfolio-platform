@@ -68,8 +68,8 @@ const CASES = [
     name: "خرابیِ داده بر حالتِ انسانی غالب است",
     defect: "«منتظرِ بازبینی» بالاتر از «در دسترس نیست» رتبه بگیرد — فیدِ مرده پنهان می‌شود",
     file: "lib/desk/contracts.ts",
-    from: "  ready: 0,\n  awaiting_review: 1,",
-    to: "  ready: 0,\n  awaiting_review: 9,",
+    from: "  ready: 0,\n  present: 1,\n  awaiting_review: 2,",
+    to: "  ready: 0,\n  present: 1,\n  awaiting_review: 9,",
     test: "lib/desk/contracts.test.ts",
   },
   {
@@ -135,6 +135,39 @@ const CASES = [
     from: '<ul className="ticker-row" aria-hidden="true">',
     to: '<ul className="ticker-row">',
     test: "lib/market-ticker-select.test.ts",
+  },
+  // ── لایهٔ عملیات و اعتماد (Wave 8) ────────────────────────────────────
+  {
+    name: "سبزِ کسب‌نشده برای منبعِ بی‌آستانه",
+    defect: "منبعِ بدونِ آستانهٔ تازگی دوباره «به‌روز» گزارش شود چون ردیف دارد",
+    file: "lib/desk/contracts.ts",
+    from: '      state: "present",\n      detail:\n        age === null',
+    to: '      state: "ready",\n      detail:\n        age === null',
+    test: "lib/desk/contracts.test.ts",
+  },
+  {
+    name: "فیلترِ «اجرای موفق» به پرس‌وجو می‌رسد",
+    defect: "فیلترِ منبع اعلام شود ولی به خواننده نرسد — «آخرین اجرای موفق» در واقع «آخرین اجرا» شود",
+    file: "lib/desk/service.ts",
+    from: "      filter: spec.filter ?? null,",
+    to: "      filter: null,",
+    test: "lib/desk/service.test.ts",
+  },
+  {
+    name: "زمانِ نامعلوم از ساعتِ ما قرض نمی‌گیرد",
+    defect: "منبعِ بی‌زمان، لحظهٔ خواندنِ ما را به‌عنوانِ زمانِ دادهٔ خودش نشان دهد",
+    file: "lib/desk/clock.ts",
+    from: "    observedValue: source.observedAt === null ? UNKNOWN_TIME : relativeAge(source.ageMinutes),",
+    to: "    observedValue: relativeAge(source.ageMinutes ?? 0),",
+    test: "lib/desk/clock.test.ts",
+  },
+  {
+    name: "تستِ ثبت‌نشده اجرا نمی‌شود",
+    defect: "یک فایلِ تست در هیچ اسکریپتی ثبت نشود و بی‌صدا هرگز اجرا نشود",
+    file: "package.json",
+    from: "lib/desk/clock.test.ts ",
+    to: "",
+    test: "lib/desk/registry.test.ts",
   },
 ];
 

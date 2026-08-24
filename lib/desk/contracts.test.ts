@@ -73,10 +73,38 @@ test("freshness splits ready from stale, and age is reported either way", () => 
   assert.equal(old.ageMinutes, 600);
 });
 
-test("a source with records but genuinely no time dimension is ready, not stale", () => {
+/**
+ * ── تصحیحِ یک ادعای نادرست در همین پرونده ────────────────────────────────
+ * نسخهٔ قبلیِ این تست اسمش «… is ready, not stale» بود و `ready` را تأیید
+ * می‌کرد. دوگانه‌اش غلط بود: انتخاب بینِ «به‌روز» و «کهنه» نبود، چون هیچ
+ * آستانه‌ای وجود نداشت که چیزی نسبت به آن سنجیده شود. تست از «کهنه نیست»
+ * به «پس به‌روز است» می‌پرید — و همان یک قدم، ده منبعِ میز را بی‌آنکه چیزی
+ * اثبات شود سبز کرد.
+ *
+ * درست است که کهنه نیست. ولی «به‌روز» یک ادعای تازگی است و اینجا هیچ
+ * اندازه‌گیری‌ای پشتش نیست.
+ */
+test("a source with records but genuinely no time dimension is present, not ready", () => {
   const result = classifySource(NO_RULE, { available: true, count: 4 }, NOW);
-  assert.equal(result.state, "ready");
+  assert.equal(result.state, "present");
   assert.equal(result.ageMinutes, null);
+  // نه خرابی است و نه گواهیِ تازگی — و متنش هیچ‌کدام را ادعا نمی‌کند.
+  assert.equal(isDataFault(result.state), false);
+  assert.doesNotMatch(result.detail, /به‌روز است|تازه است/);
+  assert.match(result.detail, /آستانهٔ تازگی تعریف نشده/);
+});
+
+/**
+ * حتی وقتی زمان **داریم**، نداشتنِ آستانه یعنی نمی‌توانیم دربارهٔ آن قضاوت
+ * کنیم. زمان نمایش داده می‌شود چون دانستنش مفید است، ولی به «سبز» ترجمه
+ * نمی‌شود: عددی که معیار ندارد، حکم نمی‌سازد.
+ */
+test("having a timestamp without a threshold still does not earn a freshness verdict", () => {
+  const result = classifySource(NO_RULE, { available: true, count: 4, lastAt: ago(3) }, NOW);
+  assert.equal(result.state, "present");
+  assert.equal(result.ageMinutes, 3);
+  assert.equal(result.observedAt, ago(3));
+  assert.match(result.detail, /سنجیده نمی‌شود/);
 });
 
 /**
@@ -155,14 +183,16 @@ test("a panel names every asset it read from and always explains itself", () => 
 
 test("the summary counts each state separately rather than reporting one verdict", () => {
   const make = (state: DataState): DeskSource => ({
-    table: "t", label: "l", state, detail: "", count: null, ageMinutes: null,
+    key: `t-${state}`, table: "t", label: "l", state, detail: "", count: null, ageMinutes: null,
     observedAt: null, fetchedAt: "2026-08-23T00:00:00.000Z",
   });
-  const text = summarise([make("ready"), make("stale"), make("empty"), make("unavailable")]);
+  const text = summarise([make("ready"), make("stale"), make("empty"), make("unavailable"), make("present")]);
   assert.match(text, /در دسترس نیست/);
   assert.match(text, /کهنه/);
   assert.match(text, /خالی/);
   assert.match(text, /به‌روز/);
+  // «بدونِ سنجهٔ تازگی» ردیفِ خودش را دارد و در شمارشِ «به‌روز» حل نمی‌شود.
+  assert.match(text, /۱|1 منبع بدونِ سنجهٔ تازگی|بدونِ سنجهٔ تازگی/);
   assert.equal(summarise([]), "هیچ منبعی برای این بخش تعریف نشده");
 });
 

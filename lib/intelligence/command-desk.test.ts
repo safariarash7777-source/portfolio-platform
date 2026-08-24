@@ -21,6 +21,7 @@ const view = () => ({
 });
 
 const source: DeskSource = {
+  key: "ir_market_snapshots",
   table: "ir_market_snapshots",
   label: "اسنپ‌شات بازار",
   state: "ready",

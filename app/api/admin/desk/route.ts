@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { classifyQueryError } from "@/lib/health/status";
 import type { SourceInput } from "@/lib/desk/contracts";
-import { buildDesk, type DeskGateway, type DeskReader } from "@/lib/desk/service";
+import { buildDesk, type DeskGateway, type DeskReader, type SourceQuery } from "@/lib/desk/service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,10 +31,14 @@ export const dynamic = "force-dynamic";
 function supabaseReader(): DeskReader {
   const admin = createAdminClient();
   return {
-    async probe(table: string, timeColumn: string | null): Promise<SourceInput> {
-      const { count, error } = await admin
-        .from(table)
-        .select("*", { count: "exact", head: true });
+    async probe({ table, timeColumn, filter }: SourceQuery): Promise<SourceInput> {
+      // فیلتر روی **هر دو** پرس‌وجو اعمال می‌شود. اگر فقط روی یکی بیفتد،
+      // شمارشِ کلِ جدول کنارِ زمانِ زیرمجموعه می‌نشیند و ردیف یک ترکیبِ
+      // بی‌معنا را گزارش می‌کند.
+      const countQuery = admin.from(table).select("*", { count: "exact", head: true });
+      const { count, error } = await (filter
+        ? countQuery.eq(filter.column, filter.value)
+        : countQuery);
 
       if (error) {
         const kind = classifyQueryError(error.code, error.message);
@@ -51,12 +55,15 @@ function supabaseReader(): DeskReader {
       const rows = count ?? 0;
       if (rows === 0 || !timeColumn) return { available: true, count: rows };
 
-      const { data, error: timeError } = await admin
+      const timeQuery = admin
         .from(table)
         .select(timeColumn)
         .order(timeColumn, { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+      const { data, error: timeError } = await (filter
+        ? timeQuery.eq(filter.column, filter.value)
+        : timeQuery
+      ).maybeSingle();
 
       if (timeError) {
         // جدول هست و ستون نیست → **باگِ خودِ ماست**، نه واقعیتِ محیط. نسخهٔ

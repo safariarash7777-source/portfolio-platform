@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildDesk, type DeskGateway, type DeskReader } from "@/lib/desk/service";
+import { isDataFault } from "@/lib/desk/contracts";
+import { buildDesk, type DeskGateway, type DeskReader, type SourceQuery } from "@/lib/desk/service";
 import type { SourceInput } from "@/lib/desk/contracts";
 import { ALL_DESK_SOURCES } from "@/lib/desk/sources";
 
@@ -21,12 +22,15 @@ function gatewayWith(
   opts: {
     user?: { id: string } | null;
     role?: string | null;
-    probe?: (table: string) => Promise<SourceInput>;
+    probe?: (query: SourceQuery) => Promise<SourceInput>;
     userThrows?: boolean;
     roleThrows?: boolean;
   } = {}
 ) {
-  const state = { readersCreated: 0, probed: [] as string[] };
+  // `queries` کلِ پرسش را نگه می‌دارد و نه فقط نامِ جدول: از وقتی یک جدول
+  // می‌تواند دو منبعِ متفاوت بسازد، «این جدول خوانده شد» دیگر ثابت نمی‌کند
+  // که **هر دو** منبع خوانده شده‌اند.
+  const state = { readersCreated: 0, probed: [] as string[], queries: [] as SourceQuery[] };
   const gateway: DeskGateway = {
     async getUser() {
       if (opts.userThrows) throw new Error("boom");
@@ -39,10 +43,11 @@ function gatewayWith(
     createReader(): DeskReader {
       state.readersCreated++;
       return {
-        async probe(table: string) {
-          state.probed.push(table);
+        async probe(query: SourceQuery) {
+          state.probed.push(query.table);
+          state.queries.push(query);
           return opts.probe
-            ? opts.probe(table)
+            ? opts.probe(query)
             : { available: true, count: 5, lastAt: NOW.toISOString() };
         },
       };
@@ -110,7 +115,7 @@ test("a failure while reading the role denies rather than allows", async () => {
 
 test("one panel's query failure neither leaks an exception nor disables the others", async () => {
   const { gateway } = gatewayWith({
-    probe: async (table) => {
+    probe: async ({ table }) => {
       if (table === "fx_rates") throw new Error("connection reset by peer at 10.0.0.4:5432");
       return { available: true, count: 3, lastAt: NOW.toISOString() };
     },
@@ -126,8 +131,15 @@ test("one panel's query failure neither leaks an exception nor disables the othe
   // منابعِ همسایه دست‌نخورده‌اند.
   const snapshots = today.sources.find((s) => s.table === "ir_market_snapshots")!;
   assert.equal(snapshots.state, "ready");
+  // ادعای واقعیِ این تست «بقیه سبزند» نیست — «شکستِ یکی به بقیه سرایت
+  // نکرد» است. سنجیدنش با `ready` آن را به وضعیتِ **پیش‌فرضِ** پنل‌های دیگر
+  // گره می‌زد، که پس از حذفِ سبزِ کسب‌نشده دیگر `ready` نیست. حالا دقیقاً
+  // همان چیزی سنجیده می‌شود که مقصود بود: هیچ پنلِ دیگری خرابیِ داده نگرفت.
   const others = res.body.panels.filter((p) => p.key !== "today");
-  assert.ok(others.every((p) => p.state === "ready"), "شکستِ یک منبع کلِ میز را خالی کرد");
+  assert.ok(
+    others.every((p) => !isDataFault(p.state)),
+    "شکستِ یک منبع به پنل‌های دیگر سرایت کرد"
+  );
 
   // و متنِ استثنا به کاربر نشت نمی‌کند.
   const payload = JSON.stringify(res.body);
@@ -171,7 +183,7 @@ test("the payload exposes only aggregate counts, never rows", async () => {
 
 test("a missing table reports unavailable, never empty and never zero", async () => {
   const { gateway } = gatewayWith({
-    probe: async (table) =>
+    probe: async ({ table }) =>
       table === "cron_runs"
         ? { available: false, count: 0, unavailableReason: "جدولِ `cron_runs` هنوز اجرا نشده" }
         : { available: true, count: 1, lastAt: NOW.toISOString() },
@@ -216,7 +228,7 @@ test("empty and unavailable are never collapsed into each other", async () => {
 
 test("a broken timestamp column is loud, not silently reported as fresh", async () => {
   const { gateway } = gatewayWith({
-    probe: async (table) =>
+    probe: async ({ table }) =>
       table === "ir_market_snapshots"
         ? { available: true, count: 9, timestampBroken: true }
         : { available: true, count: 1, lastAt: NOW.toISOString() },
@@ -269,7 +281,7 @@ test("a dead source is not masked by a healthy neighbour in the same area", asyn
   // این سناریوی واقعیِ نسخهٔ اول است: رله مرده، نرخِ ارزِ امروز درج شده،
   // و بخشِ «امروز» به‌خاطرِ گرفتنِ **تازه‌ترین** زمان سبز دیده می‌شد.
   const { gateway } = gatewayWith({
-    probe: async (table) => ({
+    probe: async ({ table }) => ({
       available: true,
       count: 5,
       lastAt:
@@ -288,7 +300,7 @@ test("a dead source is not masked by a healthy neighbour in the same area", asyn
 
 test("the overall state is the worst panel, and unavailable outranks empty and stale", async () => {
   const { gateway } = gatewayWith({
-    probe: async (table) =>
+    probe: async ({ table }) =>
       table === "cron_runs" ? { available: false, count: 0 } : { available: true, count: 0 },
   });
   const res = await buildDesk(gateway, NOW);
@@ -308,6 +320,39 @@ test("every registered source is actually probed — none is decorative", async 
     );
   }
   assert.equal(state.probed.length, ALL_DESK_SOURCES.length);
+});
+
+/**
+ * یک منبعِ فیلتردار که فیلترش به پرس‌وجو نرسد، **بی‌صدا** به شمارشِ کلِ جدول
+ * برمی‌گردد و دوباره همان چیزی می‌شود که برای حذفش ساخته شده بود: «آخرین
+ * اجرای موفق» که در واقع «آخرین اجرا» است. پس اعلامِ فیلتر کافی نیست؛ باید
+ * ثابت شود که به خواننده رسیده.
+ */
+test("a declared filter actually reaches the query, it is not merely declared", async () => {
+  const { gateway, state } = gatewayWith();
+  await buildDesk(gateway, NOW);
+
+  const filtered = ALL_DESK_SOURCES.filter((s) => s.filter);
+  assert.ok(filtered.length > 0, "دستِ‌کم یک منبعِ فیلتردار باید وجود داشته باشد");
+
+  for (const spec of filtered) {
+    const sent = state.queries.filter(
+      (q) =>
+        q.table === spec.table &&
+        q.timeColumn === spec.timeColumn &&
+        q.filter?.column === spec.filter!.column &&
+        q.filter?.value === spec.filter!.value
+    );
+    assert.equal(
+      sent.length,
+      1,
+      `فیلترِ \`${spec.filter!.column}=${spec.filter!.value}\` روی \`${spec.table}\` به پرس‌وجو نرسید`
+    );
+  }
+
+  // و منبعِ بی‌فیلترِ همان جدول نباید سهواً فیلتر بگیرد.
+  const unfiltered = state.queries.filter((q) => q.table === "cron_runs" && !q.filter);
+  assert.equal(unfiltered.length, 1, "ردیفِ «همهٔ نوبت‌ها» باید بدونِ فیلتر خوانده شود");
 });
 
 test("every panel links only to destinations that exist in this repository", async () => {
