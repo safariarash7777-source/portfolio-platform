@@ -208,14 +208,16 @@ export async function transitionAnalysis(
     return { status: 403, body: { error: "انتشارِ عمومی از این مسیر ممکن نیست" } };
   }
 
-  const writer = gateway.createWriter();
-  const from = await writer.loadState(analysisId);
-  if (from === null) return { status: 404 as 400, body: { error: "تحلیل پیدا نشد" } };
-  if (!canTransition(from, to)) {
-    return { status: 409, body: { error: "این تغییرِ وضعیت مجاز نیست" } };
-  }
-
+  // ساختِ writer داخلِ try است: بیرونش، یک پرتاب (مثلِ نبودِ سکرتِ سرور) از
+  // این تابع بیرون می‌زد و Next آن را به ۵۰۰ با بدنهٔ خالی تبدیل می‌کرد —
+  // همان کوری‌ای که `capturePackage` از قبل نداشت.
   try {
+    const writer = gateway.createWriter();
+    const from = await writer.loadState(analysisId);
+    if (from === null) return { status: 404 as 400, body: { error: "تحلیل پیدا نشد" } };
+    if (!canTransition(from, to)) {
+      return { status: 409, body: { error: "این تغییرِ وضعیت مجاز نیست" } };
+    }
     await writer.transition(analysisId, to, note, auth.userId);
     return { status: 200, body: { status: to } };
   } catch (error) {
@@ -237,5 +239,10 @@ export function describe(error: unknown): string {
   if (/only a draft analysis may be edited/i.test(raw)) return "فقط پیش‌نویس قابلِ ویرایش است";
   if (/duplicate key|unique/i.test(raw)) return "برای این تاریخ بریفِ فعال وجود دارد";
   if (/row-level security/i.test(raw)) return "دسترسی مجاز نیست";
+  // نقصِ پیکربندی نباید شبیهِ شکستِ ثبت به‌نظر برسد: این دو تشخیص و دو کارِ
+  // متفاوت‌اند. نامِ متغیر افشا می‌شود، مقدارش هرگز — همان قاعدهٔ
+  // `app/api/admin/health/route.ts`.
+  if (/SUPABASE_SERVICE_ROLE_KEY/.test(raw))
+    return "پیکربندیِ سرور ناقص است: متغیرِ «SUPABASE_SERVICE_ROLE_KEY» تنظیم نشده";
   return "ثبت انجام نشد";
 }

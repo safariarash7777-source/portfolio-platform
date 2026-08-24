@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { classifyQueryError } from "@/lib/health/status";
 import { formatJalali } from "@/lib/format";
 import IntelligenceDesk from "@/components/admin/IntelligenceDesk";
@@ -25,7 +25,12 @@ export const dynamic = "force-dynamic";
  * بدتر از نداشتنِ شاخص است.
  */
 export default async function AdminIntelligencePage() {
-  const admin = createAdminClient();
+  // جدول‌های intel زیرِ سیاستِ `intel_admin_all` هستند
+  // (`FOR ALL TO authenticated` با شرطِ ادمین، `sql/phase20`)، پس نشستِ ادمین
+  // همان دسترسی را دارد. با service-role این RSC بدونِ کلید پرتاب می‌کرد و
+  // کاربر صفحهٔ خطای خالی می‌دید؛ حالا اگر جدولی نباشد فقط همان پرس‌وجو خطا
+  // برمی‌گرداند و صفحه سرِ پا می‌ماند.
+  const admin = await createClient();
   const today = new Date().toISOString().slice(0, 10);
 
   const [briefsRes, claimsRes, evidenceRes, effectsRes, historyRes, daysRes, versionRes] =

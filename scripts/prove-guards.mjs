@@ -63,6 +63,43 @@ const CASES = [
     to: '<ul className="ticker-row">',
     test: "lib/market-ticker-select.test.ts",
   },
+
+  /* ── دامنهٔ سکرتِ سرور ─────────────────────────────────────────────────
+   * نقصِ واقعیِ مردادِ ۱۴۰۵: ۲۲ فایل به `admin.ts` وصل شده بودند، و وقتی
+   * `SUPABASE_SERVICE_ROLE_KEY` روی Production نبود همه با هم افتادند. این سه
+   * مورد ثابت می‌کنند گاردهایی که آن را می‌بندند واقعاً قرمز می‌شوند. */
+  {
+    name: "میز دوباره RLS را دور بزند",
+    defect: "میزِ آرش دوباره به کلاینتِ service-role وصل شود",
+    file: "app/api/admin/desk/route.ts",
+    from: 'import { createClient } from "@/lib/supabase/server";',
+    to: 'import { createClient } from "@/lib/supabase/server";\nimport { createAdminClient } from "@/lib/supabase/admin";',
+    test: "lib/desk/access.test.ts",
+  },
+  {
+    name: "مصرف‌کنندهٔ تأییدنشدهٔ سکرتِ سرور",
+    defect: "فایلی خارج از فهرستِ ALLOWED به `admin.ts` وصل شود",
+    file: "app/api/admin/desk/route.ts",
+    from: 'import { createClient } from "@/lib/supabase/server";',
+    to: 'import { createClient } from "@/lib/supabase/server";\nimport { createAdminClient } from "@/lib/supabase/admin";',
+    test: "lib/supabase/service-role.test.ts",
+  },
+  {
+    name: "RPCِ نشست‌محور با کلاینتِ بی‌نشست",
+    defect: "فایلی که مجازِ service-role است، RPCی را صدا بزند که با `auth.uid()` احراز می‌کند — همیشه رد می‌شود",
+    file: "app/api/admin/announcements/route.ts",
+    from: "  // از اینجا با service_role: حلِ گیرنده‌ها + ارسال + ثبتِ تحویل‌ها.",
+    to: '  await admin.rpc("publish_market_note", {});',
+    test: "lib/supabase/service-role.test.ts",
+  },
+  {
+    name: "نقصِ پیکربندی شبیهِ خطای پردازش",
+    defect: "«متغیر تنظیم نشده» با ۵۰۰ برگردد، پس از «پردازش شکست خورد» قابلِ تشخیص نباشد",
+    file: "lib/supabase/service-role.ts",
+    from: "export const SERVICE_ROLE_GAP_STATUS = 503;",
+    to: "export const SERVICE_ROLE_GAP_STATUS = 500;",
+    test: "lib/supabase/service-role.test.ts",
+  },
 ];
 
 function runTest(file) {
