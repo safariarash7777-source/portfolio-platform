@@ -87,7 +87,7 @@ const STATE_TONE: Record<
   },
   empty: {
     label: "هنوز ثبت نشده",
-    color: "var(--text-3)",
+    color: "var(--text-2)",
     background: "var(--surface-2)",
     icon: <CircleSlash size={13} />,
   },
@@ -130,7 +130,7 @@ function QuestionCard({ item }: { item: CommandQuestion }) {
             {QUESTION_ICON[item.key]}
           </span>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold" style={{ color: "var(--text-3)" }}>
+            <p className="text-[10px] font-bold" style={{ color: "var(--text-2)" }}>
               پرسش {toPersianDigits(item.order)}
             </p>
             <h2 id={titleId} className="mt-0.5 text-[13px] font-extrabold leading-6" style={{ color: "var(--text)" }}>
@@ -203,9 +203,12 @@ const SPECIALIST_ENGINES = [
  */
 function TriageStrip({ triage }: { triage: DeskTriage }) {
   const chips: { label: string; value: number; color: string; background: string }[] = [
-    { label: "خرابیِ داده", value: triage.dataFaults, color: "var(--danger)", background: "rgba(185,28,28,0.10)" },
-    { label: "منتظرِ بازبینی", value: triage.awaitingReview, color: "var(--navy)", background: "rgba(30,58,138,0.10)" },
-    { label: "پیکربندی نشده", value: triage.unconfigured, color: "var(--navy)", background: "rgba(30,58,138,0.08)" },
+    // جوهرِ چرخان و نه رنگِ خامِ برند: `--danger` روی تینتش در تمِ تیره
+    // ۲٫۵۳:۱ و `--navy` ‏۱٫۶۰:۱ می‌داد. همان درسی که `--danger-ink` از آن
+    // زاده شد، اینجا هم صدق می‌کند.
+    { label: "خرابیِ داده", value: triage.dataFaults, color: "var(--danger-ink)", background: "rgba(185,28,28,0.10)" },
+    { label: "منتظرِ بازبینی", value: triage.awaitingReview, color: "var(--navy-ink)", background: "rgba(30,58,138,0.10)" },
+    { label: "پیکربندی نشده", value: triage.unconfigured, color: "var(--navy-ink)", background: "rgba(30,58,138,0.08)" },
   ].filter((chip) => chip.value > 0);
 
   return (
@@ -295,9 +298,9 @@ function ReferencePortfolioZone() {
             <p className="text-[12px] font-extrabold" style={{ color: "var(--text)" }}>{sleeve.label}</p>
             <p className="mt-1 font-display text-xl font-extrabold" style={{ color: "var(--text)", fontVariantNumeric: "tabular-nums" }}>
               {toPersianDigits(sleeve.targetPct)}٪
-              <span className="ms-1 text-[10px] font-bold" style={{ color: "var(--text-3)" }}>هدف</span>
+              <span className="ms-1 text-[10px] font-bold" style={{ color: "var(--text-2)" }}>هدف</span>
             </p>
-            <p className="mt-1 text-[10px] leading-5" style={{ color: "var(--text-3)" }}>
+            <p className="mt-1 text-[10px] leading-5" style={{ color: "var(--text-2)" }}>
               {sleeve.instruments.length === 0
                 ? "ابزارِ نماینده تعیین نشده"
                 : sleeve.instruments.join("، ")}
@@ -412,7 +415,7 @@ function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
                     </Link>
                   ) : (
                     /* لینکِ ساختگی نمی‌سازیم. نبودِ مقصد خودش اطلاعات است. */
-                    <span className="text-[10px] font-bold" style={{ color: "var(--text-3)" }}>
+                    <span className="text-[10px] font-bold" style={{ color: "var(--text-2)" }}>
                       بدونِ صفحهٔ اقدام
                     </span>
                   )}
@@ -440,11 +443,11 @@ function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
                 style={{ borderColor: "var(--line)", background: "var(--surface)" }}
               >
                 <p className="text-[12px] font-extrabold" style={{ color: "var(--text)" }}>{source.label}</p>
-                <p className="mt-1 text-[10px]" style={{ color: "var(--text-3)" }}>
+                <p className="mt-1 text-[10px]" style={{ color: "var(--text-2)" }}>
                   {DATA_STATE_LABEL[source.state]}
                   {source.count !== null && ` · ${toPersianDigits(source.count)} رکورد`}
                 </p>
-                <p className="mt-1.5 text-[10px] leading-5" style={{ color: "var(--text-3)" }}>{source.detail}</p>
+                <p className="mt-1.5 text-[10px] leading-5" style={{ color: "var(--text-2)" }}>{source.detail}</p>
               </li>
             ))}
           </ul>
@@ -501,7 +504,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
                 <ShieldCheck size={13} />
                 داخلی و تحت تأیید انسان
               </span>
-              <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
+              <span className="text-[11px]" style={{ color: "var(--text-2)" }}>
                 بریف {view.todayJalali}
               </span>
             </div>
@@ -587,7 +590,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
                 {engine.label}
                 <ArrowLeft size={14} style={{ color: "var(--gold-ink)" }} />
               </span>
-              <span className="mt-1.5 block text-[10px] leading-5" style={{ color: "var(--text-3)" }}>
+              <span className="mt-1.5 block text-[10px] leading-5" style={{ color: "var(--text-2)" }}>
                 {engine.detail}
               </span>
             </Link>
