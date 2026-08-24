@@ -8,6 +8,7 @@
 // امنیت: role=admin از profiles؛ نوشتن با service_role (seedStore).
 
 import { NextResponse } from "next/server";
+import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 import { createClient } from "@/lib/supabase/server";
 import {
   SEED_KINDS,
@@ -109,6 +110,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, kind, meta });
   } catch (e) {
     const message = e instanceof Error ? e.message : "خطای ناشناخته در پارس/ذخیره.";
+    // «فایل بد بود» و «سکرتِ سرور نیست» دو تشخیص‌اند: یکی را کاربر با فایلِ
+    // دیگر حل می‌کند، دیگری را ادمینِ Vercel. `parse_failed` دومی را شبیهِ
+    // اولی نشان می‌داد و کاربر بی‌جهت دنبالِ فایلش می‌گشت.
+    if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
+      return NextResponse.json(serviceRoleGap("آپلودِ بذرِ ارز"), { status: SERVICE_ROLE_GAP_STATUS });
+    }
     return NextResponse.json({ error: "parse_failed", message }, { status: 422 });
   }
 }
@@ -125,6 +132,9 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ ok: true, kind });
   } catch (e) {
     const message = e instanceof Error ? e.message : "خطا در حذف.";
+    if (message.includes("SUPABASE_SERVICE_ROLE_KEY")) {
+      return NextResponse.json(serviceRoleGap("حذفِ بذرِ ارز"), { status: SERVICE_ROLE_GAP_STATUS });
+    }
     return NextResponse.json({ error: "delete_failed", message }, { status: 500 });
   }
 }

@@ -16,7 +16,7 @@ import { ALL_DESK_SOURCES } from "@/lib/desk/sources";
 
 const NOW = new Date("2026-08-01T12:00:00.000Z");
 
-/** خوانندهٔ بدل که می‌شمارد چند بار ساخته شده — قلبِ ادعای service-role. */
+/** خوانندهٔ بدل که می‌شمارد چند بار ساخته شده — قلبِ ادعای «هیچ خواندنی پیش از مجوز». */
 function gatewayWith(
   opts: {
     user?: { id: string } | null;
@@ -51,7 +51,7 @@ function gatewayWith(
   return { gateway, state };
 }
 
-/* ── ۱–۴: مجوز، و اینکه service-role کِی ساخته می‌شود ────────────────── */
+/* ── ۱–۴: مجوز، و اینکه خواننده کِی ساخته می‌شود ─────────────────────── */
 
 test("unauthenticated request is rejected with 401", async () => {
   const { gateway } = gatewayWith({ user: null });
@@ -78,7 +78,7 @@ test("admin is allowed and receives the five approved areas", async () => {
   );
 });
 
-test("the service-role reader is never constructed before authorization succeeds", async () => {
+test("the reader is never constructed before authorization succeeds", async () => {
   const denied = [
     gatewayWith({ user: null }),
     gatewayWith({ role: "user" }),
@@ -91,7 +91,7 @@ test("the service-role reader is never constructed before authorization succeeds
     assert.equal(
       state.readersCreated,
       0,
-      "کلاینتِ service-role پیش از تأییدِ مجوز ساخته شد — کلیدِ سرویس‌رول نباید در مسیرِ ردشده لمس شود"
+      "خواننده پیش از تأییدِ مجوز ساخته شد — مسیرِ ردشده نباید هیچ پرس‌وجویی بزند"
     );
   }
 
