@@ -100,6 +100,14 @@ const CASES = [
     to: "export const SERVICE_ROLE_GAP_STATUS = 500;",
     test: "lib/supabase/service-role.test.ts",
   },
+  {
+    name: "پرتابِ سکرت از ماژولِ lib به فراخوان",
+    defect: "دفترِ cron دوباره کارخانهٔ پرتابگر را صدا بزند — نبودِ سکرت jobِ سالم را می‌خواباند",
+    file: "lib/cron/store.ts",
+    from: "  const admin = tryCreateAdminClient();\n  if (!admin) return unrecordedStore();",
+    to: "  const admin = createAdminClient();",
+    test: "lib/supabase/service-role.test.ts",
+  },
 ];
 
 function runTest(file) {

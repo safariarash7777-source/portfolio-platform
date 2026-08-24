@@ -50,6 +50,22 @@ const ALLOWED = new Map<string, string>([
   ["app/api/webinars/list/route.ts", "شمارشِ ثبت‌نام افزونهٔ اختیاری است؛ نبودش `null` می‌دهد"],
 ]);
 
+/**
+ * کدِ بدونِ کامنت — همان قاعدهٔ `lib/core/vocab.test.ts` و `lib/desk/access.test.ts`.
+ *
+ * بدونِ این، گارد **مستنداتِ خودش** را می‌گیرد: فایل‌هایی که توضیح می‌دهند چرا
+ * دیگر `createAdminClient()` را صدا نمی‌زنند، دقیقاً به‌خاطرِ همان جمله علامت
+ * می‌خورند. آن‌وقت تست دربارهٔ کدِ اجراشونده چیزی نمی‌گوید.
+ */
+const codeOnly = (source: string) =>
+  source
+    .split("\n")
+    .filter((line) => {
+      const t = line.trim();
+      return !(t.startsWith("//") || t.startsWith("*") || t.startsWith("/*"));
+    })
+    .join("\n");
+
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     if (entry === "node_modules" || entry === ".next" || entry === ".git") continue;
@@ -66,7 +82,7 @@ test("only the documented callers may reach the service-role client", () => {
   const offenders: string[] = [];
   for (const dir of SOURCE_DIRS) {
     for (const file of walk(join(ROOT, dir))) {
-      const text = readFileSync(file, "utf8");
+      const text = codeOnly(readFileSync(file, "utf8"));
       if (!/from "@\/lib\/supabase\/admin"/.test(text)) continue;
       const rel = relative(ROOT, file).split(sep).join("/");
       if (!ALLOWED.has(rel)) offenders.push(rel);
@@ -115,7 +131,7 @@ test("no client component imports the service-role client", () => {
   const leaks: string[] = [];
   for (const dir of SOURCE_DIRS) {
     for (const file of walk(join(ROOT, dir))) {
-      const text = readFileSync(file, "utf8");
+      const text = codeOnly(readFileSync(file, "utf8"));
       if (!/from "@\/lib\/supabase\/admin"/.test(text)) continue;
       if (/^\s*["']use client["']/m.test(text)) leaks.push(relative(ROOT, file));
     }
@@ -150,7 +166,7 @@ test("no RPC that authenticates through auth.uid() is called with the service-ro
   const offenders: string[] = [];
   for (const dir of SOURCE_DIRS) {
     for (const file of walk(join(ROOT, dir))) {
-      const text = readFileSync(file, "utf8");
+      const text = codeOnly(readFileSync(file, "utf8"));
       const usesRpc = SESSION_RPCS.some((rpc) => text.includes(`"${rpc}"`));
       if (usesRpc && /from "@\/lib\/supabase\/admin"/.test(text)) {
         offenders.push(relative(ROOT, file).split(sep).join("/"));
@@ -162,5 +178,46 @@ test("no RPC that authenticates through auth.uid() is called with the service-ro
     [],
     `این فایل‌ها هم RPCِ نشست‌محور صدا می‌زنند و هم سکرتِ سرور را import می‌کنند؛ ` +
       `اگر RPC با آن کلاینت صدا زده شود «auth.uid() IS NULL» می‌شود و همیشه رد می‌شود: ${offenders.join(", ")}`
+  );
+});
+
+/**
+ * ── نقطهٔ کورِ گاردِ بالا ────────────────────────────────────────────────
+ * فهرستِ ALLOWED فقط importِ **مستقیم** را می‌بیند. ولی نقصِ واقعی از راهِ
+ * غیرمستقیم آمد: `app/api/admin/content/route.ts` هیچ importی به سکرت ندارد،
+ * اما `runTelegramFeedSync` را صدا می‌زند و آن ماژول `createAdminClient()`
+ * را مستقیم می‌ساخت. پرتاب از ماژول بیرون زد و آن مسیر را با ۵۰۰ و بدنهٔ
+ * خالی خواباند — در لاگِ Production هم `/api/admin/content` جزوِ قربانی‌ها بود.
+ *
+ * پس ریشه بسته می‌شود نه شاخه: یک ماژولِ `lib/` نباید نبودِ سکرت را به
+ * فراخوانش پرتاب کند، چون فراخوان نمی‌داند چنین چیزی ممکن است.
+ */
+const MAY_THROW_TO_ITS_CALLER = new Map<string, string>([
+  // قراردادِ اعلام‌شده‌اش پرتاب است و هر دو فراخوانش try/catch دارند
+  // (`app/api/admin/fx/seeds/route.ts`).
+  ["lib/fx/seedStore.ts", "همهٔ شکست‌هایش پرتاب‌اند و فراخوان می‌گیردشان"],
+]);
+
+test("no lib module lets a missing service-role key escape to its caller", () => {
+  const offenders: string[] = [];
+  for (const file of walk(join(ROOT, "lib"))) {
+    const rel = relative(ROOT, file).split(sep).join("/");
+    if (rel.endsWith(".test.ts") || rel === "lib/supabase/admin.ts") continue;
+    const text = codeOnly(readFileSync(file, "utf8"));
+    // `\b` جلوی تطبیق با `tryCreateAdminClient()` را می‌گیرد: پیش از `c` یک
+    // حرفِ کلمه‌ای (`y`) هست، پس مرزِ کلمه آنجا نیست.
+    if (!/\bcreateAdminClient\(\)/.test(text)) continue;
+    if (MAY_THROW_TO_ITS_CALLER.has(rel)) continue;
+    // پذیرفتنی است اگر پیش از ساختن، خودش حضورِ متغیر را سنجیده باشد.
+    if (/process\.env\.SUPABASE_SERVICE_ROLE_KEY/.test(text)) continue;
+    offenders.push(rel);
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    "این ماژول‌های lib/ تابعِ createAdminClient() را بدونِ محافظ صدا می‌زنند؛ " +
+      "نبودِ سکرت از آن‌ها بیرون می‌زند و فراخوان را با ۵۰۰ خالی می‌خواباند. " +
+      "از tryCreateAdminClient() استفاده کن یا حضورِ متغیر را بسنج: " +
+      offenders.join(", ")
   );
 });

@@ -1,5 +1,5 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import type { CronLedgerStore, FinishRunInput, StartRunInput } from "@/lib/cron/ledger";
 
 /**
@@ -13,9 +13,21 @@ import type { CronLedgerStore, FinishRunInput, StartRunInput } from "@/lib/cron/
  * فراخوانی‌ها خطا می‌دهند — و عمداً **مهار می‌شوند**: نبودِ دفتر نباید jobِ
  * سالم را از کار بیندازد. رفتارِ سیستم پیش و پس از اجرای migration یکی است،
  * فقط بعدش دیده می‌شود.
+ *
+ * ── چرا کارخانه دیگر پرتاب نمی‌کند ──────────────────────────────────────
+ * همان قاعده باید دربارهٔ **سکرت** هم برقرار باشد و نبود. کارخانه
+ * `createAdminClient()` را مستقیم صدا می‌زد، پس نبودِ
+ * `SUPABASE_SERVICE_ROLE_KEY` پیش از هر مهاری پرتاب می‌کرد و کلِ jobِ سالم را
+ * می‌خواباند — دقیقاً چیزی که این ماژول ادعا می‌کرد جلویش را گرفته. در لاگِ
+ * Production همین شد: `/api/cron/alerts` و `/api/cron/telegram-sync` با ۵۰۰ و
+ * بدنهٔ خالی افتادند.
+ *
+ * حالا نبودِ سکرت مثلِ نبودِ جدول رفتار می‌کند: دفتر ثبت نمی‌شود، ولی job
+ * اجرا می‌شود. `error` همان شکلِ همیشگی را دارد، پس فراخوان تغییری لازم ندارد.
  */
 export function createCronLedgerStore(): CronLedgerStore {
-  const admin = createAdminClient();
+  const admin = tryCreateAdminClient();
+  if (!admin) return unrecordedStore();
 
   return {
     async startRun(input: StartRunInput) {
@@ -56,6 +68,30 @@ export function createCronLedgerStore(): CronLedgerStore {
         .lt("started_at", olderThanIso);
       if (error) return { count: 0, error };
       return { count: count ?? 0 };
+    },
+  };
+}
+
+/**
+ * دفتری که چیزی ثبت نمی‌کند و علتش را می‌گوید.
+ *
+ * `id: null` همان چیزی است که مسیرِ «جدول نیست» هم برمی‌گرداند، پس فراخوان
+ * از قبل با آن کنار می‌آید. `error` صریح است تا در لاگ معلوم باشد چرا دفتر
+ * خالی مانده — «ثبت نشد» و «چیزی برای ثبت نبود» نباید یکی به‌نظر برسند.
+ */
+function unrecordedStore(): CronLedgerStore {
+  const error = new Error(
+    "دفترِ اجرا ثبت نشد: متغیرِ سرورِ «SUPABASE_SERVICE_ROLE_KEY» تنظیم نشده"
+  );
+  return {
+    async startRun() {
+      return { id: null, error };
+    },
+    async finishRun() {
+      return { error };
+    },
+    async countStaleRunning() {
+      return { count: 0, error };
     },
   };
 }
