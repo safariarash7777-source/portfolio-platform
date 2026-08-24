@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import DeskBoard, { type DeskBoardSnapshot } from "@/components/admin/DeskBoard";
 import IntelligenceDesk from "@/components/admin/IntelligenceDesk";
+import { buildApprovalQueue } from "@/lib/intelligence/approval-queue";
 import { toPersianDigits } from "@/lib/format";
 import {
   buildCommandQuestions,
@@ -342,6 +343,13 @@ function ReferencePortfolioZone() {
  */
 function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
   const panel = snapshot.data?.panels.find((p) => p.key === "clients") ?? null;
+  // صف از **همهٔ** ناحیه‌ها می‌آید و نه فقط از این پنل: تأییدِ تحلیل در
+  // «تصمیم‌ها» ثبت می‌شود ولی همان‌قدر منتظرِ آرش است. نکتهٔ این ناحیه
+  // یک‌جا دیدنِ کارهاست، نه مرتب‌کردنشان بر اساسِ جدولِ مبدأ.
+  const queue = useMemo(
+    () => (snapshot.data ? buildApprovalQueue(snapshot.data.panels.flatMap((p) => p.sources)) : null),
+    [snapshot.data]
+  );
 
   return (
     <section id="clients" aria-labelledby="clients-title" className="scroll-mt-20 space-y-3">
@@ -353,6 +361,67 @@ function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
           مشتری و محصول
         </h2>
       </div>
+
+      {queue && (
+        <div className="rounded-xl border p-4" style={{ borderColor: "var(--line)", background: "var(--surface)" }}>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="font-display text-[15px] font-extrabold" style={{ color: "var(--text)" }}>
+              {queue.headline}
+            </h3>
+            {queue.unreadable > 0 && (
+              <span
+                className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                style={{ color: "var(--danger-ink)", background: "rgba(185,28,28,0.10)" }}
+              >
+                {toPersianDigits(queue.unreadable)} صف خوانده نشد
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-2)" }}>{queue.detail}</p>
+
+          <ul className="mt-3 space-y-2">
+            {queue.lines.map((line) => (
+              <li
+                key={line.key}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg px-3 py-2"
+                style={{ background: "var(--surface-2)" }}
+              >
+                <div className="min-w-0">
+                  <p className="text-[12px] font-bold" style={{ color: "var(--text)" }}>{line.label}</p>
+                  <p className="mt-0.5 text-[10px] leading-5" style={{ color: "var(--text-2)" }}>
+                    {toPersianDigits(line.detail)}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  {/* «نامعلوم» و نه «۰» — یک صفِ خوانده‌نشده از دور نباید
+                      شبیهِ یک صفِ خالی دیده شود. */}
+                  <span
+                    className="text-[15px] font-extrabold"
+                    style={{ color: line.count === null ? "var(--danger-ink)" : "var(--text)" }}
+                  >
+                    {line.count === null ? "نامعلوم" : toPersianDigits(line.count)}
+                  </span>
+                  {line.href ? (
+                    <Link
+                      href={line.href}
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[11px] font-bold"
+                      style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--gold-ink)" }}
+                    >
+                      {line.linkLabel}
+                      <ArrowLeft size={13} />
+                    </Link>
+                  ) : (
+                    /* لینکِ ساختگی نمی‌سازیم. نبودِ مقصد خودش اطلاعات است. */
+                    <span className="text-[10px] font-bold" style={{ color: "var(--text-3)" }}>
+                      بدونِ صفحهٔ اقدام
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {snapshot.loading && !snapshot.data ? (
         <p className="text-[12px]" style={{ color: "var(--text-2)" }}>در حال خواندنِ وضعیتِ مشتری…</p>
@@ -366,7 +435,7 @@ function ClientsZone({ snapshot }: { snapshot: DeskBoardSnapshot }) {
           <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {panel.sources.map((source) => (
               <li
-                key={source.table}
+                key={source.key}
                 className="rounded-xl border p-3"
                 style={{ borderColor: "var(--line)", background: "var(--surface)" }}
               >

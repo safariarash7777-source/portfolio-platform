@@ -137,6 +137,32 @@ export const DESK_SOURCES = {
       rule: null,
       basis: "بدونِ تولیدکننده (`phase20` اجرا نشده) آستانه قابلِ اثبات نیست.",
     },
+    // ── دو صفِ واقعی ──────────────────────────────────────────────────
+    // شمارشِ کلِ جدول جوابِ «چه چیزی منتظرِ من است» نیست: یک جدول با ۴۰۰
+    // پیش‌نویسِ بسته‌شده و صفر موردِ باز، «۴۰۰ در صف» نیست. صفِ واقعی فقط
+    // با خواندنِ `status` معنا پیدا می‌کند.
+    {
+      key: "signal_drafts:pending",
+      table: "signal_drafts",
+      label: "پیش‌نویسِ منتظرِ بررسی",
+      timeColumn: "created_at",
+      rule: null,
+      filter: { column: "status", value: "pending" },
+      scope: "موردِ بازنشده",
+      basis:
+        "ستونِ `status` در DDL سه مقدار دارد (`pending`/`approved`/`rejected`) و `pending` دقیقاً یعنی هنوز تصمیمی گرفته نشده. عمقِ صف مهم است نه تازگی‌اش، پس آستانه ندارد.",
+    },
+    {
+      key: "intel_analyses:pending_approval",
+      table: "intel_analyses",
+      label: "تحلیلِ منتظرِ تأیید",
+      timeColumn: "created_at",
+      rule: null,
+      filter: { column: "status", value: "pending_approval" },
+      scope: "تحلیلِ منتظرِ تأیید",
+      basis:
+        "همان چرخهٔ دومرحله‌ای که `phase20` تعریف می‌کند: `draft` → `pending_approval` → `published`. فقط حالتِ میانی منتظرِ انسان است.",
+    },
   ],
   reference: [
     {
@@ -169,6 +195,17 @@ export const DESK_SOURCES = {
       timeColumn: "registered_at",
       rule: null,
       basis: "ثبت‌نام رویدادمحور است؛ آستانهٔ تازگی برایش معنا ندارد.",
+    },
+    {
+      key: "webinar_registrations:no_invite",
+      table: "webinar_registrations",
+      label: "ثبت‌نامِ بدونِ دعوتِ ارسال‌شده",
+      timeColumn: "registered_at",
+      rule: null,
+      filter: { column: "invite_sent", value: "false" },
+      scope: "ثبت‌نامِ بدونِ دعوت",
+      basis:
+        "`invite_sent boolean NOT NULL DEFAULT false` در DDL یک وضعیتِ عملیاتیِ **واقعی** است، پس ساختگی نیست. ولی دقیقاً همان را می‌گوید و نه بیشتر: «دعوت ارسال نشده». اینکه دعوت **موعدش رسیده** یا نه به `payment_status` و به گذشتن یا نگذشتنِ خودِ وبینار هم بستگی دارد، و این ردیف دربارهٔ هیچ‌کدام قضاوت نمی‌کند. صفِ دقیق‌ترْ پرس‌وجوی چندشرطی می‌خواهد که فیلترِ تک‌شرطیِ فعلی پشتیبانی نمی‌کند — بستهٔ کارِ آینده، نه ادعای امروز.",
     },
     {
       table: "entitlements",

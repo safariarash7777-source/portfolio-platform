@@ -169,6 +169,23 @@ const CASES = [
     to: "",
     test: "lib/desk/registry.test.ts",
   },
+  // ── صفِ اقدام (Wave 7) ────────────────────────────────────────────────
+  {
+    name: "صفِ خوانده‌نشده صفر نمی‌شود",
+    defect: "صفی که پرس‌وجویش مردود شده «۰ مورد» گزارش شود — آرش صفحه را با خیالِ راحت می‌بندد",
+    file: "lib/intelligence/approval-queue.ts",
+    from: "    if (isDataFault(source.state) && source.state !== \"empty\") {",
+    to: "    if (false) {",
+    test: "lib/intelligence/approval-queue.test.ts",
+  },
+  {
+    name: "مقصدِ صف واقعاً وجود دارد",
+    defect: "صف به تبی لینک دهد که صفحه نمی‌شناسد — کاربر بی‌صدا به تبِ پیش‌فرض می‌افتد",
+    file: "lib/intelligence/approval-queue.ts",
+    from: "    href: null,\n    linkLabel: null,",
+    to: '    href: "/admin/manage?tab=drafts",\n    linkLabel: "بررسیِ پیش‌نویس‌ها",',
+    test: "lib/intelligence/approval-queue.test.ts",
+  },
 ];
 
 function runTest(file) {
