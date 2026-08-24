@@ -60,13 +60,12 @@ export const APPROVAL_QUEUES: readonly QueueSpec[] = [
   },
   {
     key: "signal_drafts:pending",
-    label: "پیش‌نویسِ منتظرِ بررسی",
-    // در این مخزن هیچ صفحه‌ای `signal_drafts` را نمی‌خوانَد — با grep روی
-    // `app/` و `components/` سنجیده شد، نه فرض. عمقِ صف واقعی است، جای
-    // بررسی‌اش هنوز ساخته نشده.
-    href: null,
-    linkLabel: null,
-    noDestination: "در این نسخه صفحه‌ای برای بررسیِ این صف وجود ندارد — بستهٔ کارِ آینده",
+    label: "نامزدِ منتظرِ بازبینی",
+    // قبلاً مقصدی نداشت و صادقانه همین را می‌گفت. حالا `/admin/drafts` وجود
+    // دارد: فقط نمایش و کنارگذاشتن، بدونِ هیچ مسیرِ انتشار.
+    href: "/admin/drafts",
+    linkLabel: "بازبینیِ نامزدها",
+    caveat: "انتشار از آنجا انجام نمی‌شود — فقط دیدن و کنار گذاشتن",
   },
   {
     key: "webinar_registrations:no_invite",
