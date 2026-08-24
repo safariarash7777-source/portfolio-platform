@@ -21,6 +21,8 @@
 import type { FreshnessRule } from "@/lib/desk/contracts";
 
 export interface DeskSourceSpec {
+  /** یکتا. پیش‌فرض نامِ جدول است؛ فقط وقتی لازم است که یک جدول دو منبع بسازد. */
+  key?: string;
   table: string;
   label: string;
   /** ستونِ زمانی — باید در DDL وجود داشته باشد. `null` یعنی تازگی نمی‌سنجیم. */
@@ -28,6 +30,10 @@ export interface DeskSourceSpec {
   rule: FreshnessRule | null;
   /** شاهدِ آستانه. برای منابعِ بدونِ آستانه، دلیلِ نداشتنش. */
   basis: string;
+  /** فقط زیرمجموعه‌ای از ردیف‌ها — مثلِ `status = 'succeeded'`. */
+  filter?: { column: string; value: string };
+  /** نامِ فارسیِ همان زیرمجموعه، برای متنِ حالت. با `filter` می‌آید. */
+  scope?: string;
 }
 
 /** ۲۶ ساعت = یک نوبتِ روزانه + ۲ ساعت تحمل. همان عددی که نمای سلامت دارد. */
@@ -131,6 +137,32 @@ export const DESK_SOURCES = {
       rule: null,
       basis: "بدونِ تولیدکننده (`phase20` اجرا نشده) آستانه قابلِ اثبات نیست.",
     },
+    // ── دو صفِ واقعی ──────────────────────────────────────────────────
+    // شمارشِ کلِ جدول جوابِ «چه چیزی منتظرِ من است» نیست: یک جدول با ۴۰۰
+    // پیش‌نویسِ بسته‌شده و صفر موردِ باز، «۴۰۰ در صف» نیست. صفِ واقعی فقط
+    // با خواندنِ `status` معنا پیدا می‌کند.
+    {
+      key: "signal_drafts:pending",
+      table: "signal_drafts",
+      label: "پیش‌نویسِ منتظرِ بررسی",
+      timeColumn: "created_at",
+      rule: null,
+      filter: { column: "status", value: "pending" },
+      scope: "موردِ بازنشده",
+      basis:
+        "ستونِ `status` در DDL سه مقدار دارد (`pending`/`approved`/`rejected`) و `pending` دقیقاً یعنی هنوز تصمیمی گرفته نشده. عمقِ صف مهم است نه تازگی‌اش، پس آستانه ندارد.",
+    },
+    {
+      key: "intel_analyses:pending_approval",
+      table: "intel_analyses",
+      label: "تحلیلِ منتظرِ تأیید",
+      timeColumn: "created_at",
+      rule: null,
+      filter: { column: "status", value: "pending_approval" },
+      scope: "تحلیلِ منتظرِ تأیید",
+      basis:
+        "همان چرخهٔ دومرحله‌ای که `phase20` تعریف می‌کند: `draft` → `pending_approval` → `published`. فقط حالتِ میانی منتظرِ انسان است.",
+    },
   ],
   reference: [
     {
@@ -155,14 +187,80 @@ export const DESK_SOURCES = {
       basis: "وزنِ اولیهٔ سبد یک تصمیمِ باز است و مهندسی آن را حدس نمی‌زند.",
     },
   ],
+  clients: [
+    {
+      table: "webinar_registrations",
+      label: "ثبت‌نامِ وبینار",
+      // `registered_at` است نه `created_at` — تستِ DDLِ مخزن این را گرفت.
+      timeColumn: "registered_at",
+      rule: null,
+      basis: "ثبت‌نام رویدادمحور است؛ آستانهٔ تازگی برایش معنا ندارد.",
+    },
+    {
+      key: "webinar_registrations:no_invite",
+      table: "webinar_registrations",
+      label: "ثبت‌نامِ بدونِ دعوتِ ارسال‌شده",
+      timeColumn: "registered_at",
+      rule: null,
+      filter: { column: "invite_sent", value: "false" },
+      scope: "ثبت‌نامِ بدونِ دعوت",
+      basis:
+        "`invite_sent boolean NOT NULL DEFAULT false` در DDL یک وضعیتِ عملیاتیِ **واقعی** است، پس ساختگی نیست. ولی دقیقاً همان را می‌گوید و نه بیشتر: «دعوت ارسال نشده». اینکه دعوت **موعدش رسیده** یا نه به `payment_status` و به گذشتن یا نگذشتنِ خودِ وبینار هم بستگی دارد، و این ردیف دربارهٔ هیچ‌کدام قضاوت نمی‌کند. صفِ دقیق‌ترْ پرس‌وجوی چندشرطی می‌خواهد که فیلترِ تک‌شرطیِ فعلی پشتیبانی نمی‌کند — بستهٔ کارِ آینده، نه ادعای امروز.",
+    },
+    {
+      table: "entitlements",
+      label: "دسترسیِ محصول",
+      timeColumn: "created_at",
+      rule: null,
+      basis:
+        "فقط **خواندن** برای دیدنِ وضعیتِ دسترسی. مسیرِ نوشتنِ پرداخت→دسترسی مالکِ جداگانه‌ای دارد (PR #113) و این میز به آن دست نمی‌زند.",
+    },
+    {
+      table: "leads",
+      label: "لید",
+      timeColumn: "created_at",
+      rule: null,
+      basis:
+        "طبقِ `MIGRATION-LEDGER` این جدول روی Production **اجرا نشده** (`B-001`). انتظار می‌رود «در دسترس نیست» باشد — و همین درست است: میز باید بلاکرِ شناخته‌شده را نشان دهد، نه پنهانش کند.",
+    },
+  ],
+  /**
+   * ── چرا `cron_runs` دو ردیف است ────────────────────────────────────────
+   * «زمان‌بند شلیک کرد» و «کار انجام شد» دو واقعیتِ متفاوت‌اند، و تفاوتشان
+   * دقیقاً همان چیزی است که این جدول برای دیدنش ساخته شد. با یک ردیف،
+   * jobی که **هر شب شروع و هر شب شکست** می‌خورد روی میز «به‌روز» بود: ردیفِ
+   * تازه وجود داشت و کسی `status` را نمی‌خواند.
+   *
+   * حالا دو ردیف کنارِ هم، و همین جفت‌بودن است که خرابی را می‌گوید:
+   *   هر دو به‌روز      → زمان‌بند کار می‌کند و کارها موفق‌اند.
+   *   اولی به‌روز، دومی کهنه → **زمان‌بند سالم است، کار خراب است.**
+   *   هر دو کهنه        → زمان‌بند اصلاً شلیک نکرده.
+   *
+   * هیچ‌کدام «سلامتِ» تازه‌ای محاسبه نمی‌کند؛ فقط دو عددِ واقعی را جدا
+   * نگه می‌دارد تا خودشان حرف بزنند.
+   */
   operations: [
     {
       table: "cron_runs",
-      label: "دفترِ اجرای cron",
+      label: "اجرای cron — همهٔ نوبت‌ها",
       timeColumn: "started_at",
       rule: DAILY,
       basis:
-        "پرتکرارترین cronِ ثبت‌شده در `vercel.json` روزانه است (`0 3 * * *`)؛ بیش از ۲۶ ساعت یعنی یک نوبت از دست رفته.",
+        "پرتکرارترین cronِ ثبت‌شده در `vercel.json` روزانه است (`0 3 * * *`)؛ بیش از ۲۶ ساعت یعنی یک نوبت از دست رفته. این ردیف فقط می‌گوید زمان‌بند شلیک کرده — نه اینکه کار موفق بوده.",
+    },
+    {
+      key: "cron_runs:succeeded",
+      table: "cron_runs",
+      label: "آخرین اجرای موفق",
+      // `finished_at` و نه `started_at`: اجرای موفق طبقِ قیدِ
+      // `cron_runs_finished_consistent` حتماً زمانِ پایان دارد، و «کِی تمام شد»
+      // پاسخِ دقیق‌ترِ «آخرین بار کِی واقعاً کار کرد» است.
+      timeColumn: "finished_at",
+      rule: DAILY,
+      filter: { column: "status", value: "succeeded" },
+      scope: "اجرای موفق",
+      basis:
+        "همان آستانهٔ روزانه، ولی فقط روی `status = 'succeeded'`. طبقِ `MIGRATION-LEDGER` کلِ دلیلِ وجودِ `phase21` همین بود که «آخرین اجرای موفق» از دیتابیس قابلِ دانستن شود؛ نخواندنِ `status` یعنی همان جدول را داشتن و فایده‌اش را نگرفتن.",
     },
   ],
 } as const satisfies Record<string, readonly DeskSourceSpec[]>;

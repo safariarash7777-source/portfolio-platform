@@ -1,26 +1,24 @@
-import DashboardOverview from "@/components/admin/DashboardOverview";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "داشبورد مدیریت",
-};
-
-export default function AdminDashboardPage() {
-  return (
-    <div className="space-y-6">
-      <header>
-        <span className="eyebrow">پنل مدیریت</span>
-        <h1
-          className="font-display text-2xl md:text-3xl font-bold mt-1"
-          style={{ color: "var(--navy-deep)" }}
-        >
-          داشبورد
-        </h1>
-        <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
-          نمای کلی پلتفرم — کاربران، آزمون ریسک، پوشش پرتفوی و لیست انتظار.
-        </p>
-      </header>
-
-      <DashboardOverview />
-    </div>
-  );
+/**
+ * `/admin` → `/admin/desk`
+ *
+ * ── چرا ─────────────────────────────────────────────────────────────────────
+ *
+ * دو صفحهٔ خانه وجود داشت. بازکردنِ پنل روی آمارِ مدیریتی می‌نشست، در حالی که
+ * نقطهٔ شروعِ روزانهٔ مصوب (`DD-024`) میزِ فرماندهی است. هرکس پنل را باز می‌کرد
+ * اول چیزی می‌دید که برای کارِ روزانه ساخته نشده بود.
+ *
+ * ── چه چیزی حذف نشد ─────────────────────────────────────────────────────────
+ *
+ * هیچ‌چیز. نمای مدیریتی عیناً به `/admin/overview` منتقل شد و در ناوبری زیرِ
+ * «عملیات سامانه» می‌ماند. این یک تنزلِ جایگاه است، نه حذفِ قابلیت.
+ *
+ * ── بازگشت ──────────────────────────────────────────────────────────────────
+ *
+ * محتوای `overview/page.tsx` را به اینجا برگردانید و این redirect را بردارید.
+ * هیچ داده، جدول یا قراردادی درگیر نیست.
+ */
+export default function AdminRootPage() {
+  redirect("/admin/desk");
 }

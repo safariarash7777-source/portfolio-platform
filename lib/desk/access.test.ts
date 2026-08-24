@@ -182,8 +182,13 @@ test("the board shows each source's own state, not one merged verdict", () => {
 
 test("no existing admin destination was removed from the navigation", () => {
   const shell = read("components", "admin", "AdminShell.tsx");
+  // `/admin` عمداً از این فهرست بیرون است: ریشه حالا به `/admin/desk` هدایت
+  // می‌کند و همان نمای آمار عیناً در `/admin/overview` زندگی می‌کند. این تست
+  // **حفظِ قابلیت** را می‌سنجد، نه حضورِ یک رشتهٔ خاص — پس مقصدِ جابه‌جاشده
+  // به‌جای مقصدِ قدیمی بررسی می‌شود. (`lib/desk/navigation.test.ts` خودِ
+  // redirect و مسیرِ برگشت را جداگانه گارد می‌کند.)
   for (const href of [
-    "/admin", "/admin/users", "/admin/manage?tab=portfolio", "/admin/manage?tab=payments",
+    "/admin/overview", "/admin/users", "/admin/manage?tab=portfolio", "/admin/manage?tab=payments",
     "/admin/manage?tab=waitlist", "/admin/announcements", "/admin/notes", "/admin/analyses",
     "/admin/content", "/admin/webinars", "/admin/radar", "/admin/fx", "/admin/health",
   ]) {

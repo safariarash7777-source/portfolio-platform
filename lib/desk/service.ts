@@ -29,9 +29,22 @@ import {
 } from "@/lib/desk/contracts";
 import { DESK_SOURCES, type DeskSourceSpec } from "@/lib/desk/sources";
 
+/**
+ * پرسشی که برای یک منبع زده می‌شود.
+ *
+ * `filter` عمداً بخشی از **پرسش** است و نه پس‌پردازش: شمارش و آخرین زمان هر
+ * دو باید روی همان زیرمجموعه باشند، وگرنه «۴۰۰ اجرا» و «آخرین اجرای موفق»
+ * از دو جمعیتِ متفاوت می‌آیند و کنارِ هم یک عددِ دروغ می‌سازند.
+ */
+export interface SourceQuery {
+  table: string;
+  timeColumn: string | null;
+  filter?: { column: string; value: string } | null;
+}
+
 /** یک خوانندهٔ منبع — در Production کلاینتِ service-role، در تست یک بدل. */
 export interface DeskReader {
-  probe(table: string, timeColumn: string | null): Promise<SourceInput>;
+  probe(query: SourceQuery): Promise<SourceInput>;
 }
 
 /**
@@ -64,10 +77,21 @@ const PANEL_LINKS: Record<DeskSectionKey, DeskLink[]> = {
     { label: "یادداشت بازار", href: "/admin/notes" },
   ],
   reference: [{ label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio" }],
+  clients: [
+    { label: "کاربران", href: "/admin/users" },
+    { label: "وبینارها", href: "/admin/webinars" },
+  ],
   operations: [{ label: "سلامتِ سامانه", href: "/admin/health" }],
 };
 
-const GROUPS: DeskSectionKey[] = ["today", "intelligence", "decisions", "reference", "operations"];
+const GROUPS: DeskSectionKey[] = [
+  "today",
+  "intelligence",
+  "decisions",
+  "reference",
+  "clients",
+  "operations",
+];
 
 /**
  * یک منبع را می‌خواند و **هرگز پرتاب نمی‌کند**.
@@ -82,7 +106,11 @@ async function readSource(
 ): Promise<DeskSource> {
   let input: SourceInput;
   try {
-    input = await reader.probe(spec.table, spec.timeColumn);
+    input = await reader.probe({
+      table: spec.table,
+      timeColumn: spec.timeColumn,
+      filter: spec.filter ?? null,
+    });
   } catch {
     input = {
       available: false,
@@ -90,7 +118,17 @@ async function readSource(
       unavailableReason: `پرس‌وجوی \`${spec.table}\` مردود شد`,
     };
   }
-  return classifySource({ table: spec.table, label: spec.label, rule: spec.rule }, input, now);
+  return classifySource(
+    {
+      key: spec.key ?? spec.table,
+      table: spec.table,
+      label: spec.label,
+      rule: spec.rule,
+      scope: spec.scope ?? null,
+    },
+    input,
+    now
+  );
 }
 
 export async function buildDesk(gateway: DeskGateway, now: Date): Promise<DeskResult> {

@@ -74,6 +74,7 @@
 | [`SPEC-admin-market-radar.md`](./SPEC-admin-market-radar.md) | مشخصاتِ پنلِ رصد |
 | [`SPEC-symbol-fundamental-card.md`](./SPEC-symbol-fundamental-card.md) | مشخصاتِ کارتِ بنیادی |
 | [`SPEC-learning-hub.md`](./SPEC-learning-hub.md) | مشخصاتِ ناحیهٔ یادگیری |
+| [`INTELLIGENCE-DESK-RATIONALIZATION.md`](./INTELLIGENCE-DESK-RATIONALIZATION.md) | ماتریسِ یکپارچه‌سازیِ تجربهٔ داخلی، جریان شش‌سؤالی و مرز مخاطب |
 | [`ROADMAP-TERMINAL.md`](./ROADMAP-TERMINAL.md) | معماریِ ترمینال — **تاریخی**، جهتش را `PRODUCT-BLUEPRINT` گرفته |
 | [`QUANT-EXECUTION-PLAN.md`](./QUANT-EXECUTION-PLAN.md) | معماریِ ۹ لایهٔ کوانت — **تاریخی**، همان‌طور |
 | [`DSS-STATE.md`](./DSS-STATE.md) | وضعیتِ فازهای T0–T8 — **تاریخی**؛ «کجاییم» حالا `COMMAND-CENTER` است |

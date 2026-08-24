@@ -15,6 +15,7 @@ import {
   Bell,
   NotebookPen,
   ClipboardCheck,
+  Inbox,
   Sparkles,
   Video,
   LogOut,
@@ -34,26 +35,57 @@ type NavItem = {
   soon?: boolean;
 };
 
-const NAV: NavItem[] = [
-  { key: "dashboard", label: "داشبورد", href: "/admin", icon: <LayoutDashboard size={18} /> },
-  // میز بالای فهرست می‌نشیند چون نقطهٔ شروعِ کارِ روزانه است، ولی هیچ‌کدام از
-  // ورودی‌های زیر را جایگزین نمی‌کند — همه سرِ جای خودشان می‌مانند.
-  { key: "desk", label: "میزِ آرش", href: "/admin/desk", icon: <CalendarDays size={18} /> },
-  // موتورِ دستیِ هوشمندی زیرِ میز می‌نشیند: میز وضعیت را نشان می‌دهد، این یکی
-  // گردشِ ثبت و بازبینی است. هیچ‌کدام جای دیگری را نمی‌گیرد.
-  { key: "intelligence", label: "هوشمندی دستی", href: "/admin/intelligence", icon: <Telescope size={18} /> },
-  { key: "users", label: "کاربران", href: "/admin/users", icon: <Users size={18} /> },
-  { key: "portfolio", label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio", icon: <PieChart size={18} /> },
-  { key: "payments", label: "پرداخت‌ها", href: "/admin/manage?tab=payments", icon: <CreditCard size={18} /> },
-  { key: "waitlist", label: "لیست انتظار", href: "/admin/manage?tab=waitlist", icon: <Mail size={18} /> },
-  { key: "news", label: "اطلاعیه‌ها", href: "/admin/announcements", icon: <Bell size={18} /> },
-  { key: "notes", label: "یادداشت بازار", href: "/admin/notes", icon: <NotebookPen size={18} /> },
-  { key: "analyses", label: "کارنامه", href: "/admin/analyses", icon: <ClipboardCheck size={18} /> },
-  { key: "content", label: "هابِ محتوا", href: "/admin/content", icon: <Sparkles size={18} /> },
-  { key: "webinars", label: "وبینارها", href: "/admin/webinars", icon: <Video size={18} /> },
-  { key: "market", label: "رصد بازار", href: "/admin/radar", icon: <LineChart size={18} /> },
-  { key: "fx", label: "ابر داشبورد ارز", href: "/admin/fx", icon: <Landmark size={18} /> },
-  { key: "health", label: "سلامتِ سامانه", href: "/admin/health", icon: <Activity size={18} /> },
+type NavGroup = {
+  key: "daily" | "intelligence" | "business" | "operations";
+  label: string;
+  items: NavItem[];
+};
+
+/**
+ * یک مقصدِ روزانه و سه گروهِ پشتیبان. مسیرها حذف نشده‌اند؛ فقط از یک فهرستِ
+ * تخت و بی‌اولویت به سلسله‌مراتبِ کاری تبدیل شده‌اند.
+ */
+const NAV_GROUPS: NavGroup[] = [
+  {
+    key: "daily",
+    label: "شروع روز",
+    items: [
+      { key: "desk", label: "میز فرماندهی آرش", href: "/admin/desk", icon: <CalendarDays size={18} /> },
+    ],
+  },
+  {
+    key: "intelligence",
+    label: "موتورهای هوشمندی",
+    items: [
+      { key: "intelligence", label: "گردش هوشمندی دستی", href: "/admin/intelligence", icon: <Telescope size={18} /> },
+      { key: "market", label: "رادار بازار", href: "/admin/radar", icon: <LineChart size={18} /> },
+      { key: "fx", label: "موتور ارز", href: "/admin/fx", icon: <Landmark size={18} /> },
+      { key: "analyses", label: "کارنامه", href: "/admin/analyses", icon: <ClipboardCheck size={18} /> },
+      { key: "drafts", label: "نامزدهای موتور", href: "/admin/drafts", icon: <Inbox size={18} /> },
+      { key: "notes", label: "یادداشت بازار", href: "/admin/notes", icon: <NotebookPen size={18} /> },
+      { key: "content", label: "هاب محتوا", href: "/admin/content", icon: <Sparkles size={18} /> },
+    ],
+  },
+  {
+    key: "business",
+    label: "مشتری و درآمد",
+    items: [
+      { key: "users", label: "کاربران", href: "/admin/users", icon: <Users size={18} /> },
+      { key: "portfolio", label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio", icon: <PieChart size={18} /> },
+      { key: "payments", label: "پرداخت‌ها", href: "/admin/manage?tab=payments", icon: <CreditCard size={18} /> },
+      { key: "waitlist", label: "لیست انتظار", href: "/admin/manage?tab=waitlist", icon: <Mail size={18} /> },
+      { key: "webinars", label: "وبینارها", href: "/admin/webinars", icon: <Video size={18} /> },
+    ],
+  },
+  {
+    key: "operations",
+    label: "عملیات سامانه",
+    items: [
+      { key: "dashboard", label: "نمای مدیریتی", href: "/admin/overview", icon: <LayoutDashboard size={18} /> },
+      { key: "news", label: "اطلاعیه‌ها", href: "/admin/announcements", icon: <Bell size={18} /> },
+      { key: "health", label: "سلامت سامانه", href: "/admin/health", icon: <Activity size={18} /> },
+    ],
+  },
 ];
 
 export default function AdminShell({
@@ -71,7 +103,10 @@ export default function AdminShell({
 
   const isActive = (item: NavItem) => {
     if (item.soon) return false;
-    if (item.key === "dashboard") return pathname === "/admin";
+    if (item.key === "dashboard") return pathname.startsWith("/admin/overview");
+    if (item.key === "desk") return pathname.startsWith("/admin/desk");
+    if (item.key === "intelligence") return pathname.startsWith("/admin/intelligence");
+    if (item.key === "health") return pathname.startsWith("/admin/health");
     if (item.key === "users") return pathname.startsWith("/admin/users");
     if (item.key === "news") return pathname.startsWith("/admin/announcements");
     if (item.key === "notes") return pathname.startsWith("/admin/notes");
@@ -96,43 +131,53 @@ export default function AdminShell({
   };
 
   const NavList = () => (
-    <nav className="flex flex-col gap-1">
-      {NAV.map((item) => {
-        const active = isActive(item);
-        if (item.soon) {
-          return (
-            <div
-              key={item.key}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium cursor-not-allowed"
-              style={{ color: "var(--text-3)" }}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-              <span
-                className="mr-auto rounded-full px-2 py-0.5 text-[10px] font-bold"
-                style={{ background: "var(--surface-2)", color: "var(--text-3)" }}
-              >
-                به‌زودی
-              </span>
-            </div>
-          );
-        }
-        return (
-          <Link
-            key={item.key}
-            href={item.href!}
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors"
-            style={{
-              background: active ? "var(--navy-deep)" : "transparent",
-              color: active ? "var(--text-on-navy)" : "var(--text-2)",
-            }}
-          >
-            {item.icon}
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
+    <nav aria-label="ناوبری مدیریت" className="space-y-5">
+      {NAV_GROUPS.map((group) => (
+        <div key={group.key}>
+          <p className="mb-1.5 px-3 text-[10px] font-bold" style={{ color: "var(--text-3)" }}>
+            {group.label}
+          </p>
+          <div className="flex flex-col gap-1">
+            {group.items.map((item) => {
+              const active = isActive(item);
+              if (item.soon) {
+                return (
+                  <div
+                    key={item.key}
+                    className="flex min-h-11 cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium"
+                    style={{ color: "var(--text-3)" }}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                    <span
+                      className="mr-auto rounded-full px-2 py-0.5 text-[10px] font-bold"
+                      style={{ background: "var(--surface-2)", color: "var(--text-3)" }}
+                    >
+                      به‌زودی
+                    </span>
+                  </div>
+                );
+              }
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href!}
+                  onClick={() => setOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2"
+                  style={{
+                    background: active ? "var(--navy-deep)" : "transparent",
+                    color: active ? "var(--text-on-navy)" : "var(--text-2)",
+                  }}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </nav>
   );
 
