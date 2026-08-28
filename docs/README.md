@@ -77,6 +77,8 @@
 | [`ROADMAP-TERMINAL.md`](./ROADMAP-TERMINAL.md) | معماریِ ترمینال — **تاریخی**، جهتش را `PRODUCT-BLUEPRINT` گرفته |
 | [`QUANT-EXECUTION-PLAN.md`](./QUANT-EXECUTION-PLAN.md) | معماریِ ۹ لایهٔ کوانت — **تاریخی**، همان‌طور |
 | [`DSS-STATE.md`](./DSS-STATE.md) | وضعیتِ فازهای T0–T8 — **تاریخی**؛ «کجاییم» حالا `COMMAND-CENTER` است |
+| [`HOT-COLD-STORAGE-DESIGN.md`](./HOT-COLD-STORAGE-DESIGN.md) | معماریِ Hot/Cold بینِ Supabase و Cloudflare R2 — چه داده‌ای گرم می‌ماند، چه چیزی سرد می‌شود، و پنج شرطی که بدونشان هیچ ردیفی «آرشیوشده» شمرده نمی‌شود · **پیشنهاد، اجرانشده** |
+| [`DATA-RETENTION-AND-ARCHIVE-PLAN.md`](./DATA-RETENTION-AND-ARCHIVE-PLAN.md) | برنامهٔ پنج‌گامیِ رسیدن به زیر ۴۰۰ MB با آزادسازیِ اندازه‌گیری‌شدهٔ هر گام، قفل، Rollback و گیتِ لازم · **پیشنهاد، اجرانشده** |
 
 > ⚠️ سه سندِ آخر زمانی «سندِ زنده» بودند. از مرداد ۱۴۰۵ نقشِ «کجاییم» به
 > `COMMAND-CENTER` و نقشِ «به کجا می‌رویم» به `PRODUCT-BLUEPRINT` منتقل شد. محتوای

@@ -108,6 +108,26 @@ const CASES = [
     to: "  const admin = createAdminClient();",
     test: "lib/supabase/service-role.test.ts",
   },
+
+  /* ── نگهداشت و سهمیه ───────────────────────────────────────────────────
+   * نقصِ واقعیِ شهریورِ ۱۴۰۵: رله چهار بخش می‌نوشت و فقط دو تا خوانده می‌شد؛
+   * ۳۲۷ MB نوشته شد و هرگز خوانده نشد. */
+  {
+    name: "فیدِ مرده پشتِ جدولِ کوچک",
+    defect: "تازگی بعد از حجم سنجیده شود — قطعِ رله پشتِ «زیرِ بودجه» سبز می‌شود",
+    file: "lib/ops/retention.ts",
+    from: "  if (obs.ageMinutes > policy.freshWithinMinutes) {",
+    to: "  if (false && obs.ageMinutes > policy.freshWithinMinutes) {",
+    test: "lib/ops/retention.test.ts",
+  },
+  {
+    name: "بازگشتِ بخش‌های بی‌خواننده",
+    defect: "رله دوباره stocks/funds را بنویسد — روزی ۷.۳ MB دادهٔ خوانده‌نشده",
+    file: "relay/server.mjs",
+    from: 'String(process.env.IR_HISTORY_SECTIONS || "gold,currency")',
+    to: 'String(process.env.IR_HISTORY_SECTIONS || "gold,currency,funds,stocks")',
+    test: "relay/history-sections.test.mjs",
+  },
 ];
 
 function runTest(file) {

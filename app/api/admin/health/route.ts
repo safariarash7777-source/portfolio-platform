@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  RETENTION_POLICIES,
+  classifyRetention,
+  retentionHealthState,
+} from "@/lib/ops/retention";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { classifyCronRun, type LastRun } from "@/lib/cron/health";
 import { CRON_JOB_KEYS } from "@/lib/cron/ledger";
@@ -130,6 +135,37 @@ async function freshnessSignal(
   } catch {
     return { key, label, state: "unknown", detail: "پرس‌وجو مردود شد" };
   }
+}
+
+
+/**
+ * سن‌های یک جدول: فاصلهٔ آخرین ردیف تا حالا، و سنِ قدیمی‌ترین ردیف.
+ *
+ * هر شکستی `null` می‌دهد نه صفر — «نخواندیم» و «صفر دقیقه» دو چیزند.
+ */
+async function tableAge(
+  db: Admin,
+  table: string
+): Promise<{ newestAgeMinutes: number | null; oldestDays: number | null }> {
+  const column = table === "symbol_history" ? "captured_at" : "captured_at";
+  const pick = async (asc: boolean): Promise<string | null> => {
+    const { data, error } = await db
+      .from(table)
+      .select(column)
+      .order(column, { ascending: asc })
+      .limit(1)
+      .maybeSingle();
+    if (error) return null;
+    const v = (data as Record<string, unknown> | null)?.[column];
+    return typeof v === "string" ? v : null;
+  };
+  const [newest, oldest] = await Promise.all([pick(false), pick(true)]);
+  const now = Date.now();
+  const mins = (iso: string | null) =>
+    iso === null ? null : Math.max(0, Math.round((now - new Date(iso).getTime()) / 60000));
+  const days = (iso: string | null) =>
+    iso === null ? null : Math.max(0, (now - new Date(iso).getTime()) / 86_400_000);
+  return { newestAgeMinutes: mins(newest), oldestDays: days(oldest) };
 }
 
 export async function GET() {
@@ -331,6 +367,29 @@ export async function GET() {
       leadsExists = null;
     }
     signals.push(classifyLeadReadiness(leadsExists));
+
+    // ── ۷′) نگهداشت و آرشیو — `P2-DATA-QUOTA-RECOVERY-001` ──
+    // چرا اینجاست: نگهداشت تا امروز فقط داخلِ رله بود و وضعیتش فقط در
+    // endpointِ خودِ رله دیده می‌شد. نتیجه این شد که یک پنجرهٔ ۱۸۰روزه برای
+    // جدولی که روزی ۷.۷ MB می‌نویسد، ماه‌ها بی‌سر‌و‌صدا ماند تا سهمیه پر شد.
+    for (const p of RETENTION_POLICIES) {
+      const probe = await tableAge(admin, p.table);
+      const verdict = classifyRetention(p, {
+        table: p.table,
+        // حجمِ بایتی از سمتِ سایت خواندنی نیست؛ عمداً `null` می‌ماند تا
+        // «نسنجیدیم» با «سالم است» یکی نشود.
+        sizeMb: null,
+        ageMinutes: probe.newestAgeMinutes,
+        oldestDays: probe.oldestDays,
+      });
+      signals.push({
+        key: `retention:${p.table}`,
+        label: `نگهداشت — ${p.label}`,
+        state: retentionHealthState(verdict.state),
+        detail: verdict.detail,
+        ageMinutes: probe.newestAgeMinutes,
+      });
+    }
   }
 
   // ── ۸) وبهوکِ تلگرام — فقط سلامت، بدونِ URL ──
