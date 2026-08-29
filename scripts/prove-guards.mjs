@@ -108,6 +108,42 @@ const CASES = [
     to: "  const admin = createAdminClient();",
     test: "lib/supabase/service-role.test.ts",
   },
+
+  /* ── نگهداشت و سهمیه ───────────────────────────────────────────────────
+   * نقصِ واقعیِ شهریورِ ۱۴۰۵: رله چهار بخش می‌نوشت و فقط دو تا خوانده می‌شد؛
+   * ۳۲۷ MB نوشته شد و هرگز خوانده نشد. */
+  {
+    name: "فیدِ مرده پشتِ جدولِ کوچک",
+    defect: "تازگی بعد از حجم سنجیده شود — قطعِ رله پشتِ «زیرِ بودجه» سبز می‌شود",
+    file: "lib/ops/retention.ts",
+    from: "  if (obs.ageMinutes > policy.freshWithinMinutes) {",
+    to: "  if (false && obs.ageMinutes > policy.freshWithinMinutes) {",
+    test: "lib/ops/retention.test.ts",
+  },
+  {
+    name: "بازگشتِ بخش‌های بی‌خواننده",
+    defect: "رله دوباره stocks/funds را بنویسد — روزی ۷.۳ MB دادهٔ خوانده‌نشده",
+    file: "relay/server.mjs",
+    from: 'String(process.env.IR_HISTORY_SECTIONS || "gold,currency")',
+    to: 'String(process.env.IR_HISTORY_SECTIONS || "gold,currency,funds,stocks")',
+    test: "relay/history-sections.test.mjs",
+  },
+  {
+    name: "بعدِ نسنجیدنی، کلِ نمای سلامت را کور کند",
+    defect: "نبودِ سنجشِ حجم دوباره `unknown` بدهد — `rollup` برای همیشه unknown و هر خرابیِ دیگری پشتش گم می‌شود",
+    file: "lib/ops/retention.ts",
+    from: '      budgetChecked: false,\n      state: "ok",\n      detail:\n        "تازگی و پنجرهٔ نگهداشت سالم‌اند. حجم سنجیده نشد',
+    to: '      budgetChecked: false,\n      state: "unknown",\n      detail:\n        "تازگی و پنجرهٔ نگهداشت سالم‌اند. حجم سنجیده نشد',
+    test: "lib/ops/retention.test.ts",
+  },
+  {
+    name: "ادعای سنجشِ بودجه بدونِ سنجش",
+    defect: "`budgetChecked` در مسیرِ حجمِ نسنجیده true شود — نما ادعا می‌کند بودجه بررسی شده",
+    file: "lib/ops/retention.ts",
+    from: '  if (obs.sizeMb === null) {\n    return {\n      ...base,\n      budgetChecked: false,',
+    to: '  if (obs.sizeMb === null) {\n    return {\n      ...base,\n      budgetChecked: true,',
+    test: "lib/ops/retention.test.ts",
+  },
 ];
 
 function runTest(file) {

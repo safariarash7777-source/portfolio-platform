@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  RETENTION_POLICIES,
+  classifyRetention,
+  retentionHealthState,
+  type RetentionVerdict,
+} from "@/lib/ops/retention";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { classifyCronRun, type LastRun } from "@/lib/cron/health";
 import { CRON_JOB_KEYS } from "@/lib/cron/ledger";
@@ -132,6 +138,48 @@ async function freshnessSignal(
   }
 }
 
+
+/**
+ * سن‌های یک جدول: فاصلهٔ آخرین ردیف تا حالا، و سنِ قدیمی‌ترین ردیف.
+ *
+ * هر شکستی `null` می‌دهد نه صفر — «نخواندیم» و «صفر دقیقه» دو چیزند.
+ */
+async function tableAge(
+  db: Admin,
+  table: string
+): Promise<{ newestAgeMinutes: number | null; oldestDays: number | null }> {
+  // ⚠️ ترتیب بر اساس `id` است، نه `captured_at`.
+  //
+  // نسخهٔ اولِ همین تابع `ORDER BY captured_at` می‌زد و بدونِ اینکه بخواهم،
+  // تنها مصرف‌کنندهٔ `idx_symbol_history_captured` شد — همان indexِ ۳۲
+  // مگابایتی که ممیزی «تقریباً مرده» خوانده بود و پیشنهادِ حذفش را داده بود.
+  // یعنی داشتم دلیلِ زنده‌ماندنِ چیزی را می‌ساختم که خودم می‌خواستم برش دارم،
+  // و روی جدولِ ۲ میلیون‌ردیفی هم دو پرس‌وجوی مرتب‌سازی در هر بررسی.
+  //
+  // `id` یک `bigserial` است و به ترتیبِ درج بالا می‌رود، پس جدیدترین `id`
+  // عملاً جدیدترین درج است و از `*_pkey` می‌خواند که در هر حال می‌ماند.
+  // انحرافِ ممکن (کامیتِ همزمانِ خارج از ترتیب) در حدِ میلی‌ثانیه است و در
+  // برابر آستانه‌های ۳ و ۲۶ ساعتِ این سیاست بی‌معناست.
+  const pick = async (asc: boolean): Promise<string | null> => {
+    const { data, error } = await db
+      .from(table)
+      .select("captured_at")
+      .order("id", { ascending: asc })
+      .limit(1)
+      .maybeSingle();
+    if (error) return null;
+    const v = (data as Record<string, unknown> | null)?.captured_at;
+    return typeof v === "string" ? v : null;
+  };
+  const [newest, oldest] = await Promise.all([pick(false), pick(true)]);
+  const now = Date.now();
+  const mins = (iso: string | null) =>
+    iso === null ? null : Math.max(0, Math.round((now - new Date(iso).getTime()) / 60000));
+  const days = (iso: string | null) =>
+    iso === null ? null : Math.max(0, (now - new Date(iso).getTime()) / 86_400_000);
+  return { newestAgeMinutes: mins(newest), oldestDays: days(oldest) };
+}
+
 export async function GET() {
   // ── Auth: فقط admin ──
   const supabase = await createClient();
@@ -152,6 +200,7 @@ export async function GET() {
 
   const now = new Date();
   const signals: HealthSignal[] = [];
+  const retentionVerdicts: RetentionVerdict[] = [];
 
   // ── ۱) متغیرهای محیطی — فقط حضور ──
   const requiredPresence = presence(REQUIRED_ENV);
@@ -331,6 +380,32 @@ export async function GET() {
       leadsExists = null;
     }
     signals.push(classifyLeadReadiness(leadsExists));
+
+    // ── ۷′) نگهداشت و آرشیو — `P2-DATA-QUOTA-RECOVERY-001` ──
+    // چرا اینجاست: نگهداشت تا امروز فقط داخلِ رله بود و وضعیتش فقط در
+    // endpointِ خودِ رله دیده می‌شد. نتیجه این شد که یک پنجرهٔ ۱۸۰روزه برای
+    // جدولی که روزی ۷.۷ MB می‌نویسد، ماه‌ها بی‌سر‌و‌صدا ماند تا سهمیه پر شد.
+    for (const p of RETENTION_POLICIES) {
+      const probe = await tableAge(admin, p.table);
+      const verdict = classifyRetention(p, {
+        table: p.table,
+        // حجمِ بایتی از سمتِ سایت خواندنی نیست و عمداً `null` می‌ماند.
+        // `classifyRetention` فقط دربارهٔ ابعادِ سنجیده‌شده حکم می‌دهد و
+        // `budgetChecked` می‌گوید کدام‌ها بوده‌اند — پس نه ادعای اضافه
+        // می‌شود، نه یک بعدِ نسنجیدنی کلِ `rollup` را کور می‌کند.
+        sizeMb: null,
+        ageMinutes: probe.newestAgeMinutes,
+        oldestDays: probe.oldestDays,
+      });
+      retentionVerdicts.push(verdict);
+      signals.push({
+        key: `retention:${p.table}`,
+        label: `نگهداشت — ${p.label}`,
+        state: retentionHealthState(verdict.state),
+        detail: verdict.detail,
+        ageMinutes: probe.newestAgeMinutes,
+      });
+    }
   }
 
   // ── ۸) وبهوکِ تلگرام — فقط سلامت، بدونِ URL ──
@@ -393,5 +468,15 @@ export async function GET() {
     deployment,
     // فقط نام و حضور — هیچ مقداری.
     env: { required: requiredPresence, optional: optionalPresence },
+    // ظرفیت: صریح می‌گوید کدام بعد سنجیده شد و کدام نه. `budgetChecked:false`
+    // یعنی حکم فقط دربارهٔ تازگی و پنجرهٔ نگهداشت است.
+    retention: retentionVerdicts.map((v) => ({
+      table: v.table,
+      state: v.state,
+      budgetMb: v.budgetMb,
+      sizeMb: v.sizeMb,
+      budgetChecked: v.budgetChecked,
+      hotDays: v.hotDays,
+    })),
   });
 }
