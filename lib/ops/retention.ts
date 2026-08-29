@@ -106,6 +106,14 @@ export interface RetentionVerdict {
   sizeMb: number | null;
   budgetMb: number;
   hotDays: number | null;
+  /**
+   * آیا بعدِ «حجم» واقعاً سنجیده شد؟
+   *
+   * `false` یعنی `state` فقط دربارهٔ تازگی و پنجرهٔ نگهداشت حرف می‌زند و
+   * دربارهٔ بودجه ساکت است. بدونِ این پرچم، `ok` بیش از آنچه سنجیده شده
+   * ادعا می‌کرد.
+   */
+  budgetChecked: boolean;
 }
 
 const fa = (n: number) => n.toLocaleString("en-US");
@@ -121,12 +129,15 @@ export function classifyRetention(
   policy: RetentionPolicy,
   obs: RetentionObservation
 ): RetentionVerdict {
+  // پیش‌فرضِ `budgetChecked` عمداً `false` است: تا وقتی حجم واقعاً سنجیده
+  // نشده، هیچ مسیرِ خروجی نباید ادعا کند سنجیده شده.
   const base = {
     table: policy.table,
     label: policy.label,
     sizeMb: obs.sizeMb,
     budgetMb: policy.budgetMb,
     hotDays: policy.hotDays,
+    budgetChecked: false,
   };
 
   if (obs.ageMinutes === null && obs.sizeMb === null) {
@@ -158,23 +169,33 @@ export function classifyRetention(
     };
   }
 
+  // ── بعدِ سوم: بودجهٔ حجمی ──────────────────────────────────────────────
+  // حجمِ بایتیِ جدول از سمتِ سایت خواندنی نیست: `pg_total_relation_size` از
+  // PostgREST در دسترس نیست و ساختنِ تابعِ متناظرش migration می‌خواهد.
+  //
+  // ⚠️ نسخهٔ اولِ این تابع در آن حالت `unknown` برمی‌گرداند. چون این سیگنال
+  // وارد `rollup(signals)` در `/api/admin/health` می‌شود و `unknown` در آن
+  // رتبه‌بندی از `stale` بدتر است، وضعیتِ **کلِ سامانه** برای همیشه
+  // `unknown` می‌ماند — یعنی یک بعدِ نسنجیدنی، کلِ نمای سلامت را کور می‌کرد.
+  // آن بدتر از بی‌فایده بود: هر خرابیِ واقعیِ دیگری هم پشتش گم می‌شد.
+  //
+  // اصلاح: حکم فقط دربارهٔ ابعادی صادر می‌شود که **واقعاً سنجیده شده‌اند**، و
+  // `budgetChecked` می‌گوید کدام‌ها بوده‌اند. این نه `ok`ِ ساختگی است و نه
+  // `failed`ِ ساختگی — ادعا دقیقاً به‌اندازهٔ اندازه‌گیری است.
   if (obs.sizeMb === null) {
-    // این «نامعلوم» یک نقصِ گذرا نیست، یک قابلیتِ غایب است: حجمِ بایتیِ جدول
-    // از سمتِ سایت خواندنی نیست، چون `pg_total_relation_size` از PostgREST
-    // در دسترس نیست و تابعِ SECURITY DEFINERِ متناظرش هنوز ساخته نشده.
-    // «سالم» گفتن در این حالت یعنی ادعای چیزی که نسنجیده‌ایم — همان
-    // سبزِ ناروا. پس صریح می‌گوییم چه چیزی سنجیده شد و چه چیزی نه.
     return {
       ...base,
-      state: "unknown",
+      budgetChecked: false,
+      state: "ok",
       detail:
-        "تازگی و پنجرهٔ نگهداشت سالم‌اند، ولی حجم سنجیده نشد: خواندنش تابعِ سمتِ دیتابیس می‌خواهد که هنوز وجود ندارد",
+        "تازگی و پنجرهٔ نگهداشت سالم‌اند. حجم سنجیده نشد — خواندنش تابعِ سمتِ دیتابیس می‌خواهد که وجود ندارد، پس دربارهٔ بودجه ادعایی نمی‌شود",
     };
   }
 
   if (obs.sizeMb > policy.budgetMb) {
     return {
       ...base,
+      budgetChecked: true,
       state: "over_budget",
       detail: `${fa(Math.round(obs.sizeMb))} MB در برابر بودجهٔ ${fa(policy.budgetMb)} MB — نگهداشت هست ولی کافی نیست`,
     };
@@ -182,6 +203,7 @@ export function classifyRetention(
 
   return {
     ...base,
+    budgetChecked: true,
     state: "ok",
     detail: `${fa(Math.round(obs.sizeMb))} MB زیرِ بودجهٔ ${fa(policy.budgetMb)} MB و داده تازه است`,
   };

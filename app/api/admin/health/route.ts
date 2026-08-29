@@ -4,6 +4,7 @@ import {
   RETENTION_POLICIES,
   classifyRetention,
   retentionHealthState,
+  type RetentionVerdict,
 } from "@/lib/ops/retention";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { classifyCronRun, type LastRun } from "@/lib/cron/health";
@@ -147,16 +148,27 @@ async function tableAge(
   db: Admin,
   table: string
 ): Promise<{ newestAgeMinutes: number | null; oldestDays: number | null }> {
-  const column = table === "symbol_history" ? "captured_at" : "captured_at";
+  // ⚠️ ترتیب بر اساس `id` است، نه `captured_at`.
+  //
+  // نسخهٔ اولِ همین تابع `ORDER BY captured_at` می‌زد و بدونِ اینکه بخواهم،
+  // تنها مصرف‌کنندهٔ `idx_symbol_history_captured` شد — همان indexِ ۳۲
+  // مگابایتی که ممیزی «تقریباً مرده» خوانده بود و پیشنهادِ حذفش را داده بود.
+  // یعنی داشتم دلیلِ زنده‌ماندنِ چیزی را می‌ساختم که خودم می‌خواستم برش دارم،
+  // و روی جدولِ ۲ میلیون‌ردیفی هم دو پرس‌وجوی مرتب‌سازی در هر بررسی.
+  //
+  // `id` یک `bigserial` است و به ترتیبِ درج بالا می‌رود، پس جدیدترین `id`
+  // عملاً جدیدترین درج است و از `*_pkey` می‌خواند که در هر حال می‌ماند.
+  // انحرافِ ممکن (کامیتِ همزمانِ خارج از ترتیب) در حدِ میلی‌ثانیه است و در
+  // برابر آستانه‌های ۳ و ۲۶ ساعتِ این سیاست بی‌معناست.
   const pick = async (asc: boolean): Promise<string | null> => {
     const { data, error } = await db
       .from(table)
-      .select(column)
-      .order(column, { ascending: asc })
+      .select("captured_at")
+      .order("id", { ascending: asc })
       .limit(1)
       .maybeSingle();
     if (error) return null;
-    const v = (data as Record<string, unknown> | null)?.[column];
+    const v = (data as Record<string, unknown> | null)?.captured_at;
     return typeof v === "string" ? v : null;
   };
   const [newest, oldest] = await Promise.all([pick(false), pick(true)]);
@@ -188,6 +200,7 @@ export async function GET() {
 
   const now = new Date();
   const signals: HealthSignal[] = [];
+  const retentionVerdicts: RetentionVerdict[] = [];
 
   // ── ۱) متغیرهای محیطی — فقط حضور ──
   const requiredPresence = presence(REQUIRED_ENV);
@@ -376,12 +389,15 @@ export async function GET() {
       const probe = await tableAge(admin, p.table);
       const verdict = classifyRetention(p, {
         table: p.table,
-        // حجمِ بایتی از سمتِ سایت خواندنی نیست؛ عمداً `null` می‌ماند تا
-        // «نسنجیدیم» با «سالم است» یکی نشود.
+        // حجمِ بایتی از سمتِ سایت خواندنی نیست و عمداً `null` می‌ماند.
+        // `classifyRetention` فقط دربارهٔ ابعادِ سنجیده‌شده حکم می‌دهد و
+        // `budgetChecked` می‌گوید کدام‌ها بوده‌اند — پس نه ادعای اضافه
+        // می‌شود، نه یک بعدِ نسنجیدنی کلِ `rollup` را کور می‌کند.
         sizeMb: null,
         ageMinutes: probe.newestAgeMinutes,
         oldestDays: probe.oldestDays,
       });
+      retentionVerdicts.push(verdict);
       signals.push({
         key: `retention:${p.table}`,
         label: `نگهداشت — ${p.label}`,
@@ -452,5 +468,15 @@ export async function GET() {
     deployment,
     // فقط نام و حضور — هیچ مقداری.
     env: { required: requiredPresence, optional: optionalPresence },
+    // ظرفیت: صریح می‌گوید کدام بعد سنجیده شد و کدام نه. `budgetChecked:false`
+    // یعنی حکم فقط دربارهٔ تازگی و پنجرهٔ نگهداشت است.
+    retention: retentionVerdicts.map((v) => ({
+      table: v.table,
+      state: v.state,
+      budgetMb: v.budgetMb,
+      sizeMb: v.sizeMb,
+      budgetChecked: v.budgetChecked,
+      hotDays: v.hotDays,
+    })),
   });
 }

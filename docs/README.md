@@ -56,6 +56,7 @@
 | [`RUNBOOK-branch-protection.md`](./RUNBOOK-branch-protection.md) | اجباری‌کردنِ CI روی `main` — **هنوز اجرا نشده** (`B-015` باز) |
 | [`RUNBOOK-gate2-staging-rehearsal.md`](./RUNBOOK-gate2-staging-rehearsal.md) | تمرینِ stagingِ مسیرِ لید — **متوقف پیش از اجرا**، منتظرِ `AUTHORIZE_GATE2_STAGING` |
 | [`PRODUCTION-ACTIVATION.md`](./PRODUCTION-ACTIVATION.md) | اجرای پنج migrationِ باقی‌مانده روی Production — **منتظرِ تصمیمِ صریحِ آرش**، تنها گلوگاهِ Gate 2 |
+| [`RUNBOOK-relay-history-sections.md`](./RUNBOOK-relay-history-sections.md) | **فعال‌کردنِ مهارِ رشدِ `ir_market_history`** — merge و Vercel به‌تنهایی کافی نیست؛ رله باید روی Liara مستقر شود · **اجرا نشده** |
 | [`RUNBOOK-backup-windows.md`](./RUNBOOK-backup-windows.md) | **گرفتنِ بکاپ از Production روی ویندوز** — یک دستور، پیش‌نیازِ اجباریِ هر migration |
 
 ---

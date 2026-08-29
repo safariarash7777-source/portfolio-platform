@@ -128,6 +128,22 @@ const CASES = [
     to: 'String(process.env.IR_HISTORY_SECTIONS || "gold,currency,funds,stocks")',
     test: "relay/history-sections.test.mjs",
   },
+  {
+    name: "بعدِ نسنجیدنی، کلِ نمای سلامت را کور کند",
+    defect: "نبودِ سنجشِ حجم دوباره `unknown` بدهد — `rollup` برای همیشه unknown و هر خرابیِ دیگری پشتش گم می‌شود",
+    file: "lib/ops/retention.ts",
+    from: '      budgetChecked: false,\n      state: "ok",\n      detail:\n        "تازگی و پنجرهٔ نگهداشت سالم‌اند. حجم سنجیده نشد',
+    to: '      budgetChecked: false,\n      state: "unknown",\n      detail:\n        "تازگی و پنجرهٔ نگهداشت سالم‌اند. حجم سنجیده نشد',
+    test: "lib/ops/retention.test.ts",
+  },
+  {
+    name: "ادعای سنجشِ بودجه بدونِ سنجش",
+    defect: "`budgetChecked` در مسیرِ حجمِ نسنجیده true شود — نما ادعا می‌کند بودجه بررسی شده",
+    file: "lib/ops/retention.ts",
+    from: '  if (obs.sizeMb === null) {\n    return {\n      ...base,\n      budgetChecked: false,',
+    to: '  if (obs.sizeMb === null) {\n    return {\n      ...base,\n      budgetChecked: true,',
+    test: "lib/ops/retention.test.ts",
+  },
 ];
 
 function runTest(file) {
