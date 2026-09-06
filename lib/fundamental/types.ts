@@ -62,7 +62,10 @@ export interface CodalN10Data {
   };
 }
 
-/** یک محصول در گزارش ماهانهٔ ن-۳۰ — برای فاز بعد (نیازمند اکسل کدال). */
+/** یک محصول در گزارش ماهانهٔ ن-۳۰ — از اکسل کدال پارس می‌شود و پر است
+ *  (اندازه‌گیریِ Production ۲۰۲۶-۰۹-۰۶: ۴٬۷۷۹ گزارش روی ۳۱۵ نماد، همه با آرایهٔ
+ *  ناتهی؛ `sales_qty` در ۴٬۷۶۴ و `sales_rate` در ۴٬۷۵۹ گزارش موجود).
+ *  مصرف‌کننده: `lib/core/monthlyReport.ts` (سریِ نرخ، ترکیبِ محصول، تولید/فروش). */
 export interface N30ProductRow {
   product_name: string;
   market: "داخلی" | "صادراتی";
@@ -72,7 +75,7 @@ export interface N30ProductRow {
   sales_amount: number | null; // میلیون ریال
 }
 
-/** دادهٔ نرمال‌شدهٔ گزارش ن-۳۰ (فعالیت ماهانه) — برای فاز بعد. */
+/** دادهٔ نرمال‌شدهٔ گزارش ن-۳۰ (فعالیت ماهانه). */
 export interface CodalN30Data {
   symbol: string;
   report_kind: "ن-۳۰";
