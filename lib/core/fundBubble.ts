@@ -125,13 +125,25 @@ export function bubbleSeries(days: readonly NavPricePoint[]): BubbleSeries {
 }
 
 export interface BubbleSummary {
-  current: number;
+  /**
+   * آخرین حبابِ **ثبت‌شده در تاریخچه** — نه حبابِ امروز.
+   *
+   * ── چرا اسمش عوض شد (یافتهٔ بازبینی) ──────────────────────────────────
+   * نامِ قبلی `current` بود و نما آن را کنارِ «حبابِ جاری» می‌گذاشت. ولی این
+   * دو **دو عددِ متفاوت‌اند**: این یکی از `symbol_history` می‌آید که پایانِ‌روزی
+   * است و ممکن است مالِ چند روز پیش باشد؛ آن یکی از اسنپ‌شاتِ لحظه‌ایِ رله.
+   * گذاشتنشان کنارِ هم بدونِ برچسب یعنی «فاصله از میانه» ممکن بود از عددی
+   * حساب شود که کاربر فکر می‌کند امروز است.
+   */
+  lastObserved: number;
+  /** تاریخِ همان آخرین مشاهده — تا نما بتواند بگوید مالِ کِی است */
+  lastObservedDate: string;
   min: number;
   max: number;
   mean: number;
   median: number;
-  /** حبابِ جاری منهای میانهٔ همین بازه (واحد: درصدِ حباب) */
-  vsMedian: number;
+  /** آخرین حبابِ **تاریخی** منهای میانهٔ همین بازه (واحد: درصدِ حباب) */
+  lastVsMedian: number;
   observedDays: number;
 }
 
@@ -142,25 +154,37 @@ export function summarizeBubble(series: BubbleSeries): BubbleSummary | null {
   const sorted = [...v].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   const median = sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  const current = v[v.length - 1];
+  const last = v[v.length - 1];
   return {
-    current,
+    lastObserved: last,
+    lastObservedDate: series.points[series.points.length - 1].trade_date,
     min: sorted[0],
     max: sorted[sorted.length - 1],
     mean: v.reduce((s, x) => s + x, 0) / v.length,
     median,
-    vsMedian: current - median,
+    lastVsMedian: last - median,
     observedDays: v.length,
   };
 }
 
-/** نسبتِ روزِ معاملاتی به روزِ تقویمی — اندازه‌گیری‌شده، نه حدس:
- *  در بازهٔ `2026-07-18`..`2026-09-06` (۵۰ روزِ تقویمی) `symbol_history`
- *  دقیقاً **۳۷ روزِ معاملاتیِ متمایز** دارد. */
-export const TRADING_DAY_RATIO = 37 / 50;
-
 /** کفِ مطلقِ تعدادِ مشاهده در یک پنجره — زیرِ این، «میانه» معنا ندارد. */
 export const MIN_WINDOW_OBSERVATIONS = 5;
+
+/**
+ * حداقلِ نسبتِ چگالیِ پنجره به چگالیِ **خودِ همان سری**.
+ *
+ * ── چرا نسبتِ ثابتِ تقویمی حذف شد (یافتهٔ بازبینی) ─────────────────────────
+ * نسخهٔ قبل یک ثابتِ `TRADING_DAY_RATIO = 37/50` داشت و آن را مثلِ یک
+ * **قراردادِ عمومیِ تقویم** به کار می‌برد. آن عدد از **یک بازهٔ ۵۰ روزهٔ خاص**
+ * درآمده بود و هیچ اعتبارِ عمومی ندارد: تعطیلاتِ نوروز، ماهِ رمضان، تعطیلیِ
+ * ناگهانی و روزهای بسته‌شدنِ نماد همه نسبت را جابه‌جا می‌کنند، و برای یک
+ * نمادِ متوقف نسبت اصلاً صفر است.
+ *
+ * حالا مبنا **خودِ سری** است: هر صندوق با چگالیِ تاریخیِ خودش سنجیده می‌شود.
+ * این هیچ ادعایی دربارهٔ تقویمِ بازار نمی‌کند و برای نمادِ کم‌معامله هم درست
+ * کار می‌کند.
+ */
+export const MIN_WINDOW_DENSITY_RATIO = 0.5;
 
 /**
  * خلاصهٔ یک پنجرهٔ زمانی (مثلاً «۹۰ روزِ اخیر»).
@@ -170,7 +194,12 @@ export const MIN_WINDOW_OBSERVATIONS = 5;
  * دلیل: «میانگینِ سه‌ماههٔ حباب» که در واقع از ۳۷ روز درآمده، عددِ غلط نیست —
  * عددِ **درستِ چیزِ دیگری** است، و همین آن را خطرناک‌تر می‌کند.
  */
-export function bubbleWindow(series: BubbleSeries, windowDays: number, tolerancePercent = 20): BubbleSummary | null {
+export function bubbleWindow(
+  series: BubbleSeries,
+  /** طولِ پنجره بر حسبِ **روزِ تقویمی** — نه روزِ معاملاتی. */
+  windowDays: number,
+  tolerancePercent = 20,
+): BubbleSummary | null {
   if (!(windowDays > 0)) return null;
   const cov = series.coverage;
   if (!cov) return null;
@@ -188,11 +217,12 @@ export function bubbleWindow(series: BubbleSeries, windowDays: number, tolerance
   // رد می‌شود — و آن‌وقت «میانهٔ ۳۰ روزه» از **یک مشاهده** درمی‌آمد. همان
   // خطای «عددِ درستِ چیزِ دیگر» بود، یک لایه پایین‌تر.
   //
-  // آستانه: دستِ‌کم نیمی از روزهای معاملاتیِ موردِ انتظار در آن پنجره.
-  // نسبتِ روزِ معاملاتی به روزِ تقویمی در بازارِ ایران ≈ ۳۷ به ۵۰ (اندازه‌گیریِ
-  // ۲۰۲۶-۰۹-۰۶ روی `symbol_history`)، پس ~۰٫۷۴ — و نصفِ آن کفِ محافظه‌کارانه‌ای است.
-  const expectedTradingDays = windowDays * TRADING_DAY_RATIO;
-  if (inWindow.length < Math.max(MIN_WINDOW_OBSERVATIONS, expectedTradingDays * 0.5)) return null;
+  // آستانه از **چگالیِ خودِ همین سری** می‌آید، نه از یک نسبتِ تقویمیِ فرضی:
+  // اگر این صندوق در کلِ بازه‌اش به‌طورِ میانگین `r` مشاهده در هر روزِ تقویمی
+  // دارد، انتظارِ معقول در یک پنجرهٔ `windowDays` روزه `windowDays × r` است.
+  const seriesDensity = cov.observedDays / Math.max(1, cov.calendarSpanDays);
+  const expected = windowDays * seriesDensity;
+  if (inWindow.length < Math.max(MIN_WINDOW_OBSERVATIONS, expected * MIN_WINDOW_DENSITY_RATIO)) return null;
 
   return summarizeBubble({ points: inWindow, coverage: cov, skipped: series.skipped });
 }
@@ -201,12 +231,29 @@ export function bubbleWindow(series: BubbleSeries, windowDays: number, tolerance
 
 export type LiveBubbleState = "ready" | "stale" | "unavailable";
 
+/** دقتِ زمانی که منبع داده — «روز» یعنی ساعت نداریم و نباید وانمود کنیم داریم. */
+export type TimePrecision = "minute" | "day";
+
 export interface LiveBubble {
   state: LiveBubbleState;
   /** فقط وقتی state === "ready" عدد دارد؛ در «stale» عدد هست ولی باید کهنه برچسب بخورد */
   bubblePercent: number | null;
   /** سنِ NAV بر حسب ساعت — null یعنی زمانِ NAV اصلاً نداریم */
   navAgeHours: number | null;
+  /** سنِ قیمت بر حسب ساعت — null یعنی زمانِ قیمت را نداریم */
+  priceAgeHours: number | null;
+  /**
+   * فاصلهٔ زمانیِ **بینِ دو ورودی** (ساعت).
+   *
+   * ── چرا این مهم‌ترین عدد اینجاست ────────────────────────────────────────
+   * حباب یک **نسبت بینِ دو لحظه** است. اگر قیمتِ امروز را با NAVِ دیروز جفت
+   * کنیم، عددی که درمی‌آید بخشی‌اش تغییرِ حباب است و بخشی‌اش صرفاً تغییرِ
+   * یک‌روزهٔ NAV — و کاربر نمی‌تواند این دو را از هم جدا کند. پس تازگیِ هر
+   * ورودی به‌تنهایی کافی نیست؛ **هم‌زمانی‌شان** هم باید سنجیده شود.
+   */
+  pairingGapHours: number | null;
+  /** آیا ساعتِ NAV را واقعاً می‌دانیم یا فقط روزش را */
+  navTimePrecision: TimePrecision | null;
   reason: string | null;
 }
 
@@ -214,53 +261,99 @@ export interface LiveBubble {
 export const NAV_STALE_HOURS = 24;
 
 /**
+ * بیشینهٔ فاصلهٔ مجازِ بینِ لحظهٔ قیمت و لحظهٔ NAV.
+ *
+ * رله NAV را ساعتی تازه می‌کند و قیمت را هر ۵ دقیقه، پس در حالتِ سالم این
+ * فاصله زیرِ یک ساعت است. ۶ ساعت یک جلسهٔ معاملاتی را می‌پوشاند و در عینِ حال
+ * جفت‌شدنِ «قیمتِ امروز با NAVِ دیروز» را رد می‌کند.
+ */
+export const MAX_PAIRING_GAP_HOURS = 6;
+
+/**
  * تحملِ اختلافِ ساعت با منبع.
  *
- * چرا لازم شد: نسخهٔ اول هر زمانِ آیندهٔ NAV را `unavailable` می‌کرد. در
- * رندرِ آزمایشی معلوم شد این یعنی **چند دقیقه اختلافِ ساعتِ سرور با رله،
- * حبابِ کاملاً سالم را از صفحه حذف می‌کند** — و کاربر فقط «در دسترس نیست»
- * می‌بیند بدونِ اینکه چیزی خراب باشد. مهرِ زمانیِ رله ساعتِ تهران است و از
- * یک ماشینِ دیگر می‌آید؛ انتظارِ همگامیِ ثانیه‌ای از آن غیرواقعی است.
- *
- * پس اختلافِ کوچکِ رو به آینده «سنِ صفر» شمرده می‌شود، و فقط اختلافِ بزرگ —
- * که دیگر skew نیست، خرابیِ ساعتِ منبع است — رد می‌شود.
+ * ── چرا از ۲ ساعت به ۱۵ دقیقه آمد (یافتهٔ بازبینی) ────────────────────────
+ * ۲ ساعت بی‌مبنا بود و بدتر: یک منبع با **منطقهٔ زمانیِ اشتباه** معمولاً
+ * ساعت‌ها جابه‌جاست، پس تحملِ دوساعته دقیقاً همان خرابی را می‌پوشاند که باید
+ * بگیرد. آنچه واقعاً باید تحمل شود اختلافِ ساعتِ دو ماشینِ همگام با NTP و
+ * تأخیرِ کشِ رله است — که دقیقه‌ای است، نه ساعتی.
  */
-export const FUTURE_SKEW_TOLERANCE_HOURS = 2;
+export const FUTURE_SKEW_TOLERANCE_HOURS = 0.25;
+
+function ageHours(at: string | null | undefined, now: Date): number | null {
+  if (!at) return null;
+  const t = Date.parse(at);
+  if (!isFinite(t)) return null;
+  return (now.getTime() - t) / 3_600_000;
+}
 
 /**
  * حبابِ لحظه‌ای با گاردِ زمان.
  *
- * چرا زمان مهم است: قیمت لحظه‌ای است و NAV روزی چند بار به‌روز می‌شود. اگر
- * NAV دیروز را با قیمتِ امروز جفت کنیم، حباب را با تغییرِ یک‌روزهٔ NAV آلوده
- * کرده‌ایم و کاربر تفاوتش را نمی‌بیند. پس یا «تازه» است، یا صریحاً «کهنه».
+ * سه چیزِ متفاوت سنجیده می‌شود و هیچ‌کدام جای دیگری را نمی‌گیرد:
+ *   ۱) NAV تازه است؟            (`navAgeHours` در برابرِ `NAV_STALE_HOURS`)
+ *   ۲) قیمت تازه است؟           (`priceAgeHours` — گزارش می‌شود)
+ *   ۳) این دو هم‌زمان‌اند؟       (`pairingGapHours` در برابرِ `MAX_PAIRING_GAP_HOURS`)
  */
 export function liveBubble(args: {
   priceToman: number | null | undefined;
   navToman: number | null | undefined;
   /** زمانِ ثبتِ NAV (ISO) — نبودنش خودش یک حالت است، نه صفر */
   navAt: string | null | undefined;
+  /** دقتِ همان زمان؛ اگر ندانیم ساعت چند بوده، `"day"` */
+  navPrecision?: TimePrecision;
+  /** زمانِ اسنپ‌شاتِ قیمت (ISO) — از `fetchedAt` رله */
+  priceAt?: string | null;
   now: Date;
 }): LiveBubble {
+  const none = (reason: string, extra: Partial<LiveBubble> = {}): LiveBubble => ({
+    state: "unavailable", bubblePercent: null, navAgeHours: null, priceAgeHours: null,
+    pairingGapHours: null, navTimePrecision: args.navPrecision ?? null, reason, ...extra,
+  });
+
   const b = bubblePercent(args.priceToman, args.navToman);
-  if (b == null) {
-    return { state: "unavailable", bubblePercent: null, navAgeHours: null, reason: "قیمت یا NAV معتبر نیست" };
+  if (b == null) return none("قیمت یا NAV معتبر نیست");
+  if (!args.navAt) return none("زمانِ NAV ثبت نشده");
+
+  const navAge = ageHours(args.navAt, args.now);
+  if (navAge == null) return none("زمانِ NAV نامعتبر است");
+  if (navAge < -FUTURE_SKEW_TOLERANCE_HOURS) {
+    return none("زمانِ NAV در آینده است — ساعتِ منبع خراب است", { navAgeHours: navAge });
   }
-  if (!args.navAt) {
-    return { state: "unavailable", bubblePercent: null, navAgeHours: null, reason: "زمانِ NAV ثبت نشده" };
+
+  const priceAge = ageHours(args.priceAt, args.now);
+  if (priceAge != null && priceAge < -FUTURE_SKEW_TOLERANCE_HOURS) {
+    return none("زمانِ قیمت در آینده است — ساعتِ منبع خراب است", { priceAgeHours: priceAge });
   }
-  const t = Date.parse(args.navAt);
-  if (!isFinite(t)) {
-    return { state: "unavailable", bubblePercent: null, navAgeHours: null, reason: "زمانِ NAV نامعتبر است" };
+
+  const navT = Date.parse(args.navAt);
+  const gap = args.priceAt && isFinite(Date.parse(args.priceAt))
+    ? Math.abs(Date.parse(args.priceAt) - navT) / 3_600_000
+    : null;
+
+  const precision = args.navPrecision ?? "minute";
+  const base = {
+    bubblePercent: b,
+    navAgeHours: Math.max(0, navAge),
+    priceAgeHours: priceAge == null ? null : Math.max(0, priceAge),
+    pairingGapHours: gap,
+    navTimePrecision: precision,
+  };
+
+  // دقتِ روزانه: ساعتِ NAV را نمی‌دانیم، پس سن **محافظه‌کارانه** (از ابتدای روز)
+  // حساب شده و ممکن است تازه‌تر از این باشد. این را باید گفت، نه پنهان کرد.
+  const dayNote = precision === "day" ? " (ساعتِ NAV ثبت نشده؛ سن حداکثری است)" : "";
+
+  if (navAge > NAV_STALE_HOURS) {
+    return { ...base, state: "stale", reason: `NAV ${Math.floor(navAge)} ساعت پیش${dayNote}` };
   }
-  const ageHours = (args.now.getTime() - t) / 3_600_000;
-  if (ageHours < -FUTURE_SKEW_TOLERANCE_HOURS) {
-    return { state: "unavailable", bubblePercent: null, navAgeHours: ageHours, reason: "زمانِ NAV در آینده است" };
+  if (gap != null && gap > MAX_PAIRING_GAP_HOURS) {
+    return {
+      ...base, state: "stale",
+      reason: `قیمت و NAV ${Math.round(gap)} ساعت از هم فاصله دارند${dayNote}`,
+    };
   }
-  if (ageHours > NAV_STALE_HOURS) {
-    return { state: "stale", bubblePercent: b, navAgeHours: ageHours, reason: `NAV ${Math.floor(ageHours)} ساعت پیش` };
-  }
-  // سنِ منفیِ داخلِ تحمل → صفر، نه عددِ منفی که در UI بی‌معنا دیده می‌شود.
-  return { state: "ready", bubblePercent: b, navAgeHours: Math.max(0, ageHours), reason: null };
+  return { ...base, state: "ready", reason: precision === "day" ? "ساعتِ NAV ثبت نشده" : null };
 }
 
 /* ── ساختِ زمانِ NAV از فیدِ رله ────────────────────────────────────────── */
@@ -278,18 +371,28 @@ export function liveBubble(args: {
  */
 export const TEHRAN_UTC_OFFSET = "+03:30";
 
+export interface NavAt {
+  iso: string;
+  precision: TimePrecision;
+}
+
+/**
+ * نسخهٔ قبل وقتی ساعت نبود بی‌صدا `00:00:00` می‌گذاشت. آن یک **دقتِ ساختگی**
+ * بود: خروجی از یک زمانِ دقیق قابلِ تشخیص نبود، در حالی که فقط روز را می‌دانستیم.
+ * حالا دقت همراهِ خودش برمی‌گردد تا `liveBubble` و نما بتوانند صادق باشند.
+ */
 export function navAtIso(
   navDate: string | null | undefined,
   navTime: string | null | undefined,
   jalaliToGregorian: (jymd: string) => string | null,
-): string | null {
+): NavAt | null {
   if (!navDate) return null;
   const g = jalaliToGregorian(navDate.trim());
   if (!g) return null;
   const t = (navTime ?? "").trim();
-  const clock = /^\d{1,2}:\d{2}(:\d{2})?$/.test(t)
-    ? (t.length === 5 ? `${t}:00` : t).padStart(8, "0")
-    : "00:00:00";
+  const hasClock = /^\d{1,2}:\d{2}(:\d{2})?$/.test(t);
+  const clock = hasClock ? (t.length === 5 ? `${t}:00` : t).padStart(8, "0") : "00:00:00";
   const iso = `${g}T${clock}${TEHRAN_UTC_OFFSET}`;
-  return isFinite(Date.parse(iso)) ? iso : null;
+  if (!isFinite(Date.parse(iso))) return null;
+  return { iso, precision: hasClock ? "minute" : "day" };
 }

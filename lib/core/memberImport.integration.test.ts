@@ -166,7 +166,7 @@ for (const [profileName, profileFile] of Object.entries(PROFILES)) {
         VALUES (901, 1, 'email', 'synthetic-a-dup@example.invalid',
                 DATE '2026-09-01', DATE '2026-12-01', 'matched', '${MEMBER_A}')`);
       const err = expectError(db, `${AS_ADMIN} SELECT public.grant_member_access(901)`);
-      assert.match(err, /دسترسیِ فعال|renew_member_access/);
+      assert.match(err, /دسترسیِ باز|renew_member_access/);
     });
 
     test("اعطای بدونِ اتصال به entitlements اصلاً ثبت نمی‌شود", () => {
@@ -279,6 +279,117 @@ for (const [profileName, profileFile] of Object.entries(PROFILES)) {
         "همهٔ اعطاها — لغوشده و فعال — باقی مانده‌اند");
       assert.ok(Number(psql(db, `SELECT count(*) FROM public.entitlements`)) >= 4,
         "هیچ ردیفِ entitlements پاک نشد");
+    });
+
+    /* ── چهار موردی که بازبینی خواست ─────────────────────────────────────── */
+
+    test("دستهٔ تازه و تأییدشده برای موارد زیر", () => {
+      // دستهٔ ۱ در تست‌های قبل لغو شد؛ این‌ها دستهٔ مستقلِ خودشان را دارند.
+      psql(db, `INSERT INTO public.member_import_batches (id, source_label, evidence, imported_by, approved_at, approved_by)
+        VALUES (3, 'synthetic-review-cases.csv', 'دستهٔ مصنوعیِ بازبینی — دادهٔ واقعی ندارد', '${ADMIN}', now(), '${ADMIN}')`);
+      assert.equal(psql(db, `SELECT approved_at IS NOT NULL AND revoked_at IS NULL FROM public.member_import_batches WHERE id=3`), "t");
+    });
+
+    test("هم‌زمانی: دو واردسازیِ موازی برای یک کاربر فقط یک دسترسی می‌دهد", () => {
+      // ⚠️ این تست باید **واقعاً هم‌زمان** باشد. نسخهٔ اولش دو فراخوانی را
+      // پشتِ‌سرِ هم اجرا می‌کرد، پس دومی گاردِ «دسترسیِ باز» را می‌دید و رد
+      // می‌شد — و برداشتنِ قفلِ کاربر هیچ تستی را قرمز نمی‌کرد. یعنی قفل
+      // **آزموده‌نشده** بود.
+      //
+      // اینجا دو تراکنشِ جدا باز می‌شوند، هر دو کمی صبر می‌کنند تا واقعاً
+      // هم‌پوشانی داشته باشند، و بعد commit می‌کنند. زیرِ READ COMMITTED،
+      // تراکنشِ دوم درجِ اولی را تا commit نمی‌بیند — پس بدونِ قفلِ سطحِ کاربر
+      // هر دو یک `entitlements` می‌سازند.
+      psql(db, `UPDATE public.entitlements SET revoked_at=now() WHERE user_id='${MEMBER_A}' AND revoked_at IS NULL`);
+      psql(db, `INSERT INTO public.member_import_rows
+        (id, batch_id, contact_kind, contact_value, access_from, access_until, status, matched_user_id)
+        VALUES (910,3,'email','synthetic-conc-1@example.invalid', DATE '2026-09-01', DATE '2026-12-01','matched','${MEMBER_A}'),
+               (911,3,'email','synthetic-conc-2@example.invalid', DATE '2026-09-01', DATE '2026-12-01','matched','${MEMBER_A}')`);
+      const before = Number(psql(db,
+        `SELECT count(*) FROM public.entitlements WHERE user_id='${MEMBER_A}' AND revoked_at IS NULL`));
+
+      const tx = (rowId: number) => `BEGIN;
+        SET LOCAL ROLE service_role;
+        SET LOCAL request.jwt.claims = '{"sub":"${ADMIN}"}';
+        SELECT pg_sleep(0.4);
+        SELECT public.grant_member_access(${rowId});
+        COMMIT;`;
+      // هر دو را با هم استارت کن و منتظرِ هر دو بمان.
+      execFileSync("bash", ["-c",
+        `psql -d ${db} -X -q -A -t -c "${tx(910).replace(/"/g, '\\"').replace(/\n/g, " ")}" >/dev/null 2>&1 &
+         psql -d ${db} -X -q -A -t -c "${tx(911).replace(/"/g, '\\"').replace(/\n/g, " ")}" >/dev/null 2>&1 &
+         wait`],
+        { env: PSQL_ENV, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+
+      const after = Number(psql(db,
+        `SELECT count(*) FROM public.entitlements WHERE user_id='${MEMBER_A}' AND revoked_at IS NULL`));
+      assert.equal(after, before + 1,
+        `دو واردسازیِ موازی باید فقط یک دسترسیِ فعال بسازند (بود ${before}، شد ${after})`);
+    });
+
+    test("تاریخ شروعِ آینده: دسترسی از امروز فعال شمرده نمی‌شود", () => {
+      // `lib/access.ts:72` سمتِ اپ `starts_at <= now()` را چک می‌کند.
+      // اگر تابعِ دیتابیس این را چک نکند، دو مرجع با هم اختلاف پیدا می‌کنند و
+      // پنلِ ادمین «فعال» نشان می‌دهد در حالی که کاربر دسترسی ندارد.
+      psql(db, `UPDATE public.entitlements SET revoked_at=now() WHERE user_id='${MEMBER_B}' AND revoked_at IS NULL`);
+      psql(db, `INSERT INTO public.member_import_rows
+        (id, batch_id, contact_kind, contact_value, access_from, access_until, status, matched_user_id)
+        VALUES (912,3,'email','synthetic-future@example.invalid',
+                (CURRENT_DATE + 30), (CURRENT_DATE + 120), 'matched','${MEMBER_B}')`);
+      psql(db, `${AS_ADMIN} SELECT public.grant_member_access(912)`);
+      assert.equal(psql(db, `SELECT public.member_has_active_access('${MEMBER_B}','consulting')::text`), "false",
+        "دسترسی‌ای که هنوز شروع نشده، فعال نیست");
+    });
+
+    test("مرزِ انقضا: دقیقاً در لحظهٔ پایان، دسترسی فعال نیست", () => {
+      // ⚠️ مرز باید **درونِ یک تراکنش** سنجیده شود. اگر درج و پرس‌وجو دو
+      // دستورِ جدا باشند، `now()` بینشان جلو می‌رود و ردیف به‌هرحال منقضی
+      // می‌شود — آن‌وقت `>` و `>=` یک نتیجه می‌دهند و مرز اصلاً آزموده نشده.
+      // در یک تراکنش `now()` ثابت است، پس تفاوتِ اکید و غیراکید دیده می‌شود.
+      const uid = MEMBER_B;
+      psql(db, `UPDATE public.entitlements SET revoked_at=now() WHERE user_id='${uid}' AND revoked_at IS NULL`);
+      const atBoundary = psql(db, `BEGIN;
+        INSERT INTO public.entitlements (user_id, kind, source, starts_at, expires_at)
+        VALUES ('${uid}','consulting','test', now() - interval '10 days', now());
+        SELECT public.member_has_active_access('${uid}','consulting')::text;
+        ROLLBACK;`).trim().split("\n").pop();
+      assert.equal(atBoundary, "false",
+        "expires_at = now() یعنی تمام شده — مقایسه باید اکید باشد");
+
+      const oneSecondLeft = psql(db, `BEGIN;
+        INSERT INTO public.entitlements (user_id, kind, source, starts_at, expires_at)
+        VALUES ('${uid}','consulting','test', now() - interval '10 days', now() + interval '1 second');
+        SELECT public.member_has_active_access('${uid}','consulting')::text;
+        ROLLBACK;`).trim().split("\n").pop();
+      assert.equal(oneSecondLeft, "true", "یک ثانیه مانده یعنی هنوز فعال");
+    });
+
+    test("منطقهٔ زمانی: پایانِ دوره مستقل از TimeZone نشست است", () => {
+      // `date::timestamptz` به **TimeZone نشست** وابسته است: زیرِ UTC می‌شود
+      // `00:00+00` و زیرِ Asia/Tehran می‌شود `00:00+03:30` — یعنی همان فهرست
+      // روی دو سرور دو لحظهٔ پایانِ متفاوت می‌سازد و ۳٫۵ ساعت دسترسیِ کم‌وزیاد.
+      psql(db, `INSERT INTO public.member_import_rows
+        (id, batch_id, contact_kind, contact_value, access_from, access_until, status, matched_user_id)
+        VALUES (913,3,'email','synthetic-tz@example.invalid', DATE '2026-09-01', DATE '2026-12-01','matched','${ADMIN}')`);
+      const gid = psql(db, `${AS_ADMIN} SELECT public.grant_member_access(913)`);
+      const epochAt = (tz: string) =>
+        psql(db, `SET TimeZone='${tz}'; SELECT extract(epoch from e.expires_at)::bigint
+          FROM public.entitlements e
+          JOIN public.member_grants g ON g.entitlement_id = e.id
+          WHERE g.id = ${gid}`);
+      const utc = epochAt("UTC");
+      const tehran = epochAt("Asia/Tehran");
+      assert.equal(utc, tehran, "لحظهٔ پایان باید یک لحظهٔ مطلق باشد، نه تابعِ TimeZone نشست");
+
+      // و آن لحظه باید **پایانِ همان روز** به وقتِ تهران باشد — یعنی ابتدای روزِ بعد.
+      const expected = psql(db,
+        `SELECT extract(epoch from (DATE '2026-12-01' + 1)::timestamp AT TIME ZONE 'Asia/Tehran')::bigint`);
+      assert.equal(utc, expected, "پایانِ دوره = پایانِ ۱۰ آذر به وقتِ تهران، نه نیمه‌شبِ UTC");
+
+      // شاهدِ عددیِ تفاوت: کستِ ساده‌ٔ وابسته‌به‌نشست ۳٫۵ ساعت جابه‌جا می‌شود.
+      const naiveUtc = psql(db, `SET TimeZone='UTC'; SELECT extract(epoch from (DATE '2026-12-01')::timestamptz)::bigint`);
+      const naiveTehran = psql(db, `SET TimeZone='Asia/Tehran'; SELECT extract(epoch from (DATE '2026-12-01')::timestamptz)::bigint`);
+      assert.equal(Number(naiveUtc) - Number(naiveTehran), 12600, "کستِ ساده ۳٫۵ ساعت (۱۲۶۰۰ ثانیه) فرق می‌کند");
     });
 
     /* ── حریمِ خصوصی: شناسهٔ تماس دادهٔ شخصی است ─────────────────────────── */

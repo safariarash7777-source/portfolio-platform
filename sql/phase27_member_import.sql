@@ -138,8 +138,42 @@ CREATE INDEX IF NOT EXISTS idx_member_grants_user
 -- روی `entitlements`، با درنظرگرفتنِ **هم** لغو **و هم** انقضا — تابعِ
 -- `grant_member_access` پایین.
 
-/** آیا این کاربر همین حالا دسترسیِ فعال دارد؟ لغو **و** انقضا هر دو حساب می‌شوند. */
+/**
+ * آیا این کاربر **همین حالا** دسترسیِ فعال دارد؟
+ *
+ * سه شرط، و هر سه لازم است:
+ *   • لغو نشده باشد
+ *   • شروع شده باشد  ← `starts_at <= now()`
+ *   • منقضی نشده باشد ← `expires_at > now()` (اکیداً بزرگ‌تر: در لحظهٔ پایان، تمام است)
+ *
+ * ── چرا `starts_at` اضافه شد (یافتهٔ بازبینی) ────────────────────────────
+ * نسخهٔ قبل فقط لغو و انقضا را می‌دید. یعنی دسترسیِ **تاریخ‌دارِ آینده** از
+ * همان لحظهٔ ثبت «فعال» شمرده می‌شد. سمتِ اپ این اشتباه را نمی‌کرد
+ * (`lib/access.ts:72` صریحاً `starts_at <= now()` می‌گذارد)، پس دو مرجع با هم
+ * اختلاف داشتند: پنلِ ادمین «فعال» می‌گفت و کاربر دسترسی نداشت.
+ */
 CREATE OR REPLACE FUNCTION public.member_has_active_access(p_user_id uuid, p_kind text DEFAULT 'consulting')
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_temp
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.entitlements e
+     WHERE e.user_id = p_user_id
+       AND e.kind = p_kind
+       AND e.revoked_at IS NULL
+       AND e.starts_at <= now()
+       AND e.expires_at > now()
+  );
+$$;
+
+/**
+ * آیا دسترسیِ **باز**ی دارد — شاملِ دسترسیِ هنوز شروع‌نشده؟
+ *
+ * این با «فعال» فرق دارد و برای جلوگیری از اعطای دوم لازم است: کسی که یک
+ * دسترسیِ تاریخ‌دارِ آینده دارد، نباید دسترسیِ دومی هم بگیرد فقط چون امروز
+ * هنوز فعال نشده است.
+ */
+CREATE OR REPLACE FUNCTION public.member_has_outstanding_access(p_user_id uuid, p_kind text DEFAULT 'consulting')
 RETURNS boolean
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_temp
 AS $$
@@ -191,6 +225,20 @@ BEGIN
 
   SELECT * INTO r FROM public.member_import_rows WHERE id = p_row_id FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'ردیفِ فهرست پیدا نشد' USING ERRCODE = '22023'; END IF;
+
+  -- ⚠️ قفلِ سطحِ **کاربر**، نه سطحِ ردیف (یافتهٔ بازبینی).
+  --
+  -- `FOR UPDATE` بالا فقط همین ردیفِ فهرست را قفل می‌کند. اگر یک نفر در دو
+  -- فهرستِ متفاوت باشد و دو واردسازی هم‌زمان اجرا شوند، هر دو تراکنش ردیفِ
+  -- **خودشان** را قفل می‌کنند، هر دو «دسترسیِ باز ندارد» می‌بینند، و هر دو یک
+  -- `entitlements` می‌سازند. ایندکسِ یکتا هم اینجا کمکی نمی‌کند چون روی
+  -- `user_id` ایندکسی نداریم (و نباید داشته باشیم — تمدید را می‌بست).
+  --
+  -- قفلِ مشورتیِ تراکنشی روی خودِ کاربر این پنجره را می‌بندد و در پایانِ
+  -- تراکنش خودکار آزاد می‌شود.
+  IF r.matched_user_id IS NOT NULL THEN
+    PERFORM pg_advisory_xact_lock(hashtextextended(r.matched_user_id::text, 0));
+  END IF;
   IF r.status <> 'matched' THEN
     RAISE EXCEPTION 'فقط ردیفِ تطبیق‌یافته اعطا می‌گیرد (وضعیتِ فعلی: %)', r.status USING ERRCODE = '22023';
   END IF;
@@ -208,14 +256,24 @@ BEGIN
    WHERE row_id = p_row_id AND revoked_at IS NULL;
   IF FOUND THEN RETURN existing; END IF;
 
-  IF public.member_has_active_access(r.matched_user_id, p_kind) THEN
-    RAISE EXCEPTION 'کاربر دسترسیِ فعال دارد — برای تمدید از renew_member_access استفاده کن'
+  -- «باز» و نه «فعال»: دسترسیِ تاریخ‌دارِ آینده هم مانعِ اعطای دوم است.
+  IF public.member_has_outstanding_access(r.matched_user_id, p_kind) THEN
+    RAISE EXCEPTION 'کاربر دسترسیِ باز دارد — برای تمدید از renew_member_access استفاده کن'
       USING ERRCODE = '23505';
   END IF;
 
+  -- ⚠️ منطقهٔ زمانیِ صریح (یافتهٔ بازبینی).
+  --
+  -- `date::timestamptz` به **TimeZone نشست** وابسته است: زیرِ UTC می‌شود
+  -- `00:00+00` و زیرِ Asia/Tehran می‌شود `00:00+03:30`. یعنی همان فهرست روی دو
+  -- سرور دو لحظهٔ پایانِ متفاوت می‌سازد و ۳٫۵ ساعت دسترسیِ کم‌وزیاد می‌دهد.
+  --
+  -- معنای موردِ توافق: `access_until` **آخرین روزِ دسترسی** است، پس دسترسی در
+  -- **پایانِ همان روز به وقتِ تهران** تمام می‌شود — یعنی ابتدای روزِ بعد.
   INSERT INTO public.entitlements (user_id, kind, source, starts_at, expires_at, granted_by, note)
   VALUES (r.matched_user_id, p_kind, 'member_import',
-          r.access_from::timestamptz, r.access_until::timestamptz,
+          r.access_from::timestamp AT TIME ZONE 'Asia/Tehran',
+          (r.access_until + 1)::timestamp AT TIME ZONE 'Asia/Tehran',
           b.imported_by, format('واردسازیِ دستهٔ %s', r.batch_id))
   RETURNING id INTO ent;
 
@@ -343,12 +401,14 @@ REVOKE ALL ON FUNCTION public.renew_member_access(bigint, timestamptz, text) FRO
 REVOKE ALL ON FUNCTION public.revoke_member_grant(bigint, text)        FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.revoke_member_batch(bigint, text)        FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.member_has_active_access(uuid, text)     FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.member_has_outstanding_access(uuid, text) FROM PUBLIC, anon, authenticated;
 
 GRANT EXECUTE ON FUNCTION public.grant_member_access(bigint, text)        TO service_role;
 GRANT EXECUTE ON FUNCTION public.renew_member_access(bigint, timestamptz, text) TO service_role;
 GRANT EXECUTE ON FUNCTION public.revoke_member_grant(bigint, text)        TO service_role;
 GRANT EXECUTE ON FUNCTION public.revoke_member_batch(bigint, text)        TO service_role;
 GRANT EXECUTE ON FUNCTION public.member_has_active_access(uuid, text)     TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.member_has_outstanding_access(uuid, text) TO service_role;
 
 -- ── ۵) RLS و گرنت‌ها ────────────────────────────────────────────────────────
 --

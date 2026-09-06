@@ -168,10 +168,16 @@ export default async function SymbolPage({ params }: PageProps) {
       ]
     : [];
 
+  // زمانِ NAV با **دقتش** می‌آید؛ اگر ساعت ثبت نشده باشد نما باید همین را بگوید.
+  const fundNavAt = navAtIso(quote?.navDate ?? null, quote?.navTime ?? null, jalaliYmdToGregorian);
+  // زمانِ قیمت = لحظهٔ اسنپ‌شاتِ رله. بدونِ آن، هم‌زمانیِ دو ورودی سنجیده نمی‌شود.
+  const fundPriceAt = ir?.fetchedAt ? new Date(ir.fetchedAt).toISOString() : null;
   const fundLive = liveBubble({
     priceToman: num(quote?.closingPrice) ?? num(quote?.price),
     navToman: num(quote?.nav),
-    navAt: navAtIso(quote?.navDate ?? null, quote?.navTime ?? null, jalaliYmdToGregorian),
+    navAt: fundNavAt?.iso ?? null,
+    navPrecision: fundNavAt?.precision,
+    priceAt: fundPriceAt,
     now: new Date(),
   });
 

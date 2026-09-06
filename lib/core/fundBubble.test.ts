@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   bubblePercent, bubbleSeries, summarizeBubble, bubbleWindow, liveBubble,
   MIN_PRICE_NAV_RATIO, MAX_PRICE_NAV_RATIO, NAV_STALE_HOURS, FUTURE_SKEW_TOLERANCE_HOURS,
-  MIN_WINDOW_OBSERVATIONS,
+  MIN_WINDOW_OBSERVATIONS, MAX_PAIRING_GAP_HOURS,
   type NavPricePoint,
 } from "./fundBubble";
 
@@ -84,11 +84,12 @@ test("خلاصه: جاری، کمینه، بیشینه، میانه و فاصل�
     { trade_date: "2026-08-03", nav: 100, close: 120 }, // +20
   ]);
   const sum = summarizeBubble(s)!;
-  assert.equal(sum.current, 20, "جاری = آخرین روز، نه بیشینه");
+  assert.equal(sum.lastObserved, 20, "آخرین ثبتِ تاریخچه = آخرین روز، نه بیشینه");
+  assert.equal(sum.lastObservedDate, "2026-08-03");
   assert.equal(sum.min, -10);
   assert.equal(sum.max, 20);
   assert.equal(sum.median, 0);
-  assert.equal(sum.vsMedian, 20);
+  assert.equal(sum.lastVsMedian, 20);
   assert.equal(sum.observedDays, 3);
 });
 
@@ -132,23 +133,52 @@ test("پنجره: روی سریِ خالی null، نه صفر", () => {
   assert.equal(bubbleWindow(bubbleSeries([]), 30), null);
 });
 
-/* ── حبابِ جاری و ناسازگاریِ زمان ─────────────────────────────────────── */
+/* ── حبابِ جاری: سه واقعیتِ زمانیِ متفاوت ─────────────────────────────────── */
 
 const NOW = new Date("2026-09-06T12:00:00Z");
+const hAgo = (h: number) => new Date(NOW.getTime() - h * 3_600_000).toISOString();
 
-test("جاری: NAV تازه → ready", () => {
-  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: "2026-09-06T09:00:00Z", now: NOW });
+test("جاری: NAV و قیمتِ تازه و هم‌زمان → ready", () => {
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(1), priceAt: hAgo(0.1), now: NOW });
   assert.equal(r.state, "ready");
   assert.equal(r.bubblePercent, 10);
   assert.equal(r.reason, null);
+  assert.ok(r.navAgeHours! > 0 && r.priceAgeHours! >= 0);
 });
 
 test("جاری: NAV کهنه‌تر از ۲۴ ساعت → stale با عدد و علت، نه حذفِ خاموش", () => {
-  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: "2026-09-04T09:00:00Z", now: NOW });
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(30), priceAt: hAgo(0.1), now: NOW });
   assert.equal(r.state, "stale");
   assert.equal(r.bubblePercent, 10, "عدد نگه داشته می‌شود ولی برچسبِ کهنه می‌خورد");
-  assert.ok(r.navAgeHours! > NAV_STALE_HOURS);
   assert.match(r.reason!, /ساعت پیش/);
+});
+
+test("جاری: سنِ قیمت گزارش می‌شود، نه فقط سنِ NAV", () => {
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(1), priceAt: hAgo(3), now: NOW });
+  assert.equal(Math.round(r.priceAgeHours!), 3);
+  assert.equal(Math.round(r.navAgeHours!), 1);
+});
+
+test("جاری: قیمتِ امروز با NAVِ دیروز جفت نمی‌شود — حتی وقتی هر دو «تازه»اند", () => {
+  // NAV ۲۰ ساعت پیش (زیرِ آستانهٔ کهنگی) ولی قیمت همین حالا: فاصلهٔ ۲۰ ساعت.
+  // بدونِ گاردِ هم‌زمانی این «ready» می‌شد و عددش نیمی تغییرِ NAV بود، نه حباب.
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(20), priceAt: hAgo(0), now: NOW });
+  assert.equal(r.state, "stale");
+  assert.ok(r.pairingGapHours! > MAX_PAIRING_GAP_HOURS);
+  assert.match(r.reason!, /فاصله دارند/);
+});
+
+test("جاری: فاصلهٔ کوچکِ دو ورودی مانع نیست", () => {
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(2), priceAt: hAgo(0.1), now: NOW });
+  assert.equal(r.state, "ready");
+  assert.ok(r.pairingGapHours! < MAX_PAIRING_GAP_HOURS);
+});
+
+test("جاری: بدونِ زمانِ قیمت، هم‌زمانی سنجیده نمی‌شود و null می‌ماند", () => {
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(1), now: NOW });
+  assert.equal(r.state, "ready");
+  assert.equal(r.pairingGapHours, null, "نبودِ زمانِ قیمت نباید صفر گرفته شود");
+  assert.equal(r.priceAgeHours, null);
 });
 
 test("جاری: زمانِ NAV نداریم → unavailable، نه ready", () => {
@@ -159,11 +189,50 @@ test("جاری: زمانِ NAV نداریم → unavailable، نه ready", () =>
   }
 });
 
-test("جاری: دقیقاً روی مرزِ ۲۴ ساعت هنوز ready است", () => {
-  const at = new Date(NOW.getTime() - NAV_STALE_HOURS * 3_600_000).toISOString();
-  assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: at, now: NOW }).state, "ready");
-  const past = new Date(NOW.getTime() - (NAV_STALE_HOURS * 3_600_000 + 60_000)).toISOString();
-  assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: past, now: NOW }).state, "stale");
+test("جاری: دقتِ روزانه پنهان نمی‌شود", () => {
+  const r = liveBubble({
+    priceToman: 110, navToman: 100, navAt: hAgo(1), navPrecision: "day", priceAt: hAgo(0.1), now: NOW,
+  });
+  assert.equal(r.navTimePrecision, "day");
+  assert.match(r.reason!, /ساعتِ NAV ثبت نشده/, "کاربر باید بداند ساعت را نمی‌دانیم");
+});
+
+test("جاری: دقتِ روزانه در حالتِ کهنه هم گفته می‌شود", () => {
+  const r = liveBubble({
+    priceToman: 110, navToman: 100, navAt: hAgo(30), navPrecision: "day", priceAt: hAgo(0.1), now: NOW,
+  });
+  assert.equal(r.state, "stale");
+  assert.match(r.reason!, /سن حداکثری/, "سن از ابتدای روز حساب شده و ممکن است تازه‌تر باشد");
+});
+
+/* ── تحملِ اختلافِ ساعت: دقیقه‌ای، نه ساعتی ──────────────────────────────── */
+
+test("جاری: اختلافِ ساعتِ کوچکِ رو به آینده حباب را حذف نمی‌کند", () => {
+  const at = new Date(NOW.getTime() + 5 * 60_000).toISOString(); // ۵ دقیقه جلوتر
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: at, now: NOW });
+  assert.equal(r.state, "ready", "skew دقیقه‌ای نباید عدد را از صفحه بردارد");
+  assert.equal(r.navAgeHours, 0, "سنِ منفی به صفر گرد می‌شود");
+});
+
+test("جاری: منطقهٔ زمانیِ اشتباه پوشانده نمی‌شود", () => {
+  // خطای منطقهٔ زمانی معمولاً ساعت‌ها جابه‌جاست. تحملِ دوساعتیِ نسخهٔ قبل
+  // دقیقاً همین را می‌پوشاند؛ تحملِ ۱۵ دقیقه‌ای آن را می‌گیرد.
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(-3.5), now: NOW });
+  assert.equal(r.state, "unavailable");
+  assert.match(r.reason!, /آینده/);
+});
+
+test("جاری: مرزِ تحمل دقیقاً همان‌جاست که مستند شده", () => {
+  const inside = new Date(NOW.getTime() + FUTURE_SKEW_TOLERANCE_HOURS * 3_600_000).toISOString();
+  assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: inside, now: NOW }).state, "ready");
+  const outside = new Date(NOW.getTime() + FUTURE_SKEW_TOLERANCE_HOURS * 3_600_000 + 60_000).toISOString();
+  assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: outside, now: NOW }).state, "unavailable");
+});
+
+test("جاری: زمانِ قیمتِ آینده هم رد می‌شود", () => {
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(1), priceAt: hAgo(-3), now: NOW });
+  assert.equal(r.state, "unavailable");
+  assert.match(r.reason!, /قیمت در آینده/);
 });
 
 /* ── زمانِ NAV از فیدِ جلالیِ رله ─────────────────────────────────────── */
@@ -172,14 +241,16 @@ import { navAtIso, TEHRAN_UTC_OFFSET } from "./fundBubble";
 import { jalaliYmdToGregorian } from "./jalali";
 
 test("navAtIso: تاریخِ جلالی + ساعتِ تهران → ISO درست", () => {
-  const iso = navAtIso("1405-06-15", "16:40:00", jalaliYmdToGregorian);
+  const at = navAtIso("1405-06-15", "16:40:00", jalaliYmdToGregorian)!;
+  const iso = at.iso;
   assert.equal(iso, `2026-09-06T16:40:00${TEHRAN_UTC_OFFSET}`);
   // ۱۶:۴۰ تهران = ۱۳:۱۰ UTC
-  assert.equal(new Date(iso!).toISOString(), "2026-09-06T13:10:00.000Z");
+  assert.equal(new Date(iso).toISOString(), "2026-09-06T13:10:00.000Z");
+  assert.equal(at.precision, "minute");
 });
 
 test("navAtIso: ساعتِ بدونِ ثانیه پذیرفته می‌شود", () => {
-  assert.equal(navAtIso("1405-06-15", "09:05", jalaliYmdToGregorian), `2026-09-06T09:05:00${TEHRAN_UTC_OFFSET}`);
+  assert.deepEqual(navAtIso("1405-06-15", "09:05", jalaliYmdToGregorian), { iso: `2026-09-06T09:05:00${TEHRAN_UTC_OFFSET}`, precision: "minute" });
 });
 
 test("navAtIso: ورودیِ ناقص → null، نه زمانِ حدسی", () => {
@@ -188,10 +259,13 @@ test("navAtIso: ورودیِ ناقص → null، نه زمانِ حدسی", () =
   assert.equal(navAtIso("not-jalali", "16:40:00", jalaliYmdToGregorian), null);
 });
 
-test("navAtIso: ساعتِ خراب به نیمه‌شب می‌افتد، ولی تاریخ حفظ می‌شود", () => {
-  // نبودِ ساعت نباید کلِ روز را دور بیندازد؛ ولی سن محافظه‌کارانه‌تر می‌شود
-  assert.equal(navAtIso("1405-06-15", "xx:yy", jalaliYmdToGregorian), `2026-09-06T00:00:00${TEHRAN_UTC_OFFSET}`);
-  assert.equal(navAtIso("1405-06-15", null, jalaliYmdToGregorian), `2026-09-06T00:00:00${TEHRAN_UTC_OFFSET}`);
+test("navAtIso: نبودِ ساعت با دقتِ «روز» برمی‌گردد، نه دقتِ ساختگی", () => {
+  // نبودِ ساعت نباید کلِ روز را دور بیندازد؛ ولی نباید وانمود کند ساعت را می‌داند
+  for (const bad of ["xx:yy", null, ""]) {
+    const at = navAtIso("1405-06-15", bad as string, jalaliYmdToGregorian)!;
+    assert.equal(at.iso, `2026-09-06T00:00:00${TEHRAN_UTC_OFFSET}`, "از ابتدای روز — سنِ حداکثری");
+    assert.equal(at.precision, "day", "دقت باید صریحاً «روز» باشد");
+  }
 });
 
 /* ── تطبیق با محاسبهٔ مستقلِ رله (دادهٔ واقعیِ Production ۱۴۰۵/۰۶/۱۵) ──── */
@@ -213,30 +287,6 @@ test("تطبیق: موتورِ ما همان عددی را می‌دهد که ر
   }
 });
 
-/* ── تحملِ اختلافِ ساعت با رله (یافتهٔ رندرِ آزمایشی) ─────────────────── */
-
-test("جاری: اختلافِ ساعتِ کوچکِ رو به آینده حباب را حذف نمی‌کند", () => {
-  // NAV یک ساعت «جلوتر» از ساعتِ سرور — skew، نه خرابی
-  const at = new Date(NOW.getTime() + 60 * 60_000).toISOString();
-  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: at, now: NOW });
-  assert.equal(r.state, "ready", "skew کوچک نباید عدد را از صفحه بردارد");
-  assert.equal(r.bubblePercent, 10);
-  assert.equal(r.navAgeHours, 0, "سنِ منفی به صفر گرد می‌شود");
-});
-
-test("جاری: زمانِ آیندهٔ بزرگ همچنان رد می‌شود (ساعتِ خرابِ منبع)", () => {
-  const at = new Date(NOW.getTime() + 5 * 60 * 60_000).toISOString();
-  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: at, now: NOW });
-  assert.equal(r.state, "unavailable");
-  assert.equal(r.bubblePercent, null);
-});
-
-test("جاری: مرزِ تحمل دقیقاً همان‌جاست که مستند شده", () => {
-  const inside = new Date(NOW.getTime() + FUTURE_SKEW_TOLERANCE_HOURS * 3_600_000).toISOString();
-  assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: inside, now: NOW }).state, "ready");
-  const outside = new Date(NOW.getTime() + FUTURE_SKEW_TOLERANCE_HOURS * 3_600_000 + 60_000).toISOString();
-  assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: outside, now: NOW }).state, "unavailable");
-});
 
 /* ── چگالیِ پنجره — یافتهٔ بازبینی ───────────────────────────────────────── */
 
@@ -278,4 +328,31 @@ test("پنجره: کفِ مطلقِ تعدادِ مشاهده رعایت می‌
   const s = bubbleSeries(pts);
   assert.ok(s.points.length < MIN_WINDOW_OBSERVATIONS);
   assert.equal(bubbleWindow(s, 5), null, "زیرِ کفِ مطلق، خلاصه ساخته نمی‌شود");
+});
+
+test("جاری: زمانِ یک‌ساعت‌جلوترِ NAV هم خرابیِ ساعت است، نه skew", () => {
+  // ⚠️ این تست مرزِ بینِ «تحملِ دقیقه‌ای» و «تحملِ ساعتی» را می‌سنجد.
+  // بدونِ آن، برگرداندنِ تحمل به ۲ ساعت هیچ تستی را قرمز نمی‌کرد — یعنی
+  // کاهشِ تحمل از ۲ ساعت به ۱۵ دقیقه یک تغییرِ **آزموده‌نشده** می‌ماند.
+  const r = liveBubble({ priceToman: 110, navToman: 100, navAt: hAgo(-1), now: NOW });
+  assert.equal(r.state, "unavailable", "NAVِ یک ساعت جلوتر از ساعتِ ما یعنی ساعتِ منبع خراب است");
+  assert.match(r.reason!, /آینده/);
+});
+
+test("پنجره: نمادِ کم‌معامله ولی منظم، به‌خاطرِ کم‌بودنِ مشاهده رد نمی‌شود", () => {
+  // ⚠️ این تست دلیلِ وجودِ چگالیِ خودِ سری است. صندوقی که ذاتاً هر پنج روز
+  // یک‌بار معامله می‌شود، با یک نسبتِ تقویمیِ ثابت (که فرض می‌کند بازار هر روز
+  // باز است) بی‌دلیل رد می‌شد. بدونِ این تست، برگرداندنِ چگالی به عددِ ثابت
+  // هیچ تستی را قرمز نمی‌کرد.
+  const pts: NavPricePoint[] = [];
+  const start = Date.parse("2026-05-01");
+  for (let i = 0; i < 100; i += 5) {
+    pts.push({ trade_date: new Date(start + i * 86_400_000).toISOString().slice(0, 10), nav: 100, close: 103 });
+  }
+  const s = bubbleSeries(pts);
+  assert.equal(s.points.length, 20);
+  assert.ok(s.coverage!.calendarSpanDays >= 95);
+  const w = bubbleWindow(s, 50);
+  assert.ok(w !== null, "چگالیِ خودِ سری ۰٫۲ است؛ ۱۰ مشاهده در ۵۰ روز کاملاً معمولِ همین نماد است");
+  assert.ok(w!.observedDays >= 10);
 });

@@ -55,6 +55,13 @@ export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {
   const { live, series, summary, windows, peer, liquidity } = p;
   const cov = series.coverage;
 
+  // «فاصلهٔ امروز از میانه» فقط وقتی معنا دارد که حبابِ امروز واقعاً عددی باشد.
+  // اگر نباشد «—» می‌شود، نه اینکه بی‌صدا جای آن عددِ تاریخی بنشیند.
+  const todayVsMedian =
+    summary != null && typeof live.bubblePercent === "number"
+      ? live.bubblePercent - summary.median
+      : null;
+
   return (
     <section
       className="rounded-xl border p-5 space-y-5"
@@ -69,7 +76,7 @@ export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {
             className="rounded-full px-2 py-0.5 text-[11px] font-bold"
             style={{ background: "var(--warning-bg, #FEF3C7)", color: "var(--warning-fg, #92400E)" }}
           >
-            NAV کهنه — {fa(live.reason ?? "")}
+            {fa(live.reason ?? "دادهٔ کهنه")}
           </span>
         ) : null}
       </header>
@@ -77,13 +84,19 @@ export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {
       {/* ── حبابِ جاری ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Cell
-          label="حبابِ جاری"
+          label="حبابِ امروز"
           note={
             live.state === "unavailable"
               ? (live.reason ?? "در دسترس نیست")
-              : live.navAgeHours != null
-                ? `سنِ NAV: ${fa(Math.max(0, Math.round(live.navAgeHours)))} ساعت`
-                : undefined
+              : [
+                  live.navAgeHours != null
+                    ? `NAV ${fa(Math.round(live.navAgeHours))} ساعت پیش${live.navTimePrecision === "day" ? " (ساعت ثبت نشده)" : ""}`
+                    : null,
+                  live.priceAgeHours != null ? `قیمت ${fa(Math.round(live.priceAgeHours))} ساعت پیش` : null,
+                  live.pairingGapHours != null ? `فاصلهٔ دو ورودی ${fa(Math.round(live.pairingGapHours))} ساعت` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || undefined
           }
         >
           <span style={{ color: bubbleColor(live.bubblePercent) }}>{pct(live.bubblePercent)}</span>
@@ -97,8 +110,19 @@ export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {
             <Cell label="کمینه — بیشینه">
               <span className="text-sm">{pct(summary.min)} … {pct(summary.max)}</span>
             </Cell>
-            <Cell label="فاصله از میانه" note="حبابِ امروز منهای میانهٔ همین بازه">
-              {pct(summary.vsMedian)}
+            {/* دو عددِ متفاوت، دو خانهٔ متفاوت. قبلاً «فاصله از میانه» از آخرین
+                نقطهٔ تاریخی حساب می‌شد ولی زیرِ عنوانِ «حبابِ امروز» می‌نشست. */}
+            <Cell
+              label="فاصلهٔ امروز از میانه"
+              note={todayVsMedian == null ? "حبابِ امروز در دسترس نیست" : "حبابِ امروز منهای میانهٔ بازه"}
+            >
+              {todayVsMedian == null ? "—" : pct(todayVsMedian)}
+            </Cell>
+            <Cell
+              label="آخرین ثبتِ تاریخچه"
+              note={`${fa(formatJalali(summary.lastObservedDate, false))} · فاصله از میانه ${pct(summary.lastVsMedian)}`}
+            >
+              <span style={{ color: bubbleColor(summary.lastObserved) }}>{pct(summary.lastObserved)}</span>
             </Cell>
           </>
         ) : (
