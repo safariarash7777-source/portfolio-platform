@@ -12,6 +12,7 @@ import MonthlySalesCharts from "@/components/symbol/MonthlySalesCharts";
 import QuarterlyCharts from "@/components/symbol/QuarterlyCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
 import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavChart";
+import FundAnalysisPanel from "@/components/fund/FundAnalysisPanel";
 import SymbolTabs from "@/components/symbol/SymbolTabs";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
@@ -28,6 +29,8 @@ import {
 } from "@/lib/core/quarterly";
 import { jalaliYmdToGregorian } from "@/lib/core/jalali";
 import { getNavHistory } from "@/lib/core/navHistory";
+import { bubbleSeries, summarizeBubble, bubbleWindow, liveBubble, navAtIso } from "@/lib/core/fundBubble";
+import { peerGroupStats, peerPosition, liquidityStats, type PeerRow } from "@/lib/core/fundPeers";
 import { getFxRates, latestRate } from "@/lib/core/fx";
 import { netIndividualFlow } from "@/lib/core/engine";
 import {
@@ -152,6 +155,51 @@ export default async function SymbolPage({ params }: PageProps) {
     nav: d.nav,
     close: d.close,
   }));
+
+  /* ── تحلیلِ صندوق: حباب، هم‌گروه، نقدشوندگی ─────────────────────────────
+   * همهٔ محاسبه در lib/core؛ اینجا فقط جمع‌آوریِ ورودی و صداکردنِ موتور. */
+  const fundSeries = bubbleSeries(navHistory);
+  const fundSummary = summarizeBubble(fundSeries);
+  const fundWindows = isFund
+    ? [
+        { days: 30, label: "۳۰ روز", summary: bubbleWindow(fundSeries, 30) },
+        { days: 90, label: "۹۰ روز", summary: bubbleWindow(fundSeries, 90) },
+        { days: 180, label: "۶ ماه", summary: bubbleWindow(fundSeries, 180) },
+      ]
+    : [];
+
+  const fundLive = liveBubble({
+    priceToman: num(quote?.closingPrice) ?? num(quote?.price),
+    navToman: num(quote?.nav),
+    navAt: navAtIso(quote?.navDate ?? null, quote?.navTime ?? null, jalaliYmdToGregorian),
+    now: new Date(),
+  });
+
+  // هم‌گروه: فقط صندوق‌های هم‌نوع، و فقط آن‌هایی که حبابِ معتبر دارند.
+  const peerRows: PeerRow[] = (ir?.funds ?? []).map((f) => ({
+    id: f.id,
+    type: f.type ?? null,
+    value: typeof f.bubblePercent === "number" && isFinite(f.bubblePercent) ? f.bubblePercent : null,
+  }));
+  const fundPeer = isFund
+    ? peerPosition(
+        { id: sym, type: quote?.type ?? null, value: fundLive.bubblePercent },
+        peerGroupStats(peerRows),
+        peerRows,
+      )
+    : null;
+
+  // نقدشوندگی از همان تاریخچه‌ای که بالا خوانده شد — بدونِ درخواستِ اضافه.
+  const LIQUIDITY_WINDOW_DAYS = 90;
+  const fundLiquidity = isFund
+    ? liquidityStats(
+        history.slice(-LIQUIDITY_WINDOW_DAYS).map((d) => ({
+          trade_date: d.trade_date,
+          value_traded: d.value_traded ?? null,
+          volume: d.volume ?? null,
+        })),
+      )
+    : null;
 
   // T5-2: فهرست گزارش‌های ذخیره‌شده (codal_reports) برای تب گزارش‌ها
   const storedReports: StoredReport[] = [];
@@ -386,6 +434,19 @@ export default async function SymbolPage({ params }: PageProps) {
                     </h2>
                     <PriceNavChart points={navPoints} />
                   </section>
+                )}
+
+                {/* حباب، هم‌گروه و نقدشوندگی — فقط صندوق‌ها */}
+                {isFund && (
+                  <FundAnalysisPanel
+                    live={fundLive}
+                    series={fundSeries}
+                    summary={fundSummary}
+                    windows={fundWindows}
+                    peer={fundPeer}
+                    liquidity={fundLiquidity}
+                    liquidityWindowDays={LIQUIDITY_WINDOW_DAYS}
+                  />
                 )}
 
                 {/* تاریخچهٔ قیمت و جریان پول */}
