@@ -12,14 +12,20 @@ import {
   narrativeMonthlyVsAvg,
   narrativeProdVsSales,
   narrativeRate,
+  meaningfulRate,
 } from "./monthlyReport";
 import type { CodalN30Data, N30ProductRow } from "@/lib/fundamental/types";
 
 function prod(p: Partial<N30ProductRow> & { product_name: string }): N30ProductRow {
+  // `sales_qty` پیش‌فرضِ ۱ دارد، نه null.
+  // چرا: در دادهٔ واقعیِ Production **هیچ** ردیفی نرخِ مثبت با مقدارِ خالی ندارد
+  // (۳۱٬۰۷۳ از ۳۱٬۰۷۳ ردیفِ دارای نرخِ مثبت، مقدار هم دارند). فیکسچرِ قبلی
+  // ترکیبی می‌ساخت که در واقعیت وجود ندارد و به همین دلیل گاردِ `meaningfulRate`
+  // را بی‌دلیل قرمز می‌کرد. تستِ اختصاصیِ مقدارِ خالی پایین‌تر آمده است.
   return {
     market: "داخلی",
     production_qty: null,
-    sales_qty: null,
+    sales_qty: 1,
     sales_rate: null,
     sales_amount: null,
     ...p,
@@ -190,4 +196,59 @@ test("روایت میانگین: بالاتر/پایین‌تر درست", () =>
   assert.ok(r);
   const n = narrativeMonthlyVsAvg(r);
   assert.ok(n && n.includes("بالاتر")); // 300 نسبت به میانگین 200
+});
+
+/* ── گاردِ نرخِ معنادار — الگوهای خرابِ دادهٔ واقعیِ Production ──────────── */
+
+test("نرخ: مقدارِ مثبت با مبلغِ منفی نرخ نمی‌سازد (ردیفِ تعدیل)", () => {
+  // الگوی واقعی: دزهراوی، «آمپول»، مقدار +۰.۰۱ و مبلغ −۱۳۷۱۰ ⇒ نرخِ −۱.۳۷e۱۲
+  assert.equal(meaningfulRate({ sales_qty: 0.01, sales_rate: -1_371_000_000_000, sales_amount: -13710 }), null);
+});
+
+test("نرخ: نرخِ صفر یا منفی رد می‌شود — قیمتِ واحد نه صفر است نه منفی", () => {
+  assert.equal(meaningfulRate({ sales_qty: 10, sales_rate: 0, sales_amount: 100 }), null);
+  assert.equal(meaningfulRate({ sales_qty: 10, sales_rate: -5, sales_amount: 100 }), null);
+});
+
+test("نرخ: مقدارِ صفر یا خالی نرخ نمی‌سازد — تقسیم بر صفر", () => {
+  assert.equal(meaningfulRate({ sales_qty: 0, sales_rate: 250, sales_amount: 100 }), null);
+  assert.equal(meaningfulRate({ sales_qty: null, sales_rate: 250, sales_amount: 100 }), null);
+});
+
+test("نرخ: برگشت از فروش سالم است و عبور می‌کند", () => {
+  // مقدار و مبلغ هر دو منفی، نرخ مثبت — واقعیتِ حسابداری، نه خطای پارس
+  assert.equal(meaningfulRate({ sales_qty: -5, sales_rate: 250, sales_amount: -1250 }), 250);
+});
+
+test("نرخ: ردیفِ سالم دست‌نخورده عبور می‌کند", () => {
+  assert.equal(meaningfulRate({ sales_qty: 5, sales_rate: 250, sales_amount: 1250 }), 250);
+});
+
+test("نرخ: مبلغِ خالی مانعِ نرخ نیست (فقط تناقضِ علامت مانع است)", () => {
+  assert.equal(meaningfulRate({ sales_qty: 5, sales_rate: 250, sales_amount: null }), 250);
+});
+
+test("نرخ: ماهِ دارای ردیفِ خراب گپ می‌شود، نه عددِ بی‌معنا", () => {
+  const r = buildMonthlySales([
+    report("1405-02-31", 900, [
+      prod({ product_name: "آمپول", market: "داخلی", sales_qty: 0.01, sales_rate: -1_371_000_000_000, sales_amount: -13710 }),
+    ]),
+    report("1405-01-31", 500, [
+      prod({ product_name: "آمپول", market: "داخلی", sales_qty: 100, sales_rate: 240, sales_amount: 24 }),
+    ]),
+  ]);
+  assert.ok(r);
+  const s = r.rateSeries.find((x) => x.productName === "آمپول")!;
+  assert.equal(s.points[0].rate, 240, "ماهِ سالم عدد دارد");
+  assert.equal(s.points[1].rate, null, "ماهِ خراب گپ است، نه ۱.۳۷e۱۲−");
+});
+
+test("نرخ: تناقضِ علامت حتی با نرخِ مثبت هم رد می‌شود", () => {
+  // ⚠️ این حالت در دادهٔ امروزِ Production **وجود ندارد**: هر ۳۰۲ ردیفِ دارای
+  // تناقضِ علامت، نرخِ منفی هم دارند و گاردِ «نرخِ نامثبت» زودتر می‌گیردشان.
+  // پس بدونِ این تستِ صریح، گاردِ تناقضِ علامت هرگز قرمز نمی‌شد — یعنی یک
+  // گاردِ توخالی می‌ماند که هیچ‌کس نمی‌فهمید کار می‌کند یا نه.
+  // اگر روزی پارسر قدرمطلق بگیرد، این تست تنها چیزی است که جلوش را می‌گیرد.
+  assert.equal(meaningfulRate({ sales_qty: 5, sales_rate: 250, sales_amount: -1250 }), null);
+  assert.equal(meaningfulRate({ sales_qty: -5, sales_rate: 250, sales_amount: 1250 }), null);
 });
