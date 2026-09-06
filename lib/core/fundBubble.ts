@@ -154,6 +154,14 @@ export function summarizeBubble(series: BubbleSeries): BubbleSummary | null {
   };
 }
 
+/** نسبتِ روزِ معاملاتی به روزِ تقویمی — اندازه‌گیری‌شده، نه حدس:
+ *  در بازهٔ `2026-07-18`..`2026-09-06` (۵۰ روزِ تقویمی) `symbol_history`
+ *  دقیقاً **۳۷ روزِ معاملاتیِ متمایز** دارد. */
+export const TRADING_DAY_RATIO = 37 / 50;
+
+/** کفِ مطلقِ تعدادِ مشاهده در یک پنجره — زیرِ این، «میانه» معنا ندارد. */
+export const MIN_WINDOW_OBSERVATIONS = 5;
+
 /**
  * خلاصهٔ یک پنجرهٔ زمانی (مثلاً «۹۰ روزِ اخیر»).
  *
@@ -172,7 +180,20 @@ export function bubbleWindow(series: BubbleSeries, windowDays: number, tolerance
   const last = series.points[series.points.length - 1].trade_date;
   const cutoff = Date.parse(last) - windowDays * 86_400_000;
   const inWindow = series.points.filter((p) => Date.parse(p.trade_date) >= cutoff);
-  if (inWindow.length === 0) return null;
+
+  // گاردِ دوم: کشیدگیِ بازه با **پر بودنِ** بازه یکی نیست.
+  //
+  // نسخهٔ اول فقط `calendarSpanDays` را می‌سنجید. صندوقی که پنج روزِ اولِ
+  // بازه و بعد یک روزِ آخر داده دارد، کشیدگیِ ۵۰ روزه می‌سازد و از گاردِ اول
+  // رد می‌شود — و آن‌وقت «میانهٔ ۳۰ روزه» از **یک مشاهده** درمی‌آمد. همان
+  // خطای «عددِ درستِ چیزِ دیگر» بود، یک لایه پایین‌تر.
+  //
+  // آستانه: دستِ‌کم نیمی از روزهای معاملاتیِ موردِ انتظار در آن پنجره.
+  // نسبتِ روزِ معاملاتی به روزِ تقویمی در بازارِ ایران ≈ ۳۷ به ۵۰ (اندازه‌گیریِ
+  // ۲۰۲۶-۰۹-۰۶ روی `symbol_history`)، پس ~۰٫۷۴ — و نصفِ آن کفِ محافظه‌کارانه‌ای است.
+  const expectedTradingDays = windowDays * TRADING_DAY_RATIO;
+  if (inWindow.length < Math.max(MIN_WINDOW_OBSERVATIONS, expectedTradingDays * 0.5)) return null;
+
   return summarizeBubble({ points: inWindow, coverage: cov, skipped: series.skipped });
 }
 

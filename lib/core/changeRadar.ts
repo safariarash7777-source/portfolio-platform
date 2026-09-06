@@ -14,6 +14,24 @@
 
 export type RadarKind = "new_report" | "amendment" | "performance_change";
 
+/**
+ * از کجا می‌دانیم رویداد کِی بوده.
+ *
+ * ── چرا این تفکیک اجباری شد (`B-031`) ────────────────────────────────────
+ * ستونِ `codal_reports.published_at` روی Production برای **هر ۷٬۸۲۸ ردیف**
+ * `NULL` است (اندازه‌گیریِ ۲۰۲۶-۰۹-۰۶). یعنی امروز «کِی منتشر شد» را اصلاً
+ * نمی‌دانیم؛ فقط `captured_at` را داریم، که «کِی ما دیدیمش» است.
+ *
+ * نسخهٔ اول این ماژول یک `eventDate` بی‌برچسب داشت. آن یعنی نما ناچار بود
+ * حدس بزند، و محتمل‌ترین حدس — «تاریخِ انتشار» — یک **ادعای اثبات‌ناپذیر**
+ * می‌ساخت. حالا نوعِ تاریخ همراهِ خودش می‌آید و نما نمی‌تواند اشتباه بگوید.
+ */
+export type RadarDateKind =
+  /** تاریخِ انتشارِ رسمی — فقط وقتی منبع واقعاً داده باشد */
+  | "published"
+  /** زمانی که ما آن را دریافت کردیم — با انتشار یکی نیست */
+  | "captured";
+
 export interface RadarEvent {
   kind: RadarKind;
   symbol: string;
@@ -24,6 +42,8 @@ export interface RadarEvent {
   changeValue: number | null;
   changeUnit: string | null;
   eventDate: string;
+  /** `eventDate` چه چیزی را می‌گوید — نما بدونِ این نباید تاریخ نشان دهد. */
+  eventDateKind: RadarDateKind;
   sourceUrl: string | null;
   significance: string;
 }
@@ -49,6 +69,12 @@ export interface ReportInput {
   isAmendment: boolean;
   /** کلیدِ رویدادِ قبلی که این اصلاحیه باطلش می‌کند — اگر شناخته شده باشد. */
   supersedesKey: string | null;
+  /**
+   * `publishDate` واقعاً تاریخِ انتشار است یا زمانِ دریافتِ ما؟
+   * فراخوان **باید** صریح بگوید؛ پیش‌فرض ندارد، چون پیش‌فرضِ خوش‌بینانه
+   * دقیقاً همان ادعای اثبات‌ناپذیری است که `B-031` هشدارش را می‌دهد.
+   */
+  dateKind: RadarDateKind;
 }
 
 export function reportEvent(r: ReportInput): RadarEvent | null {
@@ -74,6 +100,7 @@ export function reportEvent(r: ReportInput): RadarEvent | null {
     changeValue: null,
     changeUnit: null,
     eventDate: r.publishDate,
+    eventDateKind: r.dateKind,
     sourceUrl: r.sourceUrl,
     significance: r.isAmendment
       ? "نسخهٔ اصلاحیِ یک گزارشِ منتشرشده — محاسبه‌های ساخته‌شده روی نسخهٔ قبلی باید بازبینی شوند."
@@ -94,6 +121,8 @@ export interface PerformanceInput {
   baselineLabel: string;
   unit: string;
   eventDate: string;
+  /** تاریخِ سنجه از کدام جنس است — مثلِ گزارش، پیش‌فرض ندارد. */
+  dateKind: RadarDateKind;
   sourceUrl: string | null;
   /** آستانهٔ درصدی؛ کمتر از آن رویداد ساخته نمی‌شود */
   thresholdPercent: number;
@@ -150,6 +179,7 @@ export function performanceEvent(p: PerformanceInput): PerformanceResult {
       changeValue: rounded,
       changeUnit: "percent",
       eventDate: p.eventDate,
+      eventDateKind: p.dateKind,
       sourceUrl: p.sourceUrl,
       significance: `تغییرِ ${rounded}٪ نسبت به ${p.baselineLabel} — از آستانهٔ ${p.thresholdPercent}٪ عبور کرد.`,
     },

@@ -49,7 +49,6 @@ export interface FundAnalysisPanelProps {
   windows: { days: number; label: string; summary: BubbleSummary | null }[];
   peer: PeerPosition | null;
   liquidity: LiquidityStats | null;
-  liquidityWindowDays: number;
 }
 
 export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {

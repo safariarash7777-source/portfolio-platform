@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   bubblePercent, bubbleSeries, summarizeBubble, bubbleWindow, liveBubble,
   MIN_PRICE_NAV_RATIO, MAX_PRICE_NAV_RATIO, NAV_STALE_HOURS, FUTURE_SKEW_TOLERANCE_HOURS,
+  MIN_WINDOW_OBSERVATIONS,
   type NavPricePoint,
 } from "./fundBubble";
 
@@ -235,4 +236,46 @@ test("جاری: مرزِ تحمل دقیقاً همان‌جاست که مستن
   assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: inside, now: NOW }).state, "ready");
   const outside = new Date(NOW.getTime() + FUTURE_SKEW_TOLERANCE_HOURS * 3_600_000 + 60_000).toISOString();
   assert.equal(liveBubble({ priceToman: 110, navToman: 100, navAt: outside, now: NOW }).state, "unavailable");
+});
+
+/* ── چگالیِ پنجره — یافتهٔ بازبینی ───────────────────────────────────────── */
+
+test("پنجره: بازهٔ کشیده ولی تُنُک خلاصه نمی‌سازد", () => {
+  // پنج روزِ اولِ بازه، بعد یک روز در انتها. کشیدگی ۵۰ روز است و از گاردِ
+  // اول رد می‌شود — ولی «میانهٔ ۳۰ روزه» اینجا از **یک مشاهده** درمی‌آمد.
+  const pts: NavPricePoint[] = [];
+  const start = Date.parse("2026-07-18");
+  for (let i = 0; i < 5; i++) {
+    pts.push({ trade_date: new Date(start + i * 86_400_000).toISOString().slice(0, 10), nav: 100, close: 105 });
+  }
+  pts.push({ trade_date: new Date(start + 49 * 86_400_000).toISOString().slice(0, 10), nav: 100, close: 108 });
+  const s = bubbleSeries(pts);
+  assert.equal(s.coverage!.calendarSpanDays, 50, "کشیدگی از گاردِ اول رد می‌شود");
+  assert.equal(bubbleWindow(s, 30), null, "ولی چگالی کافی نیست");
+});
+
+test("پنجره: بازهٔ کشیده و پرْ خلاصه می‌سازد", () => {
+  const pts: NavPricePoint[] = [];
+  const start = Date.parse("2026-07-18");
+  // ۳۷ روزِ معاملاتی پخش‌شده در ۵۰ روزِ تقویمی — همان شکلِ دادهٔ واقعی
+  for (let i = 0; i < 50; i++) {
+    const d = new Date(start + i * 86_400_000);
+    if (d.getUTCDay() === 4 || d.getUTCDay() === 5) continue; // تعطیلیِ پنجشنبه/جمعه
+    pts.push({ trade_date: d.toISOString().slice(0, 10), nav: 100, close: 105 });
+  }
+  const s = bubbleSeries(pts);
+  assert.ok(s.points.length >= 30);
+  assert.ok(bubbleWindow(s, 30) !== null, "پنجرهٔ ۳۰ روزه روی دادهٔ پُر باید ساخته شود");
+  assert.equal(bubbleWindow(s, 90), null, "۹۰ روز همچنان ساخته نمی‌شود");
+});
+
+test("پنجره: کفِ مطلقِ تعدادِ مشاهده رعایت می‌شود", () => {
+  const pts: NavPricePoint[] = [];
+  const start = Date.parse("2026-08-25");
+  for (let i = 0; i < 4; i++) {
+    pts.push({ trade_date: new Date(start + i * 86_400_000).toISOString().slice(0, 10), nav: 100, close: 105 });
+  }
+  const s = bubbleSeries(pts);
+  assert.ok(s.points.length < MIN_WINDOW_OBSERVATIONS);
+  assert.equal(bubbleWindow(s, 5), null, "زیرِ کفِ مطلق، خلاصه ساخته نمی‌شود");
 });

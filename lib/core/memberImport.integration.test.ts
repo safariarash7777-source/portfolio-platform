@@ -24,6 +24,7 @@ const PSQL_ENV = {
 
 const ROOT = process.cwd();
 const BOOTSTRAP = join(ROOT, "sql", "test", "supabase_bootstrap.sql");
+const ACCESS_TIERS = join(ROOT, "sql", "phase11_access_tiers.sql"); // پیش‌نیاز: جدولِ entitlements
 const MIGRATION = join(ROOT, "sql", "phase27_member_import.sql");
 const PROFILES = {
   legacy: join(ROOT, "sql", "test", "profile_legacy_default_privileges.sql"),
@@ -34,6 +35,9 @@ const PROFILES = {
 const ADMIN = "11111111-1111-1111-1111-111111111111";
 const MEMBER_A = "22222222-2222-2222-2222-222222222222";
 const MEMBER_B = "33333333-3333-3333-3333-333333333333";
+
+/** اجرای یک فراخوانی از مسیرِ سرویس با هویتِ ادمین. */
+const AS_ADMIN = `SET LOCAL ROLE service_role; SET LOCAL request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111"}';`;
 
 function psql(db: string, sql: string): string {
   return execFileSync("psql", ["-d", db, "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", sql], {
@@ -63,6 +67,7 @@ for (const [profileName, profileFile] of Object.entries(PROFILES)) {
       psql("postgres", `CREATE DATABASE ${db}`);
       psqlFile(db, BOOTSTRAP);
       psqlFile(db, profileFile);
+      psqlFile(db, ACCESS_TIERS);
       psqlFile(db, MIGRATION);
       psql(db, `INSERT INTO auth.users (id) VALUES ('${ADMIN}'),('${MEMBER_A}'),('${MEMBER_B}')`);
       psql(db, `INSERT INTO public.profiles (id, role) VALUES
@@ -121,63 +126,159 @@ for (const [profileName, profileFile] of Object.entries(PROFILES)) {
       assert.equal(psql(db, `SELECT count(*) FROM public.member_import_rows WHERE status='unmatched'`), "1");
     });
 
-    test("اعطا با دورهٔ واقعیِ فهرست ثبت می‌شود", () => {
+    /* ── اعطا: تولیدِ entitlements، نه سامانهٔ موازی ────────────────────── */
+
+    test("اعطا فقط پس از تأییدِ دسته ممکن است — پیش‌نمایش دسترسی نمی‌دهد", () => {
       const rid = psql(db, `SELECT id FROM public.member_import_rows WHERE contact_value='synthetic-a@example.invalid'`);
-      psql(db, `INSERT INTO public.member_grants (row_id, user_id, access_from, access_until)
-        SELECT id, matched_user_id, access_from, access_until FROM public.member_import_rows WHERE id=${rid}`);
-      assert.equal(psql(db, `SELECT access_until::text FROM public.member_grants WHERE row_id=${rid}`), "2026-12-01");
+      const err = expectError(db, `${AS_ADMIN} SELECT public.grant_member_access(${rid})`);
+      assert.match(err, /تأیید نشده/);
+      psql(db, `UPDATE public.member_import_batches SET approved_at=now(), approved_by='${ADMIN}' WHERE id=1`);
     });
 
-    test("اعطای دوباره به همان کاربر ممکن نیست", () => {
+    test("اعطا یک ردیفِ entitlements می‌سازد و به آن وصل می‌شود", () => {
       const rid = psql(db, `SELECT id FROM public.member_import_rows WHERE contact_value='synthetic-a@example.invalid'`);
-      const err = expectError(db, `INSERT INTO public.member_grants (row_id, user_id, access_from, access_until)
-        VALUES (${rid}, '${MEMBER_A}', DATE '2026-09-01', DATE '2027-01-01')`);
-      assert.match(err, /duplicate key|uq_member_grant/i);
+      const gid = psql(db, `${AS_ADMIN} SELECT public.grant_member_access(${rid})`);
+      assert.ok(Number(gid) > 0);
+      assert.equal(psql(db, `SELECT count(*) FROM public.entitlements WHERE source='member_import'`), "1");
+      assert.equal(
+        psql(db, `SELECT e.expires_at::date::text FROM public.member_grants g
+                    JOIN public.entitlements e ON e.id = g.entitlement_id WHERE g.id=${gid}`),
+        "2026-12-01", "تاریخِ پایان از خودِ فهرست می‌آید، نه پیش‌فرضِ سیستم");
     });
 
-    test("پردازشِ دوبارهٔ همان ردیف اعطای تکراری نمی‌سازد", () => {
-      assert.equal(psql(db, `SELECT count(*) FROM public.member_grants WHERE revoked_at IS NULL`), "1");
+    test("اعطای دوباره روی همان ردیف ردیفِ تازه نمی‌سازد — همان را برمی‌گرداند", () => {
+      const rid = psql(db, `SELECT id FROM public.member_import_rows WHERE contact_value='synthetic-a@example.invalid'`);
+      const a = psql(db, `${AS_ADMIN} SELECT public.grant_member_access(${rid})`);
+      const b = psql(db, `${AS_ADMIN} SELECT public.grant_member_access(${rid})`);
+      assert.equal(a, b, "ایده‌مپوتنت");
+      assert.equal(psql(db, `SELECT count(*) FROM public.entitlements WHERE source='member_import'`), "1");
     });
 
-    test("همان کاربر از دستهٔ دیگر هم دسترسیِ دوم نمی‌گیرد", () => {
-      // سناریوی واقعی: یک نفر در دو فهرستِ متفاوت هست. `uq_member_grant_row`
-      // اینجا کمکی نمی‌کند چون ردیفِ فهرست فرق دارد؛ تنها چیزی که جلویش را
-      // می‌گیرد `uq_member_grant_active` روی `user_id` است. بدونِ این تست آن
-      // ایندکس **توخالی** بود — با برداشتنش هیچ تستی قرمز نمی‌شد.
-      psql(db, `INSERT INTO public.member_import_batches (id, source_label, evidence, imported_by)
-        VALUES (2, 'synthetic-second-list.csv', 'دستهٔ دومِ مصنوعی برای تستِ تکرار', '${ADMIN}')`);
+    test("ردیفِ تطبیق‌نیافته اعطا نمی‌گیرد", () => {
+      const rid = psql(db, `SELECT id FROM public.member_import_rows WHERE contact_value='+9800000000001'`);
+      const err = expectError(db, `${AS_ADMIN} SELECT public.grant_member_access(${rid})`);
+      assert.match(err, /تطبیق‌یافته/);
+    });
+
+    test("کاربرِ دارای دسترسیِ فعال اعطای دوم نمی‌گیرد — تمدید راهِ دیگری دارد", () => {
       psql(db, `INSERT INTO public.member_import_rows
         (id, batch_id, contact_kind, contact_value, access_from, access_until, status, matched_user_id)
-        VALUES (900, 2, 'email', 'synthetic-a-again@example.invalid',
-                DATE '2026-10-01', DATE '2027-01-01', 'matched', '${MEMBER_A}')`);
-      const err = expectError(db, `INSERT INTO public.member_grants (row_id, user_id, access_from, access_until)
-        VALUES (900, '${MEMBER_A}', DATE '2026-10-01', DATE '2027-01-01')`);
-      assert.match(err, /duplicate key|uq_member_grant_active/i);
+        VALUES (901, 1, 'email', 'synthetic-a-dup@example.invalid',
+                DATE '2026-09-01', DATE '2026-12-01', 'matched', '${MEMBER_A}')`);
+      const err = expectError(db, `${AS_ADMIN} SELECT public.grant_member_access(901)`);
+      assert.match(err, /دسترسیِ فعال|renew_member_access/);
+    });
+
+    test("اعطای بدونِ اتصال به entitlements اصلاً ثبت نمی‌شود", () => {
+      // بدونِ این تست، `NOT NULL` روی `entitlement_id` **توخالی** بود: همهٔ
+      // مسیرهای کد آن را پر می‌کنند، پس برداشتنِ قید هیچ تستی را قرمز نمی‌کرد.
+      // این تست مسیرِ نوشتنِ مستقیم را می‌بندد — همان راهی که یک اسکریپتِ
+      // آیندهٔ بی‌دقت می‌تواند دفتر را از مرجعِ دسترسی جدا کند.
+      const err = expectError(db, `INSERT INTO public.member_grants (row_id, user_id, entitlement_id)
+        VALUES (901, '${MEMBER_A}', NULL)`);
+      assert.match(err, /null value|not-null|violates/i);
+    });
+
+    /* ── انقضا — نقصی که بازبینی پیدا کرد ──────────────────────────────── */
+
+    test("انقضای طبیعی یعنی دسترسیِ فعال نیست، حتی وقتی لغو نشده", () => {
+      // دوره‌ای که در گذشته تمام شده — از خودِ فهرست، نه با دستکاریِ ردیف.
+      // (تریگرِ `entitlements` اجازهٔ تغییرِ `expires_at` را نمی‌دهد، که درست است.)
+      psql(db, `INSERT INTO public.member_import_rows
+        (id, batch_id, contact_kind, contact_value, access_from, access_until, status, matched_user_id)
+        VALUES (902, 1, 'email', 'synthetic-b-expired@example.invalid',
+                DATE '2025-01-01', DATE '2025-04-01', 'matched', '${MEMBER_B}')`);
+      psql(db, `${AS_ADMIN} SELECT public.grant_member_access(902)`);
+      assert.equal(psql(db, `SELECT count(*) FROM public.member_grants WHERE user_id='${MEMBER_B}' AND revoked_at IS NULL`), "1",
+        "اعطا ثبت شد و لغو هم نشده");
+      assert.equal(psql(db, `SELECT public.member_has_active_access('${MEMBER_B}','consulting')::text`), "false",
+        "ولی دسترسی فعال نیست — انقضا مستقل از لغو است");
+    });
+
+    test("پس از انقضای طبیعی، اعطای تازه ممکن است", () => {
+      // ⚠️ نقصِ نسخهٔ اول: ایندکسِ یکتای جزئی روی (user_id) WHERE revoked_at IS NULL.
+      // انقضا `revoked_at` را پر نمی‌کند، پس عضوی که دوره‌اش طبیعتاً تمام شده بود
+      // **هرگز** نمی‌توانست دسترسیِ تازه بگیرد. تستِ اول این را نگرفت چون فقط
+      // مسیرِ «لغو، بعد اعطا» را می‌آزمود و هیچ دوره‌ای را منقضی نمی‌کرد.
+      psql(db, `INSERT INTO public.member_import_rows
+        (id, batch_id, contact_kind, contact_value, access_from, access_until, status, matched_user_id)
+        VALUES (903, 1, 'email', 'synthetic-b-renewed@example.invalid',
+                DATE '2026-09-01', DATE '2026-12-01', 'matched', '${MEMBER_B}')`);
+      const gid = psql(db, `${AS_ADMIN} SELECT public.grant_member_access(903)`);
+      assert.ok(Number(gid) > 0, "عضوِ منقضی باید بتواند دوباره دسترسی بگیرد");
+      assert.equal(psql(db, `SELECT public.member_has_active_access('${MEMBER_B}','consulting')::text`), "true");
+    });
+
+    test("دسترسیِ لغوشده هم فعال شمرده نمی‌شود", () => {
+      const gid = psql(db, `SELECT id FROM public.member_grants WHERE row_id=903 AND revoked_at IS NULL ORDER BY id DESC LIMIT 1`);
+      psql(db, `${AS_ADMIN} SELECT public.revoke_member_grant(${gid}, 'لغوِ آزمایشی برای سنجشِ حالتِ فعال.')`);
+      assert.equal(psql(db, `SELECT public.member_has_active_access('${MEMBER_B}','consulting')::text`), "false");
+    });
+
+    /* ── تمدید ─────────────────────────────────────────────────────────── */
+
+    test("تمدید زنجیره می‌سازد: قبلی لغو، تازه ساخته، دو سر وصل", () => {
+      const gid = psql(db, `${AS_ADMIN} SELECT public.grant_member_access(903)`);
+      const nid = psql(db, `${AS_ADMIN} SELECT public.renew_member_access(${gid},
+        TIMESTAMPTZ '2027-06-01', 'تمدیدِ سه‌ماههٔ آزمایشی برای تست.')`);
+      assert.notEqual(gid, nid);
+      assert.equal(psql(db, `SELECT revoked_at IS NOT NULL FROM public.member_grants WHERE id=${gid}`), "t");
+      assert.equal(psql(db, `SELECT renewed_from_grant_id FROM public.member_grants WHERE id=${nid}`), gid);
+      assert.equal(psql(db, `SELECT e.expires_at::date::text FROM public.member_grants g
+                    JOIN public.entitlements e ON e.id=g.entitlement_id WHERE g.id=${nid}`), "2027-06-01");
+      assert.equal(psql(db, `SELECT public.member_has_active_access('${MEMBER_B}','consulting')::text`), "true");
+      assert.equal(psql(db, `SELECT source FROM public.member_grants g JOIN public.entitlements e
+                    ON e.id=g.entitlement_id WHERE g.id=${nid}`), "member_import_renewal",
+        "منبعِ تمدید از اعطای اولیه قابلِ تفکیک است");
+    });
+
+    test("تمدید باید تاریخِ پایان را جلو ببرد — کوتاه‌کردن تمدید نیست", () => {
+      const gid = psql(db, `SELECT id FROM public.member_grants WHERE user_id='${MEMBER_B}' AND revoked_at IS NULL ORDER BY id DESC LIMIT 1`);
+      const err = expectError(db, `${AS_ADMIN} SELECT public.renew_member_access(${gid},
+        TIMESTAMPTZ '2026-10-01', 'تلاش برای کوتاه‌کردنِ دوره در قالبِ تمدید.')`);
+      assert.match(err, /جلو ببرد/);
+    });
+
+    test("تمدید بدونِ علت و روی اعطای لغوشده ممکن نیست", () => {
+      const gid = psql(db, `SELECT id FROM public.member_grants WHERE user_id='${MEMBER_B}' AND revoked_at IS NULL ORDER BY id DESC LIMIT 1`);
+      assert.match(expectError(db, `${AS_ADMIN} SELECT public.renew_member_access(${gid}, TIMESTAMPTZ '2028-01-01', 'کوتاه')`), /علتِ تمدید/);
+      const old = psql(db, `SELECT id FROM public.member_grants WHERE revoked_at IS NOT NULL ORDER BY id LIMIT 1`);
+      assert.match(expectError(db, `${AS_ADMIN} SELECT public.renew_member_access(${old}, TIMESTAMPTZ '2028-01-01', 'تمدیدِ اعطای لغوشده باید رد شود.')`), /لغوشده تمدید نمی‌شود/);
+    });
+
+    /* ── لغوِ موردی و دسته‌ای ───────────────────────────────────────────── */
+
+    test("لغوِ موردی هم دفتر و هم خودِ دسترسی را لغو می‌کند", () => {
+      const gid = psql(db, `SELECT id FROM public.member_grants WHERE user_id='${MEMBER_B}' AND revoked_at IS NULL ORDER BY id DESC LIMIT 1`);
+      const ent = psql(db, `SELECT entitlement_id FROM public.member_grants WHERE id=${gid}`);
+      psql(db, `${AS_ADMIN} SELECT public.revoke_member_grant(${gid}, 'لغوِ موردیِ آزمایشی با علتِ کافی.')`);
+      assert.equal(psql(db, `SELECT revoked_at IS NOT NULL FROM public.member_grants WHERE id=${gid}`), "t");
+      assert.equal(psql(db, `SELECT revoked_at IS NOT NULL FROM public.entitlements WHERE id='${ent}'`), "t",
+        "دسترسیِ واقعی هم باید لغو شود، نه فقط دفتر");
+    });
+
+    test("لغوِ موردیِ تکراری خطا نمی‌دهد، false برمی‌گرداند", () => {
+      const gid = psql(db, `SELECT id FROM public.member_grants WHERE revoked_at IS NOT NULL ORDER BY id DESC LIMIT 1`);
+      assert.equal(psql(db, `${AS_ADMIN} SELECT public.revoke_member_grant(${gid}, 'تلاشِ دومِ لغو روی همان اعطا.')`), "f");
     });
 
     test("لغو بدونِ علت ممکن نیست — حتی برای ادمین", () => {
-      // هویتِ ادمین لازم است تا به گاردِ «علت» برسیم؛ گاردِ مجوز زودتر شلیک
-      // می‌کند، که ترتیبِ درستی است (اول اجازه، بعد اعتبارسنجی).
-      const err = expectError(db, `SET LOCAL ROLE service_role;
-        SET LOCAL request.jwt.claims = '{"sub":"${ADMIN}"}';
-        SELECT public.revoke_member_batch(1, 'کوتاه')`);
-      assert.match(err, /علتِ لغو/);
+      assert.match(expectError(db, `${AS_ADMIN} SELECT public.revoke_member_batch(1, 'کوتاه')`), /علتِ لغو/);
     });
 
-    test("لغو برگشت‌پذیر است: ردیف پاک نمی‌شود، فقط revoked_at می‌خورد", () => {
-      psql(db, `SET LOCAL ROLE service_role;
-        SET LOCAL request.jwt.claims = '{"sub":"${ADMIN}"}';
-        SELECT public.revoke_member_batch(1, 'دستهٔ آزمایشی لغو شد برای تست.')`);
-      assert.equal(psql(db, `SELECT count(*) FROM public.member_grants`), "1", "ردیف باقی می‌ماند");
-      assert.equal(psql(db, `SELECT count(*) FROM public.member_grants WHERE revoked_at IS NOT NULL`), "1");
-      assert.equal(psql(db, `SELECT revoke_reason IS NOT NULL FROM public.member_grants LIMIT 1`), "t");
+    test("لغوِ دسته هر اعطای بازِ آن را از مسیرِ موردی می‌بندد", () => {
+      const n = psql(db, `${AS_ADMIN} SELECT public.revoke_member_batch(1, 'لغوِ کلِ دستهٔ آزمایشی با علتِ کافی.')`);
+      assert.ok(Number(n) >= 1);
+      assert.equal(psql(db, `SELECT count(*) FROM public.member_grants WHERE revoked_at IS NULL`), "0");
+      assert.equal(psql(db, `SELECT count(*) FROM public.entitlements WHERE revoked_at IS NULL`), "0",
+        "هیچ دسترسیِ بازی نباید از یک دستهٔ لغوشده باقی بماند");
     });
 
-    test("پس از لغو، اعطای تازه به همان کاربر مجاز است", () => {
-      const rid = psql(db, `SELECT id FROM public.member_import_rows WHERE contact_value='synthetic-a@example.invalid'`);
-      psql(db, `INSERT INTO public.member_grants (row_id, user_id, access_from, access_until)
-        VALUES (${rid}, '${MEMBER_A}', DATE '2027-01-01', DATE '2027-04-01')`);
-      assert.equal(psql(db, `SELECT count(*) FROM public.member_grants WHERE revoked_at IS NULL`), "1");
+    test("هیچ ردیفی پاک نشد — لغو برگشت‌پذیر است، نه حذف", () => {
+      assert.ok(Number(psql(db, `SELECT count(*) FROM public.member_grants`)) >= 4,
+        "همهٔ اعطاها — لغوشده و فعال — باقی مانده‌اند");
+      assert.ok(Number(psql(db, `SELECT count(*) FROM public.entitlements`)) >= 4,
+        "هیچ ردیفِ entitlements پاک نشد");
     });
 
     /* ── حریمِ خصوصی: شناسهٔ تماس دادهٔ شخصی است ─────────────────────────── */
@@ -187,10 +288,16 @@ for (const [profileName, profileFile] of Object.entries(PROFILES)) {
       assert.equal(asUser(db, MEMBER_B, `SELECT count(*) FROM public.member_import_batches`), "0");
     });
 
-    test("کاربر فقط اعطای خودش را می‌بیند", () => {
-      assert.equal(asUser(db, MEMBER_A, `SELECT count(*) FROM public.member_grants`), "2",
-        "کاربرِ A هر دو اعطای خودش (لغوشده و فعال) را می‌بیند");
-      assert.equal(asUser(db, MEMBER_B, `SELECT count(*) FROM public.member_grants`), "0");
+    test("کاربر فقط اعطای خودش را می‌بیند — و همهٔ آن‌ها را", () => {
+      const totalA = psql(db, `SELECT count(*) FROM public.member_grants WHERE user_id='${MEMBER_A}'`);
+      const totalB = psql(db, `SELECT count(*) FROM public.member_grants WHERE user_id='${MEMBER_B}'`);
+      assert.ok(Number(totalA) > 0 && Number(totalB) > 0, "هر دو کاربر اعطا دارند");
+      assert.equal(asUser(db, MEMBER_A, `SELECT count(*) FROM public.member_grants`), totalA,
+        "کاربرِ A همهٔ اعطاهای خودش را می‌بیند — لغوشده و فعال");
+      assert.equal(asUser(db, MEMBER_B, `SELECT count(*) FROM public.member_grants`), totalB);
+      // و هیچ‌کدام ردیفِ دیگری را نمی‌بیند
+      assert.equal(asUser(db, MEMBER_A, `SELECT count(*) FROM public.member_grants WHERE user_id='${MEMBER_B}'`), "0");
+      assert.equal(asUser(db, MEMBER_B, `SELECT count(*) FROM public.member_grants WHERE user_id='${MEMBER_A}'`), "0");
     });
 
     test("ادمین فهرست را می‌بیند", () => {

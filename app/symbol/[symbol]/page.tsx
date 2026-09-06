@@ -445,7 +445,6 @@ export default async function SymbolPage({ params }: PageProps) {
                     windows={fundWindows}
                     peer={fundPeer}
                     liquidity={fundLiquidity}
-                    liquidityWindowDays={LIQUIDITY_WINDOW_DAYS}
                   />
                 )}
 

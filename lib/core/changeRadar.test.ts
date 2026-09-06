@@ -8,12 +8,13 @@ import {
 const REPORT: ReportInput = {
   symbol: "فملی", reportKind: "ن-۳۰", periodEnd: "1405-05-31",
   publishDate: "2026-09-01", sourceUrl: "https://codal.ir/x", isAmendment: false, supersedesKey: null,
+  dateKind: "published",
 };
 
 const PERF: PerformanceInput = {
   symbol: "فملی", metric: "monthly_sales", period: "1405-05",
   current: 130, baseline: 100, baselineLabel: "میانگینِ سه ماهِ قبل",
-  unit: "میلیون ریال", eventDate: "2026-09-01", sourceUrl: null, thresholdPercent: 20,
+  unit: "میلیون ریال", eventDate: "2026-09-01", dateKind: "captured", sourceUrl: null, thresholdPercent: 20,
 };
 
 /* ── سه رویداد از هم جدا می‌مانند ─────────────────────────────────────────── */
@@ -131,4 +132,25 @@ test("گزارشِ بدونِ نماد یا نوع یا تاریخ رویداد 
   assert.equal(reportEvent({ ...REPORT, symbol: "  " }), null);
   assert.equal(reportEvent({ ...REPORT, reportKind: "" }), null);
   assert.equal(reportEvent({ ...REPORT, publishDate: "" }), null);
+});
+
+/* ── جنسِ تاریخ — یافتهٔ بازبینی (`B-031`) ────────────────────────────────── */
+
+test("جنسِ تاریخ همراهِ رویداد می‌آید و حدسی نیست", () => {
+  const published = reportEvent({ ...REPORT, dateKind: "published" })!;
+  const captured = reportEvent({ ...REPORT, dateKind: "captured" })!;
+  assert.equal(published.eventDateKind, "published");
+  assert.equal(captured.eventDateKind, "captured");
+});
+
+test("جنسِ تاریخ کلید را عوض نمی‌کند — همان اطلاعیه است، نه رویدادِ تازه", () => {
+  // اگر روزی `published_at` پر شود، همان اطلاعیه نباید دوباره هشدار بسازد.
+  assert.equal(
+    reportEvent({ ...REPORT, dateKind: "published" })!.dedupKey,
+    reportEvent({ ...REPORT, dateKind: "captured" })!.dedupKey,
+  );
+});
+
+test("تغییرِ عملکرد هم جنسِ تاریخش را حمل می‌کند", () => {
+  assert.equal(performanceEvent({ ...PERF, dateKind: "captured" }).event!.eventDateKind, "captured");
 });
