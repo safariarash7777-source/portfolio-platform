@@ -388,14 +388,14 @@ body[data-state="error"] .only-error{display:block}
       <div class="only-partial v num dash">—</div>
       <div class="only-stale v num dash">—</div>
       <div class="only-error v num dash">—</div>
-      <div class="only-full d"><b>یعنی:</b> بازار ۵٪ بالاتر از ارزش دارایی می‌خرد</div>
+      <div class="only-full d"><b>یعنی:</b> واحدِ صندوق ۵٪ بالاتر از ارزشِ داراییِ پشتِ آن معامله می‌شود</div>
       <div class="only-partial d">بدون NAV، حباب محاسبه نمی‌شود</div>
       <div class="only-stale d">حباب با NAVِ دیروز و قیمتِ امروز محاسبه نمی‌شود</div>
       <div class="only-error d">در دسترس نیست</div></div>
     <div class="kpi"><div class="k">بازده ۱ ماه</div><div class="v num up">‎+۶٫۲٪</div>
       <div class="d"><b>هم‌گروه:</b> میانهٔ ‎+۵٫۱٪</div></div>
-    <div class="kpi"><div class="k">خالص دارایی</div><div class="v num">۱۲٬۴۰۰ م.ت</div>
-      <div class="d"><b>رتبه:</b> ۳ از ۱۹ صندوق طلا</div></div>
+    <div class="kpi"><div class="k">خالص دارایی</div><div class="v num dash">—</div>
+      <div class="d"><b>رتبه:</b> ۳ از ۳۵ صندوق طلا</div></div>
   </div>
 
   <div class="only-full card">
@@ -412,8 +412,10 @@ body[data-state="error"] .only-error{display:block}
       <span class="band-label" style="color:var(--danger)">‎+۹٪</span>
     </div>
     <p class="hint" style="margin-top:8px">
-      باندِ طلایی = محدودهٔ متعارفِ ۹۰ روز گذشته (‎−۲٪ تا ‎+۹٪). خطِ نارنجی = امروز.
-      <b>باندِ کیفی:</b> «بالاتر از میانهٔ سه‌ماههٔ خودش».
+      باندِ طلایی = محدودهٔ ثبت‌شدهٔ <b>۳۷ روزِ معاملاتیِ موجود</b> (‎−۲٪ تا ‎+۹٪). خطِ نارنجی = امروز.
+      <b>باندِ کیفی:</b> «بالاتر از میانهٔ همین بازه».
+      <br><b>چرا ۳۷ روز و نه سه ماه:</b> تاریخچهٔ NAV روی Production از ۱۴۰۵/۰۴/۲۷ شروع می‌شود؛
+      بازهٔ بلندتر امروز وجود ندارد و ساختنش یعنی عددِ درستِ چیزِ دیگری.
     </p>
   </div>
 
@@ -424,11 +426,16 @@ body[data-state="error"] .only-error{display:block}
         <p class="sub">آنچه پشتِ هر واحد ایستاده است</p></div></div>
       <div class="state state-empty">
         <h4>این بخش هنوز داده ندارد</h4>
-        ترکیب دارایی صندوق‌ها امروز در هیچ جدولی ذخیره نمی‌شود؛ رلهٔ فعلی فقط قیمت، NAV و خالص دارایی می‌آورد.
-        به‌جای نمودارِ ساختگی، این کادر خالی می‌ماند تا منبع اضافه شود.
+        ترکیب دارایی صندوق‌ها امروز در هیچ جدولی ذخیره نمی‌شود، پس این کادر خالی می‌ماند —
+        نه نمودارِ ساختگی، نه عددِ جایگزین.
         <ul>
-          <li><b>نیازِ داده:</b> ترکیب دارایی از صورت‌وضعیت پرتفویِ ماهانهٔ صندوق (کدال).</li>
-          <li><b>وضعیت:</b> ثبت‌شده به‌عنوان یک نیازِ باز؛ تصمیمِ منبع با آرش است.</li>
+          <li><b>منبع پیدا شد:</b> «صورت وضعیت پورتفوی صندوق سرمایه‌گذاری» ماهانه در کدال —
+              <b>۷۴۸ اطلاعیه روی ۴۹۷ صندوق</b>، پوششِ <b>۲۲۶ از ۳۲۶</b> صندوقِ زنده (اندازه‌گیریِ ۱۴۰۵/۰۶/۱۵).</li>
+          <li><b>مانع مجوز نیست:</b> فایلِ عمومیِ کدال طبقِ قاعدهٔ S1 مجاز است و رله از قبل
+              از <code>excel.codal.ir</code> دانلود می‌کند. مانع این است که فید برای این نوعِ
+              گزارش لینکِ پیوست نمی‌دهد (۱ از ۷۴۸).</li>
+          <li><b>وضعیت:</b> تصمیمِ <b>D-026</b> — انتخاب میانِ سه گزینه، نه «منبع نداریم».
+              (شناسهٔ <code>D-030</code> تکراری بود و بازنشسته شد.)</li>
         </ul>
       </div>
     </div>
@@ -436,23 +443,23 @@ body[data-state="error"] .only-error{display:block}
     <!-- مقایسه -->
     <div class="card">
       <div class="sec-title"><div><h3>مقایسه با هم‌گروه</h3>
-        <p class="sub">۱۹ صندوق طلا · مرتب بر پایهٔ بازده یک‌ماهه</p></div>
+        <p class="sub">۳۵ صندوق طلا · مرتب بر پایهٔ بازده یک‌ماهه</p></div>
         <span class="chip chip-demo">نمونهٔ نمایشی</span></div>
       <div class="only-full scroll-x"><table class="tbl">
         <thead><tr><th>نماد</th><th class="l">حباب</th><th class="l">بازده ۱م</th><th class="l">خالص دارایی</th></tr></thead>
         <tbody>
-          <tr><td>عیار</td><td class="l num">‎+۲٫۱٪</td><td class="l num up">‎+۶٫۹٪</td><td class="l num">۸٬۲۰۰ م.ت</td></tr>
-          <tr class="me"><td>طلا (این صندوق)</td><td class="l num warn">‎+۵٫۰٪</td><td class="l num up">‎+۶٫۲٪</td><td class="l num">۱۲٬۴۰۰ م.ت</td></tr>
-          <tr><td>گنج</td><td class="l num">‎+۴٫۴٪</td><td class="l num up">‎+۵٫۸٪</td><td class="l num">۵٬۱۰۰ م.ت</td></tr>
-          <tr><td>زر</td><td class="l num">‎+۷٫۳٪</td><td class="l num up">‎+۵٫۱٪</td><td class="l num">۹٬۶۰۰ م.ت</td></tr>
-          <tr><td>مثقال</td><td class="l num dash">—</td><td class="l num up">‎+۴٫۷٪</td><td class="l num">۳٬۴۰۰ م.ت</td></tr>
+          <tr><td>عیار</td><td class="l num">‎+۲٫۱٪</td><td class="l num up">‎+۶٫۹٪</td><td class="l num dash">—</td></tr>
+          <tr class="me"><td>طلا (این صندوق)</td><td class="l num warn">‎+۵٫۰٪</td><td class="l num up">‎+۶٫۲٪</td><td class="l num dash">—</td></tr>
+          <tr><td>گنج</td><td class="l num">‎+۴٫۴٪</td><td class="l num up">‎+۵٫۸٪</td><td class="l num dash">—</td></tr>
+          <tr><td>زر</td><td class="l num">‎+۷٫۳٪</td><td class="l num up">‎+۵٫۱٪</td><td class="l num dash">—</td></tr>
+          <tr><td>مثقال</td><td class="l num dash">—</td><td class="l num up">‎+۴٫۷٪</td><td class="l num dash">—</td></tr>
         </tbody>
       </table>
       <p class="hint" style="margin-top:8px">ردیفِ «مثقال» NAV ندارد، پس حبابش «—» است و در میانهٔ گروه هم شمرده نمی‌شود.</p></div>
 
       <div class="only-partial state state-empty">
         <h4>مقایسه ناقص است</h4>
-        از ۱۹ صندوقِ این گروه، ۱۱ صندوق امروز NAV ندارند. مقایسهٔ حباب روی ۸ صندوق معنا نمی‌دهد و نمایش داده نمی‌شود؛
+        در این حالت بخشی از صندوق‌های گروه NAV ندارند و مقایسهٔ حباب روی بقیه معنا نمی‌دهد، پس نمایش داده نمی‌شود؛
         مقایسهٔ بازده در دسترس است.
       </div>
       <div class="only-stale state state-stale">
@@ -468,7 +475,7 @@ body[data-state="error"] .only-error{display:block}
 
   <div class="card">
     <h3>روند NAV و قیمت</h3>
-    <p class="sub">۹۰ روز اخیر</p>
+    <p class="sub">۳۷ روزِ معاملاتیِ موجود · از ۱۴۰۵/۰۴/۲۷</p>
     <div class="only-full">
       <svg class="spark" viewBox="0 0 300 100" preserveAspectRatio="none" aria-label="روند قیمت و NAV">
         <polyline fill="none" stroke="var(--navy)" stroke-width="2.2"
@@ -534,7 +541,7 @@ body[data-state="error"] .only-error{display:block}
           سه فصلِ پیاپی کاهشی. عددِ هر فصل با نگه‌داشتنِ نشانگر دیده می‌شود.</p>
       </div>
       <div class="only-partial state state-empty">
-        <h4>فقط ۲ فصل داده هست</h4>
+        <h4>فقط ۲ فصل داده هست <span class="chip chip-demo">نمادِ فرضی</span></h4>
         برای این نماد دو صورت مالیِ میان‌دوره‌ای پردازش شده است. روندِ حاشیه با دو نقطه رسم نمی‌شود؛
         به‌جای نمودار، همان دو عدد در جدول می‌آید.
         <ul><li>۱۴۰۵ ق۱ — حاشیهٔ خالص ۲۵٪</li><li>۱۴۰۵ ق۲ — حاشیهٔ خالص ۲۳٪</li></ul>
@@ -569,7 +576,7 @@ body[data-state="error"] .only-error{display:block}
       </div>
       <div class="only-partial state state-empty">
         <h4>گزارش فروشِ این نماد پردازش نشده</h4>
-        برای ۳۱۶ نماد گزارش ن‑۳۰ پردازش شده است؛ این نماد میان آن‌ها نیست.
+        برای ۳۱۷ نماد گزارشِ ن‑۳۰ پردازش شده است؛ نمادِ <b>فرضیِ</b> این نمونه میان آن‌ها نیست. (فملیِ واقعی ۳۶ گزارشِ ن‑۳۰ و ۱۸ گزارشِ ن‑۱۰ دارد — این حالت فقط برای دیدنِ ظاهرِ «دادهٔ ناقص» ساخته شده.)
         این بخش خالی می‌ماند تا گزارشش برسد.
       </div>
       <div class="only-stale state state-stale">
