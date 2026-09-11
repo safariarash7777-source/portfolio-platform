@@ -38,6 +38,9 @@ import { refreshCommodities, commoditiesForPayload, commodityStatus } from "./co
 // C1 — قرنطینهٔ زیرنمادها و فهرست سیاه NAV (اخطار رسمی BrsApi)
 import { isSubTicker, isRightsIssue } from "./symbols-util.mjs";
 import { isNavBlacklisted, recordNavResult, loadNavBlacklist, saveNavBlacklist, navBlacklistStatus } from "./nav-blacklist.mjs";
+// گامِ ۱ و ۲ کلاینتِ مرکزی — پشتِ BRSAPI_CLIENT_ENABLED. پیش‌فرض **خاموش**:
+// وقتی خاموش است هیچ مسیری تغییر نمی‌کند و کدِ قبلی عیناً اجرا می‌شود.
+import { BrsApiClient, clientEnabled } from "./brsapi-client.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -54,6 +57,25 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
+
+/**
+ * نمونهٔ یگانهٔ کلاینت — فقط وقتی ساخته می‌شود که پرچم روشن باشد.
+ *
+ * ⚠️ محدودکننده و شمارنده‌های این نمونه **per-process** هستند. با بیش از یک
+ * replica نرخِ واقعیِ روی کلید ضرب می‌شود. شواهدِ نوشتنِ Supabase می‌گوید امروز
+ * یک نمونه فعال است، ولی آن **استنتاج** است نه خواندنِ کنسولِ Liara — پس
+ * روشن‌کردنِ این پرچم گیتِ rollout دارد (`docs/BRSAPI-CLIENT-DESIGN.md`).
+ */
+let brs = null;
+function brsClient() {
+  if (!clientEnabled()) return null;
+  if (!brs) {
+    brs = new BrsApiClient({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS });
+    console.log(`brsapi client enabled: ${DEFAULT_RATE_NOTE}`);
+  }
+  return brs;
+}
+const DEFAULT_RATE_NOTE = `${process.env.BRSAPI_RATE_PER_SEC || 10} req/s, concurrency ${process.env.BRSAPI_CONCURRENCY || 4}`;
 
 let cache = null; // { body: string, at: number }
 // T5-2 — کش ۱۰دقیقه‌ای فهرست اطلاعیه‌های کدال (هر نماد یک entry)
@@ -506,12 +528,24 @@ async function fetchIndex() {
   }
   const url = `${BRSAPI_BASE}/Tsetmc/Index.php?key=${BRSAPI_KEY}&type=1`;
   try {
-    const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
-    if (!res.ok) {
-      status.sources.brsapi_index = { ok: false, error: `HTTP ${res.status}` };
-      return null;
+    // گامِ ۲ — سبک‌ترین مصرف‌کننده‌ها اول. مسیرِ قدیمی وقتی پرچم خاموش است
+    // بیت‌به‌بیت همان است؛ هیچ رفتارِ داده‌ای عوض نمی‌شود.
+    const c = brsClient();
+    let json;
+    if (c) {
+      json = await c.request({
+        endpoint: "Tsetmc/Index.php", params: { type: 1 },
+        producer: "market-index", priority: "interactive",
+        dedupeTtlMs: 60_000, timeoutMs: 10_000,
+      });
+    } else {
+      const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
+      if (!res.ok) {
+        status.sources.brsapi_index = { ok: false, error: `HTTP ${res.status}` };
+        return null;
+      }
+      json = await res.json();
     }
-    const json = await res.json();
     const data = Array.isArray(json) ? json[0] : json;
     if (!data || !data.index) {
       status.sources.brsapi_index = { ok: false, error: "no index field" };
@@ -556,7 +590,7 @@ async function buildPayload() {
   refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
   // T5-4/6 — گواهی کالایی (هر ۳۰ دقیقه در ساعات بازار) و کامودیتی جهانی (کلید جدا)
-  refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS }).catch((e) => console.error("ime cert error:", errMsg(e)));
+  refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient() }).catch((e) => console.error("ime cert error:", errMsg(e)));
   refreshCommodities(HDRS).catch((e) => console.error("commodity error:", errMsg(e)));
   applyNav(sf.funds);
   applyFundTypes(sf.funds);
@@ -1016,6 +1050,7 @@ function debugPayload() {
     indexHistory: indexHistStatus,
     marketBreadth: breadthStatus,
     historyPrune: pruneStatus,
+    brsapiClient: brs ? brs.metrics() : { enabled: false },
     fxRates: fxStatus,
     options: optionsStatus,
     candleBackfill: candleStatus,
