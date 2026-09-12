@@ -40,7 +40,8 @@ import { isSubTicker, isRightsIssue } from "./symbols-util.mjs";
 import { isNavBlacklisted, recordNavResult, loadNavBlacklist, saveNavBlacklist, navBlacklistStatus } from "./nav-blacklist.mjs";
 // گامِ ۱ و ۲ کلاینتِ مرکزی — پشتِ BRSAPI_CLIENT_ENABLED. پیش‌فرض **خاموش**:
 // وقتی خاموش است هیچ مسیری تغییر نمی‌کند و کدِ قبلی عیناً اجرا می‌شود.
-import { BrsApiClient, clientEnabled } from "./brsapi-client.mjs";
+import { BrsApiClient, PersistentDailyBudget, clientEnabled } from "./brsapi-client.mjs";
+import { makeSupabaseLeaseStore } from "./brsapi-budget-store.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -70,10 +71,48 @@ let brs = null;
 function brsClient() {
   if (!clientEnabled()) return null;
   if (!brs) {
-    brs = new BrsApiClient({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS });
-    console.log(`brsapi client enabled: ${DEFAULT_RATE_NOTE}`);
+    // شمارندهٔ **ماندگار** اگر Supabase در دسترس باشد، وگرنه همان شمارندهٔ
+    // درون‌حافظه‌ای. تفاوت مهم است و باید در لاگ دیده شود: نسخهٔ درون‌حافظه‌ای
+    // با هر restart صفر می‌شود، یعنی سقفِ روزانه در عمل تضمین نیست.
+    const store = makeSupabaseLeaseStore({
+      url: SUPABASE_URL,
+      serviceKey: SUPABASE_SERVICE_ROLE_KEY,
+    });
+    const budget = store
+      ? new PersistentDailyBudget({
+          store,
+          softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
+          hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
+          leaseSize: Number(process.env.BRSAPI_LEASE_SIZE || 50),
+          degradedCeiling: Number(process.env.BRSAPI_DEGRADED_CEILING || 100),
+          onError: (e) => console.error("brsapi budget store:", errMsg(e)),
+        })
+      : undefined;
+    brs = new BrsApiClient({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, budget });
+    console.log(
+      `brsapi client enabled: ${DEFAULT_RATE_NOTE}, budget=${store ? "persistent(supabase)" : "IN-MEMORY (restart صفر می‌کند)"}`,
+    );
   }
   return brs;
+}
+
+/**
+ * خاموشیِ مرتب: اجارهٔ خرج‌نشدهٔ بودجه را پس می‌دهد تا با هر دیپلوی یک بلوک
+ * نسوزد. **بهترین‌کوشش** — اگر فرایند کشته شود این اجرا نمی‌شود و همان بلوک
+ * تا پایانِ روز سوخته می‌ماند. نبودنش ایمن است (کم‌مصرفی، نه پرمصرفی).
+ */
+let shuttingDown = false;
+async function releaseBudgetOnShutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  try {
+    if (brs && typeof brs.budget?.release === "function") {
+      const back = await brs.budget.release();
+      if (back > 0) console.log(`brsapi budget: ${back} واحدِ اجارهٔ خرج‌نشده پس داده شد (${signal})`);
+    }
+  } catch (e) {
+    console.error("brsapi budget release:", errMsg(e));
+  }
 }
 const DEFAULT_RATE_NOTE = `${process.env.BRSAPI_RATE_PER_SEC || 10} req/s, concurrency ${process.env.BRSAPI_CONCURRENCY || 4}`;
 
@@ -1171,7 +1210,18 @@ const server = http.createServer(async (req, res) => {
 
 export { server };
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) server.listen(PORT, () => {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  // Liara روی دیپلوی `SIGTERM` می‌فرستد. مهلت کوتاه است، پس پس‌دادنِ اجاره
+  // هم مهلتِ خودش را دارد و اگر نرسید، خاموشی را نگه نمی‌دارد.
+  for (const sig of ["SIGTERM", "SIGINT"]) {
+    process.on(sig, () => {
+      Promise.race([
+        releaseBudgetOnShutdown(sig),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]).finally(() => process.exit(0));
+    });
+  }
+  server.listen(PORT, () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   // C1 — بارگذاری بلک‌لیست دائمی NAV قبل از اولین رفرش (تا با ریاستارت پاک نشود)
   loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY })
@@ -1231,3 +1281,4 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     }
   }
 });
+}

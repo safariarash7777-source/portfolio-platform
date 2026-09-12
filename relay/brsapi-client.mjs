@@ -157,6 +157,250 @@ export class DailyBudget {
   }
 }
 
+
+/**
+ * بودجهٔ روزانه با شمارندهٔ **ماندگار و مشترک**.
+ *
+ * جایگزینِ مستقیمِ `DailyBudget` است (همان `reserve`/`wouldAdmit`/`snapshot`)
+ * به‌اضافهٔ `ensure()` که کلاینت پیش از رزروِ همگام `await`ش می‌کند، و
+ * `release()` برای خاموشیِ مرتب.
+ *
+ * ── چرا `reserve` همگام مانده ───────────────────────────────────────────────
+ * اگر رزرو `async` می‌شد، بینِ «بررسیِ سقف» و «ارسال» یک نقطهٔ yield باز می‌شد
+ * و چند کارِ هم‌زمان می‌توانستند از سقف رد شوند. پس هزینهٔ شبکه به `ensure()`
+ * منتقل شده که **پیش از** بلوکِ همگام صدا زده می‌شود.
+ *
+ * ── چرا معمولاً `ensure()` منتظر نمی‌ماند ───────────────────────────────────
+ * وقتی موجودیِ اجاره زیرِ خطِ هشدار برود، شارژِ بعدی در پس‌زمینه شروع می‌شود.
+ * فقط وقتی اجاره واقعاً ته کشیده باشد `await` واقعی رخ می‌دهد.
+ */
+export class PersistentDailyBudget {
+  constructor({
+    store,
+    softBudget,
+    hardCeiling,
+    leaseSize = 50,
+    lowWaterRatio = 0.4,
+    degradedCeiling = 100,
+    now = () => Date.now(),
+    onError = null,
+  }) {
+    if (!store) throw new Error("PersistentDailyBudget بدونِ store معنا ندارد");
+    this.store = store;
+    this.softBudget = softBudget;
+    this.hardCeiling = hardCeiling;
+    this.leaseSize = Math.max(1, leaseSize);
+    this.lowWaterRatio = lowWaterRatio;
+    this.degradedCeiling = Math.max(0, degradedCeiling);
+    this.now = now;
+    this.onError = onError;
+    this.day = "";
+    this.#resetDay(tehranDayKey(new Date(this.now())));
+  }
+
+  #resetDay(key) {
+    this.day = key;
+    this.granted = 0;          // جمعِ واحدهایی که امروز به ما اجاره داده شده
+    this.spent = 0;            // از آن، چقدر خرج کرده‌ایم
+    this.globalLeased = 0;     // آخرین عددی که انبار دربارهٔ کلِ مصرفِ روز گفت
+    this.rejected = 0;
+    this.rejectedByClass = { critical: 0, standard: 0, bulk: 0 };
+    this.usedByClass = { critical: 0, standard: 0, bulk: 0 };
+    this.leaseCalls = 0;
+    this.leaseStarved = 0;     // «اجاره ته کشید» — با «بودجه تمام شد» یکی نیست
+    this.storeErrors = 0;
+    this.degradedUsed = 0;
+    this.lastStoreError = null;
+    this.storeHealthy = true;
+    this.pending = null;
+  }
+
+  #roll() {
+    const k = tehranDayKey(new Date(this.now()));
+    if (k !== this.day) this.#resetDay(k);
+  }
+
+  /** موجودیِ خرج‌نشدهٔ اجاره. */
+  get leaseRemaining() { return Math.max(0, this.granted - this.spent); }
+
+  /**
+   * برآوردِ مصرفِ **سراسری**: آنچه انبار می‌گوید اجاره رفته، منهای آن بخش از
+   * اجارهٔ خودمان که هنوز خرج نشده. با یک replica دقیق است؛ با چند replica
+   * یک کرانِ پایین است — ولی سقفِ سخت را انبار تضمین می‌کند، نه این عدد.
+   */
+  get used() { return Math.max(0, this.globalLeased - this.leaseRemaining); }
+
+  wouldAdmit(budgetClass) {
+    this.#roll();
+    if (this.leaseRemaining <= 0 && this.degradedRemaining(budgetClass) <= 0) return false;
+    const u = this.used;
+    if (u >= this.hardCeiling) return false;
+    return u < classCeiling(budgetClass, this);
+  }
+
+  /**
+   * چرا رد شد — **خالص**، بدونِ اثرِ جانبی.
+   * `"budget"` یعنی سهمیهٔ روز (یا طبقه) واقعاً تمام شده.
+   * `"lease"` یعنی سهمیه هست ولی اجارهٔ این فرایند نرسیده — حالتِ چند-replica.
+   * این دو را یکی شمردن یعنی روزی که مشکل «هماهنگی» است، «سهمیه» گزارش شود.
+   */
+  rejectionReason(budgetClass) {
+    this.#roll();
+    const u = this.used;
+    if (u >= this.hardCeiling || u >= classCeiling(budgetClass, this)) return "budget";
+    if (this.leaseRemaining <= 0 && this.degradedRemaining(budgetClass) <= 0) return "lease";
+    return null;
+  }
+
+  /**
+   * ثبتِ ردشدنی که در مسیرِ **پیش‌بررسی** رخ داد و هرگز به `reserve` نرسید.
+   * بدونِ این، شمارندهٔ ردشدنِ بودجه فقط نیمی از ردشدن‌ها را می‌دید — و
+   * شمارنده‌ای که بخشی از واقعیت را نمی‌بیند، بدتر از نداشتنِ شمارنده است.
+   */
+  noteRejected(budgetClass) {
+    const why = this.rejectionReason(budgetClass);
+    if (!why) return;
+    if (why === "lease") this.leaseStarved += 1;
+    this.rejected += 1;
+    this.rejectedByClass[budgetClass] = (this.rejectedByClass[budgetClass] ?? 0) + 1;
+  }
+
+  /** مجوزِ اضطراری فقط برای `critical` و فقط وقتی انبار در دسترس نیست. */
+  degradedRemaining(budgetClass) {
+    if (this.storeHealthy || budgetClass !== "critical") return 0;
+    return Math.max(0, this.degradedCeiling - this.degradedUsed);
+  }
+
+  /**
+   * پیش‌نیازِ **غیرِهمگام** رزرو. کلاینت این را `await` می‌کند و بعد بلوکِ
+   * همگامِ `reserve` را اجرا می‌کند.
+   */
+  async ensure() {
+    this.#roll();
+    const lowWater = Math.ceil(this.leaseSize * this.lowWaterRatio);
+    if (this.leaseRemaining > lowWater) return;
+    const p = this.#topUp();
+    // فقط وقتی واقعاً چیزی برای خرج‌کردن نداریم منتظر می‌مانیم؛ وگرنه شارژ
+    // در پس‌زمینه انجام می‌شود و این درخواست معطل نمی‌ماند.
+    if (this.leaseRemaining <= 0) await p;
+  }
+
+  #topUp() {
+    if (this.pending) return this.pending;
+    const day = this.day;
+    this.pending = (async () => {
+      try {
+        const want = Math.min(this.leaseSize, Math.max(1, this.hardCeiling - this.globalLeased));
+        const r = await this.store.lease(day, want, this.hardCeiling);
+        if (day !== this.day) return;          // روز وسطِ کار عوض شد؛ دور بریز.
+        this.leaseCalls += 1;
+        this.granted += r.granted;
+        this.globalLeased = r.leasedBefore + r.granted;
+        if (typeof r.hardCeiling === "number" && r.hardCeiling > 0) {
+          this.hardCeiling = Math.min(this.hardCeiling, r.hardCeiling);
+        }
+        this.storeHealthy = true;
+        this.lastStoreError = null;
+      } catch (e) {
+        this.storeErrors += 1;
+        this.storeHealthy = false;
+        this.lastStoreError = String(e && e.message ? e.message : e).slice(0, 200);
+        if (this.onError) { try { this.onError(e); } catch { /* لاگ نباید مسیر را بشکند */ } }
+      } finally {
+        this.pending = null;
+      }
+    })();
+    return this.pending;
+  }
+
+  /** رزروِ یک واحد. **همگام و اتمیک** — هیچ `await`ی داخلش نیست. */
+  reserve(budgetClass) {
+    this.#roll();
+
+    if (this.leaseRemaining > 0) {
+      const u = this.used;
+      if (u >= this.hardCeiling || u >= classCeiling(budgetClass, this)) {
+        this.rejected += 1;
+        this.rejectedByClass[budgetClass] = (this.rejectedByClass[budgetClass] ?? 0) + 1;
+        return false;
+      }
+      this.spent += 1;
+      this.usedByClass[budgetClass] = (this.usedByClass[budgetClass] ?? 0) + 1;
+      return true;
+    }
+
+    // اجاره ته کشیده. اگر انبار سالم است یعنی بودجهٔ روز تمام شده.
+    if (this.storeHealthy) {
+      this.leaseStarved += 1;
+      this.rejected += 1;
+      this.rejectedByClass[budgetClass] = (this.rejectedByClass[budgetClass] ?? 0) + 1;
+      return false;
+    }
+
+    // انبار در دسترس نیست: مجوزِ اضطراریِ محدود، فقط `critical`.
+    if (this.degradedRemaining(budgetClass) > 0) {
+      this.degradedUsed += 1;
+      this.usedByClass[budgetClass] = (this.usedByClass[budgetClass] ?? 0) + 1;
+      return true;
+    }
+
+    this.rejected += 1;
+    this.rejectedByClass[budgetClass] = (this.rejectedByClass[budgetClass] ?? 0) + 1;
+    return false;
+  }
+
+  /** پس‌دادنِ اجارهٔ خرج‌نشده روی خاموشیِ مرتب. بهترین‌کوشش. */
+  async release() {
+    const back = this.leaseRemaining;
+    if (back <= 0) return 0;
+    try {
+      const n = await this.store.release(this.day, back);
+      this.granted -= n;
+      this.globalLeased = Math.max(0, this.globalLeased - n);
+      return n;
+    } catch (e) {
+      this.storeErrors += 1;
+      this.lastStoreError = String(e && e.message ? e.message : e).slice(0, 200);
+      return 0;
+    }
+  }
+
+  snapshot() {
+    this.#roll();
+    const u = this.used;
+    return {
+      day: this.day,
+      persistent: true,
+      softBudget: this.softBudget,
+      hardCeiling: this.hardCeiling,
+      used: u,
+      remaining: Math.max(0, this.hardCeiling - u),
+      remainingByClass: Object.fromEntries(
+        BUDGET_CLASSES.map((c) => [c, Math.max(0, classCeiling(c, this) - u)]),
+      ),
+      usedByClass: { ...this.usedByClass },
+      rejectedByBudget: this.rejected,
+      rejectedByClass: { ...this.rejectedByClass },
+      softExhausted: u >= this.softBudget,
+      lease: {
+        size: this.leaseSize,
+        granted: this.granted,
+        spent: this.spent,
+        remaining: this.leaseRemaining,
+        calls: this.leaseCalls,
+        starved: this.leaseStarved,
+      },
+      store: {
+        healthy: this.storeHealthy,
+        errors: this.storeErrors,
+        lastError: this.lastStoreError,
+        degradedCeiling: this.degradedCeiling,
+        degradedUsed: this.degradedUsed,
+      },
+    };
+  }
+}
+
 /** خطای ردشدن به‌خاطرِ بودجه — تا فراخوان بتواند از خطای شبکه جدایش کند. */
 export class BudgetExceededError extends Error {
   constructor(budgetClass, snapshot) {
@@ -306,7 +550,9 @@ export class BrsApiClient {
     // صف و یک اسلاتِ هم‌زمانی را اشغال کند. بودجه در طولِ روز فقط بالا می‌رود،
     // پس ردِ اینجا در ادامه هم رد می‌ماند (جز در گذارِ روز، که بررسیِ دومِ
     // داخلِ هر تلاش آن را درست می‌گیرد).
+    if (typeof this.budget.ensure === "function") await this.budget.ensure();
     if (!this.budget.wouldAdmit(budgetClass)) {
+      if (typeof this.budget.noteRejected === "function") this.budget.noteRejected(budgetClass);
       this.m.rejectedByBudget += 1; this.#bump(producer, "rejectedByBudget");
       throw new BudgetExceededError(budgetClass, this.budget.snapshot());
     }
@@ -374,6 +620,11 @@ export class BrsApiClient {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const wait = this.bucket.take();
       if (wait > 0) await this.sleep(wait);
+
+      // شارژِ اجارهٔ بودجه — تنها نقطهٔ غیرِهمگامِ مسیرِ بودجه، و **پیش از**
+      // بلوکِ همگامِ زیر. با بودجهٔ درون‌حافظه‌ای این تابع وجود ندارد و
+      // چیزی عوض نمی‌شود.
+      if (typeof this.budget.ensure === "function") await this.budget.ensure();
 
       // رزروِ بودجه **همگام و بلافاصله پیش از ارسال** — هیچ `await`ی بینِ رزرو
       // و `fetch` نیست، وگرنه چند کارِ هم‌زمان می‌توانستند از سقف رد شوند.

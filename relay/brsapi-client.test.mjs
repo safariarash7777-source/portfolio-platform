@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 import {
   BrsApiClient, LeakyBucket, backoffDelayMs, dedupeKey, isRetryable,
   DailyBudget, BudgetExceededError, classCeiling, BUDGET_CLASSES,
+  PersistentDailyBudget,
 } from "./brsapi-client.mjs";
+import { makeSupabaseLeaseStore } from "./brsapi-budget-store.mjs";
 
 let pass = 0, fail = 0;
 const tests = [];
@@ -440,6 +442,232 @@ t("dedup بودجه مصرف نمی‌کند", async () => {
   await client.request({ endpoint: "A.php", params: { x: 1 }, dedupeTtlMs: 60_000 });
   await client.request({ endpoint: "A.php", params: { x: 1 }, dedupeTtlMs: 60_000 });
   assert.equal(client.metrics().budget.used, 1, "پاسخِ کش‌شده درخواستِ تازه نیست");
+});
+
+
+/* ── بودجهٔ ماندگار ──────────────────────────────────────────────────────── */
+
+/**
+ * انبارِ آزمایشی — همان قرارداد و همان تضمینِ اتمیکِ تابعِ Postgres:
+ * جمعِ اجاره‌ها هرگز از سقف رد نمی‌شود.
+ */
+function fakeStore(opts = {}) {
+  const days = new Map();                 // dayKey → leased
+  const st = {
+    hard: opts.hard ?? 100,
+    leaseCalls: 0,
+    releaseCalls: 0,
+    fail: opts.fail ?? false,
+    async lease(day, want, hard) {
+      st.leaseCalls += 1;
+      if (st.fail) throw new Error("store down");
+      const cap = Math.min(hard, st.hard);
+      const before = days.get(day) ?? 0;
+      const granted = Math.max(0, Math.min(want, cap - before));
+      days.set(day, before + granted);
+      return { granted, leasedBefore: before, hardCeiling: cap };
+    },
+    async release(day, back) {
+      st.releaseCalls += 1;
+      if (st.fail) throw new Error("store down");
+      const before = days.get(day) ?? 0;
+      const n = Math.min(back, before);
+      days.set(day, before - n);
+      return n;
+    },
+    leasedOn: (day) => days.get(day) ?? 0,
+    days,
+  };
+  return st;
+}
+
+function mkPersistent(over = {}) {
+  const c = fakeClock();
+  const store = over.store || fakeStore({ hard: over.hard ?? 100 });
+  const budget = new PersistentDailyBudget({
+    store,
+    softBudget: over.soft ?? 60,
+    hardCeiling: over.hard ?? 100,
+    leaseSize: over.leaseSize ?? 10,
+    degradedCeiling: over.degraded ?? 0,
+    now: c.now,
+  });
+  const calls = [];
+  const client = new BrsApiClient({
+    base: "https://x", key: "K", now: c.now, sleep: c.sleep, rand: () => 0.5,
+    budget,
+    fetchImpl: async (u) => { calls.push(u); return okRes(); },
+    ...over.opts,
+  });
+  return { client, budget, store, calls, clock: c };
+}
+
+t("بودجهٔ ماندگار: اجاره تکه‌تکه گرفته می‌شود، نه یک‌جا", async () => {
+  const { client, store } = mkPersistent({ hard: 100, soft: 100, leaseSize: 10 });
+  for (let i = 0; i < 25; i++) await client.request({ endpoint: "A.php", params: { i } });
+  assert.equal(client.metrics().budget.used, 25, "مصرف درست شمرده شد");
+  assert.ok(store.leaseCalls >= 3 && store.leaseCalls <= 5,
+    `۲۵ درخواست با بلوکِ ۱۰ باید ۳ تا ۵ بار اجاره بگیرد، نه ${store.leaseCalls}`);
+});
+
+t("restart شمارنده را صفر نمی‌کند — فرایندِ تازه از همان جا ادامه می‌دهد", async () => {
+  const store = fakeStore({ hard: 30 });
+  const a = mkPersistent({ store, hard: 30, soft: 30, leaseSize: 10 });
+  for (let i = 0; i < 10; i++) await a.client.request({ endpoint: "A.php", params: { i } });
+  assert.equal(a.client.metrics().budget.used, 10);
+
+  // فرایند می‌میرد — بدونِ `release`. اجارهٔ خرج‌نشده سوخته می‌ماند.
+  const b = mkPersistent({ store, hard: 30, soft: 30, leaseSize: 10 });
+  let sent = 0;
+  for (let i = 0; i < 40; i++) {
+    try { await b.client.request({ endpoint: "B.php", params: { i } }); sent += 1; }
+    catch (e) { assert.ok(e instanceof BudgetExceededError); break; }
+  }
+  assert.ok(sent <= 20, `فرایندِ تازه نباید بیش از باقیماندهٔ روز بفرستد، فرستاد ${sent}`);
+  assert.ok(store.leasedOn(b.budget.day) <= 30, "جمعِ اجاره از سقفِ روز رد نشد");
+});
+
+t("هیچ ترکیبی از فرایندها از سقفِ سراسری رد نمی‌شود", async () => {
+  const store = fakeStore({ hard: 40 });
+  const procs = Array.from({ length: 5 }, () =>
+    mkPersistent({ store, hard: 40, soft: 40, leaseSize: 7 }));
+  let wire = 0;
+  await Promise.all(procs.map(async (p, pi) => {
+    for (let i = 0; i < 30; i++) {
+      try { await p.client.request({ endpoint: "A.php", params: { pi, i } }); }
+      catch (e) { assert.ok(e instanceof BudgetExceededError); }
+    }
+    wire += p.calls.length;
+  }));
+  assert.ok(wire <= 40, `۵ فرایند × ۳۰ درخواست نباید بیش از ۴۰ بار روی سیم برود، رفت ${wire}`);
+});
+
+t("اجارهٔ خرج‌نشده روی خاموشیِ مرتب پس داده می‌شود", async () => {
+  const store = fakeStore({ hard: 100 });
+  const { client, budget } = mkPersistent({ store, hard: 100, soft: 100, leaseSize: 20 });
+  await client.request({ endpoint: "A.php", params: { i: 1 } });
+  const leasedBefore = store.leasedOn(budget.day);
+  assert.equal(leasedBefore, 20, "یک بلوکِ کامل اجاره شد");
+  const back = await budget.release();
+  assert.equal(back, 19, "۱۹ واحدِ خرج‌نشده پس داده شد");
+  assert.equal(store.leasedOn(budget.day), 1, "فقط همان یکی که واقعاً خرج شد باقی ماند");
+});
+
+t("انبارِ خراب بی‌صدا بودجه را باز نمی‌کند — رد می‌شود", async () => {
+  const store = fakeStore({ hard: 100 });
+  store.fail = true;
+  const { client, budget } = mkPersistent({ store, hard: 100, soft: 100, degraded: 0 });
+  await assert.rejects(() => client.request({ endpoint: "A.php" }),
+    (e) => e instanceof BudgetExceededError);
+  assert.equal(budget.snapshot().store.healthy, false, "خرابیِ انبار در متریک دیده می‌شود");
+  assert.ok(budget.snapshot().store.errors > 0);
+});
+
+t("در خرابیِ انبار فقط critical و فقط تا سقفِ اضطراریِ شمرده‌شده عبور می‌کند", async () => {
+  const store = fakeStore({ hard: 100 });
+  store.fail = true;
+  const { client, budget, calls } = mkPersistent({ store, hard: 100, soft: 100, degraded: 3 });
+  await assert.rejects(() => client.request({ endpoint: "A.php", budgetClass: "bulk" }),
+    (e) => e instanceof BudgetExceededError, "bulk حتی یک واحد هم نمی‌گیرد");
+  for (let i = 0; i < 3; i++) {
+    await client.request({ endpoint: "A.php", params: { i }, budgetClass: "critical" });
+  }
+  await assert.rejects(() => client.request({ endpoint: "A.php", params: { z: 1 }, budgetClass: "critical" }),
+    (e) => e instanceof BudgetExceededError, "بعد از سقفِ اضطراری، critical هم رد می‌شود");
+  assert.equal(calls.length, 3, "دقیقاً همان ۳ واحدِ اضطراری روی سیم رفت");
+  assert.equal(budget.snapshot().store.degradedUsed, 3, "مصرفِ اضطراری شمرده و دیده می‌شود");
+});
+
+t("«اجاره ته کشید» با «بودجه تمام شد» یکی شمرده نمی‌شود", async () => {
+  // وقتی انبار سقفِ واقعی را گزارش کند، فرایند سقفش را پایین می‌آورد و
+  // ردشدن **واقعاً** «بودجه تمام شد» است. starvation فقط وقتی معنا دارد که
+  // انبار بگوید «جا هست» ولی چیزی ندهد — انبارِ معیوب، یا مسابقهٔ replicaها.
+  // این دو را یکی شمردن یعنی روزی که مشکلِ هماهنگی است، «سهمیه تمام شد»
+  // گزارش شود و کسی دنبالِ علتِ درست نگردد.
+  const odd = {
+    async lease() { return { granted: 0, leasedBefore: 0, hardCeiling: 100 }; },
+    async release() { return 0; },
+  };
+  const { client, budget } = mkPersistent({ store: odd, hard: 100, soft: 100, leaseSize: 5 });
+  await assert.rejects(() => client.request({ endpoint: "A.php" }),
+    (e) => e instanceof BudgetExceededError);
+  const snap = budget.snapshot();
+  assert.equal(snap.lease.starved, 1, "شمارندهٔ جداگانه دارد");
+  assert.equal(snap.used, 0, "و این ردشدن به‌خاطرِ مصرفِ سهمیه نبود — هیچ مصرفی نشده");
+  assert.equal(budget.rejectionReason("standard"), "lease", "علت صریح گزارش می‌شود");
+});
+
+t("سقفِ انبار حاکم است — فرایند نمی‌تواند سقفِ سخاوتمندانه‌ترِ خودش را نگه دارد", async () => {
+  const store = fakeStore({ hard: 5 });
+  const { client, budget } = mkPersistent({ store, hard: 100, soft: 100, leaseSize: 5 });
+  for (let i = 0; i < 5; i++) await client.request({ endpoint: "A.php", params: { i } });
+  assert.equal(budget.snapshot().hardCeiling, 5,
+    "فرایند با ۱۰۰ بالا آمد ولی سقفِ واقعیِ روز را از انبار یاد گرفت");
+  await assert.rejects(() => client.request({ endpoint: "A.php", params: { z: 1 } }),
+    (e) => e instanceof BudgetExceededError);
+  assert.equal(budget.rejectionReason("standard"), "budget",
+    "اینجا علت واقعاً سهمیه است، نه اجاره");
+});
+t("retry هم از بودجهٔ ماندگار کم می‌کند", async () => {
+  const store = fakeStore({ hard: 100 });
+  const c = fakeClock();
+  const budget = new PersistentDailyBudget({
+    store, softBudget: 100, hardCeiling: 100, leaseSize: 10, now: c.now,
+  });
+  let n = 0;
+  const client = new BrsApiClient({
+    base: "https://x", key: "K", now: c.now, sleep: c.sleep, rand: () => 0.5, budget,
+    fetchImpl: async () => { n += 1; return n < 3 ? errRes(500) : okRes(); },
+  });
+  await client.request({ endpoint: "A.php" });
+  assert.equal(n, 3, "دو شکست و یک موفقیت");
+  assert.equal(client.metrics().budget.used, 3, "هر سه تلاش از بودجه کم شد، نه فقط آخری");
+});
+
+t("عوض‌شدنِ روز اجارهٔ تازه می‌گیرد و شمارنده را از نو می‌شمارد", async () => {
+  const store = fakeStore({ hard: 1000 });
+  const c = fakeClock();
+  // ساعت را روی یک زمانِ واقعی می‌گذاریم تا `tehranDayKey` معنا داشته باشد.
+  let base = Date.parse("2026-09-12T08:00:00Z");
+  const now = () => base;
+  const budget = new PersistentDailyBudget({
+    store, softBudget: 1000, hardCeiling: 1000, leaseSize: 5, now,
+  });
+  const client = new BrsApiClient({
+    base: "https://x", key: "K", now, sleep: c.sleep, rand: () => 0.5, budget,
+    fetchImpl: async () => okRes(),
+  });
+  await client.request({ endpoint: "A.php", params: { i: 1 } });
+  const d1 = budget.day;
+  assert.equal(budget.snapshot().used, 1);
+
+  base += 36 * 3600 * 1000;               // یک‌ونیم روز جلو
+  await client.request({ endpoint: "A.php", params: { i: 2 } });
+  assert.notEqual(budget.day, d1, "کلیدِ روز عوض شد");
+  assert.equal(budget.snapshot().used, 1, "روزِ تازه از یک شروع شد، نه از ادامهٔ دیروز");
+  assert.ok(store.leasedOn(d1) > 0 && store.leasedOn(budget.day) > 0, "هر روز ردیفِ خودش را دارد");
+});
+
+t("makeSupabaseLeaseStore بدونِ env چیزی برنمی‌گرداند، نه اینکه بی‌کلید تماس بگیرد", () => {
+  assert.equal(makeSupabaseLeaseStore({ url: "", serviceKey: "" }), null);
+  assert.equal(makeSupabaseLeaseStore({ url: "https://x", serviceKey: "" }), null);
+  assert.ok(makeSupabaseLeaseStore({ url: "https://x", serviceKey: "k" }));
+});
+
+t("makeSupabaseLeaseStore پاسخِ بی‌شکل را قبول نمی‌کند", async () => {
+  const store = makeSupabaseLeaseStore({
+    url: "https://x", serviceKey: "k",
+    fetchImpl: async () => ({ ok: true, status: 200, json: async () => ([{ nope: 1 }]) }),
+  });
+  await assert.rejects(() => store.lease("d", 5, 100), /بی‌شکل/);
+});
+
+t("makeSupabaseLeaseStore خطای HTTP را خطا می‌کند، نه صفر", async () => {
+  const store = makeSupabaseLeaseStore({
+    url: "https://x", serviceKey: "k",
+    fetchImpl: async () => ({ ok: false, status: 503, text: async () => "upstream down" }),
+  });
+  await assert.rejects(() => store.lease("d", 5, 100), /503/);
 });
 
 /* ── اجرا ────────────────────────────────────────────────────────────────── */
