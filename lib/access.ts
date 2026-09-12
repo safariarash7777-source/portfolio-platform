@@ -10,6 +10,7 @@
 // فقط ادمین full می‌گیرد و بقیه registered — سایت هرگز نمی‌شکند.
 
 import { createClient } from "@/lib/supabase/server";
+import { activeEntitlementFilter } from "@/lib/entitlement-filter";
 
 export type AccessLevel = "visitor" | "registered" | "full";
 
@@ -70,8 +71,10 @@ export async function getAccess(): Promise<AccessInfo> {
       .eq("user_id", user.id)
       .is("revoked_at", null)
       .lte("starts_at", nowIso)
-      .gt("expires_at", nowIso)
-      .order("expires_at", { ascending: false })
+      .or(activeEntitlementFilter(nowIso))
+      // `nullsFirst` لازم است: دسترسیِ همیشگی باید بر دسترسیِ موقت مقدم شود،
+      // وگرنه یک اشتراکِ کوتاهِ هم‌زمان، «همیشگی» را از گزارش پنهان می‌کرد.
+      .order("expires_at", { ascending: false, nullsFirst: true })
       .limit(1);
     if (!error && ents && ents.length > 0) {
       return {
