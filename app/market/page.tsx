@@ -63,8 +63,7 @@ export default async function MarketPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <div className="mx-auto w-full max-w-6xl px-5 pt-8 space-y-8">
-          {/* داشبورد بصری «امروز بازار» — بازطراحی رصد بازار (هر بخش یک سؤال، جواب با نمودار) */}
+        <div className="mx-auto w-full max-w-7xl px-4 pt-6 space-y-10 sm:px-5 md:pt-8">
           <TodayDashboard ir={ir} />
 
           {/* میزِ بازار — «امروز چه چیزی ارزشِ نگاهِ دوباره دارد».
@@ -72,41 +71,54 @@ export default async function MarketPage() {
           <MarketDesk ir={ir} />
 
           {/* چشم‌انداز آماری و رژیم تاریخی (T3) — روایت تکمیلی زیر داشبورد */}
-          <TodayMarket stocks={ir?.stocks ?? []} fetchedAt={ir?.fetchedAt ?? null} />
+          <section id="market-detail" className="scroll-mt-24 space-y-3">
+            <div>
+              <p className="eyebrow">جزئیات بازار سهام</p>
+              <h2 className="mt-1 font-display text-2xl font-bold" style={{ color: "var(--heading)" }}>پراکندگی، جریان و روند</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-7" style={{ color: "var(--text-2)" }}>
+                برای عبور از تصویر کلی به شواهد: گسترهٔ مشارکت نمادها، جریان حقیقی و روند ثبت‌شده را کنار هم ببینید.
+              </p>
+            </div>
+            <TodayMarket stocks={ir?.stocks ?? []} fetchedAt={ir?.fetchedAt ?? null} />
+          </section>
 
           {/* طلا و ارز */}
-          {ir && (ir.gold.length > 0 || ir.currency.length > 0) && (
-            <GoldCurrencyBoard
-              gold={ir.gold}
-              currency={ir.currency}
-              fetchedAt={ir.fetchedAt}
-            />
-          )}
+          <section id="gold-currency" className="scroll-mt-24 space-y-4">
+            {ir && (ir.gold.length > 0 || ir.currency.length > 0) ? (
+              <GoldCurrencyBoard
+                gold={ir.gold}
+                currency={ir.currency}
+                fetchedAt={ir.fetchedAt}
+              />
+            ) : null}
 
-          {/* روند طلا و دلار — منبع: ir_market_history (تصمیم T8) */}
-          <GoldUsdTrend />
+            {/* روند طلا و دلار — منبع: ir_market_history (تصمیم T8) */}
+            <GoldUsdTrend />
+          </section>
 
           {/* روند شاخص کل/هم‌وزن — M5 رصد بازار (تا داده جمع نشود رندر نمی‌شود) */}
           <IndexTrend />
 
           {/* صندوق‌ها (خلاصه) */}
-          {ir && ir.funds.length > 0 && (
-            <FundsBoard funds={ir.funds} />
-          )}
+          <section id="funds" className="scroll-mt-24">
+            {ir && ir.funds.length > 0 ? <FundsBoard funds={ir.funds} /> : null}
+          </section>
 
           {/* مسیرِ رفت‌وبرگشت به حسابِ کاربر — فقط لینک، بدونِ هیچ تغییری در گیتِ دسترسی. */}
           <AccountBridge access={access} />
         </div>
 
         {/* کریپتو + واچ‌لیست + هشدار */}
-        <MarketClient
-          crypto={market.crypto}
-          sourceOk={market.ok}
-          isLoggedIn={Boolean(user)}
-          telegramLinked={telegramLinked}
-          initialWatchlist={watchlist}
-          initialAlerts={alerts}
-        />
+        <section id="global-markets" className="scroll-mt-24">
+          <MarketClient
+            crypto={market.crypto}
+            sourceOk={market.ok}
+            isLoggedIn={Boolean(user)}
+            telegramLinked={telegramLinked}
+            initialWatchlist={watchlist}
+            initialAlerts={alerts}
+          />
+        </section>
       </main>
       <Footer />
     </>

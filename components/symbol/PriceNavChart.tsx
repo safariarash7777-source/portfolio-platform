@@ -9,7 +9,7 @@ import {
   type IChartApi,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { toPersianDigits } from "@/lib/format";
+import { formatJalali, toPersianDigits } from "@/lib/format";
 
 export interface PriceNavPoint {
   time: number; // epoch seconds
@@ -41,6 +41,10 @@ export default function PriceNavChart({ points }: { points: PriceNavPoint[] }) {
     const p = palette();
     const chart: IChartApi = createChart(ref.current, {
       layout: { background: { color: p.bg }, textColor: p.text },
+      localization: {
+        priceFormatter: (value: number) => toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬"),
+        timeFormatter: (time: UTCTimestamp) => formatJalali(Number(time) * 1000, false),
+      },
       grid: { vertLines: { color: p.line }, horzLines: { color: p.line } },
       rightPriceScale: { borderColor: p.line },
       timeScale: { borderColor: p.line },
@@ -101,7 +105,12 @@ export default function PriceNavChart({ points }: { points: PriceNavPoint[] }) {
           {toPersianDigits(points.length)} روز ثبت‌شده
         </span>
       </div>
-      <div ref={ref} style={{ minHeight: 300 }} />
+      <div
+        ref={ref}
+        style={{ minHeight: 300 }}
+        role="img"
+        aria-label={`نمودار قیمت پایانی و NAV ابطال در ${toPersianDigits(points.length)} روز ثبت‌شده؛ هر دو بر حسب تومان`}
+      />
       {points.length < 15 && (
         <p className="mt-2 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
           انباشت تاریخچهٔ NAV به‌تازگی آغاز شده؛ نمودار با گذشت روزهای معاملاتی کامل‌تر می‌شود.

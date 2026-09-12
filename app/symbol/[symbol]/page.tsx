@@ -307,18 +307,21 @@ export default async function SymbolPage({ params }: PageProps) {
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16 space-y-6">
-          <nav className="text-xs" style={{ color: "var(--text-3)" }}>
-            <Link href="/data" className="hover:underline" style={{ color: "var(--navy)" }}>
-              بانک دادهٔ بازار
+          <nav className="flex flex-wrap items-center gap-1 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
+            <Link href="/market" className="hover:underline" style={{ color: "var(--navy)" }}>میز بازار</Link>
+            <span aria-hidden="true">/</span>
+            <Link href={isFund ? "/market/funds" : "/data"} className="hover:underline" style={{ color: "var(--navy)" }}>
+              {isFund ? "صندوق‌ها" : "بانک داده"}
             </Link>
-            <span className="mx-1">/</span>
+            <span aria-hidden="true">/</span>
             {sym}
           </nav>
 
           {/* سرصفحهٔ نماد */}
           <header className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="font-display text-3xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
+              <p className="text-xs font-bold" style={{ color: "var(--gold-ink)" }}>{isFund ? "پروندهٔ صندوق" : "پروندهٔ نماد"}</p>
+              <h1 className="mt-1 font-display text-3xl font-extrabold" style={{ color: "var(--heading)" }}>
                 {sym}
               </h1>
               <p className="mt-1 text-sm" style={{ color: "var(--text-2)" }}>
@@ -342,6 +345,31 @@ export default async function SymbolPage({ params }: PageProps) {
               ) : null}
             </div>
           </header>
+
+          {!quote ? (
+            <div className="rounded-xl border border-dashed p-4" role="status" style={{ borderColor: "var(--line-strong)", background: "var(--surface)" }}>
+              <p className="text-sm font-bold" style={{ color: "var(--heading)" }}>دادهٔ جاری این نماد در اسنپ‌شات بازار نیست</p>
+              <p className="mt-1 text-xs leading-6" style={{ color: "var(--text-3)" }}>تاریخچه و گزارش‌های ثبت‌شده، اگر موجود باشند، مستقل نمایش داده می‌شوند؛ مقدار جاری با صفر جایگزین نشده است.</p>
+            </div>
+          ) : null}
+
+          {isFund ? (
+            <section className="grid gap-3 rounded-xl border p-4 md:grid-cols-3" aria-labelledby="fund-reading-guide" style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}>
+              <h2 id="fund-reading-guide" className="sr-only">راهنمای خواندن پروندهٔ صندوق</h2>
+              <div>
+                <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>قیمت و NAV را هم‌زمان ببینید</p>
+                <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>حباب فقط وقتی معتبر است که زمان دو ورودی به هم نزدیک باشد.</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>بازهٔ واقعی را بخوانید</p>
+                <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>تعداد روز ثبت‌شده کنار نمودار و آمار نوشته می‌شود.</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>هم‌گروه و نقدشوندگی را جدا بسنجید</p>
+                <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>رتبهٔ حباب، اندازه یا کیفیت مدیریت صندوق را نشان نمی‌دهد.</p>
+              </div>
+            </section>
+          ) : null}
 
           {/* آمار روز — بدون فید، «—» (هیچ عدد ساختگی) */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

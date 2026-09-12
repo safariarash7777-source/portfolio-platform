@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
@@ -27,7 +28,12 @@ export default async function FundsPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16">
+        <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-16 sm:px-5 md:pt-8">
+          <nav className="mb-5 flex items-center gap-2 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
+            <Link href="/market" className="font-semibold hover:underline" style={{ color: "var(--navy)" }}>میز بازار</Link>
+            <span aria-hidden="true">/</span>
+            <span>صندوق‌ها</span>
+          </nav>
           <FundsFullBoard funds={funds} fetchedAt={fetchedAt} />
         </div>
       </main>

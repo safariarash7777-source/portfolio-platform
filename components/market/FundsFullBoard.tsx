@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import Term from "@/components/learn/Term";
-import { PieChart, Search, ArrowUpDown, ChevronDown, Clock } from "lucide-react";
+import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import {
   toPersianDigits,
   formatToman,
@@ -215,7 +215,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             دیده‌بان صندوق‌ها
           </h3>
           <p className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
-            به‌محضِ اتصالِ منبعِ دادهٔ بازارِ ایران، خالص دارایی، بازده روز و نقشهٔ صندوق‌ها همین‌جا نمایش داده می‌شود.
+            اسنپ‌شات صندوق‌ها خالی است. تا وقتی ردیف معتبر نرسد، این صفحه عدد یا وضعیت ساختگی نشان نمی‌دهد.
           </p>
         </div>
       </div>
@@ -223,9 +223,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="funds-explorer">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <span
             className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
@@ -234,11 +234,11 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             <PieChart size={18} />
           </span>
           <div>
-            <h1 className="font-display font-bold text-xl" style={{ color: "var(--navy-deep)" }}>
-              دیده‌بان صندوق‌ها
+            <h1 className="font-display font-bold text-2xl" style={{ color: "var(--heading)" }}>
+              مقایسهٔ صندوق‌ها
             </h1>
             <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-              {toPersianDigits(funds.length)} صندوق فعال
+              {toPersianDigits(funds.length)} صندوق در آخرین اسنپ‌شات · برای بررسی جزئیات، روی نماد صندوق بزنید
             </p>
           </div>
         </div>
@@ -250,11 +250,26 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
         )}
       </div>
 
+      <div className="grid gap-3 rounded-xl border p-4 md:grid-cols-3" style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}>
+        <div>
+          <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>۱. گروه را یکسان کنید</p>
+          <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>صندوق‌های ناهم‌نوع را با هم مقایسه نکنید.</p>
+        </div>
+        <div>
+          <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>۲. بازده و حباب را جدا ببینید</p>
+          <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>بازده رفتار قیمت است؛ حباب فاصلهٔ قیمت با NAV ابطال.</p>
+        </div>
+        <div>
+          <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>۳. نقدشوندگی را در جزئیات بسنجید</p>
+          <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>ارزش معاملات یک روز، جای تاریخچهٔ نقدشوندگی را نمی‌گیرد.</p>
+        </div>
+      </div>
+
       {/* KPIs */}
       <div className={hasNav ? "grid grid-cols-2 md:grid-cols-5 gap-3" : "grid grid-cols-2 md:grid-cols-4 gap-3"}>
         <Kpi label="تعداد صندوق" value={toPersianDigits(stats.count)} />
         <Kpi
-          label="ارزش کل بازار"
+          label="ارزش بازار نمادها"
           value={stats.totalMarketValue > 0 ? fmtAssetB(Math.round(stats.totalMarketValue / 1_000_000_000)) : "—"}
         />
         <Kpi
@@ -297,14 +312,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 
       {/* Heatmap */}
       {mapCells.length > 0 && (
-        <div className="card p-5">
-          <h3 className="font-display font-bold mb-1" style={{ color: "var(--navy-deep)" }}>
-            نقشهٔ بازار صندوق‌ها
-          </h3>
-          <p className="text-[11px] mb-3" style={{ color: "var(--text-3)" }}>
-            اندازه: ارزش معاملات · رنگ: بازده روز
-          </p>
-          <div className="space-y-1.5">
+        <details className="card group p-5">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]">
+            <span>
+              <span className="block font-display font-bold" style={{ color: "var(--heading)" }}>نقشهٔ فشردهٔ صندوق‌ها</span>
+              <span className="mt-1 block text-[11px]" style={{ color: "var(--text-3)" }}>اندازه: ارزش معاملات · رنگ: بازده روز</span>
+            </span>
+            <ChevronDown size={18} className="shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="mt-4 space-y-1.5">
             {rowsOf(mapCells, 4).map((r, ri) => (
               <div key={ri} className="flex gap-1.5">
                 {r.map((f) => {
@@ -339,12 +355,18 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               </div>
             ))}
           </div>
-        </div>
+        </details>
       )}
 
       {/* Search + Filter */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="card p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-bold" style={{ color: "var(--heading)" }}>
+          <SlidersHorizontal size={17} aria-hidden="true" />
+          فیلتر و مرتب‌سازی
+        </div>
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <label className="relative block min-w-[200px]">
+          <span className="sr-only">جست‌وجوی صندوق</span>
           <Search
             size={16}
             className="absolute top-1/2 -translate-y-1/2 start-3"
@@ -354,16 +376,17 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="جستجوی نام صندوق..."
-            className="w-full rounded-lg border ps-9 pe-3 py-2.5 text-sm"
+            placeholder="نام یا نماد صندوق"
+            className="input ps-9"
             style={{
               background: "var(--surface)",
               borderColor: "var(--line)",
               color: "var(--text)",
             }}
           />
-        </div>
-        <div className="relative">
+        </label>
+        <label className="relative block">
+          <span className="sr-only">نوع صندوق</span>
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -373,6 +396,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               borderColor: "var(--line)",
               color: "var(--text)",
             }}
+            aria-label="نوع صندوق"
           >
             {types.map((t) => (
               <option key={t} value={t}>
@@ -385,7 +409,28 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             className="absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none"
             style={{ color: "var(--text-3)" }}
           />
+        </label>
+        <label className="relative block md:hidden">
+          <span className="sr-only">مرتب‌سازی صندوق‌ها</span>
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="appearance-none rounded-lg border px-4 py-2.5 pe-9 text-sm"
+            style={{ background: "var(--surface)", borderColor: "var(--line)", color: "var(--text)" }}
+            aria-label="مرتب‌سازی صندوق‌ها"
+          >
+            <option value="value">ارزش معاملات</option>
+            <option value="changePercent">تغییر روز</option>
+            <option value="bubblePercent">حباب</option>
+            <option value="ret1m">بازده یک‌ماهه</option>
+            <option value="faName">نام صندوق</option>
+          </select>
+          <ChevronDown size={14} className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-3)" }} />
+        </label>
         </div>
+        <p className="mt-3 text-[11px]" style={{ color: "var(--text-3)" }}>
+          نمایش {toPersianDigits(sorted.length)} از {toPersianDigits(funds.length)} صندوق
+        </p>
       </div>
 
       {/* Table — Desktop */}
@@ -413,6 +458,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               )}
               <SortTh label="ارزش معاملات" sortKey="value" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
               <SortTh label="ارزش بازار" sortKey="marketValue" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+              <th className="px-4 py-3"><span className="sr-only">بررسی</span></th>
             </tr>
           </thead>
           <tbody>
@@ -471,6 +517,11 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
                     {f.marketValue ? fmtAssetB(Math.round(f.marketValue / 1_000_000_000)) : "—"}
                   </td>
+                  <td className="py-3 px-4 text-left">
+                    <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]" style={{ color: "var(--navy)" }}>
+                      بررسی <ArrowLeft size={14} aria-hidden="true" />
+                    </Link>
+                  </td>
                 </tr>
               );
             })}
@@ -495,7 +546,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <Link
                     href={`/symbol/${encodeURIComponent(f.id)}`}
                     className="font-bold text-sm block truncate hover:underline"
-                    style={{ color: "var(--navy-deep)" }}
+                    style={{ color: "var(--heading)" }}
                   >
                     {f.id}
                   </Link>
@@ -535,6 +586,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <span>۳م: <b style={{ color: f.ret3m != null ? deltaColor(f.ret3m) : "var(--text-3)" }}>{f.ret3m != null ? formatSignedPercent(f.ret3m) : "—"}</b></span>
                 </div>
               )}
+              <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]" style={{ borderColor: "var(--line)", color: "var(--navy)" }}>
+                بررسی جزئیات صندوق <ArrowLeft size={15} aria-hidden="true" />
+              </Link>
             </div>
           );
         })}
@@ -554,14 +608,14 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       ) : (
         <div className="card p-5 text-center">
           <p className="text-sm" style={{ color: "var(--text-3)" }}>
-            نمودار روند NAV و بازده — داده در حال جمع‌آوری است. پس از ۲–۳ هفته نمایش داده می‌شود.
+            پوشش تاریخی برای محاسبهٔ بازده کافی نیست. تا رسیدن دادهٔ معتبر، عددی نمایش داده نمی‌شود.
           </p>
         </div>
       )}
 
       {/* Disclaimer */}
       <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
-        داده از صندوق‌های سرمایه‌گذاری (منبع رسمی)؛ صرفاً اطلاع‌رسانی و بدون توصیهٔ خرید/فروش.
+        داده از فید رسمی بازار سرمایه دریافت می‌شود و برای شناخت بازار است؛ به‌تنهایی مبنای تصمیم شخصی نیست.
         {hasNav && (
           <>
             {" "}حباب = (قیمت − NAV ابطال) ÷ NAV ابطال؛ NAV ابطال از سامانهٔ رسمی بازار (به‌روزرسانی حدوداً
@@ -596,7 +650,7 @@ function Kpi({ label, value, color }: { label: string; value: string; color?: st
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
       <p
         className="font-display font-bold mt-1.5 text-xl md:text-2xl"
-        style={{ color: color ?? "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}
+        style={{ color: color ?? "var(--heading)", fontVariantNumeric: "tabular-nums" }}
       >
         {value}
       </p>
@@ -622,15 +676,19 @@ function SortTh({
   const active = current === key;
   return (
     <th
-      className={`py-3 px-4 font-bold cursor-pointer select-none whitespace-nowrap text-${align}`}
-      style={{ color: active ? "var(--navy-deep)" : "var(--text-3)" }}
-      onClick={() => onSort(key)}
+      className={`py-2 px-2 whitespace-nowrap text-${align}`}
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
     >
-      <span className="inline-flex items-center gap-1">
+      <button
+        type="button"
+        className="inline-flex min-h-11 items-center gap-1 rounded-md px-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+        style={{ color: active ? "var(--heading)" : "var(--text-3)" }}
+        onClick={() => onSort(key)}
+      >
         {label}
         <ArrowUpDown size={12} className={active ? "opacity-100" : "opacity-40"} />
         {active && <span className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span>}
-      </span>
+      </button>
     </th>
   );
 }
