@@ -1095,6 +1095,54 @@ describe("phase24 روی Postgresِ واقعی", { skip: dbError ? `Postgres د�
       );
     });
 
+    /* ── هویتِ کاربر ────────────────────────────────────────────────────────
+     *
+     * سه تستِ بالا می‌گویند «کاربر نمی‌تواند خودش صدا بزند» و «مبلغ از
+     * فراخواننده نمی‌آید». آنچه هنوز آزموده نشده بود این است که وقتی
+     * service-role صدا می‌زند، **شناسهٔ کاربر** چه تضمینی دارد.
+     *
+     * تابع `p_user_id` را صریح می‌گیرد، پس خودِ دیتابیس نمی‌تواند بداند آن
+     * شناسه از یک نشستِ معتبر آمده یا از بدنهٔ درخواست. آن تضمین در مسیر است
+     * (`supabase.auth.getUser()`), و تستِ کدِ کنارِ این فایل آن را می‌سنجد.
+     * چیزی که **اینجا** باید ثابت شود این است که دیتابیس شناسهٔ بی‌معنا را
+     * بی‌صدا نمی‌پذیرد.
+     */
+    test("شناسهٔ کاربرِ تهی رد می‌شود، نه اینکه ردیفِ بی‌صاحب بسازد", () => {
+      const err = expectError(
+        DB,
+        `SELECT public.create_payment(NULL, 1000, 'NULL-USER', 'consulting')`
+      );
+      assert.match(err, /کاربرِ پرداخت مشخص نیست/);
+      assert.equal(
+        psql(DB, `SELECT count(*) FROM public.payments WHERE authority='NULL-USER'`),
+        "0"
+      );
+    });
+
+    test("کاربرِ ناموجود دسترسی نمی‌گیرد — و شکست بلند است، نه بی‌صدا", () => {
+      // `payments.user_id` کلیدِ خارجی ندارد، پس ردیفِ پرداخت ساخته می‌شود.
+      // ولی `entitlements.user_id` دارد — و همان‌جا می‌شکند. مهم این است که
+      // نتیجه «هیچ دسترسی» باشد و پرداخت **pending** بماند، نه صفحهٔ سبز.
+      const GHOST = "cccccccc-cccc-cccc-cccc-cccccccccccc";
+      psql(DB, `SELECT public.create_payment('${GHOST}', ${AMOUNT}, 'GHOST-USER', 'consulting')`);
+
+      const err = expectError(
+        DB,
+        `SELECT public.finalize_paid_access('GHOST-USER', 'REF-GHOST', ${AMOUNT}, NULL)`
+      );
+      assert.ok(err.length > 0, "نهایی‌سازی باید بشکند");
+      assert.equal(
+        psql(DB, `SELECT count(*) FROM public.entitlements WHERE user_id='${GHOST}'`),
+        "0",
+        "هیچ دسترسی‌ای ساخته نشد"
+      );
+      assert.equal(
+        psql(DB, `SELECT status FROM public.payments WHERE authority='GHOST-USER'`),
+        "pending",
+        "پرداخت هم نهایی نشد — مشتریِ واقعی دوباره می‌تواند تلاش کند"
+      );
+    });
+
     test("هیچ امضای قدیمیِ مبلغ‌پذیری زنده نمانده", () => {
       for (const sig of [
         "public.create_payment(integer,text)",
