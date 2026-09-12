@@ -38,7 +38,8 @@
 | [`MIGRATION-LEDGER.md`](./MIGRATION-LEDGER.md) | دفترِ مهاجرت‌ها | `APPLIED` / `NOT_APPLIED` — **مرجعِ نهایی** |
 | [`ENVIRONMENT-MATRIX.md`](./ENVIRONMENT-MATRIX.md) | نامِ متغیرهای محیطی | فقط **نام**، هرگز مقدار |
 | [`SERVICE-OWNERSHIP.md`](./SERVICE-OWNERSHIP.md) | مالکِ هر سرویس | پاسخ‌گوییِ عملیاتی |
-| [`BRSAPI-CLIENT-DESIGN.md`](./BRSAPI-CLIENT-DESIGN.md) | ممیزیِ مصرفِ BrsApi + طراحیِ کلاینت/صفِ مرکزی | ۱۵ مسیرِ مصرف · ۹ producerِ مستقل · تا ۲۱ درخواستِ هم‌زمان · سقفِ ۱۱٬۵۶۵ در برابرِ سهمیهٔ ۱۰٬۰۰۰ · **طراحی، پیاده‌نشده** |
+| [`MARKET-CORE-AUDIT.md`](./MARKET-CORE-AUDIT.md) | وضعیتِ **هستهٔ تحلیل بازار** | پنج قابلیت (صندوق، نماد، رادار، میز، پنلِ عضو) با برچسبِ وضعیت + ممیزیِ مصرفِ داده + ترتیبِ اجرا · اندازه‌گیریِ زندهٔ ۲۰۲۶-۰۹-۰۶ |
+| [`BRSAPI-CLIENT-DESIGN.md`](./BRSAPI-CLIENT-DESIGN.md) | ممیزیِ مصرفِ BrsApi + کلاینت/صفِ مرکزی | ۱۵ مسیرِ مصرف · ۹ producerِ مستقل · سقفِ ۱۱٬۵۶۵ در برابرِ سهمیهٔ ۱۰٬۰۰۰ · کلاینت و **بودجهٔ ماندگار** پیاده شد، **مستقر نشد** (ضمیمهٔ ب) |
 
 ### تصمیم‌های معماری (ADR)
 
