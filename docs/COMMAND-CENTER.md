@@ -21,8 +21,8 @@
 |---|---|---|
 | **Current Phase** | **P2 — بازتعریفِ محصول و مسیرِ رونماییِ عمومی** | VERIFIED |
 | **Current Gate** | **Gate 2 · Operational Foundation** (`G2-001`…`G2-009`) — **فعال**. **Gate 1 بسته شد**: `PRODUCT-BLUEPRINT` با تأییدِ نهاییِ آرش تصویب شد (`DD-025`)، معماریِ **Arash Intelligence Desk** پیش‌تر تأیید شده بود (`DD-024`) | VERIFIED |
-| **Last Verified Date** | **2026-09-06** (`MARKET-CORE-002`) — راستی‌آزماییِ این جلسه: SHAِ `main`، جدول‌های Production، وضعیتِ پروژهٔ staging، و زنجیرهٔ ساخت/تست | — |
-| **Portfolio main SHA** | `1d0759f` — **verified 2026-09-06** (`git log origin/main`). ⚠️ این خانه تا امروز روی `a8a686e` مانده بود در حالی که ۵ PR بعدی merge شده‌اند (#110 متادیتا، #111/#114 بکاپ، `1b4ca75` بازسازیِ سطحِ عمومی، #118 خواندن از راهِ RLS). مسیرِ پیشین تا `a8a686e`: منبعِ حقیقت `git rev-parse origin/main` است، نه این خانه. مسیر: `7ad084e` → `bdd8802`/#86 (Gate 1) → `ecfc21a` → `16ba381` (#92) → `f68f815` (#94، گرنت‌های لید) → `c1bc5c9` (#95) → `0b2c230` (#103) → `14ced60` (#105) → `a8a686e` (#107، گردشِ دستی + `phase23`) | VERIFIED |
+| **Last Verified Date** | **2026-09-12** — چهار merge به `main` در همین روز (#123، #120، #122، و #125 در جریان). ادعای قبلی (`2026-08-04`) دیگر وضعیتِ امروز نبود | VERIFIED (`git rev-parse` + CI روی همان SHA) |
+| **Portfolio main SHA** | `ae0d451213e7db1a56875b8498c28abf702a0f93` — **verified 2026-09-12**. منبعِ حقیقت `git rev-parse origin/main` است، نه این خانه. مسیرِ امروز: `1d0759f` → `4a82b60` (#123، وصلهٔ امنیتیِ Next) → `3bf120d` (#120، حبابِ صندوق و رادار و ورودِ اعضا) → `ae0d451` (#122، کلاینتِ مرکزیِ BrsApi + بودجهٔ ماندگار). ⚠️ خانهٔ قبلی روی `a8a686e` مانده بود، یعنی **۱۱ کامیت عقب‌تر از واقعیت** (`git rev-list --count a8a686e..ae0d451`) | VERIFIED |
 | **Mini App main SHA** | `8cd1e023167a0102d173eb7a751fe188ed428928` — **verified 2026-07-30**. ⚠️ این خانه تا `P2-G2-010` روی `b88f935` مانده بود در حالی که PR #3ِ مینی‌اپ merge شده بود | VERIFIED (`git rev-parse origin/main` روی `telegram-miniapp`) |
 | **Active Supabase Ref** | `uooeygybrniptzdxuzhj` | VERIFIED (فهرست‌کردنِ فقط‌خواندنیِ جدول‌ها) |
 | **Staging Supabase Ref** | `oqjcvkzyvhqnphopedpn` — ⚠️ **امروز `INACTIVE` است** (متوقف‌شده؛ شاهد: `list_projects`، ۲۰۲۶-۰۹-۰۶). تا فعال‌نشدنش هیچ تمرینِ migrationی ممکن نیست. پروژهٔ **ایزولهٔ رایگان**، ساخته‌شده در `G2-006` (۱۴۰۵/۰۵/۰۸). فقط دادهٔ مصنوعی؛ هیچ دادهٔ Production واردش نشد. جدولِ `leads` **فقط اینجا** اجرا شده | VERIFIED (ساخت + اجرای migration + پرس‌وجوهای راستی‌آزمایی) |
@@ -31,10 +31,20 @@
 | **Current Mini App hosting** | **Manus (Legacy)** — `arash-teleapp-7shs2egu.manus.space` | INFERRED (در این سشن دوباره راستی‌آزمایی نشد؛ خلافش هم مدرکی ندارد) |
 | **Mini App target hosting** | **Docker + Coolify روی VPS** | VERIFIED (کدِ هدف در `main` مینی‌اپ merge شده: `Dockerfile`, `docker-entrypoint.sh`, `DEPLOYMENT.md`) |
 | **Mini App deployment state** | نسخهٔ جدید **مستقر نشده و cutover نشده** | VERIFIED (هیچ مدرکی بر استقرار نیست؛ ADR-001) |
-| **Overall Health** | 🔴 **IMPAIRED** — سایت بالاست، ولی **دو مسیرِ درآمد و یک مسیرِ لید شکسته‌اند**: خطای `SUPABASE_SERVICE_ROLE_KEY` در Production (وبینار + همگام‌سازیِ تلگرام)، پرداختِ وبینار خطا می‌دهد، پرداخت به `entitlement` وصل نیست، و جدولِ `leads` وجود ندارد | VERIFIED |
+| **Overall Health** | 🟠 **PARTIALLY IMPAIRED** — نسبت به ۲۰۲۶-۰۸-۰۴ بهتر شده ولی مسیرِ درآمد هنوز بسته است. **رفع‌شده:** آسیب‌پذیریِ criticalِ Next (#123) و قفلِ CI که همهٔ PRها را قرمز نگه داشته بود. **تازه در `main` ولی مستقر نشده:** حبابِ صندوق و مقایسهٔ هم‌نوع (#120)، کلاینتِ مرکزیِ BrsApi با بودجهٔ ماندگار (#122، پرچم خاموش). **هنوز باز:** پرداخت به `entitlement` وصل نیست (#113 هنوز merge نشده و به `phase24` روی Production وابسته است)، و `SUPABASE_SERVICE_ROLE_KEY` در Production در این سشن **راستی‌آزمایی نشد** | VERIFIED برای بخشِ merge · UNKNOWN برای وضعیتِ Production |
 | **Highest Active Risk** | **B-024** — خطای `SUPABASE_SERVICE_ROLE_KEY` در Production؛ سپس **B-025** (پرداخت دسترسی نمی‌دهد) و **B-003** (لید عملیاتی نیست) | VERIFIED |
 
 ---
+
+> ### ⚠️ آنچه در ۲۰۲۶-۰۹-۱۲ از این محیط **دیدنی نبود** — و نباید سبز فرض شود
+>
+> این سه مورد نه «سالم»‌اند و نه «خراب»؛ **UNKNOWN** هستند، و تفاوتش مهم است:
+>
+> | مورد | چه اتفاقی افتاد | برچسب |
+> |---|---|---|
+> | استقرارِ Vercel | `portfolio-platform-fawn.vercel.app` از این کانتینر با `connect_rejected` (۴۰۳ روی CONNECT) بسته است — **سیاستِ خروجیِ محیط، نه قطعیِ سایت**. پس merge شدنِ `main` ≠ رسیدن به Production | UNKNOWN |
+> | رلهٔ Liara | `arsadata.liara.run`، `api.iran.liara.ir` و `console.liara.ir` هر سه `000` برمی‌گردانند و **هیچ توکنِ `LIARA*` در محیط نیست**. تعدادِ replica همچنان از **استنتاجِ الگوی نوشتنِ دیتابیس** است، نه از کنسول | UNKNOWN |
+> | سلامتِ `SUPABASE_SERVICE_ROLE_KEY` در Production | در این سشن اصلاً آزموده نشد | UNKNOWN |
 
 ## 1′. Capability States — چهار حالتِ متفاوت
 

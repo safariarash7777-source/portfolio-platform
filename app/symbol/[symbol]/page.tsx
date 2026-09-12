@@ -12,11 +12,14 @@ import MonthlySalesCharts from "@/components/symbol/MonthlySalesCharts";
 import QuarterlyCharts from "@/components/symbol/QuarterlyCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
 import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavChart";
+import FundAnalysisPanel from "@/components/fund/FundAnalysisPanel";
+import AccountBridge from "@/components/account/AccountBridge";
 import SymbolTabs from "@/components/symbol/SymbolTabs";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
 import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
+import { getAccess } from "@/lib/access";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
@@ -28,6 +31,8 @@ import {
 } from "@/lib/core/quarterly";
 import { jalaliYmdToGregorian } from "@/lib/core/jalali";
 import { getNavHistory } from "@/lib/core/navHistory";
+import { bubbleSeries, summarizeBubble, bubbleWindow, liveBubble, navAtIso } from "@/lib/core/fundBubble";
+import { peerGroupStats, peerPosition, liquidityStats, type PeerRow } from "@/lib/core/fundPeers";
 import { getFxRates, latestRate } from "@/lib/core/fx";
 import { netIndividualFlow } from "@/lib/core/engine";
 import {
@@ -79,12 +84,13 @@ export default async function SymbolPage({ params }: PageProps) {
   const { symbol } = await params;
   const sym = decodeURIComponent(symbol);
 
-  const [ir, history, fundamentals, fxRates, navHistory] = await Promise.all([
+  const [ir, history, fundamentals, fxRates, navHistory, access] = await Promise.all([
     getIrMarket(),
     getSymbolHistory(sym, 400),
     getFundamentals(sym),
     getFxRates(),
     getNavHistory(sym, 400),
+    getAccess(),
   ]);
   const fx = latestRate(fxRates);
 
@@ -152,6 +158,57 @@ export default async function SymbolPage({ params }: PageProps) {
     nav: d.nav,
     close: d.close,
   }));
+
+  /* ── تحلیلِ صندوق: حباب، هم‌گروه، نقدشوندگی ─────────────────────────────
+   * همهٔ محاسبه در lib/core؛ اینجا فقط جمع‌آوریِ ورودی و صداکردنِ موتور. */
+  const fundSeries = bubbleSeries(navHistory);
+  const fundSummary = summarizeBubble(fundSeries);
+  const fundWindows = isFund
+    ? [
+        { days: 30, label: "۳۰ روز", summary: bubbleWindow(fundSeries, 30) },
+        { days: 90, label: "۹۰ روز", summary: bubbleWindow(fundSeries, 90) },
+        { days: 180, label: "۶ ماه", summary: bubbleWindow(fundSeries, 180) },
+      ]
+    : [];
+
+  // زمانِ NAV با **دقتش** می‌آید؛ اگر ساعت ثبت نشده باشد نما باید همین را بگوید.
+  const fundNavAt = navAtIso(quote?.navDate ?? null, quote?.navTime ?? null, jalaliYmdToGregorian);
+  // زمانِ قیمت = لحظهٔ اسنپ‌شاتِ رله. بدونِ آن، هم‌زمانیِ دو ورودی سنجیده نمی‌شود.
+  const fundPriceAt = ir?.fetchedAt ? new Date(ir.fetchedAt).toISOString() : null;
+  const fundLive = liveBubble({
+    priceToman: num(quote?.closingPrice) ?? num(quote?.price),
+    navToman: num(quote?.nav),
+    navAt: fundNavAt?.iso ?? null,
+    navPrecision: fundNavAt?.precision,
+    priceAt: fundPriceAt,
+    now: new Date(),
+  });
+
+  // هم‌گروه: فقط صندوق‌های هم‌نوع، و فقط آن‌هایی که حبابِ معتبر دارند.
+  const peerRows: PeerRow[] = (ir?.funds ?? []).map((f) => ({
+    id: f.id,
+    type: f.type ?? null,
+    value: typeof f.bubblePercent === "number" && isFinite(f.bubblePercent) ? f.bubblePercent : null,
+  }));
+  const fundPeer = isFund
+    ? peerPosition(
+        { id: sym, type: quote?.type ?? null, value: fundLive.bubblePercent },
+        peerGroupStats(peerRows),
+        peerRows,
+      )
+    : null;
+
+  // نقدشوندگی از همان تاریخچه‌ای که بالا خوانده شد — بدونِ درخواستِ اضافه.
+  const LIQUIDITY_WINDOW_DAYS = 90;
+  const fundLiquidity = isFund
+    ? liquidityStats(
+        history.slice(-LIQUIDITY_WINDOW_DAYS).map((d) => ({
+          trade_date: d.trade_date,
+          value_traded: d.value_traded ?? null,
+          volume: d.volume ?? null,
+        })),
+      )
+    : null;
 
   // T5-2: فهرست گزارش‌های ذخیره‌شده (codal_reports) برای تب گزارش‌ها
   const storedReports: StoredReport[] = [];
@@ -388,6 +445,18 @@ export default async function SymbolPage({ params }: PageProps) {
                   </section>
                 )}
 
+                {/* حباب، هم‌گروه و نقدشوندگی — فقط صندوق‌ها */}
+                {isFund && (
+                  <FundAnalysisPanel
+                    live={fundLive}
+                    series={fundSeries}
+                    summary={fundSummary}
+                    windows={fundWindows}
+                    peer={fundPeer}
+                    liquidity={fundLiquidity}
+                  />
+                )}
+
                 {/* تاریخچهٔ قیمت و جریان پول */}
                 <section>
                   <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
@@ -423,6 +492,10 @@ export default async function SymbolPage({ params }: PageProps) {
             reports={<CodalReportsTab symbol={sym} stored={storedReports} />}
             assembly={<SymbolLiveDetail symbol={sym} sections="assembly" />}
           />
+
+          {/* مسیرِ رفت‌وبرگشت: از این نماد به داشبورد، و از اینجا برگشت به میزِ بازار.
+              فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
+          <AccountBridge access={access} backTo={{ href: "/market", label: "برگشت به میزِ بازار" }} />
 
           {/* سلب مسئولیت — الزام قانون ۶ */}
           <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
