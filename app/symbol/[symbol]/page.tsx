@@ -13,11 +13,13 @@ import QuarterlyCharts from "@/components/symbol/QuarterlyCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
 import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavChart";
 import FundAnalysisPanel from "@/components/fund/FundAnalysisPanel";
+import AccountBridge from "@/components/account/AccountBridge";
 import SymbolTabs from "@/components/symbol/SymbolTabs";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
 import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
+import { getAccess } from "@/lib/access";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
@@ -82,12 +84,13 @@ export default async function SymbolPage({ params }: PageProps) {
   const { symbol } = await params;
   const sym = decodeURIComponent(symbol);
 
-  const [ir, history, fundamentals, fxRates, navHistory] = await Promise.all([
+  const [ir, history, fundamentals, fxRates, navHistory, access] = await Promise.all([
     getIrMarket(),
     getSymbolHistory(sym, 400),
     getFundamentals(sym),
     getFxRates(),
     getNavHistory(sym, 400),
+    getAccess(),
   ]);
   const fx = latestRate(fxRates);
 
@@ -489,6 +492,10 @@ export default async function SymbolPage({ params }: PageProps) {
             reports={<CodalReportsTab symbol={sym} stored={storedReports} />}
             assembly={<SymbolLiveDetail symbol={sym} sections="assembly" />}
           />
+
+          {/* مسیرِ رفت‌وبرگشت: از این نماد به داشبورد، و از اینجا برگشت به میزِ بازار.
+              فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
+          <AccountBridge access={access} backTo={{ href: "/market", label: "برگشت به میزِ بازار" }} />
 
           {/* سلب مسئولیت — الزام قانون ۶ */}
           <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>

@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -112,8 +114,30 @@ export default async function DashboardPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <div className="mx-auto w-full max-w-6xl px-5 pt-6">
+        <div className="mx-auto w-full max-w-6xl px-5 pt-6 space-y-4">
           <AccessStatusCard access={access} />
+          {/* بستنِ حلقه: از داشبورد به میزِ بازار. طرفِ دیگرِ همین مسیر در
+              `/market` و `/symbol/[symbol]` است. */}
+          <Link
+            href="/market"
+            className="card px-4 py-3.5 flex items-center justify-between gap-3 transition-colors"
+          >
+            <span className="min-w-0">
+              <span className="block text-[13px] font-semibold" style={{ color: "var(--text-2)" }}>
+                میزِ بازار
+              </span>
+              <span className="block text-[11.5px] mt-0.5" style={{ color: "var(--text-3)" }}>
+                وضعیتِ امروز، و مواردی که ارزشِ نگاهِ دوباره دارند.
+              </span>
+            </span>
+            <span
+              className="inline-flex items-center gap-1.5 text-[12.5px] font-bold whitespace-nowrap"
+              style={{ color: "var(--navy)" }}
+            >
+              رفتن به میز
+              <ArrowLeft size={15} strokeWidth={2.2} aria-hidden />
+            </span>
+          </Link>
         </div>
         <DashboardClient
           userId={user.id}
