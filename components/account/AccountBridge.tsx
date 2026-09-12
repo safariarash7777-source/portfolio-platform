@@ -16,6 +16,44 @@ import { ArrowLeft, LayoutDashboard, LogIn, UserPlus } from "lucide-react";
 import type { AccessInfo } from "@/lib/access";
 import { formatJalali } from "@/lib/format";
 
+/**
+ * متنِ زیرِ عنوان — از `access.standing` که **سرور** حساب کرده، نه از حدسِ UI.
+ *
+ * پیش از این، «دسترسی‌اش منقضی شده» و «هیچ‌وقت نداشته» هر دو `registered` با
+ * `via: null` بودند و همین یک جمله را می‌گرفتند. کسی که اشتراکش دیروز تمام
+ * شده نباید پیامِ خوشامدِ کاربرِ تازه ببیند.
+ *
+ * `standing === null` یعنی سرور **نتوانست** بفهمد. آنجا عمداً هیچ ادعایی
+ * دربارهٔ سابقهٔ کاربر نمی‌کنیم — جملهٔ خنثی، نه حدس.
+ */
+function subtitle(access: AccessInfo): string {
+  if (access.level === "full") {
+    return access.expiresAt
+      ? `دسترسی کامل فعال است · تا ${formatJalali(access.expiresAt, false)}`
+      : "دسترسی کامل فعال است.";
+  }
+  if (access.level === "visitor") {
+    return "واچ‌لیست، یادداشت و پیگیریِ نمادها به حسابِ شما گره می‌خورد.";
+  }
+  switch (access.standing) {
+    case "expired":
+      return access.standingSince
+        ? `دورهٔ دسترسیِ شما در ${formatJalali(access.standingSince, false)} به پایان رسیده است.`
+        : "دورهٔ دسترسیِ شما به پایان رسیده است.";
+    case "revoked":
+      return "دسترسیِ شما لغو شده است. برای پیگیری با پشتیبانی تماس بگیرید.";
+    case "scheduled":
+      return access.standingSince
+        ? `دسترسیِ شما ثبت شده و از ${formatJalali(access.standingSince, false)} فعال می‌شود.`
+        : "دسترسیِ شما ثبت شده و هنوز شروع نشده است.";
+    case "never":
+      return "واچ‌لیست و یادداشت‌های شما در داشبورد نگه داشته می‌شود.";
+    default:
+      // `null` — وضعیت خوانده نشد. هیچ ادعایی دربارهٔ سابقه نمی‌کنیم.
+      return "واچ‌لیست و یادداشت‌های شما در داشبورد نگه داشته می‌شود.";
+  }
+}
+
 export default function AccountBridge({
   access,
   backTo,
@@ -36,16 +74,7 @@ export default function AccountBridge({
           {signedIn ? "حسابِ شما" : "با حساب، این صفحه‌ها به هم وصل می‌شوند"}
         </p>
         <p className="text-[11.5px] mt-0.5" style={{ color: "var(--text-3)" }}>
-          {access.level === "full" ? (
-            <>
-              دسترسی کامل فعال است
-              {access.expiresAt ? <> · تا {formatJalali(access.expiresAt, false)}</> : null}
-            </>
-          ) : access.level === "registered" ? (
-            "واچ‌لیست و یادداشت‌های شما در داشبورد نگه داشته می‌شود."
-          ) : (
-            "واچ‌لیست، یادداشت و پیگیریِ نمادها به حسابِ شما گره می‌خورد."
-          )}
+          {subtitle(access)}
         </p>
       </div>
 

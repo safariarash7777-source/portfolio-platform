@@ -204,7 +204,7 @@ export async function runArchiveCycle() {
             let items;
             try {
               spend();
-              items = await fetchAnnouncementsPage({ l18: sym, category: cat, page: ps[pageKey], producer: "codal-archive" });
+              items = await fetchAnnouncementsPage({ l18: sym, category: cat, page: ps[pageKey] });
               st.pages++;
             } catch (e) {
               archiveStatus.lastError = `${sym} cat${cat} p${ps[pageKey]}: ${e?.message ?? e}`;

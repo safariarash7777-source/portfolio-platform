@@ -13,8 +13,6 @@
 // دادهٔ ناموجود = کلید غایب/null — هیچ عدد ساختگی.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { meterBrsapi } from "./brsapi-meter.mjs";
-
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
@@ -34,7 +32,7 @@ const num = (x) => {
  * دریافت تابلوی کامل آپشن — یک درخواست.
  * @returns {Promise<Array>} آرایهٔ قراردادها (خالی اگر منبع پاسخ ندهد)
  */
-export async function fetchOptions(brsapiBase, brsapiKey) {
+export async function fetchOptions(brsapiBase, brsapiKey, { client = null, countLegacy = null } = {}) {
   if (!brsapiKey) {
     optionsStatus.ok = false;
     optionsStatus.error = "BRSAPI_KEY ست نشده";
@@ -42,17 +40,26 @@ export async function fetchOptions(brsapiBase, brsapiKey) {
   }
   const url = `${brsapiBase}/Tsetmc/Option.php?key=${brsapiKey}`;
   try {
-    // یک درخواست در هر چرخه — ولی از همان سهمیهٔ کلید می‌خورد، پس در همان
-    // بودجه شمرده می‌شود. طبقهٔ `standard`: تابلوی آپشن نه چرخهٔ حیاتیِ بازار
-    // است و نه بک‌فیلِ انبوه.
-    await meterBrsapi("options", "standard");
-    const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(25000) });
-    if (!res.ok) {
-      optionsStatus.ok = false;
-      optionsStatus.error = `HTTP ${res.status}`;
-      return [];
+    let items;
+    if (client) {
+      items = await client.request({
+        endpoint: "Tsetmc/Option.php", params: {},
+        producer: "options", priority: "background",
+        // تابلوی آپشن یک درخواست در هر چرخه است و صفحهٔ اختصاصیِ خودش را
+        // تغذیه می‌کند — مهم، ولی نه به‌اندازهٔ خودِ تابلوی بازار.
+        budgetClass: "standard",
+        dedupeTtlMs: 60_000, timeoutMs: 25_000,
+      });
+    } else {
+      if (countLegacy) await countLegacy("options", "standard");
+      const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(25000) });
+      if (!res.ok) {
+        optionsStatus.ok = false;
+        optionsStatus.error = `HTTP ${res.status}`;
+        return [];
+      }
+      items = await res.json();
     }
-    const items = await res.json();
     if (!Array.isArray(items)) {
       optionsStatus.ok = false;
       optionsStatus.error = "response is not array";

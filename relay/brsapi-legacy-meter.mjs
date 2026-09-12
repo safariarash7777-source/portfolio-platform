@@ -18,6 +18,19 @@
  * رفتارِ دیگری را هم فعال نکند.
  */
 
+/**
+ * «شمارنده در دسترس نیست» — با «سهمیه تمام شد» یکی نیست و نباید یکی شمرده
+ * شود. اولی یعنی نمی‌دانیم کجاییم، دومی یعنی می‌دانیم و رسیده‌ایم. واکنشِ
+ * عملیاتی‌شان هم فرق دارد: اولی هشدارِ زیرساخت است، دومی رفتارِ عادیِ سقف.
+ */
+export class BudgetUnavailableError extends Error {
+  constructor(producer) {
+    super(`budget counter unavailable, refusing to send unmetered (producer "${producer}")`);
+    this.name = "BudgetUnavailableError";
+    this.producer = producer;
+  }
+}
+
 export class LegacyBudgetError extends Error {
   constructor(producer) {
     super(`daily budget exhausted (legacy path, producer "${producer}")`);
@@ -35,49 +48,36 @@ export class LegacyMeter {
    * @param getBudget تابعی که بودجهٔ مشترک را می‌دهد (یا `null` اگر نساخته شده).
    *                  تابع است نه مقدار، چون بودجه تنبل ساخته می‌شود.
    */
-  constructor(getBudget, { enforced = legacyEnforced, makeFallback = null } = {}) {
+  constructor(getBudget, { enforced = legacyEnforced } = {}) {
     this.getBudget = getBudget;
     this.isEnforced = enforced;
-    this.makeFallback = makeFallback;
-    this.fallbackBudget = null;
-    this.fallbackUsed = 0;
     this.used = Object.create(null);
     this.rejected = Object.create(null);
     this.overBudgetPassed = Object.create(null);
     this.unmetered = 0;
+    this.unmeteredByProducer = Object.create(null);
   }
 
   #bump(map, producer) { map[producer] = (map[producer] ?? 0) + 1; }
-
-  /**
-   * کدام بودجه باید تصمیم بگیرد.
-   *
-   * وقتی انبارِ ماندگار نیست، در حالتِ **شمارش** همان «دیده‌نشده» گزارش
-   * می‌شود. در حالتِ **اجرا** اما «نشمردن» یعنی مصرفِ نامحدود — دقیقاً همان
-   * چیزی که سوییچِ اجرا قرار بود ببندد. پس یک سقفِ **درون‌فرایندی** ساخته
-   * می‌شود: با هر restart صفر می‌شود، پس تضمینِ روزانه **نیست**؛ ولی
-   * «نامحدود» را به «محدود در هر فرایند» تبدیل می‌کند. این تنزل در
-   * `snapshot().fallback` دیده می‌شود، نه پنهان.
-   */
-  #resolveBudget() {
-    const shared = this.getBudget();
-    if (shared) return { budget: shared, degraded: false };
-    if (!this.isEnforced() || !this.makeFallback) return { budget: null, degraded: false };
-    this.fallbackBudget ??= this.makeFallback();
-    return { budget: this.fallbackBudget ?? null, degraded: this.fallbackBudget !== null };
-  }
 
   /**
    * یک واحدِ مصرفِ مسیرِ قدیمی را ثبت می‌کند.
    * در حالتِ اجرا، وقتی بودجه اجازه ندهد `LegacyBudgetError` پرتاب می‌شود.
    */
   async count(producer, budgetClass = "standard") {
-    const { budget: b, degraded } = this.#resolveBudget();
-    if (degraded) this.fallbackUsed += 1;
+    const b = this.getBudget();
     if (!b) {
       // بدونِ شمارنده، این مصرف واقعاً دیده نمی‌شود. **پنهانش نمی‌کنیم** —
       // خودِ همین «ندیدن» یک عدد است که در `/debug` گزارش می‌شود.
       this.unmetered += 1;
+      this.#bump(this.unmeteredByProducer, producer);
+      // ── چرا اینجا هم رد می‌کنیم ─────────────────────────────────────────
+      // «enforcement روشن» یعنی «قول داده‌ایم از سقف رد نشویم». اگر شمارنده
+      // نباشد، آن قول **قابلِ نگه‌داشتن نیست** — و ادامهٔ ارسالِ بی‌حساب
+      // بدترین ترکیب است: هم ادعای کنترل داریم، هم هیچ کنترلی نداریم.
+      // پس در این حالت **متوقف** می‌شویم و سایت دادهٔ کهنه نشان می‌دهد.
+      // دادهٔ کهنهٔ برچسب‌خورده از عبورِ نامحدود بهتر است.
+      if (this.isEnforced()) throw new BudgetUnavailableError(producer);
       return;
     }
     if (typeof b.ensure === "function") await b.ensure();
@@ -97,10 +97,10 @@ export class LegacyMeter {
       rejected: { ...this.rejected },
       overBudgetPassed: { ...this.overBudgetPassed },
       unmetered: this.unmetered,
-      // سقفِ درون‌فرایندیِ اضطراری: فقط در حالتِ اجرا و فقط وقتی انبارِ
-      // ماندگار نیست. `null` یعنی هرگز لازم نشد.
-      fallback: this.fallbackBudget
-        ? { reason: "no persistent store, enforcement on", calls: this.fallbackUsed, ...this.fallbackBudget.snapshot() }
+      unmeteredByProducer: { ...this.unmeteredByProducer },
+      /** هشدارِ عملیاتی — وقتی قول داده‌ایم ولی ابزارِ نگه‌داشتنش را نداریم. */
+      alert: this.isEnforced() && this.unmetered > 0
+        ? "enforcement روشن است ولی شمارندهٔ بودجه در دسترس نیست — ارسال متوقف شد"
         : null,
     };
   }

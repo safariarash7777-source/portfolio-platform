@@ -179,9 +179,8 @@ async function pushFeedRows(items) {
 
 /** یک صفحه با یک تلاش مجدد — BrsApi گاه اتصال را گذرا قطع می‌کند. */
 async function fetchPageWithRetry(params) {
-  const p = { producer: "codal-engine", ...params };
-  try { return await fetchAnnouncementsPage(p); }
-  catch { await new Promise((r) => setTimeout(r, 4000)); return await fetchAnnouncementsPage(p); }
+  try { return await fetchAnnouncementsPage(params); }
+  catch { await new Promise((r) => setTimeout(r, 4000)); return await fetchAnnouncementsPage(params); }
 }
 
 async function pollGlobalFeed() {
@@ -310,8 +309,8 @@ async function backfillSome() {
     st.symbols.push(sym);
     try {
       const [fs, monthly] = await Promise.all([
-        fetchAnnouncementsPage({ l18: sym, category: 1, producer: "codal-engine" }),
-        fetchAnnouncementsPage({ l18: sym, category: 3, producer: "codal-engine" }),
+        fetchAnnouncementsPage({ l18: sym, category: 1 }),
+        fetchAnnouncementsPage({ l18: sym, category: 3 }),
       ]);
       const known = await existingUrlsFor(sym);
       let dl = 0;

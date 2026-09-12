@@ -1,6 +1,6 @@
 // تستِ شمارندهٔ مسیرِ قدیمی — «نامرئی» در برابر «دیده‌شده» در برابر «بسته».
 import assert from "node:assert/strict";
-import { LegacyMeter, LegacyBudgetError, legacyEnforced } from "./brsapi-legacy-meter.mjs";
+import { LegacyMeter, LegacyBudgetError, BudgetUnavailableError, legacyEnforced } from "./brsapi-legacy-meter.mjs";
 
 let pass = 0, fail = 0;
 const tests = [];
@@ -80,55 +80,39 @@ t("طبقهٔ بودجه به بودجه منتقل می‌شود، نه این�
   assert.deepEqual(seen, ["critical", "bulk"]);
 });
 
-/* ── ماتریسِ حالت‌ها: پرچم × اجرا × انبار ──────────────────────────────────────
- * مأموریت خواسته بود «در حالتِ enforce، خاموش‌شدنِ کلاینت یا خطای ذخیره‌ساز
- * نباید مصرفِ نامحدود بسازد». این چهار تست همان را می‌سنجند.
- */
 
-/** سقفِ درون‌حافظه‌ایِ ساده — همان قراردادِ `reserve`/`snapshot`. */
-function fallbackBudget(cap) {
-  return {
-    used: 0,
-    reserve() { if (this.used >= cap) return false; this.used += 1; return true; },
-    snapshot() { return { used: this.used, hardCeiling: cap }; },
-  };
-}
+/* ── نبودِ ذخیره‌ساز در حالتِ enforcement ─────────────────────────────────── */
 
-t("انبار نیست + شمارش: مصرف «دیده‌نشده» گزارش می‌شود و عبور می‌کند", async () => {
-  const m = new LegacyMeter(() => null, { enforced: () => false, makeFallback: () => fallbackBudget(2) });
-  await m.count("a"); await m.count("a"); await m.count("a");
-  const s = m.snapshot();
-  assert.equal(s.unmetered, 3, "هر سه به‌عنوان نشمرده ثبت شد");
-  assert.equal(s.fallback, null, "در حالتِ شمارش نباید سقفِ اضطراری ساخته شود");
-});
-
-t("انبار نیست + اجرا: مصرف نامحدود نمی‌شود — سقفِ درون‌فرایندی می‌بندد", async () => {
-  const m = new LegacyMeter(() => null, { enforced: () => true, makeFallback: () => fallbackBudget(2) });
-  await m.count("a", "critical");
-  await m.count("a", "critical");
-  await assert.rejects(() => m.count("a", "critical"), LegacyBudgetError,
-    "سومی باید رد شود، نه اینکه بی‌صدا عبور کند");
-  const s = m.snapshot();
-  assert.equal(s.unmetered, 0, "دیگر «نشمرده» نیست — شمرده و بسته شد");
-  assert.equal(s.fallback.used, 2);
-  assert.equal(s.fallback.calls, 3, "تنزل صریح گزارش می‌شود، پنهان نمی‌ماند");
-});
-
-t("انبار نیست + اجرا + بدونِ fallback: هنوز «نشمرده» است، نه ادعای کنترل", async () => {
+t("enforcement روشن + شمارنده غایب = توقف، نه ارسالِ بی‌حساب", async () => {
   const m = new LegacyMeter(() => null, { enforced: () => true });
-  await m.count("a");
-  const s = m.snapshot();
-  assert.equal(s.unmetered, 1);
-  assert.equal(s.fallback, null, "نباید وانمود کند سقفی هست");
+  await assert.rejects(() => m.count("nav-bulk", "critical"),
+    (e) => e instanceof BudgetUnavailableError);
+  assert.equal(m.snapshot().unmetered, 1, "و همین «نتوانستیم بشماریم» ثبت می‌شود");
 });
 
-t("انبار برمی‌گردد: تصمیم دوباره با بودجهٔ مشترک گرفته می‌شود", async () => {
-  let shared = null;
-  const m = new LegacyMeter(() => shared, { enforced: () => true, makeFallback: () => fallbackBudget(1) });
-  await m.count("a");                      // انبار نیست → سقفِ اضطراری
-  shared = fakeBudget(5);
-  await m.count("a"); await m.count("a");  // انبار برگشت → بودجهٔ مشترک
-  assert.equal(shared.used, 2, "بعد از بازگشتِ انبار، مرجعِ تصمیم همان است");
+t("«شمارنده نیست» با «سهمیه تمام شد» یکی نیست", async () => {
+  const gone = new LegacyMeter(() => null, { enforced: () => true });
+  await assert.rejects(() => gone.count("p"), (e) => e instanceof BudgetUnavailableError);
+
+  const full = new LegacyMeter(() => ({ async ensure() {}, reserve: () => false }), { enforced: () => true });
+  await assert.rejects(() => full.count("p"), (e) => e instanceof LegacyBudgetError);
+  // دو خطای متفاوت برای دو وضعیتِ متفاوت — واکنشِ عملیاتی‌شان هم فرق دارد.
+});
+
+t("هشدارِ عملیاتی فقط وقتی بلند می‌شود که قول داده باشیم و نتوانیم نگهش داریم", async () => {
+  const off = new LegacyMeter(() => null, { enforced: () => false });
+  await off.count("p");
+  assert.equal(off.snapshot().alert, null, "بدونِ enforcement، نشمردن هشدار نیست");
+
+  const on = new LegacyMeter(() => null, { enforced: () => true });
+  await assert.rejects(() => on.count("p"), () => true);
+  assert.ok(on.snapshot().alert, "با enforcement، همان وضعیت هشدار است");
+});
+
+t("نشمردن به تفکیکِ producer دیده می‌شود، نه یک عددِ کلی", async () => {
+  const m = new LegacyMeter(() => null, { enforced: () => false });
+  await m.count("nav-bulk"); await m.count("nav-bulk"); await m.count("options");
+  assert.deepEqual(m.snapshot().unmeteredByProducer, { "nav-bulk": 2, options: 1 });
 });
 
 console.log("brsapi-legacy-meter:");
