@@ -72,7 +72,12 @@ export function mapCertRow(d) {
   };
 }
 
-export async function refreshCertificates({ base, key, headers }) {
+/**
+ * `client` اختیاری است. وقتی داده شود، درخواست از درگاهِ مرکزی عبور می‌کند؛
+ * وقتی نه، مسیرِ قدیمی عیناً اجرا می‌شود. این ماژول هیچ تصمیمی دربارهٔ
+ * روشن/خاموش بودنِ پرچم نمی‌گیرد — فراخوان تصمیم می‌گیرد.
+ */
+export async function refreshCertificates({ base, key, headers, client = null }) {
   rollDay();
   const h = tehranHour();
   if (h < 8 || h >= 19) return; // خارج از ساعات بازار — دیتای صبح فردا تازه می‌شود
@@ -80,9 +85,21 @@ export async function refreshCertificates({ base, key, headers }) {
   lastCertFetch = Date.now();
   try {
     certReqToday++;
-    const res = await fetch(`${base}/IME/Certificate.php?key=${key}`, { headers, signal: AbortSignal.timeout(20000) });
-    if (!res.ok) throw new Error(`http ${res.status}`);
-    const j = await res.json();
+    let j;
+    if (client) {
+      j = await client.request({
+        endpoint: "IME/Certificate.php", producer: "ime-certificate",
+        priority: "background",
+        // فیدِ مکمل است: اگر بودجه تنگ شد، پیش از چرخهٔ بازار و NAV کنار می‌رود،
+        // ولی پیش از بک‌فیل و آرشیو هم نباید قربانی شود.
+        budgetClass: "standard",
+        dedupeTtlMs: 5 * 60_000, timeoutMs: 20_000,
+      });
+    } else {
+      const res = await fetch(`${base}/IME/Certificate.php?key=${key}`, { headers, signal: AbortSignal.timeout(20000) });
+      if (!res.ok) throw new Error(`http ${res.status}`);
+      j = await res.json();
+    }
     const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
     const rows = arr.map(mapCertRow).filter((r) => r.id && r.price !== null);
     if (rows.length === 0) throw new Error("empty certificate response");
