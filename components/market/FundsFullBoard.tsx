@@ -242,10 +242,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             </p>
           </div>
         </div>
-        {fetchedAt && (
+        {fetchedAt ? (
           <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
             <Clock size={12} />
             <span>آخرین به‌روزرسانی: {formatJalali(fetchedAt)}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-[11px]" role="status" style={{ color: "var(--warning)" }}>
+            <Clock size={12} aria-hidden="true" />
+            <span>زمان اسنپ‌شات ثبت نشده است</span>
           </div>
         )}
       </div>

@@ -7,9 +7,11 @@ import {
   createChart,
   LineSeries,
   type IChartApi,
+  type Time,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { formatJalali, toPersianDigits } from "@/lib/format";
+import { toPersianDigits } from "@/lib/format";
+import { chartAxisDateLabel, chartTooltipDateLabel } from "./chartDate";
 
 export interface PriceNavPoint {
   time: number; // epoch seconds
@@ -43,11 +45,14 @@ export default function PriceNavChart({ points }: { points: PriceNavPoint[] }) {
       layout: { background: { color: p.bg }, textColor: p.text },
       localization: {
         priceFormatter: (value: number) => toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬"),
-        timeFormatter: (time: UTCTimestamp) => formatJalali(Number(time) * 1000, false),
+        timeFormatter: (time: Time) => chartTooltipDateLabel(time),
       },
       grid: { vertLines: { color: p.line }, horzLines: { color: p.line } },
       rightPriceScale: { borderColor: p.line },
-      timeScale: { borderColor: p.line },
+      timeScale: {
+        borderColor: p.line,
+        tickMarkFormatter: (time: Time) => chartAxisDateLabel(time),
+      },
       autoSize: true,
       height: 300,
     });

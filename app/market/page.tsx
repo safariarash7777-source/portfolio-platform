@@ -105,7 +105,7 @@ export default async function MarketPage() {
           </section>
 
           {/* مسیرِ رفت‌وبرگشت به حسابِ کاربر — فقط لینک، بدونِ هیچ تغییری در گیتِ دسترسی. */}
-          <AccountBridge access={access} />
+          <AccountBridge access={access} returnTo="/market" />
         </div>
 
         {/* کریپتو + واچ‌لیست + هشدار */}

@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { AlertTriangle, Clock, Eye, HelpCircle, Layers, TrendingUp } from "lucide-react";
 import { buildDesk, type DeskBand, type DeskKind, type DeskFund, type DeskStock } from "@/lib/core/marketDesk";
-import { toPersianDigits } from "@/lib/format";
+import { formatJalali, toPersianDigits } from "@/lib/format";
 import type { IrMarket } from "@/lib/market-ir";
 
 const KIND_META: Record<DeskKind, { label: string; Icon: typeof Clock }> = {
@@ -46,32 +46,66 @@ export default function MarketDesk({ ir }: { ir: IrMarket | null }) {
   const desk = buildDesk({ funds, stocks }, { limit: 12 });
   const totalMatched = desk.coverage.reduce((a, c) => a + c.matched, 0);
   const totalExamined = desk.coverage.reduce((a, c) => a + c.examined, 0);
+  const totalCandidates = desk.coverage.reduce((a, c) => a + c.candidates, 0);
+  const blockedRules = desk.coverage.filter((c) => c.blocked !== null).length;
+  const partialRules = desk.coverage.filter((c) => c.examined < c.candidates).length;
+  const sourceUnavailable = ir === null;
+  const limitedCoverage = !sourceUnavailable && (blockedRules > 0 || partialRules > 0);
+
+  const emptyTitle = sourceUnavailable
+    ? "دادهٔ بازار در دسترس نیست."
+    : totalExamined === 0
+      ? "دادهٔ کافی برای اجرای سنجه‌ها نرسیده است."
+      : limitedCoverage
+        ? "در بخشِ قابل‌سنجش، موردی از آستانه عبور نکرد."
+        : "امروز موردی از آستانه‌ها عبور نکرد.";
+
+  const emptyDetail = sourceUnavailable
+    ? "این وضعیت خطای دریافت داده است؛ به معنی آرام‌بودن بازار نیست."
+    : totalExamined === 0
+      ? `${fa(totalCandidates)} نامزد دیده شد، اما دادهٔ لازم برای سنجش کامل نبود.`
+      : limitedCoverage
+        ? `${fa(totalExamined)} سنجش انجام شد؛ پوشش کامل نیست و نتیجه فقط دربارهٔ دادهٔ دیده‌شده صدق می‌کند.`
+        : `${fa(totalExamined)} سنجش انجام شد و هیچ‌کدام از آستانه رد نشد.`;
 
   return (
     <section aria-labelledby="desk-title">
-      <div className="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="desk-title" className="font-display text-lg font-extrabold" style={{ color: "var(--heading)" }}>
-            میزِ بازار
+          <h2 id="desk-title" className="font-display text-xl font-extrabold md:text-2xl" style={{ color: "var(--heading)" }}>
+            چه چیزی ارزشِ نگاه دوباره دارد؟
           </h2>
           <p className="text-[12px] mt-0.5" style={{ color: "var(--text-3)" }}>
-            مواردی که امروز ارزشِ نگاهِ دوباره دارند. هر مورد تعریفِ عددیِ خودش را همراه دارد.
+            خروجیِ قواعد شفاف روی آخرین اسنپ‌شات؛ مشاهده است، نه پیشنهاد اقدام.
           </p>
         </div>
-        <p className="text-[11.5px] whitespace-nowrap" style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
-          {fa(totalMatched)} مورد از {fa(totalExamined)} سنجش
-        </p>
+        <div className="text-left">
+          <p className="text-[11.5px] whitespace-nowrap" style={{ color: "var(--text-2)", fontVariantNumeric: "tabular-nums" }}>
+            {fa(totalMatched)} مورد · {fa(totalExamined)} اجرای قاعده
+          </p>
+          <p className="mt-1 text-[10.5px]" style={{ color: sourceUnavailable ? "var(--danger)" : "var(--text-3)" }}>
+            {ir?.fetchedAt ? `اسنپ‌شات قیمت: ${formatJalali(ir.fetchedAt)}` : "زمان اسنپ‌شات در دسترس نیست"}
+          </p>
+        </div>
       </div>
+
+      {limitedCoverage && desk.observations.length > 0 ? (
+        <div
+          className="mb-3 rounded-xl border px-4 py-3 text-xs leading-6"
+          style={{ borderColor: "rgba(180,83,9,0.28)", background: "rgba(180,83,9,0.06)", color: "var(--text-2)" }}
+          role="status"
+        >
+          پوشش کامل نیست: {fa(partialRules)} قاعده ورودی ناقص داشت و {fa(blockedRules)} قاعده متوقف شد. موارد زیر فقط از دادهٔ قابل‌سنجش ساخته شده‌اند.
+        </div>
+      ) : null}
 
       {desk.observations.length === 0 ? (
         <div className="card px-4 py-5 text-center">
           <p className="text-[13px] font-semibold" style={{ color: "var(--text-2)" }}>
-            {totalExamined > 0 ? "امروز موردی از آستانه‌ها عبور نکرد." : "امروز چیزی برای سنجیدن نبود."}
+            {emptyTitle}
           </p>
           <p className="text-[11.5px] mt-1" style={{ color: "var(--text-3)" }}>
-            {totalExamined > 0
-              ? `${fa(totalExamined)} سنجش انجام شد و هیچ‌کدام از آستانه رد نشد.`
-              : "دادهٔ لازم نرسیده است — این با «مشکلی نبود» یکی نیست."}
+            {emptyDetail}
           </p>
         </div>
       ) : (
@@ -128,7 +162,7 @@ export default function MarketDesk({ ir }: { ir: IrMarket | null }) {
       {/* پوشش — چرا میز این‌قدر پر یا خالی است. عمداً همیشه دیده می‌شود. */}
       <details className="mt-2.5">
         <summary
-          className="text-[11.5px] cursor-pointer inline-flex items-center gap-1.5 select-none"
+          className="inline-flex min-h-11 cursor-pointer select-none items-center gap-1.5 rounded-lg px-2 text-[11.5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
           style={{ color: "var(--text-3)" }}
         >
           <Eye size={13} strokeWidth={2} aria-hidden />

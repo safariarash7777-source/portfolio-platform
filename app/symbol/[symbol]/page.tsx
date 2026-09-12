@@ -523,7 +523,11 @@ export default async function SymbolPage({ params }: PageProps) {
 
           {/* مسیرِ رفت‌وبرگشت: از این نماد به داشبورد، و از اینجا برگشت به میزِ بازار.
               فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
-          <AccountBridge access={access} backTo={{ href: "/market", label: "برگشت به میزِ بازار" }} />
+          <AccountBridge
+            access={access}
+            returnTo={`/symbol/${encodeURIComponent(sym)}`}
+            backTo={{ href: "/market", label: "برگشت به میزِ بازار" }}
+          />
 
           {/* سلب مسئولیت — الزام قانون ۶ */}
           <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>

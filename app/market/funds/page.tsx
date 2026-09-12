@@ -2,8 +2,10 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
+import AccountBridge from "@/components/account/AccountBridge";
 import { getIrMarket } from "@/lib/market-ir";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
+import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
 
 
@@ -16,7 +18,7 @@ export const metadata = pageMetadata({
 });
 
 export default async function FundsPage() {
-  const [ir, returns] = await Promise.all([getIrMarket(), getBulkReturns()]);
+  const [ir, returns, access] = await Promise.all([getIrMarket(), getBulkReturns(), getAccess()]);
   // M6: بازدهٔ دوره‌ای فقط برای نمادهای دارای تاریخچه — بقیه undefined می‌ماند (در UI «—»).
   const funds = (ir?.funds ?? []).map((f) => {
     const r = returns.get(f.id);
@@ -35,6 +37,9 @@ export default async function FundsPage() {
             <span>صندوق‌ها</span>
           </nav>
           <FundsFullBoard funds={funds} fetchedAt={fetchedAt} />
+          <div className="mt-8">
+            <AccountBridge access={access} returnTo="/market/funds" backTo={{ href: "/market", label: "برگشت به میز بازار" }} />
+          </div>
         </div>
       </main>
       <Footer />
