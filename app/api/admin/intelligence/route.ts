@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import {
   capturePackage,
   transitionAnalysis,
@@ -27,11 +26,31 @@ export const dynamic = "force-dynamic";
  *  ۲. **هیچ انتشارِ عمومی.** `PATCH` مقصدِ `published` را رد می‌کند.
  *  ۳. **هیچ دادهٔ ساختگی.** بستهٔ ناقص اصلاً وارد دیتابیس نمی‌شود.
  *  ۴. هشِ محتوا همیشه سمتِ سرور ساخته می‌شود.
- *  ۵. مجوز پیش از ساختِ کلاینتِ service-role — با تست اثبات شده.
+ *  ۵. مجوز پیش از ساختِ writer — با تست اثبات شده.
  */
 
-function supabaseWriter(): IntelWriter {
-  const admin = createAdminClient();
+type SessionClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * نویسنده — روی **نشستِ خودِ ادمین**، نه service-role.
+ *
+ * ── چرا این تفاوت حیاتی است ────────────────────────────────────────────
+ * `capture_intel_package` و `publish_intel_analysis` توابعِ SECURITY DEFINER
+ * هستند که خودشان احراز می‌کنند:
+ *
+ *     IF NOT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role='admin')
+ *       THEN RAISE EXCEPTION 'admin required'
+ *
+ * کلاینتِ service-role هیچ نشستی حمل نمی‌کند، پس `auth.uid()` در آن `NULL`
+ * است و این شرط **همیشه** رد می‌شود. یعنی این مسیر حتی با کلیدِ سرویس‌رول و
+ * migrationِ اجراشده هم کار نمی‌کرد — «admin required» می‌گرفت. تریگرِ
+ * `intel_record_workflow_event` هم `actor_id` را از `auth.uid()` می‌گیرد و
+ * با service-role رویداد را بی‌مالک ثبت می‌کرد.
+ *
+ * سیاستِ `intel_admin_all` در `sql/phase20` هم `FOR ALL TO authenticated` با
+ * همان شرطِ ادمین است، پس نشست دقیقاً همان دسترسی را دارد.
+ */
+function supabaseWriter(admin: SessionClient): IntelWriter {
   return {
     async capture(payload) {
       // یک RPC، یک تراکنش. اگر این پنج `INSERT` جدا بود، شکستِ عبارتِ چهارم
@@ -103,15 +122,15 @@ function supabaseWriter(): IntelWriter {
   };
 }
 
-function gateway(): IntelGateway {
+async function gateway(): Promise<IntelGateway> {
+  // یک کلاینت برای هر سه کار — پیش‌تر هر فراخوان کلاینتِ تازه‌ای می‌ساخت.
+  const supabase = await createClient();
   return {
     async getUser() {
-      const supabase = await createClient();
       const { data } = await supabase.auth.getUser();
       return data.user ? { id: data.user.id } : null;
     },
     async getRole(userId) {
-      const supabase = await createClient();
       const { data, error } = await supabase
         .from("profiles")
         .select("role")
@@ -120,7 +139,8 @@ function gateway(): IntelGateway {
       if (error) throw new Error(error.message);
       return (data?.role as string | undefined) ?? null;
     },
-    createWriter: supabaseWriter,
+    // همچنان factory: هیچ نویسنده‌ای پیش از تأییدِ مجوز ساخته نمی‌شود.
+    createWriter: () => supabaseWriter(supabase),
     hash: (input) => createHash("sha256").update(input, "utf8").digest("hex"),
   };
 }
@@ -132,7 +152,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "بدنهٔ درخواست نامعتبر است" }, { status: 400 });
   }
-  const result = await capturePackage(gateway(), payload);
+  const result = await capturePackage(await gateway(), payload);
   return NextResponse.json(result.body, { status: result.status });
 }
 
@@ -144,7 +164,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "بدنهٔ درخواست نامعتبر است" }, { status: 400 });
   }
   const result = await transitionAnalysis(
-    gateway(),
+    await gateway(),
     String(body.analysisId ?? ""),
     body.to as AnalysisState,
     body.note ?? null

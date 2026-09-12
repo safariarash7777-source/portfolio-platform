@@ -9,8 +9,8 @@
  *
  * پس مجوز و تجمیع از HTTP جدا شدند و وابستگی‌ها تزریق می‌شوند. حالا تست
  * می‌تواند **واقعاً** صدا بزند و ادعا کند: بدونِ نشست ۴۰۱، با نقشِ غیرادمین
- * ۴۰۳، و — مهم‌تر از هر دو — کلاینتِ service-role در آن دو حالت **اصلاً ساخته
- * نمی‌شود**. آن ادعا با خواندنِ متن قابلِ اثبات نبود.
+ * ۴۰۳، و — مهم‌تر از هر دو — خواننده در آن دو حالت **اصلاً ساخته نمی‌شود**.
+ * آن ادعا با خواندنِ متن قابلِ اثبات نبود.
  *
  * ⚠️ محدودهٔ اعتبار: این‌ها تستِ **رفتاریِ محلی/CI**اند. جایگزینِ تستِ HTTPِ
  * احرازشده با Supabaseِ زنده نیستند و جایگزینِ راستی‌آزماییِ زمانِ اجرا روی
@@ -29,15 +29,15 @@ import {
 } from "@/lib/desk/contracts";
 import { DESK_SOURCES, type DeskSourceSpec } from "@/lib/desk/sources";
 
-/** یک خوانندهٔ منبع — در Production کلاینتِ service-role، در تست یک بدل. */
+/** یک خوانندهٔ منبع — در Production کلاینتِ نشست (زیرِ RLS)، در تست یک بدل. */
 export interface DeskReader {
   probe(table: string, timeColumn: string | null): Promise<SourceInput>;
 }
 
 /**
  * وابستگی‌های میز. `createReader` عمداً یک **factory** است و نه یک نمونهٔ
- * ساخته‌شده: تنها این‌طور می‌شود ثابت کرد که کلاینتِ service-role پیش از
- * تأییدِ مجوز ساخته نمی‌شود.
+ * ساخته‌شده: تنها این‌طور می‌شود ثابت کرد که هیچ خواندنی پیش از تأییدِ مجوز
+ * آغاز نمی‌شود.
  */
 export interface DeskGateway {
   getUser(): Promise<{ id: string } | null>;
@@ -116,7 +116,7 @@ export async function buildDesk(gateway: DeskGateway, now: Date): Promise<DeskRe
     return { status: 403, body: { error: "دسترسی غیرمجاز." } };
   }
 
-  // ── فقط حالا کلاینتِ service-role ساخته می‌شود ──
+  // ── فقط حالا خواننده ساخته می‌شود ──
   const reader = gateway.createReader();
 
   const panels = await Promise.all(

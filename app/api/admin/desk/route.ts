@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { classifyQueryError } from "@/lib/health/status";
 import type { SourceInput } from "@/lib/desk/contracts";
 import { buildDesk, type DeskGateway, type DeskReader } from "@/lib/desk/service";
@@ -27,12 +26,31 @@ export const dynamic = "force-dynamic";
  * همین مسیر مستقلاً داده را. یکی از این دو کافی نیست.
  */
 
-/** خوانندهٔ واقعی: شمارش + آخرین زمان، با تفکیکِ سه شکستِ متفاوت. */
-function supabaseReader(): DeskReader {
-  const admin = createAdminClient();
+type SessionClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * خوانندهٔ واقعی: شمارش + آخرین زمان، با تفکیکِ سه شکستِ متفاوت.
+ *
+ * ── چرا دیگر service-role نیست ─────────────────────────────────────────
+ * نسخهٔ اول اینجا کلاینتِ service-role می‌ساخت. نتیجه‌اش این بود که میز به
+ * وجودِ `SUPABASE_SERVICE_ROLE_KEY` گره خورد و روی Production — که این کلید
+ * را نداشت — کلِ مسیر ۵۰۰ می‌داد. حال آنکه هیچ‌کدام از این جدول‌ها به
+ * دورزدنِ RLS نیاز ندارند: همه برای `authenticated` سیاستِ خواندن دارند
+ * (بازارِ عمومی `qual: true`، و `waitlist`/`audit_log` با `is_admin()`).
+ *
+ * با کلاینتِ نشست، RLS **گیتِ دومِ واقعی** می‌شود: اگر گیتِ نقش در
+ * `buildDesk` روزی خراب شود، دیتابیس همچنان جلوی غیرادمین را می‌گیرد. با
+ * service-role چنین شبکهٔ ایمنی‌ای وجود نداشت. این همان چیزی است که
+ * `CLAUDE.md` می‌گوید: `admin.ts` فقط برای verify پرداخت و وبهوکِ تلگرام.
+ *
+ * ⚠️ نکتهٔ شمارش: با RLS، `count` یعنی «ردیف‌های قابلِ دیدن». برای این
+ * فراخوان که نقشش admin است این دو یکی‌اند، چون هر سیاستِ بالا برای admin
+ * کلِ جدول را باز می‌کند.
+ */
+function supabaseReader(supabase: SessionClient): DeskReader {
   return {
     async probe(table: string, timeColumn: string | null): Promise<SourceInput> {
-      const { count, error } = await admin
+      const { count, error } = await supabase
         .from(table)
         .select("*", { count: "exact", head: true });
 
@@ -51,7 +69,7 @@ function supabaseReader(): DeskReader {
       const rows = count ?? 0;
       if (rows === 0 || !timeColumn) return { available: true, count: rows };
 
-      const { data, error: timeError } = await admin
+      const { data, error: timeError } = await supabase
         .from(table)
         .select(timeColumn)
         .order(timeColumn, { ascending: false })
@@ -93,7 +111,7 @@ export async function GET() {
         .maybeSingle();
       return (data as { role?: string } | null)?.role ?? null;
     },
-    createReader: supabaseReader,
+    createReader: () => supabaseReader(supabase),
   };
 
   const result = await buildDesk(gateway, new Date());

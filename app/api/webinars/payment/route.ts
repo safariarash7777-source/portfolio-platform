@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+// هر دو طرف لازم‌اند: بدنهٔ ادغام‌شده هم `startWebinarPayment` این شاخه را صدا
+// می‌زند و هم گاردِ نبودِ کلیدِ سرویس‌رولِ main را. تنها چیزی که حذف شد
+// `createAdminClient` است — `tryCreateAdminClient` جایش را گرفته و نگه‌داشتنش
+// فقط یک importِ بی‌مصرف بود.
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 import { requestPayment, startPayUrl } from "@/lib/zarinpal";
 import {
   startWebinarPayment,
@@ -39,7 +44,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "registration_id الزامی است." }, { status: 400 });
   }
 
-  const admin = createAdminClient();
+  const admin = tryCreateAdminClient();
+  if (!admin)
+    return NextResponse.json(serviceRoleGap("پرداختِ وبینار"), { status: SERVICE_ROLE_GAP_STATUS });
 
   const ports: StartPorts = {
     async loadRegistration(id, userId) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isPlatform, isKind, detectPlatform } from "@/lib/content-hub";
 import { runTelegramFeedSync } from "@/lib/telegram-sync";
+import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,6 +79,14 @@ export async function PUT(req: NextRequest) {
 
   const result = await runTelegramFeedSync();
   if (!result.ok) {
+    // «پیکربندی ناقص» با «فید خوانده نشد» یکی نیست: یکی را ادمینِ Vercel حل
+    // می‌کند و دیگری را تنظیماتِ کانال. یک پیامِ مشترک هر دو را کور می‌کرد.
+    if (result.reason === "service_role_missing") {
+      return NextResponse.json(
+        { ...result, ...serviceRoleGap("همگام‌سازیِ هابِ محتوا") },
+        { status: SERVICE_ROLE_GAP_STATUS }
+      );
+    }
     const reason =
       result.reason === "feed_unreachable" || result.reason === "fetch_failed"
         ? "فیدِ عمومیِ کانال خوانده نشد. مطمئن شوید کانال عمومی است و نمایشِ عمومی‌اش فعال است."

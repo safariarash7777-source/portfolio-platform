@@ -1,39 +1,46 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, FileText, ShieldOff, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "درباره آرش صفری",
+  title: "دربارهٔ آرش صفری",
   description:
-    "آرش صفری — تحلیلگر و مشاور سرمایه‌گذاری. آشنایی با رویکرد، روش کار و اصول حرفه‌ای.",
+    "آرش صفری — تحلیلگر و مشاور سرمایه‌گذاری در بازار سرمایهٔ ایران. روش کار، اصول انتشار تحلیل و مسیرهای همکاری.",
 };
 
 /**
- * Truthfulness Audit — P2-PUBLIC-MEGA-002
- * حذف‌شده‌ها:
- *  - ادعای «مجوز رسمی» از PILLARS (نیاز به تأیید مالک — Owner Decision OD-001)
- *  - ادعای «داده‌ها رمزنگاری می‌شود / به شخص ثالث فروخته نمی‌شود / قابل حذف کامل» (ادعای حقوقی/امنیتی بدون مدرک)
- *  - «هیچ‌کس نمی‌تواند تاریخچه را تغییر دهد» (ادعای فنی مطلق — جایگزین با توضیح دقیق‌تر)
- *  - «۲۲ سؤال در ۶ بخش» (عدد مشخص بدون تأیید — Owner Decision OD-002)
- *  - «۳ ماه دسترسی کامل» (وعده مدت بدون تأیید — Owner Decision OD-003)
+ * دربارهٔ آرش — P2-PUBLIC-EXPERIENCE-REBASELINE-001
+ *
+ * حذف‌شده نسبت به نسخهٔ قبل:
+ *  - سه کارتِ PILLARS — **چهارمین** تکرارِ همان سه ادعا (Hero, WhyArash, FAQ)
+ *    با همان عنوانِ سکشن «اعتماد بر پایهٔ شفافیت، نه اعداد بزرگ».
+ *  - «با هش زنجیره‌ای برای حفظ یکپارچگی داده» — معماریِ داخلی برای مخاطبِ عمومی.
+ *  - «آمادهٔ شروع هستید؟» و «این شفافیت، پایهٔ اعتماد است» — جمله‌های تزئینی.
+ *  - عبارتِ تکرارشوندهٔ «تحلیل‌های ساختاریافته و تأییدشدهٔ این پلتفرم» (۴ بار در
+ *    یک صفحه) که به یک تیکِ کلامی تبدیل شده بود.
+ *
+ * ⚠️ بخشِ «مسیر» (بیوگرافی) عمداً **ساخته نشد**. هیچ سابقه، مدرک، سالِ تجربه یا
+ * نمونهٔ کارِ تأییدشده‌ای در مخزن نیست و جعلِ آن ممنوع است. طبق قانونِ «بدونِ
+ * دادهٔ واقعی، سکشن مخفی می‌شود» چیزی رندر نمی‌شود. متنِ واقعی که آرش بدهد
+ * اینجا اضافه خواهد شد — رجوع به `docs/P2-PUBLIC-REBASELINE-AUDIT.md` §۷.
  */
-const PILLARS = [
+const PRINCIPLES = [
   {
-    icon: <BadgeCheck size={22} />,
-    title: "مسئولیت‌پذیری حرفه‌ای",
-    desc: "تحلیل و مشاوره توسط آرش صفری — با نام مشخص، نه پیج بی‌نام.",
+    title: "فرض، قبل از نتیجه",
+    body:
+      "تحلیل را با فرضِ صریح شروع می‌کنم: چه چیزی باید درست باشد تا این نتیجه بگیرد. اگر فرض عوض شد، نتیجه هم عوض می‌شود.",
   },
   {
-    icon: <FileText size={22} />,
-    title: "شفافیت کامل روش",
-    desc: "تحلیل‌های ساختاریافته و تأییدشدهٔ این پلتفرم با ذکر فروض و دادهٔ پشتوانه منتشر می‌شوند؛ ارزش‌گذاری‌ها بازه‌ای و سناریومحورند، نه عدد قطعی — و در کارنامهٔ تحلیل‌های منتشرشده قابل مشاهده‌اند.",
+    title: "بازه، نه عددِ قطعی",
+    body:
+      "ارزش‌گذاری در سه سناریو منتشر می‌شود، نه یک قیمتِ هدفِ واحد. عددِ واحد دقتی را نشان می‌دهد که در عمل وجود ندارد.",
   },
   {
-    icon: <ShieldOff size={22} />,
-    title: "بدون وعدهٔ سود",
-    desc: "هیچ بازدهی تضمین نمی‌شود. تمرکز بر تصمیم‌گیریِ منطقی و کاهش ریسک‌های شناختی است، نه وعدهٔ سود.",
+    title: "نتیجه پاک نمی‌شود",
+    body:
+      "تحلیل پس از انتشار قابل ویرایش نیست. آنچه وارد کارنامه می‌شود با تاریخ و قیمتِ روزِ انتشار ثبت می‌ماند و نتیجه‌اش — درست یا غلط — پاک نمی‌شود.",
   },
 ];
 
@@ -42,176 +49,137 @@ export default function AboutPage() {
     <>
       <Navbar />
       <main>
-        {/* Hero */}
+        {/* سرصفحه */}
         <section
-          className="relative overflow-hidden"
-          style={{
-            background: "linear-gradient(180deg, var(--navy-deep) 0%, var(--navy) 100%)",
-          }}
+          style={{ background: "linear-gradient(180deg, var(--navy-deep) 0%, var(--navy) 100%)" }}
         >
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none opacity-[0.07]"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-              backgroundSize: "52px 52px",
-            }}
-          />
-          <div className="relative mx-auto w-full max-w-4xl px-5 pt-16 pb-20 text-right">
-            <span
-              className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold mb-6"
-              style={{
-                background: "rgba(212,162,43,0.12)",
-                color: "var(--gold-light)",
-                border: "1px solid rgba(212,162,43,0.30)",
-              }}
-            >
-              <BadgeCheck size={14} />
-              تحلیلگر و مشاور سرمایه‌گذاری
-            </span>
-            <h1
-              className="font-display"
-              style={{
-                color: "var(--text-on-navy)",
-                fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                fontWeight: 900,
-                lineHeight: 1.14,
-                letterSpacing: "-0.02em",
-                marginBottom: "1.25rem",
-              }}
-            >
-              آرش صفری
-            </h1>
-            <p
-              className="text-base sm:text-lg max-w-2xl"
-              style={{ color: "rgba(248,250,252,0.80)", lineHeight: 1.85 }}
-            >
-              تحلیلگر و مشاور سرمایه‌گذاری با تمرکز بر بازار سرمایهٔ ایران.
-              رویکرد کار: تصمیم‌گیری مبتنی بر داده، شفافیت کامل در روش، و
-              مسئولیت‌پذیری حرفه‌ای در برابر تحلیل‌های ساختاریافته و تأییدشدهٔ منتشرشده.
-            </p>
+          <div className="mx-auto w-full max-w-6xl px-5 pt-20 pb-16 sm:pt-24 sm:pb-20">
+            <div className="max-w-2xl">
+              <p className="text-xs sm:text-sm font-bold tracking-wide" style={{ color: "var(--gold-light)" }}>
+                تحلیلگر و مشاور سرمایه‌گذاری · بازار سرمایهٔ ایران
+              </p>
+              <div
+                aria-hidden
+                className="my-5"
+                style={{ height: 2, width: 56, background: "var(--gold)", borderRadius: 2 }}
+              />
+              <h1
+                className="font-display"
+                style={{
+                  color: "var(--text-on-navy)",
+                  fontSize: "clamp(2.25rem, 6vw, 3.75rem)",
+                  fontWeight: 900,
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.03em",
+                }}
+              >
+                آرش صفری
+              </h1>
+              <p
+                className="mt-6 text-base sm:text-lg"
+                style={{ color: "rgba(248,250,252,0.82)", lineHeight: 1.9 }}
+              >
+                بازار ایران را دنبال می‌کنم، تحلیلم را با نامِ خودم منتشر می‌کنم و
+                نتیجه‌اش را پاک نمی‌کنم.
+              </p>
+            </div>
           </div>
         </section>
 
-        {/* رویکرد و اصول */}
+        {/* اصولِ کار */}
         <section className="section" style={{ background: "var(--bg)" }}>
-          <div className="mx-auto w-full max-w-4xl px-5">
-            <div className="text-center mb-12">
-              <span className="eyebrow">اصول کار</span>
-              <h2
-                className="font-display font-bold mt-2"
-                style={{
-                  color: "var(--navy-deep)",
-                  fontSize: "clamp(1.6rem, 3.2vw, 2.4rem)",
-                  fontWeight: 800,
-                }}
-              >
-                اعتماد بر پایهٔ شفافیت، نه اعداد بزرگ
-              </h2>
-              <div className="divider-gold mx-auto mt-4" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {PILLARS.map((p) => (
+          <div className="mx-auto w-full max-w-6xl px-5">
+            <h2
+              className="font-display"
+              style={{
+                color: "var(--heading)",
+                fontSize: "clamp(1.6rem, 3.4vw, 2.4rem)",
+                fontWeight: 800,
+                lineHeight: 1.3,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              سه قاعده‌ای که رعایت می‌کنم
+            </h2>
+            <div aria-hidden className="divider-gold mt-4" />
+
+            <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
+              {PRINCIPLES.map((p, i) => (
                 <div
                   key={p.title}
-                  className="u-lift h-full rounded-2xl p-6"
-                  style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--line)",
-                    borderInlineStart: "3px solid var(--gold)",
-                    boxShadow: "var(--shadow-sm)",
-                  }}
+                  className={
+                    "h-full" +
+                    (i < PRINCIPLES.length - 1
+                      ? " md:pe-8 md:border-e md:border-[color:var(--line)]"
+                      : "")
+                  }
                 >
-                  <div className="flex items-start gap-4">
-                    <span
-                      className="flex-shrink-0 flex items-center justify-center rounded-xl mt-0.5"
-                      style={{
-                        width: 42,
-                        height: 42,
-                        background: "var(--gold-tint)",
-                        color: "var(--gold)",
-                        border: "1px solid rgba(184,134,11,0.25)",
-                      }}
-                    >
-                      {p.icon}
-                    </span>
-                    <div>
-                      <h3
-                        className="font-bold mb-2"
-                        style={{ color: "var(--navy-deep)", fontSize: "1rem" }}
-                      >
-                        {p.title}
-                      </h3>
-                      <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>
-                        {p.desc}
-                      </p>
-                    </div>
-                  </div>
+                  <h3 className="font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
+                    {p.title}
+                  </h3>
+                  <p className="mt-3 text-sm" style={{ color: "var(--text-2)", lineHeight: 1.9 }}>
+                    {p.body}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* روش کار */}
-        <section className="section" style={{ background: "var(--surface)" }}>
-          <div className="mx-auto w-full max-w-4xl px-5">
-            <div className="text-center mb-10">
-              <span className="eyebrow">روش کار</span>
+        {/* برای چه کسی */}
+        <section className="border-y" style={{ background: "var(--surface-2)", borderColor: "var(--line)" }}>
+          <div className="mx-auto w-full max-w-6xl px-5 py-16 md:py-20">
+            <div className="max-w-2xl">
               <h2
-                className="font-display font-bold mt-2"
+                className="font-display"
                 style={{
-                  color: "var(--navy-deep)",
-                  fontSize: "clamp(1.5rem, 3vw, 2.2rem)",
+                  color: "var(--heading)",
+                  fontSize: "clamp(1.4rem, 2.8vw, 2rem)",
                   fontWeight: 800,
+                  lineHeight: 1.35,
+                  letterSpacing: "-0.02em",
                 }}
               >
-                چگونه کار می‌کنم
+                اینجا چه چیزی پیدا می‌کنید — و چه چیزی پیدا نمی‌کنید
               </h2>
-            </div>
-            <div className="prose-like max-w-2xl mx-auto text-right">
-              <p className="text-base leading-8 mb-5" style={{ color: "var(--text-2)" }}>
-                تحلیل‌های ساختاریافته و تأییدشدهٔ این پلتفرم بر پایهٔ نظریهٔ مدرن پرتفوی، تحلیل بنیادی و
-                ارزیابی رفتاری بازار انجام می‌شود. این تحلیل‌ها با ذکر صریح فروض،
-                بازهٔ ارزش‌گذاری (نه عدد قطعی) و سناریوهای مختلف منتشر می‌شوند.
+              <p className="mt-6 text-base" style={{ color: "var(--text-2)", lineHeight: 1.95 }}>
+                وضعیتِ روزِ بازار، تحلیل‌هایی با فرضِ روشن، و کارنامه‌ای که می‌توانید
+                خودتان راستی‌آزمایی کنید.
               </p>
-              <p className="text-base leading-8 mb-5" style={{ color: "var(--text-2)" }}>
-                تحلیل‌های ساختاریافته و تأییدشدهٔ این پلتفرم با قیمت ورود، تاریخ و
-                وضعیت نتیجه ثبت می‌شوند — با هش زنجیره‌ای برای حفظ یکپارچگی داده.
-                این شفافیت، پایهٔ اعتماد است.
-              </p>
-              <p className="text-base leading-8" style={{ color: "var(--text-2)" }}>
-                مشاورهٔ اختصاصی شامل ارزیابی پروفایل ریسک، طراحی سبد متناسب
-                با شرایط شما، و دسترسی به ابزارهای تحلیلی پلتفرم است.
+              <p className="mt-4 text-base" style={{ color: "var(--text-2)", lineHeight: 1.95 }}>
+                اینجا نه وعدهٔ سود می‌بینید، نه بازدهی تضمین‌شده، و نه توصیهٔ خرید و فروشِ نماد.
+                تصمیمِ نهایی همیشه با خودِ شماست.
               </p>
             </div>
           </div>
         </section>
 
-        {/* CTA */}
+        {/* مسیرها */}
         <section className="section" style={{ background: "var(--bg)" }}>
-          <div className="mx-auto w-full max-w-4xl px-5 text-center">
+          <div className="mx-auto w-full max-w-6xl px-5">
             <h2
-              className="font-display font-bold mb-4"
+              className="font-display"
               style={{
-                color: "var(--navy-deep)",
+                color: "var(--heading)",
                 fontSize: "clamp(1.4rem, 2.8vw, 2rem)",
                 fontWeight: 800,
+                lineHeight: 1.35,
+                letterSpacing: "-0.02em",
               }}
             >
-              آمادهٔ شروع هستید؟
+              از کجا شروع کنید
             </h2>
-            <p className="text-base mb-8" style={{ color: "var(--text-2)" }}>
-              کارنامهٔ تحلیل‌ها را ببینید یا درخواست خود را ثبت کنید.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Link href="/analyses" className="btn btn-navy">
-                مشاهدهٔ کارنامه
-                <ArrowLeft size={14} />
+            <div aria-hidden className="divider-gold mt-4" />
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/market" className="btn btn-gold">
+                دیدن وضعیت امروز بازار
+                <ArrowLeft size={16} />
               </Link>
-              <Link href="/#waitlist" className="btn btn-gold">
-                ثبت درخواست
+              <Link href="/analyses" className="btn btn-outline">
+                دیدن کارنامه
+              </Link>
+              <Link href="/#waitlist" className="btn btn-outline">
+                درخواست مشاوره
               </Link>
             </div>
           </div>

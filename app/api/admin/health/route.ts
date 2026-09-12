@@ -55,7 +55,18 @@ const OPTIONAL_ENV = [
 const presence = (keys: readonly string[]): EnvPresence[] =>
   keys.map((key) => ({ key, present: Boolean(process.env[key]) }));
 
-type Admin = ReturnType<typeof createAdminClient>;
+/**
+ * کلاینتی که سیگنال‌ها با آن **می‌خوانند**.
+ *
+ * دیگر لزوماً service-role نیست: همهٔ جدول‌های این نما برای نشستِ ادمین از
+ * طریقِ RLS خواندنی‌اند (`audit_log`/`entitlements` با `is_admin()`، `payments`
+ * با `own OR is_admin()`، بازار عمومی). پس نبودِ کلیدِ سرویس‌رول دیگر کلِ نما
+ * را «نامعلوم» نمی‌کند — چیزی که تشخیص را کور می‌کرد، دقیقاً وقتی که بیشترین
+ * نیاز به آن بود.
+ */
+type Admin =
+  | ReturnType<typeof createAdminClient>
+  | Awaited<ReturnType<typeof createClient>>;
 
 /** آخرین مقدارِ یک ستونِ زمانی، با تفکیکِ «جدول نیست» از «خالی است». */
 async function latestTimestamp(
@@ -148,6 +159,9 @@ export async function GET() {
   signals.push(classifyEnv(requiredPresence, optionalPresence));
 
   // ── ۲) اتصالِ Supabase (service-role) — ریشهٔ B-024 ──
+  // این سیگنال حالا **دامنهٔ محدودتری** دارد: بقیهٔ نما با کلاینتِ نشست خوانده
+  // می‌شود، پس شکستِ اینجا یعنی فقط کارهایی که ذاتاً بدونِ نشست‌اند از کار
+  // افتاده‌اند — تأییدِ پرداخت، وبهوکِ تلگرام، وبهوکِ لید و cronها.
   let admin: Admin | null = null;
   try {
     admin = createAdminClient();
@@ -167,14 +181,18 @@ export async function GET() {
       key: "supabase",
       label: "اتصالِ Supabase (service-role)",
       state: "failed",
-      detail: e instanceof Error ? e.message : "خطای ناشناخته",
+      detail: `${e instanceof Error ? e.message : "خطای ناشناخته"} — تأییدِ پرداخت، وبهوکِ تلگرام، وبهوکِ لید و cronها بدونِ آن کار نمی‌کنند؛ بقیهٔ این نما از نشستِ خودِ شما خوانده شده`,
     });
   }
 
   let paymentCounts: { paidCount: number; paidWithoutEntitlement: number } | null = null;
   let leadsExists: boolean | null = null;
 
-  if (admin) {
+  // ── سیگنال‌های زیر با کلاینتِ نشست خوانده می‌شوند، نه service-role ──
+  // هر کدام try/catch خودش را دارد؛ شکستِ یکی بقیه را نمی‌خواباند (`B-024`).
+  {
+    const admin: Admin = supabase;
+
     // ── ۳) تازگیِ رلهٔ بازارِ ایران ──
     signals.push(
       await freshnessSignal(
@@ -313,23 +331,6 @@ export async function GET() {
       leadsExists = null;
     }
     signals.push(classifyLeadReadiness(leadsExists));
-  } else {
-    // بدونِ کلاینتِ ادمین همهٔ این‌ها **نامعلوم**اند، نه خراب.
-    for (const [key, label] of [
-      ["relay", "تازگیِ رلهٔ بازارِ ایران"],
-      ["telegram_sync", "آخرین همگام‌سازیِ تلگرام"],
-      ["audit", "آخرین رخدادِ ثبت‌شده در audit_log"],
-    ] as const) {
-      signals.push({ key, label, state: "unknown", detail: "بدونِ اتصالِ service-role قابلِ بررسی نیست" });
-    }
-    for (const jobKey of CRON_JOB_KEYS) {
-      signals.push({
-        key: `cron:${jobKey}`, label: `آخرین اجرای cron: ${jobKey}`,
-        state: "unknown", detail: "بدونِ اتصالِ service-role قابلِ بررسی نیست",
-      });
-    }
-    signals.push(classifyPaymentConsistency(null));
-    signals.push(classifyLeadReadiness(null));
   }
 
   // ── ۸) وبهوکِ تلگرام — فقط سلامت، بدونِ URL ──

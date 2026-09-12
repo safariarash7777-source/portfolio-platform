@@ -8,8 +8,11 @@ import TodayDashboard from "@/components/market/TodayDashboard";
 import FundsBoard from "@/components/market/FundsBoard";
 import GoldUsdTrend from "@/components/market/GoldUsdTrend";
 import IndexTrend from "@/components/market/IndexTrend";
+import MarketDesk from "@/components/market/MarketDesk";
+import AccountBridge from "@/components/account/AccountBridge";
 import { getMarketData } from "@/lib/market";
 import { getIrMarket } from "@/lib/market-ir";
+import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
 
 
@@ -24,10 +27,11 @@ export const metadata = pageMetadata({
 
 export default async function MarketPage() {
   const supabase = await createClient();
-  const [{ data: { user } }, market, ir] = await Promise.all([
+  const [{ data: { user } }, market, ir, access] = await Promise.all([
     supabase.auth.getUser(),
     getMarketData(),
     getIrMarket(),
+    getAccess(),
   ]);
 
   let watchlist: string[] = [];
@@ -63,6 +67,10 @@ export default async function MarketPage() {
           {/* داشبورد بصری «امروز بازار» — بازطراحی رصد بازار (هر بخش یک سؤال، جواب با نمودار) */}
           <TodayDashboard ir={ir} />
 
+          {/* میزِ بازار — «امروز چه چیزی ارزشِ نگاهِ دوباره دارد».
+              منطق در `lib/core/marketDesk.ts`؛ اینجا فقط نما. */}
+          <MarketDesk ir={ir} />
+
           {/* چشم‌انداز آماری و رژیم تاریخی (T3) — روایت تکمیلی زیر داشبورد */}
           <TodayMarket stocks={ir?.stocks ?? []} fetchedAt={ir?.fetchedAt ?? null} />
 
@@ -85,6 +93,9 @@ export default async function MarketPage() {
           {ir && ir.funds.length > 0 && (
             <FundsBoard funds={ir.funds} />
           )}
+
+          {/* مسیرِ رفت‌وبرگشت به حسابِ کاربر — فقط لینک، بدونِ هیچ تغییری در گیتِ دسترسی. */}
+          <AccountBridge access={access} />
         </div>
 
         {/* کریپتو + واچ‌لیست + هشدار */}

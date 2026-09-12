@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Reveal from "./Reveal";
+import { hasRealPrice } from "@/lib/market-price";
+import { hasRealChange } from "@/lib/market-ticker-select";
+import { computeFreshness } from "@/lib/market-freshness";
 import {
-  formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor, toPersianDigits,
+  formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor,
 } from "@/lib/format";
 
 interface GlobalRow {
@@ -34,6 +37,8 @@ interface MarketPayload {
     funds: IrRow[];
     stocks: IrRow[];
     ok: boolean;
+    /** مهرِ زمانیِ **رله** — دادهٔ ایران با این سنجیده می‌شود، نه با `fetchedAt`ِ بالا. */
+    fetchedAt?: number;
   } | null;
 }
 
@@ -46,22 +51,31 @@ interface DisplayRow {
 }
 
 const REFRESH_MS = 5 * 60 * 1000;
+const TICK_MS = 30 * 1000; // فقط ساعتِ نمایش؛ درخواستِ تازه نمی‌زند
 const SHOW = 8;
+
+/**
+ * درصدِ تغییر فقط وقتی عبور می‌کند که عددِ متناهی باشد.
+ * `formatSignedPercent(NaN)` رشتهٔ «• ٪NaN» و `formatSignedPercent(Infinity)`
+ * رشتهٔ «▲ ٪Infinity» می‌سازد — هر دو شبیهِ داده‌اند. `hasRealPrice` قیمت را
+ * می‌گیرد ولی درصد را نمی‌گرفت.
+ */
+const safeChange = (v: unknown): number | null => (hasRealChange(v) ? v : null);
 
 const toDisplay = {
   global: (r: GlobalRow): DisplayRow => ({
-    id: r.id, faName: r.faName, sub: r.symbol, priceText: formatUsd(r.price), change: r.change24h,
+    id: r.id, faName: r.faName, sub: r.symbol, priceText: formatUsd(r.price), change: safeChange(r.change24h),
   }),
   ir: (r: IrRow): DisplayRow => ({
     id: r.id, faName: r.faName,
     priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
-    change: r.changePercent ?? null, // درصد (نه مقدارِ مطلقِ تومان)
+    change: safeChange(r.changePercent), // درصد (نه مقدارِ مطلقِ تومان)
   }),
   // C1 — UI نمادمحور: سهام/صندوق فقط نماد (طلا/ارز/کریپتو نماد بورسی نیستند — نام می‌ماند).
   irTicker: (r: IrRow): DisplayRow => ({
     id: r.id, faName: r.id,
     priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
-    change: r.changePercent ?? null,
+    change: safeChange(r.changePercent),
   }),
 };
 
@@ -75,6 +89,7 @@ export default function LiveMarket() {
   const [data, setData] = useState<MarketPayload | null>(null);
   const [failed, setFailed] = useState(false);
   const [tab, setTab] = useState<string | null>(null);
+  const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
     let alive = true;
@@ -97,65 +112,122 @@ export default function LiveMarket() {
     return () => { alive = false; clearInterval(t); };
   }, []);
 
+  // بدونِ این، «۲ دقیقه پیش» تا refreshِ بعدی ثابت می‌ماند و گذارِ تازه→کهنه
+  // پنج دقیقه دیرتر از واقعیت دیده می‌شود.
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), TICK_MS);
+    return () => clearInterval(t);
+  }, []);
+
   const cats = useMemo(() => {
     if (!data) return [];
     const ir = data.ir;
-    const list: { key: string; label: string; rows: DisplayRow[]; note?: string }[] = [
+    // `usesIr` / `usesGlobal`: هر تب از کدام فید می‌خواند. تازگیِ هر تب با مهرِ
+    // زمانیِ همان فید سنجیده می‌شود — تبِ «ارز» نباید با ساعتِ CoinGecko
+    // برچسب بخورد و تبِ «کریپتو» نباید با ساعتِ رله.
+    const list: {
+      key: string; label: string; rows: DisplayRow[]; note?: string;
+      usesIr: boolean; usesGlobal: boolean;
+    }[] = [
       {
         key: "gold",
         label: "طلا و سکه",
-        rows: [...(ir?.gold ?? []).map(toDisplay.ir), ...(data.goldGlobal ?? []).map(toDisplay.global)],
+        rows: [
+          ...(ir?.gold ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.ir),
+          ...(data.goldGlobal ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.global),
+        ],
+        usesIr: (ir?.gold ?? []).some((r) => hasRealPrice(r.price)),
+        usesGlobal: (data.goldGlobal ?? []).some((r) => hasRealPrice(r.price)),
       },
-      { key: "currency", label: "ارز", rows: (ir?.currency ?? []).map(toDisplay.ir) },
+      {
+        key: "currency",
+        label: "ارز",
+        rows: (ir?.currency ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.ir),
+        usesIr: true,
+        usesGlobal: false,
+      },
       {
         key: "funds",
         label: "صندوق‌ها",
-        rows: (ir?.funds ?? []).map(toDisplay.irTicker),
+        rows: (ir?.funds ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.irTicker),
         note: "NAV و بازدهِ روزانهٔ صندوق‌های طلا",
+        usesIr: true,
+        usesGlobal: false,
       },
-      { key: "stocks", label: "سهام", rows: (ir?.stocks ?? []).map(toDisplay.irTicker) },
-      { key: "crypto", label: "کریپتو", rows: data.crypto.map(toDisplay.global) },
+      {
+        key: "stocks",
+        label: "سهام",
+        rows: (ir?.stocks ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.irTicker),
+        usesIr: true,
+        usesGlobal: false,
+      },
+      {
+        key: "crypto",
+        label: "کریپتو",
+        rows: data.crypto.filter((r) => hasRealPrice(r.price)).map(toDisplay.global),
+        usesIr: false,
+        usesGlobal: true,
+      },
     ];
     return list.filter((c) => c.rows.length > 0);
   }, [data]);
 
   const active = cats.find((c) => c.key === tab) ?? cats[0];
-  const ageMin = data ? Math.max(0, Math.round((Date.now() - data.fetchedAt) / 60000)) : null;
+
+  // «کهنه» حالتِ سومی است بینِ سالم و در دسترس نبودن. بدونِ آن، دادهٔ دو ساعته
+  // دقیقاً مثلِ دادهٔ لحظه‌ای به نظر می‌رسید.
+  const freshness = computeFreshness({
+    irFetchedAt: data?.ir?.fetchedAt ?? null,
+    globalFetchedAt: data?.fetchedAt ?? null,
+    usesIr: active?.usesIr ?? false,
+    usesGlobal: active?.usesGlobal ?? false,
+    now,
+  });
+  const isStale = freshness.state === "stale";
 
   return (
     <section id="market" className="section" style={{ background: "var(--bg)" }}>
       <div className="mx-auto w-full max-w-6xl px-5">
-        <Reveal className="flex flex-col items-center text-center gap-3 mb-10">
-          <span className="eyebrow">رصد بازار</span>
+        <Reveal className="mb-10">
           <h2
             className="font-display"
             style={{
-              color: "var(--navy-deep)",
-              fontSize: "clamp(1.6rem, 3.2vw, 2.4rem)",
+              color: "var(--heading)",
+              fontSize: "clamp(1.6rem, 3.4vw, 2.4rem)",
               fontWeight: 800,
-              lineHeight: 1.25,
+              lineHeight: 1.3,
+              letterSpacing: "-0.02em",
             }}
           >
-            بازار در یک نگاه
+            وضعیت امروز بازار
           </h2>
-          <div className="divider-gold" />
+          <div aria-hidden className="divider-gold mt-4" />
         </Reveal>
 
         <Reveal>
-          <div className="card-elevated overflow-hidden max-w-3xl mx-auto">
+          <div className="card-elevated overflow-hidden">
             {/* هدر + تب‌ها */}
             <div
               className="flex items-center justify-between gap-3 px-5 py-3 flex-wrap"
               style={{ borderBottom: "1px solid var(--line)", background: "var(--surface-2)" }}
             >
-              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: "var(--navy-deep)" }}>
-                <span className="live-dot" aria-hidden />
-                آخرین وضعیت بازار
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-3)" }}>
-                {ageMin != null
-                  ? `به‌روزرسانی: ${ageMin === 0 ? "هم‌اکنون" : `${toPersianDigits(ageMin)} دقیقه پیش`}`
-                  : failed ? "" : "در حال دریافت…"}
+              {/*
+                عنوانِ «آخرین وضعیت بازار» عیناً تیترِ H2ِ همین سکشن را تکرار می‌کرد.
+                حذف شد و جایش وضعیتِ تازگیِ داده — که باید حفظ شود — به برچسبِ
+                اصلیِ پنل تبدیل شد.
+              */}
+              <span
+                className="flex items-center gap-2 text-sm font-bold"
+                style={{ color: isStale ? "var(--gold)" : "var(--heading)" }}
+              >
+                {/* نقطهٔ «زنده» فقط وقتی دادهٔ تازه داریم. روی دادهٔ کهنه یا
+                    قطع‌شده، نشانهٔ زنده‌بودن یک ادعای غلط است. */}
+                {!failed && freshness.showLiveDot && <span className="live-dot" aria-hidden />}
+                {failed
+                  ? "داده در دسترس نیست"
+                  : !data
+                    ? "در حال دریافت…"
+                    : freshness.label}
               </span>
             </div>
 
@@ -193,8 +265,11 @@ export default function LiveMarket() {
                 دادهٔ بازار هم‌اکنون در دسترس نیست. چند دقیقهٔ دیگر دوباره سر بزنید.
               </div>
             ) : !active ? (
+              /* سه ردیف، نه شش. اسکلتونِ بلند اولین برداشتِ بازدیدکننده را به یک
+                 صفحهٔ نیمه‌ساخته تبدیل می‌کرد؛ ارتفاعِ کمتر همان اطلاع را می‌دهد
+                 بدونِ آنکه صفحه را اشغال کند. */
               <ul aria-hidden>
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: 3 }).map((_, i) => (
                   <li key={i} className="flex items-center justify-between gap-4 px-5 py-3.5"
                       style={{ borderTop: i ? "1px solid var(--line)" : "none" }}>
                     <span className="skeleton" style={{ width: 120, height: 14 }} />

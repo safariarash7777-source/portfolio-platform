@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createSingleUseInvite, sendMessage } from "@/lib/telegram";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+type SessionClient = Awaited<ReturnType<typeof createClient>>;
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
+/**
+ * گیتِ نقش — و **همان کلاینتی که پرس‌وجوها با آن انجام می‌شوند** را برمی‌گرداند.
+ *
+ * ── چرا کلاینت را پس می‌دهد ────────────────────────────────────────────
+ * نسخهٔ اول اینجا نقش را با کلاینتِ نشست می‌سنجید و بعد آن را دور می‌انداخت
+ * تا با کلاینتِ service-role کار کند. نتیجه دو چیزِ بد بود: مسیر به
+ * `SUPABASE_SERVICE_ROLE_KEY` گره خورد (و بدونش ۵۰۰ با بدنهٔ خالی می‌داد)، و
+ * RLS از مدار خارج شد، پس تنها گیتِ واقعی همین چند خط بالا بود.
+ *
+ * هر سه جدولِ این مسیر برای admin از طریقِ RLS باز است — `webinars` و
+ * `webinar_registrations` با سیاستِ `ALL … is_admin()` و `telegram_links` با
+ * `SELECT … (own OR is_admin())`. پس دورزدنِ RLS هیچ‌چیزِ تازه‌ای باز نمی‌کرد
+ * و فقط شبکهٔ ایمنی را برمی‌داشت.
+ */
 async function requireAdmin() {
   const supabase = await createClient();
   const {
@@ -19,7 +34,7 @@ async function requireAdmin() {
     .eq("id", user.id)
     .maybeSingle();
   if (profile?.role !== "admin") return { error: "forbidden", status: 403 };
-  return { user };
+  return { user, supabase };
 }
 
 // ── GET: لیست وبینارها (ادمین) ────────────────────────────────────────────────
@@ -28,7 +43,7 @@ export async function GET() {
   if ("error" in auth)
     return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const admin = createAdminClient();
+  const admin = auth.supabase;
   const { data, error } = await admin
     .from("webinars")
     .select(
@@ -69,7 +84,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = createAdminClient();
+  const admin = auth.supabase;
   const { data, error } = await admin
     .from("webinars")
     .insert({
@@ -105,7 +120,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "id الزامی است." }, { status: 400 });
   }
 
-  const admin = createAdminClient();
+  const admin = auth.supabase;
 
   // اگر action = send_invites → ارسال دعوت کانال به شرکت‌کنندگان
   if (updates.action === "send_invites") {
@@ -136,7 +151,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "id الزامی است." }, { status: 400 });
   }
 
-  const admin = createAdminClient();
+  const admin = auth.supabase;
   const { error } = await admin.from("webinars").delete().eq("id", id);
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -146,7 +161,7 @@ export async function DELETE(req: NextRequest) {
 
 // ── ارسال دعوت کانال به شرکت‌کنندگان ─────────────────────────────────────────
 async function handleSendInvites(
-  admin: ReturnType<typeof createAdminClient>,
+  admin: SessionClient,
   webinarId: string
 ) {
   const channelId = process.env.TELEGRAM_CHANNEL_ID;

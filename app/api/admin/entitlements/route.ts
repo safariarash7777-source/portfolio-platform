@@ -7,10 +7,18 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * گیتِ نقش — و **همان کلاینتی** که پرس‌وجوها با آن انجام می‌شوند.
+ *
+ * نسخهٔ اول نقش را با کلاینتِ نشست می‌سنجید و بعد با service-role کار می‌کرد.
+ * لازم نبود: هر سه سیاستِ `entitlements` (`INSERT`/`SELECT`/`UPDATE`) و نیز
+ * `profiles_self_read` شرطِ ادمین دارند، پس همین نشست دقیقاً همان دسترسی را
+ * می‌گیرد — با این تفاوت که حالا RLS گیتِ دوم است و مسیر دیگر به
+ * `SUPABASE_SERVICE_ROLE_KEY` گره نخورده تا بدونش ۵۰۰ بدهد.
+ */
 async function requireAdmin() {
   const supabase = await createClient();
   const {
@@ -22,12 +30,12 @@ async function requireAdmin() {
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  return profile?.role === "admin" ? user : null;
+  return profile?.role === "admin" ? { user, supabase } : null;
 }
 
 export async function POST(req: Request) {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const gate = await requireAdmin();
+  if (!gate) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const body = (await req.json().catch(() => null)) as {
     email?: string;
@@ -40,7 +48,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 
-  const svc = createAdminClient();
+  const svc = gate.supabase;
   const { data: target } = await svc
     .from("profiles")
     .select("id,email")
@@ -70,8 +78,12 @@ export async function POST(req: Request) {
       user_id: target.id,
       kind: body.kind,
       source: "admin_grant",
+      // یک خط از هر طرف — هیچ‌کدام به‌تنهایی درست نبود.
+      // `expiresAt` از این شاخه، چون `null` (دسترسیِ بدونِ انقضا) را نگه می‌دارد
+      // و `expires` فقط داخلِ همان `if` تعریف شده است.
+      // `gate.user.id` از main، چون در فایلِ ادغام‌شده `admin` اصلاً وجود ندارد.
       expires_at: expiresAt,
-      granted_by: admin.id,
+      granted_by: gate.user.id,
       note: body.note ?? null,
     })
     .select()
@@ -88,13 +100,13 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const gate = await requireAdmin();
+  if (!gate) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const email = new URL(req.url).searchParams.get("email")?.trim().toLowerCase();
   if (!email) return NextResponse.json({ error: "bad_request" }, { status: 400 });
 
-  const svc = createAdminClient();
+  const svc = gate.supabase;
   const { data: target } = await svc
     .from("profiles")
     .select("id")
@@ -120,13 +132,13 @@ export async function GET(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const admin = await requireAdmin();
-  if (!admin) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const gate = await requireAdmin();
+  if (!gate) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const body = (await req.json().catch(() => null)) as { id?: string } | null;
   if (!body?.id) return NextResponse.json({ error: "bad_request" }, { status: 400 });
 
-  const svc = createAdminClient();
+  const svc = gate.supabase;
   const { error } = await svc
     .from("entitlements")
     .update({ revoked_at: new Date().toISOString() })
