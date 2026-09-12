@@ -158,7 +158,7 @@ export function symbolRotationStatus() {
 
 // یک قدم چرخش: K نماد بعدی از فهرست پرارزش‌ترین‌ها را تازه می‌کند
 // و کل کش موجود را یک‌جا در Supabase آپسرت می‌کند. symbols: آرایهٔ l18 مرتب به ارزش.
-export async function refreshSymbolDetailsRotation({ base, key, headers, supabaseUrl, serviceKey, symbols }) {
+export async function refreshSymbolDetailsRotation({ base, key, headers, supabaseUrl, serviceKey, symbols, client = null, countLegacy = null }) {
   try {
     // C1 — فقط نمادهای اصلی وارد چرخش دیتای جامع می‌شوند (نه زیرنماد، نه حق تقدم).
     const top = (symbols || []).filter((s) => isMainTicker(s)).slice(0, ROTATION_TOP_N);
@@ -187,7 +187,7 @@ export async function refreshSymbolDetailsRotation({ base, key, headers, supabas
       rotationCursor = (rotationCursor + 1) % top.length;
     }
     for (const l18 of picked) {
-      await getSymbolDetail(l18, { base, key, headers });
+      await getSymbolDetail(l18, { base, key, headers, client, countLegacy });
     }
     // آپسرت کل کش (فقط نمادهای داخل فهرست چرخش + هر نماد تازهٔ دیگر در کش)
     const details = {};
@@ -217,7 +217,7 @@ export async function refreshSymbolDetailsRotation({ base, key, headers, supabas
   }
 }
 
-export async function getSymbolDetail(l18, { base, key, headers }) {
+export async function getSymbolDetail(l18, { base, key, headers, client = null, budgetClass = "bulk", countLegacy = null }) {
   rollDay();
   const now = Date.now();
   const c = cacheGet(l18);
@@ -232,9 +232,24 @@ export async function getSymbolDetail(l18, { base, key, headers }) {
   try {
     usedToday++;
     const url = `${base}/Tsetmc/Symbol.php?key=${key}&l18=${encodeURIComponent(l18)}`;
-    const res = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
-    if (!res.ok) throw new Error(`http ${res.status}`);
-    const j = await res.json();
+    let j;
+    if (client) {
+      j = await client.request({
+        endpoint: "Tsetmc/Symbol.php", params: { l18 },
+        producer: "symbol-detail", priority: "background",
+        budgetClass,
+        // کشِ داخلیِ این ماژول ۳ دقیقه است؛ dedupe کوتاه‌تر از آن فقط
+        // هم‌زمانی‌های لحظه‌ای را می‌گیرد و کشِ خودمان را دور نمی‌زند.
+        dedupeTtlMs: 60_000, timeoutMs: 15_000,
+      });
+    } else {
+      // سقفِ روزانهٔ همین ماژول جای بودجهٔ سراسری را نمی‌گیرد — پس وقتی
+      // کلاینت نیست، مصرف دستِ‌کم **شمرده** می‌شود.
+      if (countLegacy) await countLegacy("symbol-detail", budgetClass);
+      const res = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
+      if (!res.ok) throw new Error(`http ${res.status}`);
+      j = await res.json();
+    }
     const d = Array.isArray(j) ? j[0] : j;
     if (!d || typeof d !== "object" || !d.l18) throw new Error("empty response");
     cacheSet(l18, { data: d, at: now });
