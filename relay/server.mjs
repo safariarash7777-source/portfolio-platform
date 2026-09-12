@@ -38,6 +38,10 @@ import { refreshCommodities, commoditiesForPayload, commodityStatus } from "./co
 // C1 — قرنطینهٔ زیرنمادها و فهرست سیاه NAV (اخطار رسمی BrsApi)
 import { isSubTicker, isRightsIssue } from "./symbols-util.mjs";
 import { isNavBlacklisted, recordNavResult, loadNavBlacklist, saveNavBlacklist, navBlacklistStatus } from "./nav-blacklist.mjs";
+// گامِ ۱ و ۲ کلاینتِ مرکزی — پشتِ BRSAPI_CLIENT_ENABLED. پیش‌فرض **خاموش**:
+// وقتی خاموش است هیچ مسیری تغییر نمی‌کند و کدِ قبلی عیناً اجرا می‌شود.
+import { BrsApiClient, PersistentDailyBudget, clientEnabled } from "./brsapi-client.mjs";
+import { makeSupabaseLeaseStore } from "./brsapi-budget-store.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -54,6 +58,63 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
+
+/**
+ * نمونهٔ یگانهٔ کلاینت — فقط وقتی ساخته می‌شود که پرچم روشن باشد.
+ *
+ * ⚠️ محدودکننده و شمارنده‌های این نمونه **per-process** هستند. با بیش از یک
+ * replica نرخِ واقعیِ روی کلید ضرب می‌شود. شواهدِ نوشتنِ Supabase می‌گوید امروز
+ * یک نمونه فعال است، ولی آن **استنتاج** است نه خواندنِ کنسولِ Liara — پس
+ * روشن‌کردنِ این پرچم گیتِ rollout دارد (`docs/BRSAPI-CLIENT-DESIGN.md`).
+ */
+let brs = null;
+function brsClient() {
+  if (!clientEnabled()) return null;
+  if (!brs) {
+    // شمارندهٔ **ماندگار** اگر Supabase در دسترس باشد، وگرنه همان شمارندهٔ
+    // درون‌حافظه‌ای. تفاوت مهم است و باید در لاگ دیده شود: نسخهٔ درون‌حافظه‌ای
+    // با هر restart صفر می‌شود، یعنی سقفِ روزانه در عمل تضمین نیست.
+    const store = makeSupabaseLeaseStore({
+      url: SUPABASE_URL,
+      serviceKey: SUPABASE_SERVICE_ROLE_KEY,
+    });
+    const budget = store
+      ? new PersistentDailyBudget({
+          store,
+          softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
+          hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
+          leaseSize: Number(process.env.BRSAPI_LEASE_SIZE || 50),
+          degradedCeiling: Number(process.env.BRSAPI_DEGRADED_CEILING || 100),
+          onError: (e) => console.error("brsapi budget store:", errMsg(e)),
+        })
+      : undefined;
+    brs = new BrsApiClient({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, budget });
+    console.log(
+      `brsapi client enabled: ${DEFAULT_RATE_NOTE}, budget=${store ? "persistent(supabase)" : "IN-MEMORY (restart صفر می‌کند)"}`,
+    );
+  }
+  return brs;
+}
+
+/**
+ * خاموشیِ مرتب: اجارهٔ خرج‌نشدهٔ بودجه را پس می‌دهد تا با هر دیپلوی یک بلوک
+ * نسوزد. **بهترین‌کوشش** — اگر فرایند کشته شود این اجرا نمی‌شود و همان بلوک
+ * تا پایانِ روز سوخته می‌ماند. نبودنش ایمن است (کم‌مصرفی، نه پرمصرفی).
+ */
+let shuttingDown = false;
+async function releaseBudgetOnShutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  try {
+    if (brs && typeof brs.budget?.release === "function") {
+      const back = await brs.budget.release();
+      if (back > 0) console.log(`brsapi budget: ${back} واحدِ اجارهٔ خرج‌نشده پس داده شد (${signal})`);
+    }
+  } catch (e) {
+    console.error("brsapi budget release:", errMsg(e));
+  }
+}
+const DEFAULT_RATE_NOTE = `${process.env.BRSAPI_RATE_PER_SEC || 10} req/s, concurrency ${process.env.BRSAPI_CONCURRENCY || 4}`;
 
 let cache = null; // { body: string, at: number }
 // T5-2 — کش ۱۰دقیقه‌ای فهرست اطلاعیه‌های کدال (هر نماد یک entry)
@@ -506,12 +567,27 @@ async function fetchIndex() {
   }
   const url = `${BRSAPI_BASE}/Tsetmc/Index.php?key=${BRSAPI_KEY}&type=1`;
   try {
-    const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
-    if (!res.ok) {
-      status.sources.brsapi_index = { ok: false, error: `HTTP ${res.status}` };
-      return null;
+    // گامِ ۲ — سبک‌ترین مصرف‌کننده‌ها اول. مسیرِ قدیمی وقتی پرچم خاموش است
+    // بیت‌به‌بیت همان است؛ هیچ رفتارِ داده‌ای عوض نمی‌شود.
+    const c = brsClient();
+    let json;
+    if (c) {
+      json = await c.request({
+        endpoint: "Tsetmc/Index.php", params: { type: 1 },
+        producer: "market-index", priority: "interactive",
+        // چرخهٔ بازار تا آخرین واحدِ بودجه زنده می‌ماند — اگر شاخص نباشد،
+        // صفحهٔ بازار عملاً چیزی برای گفتن ندارد.
+        budgetClass: "critical",
+        dedupeTtlMs: 60_000, timeoutMs: 10_000,
+      });
+    } else {
+      const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
+      if (!res.ok) {
+        status.sources.brsapi_index = { ok: false, error: `HTTP ${res.status}` };
+        return null;
+      }
+      json = await res.json();
     }
-    const json = await res.json();
     const data = Array.isArray(json) ? json[0] : json;
     if (!data || !data.index) {
       status.sources.brsapi_index = { ok: false, error: "no index field" };
@@ -556,7 +632,7 @@ async function buildPayload() {
   refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
   // T5-4/6 — گواهی کالایی (هر ۳۰ دقیقه در ساعات بازار) و کامودیتی جهانی (کلید جدا)
-  refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS }).catch((e) => console.error("ime cert error:", errMsg(e)));
+  refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient() }).catch((e) => console.error("ime cert error:", errMsg(e)));
   refreshCommodities(HDRS).catch((e) => console.error("commodity error:", errMsg(e)));
   applyNav(sf.funds);
   applyFundTypes(sf.funds);
@@ -1016,6 +1092,7 @@ function debugPayload() {
     indexHistory: indexHistStatus,
     marketBreadth: breadthStatus,
     historyPrune: pruneStatus,
+    brsapiClient: brs ? brs.metrics() : { enabled: false },
     fxRates: fxStatus,
     options: optionsStatus,
     candleBackfill: candleStatus,
@@ -1133,7 +1210,18 @@ const server = http.createServer(async (req, res) => {
 
 export { server };
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) server.listen(PORT, () => {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  // Liara روی دیپلوی `SIGTERM` می‌فرستد. مهلت کوتاه است، پس پس‌دادنِ اجاره
+  // هم مهلتِ خودش را دارد و اگر نرسید، خاموشی را نگه نمی‌دارد.
+  for (const sig of ["SIGTERM", "SIGINT"]) {
+    process.on(sig, () => {
+      Promise.race([
+        releaseBudgetOnShutdown(sig),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]).finally(() => process.exit(0));
+    });
+  }
+  server.listen(PORT, () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   // C1 — بارگذاری بلک‌لیست دائمی NAV قبل از اولین رفرش (تا با ریاستارت پاک نشود)
   loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY })
@@ -1193,3 +1281,4 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     }
   }
 });
+}
