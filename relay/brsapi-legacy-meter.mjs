@@ -18,6 +18,19 @@
  * رفتارِ دیگری را هم فعال نکند.
  */
 
+/**
+ * «شمارنده در دسترس نیست» — با «سهمیه تمام شد» یکی نیست و نباید یکی شمرده
+ * شود. اولی یعنی نمی‌دانیم کجاییم، دومی یعنی می‌دانیم و رسیده‌ایم. واکنشِ
+ * عملیاتی‌شان هم فرق دارد: اولی هشدارِ زیرساخت است، دومی رفتارِ عادیِ سقف.
+ */
+export class BudgetUnavailableError extends Error {
+  constructor(producer) {
+    super(`budget counter unavailable, refusing to send unmetered (producer "${producer}")`);
+    this.name = "BudgetUnavailableError";
+    this.producer = producer;
+  }
+}
+
 export class LegacyBudgetError extends Error {
   constructor(producer) {
     super(`daily budget exhausted (legacy path, producer "${producer}")`);
@@ -42,6 +55,7 @@ export class LegacyMeter {
     this.rejected = Object.create(null);
     this.overBudgetPassed = Object.create(null);
     this.unmetered = 0;
+    this.unmeteredByProducer = Object.create(null);
   }
 
   #bump(map, producer) { map[producer] = (map[producer] ?? 0) + 1; }
@@ -56,6 +70,14 @@ export class LegacyMeter {
       // بدونِ شمارنده، این مصرف واقعاً دیده نمی‌شود. **پنهانش نمی‌کنیم** —
       // خودِ همین «ندیدن» یک عدد است که در `/debug` گزارش می‌شود.
       this.unmetered += 1;
+      this.#bump(this.unmeteredByProducer, producer);
+      // ── چرا اینجا هم رد می‌کنیم ─────────────────────────────────────────
+      // «enforcement روشن» یعنی «قول داده‌ایم از سقف رد نشویم». اگر شمارنده
+      // نباشد، آن قول **قابلِ نگه‌داشتن نیست** — و ادامهٔ ارسالِ بی‌حساب
+      // بدترین ترکیب است: هم ادعای کنترل داریم، هم هیچ کنترلی نداریم.
+      // پس در این حالت **متوقف** می‌شویم و سایت دادهٔ کهنه نشان می‌دهد.
+      // دادهٔ کهنهٔ برچسب‌خورده از عبورِ نامحدود بهتر است.
+      if (this.isEnforced()) throw new BudgetUnavailableError(producer);
       return;
     }
     if (typeof b.ensure === "function") await b.ensure();
@@ -75,6 +97,11 @@ export class LegacyMeter {
       rejected: { ...this.rejected },
       overBudgetPassed: { ...this.overBudgetPassed },
       unmetered: this.unmetered,
+      unmeteredByProducer: { ...this.unmeteredByProducer },
+      /** هشدارِ عملیاتی — وقتی قول داده‌ایم ولی ابزارِ نگه‌داشتنش را نداریم. */
+      alert: this.isEnforced() && this.unmetered > 0
+        ? "enforcement روشن است ولی شمارندهٔ بودجه در دسترس نیست — ارسال متوقف شد"
+        : null,
     };
   }
 }

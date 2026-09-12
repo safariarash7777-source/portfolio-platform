@@ -43,6 +43,7 @@ import { isNavBlacklisted, recordNavResult, loadNavBlacklist, saveNavBlacklist, 
 import { BrsApiClient, PersistentDailyBudget, clientEnabled } from "./brsapi-client.mjs";
 import { makeSupabaseLeaseStore } from "./brsapi-budget-store.mjs";
 import { LegacyMeter } from "./brsapi-legacy-meter.mjs";
+import { setCodalBudgetPorts } from "./codal.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -102,6 +103,75 @@ function sharedBudget() {
   return sharedBudgetInstance;
 }
 
+/**
+ * بودجه و کلاینتِ **کلیدِ کامودیتی** — سهمیهٔ جداگانه (~۱۵۰۰/روز).
+ *
+ * ریختنِ این مصرف در شمارندهٔ کلیدِ اصلی هر دو عدد را بی‌معنا می‌کرد: کلیدِ
+ * اصلی بی‌جهت پر به‌نظر می‌رسید و سقفِ واقعیِ کامودیتی هیچ‌وقت دیده نمی‌شد.
+ * پس فضای‌نامِ روزِ جدا (`commodity:`) و سقفِ خودش.
+ */
+let commodityBudgetInstance = null;
+let commodityBudgetResolved = false;
+function commodityBudget() {
+  if (commodityBudgetResolved) return commodityBudgetInstance;
+  commodityBudgetResolved = true;
+  const store = makeSupabaseLeaseStore({ url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_ROLE_KEY });
+  if (!store) return null;
+  commodityBudgetInstance = new PersistentDailyBudget({
+    // فضای‌نام روی کلیدِ روز — بدونِ هیچ تغییری در schema.
+    store: {
+      lease: (day, want, hard) => store.lease(`commodity:${day}`, want, hard),
+      release: (day, back) => store.release(`commodity:${day}`, back),
+    },
+    softBudget: Number(process.env.BRSAPI_COMMODITY_SOFT || 900),
+    hardCeiling: Number(process.env.BRSAPI_COMMODITY_HARD || 1200),
+    leaseSize: Number(process.env.BRSAPI_COMMODITY_LEASE || 20),
+    degradedCeiling: Number(process.env.BRSAPI_COMMODITY_DEGRADED || 20),
+    onError: (e) => console.error("commodity budget store:", errMsg(e)),
+  });
+  return commodityBudgetInstance;
+}
+
+let commodityBrs = null;
+function commodityClient() {
+  if (!clientEnabled()) return null;
+  if (!commodityBrs) {
+    const budget = commodityBudget() ?? undefined;
+    commodityBrs = new BrsApiClient({
+      base: (process.env.BRSAPI_COMMODITY_BASE || "https://BrsApi.ir/Api").replace(/\/+$/, ""),
+      key: process.env.BRSAPI_COMMODITY_KEY || "",
+      headers: HDRS, budget,
+    });
+  }
+  return commodityBrs;
+}
+
+/**
+ * توقفِ بودجه در چرخهٔ جاری.
+ *
+ * ── چرا لازم است ───────────────────────────────────────────────────────────
+ * `fetchGoldCurrency` و برادرانش خطا را **داخلِ خودشان** می‌گیرند و آرایهٔ
+ * خالی برمی‌گردانند. یعنی اگر بودجه جلوی ارسال را بگیرد، payload خالی ساخته
+ * می‌شود و کشِ **سالمِ** قبلی را با خالی بازنویسی می‌کند.
+ *
+ * دادهٔ کهنه از دادهٔ خالی بهتر است: کاربر قیمتِ دیروز را با برچسبِ کهنگی
+ * می‌بیند، به‌جای صفحه‌ای که می‌گوید «هیچ‌چیز نیست». پس وقتی در یک چرخه
+ * توقفِ بودجه رخ داده باشد، کش **بازنویسی نمی‌شود**.
+ */
+const budgetStop = { active: false, cycle: 0, lastAt: null, producers: Object.create(null) };
+function noteBudgetStop(producer) {
+  budgetStop.active = true;
+  budgetStop.cycle += 1;
+  budgetStop.lastAt = Date.now();
+  budgetStop.producers[producer] = (budgetStop.producers[producer] ?? 0) + 1;
+}
+function resetBudgetStop() { budgetStop.active = false; }
+
+const commodityMeter = new LegacyMeter(
+  () => (commodityBudgetResolved ? commodityBudgetInstance : commodityBudget()),
+);
+const countLegacyCommodity = (producer, cls) => commodityMeter.count(producer, cls);
+
 let brs = null;
 function brsClient() {
   if (!clientEnabled()) return null;
@@ -117,7 +187,14 @@ function brsClient() {
 
 /** شمارندهٔ مسیرِ قدیمی — منطقش در `brsapi-legacy-meter.mjs` است تا تست‌پذیر بماند. */
 const legacyMeter = new LegacyMeter(() => (sharedBudgetResolved ? sharedBudgetInstance : sharedBudget()));
-const countLegacy = (producer, budgetClass) => legacyMeter.count(producer, budgetClass);
+const countLegacy = async (producer, budgetClass) => {
+  try {
+    await legacyMeter.count(producer, budgetClass);
+  } catch (e) {
+    noteBudgetStop(producer);   // هم `LegacyBudgetError` هم `BudgetUnavailableError`
+    throw e;
+  }
+};
 
 
 /**
@@ -674,6 +751,7 @@ async function fetchIndex() {
         dedupeTtlMs: 60_000, timeoutMs: 10_000,
       });
     } else {
+      await countLegacy("market-index", "critical");
       const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
       if (!res.ok) {
         status.sources.brsapi_index = { ok: false, error: `HTTP ${res.status}` };
@@ -716,7 +794,7 @@ async function buildPayload() {
     fetchStocksAndFunds(),
     fetchIndex(),
     // M8-ب: تابلوی آپشن — یک درخواست در هر چرخه (~۲۸۸/روز)
-    fetchOptions(BRSAPI_BASE, BRSAPI_KEY),
+    fetchOptions(BRSAPI_BASE, BRSAPI_KEY, { client: brsClient(), countLegacy }),
   ]);
   // دورهای NAV و نوعِ صندوق در پس‌زمینه (ساعتی؛ درونشان سهمیه‌بندی شده) —
   // payload فعلی از کشِ موجود پر می‌شود و دورِ بعدی نتیجهٔ تازه را برمی‌دارد.
@@ -725,8 +803,8 @@ async function buildPayload() {
   refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
   // T5-4/6 — گواهی کالایی (هر ۳۰ دقیقه در ساعات بازار) و کامودیتی جهانی (کلید جدا)
-  refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient() }).catch((e) => console.error("ime cert error:", errMsg(e)));
-  refreshCommodities(HDRS).catch((e) => console.error("commodity error:", errMsg(e)));
+  refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient(), countLegacy }).catch((e) => console.error("ime cert error:", errMsg(e)));
+  refreshCommodities(HDRS, { client: commodityClient(), countLegacy: countLegacyCommodity }).catch((e) => console.error("commodity error:", errMsg(e)));
   applyNav(sf.funds);
   applyFundTypes(sf.funds);
   const payload = {
@@ -1113,10 +1191,18 @@ function refresh() {
   if (refreshing) return refreshing;
   refreshing = (async () => {
     try {
+      resetBudgetStop();
       const body = await buildPayload();
-      cache = { body, at: Date.now() };
-      status.lastRefresh = Date.now();
-      status.lastError = null;
+      if (budgetStop.active && cache) {
+        // این چرخه ناقص بود. کشِ سالمِ قبلی می‌ماند و سایت دادهٔ **کهنه** با
+        // برچسب نشان می‌دهد — نه یک صفحهٔ خالی.
+        status.lastError = "چرخه به‌خاطرِ سقفِ بودجه ناقص ماند؛ دادهٔ قبلی حفظ شد";
+        console.warn("brsapi budget: چرخه ناقص — کشِ قبلی حفظ شد", Object.keys(budgetStop.producers).join(","));
+      } else {
+        cache = { body, at: Date.now() };
+        status.lastRefresh = Date.now();
+        status.lastError = null;
+      }
       await pushToSupabase(body);
       await pushHistory(body);
       await pushDailyHistory(body);
@@ -1191,6 +1277,12 @@ function debugPayload() {
     // مصرفِ مسیرِ **قدیمی** — همان چیزی که تا امروز نامرئی بود. اگر پرچم
     // خاموش باشد `brsapiClient.enabled=false` است ولی این بلوک همچنان
     // می‌گوید روز چقدر خرج شده و چقدرش از سقف رد شده.
+    brsapiBudgetStop: {
+      ...budgetStop,
+      /** سنِ دادهٔ سروشده — وقتی چرخه ناقص مانده، همین عدد «کهنگی» است. */
+      servedAgeMs: cache ? Date.now() - cache.at : null,
+    },
+    brsapiCommodityLegacy: commodityMeter.snapshot(),
     brsapiLegacy: {
       ...legacyMeter.snapshot(),
       budget: sharedBudgetResolved && sharedBudgetInstance
@@ -1325,6 +1417,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       ]).finally(() => process.exit(0));
     });
   }
+  // درگاه‌های بودجهٔ codal — یک‌بار، پیش از اولین چرخه.
+  setCodalBudgetPorts({ client: brsClient(), countLegacy });
+
   server.listen(PORT, () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   // C1 — بارگذاری بلک‌لیست دائمی NAV قبل از اولین رفرش (تا با ریاستارت پاک نشود)
@@ -1338,14 +1433,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // بک‌فیل کندل (M8-الف) — هر ۱۰ دقیقه یک دسته؛ سقف ساعتی/روزانه درون ماژول اعمال می‌شود.
   // اولین اجرا ۳ دقیقه بعد از بوت تا اسنپ‌شات اول آماده باشد.
   if (process.env.CANDLE_BACKFILL_ENABLED !== "0") {
-    setTimeout(() => { runCandleBackfill(latestSnapshotSymbols).catch((e) => console.error("candle backfill:", errMsg(e))); }, 3 * 60 * 1000).unref();
-    setInterval(() => { runCandleBackfill(latestSnapshotSymbols).catch((e) => console.error("candle backfill:", errMsg(e))); }, 10 * 60 * 1000).unref();
+    setTimeout(() => { runCandleBackfill(latestSnapshotSymbols, { client: brsClient(), countLegacy }).catch((e) => console.error("candle backfill:", errMsg(e))); }, 3 * 60 * 1000).unref();
+    setInterval(() => { runCandleBackfill(latestSnapshotSymbols, { client: brsClient(), countLegacy }).catch((e) => console.error("candle backfill:", errMsg(e))); }, 10 * 60 * 1000).unref();
   }
   // T5-4/5 — بورس کالا: append پایان‌روز گواهی‌ها + فیزیکی روزانه (گیت زمانی درون ماژول‌ها)
   if (process.env.IME_ENABLED !== "0") {
     setInterval(() => {
       pushCertEod({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch((e) => console.error("ime cert eod:", errMsg(e)));
-      runPhysicalDaily({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch((e) => console.error("ime physical:", errMsg(e)));
+      runPhysicalDaily({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY, client: brsClient(), countLegacy }).catch((e) => console.error("ime physical:", errMsg(e)));
     }, 20 * 60 * 1000).unref();
   }
   // دامپ تشخیصی ساختار اکسل کدال (فقط وقتی CODAL_DEBUG_EXCEL_URL ست باشد) — هر ۳ دقیقه تا موفقیت.
