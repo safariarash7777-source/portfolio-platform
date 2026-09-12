@@ -21,6 +21,8 @@
 //   - append پایان‌روز گواهی‌ها → جدول ime_certificate_history (همان قاعده).
 //   - بودجه: گواهی ~۲۲/روز + فیزیکی ۱-۲/روز — در status شمرده می‌شود.
 
+import { meterBrsapi } from "./brsapi-meter.mjs";
+
 const CERT_INTERVAL_MS = 30 * 60 * 1000;
 
 let lastCertFetch = 0;
@@ -96,6 +98,9 @@ export async function refreshCertificates({ base, key, headers, client = null })
         dedupeTtlMs: 5 * 60_000, timeoutMs: 20_000,
       });
     } else {
+      // بدونِ کلاینت، بودجه این مصرف را نمی‌دید — یعنی خاموش‌کردنِ پرچم
+      // همین یک نقطه را دوباره نامرئی می‌کرد. حالا در هر دو حالت شمرده می‌شود.
+      await meterBrsapi("ime-certificate", "standard");
       const res = await fetch(`${base}/IME/Certificate.php?key=${key}`, { headers, signal: AbortSignal.timeout(20000) });
       if (!res.ok) throw new Error(`http ${res.status}`);
       j = await res.json();
@@ -198,6 +203,8 @@ export function mapPhysicalRow(d, fetchDay) {
 
 async function fetchPhysicalDay(jdate, { base, key, headers }) {
   const url = `${base}/IME/Physical.php?key=${key}&date_start=${jdate}&date_end=${jdate}`;
+  // روزی یک‌بار، ولی چند روزِ عقب‌افتاده را پشت‌سرِ هم می‌گیرد — پس `bulk`.
+  await meterBrsapi("ime-physical", "bulk");
   const res = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
   if (!res.ok) throw new Error(`http ${res.status}`);
   const j = await res.json();

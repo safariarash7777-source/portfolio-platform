@@ -13,6 +13,8 @@
 // دادهٔ ناموجود = کلید غایب/null — هیچ عدد ساختگی.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { meterBrsapi } from "./brsapi-meter.mjs";
+
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
@@ -40,6 +42,10 @@ export async function fetchOptions(brsapiBase, brsapiKey) {
   }
   const url = `${brsapiBase}/Tsetmc/Option.php?key=${brsapiKey}`;
   try {
+    // یک درخواست در هر چرخه — ولی از همان سهمیهٔ کلید می‌خورد، پس در همان
+    // بودجه شمرده می‌شود. طبقهٔ `standard`: تابلوی آپشن نه چرخهٔ حیاتیِ بازار
+    // است و نه بک‌فیلِ انبوه.
+    await meterBrsapi("options", "standard");
     const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(25000) });
     if (!res.ok) {
       optionsStatus.ok = false;

@@ -20,6 +20,7 @@
 // هیچ endpoint حدسی — فقط Candlestick.php طبق مستندات پلن AIO (سند آرش، ۲۷ تیر ۱۴۰۵).
 // ─────────────────────────────────────────────────────────────────────────────
 import { codalEnv, jalaliTextToIso, jalaliYmdToGregorian } from "./codal.mjs";
+import { meterBrsapi } from "./brsapi-meter.mjs";
 import { isMainTicker } from "./symbols-util.mjs"; // C1 — قرنطینهٔ زیرنماد/حق‌تقدم
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
@@ -212,6 +213,11 @@ function jalaliToG(jy, jm, jd) {
  */
 async function backfillSymbol(symbol) {
   const url = `${BRSAPI_BASE}/Tsetmc/Candlestick.php?key=${BRSAPI_KEY}&type=2&l18=${encodeURIComponent(symbol)}`;
+  // سقفِ ساعتی/روزانهٔ همین ماژول (`countReq`) جای بودجهٔ مشترک را نمی‌گیرد:
+  // آن سقف فقط این ماژول را می‌بیند. بزرگ‌ترین مصرف‌کنندهٔ تئوریِ سهمیه باید
+  // در همان شمارنده‌ای دیده شود که بقیه در آن دیده می‌شوند. طبقهٔ `bulk`:
+  // در کمیابی، بک‌فیل اولین قربانی است، نه چرخهٔ بازار.
+  await meterBrsapi("candle-backfill", "bulk");
   const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(25000) });
   countReq(1);
   if (!res.ok) throw new Error(`candle HTTP ${res.status}`);

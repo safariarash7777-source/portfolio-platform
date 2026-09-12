@@ -40,9 +40,10 @@ import { isSubTicker, isRightsIssue } from "./symbols-util.mjs";
 import { isNavBlacklisted, recordNavResult, loadNavBlacklist, saveNavBlacklist, navBlacklistStatus } from "./nav-blacklist.mjs";
 // گامِ ۱ و ۲ کلاینتِ مرکزی — پشتِ BRSAPI_CLIENT_ENABLED. پیش‌فرض **خاموش**:
 // وقتی خاموش است هیچ مسیری تغییر نمی‌کند و کدِ قبلی عیناً اجرا می‌شود.
-import { BrsApiClient, PersistentDailyBudget, clientEnabled } from "./brsapi-client.mjs";
+import { BrsApiClient, PersistentDailyBudget, DailyBudget, clientEnabled } from "./brsapi-client.mjs";
 import { makeSupabaseLeaseStore } from "./brsapi-budget-store.mjs";
 import { LegacyMeter } from "./brsapi-legacy-meter.mjs";
+import { setBrsapiMeter, brsapiMeterSnapshot } from "./brsapi-meter.mjs";
 
 const PORT = Number(process.env.PORT || 3400);
 const TOKEN = process.env.RELAY_TOKEN || "";
@@ -116,8 +117,26 @@ function brsClient() {
 }
 
 /** شمارندهٔ مسیرِ قدیمی — منطقش در `brsapi-legacy-meter.mjs` است تا تست‌پذیر بماند. */
-const legacyMeter = new LegacyMeter(() => (sharedBudgetResolved ? sharedBudgetInstance : sharedBudget()));
+const legacyMeter = new LegacyMeter(
+  () => (sharedBudgetResolved ? sharedBudgetInstance : sharedBudget()),
+  {
+    // فقط در حالتِ اجرا و فقط وقتی انبارِ ماندگار نیست ساخته می‌شود. سقفی که
+    // با restart صفر می‌شود تضمینِ روزانه نیست — ولی «اجرا + بدونِ انبار =
+    // مصرفِ نامحدود» هم پاسخِ درستی نبود.
+    makeFallback: () => new DailyBudget({
+      softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
+      hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
+    }),
+  },
+);
 const countLegacy = (producer, budgetClass) => legacyMeter.count(producer, budgetClass);
+
+/**
+ * ماژول‌هایی که در عمقِ زنجیرهٔ فراخوانی‌اند (کدال، آپشن، بک‌فیلِ کندل، بورسِ
+ * کالا) از راهِ همین قلاب به بودجه وصل می‌شوند. ثبت در لحظهٔ import انجام
+ * می‌شود تا هیچ چرخه‌ای زودتر از شمارنده شروع نشود.
+ */
+setBrsapiMeter(countLegacy);
 
 
 /**
@@ -674,6 +693,11 @@ async function fetchIndex() {
         dedupeTtlMs: 60_000, timeoutMs: 10_000,
       });
     } else {
+      // ⚠️ یافتهٔ ۱۴۰۵/۰۶/۲۱: این خط تا امروز نبود. جدولِ سندِ
+      // `BRSAPI-CLIENT-DESIGN` ادعا می‌کرد `Index.php` در هر دو حالتِ پرچم
+      // شمرده می‌شود، ولی مسیرِ قدیمی‌اش شمارنده نداشت — یعنی پرپرمصرف‌ترین
+      // چرخه (هر ۵ دقیقه) با پرچمِ خاموش نامرئی بود.
+      await countLegacy("market-index", "critical");
       const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(10000) });
       if (!res.ok) {
         status.sources.brsapi_index = { ok: false, error: `HTTP ${res.status}` };
@@ -1193,6 +1217,9 @@ function debugPayload() {
     // می‌گوید روز چقدر خرج شده و چقدرش از سقف رد شده.
     brsapiLegacy: {
       ...legacyMeter.snapshot(),
+      // اگر قلاب ثبت نشده باشد، مصرفِ ماژول‌های عمیق بی‌صدا نمی‌ماند:
+      // در `hook.unregistered` دیده می‌شود.
+      hook: brsapiMeterSnapshot(),
       budget: sharedBudgetResolved && sharedBudgetInstance
         ? sharedBudgetInstance.snapshot()
         : { available: false, reason: "بدونِ Supabase شمارنده‌ای ساخته نشد" },
@@ -1269,7 +1296,7 @@ const server = http.createServer(async (req, res) => {
       return res.end(c.body);
     }
     try {
-      const page = await fetchAnnouncementsPage({ l18: sym });
+      const page = await fetchAnnouncementsPage({ l18: sym, producer: "codal-list", budgetClass: "standard" });
       const body = JSON.stringify({ at: Date.now(), items: page?.data ?? page ?? [] });
       codalListCache.set(cacheKey, { body, at: Date.now() });
       if (codalListCache.size > 200) { const k = codalListCache.keys().next().value; codalListCache.delete(k); }

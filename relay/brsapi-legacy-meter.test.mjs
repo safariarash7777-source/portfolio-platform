@@ -80,6 +80,57 @@ t("طبقهٔ بودجه به بودجه منتقل می‌شود، نه این�
   assert.deepEqual(seen, ["critical", "bulk"]);
 });
 
+/* ── ماتریسِ حالت‌ها: پرچم × اجرا × انبار ──────────────────────────────────────
+ * مأموریت خواسته بود «در حالتِ enforce، خاموش‌شدنِ کلاینت یا خطای ذخیره‌ساز
+ * نباید مصرفِ نامحدود بسازد». این چهار تست همان را می‌سنجند.
+ */
+
+/** سقفِ درون‌حافظه‌ایِ ساده — همان قراردادِ `reserve`/`snapshot`. */
+function fallbackBudget(cap) {
+  return {
+    used: 0,
+    reserve() { if (this.used >= cap) return false; this.used += 1; return true; },
+    snapshot() { return { used: this.used, hardCeiling: cap }; },
+  };
+}
+
+t("انبار نیست + شمارش: مصرف «دیده‌نشده» گزارش می‌شود و عبور می‌کند", async () => {
+  const m = new LegacyMeter(() => null, { enforced: () => false, makeFallback: () => fallbackBudget(2) });
+  await m.count("a"); await m.count("a"); await m.count("a");
+  const s = m.snapshot();
+  assert.equal(s.unmetered, 3, "هر سه به‌عنوان نشمرده ثبت شد");
+  assert.equal(s.fallback, null, "در حالتِ شمارش نباید سقفِ اضطراری ساخته شود");
+});
+
+t("انبار نیست + اجرا: مصرف نامحدود نمی‌شود — سقفِ درون‌فرایندی می‌بندد", async () => {
+  const m = new LegacyMeter(() => null, { enforced: () => true, makeFallback: () => fallbackBudget(2) });
+  await m.count("a", "critical");
+  await m.count("a", "critical");
+  await assert.rejects(() => m.count("a", "critical"), LegacyBudgetError,
+    "سومی باید رد شود، نه اینکه بی‌صدا عبور کند");
+  const s = m.snapshot();
+  assert.equal(s.unmetered, 0, "دیگر «نشمرده» نیست — شمرده و بسته شد");
+  assert.equal(s.fallback.used, 2);
+  assert.equal(s.fallback.calls, 3, "تنزل صریح گزارش می‌شود، پنهان نمی‌ماند");
+});
+
+t("انبار نیست + اجرا + بدونِ fallback: هنوز «نشمرده» است، نه ادعای کنترل", async () => {
+  const m = new LegacyMeter(() => null, { enforced: () => true });
+  await m.count("a");
+  const s = m.snapshot();
+  assert.equal(s.unmetered, 1);
+  assert.equal(s.fallback, null, "نباید وانمود کند سقفی هست");
+});
+
+t("انبار برمی‌گردد: تصمیم دوباره با بودجهٔ مشترک گرفته می‌شود", async () => {
+  let shared = null;
+  const m = new LegacyMeter(() => shared, { enforced: () => true, makeFallback: () => fallbackBudget(1) });
+  await m.count("a");                      // انبار نیست → سقفِ اضطراری
+  shared = fakeBudget(5);
+  await m.count("a"); await m.count("a");  // انبار برگشت → بودجهٔ مشترک
+  assert.equal(shared.used, 2, "بعد از بازگشتِ انبار، مرجعِ تصمیم همان است");
+});
+
 console.log("brsapi-legacy-meter:");
 for (const [n, f] of tests) {
   try { await f(); pass++; console.log(`  ✓ ${n}`); }

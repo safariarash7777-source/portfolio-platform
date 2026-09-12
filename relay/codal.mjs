@@ -15,6 +15,8 @@
 // و ردیف با data=null فقط به‌عنوان متادیتای اطلاعیه ثبت می‌شود (raw همیشه هست).
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { meterBrsapi } from "./brsapi-meter.mjs";
+
 const BRSAPI_KEY = process.env.BRSAPI_KEY || "";
 const BRSAPI_BASE = (process.env.BRSAPI_BASE || "https://Api.BrsApi.ir").replace(/\/+$/, "");
 const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/+$/, "");
@@ -432,6 +434,7 @@ async function fetchAnnouncements(symbol, category) {
     key: BRSAPI_KEY, l18: symbol, category: String(category), page: "1",
     only_main_company: "true", only_subsidiaries: "false",
   });
+  await meterBrsapi("codal-symbol", "bulk");
   const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
     headers: HDRS, signal: AbortSignal.timeout(20000),
   });
@@ -554,7 +557,7 @@ export const existingUrlsFor = existingUrls;
 /** دریافت یک صفحهٔ اطلاعیه — بدون l18، فید سراسری کل بازار را می‌دهد
  * (جدیدترین‌ها اول، ۲۰تایی). موتور v3 برای واترمارک فید و بک‌فیل نمادی
  * از همین استفاده می‌کند. */
-export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start } = {}) {
+export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start, producer = "codal-page", budgetClass = "bulk" } = {}) {
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, page: String(page),
     only_main_company: "true", only_subsidiaries: "false",
@@ -562,6 +565,9 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
   if (l18) qs.set("l18", l18);
   if (category) qs.set("category", String(category));
   if (date_start) qs.set("date_start", String(date_start)); // جلالی YYYY/MM/DD — مرز آرشیو (T4)
+  // هر فراخوانی یک تلاشِ واقعیِ upstream است — **از جمله تلاشِ دومِ**
+  // `codal-engine` بعد از خطا. شمارش اینجاست تا retry هم دیده شود.
+  await meterBrsapi(producer, budgetClass);
   const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
     headers: HDRS, signal: AbortSignal.timeout(25000),
   });
