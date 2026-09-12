@@ -536,6 +536,9 @@ async function fetchIndex() {
       json = await c.request({
         endpoint: "Tsetmc/Index.php", params: { type: 1 },
         producer: "market-index", priority: "interactive",
+        // چرخهٔ بازار تا آخرین واحدِ بودجه زنده می‌ماند — اگر شاخص نباشد،
+        // صفحهٔ بازار عملاً چیزی برای گفتن ندارد.
+        budgetClass: "critical",
         dedupeTtlMs: 60_000, timeoutMs: 10_000,
       });
     } else {

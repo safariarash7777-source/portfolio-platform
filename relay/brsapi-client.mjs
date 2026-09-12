@@ -34,7 +34,138 @@ const DEFAULTS = {
   maxAttemptsInteractive: 2,
   backoffBaseMs: 1_000,
   backoffMaxMs: 60_000,
+
+  // ── بودجهٔ روزانه ────────────────────────────────────────────────────────
+  // سهمیهٔ کلیدِ اصلی ۱۰٬۰۰۰/روز است. سقفِ سخت **زیرِ** آن می‌ماند تا حاشیه‌ای
+  // برای کارِ دستی، اشکال‌زدایی و خطای شمارش بماند.
+  hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9_000),
+  softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6_000),
 };
+
+/**
+ * طبقهٔ بودجه‌ایِ یک تولیدکننده — **محورِ جدا از `priority`**.
+ *
+ * `priority` دربارهٔ **تأخیر** است: چه کسی زودتر از صف خدمت بگیرد.
+ * `budgetClass` دربارهٔ **کمیابی** است: وقتی بودجه ته می‌کشد، چه کسی قربانی شود.
+ *
+ * این دو یکی نیستند و ادغامشان غلط می‌شد: دورِ NAV از نظرِ تأخیر `background`
+ * است (کسی پشتِ خط منتظرش نیست) ولی از نظرِ بودجه `critical` است — اگر NAV
+ * نباشد، حباب کلاً محاسبه نمی‌شود. برعکس، یک درخواستِ `interactive` از مسیرِ
+ * اشکال‌زدایی می‌تواند از نظرِ بودجه کاملاً `bulk` باشد.
+ */
+export const BUDGET_CLASSES = ["critical", "standard", "bulk"];
+
+/**
+ * سقفِ مصرفِ هر طبقه.
+ *
+ * `bulk` در `softBudget` می‌ایستد، `critical` تا `hardCeiling` ادامه می‌دهد، و
+ * `standard` وسطِ این دو. نتیجه **تنزلِ تدریجی** است نه قطعِ ناگهانی: اول
+ * بک‌فیل و آرشیو می‌ایستند، بعد کارهای معمولی، و چرخهٔ بازار و NAV تا آخرین
+ * واحدِ بودجه زنده می‌مانند.
+ */
+export function classCeiling(budgetClass, { softBudget, hardCeiling }) {
+  switch (budgetClass) {
+    case "critical": return hardCeiling;
+    case "bulk":     return Math.min(softBudget, hardCeiling);
+    default:         return Math.min(hardCeiling, softBudget + Math.floor((hardCeiling - softBudget) / 2));
+  }
+}
+
+/** کلیدِ روزِ تهران — مبنای ریستِ شمارنده (هم‌ترازِ بقیهٔ ماژول‌های رله). */
+export function tehranDayKey(now = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tehran" }).format(now);
+}
+
+/**
+ * بودجهٔ روزانهٔ سراسری.
+ *
+ * ── چرا رزرو **همگام** است ───────────────────────────────────────────────
+ * بررسی و افزایشِ شمارنده باید بدونِ هیچ `await` بینشان انجام شود. اگر بینشان
+ * `await` باشد، ده کارِ هم‌زمان همگی «هنوز جا هست» را می‌بینند و بعد همگی
+ * افزایش می‌دهند — و سقف رد می‌شود. جاوااسکریپت تک‌نخی است، پس یک تابعِ
+ * کاملاً همگام این مسابقه را حذف می‌کند.
+ *
+ * ── چرا retryها هم حساب می‌شوند ──────────────────────────────────────────
+ * هر تلاشِ دوباره یک درخواستِ **واقعی** روی سیم است و از سهمیهٔ تأمین‌کننده کم
+ * می‌کند. اگر نشمریم، بودجه دیگر بودجه نیست — یک تخمینِ خوش‌بینانه است که
+ * دقیقاً در بدترین روز (روزی که پر از ۵xx است) بیشترین خطا را دارد.
+ */
+export class DailyBudget {
+  constructor({ softBudget, hardCeiling, now = () => Date.now() }) {
+    this.softBudget = softBudget;
+    this.hardCeiling = hardCeiling;
+    this.now = now;
+    this.day = "";
+    this.used = 0;
+    this.rejected = 0;
+    this.rejectedByClass = { critical: 0, standard: 0, bulk: 0 };
+    this.usedByClass = { critical: 0, standard: 0, bulk: 0 };
+    this.#roll();
+  }
+
+  #roll() {
+    const k = tehranDayKey(new Date(this.now()));
+    if (k !== this.day) {
+      this.day = k;
+      this.used = 0;
+      this.rejected = 0;
+      this.rejectedByClass = { critical: 0, standard: 0, bulk: 0 };
+      this.usedByClass = { critical: 0, standard: 0, bulk: 0 };
+    }
+  }
+
+  /** بدونِ رزرو — فقط برای پیش‌بررسی و متریک. */
+  wouldAdmit(budgetClass) {
+    this.#roll();
+    if (this.used >= this.hardCeiling) return false;
+    return this.used < classCeiling(budgetClass, this);
+  }
+
+  /**
+   * رزروِ یک واحد. **همگام و اتمیک.**
+   * خروجی: `true` اگر رزرو شد، `false` اگر بودجه اجازه نداد.
+   */
+  reserve(budgetClass) {
+    this.#roll();
+    // سقفِ سخت اول — هیچ طبقه‌ای، حتی `critical`، از آن رد نمی‌شود.
+    if (this.used >= this.hardCeiling || this.used >= classCeiling(budgetClass, this)) {
+      this.rejected += 1;
+      this.rejectedByClass[budgetClass] = (this.rejectedByClass[budgetClass] ?? 0) + 1;
+      return false;
+    }
+    this.used += 1;
+    this.usedByClass[budgetClass] = (this.usedByClass[budgetClass] ?? 0) + 1;
+    return true;
+  }
+
+  snapshot() {
+    this.#roll();
+    return {
+      day: this.day,
+      softBudget: this.softBudget,
+      hardCeiling: this.hardCeiling,
+      used: this.used,
+      remaining: Math.max(0, this.hardCeiling - this.used),
+      remainingByClass: Object.fromEntries(
+        BUDGET_CLASSES.map((c) => [c, Math.max(0, classCeiling(c, this) - this.used)]),
+      ),
+      usedByClass: { ...this.usedByClass },
+      rejectedByBudget: this.rejected,
+      rejectedByClass: { ...this.rejectedByClass },
+      softExhausted: this.used >= this.softBudget,
+    };
+  }
+}
+
+/** خطای ردشدن به‌خاطرِ بودجه — تا فراخوان بتواند از خطای شبکه جدایش کند. */
+export class BudgetExceededError extends Error {
+  constructor(budgetClass, snapshot) {
+    super(`daily budget exhausted for class "${budgetClass}" (used ${snapshot.used}/${snapshot.hardCeiling})`);
+    this.name = "BudgetExceededError";
+    this.budgetClass = budgetClass;
+    this.budget = snapshot;
+  }
+}
 
 /** خطاهایی که اصلاً retry نمی‌شوند — قاعدهٔ `Q1`. */
 export function isRetryable(status) {
@@ -110,6 +241,9 @@ export class BrsApiClient {
     this.sleep = o.sleep || ((ms) => new Promise((r) => setTimeout(r, ms)));
     this.rand = o.rand || Math.random;
     this.bucket = new LeakyBucket({ ratePerSec: o.ratePerSec, now: this.now });
+    this.budget = o.budget || new DailyBudget({
+      softBudget: o.softBudget, hardCeiling: o.hardCeiling, now: this.now,
+    });
 
     this.queues = { interactive: [], background: [] };
     this.active = 0;
@@ -120,13 +254,14 @@ export class BrsApiClient {
       retries: 0, backoffMsTotal: 0,
       dedupeInFlight: 0, dedupeCache: 0,
       queuedPeak: 0, queueWaitMsTotal: 0, queueWaitSamples: 0, queueWaitMaxMs: 0,
-      rejectedQueueTimeout: 0, byProducer: {},
+      rejectedQueueTimeout: 0, rejectedByBudget: 0, byProducer: {},
     };
   }
 
   metrics() {
     return {
       ...this.m,
+      budget: this.budget.snapshot(),
       active: this.active,
       queueDepth: this.queues.interactive.length + this.queues.background.length,
       cacheSize: this.cache.size,
@@ -137,15 +272,21 @@ export class BrsApiClient {
   }
 
   #bump(producer, field) {
-    const p = (this.m.byProducer[producer] ||= { sent: 0, ok: 0, failed: 0, retries: 0, dedupe: 0 });
-    p[field] += 1;
+    const p = (this.m.byProducer[producer] ||= {
+      sent: 0, ok: 0, failed: 0, retries: 0, dedupe: 0, rejectedByBudget: 0,
+    });
+    p[field] = (p[field] ?? 0) + 1;
   }
 
   /** تنها راهِ تماس با BrsApi. */
   async request({ endpoint, params = {}, producer = "unknown",
-                  priority = "background", dedupeTtlMs = 0, timeoutMs }) {
+                  priority = "background", budgetClass = "standard",
+                  dedupeTtlMs = 0, timeoutMs }) {
     if (!endpoint) throw new Error("endpoint required");
     if ("key" in params) throw new Error("کلیدِ API نباید در params باشد");
+    if (!BUDGET_CLASSES.includes(budgetClass)) {
+      throw new Error(`budgetClass نامعتبر: ${budgetClass}`);
+    }
     const dk = dedupeKey(endpoint, params);
 
     if (dedupeTtlMs > 0) {
@@ -161,7 +302,16 @@ export class BrsApiClient {
       return flying;
     }
 
-    const p = this.#run({ endpoint, params, producer, priority, dedupeTtlMs, dk, timeoutMs })
+    // پیش‌بررسیِ بودجه **قبل از صف**: کاری که به‌هرحال رد می‌شود نباید نوبتِ
+    // صف و یک اسلاتِ هم‌زمانی را اشغال کند. بودجه در طولِ روز فقط بالا می‌رود،
+    // پس ردِ اینجا در ادامه هم رد می‌ماند (جز در گذارِ روز، که بررسیِ دومِ
+    // داخلِ هر تلاش آن را درست می‌گیرد).
+    if (!this.budget.wouldAdmit(budgetClass)) {
+      this.m.rejectedByBudget += 1; this.#bump(producer, "rejectedByBudget");
+      throw new BudgetExceededError(budgetClass, this.budget.snapshot());
+    }
+
+    const p = this.#run({ endpoint, params, producer, priority, budgetClass, dedupeTtlMs, dk, timeoutMs })
       .finally(() => this.inFlight.delete(dk));
     this.inFlight.set(dk, p);
     return p;
@@ -224,6 +374,19 @@ export class BrsApiClient {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const wait = this.bucket.take();
       if (wait > 0) await this.sleep(wait);
+
+      // رزروِ بودجه **همگام و بلافاصله پیش از ارسال** — هیچ `await`ی بینِ رزرو
+      // و `fetch` نیست، وگرنه چند کارِ هم‌زمان می‌توانستند از سقف رد شوند.
+      // تلاشِ دوباره هم اینجاست، یعنی **retryها هم از بودجه کم می‌کنند**.
+      if (!this.budget.reserve(job.budgetClass)) {
+        this.m.rejectedByBudget += 1; this.#bump(job.producer, "rejectedByBudget");
+        const err = new BudgetExceededError(job.budgetClass, this.budget.snapshot());
+        if (attempt === 1) throw err;
+        // اگر تلاشِ اول رفته و بودجه وسطِ کار ته کشیده، همان خطای آخر را
+        // برمی‌گردانیم ولی علتِ واقعی را هم می‌چسبانیم.
+        err.cause = lastErr;
+        throw err;
+      }
 
       const qs = new URLSearchParams({ ...job.params, key: this.key }).toString();
       const url = `${this.base}/${job.endpoint}?${qs}`;

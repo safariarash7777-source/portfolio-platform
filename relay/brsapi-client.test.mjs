@@ -1,7 +1,10 @@
 // تستِ رفتاریِ کلاینتِ مرکزی — بدونِ شبکه، با ساعت و fetchِ تزریقی.
 // اجرا:  node relay/brsapi-client.test.mjs
 import assert from "node:assert/strict";
-import { BrsApiClient, LeakyBucket, backoffDelayMs, dedupeKey, isRetryable } from "./brsapi-client.mjs";
+import {
+  BrsApiClient, LeakyBucket, backoffDelayMs, dedupeKey, isRetryable,
+  DailyBudget, BudgetExceededError, classCeiling, BUDGET_CLASSES,
+} from "./brsapi-client.mjs";
 
 let pass = 0, fail = 0;
 const tests = [];
@@ -264,6 +267,179 @@ t("مهلتِ صف جدا از مهلتِ درخواست است", async () => {
   assert.equal(client.metrics().rejectedQueueTimeout, 1);
   releaseFirst?.();
   await first;
+});
+
+/* ── بودجهٔ روزانه ───────────────────────────────────────────────────────── */
+
+const BUDGET = { softBudget: 100, hardCeiling: 150 };
+
+t("سقفِ هر طبقه: bulk در soft، critical در hard، standard وسط", () => {
+  assert.equal(classCeiling("bulk", BUDGET), 100);
+  assert.equal(classCeiling("critical", BUDGET), 150);
+  assert.equal(classCeiling("standard", BUDGET), 125);
+});
+
+t("سقفِ سخت بر همه مقدم است، حتی اگر soft بزرگ‌تر تنظیم شده باشد", () => {
+  const weird = { softBudget: 999, hardCeiling: 10 };
+  for (const c of BUDGET_CLASSES) {
+    assert.ok(classCeiling(c, weird) <= 10, `${c} از سقفِ سخت رد شد`);
+  }
+});
+
+t("bulk در softBudget می‌ایستد ولی critical ادامه می‌دهد", () => {
+  const b = new DailyBudget({ ...BUDGET, now: () => 0 });
+  for (let i = 0; i < 100; i++) assert.ok(b.reserve("bulk"), `bulk در ${i} رد شد`);
+  assert.equal(b.reserve("bulk"), false, "bulk باید دقیقاً روی soft بایستد");
+  assert.equal(b.reserve("critical"), true, "critical باید ادامه بدهد");
+});
+
+t("standard پیش از critical می‌ایستد — تنزلِ تدریجی", () => {
+  const b = new DailyBudget({ ...BUDGET, now: () => 0 });
+  for (let i = 0; i < 125; i++) b.reserve("critical");
+  assert.equal(b.reserve("standard"), false, "standard روی سقفِ خودش می‌ایستد");
+  assert.equal(b.reserve("critical"), true);
+});
+
+t("در سقفِ سخت هیچ طبقه‌ای عبور نمی‌کند — حتی critical", () => {
+  const b = new DailyBudget({ ...BUDGET, now: () => 0 });
+  for (let i = 0; i < 150; i++) b.reserve("critical");
+  for (const c of BUDGET_CLASSES) {
+    assert.equal(b.reserve(c), false, `${c} از سقفِ سخت رد شد`);
+  }
+  assert.equal(b.snapshot().used, 150);
+});
+
+t("شمارنده با تغییرِ روزِ تهران صفر می‌شود", () => {
+  let ms = Date.parse("2026-09-12T09:00:00Z");
+  const b = new DailyBudget({ ...BUDGET, now: () => ms });
+  for (let i = 0; i < 150; i++) b.reserve("critical");
+  assert.equal(b.reserve("critical"), false);
+  ms = Date.parse("2026-09-13T09:00:00Z");
+  assert.equal(b.reserve("critical"), true, "روزِ تازه یعنی بودجهٔ تازه");
+  assert.equal(b.snapshot().used, 1);
+});
+
+t("متریکِ بودجه used/remaining/rejected را جدا گزارش می‌کند", () => {
+  const b = new DailyBudget({ ...BUDGET, now: () => 0 });
+  for (let i = 0; i < 100; i++) b.reserve("bulk");
+  b.reserve("bulk"); b.reserve("bulk");
+  const s = b.snapshot();
+  assert.equal(s.used, 100);
+  assert.equal(s.remaining, 50, "باقی‌مانده نسبت به سقفِ سخت");
+  assert.equal(s.rejectedByBudget, 2);
+  assert.equal(s.rejectedByClass.bulk, 2);
+  assert.equal(s.usedByClass.bulk, 100);
+  assert.equal(s.remainingByClass.bulk, 0, "bulk دیگر جا ندارد");
+  assert.equal(s.remainingByClass.critical, 50, "critical هنوز دارد");
+  assert.ok(s.softExhausted);
+});
+
+/* ── بودجه در مسیرِ واقعیِ کلاینت ────────────────────────────────────────── */
+
+function mkBudget(over = {}) {
+  const c = fakeClock();
+  const calls = [];
+  const client = new BrsApiClient({
+    base: "https://x", key: "K", now: c.now, sleep: c.sleep, rand: () => 0.5,
+    softBudget: over.soft ?? 6, hardCeiling: over.hard ?? 10,
+    fetchImpl: async (u) => { calls.push(u); return (over.responder || (() => okRes()))(u, calls.length); },
+    ...over.opts,
+  });
+  return { client, calls, clock: c };
+}
+
+t("درخواستِ ردشده به‌خاطرِ بودجه اصلاً روی سیم نمی‌رود", async () => {
+  const { client, calls } = mkBudget({ soft: 2, hard: 3 });
+  for (let i = 0; i < 3; i++) await client.request({ endpoint: "A.php", params: { i }, budgetClass: "critical" });
+  assert.equal(calls.length, 3);
+  await assert.rejects(() => client.request({ endpoint: "A.php", params: { z: 1 }, budgetClass: "critical" }),
+    (e) => e instanceof BudgetExceededError);
+  assert.equal(calls.length, 3, "هیچ درخواستِ اضافه‌ای فرستاده نشد");
+  assert.equal(client.metrics().rejectedByBudget, 1);
+});
+
+t("bulk قربانی می‌شود تا critical زنده بماند", async () => {
+  const { client, calls } = mkBudget({ soft: 3, hard: 6 });
+  for (let i = 0; i < 3; i++) await client.request({ endpoint: "A.php", params: { i }, budgetClass: "bulk", producer: "backfill" });
+  await assert.rejects(() => client.request({ endpoint: "A.php", params: { b: 1 }, budgetClass: "bulk", producer: "backfill" }),
+    (e) => e instanceof BudgetExceededError);
+  // چرخهٔ بازار باید همچنان عبور کند
+  await client.request({ endpoint: "A.php", params: { m: 1 }, budgetClass: "critical", producer: "market" });
+  assert.equal(calls.length, 4);
+  const m = client.metrics();
+  assert.equal(m.byProducer.backfill.rejectedByBudget, 1);
+  assert.equal(m.byProducer.market.ok, 1);
+});
+
+t("retryها هم از بودجه کم می‌کنند", async () => {
+  // چهار تلاشِ ۵xx = چهار واحدِ بودجه، نه یکی.
+  const { client } = mkBudget({ hard: 100, soft: 100, responder: () => errRes(503) });
+  await assert.rejects(() => client.request({ endpoint: "A.php", budgetClass: "critical" }));
+  assert.equal(client.metrics().budget.used, 4, "هر تلاش یک درخواستِ واقعی روی سیم است");
+});
+
+t("بودجه می‌تواند وسطِ زنجیرهٔ retry تمام شود و صریح خطا بدهد", async () => {
+  const { client, calls } = mkBudget({ hard: 2, soft: 2, responder: () => errRes(503) });
+  await assert.rejects(
+    () => client.request({ endpoint: "A.php", budgetClass: "critical" }),
+    (e) => e instanceof BudgetExceededError,
+  );
+  assert.equal(calls.length, 2, "دو تلاش رفت، سومی پشتِ بودجه ماند");
+});
+
+t("هیچ ترکیبی از producerها نمی‌تواند از سقفِ سخت رد شود", async () => {
+  // پنج تولیدکننده با هر سه طبقه، همه هم‌زمان، خیلی بیشتر از بودجه.
+  const { client, calls } = mkBudget({ hard: 40, soft: 25, opts: { concurrency: 8 } });
+  const jobs = [];
+  const producers = [
+    ["market", "critical"], ["nav", "critical"], ["meta", "standard"],
+    ["backfill", "bulk"], ["archive", "bulk"],
+  ];
+  for (const [producer, budgetClass] of producers) {
+    for (let i = 0; i < 60; i++) {
+      jobs.push(client.request({ endpoint: "A.php", params: { producer, i }, producer, budgetClass })
+        .catch(() => null));
+    }
+  }
+  await Promise.all(jobs);
+  const m = client.metrics();
+  assert.ok(calls.length <= 40, `${calls.length} درخواستِ واقعی — سقفِ سخت ۴۰ است`);
+  assert.equal(m.budget.used, calls.length, "شمارنده باید دقیقاً با درخواست‌های واقعی بخواند");
+  assert.ok(m.budget.used <= m.budget.hardCeiling);
+  assert.ok(m.rejectedByBudget > 0, "بقیه باید با علتِ بودجه رد شده باشند");
+});
+
+t("در کمبودِ بودجه، سهمِ critical از bulk بیشتر است", async () => {
+  const { client } = mkBudget({ hard: 30, soft: 10, opts: { concurrency: 8 } });
+  const jobs = [];
+  for (let i = 0; i < 50; i++) {
+    jobs.push(client.request({ endpoint: "A.php", params: { c: i }, producer: "market", budgetClass: "critical" }).catch(() => null));
+    jobs.push(client.request({ endpoint: "A.php", params: { b: i }, producer: "backfill", budgetClass: "bulk" }).catch(() => null));
+  }
+  await Promise.all(jobs);
+  const u = client.metrics().budget.usedByClass;
+  assert.ok(u.bulk <= 10, `bulk ${u.bulk} — نباید از softBudget رد شود`);
+  assert.ok(u.critical > u.bulk, `critical ${u.critical} باید بیشتر از bulk ${u.bulk} باشد`);
+});
+
+t("budgetClass نامعتبر رد می‌شود، نه اینکه بی‌صدا standard شود", async () => {
+  const { client } = mkBudget();
+  await assert.rejects(() => client.request({ endpoint: "A.php", budgetClass: "urgent" }), /budgetClass نامعتبر/);
+});
+
+t("پیش‌فرضِ budgetClass همان standard است", async () => {
+  const { client } = mkBudget({ hard: 10, soft: 4 });
+  for (let i = 0; i < 7; i++) await client.request({ endpoint: "A.php", params: { i } });
+  await assert.rejects(() => client.request({ endpoint: "A.php", params: { z: 1 } }),
+    (e) => e instanceof BudgetExceededError);
+  assert.equal(client.metrics().budget.usedByClass.standard, 7, "سقفِ standard = 4 + (10-4)/2 = 7");
+});
+
+t("dedup بودجه مصرف نمی‌کند", async () => {
+  const { client } = mkBudget({ hard: 10, soft: 10 });
+  await client.request({ endpoint: "A.php", params: { x: 1 }, dedupeTtlMs: 60_000 });
+  await client.request({ endpoint: "A.php", params: { x: 1 }, dedupeTtlMs: 60_000 });
+  assert.equal(client.metrics().budget.used, 1, "پاسخِ کش‌شده درخواستِ تازه نیست");
 });
 
 /* ── اجرا ────────────────────────────────────────────────────────────────── */

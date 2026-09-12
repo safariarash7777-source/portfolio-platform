@@ -89,7 +89,11 @@ export async function refreshCertificates({ base, key, headers, client = null })
     if (client) {
       j = await client.request({
         endpoint: "IME/Certificate.php", producer: "ime-certificate",
-        priority: "background", dedupeTtlMs: 5 * 60_000, timeoutMs: 20_000,
+        priority: "background",
+        // فیدِ مکمل است: اگر بودجه تنگ شد، پیش از چرخهٔ بازار و NAV کنار می‌رود،
+        // ولی پیش از بک‌فیل و آرشیو هم نباید قربانی شود.
+        budgetClass: "standard",
+        dedupeTtlMs: 5 * 60_000, timeoutMs: 20_000,
       });
     } else {
       const res = await fetch(`${base}/IME/Certificate.php?key=${key}`, { headers, signal: AbortSignal.timeout(20000) });
