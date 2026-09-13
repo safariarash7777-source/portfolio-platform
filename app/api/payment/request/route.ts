@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requestPayment, coursePriceToman } from "@/lib/zarinpal";
+import { isPermissionDenied } from "@/lib/supabase/errors";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,21 @@ export async function POST() {
   });
   if (dbErr) {
     console.error("create_payment error:", dbErr.message);
+    // `phase30` امتیازِ اجرای این تابع را از `authenticated` پس می‌گیرد، چون
+    // مبلغ آرگومانِ کاربر است و پس از آمدنِ صدورِ دسترسی (#113) همین یک خط از
+    // یک آلودگیِ دفتری به یک حفرهٔ واقعی تبدیل می‌شود.
+    //
+    // این شاخه عمداً اینجاست تا **ترتیبِ انتشار اجباری نباشد**: برنامه با
+    // دیتابیسِ قبل و بعد از `phase30` هر دو درست کار می‌کند. پیش از آن این
+    // شاخه هرگز اجرا نمی‌شود؛ پس از آن، کاربر به‌جای ۵۰۰ِ مبهم یک پیامِ صادق
+    // می‌بیند و — مهم‌تر — **پولی از او گرفته نشده**: ردیفِ pending ساخته
+    // نشده یعنی مسیرِ پرداخت اصلاً شروع نشده است.
+    if (isPermissionDenied(dbErr)) {
+      return NextResponse.json(
+        { error: "پرداخت موقتاً در دسترس نیست. لطفاً بعداً تلاش کنید." },
+        { status: 503 },
+      );
+    }
     return NextResponse.json({ error: "خطا در ثبت پرداخت." }, { status: 500 });
   }
 
