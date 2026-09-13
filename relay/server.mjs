@@ -877,14 +877,48 @@ async function pushToSupabase(body) {
 const HISTORY_INTERVAL_MS = 30 * 60 * 1000;
 let lastHistoryPush = 0;
 
+// بخش‌هایی که در `ir_market_history` نوشته می‌شوند.
+//
+// ── چرا پیش‌فرض فقط دو بخش است ──────────────────────────────────────────────
+// نسخهٔ قبل هر چهار بخش را می‌نوشت. بازاندازه‌گیریِ ۱۴۰۵/۰۶/۲۱ روی Production:
+// در ۲۴ ساعت ۷٬۲۰۳ kB نوشته شد که **۷٬۱۰۱ kB‌اش (۹۸.۶٪) `stocks` و `funds`**
+// بود؛ هر چهار بخش دقیقاً ۴۰ نمونه گرفتند. جدول امروز ۴۶۹ MB است.
+//
+// و تنها خوانندهٔ این جدول در کلِ مخزن `lib/core/trend.ts` است که
+// `section=in.(gold,currency)` می‌خواهد — بازبینی‌شده روی `main`ِ امروز
+// (`614b59d`)، نه روی یک یادداشتِ قدیمی. یعنی آن ۹۸.۶٪ هرگز خوانده نشده.
+// قاعدهٔ Q3: داده‌ای که هیچ صفحه/محاسبه‌ای مصرفش نمی‌کند جمع نمی‌شود.
+//
+// ⚠️ این تغییر **فقط نوشتن را می‌ایستاند**. هیچ ردیفی حذف نمی‌شود، هیچ
+// retentionای عوض نمی‌شود، و حجمِ امروزِ جدول کم **نمی‌شود** — فقط رشدِ آینده
+// محدود می‌شود. پاک‌سازی بستهٔ جداگانه‌ای است با دروازه‌های خودش.
+//
+// `ir_market_snapshots` (تابلوی زنده و صفحهٔ صندوق) جدولِ **دیگری** است و این
+// تغییر لمسش نمی‌کند.
+//
+// اگر روزی مصرف‌کننده‌ای برای stocks/funds ساخته شد، این env بازش می‌کند:
+//   IR_HISTORY_SECTIONS=gold,currency,funds,stocks
+const HISTORY_SECTIONS = String(process.env.IR_HISTORY_SECTIONS || "gold,currency")
+  .split(",")
+  .map((x) => x.trim())
+  .filter(Boolean);
+
+/** بخش‌هایی که خواسته شدند ولی در پاسخِ منبع نبودند — برای نمای وضعیت. */
+let historyMissingSections = [];
+
 async function pushHistory(body) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
   if (Date.now() - lastHistoryPush < HISTORY_INTERVAL_MS) return;
   const p = typeof body === "string" ? JSON.parse(body) : body;
-  const sections = ["gold", "currency", "funds", "stocks"];
-  const rows = sections
-    .filter((s) => Array.isArray(p[s]) && p[s].length > 0)
-    .map((s) => ({ section: s, payload: p[s] }));
+  const present = HISTORY_SECTIONS.filter((s) => Array.isArray(p[s]) && p[s].length > 0);
+  // بخشِ غایب **بی‌صدا رد نمی‌شود**. نسخهٔ قبل فقط filter می‌کرد، پس اگر منبع
+  // یک بخش را نمی‌داد، تاریخچه‌اش بی‌سر‌و‌صدا سوراخ می‌شد و هیچ‌جا دیده
+  // نمی‌شد. حالا ثبت و در `/debug` منتشر می‌شود.
+  historyMissingSections = HISTORY_SECTIONS.filter((s) => !present.includes(s));
+  if (historyMissingSections.length > 0) {
+    console.error("history push: missing sections:", historyMissingSections.join(","));
+  }
+  const rows = present.map((s) => ({ section: s, payload: p[s] }));
   if (rows.length === 0) return;
   try {
     const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/ir_market_history`, {
@@ -1273,6 +1307,7 @@ function debugPayload() {
     indexHistory: indexHistStatus,
     marketBreadth: breadthStatus,
     historyPrune: pruneStatus,
+    historySections: { written: HISTORY_SECTIONS, missing: historyMissingSections },
     brsapiClient: brs ? brs.metrics() : { enabled: false },
     // مصرفِ مسیرِ **قدیمی** — همان چیزی که تا امروز نامرئی بود. اگر پرچم
     // خاموش باشد `brsapiClient.enabled=false` است ولی این بلوک همچنان
