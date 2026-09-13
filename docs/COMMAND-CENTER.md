@@ -33,6 +33,26 @@ checkpoint و لینکِ branch/PR بدهند. پیش از هر ویرایشِ �
 
 ---
 
+## 0′. مرزِ تحویل — چهار بستهٔ مستقل روی یک برنچ
+
+> بازبینیِ مستقل خواست بکاپ و مهارِ پرداخت جدا و قابلِ‌بررسی باشند و
+> `liveness` مانعشان نشود. **هیچ وابستگیِ کدی بینِ این چهار بسته نیست**
+> (`grep` روی import‌ها: صفر ارجاع)، پس هرکدام مستقل قابلِ cherry-pick،
+> بازبینی و اجراست.
+
+| بسته | فایل‌ها | کامیت | مسدودکنندهٔ بقیه؟ |
+|---|---|---|---|
+| **B — مهارِ پرداخت** | `sql/phase30_*.sql` · `app/api/payment/request/route.ts` · `lib/supabase/errors*.ts` · `lib/security/create-payment-containment.integration.test.ts` · `docs/ops/RELEASE-payment-containment.md` | `d2f0e83` | نه |
+| **D′ — اعتبارسنجیِ بکاپ** | `scripts/backup/compare.mjs` · `scripts/backup-production.{sh,ps1}` · `lib/ops/backup-scripts.test.ts` · `docs/RUNBOOK-backup-windows.md` | `bb6ddb7`، `2420fe3` | نه |
+| **A — توقفِ نوشتنِ تاریخچه** | `relay/server.mjs` · `relay/history-sections.test.mjs` · `docs/ops/RELEASE-history-sections.md` | `798928f` | نه |
+| **F — زندگیِ نماد** | `lib/core/symbolLiveness*.ts` · `lib/core/livenessData.ts` · `sql/phase29_*.sql` | `304194e`، `184d614` | **نه** — نه چیزی از آن import می‌کند و نه چیزی را import می‌کند |
+
+`package.json` و `.github/workflows/ci.yml` تنها فایل‌های مشترک‌اند (ثبتِ تست و
+کفِ شمارش). اگر بسته‌ها به PRهای جدا تقسیم شوند، همان دو خط تنها جایی است که
+باید هماهنگ شود.
+
+---
+
 ## 1. Current Program State
 
 | مورد | مقدار | برچسب |
