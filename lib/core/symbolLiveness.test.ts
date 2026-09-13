@@ -24,9 +24,11 @@ test("تابلوی تازه با معامله = بازار باز", () => {
   assert.match(a.driver, /900/);
 });
 
-test("تابلوی تازه بدونِ هیچ حجمی = بازارِ بسته، نه فیدِ خراب", () => {
+test("تابلوی تازه بدونِ هیچ حجمی = «معامله‌ای دیده نشد» — نه «بازار بسته»", () => {
   const a = assessFeed({ ...healthyFeed, boardWithVolume: 0 });
-  assert.equal(a.verdict, "closed");
+  assert.equal(a.verdict, "no_trades_observed");
+  // ادعای تعطیلیِ بازار شاهدِ تقویمِ رسمی می‌خواهد و این ماژول ندارد.
+  assert.match(a.driver, /علتش از این داده معلوم نیست/);
 });
 
 test("تابلوی کهنه = فیدِ خراب، هرچقدر هم ردیف داشته باشد", () => {
@@ -34,7 +36,7 @@ test("تابلوی کهنه = فیدِ خراب، هرچقدر هم ردیف د�
   assert.equal(a.verdict, "feed_down");
 });
 
-test("تابلوی تازه ولی خالی = فیدِ خراب، نه بازارِ بسته", () => {
+test("تابلوی تازه ولی خالی = فیدِ خراب، نه «معامله‌ای دیده نشد»", () => {
   const a = assessFeed({ ...healthyFeed, boardSymbols: 0, boardWithVolume: 0 });
   assert.equal(a.verdict, "feed_down");
 });
@@ -61,10 +63,13 @@ test("عقب + روی تابلو = عقب‌ماندگیِ لولهٔ ما", () 
   assert.match(r.why, /ثبت نشده/);
 });
 
-test("عقب + بیرون از تابلو = متوقف یا حذف‌شده", () => {
+test("عقب + بیرون از منبع = «مشاهده نشد» — و هیچ ادعای توقف/حذف نمی‌کند", () => {
   const r = classifySymbol({ symbol: "دتهران", lastTradeDate: "2018-10-29", onBoard: false }, LAST_DAY, TODAY, true);
-  assert.equal(r.state, "off_board");
+  assert.equal(r.state, "not_in_source");
   assert.ok(r.behindDays! > 2800);
+  // گاردِ لحن: طبقه‌بندیِ رسمی شاهدِ ناشرِ بازار می‌خواهد، نه غیبت در اسنپ‌شات.
+  assert.doesNotMatch(r.why, /متوقف|حذف/, "نباید وضعیتِ رسمیِ نماد را ادعا کند");
+  assert.match(r.why, /نامشخص/);
 });
 
 test("همان دو ورودی، وقتی فید خراب است، به حدس تبدیل نمی‌شوند", () => {
@@ -103,7 +108,7 @@ const SAMPLE: SymbolRow[] = [
 test("گزارش هر پنج حالت را جدا می‌شمارد", () => {
   const rep = buildLivenessReport(SAMPLE, healthyFeed);
   assert.deepEqual(rep.counts, {
-    live: 2, lagging: 1, off_board: 1, undetermined: 0, invalid_date: 0, never_seen: 1,
+    live: 2, lagging: 1, not_in_source: 1, undetermined: 0, invalid_date: 0, never_seen: 1,
   });
   assert.equal(rep.marketLastTradeDate, "2026-09-12");
   assert.equal(rep.coverageOnLastDay, 2 / 5);
@@ -119,18 +124,18 @@ test("یک ردیفِ تاریخِ آینده نباید کلِ مجموعه ر�
   assert.equal(rep.counts.invalid_date, 1);
 });
 
-test("فیدِ خراب: هیچ نمادی به «متوقف» متهم نمی‌شود", () => {
+test("فیدِ خراب: هیچ نمادی به «مشاهده نشد» هم متهم نمی‌شود", () => {
   const rep = buildLivenessReport(SAMPLE, { ...healthyFeed, boardFetchedAt: NOW - 120 * 60_000 });
   assert.equal(rep.feed.verdict, "feed_down");
-  assert.equal(rep.counts.off_board, 0);
+  assert.equal(rep.counts.not_in_source, 0);
   assert.equal(rep.counts.lagging, 0);
   assert.equal(rep.counts.undetermined, 2);
 });
 
-test("بازارِ بسته اعتمادِ تابلو را از بین نمی‌برد", () => {
+test("نبودِ حجم اعتمادِ تابلو را از بین نمی‌برد", () => {
   const rep = buildLivenessReport(SAMPLE, { ...healthyFeed, boardWithVolume: 0 });
-  assert.equal(rep.feed.verdict, "closed");
-  assert.equal(rep.counts.off_board, 1, "تابلوی تازه هنوز می‌گوید چه کسی هست");
+  assert.equal(rep.feed.verdict, "no_trades_observed");
+  assert.equal(rep.counts.not_in_source, 1, "تابلوی تازه هنوز می‌گوید چه کسی در منبع هست");
 });
 
 test("مجموعهٔ خالی پوششِ صفر نمی‌سازد — پوشش نامعلوم است", () => {
@@ -155,12 +160,12 @@ test("نمادی که روی تابلو هست ولی تاریخچه ندارد 
   assert.equal(rep.counts.lagging, 1);
 });
 
-test("نمادِ بیرون از تابلو با تاریخچهٔ کهنه = متوقف", () => {
+test("نمادِ بیرون از منبع با تاریخچهٔ کهنه = «مشاهده نشد»", () => {
   const rep = composeLiveness(
     [{ symbol: "فولاد", last_trade_date: "2026-09-12" }, { symbol: "رفته", last_trade_date: "2019-01-01" }],
     BOARD, NOW,
   );
-  assert.equal(rep.rows.find((r) => r.symbol === "رفته")!.state, "off_board");
+  assert.equal(rep.rows.find((r) => r.symbol === "رفته")!.state, "not_in_source");
 });
 
 test("نبودِ RPC با خطای RPC یکی نیست", async () => {
