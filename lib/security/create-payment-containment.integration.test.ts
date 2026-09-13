@@ -19,7 +19,7 @@
  * آنچه **اثبات نمی‌کنند**: وضعیتِ ACL روی Production در لحظهٔ اجرا. آن را
  * باید همان‌جا و پیش از اجرا خواند.
  */
-import { before, describe, test } from "node:test";
+import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { join } from "node:path";
@@ -270,6 +270,18 @@ describe("phase30 · امتیاز از راهِ PUBLIC", { skip, concurrency: 1 
 
 describe("phase30 · امتیاز از راهِ عضویتِ نقش", { skip, concurrency: 1 }, () => {
   const DB = "p30_member";
+
+  // ⚠️ نقش‌ها **کلاستری‌اند، نه per-database**. نشت‌کردنِ یک نقش به کلاستر
+  // می‌تواند فایل‌های بعدیِ همین مجموعه را به‌هم بریزد — و چون آن‌ها جای دیگری
+  // شکست می‌خورند، ردیابی‌اش سخت است. پس نه فقط پیش از ساخت، بلکه **پس از
+  // پایان هم** پاک می‌شود، حتی اگر تستی وسطِ کار بشکند.
+  after(() => {
+    try {
+      psql("postgres", `DROP DATABASE IF EXISTS ${DB}`);
+      psql("postgres", "DROP ROLE IF EXISTS payment_callers");
+    } catch { /* پاک‌سازیِ بهترین‌کوشش — نباید نتیجهٔ تست را عوض کند */ }
+  });
+
   before(() => {
     freshDb(DB, true);
     // ⚠️ نقش‌ها **کلاستری‌اند**، نه per-database. بدونِ این DROP، اجرای دومِ
