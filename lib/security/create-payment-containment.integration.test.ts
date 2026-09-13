@@ -271,31 +271,65 @@ describe("phase30 · امتیاز از راهِ PUBLIC", { skip, concurrency: 1 
 describe("phase30 · امتیاز از راهِ عضویتِ نقش", { skip, concurrency: 1 }, () => {
   const DB = "p30_member";
 
-  // ⚠️ نقش‌ها **کلاستری‌اند، نه per-database**. نشت‌کردنِ یک نقش به کلاستر
-  // می‌تواند فایل‌های بعدیِ همین مجموعه را به‌هم بریزد — و چون آن‌ها جای دیگری
-  // شکست می‌خورند، ردیابی‌اش سخت است. پس نه فقط پیش از ساخت، بلکه **پس از
-  // پایان هم** پاک می‌شود، حتی اگر تستی وسطِ کار بشکند.
-  after(() => {
-    try {
-      psql("postgres", `DROP DATABASE IF EXISTS ${DB}`);
-      psql("postgres", "DROP ROLE IF EXISTS payment_callers");
-    } catch { /* پاک‌سازیِ بهترین‌کوشش — نباید نتیجهٔ تست را عوض کند */ }
-  });
+  /**
+   * ⚠️ **این سناریو یک بار غلط ساخته شد و درسش ارزشِ نوشتن دارد.**
+   *
+   * نسخهٔ اول فقط نقش را به `authenticated` می‌داد و انتظار داشت امتیازِ مؤثر
+   * پیدا شود. روی کلاسترِ توسعه سبز بود و در CI قرمز — چون نقش‌های Supabase
+   * (و همین‌طور `sql/test/supabase_bootstrap.sql`) با **`NOINHERIT`** ساخته
+   * می‌شوند. با `NOINHERIT` عضویت به‌تنهایی هیچ امتیازی نمی‌دهد، پس
+   * `has_function_privilege` درست می‌گفت `false` و `phase30` هم درست موفق
+   * می‌شد؛ **تست غلط بود، نه کد**.
+   *
+   * (چرا روی کلاسترِ توسعه سبز بود: آن نقش‌ها پیش‌تر با یک پروبِ دستی و
+   * `CREATE ROLE` ساده — یعنی `INHERIT`ِ پیش‌فرض — ساخته شده بودند و گاردِ
+   * `IF NOT EXISTS` بوت‌استرپ بازسازی‌شان نکرد. دقیقاً همان «محیطِ من با محیطِ
+   * واقعی یکی نیست» که این مخزن جای دیگری هم به آن خورده.)
+   *
+   * پس مسیرِ واقعیِ عبورِ امتیاز برای این نقش‌ها **`PUBLIC`** است (حالتِ ۴).
+   * عضویت فقط وقتی مسئله می‌شود که عضویت `INHERIT` باشد — و همان حالت
+   * اینجا با `GRANT ... WITH INHERIT TRUE` **صریح ساخته می‌شود**، تا گاردِ
+   * امتیازِ مؤثر و اتمیک‌بودنِ rollback واقعاً سنجیده شوند، نه فرض.
+   */
+  const dropRoleAndDb = () => {
+    psql("postgres", `DROP DATABASE IF EXISTS ${DB}`);
+    psql("postgres", "DROP ROLE IF EXISTS payment_callers");
+  };
+
+  // با \`WITH INHERIT TRUE\` هیچ صفتِ کلاستریِ نقشی عوض نمی‌شود؛ عضویت با
+  // خودِ نقش drop می‌شود. پس پاک‌سازی فقط دیتابیس و نقش است.
+  after(dropRoleAndDb);
 
   before(() => {
+    dropRoleAndDb();
     freshDb(DB, true);
-    // ⚠️ نقش‌ها **کلاستری‌اند**، نه per-database. بدونِ این DROP، اجرای دومِ
-    // همین فایل با «role already exists» می‌افتد.
-    psql("postgres", "DROP ROLE IF EXISTS payment_callers");
     psql(DB, `
       CREATE ROLE payment_callers;
       GRANT EXECUTE ON FUNCTION ${SIG} TO payment_callers;
-      GRANT payment_callers TO authenticated;
+      -- ⚠️ در PostgreSQL 16 گزینهٔ inheritِ **هر عضویت** جداگانه ذخیره می‌شود و
+      -- پیش‌فرضش از \`rolinherit\`ِ عضو در **لحظهٔ GRANT** گرفته می‌شود. چون این
+      -- نقش‌ها \`NOINHERIT\`اند، \`ALTER ROLE ... INHERIT\`ِ بعدی عضویتِ
+      -- ثبت‌شده را عوض نمی‌کند — این هم یک بار اشتباه شد. پس صریح می‌نویسیم.
+      GRANT payment_callers TO authenticated WITH INHERIT TRUE;
+      -- گرنتِ مستقیم برداشته می‌شود تا تنها مسیرِ باقی‌مانده عضویت باشد؛
+      -- وگرنه تستِ بعدی از راهِ گرنتِ مستقیم سبز می‌شد و چیزی را اثبات نمی‌کرد.
+      REVOKE ALL ON FUNCTION ${SIG} FROM authenticated;
     `);
   });
 
-  test("عضویت واقعاً امتیازِ مؤثر می‌دهد", () => {
-    assert.equal(canExec(DB, "authenticated"), "t");
+  test("نقش‌های بوت‌استرپ پیش‌فرض NOINHERIT‌اند — پس عضویت مسیرِ واقعی نیست", () => {
+    // اگر روزی این عوض شود، همین تست خبر می‌دهد.
+    assert.equal(
+      last(psql(DB, "SELECT rolinherit FROM pg_roles WHERE rolname='anon'")), "f",
+      "بوت‌استرپ باید نقش‌ها را NOINHERIT بسازد",
+    );
+  });
+
+  test("با عضویتِ INHERIT، امتیازِ مؤثر واقعاً می‌رسد — بدونِ گرنتِ مستقیم", () => {
+    const acl = last(psql(DB, `SELECT coalesce(array_to_string(proacl,','),'') FROM pg_proc
+      WHERE oid = '${SIG}'::regprocedure`));
+    assert.doesNotMatch(acl, /authenticated=X/, "گرنتِ مستقیم نباید مانده باشد");
+    assert.equal(canExec(DB, "authenticated"), "t", "پس این امتیاز فقط از راهِ عضویت است");
   });
 
   test("مهار به‌جای ادعای موفقیتِ دروغ، با خطا می‌ایستد", () => {
@@ -306,12 +340,12 @@ describe("phase30 · امتیاز از راهِ عضویتِ نقش", { skip, co
   });
 
   test("و ACL نیمه‌تغییریافته نمی‌ماند — تغییرها برمی‌گردند", () => {
-    // این هستهٔ اتمیک‌بودن است: گرنتِ مستقیمِ `authenticated` باید سرِ جایش
-    // مانده باشد، چون کلِ بلوک rollback شده.
+    // هستهٔ اتمیک‌بودن: نه گرنتِ نقشِ واسط رفته، نه گرنتِ `service_role`.
     const acl = last(psql(DB, `SELECT coalesce(array_to_string(proacl,','),'') FROM pg_proc
       WHERE oid = '${SIG}'::regprocedure`));
-    assert.match(acl, /authenticated=X/, "گرنتِ مستقیم باید برگشته باشد");
-    assert.equal(canExec(DB, "payment_callers"), "t", "نقشِ واسط هم دست‌نخورده");
+    assert.match(acl, /payment_callers=X/, "گرنتِ نقشِ واسط باید دست‌نخورده باشد");
+    assert.match(acl, /service_role=X/);
+    assert.equal(canExec(DB, "authenticated"), "t", "امتیازِ مؤثر هنوز هست — یعنی چیزی نصفه نشد");
   });
 
   test("پس از برداشتنِ عضویت، همان فایل موفق می‌شود", () => {
