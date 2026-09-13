@@ -324,7 +324,13 @@ try {
     $compareExit = $LASTEXITCODE
 
     # ---- 8) manifest - non-sensitive only -----------------------------------
-    $verdict = if ($compareExit -eq 0) { 'PASS' } else { 'FAIL' }
+    # Three states, not two. "Unverified" is neither PASS nor FAIL, and
+    # neither one may hide the other.
+    $verdict = switch ($compareExit) {
+        0       { 'PASS (structure verified - row counts exactly equal)' }
+        2       { 'PARTIAL (structure verified - row-count equality NOT proven)' }
+        default { 'FAIL' }
+    }
     $cliVersion = (& $SupaExe @($SupaArgs + @('--version')) | Select-Object -Last 1)
     $manifest = New-Object System.Collections.Generic.List[string]
     $manifest.Add("backup taken:   $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) UTC")
@@ -347,6 +353,21 @@ try {
     $manifestPath = Join-Path $OutDir 'MANIFEST.txt'
     Set-Content -Path $manifestPath -Value $manifest -Encoding UTF8
     Get-Content $manifestPath | ForEach-Object { Write-Host $_ }
+
+    if ($compareExit -eq 2) {
+        Write-Host ''
+        Write-Host '[PARTIAL] Backup created, restore worked, structure verified -' -ForegroundColor Yellow
+        Write-Host '          but row-count equality for the tables that were live' -ForegroundColor Yellow
+        Write-Host '          during the dump was NOT proven.' -ForegroundColor Yellow
+        Write-Host ''
+        Write-Host 'This is NOT a PASS. The backup is probably sound; we cannot prove it.'
+        Write-Host 'Until the inventory can be read in the dump own snapshot, this state'
+        Write-Host 'does not on its own authorise a production migration.'
+        Write-Host ''
+        Write-Host "Details: $(Join-Path $OutDir 'comparison.txt')"
+        Write-Host "Path: $OutDir"
+        exit 2
+    }
 
     if ($compareExit -ne 0) {
         Die "The backup was created but the comparison did not match.`nDetails: $(Join-Path $OutDir 'comparison.txt')`nThe backup is NOT reliable. No migration runs on production."
