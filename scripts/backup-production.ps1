@@ -227,6 +227,22 @@ try {
     if ((Invoke-Supabase @('db', 'dump', '--db-url', $DbUrl, '-f', (Join-Path $OutDir 'schema.sql'))) -ne 0) { Die 'schema dump failed.' }
     if ((Invoke-Supabase @('db', 'dump', '--db-url', $DbUrl, '-f', (Join-Path $OutDir 'data.sql'), '--use-copy', '--data-only', '-x', 'storage.buckets_vectors', '-x', 'storage.vector_indexes')) -ne 0) { Die 'data dump failed.' }
 
+    # ---- 4b) source fingerprint AGAIN, after the dump -----------------------
+    # Production keeps writing during the dump: the relay stores a snapshot
+    # every five minutes and symbol_history takes over a thousand rows a day.
+    # Without this second read the comparison fails a perfectly good backup,
+    # and an operator who sees that learns to ignore the comparison - which is
+    # worse than not having one.
+    #
+    # This is not a waiver, it is a measurement: a table that moved between the
+    # two reads is proven to have been live in that window. A count outside the
+    # range - especially BELOW it - is still a failure.
+    Invoke-PsqlWithUrl -Url $DbUrl `
+        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' `
+        -DockerArgs @('-v', "${SqlDir}:/sql:ro") |
+        Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-source-after.txt')
+    if ($LASTEXITCODE -ne 0) { Die 'Could not read the second production fingerprint.' }
+
     foreach ($name in @('roles', 'schema', 'data')) {
         $path = Join-Path $OutDir "$name.sql"
         if (-not (Test-Path $path) -or (Get-Item $path).Length -eq 0) { Die "$name.sql is empty - the backup is incomplete." }
@@ -304,7 +320,7 @@ try {
         Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-restored.txt')
     if ($LASTEXITCODE -ne 0) { Die 'Could not read the fingerprint of the restored database.' }
 
-    & node $CompareJs (Join-Path $OutDir 'inventory-source.txt') (Join-Path $OutDir 'inventory-restored.txt') --report (Join-Path $OutDir 'comparison.txt')
+    & node $CompareJs (Join-Path $OutDir 'inventory-source.txt') (Join-Path $OutDir 'inventory-restored.txt') --source-after (Join-Path $OutDir 'inventory-source-after.txt') --report (Join-Path $OutDir 'comparison.txt')
     $compareExit = $LASTEXITCODE
 
     # ---- 8) manifest - non-sensitive only -----------------------------------

@@ -377,3 +377,120 @@ test("هیچ‌کدام «موفق» نمی‌گویند مگر مقایسه س�
   assert.match(bash, /if \[ "\$COMPARE_RC" -eq 0 \][\s\S]{0,600}بکاپ ساخته شد و/);
   assert.match(ps1, /if \(\$compareExit -ne 0\)[\s\S]{0,300}Die/);
 });
+
+/* ── پنجرهٔ زندهٔ بکاپ — `compare.mjs --source-after` ─────────────────────────
+ *
+ * اثرِ انگشتِ مبدأ پیش از dump خوانده می‌شود و dump چند دقیقه طول می‌کشد.
+ * Production در همان چند دقیقه می‌نویسد. بدونِ این پنجره، یک بکاپِ کاملاً
+ * سالم مردود می‌شود و اپراتور یاد می‌گیرد این مقایسه را جدی نگیرد — که از
+ * نبودِ مقایسه بدتر است.
+ *
+ * ولی پنجره نباید به «هر عددی قبول است» تبدیل شود: عددِ کمتر از کمینهٔ
+ * پنجره یعنی داده از دست رفته و باید همچنان شکست باشد.
+ */
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, writeFileSync as writeFile } from "node:fs";
+import { tmpdir } from "node:os";
+
+const CMP = join(process.cwd(), "scripts", "backup", "compare.mjs");
+
+function runCompare(before: string, restored: string, after?: string): { code: number; out: string } {
+  const dir = mkdtempSync(join(tmpdir(), "cmp-"));
+  const f = (name: string, body: string) => {
+    const p = join(dir, name);
+    writeFile(p, body, "utf8");
+    return p;
+  };
+  const args = [CMP, f("before.txt", before), f("restored.txt", restored)];
+  if (after !== undefined) args.push("--source-after", f("after.txt", after));
+  try {
+    const out = execFileSync("node", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return { code: 0, out };
+  } catch (e) {
+    const err = e as { status?: number; stdout?: string; stderr?: string };
+    return { code: err.status ?? -1, out: `${err.stdout ?? ""}${err.stderr ?? ""}` };
+  }
+}
+
+/** یک جدولِ زنده و یک جدولِ ساکن و یک شیءِ ساختاری. */
+const BEFORE = [
+  "rowcount|public.symbol_history|2108888",
+  "rowcount|public.profiles|2",
+  "column|public.payments.amount|integer",
+].join("\n");
+const AFTER_LIVE = [
+  "rowcount|public.symbol_history|2109300",
+  "rowcount|public.profiles|2",
+  "column|public.payments.amount|integer",
+].join("\n");
+
+test("بدونِ پنجره: رشدِ طبیعیِ حینِ بکاپ یک بکاپِ سالم را مردود می‌کند", () => {
+  const restored = BEFORE.replace("2108888", "2109100");
+  const r = runCompare(BEFORE, restored);
+  assert.equal(r.code, 1, "این همان رفتاری است که پنجره برای اصلاحش آمده");
+});
+
+test("با پنجره: همان عدد داخلِ بازه پذیرفته و به‌عنوان drift گزارش می‌شود", () => {
+  const restored = BEFORE.replace("2108888", "2109100");
+  const r = runCompare(BEFORE, restored, AFTER_LIVE);
+  assert.equal(r.code, 0);
+  assert.match(r.out, /drift|پنجرهٔ اندازه‌گیری‌شده/);
+  assert.match(r.out, /symbol_history/);
+});
+
+test("با پنجره: مرزهای بازه هر دو پذیرفته‌اند", () => {
+  for (const v of ["2108888", "2109300"]) {
+    const r = runCompare(BEFORE, BEFORE.replace("2108888", v), AFTER_LIVE);
+    assert.equal(r.code, 0, `مرزِ ${v} باید پذیرفته شود`);
+  }
+});
+
+test("با پنجره: عددِ کمتر از کمینه همچنان شکست است — آن از‌دست‌رفتنِ داده است", () => {
+  const restored = BEFORE.replace("2108888", "2108000");
+  const r = runCompare(BEFORE, restored, AFTER_LIVE);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /بیرونِ آن است/);
+});
+
+test("با پنجره: عددِ بیشتر از بیشینه هم شکست است — پنجره سقف دارد", () => {
+  const restored = BEFORE.replace("2108888", "2200000");
+  assert.equal(runCompare(BEFORE, restored, AFTER_LIVE).code, 1);
+});
+
+test("جدولِ ساکن پنجره نمی‌گیرد — برابریِ دقیق لازم است", () => {
+  // `profiles` بینِ دو خواندن تکان نخورده، پس هیچ عذری ندارد.
+  const restored = BEFORE.replace("public.profiles|2", "public.profiles|3");
+  assert.equal(runCompare(BEFORE, restored, AFTER_LIVE).code, 1);
+});
+
+test("زنده‌بودنِ دیتابیس دربارهٔ **ساختار** هیچ عذری نمی‌سازد", () => {
+  const restored = BEFORE.replace("payments.amount|integer", "payments.amount|bigint");
+  assert.equal(runCompare(BEFORE, restored, AFTER_LIVE).code, 1);
+});
+
+test("جدولِ غایب با جدولِ زنده یکی نیست", () => {
+  const restored = BEFORE.split("\n").filter((l) => !l.includes("symbol_history")).join("\n");
+  const r = runCompare(BEFORE, restored, AFTER_LIVE);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /غایب/);
+});
+
+test("هر دو اسکریپت فهرستِ مبدأ را دو بار می‌خوانند و پنجره را پاس می‌دهند", () => {
+  // پاریتی عمدی است: اگر فقط یکی از دو مسیر پنجره را بفرستد، همان مسیرِ دیگر
+  // روی یک دیتابیسِ زنده بکاپِ سالم را مردود می‌کند — و چون هر دو «اسکریپتِ
+  // رسمی» هستند، معلوم نمی‌شود کدام درست گفته.
+  for (const [name, src] of [["bash", bash], ["ps1", ps1]] as const) {
+    assert.match(src, /inventory-source-after\.txt/, `${name}: خواندنِ دومِ مبدأ ندارد`);
+    assert.match(src, /--source-after/, `${name}: پنجره را به compare نمی‌دهد`);
+  }
+});
+
+test("خواندنِ دوم **پس از** dump است، نه پیش از آن", () => {
+  // اگر پیش از dump خوانده شود، پنجره خالی می‌ماند و کلِ این کار بی‌اثر است.
+  const afterIdx = bash.indexOf("inventory-source-after.txt");
+  const dumpIdx = bash.indexOf("--data-only");
+  assert.ok(dumpIdx > 0 && afterIdx > dumpIdx, "در bash خواندنِ دوم باید بعد از dumpِ داده باشد");
+  const psAfter = ps1.indexOf("inventory-source-after.txt");
+  const psDump = ps1.indexOf("--data-only");
+  assert.ok(psDump > 0 && psAfter > psDump, "در ps1 خواندنِ دوم باید بعد از dumpِ داده باشد");
+});

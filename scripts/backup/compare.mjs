@@ -2,7 +2,8 @@
 //
 // compare.mjs — مقایسهٔ **دوطرفهٔ** دو خروجیِ `inventory.sql`.
 //
-//   node scripts/backup/compare.mjs <source.txt> <restored.txt> [--report out.txt]
+//   node scripts/backup/compare.mjs <source.txt> <restored.txt> \
+//        [--source-after <after.txt>] [--report out.txt]
 //
 // خروجی: کدِ ۰ فقط وقتی دو فهرست **دقیقاً** یکی باشند.
 //
@@ -18,6 +19,32 @@
 //
 // «هر چیزی که در مبدأ بود در مقصد هست» نصفِ سؤال است. شیءِ **اضافه** در مقصد
 // هم یعنی بازگردانی همانی نیست که فکر می‌کنیم.
+//
+// ── چرا `--source-after` وجود دارد ──────────────────────────────────────────
+//
+// اثرِ انگشتِ مبدأ **پیش از** dump خوانده می‌شود و dump چند دقیقه طول می‌کشد.
+// Production در همان چند دقیقه می‌نویسد: رله هر ۵ دقیقه اسنپ‌شات می‌گذارد،
+// `symbol_history` روزانه بیش از هزار ردیف می‌گیرد، کدال مدام درج می‌کند. پس
+// فایلِ بازگردانی‌شده **بیشتر** ردیف دارد از عددی که پیش از dump ثبت شده — و
+// مقایسهٔ سخت‌گیرانه یک بکاپِ کاملاً سالم را مردود می‌کند.
+//
+// این بدترین نوع شکست است: «بکاپ خراب است» در حالی که فقط دیتابیس زنده بوده.
+// اپراتور یا بکاپ را دور می‌اندازد، یا بدتر، یاد می‌گیرد این مقایسه را جدی
+// نگیرد.
+//
+// راهِ حل **اعلام‌کردن** نیست، **اندازه‌گیری** است: فهرست دو بار از مبدأ
+// خوانده می‌شود، یکی پیش از dump و یکی پس از آن. هر جدولی که بینِ آن دو
+// تکان خورده، ثابت شده که در همان پنجره نوشته می‌شده؛ برای همان جدول‌ها
+// عددِ مقصد اگر **داخلِ همان بازه** باشد پذیرفته می‌شود و به‌عنوانِ `drift`
+// گزارش می‌شود — دیده‌شده، نه نادیده‌گرفته.
+//
+// بیرونِ بازه همچنان شکست است. مخصوصاً عددِ **کمتر** از کمینهٔ بازه: آن
+// دیگر «دیتابیس زنده بود» نیست، آن یعنی داده از دست رفته.
+//
+// جدول‌هایی که بینِ دو خواندن تکان نخورده‌اند همچنان **برابریِ دقیق** لازم
+// دارند، و کلِ بخش‌های ساختاری (ستون، قید، ایندکس، تابع، سیاست، امتیاز،
+// تریگر) دست‌نخورده و سخت‌گیرانه می‌مانند. زنده‌بودنِ دیتابیس دربارهٔ
+// **ساختار** هیچ عذری نمی‌سازد.
 
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -30,6 +57,9 @@ if (!sourcePath || !restoredPath) {
 
 const reportIndex = rest.indexOf("--report");
 const reportPath = reportIndex >= 0 ? rest[reportIndex + 1] : null;
+
+const afterIndex = rest.indexOf("--source-after");
+const sourceAfterPath = afterIndex >= 0 ? rest[afterIndex + 1] : null;
 
 /**
  * `section|key|value` → Map(identity → value).
@@ -63,16 +93,48 @@ function load(path) {
 
 const source = load(sourcePath);
 const restored = load(restoredPath);
+const sourceAfter = sourceAfterPath ? load(sourceAfterPath) : null;
 
 const missing = []; // در مبدأ هست، در مقصد نیست
 const extra = []; //   در مقصد هست، در مبدأ نیست
 const changed = []; // در هر دو هست، مقدار فرق دارد
+const drift = []; //   شمارشِ یک جدولِ زنده، داخلِ بازهٔ اندازه‌گیری‌شده
+
+/** فقط شمارشِ ردیف پنجره می‌گیرد؛ هیچ بخشِ ساختاری‌ای نه. */
+const isRowCount = (key) => key.startsWith("rowcount|");
+
+/**
+ * بازهٔ مجاز برای یک جدول: `null` یعنی پنجره‌ای اندازه‌گیری نشده و برابریِ
+ * دقیق لازم است.
+ */
+function window(key, before) {
+  if (!sourceAfter || !isRowCount(key)) return null;
+  const after = sourceAfter.get(key);
+  if (after === undefined) return null;
+  const a = Number(before);
+  const b = Number(after);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || a === b) return null;
+  return { lo: Math.min(a, b), hi: Math.max(a, b) };
+}
 
 for (const [key, value] of source) {
-  if (!restored.has(key)) missing.push(`${key} = ${value}`);
-  else if (restored.get(key) !== value) {
-    changed.push(`${key}\n      مبدأ:  ${value}\n      مقصد: ${restored.get(key)}`);
+  if (!restored.has(key)) {
+    missing.push(`${key} = ${value}`);
+    continue;
   }
+  const got = restored.get(key);
+  if (got === value) continue;
+
+  const win = window(key, value);
+  const n = Number(got);
+  if (win && Number.isFinite(n) && n >= win.lo && n <= win.hi) {
+    drift.push(`${key}: ${value} → ${got} (پنجرهٔ اندازه‌گیری‌شده ${win.lo}..${win.hi})`);
+    continue;
+  }
+  const note = win
+    ? `\n      پنجرهٔ زندهٔ اندازه‌گیری‌شده: ${win.lo}..${win.hi} — مقصد بیرونِ آن است`
+    : "";
+  changed.push(`${key}\n      مبدأ:  ${value}\n      مقصد: ${got}${note}`);
 }
 for (const key of restored.keys()) {
   if (!source.has(key)) extra.push(`${key} = ${restored.get(key)}`);
@@ -118,8 +180,19 @@ if (changed.length) {
   if (changed.length > 40) say(`    … و ${changed.length - 40} مورد دیگر`);
 }
 
+if (drift.length) {
+  // شکست نیست، ولی **پنهان هم نیست**: اپراتور باید ببیند کدام جدول‌ها حینِ
+  // بکاپ زنده بوده‌اند.
+  say(`\nℹ️ ${drift.length} جدول حینِ بکاپ نوشته شده — داخلِ بازهٔ اندازه‌گیری‌شده، پذیرفته:`);
+  for (const item of drift.slice(0, 40)) say(`    ~ ${item}`);
+  if (drift.length > 40) say(`    … و ${drift.length - 40} مورد دیگر`);
+}
+
 if (problems === 0) {
-  say(`\n✅ ${source.size} مورد بررسی شد · صفر اختلاف در هر دو جهت.`);
+  const note = sourceAfter
+    ? ` (${drift.length} جدولِ زنده داخلِ بازه)`
+    : " (بدونِ --source-after: برابریِ دقیق برای همه)";
+  say(`\n✅ ${source.size} مورد بررسی شد · صفر اختلاف در هر دو جهت${note}.`);
 } else {
   say(`\n❌ ${problems} اختلاف. بکاپ قابلِ اتکا نیست.`);
 }
