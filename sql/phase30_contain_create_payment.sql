@@ -21,66 +21,111 @@
 -- پس امروز این یک **ارتقای دسترسیِ زنده نیست**؛ یک مسیرِ نوشتنِ کنترل‌نشده در
 -- دفترِ مالی است.
 --
--- ── چرا با این حال حالا بسته می‌شود ─────────────────────────────────────────
--- لحظه‌ای که #113 با `finalize_paid_access` بیاید، «ردیفِ paid» معنیِ
--- «دسترسی» پیدا می‌کند — و آن‌وقت همین خط از یک آلودگیِ دفتری به یک حفرهٔ
--- واقعی تبدیل می‌شود. بستنش **قبل از** آن، یک خط است؛ بعد از آن، یک حادثه.
+-- ── چرا با این حال حالا بسته می‌شود — و ادعایی که **نمی‌کنیم** ───────────────
+-- `phase24` در #113 خودش قراردادِ پرداخت را عوض می‌کند: امضای دوآرگومانی را
+-- شرطی `REVOKE` و `DROP` می‌کند (خطِ ۶۲۰) و اگر باقی مانده باشد
+-- `RAISE EXCEPTION` می‌دهد (خطِ ۶۸۰). پس **این جمله که «merge شدنِ #113 حتماً
+-- این را به ارتقای دسترسی تبدیل می‌کند» درست نیست** و در نسخهٔ قبلِ همین فایل
+-- بیش از شواهد گفته شده بود.
+--
+-- خطرِ واقعیِ باقی‌مانده باریک‌تر و مشخص‌تر است: پنجره‌ای که در آن
+-- `finalize_paid_access` وجود داشته باشد **و** امضای دوآرگومانی هنوز زنده
+-- باشد. با اجرای کاملِ `phase24` چنین پنجره‌ای ساخته نمی‌شود؛ با اجرای
+-- **ناقص یا نیمه‌کاره** یا با ترتیبی که `finalize_paid_access` را جدا بیاورد،
+-- ساخته می‌شود. `phase30` همان پنجره را **از قبل** می‌بندد و مستقل از زمان‌بندیِ
+-- #113 اجرا می‌شود.
 --
 -- ── چرا این فایل پشتِ دروازهٔ بکاپ نیست ─────────────────────────────────────
 -- نه جدولی، نه ستونی، نه ردیفی، نه امضای تابعی عوض نمی‌شود. فقط یک امتیاز
 -- پس گرفته می‌شود. بازگشت **یک دستور** است و در پایینِ همین فایل نوشته شده.
--- هیچ دادهٔ کاربری در معرضِ این تغییر نیست؛ `payments` امروز **صفر ردیف** دارد.
 --
--- ── سازگاریِ نسخهٔ جاری ─────────────────────────────────────────────────────
--- `app/api/payment/request/route.ts` این تابع را با کلاینتِ **کاربر** صدا
--- می‌زند. پس از این فایل، آن فراخوانی `permission denied` می‌گیرد. روتِ همان
--- کامیت این حالت را می‌شناسد و **۵۰۳ صادق** برمی‌گرداند («پرداخت موقتاً در
--- دسترس نیست») نه ۵۰۰ مبهم — یعنی برنامه با **هر دو** حالتِ دیتابیس درست کار
--- می‌کند و ترتیبِ انتشار اجباری نیست.
+-- ── ⚠️ اثرِ عملیاتی: این یک «توقفِ کنترل‌شدهٔ پرداخت» است ────────────────────
+-- پس از این فایل، مسیرِ `/api/payment/request` دیگر **کار نمی‌کند** — نه اینکه
+-- «با پیامِ بهتری کار کند». تا merge شدنِ #113 پرداختِ تازه ممکن نیست.
+-- امروز این هزینه صفر است (`payments` صفر ردیف؛ هیچ پرداختی تا کنون کامل
+-- نشده)، ولی ادعای «قابلیت حفظ شد» غلط است.
 --
--- پایانِ این وضعیتِ موقت، #113 است: آنجا روت با `service_role` و امضای
--- سه‌آرگومانی صدا می‌زند و `authenticated` دیگر اصلاً لازم نیست.
+-- ترتیبِ انتشار **اهمیت دارد**:
+--   ۱. اول نسخهٔ برنامه‌ای که `permission denied` را می‌شناسد مستقر شود.
+--   ۲. بعد این فایل اجرا شود.
+-- اگر برعکس شود، کاربر به‌جای ۵۰۳ یک ۵۰۰ِ مبهم می‌بیند. جزئیات و اثرِ
+-- `authority`ِ بی‌رکورد در `docs/ops/RELEASE-payment-containment.md`.
+--
+-- ── چرا همه‌چیز داخلِ یک بلوک است ───────────────────────────────────────────
+-- نسخهٔ قبلِ این فایل `REVOKE` را **پیش از** بررسیِ وجودِ تابع اجرا می‌کرد. دو
+-- نقص داشت و هر دو اندازه‌گیری شدند، نه حدس:
+--   • روی دیتابیسی که امضای دوآرگومانی ندارد (یعنی بعد از `phase24`) اجرای
+--     فایل با `ERROR: function public.create_payment(integer, text) does not
+--     exist` می‌افتاد و شاخهٔ «بی‌اثر» هرگز به آن نمی‌رسید.
+--   • اگر راستی‌آزمایی شکست می‌خورد، `REVOKE`ها از قبل اعمال شده بودند و
+--     ACL نیمه‌تغییریافته می‌ماند.
+-- حالا بررسیِ امضا **اولین** کار است و تغییر و راستی‌آزمایی در **یک** بلوک
+-- `DO` هستند؛ هر `RAISE EXCEPTION` کلِ تغییر را برمی‌گرداند.
 -- =============================================================================
 
-REVOKE EXECUTE ON FUNCTION public.create_payment(integer, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.create_payment(integer, text) FROM anon;
-REVOKE EXECUTE ON FUNCTION public.create_payment(integer, text) FROM authenticated;
-
--- سرور باید بتواند. این خط عمداً هست تا فایل روی محیطی که گرنت را ندارد هم
--- به وضعیتِ درست برسد، نه فقط روی محیطی که از قبل داشت.
-GRANT EXECUTE ON FUNCTION public.create_payment(integer, text) TO service_role;
-
--- ── راستی‌آزماییِ پس از اجرا ────────────────────────────────────────────────
-DO $$
+DO $phase30$
 DECLARE
-  auth_x bool;
-  anon_x bool;
-  svc_x  bool;
-  v_oid  oid;
+  v_oid    regprocedure;
+  v_sig    constant text := 'public.create_payment(integer, text)';
+  auth_x   bool;
+  anon_x   bool;
+  pub_x    bool;
+  svc_x    bool;
 BEGIN
-  SELECT p.oid INTO v_oid
-  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
-  WHERE n.nspname = 'public' AND p.proname = 'create_payment'
-    AND pg_get_function_identity_arguments(p.oid) = 'p_amount integer, p_authority text';
-
+  -- ── ۰) امضا هست یا نه — **پیش از هر عملیاتِ وابسته به آن** ────────────────
+  v_oid := to_regprocedure(v_sig);
   IF v_oid IS NULL THEN
-    -- روی محیطی که #113 اجرا شده، امضای دوآرگومانی دیگر نیست و این فایل
-    -- بی‌موضوع است. ساکت رد نمی‌شویم — صریح می‌گوییم.
-    RAISE NOTICE 'phase30: امضای دوآرگومانیِ create_payment نیست — احتمالاً #113 اجرا شده؛ بی‌اثر';
+    -- روی محیطی که `phase24` اجرا شده، این امضا دیگر نیست و فایل بی‌موضوع
+    -- است. ساکت رد نمی‌شویم — صریح می‌گوییم و **خطا نمی‌دهیم**.
+    RAISE NOTICE 'phase30: امضای % وجود ندارد — احتمالاً phase24 اجرا شده؛ بی‌اثر', v_sig;
     RETURN;
   END IF;
 
-  SELECT has_function_privilege('authenticated', v_oid, 'EXECUTE'),
-         has_function_privilege('anon', v_oid, 'EXECUTE'),
-         has_function_privilege('service_role', v_oid, 'EXECUTE')
-    INTO auth_x, anon_x, svc_x;
+  -- ── ۱) پس‌گرفتنِ امتیاز ───────────────────────────────────────────────────
+  -- `PUBLIC` جداگانه لازم است: امتیازِ PUBLIC به هر نقشی می‌رسد و با
+  -- `REVOKE ... FROM authenticated` برداشته نمی‌شود.
+  EXECUTE format('REVOKE ALL ON FUNCTION %s FROM PUBLIC', v_oid);
+  EXECUTE format('REVOKE ALL ON FUNCTION %s FROM anon', v_oid);
+  EXECUTE format('REVOKE ALL ON FUNCTION %s FROM authenticated', v_oid);
 
-  IF auth_x THEN RAISE EXCEPTION 'phase30: authenticated هنوز EXECUTE دارد'; END IF;
-  IF anon_x THEN RAISE EXCEPTION 'phase30: anon هنوز EXECUTE دارد'; END IF;
-  IF NOT svc_x THEN RAISE EXCEPTION 'phase30: service_role دیگر EXECUTE ندارد — سرور می‌شکند'; END IF;
+  -- سرور باید بتواند. صریح داده می‌شود تا فایل روی محیطی که این گرنت را
+  -- ندارد هم به وضعیتِ درست برسد، نه فقط روی محیطی که از قبل داشت.
+  EXECUTE format('GRANT EXECUTE ON FUNCTION %s TO service_role', v_oid);
 
-  RAISE NOTICE 'phase30 ok — create_payment حالا هم‌ترازِ verify_payment و fail_payment است';
-END $$;
+  -- ── ۲) راستی‌آزمایی، در همان تراکنش ──────────────────────────────────────
+  -- `has_function_privilege` امتیازِ **مؤثر** را می‌دهد: هم مسیرِ `PUBLIC` و
+  -- هم عضویتِ نقش‌ها را حساب می‌کند. پس اگر `authenticated` از راهِ یک نقشِ
+  -- واسط هنوز EXECUTE داشته باشد، اینجا گرفته می‌شود — و چون داخلِ همین
+  -- بلوک است، `REVOKE`ها هم برمی‌گردند.
+  auth_x := has_function_privilege('authenticated', v_oid, 'EXECUTE');
+  anon_x := has_function_privilege('anon', v_oid, 'EXECUTE');
+  pub_x  := has_function_privilege('public', v_oid, 'EXECUTE');
+  svc_x  := has_function_privilege('service_role', v_oid, 'EXECUTE');
+
+  IF auth_x THEN
+    RAISE EXCEPTION 'phase30: authenticated هنوز EXECUTEِ مؤثر دارد — احتمالاً از راهِ عضویت در نقشِ دیگری. با «\\du authenticated» دنبالش بگرد. هیچ تغییری اعمال نشد.';
+  END IF;
+  IF anon_x THEN
+    RAISE EXCEPTION 'phase30: anon هنوز EXECUTEِ مؤثر دارد. هیچ تغییری اعمال نشد.';
+  END IF;
+  IF pub_x THEN
+    RAISE EXCEPTION 'phase30: PUBLIC هنوز EXECUTEِ مؤثر دارد. هیچ تغییری اعمال نشد.';
+  END IF;
+  IF NOT svc_x THEN
+    RAISE EXCEPTION 'phase30: service_role دیگر EXECUTE ندارد — سرور می‌شکند. هیچ تغییری اعمال نشد.';
+  END IF;
+
+  RAISE NOTICE 'phase30 ok — % حالا هم‌ترازِ verify_payment و fail_payment است', v_sig;
+END
+$phase30$;
+
+-- ⚠️ داشتنِ EXECUTE برای `service_role` **به‌معنای کارکردنِ تابع نیست**. این
+--    تابع نشست‌محور است و `auth.uid()` را از claimsِ JWT می‌خواند؛ زیرِ
+--    `service_role`ِ بدونِ claims مقدارش `NULL` است و خودِ تابع
+--    `دسترسی غیرمجاز.` پرتاب می‌کند. یعنی پس از این فایل **هیچ مسیرِ کاریِ
+--    باقی‌مانده‌ای برای این تابع نیست** تا امضای چهارآرگومانیِ `phase24` بیاید.
+--    این عمدی است و همان «توقفِ کنترل‌شده» است. تستِ رفتاری‌اش در
+--    `lib/security/create-payment-containment.integration.test.ts`.
 
 -- ── بازگشت (یک دستور) ───────────────────────────────────────────────────────
 --   GRANT EXECUTE ON FUNCTION public.create_payment(integer, text) TO authenticated;
