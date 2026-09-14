@@ -63,11 +63,19 @@ jobs:
        github.event.workflow_run.head_branch == 'main' &&
        github.event.workflow_run.event == 'push')
     steps:
-      # شاخهٔ پیش‌فرض، با کلِ تاریخچه و تگ‌ها — برای محاسبهٔ نسبتِ SHA با main
-      # و با مبنای انتشار. `git archive` بعداً بستهٔ مقصد را جدا می‌کند.
+      # `ref: main` صریح است و **انتخابِ شاخه در workflow_dispatch منبعِ منطقِ
+      # دروازه را عوض نمی‌کند**. بدونِ آن، اجرای دستی از یک شاخهٔ دلخواه،
+      # `scripts/deploy/` همان شاخه را اجرا می‌کرد.
+      # ⚠️ آنچه این تضمین نمی‌کند: خودِ فایلِ workflow را GitHub از refِ انتخابی
+      # برمی‌دارد. مهارِ آن با دسترسیِ dispatch و محافظتِ شاخه است، نه اینجا.
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
+
+      - name: ثبتِ SHAِ منطقِ دروازه
+        id: gatesrc
+        run: echo "gate_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
         with:
@@ -180,7 +188,9 @@ jobs:
           git archive "$SHA" relay | tar -x -C "$PAYLOAD"
           test -f "$PAYLOAD/relay/liara.json"
 
-          echo "published_at=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
+          # زمانِ **تلاش**، نه زمانِ موفقیت. اگر CLI شکست بخورد این مقدار
+          # همچنان وجود دارد — پس گزارش نباید از آن «منتشر شد» بسازد.
+          echo "started_at=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
           # پیامِ release حاملِ **SHAِ کامل** است — همان‌جا که نسخهٔ مستقر به
           # کامیت گره می‌خورد.
           npx --yes "$LIARA_CLI" deploy \
@@ -194,6 +204,8 @@ jobs:
 
           REL=$(grep -oE '\bv[0-9]+\b' "$RUNNER_TEMP/deploy.log" | tail -1 || true)
           echo "release=${REL:-نامشخص-از-خروجیِ-CLI}" >> "$GITHUB_OUTPUT"
+          # فقط پس از خروجِ موفقِ CLI نوشته می‌شود (`set -e` بالاتر).
+          echo "published_at=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
 
       # مبنا بلافاصله پس از انتشارِ موفق جابه‌جا می‌شود، نه پس از پذیرش:
       # «چه چیزی مستقر است» با «چه چیزی پذیرفته شد» یکی نیست.
@@ -223,9 +235,12 @@ jobs:
           exit 1
 
       # ── پذیرش — جدا از انتشار ───────────────────────────────────────────────
+      # بازگشت عمداً پذیرش ندارد: نسخهٔ قدیمی کلیدِ `historySections` را منتشر
+      # نمی‌کند، پس معیارِ نسخهٔ هدف رویش بی‌معنا است و یک «رد شد»ِ گمراه‌کننده
+      # می‌سازد. در گزارش `not-applicable` ثبت می‌شود، نه موفق.
       - name: پذیرش — شاهدِ نسخه از /debug
         id: accept
-        if: steps.gate.outputs.action == 'publish'
+        if: steps.gate.outputs.action == 'publish' && steps.gate.outputs.code != 'rollback'
         env:
           RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
           DEBUG_REACHABLE: ${{ steps.preflight.outputs.debug_reachable }}
@@ -237,7 +252,7 @@ jobs:
             exit 0
           fi
           BODY=$(curl -fsS --max-time 20 -H "Authorization: Bearer ${RELAY_TOKEN}" "$DEBUG_URL" || true)
-          if printf '%s' "$BODY" | node scripts/deploy/relay-gate.mjs accept '{}'; then
+          if printf '%s' "$BODY" | node scripts/deploy/relay-gate.mjs accept "{\"phase28Applied\": ${PHASE28_APPLIED}}"; then
             echo "status=passed" >> "$GITHUB_OUTPUT"
           else
             echo "status=failed" >> "$GITHUB_OUTPUT"
@@ -247,22 +262,15 @@ jobs:
       - name: گزارش
         if: always()
         env:
-          ACTION: ${{ steps.gate.outputs.action }}
-          CODE: ${{ steps.gate.outputs.code }}
-          REASON: ${{ steps.gate.outputs.reason }}
+          GATE_ACTION: ${{ steps.gate.outputs.action }}
+          GATE_CODE: ${{ steps.gate.outputs.code }}
+          GATE_REASON: ${{ steps.gate.outputs.reason }}
           SHA: ${{ steps.sha.outputs.sha }}
+          GATE_SHA: ${{ steps.gatesrc.outputs.gate_sha }}
           BASELINE: ${{ steps.gate.outputs.baseline }}
+          STARTED_AT: ${{ steps.publish.outputs.started_at }}
+          PUBLISHED_AT: ${{ steps.publish.outputs.published_at }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
           RELEASE: ${{ steps.publish.outputs.release }}
-          AT: ${{ steps.publish.outputs.published_at }}
-          ACCEPT: ${{ steps.accept.outputs.status }}
-        run: |
-          {
-            echo "| مورد | مقدار |"
-            echo "|---|---|"
-            echo "| تصمیم | \`${ACTION:-—}\` (${CODE:-—}) — ${REASON:-—} |"
-            echo "| SHA | \`${SHA:-—}\` |"
-            echo "| مبنای قبلی | \`${BASELINE:-—}\` |"
-            echo "| **انتشار** | ${AT:+انجام شد در \`$AT\`}${AT:-انجام نشد} |"
-            echo "| release | \`${RELEASE:-—}\` |"
-            echo "| **پذیرش** | \`${ACCEPT:-در انتظار}\` |"
-          } >> "$GITHUB_STEP_SUMMARY"
+          ACCEPTANCE: ${{ steps.accept.outputs.status }}
+        run: node scripts/deploy/relay-gate.mjs report >> "$GITHUB_STEP_SUMMARY"

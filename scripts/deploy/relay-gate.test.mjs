@@ -6,6 +6,7 @@ import {
   decidePublish,
   evaluateFlags,
   evaluateDebug,
+  summarize,
 } from "./relay-gate.mjs";
 
 // ── SHA ─────────────────────────────────────────────────────────────────────
@@ -279,4 +280,111 @@ test("CLI: شکستِ دروازه کدِ خروجِ ۱ می‌دهد و چیز�
     assert.equal(r.status, 1, `${args[0]} باید رد شود`);
     assert.ok(onlyPairs(r.stdout), `${args[0]} روی stdout نوشت:\n${r.stdout}`);
   }
+});
+
+// ── ۳) پذیرش: بدونِ phase28، کلاینتِ روشن هم رد است ──────────────────────────
+
+test("پذیرش: brsapiClient.enabled=true بدونِ phase28 رد می‌شود", () => {
+  const r = evaluateDebug(dbg({ brsapiClient: { enabled: true } }));
+  assert.equal(r.ok, false);
+  assert.match(r.failures.join(" "), /brsapi_budget_lease/);
+});
+
+test("پذیرش: با phase28 اجراشده، هر دو پرچمِ روشن مانع نیستند", () => {
+  const r = evaluateDebug(dbg({ brsapiLegacy: { enforced: true }, brsapiClient: { enabled: true } }), {
+    phase28Applied: true,
+  });
+  assert.equal(r.ok, true, r.failures.join(" | "));
+});
+
+test("پذیرش: بدونِ phase28، هر دو مستقل از هم رد می‌کنند", () => {
+  assert.equal(evaluateDebug(dbg({ brsapiLegacy: { enforced: true } })).ok, false);
+  assert.equal(evaluateDebug(dbg({ brsapiClient: { enabled: true } })).ok, false);
+  const both = evaluateDebug(dbg({ brsapiLegacy: { enforced: true }, brsapiClient: { enabled: true } }));
+  assert.equal(both.failures.length, 2, "هر دو باید جداگانه گزارش شوند");
+});
+
+// ── ۲) زمانِ تلاش ≠ موفقیتِ انتشار ────────────────────────────────────────────
+
+test("گزارش: published_at موجود ولی گامِ publish شکست‌خورده «منتشر شد» نیست", () => {
+  const r = summarize({
+    gateAction: "publish",
+    publishOutcome: "failure",
+    startedAt: "2026-09-14T11:00:00Z",
+    publishedAt: "2026-09-14T11:00:00Z", // باقی‌ماندهٔ یک تلاشِ ناموفق
+  });
+  assert.equal(r.publish.state, "failed");
+  assert.match(r.publish.text, /شکست/);
+  assert.equal(r.acceptance.state, "not-attempted", "پذیرشِ انتشارِ نشده معنا ندارد");
+});
+
+test("گزارش: فقط outcome موفق + زمانِ انتشار «منتشر شد» می‌سازد", () => {
+  const ok = summarize({
+    gateAction: "publish",
+    publishOutcome: "success",
+    startedAt: "2026-09-14T11:00:00Z",
+    publishedAt: "2026-09-14T11:02:00Z",
+    acceptance: "passed",
+  });
+  assert.equal(ok.publish.state, "done");
+  assert.match(ok.publish.text, /11:02/);
+  assert.equal(ok.acceptance.state, "passed");
+
+  // موفق ولی بدونِ زمانِ انتشار → همچنان «منتشر شد» نیست.
+  assert.equal(
+    summarize({ gateAction: "publish", publishOutcome: "success", startedAt: "x" }).publish.state,
+    "failed",
+  );
+});
+
+test("گزارش: دروازه که رد کند، انتشار «انجام نشد» است نه شکست", () => {
+  const r = summarize({ gateAction: "skip", gateCode: "no-relay-change" });
+  assert.equal(r.publish.state, "not-attempted");
+  assert.match(r.publish.text, /no-relay-change/);
+  assert.equal(r.acceptance.state, "not-attempted");
+});
+
+test("گزارش: پذیرشِ ناموفق و در انتظار از هم جدا می‌مانند", () => {
+  const base = { gateAction: "publish", publishOutcome: "success", publishedAt: "t" };
+  assert.equal(summarize({ ...base, acceptance: "failed" }).acceptance.state, "failed");
+  assert.equal(summarize({ ...base, acceptance: "pending" }).acceptance.state, "pending");
+  assert.equal(summarize({ ...base }).acceptance.state, "pending", "پیش‌فرض موفق نیست");
+  assert.equal(summarize({ ...base, acceptance: "bogus" }).acceptance.state, "pending");
+});
+
+test("گزارش: بازگشت، پذیرشِ نسخهٔ هدف را «اعمال‌نشدنی» ثبت می‌کند نه رد", () => {
+  const r = summarize({ gateAction: "publish", publishOutcome: "success", publishedAt: "t", rollback: true });
+  assert.equal(r.acceptance.state, "not-applicable");
+});
+
+// ── ۱) قیدِ منبعِ منطقِ دروازه در workflow ────────────────────────────────────
+// این‌ها قراردادِ خودِ فایلِ workflow‌اند؛ منطقشان در YAML است، پس اینجا روی
+// متنِ همان فایل ادعا می‌شود تا رگرسیونِ خاموش ممکن نباشد.
+
+import { readFileSync } from "node:fs";
+const WF = readFileSync(new URL("../../.github/workflows/deploy-relay.yml", import.meta.url), "utf8");
+
+test("workflow: checkout صریحاً به main مقید است", () => {
+  assert.match(WF, /uses: actions\/checkout@v4\s*\n\s*with:\s*\n\s*ref: main\b/);
+});
+
+test("workflow: SHAِ منطقِ دروازه ثبت و گزارش می‌شود", () => {
+  assert.match(WF, /gate_sha=\$\(git rev-parse HEAD\)/);
+  assert.match(WF, /GATE_SHA: \$\{\{ steps\.gatesrc\.outputs\.gate_sha \}\}/);
+});
+
+test("workflow: گزارش به outcome واقعیِ گامِ publish نگاه می‌کند", () => {
+  assert.match(WF, /PUBLISH_OUTCOME: \$\{\{ steps\.publish\.outcome \}\}/);
+});
+
+test("workflow: published_at پس از دستورِ deploy نوشته می‌شود، نه پیش از آن", () => {
+  const deployAt = WF.indexOf("deploy \\");
+  const publishedAt = WF.indexOf('echo "published_at=');
+  const startedAt = WF.indexOf('echo "started_at=');
+  assert.ok(startedAt > -1 && startedAt < deployAt, "started_at باید پیش از deploy باشد");
+  assert.ok(publishedAt > deployAt, "published_at باید پس از deploy باشد");
+});
+
+test("workflow: پذیرش همان واقعیتِ phase28 را می‌گیرد", () => {
+  assert.match(WF, /accept "\{\\"phase28Applied\\": \$\{PHASE28_APPLIED\}\}"/);
 });

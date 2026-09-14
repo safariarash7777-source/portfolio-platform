@@ -237,7 +237,7 @@ function sectionsOf(v) {
  * `{}`، فیلدِ مفقود و `written` نامطلوب هر سه **رد** می‌شوند.
  */
 export function evaluateDebug(raw, opts = {}) {
-  const { expectSections = ["gold", "currency"] } = opts;
+  const { expectSections = ["gold", "currency"], phase28Applied = false } = opts;
   const parsed = parseObject(raw);
   if (!parsed.ok) return { ok: false, failures: [`پاسخِ /debug ${parsed.reason}`], summary: null };
 
@@ -268,14 +268,22 @@ export function evaluateDebug(raw, opts = {}) {
     else if (hs.missing.length) failures.push(`historySections.missing خالی نیست: [${hs.missing}]`);
   }
 
+  // پذیرش همان دو شرطِ پیش‌پرواز را روی نسخهٔ **مستقر** دوباره می‌سنجد: بینِ
+  // خواندنِ پرچم‌ها و بالا آمدنِ نسخهٔ تازه، مقدارِ محیط می‌تواند عوض شده باشد.
+  // بدونِ phase28 هر دو مسیر به توقفِ دادهٔ بازار می‌رسند، نه فقط enforcement.
   if (typeof d.brsapiLegacy?.enforced !== "boolean") {
     failures.push("brsapiLegacy.enforced در /debug نیست یا boolean نیست");
-  } else if (d.brsapiLegacy.enforced === true) {
+  } else if (d.brsapiLegacy.enforced === true && !phase28Applied) {
     failures.push("brsapiLegacy.enforced=true روی نسخهٔ مستقر، ولی phase28 اجرا نشده");
   }
 
   if (typeof d.brsapiClient?.enabled !== "boolean") {
     failures.push("brsapiClient.enabled در /debug نیست یا boolean نیست");
+  } else if (d.brsapiClient.enabled === true && !phase28Applied) {
+    failures.push(
+      "brsapiClient.enabled=true روی نسخهٔ مستقر، ولی phase28 اجرا نشده — " +
+        "کلاینتِ مرکزی rpc(brsapi_budget_lease) را صدا می‌زند که وجود ندارد",
+    );
   }
 
   return {
@@ -289,6 +297,48 @@ export function evaluateDebug(raw, opts = {}) {
           clientEnabled: d.brsapiClient.enabled,
         },
   };
+}
+
+// ── گزارش ───────────────────────────────────────────────────────────────────
+
+/**
+ * «انتشار» و «پذیرش» دو پرسشِ جدا هستند و اینجا جدا جواب داده می‌شوند.
+ *
+ * نکتهٔ اصلی: **وجودِ زمانِ شروع، اثباتِ انتشار نیست.** زمانِ تلاش پیش از اجرای
+ * CLI ثبت می‌شود، پس اگر CLI شکست بخورد همچنان یک timestamp وجود دارد. تنها
+ * چیزی که «منتشر شد» را تعیین می‌کند، `outcome` واقعیِ همان گام است.
+ */
+export function summarize(input) {
+  const {
+    gateAction,
+    gateCode = "",
+    publishOutcome = "",
+    startedAt = "",
+    publishedAt = "",
+    acceptance = "",
+    rollback = false,
+  } = input;
+
+  let publish;
+  if (gateAction !== "publish") {
+    publish = { state: "not-attempted", text: `انجام نشد — ${gateCode || "دروازه"}` };
+  } else if (publishOutcome === "success" && publishedAt) {
+    publish = { state: "done", text: `انجام شد در \`${publishedAt}\`` };
+  } else {
+    publish = {
+      state: "failed",
+      text: `**شکست خورد** — تلاش از \`${startedAt || "نامشخص"}\``,
+    };
+  }
+
+  let accept;
+  if (publish.state !== "done") accept = { state: "not-attempted", text: "انجام نشد" };
+  else if (rollback) accept = { state: "not-applicable", text: "بازگشت — معیارِ نسخهٔ هدف اعمال نمی‌شود" };
+  else if (["passed", "failed", "pending"].includes(acceptance)) {
+    accept = { state: acceptance, text: { passed: "موفق", failed: "**رد شد**", pending: "در انتظار" }[acceptance] };
+  } else accept = { state: "pending", text: "در انتظار" };
+
+  return { publish, acceptance: accept };
 }
 
 // ── CLI ─────────────────────────────────────────────────────────────────────
@@ -345,6 +395,39 @@ const MAIN = {
       process.exit(1);
     }
     console.log(`::notice::پذیرش: written=[${r.summary.written}] enforced=${r.summary.legacyEnforced}`);
+  },
+  report() {
+    // ورودی از محیط می‌آید، نه از یک JSONِ ساخته‌شده در YAML: زنجیرهٔ
+    // format/fromJSON در workflow با هر نقل‌قول یا کاراکترِ فارسی می‌شکست.
+    const e = process.env;
+    const a = {
+      gateAction: e.GATE_ACTION || "",
+      gateCode: e.GATE_CODE || "",
+      gateReason: e.GATE_REASON || "",
+      sha: e.SHA || "",
+      gateSha: e.GATE_SHA || "",
+      baseline: e.BASELINE || "",
+      startedAt: e.STARTED_AT || "",
+      publishedAt: e.PUBLISHED_AT || "",
+      publishOutcome: e.PUBLISH_OUTCOME || "",
+      release: e.RELEASE || "",
+      acceptance: e.ACCEPTANCE || "",
+      rollback: e.GATE_CODE === "rollback",
+    };
+    const r = summarize(a);
+    const cell = (v) => (v ? `\`${v}\`` : "—");
+    const rows = [
+      ["تصمیمِ دروازه", `${cell(a.gateAction)} (${a.gateCode || "—"}) — ${a.gateReason || "—"}`],
+      ["SHAِ منتشرشونده", cell(a.sha)],
+      ["SHAِ منطقِ دروازه", cell(a.gateSha)],
+      ["مبنای قبلی", cell(a.baseline)],
+      ["**انتشار**", r.publish.text],
+      ["release", cell(a.release)],
+      ["**پذیرش**", r.acceptance.text],
+    ];
+    console.log("| مورد | مقدار |");
+    console.log("|---|---|");
+    for (const [k, v] of rows) console.log(`| ${k} | ${v} |`);
   },
   sha() {
     const v = validateShaInput(process.argv[3]);
