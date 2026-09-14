@@ -102,6 +102,11 @@ jobs:
       - name: Relay tests (no external services)
         run: npm run test:relay
 
+      # دروازه‌های استقرارِ رله: تصمیمِ «منتشر بشود یا نه» و «پذیرفته است یا نه»
+      # منطقِ خالص است و اینجا آزموده می‌شود — نه با اجرای واقعی روی Production.
+      - name: Deploy gate tests
+        run: npm run test:deploy
+
       # build آخر است: گران‌ترین گام، بعد از ارزان‌ترین بازخوردها.
       - name: Build
         run: npm run build

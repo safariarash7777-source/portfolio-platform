@@ -1,45 +1,42 @@
 name: Deploy relay
 
 # ── چرا این فایل وجود دارد ──────────────────────────────────────────────────
-# تا امروز رله از راهِ «اتصالِ مستقیمِ مخزن» در کنسولِ لیارا منتشر می‌شد و آن
-# مسیر با `"port" is required` شکسته است (`B-053`). علتش داخلِ مخزن نیست:
-# `relay/liara.json` از کامیتِ `6570aaf` — همان نسخهٔ موفقِ v46 که همین حالا
-# زنده است — تا `main` امروز **بایت‌به‌بایت یکی** است، و `liara.json` در ریشهٔ
-# مخزن **هیچ‌وقت وجود نداشته**. پس آن‌چه عوض شده حالتِ سمتِ کنسول است، و هیچ
-# ویرایشی در مخزن نمی‌تواند اثبات‌شده درستش کند.
+# مسیرِ «اتصالِ مستقیمِ مخزن» در کنسولِ لیارا با `"port" is required` رد می‌شود
+# (`B-053`). ⚠️ **علتِ ریشه‌ای هنوز تأیید نشده** — لاگِ بیلد خوانده نشده و
+# ثابت‌ماندنِ `relay/liara.json` بینِ `6570aaf` و `main` هم آن را اثبات نمی‌کند.
+# آنچه این workflow حل می‌کند این است که سه چیزِ ضروریِ انتشار دیگر ضمنی و
+# وابسته به حالتِ کنسول نباشند:
 #
-# افزودنِ یک `liara.json` به ریشه هم راه‌حل نیست: `scripts.start` ریشه
-# `next start` است، پس آن کار «خطا را خاموش می‌کند» و در عوض **اپِ Next.js**
-# را به‌جای رله منتشر می‌کند.
-#
-# این workflow هر سه چیزِ گم‌شده را صریح و نسخه‌دار می‌کند:
 #   app = arsadata · source = relay/ · port = 3400
 #
 # ⚠️ دو منتشرکنندهٔ هم‌زمان ممنوع: پیش از فعال‌شدنِ این مسیر، «اتصالِ مخزن» در
 # کنسولِ اپ باید قطع شود. جزئیات: docs/RUNBOOK-relay-deploy.md
+#
+# ── نکتهٔ امنیتیِ ساختار ─────────────────────────────────────────────────────
+# منطقِ دروازه‌ها از `scripts/deploy/relay-gate.mjs` **روی شاخهٔ پیش‌فرض** اجرا
+# می‌شود، نه از کامیتی که منتشر می‌شود. بستهٔ انتشار با `git archive` در پوشهٔ
+# موقت باز می‌شود تا درختِ کاری دست‌نخورده بماند. یعنی کامیتِ مقصد نمی‌تواند
+# دروازه‌های خودش را بازنویسی کند.
 
 on:
-  # فقط پس از CI سبز روی همان SHA — نه با هر push.
   workflow_run:
     workflows: ["CI"]
     types: [completed]
-  # انتشارِ دستی و مسیرِ بازگشت (SHA نسخهٔ سالم را بده).
   workflow_dispatch:
     inputs:
       sha:
-        description: "SHA برای انتشار (خالی = HEAD شاخهٔ انتخابی). برای بازگشت، SHA نسخهٔ سالم."
-        required: false
-        default: ""
-      flags_checked:
-        description: "پرچم‌های اپ را دستی بررسی کرده‌ام؛ اگر پیش‌پرواز نتوانست بخواند ادامه بده"
+        description: "SHA برای انتشار (کامل یا حداقل ۷ رقم)"
+        required: true
+      allow_older:
+        description: "بازگشت — اجازهٔ انتشارِ کامیتی قدیمی‌تر از نسخهٔ مستقر (CIِ موفق همچنان لازم است)"
         type: boolean
         required: false
         default: false
 
 permissions:
-  contents: read
+  contents: write   # جابه‌جاییِ تگِ relay-deployed = مبنای «چه چیزی مستقر است»
+  actions: read     # پرس‌وجوی اجراهای CI برای همان SHA
 
-# هرگز دو انتشارِ هم‌زمان؛ و یک انتشارِ نیمه‌کاره را هم لغو نکن.
 concurrency:
   group: deploy-relay-arsadata
   cancel-in-progress: false
@@ -47,26 +44,36 @@ concurrency:
 env:
   LIARA_CLI: "@liara/cli@9.5.1"   # همان نسخه‌ای که نحوِ پرچم‌هایش راستی‌آزمایی شده
   APP: arsadata
-  SOURCE: relay
   PORT: "3400"
   PLATFORM: node
+  BASELINE_TAG: relay-deployed
   HEALTH_URL: "https://arsadata.liara.run/healthz"
   DEBUG_URL: "https://arsadata.liara.run/debug"
+  # وضعیتِ واقعیِ Production (۲۰۲۶-۰۹-۱۴): نه `brsapi_budget_days` هست نه
+  # `brsapi_budget_lease`. اگر روزی phase28 اجرا شد، این را آگاهانه `true` کن.
+  PHASE28_APPLIED: "false"
 
 jobs:
   deploy:
     name: Deploy relay → arsadata
     runs-on: ubuntu-latest
-    # اجراهای CI مربوط به PR نباید چیزی منتشر کنند.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main' &&
        github.event.workflow_run.event == 'push')
     steps:
-      # SHA از ورودیِ کاربر می‌آید؛ پیش از هر استفاده‌ای اعتبارسنجی می‌شود تا
-      # به تزریقِ فرمان در shell تبدیل نشود.
-      - name: تعیینِ SHA
+      # شاخهٔ پیش‌فرض، با کلِ تاریخچه و تگ‌ها — برای محاسبهٔ نسبتِ SHA با main
+      # و با مبنای انتشار. `git archive` بعداً بستهٔ مقصد را جدا می‌کند.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: اعتبارسنجی و resolve کردنِ SHA
         id: sha
         env:
           EVENT: ${{ github.event_name }}
@@ -74,156 +81,188 @@ jobs:
           RUN_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
-          if [ "$EVENT" = "workflow_dispatch" ]; then
-            SHA="${INPUT_SHA:-}"
-            [ -n "$SHA" ] || SHA="$GITHUB_SHA"
-          else
-            SHA="$RUN_SHA"
-          fi
-          case "$SHA" in
-            ""|*[!0-9a-fA-F]*) echo "::error::SHA نامعتبر است"; exit 1 ;;
-          esac
-          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-          echo "short=$(printf '%.7s' "$SHA")" >> "$GITHUB_OUTPUT"
+          RAW="${INPUT_SHA:-}"
+          [ "$EVENT" = "workflow_dispatch" ] || RAW="$RUN_SHA"
+          # اعتبارسنجی **پیش از** رسیدنِ مقدار به git.
+          node scripts/deploy/relay-gate.mjs sha "$RAW" >> "$GITHUB_OUTPUT"
+          CLEAN=$(node scripts/deploy/relay-gate.mjs sha "$RAW" | cut -d= -f2)
+          git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main" --quiet
+          FULL=$(git rev-parse --verify "${CLEAN}^{commit}")
+          node scripts/deploy/relay-gate.mjs resolved "$FULL" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.sha.outputs.sha }}
-          fetch-depth: 2
-
-      # «استقرارِ بدونِ اختلال» روی این اپ خاموش است، پس هر انتشار یک قطعیِ
-      # کوتاه دارد. یعنی انتشارِ رله بابتِ کامیتی که رله را لمس نکرده،
-      # قطعیِ بی‌دلیل است.
-      - name: آیا relay/ تغییر کرده؟
-        id: changed
+      - name: دروازه — تعلق به تاریخچهٔ main و CIِ موفقِ همان SHA
+        id: gate
         env:
-          FORCE: ${{ github.event_name == 'workflow_dispatch' }}
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.sha.outputs.sha }}
+          EVENT: ${{ github.event_name }}
+          ALLOW_OLDER: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_older }}
         run: |
           set -euo pipefail
-          if [ "$FORCE" = "true" ]; then
-            echo "yes=true" >> "$GITHUB_OUTPUT"; exit 0
-          fi
-          if git rev-parse -q --verify 'HEAD^' >/dev/null 2>&1 \
-             && ! git diff --name-only 'HEAD^' HEAD | grep -qE '^relay/'; then
-            echo "::notice::relay/ در این کامیت تغییر نکرده — انتشار انجام نشد."
-            echo "yes=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "yes=true" >> "$GITHUB_OUTPUT"
+          IN_MAIN=false
+          git merge-base --is-ancestor "$SHA" origin/main && IN_MAIN=true || true
+
+          # اجرای موفقِ **CI** روی همان SHA. فیلترِ head_sha به‌تنهایی کافی نیست:
+          # workflowهای زمان‌بندی‌شده هم همان head_sha را دارند. پس مستقیم از
+          # مسیرِ ci.yml پرسیده می‌شود.
+          CI_OK=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${SHA}&status=success&per_page=1" \
+            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+                try{const d=JSON.parse(s);process.stdout.write(String((d.workflow_runs||[]).some(r=>r.conclusion==="success")));}
+                catch{process.stdout.write("false");}});')
+
+          BASELINE=null
+          OLDER=false
+          RELAY_CHANGED=false
+          if git rev-parse -q --verify "refs/tags/${BASELINE_TAG}^{commit}" >/dev/null; then
+            B=$(git rev-parse "refs/tags/${BASELINE_TAG}^{commit}")
+            BASELINE="\"$B\""
+            git merge-base --is-ancestor "$SHA" "$B" && OLDER=true || true
+            # مبنای مقایسه **آخرین انتشارِ موفق** است، نه HEAD^ — وگرنه در یک
+            # pushِ چندکامیتی، تغییرِ relay در کامیتِ ماقبلِ آخر جا می‌ماند.
+            git diff --quiet "$B" "$SHA" -- relay/ || RELAY_CHANGED=true
           fi
 
-      - uses: actions/setup-node@v4
-        if: steps.changed.outputs.yes == 'true'
-        with:
-          node-version: "22"
-
-      # مسیرِ workflow_dispatch از CI رد نشده (مثلاً بازگشت به یک SHA قدیمی)،
-      # پس بستهٔ واقعیِ انتشار اینجا هم آزموده می‌شود. تست‌های رله وابستگیِ
-      # خارجی ندارند، پس به `npm ci` نیازی نیست.
-      - name: تست‌های همین بستهٔ انتشار
-        if: steps.changed.outputs.yes == 'true'
-        run: npm run test:relay
+          node scripts/deploy/relay-gate.mjs decide "{
+            \"event\": \"$EVENT\",
+            \"sha\": \"$SHA\",
+            \"baseline\": $BASELINE,
+            \"isAncestorOfMain\": $IN_MAIN,
+            \"ciSuccess\": $CI_OK,
+            \"isAncestorOfBaseline\": $OLDER,
+            \"relayChangedSinceBaseline\": $RELAY_CHANGED,
+            \"allowOlder\": ${ALLOW_OLDER:-false}
+          }" >> "$GITHUB_OUTPUT"
+          echo "baseline=${BASELINE//\"/}" >> "$GITHUB_OUTPUT"
 
       - name: وجودِ توکن
-        if: steps.changed.outputs.yes == 'true'
+        if: steps.gate.outputs.action == 'publish'
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: |
           if [ -z "${LIARA_API_TOKEN:-}" ]; then
-            echo "::error::سکرتِ LIARA_API_TOKEN تنظیم نشده. کنسولِ لیارا → API Token، سپس GitHub → Settings → Secrets and variables → Actions → New repository secret با همین نام."
+            echo "::error::سکرتِ LIARA_API_TOKEN تنظیم نشده. کنسولِ لیارا → API Token، سپس GitHub → Settings → Secrets and variables → Actions."
             exit 1
           fi
 
       # ── پیش‌پرواز ───────────────────────────────────────────────────────────
-      # `phase28` روی Production اجرا **نشده** (بررسیِ کاتالوگ ۲۰۲۶-۰۹-۱۴:
-      # نه `brsapi_budget_days` هست نه `brsapi_budget_lease`). کدِ تازه اگر با
-      # `BRSAPI_BUDGET_ENFORCE_LEGACY=1` بالا بیاید `BudgetUnavailableError`
-      # می‌دهد و «از فرستادنِ بی‌شمارش امتناع» می‌کند — یعنی دادهٔ بازار می‌ایستد.
-      # نسخهٔ زندهٔ فعلی (6570aaf) اصلاً این متر را ندارد، پس پرچم امروز بی‌اثر
-      # است و **همین انتشار** زنده‌اش می‌کند. پس پیش از انتشار خوانده می‌شود.
-      # هیچ مقدارِ سکرتی چاپ نمی‌شود — فقط بود/نبود.
-      - name: پیش‌پرواز — مقدارِ واقعیِ پرچم‌ها روی اپِ زنده
+      # **fail-closed، بدونِ راهِ عبور.** اگر پرچم‌ها خوانده نشوند یا ساختارشان
+      # درست نباشد، انتشار انجام نمی‌شود. هیچ پرچمی هم تغییر داده نمی‌شود.
+      - name: پیش‌پرواز — پرچم‌های واقعیِ اپِ زنده
         id: preflight
-        if: steps.changed.outputs.yes == 'true'
+        if: steps.gate.outputs.action == 'publish'
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
-          ALLOW_UNVERIFIED: ${{ github.event_name == 'workflow_dispatch' && inputs.flags_checked }}
         run: |
-          set -uo pipefail
-          PROBE='const e=process.env;console.log("FLAGS="+JSON.stringify({node:process.version,PORT:e.PORT??null,IR_HISTORY_SECTIONS:e.IR_HISTORY_SECTIONS??null,BRSAPI_CLIENT_ENABLED:e.BRSAPI_CLIENT_ENABLED??null,BRSAPI_BUDGET_ENFORCE_LEGACY:e.BRSAPI_BUDGET_ENFORCE_LEGACY??null,BRSAPI_KEY_SET:Boolean(e.BRSAPI_KEY),SUPABASE_URL_SET:Boolean(e.SUPABASE_URL),RELAY_TOKEN_SET:Boolean(e.RELAY_TOKEN)}))'
+          set -euo pipefail
+          PROBE='const e=process.env;console.log("FLAGS="+JSON.stringify({node:process.version,PORT:e.PORT??null,IR_HISTORY_SECTIONS:e.IR_HISTORY_SECTIONS??null,BRSAPI_CLIENT_ENABLED:e.BRSAPI_CLIENT_ENABLED??null,BRSAPI_BUDGET_ENFORCE_LEGACY:e.BRSAPI_BUDGET_ENFORCE_LEGACY??null,BRSAPI_KEY_SET:Boolean(e.BRSAPI_KEY),SUPABASE_URL_SET:Boolean(e.SUPABASE_URL),SUPABASE_SERVICE_ROLE_KEY_SET:Boolean(e.SUPABASE_SERVICE_ROLE_KEY),RELAY_TOKEN_SET:Boolean(e.RELAY_TOKEN)}))'
+          set +e
           OUT=$(timeout 150 npx --yes "$LIARA_CLI" shell -a "$APP" --api-token "$LIARA_API_TOKEN" \
-                  -c "node -e '$PROBE'" 2>&1 | tr -d '\r' || true)
-          LINE=$(printf '%s\n' "$OUT" | grep -o 'FLAGS={.*}' | tail -1 || true)
-          if [ -z "$LINE" ]; then
-            echo "::warning::پیش‌پرواز نتوانست پرچم‌ها را از کانتینرِ زنده بخواند."
-            if [ "${ALLOW_UNVERIFIED:-false}" = "true" ]; then
-              echo "::notice::flags_checked=true — اپراتور دستی بررسی کرده؛ ادامه."
-              exit 0
-            fi
-            echo "::error::انتشار متوقف شد چون وضعیتِ واقعیِ BRSAPI_BUDGET_ENFORCE_LEGACY ناشناخته است. دستور را دستی اجرا کن (RUNBOOK-relay-deploy.md گامِ ۱) و اگر مقدارش «1» نبود، این workflow را با flags_checked=true اجرا کن."
-            exit 1
-          fi
-          echo "$LINE"
-          if printf '%s' "$LINE" | grep -q '"BRSAPI_BUDGET_ENFORCE_LEGACY":"1"'; then
-            echo "::error::BRSAPI_BUDGET_ENFORCE_LEGACY=1 روی اپ است، ولی phase28 اجرا نشده. انتشارِ این کد رله را به «امتناع از ارسالِ بی‌شمارش» می‌برد و دادهٔ بازار می‌ایستد. یا پرچم را در کنسول بردار یا phase28 را اجرا کن — این workflow پرچم را عوض نمی‌کند."
-            exit 1
-          fi
+                  -c "node -e '$PROBE'" 2>&1 | tr -d '\r')
+          set -e
+          # فقط مقدارِ بعد از FLAGS= به ارزیاب می‌رود؛ ساختارش آنجا اعتبارسنجی
+          # می‌شود — «پیدا شدنِ FLAGS» به‌تنهایی هیچ تضمینی نیست.
+          printf '%s\n' "$OUT" | sed -n 's/^.*FLAGS=//p' | tail -1 \
+            | node scripts/deploy/relay-gate.mjs flags "{\"phase28Applied\": ${PHASE28_APPLIED}}" \
+            >> "$GITHUB_OUTPUT"
 
       - name: انتشار
         id: publish
-        if: steps.changed.outputs.yes == 'true'
+        if: steps.gate.outputs.action == 'publish'
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
-          SHA_SHORT: ${{ steps.sha.outputs.short }}
+          SHA: ${{ steps.sha.outputs.sha }}
         run: |
           set -euo pipefail
+          # بسته از خودِ SHA بیرون کشیده می‌شود؛ درختِ کاری (و منطقِ دروازه) دست نمی‌خورد.
+          PAYLOAD="$RUNNER_TEMP/payload"
+          mkdir -p "$PAYLOAD"
+          git archive "$SHA" relay | tar -x -C "$PAYLOAD"
+          test -f "$PAYLOAD/relay/liara.json"
+
           echo "published_at=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
+          # پیامِ release حاملِ **SHAِ کامل** است — همان‌جا که نسخهٔ مستقر به
+          # کامیت گره می‌خورد.
           npx --yes "$LIARA_CLI" deploy \
             --app "$APP" \
-            --path "$SOURCE" \
+            --path "$PAYLOAD/relay" \
             --platform "$PLATFORM" \
             --port "$PORT" \
             --api-token "$LIARA_API_TOKEN" \
-            --message "relay @ ${SHA_SHORT}" \
-            --no-app-logs
+            --message "relay @ ${SHA}" \
+            --no-app-logs 2>&1 | tee "$RUNNER_TEMP/deploy.log"
 
-      # قطعیِ کوتاه انتظار می‌رود («استقرارِ بدونِ اختلال» خاموش است)، پس
-      # تا ۵ دقیقه صبر می‌کنیم — ولی شکستِ پایدار را سبز نمی‌شماریم.
-      - name: سلامتِ پس از انتشار
-        if: steps.changed.outputs.yes == 'true'
+          REL=$(grep -oE '\bv[0-9]+\b' "$RUNNER_TEMP/deploy.log" | tail -1 || true)
+          echo "release=${REL:-نامشخص-از-خروجیِ-CLI}" >> "$GITHUB_OUTPUT"
+
+      # مبنا بلافاصله پس از انتشارِ موفق جابه‌جا می‌شود، نه پس از پذیرش:
+      # «چه چیزی مستقر است» با «چه چیزی پذیرفته شد» یکی نیست.
+      - name: به‌روزرسانیِ مبنای انتشار
+        if: steps.publish.outcome == 'success' && steps.gate.outputs.action == 'publish'
+        env:
+          SHA: ${{ steps.sha.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git tag -f "$BASELINE_TAG" "$SHA"
+          git push -f origin "refs/tags/${BASELINE_TAG}"
+
+      # `/healthz` فقط می‌گوید یک فرایند روی پورت جواب می‌دهد — نسخهٔ قدیمی هم
+      # همین را می‌گوید. پس این گام **زنده‌بودن** است، نه شاهدِ نسخه.
+      - name: زنده‌بودن پس از انتشار
+        if: steps.gate.outputs.action == 'publish'
         run: |
           set -uo pipefail
           for i in $(seq 1 30); do
             if [ "$(curl -fsS --max-time 10 "$HEALTH_URL" || true)" = "ok" ]; then
-              echo "::notice::/healthz پس از ${i} تلاش ok شد."
+              echo "::notice::/healthz پس از ${i} تلاش ok شد (زنده‌بودن، نه شاهدِ نسخه)."
               exit 0
             fi
             sleep 10
           done
-          echo "::error::/healthz تا ۵ دقیقه پس از انتشار ok نشد. نسخهٔ سالمِ قبلی را با workflow_dispatch و همان SHA دوباره منتشر کن."
+          echo "::error::/healthz تا ۵ دقیقه پس از انتشار ok نشد."
           exit 1
 
-      # اثباتِ این‌که کدِ تازه واقعاً بالا آمده، نه فقط پورت باز است.
-      # بدونِ سکرتِ RELAY_TOKEN از این گام صرف‌نظر می‌شود (خطا نیست).
-      - name: راستی‌آزماییِ کدِ مستقر
-        if: steps.changed.outputs.yes == 'true'
+      # ── پذیرش — جدا از انتشار ───────────────────────────────────────────────
+      - name: پذیرش — شاهدِ نسخه از /debug
+        id: accept
+        if: steps.gate.outputs.action == 'publish'
         env:
           RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
+          DEBUG_REACHABLE: ${{ steps.preflight.outputs.debug_reachable }}
         run: |
           set -uo pipefail
-          if [ -z "${RELAY_TOKEN:-}" ]; then
-            echo "::notice::سکرتِ RELAY_TOKEN تنظیم نشده — /debug بررسی نشد. پذیرش باید دستی انجام شود."
+          if [ -z "${RELAY_TOKEN:-}" ] || [ "$DEBUG_REACHABLE" != "true" ]; then
+            echo "status=pending" >> "$GITHUB_OUTPUT"
+            echo "::warning::شاهدِ نسخه در دسترس نیست (سکرتِ RELAY_TOKEN یا RELAY_TOKEN روی اپ). پذیرش «در انتظار» ثبت شد، نه موفق."
             exit 0
           fi
           BODY=$(curl -fsS --max-time 20 -H "Authorization: Bearer ${RELAY_TOKEN}" "$DEBUG_URL" || true)
-          [ -n "$BODY" ] || { echo "::error::/debug پاسخ نداد"; exit 1; }
-          printf '%s' "$BODY" | node -e '
-            let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
-              const d=JSON.parse(s);
-              console.log("historySections:",JSON.stringify(d.historySections??null));
-              console.log("brsapiLegacy.enforced:",d.brsapiLegacy?.enforced??null);
-              console.log("brsapiClient.enabled:",d.brsapiClient?.enabled??null);
-              if(d.brsapiLegacy?.enforced===true){
-                console.error("::error::brsapiLegacy.enforced=true روی نسخهٔ مستقر، ولی phase28 اجرا نشده.");
-                process.exit(1);
-              }
-            });'
+          if printf '%s' "$BODY" | node scripts/deploy/relay-gate.mjs accept '{}'; then
+            echo "status=passed" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=failed" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: گزارش
+        if: always()
+        env:
+          ACTION: ${{ steps.gate.outputs.action }}
+          CODE: ${{ steps.gate.outputs.code }}
+          REASON: ${{ steps.gate.outputs.reason }}
+          SHA: ${{ steps.sha.outputs.sha }}
+          BASELINE: ${{ steps.gate.outputs.baseline }}
+          RELEASE: ${{ steps.publish.outputs.release }}
+          AT: ${{ steps.publish.outputs.published_at }}
+          ACCEPT: ${{ steps.accept.outputs.status }}
+        run: |
+          {
+            echo "| مورد | مقدار |"
+            echo "|---|---|"
+            echo "| تصمیم | \`${ACTION:-—}\` (${CODE:-—}) — ${REASON:-—} |"
+            echo "| SHA | \`${SHA:-—}\` |"
+            echo "| مبنای قبلی | \`${BASELINE:-—}\` |"
+            echo "| **انتشار** | ${AT:+انجام شد در \`$AT\`}${AT:-انجام نشد} |"
+            echo "| release | \`${RELEASE:-—}\` |"
+            echo "| **پذیرش** | \`${ACCEPT:-در انتظار}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
