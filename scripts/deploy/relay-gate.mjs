@@ -316,11 +316,13 @@ const MAIN = {
     const a = JSON.parse(process.argv[3] ?? "{}");
     const r = decidePublish(a);
     emit({ action: r.action, code: r.code, reason: r.reason });
+    // ⚠️ پیام‌ها فقط به stderr: stdoutِ این زیرفرمان مستقیم به
+    // `$GITHUB_OUTPUT` می‌رود و هر خطِ بدونِ `key=value` آن فایل را خراب می‌کند.
     if (r.action === "fail") {
       console.error(`::error::دروازهٔ انتشار رد شد — ${r.reason}`);
       process.exit(1);
     }
-    console.log(`::notice::${r.action}: ${r.reason}`);
+    console.error(`::notice::${r.action}: ${r.reason}`);
   },
   async flags() {
     const opts = JSON.parse(process.argv[3] ?? "{}");

@@ -83,11 +83,11 @@ jobs:
           set -euo pipefail
           RAW="${INPUT_SHA:-}"
           [ "$EVENT" = "workflow_dispatch" ] || RAW="$RUN_SHA"
-          # اعتبارسنجی **پیش از** رسیدنِ مقدار به git.
-          node scripts/deploy/relay-gate.mjs sha "$RAW" >> "$GITHUB_OUTPUT"
+          # اعتبارسنجی **پیش از** رسیدنِ مقدار به git — وگرنه ورودیِ کاربر
+          # مستقیم به خطِ فرمان می‌رسد.
           CLEAN=$(node scripts/deploy/relay-gate.mjs sha "$RAW" | cut -d= -f2)
-          git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main" --quiet
           FULL=$(git rev-parse --verify "${CLEAN}^{commit}")
+          # و خروجیِ git هم اعتبارسنجی می‌شود: باید ۴۰ رقمِ کامل باشد.
           node scripts/deploy/relay-gate.mjs resolved "$FULL" >> "$GITHUB_OUTPUT"
 
       - name: دروازه — تعلق به تاریخچهٔ main و CIِ موفقِ همان SHA

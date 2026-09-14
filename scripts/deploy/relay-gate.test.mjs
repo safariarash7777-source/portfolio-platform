@@ -239,3 +239,44 @@ test("پذیرش: enforced=true رد می‌شود", () => {
 test("پذیرش: پاسخِ بدشکل رد می‌شود", () => {
   for (const bad of ["", "ok", "[]", "null"]) assert.equal(evaluateDebug(bad).ok, false);
 });
+
+// ── قراردادِ CLI ─────────────────────────────────────────────────────────────
+// stdoutِ زیرفرمان‌هایی که به `$GITHUB_OUTPUT` هدایت می‌شوند باید **فقط**
+// `key=value` باشد. یک خطِ `::notice::` آنجا فایلِ خروجی را خراب می‌کند.
+
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const GATE = fileURLToPath(new URL("./relay-gate.mjs", import.meta.url));
+const run = (args, input) => spawnSync(process.execPath, [GATE, ...args], { input, encoding: "utf8" });
+const onlyPairs = (out) =>
+  out.split("\n").filter((l) => l.trim() !== "").every((l) => /^[a-z_]+=/.test(l));
+
+test("CLI: stdoutِ هر زیرفرمانِ خروجی‌ساز فقط key=value است", () => {
+  const cases = [
+    [["sha", "1d7e8f1"], undefined],
+    [["resolved", "1d7e8f11084dec6fd43c81fe46a49baed6fe15bf"], undefined],
+    [["flags", '{"phase28Applied":false}'], flags()],
+    [["decide", JSON.stringify({ ...base, sha: B, baseline: A, relayChangedSinceBaseline: true })], undefined],
+    [["decide", JSON.stringify({ ...base, sha: A, baseline: A })], undefined],
+  ];
+  for (const [args, input] of cases) {
+    const r = run(args, input);
+    assert.equal(r.status, 0, `${args[0]} باید موفق باشد: ${r.stderr}`);
+    assert.ok(onlyPairs(r.stdout), `${args[0]} خطِ غیرِ key=value نوشت:\n${r.stdout}`);
+  }
+});
+
+test("CLI: شکستِ دروازه کدِ خروجِ ۱ می‌دهد و چیزی روی stdout نمی‌ریزد", () => {
+  const bad = [
+    [["decide", JSON.stringify({ ...base, sha: B, baseline: A, ciSuccess: false })], undefined],
+    [["flags", "{}"], "not json"],
+    [["accept", "{}"], "{}"],
+    [["sha", "nope"], undefined],
+  ];
+  for (const [args, input] of bad) {
+    const r = run(args, input);
+    assert.equal(r.status, 1, `${args[0]} باید رد شود`);
+    assert.ok(onlyPairs(r.stdout), `${args[0]} روی stdout نوشت:\n${r.stdout}`);
+  }
+});
