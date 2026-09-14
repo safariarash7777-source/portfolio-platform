@@ -388,3 +388,9 @@ test("workflow: published_at پس از دستورِ deploy نوشته می‌ش�
 test("workflow: پذیرش همان واقعیتِ phase28 را می‌گیرد", () => {
   assert.match(WF, /accept "\{\\"phase28Applied\\": \$\{PHASE28_APPLIED\}\}"/);
 });
+
+test("گزارش: متنِ بازگشت، بررسیِ سلامت و تازگی را کنار نمی‌گذارد", () => {
+  const r = summarize({ gateAction: "publish", publishOutcome: "success", publishedAt: "t", rollback: true });
+  assert.equal(r.acceptance.state, "not-applicable");
+  assert.match(r.acceptance.text, /سلامت و تازگیِ داده همچنان بررسی شود/);
+});

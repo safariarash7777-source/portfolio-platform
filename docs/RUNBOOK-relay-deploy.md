@@ -95,7 +95,7 @@ select to_regclass('public.brsapi_budget_days') is not null,
 npx @liara/cli@9.5.1 shell -a arsadata -c 'node -e "const e=process.env;console.log(JSON.stringify({node:process.version,PORT:e.PORT??null,IR_HISTORY_SECTIONS:e.IR_HISTORY_SECTIONS??null,BRSAPI_CLIENT_ENABLED:e.BRSAPI_CLIENT_ENABLED??null,BRSAPI_BUDGET_ENFORCE_LEGACY:e.BRSAPI_BUDGET_ENFORCE_LEGACY??null,BRSAPI_KEY_SET:Boolean(e.BRSAPI_KEY),SUPABASE_URL_SET:Boolean(e.SUPABASE_URL),SUPABASE_SERVICE_ROLE_KEY_SET:Boolean(e.SUPABASE_SERVICE_ROLE_KEY),RELAY_TOKEN_SET:Boolean(e.RELAY_TOKEN)}))"'
 ```
 
-### ج) بازگشت — ✅ **آماده، و از دروازه رد می‌شود**
+### ج) بازگشت — **آماده برای اجرا، هنوز روی Liara تمرین‌نشده**
 
 `@liara/cli@9.5.1` دستورِ `rollback` ندارد، پس بازگشت یعنی انتشارِ دوبارهٔ یک
 کامیت. هدفِ بدیهی — `6570aaf` (v46) — **از دروازهٔ CI رد نمی‌شود**:
@@ -135,10 +135,22 @@ gh workflow run "Deploy relay" -f sha=45e25b91e1372581487aa58230b708f745750b1b -
 از نسخهٔ مستقر). دروازه‌های SHA، تعلق به `main`، CI و پیش‌پرواز همچنان اجرا
 می‌شوند.
 
-پذیرش روی بازگشت **عمداً اجرا نمی‌شود** و `not-applicable` ثبت می‌شود: نسخهٔ
-قدیمی کلیدِ `historySections` را منتشر نمی‌کند، پس معیارِ نسخهٔ هدف رویش یک
-«رد شد»ِ گمراه‌کننده می‌ساخت. شاهدِ درستیِ بازگشت، بازگشتِ لاگ به
-`history push ok: 4 sections` است.
+**وضعیتِ این مسیر:** هر سه شرطش **اندازه‌گیری‌شده** است، ولی **روی Liara اجرا
+نشده** — نه این SHA، نه هیچ SHAیی از این مسیر. پس «آماده برای اجرا» درست است و
+«آزموده» نیست. اولین اجرای واقعیِ این workflow، هر چه باشد، اولین تمرینِ آن هم
+هست.
+
+**پذیرشِ بازگشت — فقط معیارِ مخصوصِ نسخهٔ جدید کنار می‌رود، نه بررسی:**
+
+| بررسی | روی بازگشت |
+|---|---|
+| `/healthz` → `ok` | ✅ **لازم** (گامِ زنده‌بودن در workflow اجرا می‌شود) |
+| `ir_market_snapshots.latest` تازه بماند | ✅ **لازم** — با همان پرس‌وجوی §۵ج |
+| لاگِ اپ | باید به `history push ok: 4 sections` برگردد |
+| `historySections.written == [gold, currency]` | ❌ نامرتبط — نسخهٔ قدیمی این کلید را ندارد |
+
+گامِ خودکارِ `/debug` روی بازگشت اجرا نمی‌شود و در گزارش `not-applicable` ثبت
+می‌شود؛ سه سطرِ اولِ بالا **دستی** بررسی می‌شوند. بازگشتِ خاموش هم یک خرابی است.
 
 ⚠️ **آنچه این تضمین نمی‌کند:** بازگشتِ **محیط**. اگر بینِ حالا و آن لحظه متغیری
 در کنسول عوض شده باشد، کد برمی‌گردد ولی محیط نه. و چون «استقرارِ بدونِ اختلال»
@@ -163,15 +175,20 @@ GET /repos/…/deployments?sha=18935bf…&environment=arsadata
 پس ترتیب اجباری است: تا این اتصال برقرار است، **سکرتِ `LIARA_API_TOKEN` را
 اضافه نکن**. وگرنه دو منتشرکنندهٔ هم‌زمان روی یک اپ داری.
 
-**راستی‌آزماییِ قطع شدن** — پس از قطع، یک push روی `main` و سپس:
+**مبنای احراز، وضعیتِ صریحِ اتصال در کنسولِ اپ است** — همان‌جا که اتصال تعریف
+شده. ⚠️ بررسیِ زیر **شاهدِ تکمیلی** است، نه مبنا: نبودِ رکوردِ تازه می‌تواند دلیلِ
+دیگری هم داشته باشد (نرسیدنِ webhook، مکث، خطای موقت).
+
+**شاهدِ تکمیلی** — پس از قطع، یک push روی `main` و سپس:
 
 ```
 gh api "repos/safariarash7777-source/portfolio-platform/deployments?environment=arsadata&per_page=5" \
   --jq '.[] | "\(.created_at) \(.creator.login) \(.sha[0:7])"'
 ```
 
-باید **هیچ رکوردِ تازه‌ای** از `liara-cloud[bot]` نداشته باشد. تا وقتی رکوردِ
-تازه می‌آید، قطع نشده.
+باید **هیچ رکوردِ تازه‌ای** از `liara-cloud[bot]` نداشته باشد. آمدنِ رکوردِ تازه
+**اثباتِ برقراری** است (همین حالا همین اتفاق افتاده)؛ نیامدنش تأییدِ کنسول را
+تقویت می‌کند ولی جایش را نمی‌گیرد.
 
 ### گامِ ۲ — سکرت
 

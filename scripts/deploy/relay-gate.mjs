@@ -333,7 +333,13 @@ export function summarize(input) {
 
   let accept;
   if (publish.state !== "done") accept = { state: "not-attempted", text: "انجام نشد" };
-  else if (rollback) accept = { state: "not-applicable", text: "بازگشت — معیارِ نسخهٔ هدف اعمال نمی‌شود" };
+  else if (rollback)
+    accept = {
+      state: "not-applicable",
+      // فقط معیارِ **مخصوصِ نسخهٔ جدید** نامرتبط است. سلامت و تازگیِ داده
+      // همچنان باید بررسی شوند — بازگشتِ خاموش هم یک خرابی است.
+      text: "بازگشت — معیارِ نسخهٔ هدف اعمال نمی‌شود؛ **سلامت و تازگیِ داده همچنان بررسی شود**",
+    };
   else if (["passed", "failed", "pending"].includes(acceptance)) {
     accept = { state: acceptance, text: { passed: "موفق", failed: "**رد شد**", pending: "در انتظار" }[acceptance] };
   } else accept = { state: "pending", text: "در انتظار" };
