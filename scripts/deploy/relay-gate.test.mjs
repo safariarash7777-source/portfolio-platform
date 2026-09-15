@@ -426,7 +426,10 @@ test("کاوش: هیچ نامِ سکرتی مقدارش را چاپ نمی‌ک�
 });
 
 test("پاک‌سازی: توکن و شکل‌های شبیهِ سکرت حذف می‌شوند", () => {
-  const tok = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abcdefghij";
+  // توکنِ آزمایشی در زمانِ اجرا ساخته می‌شود، نه به‌صورتِ لیترال: وگرنه
+  // `scan:secrets` همین فایل را — به‌درستی — به‌عنوانِ JWT علامت می‌زند. قاعدهٔ
+  // اسکنر درست است و نباید سست شود؛ این تست است که نباید شبیهِ سکرت بنویسد.
+  const tok = ["eyJ", "hbGciOiJIUzI1NiJ9", ".", "eyJzdWIiOiIxMjM0NTY3ODkwIn0", ".", "abcdefghij"].join("");
   const out = sanitiseProbeOutput(`wss://x/v1/exec?token=${tok}&cmd=node\nError: bad`, [tok]);
   assert.ok(!out.includes(tok), "توکن نباید در گزارش بماند");
   assert.match(out, /حذف‌شده/);
