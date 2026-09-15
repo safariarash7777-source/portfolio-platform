@@ -12,6 +12,7 @@ import {
   isBuyQueueRow,
   isSellQueueRow,
   rowChangePercent,
+  FLAT_BAND_PCT,
 } from "./marketToday";
 import type { IrStockRow } from "@/lib/market-ir";
 
@@ -150,4 +151,37 @@ test("toSparkPoints: فقط عددهای مثبت متناهی", () => {
     { label: "4", value: "25" },
   ]);
   assert.deepEqual(pts, [{ label: "1", value: 10 }, { label: "4", value: 25 }]);
+});
+
+/* ── آستانهٔ نوارِ خنثی ──────────────────────────────────────────────────── */
+
+test("FLAT_BAND_PCT همان آستانه‌ای است که شمارشِ مثبت/منفی به‌کار می‌برد", () => {
+  // درست **روی** آستانه: نه مثبت، نه منفی — خنثی.
+  const onBand = computeMarketPulse([
+    { id: "الف", faName: "الف", price: 100, unit: "toman", changePercent: FLAT_BAND_PCT, value: 10 },
+    { id: "ب", faName: "ب", price: 100, unit: "toman", changePercent: -FLAT_BAND_PCT, value: 10 },
+  ] as never);
+  assert.equal(onBand.posCount, 0, "دقیقاً روی آستانه مثبت نیست");
+  assert.equal(onBand.negCount, 0, "دقیقاً روی آستانه منفی نیست");
+  assert.equal(onBand.flatCount, 2);
+
+  // یک پله بالاتر/پایین‌تر: شمرده می‌شود.
+  const outside = computeMarketPulse([
+    { id: "ج", faName: "ج", price: 100, unit: "toman", changePercent: FLAT_BAND_PCT + 0.01, value: 10 },
+    { id: "د", faName: "د", price: 100, unit: "toman", changePercent: -FLAT_BAND_PCT - 0.01, value: 10 },
+  ] as never);
+  assert.equal(outside.posCount, 1);
+  assert.equal(outside.negCount, 1);
+  assert.equal(outside.flatCount, 0);
+});
+
+test("posShare روی نمادهای معامله‌شده حساب می‌شود، نه کلِ اسنپ‌شات", () => {
+  // دو نمادِ معامله‌شده (یکی مثبت) + یک نمادِ معامله‌نشده.
+  const p = computeMarketPulse([
+    { id: "الف", faName: "الف", price: 100, unit: "toman", changePercent: 3, value: 10 },
+    { id: "ب", faName: "ب", price: 100, unit: "toman", changePercent: -3, value: 10 },
+    { id: "ج", faName: "ج", price: 100, unit: "toman", changePercent: 3, value: 0 },
+  ] as never);
+  assert.equal(p.totalTraded, 2, "نمادِ بدونِ ارزشِ معامله در جامعه نیست");
+  assert.equal(p.posShare, 50, "۱ از ۲ — نه ۲ از ۳");
 });

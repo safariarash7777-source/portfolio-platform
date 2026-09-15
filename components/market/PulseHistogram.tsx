@@ -1,7 +1,7 @@
 "use client";
 // نبض بازار — هیستوگرام پراکندگی بازدهی نمادها (مرجع بصری: داشبورد بازار بورس‌ویو).
 // ستون‌ها با div و ارتفاع نسبی رندر می‌شوند (بدون کتابخانهٔ چارت)؛ رنگ‌ها فقط توکن CSS.
-import type { MarketPulse } from "@/lib/core/marketToday";
+import { FLAT_BAND_PCT, type MarketPulse } from "@/lib/core/marketToday";
 import { toPersianDigits } from "@/lib/format";
 
 const BAR_COLORS = [
@@ -57,7 +57,7 @@ export default function PulseHistogram({ pulse }: { pulse: MarketPulse }) {
         <div className="mt-4">
           <div className="flex items-center justify-between text-[11.5px] mb-1" style={{ color: "var(--text-3)" }}>
             <span style={{ color: "var(--success)", fontWeight: 700 }}>
-              ٪{toPersianDigits(Math.round(posPct))} بیش از ٪۰٫۵+
+              ٪{toPersianDigits(Math.round(posPct))} بیش از ٪{toPersianDigits(FLAT_BAND_PCT).replace(".", "٫")}+
             </span>
             <span style={{ color: "var(--danger)", fontWeight: 700 }}>
               ٪{toPersianDigits(Math.round(100 - posPct))} بقیه
@@ -68,7 +68,7 @@ export default function PulseHistogram({ pulse }: { pulse: MarketPulse }) {
             <div style={{ width: `${100 - posPct}%`, background: "var(--danger)", opacity: 0.75 }} />
           </div>
           <p className="mt-1.5 text-[10.5px] leading-4" style={{ color: "var(--text-3)" }}>
-            نمادِ «مثبت» یعنی بیش از ٪۰٫۵ رشد، از میانِ {toPersianDigits(pulse.posCount + pulse.negCount + pulse.flatCount)} نمادِ
+            نمادِ «مثبت» یعنی بیش از ٪{toPersianDigits(FLAT_BAND_PCT).replace(".", "٫")} رشد، از میانِ {toPersianDigits(pulse.posCount + pulse.negCount + pulse.flatCount)} نمادِ
             معامله‌شدهٔ دارای درصدِ تغییر. این نسبت با «پهنای بازار» — که آستانه‌اش صفر است و روی
             همهٔ نمادهای اسنپ‌شات حساب می‌شود — یکی نیست.
           </p>
