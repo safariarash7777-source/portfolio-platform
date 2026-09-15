@@ -8,7 +8,7 @@ import { join } from "node:path";
  *
  * ── این فایل چه چیزی را اثبات می‌کند و چه چیزی را نه ────────────────────
  * رفتارِ مجوز و طبقه‌بندی حالا در `lib/desk/service.test.ts` **واقعاً اجرا
- * می‌شود** (۴۰۱، ۴۰۳، نساختنِ کلاینتِ service-role در مسیرِ ردشده، چهار حالت).
+ * می‌شود** (۴۰۱، ۴۰۳، نساختنِ خواننده در مسیرِ ردشده، چهار حالت).
  * پس این فایل دیگر وانمود نمی‌کند تستِ دسترسی است.
  *
  * آنچه اینجا می‌ماند فقط چیزهایی است که **ذاتاً ایستا**اند: نبودِ وابستگیِ
@@ -57,14 +57,23 @@ test("the route delegates authorization and aggregation to the testable layer", 
     "بررسیِ نقش باید در لایهٔ تست‌پذیر باشد، نه در route handler");
 });
 
-test("the service-role client is created lazily, never at module scope", () => {
+test("the desk reads through RLS, never around it", () => {
+  // میز روی Production ۵۰۰ می‌داد چون خواندنش به `SUPABASE_SERVICE_ROLE_KEY`
+  // گره خورده بود — کلیدی که هیچ‌کدام از این جدول‌ها لازمش ندارند. حالا با
+  // کلاینتِ نشست می‌خواند، پس RLS گیتِ دومِ واقعی است: اگر گیتِ نقش در
+  // `buildDesk` روزی خراب شود، دیتابیس همچنان جلوی غیرادمین را می‌گیرد.
+  assert.doesNotMatch(ROUTE, /createAdminClient|supabase\/admin/,
+    "میز دوباره به کلاینتِ service-role وصل شده و RLS را دور می‌زند");
+  assert.match(ROUTE, /from "@\/lib\/supabase\/server"/);
+});
+
+test("the reader is built lazily, never before authorization", () => {
   // `createReader` یک factory است؛ اگر به یک نمونهٔ ساخته‌شده تبدیل شود،
-  // کلید پیش از مجوز لمس می‌شود و تستِ رفتاری هم دیگر معنا نمی‌دهد.
-  assert.match(ROUTE, /createReader:\s*supabaseReader/);
-  assert.match(ROUTE, /function supabaseReader\(\)/);
+  // خواندن پیش از مجوز آغاز می‌شود و تستِ رفتاری هم دیگر معنا نمی‌دهد.
+  assert.match(ROUTE, /createReader:\s*\(\)\s*=>\s*supabaseReader\(/);
   const moduleScope = ROUTE.slice(0, ROUTE.indexOf("function supabaseReader"));
-  assert.doesNotMatch(moduleScope, /createAdminClient\(\)/,
-    "کلاینتِ service-role در سطحِ ماژول ساخته شده");
+  assert.doesNotMatch(moduleScope, /supabaseReader\(|createClient\(/,
+    "خواننده در سطحِ ماژول ساخته شده");
 });
 
 test("the admin view is gated independently of the route, not instead of it", () => {

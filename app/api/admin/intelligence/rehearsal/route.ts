@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { describe } from "@/lib/intelligence/service";
 
 export const runtime = "nodejs";
@@ -17,7 +16,17 @@ export const dynamic = "force-dynamic";
  *  ۳. حذف وجود ندارد. اصلاح فقط تا وقتی روز مهر نشده ممکن است.
  */
 
-async function requireAdmin(): Promise<{ id: string } | null> {
+type SessionClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * گیتِ نقش — و همان کلاینتی که درج با آن انجام می‌شود.
+ *
+ * `intel_rehearsal_days` زیرِ سیاستِ `intel_admin_all` است
+ * (`FOR ALL TO authenticated` با شرطِ ادمین، `sql/phase20`)، پس نشستِ ادمین
+ * دقیقاً همان اجازه را دارد و دیگر لازم نیست این مسیر به
+ * `SUPABASE_SERVICE_ROLE_KEY` گره بخورد.
+ */
+async function requireAdmin(): Promise<{ id: string; supabase: SessionClient } | null> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) return null;
@@ -27,7 +36,7 @@ async function requireAdmin(): Promise<{ id: string } | null> {
     .eq("id", data.user.id)
     .maybeSingle();
   if (error || profile?.role !== "admin") return null;
-  return { id: data.user.id };
+  return { id: data.user.id, supabase };
 }
 
 interface Body {
@@ -50,7 +59,7 @@ const isNameList = (v: unknown): v is string[] =>
   Array.isArray(v) && v.every((s) => typeof s === "string" && s.length > 0 && s.length <= 120);
 
 export async function POST(request: Request) {
-  // مجوز پیش از ساختِ کلاینتِ service-role — همان ترتیبی که در
+  // مجوز پیش از هر پرس‌وجو — همان ترتیبی که در
   // `lib/intelligence/service.ts` با تست اثبات شده.
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "دسترسی مجاز نیست" }, { status: 403 });
@@ -103,8 +112,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "یادداشتِ پیگیری نامعتبر است" }, { status: 400 });
   }
 
-  const client = createAdminClient();
-  const { error } = await client.from("intel_rehearsal_days").insert({
+  const { error } = await admin.supabase.from("intel_rehearsal_days").insert({
     rehearsal_date: body.rehearsalDate,
     day_index: body.dayIndex,
     brief_produced: body.briefProduced,

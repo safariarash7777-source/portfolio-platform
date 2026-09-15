@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import { toPersianDigits } from "@/lib/format";
 
 interface Webinar {
   id: string;
@@ -26,7 +27,8 @@ interface Webinar {
   platform: string;
   platform_url: string | null;
   status: string;
-  registered_count: number;
+  /** `null` یعنی شمارش در دسترس نبود — نه اینکه صفر نفر ثبت‌نام کرده‌اند. */
+  registered_count: number | null;
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -200,7 +202,13 @@ function WebinarsContent() {
         ) : (
           <div className="space-y-6">
             {webinars.map((w) => {
-              const isFull = w.max_capacity ? w.registered_count >= w.max_capacity : false;
+              // شمارشِ نامعلوم «پر» نیست و «خالی» هم نیست. ادعای پربودن فقط
+              // وقتی مجاز است که واقعاً شمرده باشیم؛ ظرفیت را در هر حال سرور
+              // هنگامِ ثبت‌نام اعمال می‌کند، پس اینجا فقط UX است.
+              const isFull =
+                w.max_capacity !== null && w.registered_count !== null
+                  ? w.registered_count >= w.max_capacity
+                  : false;
               const canRegister = w.registration_open && !isFull && w.status === "published";
 
               return (
@@ -260,8 +268,11 @@ function WebinarsContent() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Users size={13} />
-                        {w.registered_count} نفر ثبت‌نام کرده
-                        {w.max_capacity && ` (ظرفیت: ${w.max_capacity})`}
+                        {w.registered_count === null
+                          ? "شمارِ ثبت‌نام در دسترس نیست"
+                          : `${toPersianDigits(w.registered_count)} نفر ثبت‌نام کرده`}
+                        {w.max_capacity !== null &&
+                          ` (ظرفیت: ${toPersianDigits(w.max_capacity)})`}
                       </span>
                       <span className="flex items-center gap-1">
                         <Video size={13} />

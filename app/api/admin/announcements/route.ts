@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 import { sendAnnouncementEmail } from "@/lib/resend";
 import { sendMessage } from "@/lib/telegram";
 import { markdownToPlain } from "@/lib/markdown";
@@ -53,7 +54,9 @@ export async function POST(req: NextRequest) {
   }
 
   // از اینجا با service_role: حلِ گیرنده‌ها + ارسال + ثبتِ تحویل‌ها.
-  const admin = createAdminClient();
+  const admin = tryCreateAdminClient();
+  if (!admin)
+    return NextResponse.json(serviceRoleGap("اعلان‌های ادمین"), { status: SERVICE_ROLE_GAP_STATUS });
   const recipients = await resolveRecipients(admin, target);
 
   const tgMap = await telegramMap(admin, recipients.map((r) => r.id));
@@ -122,7 +125,7 @@ interface Recipient {
 }
 
 async function resolveRecipients(
-  admin: ReturnType<typeof createAdminClient>,
+  admin: NonNullable<ReturnType<typeof tryCreateAdminClient>>,
   target: string
 ): Promise<Recipient[]> {
   if (target === "all") {
@@ -157,7 +160,7 @@ async function resolveRecipients(
 }
 
 async function telegramMap(
-  admin: ReturnType<typeof createAdminClient>,
+  admin: NonNullable<ReturnType<typeof tryCreateAdminClient>>,
   userIds: string[]
 ): Promise<Map<string, number>> {
   const map = new Map<string, number>();

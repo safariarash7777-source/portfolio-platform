@@ -72,7 +72,12 @@ export function mapCertRow(d) {
   };
 }
 
-export async function refreshCertificates({ base, key, headers }) {
+/**
+ * `client` اختیاری است. وقتی داده شود، درخواست از درگاهِ مرکزی عبور می‌کند؛
+ * وقتی نه، مسیرِ قدیمی عیناً اجرا می‌شود. این ماژول هیچ تصمیمی دربارهٔ
+ * روشن/خاموش بودنِ پرچم نمی‌گیرد — فراخوان تصمیم می‌گیرد.
+ */
+export async function refreshCertificates({ base, key, headers, client = null, countLegacy = null }) {
   rollDay();
   const h = tehranHour();
   if (h < 8 || h >= 19) return; // خارج از ساعات بازار — دیتای صبح فردا تازه می‌شود
@@ -80,9 +85,22 @@ export async function refreshCertificates({ base, key, headers }) {
   lastCertFetch = Date.now();
   try {
     certReqToday++;
-    const res = await fetch(`${base}/IME/Certificate.php?key=${key}`, { headers, signal: AbortSignal.timeout(20000) });
-    if (!res.ok) throw new Error(`http ${res.status}`);
-    const j = await res.json();
+    let j;
+    if (client) {
+      j = await client.request({
+        endpoint: "IME/Certificate.php", producer: "ime-certificate",
+        priority: "background",
+        // فیدِ مکمل است: اگر بودجه تنگ شد، پیش از چرخهٔ بازار و NAV کنار می‌رود،
+        // ولی پیش از بک‌فیل و آرشیو هم نباید قربانی شود.
+        budgetClass: "standard",
+        dedupeTtlMs: 5 * 60_000, timeoutMs: 20_000,
+      });
+    } else {
+      if (countLegacy) await countLegacy("ime-certificate", "standard");
+      const res = await fetch(`${base}/IME/Certificate.php?key=${key}`, { headers, signal: AbortSignal.timeout(20000) });
+      if (!res.ok) throw new Error(`http ${res.status}`);
+      j = await res.json();
+    }
     const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
     const rows = arr.map(mapCertRow).filter((r) => r.id && r.price !== null);
     if (rows.length === 0) throw new Error("empty certificate response");
@@ -179,11 +197,23 @@ export function mapPhysicalRow(d, fetchDay) {
   };
 }
 
-async function fetchPhysicalDay(jdate, { base, key, headers }) {
+async function fetchPhysicalDay(jdate, { base, key, headers, client = null, countLegacy = null }) {
   const url = `${base}/IME/Physical.php?key=${key}&date_start=${jdate}&date_end=${jdate}`;
-  const res = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
-  if (!res.ok) throw new Error(`http ${res.status}`);
-  const j = await res.json();
+  let j;
+  if (client) {
+    j = await client.request({
+      endpoint: "IME/Physical.php", params: { date_start: jdate, date_end: jdate },
+      producer: "ime-physical", priority: "background",
+      // معاملاتِ فیزیکیِ روزهای گذشته — تاریخی است و منتظر می‌ماند.
+      budgetClass: "bulk",
+      dedupeTtlMs: 600_000, timeoutMs: 30_000,
+    });
+  } else {
+    if (countLegacy) await countLegacy("ime-physical", "bulk");
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
+    if (!res.ok) throw new Error(`http ${res.status}`);
+    j = await res.json();
+  }
   if (j && !Array.isArray(j) && j.status === "no_data") return [];
   const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
   return arr;
@@ -200,7 +230,7 @@ function tehranJalaliDaysAgo(n) {
 }
 
 // روزی یک‌بار (بعد از ۱۵ تهران): امروز + یک روزِ بک‌فیل از ۷ روز اخیر.
-export async function runPhysicalDaily({ base, key, headers, supabaseUrl, serviceKey }) {
+export async function runPhysicalDaily({ base, key, headers, supabaseUrl, serviceKey, client = null, countLegacy = null }) {
   if (!supabaseUrl || !serviceKey || !key) return;
   const day = tehranDayKey();
   if (physState.lastRunDay === day) return;
@@ -213,7 +243,7 @@ export async function runPhysicalDaily({ base, key, headers, supabaseUrl, servic
     physState.backfillCursor++;
     let inserted = 0;
     for (const jd of [today, backDay]) {
-      const arr = await fetchPhysicalDay(jd, { base, key, headers });
+      const arr = await fetchPhysicalDay(jd, { base, key, headers, client, countLegacy });
       const rows = arr.map((d) => mapPhysicalRow(d, day)).filter((r) => r.symbol_code && r.trade_jdate);
       if (rows.length === 0) continue;
       const res = await fetch(`${supabaseUrl}/rest/v1/ime_physical_trades?on_conflict=trade_jdate,symbol_code,producer,price_close_rial,volume_contract`, {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,18 +16,24 @@ export const dynamic = "force-dynamic";
 // قوانین سخت: جدول‌ها append-only هستند (تریگر DB خودش UPDATE/DELETE را بلاک می‌کند).
 // هیچ ویرایشی بعد از انتشار وجود ندارد.
 
-async function requireAdmin(): Promise<{ ok: boolean; userId: string | null }> {
+type SessionClient = Awaited<ReturnType<typeof createClient>>;
+
+async function requireAdmin(): Promise<{
+  ok: boolean;
+  userId: string | null;
+  supabase: SessionClient;
+}> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, userId: null };
+  if (!user) return { ok: false, userId: null, supabase };
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  return { ok: profile?.role === "admin", userId: user.id };
+  return { ok: profile?.role === "admin", userId: user.id, supabase };
 }
 
 const OUTCOMES = ["target", "stop", "manual_close", "expired"] as const;
@@ -35,7 +42,12 @@ const LABELS = ["سازنده", "خنثی", "فرسایشی"] as const;
 export async function GET() {
   const gate = await requireAdmin();
   if (!gate.ok) return NextResponse.json({ error: "دسترسی غیرمجاز." }, { status: 403 });
-  const admin = createAdminClient();
+  // ── خواندن با نشست ──
+  // هر چهار جدولِ کارنامه سیاستِ `public read … (qual: true)` دارند، پس
+  // خواندنشان هرگز به سکرتِ سرور نیاز نداشت. با آن گره، نبودِ یک متغیر کلِ
+  // کارنامه را از دسترس خارج می‌کرد؛ حالا فقط **انتشار** (POST) که واقعاً
+  // سیاستِ نوشتن ندارد به سکرت وابسته است.
+  const admin = gate.supabase;
   const [sigs, outs, weeks, weekResults] = await Promise.all([
     admin
       .from("signals")
@@ -72,7 +84,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "درخواست نامعتبر." }, { status: 400 });
   }
   const action = String(body.action ?? "");
-  const admin = createAdminClient();
+  const admin = tryCreateAdminClient();
+  if (!admin)
+    return NextResponse.json(serviceRoleGap("کارنامهٔ تحلیل‌ها"), { status: SERVICE_ROLE_GAP_STATUS });
 
   // ── انتشار تحلیل نماد ──────────────────────────────────────────────
   if (action === "publish") {

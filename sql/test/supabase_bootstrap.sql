@@ -101,3 +101,21 @@ CREATE POLICY "own profile readable" ON public.profiles
   FOR SELECT USING (id = auth.uid());
 
 GRANT SELECT ON public.profiles TO authenticated;
+
+-- ── ۴) `is_admin()` — پیش‌نیازِ سیاست‌هایی که نقشِ ادمین را می‌خوانند ────────
+--
+-- روی Production این تابع وجود دارد (در فهرستِ توابعِ `public` سنجیده شد،
+-- ۲۰۲۶-۰۹-۰۶) و منبعِ حقیقتِ نقش، ستونِ `profiles.role` است — نه ادعای JWT.
+-- اینجا همان قرارداد بازتولید می‌شود تا migrationهایی که به آن تکیه دارند
+-- (مثلاً `phase26_change_radar`) روی Postgresِ یک‌بارمصرف هم آزمودنی باشند.
+--
+-- ⚠️ این فایل فقط تست است و هرگز روی Production/Staging اجرا نمی‌شود؛ پس این
+-- تعریف **جایگزینِ** تابعِ واقعی نمی‌شود، فقط شبیه‌سازی‌اش می‌کند.
+CREATE OR REPLACE FUNCTION public.is_admin() RETURNS boolean
+  LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_temp AS $$
+    SELECT EXISTS (
+      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin'
+    );
+  $$;
+
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, service_role;

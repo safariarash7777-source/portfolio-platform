@@ -43,17 +43,36 @@ export function mapCommodityRow(d) {
   };
 }
 
-export async function refreshCommodities(headers) {
+/**
+ * ⚠️ این ماژول روی **کلیدِ دیگری** کار می‌کند (`BRSAPI_COMMODITY_KEY`، پلنِ
+ * رایگان ~۱۵۰۰/روز) — پس سهمیه‌اش با سهمیهٔ اصلیِ ۱۰٬۰۰۰ **یکی نیست** و
+ * ریختنش در همان شمارنده، هر دو عدد را بی‌معنا می‌کرد.
+ *
+ * بنابراین بودجهٔ خودش را می‌گیرد: همان `PersistentDailyBudget`، ولی با
+ * فضای‌نامِ روزِ جدا. `countLegacy` اینجا هم همان قراردادِ بقیهٔ ماژول‌هاست.
+ */
+export async function refreshCommodities(headers, { client = null, countLegacy = null } = {}) {
   if (!COMMODITY_KEY) return; // غیرفعالِ صادق
   rollDay();
   try {
     reqToday++;
-    const res = await fetch(`${COMMODITY_BASE}/Market/Commodity.php?key=${COMMODITY_KEY}`, {
-      headers,
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!res.ok) throw new Error(`http ${res.status}`);
-    const j = await res.json();
+    let j;
+    if (client) {
+      j = await client.request({
+        endpoint: "Market/Commodity.php", params: {},
+        producer: "commodity", priority: "background",
+        budgetClass: "standard",
+        dedupeTtlMs: 60_000, timeoutMs: 20_000,
+      });
+    } else {
+      if (countLegacy) await countLegacy("commodity", "standard");
+      const res = await fetch(`${COMMODITY_BASE}/Market/Commodity.php?key=${COMMODITY_KEY}`, {
+        headers,
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!res.ok) throw new Error(`http ${res.status}`);
+      j = await res.json();
+    }
     const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
     const mapped = arr.map(mapCommodityRow).filter((r) => r.id && r.price !== null);
     if (mapped.length === 0) throw new Error("empty commodity response");

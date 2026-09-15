@@ -1,5 +1,5 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { parseChannelFeed } from "@/lib/telegram-feed";
 
 // منطقِ مشترکِ همگام‌سازیِ هابِ محتوا با فیدِ عمومیِ تلگرام. هم کرانِ زمان‌بندی‌شده
@@ -17,7 +17,7 @@ export interface SyncResult {
   ok: boolean;
   found: number;
   inserted: number;
-  /** در صورتِ خطا: feed_unreachable | fetch_failed | insert_failed */
+  /** در صورتِ خطا: feed_unreachable | fetch_failed | insert_failed | service_role_missing */
   reason?: string;
   channel: string;
 }
@@ -48,7 +48,20 @@ export async function runTelegramFeedSync(): Promise<SyncResult> {
     return { ok: true, found: 0, inserted: 0, channel };
   }
 
-  const admin = createAdminClient();
+  // ⚠️ این ماژول **هرگز** نباید سکرتِ غایب را به فراخوان پرتاب کند.
+  //
+  // هر شکستِ دیگرِ اینجا یک `reason` برمی‌گرداند، ولی این یکی پرتاب می‌کرد و
+  // چون `runTelegramFeedSync` از `PUT /api/admin/content` هم صدا زده می‌شود،
+  // آن پرتاب از ماژول بیرون می‌زد و آن مسیر را با ۵۰۰ و بدنهٔ خالی می‌خواباند —
+  // مسیری که خودش هیچ import مستقیمی به سکرت ندارد. یعنی وابستگی **غیرمستقیم**
+  // بود و در لاگِ Production هم دقیقاً همان‌طور دیده شد.
+  //
+  // `content_hub` سیاستِ INSERT ندارد، پس نوشتن واقعاً سکرت می‌خواهد؛ چیزی که
+  // عوض می‌شود شکلِ شکست است، نه نیاز.
+  const admin = tryCreateAdminClient();
+  if (!admin) {
+    return { ok: false, found: posts.length, inserted: 0, reason: "service_role_missing", channel };
+  }
 
   // dedup: لینک‌های موجود را کنار بگذار (append-only).
   const urls = posts.map((p) => p.url);

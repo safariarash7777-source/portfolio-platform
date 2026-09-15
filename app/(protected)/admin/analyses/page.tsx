@@ -1,5 +1,5 @@
 // پنل ادمین کارنامه — دادهٔ سروری + پیش‌فرض چشم‌انداز از موتور رژیم بازار.
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { buildWatchlist } from "@/lib/core/watchlist";
 import AnalysesManager, {
   type AdminAnalysis,
@@ -24,7 +24,13 @@ function nextSaturday(): string {
 }
 
 export default async function AdminAnalysesPage() {
-  const admin = createAdminClient();
+  // هر چهار جدولِ این صفحه سیاستِ خواندنِ عمومی دارند
+  // (`public read signals`/`signal_outcomes`/`weekly_outlooks`/`weekly_outlook_results`،
+  // همه با `qual: true`). پس دورزدنِ RLS چیزی باز نمی‌کرد و فقط صفحه را به
+  // `SUPABASE_SERVICE_ROLE_KEY` گره می‌زد — بدونِ آن کلید، این RSC پرتاب
+  // می‌کرد و کاربر یک صفحهٔ خطای خالی می‌دید. گیتِ نقش در
+  // `app/(protected)/admin/layout.tsx` سرِ جایش است.
+  const admin = await createClient();
 
   const [sigs, outs, weeks, weekResults, watch] = await Promise.all([
     admin

@@ -426,17 +426,46 @@ export function normalizeN30(tables, meta) {
 
 /* ── دریافت از BrsApi و کدال ────────────────────────────────────────────────── */
 
+/**
+ * درگاه‌های بودجه — یک‌بار در بوت از `server.mjs` ست می‌شوند.
+ *
+ * این ماژول فراخوانِ داخلیِ زیاد دارد؛ عبور دادنِ `client` از همهٔ آنها فقط
+ * نویز اضافه می‌کرد. یک نقطهٔ تزریقِ ماژولی همان کار را می‌کند و تست هم
+ * می‌تواند مستقیم ست‌اش کند.
+ */
+let budgetPorts = { client: null, countLegacy: null };
+export function setCodalBudgetPorts(ports) {
+  budgetPorts = { client: ports?.client ?? null, countLegacy: ports?.countLegacy ?? null };
+}
+export function codalBudgetPorts() { return budgetPorts; }
+
 async function fetchAnnouncements(symbol, category) {
   // only_subsidiaries=false: گزارش شرکت‌های زیرمجموعه (مثل «بهساز مشارکت‌های ملت») قاطی نشود.
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, l18: symbol, category: String(category), page: "1",
     only_main_company: "true", only_subsidiaries: "false",
   });
-  const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
-    headers: HDRS, signal: AbortSignal.timeout(20000),
-  });
-  if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
-  const json = await res.json();
+  const { client, countLegacy } = budgetPorts;
+  let json;
+  if (client) {
+    json = await client.request({
+      endpoint: "Codal/Announcement.php",
+      params: {
+        l18: symbol, category: String(category), page: "1",
+        only_main_company: "true", only_subsidiaries: "false",
+      },
+      producer: "codal-list", priority: "background",
+      budgetClass: "standard",
+      dedupeTtlMs: 300_000, timeoutMs: 20_000,
+    });
+  } else {
+    if (countLegacy) await countLegacy("codal-list", "standard");
+    const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
+      headers: HDRS, signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
+    json = await res.json();
+  }
   return Array.isArray(json?.announcement) ? json.announcement : [];
 }
 
@@ -562,11 +591,28 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
   if (l18) qs.set("l18", l18);
   if (category) qs.set("category", String(category));
   if (date_start) qs.set("date_start", String(date_start)); // جلالی YYYY/MM/DD — مرز آرشیو (T4)
-  const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
-    headers: HDRS, signal: AbortSignal.timeout(25000),
-  });
-  if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
-  const json = await res.json();
+  const { client, countLegacy } = budgetPorts;
+  let json;
+  if (client) {
+    const params = { page: String(page), only_main_company: "true", only_subsidiaries: "false" };
+    if (l18) params.l18 = l18;
+    if (category) params.category = String(category);
+    if (date_start) params.date_start = String(date_start);
+    json = await client.request({
+      endpoint: "Codal/Announcement.php", params,
+      producer: "codal-archive", priority: "background",
+      // صفحه‌گردیِ آرشیو — تاریخی و بی‌عجله.
+      budgetClass: "bulk",
+      dedupeTtlMs: 300_000, timeoutMs: 25_000,
+    });
+  } else {
+    if (countLegacy) await countLegacy("codal-archive", "bulk");
+    const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
+      headers: HDRS, signal: AbortSignal.timeout(25000),
+    });
+    if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
+    json = await res.json();
+  }
   return Array.isArray(json?.announcement) ? json.announcement : [];
 }
 

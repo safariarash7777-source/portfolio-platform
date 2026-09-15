@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,10 +23,18 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = createAdminClient();
-
-  // استفاده از RPC امن
-  const { data, error } = await admin.rpc("register_for_webinar", {
+  // ⚠️ این RPC **باید** با کلاینتِ نشست صدا زده شود.
+  //
+  // `register_for_webinar` یک تابعِ SECURITY DEFINER است که اولین کارش
+  // `v_user_id := auth.uid()` است و اگر NULL باشد `دسترسی غیرمجاز.` پرتاب
+  // می‌کند. کلاینتِ service-role هیچ نشستی حمل نمی‌کند، پس `auth.uid()` همیشه
+  // NULL بود و این مسیر **همیشه** شکست می‌خورد — حتی وقتی کلیدِ سرویس‌رول
+  // موجود بود. کاربرِ واردشده پیامِ «دسترسی غیرمجاز.» می‌گرفت.
+  //
+  // با نشستِ خودِ کاربر، تابع همان کاری را می‌کند که برایش نوشته شده: ظرفیت،
+  // ثبت‌نامِ تکراری و وضعیتِ وبینار را می‌سنجد و `audit_log` را با actorِ درست
+  // پر می‌کند.
+  const { data, error } = await supabase.rpc("register_for_webinar", {
     p_webinar_id: webinar_id,
   });
 

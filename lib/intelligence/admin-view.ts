@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { classifyQueryError } from "@/lib/health/status";
 import { formatJalali } from "@/lib/format";
 import {
@@ -29,7 +29,16 @@ export type AdminIntelligenceView = IntelligenceDeskViewModel;
  * می‌دهد. این تابع فقط داده می‌خواند و هیچ mutation یا محاسبهٔ مالی ندارد.
  */
 export async function loadAdminIntelligenceView(now = new Date()): Promise<AdminIntelligenceView> {
-  const admin = createAdminClient();
+  // ⚠️ عمداً کلاینتِ **نشست** است، نه service-role.
+  //
+  // این فایل در `#115` با `createAdminClient()` نوشته شده بود، ولی `main` از
+  // آن فاصله گرفته و `prove-guards` هم دو گاردِ صریح برایش دارد. جدول‌های
+  // `intel_*` زیرِ سیاستِ `intel_admin_all` هستند (`FOR ALL TO authenticated`
+  // با شرطِ ادمین، `sql/phase20`)، پس نشستِ ادمین همان دسترسی را دارد و
+  // چیزی از دست نمی‌رود. با service-role این RSC روی محیطی که کلید ندارد
+  // **پرتاب** می‌کرد و کاربر صفحهٔ خطای خالی می‌دید؛ حالا نبودِ جدول فقط
+  // همان پرس‌وجو را مردود می‌کند و صفحه سرِ پا می‌ماند.
+  const admin = await createClient();
   const today = now.toISOString().slice(0, 10);
 
   const [briefsRes, claimsRes, evidenceRes, effectsRes, historyRes, daysRes, versionRes] =

@@ -278,7 +278,17 @@ describe("راستی‌آزمایی", () => {
     assert.match(compare, /missing/);
     assert.match(compare, /extra/);
     assert.match(compare, /changed/);
-    assert.match(compare, /process\.exit\(problems === 0 \? 0 : 1\)/);
+    // سه حالت، نه دو: ۰ تأییدشده · ۲ تأییدنشده · ۱ شکست.
+    assert.match(compare, /process\.exit\(!structureOk \? 1 : dataVerified \? 0 : 2\)/);
+  });
+
+  test("هر دو اسکریپت حالتِ «تأییدنشده» را از PASS و FAIL جدا می‌کنند", () => {
+    // اگر یکی از دو مسیر کدِ ۲ را با ۰ یکی بگیرد، «اثبات نشد» بی‌صدا به
+    // «تأیید شد» تبدیل می‌شود — دقیقاً همان چیزی که این تفکیک برای بستنش آمد.
+    assert.match(bash, /COMPARE_RC" -eq 2/, "bash حالتِ PARTIAL را جدا نمی‌کند");
+    assert.match(bash, /PARTIAL/, "bash در MANIFEST حالتِ PARTIAL را نمی‌نویسد");
+    assert.match(ps1, /compareExit -eq 2/, "ps1 حالتِ PARTIAL را جدا نمی‌کند");
+    assert.match(ps1, /PARTIAL/, "ps1 در MANIFEST حالتِ PARTIAL را نمی‌نویسد");
   });
 
   test("استثناها صریح و مستند هستند", () => {
@@ -376,4 +386,185 @@ describe("سکرت و مقصدِ بکاپ", () => {
 test("هیچ‌کدام «موفق» نمی‌گویند مگر مقایسه سبز باشد", () => {
   assert.match(bash, /if \[ "\$COMPARE_RC" -eq 0 \][\s\S]{0,600}بکاپ ساخته شد و/);
   assert.match(ps1, /if \(\$compareExit -ne 0\)[\s\S]{0,300}Die/);
+});
+
+/* ── پنجرهٔ زندهٔ بکاپ — `compare.mjs --source-after` ─────────────────────────
+ *
+ * اثرِ انگشتِ مبدأ پیش از dump خوانده می‌شود و dump چند دقیقه طول می‌کشد.
+ * Production در همان چند دقیقه می‌نویسد. بدونِ این پنجره، یک بکاپِ کاملاً
+ * سالم مردود می‌شود و اپراتور یاد می‌گیرد این مقایسه را جدی نگیرد — که از
+ * نبودِ مقایسه بدتر است.
+ *
+ * ولی پنجره نباید به «هر عددی قبول است» تبدیل شود: عددِ کمتر از کمینهٔ
+ * پنجره یعنی داده از دست رفته و باید همچنان شکست باشد.
+ */
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, writeFileSync as writeFile } from "node:fs";
+import { tmpdir } from "node:os";
+
+const CMP = join(process.cwd(), "scripts", "backup", "compare.mjs");
+
+function runCompare(before: string, restored: string, after?: string): { code: number; out: string } {
+  const dir = mkdtempSync(join(tmpdir(), "cmp-"));
+  const f = (name: string, body: string) => {
+    const p = join(dir, name);
+    writeFile(p, body, "utf8");
+    return p;
+  };
+  const args = [CMP, f("before.txt", before), f("restored.txt", restored)];
+  if (after !== undefined) args.push("--source-after", f("after.txt", after));
+  try {
+    const out = execFileSync("node", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    return { code: 0, out };
+  } catch (e) {
+    const err = e as { status?: number; stdout?: string; stderr?: string };
+    return { code: err.status ?? -1, out: `${err.stdout ?? ""}${err.stderr ?? ""}` };
+  }
+}
+
+/** یک جدولِ زنده و یک جدولِ ساکن و یک شیءِ ساختاری. */
+const BEFORE = [
+  "rowcount|public.symbol_history|2108888",
+  "rowcount|public.profiles|2",
+  "column|public.payments.amount|integer",
+].join("\n");
+const AFTER_LIVE = [
+  "rowcount|public.symbol_history|2109300",
+  "rowcount|public.profiles|2",
+  "column|public.payments.amount|integer",
+].join("\n");
+
+test("بدونِ پنجره: رشدِ طبیعیِ حینِ بکاپ به‌عنوان شکست گزارش می‌شود", () => {
+  // تضمین: بدونِ `--source-after` رفتار عیناً همان قبل است (سازگاریِ عقب‌رو).
+  const restored = BEFORE.replace("2108888", "2109100");
+  const r = runCompare(BEFORE, restored);
+  assert.equal(r.code, 1);
+});
+
+test("با پنجره: عددِ داخلِ بازه **تأییدنشده** است، نه پذیرفته‌شده", () => {
+  // تضمینِ این تست: کدِ ۲ (تأییدنشده) از کدِ ۰ (تأییدشده) جدا می‌ماند.
+  // چیزی که **اثبات نمی‌کند**: اینکه آن جدول واقعاً سالم بازگردانده شده.
+  const restored = BEFORE.replace("2108888", "2109100");
+  const r = runCompare(BEFORE, restored, AFTER_LIVE);
+  assert.equal(r.code, 2, "داخلِ بازه نباید PASS بدهد");
+  assert.match(r.out, /تأیید نشد|تأییدنشده/);
+  assert.match(r.out, /symbol_history/);
+  assert.match(r.out, /PARTIAL/);
+});
+
+test("با پنجره: مرزهای بازه هم تأییدنشده‌اند، نه پذیرفته", () => {
+  for (const v of ["2108888", "2109300"]) {
+    const r = runCompare(BEFORE, BEFORE.replace("2108888", v), AFTER_LIVE);
+    // مرزِ پایین برابرِ عددِ «قبل» است، پس آن یکی برابریِ دقیق است و PASS.
+    const expected = v === "2108888" ? 0 : 2;
+    assert.equal(r.code, expected, `مرزِ ${v}`);
+  }
+});
+
+test("با پنجره: عددِ کمتر از کمینه همچنان شکست است — آن از‌دست‌رفتنِ داده است", () => {
+  const restored = BEFORE.replace("2108888", "2108000");
+  const r = runCompare(BEFORE, restored, AFTER_LIVE);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /بیرونِ آن است/);
+});
+
+test("با پنجره: عددِ بیشتر از بیشینه هم شکست است — پنجره سقف دارد", () => {
+  const restored = BEFORE.replace("2108888", "2200000");
+  assert.equal(runCompare(BEFORE, restored, AFTER_LIVE).code, 1);
+});
+
+test("جدولِ ساکن پنجره نمی‌گیرد — برابریِ دقیق لازم است", () => {
+  // `profiles` بینِ دو خواندن تکان نخورده، پس هیچ عذری ندارد.
+  const restored = BEFORE.replace("public.profiles|2", "public.profiles|3");
+  assert.equal(runCompare(BEFORE, restored, AFTER_LIVE).code, 1);
+});
+
+test("زنده‌بودنِ دیتابیس دربارهٔ **ساختار** هیچ عذری نمی‌سازد", () => {
+  const restored = BEFORE.replace("payments.amount|integer", "payments.amount|bigint");
+  assert.equal(runCompare(BEFORE, restored, AFTER_LIVE).code, 1);
+});
+
+test("جدولِ غایب با جدولِ زنده یکی نیست", () => {
+  const restored = BEFORE.split("\n").filter((l) => !l.includes("symbol_history")).join("\n");
+  const r = runCompare(BEFORE, restored, AFTER_LIVE);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /غایب/);
+});
+
+test("هر دو اسکریپت فهرستِ مبدأ را دو بار می‌خوانند و پنجره را پاس می‌دهند", () => {
+  // پاریتی عمدی است: اگر فقط یکی از دو مسیر پنجره را بفرستد، همان مسیرِ دیگر
+  // روی یک دیتابیسِ زنده بکاپِ سالم را مردود می‌کند — و چون هر دو «اسکریپتِ
+  // رسمی» هستند، معلوم نمی‌شود کدام درست گفته.
+  for (const [name, src] of [["bash", bash], ["ps1", ps1]] as const) {
+    assert.match(src, /inventory-source-after\.txt/, `${name}: خواندنِ دومِ مبدأ ندارد`);
+    assert.match(src, /--source-after/, `${name}: پنجره را به compare نمی‌دهد`);
+  }
+});
+
+test("خواندنِ دوم **پس از** dump است، نه پیش از آن", () => {
+  // اگر پیش از dump خوانده شود، پنجره خالی می‌ماند و کلِ این کار بی‌اثر است.
+  const afterIdx = bash.indexOf("inventory-source-after.txt");
+  const dumpIdx = bash.indexOf("--data-only");
+  assert.ok(dumpIdx > 0 && afterIdx > dumpIdx, "در bash خواندنِ دوم باید بعد از dumpِ داده باشد");
+  const psAfter = ps1.indexOf("inventory-source-after.txt");
+  const psDump = ps1.indexOf("--data-only");
+  assert.ok(psDump > 0 && psAfter > psDump, "در ps1 خواندنِ دوم باید بعد از dumpِ داده باشد");
+});
+
+/* ── محدودهٔ تضمین: چه چیزی را این مقایسه **نمی‌بیند** ────────────────────────
+ *
+ * سه سناریوی زیر به درخواستِ بازبینیِ مستقل اضافه شده‌اند. دو تای آخرشان
+ * عمداً ثابت می‌کنند مقایسه **کور** است — و همین دلیلِ وجودِ حالتِ سومِ
+ * «تأییدنشده» است. تستی که فقط موفقیت را نشان دهد، این کوری را پنهان می‌کرد.
+ */
+
+test("بکاپِ ناقص با شمارشِ داخلِ بازه → تأییدنشده، نه PASS", () => {
+  // تضمینِ این تست: یک بازگردانیِ **ناقص** (۴۰۰ ردیف کمتر از عددِ پس از dump)
+  // که تصادفاً داخلِ پنجره می‌افتد، هرگز کدِ ۰ نمی‌گیرد.
+  // اثبات **نمی‌کند**: که مقایسه بتواند ناقص‌بودن را *تشخیص* دهد — نمی‌تواند.
+  // فقط از ادعای «تأیید شد» خودداری می‌کند.
+  const restored = BEFORE.replace("2108888", "2108900"); // داخلِ 2108888..2109300
+  const r = runCompare(BEFORE, restored, AFTER_LIVE);
+  assert.equal(r.code, 2, "ناقص‌بودنِ ممکن نباید PASS بگیرد");
+  assert.match(r.out, /PARTIAL/);
+  assert.doesNotMatch(r.out, /صفر اختلاف/);
+});
+
+test("تغییرِ محتوا بدونِ تغییرِ تعداد → این مقایسه آن را **نمی‌بیند**", () => {
+  // تضمینِ این تست: ثبتِ صریحِ یک نقطهٔ کور. فهرست فقط `count(*)` دارد و هیچ
+  // checksumی از محتوا نمی‌گیرد، پس دو دیتابیس با ردیف‌های متفاوت ولی تعدادِ
+  // یکسان اینجا «برابر» دیده می‌شوند.
+  // یعنی **حتی کدِ ۰ هم «دادهٔ یکسان» را اثبات نمی‌کند** — «تعدادِ یکسان» را
+  // می‌گوید. بستنِ این شکاف snapshotِ مشترک می‌خواهد، نه یک تستِ بیشتر.
+  const r = runCompare(BEFORE, BEFORE, AFTER_LIVE);
+  assert.equal(r.code, 0, "تعدادها برابرند، پس مقایسه سبز است");
+  assert.match(r.out, /محتوا را نمی‌بیند/, "این محدودیت باید در گزارش نوشته شود");
+});
+
+test("درج و حذفِ هم‌زمان → تعداد دست‌نخورده می‌ماند و باز هم دیده نمی‌شود", () => {
+  // تضمینِ این تست: همان نقطهٔ کور، از راهی که در یک دیتابیسِ زنده **محتمل‌تر**
+  // است — یک درج و یک حذف در همان پنجره. عدد تکان نمی‌خورد.
+  // برای جدولِ append-only این سناریو نباید رخ دهد؛ برای بقیه می‌تواند.
+  const before = "rowcount|public.notes|100";
+  const after = "rowcount|public.notes|100";      // خالص: بدونِ تغییر
+  const restored = "rowcount|public.notes|100";   // ولی محتوا متفاوت
+  const r = runCompare(before, restored, after);
+  assert.equal(r.code, 0);
+  assert.match(r.out, /محتوا را نمی‌بیند/);
+});
+
+test("گزارش صریح می‌گوید hash فقط تمامیتِ فایل را نشان می‌دهد", () => {
+  // ادعای «sha256 دارد پس بکاپ کامل است» یک استنتاجِ غلطِ رایج است.
+  const r = runCompare(BEFORE, BEFORE, AFTER_LIVE);
+  assert.match(r.out, /sha256ِ فایل‌ها هم فقط تمامیتِ/);
+  assert.match(bash, /not the completeness of the source data/);
+});
+
+test("چهار وضعیت جدا گزارش می‌شوند، نه یک PASS/FAILِ واحد", () => {
+  const r = runCompare(BEFORE, BEFORE, AFTER_LIVE);
+  for (const label of [/restore/, /ساختار بررسی‌شده/, /تطبیقِ شمارشِ ردیف‌ها/, /تطبیق با snapshotِ مشترک/]) {
+    assert.match(r.out, label);
+  }
+  // تطبیق با snapshotِ مشترک هنوز انجام نمی‌شود و باید همین را بگوید.
+  assert.match(r.out, /انجام نشد/);
 });

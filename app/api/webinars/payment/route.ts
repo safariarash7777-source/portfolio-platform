@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 import { requestPayment } from "@/lib/zarinpal";
 
 export const runtime = "nodejs";
@@ -25,7 +26,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const admin = createAdminClient();
+  const admin = tryCreateAdminClient();
+  if (!admin)
+    return NextResponse.json(serviceRoleGap("پرداختِ وبینار"), { status: SERVICE_ROLE_GAP_STATUS });
 
   // دریافت اطلاعات ثبت‌نام و وبینار
   const { data: reg, error: regErr } = await admin
