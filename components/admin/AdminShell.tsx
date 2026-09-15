@@ -23,6 +23,8 @@ import {
   X,
   Activity,
   CalendarDays,
+  Bot,
+  BookOpen,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { createClient } from "@/lib/supabase/client";
@@ -55,8 +57,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "intelligence",
-    label: "موتورهای هوشمندی",
+    label: "تحلیل و پژوهش",
     items: [
+      { key: "research", label: "کاربرگ تحلیل", href: "/admin/research", icon: <BookOpen size={18} /> },
+      { key: "agents", label: "ایجنت‌های پژوهش", href: "/admin/agents", icon: <Bot size={18} /> },
       { key: "intelligence", label: "گردش هوشمندی دستی", href: "/admin/intelligence", icon: <Telescope size={18} /> },
       { key: "market", label: "رادار بازار", href: "/admin/radar", icon: <LineChart size={18} /> },
       { key: "fx", label: "موتور ارز", href: "/admin/fx", icon: <Landmark size={18} /> },
@@ -105,6 +109,9 @@ export default function AdminShell({
     if (item.soon) return false;
     if (item.key === "dashboard") return pathname.startsWith("/admin/overview");
     if (item.key === "desk") return pathname.startsWith("/admin/desk");
+    if (item.key === "research") return pathname.startsWith("/admin/research");
+    if (item.key === "agents") return pathname.startsWith("/admin/agents");
+    if (item.key === "drafts") return pathname.startsWith("/admin/drafts");
     if (item.key === "intelligence") return pathname.startsWith("/admin/intelligence");
     if (item.key === "health") return pathname.startsWith("/admin/health");
     if (item.key === "users") return pathname.startsWith("/admin/users");
