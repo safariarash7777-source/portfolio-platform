@@ -34,8 +34,9 @@ on:
         default: false
 
 permissions:
-  contents: write   # جابه‌جاییِ تگِ relay-deployed = مبنای «چه چیزی مستقر است»
-  actions: read     # پرس‌وجوی اجراهای CI برای همان SHA
+  contents: read
+  actions: read       # پرس‌وجوی اجراهای CI برای همان SHA
+  deployments: write  # ثبتِ «چه چیزی مستقر است» — جای تگِ قبلی
 
 concurrency:
   group: deploy-relay-arsadata
@@ -46,7 +47,7 @@ env:
   APP: arsadata
   PORT: "3400"
   PLATFORM: node
-  BASELINE_TAG: relay-deployed
+  BASELINE_ENV: relay-arsadata
   HEALTH_URL: "https://arsadata.liara.run/healthz"
   DEBUG_URL: "https://arsadata.liara.run/debug"
   # وضعیتِ واقعیِ Production (۲۰۲۶-۰۹-۱۴): نه `brsapi_budget_days` هست نه
@@ -119,11 +120,23 @@ jobs:
                 try{const d=JSON.parse(s);process.stdout.write(String((d.workflow_runs||[]).some(r=>r.conclusion==="success")));}
                 catch{process.stdout.write("false");}});')
 
+          # مبنا از رکوردِ deploymentِ GitHub خوانده می‌شود.
+          #
+          # پیش از این یک تگ بود و push‌اش رد شد: GitHub اجازه نمی‌دهد توکنِ یک
+          # GitHub App، refی بسازد که فایلِ workflow را نسبت به شاخهٔ پیش‌فرض
+          # عوض می‌کند (`refusing to allow a GitHub App to create or update
+          # workflow ... without workflows permission`). آن انتشار موفق شد ولی
+          # دفترداری‌اش نه. رکوردِ deployment دقیقاً برای همین کار است، مجوزِ
+          # باریک‌تری می‌خواهد و در UI هم دیده می‌شود.
           BASELINE=null
           OLDER=false
           RELAY_CHANGED=false
-          if git rev-parse -q --verify "refs/tags/${BASELINE_TAG}^{commit}" >/dev/null; then
-            B=$(git rev-parse "refs/tags/${BASELINE_TAG}^{commit}")
+          B=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+                "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments?environment=${BASELINE_ENV}&per_page=1" \
+              | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+                  try{const d=JSON.parse(s);process.stdout.write(Array.isArray(d)&&d[0]?String(d[0].sha):"");}
+                  catch{process.stdout.write("");}});')
+          if [ -n "$B" ] && git cat-file -e "${B}^{commit}" 2>/dev/null; then
             BASELINE="\"$B\""
             git merge-base --is-ancestor "$SHA" "$B" && OLDER=true || true
             # مبنای مقایسه **آخرین انتشارِ موفق** است، نه HEAD^ — وگرنه در یک
@@ -212,26 +225,18 @@ jobs:
             --message "relay @ ${SHA}" \
             --no-app-logs 2>&1 | tee "$RUNNER_TEMP/deploy.log"
 
-          REL=$(grep -oE '\bv[0-9]+\b' "$RUNNER_TEMP/deploy.log" | tail -1 || true)
-          echo "release=${REL:-نامشخص-از-خروجیِ-CLI}" >> "$GITHUB_OUTPUT"
+          # `@liara/cli@9.5.1` فقط «✔ Release created.» می‌گوید و **هیچ شماره‌ای**
+          # چاپ نمی‌کند. تنها شناسه‌ای که واقعاً می‌دهد تگِ ایمیج است، و همان ثبت
+          # می‌شود — به‌جای اینکه یک شمارهٔ ساختگی جای release بنشیند.
+          REL=$(grep -oE 'apps/[0-9a-f]+:[0-9a-z]+' "$RUNNER_TEMP/deploy.log" | tail -1 || true)
+          echo "release=${REL:-بدون-شناسه-در-خروجیِ-CLI}" >> "$GITHUB_OUTPUT"
           # فقط پس از خروجِ موفقِ CLI نوشته می‌شود (`set -e` بالاتر).
           echo "published_at=$(date -u +%FT%TZ)" >> "$GITHUB_OUTPUT"
-
-      # مبنا بلافاصله پس از انتشارِ موفق جابه‌جا می‌شود، نه پس از پذیرش:
-      # «چه چیزی مستقر است» با «چه چیزی پذیرفته شد» یکی نیست.
-      - name: به‌روزرسانیِ مبنای انتشار
-        if: steps.publish.outcome == 'success' && steps.gate.outputs.action == 'publish'
-        env:
-          SHA: ${{ steps.sha.outputs.sha }}
-        run: |
-          set -euo pipefail
-          git tag -f "$BASELINE_TAG" "$SHA"
-          git push -f origin "refs/tags/${BASELINE_TAG}"
 
       # `/healthz` فقط می‌گوید یک فرایند روی پورت جواب می‌دهد — نسخهٔ قدیمی هم
       # همین را می‌گوید. پس این گام **زنده‌بودن** است، نه شاهدِ نسخه.
       - name: زنده‌بودن پس از انتشار
-        if: steps.gate.outputs.action == 'publish'
+        if: always() && steps.publish.outcome == 'success'
         run: |
           set -uo pipefail
           for i in $(seq 1 30); do
@@ -250,7 +255,7 @@ jobs:
       # می‌سازد. در گزارش `not-applicable` ثبت می‌شود، نه موفق.
       - name: پذیرش — شاهدِ نسخه از /debug
         id: accept
-        if: steps.gate.outputs.action == 'publish' && steps.gate.outputs.code != 'rollback'
+        if: always() && steps.publish.outcome == 'success' && steps.gate.outputs.code != 'rollback'
         env:
           RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
           DEBUG_REACHABLE: ${{ steps.preflight.outputs.debug_reachable }}
@@ -268,6 +273,33 @@ jobs:
             echo "status=failed" >> "$GITHUB_OUTPUT"
             exit 1
           fi
+
+      # دفترداری **بعد از** راستی‌آزمایی می‌آید.
+      #
+      # در اجرای 34955555129 این گام وسط نشسته بود و وقتی شکست، `/healthz` و
+      # پذیرش هر دو skipped شدند — یعنی چیزی که همین الان روی Production رفته
+      # بود اصلاً بررسی نشد. `always()` هم هست چون «چه چیزی مستقر است» به
+      # نتیجهٔ پذیرش ربطی ندارد: انتشار انجام شده، حتی اگر پذیرش رد شود.
+      - name: ثبتِ مبنای انتشار
+        if: always() && steps.publish.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.sha.outputs.sha }}
+          ACCEPTANCE: ${{ steps.accept.outputs.status }}
+        run: |
+          set -euo pipefail
+          ID=$(curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
+                 -H "Accept: application/vnd.github+json" \
+                 "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments" \
+                 -d "{\"ref\":\"${SHA}\",\"environment\":\"${BASELINE_ENV}\",\"auto_merge\":false,\"required_contexts\":[],\"description\":\"relay @ ${SHA}\"}" \
+               | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+                   const d=JSON.parse(s);if(!d.id)throw new Error(d.message||"no deployment id");
+                   process.stdout.write(String(d.id));});')
+          curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments/${ID}/statuses" \
+            -d "{\"state\":\"success\",\"description\":\"acceptance=${ACCEPTANCE:-pending}\"}" > /dev/null
+          echo "::notice::مبنای انتشار ثبت شد — deployment $ID روی ${SHA:0:7}"
 
       - name: گزارش
         if: always()

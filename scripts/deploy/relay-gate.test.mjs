@@ -532,3 +532,42 @@ test("workflow: فرمانِ کاوش از ماژول می‌آید، نه دس�
 test("workflow: پیش‌پرواز هنوز راهِ عبور ندارد", () => {
   assert.ok(!/flags_checked/.test(WF), "هر ورودیِ «قبولش کن» یعنی دروازه دور زده می‌شود");
 });
+
+// ── درس‌های اجرای واقعیِ 34955555129 ────────────────────────────────────────
+// انتشار موفق شد، ولی دفترداری وسط راه شکست و راستی‌آزمایی را با خودش برد.
+
+test("workflow: راستی‌آزمایی پیش از دفترداری می‌آید", () => {
+  const health = WF.indexOf("زنده‌بودن پس از انتشار");
+  const accept = WF.indexOf("پذیرش — شاهدِ نسخه");
+  const record = WF.indexOf("ثبتِ مبنای انتشار");
+  assert.ok(health > -1 && accept > -1 && record > -1);
+  assert.ok(health < record, "`/healthz` نباید پشتِ دفترداری بیفتد");
+  assert.ok(accept < record, "پذیرش نباید پشتِ دفترداری بیفتد");
+});
+
+test("workflow: شکستِ یک گام، راستی‌آزماییِ چیزی که مستقر شده را پنهان نمی‌کند", () => {
+  for (const step of ["زنده‌بودن پس از انتشار", "پذیرش — شاهدِ نسخه", "ثبتِ مبنای انتشار"]) {
+    const i = WF.indexOf(step);
+    const cond = WF.slice(i, i + 420);
+    assert.match(cond, /if: always\(\) && steps\.publish\.outcome == 'success'/,
+      `«${step}» باید به نتیجهٔ واقعیِ انتشار نگاه کند، نه به اینکه گامِ قبلی افتاده یا نه`);
+  }
+});
+
+test("workflow: مبنا دیگر با push کردنِ ref ثبت نمی‌شود", () => {
+  // `git push -f origin refs/tags/...` را GitHub رد کرد، چون توکنِ GitHub App
+  // حق ندارد refی بسازد که فایلِ workflow را نسبت به شاخهٔ پیش‌فرض عوض کند.
+  assert.ok(!/git push .*refs\/tags/.test(WF), "push کردنِ تگ برگشته است");
+  assert.ok(!/contents: write/.test(WF), "دیگر به نوشتن در مخزن نیازی نیست");
+  assert.match(WF, /deployments: write/);
+  assert.match(WF, /deployments\?environment=\$\{BASELINE_ENV\}/, "مبنا باید از همان‌جا خوانده شود");
+});
+
+test("workflow: شناسهٔ نسخه از تگِ ایمیج می‌آید، چون CLI شماره نمی‌دهد", () => {
+  // خروجیِ واقعی: «✔ Release created.» بدونِ هیچ شماره‌ای. تنها شناسه:
+  // «Successfully tagged apps/6a5351feb95bf1e50c1ee34f:7mwbs98ytrzw»
+  assert.ok(!/grep -oE '\\\\bv\[0-9\]\+\\\\b'/.test(WF), "الگوی vN چیزی پیدا نمی‌کرد");
+  assert.match(WF, /apps\/\[0-9a-f\]\+:\[0-9a-z\]\+/);
+  const sample = "- Successfully tagged apps/6a5351feb95bf1e50c1ee34f:7mwbs98ytrzw";
+  assert.match(sample, /apps\/[0-9a-f]+:[0-9a-z]+/, "الگو باید روی خروجیِ واقعی بگیرد");
+});
