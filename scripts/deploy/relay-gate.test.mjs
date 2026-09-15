@@ -532,3 +532,88 @@ test("workflow: فرمانِ کاوش از ماژول می‌آید، نه دس�
 test("workflow: پیش‌پرواز هنوز راهِ عبور ندارد", () => {
   assert.ok(!/flags_checked/.test(WF), "هر ورودیِ «قبولش کن» یعنی دروازه دور زده می‌شود");
 });
+
+// ── درس‌های اجرای واقعیِ 34955555129 ────────────────────────────────────────
+// انتشار موفق شد، ولی دفترداری وسط راه شکست و راستی‌آزمایی را با خودش برد.
+
+test("workflow: راستی‌آزمایی پیش از دفترداری می‌آید", () => {
+  const health = WF.indexOf("زنده‌بودن پس از انتشار");
+  const accept = WF.indexOf("پذیرش — شاهدِ نسخه");
+  const record = WF.indexOf("ثبتِ مبنای انتشار");
+  assert.ok(health > -1 && accept > -1 && record > -1);
+  assert.ok(health < record, "`/healthz` نباید پشتِ دفترداری بیفتد");
+  assert.ok(accept < record, "پذیرش نباید پشتِ دفترداری بیفتد");
+});
+
+test("workflow: شکستِ یک گام، راستی‌آزماییِ چیزی که مستقر شده را پنهان نمی‌کند", () => {
+  for (const step of ["زنده‌بودن پس از انتشار", "پذیرش — شاهدِ نسخه", "ثبتِ مبنای انتشار"]) {
+    const i = WF.indexOf(`- name: ${step}`);
+    const cond = WF.slice(i, i + 420);
+    // `always()` تنها کافی نیست: باید به **نتیجهٔ واقعیِ انتشار** هم گره بخورد،
+    // وگرنه پس از شکستِ پیش‌پرواز (outcome=skipped) سلامتِ یک انتشارِ
+    // انجام‌نشده گزارش می‌شود.
+    assert.match(cond, /if: always\(\) &&[\s\S]{0,60}steps\.publish\.outcome == 'success'/,
+      `«${step}» باید به نتیجهٔ واقعیِ انتشار نگاه کند — شرط: ${cond.slice(0, 120)}`);
+  }
+});
+
+test("workflow: مبنا دیگر با push کردنِ ref ثبت نمی‌شود", () => {
+  // `git push -f origin refs/tags/...` را GitHub رد کرد، چون توکنِ GitHub App
+  // حق ندارد refی بسازد که فایلِ workflow را نسبت به شاخهٔ پیش‌فرض عوض کند.
+  assert.ok(!/git push .*refs\/tags/.test(WF), "push کردنِ تگ برگشته است");
+  assert.ok(!/contents: write/.test(WF), "دیگر به نوشتن در مخزن نیازی نیست");
+  assert.match(WF, /deployments: write/);
+  assert.match(WF, /deployments\?environment=\$\{BASELINE_ENV\}/, "مبنا باید از همان‌جا خوانده شود");
+});
+
+test("workflow: شناسهٔ نسخه از تگِ ایمیج می‌آید، چون CLI شماره نمی‌دهد", () => {
+  // خروجیِ واقعی: «✔ Release created.» بدونِ هیچ شماره‌ای. تنها شناسه:
+  // «Successfully tagged apps/6a5351feb95bf1e50c1ee34f:7mwbs98ytrzw»
+  assert.ok(!/grep -oE '\\\\bv\[0-9\]\+\\\\b'/.test(WF), "الگوی vN چیزی پیدا نمی‌کرد");
+  assert.match(WF, /apps\/\[0-9a-f\]\+:\[0-9a-z\]\+/);
+  const sample = "- Successfully tagged apps/6a5351feb95bf1e50c1ee34f:7mwbs98ytrzw";
+  assert.match(sample, /apps\/[0-9a-f]+:[0-9a-z]+/, "الگو باید روی خروجیِ واقعی بگیرد");
+});
+
+import { readFileSync as _rf } from "node:fs";
+const HEALTH_WF = _rf(new URL("../../.github/workflows/relay-health.yml", import.meta.url), "utf8");
+
+test("سلامت: یک workflowِ جدا هست که چیزی منتشر نمی‌کند", () => {
+  // وگرنه تنها راهِ دیدنِ حالِ نسخهٔ مستقر «یک deploy دیگر» است، و چون
+  // «استقرارِ بدونِ اختلال» خاموش است یعنی هر بررسی یک قطعیِ بی‌دلیل.
+  assert.ok(!/liara.*deploy|deploy --app|--path/.test(HEALTH_WF), "این workflow نباید هیچ مسیرِ انتشاری داشته باشد");
+  assert.ok(!/LIARA_API_TOKEN/.test(HEALTH_WF), "به توکنِ انتشار هم نیازی ندارد");
+  assert.match(HEALTH_WF, /healthz/);
+  assert.match(HEALTH_WF, /workflow_dispatch/);
+  assert.ok(!/workflow_run/.test(HEALTH_WF), "نباید خودکار روی هر CI بیفتد");
+});
+
+test("سلامت: نبودِ RELAY_TOKEN «موفق» نمی‌شود، «در انتظار» می‌شود", () => {
+  assert.match(HEALTH_WF, /status=pending/);
+  assert.ok(!/status=passed[\s\S]{0,80}RELAY_TOKEN:-/.test(HEALTH_WF));
+});
+
+test("مبنا: فقط deploymentهای موفقِ همین محیط انتخاب می‌شوند", () => {
+  // مخزن پر از رکوردِ Preview/Production از vercel[bot] و arsadata از
+  // liara-cloud[bot] است؛ هیچ‌کدام نباید مبنای رله شوند.
+  assert.match(WF, /deployments\?environment=\$\{BASELINE_ENV\}/, "فیلترِ محیط اجباری است");
+  assert.match(WF, /deployments\/\$\{ID\}\/statuses/, "وضعیتِ هر رکورد باید خوانده شود");
+  assert.match(WF, /if \[ "\$STATE" = "success" \]/, "فقط وضعیتِ success مبنا می‌شود");
+});
+
+test("ثبتِ سابقه: مسیرِ record_only هیچ چیزی منتشر نمی‌کند", () => {
+  // ترمیمِ «انتشار گرفت، دفترداری نگرفت» نباید از راهِ انتشارِ تکراری باشد.
+  for (const step of ["وجودِ توکن", "پیش‌پرواز — پرچم‌های واقعیِ اپِ زنده", "انتشار"]) {
+    const i = WF.indexOf(`- name: ${step}`);
+    assert.match(WF.slice(i, i + 200), /inputs\.record_only != true/,
+      `«${step}» باید در حالتِ record_only اجرا نشود`);
+  }
+  const rec = WF.indexOf("- name: ثبتِ مبنای انتشار");
+  assert.match(WF.slice(rec, rec + 260), /inputs\.record_only == true/);
+});
+
+test("ثبتِ سابقه: «منتشرشده» با «سلامتِ تأییدشده» یکی نمی‌شود", () => {
+  const rec = WF.indexOf("- name: ثبتِ مبنای انتشار");
+  assert.match(WF.slice(rec, rec + 1800), /health=جدا/,
+    "وضعیتِ deployment نباید سلامت را ضمنی تأیید کند");
+});
