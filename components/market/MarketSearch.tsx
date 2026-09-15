@@ -18,6 +18,7 @@
 
 import { useState, useRef, useMemo, useId, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useUrlBackedText } from "@/lib/useUrlState";
 import { Search, X, CornerDownLeft } from "lucide-react";
 import { searchMarket, type MarketSearchEntry } from "@/lib/market-nav";
 import { toLatinDigits } from "@/lib/format";
@@ -39,7 +40,21 @@ export default function MarketSearch({
   autoFocusOnMount?: boolean;
 }) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
+
+  /**
+   * متنِ جست‌وجو در URL می‌نشیند (`?find=`).
+   *
+   * ── چرا ──────────────────────────────────────────────────────────────
+   * معیارِ پذیرش: «بازار ← جست‌وجوی نماد ← جزئیات ← برگشت **با حفظ جست‌وجو**».
+   * با `useState` تنها، دکمهٔ برگشتِ مرورگر به صفحه‌ای برمی‌گشت که کادرش خالی
+   * بود و کاربر باید از نو تایپ می‌کرد.
+   *
+   * نامِ پارامتر عمداً `find` است و نه `q`: تابلوی سهام و دیده‌بانِ صندوق‌ها
+   * از قبل `?q=` را برای جست‌وجوی **داخلِ جدولِ خودشان** گرفته‌اند. یک نامِ
+   * مشترک یعنی تایپ در کادرِ بالا جدولِ پایین را هم فیلتر می‌کرد.
+   */
+  const [query, setQuery] = useUrlBackedText("find");
+
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,6 +89,9 @@ export default function MarketSearch({
 
   function go(entry: MarketSearchEntry) {
     const qs = from ? `?from=${encodeURIComponent(from)}` : "";
+    // `push` (نه replace): رفتن به صفحهٔ نماد یک قدمِ واقعی در تاریخچه است، پس
+    // «برگشت» باید به همین صفحه با همین جست‌وجو برگردد — و چون متنِ جست‌وجو
+    // در URLِ همین صفحه است، برگشت خودش کادر را پر می‌کند.
     router.push(`/symbol/${encodeURIComponent(entry.id)}${qs}`);
     setOpen(false);
   }

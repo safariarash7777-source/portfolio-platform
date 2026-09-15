@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useUrlState } from "@/lib/useUrlState";
+import { useUrlState, useUrlBackedText } from "@/lib/useUrlState";
 import { fundCategory, countByCategory, FUND_CATEGORIES, ALL_CATEGORIES } from "@/lib/core/fundCategory";
 import Term from "@/components/learn/Term";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
@@ -105,9 +105,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
   // دسته و جست‌وجو در URL می‌نشینند تا برگشت از صفحهٔ صندوق وضعیت را نگه دارد.
   const url = useUrlState();
   const typeFilter = url.get("type", ALL_CATEGORIES);
-  const search = url.get("q", "");
+  const [search, setSearch] = useUrlBackedText("q");
   const setTypeFilter = (v: string) => url.set({ type: v === ALL_CATEGORIES ? null : v });
-  const setSearch = (v: string) => url.set({ q: v });
 
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDir, setSortDir] = useState<SortDir>("desc");

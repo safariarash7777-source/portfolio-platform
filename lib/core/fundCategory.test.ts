@@ -69,3 +69,32 @@ test("دسته‌ها یکتا و «سایر» آخر است", () => {
   assert.equal(new Set(FUND_CATEGORIES).size, FUND_CATEGORIES.length);
   assert.equal(FUND_CATEGORIES[FUND_CATEGORIES.length - 1], "سایر");
 });
+
+
+/* ── مقاومت در برابرِ تغییرِ نگارشِ منبع ──────────────────────────────────── */
+
+test("نگارشِ کوتاه‌ترِ منبع هم درست دسته‌بندی می‌شود", () => {
+  // اگر منبع روزی «صندوق کالایی مبتنی بر طلا» را «صندوق طلا» بنویسد، این ۳۵
+  // صندوق نباید بی‌صدا به «سایر» بیفتند.
+  assert.equal(fundCategory("صندوق طلا"), "طلا");
+  assert.equal(fundCategory("صندوق در سهام"), "سهامی");
+  assert.equal(fundCategory("صندوق سهامی"), "سهامی");
+  assert.equal(fundCategory("صندوق با درآمد ثابت"), "درآمد ثابت");
+});
+
+test("نقره هرگز طلا نمی‌شود، با هر نگارشی", () => {
+  assert.equal(fundCategory("صندوق کالایی مبتنی بر نقره"), "سایر");
+  assert.equal(fundCategory("صندوق نقره"), "سایر");
+});
+
+test("نگاشت روی ۱۳ نوعِ واقعی دست‌نخورده می‌ماند", () => {
+  const rows = REAL.flatMap(([t, n]) => Array.from({ length: n }, () => ({ type: t })));
+  const c = countByCategory(rows);
+  assert.equal(c.get("درآمد ثابت"), 92);
+  assert.equal(c.get("سهامی"), 88);
+  assert.equal(c.get("بخشی"), 62);
+  assert.equal(c.get("طلا"), 35);
+  assert.equal(c.get("اهرمی"), 9);
+  assert.equal(c.get("سایر"), 44);
+  assert.equal([...c.values()].reduce((a, b) => a + b, 0), 330);
+});

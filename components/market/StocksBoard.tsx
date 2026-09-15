@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
-import { useUrlState } from "@/lib/useUrlState";
+import { useUrlState, useUrlBackedText } from "@/lib/useUrlState";
 import IndustryDesk from "./IndustryDesk";
 import { BarChart3, Search, ArrowUpDown, ChevronDown, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import {
@@ -94,11 +94,10 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
   const url = useUrlState();
   const rawView = url.get("view", "table");
   const view: ViewKey = isViewKey(rawView) ? rawView : "table";
-  const search = url.get("q", "");
+  const [search, setSearch] = useUrlBackedText("q");
   const industryFilter = url.get("industry", "همه");
 
   const setView = (v: ViewKey) => url.set({ view: v === "table" ? null : v });
-  const setSearch = (v: string) => url.set({ q: v });
   const setIndustryFilter = (v: string) => url.set({ industry: v === "همه" ? null : v });
 
   const tableAnchorRef = useRef<HTMLDivElement | null>(null);

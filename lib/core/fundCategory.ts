@@ -48,9 +48,16 @@ export const ALL_CATEGORIES = "همه";
 const RULES: ReadonlyArray<{ test: RegExp; category: FundCategory }> = [
   { test: /درآمد\s*ثابت/, category: "درآمد ثابت" },
   { test: /اهرمی/, category: "اهرمی" },
-  { test: /مبتنی\s*بر\s*طلا/, category: "طلا" },
+  // «نقره» پیش از «طلا» بررسی می‌شود و صریحاً به سایر می‌رود؛ وگرنه یک قاعدهٔ
+  // عامِ طلا صندوقِ نقره را هم می‌بلعید.
+  { test: /نقره/, category: "سایر" },
+  // عمداً فقط «طلا» — نه «مبتنی بر طلا». نامِ رسمیِ امروز «صندوق کالایی مبتنی
+  // بر طلا» است، ولی قاعده‌ای که به آن عبارتِ دقیق بچسبد با کوچک‌ترین تغییرِ
+  // نگارشِ منبع (مثلاً «صندوق طلا») بی‌صدا به «سایر» می‌افتد و ۳۵ صندوق از
+  // فیلتر گم می‌شوند.
+  { test: /طلا/, category: "طلا" },
   { test: /بخشی/, category: "بخشی" },
-  { test: /در\s*سهام/, category: "سهامی" },
+  { test: /سهام/, category: "سهامی" },
 ];
 
 export function fundCategory(sourceType: string | null | undefined): FundCategory {
