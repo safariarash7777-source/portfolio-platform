@@ -144,6 +144,20 @@ say "۲/۵ — گرفتنِ بکاپ (roles · schema · data)"
 "${SUPA[@]}" db dump --db-url "$DB_URL" -f "$OUT_DIR/data.sql"   --use-copy --data-only \
   -x "storage.buckets_vectors" -x "storage.vector_indexes"
 
+# ── ۴′) اثرِ انگشتِ مبدأ، **پس از** dump ──────────────────────────────────────
+# Production حینِ همین چند دقیقه نوشته است: رله هر ۵ دقیقه اسنپ‌شات می‌گذارد و
+# `symbol_history` روزانه بیش از هزار ردیف می‌گیرد. بدونِ این خواندنِ دوم،
+# مقایسه یک بکاپِ کاملاً سالم را مردود می‌کند و اپراتور یاد می‌گیرد مقایسه را
+# جدی نگیرد — که از نبودش بدتر است.
+#
+# این «چشم‌پوشی» نیست، **اندازه‌گیری** است: هر جدولی که بینِ دو خواندن تکان
+# خورده، ثابت شده در همان پنجره زنده بوده. شمارشِ بیرونِ آن بازه — به‌ویژه
+# **کمتر** از کمینه‌اش — همچنان شکست است.
+psql_with_url '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
+  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
+  > "$OUT_DIR/inventory-source-after.txt" \
+  || die "اثرِ انگشتِ دومِ Production خوانده نشد."
+
 for f in roles schema data; do
   [ -s "$OUT_DIR/$f.sql" ] || die "$f.sql خالی است — بکاپ ناقص است."
 done
@@ -230,12 +244,19 @@ docker run --rm --network host -e DB_URL="$VERIFY_URL" \
 
 set +e
 node "$COMPARE_JS" "$OUT_DIR/inventory-source.txt" "$OUT_DIR/inventory-restored.txt" \
+  --source-after "$OUT_DIR/inventory-source-after.txt" \
   --report "$OUT_DIR/comparison.txt"
 COMPARE_RC=$?
 set -e
 
 # ── ۸) manifest — فقط غیرحساس ────────────────────────────────────────────────
-VERDICT=$([ "$COMPARE_RC" -eq 0 ] && echo PASS || echo FAIL)
+# سه حالت، نه دو. «تأییدنشده» نه PASS است نه FAIL — و هیچ‌کدام نباید
+# دیگری را بپوشاند.
+case "$COMPARE_RC" in
+  0) VERDICT="PASS (structure verified · row counts exactly equal)" ;;
+  2) VERDICT="PARTIAL (structure verified · row-count equality NOT proven)" ;;
+  *) VERDICT="FAIL" ;;
+esac
 {
   echo "backup taken:   $(date -u '+%Y-%m-%dT%H:%M:%SZ') UTC"
   echo "project ref:    uooeygybrniptzdxuzhj (production)"
@@ -243,7 +264,16 @@ VERDICT=$([ "$COMPARE_RC" -eq 0 ] && echo PASS || echo FAIL)
   echo "verify target:  isolated local Supabase stack ($VERIFY_ID)"
   echo "restore method: single psql invocation, --single-transaction, ON_ERROR_STOP=1"
   echo "restore exit:   $RESTORE_RC"
-  echo "verification:   dynamic row counts (public+auth+storage) + structural fingerprint, both directions"
+  echo "verification:   structural fingerprint (both directions) + dynamic row counts (public+auth+storage)"
+  echo "live window:    source fingerprint read twice (before and after the dump). A table that moved"
+  echo "                between them is reported as UNVERIFIED, not accepted. The window is evidence"
+  echo "                of drift, not proof of correctness."
+  echo "snapshot match: NOT PERFORMED - the inventory is not read in the dump's own snapshot."
+  echo "                pg_dump supports --snapshot; whether 'supabase db dump' passes it through"
+  echo "                is UNVERIFIED. Until then, row counts for live tables stay unproven."
+  echo "scope limit:    a row count does not see content. A changed column value, or an insert and a"
+  echo "                delete in the same window, leave the count untouched. sha256 below proves the"
+  echo "                integrity of each file only - not the completeness of the source data."
   echo "exclusions:     storage.buckets_vectors, storage.vector_indexes (documented)"
   echo "inventory rows: $(wc -l < "$OUT_DIR/inventory-source.txt" | tr -d ' ')"
   echo "result:         $VERDICT"
@@ -257,6 +287,22 @@ VERDICT=$([ "$COMPARE_RC" -eq 0 ] && echo PASS || echo FAIL)
 cat "$OUT_DIR/MANIFEST.txt"
 
 echo
+if [ "$COMPARE_RC" -eq 2 ]; then
+  cat <<EOS
+⚠️ بکاپ ساخته شد، بازگردانی کار کرد و **ساختار تأیید شد** — ولی برابریِ
+   دادهٔ جدول‌هایی که حینِ بکاپ زنده بوده‌اند **اثبات نشد**.
+
+این **PASS نیست.** جزئیات: $OUT_DIR/comparison.txt
+
+بکاپ احتمالاً سالم است؛ ما فقط نمی‌توانیم اثباتش کنیم. تا وقتی مقایسه با
+snapshotِ مشترکِ dump ممکن نشود، این وضعیت به‌تنهایی مجوزِ اجرای migration
+روی Production **نمی‌دهد**.
+
+مسیر: $OUT_DIR
+EOS
+  exit 2
+fi
+
 if [ "$COMPARE_RC" -eq 0 ]; then
   cat <<EOS
 ✅ بکاپ ساخته شد و **آزمونِ بازگردانی را پاس کرد**.

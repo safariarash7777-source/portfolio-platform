@@ -14,8 +14,8 @@
 import Link from "next/link";
 import { ArrowLeft, LayoutDashboard, LogIn, UserPlus } from "lucide-react";
 import type { AccessInfo } from "@/lib/access";
-import { formatJalali } from "@/lib/format";
 import { accountEntryHref, normalizeReturnPath } from "./returnPath";
+import { accountSubtitle } from "./accountSubtitle";
 
 export default function AccountBridge({
   access,
@@ -41,16 +41,7 @@ export default function AccountBridge({
           {signedIn ? "حسابِ شما" : "با حساب، این صفحه‌ها به هم وصل می‌شوند"}
         </p>
         <p className="text-[11.5px] mt-0.5" style={{ color: "var(--text-3)" }}>
-          {access.level === "full" ? (
-            <>
-              دسترسی کامل فعال است
-              {access.expiresAt ? <> · تا {formatJalali(access.expiresAt, false)}</> : null}
-            </>
-          ) : access.level === "registered" ? (
-            "حساب فعال است؛ ابزارهای حساب در دسترس‌اند، اما دسترسی کامل فعال نیست."
-          ) : (
-            "واچ‌لیست، یادداشت و پیگیریِ نمادها به حسابِ شما گره می‌خورد."
-          )}
+          {accountSubtitle(access)}
         </p>
       </div>
 
