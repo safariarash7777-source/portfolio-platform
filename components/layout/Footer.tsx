@@ -49,6 +49,7 @@ const GROUPS = [
       { href: "/notes", label: "یادداشت روزانه" },
       { href: "/insights", label: "تحلیل‌های اجتماعی" },
       { href: "/learn/glossary", label: "واژه‌نامهٔ مالی" },
+      { href: "/tools/portfolio-scenario", label: "سناریوی سبد" },
     ],
   },
   {
