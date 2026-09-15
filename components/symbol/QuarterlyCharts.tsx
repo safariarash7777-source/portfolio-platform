@@ -48,7 +48,7 @@ function Card({
   return (
     <div className="card p-4 sm:p-5">
       <header className="mb-3">
-        <h4 className="text-[14px] font-bold" style={{ color: "var(--navy)" }}>
+        <h4 className="text-[14px] font-bold" style={{ color: "var(--navy-ink)" }}>
           {title}
         </h4>
         <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>
@@ -114,7 +114,7 @@ export default function QuarterlyCharts({
   return (
     <section className="card p-4 sm:p-5 scroll-mt-24" id="quarterly">
       <header className="mb-3">
-        <h3 className="text-[15px] font-bold" style={{ color: "var(--navy)" }}>
+        <h3 className="text-[15px] font-bold" style={{ color: "var(--navy-ink)" }}>
           تحلیل فصلی (ن-۱۰)
         </h3>
         <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>

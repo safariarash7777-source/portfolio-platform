@@ -27,14 +27,14 @@ export default async function MarketMapPage() {
             <div>
               <p
                 className="flex items-center gap-2 text-sm font-semibold"
-                style={{ color: "var(--navy)" }}
+                style={{ color: "var(--navy-ink)" }}
               >
                 <MapIcon size={16} />
                 نمای یک‌نگاهی بازار
               </p>
               <h1
                 className="mt-1 text-3xl font-extrabold"
-                style={{ color: "var(--navy-deep)" }}
+                style={{ color: "var(--heading)" }}
               >
                 نقشهٔ بازار
               </h1>

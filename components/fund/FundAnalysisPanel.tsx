@@ -26,9 +26,23 @@ function pct(v: number | null | undefined, digits = 2): string {
 /** مثبت = گران‌تر از NAV (هشدار) · منفی = زیرِ NAV. */
 function bubbleColor(v: number | null | undefined): string {
   if (typeof v !== "number" || !isFinite(v)) return "var(--text-3)";
-  if (v > 2) return "var(--danger, #B91C1C)";
-  if (v < -2) return "var(--success, #15803D)";
+  if (v > 2) return "var(--danger)";
+  if (v < -2) return "var(--success)";
   return "var(--text-2)";
+}
+
+function StateBadge({ live }: { live: LiveBubble }) {
+  const state = live.state === "ready"
+    ? { label: "دادهٔ قابل مقایسه", color: "var(--success)" }
+    : live.state === "stale"
+      ? { label: "دادهٔ کهنه", color: "var(--warning)" }
+      : { label: "مقایسه در دسترس نیست", color: "var(--text-3)" };
+  return (
+    <span className="inline-flex min-h-7 items-center gap-2 rounded-full border px-2.5 text-[11px] font-bold" style={{ borderColor: "var(--line)", color: state.color }}>
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: state.color }} aria-hidden="true" />
+      {state.label}
+    </span>
+  );
 }
 
 function Cell({ label, children, note }: { label: string; children: React.ReactNode; note?: string }) {
@@ -67,18 +81,20 @@ export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {
       className="rounded-xl border p-5 space-y-5"
       style={{ borderColor: "var(--line)", background: "var(--surface)" }}
     >
-      <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
-          حباب، هم‌گروه و نقدشوندگی
-        </h2>
-        {live.state === "stale" ? (
-          <span
-            className="rounded-full px-2 py-0.5 text-[11px] font-bold"
-            style={{ background: "var(--warning-bg, #FEF3C7)", color: "var(--warning-fg, #92400E)" }}
-          >
-            {fa(live.reason ?? "دادهٔ کهنه")}
-          </span>
-        ) : null}
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold" style={{ color: "var(--gold-ink)" }}>لایهٔ بررسی</p>
+          <h2 className="mt-1 font-display text-xl font-bold" style={{ color: "var(--heading)" }}>
+            حباب، هم‌گروه و نقدشوندگی
+          </h2>
+          <p className="mt-2 max-w-2xl text-xs leading-6" style={{ color: "var(--text-3)" }}>
+            حباب فاصلهٔ قیمت بازار با NAV ابطال است. این عدد بدون کنترل زمان دو ورودی یا بدون مقایسه با هم‌گروه، به‌تنهایی معنای کافی ندارد.
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-1.5">
+          <StateBadge live={live} />
+          {live.reason ? <span className="max-w-xs text-left text-[10px] leading-5" style={{ color: "var(--text-3)" }}>{fa(live.reason)}</span> : null}
+        </div>
       </header>
 
       {/* ── حبابِ جاری ─────────────────────────────────────────────── */}
@@ -174,7 +190,7 @@ export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {
 
       {/* ── هم‌گروه ────────────────────────────────────────────────── */}
       <div className="border-t pt-4" style={{ borderColor: "var(--line)" }}>
-        <h3 className="text-sm font-bold mb-2" style={{ color: "var(--navy-deep)" }}>جایگاه در هم‌گروه</h3>
+        <h3 className="text-sm font-bold mb-2" style={{ color: "var(--heading)" }}>جایگاه در هم‌گروه</h3>
         {peer ? (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Cell label="گروه" note={`${fa(peer.of)} صندوقِ دارای حباب`}>
@@ -197,7 +213,7 @@ export default function FundAnalysisPanel(p: FundAnalysisPanelProps) {
 
       {/* ── نقدشوندگی ─────────────────────────────────────────────── */}
       <div className="border-t pt-4" style={{ borderColor: "var(--line)" }}>
-        <h3 className="text-sm font-bold mb-2" style={{ color: "var(--navy-deep)" }}>نقدشوندگی</h3>
+        <h3 className="text-sm font-bold mb-2" style={{ color: "var(--heading)" }}>نقدشوندگی</h3>
         {liquidity ? (
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

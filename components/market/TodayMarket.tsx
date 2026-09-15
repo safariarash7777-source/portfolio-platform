@@ -42,7 +42,7 @@ export default async function TodayMarket({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="eyebrow">امروز بازار</p>
-          <h2 className="mt-1 font-display text-xl font-bold" style={{ color: "var(--navy-deep)" }}>
+          <h2 className="mt-1 font-display text-xl font-bold" style={{ color: "var(--heading)" }}>
             چشم‌انداز آماری بازار سهام
           </h2>
         </div>
@@ -56,7 +56,7 @@ export default async function TodayMarket({
             </span>
             <span
               className="text-2xl font-extrabold"
-              style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}
+              style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}
             >
               {toPersianDigits(regime.score)}
               <span className="text-sm font-medium" style={{ color: "var(--text-3)" }}>
@@ -142,7 +142,7 @@ export default async function TodayMarket({
                 ارزش معاملات سهام
               </p>
               {breadth.totalValueToman != null ? (
-                <p className="mt-0.5 text-[15px] font-bold" style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}>
+                <p className="mt-0.5 text-[15px] font-bold" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
                   {formatTomanShort(breadth.totalValueToman)}
                 </p>
               ) : (
@@ -159,7 +159,7 @@ export default async function TodayMarket({
               {breadth.topInflowIndustries.map((x, i) => (
                 <span key={x.industry}>
                   {i > 0 ? "، " : ""}
-                  <b style={{ color: "var(--navy-deep)" }}>{x.industry}</b>{" "}
+                  <b style={{ color: "var(--heading)" }}>{x.industry}</b>{" "}
                   <span style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
                     ({formatTomanShort(x.flowToman)})
                   </span>

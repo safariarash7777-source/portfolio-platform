@@ -89,11 +89,11 @@ export default function IndustryDesk({
           <div className="flex items-center gap-2">
             <span
               className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
-              style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+              style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
             >
               <Grid3x3 size={15} />
             </span>
-            <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
+            <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
               نقشهٔ صنایع
             </h3>
           </div>
@@ -171,7 +171,7 @@ export default function IndustryDesk({
       <div className="card overflow-x-auto">
         <div className="px-5 pt-5 pb-1 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
+            <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
               میز صنایع
             </h3>
             <p className="text-[11px] mt-0.5" style={{ color: "var(--text-3)" }}>
@@ -210,7 +210,7 @@ export default function IndustryDesk({
                 onClick={() => onSelectIndustry?.(r.industry)}
                 title={`فیلتر جدول نمادها روی ${r.industry}`}
               >
-                <td className="py-2.5 px-4 font-bold" style={{ color: "var(--navy-deep)" }}>
+                <td className="py-2.5 px-4 font-bold" style={{ color: "var(--heading)" }}>
                   {r.industry}
                   {r.valueSharePct != null && r.valueSharePct >= 0.1 ? (
                     <span className="block text-[10.5px] font-normal mt-0.5" style={{ color: "var(--text-3)" }}>
@@ -263,7 +263,7 @@ export default function IndustryDesk({
             type="button"
             onClick={() => setShowAll((v) => !v)}
             className="w-full py-3 text-xs font-medium hover:bg-[var(--surface-2)]"
-            style={{ color: "var(--navy)", borderTop: "1px solid var(--line)" }}
+            style={{ color: "var(--navy-ink)", borderTop: "1px solid var(--line)" }}
           >
             {showAll ? "نمایش کمتر" : `نمایش همهٔ ${toPersianDigits(sortedRows.length)} صنعت`}
           </button>
