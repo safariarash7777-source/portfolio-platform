@@ -55,7 +55,7 @@ export default function SymbolTabs({
             role="tab"
             aria-selected={active === t.key}
             onClick={() => select(t.key)}
-            className="min-w-fit flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-[13px] font-semibold transition-colors"
+            className="inline-flex min-h-11 min-w-fit flex-1 items-center justify-center whitespace-nowrap rounded-lg px-4 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={
               active === t.key
                 ? { background: "var(--navy-deep)", color: "#fff" }

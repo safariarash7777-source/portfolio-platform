@@ -24,6 +24,7 @@ function QueueList({
   count,
   totalToman,
   emptyMsg,
+  from,
 }: {
   title: string;
   color: string;
@@ -31,6 +32,7 @@ function QueueList({
   count: number;
   totalToman: number;
   emptyMsg: string;
+  from: string;
 }) {
   const max = Math.max(1, ...items.map((x) => x.queueValueToman));
   return (
@@ -48,8 +50,8 @@ function QueueList({
           {items.map((x) => (
             <li key={x.id} className="flex items-center gap-2">
               <Link
-                href={`/symbol/${encodeURIComponent(x.id)}?from=/market`}
-                className="text-[12.5px] font-medium hover:underline flex-shrink-0"
+                href={`/symbol/${encodeURIComponent(x.id)}?from=${encodeURIComponent(from)}`}
+                className="inline-flex min-h-11 flex-shrink-0 items-center text-[12.5px] font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
                 style={{ color: "var(--heading)", width: 76 }}
                 title={x.faName || x.id}
               >
@@ -79,10 +81,12 @@ function TopList({
   title,
   items,
   render,
+  from,
 }: {
   title: string;
   items: Array<{ id: string; faName: string }>;
   render: (x: never) => { text: string; color: string };
+  from: string;
 }) {
   return (
     <div className="min-w-0">
@@ -96,8 +100,8 @@ function TopList({
             return (
               <li key={x.id} className="flex items-center justify-between gap-2 text-[12.5px]">
                 <Link
-                  href={`/symbol/${encodeURIComponent(x.id)}?from=/market`}
-                  className="font-medium truncate hover:underline"
+                  href={`/symbol/${encodeURIComponent(x.id)}?from=${encodeURIComponent(from)}`}
+                  className="inline-flex min-h-11 items-center truncate font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
                   style={{ color: "var(--heading)" }}
                   title={x.faName || x.id}
                 >
@@ -119,11 +123,14 @@ function TopList({
 /* ── بخش ─────────────────────────────────────────────────────────────────── */
 
 export default function MarketDepthDetails({
+  from = "/market",
   queues,
   tops,
   flowTrend,
   hasMarket,
 }: {
+  /** مبدأ — در لینکِ نماد می‌رود تا «برگشت» وضعیتِ این صفحه را نگه دارد. */
+  from?: string;
   queues: QueuesSummary;
   tops: TopLists;
   flowTrend: FlowTrendPoint[];
@@ -149,6 +156,7 @@ export default function MarketDepthDetails({
               count={queues.buyCount}
               totalToman={queues.buyValueToman}
               emptyMsg="در حال حاضر هیچ نمادی در صف خرید نیست."
+              from={from}
             />
             <QueueList
               title="صف فروش"
@@ -157,6 +165,7 @@ export default function MarketDepthDetails({
               count={queues.sellCount}
               totalToman={queues.sellValueToman}
               emptyMsg="در حال حاضر هیچ نمادی در صف فروش نیست."
+              from={from}
             />
           </div>
         ) : (
@@ -196,6 +205,7 @@ export default function MarketDepthDetails({
             <TopList
               title="بیشترین رشد"
               items={tops.gainers}
+              from={from}
               render={(x: { changePercent: number | null }) => ({
                 text: x.changePercent != null ? formatPercent(x.changePercent) : "—",
                 color: "var(--success)",
@@ -204,6 +214,7 @@ export default function MarketDepthDetails({
             <TopList
               title="بیشترین افت"
               items={tops.losers}
+              from={from}
               render={(x: { changePercent: number | null }) => ({
                 text: x.changePercent != null ? formatPercent(x.changePercent) : "—",
                 color: "var(--danger)",
@@ -212,6 +223,7 @@ export default function MarketDepthDetails({
             <TopList
               title="بیشترین ارزش معاملات"
               items={tops.byValue}
+              from={from}
               render={(x: { value: number }) => ({
                 // ورودی ریالِ خامِ اسنپ‌شات است؛ تبدیل به تومان همین‌جا و یک بار.
                 text: formatTomanShort(x.value / 10),
@@ -221,6 +233,7 @@ export default function MarketDepthDetails({
             <TopList
               title="بیشترین ورود پول حقیقی"
               items={tops.byNetReal}
+              from={from}
               render={(x: { netRealToman: number | null }) => ({
                 text: x.netRealToman != null ? formatTomanShort(x.netRealToman) : "—",
                 color: "var(--success)",

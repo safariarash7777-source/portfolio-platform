@@ -49,8 +49,8 @@ export default function AccountBridge({
         {backTo ? (
           <Link
             href={backTo.href}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
-            style={{ color: "var(--navy)", background: "var(--surface-2)" }}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+            style={{ color: "var(--navy-ink)", background: "var(--surface-2)" }}
           >
             <ArrowLeft size={15} strokeWidth={2.2} aria-hidden />
             {backTo.label}
@@ -60,7 +60,7 @@ export default function AccountBridge({
         {signedIn ? (
           <Link
             href="/dashboard"
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{ background: "var(--navy)", color: "var(--text-on-navy)", boxShadow: "var(--shadow-sm)" }}
           >
             <LayoutDashboard size={15} strokeWidth={2.2} aria-hidden />
@@ -70,15 +70,15 @@ export default function AccountBridge({
           <>
             <Link
               href={accountEntryHref("/login", safeReturnTo)}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
-              style={{ color: "var(--navy)", background: "var(--surface-2)" }}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+              style={{ color: "var(--navy-ink)", background: "var(--surface-2)" }}
             >
               <LogIn size={15} strokeWidth={2.2} aria-hidden />
               ورود
             </Link>
             <Link
               href={accountEntryHref("/register", safeReturnTo)}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
               style={{ background: "var(--navy)", color: "var(--text-on-navy)", boxShadow: "var(--shadow-sm)" }}
             >
               <UserPlus size={15} strokeWidth={2.2} aria-hidden />

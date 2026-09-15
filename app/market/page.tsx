@@ -37,7 +37,7 @@ import { getMarketData } from "@/lib/market";
 import { getIrMarket } from "@/lib/market-ir";
 import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
-import { buildSearchIndex } from "@/lib/market-nav";
+import { buildSearchIndex, resolveBackTarget } from "@/lib/market-nav";
 import { buildMarketHeadline } from "@/lib/core/marketHeadline";
 import { computeMarketPulse, computeQueues, computeMoneyFlow, computeTopLists } from "@/lib/core/marketToday";
 import { getFlowTrend } from "@/lib/core/breadthTrend";
@@ -53,7 +53,24 @@ export const metadata = pageMetadata({
   path: "/market",
 });
 
-export default async function MarketPage() {
+export default async function MarketPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = searchParams ? await searchParams : {};
+  /**
+   * مبدأِ این صفحه برای لینک‌های سمتِ سرور.
+   *
+   * `resolveBackTarget` خودش دوباره اعتبارسنجی می‌کند، ولی همان قرارداد را
+   * اینجا هم به‌کار می‌بریم تا رشتهٔ ساخته‌شده از اول تمیز باشد.
+   */
+  const rawFind = Array.isArray(sp.find) ? sp.find[0] : sp.find;
+  const selfHref = resolveBackTarget(
+    rawFind ? `/market?find=${encodeURIComponent(rawFind)}` : "/market",
+    { href: "/market", label: "میز بازار" },
+  ).href;
+
   const supabase = await createClient();
   const [{ data: { user } }, market, ir, access] = await Promise.all([
     supabase.auth.getUser(),
@@ -150,7 +167,7 @@ export default async function MarketPage() {
 
             {/* میزِ بازار — خلاصه و متنوع؛ فهرستِ کامل داخلِ خودِ بخش باز می‌شود.
                 منطق در `lib/core/marketDesk.ts`؛ اینجا فقط نما. */}
-            <MarketDesk ir={ir} limit={24} summaryLimit={6} maxPerKind={2} />
+            <MarketDesk ir={ir} limit={24} summaryLimit={6} maxPerKind={2} from={selfHref} />
 
             {/* ── طلا و ارز ──────────────────────────────────────────────── */}
             {ir && (ir.gold.length > 0 || ir.currency.length > 0) ? (
@@ -174,6 +191,7 @@ export default async function MarketPage() {
                 hint="جزئیاتِ تخصصیِ تابلو — دفترِ سفارش، سریِ روزانه و صدرنشین‌ها"
               >
                 <MarketDepthDetails
+                  from={selfHref}
                   queues={queues}
                   tops={tops}
                   flowTrend={flowTrend}
@@ -205,7 +223,7 @@ export default async function MarketPage() {
             </p>
 
             {/* مسیرِ رفت‌وبرگشت به حسابِ کاربر — فقط لینک، بدونِ تغییر در گیتِ دسترسی. */}
-            <AccountBridge access={access} returnTo="/market" />
+            <AccountBridge access={access} returnTo={selfHref} />
           </div>
         </MarketShell>
       </main>

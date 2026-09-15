@@ -1,8 +1,16 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
-import { useUrlState, useUrlBackedText } from "@/lib/useUrlState";
+import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
 import IndustryDesk from "./IndustryDesk";
+import {
+  STOCK_VIEWS,
+  STOCK_SORT_KEYS,
+  SORT_DIRS,
+  type StockView,
+  type StockSortKey,
+  type SortDirection,
+} from "@/lib/market-nav";
 import { BarChart3, Search, ArrowUpDown, ChevronDown, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import {
   toPersianDigits,
@@ -38,8 +46,10 @@ export interface StockRow {
   sellN?: number;
 }
 
-type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | "pe";
-type SortDir = "asc" | "desc";
+// نوع از همان فهرستی می‌آید که اعتبارسنجیِ URL به‌کار می‌برد (`lib/market-nav.ts`)
+// — تا مقداری که در `?sort=` مجاز است همانی باشد که این جدول می‌فهمد.
+type SortKey = StockSortKey;
+type SortDir = SortDirection;
 
 /** ارزش معاملات → متن فارسی */
 /**
@@ -77,15 +87,18 @@ interface Props {
   fetchedAt: number | null;
 }
 
-type ViewKey = "table" | "map" | "industry";
+type ViewKey = StockView;
 
-const VIEWS: Array<{ key: ViewKey; label: string }> = [
-  { key: "table", label: "جدول" },
-  { key: "map", label: "نقشهٔ نمادها" },
-  { key: "industry", label: "صنایع" },
-];
+const VIEW_LABEL: Record<ViewKey, string> = {
+  table: "جدول",
+  map: "نقشهٔ نمادها",
+  industry: "صنایع",
+};
+const VIEWS = STOCK_VIEWS.map((key) => ({ key, label: VIEW_LABEL[key] }));
 
-const isViewKey = (v: string): v is ViewKey => VIEWS.some((x) => x.key === v);
+const isViewKey = (v: string): v is ViewKey => (STOCK_VIEWS as readonly string[]).includes(v);
+const isSortKey = (v: string): v is SortKey => (STOCK_SORT_KEYS as readonly string[]).includes(v);
+const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).includes(v);
 
 /** بیشینهٔ کاشیِ نقشه. متنِ پوششِ زیرِ نقشه همین را می‌نویسد. */
 const MAP_CELL_LIMIT = 30;
@@ -104,6 +117,8 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
   const setIndustryFilter = (v: string) => url.set({ industry: v === "همه" ? null : v });
 
   const tableAnchorRef = useRef<HTMLDivElement | null>(null);
+  // مبدأ = همین صفحه با همین فیلترها؛ اعتبارسنجی سمتِ صفحهٔ نماد انجام می‌شود.
+  const from = useCurrentHref();
 
   /** کلیک روی صنعت در نقشه/میز → فیلتر جدول نمادها (M2/M3) */
   const selectIndustry = (industry: string) => {
@@ -113,8 +128,14 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
     url.set({ industry: next === "همه" ? null : next, view: null });
     tableAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const [sortKey, setSortKey] = useState<SortKey>("value");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  // مرتب‌سازی هم در URL می‌نشیند: بدونِ آن، «برگشت» ترتیبی را که کاربر انتخاب
+  // کرده بود از دست می‌داد و جدول به ترتیبِ پیش‌فرض برمی‌گشت.
+  const rawSort = url.get("sort", "value");
+  const sortKey: SortKey = isSortKey(rawSort) ? rawSort : "value";
+  const rawDir = url.get("dir", "desc");
+  const sortDir: SortDir = isSortDir(rawDir) ? rawDir : "desc";
+  const setSort = (key: SortKey, dir: SortDir) =>
+    url.set({ sort: key === "value" && dir === "desc" ? null : key, dir: key === "value" && dir === "desc" ? null : dir });
 
   // Industries
   const industries = useMemo(() => {
@@ -167,8 +188,8 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
   }, [filtered, sortKey, sortDir]);
 
   const toggleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortKey(key); setSortDir("desc"); }
+    if (sortKey === key) setSort(key, sortDir === "asc" ? "desc" : "asc");
+    else setSort(key, "desc");
   };
 
   // Heatmap cells — سقف از یک ثابتِ نام‌دار می‌آید تا متنِ پوششِ زیرِ نقشه
@@ -209,7 +230,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
       <p className="text-xs" style={{ color: "var(--text-3)" }}>
         {toPersianDigits(stocks.length)} نماد در آخرین اسنپ‌شات
         {" · "}
-        <Link href="/data" className="font-bold hover:underline" style={{ color: "var(--navy-ink)" }}>
+        <Link href="/data" className="inline-flex min-h-11 items-center font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>
           تاریخچه و خروجی CSV در بانک داده
         </Link>
       </p>
@@ -258,8 +279,9 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="جستجوی نماد یا نام..."
-            className="w-full rounded-lg border ps-9 pe-3 py-2.5 text-sm"
+            className="w-full rounded-lg border ps-9 pe-3 text-sm"
             style={{
+              minHeight: 44,
               background: "var(--surface)",
               borderColor: "var(--line)",
               color: "var(--text)",
@@ -270,8 +292,9 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           <select
             value={industryFilter}
             onChange={(e) => setIndustryFilter(e.target.value)}
-            className="appearance-none rounded-lg border px-4 py-2.5 pe-9 text-sm"
+            className="appearance-none rounded-lg border px-4 pe-9 text-sm"
             style={{
+              minHeight: 44,
               background: "var(--surface)",
               borderColor: "var(--line)",
               color: "var(--text)",
@@ -309,7 +332,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
             onClick={() => setView(v.key)}
             className="rounded-md px-4 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{
-              minHeight: 40,
+              minHeight: 44,
               background: view === v.key ? "var(--surface)" : "transparent",
               color: view === v.key ? "var(--navy-ink)" : "var(--text-2)",
               boxShadow: view === v.key ? "var(--shadow-sm)" : "none",
@@ -413,8 +436,8 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
                 <tr key={s.id} className="hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--line)" }}>
                   <td className="py-3 px-4">
                     <Link
-                      href={`/symbol/${encodeURIComponent(s.id)}?from=/market/stocks`}
-                      className="font-bold hover:underline"
+                      href={`/symbol/${encodeURIComponent(s.id)}?from=${encodeURIComponent(from)}`}
+                      className="inline-flex min-h-11 items-center font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
                       style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${s.id}`}
                     >
@@ -468,7 +491,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <Link
-                    href={`/symbol/${encodeURIComponent(s.id)}?from=/market/stocks`}
+                    href={`/symbol/${encodeURIComponent(s.id)}?from=${encodeURIComponent(from)}`}
                     className="font-bold text-sm hover:underline"
                     style={{ color: "var(--heading)" }}
                   >
@@ -550,16 +573,32 @@ function SortTh({
 }) {
   const active = current === key;
   return (
+    // ── چرا th دیگر خودش کلیک‌پذیر نیست ──────────────────────────────────
+    // نسخهٔ قبل `onClick` را روی خودِ `<th>` می‌گذاشت: با ماوس کار می‌کرد، ولی
+    // با کیبورد اصلاً قابلِ رسیدن نبود و صفحه‌خوان نه می‌فهمید این ستون
+    // مرتب‌شدنی است نه می‌دانست الان بر چه اساسی مرتب است. حالا کنترل یک
+    // `<button>` واقعی است و وضعیتِ مرتب‌سازی روی `<th>` با `aria-sort` اعلام
+    // می‌شود — همان چیزی که جدولِ داده باید بگوید.
     <th
-      className={`py-3 px-4 font-bold cursor-pointer select-none whitespace-nowrap text-${align}`}
-      style={{ color: active ? "var(--navy-deep)" : "var(--text-3)" }}
-      onClick={() => onSort(key)}
+      className={`whitespace-nowrap p-0 font-bold text-${align}`}
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+      style={{ color: active ? "var(--navy-ink)" : "var(--text-3)" }}
     >
-      <span className="inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => onSort(key)}
+        className={`inline-flex w-full min-h-11 select-none items-center gap-1 px-4 py-3 text-${align} transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--navy-ink)] ${align === "left" ? "justify-end" : "justify-start"}`}
+        style={{ color: "inherit", font: "inherit" }}
+      >
         {label}
-        <ArrowUpDown size={12} className={active ? "opacity-100" : "opacity-40"} />
-        {active && <span className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span>}
-      </span>
+        <ArrowUpDown size={12} aria-hidden className={active ? "opacity-100" : "opacity-40"} />
+        {active ? <span aria-hidden className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span> : null}
+        <span className="sr-only">
+          {active
+            ? `، مرتب‌شده ${dir === "asc" ? "صعودی" : "نزولی"} — برای معکوس‌کردن فعال کنید`
+            : "، برای مرتب‌سازی بر اساس این ستون فعال کنید"}
+        </span>
+      </button>
     </th>
   );
 }

@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fundCategory, countByCategory, FUND_CATEGORIES } from "./fundCategory";
+import { FUND_TYPE_VALUES } from "../market-nav";
 
 /** سیزده نوعِ واقعیِ اسنپ‌شاتِ ۱۴۰۵/۰۶/۲۴ با تعدادِ واقعی‌شان. */
 const REAL: Array<[string, number]> = [
@@ -97,4 +98,13 @@ test("نگاشت روی ۱۳ نوعِ واقعی دست‌نخورده می‌م
   assert.equal(c.get("اهرمی"), 9);
   assert.equal(c.get("سایر"), 44);
   assert.equal([...c.values()].reduce((a, b) => a + b, 0), 330);
+});
+
+/* ── قراردادِ URL ────────────────────────────────────────────────────────── */
+
+test("مقادیرِ مجازِ ?type= دقیقاً همان دسته‌های واقعی‌اند", () => {
+  // `lib/market-nav.ts` این فهرست را برای اعتبارسنجیِ URL نگه می‌دارد. اگر دو
+  // فهرست از هم جدا بیفتند، یک دستهٔ واقعی از فیلترِ برگشت می‌افتد (یا برعکس،
+  // مقداری مجاز می‌شود که هیچ صندوقی ندارد) — و هیچ‌کدام سر و صدا نمی‌کند.
+  assert.deepEqual([...FUND_TYPE_VALUES].sort(), [...FUND_CATEGORIES].sort());
 });

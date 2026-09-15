@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useUrlState, useUrlBackedText } from "@/lib/useUrlState";
+import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
 import { fundCategory, countByCategory, FUND_CATEGORIES, ALL_CATEGORIES } from "@/lib/core/fundCategory";
+import { FUND_SORT_KEYS, SORT_DIRS, type FundSortKey, type SortDirection } from "@/lib/market-nav";
 import Term from "@/components/learn/Term";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import {
@@ -42,8 +43,12 @@ export interface FundRow {
   ret3m?: number | null;
 }
 
-type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | "bubblePercent" | "ret1w" | "ret1m" | "ret3m";
-type SortDir = "asc" | "desc";
+// نوع از همان فهرستِ اعتبارسنجیِ URL می‌آید (`lib/market-nav.ts`).
+type SortKey = FundSortKey;
+type SortDir = SortDirection;
+
+const isSortKey = (v: string): v is SortKey => (FUND_SORT_KEYS as readonly string[]).includes(v);
+const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).includes(v);
 
 /** میلیارد تومان → متن فارسی */
 function fmtAssetB(b: number): string {
@@ -108,8 +113,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
   const [search, setSearch] = useUrlBackedText("q");
   const setTypeFilter = (v: string) => url.set({ type: v === ALL_CATEGORIES ? null : v });
 
-  const [sortKey, setSortKey] = useState<SortKey>("value");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  // مرتب‌سازی در URL — تا «برگشت» ترتیبِ انتخابیِ کاربر را نگه دارد.
+  const rawSort = url.get("sort", "value");
+  const sortKey: SortKey = isSortKey(rawSort) ? rawSort : "value";
+  const rawDir = url.get("dir", "desc");
+  const sortDir: SortDir = isSortDir(rawDir) ? rawDir : "desc";
+  const isDefaultSort = (k: SortKey, d: SortDir) => k === "value" && d === "desc";
+  const setSort = (key: SortKey, dir: SortDir) =>
+    url.set({ sort: isDefaultSort(key, dir) ? null : key, dir: isDefaultSort(key, dir) ? null : dir });
+  const from = useCurrentHref();
   const [rowLimit, setRowLimit] = useState(ROW_PAGE);
 
   // دسته‌های کوتاه با تعدادِ واقعیِ هر کدام — برچسبِ بدونِ عدد نمی‌گوید
@@ -221,8 +233,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
   }, [filtered]);
 
   const toggleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortKey(key); setSortDir("desc"); }
+    if (sortKey === key) setSort(key, sortDir === "asc" ? "desc" : "asc");
+    else setSort(key, "desc");
   };
 
   // Heatmap cells (top 24 by market value)
@@ -432,7 +444,10 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           <span className="sr-only">مرتب‌سازی صندوق‌ها</span>
           <select
             value={sortKey}
-            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (isSortKey(v)) setSort(v, sortDir);
+            }}
             className="appearance-none rounded-lg border px-4 py-2.5 pe-9 text-sm"
             style={{ background: "var(--surface)", borderColor: "var(--line)", color: "var(--text)" }}
             aria-label="مرتب‌سازی صندوق‌ها"
@@ -492,8 +507,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <td className="py-3 px-4">
                     {/* C1 — UI نمادمحور: فقط نماد؛ نام کامل فقط در هدر صفحهٔ نماد */}
                     <Link
-                      href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`}
-                      className="font-bold hover:underline"
+                      href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`}
+                      className="inline-flex min-h-11 items-center font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
                       style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${f.id}`}
                     >
@@ -541,7 +556,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     {formatRialAsToman(f.marketValue)}
                   </td>
                   <td className="py-3 px-4 text-left">
-                    <Link href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ color: "var(--navy-ink)" }}>
+                    <Link href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ color: "var(--navy-ink)" }}>
                       بررسی <ArrowLeft size={14} aria-hidden="true" />
                     </Link>
                   </td>
@@ -567,7 +582,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                 <div className="min-w-0">
                   {/* C1 — UI نمادمحور: فقط نماد */}
                   <Link
-                    href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`}
+                    href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`}
                     className="font-bold text-sm block truncate hover:underline"
                     style={{ color: "var(--heading)" }}
                   >
@@ -609,7 +624,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <span>۳م: <b style={{ color: f.ret3m != null ? deltaColor(f.ret3m) : "var(--text-3)" }}>{f.ret3m != null ? formatSignedPercent(f.ret3m) : "—"}</b></span>
                 </div>
               )}
-              <Link href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ borderColor: "var(--line)", color: "var(--navy-ink)" }}>
+              <Link href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ borderColor: "var(--line)", color: "var(--navy-ink)" }}>
                 بررسی جزئیات صندوق <ArrowLeft size={15} aria-hidden="true" />
               </Link>
             </div>
@@ -724,19 +739,31 @@ function SortTh({
 }) {
   const active = current === key;
   return (
+    // ── چرا th دیگر خودش کلیک‌پذیر نیست ──────────────────────────────────
+    // نسخهٔ قبل `onClick` را روی خودِ `<th>` می‌گذاشت: با ماوس کار می‌کرد، ولی
+    // با کیبورد اصلاً قابلِ رسیدن نبود و صفحه‌خوان نه می‌فهمید این ستون
+    // مرتب‌شدنی است نه می‌دانست الان بر چه اساسی مرتب است. حالا کنترل یک
+    // `<button>` واقعی است و وضعیتِ مرتب‌سازی روی `<th>` با `aria-sort` اعلام
+    // می‌شود — همان چیزی که جدولِ داده باید بگوید.
     <th
-      className={`py-2 px-2 whitespace-nowrap text-${align}`}
+      className={`whitespace-nowrap p-0 font-bold text-${align}`}
       aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+      style={{ color: active ? "var(--navy-ink)" : "var(--text-3)" }}
     >
       <button
         type="button"
-        className="inline-flex min-h-11 items-center gap-1 rounded-md px-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
-        style={{ color: active ? "var(--heading)" : "var(--text-3)" }}
         onClick={() => onSort(key)}
+        className={`inline-flex w-full min-h-11 select-none items-center gap-1 px-4 py-3 text-${align} transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--navy-ink)] ${align === "left" ? "justify-end" : "justify-start"}`}
+        style={{ color: "inherit", font: "inherit" }}
       >
         {label}
-        <ArrowUpDown size={12} className={active ? "opacity-100" : "opacity-40"} />
-        {active && <span className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span>}
+        <ArrowUpDown size={12} aria-hidden className={active ? "opacity-100" : "opacity-40"} />
+        {active ? <span aria-hidden className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span> : null}
+        <span className="sr-only">
+          {active
+            ? `، مرتب‌شده ${dir === "asc" ? "صعودی" : "نزولی"} — برای معکوس‌کردن فعال کنید`
+            : "، برای مرتب‌سازی بر اساس این ستون فعال کنید"}
+        </span>
       </button>
     </th>
   );

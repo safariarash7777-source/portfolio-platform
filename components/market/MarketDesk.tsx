@@ -32,7 +32,7 @@ function fa(v: string | number): string {
 
 
 /** کارتِ یک مشاهده — از نمای خلاصه و فهرستِ کامل هر دو استفاده می‌شود. */
-function ObservationCard({ o }: { o: DeskObservation }) {
+function ObservationCard({ o, from }: { o: DeskObservation; from: string }) {
   const meta = KIND_META[o.kind];
   const style = BAND_STYLE[o.band];
   return (
@@ -52,7 +52,7 @@ function ObservationCard({ o }: { o: DeskObservation }) {
 
                 <div className="min-w-0">
                   <Link
-                    href={`/symbol/${encodeURIComponent(o.symbol)}?from=/market`}
+                    href={`/symbol/${encodeURIComponent(o.symbol)}?from=${encodeURIComponent(from)}`}
                     // ۴۴ پیکسل ارتفاعِ لمسی برای مقصدِ اصلیِ کارت (پیش از این ۲۳ بود).
                     className="inline-flex min-h-11 items-center font-display text-[15px] font-extrabold hover:underline truncate w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
                     style={{ color: "var(--heading)" }}
@@ -113,11 +113,14 @@ export default function MarketDesk({
   summaryLimit,
   /** سقفِ هر نوعِ رخداد در نمای خلاصه */
   maxPerKind,
+  /** مبدأ — در لینکِ نماد می‌رود تا «برگشت» وضعیتِ این صفحه را نگه دارد. */
+  from = "/market",
 }: {
   ir: IrMarket | null;
   limit?: number;
   summaryLimit?: number;
   maxPerKind?: number;
+  from?: string;
 }) {
   const funds: DeskFund[] = (ir?.funds ?? []).map((f) => ({
     id: f.id, faName: f.faName, price: f.price ?? null, type: f.type ?? null,
@@ -205,7 +208,7 @@ export default function MarketDesk({
         <>
           <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map((o) => (
-              <ObservationCard key={o.id} o={o} />
+              <ObservationCard key={o.id} o={o} from={from} />
             ))}
           </ul>
 
@@ -220,7 +223,7 @@ export default function MarketDesk({
               </summary>
               <ul className="mt-2.5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                 {hidden.map((o) => (
-                  <ObservationCard key={o.id} o={o} />
+                  <ObservationCard key={o.id} o={o} from={from} />
                 ))}
               </ul>
             </details>

@@ -173,29 +173,121 @@ export interface BackTarget {
   label: string;
 }
 
-/**
- * مقصدهای مجازِ «برگشت». هر ورودیِ `?from=` باید **دقیقاً** یکی از این‌ها باشد.
- *
- * ── چرا فهرستِ سفید و نه اعتبارسنجیِ الگو ─────────────────────────────────
- * `from` از URL می‌آید، یعنی هر کسی می‌تواند لینکی بسازد که کاربر را از صفحهٔ
- * نماد به جای دیگری ببرد. بررسیِ «با `/` شروع می‌شود» کافی نیست: `//evil.com`
- * هم با `/` شروع می‌شود و مرورگر آن را **دامنهٔ بیرونی** می‌خواند. با فهرستِ
- * سفیدِ ثابت، هیچ ورودی‌ای جز همین چند مسیر اثر ندارد.
- */
-const BACK_TARGETS: ReadonlyArray<BackTarget> = [
-  { href: "/market", label: "میز بازار" },
-  { href: "/market/stocks", label: "تابلوی سهام" },
-  { href: "/market/funds", label: "دیده‌بان صندوق‌ها" },
-  { href: "/market/map", label: "نقشه و صنایع" },
-  { href: "/market/options", label: "اختیار معامله" },
-  { href: "/data", label: "بانک داده" },
-];
+/** اعتبارسنجِ مقدارِ یک پارامتر. `false` یعنی آن پارامتر دور ریخته می‌شود. */
+type ParamValidator = (value: string) => boolean;
+
+/* ── اعتبارسنج‌های پایه ──────────────────────────────────────────────────── */
+
+const isEnum = (allowed: readonly string[]): ParamValidator => (v) => allowed.includes(v);
+
+/** کنترل‌کاراکترها و جهت‌گردان‌های یونیکد — هیچ‌کدام در مقدارِ فیلتر جا ندارند. */
+const CONTROL_RE = /[\u0000-\u001F\u007F\u200E\u200F\u202A-\u202E\u2066-\u2069]/;
 
 /**
- * مقصدِ برگشت از روی `?from=`.
+ * متنِ آزادِ جست‌وجو. کران‌دار و بدونِ کنترل‌کاراکتر.
  *
- * ورودیِ ناشناخته، غایب یا مخرب بی‌صدا نادیده گرفته می‌شود و `fallback`
- * برمی‌گردد — هرگز خطا، و هرگز مقصدِ بیرونی.
+ * چرا کران: این مقدار در `href` می‌نشیند و در تاریخچهٔ مرورگر و لاگِ سرور ثبت
+ * می‌شود. یک رشتهٔ چندکیلوبایتی که کاربر هرگز تایپش نکرده، فقط از یک لینکِ
+ * دست‌ساز می‌آید.
+ */
+const isFreeText = (max: number): ParamValidator => (v) =>
+  v.length > 0 && v.length <= max && !CONTROL_RE.test(v);
+
+/**
+ * برچسبِ داده‌محور (نامِ صنعت) — فهرستِ مقادیر از دادهٔ بازار می‌آید، پس
+ * enum ممکن نیست. در عوض شکلِ مقدار محدود می‌شود: حرفِ فارسی/لاتین، رقم،
+ * فاصله، نیم‌فاصله و چند نشانهٔ متعارفِ نامِ صنعت.
+ */
+const INDUSTRY_RE = /^[\u0600-\u06FF\u200CA-Za-z0-9 ()\u002D\u060C.\u066B\u066C\/]{1,60}$/;
+const isIndustry: ParamValidator = (v) => INDUSTRY_RE.test(v);
+
+/* ── قراردادِ URLِ تابلوها ────────────────────────────────────────────────
+ * این ثابت‌ها **هم** اعتبارسنجیِ `?from=` را می‌سازند و **هم** نوعِ کلیدِ
+ * مرتب‌سازی را در خودِ کامپوننت. یک فهرست، دو مصرف‌کننده — تا مقداری که در
+ * URL مجاز است با مقداری که جدول می‌فهمد نتواند از هم جدا بیفتد. */
+
+export const STOCK_VIEWS = ["table", "map", "industry"] as const;
+export type StockView = (typeof STOCK_VIEWS)[number];
+
+export const STOCK_SORT_KEYS = [
+  "faName", "price", "changePercent", "value", "marketValue", "pe",
+] as const;
+export type StockSortKey = (typeof STOCK_SORT_KEYS)[number];
+
+export const FUND_SORT_KEYS = [
+  "faName", "price", "changePercent", "value", "marketValue",
+  "bubblePercent", "ret1w", "ret1m", "ret3m",
+] as const;
+export type FundSortKey = (typeof FUND_SORT_KEYS)[number];
+
+export const SORT_DIRS = ["asc", "desc"] as const;
+export type SortDirection = (typeof SORT_DIRS)[number];
+
+/** دسته‌های صندوق — برای اعتبارسنجیِ `?type=`. با `lib/core/fundCategory.ts` یکی است. */
+export const FUND_TYPE_VALUES = [
+  "درآمد ثابت", "سهامی", "بخشی", "طلا", "اهرمی", "سایر",
+] as const;
+
+/** بیشینهٔ طولِ عبارتِ جست‌وجو — بلندتر از این، تایپِ انسان نیست. */
+export const SEARCH_MAX_LEN = 64;
+
+interface BackTargetSpec extends BackTarget {
+  /**
+   * پارامترهای مجازِ این مسیر و اعتبارسنجِ مقدارشان.
+   *
+   * ── چرا فهرستِ سفیدِ پارامتر، نه «هرچه آمد» ─────────────────────────────
+   * نسخهٔ قبل کلِ query را دور می‌ریخت، پس لینکِ «برگشت» داخلِ صفحهٔ نماد
+   * کاربر را به تابلوی **بی‌فیلتر** برمی‌گرداند و او باید از نو فیلتر می‌کرد.
+   * ولی نگه‌داشتنِ کورِ همهٔ پارامترها هم درست نیست: مقدارِ کنترل‌نشده از URL
+   * به `href` می‌رسد. پس هر مسیر فقط پارامترهای **خودش** را نگه می‌دارد، و
+   * هر مقدار باید از اعتبارسنجِ خودش رد شود.
+   */
+  params: Readonly<Record<string, ParamValidator>>;
+}
+
+/** پارامترِ مشترکِ همهٔ صفحاتِ بازار: جست‌وجوی پوسته. */
+const SHELL_SEARCH = { find: isFreeText(SEARCH_MAX_LEN) } as const;
+
+const BACK_TARGETS: ReadonlyArray<BackTargetSpec> = [
+  { href: "/market", label: "میز بازار", params: { ...SHELL_SEARCH } },
+  {
+    href: "/market/stocks",
+    label: "تابلوی سهام",
+    params: {
+      ...SHELL_SEARCH,
+      q: isFreeText(SEARCH_MAX_LEN),
+      industry: isIndustry,
+      view: isEnum(STOCK_VIEWS),
+      sort: isEnum(STOCK_SORT_KEYS),
+      dir: isEnum(SORT_DIRS),
+    },
+  },
+  {
+    href: "/market/funds",
+    label: "دیده‌بان صندوق‌ها",
+    params: {
+      ...SHELL_SEARCH,
+      q: isFreeText(SEARCH_MAX_LEN),
+      type: isEnum(FUND_TYPE_VALUES),
+      sort: isEnum(FUND_SORT_KEYS),
+      dir: isEnum(SORT_DIRS),
+    },
+  },
+  { href: "/market/map", label: "نقشه و صنایع", params: { ...SHELL_SEARCH } },
+  { href: "/market/options", label: "اختیار معامله", params: { ...SHELL_SEARCH } },
+  { href: "/data", label: "بانک داده", params: {} },
+];
+
+/** سقفِ تعدادِ پارامترِ نگه‌داشته‌شده — گاردِ ساده در برابرِ URLِ متورم. */
+const MAX_KEPT_PARAMS = 8;
+
+/**
+ * مقصدِ برگشت از روی `?from=`، **با حفظِ وضعیتِ مجاز**.
+ *
+ * مسیر باید دقیقاً یکی از `BACK_TARGETS` باشد (ضدِ ری‌دایرکتِ باز)، و از
+ * query فقط پارامترهایی می‌مانند که هم برای آن مسیر تعریف شده‌اند و هم
+ * مقدارشان معتبر است. ورودیِ ناشناخته، غایب یا مخرب بی‌صدا `fallback`
+ * می‌دهد — هرگز خطا، هرگز مقصدِ بیرونی.
  */
 export function resolveBackTarget(
   from: string | string[] | undefined,
@@ -203,7 +295,26 @@ export function resolveBackTarget(
 ): BackTarget {
   const raw = Array.isArray(from) ? from[0] : from;
   if (typeof raw !== "string") return fallback;
-  // فقط بخشِ مسیر مقایسه می‌شود؛ query و hash عمداً دور ریخته می‌شوند.
-  const path = raw.split("?")[0].split("#")[0].trim();
-  return BACK_TARGETS.find((t) => t.href === path) ?? fallback;
+
+  const noHash = raw.split("#")[0];
+  const qIndex = noHash.indexOf("?");
+  const path = (qIndex === -1 ? noHash : noHash.slice(0, qIndex)).trim();
+  const spec = BACK_TARGETS.find((t) => t.href === path);
+  if (!spec) return fallback;
+
+  const incoming = new URLSearchParams(qIndex === -1 ? "" : noHash.slice(qIndex + 1));
+  // مرتب‌سازیِ کلیدها: خروجی مستقل از ترتیبِ ورودی و در نتیجه آزمون‌پذیر است.
+  const keys = [...new Set(incoming.keys())].sort();
+  const kept = new URLSearchParams();
+  for (const k of keys) {
+    if (kept.size >= MAX_KEPT_PARAMS) break;
+    const validate = spec.params[k];
+    if (!validate) continue;
+    // فقط **اولین** مقدار؛ پارامترِ تکراری نباید دو بار در خروجی بیاید.
+    const v = incoming.get(k);
+    if (v != null && validate(v)) kept.set(k, v);
+  }
+
+  const qs = kept.toString();
+  return { href: qs ? `${spec.href}?${qs}` : spec.href, label: spec.label };
 }

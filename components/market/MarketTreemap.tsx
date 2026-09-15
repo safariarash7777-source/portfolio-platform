@@ -145,7 +145,7 @@ export default function MarketTreemap({
           <button
             type="button"
             onClick={() => setUniverse("stocks")}
-            className="rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
+            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={seg(universe === "stocks")}
           >
             سهام
@@ -153,7 +153,7 @@ export default function MarketTreemap({
           <button
             type="button"
             onClick={() => setUniverse("funds")}
-            className="rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
+            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={seg(universe === "funds")}
           >
             صندوق‌ها
@@ -166,7 +166,7 @@ export default function MarketTreemap({
           <button
             type="button"
             onClick={() => setSizeMode("value")}
-            className="rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
+            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={seg(sizeMode === "value")}
           >
             اندازه: ارزش معاملات
@@ -174,7 +174,7 @@ export default function MarketTreemap({
           <button
             type="button"
             onClick={() => setSizeMode("marketValue")}
-            className="rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
+            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={seg(sizeMode === "marketValue")}
           >
             اندازه: ارزش بازار

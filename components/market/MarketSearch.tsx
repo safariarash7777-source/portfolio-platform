@@ -18,7 +18,7 @@
 
 import { useState, useRef, useMemo, useId, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUrlBackedText } from "@/lib/useUrlState";
+import { useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
 import { Search, X, CornerDownLeft } from "lucide-react";
 import { searchMarket, type MarketSearchEntry } from "@/lib/market-nav";
 import { toLatinDigits } from "@/lib/format";
@@ -54,6 +54,10 @@ export default function MarketSearch({
    * مشترک یعنی تایپ در کادرِ بالا جدولِ پایین را هم فیلتر می‌کرد.
    */
   const [query, setQuery] = useUrlBackedText("find");
+  // مبدأ از URLِ زنده می‌آید، نه از propِ ثابت: کاربری که در تابلوی سهام فیلتر
+  // گذاشته و بعد از همین کادر نمادی را باز می‌کند، باید به همان تابلوی
+  // فیلترشده برگردد.
+  const liveHref = useCurrentHref();
 
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -88,7 +92,7 @@ export default function MarketSearch({
   }, [autoFocusOnMount]);
 
   function go(entry: MarketSearchEntry) {
-    const qs = from ? `?from=${encodeURIComponent(from)}` : "";
+    const qs = `?from=${encodeURIComponent(liveHref || from || "/market")}`;
     // `push` (نه replace): رفتن به صفحهٔ نماد یک قدمِ واقعی در تاریخچه است، پس
     // «برگشت» باید به همین صفحه با همین جست‌وجو برگردد — و چون متنِ جست‌وجو
     // در URLِ همین صفحه است، برگشت خودش کادر را پر می‌کند.

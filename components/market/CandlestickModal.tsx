@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createChart, CandlestickSeries, type IChartApi, type UTCTimestamp } from "lightweight-charts";
+import { createChart, CandlestickSeries, type IChartApi, type UTCTimestamp,
+  type ISeriesApi,
+} from "lightweight-charts";
 import { X } from "lucide-react";
+import { useThemeToken } from "@/lib/useChartTheme";
 
 interface Candle {
   time: number;
@@ -18,6 +21,7 @@ interface Candle {
 // استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
 // این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
 function palette() {
+  // خوانده‌شده در زمانِ اجرا؛ با تغییرِ تم دوباره صدا زده می‌شود.
   const cs = typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
   const v = (name: string, fallback: string) => cs?.getPropertyValue(name).trim() || fallback;
   return {
@@ -43,7 +47,34 @@ export default function CandlestickModal({
   onClose: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const theme = useThemeToken();
   const [state, setState] = useState<"loading" | "ready" | "empty">("loading");
+
+  /**
+   * تغییرِ تم → فقط رنگ‌ها.
+   *
+   * کندل‌ها از `/api/market/ohlc` می‌آیند؛ ساختِ دوبارهٔ نمودار یعنی یک
+   * درخواستِ تازه و پرش به بازهٔ پیش‌فرض. `applyOptions` هیچ‌کدام را نمی‌کند.
+   */
+  useEffect(() => {
+    const chart = chartRef.current;
+    const series = seriesRef.current;
+    if (!chart || !series) return;
+    const c = palette();
+    chart.applyOptions({
+      layout: { background: { color: c.bg }, textColor: c.text, attributionLogo: false },
+      grid: { vertLines: { color: c.line }, horzLines: { color: c.line } },
+      rightPriceScale: { borderColor: c.line },
+      timeScale: { borderColor: c.line, timeVisible: false },
+    });
+    series.applyOptions({
+      upColor: c.up, downColor: c.down,
+      borderUpColor: c.up, borderDownColor: c.down,
+      wickUpColor: c.up, wickDownColor: c.down,
+    });
+  }, [theme, state]);
 
   useEffect(() => {
     let chart: IChartApi | null = null;
@@ -73,7 +104,7 @@ export default function CandlestickModal({
         rightPriceScale: { borderColor: c.line },
         timeScale: { borderColor: c.line, timeVisible: false },
       });
-      const series = chart.addSeries(CandlestickSeries, {
+      const series: ISeriesApi<"Candlestick"> = chart.addSeries(CandlestickSeries, {
         upColor: c.up,
         downColor: c.down,
         borderUpColor: c.up,
@@ -91,6 +122,8 @@ export default function CandlestickModal({
         }))
       );
       chart.timeScale().fitContent();
+      chartRef.current = chart;
+      seriesRef.current = series;
       setState("ready");
 
       const onResize = () => {
@@ -104,6 +137,8 @@ export default function CandlestickModal({
 
     return () => {
       disposed = true;
+      chartRef.current = null;
+      seriesRef.current = null;
       if (chart) {
         (chart as unknown as { _cleanup?: () => void })._cleanup?.();
         chart.remove();

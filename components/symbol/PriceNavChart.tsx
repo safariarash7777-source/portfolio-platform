@@ -9,8 +9,10 @@ import {
   type IChartApi,
   type Time,
   type UTCTimestamp,
+  type ISeriesApi,
 } from "lightweight-charts";
 import { toPersianDigits } from "@/lib/format";
+import { useThemeToken, readChartPalette, chartThemeOptions } from "@/lib/useChartTheme";
 import { chartAxisDateLabel, chartTooltipDateLabel } from "./chartDate";
 
 export interface PriceNavPoint {
@@ -19,31 +21,16 @@ export interface PriceNavPoint {
   close: number | null; // تومان
 }
 
-// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
-// مقدار خود توکن در زمان اجرا خوانده می‌شود و hex صرفاً fallback هم‌ارزش همان توکن است.
-function palette() {
-  const cs =
-    typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
-  const v = (name: string, fallback: string) =>
-    cs?.getPropertyValue(name).trim() || fallback;
-  return {
-    bg: v("--surface", "#FFFFFF"),
-    text: v("--text-2", "#334155"),
-    line: v("--line", "#E5E3DC"),
-    // `--navy-ink` و نه `--navy`: خطِ نمودار روی بومِ canvas کشیده می‌شود و
-    // سرمهٔ برند روی زمینهٔ تیره تقریباً نامرئی است. این توکن در تمِ روشن
-    // همان سرمه‌ای است و در تیره روشن‌تر می‌شود، پس هر دو تم پوشش دارند.
-    navy: v("--navy-ink", "#1E3A8A"),
-    gold: v("--gold", "#B48A2C"),
-  };
-}
-
 export default function PriceNavChart({ points }: { points: PriceNavPoint[] }) {
   const ref = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const navRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const priceRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const theme = useThemeToken();
 
   useEffect(() => {
     if (!ref.current || points.length === 0) return;
-    const p = palette();
+    const p = readChartPalette();
     const chart: IChartApi = createChart(ref.current, {
       layout: { background: { color: p.bg }, textColor: p.text },
       localization: {
@@ -81,8 +68,26 @@ export default function PriceNavChart({ points }: { points: PriceNavPoint[] }) {
     );
 
     chart.timeScale().fitContent();
-    return () => chart.remove();
+    chartRef.current = chart;
+    navRef.current = navSeries;
+    priceRef.current = priceSeries;
+    return () => {
+      chartRef.current = null;
+      navRef.current = null;
+      priceRef.current = null;
+      chart.remove();
+    };
   }, [points]);
+
+  // تغییرِ تم → فقط رنگ‌ها. دادهٔ دو سری و بازهٔ دیدِ کاربر دست‌نخورده می‌مانند.
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    const p = readChartPalette();
+    chart.applyOptions(chartThemeOptions(p));
+    navRef.current?.applyOptions({ color: p.gold });
+    priceRef.current?.applyOptions({ color: p.navy });
+  }, [theme]);
 
   if (points.length === 0) {
     return (

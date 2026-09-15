@@ -105,3 +105,18 @@ export function useUrlBackedText(
 
   return [local, update];
 }
+
+/**
+ * مسیرِ فعلی همراه با queryِ فعلی — برای ساختِ `?from=`.
+ *
+ * ── چرا لازم است ────────────────────────────────────────────────────────
+ * لینکِ نماد تا امروز مبدأ را به‌صورتِ رشتهٔ ثابت می‌داد (`/market/stocks`)، پس
+ * «برگشت» به تابلوی **بی‌فیلتر** می‌رسید. مقصد باید وضعیتِ همان لحظه را حمل
+ * کند؛ اعتبارسنجی‌اش در `resolveBackTarget` سمتِ مقصد انجام می‌شود.
+ */
+export function useCurrentHref(): string {
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const qs = params.toString();
+  return qs ? `${pathname}?${qs}` : pathname;
+}

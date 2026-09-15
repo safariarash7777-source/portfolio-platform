@@ -271,7 +271,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
           </h2>
           <span
             className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+            style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
           >
             به‌زودی
           </span>
@@ -306,7 +306,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
       {/* نمودارهای بنیادی WP4 */}
       <section>
-        <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+        <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
           تحلیل بنیادی (گزارش‌های کدال)
         </h2>
         <FundamentalCharts
@@ -324,7 +324,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16 space-y-6">
           <nav className="flex flex-wrap items-center gap-1 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
-            <Link href="/market" className="hover:underline" style={{ color: "var(--navy-ink)" }}>میز بازار</Link>
+            <Link href="/market" className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>میز بازار</Link>
             <span aria-hidden="true">/</span>
             {/* ── مسیرِ بازگشتِ متناسب با مبدأ ────────────────────────────
                 تا امروز ثابت بود: کاربری که از تابلوی سهام با فیلترِ صنعت آمده
@@ -332,7 +332,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 `?from=` که جست‌وجو می‌گذارد خوانده می‌شود، و
                 `resolveBackTarget` آن را با فهرستِ سفید می‌سنجد تا این پارامتر
                 نتواند به مقصدِ بیرونی تبدیل شود. */}
-            <Link href={back.href} className="hover:underline" style={{ color: "var(--navy-ink)" }}>
+            <Link href={back.href} className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>
               {back.label}
             </Link>
             <span aria-hidden="true">/</span>
@@ -355,7 +355,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
             <div className="flex items-center gap-2">
               <a
                 href={`/api/data/${encodeURIComponent(sym)}/history.csv`}
-                className="btn-outline rounded-full border px-4 py-1.5 text-xs font-semibold"
+                className="btn-outline inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-semibold"
                 style={{ borderColor: "var(--line-strong)" }}
               >
                 دانلود تاریخچه (CSV)
@@ -500,7 +500,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 {/* M6: قیمت در برابر NAV — فقط برای صندوق‌ها */}
                 {isFund && (
                   <section>
-                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
                       قیمت در برابر NAV ابطال
                     </h2>
                     <PriceNavChart points={navPoints} />
@@ -521,7 +521,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
                 {/* تاریخچهٔ قیمت و جریان پول */}
                 <section>
-                  <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                  <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
                     تاریخچهٔ قیمت و جریان پول
                   </h2>
                   {points.length > 0 ? (
@@ -540,7 +540,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 {/* T5-1 — دادهٔ زنده: عمق ۵سطحی، جریان حقیقی/حقوقی، کارت‌های ارزش‌گذاری */}
                 {!isFund && (
                   <section>
-                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
                       تابلوی زندهٔ نماد
                     </h2>
                     <SymbolLiveDetail symbol={sym} sections="market" />
@@ -559,7 +559,9 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
           <AccountBridge
             access={access}
-            returnTo={`/symbol/${encodeURIComponent(sym)}`}
+            /* مبدأ همراهِ مسیرِ بازگشت از حساب می‌رود؛ بدونِ آن، کاربری که از
+               صفحهٔ نماد وارد می‌شود، لینکِ «برگشت»ش به پیش‌فرض برمی‌گردد. */
+            returnTo={`/symbol/${encodeURIComponent(sym)}?from=${encodeURIComponent(back.href)}`}
             backTo={{ href: "/market", label: "برگشت به میزِ بازار" }}
           />
 
