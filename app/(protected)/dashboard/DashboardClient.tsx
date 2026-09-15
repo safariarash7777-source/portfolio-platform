@@ -200,7 +200,7 @@ export default function DashboardClient({
         <div className="flex items-center gap-3 flex-shrink-0 flex-wrap justify-end">
           {isAdmin && (
             <Link
-              href="/admin"
+              href="/admin/desk"
               className="btn btn-gold"
               style={{ fontSize: "0.8rem", padding: "0.5rem 1.25rem" }}
             >

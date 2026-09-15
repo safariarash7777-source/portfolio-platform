@@ -21,6 +21,19 @@ import {
   type ScenarioLabel,
 } from "@/lib/intelligence/workflow";
 import { ASSET_CLASS_LABEL, type IntelAssetClass } from "@/lib/intelligence/contracts";
+import type { QueryErrorKind } from "@/lib/health/status";
+
+/**
+ * یک شکستِ خواندن نباید به آرایهٔ خالی و بعد به «صفر» تبدیل شود. این متن
+ * مشترک، کل view را تا زمانِ رفع شکست fail-closed نگه می‌دارد.
+ */
+export function explainIntelligenceFailures(failures: readonly QueryErrorKind[]): string | null {
+  if (failures.length === 0) return null;
+  if (failures.includes("missing_table")) {
+    return "جدول‌های گردشِ دستی هنوز روی این محیط اجرا نشده‌اند — `phase22` هنوز اعمال نشده است.";
+  }
+  return "یک یا چند بخش از دادهٔ هوشمندی خوانده نشد؛ خروجی ناقص به‌عنوان نتیجه نمایش داده نمی‌شود.";
+}
 
 export interface BriefRow {
   id: string;
@@ -67,6 +80,8 @@ export interface PositionRow {
 
 export interface TodayView {
   brief: BriefRow | null;
+  /** گزاره‌های همان بریف؛ برای پاسخِ «چرا مهم است؟»، نه نمایشِ همهٔ تاریخچه. */
+  claims: readonly ClaimRow[];
   /** `null` یعنی هنوز بریفی برای امروز ثبت نشده — نه اینکه بریف خالی است. */
   claimCount: number | null;
   unsupportedClaims: number;
@@ -76,11 +91,12 @@ export interface TodayView {
 export function buildToday(today: string, briefs: readonly BriefRow[], claims: readonly ClaimRow[]): TodayView {
   const brief = briefs.find((b) => b.briefDate === today && b.status !== "rejected" && b.status !== "superseded") ?? null;
   if (!brief) {
-    return { brief: null, claimCount: null, unsupportedClaims: 0, statusLabel: "ثبت‌نشده" };
+    return { brief: null, claims: [], claimCount: null, unsupportedClaims: 0, statusLabel: "ثبت‌نشده" };
   }
   const mine = claims.filter((c) => c.analysisId === brief.id);
   return {
     brief,
+    claims: mine,
     claimCount: mine.length,
     unsupportedClaims: mine.filter((c) => c.evidenceCount === 0).length,
     statusLabel: ANALYSIS_STATE_LABEL[brief.status],
@@ -224,6 +240,17 @@ export function buildPortfolioImpact(
 export interface RehearsalView extends RehearsalSummary {
   remainingDays: number;
   gateStatus: "not_started" | "in_progress" | "ready_for_review";
+}
+
+/** قرارداد واحدِ دو نمای داخلی: میز فرماندهی و گردش تخصصی هوشمندی. */
+export interface IntelligenceDeskViewModel {
+  today: TodayView;
+  todayJalali: string;
+  inbox: InboxItem[];
+  scenarios: ScenarioCard[];
+  portfolio: PortfolioImpactView;
+  rehearsal: RehearsalView;
+  unavailableReason: string | null;
 }
 
 export function buildRehearsalView(days: readonly RehearsalDay[]): RehearsalView {

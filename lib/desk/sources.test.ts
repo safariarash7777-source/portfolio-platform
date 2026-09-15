@@ -212,12 +212,13 @@ test("no source claims a cron cadence that vercel.json does not contain", () => 
   }
 });
 
-test("sources are grouped into exactly the five approved desk areas", () => {
+test("sources are grouped into exactly the six approved desk areas", () => {
   assert.deepEqual(Object.keys(DESK_SOURCES), [
     "today",
     "intelligence",
     "decisions",
     "reference",
+    "clients",
     "operations",
   ]);
   for (const group of Object.values(DESK_SOURCES)) {
