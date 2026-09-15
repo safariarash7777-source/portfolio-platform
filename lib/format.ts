@@ -30,12 +30,24 @@ export function formatToman(value: number): string {
   return `${toPersianDigits(groupThousands(value))} تومان`;
 }
 
-/** Abbreviated Toman, e.g. 3_500_000_000 → "۳٫۵ میلیارد تومان". */
+/**
+ * Abbreviated Toman, e.g. 3_500_000_000 → "۳٫۵ میلیارد تومان".
+ *
+ * ── چرا پلهٔ «همت» اضافه شد ───────────────────────────────────────────────
+ * بالاترین پلهٔ قبلی «میلیارد» بود، پس جمع‌های سطحِ بازار — ارزشِ معاملاتِ کل و
+ * خالصِ پولِ حقیقی — به شکلِ «۳۳۲٬۹۲۸٬۱۴۶٫۲ میلیارد تومان» درمی‌آمدند: عددی که
+ * نه خوانده می‌شود، نه در کارتِ سنجه جا می‌شود. «همت» (هزار میلیارد تومان)
+ * واحدِ متعارفِ همین بازار است و در `TodayDashboard` هم به‌صورتِ محلی ساخته
+ * شده بود؛ حالا یک بار اینجاست و همه از همین می‌خوانند.
+ */
 export function formatTomanShort(value: number): string {
   const abs = Math.abs(value);
   let num = value;
   let unit = "";
-  if (abs >= 1_000_000_000) {
+  if (abs >= 1_000_000_000_000) {
+    num = value / 1_000_000_000_000;
+    unit = " همت";
+  } else if (abs >= 1_000_000_000) {
     num = value / 1_000_000_000;
     unit = " میلیارد";
   } else if (abs >= 1_000_000) {
@@ -45,8 +57,13 @@ export function formatTomanShort(value: number): string {
     num = value / 1_000;
     unit = " هزار";
   }
-  const body = unit ? num.toFixed(num % 1 === 0 ? 0 : 1) : groupThousands(num);
-  return `${toPersianDigits(body).replace(".", "٫")}${unit} تومان`;
+  // علامتِ منفی: همان «−» (U+2212) که `formatPercent` می‌گذارد، نه خطِ تیرهٔ
+  // اسکی. دو علامتِ متفاوت برای یک معنا در یک صفحه، و در RTL خطِ تیرهٔ اسکی
+  // کنارِ رقمِ فارسی جهتش مبهم می‌شود.
+  const sign = num < 0 ? "−" : "";
+  const mag = Math.abs(num);
+  const body = unit ? mag.toFixed(mag % 1 === 0 ? 0 : 1) : groupThousands(mag);
+  return `${sign}${toPersianDigits(body).replace(".", "٫")}${unit} تومان`;
 }
 
 /** Percent with Persian decimal/sign, e.g. 12.5 → "٪۱۲٫۵", -3.2 → "−٪۳٫۲". */
@@ -115,4 +132,86 @@ export function formatJalaliShort(date: string | number | Date): string {
   const parts = jalaliParts.formatToParts(d);
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
   return `${toPersianDigits(Number(get("day")))} ${FA_MONTHS[Number(get("month")) - 1]}`;
+}
+
+/* ── تفکیک‌هایی که نبودشان باگِ عددی می‌سازد ─────────────────────────────── */
+
+/**
+ * **واحدِ درصد** (percentage point) — نه درصد.
+ *
+ * ── چرا تابعِ جداست ──────────────────────────────────────────────────────
+ * «حبابِ این صندوق ۲ واحدِ درصد از میانه بالاتر است» و «حباب ۲٪ بالاتر است»
+ * دو گزارهٔ متفاوت‌اند و با هم اشتباه گرفتن‌شان عددِ خروجی را عوض می‌کند.
+ * وقتی هر دو با `formatPercent` نوشته شوند، هیچ‌کس در UI نمی‌تواند تشخیص
+ * بدهد کدام است. این تابع تفاوت را **در خودِ متن** می‌گذارد.
+ */
+export function formatPercentPoints(value: number, digits = 1): string {
+  const sign = value < 0 ? "−" : "";
+  const body = toPersianDigits(Math.abs(value).toFixed(digits)).replace(".", "٫");
+  return `${sign}${body} واحدِ درصد`;
+}
+
+/** شمارش با ارقامِ فارسی و جداکنندهٔ هزارگان، e.g. 1234 → "۱٬۲۳۴". */
+export function formatCount(value: number): string {
+  return toPersianDigits(groupThousands(value));
+}
+
+/**
+ * ساعتِ تهران از یک مهرِ زمانی.
+ *
+ * `Intl` با `timeZone: "Asia/Tehran"` استفاده می‌شود تا خروجیِ سرور (UTC) و
+ * مرورگرِ کاربر (هر منطقه‌ای) یکسان باشد — وگرنه hydration ناهماهنگ می‌شود.
+ */
+const tehranClock = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Tehran",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+export function formatTehranClock(date: string | number | Date): string {
+  const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  return toPersianDigits(tehranClock.format(d));
+}
+
+/**
+ * حالتِ یک عدد در نما. **«صفرِ واقعی» و «ناموجود» یک چیز نیستند** و این نوع
+ * وادار می‌کند هر مصرف‌کننده تکلیفش را روشن کند.
+ */
+export type ValueState = "value" | "missing";
+
+/**
+ * عددِ اختیاری → متن. `null`/`undefined`/غیرعدد → «—» (نه صفر).
+ *
+ * هرجا این تابع به‌کار برود، باگِ «دادهٔ ناموجود صفر نشود» دیگر ممکن نیست.
+ */
+export function formatOrDash(value: number | null | undefined, fmt: (n: number) => string): string {
+  if (typeof value !== "number" || !isFinite(value)) return "—";
+  return fmt(value);
+}
+
+/**
+ * جمعِ یک ستونِ اختیاری با **پوششِ صریح**.
+ *
+ * ── باگی که این تابع می‌بندد ──────────────────────────────────────────────
+ * الگوی `rows.reduce((s, r) => s + (r.x ?? 0), 0)` وقتی هیچ ردیفی `x` ندارد
+ * عددِ `0` می‌دهد — و نما آن را «جمعِ کل: صفر» نشان می‌دهد. یعنی «نمی‌دانیم»
+ * به «صفر است» ترجمه می‌شود. اینجا جمع همراهِ `covered` برمی‌گردد و اگر هیچ
+ * ردیفی داده نداشت، `total` عمداً `null` است.
+ */
+export function sumCovered<T>(rows: readonly T[], pick: (row: T) => number | null | undefined): {
+  total: number | null;
+  covered: number;
+  population: number;
+} {
+  let total = 0;
+  let covered = 0;
+  for (const r of rows) {
+    const v = pick(r);
+    if (typeof v === "number" && isFinite(v)) {
+      total += v;
+      covered += 1;
+    }
+  }
+  return { total: covered > 0 ? total : null, covered, population: rows.length };
 }

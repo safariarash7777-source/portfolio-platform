@@ -1,13 +1,13 @@
-import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
+import MarketShell from "@/components/market/MarketShell";
 import AccountBridge from "@/components/account/AccountBridge";
 import { getIrMarket } from "@/lib/market-ir";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
 import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
-
+import { buildSearchIndex } from "@/lib/market-nav";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
@@ -30,17 +30,24 @@ export default async function FundsPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-16 sm:px-5 md:pt-8">
-          <nav className="mb-5 flex items-center gap-2 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
-            <Link href="/market" className="font-semibold hover:underline" style={{ color: "var(--navy)" }}>میز بازار</Link>
-            <span aria-hidden="true">/</span>
-            <span>صندوق‌ها</span>
-          </nav>
+        <MarketShell
+          active="funds"
+          title="دیده‌بان صندوق‌ها"
+          lead="NAV، حباب و بازدهٔ صندوق‌های سرمایه‌گذاری از آخرین اسنپ‌شات."
+          fetchedAt={fetchedAt}
+          boardState={ir?.indices?.state ?? null}
+          searchIndex={buildSearchIndex(ir?.stocks ?? [], funds)}
+          path="/market/funds"
+        >
           <FundsFullBoard funds={funds} fetchedAt={fetchedAt} />
           <div className="mt-8">
-            <AccountBridge access={access} returnTo="/market/funds" backTo={{ href: "/market", label: "برگشت به میز بازار" }} />
+            <AccountBridge
+              access={access}
+              returnTo="/market/funds"
+              backTo={{ href: "/market", label: "برگشت به میز بازار" }}
+            />
           </div>
-        </div>
+        </MarketShell>
       </main>
       <Footer />
     </>

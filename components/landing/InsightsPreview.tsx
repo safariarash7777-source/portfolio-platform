@@ -35,7 +35,15 @@ export default async function InsightsPreview() {
     .is("deleted_at", null)
     .not("published_at", "is", null)
     .order("published_at", { ascending: false })
-    .limit(4);
+    // ⚠️ عمداً بیش از ۴ تا خوانده می‌شود، چون `content_hub` ردیفِ تکراری دارد.
+    // همگام‌سازیِ تلگرام یک پست را با شناسه‌های **متفاوت** ولی `content_url`
+    // یکسان چند بار درج می‌کند (در دادهٔ امروز تا ۴۷ نسخه از یک پست). با
+    // `limit(4)` هر چهار کارت می‌توانستند یک پستِ واحد باشند — و همین اتفاق
+    // افتاده بود. پنجرهٔ بزرگ‌تر می‌خوانیم، یکتا می‌کنیم، بعد ۴ تا برمی‌داریم.
+    //
+    // این فقط نما را درست می‌کند؛ **ریشهٔ درج تکراری در همگام‌سازی است** و
+    // باید جدا رفع شود (خارج از دامنهٔ این تغییر).
+    .limit(60);
 
   /**
    * فقط میدان‌هایی که این کارت واقعاً رندر می‌کند. `ContentItem` کاملِ
@@ -47,16 +55,33 @@ export default async function InsightsPreview() {
     "id" | "platform" | "kind" | "content_url" | "title" | "published_at"
   >;
 
-  const items: PreviewItem[] = (data ?? [])
-    .filter((r) => isPlatform(r.platform) && isKind(r.kind))
-    .map((r) => ({
+  /**
+   * یکتاسازی بر اساسِ `content_url`.
+   *
+   * کلیدِ یکتایی عمداً **آدرسِ محتوا** است، نه `id`: شناسه‌ها متفاوت‌اند و
+   * دقیقاً به همین دلیل تکراری‌ها از فیلترِ شناسه رد می‌شدند. آدرس نرمال
+   * می‌شود (فاصله و اسلشِ پایانی) تا `…/3030` و `…/3030/` یکی شمرده شوند.
+   * چون ردیف‌ها از تازه به قدیم مرتب‌اند، نسخهٔ نگه‌داشته‌شده تازه‌ترین است.
+   */
+  const seen = new Set<string>();
+  const items: PreviewItem[] = [];
+  for (const r of data ?? []) {
+    if (!isPlatform(r.platform) || !isKind(r.kind)) continue;
+    const key = (r.content_url ?? "").trim().replace(/\/+$/, "").toLowerCase();
+    // ردیفِ بدونِ آدرس یکتا نمی‌شود؛ با شناسه‌اش می‌آید تا بی‌صدا حذف نشود.
+    const dedupeKey = key || `id:${r.id}`;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+    items.push({
       id: r.id,
       platform: r.platform,
       kind: r.kind,
       content_url: r.content_url,
       title: r.title,
       published_at: r.published_at,
-    }));
+    });
+    if (items.length === 4) break;
+  }
 
   if (items.length === 0) return null;
 
@@ -75,7 +100,7 @@ export default async function InsightsPreview() {
                 letterSpacing: "-0.02em",
               }}
             >
-              آخرین تحلیل‌ها
+              آخرین مطالب آرش
             </h2>
             <div aria-hidden className="divider-gold mt-4" />
           </div>

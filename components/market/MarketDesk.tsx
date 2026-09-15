@@ -7,7 +7,7 @@
  */
 import Link from "next/link";
 import { AlertTriangle, Clock, Eye, HelpCircle, Layers, TrendingUp } from "lucide-react";
-import { buildDesk, type DeskBand, type DeskKind, type DeskFund, type DeskStock } from "@/lib/core/marketDesk";
+import { buildDesk, type DeskBand, type DeskKind, type DeskFund, type DeskStock, type DeskObservation } from "@/lib/core/marketDesk";
 import { formatJalali, toPersianDigits } from "@/lib/format";
 import type { IrMarket } from "@/lib/market-ir";
 
@@ -30,7 +30,94 @@ function fa(v: string | number): string {
   return toPersianDigits(String(v));
 }
 
-export default function MarketDesk({ ir }: { ir: IrMarket | null }) {
+
+/** کارتِ یک مشاهده — از نمای خلاصه و فهرستِ کامل هر دو استفاده می‌شود. */
+function ObservationCard({ o }: { o: DeskObservation }) {
+  const meta = KIND_META[o.kind];
+  const style = BAND_STYLE[o.band];
+  return (
+              <li className="card px-4 py-3.5 flex flex-col gap-2.5 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <meta.Icon size={14} strokeWidth={2} style={{ color: "var(--gold-ink)", flexShrink: 0 }} aria-hidden />
+                    <span className="text-[11px] truncate" style={{ color: "var(--text-3)" }}>{meta.label}</span>
+                  </div>
+                  <span
+                    className="text-[10.5px] font-bold rounded px-1.5 py-0.5 whitespace-nowrap"
+                    style={{ background: style.bg, color: style.fg }}
+                  >
+                    {o.band}
+                  </span>
+                </div>
+
+                <div className="min-w-0">
+                  <Link
+                    href={`/symbol/${encodeURIComponent(o.symbol)}`}
+                    className="font-display text-[15px] font-extrabold hover:underline truncate block"
+                    style={{ color: "var(--navy-deep)" }}
+                  >
+                    {o.symbol}
+                  </Link>
+                  <p className="text-[11.5px] truncate" style={{ color: "var(--text-3)" }}>{o.faName}</p>
+                  <p className="text-[12.5px] mt-1.5" style={{ color: "var(--text-2)" }}>{o.headline}</p>
+                </div>
+
+                <dl className="grid gap-1 pt-2" style={{ borderTop: "1px solid var(--line)" }}>
+                  {o.drivers.map((d) => (
+                    <div key={d.label} className="flex items-baseline justify-between gap-2">
+                      <dt className="text-[11px] truncate" style={{ color: "var(--text-3)" }}>{d.label}</dt>
+                      <dd
+                        className="text-[11.5px] font-bold whitespace-nowrap"
+                        style={{ color: "var(--text)", fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {fa(d.value)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </li>
+  );
+}
+
+/**
+ * تنوع‌بخشی به نمای خلاصه.
+ *
+ * ── مسئله ────────────────────────────────────────────────────────────────
+ * قواعدِ میز مستقل‌اند و یکی از آنها می‌تواند ده‌ها مورد بسازد: مثلاً اگر رله
+ * یک بار NAV نفرستد، «نبودِ ساعتِ NAV» برای صدها صندوق هم‌زمان صدق می‌کند و
+ * تمامِ نمای خلاصه از یک رخدادِ تکراری پر می‌شود — در حالی که همهٔ آنها **یک**
+ * خبرند. اینجا از هر نوعِ رخداد حداکثر `maxPerKind` مورد به نمای خلاصه می‌آید؛
+ * بقیه حذف نمی‌شوند، به فهرستِ کاملِ بازشونده می‌روند.
+ *
+ * ⚠️ این تابع هیچ رتبه‌بندیِ تازه‌ای نمی‌سازد: ترتیبِ خروجیِ موتور دست‌نخورده
+ * می‌ماند و فقط **انتخاب** می‌شود. هیچ امتیازِ ترکیبی، هیچ وزنِ تازه.
+ */
+function diversify<T extends { kind: DeskKind }>(items: readonly T[], maxPerKind: number): T[] {
+  const seen = new Map<DeskKind, number>();
+  const out: T[] = [];
+  for (const it of items) {
+    const n = seen.get(it.kind) ?? 0;
+    if (n >= maxPerKind) continue;
+    seen.set(it.kind, n + 1);
+    out.push(it);
+  }
+  return out;
+}
+
+export default function MarketDesk({
+  ir,
+  /** سقفِ موردی که موتور تولید می‌کند */
+  limit = 12,
+  /** سقفِ نمایش در نمای خلاصه — بقیه در فهرستِ بازشونده */
+  summaryLimit,
+  /** سقفِ هر نوعِ رخداد در نمای خلاصه */
+  maxPerKind,
+}: {
+  ir: IrMarket | null;
+  limit?: number;
+  summaryLimit?: number;
+  maxPerKind?: number;
+}) {
   const funds: DeskFund[] = (ir?.funds ?? []).map((f) => ({
     id: f.id, faName: f.faName, price: f.price ?? null, type: f.type ?? null,
     nav: f.nav ?? null, bubblePercent: f.bubblePercent ?? null,
@@ -43,7 +130,12 @@ export default function MarketDesk({ ir }: { ir: IrMarket | null }) {
     volume: s.volume ?? null,
   }));
 
-  const desk = buildDesk({ funds, stocks }, { limit: 12 });
+  const desk = buildDesk({ funds, stocks }, { limit });
+
+  // نمای خلاصه: متنوع و کوتاه. فهرستِ کامل هیچ‌وقت دور انداخته نمی‌شود.
+  const diversified = maxPerKind ? diversify(desk.observations, maxPerKind) : desk.observations;
+  const shown = summaryLimit ? diversified.slice(0, summaryLimit) : diversified;
+  const hidden = desk.observations.filter((o) => !shown.some((x) => x.id === o.id));
   const totalMatched = desk.coverage.reduce((a, c) => a + c.matched, 0);
   const totalExamined = desk.coverage.reduce((a, c) => a + c.examined, 0);
   const totalCandidates = desk.coverage.reduce((a, c) => a + c.candidates, 0);
@@ -109,54 +201,30 @@ export default function MarketDesk({ ir }: { ir: IrMarket | null }) {
           </p>
         </div>
       ) : (
-        <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-          {desk.observations.map((o) => {
-            const meta = KIND_META[o.kind];
-            const style = BAND_STYLE[o.band];
-            return (
-              <li key={o.id} className="card px-4 py-3.5 flex flex-col gap-2.5 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <meta.Icon size={14} strokeWidth={2} style={{ color: "var(--gold-ink)", flexShrink: 0 }} aria-hidden />
-                    <span className="text-[11px] truncate" style={{ color: "var(--text-3)" }}>{meta.label}</span>
-                  </div>
-                  <span
-                    className="text-[10.5px] font-bold rounded px-1.5 py-0.5 whitespace-nowrap"
-                    style={{ background: style.bg, color: style.fg }}
-                  >
-                    {o.band}
-                  </span>
-                </div>
+        <>
+          <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {shown.map((o) => (
+              <ObservationCard key={o.id} o={o} />
+            ))}
+          </ul>
 
-                <div className="min-w-0">
-                  <Link
-                    href={`/symbol/${encodeURIComponent(o.symbol)}`}
-                    className="font-display text-[15px] font-extrabold hover:underline truncate block"
-                    style={{ color: "var(--navy-deep)" }}
-                  >
-                    {o.symbol}
-                  </Link>
-                  <p className="text-[11.5px] truncate" style={{ color: "var(--text-3)" }}>{o.faName}</p>
-                  <p className="text-[12.5px] mt-1.5" style={{ color: "var(--text-2)" }}>{o.headline}</p>
-                </div>
-
-                <dl className="grid gap-1 pt-2" style={{ borderTop: "1px solid var(--line)" }}>
-                  {o.drivers.map((d) => (
-                    <div key={d.label} className="flex items-baseline justify-between gap-2">
-                      <dt className="text-[11px] truncate" style={{ color: "var(--text-3)" }}>{d.label}</dt>
-                      <dd
-                        className="text-[11.5px] font-bold whitespace-nowrap"
-                        style={{ color: "var(--text)", fontVariantNumeric: "tabular-nums" }}
-                      >
-                        {fa(d.value)}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </li>
-            );
-          })}
-        </ul>
+          {/* بقیهٔ موارد حذف نشده‌اند — یک کلیک آن‌طرف‌ترند. */}
+          {hidden.length > 0 ? (
+            <details className="mt-2.5">
+              <summary
+                className="inline-flex min-h-11 cursor-pointer select-none items-center gap-1.5 rounded-lg px-2 text-[11.5px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+                style={{ color: "var(--navy)" }}
+              >
+                مشاهدهٔ همهٔ {fa(desk.observations.length)} مورد
+              </summary>
+              <ul className="mt-2.5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                {hidden.map((o) => (
+                  <ObservationCard key={o.id} o={o} />
+                ))}
+              </ul>
+            </details>
+          ) : null}
+        </>
       )}
 
       {/* پوشش — چرا میز این‌قدر پر یا خالی است. عمداً همیشه دیده می‌شود. */}

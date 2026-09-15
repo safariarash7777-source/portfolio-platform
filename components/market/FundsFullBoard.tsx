@@ -11,6 +11,7 @@ import {
   deltaColor,
   describeDelta,
   formatJalali,
+  sumCovered,
 } from "@/lib/format";
 
 export interface FundRow {
@@ -58,11 +59,20 @@ function fmtValue(v: number): string {
   return `${toPersianDigits(Math.round(m).toLocaleString("en-US")).replace(/,/g, "٬")} میلیون`;
 }
 
-/** رنگ حباب: مثبت (گران‌تر از NAV) = هشدار، منفی (زیر NAV) = سبز */
+/**
+ * رنگِ حباب — **خنثی و جهت‌دار، نه ارزش‌گذارانه**.
+ *
+ * ── چرا سبز/قرمزِ قبلی غلط بود ────────────────────────────────────────────
+ * نسخهٔ قبل حبابِ منفی را **سبز** می‌کرد. سبز در همین صفحه معنای ثابتی دارد:
+ * «مطلوب». پس صندوقی که زیرِ NAV معامله می‌شد به‌طور خودکار «فرصت» دیده
+ * می‌شد — یک قضاوتِ سرمایه‌گذاری که سامانه اجازهٔ بیانش را ندارد، و در ضمن
+ * غلط هم هست: حبابِ منفیِ پایدار معمولاً نشانهٔ نقدشوندگیِ ضعیف است، نه تخفیف.
+ *
+ * حالا هر دو جهت با **طلاییِ برند** (رنگِ توجه، نه رنگِ خوب/بد) علامت می‌خورند
+ * و جهت را علامتِ خودِ عدد (+/−) می‌گوید، نه رنگ.
+ */
 function bubbleColor(b: number): string {
-  if (b > 0.05) return "var(--danger)";
-  if (b < -0.05) return "var(--success)";
-  return "var(--text-3)";
+  return Math.abs(b) > 0.05 ? "var(--gold-ink)" : "var(--text-3)";
 }
 
 /** پس‌زمینه/متنِ کاشیِ نقشهٔ بازار */
@@ -176,7 +186,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     const withChange = filtered.filter(
       (f) => typeof (f.changePercent ?? f.closingChangePercent) === "number"
     );
-    const totalMarketValue = filtered.reduce((s, f) => s + (f.marketValue ?? 0), 0);
+    // «ناموجود» با «صفر» یکی نمی‌شود: جمع فقط از ردیف‌های دارای داده ساخته
+    // می‌شود و تعدادشان همراهِ عدد گزارش می‌شود (باگِ «جمعِ ۰ برای ۳۲۹ صندوق»).
+    const marketValue = sumCovered(filtered, (f) => f.marketValue);
     const avg = withChange.length
       ? withChange.reduce((s, f) => s + ((f.changePercent ?? f.closingChangePercent) as number), 0) / withChange.length
       : null;
@@ -186,7 +198,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     const avgBubble = withNav.length
       ? withNav.reduce((s, f) => s + (f.bubblePercent as number), 0) / withNav.length
       : null;
-    return { count: filtered.length, totalMarketValue, avg, posRatio, rated: withChange.length, avgBubble, navCount: withNav.length };
+    return { count: filtered.length, marketValue, avg, posRatio, rated: withChange.length, avgBubble, navCount: withNav.length };
   }, [filtered]);
 
   const toggleSort = (key: SortKey) => {
@@ -272,26 +284,40 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 
       {/* KPIs */}
       <div className={hasNav ? "grid grid-cols-2 md:grid-cols-5 gap-3" : "grid grid-cols-2 md:grid-cols-4 gap-3"}>
-        <Kpi label="تعداد صندوق" value={toPersianDigits(stats.count)} />
+        {/* «تعدادِ نتیجهٔ فیلتر» و «کلِ بازار» دو عددِ متفاوت‌اند و هر دو نوشته
+            می‌شوند — وگرنه کاربر نمی‌داند نسبت‌های کنارش روی کدام جامعه‌اند. */}
         <Kpi
-          label="ارزش بازار نمادها"
-          value={stats.totalMarketValue > 0 ? fmtAssetB(Math.round(stats.totalMarketValue / 1_000_000_000)) : "—"}
+          label="نتیجهٔ فیلتر"
+          value={toPersianDigits(stats.count)}
+          note={stats.count === funds.length ? "کلِ صندوق‌های اسنپ‌شات" : `از ${toPersianDigits(funds.length)} صندوق`}
         />
         <Kpi
-          label="میانگین بازده"
+          label="ارزش بازار نمادها"
+          value={stats.marketValue.total == null ? "—" : fmtAssetB(Math.round(stats.marketValue.total / 1_000_000_000))}
+          note={
+            stats.marketValue.total == null
+              ? "هیچ ردیفی ارزشِ بازار ندارد"
+              : `از ${toPersianDigits(stats.marketValue.covered)} صندوق از ${toPersianDigits(stats.marketValue.population)}`
+          }
+        />
+        <Kpi
+          label="میانگین بازده روز"
           value={stats.avg == null ? "—" : formatSignedPercent(stats.avg)}
           color={stats.avg == null ? undefined : deltaColor(stats.avg)}
+          note={stats.rated > 0 ? `از ${toPersianDigits(stats.rated)} صندوقِ دارای بازده` : "بازدهی ثبت نشده"}
         />
         <Kpi
           label="نسبت مثبت"
           value={stats.posRatio == null ? "—" : `٪${toPersianDigits(stats.posRatio)}`}
           color={stats.posRatio == null ? undefined : stats.posRatio >= 50 ? "var(--success)" : "var(--danger)"}
+          note={stats.rated > 0 ? `از ${toPersianDigits(stats.rated)} صندوقِ دارای بازده` : undefined}
         />
         {hasNav && (
           <Kpi
-            label={`میانگین حباب (${toPersianDigits(stats.navCount)} صندوق)`}
+            label="میانگین حباب"
             value={stats.avgBubble == null ? "—" : formatSignedPercent(stats.avgBubble)}
             color={stats.avgBubble == null ? undefined : bubbleColor(stats.avgBubble)}
+            note={`از ${toPersianDigits(stats.navCount)} صندوقِ دارای NAV معتبر`}
           />
         )}
       </div>
@@ -649,16 +675,24 @@ function RetCell({ v }: { v: number | null | undefined }) {
   );
 }
 
-function Kpi({ label, value, color }: { label: string; value: string; color?: string }) {
+/**
+ * کاشیِ سنجه. `note` اختیاری نیست از سرِ تزئین: هر نسبت یا جمعی که اینجا
+ * می‌آید باید بگوید **روی چه جامعه‌ای** حساب شده، وگرنه دو کاشی با دو جامعهٔ
+ * متفاوت کنارِ هم می‌نشینند و کاربر آنها را قابلِ مقایسه فرض می‌کند.
+ */
+function Kpi({ label, value, color, note }: { label: string; value: string; color?: string; note?: string }) {
   return (
-    <div className="card p-4">
+    <div className="card flex flex-col p-4">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
       <p
         className="font-display font-bold mt-1.5 text-xl md:text-2xl"
-        style={{ color: color ?? "var(--heading)", fontVariantNumeric: "tabular-nums" }}
+        style={{ color: color ?? "var(--heading)", fontVariantNumeric: "tabular-nums", overflowWrap: "anywhere" }}
       >
         {value}
       </p>
+      {note ? (
+        <p className="mt-1 text-[10.5px] leading-4" style={{ color: "var(--text-3)" }}>{note}</p>
+      ) : null}
     </div>
   );
 }

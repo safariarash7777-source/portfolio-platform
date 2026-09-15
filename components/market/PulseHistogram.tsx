@@ -46,21 +46,32 @@ export default function PulseHistogram({ pulse }: { pulse: MarketPulse }) {
         })}
       </div>
 
-      {/* نوار سهم مثبت/منفی */}
+      {/* نوار سهم مثبت/منفی.
+          ── چرا آستانه در متن نوشته شده ─────────────────────────────────────
+          این نسبت نمادی را «مثبت» می‌شمارد که بیش از **نیم درصد** رشد کرده
+          باشد، ولی برچسبِ قبلی فقط «٪X نمادها مثبت» بود. جای دیگرِ سایت پهنای
+          بازار را با آستانهٔ صفر و روی **کلِ** نمادها حساب می‌کند. دو عددِ
+          متفاوت از یک اسنپ‌شات درمی‌آمد (در دادهٔ ۱۴۰۵/۰۶/۲۴: ۷۵٫۵٪ و ۷۸٫۲٪)
+          و هیچ‌کدام نمی‌گفت روی چه جامعه و چه آستانه‌ای حساب شده. */}
       {posPct != null ? (
         <div className="mt-4">
           <div className="flex items-center justify-between text-[11.5px] mb-1" style={{ color: "var(--text-3)" }}>
             <span style={{ color: "var(--success)", fontWeight: 700 }}>
-              ٪{toPersianDigits(Math.round(posPct))} نمادها مثبت
+              ٪{toPersianDigits(Math.round(posPct))} بیش از ٪۰٫۵+
             </span>
             <span style={{ color: "var(--danger)", fontWeight: 700 }}>
-              ٪{toPersianDigits(Math.round(100 - posPct))} منفی یا خنثی
+              ٪{toPersianDigits(Math.round(100 - posPct))} بقیه
             </span>
           </div>
           <div className="flex h-2 w-full overflow-hidden rounded-full" dir="rtl" aria-hidden>
             <div style={{ width: `${posPct}%`, background: "var(--success)" }} />
             <div style={{ width: `${100 - posPct}%`, background: "var(--danger)", opacity: 0.75 }} />
           </div>
+          <p className="mt-1.5 text-[10.5px] leading-4" style={{ color: "var(--text-3)" }}>
+            نمادِ «مثبت» یعنی بیش از ٪۰٫۵ رشد، از میانِ {toPersianDigits(pulse.posCount + pulse.negCount + pulse.flatCount)} نمادِ
+            معامله‌شدهٔ دارای درصدِ تغییر. این نسبت با «پهنای بازار» — که آستانه‌اش صفر است و روی
+            همهٔ نمادهای اسنپ‌شات حساب می‌شود — یکی نیست.
+          </p>
         </div>
       ) : null}
     </div>

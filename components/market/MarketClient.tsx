@@ -119,9 +119,10 @@ export default function MarketClient({
       {/* Header */}
       <div>
         <span className="eyebrow">رصد بازار</span>
-        <h1 className="font-display text-2xl md:text-3xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
+        {/* H2 و نه H1: عنوانِ H1 صفحه در پوستهٔ بازار است و هر صفحه فقط یک H1 دارد. */}
+        <h2 className="font-display text-xl md:text-2xl font-bold mt-1" style={{ color: "var(--heading)" }}>
           رصد بازار کریپتو
-        </h1>
+        </h2>
         <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
           آخرین قیمت‌های بازار کریپتو (دلاری، منبع: CoinGecko — به‌روزرسانی دوره‌ای).
           {isLoggedIn ? " نمادها را ستاره‌دار کنید و هشدار قیمتی بسازید." : ""}

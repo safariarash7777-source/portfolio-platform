@@ -1,9 +1,10 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StocksBoard from "@/components/market/StocksBoard";
+import MarketShell from "@/components/market/MarketShell";
 import { getIrMarket } from "@/lib/market-ir";
 import { pageMetadata } from "@/lib/metadata";
-
+import { buildSearchIndex } from "@/lib/market-nav";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
@@ -23,9 +24,17 @@ export default async function StocksPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16">
+        <MarketShell
+          active="stocks"
+          title="تابلوی سهام"
+          lead="جدول، نقشه و صنایعِ نمادهای بورس و فرابورس از آخرین اسنپ‌شات."
+          fetchedAt={fetchedAt}
+          boardState={indices?.state ?? null}
+          searchIndex={buildSearchIndex(stocks, ir?.funds ?? [])}
+          path="/market/stocks"
+        >
           <StocksBoard stocks={stocks} indices={indices} fetchedAt={fetchedAt} />
-        </div>
+        </MarketShell>
       </main>
       <Footer />
     </>
