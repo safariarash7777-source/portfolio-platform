@@ -1,0 +1,99 @@
+name: Relay health
+
+# بررسیِ سلامتِ رله — **بدونِ هیچ انتشاری**.
+#
+# چرا فایلِ جدا: در اجرای 34955555129 انتشار موفق شد ولی گامِ دفترداریِ بعدش
+# افتاد و `/healthz` skipped شد. اگر تنها راهِ سلامت‌سنجی «یک deploy دیگر»
+# باشد، برای دیدنِ حالِ چیزی که مستقر است باید دوباره مستقرش کنیم — و چون
+# «استقرارِ بدونِ اختلال» روی این اپ خاموش است، هر بار یک قطعیِ بی‌دلیل.
+#
+# این workflow هیچ‌وقت چیزی منتشر نمی‌کند و هیچ پرچمی را تغییر نمی‌دهد.
+
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "یادداشت برای این بررسی (اختیاری)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: relay-health
+  cancel-in-progress: false
+
+env:
+  HEALTH_URL: "https://arsadata.liara.run/healthz"
+  DEBUG_URL: "https://arsadata.liara.run/debug"
+  PHASE28_APPLIED: "false"
+
+jobs:
+  check:
+    name: Relay health → arsadata
+    runs-on: ubuntu-latest
+    steps:
+      # منطقِ پذیرش از شاخهٔ پیش‌فرض می‌آید، مثلِ خودِ deploy.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: زنده‌بودن
+        id: live
+        run: |
+          set -uo pipefail
+          for i in $(seq 1 12); do
+            BODY=$(curl -fsS --max-time 10 "$HEALTH_URL" || true)
+            if [ "$BODY" = "ok" ]; then
+              echo "healthz=ok" >> "$GITHUB_OUTPUT"
+              echo "::notice::/healthz پس از ${i} تلاش ok شد."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "healthz=fail" >> "$GITHUB_OUTPUT"
+          echo "::error::/healthz تا یک دقیقه ok نشد."
+          exit 1
+
+      # `/healthz` فقط می‌گوید فرایندی روی پورت جواب می‌دهد. شاهدِ **نسخه**
+      # کلیدِ historySections است که فقط در کدِ هدف وجود دارد.
+      - name: شاهدِ نسخه از /debug
+        id: version
+        if: always() && steps.live.outputs.healthz == 'ok'
+        env:
+          RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
+        run: |
+          set -uo pipefail
+          if [ -z "${RELAY_TOKEN:-}" ]; then
+            echo "status=pending" >> "$GITHUB_OUTPUT"
+            echo "::warning::سکرتِ RELAY_TOKEN ثبت نشده — شاهدِ نسخه خوانده نشد. «در انتظار»، نه موفق."
+            exit 0
+          fi
+          BODY=$(curl -fsS --max-time 20 -H "Authorization: Bearer ${RELAY_TOKEN}" "$DEBUG_URL" || true)
+          if printf '%s' "$BODY" | node scripts/deploy/relay-gate.mjs accept "{\"phase28Applied\": ${PHASE28_APPLIED}}"; then
+            echo "status=passed" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=failed" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: گزارش
+        if: always()
+        env:
+          NOTE: ${{ inputs.note }}
+          LIVE: ${{ steps.live.outputs.healthz }}
+          VER: ${{ steps.version.outputs.status }}
+        run: |
+          {
+            echo "| بررسی | نتیجه |"
+            echo "|---|---|"
+            echo "| زنده‌بودن (\`/healthz\`) | \`${LIVE:-اجرا نشد}\` |"
+            echo "| شاهدِ نسخه (\`/debug\`) | \`${VER:-در انتظار}\` |"
+            echo "| یادداشت | ${NOTE:-—} |"
+            echo ""
+            echo "این اجرا **هیچ چیزی منتشر نکرده** و هیچ پرچمی را تغییر نداده."
+          } >> "$GITHUB_STEP_SUMMARY"

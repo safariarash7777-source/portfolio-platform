@@ -106,6 +106,133 @@ const skip = (code, reason) => ({ action: "skip", code, reason });
 const fail = (code, reason) => ({ action: "fail", code, reason });
 const short = (s) => String(s ?? "").slice(0, 7);
 
+// ── کاوشِ اپِ زنده ───────────────────────────────────────────────────────────
+
+/**
+ * اسکریپتی که داخلِ کانتینرِ زنده اجرا می‌شود.
+ *
+ * ⚠️ **بدونِ هیچ فاصله‌ای** — و این قید از یک اجرای واقعی آمده، نه از احتیاط.
+ *
+ * اجرای `34955059014` با `exit=0` برگشت و خروجی‌اش این بود:
+ *
+ *     [eval]:1
+ *     const
+ *     SyntaxError: Unexpected end of input
+ *     Node.js v18.20.8
+ *
+ * یعنی سمتِ سرور فرمان را **روی فاصله تکه می‌کند** و هر تکه یک argv می‌شود؛
+ * هیچ shellی وسط نیست. پس `node -e const e=process.env;…` به
+ * `argv=["node","-e","const", …]` تبدیل شد و اسکریپتِ eval فقط `const` بود.
+ * درمانش این است که خودِ اسکریپت یک توکنِ بی‌فاصله باشد — `const` حذف شد و
+ * `process.env` سرِ جای هر کلید نوشته شد.
+ *
+ * ⚠️ و عمداً بدونِ `+` و `&` و نقل‌قول: `@liara/cli@9.5.1` در
+ * `lib/commands/app/shell.js:31` فرمان را بدونِ `encodeURIComponent` داخلِ
+ * query string می‌گذارد. همان اجرا ثابت کرد سرور percent-decode می‌کند، پس
+ * encodeِ ما درست است — ولی اگر روزی نکند، این قیدها جلوی خرابیِ خاموش را
+ * می‌گیرند.
+ *
+ * هیچ **مقدارِ** سکرتی چاپ نمی‌شود؛ فقط بود/نبود.
+ */
+export const PROBE_SOURCE =
+  "console.log(JSON.stringify({probe:1,node:process.version,PORT:process.env.PORT??null,IR_HISTORY_SECTIONS:process.env.IR_HISTORY_SECTIONS??null,BRSAPI_CLIENT_ENABLED:process.env.BRSAPI_CLIENT_ENABLED??null,BRSAPI_BUDGET_ENFORCE_LEGACY:process.env.BRSAPI_BUDGET_ENFORCE_LEGACY??null,BRSAPI_KEY_SET:Boolean(process.env.BRSAPI_KEY),SUPABASE_URL_SET:Boolean(process.env.SUPABASE_URL),SUPABASE_SERVICE_ROLE_KEY_SET:Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),RELAY_TOKEN_SET:Boolean(process.env.RELAY_TOKEN)}))";
+
+/**
+ * چون CLI خودش encode نمی‌کند، **ما** encode می‌کنیم. `cmd` سمتِ سرور مثلِ هر
+ * پارامترِ query رمزگشایی می‌شود، پس فرمانِ درست به کانتینر می‌رسد.
+ */
+export function probeCommand(source = PROBE_SOURCE) {
+  return encodeURIComponent("node -e " + source);
+}
+
+/** کاراکترهایی که در یک query stringِ رمزنشده معنای فرمان را عوض می‌کنند. */
+export function urlHostileChars(source = PROBE_SOURCE) {
+  return [...new Set(source.match(/[+&\s"'#%]/g) ?? [])];
+}
+
+// ── پاک‌سازیِ خروجی پیش از گزارش ─────────────────────────────────────────────
+
+const ANSI = /\x1b\[[0-9;]*[A-Za-z]/g;
+const SECRETISH = [
+  /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}(?:\.[A-Za-z0-9_-]+)?/g,
+  /\b[A-Fa-f0-9]{32,}\b/g,
+  /\b[A-Za-z0-9_-]{40,}\b/g,
+  /(token|api[-_]?token|key|secret|password)=([^\s&"']+)/gi,
+];
+
+/**
+ * خروجیِ CLI هرگز خام گزارش نمی‌شود.
+ *
+ * دلیلِ مشخص: همان خطِ ۳۱ توکن را **داخلِ URL** می‌گذارد، پس هر پیامی که آن URL
+ * را نقل کند توکن را با خودش می‌آورد. ماسکِ GitHub فقط مقدارِ دقیقِ سکرت را
+ * می‌پوشاند، نه شکلِ تغییریافته‌اش.
+ */
+export function sanitiseProbeOutput(raw, secrets = [], { maxLines = 20, maxChars = 1500 } = {}) {
+  let text = String(raw ?? "").replace(ANSI, "");
+  for (const s of secrets) {
+    const v = String(s ?? "").trim();
+    if (v.length >= 8) text = text.split(v).join("«حذف‌شده»");
+  }
+  for (const re of SECRETISH) {
+    text = text.replace(re, (m, k) => (k ? k + "=«حذف‌شده»" : "«حذف‌شده»"));
+  }
+  const lines = text.split("\n").map((l) => l.trimEnd()).filter((l) => l !== "");
+  const out = lines.slice(-maxLines).join("\n");
+  return out.length > maxChars ? out.slice(-maxChars) : out;
+}
+
+// ── تشخیص ───────────────────────────────────────────────────────────────────
+
+/**
+ * «نتوانستیم دستور را اجرا کنیم» با «اجرا شد ولی خروجی‌اش خراب بود» یکی نیست.
+ *
+ * نسخهٔ قبلی هر دو را «JSON معتبر نیست» می‌نامید، چون خروجی در یک متغیر گم
+ * می‌شد و کدِ خروجِ دستور هم به‌خاطرِ لوله به `tr` از بین می‌رفت. اجرای واقعیِ
+ * `34953490961` دقیقاً همین را نشان داد: ۱۲ ثانیه، بدونِ یک کلمه تشخیص.
+ *
+ * هر پنج حالت **جلوی انتشار را می‌گیرند**؛ تفکیک برای تشخیص است، نه برای عبور.
+ */
+export function classifyProbe({ exitCode, raw, secrets = [] }) {
+  const clean = sanitiseProbeOutput(raw, secrets);
+  const fail = (kind, summary) => ({ ok: false, kind, summary, detail: clean });
+
+  if (exitCode === 124 || exitCode === 137) {
+    return fail("timeout", "دستورِ liara shell در مهلتِ تعیین‌شده تمام نشد");
+  }
+  if (exitCode !== 0) {
+    const hint = /40[13]|forbidden|unauthor|invalid token|authentication/i.test(clean)
+      ? "دسترسی یا توکن پذیرفته نشد"
+      : /404|not found|no such app|does not exist/i.test(clean)
+        ? "اپ پیدا نشد"
+        : /ECONNREFUSED|ENOTFOUND|ETIMEDOUT|socket|network|proxy/i.test(clean)
+          ? "اتصال برقرار نشد"
+          : "اجرای دستور شکست خورد";
+    return fail("command-failed", hint + " (کدِ خروج " + exitCode + ")");
+  }
+  if (clean.trim() === "") {
+    return fail("no-output", "دستور موفق بود ولی هیچ خروجی‌ای نداد");
+  }
+
+  const candidates = [];
+  for (const line of clean.split("\n")) {
+    const t = line.trim().replace(/^.*?FLAGS=\s*/, "");
+    if (!t.startsWith("{")) continue;
+    try {
+      const v = JSON.parse(t);
+      if (v && typeof v === "object" && v.probe === 1) candidates.push(t);
+    } catch {
+      /* خطِ بعدی */
+    }
+  }
+  if (candidates.length === 0) {
+    return fail(
+      "no-marker",
+      "دستور اجرا شد ولی هیچ خطِ JSONِ کاوش برنگشت — اسکریپت داخلِ کانتینر بالا نیامد",
+    );
+  }
+  return { ok: true, flagsJson: candidates[candidates.length - 1], detail: clean };
+}
+
 // ── پیش‌پرواز ────────────────────────────────────────────────────────────────
 
 const FLAG_KEYS = [
@@ -351,6 +478,8 @@ export function summarize(input) {
 // هر زیرفرمان stdin/argv می‌گیرد و برای `$GITHUB_OUTPUT` خط `key=value`
 // می‌نویسد. کدِ خروج: 0 تصمیمِ گرفته‌شده، 1 شکستِ دروازه.
 
+import { readFileSync, existsSync } from "node:fs";
+
 async function readStdin() {
   const chunks = [];
   for await (const c of process.stdin) chunks.push(c);
@@ -379,6 +508,42 @@ const MAIN = {
       process.exit(1);
     }
     console.error(`::notice::${r.action}: ${r.reason}`);
+  },
+  /**
+   * کلِ پیش‌پرواز در یک جا: خواندنِ خروجیِ ذخیره‌شده، کدِ خروج، تشخیص،
+   * و بعد اعتبارسنجیِ ساختاری. تشخیص به stderr می‌رود تا stdout فقط
+   * `key=value` بماند.
+   */
+  "probe-cmd"() {
+    // فقط خودِ فرمان روی stdout؛ هیچ چیزِ دیگری، چون مستقیم به `-c` می‌رود.
+    process.stdout.write(probeCommand());
+  },
+  preflight() {
+    const [, , , rawPath, exitRaw, optsRaw] = process.argv;
+    const exitCode = Number(exitRaw);
+    const raw = existsSync(rawPath) ? readFileSync(rawPath, "utf8") : "";
+    const secrets = [process.env.LIARA_API_TOKEN, process.env.RELAY_TOKEN].filter(Boolean);
+
+    const probe = classifyProbe({ exitCode, raw, secrets });
+    if (!probe.ok) {
+      console.error(`::error::پیش‌پرواز رد شد (${probe.kind}) — ${probe.summary}`);
+      console.error("خروجیِ پاک‌سازی‌شدهٔ دستور:");
+      for (const line of (probe.detail || "(خالی)").split("\n")) console.error("  | " + line);
+      console.error("انتشار انجام نمی‌شود. پرچمی هم تغییر داده نشد.");
+      process.exit(1);
+    }
+
+    const r = evaluateFlags(probe.flagsJson, JSON.parse(optsRaw ?? "{}"));
+    if (!r.ok) {
+      reportFailures("پیش‌پرواز رد شد (bad-flags) — انتشار انجام نمی‌شود", r.failures);
+      process.exit(1);
+    }
+    console.error(`::notice::پیش‌پرواز موفق — node ${r.flags.node}`);
+    emit({
+      node: r.flags.node,
+      effective_sections: r.flags.effectiveSections.join(","),
+      debug_reachable: String(r.flags.debugReachable),
+    });
   },
   async flags() {
     const opts = JSON.parse(process.argv[3] ?? "{}");
