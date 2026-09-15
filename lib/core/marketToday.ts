@@ -24,6 +24,18 @@ export interface MarketPulse {
   posShare: number | null;
 }
 
+/**
+ * نوارِ «خنثی»: تغییرِ کمتر از این، مثبت یا منفی شمرده نمی‌شود.
+ *
+ * ── چرا ثابتِ صادرشده و نه عددِ درجا ───────────────────────────────────────
+ * نمای `PulseHistogram` این آستانه را **در متن** به کاربر می‌گوید («نمادِ مثبت
+ * یعنی بیش از ٪۰٫۵ رشد»)، چون بدونِ آن این نسبت با «پهنای بازار» — که آستانه‌اش
+ * صفر است — اشتباه گرفته می‌شود و دو عددِ متفاوت در یک صفحه می‌سازد. اگر عدد
+ * در دو جا دست‌نویس بماند، روزی یکی عوض می‌شود و متن دربارهٔ همان چیزی دروغ
+ * می‌گوید که برای روشن‌کردنش نوشته شده بود.
+ */
+export const FLAT_BAND_PCT = 0.5;
+
 const BUCKET_DEFS: Array<{ label: string; min: number; max: number }> = [
   { label: "بیش از ۴٪+", min: 4, max: Infinity },
   { label: "۲ تا ۴٪+", min: 2, max: 4 },
@@ -55,8 +67,8 @@ export function computeMarketPulse(stocks: IrStockRow[]): MarketPulse {
   for (const r of traded) {
     const cp = rowChangePercent(r);
     if (cp === null) continue;
-    if (cp > 0.5) pos++;
-    else if (cp < -0.5) neg++;
+    if (cp > FLAT_BAND_PCT) pos++;
+    else if (cp < -FLAT_BAND_PCT) neg++;
     else flat++;
     for (const b of buckets) {
       // بازه‌ها نیم‌باز: [min, max) برای مثبت‌ها و (min, max] برای منفی‌ها — با

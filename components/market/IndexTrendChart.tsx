@@ -3,23 +3,10 @@
 // تاریخ‌ها جلالی متن منبع‌اند؛ lightweight-charts زمان میلادی می‌خواهد، پس نقاط را با
 // ایندکس روز رسم و برچسب محور را با جدول جلالی جایگزین می‌کنیم (بدون تبدیل تقویم حدسی).
 import { useEffect, useRef, useState } from "react";
-import { createChart, LineSeries, type IChartApi, type UTCTimestamp } from "lightweight-charts";
+import { createChart, LineSeries, type IChartApi, type ISeriesApi, type UTCTimestamp } from "lightweight-charts";
+import { useThemeToken, readChartPalette, chartThemeOptions } from "@/lib/useChartTheme";
 import type { IndexSeries } from "@/lib/core/indexTrend";
 import { toPersianDigits } from "@/lib/format";
-
-// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
-// این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
-function palette() {
-  const cs = typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
-  const v = (name: string, fallback: string) => cs?.getPropertyValue(name).trim() || fallback;
-  return {
-    bg: v("--surface", "#FFFFFF"),
-    text: v("--text-2", "#334155"),
-    line: v("--line", "#E5E3DC"),
-    navy: v("--navy", "#1E3A8A"),
-    gold: v("--gold", "#B8860B"),
-  };
-}
 
 /** «1405/04/27» → «۰۴/۲۷» برای برچسب محور؛ سال در تولتیپ کامل می‌آید. */
 const shortJdate = (j: string) => toPersianDigits(j.slice(5));
@@ -27,11 +14,14 @@ const shortJdate = (j: string) => toPersianDigits(j.slice(5));
 export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
   const [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const theme = useThemeToken();
   const current = series[active] ?? null;
 
   useEffect(() => {
     if (!ref.current || !current || current.points.length === 0) return;
-    const p = palette();
+    const p = readChartPalette();
     const color = current.id === "equal_weight" ? p.gold : p.navy;
     // نگاشت ایندکس → jdate برای برچسب محور زمان
     const jdates = current.points.map((pt) => pt.jdate);
@@ -66,8 +56,30 @@ export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
       })),
     );
     chart.timeScale().fitContent();
-    return () => chart.remove();
+    chartRef.current = chart;
+    seriesRef.current = line;
+    return () => {
+      chartRef.current = null;
+      seriesRef.current = null;
+      chart.remove();
+    };
   }, [current]);
+
+  /**
+   * تغییرِ تم → فقط رنگ‌ها.
+   *
+   * عمداً `applyOptions` و نه ساختِ دوبارهٔ نمودار: داده و بازهٔ دیدِ کاربر
+   * (زوم/اسکرول) دست‌نخورده می‌مانند. `current` در وابستگی هست تا اگر سری
+   * عوض شد رنگِ خط هم با نوعِ تازه بخواند.
+   */
+  useEffect(() => {
+    const chart = chartRef.current;
+    const line = seriesRef.current;
+    if (!chart || !line || !current) return;
+    const p = readChartPalette();
+    chart.applyOptions(chartThemeOptions(p));
+    line.applyOptions({ color: current.id === "equal_weight" ? p.gold : p.navy });
+  }, [theme, current]);
 
   if (series.length === 0) return null;
   return (
@@ -78,11 +90,12 @@ export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
             key={s.id}
             type="button"
             onClick={() => setActive(i)}
-            className="rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors"
+            className="inline-flex items-center rounded-full px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={
+              // ۴۴ پیکسل: کمینهٔ هدفِ لمسی (پیش از این ۲۷ پیکسل بود).
               i === active
-                ? { background: "var(--navy)", color: "var(--text-on-navy)" }
-                : { background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
+                ? { minHeight: 44, background: "var(--navy)", color: "var(--text-on-navy)" }
+                : { minHeight: 44, background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
             }
           >
             {s.faName}

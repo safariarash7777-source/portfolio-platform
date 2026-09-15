@@ -39,11 +39,11 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
         <div className="flex items-center gap-3">
           <span
             className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+            style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
           >
             <Coins size={18} />
           </span>
-          <h2 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
+          <h2 className="font-display font-bold text-lg" style={{ color: "var(--heading)" }}>
             طلا و ارز
           </h2>
         </div>
@@ -97,8 +97,9 @@ function TabBtn({ active, onClick, label, count }: { active: boolean; onClick: (
   return (
     <button
       onClick={onClick}
-      className="px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+      className="inline-flex items-center rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
       style={{
+        minHeight: 44,
         background: active ? "var(--navy-deep)" : "var(--surface-2)",
         color: active ? "var(--text-on-navy)" : "var(--text-2)",
       }}

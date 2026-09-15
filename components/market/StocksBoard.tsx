@@ -1,13 +1,23 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
+import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
 import IndustryDesk from "./IndustryDesk";
+import {
+  STOCK_VIEWS,
+  STOCK_SORT_KEYS,
+  SORT_DIRS,
+  type StockView,
+  type StockSortKey,
+  type SortDirection,
+} from "@/lib/market-nav";
 import { BarChart3, Search, ArrowUpDown, ChevronDown, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import {
   toPersianDigits,
   formatToman,
   formatTomanShort,
   formatSignedPercent,
+  formatRialAsToman,
   deltaColor,
   describeDelta,
   formatJalali,
@@ -36,23 +46,25 @@ export interface StockRow {
   sellN?: number;
 }
 
-type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | "pe";
-type SortDir = "asc" | "desc";
+// نوع از همان فهرستی می‌آید که اعتبارسنجیِ URL به‌کار می‌برد (`lib/market-nav.ts`)
+// — تا مقداری که در `?sort=` مجاز است همانی باشد که این جدول می‌فهمد.
+type SortKey = StockSortKey;
+type SortDir = SortDirection;
 
 /** ارزش معاملات → متن فارسی */
-function fmtValue(v: number): string {
-  const b = v / 1_000_000_000;
-  if (b >= 1) return `${toPersianDigits(b.toFixed(1)).replace(".", "٫")} میلیارد`;
-  const m = v / 1_000_000;
-  return `${toPersianDigits(Math.round(m).toLocaleString("en-US")).replace(/,/g, "٬")} میلیون`;
-}
-
-function fmtMarketCap(v: number): string {
-  const t = v / 1_000_000_000_000;
-  if (t >= 1) return `${toPersianDigits(t.toFixed(1)).replace(".", "٫")} هزار میلیارد`;
-  const b = v / 1_000_000_000;
-  return `${toPersianDigits(Math.round(b).toLocaleString("en-US")).replace(/,/g, "٬")} میلیارد`;
-}
+/**
+ * ارزشِ ریالیِ فید → متنِ تومانی.
+ *
+ * ── باگی که بسته شد ──────────────────────────────────────────────────────
+ * دو تابعِ محلیِ قبلی (`fmtValue` و `fmtMarketCap`) عددِ **ریالِ** خامِ فید را
+ * می‌گرفتند، بر ۱۰⁹ یا ۱۰¹² تقسیم می‌کردند و بدونِ هیچ واحدِ پولی «میلیارد» یا
+ * «هزار میلیارد» می‌نوشتند. نتیجه دو خطا با هم بود: عدد **ده برابر** واقعیت
+ * می‌شد، و کاربر نمی‌دانست ریال است یا تومان — در حالی که ستونِ قیمتِ همان
+ * جدول تومان بود. حالا هر دو از یک نقطهٔ تبدیل می‌گذرند و همیشه «تومان» را
+ * در متن حمل می‌کنند.
+ */
+const fmtValue = formatRialAsToman;
+const fmtMarketCap = formatRialAsToman;
 
 /** پس‌زمینه/متنِ کاشیِ نقشهٔ بازار */
 function tile(change: number | null) {
@@ -75,18 +87,55 @@ interface Props {
   fetchedAt: number | null;
 }
 
+type ViewKey = StockView;
+
+const VIEW_LABEL: Record<ViewKey, string> = {
+  table: "جدول",
+  map: "نقشهٔ نمادها",
+  industry: "صنایع",
+};
+const VIEWS = STOCK_VIEWS.map((key) => ({ key, label: VIEW_LABEL[key] }));
+
+const isViewKey = (v: string): v is ViewKey => (STOCK_VIEWS as readonly string[]).includes(v);
+const isSortKey = (v: string): v is SortKey => (STOCK_SORT_KEYS as readonly string[]).includes(v);
+const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).includes(v);
+
+/** بیشینهٔ کاشیِ نقشه. متنِ پوششِ زیرِ نقشه همین را می‌نویسد. */
+const MAP_CELL_LIMIT = 30;
+
 export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
-  const [search, setSearch] = useState("");
-  const [industryFilter, setIndustryFilter] = useState("همه");
+  // نما، جست‌وجو و فیلترِ صنعت در URL می‌نشینند تا back/forward و برگشت از
+  // صفحهٔ نماد وضعیت را حفظ کنند. مرتب‌سازی عمداً محلی می‌ماند: حالتِ گذرایی
+  // است که کاربر انتظارِ اشتراک‌گذاری‌اش را ندارد.
+  const url = useUrlState();
+  const rawView = url.get("view", "table");
+  const view: ViewKey = isViewKey(rawView) ? rawView : "table";
+  const [search, setSearch] = useUrlBackedText("q");
+  const industryFilter = url.get("industry", "همه");
+
+  const setView = (v: ViewKey) => url.set({ view: v === "table" ? null : v });
+  const setIndustryFilter = (v: string) => url.set({ industry: v === "همه" ? null : v });
+
   const tableAnchorRef = useRef<HTMLDivElement | null>(null);
+  // مبدأ = همین صفحه با همین فیلترها؛ اعتبارسنجی سمتِ صفحهٔ نماد انجام می‌شود.
+  const from = useCurrentHref();
 
   /** کلیک روی صنعت در نقشه/میز → فیلتر جدول نمادها (M2/M3) */
   const selectIndustry = (industry: string) => {
-    setIndustryFilter((cur) => (cur === industry ? "همه" : industry));
+    const next = industryFilter === industry ? "همه" : industry;
+    // انتخابِ صنعت از نمای «صنایع» کاربر را به جدولِ همان صنعت می‌برد — وگرنه
+    // فیلتر عوض می‌شود ولی نتیجه‌اش در نمای فعلی دیده نمی‌شود.
+    url.set({ industry: next === "همه" ? null : next, view: null });
     tableAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const [sortKey, setSortKey] = useState<SortKey>("value");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  // مرتب‌سازی هم در URL می‌نشیند: بدونِ آن، «برگشت» ترتیبی را که کاربر انتخاب
+  // کرده بود از دست می‌داد و جدول به ترتیبِ پیش‌فرض برمی‌گشت.
+  const rawSort = url.get("sort", "value");
+  const sortKey: SortKey = isSortKey(rawSort) ? rawSort : "value";
+  const rawDir = url.get("dir", "desc");
+  const sortDir: SortDir = isSortDir(rawDir) ? rawDir : "desc";
+  const setSort = (key: SortKey, dir: SortDir) =>
+    url.set({ sort: key === "value" && dir === "desc" ? null : key, dir: key === "value" && dir === "desc" ? null : dir });
 
   // Industries
   const industries = useMemo(() => {
@@ -139,13 +188,14 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
   }, [filtered, sortKey, sortDir]);
 
   const toggleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortKey(key); setSortDir("desc"); }
+    if (sortKey === key) setSort(key, sortDir === "asc" ? "desc" : "asc");
+    else setSort(key, "desc");
   };
 
-  // Heatmap cells (top 30 by market value)
+  // Heatmap cells — سقف از یک ثابتِ نام‌دار می‌آید تا متنِ پوششِ زیرِ نقشه
+  // نتواند از خودِ برش جدا بیفتد.
   const mapCells = useMemo(
-    () => [...filtered].sort((a, b) => (b.marketValue ?? 0) - (a.marketValue ?? 0)).slice(0, 30),
+    () => [...filtered].sort((a, b) => (b.marketValue ?? 0) - (a.marketValue ?? 0)).slice(0, MAP_CELL_LIMIT),
     [filtered]
   );
 
@@ -155,12 +205,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
       <div className="card p-6 flex items-start gap-3">
         <span
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+          style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
         >
           <BarChart3 size={18} />
         </span>
         <div>
-          <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
+          <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
             نمای بازار سهام
           </h3>
           <p className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
@@ -173,36 +223,17 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
-          >
-            <BarChart3 size={18} />
-          </span>
-          <div>
-            <h1 className="font-display font-bold text-xl" style={{ color: "var(--navy-deep)" }}>
-              تابلوی بازار سهام
-            </h1>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-              دیده‌بانی تابلو، نقشه و شاخص‌ها · {toPersianDigits(stocks.length)} نماد فعال
-              {indices?.state && ` · ${indices.state}`}
-              {" · "}
-              <Link href="/data" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
-                تاریخچه و خروجی CSV در بانک داده
-              </Link>
-            </p>
-          </div>
-        </div>
-        {fetchedAt && (
-          <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
-            <Clock size={12} />
-            <span>آخرین به‌روزرسانی: {formatJalali(fetchedAt)}</span>
-          </div>
-        )}
-      </div>
+      {/* ── سربرگ ────────────────────────────────────────────────────────────
+          عنوانِ صفحه، تاریخ و وضعیتِ تابلو حالا در پوستهٔ مشترک (`MarketShell`)
+          هستند. تکرارشان اینجا یعنی دو عنوان و دو مهرِ زمانی روی یک صفحه — پس
+          فقط چیزی می‌ماند که پوسته نمی‌گوید: شمارِ نمادها و راهِ بانکِ داده. */}
+      <p className="text-xs" style={{ color: "var(--text-3)" }}>
+        {toPersianDigits(stocks.length)} نماد در آخرین اسنپ‌شات
+        {" · "}
+        <Link href="/data" className="inline-flex min-h-11 items-center font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>
+          تاریخچه و خروجی CSV در بانک داده
+        </Link>
+      </p>
 
       {/* Indices */}
       {indices && (
@@ -219,23 +250,112 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           />
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش بازار</p>
-            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}>
+            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
               {indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
             </p>
           </div>
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش معاملات</p>
-            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}>
+            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
               {indices.value > 0 ? fmtValue(indices.value) : "—"}
             </p>
           </div>
         </div>
       )}
 
+
+
+
+      {/* Search + Filter */}
+      <div ref={tableAnchorRef} className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search
+            size={16}
+            className="absolute top-1/2 -translate-y-1/2 start-3"
+            style={{ color: "var(--text-3)" }}
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="جستجوی نماد یا نام..."
+            className="w-full rounded-lg border ps-9 pe-3 text-sm"
+            style={{
+              minHeight: 44,
+              background: "var(--surface)",
+              borderColor: "var(--line)",
+              color: "var(--text)",
+            }}
+          />
+        </div>
+        <div className="relative">
+          <select
+            value={industryFilter}
+            onChange={(e) => setIndustryFilter(e.target.value)}
+            className="appearance-none rounded-lg border px-4 pe-9 text-sm"
+            style={{
+              minHeight: 44,
+              background: "var(--surface)",
+              borderColor: "var(--line)",
+              color: "var(--text)",
+            }}
+          >
+            {industries.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={14}
+            className="absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none"
+            style={{ color: "var(--text-3)" }}
+          />
+        </div>
+      </div>
+
+      {/* ── انتخابِ نما ──────────────────────────────────────────────────────
+          سه نمای سنگین (جدول، نقشه، صنایع) پیش از این پشتِ سرِ هم روی صفحه
+          می‌نشستند و جست‌وجوی جدول را حدودِ ۲۲۰۰ پیکسل پایین می‌بردند. حالا
+          هم‌زمان فقط یکی mount می‌شود — هم صفحه کوتاه‌تر است، هم نمودار و
+          جدولِ پنهان هزینهٔ رندر نمی‌دهند.
+
+          فیلترِ صنعت و جست‌وجو بالای این سوییچ‌اند، پس بینِ نماها **مشترک**
+          می‌مانند: نقشه و جدول همیشه یک جامعه را نشان می‌دهند. */}
+      <div role="tablist" aria-label="نمای تابلوی سهام" className="flex flex-wrap gap-1 rounded-lg p-0.5" style={{ background: "var(--surface-2)", width: "fit-content" }}>
+        {VIEWS.map((v) => (
+          <button
+            key={v.key}
+            type="button"
+            role="tab"
+            aria-selected={view === v.key}
+            onClick={() => setView(v.key)}
+            className="rounded-md px-4 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+            style={{
+              minHeight: 44,
+              background: view === v.key ? "var(--surface)" : "transparent",
+              color: view === v.key ? "var(--navy-ink)" : "var(--text-2)",
+              boxShadow: view === v.key ? "var(--shadow-sm)" : "none",
+            }}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+
+      {/* شمارشِ نتیجه و جامعه — همیشه، در هر نما. */}
+      <p className="text-[11.5px]" style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
+        {`${toPersianDigits(filtered.length)} نتیجه از ${toPersianDigits(stocks.length)} نماد`}
+        {industryFilter !== "همه" ? ` · صنعت: ${industryFilter}` : ""}
+        {search.trim() ? ` · جست‌وجو: «${search.trim()}»` : ""}
+      </p>
+
+      {view === "map" ? (
+        <>
       {/* Heatmap */}
       {mapCells.length > 0 && mapCells.some((c) => c.marketValue && c.marketValue > 0) && (
         <div className="card p-5">
-          <h3 className="font-display font-bold mb-1" style={{ color: "var(--navy-deep)" }}>
+          <h3 className="font-display font-bold mb-1" style={{ color: "var(--heading)" }}>
             نقشهٔ بازار
           </h3>
           <p className="text-[11px] mb-3" style={{ color: "var(--text-3)" }}>
@@ -277,59 +397,25 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
         </div>
       )}
 
-      {/* نقشهٔ صنایع + میز صنایع (M2/M3 — رصد بازار) */}
-      <IndustryDesk
-        stocks={stocks}
-        onSelectIndustry={selectIndustry}
-        selectedIndustry={industryFilter !== "همه" ? industryFilter : undefined}
-      />
-
-      {/* Search + Filter */}
-      <div ref={tableAnchorRef} className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search
-            size={16}
-            className="absolute top-1/2 -translate-y-1/2 start-3"
-            style={{ color: "var(--text-3)" }}
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="جستجوی نماد یا نام..."
-            className="w-full rounded-lg border ps-9 pe-3 py-2.5 text-sm"
-            style={{
-              background: "var(--surface)",
-              borderColor: "var(--line)",
-              color: "var(--text)",
-            }}
-          />
-        </div>
-        <div className="relative">
-          <select
-            value={industryFilter}
-            onChange={(e) => setIndustryFilter(e.target.value)}
-            className="appearance-none rounded-lg border px-4 py-2.5 pe-9 text-sm"
-            style={{
-              background: "var(--surface)",
-              borderColor: "var(--line)",
-              color: "var(--text)",
-            }}
-          >
-            {industries.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={14}
-            className="absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none"
-            style={{ color: "var(--text-3)" }}
-          />
-        </div>
-      </div>
-
+          {/* پوششِ نقشه — «۳۰ نمادِ اول» با «کلِ بازار» یکی نیست، و کاشیِ بدونِ
+              ارزشِ بازار اصلاً کشیده نمی‌شود (مساحتِ ساختگی ممنوع).
+              ⚠️ عددِ این متن از `MAP_CELL_LIMIT` می‌آید، نه از حافظه: متنِ
+              دست‌نویس با `slice()` از هم جدا می‌افتد و همین یک بار افتاد. */}
+          <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
+            نقشه حداکثر {toPersianDigits(MAP_CELL_LIMIT)} نمادِ بزرگ‌ترِ نتیجهٔ فیلتر را می‌کشد و
+            نمادِ فاقدِ ارزشِ بازار در آن نمی‌آید. برای دیدنِ همهٔ نتایج از نمای «جدول» استفاده کنید.
+          </p>
+        </>
+      ) : view === "industry" ? (
+        /* نقشهٔ صنایع + میز صنایع (M2/M3 — رصد بازار). کلیک روی یک صنعت
+           فیلترِ مشترک را عوض می‌کند، پس جدول و نقشه هم با آن هماهنگ می‌شوند. */
+        <IndustryDesk
+          stocks={stocks}
+          onSelectIndustry={selectIndustry}
+          selectedIndustry={industryFilter !== "همه" ? industryFilter : undefined}
+        />
+      ) : (
+        <>
       {/* Table — Desktop */}
       <div className="hidden md:block card overflow-x-auto">
         <table className="w-full text-sm" style={{ color: "var(--text)" }}>
@@ -350,9 +436,9 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
                 <tr key={s.id} className="hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--line)" }}>
                   <td className="py-3 px-4">
                     <Link
-                      href={`/symbol/${encodeURIComponent(s.id)}`}
-                      className="font-bold hover:underline"
-                      style={{ color: "var(--navy-deep)" }}
+                      href={`/symbol/${encodeURIComponent(s.id)}?from=${encodeURIComponent(from)}`}
+                      className="inline-flex min-h-11 items-center font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
+                      style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${s.id}`}
                     >
                       {s.id}
@@ -405,9 +491,9 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <Link
-                    href={`/symbol/${encodeURIComponent(s.id)}`}
+                    href={`/symbol/${encodeURIComponent(s.id)}?from=${encodeURIComponent(from)}`}
                     className="font-bold text-sm hover:underline"
-                    style={{ color: "var(--navy-deep)" }}
+                    style={{ color: "var(--heading)" }}
                   >
                     {s.id}
                   </Link>
@@ -434,7 +520,9 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
             نمادی با این فیلتر یافت نشد.
           </p>
         )}
-      </div>
+          </div>
+        </>
+      )}
 
       {/* Disclaimer */}
       <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
@@ -452,7 +540,7 @@ function IndexCard({ label, value, change }: { label: string; value: number; cha
   return (
     <div className="card p-4">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
-      <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}>
+      <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
         {toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬")}
       </p>
       <div className="flex items-center gap-1 mt-1">
@@ -485,16 +573,32 @@ function SortTh({
 }) {
   const active = current === key;
   return (
+    // ── چرا th دیگر خودش کلیک‌پذیر نیست ──────────────────────────────────
+    // نسخهٔ قبل `onClick` را روی خودِ `<th>` می‌گذاشت: با ماوس کار می‌کرد، ولی
+    // با کیبورد اصلاً قابلِ رسیدن نبود و صفحه‌خوان نه می‌فهمید این ستون
+    // مرتب‌شدنی است نه می‌دانست الان بر چه اساسی مرتب است. حالا کنترل یک
+    // `<button>` واقعی است و وضعیتِ مرتب‌سازی روی `<th>` با `aria-sort` اعلام
+    // می‌شود — همان چیزی که جدولِ داده باید بگوید.
     <th
-      className={`py-3 px-4 font-bold cursor-pointer select-none whitespace-nowrap text-${align}`}
-      style={{ color: active ? "var(--navy-deep)" : "var(--text-3)" }}
-      onClick={() => onSort(key)}
+      className={`whitespace-nowrap p-0 font-bold text-${align}`}
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+      style={{ color: active ? "var(--navy-ink)" : "var(--text-3)" }}
     >
-      <span className="inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => onSort(key)}
+        className={`inline-flex w-full min-h-11 select-none items-center gap-1 px-4 py-3 text-${align} transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--navy-ink)] ${align === "left" ? "justify-end" : "justify-start"}`}
+        style={{ color: "inherit", font: "inherit" }}
+      >
         {label}
-        <ArrowUpDown size={12} className={active ? "opacity-100" : "opacity-40"} />
-        {active && <span className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span>}
-      </span>
+        <ArrowUpDown size={12} aria-hidden className={active ? "opacity-100" : "opacity-40"} />
+        {active ? <span aria-hidden className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span> : null}
+        <span className="sr-only">
+          {active
+            ? `، مرتب‌شده ${dir === "asc" ? "صعودی" : "نزولی"} — برای معکوس‌کردن فعال کنید`
+            : "، برای مرتب‌سازی بر اساس این ستون فعال کنید"}
+        </span>
+      </button>
     </th>
   );
 }

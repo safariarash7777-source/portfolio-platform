@@ -81,7 +81,7 @@ export default function OptionsBoard({
     <section>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
+          <h1 className="text-3xl font-extrabold" style={{ color: "var(--heading)" }}>
             تابلوی اختیار معامله
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-7" style={{ color: "var(--text-3)" }}>
@@ -132,7 +132,7 @@ export default function OptionsBoard({
             setLimit(100);
           }}
           className="rounded-full border px-4 py-2 text-sm"
-          style={{ borderColor: "var(--line)", background: "var(--surface)", color: "var(--navy-deep)" }}
+          style={{ borderColor: "var(--line)", background: "var(--surface)", color: "var(--heading)" }}
         >
           {bases.slice(0, 80).map((b) => (
             <option key={b} value={b}>
@@ -151,7 +151,7 @@ export default function OptionsBoard({
             onChange={(e) => setQ(e.target.value)}
             placeholder="جستجوی قرارداد یا نماد پایه…"
             className="w-full bg-transparent text-sm outline-none"
-            style={{ color: "var(--navy-deep)" }}
+            style={{ color: "var(--heading)" }}
           />
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function OptionsBoard({
           style={{ borderColor: "var(--line)", background: "var(--surface)" }}
         >
           <FileQuestion size={32} style={{ color: "var(--text-3)" }} />
-          <p className="text-sm font-semibold" style={{ color: "var(--navy-deep)" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--heading)" }}>
             دادهٔ اختیار معامله در اسنپ‌شات فعلی موجود نیست.
           </p>
           <p className="max-w-md text-xs leading-6" style={{ color: "var(--text-3)" }}>
@@ -201,12 +201,12 @@ export default function OptionsBoard({
                   style={{ borderColor: "var(--line)" }}
                 >
                   <td className="px-4 py-2.5">
-                    <span className="font-bold" style={{ color: "var(--navy-deep)" }} title={o.faName}>
+                    <span className="font-bold" style={{ color: "var(--heading)" }} title={o.faName}>
                       {o.id}
                     </span>
                     {/* C1 — UI نمادمحور: نام کامل حذف شد (در title) */}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
+                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {o.baseId || "—"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5">
@@ -221,27 +221,27 @@ export default function OptionsBoard({
                       {o.type === "call" ? "اختیار خرید" : "اختیار فروش"}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
+                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.strike) != null ? formatToman(o.strike as number) : "—"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
+                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.dayRemain) != null ? toPersianDigits(o.dayRemain as number) : "—"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-xs" style={{ color: "var(--text-2)" }}>
                     {o.dateEnd ? toPersianDigits(o.dateEnd) : "—"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
+                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.openInterest) != null ? toPersianDigits(Math.round(o.openInterest as number).toLocaleString("en-US")) : "—"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
+                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.price) != null && (o.price as number) > 0 ? formatToman(o.price as number) : "—"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
+                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.volume) != null && (o.volume as number) > 0
                       ? toPersianDigits(Math.round(o.volume as number).toLocaleString("en-US"))
                       : "—"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--navy-deep)" }}>
+                  <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.value) != null && (o.value as number) > 0 ? formatTomanShort(o.value as number) : "—"}
                   </td>
                 </tr>
@@ -259,7 +259,7 @@ export default function OptionsBoard({
                 type="button"
                 onClick={() => setLimit((l) => l + 200)}
                 className="rounded-full border px-5 py-1.5 text-sm font-semibold"
-                style={{ borderColor: "var(--line)", color: "var(--navy)" }}
+                style={{ borderColor: "var(--line)", color: "var(--navy-ink)" }}
               >
                 نمایش بیشتر ({toPersianDigits(rows.length - limit)} قرارداد دیگر)
               </button>

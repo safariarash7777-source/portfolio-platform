@@ -197,7 +197,12 @@ export function computeIndustryDesk(stocks: BreadthStockLike[]): IndustryDesk {
       a.flowCovered++;
     }
 
-    const mc = num(s.marketValue);
+    // `marketValue` اسنپ‌شات **ریال** است (خامِ tsetmc) — مثلِ `value`. تبدیل
+    // همین‌جا انجام می‌شود تا نامِ میدانِ خروجی (`marketCapToman`) راست باشد.
+    // شاهد: marketValue فملی ÷ قیمتِ تومانی = ۱٫۴۳×۱۰¹³ سهم، در حالی که
+    // تعدادِ سهامِ واقعی ۱٫۴۳×۱۰¹² است.
+    const mcRial = num(s.marketValue);
+    const mc = mcRial == null ? null : mcRial / 10;
     if (mc != null && mc > 0) {
       a.mcap += mc;
       if (p != null) {

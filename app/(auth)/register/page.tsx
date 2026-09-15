@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toLatinDigits } from "@/lib/format";
 import Logo from "@/components/ui/Logo";
+import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
 
 interface FormFields {
   full_name: string;
@@ -44,6 +46,24 @@ function supabaseError(msg: string): string {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<AuthPageFallback label="در حال آماده‌سازی ثبت‌نام..." />}>
+      <RegisterPageContent />
+    </Suspense>
+  );
+}
+
+function AuthPageFallback({ label }: { label: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-5" style={{ background: "var(--bg)", color: "var(--text-3)" }}>
+      <p className="text-sm" role="status">{label}</p>
+    </div>
+  );
+}
+
+function RegisterPageContent() {
+  const searchParams = useSearchParams();
+  const returnTo = normalizeReturnPath(searchParams.get("next"), "/dashboard");
   const [fields, setFields] = useState<FormFields>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof FormFields, string>>>({});
   const [serverError, setServerError] = useState("");
@@ -79,6 +99,7 @@ export default function RegisterPage() {
         email: fields.email,
         password: fields.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`,
           data: {
             // SECURITY: role عمداً ارسال نمی‌شود — تریگر handle_new_user همیشه 'user' درج می‌کند
             full_name: fields.full_name,
@@ -117,7 +138,7 @@ export default function RegisterPage() {
           <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
             ایمیل تأیید ارسال شد. لطفاً صندوق ورودی خود را بررسی کرده و ایمیل خود را تأیید کنید.
           </p>
-          <Link href="/login" className="btn btn-gold w-full">
+          <Link href={accountEntryHref("/login", returnTo)} className="btn btn-gold w-full">
             رفتن به صفحه ورود
           </Link>
         </div>
@@ -221,9 +242,8 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass((s) => !s)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  className="absolute left-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
                   style={{ color: "var(--text-3)" }}
-                  tabIndex={-1}
                   aria-label={showPass ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -247,9 +267,8 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((s) => !s)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  className="absolute left-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
                   style={{ color: "var(--text-3)" }}
-                  tabIndex={-1}
                   aria-label={showConfirm ? "پنهان کردن تکرار رمز" : "نمایش تکرار رمز"}
                 >
                   {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -289,7 +308,7 @@ export default function RegisterPage() {
           <div className="mt-6 text-center text-sm" style={{ color: "var(--text-3)" }}>
             قبلاً ثبت‌نام کرده‌اید؟{" "}
             <Link
-              href="/login"
+              href={accountEntryHref("/login", returnTo)}
               className="font-bold"
               style={{ color: "var(--navy)" }}
             >

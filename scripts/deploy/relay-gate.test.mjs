@@ -394,3 +394,226 @@ test("گزارش: متنِ بازگشت، بررسیِ سلامت و تازگی 
   assert.equal(r.acceptance.state, "not-applicable");
   assert.match(r.acceptance.text, /سلامت و تازگیِ داده همچنان بررسی شود/);
 });
+
+// ── کاوشِ اپِ زنده: تشخیص باید علت را بگوید، نه فقط «JSON معتبر نیست» ────────
+// اجرای واقعیِ 34953490961 در ۱۲ ثانیه با یک جملهٔ بی‌اطلاع شکست خورد، چون
+// خروجیِ CLI داخلِ یک متغیر گم می‌شد و کدِ خروجش با لولهٔ `tr` از بین می‌رفت.
+
+import { PROBE_SOURCE, probeCommand, urlHostileChars, sanitiseProbeOutput, classifyProbe } from "./relay-gate.mjs";
+
+test("کاوش: فرمان encode می‌شود، چون CLI خودش نمی‌کند", () => {
+  const cmd = probeCommand();
+  for (const ch of [" ", "+", "&", '"', "'", "#"]) {
+    assert.ok(!cmd.includes(ch), `کاراکترِ خام «${ch}» در فرمانِ encodeشده ماند`);
+  }
+  assert.ok(cmd.startsWith("node%20-e%20"));
+  assert.equal(decodeURIComponent(cmd), `node -e ${PROBE_SOURCE}`, "رفت‌وبرگشت باید دقیق باشد");
+});
+
+test("کاوش: منبع هیچ فاصله‌ای ندارد — سرور روی فاصله تکه می‌کند", () => {
+  // شاهد: اجرای 34955059014 با exit=0 برگشت و کانتینر گفت
+  //   [eval]:1 / const / SyntaxError: Unexpected end of input
+  // یعنی `node -e const e=process.env;…` به argv تکه شد و اسکریپت فقط `const`
+  // بود. هیچ shellی وسط نیست، پس اسکریپت باید **یک توکنِ بی‌فاصله** باشد.
+  assert.deepEqual(PROBE_SOURCE.match(/\s/g), null, "هر فاصله یک argvِ تازه می‌سازد");
+  assert.ok(!PROBE_SOURCE.includes("const"), "`const` بدونِ فاصله ممکن نیست — حذف شد");
+  assert.match(PROBE_SOURCE, /process\.env\.PORT/, "دسترسی به env باید inline بماند");
+});
+
+test("کاوش: فرمانِ کامل دقیقاً سه توکن می‌شود، همان‌طور که سرور تکه می‌کند", () => {
+  const argv = decodeURIComponent(probeCommand()).split(/\s+/);
+  assert.equal(argv.length, 3, `سرور به ${argv.length} توکن تکه می‌کند: ${argv.slice(0, 4)}`);
+  assert.deepEqual(argv.slice(0, 2), ["node", "-e"]);
+  assert.equal(argv[2], PROBE_SOURCE, "تکهٔ سوم باید کلِ اسکریپت باشد، نه بخشی از آن");
+});
+
+test("کاوش: اسکریپت واقعاً اجرا می‌شود و JSONِ قابلِ تشخیص می‌دهد", () => {
+  const r = spawnSync(process.execPath, ["-e", PROBE_SOURCE], { encoding: "utf8" });
+  assert.equal(r.status, 0, `اسکریپت نباید بیفتد: ${r.stderr}`);
+  const probe = classifyProbe({ exitCode: 0, raw: r.stdout });
+  assert.equal(probe.ok, true, "خروجیِ خودِ اسکریپت باید از تشخیص عبور کند");
+  assert.equal(evaluateFlags(probe.flagsJson).ok, false, "روی این ماشین سکرت‌ها نیستند — پس رد می‌شود");
+  assert.match(JSON.parse(probe.flagsJson).node, /^v\d+\./);
+});
+
+test("کاوش: منبع نه `+` دارد نه `&` — همان چیزی که نسخهٔ اولِ کاوش را شکست", () => {
+  // `+` هنگامِ decode فاصله می‌شود و `&` رشته را قطع می‌کند؛ حتی با encode هم
+  // نگه‌داشتنِ این قید یعنی اگر روزی کسی بدونِ encode بسازدش، بی‌صدا نمی‌شکند.
+  assert.ok(!PROBE_SOURCE.includes("+"), "نسخهٔ شکسته `\"FLAGS=\"+JSON.stringify(...)` بود");
+  assert.ok(!PROBE_SOURCE.includes("&"));
+  assert.ok(!PROBE_SOURCE.includes('"'));
+  assert.deepEqual(urlHostileChars(), [], "بعد از حذفِ `const`، هیچ کاراکترِ خصمانه‌ای نماند");
+});
+
+test("کاوش: هیچ نامِ سکرتی مقدارش را چاپ نمی‌کند", () => {
+  for (const k of ["BRSAPI_KEY", "SUPABASE_SERVICE_ROLE_KEY", "RELAY_TOKEN", "SUPABASE_URL"]) {
+    assert.match(PROBE_SOURCE, new RegExp(`Boolean\\(process\\.env\\.${k}\\)`), `${k} باید بولین شود`);
+  }
+});
+
+test("پاک‌سازی: توکن و شکل‌های شبیهِ سکرت حذف می‌شوند", () => {
+  // توکنِ آزمایشی در زمانِ اجرا ساخته می‌شود، نه به‌صورتِ لیترال: وگرنه
+  // `scan:secrets` همین فایل را — به‌درستی — به‌عنوانِ JWT علامت می‌زند. قاعدهٔ
+  // اسکنر درست است و نباید سست شود؛ این تست است که نباید شبیهِ سکرت بنویسد.
+  const tok = ["eyJ", "hbGciOiJIUzI1NiJ9", ".", "eyJzdWIiOiIxMjM0NTY3ODkwIn0", ".", "abcdefghij"].join("");
+  const out = sanitiseProbeOutput(`wss://x/v1/exec?token=${tok}&cmd=node\nError: bad`, [tok]);
+  assert.ok(!out.includes(tok), "توکن نباید در گزارش بماند");
+  assert.match(out, /حذف‌شده/);
+  assert.match(out, /Error: bad/, "پیامِ واقعی باید بماند");
+});
+
+test("پاک‌سازی: سکرتِ ناشناخته هم با الگو گرفته می‌شود", () => {
+  const out = sanitiseProbeOutput("api-token=SuperSecretValue123 rest");
+  assert.ok(!out.includes("SuperSecretValue123"));
+});
+
+test("پاک‌سازی: خروجیِ بلند بریده می‌شود", () => {
+  const big = Array.from({ length: 200 }, (_, i) => `line ${i}`).join("\n");
+  const out = sanitiseProbeOutput(big);
+  assert.ok(out.split("\n").length <= 20);
+  assert.match(out, /line 199/, "آخرین خط‌ها مفیدترند");
+});
+
+test("تشخیص: شکستِ اجرا از شکستِ استخراج جدا می‌شود", () => {
+  const kind = (exitCode, raw) => classifyProbe({ exitCode, raw }).kind;
+  assert.equal(kind(124, ""), "timeout");
+  assert.equal(kind(2, " ›   Error: Response code 403 (Forbidden)"), "command-failed");
+  assert.equal(kind(1, "connect ECONNREFUSED 1.2.3.4:443"), "command-failed");
+  assert.equal(kind(0, ""), "no-output");
+  assert.equal(kind(0, "SyntaxError: Unexpected identifier"), "no-marker");
+  assert.equal(kind(0, '{"probe":1,'), "no-marker", "JSONِ خراب هم عبور نمی‌کند");
+});
+
+test("تشخیص: علتِ شکستِ اجرا نام‌گذاری می‌شود، نه اینکه یک جملهٔ کلی بگیرد", () => {
+  const s = (e, r) => classifyProbe({ exitCode: e, raw: r }).summary;
+  assert.match(s(2, "Response code 403 (Forbidden)"), /توکن|دسترسی/);
+  assert.match(s(2, "Response code 404 (Not Found)"), /اپ پیدا نشد/);
+  assert.match(s(1, "ENOTFOUND api.iran.liara.ir"), /اتصال/);
+  assert.match(s(9, "weird"), /کدِ خروج 9/, "کدِ خروج باید در گزارش بیاید");
+});
+
+test("تشخیص: **هر** حالتِ شکست جلوی انتشار را می‌گیرد", () => {
+  for (const [e, r] of [[124, ""], [2, "403"], [0, ""], [0, "junk"], [0, '{"probe":2}']]) {
+    assert.equal(classifyProbe({ exitCode: e, raw: r }).ok, false, `(${e}, ${r}) نباید عبور کند`);
+  }
+});
+
+test("تشخیص: خروجیِ سالم پذیرفته می‌شود، حتی با نویز دور و برش", () => {
+  const good = '{"probe":1,"node":"v22.11.0","PORT":"3400"}';
+  const r = classifyProbe({ exitCode: 0, raw: `Using proxy server\nnoise\n${good}\nConnection closed` });
+  assert.equal(r.ok, true);
+  assert.equal(r.flagsJson, good);
+});
+
+test("تشخیص: خروجیِ کاوش به evaluateFlags وصل می‌شود و ساختار همان‌جا سنجیده می‌شود", () => {
+  const partial = '{"probe":1,"node":"v22.11.0"}';
+  const r = classifyProbe({ exitCode: 0, raw: partial });
+  assert.equal(r.ok, true, "تشخیص فقط می‌گوید «خواندیم»");
+  assert.equal(evaluateFlags(r.flagsJson).ok, false, "کاملِ نبودنِ کلیدها را evaluateFlags می‌گیرد");
+});
+
+test("تشخیص: گزارش، خروجیِ پاک‌سازی‌شده را همراه دارد تا تشخیص ممکن باشد", () => {
+  const r = classifyProbe({ exitCode: 2, raw: "Error: Response code 403 (Forbidden)" });
+  assert.match(r.detail, /403/, "بدونِ متنِ واقعی، تشخیص دوباره کور می‌شود");
+});
+
+test("workflow: خروجیِ liara به فایل می‌رود و کدِ خروج جدا نگه داشته می‌شود", () => {
+  // نسخهٔ شکسته: OUT=$(… | tr -d '\r') — کدِ خروجِ tr، و OUT هرگز دیده نمی‌شد.
+  assert.ok(!/OUT=\$\(timeout/.test(WF), "خروجی دیگر نباید در یک متغیرِ چاپ‌نشده گم شود");
+  assert.match(WF, /> "\$RAW" 2>&1\n\s*RC=\$\?/, "کدِ خروجِ خودِ دستور باید ثبت شود");
+  assert.match(WF, /relay-gate\.mjs preflight "\$RAW" "\$RC"/);
+});
+
+test("workflow: فرمانِ کاوش از ماژول می‌آید، نه دست‌ساز در YAML", () => {
+  assert.match(WF, /CMD="\$\(node scripts\/deploy\/relay-gate\.mjs probe-cmd\)"/);
+  assert.ok(!/PROBE='const e=process\.env/.test(WF), "رشتهٔ دست‌ساز باید رفته باشد");
+});
+
+test("workflow: پیش‌پرواز هنوز راهِ عبور ندارد", () => {
+  assert.ok(!/flags_checked/.test(WF), "هر ورودیِ «قبولش کن» یعنی دروازه دور زده می‌شود");
+});
+
+// ── درس‌های اجرای واقعیِ 34955555129 ────────────────────────────────────────
+// انتشار موفق شد، ولی دفترداری وسط راه شکست و راستی‌آزمایی را با خودش برد.
+
+test("workflow: راستی‌آزمایی پیش از دفترداری می‌آید", () => {
+  const health = WF.indexOf("زنده‌بودن پس از انتشار");
+  const accept = WF.indexOf("پذیرش — شاهدِ نسخه");
+  const record = WF.indexOf("ثبتِ مبنای انتشار");
+  assert.ok(health > -1 && accept > -1 && record > -1);
+  assert.ok(health < record, "`/healthz` نباید پشتِ دفترداری بیفتد");
+  assert.ok(accept < record, "پذیرش نباید پشتِ دفترداری بیفتد");
+});
+
+test("workflow: شکستِ یک گام، راستی‌آزماییِ چیزی که مستقر شده را پنهان نمی‌کند", () => {
+  for (const step of ["زنده‌بودن پس از انتشار", "پذیرش — شاهدِ نسخه", "ثبتِ مبنای انتشار"]) {
+    const i = WF.indexOf(`- name: ${step}`);
+    const cond = WF.slice(i, i + 420);
+    // `always()` تنها کافی نیست: باید به **نتیجهٔ واقعیِ انتشار** هم گره بخورد،
+    // وگرنه پس از شکستِ پیش‌پرواز (outcome=skipped) سلامتِ یک انتشارِ
+    // انجام‌نشده گزارش می‌شود.
+    assert.match(cond, /if: always\(\) &&[\s\S]{0,60}steps\.publish\.outcome == 'success'/,
+      `«${step}» باید به نتیجهٔ واقعیِ انتشار نگاه کند — شرط: ${cond.slice(0, 120)}`);
+  }
+});
+
+test("workflow: مبنا دیگر با push کردنِ ref ثبت نمی‌شود", () => {
+  // `git push -f origin refs/tags/...` را GitHub رد کرد، چون توکنِ GitHub App
+  // حق ندارد refی بسازد که فایلِ workflow را نسبت به شاخهٔ پیش‌فرض عوض کند.
+  assert.ok(!/git push .*refs\/tags/.test(WF), "push کردنِ تگ برگشته است");
+  assert.ok(!/contents: write/.test(WF), "دیگر به نوشتن در مخزن نیازی نیست");
+  assert.match(WF, /deployments: write/);
+  assert.match(WF, /deployments\?environment=\$\{BASELINE_ENV\}/, "مبنا باید از همان‌جا خوانده شود");
+});
+
+test("workflow: شناسهٔ نسخه از تگِ ایمیج می‌آید، چون CLI شماره نمی‌دهد", () => {
+  // خروجیِ واقعی: «✔ Release created.» بدونِ هیچ شماره‌ای. تنها شناسه:
+  // «Successfully tagged apps/6a5351feb95bf1e50c1ee34f:7mwbs98ytrzw»
+  assert.ok(!/grep -oE '\\\\bv\[0-9\]\+\\\\b'/.test(WF), "الگوی vN چیزی پیدا نمی‌کرد");
+  assert.match(WF, /apps\/\[0-9a-f\]\+:\[0-9a-z\]\+/);
+  const sample = "- Successfully tagged apps/6a5351feb95bf1e50c1ee34f:7mwbs98ytrzw";
+  assert.match(sample, /apps\/[0-9a-f]+:[0-9a-z]+/, "الگو باید روی خروجیِ واقعی بگیرد");
+});
+
+import { readFileSync as _rf } from "node:fs";
+const HEALTH_WF = _rf(new URL("../../.github/workflows/relay-health.yml", import.meta.url), "utf8");
+
+test("سلامت: یک workflowِ جدا هست که چیزی منتشر نمی‌کند", () => {
+  // وگرنه تنها راهِ دیدنِ حالِ نسخهٔ مستقر «یک deploy دیگر» است، و چون
+  // «استقرارِ بدونِ اختلال» خاموش است یعنی هر بررسی یک قطعیِ بی‌دلیل.
+  assert.ok(!/liara.*deploy|deploy --app|--path/.test(HEALTH_WF), "این workflow نباید هیچ مسیرِ انتشاری داشته باشد");
+  assert.ok(!/LIARA_API_TOKEN/.test(HEALTH_WF), "به توکنِ انتشار هم نیازی ندارد");
+  assert.match(HEALTH_WF, /healthz/);
+  assert.match(HEALTH_WF, /workflow_dispatch/);
+  assert.ok(!/workflow_run/.test(HEALTH_WF), "نباید خودکار روی هر CI بیفتد");
+});
+
+test("سلامت: نبودِ RELAY_TOKEN «موفق» نمی‌شود، «در انتظار» می‌شود", () => {
+  assert.match(HEALTH_WF, /status=pending/);
+  assert.ok(!/status=passed[\s\S]{0,80}RELAY_TOKEN:-/.test(HEALTH_WF));
+});
+
+test("مبنا: فقط deploymentهای موفقِ همین محیط انتخاب می‌شوند", () => {
+  // مخزن پر از رکوردِ Preview/Production از vercel[bot] و arsadata از
+  // liara-cloud[bot] است؛ هیچ‌کدام نباید مبنای رله شوند.
+  assert.match(WF, /deployments\?environment=\$\{BASELINE_ENV\}/, "فیلترِ محیط اجباری است");
+  assert.match(WF, /deployments\/\$\{ID\}\/statuses/, "وضعیتِ هر رکورد باید خوانده شود");
+  assert.match(WF, /if \[ "\$STATE" = "success" \]/, "فقط وضعیتِ success مبنا می‌شود");
+});
+
+test("ثبتِ سابقه: مسیرِ record_only هیچ چیزی منتشر نمی‌کند", () => {
+  // ترمیمِ «انتشار گرفت، دفترداری نگرفت» نباید از راهِ انتشارِ تکراری باشد.
+  for (const step of ["وجودِ توکن", "پیش‌پرواز — پرچم‌های واقعیِ اپِ زنده", "انتشار"]) {
+    const i = WF.indexOf(`- name: ${step}`);
+    assert.match(WF.slice(i, i + 200), /inputs\.record_only != true/,
+      `«${step}» باید در حالتِ record_only اجرا نشود`);
+  }
+  const rec = WF.indexOf("- name: ثبتِ مبنای انتشار");
+  assert.match(WF.slice(rec, rec + 260), /inputs\.record_only == true/);
+});
+
+test("ثبتِ سابقه: «منتشرشده» با «سلامتِ تأییدشده» یکی نمی‌شود", () => {
+  const rec = WF.indexOf("- name: ثبتِ مبنای انتشار");
+  assert.match(WF.slice(rec, rec + 1800), /health=جدا/,
+    "وضعیتِ deployment نباید سلامت را ضمنی تأیید کند");
+});
