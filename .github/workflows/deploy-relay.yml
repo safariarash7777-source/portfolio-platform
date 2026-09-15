@@ -156,23 +156,33 @@ jobs:
       # ── پیش‌پرواز ───────────────────────────────────────────────────────────
       # **fail-closed، بدونِ راهِ عبور.** اگر پرچم‌ها خوانده نشوند یا ساختارشان
       # درست نباشد، انتشار انجام نمی‌شود. هیچ پرچمی هم تغییر داده نمی‌شود.
+      # ── پیش‌پرواز ───────────────────────────────────────────────────────────
+      # **fail-closed، بدونِ راهِ عبور.** اگر پرچم‌ها خوانده نشوند یا ساختارشان
+      # درست نباشد، انتشار انجام نمی‌شود. هیچ پرچمی هم تغییر داده نمی‌شود.
+      #
+      # خروجی به **فایل** می‌رود و کدِ خروج جداگانه نگه داشته می‌شود. نسخهٔ قبلی
+      # `OUT=$(… | tr -d '\r')` بود: کدِ خروجِ `tr` را می‌گرفت نه کدِ `liara`، و
+      # `OUT` هیچ‌وقت چاپ نمی‌شد. اجرای `34953490961` به همین دلیل در ۱۲ ثانیه با
+      # «JSON معتبر نیست» افتاد، بدونِ اینکه کسی بفهمد چه شد.
       - name: پیش‌پرواز — پرچم‌های واقعیِ اپِ زنده
         id: preflight
         if: steps.gate.outputs.action == 'publish'
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+          RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
         run: |
-          set -euo pipefail
-          PROBE='const e=process.env;console.log("FLAGS="+JSON.stringify({node:process.version,PORT:e.PORT??null,IR_HISTORY_SECTIONS:e.IR_HISTORY_SECTIONS??null,BRSAPI_CLIENT_ENABLED:e.BRSAPI_CLIENT_ENABLED??null,BRSAPI_BUDGET_ENFORCE_LEGACY:e.BRSAPI_BUDGET_ENFORCE_LEGACY??null,BRSAPI_KEY_SET:Boolean(e.BRSAPI_KEY),SUPABASE_URL_SET:Boolean(e.SUPABASE_URL),SUPABASE_SERVICE_ROLE_KEY_SET:Boolean(e.SUPABASE_SERVICE_ROLE_KEY),RELAY_TOKEN_SET:Boolean(e.RELAY_TOKEN)}))'
-          set +e
-          OUT=$(timeout 150 npx --yes "$LIARA_CLI" shell -a "$APP" --api-token "$LIARA_API_TOKEN" \
-                  -c "node -e '$PROBE'" 2>&1 | tr -d '\r')
-          set -e
-          # فقط مقدارِ بعد از FLAGS= به ارزیاب می‌رود؛ ساختارش آنجا اعتبارسنجی
-          # می‌شود — «پیدا شدنِ FLAGS» به‌تنهایی هیچ تضمینی نیست.
-          printf '%s\n' "$OUT" | sed -n 's/^.*FLAGS=//p' | tail -1 \
-            | node scripts/deploy/relay-gate.mjs flags "{\"phase28Applied\": ${PHASE28_APPLIED}}" \
-            >> "$GITHUB_OUTPUT"
+          set -uo pipefail
+          RAW="$RUNNER_TEMP/preflight.log"
+          # فرمان از همان ماژولِ آزموده‌شده می‌آید و **percent-encoded** است، چون
+          # `@liara/cli@9.5.1` در `lib/commands/app/shell.js:31` فرمان را بدونِ
+          # `encodeURIComponent` داخلِ query string می‌گذارد.
+          CMD="$(node scripts/deploy/relay-gate.mjs probe-cmd)"
+          timeout 150 npx --yes "$LIARA_CLI" shell -a "$APP" \
+            --api-token "$LIARA_API_TOKEN" -c "$CMD" > "$RAW" 2>&1
+          RC=$?
+          echo "::notice::liara shell exit=$RC ($(wc -c < "$RAW") بایت خروجی)"
+          node scripts/deploy/relay-gate.mjs preflight "$RAW" "$RC" \
+            "{\"phase28Applied\": ${PHASE28_APPLIED}}" >> "$GITHUB_OUTPUT"
 
       - name: انتشار
         id: publish
