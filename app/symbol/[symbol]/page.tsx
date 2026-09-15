@@ -64,7 +64,7 @@ function num(x: unknown): number | null {
   return x;
 }
 
-function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
+function Stat({ label, value, color, note }: { label: string; value: string; color?: string; note?: string }) {
   return (
     <div className="card px-4 py-3">
       <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
@@ -72,10 +72,15 @@ function Stat({ label, value, color }: { label: string; value: string; color?: s
       </p>
       <p
         className="mt-1 text-[15px] font-bold"
-        style={{ color: color ?? "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}
+        style={{ color: color ?? "var(--heading)", fontVariantNumeric: "tabular-nums" }}
       >
         {value}
       </p>
+      {/* «کهنه» و «ناموجود» دو حالتِ متفاوت‌اند و هر دو باید دیده شوند — عددِ
+          کهنه بدونِ برچسب، از عددِ تازه قابلِ تشخیص نیست. */}
+      {note ? (
+        <p className="mt-0.5 text-[10.5px] leading-4" style={{ color: "var(--warning-ink)" }}>{note}</p>
+      ) : null}
     </div>
   );
 }
@@ -409,17 +414,29 @@ export default async function SymbolPage({ params }: PageProps) {
                 label="NAV صدور"
                 value={num(quote?.navIssue) != null ? formatToman(quote!.navIssue as number) : "—"}
               />
+              {/* ── حباب: یک عدد، یک موتور ────────────────────────────────
+                  این کارت تا امروز `quote.bubblePercent` را نشان می‌داد — عددی
+                  که **رله** خودش حساب کرده — در حالی که پنلِ تحلیلِ پایینِ همین
+                  صفحه از `liveBubble()` استفاده می‌کرد. دو محاسبهٔ متفاوت روی
+                  یک صفحه، هر دو با برچسبِ «حباب»: یکی ٪−۲٫۹ و دیگری ٪−۲٫۵۰.
+                  حالا هر دو از همان `fundLive` می‌خوانند.
+
+                  رنگ هم عوض شد: `deltaColor` حبابِ منفی را سبز می‌کرد، یعنی
+                  «زیرِ NAV = مطلوب» — قضاوتی که سامانه اجازهٔ بیانش را ندارد. */}
               <Stat
                 label="حباب"
                 value={
-                  num(quote?.bubblePercent) != null
-                    ? formatSignedPercent(quote!.bubblePercent as number)
+                  fundLive.bubblePercent != null
+                    ? formatSignedPercent(fundLive.bubblePercent)
                     : "—"
                 }
-                color={
-                  num(quote?.bubblePercent) != null
-                    ? deltaColor(quote!.bubblePercent as number)
-                    : undefined
+                color={fundLive.bubblePercent != null ? "var(--gold-ink)" : undefined}
+                note={
+                  fundLive.state === "stale"
+                    ? `کهنه — ${fundLive.reason ?? ""}`
+                    : fundLive.state === "unavailable"
+                      ? (fundLive.reason ?? undefined)
+                      : undefined
                 }
               />
               <Stat label="تاریخ NAV" value={quote?.navDate ? toPersianDigits(quote.navDate) : "—"} />
