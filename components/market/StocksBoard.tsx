@@ -87,6 +87,9 @@ const VIEWS: Array<{ key: ViewKey; label: string }> = [
 
 const isViewKey = (v: string): v is ViewKey => VIEWS.some((x) => x.key === v);
 
+/** بیشینهٔ کاشیِ نقشه. متنِ پوششِ زیرِ نقشه همین را می‌نویسد. */
+const MAP_CELL_LIMIT = 30;
+
 export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
   // نما، جست‌وجو و فیلترِ صنعت در URL می‌نشینند تا back/forward و برگشت از
   // صفحهٔ نماد وضعیت را حفظ کنند. مرتب‌سازی عمداً محلی می‌ماند: حالتِ گذرایی
@@ -168,9 +171,10 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
     else { setSortKey(key); setSortDir("desc"); }
   };
 
-  // Heatmap cells (top 30 by market value)
+  // Heatmap cells — سقف از یک ثابتِ نام‌دار می‌آید تا متنِ پوششِ زیرِ نقشه
+  // نتواند از خودِ برش جدا بیفتد.
   const mapCells = useMemo(
-    () => [...filtered].sort((a, b) => (b.marketValue ?? 0) - (a.marketValue ?? 0)).slice(0, 30),
+    () => [...filtered].sort((a, b) => (b.marketValue ?? 0) - (a.marketValue ?? 0)).slice(0, MAP_CELL_LIMIT),
     [filtered]
   );
 
@@ -370,11 +374,13 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
         </div>
       )}
 
-          {/* پوششِ نقشه — «۲۴ نمادِ اول» با «کلِ بازار» یکی نیست، و کاشیِ بدونِ
-              ارزشِ بازار اصلاً کشیده نمی‌شود (مساحتِ ساختگی ممنوع). */}
+          {/* پوششِ نقشه — «۳۰ نمادِ اول» با «کلِ بازار» یکی نیست، و کاشیِ بدونِ
+              ارزشِ بازار اصلاً کشیده نمی‌شود (مساحتِ ساختگی ممنوع).
+              ⚠️ عددِ این متن از `MAP_CELL_LIMIT` می‌آید، نه از حافظه: متنِ
+              دست‌نویس با `slice()` از هم جدا می‌افتد و همین یک بار افتاد. */}
           <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
-            نقشه حداکثر ۲۴ نمادِ بزرگ‌ترِ نتیجهٔ فیلتر را می‌کشد و نمادِ فاقدِ ارزشِ بازار در آن
-            نمی‌آید. برای دیدنِ همهٔ نتایج از نمای «جدول» استفاده کنید.
+            نقشه حداکثر {toPersianDigits(MAP_CELL_LIMIT)} نمادِ بزرگ‌ترِ نتیجهٔ فیلتر را می‌کشد و
+            نمادِ فاقدِ ارزشِ بازار در آن نمی‌آید. برای دیدنِ همهٔ نتایج از نمای «جدول» استفاده کنید.
           </p>
         </>
       ) : view === "industry" ? (
