@@ -410,18 +410,44 @@ test("کاوش: فرمان encode می‌شود، چون CLI خودش نمی‌�
   assert.equal(decodeURIComponent(cmd), `node -e ${PROBE_SOURCE}`, "رفت‌وبرگشت باید دقیق باشد");
 });
 
-test("کاوش: منبع نه `+` دارد نه `&` — همان چیزی که نسخهٔ قبلی را شکست", () => {
+test("کاوش: منبع هیچ فاصله‌ای ندارد — سرور روی فاصله تکه می‌کند", () => {
+  // شاهد: اجرای 34955059014 با exit=0 برگشت و کانتینر گفت
+  //   [eval]:1 / const / SyntaxError: Unexpected end of input
+  // یعنی `node -e const e=process.env;…` به argv تکه شد و اسکریپت فقط `const`
+  // بود. هیچ shellی وسط نیست، پس اسکریپت باید **یک توکنِ بی‌فاصله** باشد.
+  assert.deepEqual(PROBE_SOURCE.match(/\s/g), null, "هر فاصله یک argvِ تازه می‌سازد");
+  assert.ok(!PROBE_SOURCE.includes("const"), "`const` بدونِ فاصله ممکن نیست — حذف شد");
+  assert.match(PROBE_SOURCE, /process\.env\.PORT/, "دسترسی به env باید inline بماند");
+});
+
+test("کاوش: فرمانِ کامل دقیقاً سه توکن می‌شود، همان‌طور که سرور تکه می‌کند", () => {
+  const argv = decodeURIComponent(probeCommand()).split(/\s+/);
+  assert.equal(argv.length, 3, `سرور به ${argv.length} توکن تکه می‌کند: ${argv.slice(0, 4)}`);
+  assert.deepEqual(argv.slice(0, 2), ["node", "-e"]);
+  assert.equal(argv[2], PROBE_SOURCE, "تکهٔ سوم باید کلِ اسکریپت باشد، نه بخشی از آن");
+});
+
+test("کاوش: اسکریپت واقعاً اجرا می‌شود و JSONِ قابلِ تشخیص می‌دهد", () => {
+  const r = spawnSync(process.execPath, ["-e", PROBE_SOURCE], { encoding: "utf8" });
+  assert.equal(r.status, 0, `اسکریپت نباید بیفتد: ${r.stderr}`);
+  const probe = classifyProbe({ exitCode: 0, raw: r.stdout });
+  assert.equal(probe.ok, true, "خروجیِ خودِ اسکریپت باید از تشخیص عبور کند");
+  assert.equal(evaluateFlags(probe.flagsJson).ok, false, "روی این ماشین سکرت‌ها نیستند — پس رد می‌شود");
+  assert.match(JSON.parse(probe.flagsJson).node, /^v\d+\./);
+});
+
+test("کاوش: منبع نه `+` دارد نه `&` — همان چیزی که نسخهٔ اولِ کاوش را شکست", () => {
   // `+` هنگامِ decode فاصله می‌شود و `&` رشته را قطع می‌کند؛ حتی با encode هم
   // نگه‌داشتنِ این قید یعنی اگر روزی کسی بدونِ encode بسازدش، بی‌صدا نمی‌شکند.
   assert.ok(!PROBE_SOURCE.includes("+"), "نسخهٔ شکسته `\"FLAGS=\"+JSON.stringify(...)` بود");
   assert.ok(!PROBE_SOURCE.includes("&"));
   assert.ok(!PROBE_SOURCE.includes('"'));
-  assert.deepEqual(urlHostileChars(), [" "], "فقط فاصلهٔ `const e=` می‌ماند که encode جمعش می‌کند");
+  assert.deepEqual(urlHostileChars(), [], "بعد از حذفِ `const`، هیچ کاراکترِ خصمانه‌ای نماند");
 });
 
 test("کاوش: هیچ نامِ سکرتی مقدارش را چاپ نمی‌کند", () => {
   for (const k of ["BRSAPI_KEY", "SUPABASE_SERVICE_ROLE_KEY", "RELAY_TOKEN", "SUPABASE_URL"]) {
-    assert.match(PROBE_SOURCE, new RegExp(`Boolean\\(e\\.${k}\\)`), `${k} باید بولین شود`);
+    assert.match(PROBE_SOURCE, new RegExp(`Boolean\\(process\\.env\\.${k}\\)`), `${k} باید بولین شود`);
   }
 });
 

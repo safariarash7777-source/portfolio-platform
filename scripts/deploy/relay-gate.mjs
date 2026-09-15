@@ -111,20 +111,31 @@ const short = (s) => String(s ?? "").slice(0, 7);
 /**
  * اسکریپتی که داخلِ کانتینرِ زنده اجرا می‌شود.
  *
- * ⚠️ عمداً **بدونِ `+`، `&`، فاصله و نقل‌قول**. دلیلش در خودِ CLI است:
- * `@liara/cli@9.5.1` در `lib/commands/app/shell.js` فرمان را این‌طور می‌فرستد —
+ * ⚠️ **بدونِ هیچ فاصله‌ای** — و این قید از یک اجرای واقعی آمده، نه از احتیاط.
  *
- *     `${wsURL}/v1/exec?token=${token}&cmd=${flags.command}&project_id=...`
+ * اجرای `34955059014` با `exit=0` برگشت و خروجی‌اش این بود:
  *
- * یعنی **هیچ `encodeURIComponent`ی در کار نیست**. پس `+` هنگامِ decode به فاصله
- * تبدیل می‌شود، `&` رشته را قطع می‌کند و فاصله خودِ URL را خراب می‌کند. نسخهٔ
- * قبلی `console.log("FLAGS="+JSON.stringify(x))` بود و همان یک `+` کافی بود که
- * اسکریپت با SyntaxError بیفتد — مستقل از توکن و دسترسی.
+ *     [eval]:1
+ *     const
+ *     SyntaxError: Unexpected end of input
+ *     Node.js v18.20.8
+ *
+ * یعنی سمتِ سرور فرمان را **روی فاصله تکه می‌کند** و هر تکه یک argv می‌شود؛
+ * هیچ shellی وسط نیست. پس `node -e const e=process.env;…` به
+ * `argv=["node","-e","const", …]` تبدیل شد و اسکریپتِ eval فقط `const` بود.
+ * درمانش این است که خودِ اسکریپت یک توکنِ بی‌فاصله باشد — `const` حذف شد و
+ * `process.env` سرِ جای هر کلید نوشته شد.
+ *
+ * ⚠️ و عمداً بدونِ `+` و `&` و نقل‌قول: `@liara/cli@9.5.1` در
+ * `lib/commands/app/shell.js:31` فرمان را بدونِ `encodeURIComponent` داخلِ
+ * query string می‌گذارد. همان اجرا ثابت کرد سرور percent-decode می‌کند، پس
+ * encodeِ ما درست است — ولی اگر روزی نکند، این قیدها جلوی خرابیِ خاموش را
+ * می‌گیرند.
  *
  * هیچ **مقدارِ** سکرتی چاپ نمی‌شود؛ فقط بود/نبود.
  */
 export const PROBE_SOURCE =
-  "const e=process.env;console.log(JSON.stringify({probe:1,node:process.version,PORT:e.PORT??null,IR_HISTORY_SECTIONS:e.IR_HISTORY_SECTIONS??null,BRSAPI_CLIENT_ENABLED:e.BRSAPI_CLIENT_ENABLED??null,BRSAPI_BUDGET_ENFORCE_LEGACY:e.BRSAPI_BUDGET_ENFORCE_LEGACY??null,BRSAPI_KEY_SET:Boolean(e.BRSAPI_KEY),SUPABASE_URL_SET:Boolean(e.SUPABASE_URL),SUPABASE_SERVICE_ROLE_KEY_SET:Boolean(e.SUPABASE_SERVICE_ROLE_KEY),RELAY_TOKEN_SET:Boolean(e.RELAY_TOKEN)}))";
+  "console.log(JSON.stringify({probe:1,node:process.version,PORT:process.env.PORT??null,IR_HISTORY_SECTIONS:process.env.IR_HISTORY_SECTIONS??null,BRSAPI_CLIENT_ENABLED:process.env.BRSAPI_CLIENT_ENABLED??null,BRSAPI_BUDGET_ENFORCE_LEGACY:process.env.BRSAPI_BUDGET_ENFORCE_LEGACY??null,BRSAPI_KEY_SET:Boolean(process.env.BRSAPI_KEY),SUPABASE_URL_SET:Boolean(process.env.SUPABASE_URL),SUPABASE_SERVICE_ROLE_KEY_SET:Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),RELAY_TOKEN_SET:Boolean(process.env.RELAY_TOKEN)}))";
 
 /**
  * چون CLI خودش encode نمی‌کند، **ما** encode می‌کنیم. `cmd` سمتِ سرور مثلِ هر
