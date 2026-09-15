@@ -165,3 +165,45 @@ export function buildSearchIndex(
   }
   return out;
 }
+
+/* ── مسیرِ بازگشت ────────────────────────────────────────────────────────── */
+
+export interface BackTarget {
+  href: string;
+  label: string;
+}
+
+/**
+ * مقصدهای مجازِ «برگشت». هر ورودیِ `?from=` باید **دقیقاً** یکی از این‌ها باشد.
+ *
+ * ── چرا فهرستِ سفید و نه اعتبارسنجیِ الگو ─────────────────────────────────
+ * `from` از URL می‌آید، یعنی هر کسی می‌تواند لینکی بسازد که کاربر را از صفحهٔ
+ * نماد به جای دیگری ببرد. بررسیِ «با `/` شروع می‌شود» کافی نیست: `//evil.com`
+ * هم با `/` شروع می‌شود و مرورگر آن را **دامنهٔ بیرونی** می‌خواند. با فهرستِ
+ * سفیدِ ثابت، هیچ ورودی‌ای جز همین چند مسیر اثر ندارد.
+ */
+const BACK_TARGETS: ReadonlyArray<BackTarget> = [
+  { href: "/market", label: "میز بازار" },
+  { href: "/market/stocks", label: "تابلوی سهام" },
+  { href: "/market/funds", label: "دیده‌بان صندوق‌ها" },
+  { href: "/market/map", label: "نقشه و صنایع" },
+  { href: "/market/options", label: "اختیار معامله" },
+  { href: "/data", label: "بانک داده" },
+];
+
+/**
+ * مقصدِ برگشت از روی `?from=`.
+ *
+ * ورودیِ ناشناخته، غایب یا مخرب بی‌صدا نادیده گرفته می‌شود و `fallback`
+ * برمی‌گردد — هرگز خطا، و هرگز مقصدِ بیرونی.
+ */
+export function resolveBackTarget(
+  from: string | string[] | undefined,
+  fallback: BackTarget,
+): BackTarget {
+  const raw = Array.isArray(from) ? from[0] : from;
+  if (typeof raw !== "string") return fallback;
+  // فقط بخشِ مسیر مقایسه می‌شود؛ query و hash عمداً دور ریخته می‌شوند.
+  const path = raw.split("?")[0].split("#")[0].trim();
+  return BACK_TARGETS.find((t) => t.href === path) ?? fallback;
+}

@@ -52,7 +52,7 @@ function ObservationCard({ o }: { o: DeskObservation }) {
 
                 <div className="min-w-0">
                   <Link
-                    href={`/symbol/${encodeURIComponent(o.symbol)}`}
+                    href={`/symbol/${encodeURIComponent(o.symbol)}?from=/market`}
                     // ۴۴ پیکسل ارتفاعِ لمسی برای مقصدِ اصلیِ کارت (پیش از این ۲۳ بود).
                     className="inline-flex min-h-11 items-center font-display text-[15px] font-extrabold hover:underline truncate w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
                     style={{ color: "var(--heading)" }}

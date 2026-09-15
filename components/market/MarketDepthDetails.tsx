@@ -48,7 +48,7 @@ function QueueList({
           {items.map((x) => (
             <li key={x.id} className="flex items-center gap-2">
               <Link
-                href={`/symbol/${encodeURIComponent(x.id)}`}
+                href={`/symbol/${encodeURIComponent(x.id)}?from=/market`}
                 className="text-[12.5px] font-medium hover:underline flex-shrink-0"
                 style={{ color: "var(--heading)", width: 76 }}
                 title={x.faName || x.id}
@@ -96,7 +96,7 @@ function TopList({
             return (
               <li key={x.id} className="flex items-center justify-between gap-2 text-[12.5px]">
                 <Link
-                  href={`/symbol/${encodeURIComponent(x.id)}`}
+                  href={`/symbol/${encodeURIComponent(x.id)}?from=/market`}
                   className="font-medium truncate hover:underline"
                   style={{ color: "var(--heading)" }}
                   title={x.faName || x.id}

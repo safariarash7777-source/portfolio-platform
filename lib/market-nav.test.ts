@@ -6,6 +6,7 @@ import {
   searchMarket,
   buildSearchIndex,
   isIndexableSymbol,
+  resolveBackTarget,
   type MarketSearchEntry,
 } from "./market-nav";
 
@@ -109,4 +110,44 @@ test("buildSearchIndex زیرنمادها را می‌اندازد و تکرار
 test("نمایه فقط میدان‌های لازم را حمل می‌کند (بدونِ دادهٔ مصرف‌نشده)", () => {
   const idx = buildSearchIndex([{ id: "وبملت", faName: "بانک ملت" }], []);
   assert.deepEqual(Object.keys(idx[0]).sort(), ["id", "kind", "name"]);
+});
+
+/* ── مسیرِ بازگشت ────────────────────────────────────────────────────────── */
+
+const FALLBACK = { href: "/data", label: "بانک داده" };
+
+test("مقصدِ شناخته‌شده برگردانده می‌شود", () => {
+  assert.deepEqual(resolveBackTarget("/market", FALLBACK), { href: "/market", label: "میز بازار" });
+  assert.deepEqual(resolveBackTarget("/market/funds", FALLBACK).href, "/market/funds");
+});
+
+test("query و hash در مقایسه اثری ندارند", () => {
+  assert.equal(resolveBackTarget("/market/stocks?industry=خودرو&view=map", FALLBACK).href, "/market/stocks");
+  assert.equal(resolveBackTarget("/market#gold-currency", FALLBACK).href, "/market");
+});
+
+test("ورودیِ غایب یا ناشناخته به fallback می‌افتد", () => {
+  assert.deepEqual(resolveBackTarget(undefined, FALLBACK), FALLBACK);
+  assert.deepEqual(resolveBackTarget("", FALLBACK), FALLBACK);
+  assert.deepEqual(resolveBackTarget("/admin", FALLBACK), FALLBACK);
+  assert.deepEqual(resolveBackTarget("/dashboard", FALLBACK), FALLBACK);
+});
+
+test("هیچ مقصدِ بیرونی‌ای عبور نمی‌کند (ضدِ ری‌دایرکتِ باز)", () => {
+  for (const bad of [
+    "//evil.com",
+    "https://evil.com",
+    "http://evil.com/market",
+    "/\\evil.com",
+    "javascript:alert(1)",
+    "/market@evil.com",
+    " //evil.com",
+  ]) {
+    assert.deepEqual(resolveBackTarget(bad, FALLBACK), FALLBACK, `عبور کرد: ${bad}`);
+  }
+});
+
+test("آرایه (پارامترِ تکراری) فقط اولی را می‌خواند و همچنان اعتبارسنجی می‌شود", () => {
+  assert.equal(resolveBackTarget(["/market", "//evil.com"], FALLBACK).href, "/market");
+  assert.deepEqual(resolveBackTarget(["//evil.com", "/market"], FALLBACK), FALLBACK);
 });

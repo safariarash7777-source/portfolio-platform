@@ -492,7 +492,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <td className="py-3 px-4">
                     {/* C1 — UI نمادمحور: فقط نماد؛ نام کامل فقط در هدر صفحهٔ نماد */}
                     <Link
-                      href={`/symbol/${encodeURIComponent(f.id)}`}
+                      href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`}
                       className="font-bold hover:underline"
                       style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${f.id}`}
@@ -541,7 +541,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     {formatRialAsToman(f.marketValue)}
                   </td>
                   <td className="py-3 px-4 text-left">
-                    <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ color: "var(--navy-ink)" }}>
+                    <Link href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ color: "var(--navy-ink)" }}>
                       بررسی <ArrowLeft size={14} aria-hidden="true" />
                     </Link>
                   </td>
@@ -567,7 +567,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                 <div className="min-w-0">
                   {/* C1 — UI نمادمحور: فقط نماد */}
                   <Link
-                    href={`/symbol/${encodeURIComponent(f.id)}`}
+                    href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`}
                     className="font-bold text-sm block truncate hover:underline"
                     style={{ color: "var(--heading)" }}
                   >
@@ -609,7 +609,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <span>۳م: <b style={{ color: f.ret3m != null ? deltaColor(f.ret3m) : "var(--text-3)" }}>{f.ret3m != null ? formatSignedPercent(f.ret3m) : "—"}</b></span>
                 </div>
               )}
-              <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ borderColor: "var(--line)", color: "var(--navy-ink)" }}>
+              <Link href={`/symbol/${encodeURIComponent(f.id)}?from=/market/funds`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ borderColor: "var(--line)", color: "var(--navy-ink)" }}>
                 بررسی جزئیات صندوق <ArrowLeft size={15} aria-hidden="true" />
               </Link>
             </div>

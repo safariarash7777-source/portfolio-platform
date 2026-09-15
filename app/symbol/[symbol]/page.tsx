@@ -20,6 +20,7 @@ import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalRep
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
 import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
 import { getAccess } from "@/lib/access";
+import { resolveBackTarget } from "@/lib/market-nav";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
@@ -48,6 +49,8 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
+  /** `?from=` — مبدأی که کاربر از آن آمده؛ فقط برای مسیرِ بازگشت. */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -85,9 +88,10 @@ function Stat({ label, value, color, note }: { label: string; value: string; col
   );
 }
 
-export default async function SymbolPage({ params }: PageProps) {
+export default async function SymbolPage({ params, searchParams }: PageProps) {
   const { symbol } = await params;
   const sym = decodeURIComponent(symbol);
+  const sp = searchParams ? await searchParams : {};
 
   const [ir, history, fundamentals, fxRates, navHistory, access] = await Promise.all([
     getIrMarket(),
@@ -102,6 +106,13 @@ export default async function SymbolPage({ params }: PageProps) {
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
   const quote = all.find((r) => r.id === sym) ?? null;
   const isFund = (ir?.funds ?? []).some((r) => r.id === sym);
+  // پیش‌فرض به نوعِ ابزار بستگی دارد؛ `?from=`ِ معتبر بر آن مقدم است.
+  const back = resolveBackTarget(
+    sp.from,
+    isFund
+      ? { href: "/market/funds", label: "دیده‌بان صندوق‌ها" }
+      : { href: "/data", label: "بانک داده" },
+  );
 
   const pct = num(quote?.closingChangePercent) ?? num(quote?.changePercent);
   const buyI = num(quote?.buyI);
@@ -313,10 +324,16 @@ export default async function SymbolPage({ params }: PageProps) {
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16 space-y-6">
           <nav className="flex flex-wrap items-center gap-1 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
-            <Link href="/market" className="hover:underline" style={{ color: "var(--navy)" }}>میز بازار</Link>
+            <Link href="/market" className="hover:underline" style={{ color: "var(--navy-ink)" }}>میز بازار</Link>
             <span aria-hidden="true">/</span>
-            <Link href={isFund ? "/market/funds" : "/data"} className="hover:underline" style={{ color: "var(--navy)" }}>
-              {isFund ? "صندوق‌ها" : "بانک داده"}
+            {/* ── مسیرِ بازگشتِ متناسب با مبدأ ────────────────────────────
+                تا امروز ثابت بود: کاربری که از تابلوی سهام با فیلترِ صنعت آمده
+                بود، به «بانکِ داده» فرستاده می‌شد — جایی که اصلاً نبوده. حالا
+                `?from=` که جست‌وجو می‌گذارد خوانده می‌شود، و
+                `resolveBackTarget` آن را با فهرستِ سفید می‌سنجد تا این پارامتر
+                نتواند به مقصدِ بیرونی تبدیل شود. */}
+            <Link href={back.href} className="hover:underline" style={{ color: "var(--navy-ink)" }}>
+              {back.label}
             </Link>
             <span aria-hidden="true">/</span>
             {sym}

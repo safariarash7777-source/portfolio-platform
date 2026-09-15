@@ -123,7 +123,9 @@ export default function MarketTreemap({
   }, [stocks, funds, universe, sizeMode]);
 
   const openSymbol = (name: string) => {
-    router.push(`/symbol/${encodeURIComponent(name)}`);
+    // مبدأ همراه می‌رود تا «برگشت» از صفحهٔ نماد به نقشه اشاره کند، نه به
+    // مقصدِ پیش‌فرض. مقدار در خودِ صفحهٔ نماد با فهرستِ سفید سنجیده می‌شود.
+    router.push(`/symbol/${encodeURIComponent(name)}?from=/market/map`);
   };
 
   const seg = (

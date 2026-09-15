@@ -413,7 +413,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
                 <tr key={s.id} className="hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--line)" }}>
                   <td className="py-3 px-4">
                     <Link
-                      href={`/symbol/${encodeURIComponent(s.id)}`}
+                      href={`/symbol/${encodeURIComponent(s.id)}?from=/market/stocks`}
                       className="font-bold hover:underline"
                       style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${s.id}`}
@@ -468,7 +468,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <Link
-                    href={`/symbol/${encodeURIComponent(s.id)}`}
+                    href={`/symbol/${encodeURIComponent(s.id)}?from=/market/stocks`}
                     className="font-bold text-sm hover:underline"
                     style={{ color: "var(--heading)" }}
                   >
