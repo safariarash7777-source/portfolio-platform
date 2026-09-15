@@ -124,18 +124,33 @@ jobs:
           #
           # پیش از این یک تگ بود و push‌اش رد شد: GitHub اجازه نمی‌دهد توکنِ یک
           # GitHub App، refی بسازد که فایلِ workflow را نسبت به شاخهٔ پیش‌فرض
-          # عوض می‌کند (`refusing to allow a GitHub App to create or update
-          # workflow ... without workflows permission`). آن انتشار موفق شد ولی
-          # دفترداری‌اش نه. رکوردِ deployment دقیقاً برای همین کار است، مجوزِ
-          # باریک‌تری می‌خواهد و در UI هم دیده می‌شود.
+          # عوض می‌کند. آن انتشار موفق شد ولی دفترداری‌اش نه.
+          #
+          # دو فیلتر لازم است و هیچ‌کدام اختیاری نیست:
+          #   ۱. `environment=relay-arsadata` — این مخزن پر از رکوردِ deployment
+          #      است که ربطی به رله ندارند: `Preview`/`Production` از
+          #      `vercel[bot]` و `arsadata` از اتصالِ قدیمیِ `liara-cloud[bot]`.
+          #      هیچ‌کدام نباید مبنای «چه چیزی روی رله مستقر است» شوند.
+          #   ۲. آخرین وضعیتِ همان رکورد باید `success` باشد. خودِ رکورد فقط
+          #      می‌گوید «تلاشی ثبت شد»، نه اینکه گرفت.
           BASELINE=null
           OLDER=false
           RELAY_CHANGED=false
-          B=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
-                "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments?environment=${BASELINE_ENV}&per_page=1" \
+          B=""
+          for PAIR in $(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+                "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments?environment=${BASELINE_ENV}&per_page=10" \
               | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
-                  try{const d=JSON.parse(s);process.stdout.write(Array.isArray(d)&&d[0]?String(d[0].sha):"");}
-                  catch{process.stdout.write("");}});')
+                  try{const d=JSON.parse(s);
+                    if(Array.isArray(d))for(const x of d)process.stdout.write(`${x.id}:${x.sha}\n`);}
+                  catch{}});'); do
+            ID=${PAIR%%:*}; CAND=${PAIR#*:}
+            STATE=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+                      "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments/${ID}/statuses?per_page=1" \
+                    | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+                        try{const d=JSON.parse(s);process.stdout.write(Array.isArray(d)&&d[0]?String(d[0].state):"");}
+                        catch{process.stdout.write("");}});')
+            if [ "$STATE" = "success" ]; then B="$CAND"; break; fi
+          done
           if [ -n "$B" ] && git cat-file -e "${B}^{commit}" 2>/dev/null; then
             BASELINE="\"$B\""
             git merge-base --is-ancestor "$SHA" "$B" && OLDER=true || true
