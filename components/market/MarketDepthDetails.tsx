@@ -50,7 +50,7 @@ function QueueList({
               <Link
                 href={`/symbol/${encodeURIComponent(x.id)}`}
                 className="text-[12.5px] font-medium hover:underline flex-shrink-0"
-                style={{ color: "var(--navy-deep)", width: 76 }}
+                style={{ color: "var(--heading)", width: 76 }}
                 title={x.faName || x.id}
               >
                 {/* C1 — UI نمادمحور: فقط نماد */}
@@ -98,7 +98,7 @@ function TopList({
                 <Link
                   href={`/symbol/${encodeURIComponent(x.id)}`}
                   className="font-medium truncate hover:underline"
-                  style={{ color: "var(--navy-deep)" }}
+                  style={{ color: "var(--heading)" }}
                   title={x.faName || x.id}
                 >
                   {/* C1 — UI نمادمحور: فقط نماد */}
@@ -215,7 +215,7 @@ export default function MarketDepthDetails({
               render={(x: { value: number }) => ({
                 // ورودی ریالِ خامِ اسنپ‌شات است؛ تبدیل به تومان همین‌جا و یک بار.
                 text: formatTomanShort(x.value / 10),
-                color: "var(--navy)",
+                color: "var(--navy-ink)",
               })}
             />
             <TopList

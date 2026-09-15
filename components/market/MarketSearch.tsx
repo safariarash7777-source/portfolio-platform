@@ -161,7 +161,7 @@ export default function MarketSearch({
               inputRef.current?.focus();
             }}
             aria-label="پاک‌کردن جست‌وجو"
-            className="flex flex-shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+            className="flex flex-shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{ width: 36, height: 36, color: "var(--text-3)" }}
           >
             <X size={15} aria-hidden />

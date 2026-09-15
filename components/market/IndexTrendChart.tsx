@@ -78,11 +78,12 @@ export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
             key={s.id}
             type="button"
             onClick={() => setActive(i)}
-            className="rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors"
+            className="inline-flex items-center rounded-full px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={
+              // ۴۴ پیکسل: کمینهٔ هدفِ لمسی (پیش از این ۲۷ پیکسل بود).
               i === active
-                ? { background: "var(--navy)", color: "var(--text-on-navy)" }
-                : { background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
+                ? { minHeight: 44, background: "var(--navy)", color: "var(--text-on-navy)" }
+                : { minHeight: 44, background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
             }
           >
             {s.faName}

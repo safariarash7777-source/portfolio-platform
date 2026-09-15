@@ -180,12 +180,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
       <div className="card p-6 flex items-start gap-3">
         <span
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+          style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
         >
           <BarChart3 size={18} />
         </span>
         <div>
-          <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
+          <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
             نمای بازار سهام
           </h3>
           <p className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
@@ -205,7 +205,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
       <p className="text-xs" style={{ color: "var(--text-3)" }}>
         {toPersianDigits(stocks.length)} نماد در آخرین اسنپ‌شات
         {" · "}
-        <Link href="/data" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
+        <Link href="/data" className="font-bold hover:underline" style={{ color: "var(--navy-ink)" }}>
           تاریخچه و خروجی CSV در بانک داده
         </Link>
       </p>
@@ -225,13 +225,13 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           />
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش بازار</p>
-            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}>
+            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
               {indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
             </p>
           </div>
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش معاملات</p>
-            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}>
+            <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
               {indices.value > 0 ? fmtValue(indices.value) : "—"}
             </p>
           </div>
@@ -303,11 +303,11 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
             role="tab"
             aria-selected={view === v.key}
             onClick={() => setView(v.key)}
-            className="rounded-md px-4 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+            className="rounded-md px-4 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{
               minHeight: 40,
               background: view === v.key ? "var(--surface)" : "transparent",
-              color: view === v.key ? "var(--navy)" : "var(--text-2)",
+              color: view === v.key ? "var(--navy-ink)" : "var(--text-2)",
               boxShadow: view === v.key ? "var(--shadow-sm)" : "none",
             }}
           >
@@ -328,7 +328,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
       {/* Heatmap */}
       {mapCells.length > 0 && mapCells.some((c) => c.marketValue && c.marketValue > 0) && (
         <div className="card p-5">
-          <h3 className="font-display font-bold mb-1" style={{ color: "var(--navy-deep)" }}>
+          <h3 className="font-display font-bold mb-1" style={{ color: "var(--heading)" }}>
             نقشهٔ بازار
           </h3>
           <p className="text-[11px] mb-3" style={{ color: "var(--text-3)" }}>
@@ -409,7 +409,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
                     <Link
                       href={`/symbol/${encodeURIComponent(s.id)}`}
                       className="font-bold hover:underline"
-                      style={{ color: "var(--navy-deep)" }}
+                      style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${s.id}`}
                     >
                       {s.id}
@@ -464,7 +464,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
                   <Link
                     href={`/symbol/${encodeURIComponent(s.id)}`}
                     className="font-bold text-sm hover:underline"
-                    style={{ color: "var(--navy-deep)" }}
+                    style={{ color: "var(--heading)" }}
                   >
                     {s.id}
                   </Link>
@@ -511,7 +511,7 @@ function IndexCard({ label, value, change }: { label: string; value: number; cha
   return (
     <div className="card p-4">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
-      <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}>
+      <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
         {toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬")}
       </p>
       <div className="flex items-center gap-1 mt-1">

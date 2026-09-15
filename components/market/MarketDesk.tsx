@@ -22,7 +22,7 @@ const KIND_META: Record<DeskKind, { label: string; Icon: typeof Clock }> = {
 /** باندِ کیفی — سه رنگ، بدونِ عددِ ترکیبی. */
 const BAND_STYLE: Record<DeskBand, { bg: string; fg: string }> = {
   "قابل‌توجه": { bg: "rgba(185,28,28,0.10)",  fg: "var(--danger)" },
-  "متوسط":     { bg: "rgba(180,83,9,0.10)",   fg: "var(--warning)" },
+  "متوسط":     { bg: "rgba(180,83,9,0.10)",   fg: "var(--warning-ink)" },
   "خفیف":      { bg: "rgba(100,116,139,0.10)", fg: "var(--text-3)" },
 };
 
@@ -53,8 +53,9 @@ function ObservationCard({ o }: { o: DeskObservation }) {
                 <div className="min-w-0">
                   <Link
                     href={`/symbol/${encodeURIComponent(o.symbol)}`}
-                    className="font-display text-[15px] font-extrabold hover:underline truncate block"
-                    style={{ color: "var(--navy-deep)" }}
+                    // ۴۴ پیکسل ارتفاعِ لمسی برای مقصدِ اصلیِ کارت (پیش از این ۲۳ بود).
+                    className="inline-flex min-h-11 items-center font-display text-[15px] font-extrabold hover:underline truncate w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
+                    style={{ color: "var(--heading)" }}
                   >
                     {o.symbol}
                   </Link>
@@ -212,8 +213,8 @@ export default function MarketDesk({
           {hidden.length > 0 ? (
             <details className="mt-2.5">
               <summary
-                className="inline-flex min-h-11 cursor-pointer select-none items-center gap-1.5 rounded-lg px-2 text-[11.5px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
-                style={{ color: "var(--navy)" }}
+                className="inline-flex min-h-11 cursor-pointer select-none items-center gap-1.5 rounded-lg px-2 text-[11.5px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+                style={{ color: "var(--navy-ink)" }}
               >
                 مشاهدهٔ همهٔ {fa(desk.observations.length)} مورد
               </summary>
@@ -230,7 +231,7 @@ export default function MarketDesk({
       {/* پوشش — چرا میز این‌قدر پر یا خالی است. عمداً همیشه دیده می‌شود. */}
       <details className="mt-2.5">
         <summary
-          className="inline-flex min-h-11 cursor-pointer select-none items-center gap-1.5 rounded-lg px-2 text-[11.5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+          className="inline-flex min-h-11 cursor-pointer select-none items-center gap-1.5 rounded-lg px-2 text-[11.5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
           style={{ color: "var(--text-3)" }}
         >
           <Eye size={13} strokeWidth={2} aria-hidden />

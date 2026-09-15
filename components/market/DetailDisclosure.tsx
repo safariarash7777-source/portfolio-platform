@@ -36,7 +36,7 @@ export default function DetailDisclosure({
       style={{ background: "var(--surface)", borderColor: "var(--line)" }}
     >
       <summary
-        className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--navy)]"
+        className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--navy-ink)]"
         style={{ minHeight: 56 }}
       >
         <span className="min-w-0">

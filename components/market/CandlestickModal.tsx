@@ -113,7 +113,7 @@ export default function CandlestickModal({
       <div className="absolute inset-0" style={{ background: "rgba(15,23,42,0.5)" }} onClick={onClose} aria-hidden />
       <div className="card-elevated p-5 w-full max-w-2xl relative" style={{ background: "var(--surface)" }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
+          <h3 className="font-display font-bold text-lg" style={{ color: "var(--heading)" }}>
             نمودار کندل — {faName}
           </h3>
           <button type="button" onClick={onClose} aria-label="بستن" className="btn btn-ghost" style={{ padding: "0.4rem" }}>

@@ -90,7 +90,7 @@ function QCard({
   return (
     <section id={id} className="card p-4 sm:p-5 scroll-mt-24">
       <header className="mb-3">
-        <h3 className="text-[15px] font-bold" style={{ color: "var(--navy)" }}>
+        <h3 className="text-[15px] font-bold" style={{ color: "var(--navy-ink)" }}>
           {question}
         </h3>
         {subtitle ? (
@@ -306,7 +306,7 @@ function MixChart({ m }: { m: MonthlySales }) {
                 </span>
               ) : null}
             </span>
-            <span className="tabular-nums" style={{ color: "var(--navy)" }}>
+            <span className="tabular-nums" style={{ color: "var(--navy-ink)" }}>
               {x.sharePct !== null ? `٪${faDigits(String(x.sharePct)).replace(".", "٫")}` : "—"}
               <span className="mr-2 text-[11px]" style={{ color: "var(--text-3)" }}>
                 {fmtMR(x.amount)}
@@ -321,14 +321,14 @@ function MixChart({ m }: { m: MonthlySales }) {
           style={{ background: "var(--surface-2)", color: "var(--text-2)" }}
         >
           <span>
-            داخلی: <b style={{ color: "var(--navy)" }}>{fmtMR(m.latestDomesticAmount)}</b>
+            داخلی: <b style={{ color: "var(--navy-ink)" }}>{fmtMR(m.latestDomesticAmount)}</b>
           </span>
           <span>
-            صادراتی: <b style={{ color: "var(--navy)" }}>{fmtMR(m.latestExportAmount)}</b>
+            صادراتی: <b style={{ color: "var(--navy-ink)" }}>{fmtMR(m.latestExportAmount)}</b>
           </span>
           {m.latestExportSharePct !== null ? (
             <span>
-              سهم صادرات: <b style={{ color: "var(--navy)" }}>٪{faDigits(String(m.latestExportSharePct)).replace(".", "٫")}</b>
+              سهم صادرات: <b style={{ color: "var(--navy-ink)" }}>٪{faDigits(String(m.latestExportSharePct)).replace(".", "٫")}</b>
             </span>
           ) : null}
         </div>
@@ -383,7 +383,7 @@ export default function MonthlySalesCharts({
     <div className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-[18px] font-extrabold" style={{ color: "var(--navy-deep)" }}>
+          <h2 className="text-[18px] font-extrabold" style={{ color: "var(--heading)" }}>
             شناسنامهٔ بنیادی — فروش ماهانه
           </h2>
           <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>
@@ -391,7 +391,7 @@ export default function MonthlySalesCharts({
             {sourceUrl ? (
               <>
                 {" · "}
-                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--navy)" }}>
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--navy-ink)" }}>
                   {sourceTitle}
                 </a>
               </>

@@ -215,7 +215,7 @@ export default function MarketTreemap({
                         style={{
                           borderColor: "var(--line)",
                           background: "var(--surface)",
-                          color: "var(--navy-deep)",
+                          color: "var(--heading)",
                         }}
                       >
                         <p className="font-bold">{p.name}</p>

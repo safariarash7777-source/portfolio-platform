@@ -237,12 +237,12 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       <div className="card p-6 flex items-start gap-3">
         <span
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+          style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
         >
           <PieChart size={18} />
         </span>
         <div>
-          <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
+          <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
             دیده‌بان صندوق‌ها
           </h3>
           <p className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
@@ -326,7 +326,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       {/* Heatmap */}
       {mapCells.length > 0 && (
         <details className="card group p-5">
-          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]">
             <span>
               <span className="block font-display font-bold" style={{ color: "var(--heading)" }}>نقشهٔ فشردهٔ صندوق‌ها</span>
               <span className="mt-1 block text-[11px]" style={{ color: "var(--text-3)" }}>اندازه: ارزش معاملات · رنگ: بازده روز</span>
@@ -412,7 +412,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setTypeFilter(t)}
-                className="rounded-full border px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+                className="rounded-full border px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
                 style={{
                   minHeight: 40,
                   background: on ? "var(--navy)" : "var(--surface)",
@@ -494,7 +494,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     <Link
                       href={`/symbol/${encodeURIComponent(f.id)}`}
                       className="font-bold hover:underline"
-                      style={{ color: "var(--navy-deep)" }}
+                      style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${f.id}`}
                     >
                       {f.id}
@@ -541,7 +541,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     {formatRialAsToman(f.marketValue)}
                   </td>
                   <td className="py-3 px-4 text-left">
-                    <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]" style={{ color: "var(--navy)" }}>
+                    <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ color: "var(--navy-ink)" }}>
                       بررسی <ArrowLeft size={14} aria-hidden="true" />
                     </Link>
                   </td>
@@ -609,7 +609,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <span>۳م: <b style={{ color: f.ret3m != null ? deltaColor(f.ret3m) : "var(--text-3)" }}>{f.ret3m != null ? formatSignedPercent(f.ret3m) : "—"}</b></span>
                 </div>
               )}
-              <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]" style={{ borderColor: "var(--line)", color: "var(--navy)" }}>
+              <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ borderColor: "var(--line)", color: "var(--navy-ink)" }}>
                 بررسی جزئیات صندوق <ArrowLeft size={15} aria-hidden="true" />
               </Link>
             </div>
@@ -632,8 +632,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           <button
             type="button"
             onClick={() => setRowLimit((n) => n + ROW_PAGE)}
-            className="rounded-lg border px-4 text-xs font-bold transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
-            style={{ minHeight: 44, borderColor: "var(--line-strong)", color: "var(--navy)" }}
+            className="rounded-lg border px-4 text-xs font-bold transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+            style={{ minHeight: 44, borderColor: "var(--line-strong)", color: "var(--navy-ink)" }}
           >
             {`نمایشِ ${toPersianDigits(Math.min(ROW_PAGE, hiddenCount))} صندوقِ بعدی`}
           </button>
@@ -730,7 +730,7 @@ function SortTh({
     >
       <button
         type="button"
-        className="inline-flex min-h-11 items-center gap-1 rounded-md px-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+        className="inline-flex min-h-11 items-center gap-1 rounded-md px-2 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
         style={{ color: active ? "var(--heading)" : "var(--text-3)" }}
         onClick={() => onSort(key)}
       >

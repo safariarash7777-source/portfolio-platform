@@ -66,13 +66,13 @@ export default function MarketSectionLinks({
           <Link
             key={t.href}
             href={t.href}
-            className="group flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+            className="group flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{ background: "var(--surface)", borderColor: "var(--line)", minHeight: 72 }}
           >
             <span
               aria-hidden
               className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-              style={{ background: "var(--surface-2)", color: "var(--navy)" }}
+              style={{ background: "var(--surface-2)", color: "var(--navy-ink)" }}
             >
               <t.Icon size={18} />
             </span>

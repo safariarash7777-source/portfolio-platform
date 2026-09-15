@@ -112,11 +112,11 @@ export default function FeaturedTrend({
               // بازه/نمایی که داده ندارد فعال نمی‌شود — و دلیلش در title می‌آید.
               title={t.enabled ? undefined : "هنوز دادهٔ کافی برای این نما ثبت نشده"}
               onClick={() => setView(t.key)}
-              className="rounded-md px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)] disabled:cursor-not-allowed"
+              className="rounded-md px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] disabled:cursor-not-allowed"
               style={{
-                minHeight: 36,
+                minHeight: 44,
                 background: active === t.key ? "var(--surface)" : "transparent",
-                color: !t.enabled ? "var(--text-3)" : active === t.key ? "var(--navy)" : "var(--text-2)",
+                color: !t.enabled ? "var(--text-3)" : active === t.key ? "var(--navy-ink)" : "var(--text-2)",
                 opacity: t.enabled ? 1 : 0.45,
                 boxShadow: active === t.key ? "var(--shadow-sm)" : "none",
               }}

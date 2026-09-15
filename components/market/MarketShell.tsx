@@ -132,12 +132,12 @@ export default function MarketShell({
                   href={s.href}
                   aria-current={isActive ? "page" : undefined}
                   title={s.hint}
-                  className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-t-lg px-3 text-[13px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+                  className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-t-lg px-3 text-[13px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
                   style={{
                     minHeight: 44,
-                    color: isActive ? "var(--navy)" : "var(--text-2)",
+                    color: isActive ? "var(--navy-ink)" : "var(--text-2)",
                     // حالتِ فعال دو نشانه دارد (رنگ + نوارِ زیرین)، نه فقط رنگ.
-                    boxShadow: isActive ? "inset 0 -2px 0 0 var(--navy)" : "none",
+                    boxShadow: isActive ? "inset 0 -2px 0 0 var(--navy-ink)" : "none",
                   }}
                 >
                   {s.label}
