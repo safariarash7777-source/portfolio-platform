@@ -6,12 +6,19 @@ import {
   buildScenarioBoard,
   buildPortfolioImpact,
   buildRehearsalView,
+  explainIntelligenceFailures,
   type BriefRow,
   type ClaimRow,
   type EffectRow,
   type HistoryRow,
 } from "./board";
 import type { RehearsalDay } from "./workflow";
+
+test("شکست خواندن به خروجی خالی یا صفر تبدیل نمی‌شود", () => {
+  assert.equal(explainIntelligenceFailures([]), null);
+  assert.match(explainIntelligenceFailures(["other"]) ?? "", /خروجی ناقص/);
+  assert.match(explainIntelligenceFailures(["missing_table"]) ?? "", /phase22/);
+});
 
 const brief = (over: Partial<BriefRow> = {}): BriefRow => ({
   id: "b1",
@@ -44,6 +51,7 @@ const claim = (over: Partial<ClaimRow> = {}): ClaimRow => ({
 test("no brief today reports null, not zero claims", () => {
   const v = buildToday("2026-08-02", [], []);
   assert.equal(v.brief, null);
+  assert.deepEqual(v.claims, []);
   assert.equal(v.claimCount, null);
   assert.equal(v.statusLabel, "ثبت‌نشده");
 });
@@ -51,6 +59,7 @@ test("no brief today reports null, not zero claims", () => {
 test("an existing but empty brief reports zero, which is a different fact", () => {
   const v = buildToday("2026-08-02", [brief()], []);
   assert.ok(v.brief);
+  assert.deepEqual(v.claims, []);
   assert.equal(v.claimCount, 0);
 });
 
@@ -69,6 +78,7 @@ test("claims without evidence are counted separately", () => {
   const v = buildToday("2026-08-02", [brief()], [claim(), claim({ id: "c2", evidenceCount: 0 })]);
   assert.equal(v.claimCount, 2);
   assert.equal(v.unsupportedClaims, 1);
+  assert.deepEqual(v.claims.map((item) => item.id), ["c1", "c2"]);
 });
 
 // ── صندوقِ بازبینی ──────────────────────────────────────────────────────────

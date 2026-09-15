@@ -12,7 +12,7 @@ import {
   type AnalysisState, type WorkflowEvent, type IntelHorizon,
 } from "@/lib/intelligence/workflow";
 import type {
-  InboxItem, PortfolioImpactView, RehearsalView, ScenarioCard, TodayView,
+  IntelligenceDeskViewModel,
 } from "@/lib/intelligence/board";
 
 /**
@@ -96,16 +96,7 @@ function Empty({ title, hint }: { title: string; hint: string }) {
   );
 }
 
-export interface IntelligenceDeskProps {
-  today: TodayView;
-  todayJalali: string;
-  inbox: InboxItem[];
-  scenarios: ScenarioCard[];
-  portfolio: PortfolioImpactView;
-  rehearsal: RehearsalView;
-  /** وقتی migration اجرا نشده باشد، شمارش‌ها معتبر نیستند و باید گفته شود. */
-  unavailableReason: string | null;
-}
+export type IntelligenceDeskProps = IntelligenceDeskViewModel;
 
 export default function IntelligenceDesk(props: IntelligenceDeskProps) {
   const [tab, setTab] = useState<Tab>("today");
@@ -156,7 +147,7 @@ export default function IntelligenceDesk(props: IntelligenceDeskProps) {
             role="tab"
             aria-selected={tab === t.key}
             onClick={() => setTab(t.key)}
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-bold transition-colors"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 py-2 text-[12px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2"
             style={
               tab === t.key
                 ? { background: "var(--gold-tint)", color: "var(--gold)" }

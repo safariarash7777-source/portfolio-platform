@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { classifyQueryError } from "@/lib/health/status";
 import type { SourceInput } from "@/lib/desk/contracts";
-import { buildDesk, type DeskGateway, type DeskReader } from "@/lib/desk/service";
+import { buildDesk, type DeskGateway, type DeskReader, type SourceQuery } from "@/lib/desk/service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,10 +49,17 @@ type SessionClient = Awaited<ReturnType<typeof createClient>>;
  */
 function supabaseReader(supabase: SessionClient): DeskReader {
   return {
-    async probe(table: string, timeColumn: string | null): Promise<SourceInput> {
-      const { count, error } = await supabase
-        .from(table)
-        .select("*", { count: "exact", head: true });
+    async probe({ table, timeColumn, filter }: SourceQuery): Promise<SourceInput> {
+      // فیلتر روی **هر دو** پرس‌وجو اعمال می‌شود. اگر فقط روی یکی بیفتد،
+      // شمارشِ کلِ جدول کنارِ زمانِ زیرمجموعه می‌نشیند و ردیف یک ترکیبِ
+      // بی‌معنا را گزارش می‌کند.
+      //
+      // ⚠️ کلاینت عمداً `supabase` است نه `admin`: میز زیرِ RLS می‌خواند و
+      // `prove-guards` هم همین را گارد کرده. افزودنِ فیلتر نباید آن را پس بگیرد.
+      const countQuery = supabase.from(table).select("*", { count: "exact", head: true });
+      const { count, error } = await (filter
+        ? countQuery.eq(filter.column, filter.value)
+        : countQuery);
 
       if (error) {
         const kind = classifyQueryError(error.code, error.message);
@@ -69,12 +76,15 @@ function supabaseReader(supabase: SessionClient): DeskReader {
       const rows = count ?? 0;
       if (rows === 0 || !timeColumn) return { available: true, count: rows };
 
-      const { data, error: timeError } = await supabase
+      const timeQuery = supabase
         .from(table)
         .select(timeColumn)
         .order(timeColumn, { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+      const { data, error: timeError } = await (filter
+        ? timeQuery.eq(filter.column, filter.value)
+        : timeQuery
+      ).maybeSingle();
 
       if (timeError) {
         // جدول هست و ستون نیست → **باگِ خودِ ماست**، نه واقعیتِ محیط. نسخهٔ
