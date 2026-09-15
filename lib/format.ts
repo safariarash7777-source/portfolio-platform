@@ -215,3 +215,25 @@ export function sumCovered<T>(rows: readonly T[], pick: (row: T) => number | nul
   }
   return { total: covered > 0 ? total : null, covered, population: rows.length };
 }
+
+/**
+ * ریال → تومان.
+ *
+ * ── چرا یک تابعِ نام‌دار، نه `/ 10` پراکنده ───────────────────────────────
+ * فیدِ tsetmc ارزشِ معاملات و ارزشِ بازار را به **ریال** می‌دهد و قیمت را به
+ * تومان. هر مصرف‌کننده‌ای که این را نداند عددِ ده‌برابر نشان می‌دهد — و چون
+ * خروجی همچنان «معقول» به نظر می‌رسد، کسی متوجه نمی‌شود.
+ *
+ * شاهد (اسنپ‌شاتِ ۱۴۰۵/۰۶/۲۴): `marketValue` فملی ÷ قیمتِ تومانی ۱٫۴۳×۱۰¹³
+ * سهم می‌دهد، در حالی که تعدادِ سهامِ واقعیِ فملی ۱٫۴۳×۱۰¹² است. یعنی
+ * `marketValue` ریال است، نه تومان.
+ */
+export function rialToToman(rial: number): number {
+  return rial / 10;
+}
+
+/** ارزشِ ریالیِ فید → متنِ تومانیِ خلاصه. نقطهٔ واحدِ تبدیل برای نماها. */
+export function formatRialAsToman(rial: number | null | undefined): string {
+  if (typeof rial !== "number" || !isFinite(rial)) return "—";
+  return formatTomanShort(rialToToman(rial));
+}

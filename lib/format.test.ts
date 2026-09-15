@@ -9,6 +9,8 @@ import {
   formatPercent,
   formatToman,
   formatTomanShort,
+  rialToToman,
+  formatRialAsToman,
 } from "./format";
 
 /* ── واحدِ درصد در برابرِ درصد ────────────────────────────────────────────── */
@@ -103,4 +105,34 @@ test("منفی با «−» فارسی می‌آید، نه خطِ تیرهٔ ا
   assert.ok(!out.includes("-"), "خطِ تیرهٔ اسکی نباید در خروجی باشد");
   // همان علامتی که درصدها استفاده می‌کنند.
   assert.ok(formatPercent(-2).startsWith("−"));
+});
+
+
+/* ── ریال در برابر تومان ─────────────────────────────────────────────────── */
+
+test("ریال به تومان تقسیم بر ۱۰ می‌شود", () => {
+  assert.equal(rialToToman(543_964_925_596_647), 54_396_492_559_664.7);
+  assert.equal(rialToToman(0), 0);
+});
+
+test("ارزشِ ریالیِ فید همیشه با واحدِ «تومان» رندر می‌شود", () => {
+  // ارزشِ معاملاتِ کلِ بازار در اسنپ‌شات ۱۴۰۵/۰۶/۲۴ (ریالِ خام):
+  const out = formatRialAsToman(543_964_925_596_647);
+  assert.ok(out.includes("تومان"), "واحدِ پول باید در متن باشد");
+  assert.ok(out.includes("همت"), "جمعِ سطحِ بازار باید همت شود");
+  // ۵۴۳٬۹۶۴٬۹۲۵٬۵۹۶٬۶۴۷ ریال = ۵۴٫۴ همت تومان — نه «۵۴۳۹۶۴٫۹ میلیارد».
+  assert.equal(out, "۵۴٫۴ همت تومان");
+});
+
+test("عددِ تومانی ده برابرِ عددِ ریالی نیست — باگِ واحد برنمی‌گردد", () => {
+  const rial = 100_000_000_000_000;
+  assert.notEqual(formatRialAsToman(rial), formatTomanShort(rial));
+  assert.equal(formatRialAsToman(rial), formatTomanShort(rial / 10));
+});
+
+test("ارزشِ ناموجود خط‌تیره می‌شود، نه صفرِ تومان", () => {
+  assert.equal(formatRialAsToman(null), "—");
+  assert.equal(formatRialAsToman(undefined), "—");
+  assert.equal(formatRialAsToman(NaN), "—");
+  assert.equal(formatRialAsToman(0), "۰ تومان", "صفرِ واقعی صفر می‌ماند");
 });

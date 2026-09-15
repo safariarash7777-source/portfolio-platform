@@ -9,6 +9,7 @@ import {
   formatToman,
   formatTomanShort,
   formatSignedPercent,
+  formatRialAsToman,
   deltaColor,
   describeDelta,
   formatJalali,
@@ -41,19 +42,19 @@ type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | 
 type SortDir = "asc" | "desc";
 
 /** ارزش معاملات → متن فارسی */
-function fmtValue(v: number): string {
-  const b = v / 1_000_000_000;
-  if (b >= 1) return `${toPersianDigits(b.toFixed(1)).replace(".", "٫")} میلیارد`;
-  const m = v / 1_000_000;
-  return `${toPersianDigits(Math.round(m).toLocaleString("en-US")).replace(/,/g, "٬")} میلیون`;
-}
-
-function fmtMarketCap(v: number): string {
-  const t = v / 1_000_000_000_000;
-  if (t >= 1) return `${toPersianDigits(t.toFixed(1)).replace(".", "٫")} هزار میلیارد`;
-  const b = v / 1_000_000_000;
-  return `${toPersianDigits(Math.round(b).toLocaleString("en-US")).replace(/,/g, "٬")} میلیارد`;
-}
+/**
+ * ارزشِ ریالیِ فید → متنِ تومانی.
+ *
+ * ── باگی که بسته شد ──────────────────────────────────────────────────────
+ * دو تابعِ محلیِ قبلی (`fmtValue` و `fmtMarketCap`) عددِ **ریالِ** خامِ فید را
+ * می‌گرفتند، بر ۱۰⁹ یا ۱۰¹² تقسیم می‌کردند و بدونِ هیچ واحدِ پولی «میلیارد» یا
+ * «هزار میلیارد» می‌نوشتند. نتیجه دو خطا با هم بود: عدد **ده برابر** واقعیت
+ * می‌شد، و کاربر نمی‌دانست ریال است یا تومان — در حالی که ستونِ قیمتِ همان
+ * جدول تومان بود. حالا هر دو از یک نقطهٔ تبدیل می‌گذرند و همیشه «تومان» را
+ * در متن حمل می‌کنند.
+ */
+const fmtValue = formatRialAsToman;
+const fmtMarketCap = formatRialAsToman;
 
 /** پس‌زمینه/متنِ کاشیِ نقشهٔ بازار */
 function tile(change: number | null) {
@@ -198,36 +199,17 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
-          >
-            <BarChart3 size={18} />
-          </span>
-          <div>
-            <h2 className="font-display font-bold text-xl" style={{ color: "var(--heading)" }}>
-              تابلوی بازار سهام
-            </h2>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-              دیده‌بانی تابلو، نقشه و شاخص‌ها · {toPersianDigits(stocks.length)} نماد فعال
-              {indices?.state && ` · ${indices.state}`}
-              {" · "}
-              <Link href="/data" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
-                تاریخچه و خروجی CSV در بانک داده
-              </Link>
-            </p>
-          </div>
-        </div>
-        {fetchedAt && (
-          <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
-            <Clock size={12} />
-            <span>آخرین به‌روزرسانی: {formatJalali(fetchedAt)}</span>
-          </div>
-        )}
-      </div>
+      {/* ── سربرگ ────────────────────────────────────────────────────────────
+          عنوانِ صفحه، تاریخ و وضعیتِ تابلو حالا در پوستهٔ مشترک (`MarketShell`)
+          هستند. تکرارشان اینجا یعنی دو عنوان و دو مهرِ زمانی روی یک صفحه — پس
+          فقط چیزی می‌ماند که پوسته نمی‌گوید: شمارِ نمادها و راهِ بانکِ داده. */}
+      <p className="text-xs" style={{ color: "var(--text-3)" }}>
+        {toPersianDigits(stocks.length)} نماد در آخرین اسنپ‌شات
+        {" · "}
+        <Link href="/data" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
+          تاریخچه و خروجی CSV در بانک داده
+        </Link>
+      </p>
 
       {/* Indices */}
       {indices && (

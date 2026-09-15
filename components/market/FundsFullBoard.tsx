@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useUrlState } from "@/lib/useUrlState";
+import { fundCategory, countByCategory, FUND_CATEGORIES, ALL_CATEGORIES } from "@/lib/core/fundCategory";
 import Term from "@/components/learn/Term";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import {
@@ -12,6 +14,7 @@ import {
   describeDelta,
   formatJalali,
   sumCovered,
+  formatRialAsToman,
 } from "@/lib/format";
 
 export interface FundRow {
@@ -95,24 +98,30 @@ interface Props {
   fetchedAt: number | null;
 }
 
+/** سقفِ ردیفِ جدول پیش از «نمایشِ بیشتر». */
+const ROW_PAGE = 60;
+
 export default function FundsFullBoard({ funds, fetchedAt }: Props) {
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("همه");
+  // دسته و جست‌وجو در URL می‌نشینند تا برگشت از صفحهٔ صندوق وضعیت را نگه دارد.
+  const url = useUrlState();
+  const typeFilter = url.get("type", ALL_CATEGORIES);
+  const search = url.get("q", "");
+  const setTypeFilter = (v: string) => url.set({ type: v === ALL_CATEGORIES ? null : v });
+  const setSearch = (v: string) => url.set({ q: v });
+
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [rowLimit, setRowLimit] = useState(ROW_PAGE);
 
-  // Extract unique types
-  const types = useMemo(() => {
-    const s = new Set<string>();
-    for (const f of funds) if (f.type || f.industry) s.add(f.type || f.industry || "");
-    return ["همه", ...[...s].filter(Boolean).sort()];
-  }, [funds]);
+  // دسته‌های کوتاه با تعدادِ واقعیِ هر کدام — برچسبِ بدونِ عدد نمی‌گوید
+  // «کلیک‌کردن ارزشش را دارد یا نه».
+  const categoryCounts = useMemo(() => countByCategory(funds), [funds]);
 
   // Filter
   const filtered = useMemo(() => {
     let rows = funds;
-    if (typeFilter !== "همه") {
-      rows = rows.filter((f) => (f.type || f.industry) === typeFilter);
+    if (typeFilter !== ALL_CATEGORIES) {
+      rows = rows.filter((f) => fundCategory(f.type ?? f.industry ?? null) === typeFilter);
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
@@ -168,6 +177,17 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     });
     return arr;
   }, [filtered, sortKey, sortDir]);
+
+  /**
+   * سقفِ ردیف.
+   *
+   * جدول تا امروز هر ۳۳۰ صندوق را **دو بار** رندر می‌کرد (جدولِ دسکتاپ و
+   * کارت‌های موبایل، هر دو در DOM) و صفحه به حدودِ ۲۴٬۷۰۰ پیکسل می‌رسید.
+   * حالا تا `rowLimit` ردیف می‌آید و بقیه با یک دکمه. هیچ صندوقی حذف نشده —
+   * شمارِ کل و تعدادِ نمایش‌داده‌شده هر دو زیرِ جدول نوشته می‌شوند.
+   */
+  const visible = useMemo(() => sorted.slice(0, rowLimit), [sorted, rowLimit]);
+  const hiddenCount = Math.max(0, sorted.length - visible.length);
 
   // آیا دست‌کم یک صندوق NAV دارد؟ (ستون‌های NAV/حباب فقط در این حالت)
   const hasNav = useMemo(() => funds.some((f) => f.nav != null), [funds]);
@@ -236,51 +256,13 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 
   return (
     <div className="space-y-6" data-testid="funds-explorer">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
-          >
-            <PieChart size={18} />
-          </span>
-          <div>
-            <h1 className="font-display font-bold text-2xl" style={{ color: "var(--heading)" }}>
-              مقایسهٔ صندوق‌ها
-            </h1>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-              {toPersianDigits(funds.length)} صندوق در آخرین اسنپ‌شات · برای بررسی جزئیات، روی نماد صندوق بزنید
-            </p>
-          </div>
-        </div>
-        {fetchedAt ? (
-          <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
-            <Clock size={12} />
-            <span>آخرین به‌روزرسانی: {formatJalali(fetchedAt)}</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 text-[11px]" role="status" style={{ color: "var(--warning)" }}>
-            <Clock size={12} aria-hidden="true" />
-            <span>زمان اسنپ‌شات ثبت نشده است</span>
-          </div>
-        )}
-      </div>
-
-      <div className="grid gap-3 rounded-xl border p-4 md:grid-cols-3" style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}>
-        <div>
-          <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>۱. گروه را یکسان کنید</p>
-          <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>صندوق‌های ناهم‌نوع را با هم مقایسه نکنید.</p>
-        </div>
-        <div>
-          <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>۲. بازده و حباب را جدا ببینید</p>
-          <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>بازده رفتار قیمت است؛ حباب فاصلهٔ قیمت با NAV ابطال.</p>
-        </div>
-        <div>
-          <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>۳. نقدشوندگی را در جزئیات بسنجید</p>
-          <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>ارزش معاملات یک روز، جای تاریخچهٔ نقدشوندگی را نمی‌گیرد.</p>
-        </div>
-      </div>
+      {/* ── سربرگ ────────────────────────────────────────────────────────────
+          عنوان، تاریخ و وضعیتِ تابلو در پوستهٔ مشترک‌اند؛ اینجا فقط راهنمایی
+          می‌ماند که پوسته نمی‌گوید. (این بلوک تا امروز H1 دومِ صفحه بود.) */}
+      <p className="text-xs" style={{ color: "var(--text-3)" }}>
+        {toPersianDigits(funds.length)} صندوق در آخرین اسنپ‌شات · برای دیدنِ NAV، حباب و تاریخچه روی
+        نمادِ صندوق بزنید.
+      </p>
 
       {/* KPIs */}
       <div className={hasNav ? "grid grid-cols-2 md:grid-cols-5 gap-3" : "grid grid-cols-2 md:grid-cols-4 gap-3"}>
@@ -293,7 +275,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
         />
         <Kpi
           label="ارزش بازار نمادها"
-          value={stats.marketValue.total == null ? "—" : fmtAssetB(Math.round(stats.marketValue.total / 1_000_000_000))}
+          // `marketValue` فید ریال است — تبدیل و برچسبِ واحد در یک نقطه.
+          value={formatRialAsToman(stats.marketValue.total)}
           note={
             stats.marketValue.total == null
               ? "هیچ ردیفی ارزشِ بازار ندارد"
@@ -416,31 +399,36 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             }}
           />
         </label>
-        <label className="relative block">
-          <span className="sr-only">نوع صندوق</span>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="appearance-none rounded-lg border px-4 py-2.5 pe-9 text-sm"
-            style={{
-              background: "var(--surface)",
-              borderColor: "var(--line)",
-              color: "var(--text)",
-            }}
-            aria-label="نوع صندوق"
-          >
-            {types.map((t) => (
-              <option key={t} value={t}>
+        {/* دستهٔ صندوق — برچسبِ کوتاه با تعداد. نامِ رسمیِ کاملِ هر صندوق در
+            ردیفِ خودش می‌ماند؛ اینجا فقط راهِ رسیدن است. دسته‌ای که صندوقی
+            ندارد رندر نمی‌شود تا فیلترِ بی‌نتیجه پیشنهاد نشود. */}
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="دستهٔ صندوق">
+          {[ALL_CATEGORIES, ...FUND_CATEGORIES].map((t) => {
+            const n = t === ALL_CATEGORIES ? funds.length : categoryCounts.get(t as never) ?? 0;
+            if (n === 0) return null;
+            const on = typeFilter === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setTypeFilter(t)}
+                className="rounded-full border px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+                style={{
+                  minHeight: 40,
+                  background: on ? "var(--navy)" : "var(--surface)",
+                  color: on ? "var(--text-on-navy)" : "var(--text-2)",
+                  borderColor: on ? "var(--navy)" : "var(--line)",
+                }}
+              >
                 {t}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={14}
-            className="absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none"
-            style={{ color: "var(--text-3)" }}
-          />
-        </label>
+                <span className="ms-1.5 opacity-70" style={{ fontVariantNumeric: "tabular-nums" }}>
+                  {toPersianDigits(n)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
         <label className="relative block md:hidden">
           <span className="sr-only">مرتب‌سازی صندوق‌ها</span>
           <select
@@ -459,8 +447,13 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           <ChevronDown size={14} className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-3)" }} />
         </label>
         </div>
-        <p className="mt-3 text-[11px]" style={{ color: "var(--text-3)" }}>
-          نمایش {toPersianDigits(sorted.length)} از {toPersianDigits(funds.length)} صندوق
+        {/* «نتیجهٔ فیلتر» و «کلِ بازار» — و نه «نمایش»، چون تعدادِ رندرشده را
+            شمارشِ زیرِ جدول می‌گوید. سه عددِ متفاوت‌اند و قاطی‌کردنشان همان
+            خطایی است که این بسته دنبالِ بستنش است. */}
+        <p className="mt-3 text-[11px]" style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
+          {sorted.length === funds.length
+            ? `همهٔ ${toPersianDigits(funds.length)} صندوقِ اسنپ‌شات`
+            : `${toPersianDigits(sorted.length)} نتیجه از ${toPersianDigits(funds.length)} صندوق`}
         </p>
       </div>
 
@@ -493,7 +486,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sorted.map((f) => {
+            {visible.map((f) => {
               const pct = f.changePercent ?? f.closingChangePercent ?? null;
               return (
                 <tr key={f.id} className="hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--line)" }}>
@@ -546,7 +539,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     {f.value ? fmtValue(f.value) : "—"}
                   </td>
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
-                    {f.marketValue ? fmtAssetB(Math.round(f.marketValue / 1_000_000_000)) : "—"}
+                    {formatRialAsToman(f.marketValue)}
                   </td>
                   <td className="py-3 px-4 text-left">
                     <Link href={`/symbol/${encodeURIComponent(f.id)}`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]" style={{ color: "var(--navy)" }}>
@@ -567,7 +560,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 
       {/* Cards — Mobile */}
       <div className="md:hidden space-y-3">
-        {sorted.map((f) => {
+        {visible.map((f) => {
           const pct = f.changePercent ?? f.closingChangePercent ?? null;
           return (
             <div key={f.id} className="card p-4">
@@ -628,6 +621,24 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             صندوقی با این فیلتر یافت نشد.
           </p>
         )}
+      </div>
+
+      {/* شمارشِ صادق + راهِ دیدنِ بقیه. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[11.5px]" style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
+          {`نمایشِ ${toPersianDigits(visible.length)} از ${toPersianDigits(sorted.length)} نتیجه`}
+          {sorted.length !== funds.length ? ` · کلِ صندوق‌ها: ${toPersianDigits(funds.length)}` : ""}
+        </p>
+        {hiddenCount > 0 ? (
+          <button
+            type="button"
+            onClick={() => setRowLimit((n) => n + ROW_PAGE)}
+            className="rounded-lg border px-4 text-xs font-bold transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
+            style={{ minHeight: 44, borderColor: "var(--line-strong)", color: "var(--navy)" }}
+          >
+            {`نمایشِ ${toPersianDigits(Math.min(ROW_PAGE, hiddenCount))} صندوقِ بعدی`}
+          </button>
+        ) : null}
       </div>
 
       {/* پوشش بازدهٔ دوره‌ای (M6) — صادقانه: فقط نمادهای دارای تاریخچه */}
