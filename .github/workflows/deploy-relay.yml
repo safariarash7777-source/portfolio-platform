@@ -27,6 +27,15 @@ on:
       sha:
         description: "SHA برای انتشار (کامل یا حداقل ۷ رقم)"
         required: true
+      record_only:
+        description: "فقط سابقهٔ یک انتشارِ موفقِ قبلی را ثبت کن — هیچ چیزی منتشر نمی‌شود"
+        type: boolean
+        required: false
+        default: false
+      image:
+        description: "شناسهٔ ایمیجِ همان انتشار (فقط با record_only)"
+        required: false
+        default: ""
       allow_older:
         description: "بازگشت — اجازهٔ انتشارِ کامیتی قدیمی‌تر از نسخهٔ مستقر (CIِ موفق همچنان لازم است)"
         type: boolean
@@ -172,7 +181,7 @@ jobs:
           echo "baseline=${BASELINE//\"/}" >> "$GITHUB_OUTPUT"
 
       - name: وجودِ توکن
-        if: steps.gate.outputs.action == 'publish'
+        if: steps.gate.outputs.action == 'publish' && inputs.record_only != true
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: |
@@ -194,7 +203,7 @@ jobs:
       # «JSON معتبر نیست» افتاد، بدونِ اینکه کسی بفهمد چه شد.
       - name: پیش‌پرواز — پرچم‌های واقعیِ اپِ زنده
         id: preflight
-        if: steps.gate.outputs.action == 'publish'
+        if: steps.gate.outputs.action == 'publish' && inputs.record_only != true
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
           RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
@@ -214,7 +223,7 @@ jobs:
 
       - name: انتشار
         id: publish
-        if: steps.gate.outputs.action == 'publish'
+        if: steps.gate.outputs.action == 'publish' && inputs.record_only != true
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
           SHA: ${{ steps.sha.outputs.sha }}
@@ -295,25 +304,29 @@ jobs:
       # پذیرش هر دو skipped شدند — یعنی چیزی که همین الان روی Production رفته
       # بود اصلاً بررسی نشد. `always()` هم هست چون «چه چیزی مستقر است» به
       # نتیجهٔ پذیرش ربطی ندارد: انتشار انجام شده، حتی اگر پذیرش رد شود.
+      # `record_only` ترمیمِ همان خرابی است که دیدیم: انتشار گرفت، دفترداری
+      # نگرفت. بدونِ این مسیر، تنها راهِ درست‌کردنِ سابقه یک انتشارِ تکراری بود —
+      # یعنی یک قطعیِ بی‌دلیل روی اپی که «استقرارِ بدونِ اختلال» ندارد.
       - name: ثبتِ مبنای انتشار
-        if: always() && steps.publish.outcome == 'success'
+        if: always() && (steps.publish.outcome == 'success' || inputs.record_only == true)
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ steps.sha.outputs.sha }}
           ACCEPTANCE: ${{ steps.accept.outputs.status }}
+          IMAGE: ${{ steps.publish.outputs.release || inputs.image }}
         run: |
           set -euo pipefail
           ID=$(curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
                  -H "Accept: application/vnd.github+json" \
                  "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments" \
-                 -d "{\"ref\":\"${SHA}\",\"environment\":\"${BASELINE_ENV}\",\"auto_merge\":false,\"required_contexts\":[],\"description\":\"relay @ ${SHA}\"}" \
+                 -d "{\"ref\":\"${SHA}\",\"environment\":\"${BASELINE_ENV}\",\"auto_merge\":false,\"required_contexts\":[],\"description\":\"relay @ ${SHA} image=${IMAGE:-نامشخص}\"}" \
                | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
                    const d=JSON.parse(s);if(!d.id)throw new Error(d.message||"no deployment id");
                    process.stdout.write(String(d.id));});')
           curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/deployments/${ID}/statuses" \
-            -d "{\"state\":\"success\",\"description\":\"acceptance=${ACCEPTANCE:-pending}\"}" > /dev/null
+            -d "{\"state\":\"success\",\"description\":\"published; health=جدا، acceptance=${ACCEPTANCE:-pending}\"}" > /dev/null
           echo "::notice::مبنای انتشار ثبت شد — deployment $ID روی ${SHA:0:7}"
 
       - name: گزارش

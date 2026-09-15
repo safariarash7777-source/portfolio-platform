@@ -547,10 +547,13 @@ test("workflow: راستی‌آزمایی پیش از دفترداری می‌آ
 
 test("workflow: شکستِ یک گام، راستی‌آزماییِ چیزی که مستقر شده را پنهان نمی‌کند", () => {
   for (const step of ["زنده‌بودن پس از انتشار", "پذیرش — شاهدِ نسخه", "ثبتِ مبنای انتشار"]) {
-    const i = WF.indexOf(step);
+    const i = WF.indexOf(`- name: ${step}`);
     const cond = WF.slice(i, i + 420);
-    assert.match(cond, /if: always\(\) && steps\.publish\.outcome == 'success'/,
-      `«${step}» باید به نتیجهٔ واقعیِ انتشار نگاه کند، نه به اینکه گامِ قبلی افتاده یا نه`);
+    // `always()` تنها کافی نیست: باید به **نتیجهٔ واقعیِ انتشار** هم گره بخورد،
+    // وگرنه پس از شکستِ پیش‌پرواز (outcome=skipped) سلامتِ یک انتشارِ
+    // انجام‌نشده گزارش می‌شود.
+    assert.match(cond, /if: always\(\) &&[\s\S]{0,60}steps\.publish\.outcome == 'success'/,
+      `«${step}» باید به نتیجهٔ واقعیِ انتشار نگاه کند — شرط: ${cond.slice(0, 120)}`);
   }
 });
 
@@ -596,4 +599,21 @@ test("مبنا: فقط deploymentهای موفقِ همین محیط انتخا�
   assert.match(WF, /deployments\?environment=\$\{BASELINE_ENV\}/, "فیلترِ محیط اجباری است");
   assert.match(WF, /deployments\/\$\{ID\}\/statuses/, "وضعیتِ هر رکورد باید خوانده شود");
   assert.match(WF, /if \[ "\$STATE" = "success" \]/, "فقط وضعیتِ success مبنا می‌شود");
+});
+
+test("ثبتِ سابقه: مسیرِ record_only هیچ چیزی منتشر نمی‌کند", () => {
+  // ترمیمِ «انتشار گرفت، دفترداری نگرفت» نباید از راهِ انتشارِ تکراری باشد.
+  for (const step of ["وجودِ توکن", "پیش‌پرواز — پرچم‌های واقعیِ اپِ زنده", "انتشار"]) {
+    const i = WF.indexOf(`- name: ${step}`);
+    assert.match(WF.slice(i, i + 200), /inputs\.record_only != true/,
+      `«${step}» باید در حالتِ record_only اجرا نشود`);
+  }
+  const rec = WF.indexOf("- name: ثبتِ مبنای انتشار");
+  assert.match(WF.slice(rec, rec + 260), /inputs\.record_only == true/);
+});
+
+test("ثبتِ سابقه: «منتشرشده» با «سلامتِ تأییدشده» یکی نمی‌شود", () => {
+  const rec = WF.indexOf("- name: ثبتِ مبنای انتشار");
+  assert.match(WF.slice(rec, rec + 1800), /health=جدا/,
+    "وضعیتِ deployment نباید سلامت را ضمنی تأیید کند");
 });
