@@ -233,12 +233,21 @@ async function handleAnnouncements(
 
   const { data: anns } = await admin
     .from("announcements")
-    .select("title, body_md, target, published_at")
+    .select("id, title, body_md, target, published_at")
     .not("published_at", "is", null)
     .order("published_at", { ascending: false })
     .limit(50);
 
+  // ⚠️ این خواننده با service-role کار می‌کند و RLS را **دور می‌زند**، پس
+  // سیاستِ `ann_target_read` اینجا هیچ کاری نمی‌کند. بیرون‌بردنِ لغوشده‌ها
+  // باید صریح در کد باشد، وگرنه بات چیزی را نشان می‌دهد که سایت برداشته.
+  const { data: revoked } = await admin
+    .from("announcement_revocations")
+    .select("announcement_id");
+  const revokedIds = new Set((revoked ?? []).map((r) => r.announcement_id));
+
   const matched = (anns ?? [])
+    .filter((a) => !revokedIds.has(a.id))
     .filter((a) => {
       if (a.target === "all") return true;
       if (a.target === `user:${link.user_id}`) return true;
