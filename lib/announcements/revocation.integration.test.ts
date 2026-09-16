@@ -172,10 +172,51 @@ describe("لغوِ انتشارِ اعلان (#139)", () => {
         WHERE n.nspname='public' AND p.proname='is_announcement_revoked'`)), "t");
   });
 
+  // بازبینیِ مستقل این را خواست: «بخوان، اگر نبود بنویس» دو درخواستِ هم‌زمان
+  // را امن نمی‌کند. این آزمون چهار اتصالِ واقعاً موازی می‌سازد روی اعلامیه‌ای
+  // که هنوز لغو نشده.
+  test("چهار لغوِ هم‌زمان: صفر خطا، یک ردیف، یک رویدادِ ممیزی", () => {
+    const second = last(asRole("authenticated", ADMIN,
+      `SELECT public.publish_announcement('اعلانِ هم‌زمانی','متن','user:${QA}')`));
+    assert.match(second, /^[0-9a-f-]{36}$/);
+
+    const before = Number(last(asRole("authenticated", ADMIN,
+      `SELECT count(*) FROM public.audit_log WHERE action='announcement.revoke'`)));
+
+    const runs = [1, 2, 3, 4].map(() =>
+      spawnSync("psql", ["-d", DB, "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1",
+        "-c", wrap("authenticated", ADMIN,
+          `SELECT already_revoked FROM public.revoke_announcement('${second}','هم‌زمان')`)],
+        { env: ENV, encoding: "utf8" })
+    );
+
+    const failed = runs.filter((r) => (r.status ?? -1) !== 0);
+    assert.equal(failed.length, 0,
+      `هیچ درخواستی نباید خطا بگیرد: ${failed[0]?.stderr ?? ""}`);
+
+    assert.equal(last(asRole("authenticated", ADMIN,
+      `SELECT count(*) FROM public.announcement_revocations WHERE announcement_id='${second}'`)),
+      "1", "فقط یک ردیفِ لغو");
+
+    const after = Number(last(asRole("authenticated", ADMIN,
+      `SELECT count(*) FROM public.audit_log WHERE action='announcement.revoke'`)));
+    assert.equal(after - before, 1, "یک لغو باید دقیقاً یک رویدادِ ممیزی بسازد");
+
+    assert.equal(last(asRole("authenticated", QA,
+      `SELECT count(*) FROM public.announcements WHERE id='${second}'`)), "0",
+      "عضو نباید اعلامیهٔ لغوشده را ببیند");
+  });
+
   test("اجرای دوبارهٔ migration بی‌خطر است", () => {
+    // شمارش پیش از اجرا گرفته می‌شود، نه عددِ ثابت — وگرنه هر آزمونِ تازه‌ای
+    // که ردیفِ لغو بسازد این را به‌دلیلِ بی‌ربط قرمز می‌کند.
+    const before = last(asRole("authenticated", ADMIN,
+      "SELECT count(*) FROM public.announcement_revocations"));
     psqlFile(DB, FILES[2]);
     assert.equal(last(asRole("authenticated", ADMIN,
-      "SELECT count(*) FROM public.announcement_revocations")), "1");
-    assert.equal(last(asRole("authenticated", QA, "SELECT count(*) FROM public.announcements")), "0");
+      "SELECT count(*) FROM public.announcement_revocations")), before,
+      "migration نباید ردیفی اضافه یا کم کند");
+    assert.equal(last(asRole("authenticated", QA, "SELECT count(*) FROM public.announcements")), "0",
+      "عضو همچنان نباید اعلامیهٔ لغوشده را ببیند");
   });
 });

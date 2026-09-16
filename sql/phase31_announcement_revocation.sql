@@ -35,7 +35,11 @@ BEGIN;
 -- یک خطا. این همان idempotency است که `#139` می‌خواهد.
 CREATE TABLE IF NOT EXISTS public.announcement_revocations (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  announcement_id uuid NOT NULL UNIQUE REFERENCES public.announcements(id) ON DELETE RESTRICT,
+  -- بندِ یکتایی نامِ صریح دارد چون `revoke_announcement` در `ON CONFLICT` به
+  -- آن ارجاع می‌دهد؛ با نامِ خودکار، ستون با پارامترِ خروجیِ هم‌نامِ تابع
+  -- اشتباه گرفته می‌شود و Postgres «ambiguous» می‌دهد.
+  announcement_id uuid NOT NULL REFERENCES public.announcements(id) ON DELETE RESTRICT
+                       CONSTRAINT announcement_revocations_once UNIQUE,
   revoked_by      uuid NOT NULL REFERENCES auth.users(id),
   revoked_at      timestamptz NOT NULL DEFAULT now(),
   reason          text
@@ -148,20 +152,28 @@ BEGIN
     RAISE EXCEPTION 'اعلامیه پیدا نشد.';
   END IF;
 
-  -- لغوِ دوباره بی‌خطر است و ردیفِ تازه نمی‌سازد.
-  SELECT * INTO v_existing
-    FROM public.announcement_revocations r
-   WHERE r.announcement_id = p_announcement_id;
+  -- ⚠️ «بخوان، اگر نبود بنویس» دو درخواستِ هم‌زمان را امن نمی‌کند: هر دو
+  -- می‌توانند نبودِ ردیف را ببینند و یکی با نقضِ یکتایی بترکد — یعنی مدیر
+  -- خطا می‌گیرد در حالی که لغو واقعاً انجام شده. پس نوشتن **اتمیک** است:
+  -- یک INSERT با `ON CONFLICT DO NOTHING`. برنده ردیف را می‌گیرد، بازنده
+  -- هیچ ردیفی نمی‌گیرد و در گامِ بعد همان ردیفِ موجود را می‌خوانَد.
+  INSERT INTO public.announcement_revocations (announcement_id, revoked_by, reason)
+  VALUES (p_announcement_id, auth.uid(), nullif(btrim(coalesce(p_reason,'')), ''))
+  ON CONFLICT ON CONSTRAINT announcement_revocations_once DO NOTHING
+  RETURNING * INTO v_existing;
 
-  IF FOUND THEN
+  IF NOT FOUND THEN
+    -- یا قبلاً لغو شده بود، یا درخواستِ هم‌زمانِ دیگری برنده شد. هر دو حالت
+    -- یک معنا دارند: لغو انجام شده است. هیچ `audit_log` تازه‌ای ثبت نمی‌شود،
+    -- پس یک لغو دقیقاً یک رویداد دارد نه چند تا.
+    SELECT * INTO v_existing
+      FROM public.announcement_revocations r
+     WHERE r.announcement_id = p_announcement_id;
     RETURN QUERY SELECT v_existing.announcement_id, v_existing.revoked_at, true;
     RETURN;
   END IF;
 
-  INSERT INTO public.announcement_revocations (announcement_id, revoked_by, reason)
-  VALUES (p_announcement_id, auth.uid(), nullif(btrim(coalesce(p_reason,'')), ''))
-  RETURNING * INTO v_existing;
-
+  -- فقط برندهٔ واقعیِ INSERT به اینجا می‌رسد، پس رویدادِ ممیزی یکتاست.
   INSERT INTO public.audit_log (actor_id, action, entity, target_user_id, after)
   VALUES (auth.uid(), 'announcement.revoke', 'announcement', NULL,
           jsonb_build_object('id', p_announcement_id, 'title', v_title,

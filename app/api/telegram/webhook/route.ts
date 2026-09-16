@@ -4,6 +4,7 @@ import { sendMessage } from "@/lib/telegram";
 import { markdownToPlain } from "@/lib/markdown";
 import { toPersianDigits } from "@/lib/format";
 import { detectPlatform, guessKind, firstUrl, PLATFORM_META } from "@/lib/content-hub";
+import { selectVisibleAnnouncements } from "@/lib/announcements/botVisibility";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -239,22 +240,33 @@ async function handleAnnouncements(
     .limit(50);
 
   // ⚠️ این خواننده با service-role کار می‌کند و RLS را **دور می‌زند**، پس
-  // سیاستِ `ann_target_read` اینجا هیچ کاری نمی‌کند. بیرون‌بردنِ لغوشده‌ها
-  // باید صریح در کد باشد، وگرنه بات چیزی را نشان می‌دهد که سایت برداشته.
-  const { data: revoked } = await admin
+  // سیاستِ `ann_target_read` اینجا هیچ کاری نمی‌کند و تنها گیتِ لغوشده‌ها
+  // همان `selectVisibleAnnouncements` است. منطقِ تصمیم عمداً بیرون کشیده شده
+  // تا مستقیم آزمون شود، نه از پشتِ این وبهوک.
+  const { data: revoked, error: revokedError } = await admin
     .from("announcement_revocations")
     .select("announcement_id");
-  const revokedIds = new Set((revoked ?? []).map((r) => r.announcement_id));
 
-  const matched = (anns ?? [])
-    .filter((a) => !revokedIds.has(a.id))
-    .filter((a) => {
-      if (a.target === "all") return true;
-      if (a.target === `user:${link.user_id}`) return true;
-      if (cat && a.target === `risk:${cat}`) return true;
-      return false;
-    })
-    .slice(0, 3);
+  if (revokedError) {
+    console.error("announcement_revocations read failed:", revokedError.message);
+  }
+
+  const visibility = selectVisibleAnnouncements({
+    announcements: anns ?? [],
+    revokedIds: revoked ? revoked.map((r) => r.announcement_id as string) : null,
+    revocationReadFailed: Boolean(revokedError),
+    userId: link.user_id,
+    riskCategory: cat,
+  });
+
+  // خطای خواندنِ لغوها هرگز «هیچ لغوی نیست» معنا نمی‌شود: در آن حالت هیچ
+  // محتوای اعلامیه‌ای ارسال نمی‌شود.
+  if (visibility.kind === "unavailable") {
+    await sendMessage(chatId, visibility.message);
+    return;
+  }
+
+  const matched = visibility.announcements;
 
   if (matched.length === 0) {
     await sendMessage(chatId, "در حال حاضر اعلامیه‌ای برای شما وجود ندارد.");
