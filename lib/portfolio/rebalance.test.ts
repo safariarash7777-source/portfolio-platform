@@ -9,7 +9,7 @@ import {
 import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
 
 const NOW = new Date("2026-09-16T00:00:00Z");
-const opts = { maxPriceAgeDays: 3, now: NOW };
+const opts = { maxPriceAgeDays: 3, maxPriceFutureDays: 1, now: NOW };
 
 const target = (weights: [string, number][], refId: string | null = "ref-1"): TargetVersion => ({
   id: "tgt-1",
@@ -161,6 +161,59 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
       opts
     );
     assert.equal(exceedsThreshold(stale, 1), false, "قیمت کهنه نباید اعلان بسازد");
+  });
+
+  // ── آزمون‌های مرزیِ قیمت (یافتهٔ بازبینیِ مستقل) ──────────────────────────
+  // نسخهٔ اول فقط `Number.isFinite` را می‌سنجید، پس قیمتِ منفی و تاریخِ آینده
+  // هر دو «معتبر» بودند و عددِ قطعیِ بی‌معنا می‌ساختند.
+  const rejected = (p: PricePoint) =>
+    compareHoldingsToTarget(
+      holdings([["ط", "gold", 10]]),
+      target([["gold", 100]]),
+      new Map([["ط", p]]),
+      opts
+    );
+
+  test("قیمت منفی رد می‌شود و عدد قطعی نمی‌سازد", () => {
+    const r = rejected({ toman: -100, source: "رله", asOf: "2026-09-15" });
+    assert.equal(r.definitive, false);
+    assert.equal(r.rows[0].valueDelta, null);
+  });
+
+  test("قیمت صفر رد می‌شود — قرارداد روشن", () => {
+    const r = rejected({ toman: 0, source: "رله", asOf: "2026-09-15" });
+    assert.equal(r.definitive, false);
+    assert.equal(r.totalValue, null);
+  });
+
+  test("تاریخ آینده خارج از تلورانس رد می‌شود", () => {
+    const r = rejected({ toman: 100, source: "رله", asOf: "2100-01-01" });
+    assert.equal(r.definitive, false, "سنِ منفی نباید «تازه» به حساب بیاید");
+    assert.equal(r.gaps[0].reason, "no_price");
+  });
+
+  test("اختلاف ساعتِ کوچک تحمل می‌شود", () => {
+    const soon = new Date(NOW.getTime() + 6 * 3600_000).toISOString();
+    const r = rejected({ toman: 100, source: "رله", asOf: soon });
+    assert.equal(r.definitive, true, "شش ساعت جلوتر نباید کلِ محاسبه را بیندازد");
+  });
+
+  test("قیمت NaN و مقدار نامعتبر رد می‌شوند", () => {
+    assert.equal(rejected({ toman: NaN, source: "رله", asOf: "2026-09-15" }).definitive, false);
+    assert.equal(rejected({ toman: Infinity, source: "رله", asOf: "2026-09-15" }).definitive, false);
+    const bad = compareHoldingsToTarget(
+      { id: "h", version: 1, positions: [{ positionKey: "ط", symbol: "ط", manualLabel: null,
+        assetClass: "gold", qty: Number.NaN, unit: "عدد", costBasis: null, asOf: "2026-09-15" }] },
+      target([["gold", 100]]),
+      new Map([["ط", price(100)]]),
+      opts
+    );
+    assert.equal(bad.definitive, false, "مقدارِ NaN نباید عددِ قطعی بسازد");
+  });
+
+  test("تاریخ بی‌معنا رد می‌شود", () => {
+    const r = rejected({ toman: 100, source: "رله", asOf: "نه‌یک‌تاریخ" });
+    assert.equal(r.definitive, false);
   });
 
   test("آستانه فقط با عبور واقعی فعال می‌شود", () => {

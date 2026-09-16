@@ -33,11 +33,19 @@ CREATE TABLE IF NOT EXISTS public.member_holding_versions (
   user_id      uuid NOT NULL REFERENCES auth.users(id),
   version      integer NOT NULL CHECK (version > 0),
   client_token text,
+  -- اثرِ انگشتِ محتوای نرمال‌شده. بدونِ آن، «همان توکن» به‌تنهایی کافی بود تا
+  -- محتوای **متفاوت** هم موفق اعلام شود — سناریوی واقعی: ذخیره انجام شده،
+  -- پاسخ در شبکه گم شده، کاربر مقدار را اصلاح می‌کند و دوباره می‌زند؛ نسخهٔ
+  -- قدیمی به‌عنوان موفقیت برمی‌گردد و اصلاحش بی‌صدا دور ریخته می‌شود.
+  content_hash text,
   note         text,
   created_at   timestamptz NOT NULL DEFAULT now(),
   UNIQUE (user_id, version),
   UNIQUE (user_id, client_token)
 );
+
+ALTER TABLE public.member_holding_versions
+  ADD COLUMN IF NOT EXISTS content_hash text;
 
 COMMENT ON TABLE public.member_holding_versions IS
   'داراییِ واقعیِ عضو — افزایشی و نسخه‌دار. هدفِ عضو در portfolio_versions است و قاطی نمی‌شود.';
@@ -180,6 +188,7 @@ DECLARE
   v_next     integer;
   v_id       uuid;
   v_count    integer;
+  v_hash     text;
 BEGIN
   IF v_user IS NULL THEN
     RAISE EXCEPTION 'دسترسی غیرمجاز: ثبت دارایی نیاز به ورود دارد.';
@@ -194,11 +203,29 @@ BEGIN
   -- کاربرهای دیگر معطل نمی‌شوند.
   PERFORM pg_advisory_xact_lock(hashtext('member_holdings'), hashtext(v_user::text));
 
-  -- ثبتِ دوباره با همان توکن = همان نسخه، نه نسخهٔ تازه.
+  -- اثرِ انگشتِ محتوا، مستقل از ترتیبِ اقلام و فاصله‌ها.
+  SELECT md5(string_agg(line, '|' ORDER BY line)) INTO v_hash
+    FROM (
+      SELECT btrim(e->>'position_key') || '~' ||
+             coalesce(btrim(e->>'symbol'), '') || '~' ||
+             coalesce(btrim(e->>'manual_label'), '') || '~' ||
+             btrim(e->>'asset_class') || '~' ||
+             (e->>'qty')::numeric::text || '~' ||
+             btrim(e->>'unit') || '~' ||
+             coalesce(nullif(btrim(coalesce(e->>'cost_basis','')), ''), '') || '~' ||
+             (e->>'as_of')::date::text AS line
+        FROM jsonb_array_elements(p_positions) AS e
+    ) AS lines;
+
+  -- ثبتِ دوباره با همان توکن **و همان محتوا** = همان نسخه، نه نسخهٔ تازه.
+  -- همان توکن با محتوای متفاوت = خطای روشن، نه موفقیتِ دروغین.
   IF v_token IS NOT NULL THEN
     SELECT * INTO v_existing FROM public.member_holding_versions
      WHERE user_id = v_user AND client_token = v_token;
     IF FOUND THEN
+      IF v_existing.content_hash IS DISTINCT FROM v_hash THEN
+        RAISE EXCEPTION 'این ثبت قبلاً با محتوای متفاوتی انجام شده است. صفحه را تازه کنید و دوباره ثبت کنید.';
+      END IF;
       SELECT count(*) INTO v_count FROM public.member_holding_positions
        WHERE member_holding_positions.version_id = v_existing.id;
       RETURN QUERY SELECT v_existing.id, v_existing.version, v_count, true;
@@ -209,8 +236,8 @@ BEGIN
   SELECT COALESCE(max(v.version), 0) + 1 INTO v_next
     FROM public.member_holding_versions v WHERE v.user_id = v_user;
 
-  INSERT INTO public.member_holding_versions (user_id, version, client_token, note)
-  VALUES (v_user, v_next, v_token, nullif(btrim(coalesce(p_note, '')), ''))
+  INSERT INTO public.member_holding_versions (user_id, version, client_token, content_hash, note)
+  VALUES (v_user, v_next, v_token, v_hash, nullif(btrim(coalesce(p_note, '')), ''))
   RETURNING id INTO v_id;
 
   INSERT INTO public.member_holding_positions

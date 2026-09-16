@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Save, AlertCircle, CheckCircle2, History, Info } from "lucide-react";
 import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
-import type { AssetClassRow, CoverageGap } from "@/lib/portfolio/contracts";
+import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
 
 interface Row {
   positionKey: string;
@@ -44,6 +44,7 @@ export default function HoldingsWorkbench({
   ready,
   history,
   activeVersion,
+  activePositions,
   rows: comparison,
   gaps,
   definitive,
@@ -53,6 +54,8 @@ export default function HoldingsWorkbench({
   ready: boolean;
   history: readonly HistoryItem[];
   activeVersion: number | null;
+  /** ریزِ اقلامِ نسخهٔ انتخابی — مستقل از قیمت و هدف نمایش داده می‌شود. */
+  activePositions: readonly HoldingPosition[];
   rows: readonly AssetClassRow[];
   gaps: readonly CoverageGap[];
   definitive: boolean;
@@ -60,7 +63,31 @@ export default function HoldingsWorkbench({
   totalValue: number | null;
 }) {
   const router = useRouter();
-  const [rows, setRows] = useState<Row[]>([blank()]);
+
+  const fromPositions = (ps: readonly HoldingPosition[]): Row[] =>
+    ps.length === 0
+      ? [blank()]
+      : ps.map((p) => ({
+          positionKey: p.positionKey,
+          kind: p.symbol ? ("symbol" as const) : ("manual" as const),
+          assetClass: p.assetClass,
+          qty: String(p.qty),
+          unit: p.unit,
+          asOf: p.asOf,
+        }));
+
+  // ⚠️ فرم از ریزِ همان نسخه‌ای پر می‌شود که باز شده. نسخهٔ قبلی فرم همیشه
+  // خالی بود، پس «اصلاح» یعنی تایپِ دوبارهٔ همه‌چیز از صفر — و ریزِ اقلامِ
+  // ذخیره‌شده اصلاً هیچ‌جا دیده نمی‌شد.
+  const [rows, setRows] = useState<Row[]>(() => fromPositions(activePositions));
+  const [seededFrom, setSeededFrom] = useState<number | null>(activeVersion);
+
+  // با تعویضِ نسخه (کلیک روی تاریخچه) فرم دوباره از همان نسخه پر می‌شود.
+  if (seededFrom !== activeVersion) {
+    setSeededFrom(activeVersion);
+    setRows(fromPositions(activePositions));
+  }
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState<string | null>(null);
@@ -113,6 +140,10 @@ export default function HoldingsWorkbench({
           : `نسخهٔ ${toPersianDigits(json.version)} با ${toPersianDigits(json.position_count)} قلم ذخیره شد.`
       );
       setToken(crypto.randomUUID());
+      // ⚠️ فقط `router.refresh()` کافی نیست: اگر کاربر روی `?v=نسخهٔ قدیمی`
+      // بود، پس از ذخیرهٔ موفق همان نسخهٔ قدیمی انتخاب می‌ماند و نسخهٔ تازه‌ای
+      // که همین الان ساخت را نمی‌بیند. پس صریح به نسخهٔ برگشتی می‌رویم.
+      router.push(`?v=${json.version_id}`);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "ثبت دارایی انجام نشد.");
@@ -240,6 +271,53 @@ export default function HoldingsWorkbench({
                 <span style={{ color: "var(--text-3)" }}>{formatJalali(h.createdAt)}</span>
               </a>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ریزِ داراییِ نسخهٔ انتخابی — مستقل از قیمت و هدف */}
+      {activePositions.length > 0 && (
+        <div className="card-elevated p-6">
+          <h3 className="font-display font-bold text-lg mb-1" style={{ color: "var(--navy-deep)" }}>
+            ریز دارایی نسخهٔ {activeVersion === null ? "—" : toPersianDigits(activeVersion)}
+          </h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-3)" }}>
+            این فهرست بدون نیاز به قیمت یا سبد هدف نمایش داده می‌شود؛ فرم بالا هم از همین
+            اقلام پر شده تا بتوانید نسخهٔ اصلاحی بسازید.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ color: "var(--text-2)" }}>
+                  <th className="text-right py-2 font-bold">قلم</th>
+                  <th className="text-right py-2 font-bold">نوع</th>
+                  <th className="text-right py-2 font-bold">دسته</th>
+                  <th className="text-right py-2 font-bold">مقدار</th>
+                  <th className="text-right py-2 font-bold">تاریخ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activePositions.map((p) => (
+                  <tr key={p.positionKey} style={{ borderTop: "1px solid var(--line)" }}>
+                    <td className="py-2" style={{ color: "var(--navy-deep)" }}>
+                      {p.symbol ?? p.manualLabel ?? p.positionKey}
+                    </td>
+                    <td className="py-2" style={{ color: "var(--text-3)" }}>
+                      {p.symbol ? "نماد" : "دستی"}
+                    </td>
+                    <td className="py-2" style={{ color: "var(--text-2)" }}>
+                      {ASSET_LABEL[p.assetClass] ?? p.assetClass}
+                    </td>
+                    <td className="py-2" style={{ color: "var(--text-2)" }}>
+                      {toPersianDigits(p.qty)} {p.unit}
+                    </td>
+                    <td className="py-2" style={{ color: "var(--text-3)" }}>
+                      {formatJalali(p.asOf)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

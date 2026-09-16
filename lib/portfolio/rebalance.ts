@@ -23,12 +23,18 @@ import type {
 export interface RebalanceOptions {
   /** قیمت از چند روز کهنه‌تر، دیگر مبنای عددِ قطعی نیست. */
   maxPriceAgeDays: number;
+  /**
+   * چقدر «جلوتر از حالا» بودنِ مهرِ قیمت تحمل می‌شود. صفر نیست، چون اختلافِ
+   * ساعتِ سرورها واقعی است؛ ولی بی‌نهایت هم نیست.
+   */
+  maxPriceFutureDays: number;
   /** زمانِ مرجعِ محاسبه. صریح گرفته می‌شود تا تست قطعی بماند. */
   now: Date;
 }
 
 export const DEFAULT_REBALANCE_OPTIONS: RebalanceOptions = {
   maxPriceAgeDays: 3,
+  maxPriceFutureDays: 1,
   now: new Date(0),
 };
 
@@ -68,11 +74,30 @@ function priceAgeDays(price: PricePoint, now: Date): number {
   return (now.getTime() - new Date(price.asOf).getTime()) / DAY_MS;
 }
 
-function isUsable(price: PricePoint | undefined): price is PricePoint {
+/**
+ * قیمت «قابلِ استفاده» یعنی چه — سخت‌گیرانه، چون خروجیِ این تابع تعیین
+ * می‌کند که عددِ قطعیِ ریبالانس تولید بشود یا نه.
+ *
+ * ⚠️ نسخهٔ اول فقط `Number.isFinite` را می‌سنجید. یعنی **قیمتِ منفی** و
+ * **تاریخِ آینده** هر دو قبول می‌شدند: سنِ منفی هرگز از `maxPriceAgeDays`
+ * بیشتر نمی‌شود، پس مهرِ سالِ ۲۱۰۰ «تازه» به حساب می‌آمد و یک عددِ قطعیِ
+ * کاملاً بی‌معنا می‌ساخت. هر دو حالا رد می‌شوند.
+ *
+ * قرارداد صفر: قیمتِ صفر رد می‌شود. «ارزشِ صفر» و «قیمتِ نامعلوم» در عمل
+ * قابلِ تفکیک نیستند و صفرِ اشتباه، وزنِ بقیه را متورم می‌کند. اگر قلمی
+ * واقعاً بی‌ارزش است، جایش در سبد نیست.
+ */
+function isUsable(price: PricePoint | undefined, options: RebalanceOptions): price is PricePoint {
   if (!price) return false;
-  if (!Number.isFinite(price.toman)) return false;
-  if (price.source.trim() === "") return false;
-  if (Number.isNaN(new Date(price.asOf).getTime())) return false;
+  if (typeof price.toman !== "number" || !Number.isFinite(price.toman)) return false;
+  if (price.toman <= 0) return false;
+  if (typeof price.source !== "string" || price.source.trim() === "") return false;
+
+  const t = new Date(price.asOf).getTime();
+  if (Number.isNaN(t)) return false;
+
+  const ageDays = (options.now.getTime() - t) / DAY_MS;
+  if (ageDays < -options.maxPriceFutureDays) return false;
   return true;
 }
 
@@ -98,7 +123,7 @@ export function compareHoldingsToTarget(
 
   for (const pos of holdings.positions) {
     const price = prices.get(pos.positionKey);
-    if (!isUsable(price)) {
+    if (!isUsable(price, options)) {
       gaps.push({
         positionKey: pos.positionKey,
         reason: "no_price",
@@ -115,7 +140,17 @@ export function compareHoldingsToTarget(
       });
       continue;
     }
+    // مقدار هم باید معتبر باشد؛ `qty` از دیتابیس می‌آید ولی حاصل‌ضرب می‌تواند
+    // سرریز کند یا `NaN` شود و عددِ قطعیِ بی‌معنا بسازد.
     const value = pos.qty * price.toman;
+    if (!Number.isFinite(value) || value <= 0) {
+      gaps.push({
+        positionKey: pos.positionKey,
+        reason: "no_price",
+        detail: "حاصل‌ضربِ مقدار در قیمت معتبر نیست.",
+      });
+      continue;
+    }
     valueByClass.set(pos.assetClass, (valueByClass.get(pos.assetClass) ?? 0) + value);
     covered += value;
   }

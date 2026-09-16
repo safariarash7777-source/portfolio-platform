@@ -114,11 +114,22 @@ export async function POST(req: NextRequest) {
   // خطای دیتابیس هرگز «موفق» گزارش نمی‌شود.
   if (error) {
     console.error("record_member_holdings error:", error.message);
-    const forbidden = /دسترسی غیرمجاز/.test(error.message);
-    return NextResponse.json(
-      { error: forbidden ? "دسترسی غیرمجاز." : "ثبت دارایی انجام نشد." },
-      { status: forbidden ? 403 : 500 },
-    );
+    if (/دسترسی غیرمجاز/.test(error.message)) {
+      return NextResponse.json({ error: "دسترسی غیرمجاز." }, { status: 403 });
+    }
+    // ⚠️ «همان توکن با محتوای متفاوت» یک تعارضِ واقعی است، نه خرابیِ سرور.
+    // کاربر باید بفهمد ثبتِ قبلی‌اش انجام شده و این تلاش با محتوای عوض‌شده
+    // نادیده گرفته نشده — وگرنه فکر می‌کند اصلاحش ذخیره شده است.
+    if (/محتوای متفاوت/.test(error.message)) {
+      return NextResponse.json(
+        {
+          error:
+            "این ثبت قبلاً با محتوای متفاوتی انجام شده است. صفحه را تازه کنید تا آخرین نسخه را ببینید، بعد اصلاح کنید.",
+        },
+        { status: 409 },
+      );
+    }
+    return NextResponse.json({ error: "ثبت دارایی انجام نشد." }, { status: 500 });
   }
 
   const row = Array.isArray(data) ? data[0] : data;

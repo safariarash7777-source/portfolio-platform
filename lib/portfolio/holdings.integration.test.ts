@@ -164,6 +164,37 @@ describe("ثبت نسخه‌دار دارایی عضو (#140)", () => {
       "شماره‌های نسخه باید یکتا بمانند");
   });
 
+  // ⚠️ یافتهٔ بازبینیِ مستقل: سناریوی «پاسخ گم شد».
+  // ذخیره واقعاً انجام شده، پاسخ در شبکه گم شده، کاربر مقدار را **اصلاح**
+  // می‌کند و دوباره می‌زند. بدونِ مقایسهٔ محتوا، نسخهٔ قدیمی به‌عنوان موفقیت
+  // برمی‌گشت و اصلاحِ تازه بی‌صدا دور ریخته می‌شد.
+  test("همان توکن با محتوای متفاوت ⇒ خطای روشن، نه موفقیتِ دروغین", () => {
+    assert.equal(last(asRole("authenticated", B, record(POS("نقره", 5), "tok-b1"))), "1|f");
+    const err = asRoleError("authenticated", B, record(POS("نقره", 9), "tok-b1"));
+    assert.match(err, /محتوای متفاوت/);
+    assert.equal(last(asRole("authenticated", B,
+      `SELECT qty FROM public.member_holding_positions p
+        JOIN public.member_holding_versions v ON v.id = p.version_id
+       WHERE v.user_id='${B}' AND p.position_key='نقره'`)), "5",
+      "مقدار قبلی نباید عوض شده باشد");
+  });
+
+  test("همان توکن با همان محتوا ⇒ همان نتیجه، بدون نسخهٔ تازه", () => {
+    const before = last(asRole("authenticated", B,
+      `SELECT count(*) FROM public.member_holding_versions`));
+    assert.equal(last(asRole("authenticated", B, record(POS("نقره", 5), "tok-b1"))), "1|t");
+    assert.equal(last(asRole("authenticated", B,
+      `SELECT count(*) FROM public.member_holding_versions`)), before);
+  });
+
+  test("ترتیب اقلام اثر انگشت را عوض نمی‌کند", () => {
+    const two = `${POS("الف", 1)},${POS("ب", 2)}`;
+    const swapped = `${POS("ب", 2)},${POS("الف", 1)}`;
+    assert.match(last(asRole("authenticated", B, record(two, "tok-b2"))), /\|f$/);
+    assert.match(last(asRole("authenticated", B, record(swapped, "tok-b2"))), /\|t$/,
+      "همان اقلام با ترتیب دیگر باید همان ثبت شمرده شود");
+  });
+
   test("سبد مرجع: وزن‌هایی که ۱۰۰ نمی‌شوند نهایی نمی‌شوند", () => {
     psql(DB, `INSERT INTO public.intel_reference_portfolios(id, name, created_by)
               VALUES ('44444444-4444-4444-4444-444444444444','مرجع آزمایشی','${ADMIN}')`);
@@ -199,6 +230,72 @@ describe("ثبت نسخه‌دار دارایی عضو (#140)", () => {
       "55555555-5555-5555-5555-555555555555", "هدف قبلی عضو نباید بی‌اطلاع عوض شده باشد");
     assert.ok(Number(last(asRole("authenticated", A,
       `SELECT count(*) FROM public.member_holding_versions`))) > 0, "دارایی واقعی هم دست‌نخورده است");
+  });
+
+  // ⚠️ یافتهٔ بازبینیِ مستقل: سیاستِ `mhv_self_read` عمداً `is_admin()` را هم
+  // مجاز می‌کند، پس RLS به‌تنهایی صفحهٔ «داراییِ من» را ایزوله نمی‌کند — در
+  // نشستِ مدیر نسخه‌های همهٔ اعضا قاطی می‌شد. این آزمون همان واقعیتِ
+  // دیتابیس را تثبیت می‌کند تا روشن باشد چرا فیلترِ `user_id` در کد لازم است.
+  test("مدیر بدون فیلترِ user_id نسخه‌های همهٔ اعضا را می‌بیند", () => {
+    const adminSees = Number(last(asRole("authenticated", ADMIN,
+      `SELECT count(*) FROM public.member_holding_versions`)));
+    const aSees = Number(last(asRole("authenticated", A,
+      `SELECT count(*) FROM public.member_holding_versions`)));
+    const bSees = Number(last(asRole("authenticated", B,
+      `SELECT count(*) FROM public.member_holding_versions`)));
+    assert.ok(aSees > 0 && bSees > 0, "هر دو عضو باید نسخه داشته باشند");
+    assert.equal(adminSees, aSees + bSees,
+      "RLS جلوی مدیر را نمی‌گیرد؛ پس فیلترِ user_id باید در کد باشد");
+    // و با فیلترِ صریح — همان کاری که `service.ts` می‌کند — ایزوله می‌شود.
+    assert.equal(last(asRole("authenticated", ADMIN,
+      `SELECT count(*) FROM public.member_holding_versions WHERE user_id='${ADMIN}'`)), "0");
+  });
+
+  // ── مسیرِ واقعیِ کاربر، سرتاسر ───────────────────────────────────────────
+  // ثبت ← ذخیره ← بازکردنِ دوباره ← اصلاح ← ذخیرهٔ نسخهٔ تازه ← دیدنِ نسخهٔ
+  // تازه ← برگشت به نسخهٔ قبلی و اثباتِ دست‌نخوردگی‌اش. همان کاری که صفحه
+  // می‌کند، ولی روی دیتابیسِ واقعی.
+  test("مسیر کامل: ثبت، بازکردن، اصلاح، نسخهٔ تازه، برگشت به قبلی", () => {
+    const C = "77777777-7777-7777-7777-777777777777";
+    psql(DB, `INSERT INTO auth.users(id) VALUES ('${C}')`);
+    psql(DB, `INSERT INTO public.profiles(id, role) VALUES ('${C}','user')`);
+
+    // ۱) ثبتِ اولیه
+    assert.equal(last(asRole("authenticated", C,
+      record(`${POS("سکه", 10)},${POS("شمش", 2)}`, "j-1"))), "1|f");
+
+    // ۲) بازکردنِ دوباره — ریزِ اقلام باید همان باشد که ذخیره شد
+    const v1 = last(asRole("authenticated", C,
+      `SELECT string_agg(p.position_key || ':' || p.qty, ',' ORDER BY p.position_key)
+         FROM public.member_holding_positions p
+         JOIN public.member_holding_versions v ON v.id = p.version_id
+        WHERE v.user_id='${C}' AND v.version = 1`));
+    assert.equal(v1, "سکه:10,شمش:2");
+
+    // ۳) اصلاح و ذخیرهٔ نسخهٔ تازه
+    assert.equal(last(asRole("authenticated", C,
+      record(`${POS("سکه", 14)},${POS("شمش", 2)}`, "j-2"))), "2|f");
+
+    // ۴) نسخهٔ تازه همان چیزی است که ذخیره شد
+    const v2 = last(asRole("authenticated", C,
+      `SELECT string_agg(p.position_key || ':' || p.qty, ',' ORDER BY p.position_key)
+         FROM public.member_holding_positions p
+         JOIN public.member_holding_versions v ON v.id = p.version_id
+        WHERE v.user_id='${C}' AND v.version = 2`));
+    assert.equal(v2, "سکه:14,شمش:2");
+
+    // ۵) نسخهٔ قبلی دست‌نخورده مانده — «اصلاح» تاریخچه را بازنویسی نکرد
+    const v1again = last(asRole("authenticated", C,
+      `SELECT string_agg(p.position_key || ':' || p.qty, ',' ORDER BY p.position_key)
+         FROM public.member_holding_positions p
+         JOIN public.member_holding_versions v ON v.id = p.version_id
+        WHERE v.user_id='${C}' AND v.version = 1`));
+    assert.equal(v1again, "سکه:10,شمش:2", "بازکردنِ نسخهٔ ۱ باید همان دادهٔ اول را بدهد");
+
+    // ۶) و «آخرین نسخه» همان است که صفحه پیش‌فرض باز می‌کند
+    assert.equal(last(asRole("authenticated", C,
+      `SELECT version FROM public.member_holding_versions
+        WHERE user_id='${C}' ORDER BY version DESC LIMIT 1`)), "2");
   });
 
   test("اجرای دوبارهٔ هر دو migration بی‌خطر است", () => {

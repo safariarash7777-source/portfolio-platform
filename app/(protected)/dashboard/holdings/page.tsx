@@ -25,6 +25,7 @@ export default async function HoldingsPage({
     try {
       const result = compareHoldingsToTarget(snapshot.holdings, snapshot.target, prices, {
         maxPriceAgeDays: 3,
+        maxPriceFutureDays: 1,
         now: new Date(),
       });
       rows = result.rows;
@@ -64,6 +65,7 @@ export default async function HoldingsPage({
         ready={snapshot.ready}
         history={snapshot.history}
         activeVersion={snapshot.holdings?.version ?? null}
+        activePositions={snapshot.holdings?.positions ?? []}
         rows={rows}
         gaps={gaps}
         definitive={definitive}

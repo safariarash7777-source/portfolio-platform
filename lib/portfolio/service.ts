@@ -3,12 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
 
 /**
- * خواندنِ آخرین نسخهٔ دارایی و هدفِ عضو — با کلاینتِ نشست، پس RLS خودش
- * تفکیکِ کاربرها را انجام می‌دهد و این فایل لازم نیست `user_id` را دستی
- * فیلتر کند. با service-role این خاصیت از بین می‌رفت.
+ * خواندنِ داراییِ **خودِ کاربرِ نشست** و هدفِ او.
  *
- * وقتی migration اجرا نشده باشد، این توابع `null` می‌دهند و صفحه می‌گوید
- * قابلیت روی این محیط فعال نیست — به‌جای افتادن.
+ * ⚠️ تکیه به RLS اینجا کافی **نیست** و این یک درسِ بازبینیِ مستقل است.
+ * سیاستِ `mhv_self_read` عمداً `is_admin()` را هم مجاز می‌کند تا مدیر بتواند
+ * پشتیبانی کند. نتیجه‌اش این بود که در نشستِ مدیر، همین صفحه نسخه‌های
+ * **همهٔ اعضا** را با هم قاطی می‌کرد و `history[0]` بزرگ‌ترین شمارهٔ نسخه
+ * بینِ همه بود، نه داراییِ خودِ مدیر. هدف هم می‌توانست مالِ عضوِ دیگری شود.
+ *
+ * پس هویتِ نشست گرفته می‌شود و هر دو پرس‌وجو صریح به همان `user_id` محدود
+ * می‌شوند. RLS لایهٔ دوم می‌ماند، نه تنها لایه. دسترسیِ مدیریتی به سبدِ
+ * اعضا اگر لازم شد، مسیرِ صریحِ جداگانه می‌خواهد، نه همین صفحه.
+ *
+ * وقتی migration اجرا نشده باشد، این توابع `ready: false` می‌دهند و صفحه
+ * می‌گوید قابلیت روی این محیط فعال نیست — به‌جای افتادن.
  */
 
 export interface PortfolioSnapshot {
@@ -23,9 +31,15 @@ export interface PortfolioSnapshot {
 export async function loadPortfolioSnapshot(versionId?: string): Promise<PortfolioSnapshot> {
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { holdings: null, target: null, ready: true, history: [] };
+  }
+
   const listRes = await supabase
     .from("member_holding_versions")
     .select("id, version, note, created_at")
+    .eq("user_id", user.id)
     .order("version", { ascending: false });
 
   if (listRes.error) {
@@ -70,6 +84,7 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
   const tgtRes = await supabase
     .from("portfolio_versions")
     .select("id, version, allocations, reference_version_id")
+    .eq("user_id", user.id)
     .order("version", { ascending: false })
     .limit(1)
     .maybeSingle();
