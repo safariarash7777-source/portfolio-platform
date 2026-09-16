@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
+import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
+import { signInAndReturn } from "@/components/account/loginFlow";
 
 function supabaseError(msg: string): string {
   if (msg.includes("Invalid login credentials")) return "ایمیل یا رمز عبور اشتباه است";
@@ -15,7 +17,25 @@ function supabaseError(msg: string): string {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<AuthPageFallback label="در حال آماده‌سازی ورود..." />}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function AuthPageFallback({ label }: { label: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-5" style={{ background: "var(--bg)", color: "var(--text-3)" }}>
+      <p className="text-sm" role="status">{label}</p>
+    </div>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = normalizeReturnPath(searchParams.get("next"), "/dashboard");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -40,10 +60,16 @@ export default function LoginPage() {
     setServerError("");
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const error = await signInAndReturn(
+        {
+          signIn: (credentials) => supabase.auth.signInWithPassword(credentials),
+          navigate: (destination) => router.push(destination),
+          refresh: () => router.refresh(),
+        },
+        { email, password },
+        returnTo,
+      );
       if (error) { setServerError(supabaseError(error.message)); return; }
-      router.push("/dashboard");
-      router.refresh();
     } catch {
       setServerError("خطا در اتصال. لطفاً دوباره تلاش کنید");
     } finally {
@@ -114,9 +140,8 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass((s) => !s)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  className="absolute left-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
                   style={{ color: "var(--text-3)" }}
-                  tabIndex={-1}
                   aria-label={showPass ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -165,7 +190,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center text-sm" style={{ color: "var(--text-3)" }}>
             حساب کاربری ندارید؟{" "}
             <Link
-              href="/register"
+              href={accountEntryHref("/register", returnTo)}
               className="font-bold"
               style={{ color: "var(--navy)" }}
             >

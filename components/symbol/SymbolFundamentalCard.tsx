@@ -53,7 +53,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
       style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+        <h2 className="font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
           کارت بنیادی — فعالیت ماهانه (<Term id="n10-n30">ن-۳۰</Term>)
         </h2>
         {card.sourceUrl ? (
@@ -62,7 +62,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
             target="_blank"
             rel="noopener noreferrer"
             className="text-[11px] hover:underline"
-            style={{ color: "var(--navy)" }}
+            style={{ color: "var(--navy-ink)" }}
           >
             منبع رسمی: کدال ↗
           </a>
@@ -82,7 +82,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
         type="button"
         onClick={() => setOpenTrend((v) => !v)}
         className="mt-3 flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-bold"
-        style={{ background: "var(--surface-2)", color: "var(--navy-deep)" }}
+        style={{ background: "var(--surface-2)", color: "var(--heading)" }}
         aria-expanded={openTrend}
       >
         <span>روند و ترکیب فروش (۱۲ ماه)</span>
@@ -130,7 +130,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="rounded-lg px-3 py-2" style={{ background: "var(--surface-2)" }}>
               <div className="text-[11px]" style={{ color: "var(--text-3)" }}>سهم صادرات (آخرین ماه)</div>
-              <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--navy-deep)" }}>
+              <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--heading)" }}>
                 {card.exportSharePct != null ? `${fa(card.exportSharePct)}٪` : "—"}
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
               <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
                 شکاف تولید−فروش (واحد کالا)
               </div>
-              <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--navy-deep)" }} dir="ltr">
+              <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--heading)" }} dir="ltr">
                 {card.prodSalesGap != null ? fa(card.prodSalesGap.toLocaleString("en-US")) : "—"}
               </div>
               <div className="text-[10px]" style={{ color: "var(--text-3)" }}>
@@ -149,7 +149,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
               <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
                 نرخ فروش {card.topProductName ? `«${card.topProductName}»` : "محصول اصلی"} (ریال/واحد)
               </div>
-              <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--navy-deep)" }} dir="ltr">
+              <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--heading)" }} dir="ltr">
                 {card.topProductRate != null ? fa(card.topProductRate.toLocaleString("en-US")) : "—"}
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
             type="button"
             onClick={() => setOpenRaw((v) => !v)}
             className="mt-3 flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-bold"
-            style={{ background: "var(--surface-2)", color: "var(--navy-deep)" }}
+            style={{ background: "var(--surface-2)", color: "var(--heading)" }}
             aria-expanded={openRaw}
           >
             <span>جدول محصولات آخرین ماه (دادهٔ خام)</span>

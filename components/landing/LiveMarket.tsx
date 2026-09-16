@@ -245,9 +245,9 @@ export default function LiveMarket() {
                     role="tab"
                     aria-selected={active?.key === c.key}
                     onClick={() => setTab(c.key)}
-                    className="rounded-lg px-3.5 text-xs font-bold whitespace-nowrap transition-colors"
+                    className="inline-flex items-center rounded-lg px-3.5 text-xs font-bold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
                     style={{
-                      minHeight: 40,
+                      minHeight: 44,
                       ...(active?.key === c.key
                         ? { background: "var(--navy)", color: "var(--text-on-navy)" }
                         : { color: "var(--text-2)", background: "var(--surface-2)" }),

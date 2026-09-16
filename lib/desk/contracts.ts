@@ -40,6 +40,7 @@ export const DESK_SECTIONS = [
   "intelligence",
   "decisions",
   "reference",
+  "clients",
   "operations",
 ] as const;
 
@@ -50,6 +51,7 @@ export const DESK_SECTION_LABEL: Record<DeskSectionKey, string> = {
   intelligence: "هوشمندیِ بازار",
   decisions: "تصمیم‌ها و سناریوها",
   reference: "سبدِ مرجع",
+  clients: "مشتری و محصول",
   operations: "عملیات و سلامت",
 };
 
@@ -62,18 +64,74 @@ export const DESK_SECTION_QUESTION: Record<DeskSectionKey, string> = {
   intelligence: "چه رخداد و گزارشی ثبت شده که باید ببینم؟",
   decisions: "چه چیزی در صفِ تصمیم یا تأییدِ من است؟",
   reference: "سبدِ مرجع در چه وضعیتی است؟",
+  clients: "چه کسی یا چه محصولی منتظرِ اقدامِ من است؟",
   operations: "خطِ لولهٔ داده و cronها سالم‌اند؟",
 };
 
-/** ترتیبِ نمایش عمداً همان ترتیبِ کارِ روزانه است، نه ترتیبِ الفبا. */
-export type DataState = "ready" | "stale" | "empty" | "unavailable";
+/**
+ * هفت حالتِ متعارف — تنها واژگانِ مجازِ وضعیت در کلِ میز.
+ *
+ * پیش از این دو واژگانِ رقیب وجود داشت: اینجا چهار حالت و در
+ * `lib/intelligence/command-desk.ts` پنج حالت با یک نگاشتِ دستی وسطشان. دو
+ * واژگان یعنی دو حقیقتِ ممکن برای یک چیز.
+ *
+ * دو حالتِ تازه، دو چیزِ متفاوت را از هم جدا می‌کنند که قبلاً هر دو
+ * «مشکلِ داده» به نظر می‌رسیدند:
+ *
+ *   `unconfigured`    مالک هنوز تصمیم نگرفته. دادهٔ خراب نیست — تصمیم نیامده.
+ *                     نبودِ نسخهٔ رسمیِ سبد قبلاً شبیهِ خرابیِ فید دیده می‌شد.
+ *   `awaiting_review` دادهٔ سالم، منتظرِ قضاوتِ انسان. «آماده» نیست، چون هنوز
+ *                     کسی تأییدش نکرده؛ «خراب» هم نیست.
+ *
+ * ── و چرا هشتمی (`present`) ─────────────────────────────────────────────
+ * `ready` برچسبِ «به‌روز» دارد، یعنی یک **ادعای تازگی**. ولی نسخهٔ قبلی آن را
+ * به هر منبعی می‌داد که `rule: null` داشت و دستِ‌کم یک ردیف — یعنی صرفِ
+ * «جدول خالی نیست» به «داده تازه است» ترجمه می‌شد. برای صفِ پیش‌نویس‌ها،
+ * جدول‌های سبدِ مرجع و رکوردهای مشتری هیچ آستانه‌ای وجود ندارد، پس آن سبز
+ * هیچ‌وقت **کسب** نشده بود: ده منبعِ میز بی‌آنکه چیزی اثبات شود سبز بودند.
+ *
+ *   `present` — رکورد هست، و **تازگی سنجیده نمی‌شود**.
+ *
+ * خرابی نیست (`isDataFault` رد می‌کند) چون برای یک صف، کهنگی خطا نیست؛ ولی
+ * `ready` هم نیست، چون چیزی را که اندازه نگرفته‌ایم ادعا نمی‌کنیم. تنها
+ * منبعی «به‌روز» است که آستانه‌ای داشته باشد و از آن آستانه رد شده باشد.
+ */
+export type DataState =
+  | "loading"
+  | "ready"
+  | "present"
+  | "awaiting_review"
+  | "unconfigured"
+  | "stale"
+  | "empty"
+  | "unavailable";
 
 export const DATA_STATE_LABEL: Record<DataState, string> = {
+  loading: "در حال دریافت",
   ready: "به‌روز",
+  present: "رکورد دارد",
+  awaiting_review: "منتظرِ بازبینی",
+  unconfigured: "پیکربندی نشده",
   stale: "کهنه",
   empty: "خالی",
   unavailable: "در دسترس نیست",
 };
+
+/**
+ * آیا این حالت یک **خرابیِ داده** است؟
+ *
+ * `unconfigured` و `awaiting_review` نیستند: در هر دو، خطِ داده سالم است و
+ * توپ در زمینِ انسان است. اگر این تفکیک نباشد، یک تصمیمِ نگرفته در نوارِ
+ * سلامت قرمز می‌شود و خرابیِ واقعیِ فید را بی‌ارزش می‌کند.
+ *
+ * `present` هم نیست: نبودِ **سنجه** با خرابیِ **داده** یکی نیست. اگر
+ * «تازگی‌اش را نمی‌سنجیم» قرمز شود، هر روز یازده هشدارِ کاذب می‌بینیم و
+ * فیدِ واقعاً مرده لای آن‌ها گم می‌شود — همان گرگ‌گرگ‌کردنی که این پرونده
+ * علیه‌اش نوشته شده.
+ */
+export function isDataFault(state: DataState): boolean {
+  return state === "stale" || state === "empty" || state === "unavailable";
+}
 
 /**
  * یک منبعِ واقعی در میز — یک جدولِ مشخص، با حالت و شمارشِ خودش.
@@ -83,6 +141,12 @@ export const DATA_STATE_LABEL: Record<DataState, string> = {
  * یک واقعیتِ معتبر است؛ صفرِ ساختگی یک دروغ است.
  */
 export interface DeskSource {
+  /**
+   * شناسهٔ یکتای ردیف. معمولاً همان نامِ جدول است، ولی یک جدول می‌تواند بیش
+   * از یک منبع بسازد — `cron_runs` هم «همهٔ نوبت‌ها» را می‌دهد هم «آخرین
+   * اجرای موفق»، و آن دو ردیفِ متفاوت با حالتِ متفاوت‌اند.
+   */
+  key: string;
   /** نامِ جدول در دیتابیس — پاسخِ «این عدد از کجا آمد؟». */
   table: string;
   label: string;
@@ -90,6 +154,21 @@ export interface DeskSource {
   detail: string;
   count: number | null;
   ageMinutes: number | null;
+  /**
+   * دو زمانِ **متفاوت** که قبلاً به یک `ageMinutes` تقلیل می‌شدند:
+   *
+   *   `observedAt` جدیدترین لحظه‌ای که خودِ داده دربارهٔ جهان ادعا می‌کند
+   *                (بیشینهٔ ستونِ زمانیِ همان جدول)
+   *   `fetchedAt`  لحظه‌ای که ما پرسیدیم
+   *
+   * جدا نگه‌داشتنشان قاعدهٔ «مهرِ زمانیِ سراسری برچسبِ فیدِ دیگر نمی‌شود» را
+   * در سطحِ تایپ اجرا می‌کند: هر منبع ساعتِ خودش را حمل می‌کند و هیچ منبعی
+   * نمی‌تواند تازگیِ منبعِ دیگر را قرض بگیرد.
+   *
+   * هر دو `string | null`‌اند. `null` یعنی **نمی‌دانیم** — نه «اکنون».
+   */
+  observedAt: string | null;
+  fetchedAt: string;
 }
 
 /** مقصدِ موجود برای ادامهٔ کار. میز جای آن‌ها را نمی‌گیرد، به آن‌ها راه می‌دهد. */
@@ -120,9 +199,13 @@ export interface DeskView {
 
 const RANK: Record<DataState, number> = {
   ready: 0,
-  stale: 1,
-  empty: 2,
-  unavailable: 3,
+  present: 1,
+  awaiting_review: 2,
+  unconfigured: 3,
+  loading: 4,
+  stale: 5,
+  empty: 6,
+  unavailable: 7,
 };
 
 /**
@@ -131,6 +214,15 @@ const RANK: Record<DataState, number> = {
  * ترتیب عمدی است و با شهودِ اول فرق دارد: `empty` از `stale` بدتر حساب
  * می‌شود، چون دادهٔ کهنه دستِ‌کم یک‌بار وجود داشته؛ و `unavailable` از هر دو
  * بدتر است، چون دربارهٔ واقعیت **هیچ** نمی‌گوید.
+ *
+ * `present` درست زیرِ `ready` می‌نشیند: یک بخش که حتی یک منبعِ نسنجیده دارد
+ * نباید کلاً «به‌روز» خوانده شود، ولی این هم آن‌قدر جدی نیست که جای یک
+ * بازبینیِ معوق یا یک فیدِ مرده را بگیرد.
+ *
+ * دو حالتِ انسانی زیرِ همهٔ خرابی‌ها می‌نشینند: یک تصمیمِ نگرفته
+ * (`unconfigured`) یا یک بازبینیِ انجام‌نشده (`awaiting_review`) نباید یک فیدِ
+ * واقعاً خراب را بپوشاند. `loading` هم زیرِ خرابی‌هاست چون گذراست و خودش
+ * حل می‌شود — ولی بالای حالت‌های انسانی است، چون هنوز **نمی‌دانیم**.
  */
 export function worstState(states: readonly DataState[]): DataState {
   if (states.length === 0) return "unavailable";
@@ -200,10 +292,32 @@ export interface SourceInput {
 }
 
 export interface SourceSpec {
+  /** وقتی یک جدول بیش از یک منبع می‌سازد. پیش‌فرض: نامِ جدول. */
+  key?: string;
   table: string;
   label: string;
   /** `null` یعنی این منبع اصلاً معیارِ تازگیِ زمانی ندارد. */
   rule: FreshnessRule | null;
+  /**
+   * وقتی منبع فقط **زیرمجموعه‌ای** از جدول است — عبارتی مثل «اجرای موفق».
+   *
+   * بدونِ این، `cron_runs` دقیقاً همان دروغی را می‌گفت که برای ساختنش
+   * ساخته شده بود: میز آخرین `started_at` را می‌خواند و به `status` کاری
+   * نداشت، پس یک jobی که **هر شب شروع می‌شود و هر شب شکست می‌خورد** روی
+   * میز «به‌روز» بود. دفترِ اجرا برای همین وجود دارد که «اجرا شد» را از
+   * «اجرا موفق بود» جدا کند؛ نخواندنِ `status` یعنی دور زدنِ کلِ فایدهٔ آن.
+   *
+   * وقتی پر باشد، متنِ حالت هم همین دامنه را می‌گوید — وگرنه یک شمارشِ
+   * فیلترشده شبیهِ شمارشِ کلِ جدول دیده می‌شود، که خودش عددِ گمراه‌کننده است.
+   */
+  scope?: string | null;
+}
+
+/** زمانِ منبع به ISO — ورودیِ نامعتبر `null` می‌شود، نه «اکنون». */
+function toIso(value: string | Date | null | undefined): string | null {
+  if (!value) return null;
+  const d = value instanceof Date ? value : new Date(value);
+  return Number.isFinite(d.getTime()) ? d.toISOString() : null;
 }
 
 export function classifySource(
@@ -211,7 +325,18 @@ export function classifySource(
   input: SourceInput,
   now: Date
 ): DeskSource {
-  const base = { table: spec.table, label: spec.label };
+  // `fetchedAt` همیشه واقعی است: همین لحظه پرسیدیم. `observedAt` فقط وقتی پر
+  // می‌شود که خودِ منبع زمانی داده باشد.
+  const base = {
+    key: spec.key ?? spec.table,
+    table: spec.table,
+    label: spec.label,
+    fetchedAt: now.toISOString(),
+    observedAt: toIso(input.lastAt),
+  };
+  // وقتی منبع زیرمجموعه است، هر جملهٔ حالت باید همان زیرمجموعه را نام ببرد.
+  const scope = spec.scope ?? null;
+  const subject = scope ? `آخرین «${scope}»` : "آخرین به‌روزرسانی";
 
   if (!input.available) {
     return {
@@ -234,6 +359,8 @@ export function classifySource(
       detail: `شمارش خوانده شد ولی ستونِ زمانیِ این شاخص در جدول \`${spec.table}\` وجود ندارد — شاخص اشتباه پیکربندی شده`,
       count: input.count,
       ageMinutes: null,
+      // ستونِ زمانی خوانده نشد، پس زمانِ مشاهده **قابلِ دانستن نیست**.
+      observedAt: null,
     };
   }
 
@@ -241,7 +368,9 @@ export function classifySource(
     return {
       ...base,
       state: "empty",
-      detail: "منبع در دسترس است و هیچ رکوردی ندارد — یک واقعیتِ معتبر، نه خطا",
+      detail: scope
+        ? `جدول در دسترس است ولی هیچ رکوردی با معیارِ «${scope}» ندارد — این با «جدولِ خالی» یکی نیست`
+        : "منبع در دسترس است و هیچ رکوردی ندارد — یک واقعیتِ معتبر، نه خطا",
       count: 0,
       ageMinutes: null,
     };
@@ -250,10 +379,16 @@ export function classifySource(
   const age = deskAgeMinutes(input.lastAt, now);
 
   if (!spec.rule) {
+    // اینجا `ready` **کسب نشده**: هیچ آستانه‌ای نداریم که از آن رد شده باشیم،
+    // پس تنها چیزی که می‌دانیم این است که رکورد وجود دارد. `age` را همچنان
+    // حمل می‌کنیم — دانستنش مفید است — ولی حالت را با آن تزیین نمی‌کنیم.
     return {
       ...base,
-      state: "ready",
-      detail: "این منبع معیارِ تازگیِ زمانی ندارد؛ فقط وجود یا نبودِ رکورد معنا دارد",
+      state: "present",
+      detail:
+        age === null
+          ? "رکورد دارد؛ برای این منبع آستانهٔ تازگی تعریف نشده، پس «به‌روز» دربارهٔ آن ادعا نمی‌شود"
+          : `${subject} ${age} دقیقه پیش — آستانهٔ تازگی‌ای تعریف نشده، پس این عدد سنجیده نمی‌شود`,
       count: input.count,
       ageMinutes: age,
     };
@@ -272,13 +407,13 @@ export function classifySource(
   }
 
   if (age <= spec.rule.freshWithinMinutes) {
-    return { ...base, state: "ready", detail: `آخرین به‌روزرسانی ${age} دقیقه پیش`, count: input.count, ageMinutes: age };
+    return { ...base, state: "ready", detail: `${subject} ${age} دقیقه پیش`, count: input.count, ageMinutes: age };
   }
 
   return {
     ...base,
     state: "stale",
-    detail: `آخرین به‌روزرسانی ${age} دقیقه پیش بوده — از آستانهٔ ${spec.rule.freshWithinMinutes} دقیقه گذشته`,
+    detail: `${subject} ${age} دقیقه پیش بوده — از آستانهٔ ${spec.rule.freshWithinMinutes} دقیقه گذشته`,
     count: input.count,
     ageMinutes: age,
   };
@@ -296,12 +431,16 @@ export function summarise(sources: readonly DeskSource[]): string {
   const broken = sources.filter((s) => s.state === "unavailable");
   const stale = sources.filter((s) => s.state === "stale");
   const empty = sources.filter((s) => s.state === "empty");
+  const present = sources.filter((s) => s.state === "present");
   const ready = sources.filter((s) => s.state === "ready");
 
   const parts: string[] = [];
   if (broken.length > 0) parts.push(`${broken.length} منبع در دسترس نیست`);
   if (stale.length > 0) parts.push(`${stale.length} منبع کهنه`);
   if (empty.length > 0) parts.push(`${empty.length} منبع خالی`);
+  // «بدونِ سنجهٔ تازگی» عمداً از «به‌روز» جدا شمرده می‌شود: جمع‌کردنشان
+  // دقیقاً همان عددِ متورمِ سبزی است که این ماژول علیه‌اش نوشته شده.
+  if (present.length > 0) parts.push(`${present.length} منبع بدونِ سنجهٔ تازگی`);
   if (ready.length > 0) parts.push(`${ready.length} منبع به‌روز`);
   // جداکنندهٔ «،» و نه «·»: نقطهٔ وسط یک نویسهٔ خنثای دوطرفه است و در متنِ
   // راست‌به‌چپ کنارِ رقم می‌نشیند — «۲ … · ۳ منبع» روی صفحه شبیهِ «۳۰» دیده

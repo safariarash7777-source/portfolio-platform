@@ -119,9 +119,10 @@ export default function MarketClient({
       {/* Header */}
       <div>
         <span className="eyebrow">رصد بازار</span>
-        <h1 className="font-display text-2xl md:text-3xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
+        {/* H2 و نه H1: عنوانِ H1 صفحه در پوستهٔ بازار است و هر صفحه فقط یک H1 دارد. */}
+        <h2 className="font-display text-xl md:text-2xl font-bold mt-1" style={{ color: "var(--heading)" }}>
           رصد بازار کریپتو
-        </h1>
+        </h2>
         <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
           آخرین قیمت‌های بازار کریپتو (دلاری، منبع: CoinGecko — به‌روزرسانی دوره‌ای).
           {isLoggedIn ? " نمادها را ستاره‌دار کنید و هشدار قیمتی بسازید." : ""}
@@ -197,7 +198,7 @@ export default function MarketClient({
           {!telegramLinked && (
             <div
               className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm mb-3"
-              style={{ background: "var(--gold-tint)", border: "1px solid rgba(184,134,11,0.3)", color: "var(--navy-deep)" }}
+              style={{ background: "var(--gold-tint)", border: "1px solid rgba(184,134,11,0.3)", color: "var(--heading)" }}
             >
               <Send size={15} />
               برای دریافت هشدار در تلگرام، حساب تلگرام خود را از داشبورد متصل کنید. تا آن زمان هشدارها فقط اینجا نشان داده می‌شوند.
@@ -209,7 +210,7 @@ export default function MarketClient({
               return (
                 <div key={a.id} className="flex items-center justify-between gap-3 p-4" style={{ borderColor: "var(--line)" }}>
                   <div className="min-w-0">
-                    <div className="font-bold text-sm" style={{ color: "var(--navy-deep)" }}>
+                    <div className="font-bold text-sm" style={{ color: "var(--heading)" }}>
                       {row?.faName ?? a.symbol}
                     </div>
                     <div className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
@@ -272,7 +273,7 @@ function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string })
   return (
     <div className="flex items-center gap-2 mb-4">
       <span style={{ color: "var(--gold)" }}>{icon}</span>
-      <h2 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
+      <h2 className="font-display font-bold text-lg" style={{ color: "var(--heading)" }}>
         {title}
       </h2>
     </div>
@@ -302,12 +303,12 @@ function MarketCardItem({
           <span
             className="flex items-center justify-center rounded-full font-display font-bold text-xs flex-shrink-0"
             dir="ltr"
-            style={{ width: 32, height: 32, background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+            style={{ width: 32, height: 32, background: "var(--gold-tint)", color: "var(--heading)" }}
           >
             {row.symbol.slice(0, 3)}
           </span>
           <div className="min-w-0">
-            <div className="font-bold text-sm truncate" style={{ color: "var(--navy-deep)" }}>{row.faName}</div>
+            <div className="font-bold text-sm truncate" style={{ color: "var(--heading)" }}>{row.faName}</div>
             <div className="text-xs" dir="ltr" style={{ color: "var(--text-3)" }}>{row.symbol}</div>
           </div>
         </div>
@@ -319,7 +320,7 @@ function MarketCardItem({
       </div>
 
       <div className="mt-4 flex items-end justify-between">
-        <div className="font-display text-xl font-bold" dir="ltr" style={{ color: "var(--navy-deep)" }}>
+        <div className="font-display text-xl font-bold" dir="ltr" style={{ color: "var(--heading)" }}>
           ${fmtUsd(row.price)}
         </div>
         {row.change24h != null && (
@@ -386,7 +387,7 @@ function AlertForm({
     <div className="fixed inset-0 z-50 flex items-center justify-center px-5" role="dialog" aria-label="ساخت هشدار">
       <div className="absolute inset-0" style={{ background: "rgba(15,23,42,0.5)" }} onClick={onClose} aria-hidden />
       <div className="card-elevated p-6 w-full max-w-sm relative" style={{ background: "var(--surface)" }}>
-        <h3 className="font-display font-bold text-lg mb-1" style={{ color: "var(--navy-deep)" }}>
+        <h3 className="font-display font-bold text-lg mb-1" style={{ color: "var(--heading)" }}>
           هشدار قیمت — {row.faName}
         </h3>
         <p className="text-xs mb-4" style={{ color: "var(--text-3)" }}>
@@ -446,7 +447,7 @@ function MarketLink({ href, title, note }: { href: string; title: string; note: 
   return (
     <Link href={href} className="card p-6 group transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="font-display font-bold text-base" style={{ color: "var(--navy-deep)" }}>{title}</h3>
+        <h3 className="font-display font-bold text-base" style={{ color: "var(--heading)" }}>{title}</h3>
         <span className="text-[11px] px-2 py-0.5 rounded-full transition-colors group-hover:bg-[var(--gold-tint)]" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}>
           مشاهده ←
         </span>
