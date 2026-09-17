@@ -10,7 +10,7 @@
 import { compareHoldingsToTarget, InvalidTargetError } from "./rebalance";
 import { parseStoredAllocations, describeTargetProblems } from "./targetContract";
 import { buildPriceMap, resolvePricesByPosition, type SymbolHistoryRow } from "./prices";
-import type { AssetClassRow, CoverageGap, HoldingVersion, TargetVersion } from "./contracts";
+import type { AssetClassRow, CoverageGap, HoldingVersion, RebalanceResult, TargetVersion } from "./contracts";
 
 export interface HoldingsView {
   rows: readonly AssetClassRow[];
@@ -18,6 +18,14 @@ export interface HoldingsView {
   definitive: boolean;
   totalValue: number | null;
   notes: readonly string[];
+  /**
+   * نتیجهٔ کاملِ موتور — ورودیِ تصمیمِ هشدار.
+   *
+   * ⚠️ عمداً همین شیء به `dispatchRebalanceAlert` می‌رود، نه یک محاسبهٔ دوباره.
+   * اگر مسیرِ هشدار خودش دوباره حساب می‌کرد، همان شکافِ «تابع سبز، اتصال غلط»
+   * دوباره باز می‌شد و می‌شد وضعیتی که صفحه «پوشش ناقص» بگوید و هشدار برود.
+   */
+  result: RebalanceResult | null;
 }
 
 export interface BuildViewInput {
@@ -52,7 +60,7 @@ export function toTargetVersion(
 
 export function buildHoldingsView(input: BuildViewInput): HoldingsView {
   const empty: HoldingsView = {
-    rows: [], gaps: [], definitive: false, totalValue: null, notes: [],
+    rows: [], gaps: [], definitive: false, totalValue: null, notes: [], result: null,
   };
 
   if (!input.holdings) {
@@ -82,6 +90,7 @@ export function buildHoldingsView(input: BuildViewInput): HoldingsView {
       definitive: result.definitive,
       totalValue: result.totalValue,
       notes: result.notes,
+      result,
     };
   } catch (e) {
     // هدفِ نامعتبر صفحه را نمی‌اندازد، ولی **هیچ عددی هم نمی‌سازد**. دلیلش

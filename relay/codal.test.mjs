@@ -1,6 +1,6 @@
 // تست واحد پارسر کدال — نمونه‌ها بازتولید ساختار واقعیِ تأییدشده از اکسل کدال است
 // (شبندر: ن-۱۰ سه‌ماههٔ ۱۴۰۴/۰۳/۳۱ و ن-۳۰ ماهانهٔ ۱۴۰۵/۰۳). اجرا: node codal.test.mjs
-import { parseHtmlTables, normalizeN10, normalizeN10Bank, normalizeN30 } from "./codal.mjs";
+import { parseHtmlTables, normalizeN10, normalizeN10Bank, normalizeN30, unitFromHeader, unitFromArithmetic, resolveAmountUnit } from "./codal.mjs";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -174,5 +174,84 @@ const badIns = insTable.replace("۵۰,۰۰۰", "۹۹۹,۹۹۹");
 check("bank rejects inconsistent gross",
   normalizeN10Bank(parseHtmlTables(badIns), { symbol: "x", period_end: null, period_months: 12 }) === null);
 
+/* ── واحدِ مبلغ: استخراج‌شده، نه اعلام‌شده ───────────────────────────────────
+ *
+ * تستِ قبلی فقط می‌پرسید «رشتهٔ میلیون ریال هست؟» — که با یک ثابتِ سفت هم سبز
+ * می‌شد و هیچ‌چیز اثبات نمی‌کرد. این تست‌ها سه حالتِ واقعی را می‌سنجند:
+ * معتبر، ناشناخته، و متناقض.
+ */
+const P = (qty, rate, amount) => ({ sales_qty: qty, sales_rate: rate, sales_amount: amount });
+
+// مبلغ = مقدار×نرخ÷10^6 ⇒ میلیون ریال
+const millionRows = [P(28383, 435699010, 12366700), P(1000, 2_000_000, 2000)];
+// مبلغ = مقدار×نرخ ⇒ ریال
+const rialRows = [P(10, 5, 50), P(200, 3, 600)];
+
+check("سربرگ «میلیون ریال» خوانده می‌شود",
+  unitFromHeader([[["ارقام به ميليون ريال"]]]) === "میلیون ریال");
+check("سربرگ «ریال» با «میلیون ریال» اشتباه نمی‌شود",
+  unitFromHeader([[["مبلغ به ریال"]]]) === "ریال");
+check("سربرگِ بی‌واحد null می‌دهد",
+  unitFromHeader([[["نام محصول", "مقدار"]]]) === null);
+
+check("سازگاریِ حسابی مقیاسِ میلیون را پیدا می‌کند",
+  unitFromArithmetic(millionRows) === "میلیون ریال", String(unitFromArithmetic(millionRows)));
+check("سازگاریِ حسابی مقیاسِ ریال را پیدا می‌کند",
+  unitFromArithmetic(rialRows) === "ریال", String(unitFromArithmetic(rialRows)));
+check("ردیف‌های ناسازگار هیچ مقیاسی نمی‌دهند",
+  unitFromArithmetic([P(10, 5, 50), P(10, 5, 50_000_000)]) === null);
+check("بدونِ شاهد (نبودِ نرخ) استنتاج نمی‌شود",
+  unitFromArithmetic([{ sales_qty: 10, sales_rate: null, sales_amount: 50 }]) === null);
+
+// دو شاهدِ هم‌سو ⇒ واحد با پایهٔ ترکیبی
+{
+  const r = resolveAmountUnit([[["ارقام به میلیون ریال"]]], millionRows);
+  check("سربرگ و حساب هم‌سو ⇒ واحد معتبر", r.unit === "میلیون ریال" && r.basis === "header+arithmetic", JSON.stringify(r));
+  check("دو شاهد جدا ثبت می‌شوند", r.header === "میلیون ریال" && r.inferred === "میلیون ریال", JSON.stringify(r));
+}
+// سربرگِ تنها: واحد هست ولی تأییدِ دوم ندارد — و همین در basis دیده می‌شود.
+{
+  const r = resolveAmountUnit([[["ارقام به میلیون ریال"]]], [{ sales_qty: null, sales_rate: null, sales_amount: 5 }]);
+  check("سربرگِ تنها basis جدا می‌گیرد", r.basis === "header_only" && r.inferred === null, JSON.stringify(r));
+}
+// حسابِ تنها: استنباط است، نه اعلامِ صریحِ گزارش.
+{
+  const r = resolveAmountUnit([[["نام محصول"]]], millionRows);
+  check("حسابِ تنها basis جدا می‌گیرد", r.basis === "arithmetic_only" && r.header === null, JSON.stringify(r));
+}
+// تعارض ⇒ هیچ‌کدام برنده نیست
+{
+  const r = resolveAmountUnit([[["ارقام به میلیون ریال"]]], rialRows);
+  check("تعارضِ سربرگ و حساب ⇒ واحد اعلام نمی‌شود", r.unit === null && r.basis === "conflict", JSON.stringify(r));
+  check("در تعارض هم هر دو شاهد نگه داشته می‌شوند",
+    r.header === "میلیون ریال" && r.inferred === "ریال", JSON.stringify(r));
+}
+// قالبِ ناشناخته ⇒ unresolved
+{
+  const r = resolveAmountUnit([[["نام محصول"]]], [{ sales_qty: null, sales_rate: null, sales_amount: 5 }]);
+  check("قالبِ ناشناخته ⇒ unresolved", r.unit === null && r.basis === "unresolved", JSON.stringify(r));
+}
+
+/* ── تعمیمِ ممنوع: یک‌ماهه ≠ تجمعیِ سال ─────────────────────────────────── */
+if (n30) {
+  check("واحدِ ن-۳۰ از خودِ گزارش استخراج شد", n30.unit === "میلیون ریال", String(n30.unit));
+  check("پایهٔ اثباتِ واحد ثبت شد", typeof n30.unit_basis === "string" && n30.unit_basis.length > 0, String(n30.unit_basis));
+  check("دورهٔ مقایسه یک ماه است", n30.period_months === 1);
+  check("واحدِ مقدارِ کالا استخراج نشده و صریح null است", n30.qty_unit === null, String(n30.qty_unit));
+  check("واحدِ مبلغ با واحدِ مقدار قاطی نشده", n30.unit !== n30.qty_unit);
+}
+
+// جدولی بدونِ ستونِ تجمعی: `fy_cumulative_amount` باید خالی بماند، نه برابرِ ماه.
+{
+  const noCum = normalizeN30(parseHtmlTables(tbl([
+    ["", "", "", "", "", "", "", "", "", "", "", "", "", "دوره یک ماهه", "", "", "", "", "", "", "", "", "", "", "", ""],
+    ["نام محصول", "", "", "", "", "", "", "", "", "", "", "", "", "تولید", "مقدار", "نرخ", "مبلغ", "", "", "", "", "", "", "", "", ""],
+  ])), { symbol: "x", period_end: "1405-03-31" });
+  check("جدولِ بدونِ محصول null می‌دهد (تعمیم ساخته نمی‌شود)", noCum === null);
+}
+
+
 console.log(failed === 0 ? "\nALL TESTS PASSED" : `\n${failed} TESTS FAILED`);
 process.exit(failed === 0 ? 0 : 1);
+
+

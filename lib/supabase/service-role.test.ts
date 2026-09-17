@@ -44,6 +44,7 @@ const ALLOWED = new Map<string, string>([
   ["app/api/webinars/payment/route.ts", "`payments` سیاستِ INSERT ندارد"],
   ["app/api/admin/announcements/route.ts", "`announcements` سیاستِ INSERT/UPDATE ندارد"],
   ["app/api/admin/analyses/route.ts", "انتشار در `signals`/`weekly_outlooks` سیاستِ INSERT ندارد"],
+  ["app/api/portfolio/rebalance-alert/route.ts", "`rebalance_alert_*` سیاستِ INSERT ندارد؛ حقِ نوشتنِ عضو عمداً پس گرفته شده تا رویدادِ هشدار برای کاربرِ دیگر جعل نشود"],
 
   // ── تشخیص و افزونهٔ اختیاری ──
   ["app/api/admin/health/route.ts", "حضورِ خودِ کلید را گزارش می‌کند"],
