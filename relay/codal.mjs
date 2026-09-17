@@ -351,6 +351,86 @@ export function normalizeN10(tables, meta) {
  * تجمعی جاری، تجمعی سال قبل)، سطر ۱ = زیرستون‌ها. در سطر داده (۲۶ سلول):
  * ستون ۰=نام، ۱=واحد، بلوک «دوره یک ماهه» = ستون‌های ۱۳–۱۶ (تولید، فروش، نرخ، مبلغ)،
  * بلوک تجمعی جاری = ۱۷–۲۰. اعتبارسنجی: مبلغ ≈ فروش×نرخ÷10^6 (±۵٪). */
+
+/* ── واحدِ مبلغ: استخراج، نه اعلام ───────────────────────────────────────────
+ *
+ * ⚠️ نوشتنِ `unit: "میلیون ریال"` به‌صورت ثابت، **اثباتِ استخراجِ واحد نیست** —
+ * یک فرض است که شکلِ داده به خودش گرفته. اگر روزی قالبِ کدال عوض شود یا ستون‌ها
+ * جابه‌جا شوند، همان ثابت با اطمینانِ کامل عددِ غلط را «میلیون ریال» برچسب
+ * می‌زند.
+ *
+ * دو شاهدِ مستقل استفاده می‌شود:
+ *   ۱. **سربرگ** — کدال معمولاً «ارقام به میلیون ریال» یا «مبلغ (میلیون ریال)»
+ *      را در بالای جدول می‌نویسد.
+ *   ۲. **سازگاریِ حسابی** — در ن-۳۰ رابطهٔ `مبلغ ≈ مقدار × نرخ ÷ مقیاس` برقرار
+ *      است. اگر مقیاسِ ۱۰^۶ جواب بدهد، مبلغ به میلیون ریال است؛ اگر ۱ جواب
+ *      بدهد، به ریال. این یک اندازه‌گیری روی خودِ همان گزارش است، نه یک عادت.
+ *
+ * تعارضِ این دو ⇒ `null`. قالبِ ناشناخته ⇒ `null`. و ردیفی با واحدِ `null`
+ * **معتبر اعلام نمی‌شود**؛ مصرف‌کننده باید همان‌طور با آن رفتار کند که با
+ * دادهٔ غایب.
+ */
+const UNIT_SCALES = [
+  { unit: "ریال", divisor: 1 },
+  { unit: "هزار ریال", divisor: 1e3 },
+  { unit: "میلیون ریال", divisor: 1e6 },
+];
+
+/** واحد را از متنِ سربرگ می‌خواند. `null` یعنی سربرگ چیزی نگفته. */
+export function unitFromHeader(tables) {
+  const text = tables.flat(2).map((c) => String(c ?? "")).join(" ");
+  const norm = text.replace(/[يى]/g, "ی").replace(/ك/g, "ک").replace(/\s+/g, " ");
+  // ترتیب مهم است: «میلیون ریال» باید پیش از «ریال» بررسی شود.
+  if (/میلیون\s*ریال/.test(norm)) return "میلیون ریال";
+  if (/هزار\s*ریال/.test(norm)) return "هزار ریال";
+  // ⚠️ بدونِ `\b`: مرزِ کلمه در جاوااسکریپت ASCII-محور است و کنارِ حرفِ فارسی
+  // اصلاً تطبیق نمی‌کند، پس `\bریال\b` هیچ‌وقت درست جواب نمی‌داد.
+  // ترتیبِ بررسی (میلیون ← هزار ← ریال) تفکیک را تضمین می‌کند.
+  if (/ریال/.test(norm)) return "ریال";
+  return null;
+}
+
+/**
+ * واحد را از سازگاریِ حسابیِ ردیف‌ها استنتاج می‌کند.
+ *
+ * فقط ردیف‌هایی که هر سه عدد را دارند شاهد به حساب می‌آیند. اگر هیچ مقیاسی
+ * روی **همهٔ** شاهدها جواب ندهد، یا بیش از یکی جواب بدهد، نتیجه `null` است —
+ * چون آن‌وقت داده دارد دو چیزِ متفاوت می‌گوید.
+ */
+export function unitFromArithmetic(products, tolerance = 0.05) {
+  const witnesses = products.filter((p) => p.sales_qty && p.sales_rate && p.sales_amount);
+  if (witnesses.length === 0) return null;
+
+  const fits = UNIT_SCALES.filter(({ divisor }) =>
+    witnesses.every((p) => {
+      const calc = (p.sales_qty * p.sales_rate) / divisor;
+      return Math.abs(calc - p.sales_amount) / Math.max(Math.abs(p.sales_amount), 1) <= tolerance;
+    })
+  );
+  return fits.length === 1 ? fits[0].unit : null;
+}
+
+/**
+ * واحدِ نهایی + پایهٔ اثباتش.
+ *
+ * `basis` عمداً برگردانده می‌شود تا بعداً بشود پرسید «این عدد را از کجا
+ * فهمیدیم؟» — همان چیزی که بازبینی خواست ثبت شود.
+ */
+export function resolveAmountUnit(tables, products) {
+  const header = unitFromHeader(tables);
+  const arithmetic = unitFromArithmetic(products);
+
+  if (header && arithmetic) {
+    if (header === arithmetic) return { unit: header, basis: "header+arithmetic" };
+    // ⚠️ تعارض پنهان نمی‌شود و هیچ‌کدام «برنده» نیست. یکی‌شان غلط است و
+    // نمی‌دانیم کدام؛ حدس‌زدن یعنی ساختنِ عددی که هیچ‌کس تأییدش نکرده.
+    return { unit: null, basis: "conflict", header, arithmetic };
+  }
+  if (arithmetic) return { unit: arithmetic, basis: "arithmetic" };
+  if (header) return { unit: header, basis: "header" };
+  return { unit: null, basis: "unresolved" };
+}
+
 export function normalizeN30(tables, meta) {
   const products = [];
   let periodTotal = null;
@@ -408,6 +488,7 @@ export function normalizeN30(tables, meta) {
   }
 
   if (products.length === 0) return null;
+  const unitInfo = resolveAmountUnit(tables, products);
   if (periodTotal === null) {
     periodTotal = products.reduce((s, p) => s + (p.sales_amount ?? 0), 0);
   }
@@ -420,18 +501,15 @@ export function normalizeN30(tables, meta) {
     fiscal_year: fyMatch ? Number(fyMatch[1]) : 0,
     products,
     period_total_amount: periodTotal,
-    fy_cumulative_amount: fyCumulative ?? periodTotal,
-    // ⚠️ واحد صریح ثبت می‌شود، نه ضمنی.
-    //
-    // اندازه‌گیری روی Production (۱۴۰۵/۰۶/۲۶): از ۵۷۱۰ ردیف ن-۳۰، **هیچ‌کدام**
-    // کلید `unit` نداشتند، در حالی که هر ۳۴۱۶ ردیف ن-۱۰ داشتند. یعنی مبلغ فروش
-    // ماهانه بدون مقیاس ذخیره می‌شد و هر نمایشی از آن، عددی با بزرگیِ
-    // اثبات‌ناپذیر بود.
-    //
-    // مقدار همان قراردادی است که دو سازندهٔ ن-۱۰ در همین فایل دارند؛ جدول‌های
-    // مالی کدال به میلیون ریال‌اند. ثبتش اینجا فرضِ ضمنی را به فرضِ **قابل
-    // بازبینی** تبدیل می‌کند.
-    unit: "میلیون ریال",
+    // ⚠️ وقتی ستونِ تجمعی در گزارش نبود، **جای خالی می‌ماند**.
+    // نسخهٔ قبل اینجا `?? periodTotal` داشت، یعنی مبلغِ یک ماه را به‌عنوان
+    // تجمعیِ سال گزارش می‌کرد. آن عدد در هیچ گزارشی وجود نداشت و برای
+    // شرکتی در ماه دوازدهم، یک‌دوازدهمِ واقعیت را «تجمعی» نشان می‌داد.
+    fy_cumulative_amount: fyCumulative,
+    // واحد از خودِ گزارش استخراج می‌شود (سربرگ + سازگاریِ حسابی)، نه از عادت.
+    // `null` یعنی قالب یا واحد قابلِ اثبات نبود؛ آن ردیف معتبر اعلام نمی‌شود.
+    unit: unitInfo.unit,
+    unit_basis: unitInfo.basis,
     // ن-۳۰ گزارش ماهانه است — دورهٔ مقایسه تعریفاً یک ماه.
     period_months: 1,
   };
