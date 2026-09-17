@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
+import { isPrivateBotConversation } from "@/lib/telegram/private-chat";
 import { markdownToPlain } from "@/lib/markdown";
 import { toPersianDigits } from "@/lib/format";
 import { detectPlatform, guessKind, firstUrl, PLATFORM_META } from "@/lib/content-hub";
-import { selectVisibleAnnouncements } from "@/lib/announcements/botVisibility";
+import {
+  selectVisibleAnnouncements,
+  candidateAnnouncementIds,
+} from "@/lib/announcements/botVisibility";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +53,11 @@ export async function POST(req: NextRequest) {
   }
 
   const msg = update.message;
+  // Never read personal data, redeem a link code, or reply to a shared chat.
+  // Public channel ingestion above remains a separate, allowlisted path.
+  if (!isPrivateBotConversation(msg)) {
+    return NextResponse.json({ ok: true });
+  }
   // متنِ پیام یا کپشنِ عکس/ویدیو (برای پیستِ لینک با رسانه).
   const text = (msg?.text ?? msg?.caption)?.trim();
   const tgUserId = msg?.from?.id;
@@ -243,18 +252,36 @@ async function handleAnnouncements(
   // سیاستِ `ann_target_read` اینجا هیچ کاری نمی‌کند و تنها گیتِ لغوشده‌ها
   // همان `selectVisibleAnnouncements` است. منطقِ تصمیم عمداً بیرون کشیده شده
   // تا مستقیم آزمون شود، نه از پشتِ این وبهوک.
-  const { data: revoked, error: revokedError } = await admin
-    .from("announcement_revocations")
-    .select("announcement_id");
+  //
+  // ⚠️ و پرس‌وجو **به همان نامزدها محدود** می‌شود، نه کلِ جدول. خواندنِ کلِ
+  // `announcement_revocations` با رشدِ سابقه به سقفِ پاسخِ PostgREST می‌خورد و
+  // آن‌وقت پاسخ «موفق» است ولی ناقص — یعنی بخشی از لغوها بی‌صدا از فهرست
+  // می‌افتند و بات همان اعلامیه‌ای را که مدیر برداشته دوباره نشان می‌دهد.
+  // تعدادِ نامزدها حداکثر ۵۰ است، پس این پرس‌وجو هرگز به سقف نمی‌خورد.
+  const candidateIds = candidateAnnouncementIds(anns ?? []);
 
-  if (revokedError) {
-    console.error("announcement_revocations read failed:", revokedError.message);
+  let revokedIds: string[] | null = [];
+  let revocationReadFailed = false;
+
+  if (candidateIds.length > 0) {
+    const { data: revoked, error: revokedError } = await admin
+      .from("announcement_revocations")
+      .select("announcement_id")
+      .in("announcement_id", candidateIds);
+
+    if (revokedError) {
+      console.error("announcement_revocations read failed:", revokedError.message);
+      revokedIds = null;
+      revocationReadFailed = true;
+    } else {
+      revokedIds = (revoked ?? []).map((r) => r.announcement_id as string);
+    }
   }
 
   const visibility = selectVisibleAnnouncements({
     announcements: anns ?? [],
-    revokedIds: revoked ? revoked.map((r) => r.announcement_id as string) : null,
-    revocationReadFailed: Boolean(revokedError),
+    revokedIds,
+    revocationReadFailed,
     userId: link.user_id,
     riskCategory: cat,
   });
@@ -453,8 +480,8 @@ interface TelegramUpdate {
   message?: {
     text?: string;
     caption?: string;
-    from?: { id?: number; first_name?: string };
-    chat?: { id?: number };
+    from?: { id?: number; first_name?: string; is_bot?: boolean };
+    chat?: { id?: number; type?: string };
   };
   channel_post?: ChannelPost;
 }

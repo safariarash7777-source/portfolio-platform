@@ -23,6 +23,23 @@ export type BotVisibility =
 export const REVOCATION_UNAVAILABLE_MESSAGE =
   "فهرست اعلامیه‌ها موقتاً در دسترس نیست. کمی بعد دوباره تلاش کنید.";
 
+/**
+ * شناسه‌های اعلامیه‌هایی که اصلاً نامزدِ نمایش‌اند.
+ *
+ * ⚠️ چرا لازم است: پرس‌وجوی لغوها باید **به همین‌ها محدود** شود. اگر کلِ
+ * `announcement_revocations` خوانده شود، با رشدِ سابقه به سقفِ پاسخِ PostgREST
+ * می‌خورد و پاسخ «موفق» ولی **ناقص** برمی‌گردد — بدترین حالت، چون نه خطایی
+ * هست که fail-closed را فعال کند و نه فهرست کامل است. نتیجه: چند لغو بی‌صدا
+ * می‌افتند و بات همان اعلامیه‌ای را که مدیر برداشته دوباره نشان می‌دهد.
+ */
+export function candidateAnnouncementIds(
+  announcements: readonly BotAnnouncement[] | null
+): string[] {
+  return (announcements ?? [])
+    .filter((a) => a.published_at !== null)
+    .map((a) => a.id);
+}
+
 export function selectVisibleAnnouncements(input: {
   announcements: readonly BotAnnouncement[] | null;
   revokedIds: readonly string[] | null;
