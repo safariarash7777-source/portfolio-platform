@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
+import { isPrivateBotConversation } from "@/lib/telegram/private-chat";
 import { markdownToPlain } from "@/lib/markdown";
 import { toPersianDigits } from "@/lib/format";
 import { detectPlatform, guessKind, firstUrl, PLATFORM_META } from "@/lib/content-hub";
@@ -48,6 +49,11 @@ export async function POST(req: NextRequest) {
   }
 
   const msg = update.message;
+  // Never read personal data, redeem a link code, or reply to a shared chat.
+  // Public channel ingestion above remains a separate, allowlisted path.
+  if (!isPrivateBotConversation(msg)) {
+    return NextResponse.json({ ok: true });
+  }
   // متنِ پیام یا کپشنِ عکس/ویدیو (برای پیستِ لینک با رسانه).
   const text = (msg?.text ?? msg?.caption)?.trim();
   const tgUserId = msg?.from?.id;
@@ -432,8 +438,8 @@ interface TelegramUpdate {
   message?: {
     text?: string;
     caption?: string;
-    from?: { id?: number; first_name?: string };
-    chat?: { id?: number };
+    from?: { id?: number; first_name?: string; is_bot?: boolean };
+    chat?: { id?: number; type?: string };
   };
   channel_post?: ChannelPost;
 }
