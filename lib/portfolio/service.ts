@@ -1,8 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
-import { parseStoredAllocations, describeTargetProblems } from "./targetContract";
-import { buildPriceMap, priceableSymbols, type SymbolHistoryRow } from "./prices";
+import type { HoldingPosition, HoldingVersion } from "./contracts";
+import { priceableSymbols, type SymbolHistoryRow } from "./prices";
 
 /**
  * خواندنِ داراییِ **خودِ کاربرِ نشست** و هدفِ او.
@@ -23,9 +22,18 @@ import { buildPriceMap, priceableSymbols, type SymbolHistoryRow } from "./prices
 
 export interface PortfolioSnapshot {
   holdings: HoldingVersion | null;
-  target: TargetVersion | null;
-  /** مشکل‌های سبدِ هدف — دستهٔ ناشناخته یا دادهٔ خراب. خالی = سالم. */
-  targetProblems: readonly string[];
+  /**
+   * هدفِ **خام**، همان‌طور که ذخیره شده.
+   *
+   * ⚠️ عمداً اینجا پارس نمی‌شود: ترجمه و اعتبارسنجی در `buildHoldingsView`
+   * انجام می‌شود تا همان مسیری که صفحه می‌پیماید مستقیم آزمون‌پذیر باشد.
+   */
+  storedTarget: {
+    id: string;
+    version: number;
+    referenceVersionId: string | null;
+    allocations: unknown;
+  } | null;
   /** آیا جدول‌های phase32 روی این محیط هستند. */
   ready: boolean;
   /** نسخه‌های قبلی، برای «بازکردن دوباره». */
@@ -37,7 +45,7 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { holdings: null, target: null, targetProblems: [], ready: true, history: [] };
+    return { holdings: null, storedTarget: null, ready: true, history: [] };
   }
 
   const listRes = await supabase
@@ -47,7 +55,7 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
     .order("version", { ascending: false });
 
   if (listRes.error) {
-    return { holdings: null, target: null, targetProblems: [], ready: false, history: [] };
+    return { holdings: null, storedTarget: null, ready: false, history: [] };
   }
 
   const history = (listRes.data ?? []).map((v) => ({
@@ -93,24 +101,17 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
     .limit(1)
     .maybeSingle();
 
-  let target: TargetVersion | null = null;
-  let targetProblems: string[] = [];
-  if (!tgtRes.error && tgtRes.data) {
-    // ⚠️ شکلِ ذخیره‌شده `{asset, pct, note}` است، نه `{assetClass, weightPct}`.
-    // نسخهٔ قبل مستقیم دنبالِ کلیدهای تازه می‌گشت و چون هیچ‌کدام نبودند،
-    // `weights` همیشه خالی می‌شد — یعنی سبدِ هدفِ واقعیِ کاربر بی‌صدا ناپدید
-    // می‌شد. آداپتور صریح این را ترجمه می‌کند و دستهٔ ناشناخته را حدس نمی‌زند.
-    const parsed = parseStoredAllocations(tgtRes.data.allocations);
-    targetProblems = describeTargetProblems(parsed);
-    target = {
-      id: tgtRes.data.id as string,
-      version: tgtRes.data.version as number,
-      referenceVersionId: (tgtRes.data.reference_version_id as string | null) ?? null,
-      weights: parsed.weights,
-    };
-  }
+  const storedTarget =
+    !tgtRes.error && tgtRes.data
+      ? {
+          id: tgtRes.data.id as string,
+          version: tgtRes.data.version as number,
+          referenceVersionId: (tgtRes.data.reference_version_id as string | null) ?? null,
+          allocations: tgtRes.data.allocations as unknown,
+        }
+      : null;
 
-  return { holdings, target, targetProblems, ready: true, history };
+  return { holdings, storedTarget, ready: true, history };
 }
 
 /**
@@ -124,16 +125,15 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
  * قلمِ دستی و زیرنمادِ رقم‌دار اصلاً درخواست نمی‌شوند، پس نتیجه‌شان «پوششِ
  * ناقص» می‌شود — که همان حقیقت است، نه یک خطا.
  */
-export async function loadPrices(
-  positions: readonly { symbol: string | null }[]
-): Promise<Map<string, PricePoint>> {
+export async function loadPriceRows(
+  positions: readonly HoldingPosition[]
+): Promise<SymbolHistoryRow[]> {
   const symbols = priceableSymbols(positions);
-  if (symbols.length === 0) return new Map();
+  if (symbols.length === 0) return [];
 
   const supabase = await createClient();
-  // سقفِ محافظه‌کارانه: هر نماد حداکثر چند ردیفِ اخیر لازم دارد، ولی جدول
-  // append-only است و یک روز ممکن است چند بار درج شده باشد. مرتب‌سازی
-  // نزولی + انتخابِ بیشینه در `buildPriceMap` این را پوشش می‌دهد.
+  // سقفِ محافظه‌کارانه: جدول append-only است و یک روز ممکن است چند بار درج
+  // شده باشد؛ انتخابِ بیشینه در `buildPriceMap` این را پوشش می‌دهد.
   const res = await supabase
     .from("symbol_history")
     .select("symbol, trade_date, close, last_price, source")
@@ -142,11 +142,11 @@ export async function loadPrices(
     .limit(Math.min(symbols.length * 10, 500));
 
   if (res.error) {
-    // خطای خواندنِ قیمت «قیمتِ صفر» نیست. نقشهٔ خالی یعنی پوششِ ناقص و
+    // خطای خواندنِ قیمت «قیمتِ صفر» نیست. فهرستِ خالی یعنی پوششِ ناقص و
     // موتور هیچ عددِ قطعی نمی‌سازد.
     console.error("symbol_history read failed:", res.error.message);
-    return new Map();
+    return [];
   }
 
-  return buildPriceMap((res.data ?? []) as SymbolHistoryRow[]);
+  return (res.data ?? []) as SymbolHistoryRow[];
 }

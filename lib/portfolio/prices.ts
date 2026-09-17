@@ -20,7 +20,15 @@
  * «آخرین صورتِ مالیِ شرکت» چیزی نمی‌گویند. قیمتِ امروز کنارِ گزارشِ شش‌ماه‌پیش
  * کاملاً ممکن است؛ این دو سنجهٔ جدا هستند و نباید جای هم بنشینند.
  */
-import type { PricePoint } from "./contracts";
+import type { HoldingPosition, PricePoint } from "./contracts";
+
+/**
+ * واحدی که قیمتِ `symbol_history` به ازای آن است.
+ *
+ * تابلوی بورس تهران قیمتِ **هر سهم** را می‌دهد. این یک قرارداد است و صریح
+ * نوشته می‌شود تا موتور بتواند واحدِ مقدارِ کاربر را با آن بسنجد.
+ */
+export const SYMBOL_HISTORY_PRICE_UNIT = "سهم";
 
 /** زیرنمادِ بلوکی/عمده: نمادِ ختم به رقم (فارسی، عربی یا لاتین). */
 const SUB_TICKER_RE = /[0-9۰-۹٠-٩]$/;
@@ -78,11 +86,19 @@ export function buildPriceMap(rows: readonly SymbolHistoryRow[]): Map<string, Pr
     const rial = numeric(row.close) ?? numeric(row.last_price);
     if (rial === null) continue;
 
+    // ⚠️ ردیفِ بدونِ منبع قیمت نمی‌سازد.
+    // نسخهٔ قبل جای خالی را با «نامشخص» پر می‌کرد؛ آن رشته خالی نیست، پس از
+    // گاردِ «منبع باید باشد» رد می‌شد و دقیقاً همان دادهٔ بی‌منبع را معتبر
+    // می‌کرد. جای خالی با برچسبِ جانشین پر نمی‌شود.
+    const src = row.source?.trim() ?? "";
+    if (src === "") continue;
+
     out.set(symbol, {
       toman: rialToToman(rial),
       // منبع صریح است تا کاربر بداند این عدد از کجا آمده — نه «قیمت روز».
-      source: `symbol_history · ${row.source?.trim() || "نامشخص"}`,
+      source: `symbol_history · ${src}`,
       asOf: date,
+      unit: SYMBOL_HISTORY_PRICE_UNIT,
     });
   }
   return out;
@@ -104,4 +120,30 @@ export function priceableSymbols(
     if (s !== "" && !isSubTicker(s)) set.add(s);
   }
   return [...set];
+}
+
+/**
+ * نگاشتِ صریحِ «قیمتِ هر نماد» به «قیمتِ هر قلم».
+ *
+ * ⚠️ چرا لازم است: قیمت‌ها با **نماد** کلید می‌خورند ولی موتور هر قلم را با
+ * `positionKey` می‌شناسد، و این دو عمداً یکی نیستند — `positionKey` شناسهٔ
+ * پایدارِ قلم است و با تغییرِ نماد نباید عوض شود. قبلاً موتور با
+ * `positionKey` در نقشهٔ نمادها جست‌وجو می‌کرد، پس قلمی که کلیدش با نمادش
+ * فرق داشت بی‌صدا «بدونِ قیمت» می‌شد.
+ *
+ * راهِ حل، **تغییرِ شناسهٔ پایدار نیست** — نگاشتِ صریح است. دو قلمِ متفاوت با
+ * نمادِ یکسان هم هرکدام همان قیمت را می‌گیرند، که درست است.
+ */
+export function resolvePricesByPosition(
+  positions: readonly HoldingPosition[],
+  priceBySymbol: ReadonlyMap<string, PricePoint>
+): Map<string, PricePoint> {
+  const out = new Map<string, PricePoint>();
+  for (const pos of positions) {
+    const symbol = (pos.symbol ?? "").trim();
+    if (symbol === "") continue; // قلمِ دستی قیمت ندارد — پوششِ ناقص، نه حدس.
+    const price = priceBySymbol.get(symbol);
+    if (price) out.set(pos.positionKey, price);
+  }
+  return out;
 }

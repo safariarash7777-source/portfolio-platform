@@ -11,14 +11,19 @@ import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
 const NOW = new Date("2026-09-16T00:00:00Z");
 const opts = { maxPriceAgeDays: 3, maxPriceFutureDays: 1, now: NOW };
 
-const target = (weights: [string, number][], refId: string | null = "ref-1"): TargetVersion => ({
+const target = (
+  weights: [string, number][],
+  refId: string | null = "ref-1",
+  problems: string[] = []
+): TargetVersion => ({
   id: "tgt-1",
   version: 1,
   referenceVersionId: refId,
   weights: weights.map(([assetClass, weightPct]) => ({ assetClass, weightPct })),
+  problems,
 });
 
-const holdings = (rows: [string, string, number][]): HoldingVersion => ({
+const holdings = (rows: [string, string, number][], unit = "عدد"): HoldingVersion => ({
   id: "hold-1",
   version: 1,
   positions: rows.map(([positionKey, assetClass, qty]) => ({
@@ -27,13 +32,14 @@ const holdings = (rows: [string, string, number][]): HoldingVersion => ({
     manualLabel: null,
     assetClass,
     qty,
-    unit: "عدد",
+    unit,
     costBasis: null,
     asOf: "2026-09-15",
   })),
 });
 
-const price = (toman: number, asOf = "2026-09-15"): PricePoint => ({ toman, source: "رله", asOf });
+const price = (toman: number, asOf = "2026-09-15", unit = "عدد"): PricePoint =>
+  ({ toman, source: "رله", asOf, unit });
 
 describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
   test("۷۰/۱۰/۳۰ برابر ۱۱۰ درصد است و رد می‌شود، نه نرمال", () => {
@@ -92,7 +98,7 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
     const r = compareHoldingsToTarget(
       holdings([["ط", "gold", 10]]),
       target([["gold", 100]]),
-      new Map([["ط", { toman: 100, source: "   ", asOf: "2026-09-15" }]]),
+      new Map([["ط", { toman: 100, source: "   ", asOf: "2026-09-15", unit: "عدد" }]]),
       opts
     );
     assert.equal(r.definitive, false);
@@ -175,32 +181,32 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
     );
 
   test("قیمت منفی رد می‌شود و عدد قطعی نمی‌سازد", () => {
-    const r = rejected({ toman: -100, source: "رله", asOf: "2026-09-15" });
+    const r = rejected({ toman: -100, source: "رله", asOf: "2026-09-15", unit: "عدد" });
     assert.equal(r.definitive, false);
     assert.equal(r.rows[0].valueDelta, null);
   });
 
   test("قیمت صفر رد می‌شود — قرارداد روشن", () => {
-    const r = rejected({ toman: 0, source: "رله", asOf: "2026-09-15" });
+    const r = rejected({ toman: 0, source: "رله", asOf: "2026-09-15", unit: "عدد" });
     assert.equal(r.definitive, false);
     assert.equal(r.totalValue, null);
   });
 
   test("تاریخ آینده خارج از تلورانس رد می‌شود", () => {
-    const r = rejected({ toman: 100, source: "رله", asOf: "2100-01-01" });
+    const r = rejected({ toman: 100, source: "رله", asOf: "2100-01-01", unit: "عدد" });
     assert.equal(r.definitive, false, "سنِ منفی نباید «تازه» به حساب بیاید");
     assert.equal(r.gaps[0].reason, "no_price");
   });
 
   test("اختلاف ساعتِ کوچک تحمل می‌شود", () => {
     const soon = new Date(NOW.getTime() + 6 * 3600_000).toISOString();
-    const r = rejected({ toman: 100, source: "رله", asOf: soon });
+    const r = rejected({ toman: 100, source: "رله", asOf: soon, unit: "عدد" });
     assert.equal(r.definitive, true, "شش ساعت جلوتر نباید کلِ محاسبه را بیندازد");
   });
 
   test("قیمت NaN و مقدار نامعتبر رد می‌شوند", () => {
-    assert.equal(rejected({ toman: NaN, source: "رله", asOf: "2026-09-15" }).definitive, false);
-    assert.equal(rejected({ toman: Infinity, source: "رله", asOf: "2026-09-15" }).definitive, false);
+    assert.equal(rejected({ toman: NaN, source: "رله", asOf: "2026-09-15", unit: "عدد" }).definitive, false);
+    assert.equal(rejected({ toman: Infinity, source: "رله", asOf: "2026-09-15", unit: "عدد" }).definitive, false);
     const bad = compareHoldingsToTarget(
       { id: "h", version: 1, positions: [{ positionKey: "ط", symbol: "ط", manualLabel: null,
         assetClass: "gold", qty: Number.NaN, unit: "عدد", costBasis: null, asOf: "2026-09-15" }] },
@@ -212,7 +218,7 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
   });
 
   test("تاریخ بی‌معنا رد می‌شود", () => {
-    const r = rejected({ toman: 100, source: "رله", asOf: "نه‌یک‌تاریخ" });
+    const r = rejected({ toman: 100, source: "رله", asOf: "نه‌یک‌تاریخ", unit: "عدد" });
     assert.equal(r.definitive, false);
   });
 
@@ -251,6 +257,105 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
         assert.ok(v === null || Number.isFinite(v), `مقدار نامعتبر: ${v}`);
       }
     }
+  });
+
+  // ── یافته‌های بازبینی ۱۴۰۵/۰۶/۲۶ ─────────────────────────────────────────
+
+  // ورودیِ واقعیِ گزارش: [{طلا,۱۰۰},{dsf,۲۰}]. «dsf» کنار گذاشته می‌شد و
+  // بقیه اتفاقاً ۱۰۰ جمع می‌زدند، پس محاسبه «قطعی» می‌شد و مبلغ بازتوازن
+  // می‌ساخت — با وجود اینکه یک‌پنجم سبد اصلاً شناخته نشده بود.
+  test("هدفِ دارای دستهٔ ناشناخته محاسبهٔ قطعی نمی‌دهد", () => {
+    const broken = target([["gold", 100]], "ref-1", ["دستهٔ «dsf» شناخته نشد."]);
+    assert.throws(() => assertTargetSumsTo100(broken), InvalidTargetError);
+    assert.throws(
+      () =>
+        compareHoldingsToTarget(
+          holdings([["ط", "gold", 10]]),
+          broken,
+          new Map([["ط", price(100)]]),
+          opts
+        ),
+      (e: unknown) => e instanceof InvalidTargetError && /dsf/.test((e as Error).message)
+    );
+  });
+
+  test("هدفِ دارای قلمِ نامعتبر هم مسدود می‌شود", () => {
+    const broken = target([["gold", 100]], "ref-1", ["قلم‌های نامعتبر: «سهام»"]);
+    assert.throws(() => assertTargetSumsTo100(broken), InvalidTargetError);
+  });
+
+  test("هدفِ سالم همچنان محاسبه می‌شود", () => {
+    const r = compareHoldingsToTarget(
+      holdings([["ط", "gold", 10]]),
+      target([["gold", 100]]),
+      new Map([["ط", price(100)]]),
+      opts
+    );
+    assert.equal(r.definitive, true);
+  });
+
+  // «۱ سهم» و «۱ هزار سهم» ارزشِ یکسان می‌گرفتند.
+  test("واحدِ مقدار در ارزش اثر می‌گذارد", () => {
+    const one = compareHoldingsToTarget(
+      holdings([["س", "equity_ir", 1]], "سهم"),
+      target([["equity_ir", 100]]),
+      new Map([["س", price(1000, "2026-09-15", "سهم")]]),
+      opts
+    );
+    const thousand = compareHoldingsToTarget(
+      holdings([["س", "equity_ir", 1]], "هزار سهم"),
+      target([["equity_ir", 100]]),
+      new Map([["س", price(1000, "2026-09-15", "سهم")]]),
+      opts
+    );
+    assert.equal(one.totalValue, 1000);
+    assert.equal(thousand.totalValue, 1_000_000, "هزار سهم باید هزار برابر باشد");
+    assert.notEqual(one.totalValue, thousand.totalValue);
+  });
+
+  test("واحدِ ناشناخته پوششِ ناقص می‌دهد، نه عددِ حدسی", () => {
+    const r = compareHoldingsToTarget(
+      holdings([["س", "equity_ir", 5]], "واحدِ عجیب"),
+      target([["equity_ir", 100]]),
+      new Map([["س", price(1000, "2026-09-15", "سهم")]]),
+      opts
+    );
+    assert.equal(r.definitive, false);
+    assert.equal(r.gaps[0].reason, "unit_mismatch");
+    assert.equal(r.totalValue, null);
+  });
+
+  test("طلای فیزیکی (گرم) با قیمتِ هر سهم ضرب نمی‌شود", () => {
+    const r = compareHoldingsToTarget(
+      holdings([["ط", "gold", 5]], "گرم"),
+      target([["gold", 100]]),
+      new Map([["ط", price(1000, "2026-09-15", "سهم")]]),
+      opts
+    );
+    assert.equal(r.definitive, false);
+    assert.equal(r.gaps[0].reason, "unit_mismatch");
+    assert.match(r.gaps[0].detail, /هم‌خانواده/);
+  });
+
+  test("منبعِ «نامشخص» قیمت را معتبر نمی‌کند", () => {
+    const r = compareHoldingsToTarget(
+      holdings([["ط", "gold", 10]]),
+      target([["gold", 100]]),
+      new Map([["ط", { toman: 100, source: "نامشخص", asOf: "2026-09-15", unit: "عدد" }]]),
+      opts
+    );
+    assert.equal(r.definitive, false);
+    assert.equal(r.gaps[0].reason, "no_price");
+  });
+
+  test("قیمت بدون واحد رد می‌شود", () => {
+    const r = compareHoldingsToTarget(
+      holdings([["ط", "gold", 10]]),
+      target([["gold", 100]]),
+      new Map([["ط", { toman: 100, source: "رله", asOf: "2026-09-15", unit: "  " }]]),
+      opts
+    );
+    assert.equal(r.definitive, false);
   });
 
   test("آستانه فقط با عبور واقعی فعال می‌شود", () => {

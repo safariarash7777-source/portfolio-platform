@@ -19,6 +19,7 @@ import type {
   RebalanceResult,
   TargetVersion,
 } from "./contracts";
+import { conversionFactor, describeUnitProblem } from "./units";
 
 export interface RebalanceOptions {
   /** قیمت از چند روز کهنه‌تر، دیگر مبنای عددِ قطعی نیست. */
@@ -42,10 +43,19 @@ export const DEFAULT_REBALANCE_OPTIONS: RebalanceOptions = {
 export class InvalidTargetError extends Error {}
 
 const DAY_MS = 86_400_000;
+/** برچسب‌هایی که «منبع» نیستند و نباید قیمت را معتبر کنند. */
+const UNSOURCED = new Set(["نامشخص", "unknown", "-", "—"]);
 /** تلورانسِ ممیزِ شناور؛ ۷۰+۱۵+۱۵ نباید به‌خاطرِ نمایشِ دودویی رد شود. */
 const WEIGHT_EPSILON = 1e-9;
 
 export function assertTargetSumsTo100(target: TargetVersion): void {
+  // ⚠️ اول از همه: هدفی که خودش مشکل دارد اصلاً نباید به مرحلهٔ جمعِ وزن‌ها
+  // برسد. اگر قلمی شناخته نشده باشد و کنار گذاشته شود، بقیه ممکن است
+  // اتفاقاً ۱۰۰ جمع بزنند و یک عددِ قطعیِ کاملاً اشتباه بسازند — همان
+  // ورودیِ `[{طلا,۱۰۰},{dsf,۲۰}]` که مبلغ بازتوازن می‌داد.
+  if (target.problems.length > 0) {
+    throw new InvalidTargetError(target.problems.join(" "));
+  }
   if (target.weights.length === 0) {
     throw new InvalidTargetError("سبد هدف هیچ وزنی ندارد.");
   }
@@ -92,6 +102,10 @@ function isUsable(price: PricePoint | undefined, options: RebalanceOptions): pri
   if (typeof price.toman !== "number" || !Number.isFinite(price.toman)) return false;
   if (price.toman <= 0) return false;
   if (typeof price.source !== "string" || price.source.trim() === "") return false;
+  // ⚠️ «نامشخص» منبع نیست. یک برچسبِ جانشین که فقط خالی‌نبودن را راضی کند،
+  // همان قاعدهٔ «قیمت باید منبع داشته باشد» را توخالی می‌کند.
+  if (UNSOURCED.has(price.source.trim())) return false;
+  if (typeof price.unit !== "string" || price.unit.trim() === "") return false;
 
   const t = new Date(price.asOf).getTime();
   if (Number.isNaN(t)) return false;
@@ -122,6 +136,11 @@ export function compareHoldingsToTarget(
   let covered = 0;
 
   for (const pos of holdings.positions) {
+    // ⚠️ نقشه با `positionKey` کلید می‌خورد، نه با نماد. قیمت‌ها از
+    // `symbol_history` با نماد می‌آیند و نگاشتشان به قلم **صریح** و بیرون از
+    // این تابع انجام می‌شود (`resolvePricesByPosition`). قبلاً همین‌جا با
+    // `positionKey` در نقشه‌ای که کلیدش نماد بود جست‌وجو می‌شد، پس قلمی که
+    // کلیدش با نمادش فرق داشت بی‌صدا «بدونِ قیمت» می‌شد.
     const price = prices.get(pos.positionKey);
     if (!isUsable(price, options)) {
       gaps.push({
@@ -140,9 +159,21 @@ export function compareHoldingsToTarget(
       });
       continue;
     }
+    // ⚠️ واحدِ مقدار باید با واحدِ قیمت سازگار باشد. «۱ هزار سهم» با قیمتِ
+    // «هر سهم» یعنی ضربِ ۱۰۰۰ — نه ضربِ ۱. ضریبِ ناشناخته حدس زده نمی‌شود.
+    const conv = conversionFactor(pos.unit, price.unit);
+    if (!conv.ok) {
+      gaps.push({
+        positionKey: pos.positionKey,
+        reason: "unit_mismatch",
+        detail: `${describeUnitProblem(conv.reason)} (مقدار: «${pos.unit}» · قیمت: «${price.unit}»)`,
+      });
+      continue;
+    }
+
     // مقدار هم باید معتبر باشد؛ `qty` از دیتابیس می‌آید ولی حاصل‌ضرب می‌تواند
     // سرریز کند یا `NaN` شود و عددِ قطعیِ بی‌معنا بسازد.
-    const value = pos.qty * price.toman;
+    const value = pos.qty * conv.factor * price.toman;
     if (!Number.isFinite(value) || value <= 0) {
       gaps.push({
         positionKey: pos.positionKey,

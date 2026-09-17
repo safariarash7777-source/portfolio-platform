@@ -1,7 +1,6 @@
-import { loadPortfolioSnapshot, loadPrices } from "@/lib/portfolio/service";
-import { compareHoldingsToTarget, InvalidTargetError } from "@/lib/portfolio/rebalance";
+import { loadPortfolioSnapshot, loadPriceRows } from "@/lib/portfolio/service";
+import { buildHoldingsView } from "@/lib/portfolio/view";
 import HoldingsWorkbench from "@/components/portfolio/HoldingsWorkbench";
-import type { AssetClassRow, CoverageGap } from "@/lib/portfolio/contracts";
 
 export const metadata = { title: "دارایی من" };
 export const dynamic = "force-dynamic";
@@ -13,40 +12,19 @@ export default async function HoldingsPage({
 }) {
   const { v } = await searchParams;
   const snapshot = await loadPortfolioSnapshot(v);
-  const prices = await loadPrices(snapshot.holdings?.positions ?? []);
+  const priceRows = await loadPriceRows(snapshot.holdings?.positions ?? []);
 
-  let rows: readonly AssetClassRow[] = [];
-  let gaps: readonly CoverageGap[] = [];
-  let definitive = false;
-  let totalValue: number | null = null;
-  const notes: string[] = [...snapshot.targetProblems];
-
-  if (snapshot.holdings && snapshot.target) {
-    try {
-      const result = compareHoldingsToTarget(snapshot.holdings, snapshot.target, prices, {
-        maxPriceAgeDays: 3,
-        maxPriceFutureDays: 1,
-        now: new Date(),
-      });
-      rows = result.rows;
-      gaps = result.gaps;
-      definitive = result.definitive;
-      totalValue = result.totalValue;
-      notes.push(...result.notes);
-    } catch (e) {
-      // ⚠️ سبد هدفِ نامعتبر (مثلاً جمعِ ۱۱۰٪) صفحه را نمی‌اندازد، ولی
-      // خودکار هم اصلاح نمی‌شود — دقیقاً همان چیزی که رخ داده گفته می‌شود.
-      notes.push(
-        e instanceof InvalidTargetError
-          ? e.message
-          : "مقایسه انجام نشد."
-      );
-    }
-  } else if (!snapshot.holdings) {
-    notes.push("هنوز دارایی‌ای ثبت نکرده‌اید.");
-  } else {
-    notes.push("سبد هدفی برای مقایسه ثبت نشده است.");
-  }
+  // ⚠️ صفحه خودش چیزی حساب نمی‌کند. همان ترکیبی را صدا می‌زند که مستقیم
+  // آزمون می‌شود، وگرنه اتصالِ «خواندنِ هدف + خواندنِ قیمت + محاسبه» بی‌آزمون
+  // می‌ماند — و هر سه ایرادِ بازبینی دقیقاً در همین اتصال بودند.
+  const view = buildHoldingsView({
+    holdings: snapshot.holdings,
+    storedTarget: snapshot.storedTarget,
+    priceRows,
+    maxPriceAgeDays: 3,
+    maxPriceFutureDays: 1,
+    now: new Date(),
+  });
 
   return (
     <div className="space-y-6">
@@ -66,11 +44,11 @@ export default async function HoldingsPage({
         history={snapshot.history}
         activeVersion={snapshot.holdings?.version ?? null}
         activePositions={snapshot.holdings?.positions ?? []}
-        rows={rows}
-        gaps={gaps}
-        definitive={definitive}
-        notes={notes}
-        totalValue={totalValue}
+        rows={view.rows}
+        gaps={view.gaps}
+        definitive={view.definitive}
+        notes={view.notes}
+        totalValue={view.totalValue}
       />
     </div>
   );
