@@ -94,10 +94,17 @@ if (n30) {
   check("n30 period total", n30.period_total_amount === 12366445, String(n30.period_total_amount));
   check("n30 fy cumulative", n30.fy_cumulative_amount === 47865111, String(n30.fy_cumulative_amount));
   check("n30 fiscal year", n30.fiscal_year === 1405);
+  // ⚠️ واحد و دوره باید در خودِ رکورد باشند.
+  // اندازه‌گیریِ Production (۱۴۰۵/۰۶/۲۶): صفر از ۵۷۱۰ ردیفِ ن-۳۰ کلیدِ `unit`
+  // داشت، در حالی که هر ۳۴۱۶ ردیفِ ن-۱۰ داشت. یعنی مبلغِ فروشِ ماهانه بدونِ
+  // مقیاس ذخیره می‌شد و هر نمایشی از آن، عددی با بزرگیِ اثبات‌ناپذیر بود.
+  check("n30 unit recorded", n30.unit === "میلیون ریال", String(n30.unit));
+  check("n30 period months", n30.period_months === 1, String(n30.period_months));
 }
 // بدون جدول محصول → null.
 check("n30 null without product table",
   normalizeN30(parseHtmlTables(histTable), { symbol: "x", period_end: null }) === null);
+
 
 /* ── بانک (T5): تطبیق عددی با اکسل واقعی کدال — ونوین FY1404 (فیکسچر کامل) ────
  * مرجع اعداد: صورت سود و زیان بانک در اکسل رسمی کدال (excel.codal.ir،
