@@ -37,6 +37,15 @@ export interface HistoryItem {
 }
 
 const ASSET_CLASSES = ["gold", "fixed_income", "equity_ir", "fx", "cash"] as const;
+/**
+ * برچسبِ فارسیِ دستهٔ دارایی.
+ *
+ * ⚠️ `asset_class` در دیتابیس متنِ آزاد است (`CHECK (btrim(...) <> '')`)، پس
+ * دسته‌ای خارج از این فهرست هم می‌تواند ذخیره شده باشد. چاپِ خامِ آن اسلاگ
+ * کنارِ برچسب‌های فارسی، آن را مثلِ یک دستهٔ عادی نشان می‌داد — در حالی که
+ * هیچ‌جای محاسبه آن را نمی‌شناسد. `assetLabel` صریح علامتش می‌زند؛ برچسبِ
+ * تازه هم برایش اختراع نمی‌شود، چون حدس‌زدنِ دسته ممنوع است.
+ */
 const ASSET_LABEL: Record<string, string> = {
   gold: "طلا",
   fixed_income: "درآمد ثابت",
@@ -44,6 +53,10 @@ const ASSET_LABEL: Record<string, string> = {
   fx: "ارز",
   cash: "نقد",
 };
+
+function assetLabel(assetClass: string): string {
+  return ASSET_LABEL[assetClass] ?? `«${assetClass}» (دستهٔ ناشناخته)`;
+}
 
 const blank = (): Row => ({
   positionKey: "",
@@ -331,7 +344,7 @@ export default function HoldingsWorkbench({
                       {p.symbol ? "نماد" : "دستی"}
                     </td>
                     <td className="py-2" style={{ color: "var(--text-2)" }}>
-                      {ASSET_LABEL[p.assetClass] ?? p.assetClass}
+                      {assetLabel(p.assetClass)}
                     </td>
                     <td className="py-2" style={{ color: "var(--text-2)" }}>
                       {toPersianDigits(p.qty)} {p.unit}
@@ -395,7 +408,7 @@ export default function HoldingsWorkbench({
                 {comparison.map((r) => (
                   <tr key={r.assetClass} style={{ borderTop: "1px solid var(--line)" }}>
                     <td className="py-2" style={{ color: "var(--navy-deep)" }}>
-                      {ASSET_LABEL[r.assetClass] ?? r.assetClass}
+                      {assetLabel(r.assetClass)}
                     </td>
                     <td className="py-2" style={{ color: "var(--text-2)" }}>
                       {r.currentWeightPct === null ? "—" : `${toPersianDigits(r.currentWeightPct.toFixed(1))}٪`}
