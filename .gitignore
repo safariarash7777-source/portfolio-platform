@@ -58,3 +58,7 @@ inventory-restored.txt
 comparison.txt
 restore.log
 MANIFEST.txt
+
+# symlinkِ خودارجاعِ node_modules به‌اشتباه کامیت شده بود؛ الگوی بالا با
+# اسلشِ انتهایی فقط پوشه را می‌گیرد، نه خودِ symlink را.
+node_modules
