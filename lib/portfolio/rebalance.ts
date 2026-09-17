@@ -156,7 +156,14 @@ export function compareHoldingsToTarget(
   }
 
   const fullCoverage = gaps.length === 0;
-  const definitive = fullCoverage && holdings.positions.length > 0;
+
+  // ⚠️ گاردِ سرریزِ **جمع**، نه فقط تکِ اقلام.
+  // هر قلم می‌تواند `finite` باشد ولی جمعشان `Infinity` شود: دو قلم با
+  // `qty = 1e308` و قیمتِ ۱، هرکدام معتبرند و جمعشان از بردِ `double`
+  // بیرون می‌زند. آن‌وقت `valueDelta` به `NaN` می‌رسید و `definitive` هم
+  // `true` می‌ماند — یعنی یک «عددِ قطعی» که اصلاً عدد نیست.
+  const totalUsable = Number.isFinite(covered) && covered > 0;
+  const definitive = fullCoverage && holdings.positions.length > 0 && totalUsable;
   const totalValue = definitive ? covered : null;
 
   const classes = new Set<string>([
@@ -180,13 +187,19 @@ export function compareHoldingsToTarget(
     }
 
     const currentWeightPct = (value / totalValue) * 100;
+    const valueDelta = Math.round((targetWeightPct / 100) * totalValue - value);
+
+    // خروجیِ محاسبه هم بررسی می‌شود، نه فقط ورودی‌اش: اگر به هر دلیل
+    // `NaN`/`Infinity` بیرون بیاید، `null` گزارش می‌شود نه عددِ بی‌معنا.
+    const safe = (n: number): number | null => (Number.isFinite(n) ? n : null);
+
     return {
       assetClass,
       value,
-      currentWeightPct,
+      currentWeightPct: safe(currentWeightPct),
       targetWeightPct,
-      deltaPercentagePoints: targetWeightPct - currentWeightPct,
-      valueDelta: Math.round((targetWeightPct / 100) * totalValue - value),
+      deltaPercentagePoints: safe(targetWeightPct - currentWeightPct),
+      valueDelta: safe(valueDelta),
     };
   });
 
@@ -195,7 +208,9 @@ export function compareHoldingsToTarget(
     notes.push(
       holdings.positions.length === 0
         ? "هیچ قلمی ثبت نشده، پس مقایسه‌ای انجام نشد."
-        : "به‌خاطر پوشش ناقصِ قیمت، مقدار قطعی بازتوازن محاسبه نشد."
+        : !totalUsable && fullCoverage
+          ? "جمع ارزش‌ها از محدودهٔ عددی معتبر بیرون است، پس مقدار قطعی محاسبه نشد."
+          : "به‌خاطر پوشش ناقصِ قیمت، مقدار قطعی بازتوازن محاسبه نشد."
     );
   }
   if (target.referenceVersionId === null) {

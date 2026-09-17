@@ -216,6 +216,43 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
     assert.equal(r.definitive, false);
   });
 
+  // ── سرریزِ جمع (یافتهٔ بازبینیِ ۱۴۰۵/۰۶/۲۶) ────────────────────────────────
+  test("دو قلمِ finite که جمعشان Infinity می‌شود، نتیجهٔ قطعی نمی‌سازند", () => {
+    const r = compareHoldingsToTarget(
+      holdings([["الف", "gold", 1e308], ["ب", "equity_ir", 1e308]]),
+      target([["gold", 70], ["equity_ir", 30]]),
+      new Map([["الف", price(1)], ["ب", price(1)]]),
+      opts
+    );
+    assert.equal(r.fullCoverage, true, "هر دو قلم قیمتِ معتبر دارند");
+    assert.equal(r.definitive, false, "ولی جمعشان از بردِ عددی بیرون است");
+    assert.equal(r.totalValue, null);
+    for (const row of r.rows) {
+      assert.equal(row.valueDelta, null, `${row.assetClass} نباید NaN بدهد`);
+      assert.notEqual(row.deltaPercentagePoints, undefined);
+      assert.ok(
+        row.deltaPercentagePoints === null || Number.isFinite(row.deltaPercentagePoints),
+        "هیچ خروجی‌ای نباید NaN باشد"
+      );
+    }
+    assert.ok(r.notes.some((n) => /محدودهٔ عددی/.test(n)), "دلیل باید صریح گفته شود");
+  });
+
+  test("هیچ خروجی قطعی‌ای NaN یا Infinity نیست", () => {
+    const r = compareHoldingsToTarget(
+      holdings([["ط", "gold", 10], ["س", "equity_ir", 10]]),
+      target([["gold", 70], ["equity_ir", 30]]),
+      new Map([["ط", price(100)], ["س", price(100)]]),
+      opts
+    );
+    assert.equal(r.definitive, true);
+    for (const row of r.rows) {
+      for (const v of [row.value, row.currentWeightPct, row.deltaPercentagePoints, row.valueDelta]) {
+        assert.ok(v === null || Number.isFinite(v), `مقدار نامعتبر: ${v}`);
+      }
+    }
+  });
+
   test("آستانه فقط با عبور واقعی فعال می‌شود", () => {
     const r = compareHoldingsToTarget(
       holdings([["ط", "gold", 10], ["س", "equity_ir", 10]]),

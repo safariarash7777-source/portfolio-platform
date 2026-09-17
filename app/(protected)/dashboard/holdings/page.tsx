@@ -19,7 +19,7 @@ export default async function HoldingsPage({
   let gaps: readonly CoverageGap[] = [];
   let definitive = false;
   let totalValue: number | null = null;
-  const notes: string[] = [];
+  const notes: string[] = [...snapshot.targetProblems];
 
   if (snapshot.holdings && snapshot.target) {
     try {

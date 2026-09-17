@@ -56,6 +56,9 @@ const last = (s: string) => s.split("\n").filter(Boolean).pop()?.trim() ?? "";
 
 const POS = (key: string, qty: number) =>
   `{"position_key":"${key}","symbol":"${key}","asset_class":"gold","qty":${qty},"unit":"گرم","as_of":"2026-09-15"}`;
+/** قلمِ دلخواه — برای آزمون‌های برخوردِ اثر انگشت و رفت‌وبرگشتِ کامل. */
+const POSX = (o: Record<string, string | number>) =>
+  JSON.stringify({ unit: "u", as_of: "2026-09-15", ...o });
 const record = (positions: string, token: string | null = null, note = "") =>
   `SELECT version, reused FROM public.record_member_holdings('[${positions}]'::jsonb, ${note ? `'${note}'` : "NULL"}, ${token ? `'${token}'` : "NULL"})`;
 
@@ -195,6 +198,81 @@ describe("ثبت نسخه‌دار دارایی عضو (#140)", () => {
       "همان اقلام با ترتیب دیگر باید همان ثبت شمرده شود");
   });
 
+  // ⚠️ برخوردِ اثر انگشت — یافتهٔ بازبینیِ ۱۴۰۵/۰۶/۲۶.
+  // با چسباندنِ رشته‌ها با `~`، این دو محتوای **متفاوت** یک هشِ یکسان
+  // می‌گرفتند و دومی «ثبتِ تکراری» شمرده می‌شد.
+  test("دو محتوای متفاوت با مرزِ جداکننده، اثر انگشتِ یکسان نمی‌گیرند", () => {
+    const D = "88888888-8888-8888-8888-888888888888";
+    psql(DB, `INSERT INTO auth.users(id) VALUES ('${D}')`);
+    psql(DB, `INSERT INTO public.profiles(id, role) VALUES ('${D}','user')`);
+
+    const a = POSX({ position_key: "x", symbol: "x", asset_class: "gold~1", qty: 2, unit: "u" });
+    const b = POSX({ position_key: "x", symbol: "x", asset_class: "gold", qty: 1, unit: "2~u" });
+
+    assert.match(last(asRole("authenticated", D, record(a, "tok-c"))), /\|f$/);
+    const err = asRoleError("authenticated", D, record(b, "tok-c"));
+    assert.match(err, /محتوای متفاوت/, "محتوای متفاوت نباید تکراری شمرده شود");
+  });
+
+  test("یادداشت هم بخشی از اثر انگشت است", () => {
+    const E = "99999999-9999-9999-9999-999999999999";
+    psql(DB, `INSERT INTO auth.users(id) VALUES ('${E}')`);
+    psql(DB, `INSERT INTO public.profiles(id, role) VALUES ('${E}','user')`);
+    assert.match(last(asRole("authenticated", E, record(POS("ط", 1), "tok-n", "یادداشت اول"))), /\|f$/);
+    assert.match(
+      asRoleError("authenticated", E, record(POS("ط", 1), "tok-n", "یادداشت دوم")),
+      /محتوای متفاوت/
+    );
+  });
+
+  test("مقدار هم‌ارز با نوع مقصد نرمال می‌شود", () => {
+    const F = "aaaaaaaa-0000-0000-0000-000000000001";
+    psql(DB, `INSERT INTO auth.users(id) VALUES ('${F}')`);
+    psql(DB, `INSERT INTO public.profiles(id, role) VALUES ('${F}','user')`);
+    const one = POSX({ position_key: "ط", symbol: "ط", asset_class: "gold", qty: 10 });
+    const same = POSX({ position_key: "ط", symbol: "ط", asset_class: "gold", qty: "10.0" });
+    assert.match(last(asRole("authenticated", F, record(one, "tok-q"))), /\|f$/);
+    assert.match(last(asRole("authenticated", F, record(same, "tok-q"))), /\|t$/,
+      "«۱۰» و «10.0» باید یک محتوا شمرده شوند");
+  });
+
+  // ⚠️ رفت‌وبرگشتِ بی‌اتلاف — یافتهٔ بازبینی: اصلاحِ مقدار نباید برچسب،
+  // کلید یا بهای تمام‌شده را از بین ببرد.
+  test("اصلاح مقدار، کلید و برچسب و بهای تمام‌شده را حفظ می‌کند", () => {
+    const G = "aaaaaaaa-0000-0000-0000-000000000002";
+    psql(DB, `INSERT INTO auth.users(id) VALUES ('${G}')`);
+    psql(DB, `INSERT INTO public.profiles(id, role) VALUES ('${G}','user')`);
+
+    // کلید عمداً با برچسب فرق دارد، و بهای تمام‌شده هم دارد.
+    const original = POSX({
+      position_key: "key-1", manual_label: "نفت (دستی)", asset_class: "commodity",
+      qty: 5, unit: "بشکه", cost_basis: "1200000",
+    });
+    assert.match(last(asRole("authenticated", G, record(original, "rt-1"))), /\|f$/);
+
+    const read = last(asRole("authenticated", G,
+      `SELECT position_key||'|'||coalesce(symbol,'-')||'|'||coalesce(manual_label,'-')||'|'||
+              asset_class||'|'||qty||'|'||unit||'|'||coalesce(cost_basis::text,'-')
+         FROM public.member_holding_positions p
+         JOIN public.member_holding_versions v ON v.id=p.version_id
+        WHERE v.user_id='${G}' AND v.version=1`));
+    assert.equal(read, "key-1|-|نفت (دستی)|commodity|5|بشکه|1200000");
+
+    // فقط مقدار عوض می‌شود؛ بقیه باید دست‌نخورده بمانند.
+    const edited = POSX({
+      position_key: "key-1", manual_label: "نفت (دستی)", asset_class: "commodity",
+      qty: 7, unit: "بشکه", cost_basis: "1200000",
+    });
+    assert.match(last(asRole("authenticated", G, record(edited, "rt-2"))), /\|f$/);
+    const after = last(asRole("authenticated", G,
+      `SELECT position_key||'|'||coalesce(manual_label,'-')||'|'||qty||'|'||coalesce(cost_basis::text,'-')
+         FROM public.member_holding_positions p
+         JOIN public.member_holding_versions v ON v.id=p.version_id
+        WHERE v.user_id='${G}' AND v.version=2`));
+    assert.equal(after, "key-1|نفت (دستی)|7|1200000",
+      "اصلاح مقدار نباید کلید، برچسب یا بهای تمام‌شده را از بین ببرد");
+  });
+
   test("سبد مرجع: وزن‌هایی که ۱۰۰ نمی‌شوند نهایی نمی‌شوند", () => {
     psql(DB, `INSERT INTO public.intel_reference_portfolios(id, name, created_by)
               VALUES ('44444444-4444-4444-4444-444444444444','مرجع آزمایشی','${ADMIN}')`);
@@ -243,9 +321,15 @@ describe("ثبت نسخه‌دار دارایی عضو (#140)", () => {
       `SELECT count(*) FROM public.member_holding_versions`)));
     const bSees = Number(last(asRole("authenticated", B,
       `SELECT count(*) FROM public.member_holding_versions`)));
+    // جمعِ کل از خودِ دیتابیس خوانده می‌شود، نه عددِ ثابت — وگرنه هر آزمونِ
+    // تازه‌ای که کاربر اضافه کند این را به دلیلِ بی‌ربط قرمز می‌کند.
+    const total = Number(last(psql(DB,
+      `SELECT count(*) FROM public.member_holding_versions`)));
     assert.ok(aSees > 0 && bSees > 0, "هر دو عضو باید نسخه داشته باشند");
-    assert.equal(adminSees, aSees + bSees,
+    assert.equal(adminSees, total,
       "RLS جلوی مدیر را نمی‌گیرد؛ پس فیلترِ user_id باید در کد باشد");
+    assert.ok(adminSees > aSees && adminSees > bSees,
+      "مدیر بیش از داراییِ هر عضو می‌بیند");
     // و با فیلترِ صریح — همان کاری که `service.ts` می‌کند — ایزوله می‌شود.
     assert.equal(last(asRole("authenticated", ADMIN,
       `SELECT count(*) FROM public.member_holding_versions WHERE user_id='${ADMIN}'`)), "0");

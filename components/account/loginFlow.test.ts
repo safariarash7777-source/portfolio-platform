@@ -50,3 +50,49 @@ test("ورود ناموفق نه جابه‌جا می‌شود و نه صفحه 
   assert.equal(navigated, false);
   assert.equal(refreshed, false);
 });
+
+
+// Exercise the actual middleware with an anonymous session, without network or credentials.
+// This catches losing ?next before the already-tested login helper ever runs.
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { runInNewContext } from "node:vm";
+import ts from "typescript";
+import { NextRequest } from "next/server";
+import * as returnPaths from "./returnPath";
+
+const localRequire = createRequire(import.meta.url);
+const middlewareModule = { exports: {} as { middleware?: (request: NextRequest) => Promise<Response> } };
+runInNewContext(ts.transpileModule(readFileSync(new URL("../../middleware.ts", import.meta.url), "utf8"), {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText, {
+  exports: middlewareModule.exports,
+  require: (name: string) => name === "@supabase/ssr"
+    ? { createServerClient: () => ({ auth: { getUser: async () => ({ data: { user: null } }) } }) }
+    : name === "./components/account/returnPath" ? returnPaths : localRequire(name),
+  process: { env: {} }, URL,
+});
+
+for (const path of ["/dashboard?tab=portfolio", "/admin/research", "/terminal/فملی?tab=financials"]) {
+  test(`anonymous protected link survives login: ${path}`, async () => {
+    const request = new NextRequest(new URL(path, "https://site.example"));
+    const response = await middlewareModule.exports.middleware!(request);
+    const redirect = new URL(response.headers.get("location")!);
+    assert.equal(redirect.origin, request.nextUrl.origin);
+    assert.equal(redirect.pathname, "/login");
+    const intended = request.nextUrl.pathname + request.nextUrl.search;
+    assert.equal(redirect.searchParams.get("next"), intended);
+    const navigations: string[] = [];
+    await signInAndReturn({ signIn: async () => ({ error: null }),
+      navigate: path => navigations.push(path), refresh: () => undefined,
+    }, { email: "member@example.com", password: "test-only" }, redirect.searchParams.get("next")!);
+    assert.deepEqual(navigations, [intended]);
+  });
+}
+
+test("nested external next remains data on a local protected path", async () => {
+  const request = new NextRequest("https://site.example/dashboard?next=https%3A%2F%2Fevil.example");
+  const response = await middlewareModule.exports.middleware!(request);
+  const redirect = new URL(response.headers.get("location")!);
+  assert.equal(redirect.searchParams.get("next"), "/dashboard?next=https%3A%2F%2Fevil.example");
+});

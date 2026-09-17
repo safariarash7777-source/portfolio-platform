@@ -6,12 +6,26 @@ import { Plus, Trash2, Save, AlertCircle, CheckCircle2, History, Info } from "lu
 import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
 import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
 
+/**
+ * یک ردیفِ فرم.
+ *
+ * ⚠️ `positionKey` جدا از `label` نگه داشته می‌شود و `costBasis` هم حمل
+ * می‌شود. نسخهٔ قبل فقط `positionKey` را نگه می‌داشت و هنگامِ ارسال همان را
+ * جای `symbol`/`manual_label` می‌نوشت؛ یعنی قلمی که کلیدش با برچسبش فرق
+ * داشت، یا بهای تمام‌شده داشت، با یک اصلاحِ سادهٔ مقدار آن اطلاعات را از
+ * دست می‌داد. اصلاحِ یک عدد نباید بقیهٔ قلم را پاک کند.
+ */
 interface Row {
+  /** کلیدِ پایدارِ قلم — با تغییرِ برچسب هم عوض نمی‌شود. */
   positionKey: string;
+  /** نماد یا برچسبِ دستی، هرکدام که هست. */
+  label: string;
   kind: "symbol" | "manual";
   assetClass: string;
   qty: string;
   unit: string;
+  /** بهای تمام‌شده — رشتهٔ خالی یعنی ثبت‌نشده، نه صفر. */
+  costBasis: string;
   asOf: string;
 }
 
@@ -33,10 +47,12 @@ const ASSET_LABEL: Record<string, string> = {
 
 const blank = (): Row => ({
   positionKey: "",
+  label: "",
   kind: "symbol",
   assetClass: "gold",
   qty: "",
   unit: "عدد",
+  costBasis: "",
   asOf: new Date().toISOString().slice(0, 10),
 });
 
@@ -69,10 +85,12 @@ export default function HoldingsWorkbench({
       ? [blank()]
       : ps.map((p) => ({
           positionKey: p.positionKey,
+          label: p.symbol ?? p.manualLabel ?? p.positionKey,
           kind: p.symbol ? ("symbol" as const) : ("manual" as const),
           assetClass: p.assetClass,
           qty: String(p.qty),
           unit: p.unit,
+          costBasis: p.costBasis === null ? "" : String(p.costBasis),
           asOf: p.asOf,
         }));
 
@@ -101,16 +119,23 @@ export default function HoldingsWorkbench({
   const submit = async () => {
     setError("");
     setSaved(null);
-    const positions = rows.map((r) => ({
-      position_key: r.positionKey.trim(),
-      ...(r.kind === "symbol"
-        ? { symbol: r.positionKey.trim() }
-        : { manual_label: r.positionKey.trim() }),
-      asset_class: r.assetClass,
-      qty: Number(toLatinDigits(r.qty)),
-      unit: r.unit.trim(),
-      as_of: r.asOf,
-    }));
+    // ⚠️ رفت‌وبرگشتِ بی‌اتلاف: کلید، برچسب و بهای تمام‌شده هرکدام جدا حمل
+    // می‌شوند. برای قلمِ تازه (کلیدِ خالی) از برچسب کلید ساخته می‌شود، ولی
+    // برای قلمِ موجود کلیدِ اصلی دست نمی‌خورد.
+    const positions = rows.map((r) => {
+      const label = r.label.trim();
+      const key = r.positionKey.trim() || label;
+      const costBasis = toLatinDigits(r.costBasis).trim();
+      return {
+        position_key: key,
+        ...(r.kind === "symbol" ? { symbol: label } : { manual_label: label }),
+        asset_class: r.assetClass,
+        qty: Number(toLatinDigits(r.qty)),
+        unit: r.unit.trim(),
+        ...(costBasis === "" ? {} : { cost_basis: costBasis }),
+        as_of: r.asOf,
+      };
+    });
 
     if (positions.some((p) => !p.position_key)) {
       setError("نام یا نماد هر قلم را وارد کنید.");
@@ -184,8 +209,8 @@ export default function HoldingsWorkbench({
                 </label>
                 <input
                   className="input"
-                  value={r.positionKey}
-                  onChange={(e) => patch(i, { positionKey: e.target.value })}
+                  value={r.label}
+                  onChange={(e) => patch(i, { label: e.target.value })}
                   disabled={saving}
                   dir="rtl"
                 />

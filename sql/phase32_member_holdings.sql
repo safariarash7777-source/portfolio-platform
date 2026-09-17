@@ -203,19 +203,42 @@ BEGIN
   -- کاربرهای دیگر معطل نمی‌شوند.
   PERFORM pg_advisory_xact_lock(hashtext('member_holdings'), hashtext(v_user::text));
 
-  -- اثرِ انگشتِ محتوا، مستقل از ترتیبِ اقلام و فاصله‌ها.
-  SELECT md5(string_agg(line, '|' ORDER BY line)) INTO v_hash
+  -- ⚠️ اثرِ انگشت **ساختاری** است، نه چسباندنِ رشته‌ها با جداکننده.
+  --
+  -- نسخهٔ قبل خطوط را با `~` به هم می‌چسباند و همان را هش می‌کرد. آن روش
+  -- برخوردِ واقعی داشت: با نمادِ ثابت،
+  --   asset_class='gold~1', qty=2, unit='u'
+  -- و
+  --   asset_class='gold',   qty=1, unit='2~u'
+  -- دقیقاً یک رشتهٔ یکسان می‌سازند. یعنی دو محتوای متفاوت یک اثرِ انگشت
+  -- می‌گرفتند و «ثبتِ تکراری» اشتباه تشخیص داده می‌شد.
+  --
+  -- حالا هر قلم یک `jsonb` با کلیدهای مشخص است و مرزِ مقادیر را خودِ
+  -- ساختار نگه می‌دارد، نه یک کاراکترِ جداکننده. مقادیر با **نوعِ مقصد**
+  -- نرمال می‌شوند (`numeric` و `date` و `bigint`) تا «۱۰» و «10.0» یکی
+  -- شمرده شوند. یادداشت هم بخشی از محتواست و لحاظ می‌شود.
+  SELECT md5(
+           jsonb_build_object(
+             'note', coalesce(nullif(btrim(coalesce(p_note, '')), ''), ''),
+             'positions', coalesce(jsonb_agg(item ORDER BY item->>'k'), '[]'::jsonb)
+           )::text
+         ) INTO v_hash
     FROM (
-      SELECT btrim(e->>'position_key') || '~' ||
-             coalesce(btrim(e->>'symbol'), '') || '~' ||
-             coalesce(btrim(e->>'manual_label'), '') || '~' ||
-             btrim(e->>'asset_class') || '~' ||
-             (e->>'qty')::numeric::text || '~' ||
-             btrim(e->>'unit') || '~' ||
-             coalesce(nullif(btrim(coalesce(e->>'cost_basis','')), ''), '') || '~' ||
-             (e->>'as_of')::date::text AS line
+      SELECT jsonb_build_object(
+               'k', btrim(e->>'position_key'),
+               's', coalesce(nullif(btrim(coalesce(e->>'symbol','')), ''), ''),
+               'm', coalesce(nullif(btrim(coalesce(e->>'manual_label','')), ''), ''),
+               'c', btrim(e->>'asset_class'),
+               -- ⚠️ `trim_scale` لازم است: در Postgres مقدارِ `numeric` صفرهای
+               -- انتهایی را نگه می‌دارد، پس `10` و `10.0` دو متنِ متفاوت
+               -- می‌سازند و یک محتوا دو اثرِ انگشت می‌گیرد.
+               'q', trim_scale((e->>'qty')::numeric),
+               'u', btrim(e->>'unit'),
+               'b', coalesce((nullif(btrim(coalesce(e->>'cost_basis','')), ''))::bigint, -1),
+               'd', (e->>'as_of')::date
+             ) AS item
         FROM jsonb_array_elements(p_positions) AS e
-    ) AS lines;
+    ) AS items;
 
   -- ثبتِ دوباره با همان توکن **و همان محتوا** = همان نسخه، نه نسخهٔ تازه.
   -- همان توکن با محتوای متفاوت = خطای روشن، نه موفقیتِ دروغین.

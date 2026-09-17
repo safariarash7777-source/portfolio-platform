@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
+import { parseStoredAllocations, describeTargetProblems } from "./targetContract";
 
 /**
  * خواندنِ داراییِ **خودِ کاربرِ نشست** و هدفِ او.
@@ -22,6 +23,8 @@ import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
 export interface PortfolioSnapshot {
   holdings: HoldingVersion | null;
   target: TargetVersion | null;
+  /** مشکل‌های سبدِ هدف — دستهٔ ناشناخته یا دادهٔ خراب. خالی = سالم. */
+  targetProblems: readonly string[];
   /** آیا جدول‌های phase32 روی این محیط هستند. */
   ready: boolean;
   /** نسخه‌های قبلی، برای «بازکردن دوباره». */
@@ -33,7 +36,7 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { holdings: null, target: null, ready: true, history: [] };
+    return { holdings: null, target: null, targetProblems: [], ready: true, history: [] };
   }
 
   const listRes = await supabase
@@ -43,7 +46,7 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
     .order("version", { ascending: false });
 
   if (listRes.error) {
-    return { holdings: null, target: null, ready: false, history: [] };
+    return { holdings: null, target: null, targetProblems: [], ready: false, history: [] };
   }
 
   const history = (listRes.data ?? []).map((v) => ({
@@ -90,25 +93,23 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
     .maybeSingle();
 
   let target: TargetVersion | null = null;
+  let targetProblems: string[] = [];
   if (!tgtRes.error && tgtRes.data) {
-    const raw = tgtRes.data.allocations;
-    const weights = Array.isArray(raw)
-      ? raw
-          .map((a: Record<string, unknown>) => ({
-            assetClass: String(a.assetClass ?? a.asset_class ?? ""),
-            weightPct: Number(a.weightPct ?? a.weight_pct ?? NaN),
-          }))
-          .filter((w) => w.assetClass !== "" && Number.isFinite(w.weightPct))
-      : [];
+    // ⚠️ شکلِ ذخیره‌شده `{asset, pct, note}` است، نه `{assetClass, weightPct}`.
+    // نسخهٔ قبل مستقیم دنبالِ کلیدهای تازه می‌گشت و چون هیچ‌کدام نبودند،
+    // `weights` همیشه خالی می‌شد — یعنی سبدِ هدفِ واقعیِ کاربر بی‌صدا ناپدید
+    // می‌شد. آداپتور صریح این را ترجمه می‌کند و دستهٔ ناشناخته را حدس نمی‌زند.
+    const parsed = parseStoredAllocations(tgtRes.data.allocations);
+    targetProblems = describeTargetProblems(parsed);
     target = {
       id: tgtRes.data.id as string,
       version: tgtRes.data.version as number,
       referenceVersionId: (tgtRes.data.reference_version_id as string | null) ?? null,
-      weights,
+      weights: parsed.weights,
     };
   }
 
-  return { holdings, target, ready: true, history };
+  return { holdings, target, targetProblems, ready: true, history };
 }
 
 /**
