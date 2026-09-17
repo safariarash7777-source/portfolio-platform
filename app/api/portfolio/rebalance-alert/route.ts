@@ -89,6 +89,8 @@ export async function POST() {
         thresholdPoints: Number(process.env.REBALANCE_ALERT_THRESHOLD_POINTS ?? 5),
         cooldownHours: Number(process.env.REBALANCE_ALERT_COOLDOWN_HOURS ?? 24),
         maxAttempts: Number(process.env.REBALANCE_ALERT_MAX_ATTEMPTS ?? 2),
+        maxTotalAttempts: Number(process.env.REBALANCE_ALERT_MAX_TOTAL_ATTEMPTS ?? 5),
+        attemptLeaseMinutes: Number(process.env.REBALANCE_ALERT_ATTEMPT_LEASE_MINUTES ?? 10),
         now,
       },
     }

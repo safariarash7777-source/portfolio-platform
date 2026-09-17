@@ -8,6 +8,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { dispatchRebalanceAlert, type AlertSinkPort, type AlertStorePort, type ClaimInput, type ClaimResult } from "./alertDispatch";
+import { alertKey } from "./alerts";
 import type { RebalanceResult } from "./contracts";
 
 const NOW = new Date("2026-09-17T12:00:00Z");
@@ -25,49 +26,88 @@ const result = (delta: number, definitive = true): RebalanceResult => ({
   notes: [],
 });
 
-/** ذخیره‌گاهِ درون‌حافظه‌ای که قفلِ یکتاییِ دیتابیس را تقلید می‌کند. */
+/**
+ * ذخیره‌گاهِ درون‌حافظه‌ای که قفلِ یکتایی و دفترِ append-onlyِ دیتابیس را تقلید
+ * می‌کند — با همان قیدها، تا بدل از واقعیت سست‌تر نباشد.
+ */
 class FakeStore implements AlertStorePort {
   events = new Map<string, { id: string; userId: string }>();
-  deliveries: { eventId: string; channel: string; status: string; attempt: number; error: string | null; sentAt: string | null }[] = [];
+  deliveries: { eventId: string; channel: string; status: string; attempt: number; error: string | null; sentAt: string | null; createdAt: string }[] = [];
   private seq = 0;
+  /** ساعتِ ساختگی برای مهرِ ردیف‌ها؛ تست می‌تواند جلو ببردش. */
+  clock = new Date("2026-09-17T12:00:00Z");
 
   private keyOf(userId: string, alertKey: string) {
     return `${userId}::${alertKey}`;
   }
 
+  private summarise(eventId: string) {
+    const mine = this.deliveries.filter((d) => d.eventId === eventId);
+    const terminal = new Set(mine.filter((d) => d.status !== "pending").map((d) => `${d.channel}#${d.attempt}`));
+    const open = mine
+      .filter((d) => d.status === "pending" && !terminal.has(`${d.channel}#${d.attempt}`))
+      .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1))[0];
+    return {
+      alreadyDelivered: mine.some((d) => d.status === "sent"),
+      openAttempt: open
+        ? { channel: open.channel as "log" | "email" | "telegram", attempt: open.attempt, startedAt: open.createdAt }
+        : null,
+      finishedAttempts: terminal.size,
+    };
+  }
+
   async loadState(userId: string) {
     const sentIds = new Set(this.deliveries.filter((d) => d.status === "sent").map((d) => d.eventId));
     const mine = [...this.events.entries()]
-      .filter(([k, e]) => e.userId === userId && sentIds.has(e.id))
-      .map(([k, e]) => ({ alertKey: k.split("::")[1]!, id: e.id }));
-    const last = mine[mine.length - 1];
-    if (!last) return { lastKey: null, lastSentAt: null };
-    const sentAt = this.deliveries.find((d) => d.eventId === last.id && d.status === "sent")?.sentAt ?? null;
-    return { lastKey: last.alertKey, lastSentAt: sentAt };
+      .filter(([, e]) => e.userId === userId && sentIds.has(e.id))
+      .map(([k, e]) => ({ alertKey: k.slice(userId.length + 2), id: e.id }));
+    const lastEntry = mine[mine.length - 1];
+    if (!lastEntry) return { lastKey: null, lastSentAt: null };
+    const sentAt = this.deliveries.find((d) => d.eventId === lastEntry.id && d.status === "sent")?.sentAt ?? null;
+    return { lastKey: lastEntry.alertKey, lastSentAt: sentAt };
   }
 
   async claimEvent(input: ClaimInput): Promise<ClaimResult> {
     const k = this.keyOf(input.userId, input.alertKey);
     const existing = this.events.get(k);
-    if (existing) {
-      const mine = this.deliveries.filter((d) => d.eventId === existing.id);
-      return {
-        claimed: false,
-        eventId: existing.id,
-        alreadyDelivered: mine.some((d) => d.status === "sent"),
-        attemptsRecorded: mine.length,
-      };
-    }
+    if (existing) return { claimed: false, eventId: existing.id, ...this.summarise(existing.id) };
     const id = `ev-${++this.seq}`;
     this.events.set(k, { id, userId: input.userId });
-    return { claimed: true, eventId: id, alreadyDelivered: false, attemptsRecorded: 0 };
+    return { claimed: true, eventId: id, alreadyDelivered: false, openAttempt: null, finishedAttempts: 0 };
   }
 
-  async recordDelivery(d: Parameters<AlertStorePort["recordDelivery"]>[0]) {
-    // قیدهای دیتابیس اینجا هم اعمال می‌شوند تا بدل از واقعیت سست‌تر نباشد.
-    if (d.status === "sent" && !d.sentAt) throw new Error("sent بدون زمان");
-    if (d.status === "failed" && !d.error) throw new Error("failed بدون دلیل");
-    this.deliveries.push(d);
+  async beginAttempt(input: { eventId: string; channel: string; attempt: number }) {
+    // ⚠️ همان قیدِ `rad_attempt_once` دیتابیس. **قفلِ واقعیِ هم‌زمانی همین است**:
+    // دو پردازش که هر دو «تلاشِ ۱» را برمی‌دارند، فقط یکی‌شان می‌تواند ردیفِ
+    // آغاز را بنویسد. بدونِ اعمالِ این قید در بدل، تست از واقعیت سست‌تر بود.
+    const dup = this.deliveries.some(
+      (d) => d.eventId === input.eventId && d.channel === input.channel &&
+             d.attempt === input.attempt && d.status === "pending"
+    );
+    if (dup) throw new Error("تلاش با همین شماره از قبل آغاز شده است");
+    this.deliveries.push({
+      eventId: input.eventId, channel: input.channel, status: "pending",
+      attempt: input.attempt, error: null, sentAt: null, createdAt: this.clock.toISOString(),
+    });
+  }
+
+  async finishAttempt(input: { eventId: string; channel: string; attempt: number; status: string; error: string | null; sentAt: string | null }) {
+    // قیدهای واقعیِ دیتابیس اینجا هم اعمال می‌شوند.
+    if (input.status === "sent" && !input.sentAt) throw new Error("sent بدون زمان");
+    if (input.status === "failed" && !input.error) throw new Error("failed بدون دلیل");
+    if (input.status === "unknown" && !input.error) throw new Error("unknown بدون دلیل");
+    const dup = this.deliveries.some(
+      (d) => d.eventId === input.eventId && d.channel === input.channel &&
+             d.attempt === input.attempt && d.status === input.status
+    );
+    if (dup) throw new Error("همان تلاش دوبار همان وضعیت گرفت");
+    this.deliveries.push({ ...input, createdAt: this.clock.toISOString() });
+  }
+
+  /** فقط برای تست: تلاش‌های باز. */
+  openAttempts() {
+    return this.deliveries.filter((d) => d.status === "pending" &&
+      !this.deliveries.some((t) => t.status !== "pending" && t.eventId === d.eventId && t.channel === d.channel && t.attempt === d.attempt));
   }
 }
 
@@ -92,7 +132,14 @@ class ThrowSink implements AlertSinkPort {
   async deliver(): Promise<{ ok: boolean }> { throw new Error("کلید نامعتبر"); }
 }
 
-const opts = { thresholdPoints: 5, cooldownHours: 24, maxAttempts: 2, now: NOW };
+/** ردیف‌های پایانی — `pending` ردِ آغاز است، نه نتیجه. */
+const terminal = (store: FakeStore) => store.deliveries.filter((d) => d.status !== "pending");
+
+const opts = {
+  thresholdPoints: 5, cooldownHours: 24,
+  maxAttempts: 2, maxTotalAttempts: 5, attemptLeaseMinutes: 10,
+  now: NOW,
+};
 const run = (store: AlertStorePort, sinks: AlertSinkPort[], res = result(10), userId = "u-1") =>
   dispatchRebalanceAlert({ userId, result: res }, { store, sinks, options: opts });
 
@@ -106,9 +153,11 @@ describe("ارسال و ثبت", () => {
     assert.equal(out.reason, "sent");
     assert.ok(out.eventId, "رویداد شناسه دارد");
     assert.equal(sink.calls, 1);
-    assert.equal(store.deliveries.length, 1);
-    assert.equal(store.deliveries[0]!.status, "sent");
-    assert.ok(store.deliveries[0]!.sentAt, "زمان ارسال ثبت شد");
+    assert.equal(terminal(store).length, 1);
+    assert.equal(terminal(store)[0]!.status, "sent");
+    assert.ok(terminal(store)[0]!.sentAt, "زمان ارسال ثبت شد");
+    // ردِ آغاز هم هست و پیش از نتیجه نوشته شده.
+    assert.equal(store.deliveries[0]!.status, "pending");
   });
 
   test("نتیجهٔ غیرقطعی هیچ رویدادی نمی‌سازد", async () => {
@@ -205,8 +254,8 @@ describe("شکست و تلاش دوباره", () => {
     const out = await run(store, [new FailSink()]);
     assert.equal(out.sent, false);
     assert.equal(out.reason, "delivery_failed");
-    assert.ok(store.deliveries.every((d) => d.status === "failed"));
-    assert.ok(store.deliveries.every((d) => d.error), "هر شکست دلیل دارد");
+    assert.ok(terminal(store).every((d) => d.status === "failed"));
+    assert.ok(terminal(store).every((d) => d.error), "هر شکست دلیل دارد");
   });
 
   test("هر تلاش جداگانه ثبت می‌شود", async () => {
@@ -214,7 +263,7 @@ describe("شکست و تلاش دوباره", () => {
     const sink = new FailSink();
     await run(store, [sink]);
     assert.equal(sink.calls, 2, "maxAttempts رعایت شد");
-    assert.deepEqual(store.deliveries.map((d) => d.attempt), [1, 2]);
+    assert.deepEqual(terminal(store).map((d) => d.attempt), [1, 2]);
   });
 
   test("تلاشِ دوم که موفق شود، ارسال محسوب می‌شود و سومی نمی‌رود", async () => {
@@ -223,14 +272,14 @@ describe("شکست و تلاش دوباره", () => {
     const out = await run(store, [sink]);
     assert.equal(out.sent, true);
     assert.equal(sink.calls, 2);
-    assert.deepEqual(store.deliveries.map((d) => d.status), ["failed", "sent"]);
+    assert.deepEqual(terminal(store).map((d) => d.status), ["failed", "sent"]);
   });
 
   test("استثنای کانال، مسیر را نمی‌اندازد و شکست ثبت می‌شود", async () => {
     const store = new FakeStore();
     const out = await run(store, [new ThrowSink()]);
     assert.equal(out.sent, false);
-    assert.ok(store.deliveries.every((d) => d.status === "failed"));
+    assert.ok(terminal(store).every((d) => d.status === "failed"));
   });
 
   test("رویدادی که ارسالش شکست خورده، بعداً دوباره تلاش می‌شود", async () => {
@@ -245,8 +294,8 @@ describe("شکست و تلاش دوباره", () => {
     const store = new FakeStore();
     const out = await run(store, [new FailSink(), new OkSink()]);
     assert.equal(out.sent, true);
-    assert.ok(store.deliveries.some((d) => d.status === "failed"));
-    assert.ok(store.deliveries.some((d) => d.status === "sent"));
+    assert.ok(terminal(store).some((d) => d.status === "failed"));
+    assert.ok(terminal(store).some((d) => d.status === "sent"));
   });
 
   test("نبودِ گیرنده، ارسال جا نمی‌زند", async () => {
@@ -271,34 +320,143 @@ describe("جداییِ دو عضو", () => {
   });
 });
 
-describe("گاردِ هم‌زمانی پوچ نیست", () => {
-  test("رقیبِ در حالِ اجرا مانع ارسالِ دوم می‌شود، نه یک شکستِ ثبت‌شده", async () => {
-    // این تست تفاوتِ دو حالت را تثبیت می‌کند. اگر کسی بعداً `attemptsRecorded`
-    // را بردارد، یکی از این دو ادعا می‌شکند.
+
+/**
+ * ── پنج حالتِ قطعِ کار که بازبینی خواست ─────────────────────────────────────
+ *
+ * برای هرکدام دو چیز اثبات می‌شود: **چه در دیتابیس می‌ماند** و **ادامهٔ کار
+ * چطور انجام می‌شود**. شمردنِ پیام‌های ارسال‌شده به‌تنهایی هیچ‌کدام را نشان
+ * نمی‌دهد.
+ */
+describe("قطعِ کار و بازیابی", () => {
+  // ⚠️ کلید باید **همانی** باشد که موتور می‌سازد، وگرنه تست رویدادِ دیگری
+  // می‌سازد و بی‌سروصدا چیزِ اشتباهی را اثبات می‌کند.
+  const KEY = alertKey(result(10), ["gold", "equity_ir"]);
+
+  /** کانالی که وسطِ ارسال، پردازش را «می‌کُشد». */
+  class CrashSink implements AlertSinkPort {
+    readonly channel = "log" as const;
+    calls = 0;
+    async deliver(): Promise<{ ok: boolean }> {
+      this.calls++;
+      throw Object.assign(new Error("PROCESS_DIED"), { fatal: true });
+    }
+  }
+
+  test("۱ — مرگ پس از ثبتِ آغاز و پیش از ارسال: ردِ باز می‌ماند و هشدار گم نمی‌شود", async () => {
     const store = new FakeStore();
-    await store.claimEvent({
-      userId: "u-9", alertKey: "k", holdingVersionId: "hv", targetVersionId: "tv",
-      breachedClasses: ["gold"], maxDeviationPoints: 10,
-    });
-
-    // هیچ تلاشی ثبت نشده ⇒ رقیب در راه است.
+    // «مرگ» را با پرش از finishAttempt شبیه‌سازی می‌کنیم: فقط آغاز ثبت می‌شود.
     const claim = await store.claimEvent({
-      userId: "u-9", alertKey: "k", holdingVersionId: "hv", targetVersionId: "tv",
+      userId: "u-1", alertKey: KEY, holdingVersionId: "hv-1", targetVersionId: "tv-1",
       breachedClasses: ["gold"], maxDeviationPoints: 10,
     });
-    assert.equal(claim.claimed, false);
-    assert.equal(claim.attemptsRecorded, 0);
+    await store.beginAttempt({ eventId: claim.eventId!, channel: "log", attempt: 1 });
 
-    // پس از ثبتِ یک شکست، همان ادعا دیگر «در راه» نیست.
-    await store.recordDelivery({
-      eventId: claim.eventId!, channel: "log", status: "failed",
-      attempt: 1, error: "شکست", sentAt: null,
-    });
-    const after = await store.claimEvent({
-      userId: "u-9", alertKey: "k", holdingVersionId: "hv", targetVersionId: "tv",
+    // آنچه در دیتابیس مانده: دقیقاً یک تلاشِ باز، بدونِ نتیجه.
+    assert.equal(store.openAttempts().length, 1);
+    assert.equal(store.deliveries.filter((d) => d.status === "sent").length, 0);
+
+    // بلافاصله: دستِ رقیب فرض می‌شود و دست نمی‌خورد.
+    const soon = await run(store, [new OkSink()]);
+    assert.equal(soon.reason, "in_flight");
+
+    // پس از پایانِ اجاره: تلاشِ رها **نامعلوم** ثبت و کار از سر گرفته می‌شود.
+    const later = await dispatchRebalanceAlert(
+      { userId: "u-1", result: result(10) },
+      { store, sinks: [new OkSink()], options: { ...opts, now: new Date("2026-09-17T12:30:00Z") } }
+    );
+    assert.equal(later.sent, true, "هشدار برای همیشه مسدود نشد");
+    assert.ok(store.deliveries.some((d) => d.status === "unknown"), "تلاشِ رها نامعلوم ثبت شد");
+    assert.equal(store.openAttempts().length, 0, "هیچ تلاشِ بازی باقی نماند");
+  });
+
+  test("۲ — گیرنده پیام را گرفت ولی پاسخ گم شد: نه موفقیت جعل می‌شود نه شکست", async () => {
+    const store = new FakeStore();
+    const claim = await store.claimEvent({
+      userId: "u-2", alertKey: KEY, holdingVersionId: "hv-1", targetVersionId: "tv-1",
       breachedClasses: ["gold"], maxDeviationPoints: 10,
     });
-    assert.equal(after.attemptsRecorded, 1);
-    assert.equal(after.alreadyDelivered, false);
+    // پیام رسید، ولی پردازش پیش از ثبتِ نتیجه مُرد — از بیرون همان حالتِ ۱ است.
+    await store.beginAttempt({ eventId: claim.eventId!, channel: "log", attempt: 1 });
+
+    const after = await dispatchRebalanceAlert(
+      { userId: "u-2", result: result(10) },
+      { store, sinks: [new OkSink()], options: { ...opts, now: new Date("2026-09-17T12:30:00Z") } }
+    );
+
+    const abandoned = store.deliveries.find((d) => d.status === "unknown");
+    assert.ok(abandoned, "تلاشِ رها ثبت شد");
+    assert.equal(abandoned!.sentAt, null, "موفقیت جعل نشد");
+    assert.match(abandoned!.error!, /معلوم نیست/, "دلیلِ نامعلومی ثبت شد");
+    // ⚠️ نتیجهٔ صادق: پیام دوباره می‌رود. چون کانال ضدتکرار ندارد، احتمالِ
+    // پیامِ تکراری واقعی است و ادعای تضمین نمی‌شود.
+    assert.equal(after.sent, true);
+  });
+
+  test("۳ — شکستِ قطعی سپس تلاشِ مجدد", async () => {
+    const store = new FakeStore();
+    const failed = await run(store, [new FailSink()]);
+    assert.equal(failed.sent, false);
+    assert.equal(store.openAttempts().length, 0, "شکست، تلاشِ باز جا نمی‌گذارد");
+
+    const retry = await run(store, [new OkSink()]);
+    assert.equal(retry.sent, true);
+    assert.equal(retry.eventId, failed.eventId, "رویدادِ تازه ساخته نشد");
+  });
+
+  test("۴ — دو پردازش هم‌زمان یک هشدار را برمی‌دارند", async () => {
+    const store = new FakeStore();
+    const s1 = new OkSink();
+    const s2 = new OkSink();
+    const [a, b] = await Promise.all([run(store, [s1]), run(store, [s2])]);
+    assert.equal([a, b].filter((r) => r.sent).length, 1, "فقط یکی فرستاد");
+    assert.equal(s1.calls + s2.calls, 1);
+    assert.equal(store.events.size, 1);
+  });
+
+  test("۵ — ری‌استارت با کارِ نیمه‌تمام: وضعیت از دیتابیس بازخوانده می‌شود", async () => {
+    const store = new FakeStore();
+    const claim = await store.claimEvent({
+      userId: "u-5", alertKey: KEY, holdingVersionId: "hv-1", targetVersionId: "tv-1",
+      breachedClasses: ["gold"], maxDeviationPoints: 10,
+    });
+    await store.beginAttempt({ eventId: claim.eventId!, channel: "log", attempt: 1 });
+    await store.finishAttempt({
+      eventId: claim.eventId!, channel: "log", attempt: 1,
+      status: "failed", error: "شبکه", sentAt: null,
+    });
+
+    // «پردازشِ تازه» — هیچ حافظه‌ای از قبل ندارد.
+    const fresh = new OkSink();
+    const out = await dispatchRebalanceAlert(
+      { userId: "u-5", result: result(10) },
+      { store, sinks: [fresh], options: opts }
+    );
+    assert.equal(out.sent, true, "کارِ نیمه‌تمام ادامه یافت");
+    assert.equal(out.attempts[0]!.attempt, 2, "شمارهٔ تلاش از دیتابیس ادامه پیدا کرد");
+  });
+
+  test("سقفِ کلی: رویدادی که همیشه می‌افتد بی‌نهایت تلاش نمی‌شود", async () => {
+    const store = new FakeStore();
+    const sink = new FailSink();
+    const tight = { ...opts, maxAttempts: 2, maxTotalAttempts: 4 };
+    await dispatchRebalanceAlert({ userId: "u-6", result: result(10) }, { store, sinks: [sink], options: tight });
+    await dispatchRebalanceAlert({ userId: "u-6", result: result(10) }, { store, sinks: [sink], options: tight });
+    const third = await dispatchRebalanceAlert({ userId: "u-6", result: result(10) }, { store, sinks: [sink], options: tight });
+
+    assert.equal(third.reason, "exhausted");
+    assert.equal(sink.calls, 4, "بیش از سقف تلاش نشد");
+    // وضعیتِ پایانی در دیتابیس دیده می‌شود، نه اینکه بی‌صدا رها شود.
+    assert.equal(terminal(store).filter((d) => d.status === "failed").length, 4);
+  });
+
+  test("ترتیب همیشه «اول ثبت، بعد ارسال» است", async () => {
+    const store = new FakeStore();
+    const sink = new CrashSink();
+    await run(store, [sink]);
+    // کانال منفجر شد، ولی ردِ آغاز از قبل نوشته شده بود.
+    assert.equal(sink.calls, 2);
+    assert.equal(store.deliveries.filter((d) => d.status === "pending").length, 2);
+    assert.equal(store.deliveries.filter((d) => d.status === "failed").length, 2);
   });
 });

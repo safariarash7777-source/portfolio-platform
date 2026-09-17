@@ -418,17 +418,26 @@ export function unitFromArithmetic(products, tolerance = 0.05) {
  */
 export function resolveAmountUnit(tables, products) {
   const header = unitFromHeader(tables);
-  const arithmetic = unitFromArithmetic(products);
+  const inferred = unitFromArithmetic(products);
 
-  if (header && arithmetic) {
-    if (header === arithmetic) return { unit: header, basis: "header+arithmetic" };
-    // ⚠️ تعارض پنهان نمی‌شود و هیچ‌کدام «برنده» نیست. یکی‌شان غلط است و
-    // نمی‌دانیم کدام؛ حدس‌زدن یعنی ساختنِ عددی که هیچ‌کس تأییدش نکرده.
-    return { unit: null, basis: "conflict", header, arithmetic };
+  // ⚠️ هر دو شاهد **جداگانه** برگردانده می‌شوند، نه فقط نتیجهٔ ترکیبشان.
+  // سازگاریِ «مقدار × نرخ» یک شاهدِ **کمکی** است، نه اثباتِ مستقلِ واحد: اگر
+  // ستونِ نرخ خودش مقیاسِ دیگری داشته باشد، همان رابطه با مقیاسِ غلط هم جور
+  // درمی‌آید. پس نگه‌داشتنِ دو عدد جدا اجازه می‌دهد بعداً بشود پرسید کدام
+  // شاهد چه گفت — به‌جای یک «واحد» که منشأش گم شده.
+  const base = { header, inferred };
+
+  if (header && inferred) {
+    if (header === inferred) return { ...base, unit: header, basis: "header+arithmetic" };
+    // تعارض: یکی غلط است و نمی‌دانیم کدام. انتخابِ یکی یعنی قطعیتِ کاذب.
+    return { ...base, unit: null, basis: "conflict" };
   }
-  if (arithmetic) return { unit: arithmetic, basis: "arithmetic" };
-  if (header) return { unit: header, basis: "header" };
-  return { unit: null, basis: "unresolved" };
+  // ⚠️ سربرگ تنها، «صریح» است ولی تأییدِ دوم ندارد؛ و حساب تنها، استنباط است.
+  // هیچ‌کدام به‌تنهایی قطعی اعلام نمی‌شوند: `basis` این تفاوت را حمل می‌کند تا
+  // مصرف‌کننده بتواند سخت‌گیرتر باشد.
+  if (header) return { ...base, unit: header, basis: "header_only" };
+  if (inferred) return { ...base, unit: inferred, basis: "arithmetic_only" };
+  return { ...base, unit: null, basis: "unresolved" };
 }
 
 export function normalizeN30(tables, meta) {
@@ -506,10 +515,21 @@ export function normalizeN30(tables, meta) {
     // تجمعیِ سال گزارش می‌کرد. آن عدد در هیچ گزارشی وجود نداشت و برای
     // شرکتی در ماه دوازدهم، یک‌دوازدهمِ واقعیت را «تجمعی» نشان می‌داد.
     fy_cumulative_amount: fyCumulative,
-    // واحد از خودِ گزارش استخراج می‌شود (سربرگ + سازگاریِ حسابی)، نه از عادت.
-    // `null` یعنی قالب یا واحد قابلِ اثبات نبود؛ آن ردیف معتبر اعلام نمی‌شود.
+    // ── واحدها: سه چیزِ متفاوت که نباید با هم قاطی شوند ─────────────────
+    // `unit`            واحدِ **مبلغ** (میلیون ریال / هزار ریال / ریال)
+    // `qty_unit`        واحدِ **مقدارِ کالا** — کدال آن را در ستونِ جدا می‌دهد
+    //                   و ما اینجا استخراجش نمی‌کنیم، پس `null` می‌ماند.
+    // `sales_rate`      نرخِ فروش، در خودِ هر محصول.
+    //
+    // `unit` از خودِ گزارش استخراج می‌شود، نه از عادت. `null` یعنی قابلِ اثبات
+    // نبود؛ آن ردیف معتبر اعلام نمی‌شود.
     unit: unitInfo.unit,
     unit_basis: unitInfo.basis,
+    unit_header: unitInfo.header,
+    unit_inferred: unitInfo.inferred,
+    // ⚠️ صریح `null` است، نه غایب: «نمی‌دانیم» با «ندارد» فرق دارد و
+    // خالی‌گذاشتنِ کلید، بعداً به «فرض کن دانه» تفسیر می‌شود.
+    qty_unit: null,
     // ن-۳۰ گزارش ماهانه است — دورهٔ مقایسه تعریفاً یک ماه.
     period_months: 1,
   };

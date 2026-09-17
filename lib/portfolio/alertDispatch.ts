@@ -19,7 +19,7 @@
 import { decideDeviationAlert, type AlertOptions, type AlertState } from "./alerts";
 import type { RebalanceResult } from "./contracts";
 
-export type DeliveryStatus = "sent" | "failed" | "skipped";
+export type DeliveryStatus = "pending" | "sent" | "failed" | "unknown";
 export type AlertChannel = "log" | "email" | "telegram";
 
 export interface AlertMessage {
@@ -42,6 +42,13 @@ export interface ClaimInput {
   maxDeviationPoints: number;
 }
 
+export interface OpenAttempt {
+  channel: AlertChannel;
+  attempt: number;
+  /** زمانِ نوشتنِ ردیفِ `pending` — مبنای تشخیصِ رهاشدگی. */
+  startedAt: string;
+}
+
 export interface ClaimResult {
   /** آیا **همین اجرا** رویداد را ساخت. */
   claimed: boolean;
@@ -49,32 +56,80 @@ export interface ClaimResult {
   /**
    * آیا این رویداد از قبل ارسالِ موفق دارد.
    *
-   * ⚠️ تفکیکِ این دو حالت مهم است: رویدادی که ادعا شده ولی ارسالش شکست خورده
-   * باید **دوباره تلاش شود**، نه اینکه برای همیشه خاموش بماند. اگر فقط
-   * «تکراری است یا نه» را می‌دانستیم، یک شکستِ شبکه هشدار را تا ابد می‌بلعید.
+   * ⚠️ رویدادی که ادعا شده ولی ارسالش شکست خورده باید **دوباره تلاش شود**، نه
+   * اینکه برای همیشه خاموش بماند. اگر فقط «تکراری است یا نه» را می‌دانستیم،
+   * یک شکستِ شبکه هشدار را تا ابد می‌بلعید.
    */
   alreadyDelivered: boolean;
   /**
-   * چند تلاشِ ارسال تا الان برای این رویداد **ثبت شده**.
+   * تلاشی که ردیفِ `pending` دارد و هنوز ردیفِ پایانی نگرفته.
    *
-   * ⚠️ این عدد تفاوتِ «رقیبِ همین لحظه» و «تلاشِ شکست‌خوردهٔ قبلی» را می‌سازد و
-   * بدونش یک حفرهٔ هم‌زمانی باز می‌ماند: اگر فقط می‌پرسیدیم «ارسالِ موفق دارد
-   * یا نه»، دو اجرای هم‌زمان هر دو «نه» می‌دیدند و هر دو می‌فرستادند — یعنی
-   * همان قابلیتِ تلاشِ دوباره، ضدتکرار را خنثی می‌کرد. اجرایی که هنوز چیزی
-   * ثبت نکرده در حالِ اجراست؛ پس صفر یعنی «رقیب در راه است».
+   * ⚠️ این همان چیزی است که «رقیبِ در حالِ اجرا» را از «پردازشی که وسطِ کار
+   * مُرد» جدا می‌کند — و تشخیصش **زمان‌محور** است، نه حدسی. نسخهٔ قبل فقط
+   * تعدادِ تلاش‌های ثبت‌شده را می‌دید و اگر پردازش بینِ ارسالِ موفق و ثبتِ آن
+   * می‌مرد، رویداد با صفر تلاش می‌ماند و برای همیشه `in_flight` می‌گرفت؛
+   * یعنی هشدار **گم می‌شد**، نه اینکه تکرار نشود.
    */
-  attemptsRecorded: number;
+  openAttempt: OpenAttempt | null;
+  /** تلاش‌هایی که نتیجهٔ نهایی گرفته‌اند (`sent`/`failed`/`unknown`). */
+  finishedAttempts: number;
+}
+
+export interface DeliveryRow {
+  channel: string;
+  status: string;
+  attempt: number;
+  created_at: string;
+}
+
+/**
+ * تلاش‌ها را به وضعیتِ قابلِ تصمیم‌گیری خلاصه می‌کند.
+ *
+ * «تلاشِ باز» یعنی ردیفِ `pending` که هیچ ردیفِ پایانی با همان شمارهٔ تلاش
+ * ندارد. همین تعریف است که پردازشِ مُرده را قابلِ تشخیص می‌کند.
+ *
+ * صادر می‌شود تا مستقیم آزموده شود؛ منطقش ظریف‌تر از آن است که فقط از راهِ
+ * شبکه سنجیده شود.
+ */
+export function summariseDeliveries(rows: readonly DeliveryRow[]): {
+  alreadyDelivered: boolean;
+  openAttempt: { channel: AlertChannel; attempt: number; startedAt: string } | null;
+  finishedAttempts: number;
+} {
+  const terminal = new Set(
+    rows.filter((r) => r.status !== "pending").map((r) => `${r.channel}#${r.attempt}`)
+  );
+  const open = rows
+    .filter((r) => r.status === "pending" && !terminal.has(`${r.channel}#${r.attempt}`))
+    .sort((a, b) => (a.created_at < b.created_at ? -1 : 1))[0];
+
+  return {
+    alreadyDelivered: rows.some((r) => r.status === "sent"),
+    openAttempt: open
+      ? { channel: open.channel as AlertChannel, attempt: open.attempt, startedAt: open.created_at }
+      : null,
+    finishedAttempts: terminal.size,
+  };
 }
 
 export interface AlertStorePort {
   /** وضعیتِ پایدار: آخرین هشداری که **واقعاً فرستاده شد**. */
   loadState(userId: string): Promise<AlertState>;
   claimEvent(input: ClaimInput): Promise<ClaimResult>;
-  recordDelivery(input: {
+  /**
+   * ردیفِ `pending` را **پیش از** تماس با کانال می‌نویسد.
+   *
+   * اگر این ردیف نوشته نشود و پردازش بمیرد، هیچ ردی نمی‌ماند که بگوید تماسی
+   * آغاز شده بود. ترتیب عمداً «اول ثبت، بعد ارسال» است، حتی به قیمتِ اینکه
+   * گاهی یک تلاشِ ثبت‌شده هرگز به کانال نرسد — آن حالت قابلِ تشخیص و
+   * بازیابی است، ولی حالتِ عکسش نیست.
+   */
+  beginAttempt(input: { eventId: string; channel: AlertChannel; attempt: number }): Promise<void>;
+  finishAttempt(input: {
     eventId: string;
     channel: AlertChannel;
-    status: DeliveryStatus;
     attempt: number;
+    status: Exclude<DeliveryStatus, "pending">;
     error: string | null;
     sentAt: string | null;
   }): Promise<void>;
@@ -87,6 +142,7 @@ export type DispatchReason =
   | "cooling_down"
   | "already_delivered"
   | "in_flight"
+  | "exhausted"
   | "no_sink"
   | "delivery_failed"
   | "sent";
@@ -98,14 +154,31 @@ export interface DispatchOutcome {
   attempts: {
     channel: AlertChannel;
     attempt: number;
-    status: DeliveryStatus;
+    status: Exclude<DeliveryStatus, "pending">;
     error: string | null;
   }[];
 }
 
 export interface DispatchOptions extends AlertOptions {
-  /** حداکثر تلاش برای هر کانال. هر تلاش جداگانه ثبت می‌شود. */
+  /** حداکثر تلاش در **یک اجرا** برای هر کانال. */
   maxAttempts: number;
+  /**
+   * سقفِ تلاش‌ها روی همهٔ اجراها. بعد از آن رویداد `exhausted` می‌شود و دیگر
+   * تلاش نمی‌شود.
+   *
+   * ⚠️ بدونِ این سقف، رویدادی که کانالش دائماً می‌افتد هر اجرا دوباره تلاش
+   * می‌شود و دفترِ append-only بی‌انتها رشد می‌کند. با سقف، همان رویداد یک
+   * وضعیتِ پایانیِ **قابلِ دیدن** پیدا می‌کند.
+   */
+  maxTotalAttempts: number;
+  /**
+   * تلاشِ `pending` بعد از چند دقیقه «رهاشده» حساب می‌شود.
+   *
+   * ⚠️ این عدد تنها چیزی است که «رقیبِ در حالِ اجرا» را از «پردازشی که مُرد»
+   * جدا می‌کند. کوچک‌بودنش یعنی دو پردازشِ کُند هم‌زمان می‌فرستند؛ بزرگ‌بودنش
+   * یعنی بازیابیِ دیرهنگام. پیش‌فرض محافظه‌کارانه است.
+   */
+  attemptLeaseMinutes: number;
 }
 
 export async function dispatchRebalanceAlert(
@@ -151,13 +224,52 @@ export async function dispatchRebalanceAlert(
   });
 
   if (claim.eventId === null) return none("duplicate");
-  // رویدادی که قبلاً ارسالِ موفق دارد، دوباره فرستاده نمی‌شود — این همان
-  // محافظ در برابرِ «پاسخ گم شد و کاربر دوباره زد» است.
-  if (claim.alreadyDelivered) return none("already_delivered", claim.eventId);
-  // رویدادی که رقیبی همین الان ادعایش کرده و هنوز چیزی ثبت نکرده، دستِ اوست.
-  // تلاشِ دوباره فقط وقتی مجاز است که شکستِ قبلی **ثبت شده** باشد.
-  if (!claim.claimed && claim.attemptsRecorded === 0) return none("in_flight", claim.eventId);
-  if (sinks.length === 0) return none("no_sink", claim.eventId);
+  const eventId = claim.eventId;
+
+  // رویدادی که قبلاً ارسالِ موفق دارد، دوباره فرستاده نمی‌شود — محافظ در
+  // برابرِ «پاسخ گم شد و کاربر دوباره زد».
+  if (claim.alreadyDelivered) return none("already_delivered", eventId);
+
+  const attempts: DispatchOutcome["attempts"] = [];
+
+  /**
+   * تلاشِ باز: یا رقیبی همین الان در حالِ ارسال است، یا پردازشی وسطِ کار مُرد.
+   * تفکیک فقط با زمان ممکن است.
+   */
+  if (claim.openAttempt) {
+    const ageMinutes =
+      (options.now.getTime() - new Date(claim.openAttempt.startedAt).getTime()) / 60_000;
+
+    if (!(ageMinutes >= options.attemptLeaseMinutes)) {
+      // تازه است ⇒ دستِ رقیب. دست نمی‌زنیم.
+      return none("in_flight", eventId);
+    }
+
+    // رها شده. ⚠️ اینجا نه `sent` می‌نویسیم نه `failed`: **نمی‌دانیم** آن تماس
+    // به کجا رسید. جعلِ هرکدام یعنی یا هشدارِ گم‌شده یا پیامِ تکراریِ بی‌سبب.
+    await deps.store.finishAttempt({
+      eventId,
+      channel: claim.openAttempt.channel,
+      attempt: claim.openAttempt.attempt,
+      status: "unknown",
+      error:
+        `تلاش پس از ${Math.floor(ageMinutes)} دقیقه بدون نتیجه رها شده بود؛ ` +
+        "معلوم نیست پیام به کانال رسید یا نه.",
+      sentAt: null,
+    });
+    attempts.push({
+      channel: claim.openAttempt.channel,
+      attempt: claim.openAttempt.attempt,
+      status: "unknown",
+      error: "تلاش رهاشده",
+    });
+  }
+
+  const finishedBefore = claim.finishedAttempts + (claim.openAttempt ? 1 : 0);
+  if (finishedBefore >= options.maxTotalAttempts) {
+    return { sent: false, reason: "exhausted", eventId, attempts };
+  }
+  if (sinks.length === 0) return { sent: false, reason: "no_sink", eventId, attempts };
 
   const message: AlertMessage = {
     userId: input.userId,
@@ -165,39 +277,53 @@ export async function dispatchRebalanceAlert(
     body: decision.message ?? "ترکیب سبد شما از سبد هدف فاصله گرفته است.",
   };
 
-  const attempts: DispatchOutcome["attempts"] = [];
   let anySent = false;
+  let attemptNo = finishedBefore;
 
   for (const sink of sinks) {
-    for (let attempt = 1; attempt <= Math.max(1, options.maxAttempts); attempt++) {
+    for (let i = 0; i < Math.max(1, options.maxAttempts); i++) {
+      if (attemptNo >= options.maxTotalAttempts) break;
+      attemptNo += 1;
+
+      // ⚠️ اول ثبت، بعد ارسال. اگر پردازش بینِ این دو بمیرد، یک ردیفِ `pending`
+      // می‌ماند که اجرای بعدی می‌تواند ببیند و تصمیم بگیرد. ترتیبِ عکس یعنی
+      // مرگِ بی‌رد، و رویدادی که هیچ‌کس دیگر سراغش نمی‌رود.
+      //
+      // ⚠️ و این نوشتن **خودش قفل است**: قیدِ `rad_attempt_once` اجازه نمی‌دهد
+      // دو پردازش همان شمارهٔ تلاش را آغاز کنند. پس شکستِ اینجا یعنی رقیبی
+      // زودتر مالکِ همین تلاش شده و ما باید عقب بکشیم — نه اینکه بفرستیم.
+      // تکیه به «اول بخوان بعد بنویس» این تضمین را نمی‌داد.
+      try {
+        await deps.store.beginAttempt({ eventId, channel: sink.channel, attempt: attemptNo });
+      } catch {
+        return { sent: anySent, reason: anySent ? "sent" : "in_flight", eventId, attempts };
+      }
+
       let ok = false;
       let error: string | null = null;
       try {
         const res = await sink.deliver(message);
         ok = res.ok;
-        // ⚠️ `ok=false` بدونِ دلیل هم یک شکست است؛ قیدِ دیتابیس دلیل می‌خواهد،
-        // پس همین‌جا یک دلیلِ صادق ساخته می‌شود نه یک رشتهٔ خالی.
         error = ok ? null : (res.error?.trim() || "کانال بدون توضیح شکست خورد.");
       } catch (e) {
         ok = false;
         error = (e as Error).message || "استثنا در ارسال.";
       }
 
-      const status: DeliveryStatus = ok ? "sent" : "failed";
-      const sentAt = ok ? new Date(options.now).toISOString() : null;
-      await store.recordDelivery({
-        eventId: claim.eventId,
+      const status = ok ? "sent" : "failed";
+      await deps.store.finishAttempt({
+        eventId,
         channel: sink.channel,
+        attempt: attemptNo,
         status,
-        attempt,
         error,
-        sentAt,
+        sentAt: ok ? new Date(options.now).toISOString() : null,
       });
-      attempts.push({ channel: sink.channel, attempt, status, error });
+      attempts.push({ channel: sink.channel, attempt: attemptNo, status, error });
 
       if (ok) {
         anySent = true;
-        break; // تلاشِ بعدیِ همین کانال لازم نیست
+        break;
       }
     }
   }
@@ -205,7 +331,7 @@ export async function dispatchRebalanceAlert(
   return {
     sent: anySent,
     reason: anySent ? "sent" : "delivery_failed",
-    eventId: claim.eventId,
+    eventId,
     attempts,
   };
 }

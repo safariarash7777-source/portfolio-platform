@@ -105,7 +105,7 @@
 | `sql/phase31_announcement_revocation.sql` | **NOT_APPLIED** | ۱۴ تست روی Postgres 16.13 واقعی |
 | `sql/phase20_intelligence_model.sql` | **NOT_APPLIED** | یکپارچه روی کلاسترِ نو اجرا شد؛ تنها دو وابستگیِ بیرونی (`profiles`, `signals`) و هر دو روی Production **موجودند** |
 | `sql/phase32_member_holdings.sql` | **NOT_APPLIED** | ۲۴ تست روی Postgres 16.13 واقعی |
-| `sql/phase33_rebalance_alerts.sql` | **NOT_APPLIED** | ۱۴ تست روی Postgres 16.13 واقعی؛ وابستگیِ بیرونی فقط `auth.users` و `deny_mutation()` — هر دو روی Production موجودند. مستقل از phase20/phase32 اجرا می‌شود |
+| `sql/phase33_rebalance_alerts.sql` | **NOT_APPLIED** | ۱۷ تست روی Postgres 16.13 واقعی؛ وابستگیِ بیرونی فقط `auth.users` و `deny_mutation()` — هر دو روی Production موجودند. مستقل از phase20/phase32 اجرا می‌شود. ⚠️ فایل در همین بستهٔ ادغام‌نشده **بازنویسی شد** (وضعیت‌های `pending`/`unknown` و قیدِ `rad_attempt_once`)؛ چون هیچ‌جا جز دیتابیسِ یک‌بارمصرفِ محلی اجرا نشده، ویرایشِ درجا مجاز و از افزودنِ phase34 تمیزتر است |
 
 ### دو فهرستِ متفاوت — تعارض نیست، دامنهٔ متفاوت است
 

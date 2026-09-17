@@ -61,16 +61,31 @@ CREATE TABLE IF NOT EXISTS public.rebalance_alert_deliveries (
   event_id   uuid NOT NULL REFERENCES public.rebalance_alert_events(id) ON DELETE RESTRICT,
   -- `log` گیرندهٔ آزمایشیِ محلی است: پیام ثبت می‌شود و جایی نمی‌رود.
   channel    text NOT NULL CHECK (channel IN ('log','email','telegram')),
-  status     text NOT NULL CHECK (status IN ('sent','failed','skipped')),
+  -- ⚠️ چهار وضعیت، نه سه. `pending` **پیش از** تماس با کانال نوشته می‌شود و
+  -- `unknown` وقتی که هرگز نفهمیدیم آن تماس به کجا رسید.
+  --
+  -- چرا `pending` لازم است: بدونش ترتیب «ادعا ← ارسال ← ثبت» بود و اگر
+  -- پردازش **بین** ارسالِ موفق و ثبتِ آن می‌مرد، رویداد با صفر تلاشِ ثبت‌شده
+  -- می‌ماند. هر اجرای بعدی آن را «رقیبِ در حالِ اجرا» می‌دید و برای همیشه
+  -- ساکت می‌شد — یعنی هشدار گم می‌شد، نه اینکه تکرار نشود.
+  --
+  -- چرا `unknown` لازم است: وقتی یک تلاشِ `pending` رها شده، نمی‌دانیم پیام
+  -- رسید یا نه. نوشتنِ `failed` یعنی جعلِ شکست و نوشتنِ `sent` یعنی جعلِ
+  -- موفقیت. هر دو دروغ‌اند؛ `unknown` همان حقیقت است.
+  status     text NOT NULL CHECK (status IN ('pending','sent','failed','unknown')),
   attempt    integer NOT NULL CHECK (attempt >= 1),
   error      text,
   sent_at    timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
-  -- ⚠️ این دو قید «خطا با موفقیت اشتباه نشود» را در سطحِ دیتابیس می‌بندند،
-  -- نه در سطحِ ادبِ برنامه. `sent` بدونِ زمان و `failed` بدونِ دلیل، ردیفی
-  -- است که بعداً کسی آن را «فرستاده شد» می‌خواند.
+  -- «خطا با موفقیت اشتباه نشود» در سطحِ دیتابیس، نه در سطحِ ادبِ برنامه.
   CONSTRAINT rad_sent_needs_time  CHECK (status <> 'sent'   OR sent_at IS NOT NULL),
-  CONSTRAINT rad_failed_needs_why CHECK (status <> 'failed' OR btrim(coalesce(error,'')) <> '')
+  CONSTRAINT rad_failed_needs_why CHECK (status <> 'failed' OR btrim(coalesce(error,'')) <> ''),
+  -- وضعیتِ نامعلوم هم باید بگوید **چرا** نامعلوم ماند.
+  CONSTRAINT rad_unknown_needs_why CHECK (status <> 'unknown' OR btrim(coalesce(error,'')) <> ''),
+  -- `pending` هنوز نتیجه‌ای ندارد؛ زمانِ ارسال روی آن یعنی ردیف دروغ می‌گوید.
+  CONSTRAINT rad_pending_is_open  CHECK (status <> 'pending' OR sent_at IS NULL),
+  -- هر تلاش دقیقاً یک ردیفِ آغاز و حداکثر یک ردیفِ پایان دارد.
+  CONSTRAINT rad_attempt_once UNIQUE (event_id, channel, attempt, status)
 );
 
 CREATE INDEX IF NOT EXISTS idx_rad_event ON public.rebalance_alert_deliveries(event_id);
@@ -159,6 +174,17 @@ BEGIN
        AND tgrelid = 'public.rebalance_alert_events'::regclass
   ) THEN
     RAISE EXCEPTION 'phase33: گاردِ append-only روی رویدادها نصب نشد.';
+  END IF;
+
+  -- ⚠️ بدونِ این سه، مسیرِ بازیابیِ تلاشِ نیمه‌تمام توخالی است.
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'rad_unknown_needs_why') THEN
+    RAISE EXCEPTION 'phase33: وضعیتِ نامعلوم بدونِ دلیل مجاز مانده است.';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'rad_pending_is_open') THEN
+    RAISE EXCEPTION 'phase33: تلاشِ باز می‌تواند زمانِ ارسال بگیرد — ردیفِ دروغ.';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'rad_attempt_once') THEN
+    RAISE EXCEPTION 'phase33: یک تلاش می‌تواند دوبار همان وضعیت را بگیرد.';
   END IF;
 
   -- حقِ نوشتنِ اضافی روی نقش‌های عمومی نماند.

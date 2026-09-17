@@ -16,7 +16,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AlertState } from "./alerts";
-import type { AlertStorePort, ClaimInput, ClaimResult } from "./alertDispatch";
+import { summariseDeliveries, type AlertStorePort, type ClaimInput, type ClaimResult, type DeliveryRow } from "./alertDispatch";
 
 export class SupabaseAlertStore implements AlertStorePort {
   constructor(private readonly db: SupabaseClient) {}
@@ -77,35 +77,45 @@ export class SupabaseAlertStore implements AlertStorePort {
         claimed: true,
         eventId: (inserted.data as { id: string }).id,
         alreadyDelivered: false,
-        attemptsRecorded: 0,
+        openAttempt: null,
+        finishedAttempts: 0,
       };
     }
 
     const existing = await this.db
       .from("rebalance_alert_events")
-      .select("id, rebalance_alert_deliveries(status)")
+      .select("id, rebalance_alert_deliveries(channel, status, attempt, created_at)")
       .eq("user_id", input.userId)
       .eq("alert_key", input.alertKey)
       .maybeSingle();
 
     if (existing.error || !existing.data) {
-      return { claimed: false, eventId: null, alreadyDelivered: false, attemptsRecorded: 0 };
+      return { claimed: false, eventId: null, alreadyDelivered: false, openAttempt: null, finishedAttempts: 0 };
     }
-    const row = existing.data as { id: string; rebalance_alert_deliveries?: { status: string }[] };
-    const deliveries = row.rebalance_alert_deliveries ?? [];
-    return {
-      claimed: false,
-      eventId: row.id,
-      alreadyDelivered: deliveries.some((d) => d.status === "sent"),
-      attemptsRecorded: deliveries.length,
+    const row = existing.data as {
+      id: string;
+      rebalance_alert_deliveries?: DeliveryRow[];
     };
+    return { claimed: false, eventId: row.id, ...summariseDeliveries(row.rebalance_alert_deliveries ?? []) };
   }
 
-  async recordDelivery(input: {
+  async beginAttempt(input: { eventId: string; channel: string; attempt: number }): Promise<void> {
+    const res = await this.db.from("rebalance_alert_deliveries").insert({
+      event_id: input.eventId,
+      channel: input.channel,
+      status: "pending",
+      attempt: input.attempt,
+    });
+    // ⚠️ اینجا خطا **بلعیده نمی‌شود**. اگر ردیفِ آغاز ثبت نشود و بعد ارسال
+    // انجام شود، رویداد بدونِ ردِ تلاش می‌ماند و اجرای بعدی نمی‌فهمد چه شد.
+    if (res.error) throw new Error(`ثبت آغاز تلاش ناموفق بود: ${res.error.message}`);
+  }
+
+  async finishAttempt(input: {
     eventId: string;
     channel: string;
-    status: string;
     attempt: number;
+    status: string;
     error: string | null;
     sentAt: string | null;
   }): Promise<void> {
@@ -117,7 +127,8 @@ export class SupabaseAlertStore implements AlertStorePort {
       error: input.error,
       sent_at: input.sentAt,
     });
-    // ثبت‌نشدنِ دفتر نباید ارسالِ انجام‌شده را پنهان کند، ولی باید دیده شود.
-    if (res.error) console.error("rebalance alert delivery log failed:", res.error.message);
+    // ثبت‌نشدنِ نتیجه یعنی همان تلاش بعداً «رهاشده» دیده می‌شود — که بدتر از
+    // خطای آشکار نیست، ولی باید دیده شود.
+    if (res.error) console.error("rebalance alert finishAttempt failed:", res.error.message);
   }
 }

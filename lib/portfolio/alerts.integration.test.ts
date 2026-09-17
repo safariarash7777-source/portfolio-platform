@@ -31,6 +31,7 @@ const B = "33333333-3333-3333-3333-333333333333";
 // داخلِ «فاصلهٔ خاموشی» می‌برد. جداسازی با کاربر است، نه با پاک‌کردن.
 const C = "66666666-6666-6666-6666-666666666666";
 const D = "77777777-7777-7777-7777-777777777777";
+const E = "88888888-8888-8888-8888-888888888888";
 
 function psql(db: string, sql: string): string {
   return execFileSync("psql", ["-d", db, "-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "-c", sql], {
@@ -76,8 +77,8 @@ before(() => {
   psql("postgres", `DROP DATABASE IF EXISTS ${DB}`);
   psql("postgres", `CREATE DATABASE ${DB}`);
   for (const f of FILES) psqlFile(DB, f);
-  psql(DB, `INSERT INTO auth.users(id) VALUES ('${A}'),('${B}'),('${C}'),('${D}')`);
-  psql(DB, `INSERT INTO public.profiles(id, role) VALUES ('${A}','user'),('${B}','user'),('${C}','user'),('${D}','user')`);
+  psql(DB, `INSERT INTO auth.users(id) VALUES ('${A}'),('${B}'),('${C}'),('${D}'),('${E}')`);
+  psql(DB, `INSERT INTO public.profiles(id, role) VALUES ('${A}','user'),('${B}','user'),('${C}','user'),('${D}','user'),('${E}','user')`);
 });
 
 after(() => {
@@ -122,6 +123,11 @@ describe("phase33 — ذخیرهٔ پایدار هشدار", { skip: !available 
     // حالتِ درست قبول می‌شود، پس قید بیش‌ازحد سخت نیست.
     psql(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt, sent_at) VALUES ('${id}','log','sent',1, now())`);
     psql(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt, error) VALUES ('${id}','email','failed',1,'شبکه')`);
+    // وضعیت نامعلوم هم باید دلیل داشته باشد.
+    assert.match(
+      expectError(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt) VALUES ('${id}','telegram','unknown',1)`),
+      /rad_unknown_needs_why/
+    );
     assert.equal(psql(DB, `SELECT count(*) FROM public.rebalance_alert_deliveries WHERE event_id='${id}'`), "2");
   });
 
@@ -173,7 +179,8 @@ describe("phase33 — ذخیرهٔ پایدار هشدار", { skip: !available 
  * نیست. معناشناسیِ SQL اثبات شده، اتصالِ کلاینت نه.
  */
 import { buildHoldingsView } from "./view";
-import { dispatchRebalanceAlert, type AlertMessage, type AlertSinkPort, type AlertStorePort, type ClaimInput } from "./alertDispatch";
+import { dispatchRebalanceAlert, summariseDeliveries, type AlertMessage, type AlertSinkPort, type AlertStorePort, type ClaimInput } from "./alertDispatch";
+import { alertKey } from "./alerts";
 
 /** ذخیره‌گاهِ واقعی روی همان Postgres — از راهِ psql، بدونِ supabase-js. */
 class PgStore implements AlertStorePort {
@@ -204,30 +211,43 @@ class PgStore implements AlertStorePort {
       VALUES ('${input.userId}', '${input.alertKey}', '${input.holdingVersionId}',
               '${input.targetVersionId}', ${classes}, ${input.maxDeviationPoints})
       ON CONFLICT DO NOTHING RETURNING id`);
-    if (claimed) return { claimed: true, eventId: claimed, alreadyDelivered: false, attemptsRecorded: 0 };
+    if (claimed) {
+      return { claimed: true, eventId: claimed, alreadyDelivered: false, openAttempt: null, finishedAttempts: 0 };
+    }
 
-    const found = psql(DB, `
-      SELECT e.id || chr(1) || count(d.*) || chr(1) || count(d.*) FILTER (WHERE d.status='sent')
-        FROM public.rebalance_alert_events e
-        LEFT JOIN public.rebalance_alert_deliveries d ON d.event_id = e.id
-       WHERE e.user_id='${input.userId}' AND e.alert_key='${input.alertKey}'
-       GROUP BY e.id`);
-    if (!found) return { claimed: false, eventId: null, alreadyDelivered: false, attemptsRecorded: 0 };
-    const [id, total, sent] = found.split("\u0001");
-    return {
-      claimed: false,
-      eventId: id!,
-      alreadyDelivered: Number(sent) > 0,
-      attemptsRecorded: Number(total),
-    };
+    const id = psql(DB, `
+      SELECT id FROM public.rebalance_alert_events
+       WHERE user_id='${input.userId}' AND alert_key='${input.alertKey}'`);
+    if (!id) {
+      return { claimed: false, eventId: null, alreadyDelivered: false, openAttempt: null, finishedAttempts: 0 };
+    }
+
+    // ⚠️ خلاصه‌سازی با همان تعریفی که `summariseDeliveries` دارد، ولی در SQL —
+    // تا اگر آن تابع و این پرس‌وجو از هم جدا افتادند، تست بفهمد.
+    const rows = psql(DB, `
+      SELECT channel || chr(1) || status || chr(1) || attempt || chr(1) || created_at
+        FROM public.rebalance_alert_deliveries WHERE event_id='${id}'`)
+      .split("\n").filter(Boolean)
+      .map((line) => {
+        const [channel, status, attempt, createdAt] = line.split("\u0001");
+        return { channel: channel!, status: status!, attempt: Number(attempt), created_at: createdAt! };
+      });
+
+    return { claimed: false, eventId: id, ...summariseDeliveries(rows) };
   }
 
-  async recordDelivery(d: Parameters<AlertStorePort["recordDelivery"]>[0]) {
+  async beginAttempt(input: { eventId: string; channel: string; attempt: number }) {
+    psql(DB, `
+      INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt)
+      VALUES ('${input.eventId}', '${input.channel}', 'pending', ${input.attempt})`);
+  }
+
+  async finishAttempt(input: { eventId: string; channel: string; attempt: number; status: string; error: string | null; sentAt: string | null }) {
     psql(DB, `
       INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt, error, sent_at)
-      VALUES ('${d.eventId}', '${d.channel}', '${d.status}', ${d.attempt},
-              ${d.error === null ? "NULL" : `'${d.error.replace(/'/g, "''")}'`},
-              ${d.sentAt === null ? "NULL" : `'${d.sentAt}'`})`);
+      VALUES ('${input.eventId}', '${input.channel}', '${input.status}', ${input.attempt},
+              ${input.error === null ? "NULL" : `'${input.error.replace(/'/g, "''")}'`},
+              ${input.sentAt === null ? "NULL" : `'${input.sentAt}'`})`);
   }
 }
 
@@ -259,7 +279,11 @@ describe("مسیر کامل تا گیرندهٔ آزمایشی", { skip: !availa
     });
   }
 
-  const options = { thresholdPoints: 5, cooldownHours: 24, maxAttempts: 2, now: new Date("2026-09-17T00:00:00Z") };
+  const options = {
+    thresholdPoints: 5, cooldownHours: 24,
+    maxAttempts: 2, maxTotalAttempts: 5, attemptLeaseMinutes: 10,
+    now: new Date("2026-09-17T00:00:00Z"),
+  };
 
   test("محاسبه ← ذخیره ← گیرنده، و نتیجه در دیتابیس قابل مشاهده است", async () => {
     const view = compute();
@@ -286,8 +310,13 @@ describe("مسیر کامل تا گیرندهٔ آزمایشی", { skip: !availa
     // ردِ ماندگار در دیتابیس — همان چیزی که با ری‌استارت از بین نمی‌رود.
     assert.equal(psql(DB, `SELECT count(*) FROM public.rebalance_alert_events WHERE id='${out.eventId}'`), "1");
     assert.equal(
-      psql(DB, `SELECT status FROM public.rebalance_alert_deliveries WHERE event_id='${out.eventId}'`),
+      psql(DB, `SELECT status FROM public.rebalance_alert_deliveries WHERE event_id='${out.eventId}' AND status <> 'pending'`),
       "sent"
+    );
+    // ردِ آغاز هم هست — همان چیزی که بازیابیِ پس از مرگ به آن تکیه دارد.
+    assert.equal(
+      psql(DB, `SELECT count(*) FROM public.rebalance_alert_deliveries WHERE event_id='${out.eventId}' AND status='pending'`),
+      "1"
     );
     assert.equal(
       psql(DB, `SELECT breached_classes::text FROM public.rebalance_alert_events WHERE id='${out.eventId}'`),
@@ -343,5 +372,107 @@ describe("مسیر کامل تا گیرندهٔ آزمایشی", { skip: !availa
     assert.equal(out.reason, "not_definitive");
     assert.equal(receiver.inbox.length, 0);
     assert.equal(psql(DB, "SELECT count(*) FROM public.rebalance_alert_events"), before);
+  });
+});
+
+
+/**
+ * ── قطعِ کار، روی Postgresِ واقعی ──────────────────────────────────────────
+ *
+ * بدل می‌تواند ناخواسته از واقعیت سست‌تر باشد؛ اینجا خودِ قیدها قضاوت می‌کنند.
+ */
+describe("قطعِ کار و بازیابی روی دیتابیس واقعی", { skip: !available }, () => {
+
+  test("قیدِ یکتاییِ تلاش، دو پردازش را از آغازِ هم‌زمانِ یک تلاش بازمی‌دارد", () => {
+    const id = psql(DB, `${insertEvent(E, "lock-key")} RETURNING id`);
+    psql(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt) VALUES ('${id}','log','pending',1)`);
+    // همان تلاش، همان کانال، همان وضعیت ⇒ رد.
+    assert.match(
+      expectError(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt) VALUES ('${id}','log','pending',1)`),
+      /rad_attempt_once|duplicate key/i
+    );
+    // ولی شمارهٔ بعدی آزاد است.
+    psql(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt) VALUES ('${id}','log','pending',2)`);
+    assert.equal(psql(DB, `SELECT count(*) FROM public.rebalance_alert_deliveries WHERE event_id='${id}' AND status='pending'`), "2");
+  });
+
+  test("تلاشِ باز با همان تعریفِ برنامه از دیتابیس بیرون می‌آید", () => {
+    const id = psql(DB, `${insertEvent(E, "open-key")} RETURNING id`);
+    psql(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt) VALUES ('${id}','log','pending',1)`);
+    psql(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt, error) VALUES ('${id}','log','failed',1,'شبکه')`);
+    psql(DB, `INSERT INTO public.rebalance_alert_deliveries (event_id, channel, status, attempt) VALUES ('${id}','log','pending',2)`);
+
+    const rows = psql(DB, `
+      SELECT channel || chr(1) || status || chr(1) || attempt || chr(1) || created_at
+        FROM public.rebalance_alert_deliveries WHERE event_id='${id}'`)
+      .split("\n").filter(Boolean)
+      .map((line) => {
+        const [channel, status, attempt, createdAt] = line.split("\u0001");
+        return { channel: channel!, status: status!, attempt: Number(attempt), created_at: createdAt! };
+      });
+
+    const summary = summariseDeliveries(rows);
+    assert.equal(summary.alreadyDelivered, false);
+    assert.equal(summary.finishedAttempts, 1, "تلاش ۱ نتیجه گرفت");
+    assert.equal(summary.openAttempt?.attempt, 2, "تلاش ۲ هنوز باز است");
+  });
+
+  test("مسیرِ کامل: مرگ وسطِ کار، سپس بازیابی پس از پایانِ اجاره", async () => {
+    const store = new PgStore();
+    const view = buildHoldingsView({
+      holdings: {
+        id: "99999999-9999-9999-9999-999999999999", version: 1,
+        positions: [{
+          positionKey: "p1", symbol: "خودرو", manualLabel: null,
+          assetClass: "equity_ir", qty: 100, unit: "سهم", costBasis: null, asOf: "2026-09-16",
+        }],
+      },
+      storedTarget: { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", version: 1, referenceVersionId: null, allocations: [{ asset: "طلا", pct: 100 }] },
+      priceRows: [{ symbol: "خودرو", trade_date: "2026-09-16", close: 760, last_price: null, source: "relay_eod" }],
+      maxPriceAgeDays: 3, maxPriceFutureDays: 1,
+      now: new Date("2026-09-17T00:00:00Z"),
+    });
+    assert.ok(view.result);
+
+    // «مرگ»: ادعا و آغازِ تلاش انجام شد، نتیجه هرگز ثبت نشد.
+    const claim = await store.claimEvent({
+      userId: E,
+      alertKey: alertKey(view.result!, ["equity_ir", "gold"]),
+      holdingVersionId: view.result!.identity.holdingVersionId,
+      targetVersionId: view.result!.identity.targetVersionId,
+      breachedClasses: ["equity_ir", "gold"],
+      maxDeviationPoints: 100,
+    });
+    await store.beginAttempt({ eventId: claim.eventId!, channel: "log", attempt: 1 });
+
+    // ⚠️ مهرِ `created_at` را خودِ Postgres با `now()` می‌زند، پس ساعتِ تصمیم
+    // باید با ساعتِ واقعیِ دیتابیس هم‌تراز باشد، نه با یک تاریخِ ساختگی —
+    // وگرنه سنِ تلاش منفی می‌شود و بازیابی هرگز رخ نمی‌دهد.
+    const opts = {
+      thresholdPoints: 5, cooldownHours: 24,
+      maxAttempts: 2, maxTotalAttempts: 5, attemptLeaseMinutes: 10,
+      now: new Date(),
+    };
+
+    // بلافاصله: دستِ رقیب فرض می‌شود.
+    const soon = await dispatchRebalanceAlert(
+      { userId: E, result: view.result! },
+      { store, sinks: [new TestReceiver()], options: opts }
+    );
+    assert.equal(soon.reason, "in_flight");
+
+    // پس از اجاره: تلاشِ رها **نامعلوم** ثبت می‌شود و کار ادامه می‌یابد.
+    const receiver = new TestReceiver();
+    const later = await dispatchRebalanceAlert(
+      { userId: E, result: view.result! },
+      { store, sinks: [receiver], options: { ...opts, now: new Date(Date.now() + 20 * 60_000) } }
+    );
+    assert.equal(later.sent, true, "هشدار برای همیشه مسدود نماند");
+    assert.equal(receiver.inbox.length, 1);
+
+    const unknowns = psql(DB, `
+      SELECT count(*) FROM public.rebalance_alert_deliveries
+       WHERE event_id='${claim.eventId}' AND status='unknown'`);
+    assert.equal(unknowns, "1", "تلاشِ رها نه موفق جا زده شد نه شکست");
   });
 });

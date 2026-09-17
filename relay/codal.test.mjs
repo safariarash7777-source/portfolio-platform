@@ -207,11 +207,24 @@ check("بدونِ شاهد (نبودِ نرخ) استنتاج نمی‌شود",
 {
   const r = resolveAmountUnit([[["ارقام به میلیون ریال"]]], millionRows);
   check("سربرگ و حساب هم‌سو ⇒ واحد معتبر", r.unit === "میلیون ریال" && r.basis === "header+arithmetic", JSON.stringify(r));
+  check("دو شاهد جدا ثبت می‌شوند", r.header === "میلیون ریال" && r.inferred === "میلیون ریال", JSON.stringify(r));
+}
+// سربرگِ تنها: واحد هست ولی تأییدِ دوم ندارد — و همین در basis دیده می‌شود.
+{
+  const r = resolveAmountUnit([[["ارقام به میلیون ریال"]]], [{ sales_qty: null, sales_rate: null, sales_amount: 5 }]);
+  check("سربرگِ تنها basis جدا می‌گیرد", r.basis === "header_only" && r.inferred === null, JSON.stringify(r));
+}
+// حسابِ تنها: استنباط است، نه اعلامِ صریحِ گزارش.
+{
+  const r = resolveAmountUnit([[["نام محصول"]]], millionRows);
+  check("حسابِ تنها basis جدا می‌گیرد", r.basis === "arithmetic_only" && r.header === null, JSON.stringify(r));
 }
 // تعارض ⇒ هیچ‌کدام برنده نیست
 {
   const r = resolveAmountUnit([[["ارقام به میلیون ریال"]]], rialRows);
   check("تعارضِ سربرگ و حساب ⇒ واحد اعلام نمی‌شود", r.unit === null && r.basis === "conflict", JSON.stringify(r));
+  check("در تعارض هم هر دو شاهد نگه داشته می‌شوند",
+    r.header === "میلیون ریال" && r.inferred === "ریال", JSON.stringify(r));
 }
 // قالبِ ناشناخته ⇒ unresolved
 {
@@ -224,6 +237,8 @@ if (n30) {
   check("واحدِ ن-۳۰ از خودِ گزارش استخراج شد", n30.unit === "میلیون ریال", String(n30.unit));
   check("پایهٔ اثباتِ واحد ثبت شد", typeof n30.unit_basis === "string" && n30.unit_basis.length > 0, String(n30.unit_basis));
   check("دورهٔ مقایسه یک ماه است", n30.period_months === 1);
+  check("واحدِ مقدارِ کالا استخراج نشده و صریح null است", n30.qty_unit === null, String(n30.qty_unit));
+  check("واحدِ مبلغ با واحدِ مقدار قاطی نشده", n30.unit !== n30.qty_unit);
 }
 
 // جدولی بدونِ ستونِ تجمعی: `fy_cumulative_amount` باید خالی بماند، نه برابرِ ماه.
