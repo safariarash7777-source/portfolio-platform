@@ -39,11 +39,11 @@ function harness(source = readFileSync(new URL('../../app/api/telegram/webhook/r
       if (!(name in imports)) throw new Error(`Unexpected dependency: ${name}`);
       return imports[name];
     },
-    process: { env: { TELEGRAM_WEBHOOK_SECRET: 'synthetic-test-only' } },
+    process: { env: { TELEGRAM_WEBHOOK_SECRET: 'dummy-test-only' } },
     console: { error: () => undefined },
   });
   return {
-    invoke: (body: unknown, secret = 'synthetic-test-only') => mod.exports.POST({
+    invoke: (body: unknown, secret = 'dummy-test-only') => mod.exports.POST({
       headers: { get: () => secret }, json: async () => body,
     }),
     databaseClients: () => databaseClients,
