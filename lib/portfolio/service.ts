@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
 import { parseStoredAllocations, describeTargetProblems } from "./targetContract";
+import { buildPriceMap, priceableSymbols, type SymbolHistoryRow } from "./prices";
 
 /**
  * خواندنِ داراییِ **خودِ کاربرِ نشست** و هدفِ او.
@@ -113,15 +114,39 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
 }
 
 /**
- * قیمت‌ها — فعلاً هیچ منبعِ خودکاری وصل نیست.
+ * قیمت‌ها از `symbol_history` — با زمان، منبع و واحدِ روشن.
  *
- * ⚠️ عمداً نقشهٔ خالی برمی‌گردد به‌جای اینکه از `holdings.current_price`
- * بخواند. آن ستون عددی است بدونِ منبع و بدونِ زمانِ قیمت (تنها مهرش
- * `updated_at`ِ ردیف است). استفاده از آن یعنی تولیدِ عددِ قطعیِ ریبالانس روی
- * قیمتی که نمی‌دانیم از کجا و کِی آمده — دقیقاً همان چیزی که `#140` منع
- * می‌کند. تا وصل‌شدنِ منبعِ دارای زمان، موتور «پوششِ ناقص» گزارش می‌دهد و
- * هیچ مقدارِ قطعی نمی‌سازد.
+ * ⚠️ عمداً از `holdings.current_price` خوانده **نمی‌شود**. آن ستون عددی است
+ * بدونِ منبع و بدونِ زمانِ قیمت (تنها مهرش `updated_at`ِ ردیف است)، پس عددِ
+ * قطعیِ ریبالانس رویش ساخته نمی‌شود.
+ *
+ * فقط نمادهای همین دارایی خوانده می‌شوند و پرس‌وجو با `.in()` کراندار است.
+ * قلمِ دستی و زیرنمادِ رقم‌دار اصلاً درخواست نمی‌شوند، پس نتیجه‌شان «پوششِ
+ * ناقص» می‌شود — که همان حقیقت است، نه یک خطا.
  */
-export async function loadPrices(): Promise<Map<string, PricePoint>> {
-  return new Map();
+export async function loadPrices(
+  positions: readonly { symbol: string | null }[]
+): Promise<Map<string, PricePoint>> {
+  const symbols = priceableSymbols(positions);
+  if (symbols.length === 0) return new Map();
+
+  const supabase = await createClient();
+  // سقفِ محافظه‌کارانه: هر نماد حداکثر چند ردیفِ اخیر لازم دارد، ولی جدول
+  // append-only است و یک روز ممکن است چند بار درج شده باشد. مرتب‌سازی
+  // نزولی + انتخابِ بیشینه در `buildPriceMap` این را پوشش می‌دهد.
+  const res = await supabase
+    .from("symbol_history")
+    .select("symbol, trade_date, close, last_price, source")
+    .in("symbol", symbols)
+    .order("trade_date", { ascending: false })
+    .limit(Math.min(symbols.length * 10, 500));
+
+  if (res.error) {
+    // خطای خواندنِ قیمت «قیمتِ صفر» نیست. نقشهٔ خالی یعنی پوششِ ناقص و
+    // موتور هیچ عددِ قطعی نمی‌سازد.
+    console.error("symbol_history read failed:", res.error.message);
+    return new Map();
+  }
+
+  return buildPriceMap((res.data ?? []) as SymbolHistoryRow[]);
 }

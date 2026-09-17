@@ -13,7 +13,7 @@ export default async function HoldingsPage({
 }) {
   const { v } = await searchParams;
   const snapshot = await loadPortfolioSnapshot(v);
-  const prices = await loadPrices();
+  const prices = await loadPrices(snapshot.holdings?.positions ?? []);
 
   let rows: readonly AssetClassRow[] = [];
   let gaps: readonly CoverageGap[] = [];
