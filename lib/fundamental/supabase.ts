@@ -15,7 +15,7 @@ import type {
   SymbolFundamentals,
 } from "./types";
 
-interface CodalRow {
+export interface CodalRow {
   id: number;
   symbol: string;
   report_kind: string;
@@ -88,18 +88,61 @@ function latestParserRows(rows: CodalRow[]): CodalRow[] {
   return [...byAnnouncement.values()];
 }
 
-/** برای هر دورهٔ مالی یک گزارش: حسابرسی‌شده مقدم، بعد جدیدترین id. */
-function dedupeByPeriod(rows: CodalRow[]): CodalRow[] {
+/**
+ * آیا عنوانِ اطلاعیه می‌گوید این یک **اصلاحیه** است.
+ *
+ * ⚠️ «ي» و «ك» عربی در عنوان‌های کدال واقعاً وجود دارند و اگر نرمال نشوند،
+ * «اصلاحيه» با «اصلاحیه» یکی گرفته نمی‌شود و اصلاحیه نامرئی می‌ماند.
+ *
+ * منبعِ سیگنال عمداً ستونِ `title` است، نه یک کلیدِ تازه در `data`: هر ۳۴۳۹
+ * ردیفِ موجود همین حالا عنوان دارند، پس این اصلاح **بدونِ بک‌فیل و بدونِ
+ * دست‌زدن به ردیف‌های قدیمی** کار می‌کند. بازنویسیِ سوابق برای رفعِ یک باگِ
+ * انتخاب، خودش یک اشتباهِ جداست.
+ */
+export function isAmendmentTitle(title: string | null | undefined): boolean {
+  if (!title) return false;
+  const norm = String(title).replace(/[يى]/g, "ی").replace(/ك/g, "ک");
+  return norm.includes("اصلاحیه");
+}
+
+/**
+ * برای هر دورهٔ مالی یک گزارش.
+ *
+ * تقدم، به ترتیب:
+ *   ۱. حسابرسی‌شده بر حسابرسی‌نشده
+ *   ۲. **اصلاحیه بر نسخهٔ اولیه** (در همان وضعیتِ حسابرسی)
+ *   ۳. در تساوی، `id` بزرگ‌تر
+ *
+ * ⚠️ بندِ ۲ تازه است و یک باگِ واقعی را می‌بندد. پیش از این، انتخاب فقط به
+ * `id` تکیه می‌کرد و `id` ترتیبِ **درج** است نه ترتیبِ انتشار: اندازه‌گیریِ
+ * فقط‌خواندنیِ پروژهٔ اصلی (۱۴۰۵/۰۶/۲۸) نشان داد در ۲۸۰ دوره‌ای که هم
+ * اصلاحیه دارند و هم نسخهٔ اولیه، در **۲۵۷** مورد نسخهٔ اولیه صرفاً به‌خاطر
+ * `id` بزرگ‌تر برنده می‌شد — و در **۱۷** مورد اعدادِ دو نسخه واقعاً فرق
+ * داشتند. یعنی کارت می‌توانست رقمِ باطل‌شده را نشان بدهد.
+ */
+export function dedupeByPeriod(rows: CodalRow[]): CodalRow[] {
   const byPeriod = new Map<string, CodalRow>();
   for (const r of rows) {
     const d = r.data as CodalN10Data;
     const key = `${d.period_end}|${d.period_months}`;
     const prev = byPeriod.get(key);
     if (!prev) { byPeriod.set(key, r); continue; }
+
     const pa = (prev.data as CodalN10Data).audited === true;
     const ca = d.audited === true;
-    if (ca && !pa) byPeriod.set(key, r);
-    else if (ca === pa && r.id > prev.id) byPeriod.set(key, r);
+    if (ca !== pa) {
+      if (ca) byPeriod.set(key, r);
+      continue;
+    }
+
+    const pAmend = isAmendmentTitle(prev.title);
+    const cAmend = isAmendmentTitle(r.title);
+    if (cAmend !== pAmend) {
+      if (cAmend) byPeriod.set(key, r);
+      continue;
+    }
+
+    if (r.id > prev.id) byPeriod.set(key, r);
   }
   return [...byPeriod.values()];
 }
