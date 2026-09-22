@@ -47,7 +47,27 @@ test("retention stays configurable and its status stays observable", () => {
 test("the source-side sub-ticker filter is still applied before symbol_history", () => {
   // قاعدهٔ Z1. اندازه‌گیری تأیید کرد که امروز صفر ردیفِ آلوده هست؛ این گارد
   // نمی‌گذارد آن دستاورد بی‌صدا برگردد.
-  assert.match(codeOnly, /if \(isSubTicker\(r\.id\) \|\| isRightsIssue\(r\.id\)\) continue;/);
+  //
+  // B-055 ساختنِ ردیف‌ها را به `eod.mjs` برد تا مسیرِ واقعی آزمون‌پذیر شود. گارد
+  // جابه‌جا شد، ضعیف نشد: هم فیلتر باید آنجا باشد، هم `server.mjs` باید **حتماً**
+  // از همان مسیر به symbol_history بنویسد — وگرنه فیلترِ درست در فایلی که کسی
+  // صدایش نمی‌زند هیچ چیزی را نمی‌بندد. آزمونِ رفتاری در `eod.test.mjs` است.
+  const EOD = readFileSync(new URL("./eod.mjs", import.meta.url), "utf8")
+    .split("\n")
+    .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+    .join("\n");
+  assert.match(EOD, /if \(isSubTicker\(r\.id\) \|\| isRightsIssue\(r\.id\)\) continue;/);
+  assert.match(codeOnly, /const plan = planEodHistory\(/);
+  assert.match(codeOnly, /import \{[^}]*\bplanEodHistory\b[^}]*\} from "\.\/eod\.mjs";/);
+  // هیچ مسیرِ دومی که بی‌فیلتر به symbol_history بنویسد نمانده باشد. server.mjs
+  // **هیچ** URLِ مستقیمِ symbol_history ندارد؛ تنها درج در `writeEodHistory`ِ
+  // eod.mjs است و ردیف‌هایش فقط از `planEodHistory` (همان فیلتر) می‌آیند.
+  // (`source: "relay_eod"` را نمی‌شماریم — `index_history` هم دارد.)
+  assert.doesNotMatch(codeOnly, /rest\/v1\/symbol_history/, "server.mjs مستقیم به symbol_history می‌نویسد/می‌خواند");
+  const posts = [...EOD.matchAll(/"POST",\s*"symbol_history/g)];
+  assert.equal(posts.length, 1, "مسیرِ دومِ درج در symbol_history");
+  const fnStart = EOD.indexOf("export async function writeEodHistory(");
+  assert.ok(fnStart >= 0 && posts[0].index > fnStart, "درج بیرون از writeEodHistory");
 });
 
 test("nothing in the relay deletes from symbol_history", () => {

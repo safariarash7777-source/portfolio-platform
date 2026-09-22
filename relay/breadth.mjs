@@ -4,6 +4,8 @@
 // نمی‌شود چون indices.date همان آخرین روز معاملاتی می‌ماند و unique رد می‌کند (409 بی‌خطر).
 // append-only: فقط INSERT — هیچ UPDATE/DELETE.
 
+import { tehranHour, isAfterClose } from "./eod.mjs";
+
 export let breadthStatus = { lastJdate: null, error: null };
 
 /** آیا نماد در صف خرید است؟ (بهترین تقاضا روی سقف دامنه و عرضهٔ صفر)
@@ -89,10 +91,9 @@ export function computeBreadth(stocks) {
 export async function pushDailyBreadth(cfg, body) {
   const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, EOD_AFTER_HOUR = 14 } = cfg || {};
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
-  const hourTehran = Number(
-    new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Tehran", hour: "2-digit", hour12: false }).format(new Date()),
-  );
-  if (hourTehran < EOD_AFTER_HOUR) return; // فقط پس از ساعت بازار — رقم پایان روز
+  // `en-US` + `hour12: false` همان ترکیبی است که نیمه‌شب «24» می‌دهد (B-055). این
+  // مسیر فقط به‌خاطرِ کلیدِ `jdate`ِ منبع آسیب ندید؛ ساعت هم دیگر نباید دروغ بگوید.
+  if (!isAfterClose(tehranHour(), EOD_AFTER_HOUR)) return; // فقط پس از ساعت بازار — رقم پایان روز
   const p = typeof body === "string" ? JSON.parse(body) : body;
   const jdate = p?.indices?.date ? String(p.indices.date).trim() : null;
   if (!jdate) return; // بدون تاریخ منبع → هیچ درجی
