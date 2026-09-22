@@ -125,10 +125,11 @@ const pushDailyHistory = SERVER.slice(
   SERVER.indexOf("\n}\n", SERVER.indexOf("async function pushDailyHistory(")),
 );
 
-test("server.mjs: نوشتنِ پایانِ روز از planEodHistory می‌گذرد و دفعِ تکرار روی جلسهٔ منبع است", () => {
+test("server.mjs: نوشتنِ پایانِ روز از planEodHistory و writeEodHistory می‌گذرد", () => {
   assert.ok(pushDailyHistory.length > 200, "بدنهٔ pushDailyHistory پیدا نشد");
   assert.match(pushDailyHistory, /planEodHistory\(/);
-  assert.match(pushDailyHistory, /trade_date=eq\.\$\{tradeDate\}/);
+  // دفعِ تکرار روی جلسهٔ منبع حالا داخلِ writeEodHistory است (eod-write.test.mjs).
+  assert.match(pushDailyHistory, /writeEodHistory\(\{ plan,/);
   assert.doesNotMatch(pushDailyHistory, /t\.date/);
   assert.doesNotMatch(SERVER, /trade_date:\s*t\.date/);
 });

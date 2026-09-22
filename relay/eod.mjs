@@ -117,3 +117,160 @@ export function planEodHistory(payload, now = new Date(), afterHour = 14) {
   if (rows.length === 0) return { skip: `no traded rows ${tradeDate}` };
   return { tradeDate, rows };
 }
+
+/**
+ * کمترین تعدادِ ردیف تا یک جلسه «کامل» حساب شود. تاریخچهٔ Production: ۸۳۲ تا
+ * ۱٬۰۸۲ ردیف در هر جلسه. زیرِ این کف، نوشتن انجام می‌شود (idempotent است) ولی
+ * جلسه تمام‌شده علامت نمی‌خورد تا چرخهٔ بعد ردیف‌های غایب را اضافه کند.
+ */
+export const MIN_EOD_ROWS = 500;
+
+/**
+ * آیا ردیفِ موجود **پس از** بسته‌شدنِ همان جلسه نوشته شده؟ یعنی محتوایش می‌تواند
+ * پایانیِ همان جلسه باشد. ردیفی که روزِ جلسه پیش از ساعتِ بسته‌شدن نوشته شده
+ * (رفتارِ کدِ قبلی: ۰۰:۰۰ تا ۰۰:۱۳) از نظرِ فیزیکی نمی‌تواند پایانیِ آن روز باشد.
+ */
+export function writtenAfterClose(capturedAt, tradeDate, afterHour = 14) {
+  const t = tehranNow(new Date(capturedAt));
+  if (t.date > tradeDate) return true; // نوشتنِ دیرهنگام؛ تاریخِ منبع همچنان همان جلسه بود
+  return t.date === tradeDate && isAfterClose(t.hour, afterHour);
+}
+
+/** سهمِ نمادهای یکسان که بالاتر از آن دادهٔ نماد «کهنه» حساب می‌شود. */
+export const STALE_IDENTICAL_SHARE = 0.95;
+/** کمترین همپوشانی تا مقایسه معنا داشته باشد. */
+const STALE_MIN_OVERLAP = 100;
+
+/**
+ * آیا ردیف‌ها همان آخرین جلسهٔ ثبت‌شده‌اند؟ (`close` و `value_traded` هر دو یکسان)
+ */
+export async function sameAsPreviousSession({ request, tradeDate, rows }) {
+  const lastRes = await request(
+    "GET",
+    `symbol_history?select=trade_date&source=eq.relay_eod&trade_date=lt.${tradeDate}&order=trade_date.desc&limit=1`,
+  );
+  if (!lastRes.ok) throw new Error(`read previous session HTTP ${lastRes.status}`);
+  const last = await lastRes.json();
+  if (!Array.isArray(last) || last.length === 0) return { stale: false };
+  const previousSession = last[0].trade_date;
+  const prevRes = await request(
+    "GET",
+    `symbol_history?select=symbol,close,value_traded&source=eq.relay_eod&trade_date=eq.${previousSession}&limit=5000`,
+  );
+  if (!prevRes.ok) throw new Error(`read previous rows HTTP ${prevRes.status}`);
+  const prev = new Map();
+  for (const p of await prevRes.json()) prev.set(p.symbol, p);
+  let overlap = 0;
+  let identical = 0;
+  for (const r of rows) {
+    const p = prev.get(r.symbol);
+    if (!p) continue;
+    overlap += 1;
+    if (Number(p.close) === Number(r.close) && Number(p.value_traded) === Number(r.value_traded)) identical += 1;
+  }
+  if (overlap < STALE_MIN_OVERLAP) return { stale: false, previousSession, identicalShare: null };
+  const identicalShare = identical / overlap;
+  return { stale: identicalShare >= STALE_IDENTICAL_SHARE, previousSession, identicalShare };
+}
+
+/**
+ * نوشتنِ پایانِ روز — idempotent، با ترمیمِ خودکار و بدونِ دورریختنِ داده.
+ *
+ * `request(method, path, body?, prefer?)` → `{ ok, status, json() }`؛ در رله
+ * همان fetch به PostgREST است و در آزمون یک PostgRESTِ جعلی.
+ *
+ * ── سه نقصی که این تابع می‌بندد (B-055، هر سه در کدِ قبلی) ──────────────
+ * ۱. **خرابیِ دسته‌ای قفل می‌کرد.** بررسیِ «یک ردیف هست؟» پس از شکستِ دستهٔ دوم
+ *    جلسه را نوشته‌شده می‌گرفت و بقیهٔ نمادها برای همیشه گم می‌شدند. حالا همهٔ
+ *    ردیف‌های موجود خوانده و فقط غایب‌ها درج می‌شوند، با `ignore-duplicates`.
+ * ۲. **برچسبِ اشغال‌شده بی‌صدا دور ریخته می‌شد.** اگر برچسبِ جلسه را پیش‌تر
+ *    ردیفی از **پیش از بسته‌شدن** گرفته باشد (کدِ قبلی، روزِ گذار)، کلیدِ یکتای
+ *    `(symbol, trade_date)` جا نمی‌دهد. پایانیِ درست دور ریخته نمی‌شود: در
+ *    `ir_market_snapshots` زیرِ کلیدِ `eod_displaced:<تاریخ>` می‌ماند. بدونِ
+ *    migration، بدونِ بازنویسیِ تاریخچه، و با حذفِ همان کلید برگشت‌پذیر.
+ * ۳. **ردیفِ منبعِ دیگر** (`brsapi_candle`) برای همان نماد و روز، پیش‌تر کلِ
+ *    دستهٔ ۵۰۰تایی را با 409 می‌شکست. حالا جدا شمرده و دست‌نخورده رها می‌شود.
+ */
+export async function writeEodHistory({ plan, request, now = new Date(), afterHour = 14 }) {
+  const { tradeDate, rows } = plan;
+
+  const exRes = await request(
+    "GET",
+    `symbol_history?select=symbol,source,captured_at&trade_date=eq.${tradeDate}&limit=5000`,
+  );
+  if (!exRes.ok) throw new Error(`read existing HTTP ${exRes.status}`);
+  const existing = new Map();
+  for (const e of await exRes.json()) existing.set(e.symbol, e);
+
+  const toInsert = [];
+  const displaced = [];
+  let alreadyDone = 0;
+  let occupiedByOtherSource = 0;
+  for (const r of rows) {
+    const e = existing.get(r.symbol);
+    if (!e) toInsert.push(r);
+    else if (e.source !== "relay_eod") occupiedByOtherSource += 1;
+    else if (writtenAfterClose(e.captured_at, tradeDate, afterHour)) alreadyDone += 1;
+    else displaced.push(r);
+  }
+
+  // ── سازگاریِ «تاریخِ شاخص ↔ دادهٔ نمادها» ───────────────────────────────
+  // منبع برای هر ردیف تاریخ نمی‌دهد؛ برچسب از `indices.date` است. اگر شاخص جلو
+  // رفته ولی ردیف‌های نماد همان جلسهٔ قبل باشند (فیدِ کهنه)، برچسبِ تازه روی
+  // دادهٔ کهنه می‌نشست — دقیقاً الگوی سه جفتِ تعطیلی در Production: ۱۰۰٪ نمادها
+  // با `close` و `value_traded`ِ یکسان زیرِ دو برچسب. دو جلسهٔ واقعی چنین امضایی
+  // ندارند، پس این آستانه محافظه‌کارانه است.
+  if (toInsert.length + displaced.length > 0) {
+    const stale = await sameAsPreviousSession({ request, tradeDate, rows });
+    if (stale.stale) {
+      return {
+        tradeDate, planned: rows.length, inserted: 0, alreadyDone, displaced: 0,
+        occupiedByOtherSource, complete: false,
+        stale: { previousSession: stale.previousSession, identicalShare: stale.identicalShare },
+      };
+    }
+  }
+
+  let inserted = 0;
+  for (let i = 0; i < toInsert.length; i += 500) {
+    const batch = toInsert.slice(i, i + 500);
+    const res = await request(
+      "POST",
+      "symbol_history?on_conflict=symbol,trade_date",
+      batch,
+      "resolution=ignore-duplicates,return=minimal",
+    );
+    if (!res.ok) throw new Error(`insert HTTP ${res.status} @batch ${i}`);
+    inserted += batch.length;
+  }
+
+  if (displaced.length > 0) {
+    const res = await request(
+      "POST",
+      "ir_market_snapshots?on_conflict=key",
+      [{
+        key: `eod_displaced:${tradeDate}`,
+        payload: {
+          session: tradeDate,
+          reason: "label occupied by a row written before this session closed",
+          recorded_at: now.toISOString(),
+          count: displaced.length,
+          rows: displaced,
+        },
+      }],
+      "resolution=merge-duplicates,return=minimal",
+    );
+    if (!res.ok) throw new Error(`stash displaced HTTP ${res.status}`);
+  }
+
+  const covered = inserted + alreadyDone + displaced.length + occupiedByOtherSource;
+  return {
+    tradeDate,
+    planned: rows.length,
+    inserted,
+    alreadyDone,
+    displaced: displaced.length,
+    occupiedByOtherSource,
+    complete: covered === rows.length && rows.length >= MIN_EOD_ROWS,
+  };
+}
