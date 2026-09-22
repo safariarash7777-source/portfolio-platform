@@ -300,7 +300,11 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
           ttm={ttm}
           peSeries={peSeries}
           currentPe={currentPe}
-          sourceTitle={fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال"}
+          sourceTitle={
+            fundamentals?.n10PeriodsScope === "consolidated_ambiguous"
+              ? `${fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال"} — شاملِ گزارشِ تلفیقی؛ ممکن است رقمِ گروه باشد، نه شرکتِ اصلی`
+              : (fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال")
+          }
         />
       ) : null}
 
