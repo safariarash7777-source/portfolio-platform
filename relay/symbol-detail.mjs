@@ -107,12 +107,15 @@ let rotationDayKey = "";
 
 /** میلی‌ثانیه تا نیمه‌شبِ تهران — پایهٔ پخشِ بودجه. */
 export function msUntilTehranMidnight(now = new Date()) {
+  // `hourCycle: "h23"` نه `hour12: false` — دومی در بعضی ICUها نیمه‌شب را «24»
+  // می‌خواند و اینجا خروجی را **منفی** می‌کرد (۰۰:۰۵ → ۲۴ ساعت و ۵ دقیقه گذشته)،
+  // درست همان لحظه‌ای که بودجهٔ روزِ تازه پخش می‌شود. B-055.
   const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Tehran", hour12: false,
+    timeZone: "Asia/Tehran", hourCycle: "h23",
     hour: "2-digit", minute: "2-digit", second: "2-digit",
   }).formatToParts(now);
   const get = (t) => Number(parts.find((p) => p.type === t)?.value ?? 0);
-  const elapsed = (get("hour") * 3600 + get("minute") * 60 + get("second")) * 1000;
+  const elapsed = ((get("hour") % 24) * 3600 + get("minute") * 60 + get("second")) * 1000;
   return 86_400_000 - elapsed;
 }
 
