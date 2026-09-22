@@ -4,8 +4,8 @@
 // قواعد انتخاب (append-only بودن جدول یعنی نسخه‌های تکراری وجود دارد):
 // ۱) فقط ردیف‌هایی که data دارند (پارس موفق).
 // ۲) بالاترین raw.parser_version برای هر اطلاعیه (پسوند #pvN در source_url).
-// ۳) برای هر (period_end, period_months): «حسابرسی‌شده» بر نشده مقدم است؛
-//    بعد جدیدترین id (اصلاحیهٔ متأخر).
+// ۳) برای هر (period_end, period_months): جداگانه بر تلفیقی، حسابرسی‌شده بر نشده،
+//    اصلاحیه بر اولیه، انتشارِ دیرتر، سپس id — جزئیات در `dedupeByPeriod`.
 // ۴) n10 اصلی صفحه = جدیدترین گزارش سالانه (۱۲ماهه)؛ اگر نبود جدیدترین میان‌دوره.
 // ۵) سری روند فروش از دل همهٔ دوره‌های ۱۲ماههٔ موجود ساخته می‌شود.
 
@@ -46,24 +46,54 @@ function env(): { url: string; anon: string } | null {
   return { url: url.replace(/\/+$/, ""), anon };
 }
 
+/**
+ * سقفِ ردیف برای هر نوعِ گزارش. هر برش باید **قدیمی‌ترین دوره‌ها** را کنار بگذارد،
+ * نه تازه‌ترین را — پس مرتب‌سازی روی `period_end` است، نه `id`.
+ *
+ * پیش‌تر یک پرس‌وجوی مشترک با `order=id.desc&limit=120` بود. امروز بیشینه ۷۰
+ * ردیف در هر نماد است، ولی جدول append-only است و هر اجرای دوبارهٔ پارسر
+ * (`#pvN` تازه) همهٔ ردیف‌ها را دوباره درج می‌کند؛ و `id` ترتیبِ درج است که در
+ * بک‌فیلِ آرشیو **برعکسِ** زمانِ انتشار بود. برشِ `id` می‌توانست گزارشِ تازه را
+ * بیندازد و هیچ نشانه‌ای نمی‌داد.
+ */
+export const FETCH_LIMITS = { "ن-۱۰": 400, "ن-۳۰": 200 } as const;
+
+export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_LIMITS; qs: URLSearchParams }> {
+  return (Object.keys(FETCH_LIMITS) as Array<keyof typeof FETCH_LIMITS>).map((kind) => ({
+    kind,
+    qs: new URLSearchParams({
+      select: "id,symbol,report_kind,period_end,title,source_url,data,raw",
+      symbol: `eq.${symbol}`,
+      report_kind: `eq.${kind}`,
+      data: "not.is.null",
+      order: "period_end.desc,id.desc",
+      limit: String(FETCH_LIMITS[kind]),
+    }),
+  }));
+}
+
 async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
   const e = env();
   if (!e) return null;
-  const qs = new URLSearchParams({
-    select: "id,symbol,report_kind,period_end,title,source_url,data,raw",
-    symbol: `eq.${symbol}`,
-    data: "not.is.null",
-    order: "id.desc",
-    limit: "120", // T1: جا برای ۲۶ گزارش ن-۳۰ + نسخه‌های تکراری/اصلاحیه + ن-۱۰ها
-  });
   try {
-    const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
-      headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
-      signal: AbortSignal.timeout(8000),
-      next: { revalidate: 600 },
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as CodalRow[];
+    const parts = await Promise.all(
+      fetchQueries(symbol).map(async ({ kind, qs }) => {
+        const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
+          headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
+          signal: AbortSignal.timeout(8000),
+          next: { revalidate: 600 },
+        });
+        if (!res.ok) return null;
+        const rows = (await res.json()) as CodalRow[];
+        if (rows.length >= FETCH_LIMITS[kind]) {
+          // برش رخ داد: قدیمی‌ترین دوره‌ها بیرون ماندند. بی‌صدا نباشد.
+          console.warn(`codal_reports: ${symbol} ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
+        }
+        return rows;
+      }),
+    );
+    if (parts.some((p) => p === null)) return null;
+    return parts.flat() as CodalRow[];
   } catch {
     return null;
   }
@@ -103,6 +133,20 @@ function latestParserRows(rows: CodalRow[]): CodalRow[] {
  * دست‌زدن به ردیف‌های قدیمی** کار می‌کند. بازنویسیِ سوابق برای رفعِ یک باگِ
  * انتخاب، خودش یک اشتباهِ جداست.
  */
+/**
+ * آیا عنوانِ اطلاعیه «تلفیقی» است (صورت‌های گروه).
+ *
+ * B-056: پارسر (`relay/codal.mjs`) اولین جدولِ سود و زیانِ مطابق را برمی‌دارد و
+ * آن را در `standalone` می‌گذارد؛ `data.consolidated` در **هیچ** ردیفی پر نیست.
+ * در گزارشِ تلفیقی آن جدول ممکن است صورتِ گروه باشد. تا تطبیق با سندِ اصلی،
+ * رقمِ این گزارش‌ها به شرکت نسبت داده نمی‌شود.
+ */
+export function isConsolidatedTitle(title: string | null | undefined): boolean {
+  if (!title) return false;
+  const norm = String(title).replace(/[يى]/g, "ی").replace(/ك/g, "ک");
+  return norm.includes("تلفیقی");
+}
+
 export function isAmendmentTitle(title: string | null | undefined): boolean {
   if (!title) return false;
   const norm = String(title).replace(/[يى]/g, "ی").replace(/ك/g, "ک");
@@ -135,16 +179,22 @@ export function publishKey(row: Pick<CodalRow, "raw">): string | null {
  * برای هر دورهٔ مالی یک گزارش.
  *
  * تقدم، به ترتیب:
+ *   ۰. **گزارشِ جداگانهٔ شرکت بر تلفیقی** (دو دامنهٔ متفاوت‌اند — B-056)
  *   ۱. حسابرسی‌شده بر حسابرسی‌نشده
  *   ۲. **اصلاحیه بر نسخهٔ اولیه** (در همان وضعیتِ حسابرسی)
  *   ۳. **زمانِ انتشارِ دیرتر** — فقط وقتی هر دو زمان معلوم باشند
  *   ۴. در تساوی یا نامعلومی، `id` بزرگ‌تر
  *
  * ⚠️ بندِ ۳ (۱۴۰۵/۰۶/۳۱): #150 بندِ ۳ را نداشت و مستقیم به `id` می‌رفت. ولی
- * بک‌فیلِ آرشیوِ کدال از جدید به قدیم درج کرده، پس در همان دوره‌هایی که مهم
- * است `id` **برعکسِ** زمانِ انتشار است. اندازه‌گیری روی ۹۸۵ دورهٔ چندردیفی:
- * بندِ ۳ برنده را در ۷ دوره عوض می‌کند و در ۳ دوره رقمِ نمایشی فرق دارد —
- * فخاس سالانهٔ ۱۴۰۳: سودِ خالصِ ۷۳٫۴ در برابرِ ۶۱٫۵ هزار میلیارد ریال (۱۶٪).
+ * بک‌فیلِ آرشیوِ کدال از جدید به قدیم درج کرده، پس `id` می‌تواند **برعکسِ** زمانِ
+ * انتشار باشد. اندازه‌گیری **درونِ یک دامنه** (پس از بندِ ۰): بندِ ۳ برنده را در
+ * ۱۲ دوره عوض می‌کند و فقط در **یک** دوره رقم فرق دارد (پاریز، یک واحد). ارزشِ
+ * آن درستیِ ترتیب است، نه تغییرِ امروزِ ارقام.
+ *
+ * ❌ تصحیح: نسخهٔ قبلیِ همین توضیح فخاس و ذوب را مثالِ «گزارشِ دیرترِ همان دوره»
+ * آورده بود. هر دو «گزارشِ دیرتر» **تلفیقی** بودند؛ یعنی بندِ ۳ بدونِ بندِ ۰ کارتِ
+ * فخاس را از رقمِ درستِ شرکت (سودِ خالصِ ۷۳٬۳۹۸٬۰۵۱) به رقمِ گروه (۶۱٬۵۳۶٬۵۹۰)
+ * می‌برد. بندِ ۰ همین را می‌بندد.
  *
  * چرا بندِ ۳ **زیرِ** اصلاحیه است نه بالای آن: در همهٔ ۸ دوره‌ای که گزارشِ
  * بی‌عنوانِ اصلاحیه دیرتر از یک اصلاحیه منتشر شده، آن گزارش «تلفیقی» است —
@@ -156,10 +206,10 @@ export function publishKey(row: Pick<CodalRow, "raw">): string | null {
  *   • تشخیصِ اصلاحیه از عنوان است. اصلاحی که کلمهٔ «اصلاحیه» ندارد با بندِ ۳
  *     پیدا می‌شود فقط اگر وضعیتِ حسابرسی و اصلاحیه برابر باشد.
  *   • ۶ گروه زمانِ انتشارِ **دقیقاً یکسان** دارند؛ آنجا `id` تصمیم می‌گیرد.
- *   • گزارشِ **تلفیقی** و **جداگانه** یک دوره در یک صف رقابت می‌کنند و در ۱۹۳
- *     از ۱۹۷ دوره تلفیقی برنده است. اینکه `standalone`ِ گزارشِ تلفیقی رقمِ
- *     شرکتِ اصلی است یا گروه، بدونِ سندِ اصلیِ کدال اثبات نشده (B-056). این
- *     تابع آن را حل نمی‌کند.
+ *   • دوره‌ای که **فقط** گزارشِ تلفیقی دارد همچنان انتخاب می‌شود، ولی دامنه‌اش
+ *     مبهم است: در ۴۸ جفتِ قابلِ مقایسه، `standalone`ِ تلفیقی در ۳۳ بزرگ‌تر، در
+ *     ۱۱ برابر و در ۴ کوچک‌تر از جداگانه بود. مصرف‌کننده باید آن را با
+ *     `isConsolidatedTitle` برچسب بزند و **قطعی به شرکت نسبت ندهد** (B-056).
  *
  * ⚠️ بندِ ۲ تازه است و یک باگِ واقعی را می‌بندد. پیش از این، انتخاب فقط به
  * `id` تکیه می‌کرد و `id` ترتیبِ **درج** است نه ترتیبِ انتشار: اندازه‌گیریِ
@@ -175,6 +225,17 @@ export function dedupeByPeriod(rows: CodalRow[]): CodalRow[] {
     const key = `${d.period_end}|${d.period_months}`;
     const prev = byPeriod.get(key);
     if (!prev) { byPeriod.set(key, r); continue; }
+
+    // ۰. دامنه: گزارشِ **جداگانهٔ شرکت** بر تلفیقی مقدم است، پیش از هر معیارِ دیگر.
+    // کارت دربارهٔ شرکت است؛ `standalone`ِ گزارشِ تلفیقی در ۶۹٪ جفت‌های قابلِ
+    // مقایسه از رقمِ جداگانهٔ همان دوره بزرگ‌تر است (B-056)، پس حسابرسی یا
+    // اصلاحیه بودنِ آن رقم را به دامنهٔ درست نمی‌برد.
+    const pCons = isConsolidatedTitle(prev.title);
+    const cCons = isConsolidatedTitle(r.title);
+    if (pCons !== cCons) {
+      if (!cCons) byPeriod.set(key, r);
+      continue;
+    }
 
     const pa = (prev.data as CodalN10Data).audited === true;
     const ca = d.audited === true;
@@ -201,6 +262,10 @@ export function dedupeByPeriod(rows: CodalRow[]): CodalRow[] {
   }
   return [...byPeriod.values()];
 }
+
+/** متنِ یکسانِ هشدارِ دامنه برای کارت و فصل‌ها. */
+export const CONSOLIDATED_SCOPE_NOTE =
+  "این ارقام از گزارشِ تلفیقی استخراج شده‌اند و ممکن است رقمِ گروه باشند، نه شرکتِ اصلی — تطبیق با سندِ کدال انجام نشده.";
 
 /** سال مالی جلالی از period_end مثل "1404-12-29" → 1404. */
 function fyOf(d: CodalN10Data): number {
@@ -246,13 +311,19 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
     const faDigits = (v: number | string) =>
       String(v).replace(/\d/g, (c) => "۰۱۲۳۴۵۶۷۸۹"[Number(c)]);
     const periodLabel = d.period_months === 12 ? "۱۲ماههٔ" : `${faDigits(d.period_months)}ماههٔ`;
+    const consolidated = isConsolidatedTitle(main.title);
     n10 = {
       data: d,
       source: {
-        title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${faDigits(fyOf(d))} (کدال)`,
+        title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${faDigits(fyOf(d))}${consolidated ? " — گزارشِ تلفیقی" : ""} (کدال)`,
         source_url: cleanUrl(main),
-        verified: true,
-        verification_note: "استخراج خودکار از اکسل رسمی کدال با اعتبارسنجی حسابی (ناخالص = فروش − بها)",
+        // «اعتبارسنجی متقاطع» فقط حسابی است (ناخالص = فروش − بها) و دامنه را اثبات
+        // نمی‌کند؛ برای گزارشِ تلفیقی تیکِ سبز گمراه‌کننده بود (B-056).
+        verified: !consolidated,
+        verification_note: consolidated
+          ? CONSOLIDATED_SCOPE_NOTE
+          : "استخراج خودکار از اکسل رسمی کدال با اعتبارسنجی حسابی (ناخالص = فروش − بها)",
+        scope: consolidated ? "consolidated_ambiguous" : "company",
       },
     };
   }
@@ -279,9 +350,29 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   // #150 به کارتِ اصلی رسید ولی **هرگز** به فصل‌ها، TTM و P/Eِ همان صفحه نرسید؛
   // یک صفحه، دو پاسخ برای یک دوره. حالا انتخاب یک‌بار و یک‌جا انجام می‌شود و
   // `dedupePeriods`ِ فصلی با یک ردیف در هر دوره عملاً بی‌اثر است.
-  const n10Periods = n10all.map((r) => ({ id: r.id, data: r.data as CodalN10Data }));
+  //
+  // دامنه در زنجیرهٔ فصلی (B-056): Q2 = ۶ماهه − ۳ماهه. اگر ۳ماهه جداگانه و ۶ماهه
+  // تلفیقی باشد، تفاضل رقمِ گروه منهای رقمِ شرکت است — عددی بی‌معنا با ظاهرِ
+  // دقیق. پس در هر سالِ مالی که گزارشِ جداگانه دارد، گزارش‌های تلفیقیِ همان سال
+  // کنار می‌روند؛ حلقهٔ غایب فصل را null می‌کند (قاعدهٔ D2)، نه حدس.
+  const fyHasCompany = new Set(
+    n10all.filter((r) => !isConsolidatedTitle(r.title)).map((r) => fyOf(r.data as CodalN10Data)),
+  );
+  const periodRows = n10all.filter(
+    (r) => !isConsolidatedTitle(r.title) || !fyHasCompany.has(fyOf(r.data as CodalN10Data)),
+  );
+  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data }));
+  const n10PeriodsScope: SymbolFundamentals["n10PeriodsScope"] = periodRows.some((r) => isConsolidatedTitle(r.title))
+    ? "consolidated_ambiguous"
+    : "company";
 
-  return { symbol, n10, n30, n10Periods: n10Periods.length > 0 ? n10Periods : undefined };
+  return {
+    symbol,
+    n10,
+    n30,
+    n10Periods: n10Periods.length > 0 ? n10Periods : undefined,
+    n10PeriodsScope: n10Periods.length > 0 ? n10PeriodsScope : undefined,
+  };
 }
 
 /** دادهٔ بنیادی نماد از Supabase؛ نبودِ داده یا خطا → null (بدون عدد ساختگی). */

@@ -136,21 +136,31 @@ const pub = (
 };
 
 describe("زمانِ انتشار در تساوی", () => {
-  test("فخاس سالانهٔ ۱۴۰۳: گزارشِ ۱۴۰۴/۰۴/۱۳ بر ۱۴۰۴/۰۳/۰۶ — با وجودِ `id` کمتر", () => {
-    const early = pub(8275, "۱۴۰۴/۰۳/۰۶", "۱۷:۱۴:۲۵", { revenue: 262508422, netProfit: 73398051 });
-    const late = pub(8274, "۱۴۰۴/۰۴/۱۳", "۱۵:۱۴:۴۰", { revenue: 262955304, netProfit: 61536590 });
-    for (const order of [[early, late], [late, early]]) {
+  // ❌ تصحیح: این دو آزمون پیش‌تر فخاس و ذوب را «گزارشِ دیرترِ همان دوره» می‌گرفتند
+  // و انتظار داشتند دیرتر برنده شود. عنوانِ واقعیِ هر دو «دیرتر» تلفیقی است.
+  // حالا با عنوانِ واقعی: گزارشِ جداگانهٔ شرکت برنده است، هرچند زودتر آمده.
+  test("فخاس سالانهٔ ۱۴۰۳ (شناسه و عنوانِ واقعی): جداگانه (۰۳/۰۶) بر تلفیقیِ دیرتر (۰۴/۱۳)", () => {
+    const sep = pub(8275, "۱۴۰۴/۰۳/۰۶", "۱۷:۱۴:۲۵", { revenue: 262508422, netProfit: 73398051 });
+    const cons = pub(8274, "۱۴۰۴/۰۴/۱۳", "۱۵:۱۴:۴۰", { consolidated: true, revenue: 262955304, netProfit: 61536590 });
+    for (const order of [[sep, cons], [cons, sep]]) {
       const w = pick(order);
-      assert.equal(w.id, 8274);
-      assert.equal((w.data as { standalone: { net_profit: number } }).standalone.net_profit, 61536590);
+      assert.equal(w.id, 8275);
+      assert.equal((w.data as { standalone: { net_profit: number } }).standalone.net_profit, 73398051);
     }
   });
 
-  test("ذوب ۶ماههٔ ۱۴۰۴: گزارشِ ۱۴۰۴/۰۸/۳۰ بر ۱۴۰۴/۰۸/۰۱", () => {
-    const early = pub(4517, "۱۴۰۴/۰۸/۰۱", "۰۰:۱۷:۳۸", { revenue: 301142570 });
-    const late = pub(4516, "۱۴۰۴/۰۸/۳۰", "۰۶:۴۴:۳۱", { revenue: 314634906 });
-    assert.equal(pick([early, late]).id, 4516);
-    assert.equal(pick([late, early]).id, 4516);
+  test("ذوب ۶ماههٔ ۱۴۰۴ (واقعی): جداگانه (۰۸/۰۱) بر تلفیقیِ دیرتر (۰۸/۳۰)", () => {
+    const sep = pub(4517, "۱۴۰۴/۰۸/۰۱", "۰۰:۱۷:۳۸", { revenue: 301142570 });
+    const cons = pub(4516, "۱۴۰۴/۰۸/۳۰", "۰۶:۴۴:۳۱", { consolidated: true, revenue: 314634906 });
+    assert.equal(pick([sep, cons]).id, 4517);
+    assert.equal(pick([cons, sep]).id, 4517);
+  });
+
+  test("فملی ۹ماههٔ ۱۴۰۴ (واقعی، هم‌دامنه): انتشارِ ۱۱/۰۸ بر ۱۱/۰۷ با وجودِ `id` کمتر", () => {
+    const early = pub(23, "۱۴۰۴/۱۱/۰۷", "۱۹:۳۴:۴۰", { revenue: 1894724914 });
+    const late = pub(21, "۱۴۰۴/۱۱/۰۸", "۱۳:۲۲:۲۲", { revenue: 1894724914 });
+    assert.equal(pick([early, late]).id, 21);
+    assert.equal(pick([late, early]).id, 21);
   });
 
   test("پاریز: از سه اصلاحیه، آخرین منتشرشده — نه قدیمی‌ترین با بزرگ‌ترین `id`", () => {
@@ -205,5 +215,23 @@ describe("publishKey", () => {
       assert.equal(publishKey({ raw: { date_publish: d, time_publish: t } }), null, `${d} ${t}`);
     }
     assert.equal(publishKey({ raw: null }), null);
+  });
+});
+
+describe("دامنه: جداگانه بر تلفیقی (B-056)", () => {
+  test("تشخیصِ «تلفیقی» با ی/ک عربی", async () => {
+    const { isConsolidatedTitle } = await import("./supabase");
+    assert.equal(isConsolidatedTitle("صورت‌های مالی تلفيقي سال مالی"), true);
+    assert.equal(isConsolidatedTitle("صورت‌های مالی سال مالی"), false);
+    assert.equal(isConsolidatedTitle(null), false);
+  });
+
+  test("جداگانهٔ حسابرسی‌نشده بر تلفیقیِ حسابرسی‌شده و اصلاحیهٔ تلفیقی مقدم است", () => {
+    const sep = pub(1, "۱۴۰۴/۰۱/۰۱", "۱۰:۰۰:۰۰", { revenue: 100 });
+    const consAudited = pub(2, "۱۴۰۴/۰۲/۰۱", "۱۰:۰۰:۰۰", { audited: true, consolidated: true, revenue: 105 });
+    const consAmend = pub(3, "۱۴۰۴/۰۳/۰۱", "۱۰:۰۰:۰۰", { amend: true, consolidated: true, revenue: 106 });
+    for (const order of [[sep, consAudited, consAmend], [consAmend, consAudited, sep], [consAudited, sep, consAmend]]) {
+      assert.equal(pick(order).id, 1);
+    }
   });
 });
