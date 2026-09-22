@@ -37,9 +37,11 @@
       * Verification compares exact row counts for every table plus a
         structural fingerprint, in BOTH directions.
 
-    Remaining known leak: `supabase db dump` takes the connection string as
-    an argument, so it is visible in the local process list while running.
-    Fine on a personal laptop; do not run this on a shared machine.
+    Remaining known leaks, both local-machine only: `supabase db dump` takes
+    the connection string as an argument, and psql inside the container
+    receives it as an argument too (see Invoke-PsqlWithUrl). Either is visible
+    in a process list while running. Fine on a personal laptop; do not run
+    this on a shared machine.
 
     Prerequisites: Docker Desktop, Supabase CLI (or npx), Node.
 #>
@@ -171,15 +173,29 @@ if ($DbUrl -notmatch '^postgres(ql)?://') {
 # socket /var/run/postgresql/.s.PGSQL.5432 failed" that looks nothing like the
 # real cause.
 #
-# stdin removes the question entirely. It also keeps the value out of argv AND
-# out of `docker inspect`, which an environment variable would not.
+# stdin keeps the value out of the `docker run` command line and out of
+# `docker inspect`, which an environment variable would not.
+#
+# It does NOT keep it out of psql's own argv: `exec psql "$PGURL"` expands the
+# full URL, password included, into the psql process inside the container. It
+# is visible to anyone who can list processes on the Docker VM while psql runs
+# (measured: `ps -eo args` shows it). Same exposure class as the documented
+# `supabase db dump` leak in the header - local machine only.
+#
+# CRLF (B-057): a Windows PowerShell pipe into a native process terminates the
+# string with CR LF. `read -r` strips only the LF, so the CR stayed inside the
+# URL: the database name became "postgres<CR>" ("database does not exist"), or
+# a trailing ?sslmode= value became invalid. On a Windows console the CR also
+# returns the cursor to column 0, so the error text overwrites itself and does
+# not look like the real cause. `tr -d` removes every CR before psql sees it;
+# a connection string never legitimately contains one.
 function Invoke-PsqlWithUrl {
     param(
         [Parameter(Mandatory = $true)][string]$Url,
         [Parameter(Mandatory = $true)][string]$PsqlArgs,
         [string[]]$DockerArgs = @()
     )
-    $inner = 'read -r PGURL; exec psql "$PGURL" ' + $PsqlArgs
+    $inner = 'read -r PGURL; PGURL=$(printf ''%s'' "$PGURL" | tr -d ''\r''); exec psql "$PGURL" ' + $PsqlArgs
     $Url | & docker run --rm -i @DockerArgs --entrypoint sh $PgImage -c $inner
 }
 

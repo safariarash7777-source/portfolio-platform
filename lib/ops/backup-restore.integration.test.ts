@@ -366,3 +366,57 @@ describe("ماشینِ راستی‌آزماییِ بکاپ روی Postgresِ و
     });
   });
 });
+
+/**
+ * B-057 — رشتهٔ اتصال از stdin، با پایانِ خطِ ویندوز.
+ *
+ * پایپِ Windows PowerShell به فرایندِ native رشته را با CR LF می‌بندد. `read -r`
+ * فقط LF را برمی‌دارد و CR داخلِ URL می‌ماند: نامِ دیتابیس «postgres<CR>» می‌شد
+ * یا مقدارِ `?sslmode=` نامعتبر. این آزمون همان تکهٔ shِ **خودِ**
+ * `backup-production.ps1` را از فایل برمی‌دارد (نه کپیِ آن) و با psqlِ واقعی
+ * روی Postgresِ واقعی و بایت‌های CRLF اجرا می‌کند.
+ *
+ * ⚠️ خودِ PowerShell اینجا اجرا نمی‌شود (runner لینوکس است)؛ آنچه سنجیده می‌شود
+ * بخشِ sh است با دقیقاً همان بایت‌هایی که PowerShell می‌فرستد.
+ */
+describe("اتصال از stdin با CRLF (B-057)", {
+  skip: dbError ? `Postgres در دسترس نیست: ${dbError}` : false,
+}, () => {
+  const ps1 = readFileSync(join(ROOT, "scripts", "backup-production.ps1"), "utf8");
+  const m = ps1.match(/^\s*\$inner = '((?:[^']|'')*)' \+ \$PsqlArgs$/m);
+  // رشتهٔ تک‌نقل‌قولیِ PowerShell: '' یعنی یک '.
+  const inner = m ? m[1].replace(/''/g, "'") : "";
+  const url = (db: string, query = "") =>
+    `postgresql://${encodeURIComponent(ENV.PGUSER!)}:${encodeURIComponent(ENV.PGPASSWORD!)}` +
+    `@${ENV.PGHOST}:${ENV.PGPORT}/${db}${query}`;
+  const run = (stdin: string) =>
+    execFileSync("sh", ["-c", `${inner} -X -A -t -c "SELECT current_database()"`], {
+      input: stdin,
+      encoding: "utf8",
+      // عمداً فقط PATH: هیچ PG*ای از محیط نمی‌رسد، پس اتصال فقط از stdin است.
+      env: { PATH: process.env.PATH, NODE_ENV: "test" } as NodeJS.ProcessEnv,
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+
+  test("تکهٔ sh از فایل استخراج شد", () => {
+    assert.ok(inner.includes("read -r PGURL"), "الگوی `$inner = '...' + $PsqlArgs` در ps1 پیدا نشد");
+  });
+
+  test("LF (لینوکس) وصل می‌شود", () => {
+    assert.equal(run(`${url("postgres")}\n`), "postgres");
+  });
+
+  test("CRLF (پایپِ PowerShell) وصل می‌شود — نه «postgres\\r»", () => {
+    assert.equal(run(`${url("postgres")}\r\n`), "postgres");
+  });
+
+  test("CRLF با پارامترِ کوئری — sslmode سالم می‌ماند", () => {
+    assert.equal(run(`${url("postgres", "?sslmode=disable")}\r\n`), "postgres");
+  });
+
+  test("رمز از محیط نمی‌آید: env خالی است و فقط stdin حامل است", () => {
+    // اگر تکه به‌جای stdin به PG* محیط تکیه می‌کرد، اینجا بی‌صدا از آن استفاده
+    // می‌کرد. env فقط PATH دارد، پس موفقیتِ آزمون‌های بالا فقط از stdin است.
+    assert.equal(run(`${url("postgres")}\r\n`), "postgres");
+  });
+});
