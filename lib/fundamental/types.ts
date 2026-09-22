@@ -99,6 +99,10 @@ export interface SymbolFundamentals {
   symbol: string;
   n10: { data: CodalN10Data; source: ReportSource } | null;
   n30: { data: CodalN30Data[]; source: ReportSource } | null;
-  /** T3: همهٔ دوره‌های ن-۱۰ پس از dedup نسخه‌ها (با id ردیف برای تقدم اصلاحیه) — ورودی فصل‌سازی. */
+  /**
+   * T3: ورودیِ فصل‌سازی — **یک ردیف برای هر دوره**، همان که `dedupeByPeriod`
+   * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ
+   * دوباره در پایین‌دست ممنوع است؛ دو قاعده یعنی دو پاسخ در یک صفحه.
+   */
   n10Periods?: Array<{ id: number; data: CodalN10Data }>;
 }
