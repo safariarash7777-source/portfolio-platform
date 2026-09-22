@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Treemap, ResponsiveContainer, Tooltip } from "recharts";
 import { toPersianDigits, formatSignedPercent, formatTomanShort } from "@/lib/format";
+import { heatTile, heatDirectionLabel, HEAT_LABEL_COLOR } from "@/lib/core/heatTint";
 import type { IrStockRow } from "@/lib/market-ir";
 
 type SizeMode = "value" | "marketValue";
@@ -18,17 +19,6 @@ function num(x: unknown): number | null {
   return typeof x === "number" && isFinite(x) ? x : null;
 }
 
-/** رنگ ۷پله‌ای بر اساس درصد تغییر — همان بازه‌های «نبض بازار» */
-function bucketColor(chg: number | null): string {
-  if (chg == null) return "#9ca3af";
-  if (chg > 4) return "#15803d";
-  if (chg > 2) return "#22c55e";
-  if (chg > 0.5) return "#86efac";
-  if (chg >= -0.5) return "#9ca3af";
-  if (chg >= -2) return "#fca5a5";
-  if (chg >= -4) return "#ef4444";
-  return "#b91c1c";
-}
 
 interface TileDatum {
   name: string;
@@ -51,14 +41,23 @@ function Tile(props: {
   if (width < 4 || height < 4 || !name) return null;
   const showText = width > 44 && height > 26;
   const showPct = width > 56 && height > 42;
+  // رنگ و شدت از نگاشتِ واحدِ هسته می‌آید — با تم می‌چرخد و برچسبش خوانا
+  // می‌ماند. (پیش از این هفت hexِ ثابت بود و متنِ سفید روی سه پله ناخوانا.)
+  const heat = heatTile(chg);
   return (
     <g onClick={() => onOpen(name)} style={{ cursor: "pointer" }}>
+      <title>{`${name} — ${chg != null ? formatSignedPercent(chg) : "بدون داده"} (${heatDirectionLabel(heat.direction)})`}</title>
+      {/* کاشی روی سطحِ کارت می‌نشیند، پس زیرِ تینت یک لایهٔ مات لازم است؛
+          وگرنه شفافیتِ کاشی با پس‌زمینهٔ صفحه ترکیب می‌شود و کنتراستِ
+          محاسبه‌شدهٔ برچسب دیگر معتبر نیست. */}
+      <rect x={x} y={y} width={width} height={height} fill="var(--surface)" rx={3} />
       <rect
         x={x}
         y={y}
         width={width}
         height={height}
-        fill={bucketColor(chg)}
+        fill={heat.color}
+        fillOpacity={heat.opacity}
         stroke="var(--bg)"
         strokeWidth={1.5}
         rx={3}
@@ -68,7 +67,7 @@ function Tile(props: {
           x={x + width / 2}
           y={y + height / 2 + (showPct ? -6 : 4)}
           textAnchor="middle"
-          fill="#ffffff"
+          fill={HEAT_LABEL_COLOR}
           fontSize={Math.min(14, Math.max(10, width / 8))}
           fontWeight={700}
           style={{ pointerEvents: "none" }}
@@ -81,7 +80,7 @@ function Tile(props: {
           x={x + width / 2}
           y={y + height / 2 + 12}
           textAnchor="middle"
-          fill="#ffffff"
+          fill={HEAT_LABEL_COLOR}
           fontSize={10}
           style={{ pointerEvents: "none" }}
         >
@@ -240,20 +239,34 @@ export default function MarketTreemap({
 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs" style={{ color: "var(--text-3)" }}>
         <span>راهنمای رنگ:</span>
+        {/* نمونهٔ راهنما از همان تابعِ کاشی ساخته می‌شود، نه از فهرستی موازی:
+            راهنمایی که دستی نوشته شود، اولین چیزی است که با تغییرِ رمپ کهنه
+            می‌شود و کسی متوجه نمی‌شود. */}
         {[
-          { l: "> ٪۴", c: "#15803d" },
-          { l: "٪۲ تا ٪۴", c: "#22c55e" },
-          { l: "٪۰٫۵ تا ٪۲", c: "#86efac" },
-          { l: "±٪۰٫۵", c: "#9ca3af" },
-          { l: "−٪۰٫۵ تا −٪۲", c: "#fca5a5" },
-          { l: "−٪۲ تا −٪۴", c: "#ef4444" },
-          { l: "< −٪۴", c: "#b91c1c" },
-        ].map((b) => (
-          <span key={b.l} className="inline-flex items-center gap-1">
-            <span className="inline-block h-3 w-3 rounded-sm" style={{ background: b.c }} />
-            {b.l}
-          </span>
-        ))}
+          { l: "> ٪۴", v: 5 },
+          { l: "٪۲ تا ٪۴", v: 3 },
+          { l: "٪۰٫۵ تا ٪۲", v: 1 },
+          { l: "±٪۰٫۵", v: 0 },
+          { l: "−٪۰٫۵ تا −٪۲", v: -1 },
+          { l: "−٪۲ تا −٪۴", v: -3 },
+          { l: "< −٪۴", v: -5 },
+          { l: "بدون داده", v: null },
+        ].map((b) => {
+          const h = heatTile(b.v);
+          return (
+            <span key={b.l} className="inline-flex items-center gap-1">
+              <span
+                className="inline-block h-3 w-3 rounded-sm"
+                style={{
+                  background: h.color,
+                  opacity: h.opacity,
+                  outline: "1px solid var(--line)",
+                }}
+              />
+              {b.l}
+            </span>
+          );
+        })}
       </div>
     </div>
   );

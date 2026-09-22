@@ -64,7 +64,22 @@ export interface ChartPalette {
   line: string;
   navy: string;
   gold: string;
+  /** خطِ راهنما — عمداً کم‌کنتراست، تا با خودِ داده رقابت نکند. */
+  grid: string;
+  /** برچسبِ محور — متن است، پس کنتراستِ متن می‌خواهد. */
+  axis: string;
+  /**
+   * پالتِ **دسته‌ای** برای سری‌های نمودار، به ترتیبِ استفاده.
+   *
+   * تا امروز هر نمودار رنگِ خودش را می‌ساخت (۶۳ hexِ خام در کامپوننت‌ها)، پس
+   * دو نمودار در یک صفحه دو زبانِ رنگی داشتند و هیچ‌کدام با تم نمی‌چرخید.
+   * این آرایه از توکن‌های `--data-*` می‌آید که در هر دو تم بالای ۵:۱ هستند.
+   */
+  series: string[];
 }
+
+/** تعدادِ رنگ‌های دسته‌ایِ تعریف‌شده در `globals.css` (`--data-1` … `--data-6`). */
+export const SERIES_COLOR_COUNT = 6;
 
 /**
  * پالتِ نمودار از توکن‌های زندهٔ CSS.
@@ -82,14 +97,34 @@ export function readChartPalette(): ChartPalette {
     // `--navy-ink` و نه `--navy`: سرمهٔ برند روی زمینهٔ تیره تقریباً نامرئی است.
     navy: v("--navy-ink", "#1E3A8A"),
     gold: v("--gold", "#B8860B"),
+    grid: v("--grid", "#EDEBE3"),
+    axis: v("--axis", "#556274"),
+    series: Array.from({ length: SERIES_COLOR_COUNT }, (_, i) =>
+      v(`--data-${i + 1}`, "#1E3A8A"),
+    ),
   };
+}
+
+/**
+ * رنگِ سریِ nام — با چرخش، تا نموداری با هفت سری هم بی‌رنگ نماند.
+ *
+ * چرخش یعنی سریِ هفتم رنگِ سریِ اول را می‌گیرد؛ در آن حالت رنگ دیگر به‌تنهایی
+ * سری را نمی‌گوید و UI باید برچسبِ مستقیم یا الگو هم بگذارد (قاعدهٔ
+ * «رنگ تنها حاملِ معنا نباشد»).
+ */
+export function seriesColor(p: ChartPalette, index: number): string {
+  const n = p.series.length || 1;
+  return p.series[((index % n) + n) % n];
 }
 
 /** گزینه‌های ظاهریِ مشترکِ نمودار — همان‌هایی که با تغییرِ تم باید عوض شوند. */
 export function chartThemeOptions(p: ChartPalette) {
   return {
     layout: { background: { color: p.bg }, textColor: p.text },
-    grid: { vertLines: { color: p.line }, horzLines: { color: p.line } },
+    // خطِ راهنما از `--grid` می‌آید نه `--line`: مرزِ کارت و شبکهٔ نمودار دو
+    // نقشِ متفاوت‌اند و وقتی یک رنگ بودند، شبکه به‌اندازهٔ قابِ کارت پررنگ
+    // می‌شد و چشم را از خطِ داده می‌دزدید.
+    grid: { vertLines: { color: p.grid }, horzLines: { color: p.grid } },
     rightPriceScale: { borderColor: p.line },
     timeScale: { borderColor: p.line },
   };
