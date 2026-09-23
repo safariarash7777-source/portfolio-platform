@@ -3,6 +3,12 @@
 // داده از سرور به‌صورت prop می‌آید (بدون fetch کلاینتی).
 import { useEffect, useRef } from "react";
 import {
+  readChartPalette,
+  chartThemeOptions,
+  seriesColor,
+  useThemeToken,
+} from "@/lib/useChartTheme";
+import {
   createChart,
   LineSeries,
   type IChartApi,
@@ -15,45 +21,35 @@ export interface AllocationChartPoint {
   holdValue: number; // بدون ریبالانس (پایه ۱۰۰)
 }
 
-// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
-// این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
-function palette() {
-  const cs =
-    typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
-  const v = (name: string, fallback: string) =>
-    cs?.getPropertyValue(name).trim() || fallback;
-  return {
-    bg: v("--surface", "#FFFFFF"),
-    text: v("--text-2", "#334155"),
-    line: v("--line", "#E5E3DC"),
-    navy: v("--navy", "#1E3A8A"),
-    gold: v("--gold", "#D4A22B"),
-  };
-}
-
+/*
+ * پالتِ محلی حذف شد و جایش `lib/useChartTheme` نشست.
+ *
+ * نسخهٔ قبل سه اشکال داشت: (۱) `--navy` را می‌خواند، که روی سطحِ تمِ تیره
+ * ۱٫۶:۱ می‌دهد و خطِ سری عملاً ناپیدا می‌شد؛ (۲) fallbackِ طلایی‌اش
+ * `#D4A22B` بود ولی توکنِ `--gold` امروز `#B8860B` است — دو رنگِ متفاوت با
+ * یک نام؛ (۳) رنگ‌ها فقط یک بار در mount خوانده می‌شدند، پس با تعویضِ تم
+ * نمودار در تمِ قبلی جا می‌ماند.
+ */
 export default function AllocationChart({ points }: { points: AllocationChartPoint[] }) {
   const ref = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const theme = useThemeToken();
 
   useEffect(() => {
     if (!ref.current || points.length === 0) return;
-    const p = palette();
+    const p = readChartPalette();
     const charts: IChartApi[] = [];
 
     const chart = createChart(ref.current, {
-      layout: { background: { color: p.bg }, textColor: p.text },
-      grid: {
-        vertLines: { color: p.line },
-        horzLines: { color: p.line },
-      },
-      rightPriceScale: { borderColor: p.line },
-      timeScale: { borderColor: p.line },
+      ...chartThemeOptions(p),
       autoSize: true,
       height: 280,
     });
     charts.push(chart);
+    chartRef.current = chart;
 
     const rebal = chart.addSeries(LineSeries, {
-      color: p.navy,
+      color: seriesColor(p, 0),
       lineWidth: 2,
       title: "با ریبالانس",
     });
@@ -62,7 +58,7 @@ export default function AllocationChart({ points }: { points: AllocationChartPoi
     );
 
     const hold = chart.addSeries(LineSeries, {
-      color: p.gold,
+      color: seriesColor(p, 1),
       lineWidth: 2,
       title: "بدون ریبالانس",
     });
@@ -71,8 +67,19 @@ export default function AllocationChart({ points }: { points: AllocationChartPoi
     );
 
     chart.timeScale().fitContent();
-    return () => charts.forEach((c) => c.remove());
+    return () => {
+      charts.forEach((c) => c.remove());
+      chartRef.current = null;
+    };
   }, [points]);
+
+  // تغییرِ تم فقط رنگ‌ها را عوض می‌کند. `applyOptions` نه به داده دست می‌زند
+  // نه به بازهٔ دیدِ کاربر؛ بازساختنِ نمودار هر دو را دور می‌ریخت.
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const p = readChartPalette();
+    chartRef.current.applyOptions(chartThemeOptions(p));
+  }, [theme]);
 
   if (points.length === 0) return null;
 
@@ -80,11 +87,11 @@ export default function AllocationChart({ points }: { points: AllocationChartPoi
     <div>
       <div className="mb-1.5 flex items-center gap-4 text-[11px]" style={{ color: "var(--text-3)" }}>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-0.5 w-4" style={{ background: "var(--navy)" }} />
+          <span className="inline-block h-0.5 w-4" style={{ background: "var(--data-1)" }} />
           سبد با ریبالانس فصلی (پایه ۱۰۰)
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-0.5 w-4" style={{ background: "var(--gold)" }} />
+          <span className="inline-block h-0.5 w-4" style={{ background: "var(--data-2)" }} />
           خرید و نگه‌داری (بدون ریبالانس)
         </span>
       </div>

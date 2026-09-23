@@ -62,6 +62,39 @@
   --warning-ink: #9A4708;
   --danger:      #B91C1C;
   --info:        var(--navy);
+  /* متنِ روی سطحِ «خطر». در تمِ تیره خودِ `--danger` روشن می‌شود، پس سفید
+     روی آن ۳٫۰۱:۱ می‌دهد — زیرِ AA. این توکن با تم می‌چرخد. */
+  --text-on-danger: #FFFFFF;
+
+  /* ─── حلقهٔ فوکوس ────────────────────────────────────────────
+     تا امروز فوکوس فقط `--ring` بود: یک هالهٔ سرمه‌ایِ ۱۸٪. در تمِ **تیره**
+     این توکن اصلاً بازتعریف نمی‌شد، یعنی هالهٔ سرمه‌ای روی زمینهٔ سرمه‌ایِ
+     تیره تقریباً نامرئی بود و کاربرِ کیبورد نمی‌دانست کجاست. حالا رنگِ فوکوس
+     خودش توکن است و با تم می‌چرخد. */
+  --focus:       var(--navy);
+  --ring:        0 0 0 3px rgba(30,58,138,0.28);
+
+  /* ─── پالتِ داده (نمودار) ────────────────────────────────────
+     شش رنگِ **دسته‌ای** برای سری‌های نمودار، ساخته‌شده از خانوادهٔ برند
+     (سرمه‌ای و طلایی) به‌علاوهٔ چهار تُنِ خاموشِ هم‌خانواده. هر شش رنگ روی
+     `--surface`، `--bg` و `--surface-2` بالای ۵:۱ می‌دهند، پس هم برای سطح و
+     هم برای خطِ نازک و برچسبِ ریز کافی‌اند.
+
+     اینها جایگزینِ `--success`/`--danger` **نیستند**: آن دو معنا دارند
+     (صعود/نزول) و این شش فقط «دستهٔ متفاوت» را می‌گویند. */
+  --data-1: #1E3A8A;
+  --data-2: #7A5A08;
+  --data-3: #0F6E6E;
+  --data-4: #7C3A6B;
+  --data-5: #3F6B35;
+  --data-6: #A14A1F;
+  /* خطوطِ راهنما عمداً کم‌کنتراست‌اند (~۱٫۲:۱) تا با خودِ داده رقابت نکنند؛
+     محورها متن‌اند و کنتراستِ متن می‌خواهند. */
+  --grid:   #EDEBE3;
+  --axis:   var(--text-3);
+
+  /* برقِ داخلیِ دکمه‌های پُر — عمق بدونِ سایهٔ سنگین. */
+  --sheen:  rgba(255,255,255,0.14);
 
   /* ─── Social platform accents (توکنِ متمرکزِ برندِ شبکه‌ها) ──
      فقط برای آیکون/هالهٔ ظریفِ کارت‌های هابِ محتوا؛ بدنهٔ کارت هم‌چنان
@@ -79,7 +112,8 @@
   --shadow-sm:   0 1px 2px 0 rgba(15,23,42,0.05);
   --shadow:      0 4px 12px -2px rgba(15,23,42,0.08), 0 2px 4px -1px rgba(15,23,42,0.04);
   --shadow-lg:   0 12px 28px -8px rgba(23,37,84,0.18), 0 4px 8px -2px rgba(15,23,42,0.06);
-  --ring:        0 0 0 3px rgba(30,58,138,0.18);
+  /* `--ring` در بلوکِ فوکوسِ بالا تعریف می‌شود؛ تعریفِ دومی که اینجا بود
+     مقدارِ تازه را بازمی‌نوشت (۱۸٪ به‌جای ۲۸٪) — خطای ترتیبِ کاسکید. */
 
   /* ─── Radius ────────────────────────────────────────────── */
   --r-sm: 6px;
@@ -120,6 +154,21 @@
   --danger:      #EF6B6B;   /* ۵٫۷:۱ روی --surface */
   --warning:     #E8B33C;   /* ۸٫۹:۱ روی --surface */
 
+  --text-on-danger: #3B0A0A;   /* ۵٫۶۶:۱ روی --danger تیره */
+
+  --focus:       var(--navy-ink);            /* ۷٫۴–۹٫۱:۱ روی سه سطحِ تیره */
+  --ring:        0 0 0 3px rgba(147,180,255,0.35);
+
+  /* پالتِ داده در تمِ تیره — همان شش هویت، روشن‌شده. کمینهٔ کنتراست ۷٫۴:۱. */
+  --data-1: #93B4FF;
+  --data-2: #F5D07A;
+  --data-3: #5FD4D4;
+  --data-4: #E7A3D6;
+  --data-5: #A7DB92;
+  --data-6: #F5A97A;
+  --grid:   #22304F;
+  --sheen:  rgba(255,255,255,0.07);
+
   --shadow-sm:   0 1px 2px 0 rgba(0,0,0,0.4);
   --shadow:      0 6px 16px -4px rgba(0,0,0,0.5), 0 2px 4px -1px rgba(0,0,0,0.3);
   --shadow-lg:   0 16px 36px -10px rgba(0,0,0,0.6);
@@ -143,7 +192,10 @@ html, body {
 
 body { min-height: 100vh; }
 
-::selection { background: var(--gold); color: #FFFFFF; }
+/* سفیدِ قبلی روی `--gold` فقط ۳٫۲۵:۱ می‌داد — متنِ انتخاب‌شده کم‌خوان‌تر از
+   متنِ انتخاب‌نشده بود. `--text-on-gold` همان جفتِ تعریف‌شدهٔ برند است: ۴٫۵۲:۱.
+   (و hexِ خام هم از فایل بیرون رفت.) */
+::selection { background: var(--gold); color: var(--text-on-gold); }
 
 /* ─── Typography helpers ────────────────────────────────────── */
 .font-display { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.01em; }
@@ -168,9 +220,31 @@ body { min-height: 100vh; }
   white-space: nowrap;
   user-select: none;
 }
-.btn:focus-visible { outline: none; box-shadow: var(--ring); }
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+/*
+ * فوکوس با `outline` و نه `box-shadow`.
+ *
+ * ── چرا عوض شد ───────────────────────────────────────────────────────────
+ * ۱) `box-shadow` همان خاصیتی است که خودِ دکمه برای «برجستگی در hover» به‌کار
+ *    می‌برد، و `:active` آن را `none` می‌کرد — یعنی کاربری که با کیبورد روی
+ *    دکمه بود، درست در لحظهٔ فشردن حلقهٔ فوکوسش ناپدید می‌شد.
+ * ۲) در حالتِ «کنتراستِ اجباری» (Windows High Contrast) سایه حذف می‌شود ولی
+ *    outline می‌ماند.
+ * ۳) رنگش حالا توکن است و با تم می‌چرخد؛ نسخهٔ قبل در تمِ تیره نامرئی بود.
+ */
+.btn:focus-visible,
+.input:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+/* `opacity` به‌تنهایی «غیرفعال» را نمی‌گوید — نشانگر و معنا هم لازم است. */
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+
+/* برقِ داخلیِ یک‌پیکسلی فقط روی دکمه‌های پُر — عمق بدونِ سایهٔ سنگین. */
+.btn-primary, .btn-gold, .btn-danger { box-shadow: inset 0 1px 0 var(--sheen); }
 
 .btn-primary { background: var(--navy); color: var(--text-on-navy); border-color: var(--navy); }
 .btn-primary:hover:not(:disabled) { background: var(--navy-deep); border-color: var(--navy-deep); }
@@ -178,9 +252,14 @@ body { min-height: 100vh; }
 .btn-gold { background: var(--gold); color: var(--text-on-gold); border-color: var(--gold); }
 .btn-gold:hover:not(:disabled) { background: var(--gold-soft); border-color: var(--gold-soft); }
 
+/* کنشِ مخرب — رنگِ معناییِ جدا و فاصلهٔ بصری از کنشِ اصلی (HIG/MD). */
+.btn-danger { background: var(--danger); color: var(--text-on-danger); border-color: var(--danger); }
+.btn-danger:hover:not(:disabled) { filter: brightness(0.94); }
+
 .btn-outline { background: transparent; color: var(--navy); border-color: var(--line-strong); }
 .dark .btn-outline { color: var(--gold-soft); }
-.btn-outline:hover:not(:disabled) { border-color: var(--navy); background: var(--surface-2); }
+/* `--navy` روی سطحِ تیره ۱٫۶:۱ می‌دهد؛ `--focus` با تم می‌چرخد. */
+.btn-outline:hover:not(:disabled) { border-color: var(--focus); background: var(--surface-2); }
 
 .btn-ghost { background: transparent; color: var(--text-2); border-color: transparent; }
 .btn-ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
@@ -188,11 +267,25 @@ body { min-height: 100vh; }
 /* Outline button placed on a dark navy band (Hero / final CTA) */
 .btn-on-navy { background: transparent; color: var(--gold-light); border-color: rgba(255,255,255,0.22); }
 .btn-on-navy:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.42); color: var(--gold-light); }
+/* روی نوارِ سرمه‌ای، حلقهٔ سرمه‌ای دیده نمی‌شود. */
+.btn-on-navy:focus-visible { outline-color: var(--gold-light); }
 
 /* Primary CTAs get a subtle lift + elevation on hover (state clarity, on-brand) */
-.btn-gold:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 20px -8px rgba(184,134,11,0.55); }
-.btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow); }
-.btn-gold:active:not(:disabled), .btn-primary:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+.btn-gold:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 1px 0 var(--sheen), 0 8px 20px -8px rgba(184,134,11,0.55); }
+.btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 1px 0 var(--sheen), var(--shadow); }
+.btn-danger:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 1px 0 var(--sheen), var(--shadow); }
+.btn-gold:active:not(:disabled), .btn-primary:active:not(:disabled), .btn-danger:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: inset 0 1px 0 var(--sheen);
+}
+
+/*
+ * اندازه‌ها. هر دو هنوز ۴۴ پیکسل ارتفاعِ هدفِ لمسی دارند — `.btn-sm` فقط
+ * padding و اندازهٔ متن را کم می‌کند، نه هدفِ انگشت را. دکمهٔ ۳۶ پیکسلی
+ * «جمع‌وجورتر» نیست، خطاست.
+ */
+.btn-sm { padding: 0.5rem 0.9rem; font-size: 0.8rem; border-radius: var(--r-sm); }
+.btn-lg { padding: 0.95rem 2rem; min-height: 52px; font-size: 0.95rem; border-radius: var(--r-lg); }
 
 /* ─── Cards & surfaces ──────────────────────────────────────── */
 .card {
@@ -221,7 +314,12 @@ body { min-height: 100vh; }
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .input::placeholder { color: var(--text-3); }
-.input:focus { outline: none; border-color: var(--navy); box-shadow: var(--ring); }
+/* `--navy` روی سطحِ تیره ۱٫۶:۱ می‌دهد؛ یعنی فیلدِ فوکوس‌شده در تمِ تیره
+   دقیقاً شبیهِ فیلدِ عادی بود. `--focus` با تم می‌چرخد. */
+.input:focus { outline: none; border-color: var(--focus); box-shadow: var(--ring); }
+.input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; box-shadow: none; }
+.input:disabled { opacity: 0.5; cursor: not-allowed; }
+.input[readonly] { background: var(--surface-2); }
 
 /* ─── Section frame ─────────────────────────────────────────── */
 .section { padding-top: 5rem; padding-bottom: 5rem; }
@@ -244,8 +342,11 @@ body { min-height: 100vh; }
 
 /* ─── Rendered Markdown (announcements) ─────────────────────────── */
 .markdown-body { color: var(--text-2); font-size: 0.9rem; line-height: 1.9; }
-.markdown-body h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--navy-deep); margin: 0.75rem 0 0.4rem; }
-.markdown-body h4 { font-weight: 700; font-size: 0.95rem; color: var(--navy-deep); margin: 0.6rem 0 0.35rem; }
+/* `--navy-deep` رنگِ **برند** است و در `.dark` عوض نمی‌شود؛ به‌عنوانِ رنگِ
+   متن، عنوان‌های این بلوک در تمِ تیره ۱٫۳:۱ می‌دادند. `--heading` همان نقش
+   را دارد ولی با تم می‌چرخد. */
+.markdown-body h3 { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--heading); margin: 0.75rem 0 0.4rem; }
+.markdown-body h4 { font-weight: 700; font-size: 0.95rem; color: var(--heading); margin: 0.6rem 0 0.35rem; }
 .markdown-body h5 { font-weight: 700; font-size: 0.9rem; color: var(--text); margin: 0.5rem 0 0.3rem; }
 .markdown-body p { margin: 0 0 0.6rem; }
 .markdown-body ul, .markdown-body ol { margin: 0 0 0.6rem; padding-inline-start: 1.4rem; }

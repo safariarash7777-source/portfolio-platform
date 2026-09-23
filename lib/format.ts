@@ -63,7 +63,11 @@ export function formatTomanShort(value: number): string {
   const sign = num < 0 ? "−" : "";
   const mag = Math.abs(num);
   const body = unit ? mag.toFixed(mag % 1 === 0 ? 0 : 1) : groupThousands(mag);
-  return `${sign}${toPersianDigits(body).replace(".", "٫")}${unit} تومان`;
+  // «همت» خودش مخفّفِ «هزار میلیارد تومان» است، پس «۴۱۵٫۴ همت تومان» یعنی
+  // «…تومان تومان». واحد یک بار نوشته می‌شود؛ بقیهٔ پله‌ها («میلیارد»،
+  // «میلیون»، …) عدد خالص‌اند و «تومان» را لازم دارند.
+  const currency = unit === " همت" ? "" : " تومان";
+  return `${sign}${toPersianDigits(body).replace(".", "٫")}${unit}${currency}`;
 }
 
 /** Percent with Persian decimal/sign, e.g. 12.5 → "٪۱۲٫۵", -3.2 → "−٪۳٫۲". */

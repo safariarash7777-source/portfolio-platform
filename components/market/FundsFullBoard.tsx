@@ -2,7 +2,13 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
-import { fundCategory, countByCategory, FUND_CATEGORIES, ALL_CATEGORIES } from "@/lib/core/fundCategory";
+import {
+  fundCategory,
+  countByCategory,
+  categoryBreakdown,
+  FUND_CATEGORIES,
+  ALL_CATEGORIES,
+} from "@/lib/core/fundCategory";
 import { FUND_SORT_KEYS, SORT_DIRS, type FundSortKey, type SortDirection } from "@/lib/market-nav";
 import Term from "@/components/learn/Term";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
@@ -83,6 +89,25 @@ function bubbleColor(b: number): string {
   return Math.abs(b) > 0.05 ? "var(--gold-ink)" : "var(--text-3)";
 }
 
+/**
+ * شدتِ قطعهٔ تفکیک بر اساسِ **رتبه**، نه ارزشِ سرمایه‌گذاری.
+ *
+ * یازده دسته یازده رنگ لازم دارد و پالتِ برند یازده توکن ندارد — و ساختنِ رنگِ
+ * تازه ممنوع است. پس تنها یک توکن (`--navy-ink`) با شدتِ نزولی تکرار می‌شود:
+ * قطعه‌ها از هم جدا می‌شوند بدون اینکه رنگ حرفی بزند. سقف ۰٫۹ است نه ۱، تا
+ * دسته‌ای «برجسته» به نظر نرسد؛ کف ۰٫۲۸ تا آخرین قطعه در تمِ روشن هم دیده شود.
+ */
+function sliceOpacity(rank: number, total: number): number {
+  if (total <= 1) return 0.9;
+  return 0.9 - (rank / (total - 1)) * 0.62;
+}
+
+/** عرضِ میلهٔ مقایسه‌ای — نسبت به بزرگ‌ترین دسته، با کفِ دیده‌شدن. */
+function relativeWidth(count: number, max: number): number {
+  if (max <= 0) return 0;
+  return Math.max(3, Math.round((count / max) * 100));
+}
+
 /** پس‌زمینه/متنِ کاشیِ نقشهٔ بازار */
 function tile(change: number | null) {
   if (change == null) return { bg: "var(--surface-2)", fg: "var(--text-2)" };
@@ -124,22 +149,33 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
   const from = useCurrentHref();
   const [rowLimit, setRowLimit] = useState(ROW_PAGE);
 
+  /**
+   * جامعهٔ چیپ‌ها و تفکیک = ردیف‌های **پس از جست‌وجو، پیش از فیلترِ دسته**.
+   *
+   * ── چرا نه `funds` و نه `filtered` ────────────────────────────────────────
+   * روی `funds` عددِ چیپ با نتیجهٔ کلیک نمی‌خواند: کاربر «طلا ۳۵» می‌بیند،
+   * کلیک می‌کند و با جست‌وجوی فعال ۳ ردیف می‌گیرد. روی `filtered` هم تفکیک
+   * پس از انتخابِ یک دسته به یک ردیف می‌ریزد و دیگر «تفکیک» نیست. جامعهٔ درست
+   * همان چیزی است که خودِ چیپ‌ها روی آن عمل می‌کنند.
+   */
+  const searchScoped = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return funds;
+    return funds.filter((f) => f.faName.includes(q) || f.id.toLowerCase().includes(q));
+  }, [funds, search]);
+
   // دسته‌های کوتاه با تعدادِ واقعیِ هر کدام — برچسبِ بدونِ عدد نمی‌گوید
   // «کلیک‌کردن ارزشش را دارد یا نه».
-  const categoryCounts = useMemo(() => countByCategory(funds), [funds]);
+  const categoryCounts = useMemo(() => countByCategory(searchScoped), [searchScoped]);
+
+  // تفکیک — سهم، ارزشِ بازار و بازدهٔ هر دسته. محاسبه در هسته است.
+  const breakdown = useMemo(() => categoryBreakdown(searchScoped), [searchScoped]);
 
   // Filter
   const filtered = useMemo(() => {
-    let rows = funds;
-    if (typeFilter !== ALL_CATEGORIES) {
-      rows = rows.filter((f) => fundCategory(f.type ?? f.industry ?? null) === typeFilter);
-    }
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      rows = rows.filter((f) => f.faName.includes(q) || f.id.toLowerCase().includes(q));
-    }
-    return rows;
-  }, [funds, typeFilter, search]);
+    if (typeFilter === ALL_CATEGORIES) return searchScoped;
+    return searchScoped.filter((f) => fundCategory(f.type ?? f.industry ?? null) === typeFilter);
+  }, [searchScoped, typeFilter]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -335,6 +371,132 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
         </div>
       )}
 
+      {/* ── تفکیک صندوق‌ها ──────────────────────────────────────────────────
+          «۳۳۰ صندوق» یک عددِ بی‌شکل است. این پنل همان عدد را به ترکیبِ واقعیِ
+          بازار می‌شکند: وزنِ تعدادی، ارزشِ بازارِ نمادها و حالِ امروزِ هر دسته.
+          هر ردیف خودش فیلتر است، پس «دیدن» و «رفتن» یک حرکت‌اند.
+
+          سه قاعده که این پنل را از یک نمودارِ تزئینی جدا می‌کند:
+          · رنگ فقط **شدتِ** یک توکن است (رتبه)، نه معنای خوب/بد. جهتِ بازده را
+            علامتِ خودِ عدد می‌گوید.
+          · ارزشِ بازار وقتی همهٔ ردیف‌های دسته آن را ندارند، با تعدادِ پوشش
+            نوشته می‌شود؛ جمعِ ناقص بی‌برچسب نمی‌ماند.
+          · «جمعِ دارایی» (AUM) اینجا نیست چون فید آن را نمی‌دهد؛ جایش عددی
+            ساختگی نمی‌نشیند. */}
+      {breakdown.slices.length > 1 && (
+        <details className="card group p-5" open>
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]">
+            <span>
+              <span className="block font-display font-bold" style={{ color: "var(--heading)" }}>
+                تفکیک صندوق‌ها
+              </span>
+              <span className="mt-1 block text-[11px]" style={{ color: "var(--text-3)" }}>
+                سهمِ هر دسته از {toPersianDigits(breakdown.total)} صندوق · روی هر دسته بزنید تا
+                تابلو همان دسته را نشان دهد
+              </span>
+            </span>
+            <ChevronDown size={18} className="shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+
+          {/* نوارِ ترکیب — همان «سهمِ دسته‌ها» در یک نگاه. عرضِ هر قطعه دقیقاً
+              سهمِ تعدادی است، پس جمعِ عرض‌ها ۱۰۰٪ می‌شود. */}
+          <div
+            className="mt-4 flex h-3 w-full overflow-hidden rounded-full"
+            style={{ border: "1px solid var(--line)" }}
+            role="img"
+            aria-label={`ترکیبِ دسته‌ها: ${breakdown.slices
+              .map((s) => `${s.category} ${toPersianDigits(s.sharePercent)} درصد`)
+              .join("، ")}`}
+          >
+            {breakdown.slices.map((s, i) => (
+              <div
+                key={s.category}
+                title={`${s.category} — ${toPersianDigits(s.count)} صندوق`}
+                style={{
+                  width: `${s.share * 100}%`,
+                  background: "var(--navy-ink)",
+                  opacity: sliceOpacity(i, breakdown.slices.length),
+                }}
+              />
+            ))}
+          </div>
+
+          <ul className="mt-4 space-y-1">
+            {breakdown.slices.map((s, i) => {
+              const on = typeFilter === s.category;
+              const avg = s.avgChangePercent;
+              return (
+                <li key={s.category}>
+                  <button
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setTypeFilter(on ? ALL_CATEGORIES : s.category)}
+                    className="w-full rounded-lg border px-3 py-2 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+                    style={{
+                      minHeight: 44,
+                      background: on ? "var(--gold-tint)" : "transparent",
+                      borderColor: on ? "var(--gold-ink)" : "transparent",
+                    }}
+                  >
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm font-bold" style={{ color: "var(--heading)" }}>
+                        {s.category}
+                      </span>
+                      <span className="text-xs" style={{ color: "var(--text-2)", fontVariantNumeric: "tabular-nums" }}>
+                        {toPersianDigits(s.count)} صندوق ·{" "}
+                        {s.sharePercent === 0 ? "کمتر از ٪۱" : `٪${toPersianDigits(s.sharePercent)}`}
+                      </span>
+                    </span>
+                    {/* عرضِ میله نسبت به **بزرگ‌ترین دسته** است تا دسته‌های کوچک
+                        دیده شوند؛ عددِ سهمِ واقعی بالا نوشته شده، پس میله
+                        جایگزینِ آن نمی‌شود. */}
+                    <span
+                      className="mt-1.5 block h-1.5 w-full overflow-hidden rounded-full"
+                      style={{ background: "var(--surface-2)" }}
+                      aria-hidden="true"
+                    >
+                      <span
+                        className="block h-full rounded-full"
+                        style={{
+                          width: `${relativeWidth(s.count, breakdown.slices[0]?.count ?? 0)}%`,
+                          background: "var(--navy-ink)",
+                          opacity: sliceOpacity(i, breakdown.slices.length),
+                        }}
+                      />
+                    </span>
+                    <span className="mt-1.5 flex items-baseline justify-between gap-3 text-[11px]">
+                      <span style={{ color: "var(--text-3)" }}>
+                        {s.marketValue == null
+                          ? "ارزشِ بازار ثبت نشده"
+                          : `ارزشِ بازار ${formatRialAsToman(s.marketValue)}`}
+                        {s.marketValue != null && s.marketValueCovered < s.count
+                          ? ` (از ${toPersianDigits(s.marketValueCovered)} صندوق از ${toPersianDigits(s.count)})`
+                          : ""}
+                      </span>
+                      <span
+                        style={{
+                          color: avg == null ? "var(--text-3)" : deltaColor(avg),
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {avg == null ? "بازده ثبت نشده" : formatSignedPercent(avg)}
+                        {avg != null && <span className="sr-only"> {describeDelta(avg)}</span>}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <p className="mt-3 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
+            «سایر» دسته نیست، باقی‌ماندهٔ دسته‌بندی است: صندوق‌های جسورانه، خصوصی و
+            پروژه‌ای که تابلو برایشان دستهٔ جدا ندارد. ارزشِ بازارِ نمادها با «جمعِ
+            دارایی‌های صندوق» یکی نیست و فیدِ ما عددِ دوم را نمی‌دهد.
+          </p>
+        </details>
+      )}
+
       {/* Heatmap */}
       {mapCells.length > 0 && (
         <details className="card group p-5">
@@ -415,7 +577,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             ندارد رندر نمی‌شود تا فیلترِ بی‌نتیجه پیشنهاد نشود. */}
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="دستهٔ صندوق">
           {[ALL_CATEGORIES, ...FUND_CATEGORIES].map((t) => {
-            const n = t === ALL_CATEGORIES ? funds.length : categoryCounts.get(t as never) ?? 0;
+            // جامعهٔ هر دو عدد یکی است (`searchScoped`)، پس عددِ چیپ دقیقاً
+            // همان تعدادِ ردیفی است که کلیک نشان می‌دهد.
+            const n = t === ALL_CATEGORIES ? searchScoped.length : categoryCounts.get(t as never) ?? 0;
             if (n === 0) return null;
             const on = typeFilter === t;
             return (
