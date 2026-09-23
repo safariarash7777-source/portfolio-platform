@@ -15,14 +15,25 @@
 #   realtime          : 0 tables in the supabase_realtime publication; no
 #                       `.channel(` call in the code.
 #   functions         : telegram-sync / instagram-sync live only in the cloud
-#                       project (source is not in this repo) and call
-#                       api.telegram.org / Instagram, which an Iranian host
-#                       cannot reach. Telegram sync stays on Vercel cron
-#                       (/api/cron/telegram-sync).
+#                       project (source is not in this repo but is readable
+#                       through the management API) and fetch t.me /
+#                       instagram.com, which an Iranian host cannot reach.
+#                       Where that work runs after the move is an owner
+#                       decision (docs/ops/LIARA-SELFHOST-MIGRATION.md,
+#                       capability table); nothing here removes a schedule.
 # Profiles keep them in the file (upstream `depends_on` still resolves) but
 # they never start unless someone passes `--profile unused` on purpose.
 
 services:
+  # Auth must be at least as new as production's Auth schema. Production is at
+  # migration 20260831180000 (auth.one_time_tokens.expires_at, measured
+  # 2026-09-23); the first Auth release that has it is v2.197.0. Upstream's
+  # compose file pinned v2.196.0 on that date, which would make the data dump
+  # fail to load. restore-to-selfhost.sh re-checks this against the backup's
+  # auth-version.txt before restoring anything.
+  auth:
+    image: supabase/gotrue:v2.197.0
+
   # Operators only, via SSH tunnel. Never 0.0.0.0.
   supavisor:
     ports: !override

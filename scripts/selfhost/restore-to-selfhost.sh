@@ -57,6 +57,8 @@ for f in roles schema data; do
   [ -s "$BACKUP_DIR/$f.sql" ] || die "$f.sql نیست یا خالی است — بکاپ ناقص است."
 done
 [ -s "$BACKUP_DIR/inventory-source.txt" ] || die "inventory-source.txt نیست — بدونِ اثرِ انگشتِ مبدأ مقایسه ممکن نیست."
+SRC_AUTH="$(tr -d '[:space:]' < "$BACKUP_DIR/auth-version.txt" 2>/dev/null || true)"
+printf '%s' "$SRC_AUTH" | grep -Eq '^[0-9]{14}$' || die "auth-version.txt نیست یا نامعتبر است — بکاپ با نسخهٔ پیش از #155@8c6ca43 گرفته شده؛ دوباره بکاپ بگیر."
 MODE="$(stat -c %a "$BACKUP_DIR" 2>/dev/null || stat -f %Lp "$BACKUP_DIR")"
 [ "$MODE" = "700" ] || die "پوشهٔ بکاپ باید mode 700 باشد (الان $MODE): دادهٔ واقعیِ اعضا در آن است."
 
@@ -75,7 +77,17 @@ TABLES="$(q -X -q -t -A -c "SELECT count(*) FROM pg_tables WHERE schemaname = 'p
 یک استکِ تازه بساز (یا عمداً پاکش کن) و دوباره اجرا کن."
 q -X -q -v ON_ERROR_STOP=1 -f - < "$BACKUP_SQL/assert-managed-schemas.sql" \
   || die "مقصد اسکیماهای مدیریت‌شده (auth/storage) را ندارد؛ Supabaseِ کامل نیست."
-echo "    superuser ✓ · public خالی ✓ · auth/storage موجود ✓"
+# Authِ مقصد باید دست‌کم به‌اندازهٔ Production تازه باشد: ۲۰۲۶۰۸۳۱۱۸۰۰۰۰ ستونِ
+# auth.one_time_tokens.expires_at را افزود (gotrue ≥ v2.197.0). Authِ قدیمی‌تر آن
+# ستون را ندارد و dumpِ داده بار نمی‌شود.
+DST_AUTH="$(q -X -q -t -A -c "SELECT max(version) FROM auth.schema_migrations" | tr -d '[:space:]')" \
+  || die "نسخهٔ طرحِ Authِ مقصد خوانده نشد."
+printf '%s' "$DST_AUTH" | grep -Eq '^[0-9]{14}$' || die "نسخهٔ طرحِ Authِ مقصد نامعتبر است."
+if [[ "$DST_AUTH" < "$SRC_AUTH" ]]; then
+  die "طرحِ Authِ مقصد ($DST_AUTH) از Production ($SRC_AUTH) قدیمی‌تر است. هیچ داده‌ای بازگردانی نشد.
+تصویرِ auth را به supabase/gotrue ≥ v2.197.0 برسان (docker-compose.portfolio.yml) و استک را تازه بساز."
+fi
+echo "    superuser ✓ · public خالی ✓ · auth/storage موجود ✓ · Auth $DST_AUTH ≥ $SRC_AUTH"
 
 # ── ۲) بازگردانیِ اتمیک ───────────────────────────────────────────────────────
 say "۲/۵ — بازگردانی در یک تراکنش (ON_ERROR_STOP=1)"
@@ -113,10 +125,11 @@ else
   echo "    node روی سرور نیست؛ inventory-selfhost.txt را به لپ‌تاپ بیاور و compare.mjs را آنجا اجرا کن."
 fi
 
-# ── ۴) پاک‌سازیِ وابستگی‌های ابری (فقط روی مقصد) ──────────────────────────────
+# ── ۴) گزارشِ وابستگی‌های ابری (فقط روی مقصد، بدونِ هیچ تغییری) ───────────────
 # کارهای pg_cronِ Production آدرسِ `*.supabase.co/functions/v1/...` را صدا می‌زنند.
-# روی این سرور هم آن آدرس از کار افتاده (402) و هم Edge Functionها اینجا نیستند.
-say "۴/۵ — غیرفعال‌کردنِ کارهای زمان‌بندیِ وابسته به پروژهٔ ابری"
+# این اسکریپت آن‌ها را حذف، غیرفعال یا کند **نمی‌کند** — فقط نام می‌برد؛ مقصدِ
+# تازه‌شان تصمیمِ مالک است.
+say "۴/۵ — گزارشِ کارهای زمان‌بندیِ وابسته به پروژهٔ ابری (بدونِ تغییر)"
 q -X -v ON_ERROR_STOP=1 -f - < "$HERE/post-restore.sql" 2>&1 | sed -n 's/^.*NOTICE:  /    /p' \
   || die "post-restore.sql شکست خورد."
 

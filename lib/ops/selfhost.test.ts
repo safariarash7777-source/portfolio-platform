@@ -67,6 +67,13 @@ test("override: پورت‌های Postgres و Studio فقط روی 127.0.0.1؛ �
   assert.match(y, /\.\/portfolio\/Caddyfile:\/etc\/caddy\/Caddyfile:ro/);
 });
 
+test("override: Auth دست‌کم v2.197.0 (طرحِ Authِ Production = 20260831180000)", () => {
+  const m = read("docker-compose.portfolio.yml").match(/\n  auth:\n    image: supabase\/gotrue:v(\d+)\.(\d+)\.(\d+)/);
+  assert.ok(m, "تصویرِ auth سنجاق نشده");
+  const [maj, min] = [Number(m![1]), Number(m![2])];
+  assert.ok(maj > 2 || (maj === 2 && min >= 197), `gotrue v${m![1]}.${m![2]} قدیمی‌تر از v2.197.0 است`);
+});
+
 test("Caddyfile: فقط /auth/v1 و /rest/v1 عمومی‌اند؛ Studio و basic_auth نیست", () => {
   const c = read("Caddyfile").split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
   assert.match(c, /@api path \/auth\/v1\/\* \/rest\/v1\/\*\s*\n/);

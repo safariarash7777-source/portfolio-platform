@@ -45,8 +45,10 @@ CREATE SCHEMA auth;
 CREATE SCHEMA storage;
 CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, encrypted_password text);
 CREATE TABLE storage.objects (id uuid PRIMARY KEY, name text);
+CREATE TABLE auth.schema_migrations (version text PRIMARY KEY);
+INSERT INTO auth.schema_migrations VALUES ('20260831180000');
 CREATE SCHEMA cron;
-CREATE TABLE cron.job (jobid bigserial PRIMARY KEY, jobname text, command text);
+CREATE TABLE cron.job (jobid bigserial PRIMARY KEY, jobname text, command text, schedule text DEFAULT '*/30 * * * *', active boolean DEFAULT true);
 CREATE FUNCTION cron.unschedule(job_id bigint) RETURNS boolean LANGUAGE sql AS
   $$ DELETE FROM cron.job WHERE jobid = job_id RETURNING true $$;
 INSERT INTO cron.job (jobname, command) VALUES
@@ -87,6 +89,7 @@ function makeBackup(name: string): string {
   writeFileSync(join(b, "roles.sql"), "-- no custom roles in this synthetic source\nSELECT 1;\n");
   writeFileSync(join(b, "schema.sql"), dump(["--schema-only", "-n", "public"]));
   writeFileSync(join(b, "data.sql"), dump(["--data-only", "-n", "public", "-n", "auth", "-n", "storage"]));
+  writeFileSync(join(b, "auth-version.txt"), "20260831180000\n");
   writeFileSync(join(b, "inventory-source.txt"),
     execFileSync("psql", ["-d", SRC, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", INVENTORY], { env: ENV, encoding: "utf8" }));
   return b;
@@ -131,7 +134,7 @@ describe("restore-to-selfhost.sh", { skip }, () => {
     psql("postgres", `DROP DATABASE IF EXISTS ${SRC}`);
   });
 
-  test("بازگردانیِ کامل: PASS، ردیف‌ها و رمزهای هش‌شده برابر، کارِ cronِ ابری خاموش", () => {
+  test("بازگردانیِ کامل: PASS، ردیف‌ها و هشِ رمزها برابر؛ کارِ cronِ ابری فقط گزارش می‌شود", () => {
     freshTarget();
     const b = makeBackup("ok");
     const r = run(b);
@@ -144,8 +147,10 @@ describe("restore-to-selfhost.sh", { skip }, () => {
       "هشِ رمزها دست‌نخورده منتقل شد — اعضا با همان رمز وارد می‌شوند",
     );
     assert.equal(psql(DST, "SELECT relrowsecurity FROM pg_class WHERE oid='public.profiles'::regclass"), "t");
-    assert.equal(psql(DST, "SELECT string_agg(jobname, ',') FROM cron.job"), "local-maintenance");
-    assert.match(r.stdout, /disabled cron job 1 \(telegram-sync-30m\)/);
+    // هیچ زمان‌بندی‌ای حذف یا غیرفعال نشد (بدونِ تأییدِ مالک مجاز نیست).
+    assert.equal(psql(DST, "SELECT string_agg(jobname, ',' ORDER BY jobid) FROM cron.job"), "telegram-sync-30m,local-maintenance");
+    assert.match(r.stdout, /cron job 1 \(telegram-sync-30m\) .*abcdefgh\.supabase\.co\/functions\/v1\/telegram-sync - left UNCHANGED/);
+    assert.match(r.stdout, /1 job\(s\) target the cloud project; 2 job\(s\) in total; nothing was changed/);
     assert.equal((statSync(join(b, "restore-selfhost.log")).mode & 0o777).toString(8), "600");
     assert.doesNotMatch(r.stdout + r.stderr, /\$2a\$10\$/, "هیچ داده‌ای چاپ نشد");
   });
@@ -185,6 +190,24 @@ describe("restore-to-selfhost.sh", { skip }, () => {
     assert.notEqual(r.status, 0);
     assert.match(r.stderr, /superuser نیست/);
     assert.equal(psql(DST, "SELECT count(*) FROM pg_tables WHERE schemaname='public'"), "0");
+  });
+
+  test("Authِ مقصد قدیمی‌تر از Production: پیش از بازگردانی متوقف می‌شود", () => {
+    freshTarget();
+    psql(DST, "DELETE FROM auth.schema_migrations; INSERT INTO auth.schema_migrations VALUES ('20260625000000')");
+    const r = run(makeBackup("oldauth"));
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /طرحِ Authِ مقصد \(20260625000000\) از Production \(20260831180000\) قدیمی‌تر است/);
+    assert.equal(psql(DST, "SELECT count(*) FROM pg_tables WHERE schemaname='public'"), "0");
+  });
+
+  test("بکاپِ بدونِ auth-version.txt (پیش از این نسخه) رد می‌شود", () => {
+    freshTarget();
+    const b = makeBackup("noauth");
+    rmSync(join(b, "auth-version.txt"));
+    const r = run(b);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /auth-version\.txt/);
   });
 
   test("بکاپِ ناقص (بدونِ اثرِ انگشتِ مبدأ) رد می‌شود", () => {
