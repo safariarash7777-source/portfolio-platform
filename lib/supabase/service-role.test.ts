@@ -42,6 +42,11 @@ const ALLOWED = new Map<string, string>([
 
   // ── نشست هست، ولی RLS سیاستِ نوشتن ندارد ──
   ["app/api/webinars/payment/route.ts", "`payments` سیاستِ INSERT ندارد"],
+  // `create_payment` بعد از `phase24` از `authenticated` گرفته شده و فقط به
+  // `service_role` داده شده — **عمداً**. تا وقتی کاربر می‌توانست خودش صدایش
+  // بزند، مبلغ را هم خودش تعیین می‌کرد و `verify_payment` همان مبلغِ جعلی را
+  // تأیید می‌کرد. مبلغ حالا فقط از env می‌آید و کاربر صریح پاس می‌شود.
+  ["app/api/payment/request/route.ts", "`create_payment` فقط `service_role` است (phase24) — مبلغ سمتِ سرور"],
   ["app/api/admin/announcements/route.ts", "`announcements` سیاستِ INSERT/UPDATE ندارد"],
   ["app/api/admin/analyses/route.ts", "انتشار در `signals`/`weekly_outlooks` سیاستِ INSERT ندارد"],
 
@@ -162,10 +167,27 @@ test("the gap response names the missing variable and the broken feature", () =>
  * بدنه‌اش دارد. `is_admin` و `can_see_announcement` نیامده‌اند چون از داخلِ
  * سیاست‌ها صدا زده می‌شوند، نه از کد.
  */
+/*
+ * ⚠️ `create_payment` عمداً در این فهرست **نیست**.
+ *
+ * تا پیش از `phase24` امضایش `(amount, authority, purpose)` بود و خودش با
+ * `auth.uid()` احراز می‌کرد — پس آنجا درست بود که در این فهرست باشد.
+ * `phase24` آن نسخه را `DROP` می‌کند و جایش
+ * `create_payment(p_user_id uuid, ...)` را می‌گذارد که **هیچ** `auth.uid()`
+ * ندارد، از `authenticated` گرفته شده و فقط به `service_role` داده شده.
+ *
+ * این عوض‌شدن خودش یک اصلاحِ امنیتی است: تا وقتی کاربر می‌توانست RPC را صدا
+ * بزند، مبلغ را هم خودش می‌فرستاد و `verify_payment` همان مبلغِ جعلی را
+ * تأیید می‌کرد. برگرداندنش به این فهرست یعنی برگرداندنِ همان حفره.
+ *
+ * ⚠️ این مدخل به `phase24` **وابسته** است. اگر `phase24` روی دیتابیس اعمال
+ * نشده باشد، امضای قدیمی سرِ جایش است و فراخوانِ چهارآرگومانی با خطای
+ * «تابع پیدا نشد» **بلند** شکست می‌خورد — نه بی‌صدا. همین بلندبودن است که
+ * این وابستگی را قابلِ‌تحمل می‌کند.
+ */
 const SESSION_RPCS = [
   "add_content_item",
   "capture_intel_package",
-  "create_payment",
   "force_expire_risk",
   "generate_telegram_link_code",
   "hide_content_item",
