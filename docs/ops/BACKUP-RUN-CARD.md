@@ -29,17 +29,25 @@ daemon ندارد، و — تعیین‌کننده‌تر — **رمز باید 
 | ابزار | چرا |
 |---|---|
 | **Docker Desktop** (باز و بالا آمده) | هم بکاپ می‌گیرد، هم بازیابی را در محیطِ ایزوله می‌آزماید |
+| **Docker Desktop → Settings → Docker Engine**: افزودنِ `"ip": "127.0.0.1"` → Apply & restart | Supabase CLI پورت‌های استکِ موقت را پیش‌فرض روی **همهٔ** رابط‌ها باز می‌کند (یافتهٔ Codex). اسکریپت پیش از واردکردنِ دادهٔ واقعی پورت‌ها را می‌خواند و اگر یکی روی `0.0.0.0` یا `::` باشد، **متوقف می‌شود** — بدونِ این تنظیم به مرحلهٔ بازیابی نمی‌رسد |
 | **Node.js LTS** | ابزارِ رسمیِ Supabase و `compare.mjs` |
+| **git** | برای گرفتنِ **دقیقاً همان نسخهٔ آزموده** |
 
 ---
 
 ## ۲. دستور
 
-روی **ویندوز** (PowerShell، داخلِ پوشهٔ ریپو):
+روی **ویندوز**، در **Windows PowerShell** (نه لازم است PowerShell 7 باشد)، **داخلِ پوشهٔ ریپو**:
 
 ```powershell
-.\scripts\backup-production.ps1
+git fetch origin claude/backup-stdin-crlf
+git checkout --detach origin/claude/backup-stdin-crlf
+git rev-parse --short HEAD        # باید با SHAِ اعلام‌شده در PR #155 یکی باشد
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\backup-production.ps1
 ```
+
+بکاپ در `%USERPROFILE%\supabase-backups\prod-<زمان>` ساخته می‌شود — **بیرون از ریپو**؛
+اگر مقصد داخلِ یک مخزنِ گیت باشد، اسکریپت اجرا نمی‌شود.
 
 روی **مک یا لینوکس**:
 
@@ -97,3 +105,15 @@ bash scripts/backup-production.sh
 
 ⚠️ فایل‌های بکاپ **بیرون از مخزن** ساخته می‌شوند و اسکریپت اگر ببیند مقصد داخلِ
 یک ریپوی گیت است اجرا نمی‌شود. هرگز بکاپ را commit نکن.
+
+---
+
+## محدودیتِ آزمونِ این نسخه — صریح
+
+| چه آزموده شد | کجا | چه **آزموده نشد** |
+|---|---|---|
+| کلِ مسیرِ ps1 تا PASS (اتصال → dump → استکِ موقت → بررسیِ پورت → بازگردانی با `supabase_admin` داخلِ کانتینر → مقایسه) | لینوکس، **PowerShell 7.4**، Postgresِ واقعی؛ `docker` و `supabase` جعلی | **Windows PowerShell 5.1 واقعی** اجرا نشد |
+| رفتارِ خطِ فرمانِ 5.1 (نقل‌قولِ دوتایی escape نمی‌شود) | همان آزمون با `$PSNativeCommandArgumentPassing='Legacy'`؛ نسخهٔ قبل در همین حالت با رشتهٔ اتصالِ **درست** «Could not connect» می‌داد | کدگذاریِ کنسولِ ویندوز و سیاستِ اجرای اسکریپت |
+| BOM: `pgurl.sh` و `compare.mjs` BOM را برمی‌دارند؛ هیچ فایلِ خروجی BOM ندارد | آزمونِ ورودیِ BOM+CRLF روی busybox/dash و Postgresِ واقعی؛ گاردِ ایستا روی `Set-Content -Encoding UTF8`، `| Set-Content` و `*>` | نوشتنِ BOM توسطِ خودِ 5.1 (روی 7.4 بازتولیدپذیر نیست) |
+| توقف پیش از بازگردانی اگر پورتی روی `0.0.0.0`/`::` باشد | آزمونِ IPv4 و IPv6 با خروجیِ جعلیِ `docker ps` | اینکه تنظیمِ `"ip": "127.0.0.1"` در Docker Desktop واقعاً پورت‌های Supabase CLI را محدود کند — اسکریپت آن را **می‌سنجد** و در غیرِ این صورت متوقف می‌شود |
+| — | — | **هیچ بکاپی از Production** گرفته نشده |

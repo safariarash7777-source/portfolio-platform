@@ -101,7 +101,9 @@ const MULTI_VALUED = /^grant_/;
 
 function load(path) {
   const map = new Map();
-  const raw = readFileSync(path, "utf8");
+  // BOM را برمی‌داریم: Windows PowerShell 5.1 با `Set-Content -Encoding UTF8` آن را
+  // می‌نویسد و بدونِ این، اولین خطِ یک فایلِ ویندوزی با همان خط از لینوکس برابر نمی‌شد.
+  const raw = readFileSync(path, "utf8").replace(/^\uFEFF/, "");
   for (const line of raw.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed) continue;

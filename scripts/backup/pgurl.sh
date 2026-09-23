@@ -9,6 +9,9 @@
 #   PGPASSWORD  the decoded password, exported -> environment, not argv
 #
 # Why each step exists (B-057):
+#   * BOM: a UTF-8 byte-order mark (EF BB BF) in front of the URI, which
+#     Windows PowerShell 5.1 emits whenever the pipe encoding carries a
+#     preamble. It is stripped the same way as the CR.
 #   * CR: a Windows PowerShell pipe into a native process ends the line with
 #     CR LF. `read -r` strips only the LF, so the CR stayed in the URI and the
 #     database became "postgres<CR>" ("does not exist").
@@ -30,6 +33,8 @@
 
 IFS= read -r PGURL || true
 PGURL=$(printf '%s' "$PGURL" | tr -d '\r')
+pgurl_bom=$(printf '\357\273\277')
+PGURL=${PGURL#"$pgurl_bom"}
 
 if [ -z "$PGURL" ]; then
   echo 'pgurl: empty connection string on stdin - nothing was sent to psql' >&2
@@ -78,4 +83,16 @@ if [ "$pgurl_auth" != "$pgurl_rest" ]; then
       ;;
   esac
 fi
-unset pgurl_scheme pgurl_rest pgurl_auth pgurl_pw
+unset pgurl_scheme pgurl_rest pgurl_auth pgurl_pw pgurl_bom
+
+# pgurl_psql ARGS... - the ONE way callers start psql against the URI.
+#
+# Callers pass their psql arguments WITHOUT double quotes. Windows PowerShell
+# 5.1 does not escape embedded double quotes when it builds a native command
+# line, so `sh -c '... "$PGURL" -c "SELECT 1"'` reached docker split in the
+# wrong places (psql received `-c SELECT`). Reproduced on PowerShell 7.4 with
+# $PSNativeCommandArgumentPassing = 'Legacy', which is the 5.1 behaviour.
+# The quoting of the URI now lives here, inside sh, where it is safe.
+pgurl_psql() {
+  exec psql -w "$PGURL" "$@"
+}
