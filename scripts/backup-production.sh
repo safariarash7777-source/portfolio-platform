@@ -134,6 +134,14 @@ PROBE="$(psql_with_url '-X -q -t -A -c "SELECT 1"' 2>/dev/null | tr -d '[:space:
 در Supabase Dashboard → Connect دوباره بررسی‌اش کن. هیچ چیزی نوشته نشد."
 echo "    اتصال برقرار است."
 
+# نسخهٔ طرحِ Authِ Production: مقصدِ بازگردانی باید دست‌کم همین‌قدر تازه باشد
+# (۲۰۲۶۰۸۳۱۱۸۰۰۰۰ ستونِ auth.one_time_tokens.expires_at را افزود؛ Authِ قدیمی‌تر آن را
+# ندارد و dumpِ داده بار نمی‌شود). کنارِ بکاپ ثبت می‌شود تا بازگردانیِ بعدی هم بسنجد.
+SRC_AUTH="$(psql_with_url "-X -q -t -A -c 'SELECT max(version) FROM auth.schema_migrations'" 2>/dev/null | tr -d '[:space:]')" || true
+printf '%s' "$SRC_AUTH" | grep -Eq '^[0-9]{14}$' || die "نسخهٔ طرحِ Authِ Production خوانده نشد."
+printf '%s\n' "$SRC_AUTH" > "$OUT_DIR/auth-version.txt"
+echo "    طرحِ Authِ Production: $SRC_AUTH"
+
 psql_with_url '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
   > "$OUT_DIR/inventory-source.txt" \
   || die "وصل شدیم ولی اثرِ انگشتِ Production خوانده نشد."
@@ -230,6 +238,15 @@ for f in "$OUT_DIR/roles.sql" "$OUT_DIR/schema.sql" "$OUT_DIR/data.sql" \
   docker cp "$f" "$DB_CONTAINER:/tmp/restore/" || die "کپیِ $(basename "$f") به کانتینر شکست خورد."
 done
 
+DST_AUTH="$(in_db "-t -A -c 'SELECT max(version) FROM auth.schema_migrations'" | tr -d '[:space:]')" || true
+printf '%s' "$DST_AUTH" | grep -Eq '^[0-9]{14}$' || die "نسخهٔ طرحِ Authِ استکِ محلی خوانده نشد."
+if [[ "$DST_AUTH" < "$SRC_AUTH" ]]; then
+  die "طرحِ Authِ استکِ محلی ($DST_AUTH) از Production ($SRC_AUTH) قدیمی‌تر است.
+بازگردانی روی ستون‌های تازه‌ترِ auth شکست می‌خورد. هیچ داده‌ای بازگردانی نشد.
+Supabase CLI را به‌روز کن و دوباره اجرا کن."
+fi
+echo "    طرحِ Authِ محلی $DST_AUTH ≥ Production $SRC_AUTH"
+
 # اسکیماهای مدیریت‌شده باید **پیش از** بازگردانی موجود باشند، وگرنه مقصد
 # فاقدِ چیزی است که dumpِ data به آن نیاز دارد.
 in_db "-v ON_ERROR_STOP=1 -f /tmp/restore/assert-managed-schemas.sql" \
@@ -291,6 +308,7 @@ esac
   echo "verify target:  isolated local Supabase stack ($VERIFY_ID)"
   echo "restore method: single psql invocation, --single-transaction, ON_ERROR_STOP=1"
   echo "restore exit:   $RESTORE_RC"
+  echo "auth schema:    production $SRC_AUTH / verify stack $DST_AUTH"
   echo "verification:   structural fingerprint (both directions) + dynamic row counts (public+auth+storage)"
   echo "live window:    source fingerprint read twice (before and after the dump). A table that moved"
   echo "                between them is reported as UNVERIFIED, not accepted. The window is evidence"

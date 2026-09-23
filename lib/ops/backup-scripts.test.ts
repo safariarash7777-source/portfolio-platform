@@ -332,6 +332,18 @@ describe("راستی‌آزمایی", () => {
     assert.match(ps1, /PARTIAL/, "ps1 در MANIFEST حالتِ PARTIAL را نمی‌نویسد");
   });
 
+  test("نسخهٔ طرحِ Auth ثبت و پیش از بازگردانی سنجیده می‌شود", () => {
+    for (const name of ["auth.schema_migrations", "storage.migrations"]) {
+      assert.ok(inventory.includes(`('${name}')`), `${name} استثنای مستندِ شمارش نیست`);
+    }
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.match(code, /auth-version\.txt/, `${label}: نسخهٔ Authِ Production ثبت نمی‌شود`);
+      const gate = code.search(/older than production|قدیمی‌تر است/);
+      const restore = code.indexOf("SET session_replication_role = replica");
+      assert.ok(gate > 0 && gate < restore, `${label}: بررسیِ نسخهٔ Auth باید پیش از بازگردانی باشد`);
+    }
+  });
+
   test("استثناها صریح و مستند هستند", () => {
     for (const name of ["storage.buckets_vectors", "storage.vector_indexes"]) {
       assert.ok(inventory.includes(name), `${name} به‌عنوانِ استثنا ثبت نشده`);

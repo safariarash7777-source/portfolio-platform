@@ -11,11 +11,17 @@ import { join } from "node:path";
  * ── چه چیزی واقعی است و چه چیزی جعلی ──────────────────────────────────────
  * واقعی: اسکریپتِ ps1 (بی‌تغییر)، `Read-Host -AsSecureString` زیرِ یک pty،
  * `scripts/backup/pgurl.sh`، psql، Postgres، `inventory.sql`.
- * جعلی: `docker` (فقط `info` و `run … sh -c` را با sh/busyboxِ محلی اجرا می‌کند
- * و هر argv را ثبت می‌کند — معادلِ آنچه `docker inspect` نشان می‌دهد) و
- * `supabase` (dump را رد می‌کند تا اجرا پیش از بکاپِ واقعی متوقف شود).
+ * جعلی: `docker` (`info`، `run … sh -c`، `ps`، `cp`، `exec … sh -c` را با sh/busyboxِ
+ * محلی اجرا می‌کند و هر argv را ثبت می‌کند — معادلِ آنچه `docker inspect` نشان می‌دهد)
+ * و `supabase` (پیش‌فرض dump را رد می‌کند؛ با FAKE_SUPA_FULL=1 همهٔ مسیر را با pg_dump و
+ * یک پایگاهِ verifyِ محلی شبیه‌سازی می‌کند).
  *
- * ⚠️ آنچه اینجا اثبات **نمی‌شود**: Windows PowerShell 5.1 و CRLFِ پایپِ ویندوز
+ * حالتِ Legacy: `$PSNativeCommandArgumentPassing='Legacy'` همان رفتارِ Windows
+ * PowerShell 5.1 در ساختنِ خطِ فرمانِ native است (نقل‌قولِ دوتایی escape نمی‌شود).
+ * نسخهٔ پیشین در این حالت با رشتهٔ اتصالِ **درست** «Could not connect» می‌داد.
+ *
+ * ⚠️ آنچه اینجا اثبات **نمی‌شود**: خودِ Windows PowerShell 5.1، کدگذاریِ کنسولِ ویندوز،
+ * Docker Desktop، و CRLFِ پایپِ ویندوز
  * (روی لینوکس `[Environment]::NewLine` = LF است). CRLF در
  * `backup-restore.integration.test.ts` با همان بایت‌ها روی بخشِ sh سنجیده می‌شود.
  * و البته هیچ بکاپی از Production.
@@ -122,11 +128,11 @@ adm() { psql -d postgres -X -q -v ON_ERROR_STOP=1 -c "$1"; }
 case "$1 $2" in
   "db dump") url="$(arg --db-url "$@")"; out="$(arg -f "$@")"
     if has --role-only "$@"; then printf -- '-- no custom roles\\nSELECT 1;\\n' > "$out"
-    elif has --data-only "$@"; then pg_dump --data-only -n public -n auth -n storage --no-owner "$url" > "$out"
+    elif has --data-only "$@"; then pg_dump --data-only -n public -n auth -n storage --exclude-table-data=auth.schema_migrations --no-owner "$url" > "$out"  # مثلِ CLI
     else pg_dump --schema-only -n public "$url" > "$out"; fi ;;  # مالک و گرنت مثلِ dumpِ واقعیِ Supabase حفظ می‌شوند
   "init --workdir") mkdir -p "$3/supabase"; printf 'project_id = "x"\\n[api]\\nport = 54321\\n[db]\\nport = 54322\\nshadow_port = 54320\\n' > "$3/supabase/config.toml" ;;
   "start --workdir") adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" && adm "CREATE DATABASE $FAKE_VERIFY_DB" \\
-      && psql -d "$FAKE_VERIFY_DB" -X -q -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA auth; CREATE SCHEMA storage;" ;;
+      && psql -d "$FAKE_VERIFY_DB" -X -q -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE TABLE auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('\${FAKE_LOCAL_AUTH:-20260831180000}');" ;;
   # پیش‌فرضِ محلیِ CLI (رمزِ پشتهٔ موقت، نه سکرت)؛ با printf ساخته می‌شود تا شکلِ «URL با رمز» در متن نباشد.
   "status --workdir") printf 'DB_URL="%s://%s:%s@127.0.0.1:54322/postgres"\\n' postgresql postgres "\${FAKE_LOCAL_PW:-postgres}" ;;
   "stop --workdir") adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" ;;
@@ -211,6 +217,8 @@ PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
     admin(`CREATE ROLE ${ROLE} LOGIN PASSWORD '${PW.replace(/'/g, "''")}'`);
     admin(`CREATE DATABASE ${DB} OWNER ${ROLE}`);
     admin(`CREATE SCHEMA auth AUTHORIZATION ${ROLE}; CREATE SCHEMA storage AUTHORIZATION ${ROLE}; CREATE TABLE public.t (id int); INSERT INTO public.t VALUES (1),(2); ALTER TABLE public.t OWNER TO ${ROLE}`, DB);
+    // نسخهٔ طرحِ Auth مثلِ Production (۲۰۲۶-۰۹-۲۳).
+    admin(`CREATE TABLE auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('20260831180000'); ALTER TABLE auth.schema_migrations OWNER TO ${ROLE}`, DB);
   });
 
   after(() => {
@@ -278,6 +286,7 @@ PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
       assert.match(r.text, /every published port is bound to 127\.0\.0\.1/);
       assert.match(r.text, /\[OK\] Backup created AND it passed the restore test/);
       assert.match(r.text, /result: +PASS/);
+      assert.match(r.text, /auth schema: +production 20260831180000 \/ verify stack 20260831180000/);
       // بازگردانی واقعاً با supabase_admin و داخلِ «کانتینر» اجرا شد.
       assert.match(r.dockerLog, /exec-psql [^\n]*-U supabase_admin[^\n]*--single-transaction/);
       assert.doesNotMatch(r.dockerLog, /network host/);
@@ -304,6 +313,15 @@ PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
     assert.doesNotMatch(r.dockerLog, /--single-transaction/, "بازگردانی نباید شروع شود");
     assert.doesNotMatch(r.dockerLog, /^cp /m, "هیچ فایلی به کانتینر نرفت");
     assert.match(r.dockerLog, /supabase stop --workdir/);
+  });
+
+  test("Authِ محلیِ قدیمی‌تر از Production: پیش از بازگردانی متوقف می‌شود", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_LOCAL_AUTH: "20260625000000" }, true);
+    assert.equal(r.code, 1);
+    assert.match(r.text, /production Auth schema: 20260831180000/);
+    assert.match(r.text, /local Supabase Auth schema \(20260625000000\) is older than production \(20260831180000\)/);
+    assert.doesNotMatch(r.dockerLog, /--single-transaction/, "بازگردانی نباید شروع شود");
+    assert.equal(r.file("auth-version.txt").toString("utf8").trim(), "20260831180000");
   });
 
   test("پورتِ عمومیِ IPv6 هم گرفته می‌شود", () => {

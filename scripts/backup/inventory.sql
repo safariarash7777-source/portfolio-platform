@@ -32,8 +32,17 @@
 -- ── ۰) استثناهای ثبت‌شده ────────────────────────────────────────────────────
 -- طبقِ راهنمای جاری Supabase این دو از dumpِ data کنار گذاشته می‌شوند، پس
 -- انتظارِ وجودشان در مقصد نداریم.
+--
+-- `auth.schema_migrations` و `storage.migrations` دادهٔ بکاپ نیستند: هر ردیفشان
+-- را سرویسِ **خودِ مقصد** (Auth و Storage) هنگامِ بالا آمدن می‌نویسد و dumpِ data
+-- آن‌ها را ندارد. شمارششان نسخهٔ سرویسِ مقصد را می‌سنجد، نه وفاداریِ بکاپ را: مقصدی
+-- که Authِ **تازه‌تر** از Production دارد (مجاز) یک بکاپِ سالم را FAIL می‌کرد.
+-- سازگاریِ نسخه جدا و سخت‌گیرانه سنجیده می‌شود: اسکریپت‌های بکاپ نسخهٔ طرحِ
+-- Authِ Production را ثبت می‌کنند (auth-version.txt) و اگر مقصد قدیمی‌تر باشد،
+-- پیش از بازگردانی متوقف می‌شوند.
 WITH excluded(name) AS (
-  VALUES ('storage.buckets_vectors'), ('storage.vector_indexes')
+  VALUES ('storage.buckets_vectors'), ('storage.vector_indexes'),
+         ('auth.schema_migrations'), ('storage.migrations')
 )
 SELECT format('exclusion|%s|documented', name) FROM excluded ORDER BY 1;
 
@@ -49,7 +58,8 @@ JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE c.relkind IN ('r', 'p')
   AND n.nspname IN ('public', 'auth', 'storage')
   AND format('%s.%s', n.nspname, c.relname)
-      NOT IN ('storage.buckets_vectors', 'storage.vector_indexes')
+      NOT IN ('storage.buckets_vectors', 'storage.vector_indexes',
+              'auth.schema_migrations', 'storage.migrations')
   -- بخش‌های یک جدولِ پارتیشن‌شده جدا شمرده نمی‌شوند؛ والد آن‌ها را پوشش می‌دهد.
   AND NOT EXISTS (SELECT 1 FROM pg_inherits i WHERE i.inhrelid = c.oid)
 ORDER BY 1;

@@ -244,6 +244,16 @@ try {
     }
     Write-Host '    connection OK'
 
+    # Production's Auth schema version. The restore target must be at least
+    # this new: 20260831180000 added auth.one_time_tokens.expires_at, and an
+    # older Auth has no such column, so the data dump would fail to load (or,
+    # worse, a hand-edited restore would silently drop it). Recorded next to
+    # the backup so a later restore on another host can make the same check.
+    $srcAuth = "$(Invoke-PsqlWithUrl -Url $DbUrl -PsqlArgs '-X -q -t -A -c ''SELECT max(version) FROM auth.schema_migrations''')".Trim()
+    if ($LASTEXITCODE -ne 0 -or $srcAuth -notmatch '^\d{14}$') { Die 'Connected, but could not read the production Auth schema version.' }
+    Write-Utf8NoBom -Path (Join-Path $OutDir 'auth-version.txt') -Lines @($srcAuth)
+    Write-Host "    production Auth schema: $srcAuth"
+
     # psql writes the file itself (-o into a mounted folder). Piping psql's
     # output through PowerShell would decode it with the console code page on
     # 5.1 and re-encode it, so the bytes on disk would not be the bytes psql
@@ -352,6 +362,16 @@ try {
         if ($LASTEXITCODE -ne 0) { Die "Could not copy $(Split-Path -Leaf $file) into the local database container." }
     }
 
+    # The local Auth must be at least as new as production's (see above).
+    $dstAuth = "$(Invoke-InDb '-t -A -c ''SELECT max(version) FROM auth.schema_migrations''')".Trim()
+    if ($LASTEXITCODE -ne 0 -or $dstAuth -notmatch '^\d{14}$') { Die 'Could not read the local stack Auth schema version.' }
+    if ([string]::CompareOrdinal($dstAuth, $srcAuth) -lt 0) {
+        Die ("The local Supabase Auth schema ($dstAuth) is older than production ($srcAuth).`n" +
+            "A restore would fail on newer auth columns. Nothing was restored.`n" +
+            "Update the Supabase CLI (for example: npm install -g supabase@latest), then run again.")
+    }
+    Write-Host "    local Auth schema $dstAuth >= production $srcAuth"
+
     # Managed schemas must exist BEFORE the restore, otherwise the target is
     # missing something the data dump needs.
     Invoke-InDb '-v ON_ERROR_STOP=1 -f /tmp/restore/assert-managed-schemas.sql'
@@ -407,6 +427,7 @@ try {
     $manifest.Add('restore method: docker exec in the db container, supabase_admin, one psql invocation, --single-transaction, ON_ERROR_STOP=1')
     $manifest.Add('local ports:    every published port bound to 127.0.0.1 (checked before restore)')
     $manifest.Add("restore exit:   $restoreExit")
+    $manifest.Add("auth schema:    production $srcAuth / verify stack $dstAuth")
     $manifest.Add('verification:   dynamic row counts (public+auth+storage) + structural fingerprint, both directions')
     $manifest.Add('exclusions:     storage.buckets_vectors, storage.vector_indexes (documented)')
     $manifest.Add("inventory rows: $sourceRows")
