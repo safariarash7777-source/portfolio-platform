@@ -24,6 +24,15 @@
 -- • **شمارشِ ردیف** شاملِ `public`، `auth` و `storage` — چون dumpِ data دادهٔ
 --   مدیریت‌شده مثلِ `auth.users` را **دارد**.
 -- • استثناها صریح‌اند و در خروجی هم ثبت می‌شوند تا در manifest دیده شوند.
+--
+-- ── search_pathِ ثابت ───────────────────────────────────────────────────────
+-- مبدأ با نقشِ `postgres` خوانده می‌شود و مقصد با `supabase_admin`، که
+-- search_pathش `auth` را هم دارد. pg_get_constraintdef و pg_get_expr نامِ
+-- داخلِ search_path را بی‌پیشوند چاپ می‌کنند، پس همان FKِ `auth.users(id)` در
+-- مقصد `users(id)` می‌شد و مقایسه یک بازگردانیِ سالم را FAIL می‌کرد (روی لپ‌تاپِ
+-- آرش با دادهٔ مصنوعی اندازه‌گیری شد، ۲۰۲۶-۰۹-۲۳). با pg_catalog همه‌چیز
+-- پیشونددار چاپ می‌شود و دو اتصال یک متن می‌بینند.
+SET search_path = pg_catalog;
 
 \pset tuples_only on
 \pset format unaligned
@@ -63,6 +72,17 @@ WHERE c.relkind IN ('r', 'p')
   -- بخش‌های یک جدولِ پارتیشن‌شده جدا شمرده نمی‌شوند؛ والد آن‌ها را پوشش می‌دهد.
   AND NOT EXISTS (SELECT 1 FROM pg_inherits i WHERE i.inhrelid = c.oid)
 ORDER BY 1;
+
+-- ── ۱′) اثرِ انگشتِ اعتبارنامه‌های کاربران ─────────────────────────────────────
+-- شمارشِ `auth.users` می‌گوید «همان تعداد کاربر»، نه «همان رمز». اگر هشِ رمز در
+-- مسیرِ dump/restore عوض شود (کوتاه‌شدن، کدگذاری، ستونِ اشتباه)، هیچ کاربری
+-- نمی‌تواند وارد شود و شمارش هنوز سبز است. اینجا یک md5 از همهٔ جفت‌های
+-- (id، encrypted_password) به ترتیبِ id: خودِ هش‌ها بیرون نمی‌آیند، ولی تغییرِ
+-- یک بایت از یکی از آن‌ها دیده می‌شود. کاربری که حینِ dump رمزش را عوض کند
+-- این خط را قرمز می‌کند — عمداً: آن بکاپ همان چیزی نیست که خوانده شد.
+SELECT format('digest|auth.users.credentials|%s',
+         md5(coalesce(string_agg(id::text || ':' || coalesce(encrypted_password, '-'), ',' ORDER BY id), '')))
+FROM auth.users;
 
 -- ── ۲) جدول‌ها ──────────────────────────────────────────────────────────────
 SELECT format('table|%s.%s|%s', n.nspname, c.relname, c.relkind)

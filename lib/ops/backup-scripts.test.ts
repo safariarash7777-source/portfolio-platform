@@ -151,7 +151,8 @@ describe("قراردادِ Windows PowerShell 5.1", () => {
 
   test("بازگردانی فقط پس از بررسیِ پورتِ عمومی و داخلِ کانتینرِ db با supabase_admin", () => {
     for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
-      const gate = code.indexOf("docker ps --filter");
+      // `-a`: یک کانتینرِ متوقف‌شده هم جزوِ این اجرا است و باید دیده شود.
+      const gate = code.search(/docker ps (-a )?--filter/);
       const restore = code.indexOf("SET session_replication_role = replica");
       assert.ok(gate > 0 && restore > gate, `${label}: بررسیِ پورت باید پیش از بازگردانی باشد`);
       assert.match(code, /0\\\.0\\\.0\\\.0/, `${label}: الگوی 0.0.0.0`);
@@ -235,31 +236,149 @@ describe("بازگردانی بر پایهٔ کدِ خروجی", () => {
 // ── ۳. مقصدِ وفادار و پاکسازی ───────────────────────────────────────────────
 
 describe("مقصدِ بازگردانی", () => {
-  test("استکِ Supabaseِ محلیِ ایزوله، نه Postgresِ ساده", () => {
-    assert.match(bashCode, /"\$\{SUPA\[@\]\}" init --workdir "\$VERIFY_WORKDIR"/);
-    assert.match(ps1Code, /@\('init', '--workdir', \$VerifyWorkdir/);
-    // مقصد دیگر یک Postgresِ سادهٔ خالی نیست؛ استکِ Supabase بالا می‌آید.
-    assert.match(bashCode, /"\$\{SUPA\[@\]\}" start --workdir/);
-    assert.match(ps1Code, /@\('start', '--workdir', \$VerifyWorkdir/);
+  const COMPOSE = join(ROOT, "scripts", "backup", "verify-stack.compose.yml");
+  const compose = existsSync(COMPOSE) ? readFileSync(COMPOSE, "utf8") : "";
+  const composeCode = stripHash(compose);
+
+  test("استکِ Supabaseِ یک‌بارمصرف از یک فایلِ compose، نه Postgresِ ساده و نه supabase start", () => {
+    assert.ok(compose.length > 0, "scripts/backup/verify-stack.compose.yml پیدا نشد");
+    for (const service of ["db:", "auth:", "storage:"]) {
+      assert.match(composeCode, new RegExp(`^  ${service}`, "m"), `سرویسِ ${service} در compose نیست`);
+    }
+    // هر دو اسکریپت همان فایل را بالا می‌آورند و تا سالم‌شدن منتظر می‌مانند.
+    assert.match(bashCode, /COMPOSE_FILE="\$SQL_DIR\/verify-stack\.compose\.yml"/);
+    assert.match(ps1Code, /'verify-stack\.compose\.yml'/);
+    assert.match(bashCode, /compose up --detach --wait/);
+    assert.match(ps1Code, /@\('up', '--detach', '--wait'/);
+    // `supabase start` همهٔ پورت‌ها را روی 0.0.0.0 منتشر می‌کرد (اندازه‌گیری‌شده).
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.doesNotMatch(code, /\bstart --workdir|'start', '--workdir'/, `${label}: هنوز supabase start`);
+      assert.doesNotMatch(code, /\binit --workdir|'init', '--workdir'/, `${label}: هنوز supabase init`);
+    }
   });
 
-  test("شناسه و پورت‌ها یکتا هستند", () => {
-    assert.match(bash, /VERIFY_ID="prodverify\$STAMP"/);
-    assert.match(bash, /PORT_BASE=/);
+  test("فایلِ compose هیچ پورتی منتشر نمی‌کند و شبکه‌اش internal است", () => {
+    assert.doesNotMatch(composeCode, /^\s*ports\s*:/m, "کلیدِ ports در compose");
+    assert.doesNotMatch(composeCode, /network_mode\s*:\s*host/, "network_mode: host");
+    assert.doesNotMatch(composeCode, /privileged\s*:\s*true/, "privileged");
+    assert.doesNotMatch(composeCode, /docker\.sock/, "دسترسی به docker.sock");
+    assert.match(composeCode, /^networks:\s*\n\s+verify:\s*\n\s+internal: true/m, "شبکهٔ verify باید internal باشد");
+    // jobهای pg_cronِ بازگردانی‌شده نباید پیش از شمارش داده را عوض کنند.
+    assert.match(composeCode, /cron\.launch_active_jobs=off/);
+  });
+
+  test("هر تصویر با digest ثابت pin شده و Auth ≥ v2.197.0 است", () => {
+    const images = [...composeCode.matchAll(/^\s*image:\s*(\S+)/gm)].map((m) => m[1]);
+    assert.equal(images.length, 3, `سه تصویر انتظار می‌رفت: ${images.join(", ")}`);
+    for (const image of images) assert.match(image, /:[\w.-]+@sha256:[0-9a-f]{64}$/, `بدونِ digest: ${image}`);
+    const auth = images.find((i) => /gotrue/.test(i)) ?? "";
+    const [, minor, patch] = auth.match(/:v2\.(\d+)\.(\d+)@/) ?? [];
+    assert.ok(Number(minor) > 197 || (Number(minor) === 197 && Number(patch) >= 0), `Auth قدیمی‌تر از v2.197.0: ${auth}`);
+  });
+
+  test("ایزوله‌بودن روی کانتینرهای در حالِ اجرا خوانده می‌شود، نه از فایل", () => {
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.match(code, /\.HostConfig\.PortBindings/, `${label}: PortBindings خوانده نمی‌شود`);
+      assert.match(code, /\.HostConfig\.PublishAllPorts/, `${label}: PublishAllPorts خوانده نمی‌شود`);
+      assert.match(code, /\{\{\.Internal\}\}/, `${label}: internal بودنِ شبکه خوانده نمی‌شود`);
+      assert.match(code, /->/, `${label}: هر پورتِ منتشرشده (نه فقط 0.0.0.0) باید رد شود`);
+      const gate = code.indexOf("{{.Internal}}");
+      const restore = code.indexOf("SET session_replication_role = replica");
+      assert.ok(gate > 0 && restore > gate, `${label}: بررسیِ ایزوله‌بودن باید پیش از بازگردانی باشد`);
+    }
+  });
+
+  test("شناسهٔ اجرا یکتا است و همهٔ منابع با برچسبِ همان اجرا ساخته و پاک می‌شوند", () => {
+    assert.match(bash, /VERIFY_ID="prodverify\$\{STAMP\/\/-\/\}"/);
     assert.match(ps1, /\$VerifyId\s*=\s*"prodverify/);
-    assert.match(ps1, /\$PortBase\s*=/);
+    assert.match(compose, /com\.portfolio\.backup-verify: \$\{VERIFY_ID\}/);
+    assert.match(bash, /com\.portfolio\.backup-verify=\$VERIFY_ID/);
+    assert.match(ps1, /com\.portfolio\.backup-verify=\$VerifyId/);
   });
 
-  test("پروژهٔ محلیِ موجود متوقف یا بازنویسی نمی‌شود", () => {
-    // هیچ‌کدام نباید `supabase stop` را بدونِ workdir صدا بزنند — آن نسخه
-    // پروژهٔ جاری کاربر را می‌خواباند.
-    assert.doesNotMatch(bashCode, /supabase" stop(?![\s\S]{0,60}--workdir)/);
-    assert.match(bash, /stop --workdir "\$VERIFY_WORKDIR" --no-backup/);
-    assert.match(ps1, /'stop', '--workdir', \$VerifyWorkdir, '--no-backup'/);
-    // هیچ فراخوانیِ CLI نباید منتظرِ پاسخِ تعاملی بماند — اسکریپت بدونِ کاربر
-    // جلوی صفحه هم باید تمام شود.
+  test("پاکسازی فقط پروژهٔ همین اجرا را برمی‌دارد، نه چیزِ دیگری روی ماشین", () => {
+    assert.match(bashCode, /compose down --volumes --remove-orphans/);
+    assert.match(ps1Code, /@\('down', '--volumes', '--remove-orphans'/);
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      // compose() / Invoke-Compose همیشه `-p <VERIFY_ID>` می‌دهند.
+      assert.match(code, /docker compose -p (\$VERIFY_ID|"\$VERIFY_ID"|\$VerifyId)/, `${label}: compose بدونِ -p`);
+      for (const broad of [/system prune/, /volume prune/, /network prune/, /container prune/, /docker rm -f \$\(docker ps/]) {
+        assert.doesNotMatch(code, broad, `${label}: پاکسازیِ فراگیر ${broad}`);
+      }
+    }
+    // هیچ فراخوانیِ CLI نباید منتظرِ پاسخِ تعاملی بماند.
     assert.match(ps1Code, /'--yes'/);
     assert.match(bashCode, /--yes/);
+  });
+
+  test("ساختارِ auth/storageِ مقصد پیش از بازگردانی با Production سنجیده می‌شود، دوطرفه", () => {
+    const managed = readFileSync(join(ROOT, "scripts", "backup", "managed-schemas.sql"), "utf8");
+    for (const section of ["mschema_migrations|", "mtable|", "mcolumn|", "mconstraint|", "menum|", "mfunction|"]) {
+      assert.ok(managed.includes(section), `بخشِ ${section} در managed-schemas.sql نیست`);
+    }
+    assert.match(managed, /SET search_path = pg_catalog;/, "بدونِ search_pathِ ثابت نام‌ها روی دو اتصال فرق می‌کنند");
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.match(code, /managed-source\.txt/, `${label}: ساختارِ Production خوانده نمی‌شود`);
+      const gate = code.search(/managed-comparison\.txt/);
+      const restore = code.indexOf("SET session_replication_role = replica");
+      assert.ok(gate > 0 && gate < restore, `${label}: مقایسهٔ ساختارِ مدیریت‌شده باید پیش از بازگردانی باشد`);
+    }
+  });
+
+  test("اگر dump موفق بود ولی بازگردانی نه، فایل‌ها می‌مانند و MANIFEST «RESTORE UNVERIFIED» می‌گوید", () => {
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.match(code, /RESTORE UNVERIFIED/, `${label}`);
+      assert.doesNotMatch(code, /Remove-Item[^\n]*\$OutDir|rm -rf "\$OUT_DIR"/, `${label}: پوشهٔ بکاپ پاک می‌شود`);
+    }
+  });
+
+  test("پیش‌درآمدِ بازگردانی: امتیازِ پیش‌فرضِ نقشِ اجراکننده پیش از schema.sql برداشته می‌شود", () => {
+    // بدونِ آن، anon روی جدولی که در مبدأ `REVOKE ALL ... FROM anon` داشت دوباره
+    // همه‌چیز می‌گرفت (اندازه‌گیری‌شده با دادهٔ مصنوعی). Production یک جدول در
+    // public دارد که anon رویش SELECT ندارد.
+    const prelude = readFileSync(join(ROOT, "scripts", "backup", "restore-prelude.sql"), "utf8");
+    assert.match(prelude, /ALTER DEFAULT PRIVILEGES FOR ROLE %I%s REVOKE ALL ON %s FROM %s/);
+    assert.match(prelude, /WHERE defaclrole = current_user::regrole/, "فقط نقشِ همین تراکنش");
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.match(
+        code,
+        /--file \/tmp\/restore\/roles\.sql --file \/tmp\/restore\/restore-prelude\.sql --file \/tmp\/restore\/schema\.sql/,
+        `${label}: پیش‌درآمد باید بینِ roles و schema و داخلِ همان تراکنش باشد`
+      );
+    }
+  });
+
+  test("inventory با search_pathِ ثابت خوانده می‌شود تا دو اتصال یک متن ببینند", () => {
+    // supabase_admin، auth را در search_path دارد و `auth.users(id)` را `users(id)`
+    // چاپ می‌کرد؛ یک بازگردانیِ سالم FAIL می‌شد.
+    assert.match(inventoryCode, /^SET search_path = pg_catalog;/m);
+    assert.match(inventory, /digest\|auth\.users\.credentials\|/, "اثرِ انگشتِ هشِ رمزِ کاربران");
+  });
+
+  test("jobهای pg_cron که در dump نیستند شمرده و در manifest اعلام می‌شوند", () => {
+    for (const [label, text] of [["bash", bash], ["ps1", ps1]] as const) {
+      assert.match(text, /NOT IN BACKUP:\s+pg_cron jobs/, `${label}`);
+      assert.match(stripHash(text), /FROM cron\.job/, `${label}: شمارشِ cron.job`);
+    }
+  });
+
+  test("CLIِ dump روی npx pin شده و پیش از پرسیدنِ رمز اجرا می‌شود", () => {
+    assert.match(ps1Code, /\$SupaPin\s*=\s*'supabase@\d+\.\d+\.\d+'/);
+    assert.match(bashCode, /SUPA_PIN="supabase@\d+\.\d+\.\d+"/);
+    assert.ok(ps1.indexOf("$supaVersion =") < ps1.indexOf("Read-Host -Prompt"), "ps1: بررسیِ CLI باید پیش از رمز باشد");
+    assert.ok(bash.indexOf("SUPA_VERSION=") < bash.indexOf("read -rsp"), "bash: بررسیِ CLI باید پیش از رمز باشد");
+    // stdoutِ CLI نباید واردِ مقدارِ برگشتیِ Invoke-Supabase شود.
+    assert.match(ps1Code, /& \$SupaExe @\(\$SupaArgs \+ \$Arguments\) \| Out-Host/);
+  });
+
+  test("pgurl.sh روی هر checkout با LF می‌ماند و CRLF پیش از اجرا گرفته می‌شود", () => {
+    // core.autocrlf=true (پیش‌فرضِ Git for Windows) آن را CRLF کرد و busybox sh
+    // روی خطِ ۳۳ شکست — روی لپ‌تاپِ آرش اندازه‌گیری شد.
+    const attrs = existsSync(join(ROOT, ".gitattributes")) ? readFileSync(join(ROOT, ".gitattributes"), "utf8") : "";
+    assert.match(attrs, /^scripts\/backup\/\*\*\s+text eol=lf$/m);
+    assert.match(attrs, /^\*\.sh\s+text eol=lf$/m);
+    assert.match(ps1Code, /pgurl\.sh[\s\S]{0,40}\)\)\.Contains\("`r"\)/);
+    assert.match(bashCode, /grep -q \$'\\r' "\$SQL_DIR\/pgurl\.sh"/);
   });
 
   test("وفاداریِ مقصد پیش از بازگردانی تأیید می‌شود", () => {
