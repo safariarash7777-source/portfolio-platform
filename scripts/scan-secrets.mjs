@@ -21,7 +21,10 @@ const RULES = [
   { id: "github-pat", re: /\bgh[pousr]_[A-Za-z0-9]{36,}/, what: "توکنِ گیت‌هاب" },
   { id: "aws-akid", re: /\bAKIA[0-9A-Z]{16}\b/, what: "کلیدِ دسترسیِ AWS" },
   { id: "private-key", re: /-----BEGIN (RSA |EC |OPENSSH |PGP )?PRIVATE KEY-----/, what: "کلیدِ خصوصی" },
-  { id: "db-url", re: /\b(postgres(ql)?|mysql|mongodb(\+srv)?):\/\/[^\s:@/]+:[^\s@/]{6,}@/, what: "رشتهٔ اتصالِ دیتابیس با رمز" },
+  // رمزی که **کلاً** یک interpolationِ قالب است (`:${expr}@`) مقدارِ ثابت نیست و در
+  // زمانِ اجرا ساخته می‌شود؛ مستثنا است. رمزِ ثابت — حتی اگر کنارِ یک interpolation
+  // بیاید — همچنان گرفته می‌شود (lib/ops/scan-secrets.test.ts).
+  { id: "db-url", re: /\b(postgres(ql)?|mysql|mongodb(\+srv)?):\/\/[^\s:@/]+:(?!\$\{[^}\s]*\}@)[^\s@/]{6,}@/, what: "رشتهٔ اتصالِ دیتابیس با رمز" },
   // انتسابِ یک مقدارِ واقعی به متغیرِ محیطیِ حساس (نه خالی، نه placeholder).
   // lookaheadِ منفی، *خواندنِ* متغیر را رد می‌کند: `const K = process.env.K || ""`
   // یک نشت نیست — الگوی درستِ کد است.

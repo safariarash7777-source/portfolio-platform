@@ -124,7 +124,6 @@ function runPs1(input: string, extraEnv: Record<string, string> = {}) {
     encoding: "utf8",
     timeout: 240_000,
   });
-  // eslint-disable-next-line no-control-regex
   const text = (r.stdout ?? "").replace(/\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07/g, "").replace(/\r/g, "");
   const dockerLog = readFileSync(log, "utf8").replace(/\0/g, " ");
   const inv = existsSync(join(out, "inventory-source.txt")) ? readFileSync(join(out, "inventory-source.txt"), "utf8") : "";
