@@ -14,16 +14,23 @@
 -- refuses to drop anything that holds a row.
 -- ASCII only.
 
+-- The row check is dynamic SQL on purpose: PL/pgSQL plans a whole IF
+-- expression, so a static `EXISTS (SELECT ... FROM storage.iceberg_tables)`
+-- fails with "relation does not exist" on a target that never had the table,
+-- even behind a to_regclass() guard (caught by CI, 2026-09-23).
 DO $$
+DECLARE
+  t text;
+  has_rows boolean;
 BEGIN
-  IF to_regclass('storage.iceberg_namespaces') IS NOT NULL
-     AND EXISTS (SELECT 1 FROM storage.iceberg_namespaces) THEN
-    RAISE EXCEPTION 'storage.iceberg_namespaces is not empty - refusing to reshape the restore target';
-  END IF;
-  IF to_regclass('storage.iceberg_tables') IS NOT NULL
-     AND EXISTS (SELECT 1 FROM storage.iceberg_tables) THEN
-    RAISE EXCEPTION 'storage.iceberg_tables is not empty - refusing to reshape the restore target';
-  END IF;
+  FOREACH t IN ARRAY ARRAY['storage.iceberg_namespaces', 'storage.iceberg_tables'] LOOP
+    IF to_regclass(t) IS NOT NULL THEN
+      EXECUTE format('SELECT EXISTS (SELECT 1 FROM %s)', t) INTO has_rows;
+      IF has_rows THEN
+        RAISE EXCEPTION '% is not empty - refusing to reshape the restore target', t;
+      END IF;
+    END IF;
+  END LOOP;
 END $$;
 
 DROP TABLE IF EXISTS storage.iceberg_tables;
