@@ -1,13 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { normalizeReturnPath } from '@/components/account/returnPath'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const nextParam = searchParams.get('next') ?? '/dashboard'
-  // Only allow relative same-origin paths to prevent open-redirect abuse.
-  const next =
-    nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/dashboard'
+  // همان قانونی که لینک‌های ورود/ثبت‌نام با آن ساخته می‌شوند. پیش از این
+  // اینجا یک بررسیِ جداگانه و سست‌تر بود (backslash و نویسهٔ کنترلی را رد
+  // نمی‌کرد)؛ دو تعریف از «مسیرِ امن» یعنی روزی یکی‌شان عقب می‌ماند.
+  const next = normalizeReturnPath(searchParams.get('next'), '/dashboard')
 
   if (code) {
     const supabaseResponse = NextResponse.redirect(`${origin}${next}`)

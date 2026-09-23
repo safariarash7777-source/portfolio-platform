@@ -210,12 +210,27 @@ function jalaliToG(jy, jm, jd) {
  * گرفته می‌شوند (ردیف موجود دست‌نخورده می‌ماند — همچنان فقط INSERT، هیچ UPDATE/DELETE).
  * دیگر SELECT «تاریخ‌های موجود» لازم نیست (existingDates حذف شد — با Max Rows پستگرست ناقص می‌شد).
  */
-async function backfillSymbol(symbol) {
+async function backfillSymbol(symbol, { client = null, countLegacy = null } = {}) {
   const url = `${BRSAPI_BASE}/Tsetmc/Candlestick.php?key=${BRSAPI_KEY}&type=2&l18=${encodeURIComponent(symbol)}`;
-  const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(25000) });
-  countReq(1);
-  if (!res.ok) throw new Error(`candle HTTP ${res.status}`);
-  const json = await res.json();
+  let json;
+  if (client) {
+    json = await client.request({
+      endpoint: "Tsetmc/Candlestick.php", params: { type: 2, l18: symbol },
+      producer: "candle-backfill", priority: "background",
+      // بک‌فیلِ تاریخی — سنگین‌ترین مصرف‌کننده و اولین چیزی که باید کنار برود.
+      // سقفِ ساعتی/روزانهٔ خودِ این ماژول سرِ جایش می‌ماند، ولی **جایگزینِ**
+      // سقفِ مشترک نیست: آن سقف فقط این ماژول را می‌بیند، نه جمعِ کلید را.
+      budgetClass: "bulk",
+      dedupeTtlMs: 0, timeoutMs: 25_000,
+    });
+    countReq(1);
+  } else {
+    if (countLegacy) await countLegacy("candle-backfill", "bulk");
+    const res = await fetch(url, { headers: HDRS, signal: AbortSignal.timeout(25000) });
+    countReq(1);
+    if (!res.ok) throw new Error(`candle HTTP ${res.status}`);
+    json = await res.json();
+  }
   const rows = mapCandles(symbol, json);
   if (rows.length === 0) {
     candleStatus.emptyResponses++;
@@ -244,7 +259,7 @@ let running = false;
 /**
  * @param {Array<{id:string}>} snapshotSymbols همهٔ نمادهای اسنپ‌شات جاری (سهام+صندوق)
  */
-export async function runCandleBackfill(snapshotSymbols) {
+export async function runCandleBackfill(snapshotSymbols, { client = null, countLegacy = null } = {}) {
   if (running) return;
   if (!BRSAPI_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     candleStatus.lastError = "env ناقص (BRSAPI_KEY/SUPABASE)";
@@ -275,7 +290,7 @@ export async function runCandleBackfill(snapshotSymbols) {
         const symbol = batch[idx++];
         candleStatus.lastSymbol = symbol;
         try {
-          const inserted = await backfillSymbol(symbol);
+          const inserted = await backfillSymbol(symbol, { client, countLegacy });
           state.done[symbol] = inserted;
           state.insertedTotal += inserted;
           candleStatus.insertedToday += inserted;

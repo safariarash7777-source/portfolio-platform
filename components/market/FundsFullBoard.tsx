@@ -1,8 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
+import { fundCategory, countByCategory, FUND_CATEGORIES, ALL_CATEGORIES } from "@/lib/core/fundCategory";
+import { FUND_SORT_KEYS, SORT_DIRS, type FundSortKey, type SortDirection } from "@/lib/market-nav";
 import Term from "@/components/learn/Term";
-import { PieChart, Search, ArrowUpDown, ChevronDown, Clock } from "lucide-react";
+import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import {
   toPersianDigits,
   formatToman,
@@ -11,6 +14,8 @@ import {
   deltaColor,
   describeDelta,
   formatJalali,
+  sumCovered,
+  formatRialAsToman,
 } from "@/lib/format";
 
 export interface FundRow {
@@ -38,8 +43,12 @@ export interface FundRow {
   ret3m?: number | null;
 }
 
-type SortKey = "faName" | "price" | "changePercent" | "value" | "marketValue" | "bubblePercent" | "ret1w" | "ret1m" | "ret3m";
-type SortDir = "asc" | "desc";
+// نوع از همان فهرستِ اعتبارسنجیِ URL می‌آید (`lib/market-nav.ts`).
+type SortKey = FundSortKey;
+type SortDir = SortDirection;
+
+const isSortKey = (v: string): v is SortKey => (FUND_SORT_KEYS as readonly string[]).includes(v);
+const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).includes(v);
 
 /** میلیارد تومان → متن فارسی */
 function fmtAssetB(b: number): string {
@@ -58,11 +67,20 @@ function fmtValue(v: number): string {
   return `${toPersianDigits(Math.round(m).toLocaleString("en-US")).replace(/,/g, "٬")} میلیون`;
 }
 
-/** رنگ حباب: مثبت (گران‌تر از NAV) = هشدار، منفی (زیر NAV) = سبز */
+/**
+ * رنگِ حباب — **خنثی و جهت‌دار، نه ارزش‌گذارانه**.
+ *
+ * ── چرا سبز/قرمزِ قبلی غلط بود ────────────────────────────────────────────
+ * نسخهٔ قبل حبابِ منفی را **سبز** می‌کرد. سبز در همین صفحه معنای ثابتی دارد:
+ * «مطلوب». پس صندوقی که زیرِ NAV معامله می‌شد به‌طور خودکار «فرصت» دیده
+ * می‌شد — یک قضاوتِ سرمایه‌گذاری که سامانه اجازهٔ بیانش را ندارد، و در ضمن
+ * غلط هم هست: حبابِ منفیِ پایدار معمولاً نشانهٔ نقدشوندگیِ ضعیف است، نه تخفیف.
+ *
+ * حالا هر دو جهت با **طلاییِ برند** (رنگِ توجه، نه رنگِ خوب/بد) علامت می‌خورند
+ * و جهت را علامتِ خودِ عدد (+/−) می‌گوید، نه رنگ.
+ */
 function bubbleColor(b: number): string {
-  if (b > 0.05) return "var(--danger)";
-  if (b < -0.05) return "var(--success)";
-  return "var(--text-3)";
+  return Math.abs(b) > 0.05 ? "var(--gold-ink)" : "var(--text-3)";
 }
 
 /** پس‌زمینه/متنِ کاشیِ نقشهٔ بازار */
@@ -85,24 +103,36 @@ interface Props {
   fetchedAt: number | null;
 }
 
-export default function FundsFullBoard({ funds, fetchedAt }: Props) {
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState("همه");
-  const [sortKey, setSortKey] = useState<SortKey>("value");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+/** سقفِ ردیفِ جدول پیش از «نمایشِ بیشتر». */
+const ROW_PAGE = 60;
 
-  // Extract unique types
-  const types = useMemo(() => {
-    const s = new Set<string>();
-    for (const f of funds) if (f.type || f.industry) s.add(f.type || f.industry || "");
-    return ["همه", ...[...s].filter(Boolean).sort()];
-  }, [funds]);
+export default function FundsFullBoard({ funds, fetchedAt }: Props) {
+  // دسته و جست‌وجو در URL می‌نشینند تا برگشت از صفحهٔ صندوق وضعیت را نگه دارد.
+  const url = useUrlState();
+  const typeFilter = url.get("type", ALL_CATEGORIES);
+  const [search, setSearch] = useUrlBackedText("q");
+  const setTypeFilter = (v: string) => url.set({ type: v === ALL_CATEGORIES ? null : v });
+
+  // مرتب‌سازی در URL — تا «برگشت» ترتیبِ انتخابیِ کاربر را نگه دارد.
+  const rawSort = url.get("sort", "value");
+  const sortKey: SortKey = isSortKey(rawSort) ? rawSort : "value";
+  const rawDir = url.get("dir", "desc");
+  const sortDir: SortDir = isSortDir(rawDir) ? rawDir : "desc";
+  const isDefaultSort = (k: SortKey, d: SortDir) => k === "value" && d === "desc";
+  const setSort = (key: SortKey, dir: SortDir) =>
+    url.set({ sort: isDefaultSort(key, dir) ? null : key, dir: isDefaultSort(key, dir) ? null : dir });
+  const from = useCurrentHref();
+  const [rowLimit, setRowLimit] = useState(ROW_PAGE);
+
+  // دسته‌های کوتاه با تعدادِ واقعیِ هر کدام — برچسبِ بدونِ عدد نمی‌گوید
+  // «کلیک‌کردن ارزشش را دارد یا نه».
+  const categoryCounts = useMemo(() => countByCategory(funds), [funds]);
 
   // Filter
   const filtered = useMemo(() => {
     let rows = funds;
-    if (typeFilter !== "همه") {
-      rows = rows.filter((f) => (f.type || f.industry) === typeFilter);
+    if (typeFilter !== ALL_CATEGORIES) {
+      rows = rows.filter((f) => fundCategory(f.type ?? f.industry ?? null) === typeFilter);
     }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
@@ -159,6 +189,17 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     return arr;
   }, [filtered, sortKey, sortDir]);
 
+  /**
+   * سقفِ ردیف.
+   *
+   * جدول تا امروز هر ۳۳۰ صندوق را **دو بار** رندر می‌کرد (جدولِ دسکتاپ و
+   * کارت‌های موبایل، هر دو در DOM) و صفحه به حدودِ ۲۴٬۷۰۰ پیکسل می‌رسید.
+   * حالا تا `rowLimit` ردیف می‌آید و بقیه با یک دکمه. هیچ صندوقی حذف نشده —
+   * شمارِ کل و تعدادِ نمایش‌داده‌شده هر دو زیرِ جدول نوشته می‌شوند.
+   */
+  const visible = useMemo(() => sorted.slice(0, rowLimit), [sorted, rowLimit]);
+  const hiddenCount = Math.max(0, sorted.length - visible.length);
+
   // آیا دست‌کم یک صندوق NAV دارد؟ (ستون‌های NAV/حباب فقط در این حالت)
   const hasNav = useMemo(() => funds.some((f) => f.nav != null), [funds]);
   // آیا دست‌کم یک صندوق بازدهٔ دوره‌ای دارد؟ (M6 — ستون‌ها فقط وقتی داده هست)
@@ -176,7 +217,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     const withChange = filtered.filter(
       (f) => typeof (f.changePercent ?? f.closingChangePercent) === "number"
     );
-    const totalMarketValue = filtered.reduce((s, f) => s + (f.marketValue ?? 0), 0);
+    // «ناموجود» با «صفر» یکی نمی‌شود: جمع فقط از ردیف‌های دارای داده ساخته
+    // می‌شود و تعدادشان همراهِ عدد گزارش می‌شود (باگِ «جمعِ ۰ برای ۳۲۹ صندوق»).
+    const marketValue = sumCovered(filtered, (f) => f.marketValue);
     const avg = withChange.length
       ? withChange.reduce((s, f) => s + ((f.changePercent ?? f.closingChangePercent) as number), 0) / withChange.length
       : null;
@@ -186,12 +229,12 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     const avgBubble = withNav.length
       ? withNav.reduce((s, f) => s + (f.bubblePercent as number), 0) / withNav.length
       : null;
-    return { count: filtered.length, totalMarketValue, avg, posRatio, rated: withChange.length, avgBubble, navCount: withNav.length };
+    return { count: filtered.length, marketValue, avg, posRatio, rated: withChange.length, avgBubble, navCount: withNav.length };
   }, [filtered]);
 
   const toggleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else { setSortKey(key); setSortDir("desc"); }
+    if (sortKey === key) setSort(key, sortDir === "asc" ? "desc" : "asc");
+    else setSort(key, "desc");
   };
 
   // Heatmap cells (top 24 by market value)
@@ -206,16 +249,16 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       <div className="card p-6 flex items-start gap-3">
         <span
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-          style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+          style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
         >
           <PieChart size={18} />
         </span>
         <div>
-          <h3 className="font-display font-bold" style={{ color: "var(--navy-deep)" }}>
+          <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
             دیده‌بان صندوق‌ها
           </h3>
           <p className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
-            به‌محضِ اتصالِ منبعِ دادهٔ بازارِ ایران، خالص دارایی، بازده روز و نقشهٔ صندوق‌ها همین‌جا نمایش داده می‌شود.
+            اسنپ‌شات صندوق‌ها خالی است. تا وقتی ردیف معتبر نرسد، این صفحه عدد یا وضعیت ساختگی نشان نمی‌دهد.
           </p>
         </div>
       </div>
@@ -223,55 +266,52 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
-          >
-            <PieChart size={18} />
-          </span>
-          <div>
-            <h1 className="font-display font-bold text-xl" style={{ color: "var(--navy-deep)" }}>
-              دیده‌بان صندوق‌ها
-            </h1>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>
-              {toPersianDigits(funds.length)} صندوق فعال
-            </p>
-          </div>
-        </div>
-        {fetchedAt && (
-          <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
-            <Clock size={12} />
-            <span>آخرین به‌روزرسانی: {formatJalali(fetchedAt)}</span>
-          </div>
-        )}
-      </div>
+    <div className="space-y-6" data-testid="funds-explorer">
+      {/* ── سربرگ ────────────────────────────────────────────────────────────
+          عنوان، تاریخ و وضعیتِ تابلو در پوستهٔ مشترک‌اند؛ اینجا فقط راهنمایی
+          می‌ماند که پوسته نمی‌گوید. (این بلوک تا امروز H1 دومِ صفحه بود.) */}
+      <p className="text-xs" style={{ color: "var(--text-3)" }}>
+        {toPersianDigits(funds.length)} صندوق در آخرین اسنپ‌شات · برای دیدنِ NAV، حباب و تاریخچه روی
+        نمادِ صندوق بزنید.
+      </p>
 
       {/* KPIs */}
       <div className={hasNav ? "grid grid-cols-2 md:grid-cols-5 gap-3" : "grid grid-cols-2 md:grid-cols-4 gap-3"}>
-        <Kpi label="تعداد صندوق" value={toPersianDigits(stats.count)} />
+        {/* «تعدادِ نتیجهٔ فیلتر» و «کلِ بازار» دو عددِ متفاوت‌اند و هر دو نوشته
+            می‌شوند — وگرنه کاربر نمی‌داند نسبت‌های کنارش روی کدام جامعه‌اند. */}
         <Kpi
-          label="ارزش کل بازار"
-          value={stats.totalMarketValue > 0 ? fmtAssetB(Math.round(stats.totalMarketValue / 1_000_000_000)) : "—"}
+          label="نتیجهٔ فیلتر"
+          value={toPersianDigits(stats.count)}
+          note={stats.count === funds.length ? "کلِ صندوق‌های اسنپ‌شات" : `از ${toPersianDigits(funds.length)} صندوق`}
         />
         <Kpi
-          label="میانگین بازده"
+          label="ارزش بازار نمادها"
+          // `marketValue` فید ریال است — تبدیل و برچسبِ واحد در یک نقطه.
+          value={formatRialAsToman(stats.marketValue.total)}
+          note={
+            stats.marketValue.total == null
+              ? "هیچ ردیفی ارزشِ بازار ندارد"
+              : `از ${toPersianDigits(stats.marketValue.covered)} صندوق از ${toPersianDigits(stats.marketValue.population)}`
+          }
+        />
+        <Kpi
+          label="میانگین بازده روز"
           value={stats.avg == null ? "—" : formatSignedPercent(stats.avg)}
           color={stats.avg == null ? undefined : deltaColor(stats.avg)}
+          note={stats.rated > 0 ? `از ${toPersianDigits(stats.rated)} صندوقِ دارای بازده` : "بازدهی ثبت نشده"}
         />
         <Kpi
           label="نسبت مثبت"
           value={stats.posRatio == null ? "—" : `٪${toPersianDigits(stats.posRatio)}`}
           color={stats.posRatio == null ? undefined : stats.posRatio >= 50 ? "var(--success)" : "var(--danger)"}
+          note={stats.rated > 0 ? `از ${toPersianDigits(stats.rated)} صندوقِ دارای بازده` : undefined}
         />
         {hasNav && (
           <Kpi
-            label={`میانگین حباب (${toPersianDigits(stats.navCount)} صندوق)`}
+            label="میانگین حباب"
             value={stats.avgBubble == null ? "—" : formatSignedPercent(stats.avgBubble)}
             color={stats.avgBubble == null ? undefined : bubbleColor(stats.avgBubble)}
+            note={`از ${toPersianDigits(stats.navCount)} صندوقِ دارای NAV معتبر`}
           />
         )}
       </div>
@@ -297,14 +337,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 
       {/* Heatmap */}
       {mapCells.length > 0 && (
-        <div className="card p-5">
-          <h3 className="font-display font-bold mb-1" style={{ color: "var(--navy-deep)" }}>
-            نقشهٔ بازار صندوق‌ها
-          </h3>
-          <p className="text-[11px] mb-3" style={{ color: "var(--text-3)" }}>
-            اندازه: ارزش معاملات · رنگ: بازده روز
-          </p>
-          <div className="space-y-1.5">
+        <details className="card group p-5">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]">
+            <span>
+              <span className="block font-display font-bold" style={{ color: "var(--heading)" }}>نقشهٔ فشردهٔ صندوق‌ها</span>
+              <span className="mt-1 block text-[11px]" style={{ color: "var(--text-3)" }}>اندازه: ارزش معاملات · رنگ: بازده روز</span>
+            </span>
+            <ChevronDown size={18} className="shrink-0 transition-transform group-open:rotate-180" aria-hidden="true" />
+          </summary>
+          <div className="mt-4 space-y-1.5">
             {rowsOf(mapCells, 4).map((r, ri) => (
               <div key={ri} className="flex gap-1.5">
                 {r.map((f) => {
@@ -339,12 +380,18 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               </div>
             ))}
           </div>
-        </div>
+        </details>
       )}
 
       {/* Search + Filter */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="card p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-bold" style={{ color: "var(--heading)" }}>
+          <SlidersHorizontal size={17} aria-hidden="true" />
+          فیلتر و مرتب‌سازی
+        </div>
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <label className="relative block min-w-[200px]">
+          <span className="sr-only">جست‌وجوی صندوق</span>
           <Search
             size={16}
             className="absolute top-1/2 -translate-y-1/2 start-3"
@@ -354,38 +401,74 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="جستجوی نام صندوق..."
-            className="w-full rounded-lg border ps-9 pe-3 py-2.5 text-sm"
+            placeholder="نام یا نماد صندوق"
+            className="input ps-9"
             style={{
               background: "var(--surface)",
               borderColor: "var(--line)",
               color: "var(--text)",
             }}
           />
-        </div>
-        <div className="relative">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="appearance-none rounded-lg border px-4 py-2.5 pe-9 text-sm"
-            style={{
-              background: "var(--surface)",
-              borderColor: "var(--line)",
-              color: "var(--text)",
-            }}
-          >
-            {types.map((t) => (
-              <option key={t} value={t}>
+        </label>
+        {/* دستهٔ صندوق — برچسبِ کوتاه با تعداد. نامِ رسمیِ کاملِ هر صندوق در
+            ردیفِ خودش می‌ماند؛ اینجا فقط راهِ رسیدن است. دسته‌ای که صندوقی
+            ندارد رندر نمی‌شود تا فیلترِ بی‌نتیجه پیشنهاد نشود. */}
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="دستهٔ صندوق">
+          {[ALL_CATEGORIES, ...FUND_CATEGORIES].map((t) => {
+            const n = t === ALL_CATEGORIES ? funds.length : categoryCounts.get(t as never) ?? 0;
+            if (n === 0) return null;
+            const on = typeFilter === t;
+            return (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setTypeFilter(t)}
+                className="rounded-full border px-3 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+                style={{
+                  minHeight: 40,
+                  background: on ? "var(--navy)" : "var(--surface)",
+                  color: on ? "var(--text-on-navy)" : "var(--text-2)",
+                  borderColor: on ? "var(--navy)" : "var(--line)",
+                }}
+              >
                 {t}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={14}
-            className="absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none"
-            style={{ color: "var(--text-3)" }}
-          />
+                <span className="ms-1.5 opacity-70" style={{ fontVariantNumeric: "tabular-nums" }}>
+                  {toPersianDigits(n)}
+                </span>
+              </button>
+            );
+          })}
         </div>
+        <label className="relative block md:hidden">
+          <span className="sr-only">مرتب‌سازی صندوق‌ها</span>
+          <select
+            value={sortKey}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (isSortKey(v)) setSort(v, sortDir);
+            }}
+            className="appearance-none rounded-lg border px-4 py-2.5 pe-9 text-sm"
+            style={{ background: "var(--surface)", borderColor: "var(--line)", color: "var(--text)" }}
+            aria-label="مرتب‌سازی صندوق‌ها"
+          >
+            <option value="value">ارزش معاملات</option>
+            <option value="changePercent">تغییر روز</option>
+            <option value="bubblePercent">حباب</option>
+            <option value="ret1m">بازده یک‌ماهه</option>
+            <option value="faName">نام صندوق</option>
+          </select>
+          <ChevronDown size={14} className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-3)" }} />
+        </label>
+        </div>
+        {/* «نتیجهٔ فیلتر» و «کلِ بازار» — و نه «نمایش»، چون تعدادِ رندرشده را
+            شمارشِ زیرِ جدول می‌گوید. سه عددِ متفاوت‌اند و قاطی‌کردنشان همان
+            خطایی است که این بسته دنبالِ بستنش است. */}
+        <p className="mt-3 text-[11px]" style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
+          {sorted.length === funds.length
+            ? `همهٔ ${toPersianDigits(funds.length)} صندوقِ اسنپ‌شات`
+            : `${toPersianDigits(sorted.length)} نتیجه از ${toPersianDigits(funds.length)} صندوق`}
+        </p>
       </div>
 
       {/* Table — Desktop */}
@@ -413,19 +496,20 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               )}
               <SortTh label="ارزش معاملات" sortKey="value" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
               <SortTh label="ارزش بازار" sortKey="marketValue" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
+              <th className="px-4 py-3"><span className="sr-only">بررسی</span></th>
             </tr>
           </thead>
           <tbody>
-            {sorted.map((f) => {
+            {visible.map((f) => {
               const pct = f.changePercent ?? f.closingChangePercent ?? null;
               return (
                 <tr key={f.id} className="hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--line)" }}>
                   <td className="py-3 px-4">
                     {/* C1 — UI نمادمحور: فقط نماد؛ نام کامل فقط در هدر صفحهٔ نماد */}
                     <Link
-                      href={`/symbol/${encodeURIComponent(f.id)}`}
-                      className="font-bold hover:underline"
-                      style={{ color: "var(--navy-deep)" }}
+                      href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`}
+                      className="inline-flex min-h-11 items-center font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
+                      style={{ color: "var(--heading)" }}
                       title={`صفحهٔ نماد ${f.id}`}
                     >
                       {f.id}
@@ -469,7 +553,12 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     {f.value ? fmtValue(f.value) : "—"}
                   </td>
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
-                    {f.marketValue ? fmtAssetB(Math.round(f.marketValue / 1_000_000_000)) : "—"}
+                    {formatRialAsToman(f.marketValue)}
+                  </td>
+                  <td className="py-3 px-4 text-left">
+                    <Link href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`} className="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 text-xs font-bold hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ color: "var(--navy-ink)" }}>
+                      بررسی <ArrowLeft size={14} aria-hidden="true" />
+                    </Link>
                   </td>
                 </tr>
               );
@@ -485,7 +574,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 
       {/* Cards — Mobile */}
       <div className="md:hidden space-y-3">
-        {sorted.map((f) => {
+        {visible.map((f) => {
           const pct = f.changePercent ?? f.closingChangePercent ?? null;
           return (
             <div key={f.id} className="card p-4">
@@ -493,9 +582,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                 <div className="min-w-0">
                   {/* C1 — UI نمادمحور: فقط نماد */}
                   <Link
-                    href={`/symbol/${encodeURIComponent(f.id)}`}
+                    href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`}
                     className="font-bold text-sm block truncate hover:underline"
-                    style={{ color: "var(--navy-deep)" }}
+                    style={{ color: "var(--heading)" }}
                   >
                     {f.id}
                   </Link>
@@ -535,6 +624,9 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   <span>۳م: <b style={{ color: f.ret3m != null ? deltaColor(f.ret3m) : "var(--text-3)" }}>{f.ret3m != null ? formatSignedPercent(f.ret3m) : "—"}</b></span>
                 </div>
               )}
+              <Link href={`/symbol/${encodeURIComponent(f.id)}?from=${encodeURIComponent(from)}`} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-lg border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]" style={{ borderColor: "var(--line)", color: "var(--navy-ink)" }}>
+                بررسی جزئیات صندوق <ArrowLeft size={15} aria-hidden="true" />
+              </Link>
             </div>
           );
         })}
@@ -543,6 +635,24 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
             صندوقی با این فیلتر یافت نشد.
           </p>
         )}
+      </div>
+
+      {/* شمارشِ صادق + راهِ دیدنِ بقیه. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[11.5px]" style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
+          {`نمایشِ ${toPersianDigits(visible.length)} از ${toPersianDigits(sorted.length)} نتیجه`}
+          {sorted.length !== funds.length ? ` · کلِ صندوق‌ها: ${toPersianDigits(funds.length)}` : ""}
+        </p>
+        {hiddenCount > 0 ? (
+          <button
+            type="button"
+            onClick={() => setRowLimit((n) => n + ROW_PAGE)}
+            className="rounded-lg border px-4 text-xs font-bold transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+            style={{ minHeight: 44, borderColor: "var(--line-strong)", color: "var(--navy-ink)" }}
+          >
+            {`نمایشِ ${toPersianDigits(Math.min(ROW_PAGE, hiddenCount))} صندوقِ بعدی`}
+          </button>
+        ) : null}
       </div>
 
       {/* پوشش بازدهٔ دوره‌ای (M6) — صادقانه: فقط نمادهای دارای تاریخچه */}
@@ -554,14 +664,14 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       ) : (
         <div className="card p-5 text-center">
           <p className="text-sm" style={{ color: "var(--text-3)" }}>
-            نمودار روند NAV و بازده — داده در حال جمع‌آوری است. پس از ۲–۳ هفته نمایش داده می‌شود.
+            پوشش تاریخی برای محاسبهٔ بازده کافی نیست. تا رسیدن دادهٔ معتبر، عددی نمایش داده نمی‌شود.
           </p>
         </div>
       )}
 
       {/* Disclaimer */}
       <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
-        داده از صندوق‌های سرمایه‌گذاری (منبع رسمی)؛ صرفاً اطلاع‌رسانی و بدون توصیهٔ خرید/فروش.
+        داده از فید رسمی بازار سرمایه دریافت می‌شود و برای شناخت بازار است؛ به‌تنهایی مبنای تصمیم شخصی نیست.
         {hasNav && (
           <>
             {" "}حباب = (قیمت − NAV ابطال) ÷ NAV ابطال؛ NAV ابطال از سامانهٔ رسمی بازار (به‌روزرسانی حدوداً
@@ -590,16 +700,24 @@ function RetCell({ v }: { v: number | null | undefined }) {
   );
 }
 
-function Kpi({ label, value, color }: { label: string; value: string; color?: string }) {
+/**
+ * کاشیِ سنجه. `note` اختیاری نیست از سرِ تزئین: هر نسبت یا جمعی که اینجا
+ * می‌آید باید بگوید **روی چه جامعه‌ای** حساب شده، وگرنه دو کاشی با دو جامعهٔ
+ * متفاوت کنارِ هم می‌نشینند و کاربر آنها را قابلِ مقایسه فرض می‌کند.
+ */
+function Kpi({ label, value, color, note }: { label: string; value: string; color?: string; note?: string }) {
   return (
-    <div className="card p-4">
+    <div className="card flex flex-col p-4">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
       <p
         className="font-display font-bold mt-1.5 text-xl md:text-2xl"
-        style={{ color: color ?? "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}
+        style={{ color: color ?? "var(--heading)", fontVariantNumeric: "tabular-nums", overflowWrap: "anywhere" }}
       >
         {value}
       </p>
+      {note ? (
+        <p className="mt-1 text-[10.5px] leading-4" style={{ color: "var(--text-3)" }}>{note}</p>
+      ) : null}
     </div>
   );
 }
@@ -621,16 +739,32 @@ function SortTh({
 }) {
   const active = current === key;
   return (
+    // ── چرا th دیگر خودش کلیک‌پذیر نیست ──────────────────────────────────
+    // نسخهٔ قبل `onClick` را روی خودِ `<th>` می‌گذاشت: با ماوس کار می‌کرد، ولی
+    // با کیبورد اصلاً قابلِ رسیدن نبود و صفحه‌خوان نه می‌فهمید این ستون
+    // مرتب‌شدنی است نه می‌دانست الان بر چه اساسی مرتب است. حالا کنترل یک
+    // `<button>` واقعی است و وضعیتِ مرتب‌سازی روی `<th>` با `aria-sort` اعلام
+    // می‌شود — همان چیزی که جدولِ داده باید بگوید.
     <th
-      className={`py-3 px-4 font-bold cursor-pointer select-none whitespace-nowrap text-${align}`}
-      style={{ color: active ? "var(--navy-deep)" : "var(--text-3)" }}
-      onClick={() => onSort(key)}
+      className={`whitespace-nowrap p-0 font-bold text-${align}`}
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+      style={{ color: active ? "var(--navy-ink)" : "var(--text-3)" }}
     >
-      <span className="inline-flex items-center gap-1">
+      <button
+        type="button"
+        onClick={() => onSort(key)}
+        className={`inline-flex w-full min-h-11 select-none items-center gap-1 px-4 py-3 text-${align} transition-colors hover:bg-[var(--surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--navy-ink)] ${align === "left" ? "justify-end" : "justify-start"}`}
+        style={{ color: "inherit", font: "inherit" }}
+      >
         {label}
-        <ArrowUpDown size={12} className={active ? "opacity-100" : "opacity-40"} />
-        {active && <span className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span>}
-      </span>
+        <ArrowUpDown size={12} aria-hidden className={active ? "opacity-100" : "opacity-40"} />
+        {active ? <span aria-hidden className="text-[10px]">{dir === "asc" ? "↑" : "↓"}</span> : null}
+        <span className="sr-only">
+          {active
+            ? `، مرتب‌شده ${dir === "asc" ? "صعودی" : "نزولی"} — برای معکوس‌کردن فعال کنید`
+            : "، برای مرتب‌سازی بر اساس این ستون فعال کنید"}
+        </span>
+      </button>
     </th>
   );
 }

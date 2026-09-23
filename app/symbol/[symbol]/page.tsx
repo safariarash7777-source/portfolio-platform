@@ -20,6 +20,7 @@ import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalRep
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
 import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
 import { getAccess } from "@/lib/access";
+import { resolveBackTarget } from "@/lib/market-nav";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { getFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
@@ -48,6 +49,8 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
+  /** `?from=` — مبدأی که کاربر از آن آمده؛ فقط برای مسیرِ بازگشت. */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -64,7 +67,7 @@ function num(x: unknown): number | null {
   return x;
 }
 
-function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
+function Stat({ label, value, color, note }: { label: string; value: string; color?: string; note?: string }) {
   return (
     <div className="card px-4 py-3">
       <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
@@ -72,17 +75,23 @@ function Stat({ label, value, color }: { label: string; value: string; color?: s
       </p>
       <p
         className="mt-1 text-[15px] font-bold"
-        style={{ color: color ?? "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}
+        style={{ color: color ?? "var(--heading)", fontVariantNumeric: "tabular-nums" }}
       >
         {value}
       </p>
+      {/* «کهنه» و «ناموجود» دو حالتِ متفاوت‌اند و هر دو باید دیده شوند — عددِ
+          کهنه بدونِ برچسب، از عددِ تازه قابلِ تشخیص نیست. */}
+      {note ? (
+        <p className="mt-0.5 text-[10.5px] leading-4" style={{ color: "var(--warning-ink)" }}>{note}</p>
+      ) : null}
     </div>
   );
 }
 
-export default async function SymbolPage({ params }: PageProps) {
+export default async function SymbolPage({ params, searchParams }: PageProps) {
   const { symbol } = await params;
   const sym = decodeURIComponent(symbol);
+  const sp = searchParams ? await searchParams : {};
 
   const [ir, history, fundamentals, fxRates, navHistory, access] = await Promise.all([
     getIrMarket(),
@@ -97,6 +106,13 @@ export default async function SymbolPage({ params }: PageProps) {
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
   const quote = all.find((r) => r.id === sym) ?? null;
   const isFund = (ir?.funds ?? []).some((r) => r.id === sym);
+  // پیش‌فرض به نوعِ ابزار بستگی دارد؛ `?from=`ِ معتبر بر آن مقدم است.
+  const back = resolveBackTarget(
+    sp.from,
+    isFund
+      ? { href: "/market/funds", label: "دیده‌بان صندوق‌ها" }
+      : { href: "/data", label: "بانک داده" },
+  );
 
   const pct = num(quote?.closingChangePercent) ?? num(quote?.changePercent);
   const buyI = num(quote?.buyI);
@@ -255,7 +271,7 @@ export default async function SymbolPage({ params }: PageProps) {
           </h2>
           <span
             className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+            style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
           >
             به‌زودی
           </span>
@@ -290,7 +306,7 @@ export default async function SymbolPage({ params }: PageProps) {
 
       {/* نمودارهای بنیادی WP4 */}
       <section>
-        <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+        <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
           تحلیل بنیادی (گزارش‌های کدال)
         </h2>
         <FundamentalCharts
@@ -307,18 +323,27 @@ export default async function SymbolPage({ params }: PageProps) {
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16 space-y-6">
-          <nav className="text-xs" style={{ color: "var(--text-3)" }}>
-            <Link href="/data" className="hover:underline" style={{ color: "var(--navy)" }}>
-              بانک دادهٔ بازار
+          <nav className="flex flex-wrap items-center gap-1 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
+            <Link href="/market" className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>میز بازار</Link>
+            <span aria-hidden="true">/</span>
+            {/* ── مسیرِ بازگشتِ متناسب با مبدأ ────────────────────────────
+                تا امروز ثابت بود: کاربری که از تابلوی سهام با فیلترِ صنعت آمده
+                بود، به «بانکِ داده» فرستاده می‌شد — جایی که اصلاً نبوده. حالا
+                `?from=` که جست‌وجو می‌گذارد خوانده می‌شود، و
+                `resolveBackTarget` آن را با فهرستِ سفید می‌سنجد تا این پارامتر
+                نتواند به مقصدِ بیرونی تبدیل شود. */}
+            <Link href={back.href} className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>
+              {back.label}
             </Link>
-            <span className="mx-1">/</span>
+            <span aria-hidden="true">/</span>
             {sym}
           </nav>
 
           {/* سرصفحهٔ نماد */}
           <header className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="font-display text-3xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
+              <p className="text-xs font-bold" style={{ color: "var(--gold-ink)" }}>{isFund ? "پروندهٔ صندوق" : "پروندهٔ نماد"}</p>
+              <h1 className="mt-1 font-display text-3xl font-extrabold" style={{ color: "var(--heading)" }}>
                 {sym}
               </h1>
               <p className="mt-1 text-sm" style={{ color: "var(--text-2)" }}>
@@ -330,7 +355,7 @@ export default async function SymbolPage({ params }: PageProps) {
             <div className="flex items-center gap-2">
               <a
                 href={`/api/data/${encodeURIComponent(sym)}/history.csv`}
-                className="btn-outline rounded-full border px-4 py-1.5 text-xs font-semibold"
+                className="btn-outline inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-semibold"
                 style={{ borderColor: "var(--line-strong)" }}
               >
                 دانلود تاریخچه (CSV)
@@ -342,6 +367,31 @@ export default async function SymbolPage({ params }: PageProps) {
               ) : null}
             </div>
           </header>
+
+          {!quote ? (
+            <div className="rounded-xl border border-dashed p-4" role="status" style={{ borderColor: "var(--line-strong)", background: "var(--surface)" }}>
+              <p className="text-sm font-bold" style={{ color: "var(--heading)" }}>دادهٔ جاری این نماد در اسنپ‌شات بازار نیست</p>
+              <p className="mt-1 text-xs leading-6" style={{ color: "var(--text-3)" }}>تاریخچه و گزارش‌های ثبت‌شده، اگر موجود باشند، مستقل نمایش داده می‌شوند؛ مقدار جاری با صفر جایگزین نشده است.</p>
+            </div>
+          ) : null}
+
+          {isFund ? (
+            <section className="grid gap-3 rounded-xl border p-4 md:grid-cols-3" aria-labelledby="fund-reading-guide" style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}>
+              <h2 id="fund-reading-guide" className="sr-only">راهنمای خواندن پروندهٔ صندوق</h2>
+              <div>
+                <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>قیمت و NAV را هم‌زمان ببینید</p>
+                <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>حباب فقط وقتی معتبر است که زمان دو ورودی به هم نزدیک باشد.</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>بازهٔ واقعی را بخوانید</p>
+                <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>تعداد روز ثبت‌شده کنار نمودار و آمار نوشته می‌شود.</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold" style={{ color: "var(--heading)" }}>هم‌گروه و نقدشوندگی را جدا بسنجید</p>
+                <p className="mt-1 text-[11px] leading-6" style={{ color: "var(--text-3)" }}>رتبهٔ حباب، اندازه یا کیفیت مدیریت صندوق را نشان نمی‌دهد.</p>
+              </div>
+            </section>
+          ) : null}
 
           {/* آمار روز — بدون فید، «—» (هیچ عدد ساختگی) */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -381,17 +431,29 @@ export default async function SymbolPage({ params }: PageProps) {
                 label="NAV صدور"
                 value={num(quote?.navIssue) != null ? formatToman(quote!.navIssue as number) : "—"}
               />
+              {/* ── حباب: یک عدد، یک موتور ────────────────────────────────
+                  این کارت تا امروز `quote.bubblePercent` را نشان می‌داد — عددی
+                  که **رله** خودش حساب کرده — در حالی که پنلِ تحلیلِ پایینِ همین
+                  صفحه از `liveBubble()` استفاده می‌کرد. دو محاسبهٔ متفاوت روی
+                  یک صفحه، هر دو با برچسبِ «حباب»: یکی ٪−۲٫۹ و دیگری ٪−۲٫۵۰.
+                  حالا هر دو از همان `fundLive` می‌خوانند.
+
+                  رنگ هم عوض شد: `deltaColor` حبابِ منفی را سبز می‌کرد، یعنی
+                  «زیرِ NAV = مطلوب» — قضاوتی که سامانه اجازهٔ بیانش را ندارد. */}
               <Stat
                 label="حباب"
                 value={
-                  num(quote?.bubblePercent) != null
-                    ? formatSignedPercent(quote!.bubblePercent as number)
+                  fundLive.bubblePercent != null
+                    ? formatSignedPercent(fundLive.bubblePercent)
                     : "—"
                 }
-                color={
-                  num(quote?.bubblePercent) != null
-                    ? deltaColor(quote!.bubblePercent as number)
-                    : undefined
+                color={fundLive.bubblePercent != null ? "var(--gold-ink)" : undefined}
+                note={
+                  fundLive.state === "stale"
+                    ? `کهنه — ${fundLive.reason ?? ""}`
+                    : fundLive.state === "unavailable"
+                      ? (fundLive.reason ?? undefined)
+                      : undefined
                 }
               />
               <Stat label="تاریخ NAV" value={quote?.navDate ? toPersianDigits(quote.navDate) : "—"} />
@@ -438,7 +500,7 @@ export default async function SymbolPage({ params }: PageProps) {
                 {/* M6: قیمت در برابر NAV — فقط برای صندوق‌ها */}
                 {isFund && (
                   <section>
-                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
                       قیمت در برابر NAV ابطال
                     </h2>
                     <PriceNavChart points={navPoints} />
@@ -459,7 +521,7 @@ export default async function SymbolPage({ params }: PageProps) {
 
                 {/* تاریخچهٔ قیمت و جریان پول */}
                 <section>
-                  <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                  <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
                     تاریخچهٔ قیمت و جریان پول
                   </h2>
                   {points.length > 0 ? (
@@ -478,7 +540,7 @@ export default async function SymbolPage({ params }: PageProps) {
                 {/* T5-1 — دادهٔ زنده: عمق ۵سطحی، جریان حقیقی/حقوقی، کارت‌های ارزش‌گذاری */}
                 {!isFund && (
                   <section>
-                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+                    <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
                       تابلوی زندهٔ نماد
                     </h2>
                     <SymbolLiveDetail symbol={sym} sections="market" />
@@ -495,7 +557,13 @@ export default async function SymbolPage({ params }: PageProps) {
 
           {/* مسیرِ رفت‌وبرگشت: از این نماد به داشبورد، و از اینجا برگشت به میزِ بازار.
               فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
-          <AccountBridge access={access} backTo={{ href: "/market", label: "برگشت به میزِ بازار" }} />
+          <AccountBridge
+            access={access}
+            /* مبدأ همراهِ مسیرِ بازگشت از حساب می‌رود؛ بدونِ آن، کاربری که از
+               صفحهٔ نماد وارد می‌شود، لینکِ «برگشت»ش به پیش‌فرض برمی‌گردد. */
+            returnTo={`/symbol/${encodeURIComponent(sym)}?from=${encodeURIComponent(back.href)}`}
+            backTo={{ href: "/market", label: "برگشت به میزِ بازار" }}
+          />
 
           {/* سلب مسئولیت — الزام قانون ۶ */}
           <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>

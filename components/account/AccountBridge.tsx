@@ -14,17 +14,22 @@
 import Link from "next/link";
 import { ArrowLeft, LayoutDashboard, LogIn, UserPlus } from "lucide-react";
 import type { AccessInfo } from "@/lib/access";
-import { formatJalali } from "@/lib/format";
+import { accountEntryHref, normalizeReturnPath } from "./returnPath";
+import { accountSubtitle } from "./accountSubtitle";
 
 export default function AccountBridge({
   access,
   backTo,
+  returnTo = "/market",
 }: {
   access: AccessInfo;
   /** اگر داده شود، یک راهِ برگشت به همان صفحه‌ای که کاربر از آن آمده نشان می‌دهد. */
   backTo?: { href: string; label: string };
+  /** مقصد امنی که پس از ورود باید حفظ شود. فقط مسیر محلی پذیرفته می‌شود. */
+  returnTo?: string;
 }) {
   const signedIn = access.level !== "visitor";
+  const safeReturnTo = normalizeReturnPath(returnTo, "/market");
 
   return (
     <section
@@ -36,16 +41,7 @@ export default function AccountBridge({
           {signedIn ? "حسابِ شما" : "با حساب، این صفحه‌ها به هم وصل می‌شوند"}
         </p>
         <p className="text-[11.5px] mt-0.5" style={{ color: "var(--text-3)" }}>
-          {access.level === "full" ? (
-            <>
-              دسترسی کامل فعال است
-              {access.expiresAt ? <> · تا {formatJalali(access.expiresAt, false)}</> : null}
-            </>
-          ) : access.level === "registered" ? (
-            "واچ‌لیست و یادداشت‌های شما در داشبورد نگه داشته می‌شود."
-          ) : (
-            "واچ‌لیست، یادداشت و پیگیریِ نمادها به حسابِ شما گره می‌خورد."
-          )}
+          {accountSubtitle(access)}
         </p>
       </div>
 
@@ -53,8 +49,8 @@ export default function AccountBridge({
         {backTo ? (
           <Link
             href={backTo.href}
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold rounded-lg px-3 py-2 transition-colors"
-            style={{ color: "var(--navy)", background: "var(--surface-2)" }}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+            style={{ color: "var(--navy-ink)", background: "var(--surface-2)" }}
           >
             <ArrowLeft size={15} strokeWidth={2.2} aria-hidden />
             {backTo.label}
@@ -64,7 +60,7 @@ export default function AccountBridge({
         {signedIn ? (
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-bold rounded-lg px-3.5 py-2 transition-colors"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{ background: "var(--navy)", color: "var(--text-on-navy)", boxShadow: "var(--shadow-sm)" }}
           >
             <LayoutDashboard size={15} strokeWidth={2.2} aria-hidden />
@@ -73,16 +69,16 @@ export default function AccountBridge({
         ) : (
           <>
             <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold rounded-lg px-3 py-2 transition-colors"
-              style={{ color: "var(--navy)", background: "var(--surface-2)" }}
+              href={accountEntryHref("/login", safeReturnTo)}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
+              style={{ color: "var(--navy-ink)", background: "var(--surface-2)" }}
             >
               <LogIn size={15} strokeWidth={2.2} aria-hidden />
               ورود
             </Link>
             <Link
-              href="/register"
-              className="inline-flex items-center gap-1.5 text-[12.5px] font-bold rounded-lg px-3.5 py-2 transition-colors"
+              href={accountEntryHref("/register", safeReturnTo)}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
               style={{ background: "var(--navy)", color: "var(--text-on-navy)", boxShadow: "var(--shadow-sm)" }}
             >
               <UserPlus size={15} strokeWidth={2.2} aria-hidden />

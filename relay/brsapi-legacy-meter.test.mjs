@@ -1,6 +1,6 @@
 // تستِ شمارندهٔ مسیرِ قدیمی — «نامرئی» در برابر «دیده‌شده» در برابر «بسته».
 import assert from "node:assert/strict";
-import { LegacyMeter, LegacyBudgetError, legacyEnforced } from "./brsapi-legacy-meter.mjs";
+import { LegacyMeter, LegacyBudgetError, BudgetUnavailableError, legacyEnforced } from "./brsapi-legacy-meter.mjs";
 
 let pass = 0, fail = 0;
 const tests = [];
@@ -78,6 +78,41 @@ t("طبقهٔ بودجه به بودجه منتقل می‌شود، نه این�
   await m.count("a", "critical");
   await m.count("b", "bulk");
   assert.deepEqual(seen, ["critical", "bulk"]);
+});
+
+
+/* ── نبودِ ذخیره‌ساز در حالتِ enforcement ─────────────────────────────────── */
+
+t("enforcement روشن + شمارنده غایب = توقف، نه ارسالِ بی‌حساب", async () => {
+  const m = new LegacyMeter(() => null, { enforced: () => true });
+  await assert.rejects(() => m.count("nav-bulk", "critical"),
+    (e) => e instanceof BudgetUnavailableError);
+  assert.equal(m.snapshot().unmetered, 1, "و همین «نتوانستیم بشماریم» ثبت می‌شود");
+});
+
+t("«شمارنده نیست» با «سهمیه تمام شد» یکی نیست", async () => {
+  const gone = new LegacyMeter(() => null, { enforced: () => true });
+  await assert.rejects(() => gone.count("p"), (e) => e instanceof BudgetUnavailableError);
+
+  const full = new LegacyMeter(() => ({ async ensure() {}, reserve: () => false }), { enforced: () => true });
+  await assert.rejects(() => full.count("p"), (e) => e instanceof LegacyBudgetError);
+  // دو خطای متفاوت برای دو وضعیتِ متفاوت — واکنشِ عملیاتی‌شان هم فرق دارد.
+});
+
+t("هشدارِ عملیاتی فقط وقتی بلند می‌شود که قول داده باشیم و نتوانیم نگهش داریم", async () => {
+  const off = new LegacyMeter(() => null, { enforced: () => false });
+  await off.count("p");
+  assert.equal(off.snapshot().alert, null, "بدونِ enforcement، نشمردن هشدار نیست");
+
+  const on = new LegacyMeter(() => null, { enforced: () => true });
+  await assert.rejects(() => on.count("p"), () => true);
+  assert.ok(on.snapshot().alert, "با enforcement، همان وضعیت هشدار است");
+});
+
+t("نشمردن به تفکیکِ producer دیده می‌شود، نه یک عددِ کلی", async () => {
+  const m = new LegacyMeter(() => null, { enforced: () => false });
+  await m.count("nav-bulk"); await m.count("nav-bulk"); await m.count("options");
+  assert.deepEqual(m.snapshot().unmeteredByProducer, { "nav-bulk": 2, options: 1 });
 });
 
 console.log("brsapi-legacy-meter:");

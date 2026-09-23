@@ -191,7 +191,7 @@ function ChartCard({
     >
       <header className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-[15px] font-bold" style={{ color: "var(--navy)" }}>
+          <h3 className="text-[15px] font-bold" style={{ color: "var(--navy-ink)" }}>
             {title}
           </h3>
           {subtitle ? (
@@ -226,7 +226,7 @@ function ComingSoon({ id, title, waitingFor }: { id: string; title: string; wait
           </h3>
           <span
             className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-            style={{ background: "var(--gold-tint)", color: "var(--navy-deep)" }}
+            style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
           >
             به‌زودی
           </span>
@@ -542,7 +542,7 @@ export default function FundamentalCharts({
         style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text-2)" }}
         role="note"
       >
-        <span className="font-bold" style={{ color: "var(--navy)" }}>
+        <span className="font-bold" style={{ color: "var(--navy-ink)" }}>
           منبع: {n10.source.title}
         </span>
         <span>واحد ارقام: {d.unit}</span>

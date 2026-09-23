@@ -6,26 +6,12 @@ import {
   createChart,
   LineSeries,
   type IChartApi,
+  type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
+import { useThemeToken, readChartPalette, chartThemeOptions } from "@/lib/useChartTheme";
 import type { TrendSeries } from "@/lib/core/trend";
 import { toPersianDigits } from "@/lib/format";
-
-// استثنای مستند C4: lightweight-charts روی canvas رنگ می‌کشد و CSS var را نمی‌فهمد؛
-// این تابع مقدارِ خودِ توکن را در زمان اجرا می‌خواند و hex صرفاً fallback هم‌ارزش همان توکن است.
-function palette() {
-  const cs =
-    typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
-  const v = (name: string, fallback: string) =>
-    cs?.getPropertyValue(name).trim() || fallback;
-  return {
-    bg: v("--surface", "#FFFFFF"),
-    text: v("--text-2", "#334155"),
-    line: v("--line", "#E5E3DC"),
-    navy: v("--navy", "#1E3A8A"),
-    gold: v("--gold", "#B8860B"),
-  };
-}
 
 const SERIES_COLOR_KEY: Record<string, "gold" | "navy"> = {
   IR_GOLD_18K: "gold",
@@ -35,12 +21,15 @@ const SERIES_COLOR_KEY: Record<string, "gold" | "navy"> = {
 export default function TrendChart({ series }: { series: TrendSeries[] }) {
   const [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const theme = useThemeToken();
 
   const current = series[active] ?? null;
 
   useEffect(() => {
     if (!ref.current || !current || current.points.length === 0) return;
-    const p = palette();
+    const p = readChartPalette();
     const colorKey = SERIES_COLOR_KEY[current.id] ?? "navy";
     const color = colorKey === "gold" ? p.gold : p.navy;
 
@@ -63,8 +52,25 @@ export default function TrendChart({ series }: { series: TrendSeries[] }) {
       }))
     );
     chart.timeScale().fitContent();
-    return () => chart.remove();
+    chartRef.current = chart;
+    seriesRef.current = line;
+    return () => {
+      chartRef.current = null;
+      seriesRef.current = null;
+      chart.remove();
+    };
   }, [current]);
+
+  // تغییرِ تم → فقط رنگ‌ها، با `applyOptions`. داده و بازهٔ دیدِ کاربر می‌مانند.
+  useEffect(() => {
+    const chart = chartRef.current;
+    const line = seriesRef.current;
+    if (!chart || !line || !current) return;
+    const p = readChartPalette();
+    chart.applyOptions(chartThemeOptions(p));
+    const key = SERIES_COLOR_KEY[current.id] ?? "navy";
+    line.applyOptions({ color: key === "gold" ? p.gold : p.navy });
+  }, [theme, current]);
 
   if (series.length === 0) return null;
 
@@ -76,11 +82,12 @@ export default function TrendChart({ series }: { series: TrendSeries[] }) {
             key={s.id}
             type="button"
             onClick={() => setActive(i)}
-            className="rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors"
+            className="inline-flex items-center rounded-full px-3 text-[12.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={
+              // ۴۴ پیکسل: کمینهٔ هدفِ لمسی (پیش از این ۲۷ پیکسل بود).
               i === active
-                ? { background: "var(--navy)", color: "var(--text-on-navy)" }
-                : { background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
+                ? { minHeight: 44, background: "var(--navy)", color: "var(--text-on-navy)" }
+                : { minHeight: 44, background: "var(--surface-2)", color: "var(--text-2)", border: "1px solid var(--line)" }
             }
           >
             {s.faName}

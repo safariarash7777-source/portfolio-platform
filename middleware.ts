@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { activeEntitlementFilter } from '@/lib/entitlement-filter'
+import { accountEntryHref } from './components/account/returnPath'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -26,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
   const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/terminal')
   if (isProtected && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL(accountEntryHref('/login', pathname + request.nextUrl.search), request.url))
   }
 
   // Admin gate — DB-backed (single source of truth)

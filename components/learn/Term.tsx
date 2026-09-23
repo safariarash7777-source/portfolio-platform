@@ -28,7 +28,7 @@ export default function Term({
     >
       <Link
         href={`/learn/glossary#${t.id}`}
-        className="cursor-help underline decoration-dotted underline-offset-4"
+        className="inline-flex min-h-11 cursor-help items-center underline decoration-dotted underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded"
         style={{ color: "inherit", textDecorationColor: "var(--line-strong, #b9c2d0)" }}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}

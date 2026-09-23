@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نمونهٔ طراحی — قطب‌نمای بازار</title>
+<style>
+/* ================================================================
+   نمونهٔ طراحی (Prototype) — قطب‌نمای بازار
+   توکن‌ها عیناً از app/globals.css کپی شده‌اند تا نمونه با محصول یکی باشد.
+   هیچ رنگِ خارج از توکن اینجا تعریف نشده جز رنگ‌های نوارِ خودِ نمونه.
+   ================================================================ */
+:root{
+  --navy:#1E3A8A; --navy-deep:#0D1F4A; --navy-soft:#2748A6;
+  --gold:#B8860B; --gold-soft:#D4A22B; --gold-light:#F5D07A; --gold-tint:#F5E6B8;
+  --bg:#F8F7F4; --surface:#FFFFFF; --surface-2:#F2F0E8; --line:#E5E3DC; --line-strong:#D6D2C6;
+  --text:#0F172A; --text-2:#334155; --text-3:#64748B;
+  --text-on-navy:#F8FAFC; --text-on-gold:#172554;
+  --heading:#0D1F4A; --gold-ink:#7A5A08;
+  --success:#15803D; --warning:#B45309; --danger:#B91C1C; --info:var(--navy);
+  --shadow-sm:0 1px 2px 0 rgba(15,23,42,.05);
+  --shadow:0 4px 12px -2px rgba(15,23,42,.08),0 2px 4px -1px rgba(15,23,42,.04);
+  --shadow-lg:0 12px 28px -8px rgba(23,37,84,.18),0 4px 8px -2px rgba(15,23,42,.06);
+  --r-sm:6px; --r:10px; --r-lg:14px; --r-xl:20px;
+  --font-body:"Vazirmatn","IRANSansX","Tahoma",sans-serif;
+  --font-display:"Vazirmatn","IRANSansX","Tahoma",sans-serif;
+}
+html[data-theme="dark"]{
+  --bg:#0B1220; --surface:#131C30; --surface-2:#1A2540; --line:#1E2A47; --line-strong:#2C3B5E;
+  --text:#F1F5F9; --text-2:#CBD5E1; --text-3:#94A3B8; --heading:#F1F5F9; --gold-ink:var(--gold-light);
+  --shadow-sm:0 1px 2px 0 rgba(0,0,0,.4);
+  --shadow:0 6px 16px -4px rgba(0,0,0,.5),0 2px 4px -1px rgba(0,0,0,.3);
+  --shadow-lg:0 16px 36px -10px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.75;
+     font-size:14px;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--font-display);color:var(--heading);line-height:1.5}
+a{color:var(--navy);text-decoration:none}
+table{border-collapse:collapse;width:100%}
+.num{font-variant-numeric:tabular-nums}
+
+/* ── نوارِ خودِ نمونه (بخشی از محصول نیست) ───────────────────── */
+.proto-bar{position:sticky;top:0;z-index:50;background:var(--navy-deep);color:var(--text-on-navy);
+  padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px;
+  max-width:100%;overflow-x:auto}
+.proto-bar strong{color:var(--gold-light)}
+.proto-bar .grp{display:flex;gap:4px;align-items:center;background:rgba(255,255,255,.07);
+  border-radius:999px;padding:3px}
+.proto-bar button{font:inherit;font-family:var(--font-body);cursor:pointer;border:0;background:transparent;
+  color:var(--text-on-navy);padding:4px 11px;border-radius:999px;opacity:.72}
+.proto-bar button[aria-pressed="true"]{background:var(--gold);color:var(--text-on-gold);opacity:1;font-weight:700}
+.proto-note{background:var(--gold-tint);color:var(--navy-deep);padding:8px 16px;font-size:12px;max-width:100%;
+  border-bottom:1px solid var(--line)}
+
+/* ── قابِ دستگاه ─────────────────────────────────────────────── */
+.stage{padding:20px 16px 64px}
+.frame{margin:0 auto;transition:max-width .25s ease}
+body[data-view="desktop"] .frame{max-width:1180px}
+body[data-view="mobile"] .frame{max-width:390px;box-shadow:var(--shadow-lg);border:1px solid var(--line);
+  border-radius:var(--r-xl);overflow:hidden;background:var(--bg)}
+@media (max-width:760px){ body[data-view="mobile"] .frame{max-width:100%;border:0;box-shadow:none;border-radius:0} }
+body[data-view="mobile"] .stage{padding:20px 8px 64px}
+
+/* ── ناوبریِ محصول ──────────────────────────────────────────── */
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;
+  background:var(--surface);border-bottom:1px solid var(--line)}
+.nav .brand{font-family:var(--font-display);font-weight:800;color:var(--heading);font-size:15px}
+.nav .brand span{color:var(--gold-ink)}
+.nav .links{display:flex;gap:16px;font-size:13px;color:var(--text-2)}
+body[data-view="mobile"] .nav .links{display:none}
+
+/* ── ساختار ─────────────────────────────────────────────────── */
+.page{padding:18px}
+.grid2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.grid5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+body[data-view="mobile"] .grid2,
+body[data-view="mobile"] .grid3,
+body[data-view="mobile"] .grid5{grid-template-columns:minmax(0,1fr)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-sm);padding:16px}
+.card h3{font-size:14px;font-weight:700;margin-bottom:2px}
+.card .sub{font-size:11.5px;color:var(--text-3);margin-bottom:12px}
+.sec-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
+.sec-title h2{font-size:16px;font-weight:800}
+.hint{font-size:11.5px;color:var(--text-3)}
+
+/* ── چیپ‌ها ─────────────────────────────────────────────────── */
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;
+  font-size:11px;font-weight:700;border:1px solid transparent;white-space:nowrap}
+.chip-fresh{background:rgba(21,128,61,.10);color:var(--success);border-color:rgba(21,128,61,.28)}
+.chip-stale{background:rgba(180,83,9,.10);color:var(--warning);border-color:rgba(180,83,9,.30)}
+.chip-unknown{background:var(--surface-2);color:var(--text-3);border-color:var(--line-strong)}
+.chip-demo{background:var(--gold-tint);color:var(--navy-deep);border-color:var(--gold-soft)}
+.chip-neutral{background:var(--surface-2);color:var(--text-2);border-color:var(--line)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.up{color:var(--success)} .down{color:var(--danger)} .warn{color:var(--warning)}
+
+/* ── KPI ────────────────────────────────────────────────────── */
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 13px}
+.kpi .k{font-size:11px;color:var(--text-3)}
+.kpi .v{font-size:18px;font-weight:800;color:var(--heading);margin-top:3px;letter-spacing:-.3px}
+.kpi .d{font-size:11px;color:var(--text-3);margin-top:5px;border-top:1px dashed var(--line);padding-top:5px}
+.kpi .d b{color:var(--text-2);font-weight:700}
+
+/* ── باندِ کیفی (هرگز عددِ خام به‌تنهایی) ─────────────────────── */
+.band{display:flex;align-items:center;gap:8px;margin-top:8px}
+.band-track{flex:1;height:10px;border-radius:999px;background:var(--surface-2);position:relative;
+  overflow:hidden;border:1px solid var(--line)}
+.band-fill{position:absolute;inset-block:0;border-radius:999px}
+.band-label{font-size:11px;font-weight:700}
+
+/* ── جدول ───────────────────────────────────────────────────── */
+.tbl{font-size:12.5px}
+.tbl th{text-align:right;font-weight:700;color:var(--text-3);font-size:11px;padding:8px 10px;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--text-2)}
+.tbl td:first-child{color:var(--heading);font-weight:700}
+.tbl .l{text-align:left}
+.tbl tr.me{background:var(--gold-tint)}
+html[data-theme="dark"] .tbl tr.me{background:rgba(184,134,11,.16)}
+.scroll-x{overflow-x:auto}
+
+/* ── حالت‌های داده ──────────────────────────────────────────── */
+.state{border-radius:var(--r);padding:14px;font-size:12.5px;line-height:1.85}
+.state h4{font-size:13px;margin-bottom:4px}
+.state-empty{background:var(--surface-2);border:1px dashed var(--line-strong);color:var(--text-2)}
+.state-stale{background:rgba(180,83,9,.08);border:1px solid rgba(180,83,9,.30);color:var(--text-2)}
+.state-error{background:rgba(185,28,28,.07);border:1px solid rgba(185,28,28,.28);color:var(--text-2)}
+.state ul{margin:6px 0 0;padding-inline-start:18px}
+.state li{margin-bottom:2px}
+.dash{color:var(--text-3)}
+
+/* ── نمودارهای ساده (SVG درون‌خط) ───────────────────────────── */
+.spark{width:100%;height:96px;display:block;margin-top:6px}
+.bars{display:flex;align-items:flex-end;gap:5px;height:78px;margin-top:8px;direction:ltr}
+.bars i{flex:1;background:var(--navy-soft);border-radius:3px 3px 0 0;display:block;opacity:.85}
+.bars i.g{background:var(--gold-soft)}
+.bar-x{display:flex;gap:5px;font-size:9.5px;color:var(--text-3);margin-top:4px;direction:ltr}
+.bar-x span{flex:1;text-align:center;direction:rtl;unicode-bidi:isolate}
+.donut{display:flex;align-items:center;gap:14px}
+.legend{font-size:11.5px;color:var(--text-2);display:flex;flex-direction:column;gap:5px}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-inline-end:6px}
+
+/* ── ناحیهٔ صفحات ───────────────────────────────────────────── */
+.screen{display:none}
+.screen.on{display:block}
+.only-full,.only-partial,.only-stale,.only-error{display:none}
+body[data-state="full"] .only-full,
+body[data-state="partial"] .only-partial,
+body[data-state="stale"] .only-stale,
+body[data-state="error"] .only-error{display:block}
+/* ── واکنش‌گراییِ واقعی: علاوه بر کلیدِ پیش‌نمایش، خودِ عرضِ نمایشگر هم لایه‌بندی را عوض می‌کند ── */
+@media (max-width:760px){
+  .grid2,.grid3,.grid5{grid-template-columns:minmax(0,1fr)}
+  .nav .links{display:none}
+  .stage{padding:16px 10px 56px}
+  .page{padding:14px}
+  .kpi .v{font-size:17px}
+}
+.footer-note{max-width:min(1180px,100%);margin:28px auto 0;font-size:11.5px;color:var(--text-3);
+  border-top:1px solid var(--line);padding-top:12px;line-height:2}
+</style>
+</head>
+<body data-view="desktop" data-state="full">
+
+<div class="proto-bar">
+  <strong>نمونهٔ طراحی — تصویب‌نشده</strong>
+  <span class="grp" role="group" aria-label="انتخاب صفحه">
+    <button data-screen="home" aria-pressed="true">خانهٔ عضو</button>
+    <button data-screen="fund" aria-pressed="false">صندوق</button>
+    <button data-screen="symbol" aria-pressed="false">نماد</button>
+  </span>
+  <span class="grp" role="group" aria-label="اندازهٔ نمایش">
+    <button data-view="desktop" aria-pressed="true">دسکتاپ</button>
+    <button data-view="mobile" aria-pressed="false">موبایل</button>
+  </span>
+  <span class="grp" role="group" aria-label="حالت داده">
+    <button data-state="full" aria-pressed="true">دادهٔ کامل</button>
+    <button data-state="partial" aria-pressed="false">ناقص</button>
+    <button data-state="stale" aria-pressed="false">کهنه</button>
+    <button data-state="error" aria-pressed="false">خطا</button>
+  </span>
+  <span class="grp" role="group" aria-label="تم">
+    <button data-theme="light" aria-pressed="true">روشن</button>
+    <button data-theme="dark" aria-pressed="false">تیره</button>
+  </span>
+</div>
+
+<div class="proto-note">
+  همهٔ اعداد این صفحه <b>نمونهٔ نمایشی</b> است و از پایگاه‌داده نمی‌آید. هدف، توافق روی
+  <b>چیدمان، سلسله‌مراتب و رفتارِ حالت‌های داده</b> است — نه صحتِ ارقام.
+</div>
+
+<div class="stage">
+<div class="frame">
+
+<div class="nav">
+  <div class="brand">آرش صفری <span>· قطب‌نمای بازار</span></div>
+  <div class="links"><span>بازار</span><span>صندوق‌ها</span><span>نمادها</span><span>کدال</span><span>کارنامه</span></div>
+  <span class="chip chip-demo">نمونهٔ نمایشی</span>
+</div>
+
+<!-- ══════════════════ الف) خانهٔ عضو ══════════════════ -->
+<section class="screen on" id="s-home">
+<div class="page stack">
+
+  <div class="sec-title">
+    <div>
+      <h2>سلام آرش</h2>
+      <p class="hint">هدفِ این صفحه: در ۳۰ ثانیه بفهمی <b>بازار چه کرد</b> و <b>پرتفویِ تو کجای آن ایستاده</b>.</p>
+    </div>
+    <span class="only-full chip chip-fresh"><i class="dot"></i> داده‌ها ۴ دقیقه پیش</span>
+    <span class="only-partial chip chip-fresh"><i class="dot"></i> داده‌ها ۶ دقیقه پیش</span>
+    <span class="only-stale chip chip-stale">آخرین به‌روزرسانی: ۲ ساعت و ۱۴ دقیقه پیش</span>
+    <span class="only-error chip chip-unknown">وضعیت داده نامشخص</span>
+  </div>
+
+  <div class="only-stale state state-stale">
+    <h4>این صفحه دادهٔ کهنه نشان می‌دهد</h4>
+    رلهٔ داخل ایران از ساعت ۱۲:۰۶ پاسخ نداده است. آنچه می‌بینی <b>آخرین دادهٔ سالم</b> است، نه قیمت لحظه‌ای.
+    هیچ عددی جای‌گذاری یا حدس زده نشده.
+    <ul><li>سنِ داده کنارِ هر بخش نوشته می‌شود.</li><li>نقطهٔ «زنده» روی دادهٔ کهنه نمی‌تپد.</li></ul>
+  </div>
+
+  <div class="only-error state state-error">
+    <h4>نبضِ بازار در دسترس نیست</h4>
+    آخرین تلاش برای خواندنِ داده ناموفق بود. به‌جای نشان‌دادن عددِ قدیمی زیرِ برچسبِ «زنده»، این بخش خالی می‌ماند.
+    <ul><li>بخشِ «پرتفوی من» پایین‌تر همچنان کار می‌کند (از دادهٔ خودت خوانده می‌شود).</li>
+    <li>آخرین دادهٔ سالم: دیروز ۱۴:۳۰ — <a href="#">نمایش همان</a></li></ul>
+  </div>
+
+  <!-- نبض بازار -->
+  <div class="only-full">
+    <div class="grid5">
+      <div class="kpi"><div class="k">شاخص کل</div><div class="v num up">‎+۰٫۸٪</div>
+        <div class="d">۲٬۴۱۸٬۶۰۰ واحد · <b>چرا:</b> ۶۲٪ نمادها مثبت</div></div>
+      <div class="kpi"><div class="k">شاخص هم‌وزن</div><div class="v num up">‎+۰٫۳٪</div>
+        <div class="d"><b>چرا:</b> رشد در بزرگ‌ها متمرکز است</div></div>
+      <div class="kpi"><div class="k">ارزش معاملات خرد</div><div class="v num">۵٬۹۰۰ میلیون تومان</div>
+        <div class="d"><b>چرا:</b> ۱۸٪ بالاتر از میانگین ۲۰ روز</div></div>
+      <div class="kpi"><div class="k">خالص ورود حقیقی</div><div class="v num up">‎+۳۱۰ میلیون تومان</div>
+        <div class="d"><b>چرا:</b> سومین روز پیاپیِ مثبت</div></div>
+      <div class="kpi"><div class="k">دلار بازار آزاد</div><div class="v num">۸۹٬۴۰۰ ت</div>
+        <div class="d"><b>چرا:</b> ‎−۰٫۲٪ نسبت به دیروز</div></div>
+    </div>
+  </div>
+
+  <div class="only-partial">
+    <div class="grid5">
+      <div class="kpi"><div class="k">شاخص کل</div><div class="v num up">‎+۰٫۸٪</div>
+        <div class="d">۲٬۴۱۸٬۶۰۰ واحد · <b>چرا:</b> ۶۲٪ نمادها مثبت</div></div>
+      <div class="kpi"><div class="k">شاخص هم‌وزن</div><div class="v num up">‎+۰٫۳٪</div>
+        <div class="d"><b>چرا:</b> رشد در بزرگ‌ها متمرکز است</div></div>
+      <div class="kpi"><div class="k">ارزش معاملات خرد</div><div class="v num dash">—</div>
+        <div class="d">این قلم امروز از منبع نیامد</div></div>
+      <div class="kpi"><div class="k">خالص ورود حقیقی</div><div class="v num dash">—</div>
+        <div class="d">تجمیعِ پایان‌بازار هنوز ثبت نشده</div></div>
+      <div class="kpi"><div class="k">دلار بازار آزاد</div><div class="v num">۸۹٬۴۰۰ ت</div>
+        <div class="d"><b>چرا:</b> ‎−۰٫۲٪ نسبت به دیروز</div></div>
+    </div>
+    <p class="hint" style="margin-top:8px">۲ قلم از ۵ قلم در دسترس نیست. جای خالی با «—» پر می‌شود، نه با تخمین.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="stack">
+      <!-- پرتفوی من -->
+      <div class="card">
+        <div class="sec-title"><div><h3>پرتفوی من</h3>
+          <p class="sub">ارزش روز بر پایهٔ آخرین قیمتِ در دسترس</p></div>
+          <span class="chip chip-demo">نمونهٔ نمایشی</span></div>
+        <div class="grid3" style="gap:10px">
+          <div class="kpi"><div class="k">ارزش کل</div><div class="v num">۴۸۲٫۶ میلیون تومان</div>
+            <div class="d"><b>امروز:</b> <span class="up">‎+۰٫۵٪</span></div></div>
+          <div class="kpi"><div class="k">بازده از ابتدای سال</div><div class="v num up">‎+۱۴٫۲٪</div>
+            <div class="d"><b>مرجع:</b> شاخص کل ‎+۱۱٫۰٪</div></div>
+          <div class="kpi"><div class="k">افتِ حداکثری</div><div class="v num down">‎−۹٫۴٪</div>
+            <div class="d"><b>کِی:</b> مرداد ۱۴۰۵</div></div>
+        </div>
+        <div class="donut" style="margin-top:14px">
+          <svg width="104" height="104" viewBox="0 0 42 42" aria-label="ترکیب پرتفوی">
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--surface-2)" stroke-width="6"></circle>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--navy)" stroke-width="6"
+              stroke-dasharray="44 56" stroke-dashoffset="0"></circle>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--gold)" stroke-width="6"
+              stroke-dasharray="27 73" stroke-dashoffset="-44"></circle>
+            <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--navy-soft)" stroke-width="6"
+              stroke-dasharray="19 81" stroke-dashoffset="-71"></circle>
+          </svg>
+          <div class="legend">
+            <span><i style="background:var(--navy)"></i>سهام — ۴۴٪</span>
+            <span><i style="background:var(--gold)"></i>صندوق درآمد ثابت — ۲۷٪</span>
+            <span><i style="background:var(--navy-soft)"></i>صندوق طلا — ۱۹٪</span>
+            <span><i style="background:var(--surface-2)"></i>نقد — ۱۰٪</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- فاصله با پروفایل ریسک -->
+      <div class="card">
+        <h3>فاصلهٔ پرتفوی با پروفایل ریسکِ ثبت‌شده</h3>
+        <p class="sub">پروفایل: «متعادل» — ثبت‌شده در ۱۴۰۵/۰۴/۱۲</p>
+        <div class="scroll-x"><table class="tbl">
+          <thead><tr><th>طبقهٔ دارایی</th><th class="l">پرتفوی فعلی</th><th class="l">بازهٔ پروفایل</th><th class="l">فاصله</th></tr></thead>
+          <tbody>
+            <tr><td>سهام</td><td class="l num">۴۴٪</td><td class="l num">۳۰ تا ۴۰٪</td><td class="l num warn">‎+۴ واحد بالاتر</td></tr>
+            <tr><td>درآمد ثابت</td><td class="l num">۲۷٪</td><td class="l num">۲۵ تا ۴۰٪</td><td class="l num up">درون بازه</td></tr>
+            <tr><td>طلا</td><td class="l num">۱۹٪</td><td class="l num">۱۰ تا ۲۰٪</td><td class="l num up">درون بازه</td></tr>
+            <tr><td>نقد</td><td class="l num">۱۰٪</td><td class="l num">۵ تا ۱۵٪</td><td class="l num up">درون بازه</td></tr>
+          </tbody>
+        </table></div>
+        <p class="hint" style="margin-top:10px">این جدول <b>وضعیت</b> را گزارش می‌کند و اقدامی تجویز نمی‌کند؛
+          بازهٔ پروفایل از پرسش‌نامهٔ ریسکِ خودت آمده است.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <h3>وضعیت دسترسی</h3>
+        <p class="sub">آنچه امروز برایت باز است</p>
+        <div class="stack" style="gap:8px">
+          <span class="chip chip-fresh">دیده‌بان بازار — فعال</span>
+          <span class="chip chip-fresh">کارت بنیادی نمادها — فعال</span>
+          <span class="chip chip-neutral">میز تحلیل هفتگی — غیرفعال</span>
+        </div>
+        <p class="hint" style="margin-top:10px">اعتبار: تا ۱۴۰۵/۰۸/۳۰</p>
+      </div>
+
+      <div class="card">
+        <h3>رویدادهای کدالِ نمادهای من</h3>
+        <p class="sub">فقط اطلاعیه‌های نمادهایی که داری</p>
+        <div class="only-full stack" style="gap:10px">
+          <div><b style="color:var(--heading)">فملی</b> — گزارش فروش مرداد
+            <div class="hint">دریافت‌شده ۲ روز پیش · ن‑۳۰</div></div>
+          <div><b style="color:var(--heading)">شپنا</b> — صورت مالی میان‌دوره‌ای
+            <div class="hint">دریافت‌شده ۵ روز پیش · ن‑۱۰</div></div>
+        </div>
+        <div class="only-partial state state-empty">
+          <h4>هنوز چیزی نیامده</h4>
+          برای نمادهای پرتفویِ تو، در ۷ روز گذشته اطلاعیه‌ای دریافت نشده است.
+        </div>
+        <div class="only-stale stack" style="gap:10px">
+          <div><b style="color:var(--heading)">فملی</b> — گزارش فروش مرداد
+            <div class="hint warn">دریافت‌شده ۲ روز پیش · تاریخ انتشارِ رسمی در منبع ثبت نشده</div></div>
+        </div>
+        <div class="only-error state state-error">
+          <h4>در دسترس نیست</h4>
+          خواندنِ فهرست اطلاعیه‌ها ناموفق بود.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════ ب) صفحهٔ صندوق ══════════════════ -->
+<section class="screen" id="s-fund">
+<div class="page stack">
+
+  <div class="sec-title">
+    <div>
+      <h2>طلا — صندوق کالایی مبتنی بر سکهٔ طلا</h2>
+      <p class="hint">هدفِ این صفحه: بفهمی این صندوق <b>گران‌تر یا ارزان‌تر از دارایی‌اش</b> معامله می‌شود و
+        <b>در برابر هم‌گروهش</b> کجاست.</p>
+    </div>
+    <span class="only-full chip chip-fresh"><i class="dot"></i> قیمت ۴ دقیقه پیش · NAV ۱۴۰۵/۰۶/۱۵ ساعت ۱۲:۳۰</span>
+    <span class="only-partial chip chip-fresh"><i class="dot"></i> قیمت ۶ دقیقه پیش</span>
+    <span class="only-stale chip chip-stale">قیمت ۲ ساعت پیش · NAV دیروز</span>
+    <span class="only-error chip chip-unknown">وضعیت داده نامشخص</span>
+  </div>
+
+  <div class="grid5">
+    <div class="kpi"><div class="k">قیمت پایانی</div><div class="v num">۲۸٬۴۵۰ ت</div>
+      <div class="d"><b>تغییر:</b> <span class="up">‎+۰٫۹٪</span></div></div>
+    <div class="kpi"><div class="k">NAV ابطال</div>
+      <div class="only-full v num">۲۷٬۱۰۰ ت</div>
+      <div class="only-partial v num dash">—</div>
+      <div class="only-stale v num">۲۶٬۹۸۰ ت</div>
+      <div class="only-error v num dash">—</div>
+      <div class="only-full d"><b>زمان:</b> امروز ۱۲:۳۰</div>
+      <div class="only-partial d">صادرکننده امروز NAV منتشر نکرده</div>
+      <div class="only-stale d warn"><b>زمان:</b> دیروز ۱۵:۰۰</div>
+      <div class="only-error d">در دسترس نیست</div></div>
+    <div class="kpi"><div class="k">حباب</div>
+      <div class="only-full v num warn">‎+۵٫۰٪</div>
+      <div class="only-partial v num dash">—</div>
+      <div class="only-stale v num dash">—</div>
+      <div class="only-error v num dash">—</div>
+      <div class="only-full d"><b>یعنی:</b> واحدِ صندوق ۵٪ بالاتر از ارزشِ داراییِ پشتِ آن معامله می‌شود</div>
+      <div class="only-partial d">بدون NAV، حباب محاسبه نمی‌شود</div>
+      <div class="only-stale d">حباب با NAVِ دیروز و قیمتِ امروز محاسبه نمی‌شود</div>
+      <div class="only-error d">در دسترس نیست</div></div>
+    <div class="kpi"><div class="k">بازده ۱ ماه</div><div class="v num up">‎+۶٫۲٪</div>
+      <div class="d"><b>هم‌گروه:</b> میانهٔ ‎+۵٫۱٪</div></div>
+    <div class="kpi"><div class="k">خالص دارایی</div><div class="v num dash">—</div>
+      <div class="d"><b>رتبه:</b> ۳ از ۳۵ صندوق طلا</div></div>
+  </div>
+
+  <div class="only-full card">
+    <h3>حباب در برابر بازهٔ تاریخیِ خودش</h3>
+    <p class="sub">بدون این بازه، عددِ «‎+۵٪» بی‌معناست — سؤال این است که برای همین صندوق زیاد است یا کم</p>
+    <div class="band">
+      <span class="band-label" style="color:var(--success)">‎−۲٪</span>
+      <div class="band-track">
+        <span class="band-fill" style="inset-inline-start:14%;width:58%;background:var(--gold-tint);
+          border-inline:1px solid var(--gold-soft)"></span>
+        <span class="band-fill" style="inset-inline-start:62%;width:3px;background:var(--warning);
+          box-shadow:0 0 0 2px rgba(180,83,9,.20)"></span>
+      </div>
+      <span class="band-label" style="color:var(--danger)">‎+۹٪</span>
+    </div>
+    <p class="hint" style="margin-top:8px">
+      باندِ طلایی = محدودهٔ ثبت‌شدهٔ <b>۳۷ روزِ معاملاتیِ موجود</b> (‎−۲٪ تا ‎+۹٪). خطِ نارنجی = امروز.
+      <b>باندِ کیفی:</b> «بالاتر از میانهٔ همین بازه».
+      <br><b>چرا ۳۷ روز و نه سه ماه:</b> تاریخچهٔ NAV روی Production از ۱۴۰۵/۰۴/۲۷ شروع می‌شود؛
+      بازهٔ بلندتر امروز وجود ندارد و ساختنش یعنی عددِ درستِ چیزِ دیگری.
+    </p>
+  </div>
+
+  <div class="grid2">
+    <!-- ترکیب دارایی -->
+    <div class="card">
+      <div class="sec-title"><div><h3>ترکیب دارایی صندوق</h3>
+        <p class="sub">آنچه پشتِ هر واحد ایستاده است</p></div></div>
+      <div class="state state-empty">
+        <h4>این بخش هنوز داده ندارد</h4>
+        ترکیب دارایی صندوق‌ها امروز در هیچ جدولی ذخیره نمی‌شود، پس این کادر خالی می‌ماند —
+        نه نمودارِ ساختگی، نه عددِ جایگزین.
+        <ul>
+          <li><b>منبع پیدا شد:</b> «صورت وضعیت پورتفوی صندوق سرمایه‌گذاری» ماهانه در کدال —
+              <b>۷۴۸ اطلاعیه روی ۴۹۷ صندوق</b>، پوششِ <b>۲۲۶ از ۳۲۶</b> صندوقِ زنده (اندازه‌گیریِ ۱۴۰۵/۰۶/۱۵).</li>
+          <li><b>مانع مجوز نیست:</b> فایلِ عمومیِ کدال طبقِ قاعدهٔ S1 مجاز است و رله از قبل
+              از <code>excel.codal.ir</code> دانلود می‌کند. مانع این است که فید برای این نوعِ
+              گزارش لینکِ پیوست نمی‌دهد (۱ از ۷۴۸).</li>
+          <li><b>وضعیت:</b> تصمیمِ <b>D-026</b> — انتخاب میانِ سه گزینه، نه «منبع نداریم».
+              (شناسهٔ <code>D-030</code> تکراری بود و بازنشسته شد.)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- مقایسه -->
+    <div class="card">
+      <div class="sec-title"><div><h3>مقایسه با هم‌گروه</h3>
+        <p class="sub">۳۵ صندوق طلا · مرتب بر پایهٔ بازده یک‌ماهه</p></div>
+        <span class="chip chip-demo">نمونهٔ نمایشی</span></div>
+      <div class="only-full scroll-x"><table class="tbl">
+        <thead><tr><th>نماد</th><th class="l">حباب</th><th class="l">بازده ۱م</th><th class="l">خالص دارایی</th></tr></thead>
+        <tbody>
+          <tr><td>عیار</td><td class="l num">‎+۲٫۱٪</td><td class="l num up">‎+۶٫۹٪</td><td class="l num dash">—</td></tr>
+          <tr class="me"><td>طلا (این صندوق)</td><td class="l num warn">‎+۵٫۰٪</td><td class="l num up">‎+۶٫۲٪</td><td class="l num dash">—</td></tr>
+          <tr><td>گنج</td><td class="l num">‎+۴٫۴٪</td><td class="l num up">‎+۵٫۸٪</td><td class="l num dash">—</td></tr>
+          <tr><td>زر</td><td class="l num">‎+۷٫۳٪</td><td class="l num up">‎+۵٫۱٪</td><td class="l num dash">—</td></tr>
+          <tr><td>مثقال</td><td class="l num dash">—</td><td class="l num up">‎+۴٫۷٪</td><td class="l num dash">—</td></tr>
+        </tbody>
+      </table>
+      <p class="hint" style="margin-top:8px">ردیفِ «مثقال» NAV ندارد، پس حبابش «—» است و در میانهٔ گروه هم شمرده نمی‌شود.</p></div>
+
+      <div class="only-partial state state-empty">
+        <h4>مقایسه ناقص است</h4>
+        در این حالت بخشی از صندوق‌های گروه NAV ندارند و مقایسهٔ حباب روی بقیه معنا نمی‌دهد، پس نمایش داده نمی‌شود؛
+        مقایسهٔ بازده در دسترس است.
+      </div>
+      <div class="only-stale state state-stale">
+        <h4>مقایسه با دادهٔ کهنه انجام نمی‌شود</h4>
+        قیمت‌ها ۲ ساعت قدیمی‌اند. رتبه‌بندیِ حباب روی دادهٔ کهنه گمراه‌کننده است، پس متوقف شده است.
+      </div>
+      <div class="only-error state state-error">
+        <h4>در دسترس نیست</h4>
+        خواندنِ فهرست هم‌گروه ناموفق بود. صفحه به‌جای جدولِ خالی، همین پیام را نشان می‌دهد.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>روند NAV و قیمت</h3>
+    <p class="sub">۳۷ روزِ معاملاتیِ موجود · از ۱۴۰۵/۰۴/۲۷</p>
+    <div class="only-full">
+      <svg class="spark" viewBox="0 0 300 100" preserveAspectRatio="none" aria-label="روند قیمت و NAV">
+        <polyline fill="none" stroke="var(--navy)" stroke-width="2.2"
+          points="0,82 25,76 50,70 75,73 100,58 125,52 150,55 175,40 200,34 225,26 250,23 275,14 300,8"/>
+        <polyline fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-dasharray="3 3"
+          points="0,90 25,87 50,81 75,81 100,69 125,66 150,66 175,54 200,51 225,42 250,39 275,33 300,27"/>
+      </svg>
+      <p class="hint"><span style="color:var(--navy)">▬</span> قیمت &nbsp;
+        <span style="color:var(--gold-ink)">▬▬</span> NAV ابطال — فاصلهٔ دو خط همان حباب است.</p>
+    </div>
+    <div class="only-partial state state-empty">
+      <h4>تاریخچه هنوز کوتاه است</h4>
+      برای این صندوق ۹ روز NAV ثبت شده است. نمودارِ روند از ۳۰ روز به بعد نمایش داده می‌شود تا شکلِ نمودار گمراه نکند.
+    </div>
+    <div class="only-stale state state-stale"><h4>آخرین نقطهٔ نمودار دیروز است</h4>
+      نمودار رسم می‌شود ولی آخرین نقطه‌اش امروز نیست؛ روی محور علامت خورده است.</div>
+    <div class="only-error state state-error"><h4>در دسترس نیست</h4>خواندنِ تاریخچه ناموفق بود.</div>
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════ ج) صفحهٔ نماد ══════════════════ -->
+<section class="screen" id="s-symbol">
+<div class="page stack">
+
+  <div class="sec-title">
+    <div>
+      <h2>فملی — ملی صنایع مس ایران</h2>
+      <p class="hint">هدفِ این صفحه: از قیمت برسی به <b>اینکه شرکت چه می‌فروشد، با چه حاشیه‌ای، و روندش چیست</b>.</p>
+    </div>
+    <span class="only-full chip chip-fresh"><i class="dot"></i> قیمت ۴ دقیقه پیش</span>
+    <span class="only-partial chip chip-fresh"><i class="dot"></i> قیمت ۶ دقیقه پیش</span>
+    <span class="only-stale chip chip-stale">قیمت ۲ ساعت پیش</span>
+    <span class="only-error chip chip-unknown">وضعیت داده نامشخص</span>
+  </div>
+
+  <div class="grid5">
+    <div class="kpi"><div class="k">قیمت پایانی</div><div class="v num">۷٬۳۲۰ ت</div>
+      <div class="d"><b>تغییر:</b> <span class="up">‎+۱٫۴٪</span></div></div>
+    <div class="kpi"><div class="k">ارزش بازار</div><div class="v num">۸۷۹ میلیارد تومان</div>
+      <div class="d"><b>رتبه:</b> ۴ بازار</div></div>
+    <div class="kpi"><div class="k">P/E گذشته‌نگر</div><div class="v num">۸٫۱</div>
+      <div class="d"><b>پایه:</b> سود ۴ فصل اخیر</div></div>
+    <div class="kpi"><div class="k">حاشیه سود خالص</div><div class="v num">۲۳٪</div>
+      <div class="d"><b>فصل قبل:</b> ۲۵٪ · <span class="down">‎−۲ واحد</span></div></div>
+    <div class="kpi"><div class="k">خالص ورود حقیقی</div><div class="v num down">‎−۱۲ میلیون تومان</div>
+      <div class="d"><b>چرا:</b> دومین روز خروج</div></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="sec-title"><div><h3>حاشیه سود — ۸ فصل اخیر</h3>
+        <p class="sub">ناخالص · عملیاتی · خالص، از صورت‌های میان‌دوره‌ای (ن‑۱۰)</p></div>
+        <span class="chip chip-demo">نمونهٔ نمایشی</span></div>
+      <div class="only-full">
+        <div class="bars">
+          <i style="height:64%"></i><i style="height:70%"></i><i style="height:66%"></i><i style="height:74%"></i>
+          <i style="height:71%"></i><i style="height:62%"></i><i style="height:58%"></i><i style="height:55%"></i>
+        </div>
+        <div class="bar-x"><span>۱۴۰۳ق۳</span><span>ق۴</span><span>۱۴۰۴ ق۱</span><span>ق۲</span>
+          <span>ق۳</span><span>ق۴</span><span>۱۴۰۵ق۱</span><span>ق۲</span></div>
+        <p class="hint" style="margin-top:8px"><b>محورِ زمان چپ→راست است</b> (هم‌راستا با نمودارهای فعلیِ محصول). <b>خواندنِ نمودار:</b> حاشیهٔ خالص از ۳۱٪ به ۲۳٪ رسیده —
+          سه فصلِ پیاپی کاهشی. عددِ هر فصل با نگه‌داشتنِ نشانگر دیده می‌شود.</p>
+      </div>
+      <div class="only-partial state state-empty">
+        <h4>فقط ۲ فصل داده هست <span class="chip chip-demo">نمادِ فرضی</span></h4>
+        برای این نماد دو صورت مالیِ میان‌دوره‌ای پردازش شده است. روندِ حاشیه با دو نقطه رسم نمی‌شود؛
+        به‌جای نمودار، همان دو عدد در جدول می‌آید.
+        <ul><li>۱۴۰۵ ق۱ — حاشیهٔ خالص ۲۵٪</li><li>۱۴۰۵ ق۲ — حاشیهٔ خالص ۲۳٪</li></ul>
+      </div>
+      <div class="only-stale state state-stale">
+        <h4>تازه‌ترین صورت مالی مربوط به ۷ ماه پیش است</h4>
+        آخرین ن‑۱۰ پردازش‌شده برای دورهٔ منتهی به ۱۴۰۴/۱۲/۲۹ است. حاشیه‌ها نمایش داده می‌شوند
+        ولی با برچسبِ صریحِ دوره — نه به‌عنوان وضعیت امروز.
+      </div>
+      <div class="only-error state state-error">
+        <h4>در دسترس نیست</h4>خواندنِ صورت‌های مالی ناموفق بود.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title"><div><h3>فروش ماهانه</h3>
+        <p class="sub">از گزارش‌های ن‑۳۰ · واحدها روی هر عدد نوشته شده‌اند</p></div></div>
+      <div class="only-full">
+        <div class="bars">
+          <i class="g" style="height:52%"></i><i class="g" style="height:60%"></i><i class="g" style="height:57%"></i>
+          <i class="g" style="height:71%"></i><i class="g" style="height:83%"></i><i class="g" style="height:78%"></i>
+        </div>
+        <div class="bar-x"><span>اسف</span><span>فرو</span><span>ارد</span><span>خرد</span><span>تیر</span><span>مرد</span></div>
+        <div class="grid3" style="gap:10px;margin-top:12px">
+          <div class="kpi"><div class="k">فروش مرداد</div><div class="v num">۱٬۹۵۰ میلیارد تومان</div>
+            <div class="d"><b>مبنا:</b> جمعِ جدولِ محصولات · <b>پارسال:</b> <span class="up">‎+۱۹٪</span></div></div>
+          <div class="kpi"><div class="k">سهم صادرات</div><div class="v num">۵۷٪</div>
+            <div class="d"><b>مبنا:</b> ۱۱٬۰۹۸ از ۱۹٬۴۹۵ هزار م.ر جدولِ محصولات</div></div>
+          <div class="kpi"><div class="k">شکاف تولید و فروش</div><div class="v num">‎−۱٫۶٪</div>
+            <div class="d"><b>مبنا:</b> ۶۸٬۴۰۰ فروش در برابر ۶۹٬۵۰۰ تن تولید</div></div>
+        </div>
+      </div>
+      <div class="only-partial state state-empty">
+        <h4>گزارش فروشِ این نماد پردازش نشده</h4>
+        برای ۳۱۷ نماد گزارشِ ن‑۳۰ پردازش شده است؛ نمادِ <b>فرضیِ</b> این نمونه میان آن‌ها نیست. (فملیِ واقعی ۳۶ گزارشِ ن‑۳۰ و ۱۸ گزارشِ ن‑۱۰ دارد — این حالت فقط برای دیدنِ ظاهرِ «دادهٔ ناقص» ساخته شده.)
+        این بخش خالی می‌ماند تا گزارشش برسد.
+      </div>
+      <div class="only-stale state state-stale">
+        <h4>آخرین گزارشِ فروش، تیرماه است</h4>
+        گزارش مرداد هنوز در منبع دیده نشده. تاریخِ دوره روی هر عدد نوشته می‌شود.
+      </div>
+      <div class="only-error state state-error"><h4>در دسترس نیست</h4>خواندنِ گزارش‌های فروش ناموفق بود.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title"><div><h3>محصولات — آخرین دورهٔ گزارش‌شده</h3>
+      <p class="sub">مقدار تولید و فروش، نرخِ فروش هر واحد</p></div>
+      <span class="chip chip-neutral">مرداد ۱۴۰۵ · ن‑۳۰</span></div>
+    <div class="only-full scroll-x"><table class="tbl">
+      <thead><tr><th>محصول</th><th>بازار</th><th class="l">تولید</th><th class="l">فروش</th>
+        <th class="l">نرخ فروش</th><th class="l">مبلغ</th></tr></thead>
+      <tbody>
+        <tr><td>کاتد مس</td><td>صادراتی</td><td class="l num">۱۸٬۴۰۰ تن</td><td class="l num">۱۷٬۹۰۰ تن</td>
+          <td class="l num">۶۲۰ م.ر/تن</td><td class="l num">۱۱٬۰۹۸ هزار م.ر</td></tr>
+        <tr><td>کاتد مس</td><td>داخلی</td><td class="l num">۹٬۱۰۰ تن</td><td class="l num">۹٬۳۰۰ تن</td>
+          <td class="l num">۵۹۰ م.ر/تن</td><td class="l num">۵٬۴۸۷ هزار م.ر</td></tr>
+        <tr><td>کنسانتره مس</td><td>داخلی</td><td class="l num">۴۲٬۰۰۰ تن</td><td class="l num">۴۱٬۲۰۰ تن</td>
+          <td class="l num dash">—</td><td class="l num">۲٬۹۱۰ هزار م.ر</td></tr>
+      </tbody>
+    </table>
+    <p class="hint" style="margin-top:8px">نرخِ «کنسانتره» در خودِ گزارش نیامده، پس «—» است و از هیچ عددی بازسازی نشده.
+      <br><b>اتحادِ قابلِ بررسی:</b> برای هر ردیفِ دارای نرخ، <span dir="ltr">مقدارِ فروش × نرخ = مبلغ</span>
+      (۱۷٬۹۰۰ × ۶۲۰ = ۱۱٬۰۹۸ · ۹٬۳۰۰ × ۵۹۰ = ۵٬۴۸۷ هزار م.ر). جمعِ ستونِ مبلغ = ۱۹٬۴۹۵ هزار م.ر،
+      که همان ۱٬۹۵۰ میلیارد تومانِ کارتِ «فروش مرداد» است (میلیون ریال ÷ ۱۰ = میلیون تومان ⇒ ۱۹٬۴۹۵٬۰۰۰ ÷ ۱۰ = ۱٬۹۴۹٬۵۰۰ میلیون تومان).</p></div>
+    <div class="only-partial state state-empty"><h4>ریز محصولات در این گزارش نیامده</h4>
+      گزارش فقط مبلغ کل دوره را دارد. جدولِ محصولات وقتی می‌آید که ریزِ اقلام در گزارش باشد.</div>
+    <div class="only-stale state state-stale"><h4>آخرین ریزِ محصولات، تیرماه است</h4>
+      دورهٔ گزارش روی سرصفحهٔ همین کادر نوشته شده تا با ماه جاری اشتباه نشود.</div>
+    <div class="only-error state state-error"><h4>در دسترس نیست</h4>خواندنِ ریز محصولات ناموفق بود.</div>
+  </div>
+
+  <div class="card">
+    <h3>منبع و تاریخ</h3>
+    <p class="sub">هر عددِ بنیادیِ این صفحه به یک گزارشِ رسمی وصل است</p>
+    <div class="scroll-x"><table class="tbl">
+      <thead><tr><th>بخش</th><th>منبع</th><th class="l">دورهٔ گزارش</th><th class="l">زمان دریافت</th></tr></thead>
+      <tbody>
+        <tr><td>حاشیه سود</td><td>کدال · ن‑۱۰</td><td class="l">منتهی به ۱۴۰۵/۰۴/۳۱</td><td class="l">۱۴۰۵/۰۶/۰۲</td></tr>
+        <tr><td>فروش ماهانه</td><td>کدال · ن‑۳۰</td><td class="l">مرداد ۱۴۰۵</td><td class="l">۱۴۰۵/۰۶/۱۰</td></tr>
+        <tr><td>قیمت و جریان پول</td><td>رلهٔ بازار</td><td class="l">امروز</td><td class="l">۱۴۰۵/۰۶/۱۵ ۱۷:۱۷</td></tr>
+      </tbody>
+    </table></div>
+    <p class="hint" style="margin-top:8px"><b>محدودیتِ شناخته‌شده:</b> «تاریخ انتشارِ رسمی» برای گزارش‌های کدال
+      امروز ثبت نمی‌شود؛ آنچه می‌بینی <b>زمانِ دریافت</b> است. این تفاوت عمداً نوشته شده تا ادعای نادرست نسازد.</p>
+  </div>
+</div>
+</section>
+
+<div class="footer-note">
+  <b>این صفحه یک نمونهٔ طراحی است، نه محصول.</b> داده‌ها ساختگی‌اند و صرفاً برای توافق روی چیدمان‌اند.
+  هیچ بخشی از این صفحه توصیه، پیشنهاد یا جهت‌گیریِ معاملاتی نیست؛ خروجی‌ها وضعیت و بازه گزارش می‌کنند.
+  حالت‌های «ناقص / کهنه / خطا» از نوارِ بالا قابل بررسی‌اند و بخشی از خودِ طراحی‌اند، نه استثنا.
+</div>
+
+</div><!-- /frame -->
+</div><!-- /stage -->
+
+<script>
+(function(){
+  var body=document.body, html=document.documentElement;
+  // پشتیبانی از لینکِ مستقیم به یک حالت: ...html#fund/mobile/partial/dark
+  function apply(tok){
+    var b=document.querySelector('.proto-bar [data-screen="'+tok+'"],.proto-bar [data-view="'+tok+'"],'+
+                                 '.proto-bar [data-state="'+tok+'"],.proto-bar [data-theme="'+tok+'"]');
+    if(b) b.click();
+  }
+  function fromHash(){
+    (location.hash.replace('#','').split('/')).forEach(function(t){ if(t) apply(t.trim()); });
+  }
+  window.addEventListener('hashchange',fromHash);
+
+  document.querySelector('.proto-bar').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var grp=b.parentElement;
+    grp.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed','false')});
+    b.setAttribute('aria-pressed','true');
+    if(b.dataset.screen){
+      document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on')});
+      document.getElementById('s-'+b.dataset.screen).classList.add('on');
+    }
+    if(b.dataset.view) body.dataset.view=b.dataset.view;
+    if(b.dataset.state) body.dataset.state=b.dataset.state;
+    if(b.dataset.theme) html.dataset.theme=b.dataset.theme;
+  });
+  fromHash();
+})();
+</script>
+</body>
+</html>
