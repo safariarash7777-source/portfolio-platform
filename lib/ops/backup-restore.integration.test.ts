@@ -1,6 +1,6 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -383,23 +383,32 @@ describe("اتصال از stdin با CRLF (B-057)", {
   skip: dbError ? `Postgres در دسترس نیست: ${dbError}` : false,
 }, () => {
   const ps1 = readFileSync(join(ROOT, "scripts", "backup-production.ps1"), "utf8");
+  const sh = readFileSync(join(ROOT, "scripts", "backup-production.sh"), "utf8");
   const m = ps1.match(/^\s*\$inner = '((?:[^']|'')*)' \+ \$PsqlArgs$/m);
-  // رشتهٔ تک‌نقل‌قولیِ PowerShell: '' یعنی یک '.
-  const inner = m ? m[1].replace(/''/g, "'") : "";
+  // رشتهٔ تک‌نقل‌قولیِ PowerShell: '' یعنی یک '. `/sql` همان mountِ scripts/backup است.
+  const inner = (m ? m[1].replace(/''/g, "'") : "").replaceAll("/sql/", `${join(ROOT, "scripts", "backup")}/`);
   const url = (db: string, query = "") =>
     `postgresql://${encodeURIComponent(ENV.PGUSER!)}:${encodeURIComponent(ENV.PGPASSWORD!)}` +
     `@${ENV.PGHOST}:${ENV.PGPORT}/${db}${query}`;
-  const run = (stdin: string) =>
-    execFileSync("sh", ["-c", `${inner} -X -A -t -c "SELECT current_database()"`], {
+  // busybox همان پوستهٔ ایمیجِ postgres:17-alpine است؛ نبودش یعنی sh (dash).
+  const SH = spawnSync("sh", ["-c", "command -v busybox"]).status === 0 ? ["busybox", "sh"] : ["sh"];
+  const exec = (stdin: string) =>
+    spawnSync(SH[0], [...SH.slice(1), "-c", `${inner} -X -A -t -c "SELECT current_database()"`], {
       input: stdin,
       encoding: "utf8",
       // عمداً فقط PATH: هیچ PG*ای از محیط نمی‌رسد، پس اتصال فقط از stdin است.
       env: { PATH: process.env.PATH, NODE_ENV: "test" } as NodeJS.ProcessEnv,
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
+    });
+  const run = (stdin: string) => {
+    const r = exec(stdin);
+    assert.equal(r.status, 0, r.stderr);
+    return r.stdout.trim();
+  };
 
-  test("تکهٔ sh از فایل استخراج شد", () => {
-    assert.ok(inner.includes("read -r PGURL"), "الگوی `$inner = '...' + $PsqlArgs` در ps1 پیدا نشد");
+  test("تکهٔ sh از فایل استخراج شد و هر دو اسکریپت همان pgurl.sh را منبع می‌کنند", () => {
+    assert.ok(inner.includes("pgurl.sh"), "الگوی `$inner = '...' + $PsqlArgs` در ps1 پیدا نشد");
+    assert.match(sh, /\. \/sql\/pgurl\.sh; exec psql -w/, "backup-production.sh از pgurl.sh نمی‌گذرد — دو مسیرِ موازی");
+    assert.doesNotMatch(ps1 + sh, /read -r PGURL; exec psql/, "مسیرِ قدیمیِ بی‌گارد برگشته");
   });
 
   test("LF (لینوکس) وصل می‌شود", () => {
@@ -414,9 +423,18 @@ describe("اتصال از stdin با CRLF (B-057)", {
     assert.equal(run(`${url("postgres", "?sslmode=disable")}\r\n`), "postgres");
   });
 
-  test("رمز از محیط نمی‌آید: env خالی است و فقط stdin حامل است", () => {
-    // اگر تکه به‌جای stdin به PG* محیط تکیه می‌کرد، اینجا بی‌صدا از آن استفاده
-    // می‌کرد. env فقط PATH دارد، پس موفقیتِ آزمون‌های بالا فقط از stdin است.
-    assert.equal(run(`${url("postgres")}\r\n`), "postgres");
+  test("ورودیِ خالی: exit 64 پیش از psql — نه سقوط به سوکتِ محلی", () => {
+    for (const stdin of ["", "\n", "\r\n"]) {
+      const r = exec(stdin);
+      assert.equal(r.status, 64, JSON.stringify(stdin));
+      assert.match(r.stderr, /empty connection string/);
+      assert.doesNotMatch(r.stderr, /\/var\/run\/postgresql/);
+    }
+  });
+
+  test("غیر URI: exit 64 پیش از psql", () => {
+    const r = exec(`host=${ENV.PGHOST} password=x\n`);
+    assert.equal(r.status, 64);
+    assert.match(r.stderr, /not a postgres/);
   });
 });

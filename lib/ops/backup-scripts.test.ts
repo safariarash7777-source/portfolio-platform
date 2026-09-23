@@ -311,8 +311,17 @@ describe("سکرت و مقصدِ بکاپ", () => {
   test("رشتهٔ اتصال از stdin می‌رود، نه از argv و نه از متغیرِ محیطی", () => {
     // پاس‌ترویِ `-e DB_URL` روی دستگاهِ آرش نرسید و psql بی‌صدا سراغِ سوکتِ
     // محلی رفت. متغیرِ محیطی ضمناً در `docker inspect` هم دیده می‌شود.
+    // B-057: خواندن از stdin و هر کارِ دیگر روی مقدار در **یک** فایل است که هر دو
+    // اسکریپت منبع می‌کنند — گارد جابه‌جا شد، ضعیف نشد.
+    const pgurl = existsSync(join(ROOT, "scripts", "backup", "pgurl.sh"))
+      ? readFileSync(join(ROOT, "scripts", "backup", "pgurl.sh"), "utf8") : "";
+    assert.match(pgurl, /IFS= read -r PGURL/, "pgurl.sh باید از stdin بخواند");
+    assert.match(pgurl, /tr -d '\\r'/, "pgurl.sh باید CR را حذف کند");
+    assert.match(pgurl, /export PGPASSWORD/, "pgurl.sh باید رمز را از argv بیرون ببرد");
+    assert.ok([...pgurl].every((c) => c.charCodeAt(0) < 128), "pgurl.sh باید ASCII باشد");
     for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
-      assert.match(code, /read -r PGURL/, `${label} باید از stdin بخواند`);
+      assert.match(code, /\. \/sql\/pgurl\.sh; exec psql -w \\?"\\?\$PGURL/, `${label} باید از pgurl.sh بگذرد`);
+      assert.doesNotMatch(code, /read -r PGURL; exec psql/, `${label} مسیرِ قدیمیِ بی‌گارد را دارد`);
       assert.doesNotMatch(code, /docker run --rm -e DB_URL\b/, `${label} هنوز پاس‌ترو دارد`);
       assert.doesNotMatch(code, /-e DB_URL=\$DbUrl/, `${label} سکرت را در argv می‌گذارد`);
     }

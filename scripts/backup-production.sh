@@ -96,13 +96,16 @@ esac
 # مقدار **نرسید**: psql رشتهٔ تهی دید و بی‌صدا سراغِ سوکتِ محلی رفت، و خطایی
 # داد که هیچ شباهتی به علتِ واقعی نداشت.
 #
-# stdin این سؤال را کاملاً حذف می‌کند. ضمناً مقدار نه در argv می‌ماند و نه در
-# `docker inspect` — که متغیرِ محیطی هر دو را نگه می‌داشت.
+# stdin این سؤال را حذف می‌کند و مقدار را از argvِ `docker run` و از
+# `docker inspect` بیرون نگه می‌دارد. هر کاری که داخلِ کانتینر با مقدار می‌شود
+# در **یک** فایل است — `scripts/backup/pgurl.sh`، مشترک با نسخهٔ PowerShell —
+# تا دو اصلاحِ موازی از هم دور نشوند (B-057): حذفِ CR، توقفِ exit 64 روی ورودیِ
+# خالی یا غیر URI پیش از psql، و انتقالِ رمز از argvِ psql به PGPASSWORD.
 psql_with_url() {
   local psql_args="$1"; shift
-  printf '%s\n' "$DB_URL" | docker run --rm -i "$@" \
+  printf '%s\n' "$DB_URL" | docker run --rm -i -v "$REPO_ROOT/scripts/backup:/sql:ro" "$@" \
     --entrypoint sh "$PG_IMAGE" \
-    -c "read -r PGURL; exec psql \"\$PGURL\" $psql_args"
+    -c ". /sql/pgurl.sh; exec psql -w \"\$PGURL\" $psql_args"
 }
 
 # ── پاکسازی، روی هر مسیرِ خروج ───────────────────────────────────────────────
@@ -132,7 +135,6 @@ PROBE="$(psql_with_url '-X -q -t -A -c "SELECT 1"' 2>/dev/null | tr -d '[:space:
 echo "    اتصال برقرار است."
 
 psql_with_url '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
-  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
   > "$OUT_DIR/inventory-source.txt" \
   || die "وصل شدیم ولی اثرِ انگشتِ Production خوانده نشد."
 printf '    %s سطرِ فهرست ثبت شد\n' "$(wc -l < "$OUT_DIR/inventory-source.txt" | tr -d ' ')"
@@ -154,7 +156,6 @@ say "۲/۵ — گرفتنِ بکاپ (roles · schema · data)"
 # خورده، ثابت شده در همان پنجره زنده بوده. شمارشِ بیرونِ آن بازه — به‌ویژه
 # **کمتر** از کمینه‌اش — همچنان شکست است.
 psql_with_url '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
-  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
   > "$OUT_DIR/inventory-source-after.txt" \
   || die "اثرِ انگشتِ دومِ Production خوانده نشد."
 

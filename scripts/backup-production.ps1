@@ -37,11 +37,12 @@
       * Verification compares exact row counts for every table plus a
         structural fingerprint, in BOTH directions.
 
-    Remaining known leaks, both local-machine only: `supabase db dump` takes
-    the connection string as an argument, and psql inside the container
-    receives it as an argument too (see Invoke-PsqlWithUrl). Either is visible
-    in a process list while running. Fine on a personal laptop; do not run
-    this on a shared machine.
+    Remaining known leak, local-machine only: `supabase db dump` takes the
+    connection string as an argument, so it is visible in a process list
+    while running. psql no longer receives the password in argv (see
+    scripts/backup/pgurl.sh); it gets it through PGPASSWORD, readable only by
+    root in the container. Fine on a personal laptop; do not run this on a
+    shared machine.
 
     Prerequisites: Docker Desktop, Supabase CLI (or npx), Node.
 #>
@@ -176,27 +177,23 @@ if ($DbUrl -notmatch '^postgres(ql)?://') {
 # stdin keeps the value out of the `docker run` command line and out of
 # `docker inspect`, which an environment variable would not.
 #
-# It does NOT keep it out of psql's own argv: `exec psql "$PGURL"` expands the
-# full URL, password included, into the psql process inside the container. It
-# is visible to anyone who can list processes on the Docker VM while psql runs
-# (measured: `ps -eo args` shows it). Same exposure class as the documented
-# `supabase db dump` leak in the header - local machine only.
-#
-# CRLF (B-057): a Windows PowerShell pipe into a native process terminates the
-# string with CR LF. `read -r` strips only the LF, so the CR stayed inside the
-# URL: the database name became "postgres<CR>" ("database does not exist"), or
-# a trailing ?sslmode= value became invalid. On a Windows console the CR also
-# returns the cursor to column 0, so the error text overwrites itself and does
-# not look like the real cause. `tr -d` removes every CR before psql sees it;
-# a connection string never legitimately contains one.
+# Everything that happens to the value INSIDE the container lives in ONE file,
+# scripts/backup/pgurl.sh, shared with backup-production.sh so there are not
+# two fixes drifting apart (B-057). It strips the CR that a Windows pipe adds,
+# stops with exit 64 on an empty or non-URI line before psql can fall back to
+# the local socket, and moves the password into PGPASSWORD so it is no longer
+# in psql's argv. `-w` makes psql fail instead of waiting for a prompt.
 function Invoke-PsqlWithUrl {
     param(
         [Parameter(Mandatory = $true)][string]$Url,
         [Parameter(Mandatory = $true)][string]$PsqlArgs,
         [string[]]$DockerArgs = @()
     )
-    $inner = 'read -r PGURL; PGURL=$(printf ''%s'' "$PGURL" | tr -d ''\r''); exec psql "$PGURL" ' + $PsqlArgs
-    $Url | & docker run --rm -i @DockerArgs --entrypoint sh $PgImage -c $inner
+    # `;` not `&&`: a sourced file that calls `exit` ends the whole shell, and a
+    # missing file is a fatal error for `.`, so psql never runs in either case
+    # (measured on busybox and dash). `&&` is also banned by the PS 5.1 guard.
+    $inner = '. /sql/pgurl.sh; exec psql -w "$PGURL" ' + $PsqlArgs
+    $Url | & docker run --rm -i -v "${SqlDir}:/sql:ro" @DockerArgs --entrypoint sh $PgImage -c $inner
 }
 
 # ---- cleanup on every exit path --------------------------------------------
@@ -230,8 +227,7 @@ try {
     Write-Host '    connection OK'
 
     Invoke-PsqlWithUrl -Url $DbUrl `
-        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' `
-        -DockerArgs @('-v', "${SqlDir}:/sql:ro") |
+        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' |
         Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-source.txt')
     if ($LASTEXITCODE -ne 0) { Die 'Connected, but could not read the production fingerprint.' }
     $sourceRows = (Get-Content (Join-Path $OutDir 'inventory-source.txt')).Count
@@ -254,8 +250,7 @@ try {
     # two reads is proven to have been live in that window. A count outside the
     # range - especially BELOW it - is still a failure.
     Invoke-PsqlWithUrl -Url $DbUrl `
-        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' `
-        -DockerArgs @('-v', "${SqlDir}:/sql:ro") |
+        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' |
         Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-source-after.txt')
     if ($LASTEXITCODE -ne 0) { Die 'Could not read the second production fingerprint.' }
 
