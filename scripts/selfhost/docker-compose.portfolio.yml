@@ -1,0 +1,51 @@
+# Override for self-hosted Supabase (upstream supabase/docker) on an Iranian VPS.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.caddy.yml \
+#                  -f docker-compose.portfolio.yml up -d
+#
+# WHY THIS FILE EXISTS
+# Upstream publishes the pooler (5432, 6543) and the API gateway (8000) on
+# 0.0.0.0. Docker writes its own iptables rules, so a host firewall (ufw) does
+# NOT hide published ports. The only reliable guard is to not publish them on a
+# public interface at all. Postgres is reached by operators through an SSH
+# tunnel to 127.0.0.1; the public edge is Caddy on 443 with a real certificate.
+#
+# WHAT IS TURNED OFF AND WHY (measured on Production, 2026-09-23)
+#   storage, imgproxy : 0 buckets, 0 objects; no `.storage.` call in the code.
+#   realtime          : 0 tables in the supabase_realtime publication; no
+#                       `.channel(` call in the code.
+#   functions         : telegram-sync / instagram-sync live only in the cloud
+#                       project (source is not in this repo) and call
+#                       api.telegram.org / Instagram, which an Iranian host
+#                       cannot reach. Telegram sync stays on Vercel cron
+#                       (/api/cron/telegram-sync).
+# Profiles keep them in the file (upstream `depends_on` still resolves) but
+# they never start unless someone passes `--profile unused` on purpose.
+
+services:
+  # Operators only, via SSH tunnel. Never 0.0.0.0.
+  supavisor:
+    ports: !override
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POOLER_PROXY_PORT_TRANSACTION:-6543}:6543"
+
+  # Studio is never on the public edge; operators tunnel to 127.0.0.1:3000.
+  studio:
+    ports: !override
+      - "127.0.0.1:3000:3000"
+
+  # Public edge: only /auth/v1 and /rest/v1 (see Caddyfile next to this file).
+  caddy:
+    volumes: !override
+      - ./portfolio/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  storage:
+    profiles: ["unused"]
+  imgproxy:
+    profiles: ["unused"]
+  realtime:
+    profiles: ["unused"]
+  functions:
+    profiles: ["unused"]
