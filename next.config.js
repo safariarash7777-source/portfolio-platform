@@ -1,3 +1,5 @@
+const { supabaseConnectSrc } = require("./lib/csp-supabase.js");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -45,7 +47,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              `connect-src 'self' ${supabaseConnectSrc()}`,
             ].join("; "),
           },
         ],
