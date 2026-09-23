@@ -31,11 +31,21 @@
         refuses to run if the destination is inside one.
       * The restore runs as ONE psql invocation, in ONE transaction, with
         ON_ERROR_STOP=1. Success is the process exit code, never a grep.
-      * The restore target is an isolated local Supabase stack, not a plain
-        Postgres container - plain Postgres lacks the managed auth/storage
-        schemas that the data dump needs.
+      * The restore target is a throwaway Supabase stack (db + auth + storage)
+        from scripts/backup/verify-stack.compose.yml, not a plain Postgres
+        container - plain Postgres lacks the managed auth/storage schemas
+        that the data dump needs. It publishes NO port and sits on an
+        `internal` Docker network: nothing on the LAN can reach it, and
+        nothing restored into it (pg_cron jobs, pg_net requests) can reach
+        a real service. Both facts are read back from the RUNNING containers
+        before any data goes in.
+      * Before the restore, the auth/storage STRUCTURE of the target must
+        equal production's (scripts/backup/managed-schemas.sql) - a newer
+        version number alone is not accepted as proof.
       * Verification compares exact row counts for every table plus a
         structural fingerprint, in BOTH directions.
+      * If the dump succeeded but the restore or the comparison did not, the
+        backup files are KEPT and MANIFEST.txt says RESTORE UNVERIFIED.
 
     Remaining known leak, local-machine only: `supabase db dump` takes the
     connection string as an argument, so it is visible in a process list
@@ -44,7 +54,12 @@
     root in the container. Fine on a personal laptop; do not run this on a
     shared machine.
 
-    Prerequisites: Docker Desktop, Supabase CLI (or npx), Node.
+    Prerequisites: Docker Desktop (with `docker compose`), Node, and the
+    Supabase CLI (or npx) - the CLI is used for the dump only.
+
+    Test-only switch: BACKUP_KEEP_VERIFY_STACK=1 leaves the throwaway stack
+    running after the run so a harness can inspect it. Never set it for a
+    production backup: the stack would keep real member data on disk.
 #>
 
 Set-StrictMode -Version 2.0
@@ -71,16 +86,29 @@ $RepoRoot   = Split-Path -Parent $PSScriptRoot
 $SqlDir       = Join-Path $RepoRoot 'scripts\backup'
 $InventorySql = Join-Path $SqlDir 'inventory.sql'
 $AssertSql    = Join-Path $SqlDir 'assert-managed-schemas.sql'
+$ManagedSql   = Join-Path $SqlDir 'managed-schemas.sql'
+$ShapeSql     = Join-Path $SqlDir 'verify-stack-shape.sql'
+$PreludeSql   = Join-Path $SqlDir 'restore-prelude.sql'
 $CompareJs    = Join-Path $SqlDir 'compare.mjs'
+$ComposeFile  = Join-Path $SqlDir 'verify-stack.compose.yml'
 
-$VerifyId      = "prodverify$($Stamp -replace '-','')"
-$VerifyWorkdir = Join-Path ([System.IO.Path]::GetTempPath()) $VerifyId
-$PortBase      = 55000 + ((([int]($Stamp.Substring($Stamp.Length - 4))) % 900) * 10)
+# One name for every resource of this run: compose project, container names,
+# network, volumes and the com.portfolio.backup-verify label all derive from
+# it, so cleanup can remove exactly this run and nothing else.
+$VerifyId     = "prodverify$($Stamp -replace '-','')"
+$VerifyLabel  = "com.portfolio.backup-verify=$VerifyId"
+$VerifyNet    = "${VerifyId}_verify"
+$KeepStack    = ($env:BACKUP_KEEP_VERIFY_STACK -eq '1')
 
 $PgImage = 'postgres:17-alpine'
 
+$script:FailReason      = ''
+$script:DumpDone        = $false
+$script:ManifestWritten = $false
+$script:StackStarted    = $false
+
 function Say  { param([string]$Text) Write-Host "`n$Text" -ForegroundColor Cyan }
-function Die  { param([string]$Text) Write-Host "`n[FAIL] $Text" -ForegroundColor Red; exit 1 }
+function Die  { param([string]$Text) $script:FailReason = $Text; Write-Host "`n[FAIL] $Text" -ForegroundColor Red; exit 1 }
 
 # UTF-8 WITHOUT a BOM, on every PowerShell version. Windows PowerShell 5.1's
 # `Set-Content -Encoding UTF8` writes a BOM (PowerShell 7 does not), so a file
@@ -90,6 +118,17 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 function Write-Utf8NoBom {
     param([string]$Path, [string[]]$Lines)
     [System.IO.File]::WriteAllLines($Path, $Lines, $Utf8NoBom)
+}
+
+# Throwaway secrets for the local stack. Random per run, never reused, never
+# written to disk; they only exist so auth/storage can log in to their own
+# database inside the internal network.
+function New-HexSecret {
+    param([int]$Bytes)
+    $buf = New-Object byte[] $Bytes
+    $rng = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+    try { $rng.GetBytes($buf) } finally { $rng.Dispose() }
+    return (($buf | ForEach-Object { $_.ToString('x2') }) -join '')
 }
 
 # ---- 0) destination must be outside every git repository --------------------
@@ -117,33 +156,60 @@ if (Test-InsideGitRepo -Path $OutDir) {
 # ---- 1) prerequisites -------------------------------------------------------
 function Test-Command { param([string]$Name) $null -ne (Get-Command $Name -ErrorAction SilentlyContinue) }
 
-if (-not (Test-Command 'docker')) { Die 'Docker is not installed. The Supabase CLI needs it to start the stack.' }
+if (-not (Test-Command 'docker')) { Die 'Docker is not installed. It runs both the dump and the restore test.' }
 & docker info 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) { Die 'Docker is installed but not running. Open Docker Desktop.' }
+& docker compose version 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) { Die '`docker compose` is not available. Update Docker Desktop.' }
 if (-not (Test-Command 'node')) { Die 'Node is not installed. The structural comparison needs it.' }
-if (-not (Test-Path $InventorySql)) { Die "Missing file: $InventorySql" }
-if (-not (Test-Path $AssertSql))    { Die "Missing file: $AssertSql" }
-if (-not (Test-Path $CompareJs))    { Die "Missing file: $CompareJs" }
+foreach ($f in @($InventorySql, $AssertSql, $ManagedSql, $ShapeSql, $PreludeSql, $CompareJs, $ComposeFile, (Join-Path $SqlDir 'pgurl.sh'))) {
+    if (-not (Test-Path $f)) { Die "Missing file: $f" }
+}
+# pgurl.sh is sourced by busybox sh inside a Linux container. A checkout with
+# core.autocrlf=true (the Git for Windows default) turns it into CRLF, and sh
+# then fails on every line. .gitattributes pins it to LF; this catches a
+# checkout made before that, instead of failing later with a baffling error.
+if ([System.IO.File]::ReadAllText((Join-Path $SqlDir 'pgurl.sh')).Contains("`r")) {
+    Die "scripts\backup\pgurl.sh has Windows line endings (CRLF). Re-checkout it (the repo copy is LF):`n    Remove-Item scripts\backup\pgurl.sh; git checkout -- scripts/backup/pgurl.sh"
+}
 
 # On Windows, `npx` resolves to npx.ps1 under some setups, which cannot be
 # invoked as a native command and fails in confusing ways. Prefer the real
 # executable: supabase.exe first, then npx.cmd.
+#
+# The npx path is PINNED. Measured on the owner's laptop (2026-09-23): an
+# unpinned `npx --yes supabase` resolved to a cached 2.117.0 install whose
+# Windows binary (an optional npm dependency) had silently failed to
+# download, and the dump died with "No matching Supabase CLI binary package
+# found for win32-x64" - after the password had been typed. A pinned spec is
+# its own cache entry, and the CLI is run once below BEFORE the prompt.
+$SupaPin  = 'supabase@2.117.0'
 $SupaExe  = $null
 $SupaArgs = @()
 if (Test-Command 'supabase') {
     $SupaExe = (Get-Command 'supabase').Source
 } elseif (Test-Command 'npx.cmd') {
     $SupaExe = (Get-Command 'npx.cmd').Source
-    $SupaArgs = @('--yes', 'supabase')
+    $SupaArgs = @('--yes', $SupaPin)
 } else {
     Die 'Neither `supabase` nor `npx.cmd` was found. One of them is required.'
 }
 
 function Invoke-Supabase {
     param([string[]]$Arguments)
-    & $SupaExe @($SupaArgs + $Arguments)
+    # `| Out-Host`: anything the CLI prints on stdout would otherwise become
+    # part of this function's return value, `(Invoke-Supabase ...) -ne 0` would
+    # compare an array, and a successful dump would be reported as failed.
+    # Measured with a wrapper that printed one line (2026-09-23).
+    & $SupaExe @($SupaArgs + $Arguments) | Out-Host
     return $LASTEXITCODE
 }
+
+$supaVersion = "$(& $SupaExe @($SupaArgs + @('--version')) 2>$null | Select-Object -Last 1)".Trim()
+if ($LASTEXITCODE -ne 0 -or $supaVersion -notmatch '^\d+\.\d+\.\d+') {
+    Die "The Supabase CLI does not run on this machine ($SupaExe $($SupaArgs -join ' ') --version failed).`nNothing was asked or written. If npx is used, clear its cache entry and retry."
+}
+Write-Host "Supabase CLI for the dump: $supaVersion"
 
 # ---- 2) connection string: prompted, never stored ---------------------------
 Write-Host @'
@@ -214,20 +280,91 @@ function Invoke-PsqlWithUrl {
     $Url | & docker run --rm -i -v "${SqlDir}:/sql:ro" @DockerArgs --entrypoint sh $PgImage -c $inner
 }
 
+# ---- the throwaway stack: one compose project, one label --------------------
+function Invoke-Compose {
+    param([string[]]$Arguments)
+    # `| Out-Host` for the same reason as Invoke-Supabase: stdout must not
+    # leak into the returned exit code.
+    & docker compose -p $VerifyId -f $ComposeFile @Arguments | Out-Host
+    return $LASTEXITCODE
+}
+
+# ---- manifest - non-sensitive only ------------------------------------------
+# Written on success AND on every failure after the dump: the files are kept,
+# and the manifest must say plainly whether they were proven restorable.
+function Write-Manifest {
+    param([string]$Verdict)
+    $manifest = New-Object System.Collections.Generic.List[string]
+    $manifest.Add("backup taken:   $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) UTC")
+    $manifest.Add('project ref:    uooeygybrniptzdxuzhj (production)')
+    $manifest.Add("supabase cli:   $supaVersion (dump only)")
+    $manifest.Add("verify target:  scripts/backup/verify-stack.compose.yml, project $VerifyId (images pinned by digest)")
+    $manifest.Add('isolation:      no published port, internal network, checked on the running containers before restore')
+    $manifest.Add('restore method: docker exec in the db container, supabase_admin, one psql invocation, --single-transaction, ON_ERROR_STOP=1')
+    $manifest.Add("restore exit:   $restoreExit")
+    $manifest.Add("auth schema:    production $srcAuth / verify stack $dstAuth")
+    $manifest.Add("managed schema: auth+storage structure compare exit $managedExit (0 = identical)")
+    $manifest.Add('verification:   dynamic row counts (public+auth+storage) + structural fingerprint + auth.users credential digest, both directions')
+    $manifest.Add('exclusions:     storage.buckets_vectors, storage.vector_indexes (documented)')
+    $manifest.Add("NOT IN BACKUP:  pg_cron jobs - production has $srcCron; supabase db dump leaves cron.job out. Recreate them by hand after a restore.")
+    $manifest.Add("inventory rows: $sourceRows")
+    $manifest.Add("result:         $Verdict")
+    $manifest.Add('')
+    foreach ($name in @('roles', 'schema', 'data')) {
+        $path = Join-Path $OutDir "$name.sql"
+        if (Test-Path $path) {
+            $size = (Get-Item $path).Length
+            $hash = (Get-FileHash -Algorithm SHA256 $path).Hash.ToLower()
+            $manifest.Add(('{0,-10} {1,12} bytes  sha256={2}' -f "$name.sql", $size, $hash))
+        } else {
+            $manifest.Add(('{0,-10} missing' -f "$name.sql"))
+        }
+    }
+    $manifestPath = Join-Path $OutDir 'MANIFEST.txt'
+    Write-Utf8NoBom -Path $manifestPath -Lines $manifest.ToArray()
+    $script:ManifestWritten = $true
+    Get-Content $manifestPath | ForEach-Object { Write-Host $_ }
+}
+
 # ---- cleanup on every exit path --------------------------------------------
 # Success, ordinary failure, partial startup and Ctrl-C all land here. A
-# leaked stack holds ports open AND keeps production data on disk.
+# leaked stack keeps production data on disk.
 function Invoke-Cleanup {
-    if (Test-Path $VerifyWorkdir) {
-        Say 'Cleaning up the temporary stack'
-        Invoke-Supabase @('stop', '--workdir', $VerifyWorkdir, '--no-backup', '--yes') | Out-Null
-        Remove-Item -Recurse -Force $VerifyWorkdir -ErrorAction SilentlyContinue
+    if ($script:DumpDone -and -not $script:ManifestWritten) {
+        Write-Host ''
+        Write-Host '[RESTORE UNVERIFIED] The backup files were created and are KEPT, but they' -ForegroundColor Yellow
+        Write-Host '                     were not proven restorable. Do not delete them.' -ForegroundColor Yellow
+        Write-Manifest -Verdict "RESTORE UNVERIFIED - $($script:FailReason -split "`n" | Select-Object -First 1)"
+        Write-Host "Path: $OutDir"
     }
-    $env:DB_URL = $null
+    if ($script:StackStarted) {
+        if ($KeepStack) {
+            Write-Host "`n[TEST] BACKUP_KEEP_VERIFY_STACK=1: stack $VerifyId left running." -ForegroundColor Yellow
+        } else {
+            Say "Cleaning up the temporary stack ($VerifyId)"
+            Invoke-Compose @('down', '--volumes', '--remove-orphans', '--timeout', '5') 2>$null | Out-Null
+            $left = @(& docker ps -a -q --filter "label=$VerifyLabel") + @(& docker volume ls -q --filter "label=com.docker.compose.project=$VerifyId") + @(& docker network ls -q --filter "label=$VerifyLabel")
+            $left = @($left | Where-Object { $_ })
+            if ($left.Count -gt 0) {
+                Write-Host "[WARN] $($left.Count) resource(s) of $VerifyId are still present. Remove them with:" -ForegroundColor Red
+                Write-Host "    docker compose -p $VerifyId -f `"$ComposeFile`" down --volumes"
+            } else {
+                Write-Host "    removed: containers, network and volumes of $VerifyId (nothing else touched)"
+            }
+        }
+    }
+    foreach ($n in @('VERIFY_ID', 'VERIFY_DB_PASSWORD', 'VERIFY_JWT_SECRET', 'VERIFY_ANON_KEY', 'VERIFY_SERVICE_KEY')) {
+        Remove-Item "Env:$n" -ErrorAction SilentlyContinue
+    }
 }
 
 $restoreExit = -1
 $compareExit = -1
+$managedExit = -1
+$srcAuth     = '(not read)'
+$srcCron     = '(not read)'
+$dstAuth     = '(not read)'
+$sourceRows  = 0
 
 try {
     # ---- 3) source fingerprint, before the dump -----------------------------
@@ -254,6 +391,14 @@ try {
     Write-Utf8NoBom -Path (Join-Path $OutDir 'auth-version.txt') -Lines @($srcAuth)
     Write-Host "    production Auth schema: $srcAuth"
 
+    # pg_cron jobs are NOT in `supabase db dump` output (CLI 2.117.0: the data
+    # dump carries no cron.job rows; measured with a synthetic job). They are
+    # counted here so the manifest states the gap instead of hiding it.
+    $srcCron = "$(Invoke-PsqlWithUrl -Url $DbUrl -PsqlArgs '-X -q -t -A -c ''SELECT coalesce((xpath($$/row/c/text()$$, query_to_xml($$SELECT count(*) AS c FROM cron.job$$, false, true, $$$$)))[1]::text, $$0$$) WHERE to_regclass($$cron.job$$) IS NOT NULL''')".Trim()
+    if ($LASTEXITCODE -ne 0) { Die 'Connected, but could not count the production pg_cron jobs.' }
+    if ([string]::IsNullOrWhiteSpace($srcCron)) { $srcCron = '0 (pg_cron not installed)' }
+    Write-Host "    production pg_cron jobs: $srcCron (not part of the dump - see MANIFEST)"
+
     # psql writes the file itself (-o into a mounted folder). Piping psql's
     # output through PowerShell would decode it with the console code page on
     # 5.1 and re-encode it, so the bytes on disk would not be the bytes psql
@@ -264,11 +409,17 @@ try {
     $sourceRows = [System.IO.File]::ReadAllLines((Join-Path $OutDir 'inventory-source.txt'), $Utf8NoBom).Count
     Write-Host "    $sourceRows inventory rows recorded"
 
+    # The auth/storage structure the restore target will have to match.
+    Invoke-PsqlWithUrl -Url $DbUrl -DockerArgs @('-v', "${OutDir}:/out") `
+        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/managed-schemas.sql -o /out/managed-source.txt'
+    if ($LASTEXITCODE -ne 0) { Die 'Connected, but could not read the production auth/storage structure.' }
+
     # ---- 4) the three dump files, per the official Supabase method ----------
     Say '2/5 - taking the backup (roles / schema / data)'
     if ((Invoke-Supabase @('db', 'dump', '--db-url', $DbUrl, '-f', (Join-Path $OutDir 'roles.sql'), '--role-only')) -ne 0) { Die 'roles dump failed.' }
     if ((Invoke-Supabase @('db', 'dump', '--db-url', $DbUrl, '-f', (Join-Path $OutDir 'schema.sql'))) -ne 0) { Die 'schema dump failed.' }
     if ((Invoke-Supabase @('db', 'dump', '--db-url', $DbUrl, '-f', (Join-Path $OutDir 'data.sql'), '--use-copy', '--data-only', '-x', 'storage.buckets_vectors', '-x', 'storage.vector_indexes')) -ne 0) { Die 'data dump failed.' }
+    $script:DumpDone = $true
 
     # ---- 4b) source fingerprint AGAIN, after the dump -----------------------
     # Production keeps writing during the dump: the relay stores a snapshot
@@ -289,63 +440,64 @@ try {
         if (-not (Test-Path $path) -or (Get-Item $path).Length -eq 0) { Die "$name.sql is empty - the backup is incomplete." }
     }
 
-    # ---- 5) isolated local Supabase stack -----------------------------------
+    # ---- 5) the throwaway restore target ------------------------------------
     # A plain postgres container is NOT a faithful target: the schema dump
     # omits managed schemas such as auth and storage, while the data dump
     # contains their data (auth.users). On plain Postgres those tables do
     # not exist, so the restore either breaks or hides the breakage.
-    Say "3/5 - starting an isolated local Supabase stack ($VerifyId)"
-    New-Item -ItemType Directory -Force -Path $VerifyWorkdir | Out-Null
-    if ((Invoke-Supabase @('init', '--workdir', $VerifyWorkdir, '--yes')) -ne 0) { Die 'supabase init failed in the temp workdir.' }
-
-    # Unique ports, so the owner's own local project is never touched.
-    $config = Join-Path $VerifyWorkdir 'supabase\config.toml'
-    if (-not (Test-Path $config)) { Die 'config.toml was not created.' }
-    $seen = @{}
-    $next = $PortBase
-    $lines = [System.IO.File]::ReadAllLines($config, $Utf8NoBom) | ForEach-Object {
-        if ($_ -match '^\s*port\s*=\s*(\d+)') {
-            $original = $matches[1]
-            if (-not $seen.ContainsKey($original)) { $seen[$original] = $next; $next = $next + 1 }
-            $_ -replace '^\s*port\s*=\s*\d+', "port = $($seen[$original])"
-        } else { $_ }
+    #
+    # `supabase start` is no longer used for this: it publishes every port on
+    # 0.0.0.0/[::] and ships whatever Auth the installed CLI bundles. See the
+    # header of verify-stack.compose.yml for the measurements.
+    Say "3/5 - starting the isolated restore target ($VerifyId)"
+    $env:VERIFY_ID          = $VerifyId
+    $env:VERIFY_DB_PASSWORD = New-HexSecret 24
+    $env:VERIFY_JWT_SECRET  = New-HexSecret 32
+    $env:VERIFY_ANON_KEY    = 'unused-in-restore-test'
+    $env:VERIFY_SERVICE_KEY = 'unused-in-restore-test'
+    $script:StackStarted = $true
+    if ((Invoke-Compose @('up', '--detach', '--wait', '--quiet-pull')) -ne 0) {
+        Die 'The restore target did not become healthy (docker compose up --wait failed).'
     }
-    Write-Utf8NoBom -Path $config -Lines $lines
 
-    if ((Invoke-Supabase @('start', '--workdir', $VerifyWorkdir)) -ne 0) { Die 'The local Supabase stack did not start.' }
-
-    $statusEnv = & $SupaExe @($SupaArgs + @('status', '--workdir', $VerifyWorkdir, '-o', 'env'))
-    $verifyUrl = $null
-    foreach ($line in $statusEnv) {
-        if ($line -match '^DB_URL="(.*)"$') { $verifyUrl = $matches[1] }
-    }
-    if ([string]::IsNullOrWhiteSpace($verifyUrl)) { Die 'Could not read the local stack database URL.' }
-    # The throwaway stack's own password (the CLI default), not a secret. It is
-    # only used inside the database container.
-    $localPw = $null
-    if ($verifyUrl -match '^postgres(ql){0,1}://[^:/@]+:([A-Za-z0-9._~-]+)@') { $localPw = $matches[2] }
-    if ([string]::IsNullOrWhiteSpace($localPw)) { Die 'Could not read the local stack password from its status.' }
-
-    # ---- 5b) no published port on a public interface ------------------------
-    # The Supabase CLI publishes its ports on every interface by default, so a
-    # stack holding REAL member data would be reachable from the local network.
-    # Production data goes in ONLY if every published port is bound to
-    # 127.0.0.1. Otherwise stop here, before anything is restored.
-    $ports = @(& docker ps --filter "name=$VerifyId" --format '{{.Names}}|{{.Ports}}')
-    if ($LASTEXITCODE -ne 0) { Die 'Could not list the local stack containers.' }
+    # ---- 5b) isolation, read back from the running containers ---------------
+    # Not "the file has no ports:" - what Docker actually did. Three separate
+    # facts, each enough to stop:
+    #   * no container of this run shows a published port in `docker ps`;
+    #   * no container has a port binding or publish-all in its HostConfig,
+    #     and none is attached to any network except this run's own;
+    #   * that network is `internal` (no route to the host LAN or internet).
+    $ports = @(& docker ps -a --filter "label=$VerifyLabel" --format '{{.Names}}|{{.Ports}}')
+    if ($LASTEXITCODE -ne 0) { Die 'Could not list the restore target containers.' }
+    if ($ports.Count -ne 3) { Die "Expected 3 containers for $VerifyId, found $($ports.Count)." }
     $public = @($ports | Where-Object { $_ -match '(^|[|, ])(0\.0\.0\.0|\[::\]|::):\d+->' })
     if ($public.Count -gt 0) {
-        Die ("The local stack publishes ports on every network interface:`n    " + ($public -join "`n    ") +
-            "`nNo production data was restored into it.`nFix once: Docker Desktop -> Settings -> Docker Engine -> add`n    `"ip`": `"127.0.0.1`"`nApply & restart, then run this script again.")
+        Die ("The restore target publishes ports on every network interface:`n    " + ($public -join "`n    ") + "`nNo production data was restored into it.")
     }
-    $dbContainer = "supabase_db_$VerifyId"
-    if (-not ($ports | Where-Object { $_ -like "$dbContainer|*" })) { Die "The database container $dbContainer was not found." }
-    Write-Host '    every published port is bound to 127.0.0.1'
+    $published = @($ports | Where-Object { $_ -match '->' })
+    if ($published.Count -gt 0) {
+        Die ("The restore target publishes a port:`n    " + ($published -join "`n    ") + "`nNo production data was restored into it.")
+    }
+    foreach ($row in $ports) {
+        $name = ($row -split '\|')[0]
+        $hc = "$(& docker inspect --format '{{json .HostConfig.PortBindings}}|{{.HostConfig.PublishAllPorts}}|{{range $k, $v := .NetworkSettings.Networks}}{{$k}};{{end}}' $name)".Trim()
+        if ($LASTEXITCODE -ne 0) { Die "Could not inspect $name." }
+        $parts = $hc -split '\|'
+        if (($parts[0] -ne '{}' -and $parts[0] -ne 'null') -or $parts[1] -ne 'false' -or $parts[2] -ne "$VerifyNet;") {
+            Die "Container $name is not isolated (bindings/publish-all/networks: $hc). No production data was restored into it."
+        }
+    }
+    $internal = "$(& docker network inspect --format '{{.Internal}}' $VerifyNet)".Trim()
+    if ($LASTEXITCODE -ne 0 -or $internal -ne 'true') { Die "Network $VerifyNet is not internal ($internal). No production data was restored into it." }
+    $dbContainer = "$(& docker ps -a --filter "label=$VerifyLabel" --filter 'label=com.docker.compose.service=db' --format '{{.Names}}')".Trim()
+    if ([string]::IsNullOrWhiteSpace($dbContainer)) { Die "The database container of $VerifyId was not found." }
+    Write-Host "    no published port on any of $($ports.Count) containers; network $VerifyNet is internal"
 
     # Everything below runs INSIDE the database container with `docker exec`:
     # no --network host (unreliable on Docker Desktop), no published port, and
     # psql is the server's own version. Files go in and out with `docker cp`,
-    # so their bytes are never re-encoded by PowerShell.
+    # so their bytes are never re-encoded by PowerShell. The image trusts
+    # supabase_admin on 127.0.0.1 inside the container, so no password.
     #
     # Connect as supabase_admin: roles.sql sets role parameters such as
     # log_min_messages that only a superuser may set. The same restore as
@@ -353,11 +505,11 @@ try {
     function Invoke-InDb {
         param([string]$Command)
         if ($Command.Contains('"')) { Die 'internal: in-container commands must not contain double quotes (Windows PowerShell 5.1).' }
-        & docker exec $dbContainer sh -c ("PGPASSWORD='$localPw' psql -h 127.0.0.1 -U supabase_admin -d postgres -X -q " + $Command)
+        & docker exec $dbContainer sh -c ('psql -h 127.0.0.1 -U supabase_admin -d postgres -X -q ' + $Command)
     }
     & docker exec $dbContainer mkdir -p /tmp/restore
     if ($LASTEXITCODE -ne 0) { Die 'Could not prepare the local database container.' }
-    foreach ($file in @((Join-Path $OutDir 'roles.sql'), (Join-Path $OutDir 'schema.sql'), (Join-Path $OutDir 'data.sql'), $AssertSql, $InventorySql)) {
+    foreach ($file in @((Join-Path $OutDir 'roles.sql'), (Join-Path $OutDir 'schema.sql'), (Join-Path $OutDir 'data.sql'), $AssertSql, $InventorySql, $ManagedSql, $ShapeSql, $PreludeSql)) {
         & docker cp $file "${dbContainer}:/tmp/restore/"
         if ($LASTEXITCODE -ne 0) { Die "Could not copy $(Split-Path -Leaf $file) into the local database container." }
     }
@@ -368,7 +520,7 @@ try {
     if ([string]::CompareOrdinal($dstAuth, $srcAuth) -lt 0) {
         Die ("The local Supabase Auth schema ($dstAuth) is older than production ($srcAuth).`n" +
             "A restore would fail on newer auth columns. Nothing was restored.`n" +
-            "Update the Supabase CLI (for example: npm install -g supabase@latest), then run again.")
+            "Update the pinned auth image in scripts/backup/verify-stack.compose.yml, then run again.")
     }
     Write-Host "    local Auth schema $dstAuth >= production $srcAuth"
 
@@ -378,6 +530,24 @@ try {
     if ($LASTEXITCODE -ne 0) {
         Die 'The restore target lacks the managed schemas. It is not faithful, so a restore there would prove nothing.'
     }
+
+    # ...and their STRUCTURE must be production's, both directions. A version
+    # number is not a structure: see scripts/backup/managed-schemas.sql.
+    # First remove the two empty tables only single-tenant Storage creates
+    # (verify-stack-shape.sql explains; it refuses if they hold any row).
+    Invoke-InDb '-v ON_ERROR_STOP=1 -f /tmp/restore/verify-stack-shape.sql'
+    if ($LASTEXITCODE -ne 0) { Die 'Could not align the restore target storage schema with the hosted platform.' }
+    Invoke-InDb '-v ON_ERROR_STOP=1 -f /tmp/restore/managed-schemas.sql -o /tmp/restore/managed-target.txt'
+    if ($LASTEXITCODE -ne 0) { Die 'Could not read the restore target auth/storage structure.' }
+    & docker cp "${dbContainer}:/tmp/restore/managed-target.txt" (Join-Path $OutDir 'managed-target.txt')
+    if ($LASTEXITCODE -ne 0) { Die 'Could not copy the target auth/storage structure out of the container.' }
+    & node $CompareJs (Join-Path $OutDir 'managed-source.txt') (Join-Path $OutDir 'managed-target.txt') --report (Join-Path $OutDir 'managed-comparison.txt') | Out-Null
+    $managedExit = $LASTEXITCODE
+    if ($managedExit -ne 0) {
+        Die ("The restore target auth/storage structure differs from production (compare exit $managedExit).`n" +
+            "Details: $(Join-Path $OutDir 'managed-comparison.txt')`nNothing was restored. Update the pinned images in verify-stack.compose.yml.")
+    }
+    Write-Host '    auth/storage structure identical to production (both directions)'
 
     # ---- 6) atomic restore --------------------------------------------------
     # One psql invocation, one transaction, ON_ERROR_STOP=1, official order:
@@ -389,7 +559,7 @@ try {
     # indicator that could never go red.
     Say '4/5 - restoring in a single transaction (ON_ERROR_STOP=1, as supabase_admin)'
     $restoreLog = Join-Path $OutDir 'restore.log'
-    Invoke-InDb ('--single-transaction --variable ON_ERROR_STOP=1 --file /tmp/restore/roles.sql --file /tmp/restore/schema.sql ' +
+    Invoke-InDb ('--single-transaction --variable ON_ERROR_STOP=1 --file /tmp/restore/roles.sql --file /tmp/restore/restore-prelude.sql --file /tmp/restore/schema.sql ' +
         '--command ''SET session_replication_role = replica'' --file /tmp/restore/data.sql > /tmp/restore/restore.log 2>&1')
     $restoreExit = $LASTEXITCODE
     & docker cp "${dbContainer}:/tmp/restore/restore.log" $restoreLog | Out-Null
@@ -418,30 +588,7 @@ try {
         2       { 'PARTIAL (structure verified - row-count equality NOT proven)' }
         default { 'FAIL' }
     }
-    $cliVersion = (& $SupaExe @($SupaArgs + @('--version')) | Select-Object -Last 1)
-    $manifest = New-Object System.Collections.Generic.List[string]
-    $manifest.Add("backup taken:   $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) UTC")
-    $manifest.Add('project ref:    uooeygybrniptzdxuzhj (production)')
-    $manifest.Add("supabase cli:   $cliVersion")
-    $manifest.Add("verify target:  isolated local Supabase stack ($VerifyId)")
-    $manifest.Add('restore method: docker exec in the db container, supabase_admin, one psql invocation, --single-transaction, ON_ERROR_STOP=1')
-    $manifest.Add('local ports:    every published port bound to 127.0.0.1 (checked before restore)')
-    $manifest.Add("restore exit:   $restoreExit")
-    $manifest.Add("auth schema:    production $srcAuth / verify stack $dstAuth")
-    $manifest.Add('verification:   dynamic row counts (public+auth+storage) + structural fingerprint, both directions')
-    $manifest.Add('exclusions:     storage.buckets_vectors, storage.vector_indexes (documented)')
-    $manifest.Add("inventory rows: $sourceRows")
-    $manifest.Add("result:         $verdict")
-    $manifest.Add('')
-    foreach ($name in @('roles', 'schema', 'data')) {
-        $path = Join-Path $OutDir "$name.sql"
-        $size = (Get-Item $path).Length
-        $hash = (Get-FileHash -Algorithm SHA256 $path).Hash.ToLower()
-        $manifest.Add(('{0,-10} {1,12} bytes  sha256={2}' -f "$name.sql", $size, $hash))
-    }
-    $manifestPath = Join-Path $OutDir 'MANIFEST.txt'
-    Write-Utf8NoBom -Path $manifestPath -Lines $manifest.ToArray()
-    Get-Content $manifestPath | ForEach-Object { Write-Host $_ }
+    Write-Manifest -Verdict $verdict
 
     if ($compareExit -eq 2) {
         Write-Host ''

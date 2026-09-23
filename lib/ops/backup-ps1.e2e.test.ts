@@ -94,6 +94,7 @@ sys.exit(os.waitstatus_to_exitcode(status))
 
 const DOCKER = `#!/usr/bin/env bash
 printf '%s\\0' "$@" >> "\${FAKE_LOG:?}"; printf '\\n' >> "$FAKE_LOG"
+adm() { psql -d postgres -X -q -v ON_ERROR_STOP=1 -c "$1"; }
 case "$1" in
   info) [ "\${FAKE_DOCKER_DOWN:-0}" = 1 ] && { echo "Cannot connect to the Docker daemon" >&2; exit 1; }; exit 0 ;;
   run) shift; mounts=(); inner=""
@@ -102,13 +103,30 @@ case "$1" in
     # psql از PATH پیدا می‌شود؛ پوشهٔ wrap جلوتر است تا argvِ **خودِ psql** ثبت شود —
     # همان چیزی که \`ps\` روی ماشینِ Docker نشان می‌دهد. نشتِ قبلی همین‌جا بود.
     PATH="\${FAKE_WRAP:?}:$PATH" exec \${FAKE_SH:-sh} -c "$inner" ;;
-  ps) id=""; for a in "$@"; do case "$a" in name=*) id="\${a#name=}";; esac; done
-    printf 'supabase_db_%s|%s\n' "$id" "\${FAKE_PORTS:-127.0.0.1:54322->5432/tcp}"
-    printf 'supabase_kong_%s|%s\n' "$id" "\${FAKE_PORTS_KONG:-127.0.0.1:54321->8000/tcp}"
+  # «استکِ یک‌بارمصرف»: up یک پایگاهِ verifyِ محلی با همان auth/storageِ مبدأ می‌سازد.
+  compose) sub=""; for a in "$@"; do case "$a" in version|up|down) sub="$a";; esac; done
+    case "$sub" in
+      version) echo "Docker Compose version v2.99.0-fake"; exit 0 ;;
+      up) adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" && adm "CREATE DATABASE $FAKE_VERIFY_DB" \\
+            && psql -d "$FAKE_VERIFY_DB" -X -q -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; \${FAKE_MANAGED_DDL:?}; INSERT INTO auth.schema_migrations VALUES ('\${FAKE_LOCAL_AUTH:-20260831180000}'); \${FAKE_MANAGED_DRIFT:-}" ;;
+      down) adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" ;;
+      *) echo "fake docker compose: unsupported $*" >&2; exit 2 ;;
+    esac ;;
+  ps) id=""; db=0; quiet=0
+    for a in "$@"; do case "$a" in label=com.portfolio.backup-verify=*) id="\${a#label=com.portfolio.backup-verify=}";; label=com.docker.compose.service=db) db=1;; -q) quiet=1;; esac; done
+    [ "$quiet" = 1 ] && exit 0
+    if [ "$db" = 1 ]; then echo "$id-db-1"; exit 0; fi
+    printf '%s-db-1|%s\n' "$id" "\${FAKE_PORTS:-5432/tcp}"
+    printf '%s-auth-1|%s\n' "$id" "\${FAKE_PORTS_AUTH:-}"
+    printf '%s-storage-1|%s\n' "$id" "\${FAKE_PORTS_STORAGE:-5000/tcp}"
     exit 0 ;;
+  inspect) name="\${@: -1}"; id="\${name%-*-1}"; bind="\${FAKE_BINDINGS:-}"; [ -n "$bind" ] || bind='{}'
+    printf '%s|%s|%s_verify;\n' "$bind" "\${FAKE_PUBLISH_ALL:-false}" "$id"; exit 0 ;;
+  network) case "$2" in inspect) echo "\${FAKE_INTERNAL:-true}";; ls) : ;; esac; exit 0 ;;
+  volume) exit 0 ;;
   cp) src="$2"; dst="$3"
     case "$dst" in *:/*) dst="\${FAKE_CFS:?}\${dst#*:}";; esac
-    case "$src" in supabase_*:/*) src="\${FAKE_CFS:?}\${src#*:}";; esac
+    case "$src" in *:/*) src="\${FAKE_CFS:?}\${src#*:}";; esac
     exec cp "$src" "$dst" ;;
   exec) shift; shift  # «exec» و نامِ کانتینر
     if [ "$1" = mkdir ]; then shift; exec mkdir "$1" "\${FAKE_CFS:?}$2"; fi
@@ -121,6 +139,8 @@ esac
 `;
 const SUPABASE = `#!/usr/bin/env bash
 printf 'supabase %s\\n' "$*" >> "\${FAKE_LOG:?}"
+# اسکریپت پیش از پرسیدنِ رمز یک بار --version می‌گیرد (CLIِ خراب را زود بگیرد).
+[ "$1" = "--version" ] && { [ "\${FAKE_SUPA_BROKEN:-0}" = 1 ] && exit 1; echo "2.99.0-fake"; exit 0; }
 [ "\${FAKE_SUPA_FULL:-0}" = 1 ] || { echo "fake supabase: '$1 $2' disabled in this test" >&2; exit 1; }
 arg() { local want="$1"; shift; while [ $# -gt 0 ]; do [ "$1" = "$want" ] && { echo "$2"; return; }; shift; done; }
 has() { local want="$1"; shift; for a in "$@"; do [ "$a" = "$want" ] && return 0; done; return 1; }
@@ -128,14 +148,8 @@ adm() { psql -d postgres -X -q -v ON_ERROR_STOP=1 -c "$1"; }
 case "$1 $2" in
   "db dump") url="$(arg --db-url "$@")"; out="$(arg -f "$@")"
     if has --role-only "$@"; then printf -- '-- no custom roles\\nSELECT 1;\\n' > "$out"
-    elif has --data-only "$@"; then pg_dump --data-only -n public -n auth -n storage --exclude-table-data=auth.schema_migrations --no-owner "$url" > "$out"  # مثلِ CLI
+    elif has --data-only "$@"; then pg_dump --data-only -n public -n auth -n storage --exclude-table-data=auth.schema_migrations --exclude-table-data=storage.migrations --no-owner "$url" > "$out"  # مثلِ CLI
     else pg_dump --schema-only -n public "$url" > "$out"; fi ;;  # مالک و گرنت مثلِ dumpِ واقعیِ Supabase حفظ می‌شوند
-  "init --workdir") mkdir -p "$3/supabase"; printf 'project_id = "x"\\n[api]\\nport = 54321\\n[db]\\nport = 54322\\nshadow_port = 54320\\n' > "$3/supabase/config.toml" ;;
-  "start --workdir") adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" && adm "CREATE DATABASE $FAKE_VERIFY_DB" \\
-      && psql -d "$FAKE_VERIFY_DB" -X -q -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA auth; CREATE SCHEMA storage; CREATE TABLE auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('\${FAKE_LOCAL_AUTH:-20260831180000}');" ;;
-  # پیش‌فرضِ محلیِ CLI (رمزِ پشتهٔ موقت، نه سکرت)؛ با printf ساخته می‌شود تا شکلِ «URL با رمز» در متن نباشد.
-  "status --workdir") printf 'DB_URL="%s://%s:%s@127.0.0.1:54322/postgres"\\n' postgresql postgres "\${FAKE_LOCAL_PW:-postgres}" ;;
-  "stop --workdir") adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" ;;
   "--version ") echo "2.99.0-fake" ;;
   *) echo "fake supabase: unsupported $*" >&2; exit 2 ;;
 esac
@@ -162,6 +176,7 @@ function runPs1(input: string, extraEnv: Record<string, string> = {}, legacy = f
       FAKE_DBWRAP: join(work, "dbwrap"),
       FAKE_CFS: cfs,
       FAKE_VERIFY_DB: VERIFY_DB,
+      FAKE_MANAGED_DDL: MANAGED_DDL,
       PGHOST: ENV.PGHOST, PGPORT: ENV.PGPORT, PGUSER: ENV.PGUSER, PGPASSWORD: ENV.PGPASSWORD,
       REAL_PGPASSWORD: ENV.PGPASSWORD,
       FAKE_SH: which("busybox") ? "busybox sh" : "sh",
@@ -178,6 +193,17 @@ function runPs1(input: string, extraEnv: Record<string, string> = {}, legacy = f
   const file = (n: string) => (existsSync(join(out, n)) ? readFileSync(join(out, n)) : Buffer.alloc(0));
   return { code: r.status, text, dockerLog, inv, file };
 }
+
+/**
+ * همان ساختارِ auth/storage در مبدأ و در «استکِ» verify — managed-schemas.sql هر
+ * دو را دوطرفه مقایسه می‌کند. `FAKE_MANAGED_DRIFT` یک ستونِ اضافه به مقصد می‌دهد.
+ */
+const MANAGED_DDL =
+  "CREATE SCHEMA auth; CREATE SCHEMA storage; " +
+  "CREATE TABLE auth.schema_migrations (version text PRIMARY KEY); " +
+  "CREATE TABLE auth.users (id uuid PRIMARY KEY, encrypted_password text); " +
+  "CREATE TABLE storage.migrations (id int PRIMARY KEY, name text); " +
+  "INSERT INTO storage.migrations VALUES (72, 'drop-bucketid-objname-index')";
 
 const url = (pw: string) =>
   `postgresql://${ROLE}:${encodeURIComponent(pw)}@${ENV.PGHOST}:${ENV.PGPORT}/${DB}?sslmode=disable`;
@@ -216,9 +242,11 @@ PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
     admin(`DROP ROLE IF EXISTS ${ROLE}`);
     admin(`CREATE ROLE ${ROLE} LOGIN PASSWORD '${PW.replace(/'/g, "''")}'`);
     admin(`CREATE DATABASE ${DB} OWNER ${ROLE}`);
-    admin(`CREATE SCHEMA auth AUTHORIZATION ${ROLE}; CREATE SCHEMA storage AUTHORIZATION ${ROLE}; CREATE TABLE public.t (id int); INSERT INTO public.t VALUES (1),(2); ALTER TABLE public.t OWNER TO ${ROLE}`, DB);
-    // نسخهٔ طرحِ Auth مثلِ Production (۲۰۲۶-۰۹-۲۳).
-    admin(`CREATE TABLE auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('20260831180000'); ALTER TABLE auth.schema_migrations OWNER TO ${ROLE}`, DB);
+    admin(`${MANAGED_DDL}; CREATE TABLE public.t (id int); INSERT INTO public.t VALUES (1),(2)`, DB);
+    // نسخهٔ طرحِ Auth مثلِ Production (۲۰۲۶-۰۹-۲۳) و یک کاربرِ مصنوعی.
+    admin(`INSERT INTO auth.schema_migrations VALUES ('20260831180000'); INSERT INTO auth.users VALUES (gen_random_uuid(), 'hash-1')`, DB);
+    admin(`ALTER SCHEMA auth OWNER TO ${ROLE}; ALTER SCHEMA storage OWNER TO ${ROLE}; ALTER TABLE public.t OWNER TO ${ROLE};
+      ALTER TABLE auth.schema_migrations OWNER TO ${ROLE}; ALTER TABLE auth.users OWNER TO ${ROLE}; ALTER TABLE storage.migrations OWNER TO ${ROLE}`, DB);
   });
 
   after(() => {
@@ -283,36 +311,82 @@ PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
     test(`مسیرِ کامل تا PASS — ${mode}`, () => {
       const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1" }, legacy);
       assert.equal(r.code, 0, r.text.slice(-1500));
-      assert.match(r.text, /every published port is bound to 127\.0\.0\.1/);
+      assert.match(r.text, /no published port on any of 3 containers; network prodverify\d+_verify is internal/);
+      assert.match(r.text, /auth\/storage structure identical to production \(both directions\)/);
       assert.match(r.text, /\[OK\] Backup created AND it passed the restore test/);
+      assert.match(r.text, /NOT IN BACKUP: +pg_cron jobs - production has 0 \(pg_cron not installed\)/);
+      // پیش‌درآمد بینِ roles و schema و داخلِ همان تراکنش اجرا شد.
+      assert.match(r.dockerLog, /exec-psql [^\n]*--file \/[^\n]*roles\.sql --file \/[^\n]*restore-prelude\.sql --file \/[^\n]*schema\.sql/);
       assert.match(r.text, /result: +PASS/);
       assert.match(r.text, /auth schema: +production 20260831180000 \/ verify stack 20260831180000/);
       // بازگردانی واقعاً با supabase_admin و داخلِ «کانتینر» اجرا شد.
       assert.match(r.dockerLog, /exec-psql [^\n]*-U supabase_admin[^\n]*--single-transaction/);
       assert.doesNotMatch(r.dockerLog, /network host/);
       // هیچ فایلی BOM ندارد و فهرستِ مقصد همان بایت‌هایی است که psql نوشت.
-      for (const f of ["inventory-source.txt", "inventory-source-after.txt", "inventory-restored.txt", "MANIFEST.txt"]) {
+      for (const f of ["inventory-source.txt", "inventory-source-after.txt", "inventory-restored.txt", "managed-source.txt", "managed-target.txt", "MANIFEST.txt"]) {
         const b = r.file(f);
         assert.ok(b.length > 0, `${f} خالی است`);
         assert.equal(b.subarray(0, 3).equals(Buffer.from([0xef, 0xbb, 0xbf])), false, `${f} BOM دارد`);
       }
       assert.match(r.file("inventory-restored.txt").toString("utf8"), /rowcount\|public\.t\|2/);
+      assert.match(r.file("inventory-restored.txt").toString("utf8"), /digest\|auth\.users\.credentials\|[0-9a-f]{32}/);
       // رمز جز در `supabase db dump` (نشتِ مستند) هیچ‌جا نیست.
       const leaks = r.dockerLog.split("\n").filter((l) => l.includes(ENC) || l.includes(PW));
       assert.ok(leaks.every((l) => l.startsWith("supabase db dump")), leaks.join("\n"));
       assert.equal(r.text.includes(PW) || r.text.includes(ENC), false);
-      assert.match(r.dockerLog, /supabase stop --workdir/, "پشتهٔ موقت پاک شد");
+      assert.match(r.dockerLog, /^compose -p prodverify\d+ -f \S+ down --volumes --remove-orphans/m, "پشتهٔ موقت پاک شد");
     });
   }
 
-  test("پورتِ عمومی: هیچ دادهٔ Production بازگردانی نمی‌شود و پشته پاک می‌شود", () => {
-    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_PORTS: "0.0.0.0:54322->5432/tcp" }, true);
+  /** شکستِ پیش از بازگردانی: هیچ دادهٔ Production واردِ مقصد نشد، ولی بکاپ ماند. */
+  function assertStoppedBeforeRestore(r: ReturnType<typeof runPs1>) {
     assert.equal(r.code, 1);
-    assert.match(r.text, /publishes ports on every network interface/);
-    assert.match(r.text, /"ip": "127\.0\.0\.1"/);
     assert.doesNotMatch(r.dockerLog, /--single-transaction/, "بازگردانی نباید شروع شود");
+    assert.match(r.dockerLog, /^compose -p prodverify\d+ -f \S+ down --volumes/m, "پشته پاک شد");
+    for (const f of ["roles.sql", "schema.sql", "data.sql"]) assert.ok(r.file(f).length > 0, `${f} باید بماند`);
+    assert.match(r.file("MANIFEST.txt").toString("utf8"), /result: +RESTORE UNVERIFIED/);
+  }
+
+  test("پورتِ عمومی: هیچ دادهٔ Production بازگردانی نمی‌شود، بکاپ می‌ماند و پشته پاک می‌شود", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_PORTS: "0.0.0.0:54322->5432/tcp" }, true);
+    assert.match(r.text, /publishes ports on every network interface/);
     assert.doesNotMatch(r.dockerLog, /^cp /m, "هیچ فایلی به کانتینر نرفت");
-    assert.match(r.dockerLog, /supabase stop --workdir/);
+    assertStoppedBeforeRestore(r);
+  });
+
+  test("پورتِ منتشرشده روی 127.0.0.1 هم رد می‌شود — مقصد هیچ پورتی نباید داشته باشد", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_PORTS: "127.0.0.1:54322->5432/tcp" }, true);
+    assert.match(r.text, /The restore target publishes a port/);
+    assertStoppedBeforeRestore(r);
+  });
+
+  test("binding در HostConfig بدونِ نمایش در docker ps هم گرفته می‌شود", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_BINDINGS: '{"5432/tcp":[{"HostIp":"","HostPort":"5432"}]}' }, true);
+    assert.match(r.text, /is not isolated/);
+    assertStoppedBeforeRestore(r);
+  });
+
+  test("شبکهٔ غیر internal رد می‌شود", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_INTERNAL: "false" }, true);
+    assert.match(r.text, /is not internal/);
+    assertStoppedBeforeRestore(r);
+  });
+
+  test("ساختارِ auth/storageِ متفاوت با شمارهٔ نسخهٔ برابر: پیش از بازگردانی متوقف می‌شود", () => {
+    // «شمارهٔ نسخه ساختار نیست»: همان 20260831180000، ولی یک ستونِ اضافه در مقصد.
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_MANAGED_DRIFT: "ALTER TABLE auth.users ADD COLUMN extra text" }, true);
+    assert.match(r.text, /local Auth schema 20260831180000 >= production 20260831180000/);
+    assert.match(r.text, /auth\/storage structure differs from production/);
+    assert.match(r.file("managed-comparison.txt").toString("utf8"), /auth\.users\.extra/);
+    assertStoppedBeforeRestore(r);
+  });
+
+  test("CLIِ خراب پیش از پرسیدنِ رمز گرفته می‌شود", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_BROKEN: "1" });
+    assert.equal(r.code, 1);
+    assert.match(r.text, /The Supabase CLI does not run on this machine/);
+    assert.doesNotMatch(r.text, /connection string:/, "رمز نباید پرسیده شود");
+    assert.equal(/^run /m.test(r.dockerLog), false);
   });
 
   test("Authِ محلیِ قدیمی‌تر از Production: پیش از بازگردانی متوقف می‌شود", () => {
@@ -325,9 +399,8 @@ PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
   });
 
   test("پورتِ عمومیِ IPv6 هم گرفته می‌شود", () => {
-    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_PORTS_KONG: ":::54321->8000/tcp" }, true);
-    assert.equal(r.code, 1);
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_PORTS_AUTH: ":::54321->9999/tcp" }, true);
     assert.match(r.text, /publishes ports on every network interface/);
-    assert.doesNotMatch(r.dockerLog, /--single-transaction/);
+    assertStoppedBeforeRestore(r);
   });
 });

@@ -78,7 +78,7 @@ if (dbError && requireDb) throw new Error(`Postgres is required in CI: ${dbError
 const SCHEMA_SQL = `
 CREATE SCHEMA IF NOT EXISTS auth;
 CREATE SCHEMA IF NOT EXISTS storage;
-CREATE TABLE auth.users (id uuid PRIMARY KEY, email text);
+CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, encrypted_password text);
 CREATE TABLE storage.objects (id uuid PRIMARY KEY, name text);
 CREATE TABLE public.profiles (
   id serial PRIMARY KEY,
@@ -104,7 +104,7 @@ INSERT INTO public.profiles (email, role)
     FROM generate_series(1, 23) g;
 INSERT INTO public.notes (owner, body)
   SELECT (g % 23) + 1, 'note ' || g FROM generate_series(1, 61) g;
-INSERT INTO auth.users SELECT gen_random_uuid(), 'a' || g || '@example.test'
+INSERT INTO auth.users SELECT gen_random_uuid(), 'a' || g || '@example.test', md5('pw' || g)
   FROM generate_series(1, 9) g;
 INSERT INTO storage.objects SELECT gen_random_uuid(), 'obj-' || g
   FROM generate_series(1, 4) g;
@@ -135,7 +135,7 @@ const MANAGED_SQL = `
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA auth;
 CREATE SCHEMA storage;
-CREATE TABLE auth.users (id uuid PRIMARY KEY, email text);
+CREATE TABLE auth.users (id uuid PRIMARY KEY, email text, encrypted_password text);
 CREATE TABLE storage.objects (id uuid PRIMARY KEY, name text);
 `;
 
