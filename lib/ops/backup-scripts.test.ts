@@ -128,6 +128,39 @@ describe("قراردادِ Windows PowerShell 5.1", () => {
     assert.equal(commandCount, 1, "--command باید فقط برای مرحلهٔ data باشد");
   });
 
+  test("هیچ نقل‌قولِ دوتایی در آرگومانِ دستورِ native نیست (Windows PowerShell 5.1)", () => {
+    // PS 5.1 نقل‌قولِ دوتاییِ درونِ آرگومان را escape نمی‌کند؛ '-c "SELECT 1"'
+    // در docker دو تکه شد و psql فقط `-c SELECT` گرفت. با PowerShell 7.4 و
+    // $PSNativeCommandArgumentPassing='Legacy' بازتولید شد.
+    const calls = [...ps1Code.matchAll(/(?:-PsqlArgs|Invoke-InDb)\s*\(?\s*'((?:[^']|'')*)'/g)].map((m) => m[1]);
+    assert.ok(calls.length >= 5, `فراخوانی‌ها پیدا نشد (${calls.length})`);
+    for (const c of calls) assert.equal(c.includes('"'), false, `نقل‌قولِ دوتایی: ${c}`);
+    assert.match(ps1Code, /\$PsqlArgs\.Contains\('"'\)/, "نگهبانِ زمانِ اجرا در Invoke-PsqlWithUrl");
+    assert.match(ps1Code, /\$Command\.Contains\('"'\)/, "نگهبانِ زمانِ اجرا در Invoke-InDb");
+  });
+
+  test("متن بدونِ BOM نوشته می‌شود و خروجیِ native از pipeline به فایل نمی‌رود", () => {
+    // Set-Content -Encoding UTF8 در PS 5.1 BOM می‌گذارد؛ `| Set-Content` خروجیِ psql را
+    // با کدپیجِ کنسول دوباره کد می‌کند؛ `*>` در 5.1 فایلِ UTF-16 می‌سازد.
+    assert.doesNotMatch(ps1Code, /Set-Content[^\n]*-Encoding\s+UTF8/i);
+    assert.doesNotMatch(ps1Code, /\|\s*Set-Content/);
+    assert.doesNotMatch(ps1Code, /\|\s*Out-File/);
+    assert.doesNotMatch(ps1Code, /\*>/);
+    assert.match(ps1Code, /UTF8Encoding\(\$false\)/);
+  });
+
+  test("بازگردانی فقط پس از بررسیِ پورتِ عمومی و داخلِ کانتینرِ db با supabase_admin", () => {
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      const gate = code.indexOf("docker ps --filter");
+      const restore = code.indexOf("SET session_replication_role = replica");
+      assert.ok(gate > 0 && restore > gate, `${label}: بررسیِ پورت باید پیش از بازگردانی باشد`);
+      assert.match(code, /0\\\.0\\\.0\\\.0/, `${label}: الگوی 0.0.0.0`);
+      assert.match(code, /-U supabase_admin/, `${label}: supabase_admin`);
+      assert.match(code, /docker exec/, `${label}: docker exec`);
+      assert.doesNotMatch(code, /--network host/, `${label}: --network host نباید باشد`);
+    }
+  });
+
   test("روی ویندوز npx.cmd انتخاب می‌شود، نه npx", () => {
     // `npx` می‌تواند به `npx.ps1` resolve شود که به‌عنوانِ دستورِ native
     // اجرا نمی‌شود و خطای گیج‌کننده می‌دهد.
@@ -178,8 +211,16 @@ describe("بازگردانی بر پایهٔ کدِ خروجی", () => {
   test("کدِ خروجیِ بازگردانی با || true بلعیده نمی‌شود", () => {
     // نسخهٔ قبل دقیقاً همین کار را می‌کرد و بعد در لاگ دنبالِ `^ERROR`
     // می‌گشت — الگویی که خطاهای فایل‌محورِ psql هرگز با آن شروع نمی‌شوند.
-    const restoreBlock = bash.slice(bash.indexOf("docker run --rm --network host -e DB_URL=\"$VERIFY_URL\" \\\n  -v \"$OUT_DIR:/backup:ro\""));
-    assert.doesNotMatch(restoreBlock.slice(0, 900), /\|\|\s*true/);
+    for (const [label, text, marker] of [
+      ["bash", bash, 'in_db "--single-transaction'],
+      ["ps1", ps1, "Invoke-InDb ('--single-transaction"],
+    ] as const) {
+      const at = text.indexOf(marker);
+      assert.ok(at > 0, `${label}: بلوکِ بازگردانی پیدا نشد — آزمون نباید بی‌صدا تهی شود`);
+      const block = text.slice(at, at + 400);
+      assert.doesNotMatch(block, /\|\|\s*true/, `${label}: کدِ خروجی بلعیده می‌شود`);
+      assert.match(text.slice(at, at + 900), /RESTORE_RC=\$\?|\$restoreExit = \$LASTEXITCODE/, `${label}: کدِ خروجی ثبت نمی‌شود`);
+    }
     assert.doesNotMatch(bashCode, /ON_ERROR_STOP=0/);
   });
 
@@ -319,8 +360,10 @@ describe("سکرت و مقصدِ بکاپ", () => {
     assert.match(pgurl, /tr -d '\\r'/, "pgurl.sh باید CR را حذف کند");
     assert.match(pgurl, /export PGPASSWORD/, "pgurl.sh باید رمز را از argv بیرون ببرد");
     assert.ok([...pgurl].every((c) => c.charCodeAt(0) < 128), "pgurl.sh باید ASCII باشد");
+    // پیاده‌سازیِ واحد: نقل‌قولِ URI فقط داخلِ pgurl.sh است (pgurl_psql).
+    assert.match(pgurl, /pgurl_psql\(\) \{\n  exec psql -w "\$PGURL" "\$@"\n\}/, "pgurl_psql باید URI را داخلِ sh نقل‌قول کند");
     for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
-      assert.match(code, /\. \/sql\/pgurl\.sh; exec psql -w \\?"\\?\$PGURL/, `${label} باید از pgurl.sh بگذرد`);
+      assert.match(code, /\. \/sql\/pgurl\.sh; pgurl_psql /, `${label} باید از pgurl.sh بگذرد`);
       assert.doesNotMatch(code, /read -r PGURL; exec psql/, `${label} مسیرِ قدیمیِ بی‌گارد را دارد`);
       assert.doesNotMatch(code, /docker run --rm -e DB_URL\b/, `${label} هنوز پاس‌ترو دارد`);
       assert.doesNotMatch(code, /-e DB_URL=\$DbUrl/, `${label} سکرت را در argv می‌گذارد`);
@@ -576,4 +619,23 @@ test("چهار وضعیت جدا گزارش می‌شوند، نه یک PASS/FAI
   }
   // تطبیق با snapshotِ مشترک هنوز انجام نمی‌شود و باید همین را بگوید.
   assert.match(r.out, /انجام نشد/);
+});
+
+// ── compare.mjs و BOM ───────────────────────────────────────────────────────
+describe("compare.mjs با فایلِ BOMدار", () => {
+  test("فایلی که Windows PowerShell 5.1 با BOM نوشته با همان فایلِ لینوکسی برابر است", async () => {
+    const { mkdtempSync, writeFileSync: write } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { spawnSync } = await import("node:child_process");
+    const dir = mkdtempSync(join(tmpdir(), "cmp-bom-"));
+    const body = "table|public.t|r\nrowcount|public.t|2\n";
+    write(join(dir, "win.txt"), "﻿" + body.replace(/\n/g, "\r\n"));
+    write(join(dir, "linux.txt"), body);
+    const r = spawnSync("node", [join(ROOT, "scripts", "backup", "compare.mjs"), join(dir, "win.txt"), join(dir, "linux.txt")], { encoding: "utf8" });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    // و برعکس: BOM یک اختلافِ واقعی را پنهان نمی‌کند.
+    write(join(dir, "linux2.txt"), body.replace("|2", "|3"));
+    const bad = spawnSync("node", [join(ROOT, "scripts", "backup", "compare.mjs"), join(dir, "win.txt"), join(dir, "linux2.txt")], { encoding: "utf8" });
+    assert.notEqual(bad.status, 0);
+  });
 });

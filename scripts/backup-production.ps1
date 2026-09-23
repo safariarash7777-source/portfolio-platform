@@ -82,6 +82,16 @@ $PgImage = 'postgres:17-alpine'
 function Say  { param([string]$Text) Write-Host "`n$Text" -ForegroundColor Cyan }
 function Die  { param([string]$Text) Write-Host "`n[FAIL] $Text" -ForegroundColor Red; exit 1 }
 
+# UTF-8 WITHOUT a BOM, on every PowerShell version. Windows PowerShell 5.1's
+# `Set-Content -Encoding UTF8` writes a BOM (PowerShell 7 does not), so a file
+# written here on Windows did not compare equal to the same file written on
+# Linux, and the Supabase CLI had to parse a config.toml that began with one.
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+function Write-Utf8NoBom {
+    param([string]$Path, [string[]]$Lines)
+    [System.IO.File]::WriteAllLines($Path, $Lines, $Utf8NoBom)
+}
+
 # ---- 0) destination must be outside every git repository --------------------
 # Deliberately the first check: it is the cheapest, and a wrong destination
 # should be caught before Docker is started.
@@ -192,7 +202,15 @@ function Invoke-PsqlWithUrl {
     # `;` not `&&`: a sourced file that calls `exit` ends the whole shell, and a
     # missing file is a fatal error for `.`, so psql never runs in either case
     # (measured on busybox and dash). `&&` is also banned by the PS 5.1 guard.
-    $inner = '. /sql/pgurl.sh; exec psql -w "$PGURL" ' + $PsqlArgs
+    #
+    # NO DOUBLE QUOTES in anything handed to a native command. Windows
+    # PowerShell 5.1 does not escape them when it builds the command line:
+    # '... -w "$PGURL" -c "SELECT 1"' reached docker split into two arguments
+    # and psql received `-c SELECT`. Reproduced with PowerShell 7.4 under
+    # $PSNativeCommandArgumentPassing = 'Legacy'. The URI is quoted inside sh,
+    # by pgurl_psql in pgurl.sh; callers use single quotes only.
+    if ($PsqlArgs.Contains('"')) { Die 'internal: psql arguments must not contain double quotes (Windows PowerShell 5.1).' }
+    $inner = '. /sql/pgurl.sh; pgurl_psql ' + $PsqlArgs
     $Url | & docker run --rm -i -v "${SqlDir}:/sql:ro" @DockerArgs --entrypoint sh $PgImage -c $inner
 }
 
@@ -220,17 +238,20 @@ try {
     # inventory.sql contains Persian comments. Piping it would corrupt them.
     # Fail fast and unambiguously before anything expensive happens.
     Say '1/5 - checking the connection, then reading the production fingerprint'
-    $probe = Invoke-PsqlWithUrl -Url $DbUrl -PsqlArgs '-X -q -t -A -c "SELECT 1"'
+    $probe = Invoke-PsqlWithUrl -Url $DbUrl -PsqlArgs '-X -q -t -A -c ''SELECT 1'''
     if ($LASTEXITCODE -ne 0 -or ("$probe".Trim() -ne '1')) {
         Die "Could not connect to production with that connection string.`nCheck it in Supabase Dashboard -> Connect. Nothing was written."
     }
     Write-Host '    connection OK'
 
-    Invoke-PsqlWithUrl -Url $DbUrl `
-        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' |
-        Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-source.txt')
+    # psql writes the file itself (-o into a mounted folder). Piping psql's
+    # output through PowerShell would decode it with the console code page on
+    # 5.1 and re-encode it, so the bytes on disk would not be the bytes psql
+    # produced.
+    Invoke-PsqlWithUrl -Url $DbUrl -DockerArgs @('-v', "${OutDir}:/out") `
+        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql -o /out/inventory-source.txt'
     if ($LASTEXITCODE -ne 0) { Die 'Connected, but could not read the production fingerprint.' }
-    $sourceRows = (Get-Content (Join-Path $OutDir 'inventory-source.txt')).Count
+    $sourceRows = [System.IO.File]::ReadAllLines((Join-Path $OutDir 'inventory-source.txt'), $Utf8NoBom).Count
     Write-Host "    $sourceRows inventory rows recorded"
 
     # ---- 4) the three dump files, per the official Supabase method ----------
@@ -249,9 +270,8 @@ try {
     # This is not a waiver, it is a measurement: a table that moved between the
     # two reads is proven to have been live in that window. A count outside the
     # range - especially BELOW it - is still a failure.
-    Invoke-PsqlWithUrl -Url $DbUrl `
-        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' |
-        Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-source-after.txt')
+    Invoke-PsqlWithUrl -Url $DbUrl -DockerArgs @('-v', "${OutDir}:/out") `
+        -PsqlArgs '-X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql -o /out/inventory-source-after.txt'
     if ($LASTEXITCODE -ne 0) { Die 'Could not read the second production fingerprint.' }
 
     foreach ($name in @('roles', 'schema', 'data')) {
@@ -273,14 +293,14 @@ try {
     if (-not (Test-Path $config)) { Die 'config.toml was not created.' }
     $seen = @{}
     $next = $PortBase
-    $lines = Get-Content $config | ForEach-Object {
+    $lines = [System.IO.File]::ReadAllLines($config, $Utf8NoBom) | ForEach-Object {
         if ($_ -match '^\s*port\s*=\s*(\d+)') {
             $original = $matches[1]
             if (-not $seen.ContainsKey($original)) { $seen[$original] = $next; $next = $next + 1 }
             $_ -replace '^\s*port\s*=\s*\d+', "port = $($seen[$original])"
         } else { $_ }
     }
-    Set-Content -Path $config -Value $lines -Encoding UTF8
+    Write-Utf8NoBom -Path $config -Lines $lines
 
     if ((Invoke-Supabase @('start', '--workdir', $VerifyWorkdir)) -ne 0) { Die 'The local Supabase stack did not start.' }
 
@@ -290,11 +310,51 @@ try {
         if ($line -match '^DB_URL="(.*)"$') { $verifyUrl = $matches[1] }
     }
     if ([string]::IsNullOrWhiteSpace($verifyUrl)) { Die 'Could not read the local stack database URL.' }
+    # The throwaway stack's own password (the CLI default), not a secret. It is
+    # only used inside the database container.
+    $localPw = $null
+    if ($verifyUrl -match '^postgres(ql){0,1}://[^:/@]+:([A-Za-z0-9._~-]+)@') { $localPw = $matches[2] }
+    if ([string]::IsNullOrWhiteSpace($localPw)) { Die 'Could not read the local stack password from its status.' }
+
+    # ---- 5b) no published port on a public interface ------------------------
+    # The Supabase CLI publishes its ports on every interface by default, so a
+    # stack holding REAL member data would be reachable from the local network.
+    # Production data goes in ONLY if every published port is bound to
+    # 127.0.0.1. Otherwise stop here, before anything is restored.
+    $ports = @(& docker ps --filter "name=$VerifyId" --format '{{.Names}}|{{.Ports}}')
+    if ($LASTEXITCODE -ne 0) { Die 'Could not list the local stack containers.' }
+    $public = @($ports | Where-Object { $_ -match '(^|[|, ])(0\.0\.0\.0|\[::\]|::):\d+->' })
+    if ($public.Count -gt 0) {
+        Die ("The local stack publishes ports on every network interface:`n    " + ($public -join "`n    ") +
+            "`nNo production data was restored into it.`nFix once: Docker Desktop -> Settings -> Docker Engine -> add`n    `"ip`": `"127.0.0.1`"`nApply & restart, then run this script again.")
+    }
+    $dbContainer = "supabase_db_$VerifyId"
+    if (-not ($ports | Where-Object { $_ -like "$dbContainer|*" })) { Die "The database container $dbContainer was not found." }
+    Write-Host '    every published port is bound to 127.0.0.1'
+
+    # Everything below runs INSIDE the database container with `docker exec`:
+    # no --network host (unreliable on Docker Desktop), no published port, and
+    # psql is the server's own version. Files go in and out with `docker cp`,
+    # so their bytes are never re-encoded by PowerShell.
+    #
+    # Connect as supabase_admin: roles.sql sets role parameters such as
+    # log_min_messages that only a superuser may set. The same restore as
+    # `postgres` fails there (measured by Codex on an isolated stack).
+    function Invoke-InDb {
+        param([string]$Command)
+        if ($Command.Contains('"')) { Die 'internal: in-container commands must not contain double quotes (Windows PowerShell 5.1).' }
+        & docker exec $dbContainer sh -c ("PGPASSWORD='$localPw' psql -h 127.0.0.1 -U supabase_admin -d postgres -X -q " + $Command)
+    }
+    & docker exec $dbContainer mkdir -p /tmp/restore
+    if ($LASTEXITCODE -ne 0) { Die 'Could not prepare the local database container.' }
+    foreach ($file in @((Join-Path $OutDir 'roles.sql'), (Join-Path $OutDir 'schema.sql'), (Join-Path $OutDir 'data.sql'), $AssertSql, $InventorySql)) {
+        & docker cp $file "${dbContainer}:/tmp/restore/"
+        if ($LASTEXITCODE -ne 0) { Die "Could not copy $(Split-Path -Leaf $file) into the local database container." }
+    }
 
     # Managed schemas must exist BEFORE the restore, otherwise the target is
     # missing something the data dump needs.
-    & docker run --rm --network host -e DB_URL=$verifyUrl -v "${SqlDir}:/sql:ro" --entrypoint sh $PgImage `
-        -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/assert-managed-schemas.sql'
+    Invoke-InDb '-v ON_ERROR_STOP=1 -f /tmp/restore/assert-managed-schemas.sql'
     if ($LASTEXITCODE -ne 0) {
         Die 'The restore target lacks the managed schemas. It is not faithful, so a restore there would prove nothing.'
     }
@@ -307,29 +367,25 @@ try {
     # then grepped the log for '^ERROR', but file-based psql errors start
     # with 'psql:/path/file.sql:123: ERROR:', not with 'ERROR'. That made an
     # indicator that could never go red.
-    #
-    # Note also that -c is supplied ONLY for the data step, as part of this
-    # single invocation. The previous version always passed -c "" for roles
-    # and schema; Windows PowerShell 5.1 can drop an empty native argument,
-    # which shifts -f into the value position for -c.
-    Say '4/5 - restoring in a single transaction (ON_ERROR_STOP=1)'
+    Say '4/5 - restoring in a single transaction (ON_ERROR_STOP=1, as supabase_admin)'
     $restoreLog = Join-Path $OutDir 'restore.log'
-    & docker run --rm --network host -e DB_URL=$verifyUrl -v "${OutDir}:/backup:ro" --entrypoint sh $PgImage `
-        -c 'psql --single-transaction --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "SET session_replication_role = replica" --file /backup/data.sql --dbname "$DB_URL"' *> $restoreLog
+    Invoke-InDb ('--single-transaction --variable ON_ERROR_STOP=1 --file /tmp/restore/roles.sql --file /tmp/restore/schema.sql ' +
+        '--command ''SET session_replication_role = replica'' --file /tmp/restore/data.sql > /tmp/restore/restore.log 2>&1')
     $restoreExit = $LASTEXITCODE
+    & docker cp "${dbContainer}:/tmp/restore/restore.log" $restoreLog | Out-Null
     if ($restoreExit -ne 0) {
         Write-Host '    last log lines:'
-        Get-Content $restoreLog -Tail 20 | ForEach-Object { Write-Host "      $_" }
+        if (Test-Path $restoreLog) { [System.IO.File]::ReadAllLines($restoreLog, $Utf8NoBom) | Select-Object -Last 20 | ForEach-Object { Write-Host "      $_" } }
         Die "Restore failed with exit code $restoreExit. The whole transaction rolled back.`nLog: $restoreLog`nThe backup is NOT reliable. No migration runs on production."
     }
     Write-Host '    restore finished with exit code 0.'
 
     # ---- 7) bidirectional comparison ---------------------------------------
     Say '5/5 - comparing row counts and the structural fingerprint'
-    & docker run --rm --network host -e DB_URL=$verifyUrl -v "${SqlDir}:/sql:ro" --entrypoint sh $PgImage `
-        -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' |
-        Set-Content -Encoding UTF8 (Join-Path $OutDir 'inventory-restored.txt')
+    Invoke-InDb '-v ON_ERROR_STOP=1 -f /tmp/restore/inventory.sql -o /tmp/restore/inventory-restored.txt'
     if ($LASTEXITCODE -ne 0) { Die 'Could not read the fingerprint of the restored database.' }
+    & docker cp "${dbContainer}:/tmp/restore/inventory-restored.txt" (Join-Path $OutDir 'inventory-restored.txt')
+    if ($LASTEXITCODE -ne 0) { Die 'Could not copy the restored fingerprint out of the container.' }
 
     & node $CompareJs (Join-Path $OutDir 'inventory-source.txt') (Join-Path $OutDir 'inventory-restored.txt') --source-after (Join-Path $OutDir 'inventory-source-after.txt') --report (Join-Path $OutDir 'comparison.txt')
     $compareExit = $LASTEXITCODE
@@ -348,7 +404,8 @@ try {
     $manifest.Add('project ref:    uooeygybrniptzdxuzhj (production)')
     $manifest.Add("supabase cli:   $cliVersion")
     $manifest.Add("verify target:  isolated local Supabase stack ($VerifyId)")
-    $manifest.Add('restore method: single psql invocation, --single-transaction, ON_ERROR_STOP=1')
+    $manifest.Add('restore method: docker exec in the db container, supabase_admin, one psql invocation, --single-transaction, ON_ERROR_STOP=1')
+    $manifest.Add('local ports:    every published port bound to 127.0.0.1 (checked before restore)')
     $manifest.Add("restore exit:   $restoreExit")
     $manifest.Add('verification:   dynamic row counts (public+auth+storage) + structural fingerprint, both directions')
     $manifest.Add('exclusions:     storage.buckets_vectors, storage.vector_indexes (documented)')
@@ -362,7 +419,7 @@ try {
         $manifest.Add(('{0,-10} {1,12} bytes  sha256={2}' -f "$name.sql", $size, $hash))
     }
     $manifestPath = Join-Path $OutDir 'MANIFEST.txt'
-    Set-Content -Path $manifestPath -Value $manifest -Encoding UTF8
+    Write-Utf8NoBom -Path $manifestPath -Lines $manifest.ToArray()
     Get-Content $manifestPath | ForEach-Object { Write-Host $_ }
 
     if ($compareExit -eq 2) {

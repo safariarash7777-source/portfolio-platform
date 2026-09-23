@@ -105,7 +105,7 @@ psql_with_url() {
   local psql_args="$1"; shift
   printf '%s\n' "$DB_URL" | docker run --rm -i -v "$REPO_ROOT/scripts/backup:/sql:ro" "$@" \
     --entrypoint sh "$PG_IMAGE" \
-    -c ". /sql/pgurl.sh; exec psql -w \"\$PGURL\" $psql_args"
+    -c ". /sql/pgurl.sh; pgurl_psql $psql_args"
 }
 
 # ── پاکسازی، روی هر مسیرِ خروج ───────────────────────────────────────────────
@@ -196,12 +196,43 @@ VERIFY_URL="$("${SUPA[@]}" status --workdir "$VERIFY_WORKDIR" -o env 2>/dev/null
   | sed -n 's/^DB_URL="\(.*\)"$/\1/p')"
 [ -n "$VERIFY_URL" ] || die "آدرسِ دیتابیسِ استکِ محلی خوانده نشد."
 
+LOCAL_PW="$(printf '%s' "$VERIFY_URL" | sed -n 's#^postgres\(ql\)\{0,1\}://[^:/@]*:\([A-Za-z0-9._~-]*\)@.*#\2#p')"
+[ -n "$LOCAL_PW" ] || die "رمزِ استکِ محلی از وضعیتش خوانده نشد."
+
+# ── ۵′) هیچ پورتِ منتشرشده‌ای روی رابطِ عمومی ────────────────────────────────
+# Supabase CLI پورت‌هایش را پیش‌فرض روی همهٔ رابط‌ها منتشر می‌کند؛ استکی که
+# دادهٔ واقعیِ اعضا را دارد نباید از شبکهٔ محلی دیده شود. دادهٔ Production فقط
+# وقتی وارد می‌شود که همهٔ پورت‌ها روی 127.0.0.1 باشند.
+PORTS="$(docker ps --filter "name=$VERIFY_ID" --format '{{.Names}}|{{.Ports}}')" \
+  || die "فهرستِ کانتینرهای استکِ محلی خوانده نشد."
+PUBLIC="$(printf '%s\n' "$PORTS" | grep -E '(^|[|, ])(0\.0\.0\.0|\[::\]|::):[0-9]+->' || true)"
+if [ -n "$PUBLIC" ]; then
+  die "استکِ محلی پورت‌ها را روی همهٔ رابط‌ها منتشر کرده:
+$PUBLIC
+هیچ دادهٔ Production واردش نشد. یک‌بار در تنظیماتِ Docker (daemon.json) بگذار:
+    \"ip\": \"127.0.0.1\"
+و Docker را دوباره راه بینداز."
+fi
+DB_CONTAINER="supabase_db_$VERIFY_ID"
+printf '%s\n' "$PORTS" | grep -q "^$DB_CONTAINER|" || die "کانتینرِ دیتابیسِ $DB_CONTAINER پیدا نشد."
+echo "    همهٔ پورت‌ها روی 127.0.0.1"
+
+# بقیه **داخلِ کانتینرِ دیتابیس** با `docker exec` اجرا می‌شود: بی‌نیاز به
+# --network host و پورتِ منتشرشده، و psql همان نسخهٔ سرور است. اتصال با
+# supabase_admin: roles.sql پارامترهایی مثلِ log_min_messages را روی نقش‌ها
+# می‌گذارد که فقط superuser مجاز است (با `postgres` شکست — یافتهٔ Codex).
+in_db() {
+  docker exec "$DB_CONTAINER" sh -c "PGPASSWORD='$LOCAL_PW' psql -h 127.0.0.1 -U supabase_admin -d postgres -X -q $1"
+}
+docker exec "$DB_CONTAINER" mkdir -p /tmp/restore || die "آماده‌سازیِ کانتینرِ دیتابیس شکست خورد."
+for f in "$OUT_DIR/roles.sql" "$OUT_DIR/schema.sql" "$OUT_DIR/data.sql" \
+         "$REPO_ROOT/scripts/backup/assert-managed-schemas.sql" "$INVENTORY_SQL"; do
+  docker cp "$f" "$DB_CONTAINER:/tmp/restore/" || die "کپیِ $(basename "$f") به کانتینر شکست خورد."
+done
+
 # اسکیماهای مدیریت‌شده باید **پیش از** بازگردانی موجود باشند، وگرنه مقصد
 # فاقدِ چیزی است که dumpِ data به آن نیاز دارد.
-docker run --rm --network host -e DB_URL="$VERIFY_URL" \
-  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
-  --entrypoint sh postgres:17-alpine \
-  -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/assert-managed-schemas.sql' \
+in_db "-v ON_ERROR_STOP=1 -f /tmp/restore/assert-managed-schemas.sql" \
   || die "مقصدِ بازگردانی اسکیماهای مدیریت‌شده را ندارد.
 یعنی مقصد وفادار نیست و آزمونِ بازگردانی چیزی را اثبات نمی‌کند."
 
@@ -213,21 +244,18 @@ docker run --rm --network host -e DB_URL="$VERIFY_URL" \
 # لاگ دنبالِ `^ERROR` می‌گشت — ولی خطاهای فایل‌محورِ psql با
 # `psql:/tmp/schema.sql:123: ERROR:` شروع می‌شوند، نه با `ERROR`. یعنی
 # نشانگری که هرگز نمی‌توانست قرمز شود.
-say "۴/۵ — بازگردانی در یک تراکنش (ON_ERROR_STOP=1)"
+say "۴/۵ — بازگردانی در یک تراکنش (ON_ERROR_STOP=1، با supabase_admin)"
 set +e
-docker run --rm --network host -e DB_URL="$VERIFY_URL" \
-  -v "$OUT_DIR:/backup:ro" --entrypoint sh postgres:17-alpine \
-  -c 'psql --single-transaction --variable ON_ERROR_STOP=1 \
-       --file /backup/roles.sql \
-       --file /backup/schema.sql \
-       --command "SET session_replication_role = replica" \
-       --file /backup/data.sql \
-       --dbname "$DB_URL"' > "$OUT_DIR/restore.log" 2>&1
+in_db "--single-transaction --variable ON_ERROR_STOP=1 --file /tmp/restore/roles.sql --file /tmp/restore/schema.sql \
+  --command 'SET session_replication_role = replica' --file /tmp/restore/data.sql > /tmp/restore/restore.log 2>&1"
 RESTORE_RC=$?
 set -e
+if ! docker cp "$DB_CONTAINER:/tmp/restore/restore.log" "$OUT_DIR/restore.log" >/dev/null 2>&1; then
+  echo "    (لاگِ بازگردانی از کانتینر بیرون نیامد)"
+fi
 if [ "$RESTORE_RC" -ne 0 ]; then
   printf '    آخرین خطوطِ لاگ:\n'
-  tail -20 "$OUT_DIR/restore.log" | sed 's/^/      /'
+  tail -20 "$OUT_DIR/restore.log" 2>/dev/null | sed 's/^/      /'
   die "بازگردانی با کدِ $RESTORE_RC شکست خورد. کلِ تراکنش برگشت.
 لاگ: $OUT_DIR/restore.log
 بکاپ **قابلِ اتکا نیست**. هیچ migrationی روی Production اجرا نمی‌شود."
@@ -236,12 +264,10 @@ echo "    بازگردانی با کدِ ۰ تمام شد."
 
 # ── ۷) مقایسهٔ دوطرفه ────────────────────────────────────────────────────────
 say "۵/۵ — مقایسهٔ شمارشِ ردیف‌ها و اثرِ انگشتِ ساختاری"
-docker run --rm --network host -e DB_URL="$VERIFY_URL" \
-  -v "$REPO_ROOT/scripts/backup:/sql:ro" \
-  --entrypoint sh postgres:17-alpine \
-  -c 'psql "$DB_URL" -X -q -v ON_ERROR_STOP=1 -f /sql/inventory.sql' \
-  > "$OUT_DIR/inventory-restored.txt" \
+in_db "-v ON_ERROR_STOP=1 -f /tmp/restore/inventory.sql -o /tmp/restore/inventory-restored.txt" \
   || die "اثرِ انگشتِ مقصد خوانده نشد."
+docker cp "$DB_CONTAINER:/tmp/restore/inventory-restored.txt" "$OUT_DIR/inventory-restored.txt" \
+  || die "اثرِ انگشتِ مقصد از کانتینر بیرون نیامد."
 
 set +e
 node "$COMPARE_JS" "$OUT_DIR/inventory-source.txt" "$OUT_DIR/inventory-restored.txt" \

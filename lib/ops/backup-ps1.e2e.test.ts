@@ -47,6 +47,7 @@ const PW = `p@ss w"o'rd$%:/#?`;
 const ENC = encodeURIComponent(PW);
 const ROLE = "bk_ps1_hostile";
 const DB = "bk_ps1";
+const VERIFY_DB = "bk_ps1_verify";
 
 const PTY = `
 import os, pty, sys, select, time, signal
@@ -95,27 +96,68 @@ case "$1" in
     # psql از PATH پیدا می‌شود؛ پوشهٔ wrap جلوتر است تا argvِ **خودِ psql** ثبت شود —
     # همان چیزی که \`ps\` روی ماشینِ Docker نشان می‌دهد. نشتِ قبلی همین‌جا بود.
     PATH="\${FAKE_WRAP:?}:$PATH" exec \${FAKE_SH:-sh} -c "$inner" ;;
+  ps) id=""; for a in "$@"; do case "$a" in name=*) id="\${a#name=}";; esac; done
+    printf 'supabase_db_%s|%s\n' "$id" "\${FAKE_PORTS:-127.0.0.1:54322->5432/tcp}"
+    printf 'supabase_kong_%s|%s\n' "$id" "\${FAKE_PORTS_KONG:-127.0.0.1:54321->8000/tcp}"
+    exit 0 ;;
+  cp) src="$2"; dst="$3"
+    case "$dst" in *:/*) dst="\${FAKE_CFS:?}\${dst#*:}";; esac
+    case "$src" in supabase_*:/*) src="\${FAKE_CFS:?}\${src#*:}";; esac
+    exec cp "$src" "$dst" ;;
+  exec) shift; shift  # «exec» و نامِ کانتینر
+    if [ "$1" = mkdir ]; then shift; exec mkdir "$1" "\${FAKE_CFS:?}$2"; fi
+    [ "$1" = sh ] && [ "$2" = -c ] || { echo "fake docker exec: unexpected $*" >&2; exit 2; }
+    [ $# -eq 3 ] || { echo "fake docker exec: $# args — the sh -c string was split" >&2; exit 2; }
+    from=/tmp/restore/; to="\${FAKE_CFS}/tmp/restore/"; inner="\${3//"$from"/"$to"}"
+    PATH="\${FAKE_DBWRAP:?}:$PATH" exec \${FAKE_SH:-sh} -c "$inner" ;;
   *) echo "fake docker: unsupported $1" >&2; exit 2 ;;
 esac
 `;
 const SUPABASE = `#!/usr/bin/env bash
 printf 'supabase %s\\n' "$*" >> "\${FAKE_LOG:?}"
-echo "fake supabase: '$1 $2' disabled in this test" >&2; exit 1
+[ "\${FAKE_SUPA_FULL:-0}" = 1 ] || { echo "fake supabase: '$1 $2' disabled in this test" >&2; exit 1; }
+arg() { local want="$1"; shift; while [ $# -gt 0 ]; do [ "$1" = "$want" ] && { echo "$2"; return; }; shift; done; }
+has() { local want="$1"; shift; for a in "$@"; do [ "$a" = "$want" ] && return 0; done; return 1; }
+adm() { psql -d postgres -X -q -v ON_ERROR_STOP=1 -c "$1"; }
+case "$1 $2" in
+  "db dump") url="$(arg --db-url "$@")"; out="$(arg -f "$@")"
+    if has --role-only "$@"; then printf -- '-- no custom roles\\nSELECT 1;\\n' > "$out"
+    elif has --data-only "$@"; then pg_dump --data-only -n public -n auth -n storage --no-owner "$url" > "$out"
+    else pg_dump --schema-only -n public "$url" > "$out"; fi ;;  # مالک و گرنت مثلِ dumpِ واقعیِ Supabase حفظ می‌شوند
+  "init --workdir") mkdir -p "$3/supabase"; printf 'project_id = "x"\\n[api]\\nport = 54321\\n[db]\\nport = 54322\\nshadow_port = 54320\\n' > "$3/supabase/config.toml" ;;
+  "start --workdir") adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" && adm "CREATE DATABASE $FAKE_VERIFY_DB" \\
+      && psql -d "$FAKE_VERIFY_DB" -X -q -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA auth; CREATE SCHEMA storage;" ;;
+  # پیش‌فرضِ محلیِ CLI (رمزِ پشتهٔ موقت، نه سکرت)؛ با printf ساخته می‌شود تا شکلِ «URL با رمز» در متن نباشد.
+  "status --workdir") printf 'DB_URL="%s://%s:%s@127.0.0.1:54322/postgres"\\n' postgresql postgres "\${FAKE_LOCAL_PW:-postgres}" ;;
+  "stop --workdir") adm "DROP DATABASE IF EXISTS \${FAKE_VERIFY_DB:?}" ;;
+  "--version ") echo "2.99.0-fake" ;;
+  *) echo "fake supabase: unsupported $*" >&2; exit 2 ;;
+esac
 `;
 
 let work = "";
 
-function runPs1(input: string, extraEnv: Record<string, string> = {}) {
+function runPs1(input: string, extraEnv: Record<string, string> = {}, legacy = false) {
   const log = join(work, `log-${Math.random().toString(36).slice(2)}`);
   writeFileSync(log, "");
   const out = mkdtempSync(join(tmpdir(), "bk-out-"));
-  const r = spawnSync("python3", [join(work, "ptydrive.py"), "pwsh", "-NoLogo", "-NoProfile", "-File", PS1], {
+  const cfs = mkdtempSync(join(tmpdir(), "bk-cfs-"));
+  // 'Legacy' همان رفتارِ Windows PowerShell 5.1 در ساختنِ خطِ فرمانِ native است.
+  const argv = legacy
+    ? ["-NoLogo", "-NoProfile", "-Command", `$PSNativeCommandArgumentPassing='Legacy'; & '${PS1}'; exit $LASTEXITCODE`]
+    : ["-NoLogo", "-NoProfile", "-File", PS1];
+  const r = spawnSync("python3", [join(work, "ptydrive.py"), "pwsh", ...argv], {
     input: `${input}\r`,
     env: {
       PATH: `${join(work, "bin")}:${process.env.PATH}`,
       HOME: process.env.HOME ?? tmpdir(),
       FAKE_LOG: log,
       FAKE_WRAP: join(work, "wrap"),
+      FAKE_DBWRAP: join(work, "dbwrap"),
+      FAKE_CFS: cfs,
+      FAKE_VERIFY_DB: VERIFY_DB,
+      PGHOST: ENV.PGHOST, PGPORT: ENV.PGPORT, PGUSER: ENV.PGUSER, PGPASSWORD: ENV.PGPASSWORD,
+      REAL_PGPASSWORD: ENV.PGPASSWORD,
       FAKE_SH: which("busybox") ? "busybox sh" : "sh",
       BACKUP_DIR: out,
       NODE_ENV: "test",
@@ -127,7 +169,8 @@ function runPs1(input: string, extraEnv: Record<string, string> = {}) {
   const text = (r.stdout ?? "").replace(/\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07/g, "").replace(/\r/g, "");
   const dockerLog = readFileSync(log, "utf8").replace(/\0/g, " ");
   const inv = existsSync(join(out, "inventory-source.txt")) ? readFileSync(join(out, "inventory-source.txt"), "utf8") : "";
-  return { code: r.status, text, dockerLog, inv };
+  const file = (n: string) => (existsSync(join(out, n)) ? readFileSync(join(out, n)) : Buffer.alloc(0));
+  return { code: r.status, text, dockerLog, inv, file };
 }
 
 const url = (pw: string) =>
@@ -151,6 +194,18 @@ describe("backup-production.ps1 end-to-end (B-057)", {
     execFileSync("mkdir", ["-p", join(work, "wrap")]);
     writeFileSync(join(work, "wrap", "psql"), `#!/bin/sh\nprintf 'psql-argv %s\\n' "$*" >> "$FAKE_LOG"\nexec ${realPsql} "$@"\n`);
     chmodSync(join(work, "wrap", "psql"), 0o755);
+    // «داخلِ کانتینرِ db»: `-U supabase_admin -d postgres` به پایگاهِ verifyِ محلی نگاشت می‌شود.
+    execFileSync("mkdir", ["-p", join(work, "dbwrap")]);
+    writeFileSync(join(work, "dbwrap", "psql"), `#!/bin/bash
+printf 'exec-psql %s\\n' "$*" >> "$FAKE_LOG"
+args=(); while [ $# -gt 0 ]; do case "$1" in
+  -U) [ "$2" = supabase_admin ] || { echo "not supabase_admin: $2" >&2; exit 3; }; args+=(-U "$PGUSER"); shift 2;;
+  -d) args+=(-d "$FAKE_VERIFY_DB"); shift 2;;
+  -h) args+=(-h "$PGHOST" -p "$PGPORT"); shift 2;;
+  *) args+=("$1"); shift;; esac; done
+PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
+`);
+    chmodSync(join(work, "dbwrap", "psql"), 0o755);
     admin(`DROP DATABASE IF EXISTS ${DB}`);
     admin(`DROP ROLE IF EXISTS ${ROLE}`);
     admin(`CREATE ROLE ${ROLE} LOGIN PASSWORD '${PW.replace(/'/g, "''")}'`);
@@ -159,7 +214,7 @@ describe("backup-production.ps1 end-to-end (B-057)", {
   });
 
   after(() => {
-    try { admin(`DROP DATABASE IF EXISTS ${DB}`); admin(`DROP ROLE IF EXISTS ${ROLE}`); } catch { /* best effort */ }
+    try { admin(`DROP DATABASE IF EXISTS ${VERIFY_DB}`); admin(`DROP DATABASE IF EXISTS ${DB}`); admin(`DROP ROLE IF EXISTS ${ROLE}`); } catch { /* best effort */ }
   });
 
   test("رمزِ دشمن‌خو: وصل می‌شود، موجودی خوانده می‌شود، و رمز در هیچ خروجی و argvِ docker نیست", () => {
@@ -212,5 +267,49 @@ describe("backup-production.ps1 end-to-end (B-057)", {
     assert.equal(r.code, 1);
     assert.match(r.text, /Could not connect to production/);
     assert.equal(r.text.includes(wrong) || r.text.includes(encodeURIComponent(wrong)), false);
+  });
+
+  // ── مسیرِ کامل: dump → پشتهٔ محلی → بررسیِ پورت → بازگردانی → مقایسه ─────────
+  for (const legacy of [false, true]) {
+    const mode = legacy ? "Legacy (رفتارِ خطِ فرمانِ PS 5.1)" : "Standard";
+    test(`مسیرِ کامل تا PASS — ${mode}`, () => {
+      const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1" }, legacy);
+      assert.equal(r.code, 0, r.text.slice(-1500));
+      assert.match(r.text, /every published port is bound to 127\.0\.0\.1/);
+      assert.match(r.text, /\[OK\] Backup created AND it passed the restore test/);
+      assert.match(r.text, /result: +PASS/);
+      // بازگردانی واقعاً با supabase_admin و داخلِ «کانتینر» اجرا شد.
+      assert.match(r.dockerLog, /exec-psql [^\n]*-U supabase_admin[^\n]*--single-transaction/);
+      assert.doesNotMatch(r.dockerLog, /network host/);
+      // هیچ فایلی BOM ندارد و فهرستِ مقصد همان بایت‌هایی است که psql نوشت.
+      for (const f of ["inventory-source.txt", "inventory-source-after.txt", "inventory-restored.txt", "MANIFEST.txt"]) {
+        const b = r.file(f);
+        assert.ok(b.length > 0, `${f} خالی است`);
+        assert.equal(b.subarray(0, 3).equals(Buffer.from([0xef, 0xbb, 0xbf])), false, `${f} BOM دارد`);
+      }
+      assert.match(r.file("inventory-restored.txt").toString("utf8"), /rowcount\|public\.t\|2/);
+      // رمز جز در `supabase db dump` (نشتِ مستند) هیچ‌جا نیست.
+      const leaks = r.dockerLog.split("\n").filter((l) => l.includes(ENC) || l.includes(PW));
+      assert.ok(leaks.every((l) => l.startsWith("supabase db dump")), leaks.join("\n"));
+      assert.equal(r.text.includes(PW) || r.text.includes(ENC), false);
+      assert.match(r.dockerLog, /supabase stop --workdir/, "پشتهٔ موقت پاک شد");
+    });
+  }
+
+  test("پورتِ عمومی: هیچ دادهٔ Production بازگردانی نمی‌شود و پشته پاک می‌شود", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_PORTS: "0.0.0.0:54322->5432/tcp" }, true);
+    assert.equal(r.code, 1);
+    assert.match(r.text, /publishes ports on every network interface/);
+    assert.match(r.text, /"ip": "127\.0\.0\.1"/);
+    assert.doesNotMatch(r.dockerLog, /--single-transaction/, "بازگردانی نباید شروع شود");
+    assert.doesNotMatch(r.dockerLog, /^cp /m, "هیچ فایلی به کانتینر نرفت");
+    assert.match(r.dockerLog, /supabase stop --workdir/);
+  });
+
+  test("پورتِ عمومیِ IPv6 هم گرفته می‌شود", () => {
+    const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1", FAKE_PORTS_KONG: ":::54321->8000/tcp" }, true);
+    assert.equal(r.code, 1);
+    assert.match(r.text, /publishes ports on every network interface/);
+    assert.doesNotMatch(r.dockerLog, /--single-transaction/);
   });
 });

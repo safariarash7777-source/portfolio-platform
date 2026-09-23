@@ -407,7 +407,7 @@ describe("اتصال از stdin با CRLF (B-057)", {
 
   test("تکهٔ sh از فایل استخراج شد و هر دو اسکریپت همان pgurl.sh را منبع می‌کنند", () => {
     assert.ok(inner.includes("pgurl.sh"), "الگوی `$inner = '...' + $PsqlArgs` در ps1 پیدا نشد");
-    assert.match(sh, /\. \/sql\/pgurl\.sh; exec psql -w/, "backup-production.sh از pgurl.sh نمی‌گذرد — دو مسیرِ موازی");
+    assert.match(sh, /\. \/sql\/pgurl\.sh; pgurl_psql /, "backup-production.sh از pgurl.sh نمی‌گذرد — دو مسیرِ موازی");
     assert.doesNotMatch(ps1 + sh, /read -r PGURL; exec psql/, "مسیرِ قدیمیِ بی‌گارد برگشته");
   });
 
@@ -417,6 +417,10 @@ describe("اتصال از stdin با CRLF (B-057)", {
 
   test("CRLF (پایپِ PowerShell) وصل می‌شود — نه «postgres\\r»", () => {
     assert.equal(run(`${url("postgres")}\r\n`), "postgres");
+  });
+
+  test("BOM + CRLF (Windows PowerShell 5.1) وصل می‌شود", () => {
+    assert.equal(run(`\uFEFF${url("postgres")}\r\n`), "postgres");
   });
 
   test("CRLF با پارامترِ کوئری — sslmode سالم می‌ماند", () => {
