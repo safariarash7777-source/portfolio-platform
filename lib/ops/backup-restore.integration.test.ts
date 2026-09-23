@@ -223,6 +223,29 @@ describe("ماشینِ راستی‌آزماییِ بکاپ روی Postgresِ و
     });
   });
 
+  describe("جدول‌های مهاجرتِ خودِ سرویس (auth.schema_migrations، storage.migrations)", () => {
+    // این ردیف‌ها را سرویسِ مقصد می‌نویسد و در dumpِ data نیستند؛ مقصدی با Authِ
+    // تازه‌تر از Production مجاز است و نباید بکاپِ سالم را FAIL کند.
+    test("مقصد با Auth/Storageِ تازه‌تر: مقایسه همچنان PASS است", () => {
+      freshTarget(true);
+      assert.equal(restore(schemaDump, dataDump), 0);
+      psql(SRC, ["-c", "CREATE TABLE IF NOT EXISTS auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('20260831180000') ON CONFLICT DO NOTHING;"]);
+      psql(DST, ["-c", "CREATE TABLE auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('20260831180000'), ('20261001000000'); CREATE TABLE storage.migrations (id int PRIMARY KEY); INSERT INTO storage.migrations VALUES (1),(2),(3);"]);
+      const a = join(work, "mig-src.txt");
+      const b = join(work, "mig-dst.txt");
+      inventory(SRC, a);
+      inventory(DST, b);
+      assert.equal(compareExit(a, b), 0);
+      assert.match(readFileSync(a, "utf8"), /exclusion\|auth\.schema_migrations\|documented/);
+      assert.doesNotMatch(readFileSync(b, "utf8"), /rowcount\|auth\.schema_migrations/);
+      // و استثنا چیزی را پنهان نمی‌کند: یک ردیفِ کم در دادهٔ واقعی هنوز شکست است.
+      psql(DST, ["-c", "DELETE FROM auth.users WHERE ctid = (SELECT ctid FROM auth.users LIMIT 1);"]);
+      inventory(DST, b);
+      assert.notEqual(compareExit(a, b), 0);
+      psql(SRC, ["-c", "DROP TABLE auth.schema_migrations;"]);
+    });
+  });
+
   describe("تزریقِ خطای عمدی", () => {
     test("یک دستورِ خراب کلِ بازگردانی را با کدِ غیرصفر می‌شکند", () => {
       const broken = join(work, "schema-broken.sql");
