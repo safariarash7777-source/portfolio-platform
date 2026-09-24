@@ -1,6 +1,6 @@
 import { before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -223,6 +223,29 @@ describe("ماشینِ راستی‌آزماییِ بکاپ روی Postgresِ و
     });
   });
 
+  describe("جدول‌های مهاجرتِ خودِ سرویس (auth.schema_migrations، storage.migrations)", () => {
+    // این ردیف‌ها را سرویسِ مقصد می‌نویسد و در dumpِ data نیستند؛ مقصدی با Authِ
+    // تازه‌تر از Production مجاز است و نباید بکاپِ سالم را FAIL کند.
+    test("مقصد با Auth/Storageِ تازه‌تر: مقایسه همچنان PASS است", () => {
+      freshTarget(true);
+      assert.equal(restore(schemaDump, dataDump), 0);
+      psql(SRC, ["-c", "CREATE TABLE IF NOT EXISTS auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('20260831180000') ON CONFLICT DO NOTHING;"]);
+      psql(DST, ["-c", "CREATE TABLE auth.schema_migrations (version text PRIMARY KEY); INSERT INTO auth.schema_migrations VALUES ('20260831180000'), ('20261001000000'); CREATE TABLE storage.migrations (id int PRIMARY KEY); INSERT INTO storage.migrations VALUES (1),(2),(3);"]);
+      const a = join(work, "mig-src.txt");
+      const b = join(work, "mig-dst.txt");
+      inventory(SRC, a);
+      inventory(DST, b);
+      assert.equal(compareExit(a, b), 0);
+      assert.match(readFileSync(a, "utf8"), /exclusion\|auth\.schema_migrations\|documented/);
+      assert.doesNotMatch(readFileSync(b, "utf8"), /rowcount\|auth\.schema_migrations/);
+      // و استثنا چیزی را پنهان نمی‌کند: یک ردیفِ کم در دادهٔ واقعی هنوز شکست است.
+      psql(DST, ["-c", "DELETE FROM auth.users WHERE ctid = (SELECT ctid FROM auth.users LIMIT 1);"]);
+      inventory(DST, b);
+      assert.notEqual(compareExit(a, b), 0);
+      psql(SRC, ["-c", "DROP TABLE auth.schema_migrations;"]);
+    });
+  });
+
   describe("تزریقِ خطای عمدی", () => {
     test("یک دستورِ خراب کلِ بازگردانی را با کدِ غیرصفر می‌شکند", () => {
       const broken = join(work, "schema-broken.sql");
@@ -364,5 +387,174 @@ describe("ماشینِ راستی‌آزماییِ بکاپ روی Postgresِ و
       inventory(DST, b);
       assert.equal(compareExit(a, b), 0, "تست‌ها نباید حالتِ ماندگار جا بگذارند");
     });
+  });
+});
+
+/**
+ * B-057 — رشتهٔ اتصال از stdin، با پایانِ خطِ ویندوز.
+ *
+ * پایپِ Windows PowerShell به فرایندِ native رشته را با CR LF می‌بندد. `read -r`
+ * فقط LF را برمی‌دارد و CR داخلِ URL می‌ماند: نامِ دیتابیس «postgres<CR>» می‌شد
+ * یا مقدارِ `?sslmode=` نامعتبر. این آزمون همان تکهٔ shِ **خودِ**
+ * `backup-production.ps1` را از فایل برمی‌دارد (نه کپیِ آن) و با psqlِ واقعی
+ * روی Postgresِ واقعی و بایت‌های CRLF اجرا می‌کند.
+ *
+ * ⚠️ خودِ PowerShell اینجا اجرا نمی‌شود (runner لینوکس است)؛ آنچه سنجیده می‌شود
+ * بخشِ sh است با دقیقاً همان بایت‌هایی که PowerShell می‌فرستد.
+ */
+describe("اتصال از stdin با CRLF (B-057)", {
+  skip: dbError ? `Postgres در دسترس نیست: ${dbError}` : false,
+}, () => {
+  const ps1 = readFileSync(join(ROOT, "scripts", "backup-production.ps1"), "utf8");
+  const sh = readFileSync(join(ROOT, "scripts", "backup-production.sh"), "utf8");
+  const m = ps1.match(/^\s*\$inner = '((?:[^']|'')*)' \+ \$PsqlArgs$/m);
+  // رشتهٔ تک‌نقل‌قولیِ PowerShell: '' یعنی یک '. `/sql` همان mountِ scripts/backup است.
+  const inner = (m ? m[1].replace(/''/g, "'") : "").replaceAll("/sql/", `${join(ROOT, "scripts", "backup")}/`);
+  const url = (db: string, query = "") =>
+    `postgresql://${encodeURIComponent(ENV.PGUSER!)}:${encodeURIComponent(ENV.PGPASSWORD!)}` +
+    `@${ENV.PGHOST}:${ENV.PGPORT}/${db}${query}`;
+  // busybox همان پوستهٔ ایمیجِ postgres:17-alpine است؛ نبودش یعنی sh (dash).
+  const SH = spawnSync("sh", ["-c", "command -v busybox"]).status === 0 ? ["busybox", "sh"] : ["sh"];
+  const exec = (stdin: string) =>
+    spawnSync(SH[0], [...SH.slice(1), "-c", `${inner} -X -A -t -c "SELECT current_database()"`], {
+      input: stdin,
+      encoding: "utf8",
+      // عمداً فقط PATH: هیچ PG*ای از محیط نمی‌رسد، پس اتصال فقط از stdin است.
+      env: { PATH: process.env.PATH, NODE_ENV: "test" } as NodeJS.ProcessEnv,
+    });
+  const run = (stdin: string) => {
+    const r = exec(stdin);
+    assert.equal(r.status, 0, r.stderr);
+    return r.stdout.trim();
+  };
+
+  test("تکهٔ sh از فایل استخراج شد و هر دو اسکریپت همان pgurl.sh را منبع می‌کنند", () => {
+    assert.ok(inner.includes("pgurl.sh"), "الگوی `$inner = '...' + $PsqlArgs` در ps1 پیدا نشد");
+    assert.match(sh, /\. \/sql\/pgurl\.sh; pgurl_psql /, "backup-production.sh از pgurl.sh نمی‌گذرد — دو مسیرِ موازی");
+    assert.doesNotMatch(ps1 + sh, /read -r PGURL; exec psql/, "مسیرِ قدیمیِ بی‌گارد برگشته");
+  });
+
+  test("LF (لینوکس) وصل می‌شود", () => {
+    assert.equal(run(`${url("postgres")}\n`), "postgres");
+  });
+
+  test("CRLF (پایپِ PowerShell) وصل می‌شود — نه «postgres\\r»", () => {
+    assert.equal(run(`${url("postgres")}\r\n`), "postgres");
+  });
+
+  test("BOM + CRLF (Windows PowerShell 5.1) وصل می‌شود", () => {
+    assert.equal(run(`\uFEFF${url("postgres")}\r\n`), "postgres");
+  });
+
+  test("CRLF با پارامترِ کوئری — sslmode سالم می‌ماند", () => {
+    assert.equal(run(`${url("postgres", "?sslmode=disable")}\r\n`), "postgres");
+  });
+
+  test("ورودیِ خالی: exit 64 پیش از psql — نه سقوط به سوکتِ محلی", () => {
+    for (const stdin of ["", "\n", "\r\n"]) {
+      const r = exec(stdin);
+      assert.equal(r.status, 64, JSON.stringify(stdin));
+      assert.match(r.stderr, /empty connection string/);
+      assert.doesNotMatch(r.stderr, /\/var\/run\/postgresql/);
+    }
+  });
+
+  test("غیر URI: exit 64 پیش از psql", () => {
+    const r = exec(`host=${ENV.PGHOST} password=x\n`);
+    assert.equal(r.status, 64);
+    assert.match(r.stderr, /not a postgres/);
+  });
+});
+
+/**
+ * رمزِ خام در URL و رمزِ جدا (۲۰۲۶-۰۹-۲۴، لپ‌تاپِ آرش).
+ *
+ * رمزی با '/' که دستی در URL نوشته شد، طبقِ قاعدهٔ libpq در اولین '/' بریده شد:
+ * بخشی از رمز «port» شد و در پیامِ خطا چاپ شد. همین تکهٔ sh از ps1 (نه کپی) با
+ * psqlِ واقعی روی نقشی با رمزِ دشمن‌خو اجرا می‌شود.
+ */
+describe("pgurl.sh: رمزِ خام، رمزِ جدا، و پاک‌کردنِ رمز از خطا", {
+  skip: dbError ? `Postgres در دسترس نیست: ${dbError}` : false,
+}, () => {
+  const ps1 = readFileSync(join(ROOT, "scripts", "backup-production.ps1"), "utf8");
+  const m = ps1.match(/^\s*\$inner = '((?:[^']|'')*)' \+ \$PsqlArgs$/m);
+  const lib = join(ROOT, "scripts", "backup");
+  const inner = (m ? m[1].replace(/''/g, "'") : "").replaceAll("/sql/", `${lib}/`);
+  const SH = spawnSync("sh", ["-c", "command -v busybox"]).status === 0 ? ["busybox", "sh"] : ["sh"];
+  const ROLE = "bk_pgurl_raw";
+  const PW = "rpNnpUa9TF3/pa ss@x#?:%zz";
+  const admin = (sql: string) =>
+    execFileSync("psql", ["-d", "postgres", "-X", "-q", "-v", "ON_ERROR_STOP=1", "-c", sql], { env: { ...process.env, ...ENV }, stdio: "pipe" });
+  const raw = (pw: string) => `postgresql://${ROLE}:${pw}@${ENV.PGHOST}:${ENV.PGPORT}/postgres?sslmode=disable`;
+  const sh = (script: string, stdin: string) =>
+    spawnSync(SH[0], [...SH.slice(1), "-c", script], {
+      input: stdin, encoding: "utf8", env: { PATH: process.env.PATH, NODE_ENV: "test" } as NodeJS.ProcessEnv,
+    });
+  const who = (stdin: string) => sh(`${inner} -X -A -t -c "SELECT current_user"`, stdin);
+  const pieces = (pw: string) => [pw, encodeURIComponent(pw), ...pw.split(/[^A-Za-z0-9]+/).filter((f) => f.length >= 6)];
+
+  before(() => {
+    admin(`DROP ROLE IF EXISTS ${ROLE}`);
+    admin(`CREATE ROLE ${ROLE} LOGIN PASSWORD '${PW.replace(/'/g, "''")}'`);
+  });
+
+  test("رمزِ خام با / @ : # ? % و فاصله داخلِ URL وصل می‌شود (پیش‌تر: invalid integer value ... port)", () => {
+    const r = who(`\uFEFF${raw(PW)}\r\n`);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), ROLE);
+  });
+
+  test("همان رمز، percent-encoded، هم وصل می‌شود", () => {
+    const r = who(`${raw(encodeURIComponent(PW))}\n`);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), ROLE);
+  });
+
+  test("[YOUR-PASSWORD] + رمز در خطِ دوم (CRLF) وصل می‌شود", () => {
+    const r = who(`${raw("[YOUR-PASSWORD]")}\r\n${PW}\r\n`);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), ROLE);
+  });
+
+  test("URIِ استاندارد (برای CLI) رمز را percent-encoded دارد و با libpq وصل می‌شود", () => {
+    const c = sh(`. ${lib}/pgurl.sh; pgurl_canonical`, `${raw("[YOUR-PASSWORD]")}\n${PW}\n`);
+    assert.equal(c.status, 0, c.stderr);
+    const canon = c.stdout.trim();
+    assert.equal(canon.includes(PW), false, "رمزِ خام در URIِ استاندارد");
+    assert.match(canon, /^postgresql:\/\/bk_pgurl_raw:[A-Za-z0-9%._~-]+@/);
+    const r = spawnSync("psql", [canon, "-X", "-A", "-t", "-c", "SELECT current_user"], { encoding: "utf8", env: { PATH: process.env.PATH, NODE_ENV: "test" } as NodeJS.ProcessEnv });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), ROLE);
+  });
+
+  test("رمزِ غلط: شکست، و نه رمز، نه شکلِ کدگذاری‌شده، نه تکه‌های بلندش در stderr", () => {
+    const wrong = "rpNnpUa9TF3/Wrong@Pass";
+    for (const stdin of [`${raw(wrong)}\n`, `${raw("[YOUR-PASSWORD]")}\n${wrong}\n`]) {
+      const r = who(stdin);
+      assert.notEqual(r.status, 0);
+      assert.match(r.stderr, /password authentication failed|authentication/);
+      for (const p of pieces(wrong)) assert.equal((r.stderr + r.stdout).includes(p), false, `تکهٔ رمز در خروجی (${p.length} نویسه)`);
+    }
+  });
+
+  test("pgurl_redact: هر تکهٔ ۶+ نویسه‌ایِ رمز که psql چاپ کند پاک می‌شود", () => {
+    const r = sh(`. ${lib}/pgurl.sh; printf '%s\\n' "port rpNnpUa9TF3 and $PGURL_PWENC" | pgurl_redact`, `${raw(PW)}\n`);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout.trim(), "port *** and ***");
+  });
+
+  test("ورودی‌های بد: exit 64 پیش از psql و بی‌بازتابِ رمز", () => {
+    const cases: [string, RegExp][] = [
+      [`${raw("[YOUR-PASSWORD]")}\n\n`, /no password/],
+      [`postgresql://${ROLE}:${PW}@bad host:5432/postgres\n`, /not host:port\/database/],
+      [`${raw("%C3%A9")}\n`, /non-ASCII/],
+      [`postgresql://${ENV.PGHOST}:${ENV.PGPORT}/postgres\n`, /no user@ part/],
+    ];
+    for (const [stdin, re] of cases) {
+      const r = who(stdin);
+      assert.equal(r.status, 64, stdin);
+      assert.match(r.stderr, re);
+      for (const p of pieces(PW)) assert.equal(r.stderr.includes(p), false);
+    }
   });
 });
