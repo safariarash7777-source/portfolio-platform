@@ -151,8 +151,12 @@ Write-Host @'
 Copy the production connection string from the dashboard:
   Supabase Dashboard -> project -> Connect -> Session pooler or Direct connection
 
-Nothing is echoed while you type. The value is not stored, not printed, and
-does not stay in shell history. DO NOT paste it into a chat.
+Paste it EXACTLY as the dashboard shows it, with [YOUR-PASSWORD] still in it.
+You will be asked for the password on its own next, so special characters
+in it (/ @ : # ? % and spaces) need no care.
+
+Nothing is echoed while you type. Nothing is stored, printed, or kept in
+shell history. DO NOT paste any of it into a chat.
 
 '@
 
@@ -174,6 +178,34 @@ $DbUrl = $DbUrl.Trim()
 if ($DbUrl -notmatch '^postgres(ql)?://') {
     Die 'That does not look like a connection string. It must start with postgresql:// or postgres://'
 }
+
+# ---- the password, on its own ----------------------------------------------
+# On 2026-09-24 the owner typed the password into the URI by hand. It had a
+# '/' in it; libpq splits a URI at the first '/', took part of the PASSWORD
+# as the port, and printed that part in its error message. So: when the URI
+# has no password, or still has the dashboard's placeholder, ask for it
+# separately. Splitting uses the LAST '@' (a host never contains one), the
+# same rule as scripts/backup/pgurl.sh, which does the real parsing.
+$DbPw = ''
+$rest = $DbUrl.Substring($DbUrl.IndexOf('://') + 3)
+$at   = $rest.LastIndexOf('@')
+if ($at -lt 0) { Die 'The connection string has no user@ part. Copy it again from Supabase Dashboard -> Connect.' }
+$userInfo = $rest.Substring(0, $at)
+$colon    = $userInfo.IndexOf(':')
+$pwInUrl  = ''
+if ($colon -ge 0) { $pwInUrl = $userInfo.Substring($colon + 1).Trim() }
+if ($pwInUrl -eq '' -or $pwInUrl -eq '[YOUR-PASSWORD]') {
+    Write-Host ''
+    $securePw = Read-Host -Prompt 'database password' -AsSecureString
+    $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePw)
+    try {
+        $DbPw = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+    } finally {
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    }
+    if ([string]::IsNullOrWhiteSpace($DbPw)) { Die 'No password was entered.' }
+}
+$rest = $null; $userInfo = $null; $pwInUrl = $null
 
 # ---- How the secret reaches psql ------------------------------------------
 # Through the container's STDIN, read into a shell variable, and nowhere else.
@@ -213,6 +245,23 @@ function Invoke-PsqlWithUrl {
     $inner = '. /sql/pgurl.sh; pgurl_psql ' + $PsqlArgs
     $Url | & docker run --rm -i -v "${SqlDir}:/sql:ro" @DockerArgs --entrypoint sh $PgImage -c $inner
 }
+
+# ---- one canonical URI for everything that follows ----------------------------
+# pgurl.sh parses what was typed and prints the URI with the password
+# percent-encoded. That form is safe for libpq AND for the Supabase CLI's
+# --db-url (Go's URL parser), whatever characters the password has. It goes
+# into a variable only; it is never printed. On a parse error pgurl.sh exits
+# 64 with a message that names the problem and never contains the password.
+$pgurlInput = @($DbUrl)
+if ($DbPw -ne '') { $pgurlInput += $DbPw }
+$canon = $pgurlInput | & docker run --rm -i -v "${SqlDir}:/sql:ro" --entrypoint sh $PgImage -c '. /sql/pgurl.sh; pgurl_canonical'
+$canonExit = $LASTEXITCODE
+$pgurlInput = $null; $DbPw = $null
+if ($canonExit -ne 0 -or ("$canon".Trim() -notmatch '^postgres(ql)?://')) {
+    Die "The connection string could not be read (reason above). Nothing was sent to production."
+}
+$DbUrl = "$canon".Trim()
+$canon = $null
 
 # ---- cleanup on every exit path --------------------------------------------
 # Success, ordinary failure, partial startup and Ctrl-C all land here. A

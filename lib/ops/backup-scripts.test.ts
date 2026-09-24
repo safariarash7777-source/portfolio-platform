@@ -373,7 +373,22 @@ describe("سکرت و مقصدِ بکاپ", () => {
     assert.match(pgurl, /export PGPASSWORD/, "pgurl.sh باید رمز را از argv بیرون ببرد");
     assert.ok([...pgurl].every((c) => c.charCodeAt(0) < 128), "pgurl.sh باید ASCII باشد");
     // پیاده‌سازیِ واحد: نقل‌قولِ URI فقط داخلِ pgurl.sh است (pgurl_psql).
-    assert.match(pgurl, /pgurl_psql\(\) \{\n  exec psql -w "\$PGURL" "\$@"\n\}/, "pgurl_psql باید URI را داخلِ sh نقل‌قول کند");
+    assert.match(pgurl, /pgurl_psql\(\) \{[^}]*\n  psql -w "\$PGURL" "\$@" 2>"\$pgurl_err"\n[^}]*pgurl_redact < "\$pgurl_err" >&2[^}]*\}/,
+      "pgurl_psql باید URI را داخلِ sh نقل‌قول کند و stderrِ psql را از pgurl_redact بگذراند");
+    // ۲۰۲۶-۰۹-۲۴: libpq بخشی از رمز را در پیامِ خطای port چاپ کرد. userinfo تا **آخرین** '@'.
+    assert.match(pgurl, /pgurl_host=\$\{pgurl_rest##\*@\}/, "بخشِ میزبان باید پس از آخرین '@' باشد");
+    assert.match(pgurl, /ENVIRON\["PGPASSWORD"\]/, "حذفِ رمز باید از ENVIRON بخواند، نه از argvِ awk");
+    assert.doesNotMatch(pgurl, /awk -v [^\n]*PGPASSWORD/, "رمز نباید در argvِ awk برود");
+    // رمزِ جدا و URIِ استاندارد برای CLI، در هر دو اسکریپت.
+    assert.match(ps1Code, /Read-Host -Prompt 'database password' -AsSecureString/, "ps1 باید رمز را جدا و مخفی بپرسد");
+    assert.match(bashCode, /read -rsp "database password: "/, "sh باید رمز را جدا و مخفی بپرسد");
+    for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
+      assert.match(code, /pgurl\.sh; pgurl_canonical/, `${label} باید URIِ استاندارد را از pgurl.sh بگیرد`);
+      const canonAt = code.indexOf("pgurl_canonical");
+      const dumpAt = Math.max(code.indexOf("db dump --db-url"), code.indexOf("'db', 'dump', '--db-url'"));
+      assert.ok(canonAt > 0 && dumpAt > canonAt, `${label}: URIِ استاندارد باید پیش از dump ساخته شود`);
+    }
+    assert.doesNotMatch(bashCode, /DB_URL="\$\(printf '%s' "\$DB_URL" \| tr -d '\[:space:\]'\)"/, "sh نباید فاصلهٔ داخلِ رمز را حذف کند");
     for (const [label, code] of [["bash", bashCode], ["ps1", ps1Code]] as const) {
       assert.match(code, /\. \/sql\/pgurl\.sh; pgurl_psql /, `${label} باید از pgurl.sh بگذرد`);
       assert.doesNotMatch(code, /read -r PGURL; exec psql/, `${label} مسیرِ قدیمیِ بی‌گارد را دارد`);

@@ -77,18 +77,55 @@ cat <<'EOS'
 رشتهٔ اتصالِ Production را از داشبورد بردار:
   Supabase Dashboard → پروژه → دکمهٔ Connect → Session pooler یا Direct connection
 
-هنگامِ تایپ چیزی نمایش داده نمی‌شود. این مقدار نه ذخیره می‌شود، نه چاپ،
-و نه در تاریخچهٔ شل می‌ماند. **آن را در چت برای کسی نفرست.**
+آن را **همان‌طور که داشبورد نشان می‌دهد**، با [YOUR-PASSWORD]، بچسبان. رمز
+جداگانه پرسیده می‌شود، پس نویسه‌های خاصِ آن (/ @ : # ? % و فاصله) مهم نیستند.
+
+هنگامِ تایپ چیزی نمایش داده نمی‌شود. هیچ‌چیز ذخیره یا چاپ نمی‌شود و در
+تاریخچهٔ شل نمی‌ماند. **هیچ بخشی از آن را در چت نفرست.**
 
 EOS
 read -rsp "connection string: " DB_URL
 echo
-[ -n "${DB_URL:-}" ] || die "چیزی وارد نشد."
-DB_URL="$(printf '%s' "$DB_URL" | tr -d '[:space:]')"
+# فقط فاصلهٔ دو سر حذف می‌شود؛ فاصلهٔ داخلِ رمز بخشی از رمز است.
+DB_URL="$(printf '%s' "${DB_URL:-}" | tr -d '\r' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+[ -n "$DB_URL" ] || die "چیزی وارد نشد."
 case "$DB_URL" in
   postgres://*|postgresql://*) : ;;
   *) die "این رشتهٔ اتصال به نظر نمی‌آید. باید با postgresql:// یا postgres:// شروع شود." ;;
 esac
+
+# رمز جدا: وقتی URL رمز ندارد یا هنوز [YOUR-PASSWORD] دارد (همان قاعدهٔ pgurl.sh:
+# آخرین '@'، اولین ':'). ۲۰۲۶-۰۹-۲۴ رمزی با '/' که دستی در URL نوشته شده بود،
+# به پورت تعبیر شد و بخشی از آن در پیامِ خطای libpq چاپ شد.
+DB_PW=""
+url_rest="${DB_URL#*://}"
+case "$url_rest" in *@*) : ;; *) die "رشتهٔ اتصال بخشِ user@ ندارد. آن را دوباره از Connect بردار." ;; esac
+url_auth="${url_rest%@*}"
+url_pw=""
+case "$url_auth" in *:*) url_pw="${url_auth#*:}" ;; esac
+url_pw="$(printf '%s' "$url_pw" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+if [ -z "$url_pw" ] || [ "$url_pw" = "[YOUR-PASSWORD]" ]; then
+  read -rsp "database password: " DB_PW
+  echo
+  [ -n "$DB_PW" ] || die "رمزی وارد نشد."
+fi
+unset url_rest url_auth url_pw
+
+# یک URIِ استاندارد برای همهٔ مراحلِ بعد (رمز percent-encoded؛ برای libpq و
+# `--db-url`ِ CLI هر دو امن). فقط در متغیر؛ هرگز چاپ نمی‌شود.
+if [ -n "$DB_PW" ]; then
+  CANON="$(printf '%s\n%s\n' "$DB_URL" "$DB_PW" | docker run --rm -i -v "$REPO_ROOT/scripts/backup:/sql:ro" \
+    --entrypoint sh "$PG_IMAGE" -c '. /sql/pgurl.sh; pgurl_canonical')" || CANON=""
+else
+  CANON="$(printf '%s\n' "$DB_URL" | docker run --rm -i -v "$REPO_ROOT/scripts/backup:/sql:ro" \
+    --entrypoint sh "$PG_IMAGE" -c '. /sql/pgurl.sh; pgurl_canonical')" || CANON=""
+fi
+DB_PW=""
+case "$CANON" in
+  postgres://*|postgresql://*) DB_URL="$CANON" ;;
+  *) die "رشتهٔ اتصال خوانده نشد (علت در بالا). چیزی به Production فرستاده نشد." ;;
+esac
+unset CANON
 
 # ── رشتهٔ اتصال از stdin به کانتینر می‌رود ──────────────────────────────────
 #

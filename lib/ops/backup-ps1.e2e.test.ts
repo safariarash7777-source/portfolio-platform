@@ -57,11 +57,13 @@ const VERIFY_DB = "bk_ps1_verify";
 
 const PTY = `
 import os, pty, sys, select, time, signal
-line = sys.stdin.buffer.read()
+# پاسخ‌ها با \\0 جدا می‌شوند: اولی برای «connection string:»، دومی برای «database password:».
+answers = sys.stdin.buffer.read().split(b"\\0")
+prompts = [b"connection string:", b"database password:"]
 pid, fd = pty.fork()
 if pid == 0:
     os.execvp(sys.argv[1], sys.argv[1:])
-out = b""; sent = False; status = None; deadline = time.time() + 180
+out = b""; sent = 0; status = None; deadline = time.time() + 180
 def pump(timeout):
     global out, sent
     r, _, _ = select.select([fd], [], [], timeout)
@@ -75,8 +77,8 @@ def pump(timeout):
     # (۸۲ ستاره برای ۸۶ نویسه) — URL خراب می‌رسید و اجرا ~۱۸۰ ثانیه طول می‌کشید.
     for _ in range(chunk.count(b"\x1b[6n")):
         os.write(fd, b"\x1b[1;1R")
-    if not sent and b"connection string:" in out:
-        time.sleep(0.3); os.write(fd, line); sent = True
+    while sent < len(answers) and sent < len(prompts) and prompts[sent] in out:
+        time.sleep(0.3); os.write(fd, answers[sent]); sent += 1
     return True
 while status is None and time.time() < deadline:
     alive = pump(0.2)
@@ -143,7 +145,7 @@ esac
 
 let work = "";
 
-function runPs1(input: string, extraEnv: Record<string, string> = {}, legacy = false) {
+function runPs1(input: string | string[], extraEnv: Record<string, string> = {}, legacy = false) {
   const log = join(work, `log-${Math.random().toString(36).slice(2)}`);
   writeFileSync(log, "");
   const out = mkdtempSync(join(tmpdir(), "bk-out-"));
@@ -153,7 +155,7 @@ function runPs1(input: string, extraEnv: Record<string, string> = {}, legacy = f
     ? ["-NoLogo", "-NoProfile", "-Command", `$PSNativeCommandArgumentPassing='Legacy'; & '${PS1}'; exit $LASTEXITCODE`]
     : ["-NoLogo", "-NoProfile", "-File", PS1];
   const r = spawnSync("python3", [join(work, "ptydrive.py"), "pwsh", ...argv], {
-    input: `${input}\r`,
+    input: (Array.isArray(input) ? input : [input]).map((a) => `${a}\r`).join("\0"),
     env: {
       PATH: `${join(work, "bin")}:${process.env.PATH}`,
       HOME: process.env.HOME ?? tmpdir(),
@@ -277,11 +279,54 @@ PGPASSWORD="$REAL_PGPASSWORD" exec ${realPsql} "\${args[@]}"
     assert.equal(r.text.includes(wrong) || r.text.includes(encodeURIComponent(wrong)), false);
   });
 
+  // ── رمزِ خام در URL (۲۰۲۶-۰۹-۲۴، لپ‌تاپِ آرش) ─────────────────────────────
+  // رمزی با '/' که دستی در URL نوشته شده بود، به پورت تعبیر شد و libpq بخشی از
+  // آن را در «invalid integer value ... for connection option port» چاپ کرد.
+  const rawUrl = (pw: string) => `postgresql://${ROLE}:${pw}@${ENV.PGHOST}:${ENV.PGPORT}/${DB}?sslmode=disable`;
+  const placeholderUrl = rawUrl("[YOUR-PASSWORD]");
+  const fragments = (pw: string) => pw.split(/[^A-Za-z0-9]+/).filter((f) => f.length >= 4);
+
+  test("رمزِ خام با / @ : # ? % و فاصله داخلِ URL: وصل می‌شود و هیچ تکه‌ای از رمز چاپ نمی‌شود", () => {
+    const r = runPs1(rawUrl(PW));
+    assert.match(r.text, /connection OK/, r.text.slice(-800));
+    assert.match(r.text, /roles dump failed/, "باید تا dumpِ جعلی برسد");
+    assert.doesNotMatch(r.text, /invalid integer value|connection option/);
+    assert.equal(r.text.includes(PW), false, "رمزِ خام در کنسول");
+    assert.equal(r.text.includes(ENC), false, "رمزِ کدگذاری‌شده در کنسول");
+    const runs = r.dockerLog.split("\n").filter((l) => l.startsWith("run ") || l.startsWith("psql-argv "));
+    for (const l of runs) assert.equal(l.includes(PW) || l.includes(ENC), false, `رمز در argv: ${l.slice(0, 60)}…`);
+  });
+
+  test("[YOUR-PASSWORD] در URL: رمز جدا و مخفی پرسیده می‌شود و وصل می‌شود", () => {
+    const r = runPs1([placeholderUrl, PW]);
+    assert.match(r.text, /database password:/);
+    assert.match(r.text, /connection OK/, r.text.slice(-800));
+    assert.match(r.text, /roles dump failed/);
+    assert.equal(r.text.includes(PW) || r.text.includes(ENC), false, "رمز در کنسول");
+  });
+
+  test("رمزِ جدای غلط (با / و بخشِ بلندِ حرف‌وعدد): شکستِ روشن و هیچ تکه‌ای از رمز در خروجی", () => {
+    const wrong = "rpNnpUa9TF3/Wrong@Pass";
+    const r = runPs1([placeholderUrl, wrong]);
+    assert.equal(r.code, 1);
+    assert.match(r.text, /Could not connect to production/);
+    for (const f of [wrong, encodeURIComponent(wrong), ...fragments(wrong)]) {
+      assert.equal(r.text.includes(f), false, `تکهٔ رمز در کنسول: ${f.length} نویسه`);
+    }
+  });
+
+  test("رمزِ جدای خالی: توقف پیش از هر اتصال", () => {
+    const r = runPs1([placeholderUrl, ""]);
+    assert.equal(r.code, 1);
+    assert.match(r.text, /No password was entered/);
+    assert.equal(/^run /m.test(r.dockerLog), false);
+  });
+
   // ── مسیرِ کامل: dump → پشتهٔ محلی → بررسیِ پورت → بازگردانی → مقایسه ─────────
-  for (const legacy of [false, true]) {
-    const mode = legacy ? "Legacy (رفتارِ خطِ فرمانِ PS 5.1)" : "Standard";
+  for (const [legacy, sep] of [[false, false], [true, false], [true, true]] as const) {
+    const mode = (legacy ? "Legacy (رفتارِ خطِ فرمانِ PS 5.1)" : "Standard") + (sep ? " · رمزِ جدا" : "");
     test(`مسیرِ کامل تا PASS — ${mode}`, () => {
-      const r = runPs1(url(PW), { FAKE_SUPA_FULL: "1" }, legacy);
+      const r = runPs1(sep ? [placeholderUrl, PW] : url(PW), { FAKE_SUPA_FULL: "1" }, legacy);
       assert.equal(r.code, 0, r.text.slice(-1500));
       assert.match(r.text, /every published port is bound to 127\.0\.0\.1/);
       assert.match(r.text, /\[OK\] Backup created AND it passed the restore test/);
