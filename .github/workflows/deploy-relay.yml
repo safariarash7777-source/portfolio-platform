@@ -214,8 +214,8 @@ jobs:
           # `@liara/cli@9.5.1` در `lib/commands/app/shell.js:31` فرمان را بدونِ
           # `encodeURIComponent` داخلِ query string می‌گذارد.
           CMD="$(node scripts/deploy/relay-gate.mjs probe-cmd)"
-          timeout 150 npx --yes "$LIARA_CLI" shell -a "$APP" \
-            --api-token "$LIARA_API_TOKEN" -c "$CMD" > "$RAW" 2>&1
+          export CMD
+          timeout 150 bash scripts/deploy/liara-shell-probe.sh > "$RAW" 2>&1
           RC=$?
           echo "::notice::liara shell exit=$RC ($(wc -c < "$RAW") بایت خروجی)"
           node scripts/deploy/relay-gate.mjs preflight "$RAW" "$RC" \

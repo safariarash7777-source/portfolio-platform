@@ -1,3 +1,4 @@
+import { brsFetch } from "./brsapi-transport.mjs";
 // brsapi-client.mjs — تنها درگاهِ تماس با BrsApi.
 //
 // ── مسئله‌ای که حل می‌کند ───────────────────────────────────────────────────
@@ -480,7 +481,7 @@ export class BrsApiClient {
     this.base = (o.base || "").replace(/\/+$/, "");
     this.key = o.key || "";
     this.headers = o.headers || {};
-    this.fetchImpl = o.fetchImpl || globalThis.fetch;
+    this.fetchImpl = o.fetchImpl || brsFetch;
     this.now = o.now || (() => Date.now());
     this.sleep = o.sleep || ((ms) => new Promise((r) => setTimeout(r, ms)));
     this.rand = o.rand || Math.random;

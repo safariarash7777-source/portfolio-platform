@@ -1,3 +1,4 @@
+import { brsFetch as fetch } from "./brsapi-transport.mjs";
 // symbol-detail.mjs — T5-1: دیتای جامع نماد (Tsetmc/Symbol.php) با کش ۳دقیقه‌ای per-symbol
 //
 // مستند رسمی: https://brsapi.ir/bourse-api-symbol-webservice/

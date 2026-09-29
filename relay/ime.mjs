@@ -1,3 +1,4 @@
+import { brsFetch as fetch } from "./brsapi-transport.mjs";
 // ime.mjs — T5-4/5: بورس کالا (IME) — گواهی سپردهٔ کالایی + معاملات فیزیکی
 //
 // مستندات رسمی (راستی‌آزمایی‌شده):
