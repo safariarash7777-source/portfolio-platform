@@ -37,6 +37,7 @@ import { refreshCertificates, certificatesForPayload, pushCertEod, runPhysicalDa
 import { refreshCommodities, commoditiesForPayload, commodityStatus } from "./commodity.mjs";
 // C1 — قرنطینهٔ زیرنمادها و فهرست سیاه NAV (اخطار رسمی BrsApi)
 import { isSubTicker, isRightsIssue } from "./symbols-util.mjs";
+import { tehranNow, isAfterClose, planEodHistory, writeEodHistory } from "./eod.mjs";
 import { isNavBlacklisted, recordNavResult, loadNavBlacklist, saveNavBlacklist, navBlacklistStatus } from "./nav-blacklist.mjs";
 // گامِ ۱ و ۲ کلاینتِ مرکزی — پشتِ BRSAPI_CLIENT_ENABLED. پیش‌فرض **خاموش**:
 // وقتی خاموش است هیچ مسیری تغییر نمی‌کند و کدِ قبلی عیناً اجرا می‌شود.
@@ -985,86 +986,56 @@ async function pruneHistory() {
 const EOD_AFTER_HOUR = Number(process.env.EOD_AFTER_HOUR || 14); // ساعت تهران
 let eodStatus = { lastRun: null, lastDate: null, rows: 0, skipped: null, error: null };
 
-function tehranNow() {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", hour12: false, weekday: "short",
-  }).formatToParts(new Date());
-  const get = (t) => parts.find((p) => p.type === t)?.value;
-  return { date: `${get("year")}-${get("month")}-${get("day")}`, hour: Number(get("hour")), weekday: get("weekday") };
-}
-
-async function pushDailyHistory(body) {
+// `tehranNow` و ساختِ ردیف‌ها به `eod.mjs` رفتند تا مسیرِ واقعی آزمون‌پذیر باشد —
+// پیش‌تر برچسبِ ردیف از ساعتِ دیواری می‌آمد و پایانیِ هر جلسه زیرِ جلسهٔ بعد
+// ذخیره می‌شد (B-055). توضیحِ کامل و شاهد در سرِ همان فایل.
+async function pushDailyHistory(body, { cycleComplete = true } = {}) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
-  const t = tehranNow();
-  // فقط بعد از بسته‌شدن بازار و فقط روزهای معاملاتی (شنبه–چهارشنبه)
-  if (t.hour < EOD_AFTER_HOUR) return;
-  if (t.weekday === "Thu" || t.weekday === "Fri") return;
-  if (eodStatus.lastDate === t.date) return; // امروز نوشته شده
   const base = SUPABASE_URL.replace(/\/+$/, "");
   const H = {
     "Content-Type": "application/json",
     apikey: SUPABASE_SERVICE_ROLE_KEY,
     Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
   };
+  const request = async (method, path, payload, prefer) => {
+    const res = await fetch(`${base}/rest/v1/${path}`, {
+      method,
+      headers: prefer ? { ...H, Prefer: prefer } : H,
+      body: payload === undefined ? undefined : JSON.stringify(payload),
+      signal: AbortSignal.timeout(method === "GET" ? 15000 : 20000),
+    });
+    return res;
+  };
   try {
-    // دفع تکرار بعد از ری‌دیپلوی: اگر برای امروز ردیف relay_eod هست، رد شو
-    const chk = await fetch(
-      `${base}/rest/v1/symbol_history?select=id&trade_date=eq.${t.date}&source=eq.relay_eod&limit=1`,
-      { headers: H, signal: AbortSignal.timeout(10000) },
-    );
-    if (chk.ok) {
-      const ex = await chk.json();
-      if (Array.isArray(ex) && ex.length > 0) {
-        eodStatus = { ...eodStatus, lastDate: t.date, skipped: "already written today" };
-        return;
-      }
-    }
-    const p = typeof body === "string" ? JSON.parse(body) : body;
-    const all = [...(p.stocks || []), ...(p.funds || [])];
-    const rows = [];
-    for (const r of all) {
-      if (!r?.id || !(Number(r.value) > 0)) continue; // فقط نمادهای معامله‌شدهٔ امروز
-      // C1 — زیرنماد و حق تقدم هرگز وارد symbol_history نمی‌شوند.
-      if (isSubTicker(r.id) || isRightsIssue(r.id)) continue;
-      const raw = {
-        eod: true,
-        buy_i_vol: Number(r.buyI) || null,
-        sell_i_vol: Number(r.sellI) || null,
-        buy_n_vol: Number(r.buyN) || null,
-        sell_n_vol: Number(r.sellN) || null,
-        change_percent: typeof r.changePercent === "number" ? r.changePercent : null,
-      };
-      if (Number(r.nav) > 0) raw.nav_toman = Number(r.nav);
-      if (typeof r.bubblePercent === "number") raw.bubble_percent = r.bubblePercent;
-      rows.push({
-        symbol: r.id,
-        trade_date: t.date,
-        close: r.closingPrice > 0 ? r.closingPrice * 10 : null, // تومان → ریال
-        last_price: r.price > 0 ? r.price * 10 : null,
-        volume: Number(r.volume) || null,
-        value_traded: Number(r.value) || null,
-        raw,
-        source: "relay_eod",
-      });
-    }
-    if (rows.length === 0) {
-      eodStatus = { ...eodStatus, skipped: `no traded rows ${t.date}` };
+    // چرخه‌ای که بودجه‌اش وسطِ کار تمام شد payloadِ خالی یا ناقص دارد (کامنتِ
+    // `budgetStop`). از آن ردیفِ تاریخچه ساخته نمی‌شود — چرخهٔ کاملِ بعدی می‌نویسد.
+    if (!cycleComplete) {
+      eodStatus = { ...eodStatus, skipped: "incomplete cycle (budget stop)" };
       return;
     }
-    let inserted = 0;
-    for (let i = 0; i < rows.length; i += 500) {
-      const res = await fetch(`${base}/rest/v1/symbol_history`, {
-        method: "POST",
-        headers: { ...H, Prefer: "return=minimal" },
-        body: JSON.stringify(rows.slice(i, i + 500)),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status} @batch ${i}`);
-      inserted += Math.min(500, rows.length - i);
+    const p = typeof body === "string" ? JSON.parse(body) : body;
+    const plan = planEodHistory(p, new Date(), EOD_AFTER_HOUR);
+    if (plan.skip) {
+      // «هنوز وقتش نیست» عادی است و status را شلوغ نمی‌کند؛ بقیه دیده شوند.
+      if (plan.skip !== "before-close" && plan.skip !== "weekend") {
+        eodStatus = { ...eodStatus, skipped: plan.skip };
+      }
+      return;
     }
-    eodStatus = { lastRun: Date.now(), lastDate: t.date, rows: inserted, skipped: null, error: null };
-    console.log(`eod history ok: ${inserted} rows for ${t.date}`);
+    if (eodStatus.lastDate === plan.tradeDate) return; // این جلسه کامل نوشته شده
+    // idempotent: پس از ری‌استارت یا شکستِ یک دسته، همین فراخوانی فقط غایب‌ها
+    // را درج می‌کند. جلسه فقط وقتی «کامل» علامت می‌خورد که همهٔ ردیف‌ها تعیین
+    // تکلیف شده باشند (B-055 — توضیح در `eod.mjs`).
+    const r = await writeEodHistory({ plan, request, now: new Date(), afterHour: EOD_AFTER_HOUR });
+    eodStatus = {
+      lastRun: Date.now(),
+      lastDate: r.complete ? r.tradeDate : eodStatus.lastDate,
+      rows: r.inserted,
+      result: r,
+      skipped: r.complete ? null : r.stale ? `stale symbol feed (same as ${r.stale.previousSession})` : "session incomplete — will retry",
+      error: null,
+    };
+    console.log(`eod history: session ${r.tradeDate} +${r.inserted} done=${r.alreadyDone} displaced=${r.displaced} other=${r.occupiedByOtherSource} complete=${r.complete}`);
   } catch (e) {
     eodStatus = { ...eodStatus, error: errMsg(e) };
     console.error("eod history error:", eodStatus.error);
@@ -1078,7 +1049,9 @@ let fxStatus = { lastDate: null, lastRate: null, error: null };
 async function pushDailyFx(body) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
   const t = tehranNow();
-  if (t.hour < EOD_AFTER_HOUR) return; // بعد از ساعت بازار — نرخ پایان روز
+  // `isAfterClose` و ساعتِ h23: پیش‌تر نیمه‌شب «24» خوانده می‌شد و نرخِ دیروز با
+  // برچسبِ امروز ثبت می‌شد (B-055 — ۶۷ از ۶۸ ردیف ساعتِ ۰۰).
+  if (!isAfterClose(t.hour, EOD_AFTER_HOUR)) return; // بعد از ساعت بازار — نرخ پایان روز
   if (fxStatus.lastDate === t.date) return;
   const p = typeof body === "string" ? JSON.parse(body) : body;
   const usd = (p.currency || []).find((r) => r?.id === "USD");
@@ -1121,7 +1094,7 @@ let indexHistStatus = { lastJdate: null, error: null };
 async function pushDailyIndex(body) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
   const t = tehranNow();
-  if (t.hour < EOD_AFTER_HOUR) return; // پس از ساعت بازار — رقم پایان روز
+  if (!isAfterClose(t.hour, EOD_AFTER_HOUR)) return; // پس از ساعت بازار — رقم پایان روز
   const p = typeof body === "string" ? JSON.parse(body) : body;
   const ix = p.indices;
   const jdate = ix?.date ? String(ix.date).trim() : null;
@@ -1239,7 +1212,8 @@ function refresh() {
       }
       await pushToSupabase(body);
       await pushHistory(body);
-      await pushDailyHistory(body);
+      // `budgetStop.active` همین چرخه را می‌گوید (در ابتدای refresh صفر می‌شود).
+      await pushDailyHistory(body, { cycleComplete: !budgetStop.active });
       await pushDailyFx(body);
       await pushDailyIndex(body);
       await pushDailyBreadth({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, EOD_AFTER_HOUR }, body);

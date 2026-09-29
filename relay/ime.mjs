@@ -21,6 +21,7 @@
 //   - append پایان‌روز گواهی‌ها → جدول ime_certificate_history (همان قاعده).
 //   - بودجه: گواهی ~۲۲/روز + فیزیکی ۱-۲/روز — در status شمرده می‌شود.
 
+import { tehranHour as tehranHourH23 } from "./eod.mjs";
 const CERT_INTERVAL_MS = 30 * 60 * 1000;
 
 let lastCertFetch = 0;
@@ -35,8 +36,13 @@ let dayKey = "";
 function tehranDayKey() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tehran" }).format(new Date());
 }
+// ساعت از `eod.mjs` (h23) — `hour12: false` در بعضی ICUها نیمه‌شب را «24» می‌خواند و
+// دروازهٔ «پس از بازار» را باز می‌کرد (B-055). جدول‌های تاریخچهٔ کالا هنوز روی
+// Production ساخته نشده‌اند، پس اینجا دادهٔ خرابی نیست؛ این اصلاح پیشگیرانه است.
+// ⚠️ برچسبِ `trade_date` در این فایل هنوز از `tehranDayKey()` (ساعتِ دیواری) می‌آید —
+// پیش از ساختنِ آن جدول‌ها باید مثلِ `eod.mjs` به تاریخِ جلسهٔ منبع وصل شود.
 function tehranHour() {
-  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Tehran", hour: "2-digit", hour12: false }).format(new Date()));
+  return tehranHourH23();
 }
 function rollDay() {
   const k = tehranDayKey();
