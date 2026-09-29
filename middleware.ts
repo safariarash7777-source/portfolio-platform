@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { activeEntitlementFilter } from '@/lib/entitlement-filter'
 import { accountEntryHref } from './components/account/returnPath'
 
 export async function middleware(request: NextRequest) {
@@ -58,8 +59,9 @@ export async function middleware(request: NextRequest) {
           .select('id')
           .eq('user_id', user.id)
           .is('revoked_at', null)
-          .lte('starts_at', nowIso)
-          .gt('expires_at', nowIso)
+          // NULL یعنی بدونِ انقضا. تعریفِ مشترک با lib/access.ts تا این دو
+          // هرگز واگرا نشوند.
+          .or(activeEntitlementFilter(nowIso))
           .limit(1)
         entitled = !error && !!ents && ents.length > 0
       } catch {

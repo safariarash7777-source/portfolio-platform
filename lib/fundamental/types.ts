@@ -92,6 +92,11 @@ export interface ReportSource {
   source_url: string | null; // URL اطلاعیهٔ codal.ir؛ تا نیامده null می‌ماند
   verified: boolean; // اعتبارسنجی متقاطع انجام شده؟
   verification_note?: string;
+  /**
+   * دامنهٔ ارقام. `consolidated_ambiguous` یعنی از گزارشِ تلفیقی آمده و ممکن است
+   * رقمِ گروه باشد (B-056) — UI نباید آن را قطعی به شرکت نسبت دهد.
+   */
+  scope?: "company" | "consolidated_ambiguous";
 }
 
 /** بستهٔ دادهٔ بنیادی یک نماد که به صفحهٔ نماد تزریق می‌شود. */
@@ -99,6 +104,12 @@ export interface SymbolFundamentals {
   symbol: string;
   n10: { data: CodalN10Data; source: ReportSource } | null;
   n30: { data: CodalN30Data[]; source: ReportSource } | null;
-  /** T3: همهٔ دوره‌های ن-۱۰ پس از dedup نسخه‌ها (با id ردیف برای تقدم اصلاحیه) — ورودی فصل‌سازی. */
+  /**
+   * T3: ورودیِ فصل‌سازی — **یک ردیف برای هر دوره**، همان که `dedupeByPeriod`
+   * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ
+   * دوباره در پایین‌دست ممنوع است؛ دو قاعده یعنی دو پاسخ در یک صفحه.
+   */
   n10Periods?: Array<{ id: number; data: CodalN10Data }>;
+  /** دامنهٔ `n10Periods`: اگر حتی یک دوره از گزارشِ تلفیقی باشد، مبهم است (B-056). */
+  n10PeriodsScope?: "company" | "consolidated_ambiguous";
 }

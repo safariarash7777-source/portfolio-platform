@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { isPrivateBotConversation } from './private-chat';
+// The announcement gate is a real dependency of the handler; register the real
+// implementation so the negative control still exercises genuine behaviour.
+import { selectVisibleAnnouncements, candidateAnnouncementIds } from '../announcements/botVisibility';
 
 test('only the sender’s own private chat is eligible for personal responses', () => {
   assert.equal(isPrivateBotConversation({ from: { id: 42 }, chat: { id: 42, type: 'private' } }), true);
@@ -27,6 +30,7 @@ function harness(source = readFileSync(new URL('../../app/api/telegram/webhook/r
   const imports: Record<string, unknown> = {
     'next/server': { NextResponse: { json: (_body: unknown, options?: { status: number }) => ({ status: options?.status ?? 200 }) } },
     '@/lib/telegram/private-chat': { isPrivateBotConversation },
+    '@/lib/announcements/botVisibility': { selectVisibleAnnouncements, candidateAnnouncementIds },
     '@/lib/supabase/admin': { createAdminClient: () => { databaseClients++; return {}; } },
     '@/lib/telegram': { sendMessage: async (chatId: number) => { sent.push(chatId); } },
     '@/lib/markdown': {}, '@/lib/format': {}, '@/lib/content-hub': {},
