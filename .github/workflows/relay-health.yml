@@ -81,6 +81,31 @@ jobs:
             exit 1
           fi
 
+      - name: فاصلهٔ واقعی درخواست‌های BrsApi
+        if: steps.version.outputs.status == 'passed'
+        env:
+          RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          for (let i = 0; i < 3; i++) {
+            if (i) await new Promise(resolve => setTimeout(resolve, 10000));
+            const response = await fetch(process.env.DEBUG_URL, {
+              headers: { Authorization: `Bearer ${process.env.RELAY_TOKEN}` },
+              signal: AbortSignal.timeout(20000),
+            });
+            if (!response.ok) throw new Error(`debug HTTP ${response.status}`);
+            const { brsapiTransport: t } = await response.json();
+            if (!t || t.enabled !== true || t.scope !== 'process' || t.spacingMs !== 100 ||
+                !Number.isSafeInteger(t.sent) || t.sent < 2 ||
+                !Number.isFinite(t.minStartGapMs) || t.minStartGapMs < 100) {
+              throw new Error('BrsApi live spacing is missing, insufficient, or below 100ms');
+            }
+            console.log(JSON.stringify({ sample: i + 1, scope: 'process', sent: t.sent,
+              spacingMs: t.spacingMs, minStartGapMs: t.minStartGapMs }));
+          }
+          console.log('Per-process spacing verified; replica count and external key users remain separate checks.');
+          NODE
+
       - name: گزارش
         if: always()
         env:
