@@ -3,6 +3,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createBrsTransport } from "./brsapi-transport.mjs";
 
+test("real timers enforce spacing across simultaneous calls without contacting the provider", async () => {
+  const starts = [];
+  const t = createBrsTransport({ fetchImpl: async () => { starts.push(performance.now()); return {}; } });
+  await Promise.all(Array.from({ length: 5 }, () => t.fetch("https://api.brsapi.ir/fixture")));
+  assert.equal(starts.length, 5);
+  assert.ok(starts.slice(1).every((v, i) => v - starts[i] >= 100));
+});
+
 test("parallel sources, retries and event-loop stalls cannot burst", async () => {
   let clock = 0;
   const starts = [];
