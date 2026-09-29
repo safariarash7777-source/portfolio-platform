@@ -341,9 +341,9 @@ jobs:
           # ۳۳۶ (main) جمع نمی‌شوند — تست‌های مشترک دوبار شمرده می‌شدند. از یک اجرای
           # واقعیِ کاملاً سبز روی کلاسترِ **نو** (postgres 16، بدونِ نقشِ ازپیش‌ساخته):
           # `pass=417 fail=0 skipped=0 suites=47`.
-          # Integration baseline: retained from measured #156. Re-measure the combined
-          # suite on a fresh CI database before raising this threshold.
-          MIN_PASS=417
+          # Measured on 1aa0441, CI run 36548474246, fresh Postgres 16:
+          # pass=538 fail=0 cancelled=0 skipped=0 suites=59.
+          MIN_PASS=538
 
           # ⚠️ `# fail` همهٔ شکست‌ها را نمی‌شمارد. وقتی یک هوکِ `before` بترکد،
           # node:test کلِ suite را با `not ok` علامت می‌زند ولی `# fail` همچنان

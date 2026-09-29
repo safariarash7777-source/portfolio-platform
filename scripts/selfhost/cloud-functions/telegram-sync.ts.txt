@@ -1,0 +1,129 @@
+// telegram-sync — Edge Function
+// فیدِ عمومیِ t.me/s/<channel> را می‌خواند و پست‌ها را در content_hub درج می‌کند.
+// append-only با dedup بر اساسِ لینک. با pg_cron صدا زده می‌شود. verify_jwt=false.
+// نکته: cache-buster + no-store + هدرهای مرورگر تا فید در کش قفل نشود و نسخهٔ کامل بیاید.
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+const CHANNEL = (Deno.env.get("PUBLIC_CHANNEL_USERNAME") || "arashsafariiiiiiii")
+  .replace(/^@/, "")
+  .toLowerCase();
+
+interface FeedPost {
+  messageId: number;
+  url: string;
+  text: string;
+  publishedAt: string | null;
+  kind: "post" | "video";
+}
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&#039;/g, "'")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function parseChannelFeed(html: string, username: string): FeedPost[] {
+  const uname = username.replace(/^@/, "").toLowerCase();
+  const posts: FeedPost[] = [];
+  const anchor = /data-post="([^"/]+)\/(\d+)"/g;
+  const marks: { id: number; index: number }[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = anchor.exec(html)) !== null) {
+    if (m[1].toLowerCase() !== uname) continue;
+    marks.push({ id: Number(m[2]), index: m.index });
+  }
+  for (let i = 0; i < marks.length; i++) {
+    const start = marks[i].index;
+    const end = i + 1 < marks.length ? marks[i + 1].index : html.length;
+    const chunk = html.slice(start, end);
+    const id = marks[i].id;
+    const dt = chunk.match(/<time[^>]+datetime="([^"]+)"/);
+    const tx = chunk.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/);
+    const text = tx ? htmlToText(tx[1]) : "";
+    const isVideo = /tgme_widget_message_video(?![\w-])|message_video_player|message_roundvideo/.test(chunk);
+    posts.push({
+      messageId: id,
+      url: `https://t.me/${uname}/${id}`,
+      text,
+      publishedAt: dt ? dt[1] : null,
+      kind: isVideo ? "video" : "post",
+    });
+  }
+  return posts;
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+}
+
+Deno.serve(async () => {
+  const feedUrl = `https://t.me/s/${CHANNEL}?_=${Date.now()}`;
+  let html: string;
+  try {
+    const res = await fetch(feedUrl, {
+      headers: {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36",
+        "accept": "text/html,application/xhtml+xml",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) return json({ ok: false, reason: "feed_unreachable", status: res.status }, 502);
+    html = await res.text();
+  } catch (e) {
+    return json({ ok: false, reason: "fetch_failed", error: String(e) }, 502);
+  }
+
+  const posts = parseChannelFeed(html, CHANNEL);
+  if (posts.length === 0) return json({ ok: true, found: 0, inserted: 0 });
+
+  const admin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  const urls = posts.map((p) => p.url);
+  const { data: existingRows } = await admin
+    .from("content_hub")
+    .select("content_url")
+    .in("content_url", urls);
+  const existing = new Set((existingRows ?? []).map((r: { content_url: string }) => r.content_url));
+  const fresh = posts.filter((p) => !existing.has(p.url));
+  if (fresh.length === 0) return json({ ok: true, found: posts.length, inserted: 0, maxId: Math.max(...posts.map((p) => p.messageId)) });
+
+  const rows = fresh.map((p) => {
+    const lines = p.text.split("\n").map((s) => s.trim()).filter(Boolean);
+    return {
+      platform: "telegram",
+      kind: p.kind,
+      content_url: p.url,
+      title: lines[0] ?? null,
+      description: lines.slice(1).join("\n") || null,
+      published_at: p.publishedAt ?? new Date().toISOString(),
+    };
+  });
+
+  const { data: inserted, error } = await admin.from("content_hub").insert(rows).select("id");
+  if (error) return json({ ok: false, reason: "insert_failed", error: error.message }, 500);
+
+  await admin.from("audit_log").insert({
+    actor_id: null,
+    action: "content.sync",
+    entity: "content_hub",
+    after: { source: "supabase_edge", channel: CHANNEL, found: posts.length, inserted: inserted?.length ?? 0 },
+  });
+
+  return json({ ok: true, found: posts.length, inserted: inserted?.length ?? 0 });
+});
