@@ -548,6 +548,12 @@ export default function FundamentalCharts({
         <span>واحد ارقام: {d.unit}</span>
         {d.audited ? <span style={{ color: "var(--success)" }}>حسابرسی‌شده ✓</span> : null}
         {n10.source.verified ? <span title={n10.source.verification_note}>اعتبارسنجی متقاطع ✓</span> : null}
+        {n10.source.scope === "consolidated_ambiguous" ? (
+          // B-056: فقط رنگ کافی نیست — متن خودش ابهام را می‌گوید.
+          <span className="basis-full" style={{ color: "var(--warning-ink)" }}>
+            ⚠ {n10.source.verification_note}
+          </span>
+        ) : null}
         {!n10.source.source_url ? (
           <span style={{ color: "var(--text-3)" }}>(لینک اطلاعیهٔ کدال به‌زودی)</span>
         ) : null}

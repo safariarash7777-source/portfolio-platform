@@ -13,9 +13,12 @@ import {
   MessageCircle,
   CheckCircle2,
   AlertCircle,
+  EyeOff,
+  Info,
 } from "lucide-react";
 import { renderMarkdown } from "@/lib/markdown";
 import { formatJalali } from "@/lib/format";
+import { describeRevocationScope, revocationConfirmText } from "@/lib/announcements/revocation";
 
 const RISK_CATEGORIES = ["محافظه‌کار", "متعادل", "تهاجمی", "بسیار تهاجمی"];
 
@@ -32,6 +35,9 @@ interface Announcement {
   published_at: string | null;
   created_at: string;
   counts: { email: number; telegram: number; in_app: number; seen: number };
+  /** غیرِ null یعنی از دیدِ کاربر برداشته شده. */
+  revoked_at: string | null;
+  revoked_reason: string | null;
 }
 
 type TargetKind = "all" | "risk" | "user";
@@ -39,9 +45,12 @@ type TargetKind = "all" | "risk" | "user";
 export default function AnnouncementsManager({
   users,
   announcements,
+  revocationReady = true,
 }: {
   users: UserOpt[];
   announcements: Announcement[];
+  /** اگر migrationِ لغو روی این محیط اجرا نشده باشد، دکمه نباید فعال باشد. */
+  revocationReady?: boolean;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -53,6 +62,9 @@ export default function AnnouncementsManager({
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [revokeError, setRevokeError] = useState<{ id: string; message: string } | null>(null);
+  const scope = describeRevocationScope();
 
   const buildTarget = (): string =>
     kind === "all" ? "all" : kind === "risk" ? `risk:${riskCat}` : `user:${userId}`;
@@ -87,6 +99,34 @@ export default function AnnouncementsManager({
       setError(e instanceof Error ? e.message : "خطا در انتشار.");
     } finally {
       setSending(false);
+    }
+  };
+
+  /**
+   * لغوِ انتشار. سه چیز اینجا عمدی است:
+   *  ۱) تأیید، نامِ اعلامیه و دامنهٔ واقعیِ کار را می‌گوید — نه یک «مطمئنید؟» خالی.
+   *  ۲) خطا کنارِ همان ردیف می‌نشیند، نه در نوارِ سراسریِ فرمِ انتشار؛ وگرنه
+   *     مدیر فکر می‌کند انتشارش خطا خورده.
+   *  ۳) هیچ‌جا «حذف شد» نمی‌گوییم. ایمیل و پیامِ تلگرام پس گرفته نمی‌شوند.
+   */
+  const revoke = async (a: Announcement) => {
+    setRevokeError(null);
+    if (!window.confirm(revocationConfirmText(a.title))) return;
+
+    setRevokingId(a.id);
+    try {
+      const res = await fetch("/api/admin/announcements/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: a.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "لغو انتشار انجام نشد.");
+      router.refresh();
+    } catch (e) {
+      setRevokeError({ id: a.id, message: e instanceof Error ? e.message : "لغو انتشار انجام نشد." });
+    } finally {
+      setRevokingId(null);
     }
   };
 
@@ -225,9 +265,32 @@ export default function AnnouncementsManager({
 
       {/* Published list */}
       <div className="card-elevated p-6">
-        <h3 className="font-display font-bold text-lg mb-4" style={{ color: "var(--navy-deep)" }}>
+        <h3 className="font-display font-bold text-lg mb-2" style={{ color: "var(--navy-deep)" }}>
           اعلامیه‌های منتشرشده
         </h3>
+
+        {/* دامنهٔ لغو، یک‌بار و صریح — تا مدیر پیش از زدنِ دکمه بداند چه می‌شود. */}
+        <p className="flex items-start gap-2 text-xs mb-4" style={{ color: "var(--text-3)" }}>
+          <Info size={13} className="mt-0.5 shrink-0" />
+          <span>{scope.note}</span>
+        </p>
+
+        {!revocationReady && (
+          <div
+            className="flex items-start gap-2 rounded-xl px-4 py-3 text-sm mb-4"
+            style={{
+              background: "var(--surface-2)",
+              border: "1px solid var(--line)",
+              color: "var(--text-2)",
+            }}
+          >
+            <AlertCircle size={15} className="mt-0.5 shrink-0" />
+            <span>
+              «لغو انتشار» روی این محیط هنوز فعال نیست — مهاجرت پایگاه‌داده اجرا نشده است.
+              دکمه غیرفعال می‌ماند تا به‌جای خطای بی‌توضیح، دلیلش روشن باشد.
+            </span>
+          </div>
+        )}
         {announcements.length === 0 ? (
           <p className="py-8 text-center text-sm" style={{ color: "var(--text-3)" }}>
             هنوز اعلامیه‌ای منتشر نشده است.
@@ -242,17 +305,76 @@ export default function AnnouncementsManager({
               >
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div>
-                    <div className="font-bold text-sm" style={{ color: "var(--navy-deep)" }}>{a.title}</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm" style={{ color: "var(--navy-deep)" }}>{a.title}</span>
+                      {a.revoked_at && (
+                        <span
+                          className="flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold"
+                          style={{
+                            background: "var(--surface-3, var(--surface-2))",
+                            border: "1px solid var(--line)",
+                            color: "var(--text-3)",
+                          }}
+                        >
+                          <EyeOff size={11} /> برداشته‌شده از دید کاربر
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>
                       {targetLabel(a.target, users)} · {a.published_at ? formatJalali(a.published_at) : "—"}
                     </div>
+                    {a.revoked_at && (
+                      <div className="text-xs mt-1" style={{ color: "var(--text-3)" }}>
+                        لغو در {formatJalali(a.revoked_at)}
+                        {a.revoked_reason ? ` — ${a.revoked_reason}` : ""}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-2)" }}>
-                    <span className="flex items-center gap-1"><Mail size={12} /> {toFa(a.counts.email)}</span>
-                    <span className="flex items-center gap-1"><MessageCircle size={12} /> {toFa(a.counts.telegram)}</span>
-                    <span className="flex items-center gap-1"><Eye size={12} /> {toFa(a.counts.seen)}/{toFa(a.counts.in_app)}</span>
+                  <div className="flex items-center gap-3 flex-wrap justify-end">
+                    <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-2)" }}>
+                      <span className="flex items-center gap-1"><Mail size={12} /> {toFa(a.counts.email)}</span>
+                      <span className="flex items-center gap-1"><MessageCircle size={12} /> {toFa(a.counts.telegram)}</span>
+                      <span className="flex items-center gap-1"><Eye size={12} /> {toFa(a.counts.seen)}/{toFa(a.counts.in_app)}</span>
+                    </div>
+                    {!a.revoked_at && (
+                      <button
+                        type="button"
+                        onClick={() => revoke(a)}
+                        disabled={!revocationReady || revokingId === a.id}
+                        title={
+                          revocationReady
+                            ? "برداشتن اعلامیه از داشبورد و بات"
+                            : "مهاجرت پایگاه‌داده هنوز اجرا نشده است"
+                        }
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{
+                          background: "var(--surface)",
+                          border: "1px solid var(--line)",
+                          color: "var(--danger)",
+                        }}
+                      >
+                        <EyeOff size={13} />
+                        {revokingId === a.id ? "در حال لغو..." : "لغو انتشار"}
+                      </button>
+                    )}
                   </div>
                 </div>
+
+                {revokeError?.id === a.id && (
+                  <div className="flex items-center gap-2 text-xs mt-2" style={{ color: "var(--danger)" }}>
+                    <AlertCircle size={13} /> {revokeError.message}
+                  </div>
+                )}
+
+                {/* وضعیتِ صادقانهٔ کانال‌ها: چیزی که رفته، نمی‌گوییم پس گرفته شد. */}
+                {a.revoked_at && (a.counts.email > 0 || a.counts.telegram > 0) && (
+                  <div className="text-xs mt-2" style={{ color: "var(--text-3)" }}>
+                    {scope.kept.join(" و ")} پس گرفته نشده‌اند
+                    {a.counts.email > 0 ? ` — ${toFa(a.counts.email)} ایمیل` : ""}
+                    {a.counts.telegram > 0 ? `${a.counts.email > 0 ? " و" : " —"} ${toFa(a.counts.telegram)} پیام تلگرام` : ""}
+                    .
+                  </div>
+                )}
               </div>
             ))}
           </div>

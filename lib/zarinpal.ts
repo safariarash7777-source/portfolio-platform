@@ -15,10 +15,25 @@ export function coursePriceToman(): number {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
 }
 
-/** آدرس بازگشت (callback) برای زرین‌پال. */
-export function callbackUrl(): string {
+/**
+ * آدرس بازگشت (callback) برای زرین‌پال.
+ *
+ * `path` برای جریان‌هایی است که callbackِ اختصاصی دارند (مثلاً وبینار). پیش‌فرض
+ * همان جریانِ دوره/مشاوره است تا فراخوانی‌های قبلی بی‌تغییر بمانند.
+ */
+export function callbackUrl(path: string = "/api/payment/callback"): string {
   const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "");
-  return `${site}/api/payment/callback`;
+  return `${site}${path}`;
+}
+
+/**
+ * آدرسِ صفحهٔ پرداختِ یک authorityِ موجود.
+ *
+ * برای **از سرگیریِ** یک پرداختِ در جریان لازم است: به‌جای ساختنِ تراکنشِ
+ * تازه (که لینکِ قبلی را یتیم می‌کند) همان لینک دوباره داده می‌شود.
+ */
+export function startPayUrl(authority: string): string {
+  return `${BASE}/pg/StartPay/${authority}`;
 }
 
 export interface ZarinpalRequestResult {
@@ -29,10 +44,17 @@ export interface ZarinpalRequestResult {
   message?: string;
 }
 
-/** ساخت تراکنش. amount به تومان؛ زرین‌پال به ریال می‌گیرد (×۱۰). */
+/**
+ * ساخت تراکنش. amount به تومان؛ زرین‌پال به ریال می‌گیرد (×۱۰).
+ *
+ * `callbackPath` اختیاری است؛ اگر داده نشود جریانِ پیش‌فرضِ دوره/مشاوره استفاده
+ * می‌شود. بدونِ این پارامتر، پرداختِ وبینار هم به callbackِ دوره برمی‌گشت و
+ * هرگز نهایی نمی‌شد.
+ */
 export async function requestPayment(
   amountToman: number,
-  description: string
+  description: string,
+  callbackPath?: string
 ): Promise<ZarinpalRequestResult> {
   const merchant_id = process.env.ZARINPAL_MERCHANT_ID;
   if (!merchant_id) return { ok: false, message: "درگاه پرداخت پیکربندی نشده است." };
@@ -43,7 +65,7 @@ export async function requestPayment(
     body: JSON.stringify({
       merchant_id,
       amount: amountToman * 10,
-      callback_url: callbackUrl(),
+      callback_url: callbackUrl(callbackPath),
       description,
     }),
   });
@@ -52,7 +74,7 @@ export async function requestPayment(
   const code = json?.data?.code;
   const authority = json?.data?.authority;
   if (code === 100 && authority) {
-    return { ok: true, authority, startPayUrl: `${BASE}/pg/StartPay/${authority}`, code };
+    return { ok: true, authority, startPayUrl: startPayUrl(authority), code };
   }
   const errMsg = Array.isArray(json?.errors) ? undefined : json?.errors?.message;
   return { ok: false, code, message: errMsg ?? "خطا در ایجاد تراکنش." };

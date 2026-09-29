@@ -1,0 +1,24 @@
+# Public edge for self-hosted Supabase — portfolio-platform.
+#
+# Only the two APIs the product actually calls are public:
+#   /auth/v1/*  (supabase-js auth: getUser, signIn, signUp, reset, callback)
+#   /rest/v1/*  (PostgREST: 43 app files + the Liara relay)
+# Upstream also publishes Studio (full database control, behind basic auth),
+# /graphql, /realtime, /storage, /functions and /mcp. None is used by this
+# product, and Studio on the internet behind one shared password is not an
+# acceptable risk. Studio is reachable only through an SSH tunnel to
+# 127.0.0.1:3000 (see docker-compose.portfolio.yml).
+{$PROXY_DOMAIN} {
+	@api path /auth/v1/* /rest/v1/*
+	handle @api {
+		reverse_proxy api-gw:8000
+	}
+	handle {
+		respond 404
+	}
+	header {
+		-server
+		Strict-Transport-Security "max-age=63072000; includeSubDomains"
+		X-Content-Type-Options nosniff
+	}
+}

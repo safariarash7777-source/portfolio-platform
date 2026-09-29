@@ -1,0 +1,99 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+// instagram-sync: reads public IG profile media via web_profile_info and inserts
+// into content_hub. Instagram blocks datacenter IPs intermittently, so it retries
+// up to 6 times. append-only with dedup by link. No Meta app, no VPN needed.
+const USERNAME = (Deno.env.get("INSTAGRAM_USERNAME") || "arash_safariiiiiii")
+  .replace(/^@/, "")
+  .toLowerCase();
+
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36";
+
+interface IgNode {
+  is_video?: boolean;
+  product_type?: string;
+  shortcode?: string;
+  taken_at_timestamp?: number;
+  edge_media_to_caption?: { edges?: { node?: { text?: string } }[] };
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function kindOf(n: IgNode): "post" | "video" | "reel" {
+  if (n.product_type === "clips") return "reel";
+  if (n.is_video) return "video";
+  return "post";
+}
+
+async function fetchProfile(): Promise<any | null> {
+  const url =
+    `https://www.instagram.com/api/v1/users/web_profile_info/?username=${USERNAME}`;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    try {
+      const r = await fetch(url, {
+        headers: { "x-ig-app-id": "936619743392459", "user-agent": UA, "accept": "*/*" },
+      });
+      if (r.ok) return await r.json();
+    } catch (_e) { /* retry */ }
+    await new Promise((res) => setTimeout(res, 1500));
+  }
+  return null;
+}
+
+Deno.serve(async () => {
+  const profile = await fetchProfile();
+  if (!profile) return json({ ok: false, reason: "ig_unreachable" }, 502);
+
+  const edges = profile?.data?.user?.edge_owner_to_timeline_media?.edges ?? [];
+  if (edges.length === 0) return json({ ok: true, found: 0, inserted: 0 });
+
+  const items = edges
+    .map((e: { node: IgNode }) => e.node)
+    .filter((n: IgNode) => n?.shortcode)
+    .map((n: IgNode) => {
+      const path = n.product_type === "clips" ? "reel" : "p";
+      const cap = n.edge_media_to_caption?.edges?.[0]?.node?.text ?? "";
+      const lines = cap.split("\n").map((s) => s.trim()).filter(Boolean);
+      return {
+        content_url: `https://www.instagram.com/${path}/${n.shortcode}/`,
+        kind: kindOf(n),
+        title: lines[0] ?? null,
+        description: lines.slice(1).join("\n") || null,
+        published_at: n.taken_at_timestamp
+          ? new Date(n.taken_at_timestamp * 1000).toISOString()
+          : new Date().toISOString(),
+      };
+    });
+
+  const admin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  const urls = items.map((i) => i.content_url);
+  const { data: existingRows } = await admin
+    .from("content_hub").select("content_url").in("content_url", urls);
+  const existing = new Set((existingRows ?? []).map((r: { content_url: string }) => r.content_url));
+  const fresh = items.filter((i) => !existing.has(i.content_url));
+  if (fresh.length === 0) return json({ ok: true, found: items.length, inserted: 0 });
+
+  const rows = fresh.map((i) => ({ platform: "instagram", ...i }));
+  const { data: inserted, error } = await admin.from("content_hub").insert(rows).select("id");
+  if (error) return json({ ok: false, reason: "insert_failed", error: error.message }, 500);
+
+  await admin.from("audit_log").insert({
+    actor_id: null,
+    action: "content.sync",
+    entity: "content_hub",
+    after: { source: "instagram_web", username: USERNAME, found: items.length, inserted: inserted?.length ?? 0 },
+  });
+
+  return json({ ok: true, found: items.length, inserted: inserted?.length ?? 0 });
+});

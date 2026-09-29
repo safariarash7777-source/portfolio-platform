@@ -1,0 +1,138 @@
+# verify-stack.compose.yml - the throwaway restore target for the backup scripts.
+#
+#   Used by scripts/backup-production.ps1 and scripts/backup-production.sh:
+#     docker compose -p <VERIFY_ID> -f scripts/backup/verify-stack.compose.yml up -d --wait
+#
+# -- WHY NOT `supabase start` ANY MORE ----------------------------------------
+#   1. Ports. The Supabase CLI publishes every service port with no host IP,
+#      so Docker binds 0.0.0.0 and [::]. Measured on the owner's laptop
+#      (Docker Desktop 29.6.2, 2026-09-23): even a network created with
+#      com.docker.network.bridge.host_binding_ipv4=127.0.0.1 came out as
+#      0.0.0.0/[::], and Windows listened on `::`. The only remaining fix was
+#      a GLOBAL daemon.json change affecting every container on the machine.
+#      This file publishes NOTHING, and its network is `internal`, so there
+#      is no port to publish and no route out.
+#   2. Versions. The newest CLI (2.117.0) ships gotrue v2.196.0, whose last
+#      migration is 20260625000000, and storage-api v1.72.1 (migration 67).
+#      Production is at Auth 20260831180000 (auth.one_time_tokens.expires_at)
+#      and Storage 72 (storage.buckets.lifecycle_configuration). Here both
+#      images are pinned by digest instead of inherited from whatever CLI is
+#      installed, and scripts/backup/managed-schemas.sql proves the resulting
+#      auth/storage STRUCTURE equals production's before anything is restored.
+#
+# -- WHY `internal: true` MATTERS FOR SAFETY, NOT ONLY FOR PORTS ---------------
+#   The data dump includes the `cron` and `net` schemas. Restored pg_cron jobs
+#   call production Edge Functions with production keys. With no route out,
+#   nothing restored here can reach a real service. On top of that the
+#   scheduler is told not to launch jobs at all (cron.launch_active_jobs=off),
+#   so a restored job cannot change rows between the restore and the count.
+#
+# -- WHAT IS HERE AND WHY ---------------------------------------------------
+#   db      : the same Postgres image family as production (17.6.1.x).
+#   auth    : runs its migrations so `auth` has production's structure BEFORE
+#             the restore; afterwards it can log a restored user in.
+#   storage : same, for `storage` (production is at migration 72).
+#   Nothing else: realtime/functions data is not in the dump, and no extra
+#   service means no extra moving part.
+#
+# Every image is pinned by tag AND digest. A tag can be re-pushed; a digest
+# cannot. Update both together, and re-check the Auth migration list.
+#
+# Resources are named by the compose project (-p VERIFY_ID) and carry the
+# label below, so cleanup removes exactly this run's containers, network and
+# volumes - never anything else on the machine.
+
+name: ${VERIFY_ID:?VERIFY_ID must be set}
+
+x-labels: &labels
+  com.portfolio.backup-verify: ${VERIFY_ID}
+
+services:
+  db:
+    image: public.ecr.aws/supabase/postgres:17.6.1.167@sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb
+    labels: *labels
+    networks: [verify]
+    environment:
+      POSTGRES_PASSWORD: ${VERIFY_DB_PASSWORD:?VERIFY_DB_PASSWORD must be set}
+      JWT_SECRET: ${VERIFY_JWT_SECRET:?VERIFY_JWT_SECRET must be set}
+      JWT_EXP: "3600"
+    # The image creates the service roles without passwords; auth and storage
+    # log in over the network, so give them this run's throwaway password.
+    # A sourced init script runs after the image's own migrate.sh.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        cat > /docker-entrypoint-initdb.d/zz-verify-roles.sh <<'EOF'
+        for r in supabase_auth_admin supabase_storage_admin authenticator; do
+          psql -v ON_ERROR_STOP=1 --no-password --no-psqlrc -U supabase_admin -d postgres \
+            -c "ALTER ROLE $$r WITH PASSWORD '$$POSTGRES_PASSWORD'"
+        done
+        EOF
+        exec docker-entrypoint.sh postgres -D /etc/postgresql -c cron.launch_active_jobs=off
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+
+  auth:
+    image: public.ecr.aws/supabase/gotrue:v2.197.0@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b
+    labels: *labels
+    networks: [verify]
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      API_EXTERNAL_URL: http://127.0.0.1:9999
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: "9999"
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${VERIFY_DB_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: http://127.0.0.1
+      GOTRUE_JWT_SECRET: ${VERIFY_JWT_SECRET}
+      GOTRUE_JWT_EXP: "3600"
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_DISABLE_SIGNUP: "false"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9999/health"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+
+  storage:
+    # v1.77.6 is the last release whose migrations end at 72
+    # (drop-bucketid-objname-index), where production is. v1.72.1 - the one
+    # the CLI ships - stops at 67 and has a different storage.buckets.
+    image: public.ecr.aws/supabase/storage-api:v1.77.6@sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08
+    labels: *labels
+    networks: [verify]
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgres://supabase_storage_admin:${VERIFY_DB_PASSWORD}@db:5432/postgres
+      AUTH_JWT_SECRET: ${VERIFY_JWT_SECRET}
+      PGRST_JWT_SECRET: ${VERIFY_JWT_SECRET}
+      ANON_KEY: ${VERIFY_ANON_KEY:?VERIFY_ANON_KEY must be set}
+      SERVICE_KEY: ${VERIFY_SERVICE_KEY:?VERIFY_SERVICE_KEY must be set}
+      POSTGREST_URL: http://127.0.0.1:3000
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      FILE_SIZE_LIMIT: "52428800"
+      TENANT_ID: stub
+      REGION: stub
+      GLOBAL_S3_BUCKET: stub
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5000/status').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+
+networks:
+  verify:
+    internal: true
+    labels: *labels

@@ -5,6 +5,10 @@ import { isPrivateBotConversation } from "@/lib/telegram/private-chat";
 import { markdownToPlain } from "@/lib/markdown";
 import { toPersianDigits } from "@/lib/format";
 import { detectPlatform, guessKind, firstUrl, PLATFORM_META } from "@/lib/content-hub";
+import {
+  selectVisibleAnnouncements,
+  candidateAnnouncementIds,
+} from "@/lib/announcements/botVisibility";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -239,19 +243,57 @@ async function handleAnnouncements(
 
   const { data: anns } = await admin
     .from("announcements")
-    .select("title, body_md, target, published_at")
+    .select("id, title, body_md, target, published_at")
     .not("published_at", "is", null)
     .order("published_at", { ascending: false })
     .limit(50);
 
-  const matched = (anns ?? [])
-    .filter((a) => {
-      if (a.target === "all") return true;
-      if (a.target === `user:${link.user_id}`) return true;
-      if (cat && a.target === `risk:${cat}`) return true;
-      return false;
-    })
-    .slice(0, 3);
+  // ⚠️ این خواننده با service-role کار می‌کند و RLS را **دور می‌زند**، پس
+  // سیاستِ `ann_target_read` اینجا هیچ کاری نمی‌کند و تنها گیتِ لغوشده‌ها
+  // همان `selectVisibleAnnouncements` است. منطقِ تصمیم عمداً بیرون کشیده شده
+  // تا مستقیم آزمون شود، نه از پشتِ این وبهوک.
+  //
+  // ⚠️ و پرس‌وجو **به همان نامزدها محدود** می‌شود، نه کلِ جدول. خواندنِ کلِ
+  // `announcement_revocations` با رشدِ سابقه به سقفِ پاسخِ PostgREST می‌خورد و
+  // آن‌وقت پاسخ «موفق» است ولی ناقص — یعنی بخشی از لغوها بی‌صدا از فهرست
+  // می‌افتند و بات همان اعلامیه‌ای را که مدیر برداشته دوباره نشان می‌دهد.
+  // تعدادِ نامزدها حداکثر ۵۰ است، پس این پرس‌وجو هرگز به سقف نمی‌خورد.
+  const candidateIds = candidateAnnouncementIds(anns ?? []);
+
+  let revokedIds: string[] | null = [];
+  let revocationReadFailed = false;
+
+  if (candidateIds.length > 0) {
+    const { data: revoked, error: revokedError } = await admin
+      .from("announcement_revocations")
+      .select("announcement_id")
+      .in("announcement_id", candidateIds);
+
+    if (revokedError) {
+      console.error("announcement_revocations read failed:", revokedError.message);
+      revokedIds = null;
+      revocationReadFailed = true;
+    } else {
+      revokedIds = (revoked ?? []).map((r) => r.announcement_id as string);
+    }
+  }
+
+  const visibility = selectVisibleAnnouncements({
+    announcements: anns ?? [],
+    revokedIds,
+    revocationReadFailed,
+    userId: link.user_id,
+    riskCategory: cat,
+  });
+
+  // خطای خواندنِ لغوها هرگز «هیچ لغوی نیست» معنا نمی‌شود: در آن حالت هیچ
+  // محتوای اعلامیه‌ای ارسال نمی‌شود.
+  if (visibility.kind === "unavailable") {
+    await sendMessage(chatId, visibility.message);
+    return;
+  }
+
+  const matched = visibility.announcements;
 
   if (matched.length === 0) {
     await sendMessage(chatId, "در حال حاضر اعلامیه‌ای برای شما وجود ندارد.");
