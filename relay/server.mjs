@@ -1,3 +1,5 @@
+import { brsFetch as fetch } from "./brsapi-transport.mjs";
+import { brsTransportMetrics } from "./brsapi-transport.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
 // رلهٔ بازارِ ایران — باید روی هاستِ «داخل ایران» اجرا شود (لیارا/آروان/پارس‌پک).
 // چرا: منابعِ ایرانی (BrsApi) به IPِ خارجی ۴۰۳ می‌دهند؛ این سرویسِ
@@ -1283,6 +1285,7 @@ function debugPayload() {
     historyPrune: pruneStatus,
     historySections: { written: HISTORY_SECTIONS, missing: historyMissingSections },
     brsapiClient: brs ? brs.metrics() : { enabled: false },
+    brsapiTransport: brsTransportMetrics(),
     // مصرفِ مسیرِ **قدیمی** — همان چیزی که تا امروز نامرئی بود. اگر پرچم
     // خاموش باشد `brsapiClient.enabled=false` است ولی این بلوک همچنان
     // می‌گوید روز چقدر خرج شده و چقدرش از سقف رد شده.

@@ -576,6 +576,41 @@ test("workflow: شناسهٔ نسخه از تگِ ایمیج می‌آید، چ�
 });
 
 import { readFileSync as _rf } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+test("Liara probe: noninteractive runner gets a TTY and preserves failure and quoted arguments", {
+  skip: process.platform !== "linux",
+}, () => {
+  const dir = mkdtempSync(join(tmpdir(), "liara-probe-"));
+  try {
+    // Fake only the CLI/network boundary; execute the real production wrapper.
+    writeFileSync(join(dir, "npx"), `#!/usr/bin/env node
+const a = process.argv.slice(2);
+if (!process.stdin.isTTY || !process.stdout.isTTY) process.exit(91);
+if (a[4] !== process.env.APP || a[6] !== process.env.LIARA_API_TOKEN || a[8] !== process.env.CMD) process.exit(92);
+process.stdin.setRawMode(true);
+console.log(JSON.stringify({ probe: 1 }));
+process.exit(Number(process.env.FAKE_EXIT));
+`, { mode: 0o700 });
+    for (const code of [0, 7]) {
+      const result = spawnSync("bash", ["scripts/deploy/liara-shell-probe.sh"], {
+        encoding: "utf8", timeout: 10000,
+        env: { ...process.env, PATH: dir + ":" + process.env.PATH,
+          LIARA_CLI: "@liara/cli@9.5.1", APP: "fixture app",
+          LIARA_API_TOKEN: "fixture-'-$()-token", CMD: "node%20-e%20fixture", FAKE_EXIT: String(code) },
+      });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, code, result.stdout + result.stderr);
+      assert.match(result.stdout, /"probe":1/);
+      assert.ok(!result.stdout.includes("fixture-'-$()-token"));
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 const HEALTH_WF = _rf(new URL("../../.github/workflows/relay-health.yml", import.meta.url), "utf8");
 
 test("سلامت: یک workflowِ جدا هست که چیزی منتشر نمی‌کند", () => {

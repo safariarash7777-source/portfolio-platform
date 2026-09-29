@@ -19,12 +19,13 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 let pass = 0, fail = 0;
 const tests = [];
 const t = (n, f) => tests.push([n, f]);
 
-const DIR = new URL(".", import.meta.url).pathname;
+const DIR = fileURLToPath(new URL(".", import.meta.url));
 
 /** فهرستِ اعلام‌شده — منبعِ واحدِ حقیقت برای مستندات و این گارد. */
 export const CALL_SITES = [

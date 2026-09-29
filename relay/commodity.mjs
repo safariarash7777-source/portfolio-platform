@@ -1,3 +1,4 @@
+import { brsFetch as fetch } from "./brsapi-transport.mjs";
 // commodity.mjs — T5-6: کامودیتی جهانی (Market/Commodity.php) — کلید رایگان جدا
 //
 // مستند رسمی (راستی‌آزمایی‌شده): https://brsapi.ir/free-api-commodity-webservice/
