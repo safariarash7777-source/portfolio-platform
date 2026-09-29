@@ -589,6 +589,7 @@ test("Liara probe: noninteractive runner gets a TTY and preserves failure and qu
     writeFileSync(join(dir, "npx"), `#!/usr/bin/env node
 const a = process.argv.slice(2);
 if (!process.stdin.isTTY || !process.stdout.isTTY) process.exit(91);
+if (process.stdout.columns !== 80 || process.stdout.rows !== 24) process.exit(93);
 if (a[4] !== process.env.APP || a[6] !== process.env.LIARA_API_TOKEN || a[8] !== process.env.CMD) process.exit(92);
 process.stdin.setRawMode(true);
 console.log(JSON.stringify({ probe: 1 }));
