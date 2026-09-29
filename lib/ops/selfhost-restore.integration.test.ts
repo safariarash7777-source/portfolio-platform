@@ -135,9 +135,9 @@ describe("restore-to-selfhost.sh", { skip }, () => {
     psql("postgres", `DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='${LIMITED}') THEN
         CREATE ROLE ${LIMITED} LOGIN PASSWORD 'limited-test-only'; END IF; END $$`);
-    psql("postgres", `DO $ BEGIN
+    psql("postgres", `DO $$ BEGIN
       IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='${READER}') THEN
-        CREATE ROLE ${READER} NOLOGIN; END IF; END $`);
+        CREATE ROLE ${READER} NOLOGIN; END IF; END $$`);
     wrapper = writeWrapper(ENV.PGUSER);
   });
 
