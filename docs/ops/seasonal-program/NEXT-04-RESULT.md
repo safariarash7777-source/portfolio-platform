@@ -2,6 +2,8 @@
 
 تاریخ بررسی: ۳۰ سپتامبر ۲۰۲۶، Asia/Tehran. تحویل در checkout ایزوله؛ هیچ migration، policy تجاری، پرداخت یا ارسال به عضو واقعی در Production اجرا نشده است.
 
+کد تحویلی: `0dcfd1d5332160eb09ab0e0a37fa5728d022916a`؛ [PR175 ـ Draft](https://github.com/safariarash7777-source/portfolio-platform/pull/175)، base=`codex/wave-02-base-20260930@f6cb560`. نهایی‌سازی گزارش در آغاز۱اکتبر تهران؛ تاریخ آزمون‌ها در log حفظ شده است.
+
 ## مبنا و وضعیت
 
 README مشترک، WAVE-02-REVIEW و قرارداد/ممیزی‌های NEXT-01/02/03 مبنا هستند. refs تازه: main=`51fd0661d48d791ce8758a87828a81ce72cac6df`؛ #168=`3462f0178ebed6b7a9966b465ba0756119ce267a`؛ #113=`b64ec25ec4b812d563ff0eea9935734dfed56e60`؛ #156=`fbb627e3a0560d3087f258ca165617859a990db6`. baseline ترکیبی `f6cb560` است: #168 + main، با حفظ تنظیمات Liara main. branch: `codex/next-04-core-20260930`؛ PR به branch بازبینی `codex/wave-02-base-20260930` می‌رود و وابستگی #168 را حذف نمی‌کند.
