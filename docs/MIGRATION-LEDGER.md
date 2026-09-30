@@ -1,5 +1,17 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## تحویل DEV-01…06 — 2026-09-30
+
+این سه فایل در این مأموریت فقط روی PostgreSQL 17 محلی با دادهٔ مصنوعی و دو پروفایل گرنت اجرا شدند. **در این مأموریت روی Production یا staging اجرا نشدند.** وضعیت نصب واقعی آن‌ها روی دیتابیسِ اکنون متصل به سایت لیارا هنوز تطبیق داده نشده است؛ وضعیت‌های قدیمی پایین، مربوط به ممیزی تاریخی Supabase هستند. بکاپ و تمرین بازیابی ۲۱۵۲ مقایسه در چت دیگر کامل شد و اینجا تکرار نشد.
+
+| فایل | وابستگی واقعی و آزمون |
+|---|---|
+| `phase32_member_holdings.sql` | auth/profiles، تابع موجود `deny_mutation` و جدول `portfolio_versions`؛ اتصال FK به `intel_reference_versions` اختیاری است و با اجرای دوباره پس از phase20 بسته می‌شود. مستقل از phase20/22 آزموده شد؛ phase20 نیز در آزمون holdings جدا بررسی شد. RPC چهارآرگومانی با `p_base_version` اختیاری جای امضای قدیمی را می‌گیرد؛ فراخوانی سه‌آرگومانی با default سازگار است. محدودیت خواندن به مالک عمداً جای دسترسی عمومی admin را می‌گیرد. |
+| `phase34_research_workbook_versions.sql` | auth/profiles؛ بدون phase20/22؛ دو جدول نسخه/بازبینی append-only، RLS ادمین، نویسنده از نشست و تأیید انسانی دارای شاهد. |
+| `phase35_consultation.sql` | پس از phase32 و phase34؛ registry مشاور، رابطه/لغو، جلسه/یادداشت خصوصی/انتشار و اقدام append-only؛ مجوز از رابطه و نشست؛ registry تولید هنوز خالی/نامعلوم، آرش به‌طور خودکار ثبت نشده است. |
+
+ترتیب: تطبیق auth/profiles/deny_mutation/portfolio_versions روی staging → phase32 → phase34 → phase35 → ثبت **UUID احرازشدهٔ آرش** توسط اپراتور → آزمون DEV-07. [دستور انتشار و بازگشت](./ops/PRODUCT-V1-ACCEPTANCE.md). فایل‌های `sql/test/*` فقط fixture هستند و هرگز migration محیط واقعی نیستند.
+
 > منبع: ممیزیِ فقط‌خواندنیِ P0-002 روی `uooeygybrniptzdxuzhj` + مقایسه با `sql/` ریپو.
 > **هیچ Migration در تولیدِ این سند اجرا نشد.**
 >
