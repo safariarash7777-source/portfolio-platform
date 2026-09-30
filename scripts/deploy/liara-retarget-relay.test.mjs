@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {envFingerprint,retargetPlan} from './liara-retarget-relay.mjs';
+import {envFingerprint,unrelatedFingerprint,retargetPlan} from './liara-retarget-relay.mjs';
 const project={project_id:'arsadata',scale:1,status:'ACTIVE',envs:[
   {key:'SUPABASE_URL',value:'https://previous.invalid'},
   {key:'SUPABASE_SERVICE_ROLE_KEY',value:'fixture-old'},
@@ -19,4 +19,10 @@ test('preserve unrelated provider and safety variables',()=>{
   assert.deepEqual(result.filter(x=>!x.key.startsWith('SUPABASE_')),project.envs.filter(x=>!x.key.startsWith('SUPABASE_')));
   assert.equal(result.find(x=>x.key==='SUPABASE_URL').value,target.url);
   assert.equal(project.envs[0].value,'https://previous.invalid');
+});
+test('completed migration is a no-op only while unrelated variables still match',()=>{
+  const completed={...project,envs:retargetPlan(project,target)};
+  const retry={...target,expectedUnrelatedHash:unrelatedFingerprint(project.envs)};
+  assert.equal(retargetPlan(completed,retry),null);
+  assert.throws(()=>retargetPlan({...completed,envs:completed.envs.map(x=>x.key==='PHASE28'?{...x,value:'changed'}:x)},retry),/changed since inventory/);
 });
