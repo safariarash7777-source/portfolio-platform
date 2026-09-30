@@ -1,0 +1,22 @@
+{
+  "buttons": [
+    {
+      "height": 48,
+      "label": "فعال‌سازی حالت تیره",
+      "width": 48
+    },
+    {
+      "height": 48,
+      "label": "ورود اعضا",
+      "width": 73.375
+    },
+    {
+      "height": 48,
+      "label": "باز کردن منو",
+      "width": 48
+    }
+  ],
+  "clientWidth": 390,
+  "scrollWidth": 390,
+  "viewport": 390
+}

@@ -1,0 +1,124 @@
+✓ مسیر راه سرمایه‌گذاری · آرش صفری
+  http://127.0.0.1:8765/
+
+✓ Done
+
+✓ Done
+
+✓ Done
+
+{
+  "focus": "MAIN",
+  "id": "main-content"
+}
+
+✓ Done
+
+✓ Done
+
+- link "رفتن به محتوای اصلی" [ref=e611]
+- link "آرش صفری، صفحهٔ اصلی" [ref=e612]
+- button "فعالسازی حالت تیره" [ref=e613]
+- link "ورود اعضا" [ref=e614]
+- button "بستن منو" [expanded=true, ref=e615]
+- navigation "ناوبری عمومی موبایل" [ref=e616]
+  - link "دوره و وبینار" [ref=e628]
+  - link "بازار و صندوقها" [ref=e629]
+  - link "مطالب" [ref=e630]
+  - link "درخواست مشاوره" [ref=e631]
+- region "مسیر راه سرمایهگذاری" [ref=e617]
+  - heading "مسیر راه سرمایهگذاری" [level=1, ref=e632]
+  - link "شناخت دوره و وبینار" [ref=e633]
+  - link "ورود اعضای مسیر راه" [ref=e634]
+  - heading "از جلسهٔ وبینار تا ادامهٔ یادگیری" [level=2, ref=e649]
+  - link "جزئیات دوره و وبینار" [ref=e650]
+- heading "نوبتهای اعلامشدهٔ مسیر راه" [level=2, ref=e651]
+- link "اطلاعات دوره و وبینار" [ref=e652]
+- heading "نوبت بعدی هنوز منتشر نشده است" [level=3, ref=e653]
+- region "سه ماه همراهی چه مسیری دارد؟" [ref=e618]
+  - heading "سه ماه همراهی چه مسیری دارد؟" [level=2, ref=e635]
+  - heading "شرایط نوبت را بخوانید" [level=3, ref=e654]
+  - heading "پرسش خود را مطرح کنید" [level=3, ref=e655]
+  - heading "یادگیری را ادامه دهید" [level=3, ref=e656]
+- region "بازار، صندوقها و نمادها" [ref=e619]
+  - heading "بازار، صندوقها و نمادها" [level=2, ref=e636]
+  - link "مشاهدهٔ وضعیت بازار" [ref=e637]
+  - link "مشاهدهٔ صندوقها قیمت، NAV و اطلاعات موجود هر صندوق را با حدود داده بررسی کنید. ورود به نمای صندوقها ←" [ref=e638]
+    - heading "مشاهدهٔ صندوقها" [level=3, ref=e657]
+  - link "جستجوی نماد از تابلوی سهام، نماد موردنظر را انتخاب و جزئیات آن را مطالعه کنید. ورود به تابلوی سهام ←" [ref=e639]
+    - heading "جستجوی نماد" [level=3, ref=e658]
+- region "از آموزش تا مطالعهٔ بازار" [ref=e620]
+  - heading "از آموزش تا مطالعهٔ بازار" [level=2, ref=e640]
+  - link "مشاهدهٔ مطالب" [ref=e641]
+  - heading "مطلبی در این فهرست منتشر نشده است" [level=3, ref=e642]
+- region "درخواست وقت مشاوره" [ref=e621]
+  - heading "درخواست وقت مشاوره" [level=2, ref=e643]
+  - link "جزئیات درخواست و پیگیری" [ref=e644]
+  - heading "شروع هماهنگی" [level=3, ref=e645]
+  - textbox "ایمیل برای هماهنگی مشاوره" [required, ref=e659]
+  - button "ثبت درخواست تماس" [ref=e660]
+  - link "حریم خصوصی" [ref=e680]
+- heading "آموزش و تحلیل بازار سرمایه" [level=2, ref=e646]
+- link "معرفی و روش کار" [ref=e647]
+- link "مشاهدهٔ کارنامه" [ref=e648]
+- link "تلگرام" [ref=e622]
+- link "اینستاگرام" [ref=e623]
+- heading "بازارها" [level=2, ref=e624]
+- link "رصد بازار" [ref=e661]
+- link "نقشهٔ بازار" [ref=e662]
+- link "صندوقها" [ref=e663]
+- link "تابلوی سهام" [ref=e664]
+- link "اختیار معامله" [ref=e665]
+- link "کدال" [ref=e666]
+- link "بانک داده" [ref=e667]
+- heading "تحلیلها" [level=2, ref=e625]
+- link "کارنامه" [ref=e668]
+- link "یادداشت روزانه" [ref=e669]
+- link "تحلیلهای اجتماعی" [ref=e670]
+- link "واژهنامهٔ مالی" [ref=e671]
+- link "سناریوی سبد" [ref=e672]
+- heading "محصولات" [level=2, ref=e626]
+- link "دوره و وبینار" [ref=e673]
+- link "درخواست وقت مشاوره" [ref=e674]
+- link "فرم درخواست تماس" [ref=e675]
+- heading "درباره و قوانین" [level=2, ref=e627]
+- link "دربارهٔ آرش صفری" [ref=e676]
+- link "حریم خصوصی" [ref=e677]
+- link "شرایط استفاده" [ref=e678]
+- link "سلب مسئولیت" [ref=e679]
+- button "Open Next.js Dev Tools" [expanded=false, ref=e681]
+
+✓ Done
+
+{
+  "focus": "دوره و وبینار",
+  "outline": "3px"
+}
+
+✓ Done
+
+{
+  "focus": "بستن منو"
+}
+
+✓ Done
+
+{
+  "expanded": "false",
+  "focus": "باز کردن منو"
+}
+
+✓ Screenshot saved to docs/ops/seasonal-program/next-05-evidence/keyboard-menu-390.png
+
+✓ Done
+
+✓ Done
+
+✓ Done
+
+{
+  "focus": "دوره و وبینار",
+  "outline": "3px"
+}
+
+✓ Screenshot saved to docs/ops/seasonal-program/next-05-evidence/keyboard-nav-1440.png

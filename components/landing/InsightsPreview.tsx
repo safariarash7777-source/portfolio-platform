@@ -1,168 +1,30 @@
 import Link from "next/link";
-import { Send, Instagram, Twitter, ArrowLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { formatJalali } from "@/lib/format";
-import {
-  type ContentItem,
-  type Platform,
-  isPlatform,
-  isKind,
-  PLATFORM_META,
-  KIND_LABEL,
-} from "@/lib/content-hub";
+import { isPlatform, isKind, PLATFORM_META, KIND_LABEL } from "@/lib/content-hub";
+import PublicNotice from "@/components/public/PublicNotice";
+const tehranDay = new Intl.DateTimeFormat("fa-IR", { timeZone: "Asia/Tehran", year: "numeric", month: "long", day: "numeric" });
 
-function PlatformIcon({ platform, size = 20 }: { platform: Platform; size?: number }) {
-  if (platform === "telegram") return <Send size={size} />;
-  if (platform === "instagram") return <Instagram size={size} />;
-  return <Twitter size={size} />;
-}
-
-/**
- * پیش‌نمایشِ هابِ محتوا در صفحهٔ اصلی — ۴ موردِ آخر. اگر هیچ محتوایی منتشر نشده
- * باشد، سکشن اصلاً ظاهر نمی‌شود (بدونِ بخشِ خالیِ بی‌معنی). هوور فقط CSS (u-lift).
- */
 export default async function InsightsPreview() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("content_hub")
-    // ⚠️ `description` عمداً خوانده نمی‌شود.
-    //
-    // این کارت فقط عنوان، پلتفرم و تاریخِ **واقعیِ** رکورد را نشان می‌دهد و
-    // لینک می‌دهد به خودِ منبع. متنی که خوانده شود ولی رندر نشود، دیر یا زود
-    // یک نفر رندرش می‌کند — و آن‌وقت متنی که آرش تأییدش نکرده زیرِ نامِ او
-    // به‌عنوان «چرا مهم است» ظاهر می‌شود. راهِ نرسیدن به آنجا، نخواندنش است.
-    .select("id, platform, kind, content_url, title, published_at")
-    .is("deleted_at", null)
-    .not("published_at", "is", null)
-    .order("published_at", { ascending: false })
-    // ⚠️ عمداً بیش از ۴ تا خوانده می‌شود، چون `content_hub` ردیفِ تکراری دارد.
-    // همگام‌سازیِ تلگرام یک پست را با شناسه‌های **متفاوت** ولی `content_url`
-    // یکسان چند بار درج می‌کند (در دادهٔ امروز تا ۴۷ نسخه از یک پست). با
-    // `limit(4)` هر چهار کارت می‌توانستند یک پستِ واحد باشند — و همین اتفاق
-    // افتاده بود. پنجرهٔ بزرگ‌تر می‌خوانیم، یکتا می‌کنیم، بعد ۴ تا برمی‌داریم.
-    //
-    // این فقط نما را درست می‌کند؛ **ریشهٔ درج تکراری در همگام‌سازی است** و
-    // باید جدا رفع شود (خارج از دامنهٔ این تغییر).
-    .limit(60);
-
-  /**
-   * فقط میدان‌هایی که این کارت واقعاً رندر می‌کند. `ContentItem` کاملِ
-   * `lib/content-hub.ts` دست‌نخورده می‌ماند چون مصرف‌کننده‌های دیگری دارد؛
-   * اینجا عمداً باریک‌تر است.
-   */
-  type PreviewItem = Pick<
-    ContentItem,
-    "id" | "platform" | "kind" | "content_url" | "title" | "published_at"
-  >;
-
-  /**
-   * یکتاسازی بر اساسِ `content_url`.
-   *
-   * کلیدِ یکتایی عمداً **آدرسِ محتوا** است، نه `id`: شناسه‌ها متفاوت‌اند و
-   * دقیقاً به همین دلیل تکراری‌ها از فیلترِ شناسه رد می‌شدند. آدرس نرمال
-   * می‌شود (فاصله و اسلشِ پایانی) تا `…/3030` و `…/3030/` یکی شمرده شوند.
-   * چون ردیف‌ها از تازه به قدیم مرتب‌اند، نسخهٔ نگه‌داشته‌شده تازه‌ترین است.
-   */
-  const seen = new Set<string>();
-  const items: PreviewItem[] = [];
-  for (const r of data ?? []) {
-    if (!isPlatform(r.platform) || !isKind(r.kind)) continue;
-    const key = (r.content_url ?? "").trim().replace(/\/+$/, "").toLowerCase();
-    // ردیفِ بدونِ آدرس یکتا نمی‌شود؛ با شناسه‌اش می‌آید تا بی‌صدا حذف نشود.
-    const dedupeKey = key || `id:${r.id}`;
-    if (seen.has(dedupeKey)) continue;
-    seen.add(dedupeKey);
-    items.push({
-      id: r.id,
-      platform: r.platform,
-      kind: r.kind,
-      content_url: r.content_url,
-      title: r.title,
-      published_at: r.published_at,
-    });
-    if (items.length === 4) break;
-  }
-
-  if (items.length === 0) return null;
-
-  return (
-    <section className="section" style={{ background: "var(--surface-2)" }}>
-      <div className="mx-auto w-full max-w-6xl px-5">
-        <div className="flex items-end justify-between gap-4 flex-wrap mb-8">
-          <div>
-            <h2
-              className="font-display"
-              style={{
-                color: "var(--heading)",
-                fontSize: "clamp(1.6rem, 3.4vw, 2.4rem)",
-                fontWeight: 800,
-                lineHeight: 1.3,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              آخرین مطالب آرش
-            </h2>
-            <div aria-hidden className="divider-gold mt-4" />
-          </div>
-          <Link href="/insights" className="btn btn-outline" style={{ fontSize: "0.8rem" }}>
-            مشاهدهٔ همه
-            <ArrowLeft size={14} />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {items.map((item) => {
-            const meta = PLATFORM_META[item.platform];
-            return (
-              <a
-                key={item.id}
-                href={item.content_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="card u-lift relative flex flex-col overflow-hidden"
-                style={{ minHeight: 170 }}
-                aria-label={`${meta.label} — ${item.title ?? "مشاهدهٔ محتوا"}`}
-              >
-                <span
-                  aria-hidden
-                  className="absolute inset-x-0 top-0 h-1"
-                  style={{ background: meta.colorVar, opacity: 0.85 }}
-                />
-                <div className="flex items-center justify-between gap-2 p-4 pb-2">
-                  <span
-                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
-                    style={{ background: meta.tintVar, color: meta.colorVar }}
-                  >
-                    <PlatformIcon platform={item.platform} />
-                  </span>
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                    style={{ background: "var(--surface-2)", color: "var(--text-3)", border: "1px solid var(--line)" }}
-                  >
-                    {KIND_LABEL[item.kind]}
-                  </span>
-                </div>
-                <div className="flex flex-1 flex-col px-4 pb-4">
-                  {item.title && (
-                    <h3
-                      className="font-display font-bold text-sm leading-6"
-                      style={{ color: "var(--heading)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-                    >
-                      {item.title}
-                    </h3>
-                  )}
-                  <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-                    <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                      {item.published_at ? formatJalali(item.published_at) : ""}
-                    </span>
-                    <ExternalLink size={13} style={{ color: meta.colorVar }} />
-                  </div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
+  let unavailable = false;
+  const items: { id: string; title: string; url: string; platform: string; kind: string; publishedAt: string }[] = [];
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("content_hub").select("id, platform, kind, content_url, title, published_at").is("deleted_at", null).not("published_at", "is", null).order("published_at", { ascending: false }).limit(60);
+    unavailable = Boolean(error);
+    const seen = new Set<string>();
+    for (const row of error ? [] : data ?? []) {
+      if (!isPlatform(row.platform) || !isKind(row.kind) || typeof row.content_url !== "string" || typeof row.published_at !== "string" || !Number.isFinite(Date.parse(row.published_at))) continue;
+      let url: URL; try { url = new URL(row.content_url.trim()); } catch { continue; }
+      if (url.protocol !== "https:" && url.protocol !== "http:") continue;
+      const key = url.href.replace(/\/+$/, "");
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push({ id: row.id, title: row.title?.trim() || "مشاهدهٔ مطلب منتشرشده", url: url.href, platform: PLATFORM_META[row.platform].label, kind: KIND_LABEL[row.kind], publishedAt: row.published_at });
+      if (items.length === 4) break;
+    }
+  } catch { unavailable = true; }
+  return <section className="public-section public-surface" aria-labelledby="published-content-title"><div className="public-container"><div className="public-section-heading"><div><p className="public-eyebrow">مطالب منتشرشده</p><h2 id="published-content-title">از آموزش تا مطالعهٔ بازار</h2></div><Link href="/insights" className="btn btn-outline">مشاهدهٔ مطالب</Link></div>
+    {unavailable ? <PublicNotice title="مطالب اکنون دریافت نشد"><p>برای بررسی دوباره، وارد صفحهٔ مطالب شوید. محتوای نمونه جایگزین مطالب منتشرشده نمی‌شود.</p></PublicNotice> : items.length === 0 ? <PublicNotice title="مطلبی در این فهرست منتشر نشده است"><p>محتوای تأییدشده پس از انتشار در این قسمت نمایش داده می‌شود.</p></PublicNotice> : <div className="public-two-grid">{items.map(item => <a href={item.url} key={item.id} target="_blank" rel="noopener noreferrer" className="public-entry-card"><span className="public-badge">{item.platform} · {item.kind}</span><h3 className="mt-4">{item.title}</h3><p><time dateTime={item.publishedAt}>{tehranDay.format(new Date(item.publishedAt))}</time></p><span>خواندن در منبع <ExternalLink size={16} aria-hidden className="inline" /><span className="sr-only">، پنجرهٔ جدید</span></span></a>)}</div>}
+  </div></section>;
 }

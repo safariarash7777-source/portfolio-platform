@@ -95,6 +95,9 @@ jobs:
       - name: Core tests
         run: npm run test:core
 
+      - name: Public product and form contracts
+        run: npm run test:public
+
       - name: Calc tests
         run: npm run test:calc
 
