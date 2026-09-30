@@ -446,8 +446,7 @@ if ! docker cp "$DB_CONTAINER:/tmp/restore/restore.log" "$OUT_DIR/restore.log" >
   echo "    (لاگِ بازگردانی از کانتینر بیرون نیامد)"
 fi
 if [ "$RESTORE_RC" -ne 0 ]; then
-  printf '    آخرین خطوطِ لاگ:\n'
-  tail -20 "$OUT_DIR/restore.log" 2>/dev/null | sed 's/^/      /'
+  printf '    Restore diagnostics are saved privately. Do not paste the log into chat.\n'
   die "بازگردانی با کدِ $RESTORE_RC شکست خورد. کلِ تراکنش برگشت.
 لاگ: $OUT_DIR/restore.log
 بکاپ **قابلِ اتکا نیست**. هیچ migrationی روی Production اجرا نمی‌شود."
