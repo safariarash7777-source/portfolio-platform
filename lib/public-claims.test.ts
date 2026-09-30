@@ -38,7 +38,7 @@ function copyOf(file: string): string {
   // فقط متنِ قابلِ نمایش؛ کامنت‌های کد که خودشان دربارهٔ همین قاعده توضیح
   // می‌دهند نباید تست را قرمز کنند.
   const src = readFileSync(file, "utf8");
-  return src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
+  return src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ").replace(/\s+/g, " ");
 }
 
 describe("ادعای همگانی روی مسیرِ عمومی", () => {
@@ -54,11 +54,11 @@ describe("ادعای همگانی روی مسیرِ عمومی", () => {
     });
   }
 
-  test("هیرو هنوز همان سه چیزِ قابلِ اثبات را می‌گوید", () => {
-    // اگر این‌ها از هیرو حذف شوند یعنی متن دوباره کلی شده.
+  test("هیرو خدمت، رویداد درون دوره و شرط اعلام زمان را روشن می‌کند", () => {
     const copy = copyOf("components/landing/Hero.tsx");
-    assert.match(copy, /زمانِ به‌روزرسانی/, "وعدهٔ «زمانِ به‌روزرسانی» باید بماند — MarketTicker/LiveMarket اثباتش می‌کنند");
-    assert.match(copy, /منبع و\s*\n?\s*تاریخ|منبع و تاریخ/, "«منبع و تاریخ» باید بماند — InsightsPreview اثباتش می‌کند");
-    assert.match(copy, /کارنامه/, "ارجاع به کارنامه باید بماند");
+    assert.match(copy, /مسیر راه سرمایه‌گذاری/);
+    assert.match(copy, /وبینار بخشی از دوره است/);
+    assert.match(copy, /پیش از ثبت‌نام اعلام می‌شود/);
+    assert.doesNotMatch(copy, /بازده تضمینی|همین حالا|ثبت‌نام فعال/);
   });
 });

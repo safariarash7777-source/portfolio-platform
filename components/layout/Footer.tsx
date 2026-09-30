@@ -25,9 +25,19 @@ const PREVIEW_SHA = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 const IS_PRODUCTION = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 
 const SOCIAL = [
-  { href: PLATFORM_META.telegram.followUrl, label: PLATFORM_META.telegram.label, icon: Send },
-  { href: PLATFORM_META.instagram.followUrl, label: PLATFORM_META.instagram.label, icon: Instagram },
-].filter((s): s is { href: string; label: string; icon: typeof Send } => Boolean(s.href));
+  {
+    href: PLATFORM_META.telegram.followUrl,
+    label: PLATFORM_META.telegram.label,
+    icon: Send,
+  },
+  {
+    href: PLATFORM_META.instagram.followUrl,
+    label: PLATFORM_META.instagram.label,
+    icon: Instagram,
+  },
+].filter((s): s is { href: string; label: string; icon: typeof Send } =>
+  Boolean(s.href),
+);
 
 const GROUPS = [
   {
@@ -55,8 +65,9 @@ const GROUPS = [
   {
     title: "محصولات",
     links: [
-      { href: "/webinars", label: "وبینار" },
-      { href: "/#waitlist", label: "مشاورهٔ اختصاصی" },
+      { href: "/webinars", label: "دوره و وبینار" },
+      { href: "/consultation", label: "درخواست وقت مشاوره" },
+      { href: "/#waitlist", label: "فرم درخواست تماس" },
     ],
   },
   {
@@ -72,14 +83,14 @@ const GROUPS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
-      <div className="mx-auto w-full max-w-6xl px-5 py-14">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-5">
-          <div className="col-span-2 md:col-span-1">
+    <footer className="public-footer" aria-label="پیوندهای سایت">
+      <div className="public-container">
+        <div className="public-footer-grid">
+          <div className="public-footer-brand">
             {/* عنوانِ حرفه‌ای را خودِ Logo رندر می‌کند — تکرارش اینجا حذف شد. */}
             <Logo size={44} showText textVariant="navy" />
             {SOCIAL.length > 0 && (
-              <div className="mt-6 flex items-center gap-2">
+              <div className="public-footer-social">
                 {SOCIAL.map((s) => (
                   <a
                     key={s.label}
@@ -105,10 +116,8 @@ export default function Footer() {
 
           {GROUPS.map((g) => (
             <div key={g.title}>
-              <h4 className="font-display mb-4 text-sm font-bold" style={{ color: "var(--heading)" }}>
-                {g.title}
-              </h4>
-              <ul className="flex flex-col">
+              <h2>{g.title}</h2>
+              <ul className="public-footer-links">
                 {g.links.map((l) => (
                   <li key={l.href}>
                     <Link
@@ -125,13 +134,11 @@ export default function Footer() {
           ))}
         </div>
 
-        <div
-          className="mt-12 flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between"
-          style={{ borderColor: "var(--line)" }}
-        >
-          <p className="text-xs" style={{ color: "var(--text-3)", lineHeight: 1.9 }}>
-            سرمایه‌گذاری در بازارهای مالی با ریسکِ از دست رفتنِ اصلِ سرمایه همراه است.
-            هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ سرمایه‌گذار است.
+        <div className="public-footer-bottom">
+          <p>
+            سرمایه‌گذاری در بازارهای مالی با ریسکِ از دست رفتنِ اصلِ سرمایه
+            همراه است. هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ
+            سرمایه‌گذار است.
           </p>
           <div className="flex items-center gap-3 flex-shrink-0">
             {/* بدونِ whitespace-nowrap: ظرفِ بیرونی flex-shrink-0 است و خودش
@@ -145,7 +152,11 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded px-2 py-0.5 font-mono text-xs"
-                style={{ background: "var(--surface-2)", border: "1px solid var(--line)", color: "var(--text-3)" }}
+                style={{
+                  background: "var(--surface-2)",
+                  border: "1px solid var(--line)",
+                  color: "var(--text-3)",
+                }}
                 title="Preview build — نسخهٔ آزمایشی، نه Production"
               >
                 preview · {PREVIEW_SHA}

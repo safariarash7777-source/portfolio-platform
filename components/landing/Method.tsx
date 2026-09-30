@@ -1,91 +1,46 @@
-import Reveal from "./Reveal";
-
-/**
- * روشِ کار — P2-PUBLIC-EXPERIENCE-REBASELINE-001
- *
- * جایگزینِ سه سکشنِ قبلی: `ThreeSteps` + `Capabilities` + `WhyArash`.
- * آن سه، ۱۳ کارت و ۲۹۸ کلمه بودند که یک مفهوم را سه بار می‌گفتند.
- *
- * `id="features"` عمداً حفظ شده — `components/dashboard/AccessStatusCard.tsx`
- * به `/#features` لینک می‌دهد و آن فایل در دامنهٔ Entitlement است (دست‌نخورده).
- *
- * بدونِ کارت، بدونِ آیکون، بدونِ ویژوالِ ساختگی. سه گزاره که هر کدام چیزِ
- * متفاوتی می‌گویند.
- */
-const STEPS = [
+import { CalendarDays, BookOpen, MessageSquare } from "lucide-react";
+const steps = [
   {
-    n: "۰۱",
-    title: "فرض را می‌نویسم",
-    desc: "تحلیل را با فرضِ صریح شروع می‌کنم: چه چیزی باید درست باشد تا این نتیجه بگیرد.",
+    icon: CalendarDays,
+    title: "شرایط نوبت را بخوانید",
+    text: "موضوع وبینار، زمان تهران، هزینه و پایان دسترسی باید پیش از ثبت‌نام مشخص باشد.",
   },
   {
-    n: "۰۲",
-    title: "بازه می‌دهم، نه عدد",
-    desc: "ارزش‌گذاری در سه سناریو منتشر می‌شود. عددِ هدفِ واحد نمی‌دهم، چون صادقانه نیست.",
+    icon: MessageSquare,
+    title: "پرسش خود را مطرح کنید",
+    text: "تجربه و هدف آموزشی شما به انتخاب موضوع و پرسش وبینار کمک می‌کند.",
   },
   {
-    n: "۰۳",
-    title: "نتیجه ثبت می‌ماند",
-    desc: "تحلیل پس از انتشار قابل ویرایش نیست. درست یا غلط، در کارنامه باقی می‌ماند.",
+    icon: BookOpen,
+    title: "یادگیری را ادامه دهید",
+    text: "محتوای منتشرشده و دسترسی‌های دوره از حساب عضو دنبال می‌شود. مشاوره مسیر جداگانه‌ای دارد.",
   },
 ];
-
 export default function Method() {
   return (
-    <section id="features" className="section" style={{ background: "var(--bg)" }}>
-      <div className="mx-auto w-full max-w-6xl px-5">
-        <Reveal>
-          <h2
-            className="font-display"
-            style={{
-              color: "var(--heading)",
-              fontSize: "clamp(1.6rem, 3.4vw, 2.4rem)",
-              fontWeight: 800,
-              lineHeight: 1.3,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            چطور تحلیل می‌کنم
-          </h2>
-          <div aria-hidden className="divider-gold mt-4" />
-        </Reveal>
-
-        <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
-          {STEPS.map((s, i) => (
-            <Reveal key={s.n} delay={i * 80}>
-              <div
-                className={
-                  "h-full" +
-                  (i < STEPS.length - 1
-                    ? " md:pe-8 md:border-e md:border-[color:var(--line)]"
-                    : "")
-                }
-              >
-                <span
-                  className="font-display block"
-                  style={{
-                    color: "var(--gold)",
-                    fontSize: "1.5rem",
-                    fontWeight: 900,
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
-                  {s.n}
-                </span>
-                <h3
-                  className="font-display mt-3 text-lg font-bold"
-                  style={{ color: "var(--heading)" }}
-                >
-                  {s.title}
-                </h3>
-                <p
-                  className="mt-2 text-sm"
-                  style={{ color: "var(--text-2)", lineHeight: 1.9 }}
-                >
-                  {s.desc}
-                </p>
+    <section
+      id="features"
+      className="public-section public-surface"
+      aria-labelledby="path-title"
+    >
+      <div className="public-container">
+        <div className="public-section-heading">
+          <div>
+            <p className="public-eyebrow">جریان دوره</p>
+            <h2 id="path-title">سه ماه همراهی چه مسیری دارد؟</h2>
+          </div>
+          <p>جزئیات اجرایی هر نوبت در صفحهٔ همان دوره اعلام می‌شود.</p>
+        </div>
+        <div className="public-three-grid">
+          {steps.map((step, index) => (
+            <article className="public-step" key={step.title}>
+              <div className="public-step-icon">
+                <step.icon size={23} aria-hidden />
+                <span aria-hidden>{["۰۱", "۰۲", "۰۳"][index]}</span>
               </div>
-            </Reveal>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </article>
           ))}
         </div>
       </div>

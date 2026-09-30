@@ -1,116 +1,105 @@
 "use client";
+import { useId, useState } from "react";
+import Link from "next/link";
+import { readWaitlistResponse } from "./waitlist-response";
 
-import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
-
-type Status = "idle" | "loading" | "success" | "error";
-
-/**
- * فرم لیست انتظار — پوستهٔ نو، منطق عیناً حفظ‌شده:
- * همان endpoint (`/api/waitlist`)، همان بدنهٔ درخواست و همان وضعیت‌ها.
- */
-export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onNavy" }) {
+export default function WaitlistForm({
+  tone = "light",
+}: {
+  tone?: "light" | "onNavy";
+}) {
+  const id = useId();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<Status>("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (status === "loading" || status === "success") return;
     setStatus("loading");
+    setErrorMessage("");
     try {
-      const res = await fetch("/api/waitlist", {
+      const response = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setStatus("error");
-        setErrorMessage(data.error || "خطایی رخ داد.");
-      } else {
+      const result = await readWaitlistResponse(response);
+      if (result.ok) {
         setStatus("success");
         setEmail("");
+      } else {
+        setStatus("error");
+        setErrorMessage(result.message);
       }
     } catch {
       setStatus("error");
-      setErrorMessage("اتصال به سرور برقرار نشد.");
+      setErrorMessage(
+        "اتصال برقرار نشد. ایمیل شما در فرم باقی مانده؛ دوباره ارسال کنید.",
+      );
     }
-  };
-
-  const onNavy = tone === "onNavy";
-  const hintColor = onNavy ? "rgba(248,250,252,0.6)" : "var(--text-3)";
-  const busy = status === "loading" || status === "success";
-
+  }
   return (
-    <div className="w-full max-w-lg">
-      {/*
-        حلقهٔ فوکوس روی خودِ گروهِ ورودی است، نه روی input.
-        دلیل: input عمداً بی‌مرز و شفاف است و استایلِ inlineِ آن
-        (`boxShadow: "none"`) قاعدهٔ `.input:focus` را خنثی می‌کرد — یعنی فیلدِ
-        ایمیل هیچ نشانهٔ فوکوسِ دیداری نداشت. حالا کلِ کادر با `focus-within`
-        حلقه می‌گیرد. رنگ از توکن می‌آید و `boxShadow`ِ inline حذف شد تا
-        `ring` بتواند اعمال شود.
-      */}
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl border transition-shadow focus-within:ring-2"
-        style={
-          {
-            background: onNavy ? "rgba(255,255,255,0.06)" : "var(--surface)",
-            borderColor: onNavy ? "rgba(255,255,255,0.16)" : "var(--line)",
-            "--tw-ring-color": onNavy ? "var(--gold-light)" : "var(--navy)",
-          } as React.CSSProperties
-        }
-      >
+    <form
+      onSubmit={submit}
+      className={`public-waitlist ${tone === "onNavy" ? "public-waitlist-on-navy" : ""}`}
+      aria-busy={status === "loading"}
+    >
+      <label htmlFor={`${id}-email`}>ایمیل برای هماهنگی مشاوره</label>
+      <p id={`${id}-help`} className="public-caption">
+        برای ثبت درخواست تماس استفاده می‌شود. ارسال فرم به معنی رزرو قطعی جلسه
+        نیست.
+      </p>
+      <div className="public-form-controls">
         <input
+          id={`${id}-email`}
+          className="input"
           type="email"
-          name="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="ایمیل شما — مثلاً name@example.com"
-          required
-          disabled={busy}
           dir="ltr"
-          aria-label="آدرس ایمیل"
-          className="input flex-1"
-          style={{
-            border: "none",
-            boxShadow: "none",
-            background: "transparent",
-            color: onNavy ? "var(--text-on-navy)" : "var(--text)",
-          }}
+          autoComplete="email"
+          maxLength={254}
+          required
+          value={email}
+          disabled={status === "loading" || status === "success"}
+          onChange={(event) => setEmail(event.target.value)}
+          aria-invalid={status === "error"}
+          aria-describedby={`${id}-help${status === "error" ? ` ${id}-error` : ""}`}
+          placeholder="you@example.com"
         />
         <button
           type="submit"
-          disabled={busy}
-          className={status === "success" ? "btn btn-primary" : "btn btn-gold"}
+          className={tone === "onNavy" ? "btn btn-gold" : "btn btn-primary"}
+          disabled={status === "loading" || status === "success"}
         >
           {status === "loading"
-            ? "در حال ثبت..."
+            ? "در حال ارسال…"
             : status === "success"
-            ? "ثبت شدید ✓"
-            : "ثبت درخواست"}
-          {status === "idle" && <ArrowLeft size={16} />}
+              ? "درخواست ثبت شد"
+              : "ثبت درخواست تماس"}
         </button>
-      </form>
-
-      <div className="h-6 mt-2 px-1">
-        {status === "success" && (
-          <p className="text-sm" style={{ color: onNavy ? "var(--gold-soft)" : "var(--success)" }}>
-            ثبت شد! برای هماهنگی مشاوره و خبرهای مهم، از همین ایمیل با شما در تماس خواهیم بود.
-          </p>
-        )}
-        {status === "error" && (
-          <p className="text-sm" style={{ color: onNavy ? "color-mix(in srgb, var(--danger) 45%, white)" : "var(--danger)" }}>
-            {errorMessage}
-          </p>
-        )}
-        {status === "idle" && (
-          <p className="text-xs" style={{ color: hintColor }}>
-            اطلاعات شما فقط برای ارتباط با شما استفاده می‌شود.
-          </p>
-        )}
       </div>
-    </div>
+      {status === "error" ? (
+        <p id={`${id}-error`} className="public-form-error" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
+      {status === "success" ? (
+        <div className="public-form-success" role="status">
+          <strong>ایمیل شما برای هماهنگی ثبت شد.</strong>
+          <p>
+            منتظر تماس برای بررسی موضوع و زمان باشید. هنوز وقت مشاوره‌ای تأیید
+            نشده است.
+          </p>
+        </div>
+      ) : null}
+      <p className="public-caption">
+        نحوهٔ استفاده از اطلاعات تماس در{" "}
+        <Link href="/legal/privacy" className="public-text-link">
+          حریم خصوصی
+        </Link>{" "}
+        آمده است.
+      </p>
+    </form>
   );
 }

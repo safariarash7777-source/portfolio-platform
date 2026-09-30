@@ -1,0 +1,110 @@
+[
+  {
+    "theme": "light",
+    "foreground": "--text",
+    "background": "--surface",
+    "ratio": 17.85
+  },
+  {
+    "theme": "light",
+    "foreground": "--text-2",
+    "background": "--bg",
+    "ratio": 9.67
+  },
+  {
+    "theme": "light",
+    "foreground": "--text-3",
+    "background": "--surface-2",
+    "ratio": 5.44
+  },
+  {
+    "theme": "light",
+    "foreground": "--heading",
+    "background": "--bg",
+    "ratio": 14.94
+  },
+  {
+    "theme": "light",
+    "foreground": "--gold-ink",
+    "background": "--surface",
+    "ratio": 6.38
+  },
+  {
+    "theme": "light",
+    "foreground": "--text-on-navy",
+    "background": "--navy-deep",
+    "ratio": 15.3
+  },
+  {
+    "theme": "light",
+    "foreground": "--gold-light",
+    "background": "--navy-deep",
+    "ratio": 10.81
+  },
+  {
+    "theme": "light",
+    "foreground": "--danger",
+    "background": "--surface",
+    "ratio": 6.47
+  },
+  {
+    "theme": "light",
+    "foreground": "--focus",
+    "background": "--surface",
+    "ratio": 10.36
+  },
+  {
+    "theme": "dark",
+    "foreground": "--text",
+    "background": "--surface",
+    "ratio": 15.5
+  },
+  {
+    "theme": "dark",
+    "foreground": "--text-2",
+    "background": "--bg",
+    "ratio": 12.61
+  },
+  {
+    "theme": "dark",
+    "foreground": "--text-3",
+    "background": "--surface-2",
+    "ratio": 5.92
+  },
+  {
+    "theme": "dark",
+    "foreground": "--heading",
+    "background": "--bg",
+    "ratio": 17.09
+  },
+  {
+    "theme": "dark",
+    "foreground": "--gold-ink",
+    "background": "--surface",
+    "ratio": 11.47
+  },
+  {
+    "theme": "dark",
+    "foreground": "--text-on-navy",
+    "background": "--navy-deep",
+    "ratio": 15.3
+  },
+  {
+    "theme": "dark",
+    "foreground": "--gold-light",
+    "background": "--navy-deep",
+    "ratio": 10.81
+  },
+  {
+    "theme": "dark",
+    "foreground": "--danger",
+    "background": "--surface",
+    "ratio": 5.65
+  },
+  {
+    "theme": "dark",
+    "foreground": "--focus",
+    "background": "--surface",
+    "ratio": 8.26
+  }
+]
