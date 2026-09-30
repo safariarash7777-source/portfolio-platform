@@ -29,6 +29,11 @@ on:
         type: boolean
         required: false
         default: false
+      maintenance_action:
+        description: "Migration maintenance operation (requires maintenance_probe)"
+        type: choice
+        options: [inventory, retarget-relay]
+        default: inventory
       sha:
         description: "SHA برای انتشار (کامل یا حداقل ۷ رقم)"
         required: true
@@ -362,10 +367,18 @@ jobs:
         with:
           node-version: "22"
       - name: Read existing relay and mail configuration privately
+        if: inputs.maintenance_action != 'retarget-relay'
         env:
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: node scripts/deploy/liara-migration-inventory.mjs
+      - name: Retarget the existing single relay with a concurrent-change guard
+        if: inputs.maintenance_action == 'retarget-relay'
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+          LIARA_MIGRATION_TARGET: ${{ secrets.LIARA_MIGRATION_TARGET }}
+        run: node scripts/deploy/liara-retarget-relay.mjs
       - uses: actions/upload-artifact@v4
+        if: inputs.maintenance_action != 'retarget-relay'
         with:
           name: liara-migration-inventory-encrypted
           path: migration-inventory.p7m
