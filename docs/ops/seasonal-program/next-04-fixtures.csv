@@ -1,0 +1,3 @@
+source,external_registration_id,external_cohort_ref,status,occurred_at,source_revision,contact_type,contact_value
+synthetic-partner,SYNTHETIC-001,SYNTHETIC-A,accepted,2026-10-01T09:00:00+03:30,1,email,member@example.invalid
+synthetic-partner,SYNTHETIC-002,SYNTHETIC-A,accepted,2026-10-20T09:00:00+03:30,1,email,late@example.invalid

@@ -17,7 +17,7 @@ const row = (o: Partial<{ expires_at: string; revoked_at: string | null; starts_
 /** کلاینتِ آزمایشی با همان زنجیرهٔ فراخوانیِ Supabase. */
 function fakeClient(result: { data: unknown[] | null; error: unknown }) {
   const chain = {
-    select: () => chain, eq: () => chain, order: () => chain,
+    select: () => chain, eq: () => chain, is: () => chain, order: () => chain,
     limit: () => Promise.resolve(result),
   };
   return { from: () => chain } as unknown as Parameters<typeof standingOf>[0];

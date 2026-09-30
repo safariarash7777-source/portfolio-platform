@@ -44,12 +44,7 @@ export async function GET() {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const admin = auth.supabase;
-  const { data, error } = await admin
-    .from("webinars")
-    .select(
-      "*, webinar_registrations(count)"
-    )
-    .order("starts_at", { ascending: false });
+  const { data, error } = await admin.rpc("seasonal_admin_webinars");
 
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -99,7 +94,7 @@ export async function POST(req: NextRequest) {
       platform_url: platform_url || null,
       status: status || "draft",
     })
-    .select()
+    .select("id,title,description,starts_at,ends_at,registration_open,max_capacity,price_toman,platform,status")
     .single();
 
   if (error)
@@ -124,6 +119,9 @@ export async function PATCH(req: NextRequest) {
 
   // اگر action = send_invites → ارسال دعوت کانال به شرکت‌کنندگان
   if (updates.action === "send_invites") {
+    const scope=await admin.from("webinars").select("cohort_id").eq("id",id).maybeSingle();
+    if(scope.error)return NextResponse.json({error:"بررسی دوره انجام نشد."},{status:503});
+    if(scope.data?.cohort_id)return NextResponse.json({error:"ارسال اعلان دوره از مسیر هماهنگ انتشار و مجوزهای دوره انجام می‌شود."},{status:409});
     return await handleSendInvites(admin, id);
   }
 
@@ -131,7 +129,7 @@ export async function PATCH(req: NextRequest) {
     .from("webinars")
     .update(updates)
     .eq("id", id)
-    .select()
+    .select("id,title,description,starts_at,ends_at,registration_open,max_capacity,price_toman,platform,status")
     .single();
 
   if (error)
