@@ -43,6 +43,9 @@ export interface FundRow {
   navDate?: string | null;
   navTime?: string | null;
   bubblePercent?: number | null;
+  navState?: string;
+  navReason?: string | null;
+  lastTradeDate?: string | null;
   /** بازدهٔ دوره‌ای از symbol_history (M6) — null = دادهٔ کافی نیست */
   ret1w?: number | null;
   ret1m?: number | null;
@@ -65,12 +68,9 @@ function fmtAssetB(b: number): string {
   return `${toPersianDigits(b.toLocaleString("en-US")).replace(/,/g, "٬")} میلیارد`;
 }
 
-/** ارزش معاملات → متن فارسی (میلیارد تومان) */
-function fmtValue(v: number): string {
-  const b = v / 1_000_000_000;
-  if (b >= 1) return `${toPersianDigits(b.toFixed(1)).replace(".", "٫")} میلیارد`;
-  const m = v / 1_000_000;
-  return `${toPersianDigits(Math.round(m).toLocaleString("en-US")).replace(/,/g, "٬")} میلیون`;
+/** مقدار خام BrsApi ریال است؛ تبدیل تومان فقط در مرز نمایش انجام می‌شود. */
+function fmtValue(v: number | null | undefined): string {
+  return formatRialAsToman(v);
 }
 
 /**
@@ -290,11 +290,11 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
           <PieChart size={18} />
         </span>
         <div>
-          <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
-            دیده‌بان صندوق‌ها
-          </h3>
+          <h2 className="font-display font-bold" style={{ color: "var(--heading)" }}>
+            دادهٔ صندوق در دسترس نیست
+          </h2>
           <p className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
-            اسنپ‌شات صندوق‌ها خالی است. تا وقتی ردیف معتبر نرسد، این صفحه عدد یا وضعیت ساختگی نشان نمی‌دهد.
+            ردیف معتبر صندوق برای نمایش در دسترس نیست. تا وقتی ردیف معتبر نرسد، این صفحه عدد یا وضعیت ساختگی نشان نمی‌دهد.
           </p>
         </div>
       </div>
@@ -653,6 +653,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               )}
               {hasReturns && (
                 <>
+                  <th scope="col" className="px-4 py-3 text-left text-xs">آخرین روز بازده</th>
                   <SortTh label="بازده ۱ه" sortKey="ret1w" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
                   <SortTh label="بازده ۱م" sortKey="ret1m" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
                   <SortTh label="بازده ۳م" sortKey="ret3m" current={sortKey} dir={sortDir} onSort={toggleSort} align="left" />
@@ -694,6 +695,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     <>
                       <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
                         {f.nav != null ? formatToman(f.nav) : "—"}
+                        <span className="block text-xs">{f.navDate ? toPersianDigits(f.navDate) : "تاریخ نامشخص"}</span>
+                        <span className="block text-xs">{f.navReason}</span>
                       </td>
                       <td
                         className="py-3 px-4 text-left font-bold"
@@ -708,13 +711,14 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                   )}
                   {hasReturns && (
                     <>
+                      <td className="py-3 px-4 text-left text-xs">{f.lastTradeDate ? formatJalali(f.lastTradeDate + "T00:00:00Z", false) : "نامشخص"}</td>
                       <RetCell v={f.ret1w} />
                       <RetCell v={f.ret1m} />
                       <RetCell v={f.ret3m} />
                     </>
                   )}
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
-                    {f.value ? fmtValue(f.value) : "—"}
+                    {fmtValue(f.value)}
                   </td>
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
                     {formatRialAsToman(f.marketValue)}
@@ -769,11 +773,11 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               </div>
               <div className="flex items-center justify-between mt-2 text-xs" style={{ color: "var(--text-2)" }}>
                 <span>{formatToman(f.price)}</span>
-                {f.value ? <span>ارزش: {fmtValue(f.value)}</span> : null}
+                {f.value != null ? <span>ارزش: {fmtValue(f.value)}</span> : null}
               </div>
               {f.nav != null && (
                 <div className="flex items-center justify-between mt-1.5 text-xs" style={{ color: "var(--text-2)" }}>
-                  <span>NAV ابطال: {formatToman(f.nav)}</span>
+                  <span>NAV ابطال: {formatToman(f.nav)}<small className="block">{f.navDate ? toPersianDigits(f.navDate) : "تاریخ نامشخص"} · {f.navReason ?? "NAV معتبر"}</small></span>
                   {f.bubblePercent != null && (
                     <span className="font-bold" style={{ color: bubbleColor(f.bubblePercent), fontVariantNumeric: "tabular-nums" }}>
                       حباب: {formatSignedPercent(f.bubblePercent)}
@@ -783,6 +787,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
               )}
               {(f.ret1w != null || f.ret1m != null || f.ret3m != null) && (
                 <div className="flex items-center gap-3 mt-1.5 text-xs" style={{ color: "var(--text-2)" }}>
+                  <span>تا {f.lastTradeDate ? formatJalali(f.lastTradeDate + "T00:00:00Z", false) : "تاریخ نامشخص"}</span>
                   <span>بازده ۱ه: <b style={{ color: f.ret1w != null ? deltaColor(f.ret1w) : "var(--text-3)" }}>{f.ret1w != null ? formatSignedPercent(f.ret1w) : "—"}</b></span>
                   <span>۱م: <b style={{ color: f.ret1m != null ? deltaColor(f.ret1m) : "var(--text-3)" }}>{f.ret1m != null ? formatSignedPercent(f.ret1m) : "—"}</b></span>
                   <span>۳م: <b style={{ color: f.ret3m != null ? deltaColor(f.ret3m) : "var(--text-3)" }}>{f.ret3m != null ? formatSignedPercent(f.ret3m) : "—"}</b></span>
@@ -836,6 +841,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
       {/* Disclaimer */}
       <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
         داده از فید رسمی بازار سرمایه دریافت می‌شود و برای شناخت بازار است؛ به‌تنهایی مبنای تصمیم شخصی نیست.
+        {hasReturns ? " بازده‌های دوره‌ای بر قیمت تعدیل‌نشده و تا آخرین روز ثبت‌شده محاسبه شده‌اند؛ بازده شخصی با سود تقسیمی را نشان نمی‌دهند." : ""}
         {hasNav && (
           <>
             {" "}حباب = (قیمت − NAV ابطال) ÷ NAV ابطال؛ NAV ابطال از سامانهٔ رسمی بازار (به‌روزرسانی حدوداً

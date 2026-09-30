@@ -1,6 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StocksBoard from "@/components/market/StocksBoard";
+import MarketDataStatus from "@/components/market/MarketDataStatus";
 import MarketShell from "@/components/market/MarketShell";
 import { getIrMarket } from "@/lib/market-ir";
 import { pageMetadata } from "@/lib/metadata";
@@ -33,6 +34,7 @@ export default async function StocksPage() {
           searchIndex={buildSearchIndex(stocks, ir?.funds ?? [])}
           path="/market/stocks"
         >
+          <MarketDataStatus market={ir} />
           <StocksBoard stocks={stocks} indices={indices} fetchedAt={fetchedAt} />
         </MarketShell>
       </main>

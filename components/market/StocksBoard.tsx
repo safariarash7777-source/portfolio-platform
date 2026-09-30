@@ -1,4 +1,7 @@
 "use client";
+import { indexChangePercent } from "@/lib/core/marketHeadline";
+import { formatOrDash, formatCount } from "@/lib/format";
+
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
@@ -251,13 +254,13 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش بازار</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-              {indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
+              {indices.marketValue != null && indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
             </p>
           </div>
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش معاملات</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-              {indices.value > 0 ? fmtValue(indices.value) : "—"}
+              {indices.value != null && indices.value > 0 ? fmtValue(indices.value) : "—"}
             </p>
           </div>
         </div>
@@ -534,24 +537,17 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
 
 // ── Helper Components ────────────────────────────────────────────────────────
 
-function IndexCard({ label, value, change }: { label: string; value: number; change: number }) {
-  const pct = value > 0 ? (change / value) * 100 : 0;
-  const Icon = change >= 0 ? TrendingUp : TrendingDown;
+function IndexCard({ label, value, change }: { label: string; value: number | null; change: number | null }) {
+  const pct = indexChangePercent(value, change);
   return (
     <div className="card p-4">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
       <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-        {toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬")}
+        {formatOrDash(value, formatCount)}
       </p>
-      <div className="flex items-center gap-1 mt-1">
-        <Icon size={12} style={{ color: deltaColor(change) }} />
-        <span className="text-xs font-bold" style={{ color: deltaColor(change), fontVariantNumeric: "tabular-nums" }}>
-          {formatSignedPercent(pct)}
-        </span>
-        <span className="text-[10px]" style={{ color: "var(--text-3)" }}>
-          ({toPersianDigits(Math.abs(Math.round(change)).toLocaleString("en-US")).replace(/,/g, "٬")})
-        </span>
-      </div>
+      <p className="mt-1 text-xs font-bold" style={{ color: pct == null ? "var(--text-3)" : deltaColor(pct) }}>
+        {formatOrDash(pct, formatSignedPercent)}
+      </p>
     </div>
   );
 }

@@ -32,8 +32,8 @@ export default function MarketPulsePanel({
             همان چیزی است که دو عددِ متفاوت در یک صفحه می‌سازد. */}
         <p className="mt-0.5 text-[11px] leading-5" style={{ color: "var(--text-3)" }}>
           {hasMarket
-            ? `از ${toPersianDigits(pulse.totalTraded)} نمادِ معامله‌شدهٔ امروز (کلِ اسنپ‌شات: ${toPersianDigits(universe)})`
-            : "پس از شروع معاملات به‌روز می‌شود"}
+            ? `از ${toPersianDigits(pulse.totalTraded)} نمادِ معامله‌شده در اسنپ‌شات (کل: ${toPersianDigits(universe)})`
+            : "پوشش دادهٔ معامله در دسترس نیست"}
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function MarketPulsePanel({
         <PulseHistogram pulse={pulse} />
       ) : (
         <p className="py-6 text-center text-[12.5px]" style={{ color: "var(--text-3)" }}>
-          خارج از ساعاتِ بازار — هنوز نمادی معامله نشده است.
+          معاملهٔ دارای داده ثبت نشده است؛ بسته بودن بازار از این عدد نتیجه نمی‌شود.
         </p>
       )}
 
@@ -65,7 +65,7 @@ export default function MarketPulsePanel({
           <p className="mt-0.5 text-sm font-bold" style={{ color: "var(--text-3)" }}>
             —
             <span className="mr-2 text-[11px] font-normal">
-              دادهٔ حقیقی/حقوقی در اسنپ‌شات امروز نیامده
+              دادهٔ حقیقی/حقوقی در اسنپ‌شات نیامده
             </span>
           </p>
         )}
