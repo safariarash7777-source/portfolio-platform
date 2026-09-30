@@ -36,6 +36,13 @@ const ps1 = ps1Bytes.toString("utf8").replace(/^﻿/, "");
 const inventory = existsSync(INVENTORY) ? readFileSync(INVENTORY, "utf8") : "";
 const compare = existsSync(COMPARE) ? readFileSync(COMPARE, "utf8") : "";
 
+test("restore SQL errors stay in private logs, not terminal output", () => {
+  assert.doesNotMatch(ps1, /ReadAllLines\(\$restoreLog/);
+  assert.doesNotMatch(bash, /tail\s+-20\s+"\$OUT_DIR\/restore\.log"/);
+  assert.match(ps1, /Restore diagnostics are saved privately/);
+  assert.match(bash, /Restore diagnostics are saved privately/);
+});
+
 /**
  * خطوطِ **اجرایی**، بدونِ کامنت.
  *

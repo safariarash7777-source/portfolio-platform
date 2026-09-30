@@ -62,6 +62,13 @@
     production backup: the stack would keep real member data on disk.
 #>
 
+param(
+    # Non-secret host copied/verified from the project's Connect panel.
+    # Do not guess the pooler index from the project region.
+    [ValidatePattern('^aws-[0-9]+-us-east-2\.pooler\.supabase\.com$')]
+    [string]$ProductionPoolerHost
+)
+
 Set-StrictMode -Version 2.0
 
 # ---- Why this is 'Continue' and not 'Stop' ---------------------------------
@@ -212,6 +219,7 @@ if ($LASTEXITCODE -ne 0 -or $supaVersion -notmatch '^\d+\.\d+\.\d+') {
 Write-Host "Supabase CLI for the dump: $supaVersion"
 
 # ---- 2) connection string: prompted, never stored ---------------------------
+if (-not $ProductionPoolerHost) {
 Write-Host @'
 
 Copy the production connection string from the dashboard:
@@ -225,7 +233,12 @@ Nothing is echoed while you type. Nothing is stored, printed, or kept in
 shell history. DO NOT paste any of it into a chat.
 
 '@
+}
 
+if ($ProductionPoolerHost) {
+    Write-Host "Source project: uooeygybrniptzdxuzhj; session pooler: ${ProductionPoolerHost}:5432"
+    $DbUrl = "postgresql://postgres.uooeygybrniptzdxuzhj:[YOUR-PASSWORD]@${ProductionPoolerHost}:5432/postgres?sslmode=require"
+} else {
 $secure = Read-Host -Prompt 'connection string' -AsSecureString
 $bstr   = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
 try {
@@ -234,6 +247,7 @@ try {
     [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
 }
 if ([string]::IsNullOrWhiteSpace($DbUrl)) { Die 'Nothing was entered.' }
+}
 
 # Windows PowerShell 5.1 encodes pipeline text to a native process using
 # $OutputEncoding, which defaults to ASCII. The connection string travels by
@@ -614,8 +628,7 @@ try {
     $restoreExit = $LASTEXITCODE
     & docker cp "${dbContainer}:/tmp/restore/restore.log" $restoreLog | Out-Null
     if ($restoreExit -ne 0) {
-        Write-Host '    last log lines:'
-        if (Test-Path $restoreLog) { [System.IO.File]::ReadAllLines($restoreLog, $Utf8NoBom) | Select-Object -Last 20 | ForEach-Object { Write-Host "      $_" } }
+        Write-Host '    Restore diagnostics are saved privately. Do not paste the log into chat.'
         Die "Restore failed with exit code $restoreExit. The whole transaction rolled back.`nLog: $restoreLog`nThe backup is NOT reliable. No migration runs on production."
     }
     Write-Host '    restore finished with exit code 0.'
