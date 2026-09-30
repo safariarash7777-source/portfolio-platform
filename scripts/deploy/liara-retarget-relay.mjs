@@ -18,6 +18,7 @@ export function retargetPlan(project,target) {
   return project.envs.map(({key,value})=>({key,value:key==='SUPABASE_URL'?target.url:key==='SUPABASE_SERVICE_ROLE_KEY'?target.serviceKey:value}));
 }
 
+let stage='load-target';
 async function run() {
   const token=process.env.LIARA_API_TOKEN;
   if(!token || !process.env.LIARA_MIGRATION_TARGET) throw new Error('Migration credential missing');
@@ -27,17 +28,32 @@ async function run() {
     if(!r.ok) throw new Error(`Liara ${method} ${path} HTTP ${r.status}`);
     return r.status===204 ? {} : r.json();
   }
+  stage='read-existing-relay';
   const before=await api('/v1/projects/arsadata');
+  stage='validate-migration-plan';
   const variables=retargetPlan(before.project ?? before.data?.project,target);
   // All unrelated values, including transport/budget flags and provider keys,
   // remain exactly as observed. No second relay or provider request is created.
+  stage='update-database-destination';
   await api('/v1/projects/update-envs','POST',{project:'arsadata',variables});
+  stage='verify-destination';
   const after=await api('/v1/projects/arsadata');
   const observed=after.project ?? after.data?.project;
   if(observed.scale!==1 || envFingerprint(observed.envs)!==envFingerprint(variables)) throw new Error('Updated relay configuration did not verify');
+  stage='restart-existing-relay';
   await api('/v1/projects/arsadata/actions/restart','POST');
   console.log(JSON.stringify({result:'relay destination verified; existing app restart requested',relay:'arsadata',scale:1,destination:target.url}));
 }
 if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
-  run().catch(()=>{console.error('Relay migration failed; inspect safe API status and owner-held rollback inventory. Credentials not printed.');process.exitCode=1;});
+  run().catch((error)=>{
+    const known=[
+      'Migration credential missing','Expected active single arsadata relay',
+      'Invalid relay variables','Relay configuration changed since inventory; refusing overwrite',
+      'Unexpected database destination','Invalid target server credential',
+      'Updated relay configuration did not verify',
+    ];
+    const message=known.includes(error.message) || /^Liara (GET|POST) \/v1\/projects(?:\/arsadata(?:\/actions\/restart)?|\/update-envs) HTTP \d{3}$/.test(error.message) ? error.message : 'Details withheld to protect credentials';
+    console.error(JSON.stringify({result:'migration failed',stage,reason:message}));
+    process.exitCode=1;
+  });
 }
