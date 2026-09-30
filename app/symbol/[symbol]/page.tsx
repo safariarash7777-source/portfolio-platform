@@ -1,3 +1,4 @@
+import CustomerJourney from "@/components/account/CustomerJourney";
 // صفحهٔ واحد نماد — T2 ممیزی: ادغام /data/[symbol] در /symbol/[symbol].
 // سکشن‌ها: سرصفحهٔ قیمت زنده + آمار روز + (NAV/حباب صندوق) + تاریخچهٔ قیمت و جریان پول
 // + دانلود CSV + کارت امتیاز (به‌زودی) + نمودارهای بنیادی کدال.
@@ -561,6 +562,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
           {/* مسیرِ رفت‌وبرگشت: از این نماد به داشبورد، و از اینجا برگشت به میزِ بازار.
               فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
+          <CustomerJourney />
           <AccountBridge
             access={access}
             /* مبدأ همراهِ مسیرِ بازگشت از حساب می‌رود؛ بدونِ آن، کاربری که از

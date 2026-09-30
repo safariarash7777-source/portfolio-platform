@@ -1,3 +1,4 @@
+import CustomerJourney from "@/components/account/CustomerJourney";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
@@ -63,7 +64,8 @@ export default async function FundsPage({
         >
           <FundsFullBoard funds={funds} fetchedAt={fetchedAt} />
           <div className="mt-8">
-            <AccountBridge
+            <CustomerJourney />
+          <AccountBridge
               access={access}
               returnTo={selfHref}
               backTo={{ href: "/market", label: "برگشت به میز بازار" }}

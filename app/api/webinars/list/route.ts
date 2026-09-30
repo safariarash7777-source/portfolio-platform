@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
@@ -26,6 +27,16 @@ export const dynamic = "force-dynamic";
 const PUBLIC_STATUSES = ["published", "live", "ended"] as const;
 
 export async function GET() {
+  try {
+    return await list();
+  } catch { return publicFailure(); }
+}
+
+function publicFailure() {
+  return NextResponse.json({ error: "دریافت فهرست وبینارها انجام نشد. دوباره تلاش کنید.", code: "WEBINARS_LIST_UNAVAILABLE", requestId: randomUUID() }, { status: 503 });
+}
+
+async function list() {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -37,7 +48,7 @@ export async function GET() {
     .order("starts_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return publicFailure();
   }
 
   const webinars = data ?? [];
@@ -53,6 +64,7 @@ export async function GET() {
 
   const withCounts = await Promise.all(
     webinars.map(async (w) => {
+      try {
       const { count, error: countError } = await admin
         .from("webinar_registrations")
         .select("*", { count: "exact", head: true })
@@ -60,8 +72,9 @@ export async function GET() {
         .in("payment_status", ["paid", "free"]);
       // شکستِ شمارش هم `null` است، نه صفر — همان قاعده.
       return { ...w, registered_count: countError ? null : count ?? null };
+      } catch { return { ...w, registered_count: null }; }
     })
   );
 
-  return NextResponse.json({ webinars: withCounts, countsAvailable: true });
+  return NextResponse.json({ webinars: withCounts, countsAvailable: withCounts.every(w => w.registered_count !== null) });
 }

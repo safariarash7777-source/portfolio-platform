@@ -4,8 +4,15 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import HoldingsSummary from "@/components/portfolio/HoldingsSummary";
+import { loadPortfolioSnapshot, loadPriceRows } from "@/lib/portfolio/service";
+import { valuePositions } from "@/lib/portfolio/valuation";
+import type { Assessment, Portfolio } from "./DashboardClient";
+import type { PaidPayment } from "@/components/dashboard/AccessCards";
 import DashboardClient from "./DashboardClient";
 import AccessStatusCard from "@/components/dashboard/AccessStatusCard";
+import { readState, safeReads } from "@/lib/read-state";
+import ReadError from "@/components/dashboard/ReadError";
 import { getAccess } from "@/lib/access";
 
 export const metadata = {
@@ -25,22 +32,22 @@ export default async function DashboardPage() {
     profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes,
     telegramRes, paymentRes, scoreHistoryRes, revalidationRes, announcementsRes, seenRes,
     portfolioVersionsRes,
-  ] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+  ] = await safeReads([
+    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle<{ full_name: string | null; role: string | null }>(),
     supabase
       .from("risk_assessments")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1)
-      .maybeSingle(),
+      .maybeSingle<Assessment>(),
     supabase
       .from("portfolios")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1)
-      .maybeSingle(),
+      .maybeSingle<Portfolio>(),
     supabase
       .from("holdings")
       .select("*")
@@ -61,7 +68,7 @@ export default async function DashboardPage() {
       .from("telegram_links")
       .select("user_id")
       .eq("user_id", user.id)
-      .maybeSingle(),
+      .maybeSingle<{ user_id: string }>(),
     supabase
       .from("payments")
       .select("status, invite_link, ref_id")
@@ -69,7 +76,7 @@ export default async function DashboardPage() {
       .eq("status", "paid")
       .order("created_at", { ascending: false })
       .limit(1)
-      .maybeSingle(),
+      .maybeSingle<PaidPayment>(),
     supabase
       .from("risk_assessments")
       .select("total_score, risk_category, created_at")
@@ -81,7 +88,7 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .order("expired_at", { ascending: false })
       .limit(1)
-      .maybeSingle(),
+      .maybeSingle<{ expired_at: string }>(),
     supabase
       .from("announcements")
       .select("id, title, body_md, published_at")
@@ -103,6 +110,16 @@ export default async function DashboardPage() {
   ]);
 
   const access = await getAccess();
+  const holdingSnapshot = await loadPortfolioSnapshot();
+  const prices = await loadPriceRows(holdingSnapshot.holdings?.positions ?? []);
+  const sectionEntries = {
+    profile: profileRes, assessment: assessmentRes, portfolio: portfolioRes, holdings: holdingsRes,
+    snapshots: snapshotsRes, transactions: txRes, telegram: telegramRes, payment: paymentRes,
+    scoreHistory: scoreHistoryRes, revalidation: revalidationRes, announcements: announcementsRes,
+    seen: seenRes, portfolioVersions: portfolioVersionsRes,
+  };
+  const sections = Object.fromEntries(Object.entries(sectionEntries).map(([key, result]) =>
+    [key, (() => { const state = readState<unknown>(result, `DASHBOARD_${key.toUpperCase()}`); return { status: state.status, ...(state.status === "error" ? { code: state.code } : {}) }; })()]));
 
   const seenSet = new Set((seenRes.data ?? []).map((d) => d.announcement_id));
   const announcements = (announcementsRes.data ?? []).map((a) => ({
@@ -115,7 +132,9 @@ export default async function DashboardPage() {
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-6 space-y-4">
-          <AccessStatusCard access={access} />
+          {access.standing === null ? <ReadError label="وضعیت دسترسی" code="DASHBOARD_ACCESS" /> : <AccessStatusCard access={access} />}
+          {holdingSnapshot.ready ? <HoldingsSummary valuation={valuePositions(holdingSnapshot.holdings?.positions ?? [], prices.data ?? [], new Date())} version={holdingSnapshot.holdings?.version ?? null} pricesFailed={prices.status === "error"} /> : <ReadError label="دارایی‌های نسخه‌دار" code="PORTFOLIO_READ" />}
+          <Link href="/dashboard/consultation" className="btn btn-outline min-h-11">پروندهٔ مشاوره و اقدام بعدی</Link>
           {/* بستنِ حلقه: از داشبورد به میزِ بازار. طرفِ دیگرِ همین مسیر در
               `/market` و `/symbol/[symbol]` است. */}
           <Link
@@ -140,10 +159,11 @@ export default async function DashboardPage() {
           </Link>
         </div>
         <DashboardClient
+          sections={sections}
           userId={user.id}
           userEmail={user.email ?? ""}
           userName={profileRes.data?.full_name ?? "سرمایه‌گذار"}
-          userRole={profileRes.data?.role ?? "user"}
+          userRole={profileRes.error ? "user" : profileRes.data?.role ?? "user"}
           assessment={assessmentRes.data ?? null}
           portfolio={portfolioRes.data ?? null}
           holdings={holdingsRes.data ?? []}

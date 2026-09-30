@@ -15,21 +15,8 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { toPersianDigits } from "@/lib/format";
 
-interface Webinar {
-  id: string;
-  title: string;
-  description: string | null;
-  starts_at: string;
-  ends_at: string | null;
-  registration_open: boolean;
-  max_capacity: number | null;
-  price_toman: number;
-  platform: string;
-  platform_url: string | null;
-  status: string;
-  /** `null` یعنی شمارش در دسترس نبود — نه اینکه صفر نفر ثبت‌نام کرده‌اند. */
-  registered_count: number | null;
-}
+import { fetchWebinars, type Webinar } from "@/lib/webinars-list";
+import type { ReadState } from "@/lib/read-state";
 
 const PLATFORM_LABELS: Record<string, string> = {
   link: "لینک آنلاین",
@@ -69,7 +56,9 @@ function statusLabel(status: string) {
 
 function WebinarsContent() {
   const searchParams = useSearchParams();
-  const [webinars, setWebinars] = useState<Webinar[]>([]);
+  const [listState, setListState] = useState<ReadState<Webinar[]>>({ status: "empty", data: null });
+  const [attempt, setAttempt] = useState(0);
+  const webinars = listState.data ?? [];
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -85,12 +74,11 @@ function WebinarsContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    fetch("/api/webinars/list")
-      .then((r) => r.json())
-      .then((data) => setWebinars(data.webinars ?? []))
-      .catch(() => setMessage({ type: "error", text: "خطا در بارگذاری وبینارها." }))
-      .finally(() => setLoading(false));
-  }, []);
+    let active = true;
+    setLoading(true);
+    void fetchWebinars().then(state => { if (active) { setListState(state); setLoading(false); } });
+    return () => { active = false; };
+  }, [attempt]);
 
   const handleRegister = async (webinarId: string, priceToman: number) => {
     setRegistering(webinarId);
@@ -108,7 +96,7 @@ function WebinarsContent() {
       if (!res.ok) {
         if (res.status === 401) {
           // کاربر لاگین نیست → هدایت به صفحه ورود
-          window.location.href = `/login?redirect=/webinars`;
+          window.location.href = `/login?next=/webinars`;
           return;
         }
         throw new Error(data.error || "خطا در ثبت‌نام");
@@ -186,7 +174,13 @@ function WebinarsContent() {
           <div className="flex justify-center py-16">
             <Loader2 size={24} className="animate-spin" style={{ color: "var(--text-3)" }} />
           </div>
-        ) : webinars.length === 0 ? (
+        ) : listState.status === "error" ? (
+          <div role="alert" className="card p-6">
+            <p>دریافت وبینارها انجام نشد. لطفاً دوباره تلاش کنید.</p>
+            <p className="text-xs mt-2">کد پیگیری: {listState.code}</p>
+            <button type="button" className="btn btn-outline mt-4 min-h-11" onClick={() => setAttempt(a => a + 1)}>تلاش مجدد</button>
+          </div>
+        ) : listState.status === "empty" ? (
           <div
             className="text-center py-20 rounded-2xl border"
             style={{ background: "var(--surface)", borderColor: "var(--line)" }}

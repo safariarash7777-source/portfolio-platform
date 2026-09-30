@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
@@ -32,6 +32,9 @@ import RiskPlanCard from "@/components/dashboard/RiskPlanCard";
 import PortfolioVersionHistory from "@/components/dashboard/PortfolioVersionHistory";
 import { formatJalali } from "@/lib/format";
 
+import type { SectionStates } from "@/lib/read-state";
+import ReadError from "@/components/dashboard/ReadError";
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const VALIDITY_DAYS = 180;
 
@@ -56,7 +59,7 @@ function computeRevalidation(
   return { isExpired, daysLeft };
 }
 
-interface Assessment {
+export interface Assessment {
   id: string;
   total_score: number;
   risk_category: string;
@@ -70,7 +73,7 @@ interface Allocation {
   note?: string;
 }
 
-interface Portfolio {
+export interface Portfolio {
   id: string;
   allocations: Allocation[];
   notes?: string;
@@ -78,6 +81,7 @@ interface Portfolio {
 }
 
 interface Props {
+  sections: SectionStates;
   userId: string;
   userEmail: string;
   userName: string;
@@ -97,6 +101,7 @@ interface Props {
 
 
 export default function DashboardClient({
+  sections,
   userId,
   userEmail,
   userName,
@@ -113,7 +118,9 @@ export default function DashboardClient({
   announcements,
   portfolioVersions,
 }: Props) {
-  const isAdmin = userRole === "admin";
+  const isAdmin = sections.profile?.status !== "error" && userRole === "admin";
+  const failed = (key: string) => sections[key]?.status === "error";
+  const readError = (key: string, label: string) => failed(key) ? <ReadError label={label} code={sections[key].code} /> : null;
   const { isExpired, daysLeft } = computeRevalidation(
     initialAssessment?.created_at ?? null,
     revalidationExpiredAt
@@ -122,6 +129,9 @@ export default function DashboardClient({
   const [assessment, setAssessment] = useState<Assessment | null>(initialAssessment);
   const [showQuiz, setShowQuiz] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const pendingQuiz = useRef<{ score: number; category: RiskCategory; answers: Record<number, number> } | null>(null);
+  const saveLock = useRef(false);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -132,10 +142,14 @@ export default function DashboardClient({
 
   const handleQuizComplete = useCallback(
     async (score: number, category: RiskCategory, answers: Record<number, number>) => {
+      if (saveLock.current) return;
+      saveLock.current = true;
+      pendingQuiz.current = { score, category, answers };
+      setSaveError("");
       setSaving(true);
       try {
         const supabase = createClient();
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("risk_assessments")
           .insert({
             user_id: userId,
@@ -145,14 +159,16 @@ export default function DashboardClient({
           })
           .select()
           .maybeSingle();
+        if (error || !data) throw new Error("save failed");
         if (data) {
           setAssessment(data);
           setShowQuiz(false);
         }
         router.refresh();
-      } catch (err) {
-        console.error("Failed to save assessment:", err);
+      } catch {
+        setSaveError("ذخیرهٔ ارزیابی انجام نشد. پاسخ‌های شما حفظ شده است؛ دوباره تلاش کنید.");
       } finally {
+        saveLock.current = false;
         setSaving(false);
       }
     },
@@ -170,6 +186,11 @@ export default function DashboardClient({
           بازگشت به داشبورد
         </button>
         <RiskProfileQuiz userId={userId} onComplete={handleQuizComplete} />
+        {saveError && <div role="alert" className="card p-4 mt-4"><p>{saveError}</p>
+          <button type="button" disabled={saving} className="btn btn-outline mt-3" onClick={() => {
+            const pending = pendingQuiz.current;
+            if (pending) void handleQuizComplete(pending.score, pending.category, pending.answers);
+          }}>تلاش مجدد برای ذخیره</button></div>}
         {saving && (
           <p className="text-center text-sm mt-4" style={{ color: "var(--text-3)" }}>
             در حال ذخیره نتایج...
@@ -231,8 +252,11 @@ export default function DashboardClient({
         </div>
       </div>
 
+      {readError("profile", "مشخصات حساب")}
+      {readError("revalidation", "اعتبار ارزیابی")}
+      {readError("portfolio", "سبد هدف")}
       {/* Risk-profile 180-day revalidation banner */}
-      {assessment && (
+      {assessment && !failed("revalidation") && (
         <div className="mb-6">
           <RiskRevalidationBanner
             isExpired={isExpired}
@@ -242,6 +266,8 @@ export default function DashboardClient({
         </div>
       )}
 
+      {readError("announcements", "اطلاعیه‌ها")}
+      {readError("seen", "وضعیت مشاهدهٔ اطلاعیه‌ها")}
       {/* Targeted announcements */}
       {announcements.length > 0 && (
         <div className="mb-6">
@@ -249,10 +275,11 @@ export default function DashboardClient({
         </div>
       )}
 
-      {assessment ? (
+      {failed("assessment") && !assessment ? readError("assessment", "ارزیابی ریسک") : assessment ? (
         <WithAssessment
           assessment={assessment}
           portfolio={portfolio}
+          portfolioError={failed("portfolio")}
           onRetake={() => setShowQuiz(true)}
         />
       ) : (
@@ -266,6 +293,8 @@ export default function DashboardClient({
         </div>
       )}
 
+      {readError("scoreHistory", "تاریخچهٔ ارزیابی")}
+      {readError("portfolioVersions", "تاریخچهٔ سبد هدف")}
       {/* Risk score evolution over time */}
       {scoreHistory.length > 0 && (
         <div className="mt-6">
@@ -282,12 +311,14 @@ export default function DashboardClient({
 
       {/* Telegram connection + channel access (payment) */}
       <div className="mt-8">
-        <AccessCards telegramLinked={telegramLinked} payment={payment} />
+        {readError("telegram", "اتصال تلگرام")}
+        {readError("payment", "سوابق دسترسی")}
+        {!failed("telegram") && !failed("payment") && <AccessCards telegramLinked={telegramLinked} payment={payment} />}
       </div>
 
       {/* Live portfolio overview — KPIs, allocation donut, performance, holdings */}
       <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
-        <LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} />
+        <details><summary className="cursor-pointer py-3">سوابق دارایی و فعالیت‌های قبلی</summary><LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} sections={sections} /></details>
       </div>
     </div>
   );
@@ -387,10 +418,12 @@ function WithAssessment({
   assessment,
   portfolio,
   onRetake,
+  portfolioError,
 }: {
   assessment: Assessment;
   portfolio: Portfolio | null;
   onRetake: () => void;
+  portfolioError: boolean;
 }) {
   const profile = RISK_PROFILES[assessment.risk_category as RiskCategory];
   const riskColor = profile?.accent ?? "var(--navy)";
@@ -486,7 +519,7 @@ function WithAssessment({
       {portfolio ? (
         <AdminPortfolio portfolio={portfolio} />
       ) : (
-        <WaitingPortfolio />
+        !portfolioError && <WaitingPortfolio />
       )}
     </div>
   );
