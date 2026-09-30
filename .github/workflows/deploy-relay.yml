@@ -24,6 +24,11 @@ on:
     types: [completed]
   workflow_dispatch:
     inputs:
+      maintenance_probe:
+        description: "Read-only migration inventory; no relay deployment"
+        type: boolean
+        required: false
+        default: false
       sha:
         description: "SHA برای انتشار (کامل یا حداقل ۷ رقم)"
         required: true
@@ -68,7 +73,7 @@ jobs:
     name: Deploy relay → arsadata
     runs-on: ubuntu-latest
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_dispatch' && inputs.maintenance_probe != true) ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main' &&
        github.event.workflow_run.event == 'push')
@@ -344,3 +349,25 @@ jobs:
           RELEASE: ${{ steps.publish.outputs.release }}
           ACCEPTANCE: ${{ steps.accept.outputs.status }}
         run: node scripts/deploy/relay-gate.mjs report >> "$GITHUB_STEP_SUMMARY"
+
+  migration-inventory:
+    name: Read-only Liara migration inventory
+    if: github.event_name == 'workflow_dispatch' && inputs.maintenance_probe == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Read existing relay and mail configuration privately
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        run: node scripts/deploy/liara-migration-inventory.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: liara-migration-inventory-encrypted
+          path: migration-inventory.p7m
+          retention-days: 1
+          if-no-files-found: error
