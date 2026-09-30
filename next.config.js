@@ -1,3 +1,5 @@
+const fxDashboardOrigin = new URL(process.env.FX_DASHBOARD_URL?.trim() || "https://62-60-191-24.sslip.io/").origin;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -40,6 +42,7 @@ const nextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'self'",
+              `frame-src 'self' ${fxDashboardOrigin}`,
               "object-src 'none'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
