@@ -1,0 +1,16 @@
+{
+  "fixture": true,
+  "label": "دادهٔ مصنوعی برای NEXT06؛ قابل انتشار به عنوان دورهٔ واقعی نیست",
+  "contractVersion": "seasonal.v0.1",
+  "courses": [{"id":"99999999-9999-4999-8999-999999999999","title":"دورهٔ نمونهٔ آزمایشی","summary":"وبینار و منابع همان دوره","cohorts":[{"id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","title":"دورهٔ A ـ نمونه","startsAt":"2026-10-01T05:30:00Z","endsAtExclusive":"2027-01-01T05:30:00Z","timeZone":"Asia/Tehran","policyVersion":"sandbox.calendar.v1","status":"published","registrationAction":{"enabled":false,"reason":"registration_not_enabled"}}]}],
+  "myGrantProjection": {"contractVersion":"seasonal.v0.1","data":[{"grantRef":"55555555-5555-4555-8555-555555555555","cohortId":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","moduleKeys":["webinar","resources","funds"],"startsAt":"2026-10-01T05:30:00Z","endsAtExclusive":"2027-01-01T05:30:00Z","standing":"scheduled","title":"دورهٔ A ـ نمونه","policyVersion":"sandbox.calendar.v1"}]},
+  "moduleDecisions": {
+    "active":{"allowed":true,"reason":"active","authorizedByCohortIds":["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"],"until":"2027-01-01T05:30:00Z","policyVersion":"sandbox.calendar.v1"},
+    "expired":{"allowed":false,"reason":"expired","authorizedByCohortIds":[],"until":null,"policyVersion":null},
+    "revoked":{"allowed":false,"reason":"revoked","authorizedByCohortIds":[],"until":null,"policyVersion":null},
+    "notGranted":{"allowed":false,"reason":"module_not_granted","authorizedByCohortIds":[],"until":null,"policyVersion":null}
+  },
+  "needsRequest":{"baseVersion":0,"submitted":true,"body":{"experience":"new","interests":["صندوق"],"goal":"آشنایی آموزشی با مفهوم NAV","question":"چرا تاریخ NAV اهمیت دارد؟"}},
+  "empty":{"contractVersion":"seasonal.v0.1","data":[]},
+  "unavailable":{"error":"دریافت یا ذخیره انجام نشد؛ دوباره تلاش کنید.","code":"SEASONAL_UNAVAILABLE"}
+}

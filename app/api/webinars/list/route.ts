@@ -42,7 +42,7 @@ async function list() {
   const { data, error } = await supabase
     .from("webinars")
     .select(
-      "id, title, description, starts_at, ends_at, registration_open, max_capacity, price_toman, platform, platform_url, status, created_at"
+      "id, title, description, starts_at, ends_at, registration_open, max_capacity, price_toman, platform, status, created_at"
     )
     .in("status", PUBLIC_STATUSES as unknown as string[])
     .order("starts_at", { ascending: false });
@@ -51,7 +51,7 @@ async function list() {
     return publicFailure();
   }
 
-  const webinars = data ?? [];
+  const webinars = (data ?? []).map(w => ({ ...w, platform_url: null }));
 
   // شمارش فقط وقتی سکرتِ سرور در دسترس است. نبودش فهرست را نمی‌خواباند.
   const admin = tryCreateAdminClient();

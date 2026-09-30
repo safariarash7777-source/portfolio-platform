@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import {activeEntitlementFilter} from "./lib/entitlement-filter";
 import { NextResponse, type NextRequest } from 'next/server'
 import { accountEntryHref } from './components/account/returnPath'
 
@@ -57,9 +58,10 @@ export async function middleware(request: NextRequest) {
           .from('entitlements')
           .select('id')
           .eq('user_id', user.id)
+          .is('cohort_id', null)
           .is('revoked_at', null)
           .lte('starts_at', nowIso)
-          .gt('expires_at', nowIso)
+          .or(activeEntitlementFilter(nowIso))
           .limit(1)
         entitled = !error && !!ents && ents.length > 0
       } catch {

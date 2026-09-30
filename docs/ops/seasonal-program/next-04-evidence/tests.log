@@ -1,0 +1,46 @@
+✔ هیچ ردیفی نیست → never (1.1125ms)
+✔ ردیفِ گذشته → expired، با تاریخِ آخرین انقضا (0.2589ms)
+✔ همهٔ ردیف‌ها لغو شده → revoked، نه expired (0.2012ms)
+✔ ردیفِ لغوشده در کنارِ ردیفِ منقضیِ سالم → expired (0.1579ms)
+✔ تاریخِ شروعِ آینده → scheduled، نه never و نه expired (0.2147ms)
+✔ خطای خواندن → null، نه never (0.1697ms)
+✔ خطا حتی وقتی data آرایهٔ خالی است → باز هم null (0.1683ms)
+▶ NEXT04 real SQL/RLS + loopback HTTP — legacy
+  ✔ permissions and public links: direct reads and forged writes denied (1448.6114ms)
+  ✔ preview contains masked samples; no grant; commit hash conflict and replay (785.4232ms)
+  ✔ correct account claims; unrelated/unverified/forged account cannot; request retry does not extend (1102.8028ms)
+  ✔ needs assessment amendable with optimistic version; private and surplus fields denied (1293.1332ms)
+  ✔ two cohorts coexist, exact resource scope and shared module union; legacy full not widened (2446.4811ms)
+  ✔ late signup ends at original cohort date; duplicate source does not renew or mutate (789.8926ms)
+  ✔ expiry/cancellation and manual revoke never grant; B and personal history survive (2039.5644ms)
+  ✔ manual grant/renew history and idempotency body conflict; consultation independent (835.3622ms)
+  ✔ ambiguous confirmed identity enters review; evidence and chosen canonical account required (1050.0101ms)
+  ✔ SQL cohort policy calendar, draft privacy, replay and audited cancellation (1179.654ms)
+  ✔ legacy phase27 and noncohort webinar remain compatible; scoped lifetime always finite (1261.6527ms)
+✔ NEXT04 real SQL/RLS + loopback HTTP — legacy (17434.2101ms)
+▶ NEXT04 real SQL/RLS + loopback HTTP — explicit
+  ✔ permissions and public links: direct reads and forged writes denied (1388.8142ms)
+  ✔ preview contains masked samples; no grant; commit hash conflict and replay (675.0797ms)
+  ✔ correct account claims; unrelated/unverified/forged account cannot; request retry does not extend (1059.0348ms)
+  ✔ needs assessment amendable with optimistic version; private and surplus fields denied (1264.5107ms)
+  ✔ two cohorts coexist, exact resource scope and shared module union; legacy full not widened (2393.2461ms)
+  ✔ late signup ends at original cohort date; duplicate source does not renew or mutate (795.6489ms)
+  ✔ expiry/cancellation and manual revoke never grant; B and personal history survive (1960.4883ms)
+  ✔ manual grant/renew history and idempotency body conflict; consultation independent (792.6341ms)
+  ✔ ambiguous confirmed identity enters review; evidence and chosen canonical account required (1074.6723ms)
+  ✔ SQL cohort policy calendar, draft privacy, replay and audited cancellation (1165.5876ms)
+  ✔ legacy phase27 and noncohort webinar remain compatible; scoped lifetime always finite (1270.5495ms)
+✔ NEXT04 real SQL/RLS + loopback HTTP — explicit (15584.2051ms)
+✔ three Gregorian months differ from 90 days and clamp month end in Tehran (2.5367ms)
+✔ start inclusive, end exclusive, revoked overrides dates (0.1884ms)
+✔ CSV quoted field, duplicate identity, zone and mapping validation; formula-safe export (1.1552ms)
+✔ needs assessment limits and financial fields are rejected (0.2385ms)
+✔ HTTP uses session identity, returns unknown as 503, unauthenticated as 401 (33.7612ms)
+ℹ tests 34
+ℹ suites 2
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 33346.6534
