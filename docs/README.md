@@ -38,6 +38,7 @@
 | [`PRODUCTION-ARCHITECTURE.md`](./PRODUCTION-ARCHITECTURE.md) | معماریِ تولید | سرویس‌ها، جریانِ داده، مرزها |
 | [`ONBOARDING.md`](./ONBOARDING.md) | ورودِ توسعه‌دهنده | دستورها، محیط، دام‌های شناخته‌شده |
 | [`ops/PRODUCT-DELIVERY-TASKS.md`](./ops/PRODUCT-DELIVERY-TASKS.md) | پرامپت‌های عملیاتی نسخهٔ اول | DEV-01…07، دامنه، فایل‌ها، وابستگی و آزمون پذیرش؛ تابع Blueprint و DD-030 |
+| [`ops/PERSONAL-BALANCE-SHEET.md`](./ops/PERSONAL-BALANCE-SHEET.md) | قرارداد و پذیرش ترازنامهٔ شخصی | دارایی/بدهی/خالص ثروت روی نسخه و رضایت موجود، phase37، شواهد ساختگی و محدودیت پذیرش؛ DD-031 |
 | [`ops/RELEASE-payment-containment.md`](./ops/RELEASE-payment-containment.md) | بستهٔ انتشارِ مهارِ `create_payment` | ترتیبِ انتشار، اثرِ authorityِ بی‌رکورد، پذیرش، بازگشت |
 | [`RUNBOOK-relay-deploy.md`](./RUNBOOK-relay-deploy.md) | استقرارِ رله + `B-053` | پیش‌پروازِ پرچم‌ها، مسیرِ استقرار، پذیرشِ دو چرخه |
 | [`ops/RELEASE-history-sections.md`](./ops/RELEASE-history-sections.md) | بستهٔ انتشارِ توقفِ نوشتنِ بخش‌های بی‌خواننده | شاهدِ قبل/بعد، مصرف‌کننده‌ها، بازگشت |

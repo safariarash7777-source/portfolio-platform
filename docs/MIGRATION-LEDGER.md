@@ -11,6 +11,11 @@ phase37 بعد از زنجیرهٔ phase32→34→35→36 فقط در `dev07-197
 ## sandbox پذیرش DEV-07 — 2026-09-30
 
 روی DB تازه و مستقل `dev07-1978-local` از تصویر Supabase/PostgreSQL 17.6، بدون restore یا دادهٔ واقعی، پیش‌نیازهای مخزن و زنجیرهٔ **phase32→phase34→phase35→phase36** اجرا شدند: **APPLIED_SANDBOX_ONLY**. Auth/roles از سرویس واقعی‌اند؛ `sql/test/*` bootstrap استفاده نشد. preflight پس از نصب: ۱۴/۱۴ پیش‌نیاز موجود، ۱۱/۱۱ جدول مرتبط RLS و status-only phase36 موجود. فایل‌ها/hash و جزئیات وابستگی در [شاهد sandbox](./ops/DEV07-SANDBOX-1978BF5.md). نقش مشاور فقط با UUID واقعیِ حساب Auth آزمایشی این sandbox ثبت شد؛ رابطه را A باید در محصول اعطا کند. هیچ migration روی DB بازیابی‌شدهٔ Preview لیارا یا Production اجرا نشد؛ NOT_APPLIED تاریخیِ آن محیط‌ها بدون شاهد تازه به APPLIED تبدیل نمی‌شود.
+## phase38 — ترازنامهٔ شخصی (2026-09-30)
+
+`sql/phase38_personal_balance_sheet.sql`؛ scaffold CLI: `20260930153150_personal_balance_sheet.sql`، منتقل به قرارداد phase مخزن. [قرارداد و نصب](./ops/PERSONAL-BALANCE-SHEET.md). staging/Production: **NOT_APPLIED**. ترتیب phase32→34→35→36→37→38؛ پس از بازاجرای پیش‌نیازها، اصلاحات جدید نیز دوباره اعمال شوند.
+
+ستون‌های مالکیت/عنوان/ارزش‌گذاری روی `member_holding_positions`، مقدار nullable فقط برای ارزش اظهارشده، جدول `member_debt_positions` با FK به **همان** `member_holding_versions`. RPC اصلی دارایی با امضای قبلی، RPC بدهی و هستهٔ مشترک با قفل موجود؛ بدهی و دارایی هنگام اصلاح طرف دیگر حفظ می‌شوند. خواندن مستقیم owner-only، مشاور با helper رضایت موجود و RPC آخرین/نسخهٔ انتخابی. تریگر/ACL/RLS و retry legacy در دو پروفایل PostgreSQL مصنوعی، شامل نصب دوباره، آزموده شدند. هیچ دفتر نسخه یا رضایت موازی نیست؛ تاریخچه بازنویسی نشد. بازگشت بدون حذف داده؛ محدودیت برنامهٔ قدیمی برای مقدار null/بدهی در سند قرارداد آمده است.
 
 ## رفع بازبینی PR #168 — 2026-09-30
 

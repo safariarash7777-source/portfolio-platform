@@ -11,6 +11,8 @@
 
 /** قیمت بدونِ منبع، زمان و **واحد** وجود ندارد — این نوع اجازهٔ ساختنش را نمی‌دهد. */
 export interface PricePoint {
+  status?: "valid" | "estimated";
+  basis?: "total";
   /** تومان، به ازای **یک** واحدِ `unit`. */
   toman: number;
   /** از کجا آمده — «رله»، «کدال»… هرگز خالی و هرگز «نامشخص». */
@@ -32,10 +34,17 @@ export interface HoldingPosition {
   symbol: string | null;
   manualLabel: string | null;
   assetClass: string;
-  qty: number;
+  qty: number | null;
   unit: string;
   costBasis: number | null;
   asOf: string;
+  title?: string | null;
+  ownershipPct?: number;
+  valuationMode?: "market" | "declared" | "unpriced";
+  declaredValue?: number | null;
+  valuationSource?: string | null;
+  valuationAsOf?: string | null;
+  valuationStatus?: "valid" | "estimated" | "missing";
 }
 
 export interface HoldingVersion {

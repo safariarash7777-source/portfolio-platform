@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, Save, AlertCircle, CheckCircle2, History, Info } from "lucide-react";
 import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
 import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
+import { normalisePosition } from "@/lib/portfolio/financialInput";
 
 /**
  * یک ردیفِ فرم.
@@ -27,6 +28,14 @@ interface Row {
   /** بهای تمام‌شده — رشتهٔ خالی یعنی ثبت‌نشده، نه صفر. */
   costBasis: string;
   asOf: string;
+  title: string;
+  ownershipPct: string;
+  valuationMode: "market" | "declared" | "unpriced";
+  declaredValue: string;
+  currency: "IRT" | "IRR";
+  valuationSource: string;
+  valuationAsOf: string;
+  valuationStatus: "valid" | "estimated";
 }
 
 export interface HistoryItem {
@@ -67,6 +76,7 @@ const blank = (): Row => ({
   unit: "عدد",
   costBasis: "",
   asOf: new Date().toISOString().slice(0, 10),
+  title: "", ownershipPct: "100", valuationMode: "market", declaredValue: "", currency: "IRT", valuationSource: "", valuationAsOf: new Date().toISOString().slice(0, 10), valuationStatus: "estimated",
 });
 
 export default function HoldingsWorkbench({
@@ -105,10 +115,13 @@ export default function HoldingsWorkbench({
           label: p.symbol ?? p.manualLabel ?? p.positionKey,
           kind: p.symbol ? ("symbol" as const) : ("manual" as const),
           assetClass: p.assetClass,
-          qty: String(p.qty),
+          qty: p.qty === null ? "" : String(p.qty),
           unit: p.unit,
           costBasis: p.costBasis === null ? "" : String(p.costBasis),
           asOf: p.asOf,
+          title: p.title ?? "", ownershipPct: String(p.ownershipPct ?? 100), valuationMode: p.valuationMode ?? "market",
+          declaredValue: p.declaredValue === null || p.declaredValue === undefined ? "" : String(p.declaredValue), currency: "IRT",
+          valuationSource: p.valuationSource ?? "", valuationAsOf: p.valuationAsOf ?? p.asOf, valuationStatus: p.valuationStatus === "valid" ? "valid" : "estimated",
         }));
 
   // ⚠️ فرم از ریزِ همان نسخه‌ای پر می‌شود که باز شده. نسخهٔ قبلی فرم همیشه
@@ -149,10 +162,13 @@ export default function HoldingsWorkbench({
         position_key: key,
         ...(r.kind === "symbol" ? { symbol: label } : { manual_label: label }),
         asset_class: r.assetClass,
-        qty: Number(toLatinDigits(r.qty)),
+        qty: r.qty.trim() === "" ? null : toLatinDigits(r.qty),
         unit: r.unit.trim(),
         ...(costBasis === "" ? {} : { cost_basis: costBasis }),
         as_of: r.asOf,
+        title: r.title, ownership_pct: r.ownershipPct, valuation_mode: r.valuationMode,
+        declared_value: r.declaredValue, currency: r.currency, valuation_source: r.valuationSource,
+        valuation_as_of: r.valuationAsOf, valuation_status: r.valuationStatus,
       };
     });
 
@@ -160,10 +176,7 @@ export default function HoldingsWorkbench({
       setError("نام یا نماد هر قلم را وارد کنید.");
       return;
     }
-    if (positions.some((p) => !Number.isFinite(p.qty) || p.qty <= 0)) {
-      setError("مقدار هر قلم باید عددی بزرگ‌تر از صفر باشد.");
-      return;
-    }
+    try { positions.forEach(normalisePosition); } catch (e) { setError(e instanceof Error ? e.message : "اطلاعات دارایی معتبر نیست."); return; }
     if (new Set(positions.map((p) => p.position_key)).size !== positions.length) {
       setError("یک قلم دوبار وارد شده است.");
       return;
@@ -175,7 +188,7 @@ export default function HoldingsWorkbench({
       const res = await fetch("/api/portfolio/holdings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ positions, client_token: token, base_version: latestVersion }),
+        body: JSON.stringify({ positions, client_token: token, base_version: activeVersion ?? 0 }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "ثبت دارایی انجام نشد.");
@@ -217,12 +230,16 @@ export default function HoldingsWorkbench({
       {/* ثبت */}
       <div className="card-elevated p-6 space-y-4">
         <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
-          ثبت دارایی واقعی
+          ثبت و اصلاح دارایی
         </h3>
+        <p className="text-sm leading-7">مقدار و ارزش اظهارشده، مربوط به کل قلم پیش از سهم مالکیت است. مثلاً دارایی ۱۰۰ میلیون تومانی با مالکیت ۵۰ درصد، ۵۰ میلیون تومان برای شما محاسبه می‌شود. برای ثبت فقط ارزش، روش «ارزش اظهارشده» را انتخاب و مقدار را خالی بگذارید. اصلاح، یک نسخهٔ تازه از دارایی و بدهی با هم می‌سازد.</p>
+        {activeVersion !== null && activeVersion !== latestVersion && <p role="alert">در حال مشاهدهٔ سابقه هستید؛ برای اصلاح، <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
 
         <div className="space-y-3">
           {rows.map((r, i) => (
-            <div key={i} className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
+            <fieldset key={i} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}>
+            <legend className="text-sm font-bold">دارایی {toPersianDigits(i + 1)}</legend>
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
               <div className="md:col-span-2 space-y-1">
                 <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>
                   {r.kind === "symbol" ? "نماد" : "برچسب دستی"}
@@ -233,12 +250,13 @@ export default function HoldingsWorkbench({
                   onChange={(e) => patch(i, { label: e.target.value })}
                   disabled={saving}
                   dir="rtl"
+                  aria-label={r.kind === "symbol" ? "نماد دارایی" : "عنوان دارایی دستی"}
                 />
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>نوع</label>
                 <select className="input" value={r.kind} disabled={saving}
-                  onChange={(e) => patch(i, { kind: e.target.value as Row["kind"] })}>
+                  aria-label="نوع ثبت دارایی" onChange={(e) => patch(i, { kind: e.target.value as Row["kind"], valuationMode: e.target.value === "manual" ? "unpriced" : "market" })}>
                   <option value="symbol">نماد واقعی</option>
                   <option value="manual">دارایی دستی</option>
                 </select>
@@ -246,7 +264,9 @@ export default function HoldingsWorkbench({
               <div className="space-y-1">
                 <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>دسته</label>
                 <select className="input" value={r.assetClass} disabled={saving}
+                  aria-label="دستهٔ دارایی"
                   onChange={(e) => patch(i, { assetClass: e.target.value })}>
+                  {!ASSET_CLASSES.some(c => c === r.assetClass) && <option value={r.assetClass}>{assetLabel(r.assetClass)}</option>}
                   {ASSET_CLASSES.map((c) => (
                     <option key={c} value={c}>{ASSET_LABEL[c]}</option>
                   ))}
@@ -254,14 +274,14 @@ export default function HoldingsWorkbench({
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>مقدار</label>
-                <input className="input" value={r.qty} inputMode="decimal" disabled={saving}
+                <input className="input" value={r.qty} inputMode="decimal" disabled={saving} aria-label="مقدار کل دارایی"
                   onChange={(e) => patch(i, { qty: e.target.value })} />
               </div>
               <div className="flex gap-2">
                 <input className="input" value={r.unit} disabled={saving}
                   aria-label="واحد"
                   onChange={(e) => patch(i, { unit: e.target.value })} />
-                <button type="button" aria-label="حذف قلم" disabled={saving || rows.length === 1}
+                <button type="button" aria-label="حذف قلم از نسخهٔ تازه" disabled={saving}
                   onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}
                   className="px-2 rounded-lg disabled:opacity-40"
                   style={{ border: "1px solid var(--line)", color: "var(--danger)" }}>
@@ -269,6 +289,20 @@ export default function HoldingsWorkbench({
                 </button>
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <label className="space-y-1"><span className="text-xs">عنوان اختیاری دارایی</span><input className="input w-full" value={r.title} disabled={saving} maxLength={300} onChange={e => patch(i, { title: e.target.value })} /></label>
+              <label className="space-y-1"><span className="text-xs">سهم مالکیت شما (درصد)</span><input className="input w-full" inputMode="decimal" value={r.ownershipPct} disabled={saving} onChange={e => patch(i, { ownershipPct: e.target.value })} /></label>
+              <label className="space-y-1"><span className="text-xs">تاریخ ثبت مقدار (میلادی)</span><input type="date" className="input w-full" value={r.asOf} disabled={saving} onChange={e => patch(i, { asOf: e.target.value })} /></label>
+              <label className="space-y-1"><span className="text-xs">روش ارزش‌گذاری</span><select className="input w-full" value={r.valuationMode} disabled={saving} onChange={e => patch(i, { valuationMode: e.target.value as Row["valuationMode"] })}><option value="market">قیمت بازار با منبع و تاریخ</option><option value="declared">ارزش اظهارشدهٔ کل قلم</option><option value="unpriced">قیمت ناموجود؛ قابل ثبت</option></select></label>
+              {r.valuationMode === "declared" && <>
+                <label className="space-y-1"><span className="text-xs">ارزش کل قلم پیش از سهم مالکیت</span><input className="input w-full" inputMode="numeric" value={r.declaredValue} disabled={saving} onChange={e => patch(i, { declaredValue: e.target.value })} /></label>
+                <label className="space-y-1"><span className="text-xs">واحد پول ارزش اظهارشده</span><select className="input w-full" value={r.currency} disabled={saving} onChange={e => patch(i, { currency: e.target.value as Row["currency"] })}><option value="IRT">تومان</option><option value="IRR">ریال (۱۰ ریال = ۱ تومان)</option></select></label>
+                <label className="space-y-1"><span className="text-xs">منبع ارزش‌گذاری</span><input className="input w-full" value={r.valuationSource} disabled={saving} onChange={e => patch(i, { valuationSource: e.target.value })} /></label>
+                <label className="space-y-1"><span className="text-xs">تاریخ ارزش‌گذاری (میلادی)</span><input type="date" className="input w-full" value={r.valuationAsOf} disabled={saving} onChange={e => patch(i, { valuationAsOf: e.target.value })} /></label>
+                <label className="space-y-1"><span className="text-xs">وضعیت ارزش اظهارشده</span><select className="input w-full" value={r.valuationStatus} disabled={saving} onChange={e => patch(i, { valuationStatus: e.target.value as Row["valuationStatus"] })}><option value="estimated">تخمینی</option><option value="valid">معتبر طبق منبع ثبت‌شده</option></select></label>
+              </>}
+            </div>
+            </fieldset>
           ))}
         </div>
 
@@ -278,18 +312,18 @@ export default function HoldingsWorkbench({
         </button>
 
         {error && (
-          <div className="flex items-center gap-2 text-sm" style={{ color: "var(--danger)" }}>
+          <div role="alert" className="flex items-center gap-2 text-sm" style={{ color: "var(--danger)" }}>
             <AlertCircle size={15} /> {error}
           </div>
         )}
         {saved && (
-          <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
+          <div role="status" className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
             style={{ background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.25)", color: "var(--success)" }}>
             <CheckCircle2 size={15} /> {saved}
           </div>
         )}
 
-        <button type="button" onClick={submit} disabled={saving} className="btn btn-gold">
+        <button type="button" onClick={submit} disabled={saving || activeVersion !== null && activeVersion !== latestVersion} className="btn btn-gold">
           <Save size={16} />
           {saving ? "در حال ذخیره..." : "ذخیرهٔ نسخهٔ تازه"}
         </button>
@@ -299,7 +333,7 @@ export default function HoldingsWorkbench({
       {history.length > 0 && (
         <div className="card-elevated p-6">
           <h3 className="flex items-center gap-2 font-display font-bold text-lg mb-3" style={{ color: "var(--navy-deep)" }}>
-            <History size={16} /> نسخه‌های ثبت‌شده
+            <History size={16} /> نسخه‌های تصویر مالی (دارایی و بدهی)
           </h3>
           <div className="space-y-2">
             {history.map((h) => (
@@ -354,7 +388,7 @@ export default function HoldingsWorkbench({
                       {assetLabel(p.assetClass)}
                     </td>
                     <td className="py-2" style={{ color: "var(--text-2)" }}>
-                      {toPersianDigits(p.qty)} {p.unit}
+                      {p.qty === null ? "فقط ارزش اظهارشده" : `${toPersianDigits(p.qty)} ${p.unit}`}
                     </td>
                     <td className="py-2" style={{ color: "var(--text-3)" }}>
                       {formatJalali(p.asOf)}
