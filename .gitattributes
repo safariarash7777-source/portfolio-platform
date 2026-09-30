@@ -1,0 +1,2 @@
+# Keep timestamp migration hashes reproducible across Windows and CI checkouts.
+supabase/migrations/*.sql text eol=lf

@@ -1,0 +1,39 @@
+{
+  "buttons": [
+    {
+      "height": 44,
+      "text": "ذخیرهٔ پیش‌نویس",
+      "width": 308
+    },
+    {
+      "height": 44,
+      "text": "اعتبارسنجی و پیش‌نمایش",
+      "width": 192.4375
+    },
+    {
+      "height": 44,
+      "text": "اعطای وبینار و منابع",
+      "width": 160.03125
+    },
+    {
+      "height": 44,
+      "text": "لغو کل دوره با همین دلیل",
+      "width": 194.421875
+    },
+    {
+      "height": 44,
+      "text": "ثبت بررسی مستقل هویت",
+      "width": 192.09375
+    }
+  ],
+  "clientWidth": 390,
+  "scrollWidth": 390,
+  "tables": [
+    {
+      "containerWidth": 308,
+      "scrollWidth": 680,
+      "tableWidth": 680
+    }
+  ],
+  "viewport": 390
+}

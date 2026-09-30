@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import { globSync } from "node:fs";
 
-const files = globSync("sql/**/*.sql").sort();
+const files = [...globSync("sql/**/*.sql"), ...globSync("supabase/migrations/*.sql")].sort();
 
 /** دستوراتی که در یک migrationِ ردیابی‌شده نباید بی‌سروصدا ظاهر شوند. */
 const DESTRUCTIVE = [
