@@ -180,7 +180,7 @@ export default function MarketTreemap({
           </button>
         </div>
         <p className="text-xs" style={{ color: "var(--text-3)" }}>
-          {toPersianDigits(data.length)} نماد بزرگ‌تر بر اساس {sizeMode === "value" ? "ارزش معاملات امروز" : "ارزش بازار"} — رنگ: درصد تغییر پایانی
+          {toPersianDigits(data.length)} نماد بزرگ‌تر بر اساس {sizeMode === "value" ? "ارزش معاملات ثبت‌شده" : "ارزش بازار"} — رنگ: درصد تغییر پایانی
         </p>
       </div>
 

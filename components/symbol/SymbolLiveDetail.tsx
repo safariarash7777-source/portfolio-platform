@@ -15,6 +15,7 @@ const fmtNum = (v: number): string =>
 type Raw = Record<string, unknown>;
 
 const num = (v: unknown): number | null => {
+  if (v == null || v === "" || typeof v === "boolean") return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
@@ -70,7 +71,7 @@ export default function SymbolLiveDetail({
           setData(j.data);
           // دادهٔ چرخشی قدیمی‌تر از ۱۵ دقیقه ← برچسب «آخرین اسنپ‌شات» (صادقانه)
           const at = typeof j.at === "number" ? j.at : null;
-          setStale(Boolean(j.stale) || (at !== null && Date.now() - at > 15 * 60 * 1000));
+          setStale(Boolean(j.stale) || at === null || Date.now() - at > 15 * 60 * 1000 || at > Date.now() + 120_000);
           setState("ok");
         } else setState("unavailable");
       })
@@ -83,7 +84,7 @@ export default function SymbolLiveDetail({
 
   if (state === "loading") {
     return (
-      <div className="card p-6 text-sm text-muted-foreground">در حال دریافت دادهٔ زندهٔ نماد…</div>
+      <div className="card p-6 text-sm text-muted-foreground">در حال دریافت دادهٔ تابلوی نماد…</div>
     );
   }
   if (state === "notInRotation") {
@@ -91,7 +92,7 @@ export default function SymbolLiveDetail({
       <div className="card p-6 text-sm text-muted-foreground">
         {sections === "assembly"
           ? "اطلاعات مجامع این نماد هنوز در چرخهٔ به‌روزرسانی نیست. پوشش به نمادهای پرمعاملهٔ بازار محدود است و به‌تدریج گسترش می‌یابد."
-          : "دادهٔ زندهٔ این نماد هنوز در چرخهٔ به‌روزرسانی نیست. پوشش به نمادهای پرمعاملهٔ بازار محدود است و به‌تدریج گسترش می‌یابد."}
+          : "دادهٔ تابلوی این نماد هنوز در چرخهٔ به‌روزرسانی نیست. پوشش به نمادهای پرمعاملهٔ بازار محدود است و به‌تدریج گسترش می‌یابد."}
       </div>
     );
   }
@@ -100,7 +101,7 @@ export default function SymbolLiveDetail({
       <div className="card p-6 text-sm text-muted-foreground">
         {sections === "assembly"
           ? "اطلاعات مجامع این نماد در دسترس نیست. این بخش به اتصال رلهٔ داده وابسته است و به‌محض برقراری، همین‌جا نمایش داده می‌شود."
-          : "دادهٔ زندهٔ نماد در دسترس نیست. این بخش به اتصال رلهٔ داده وابسته است و به‌محض برقراری، همین‌جا نمایش داده می‌شود."}
+          : "دادهٔ تابلوی نماد در دسترس نیست. این بخش به اتصال رلهٔ داده وابسته است و به‌محض برقراری، همین‌جا نمایش داده می‌شود."}
       </div>
     );
   }
@@ -157,7 +158,7 @@ export default function SymbolLiveDetail({
     <div className="space-y-4">
       {(stale || updated) && (
         <p className="text-xs text-muted-foreground">
-          {stale ? "آخرین اسنپ‌شات موجود (خارج از ساعات بازار)" : "دادهٔ زنده"}
+          {stale ? "آخرین اسنپ‌شات موجود؛ تازگی یا زمان منبع تأیید نشده" : "دادهٔ تابلو"}
           {updated ? ` — به‌روزرسانی: ${updated}` : ""}
         </p>
       )}
@@ -240,7 +241,7 @@ export default function SymbolLiveDetail({
         </div>
 
         <div className="card p-4">
-          <h3 className="text-sm font-bold">جریان حقیقی/حقوقی امروز</h3>
+          <h3 className="text-sm font-bold">جریان حقیقی/حقوقی ثبت‌شده</h3>
           {hasFlow ? (
             <div className="mt-3 space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
@@ -292,7 +293,7 @@ export default function SymbolLiveDetail({
               </div>
             </div>
           ) : (
-            <p className="mt-3 text-xs text-muted-foreground">دادهٔ جریان امروز در دسترس نیست.</p>
+            <p className="mt-3 text-xs text-muted-foreground">دادهٔ جریان در دسترس نیست.</p>
           )}
         </div>
       </div>

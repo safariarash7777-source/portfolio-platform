@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/market",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8767/market",
+    "fixture": true,
+    "observedUTC": "2026-09-30T19:58:04.0056401Z",
+    "containsTradeValue560BillionToman": true,
+    "containsMarketCap700_5Hemt": false,
+    "notProductionEvidence": true
+  },
+  {
+    "path": "/market/funds",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8767/market/funds",
+    "fixture": true,
+    "observedUTC": "2026-09-30T19:58:04.0056401Z",
+    "containsTradeValue560BillionToman": true,
+    "containsMarketCap700_5Hemt": true,
+    "notProductionEvidence": true
+  },
+  {
+    "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:8767/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+    "fixture": true,
+    "observedUTC": "2026-09-30T19:58:04.0056401Z",
+    "containsTradeValue560BillionToman": true,
+    "containsMarketCap700_5Hemt": true,
+    "notProductionEvidence": true
+  },
+  {
+    "path": "/dashboard/market/funds",
+    "status": 200,
+    "finalUrl": "http://localhost:8767/login?next=%2Fdashboard%2Fmarket%2Ffunds",
+    "fixture": true,
+    "observedUTC": "2026-09-30T19:58:04.0056401Z",
+    "containsTradeValue560BillionToman": false,
+    "containsMarketCap700_5Hemt": false,
+    "notProductionEvidence": true
+  }
+]

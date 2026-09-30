@@ -119,7 +119,7 @@ test("نگاشتِ ردیف دست نخورده: زیرنماد، حق‌تقد�
 // ── سیم‌کشی ──────────────────────────────────────────────────────────────
 // رله روی لیارا اجرا می‌شود نه اینجا، پس اتصالِ `server.mjs` ساختاری سنجیده می‌شود.
 
-const SERVER = readFileSync(new URL("./server.mjs", import.meta.url), "utf8");
+const SERVER = readFileSync(new URL("./server.mjs", import.meta.url), "utf8").replace(/\r\n/g, "\n");
 const pushDailyHistory = SERVER.slice(
   SERVER.indexOf("async function pushDailyHistory("),
   SERVER.indexOf("\n}\n", SERVER.indexOf("async function pushDailyHistory(")),

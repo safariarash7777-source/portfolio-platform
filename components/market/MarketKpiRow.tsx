@@ -1,3 +1,7 @@
+import Link from "next/link";
+import { marketCardContract } from "@/lib/core/marketCards";
+import type { MarketProvenance } from "@/lib/market-quality";
+import { formatJalali } from "@/lib/format";
 /**
  * نوارِ سنجه‌های سرصفحه — ردیفِ دومِ نمای کلان.
  *
@@ -24,7 +28,8 @@ function renderValue(m: HeadlineMetric): string {
     : `${toPersianDigits(Math.round(m.value).toLocaleString("en-US")).replace(/,/g, "٬")} تومان`;
 }
 
-function MetricCard({ m }: { m: HeadlineMetric }) {
+function MetricCard({ m, provenance }: { m: HeadlineMetric; provenance: MarketProvenance }) {
+  const contract = marketCardContract(m, provenance);
   const has = m.value != null;
   const chg = m.changePercent;
   const hasChg = typeof chg === "number" && isFinite(chg);
@@ -76,16 +81,22 @@ function MetricCard({ m }: { m: HeadlineMetric }) {
           </>
         ) : null}
       </p>
+      <details className="text-xs leading-6" style={{ color: "var(--text-2)" }}>
+        <summary className="min-h-11 cursor-pointer py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy-ink)]">اعتبار و جزئیات</summary>
+        <p>{contract.question}</p>
+        <p>زمان معتبر: {contract.validAt == null ? "نامشخص" : formatJalali(contract.validAt)}{contract.quality === "stale" ? " · کهنه" : ""}</p>
+        <Link className="inline-flex min-h-11 items-center underline" href={contract.detailHref}>مشاهدهٔ جزئیات</Link>
+      </details>
     </div>
   );
 }
 
-export default function MarketKpiRow({ metrics }: { metrics: readonly HeadlineMetric[] }) {
+export default function MarketKpiRow({ metrics, provenance }: { metrics: readonly HeadlineMetric[]; provenance: MarketProvenance }) {
   return (
     <section aria-label="سنجه‌های اصلی بازار">
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-6">
         {metrics.map((m) => (
-          <MetricCard key={m.key} m={m} />
+          <MetricCard key={m.key} m={m} provenance={provenance} />
         ))}
       </div>
     </section>
