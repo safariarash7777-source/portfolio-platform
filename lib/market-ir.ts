@@ -196,7 +196,7 @@ function asRows(v: unknown): IrRow[] {
     }));
 }
 
-function asStockRows(v: unknown): IrStockRow[] {
+export function asStockRows(v: unknown): IrStockRow[] {
   if (!Array.isArray(v)) return [];
   return v
     .filter(
@@ -217,17 +217,17 @@ function asStockRows(v: unknown): IrStockRow[] {
       ...(typeof r.type === "string" && r.type ? { type: r.type } : {}),
       closingPrice: typeof r.closingPrice === "number" ? r.closingPrice : undefined,
       closingChangePercent: typeof r.closingChangePercent === "number" ? r.closingChangePercent : null,
-      volume: typeof r.volume === "number" ? r.volume : 0,
-      value: typeof r.value === "number" ? r.value : 0,
+      volume: typeof r.volume === "number" && isFinite(r.volume) && r.volume >= 0 ? r.volume : undefined,
+      value: typeof r.value === "number" && isFinite(r.value) && r.value >= 0 ? r.value : undefined,
       marketValue: typeof r.marketValue === "number" ? r.marketValue : null,
       industry: typeof r.industry === "string" ? r.industry : null,
       industryId: typeof r.industryId === "number" ? r.industryId : null,
       eps: typeof r.eps === "number" ? r.eps : null,
       pe: typeof r.pe === "number" ? r.pe : null,
-      buyI: typeof r.buyI === "number" ? r.buyI : 0,
-      buyN: typeof r.buyN === "number" ? r.buyN : 0,
-      sellI: typeof r.sellI === "number" ? r.sellI : 0,
-      sellN: typeof r.sellN === "number" ? r.sellN : 0,
+      buyI: typeof r.buyI === "number" && isFinite(r.buyI) && r.buyI >= 0 ? r.buyI : undefined,
+      buyN: typeof r.buyN === "number" && isFinite(r.buyN) && r.buyN >= 0 ? r.buyN : undefined,
+      sellI: typeof r.sellI === "number" && isFinite(r.sellI) && r.sellI >= 0 ? r.sellI : undefined,
+      sellN: typeof r.sellN === "number" && isFinite(r.sellN) && r.sellN >= 0 ? r.sellN : undefined,
       nav: typeof r.nav === "number" && isFinite(r.nav) && r.nav > 0 ? r.nav : null,
       navIssue:
         typeof r.navIssue === "number" && isFinite(r.navIssue) && r.navIssue > 0 ? r.navIssue : null,

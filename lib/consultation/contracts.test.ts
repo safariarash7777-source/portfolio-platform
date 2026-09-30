@@ -10,7 +10,8 @@ test("Persian base versions and dates normalize before validation",()=>{
   assert.throws(()=>consultationCommand({action:"task",relationshipId:id,actionKey:id,baseVersion:1,status:"open",title:"اقدام",sessionId:id,responsibleId:id,dueOn:"2026-02-31"}));
 });
 test("private service errors are translated to stable Persian responses",()=>{
-  for(const code of ["42501","40001","PGRST202"]) assert.ok(!JSON.stringify(consultationFailure({code})).includes("SELECT"));
+  for(const code of ["42501","PT409","PGRST202"]) assert.ok(!JSON.stringify(consultationFailure({code})).includes("SELECT"));
+  assert.equal(consultationFailure({code:"PT409"}).status,409);
   assert.equal(consultationFailure({code:"40001"}).status,409);
 });
 test("session HTTP contract requires an explicit zone and a real calendar date",()=>{

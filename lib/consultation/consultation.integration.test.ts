@@ -44,14 +44,14 @@ for(const profile of ["legacy","explicit"]){
       file(db,"sql/test/portfolio_precondition.sql");
       // Intentionally no phase20/22: reference portfolio support is optional.
       file(db,"sql/phase32_member_holdings.sql");file(db,"sql/phase34_research_workbook_versions.sql");file(db,"sql/phase35_consultation.sql");
-      file(db,"sql/phase36_consultation_review_fixes.sql");
+      file(db,"sql/phase36_consultation_review_fixes.sql");file(db,"sql/phase37_nonretryable_version_conflicts.sql");
       sql(db,`INSERT INTO auth.users(id) VALUES('${A}'),('${B}'),('${ADVISOR}'),('${ADMIN}'); INSERT INTO public.profiles(id,role) VALUES('${A}','user'),('${B}','user'),('${ADVISOR}','admin'),('${ADMIN}','admin'); INSERT INTO public.consultation_advisors(user_id,display_name) VALUES('${ADVISOR}','آرش · نمونهٔ آزمایشی');`);
     });
     after(()=>{sql("postgres",`DROP DATABASE IF EXISTS ${db}`);});
     test("migration order works without research engine tables and reruns preserve RLS",()=>{
       assert.equal(sql(db,"SELECT to_regclass('public.intel_reference_versions') IS NULL"),"t");
       file(db,"sql/phase32_member_holdings.sql");file(db,"sql/phase34_research_workbook_versions.sql");file(db,"sql/phase35_consultation.sql");
-      file(db,"sql/phase36_consultation_review_fixes.sql");
+      file(db,"sql/phase36_consultation_review_fixes.sql");file(db,"sql/phase37_nonretryable_version_conflicts.sql");
       assert.equal(sql(db,"SELECT count(*) FROM pg_class WHERE relname LIKE 'consultation_%' AND relkind='r' AND relrowsecurity"),"7");
     });
     test("A explicitly grants only their own relationship; repeated grant is stable",()=>{
@@ -73,6 +73,12 @@ for(const profile of ["legacy","explicit"]){
       assert.equal(as(db,ADVISOR,`SELECT count(*) FROM public.consultation_holding_versions('${relation}')`),"2");
       assert.match(denied(db,B,`SELECT * FROM public.consultation_holding_versions('${relation}')`),/forbidden/);
     });
+    test("stale holdings is a nonretryable HTTP conflict and creates no version",()=>{
+      const pos='[{"position_key":"p","symbol":"فملی","asset_class":"equity_ir","qty":99,"unit":"سهم","as_of":"2026-09-30"}]';
+      const before=as(db,A,"SELECT count(*) FROM public.member_holding_versions");
+      assert.match(denied(db,A,`SELECT * FROM public.record_member_holdings('${pos}',NULL,'stale-holding',0)`),/PT409:.*stale holdings/);
+      assert.equal(as(db,A,"SELECT count(*) FROM public.member_holding_versions"),before);
+    });
     const body=(summary:string)=>JSON.stringify({occurs_at:"2026-09-30T10:00:00+03:30",topic:"جلسهٔ نمونهٔ آزمایشی",goal:"هدف آزمایشی",client_summary:summary,private_note:"PRIVATE_TEST_NOTE",holding_version_id:holding});
     test("private notes and unpubished summaries never reach A, B or an unrelated admin",()=>{
       v1=as(db,ADVISOR,`SELECT public.save_consultation_session('${relation}','${KEY}',0,'${body("خلاصهٔ نسخهٔ اول")}')`);
@@ -87,7 +93,7 @@ for(const profile of ["legacy","explicit"]){
       assert.equal(as(db,A,`SELECT client_summary FROM public.consultation_sessions WHERE id='${v1}'`),"خلاصهٔ نسخهٔ اول");
       v2=as(db,ADVISOR,`SELECT public.save_consultation_session('${relation}','${KEY}',1,'${body("خلاصهٔ نسخهٔ دوم")}')`);
       assert.equal(as(db,A,"SELECT count(*) FROM public.consultation_sessions"),"1");
-      assert.match(denied(db,ADVISOR,`SELECT public.publish_consultation_session('${v1}')`),/stale/);
+      assert.match(denied(db,ADVISOR,`SELECT public.publish_consultation_session('${v1}')`),/PT409:.*stale/);
       assert.match(denied(db,ADVISOR,`SELECT public.save_consultation_session('${relation}','${KEY}',1,'${body("تعارض")}')`),/stale/);
       assert.equal(as(db,ADVISOR,`SELECT client_summary FROM public.consultation_sessions WHERE id='${v1}'`),"خلاصهٔ نسخهٔ اول");
       assert.equal(as(db,B,"SELECT count(*) FROM public.consultation_sessions"),"0");
@@ -123,14 +129,14 @@ for(const profile of ["legacy","explicit"]){
       // Reproduce the actual old RPC, then prove the new migration fixes it in place.
       file(db,"sql/phase35_consultation.sql");
       assert.match(denied(db,ADVISOR,`SELECT public.save_consultation_action('${relation}','${TASK}',2,'{"status":"doing"}')`),/session not published/);
-      file(db,"sql/phase36_consultation_review_fixes.sql");
+      file(db,"sql/phase36_consultation_review_fixes.sql");file(db,"sql/phase37_nonretryable_version_conflicts.sql");
       as(db,ADVISOR,`SELECT public.save_consultation_action('${relation}','${TASK}',2,'{"status":"doing"}')`);
       assert.equal(as(db,ADVISOR,`SELECT ROW(session_id,title,responsible_id,due_on)::text FROM public.consultation_actions WHERE action_key='${TASK}' ORDER BY version DESC LIMIT 1`),prior);
       assert.equal(as(db,ADVISOR,`SELECT status||':'||version FROM public.consultation_actions WHERE action_key='${TASK}' ORDER BY version DESC LIMIT 1`),"doing:3");
       assert.equal(as(db,ADVISOR,`SELECT actor_id FROM public.consultation_actions WHERE action_key='${TASK}' ORDER BY version DESC LIMIT 1`),ADVISOR);
       for(const user of [A,ADVISOR]) assert.match(denied(db,user,`SELECT public.save_consultation_action('${relation}','${TASK}',2,'{"status":"done"}')`),/stale/);
       assert.match(denied(db,ADVISOR,`SELECT public.save_consultation_action('${relation}',gen_random_uuid(),0,'{"status":"done"}')`),/forbidden/);
-      file(db,"sql/phase36_consultation_review_fixes.sql");
+      file(db,"sql/phase36_consultation_review_fixes.sql");file(db,"sql/phase37_nonretryable_version_conflicts.sql");
       assert.equal(as(db,ADVISOR,`SELECT count(*) FROM public.consultation_actions WHERE action_key='${TASK}'`),"3");
     });
     test("HTTP status-only for customer AND advisor creates a version, preserves fields, and rejects stale/unauthorized writes",async()=>{

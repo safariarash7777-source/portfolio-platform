@@ -1,5 +1,13 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## DEV-07 / اصلاح یافتهٔ مستقل (2026-09-30T17:04Z)
+
+`sql/phase37_nonretryable_version_conflicts.sql`: **NOT_APPLIED در زمان ثبت این commit**. پیش‌نیاز و ترتیب: phase32→phase34→phase35→phase36→phase37؛ phase37 بعد از هر اجرای مجدد migrationهای قبلی باید آخر نصب شود. نصب بعدی فقط در sandbox دادهٔ ساختگی مجاز است و شاهد آن در صورت‌جلسهٔ بازآزمایی با SHA/hash/time ثبت می‌شود. وضعیت Production و Preview دارای بکاپ از این سند قابل استنتاج نیست. علت DEV07-F01: تعارض منطقی نسخه نباید serialization_failure قابل retry باشد. rollback عملی این اصلاح، بازاجرای 32/35/36 و بازگشت رفتار قبلیِ معیوب است؛ برای بازگشت برنامه، schema اصلاح‌شده سازگار است و بازنصب قبلی توصیه نمی‌شود.
+
+## sandbox پذیرش DEV-07 — 2026-09-30
+
+روی DB تازه و مستقل `dev07-1978-local` از تصویر Supabase/PostgreSQL 17.6، بدون restore یا دادهٔ واقعی، پیش‌نیازهای مخزن و زنجیرهٔ **phase32→phase34→phase35→phase36** اجرا شدند: **APPLIED_SANDBOX_ONLY**. Auth/roles از سرویس واقعی‌اند؛ `sql/test/*` bootstrap استفاده نشد. preflight پس از نصب: ۱۴/۱۴ پیش‌نیاز موجود، ۱۱/۱۱ جدول مرتبط RLS و status-only phase36 موجود. فایل‌ها/hash و جزئیات وابستگی در [شاهد sandbox](./ops/DEV07-SANDBOX-1978BF5.md). نقش مشاور فقط با UUID واقعیِ حساب Auth آزمایشی این sandbox ثبت شد؛ رابطه را A باید در محصول اعطا کند. هیچ migration روی DB بازیابی‌شدهٔ Preview لیارا یا Production اجرا نشد؛ NOT_APPLIED تاریخیِ آن محیط‌ها بدون شاهد تازه به APPLIED تبدیل نمی‌شود.
+
 ## رفع بازبینی PR #168 — 2026-09-30
 
 `phase36_consultation_review_fixes.sql`: **NOT_APPLIED** در staging/Production این مأموریت؛ فقط در PostgreSQL مصنوعی روی دو پروفایل آزموده شد. وابستگی: phase35 پس از phase32/34. تابع اقدام status-only برای هر دو actor با حفظ مشخصات و نسخهٔ پایه؛ RPC جدید فهرست metadata پژوهش تأییدشده با مجوز رابطه. ترتیب نهایی phase32→34→35→36 است؛ اجرای دوبارهٔ phase35 باید با phase36 دنبال شود. آزمون regression شکست phase35 و موفقیت ارتقا را اثبات می‌کند. [محیط موجود، مانع و دستورکار DEV-07](./ops/DEV07-PR168-REVIEW.md)؛ [preflight فقط‌خواندنی](../sql/staging/dev07_preflight.sql). نصب واقعی در محیط لیارا هنوز اندازه‌گیری نشده است.

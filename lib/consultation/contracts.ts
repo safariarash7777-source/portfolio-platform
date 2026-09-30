@@ -54,7 +54,7 @@ export function consultationCommand(input: unknown): { rpc: string; args: Record
 }
 export function consultationFailure(error: { code?: string } | null) {
   if (error?.code === "42501") return { status: 403, error: "دسترسی به این پرونده مجاز نیست." };
-  if (["40001","23505"].includes(error?.code ?? "")) return { status: 409, error: "نسخهٔ تازه‌تری ثبت شده است؛ تغییرهای شما حفظ شده‌اند. آخرین نسخه را جدا باز کنید و سپس اصلاح کنید." };
+  if (["PT409","40001","23505"].includes(error?.code ?? "")) return { status: 409, error: "نسخهٔ تازه‌تری ثبت شده است؛ تغییرهای شما حفظ شده‌اند. آخرین نسخه را جدا باز کنید و سپس اصلاح کنید." };
   if (["22023","23514","22P02","22007","22008"].includes(error?.code ?? "")) return { status: 422, error: "ورودی یا نسخهٔ پیوندخورده معتبر نیست؛ پژوهش باید تأیید داخلی شده باشد." };
   return { status: 503, error: "دریافت یا ذخیرهٔ پرونده انجام نشد؛ پس از بازیابی سرویس دوباره تلاش کنید." };
 }

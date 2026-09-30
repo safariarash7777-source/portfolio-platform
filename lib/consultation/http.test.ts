@@ -17,7 +17,7 @@ test("HTTP denies absent session before RPC and hides SQL details for conflicts/
   const gateway: ConsultationGateway = { async authenticate() { return { user: null, error: false }; }, async rpc() { throw Error("RPC must not run"); } };
   assert.equal((await postConsultation(request({}), async () => gateway)).status, 401);
   gateway.authenticate = async () => ({ user: { id }, error: false });
-  for (const [code, expected] of [["42501", 403], ["40001", 409], ["PGRST202", 503]] as const) {
+  for (const [code, expected] of [["42501", 403], ["PT409", 409], ["40001", 409], ["PGRST202", 503]] as const) {
     gateway.rpc = async () => ({ data: null, error: { code, message: "PRIVATE SQL payload" } });
     const response = await postConsultation(request({ action: "task", relationshipId: id, actionKey: id, baseVersion: 1, status: "done" }), async () => gateway);
     assert.equal(response.status, expected);

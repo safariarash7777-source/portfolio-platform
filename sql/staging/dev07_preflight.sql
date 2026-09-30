@@ -20,7 +20,11 @@ WHERE n.nspname='public' AND c.relkind='r'
       OR c.relname LIKE 'research_workbook_%') ORDER BY c.relname;
 SELECT p.oid::regprocedure AS function_signature,p.prosecdef,p.proconfig,p.proacl,
  CASE WHEN p.proname='save_consultation_action'
-   THEN strpos(pg_get_functiondef(p.oid),'p_body ?|')>0 ELSE NULL END AS phase36_status_branch
+   THEN strpos(pg_get_functiondef(p.oid),'p_body ?|')>0 ELSE NULL END AS phase36_status_branch,
+ CASE WHEN p.proname IN ('record_member_holdings','save_consultation_session',
+   'publish_consultation_session','save_consultation_action') THEN
+   strpos(pg_get_functiondef(p.oid),'PT409')>0 AND
+   strpos(pg_get_functiondef(p.oid),'40001')=0 ELSE NULL END AS phase37_nonretryable_conflict
 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
 WHERE n.nspname='public' AND p.proname IN ('deny_mutation','record_member_holdings',
  'grant_consultation',
