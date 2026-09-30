@@ -1,0 +1,38 @@
+{
+  "background": "rgb(248, 247, 244)",
+  "buttons": [
+    {
+      "height": 44,
+      "width": 118
+    },
+    {
+      "height": 44,
+      "width": 142.703125
+    },
+    {
+      "height": 44,
+      "width": 316
+    },
+    {
+      "height": 44,
+      "width": 316
+    },
+    {
+      "height": 44,
+      "width": 316
+    }
+  ],
+  "clientWidth": 390,
+  "focus": {
+    "label": "NEXT-08 · آزمایش محلی UI با داده مصنوعی؛ این صفحه به پایگاه داده متصل نیست.حالت ",
+    "outline": "3px",
+    "shadow": "none",
+    "tag": "BODY"
+  },
+  "font": "vazirmatn, \"vazirmatn Fallback\", Vazirmatn, Tahoma, sans-serif",
+  "fontStatus": "loaded",
+  "foreground": "rgb(15, 23, 42)",
+  "scrollWidth": 390,
+  "tables": [],
+  "viewport": 390
+}

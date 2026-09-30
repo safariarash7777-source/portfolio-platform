@@ -1,0 +1,44 @@
+{
+  "background": "rgb(248, 247, 244)",
+  "buttons": [
+    {
+      "height": 71.609375,
+      "width": 465
+    },
+    {
+      "height": 44,
+      "width": 192.4375
+    },
+    {
+      "height": 44,
+      "width": 160.03125
+    },
+    {
+      "height": 44,
+      "width": 194.421875
+    },
+    {
+      "height": 44,
+      "width": 192.09375
+    }
+  ],
+  "clientWidth": 1440,
+  "focus": {
+    "label": "start",
+    "outline": "2px",
+    "shadow": "none",
+    "tag": "INPUT"
+  },
+  "font": "vazirmatn, \"vazirmatn Fallback\", Vazirmatn, Tahoma, sans-serif",
+  "fontStatus": "loaded",
+  "foreground": "rgb(15, 23, 42)",
+  "scrollWidth": 1440,
+  "tables": [
+    {
+      "parentClient": 942,
+      "parentScroll": 942,
+      "width": 942
+    }
+  ],
+  "viewport": 1440
+}
