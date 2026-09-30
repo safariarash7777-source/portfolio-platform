@@ -41,7 +41,7 @@ export default async function TodayMarket({
     <section className="card px-5 py-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="eyebrow">امروز بازار</p>
+          <p className="eyebrow">آخرین وضعیت ثبت‌شده</p>
           <h2 className="mt-1 font-display text-xl font-bold" style={{ color: "var(--heading)" }}>
             چشم‌انداز آماری بازار سهام
           </h2>
@@ -83,7 +83,7 @@ export default async function TodayMarket({
               style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
             >
               <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                نمادهای مثبت امروز
+                نمادهای مثبت ثبت‌شده
               </p>
               <p className="mt-0.5 text-[15px] font-bold" style={{ color: "var(--success)", fontVariantNumeric: "tabular-nums" }}>
                 {toPersianDigits(breadth.upCount)}
@@ -99,7 +99,7 @@ export default async function TodayMarket({
               style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
             >
               <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                نمادهای منفی امروز
+                نمادهای منفی ثبت‌شده
               </p>
               <p className="mt-0.5 text-[15px] font-bold" style={{ color: "var(--danger)", fontVariantNumeric: "tabular-nums" }}>
                 {toPersianDigits(breadth.downCount)}
@@ -115,7 +115,7 @@ export default async function TodayMarket({
               style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
             >
               <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                برآیند پول حقیقی امروز
+                برآیند پول حقیقی ثبت‌شده
               </p>
               {breadth.netFlowToman != null ? (
                 <p
@@ -155,7 +155,7 @@ export default async function TodayMarket({
 
           {breadth.topInflowIndustries.length > 0 ? (
             <p className="mt-2 text-[12.5px] leading-6" style={{ color: "var(--text-2)" }}>
-              بیشترین ورود پول حقیقی امروز به صنایع{" "}
+              بیشترین ورود پول حقیقی ثبت‌شده به صنایع{" "}
               {breadth.topInflowIndustries.map((x, i) => (
                 <span key={x.industry}>
                   {i > 0 ? "، " : ""}

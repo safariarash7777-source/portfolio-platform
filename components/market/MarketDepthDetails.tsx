@@ -198,7 +198,7 @@ export default function MarketDepthDetails({
       {/* برترین‌های امروز */}
       <section className="border-t pt-5" style={{ borderColor: "var(--line)" }}>
         <h3 className="mb-3 font-display text-sm font-bold" style={{ color: "var(--heading)" }}>
-          برترین‌های امروز
+          برترین‌های اسنپ‌شات
         </h3>
         {hasMarket ? (
           <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">

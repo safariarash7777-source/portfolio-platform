@@ -11,7 +11,7 @@ import { periodicReturns, type PeriodicReturns, RETURN_WINDOWS, TOLERANCE_DAYS }
 
 const REVALIDATE_MS = 10 * 60 * 1000;
 let cacheAt = 0;
-let cacheVal: Map<string, PeriodicReturns> | null = null;
+let cacheVal: Map<string, PeriodicReturns & { lastTradeDate: string | null }> | null = null;
 
 function env(): { url: string; anon: string } | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -32,7 +32,7 @@ interface SlimRow {
  * بازده‌های دوره‌ای همهٔ نمادهای دارای داده در ~۱۰۵ روز اخیر.
  * خروجی: Map نماد → PeriodicReturns. نماد بدون داده در Map نیست.
  */
-export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
+export async function getBulkReturns(): Promise<Map<string, PeriodicReturns & { lastTradeDate: string | null }>> {
   if (cacheVal && Date.now() - cacheAt < REVALIDATE_MS) return cacheVal;
   const e = env();
   if (!e) return new Map();
@@ -76,7 +76,7 @@ export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
     if (!prev || r.id > prev.id) m.set(r.trade_date, r);
   }
 
-  const out = new Map<string, PeriodicReturns>();
+  const out = new Map<string, PeriodicReturns & { lastTradeDate: string | null }>();
   for (const [symbol, days] of bySymbol) {
     const hist: HistoryDay[] = [...days.values()]
       .sort((a, b) => a.trade_date.localeCompare(b.trade_date))
@@ -89,7 +89,7 @@ export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
         individual_buy_count: null, individual_sell_count: null,
         legal_buy_value: null, legal_sell_value: null, buyer_power: null,
       }));
-    out.set(symbol, periodicReturns(hist));
+    out.set(symbol, { ...periodicReturns(hist), lastTradeDate: hist.length > 0 ? hist[hist.length - 1].trade_date : null });
   }
 
   cacheAt = Date.now();

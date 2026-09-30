@@ -39,7 +39,7 @@ function CoverageNote({ days, first, last }: { days: number; first: string | nul
     <p className="mt-2 text-[11px] leading-5" style={{ color: "var(--text-3)" }}>
       {`${toPersianDigits(days)} روزِ ثبت‌شده`}
       {first && last ? ` · از ${first} تا ${last}` : ""}
-      {" · ثبتِ پایانِ هر روزِ معاملاتی (درون‌روزی نیست)"}
+      {" · تاریخ آخرین نقطه، مستقل از زمان دریافت بسته است"}
     </p>
   );
 }
@@ -56,9 +56,13 @@ const gregorianLabel = (date: string) => formatJalali(`${date}T00:00:00Z`, false
 export default function FeaturedTrend({
   indexSeries,
   goldUsdSeries,
+  indexState = "ready",
+  goldState = "ready",
 }: {
   indexSeries: IndexSeries[];
   goldUsdSeries: TrendSeries[];
+  indexState?: "ready" | "empty" | "error";
+  goldState?: "ready" | "empty" | "error";
 }) {
   const hasIndex = usable(indexSeries);
   const hasGold = usable(goldUsdSeries);
@@ -69,11 +73,10 @@ export default function FeaturedTrend({
     return (
       <div className="card flex flex-col justify-center px-5 py-10 text-center" style={{ minHeight: 320 }}>
         <p className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>
-          هنوز سری زمانی‌ای برای رسم ثبت نشده
+          {indexState === "error" || goldState === "error" ? "دریافت روندها کامل نشد" : "برای رسم روند، حداقل دو روز ثبت‌شده لازم است"}
         </p>
         <p className="mx-auto mt-2 max-w-md text-xs leading-6" style={{ color: "var(--text-3)" }}>
-          روندِ شاخص و طلا/دلار از ثبتِ پایانِ هر روزِ معاملاتی ساخته می‌شود. تا جمع‌شدنِ حداقل دو
-          روز، نموداری رسم نمی‌شود.
+          {indexState === "error" || goldState === "error" ? "نبود دسترسی به منبع با تاریخچهٔ خالی متفاوت است." : "روند شاخص از ثبت پایان جلسه و طلا/دلار از آخرین نمونهٔ هر روز تهران ساخته می‌شود."}
         </p>
       </div>
     );

@@ -124,10 +124,11 @@ test("tradedCount فقط نمادهای دارای ارزشِ معامله را 
   assert.equal(h.universe, 3);
 });
 
-test("خارج از ساعاتِ بازار دلیلِ متفاوتی از «پوششِ ناکافی» می‌دهد", () => {
+test("نبود معامله علت بسته بودن بازار را ثابت نمی‌کند", () => {
   const h = buildMarketHeadline({ indices: IDX, stocks: [], gold: [], currency: [] });
   const tv = h.metrics.find((m) => m.key === "trade-value")!;
-  assert.match(tv.absentReason!, /ساعات/);
+  assert.match(tv.absentReason!, /ثبت نشده/);
+  assert.doesNotMatch(tv.absentReason!, /ساعات|بسته/);
 });
 
 /* ── ترتیب و یکتایی ──────────────────────────────────────────────────────── */

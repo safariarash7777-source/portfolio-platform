@@ -11,7 +11,7 @@ import {
 } from "lightweight-charts";
 import { useThemeToken, readChartPalette, chartThemeOptions } from "@/lib/useChartTheme";
 import type { TrendSeries } from "@/lib/core/trend";
-import { toPersianDigits } from "@/lib/format";
+import { toPersianDigits, formatJalali, formatToman } from "@/lib/format";
 
 const SERIES_COLOR_KEY: Record<string, "gold" | "navy"> = {
   IR_GOLD_18K: "gold",
@@ -96,9 +96,15 @@ export default function TrendChart({ series }: { series: TrendSeries[] }) {
       </div>
       <div ref={ref} className="mt-3 w-full" style={{ minHeight: 280 }} />
       <p className="mt-2 text-[11px]" style={{ color: "var(--text-3)" }}>
-        قیمت به تومان — یک نقطه به‌ازای هر روز (آخرین نمونهٔ ثبت‌شده). تاریخچه از زمان راه‌اندازی
-        سامانهٔ ثبت (تیر ۱۴۰۵) جمع می‌شود و تا ۱۸۰ روز نگه داشته می‌شود.
+        قیمت به تومان — آخرین نمونهٔ ثبت‌شدهٔ هر روز تهران. بازهٔ درخواست حداکثر ۱۸۰ روز است؛ تعداد روز واقعی در همین نمودار آمده است.
       </p>
+      {current ? <details className="mt-2 text-xs leading-6">
+        <summary className="min-h-11 cursor-pointer py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--navy-ink)]">جدول ده روز آخر؛ {current.faName}</summary>
+        <table className="w-full text-right" aria-label={`جدول روند ${current.faName}`}>
+          <thead><tr><th scope="col">روز نمونه</th><th scope="col">قیمت ثبت‌شده</th></tr></thead>
+          <tbody>{current.points.slice(-10).map(p => <tr key={p.date}><td>{formatJalali(`${p.date}T00:00:00Z`, false)}</td><td>{formatToman(p.price)}</td></tr>)}</tbody>
+        </table>
+      </details> : null}
     </div>
   );
 }

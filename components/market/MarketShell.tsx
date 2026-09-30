@@ -56,7 +56,7 @@ function FreshnessBadge({ fetchedAt }: { fetchedAt: number | null }) {
     >
       {/* رنگ تنها حاملِ معنا نیست: متنِ کنارش همیشه وضعیت را می‌گوید. */}
       <span aria-hidden className="inline-block rounded-full" style={{ width: 6, height: 6, background: tone.dot }} />
-      {f.label}
+      {f.state === "fresh" ? "دریافت بسته در ۳۰ دقیقهٔ اخیر" : f.state === "stale" ? "دریافت بسته قدیمی است" : "زمان دریافت بسته نامشخص"}
     </span>
   );
 }
@@ -88,7 +88,7 @@ export default function MarketShell({
           <div className="flex flex-wrap items-center gap-2">
             {fetchedAt ? (
               <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                {formatJalali(fetchedAt)} · ساعت {formatTehranClock(fetchedAt)} تهران
+                دریافت: {formatJalali(fetchedAt)} · ساعت {formatTehranClock(fetchedAt)} تهران
               </span>
             ) : null}
             {boardState ? (

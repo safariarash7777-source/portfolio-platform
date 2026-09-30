@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { publicationDay } from "@/lib/market-report-date";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +56,7 @@ export async function GET(req: Request) {
     const rows = (await res.json()) as CodalRow[];
     // dedup روی لینک اطلاعیه (جدول append-only است و نسخه‌های #pvN دارد)
     const seen = new Set<string>();
-    const data: Array<{ title: string; kind: string | null; date: string | null; url: string | null }> = [];
+    const data: Array<{ title: string; kind: string | null; date: string | null; periodEnd: string | null; url: string | null }> = [];
     for (const r of rows) {
       if (!r.title) continue;
       const u = cleanUrl(r);
@@ -65,7 +66,8 @@ export async function GET(req: Request) {
       data.push({
         title: r.title,
         kind: r.report_kind,
-        date: r.raw?.date_publish ?? r.raw?.period_end_jalali ?? null,
+        date: publicationDay(r.raw?.date_publish),
+        periodEnd: r.raw?.period_end_jalali ?? r.data?.period_end ?? null,
         url: u,
       });
       if (data.length >= 30) break;
