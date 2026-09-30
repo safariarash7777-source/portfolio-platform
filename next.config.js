@@ -1,4 +1,4 @@
-const fxDashboardOrigin = new URL(process.env.FX_DASHBOARD_URL?.trim() || "https://62-60-191-24.sslip.io/").origin;
+const fxDashboardOrigin = new URL(process.env.FX_DASHBOARD_URL?.trim() || "https://62.60.191.24/").origin;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
