@@ -116,6 +116,8 @@ AdminShell داخلی پیوندهای «دوره‌ها و ثبت‌نام»04�
 
 اجرای دوباره محلی: `NEXT04_MIGRATION` فقط مسیر migration04 sibling را تعیین می‌کند؛ در checkout ترکیبی نیازی به override نیست. سپس `tsx --test --test-concurrency=1 lib/intelligence/publication.test.ts lib/intelligence/publication.integration.test.ts`. Docker transport ثابت این فایل تنها container مصنوعی04 و DBهای next08_publication_legacy/explicit را می‌پذیرد.
 
+اصلاح ثبت CI در 2026-10-01: ممیزی تجمیع نشان داد دو فایل انتشار در npm scripts ثبت نشده‌اند؛ `publication.test.ts` به انتهای `test:core` اضافه شد و `test:publication:db` با `tsx --test --test-concurrency=1 lib/intelligence/publication.integration.test.ts` ثبت شد. [اجرای کامل فرمان core پس از ثبت](./next-08-evidence/core-registration-tests.txt) در همین شاخه: ۱۲۱۶ PASS، صفر FAIL/skip؛ registry نیز هر دو فایل را ثبت‌شده دید. فرمان DB جدید همچنان فقط sandbox مصنوعی با migration04 را اجرا می‌کند؛ wiring مشروط workflow در checkout ترکیبی با هماهنگ‌کننده است و هیچ نصب یا دسترسی Production از این تغییر نتیجه نمی‌شود. این اصلاح فقط package scripts و سند/شاهد است؛ DB و build تکرار نشدند.
+
 صفحه `/qa/next08` فقط development + `NEXT08_QA=1`، با همان Workbench و transport مصنوعی، empty/error و نمونه آماده را نشان می‌دهد. در build production حتی با flag=1، 404 است و auth gate هیچ مسیر admin را دور نمی‌زند. fixture UI شاهد Postgres/عضویت/Auth واقعی نیست. تغییرات دستی بدون AI قابل استفاده‌اند.
 
 ## تصمیم‌ها و کار باقیمانده محیط
