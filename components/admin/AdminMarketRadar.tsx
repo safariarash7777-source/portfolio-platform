@@ -200,6 +200,7 @@ export default function AdminMarketRadar({ rows }: { rows: RadarRow[] }) {
                   <Link href={`/symbol/${encodeURIComponent(r.symbol)}`} style={{ color: "var(--navy-deep)" }}>
                     {r.symbol}
                   </Link>
+                  <Link href={`/admin/research?source=${encodeURIComponent(`/symbol/${r.symbol}`)}`} className="block min-h-[44px] pt-3 text-xs font-normal underline focus-visible:outline focus-visible:outline-2" style={{ color: "var(--text-2)" }}>بررسی با منبع این نماد</Link>
                 </td>
                 {COLS.map((c) => {
                   const v = r[c.key];

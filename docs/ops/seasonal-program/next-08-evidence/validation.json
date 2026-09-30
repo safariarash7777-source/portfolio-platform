@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-09-30T20:27:54.2006500Z",
+  "branch": "codex/next-08-desk-20260930",
+  "base": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+  "node": "24.19.0",
+  "next": "15.5.25",
+  "seasonalMigrationSha256": "509A6A8C17D47E26BD4ADFBE438E02F80B6DA225DA778B0F124825BFE4F9E71B",
+  "publicationMigrationSha256": "C72828B50E66843D594C6BE710F6BA813FB7FF8E7591581F6F4E2C1ECC1F5229",
+  "publicationTests": 26,
+  "reusedTests": 33,
+  "skippedTests": 0,
+  "typecheck": "PASS",
+  "lintCi": "PASS",
+  "build": "PASS",
+  "secretScan": "PASS",
+  "browser": "real Chrome with synthetic transport",
+  "browserDurationMs": 52323,
+  "humanDuration": "UNKNOWN",
+  "actualProductionMutation": false,
+  "actualTelegramSend": false
+}
