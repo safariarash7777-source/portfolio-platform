@@ -4,6 +4,7 @@
 
 import AdminMarketRadar from "@/components/admin/AdminMarketRadar";
 import { getRadarRows } from "@/lib/core/radarData";
+import Link from 'next/link';
 
 export const metadata = {
   title: "رصد بازار — پنل مدیریت",
@@ -30,6 +31,7 @@ export default async function AdminRadarPage() {
           (فقط خواندن). یافته‌های این پنل خوراک ناحیهٔ «صدای مشاور» و کارنامه است.
         </p>
       </header>
+      <nav className="flex flex-wrap gap-3" aria-label="ادامه بررسی"><Link className="btn btn-secondary min-h-11" href="/market/funds">بررسی صندوق‌ها</Link><Link className="btn btn-secondary min-h-11" href="/codal">بررسی کدال</Link><Link className="btn btn-secondary min-h-11" href="/admin/research?source=/codal">ثبت پژوهش با منبع کدال</Link><Link className="btn btn-secondary min-h-11" href="/admin/publications">آماده‌سازی محتوای دوره</Link></nav>
       {rows.length === 0 ? (
         <div
           className="rounded-xl border p-8 text-center text-sm"

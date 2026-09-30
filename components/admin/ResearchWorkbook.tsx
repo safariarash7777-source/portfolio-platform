@@ -23,8 +23,12 @@ async function call(input: string, init?: RequestInit): Promise<{ status: number
   return { status: res.status, body };
 }
 
-export default function ResearchWorkbook() {
-  const [workbook, setWorkbook] = useState(emptyWorkbook);
+export default function ResearchWorkbook({ initialSource, initialWorkbookId }: { initialSource?: string; initialWorkbookId?: string } = {}) {
+  const [workbook, setWorkbook] = useState(() => {
+    const w=emptyWorkbook();
+    if(initialSource){w.evidence[0].sourceUrl=initialSource;w.question='این منبع چه تغییری را نشان می‌دهد و کدام محدودیت نیاز به بررسی دارد؟';}
+    return w;
+  });
   const [dirty, setDirty] = useState(false);
   const [checked, setChecked] = useState(false);
   const [message, setMessage] = useState('');
@@ -46,6 +50,7 @@ export default function ResearchWorkbook() {
     } catch { setServer('error'); }
   }
   useEffect(() => { void refreshList(); }, []);
+  useEffect(() => { if(initialWorkbookId)void openFromServer(initialWorkbookId,null); }, [initialWorkbookId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!dirty) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
@@ -252,6 +257,7 @@ export default function ResearchWorkbook() {
         </div>}
         <p className="text-sm leading-7" style={{ color: 'var(--text-2)' }}>تأیید داخلی کاربرگ، انتشار عمومی نیست و خودکار وارد گردش هوشمندی نمی‌شود.</p>
         <Link href="/admin/intelligence" className="inline-flex min-h-11 items-center underline">گردش هوشمندی</Link>
+        <Link href="/admin/publications" className="inline-flex min-h-11 items-center underline">متن مخاطب و دفتر انتشار</Link>
       </aside>
     </div>
   </div>;

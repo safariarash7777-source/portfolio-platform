@@ -1,0 +1,39 @@
+NEXT04 migration SHA256: 509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b
+▶ NEXT08 PostgreSQL real permissions/publication — legacy
+  ✔ direct writes, nonadmin commands and internal reads are denied under both privilege profiles (4517.2209ms)
+  ✔ draft remains private; unapproved or malformed source and incomplete audience cannot become ready (788.3578ms)
+  ✔ actual HTTP handler over loopback reaches real session RPC; unauthorized and malformed requests stay blocked (433.6636ms)
+  ✔ latest research v2 approval through reused workbook service is required; ready is private; publish exposes only reviewed audience body (2223.3269ms)
+  ✔ cohortA resource grants allow A, deny B/expired/anonymous; admin is independent of course membership (950.8941ms)
+  ✔ unpublished/cancelled course does not expose content or a machine payload despite an active resource grant (1605.8753ms)
+  ✔ withdraw removes direct access and preserves historical versions/events (438.6983ms)
+  ✔ new publication version invalidates old direct URL; idempotency does not permit altered replay (974.0306ms)
+  ✔ public to cohort audience change creates a new version and closes the old public URL (1121.2128ms)
+  ✔ returned approval immediately denies published direct access and stale machine event without deleting private records (696.3162ms)
+  ✔ an approval and return sharing the transaction timestamp resolve to returned, not random UUID order (569.0482ms)
+✔ NEXT08 PostgreSQL real permissions/publication — legacy (16616.6881ms)
+▶ NEXT08 PostgreSQL real permissions/publication — explicit
+  ✔ direct writes, nonadmin commands and internal reads are denied under both privilege profiles (4583.5022ms)
+  ✔ draft remains private; unapproved or malformed source and incomplete audience cannot become ready (785.882ms)
+  ✔ actual HTTP handler over loopback reaches real session RPC; unauthorized and malformed requests stay blocked (379.3205ms)
+  ✔ latest research v2 approval through reused workbook service is required; ready is private; publish exposes only reviewed audience body (2255.2344ms)
+  ✔ cohortA resource grants allow A, deny B/expired/anonymous; admin is independent of course membership (946.8127ms)
+  ✔ unpublished/cancelled course does not expose content or a machine payload despite an active resource grant (1597.0939ms)
+  ✔ withdraw removes direct access and preserves historical versions/events (445.403ms)
+  ✔ new publication version invalidates old direct URL; idempotency does not permit altered replay (889.866ms)
+  ✔ public to cohort audience change creates a new version and closes the old public URL (1028.3259ms)
+  ✔ returned approval immediately denies published direct access and stale machine event without deleting private records (650.7442ms)
+  ✔ an approval and return sharing the transaction timestamp resolve to returned, not random UUID order (560.0468ms)
+✔ NEXT08 PostgreSQL real permissions/publication — explicit (16267.4066ms)
+✔ publication rebuilds allowlist, preserving sources but no private notes or forged author (2.0127ms)
+✔ audience, exact cohort scope, channel and real date boundaries reject contradictory input (0.5144ms)
+✔ ready and publish require separate privacy confirmation and reason; withdraw remains possible (0.312ms)
+✔ direct access denies unapproved, expired grants, other cohorts, draft and withdrawn versions (0.2669ms)
+ℹ tests 26
+ℹ suites 2
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 33223.8748
