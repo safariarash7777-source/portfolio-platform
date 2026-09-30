@@ -12,7 +12,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default function AdminFxPage() {
-  const dashboardUrl = process.env.FX_DASHBOARD_URL?.trim() || "https://62-60-191-24.sslip.io/";
+  const dashboardUrl = process.env.FX_DASHBOARD_URL?.trim() || "https://62.60.191.24/";
   const embedUrl = new URL(dashboardUrl);
   embedUrl.searchParams.set("embed", "true");
 
