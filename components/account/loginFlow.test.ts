@@ -60,6 +60,7 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import { NextRequest } from "next/server";
 import * as returnPaths from "./returnPath";
+import * as entitlementFilters from "../../lib/entitlement-filter";
 
 const localRequire = createRequire(import.meta.url);
 const middlewareModule = { exports: {} as { middleware?: (request: NextRequest) => Promise<Response> } };
@@ -69,7 +70,8 @@ runInNewContext(ts.transpileModule(readFileSync(new URL("../../middleware.ts", i
   exports: middlewareModule.exports,
   require: (name: string) => name === "@supabase/ssr"
     ? { createServerClient: () => ({ auth: { getUser: async () => ({ data: { user: null } }) } }) }
-    : name === "./components/account/returnPath" ? returnPaths : localRequire(name),
+    : name === "./components/account/returnPath" ? returnPaths
+    : name === "./lib/entitlement-filter" ? entitlementFilters : localRequire(name),
   process: { env: {} }, URL,
 });
 
