@@ -1,13 +1,17 @@
 import { toLatinDigits } from "@/lib/format";
+import { isDate } from "./time";
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export interface Relationship { id: string; client_id: string; advisor_id: string; client_label: string; created_at: string }
 export interface Session { id: string; relationship_id: string; session_key: string; version: number; occurs_at: string; topic: string; goal: string; client_summary: string; holding_version_id: string | null; research_version_id: string | null; actor_id: string; created_at: string }
 export interface Action { id: string; relationship_id: string; session_id: string; action_key: string; version: number; title: string; responsible_id: string; due_on: string; status: "open" | "doing" | "done"; actor_id: string; created_at: string }
+export interface ApprovedResearch { id: string; title: string; version: number }
 export interface ConsultationData {
   userId: string; advisors: { user_id: string; display_name: string }[]; relationships: Relationship[];
   selected: Relationship | null; revoked: boolean; sessions: Session[]; notes: { session_id: string; note: string }[];
   publications: { session_id: string; published_at: string }[]; actions: Action[];
   holdings: { id: string; version: number; created_at: string }[];
+  research: ApprovedResearch[];
+  researchUnavailable: boolean;
 }
 export function latestActions(actions: readonly Action[]) {
   const latest = new Map<string, Action>();
@@ -28,8 +32,8 @@ export function consultationCommand(input: unknown): { rpc: string; args: Record
   if (p.action === "revoke") return { rpc: "revoke_consultation", args: { p_relation: id(p.relationshipId) } };
   if (p.action === "publish") return { rpc: "publish_consultation_session", args: { p_session: id(p.sessionId) } };
   if (p.action === "session") {
-    const occursAt = text(p.occursAt,100);
-    if (!Number.isFinite(Date.parse(occursAt)) || !/(Z|[+-]\d{2}:\d{2})$/.test(occursAt)) throw new Error("زمان جلسه با منطقهٔ زمانی لازم است.");
+    const occursAt = toLatinDigits(text(p.occursAt,100));
+    if (!isDate(occursAt.slice(0,10)) || !Number.isFinite(Date.parse(occursAt)) || !/(Z|[+-]\d{2}:\d{2})$/.test(occursAt)) throw new Error("زمان جلسه با منطقهٔ زمانی لازم است.");
     return { rpc: "save_consultation_session", args: { p_relation: id(p.relationshipId), p_session_key: id(p.sessionKey), p_base: base(p.baseVersion), p_body: {
       occurs_at: occursAt, topic: text(p.topic,300), goal: text(p.goal,4000), client_summary: text(p.summary,10000), private_note: text(p.privateNote,10000,true),
       holding_version_id: p.holdingVersionId ? id(p.holdingVersionId) : null, research_version_id: p.researchVersionId ? id(p.researchVersionId) : null,
@@ -41,7 +45,7 @@ export function consultationCommand(input: unknown): { rpc: string; args: Record
     // Clients change only status; DB preserves all other fields from the previous version.
     if (p.title !== undefined) {
       const dueOn = toLatinDigits(text(p.dueOn,10));
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(dueOn) || !Number.isFinite(Date.parse(dueOn)) || new Date(dueOn).toISOString().slice(0,10) !== dueOn) throw new Error("موعد اقدام نامعتبر است.");
+      if (!isDate(dueOn)) throw new Error("موعد اقدام نامعتبر است.");
       Object.assign(body,{ title: text(p.title,2000), session_id: id(p.sessionId), responsible_id: id(p.responsibleId), due_on: dueOn });
     }
     return { rpc: "save_consultation_action", args: { p_relation: id(p.relationshipId), p_action_key: id(p.actionKey), p_base: base(p.baseVersion), p_body: body } };

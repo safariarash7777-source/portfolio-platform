@@ -1,3 +1,4 @@
+const { supabaseConnectSrc } = require("./lib/csp-supabase.js");
 const fxDashboardOrigin = new URL(process.env.FX_DASHBOARD_URL?.trim() || "https://62.60.191.24/").origin;
 
 /** @type {import('next').NextConfig} */
@@ -48,7 +49,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              `connect-src 'self' ${supabaseConnectSrc()}`,
             ].join("; "),
           },
         ],
