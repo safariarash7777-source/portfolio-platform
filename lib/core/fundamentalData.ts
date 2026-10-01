@@ -1,3 +1,4 @@
+import { withDeadline } from "../deadline";
 // دادهٔ سرورِ پرست‌های بنیادی (T2-ب) — ساخت Map های YoY از codal_reports.
 //
 // شکل داده (راستی‌آزمایی‌شده از دیتابیس زنده):
@@ -25,10 +26,10 @@ export async function fetchCodal(reportKind: string) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) throw new PagedReadError("configuration", 0);
-  const result = await readAllPages<CodalRow>({
+  const result = await withDeadline(signal => readAllPages<CodalRow>({
     url, anon, table: "codal_reports", select: "id,captured_at,symbol,data",
-    filters: { report_kind: `eq.${reportKind}` },
-  });
+    filters: { report_kind: `eq.${reportKind}` }, signal,
+  }), 15000);
   if (result.data.some(row => typeof row.captured_at !== "string" || !Number.isFinite(Date.parse(row.captured_at)))) {
     throw new PagedReadError("invalid_capture_time", 0);
   }
@@ -152,4 +153,9 @@ export async function getFundamentalYoY() {
     quarterly: Object.fromEntries(quarterlyYoYFromRows(quarterly.data)),
     coverage: { monthly: monthly.coverage, quarterly: quarterly.coverage },
   };
+}
+/** Independent on-demand kinds; one slow kind never holds the other. */
+export async function getFundamentalKind(kind: "monthly" | "quarterly") {
+  const result = await (kind === "monthly" ? readMonthly() : readQuarterly());
+  return { ...result, data: Object.fromEntries(kind === "monthly" ? monthlyYoYFromRows(result.data) : quarterlyYoYFromRows(result.data)) };
 }

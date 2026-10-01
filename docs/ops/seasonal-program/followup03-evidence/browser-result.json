@@ -1,0 +1,295 @@
+{
+  "environment": "synthetic-production-build-chrome",
+  "checks": [
+    {
+      "case": "full board available without any analytic scan",
+      "failed": false,
+      "overflow": false,
+      "pending": false,
+      "records": [],
+      "requests": [],
+      "rows": 100,
+      "search": "",
+      "stale": false
+    },
+    {
+      "case": "cold middle failure explicit; no infinite loading",
+      "failed": true,
+      "overflow": false,
+      "pending": false,
+      "records": [
+        {
+          "at": null,
+          "kind": "quarterly",
+          "rows": 0,
+          "state": "error",
+          "status": 503
+        }
+      ],
+      "requests": [
+        {
+          "ms": 245.0999999940395,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        }
+      ],
+      "rows": 0,
+      "search": "",
+      "stale": false
+    },
+    {
+      "case": "retry completes all quarterly reports",
+      "failed": false,
+      "overflow": false,
+      "pending": false,
+      "records": [
+        {
+          "at": null,
+          "kind": "quarterly",
+          "rows": 0,
+          "state": "error",
+          "status": 503
+        },
+        {
+          "at": 1790859046104,
+          "kind": "quarterly",
+          "rows": 3638,
+          "state": "complete",
+          "status": 200
+        }
+      ],
+      "requests": [
+        {
+          "ms": 245.0999999940395,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        },
+        {
+          "ms": 345.5,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        }
+      ],
+      "rows": 50,
+      "search": "",
+      "stale": false
+    },
+    {
+      "case": "complete monthly filter",
+      "failed": false,
+      "overflow": false,
+      "pending": false,
+      "records": [
+        {
+          "at": null,
+          "kind": "quarterly",
+          "rows": 0,
+          "state": "error",
+          "status": 503
+        },
+        {
+          "at": 1790859046104,
+          "kind": "quarterly",
+          "rows": 3638,
+          "state": "complete",
+          "status": 200
+        },
+        {
+          "at": 1790859047098,
+          "kind": "monthly",
+          "rows": 5981,
+          "state": "complete",
+          "status": 200
+        }
+      ],
+      "requests": [
+        {
+          "ms": 245.0999999940395,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        },
+        {
+          "ms": 345.5,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        },
+        {
+          "ms": 493.20000000298023,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=monthly"
+        }
+      ],
+      "rows": 50,
+      "search": "",
+      "stale": false
+    },
+    {
+      "case": "complete volume; 29610 rows preserved",
+      "failed": false,
+      "overflow": false,
+      "pending": false,
+      "records": [
+        {
+          "at": null,
+          "kind": "quarterly",
+          "rows": 0,
+          "state": "error",
+          "status": 503
+        },
+        {
+          "at": 1790859046104,
+          "kind": "quarterly",
+          "rows": 3638,
+          "state": "complete",
+          "status": 200
+        },
+        {
+          "at": 1790859047098,
+          "kind": "monthly",
+          "rows": 5981,
+          "state": "complete",
+          "status": 200
+        },
+        {
+          "at": 1790859049130,
+          "kind": "volume",
+          "rows": 29610,
+          "state": "complete",
+          "status": 200
+        }
+      ],
+      "requests": [
+        {
+          "ms": 245.0999999940395,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        },
+        {
+          "ms": 345.5,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        },
+        {
+          "ms": 493.20000000298023,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=monthly"
+        },
+        {
+          "ms": 1777.5999999940395,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=volume"
+        }
+      ],
+      "rows": 100,
+      "search": "",
+      "stale": false
+    },
+    {
+      "case": "390 viewport has no page overflow",
+      "failed": false,
+      "overflow": false,
+      "pending": false,
+      "records": [
+        {
+          "at": null,
+          "kind": "quarterly",
+          "rows": 0,
+          "state": "error",
+          "status": 503
+        },
+        {
+          "at": 1790859046104,
+          "kind": "quarterly",
+          "rows": 3638,
+          "state": "complete",
+          "status": 200
+        },
+        {
+          "at": 1790859047098,
+          "kind": "monthly",
+          "rows": 5981,
+          "state": "complete",
+          "status": 200
+        },
+        {
+          "at": 1790859049130,
+          "kind": "volume",
+          "rows": 29610,
+          "state": "complete",
+          "status": 200
+        }
+      ],
+      "requests": [
+        {
+          "ms": 245.0999999940395,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        },
+        {
+          "ms": 345.5,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=quarterly"
+        },
+        {
+          "ms": 493.20000000298023,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=monthly"
+        },
+        {
+          "ms": 1777.5999999940395,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=volume"
+        }
+      ],
+      "rows": 100,
+      "search": "",
+      "stale": false
+    },
+    {
+      "case": "stale complete reports; original read time retained",
+      "failed": true,
+      "overflow": false,
+      "pending": false,
+      "records": [
+        {
+          "at": 1790859047098,
+          "kind": "monthly",
+          "rows": 5981,
+          "state": "stale",
+          "status": 200
+        }
+      ],
+      "requests": [
+        {
+          "ms": 242.79999999701977,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=monthly"
+        }
+      ],
+      "rows": 50,
+      "search": "",
+      "stale": true
+    },
+    {
+      "case": "hung analytic ends at server deadline; full previous volume retained",
+      "failed": true,
+      "overflow": false,
+      "pending": false,
+      "records": [
+        {
+          "at": 1790859047098,
+          "kind": "monthly",
+          "rows": 5981,
+          "state": "stale",
+          "status": 200
+        },
+        {
+          "at": 1790859049130,
+          "kind": "volume",
+          "rows": 29610,
+          "state": "stale",
+          "status": 200
+        }
+      ],
+      "requests": [
+        {
+          "ms": 242.79999999701977,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=monthly"
+        },
+        {
+          "ms": 15023.70000000298,
+          "url": "http://127.0.0.1:15902/api/data/analytics?kind=volume"
+        }
+      ],
+      "rows": 100,
+      "search": "",
+      "stale": true
+    }
+  ],
+  "status": "PASS"
+}

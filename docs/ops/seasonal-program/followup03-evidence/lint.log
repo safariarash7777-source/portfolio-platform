@@ -1,0 +1,2 @@
+npm notice run portfolio-platform@0.2.0 lint:ci
+npm notice run eslint . --max-warnings=0

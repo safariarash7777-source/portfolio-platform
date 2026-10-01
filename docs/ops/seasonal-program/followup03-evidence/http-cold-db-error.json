@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "cold": true,
+  "status": 200,
+  "ms": 5047.86,
+  "iranNull": true,
+  "cryptoCount": 1,
+  "availability": {
+    "global": {
+      "state": "ready",
+      "sourceAt": 1790858749822,
+      "readAt": 1790858749823
+    },
+    "iran": {
+      "state": "timeout",
+      "sourceAt": null,
+      "readAt": 1790858754756
+    }
+  },
+  "diagError": "AbortError"
+}
