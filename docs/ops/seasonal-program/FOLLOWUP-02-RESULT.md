@@ -1,6 +1,6 @@
 # FOLLOWUP-02-RESULT — خواندن کامل و تازه‌شدن تابلو
 
-تاریخ: 2026-10-01. وضعیت: پیاده‌سازی ایزوله؛ هیچ تغییر Production، migration یا تولیدکنندهٔ BrsApi اجرا نشده است. PR و SHA نهایی پس از ثبت تحویل در HANDOFF همین پوشه درج می‌شود.
+تاریخ: 2026-10-01. وضعیت: پیاده‌سازی ایزوله؛ هیچ تغییر Production، migration یا تولیدکنندهٔ BrsApi اجرا نشده است. تحویل کد: draft [PR182](https://github.com/safariarash7777-source/portfolio-platform/pull/182)، implementation SHA: `e6ed01702e17e21500a5cf45f7507ef83f2dfa7f`. base174 دقیق است. CI مربوط به head جاری در Checks همین PR بررسی شود؛ شواهد محلی این سند جای CI یا پذیرش زنده نیست. ثبت نهایی head/CI در گزارش HANDOFF پروندهٔ محلی این task نگه داشته می‌شود.
 
 ## مبنا و مالکیت
 
@@ -29,7 +29,7 @@ URL/filter/sort و state جدول remount نشده‌اند. last-valid props ح
 
 - 15تست جدید واحد: بیش از1000، cap317، نماد مرزی، retry میانی، شکست پایدار، 4xx، append پس از fence، order/shape/budget، single-flight/cache stale/cold، جفت دوره/اصلاحیه و زنجیرهٔ فصلی، دو cadence مصنوعی و hidden/slow gating.
 - PostgreSQL17.11 + PostgREST14.17 ایزوله، SELECT تحت RLS با cap317: تاریخچه2407ردیف/8صفحه، ن۳۰1208ردیف/4صفحه، ن۱۰1208ردیف/4صفحه؛ count، distinct symbol و digest ID با **SQL همان فیلتر و role** برابر. هیچ رقم مالی واقعی خوانده/ثبت نشد. `followup02-evidence/sql-match.log` شاهد است. اجرای دوباره با SYNTHETIC_READ_DB=1 روی نام/پورت آزمایشی ثبت‌شده انجام شود؛ این تست به DB زنده وصل نمی‌شود.
-- test:core1239/1239 و test:calc106/106 PASS در اجرای ثبت‌شده. typecheck، lint بدونwarning، secret scan748فایل، SQL validator46فایل و build نهایی پس از اصلاح UI PASS. هشدارهای SQL validator مربوط به فایل‌های تاریخی بدون تغییر است؛ migration اجرا نشده.
+- test:core1239/1239 و test:calc106/106 PASS در اجرای ثبت‌شده. typecheck، lint بدونwarning، secret scan749فایل، SQL validator46فایل و build نهایی پس از اصلاح UI PASS. هشدارهای SQL validator مربوط به فایل‌های تاریخی بدون تغییر است؛ migration اجرا نشده.
 - Chrome واقعی headless با agent-browser0.38.1 و Next15.5.25، fixture محلی15886 و app15885، ساعت کنترل‌شده در مرورگر/سرور: stocks1440×1000، دو چرخه stamp جلو‌رونده بدون تغییر قیمت بازار بسته، hidden/resume، DB503 حفظ60ردیف/زمان/URL/search/sort/scroll با هشدار، recovery، maxActive1. `browser-stocks.json` و تصاویر شاهدند.
 - صندوق390×844 PASS: دو چرخهٔ stamp، حفظ دسته طلا/search/sort و کارت، بدون overflow، DB503 با حفظ زمان/URL/اسکرول، و RSC نگه‌داشته‌شده پس از tick عقب‌افتادهٔ دیگر با maxActive1؛ wheel عمدی کاربر به نقطه قبلی برنگشت. browser-funds.json و تصویر کامل شاهدند. آزمون کامل screen reader و Auth واقعی ادعا نشده است.
 - **پذیرش واقعی دو چرخه در محیط Production: BLOCKED/اجرا نشده**. baseline/reset مصرف مشترک BrsApi هنوز مشخص و guard178 مستقر نیست؛ استقرار این PR هم مجاز این تسک نیست. هیچ `/market.json` اجباری یا بک‌فیل upstream برای ساخت شاهد اجرا نشد. شواهد مصنوعی به‌عنوان دادهٔ زنده معرفی نمی‌شوند.
