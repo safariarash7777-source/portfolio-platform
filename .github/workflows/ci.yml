@@ -195,6 +195,15 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: postgres
 
+      - name: BrsApi shared budget — real isolated Postgres
+        run: node --test relay/brsapi-budget.integration.test.mjs
+        env:
+          BRSAPI_BUDGET_TEST_ISOLATED: "1"
+          PGHOST: 127.0.0.1
+          PGPORT: "5433"
+          PGUSER: postgres
+          PGPASSWORD: postgres
+
       # چرا شمردنِ pass لازم است و گرپِ `# skip` کافی نیست:
       #
       # ⚠️ این گارد بلافاصله کارش را کرد. اولین اجرای مشترکِ leads + cron در CI

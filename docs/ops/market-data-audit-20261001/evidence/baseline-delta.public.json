@@ -1,0 +1,248 @@
+[
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "alert_events",
+    "delta": 0
+  },
+  {
+    "backup_rows": 3,
+    "liara_rows": 3,
+    "table": "announcement_deliveries",
+    "delta": 0
+  },
+  {
+    "backup_rows": 8,
+    "liara_rows": 8,
+    "table": "announcements",
+    "delta": 0
+  },
+  {
+    "backup_rows": 243,
+    "liara_rows": 243,
+    "table": "audit_log",
+    "delta": 0
+  },
+  {
+    "backup_rows": 11015,
+    "liara_rows": 11171,
+    "table": "codal_feed",
+    "delta": 156
+  },
+  {
+    "backup_rows": 9439,
+    "liara_rows": 9522,
+    "table": "codal_reports",
+    "delta": 83
+  },
+  {
+    "backup_rows": 1266,
+    "liara_rows": 1266,
+    "table": "content_hub",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "entitlements",
+    "delta": 0
+  },
+  {
+    "backup_rows": 2,
+    "liara_rows": 2,
+    "table": "fx_heavy_analytics",
+    "delta": 0
+  },
+  {
+    "backup_rows": 68,
+    "liara_rows": 69,
+    "table": "fx_rates",
+    "delta": 1
+  },
+  {
+    "backup_rows": 6,
+    "liara_rows": 6,
+    "table": "holdings",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "ime_snapshots",
+    "delta": 0
+  },
+  {
+    "backup_rows": 46,
+    "liara_rows": 47,
+    "table": "index_history",
+    "delta": 1
+  },
+  {
+    "backup_rows": 11236,
+    "liara_rows": 11260,
+    "table": "ir_market_history",
+    "delta": 24
+  },
+  {
+    "backup_rows": 9,
+    "liara_rows": 9,
+    "table": "ir_market_snapshots",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "macro_first_print",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "macro_revisions",
+    "delta": 0
+  },
+  {
+    "backup_rows": 45,
+    "liara_rows": 46,
+    "table": "market_breadth",
+    "delta": 1
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "market_notes",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "payments",
+    "delta": 0
+  },
+  {
+    "backup_rows": 12,
+    "liara_rows": 12,
+    "table": "portfolio_snapshots",
+    "delta": 0
+  },
+  {
+    "backup_rows": 2,
+    "liara_rows": 2,
+    "table": "portfolio_versions",
+    "delta": 0
+  },
+  {
+    "backup_rows": 2,
+    "liara_rows": 2,
+    "table": "portfolios",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "price_alerts",
+    "delta": 0
+  },
+  {
+    "backup_rows": 2,
+    "liara_rows": 2,
+    "table": "profiles",
+    "delta": 0
+  },
+  {
+    "backup_rows": 5,
+    "liara_rows": 5,
+    "table": "risk_assessments",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "risk_revalidations",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "screener_presets",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "signal_drafts",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "signal_outcomes",
+    "delta": 0
+  },
+  {
+    "backup_rows": 1,
+    "liara_rows": 1,
+    "table": "signals",
+    "delta": 0
+  },
+  {
+    "backup_rows": 2118029,
+    "liara_rows": 2119127,
+    "table": "symbol_history",
+    "delta": 1098
+  },
+  {
+    "backup_rows": 2,
+    "liara_rows": 2,
+    "table": "telegram_link_codes",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "telegram_links",
+    "delta": 0
+  },
+  {
+    "backup_rows": 5,
+    "liara_rows": 5,
+    "table": "transactions",
+    "delta": 0
+  },
+  {
+    "backup_rows": 1,
+    "liara_rows": 1,
+    "table": "waitlist",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "watchlist_items",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "webinar_registrations",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "webinars",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "weekly_outlook_results",
+    "delta": 0
+  },
+  {
+    "backup_rows": 0,
+    "liara_rows": 0,
+    "table": "weekly_outlooks",
+    "delta": 0
+  }
+]

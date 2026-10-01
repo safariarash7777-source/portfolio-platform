@@ -542,15 +542,17 @@ t("هیچ ترکیبی از فرایندها از سقفِ سراسری رد ن�
   assert.ok(wire <= 40, `۵ فرایند × ۳۰ درخواست نباید بیش از ۴۰ بار روی سیم برود، رفت ${wire}`);
 });
 
-t("اجارهٔ خرج‌نشده روی خاموشیِ مرتب پس داده می‌شود", async () => {
+t("shutdown burns unused units; repeated release cannot reopen quota", async () => {
   const store = fakeStore({ hard: 100 });
   const { client, budget } = mkPersistent({ store, hard: 100, soft: 100, leaseSize: 20 });
   await client.request({ endpoint: "A.php", params: { i: 1 } });
   const leasedBefore = store.leasedOn(budget.day);
   assert.equal(leasedBefore, 20, "یک بلوکِ کامل اجاره شد");
   const back = await budget.release();
-  assert.equal(back, 19, "۱۹ واحدِ خرج‌نشده پس داده شد");
-  assert.equal(store.leasedOn(budget.day), 1, "فقط همان یکی که واقعاً خرج شد باقی ماند");
+  assert.equal(back, 0);
+  assert.equal(await budget.release(), 0);
+  assert.equal(store.releaseCalls, 0);
+  assert.equal(store.leasedOn(budget.day), 20, "unused units remain allocated");
 });
 
 t("انبارِ خراب بی‌صدا بودجه را باز نمی‌کند — رد می‌شود", async () => {
@@ -563,19 +565,24 @@ t("انبارِ خراب بی‌صدا بودجه را باز نمی‌کند �
   assert.ok(budget.snapshot().store.errors > 0);
 });
 
-t("در خرابیِ انبار فقط critical و فقط تا سقفِ اضطراریِ شمرده‌شده عبور می‌کند", async () => {
+t("DB outage never renews emergency units, even across restarts", async () => {
   const store = fakeStore({ hard: 100 });
   store.fail = true;
   const { client, budget, calls } = mkPersistent({ store, hard: 100, soft: 100, degraded: 3 });
   await assert.rejects(() => client.request({ endpoint: "A.php", budgetClass: "bulk" }),
     (e) => e instanceof BudgetExceededError, "bulk حتی یک واحد هم نمی‌گیرد");
   for (let i = 0; i < 3; i++) {
-    await client.request({ endpoint: "A.php", params: { i }, budgetClass: "critical" });
+    await assert.rejects(() => client.request({ endpoint: "A.php", params: { i }, budgetClass: "critical" }),
+      (e) => e instanceof BudgetExceededError);
+    const restarted = mkPersistent({ store, degraded: 100 });
+    await assert.rejects(() => restarted.client.request({ endpoint: "A.php", budgetClass: "critical" }),
+      (e) => e instanceof BudgetExceededError);
+    assert.equal(restarted.calls.length, 0);
   }
-  await assert.rejects(() => client.request({ endpoint: "A.php", params: { z: 1 }, budgetClass: "critical" }),
-    (e) => e instanceof BudgetExceededError, "بعد از سقفِ اضطراری، critical هم رد می‌شود");
-  assert.equal(calls.length, 3, "دقیقاً همان ۳ واحدِ اضطراری روی سیم رفت");
-  assert.equal(budget.snapshot().store.degradedUsed, 3, "مصرفِ اضطراری شمرده و دیده می‌شود");
+  assert.equal(calls.length, 0);
+  assert.equal(budget.snapshot().store.degradedUsed, 0);
+  assert.equal(budget.snapshot().remaining, null);
+  assert.equal(budget.snapshot().remainingKnown, false);
 });
 
 t("«اجاره ته کشید» با «بودجه تمام شد» یکی شمرده نمی‌شود", async () => {
