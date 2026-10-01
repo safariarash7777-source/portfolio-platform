@@ -1,0 +1,74 @@
+{
+  "environment": "synthetic-local-next15-chrome",
+  "viewport": "1440x1000",
+  "checks": [
+    {
+      "case": "five-minute RSC cycle",
+      "offset": 300100,
+      "active": 0,
+      "maxActive": 1,
+      "received": "دریافت: ۹ مهر ۱۴۰۵ · ساعت ۱۴:۲۸ تهران",
+      "requests": 1,
+      "rows": 60,
+      "scroll": 586,
+      "search": "نمونه",
+      "timers": 2,
+      "url": "http://127.0.0.1:15885/market/stocks?sort=value&dir=asc&q=%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "warning": false
+    },
+    {
+      "case": "five-minute RSC cycle",
+      "offset": 600300,
+      "active": 0,
+      "maxActive": 1,
+      "received": "دریافت: ۹ مهر ۱۴۰۵ · ساعت ۱۴:۳۴ تهران",
+      "requests": 2,
+      "rows": 60,
+      "scroll": 586,
+      "search": "نمونه",
+      "timers": 2,
+      "url": "http://127.0.0.1:15885/market/stocks?sort=value&dir=asc&q=%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "warning": false
+    },
+    {
+      "case": "hidden pause and one overdue resume",
+      "active": 0,
+      "maxActive": 1,
+      "received": "دریافت: ۹ مهر ۱۴۰۵ · ساعت ۱۴:۳۹ تهران",
+      "requests": 3,
+      "rows": 60,
+      "scroll": 586,
+      "search": "نمونه",
+      "timers": 2,
+      "url": "http://127.0.0.1:15885/market/stocks?sort=value&dir=asc&q=%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "warning": false
+    },
+    {
+      "case": "failed DB read preserves data with warning",
+      "active": 0,
+      "maxActive": 1,
+      "received": "دریافت: ۹ مهر ۱۴۰۵ · ساعت ۱۴:۳۹ تهران",
+      "requests": 4,
+      "rows": 60,
+      "scroll": 586,
+      "search": "نمونه",
+      "timers": 2,
+      "url": "http://127.0.0.1:15885/market/stocks?sort=value&dir=asc&q=%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "warning": true
+    },
+    {
+      "case": "recovery",
+      "active": 0,
+      "maxActive": 1,
+      "received": "دریافت: ۹ مهر ۱۴۰۵ · ساعت ۱۴:۴۹ تهران",
+      "requests": 5,
+      "rows": 60,
+      "scroll": 586,
+      "search": "نمونه",
+      "timers": 2,
+      "url": "http://127.0.0.1:15885/market/stocks?sort=value&dir=asc&q=%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "warning": false
+    }
+  ],
+  "status": "PASS"
+}

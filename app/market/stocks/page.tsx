@@ -25,7 +25,7 @@ export default async function StocksPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <MarketShell
+        <MarketShell autoRefresh
           active="stocks"
           title="تابلوی سهام"
           lead="جدول، نقشه و صنایعِ نمادهای بورس و فرابورس از آخرین اسنپ‌شات."

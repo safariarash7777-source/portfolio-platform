@@ -15,13 +15,16 @@
  */
 import Link from "next/link";
 import { MARKET_SECTIONS, type MarketSectionKey, type MarketSearchEntry } from "@/lib/market-nav";
-import { computeFreshness } from "@/lib/market-freshness";
+import { getLastIrDiag } from "@/lib/market-ir";
+import FreshnessBadge from "./MarketFreshnessBadge";
+import MarketAutoRefresh from "./MarketAutoRefresh";
 import { formatJalali, formatTehranClock } from "@/lib/format";
 import MarketSearch from "./MarketSearch";
 
 export interface MarketShellProps {
   /** بخشِ فعال — حالتِ فعالِ ناوبری از همین می‌آید، نه از خواندنِ URL در کلاینت. */
   active: MarketSectionKey;
+  autoRefresh?: boolean;
   title: string;
   /** یک جمله: این صفحه چه چیزی نشان می‌دهد */
   lead?: string;
@@ -35,34 +38,9 @@ export interface MarketShellProps {
   children: React.ReactNode;
 }
 
-function FreshnessBadge({ fetchedAt }: { fetchedAt: number | null }) {
-  const f = computeFreshness({
-    irFetchedAt: fetchedAt,
-    usesIr: true,
-    usesGlobal: false,
-    now: Date.now(),
-  });
-  const tone =
-    f.state === "fresh"
-      ? { dot: "var(--success)", text: "var(--text-2)" }
-      : f.state === "stale"
-        ? { dot: "var(--warning)", text: "var(--warning)" }
-        : { dot: "var(--text-3)", text: "var(--text-3)" };
-
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-      style={{ background: "var(--surface-2)", border: "1px solid var(--line)", color: tone.text }}
-    >
-      {/* رنگ تنها حاملِ معنا نیست: متنِ کنارش همیشه وضعیت را می‌گوید. */}
-      <span aria-hidden className="inline-block rounded-full" style={{ width: 6, height: 6, background: tone.dot }} />
-      {f.state === "fresh" ? "دریافت بسته در ۳۰ دقیقهٔ اخیر" : f.state === "stale" ? "دریافت بسته قدیمی است" : "زمان دریافت بسته نامشخص"}
-    </span>
-  );
-}
-
 export default function MarketShell({
   active,
+  autoRefresh = false,
   title,
   lead,
   fetchedAt,
@@ -71,6 +49,9 @@ export default function MarketShell({
   path,
   children,
 }: MarketShellProps) {
+  const readAt = Date.now();
+  const diag = getLastIrDiag();
+  const readFailed = fetchedAt == null || Boolean(diag?.fromCache && ((diag.status ?? 0) >= 400 || diag.error));
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-5 sm:px-5 md:pt-6">
       {/* ── ردیفِ اول: سربرگِ بازار، زمان و جست‌وجو ───────────────────────── */}
@@ -99,7 +80,7 @@ export default function MarketShell({
                 {boardState}
               </span>
             ) : null}
-            <FreshnessBadge fetchedAt={fetchedAt} />
+            <FreshnessBadge fetchedAt={fetchedAt} initialNow={readAt} />
           </div>
         </div>
 
@@ -157,7 +138,10 @@ export default function MarketShell({
         </ul>
       </nav>
 
-      <div className="mt-5">{children}</div>
+      <div className="mt-5">
+        {autoRefresh ? <MarketAutoRefresh readAt={readAt} readFailed={readFailed} /> : null}
+        {children}
+      </div>
     </div>
   );
 }
