@@ -1,0 +1,70 @@
+▶ NEXT09 scoped link patch + read-only feed185: legacy
+  ✔ existing189 notices gain deterministic eligible cohort; no recipient/job duplication (1156.5665ms)
+  ✔ notice seen and actual version read remain independent; a new version starts unread (1744.108ms)
+  ✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it (113.6682ms)
+  ✔ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links (1070.4647ms)
+  ✔ withdrawn content does not regain a cohort link or mutate either receipt ledger (661.9838ms)
+✖ NEXT09 scoped link patch + read-only feed185: legacy (9473.2115ms)
+▶ NEXT09 scoped link patch + read-only feed185: explicit
+  ✔ existing189 notices gain deterministic eligible cohort; no recipient/job duplication (1038.7068ms)
+  ✔ notice seen and actual version read remain independent; a new version starts unread (1396.218ms)
+  ✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it (103.8567ms)
+  ✔ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links (1027.5849ms)
+  ✔ withdrawn content does not regain a cohort link or mutate either receipt ledger (653.7811ms)
+✖ NEXT09 scoped link patch + read-only feed185: explicit (8813.8146ms)
+ℹ tests 10
+ℹ suites 2
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18601.1264
+
+✖ failing tests:
+
+test at lib\notifications\scope-audit.integration.test.ts:4:3201
+✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it (113.6682ms)
+  Error: Command failed: docker exec -i next09-synthetic-db psql -U postgres -d next09_scope_legacy -X -qAt -v ON_ERROR_STOP=1
+  ERROR:  revoke reason required
+  CONTEXT:  PL/pgSQL function seasonal_private.guard_entitlement_scope() line 9 at RAISE
+
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at sql (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:11:152)
+      at TestContext.<anonymous> (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:56:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    status: 3,
+    signal: null,
+    output: [ null, '', 'ERROR:  revoke reason required\nCONTEXT:  PL/pgSQL function seasonal_private.guard_entitlement_scope() line 9 at RAISE\n' ],
+    pid: 6584,
+    stdout: '',
+    stderr: 'ERROR:  revoke reason required\nCONTEXT:  PL/pgSQL function seasonal_private.guard_entitlement_scope() line 9 at RAISE\n'
+  }
+
+test at lib\notifications\scope-audit.integration.test.ts:4:3201
+✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it (103.8567ms)
+  Error: Command failed: docker exec -i next09-synthetic-db psql -U postgres -d next09_scope_explicit -X -qAt -v ON_ERROR_STOP=1
+  ERROR:  revoke reason required
+  CONTEXT:  PL/pgSQL function seasonal_private.guard_entitlement_scope() line 9 at RAISE
+
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at sql (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:11:152)
+      at TestContext.<anonymous> (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:56:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    status: 3,
+    signal: null,
+    output: [ null, '', 'ERROR:  revoke reason required\nCONTEXT:  PL/pgSQL function seasonal_private.guard_entitlement_scope() line 9 at RAISE\n' ],
+    pid: 13616,
+    stdout: '',
+    stderr: 'ERROR:  revoke reason required\nCONTEXT:  PL/pgSQL function seasonal_private.guard_entitlement_scope() line 9 at RAISE\n'
+  }

@@ -1,0 +1,22 @@
+▶ NEXT09 scoped link patch + read-only feed185: legacy
+  ✔ existing189 notices gain deterministic eligible cohort; no recipient/job duplication (1067.7901ms)
+  ✔ notice seen and actual version read remain independent; a new version starts unread (1458.7372ms)
+  ✔ revoked chosen cohort switches to another valid cohort; other account cannot borrow it (754.6932ms)
+  ✔ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links (1027.3419ms)
+  ✔ withdrawn content does not regain a cohort link or mutate either receipt ledger (664.6012ms)
+✔ NEXT09 scoped link patch + read-only feed185: legacy (9567.1263ms)
+▶ NEXT09 scoped link patch + read-only feed185: explicit
+  ✔ existing189 notices gain deterministic eligible cohort; no recipient/job duplication (1372.1946ms)
+  ✔ notice seen and actual version read remain independent; a new version starts unread (1816.3392ms)
+  ✔ revoked chosen cohort switches to another valid cohort; other account cannot borrow it (884.075ms)
+  ✔ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links (1262.1514ms)
+  ✔ withdrawn content does not regain a cohort link or mutate either receipt ledger (790.0623ms)
+✔ NEXT09 scoped link patch + read-only feed185: explicit (11193.0889ms)
+ℹ tests 10
+ℹ suites 2
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 21117.0912

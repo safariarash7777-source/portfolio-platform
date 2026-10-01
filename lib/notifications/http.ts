@@ -1,10 +1,12 @@
 import {TOKEN,CONTRACT} from './bridge';
-export interface MemberGateway {authenticate():Promise<{user:unknown;error:boolean}>;rpc(name:string,args?:Record<string,unknown>):Promise<{data:unknown;error:{code?:string}|null}>}
+import {notificationSessionStatus} from './session-status';
+export interface MemberGateway {authenticate():Promise<{user:unknown;error:unknown}>;rpc(name:string,args?:Record<string,unknown>):Promise<{data:unknown;error:{code?:string}|null}>}
 export async function memberNotifications(req:Request,connect:()=>Promise<MemberGateway>,feature:boolean):Promise<Response>{
  const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{'cache-control':'private, no-store'}});
  if(!feature)return reply({error:'مرکز اعلان هنوز فعال نشده است.'},503);
  try{
-  const db=await connect();const auth=await db.authenticate();if(auth.error)return reply({error:'بررسی نشست انجام نشد.'},503);if(!auth.user)return reply({error:'ابتدا وارد شوید.'},401);
+  const db=await connect();const auth=await db.authenticate();const sessionStatus=notificationSessionStatus(auth.user,auth.error);
+  if(sessionStatus!==200)return reply({error:sessionStatus===401?'ابتدا وارد شوید.':'بررسی نشست انجام نشد؛ دوباره تلاش کنید.'},sessionStatus);
   let name:string,args:Record<string,unknown>={};
   if(req.method==='GET')name=new URL(req.url).searchParams.get('view')==='connection'?'next09_connection':'next09_notices';
   else{

@@ -1,0 +1,45 @@
+✔ signed bridge binds body/time/contract and rejects altered identity/stale request (6.4534ms)
+✔ content links require approved HTTPS origin and local authenticated target (1.6786ms)
+✔ transport acknowledgement is accepted, sends only fixed generic text with disabled previews (46.2316ms)
+✔ known rate-limit allows bounded retry; reject and ambiguous network never masquerade as accepted (2.7388ms)
+✔ worker rechecks revoked authorization and records cancellation without transport (0.4711ms)
+✔ HTTP identity comes from session and writes reject CSRF/forged user parameters (3.9005ms)
+✔ webhook link refuses groups/forged private identity before RPC or response (0.3879ms)
+✔ NEXT09 matches Auth190 categories: healthy guest (21.6354ms)
+✔ NEXT09 matches Auth190 categories: missing native session (0.5078ms)
+✔ NEXT09 matches Auth190 categories: expired SDK credentials (0.3804ms)
+✔ NEXT09 matches Auth190 categories: rejected SDK credentials (0.3266ms)
+✔ NEXT09 matches Auth190 categories: returned service outage (0.418ms)
+✔ NEXT09 matches Auth190 categories: unknown transport error (0.3421ms)
+✔ NEXT09 matches Auth190 categories: stale user with returned outage (0.3217ms)
+✔ NEXT09 matches Auth190 categories: healthy native user (0.4469ms)
+✔ cohort+version deep link survives authenticated local return path; no read receipt implied (0.7595ms)
+✔ draft channel adapter mock: verified pending join (0.3022ms)
+✔ draft channel adapter mock: forged ingress (0.0846ms)
+✔ draft channel adapter mock: unproven identity (0.1007ms)
+✔ draft channel adapter mock: unlink or changed link epoch (0.0576ms)
+✔ draft channel adapter mock: wrong configured channel/cohort binding (0.0644ms)
+✔ draft channel adapter mock: Auth/ledger outage (0.062ms)
+✔ draft channel adapter mock: expired decision snapshot (0.0569ms)
+✔ draft channel adapter mock: future snapshot (0.0483ms)
+✔ draft channel adapter mock: replayed receipt (0.0466ms)
+✔ draft channel adapter mock: missing admin (0.0497ms)
+✔ draft channel adapter mock: missing invite right (0.0436ms)
+✔ draft channel adapter mock: notification opt-in does not provide channel consent (0.0443ms)
+✔ draft channel adapter mock: expired/revoked canonical entitlement (0.0564ms)
+✔ draft channel adapter mock: unknown member observation (0.0453ms)
+✔ draft channel adapter mock: membership alone does not renew entitlement (0.0457ms)
+✔ draft channel adapter mock: existing eligible member (0.0542ms)
+✔ draft channel adapter mock: no actual join request (0.0522ms)
+✔ draft channel adapter mock: invalid clock (0.0846ms)
+✔ draft channel adapter mock: denied absent member (0.0801ms)
+✔ draft channel adapter mock: denied unknown member (0.0477ms)
+✔ mock port rechecks revocation immediately before approval and records no API acceptance/read (0.7127ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 796.252
