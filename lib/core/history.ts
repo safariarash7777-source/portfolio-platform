@@ -6,6 +6,7 @@
 // (بک‌فیل + رلهٔ روزانه). dedupe: جدیدترین id برای هر trade_date برنده است.
 
 import type { HistoryDay } from "./engine";
+import { createCompleteReader, PagedReadError, readAllPages } from "../supabase/paged-read";
 
 interface HistoryRow extends HistoryDay {
   id: number;
@@ -91,43 +92,22 @@ export async function getSymbolHistory(
   return out;
 }
 
-/** فهرست نمادهایی که در symbol_history داده دارند (برای صفحهٔ فهرست ترمینال). */
-export async function getHistorySymbols(): Promise<string[]> {
-  const key = "__symbols__";
-  const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < REVALIDATE_MS) {
-    return hit.value as unknown as string[];
-  }
+/** Complete 30-day symbol set. Coverage is separate from a genuinely empty set. */
+export const getHistorySymbolsRead = createCompleteReader(async () => {
   const e = env();
-  if (!e) return [];
-  try {
-    // فقط ۳۰ روز اخیر — هر نماد فعال حتماً در این بازه ردیف دارد و حجم پاسخ کوچک می‌ماند
-    const since = new Date(Date.now() - 30 * 24 * 3600 * 1000)
-      .toISOString()
-      .slice(0, 10);
-    const res = await fetch(
-      `${e.url}/rest/v1/symbol_history?select=symbol&trade_date=gte.${since}&limit=10000`,
-      {
-        headers: {
-          apikey: e.anon,
-          Authorization: `Bearer ${e.anon}`,
-        },
-        signal: AbortSignal.timeout(10000),
-        next: { revalidate: 600 },
-      }
-    );
-    if (!res.ok) return [];
-    const rows = (await res.json()) as Array<{ symbol: string }>;
-    const uniq = [...new Set(rows.map((r) => r.symbol))].sort((a, b) =>
-      a.localeCompare(b, "fa")
-    );
-    cache.set(key, { at: Date.now(), value: uniq as unknown as HistoryDay[] });
-    return uniq;
-  } catch {
-    return [];
-  }
-}
+  if (!e) throw new PagedReadError("configuration", 0);
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
+  const result = await readAllPages<{ id: number; symbol: string }>({
+    ...e, table: "symbol_history", select: "id,symbol", filters: { trade_date: `gte.${since}` },
+  });
+  const symbols = [...new Set(result.data.map(row => row.symbol).filter(Boolean))].sort((a, b) => a.localeCompare(b, "fa"));
+  return { data: symbols, coverage: result.coverage };
+}, () => [] as string[], REVALIDATE_MS);
 
+/** Compatibility for callers that only need the completed set. */
+export async function getHistorySymbols(): Promise<string[]> {
+  return (await getHistorySymbolsRead()).data;
+}
 function numOrNull(x: unknown): number | null {
   if (x == null) return null;
   const n = typeof x === "number" ? x : Number(x);

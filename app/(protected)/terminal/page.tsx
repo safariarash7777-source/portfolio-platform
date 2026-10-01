@@ -1,13 +1,14 @@
 // فهرست ترمینال تحلیلگر — نمادهای دارای تاریخچه در symbol_history.
 // چارچوب تحلیلی داخلی؛ هیچ واژهٔ سیگنالی در هیچ خروجی این صفحه نیست.
 import Link from "next/link";
-import { getHistorySymbols } from "@/lib/core/history";
+import ReadCoverageNotice from "@/components/market/ReadCoverageNotice";
+import { getHistorySymbolsRead } from "@/lib/core/history";
 import { toPersianDigits } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function TerminalIndexPage() {
-  const symbols = await getHistorySymbols();
+  const { data: symbols, coverage } = await getHistorySymbolsRead();
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
@@ -43,10 +44,10 @@ export default async function TerminalIndexPage() {
         </p>
       </header>
 
+      <ReadCoverageNotice coverage={coverage} label="فهرست تاریخچه" />
       {symbols.length === 0 ? (
         <div className="card p-6 text-[13px]" style={{ color: "var(--text-3)" }}>
-          هنوز تاریخچه‌ای در پایگاه داده ثبت نشده است. پس از اتمام بک‌فیل، نمادها اینجا ظاهر
-          می‌شوند.
+          {coverage.state === "complete" ? "در بازهٔ ۳۰ روز اخیر تاریخچه‌ای برای نمایش پیدا نشد." : "فهرست کامل تاریخچه فعلاً در دسترس نیست."}
         </div>
       ) : (
         <>

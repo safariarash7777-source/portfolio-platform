@@ -1,4 +1,5 @@
 "use client";
+import { useRetainedBoard } from "./useRetainedBoard";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
@@ -131,7 +132,8 @@ interface Props {
 /** سقفِ ردیفِ جدول پیش از «نمایشِ بیشتر». */
 const ROW_PAGE = 60;
 
-export default function FundsFullBoard({ funds, fetchedAt }: Props) {
+export default function FundsFullBoard(incoming: Props) {
+  const { funds, fetchedAt } = useRetainedBoard(incoming, incoming.fetchedAt != null, (a, b) => a.funds === b.funds && a.fetchedAt === b.fetchedAt);
   // دسته و جست‌وجو در URL می‌نشینند تا برگشت از صفحهٔ صندوق وضعیت را نگه دارد.
   const url = useUrlState();
   const typeFilter = url.get("type", ALL_CATEGORIES);

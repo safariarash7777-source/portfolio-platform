@@ -56,7 +56,7 @@ export default async function FundsPage({
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <MarketShell
+        <MarketShell autoRefresh
           active="funds"
           title="دیده‌بان صندوق‌ها"
           lead="NAV، حباب و بازدهٔ صندوق‌های سرمایه‌گذاری از آخرین اسنپ‌شات."

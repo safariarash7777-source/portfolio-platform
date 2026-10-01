@@ -1,3 +1,4 @@
+import ReadCoverageNotice from "@/components/market/ReadCoverageNotice";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DataExplorer from "@/components/data/DataExplorer";
@@ -27,6 +28,8 @@ export default async function DataBankPage() {
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-7xl px-5 pt-8 pb-16">
+          <ReadCoverageNotice coverage={fundamentalYoY.coverage.monthly} label="گزارش‌های ماهانه" />
+          <ReadCoverageNotice coverage={fundamentalYoY.coverage.quarterly} label="گزارش‌های فصلی" />
           <DataExplorer
             stocks={ir?.stocks ?? []}
             funds={ir?.funds ?? []}

@@ -1,0 +1,14 @@
+npm notice run portfolio-platform@0.2.0 test:market-read:db
+npm notice run tsx --test lib/supabase/paged-read.integration.test.ts
+{"environment":"synthetic-pg-postgrest","table":"symbol_history","filter":"trade_date >= '2026-09-01'","count":2407,"pages":8,"idDigest":"82f88ffac98d70bb6e51838d02c6ff36","distinctSymbols":2407,"sqlMatch":true}
+{"environment":"synthetic-pg-postgrest","table":"codal_reports","filter":"report_kind='ن-۳۰'","count":1208,"pages":4,"idDigest":"a1a567b27423b380c269cb8a2db8721b","distinctSymbols":1208,"sqlMatch":true}
+{"environment":"synthetic-pg-postgrest","table":"codal_reports","filter":"report_kind='ن-۱۰'","count":1208,"pages":4,"idDigest":"af6311c441def28bc720df6558e20612","distinctSymbols":1208,"sqlMatch":true}
+✔ real capped PostgREST under SELECT RLS matches SQL count and ID set for each identical filter (774.8735ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1270.8221
