@@ -1,8 +1,11 @@
 const { supabaseConnectSrc } = require("./lib/csp-supabase.js");
+const { liaraPublicEnv } = require("./lib/liara-public-env.js");
+const publicDatabaseEnv = liaraPublicEnv();
 const fxDashboardOrigin = new URL(process.env.FX_DASHBOARD_URL?.trim() || "https://62.60.191.24/").origin;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: publicDatabaseEnv,
   reactStrictMode: true,
   poweredByHeader: false,
   eslint: {
@@ -49,7 +52,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self' data:",
-              `connect-src 'self' ${supabaseConnectSrc()}`,
+              `connect-src 'self' ${supabaseConnectSrc(publicDatabaseEnv.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)}`,
             ].join("; "),
           },
         ],
