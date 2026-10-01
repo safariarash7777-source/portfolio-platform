@@ -1,0 +1,76 @@
+[
+  {
+    "at": "2026-10-01T09:55:02.630Z",
+    "parent": "a84d06018ed828418e4a7327a100d015a01c3181",
+    "incoming": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+    "conflicts": [
+      "docs/COMMAND-CENTER.md",
+      "package.json"
+    ],
+    "resolutions": [
+      {
+        "path": "docs/COMMAND-CENTER.md",
+        "method": "retain both original status sections; resolved before package virtual-base parsing retry"
+      },
+      {
+        "path": "package.json",
+        "method": "preserve every script and union test:core/test:db paths; identical dependencies/lockfile"
+      }
+    ],
+    "virtualBaseHadConflict": true
+  },
+  {
+    "at": "2026-10-01T09:55:23.241Z",
+    "parent": "683a389ac366bb94c1db63422cbea01d58383623",
+    "incoming": "95cfa3410a97ac0d98cdefcb6671d4cfcb668646",
+    "conflicts": [
+      "package.json"
+    ],
+    "resolutions": [
+      {
+        "path": "package.json",
+        "method": "preserve every script and union test:core/test:db paths; identical dependencies/lockfile"
+      }
+    ]
+  },
+  {
+    "at": "2026-10-01T09:55:54.699Z",
+    "parent": "7b36f05b8d00647dbfec3edd017ea7f860838e56",
+    "incoming": "d69763563ef695b2d16ea2e52be4a4452b0811dc",
+    "conflicts": [
+      "package.json"
+    ],
+    "resolutions": [
+      {
+        "path": "package.json",
+        "method": "preserve every script and union test:core/test:db paths; identical dependencies/lockfile"
+      }
+    ]
+  },
+  {
+    "at": "2026-10-01T09:56:26.488Z",
+    "parent": "4f59d3e714eea4a77cfdc782642d3dcc21fa045b",
+    "incoming": "27e59ad8d85f37da32b6f5346d289afdb73b20e6",
+    "conflicts": [],
+    "resolutions": []
+  },
+  {
+    "at": "2026-10-01T09:57:39.161Z",
+    "parent": "1d409325f01b2b8f247dffb411b1b10f650b88cf",
+    "incoming": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+    "conflicts": [
+      "docs/COMMAND-CENTER.md",
+      "package.json"
+    ],
+    "resolutions": [
+      {
+        "path": "docs/COMMAND-CENTER.md",
+        "method": "retain both source status sections; inherited historical claims retain source SHA"
+      },
+      {
+        "path": "package.json",
+        "method": "preserve every script and union test:core/test:db paths; identical dependencies/lockfile"
+      }
+    ]
+  }
+]

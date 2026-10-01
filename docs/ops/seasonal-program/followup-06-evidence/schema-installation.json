@@ -1,0 +1,303 @@
+{
+  "startedAt": "2026-10-01T10:07:19.595Z",
+  "applicationSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "container": "liara-budget-test-followup06-20261001",
+  "database": "followup06_combined_schema",
+  "environment": "isolated synthetic PostgreSQL 17; test Auth/Storage scaffolds, not real Auth/Storage provider",
+  "productionApplied": false,
+  "steps": [
+    {
+      "path": "sql/test/supabase_bootstrap.sql",
+      "sha256InstalledBytes": "70705b75e96b5154af449d37590c0943d4907bffc0d26f531bf2275cded96d0b",
+      "sha256LF": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/test/profile_explicit_grants.sql",
+      "sha256InstalledBytes": "1e01602612356327be4da4aaad20bfe989b638d29369d76055b6389fcd9b5b6f",
+      "sha256LF": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/test/portfolio_precondition.sql",
+      "sha256InstalledBytes": "efdcc9d0e79a7970984437d7ed8c6dd86c6a3cbd4eb7335e2e4899e7cc9e3345",
+      "sha256LF": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase8_webinars.sql",
+      "sha256InstalledBytes": "e4c3faa90c33c58a430880a6448d0fba3be90e60870bb0bbe6ce299fd7e20ccb",
+      "sha256LF": "ec44f25997eba57ca8dd11193a677644f63b41640920ccd68cf84bd02fea816d",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase11_access_tiers.sql",
+      "sha256InstalledBytes": "2ad50dd68ce1162fdd84ba627b2b2a7b64a1b97d3348d4035d619a23ed77df15",
+      "sha256LF": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase27_member_import.sql",
+      "sha256InstalledBytes": "4e0085064a18b131e92744fc1987668be775e64aa385975094bdc77a0dece2f5",
+      "sha256LF": "69507178be682e1437250292699648555c7e3491b4cad83b18b43019f3667148",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "sha256InstalledBytes": "af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6",
+      "sha256LF": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase34_research_workbook_versions.sql",
+      "sha256InstalledBytes": "4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8",
+      "sha256LF": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase35_consultation.sql",
+      "sha256InstalledBytes": "9d9aa2faf3e6306d2f2992382564207f8b1dbe068f4eb209438597705a44ce7e",
+      "sha256LF": "63388c8b1b125332eedb405b6da9480da1305bbadbeacf4b5263fdd205299ad2",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase36_consultation_review_fixes.sql",
+      "sha256InstalledBytes": "bdf127dcee86c26f3e19961fe8b9710385ca965ec649ee61b33cfc38a53c318a",
+      "sha256LF": "e2ca9fde2c02a0457ef70bec541707bebf198afba26c94f5f7b7e47662c6cbd6",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase37_nonretryable_version_conflicts.sql",
+      "sha256InstalledBytes": "282b8be6c36b77bd9bf70c0dfd94ac3b8bccbd9cc628b75be1244cf5b1dfdf4d",
+      "sha256LF": "3162ca656b9cdacf11a3f0ba0b79724ab162aa08a74f4bc0a04d4aec5ccbb5bd",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase38_personal_balance_sheet.sql",
+      "sha256InstalledBytes": "2f44201b3aec41e489bf5ac6fd71406ea9d358748e199ca24a1161d644a2f5fb",
+      "sha256LF": "3572915cb6c3e1bc98f9ead763318bd6400db0d91691ca1dd771c9cac65de247",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "supabase/migrations/20260930182629_seasonal_course_membership.sql",
+      "sha256InstalledBytes": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+      "sha256LF": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "supabase/migrations/20260930182918_research_publication_queue.sql",
+      "sha256InstalledBytes": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+      "sha256LF": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    },
+    {
+      "path": "sql/phase28_brsapi_budget.sql",
+      "sha256InstalledBytes": "7dd7091774815ede7985135836a13c30b6df7fcc20fc158666a77dc8c0db0cc1",
+      "sha256LF": "490444bf006cadfd5146954f431cafe75e3474baf89465ad4b0efec2b264ab63",
+      "status": "APPLIED_SYNTHETIC_ONLY"
+    }
+  ],
+  "testPrerequisites": "Exact NEXT04 test Auth contact/payments/audit/Storage scaffold; deliberately permissive Storage fixture is not real Storage acceptance",
+  "postgres": "PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+  "publicTables": [
+    {
+      "rls": false,
+      "table": "audit_log"
+    },
+    {
+      "rls": true,
+      "table": "brsapi_budget_days"
+    },
+    {
+      "rls": true,
+      "table": "consultation_actions"
+    },
+    {
+      "rls": true,
+      "table": "consultation_advisors"
+    },
+    {
+      "rls": true,
+      "table": "consultation_private_notes"
+    },
+    {
+      "rls": true,
+      "table": "consultation_publications"
+    },
+    {
+      "rls": true,
+      "table": "consultation_relationships"
+    },
+    {
+      "rls": true,
+      "table": "consultation_revocations"
+    },
+    {
+      "rls": true,
+      "table": "consultation_sessions"
+    },
+    {
+      "rls": true,
+      "table": "course_cohorts"
+    },
+    {
+      "rls": true,
+      "table": "course_resources"
+    },
+    {
+      "rls": true,
+      "table": "courses"
+    },
+    {
+      "rls": true,
+      "table": "entitlements"
+    },
+    {
+      "rls": true,
+      "table": "holdings"
+    },
+    {
+      "rls": true,
+      "table": "member_debt_positions"
+    },
+    {
+      "rls": true,
+      "table": "member_grants"
+    },
+    {
+      "rls": true,
+      "table": "member_holding_positions"
+    },
+    {
+      "rls": true,
+      "table": "member_holding_versions"
+    },
+    {
+      "rls": true,
+      "table": "member_import_batches"
+    },
+    {
+      "rls": true,
+      "table": "member_import_rows"
+    },
+    {
+      "rls": true,
+      "table": "needs_assessment_versions"
+    },
+    {
+      "rls": false,
+      "table": "payments"
+    },
+    {
+      "rls": true,
+      "table": "portfolio_versions"
+    },
+    {
+      "rls": true,
+      "table": "portfolios"
+    },
+    {
+      "rls": true,
+      "table": "profiles"
+    },
+    {
+      "rls": true,
+      "table": "research_publication_commands"
+    },
+    {
+      "rls": true,
+      "table": "research_publication_events"
+    },
+    {
+      "rls": true,
+      "table": "research_publication_versions"
+    },
+    {
+      "rls": true,
+      "table": "research_workbook_reviews"
+    },
+    {
+      "rls": true,
+      "table": "research_workbook_versions"
+    },
+    {
+      "rls": true,
+      "table": "seasonal_events"
+    },
+    {
+      "rls": true,
+      "table": "signals"
+    },
+    {
+      "rls": true,
+      "table": "transactions"
+    },
+    {
+      "rls": true,
+      "table": "webinar_registrations"
+    },
+    {
+      "rls": true,
+      "table": "webinars"
+    }
+  ],
+  "functions": [
+    {
+      "40001": false,
+      "args": "p_day text, p_want integer, p_hard integer",
+      "name": "brsapi_budget_lease",
+      "PT409": false,
+      "securityDefiner": true
+    },
+    {
+      "40001": false,
+      "args": "p_debts jsonb, p_base_version integer, p_client_token text",
+      "name": "record_member_debts",
+      "PT409": false,
+      "securityDefiner": true
+    },
+    {
+      "40001": false,
+      "args": "p_positions jsonb, p_note text, p_client_token text, p_base_version integer",
+      "name": "record_member_holdings",
+      "PT409": false,
+      "securityDefiner": true
+    },
+    {
+      "40001": false,
+      "args": "p_relation uuid, p_action_key uuid, p_base integer, p_body jsonb",
+      "name": "save_consultation_action",
+      "PT409": true,
+      "securityDefiner": true
+    },
+    {
+      "40001": false,
+      "args": "p_relation uuid, p_session_key uuid, p_base integer, p_body jsonb",
+      "name": "save_consultation_session",
+      "PT409": true,
+      "securityDefiner": true
+    },
+    {
+      "40001": false,
+      "args": "p_publication uuid, p_base integer, p_body jsonb, p_key uuid",
+      "name": "save_research_publication",
+      "PT409": true,
+      "securityDefiner": true
+    },
+    {
+      "40001": false,
+      "args": "p_module text, p_cohort uuid",
+      "name": "seasonal_module_access",
+      "PT409": false,
+      "securityDefiner": false
+    }
+  ],
+  "emptyFixtureCounts": {
+    "courses": 0,
+    "authUsers": 0,
+    "holdingVersions": 0,
+    "researchVersions": 0
+  },
+  "status": "PASS_COMBINED_SCHEMA_INSTALLATION_ONLY",
+  "finishedAt": "2026-10-01T10:07:23.998Z"
+}

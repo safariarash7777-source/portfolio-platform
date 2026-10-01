@@ -1,0 +1,585 @@
+{
+  "applicationSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "observedAt": "2026-10-01T10:14:48.998Z",
+  "checks": [
+    {
+      "name": "test-public",
+      "exitCode": 0,
+      "pass": 57,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "e68e76151a5d92b533457ec67fca799b2b29a3c9d70f2ebf95df43d0540c5ed8",
+      "tail": [
+        "✔ invalid JSON, invalid records and network failure remain errors (4.945ms)",
+        "✔ retry after service recovery shows data including unknown count (1.0677ms)",
+        "ℹ tests 57",
+        "ℹ suites 1",
+        "ℹ pass 57",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 2027.5994"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": [
+        ""
+      ]
+    },
+    {
+      "name": "lint",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tail": [
+        ""
+      ]
+    },
+    {
+      "name": "build",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "686c3c614f3ba440eab5456e3b40957b3faf8d71289b2edaa3d362da4b2a871a",
+      "tail": [
+        "  ├ chunks/6552-d905b02e1a7c14d2.js              46.4 kB",
+        "  ├ chunks/d5cb6b3c-9ac1c9e2956f1205.js          54.2 kB",
+        "  └ other shared chunks (total)                  2.03 kB",
+        "",
+        "",
+        "ƒ Middleware                                     89.3 kB",
+        "",
+        "○  (Static)   prerendered as static content",
+        "●  (SSG)      prerendered as static HTML (uses generateStaticParams)",
+        "ƒ  (Dynamic)  server-rendered on demand"
+      ]
+    },
+    {
+      "name": "relay-0",
+      "exitCode": 0,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "7ce380c456239c4c2d951d7f2824879bd9c89991b27e67269803bb1f0f70bf1a",
+      "tail": [
+        "✔ واحد ده برابر، ساعت آینده و تاریخ نامعتبر رد می‌شوند (1.4289ms)",
+        "✔ null مقدار مالی صفر نمی‌شود؛ صفر واقعی حفظ می‌شود (0.6017ms)",
+        "ℹ tests 4",
+        "ℹ suites 0",
+        "ℹ pass 4",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 492.4842"
+      ]
+    },
+    {
+      "name": "relay-1",
+      "exitCode": 0,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "82b0cebfe78934c9be19b7cdbeb9e61484e07f28fe7c9eff501f9cb345814fa9",
+      "tail": [
+        "✔ Supabase bypasses a blocked provider queue; configured provider hosts join it (0.6163ms)",
+        "✔ all production BrsApi producers use the shared transport even when client flag is off (147.0978ms)",
+        "ℹ tests 5",
+        "ℹ suites 0",
+        "ℹ pass 5",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 828.0564"
+      ]
+    },
+    {
+      "name": "relay-2",
+      "exitCode": 0,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "eccc49017681ddd942e68864190db43c377b1619e69827c36f7719aa38ff4a8f",
+      "tail": [
+        "✔ the source-side sub-ticker filter is still applied before symbol_history (27.6486ms)",
+        "✔ nothing in the relay deletes from symbol_history (0.4074ms)",
+        "ℹ tests 6",
+        "ℹ suites 0",
+        "ℹ pass 6",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 236.0184"
+      ]
+    },
+    {
+      "name": "relay-3",
+      "exitCode": 0,
+      "pass": 14,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "1e77eaab1fca118628ab1db687cc3b1ecb5b9cbd3f5a975186e989bf90c09933",
+      "tail": [
+        "✔ server.mjs: نوشتنِ پایانِ روز از planEodHistory و writeEodHistory می‌گذرد (0.5705ms)",
+        "✔ هیچ خوانشِ ساعتی در رله `hour12: false` ندارد (156.6554ms)",
+        "ℹ tests 14",
+        "ℹ suites 0",
+        "ℹ pass 14",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 544.4268"
+      ]
+    },
+    {
+      "name": "relay-4",
+      "exitCode": 0,
+      "pass": 11,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "63683de4fa29d58c2eb8157e1ca5c65ffde11d80aeefa2742116c90ceb05754c",
+      "tail": [
+        "✔ کلیدِ یکتای جعلی واقعاً اعمال می‌شود: درجِ بی ignore-duplicates روی تکراری 409 می‌دهد (1.0956ms)",
+        "✔ server.mjs: نوشتن از writeEodHistory، و چرخهٔ ناقص (بودجه) چیزی نمی‌نویسد (0.5981ms)",
+        "ℹ tests 11",
+        "ℹ suites 0",
+        "ℹ pass 11",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 1811.6213"
+      ]
+    },
+    {
+      "name": "relay-5",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "44fac3347563802411d70a19bbd86cfb52f30b33c112bf3be91f9539faa6e54f",
+      "tail": [
+        "  ✓ DB outage never renews emergency units, even across restarts",
+        "  ✓ «اجاره ته کشید» با «بودجه تمام شد» یکی شمرده نمی‌شود",
+        "  ✓ سقفِ انبار حاکم است — فرایند نمی‌تواند سقفِ سخاوتمندانه‌ترِ خودش را نگه دارد",
+        "  ✓ retry هم از بودجهٔ ماندگار کم می‌کند",
+        "  ✓ عوض‌شدنِ روز اجارهٔ تازه می‌گیرد و شمارنده را از نو می‌شمارد",
+        "  ✓ makeSupabaseLeaseStore بدونِ env چیزی برنمی‌گرداند، نه اینکه بی‌کلید تماس بگیرد",
+        "  ✓ makeSupabaseLeaseStore پاسخِ بی‌شکل را قبول نمی‌کند",
+        "  ✓ makeSupabaseLeaseStore خطای HTTP را خطا می‌کند، نه صفر",
+        "",
+        "53 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-6",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "068ac3444d8816d1f96fa7ca6410d0c861bafb3ab55f0d5fad35b4f795629c39",
+      "tail": [
+        "  ✓ نبودِ شمارنده پنهان نمی‌شود — خودش یک عدد است",
+        "  ✓ قبل از رزرو، اجاره شارژ می‌شود",
+        "  ✓ سوییچِ اجرا از پرچمِ کلاینت جداست",
+        "  ✓ طبقهٔ بودجه به بودجه منتقل می‌شود، نه اینکه همه standard شوند",
+        "  ✓ enforcement روشن + شمارنده غایب = توقف، نه ارسالِ بی‌حساب",
+        "  ✓ «شمارنده نیست» با «سهمیه تمام شد» یکی نیست",
+        "  ✓ هشدارِ عملیاتی فقط وقتی بلند می‌شود که قول داده باشیم و نتوانیم نگهش داریم",
+        "  ✓ نشمردن به تفکیکِ producer دیده می‌شود، نه یک عددِ کلی",
+        "",
+        "11 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-7",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "52f2eaa39a915360eb58b1bc9501d13f3f11123399a362bfedd78d43a74844a0",
+      "tail": [
+        "brsapi-coverage:",
+        "  ✓ شمارش‌ها با هم قاطی نمی‌شوند — call site و endpoint و کلید سه چیزند",
+        "  ✓ هر نقطهٔ تماسِ اعلام‌شده واقعاً در همان فایل هست",
+        "  ✓ هر نقطه هم مسیرِ کلاینت دارد هم شمارشِ مسیرِ قدیمی",
+        "  ✓ هیچ endpointِ BrsApiای بیرون از سقف نمانده",
+        "  ✓ کلیدِ کامودیتی در شمارندهٔ کلیدِ اصلی ریخته نمی‌شود",
+        "",
+        "5 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-8",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "377fbc43d488946eca481c1fe5a23707e84229077eefd89af2153305e52eace2",
+      "tail": [
+        "brsapi-stop-behaviour:",
+        "  ✓ چرخهٔ سالم کش را پر می‌کند",
+        "  ✓ بدونِ شمارنده در enforcement: هیچ درخواستی روی سیم نمی‌رود",
+        "  ✓ کشِ سالم با خالی بازنویسی نمی‌شود — دادهٔ کهنه می‌ماند",
+        "  ✓ cold start with denied budget does not cache an empty successful cycle",
+        "  ✓ هشدارِ عملیاتی بلند می‌شود، بی‌صدا نمی‌گذرد",
+        "  ✓ بدونِ enforcement همان وضعیت عبور می‌کند — رفتارِ امروزِ Production",
+        "  ✓ BudgetUnavailableError از خطای سهمیه قابلِ تفکیک است",
+        "",
+        "7 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-9",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "4ac021606073da1954cb7bc2b642dd1f66cf5fddf6e51e98b997fe3300037000",
+      "tail": [
+        "  ✓ کلِ بودجهٔ روز مصرف می‌شود، نه کمتر",
+        "  ✓ بودجه در کلِ روز پخش می‌شود، نه در ساعاتِ اول",
+        "  ✓ هیچ چرخه‌ای از سقفِ انفجار بالاتر نمی‌رود",
+        "  ✓ بودجهٔ تمام‌شده صفر می‌دهد، نه عددِ منفی",
+        "  ✓ در پایانِ روز بودجهٔ باقی‌مانده حبس نمی‌شود",
+        "  ✓ سقفِ انفجار حتی با بودجهٔ زیاد رعایت می‌شود",
+        "  ✓ بودجهٔ کوچک‌تر از یک در چرخه نه گم می‌شود، نه به آخرِ روز می‌افتد",
+        "  ✓ msUntilTehranMidnight در بازهٔ معتبر است",
+        "",
+        "8 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-10",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "5ed7d59b38b7d9bfaee2a055cbcd74f47d5976137667dc2bcd560ab73d6b3321",
+      "tail": [
+        "  ✓ نبض: مثبت/منفی/خنثی/کل فقط از معامله‌شده‌ها",
+        "  ✓ صف‌ها: یک صف خرید و یک صف فروش",
+        "  ✓ ارزش صف خرید = حجم سطر اول × قیمت × ۱۰ (ریال)",
+        "  ✓ ارزش صف فروش = حجم سطر اول عرضه × قیمت × ۱۰ (ریال)",
+        "  ✓ خالص پول حقیقی = Σ(buyI−sellI)×پایانی×۱۰ (ریال)",
+        "  ✓ سرانهٔ خرید حقیقی = ارزش خرید حقیقی ÷ شمار خریداران",
+        "  ✓ ارزش معاملات جمع value معامله‌شده‌ها (ریال)",
+        "  ✓ ورودی خالی → صفرها و nullهای صادق",
+        "",
+        "14 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-11",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "070f10249f60815225cab073954674239edde60c0a793f9e4a7935d6bd3c438f",
+      "tail": [
+        "  ✓ کندل معتبر نگاشت می‌شود — ریال دست‌نخورده",
+        "  ✓ کندل با close صفر یا منفی حذف می‌شود",
+        "  ✓ کندل با تاریخ نامعتبر حذف می‌شود",
+        "  ✓ درج با on_conflict=symbol,trade_date انجام می‌شود",
+        "  ✓ هدر Prefer شامل resolution=ignore-duplicates و return=minimal است",
+        "  ✓ existingDates حذف شده (باگ Max Rows دیگر ممکن نیست)",
+        "  ✓ کد رله فقط INSERT دارد — هیچ UPDATE/DELETE به symbol_history",
+        "  ✓ مهاجرت v4: پاک کردن failed برای رد دوباره از مسیر ignore-duplicates",
+        "",
+        "12 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-12",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "f1e1710158d262c7649bc528f5e7814595f9acfd2a7a2dccadd09b0030891fde",
+      "tail": [
+        "  ok  در تعارض هم هر دو شاهد نگه داشته می‌شوند",
+        "  ok  قالبِ ناشناخته ⇒ unresolved",
+        "  ok  واحدِ ن-۳۰ از خودِ گزارش استخراج شد",
+        "  ok  پایهٔ اثباتِ واحد ثبت شد",
+        "  ok  دورهٔ مقایسه یک ماه است",
+        "  ok  واحدِ مقدارِ کالا استخراج نشده و صریح null است",
+        "  ok  واحدِ مبلغ با واحدِ مقدار قاطی نشده",
+        "  ok  جدولِ بدونِ محصول null می‌دهد (تعمیم ساخته نمی‌شود)",
+        "",
+        "ALL TESTS PASSED"
+      ]
+    },
+    {
+      "name": "relay-13",
+      "exitCode": 0,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "4d5b48d5776fc210c1eca1247b57c684d353e9de1c1940545d261caa4b8aa352",
+      "tail": [
+        "✔ مرزهای آرشیو: مقایسهٔ عددی درست کار می‌کند (0.3218ms)",
+        "✔ سقف بودجهٔ روزانه صریح و مثبت است (0.1926ms)",
+        "ℹ tests 5",
+        "ℹ suites 0",
+        "ℹ pass 5",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 18.3488"
+      ]
+    },
+    {
+      "name": "relay-14",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "36145ce8824f4f429be4490372b3201e4a1f32d96ae6eafb12753e45befbde60",
+      "tail": [
+        "  ✓ classify: ن-۱۰ صورت مالی",
+        "  ✓ classify: پورتفوی رد می‌شود",
+        "  ✓ classify: مجمع/آگهی رد می‌شود",
+        "  ✓ feedCategory: ن-۳۰ → ماهانه",
+        "  ✓ feedCategory: ن-۱۰ → صورت مالی",
+        "  ✓ feedCategory: شفاف‌سازی از عنوان",
+        "  ✓ feedCategory: مجمع",
+        "  ✓ feedCategory: ناشناخته → سایر",
+        "",
+        "13 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-15",
+      "exitCode": 0,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "faf46ba738655445bda98be8d13f14394669d4124fb3b0770535b7df2d9a1677",
+      "tail": [
+        "✔ mapPhysicalRow: تاریخ از قبل خط‌تیره‌دار دست نمی‌خورد (0.3927ms)",
+        "✔ mapCommodityRow: دلار خام می‌ماند (هیچ تبدیل ریالی) (2.5171ms)",
+        "ℹ tests 6",
+        "ℹ suites 0",
+        "ℹ pass 6",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 23.967"
+      ]
+    },
+    {
+      "name": "relay-16",
+      "exitCode": 0,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "10d8e7161b64278ac72ffa5fc89da584f7a1155072c410dd639cab5ecb4bae97",
+      "tail": [
+        "  ✓ «شپنا» و «طلا» نماد اصلی‌اند",
+        "  ✓ فملیح حق تقدم شناخته می‌شود",
+        "  ✓ خودروح حق تقدم است ولی زیرنماد رقم‌دار نیست",
+        "  ✓ رشتهٔ خالی/null/undefined: نه زیرنماد، نه حق تقدم، نه نماد اصلی",
+        "  ✓ SUB_TICKER_RE همان قاعدهٔ ثبت‌شدهٔ پروژه است",
+        "  ✓ صف NAV هیچ نماد رقم‌دار یا حق تقدمی ندارد",
+        "nav blacklist: «تست‌الف» بعد از 2 دور ناموفق دائمی شد (اخطار BrsApi)",
+        "  ✓ ۲ دور NAV ناموفق → بلک‌لیست دائمی؛ دور موفق شمارنده را صفر می‌کند",
+        "",
+        "15 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "relay-17",
+      "exitCode": 0,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "3a2f8c2e8c72cdf048a83b83c9f725f3656d4c17d04ec0564fde3a7f15439bf7",
+      "tail": [
+        "✔ relay keeps only /healthz public when RELAY_TOKEN is unset (345.9763ms)",
+        "✔ relay protects /debug when RELAY_TOKEN is configured (312.2455ms)",
+        "ℹ tests 2",
+        "ℹ suites 0",
+        "ℹ pass 2",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 669.1278"
+      ]
+    },
+    {
+      "name": "relay-18",
+      "exitCode": 0,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "04da3e5a7d2e57d42e180dca083e6687dcf365beb0b78cf935bba2412110d9d2",
+      "tail": [
+        "✔ previous-day RPC failure cannot clear the new pending lease (39.1484ms)",
+        "✔ previous-day RPC success cannot clear the new pending lease (2.312ms)",
+        "ℹ tests 5",
+        "ℹ suites 0",
+        "ℹ pass 5",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 256.7457"
+      ]
+    },
+    {
+      "name": "relay-19",
+      "exitCode": 0,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "48a0535a5ffd6ef0c54b26c0e8c29e6f03c3720376aafab1aa4947b37bde1e03",
+      "tail": [
+        "✔ actual server cold-start budget rejection sends no upstream and writes no empty snapshot (328.2913ms)",
+        "ℹ tests 1",
+        "ℹ suites 0",
+        "ℹ pass 1",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 494.568"
+      ]
+    },
+    {
+      "name": "test-core",
+      "exitCode": 0,
+      "pass": 1239,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "4289f10bcf9245d2b2b73915feda6fd9857682d4e3cc2bf5934a2ffa8f6136f9",
+      "tail": [
+        "✔ invalid JSON, invalid records and network failure remain errors (1.5979ms)",
+        "✔ retry after service recovery shows data including unknown count (1.1252ms)",
+        "ℹ tests 1239",
+        "ℹ suites 49",
+        "ℹ pass 1239",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 15402.3989"
+      ]
+    },
+    {
+      "name": "test-calc",
+      "exitCode": 0,
+      "pass": 106,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "80893698bb98e208bdaa1a694a4251b4d9c1f13f44c43762a2b043d08ac7aeb9",
+      "tail": [
+        "✔ limit: رشدِ ردیف تازه‌ترین دوره را نمی‌اندازد (id کمتر ولی period_end تازه‌تر) (15.3487ms)",
+        "✔ شپنا ۳ماههٔ ۱۴۰۳ (واقعی): Q1 از اصلاحیه، نه نسخهٔ اولیهٔ باطل — همان که کارت می‌بیند (1.1667ms)",
+        "ℹ tests 106",
+        "ℹ suites 5",
+        "ℹ pass 106",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 1002.1341"
+      ]
+    },
+    {
+      "name": "db-financial-consultation",
+      "exitCode": 0,
+      "pass": 69,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "db03930a859f645f8e1a71d84a9ae8850e548cf0ccceb83849aa960552138c58",
+      "tail": [
+        "  ✔ نسخهٔ پایهٔ کهنه رد می‌شود و ثبت تکراری پیش از بررسی تعارض تشخیص داده می‌شود (477.3065ms)",
+        "✔ ثبت نسخه‌دار دارایی عضو (#140) (11322.4444ms)",
+        "ℹ tests 69",
+        "ℹ suites 5",
+        "ℹ pass 69",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 73853.0607"
+      ]
+    },
+    {
+      "name": "db-seasonal",
+      "exitCode": 0,
+      "pass": 22,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "0e63e28d489000ce1ea33bab6967ceef58e65fbc58f2a2000dce5de7136ef732",
+      "tail": [
+        "  ✔ legacy phase27 and noncohort webinar remain compatible; scoped lifetime always finite (1574.7619ms)",
+        "✔ NEXT04 real SQL/RLS + loopback HTTP — explicit (22292.1354ms)",
+        "ℹ tests 22",
+        "ℹ suites 2",
+        "ℹ pass 22",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 40922.3132"
+      ]
+    },
+    {
+      "name": "db-publication",
+      "exitCode": 0,
+      "pass": 22,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "66c441c9574a18aadf290887831b36c20072cdc7e8f352438d308a4bbe87b7b5",
+      "tail": [
+        "  ✔ an approval and return sharing the transaction timestamp resolve to returned, not random UUID order (1496.8978ms)",
+        "✔ NEXT08 PostgreSQL real permissions/publication — explicit (52040.0148ms)",
+        "ℹ tests 22",
+        "ℹ suites 2",
+        "ℹ pass 22",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 84378.2359"
+      ]
+    },
+    {
+      "name": "db-budget",
+      "exitCode": 0,
+      "pass": 14,
+      "fail": 0,
+      "skipped": 0,
+      "logSHA256": "d92bfdff253b1270c0e57eaf988a7a9bb14033dd6d49a5d4ad9a5c9304a1d15c",
+      "tail": [
+        "✔ DB connection fails across restarts: no critical emergency request (864.6287ms)",
+        "✔ isolated PostgreSQL restart preserves allocations; shutdown blocks sends (5619.4745ms)",
+        "ℹ tests 14",
+        "ℹ suites 0",
+        "ℹ pass 14",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 48728.6612"
+      ]
+    }
+  ]
+}
