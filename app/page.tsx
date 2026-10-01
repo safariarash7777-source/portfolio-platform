@@ -1,43 +1,70 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import Hero from "@/components/landing/Hero";
-import MarketTicker from "@/components/market/MarketTicker";
-import LiveMarket from "@/components/landing/LiveMarket";
 import InsightsPreview from "@/components/landing/InsightsPreview";
 import Method from "@/components/landing/Method";
 import TwoProducts from "@/components/landing/TwoProducts";
-import TrackRecordStrip from "@/components/landing/TrackRecordStrip";
-import AboutStrip from "@/components/landing/AboutStrip";
-import Footer from "@/components/layout/Footer";
-
-/**
- * صفحهٔ اصلی — P2-PUBLIC-EXPERIENCE-REBASELINE-001
- *
- * ترتیب (۷ سکشن، از ۱۲):
- *  1. Hero — انسانی و کوتاه، محورِ آرش. بدونِ فرم، بدونِ داشبوردِ ساختگی.
- *  2. MarketTicker + LiveMarket — آخرین وضعیتِ واقعیِ بازار (لنگرِ `#market`).
- *  3. InsightsPreview — تحلیلِ اخیرِ واقعی. بدونِ محتوا ⇒ خودش را مخفی می‌کند.
- *  4. Method — روشِ کار، سه گزاره (لنگرِ `#features`).
- *  5. TwoProducts — وبینار و مشاورهٔ اختصاصی (لنگرِ `#waitlist`).
- *  6. TrackRecordStrip — کارنامه. بدونِ رکوردِ بسته‌شدهٔ واقعی ⇒ رندر نمی‌شود.
- *  7. AboutStrip — معرفیِ کوتاهِ آرش → `/about`.
- *
- * حذف‌شده: ProductFacts · ThreeSteps · Capabilities · WhyArash · LandingFAQ ·
- * FinalCTA (+ PortfolioPreviewCardِ مرده). دلیلِ هر کدام در
- * `docs/P2-PUBLIC-REBASELINE-AUDIT.md`.
- */
+import MarketEntry from "@/components/public/MarketEntry";
+import CourseCatalog from "@/components/public/CourseCatalog";
+export const metadata: Metadata = {
+  title: { absolute: "مسیر راه سرمایه‌گذاری · آرش صفری" },
+  description:
+    "وبینار فصلی و سه ماه همراهی با محتوای دوره و داشبوردهای بازار؛ مشاهدهٔ اطلاعات دوره، ورود اعضا و درخواست وقت مشاوره.",
+  alternates: { canonical: "/" },
+};
 export default function LandingPage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main id="main-content" className="public-page">
         <Hero />
-        <MarketTicker />
-        <LiveMarket />
-        <InsightsPreview />
+        <section className="public-section public-surface">
+          <div className="public-container">
+            <CourseCatalog compact />
+          </div>
+        </section>
         <Method />
+        <Suspense
+          fallback={
+            <div className="public-container public-section" role="status">
+              در حال دریافت وضعیت دادهٔ بازار…
+            </div>
+          }
+        >
+          <MarketEntry />
+        </Suspense>
+        <Suspense
+          fallback={
+            <div className="public-container public-section" role="status">
+              در حال دریافت مطالب منتشرشده…
+            </div>
+          }
+        >
+          <InsightsPreview />
+        </Suspense>
         <TwoProducts />
-        <TrackRecordStrip />
-        <AboutStrip />
+        <section className="public-section public-surface">
+          <div className="public-container public-about-row">
+            <div>
+              <p className="public-eyebrow">دربارهٔ آرش صفری</p>
+              <h2>آموزش و تحلیل بازار سرمایه</h2>
+              <p className="public-description">
+                معرفی، روش کار و کارنامهٔ تحلیل‌ها را در صفحات اختصاصی بخوانید.
+              </p>
+            </div>
+            <div className="public-actions">
+              <Link href="/about" className="btn btn-outline">
+                معرفی و روش کار
+              </Link>
+              <Link href="/analyses" className="public-text-link">
+                مشاهدهٔ کارنامه
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>
