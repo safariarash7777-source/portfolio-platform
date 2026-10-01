@@ -6,10 +6,13 @@ import { accountEntryHref } from './components/account/returnPath'
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  const controller = new AbortController()
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: { fetch: (input, init) => fetch(input, { ...init, signal: controller.signal }) },
       cookies: {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
@@ -22,12 +25,23 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
+  // Auth may refresh cookies during getUser even when the eventual result is a
+  // redirect. Preserve those updates; dropping them can repeat refresh/failures.
+  const redirect = (path: string) => {
+    const response = NextResponse.redirect(new URL(path, request.url))
+    supabaseResponse.cookies.getAll().forEach(cookie => response.cookies.set(cookie))
+    return response
+  }
+
+  const unavailable = () => redirect(accountEntryHref('/login', pathname + request.nextUrl.search) + '&error=auth_unavailable')
+  const runGate = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error && (!error.status || error.status >= 500)) return unavailable()
 
   const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/terminal')
   if (isProtected && !user) {
-    return NextResponse.redirect(new URL(accountEntryHref('/login', pathname + request.nextUrl.search), request.url))
+    return redirect(accountEntryHref('/login', pathname + request.nextUrl.search))
   }
 
   // Admin gate — DB-backed (single source of truth)
@@ -38,7 +52,7 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .maybeSingle()
     if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return redirect('/dashboard')
     }
   }
 
@@ -68,14 +82,27 @@ export async function middleware(request: NextRequest) {
         entitled = false
       }
       if (!entitled) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        return redirect('/dashboard')
       }
     }
   }
 
   return supabaseResponse
+  }
+  let deadline: ReturnType<typeof setTimeout> | undefined
+  try {
+    // Bound the entire gate, including SDK refresh retries and role reads.
+    return await Promise.race([runGate(), new Promise<NextResponse>(resolve => {
+      deadline = setTimeout(() => { controller.abort(); resolve(unavailable()) }, 8000)
+    })])
+  } catch {
+    return unavailable()
+  } finally {
+    if (deadline) clearTimeout(deadline)
+  }
 }
 
 export const config = {
+  runtime: 'nodejs',
   matcher: ['/dashboard/:path*', '/admin/:path*', '/terminal/:path*'],
 }
