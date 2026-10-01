@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "status": "PASS",
+  "case": "search/sort preserved while delayed complete analytic arrives",
+  "before": {
+    "failed": true,
+    "monthlyActive": "",
+    "pending": false,
+    "priceSort": "lucide lucide-arrow-up-down opacity-100",
+    "rows": 100,
+    "search": "نمونه1"
+  },
+  "after": {
+    "failed": false,
+    "monthlyActive": "var(--navy)",
+    "pending": false,
+    "priceSort": "lucide lucide-arrow-up-down opacity-100",
+    "rows": 11,
+    "search": "نمونه1"
+  }
+}

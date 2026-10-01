@@ -1,3 +1,4 @@
+import { withDeadline } from "./deadline";
 import { validTimestamp } from "./market-quality";
 // دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
 //
@@ -157,7 +158,7 @@ export interface IrDiag {
 }
 
 const CACHE_MS = 60 * 1000; // کشِ کوتاهِ سایت؛ رله هر ~۵دقیقه به Supabase می‌نویسد.
-const READ_TIMEOUT_MS = 8000;
+const READ_TIMEOUT_MS = 5000;
 let cache: IrMarket | null = null;
 let cacheAt = 0;
 let cacheSource: "supabase" | "relay" | null = null;
@@ -359,7 +360,7 @@ export function toMarket(payload: unknown): IrMarket {
 }
 
 /** منبعِ اول: آخرین اسنپ‌شاتِ بازار از Supabase (از همه‌جای دنیا در دسترس). */
-async function readSupabase(diag: IrDiag): Promise<IrMarket | null> {
+async function readSupabase(diag: IrDiag, signal: AbortSignal): Promise<IrMarket | null> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) return null;
@@ -369,21 +370,22 @@ async function readSupabase(diag: IrDiag): Promise<IrMarket | null> {
     {
       headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
       cache: "no-store",
-      signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+      signal,
     }
   );
   diag.reached = true;
   diag.status = res.status;
-  if (!res.ok) return null;
+  if (!res.ok) { diag.error = `http_${res.status}`; return null; }
   const rows = (await res.json()) as Array<{ payload?: unknown }>;
   const payload = Array.isArray(rows) && rows[0] ? rows[0].payload : null;
-  if (!payload) return null;
+  if (!payload) { diag.error = "empty_source"; return null; }
   const data = toMarket(payload);
+  if (!data.ok) diag.error = "empty_source";
   return data.ok ? data : null;
 }
 
 /** منبعِ دوم (فقط وقتی Supabase نبود/خالی بود): fetchِ زندهٔ رله. */
-async function readRelay(diag: IrDiag): Promise<IrMarket | null> {
+async function readRelay(diag: IrDiag, signal: AbortSignal): Promise<IrMarket | null> {
   const base = process.env.IR_MARKET_RELAY_URL;
   if (!base) return null;
   diag.relayUrlConfigured = true;
@@ -393,17 +395,18 @@ async function readRelay(diag: IrDiag): Promise<IrMarket | null> {
   const res = await fetch(`${base.replace(/\/+$/, "")}/market.json`, {
     headers,
     cache: "no-store",
-    signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+    signal,
   });
   diag.reached = true;
   diag.status = res.status;
-  if (!res.ok) return null;
+  if (!res.ok) { diag.error = `http_${res.status}`; return null; }
   const data = toMarket(await res.json());
+  if (!data.ok) diag.error = "empty_source";
   return data.ok ? data : null;
 }
 
 /** دادهٔ بازار ایران؛ Supabase (اول) → رله (دوم) → null. در خطا کشِ کهنه یا null. */
-export async function getIrMarket(): Promise<IrMarket | null> {
+async function loadIrMarket(signal: AbortSignal): Promise<IrMarket | null> {
   const started = Date.now();
   const diag: IrDiag = {
     at: started,
@@ -434,8 +437,9 @@ export async function getIrMarket(): Promise<IrMarket | null> {
   }
   // منبعِ اول: Supabase
   try {
-    const fromSupabase = await readSupabase(diag);
-    if (fromSupabase) {
+    const fromSupabase = await readSupabase(diag, signal);
+    if (fromSupabase && !signal.aborted) {
+      diag.error = null;
       diag.source = "supabase";
       diag.ok = true;
       diag.counts = countsOf(fromSupabase);
@@ -449,8 +453,9 @@ export async function getIrMarket(): Promise<IrMarket | null> {
   }
   // منبعِ دوم: رلهٔ زنده (وقتی لینکِ بین‌الملل بالا باشد)
   try {
-    const fromRelay = await readRelay(diag);
-    if (fromRelay) {
+    const fromRelay = signal.aborted ? null : await readRelay(diag, signal);
+    if (fromRelay && !signal.aborted) {
+      diag.error = null;
       diag.source = "relay";
       diag.ok = true;
       diag.counts = countsOf(fromRelay);
@@ -470,4 +475,17 @@ export async function getIrMarket(): Promise<IrMarket | null> {
     diag.counts = countsOf(cache);
   }
   return finish(cache);
+}
+
+let inflight: Promise<IrMarket | null> | null = null;
+let retryAt = 0;
+export function getCachedIrMarket(): IrMarket | null { return cache; }
+export async function getIrMarket(): Promise<IrMarket | null> {
+  if (Date.now() < retryAt) return cache;
+  if (inflight) return inflight;
+  inflight = withDeadline(loadIrMarket, READ_TIMEOUT_MS).catch(() => {
+    lastDiag = { at: Date.now(), source: cacheSource, supabaseConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL), relayUrlConfigured: Boolean(process.env.IR_MARKET_RELAY_URL), reached: false, status: null, ok: Boolean(cache), fromCache: Boolean(cache), ageSec: cache?.fetchedAt ? Math.round((Date.now() - cache.fetchedAt) / 1000) : null, counts: cache ? countsOf(cache) : null, error: "DeadlineError", ms: READ_TIMEOUT_MS };
+    return cache;
+  }).then(result => { retryAt = lastDiag?.error ? Date.now() + 30000 : 0; return result; }).finally(() => { inflight = null; });
+  return inflight;
 }

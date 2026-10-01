@@ -46,16 +46,17 @@ export default function MarketTicker() {
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch("/api/market");
+        const res = await fetch("/api/market", { signal: AbortSignal.timeout(7000) });
         const json = await res.json();
         if (!alive) return;
-        setAssets(selectTickerAssets(json));
+        const nextAssets = selectTickerAssets(json);
+        if (nextAssets.length) setAssets(nextAssets);
         setStamps({
           ir: typeof json?.ir?.fetchedAt === "number" ? json.ir.fetchedAt : null,
           global: typeof json?.fetchedAt === "number" ? json.fetchedAt : null,
         });
       } catch {
-        if (alive) setAssets([]);
+        if (alive) setAssets(previous => previous ?? []);
       }
     };
     load();
