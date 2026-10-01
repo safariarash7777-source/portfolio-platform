@@ -1,0 +1,43 @@
+✔ a chosen Tehran wall time carries an explicit offset independent of device timezone (14.763ms)
+✔ reopening midnight uses Tehran date; impossible dates and clocks cannot silently roll over (0.9094ms)
+▶ یک نقطهٔ شروعِ روزانه
+  ✔ `/admin` به میز هدایت می‌کند و صفحهٔ خانهٔ دوم نیست (2.2096ms)
+  ✔ نمای مدیریتی حذف نشده — فقط جابه‌جا شده (1.2325ms)
+  ✔ ناوبری به مسیرِ جابه‌جاشده اشاره می‌کند، نه به redirect (1.5905ms)
+  ✔ میزِ فرماندهی اولین ورودیِ ناوبری است (0.5309ms)
+  ✔ موتورهای تخصصی حفظ شده‌اند و از ناوبری حذف نشده‌اند (0.4091ms)
+  ✔ میان‌برِ داشبوردِ مشتری هم به میز می‌رود، نه به redirect (1.3399ms)
+✔ یک نقطهٔ شروعِ روزانه (9.7513ms)
+✔ empty draft cannot appear structurally complete (2.501ms)
+✔ each scenario invalidation is independently required (6.7158ms)
+✔ unknown dates are not filled with today and impossible dates fail (0.464ms)
+✔ credential URLs and executable schemes are rejected (0.355ms)
+✔ import ignores forged approval and preserves evidence references (1.4642ms)
+✔ bounded import rejects malformed nested types and excessive size (15.9829ms)
+✔ export and import preserve a draft without granting review status (2.611ms)
+✔ duplicate evidence IDs are rejected rather than changing references (0.4356ms)
+✔ a theme-fixed background never carries theme-aware text (1.7079ms)
+✔ the guard actually inspects some style pairs — it is not vacuously green (0.6316ms)
+✔ headings use --text, never --navy-deep, which the dark theme does not override (B-040) (1.2176ms)
+✔ no raw hex or named colour is written outside the token system (1.8803ms)
+✔ the desk builds no public publication control (0.5541ms)
+✔ بی‌نشست ۴۰۱، غیرادمین و خطای خواندنِ نقش ۴۰۳ — و مخزن اصلاً ساخته نمی‌شود (5.0041ms)
+✔ ذخیره → بازکردن → نسخهٔ دوم؛ نسخهٔ اول دست‌نخورده باز می‌شود (6.8217ms)
+✔ دو ویرایش روی یک نسخهٔ پایه: دومی ۴۰۹ می‌گیرد و کارِ اولی پاک نمی‌شود (2.2188ms)
+✔ JSONِ مخرب: فیلدِ جعلیِ تأیید دور ریخته می‌شود و شکل‌های خطرناک رد می‌شوند (2.5416ms)
+✔ پیش‌نویسِ ناقص ذخیره می‌شود؛ نشانیِ خالی مجاز، نشانیِ نامعتبر نه (0.6242ms)
+✔ کاربرگِ بزرگ‌تر از یک مگابایت ۴۱۳ می‌گیرد، نه ذخیرهٔ نیمه (25.0567ms)
+✔ نسخهٔ پایهٔ نامعتبر و شناسهٔ نامعتبر (0.5506ms)
+✔ تأییدِ داخلی: ناقص ۴۲۲، کامل ۲۰۱، نسخهٔ کهنه ۴۰۹، «انتشار» اصلاً کنش نیست (23.284ms)
+✔ ردیفِ خرابِ دیتابیس باز نمی‌شود و حدس زده نمی‌شود (0.4844ms)
+✔ جدولِ ناموجود (migration اجرا نشده) → ۵۰۳ صادق با پرچمِ unavailable (0.4899ms)
+✔ نگاشتِ خطای مخزن: کُدها و الگوهای شناخته‌شده؛ متنِ خام هرگز (0.5125ms)
+✔ latestPerWorkbook: یک ردیف برای هر کاربرگ، بالاترین نسخه، جدیدترین اول (0.2035ms)
+ℹ tests 33
+ℹ suites 1
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 583.5252
