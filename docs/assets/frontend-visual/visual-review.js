@@ -1,0 +1,38 @@
+const fontSelect = document.querySelector('#font-choice');
+document.querySelector('.skip').addEventListener('click', event => {
+  event.preventDefault(); main.focus(); main.scrollIntoView({block:'start'});
+});
+fontSelect.value = document.documentElement.dataset.font;
+fontSelect.addEventListener('change', () => {
+  const url = new URL(location.href); url.searchParams.set('font', fontSelect.value);
+  url.searchParams.set('state', states.value); location.assign(url);
+});
+const requestedState = new URL(location.href).searchParams.get('state');
+if ([...states.options].some(option => option.value === requestedState)) states.value = requestedState;
+pages.home = () => `<section class="hero"><div><p class="hero-label">آموزش و همراهی در یک دورهٔ فصلی</p><h1>مسیر راه<br>سرمایه‌گذاری</h1><p class="lead">وبینار فصلی و سه ماه همراهی با محتوای دوره و داشبوردهای بازار.</p><p>موضوع‌ها و حدود دسترسی هر دوره را پیش از ثبت‌نام ببینید. پس از اتصال ثبت‌نام معتبر به حساب، مسیر یادگیری را از خانهٔ عضو دنبال کنید.</p><div class="actions">${a('course','وبینار دورهٔ پیش‌رو','btn')}${a('member','ورود اعضای مسیر راه')}</div><p class="meta">تاریخ و شرایط دوره هنوز اعلام نشده است.</p></div><aside class="course-cover"><h2>از وبینار تا ادامهٔ مسیر</h2><p>وبینار رویدادی درون دوره است؛ دوره واحد خدمت و دسترسی شماست.</p><dl><div><dt>شروع مسیر</dt><dd>وبینار و پرسش‌های شما</dd></div><div><dt>ادامهٔ مسیر</dt><dd>محتوای منتشرشدهٔ دوره</dd></div><div><dt>ابزار همراه</dt><dd>داشبوردهای مجاز همان دوره</dd></div></dl><p class="meta">دسترسی به همهٔ ابزارهای تخصصی با عضویت دوره ایجاد نمی‌شود.</p>${a('course','جزئیات و شرایط دوره','gold outline')}</aside></section><section><h2>مسیر شرکت در دوره</h2><div class="steps"><article><b>۱. شناخت و ثبت‌نام</b><p>موضوع، زمان تهران و پایان دقیق دسترسی را ببینید. ثبت‌نام پس از اعلام سامانهٔ بیرونی باز می‌شود.</p></article><article><b>۲. اتصال به حساب</b><p>ثبت‌نام معتبر به حساب درست متصل می‌شود. هدف آموزشی و پرسش وبینار را ثبت کنید.</p></article><article><b>۳. ادامهٔ یادگیری</b><p>وبینار، منابع و محتوای منتشرشدهٔ همان دوره را از خانهٔ عضو دنبال کنید.</p></article></div></section><section class="service-list" aria-label="خدمت‌های مستقل"><article class="service-row"><h2>بازار و صندوق‌ها</h2><p>واحد، منبع و تاریخ معتبر باید کنار هر عدد باشد. این نمونه به دادهٔ جاری بازار متصل نیست.</p>${a('market','مشاهدهٔ الگوی صندوق‌ها','')}</article><article class="service-row"><h2>درخواست وقت مشاوره</h2><p>مشاوره خدمت مستقلی است. ایمیل را برای پیگیری درخواست ثبت کنید؛ دریافت درخواست به معنی رزرو جلسه نیست.</p>${a('consultation','درخواست وقت مشاوره','')}</article><article class="service-row"><h2>مطالب دوره</h2><p>در این نمونه محتوای واقعی منتشرشده وجود ندارد. نسخهٔ اجرایی فقط مطالب مجاز و منتشرشده را نشان می‌دهد.</p>${a('content','دیدن حالت محتوای خالی','')}</article></section>`;
+pages.consultation = () => `<h1>درخواست وقت مشاوره</h1><p class="lead">ایمیل را برای پیگیری درخواست ثبت کنید. موضوع و زمان جلسه پس از تماس و هماهنگی مشخص می‌شود.</p><div class="layout"><section><form id="consultation-demo" class="panel"><h2>راه تماس برای پیگیری</h2><div class="field"><label for="contact-email">ایمیل</label><input id="contact-email" type="email" autocomplete="off" required placeholder="name@example.com"><p class="hint">از ایمیل آزمایشی استفاده کنید؛ این فرم چیزی ارسال نمی‌کند.</p></div><button class="btn">ثبت نمونهٔ درخواست</button><p id="contact-status" role="status"></p><p class="meta">فرم اجرایی فعلی فقط ایمیل می‌گیرد؛ درخواست جدید به پروندهٔ مشاورهٔ حساب متصل فرض نمی‌شود.</p></form></section><aside><h2>پس از ثبت درخواست</h2><div class="timeline"><p><b>دریافت درخواست</b><br>راه تماس برای پیگیری ثبت می‌شود.</p><p><b>هماهنگی موضوع و زمان</b><br>در تماس بعدی؛ ظرفیت یا ساعت آزاد اعلام نشده است.</p><p><b>تأیید جلسه</b><br>فقط با زمان تهران و تأیید صریح طرفین.</p></div><p class="hint">هیچ رزرو واقعی در این نمونه وجود ندارد.</p></aside></div>`;
+const memberPage = pages.member;
+pages.member = () => {
+  const stale = states.value === 'stale';
+  if (stale) states.value = 'active';
+  let html = memberPage();
+  if (stale) states.value = 'stale';
+  html = html.replace('وضعیت هر دوره، محتوا و اقدام بعدی را جدا ببینید.', 'دوره‌های شما و اقدام بعدی؛ حقوق هر دوره مستقل است.');
+  const summary = `<div class="member-summary"><div><strong>اقدام امروز</strong><p>${states.value === 'incomplete' ? 'هدف آموزشی و پرسش وبینار را تکمیل کنید.' : 'وضعیت دوره و محتوای منتشرشده را بررسی کنید.'}</p></div><div>${a('needs','اصلاح نیازسنجی آموزشی','')}</div></div>`;
+  html = html.replace('</p>', '</p>' + summary);
+  if (stale) html += `<section><h2>دادهٔ بازارِ کهنه</h2>${notice('عضویت فعال است؛ دادهٔ بازار نیاز به دریافت تازه دارد. آخرین تاریخ دادهٔ نمونه: ۱ سپتامبر ۲۰۲۶. مقدار جاری نمایش داده نمی‌شود.')}<p class="hint">نمونهٔ آموزشی برای حالت کهنگی؛ تاریخ واقعی بازار یا تعطیلی را نشان نمی‌دهد.</p>${a('market','بررسی محدودیت داده','')}</section>`;
+  return html;
+};
+pages.type = () => `<section class="specimen"><h1>یک محتوا، دو فونت</h1><p class="lead">گزینهٔ A وزیرمتن است؛ گزینهٔ B استعداد. اندازه، وزن، رنگ، فاصله و متن در هر دو یکسان است.</p>${notice('این صفحه نمونهٔ سنجش خوانایی است؛ عددها، نام‌ها و تاریخ‌ها دادهٔ بازار یا مشتری نیستند.')}<h2>متن فارسی</h2><p>در مسیر راه سرمایه‌گذاری، موضوع‌های آموزشی و پرسش‌های وبینار را دنبال کنید. مدت دسترسی و محتوای مجاز هر دوره پیش از ثبت‌نام اعلام می‌شود.</p><p>نیازسنجی آموزشی قابل اصلاح است. پایان عضویت، پروندهٔ شخصی را حذف نمی‌کند. دریافت درخواست وقت به معنی تأیید جلسه نیست.</p><h2>رقم و علامت</h2><p class="numbers"><bdi dir="ltr">۰۱۲۳۴۵۶۷۸۹ · 0123456789</bdi><br><bdi dir="ltr">۱٬۲۳۴٬۵۶۷ · −۱۲٫۵٪ · +۳٫۲٪ · ۰ · —</bdi><br><bdi dir="ltr">2026-10-01 · 09:00 · NAV</bdi></p><div class="table-wrap" tabindex="0" aria-label="جدول سنجش فونت، قابل پیمایش"><table><caption>نمونهٔ خوانایی جدول · تومان، بدون محاسبه یا قیمت واقعی</caption><thead><tr><th scope="col">ردیف نمونه</th><th scope="col">مقدار نمایشی</th><th scope="col">تغییر نمایشی</th><th scope="col">وضعیت</th></tr></thead><tbody><tr><th scope="row">صندوق نمونه الف</th><td class="numeric">۱٬۲۳۴٬۵۶۷</td><td class="numeric">+۳٫۲٪</td><td>نمونهٔ مثبت</td></tr><tr><th scope="row">صندوق نمونه ب</th><td class="numeric">۰</td><td class="numeric">−۱۲٫۵٪</td><td>نمونهٔ منفی</td></tr><tr><th scope="row">صندوق نمونه ج</th><td class="numeric">—</td><td class="numeric">—</td><td>داده ناموجود؛ صفر نیست</td></tr></tbody></table></div><h2>فرم و خطا</h2><form id="type-form"><div class="field"><label for="sample-goal">هدف آموزشی</label><input id="sample-goal" placeholder="مثلاً شناخت تفاوت صندوق‌ها" maxlength="500"><p id="sample-help" class="hint">فقط نمونه؛ اطلاعات شخصی وارد نکنید.</p></div><button type="button" id="sample-error">بررسی حالت خطای فرم</button><p id="sample-result" role="alert"></p></form><div class="actions">${a('home','صفحهٔ اصلی')}${a('course','صفحهٔ دوره')}${a('member','خانهٔ عضو')}</div></section>`;
+function bindReview() {
+  document.querySelector('#sample-error')?.addEventListener('click', () => {
+    const input = document.querySelector('#sample-goal'); input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','sample-result');
+    document.querySelector('#sample-result').textContent = 'دریافت پاسخ انجام نشد. متن شما حفظ شده است؛ دوباره تلاش کنید.';input.focus();
+  });
+  document.querySelector('#consultation-demo')?.addEventListener('submit', event => {
+    event.preventDefault(); document.querySelector('#contact-status').textContent = 'نمونهٔ درخواست دریافت شد؛ ارسال واقعی و رزرو جلسه انجام نشد.';
+  });
+}
+const baseRender = render;
+render = (focus = false) => {baseRender(focus); main.dataset.route = location.hash.slice(1) || 'home'; bindReview();};
+render();

@@ -66,3 +66,9 @@ node_modules
 # symlinkِ خودارجاعِ node_modules به‌اشتباه کامیت شده بود؛ الگوی بالا با
 # اسلشِ انتهایی فقط پوشه را می‌گیرد، نه خودِ symlink را.
 node_modules
+
+# Reference-site screenshots are local research evidence; product before/after are tracked.
+docs/ops/seasonal-program/frontend-visual-evidence/reference-*.png
+# Complete visual evidence stays in the local review archive (large Git upload timed out).
+docs/ops/seasonal-program/frontend-visual-evidence/*.png
+docs/ops/seasonal-program/frontend-visual-evidence.zip
