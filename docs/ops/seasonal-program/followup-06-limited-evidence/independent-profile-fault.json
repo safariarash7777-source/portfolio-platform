@@ -1,0 +1,127 @@
+{
+  "id": "identity-auth-upstream-classification",
+  "sha": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "environment": "followup06-limited-native-local",
+  "reviewer": "/root/limited_independent",
+  "role": "A",
+  "owner": "PR180 / Auth private identity",
+  "startedAt": "2026-10-01T19:29:51.419Z",
+  "expected": "Authenticated identity GET must distinguish native Auth503 from no-session401; profile service unavailable remains503",
+  "fault": "Controlled owned loopback gateway native Auth upstream503, no containers stopped",
+  "credentialsRecorded": false,
+  "login": {
+    "tokenHTTP": 200,
+    "nativeUserHTTP": 200,
+    "canonicalUserId": "90fbdf83-2522-4362-90c3-fde6755e6653",
+    "redirect": "/dashboard/holdings"
+  },
+  "profileAdapterBefore": {
+    "state": "incomplete",
+    "phoneVerified": false,
+    "version": null
+  },
+  "relatedResourcesBefore": {
+    "downloadHTTP": 403,
+    "cohortsHTTP": 200
+  },
+  "identityBeforeHTTP": 200,
+  "identityPostBeforeHTTP": 401,
+  "statusBefore": {
+    "http": 200,
+    "authenticated": true
+  },
+  "nativeAuthFaultHTTP": 503,
+  "identityFaultHTTP": 503,
+  "identityPostFaultHTTP": 503,
+  "statusFault": {
+    "http": 503,
+    "authenticated": false
+  },
+  "profileAdapterDuring": {
+    "state": "unavailable"
+  },
+  "relatedResourcesDuring": {
+    "downloadHTTP": 503,
+    "cohortsHTTP": 503
+  },
+  "inferredAdapterState": "unavailable",
+  "identityRecoveryHTTP": 200,
+  "statusRecovery": {
+    "http": 200,
+    "authenticated": true
+  },
+  "identityPostRecoveryHTTP": 401,
+  "profileAdapterAfter": {
+    "state": "incomplete",
+    "phoneVerified": false,
+    "version": null
+  },
+  "relatedResourcesAfter": {
+    "downloadHTTP": 403,
+    "cohortsHTTP": 200
+  },
+  "guest": {
+    "identityHTTP": 401,
+    "statusHTTP": 200,
+    "authenticated": false
+  },
+  "memberHome": {
+    "path": "/dashboard",
+    "coursesTitleVisible": true,
+    "emptyProfileVisible": true,
+    "officialPendingVisible": true,
+    "sharedProfileLink": "/account/mobile?next=%2Fdashboard%3Fcohort%3Df3ec0953-d248-4838-a6db-e96c84dd434f",
+    "otherAccountUuidVisible": false
+  },
+  "portfolio": {
+    "path": "/dashboard/portfolio",
+    "memberCoursesTitleCount": 0
+  },
+  "financialLedger": {
+    "canonicalUserId": "90fbdf83-2522-4362-90c3-fde6755e6653",
+    "before": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 3,
+        "digest": "5d0c66c22002a1595f9ccf7ad0126f275a2d2892cb27f40d10f9d5987572e2bc"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 3,
+        "digest": "741ee90a4582104a92788ffcfce9d4c65cae4622124ed3326fe5a29c64af5aa4"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "8ebc7a47b49f907a75983199a36ac39f870eb201bb737805113274986f799d33"
+      }
+    ],
+    "after": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 3,
+        "digest": "5d0c66c22002a1595f9ccf7ad0126f275a2d2892cb27f40d10f9d5987572e2bc"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 3,
+        "digest": "741ee90a4582104a92788ffcfce9d4c65cae4622124ed3326fe5a29c64af5aa4"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "8ebc7a47b49f907a75983199a36ac39f870eb201bb737805113274986f799d33"
+      }
+    ],
+    "byteIdentical": true,
+    "UIVisible": true
+  },
+  "status": "PASS",
+  "finishedAt": "2026-10-01T19:29:58.936Z"
+}

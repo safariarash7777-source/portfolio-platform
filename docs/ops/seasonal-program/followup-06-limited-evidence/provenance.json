@@ -1,0 +1,83 @@
+{
+  "recordedAt": "2026-10-01T19:29:53.592Z",
+  "runtimeSHA": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "metadataHEAD": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "sourceInputs": [
+    {
+      "pr": 184,
+      "sha": "51ad615b116c7b1283404a60ee1d2081c11c96ca",
+      "ancestorOfRuntime": true
+    },
+    {
+      "pr": 179,
+      "sha": "ca27b94a44f9a37785df059574a754e170880aac",
+      "ancestorOfRuntime": true
+    },
+    {
+      "pr": 180,
+      "sha": "bb4f2f3e53859bbecb0ec942975ffb06fd2d2828",
+      "ancestorOfRuntime": true
+    },
+    {
+      "pr": 181,
+      "sha": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+      "ancestorOfRuntime": true
+    },
+    {
+      "pr": 182,
+      "sha": "e5740be93f666dc76a605ccef190f710767ab748",
+      "ancestorOfRuntime": true
+    },
+    {
+      "pr": 183,
+      "sha": "8723c55766e456c0b519b4ead3c301440b4ff05f",
+      "ancestorOfRuntime": true
+    }
+  ],
+  "applicationDiffFromBuiltRuntime": [],
+  "frozenBaseline": [
+    {
+      "path": "docs/ops/seasonal-program/followup-06-auth-storage-evidence/independent.md",
+      "canonicalLFSHA256": "42c7c227cc1b298baccde3db6e0e28528410a27eb2817f69ed366a661f862b47",
+      "sameCommittedBaseline": true
+    },
+    {
+      "path": "docs/ops/seasonal-program/followup-06-auth-storage-evidence/independent.json",
+      "canonicalLFSHA256": "33f263fd1c79acc61a43d86e3f26994a7f0a3583f2090c91d152eff66f4bb59e",
+      "sameCommittedBaseline": true
+    }
+  ],
+  "resolutions": [
+    "PR184 handlers retained when PR180 wave-review base added the same paths; missing sessions401, actualAuth/Storagefailure503, admin educationalgrant not implicit.",
+    "PR179 Node8second deadline/cookie preservation combined with PR180/current cohort_id ISNULL + activeEntitlementFilter semantics; coursegrant cannot unlockterminal.",
+    "Testscript union preserves financial173, publication178/08, member181, pagedreader182, resource184 and mobile180. Dependencylock unchanged.",
+    "Central command/decision documents retained; these historical merge snapshots do not update shared status.",
+    "Frozen Node acceptance harness module course variable kept byte-identical, scoped Next module-export lint rule override only."
+  ],
+  "boundaries": {
+    "merge": false,
+    "production": false,
+    "sharedMigration": false,
+    "restore": false,
+    "purchase": false,
+    "newFeed": false,
+    "next09": false,
+    "officialIdentity": "pending",
+    "phoneProof": "not fabricated",
+    "ownerOrHumanAcceptance": "not claimed"
+  },
+  "fix": {
+    "owner": "PR180/Auth",
+    "integrationPR": 186,
+    "sha": "a49e37cecc7922d6d80c174910301e24a1841aee",
+    "baseline": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+    "changedPaths": [
+      "app/api/auth/identity/route.ts",
+      "app/api/auth/status/route.ts",
+      "lib/auth/session-error.ts",
+      "package.json",
+      "scripts/testing/auth-session-handler.test.mjs"
+    ],
+    "scope": "SDK-returned Auth service errors503; missing/rejected session and nativephone proof contract preserved"
+  }
+}

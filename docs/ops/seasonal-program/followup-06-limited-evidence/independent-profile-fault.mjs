@@ -1,0 +1,54 @@
+import fs from 'node:fs';
+import {createHash} from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+import {chromium} from 'file:///C:/Users/Asus/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
+const out='C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-followup06-limited/docs/ops/seasonal-program/followup-06-limited-evidence/';
+const accounts=JSON.parse(fs.readFileSync('C:/Users/Asus/.codex/private/followup06-auth-storage/reviewer-credentials.json'));
+const secrets=JSON.parse(fs.readFileSync('C:/Users/Asus/.codex/private/followup06-auth-storage/secrets.json'));
+const m=JSON.parse(fs.readFileSync(out+'app-manifest.json')),origin=m.origin,faultFile='C:/Users/Asus/.codex/private/followup06-auth-storage/limited-fault.json';
+const setFault=v=>fs.writeFileSync(faultFile,JSON.stringify(v)+'\n');
+const evidence={id:'identity-auth-upstream-classification',sha:m.sha,environment:m.environment,reviewer:'/root/limited_independent',role:'A',owner:'PR180 / Auth private identity',startedAt:new Date().toISOString(),expected:'Authenticated identity GET must distinguish native Auth503 from no-session401; profile service unavailable remains503',fault:'Controlled owned loopback gateway native Auth upstream503, no containers stopped',credentialsRecorded:false};
+const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',args:['--no-first-run']}),context=await browser.newContext(),page=await context.newPage();
+try{
+ setFault({});let capture;const captured=new Promise(resolve=>capture=resolve);
+ await page.route(origin+'/supabase/auth/v1/token**',async route=>{const upstream=await route.fetch();const body=await upstream.json();capture({http:upstream.status(),body});await route.fulfill({response:upstream});});
+ await page.goto(origin+'/login?next=%2Fdashboard%2Fholdings',{waitUntil:'domcontentloaded'});await page.locator('#login-email').fill(accounts.A.email);await page.locator('#login-password').fill(accounts.A.password);await page.locator('button[type="submit"]').click();const token=await captured;
+ await page.waitForURL('**/dashboard/holdings',{waitUntil:'domcontentloaded'});
+ const identityBefore=await context.request.get(origin+'/api/auth/identity');
+ const native=await fetch(origin+'/supabase/auth/v1/user',{headers:{apikey:secrets.anon,authorization:'Bearer '+token.body.access_token}});
+ evidence.login={tokenHTTP:token.http,nativeUserHTTP:native.status,canonicalUserId:token.body.user?.id,redirect:new URL(page.url()).pathname};
+ const request=async p=>{const r=await context.request.get(origin+p);return {status:r.status(),ok:r.ok(),json:()=>r.json()};};
+ const {readMemberProfile}=await import(pathToFileURL(out+'../../../../lib/member/profile.ts').href);
+ evidence.profileAdapterBefore=await readMemberProfile(request);
+ const resource='/api/cohorts/f3ec0953-d248-4838-a6db-e96c84dd434f/resources/da12b1ad-381f-4a85-b8b2-b5c22f433365';
+ const resourceBefore=await context.request.get(origin+resource),cohortsBefore=await context.request.get(origin+'/api/me/cohorts');evidence.relatedResourcesBefore={downloadHTTP:resourceBefore.status(),cohortsHTTP:cohortsBefore.status()};
+ evidence.identityBeforeHTTP=identityBefore.status();
+ const identityPayload={firstName:'Synthetic',lastName:'Reviewer',nationalId:'0000000000',baseVersion:0,consent:'identity-v1'};
+ const postBefore=await context.request.post(origin+'/api/auth/identity',{headers:{origin},data:identityPayload});evidence.identityPostBeforeHTTP=postBefore.status();
+ const statusBefore=await context.request.get(origin+'/api/auth/status'),sb=await statusBefore.json();evidence.statusBefore={http:statusBefore.status(),authenticated:sb.authenticated};
+ setFault({auth:true});
+ const nativeFault=await fetch(origin+'/supabase/auth/v1/user',{headers:{apikey:secrets.anon,authorization:'Bearer '+token.body.access_token}}),identityFault=await context.request.get(origin+'/api/auth/identity');
+ evidence.nativeAuthFaultHTTP=nativeFault.status;evidence.identityFaultHTTP=identityFault.status();
+ const postFault=await context.request.post(origin+'/api/auth/identity',{headers:{origin},data:identityPayload});evidence.identityPostFaultHTTP=postFault.status();
+ const statusFault=await context.request.get(origin+'/api/auth/status'),sf=await statusFault.json();evidence.statusFault={http:statusFault.status(),authenticated:sf.authenticated};
+ evidence.profileAdapterDuring=await readMemberProfile(request);
+ const resourceFault=await context.request.get(origin+resource),cohortsFault=await context.request.get(origin+'/api/me/cohorts');evidence.relatedResourcesDuring={downloadHTTP:resourceFault.status(),cohortsHTTP:cohortsFault.status()};
+ evidence.inferredAdapterState=identityFault.status()===401?'sign_in_required; inference from lib/member/profile.ts status401 branch':'unavailable';
+ setFault({});const restored=await context.request.get(origin+'/api/auth/identity');evidence.identityRecoveryHTTP=restored.status();const statusRestored=await context.request.get(origin+'/api/auth/status'),sr=await statusRestored.json();evidence.statusRecovery={http:statusRestored.status(),authenticated:sr.authenticated};
+ const postRecovered=await context.request.post(origin+'/api/auth/identity',{headers:{origin},data:identityPayload});evidence.identityPostRecoveryHTTP=postRecovered.status();
+ evidence.profileAdapterAfter=await readMemberProfile(request);
+ const resourceRecovered=await context.request.get(origin+resource),cohortsRecovered=await context.request.get(origin+'/api/me/cohorts');evidence.relatedResourcesAfter={downloadHTTP:resourceRecovered.status(),cohortsHTTP:cohortsRecovered.status()};
+ const guest=await browser.newContext();const guestIdentity=await guest.request.get(origin+'/api/auth/identity'),guestStatus=await guest.request.get(origin+'/api/auth/status'),gs=await guestStatus.json();evidence.guest={identityHTTP:guestIdentity.status(),statusHTTP:guestStatus.status(),authenticated:gs.authenticated};await guest.close();
+ await page.goto(origin+'/dashboard?cohort=f3ec0953-d248-4838-a6db-e96c84dd434f',{waitUntil:'domcontentloaded'});await page.getByText('پروفایل هنوز ثبت نشده است؛ می‌توانید در مسیر مشترک حساب، آن را تکمیل کنید.',{exact:true}).waitFor({state:'visible'});
+ const homeText=await page.locator('body').innerText();evidence.memberHome={path:new URL(page.url()).pathname,coursesTitleVisible:await page.locator('#member-courses-title').isVisible(),emptyProfileVisible:homeText.includes('پروفایل هنوز ثبت نشده'),officialPendingVisible:homeText.includes('تطبیق رسمی هویت و شماره در انتظار بررسی است'),sharedProfileLink:await page.locator('a[href^="/account/mobile?"]').first().getAttribute('href'),otherAccountUuidVisible:homeText.includes(accounts.B.id)};
+ await page.goto(origin+'/dashboard/portfolio',{waitUntil:'domcontentloaded'});evidence.portfolio={path:new URL(page.url()).pathname,memberCoursesTitleCount:await page.locator('#member-courses-title').count()};
+ const digest=b=>createHash('sha256').update(JSON.stringify(b)).digest('hex');
+ const nativeRest=async p=>{const r=await fetch(origin+'/supabase/rest/v1/'+p,{headers:{apikey:secrets.anon,authorization:'Bearer '+token.body.access_token}});return {http:r.status,body:await r.json()};};
+ const versions=await nativeRest('member_holding_versions?select=*&user_id=eq.'+accounts.A.id+'&order=id'),ids=versions.body.map(x=>x.id).join(',');
+ const ledger=[{table:'member_holding_versions',http:versions.http,rows:versions.body.length,digest:digest(versions.body)}];
+ for(const [table,key]of[['member_holding_positions','position_key'],['member_debt_positions','debt_key']]){const r=await nativeRest(table+'?select=*&version_id=in.('+ids+')&order=version_id,'+key);ledger.push({table,http:r.http,rows:r.body.length,digest:digest(r.body)});}
+ const prior=JSON.parse(fs.readFileSync(out+'independent-retest.json')).ledgerFinal.A;evidence.financialLedger={canonicalUserId:accounts.A.id,before:prior,after:ledger,byteIdentical:JSON.stringify(prior)===JSON.stringify(ledger)};
+ await page.goto(origin+'/dashboard/holdings',{waitUntil:'domcontentloaded'});await page.getByText('دارایی کاملاً ساختگی FOLLOWUP06',{exact:false}).first().waitFor({state:'visible'});evidence.financialLedger.UIVisible=true;
+ evidence.status=token.http===200&&native.status===200&&identityBefore.status()===200&&postBefore.status()===401&&nativeFault.status===503&&identityFault.status()===503&&postFault.status()===503&&statusFault.status()===503&&restored.status()===200&&postRecovered.status()===401&&statusRestored.status()===200&&sr.authenticated===true&&guestIdentity.status()===401&&guestStatus.status()===200&&gs.authenticated===false?'PASS':'FAIL';
+}catch(e){evidence.executionError=String(e.message);evidence.status='BLOCKED';}
+finally{setFault({});evidence.finishedAt=new Date().toISOString();fs.writeFileSync(out+'independent-profile-fault.json',JSON.stringify(evidence,null,2)+'\n');await browser.close();console.log(JSON.stringify(evidence));}

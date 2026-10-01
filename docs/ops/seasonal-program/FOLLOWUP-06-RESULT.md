@@ -1,5 +1,41 @@
 # FOLLOWUP-06 — آمادگی تجمیع و پذیرش مستقل
 
+## ادامهٔ جاری — ترکیب محدود در PR186، جدا از baseline2605
+
+برنامهٔ نهایی **`a49e37cecc7922d6d80c174910301e24a1841aee`**، build2026-10-01T19:27:21.697Z، شناسهٔ محیط **`followup06-limited-native-local`** و origin [sandbox محلی3299](http://127.0.0.1:3299/login?next=%2Fdashboard) هستند. [PR186](https://github.com/safariarash7777-source/portfolio-platform/pull/186) Draft/Open است؛ هیچ merge/Production انجام نشده. Previewعمومی یا URL قدیمی مقصد این پذیرش نیست. این نشانی فقط روی دستگاه حاضر باز می‌شود؛ اطلاعات ورود شش حساب واقعی ساختگی از همان پوشهٔ privateمحافظت‌شده تحویل می‌شود، نه چت/مخزن/تصویر.
+
+[بستهٔ اجرای قابل بازبینی](followup-06-limited-evidence/README.md)، [manifest واقعیbuild](followup-06-limited-evidence/app-manifest.json)، [pinها و حل تعارض](followup-06-limited-evidence/provenance.json):184@51ad615،179@ca27b94،180@bb4f2f3،181@a95aa0c و ورودی‌های ثابت182@e5740be/183@8723c55 در checkout تازهٔ `portfolio-followup06-limited` ترکیب شدند. patch تازه شامل اصلاح `/api/me/cohorts` است؛77b قدیمی ورودی نهایی نیست. deadline8s/cookie/runtimeNode ازAuth با شرط `cohort_id IS NULL` و `activeEntitlementFilter` حفظ شد؛ grantدوره حق ترمینال کامل ایجاد نمی‌کند. handlerهای184 در تعارض base180 نگه داشته شدند. دستورهای آزمون union و lock/dependency ثابت‌اند؛ اسناد مرکزی مشترک تغییر نکردند.
+
+[شاهد migration](followup-06-limited-evidence/migration.json): همان DBساختگی/native قبلی با16SQLپیش‌نیاز/phase32→34→35→36→37→38/04/08 حفظ شد؛ فقط180 `20261001083215_auth_private_identity_versions.sql` افزوده شد، digest7969634e…، ششAuthuser/چهارStorageobject/صفرidentityversion. دوTABLEخصوصیRLS، clientwriter/schema denied و own-readRPC مجازند. [اصلاح آماده‌سازی](followup-06-limited-evidence/environment-recovery.json): Authپیش ازreadyشدنDB با57P03 متوقف شده بود؛ همانcontainerپس‌ازreadyشروع وhealth200 شد. catalogپس‌ازmigrationحاضر بود اماcachePostgREST قدیمیRPC404/app503 می‌داد؛ فقطNOTIFYرویDBاختصاصی cache را تازه کرد. SQLنصب دوباره، حذف/restore و تغییرDBواقعی انجام نشد؛ ابزار نصب notification/readiness را مستند می‌کند و replay را رد می‌کند.
+
+### نتیجهٔ بررسی مستقل و اصلاح مرتبط
+
+بازبین جدا `/root/limited_independent` با ششcontext/ورودUIواقعیGoTrue، توکن صادرشده فقطدرحافظه و بدون تزریقsession، نسخهٔ نخست این ترکیب **`d941b0b47520449e097dcdb0f31eef77e93cdd3c`** را بررسی کرد. دو نقص قدیمی F06-AS-01/02 ازbaseline2605 باpatch184 رفع شدند: مهمان منابع/دانلود/me-cohorts401، مدیر بدونgrantفهرست0/دانلود403، عضوBفایل36بایتیباhashصحیح؛ لغو/انقضا/scope و nativeStorage محافظت‌شده ماندند. شواهد33PASS و دوFAILتازه درمرحلهٔ اولیه بهd941تعلق دارند؛ بهbuildاصلاح‌شده نسبت داده نمی‌شوند.
+
+| یافتهٔ تازه، مالکAuth/PR180 | شاهد مستقل رویd941 | اصلاح درهمینPR186 |
+|---|---|---|
+|F06-LIM-IDENTITY-01|nativeAuth503 ولیidentityGET401؛ مصرف‌کننده وضعیت نیازورود نشان می‌دهد، نهقطعسرویس|GET/POSTهویت اکنونSDK-errorرا طبقه‌بندی می‌کنند؛ outage503، guest/rejectedsession401، nativephoneproof همچنانلازم|
+|F06-LIM-IDENTITY-02|nativeAuth503 ولیauth/status200/authenticatedfalse؛ پس‌بازیابیtrue|اختلال503/network_or_configuration_error؛ guestسالم200/falseوroleDBحفظ|
+
+[نقص/بازتولید](followup-06-limited-evidence/DEFECTS.md)، [شاهد واقعی خطا](followup-06-limited-evidence/independent-profile-fault.json)، [red/green](followup-06-limited-evidence/regression-red-green.json): کد مالک در branchاو ویرایش نشد؛ اصلاح محدود درa49e37c همین ترکیب است. آزمون8رفتاری رویHTTPhandlerواقعی با کلاسSDK، پیش‌ازاصلاح5PASS/3FAILوپس‌ازآن8PASS دارد؛ هیچ خواندن خصوصی/ساختwriterهنگامAuthfailed صورت نمی‌گیرد. lint/typecheck/build تازهPASS؛ هویت رسمیpending وphoneVerifiedfalseباورودایمیلی حفظ شد.
+
+**پذیرش مستقلِ همین دامنهٔ محدود:38PASS/0FAIL/0BLOCKED.** [جدول مستقل](followup-06-limited-evidence/independent.md) و [شواهد](followup-06-limited-evidence/independent.json) SHA واقعی هر ردیف را ثبت می‌کنند: بررسی گسترده رویd941 و بازآزمایی مسیرهای متأثر/پروفایل/خانه/سبد/مالی رویa49 در2026-10-01T19:29:51→19:29:58Z. همه38رویa49دوباره اجراشده ادعا نمی‌شود؛ diffمحدود اصلاح و نبودتغییرdependency/schema ثبت است. GET/POSTهویت وstatus هنگامAuthواقعی503 اکنون503، بازیابیGET200/POST401email-only/status200true؛ guestهویت401/status200false. adapterواقعی181 incomplete→unavailable→incomplete؛ Aسهنسخه/سهasset/یکdebt باhashیکسان وUIحاضر. signedURLقدیمی درTTLممکن بود200بماند وnativeواقعاًدر65ثانیه400شد. هر دو نقصAuthتازه پس از اصلاح مستقل تأیید شدند.
+
+### CI و گیت‌های باز
+
+[CI36914425680](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36914425680) روی **a49e37cecc7922d6d80c174910301e24a1841aee** در هرپنجjobsuccess؛ sandbox36914425665نیزsuccess. CI735a502قبلی نیزپنجjobسبز بود؛ شکست3f6درlintابزارNodeتاریخی باoverrideبسیارمحدودقاعدهNextرفعشد و فایل/شواهدbaselineتغییرنکرد. پس‌ازcommitشواهد نهایی، CI بایدرویheadنهاییPRنیزبررسی و در تحویل/شرحPR دقیقاًثبتشود؛ موفقیتa49بهheadدیگر نسبت داده نمی‌شود. تغییراتapplication/schema/dependencyبعدازbuild بایدخالیبماند.
+
+**این پذیرش فقط محدود است.** feed/read-stateجدیدNEXT06، NEXT09، providerموبایل/ایمیل و identitywriteبااثباتnativephone، ورودشخصی مالکرویURLاصلی، livequota/دوچرخه بازار، سرویس مالی واقعیFX و گیت‌های انسانیDEV07/173 بازند. wrapperadmin/fxفقطrole/UI sandboxاست، نهپذیرشProduction/مالی/iframe. FW03/PR187ورودی آیندهٔinventoryاست؛ وارداینruntimeنشده و شواهدبهآن تعمیمداده نمی‌شوند.
+
+**DEV-07 پذیرفته نشد؛ مانع انسانی قبلی محفوظ است.** گزارش14سناریویی قبلیDEV07روی15eebc9،13PASS/0FAIL/1BLOCKED بود؛ پژوهش نیازمندبازبینی/تأییدصریح انسانی ازمسیرمحصول است، نهapprovalعامل. این ادامه آن14سناریورا دوباره اجرا یاگیترا خودکار نبست؛173فهم انسانی ترازنامه نیزجداست. اگر reviewerروی‌دستگاهدیگر است، originمحلی درآن‌دستگاهدردسترسی‌فرض‌نیست؛ اپراتور باید محیط ساختگی قابل‌دسترسی/تحویل امن همان حساب‌ها را فراهم کند، بدون تغییرمسیربهPreviewبازیابی‌شده واقعی.
+
+baseline2605، نتیجهٔ مستقل18PASS/2FAIL و اسنادDEV07/173 محفوظ‌اند. hashکاننیکالLF دوشاهد مستقل قبلی باcommit a30d8fe یکسان است؛ تفاوتCRLFcheckoutجدیدتغییرمحتوایbaselineنیست. هیچ بکاپ/بازیابی، خرید، merge، Production، grantمدیربرایسبزکردن‌دانلود یاschemaمشترک انجام نشد.
+
+## سابقهٔ ثابت — گزارش و inventory پیش از ترکیب محدود تازه
+
+بخش‌های زیر سابقهٔ همان SHA2605 و ورودی‌های آن تاریخ هستند؛ عبارت‌های «منتظرpatch» دراین سابقه، وضعیت جاریِ بالا نیستند.
+
+
 تاریخ: 2026-10-01، تهران. دامنه: inventory واقعی، ترکیب آزمایشی checkpointهای مشخص، regression، نصب schema و بررسی مستقل Auth/Storage واقعی در دیتابیس ساختگی جدا. **وضعیت: تجمیع نهایی پذیرفته نشده؛ SHA انتشار آماده اعلام نمی‌شود.** بررسی مستقل Auth/Storage همین checkpoint **18 PASS / 2 FAIL / 0 BLOCKED** دارد. Auth179/180 و NEXT06@181 تحویل و inventory شده‌اند، اما واردruntime2605 نشده‌اند. شرط ترکیب محدود بعدی، تحویل patch ثابت NEXT04/Auth است؛ گیت‌های انسانی بازند.
 
 ## ادامهٔ جاری — Auth/Storage واقعی روی checkpoint ثابت
@@ -239,3 +275,7 @@ GitHub connector و Git برای inventory/CI/refهای واقعی؛ git worktre
 ## تحویل نسخه کنترل‌شده
 
 شاخه اختصاصی `codex/followup06-integration-20261001` به origin push شد؛ PR جدید ایجاد و PRهای ورودی تغییر نکردند. گزارش DEV07 و تمام JSONهای شاهد این بسته نسخه کنترل‌شده‌اند. لاگ خام محلی است و hash/خلاصه مشاهده‌شده آن در JSONها ثبت است. [نسخه گزارش روی شاخه اختصاصی](https://github.com/safariarash7777-source/portfolio-platform/blob/codex/followup06-integration-20261001/docs/ops/seasonal-program/FOLLOWUP-06-RESULT.md). ثبت نتیجه CI بعد از b7c7726 فقط docs-only است؛ نتیجه UI/Auth تازه‌ای از آن استنتاج نشده. برای dispatch CI از [endpoint رسمی GitHub](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event) و credential موجود مخزن فقط در حافظه فرایند استفاده شد؛ credential/token ذخیره یا نمایش داده نشد. بازیابی وضعیت از connector فقط PR-event را می‌دید؛ نتیجه workflow_dispatch با API و سپس لاگ jobهای connector تطبیق داده شد.
+
+## ورودی187پس‌ازپایانپذیرش محدود — inventoryفقط
+
+[Snapshotمستقلmetadata/files/CI](followup-06-limited-evidence/future-input-187.json) وHANDOFFمحلی خوانده شدند: head874c16096d792af2f57fc9142fde3124c0321dc1،runtime4687ceaa05d57233c1d718453016f3f1171aa353،base182@e5740be روی174. [CI36912816406](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36912816406) هرپنجjobsuccess؛deltaپس‌ازruntimeفقطdocs است. این ورودی واردruntimea49نشده، آزمون/build/نصب/retarget تازه‌ایبرای187انجامنشده و38PASSبهآن نسبت داده نمی‌شود. stack174→182→187 وoverlapها درJSONثبت‌اند؛ بررسی ترکیب آینده checkpointوscopeجدا می‌خواهد. benchمصنوعی1747→125ms/4018→1916ms شاهدProductionنیست؛TodayMarketdeadline15sلغوکاملکارقدیمی نیست، bulkReturns/CSVlarge/history/trendcap/watchlistcoverage وquota178/live2cycles باز می‌مانند. فعال‌سازیproducer/backfill،ادغام وProductionازاینintakeمجازنیست.
