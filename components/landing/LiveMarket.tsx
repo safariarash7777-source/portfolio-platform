@@ -95,7 +95,7 @@ export default function LiveMarket() {
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch("/api/market");
+        const res = await fetch("/api/market", { signal: AbortSignal.timeout(7000) });
         const json = (await res.json()) as MarketPayload;
         if (!alive) return;
         const any =

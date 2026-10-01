@@ -1,0 +1,266 @@
+{
+  "checkedAt": "2026-10-01T20:52:37.728Z",
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "checkoutHead": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "applicationSourceDiffEmpty": true,
+  "database": "followup06-feed-market-db",
+  "ownedLabel": "followup06-feed-market",
+  "readOnlyQueries": true,
+  "migrations": [
+    {
+      "file": "sql/archive/supabase_schema.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "001f52d5f4b1f6fe3d154fafafcabe766e6aa739c24c7ddb2bad5e72c998c0de"
+    },
+    {
+      "file": "sql/archive/supabase_portfolio_tracking.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "0ecc41f5f3a374dc0788d69f06da4413c083a29049d1a65749283d5d30ef2a9c"
+    },
+    {
+      "file": "sql/archive/supabase_portfolio_versioning.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "1f4e2f7ff3d14e2c7a55a4dc65b28aec5651e37c8ab0996173737a0a4284d491"
+    },
+    {
+      "file": "sql/staging/g3003_staging_profiles_prereq.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "5ae35fd4fa21ddec64130e565507164180f42d58bd9864d6fc225ee9bb2fe799"
+    },
+    {
+      "file": "sql/phase5_payments_telegram.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "4d689f0f45065c1989c8fba6c6b9a24aac9278695742982b5a5f7862b8438e8b"
+    },
+    {
+      "file": "sql/phase8_webinars.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "e4c3faa90c33c58a430880a6448d0fba3be90e60870bb0bbe6ce299fd7e20ccb"
+    },
+    {
+      "file": "sql/phase11_access_tiers.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "2ad50dd68ce1162fdd84ba627b2b2a7b64a1b97d3348d4035d619a23ed77df15"
+    },
+    {
+      "file": "sql/phase27_member_import.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "4e0085064a18b131e92744fc1987668be775e64aa385975094bdc77a0dece2f5"
+    },
+    {
+      "file": "sql/phase32_member_holdings.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6"
+    },
+    {
+      "file": "sql/phase34_research_workbook_versions.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8"
+    },
+    {
+      "file": "sql/phase35_consultation.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "9d9aa2faf3e6306d2f2992382564207f8b1dbe068f4eb209438597705a44ce7e"
+    },
+    {
+      "file": "sql/phase36_consultation_review_fixes.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "bdf127dcee86c26f3e19961fe8b9710385ca965ec649ee61b33cfc38a53c318a"
+    },
+    {
+      "file": "sql/phase37_nonretryable_version_conflicts.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "282b8be6c36b77bd9bf70c0dfd94ac3b8bccbd9cc628b75be1244cf5b1dfdf4d"
+    },
+    {
+      "file": "sql/phase38_personal_balance_sheet.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "2f44201b3aec41e489bf5ac6fd71406ea9d358748e199ca24a1161d644a2f5fb"
+    },
+    {
+      "file": "supabase/migrations/20260930182629_seasonal_course_membership.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b"
+    },
+    {
+      "file": "supabase/migrations/20260930182918_research_publication_queue.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229"
+    },
+    {
+      "file": "supabase/migrations/20261001083215_auth_private_identity_versions.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251"
+    },
+    {
+      "file": "supabase/migrations/20261001121858_member_publication_feed_reads.sql",
+      "applied": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "digestMatches": true,
+      "sha256": "db0cb056948ce7cfaf7a7d18472da0ebbddc834248e3f1d3710a90708b8cecdf"
+    }
+  ],
+  "catalog": {
+    "authUsers": 3,
+    "storageObjects": 3,
+    "identityRows": 0,
+    "receipts": 3,
+    "privateTables": [
+      {
+        "schema": "identity_private",
+        "table": "national_id_registry",
+        "enabled": true,
+        "forced": false,
+        "authenticatedSelect": false,
+        "anonSelect": false
+      },
+      {
+        "schema": "identity_private",
+        "table": "profile_versions",
+        "enabled": true,
+        "forced": false,
+        "authenticatedSelect": false,
+        "anonSelect": false
+      },
+      {
+        "schema": "publication_private",
+        "table": "research_publication_reads",
+        "enabled": true,
+        "forced": true,
+        "authenticatedSelect": false,
+        "anonSelect": false
+      }
+    ],
+    "feedRPCInstalled": true,
+    "holdingVersions": 6,
+    "holdingPositions": 6,
+    "debtPositions": 2
+  },
+  "clockOffset": 0,
+  "faultDisabled": true,
+  "egress": {
+    "auditRows": 0,
+    "externalPerformed": 0
+  },
+  "secretScan": [
+    {
+      "file": "independent-cold-finalize.mjs",
+      "sha256": "f7d3d342768f0c218d5d0a9808bc68575151ffddf2e6cdfce031be7b0095e8d2",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-cold-preparation.json",
+      "sha256": "9e67108c418d7bf2b336e3fc5af97bd651a09d193618788842589ef25d02eb35",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-cold-prepare.mjs",
+      "sha256": "2dffc1cb5117f66aaaa2dc2e51f7610a0b5ba74a95151009afed7ebf414c634f",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-core.mjs",
+      "sha256": "b53ba41aaf8ac9414eb44b44ff5c1b38c3a5dbbb4b933251e8e60ab579b27100",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-feed.json",
+      "sha256": "3ae3ed75c9a069a58fff11b9af2b99b51fa1eff309646c70ada64481c53fb74f",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-feed.mjs",
+      "sha256": "6b75a0714782dbc68a5eed9d14a02e959dcd4b5248a5aeb6b47b82bd02e92341",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-finalize.mjs",
+      "sha256": "ad61a846ca35dd609ccf2351c63dd49194457cfb3ef7bcfb9b6f2dccfd98a7b5",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-identity-ui.json",
+      "sha256": "c39b955e56ef247ff143be5f6011c1b86c7940a6ebe95d34ac2df4ea03e0a573",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-identity-ui.mjs",
+      "sha256": "4b00def8d5f43804b5f7412734f156bcd1b6ec1d85ee46315a216b7cec3eb7cb",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-integrity.json",
+      "sha256": "82fc30ca101df62d53dd82c385490b0021f2bd69da65f96235865174f6a28bbb",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-integrity.mjs",
+      "sha256": "42379f426c94ffc4c2f7a809090b3f9086f6b09cc20d5b4d2e397a6bfda8776d",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-market-cold-attempt-01.json",
+      "sha256": "24a4f8f066e3eb72fb66df5de747dc8a09e0bfde88beb2cc0f807ebe5b075209",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-market-cold.json",
+      "sha256": "1a75e6147bfba8c4cf7d71d2684299e29ab5363d08af5c238cfd8fd1021dc888",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-market-cold.mjs",
+      "sha256": "e2422fe9b823d5e9dd1596fcf7f301a704d3b547836e5e25e8099e209cb29c48",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-market.json",
+      "sha256": "f49e6611533a39a5ade5d96e8acfea86be33abec599654539f8c636ef6d2a7f4",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-market.mjs",
+      "sha256": "9afaee5d2cf7d9ffc53464d02c761fa35711e1fc9bcd92427f9d1a78731bf62c",
+      "secretHits": 0
+    },
+    {
+      "file": "independent-plan.md",
+      "sha256": "09c90bb8e28d8b38dd1c5b48ea6287c1665be1affd69ab686e3f3568b147d73c",
+      "secretHits": 0
+    },
+    {
+      "file": "independent.json",
+      "sha256": "fa23f9b29bb54c262ae41144a4e076ef405b4147bc1319a5cc06fafdcec55334",
+      "secretHits": 0
+    },
+    {
+      "file": "independent.md",
+      "sha256": "9621a50512c2244f69020cb0a919b77ff2dbf913761bcdca06a2ee75579b1202",
+      "secretHits": 0
+    }
+  ],
+  "frozenPR186": {
+    "baseline": "be60bf54d64d60cc1c3c5d438034439ce12b9f15",
+    "trackedEvidenceDiffEmpty": true,
+    "noAttributionToNewRuntime": true
+  },
+  "note": "Catalog counts supplement actual UI/RLS/digest observations in independent-feed.json and independent-identity-ui.json. No fixtures changed or reset.",
+  "valid": true
+}

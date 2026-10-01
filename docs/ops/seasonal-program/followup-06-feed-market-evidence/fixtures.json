@@ -1,0 +1,51 @@
+{
+  "sha": "592727a",
+  "environment": "followup06-feed-market-native-local",
+  "createdAt": "2026-10-01T20:24:25.559Z",
+  "accounts": {
+    "A": {
+      "id": "02363980-3f12-412c-a7a8-dcfa863cfb74",
+      "profileRole": "user"
+    },
+    "B": {
+      "id": "3404646c-bd5e-4f22-88d1-b128a33b92d2",
+      "profileRole": "user"
+    },
+    "admin": {
+      "id": "9dc3a88a-7be9-478a-9f86-a2f394db764e",
+      "profileRole": "admin"
+    }
+  },
+  "course": "71354d13-8592-4e50-acc9-96f17d824b9d",
+  "cohorts": {
+    "A": "01d81e9c-d2a3-42ee-a4c8-6992eaa849a7",
+    "B": "79d09526-338c-41f2-92ed-993828dcfa49",
+    "cancel": "66f35403-b7d8-43d5-b919-43b86ef44249"
+  },
+  "resources": {
+    "A": {
+      "id": "361e95c2-a88b-4da0-b83f-019e1b456565",
+      "storagePath": "followup06-A/synthetic.txt",
+      "sha256": "773ee1169339e5c25cda05f6c75296a6daeaf02c81a435a60083984598cc8128",
+      "bytes": 36,
+      "uploadHTTP": 200
+    },
+    "B": {
+      "id": "4be35ccb-c558-4422-9385-1bb0ea0ded3f",
+      "storagePath": "followup06-B/synthetic.txt",
+      "sha256": "1eac92483419fa0f08f4d4615748e7452b6a7c6d4f196fe62caa623ba2cc3792",
+      "bytes": 36,
+      "uploadHTTP": 200
+    },
+    "cancel": {
+      "id": "3e5b91de-b936-435f-abbe-f7644135c526",
+      "storagePath": "followup06-cancel/synthetic.txt",
+      "sha256": "e0030e2c47d0f32dee9a6eabee3329c8bccfe645b18121716b54fcf63d1ce3af",
+      "bytes": 41,
+      "uploadHTTP": 200
+    }
+  },
+  "accountCreation": "Native GoTrue admin API; email confirmed test users; login must still use product UI",
+  "storage": "Native Storage upload API; real storage.objects; no scaffold objects",
+  "credentialFile": "C:/Users/Asus/.codex/private/followup06-feed-market/reviewer-credentials.json"
+}

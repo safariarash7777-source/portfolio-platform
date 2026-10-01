@@ -1,0 +1,44 @@
+[
+  {
+    "runId": 36910822027,
+    "workflow": "Seasonal membership sandbox",
+    "jobs": [
+      {
+        "name": "isolated-db",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  {
+    "runId": 36910821901,
+    "workflow": "CI",
+    "jobs": [
+      {
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  }
+]

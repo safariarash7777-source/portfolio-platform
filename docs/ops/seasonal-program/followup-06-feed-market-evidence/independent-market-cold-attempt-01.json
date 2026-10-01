@@ -1,0 +1,80 @@
+{
+  "reviewer": "/root/limited_independent; did not author combined implementation",
+  "kind": "market-cold",
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "origin": "http://127.0.0.1:3399",
+  "checkoutHead": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "applicationSourceDiffEmpty": true,
+  "startedAt": "2026-10-01T20:44:10.310Z",
+  "scenarios": [
+    {
+      "id": "cold-iran-hung-null-and-explicit-recovery",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "First request after witnessed owned process restart: hung Iran ends at budget with null/error; global remains healthy. Restore fixture/cooldown and complete Iran board returns",
+      "observed": {
+        "cold": {
+          "http": 200,
+          "ms": 5112.96,
+          "iranIsNull": true,
+          "iranAvailability": {
+            "state": "timeout",
+            "sourceAt": null,
+            "readAt": 1790887455411
+          },
+          "globalAvailability": {
+            "state": "ready",
+            "sourceAt": 1790887450458,
+            "readAt": 1790887450486
+          },
+          "cryptoRows": 1,
+          "partial": true
+        },
+        "recovery": {
+          "http": 200,
+          "ms": 85.24,
+          "stocks": 760,
+          "funds": 333,
+          "iranAvailability": {
+            "state": "ready",
+            "sourceAt": 1790885845307,
+            "readAt": 1790887520499
+          },
+          "partial": false
+        }
+      },
+      "status": "FAIL",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:44:15.514Z",
+      "owner": "187/cold source truthfulness"
+    }
+  ],
+  "privacy": "Fresh actual product UI/native Auth sessions only; no invented JWT/cookies, HAR, traces, signed URLs or secret values in reports.",
+  "firstColdObservation": {
+    "http": 200,
+    "ms": 5112.96,
+    "iranIsNull": true,
+    "iranAvailability": {
+      "state": "timeout",
+      "sourceAt": null,
+      "readAt": 1790887455411
+    },
+    "globalAvailability": {
+      "state": "ready",
+      "sourceAt": 1790887450458,
+      "readAt": 1790887450486
+    },
+    "cryptoRows": 1,
+    "partial": true
+  },
+  "processRestart": "Witnessed root-owned Next3398 restart; same immutable build; see root environment recovery evidence",
+  "finishedAt": "2026-10-01T20:44:15.518Z",
+  "counts": {
+    "PASS": 0,
+    "FAIL": 1,
+    "BLOCKED": 0
+  }
+}

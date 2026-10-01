@@ -1,0 +1,113 @@
+{
+  "environment": "synthetic-production-build-local",
+  "source": "full row counts from read-only metadata; synthetic contents",
+  "records": [
+    {
+      "label": "world_slow_iran_healthy",
+      "status": 200,
+      "ms": 1956.48,
+      "stocks": 760,
+      "funds": 333,
+      "crypto": 0,
+      "partial": true,
+      "availability": {
+        "global": {
+          "state": "error",
+          "sourceAt": null,
+          "readAt": 1790858623498
+        },
+        "iran": {
+          "state": "ready",
+          "sourceAt": 1790858225605,
+          "readAt": 1790858621690
+        }
+      },
+      "irStamp": 1790858225605,
+      "globalStamp": 0,
+      "diagError": null
+    },
+    {
+      "label": "both_healthy",
+      "status": 200,
+      "ms": 93.42,
+      "stocks": 760,
+      "funds": 333,
+      "crypto": 1,
+      "partial": false,
+      "availability": {
+        "global": {
+          "state": "ready",
+          "sourceAt": 1790859223574,
+          "readAt": 1790859223574
+        },
+        "iran": {
+          "state": "ready",
+          "sourceAt": 1790858225605,
+          "readAt": 1790859223601
+        }
+      },
+      "irStamp": 1790858225605,
+      "globalStamp": 1790859223574,
+      "diagError": null
+    },
+    {
+      "label": "both_failed_complete_cache_retained",
+      "status": 200,
+      "ms": 78.31,
+      "stocks": 760,
+      "funds": 333,
+      "crypto": 1,
+      "partial": true,
+      "availability": {
+        "global": {
+          "state": "stale",
+          "sourceAt": 1790859223574,
+          "readAt": 1790859823684
+        },
+        "iran": {
+          "state": "stale",
+          "sourceAt": 1790858225605,
+          "readAt": 1790859823685
+        }
+      },
+      "irStamp": 1790858225605,
+      "globalStamp": 1790859223574,
+      "diagError": "http_503"
+    },
+    {
+      "label": "db_hang_with_previous_complete_cache",
+      "status": 200,
+      "ms": 5047.18,
+      "stocks": 760,
+      "funds": 333,
+      "crypto": 1,
+      "partial": true,
+      "availability": {
+        "global": {
+          "state": "ready",
+          "sourceAt": 1790859923793,
+          "readAt": 1790859923794
+        },
+        "iran": {
+          "state": "stale",
+          "sourceAt": 1790858225605,
+          "readAt": 1790859928747
+        }
+      },
+      "irStamp": 1790858225605,
+      "globalStamp": 1790859923793,
+      "diagError": "AbortError"
+    },
+    {
+      "label": "SSR_progressive_world_hang",
+      "status": 200,
+      "firstIranTitleMs": 216.52,
+      "fullBodyMs": 3422.22,
+      "sourceErrorRendered": true
+    },
+    {
+      "label": "private_or_unknown_kind_rejected",
+      "status": 400
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "check": "core",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 1262",
+      "ℹ pass 1262",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0"
+    ]
+  },
+  {
+    "check": "seasonal",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 5",
+      "ℹ pass 5",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0"
+    ]
+  }
+]

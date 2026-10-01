@@ -43,9 +43,9 @@ export default function ScreenerPanel({
   /** تعداد نمادهای عبورکرده از فیلتر فعال — null یعنی فیلتری فعال نیست */
   matchCount: number | null;
   /** چند نماد از کل، تاریخچهٔ کافی برای فیلتر حجم دارند */
-  historyCoverage: { covered: number; total: number };
+  historyCoverage: { covered: number | null; total: number };
   /** پوشش پرست‌های بنیادی: چند نماد گزارش کافی دارند (کلید پرست → تعداد) */
-  fundamentalCoverage?: Record<string, number>;
+  fundamentalCoverage?: Record<string, number | null>;
   currentConfig: ScreenerPresetConfig;
   onApplyPreset: (c: ScreenerPresetConfig) => void;
 }) {
@@ -157,6 +157,7 @@ export default function ScreenerPanel({
     label: string;
     coverage?: number | null;
     on: boolean;
+    deferred?: boolean;
   }) => (
     <span key={opts.key} className="inline-flex items-center">
       <button
@@ -173,7 +174,7 @@ export default function ScreenerPanel({
         {opts.label}
         {opts.coverage != null ? (
           <span className="mr-1 opacity-70">({toPersianDigits(opts.coverage)} نماد پوشش)</span>
-        ) : null}
+        ) : opts.deferred ? <span className="mr-1 opacity-70">(خواندن هنگام انتخاب)</span> : null}
       </button>
       {loggedIn ? (
         <button
@@ -212,6 +213,7 @@ export default function ScreenerPanel({
             key: f.key,
             label: f.label,
             coverage: f.needsHistory ? historyCoverage.covered : null,
+            deferred: f.needsHistory && historyCoverage.covered === null,
             on: activeFilter === f.key,
           })
         )}
@@ -241,7 +243,8 @@ export default function ScreenerPanel({
             chip({
               key: p.key,
               label: p.label,
-              coverage: fundamentalCoverage[p.key] ?? 0,
+              coverage: fundamentalCoverage[p.key],
+              deferred: fundamentalCoverage[p.key] === null,
               on: activeFilter === p.key,
             })
           )}

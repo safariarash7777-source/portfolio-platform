@@ -1,0 +1,8238 @@
+{
+  "phase": "baseline",
+  "at": "2026-10-01T12:03:47.353Z",
+  "summary": {
+    "data": {
+      "cold": {
+        "n": 20,
+        "p50": 1669.44,
+        "p95": 1746.97
+      },
+      "warm": {
+        "n": 480,
+        "p50": 10.73,
+        "p95": 26.6
+      },
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "parallelWorkers": 2
+    },
+    "market": {
+      "cold": {
+        "n": 20,
+        "p50": 4008.13,
+        "p95": 4018.05
+      },
+      "warm": {
+        "n": 480,
+        "p50": 0.02,
+        "p95": 0.09
+      },
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "parallelWorkers": 2
+    }
+  },
+  "samples": [
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1555.01,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 38.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.14,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 24.65,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 22.76,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 27.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 24.17,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 20.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 18.19,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.89,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.17,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.85,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.37,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.9,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.63,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.8,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.58,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.15,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.96,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.43,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.63,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1565.25,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 26.54,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 25.7,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 19.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 20.84,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 23.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.66,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.67,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.93,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.3,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.52,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.76,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.25,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1612.02,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 37.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 26.6,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 23.29,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.9,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.93,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 19.92,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 25.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.33,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.34,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.39,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.95,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.26,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.93,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.17,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.75,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.56,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.74,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.21,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.79,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1634.4,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 36.42,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 26.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 23.4,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.88,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 19.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 18.96,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 25.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.64,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.62,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.9,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.52,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.27,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.97,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.45,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.43,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.88,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.29,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1476.29,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 50.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.34,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 39.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.51,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.26,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.36,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.81,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.68,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 20.59,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.72,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.36,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.22,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 23.22,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.94,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.68,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 29.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1539.38,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 42.6,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.77,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.82,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.47,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.36,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 22.17,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.97,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.66,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.77,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.95,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 24.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 20.17,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.65,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 30.85,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 18.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.33,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.5,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1669.44,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 32.77,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 19.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 21.23,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.41,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.79,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.64,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.58,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.29,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.26,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.59,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.2,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.92,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.8,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.93,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.17,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.71,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.68,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.55,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1616.24,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 30.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.93,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.87,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.92,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.35,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.66,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.42,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.54,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.95,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.42,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.5,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.46,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.29,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.54,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.37,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1744.79,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 44.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 26.49,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 23.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 22,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.34,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.66,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 31.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.93,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.58,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.64,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.31,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.57,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.76,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.77,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.65,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1746.97,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 42.68,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 27.43,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 24.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 25.93,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 20,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 21.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 27.74,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 21.81,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 18.27,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.37,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.49,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 20.98,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.37,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.72,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.95,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.35,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.39,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.42,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.75,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.55,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1722.61,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 27.41,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.45,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 19.15,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.25,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.82,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.51,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.7,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.12,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.3,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.39,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.62,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.35,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.4,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.45,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.72,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.8,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.51,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1788.32,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 29.26,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.79,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 23.26,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.42,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.74,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.59,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.31,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.97,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.71,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.18,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.81,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.31,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.54,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.92,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.81,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1672.94,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 14.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.55,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 24.75,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.63,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.88,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.65,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.21,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.58,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.94,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.88,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.64,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.62,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.31,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.45,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.3,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.66,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.81,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.4,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.82,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.74,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1697.59,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 31.79,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.62,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.35,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.65,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.18,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.51,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.8,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.62,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.4,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.56,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.96,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.95,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.88,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.94,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.97,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1647.34,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 22.72,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 22.88,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 23.6,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.79,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 29.86,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.66,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.69,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.22,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.56,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 20.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.89,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.47,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.29,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.92,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.95,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.81,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1654.12,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 33.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 19.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 28.89,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 22.47,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 18.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.7,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.7,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 17.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 18.34,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.44,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.66,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.67,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.33,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.3,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.48,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.27,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.14,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 13.47,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.81,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1710.05,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 19.9,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 11.42,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.87,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.36,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.23,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.55,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.56,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.25,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.39,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.71,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.97,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.24,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.17,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.57,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.39,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.68,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1736.81,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 14.8,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.37,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.63,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.94,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.35,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.31,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.94,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.58,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.3,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.91,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.32,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.8,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.52,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.31,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.26,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.75,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.29,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.49,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1746.91,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 37.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.9,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.78,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.21,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.4,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.14,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.31,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.61,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.53,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.94,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.45,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.6,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.9,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.27,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.56,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.26,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.21,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.76,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 1722.43,
+        "requests": 43,
+        "stocks": 760,
+        "funds": 333,
+        "avgSymbols": 987,
+        "monthlyRows": 5981,
+        "quarterlyRows": 3638
+      },
+      "warm": [
+        {
+          "ms": 33.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 14.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.38,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 16.72,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 15.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 12.68,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.52,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.6,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.28,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.54,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.99,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.88,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.51,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.34,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.76,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.54,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.51,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.36,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 7.69,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 9.57,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 8.52,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 10.73,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        },
+        {
+          "ms": 6.74,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333,
+          "avgSymbols": 987,
+          "monthlyRows": 5981,
+          "quarterlyRows": 3638
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4005.83,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4005.86,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4013.89,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4013.83,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4008.69,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4009.98,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4001.9,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4004.59,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4014.58,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4008.1,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4008.13,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4007.99,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4008,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4011.48,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.11,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4018.59,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4011.95,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4012.81,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.08,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.13,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.16,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.1,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.07,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4018.05,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.09,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.04,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.06,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.12,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4007.81,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    },
+    {
+      "mode": "market",
+      "counts": {
+        "stocks": 760,
+        "funds": 333,
+        "history45": 29610,
+        "monthly": 5981,
+        "quarterly": 3638
+      },
+      "network": {
+        "dbRequestMs": 40,
+        "globalRequestMs": 4000,
+        "postgrestCap": 1000
+      },
+      "cold": {
+        "ms": 4004.12,
+        "requests": 2,
+        "stocks": 760,
+        "funds": 333
+      },
+      "warm": [
+        {
+          "ms": 0.03,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.02,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.05,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        },
+        {
+          "ms": 0.01,
+          "requests": 0,
+          "stocks": 760,
+          "funds": 333
+        }
+      ]
+    }
+  ]
+}

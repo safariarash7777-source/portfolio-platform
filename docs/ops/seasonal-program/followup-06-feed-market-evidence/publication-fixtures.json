@@ -1,0 +1,197 @@
+{
+  "environment": "followup06-feed-market-native-local",
+  "createdAt": "2026-10-01T20:24:48.791Z",
+  "cohorts": {
+    "A": "01d81e9c-d2a3-42ee-a4c8-6992eaa849a7",
+    "B": "79d09526-338c-41f2-92ed-993828dcfa49",
+    "cancel": "66f35403-b7d8-43d5-b919-43b86ef44249"
+  },
+  "visible": [
+    {
+      "versionId": "d11cf1a8-2595-4c15-94ad-e0298290b2de",
+      "publicationId": "d302b136-7c8a-48ca-ab15-e45cc25a302f",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "baff4194-fb85-426f-b1bf-ba4b33bf4dfa",
+      "publicationId": "4ea733a8-21ce-4261-85e2-4d9b4800dc97",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "ffbfe572-65ca-4a70-a567-bcb3ac5c5763",
+      "publicationId": "9d1d7bb5-8078-4a4a-b71e-d40be3460f5d",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "7a162094-b20b-47c4-b25b-255703e4f2e0",
+      "publicationId": "3574efb1-7dde-44c1-8b5e-7b8447d40c23",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "54ee71be-7fed-40d3-9ff6-3ea3b467e84d",
+      "publicationId": "53723de0-e3b1-466b-ab09-57f4a3857d86",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "7843ae51-7c3a-4757-aea9-9d4778ae9e0d",
+      "publicationId": "ad0c0109-4955-443d-96ad-416014bf6a1c",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "ce6d0616-dc82-4cb4-9b9b-c1e228a8ca2c",
+      "publicationId": "4e32fbb5-c0a7-4ab4-b30a-6d357f38b0a3",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "e45104a7-29f8-4116-a462-59d6336b4a5d",
+      "publicationId": "815502c2-4ff2-4d05-a32a-f0042584296e",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "9b83b381-50e9-4573-8b87-079415451579",
+      "publicationId": "bf6b2b7f-929e-4558-9923-e6aa253b347a",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "af5bbc82-46d1-4f04-8304-5c8ca63db0c7",
+      "publicationId": "05e8dfdb-3e1e-4261-ae58-4d3d51559d87",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "0cfe3d9b-7eed-4f2d-88c0-5a0847e6d012",
+      "publicationId": "9835bc1b-f976-4232-b174-cd3938406e77",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "db1fdba0-8211-4d9c-a999-378484595f70",
+      "publicationId": "66e701bb-51ae-4ee3-9903-70053520b70a",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "f4887bd0-0a0d-4647-83b5-7cdb7823f7c4",
+      "publicationId": "99b1fe3b-1bfc-4da7-ab94-8f7f22a42800",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "b3dfb737-e666-4862-953d-9dec93d9c950",
+      "publicationId": "25285a71-e52f-4af7-b590-13545a7e34a6",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "2c82ce8e-b4bf-42dc-b277-bfbd878e44cb",
+      "publicationId": "23234091-0843-4830-af2f-de4522c2b957",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "2d415692-8fa0-4a93-a728-d70bc75413ef",
+      "publicationId": "114bdef0-3597-4024-be83-08b6e4463bcd",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "e7b714a3-c6d4-49f2-8baf-6c900c031291",
+      "publicationId": "7e2f16a8-055b-449a-8ef9-c96e0d04c2e7",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "94e45022-eab4-48ae-ab46-4e874fa89f13",
+      "publicationId": "4848e00c-a071-4438-b551-6aa50efb0221",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "d81bf14c-d14d-4fdb-9ccc-80b0c367eb33",
+      "publicationId": "22797d6b-b11a-4818-8ddd-824236860aa4",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "a782e15f-3396-4949-950c-73837ba83bbb",
+      "publicationId": "09853f1e-e4ef-406e-8176-4082ebeaafbd",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "0fe417a1-58bc-4aa3-8d68-681f44d8359e",
+      "publicationId": "6aea3789-7dbc-4b1b-a0f9-f8475156152a",
+      "baseVersion": 1
+    },
+    {
+      "versionId": "03542241-830f-413a-9b90-9fe5f317abde",
+      "publicationId": "e2cabf06-777e-453a-bf1a-81a1f3cf293b",
+      "baseVersion": 1
+    }
+  ],
+  "privateB": {
+    "versionId": "acdccbd0-5c95-4e16-957c-6c931da7f84b",
+    "publicationId": "23ab3cc3-4a75-4188-9f8b-b1884b381cb4",
+    "baseVersion": 1
+  },
+  "publicItem": {
+    "versionId": "304ce1ac-0d2b-4819-aadf-5b01c1ff7072",
+    "publicationId": "9cefa040-bd8f-4620-bdba-432c2e7b746c",
+    "baseVersion": 1
+  },
+  "hidden": {
+    "draft": {
+      "versionId": "c9c306b2-2d8d-442c-b2fc-81a65ef3c096",
+      "publicationId": "03928ce6-d07e-49d2-98f4-9422604e9c76",
+      "baseVersion": 1
+    },
+    "ready": {
+      "versionId": "cf1aa8a5-e1e5-4344-b917-b57feb87a2d1",
+      "publicationId": "444111ab-6a1c-4e18-99df-9e113ce5f271",
+      "baseVersion": 1
+    },
+    "withdraw": {
+      "versionId": "bd8d224e-b529-4cce-a061-6a104c253473",
+      "publicationId": "acdae8f4-c966-46ec-9470-6b22344bb5d9",
+      "baseVersion": 1
+    }
+  },
+  "returned": {
+    "versionId": "4ce760ce-5dee-4368-854b-d14df6be4505",
+    "publicationId": "78dfa574-47e5-45a5-82c6-493aee85d2ec",
+    "baseVersion": 1
+  },
+  "workbook": {
+    "versionId": "97a68c7e-efec-46b6-b5d1-11b54f2807a4",
+    "workbookId": "d2269c0a-addc-4fe0-95ac-9a985e8a8248",
+    "version": 1
+  },
+  "withdrawCandidate": {
+    "versionId": "e7d9daf5-848b-4523-9da3-e08fa156ed95",
+    "publicationId": "0d18bc06-e2e8-4367-a7a7-55f772cbd1dd",
+    "baseVersion": 1
+  },
+  "returnCandidate": {
+    "versionId": "802e1593-1bc7-4937-a7c4-2d84290fd2dc",
+    "publicationId": "718becf9-71cf-4bf0-9140-e4a9c64853c6",
+    "baseVersion": 1,
+    "workbookId": "b14d9bff-53fb-471e-89fb-39c9926af7b6",
+    "workbookVersion": 1,
+    "workbookVersionId": "cc1f9f82-85f4-49fc-8937-5c5a45fdff15"
+  },
+  "grantIds": {
+    "02363980-3f12-412c-a7a8-dcfa863cfb74": "30505087-2a36-4932-8990-28f73bc7bb3b",
+    "3404646c-bd5e-4f22-88d1-b128a33b92d2": "d6ba4779-0c26-40d3-83d2-37288755bb15"
+  },
+  "draft": {
+    "workbookVersionId": "97a68c7e-efec-46b6-b5d1-11b54f2807a4",
+    "contentKind": "brief",
+    "title": "نسخهٔ دوم مستقل",
+    "summary": "این متن صرفاً ساختگی است؛ شاهد دادهٔ بازار یا تأیید انسانی نیست.",
+    "content": "محتوای ساختگی برای بررسی نسخه و مجوز. تاریخ و منبع را پیش از تفسیر بخوانید؛ توصیهٔ معامله نیست.",
+    "sources": [
+      {
+        "url": "https://example.invalid/feed-market",
+        "asOf": "2026-10-01"
+      }
+    ],
+    "audience": "cohort",
+    "cohortIds": [
+      "01d81e9c-d2a3-42ee-a4c8-6992eaa849a7"
+    ],
+    "channels": [
+      "site"
+    ],
+    "privateNote": "PRIVATE_FEED_MARKET_SYNTHETIC"
+  },
+  "source": "Native GoTrue admin sign-in for fixture preparation and canonical publication RPC. Acceptance logins must use actual UI separately; no receipt seeded."
+}

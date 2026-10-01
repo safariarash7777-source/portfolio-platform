@@ -1,3 +1,4 @@
+import { withDeadline, DeadlineError } from "../deadline";
 /** Read-only keyset scan. Short pages are NOT proof of completion (PostgREST max-rows). */
 export interface ReadCoverage {
   state: "complete" | "stale" | "error";
@@ -24,6 +25,7 @@ interface PagedReadOptions {
   pageSize?: number;
   maxPages?: number;
   fetcher?: typeof fetch;
+  signal?: AbortSignal;
 }
 
 /** Fence the append-only scan at the highest visible ID using the SAME filters and RLS. */
@@ -34,22 +36,27 @@ export async function readAllPages<T extends { id: number }>(options: PagedReadO
   }
   async function request(query: URLSearchParams, page: number): Promise<T[]> {
     for (let attempt = 0; attempt < 2; attempt++) {
-      let response: Response;
+      let response: { ok: boolean; status: number; body: unknown };
       try {
-        response = await fetcher(`${url.replace(/\/+$/, "")}/rest/v1/${table}?${query}`, {
+        response = await withDeadline(async signal => {
+          const res = await fetcher(`${url.replace(/\/+$/, "")}/rest/v1/${table}?${query}`, {
           headers: { apikey: anon, Authorization: `Bearer ${anon}` },
-          cache: "no-store", signal: AbortSignal.timeout(10000),
-        });
-      } catch {
-        if (attempt === 0) continue;
-        throw new PagedReadError("transport", page);
+          cache: "no-store", signal,
+          });
+          let body: unknown = null;
+          if (res.ok) { try { body = await res.json(); } catch { throw new PagedReadError("invalid_json", page); } }
+          return { ok: res.ok, status: res.status, body };
+        }, 10000, options.signal);
+      } catch (error) {
+        if (error instanceof PagedReadError) throw error;
+        if (attempt === 0 && !options.signal?.aborted) continue;
+        throw new PagedReadError(options.signal?.aborted ? "deadline" : "transport", page);
       }
       if (!response.ok) {
         if (attempt === 0 && (response.status === 429 || response.status >= 500)) continue;
         throw new PagedReadError("http", page, response.status);
       }
-      let body: unknown;
-      try { body = await response.json(); } catch { throw new PagedReadError("invalid_json", page); }
+      const body = response.body;
       if (!Array.isArray(body) || body.some(row => !row || !Number.isSafeInteger(row.id) || row.id <= 0)) {
         throw new PagedReadError("invalid_rows", page);
       }
@@ -104,7 +111,7 @@ export function createCompleteReader<T>(loader: () => Promise<CompleteRead<T>>, 
         failure = undefined;
         return result;
       } catch (error) {
-        const e = error instanceof PagedReadError ? error : new PagedReadError("read_failed", 0);
+        const e = error instanceof PagedReadError ? error : new PagedReadError(error instanceof DeadlineError ? "deadline" : "read_failed", 0);
         failure = { code: e.code, page: e.page, ...(e.status ? { status: e.status } : {}) };
         retryAt = now() + 30000;
         return fallback();

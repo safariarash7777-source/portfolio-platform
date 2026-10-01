@@ -1,10 +1,8 @@
-import ReadCoverageNotice from "@/components/market/ReadCoverageNotice";
+import MarketDataStatus from "@/components/market/MarketDataStatus";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DataExplorer from "@/components/data/DataExplorer";
 import { getIrMarket } from "@/lib/market-ir";
-import { getAvgVolume30 } from "@/lib/core/avgVolume";
-import { getFundamentalYoY } from "@/lib/core/fundamentalData";
 import { pageMetadata } from "@/lib/metadata";
 
 
@@ -18,26 +16,19 @@ export const metadata = pageMetadata({
 });
 
 export default async function DataBankPage() {
-  const [ir, avgVol, fundamentalYoY] = await Promise.all([
-    getIrMarket(),
-    getAvgVolume30(),
-    getFundamentalYoY(),
-  ]);
+  const ir = await getIrMarket();
   return (
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-7xl px-5 pt-8 pb-16">
-          <ReadCoverageNotice coverage={fundamentalYoY.coverage.monthly} label="گزارش‌های ماهانه" />
-          <ReadCoverageNotice coverage={fundamentalYoY.coverage.quarterly} label="گزارش‌های فصلی" />
+          <MarketDataStatus market={ir} />
           <DataExplorer
             stocks={ir?.stocks ?? []}
             funds={ir?.funds ?? []}
             gold={ir?.gold ?? []}
             currency={ir?.currency ?? []}
             fetchedAt={ir?.fetchedAt ?? null}
-            avgVolume30={[...avgVol.entries()]}
-            fundamentalYoY={fundamentalYoY}
           />
         </div>
       </main>

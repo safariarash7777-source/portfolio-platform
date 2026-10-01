@@ -1,0 +1,139 @@
+{
+  "at": "2026-10-01T19:01:55.501Z",
+  "source": "real Next + GoTrue + PostgREST on existing feed06 sandbox",
+  "gitHead": "eb94b97f50a1b628af4f84554f7a1ce06780910e",
+  "buildManifest": {
+    "sha": "eb94b97f50a1b628af4f84554f7a1ce06780910e",
+    "environment": "feed06-local",
+    "builtAt": "2026-10-01T19:00:39.962Z",
+    "origin": "http://127.0.0.1:3540",
+    "backend": "same origin /supabase",
+    "build": "production"
+  },
+  "records": [
+    {
+      "case": "A current scoped feed 20 items",
+      "result": "PASS"
+    },
+    {
+      "case": "canonical contract and no-store",
+      "result": "PASS"
+    },
+    {
+      "case": "stable second page 2 items without duplicates",
+      "result": "PASS"
+    },
+    {
+      "case": "feed excludes private metadata",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot list A",
+      "result": "PASS"
+    },
+    {
+      "case": "advisor cannot list A",
+      "result": "PASS"
+    },
+    {
+      "case": "anonymous cannot list A",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot scoped-detail A",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot mark A",
+      "result": "PASS"
+    },
+    {
+      "case": "advisor cannot scoped-detail A",
+      "result": "PASS"
+    },
+    {
+      "case": "advisor cannot mark A",
+      "result": "PASS"
+    },
+    {
+      "case": "A wrong cohort denied",
+      "result": "PASS"
+    },
+    {
+      "case": "expired current account cohort denied",
+      "result": "PASS"
+    },
+    {
+      "case": "draft absent from scoped detail",
+      "result": "PASS"
+    },
+    {
+      "case": "draft cannot mark",
+      "result": "PASS"
+    },
+    {
+      "case": "ready absent from scoped detail",
+      "result": "PASS"
+    },
+    {
+      "case": "ready cannot mark",
+      "result": "PASS"
+    },
+    {
+      "case": "withdraw absent from scoped detail",
+      "result": "PASS"
+    },
+    {
+      "case": "withdraw cannot mark",
+      "result": "PASS"
+    },
+    {
+      "case": "returned absent from scoped detail",
+      "result": "PASS"
+    },
+    {
+      "case": "returned cannot mark",
+      "result": "PASS"
+    },
+    {
+      "case": "other absent from scoped detail",
+      "result": "PASS"
+    },
+    {
+      "case": "other cannot mark",
+      "result": "PASS"
+    },
+    {
+      "case": "public absent from scoped detail",
+      "result": "PASS"
+    },
+    {
+      "case": "public cannot mark",
+      "result": "PASS"
+    },
+    {
+      "case": "canonical authorized detail",
+      "result": "PASS"
+    },
+    {
+      "case": "GET detail leaves receipts untouched",
+      "result": "PASS"
+    },
+    {
+      "case": "public canonical path preserved",
+      "result": "PASS"
+    },
+    {
+      "case": "invalid cursor 400, not empty",
+      "result": "PASS"
+    },
+    {
+      "case": "forged actor rejected",
+      "result": "PASS"
+    },
+    {
+      "case": "B sees only B",
+      "result": "PASS"
+    }
+  ]
+}

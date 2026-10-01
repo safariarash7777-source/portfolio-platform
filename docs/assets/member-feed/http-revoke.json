@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-01T19:05:40.553Z",
+  "source": "real Next + GoTrue + PostgREST on existing feed06 sandbox",
+  "gitHead": "eb94b97f50a1b628af4f84554f7a1ce06780910e",
+  "buildManifest": {
+    "sha": "eb94b97f50a1b628af4f84554f7a1ce06780910e",
+    "environment": "feed06-local",
+    "builtAt": "2026-10-01T19:00:39.962Z",
+    "origin": "http://127.0.0.1:3540",
+    "backend": "same origin /supabase",
+    "build": "production"
+  },
+  "records": [
+    {
+      "case": "revocation denies next /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/publications",
+      "result": "PASS"
+    },
+    {
+      "case": "revocation denies next /api/publications/a69a3e3c-a9b8-40e2-9762-a8e9ecde7637",
+      "result": "PASS"
+    },
+    {
+      "case": "revocation denies mark-read next request",
+      "result": "PASS"
+    },
+    {
+      "case": "B unaffected by A revocation",
+      "result": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+✔ actual identity/status HTTP handlers distinguish Auth service failure: AuthRetryableFetchError (79.4596ms)
+✔ actual identity/status HTTP handlers distinguish Auth service failure: AuthApiError (20.2189ms)
+✔ actual identity/status HTTP handlers distinguish Auth service failure: Error (13.9762ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: empty (12.9697ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: AuthSessionMissingError (14.1617ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: AuthApiError (10.4648ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: AuthApiError (11.1348ms)
+✔ email-only real account requires native confirmed phone before identity write (10.4718ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 605.0835

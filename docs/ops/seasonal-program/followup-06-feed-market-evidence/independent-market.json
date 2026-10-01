@@ -1,0 +1,451 @@
+{
+  "reviewer": "/root/limited_independent; did not author combined implementation",
+  "kind": "market",
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "origin": "http://127.0.0.1:3399",
+  "checkoutHead": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "applicationSourceDiffEmpty": true,
+  "startedAt": "2026-10-01T20:39:42.838Z",
+  "scenarios": [
+    {
+      "id": "both-synthetic-market-sources-ready",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Both synthetic sources valid;760stocks/333funds, toman/null NAV; no real provider",
+      "observed": {
+        "http": 200,
+        "ms": 132.98,
+        "stocks": 760,
+        "funds": 333,
+        "crypto": 1,
+        "partial": false,
+        "availability": {
+          "global": {
+            "state": "ready",
+            "sourceAt": 1790887183386,
+            "readAt": 1790887183433
+          },
+          "iran": {
+            "state": "ready",
+            "sourceAt": 1790885845307,
+            "readAt": 1790887183402
+          }
+        },
+        "iranSourceStamp": 1790885845307,
+        "globalSourceStamp": 1790887183386,
+        "unit": "toman",
+        "navNull": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:43.456Z",
+      "owner": "187/174"
+    },
+    {
+      "id": "global-timeout-does-not-block-iran",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Expired global cache + hung source bounded; full Iran remains and global old source timestamp retained",
+      "observed": {
+        "http": 200,
+        "ms": 1936.67,
+        "stocks": 760,
+        "funds": 333,
+        "crypto": 1,
+        "partial": true,
+        "availability": {
+          "global": {
+            "state": "stale",
+            "sourceAt": 1790887183386,
+            "readAt": 1790887785386
+          },
+          "iran": {
+            "state": "ready",
+            "sourceAt": 1790885845307,
+            "readAt": 1790887783551
+          }
+        },
+        "iranSourceStamp": 1790885845307,
+        "globalSourceStamp": 1790887183386,
+        "originalGlobalStamp": 1790887183386
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:45.398Z",
+      "owner": "187/global deadline"
+    },
+    {
+      "id": "both-source-failures-retain-complete-data-times",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Both failures retain complete prior cache and original source timestamps; HTTP200partial is not total source success",
+      "observed": {
+        "http": 200,
+        "ms": 99.01,
+        "stocks": 760,
+        "funds": 333,
+        "crypto": 1,
+        "partial": true,
+        "availability": {
+          "global": {
+            "state": "stale",
+            "sourceAt": 1790887835462,
+            "readAt": 1790888485590
+          },
+          "iran": {
+            "state": "stale",
+            "sourceAt": 1790885845307,
+            "readAt": 1790888485591
+          }
+        },
+        "iranSourceStamp": 1790885845307,
+        "globalSourceStamp": 1790887835462,
+        "originalIranStamp": 1790885845307,
+        "originalGlobalStamp": 1790887835462
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:45.606Z",
+      "owner": "187/source truthfulness"
+    },
+    {
+      "id": "iran-hung-reader-budget-with-cache",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Hung Iran DB ends within budget and serves only previous complete cache",
+      "observed": {
+        "http": 200,
+        "ms": 5041.18,
+        "stocks": 760,
+        "funds": 333,
+        "crypto": 1,
+        "partial": true,
+        "availability": {
+          "global": {
+            "state": "ready",
+            "sourceAt": 1790888635698,
+            "readAt": 1790888635727
+          },
+          "iran": {
+            "state": "stale",
+            "sourceAt": 1790885845307,
+            "readAt": 1790888640642
+          }
+        },
+        "iranSourceStamp": 1790885845307,
+        "globalSourceStamp": 1790888635698,
+        "originalIranStamp": 1790885845307
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:50.658Z",
+      "owner": "187/Iran deadline"
+    },
+    {
+      "id": "data-initial-is-independent-of-analytics",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Initial snapshot table100rows/760stocks has no analytics request",
+      "observed": {
+        "rows": 100,
+        "analyticRequests": 0
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:51.461Z",
+      "owner": "187/progressive data"
+    },
+    {
+      "id": "analytics-cold-mid-scan-error-not-complete",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Cold middle failure503/error; loading ends, partial scan not cached as complete",
+      "observed": {
+        "kind": "quarterly",
+        "http": 503,
+        "coverage": {
+          "completedAt": null,
+          "rows": 0,
+          "pages": 0,
+          "upperId": null,
+          "state": "error",
+          "failure": {
+            "code": "http",
+            "page": 2,
+            "status": 503
+          }
+        },
+        "dataKeys": 0,
+        "dataDigest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "loadingEnded": true,
+        "errorVisible": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:51.868Z",
+      "owner": "187/complete-only analytics"
+    },
+    {
+      "id": "quarterly-explicit-retry-completes",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Explicit retry reads all3638 synthetic reports with complete coverage",
+      "observed": {
+        "kind": "quarterly",
+        "http": 200,
+        "coverage": {
+          "state": "complete",
+          "completedAt": 1790888792203,
+          "rows": 3638,
+          "pages": 4,
+          "upperId": 3638
+        },
+        "dataKeys": 1819,
+        "dataDigest": "20e5bee633c5924a2f7407c68e94069fe371a3f09be679761e2918f2b2ec18e1"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:52.385Z"
+    },
+    {
+      "id": "monthly-complete-keeps-controls",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "All5981 synthetic reports arrive without erasing search/sort interaction",
+      "observed": {
+        "kind": "monthly",
+        "http": 200,
+        "coverage": {
+          "state": "complete",
+          "completedAt": 1790888792841,
+          "rows": 5981,
+          "pages": 6,
+          "upperId": 5981
+        },
+        "dataKeys": 2990,
+        "dataDigest": "473f22a1950e625df518cc08b93c594ccc81e7debec8f290ce1b8a377b77dc1f",
+        "search": "نمونه1",
+        "visibleRows": 11
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:52.965Z"
+    },
+    {
+      "id": "volume-complete-not-first-cap-page",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Volume reads all29610 source IDs despite1000cap;987symbol mappings",
+      "observed": {
+        "kind": "volume",
+        "http": 200,
+        "coverage": {
+          "state": "complete",
+          "completedAt": 1790888794834,
+          "rows": 29610,
+          "pages": 30,
+          "upperId": 29610
+        },
+        "dataKeys": 987,
+        "dataDigest": "2c4aca9c5894feb7ab64a99927a27d6e78a23a9224583ed0c6d56cb147f97e51"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:54.903Z",
+      "owner": "187/182 bounded coverage"
+    },
+    {
+      "id": "data-mobile-no-page-overflow",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "390px viewport has no page overflow; this does not certify all mobile sort gestures",
+      "observed": {
+        "viewport": 390,
+        "overflow": false
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:54.947Z"
+    },
+    {
+      "id": "monthly-stale-keeps-original-complete-coverage",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Expired/failing monthly scan serves only former complete5981rows/map with original completion timestamp",
+      "observed": {
+        "kind": "monthly",
+        "http": 200,
+        "coverage": {
+          "state": "stale",
+          "completedAt": 1790888792841,
+          "rows": 5981,
+          "pages": 6,
+          "upperId": 5981,
+          "failure": {
+            "code": "http",
+            "page": 2,
+            "status": 503
+          }
+        },
+        "dataKeys": 2990,
+        "dataDigest": "473f22a1950e625df518cc08b93c594ccc81e7debec8f290ce1b8a377b77dc1f",
+        "originalCompletedAt": 1790888792841,
+        "originalDigest": "473f22a1950e625df518cc08b93c594ccc81e7debec8f290ce1b8a377b77dc1f"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:39:55.719Z"
+    },
+    {
+      "id": "volume-hung-scan-stops-retains-complete-cache",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Hung scan ends at bounded deadline; unchanged prior complete29610rows and987map, no empty success",
+      "observed": {
+        "kind": "volume",
+        "http": 200,
+        "coverage": {
+          "state": "stale",
+          "completedAt": 1790888794834,
+          "rows": 29610,
+          "pages": 30,
+          "upperId": 29610,
+          "failure": {
+            "code": "deadline",
+            "page": 0
+          }
+        },
+        "dataKeys": 987,
+        "dataDigest": "2c4aca9c5894feb7ab64a99927a27d6e78a23a9224583ed0c6d56cb147f97e51",
+        "scanMs": 15108.37,
+        "originalCompletedAt": 1790888794834,
+        "originalDigest": "2c4aca9c5894feb7ab64a99927a27d6e78a23a9224583ed0c6d56cb147f97e51"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:40:10.841Z",
+      "owner": "187/deadline recovery"
+    },
+    {
+      "id": "volume-retry-recovers-complete-coverage",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Explicit retry restores complete bounded coverage after transport recovery",
+      "observed": {
+        "kind": "volume",
+        "http": 200,
+        "coverage": {
+          "state": "complete",
+          "completedAt": 1790893412721,
+          "rows": 29610,
+          "pages": 30,
+          "upperId": 29610
+        },
+        "dataKeys": 987,
+        "dataDigest": "2c4aca9c5894feb7ab64a99927a27d6e78a23a9224583ed0c6d56cb147f97e51"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:40:12.893Z"
+    },
+    {
+      "id": "private-unknown-analytics-kind-rejected",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Public analytics cannot select private holdings namespace",
+      "observed": {
+        "http": 400
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:40:12.906Z"
+    },
+    {
+      "id": "no-live-upstream-requests",
+      "roles": [
+        "anonymous public"
+      ],
+      "expected": "Synthetic public source only, server guard denies other egress and browser nonloopback requests are aborted",
+      "observed": {
+        "synthetic": true,
+        "fixtureCounts": {
+          "stocks": 760,
+          "funds": 333,
+          "history": 29610,
+          "monthly": 5981,
+          "quarterly": 3638
+        },
+        "fixtureRequests": 97,
+        "deniedExternalAttempts": 0,
+        "externalPerformed": 0,
+        "guardSHA256": "bf3b71691ed9d0dc9a65f1ee19cd96344104f576d482e16e8431f748e2bf49e7",
+        "liveProviderRequests": 0
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:40:12.917Z",
+      "owner": "Owned sandbox isolation"
+    }
+  ],
+  "privacy": "Fresh actual product UI/native Auth sessions only; no invented JWT/cookies, HAR, traces, signed URLs or secret values in reports.",
+  "initialSources": {
+    "http": 200,
+    "ms": 132.98,
+    "stocks": 760,
+    "funds": 333,
+    "crypto": 1,
+    "partial": false,
+    "availability": {
+      "global": {
+        "state": "ready",
+        "sourceAt": 1790887183386,
+        "readAt": 1790887183433
+      },
+      "iran": {
+        "state": "ready",
+        "sourceAt": 1790885845307,
+        "readAt": 1790887183402
+      }
+    },
+    "iranSourceStamp": 1790885845307,
+    "globalSourceStamp": 1790887183386
+  },
+  "syntheticClock": "Server-only offsets for expiry; no Auth accepted at shifted clock; reset0finally",
+  "coldIranWithoutCache": "NOT RUN: requires independently witnessed fresh server process on same immutable build, not fake cache-clearing API",
+  "finishedAt": "2026-10-01T20:40:12.928Z",
+  "counts": {
+    "PASS": 15,
+    "FAIL": 0,
+    "BLOCKED": 0
+  }
+}

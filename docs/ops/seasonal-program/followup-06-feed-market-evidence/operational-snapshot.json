@@ -1,0 +1,129 @@
+{
+  "checkedAt": "2026-10-01T20:38:26.107Z",
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "origin": "http://127.0.0.1:3399",
+  "preliminaryBy": "composition author; not independent acceptance",
+  "boundary": {
+    "loginHTTP": 200,
+    "csp": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; frame-src 'self' http://127.0.0.1:3399; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+    "corsSameOriginHTTP": 204,
+    "corsAllowOrigin": "http://127.0.0.1:3399",
+    "foreignOriginHTTP": 403,
+    "authSiteUrl": "http://127.0.0.1:3399",
+    "authExternalUrl": "http://127.0.0.1:3399/supabase/auth/v1",
+    "authAllowList": "http://127.0.0.1:3399/**"
+  },
+  "containers": [
+    {
+      "name": "/followup06-feed-market-db",
+      "label": "followup06-feed-market",
+      "image": "postgres:17-alpine",
+      "running": true,
+      "ports": {
+        "5432/tcp": null
+      }
+    },
+    {
+      "name": "/followup06-feed-market-auth",
+      "label": "followup06-feed-market",
+      "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "running": true,
+      "ports": {
+        "9999/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "54351"
+          }
+        ]
+      }
+    },
+    {
+      "name": "/followup06-feed-market-rest",
+      "label": "followup06-feed-market",
+      "image": "dev07/postgrest:14.17",
+      "running": true,
+      "ports": {
+        "3000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "54352"
+          }
+        ]
+      }
+    },
+    {
+      "name": "/followup06-feed-market-storage",
+      "label": "followup06-feed-market",
+      "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "running": true,
+      "ports": {
+        "5000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "54353"
+          }
+        ]
+      }
+    }
+  ],
+  "runtimeCI": {
+    "id": 36922102452,
+    "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36922102452",
+    "jobs": [
+      {
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "NEXT09InventoryOnly": {
+    "site": "804b6ae4f231a0c7fd2bc6e01121843fafc4e345",
+    "siteRuns": [
+      {
+        "id": 36917803711,
+        "sha": "804b6ae4f231a0c7fd2bc6e01121843fafc4e345",
+        "conclusion": "success"
+      },
+      {
+        "id": 36917803466,
+        "sha": "804b6ae4f231a0c7fd2bc6e01121843fafc4e345",
+        "conclusion": "success"
+      }
+    ],
+    "miniapp": "26c885cdf6aac1401e7feb9d7312df525ddd25e2",
+    "miniappRuns": [
+      {
+        "id": 36917813738,
+        "sha": "26c885cdf6aac1401e7feb9d7312df525ddd25e2",
+        "conclusion": "success"
+      }
+    ],
+    "runtimeExecuted": false,
+    "policyBlockPreserved": true
+  }
+}

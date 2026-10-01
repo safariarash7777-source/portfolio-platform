@@ -1,0 +1,46 @@
+[
+  {
+    "name": "typecheck",
+    "sha": "592727a6c5da197715f2e4f3cd3b89eefcf4ecdd",
+    "startedAt": "2026-10-01T20:28:20.792Z",
+    "finishedAt": "2026-10-01T20:28:23.588Z",
+    "exitCode": 0,
+    "counts": null
+  },
+  {
+    "name": "lint",
+    "sha": "592727a6c5da197715f2e4f3cd3b89eefcf4ecdd",
+    "startedAt": "2026-10-01T20:28:23.590Z",
+    "finishedAt": "2026-10-01T20:28:33.493Z",
+    "exitCode": 0,
+    "counts": null
+  },
+  {
+    "name": "core",
+    "sha": "592727a6c5da197715f2e4f3cd3b89eefcf4ecdd",
+    "startedAt": "2026-10-01T20:28:33.493Z",
+    "finishedAt": "2026-10-01T20:28:43.606Z",
+    "exitCode": 0,
+    "counts": [
+      "ℹ tests 1287",
+      "ℹ suites 49",
+      "ℹ pass 1287",
+      "ℹ fail 0",
+      "ℹ skipped 0"
+    ]
+  },
+  {
+    "name": "auth-regression",
+    "sha": "592727a6c5da197715f2e4f3cd3b89eefcf4ecdd",
+    "startedAt": "2026-10-01T20:28:43.606Z",
+    "finishedAt": "2026-10-01T20:28:44.276Z",
+    "exitCode": 0,
+    "counts": [
+      "ℹ tests 8",
+      "ℹ suites 0",
+      "ℹ pass 8",
+      "ℹ fail 0",
+      "ℹ skipped 0"
+    ]
+  }
+]

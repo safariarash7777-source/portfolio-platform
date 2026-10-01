@@ -1,0 +1,26 @@
+# دفتر نصب sandbox مستقل feed185/market187
+
+محیط `followup06-feed-market-native-local`، DB `followup06-feed-market-db`، ازDBخالی و صرفاً داده ساختگی؛ زمان نصب 2026-10-01T20:20:56.313Z تا 2026-10-01T20:21:11.972Z. این ثبت نصب مشترک/Previewبازیابی‌شده/Production نیست. Auth/Storagenative migrationها جدا از18فایل واقعی مخزن‌اند.
+
+| فایل | نتیجه | SHA256 نصب‌شده |
+|---|---|---|
+|sql/archive/supabase_schema.sql|APPLIED_NATIVE_SANDBOX_ONLY|`001f52d5f4b1f6fe3d154fafafcabe766e6aa739c24c7ddb2bad5e72c998c0de`|
+|sql/archive/supabase_portfolio_tracking.sql|APPLIED_NATIVE_SANDBOX_ONLY|`0ecc41f5f3a374dc0788d69f06da4413c083a29049d1a65749283d5d30ef2a9c`|
+|sql/archive/supabase_portfolio_versioning.sql|APPLIED_NATIVE_SANDBOX_ONLY|`1f4e2f7ff3d14e2c7a55a4dc65b28aec5651e37c8ab0996173737a0a4284d491`|
+|sql/staging/g3003_staging_profiles_prereq.sql|APPLIED_NATIVE_SANDBOX_ONLY|`5ae35fd4fa21ddec64130e565507164180f42d58bd9864d6fc225ee9bb2fe799`|
+|sql/phase5_payments_telegram.sql|APPLIED_NATIVE_SANDBOX_ONLY|`4d689f0f45065c1989c8fba6c6b9a24aac9278695742982b5a5f7862b8438e8b`|
+|sql/phase8_webinars.sql|APPLIED_NATIVE_SANDBOX_ONLY|`e4c3faa90c33c58a430880a6448d0fba3be90e60870bb0bbe6ce299fd7e20ccb`|
+|sql/phase11_access_tiers.sql|APPLIED_NATIVE_SANDBOX_ONLY|`2ad50dd68ce1162fdd84ba627b2b2a7b64a1b97d3348d4035d619a23ed77df15`|
+|sql/phase27_member_import.sql|APPLIED_NATIVE_SANDBOX_ONLY|`4e0085064a18b131e92744fc1987668be775e64aa385975094bdc77a0dece2f5`|
+|sql/phase32_member_holdings.sql|APPLIED_NATIVE_SANDBOX_ONLY|`af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6`|
+|sql/phase34_research_workbook_versions.sql|APPLIED_NATIVE_SANDBOX_ONLY|`4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8`|
+|sql/phase35_consultation.sql|APPLIED_NATIVE_SANDBOX_ONLY|`9d9aa2faf3e6306d2f2992382564207f8b1dbe068f4eb209438597705a44ce7e`|
+|sql/phase36_consultation_review_fixes.sql|APPLIED_NATIVE_SANDBOX_ONLY|`bdf127dcee86c26f3e19961fe8b9710385ca965ec649ee61b33cfc38a53c318a`|
+|sql/phase37_nonretryable_version_conflicts.sql|APPLIED_NATIVE_SANDBOX_ONLY|`282b8be6c36b77bd9bf70c0dfd94ac3b8bccbd9cc628b75be1244cf5b1dfdf4d`|
+|sql/phase38_personal_balance_sheet.sql|APPLIED_NATIVE_SANDBOX_ONLY|`2f44201b3aec41e489bf5ac6fd71406ea9d358748e199ca24a1161d644a2f5fb`|
+|supabase/migrations/20260930182629_seasonal_course_membership.sql|APPLIED_NATIVE_SANDBOX_ONLY|`509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b`|
+|supabase/migrations/20260930182918_research_publication_queue.sql|APPLIED_NATIVE_SANDBOX_ONLY|`c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229`|
+|supabase/migrations/20261001083215_auth_private_identity_versions.sql|APPLIED_NATIVE_SANDBOX_ONLY|`7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251`|
+|supabase/migrations/20261001121858_member_publication_feed_reads.sql|APPLIED_NATIVE_SANDBOX_ONLY|`db0cb056948ce7cfaf7a7d18472da0ebbddc834248e3f1d3710a90708b8cecdf`|
+
+Digest هر18فایل باcatalog/probe فقط‌خواندنی تطبیق شد؛ private receipt RLS/FORCE فعال است. NOTIFYpostgrest فقطرویهمینDB انجام شد و RPC واقعاً درپذیرشHTTP200/403/404 آزموده شد. گرامر/SQL درCIسبز است؛ sql/test/scaffold اجرا نشد. NEXT09 وquota178 خارج اززنجیرهٔ نصب این مرحله‌اند.
