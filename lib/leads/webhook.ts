@@ -65,6 +65,7 @@ const MIN_PHONE_DIGITS = 7;
 export const DUPLICATE_WINDOW_MS = 10 * 60 * 1000;
 
 export type LeadRecord = {
+  external_ref?: string;
   source: string;
   name: string;
   phone: string | null;
@@ -111,6 +112,7 @@ export function parseLeadPayload(body: unknown): ParseSuccess | ParseFailure {
     return { ok: false, status: 400, code: "invalid_body", error: "بدنهٔ درخواست معتبر نیست." };
   }
   const raw = body as Record<string, unknown>;
+  if(raw.external_ref!==undefined && (typeof raw.external_ref!=='string' || !/^[a-z0-9][a-z0-9-]{0,35}:[1-9][0-9]{0,15}$/.test(raw.external_ref) || raw.source!=='miniapp'))return {ok:false,status:400,code:'invalid_correlation',error:'مرجع درخواست معتبر نیست.'};
 
   const name = normalize(raw.name);
   if (!name) {
@@ -125,6 +127,7 @@ export function parseLeadPayload(body: unknown): ParseSuccess | ParseFailure {
   }
 
   const lead: LeadRecord = {
+    ...(typeof raw.external_ref==='string'?{external_ref:raw.external_ref}:{}),
     source: normalize(raw.source) ?? DEFAULT_SOURCE,
     name,
     phone,
@@ -205,7 +208,7 @@ export async function handleLeadWebhook(args: {
 
   // ۳) تکراری — فقط وقتی شماره داریم (تنها کلیدِ هویتیِ قابل‌اتکا).
   //    شکستِ خودِ این خواندن هرگز نباید باعثِ ازدست‌رفتنِ لید شود.
-  if (lead.phone) {
+  if (lead.phone && !lead.external_ref) {
     const sinceIso = new Date(now.getTime() - DUPLICATE_WINDOW_MS).toISOString();
     const dup = await store.findRecentDuplicate({ phone: lead.phone, topic: lead.topic, sinceIso });
     if (dup.error) {

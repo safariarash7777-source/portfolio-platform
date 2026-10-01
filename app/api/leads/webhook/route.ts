@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
         return { found: (data?.length ?? 0) > 0 };
       },
       async insertLead(lead: LeadRecord) {
+        if(lead.external_ref){const result=await supabase.rpc('next09_copy_lead',{p_body:lead});return {error:result.error};}
         const { error } = await supabase.from("leads").insert(lead);
         return { error };
       },

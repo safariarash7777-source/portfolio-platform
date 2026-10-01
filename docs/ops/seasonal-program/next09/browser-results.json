@@ -1,0 +1,17 @@
+{
+  "fixtureOnly": true,
+  "transport": "intercepted; no real bot",
+  "checks": [
+    "RTL",
+    "mobile no overflow",
+    "two-way ceremony",
+    "default opt-out",
+    "explicit preference",
+    "site acknowledgement",
+    "unlink",
+    "empty",
+    "error recovery",
+    "keyboard focus"
+  ],
+  "pageErrors": []
+}

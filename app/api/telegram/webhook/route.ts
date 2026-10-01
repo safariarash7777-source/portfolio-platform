@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { connectionMessage } from '@/lib/notifications/webhook';
 import { sendMessage } from "@/lib/telegram";
 import { isPrivateBotConversation } from "@/lib/telegram/private-chat";
 import { markdownToPlain } from "@/lib/markdown";
@@ -65,6 +66,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    if (process.env.NEXT09_ENABLED === 'true') {
+      if (await connectionMessage(msg, createAdminClient(), sendMessage)) return NextResponse.json({ ok: true });
+      if (/^\d{6}$/.test(text)) { await sendMessage(chatId, 'اتصال قدیمی غیرفعال است؛ از صفحه اتصال حساب سایت شروع کنید.'); return NextResponse.json({ ok: true }); }
+      if (text === '/portfolio' || text === '/announcements' || text === '/help') { await sendMessage(chatId, 'برای مشاهده اطلاعات و اعلان‌ها به حساب سایت وارد شوید.'); return NextResponse.json({ ok: true }); }
+    }
     await handle(text, tgUserId, chatId, firstName);
   } catch (e) {
     console.error("telegram webhook error:", e instanceof Error ? e.message : "unknown");
