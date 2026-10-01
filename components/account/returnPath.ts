@@ -13,7 +13,7 @@ export function normalizeReturnPath(
 }
 
 export function accountEntryHref(
-  entry: "/login" | "/register",
+  entry: "/login" | "/register" | "/login/mobile",
   returnTo: string,
 ): string {
   return `${entry}?next=${encodeURIComponent(normalizeReturnPath(returnTo))}`;

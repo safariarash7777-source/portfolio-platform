@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-01T09:47:41.463Z",
+  "synthetic": true,
+  "checks": [
+    {
+      "label": "Legacy account linking keeps UUID, email, profile and existing personal record",
+      "status": "PASS"
+    },
+    {
+      "label": "Claiming an already-linked mobile never silently merges another account",
+      "status": "PASS"
+    },
+    {
+      "label": "Expired GoTrue OTP rejected, independent of message receipt",
+      "status": "PASS"
+    },
+    {
+      "label": "Provider outage returns failure, no confirmed phone or new session",
+      "status": "PASS"
+    },
+    {
+      "label": "Public/authenticated cannot write digest, verify identity, read private tables or truncate",
+      "status": "PASS"
+    }
+  ]
+}

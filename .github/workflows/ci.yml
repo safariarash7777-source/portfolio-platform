@@ -98,6 +98,9 @@ jobs:
       - name: Public product and form contracts
         run: npm run test:public
 
+      - name: Signed SMS, limits and mobile Auth contracts (synthetic only)
+        run: npm run test:auth-mobile
+
       - name: Calc tests
         run: npm run test:calc
 

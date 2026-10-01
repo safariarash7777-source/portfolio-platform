@@ -1,0 +1,22 @@
+{
+  "image": "public.ecr.aws/supabase/gotrue:v2.197.0@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+  "settings": {
+    "GOTRUE_SITE_URL": "https://portfolio-platform-fawn.vercel.app",
+    "API_EXTERNAL_URL": "https://62.60.191.24/liara-preview/auth/v1",
+    "GOTRUE_URI_ALLOW_LIST": "https://portfolio-platform-git-co-116693-safariarash7777-4463s-projects.vercel.app/**,https://portfolio-platform-fawn.vercel.app/**",
+    "GOTRUE_EXTERNAL_PHONE_ENABLED": "UNSET; installed default applies",
+    "GOTRUE_EXTERNAL_EMAIL_ENABLED": "true",
+    "GOTRUE_EXTERNAL_GOOGLE_ENABLED": "UNSET; installed default applies",
+    "GOTRUE_DISABLE_SIGNUP": "true",
+    "GOTRUE_SMS_AUTOCONFIRM": "UNSET; installed default applies",
+    "GOTRUE_SMS_OTP_EXP": "UNSET; installed default applies",
+    "GOTRUE_SMS_MAX_FREQUENCY": "UNSET; installed default applies",
+    "GOTRUE_HOOK_SEND_SMS_ENABLED": "UNSET; installed default applies",
+    "GOTRUE_RATE_LIMIT_VERIFY": "UNSET; installed default applies",
+    "GOTRUE_RATE_LIMIT_SMS_SENT": "UNSET; installed default applies",
+    "GOTRUE_RATE_LIMIT_HEADER": "UNSET; installed default applies"
+  },
+  "smtpConfigured": false,
+  "smsHookSecretConfigured": false,
+  "authRestSharedSigningSecretMatches": true
+}

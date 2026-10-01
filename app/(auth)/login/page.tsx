@@ -2,12 +2,12 @@
 
 import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
 import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
-import { signInAndReturn } from "@/components/account/loginFlow";
+import {authMessage} from '@/lib/auth/mobile';
 
 function supabaseError(msg: string): string {
   if (msg.includes("Invalid login credentials")) return "ایمیل یا رمز عبور اشتباه است";
@@ -33,7 +33,6 @@ function AuthPageFallback({ label }: { label: string }) {
 }
 
 function LoginPageContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = normalizeReturnPath(searchParams.get("next"), "/dashboard");
   const [email, setEmail] = useState("");
@@ -60,16 +59,11 @@ function LoginPageContent() {
     setServerError("");
     try {
       const supabase = createClient();
-      const error = await signInAndReturn(
-        {
-          signIn: (credentials) => supabase.auth.signInWithPassword(credentials),
-          navigate: (destination) => router.push(destination),
-          refresh: () => router.refresh(),
-        },
-        { email, password },
-        returnTo,
-      );
-      if (error) { setServerError(supabaseError(error.message)); return; }
+      const {error}=await supabase.auth.signInWithPassword({email,password});
+      if(error){setServerError(authMessage(error) || supabaseError(error.message));return;}
+      // Full navigation has a visible network result and avoids a silently stalled
+      // App Router transition while the protected middleware is unavailable.
+      window.location.assign(returnTo);
     } catch {
       setServerError("خطا در اتصال. لطفاً دوباره تلاش کنید");
     } finally {
@@ -97,6 +91,8 @@ function LoginPageContent() {
         </div>
 
         <div className="card-elevated p-8">
+          <p className="text-sm leading-7 mb-5">این مسیر با رمز خود سایت کار می‌کند. رمز Google یا Gmail جای رمز سایت نیست.</p>
+          {searchParams.get('error')==='auth_unavailable' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>بررسی نشست در سرور پاسخ نداد. رمز را تغییر ندهید؛ کمی بعد دوباره ورود را امتحان کنید.</p>}
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* Email */}
             <div className="space-y-1.5">
@@ -197,6 +193,7 @@ function LoginPageContent() {
               ثبت‌نام کنید
             </Link>
           </div>
+          <Link className="btn btn-outline w-full mt-5" href={accountEntryHref('/login/mobile',returnTo)}>وضعیت ورود موبایلی</Link>
         </div>
       </div>
     </div>
