@@ -1,6 +1,6 @@
 # NEXT-09-RESULT — 2026-10-01
 
-وضعیت: **ساخت ایزوله آماده بازبینی؛ پذیرش عملیاتی بات/Auth و فعال‌سازی باز است.** هیچ merge، استقرار، migration مشترک/Production یا پیام واقعی انجام نشده است. وضعیت عملیاتی Production از این کار معلوم نیست.
+وضعیت: **ساخت ایزوله آماده بازبینی؛ پذیرش عملیاتی بات/Auth و فعال‌سازی باز است.** هیچ merge، استقرار دستی/Production، migration مشترک/Production یا پیام واقعی انجام نشده است. بررسی Preview خودکار GitHub/Vercel جداست؛ وضعیت عملیاتی Production از این کار معلوم نیست.
 
 ## تحویل
 
@@ -15,6 +15,7 @@
 |---|---|---|
 | PostgreSQL17، دو پروفایل grants، قوانین اتصال/صف/انقضا/lead + آزمون‌های HTTP/transport | 58/58 | next09/postgres-tests.txt |
 | بازبینی مجدد transport پس از اصلاح delay | 7/7، تکرار subset | next09/transport-tests.txt |
+| رگرسیون CI و همه آزمون‌های core پس از تطبیق webhook/worker و ثبت اسکریپت‌ها | 37/37 subset و 1239/1239 core | next09/ci-regression-tests.txt، core-tests.txt |
 | سایت TypeScript، ESLint بدون warning، Next build | موفق | next09/typecheck.txt، lint.txt، build.txt |
 | اسکن secret و اعتبارسنجی SQL مخزن | موفق | next09/secret-scan.txt، sql-validation.txt |
 | مینی‌اپ TypeScript، Vitest و Vite/esbuild | 68/68 و build موفق؛ warning اندازه chunk موجود | telegram-next09/docs/next09 |
@@ -22,7 +23,7 @@
 
 Docker فقط container مستقل `next09-synthetic-db` با شبکه خاموش و دیتابیس‌های موقت next09 را استفاده کرد. fixture انقضا ساعت را در همین داده ساختگی جلو می‌برد؛ guard داده واقعی تغییر نکرده است. هیچ کلید سرویس/بات واقعی خوانده یا به transport داده نشده است. پاسخ‌های مرورگر و ارسال Telegram در تست‌ها مصنوعی هستند؛ این نتایج اثبات هویت یا ارسال واقعی نیستند.
 
-دانلود agent-browser به timeout خورد؛ رابط واقعی با Playwright بسته‌شده و Chrome محلی بررسی شد. pglast نصب نبود؛ آزمون گرامر جداگانه اجرا نشد، ولی migration و RPCها واقعاً در PostgreSQL ایزوله نصب/اجرا شدند. بازبینی خودکار اجرای سرور build‌شده برای smoke محلی را با دلیل عمومی `blocked by policy` رد کرد؛ بررسی runtime حالت production انجام نشده است. gate توسعه QA در کد بررسی شده است.
+دانلود agent-browser به timeout خورد؛ رابط واقعی با Playwright بسته‌شده و Chrome محلی بررسی شد. pglast محلی نصب نبود؛ آزمون گرامر محلی جداگانه اجرا نشد، ولی migration و RPCها واقعاً در PostgreSQL ایزوله نصب/اجرا شدند و job گرامر SQL در CI اولیه سبز بود. بازبینی خودکار اجرای سرور build‌شده برای smoke محلی را با دلیل عمومی `blocked by policy` رد کرد؛ بررسی runtime حالت production انجام نشده است. gate توسعه QA در کد بررسی شده است.
 
 ## مرز مالکیت و ادغام
 
@@ -40,6 +41,11 @@ Auth/middleware/globals/Navbar/fonts، components/member، publication-server/fe
 
 ## PR و وضعیت دقیق
 
-این بخش پس از ساخت Draft PRها با URL/head SHA و snapshot CI تکمیل می‌شود. موفقیت محلی، جایگزین CI/Preview یا پذیرش بات واقعی نیست.
+| مخزن | Draft PR | commit پیاده‌سازی اولیه | پایه |
+|---|---|---|---|
+| سایت | [#189](https://github.com/safariarash7777-source/portfolio-platform/pull/189) | `9f65f38ee96a97a22728afbfb0403a017f1f76ce` | Auth180 |
+| مینی‌اپ | [#5](https://github.com/safariarash7777-source/telegram-miniapp/pull/5) | `0aefd98e55091a6f5d0ebd9aca9f5335485a84a5` | main |
+
+هر دو Draft/Open و mergeable در snapshot اولیه GitHub بودند؛ ادغام نشدند. مینی‌اپ CI run `36915267470` موفق. سایت seasonal sandbox run `36915223570` موفق؛ CI اولیه `36915223667` در core شکست داشت: dependency جدید در harness قدیمی، ثبت‌نبودن تست‌ها و endpoint بدون زمان‌بندی زیر cron. رفع شد: harness همان helper واقعی را مصرف می‌کند، تست‌ها در package scripts ثبت شدند و worker به `/api/notifications/worker` منتقل شد؛ قاعده cron و زمان‌بندی Production تغییر نکرد. اجرای محلی core پس از اصلاح 1239/1239 موفق بود. snapshot آخر head/checkها در `next09/PR-CHECKPOINT.json` ثبت می‌شود؛ موفقیت محلی جایگزین CI/Preview یا پذیرش بات واقعی نیست.
 
 تاریخچه: 2026-10-01 نسخه 1 — تحویل ایزوله NEXT09؛ ادغام/فعال‌سازی باز.
