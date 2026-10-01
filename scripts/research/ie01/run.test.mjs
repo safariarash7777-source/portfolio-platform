@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { nullContract, unitContract, verifyBaseline, digest, root, installOfflineGuards } from './run.mjs';
+import { nullContract, unitContract, verifyBaseline, digest, root, installOfflineGuards, assertEpsPreserved } from './run.mjs';
 import path from 'node:path';
 import http from 'node:http';
 import net from 'node:net';
@@ -16,6 +16,27 @@ test('unit conflict contract rejects unchanged million unit and calculated ratio
   assert.equal(unitContract({ normalized: { unit: 'میلیون ریال' }, ratios: { net_margin: 1 } }), false);
   assert.equal(unitContract({ normalized: { unit: null }, ratios: { net_margin: 1 } }), false);
   assert.equal(unitContract({ normalized: null, ratios: null }), true);
+  assert.equal(unitContract({ normalized: null, ratios: { net_margin: 1 } }), false);
+});
+test('C4 full rejection retains input EPS; present output still must retain EPS', () => {
+  const original = [[['سود (زیان) خالص هر سهم', '۷۷۳', '۶۰۰']]];
+  const same = structuredClone(original);
+  assert.doesNotThrow(() => assertEpsPreserved({ normalized: null, ratios: null }, same, original, 773));
+  assert.doesNotThrow(() => assertEpsPreserved({ normalized: { standalone: { eps_rial: 773 } } }, same, original, 773));
+  same[0][0][1] = '۷۷۴';
+  assert.throws(() => assertEpsPreserved({ normalized: null }, same, original, 773), /byte-for-byte/);
+  assert.throws(() => assertEpsPreserved({ normalized: { standalone: { eps_rial: 774 } } }, original, original, 773), /preserve EPS/);
+  assert.throws(() => assertEpsPreserved({ normalized: null }, [], [], 773), /reference must contain/);
+});
+test('corrected C4 assertion retains the original product failures and input bytes', () => {
+  const read = name => JSON.parse(fs.readFileSync(path.join(root, 'docs/research/intelligence-loop', name), 'utf8'));
+  const old = read('IE01-EVIDENCE.json');
+  const current = read('IE01-C4-ASSERTION-EVIDENCE.json');
+  const replay = read('IE01-C4-ASSERTION-REPLAY.json');
+  assert.equal(current.deterministicPayloadDigest, replay.deterministicPayloadDigest);
+  assert.deepEqual(current.cases.map(x => [x.caseId, x.status, x.inputDigest, x.outputDigest]), old.cases.map(x => [x.caseId, x.status, x.inputDigest, x.outputDigest]));
+  assert.deepEqual(current.fixtures, old.fixtures);
+  assert.deepEqual(current.originalArchive, old.originalArchive);
 });
 test('fixed-code identity rejects changed source bytes', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'scripts/research/ie01/baseline.json'), 'utf8'));

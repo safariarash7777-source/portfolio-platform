@@ -49,7 +49,14 @@ export function nullContract(actual) {
   return actual.normalized?.standalone.gross_profit === null && actual.ratios?.gross_margin === null;
 }
 export function unitContract(actual) {
-  return actual.normalized === null || (actual.normalized.unit === null && actual.ratios === null);
+  return actual.ratios === null && (actual.normalized === null || actual.normalized?.unit === null);
+}
+export function assertEpsPreserved(actual, inputTables, referenceTables, expected) {
+  const epsRows = ts => ts.flatMap(t => t.filter(r => label(r[0]).includes(label('خالص هر سهم'))));
+  const reference = epsRows(referenceTables);
+  assert.ok(reference.length > 0, 'reference must contain explicit EPS token rows');
+  assert.deepEqual(epsRows(inputTables), reference, 'input EPS rows/tokens must remain byte-for-byte identical');
+  if (actual.normalized !== null) assert.equal(actual.normalized?.standalone?.eps_rial, expected, 'present normalized output must preserve EPS');
 }
 function assertion(checks, name, fn) {
   try { fn(); checks.push({ name, status: 'PASS' }); }
@@ -59,7 +66,7 @@ const escapeHTML = s => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;
 const renderTables = tables => tables.map(t => '<table>' + t.map(r => '<tr>' + r.map(c => '<td>' + escapeHTML(c) + '</td>').join('') + '</tr>').join('') + '</table>').join('\n');
 
 export async function execute(outputName = 'IE01-EVIDENCE.json') {
-  if (!['IE01-EVIDENCE.json', 'IE01-REPLAY.json'].includes(outputName)) throw new Error('Unsupported IE01 output');
+  if (!['IE01-EVIDENCE.json', 'IE01-REPLAY.json', 'IE01-C4-ASSERTION-EVIDENCE.json', 'IE01-C4-ASSERTION-REPLAY.json'].includes(outputName)) throw new Error('Unsupported IE01 output');
   installOfflineGuards();
   const manifest = readJSON(path.join(root, 'scripts/research/ie01/baseline.json'));
   verifyBaseline(manifest);
@@ -179,7 +186,7 @@ export async function execute(outputName = 'IE01-EVIDENCE.json') {
     (a, checks) => {
       assertion(checks, 'fixture explicit thousand-rial header present', () => assert.match(mismatch.tables[bankIndex][0][0], /هزار ریال/));
       assertion(checks, 'conflicting unit must reject/null affected output', () => assert.ok(unitContract(a), 'product accepted contradictory amount unit and emitted ratios'));
-      assertion(checks, 'EPS test token unchanged', () => assert.equal(a.normalized?.standalone.eps_rial, historical.referenceInputs.current.eps_rial));
+      assertion(checks, 'input EPS tokens unchanged; present output EPS retained', () => assertEpsPreserved(a, mismatch.tables, tables, historical.referenceInputs.current.eps_rial));
     }, 'Synthetic contradictory amount-unit header; no issuer unit defect asserted');
   verifyBaseline(manifest);
   assert.equal(forbiddenAttempts, 0, 'product attempted forbidden network/process');

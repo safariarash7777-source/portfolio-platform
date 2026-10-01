@@ -1,0 +1,15 @@
+✔ missing-value contract rejects zero and absent output (0.8915ms)
+✔ unit conflict contract rejects unchanged million unit and calculated ratios (0.1671ms)
+✔ C4 full rejection retains input EPS; present output still must retain EPS (2.7389ms)
+✔ corrected C4 assertion retains the original product failures and input bytes (2.1764ms)
+✔ fixed-code identity rejects changed source bytes (3.2592ms)
+✔ two real executions have identical deterministic payloads and retained failures (2.0892ms)
+✔ offline guard stops network and child-process attempts before execution (1.0276ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.4284

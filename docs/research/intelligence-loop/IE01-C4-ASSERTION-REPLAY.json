@@ -1,0 +1,671 @@
+{
+  "contractVersion": "IE01.offline-execution.v2",
+  "preparedAt": "2026-10-01T23:11:03.654Z",
+  "timezone": "Asia/Tehran",
+  "nodeVersion": "v24.19.0",
+  "status": "OFFLINE_EXECUTED_WITH_CONTRACT_FAILURES",
+  "isOperationalAcceptance": false,
+  "isFinancialValidation": false,
+  "baseline": {
+    "selectedBaseSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+    "selectedBasePR": 191,
+    "followup03HeadSHA": "874c16096d792af2f57fc9142fde3124c0321dc1",
+    "followup03RuntimeSHA": "4687ceaa05d57233c1d718453016f3f1171aa353",
+    "compositionRuntimeSHA": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+    "checkedAt": "2026-10-01T22:14:45.3773612+00:00",
+    "files": [
+      {
+        "path": "relay/codal.mjs",
+        "sha256": "6b144cae020b76df250c9f61fc83abb9ce4438b64389f1eec1d04dc00f5a8cd3",
+        "gitBlobs": {
+          "4687ceaa05d57233c1d718453016f3f1171aa353": "5c19763d7ab65f472576b426d88808a334e1a953",
+          "874c16096d792af2f57fc9142fde3124c0321dc1": "5c19763d7ab65f472576b426d88808a334e1a953",
+          "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "5c19763d7ab65f472576b426d88808a334e1a953",
+          "be7b7230a50d0f16aba18b408829ccd7f85f1299": "5c19763d7ab65f472576b426d88808a334e1a953"
+        }
+      },
+      {
+        "path": "relay/brsapi-transport.mjs",
+        "sha256": "f43fe1ab22b81bfa7aace9be993e925a3290ef88c31fb95dcb2cce8dafa47844",
+        "gitBlobs": {
+          "4687ceaa05d57233c1d718453016f3f1171aa353": "57838c08516e7314ec717f2817d9a39b66925536",
+          "874c16096d792af2f57fc9142fde3124c0321dc1": "57838c08516e7314ec717f2817d9a39b66925536",
+          "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "57838c08516e7314ec717f2817d9a39b66925536",
+          "be7b7230a50d0f16aba18b408829ccd7f85f1299": "57838c08516e7314ec717f2817d9a39b66925536"
+        }
+      },
+      {
+        "path": "lib/core/engine.ts",
+        "sha256": "9b7f198f15009e3ce94629f71ad79d5e248dae297e7f5e3651cc2849fdcf2512",
+        "gitBlobs": {
+          "4687ceaa05d57233c1d718453016f3f1171aa353": "bbc2957a309ee7864607729c4638619948247014",
+          "874c16096d792af2f57fc9142fde3124c0321dc1": "bbc2957a309ee7864607729c4638619948247014",
+          "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "bbc2957a309ee7864607729c4638619948247014",
+          "be7b7230a50d0f16aba18b408829ccd7f85f1299": "bbc2957a309ee7864607729c4638619948247014"
+        }
+      },
+      {
+        "path": "lib/fundamental/supabase.ts",
+        "sha256": "c76593dd12ab1b6853069ec2cd255e68ae331b478ac5a05b8964929061e7ef6c",
+        "gitBlobs": {
+          "4687ceaa05d57233c1d718453016f3f1171aa353": "f9315f142dabf82e60ec5b1a0da332df703f427b",
+          "874c16096d792af2f57fc9142fde3124c0321dc1": "f9315f142dabf82e60ec5b1a0da332df703f427b",
+          "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "f9315f142dabf82e60ec5b1a0da332df703f427b",
+          "be7b7230a50d0f16aba18b408829ccd7f85f1299": "f9315f142dabf82e60ec5b1a0da332df703f427b"
+        }
+      },
+      {
+        "path": "relay/fixtures/vanovin-n10-fy1404.html",
+        "sha256": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+        "gitBlobs": {
+          "4687ceaa05d57233c1d718453016f3f1171aa353": "68f930e542c8ffd5c5bf14074d6957d966713569",
+          "874c16096d792af2f57fc9142fde3124c0321dc1": "68f930e542c8ffd5c5bf14074d6957d966713569",
+          "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "68f930e542c8ffd5c5bf14074d6957d966713569",
+          "be7b7230a50d0f16aba18b408829ccd7f85f1299": "68f930e542c8ffd5c5bf14074d6957d966713569"
+        }
+      },
+      {
+        "path": "relay/codal.test.mjs",
+        "sha256": "33198626aa5fb1b465af1982d04948eece5721609ee5bebeea8b090bd2bd741d",
+        "gitBlobs": {
+          "4687ceaa05d57233c1d718453016f3f1171aa353": "3323c99249b84045c5258d3dec138cb7d249db3b",
+          "874c16096d792af2f57fc9142fde3124c0321dc1": "3323c99249b84045c5258d3dec138cb7d249db3b",
+          "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "3323c99249b84045c5258d3dec138cb7d249db3b",
+          "be7b7230a50d0f16aba18b408829ccd7f85f1299": "3323c99249b84045c5258d3dec138cb7d249db3b"
+        }
+      }
+    ],
+    "sourceIdentity": {
+      "sourceUrl": null,
+      "announcementId": null,
+      "sourceAt": null,
+      "capturedAt": null,
+      "rightsVerified": false,
+      "archiveLastGitTouchSHA": "5fd94b3ccdd4f682898edec7a6f33451f2918936",
+      "archiveLastGitTouchAt": "2026-07-17T06:52:16Z",
+      "gitTouchIsCaptureTime": false,
+      "searchScope": [
+        "fixed checkout tracked files and archive history",
+        "product-direction/docs",
+        "portfolio-v1/docs",
+        "saved market audit reports",
+        "saved FX outputs"
+      ],
+      "searchResult": "Only parser comments and existing test assertions found; no authentic report URL, publication or capture timestamp",
+      "htmlUrlHosts": [
+        "www.w3.org"
+      ],
+      "selectedBankTableIndex": 37,
+      "selectedStatementUnitIndependentlyVerified": false
+    }
+  },
+  "sourceIdentity": {
+    "sourceUrl": null,
+    "announcementId": null,
+    "sourceAt": null,
+    "capturedAt": null,
+    "rightsVerified": false,
+    "archiveLastGitTouchSHA": "5fd94b3ccdd4f682898edec7a6f33451f2918936",
+    "archiveLastGitTouchAt": "2026-07-17T06:52:16Z",
+    "gitTouchIsCaptureTime": false,
+    "searchScope": [
+      "fixed checkout tracked files and archive history",
+      "product-direction/docs",
+      "portfolio-v1/docs",
+      "saved market audit reports",
+      "saved FX outputs"
+    ],
+    "searchResult": "Only parser comments and existing test assertions found; no authentic report URL, publication or capture timestamp",
+    "htmlUrlHosts": [
+      "www.w3.org"
+    ],
+    "selectedBankTableIndex": 37,
+    "selectedStatementUnitIndependentlyVerified": false
+  },
+  "originalArchive": {
+    "path": "relay/fixtures/vanovin-n10-fy1404.html",
+    "inputDigest": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+    "untouched": true
+  },
+  "fixtures": [
+    {
+      "path": "docs/research/intelligence-loop/fixtures/missing.json",
+      "sha256": "824fc4933a826ade30681a83d33571dce6ef8226f09f02b47d9a55dc43b8fb45",
+      "dataClass": "SYNTHETIC_DERIVED_TABLES"
+    },
+    {
+      "path": "docs/research/intelligence-loop/fixtures/correction.json",
+      "sha256": "ecb84ef508879dfddb375f76d28a35e371f752d5395ded19a64f2de13d41af5c",
+      "dataClass": "SYNTHETIC_CORRECTION_PAIR"
+    },
+    {
+      "path": "docs/research/intelligence-loop/fixtures/unit-mismatch.json",
+      "sha256": "9c98a08ad927b07ff0d078de872d39e9553b4700dfe1baf849f6d595b30eb432",
+      "dataClass": "SYNTHETIC_DERIVED_TABLES"
+    }
+  ],
+  "calculations": {
+    "path": "lib/core/engine.ts",
+    "function": "computeRatios",
+    "codeSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+    "financialOutputsProducedBy": "existing deterministic code; no model calls",
+    "parserVersion": 2
+  },
+  "coverage": {
+    "casesExecuted": 4,
+    "issuerProvenanceVerified": false,
+    "currentLiteralFields": 6,
+    "priorLiteralFields": 2,
+    "archiveTableCount": 45,
+    "sourceAt": null,
+    "capturedAt": null,
+    "marketUniverseCoverage": null
+  },
+  "cases": [
+    {
+      "caseId": "IE01-C1-COMPLETE",
+      "dataClass": "PUBLIC_ORIGIN_ARCHIVE_CLAIM",
+      "scope": "Literal replay and ratio arithmetic only; not original-issuer accuracy or unit authenticity",
+      "executionStatus": "EXECUTED",
+      "status": "PASS",
+      "codeSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "parserVersion": 2,
+      "sourceAt": null,
+      "capturedAt": null,
+      "unit": "میلیون ریال",
+      "startedAt": "2026-10-01T23:11:03.625Z",
+      "calculatedAt": "2026-10-01T23:11:03.633Z",
+      "inputDigest": "568a5473a95364530809290b4f305fb7012047250bafa40eb33af2ccaf4ea8d1",
+      "inputDigestKind": "SHA256 exact UTF-8 JSON serialization of execution input",
+      "normalizedInputDigest": "b50bbc5de2b859e27f2793db8be1592e372321f222361fffc56f9a4d779404f6",
+      "coverage": {
+        "definition": "intended current input fields; not count of non-null product outputs",
+        "requiredCurrentFields": 6,
+        "coveredCurrentFields": 6,
+        "missingCurrentFields": [],
+        "issuerProvenanceVerified": false,
+        "actualIssuerUniverseCoverage": null,
+        "amountUnitVerifiedAgainstIssuer": false
+      },
+      "outputDigest": "22192c32399527cf81ee00e80aa27d9145f05862bd3a426aa9537aeb7c381f38",
+      "actual": {
+        "normalized": {
+          "symbol": "ونوین",
+          "company_name": "بانک اقتصاد نوین",
+          "report_kind": "ن-۱۰",
+          "statement_type": "bank",
+          "period_end": "1404-12-29",
+          "period_months": 12,
+          "audited": false,
+          "restated_prior": false,
+          "unit": "میلیون ریال",
+          "capital": 243145119,
+          "standalone": {
+            "revenue": 741765467,
+            "cogs": 434732521,
+            "gross_profit": 307032946,
+            "operating_profit": 229210778,
+            "net_profit": 188042940,
+            "eps_rial": 773,
+            "prior": {
+              "revenue": 514483893,
+              "cogs": 322090096,
+              "gross_profit": 192393797,
+              "operating_profit": 137401734,
+              "net_profit": 116251941,
+              "eps_rial": 478
+            }
+          }
+        },
+        "ratios": {
+          "gross_margin": 41.392186568318635,
+          "operating_margin": 30.900707595221604,
+          "net_margin": 25.350727199598794,
+          "revenue_growth": 44.17661604033928,
+          "net_profit_growth": 61.75466696078649,
+          "pe_ttm": null
+        }
+      },
+      "checks": [
+        {
+          "name": "historic current literal: revenue",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: cogs",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: gross_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: operating_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: net_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: eps_rial",
+          "status": "PASS"
+        },
+        {
+          "name": "historic prior literal: revenue",
+          "status": "PASS"
+        },
+        {
+          "name": "historic prior literal: net_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic capital literal",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: gross_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: operating_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: net_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "growth cross-product: revenue_growth",
+          "status": "PASS"
+        },
+        {
+          "name": "growth cross-product: net_profit_growth",
+          "status": "PASS"
+        },
+        {
+          "name": "no price invented for PE",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C2-MISSING",
+      "dataClass": "SYNTHETIC_DERIVED_TABLES",
+      "scope": "Missing-row contract at parser→engine boundary; observes actual fallback, does not patch it",
+      "executionStatus": "EXECUTED",
+      "status": "FAIL",
+      "codeSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "parserVersion": 2,
+      "sourceAt": null,
+      "capturedAt": null,
+      "unit": "میلیون ریال",
+      "startedAt": "2026-10-01T23:11:03.633Z",
+      "calculatedAt": "2026-10-01T23:11:03.640Z",
+      "inputDigest": "1d95239a45ba451ccc6ac6f26a5b69d2df751195dac68ba77adf03bde08ba559",
+      "inputDigestKind": "SHA256 exact UTF-8 JSON serialization of execution input",
+      "normalizedInputDigest": "ec4ec1d3ce808c14b94babdac71c0359407176e805e3d2097bbf125c0c0c7016",
+      "coverage": {
+        "definition": "intended current input fields; not count of non-null product outputs",
+        "requiredCurrentFields": 6,
+        "coveredCurrentFields": 5,
+        "missingCurrentFields": [
+          "gross_profit"
+        ],
+        "issuerProvenanceVerified": false,
+        "actualIssuerUniverseCoverage": null,
+        "amountUnitVerifiedAgainstIssuer": false
+      },
+      "outputDigest": "f485048d111834bbebe26409a16527c3e4d27c31b9dfa0e2df228b5b975936a0",
+      "actual": {
+        "normalized": {
+          "symbol": "ونوین",
+          "company_name": "بانک اقتصاد نوین",
+          "report_kind": "ن-۱۰",
+          "statement_type": "bank",
+          "period_end": "1404-12-29",
+          "period_months": 12,
+          "audited": false,
+          "restated_prior": false,
+          "unit": "میلیون ریال",
+          "capital": 243145119,
+          "standalone": {
+            "revenue": 741765467,
+            "cogs": 434732521,
+            "gross_profit": 0,
+            "operating_profit": 229210778,
+            "net_profit": 188042940,
+            "eps_rial": 773,
+            "prior": {
+              "revenue": 514483893,
+              "cogs": 322090096,
+              "gross_profit": 0,
+              "operating_profit": 137401734,
+              "net_profit": 116251941,
+              "eps_rial": 478
+            }
+          }
+        },
+        "ratios": {
+          "gross_margin": 0,
+          "operating_margin": 30.900707595221604,
+          "net_margin": 25.350727199598794,
+          "revenue_growth": 44.17661604033928,
+          "net_profit_growth": 61.75466696078649,
+          "pe_ttm": null
+        }
+      },
+      "checks": [
+        {
+          "name": "fixture truly lacks gross row",
+          "status": "PASS"
+        },
+        {
+          "name": "missing gross and gross_margin must stay null",
+          "status": "FAIL",
+          "error": "product emitted non-null gross/gross_margin for absent gross row"
+        },
+        {
+          "name": "independent net field retained",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C3-CORRECTION",
+      "dataClass": "SYNTHETIC_CORRECTION_PAIR",
+      "scope": "Explicit title-based correction selection only; timestamps unknown, approval/database/version persistence not exercised",
+      "executionStatus": "EXECUTED",
+      "status": "PASS",
+      "codeSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "parserVersion": 2,
+      "sourceAt": null,
+      "capturedAt": null,
+      "unit": "میلیون ریال",
+      "startedAt": "2026-10-01T23:11:03.642Z",
+      "calculatedAt": "2026-10-01T23:11:03.642Z",
+      "inputDigest": "b0d62b857848cdd8e5b92906bc10fbc6ac892eba22ae3a37fe29d2e576d0e0d4",
+      "inputDigestKind": "SHA256 exact UTF-8 JSON serialization of execution input",
+      "normalizedInputDigest": "be0c6a89dfd5b95016634e042e554479e45e72e6560a823a6e247f2d72a58ecd",
+      "coverage": {
+        "definition": "intended current input fields; not count of non-null product outputs",
+        "requiredCurrentFields": 6,
+        "coveredCurrentFields": 6,
+        "missingCurrentFields": [],
+        "issuerProvenanceVerified": false,
+        "actualIssuerUniverseCoverage": null,
+        "amountUnitVerifiedAgainstIssuer": false
+      },
+      "outputDigest": "736f3c180542039edd084575de4a150f2feb485aa23e8446660b04647009d584",
+      "actual": {
+        "selected": [
+          {
+            "id": 76,
+            "symbol": "ونوین",
+            "report_kind": "ن-۱۰",
+            "period_end": "1404-12-29",
+            "title": "صورت مالی جداگانه سالانه (حسابرسی نشده) (اصلاحیه)",
+            "source_url": null,
+            "data": {
+              "symbol": "ونوین",
+              "company_name": "بانک اقتصاد نوین",
+              "report_kind": "ن-۱۰",
+              "statement_type": "bank",
+              "period_end": "1404-12-29",
+              "period_months": 12,
+              "audited": false,
+              "restated_prior": false,
+              "unit": "میلیون ریال",
+              "capital": 243145119,
+              "standalone": {
+                "revenue": 741765467,
+                "cogs": 434732521,
+                "gross_profit": 307032946,
+                "operating_profit": 229210778,
+                "net_profit": 188042941,
+                "eps_rial": 773,
+                "prior": {
+                  "revenue": 514483893,
+                  "cogs": 322090096,
+                  "gross_profit": 192393797,
+                  "operating_profit": 137401734,
+                  "net_profit": 116251941,
+                  "eps_rial": 478
+                }
+              }
+            },
+            "raw": {
+              "parser_version": 2
+            }
+          }
+        ],
+        "reverseSelected": [
+          {
+            "id": 76,
+            "symbol": "ونوین",
+            "report_kind": "ن-۱۰",
+            "period_end": "1404-12-29",
+            "title": "صورت مالی جداگانه سالانه (حسابرسی نشده) (اصلاحیه)",
+            "source_url": null,
+            "data": {
+              "symbol": "ونوین",
+              "company_name": "بانک اقتصاد نوین",
+              "report_kind": "ن-۱۰",
+              "statement_type": "bank",
+              "period_end": "1404-12-29",
+              "period_months": 12,
+              "audited": false,
+              "restated_prior": false,
+              "unit": "میلیون ریال",
+              "capital": 243145119,
+              "standalone": {
+                "revenue": 741765467,
+                "cogs": 434732521,
+                "gross_profit": 307032946,
+                "operating_profit": 229210778,
+                "net_profit": 188042941,
+                "eps_rial": 773,
+                "prior": {
+                  "revenue": 514483893,
+                  "cogs": 322090096,
+                  "gross_profit": 192393797,
+                  "operating_profit": 137401734,
+                  "net_profit": 116251941,
+                  "eps_rial": 478
+                }
+              }
+            },
+            "raw": {
+              "parser_version": 2
+            }
+          }
+        ],
+        "normalized": {
+          "symbol": "ونوین",
+          "company_name": "بانک اقتصاد نوین",
+          "report_kind": "ن-۱۰",
+          "statement_type": "bank",
+          "period_end": "1404-12-29",
+          "period_months": 12,
+          "audited": false,
+          "restated_prior": false,
+          "unit": "میلیون ریال",
+          "capital": 243145119,
+          "standalone": {
+            "revenue": 741765467,
+            "cogs": 434732521,
+            "gross_profit": 307032946,
+            "operating_profit": 229210778,
+            "net_profit": 188042941,
+            "eps_rial": 773,
+            "prior": {
+              "revenue": 514483893,
+              "cogs": 322090096,
+              "gross_profit": 192393797,
+              "operating_profit": 137401734,
+              "net_profit": 116251941,
+              "eps_rial": 478
+            }
+          }
+        },
+        "ratios": {
+          "gross_margin": 41.392186568318635,
+          "operating_margin": 30.900707595221604,
+          "net_margin": 25.350727334412294,
+          "revenue_growth": 44.17661604033928,
+          "net_profit_growth": 61.75466782098717,
+          "pe_ttm": null
+        },
+        "originalRatios": {
+          "gross_margin": 41.392186568318635,
+          "operating_margin": 30.900707595221604,
+          "net_margin": 25.350727199598794,
+          "revenue_growth": 44.17661604033928,
+          "net_profit_growth": 61.75466696078649,
+          "pe_ttm": null
+        }
+      },
+      "checks": [
+        {
+          "name": "explicit correction wins despite lower insertion ID",
+          "status": "PASS"
+        },
+        {
+          "name": "order independent and single period",
+          "status": "PASS"
+        },
+        {
+          "name": "correction field used",
+          "status": "PASS"
+        },
+        {
+          "name": "new net_margin differs; old result not reused",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C4-UNIT-MISMATCH",
+      "dataClass": "SYNTHETIC_DERIVED_TABLES",
+      "scope": "Synthetic contradictory amount-unit header; no issuer unit defect asserted",
+      "executionStatus": "EXECUTED",
+      "status": "FAIL",
+      "codeSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "parserVersion": 2,
+      "sourceAt": null,
+      "capturedAt": null,
+      "unit": "میلیون ریال",
+      "startedAt": "2026-10-01T23:11:03.642Z",
+      "calculatedAt": "2026-10-01T23:11:03.649Z",
+      "inputDigest": "a5413aa31368d39788c30b5e4139496c9ca3231063b80ebd3d5c08c92220faf1",
+      "inputDigestKind": "SHA256 exact UTF-8 JSON serialization of execution input",
+      "normalizedInputDigest": "b50bbc5de2b859e27f2793db8be1592e372321f222361fffc56f9a4d779404f6",
+      "coverage": {
+        "definition": "intended current input fields; not count of non-null product outputs",
+        "requiredCurrentFields": 6,
+        "coveredCurrentFields": 6,
+        "missingCurrentFields": [],
+        "issuerProvenanceVerified": false,
+        "actualIssuerUniverseCoverage": null,
+        "amountUnitVerifiedAgainstIssuer": false
+      },
+      "outputDigest": "8ab01fb751d109c20021f30b156cd66eafdb95a39e3ed7e6f000999047e26c06",
+      "actual": {
+        "claimedAmountUnit": "هزار ریال",
+        "epsUnit": "ریال",
+        "normalized": {
+          "symbol": "ونوین",
+          "company_name": "بانک اقتصاد نوین",
+          "report_kind": "ن-۱۰",
+          "statement_type": "bank",
+          "period_end": "1404-12-29",
+          "period_months": 12,
+          "audited": false,
+          "restated_prior": false,
+          "unit": "میلیون ریال",
+          "capital": 243145119,
+          "standalone": {
+            "revenue": 741765467,
+            "cogs": 434732521,
+            "gross_profit": 307032946,
+            "operating_profit": 229210778,
+            "net_profit": 188042940,
+            "eps_rial": 773,
+            "prior": {
+              "revenue": 514483893,
+              "cogs": 322090096,
+              "gross_profit": 192393797,
+              "operating_profit": 137401734,
+              "net_profit": 116251941,
+              "eps_rial": 478
+            }
+          }
+        },
+        "ratios": {
+          "gross_margin": 41.392186568318635,
+          "operating_margin": 30.900707595221604,
+          "net_margin": 25.350727199598794,
+          "revenue_growth": 44.17661604033928,
+          "net_profit_growth": 61.75466696078649,
+          "pe_ttm": null
+        }
+      },
+      "checks": [
+        {
+          "name": "fixture explicit thousand-rial header present",
+          "status": "PASS"
+        },
+        {
+          "name": "conflicting unit must reject/null affected output",
+          "status": "FAIL",
+          "error": "product accepted contradictory amount unit and emitted ratios"
+        },
+        {
+          "name": "input EPS tokens unchanged; present output EPS retained",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "PASS": 2,
+    "FAIL": 2,
+    "NOT_EXECUTED": 0,
+    "forbiddenAttempts": 0,
+    "upstreamRequests": 0,
+    "liveDBCalls": 0,
+    "modelCalls": 0,
+    "productFilesChanged": 0
+  },
+  "deterministicPayloadDigest": "fa25bd79d26d43610f75a5c9456865c0c6c5c903ee06733e8dc18403d9129d41",
+  "blockers": [
+    "Authentic issuer URL/version/publication/capture/rights remain unknown",
+    "Missing gross row becomes zero in parser and zero gross_margin in engine",
+    "N10 ignores contradictory amount-unit header and emits fixed million-rial unit",
+    "Correction approval/storage and ambiguous publication ties outside pure-function scope"
+  ],
+  "ownerHandoff": {
+    "owner": "existing data owner FOLLOWUP04",
+    "action": "review failures; no parser/relay/engine fix included",
+    "notifiedByThisHarness": false
+  },
+  "IE02Started": false,
+  "IE03Started": false,
+  "humanTenDayCommitment": false
+}
