@@ -1,5 +1,326 @@
 {
-  "status": "PENDING_INTEGRATED_CHECKPOINT",
-  "sourceHeads": "All 7 observed successful in source-ci.json",
-  "releaseApproved": false
+  "requestedAt": "2026-10-01T10:17:12.067Z",
+  "ref": "codex/followup06-integration-20261001",
+  "sha": "b7c77260821cd127c1a7a65eae123022dcf0a43a",
+  "status": "SUCCESS_CHECKPOINT",
+  "authorization": "existing repository git credential, only dispatch isolated CI workflow",
+  "httpStatus": 204,
+  "run": {
+    "id": 36848183098,
+    "sha": "b7c77260821cd127c1a7a65eae123022dcf0a43a",
+    "event": "workflow_dispatch",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36848183098",
+    "createdAt": "2026-10-01T10:17:18Z",
+    "updatedAt": "2026-10-01T10:19:53Z"
+  },
+  "jobs": [
+    {
+      "id": 110323272828,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "فقط یک package manager — لاکِ pnpm/yarn نباید برگردد",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "npm ci (اثباتِ هم‌گامیِ lockfile)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "audit — سطحِ critical مسدودکننده است",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "audit — گزارشِ high (مسدودکننده نیست، ولی پنهان هم نمی‌شود)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 110323273097,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "نصبِ کلاینتِ psql",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "تستِ یکپارچگیِ leads و intelligence",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "BrsApi shared budget — real isolated Postgres",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "شمارشِ واقعیِ تست‌ها — اسکیپِ خاموش مجاز نیست",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 110323273119,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "اسکنِ الگوی سکرت",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "اعتبارسنجیِ سیاستیِ SQL",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "نصبِ پارسرِ Postgres",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "اعتبارسنجیِ گرامرِ SQL (libpg_query — بدونِ اجرا)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-python@v5",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 110323273164,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Typecheck",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Lint",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Core tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Public product and form contracts",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Calc tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Relay tests (no external services)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Deploy gate tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 110324125549,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "بررسیِ نتیجهٔ همهٔ jobها",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "lastCheckedAt": "2026-10-01T10:20:29.797Z"
 }

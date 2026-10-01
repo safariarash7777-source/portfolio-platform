@@ -19,7 +19,7 @@
 | بسته | PR | head دقیق | base جاری | وضعیت ورودی |
 |---|---|---|---|---|
 | دارایی/مشاوره DEV07 |168|15eebc97ca650dde5f2687e36d9d98d193d0d543|main@51fd066|تأیید انسانی سناریوی۵ باز؛13/0/1 متعلق به همین SHA|
-| ترازنامه |173|6787005ad7b65acc49a059c2f9035ab16eb306f2|168@15eebc9|کد runtime گزارش‌شده56deb8c؛ تحویل بعدی docs-only؛ فهم انسانی باز|
+| ترازنامه |173|6787005ad7b65acc49a059c2f9035ab16eb306f2|168@15eebc9|کد runtime گزارش‌شده56deb8c85a2a09009d1624cd07b78ea87535ab2a؛ تحویل بعدی docs-only؛ فهم انسانی باز|
 | بازار NEXT07 |174|95cfa3410a97ac0d98cdefcb6671d4cfcb668646|wave-base@f6cb560|checkpoint فنی؛ تازگی upstream/استقرار نهایی باز|
 | عضویت NEXT04 |175|bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6|wave-base@f6cb560|Auth/Storage واقعی و شرایط تجاری باز|
 | میز پژوهش NEXT08 |176|d69763563ef695b2d16ea2e52be4a4452b0811dc|wave-base@f6cb560|پذیرش مقصد با هویت واقعی باز|
@@ -99,11 +99,11 @@ Hash هر فایل در inventory برای Git/LF و در نصب برای **byte
 - هر20 فرمان suiteهای relay موفق؛ بعضی runnerهای قدیمی فقط exit-code می‌دهند، برای آنها شمار آزمون اختراع نشده است.
 - typecheck، lint با صفر warning و build موفق. validate:sql:49 فایل، صفر مردود.
 - آزمون HTTP/DB از handler واقعی و PostgreSQL استفاده می‌کند؛ هویت handler در این regressionها مصنوعی است. **این اجرا ورود واقعی ترکیبی یا پذیرش مستقل انسانی نیست.**
-- تست backup/restore محلی دوباره اجرا نشد. هیچ بکاپ/بازیابی واقعی انجام نشد.
+- تست backup/restore محلی دوباره اجرا نشد. CI استاندارد مخزن آزمون‌های عادی خود، از جمله fixtureهای کاملاً مصنوعی خودش، را اجرا کرد؛ هیچ بکاپ/بازیابی واقعی انجام نشد.
 - خطای اولیه runner کیفیت فقط مسیر اشتباه فهرست public بود؛ از script واقعیtest:public استفاده و همان بخش/چک‌های باقی اجرا شد. core/calc موفق بی‌دلیل تکرار نشدند.
 - لاگ‌های خام در پوشه پروژه موجودند؛ نتیجه/تاریخ/hash و شاهدهای خلاصه نسخه کنترل‌شده‌اند. آنها حاوی داده واقعی مشتری یا اطلاعات ورود نیستند.
 
-CI تمام هفت head ورودی مستقیماً از GitHub **success** مشاهده شد؛ شماره اجراها:168=36840882933،173=36845293824،174=36771898821،175=36775201105 و sandbox36775201175،176=36774747309،177=36774588464،178=36843617522. این CIها به SHAهای ردیف inventory تعلق دارند؛ نتیجه آنها CI ترکیب2605a0f نیست. وضعیت CI ترکیب پس از انتشار checkpoint اسناد جدا ثبت می‌شود؛ تا مشاهده نتیجه، PENDING است.
+CI تمام هفت head ورودی مستقیماً از GitHub **success** مشاهده شد؛ شماره اجراها:168=36840882933،173=36845293824،174=36771898821،175=36775201105 و sandbox36775201175،176=36774747309،177=36774588464،178=36843617522. این CIها به SHAهای ردیف inventory تعلق دارند؛ نتیجه آنها CI ترکیب2605a0f نیست. **CI ترکیب نیز SUCCESS است**: [run36848183098](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36848183098) روی checkpoint `b7c77260821cd127c1a7a65eae123022dcf0a43a`؛ workflow_dispatch، هر5job موفق. CI اصلی DB425/0/0 در37suite و بودجه13/0/0 را اجرا کرد؛ locally بودجه14 شامل stop/start container اختصاصی بود. [وضعیت/steps](followup-06-evidence/integration-ci.json) و [خلاصه مستقیم لاگ jobها](followup-06-evidence/integration-ci-log-proof.json) ثبت شدند. تفاوت این checkpoint با کد آزموده‌شده2605a0f فقط اسناد و سه ابزار FOLLOWUP06 testing است؛ application/schema/dependency تغییر ندارد. commit نهایی ثبت نتیجه CI فقط docs است و CI این checkpoint را به head جدید نسبت نمی‌دهد.
 
 ## ماتریس ساخته / آزموده / نصب / منتشر / پذیرفته
 
@@ -143,7 +143,7 @@ CI تمام هفت head ورودی مستقیماً از GitHub **success** مش
 |NEXT06 و NEXT09|تحویل مستقل با SHA و fixture/قرارداد فعلی؛ بدون مدل مالی/Auth موازی|مجری173 برای06؛ صاحب09|
 |داده/refresh/quota178|تثبیت baseline مصرف و reset، نصب مصوب، خواندن کامل/تازگی واقعی؛ consumer با baseline UNKNOWN خاموش بماند|چت لیارا؛ قرارداد مدل با ارز|
 |Auth/Storage/publication تجمیع|ورود واقعی حساب‌های ساختگی، دو دوره، resource خصوصی و عدم دسترسی لینک مستقیم در sandbox قابل دسترسی؛ سپس acceptance مستقل|FOLLOWUP06 پس از ورودی ثابت|
-|CI و release gates|CI همان checkpoint نهایی، regression متأثر، بررسی DD034/035/036 و HOLD پرداخت؛ بعد درخواست تصمیم ادغام|FOLLOWUP06 و هماهنگ‌کننده|
+|CI و release gates|CI checkpoint حاضر سبز است؛ پس از Auth/NEXT06/09، CI همان SHA تازه و regression متأثر، بررسی DD034/035/036 و HOLD پرداخت؛ سپس تصمیم ادغام|FOLLOWUP06 و هماهنگ‌کننده|
 
 تغییر/retarget PRهای دیگر، merge بهmain، انتشار Production، نصب مشترک، فرانت/فونت موازی و ارسال پیام/اعلان واقعی انجام نشد. checkout مرکزی و docs/README مرکزی ویرایش نشدند؛ تغییرات inherited اسناد در ترکیب از commitهای ورودی‌اند.
 
@@ -154,3 +154,7 @@ GitHub connector و Git برای inventory/CI/refهای واقعی؛ git worktre
 مهارت‌های `using-git-worktrees` و `verification-before-completion` از `C:/Users/Asus/.claude/skills` خوانده/اعمال شدند: تشخیص checkout/ابزار native، fallback پس از خطای واقعی و تطبیق exit-code/نسخه پیش از ادعا. مهارت Supabase و changelog ثبت‌شده همین روز برای تفکیک grants/RLS، Auth واقعی از scaffold و منع ادعای نصب محیط مشترک استفاده شد. اسکیل `.claude/skills/iran-market-data/SKILL.md` و کاتالوگ رسمی داخلیbrsapi برای مصرف صفر upstream، null/تازگی/واحد و سهمیه خوانده شدند. receiving-code-review از مأموریت پیشین در این نوبت دوباره اجرا/ادعا نشده؛ UI/فونت یا provider تازه ساخته نشد.
 
 منابع واگذاری مرکزی: FOLLOWUP-06-INTEGRATION، README، CLAUDE، COMMAND-CENTER، AUTH-MOBILE-IMPLEMENTATION، FOLLOWUP-07-SMS، NEXT-06-ACTIVATION-20261001 و DOCUMENTATION-POLICY-20261001 در checkout `portfolio-product-direction`؛ این‌ها دستور/قرارداد هستند، نه شاهد نصب یا پذیرش.
+
+## تحویل نسخه کنترل‌شده
+
+شاخه اختصاصی `codex/followup06-integration-20261001` به origin push شد؛ PR جدید ایجاد و PRهای ورودی تغییر نکردند. گزارش DEV07 و تمام JSONهای شاهد این بسته نسخه کنترل‌شده‌اند. لاگ خام محلی است و hash/خلاصه مشاهده‌شده آن در JSONها ثبت است. [نسخه گزارش روی شاخه اختصاصی](https://github.com/safariarash7777-source/portfolio-platform/blob/codex/followup06-integration-20261001/docs/ops/seasonal-program/FOLLOWUP-06-RESULT.md). ثبت نتیجه CI بعد از b7c7726 فقط docs-only است؛ نتیجه UI/Auth تازه‌ای از آن استنتاج نشده. برای dispatch CI از [endpoint رسمی GitHub](https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event) و credential موجود مخزن فقط در حافظه فرایند استفاده شد؛ credential/token ذخیره یا نمایش داده نشد. بازیابی وضعیت از connector فقط PR-event را می‌دید؛ نتیجه workflow_dispatch با API و سپس لاگ jobهای connector تطبیق داده شد.
