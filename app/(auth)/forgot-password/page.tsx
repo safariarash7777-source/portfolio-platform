@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Mail, ArrowRight, CheckCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,19 +24,9 @@ export default function ForgotPasswordPage() {
     setServerError("");
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-      });
-      // Always show success even if the email isn't registered — avoids leaking
-      // which emails have accounts (account-enumeration protection).
-      if (error && !error.message.includes("rate")) {
-        console.error("resetPasswordForEmail:", error.message);
-      }
-      if (error && error.message.toLowerCase().includes("rate")) {
-        setServerError("تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.");
-        return;
-      }
+      const response=await fetch('/api/auth/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'recover',email:email.trim()})});
+      const data=await response.json();
+      if(!response.ok){setServerError(data.error??'سرویس بازیابی اکنون پاسخ نمی‌دهد.');return;}
       setSent(true);
     } catch {
       setServerError("خطا در اتصال. لطفاً دوباره تلاش کنید");
@@ -69,10 +58,10 @@ export default function ForgotPasswordPage() {
                 <CheckCircle size={32} />
               </div>
               <h2 className="font-display text-lg font-bold mb-2" style={{ color: "var(--navy-deep)" }}>
-                ایمیل بازیابی ارسال شد
+                درخواست بازیابی ثبت شد
               </h2>
               <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
-                اگر حسابی با این ایمیل وجود داشته باشد، لینک بازیابی رمز عبور برایتان ارسال شد. صندوق
+                اگر حسابی با این ایمیل وجود داشته باشد و سرویس ایمیل آماده باشد، لینک بازیابی را دریافت می‌کنید. صندوق
                 ورودی (و پوشه‌ی اسپم) خود را بررسی کنید.
               </p>
               <Link href="/login" className="btn btn-outline w-full">

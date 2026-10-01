@@ -4,7 +4,6 @@ import { useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
 
 export default function ResetPasswordPage() {
@@ -20,14 +19,13 @@ export default function ResetPasswordPage() {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setHasSession(!!data.user));
+    fetch('/api/auth/status',{cache:'no-store'}).then(response=>response.json()).then(data=>setHasSession(data.authenticated===true)).catch(()=>setHasSession(false));
   }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const errs: { password?: string; confirm?: string } = {};
-    if (password.length < 8) errs.password = "رمز عبور باید حداقل ۸ کاراکتر باشد";
+    if (password.length < 12 || password.length>128) errs.password = "رمز باید بین ۱۲ تا ۱۲۸ نویسه باشد";
     if (password !== confirm) errs.confirm = "رمز عبور و تکرار آن یکسان نیستند";
     if (Object.keys(errs).length) { setErrors(errs); return; }
 
@@ -35,14 +33,10 @@ export default function ResetPasswordPage() {
     setServerError("");
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) {
-        setServerError(
-          error.message.toLowerCase().includes("session")
-            ? "لینک بازیابی نامعتبر یا منقضی شده است. دوباره درخواست دهید."
-            : "خطا در تغییر رمز عبور. لطفاً دوباره تلاش کنید"
-        );
+      const response=await fetch('/api/auth/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'set-password',password})});
+      const data=await response.json();
+      if (!response.ok) {
+        setServerError(data.error??'رمز ذخیره نشد. دوباره تلاش کنید.');
         return;
       }
       setDone(true);
@@ -105,7 +99,7 @@ export default function ResetPasswordPage() {
                     id="new-password"
                     type={showPass ? "text" : "password"}
                     className="input"
-                    placeholder="حداقل ۸ کاراکتر"
+                    placeholder="حداقل ۱۲ نویسه"
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setErrors((x) => ({ ...x, password: undefined })); }}
                     disabled={loading}
