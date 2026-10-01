@@ -1,5 +1,9 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## شاهد جاری DEV-07: APPLIED_SANDBOX_ONLY
+
+phase37 بعد از زنجیرهٔ phase32→34→35→36 فقط در `dev07-1978-local` نصب شد؛ COMMIT موفق. شاهد ثبت‌شده در 2026-09-30T17:21:23.670Z، SHA برنامه `3462f0178ebed6b7a9966b465ba0756119ce267a`، hash فایل phase37 `b817192469b4f66937f009bf9a9dbb75f4acea41760be1e6be6306b6682834b9`. preflight:14/14 جدول حاضر،11/11 جدول RLS، چهار RPC دارای PT409 و فاقد40001، شاخهٔ status-only برقرار. [گزارش نهایی](./ops/DEV07-FINAL-3462F01.md)؛ manifest/خروجی catalog محلی `.task/dev07-migrations.json` و `.task/dev07-preflight-3462f01.txt`. Production و DB بازیابی‌شدهٔ لیارا مقصد نصب نیستند. NOT_APPLIED زیر، وضعیت پیش از این شاهد است. این ثبت پس از آزمون محلی است؛ head آزمون‌شده تغییر نکرد.
+
 ## DEV-07 / اصلاح یافتهٔ مستقل (2026-09-30T17:04Z)
 
 `sql/phase37_nonretryable_version_conflicts.sql`: **NOT_APPLIED در زمان ثبت این commit**. پیش‌نیاز و ترتیب: phase32→phase34→phase35→phase36→phase37؛ phase37 بعد از هر اجرای مجدد migrationهای قبلی باید آخر نصب شود. نصب بعدی فقط در sandbox دادهٔ ساختگی مجاز است و شاهد آن در صورت‌جلسهٔ بازآزمایی با SHA/hash/time ثبت می‌شود. وضعیت Production و Preview دارای بکاپ از این سند قابل استنتاج نیست. علت DEV07-F01: تعارض منطقی نسخه نباید serialization_failure قابل retry باشد. rollback عملی این اصلاح، بازاجرای 32/35/36 و بازگشت رفتار قبلیِ معیوب است؛ برای بازگشت برنامه، schema اصلاح‌شده سازگار است و بازنصب قبلی توصیه نمی‌شود.
