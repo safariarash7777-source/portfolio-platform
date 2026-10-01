@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-01T11:33:05.087Z",
+  "runtimeSha": "9bd5945102f21ee31ed9d9910f4d391bd907a223",
+  "records": [
+    {
+      "case": "real GoTrue login A",
+      "result": "PASS",
+      "userId": "0c4ae743-5e03-4dfb-872a-016de600c1bc"
+    },
+    {
+      "case": "real GoTrue login B",
+      "result": "PASS",
+      "userId": "670bdd54-d7b9-417b-b680-efa6a807477f"
+    },
+    {
+      "case": "real GoTrue login advisor",
+      "result": "PASS",
+      "userId": "b2e6c803-eeb1-49a8-82ad-264c88db2b93"
+    },
+    {
+      "case": "revocation denies next resource issuance",
+      "result": "PASS"
+    },
+    {
+      "case": "revocation is authoritative on next module request",
+      "result": "PASS"
+    },
+    {
+      "case": "independent cohort B stays authorized",
+      "result": "PASS"
+    },
+    {
+      "case": "needs history survives revocation",
+      "result": "PASS"
+    },
+    {
+      "case": "personal financial UUID/history survives revocation",
+      "result": "PASS"
+    }
+  ]
+}

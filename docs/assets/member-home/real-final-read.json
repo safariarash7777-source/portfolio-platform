@@ -1,0 +1,30 @@
+{
+  "runtimeSha": "6ffce1b00eb6ee87a788a099a181c16c87549243",
+  "at": "2026-10-01T11:49:13.074Z",
+  "records": [
+    {
+      "role": "A",
+      "result": "PASS",
+      "sameCanonicalUuid": true,
+      "profileEndpointInPinnedBase": "NOT_INSTALLED_404"
+    },
+    {
+      "role": "B",
+      "result": "PASS",
+      "sameCanonicalUuid": true,
+      "profileEndpointInPinnedBase": "NOT_INSTALLED_404"
+    },
+    {
+      "role": "advisor",
+      "result": "PASS",
+      "sameCanonicalUuid": true,
+      "profileEndpointInPinnedBase": "NOT_INSTALLED_404"
+    }
+  ],
+  "observed": {
+    "anonymousModuleListStatus": 503,
+    "anonymousDataExposed": false
+  },
+  "previousWriteAndStorageEvidenceRuntime": "9bd5945102f21ee31ed9d9910f4d391bd907a223",
+  "changesSinceWriteEvidence": "read-only Auth profile view; no seasonal, financial, Auth or Storage server edits"
+}

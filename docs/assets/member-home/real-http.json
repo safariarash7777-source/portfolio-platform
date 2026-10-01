@@ -1,0 +1,102 @@
+{
+  "at": "2026-10-01T11:29:27.431Z",
+  "runtimeSha": "9bd5945102f21ee31ed9d9910f4d391bd907a223",
+  "environment": "member06-local",
+  "transport": "routing-only gateway; real GoTrue/PostgREST/Storage; no bootstrap auth mock",
+  "records": [
+    {
+      "case": "real GoTrue login A",
+      "result": "PASS",
+      "userId": "0c4ae743-5e03-4dfb-872a-016de600c1bc"
+    },
+    {
+      "case": "real GoTrue login B",
+      "result": "PASS",
+      "userId": "670bdd54-d7b9-417b-b680-efa6a807477f"
+    },
+    {
+      "case": "real GoTrue login advisor",
+      "result": "PASS",
+      "userId": "b2e6c803-eeb1-49a8-82ad-264c88db2b93"
+    },
+    {
+      "case": "A has overlapping and expired cohorts",
+      "result": "PASS"
+    },
+    {
+      "case": "B only has its own cohort",
+      "result": "PASS"
+    },
+    {
+      "case": "admin role alone grants no cohort",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot issue A resource",
+      "result": "PASS",
+      "httpStatus": 403
+    },
+    {
+      "case": "advisor cannot issue A resource",
+      "result": "PASS",
+      "httpStatus": 503
+    },
+    {
+      "case": "real needs next version saved",
+      "result": "PASS"
+    },
+    {
+      "case": "stale needs version is rejected",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot save A-only needs",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot read A response",
+      "result": "PASS"
+    },
+    {
+      "case": "needs correction creates another version",
+      "result": "PASS"
+    },
+    {
+      "case": "real Storage issues 60-second URL",
+      "result": "PASS"
+    },
+    {
+      "case": "real Storage returns the uploaded bytes",
+      "result": "PASS",
+      "bytes": 36
+    },
+    {
+      "case": "Storage RLS denies B direct signing",
+      "result": "PASS"
+    },
+    {
+      "case": "existing financial snapshot API reused",
+      "result": "PASS"
+    },
+    {
+      "case": "existing debt snapshot API reused",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot read A financial version",
+      "result": "PASS"
+    },
+    {
+      "case": "fixture preview is disabled in real-runtime build",
+      "result": "PASS"
+    },
+    {
+      "case": "real expired cohort denies resources",
+      "result": "PASS"
+    },
+    {
+      "case": "real expired cohort resource list is empty",
+      "result": "PASS"
+    }
+  ]
+}
