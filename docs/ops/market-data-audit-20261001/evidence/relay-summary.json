@@ -1,0 +1,30 @@
+{
+  "budgetStopActive": false,
+  "databaseOk": true,
+  "archiveParseFailed": 5,
+  "transport": {
+    "enabled": true,
+    "scope": "process",
+    "spacingMs": 100,
+    "pending": 0,
+    "sent": 1317,
+    "minStartGapMs": 109.1348934173584
+  },
+  "imeCertificateTable": "missing (run phase19 SQL)",
+  "counts": {
+    "gold": 9,
+    "currency": 28,
+    "crypto": 19,
+    "funds": 333,
+    "stocks": 760,
+    "options": 1587
+  },
+  "lastRefresh": 1790801587123,
+  "candleDoneCount": 1244,
+  "candleQueueRemaining": 0,
+  "ageSec": 176,
+  "databaseStatus": 200,
+  "feedParseFailed": 1,
+  "backfillParseFailed": 7,
+  "imePhysicalTable": "missing (run phase19 SQL)"
+}

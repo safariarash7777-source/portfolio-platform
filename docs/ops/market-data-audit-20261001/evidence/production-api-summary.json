@@ -1,0 +1,38 @@
+{
+  "globalCryptoCount": 3,
+  "irPresent": true,
+  "globalOk": true,
+  "indexSourceState": "بسته",
+  "irDiag": {
+    "at": 1790801787390,
+    "source": "supabase",
+    "supabaseConfigured": true,
+    "relayUrlConfigured": false,
+    "reached": true,
+    "status": 200,
+    "ok": true,
+    "fromCache": false,
+    "ageSec": 201,
+    "counts": {
+      "gold": 9,
+      "currency": 28,
+      "funds": 333,
+      "stocks": 760,
+      "crypto": 19
+    },
+    "error": null,
+    "ms": 1145
+  },
+  "indexSourceTime": "18:16:15",
+  "indexSourceDate": "1405-07-08",
+  "irCounts": {
+    "gold": 9,
+    "currency": 28,
+    "crypto": 19,
+    "options": 1587,
+    "funds": 333,
+    "stocks": 760
+  },
+  "globalGoldCount": 1,
+  "irFetchedAt": 1790801587101
+}

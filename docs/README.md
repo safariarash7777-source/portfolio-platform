@@ -38,6 +38,7 @@
 | [`ops/RELEASE-payment-containment.md`](./ops/RELEASE-payment-containment.md) | بستهٔ انتشارِ مهارِ `create_payment` | ترتیبِ انتشار، اثرِ authorityِ بی‌رکورد، پذیرش، بازگشت |
 | [`RUNBOOK-relay-deploy.md`](./RUNBOOK-relay-deploy.md) | استقرارِ رله + `B-053` | پیش‌پروازِ پرچم‌ها، مسیرِ استقرار، پذیرشِ دو چرخه |
 | [`ops/RELEASE-history-sections.md`](./ops/RELEASE-history-sections.md) | بستهٔ انتشارِ توقفِ نوشتنِ بخش‌های بی‌خواننده | شاهدِ قبل/بعد، مصرف‌کننده‌ها، بازگشت |
+| [`ops/RELEASE-brsapi-budget.md`](./ops/RELEASE-brsapi-budget.md) | سهمیهٔ مشترک رله در لیارا | آزمون ایزوله، baseline نامعلوم، نصب و بازگشت ایمن |
 | [`MIGRATION-LEDGER.md`](./MIGRATION-LEDGER.md) | دفترِ مهاجرت‌ها | `APPLIED` / `NOT_APPLIED` — **مرجعِ نهایی** |
 | [`ENVIRONMENT-MATRIX.md`](./ENVIRONMENT-MATRIX.md) | نامِ متغیرهای محیطی | فقط **نام**، هرگز مقدار |
 | [`SERVICE-OWNERSHIP.md`](./SERVICE-OWNERSHIP.md) | مالکِ هر سرویس | پاسخ‌گوییِ عملیاتی |

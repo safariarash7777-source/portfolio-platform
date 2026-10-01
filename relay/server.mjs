@@ -100,7 +100,7 @@ function sharedBudget() {
     softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
     hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
     leaseSize: Number(process.env.BRSAPI_LEASE_SIZE || 50),
-    degradedCeiling: Number(process.env.BRSAPI_DEGRADED_CEILING || 100),
+    degradedCeiling: 0,
     onError: (e) => console.error("brsapi budget store:", errMsg(e)),
   });
   return sharedBudgetInstance;
@@ -129,7 +129,7 @@ function commodityBudget() {
     softBudget: Number(process.env.BRSAPI_COMMODITY_SOFT || 900),
     hardCeiling: Number(process.env.BRSAPI_COMMODITY_HARD || 1200),
     leaseSize: Number(process.env.BRSAPI_COMMODITY_LEASE || 20),
-    degradedCeiling: Number(process.env.BRSAPI_COMMODITY_DEGRADED || 20),
+    degradedCeiling: 0,
     onError: (e) => console.error("commodity budget store:", errMsg(e)),
   });
   return commodityBudgetInstance;
@@ -1202,11 +1202,12 @@ function refresh() {
     try {
       resetBudgetStop();
       const body = await buildPayload();
-      if (budgetStop.active && cache) {
-        // این چرخه ناقص بود. کشِ سالمِ قبلی می‌ماند و سایت دادهٔ **کهنه** با
-        // برچسب نشان می‌دهد — نه یک صفحهٔ خالی.
-        status.lastError = "چرخه به‌خاطرِ سقفِ بودجه ناقص ماند؛ دادهٔ قبلی حفظ شد";
+      if (budgetStop.active) {
+        // Never write an incomplete cycle to persistent snapshots/history,
+        // including a cold start where there is no in-memory cache to preserve.
+        status.lastError = "چرخه به‌خاطرِ کنترل بودجه ناقص ماند؛ دادهٔ قبلی بازنویسی نشد";
         console.warn("brsapi budget: چرخه ناقص — کشِ قبلی حفظ شد", Object.keys(budgetStop.producers).join(","));
+        return;
       } else {
         cache = { body, at: Date.now() };
         status.lastRefresh = Date.now();
