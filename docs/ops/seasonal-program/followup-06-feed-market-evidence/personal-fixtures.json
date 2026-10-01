@@ -1,0 +1,87 @@
+{
+  "environment": "followup06-feed-market-native-local",
+  "createdAt": "2026-10-01T20:27:56.966Z",
+  "source": "Native GoTrue fixture-only login then canonical RPC; independent acceptance must login throughUI",
+  "rows": [
+    {
+      "role": "A",
+      "userId": "02363980-3f12-412c-a7a8-dcfa863cfb74",
+      "holdingVersions": [
+        {
+          "id": "83783355-8a31-423c-a3fb-adc41f70f38e",
+          "version": 1
+        },
+        {
+          "id": "1ac91d61-8990-48b5-aea3-70945020f692",
+          "version": 2
+        }
+      ],
+      "debt": [
+        {
+          "version_id": "4a8e3cae-d303-41f1-9ca2-c3759f319fd5",
+          "version": 3,
+          "position_count": 1,
+          "reused": false
+        }
+      ],
+      "needs": {
+        "id": "e44b01c4-9a75-475c-9dad-4b7455369bd3",
+        "body": {
+          "goal": "هدف ساختگی مستقل A",
+          "question": "پرسش ساختگی برای حفظ نیازسنجی",
+          "interests": [
+            "مدیریت دارایی"
+          ],
+          "experience": "new"
+        },
+        "version": 1,
+        "submitted": true
+      },
+      "marker": "دارایی ساختگی ترکیب مستقل A"
+    },
+    {
+      "role": "B",
+      "userId": "3404646c-bd5e-4f22-88d1-b128a33b92d2",
+      "holdingVersions": [
+        [
+          {
+            "version_id": "7e74e83c-c7ea-4033-82b6-59b7a0f7c02b",
+            "version": 1,
+            "position_count": 1,
+            "reused": false
+          }
+        ],
+        [
+          {
+            "version_id": "222cbd7e-5ffb-4040-876d-6f6f4039efd3",
+            "version": 2,
+            "position_count": 1,
+            "reused": false
+          }
+        ]
+      ],
+      "debt": [
+        {
+          "version_id": "9c94ecbd-310d-46dc-aac5-d77e29a6a055",
+          "version": 3,
+          "position_count": 1,
+          "reused": false
+        }
+      ],
+      "needs": {
+        "id": "9b1e4f06-10dd-4f72-8af8-be3b3103c033",
+        "body": {
+          "goal": "هدف ساختگی مستقل B",
+          "question": "پرسش ساختگی برای حفظ نیازسنجی",
+          "interests": [
+            "مدیریت دارایی"
+          ],
+          "experience": "new"
+        },
+        "version": 1,
+        "submitted": true
+      },
+      "marker": "دارایی ساختگی ترکیب مستقل B"
+    }
+  ]
+}
