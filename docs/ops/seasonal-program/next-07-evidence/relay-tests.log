@@ -1,0 +1,387 @@
+✔ NAV منبع تازه با تومان درست پذیرفته می‌شود (66.216ms)
+✔ کش امروز و NAV هشت روز قبل همچنان کهنه است (1.1223ms)
+✔ واحد ده برابر، ساعت آینده و تاریخ نامعتبر رد می‌شوند (2.0592ms)
+✔ null مقدار مالی صفر نمی‌شود؛ صفر واقعی حفظ می‌شود (0.3506ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 497.1107
+
+
+✔ real timers enforce spacing across simultaneous calls without contacting the provider (557.7064ms)
+✔ parallel sources, retries and event-loop stalls cannot burst (5.6845ms)
+✔ early timer wakeups recheck the clock; cancelled requests are never sent (1.6022ms)
+✔ Supabase bypasses a blocked provider queue; configured provider hosts join it (1.8778ms)
+✔ all production BrsApi producers use the shared transport even when client flag is off (18.0306ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1010.72
+
+
+✔ the written sections are configurable and default to the consumed pair (1.9431ms)
+✔ the unread sections are no longer hard-coded into the write path (0.6501ms)
+✔ a section that the source did not return is recorded, not silently dropped (0.5085ms)
+✔ retention stays configurable and its status stays observable (0.3911ms)
+✔ the source-side sub-ticker filter is still applied before symbol_history (2.2211ms)
+✔ nothing in the relay deletes from symbol_history (0.6004ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 404.0934
+
+
+✔ ساعتِ تهران هرگز «24» نیست — ۴۸ ساعت با گامِ ۱۰ دقیقه (178.0633ms)
+✔ لحظهٔ نوشتنِ Production: ۰۰:۰۶ شنبه ساعتِ ۰ است، نه ۲۴ (3.4635ms)
+✔ دروازهٔ «پس از بسته‌شدن» با NaN بسته می‌ماند (0.4898ms)
+✔ پخشِ بودجه: ۰۰:۰۵ تهران تقریباً ۲۴ ساعت تا نیمه‌شب مانده، نه عددِ منفی (1.8639ms)
+✔ تاریخِ جلسهٔ منبع: جلالی با رقمِ لاتین یا فارسی → میلادی (1.2019ms)
+✔ تاریخِ منبعِ ناموجود یا نامعتبر → null، هرگز حدس (0.351ms)
+✔ بازتولیدِ Production: ۰۰:۰۶ شنبه با دادهٔ چهارشنبه هیچ ردیفی نمی‌سازد (1.3038ms)
+✔ چهارشنبه ۱۴:۳۰: برچسب همان چهارشنبه است (1.0791ms)
+✔ برچسب از منبع می‌آید نه از تقویم: یکشنبه‌ای که منبع هنوز شنبه را می‌گوید (5.6191ms)
+✔ بدونِ تاریخِ منبع هیچ ردیفی ساخته نمی‌شود (D2) (1.5646ms)
+✔ پنجشنبه و جمعه چیزی نوشته نمی‌شود (0.9717ms)
+✔ نگاشتِ ردیف دست نخورده: زیرنماد، حق‌تقدم و بی‌معامله بیرون؛ تومان→ریال؛ NAV در raw (0.9443ms)
+✔ server.mjs: نوشتنِ پایانِ روز از planEodHistory و writeEodHistory می‌گذرد (0.668ms)
+✔ هیچ خوانشِ ساعتی در رله `hour12: false` ندارد (21.4576ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 712.9434
+
+
+✔ writtenAfterClose: ۰۰:۰۶ همان روز پیش از بسته‌شدن است؛ ۱۴:۳۰ و روزِ بعد پس از آن (37.046ms)
+✔ گذار: برچسبِ اشغال‌شده با ردیفِ پیش از بسته‌شدن — پایانیِ جلسه دور ریخته نمی‌شود (232.9542ms)
+✔ restart در همان روز: هیچ ردیفِ تکراری، stash همان (460.2336ms)
+✔ نیمه‌شبِ بعد: هیچ نوشتنی؛ جلسهٔ بعد ساعتِ ۱۴:۳۰ با برچسبِ درست (55.7047ms)
+✔ تعطیلی: شاخص همان جلسهٔ قبل را می‌گوید — برچسبِ تازه ساخته نمی‌شود (214.7304ms)
+✔ فیدِ کهنه: شاخص جلو رفته ولی نمادها همان جلسهٔ قبل‌اند — نوشته نمی‌شود (51.944ms)
+✔ retry: شکستِ دستهٔ دوم جلسه را قفل نمی‌کند؛ تلاشِ بعد فقط غایب‌ها را درج می‌کند (98.5263ms)
+✔ ردیفِ منبعِ دیگر (کندل) دسته را نمی‌شکند و بازنویسی نمی‌شود (8.2532ms)
+✔ کمتر از کفِ ردیف: نوشته می‌شود ولی جلسه کامل علامت نمی‌خورد (5.8553ms)
+✔ کلیدِ یکتای جعلی واقعاً اعمال می‌شود: درجِ بی ignore-duplicates روی تکراری 409 می‌دهد (0.7746ms)
+✔ server.mjs: نوشتن از writeEodHistory، و چرخهٔ ناقص (بودجه) چیزی نمی‌نویسد (0.7257ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1443.6691
+
+
+brsapi-client:
+  ✓ ۴xxِ غیرِ ۴۲۹ هرگز retry نمی‌شود — قاعدهٔ Q1
+  ✓ backoff نمایی است و سقف دارد
+  ✓ full jitter: کفِ بازه صفر است، نه پایه
+  ✓ کلیدِ dedup به ترتیبِ پارامترها وابسته نیست
+  ✓ سطل: ۱۰ req/s یعنی فاصلهٔ ۱۰۰ms، نه ۱۰تا در یک لحظه
+  ✓ سطل: مرزِ پنجره تراکم نمی‌سازد
+  ✓ سطل: پس از ۴۲۹ نرخِ سراسری کند می‌شود
+  ✓ کلیدِ API در params رد می‌شود
+  ✓ کلید به URL اضافه می‌شود ولی در کلیدِ dedup نیست
+  ✓ dedupِ درپرواز: دو فراخوانِ هم‌زمان یک درخواست می‌شوند
+  ✓ کشِ کوتاه‌مدت درخواستِ دوم را حذف می‌کند
+  ✓ کش پس از انقضای TTL دوباره درخواست می‌زند
+  ✓ هم‌زمانی هرگز از سقف بالاتر نمی‌رود
+  ✓ ۴۲۹ تا سقفِ تلاش retry می‌شود و بعد شکست می‌خورد
+  ✓ ۵xx retry می‌شود و اگر بعداً موفق شد، موفق برمی‌گردد
+  ✓ ۴۰۳ فوراً شکست می‌خورد — یک تلاش، نه چهار
+  ✓ Retry-After بر محاسبهٔ backoff مقدم است
+  ✓ کارِ تعاملی قبل از پس‌زمینه خدمت می‌گیرد
+  ✓ تلاشِ تعاملی کمتر است — ۲ نه ۴
+  ✓ متریک «نفرستادیم» را از «فرستادیم و خطا نداد» جدا می‌کند
+  ✓ متریکِ صف عمق و انتظار را ثبت می‌کند
+  ✓ نرخ در عمل رعایت می‌شود: ۲۰ درخواست ≥ ۱٫۹ ثانیه طول می‌کشد
+  ✓ پرچم پیش‌فرض خاموش است — مسیرِ قدیمی دست‌نخورده می‌ماند
+  ✓ مهلتِ صف جدا از مهلتِ درخواست است
+  ✓ سقفِ هر طبقه: bulk در soft، critical در hard، standard وسط
+  ✓ سقفِ سخت بر همه مقدم است، حتی اگر soft بزرگ‌تر تنظیم شده باشد
+  ✓ bulk در softBudget می‌ایستد ولی critical ادامه می‌دهد
+  ✓ standard پیش از critical می‌ایستد — تنزلِ تدریجی
+  ✓ در سقفِ سخت هیچ طبقه‌ای عبور نمی‌کند — حتی critical
+  ✓ شمارنده با تغییرِ روزِ تهران صفر می‌شود
+  ✓ متریکِ بودجه used/remaining/rejected را جدا گزارش می‌کند
+  ✓ درخواستِ ردشده به‌خاطرِ بودجه اصلاً روی سیم نمی‌رود
+  ✓ bulk قربانی می‌شود تا critical زنده بماند
+  ✓ retryها هم از بودجه کم می‌کنند
+  ✓ بودجه می‌تواند وسطِ زنجیرهٔ retry تمام شود و صریح خطا بدهد
+  ✓ هیچ ترکیبی از producerها نمی‌تواند از سقفِ سخت رد شود
+  ✓ در کمبودِ بودجه، سهمِ critical از bulk بیشتر است
+  ✓ budgetClass نامعتبر رد می‌شود، نه اینکه بی‌صدا standard شود
+  ✓ پیش‌فرضِ budgetClass همان standard است
+  ✓ dedup بودجه مصرف نمی‌کند
+  ✓ بودجهٔ ماندگار: اجاره تکه‌تکه گرفته می‌شود، نه یک‌جا
+  ✓ restart شمارنده را صفر نمی‌کند — فرایندِ تازه از همان جا ادامه می‌دهد
+  ✓ هیچ ترکیبی از فرایندها از سقفِ سراسری رد نمی‌شود
+  ✓ اجارهٔ خرج‌نشده روی خاموشیِ مرتب پس داده می‌شود
+  ✓ انبارِ خراب بی‌صدا بودجه را باز نمی‌کند — رد می‌شود
+  ✓ در خرابیِ انبار فقط critical و فقط تا سقفِ اضطراریِ شمرده‌شده عبور می‌کند
+  ✓ «اجاره ته کشید» با «بودجه تمام شد» یکی شمرده نمی‌شود
+  ✓ سقفِ انبار حاکم است — فرایند نمی‌تواند سقفِ سخاوتمندانه‌ترِ خودش را نگه دارد
+  ✓ retry هم از بودجهٔ ماندگار کم می‌کند
+  ✓ عوض‌شدنِ روز اجارهٔ تازه می‌گیرد و شمارنده را از نو می‌شمارد
+  ✓ makeSupabaseLeaseStore بدونِ env چیزی برنمی‌گرداند، نه اینکه بی‌کلید تماس بگیرد
+  ✓ makeSupabaseLeaseStore پاسخِ بی‌شکل را قبول نمی‌کند
+  ✓ makeSupabaseLeaseStore خطای HTTP را خطا می‌کند، نه صفر
+
+53 passed, 0 failed
+
+
+brsapi-legacy-meter:
+  ✓ مصرفِ مسیرِ قدیمی در همان بودجه شمرده می‌شود، نه جای دیگر
+  ✓ پیش‌فرض فقط می‌شمارد — رفتارِ امروزِ Production را عوض نمی‌کند
+  ✓ با سوییچِ اجرا، همان مورد رد می‌شود
+  ✓ نبودِ شمارنده پنهان نمی‌شود — خودش یک عدد است
+  ✓ قبل از رزرو، اجاره شارژ می‌شود
+  ✓ سوییچِ اجرا از پرچمِ کلاینت جداست
+  ✓ طبقهٔ بودجه به بودجه منتقل می‌شود، نه اینکه همه standard شوند
+  ✓ enforcement روشن + شمارنده غایب = توقف، نه ارسالِ بی‌حساب
+  ✓ «شمارنده نیست» با «سهمیه تمام شد» یکی نیست
+  ✓ هشدارِ عملیاتی فقط وقتی بلند می‌شود که قول داده باشیم و نتوانیم نگهش داریم
+  ✓ نشمردن به تفکیکِ producer دیده می‌شود، نه یک عددِ کلی
+
+11 passed, 0 failed
+
+
+brsapi-coverage:
+  ✓ شمارش‌ها با هم قاطی نمی‌شوند — call site و endpoint و کلید سه چیزند
+  ✓ هر نقطهٔ تماسِ اعلام‌شده واقعاً در همان فایل هست
+  ✓ هر نقطه هم مسیرِ کلاینت دارد هم شمارشِ مسیرِ قدیمی
+  ✓ هیچ endpointِ BrsApiای بیرون از سقف نمانده
+  ✓ کلیدِ کامودیتی در شمارندهٔ کلیدِ اصلی ریخته نمی‌شود
+
+5 passed, 0 failed
+
+
+brsapi-stop-behaviour:
+  ✓ چرخهٔ سالم کش را پر می‌کند
+  ✓ بدونِ شمارنده در enforcement: هیچ درخواستی روی سیم نمی‌رود
+  ✓ کشِ سالم با خالی بازنویسی نمی‌شود — دادهٔ کهنه می‌ماند
+  ✓ وقتی هیچ کشِ قبلی نیست، خالی سرو می‌شود — و این عمدی است
+  ✓ هشدارِ عملیاتی بلند می‌شود، بی‌صدا نمی‌گذرد
+  ✓ بدونِ enforcement همان وضعیت عبور می‌کند — رفتارِ امروزِ Production
+  ✓ BudgetUnavailableError از خطای سهمیه قابلِ تفکیک است
+
+7 passed, 0 failed
+
+
+symbol-detail — بودجهٔ چرخش:
+  ✓ کلِ بودجهٔ روز مصرف می‌شود، نه کمتر
+  ✓ بودجه در کلِ روز پخش می‌شود، نه در ساعاتِ اول
+  ✓ هیچ چرخه‌ای از سقفِ انفجار بالاتر نمی‌رود
+  ✓ بودجهٔ تمام‌شده صفر می‌دهد، نه عددِ منفی
+  ✓ در پایانِ روز بودجهٔ باقی‌مانده حبس نمی‌شود
+  ✓ سقفِ انفجار حتی با بودجهٔ زیاد رعایت می‌شود
+  ✓ بودجهٔ کوچک‌تر از یک در چرخه نه گم می‌شود، نه به آخرِ روز می‌افتد
+  ✓ msUntilTehranMidnight در بازهٔ معتبر است
+
+8 passed, 0 failed
+
+
+breadth unit tests:
+  ✓ صف خرید: بهترین تقاضا روی سقف دامنه و عرضهٔ صفر
+  ✓ صف خرید نیست وقتی عرضه موجود است
+  ✓ صف خرید نیست وقتی تقاضا زیر سقف است
+  ✓ فیلد غایب → قضاوت نمی‌شود (false، هیچ حدسی)
+  ✓ صف فروش: بهترین عرضه روی کف دامنه و تقاضای صفر
+  ✓ صف فروش نیست وقتی تقاضا موجود است
+  ✓ نبض: مثبت/منفی/خنثی/کل فقط از معامله‌شده‌ها
+  ✓ صف‌ها: یک صف خرید و یک صف فروش
+  ✓ ارزش صف خرید = حجم سطر اول × قیمت × ۱۰ (ریال)
+  ✓ ارزش صف فروش = حجم سطر اول عرضه × قیمت × ۱۰ (ریال)
+  ✓ خالص پول حقیقی = Σ(buyI−sellI)×پایانی×۱۰ (ریال)
+  ✓ سرانهٔ خرید حقیقی = ارزش خرید حقیقی ÷ شمار خریداران
+  ✓ ارزش معاملات جمع value معامله‌شده‌ها (ریال)
+  ✓ ورودی خالی → صفرها و nullهای صادق
+
+14 passed, 0 failed
+
+
+candle-backfill unit tests:
+  ✓ جلالی ۱۴۰۴/۰۴/۲۷ → میلادی 2025-07-18
+  ✓ جلالی ۱۴۰۳/۱۲/۳۰ (کبیسه) → میلادی معتبر
+  ✓ متن جلالی با ارقام فارسی → ایزو
+  ✓ متن خراب → null
+  ✓ کندل معتبر نگاشت می‌شود — ریال دست‌نخورده
+  ✓ کندل با close صفر یا منفی حذف می‌شود
+  ✓ کندل با تاریخ نامعتبر حذف می‌شود
+  ✓ درج با on_conflict=symbol,trade_date انجام می‌شود
+  ✓ هدر Prefer شامل resolution=ignore-duplicates و return=minimal است
+  ✓ existingDates حذف شده (باگ Max Rows دیگر ممکن نیست)
+  ✓ کد رله فقط INSERT دارد — هیچ UPDATE/DELETE به symbol_history
+  ✓ مهاجرت v4: پاک کردن failed برای رد دوباره از مسیر ignore-duplicates
+
+12 passed, 0 failed
+
+
+  ok  n10 parsed
+  ok  n10 revenue
+  ok  n10 cogs abs
+  ok  n10 gross
+  ok  n10 operating
+  ok  n10 net
+  ok  n10 eps
+  ok  n10 prior revenue
+  ok  n10 prior net
+  ok  n10 capital
+  ok  n10 rejects inconsistent table
+  ok  n10 null without income table
+  ok  n30 parsed
+  ok  n30 one product with month sales
+  ok  n30 product name
+  ok  n30 month qty
+  ok  n30 month rate
+  ok  n30 month amount
+  ok  n30 month production
+  ok  n30 period total
+  ok  n30 fy cumulative
+  ok  n30 fiscal year
+  ok  n30 unit recorded
+  ok  n30 period months
+  ok  n30 null without product table
+  ok  bank fixture exists
+  ok  bank n10 parsed via fallback
+  ok  bank statement_type
+  ok  bank revenue (درآمد عملیاتی)
+  ok  bank cogs (هزینه سود سپرده‌ها)
+  ok  bank gross
+  ok  bank operating
+  ok  bank net
+  ok  bank eps (خالص هر سهم)
+  ok  bank capital
+  ok  bank prior revenue
+  ok  bank prior net
+  ok  bank arithmetic
+  ok  bank direct === fallback
+  ok  insurance parsed
+  ok  insurance statement_type
+  ok  insurance revenue
+  ok  insurance cogs
+  ok  insurance net
+  ok  insurance eps
+  ok  bank normalizer rejects industrial table
+  ok  bank rejects inconsistent gross
+  ok  سربرگ «میلیون ریال» خوانده می‌شود
+  ok  سربرگ «ریال» با «میلیون ریال» اشتباه نمی‌شود
+  ok  سربرگِ بی‌واحد null می‌دهد
+  ok  سازگاریِ حسابی مقیاسِ میلیون را پیدا می‌کند
+  ok  سازگاریِ حسابی مقیاسِ ریال را پیدا می‌کند
+  ok  ردیف‌های ناسازگار هیچ مقیاسی نمی‌دهند
+  ok  بدونِ شاهد (نبودِ نرخ) استنتاج نمی‌شود
+  ok  سربرگ و حساب هم‌سو ⇒ واحد معتبر
+  ok  دو شاهد جدا ثبت می‌شوند
+  ok  سربرگِ تنها basis جدا می‌گیرد
+  ok  حسابِ تنها basis جدا می‌گیرد
+  ok  تعارضِ سربرگ و حساب ⇒ واحد اعلام نمی‌شود
+  ok  در تعارض هم هر دو شاهد نگه داشته می‌شوند
+  ok  قالبِ ناشناخته ⇒ unresolved
+  ok  واحدِ ن-۳۰ از خودِ گزارش استخراج شد
+  ok  پایهٔ اثباتِ واحد ثبت شد
+  ok  دورهٔ مقایسه یک ماه است
+  ok  واحدِ مقدارِ کالا استخراج نشده و صریح null است
+  ok  واحدِ مبلغ با واحدِ مقدار قاطی نشده
+  ok  جدولِ بدونِ محصول null می‌دهد (تعمیم ساخته نمی‌شود)
+
+ALL TESTS PASSED
+
+
+✔ jdateKey: جلالی اسلش‌دار → عدد قابل مقایسه (1.4586ms)
+✔ jdateKey: ارقام فارسی و خط‌تیره (0.2475ms)
+✔ jdateKey: نامعتبر → null (0.1365ms)
+✔ مرزهای آرشیو: مقایسهٔ عددی درست کار می‌کند (0.2526ms)
+✔ سقف بودجهٔ روزانه صریح و مثبت است (0.1571ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11.2419
+
+
+codal-engine unit tests:
+  ✓ sentKey: تاریخ+ساعت فارسی به کلید عددی مرتب‌شونده
+  ✓ sentKey: بدون ساعت — صفر پُر می‌شود
+  ✓ sentKey: ترتیب درست بین دو اطلاعیه
+  ✓ sentKey: ورودی خراب → 0
+  ✓ classify: ن-۳۰ ماهانه
+  ✓ classify: ن-۱۰ صورت مالی
+  ✓ classify: پورتفوی رد می‌شود
+  ✓ classify: مجمع/آگهی رد می‌شود
+  ✓ feedCategory: ن-۳۰ → ماهانه
+  ✓ feedCategory: ن-۱۰ → صورت مالی
+  ✓ feedCategory: شفاف‌سازی از عنوان
+  ✓ feedCategory: مجمع
+  ✓ feedCategory: ناشناخته → سایر
+
+13 passed, 0 failed
+
+
+✔ mapCertRow: قیمت‌ها ریال→تومان و tval هزارریال→تومان (×۱۰۰) (2.265ms)
+✔ mapCertRow: فیلد غایب/نامعتبر → null، نه صفر ساختگی (0.4107ms)
+✔ mapCertRow: pc غایب → close از pl پر می‌شود (0.2063ms)
+✔ mapPhysicalRow: اعداد خام ریال حفظ می‌شود و تاریخ جلالی نرمال (خط‌تیره) (0.3638ms)
+✔ mapPhysicalRow: تاریخ از قبل خط‌تیره‌دار دست نمی‌خورد (0.205ms)
+✔ mapCommodityRow: دلار خام می‌ماند (هیچ تبدیل ریالی) (0.2222ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15.5568
+
+
+symbols-util unit tests (C1):
+  ✓ فملی2 زیرنماد است (رقم لاتین)
+  ✓ آوند4 زیرنماد است (نماد متوقف — ریشهٔ اخطار BrsApi)
+  ✓ کگل3 زیرنماد است
+  ✓ رقم فارسی: خودرو۲ زیرنماد است
+  ✓ رقم عربی: فولاد٤ زیرنماد است
+  ✓ فاصلهٔ انتهایی نادیده گرفته می‌شود: «فملی2 » زیرنماد است
+  ✓ «آ س پ» فیلتر نمی‌شود (فاصله در وسط نماد)
+  ✓ «فملی» فیلتر نمی‌شود
+  ✓ «شپنا» و «طلا» نماد اصلی‌اند
+  ✓ فملیح حق تقدم شناخته می‌شود
+  ✓ خودروح حق تقدم است ولی زیرنماد رقم‌دار نیست
+  ✓ رشتهٔ خالی/null/undefined: نه زیرنماد، نه حق تقدم، نه نماد اصلی
+  ✓ SUB_TICKER_RE همان قاعدهٔ ثبت‌شدهٔ پروژه است
+  ✓ صف NAV هیچ نماد رقم‌دار یا حق تقدمی ندارد
+nav blacklist: «تست‌الف» بعد از 2 دور ناموفق دائمی شد (اخطار BrsApi)
+  ✓ ۲ دور NAV ناموفق → بلک‌لیست دائمی؛ دور موفق شمارنده را صفر می‌کند
+
+15 passed, 0 failed
+
+
+✔ relay keeps only /healthz public when RELAY_TOKEN is unset (244.0237ms)
+✔ relay protects /debug when RELAY_TOKEN is configured (301.1625ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 553.8051
+relay exit=0

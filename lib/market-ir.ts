@@ -1,3 +1,4 @@
+import { validTimestamp } from "./market-quality";
 // دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
 //
 // معماری (چرا این‌طوری): منابعِ ایرانی به IPِ خارجی ۴۰۳ می‌دهند، پس یک «رلهٔ
@@ -21,6 +22,8 @@ export interface IrRow {
   change?: number | null;  // مقدار تغییر (تومان/دلار)
   changePercent?: number | null; // درصد تغییر
   type?: string;           // دستهٔ فارسیِ صندوق (طلا/سهامی/اهرمی/…) — فقط برای funds
+  sourceDate?: string | null;
+  sourceTime?: string | null;
   assetB?: number | null;  // خالص دارایی، میلیارد تومان — فقط برای funds
 }
 
@@ -43,6 +46,7 @@ export interface IrStockRow extends IrRow {
   nav?: number | null;
   /** NAV صدور (تومان) */
   navIssue?: number | null;
+  navStatus?: string | null;
   navDate?: string | null;
   navTime?: string | null;
   /** حباب ٪ = (قیمت − NAV ابطال) ÷ NAV ابطال × ۱۰۰ — محاسبهٔ قطعیِ رله */
@@ -96,6 +100,8 @@ export interface IrOptionRow {
 
 /** ردیفِ کریپتو (از BrsApi) */
 export interface IrCryptoRow {
+  sourceDate?: string | null;
+  sourceTime?: string | null;
   id: string;
   faName: string;
   nameEn?: string;
@@ -109,13 +115,13 @@ export interface IrCryptoRow {
 /** شاخص بورس */
 export interface IrIndices {
   total: number;
-  totalChange: number;
-  equalWeight: number;
-  equalWeightChange: number;
-  marketValue: number;
-  trades: number;
-  volume: number;
-  value: number;
+  totalChange: number | null;
+  equalWeight: number | null;
+  equalWeightChange: number | null;
+  marketValue: number | null;
+  trades: number | null;
+  volume: number | null;
+  value: number | null;
   state: string | null;
   date: string | null;
   time: string | null;
@@ -130,7 +136,7 @@ export interface IrMarket {
   /** تابلوی اختیار معامله (M8-ب) — خالی اگر رله هنوز نفرستاده */
   options: IrOptionRow[];
   indices: IrIndices | null;
-  fetchedAt: number;
+  fetchedAt: number | null;
   ok: boolean;
 }
 
@@ -186,6 +192,8 @@ function asRows(v: unknown): IrRow[] {
     )
     .map((r) => ({
       id: r.id,
+      sourceDate: typeof r.sourceDate === "string" ? r.sourceDate : null,
+      sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
       faName: r.faName,
       price: r.price,
       unit: r.unit,
@@ -209,6 +217,8 @@ export function asStockRows(v: unknown): IrStockRow[] {
     )
     .map((r) => ({
       id: r.id,
+      sourceDate: typeof r.sourceDate === "string" ? r.sourceDate : null,
+      sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
       faName: r.faName,
       price: r.price,
       unit: (r.unit === "usd" ? "usd" : "toman") as "toman" | "usd",
@@ -231,6 +241,7 @@ export function asStockRows(v: unknown): IrStockRow[] {
       nav: typeof r.nav === "number" && isFinite(r.nav) && r.nav > 0 ? r.nav : null,
       navIssue:
         typeof r.navIssue === "number" && isFinite(r.navIssue) && r.navIssue > 0 ? r.navIssue : null,
+      navStatus: typeof r.navStatus === "string" ? r.navStatus : null,
       navDate: typeof r.navDate === "string" ? r.navDate : null,
       navTime: typeof r.navTime === "string" ? r.navTime : null,
       bubblePercent:
@@ -296,6 +307,8 @@ function asCryptoRows(v: unknown): IrCryptoRow[] {
     )
     .map((r) => ({
       id: r.id,
+      sourceDate: typeof r.sourceDate === "string" ? r.sourceDate : null,
+      sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
       faName: r.faName,
       nameEn: typeof r.nameEn === "string" ? r.nameEn : undefined,
       price: r.price,
@@ -313,13 +326,13 @@ function asIndices(v: unknown): IrIndices | null {
   if (!isFinite(total) || total <= 0) return null;
   return {
     total,
-    totalChange: Number(d.totalChange) || 0,
-    equalWeight: Number(d.equalWeight) || 0,
-    equalWeightChange: Number(d.equalWeightChange) || 0,
-    marketValue: Number(d.marketValue) || 0,
-    trades: Number(d.trades) || 0,
-    volume: Number(d.volume) || 0,
-    value: Number(d.value) || 0,
+    totalChange: typeof d.totalChange === "number" && Number.isFinite(d.totalChange) ? d.totalChange : null,
+    equalWeight: typeof d.equalWeight === "number" && Number.isFinite(d.equalWeight) ? d.equalWeight : null,
+    equalWeightChange: typeof d.equalWeightChange === "number" && Number.isFinite(d.equalWeightChange) ? d.equalWeightChange : null,
+    marketValue: typeof d.marketValue === "number" && Number.isFinite(d.marketValue) ? d.marketValue : null,
+    trades: typeof d.trades === "number" && Number.isFinite(d.trades) ? d.trades : null,
+    volume: typeof d.volume === "number" && Number.isFinite(d.volume) ? d.volume : null,
+    value: typeof d.value === "number" && Number.isFinite(d.value) ? d.value : null,
     state: typeof d.state === "string" ? d.state : null,
     date: typeof d.date === "string" ? d.date : null,
     time: typeof d.time === "string" ? d.time : null,
@@ -327,9 +340,9 @@ function asIndices(v: unknown): IrIndices | null {
 }
 
 /** payload خام (از Supabase یا رله) → IrMarket با اعتبارسنجیِ سخت‌گیرانه. */
-function toMarket(payload: unknown): IrMarket {
+export function toMarket(payload: unknown): IrMarket {
   const p = (payload ?? {}) as Record<string, unknown>;
-  const fetchedAt = Number(p.fetchedAt);
+  const fetchedAt = validTimestamp(p.fetchedAt);
   const data: IrMarket = {
     gold: asRows(p.gold),
     currency: asRows(p.currency),
@@ -338,7 +351,7 @@ function toMarket(payload: unknown): IrMarket {
     crypto: asCryptoRows(p.crypto),
     options: asOptionRows(p.options),
     indices: asIndices(p.indices),
-    fetchedAt: Number.isFinite(fetchedAt) ? fetchedAt : Date.now(),
+    fetchedAt,
     ok: false,
   };
   data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length > 0;
@@ -407,7 +420,7 @@ export async function getIrMarket(): Promise<IrMarket | null> {
     ms: 0,
   };
   const finish = <T>(value: T): T => {
-    if (cache) diag.ageSec = Math.round((Date.now() - cache.fetchedAt) / 1000);
+    if (cache?.fetchedAt != null) diag.ageSec = Math.round((Date.now() - cache.fetchedAt) / 1000);
     diag.ms = Date.now() - started;
     lastDiag = diag;
     return value;

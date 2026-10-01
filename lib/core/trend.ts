@@ -1,3 +1,4 @@
+import type { ReadState } from "../read-state";
 // روند طلا و دلار — تصمیم T8: استفاده از ir_market_history (نمونه‌های ۳۰ دقیقه‌ای رله).
 // خواندن server-side با کلید anon (RLS خواندن عمومی) + کش حافظه‌ای کوتاه.
 // خروجی: یک نقطه به‌ازای هر روز (آخرین نمونهٔ روز) برای سری‌های انتخابی.
@@ -27,6 +28,7 @@ interface HistRow {
 }
 
 const REVALIDATE_MS = 10 * 60 * 1000;
+const tehranDay = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit" });
 let cached: { at: number; value: TrendSeries[] } | null = null;
 
 /** سری‌های هدف: طلای ۱۸ عیار (بازار طلا) و دلار (بازار ارز). */
@@ -53,12 +55,13 @@ export function extractDailySeries(rows: HistRow[]): TrendSeries[] {
 
   for (const row of rows) {
     if (!Array.isArray(row.payload)) continue;
-    const date = row.captured_at?.slice(0, 10);
+    const timestamp = Date.parse(row.captured_at);
+    const date = Number.isFinite(timestamp) ? tehranDay.format(new Date(timestamp)) : null;
     if (!date) continue;
     for (const t of TARGETS) {
       if (row.section !== t.section) continue;
       const item = row.payload.find((p) => p.id === t.id);
-      if (!item || typeof item.price !== "number" || !isFinite(item.price) || item.price <= 0) continue;
+      if (!item || item.unit !== "toman" || typeof item.price !== "number" || !isFinite(item.price) || item.price <= 0) continue;
       const s = bySeries.get(`${t.section}|${t.id}`)!;
       if (item.faName) s.faName = item.faName;
       if (item.unit) s.unit = item.unit;
@@ -78,10 +81,10 @@ export function extractDailySeries(rows: HistRow[]): TrendSeries[] {
 }
 
 /** خواندن تاریخچهٔ gold/currency از Supabase و ساخت سری روزانه. */
-export async function getGoldUsdTrend(days = 180): Promise<TrendSeries[]> {
-  if (cached && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
+export async function getGoldUsdTrendState(days = 180, fetchImpl: typeof fetch = fetch): Promise<ReadState<TrendSeries[]>> {
+  if (fetchImpl === fetch && cached && Date.now() - cached.at < REVALIDATE_MS) return { status: cached.value.length > 0 ? "ready" : "empty", data: cached.value.length > 0 ? cached.value : null } as ReadState<TrendSeries[]>;
   const e = env();
-  if (!e) return [];
+  if (!e) return { status: "error", data: null, code: "not_configured" };
 
   const since = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
   const qs = new URLSearchParams({
@@ -93,17 +96,23 @@ export async function getGoldUsdTrend(days = 180): Promise<TrendSeries[]> {
   });
 
   try {
-    const res = await fetch(`${e.url}/rest/v1/ir_market_history?${qs}`, {
+    const res = await fetchImpl(`${e.url}/rest/v1/ir_market_history?${qs}`, {
       headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
       signal: AbortSignal.timeout(15000),
       next: { revalidate: 600 },
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { status: "error", data: null, code: "source_unavailable" };
     const rows = (await res.json()) as HistRow[];
     const value = extractDailySeries(rows);
-    cached = { at: Date.now(), value };
-    return value;
+    if (fetchImpl === fetch) cached = { at: Date.now(), value };
+    return value.length > 0 ? { status: "ready", data: value } : { status: "empty", data: null };
   } catch {
-    return [];
+    return { status: "error", data: null, code: "source_unavailable" };
   }
+}
+
+/** Legacy consumers retain the array contract; new dashboards use the explicit read state. */
+export async function getGoldUsdTrend(days = 180): Promise<TrendSeries[]> {
+  const result = await getGoldUsdTrendState(days);
+  return result.status === "ready" ? result.data : [];
 }
