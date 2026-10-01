@@ -1,0 +1,208 @@
+[
+  {
+    "payloadKeys": [
+      "at",
+      "count",
+      "details"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-10-01T00:23:08.656+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "symbol_details"
+  },
+  {
+    "payloadKeys": [
+      "gold",
+      "funds",
+      "crypto",
+      "stocks",
+      "indices",
+      "options",
+      "currency",
+      "fetchedAt",
+      "commodities",
+      "imeCertificates"
+    ],
+    "counts": {
+      "gold": 9,
+      "crypto": 19,
+      "funds": 333,
+      "options": 1587,
+      "stocks": 760,
+      "currency": 28
+    },
+    "fetchedAt": 1790801587101,
+    "updated_at": "2026-10-01T00:23:07.178+03:30",
+    "sourceDate": "1405-07-08",
+    "sourceTime": "18:16:15",
+    "sourceState": "بسته",
+    "key": "latest"
+  },
+  {
+    "payloadKeys": [
+      "fails",
+      "budget",
+      "cursor",
+      "perSymbol"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-10-01T00:08:29.528+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "codal_archive_state"
+  },
+  {
+    "payloadKeys": [
+      "fails",
+      "watermark",
+      "backfillCursor"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-10-01T00:08:26.518+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "codal_engine_state"
+  },
+  {
+    "payloadKeys": [
+      "done",
+      "failed",
+      "reqDate",
+      "schemaV",
+      "reqToday",
+      "insertedTotal",
+      "emptyResponses",
+      "lastEmptySample",
+      "lastErrorSample"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-09-30T18:11:10.012+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "candle_backfill_state"
+  },
+  {
+    "payloadKeys": [
+      "blacklist",
+      "updatedAt",
+      "failCounts"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-09-21T19:36:39.672+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "nav_blacklist"
+  },
+  {
+    "payloadKeys": [
+      "at",
+      "id",
+      "ok",
+      "url",
+      "html",
+      "bytes"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-07-17T10:04:57.092868+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "codal_fetch_result"
+  },
+  {
+    "payloadKeys": [
+      "id",
+      "url"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-07-17T10:04:13.157208+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "codal_fetch_request"
+  },
+  {
+    "payloadKeys": [
+      "url",
+      "dump",
+      "bytes",
+      "tables"
+    ],
+    "counts": {
+      "gold": 0,
+      "crypto": 0,
+      "funds": 0,
+      "options": 0,
+      "stocks": 0,
+      "currency": 0
+    },
+    "fetchedAt": null,
+    "updated_at": "2026-07-16T17:07:56.976014+03:30",
+    "sourceDate": null,
+    "sourceTime": null,
+    "sourceState": null,
+    "key": "codal_debug"
+  }
+]

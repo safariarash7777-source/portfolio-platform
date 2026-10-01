@@ -1,0 +1,441 @@
+{"cron_jobs": 0, "checked_at": "2026-09-30T20:57:38.441211+00:00", "cron_launch_active_jobs": "off"}
+{"type": "uuid", "table": "alert_events", "column": "id"}
+{"type": "uuid", "table": "alert_events", "column": "alert_id"}
+{"type": "uuid", "table": "alert_events", "column": "user_id"}
+{"type": "numeric", "table": "alert_events", "column": "triggered_price"}
+{"type": "text", "table": "alert_events", "column": "channel"}
+{"type": "timestamp with time zone", "table": "alert_events", "column": "sent_at"}
+{"type": "uuid", "table": "announcement_deliveries", "column": "id"}
+{"type": "uuid", "table": "announcement_deliveries", "column": "announcement_id"}
+{"type": "uuid", "table": "announcement_deliveries", "column": "user_id"}
+{"type": "text", "table": "announcement_deliveries", "column": "channel"}
+{"type": "text", "table": "announcement_deliveries", "column": "status"}
+{"type": "timestamp with time zone", "table": "announcement_deliveries", "column": "sent_at"}
+{"type": "timestamp with time zone", "table": "announcement_deliveries", "column": "created_at"}
+{"type": "uuid", "table": "announcements", "column": "id"}
+{"type": "text", "table": "announcements", "column": "title"}
+{"type": "text", "table": "announcements", "column": "body_md"}
+{"type": "text", "table": "announcements", "column": "target"}
+{"type": "uuid", "table": "announcements", "column": "created_by"}
+{"type": "timestamp with time zone", "table": "announcements", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "announcements", "column": "published_at"}
+{"type": "uuid", "table": "audit_log", "column": "id"}
+{"type": "uuid", "table": "audit_log", "column": "actor_id"}
+{"type": "text", "table": "audit_log", "column": "action"}
+{"type": "text", "table": "audit_log", "column": "entity"}
+{"type": "uuid", "table": "audit_log", "column": "target_user_id"}
+{"type": "jsonb", "table": "audit_log", "column": "before"}
+{"type": "jsonb", "table": "audit_log", "column": "after"}
+{"type": "timestamp with time zone", "table": "audit_log", "column": "created_at"}
+{"type": "bigint", "table": "codal_feed", "column": "id"}
+{"type": "text", "table": "codal_feed", "column": "symbol"}
+{"type": "text", "table": "codal_feed", "column": "company_name"}
+{"type": "text", "table": "codal_feed", "column": "title"}
+{"type": "text", "table": "codal_feed", "column": "report_code"}
+{"type": "text", "table": "codal_feed", "column": "category"}
+{"type": "text", "table": "codal_feed", "column": "sent_date"}
+{"type": "text", "table": "codal_feed", "column": "sent_time"}
+{"type": "text", "table": "codal_feed", "column": "publish_date"}
+{"type": "text", "table": "codal_feed", "column": "link"}
+{"type": "text", "table": "codal_feed", "column": "link_pdf"}
+{"type": "text", "table": "codal_feed", "column": "link_excel"}
+{"type": "timestamp with time zone", "table": "codal_feed", "column": "created_at"}
+{"type": "bigint", "table": "codal_reports", "column": "id"}
+{"type": "text", "table": "codal_reports", "column": "symbol"}
+{"type": "text", "table": "codal_reports", "column": "company_name"}
+{"type": "text", "table": "codal_reports", "column": "report_kind"}
+{"type": "date", "table": "codal_reports", "column": "period_end"}
+{"type": "text", "table": "codal_reports", "column": "title"}
+{"type": "text", "table": "codal_reports", "column": "source_url"}
+{"type": "timestamp with time zone", "table": "codal_reports", "column": "published_at"}
+{"type": "jsonb", "table": "codal_reports", "column": "data"}
+{"type": "jsonb", "table": "codal_reports", "column": "raw"}
+{"type": "timestamp with time zone", "table": "codal_reports", "column": "captured_at"}
+{"type": "uuid", "table": "content_hub", "column": "id"}
+{"type": "text", "table": "content_hub", "column": "platform"}
+{"type": "text", "table": "content_hub", "column": "kind"}
+{"type": "text", "table": "content_hub", "column": "content_url"}
+{"type": "text", "table": "content_hub", "column": "embed_html"}
+{"type": "text", "table": "content_hub", "column": "title"}
+{"type": "text", "table": "content_hub", "column": "description"}
+{"type": "uuid", "table": "content_hub", "column": "created_by"}
+{"type": "timestamp with time zone", "table": "content_hub", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "content_hub", "column": "published_at"}
+{"type": "timestamp with time zone", "table": "content_hub", "column": "deleted_at"}
+{"type": "uuid", "table": "entitlements", "column": "id"}
+{"type": "uuid", "table": "entitlements", "column": "user_id"}
+{"type": "text", "table": "entitlements", "column": "kind"}
+{"type": "text", "table": "entitlements", "column": "source"}
+{"type": "timestamp with time zone", "table": "entitlements", "column": "starts_at"}
+{"type": "timestamp with time zone", "table": "entitlements", "column": "expires_at"}
+{"type": "timestamp with time zone", "table": "entitlements", "column": "revoked_at"}
+{"type": "uuid", "table": "entitlements", "column": "granted_by"}
+{"type": "text", "table": "entitlements", "column": "note"}
+{"type": "timestamp with time zone", "table": "entitlements", "column": "created_at"}
+{"type": "bigint", "table": "fx_heavy_analytics", "column": "id"}
+{"type": "timestamp with time zone", "table": "fx_heavy_analytics", "column": "computed_at"}
+{"type": "date", "table": "fx_heavy_analytics", "column": "as_of_date"}
+{"type": "text", "table": "fx_heavy_analytics", "column": "data_range"}
+{"type": "text", "table": "fx_heavy_analytics", "column": "frequency"}
+{"type": "integer", "table": "fx_heavy_analytics", "column": "n_obs"}
+{"type": "text", "table": "fx_heavy_analytics", "column": "engine_version"}
+{"type": "bigint", "table": "fx_heavy_analytics", "column": "mc_seed"}
+{"type": "jsonb", "table": "fx_heavy_analytics", "column": "lib_versions"}
+{"type": "jsonb", "table": "fx_heavy_analytics", "column": "results"}
+{"type": "text", "table": "fx_heavy_analytics", "column": "created_by"}
+{"type": "text", "table": "fx_heavy_analytics", "column": "notes"}
+{"type": "bigint", "table": "fx_rates", "column": "id"}
+{"type": "date", "table": "fx_rates", "column": "rate_date"}
+{"type": "numeric", "table": "fx_rates", "column": "usd_toman"}
+{"type": "text", "table": "fx_rates", "column": "source"}
+{"type": "timestamp with time zone", "table": "fx_rates", "column": "created_at"}
+{"type": "uuid", "table": "holdings", "column": "id"}
+{"type": "uuid", "table": "holdings", "column": "user_id"}
+{"type": "text", "table": "holdings", "column": "symbol"}
+{"type": "text", "table": "holdings", "column": "name"}
+{"type": "text", "table": "holdings", "column": "asset_class"}
+{"type": "numeric", "table": "holdings", "column": "qty"}
+{"type": "bigint", "table": "holdings", "column": "avg_price"}
+{"type": "bigint", "table": "holdings", "column": "current_price"}
+{"type": "numeric", "table": "holdings", "column": "day_change_pct"}
+{"type": "timestamp with time zone", "table": "holdings", "column": "updated_at"}
+{"type": "bigint", "table": "ime_snapshots", "column": "id"}
+{"type": "text", "table": "ime_snapshots", "column": "category"}
+{"type": "timestamp with time zone", "table": "ime_snapshots", "column": "captured_at"}
+{"type": "jsonb", "table": "ime_snapshots", "column": "data"}
+{"type": "bigint", "table": "index_history", "column": "id"}
+{"type": "text", "table": "index_history", "column": "jdate"}
+{"type": "numeric", "table": "index_history", "column": "total_index"}
+{"type": "numeric", "table": "index_history", "column": "total_change"}
+{"type": "numeric", "table": "index_history", "column": "equal_weight_index"}
+{"type": "numeric", "table": "index_history", "column": "equal_weight_change"}
+{"type": "numeric", "table": "index_history", "column": "market_value"}
+{"type": "numeric", "table": "index_history", "column": "trade_value"}
+{"type": "numeric", "table": "index_history", "column": "trade_volume"}
+{"type": "numeric", "table": "index_history", "column": "trades"}
+{"type": "text", "table": "index_history", "column": "source"}
+{"type": "timestamp with time zone", "table": "index_history", "column": "created_at"}
+{"type": "bigint", "table": "ir_market_history", "column": "id"}
+{"type": "timestamp with time zone", "table": "ir_market_history", "column": "captured_at"}
+{"type": "text", "table": "ir_market_history", "column": "section"}
+{"type": "jsonb", "table": "ir_market_history", "column": "payload"}
+{"type": "text", "table": "ir_market_snapshots", "column": "key"}
+{"type": "jsonb", "table": "ir_market_snapshots", "column": "payload"}
+{"type": "timestamp with time zone", "table": "ir_market_snapshots", "column": "updated_at"}
+{"type": "bigint", "table": "macro_first_print", "column": "id"}
+{"type": "text", "table": "macro_first_print", "column": "series"}
+{"type": "text", "table": "macro_first_print", "column": "period"}
+{"type": "numeric", "table": "macro_first_print", "column": "value"}
+{"type": "text", "table": "macro_first_print", "column": "unit"}
+{"type": "text", "table": "macro_first_print", "column": "source"}
+{"type": "timestamp with time zone", "table": "macro_first_print", "column": "published_at"}
+{"type": "timestamp with time zone", "table": "macro_first_print", "column": "captured_at"}
+{"type": "bigint", "table": "macro_revisions", "column": "id"}
+{"type": "text", "table": "macro_revisions", "column": "series"}
+{"type": "text", "table": "macro_revisions", "column": "period"}
+{"type": "numeric", "table": "macro_revisions", "column": "value"}
+{"type": "text", "table": "macro_revisions", "column": "unit"}
+{"type": "text", "table": "macro_revisions", "column": "source"}
+{"type": "timestamp with time zone", "table": "macro_revisions", "column": "published_at"}
+{"type": "timestamp with time zone", "table": "macro_revisions", "column": "captured_at"}
+{"type": "bigint", "table": "market_breadth", "column": "id"}
+{"type": "text", "table": "market_breadth", "column": "jdate"}
+{"type": "integer", "table": "market_breadth", "column": "pos_count"}
+{"type": "integer", "table": "market_breadth", "column": "neg_count"}
+{"type": "integer", "table": "market_breadth", "column": "flat_count"}
+{"type": "integer", "table": "market_breadth", "column": "total_traded"}
+{"type": "integer", "table": "market_breadth", "column": "buy_queue_count"}
+{"type": "integer", "table": "market_breadth", "column": "sell_queue_count"}
+{"type": "numeric", "table": "market_breadth", "column": "buy_queue_value"}
+{"type": "numeric", "table": "market_breadth", "column": "sell_queue_value"}
+{"type": "numeric", "table": "market_breadth", "column": "net_real_flow"}
+{"type": "numeric", "table": "market_breadth", "column": "per_capita_buy"}
+{"type": "numeric", "table": "market_breadth", "column": "per_capita_sell"}
+{"type": "numeric", "table": "market_breadth", "column": "trade_value"}
+{"type": "text", "table": "market_breadth", "column": "source"}
+{"type": "timestamp with time zone", "table": "market_breadth", "column": "created_at"}
+{"type": "uuid", "table": "market_notes", "column": "id"}
+{"type": "text", "table": "market_notes", "column": "title"}
+{"type": "text", "table": "market_notes", "column": "body_md"}
+{"type": "ARRAY", "table": "market_notes", "column": "tags"}
+{"type": "uuid", "table": "market_notes", "column": "created_by"}
+{"type": "timestamp with time zone", "table": "market_notes", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "market_notes", "column": "published_at"}
+{"type": "uuid", "table": "payments", "column": "id"}
+{"type": "uuid", "table": "payments", "column": "user_id"}
+{"type": "integer", "table": "payments", "column": "amount"}
+{"type": "text", "table": "payments", "column": "authority"}
+{"type": "text", "table": "payments", "column": "ref_id"}
+{"type": "text", "table": "payments", "column": "status"}
+{"type": "text", "table": "payments", "column": "invite_link"}
+{"type": "timestamp with time zone", "table": "payments", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "payments", "column": "verified_at"}
+{"type": "uuid", "table": "portfolio_snapshots", "column": "user_id"}
+{"type": "date", "table": "portfolio_snapshots", "column": "as_of"}
+{"type": "bigint", "table": "portfolio_snapshots", "column": "value"}
+{"type": "uuid", "table": "portfolio_versions", "column": "id"}
+{"type": "uuid", "table": "portfolio_versions", "column": "user_id"}
+{"type": "integer", "table": "portfolio_versions", "column": "version"}
+{"type": "jsonb", "table": "portfolio_versions", "column": "allocations"}
+{"type": "text", "table": "portfolio_versions", "column": "notes"}
+{"type": "uuid", "table": "portfolio_versions", "column": "created_by"}
+{"type": "timestamp with time zone", "table": "portfolio_versions", "column": "created_at"}
+{"type": "uuid", "table": "portfolios", "column": "id"}
+{"type": "uuid", "table": "portfolios", "column": "user_id"}
+{"type": "jsonb", "table": "portfolios", "column": "allocations"}
+{"type": "text", "table": "portfolios", "column": "notes"}
+{"type": "timestamp with time zone", "table": "portfolios", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "portfolios", "column": "updated_at"}
+{"type": "uuid", "table": "price_alerts", "column": "id"}
+{"type": "uuid", "table": "price_alerts", "column": "user_id"}
+{"type": "text", "table": "price_alerts", "column": "symbol"}
+{"type": "text", "table": "price_alerts", "column": "market"}
+{"type": "text", "table": "price_alerts", "column": "condition"}
+{"type": "numeric", "table": "price_alerts", "column": "target_price"}
+{"type": "boolean", "table": "price_alerts", "column": "active"}
+{"type": "timestamp with time zone", "table": "price_alerts", "column": "created_at"}
+{"type": "uuid", "table": "profiles", "column": "id"}
+{"type": "text", "table": "profiles", "column": "full_name"}
+{"type": "text", "table": "profiles", "column": "national_id"}
+{"type": "text", "table": "profiles", "column": "phone"}
+{"type": "text", "table": "profiles", "column": "email"}
+{"type": "text", "table": "profiles", "column": "role"}
+{"type": "timestamp with time zone", "table": "profiles", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "profiles", "column": "updated_at"}
+{"type": "uuid", "table": "risk_assessments", "column": "id"}
+{"type": "uuid", "table": "risk_assessments", "column": "user_id"}
+{"type": "integer", "table": "risk_assessments", "column": "total_score"}
+{"type": "text", "table": "risk_assessments", "column": "risk_category"}
+{"type": "jsonb", "table": "risk_assessments", "column": "answers_json"}
+{"type": "timestamp with time zone", "table": "risk_assessments", "column": "created_at"}
+{"type": "uuid", "table": "risk_revalidations", "column": "id"}
+{"type": "uuid", "table": "risk_revalidations", "column": "user_id"}
+{"type": "timestamp with time zone", "table": "risk_revalidations", "column": "expired_at"}
+{"type": "text", "table": "risk_revalidations", "column": "reason"}
+{"type": "uuid", "table": "risk_revalidations", "column": "created_by"}
+{"type": "timestamp with time zone", "table": "risk_revalidations", "column": "created_at"}
+{"type": "uuid", "table": "screener_presets", "column": "id"}
+{"type": "uuid", "table": "screener_presets", "column": "user_id"}
+{"type": "text", "table": "screener_presets", "column": "name"}
+{"type": "jsonb", "table": "screener_presets", "column": "config"}
+{"type": "timestamp with time zone", "table": "screener_presets", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "screener_presets", "column": "updated_at"}
+{"type": "uuid", "table": "signal_drafts", "column": "id"}
+{"type": "text", "table": "signal_drafts", "column": "symbol"}
+{"type": "text", "table": "signal_drafts", "column": "direction"}
+{"type": "numeric", "table": "signal_drafts", "column": "suggested_price"}
+{"type": "jsonb", "table": "signal_drafts", "column": "reasons"}
+{"type": "jsonb", "table": "signal_drafts", "column": "scores"}
+{"type": "text", "table": "signal_drafts", "column": "status"}
+{"type": "text", "table": "signal_drafts", "column": "source"}
+{"type": "text", "table": "signal_drafts", "column": "review_note"}
+{"type": "uuid", "table": "signal_drafts", "column": "reviewed_by"}
+{"type": "timestamp with time zone", "table": "signal_drafts", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "signal_drafts", "column": "updated_at"}
+{"type": "uuid", "table": "signal_outcomes", "column": "id"}
+{"type": "bigint", "table": "signal_outcomes", "column": "seq"}
+{"type": "uuid", "table": "signal_outcomes", "column": "signal_id"}
+{"type": "numeric", "table": "signal_outcomes", "column": "exit_price"}
+{"type": "date", "table": "signal_outcomes", "column": "exit_date"}
+{"type": "text", "table": "signal_outcomes", "column": "outcome"}
+{"type": "text", "table": "signal_outcomes", "column": "note"}
+{"type": "timestamp with time zone", "table": "signal_outcomes", "column": "closed_at"}
+{"type": "text", "table": "signal_outcomes", "column": "prev_hash"}
+{"type": "text", "table": "signal_outcomes", "column": "record_hash"}
+{"type": "uuid", "table": "signals", "column": "id"}
+{"type": "bigint", "table": "signals", "column": "seq"}
+{"type": "uuid", "table": "signals", "column": "draft_id"}
+{"type": "text", "table": "signals", "column": "symbol"}
+{"type": "text", "table": "signals", "column": "direction"}
+{"type": "numeric", "table": "signals", "column": "entry_price"}
+{"type": "date", "table": "signals", "column": "entry_date"}
+{"type": "text", "table": "signals", "column": "horizon"}
+{"type": "jsonb", "table": "signals", "column": "reasons"}
+{"type": "jsonb", "table": "signals", "column": "scores"}
+{"type": "uuid", "table": "signals", "column": "approved_by"}
+{"type": "timestamp with time zone", "table": "signals", "column": "published_at"}
+{"type": "text", "table": "signals", "column": "prev_hash"}
+{"type": "text", "table": "signals", "column": "record_hash"}
+{"type": "bigint", "table": "symbol_history", "column": "id"}
+{"type": "text", "table": "symbol_history", "column": "symbol"}
+{"type": "text", "table": "symbol_history", "column": "isin"}
+{"type": "date", "table": "symbol_history", "column": "trade_date"}
+{"type": "timestamp with time zone", "table": "symbol_history", "column": "captured_at"}
+{"type": "numeric", "table": "symbol_history", "column": "open"}
+{"type": "numeric", "table": "symbol_history", "column": "high"}
+{"type": "numeric", "table": "symbol_history", "column": "low"}
+{"type": "numeric", "table": "symbol_history", "column": "close"}
+{"type": "numeric", "table": "symbol_history", "column": "last_price"}
+{"type": "numeric", "table": "symbol_history", "column": "volume"}
+{"type": "numeric", "table": "symbol_history", "column": "value_traded"}
+{"type": "numeric", "table": "symbol_history", "column": "individual_buy_value"}
+{"type": "numeric", "table": "symbol_history", "column": "individual_sell_value"}
+{"type": "integer", "table": "symbol_history", "column": "individual_buy_count"}
+{"type": "integer", "table": "symbol_history", "column": "individual_sell_count"}
+{"type": "numeric", "table": "symbol_history", "column": "legal_buy_value"}
+{"type": "numeric", "table": "symbol_history", "column": "legal_sell_value"}
+{"type": "numeric", "table": "symbol_history", "column": "buyer_power"}
+{"type": "jsonb", "table": "symbol_history", "column": "raw"}
+{"type": "text", "table": "symbol_history", "column": "source"}
+{"type": "uuid", "table": "telegram_link_codes", "column": "id"}
+{"type": "text", "table": "telegram_link_codes", "column": "code"}
+{"type": "uuid", "table": "telegram_link_codes", "column": "user_id"}
+{"type": "timestamp with time zone", "table": "telegram_link_codes", "column": "expires_at"}
+{"type": "timestamp with time zone", "table": "telegram_link_codes", "column": "used_at"}
+{"type": "timestamp with time zone", "table": "telegram_link_codes", "column": "created_at"}
+{"type": "uuid", "table": "telegram_links", "column": "user_id"}
+{"type": "bigint", "table": "telegram_links", "column": "telegram_user_id"}
+{"type": "timestamp with time zone", "table": "telegram_links", "column": "linked_at"}
+{"type": "uuid", "table": "transactions", "column": "id"}
+{"type": "uuid", "table": "transactions", "column": "user_id"}
+{"type": "text", "table": "transactions", "column": "type"}
+{"type": "text", "table": "transactions", "column": "instrument"}
+{"type": "bigint", "table": "transactions", "column": "amount"}
+{"type": "text", "table": "transactions", "column": "status"}
+{"type": "timestamp with time zone", "table": "transactions", "column": "occurred_at"}
+{"type": "uuid", "table": "waitlist", "column": "id"}
+{"type": "text", "table": "waitlist", "column": "email"}
+{"type": "timestamp with time zone", "table": "waitlist", "column": "created_at"}
+{"type": "uuid", "table": "watchlist_items", "column": "id"}
+{"type": "uuid", "table": "watchlist_items", "column": "user_id"}
+{"type": "text", "table": "watchlist_items", "column": "symbol"}
+{"type": "text", "table": "watchlist_items", "column": "market"}
+{"type": "timestamp with time zone", "table": "watchlist_items", "column": "created_at"}
+{"type": "uuid", "table": "webinar_registrations", "column": "id"}
+{"type": "uuid", "table": "webinar_registrations", "column": "webinar_id"}
+{"type": "uuid", "table": "webinar_registrations", "column": "user_id"}
+{"type": "text", "table": "webinar_registrations", "column": "payment_status"}
+{"type": "uuid", "table": "webinar_registrations", "column": "payment_id"}
+{"type": "boolean", "table": "webinar_registrations", "column": "attended"}
+{"type": "boolean", "table": "webinar_registrations", "column": "invite_sent"}
+{"type": "text", "table": "webinar_registrations", "column": "invite_link"}
+{"type": "timestamp with time zone", "table": "webinar_registrations", "column": "registered_at"}
+{"type": "uuid", "table": "webinars", "column": "id"}
+{"type": "text", "table": "webinars", "column": "title"}
+{"type": "text", "table": "webinars", "column": "description"}
+{"type": "timestamp with time zone", "table": "webinars", "column": "starts_at"}
+{"type": "timestamp with time zone", "table": "webinars", "column": "ends_at"}
+{"type": "boolean", "table": "webinars", "column": "registration_open"}
+{"type": "integer", "table": "webinars", "column": "max_capacity"}
+{"type": "integer", "table": "webinars", "column": "price_toman"}
+{"type": "text", "table": "webinars", "column": "platform"}
+{"type": "text", "table": "webinars", "column": "platform_url"}
+{"type": "text", "table": "webinars", "column": "status"}
+{"type": "boolean", "table": "webinars", "column": "invites_sent"}
+{"type": "timestamp with time zone", "table": "webinars", "column": "created_at"}
+{"type": "timestamp with time zone", "table": "webinars", "column": "updated_at"}
+{"type": "uuid", "table": "weekly_outlook_results", "column": "id"}
+{"type": "bigint", "table": "weekly_outlook_results", "column": "seq"}
+{"type": "uuid", "table": "weekly_outlook_results", "column": "outlook_id"}
+{"type": "text", "table": "weekly_outlook_results", "column": "realized_label"}
+{"type": "integer", "table": "weekly_outlook_results", "column": "realized_score"}
+{"type": "boolean", "table": "weekly_outlook_results", "column": "correct"}
+{"type": "jsonb", "table": "weekly_outlook_results", "column": "detail"}
+{"type": "text", "table": "weekly_outlook_results", "column": "note"}
+{"type": "timestamp with time zone", "table": "weekly_outlook_results", "column": "closed_at"}
+{"type": "text", "table": "weekly_outlook_results", "column": "prev_hash"}
+{"type": "text", "table": "weekly_outlook_results", "column": "record_hash"}
+{"type": "uuid", "table": "weekly_outlooks", "column": "id"}
+{"type": "bigint", "table": "weekly_outlooks", "column": "seq"}
+{"type": "date", "table": "weekly_outlooks", "column": "week_start"}
+{"type": "text", "table": "weekly_outlooks", "column": "label"}
+{"type": "integer", "table": "weekly_outlooks", "column": "score"}
+{"type": "jsonb", "table": "weekly_outlooks", "column": "drivers"}
+{"type": "jsonb", "table": "weekly_outlooks", "column": "assumptions"}
+{"type": "text", "table": "weekly_outlooks", "column": "note_md"}
+{"type": "jsonb", "table": "weekly_outlooks", "column": "engine_snapshot"}
+{"type": "timestamp with time zone", "table": "weekly_outlooks", "column": "published_at"}
+{"type": "text", "table": "weekly_outlooks", "column": "prev_hash"}
+{"type": "text", "table": "weekly_outlooks", "column": "record_hash"}
+{"rows": 0, "table": "alert_events"}
+{"rows": 3, "table": "announcement_deliveries"}
+{"rows": 8, "table": "announcements"}
+{"rows": 243, "table": "audit_log"}
+{"rows": 11171, "table": "codal_feed"}
+{"rows": 9522, "table": "codal_reports"}
+{"rows": 1266, "table": "content_hub"}
+{"rows": 0, "table": "entitlements"}
+{"rows": 2, "table": "fx_heavy_analytics"}
+{"rows": 69, "table": "fx_rates"}
+{"rows": 6, "table": "holdings"}
+{"rows": 0, "table": "ime_snapshots"}
+{"rows": 47, "table": "index_history"}
+{"rows": 11260, "table": "ir_market_history"}
+{"rows": 9, "table": "ir_market_snapshots"}
+{"rows": 0, "table": "macro_first_print"}
+{"rows": 0, "table": "macro_revisions"}
+{"rows": 46, "table": "market_breadth"}
+{"rows": 0, "table": "market_notes"}
+{"rows": 0, "table": "payments"}
+{"rows": 12, "table": "portfolio_snapshots"}
+{"rows": 2, "table": "portfolio_versions"}
+{"rows": 2, "table": "portfolios"}
+{"rows": 0, "table": "price_alerts"}
+{"rows": 2, "table": "profiles"}
+{"rows": 5, "table": "risk_assessments"}
+{"rows": 0, "table": "risk_revalidations"}
+{"rows": 0, "table": "screener_presets"}
+{"rows": 0, "table": "signal_drafts"}
+{"rows": 0, "table": "signal_outcomes"}
+{"rows": 1, "table": "signals"}
+{"rows": 2119127, "table": "symbol_history"}
+{"rows": 2, "table": "telegram_link_codes"}
+{"rows": 0, "table": "telegram_links"}
+{"rows": 5, "table": "transactions"}
+{"rows": 1, "table": "waitlist"}
+{"rows": 0, "table": "watchlist_items"}
+{"rows": 0, "table": "webinar_registrations"}
+{"rows": 0, "table": "webinars"}
+{"rows": 0, "table": "weekly_outlook_results"}
+{"rows": 0, "table": "weekly_outlooks"}
+{"max": "2026-09-30 20:38:24.819161+00", "min": "2026-07-16 13:03:03.268445+00", "table": "codal_reports", "column": "captured_at"}
+{"max": "2026-09-22", "min": "2018-03-20", "table": "codal_reports", "column": "period_end"}
+{"max": null, "min": null, "table": "codal_reports", "column": "published_at"}
+{"max": "2026-09-30 14:38:09.121258+00", "min": "2026-07-17 10:34:03.179099+00", "table": "fx_rates", "column": "created_at"}
+{"max": "2026-09-30", "min": "2026-07-17", "table": "fx_rates", "column": "rate_date"}
+{"max": "2026-09-30 14:38:09.149986+00", "min": "2026-07-17 19:16:57.778966+00", "table": "index_history", "column": "created_at"}
+{"max": "2026-09-30 20:38:10.655845+00", "min": "2026-07-13 10:07:32.578635+00", "table": "ir_market_history", "column": "captured_at"}
+{"max": "2026-09-30 20:53:08.656+00", "min": "2026-07-16 13:37:56.976014+00", "table": "ir_market_snapshots", "column": "updated_at"}
+{"max": "2026-09-30 14:41:09.990072+00", "min": "2026-07-16 16:19:20.479559+00", "table": "symbol_history", "column": "captured_at"}
+{"max": "2026-09-30", "min": "2001-03-25", "table": "symbol_history", "column": "trade_date"}
+{"rls": true, "table": "alert_events", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "announcement_deliveries", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "announcements", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "audit_log", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "codal_feed", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "codal_reports", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "content_hub", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "entitlements", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "fx_heavy_analytics", "anon_select": false, "authenticated_select": true}
+{"rls": true, "table": "fx_rates", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "holdings", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "ime_snapshots", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "index_history", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "ir_market_history", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "ir_market_snapshots", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "macro_first_print", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "macro_revisions", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "market_breadth", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "market_notes", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "payments", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "portfolio_snapshots", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "portfolio_versions", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "portfolios", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "price_alerts", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "profiles", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "risk_assessments", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "risk_revalidations", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "screener_presets", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "signal_drafts", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "signal_outcomes", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "signals", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "symbol_history", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "telegram_link_codes", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "telegram_links", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "transactions", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "waitlist", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "watchlist_items", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "webinar_registrations", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "webinars", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "weekly_outlook_results", "anon_select": true, "authenticated_select": true}
+{"rls": true, "table": "weekly_outlooks", "anon_select": true, "authenticated_select": true}

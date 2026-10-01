@@ -1,0 +1,127 @@
+{
+  "scope": "sanitized metadata only; no live mutation or supplier API call",
+  "targetReadOnly": {
+    "observedAtUtc": "2026-10-01T13:03:37.246463+03:30",
+    "serverVersion": "17.6",
+    "budgetTable": null,
+    "leaseRpc": null,
+    "releaseRpc": null,
+    "roles": [
+      {
+        "name": "supabase_admin",
+        "super": true,
+        "bypassRls": true
+      },
+      {
+        "name": "postgres",
+        "super": false,
+        "bypassRls": true
+      },
+      {
+        "name": "authenticated",
+        "super": false,
+        "bypassRls": false
+      },
+      {
+        "name": "anon",
+        "super": false,
+        "bypassRls": false
+      },
+      {
+        "name": "service_role",
+        "super": false,
+        "bypassRls": true
+      }
+    ]
+  },
+  "relayReadOnly": {
+    "observedAtUtc": "2026-10-01T09:18:32.8820763Z",
+    "lastRefresh": 1790846287488,
+    "ageSec": 24,
+    "warmedUp": true,
+    "counts": {
+      "gold": 9,
+      "currency": 28,
+      "crypto": 19,
+      "funds": 333,
+      "stocks": 760,
+      "options": 1587
+    },
+    "transport": {
+      "enabled": true,
+      "scope": "process",
+      "spacingMs": 100,
+      "pending": 0,
+      "sent": 2506,
+      "minStartGapMs": 109.1348934173584
+    },
+    "legacyEnforced": false,
+    "budget": {
+      "day": "2026-10-01",
+      "persistent": true,
+      "softBudget": 6000,
+      "hardCeiling": 9000,
+      "used": 0,
+      "remaining": 9000,
+      "remainingByClass": {
+        "critical": 9000,
+        "standard": 7500,
+        "bulk": 6000
+      },
+      "usedByClass": {
+        "critical": 100,
+        "standard": 0,
+        "bulk": 0
+      },
+      "rejectedByBudget": 883,
+      "rejectedByClass": {
+        "critical": 362,
+        "standard": 163,
+        "bulk": 358
+      },
+      "softExhausted": false,
+      "lease": {
+        "size": 50,
+        "granted": 0,
+        "spent": 0,
+        "remaining": 0,
+        "calls": 0,
+        "starved": 0
+      },
+      "store": {
+        "healthy": false,
+        "errors": 506,
+        "lastError": "PGRST202 (missing lease RPC)",
+        "degradedCeiling": 100,
+        "degradedUsed": 100
+      }
+    },
+    "budgetStopActive": false,
+    "supabaseHttpStatus": 200,
+    "clientEnabled": false
+  },
+  "isolatedTests": {
+    "postgres": "17.11",
+    "imageId": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+    "network": "none",
+    "publishedPorts": "none",
+    "testCount": 14,
+    "fail": 0,
+    "skip": 0,
+    "quotaDailyUsage": "unknown",
+    "liveApplied": false
+  },
+  "serverRegression": {
+    "fixed": "PASS, upstream=0 writes=0 HTTP=503 remaining=null",
+    "originalUnsafeSnapshotWrite": "FAIL expected, writes=1 and HTTP=200"
+  },
+  "validation": {
+    "sql": "PASS",
+    "build": "PASS",
+    "secretScan": "PASS",
+    "lint": "PASS",
+    "relay": "PASS"
+  },
+  "liveDeployment": "NOT DEPLOYED",
+  "quotaBaseline": "UNKNOWN"
+}
