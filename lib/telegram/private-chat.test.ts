@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import { isPrivateBotConversation } from './private-chat';
+import {connectionMessage} from '../notifications/webhook';
 
 test('only the sender’s own private chat is eligible for personal responses', () => {
   assert.equal(isPrivateBotConversation({ from: { id: 42 }, chat: { id: 42, type: 'private' } }), true);
@@ -20,13 +21,14 @@ test('only the sender’s own private chat is eligible for personal responses', 
 });
 
 // Execute the actual POST handler with synthetic I/O: no Telegram or database access.
-function harness(source = readFileSync(new URL('../../app/api/telegram/webhook/route.ts', import.meta.url), 'utf8')) {
+function harness(source = readFileSync(new URL('../../app/api/telegram/webhook/route.ts', import.meta.url), 'utf8'), feature=false) {
   let databaseClients = 0;
   const sent: number[] = [];
   const mod = { exports: {} as { POST: (req: unknown) => Promise<{ status: number }> } };
   const imports: Record<string, unknown> = {
     'next/server': { NextResponse: { json: (_body: unknown, options?: { status: number }) => ({ status: options?.status ?? 200 }) } },
     '@/lib/telegram/private-chat': { isPrivateBotConversation },
+    '@/lib/notifications/webhook': {connectionMessage},
     '@/lib/supabase/admin': { createAdminClient: () => { databaseClients++; return {}; } },
     '@/lib/telegram': { sendMessage: async (chatId: number) => { sent.push(chatId); } },
     '@/lib/markdown': {}, '@/lib/format': {}, '@/lib/content-hub': {},
@@ -39,7 +41,7 @@ function harness(source = readFileSync(new URL('../../app/api/telegram/webhook/r
       if (!(name in imports)) throw new Error(`Unexpected dependency: ${name}`);
       return imports[name];
     },
-    process: { env: { TELEGRAM_WEBHOOK_SECRET: 'dummy-test-only' } },
+    process: { env: { TELEGRAM_WEBHOOK_SECRET: 'dummy-test-only',NEXT09_ENABLED:feature?'true':'false' } },
     console: { error: () => undefined },
   });
   return {
@@ -67,6 +69,14 @@ test('a valid private help request still reaches the existing handler', async ()
   assert.equal((await h.invoke({ message: { text: '/help', from: { id: 42 }, chat: { id: 42, type: 'private' } } })).status, 200);
   assert.equal(h.databaseClients(), 1);
   assert.deepEqual(h.sent, [42]);
+});
+
+test('NEXT09 enabled still rejects group proof before database/reply and blocks legacy personal commands',async()=>{
+ const source=readFileSync(new URL('../../app/api/telegram/webhook/route.ts',import.meta.url),'utf8');
+ const h=harness(source,true);await h.invoke({message:{text:'/link '+'a'.repeat(64),from:{id:42},chat:{id:-99,type:'group'}}});
+ assert.equal(h.databaseClients(),0);assert.deepEqual(h.sent,[]);
+ for(const text of ['/portfolio','/announcements','123456'])await h.invoke({message:{text,from:{id:42},chat:{id:42,type:'private'}}});
+ assert.deepEqual(h.sent,[42,42,42]);
 });
 
 test('a mismatched private recipient cannot receive the sender’s data', async () => {

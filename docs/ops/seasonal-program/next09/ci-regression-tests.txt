@@ -1,0 +1,45 @@
+✔ هر مسیرِ cron در vercel.json یک route handlerِ واقعی دارد (1.3941ms)
+✔ هیچ روتِ cronی بدونِ زمان‌بندی رها نشده (1.4103ms)
+✔ کامنتِ روتِ cron دورهٔ زیرروزانه ادعا نمی‌کند وقتی cron روزانه است (2.1079ms)
+✔ کامپوننت‌های صفحهٔ اول ادعای «پایش هر N دقیقه» نمی‌کنند (4.7249ms)
+✔ عمرِ کشِ بازار با زمان‌بندیِ cron قاطی نشده (0.4209ms)
+✔ every test file under lib/ is registered in an npm script and actually runs (3.5103ms)
+✔ the orphan check is looking at real files and can fail (2.5849ms)
+✔ signed bridge binds body/time/contract and rejects altered identity/stale request (3.2242ms)
+✔ content links require approved HTTPS origin and local authenticated target (1.1669ms)
+✔ transport acknowledgement is accepted, sends only fixed generic text with disabled previews (22.4781ms)
+✔ known rate-limit allows bounded retry; reject and ambiguous network never masquerade as accepted (3.2766ms)
+✔ worker rechecks revoked authorization and records cancellation without transport (0.6684ms)
+✔ HTTP identity comes from session and writes reject CSRF/forged user parameters (4.2044ms)
+✔ webhook link refuses groups/forged private identity before RPC or response (0.4029ms)
+✔ only the sender’s own private chat is eligible for personal responses (1.8072ms)
+✔ group /portfolio: no database read, code redemption or reply (116.425ms)
+✔ group /announcements: no database read, code redemption or reply (30.4651ms)
+✔ group 123456: no database read, code redemption or reply (16.5456ms)
+✔ group /help: no database read, code redemption or reply (16.4717ms)
+✔ supergroup /portfolio: no database read, code redemption or reply (16.4133ms)
+✔ supergroup /announcements: no database read, code redemption or reply (22.7312ms)
+✔ supergroup 123456: no database read, code redemption or reply (22.9178ms)
+✔ supergroup /help: no database read, code redemption or reply (17.6392ms)
+✔ channel /portfolio: no database read, code redemption or reply (16.1008ms)
+✔ channel /announcements: no database read, code redemption or reply (14.2387ms)
+✔ channel 123456: no database read, code redemption or reply (18.2648ms)
+✔ channel /help: no database read, code redemption or reply (11.1794ms)
+✔ missing chat type /portfolio: no database read, code redemption or reply (12.3303ms)
+✔ missing chat type /announcements: no database read, code redemption or reply (11.5777ms)
+✔ missing chat type 123456: no database read, code redemption or reply (14.2413ms)
+✔ missing chat type /help: no database read, code redemption or reply (15.0388ms)
+✔ a valid private help request still reaches the existing handler (11.4141ms)
+✔ NEXT09 enabled still rejects group proof before database/reply and blocks legacy personal commands (10.6236ms)
+✔ a mismatched private recipient cannot receive the sender’s data (11.1231ms)
+✔ webhook authentication still runs before message processing (10.7067ms)
+✔ public channel updates still enter the separate channel handler (10.9194ms)
+✔ negative control: removing the private-chat gate reaches personal handlers from a group (13.0781ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1218.8499

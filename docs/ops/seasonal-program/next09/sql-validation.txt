@@ -1,0 +1,74 @@
+✅ sql\admin_dashboard_stats.sql
+✅ sql\admin_users_module.sql
+✅ sql\archive\supabase_portfolio_seed.sql
+✅ sql\archive\supabase_portfolio_tracking.sql
+✅ sql\archive\supabase_portfolio_versioning.sql
+✅ sql\archive\supabase_schema.sql
+✅ sql\ir_market_history.sql
+✅ sql\ir_market_snapshots.sql
+✅ sql\phase10_content_hub.sql
+✅ sql\phase11_access_tiers.sql
+✅ sql\phase12_weekly_outlook.sql
+✅ sql\phase13_fx_rates.sql
+✅ sql\phase14_rosad.sql
+✅ sql\phase15_security.sql
+✅ sql\phase16_symbol_history_dedup.sql
+✅ sql\phase17_market_breadth.sql
+✅ sql\phase18_purge_subtickers.sql
+✅ sql\phase18_screener_starred.sql
+✅ sql\phase19_ime_tables.sql
+✅ sql\phase20_intelligence_model.sql
+✅ sql\phase21_cron_runs.sql
+✅ sql\phase22_manual_intelligence_workflow.sql
+✅ sql\phase23_grant_hardening.sql
+✅ sql\phase26_change_radar.sql
+✅ sql\phase27_member_import.sql
+✅ sql\phase28_brsapi_budget.sql
+✅ sql\phase29_symbol_liveness.sql
+✅ sql\phase30_contain_create_payment.sql
+✅ sql\phase32_member_holdings.sql
+✅ sql\phase34_research_workbook_versions.sql
+✅ sql\phase35_consultation.sql
+✅ sql\phase36_consultation_review_fixes.sql
+✅ sql\phase37_nonretryable_version_conflicts.sql
+✅ sql\phase5_payments_telegram.sql
+✅ sql\phase6_announcements_revalidation.sql
+✅ sql\phase7_watchlist_alerts.sql
+✅ sql\phase8_webinars.sql
+✅ sql\phase8b_leads.sql
+✅ sql\phase9_market_notes.sql
+✅ sql\staging\dev07_preflight.sql
+✅ sql\staging\g3003_staging_profiles_prereq.sql
+✅ sql\terminal_t0.sql
+✅ sql\test\portfolio_precondition.sql
+✅ sql\test\profile_explicit_grants.sql
+✅ sql\test\profile_legacy_default_privileges.sql
+✅ sql\test\supabase_bootstrap.sql
+✅ supabase\migrations\20260930182629_seasonal_course_membership.sql
+✅ supabase\migrations\20260930182918_research_publication_queue.sql
+✅ supabase\migrations\20261001083215_auth_private_identity_versions.sql
+✅ supabase\migrations\20261001125428_next09_notifications.sql
+
+⚠️  دستوراتِ مخرب (عمدی؟ حتماً rollback مستند باشد):
+   • sql\archive\supabase_portfolio_seed.sql: DELETE FROM
+   • sql\archive\supabase_schema.sql: DROP TABLE
+   • sql\phase16_symbol_history_dedup.sql: DELETE FROM
+   • sql\phase17_market_breadth.sql: TRUNCATE
+   • sql\phase18_purge_subtickers.sql: DELETE FROM
+   • sql\phase20_intelligence_model.sql: TRUNCATE
+   • sql\phase21_cron_runs.sql: TRUNCATE، DROP TABLE
+   • sql\phase22_manual_intelligence_workflow.sql: TRUNCATE
+   • sql\phase23_grant_hardening.sql: TRUNCATE
+   • sql\phase26_change_radar.sql: TRUNCATE
+   • sql\phase27_member_import.sql: TRUNCATE
+   • sql\phase34_research_workbook_versions.sql: TRUNCATE
+   • sql\phase8b_leads.sql: DROP TABLE، DROP COLUMN، TRUNCATE
+   • sql\staging\g3003_staging_profiles_prereq.sql: TRUNCATE
+   • sql\terminal_t0.sql: TRUNCATE
+   • sql\test\profile_legacy_default_privileges.sql: TRUNCATE
+   • sql\test\supabase_bootstrap.sql: TRUNCATE
+   • supabase\migrations\20260930182629_seasonal_course_membership.sql: TRUNCATE
+   • supabase\migrations\20261001125428_next09_notifications.sql: TRUNCATE، DELETE FROM
+
+50 فایل بررسی شد · 0 مردود
+هیچ SQLای اجرا نشد و به هیچ دیتابیسی وصل نشدیم.

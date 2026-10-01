@@ -1,0 +1,75 @@
+{
+  "contractVersion": "notifications.v1",
+  "observedAtUtc": "2026-10-01T19:47:33Z",
+  "scope": "Verified implementation heads; later evidence-only commits may follow. Final exact-head snapshot is mirrored to coordinator's FINAL-PR-CHECKPOINT.json.",
+  "sharedReadmeSha256": "62b522c6fc008593d6762b0c50c90ea67e2e15f222930106362c1d129681b235",
+  "platform": {
+    "pr": "https://github.com/safariarash7777-source/portfolio-platform/pull/189",
+    "branch": "codex/next09-telegram-20261001",
+    "base": "codex/followup-auth-20261001",
+    "baseSha": "bb4f2f3e53859bbecb0ec942975ffb06fd2d2828",
+    "verifiedImplementationHead": "ad69b6a568fecafdee815d1c29a73c9ba66754d9",
+    "actions": [
+      {
+        "id": 36916116727,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 36916116762,
+        "name": "Seasonal membership sandbox",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "commitStatuses": [
+      {
+        "context": "Vercel",
+        "state": "success",
+        "targetUrl": "https://vercel.com/safariarash7777-4463s-projects/portfolio-platform/H1JmreG8j15AA2gr2RYsov4cxuT9"
+      }
+    ],
+    "initialFailure": {
+      "head": "9f65f38ee96a97a22728afbfb0403a017f1f76ce",
+      "run": 36915223667,
+      "causes": [
+        "New webhook dependency absent from old VM test harness",
+        "New lib tests absent from package scripts",
+        "Explicit worker incorrectly placed in automatically scheduled cron namespace"
+      ],
+      "resolution": "Consume actual helper in harness, register tests, move endpoint to /api/notifications/worker; preserve cron rule and do not add a schedule"
+    }
+  },
+  "miniapp": {
+    "pr": "https://github.com/safariarash7777-source/telegram-miniapp/pull/5",
+    "branch": "codex/next09-bridge-20261001",
+    "base": "main",
+    "baseSha": "94d20e104705b573d5def4b1f2058695cbdfcf9a",
+    "verifiedImplementationHead": "ade9e916e8e4d01e0c35c607a4c6e3efd29afede",
+    "actions": [
+      {
+        "id": 36916107701,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "local": {
+    "platformIsolatedTests": 58,
+    "platformCore": 1239,
+    "miniappTests": 68,
+    "browser": "actual components, fixture responses only; no page errors",
+    "productionModeRuntimeSmoke": "automatic approval review rejected local built-server start: blocked by policy",
+    "pglast": "unavailable locally; GitHub SQL grammar job passed"
+  },
+  "remaining": [
+    "real shared Auth/initData ceremony",
+    "experimental bot/channel owner and admin rights",
+    "target schema and grant approval",
+    "stable MySQL receipt cutover",
+    "actual Telegram delivery acceptance"
+  ],
+  "deployment": "No manual or Production deployment, merge, target migration or real messages. Automatic Vercel status success does not certify Production or runtime behavior."
+}

@@ -1,0 +1,1 @@
+Not run: standalone pglast unavailable. Full new migration and RPC bodies were installed and exercised in isolated PostgreSQL17; see postgres-tests.txt.

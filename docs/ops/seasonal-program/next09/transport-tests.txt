@@ -1,0 +1,15 @@
+✔ signed bridge binds body/time/contract and rejects altered identity/stale request (1.5628ms)
+✔ content links require approved HTTPS origin and local authenticated target (0.5575ms)
+✔ transport acknowledgement is accepted, sends only fixed generic text with disabled previews (19.3833ms)
+✔ known rate-limit allows bounded retry; reject and ambiguous network never masquerade as accepted (1.6378ms)
+✔ worker rechecks revoked authorization and records cancellation without transport (0.4007ms)
+✔ HTTP identity comes from session and writes reject CSRF/forged user parameters (3.7509ms)
+✔ webhook link refuses groups/forged private identity before RPC or response (0.3256ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 378.0686
