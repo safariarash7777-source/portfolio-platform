@@ -1,4 +1,5 @@
 "use client";
+import { useRetainedBoard } from "./useRetainedBoard";
 import { indexChangePercent } from "@/lib/core/marketHeadline";
 import { formatOrDash, formatCount } from "@/lib/format";
 
@@ -106,7 +107,8 @@ const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).
 /** بیشینهٔ کاشیِ نقشه. متنِ پوششِ زیرِ نقشه همین را می‌نویسد. */
 const MAP_CELL_LIMIT = 30;
 
-export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
+export default function StocksBoard(incoming: Props) {
+  const { stocks, indices, fetchedAt } = useRetainedBoard(incoming, incoming.fetchedAt != null, (a, b) => a.stocks === b.stocks && a.indices === b.indices && a.fetchedAt === b.fetchedAt);
   // نما، جست‌وجو و فیلترِ صنعت در URL می‌نشینند تا back/forward و برگشت از
   // صفحهٔ نماد وضعیت را حفظ کنند. مرتب‌سازی عمداً محلی می‌ماند: حالتِ گذرایی
   // است که کاربر انتظارِ اشتراک‌گذاری‌اش را ندارد.

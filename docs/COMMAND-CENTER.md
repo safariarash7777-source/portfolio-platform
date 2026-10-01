@@ -1,5 +1,9 @@
 # Arash Digital Platform — Command Center
 
+## FOLLOWUP-02 — خواندن کامل و refresh بازار (2026-10-01)
+
+روی head دقیق174=95cfa341 در worktree مستقل ادامه داده شد. keyset و fence با RLS، cache فقط کامل و coverage خطا/کهنه برای history symbols و ن۱۰/ن۳۰؛ cadence پنج‌دقیقه‌ای با hidden/lease/ack و حفظ داده/فیلتر/sort/scroll دو تابلو. [نتیجه و ماتریس فایل‌ها](./ops/seasonal-program/FOLLOWUP-02-RESULT.md)؛ [شواهد مصنوعی](./ops/seasonal-program/followup02-evidence/). SQL count/ID set همان فیلتر در PG17.11/PostgREST14.17 cap317 برابر؛ مرورگر stock1440/fund390 دو چرخه، خطا و slow request پاس. این تحویل مستقل و stacked بر174 است؛ merge/Production/migration انجام نشده، پذیرش دو چرخهٔ زنده تا quota baseline/reset و نصب178 و انتشار تجمعی BLOCKED است. بودجهٔ کامل خواندن و نقص‌های bulkReturns/avgVolume/CSV و race چند mutation سریع URL برای FOLLOWUP03 در نتیجه ثبت شده‌اند؛ بهبود latency از قطع ردیف‌ها ادعا نمی‌شود.
+
 ## DEV-07 / نتیجهٔ نسخهٔ 1978bf5 (2026-09-30T17:04Z)
 
 ۱۴ سناریوی sandbox واقعی توسط بازبین جدا اجرا شدند: ۱۰ PASS، سه FAIL و یک BLOCKED. [گزارش مستقل](./ops/DEV07-INDEPENDENT-RESULTS.md). دو نقص مرتبط DEV07-F01 (retry بی‌پایان تعارض) و DEV07-F02 (صفر ساختگی در نماد) اصلاح کد دارند؛ phase37 هنوز در sandbox نصب نشده و نتیجهٔ نسخهٔ تازه هنوز PENDING است. مانع انسانی سناریوی ۵ مطابق دستورکار پابرجاست. **DEV-07 پذیرفته نشد؛ تصمیم ادغام تا CI و بازآزمایی نسخهٔ تازه و تأیید انسانی مستقل باز است.** ادغام، Production و بکاپ/بازیابی انجام نشده‌اند.
