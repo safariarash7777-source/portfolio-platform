@@ -1,0 +1,30 @@
+{
+  "runtimeSha": "6ffce1b00eb6ee87a788a099a181c16c87549243",
+  "local": {
+    "core": {
+      "passed": 1255,
+      "failed": 0
+    },
+    "seasonal": {
+      "passed": 5,
+      "failed": 0
+    },
+    "member": {
+      "passed": 16,
+      "failed": 0
+    },
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "build": "PASS",
+    "secretScan": "PASS"
+  },
+  "limitations": [
+    "feed08/read-state contract missing",
+    "shared auth.identity.v1 received and read-only adapter implemented; PR180 endpoint not installed in this pinned base",
+    "NEXT09 announcement destination not integrated",
+    "D-034 three-month policy OPEN",
+    "sandbox RSC same-path navigation root cause remains unknown; course selection uses full-document navigation",
+    "issued signed URL remains a capability until its 60s expiry; next issuance rechecks authorization",
+    "external webinar provider and actual production SMTP/SMS not exercised"
+  ]
+}

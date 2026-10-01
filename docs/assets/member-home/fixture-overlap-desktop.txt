@@ -1,0 +1,131 @@
+- main:
+  - heading "خانهٔ عضو — پیش‌نمایش ساختگی" [level=1]
+  - navigation "سناریوی ساختگی":
+    - link "overlap" [active]:
+      - /url: /member-home-preview?scenario=overlap
+    - link "active-b":
+      - /url: /member-home-preview?scenario=active-b
+    - link "expired":
+      - /url: /member-home-preview?scenario=expired
+    - link "revoked":
+      - /url: /member-home-preview?scenario=revoked
+    - link "cancelled":
+      - /url: /member-home-preview?scenario=cancelled
+    - link "scheduled":
+      - /url: /member-home-preview?scenario=scheduled
+    - link "empty":
+      - /url: /member-home-preview?scenario=empty
+    - link "never":
+      - /url: /member-home-preview?scenario=never
+    - link "error":
+      - /url: /member-home-preview?scenario=error
+    - link "save-error":
+      - /url: /member-home-preview?scenario=save-error
+    - link "save-conflict":
+      - /url: /member-home-preview?scenario=save-conflict
+  - status:
+    - strong: نمونهٔ ساختگی برای بازبینی رابط
+    - paragraph: داده، نشست و پاسخ ذخیره در این نما fixture هستند؛ این صفحه شاهد پذیرش Auth، Storage یا انتشار واقعی نیست.
+  - region "دوره‌های من":
+    - heading "دوره‌های من" [level=2]
+    - paragraph: بیش از یک دوره دارید؛ انتخاب دوره، برنامه و منابع همان دوره را نشان می‌دهد. دسترسی یک دوره، منابع دورهٔ دیگر را باز نمی‌کند.
+    - navigation "انتخاب دوره":
+      - link "مسیر راه — دورهٔ ساختگی A":
+        - /url: /member-home-preview?scenario=overlap&cohort=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+      - link "مسیر راه — دورهٔ ساختگی B":
+        - /url: /member-home-preview?scenario=overlap&cohort=bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb
+    - heading "مسیر راه — دورهٔ ساختگی A" [level=3]
+    - status: عضویت فعال
+    - generic "زمان دسترسی‌های ثبت‌شدهٔ این دوره"
+    - paragraph: زمان‌ها به وقت تهران‌اند. مجوز هر بخش هنگام بازکردن دوباره بررسی می‌شود؛ پایان دوره اطلاعات مالی و پروندهٔ خصوصی را حذف نمی‌کند.
+  - region "اقدام بعدی":
+    - heading "اقدام بعدی" [level=2]
+    - paragraph: برنامهٔ وبینار و منابع دوره را بررسی کنید؛ نیازسنجی را هم می‌توانید کوتاه پاسخ دهید یا بعداً ادامه دهید.
+    - link "برنامهٔ وبینار":
+      - /url: "#member-webinars"
+    - link "نیازسنجی کوتاه":
+      - /url: "#member-needs-title"
+  - region "وبینار من":
+    - heading "وبینار من" [level=2]
+    - article:
+      - heading "وبینار آیندهٔ ساختگی" [level=3]
+      - paragraph: ۹ مهر ۱۴۰۵، ۱۶:۳۰ تا ۹ مهر ۱۴۰۵، ۱۷:۳۰
+      - paragraph: هنوز آغاز نشده
+      - button "بررسی دسترسی و دریافت راه ورود"
+    - article:
+      - heading "وبینار در بازهٔ برگزاری ساختگی" [level=3]
+      - paragraph: ۹ مهر ۱۴۰۵، ۱۵:۰۰ تا ۹ مهر ۱۴۰۵، ۱۶:۰۰
+      - paragraph: در بازهٔ برنامه‌ریزی‌شدهٔ برگزاری؛ وضعیت ورود از سرویس بررسی می‌شود
+      - button "بررسی دسترسی و دریافت راه ورود"
+    - article:
+      - heading "وبینار پایان‌یافتهٔ ساختگی" [level=3]
+      - paragraph: ۲۹ شهریور ۱۴۰۵، ۱۳:۳۰ تا ۲۹ شهریور ۱۴۰۵، ۱۵:۳۰
+      - paragraph: وبینار پایان یافته؛ منابع منتشرشده را پایین ببینید
+  - region "منابع تازهٔ دوره و ضبط‌های منتشرشده":
+    - heading "منابع تازهٔ دوره و ضبط‌های منتشرشده" [level=2]
+    - paragraph: فقط منابع منتشرشده و مجاز همین دوره نمایش داده می‌شوند؛ وجود ضبط، تا انتشار آن تضمین نشده است.
+    - list:
+      - heading "منبع ساختگی فقط دورهٔ A" [level=3]
+      - paragraph: "ثبت منبع: ۹ مهر ۱۴۰۵، ۱۵:۳۰"
+      - button "دریافت لینک منبع ساختگی فقط دورهٔ A"
+  - region "داشبوردهای دوره":
+    - heading "داشبوردهای دوره" [level=2]
+    - paragraph: منبع، واحد و زمان معتبر هر داده را داخل داشبورد بخوانید. نبود داده یا تحلیل به معنی آرام‌بودن بازار نیست.
+    - list:
+      - heading "نمای کلان بازار" [level=3]
+      - paragraph: این بخش در دسترسی دورهٔ شما نیست
+      - heading "دیده‌بان صندوق‌ها" [level=3]
+      - paragraph: دسترسی این بخش تا ۱۱ دی ۱۴۰۵، ۰۹:۰۰
+      - link "بازکردن دیده‌بان صندوق‌ها":
+        - /url: /dashboard/market/funds?cohort=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
+      - heading "طلا و ارز" [level=3]
+      - paragraph: این بخش در دسترسی دورهٔ شما نیست
+      - heading "پروندهٔ نماد" [level=3]
+      - paragraph: این بخش در دسترسی دورهٔ شما نیست
+    - button "تازه‌کردن وضعیت دوره"
+  - region "نیازسنجی کوتاه دوره":
+    - heading "نیازسنجی کوتاه دوره" [level=2]
+    - paragraph: پاسخ به این چهار مورد به آماده‌سازی محتوای آموزشی کمک می‌کند. می‌توانید ذخیره کنید و بعداً ادامه دهید؛ دریافت خدمت به تکمیل این فرم وابسته نیست. ارقام مالی یا اطلاعات هویتی خصوصی را اینجا ننویسید.
+    - text: تجربهٔ سرمایه‌گذاری
+    - combobox "تجربهٔ سرمایه‌گذاری":
+      - option "تازه شروع کرده‌ام" [selected]
+      - option "کمی تجربه دارم"
+      - option "تجربه دارم"
+    - group "موضوع‌های مورد علاقه (حداکثر پنج مورد)":
+      - generic: موضوع‌های مورد علاقه (حداکثر پنج مورد)
+      - checkbox "صندوق‌ها"
+      - text: صندوق‌ها
+      - checkbox "طلا"
+      - text: طلا
+      - checkbox "ارز"
+      - text: ارز
+      - checkbox "سهام"
+      - text: سهام
+      - checkbox "اصول سرمایه‌گذاری"
+      - text: اصول سرمایه‌گذاری
+    - text: از این دوره چه می‌خواهید؟ (اختیاری)
+    - textbox "از این دوره چه می‌خواهید؟ (اختیاری)"
+    - text: پرسش آموزشی شما (اختیاری)
+    - textbox "پرسش آموزشی شما (اختیاری)"
+    - button "ذخیره و ادامه در زمان دیگر"
+    - button "ثبت پاسخ دوره"
+  - heading "تحلیل‌ها و اعلان‌های دوره" [level=2]
+  - paragraph: فهرست تحلیل‌های مجاز و وضعیت خوانده‌شدن آن‌ها هنوز به این خانه متصل نیست. منابع منتشرشدهٔ دوره را از بخش منابع باز کنید.
+  - paragraph: نبود این فهرست به معنی نبود تحلیل یا آرام‌بودن بازار نیست.
+  - region "خلاصهٔ مالی ساختگی؛ مستقل از پایان دوره":
+    - region "خلاصهٔ وضعیت مالی ثبت‌شده":
+      - heading "وضعیت مالی ثبت‌شده · نسخهٔ ۳" [level=2]
+      - paragraph: این تصویر فقط اطلاعاتی را پوشش می‌دهد که اینجا ثبت کرده‌اید؛ با کل ثروت شما یکسان فرض نمی‌شود. همهٔ ارقام به تومان نمایش داده می‌شوند؛ هر تومان برابر ۱۰ ریال است.
+      - term: ارزش دارایی‌های دارای ارزش‌گذاری
+      - definition: ۱٬۰۰۰ تومان
+      - definition: ارزش چیزهایی که دارید، فقط برای اقلام دارای قیمت یا ارزش اظهارشده و متناسب با سهم مالکیت شما.
+      - term: مجموع بدهی‌های ثبت‌شده
+      - definition: ۱٬۵۰۰ تومان
+      - definition: ماندهٔ پولی که طبق ثبت شما باید پرداخت شود. قسط بعدی بخشی از همین بدهی است و دوباره به آن اضافه نمی‌شود.
+      - term: خالص ثروت جزئی در اطلاعات ثبت‌شده
+      - definition: "-۵۰۰ تومان"
+      - definition: ارزش دارایی‌های دارای ارزش‌گذاری منهای بدهی‌های ثبت‌شده. عدد منفی یعنی بدهی ثبت‌شده از این دارایی‌ها بیشتر است.
+      - alert: اطلاعات ناقص یا در دسترس نیست. جمع جزئی فقط اقلام دارای ارزش‌گذاری را در بر می‌گیرد؛ دارایی نامعلوم حذف یا صفر نشده است. این عدد «کل ثروت شما» نیست.
+      - paragraph: مبلغ‌ها مربوط به تاریخ ثبت‌شدهٔ هر ارزش‌گذاری و مانده‌اند، نه لزوماً امروز. نبود بدهی در فهرست فقط یعنی بدهی ثبت نشده است؛ به معنی نداشتن بدهی نیست.
+- button "Open Next.js Dev Tools":
+- alert
