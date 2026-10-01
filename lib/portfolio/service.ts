@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { safeRead, readState, type ReadState } from "@/lib/read-state";
 import type { HoldingPosition, HoldingVersion } from "./contracts";
 import { priceableSymbols, type SymbolHistoryRow } from "./prices";
+import { positionFromStored, debtFromStored, type DebtPosition } from "./balanceSheet";
 
 /**
  * خواندنِ داراییِ **خودِ کاربرِ نشست** و هدفِ او.
@@ -77,23 +78,14 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
   if (chosen) {
     const posRes = await safeRead(supabase
       .from("member_holding_positions")
-      .select("position_key, symbol, manual_label, asset_class, qty, unit, cost_basis, as_of")
+      .select("position_key, symbol, manual_label, asset_class, qty, unit, cost_basis, as_of, title, ownership_pct, valuation_mode, declared_value, valuation_source, valuation_as_of, valuation_status")
       .eq("version_id", chosen.id));
     if (posRes.error) holdingsState = "error";
     if (!posRes.error) {
       holdings = {
         id: chosen.id,
         version: chosen.version,
-        positions: (posRes.data ?? []).map((p) => ({
-          positionKey: p.position_key as string,
-          symbol: (p.symbol as string | null) ?? null,
-          manualLabel: (p.manual_label as string | null) ?? null,
-          assetClass: p.asset_class as string,
-          qty: Number(p.qty),
-          unit: p.unit as string,
-          costBasis: p.cost_basis === null ? null : Number(p.cost_basis),
-          asOf: p.as_of as string,
-        })),
+        positions: (posRes.data ?? []).map(positionFromStored),
       };
     }
   }
@@ -119,6 +111,20 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
   return { holdings, storedTarget, ready: holdingsState !== "error", holdingsState, targetState: tgtRes.error ? "error" : storedTarget ? "ready" : "empty", history };
 }
 
+export async function loadVersionDebts(versionId: string | null): Promise<{ ready: boolean; debts: DebtPosition[] }> {
+  if (!versionId) return { ready: true, debts: [] };
+  const db = await createClient();
+  const result = await safeRead(db.from("member_debt_positions").select("*").eq("version_id", versionId).order("debt_key"));
+  return { ready: !result.error, debts: (result.data ?? []).map(debtFromStored) };
+}
+export async function loadAdvisorBalanceSheet(relationshipId: string, versionId?: string) {
+  const db = await createClient();
+  const { data, error } = await db.rpc("consultation_balance_sheet", { p_relation: relationshipId, p_version: versionId ?? null });
+  if (error || !data) throw new Error("financial file unavailable");
+  return { version: data.version as { id: string; version: number; created_at: string } | null,
+    positions: (data.positions as Record<string, unknown>[]).map(positionFromStored), debts: (data.debts as Record<string, unknown>[]).map(debtFromStored) };
+}
+
 /**
  * قیمت‌ها از `symbol_history` — با زمان، منبع و واحدِ روشن.
  *
@@ -133,7 +139,7 @@ export async function loadPortfolioSnapshot(versionId?: string): Promise<Portfol
 export async function loadPriceRows(
   positions: readonly HoldingPosition[]
 ): Promise<ReadState<SymbolHistoryRow[]>> {
-  const symbols = priceableSymbols(positions);
+  const symbols = priceableSymbols(positions.filter(p => !p.valuationMode || p.valuationMode === "market"));
   if (symbols.length === 0) return { status: "empty", data: null };
 
   const supabase = await createClient();
