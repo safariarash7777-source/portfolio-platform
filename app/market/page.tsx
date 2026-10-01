@@ -1,3 +1,4 @@
+import CustomerJourney from "@/components/account/CustomerJourney";
 /**
  * نمای کلانِ بازار — `/market`.
  *
@@ -223,7 +224,8 @@ export default async function MarketPage({
             </p>
 
             {/* مسیرِ رفت‌وبرگشت به حسابِ کاربر — فقط لینک، بدونِ تغییر در گیتِ دسترسی. */}
-            <AccountBridge access={access} returnTo={selfHref} />
+            <CustomerJourney />
+          <AccountBridge access={access} returnTo={selfHref} />
           </div>
         </MarketShell>
       </main>

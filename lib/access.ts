@@ -87,16 +87,17 @@ export async function getAccess(): Promise<AccessInfo> {
 
   // ادمین همیشه full
   try {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
+    if (error) return base;
     if (profile?.role === "admin") {
       return { ...base, level: "full", via: "admin", standing: "active" };
     }
   } catch {
-    /* profiles همیشه هست؛ محض احتیاط */
+    return base;
   }
 
   // دسترسی اعطاشده (مشاوره/وبینار) — جدول ممکن است هنوز ساخته نشده باشد
