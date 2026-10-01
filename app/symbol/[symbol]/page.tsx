@@ -1,3 +1,6 @@
+import { sourceTime, withValidNav } from "@/lib/market-quality";
+import MarketDataStatus from "@/components/market/MarketDataStatus";
+import CustomerJourney from "@/components/account/CustomerJourney";
 // صفحهٔ واحد نماد — T2 ممیزی: ادغام /data/[symbol] در /symbol/[symbol].
 // سکشن‌ها: سرصفحهٔ قیمت زنده + آمار روز + (NAV/حباب صندوق) + تاریخچهٔ قیمت و جریان پول
 // + دانلود CSV + کارت امتیاز (به‌زودی) + نمودارهای بنیادی کدال.
@@ -40,6 +43,7 @@ import {
   toPersianDigits,
   formatToman,
   formatTomanShort,
+  formatRialAsToman,
   formatSignedPercent,
   deltaColor,
   formatJalali,
@@ -189,9 +193,10 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
   // زمانِ NAV با **دقتش** می‌آید؛ اگر ساعت ثبت نشده باشد نما باید همین را بگوید.
   const fundNavAt = navAtIso(quote?.navDate ?? null, quote?.navTime ?? null, jalaliYmdToGregorian);
-  // زمانِ قیمت = لحظهٔ اسنپ‌شاتِ رله. بدونِ آن، هم‌زمانیِ دو ورودی سنجیده نمی‌شود.
-  const fundPriceAt = ir?.fetchedAt ? new Date(ir.fetchedAt).toISOString() : null;
-  const fundLive = liveBubble({
+  // زمان خود منبع قیمت؛ زمان انتقال اسنپ‌شات جانشین آن نیست.
+  const priceSourceAt = sourceTime(quote?.sourceDate, quote?.sourceTime);
+  const fundPriceAt = priceSourceAt != null ? new Date(priceSourceAt).toISOString() : null;
+  const rawFundLive = liveBubble({
     priceToman: num(quote?.closingPrice) ?? num(quote?.price),
     navToman: num(quote?.nav),
     navAt: fundNavAt?.iso ?? null,
@@ -200,11 +205,13 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
     now: new Date(),
   });
 
+  const fundLive = fundPriceAt == null && rawFundLive.state === "ready" ? { ...rawFundLive, state: "unavailable" as const, bubblePercent: null, reason: "زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص" } : rawFundLive;
+
   // هم‌گروه: فقط صندوق‌های هم‌نوع، و فقط آن‌هایی که حبابِ معتبر دارند.
   const peerRows: PeerRow[] = (ir?.funds ?? []).map((f) => ({
     id: f.id,
     type: f.type ?? null,
-    value: typeof f.bubblePercent === "number" && isFinite(f.bubblePercent) ? f.bubblePercent : null,
+    value: withValidNav(f, null, Date.now()).bubblePercent ?? null,
   }));
   const fundPeer = isFund
     ? peerPosition(
@@ -366,11 +373,13 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               </a>
               {ir?.fetchedAt ? (
                 <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                  آخرین به‌روزرسانی بازار: {formatJalali(ir.fetchedAt)}
+                  زمان دریافت اسنپ‌شات: {formatJalali(ir.fetchedAt)}
                 </p>
               ) : null}
             </div>
           </header>
+
+          <MarketDataStatus market={ir} />
 
           {!quote ? (
             <div className="rounded-xl border border-dashed p-4" role="status" style={{ borderColor: "var(--line-strong)", background: "var(--surface)" }}>
@@ -416,10 +425,10 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
             />
             <Stat
               label="ارزش معاملات"
-              value={num(quote?.value) != null ? formatTomanShort(quote!.value as number) : "—"}
+              value={num(quote?.value) != null ? formatRialAsToman(quote!.value) : "—"}
             />
             <Stat
-              label="ورود پول حقیقی (امروز)"
+              label="ورود پول حقیقی ثبت‌شده"
               value={flow != null ? formatTomanShort(flow) : "—"}
               color={flow != null ? deltaColor(flow) : undefined}
             />
@@ -483,7 +492,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               <Stat
                 label="ارزش بازار"
                 value={
-                  num(quote?.marketValue) != null ? formatTomanShort(quote!.marketValue as number) : "—"
+                  num(quote?.marketValue) != null ? formatRialAsToman(quote!.marketValue) : "—"
                 }
               />
               <Stat
@@ -529,7 +538,10 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                     تاریخچهٔ قیمت و جریان پول
                   </h2>
                   {points.length > 0 ? (
-                    <HistoryChart points={points} />
+                    <>
+                      <p className="mb-2 text-xs leading-6" style={{ color: "var(--text-2)" }}>سری قیمت به ریال و تعدیل‌نشده است؛ افزایش سرمایه و تقسیم سود می‌تواند پیوستگی آن را تغییر دهد. کارت‌های مبلغ به تومان نمایش داده می‌شوند.</p>
+                      <HistoryChart points={points} />
+                    </>
                   ) : (
                     <div
                       className="rounded-xl border border-dashed p-6 text-center text-sm"
@@ -545,7 +557,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 {!isFund && (
                   <section>
                     <h2 className="mb-3 font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
-                      تابلوی زندهٔ نماد
+                      جزئیات تابلوی نماد
                     </h2>
                     <SymbolLiveDetail symbol={sym} sections="market" />
                   </section>
@@ -561,6 +573,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
           {/* مسیرِ رفت‌وبرگشت: از این نماد به داشبورد، و از اینجا برگشت به میزِ بازار.
               فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
+          <CustomerJourney />
           <AccountBridge
             access={access}
             /* مبدأ همراهِ مسیرِ بازگشت از حساب می‌رود؛ بدونِ آن، کاربری که از

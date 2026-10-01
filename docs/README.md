@@ -3,13 +3,15 @@
 > **این تنها فهرستِ معتبرِ اسناد است.** اگر سندی اینجا نیست، یا آرشیو است یا باید
 > اینجا اضافه شود.
 >
-> آخرین به‌روزرسانی: ۱۴۰۵/۰۶/۱۵ (2026-09-06)
+> آخرین به‌روزرسانی: ۸ مهر ۱۴۰۵ (2026-09-30)
 >
-> **شمارشِ فعلی:** ۲۲ سندِ فعال در `docs/` (۱۱ هسته + ۹ مرجعِ فنی + ۲ runbook) ·
+> **شمارشِ تاریخی در 2026-09-06:** ۲۲ سندِ فعال در `docs/` (۱۱ هسته + ۹ مرجعِ فنی + ۲ runbook) ·
 > ۴ ADR · ۱۲ آرشیو. (`CAPABILITY-INVENTORY` در ۱۴۰۵/۰۶/۱۵ اضافه شد.) پیش از این پاکسازی، ۲۵ سند در `docs/` بود بدونِ نقشِ روشن.
 > (‏`RUNBOOK-branch-protection` و `ADR/004` با merge شدنِ PR #84 اضافه شدند.)
 
 ## سه سؤال، سه سند
+
+شواهد تحویل DEV-01…06 و دستور پذیرش مستقل/انتشار: [`ops/PRODUCT-V1-ACCEPTANCE.md`](./ops/PRODUCT-V1-ACCEPTANCE.md). این سند شاهد و runbook است؛ وضعیت جاری فقط در Command Center نگهداری می‌شود.
 
 پروژه سه سؤالِ متفاوت دارد و هر کدام **دقیقاً یک** مرجع:
 
@@ -31,13 +33,16 @@
 | [`../CLAUDE.md`](../CLAUDE.md) | قواعدِ سختِ کد | RTL، توکنِ رنگ، سه‌گانهٔ Supabase، واژگانِ ممنوع |
 | [`COMMAND-CENTER.md`](./COMMAND-CENTER.md) | وضعیتِ عملیاتیِ زنده | گیت‌ها (`G-…`)، بلاکرها (`B-…`)، اقداماتِ بعدی |
 | [`DECISION-LOG.md`](./DECISION-LOG.md) | دفترِ دائمیِ تصمیم | `D-…` (باز) · `DD-…` (گرفته‌شده) · `SD-…` (منسوخ) |
-| [`PRODUCT-BLUEPRINT.md`](./PRODUCT-BLUEPRINT.md) | قطب‌نمای محصول | تعریفِ محصول، مقصدِ دوگانه، سه سطحِ تجربه، حلقهٔ کسب‌وکار، معماریِ «یک مغز چند رابط»، نقشهٔ ۷ گیت تا رونمایی · **بازنویسیِ کامل ۱۴۰۵/۰۵/۰۶ · تصویبِ نهاییِ آرش ۱۴۰۵/۰۵/۰۷ (`DD-025`)** |
+| [`PRODUCT-BLUEPRINT.md`](./PRODUCT-BLUEPRINT.md) | قطب‌نمای محصول | مسیر اصلی دو سمت محصول، سه جریان A/C/F، پنج مرحله و بسته‌های قابل واگذاری؛ DD-030 مصوب، دامنهٔ تفصیلی نسخهٔ اول باز |
 | [`PRODUCT-MAP.md`](./PRODUCT-MAP.md) | نقشهٔ مسیرهای **موجود** | واقعیتِ امروزِ `app/` — نه برنامه |
 | [`PRODUCTION-ARCHITECTURE.md`](./PRODUCTION-ARCHITECTURE.md) | معماریِ تولید | سرویس‌ها، جریانِ داده، مرزها |
 | [`ONBOARDING.md`](./ONBOARDING.md) | ورودِ توسعه‌دهنده | دستورها، محیط، دام‌های شناخته‌شده |
+| [`ops/PRODUCT-DELIVERY-TASKS.md`](./ops/PRODUCT-DELIVERY-TASKS.md) | پرامپت‌های عملیاتی نسخهٔ اول | DEV-01…07، دامنه، فایل‌ها، وابستگی و آزمون پذیرش؛ تابع Blueprint و DD-030 |
+| [`ops/PERSONAL-BALANCE-SHEET.md`](./ops/PERSONAL-BALANCE-SHEET.md) | قرارداد و پذیرش ترازنامهٔ شخصی | دارایی/بدهی/خالص ثروت روی نسخه و رضایت موجود، phase37، شواهد ساختگی و محدودیت پذیرش؛ DD-031 |
 | [`ops/RELEASE-payment-containment.md`](./ops/RELEASE-payment-containment.md) | بستهٔ انتشارِ مهارِ `create_payment` | ترتیبِ انتشار، اثرِ authorityِ بی‌رکورد، پذیرش، بازگشت |
 | [`RUNBOOK-relay-deploy.md`](./RUNBOOK-relay-deploy.md) | استقرارِ رله + `B-053` | پیش‌پروازِ پرچم‌ها، مسیرِ استقرار، پذیرشِ دو چرخه |
 | [`ops/RELEASE-history-sections.md`](./ops/RELEASE-history-sections.md) | بستهٔ انتشارِ توقفِ نوشتنِ بخش‌های بی‌خواننده | شاهدِ قبل/بعد، مصرف‌کننده‌ها، بازگشت |
+| [`ops/RELEASE-brsapi-budget.md`](./ops/RELEASE-brsapi-budget.md) | سهمیهٔ مشترک رله در لیارا | آزمون ایزوله، baseline نامعلوم، نصب و بازگشت ایمن |
 | [`MIGRATION-LEDGER.md`](./MIGRATION-LEDGER.md) | دفترِ مهاجرت‌ها | `APPLIED` / `NOT_APPLIED` — **مرجعِ نهایی** |
 | [`ENVIRONMENT-MATRIX.md`](./ENVIRONMENT-MATRIX.md) | نامِ متغیرهای محیطی | فقط **نام**، هرگز مقدار |
 | [`SERVICE-OWNERSHIP.md`](./SERVICE-OWNERSHIP.md) | مالکِ هر سرویس | پاسخ‌گوییِ عملیاتی |
@@ -91,7 +96,8 @@
 
 ---
 
-## ۳. آرشیو — `archive/`
+## ۳. آرشیو — archive/
+[Blueprint پیشین، مصوب 2026-07-29](./archive/PRODUCT-BLUEPRINT-20260729.md): سابقهٔ جهت قبلی؛ جانشین DD-030. کارهای باز و معیارها در بخش ۹ Blueprint جاری نگاشت شده‌اند.
 
 دستورکارها و ممیزی‌های **تمام‌شده یا جایگزین‌شده**. برای تاریخ نگه داشته می‌شوند و
 **هرگز مبنای کارِ جدید نیستند**.

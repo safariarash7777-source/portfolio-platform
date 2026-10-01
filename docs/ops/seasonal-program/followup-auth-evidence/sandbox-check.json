@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-01T09:47:37.322Z",
+  "synthetic": true,
+  "gotrue": "v2.197.0",
+  "checks": [
+    {
+      "label": "OTP request executes real signed GoTrue hook",
+      "status": "PASS"
+    },
+    {
+      "label": "Wrong OTP rejected without clearing input or creating session",
+      "status": "PASS"
+    },
+    {
+      "label": "GoTrue OTP verification -> SSR cookie -> profiles.user",
+      "status": "PASS"
+    },
+    {
+      "label": "OTP replay rejected by GoTrue",
+      "status": "PASS"
+    },
+    {
+      "label": "Unrelated user cannot enter admin and anonymous cannot read identity",
+      "status": "PASS"
+    },
+    {
+      "label": "Private identity encryption and append-only optimistic version",
+      "status": "PASS"
+    },
+    {
+      "label": "Optional password needs fresh OTP and accepts legitimate GoTrue AMR",
+      "status": "PASS"
+    },
+    {
+      "label": "SSR refresh retains UUID and private versions",
+      "status": "PASS"
+    },
+    {
+      "label": "Logout -> no private access -> phone/password login same UUID",
+      "status": "PASS"
+    },
+    {
+      "label": "Password change blocked after password-only authentication",
+      "status": "PASS"
+    },
+    {
+      "label": "CSRF origin mismatch rejected",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-10-01T09:43:33.309055+00:00",
+  "method": "read-only sha256sum in active fx-dashboard container",
+  "consumer_source_matches_local": {
+    "models.py": true,
+    "econometrics.py": true,
+    "data_sources.py": true,
+    "app.py": true
+  },
+  "production_code_contains_nominal_IR_GDP_mapping": true,
+  "production_code_contains_inflation_proxy_in_FB_OLS": true,
+  "production_executed_model_outputs_in_this_review": false,
+  "default_ECM_uses_US_GDP": false,
+  "default_ECM_features": [
+    "ln_m2_ir",
+    "ln_gdp_ir",
+    "ln_oil"
+  ],
+  "production_mutated": false,
+  "source_hashes": {
+    "models.py": "51501f8422f443a358746a9e233591c6c4c78e81e9b64874a660f4b745801a01",
+    "econometrics.py": "22fa5581aa170cdd420284a0b3fe2cd4c5a9f98d82df4db67ed90e36582e7394",
+    "data_sources.py": "e19b86ff02cc51a7dd5ffae92e5031171805e3c5edefca9abfc8389f957fe028",
+    "app.py": "e8abcb60a33c43efcffdeac31f5519c842a8f6d38c007a421ab6d824cf1f9596"
+  }
+}

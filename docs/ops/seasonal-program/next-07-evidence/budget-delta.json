@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "next07.budget.v1",
+  "observedDate": "2026-09-30",
+  "environment": "isolated-local-fixture",
+  "upstreamRequestsActuallyExecuted": 0,
+  "productionReadsExecuted": 0,
+  "productionWritesExecuted": 0,
+  "delta": {
+    "upstreamRequestsPerCycle": 0,
+    "newUpstreamEndpoints": 0,
+    "newProducers": 0,
+    "cadenceChanges": 0,
+    "heavyBackfillRows": 0
+  },
+  "existingProductionQuotaCounters": null,
+  "existingProductionQuotaStatus": "UNKNOWN; no fresh production counter read in NEXT07",
+  "newLocalRead": "seasonal_module_access RPC at most once per gated wrapper request, not a BrsApi request",
+  "sourceClock": "carried only when present in existing responses; missing remains null",
+  "cache": "existing snapshot/history caches retained; no claim of shared distributed counter",
+  "liveTests": "SKIP_LIVE=1",
+  "fixturePorts": [
+    8767,
+    8769
+  ]
+}

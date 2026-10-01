@@ -1,0 +1,136 @@
+   ▲ Next.js 15.5.25
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 22.0s
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/39) ...
+   Generating static pages (9/39)
+   Generating static pages (19/39)
+   Generating static pages (29/39)
+ ✓ Generating static pages (39/39)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                         Size  First Load JS
+┌ ƒ /                                            6.71 kB         121 kB
+├ ○ /_not-found                                    998 B         104 kB
+├ ○ /about                                         480 B         115 kB
+├ ƒ /admin                                         270 B         103 kB
+├ ƒ /admin/agents                                  172 B         106 kB
+├ ƒ /admin/analyses                              6.22 kB         109 kB
+├ ƒ /admin/announcements                         5.54 kB         108 kB
+├ ƒ /admin/content                                6.3 kB         109 kB
+├ ƒ /admin/courses                                 163 B         107 kB
+├ ƒ /admin/desk                                  12.3 kB         124 kB
+├ ƒ /admin/drafts                                4.99 kB         111 kB
+├ ƒ /admin/fx                                    1.63 kB         108 kB
+├ ƒ /admin/fx/native                             12.7 kB         239 kB
+├ ƒ /admin/health                                4.39 kB         107 kB
+├ ƒ /admin/intelligence                          1.65 kB         113 kB
+├ ƒ /admin/manage                                7.24 kB         173 kB
+├ ƒ /admin/notes                                 5.15 kB         108 kB
+├ ƒ /admin/overview                              5.36 kB         286 kB
+├ ƒ /admin/radar                                 4.25 kB         110 kB
+├ ƒ /admin/research                              10.3 kB         116 kB
+├ ƒ /admin/users                                 7.63 kB         176 kB
+├ ƒ /admin/webinars                              5.18 kB         108 kB
+├ ƒ /analyses                                      471 B         115 kB
+├ ƒ /api/admin/analyses                            270 B         103 kB
+├ ƒ /api/admin/announcements                       270 B         103 kB
+├ ƒ /api/admin/codal-proxy                         270 B         103 kB
+├ ƒ /api/admin/cohort-access/commands              270 B         103 kB
+├ ƒ /api/admin/content                             270 B         103 kB
+├ ƒ /api/admin/course-operations                   270 B         103 kB
+├ ƒ /api/admin/desk                                270 B         103 kB
+├ ƒ /api/admin/drafts                              270 B         103 kB
+├ ƒ /api/admin/entitlements                        270 B         103 kB
+├ ƒ /api/admin/fx/seeds                            270 B         103 kB
+├ ƒ /api/admin/health                              270 B         103 kB
+├ ƒ /api/admin/intelligence                        270 B         103 kB
+├ ƒ /api/admin/intelligence/rehearsal              270 B         103 kB
+├ ƒ /api/admin/intelligence/workbooks              270 B         103 kB
+├ ƒ /api/admin/notes                               270 B         103 kB
+├ ƒ /api/admin/registration-imports/[id]/commit    270 B         103 kB
+├ ƒ /api/admin/registration-imports/preview        270 B         103 kB
+├ ƒ /api/admin/webinars                            270 B         103 kB
+├ ƒ /api/codal-list                                270 B         103 kB
+├ ƒ /api/cohorts/[id]                              270 B         103 kB
+├ ƒ /api/cohorts/[id]/needs-assessment             270 B         103 kB
+├ ƒ /api/cohorts/[id]/resources                    270 B         103 kB
+├ ƒ /api/cohorts/[id]/resources/[resourceId]       270 B         103 kB
+├ ƒ /api/cohorts/[id]/webinars/[webinarId]/join    270 B         103 kB
+├ ƒ /api/consultation                              270 B         103 kB
+├ ƒ /api/courses                                   270 B         103 kB
+├ ƒ /api/cron/alerts                               270 B         103 kB
+├ ƒ /api/cron/telegram-sync                        270 B         103 kB
+├ ƒ /api/data/[symbol]/history.csv                 270 B         103 kB
+├ ƒ /api/leads/webhook                             270 B         103 kB
+├ ƒ /api/market                                    270 B         103 kB
+├ ƒ /api/market/ohlc                               270 B         103 kB
+├ ƒ /api/me/cohorts                                270 B         103 kB
+├ ƒ /api/me/module-access                          270 B         103 kB
+├ ƒ /api/payment/callback                          270 B         103 kB
+├ ƒ /api/payment/request                           270 B         103 kB
+├ ƒ /api/portfolio/holdings                        270 B         103 kB
+├ ƒ /api/registrations/claim                       270 B         103 kB
+├ ƒ /api/symbol-detail                             270 B         103 kB
+├ ƒ /api/telegram/webhook                          270 B         103 kB
+├ ƒ /api/waitlist                                  270 B         103 kB
+├ ƒ /api/webinars/list                             270 B         103 kB
+├ ƒ /api/webinars/payment                          270 B         103 kB
+├ ƒ /api/webinars/payment/callback                 270 B         103 kB
+├ ƒ /api/webinars/register                         270 B         103 kB
+├ ƒ /auth/callback                                 270 B         103 kB
+├ ƒ /codal                                         480 B         115 kB
+├ ƒ /dashboard                                   20.3 kB         197 kB
+├ ƒ /dashboard/consultation                      6.25 kB         112 kB
+├ ƒ /dashboard/holdings                          6.16 kB         112 kB
+├ ƒ /data                                        9.49 kB         187 kB
+├ ƒ /data/[symbol]                                 270 B         103 kB
+├ ○ /forgot-password                             2.49 kB         177 kB
+├ ƒ /insights                                    4.47 kB         119 kB
+├ ○ /learn                                         136 B         120 kB
+├ ● /learn/[slug]                                  480 B         115 kB
+├   ├ /learn/what-is-the-market
+├   ├ /learn/how-to-read-a-symbol
+├   ├ /learn/fundamentals-simple
+├   └ [+3 more paths]
+├ ○ /learn/glossary                                136 B         120 kB
+├ ○ /legal/disclaimer                              270 B         103 kB
+├ ○ /legal/privacy                                 270 B         103 kB
+├ ○ /legal/terms                                   270 B         103 kB
+├ ○ /login                                       3.14 kB         178 kB
+├ ƒ /market                                      12.9 kB         247 kB
+├ ƒ /market/funds                                12.6 kB         131 kB
+├ ƒ /market/map                                  11.4 kB         214 kB
+├ ƒ /market/options                              4.48 kB         119 kB
+├ ƒ /market/stocks                               7.39 kB         126 kB
+├ ƒ /notes                                       3.39 kB         118 kB
+├ ƒ /payment/result                                480 B         115 kB
+├ ƒ /qa/next04                                   1.16 kB         108 kB
+├ ○ /register                                    5.11 kB         180 kB
+├ ○ /reset-password                               3.1 kB         178 kB
+├ ○ /robots.txt                                    270 B         103 kB
+├ ○ /sitemap.xml                                   270 B         103 kB
+├ ƒ /symbol/[symbol]                             26.3 kB         313 kB
+├ ƒ /terminal                                      172 B         106 kB
+├ ƒ /terminal/[symbol]                           3.22 kB         161 kB
+├ ƒ /terminal/allocation                         3.37 kB         162 kB
+├ ƒ /terminal/watchlist                            172 B         106 kB
+├ ○ /tools/portfolio-scenario                    8.21 kB         123 kB
+└ ○ /webinars                                    5.26 kB         120 kB
++ First Load JS shared by all                     103 kB
+  ├ chunks/6552-d905b02e1a7c14d2.js              46.4 kB
+  ├ chunks/d5cb6b3c-9ac1c9e2956f1205.js          54.2 kB
+  └ other shared chunks (total)                  2.03 kB
+
+
+ƒ Middleware                                     89.2 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand

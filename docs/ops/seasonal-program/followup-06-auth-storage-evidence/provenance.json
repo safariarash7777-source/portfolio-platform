@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-01T11:33:47.539Z",
+  "branch": "codex/followup06-integration-20261001",
+  "applicationSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "ciCheckpoint": "b7c77260821cd127c1a7a65eae123022dcf0a43a",
+  "documentationBaseline": "630c4bac8ff264b3f9f27464266e50f239707723",
+  "applicationPathChangesAgainstCI": 0,
+  "runtimeApplicationPathChangesAgainstCI": 0,
+  "checkedPaths": [
+    "app",
+    "components",
+    "lib",
+    "sql",
+    "supabase",
+    "relay",
+    "package.json",
+    "package-lock.json",
+    "next.config.js",
+    "tsconfig.json",
+    "middleware.ts"
+  ],
+  "filesScanned": 27,
+  "actualPrivateCredentialsAndJWTMatches": 0,
+  "evidenceSHA256": {
+    "independent.md": "42c7c227cc1b298baccde3db6e0e28528410a27eb2817f69ed366a661f862b47",
+    "independent.json": "33f263fd1c79acc61a43d86e3f26994a7f0a3583f2090c91d152eff66f4bb59e",
+    "acceptance.json": "34161a4c32a6f27c707f9a83806cabd0dd7e534919f1f69e7fa64d12db5ef05f",
+    "environment.json": "dcc38f19eb9ce89fdeed049cadcd3e7e697f193ea2101bcc1f868192f2cde462",
+    "environment-verification.json": "8c8d063a665138240149124f11742f783affe645fad2bc96056981a1f877e59b"
+  },
+  "scope": "documentation and acceptance tooling only; application source unchanged; no new CI run claimed"
+}

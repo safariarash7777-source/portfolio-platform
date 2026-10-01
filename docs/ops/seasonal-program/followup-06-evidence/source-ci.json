@@ -1,0 +1,131 @@
+[
+  {
+    "pr": 168,
+    "sha": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+    "checkedAt": "2026-10-01T10:01:01.556Z",
+    "runs": [
+      {
+        "id": 36840882933,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 345,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36840882933/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36840882933/logs",
+        "workflow_id": 320220968
+      }
+    ]
+  },
+  {
+    "pr": 173,
+    "sha": "6787005ad7b65acc49a059c2f9035ab16eb306f2",
+    "checkedAt": "2026-10-01T10:01:01.557Z",
+    "runs": [
+      {
+        "id": 36845293824,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 347,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36845293824/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36845293824/logs",
+        "workflow_id": 320220968
+      }
+    ]
+  },
+  {
+    "pr": 174,
+    "sha": "95cfa3410a97ac0d98cdefcb6671d4cfcb668646",
+    "checkedAt": "2026-10-01T10:01:01.557Z",
+    "runs": [
+      {
+        "id": 36771898821,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 335,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36771898821/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36771898821/logs",
+        "workflow_id": 320220968
+      }
+    ]
+  },
+  {
+    "pr": 175,
+    "sha": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+    "checkedAt": "2026-10-01T10:01:01.557Z",
+    "runs": [
+      {
+        "id": 36775201175,
+        "name": "Seasonal membership sandbox",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 4,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36775201175/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36775201175/logs",
+        "workflow_id": 371553818
+      },
+      {
+        "id": 36775201105,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 344,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36775201105/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36775201105/logs",
+        "workflow_id": 320220968
+      }
+    ]
+  },
+  {
+    "pr": 176,
+    "sha": "d69763563ef695b2d16ea2e52be4a4452b0811dc",
+    "checkedAt": "2026-10-01T10:01:01.557Z",
+    "runs": [
+      {
+        "id": 36774747309,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 343,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36774747309/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36774747309/logs",
+        "workflow_id": 320220968
+      }
+    ]
+  },
+  {
+    "pr": 177,
+    "sha": "27e59ad8d85f37da32b6f5346d289afdb73b20e6",
+    "checkedAt": "2026-10-01T10:01:01.557Z",
+    "runs": [
+      {
+        "id": 36774588464,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 341,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36774588464/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36774588464/logs",
+        "workflow_id": 320220968
+      }
+    ]
+  },
+  {
+    "pr": 178,
+    "sha": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+    "checkedAt": "2026-10-01T10:01:01.557Z",
+    "runs": [
+      {
+        "id": 36843617522,
+        "name": "CI",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 346,
+        "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36843617522/jobs",
+        "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36843617522/logs",
+        "workflow_id": 320220968
+      }
+    ]
+  }
+]

@@ -1,4 +1,7 @@
 "use client";
+import { sourceTime } from "@/lib/market-quality";
+import { formatTehranClock } from "@/lib/format";
+
 import { useState } from "react";
 import { Coins, Clock } from "lucide-react";
 import {
@@ -14,6 +17,8 @@ interface IrRow {
   faName: string;
   price: number;
   unit: "toman" | "usd";
+  sourceDate?: string | null;
+  sourceTime?: string | null;
   change?: number | null;
   changePercent?: number | null;
 }
@@ -21,7 +26,7 @@ interface IrRow {
 interface Props {
   gold: IrRow[];
   currency: IrRow[];
-  fetchedAt: number;
+  fetchedAt: number | null;
 }
 
 type Tab = "gold" | "currency";
@@ -50,7 +55,7 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
         {fetchedAt && (
           <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
             <Clock size={12} />
-            <span>آخرین به‌روزرسانی: {formatJalali(fetchedAt)}</span>
+            <span>آخرین دریافت بسته: {formatJalali(fetchedAt)}</span>
           </div>
         )}
       </div>
@@ -65,6 +70,7 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {rows.map((r) => {
           const pct = r.changePercent ?? null;
+          const at = sourceTime(r.sourceDate, r.sourceTime);
           return (
             <div key={r.id} className="card p-4 flex items-center justify-between gap-3">
               <div className="min-w-0">
@@ -76,6 +82,7 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
                     ? `$${toPersianDigits(r.price.toLocaleString("en-US")).replace(/,/g, "٬")}`
                     : formatToman(r.price)}
                 </span>
+                <span className="block text-xs leading-5" style={{ color: "var(--text-3)" }}>زمان منبع: {at != null ? formatJalali(at) + " · " + formatTehranClock(at) : "نامشخص"}</span>
               </div>
               {pct != null && (
                 <span

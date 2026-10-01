@@ -1,0 +1,11 @@
+{
+  "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "command": "node scripts/validate-sql.mjs",
+  "observedResult": [
+    "",
+    "49 فایل بررسی شد · 0 مردود",
+    "هیچ SQLای اجرا نشد و به هیچ دیتابیسی وصل نشدیم."
+  ],
+  "logSHA256": "27c360ae2e3d96437f72cc33b726fe879695eab4f9bc4af83948ed33db21f783",
+  "executedSQL": false
+}

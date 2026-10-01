@@ -1,3 +1,6 @@
+import MarketDataStatus from "@/components/market/MarketDataStatus";
+import { marketProvenance } from "@/lib/market-quality";
+import CustomerJourney from "@/components/account/CustomerJourney";
 /**
  * نمای کلانِ بازار — `/market`.
  *
@@ -40,9 +43,9 @@ import { pageMetadata } from "@/lib/metadata";
 import { buildSearchIndex, resolveBackTarget } from "@/lib/market-nav";
 import { buildMarketHeadline } from "@/lib/core/marketHeadline";
 import { computeMarketPulse, computeQueues, computeMoneyFlow, computeTopLists } from "@/lib/core/marketToday";
-import { getFlowTrend } from "@/lib/core/breadthTrend";
-import { getGoldUsdTrend } from "@/lib/core/trend";
-import { getIndexTrend } from "@/lib/core/indexTrend";
+import { getFlowTrendState } from "@/lib/core/breadthTrend";
+import { getGoldUsdTrendState } from "@/lib/core/trend";
+import { getIndexTrendState } from "@/lib/core/indexTrend";
 
 export const dynamic = "force-dynamic";
 
@@ -108,11 +111,15 @@ export default async function MarketPage({
   const funds = ir?.funds ?? [];
 
   // سری‌های تاریخی — همه best-effort؛ نبودشان صفحه را نمی‌شکند.
-  const [flowTrend, goldUsdSeries, indexSeries] = await Promise.all([
-    getFlowTrend(90).catch(() => []),
-    getGoldUsdTrend(180).catch(() => []),
-    getIndexTrend(180).catch(() => []),
+  const [flowRead, goldRead, indexRead] = await Promise.all([
+    getFlowTrendState(90),
+    getGoldUsdTrendState(180),
+    getIndexTrendState(180),
   ]);
+
+  const flowTrend = flowRead.status === "ready" ? flowRead.data : [];
+  const goldUsdSeries = goldRead.status === "ready" ? goldRead.data : [];
+  const indexSeries = indexRead.status === "ready" ? indexRead.data : [];
 
   // ── محاسبهٔ یک‌باره ──────────────────────────────────────────────────────
   const headline = buildMarketHeadline({
@@ -138,20 +145,21 @@ export default async function MarketPage({
         <MarketShell
           active="overview"
           title="نمای کلان بازار"
-          lead="تصویرِ امروزِ بازارِ ایران از آخرین اسنپ‌شات. همهٔ ارقام مشاهده‌اند، نه پیشنهادِ اقدام."
+          lead="نمای آخرین داده‌های ثبت‌شدهٔ بازار ایران؛ وضعیت منبع و تاریخ هر بخش را همراه عدد بخوانید."
           fetchedAt={ir?.fetchedAt ?? null}
           boardState={ir?.indices?.state ?? null}
           searchIndex={searchIndex}
           path="/market"
         >
           <div className="space-y-5">
+            <MarketDataStatus market={ir} />
             {/* ── ردیف ۲: سنجه‌های اصلی ─────────────────────────────────── */}
-            <MarketKpiRow metrics={headline.metrics} />
+            <MarketKpiRow metrics={headline.metrics} provenance={marketProvenance(ir)} />
 
             {/* ── ردیف ۳: نمودارِ منتخب + نبض بازار ──────────────────────── */}
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
               <div className="min-w-0 lg:col-span-2">
-                <FeaturedTrend indexSeries={indexSeries} goldUsdSeries={goldUsdSeries} />
+                <FeaturedTrend indexSeries={indexSeries} goldUsdSeries={goldUsdSeries} indexState={indexRead.status} goldState={goldRead.status} />
               </div>
               <div className="min-w-0">
                 <MarketPulsePanel pulse={pulse} flow={flow} universe={headline.universe} />
@@ -170,7 +178,7 @@ export default async function MarketPage({
             <MarketDesk ir={ir} limit={24} summaryLimit={6} maxPerKind={2} from={selfHref} />
 
             {/* ── طلا و ارز ──────────────────────────────────────────────── */}
-            {ir && (ir.gold.length > 0 || ir.currency.length > 0) ? (
+            {ir ? (
               <section id="gold-currency" className="scroll-mt-24">
                 <GoldCurrencyBoard gold={ir.gold} currency={ir.currency} fetchedAt={ir.fetchedAt} />
               </section>
@@ -223,7 +231,8 @@ export default async function MarketPage({
             </p>
 
             {/* مسیرِ رفت‌وبرگشت به حسابِ کاربر — فقط لینک، بدونِ تغییر در گیتِ دسترسی. */}
-            <AccountBridge access={access} returnTo={selfHref} />
+            <CustomerJourney />
+          <AccountBridge access={access} returnTo={selfHref} />
           </div>
         </MarketShell>
       </main>

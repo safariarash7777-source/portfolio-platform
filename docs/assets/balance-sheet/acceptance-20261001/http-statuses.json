@@ -1,0 +1,282 @@
+[
+  {
+    "at": "2026-10-01T09:19:20.487Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_holdings",
+    "status": 200,
+    "durationMs": 481
+  },
+  {
+    "at": "2026-10-01T09:19:20.499Z",
+    "method": "POST",
+    "path": "/api/portfolio/holdings",
+    "status": 201,
+    "durationMs": 2374
+  },
+  {
+    "at": "2026-10-01T09:22:31.397Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_debts",
+    "status": 200,
+    "durationMs": 631
+  },
+  {
+    "at": "2026-10-01T09:22:31.423Z",
+    "method": "POST",
+    "path": "/api/portfolio/debts",
+    "status": 201,
+    "durationMs": 2383
+  },
+  {
+    "at": "2026-10-01T09:24:19.967Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_debts",
+    "status": 200,
+    "durationMs": 199
+  },
+  {
+    "at": "2026-10-01T09:24:19.969Z",
+    "method": "POST",
+    "path": "/api/portfolio/debts",
+    "status": 201,
+    "durationMs": 539
+  },
+  {
+    "at": "2026-10-01T09:31:19.273Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 539
+  },
+  {
+    "at": "2026-10-01T09:31:19.525Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 242
+  },
+  {
+    "at": "2026-10-01T09:31:19.819Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 288
+  },
+  {
+    "at": "2026-10-01T09:31:32.145Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 403,
+    "durationMs": 206
+  },
+  {
+    "at": "2026-10-01T09:31:44.438Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 511
+  },
+  {
+    "at": "2026-10-01T09:31:44.447Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 501
+  },
+  {
+    "at": "2026-10-01T09:32:34.805Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_holdings",
+    "status": 200,
+    "durationMs": 301
+  },
+  {
+    "at": "2026-10-01T09:32:34.809Z",
+    "method": "POST",
+    "path": "/api/portfolio/holdings",
+    "status": 201,
+    "durationMs": 858
+  },
+  {
+    "at": "2026-10-01T09:37:32.827Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_debts",
+    "status": 200,
+    "durationMs": 282
+  },
+  {
+    "at": "2026-10-01T09:37:32.832Z",
+    "method": "POST",
+    "path": "/api/portfolio/debts",
+    "status": 201,
+    "durationMs": 654
+  },
+  {
+    "at": "2026-10-01T09:37:53.557Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_debts",
+    "status": 200,
+    "durationMs": 150
+  },
+  {
+    "at": "2026-10-01T09:37:53.560Z",
+    "method": "POST",
+    "path": "/api/portfolio/debts",
+    "status": 201,
+    "durationMs": 419
+  },
+  {
+    "at": "2026-10-01T09:38:25.107Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 361
+  },
+  {
+    "at": "2026-10-01T09:39:01.345Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_debts",
+    "status": 200,
+    "durationMs": 149
+  },
+  {
+    "at": "2026-10-01T09:39:01.347Z",
+    "method": "POST",
+    "path": "/api/portfolio/debts",
+    "status": 201,
+    "durationMs": 383
+  },
+  {
+    "at": "2026-10-01T09:39:28.207Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 234
+  },
+  {
+    "at": "2026-10-01T09:39:48.202Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 238
+  },
+  {
+    "at": "2026-10-01T09:40:14.503Z",
+    "method": "POST",
+    "path": "/api/consultation",
+    "status": 201,
+    "durationMs": 381
+  },
+  {
+    "at": "2026-10-01T09:40:26.981Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 200,
+    "durationMs": 130
+  },
+  {
+    "at": "2026-10-01T09:40:27.102Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 200,
+    "durationMs": 116
+  },
+  {
+    "at": "2026-10-01T09:40:27.260Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 403,
+    "durationMs": 142
+  },
+  {
+    "at": "2026-10-01T09:40:27.488Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 403,
+    "durationMs": 109
+  },
+  {
+    "at": "2026-10-01T09:40:28.014Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/record_member_debts",
+    "status": 409,
+    "durationMs": 125
+  },
+  {
+    "at": "2026-10-01T09:40:46.596Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 402
+  },
+  {
+    "at": "2026-10-01T09:40:50.145Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 200,
+    "durationMs": 727
+  },
+  {
+    "at": "2026-10-01T09:40:50.439Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 200,
+    "durationMs": 131
+  },
+  {
+    "at": "2026-10-01T09:41:07.555Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 200,
+    "durationMs": 157
+  },
+  {
+    "at": "2026-10-01T09:41:17.914Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 200,
+    "durationMs": 207
+  },
+  {
+    "at": "2026-10-01T09:41:46.378Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 438
+  },
+  {
+    "at": "2026-10-01T09:42:05.760Z",
+    "method": "POST",
+    "path": "/api/consultation",
+    "status": 201,
+    "durationMs": 380
+  },
+  {
+    "at": "2026-10-01T09:42:12.418Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 403,
+    "durationMs": 116
+  },
+  {
+    "at": "2026-10-01T09:42:12.547Z",
+    "method": "POST",
+    "path": "/supabase/rest/v1/rpc/consultation_balance_sheet",
+    "status": 403,
+    "durationMs": 125
+  },
+  {
+    "at": "2026-10-01T09:42:31.163Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 251
+  },
+  {
+    "at": "2026-10-01T09:43:33.875Z",
+    "method": "POST",
+    "path": "/supabase/auth/v1/token",
+    "status": 200,
+    "durationMs": 636
+  }
+]

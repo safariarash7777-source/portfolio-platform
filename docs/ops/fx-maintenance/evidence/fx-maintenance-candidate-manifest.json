@@ -1,0 +1,16 @@
+{
+  "files": {
+    "agent_status_ui.py": "9519904ebb4fec9c3ed7a317407b82e5a81b62efc9c4d6af53f1dae8d237ac09",
+    "maintenance_status.py": "d8529ed111c6486840cdba1071ec7358b7eb479f387e7dda0b6384eabc446a34",
+    "maintenance_gate.py": "1010025bda938f52167c72d70c71427a99287ec7cd94eacba5eb437b276ab90f",
+    "ifb_bonds.py": "8cda7ea552fada9cc74f921c7ec068adaa3f798fa407ccb12c14059cc7609bda",
+    "bond_status_ui.py": "21691ecc36642b61ca0d1ede4f2e39e273caeb11e3b5a5a1412f5393b568d8a9"
+  },
+  "base_image": "fx-dashboard:20261001-agent-health",
+  "candidate_image": "fx-dashboard:20261001-maintenance-candidate",
+  "production_deployed": false,
+  "candidate_image_id": "sha256:763965b89c336abd2ffbf04d93987fd7952e07004c07041e31fd84b589bdfaf5",
+  "server_code_hashes_match": true,
+  "candidate_gate": "PASS",
+  "local_gate": "PASS"
+}

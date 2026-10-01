@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-01T19:32:26.926Z",
+  "scope": "Independent read-only verification on retained exclusively synthetic owned sandbox",
+  "scannedFiles": 16,
+  "credentialOrTokenFindings": 0,
+  "filesWithFindings": [],
+  "identityMigrationSHA256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251",
+  "catalogQuery": "select c.relname,c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='identity_private' and c.relkind='r' order by c.relname; select count(*) from identity_private.profile_versions; select count(*) from auth.users; select count(*) from storage.objects; select has_function_privilege('authenticated','public.auth_save_private_identity(uuid,integer,text,text,text,text)','execute'); select has_function_privilege('authenticated','public.auth_read_private_identity()','execute');",
+  "catalogResult": "national_id_registry|t\nprofile_versions|t\n0\n6\n4\nf\nt",
+  "faultMode": {},
+  "currentBuildSHA": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "humanGatesUntouched": true
+}

@@ -1,3 +1,4 @@
+import type { ReadState } from "../read-state";
 // روند شاخص کل و هم‌وزن — M5 «رصد بازار». منبع: جدول append-only مبتنی بر index_history
 // (روزی یک ردیف EOD که رله درج می‌کند). خواندن server-side با کلید anon (RLS خواندن عمومی).
 // قانون سخت: جدول نساخته/داده ناکافی → آرایهٔ خالی؛ هیچ عدد ساختگی.
@@ -58,27 +59,33 @@ function env(): { url: string; anon: string } | null {
 }
 
 /** آخرین `days` ردیف EOD شاخص. جدول نساخته/خطا → []. */
-export async function getIndexTrend(days = 180): Promise<IndexSeries[]> {
-  if (cached && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
+export async function getIndexTrendState(days = 180, fetchImpl: typeof fetch = fetch): Promise<ReadState<IndexSeries[]>> {
+  if (fetchImpl === fetch && cached && Date.now() - cached.at < REVALIDATE_MS) return { status: cached.value.length > 0 ? "ready" : "empty", data: cached.value.length > 0 ? cached.value : null } as ReadState<IndexSeries[]>;
   const e = env();
-  if (!e) return [];
+  if (!e) return { status: "error", data: null, code: "not_configured" };
   try {
     const qs = new URLSearchParams({
       select: "jdate,total_index,equal_weight_index,trade_value",
       order: "jdate.desc",
       limit: String(days),
     });
-    const res = await fetch(`${e.url}/rest/v1/index_history?${qs}`, {
+    const res = await fetchImpl(`${e.url}/rest/v1/index_history?${qs}`, {
       headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
       signal: AbortSignal.timeout(10000),
       cache: "no-store",
     });
-    if (!res.ok) return []; // 404 = جدول نساخته (phase14) — حالت خالی صادقانه
+    if (!res.ok) return { status: "error", data: null, code: "source_unavailable" }; // 404 = جدول نساخته (phase14) — حالت خالی صادقانه
     const rows = (await res.json()) as IndexHistRow[];
     const value = buildIndexSeries(rows);
-    cached = { at: Date.now(), value };
-    return value;
+    if (fetchImpl === fetch) cached = { at: Date.now(), value };
+    return value.length > 0 ? { status: "ready", data: value } : { status: "empty", data: null };
   } catch {
-    return [];
+    return { status: "error", data: null, code: "source_unavailable" };
   }
+}
+
+/** Legacy consumers retain the array contract; new dashboards use the explicit read state. */
+export async function getIndexTrend(days = 180): Promise<IndexSeries[]> {
+  const result = await getIndexTrendState(days);
+  return result.status === "ready" ? result.data : [];
 }

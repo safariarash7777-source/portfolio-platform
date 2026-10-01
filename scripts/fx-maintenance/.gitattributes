@@ -1,0 +1,2 @@
+# Preserve tested bytes and SHA across Git checkout; scoped to this handoff.
+* -text

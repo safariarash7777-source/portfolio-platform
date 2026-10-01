@@ -95,6 +95,15 @@ jobs:
       - name: Core tests
         run: npm run test:core
 
+      - name: Public product and form contracts
+        run: npm run test:public
+
+      - name: Seasonal resource and cohort HTTP contracts
+        run: npm run test:seasonal
+
+      - name: Signed SMS, limits and mobile Auth contracts (synthetic only)
+        run: npm run test:auth-mobile
+
       - name: Calc tests
         run: npm run test:calc
 

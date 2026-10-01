@@ -1,0 +1,3 @@
+sha256:763965b89c336abd2ffbf04d93987fd7952e07004c07041e31fd84b589bdfaf5
+{"status": "offline_candidate_passed", "tabs": 12, "exceptions": 0, "separate_status_axes": true, "external_provider_requests": 0}
+PRODUCTION_IMAGE=fx-dashboard:20261001-agent-health

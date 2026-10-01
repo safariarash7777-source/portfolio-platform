@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-01T19:19:07.768Z",
+  "environment": "followup06-limited-native-local",
+  "nativeRestHTTP": 200,
+  "writerPathInstalled": true,
+  "schemaReload": "NOTIFY pgrst reload schema on OWN DB",
+  "migrationReplayed": false,
+  "identityRows": "0",
+  "AuthStartupRecovery": "same container restarted after PostgreSQL readiness; priorSQLSTATE57P03 retained",
+  "nativeAuthHealthHTTP": 200
+}

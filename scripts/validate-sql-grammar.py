@@ -23,7 +23,7 @@ except ImportError:
     print("pglast نصب نیست. اجرا کن:  pip install pglast", file=sys.stderr)
     sys.exit(2)
 
-files = sorted(glob.glob("sql/**/*.sql", recursive=True))
+files = sorted((glob.glob("sql/**/*.sql", recursive=True) + glob.glob("supabase/migrations/*.sql")))
 if not files:
     print("هیچ فایلِ SQL پیدا نشد.", file=sys.stderr)
     sys.exit(1)

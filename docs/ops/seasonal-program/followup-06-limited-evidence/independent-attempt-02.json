@@ -1,0 +1,92 @@
+{
+  "reviewer": "/root/limited_independent; independent agent, not code author or human research approver",
+  "sha": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+  "checkoutHead": "735a502595e575dea74929ab896830e93ee4b329",
+  "checkpointDiff": [
+    ".github/workflows/ci.yml",
+    "eslint.config.mjs"
+  ],
+  "applicationSourceDiffEmpty": true,
+  "environment": "followup06-limited-native-local",
+  "origin": "http://127.0.0.1:3299",
+  "startedAt": "2026-10-01T19:14:57.386Z",
+  "manifest": {
+    "sha": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+    "environment": "followup06-limited-native-local",
+    "builtAt": "2026-10-01T19:06:16.029Z",
+    "origin": "http://127.0.0.1:3299",
+    "backend": "same-origin /supabase, retained exclusively synthetic native backend",
+    "build": "production",
+    "cpu": "one reported CPU, max heap768MB",
+    "identityEnabled": true,
+    "identityOfficialMatch": "pending",
+    "mobileProvider": "not configured, fail closed",
+    "emailProvider": "disabled",
+    "newMemberHomeIncluded": true,
+    "baselineRuntime": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "egress": "loopback only"
+  },
+  "migrationProof": "migration.json",
+  "fixtureSource": "../followup-06-auth-storage-evidence/fixtures.json; existing synthetic resources retained",
+  "frozenEvidenceHashesBefore": {
+    "independent.md": "fabdfef52c86a3f82c1ac71feb22d0c4b2c359a062b8a496bb54ebaee87af925",
+    "independent.json": "d81edd2b2aa2b5e1f103772c3a0332920c90e0b38ab6301146b89e4affb670d9"
+  },
+  "scenarios": [
+    {
+      "id": "login-A",
+      "roles": [
+        "A"
+      ],
+      "sha": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+      "environment": "followup06-limited-native-local",
+      "at": "2026-10-01T19:14:59.929Z",
+      "expected": "Fresh UI form login, native GoTrue issued token/user200, canonical UUID and actual holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "90fbdf83-2522-4362-90c3-fde6755e6653",
+        "redirect": "/dashboard/holdings",
+        "contextTimezone": "Asia/Tehran"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-B",
+      "roles": [
+        "B"
+      ],
+      "sha": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+      "environment": "followup06-limited-native-local",
+      "at": "2026-10-01T19:15:02.069Z",
+      "expected": "Fresh UI form login, native GoTrue issued token/user200, canonical UUID and actual holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "de53f5b7-ab5b-4c14-9c75-b77646073cc2",
+        "redirect": "/dashboard/holdings",
+        "contextTimezone": "America/Los_Angeles"
+      },
+      "status": "PASS"
+    }
+  ],
+  "privacy": "UI-issued sessions and signed capabilities stay in memory. No storageState/session injection, traces, HAR or credential screenshots.",
+  "open": [
+    "Successful private-identity write: native confirmed phone absent; provider disabled/unconfigured",
+    "New member feed/read-state and NEXT09",
+    "Human DEV07/173 and personal owner login",
+    "Live market quota/cycles and real FX financial/provider acceptance"
+  ],
+  "executionError": "response.json: Protocol error (Network.getResponseBody): No resource with given identifier found\nResponse body is not available for a response that was navigated away from. Read response.body() before triggering any navigation.",
+  "frozenEvidenceHashesAfter": {
+    "independent.md": "fabdfef52c86a3f82c1ac71feb22d0c4b2c359a062b8a496bb54ebaee87af925",
+    "independent.json": "d81edd2b2aa2b5e1f103772c3a0332920c90e0b38ab6301146b89e4affb670d9"
+  },
+  "frozenEvidenceUnchanged": true,
+  "finishedAt": "2026-10-01T19:15:02.987Z",
+  "counts": {
+    "PASS": 2,
+    "FAIL": 0,
+    "BLOCKED": 0
+  }
+}

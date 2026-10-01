@@ -1,0 +1,37 @@
+{
+  "id": "identity-auth-upstream-classification",
+  "sha": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+  "environment": "followup06-limited-native-local",
+  "reviewer": "/root/limited_independent",
+  "role": "A",
+  "owner": "PR180 / Auth private identity",
+  "startedAt": "2026-10-01T19:23:05.574Z",
+  "expected": "Authenticated identity GET must distinguish native Auth503 from no-session401; profile service unavailable remains503",
+  "fault": "Controlled owned loopback gateway native Auth upstream503, no containers stopped",
+  "credentialsRecorded": false,
+  "login": {
+    "tokenHTTP": 200,
+    "nativeUserHTTP": 200,
+    "canonicalUserId": "90fbdf83-2522-4362-90c3-fde6755e6653",
+    "redirect": "/dashboard/holdings"
+  },
+  "identityBeforeHTTP": 200,
+  "statusBefore": {
+    "http": 200,
+    "authenticated": true
+  },
+  "nativeAuthFaultHTTP": 503,
+  "identityFaultHTTP": 401,
+  "statusFault": {
+    "http": 200,
+    "authenticated": false
+  },
+  "inferredAdapterState": "sign_in_required; inference from lib/member/profile.ts status401 branch",
+  "identityRecoveryHTTP": 200,
+  "statusRecovery": {
+    "http": 200,
+    "authenticated": true
+  },
+  "status": "FAIL",
+  "finishedAt": "2026-10-01T19:23:09.644Z"
+}

@@ -17,7 +17,7 @@ import {
   closeLastDivergence,
   dailyRangeVolatility,
 } from "./screener";
-import type { IrStockRow } from "@/lib/market-ir";
+import { asStockRows, type IrStockRow } from "@/lib/market-ir";
 
 function row(over: Partial<IrStockRow>): IrStockRow {
   return {
@@ -213,4 +213,17 @@ test("پرست‌های جدید هم تعریف عمومی دارند (کل ف�
   for (const k of ["bullish_guard", "bearish_guard", "near_buy_queue", "near_sell_queue", "divergence_up", "divergence_down", "high_range_volatility"]) {
     assert.ok(keys.includes(k), `پرست غایب: ${k}`);
   }
+});
+
+test("snapshot normalization preserves missing flow/value as unknown while keeping observed zero", () => {
+  const base={id:"DEV07",faName:"synthetic",price:1200,unit:"toman"};
+  for(const invalid of [undefined,null,NaN,Infinity,-1]) {
+    const [stock]=asStockRows([{...base,buyI:invalid,sellI:invalid,volume:invalid,value:invalid}]);
+    assert.equal(realMoneyFlow(stock),null);
+    assert.equal(stock.volume,undefined);assert.equal(stock.value,undefined);
+  }
+  const [zero]=asStockRows([{...base,buyI:0,sellI:0,volume:0,value:0}]);
+  assert.equal(realMoneyFlow(zero),0);assert.equal(zero.volume,0);assert.equal(zero.value,0);
+  const [known]=asStockRows([{...base,buyI:10,sellI:2}]);
+  assert.equal(realMoneyFlow(known),9600);
 });

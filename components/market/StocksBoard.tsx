@@ -1,4 +1,8 @@
 "use client";
+import { useRetainedBoard } from "./useRetainedBoard";
+import { indexChangePercent } from "@/lib/core/marketHeadline";
+import { formatOrDash, formatCount } from "@/lib/format";
+
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
@@ -103,7 +107,8 @@ const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).
 /** بیشینهٔ کاشیِ نقشه. متنِ پوششِ زیرِ نقشه همین را می‌نویسد. */
 const MAP_CELL_LIMIT = 30;
 
-export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
+export default function StocksBoard(incoming: Props) {
+  const { stocks, indices, fetchedAt } = useRetainedBoard(incoming, incoming.fetchedAt != null, (a, b) => a.stocks === b.stocks && a.indices === b.indices && a.fetchedAt === b.fetchedAt);
   // نما، جست‌وجو و فیلترِ صنعت در URL می‌نشینند تا back/forward و برگشت از
   // صفحهٔ نماد وضعیت را حفظ کنند. مرتب‌سازی عمداً محلی می‌ماند: حالتِ گذرایی
   // است که کاربر انتظارِ اشتراک‌گذاری‌اش را ندارد.
@@ -251,13 +256,13 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش بازار</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-              {indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
+              {indices.marketValue != null && indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
             </p>
           </div>
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش معاملات</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-              {indices.value > 0 ? fmtValue(indices.value) : "—"}
+              {indices.value != null && indices.value > 0 ? fmtValue(indices.value) : "—"}
             </p>
           </div>
         </div>
@@ -534,24 +539,17 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
 
 // ── Helper Components ────────────────────────────────────────────────────────
 
-function IndexCard({ label, value, change }: { label: string; value: number; change: number }) {
-  const pct = value > 0 ? (change / value) * 100 : 0;
-  const Icon = change >= 0 ? TrendingUp : TrendingDown;
+function IndexCard({ label, value, change }: { label: string; value: number | null; change: number | null }) {
+  const pct = indexChangePercent(value, change);
   return (
     <div className="card p-4">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
       <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-        {toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬")}
+        {formatOrDash(value, formatCount)}
       </p>
-      <div className="flex items-center gap-1 mt-1">
-        <Icon size={12} style={{ color: deltaColor(change) }} />
-        <span className="text-xs font-bold" style={{ color: deltaColor(change), fontVariantNumeric: "tabular-nums" }}>
-          {formatSignedPercent(pct)}
-        </span>
-        <span className="text-[10px]" style={{ color: "var(--text-3)" }}>
-          ({toPersianDigits(Math.abs(Math.round(change)).toLocaleString("en-US")).replace(/,/g, "٬")})
-        </span>
-      </div>
+      <p className="mt-1 text-xs font-bold" style={{ color: pct == null ? "var(--text-3)" : deltaColor(pct) }}>
+        {formatOrDash(pct, formatSignedPercent)}
+      </p>
     </div>
   );
 }

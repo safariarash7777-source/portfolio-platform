@@ -1,0 +1,88 @@
+{
+  "at": "2026-10-01T12:14:21.953Z",
+  "environment": "readonly existing followup06 synthetic native services; own HTTP route harness",
+  "upstreamSha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "routeCode": true,
+  "session": "actual SDK password login; no browser/cookie-adapter claim",
+  "databaseChanges": false,
+  "providerChanges": false,
+  "serviceRoleUsed": false,
+  "checks": [
+    {
+      "label": "Guest real SDK session missing -> HTTP401; no private data",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "label": "Guest real SDK cohort list -> HTTP401",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "label": "A real Auth/REST/module/Storage scope",
+      "status": "PASS",
+      "listHTTP": 200,
+      "listRows": 0,
+      "downloadHTTP": 403,
+      "exactFileVerified": false
+    },
+    {
+      "label": "B real Auth/REST/module/Storage scope",
+      "status": "PASS",
+      "listHTTP": 200,
+      "listRows": 1,
+      "downloadHTTP": 200,
+      "exactFileVerified": true
+    },
+    {
+      "label": "expired real Auth/REST/module/Storage scope",
+      "status": "PASS",
+      "listHTTP": 200,
+      "listRows": 0,
+      "downloadHTTP": 403,
+      "exactFileVerified": false
+    },
+    {
+      "label": "cancelled real Auth/REST/module/Storage scope",
+      "status": "PASS",
+      "listHTTP": 200,
+      "listRows": 0,
+      "downloadHTTP": 403,
+      "exactFileVerified": false
+    },
+    {
+      "label": "nonmember real Auth/REST/module/Storage scope",
+      "status": "PASS",
+      "listHTTP": 200,
+      "listRows": 0,
+      "downloadHTTP": 403,
+      "exactFileVerified": false
+    },
+    {
+      "label": "admin real Auth/REST/module/Storage scope",
+      "status": "PASS",
+      "listHTTP": 200,
+      "listRows": 0,
+      "downloadHTTP": 403,
+      "exactFileVerified": false
+    },
+    {
+      "label": "Actual SDK auth transport failure -> HTTP503 without raw error",
+      "status": "PASS",
+      "http": 503,
+      "syntheticFaultOnly": true
+    },
+    {
+      "label": "Actual SDK Auth transport failure on cohort list -> HTTP503",
+      "status": "PASS",
+      "http": 503,
+      "syntheticFaultOnly": true
+    },
+    {
+      "label": "Actual SDK storage transport failure -> HTTP503 without raw error",
+      "status": "PASS",
+      "http": 503,
+      "syntheticFaultOnly": true
+    }
+  ]
+}

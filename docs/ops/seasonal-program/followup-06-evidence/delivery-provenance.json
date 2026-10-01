@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-01T10:27:48.531Z",
+  "testedApplicationSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "ciCheckpointSHA": "b7c77260821cd127c1a7a65eae123022dcf0a43a",
+  "dev07TestedSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+  "dev07DocsCommit": "2d7f4a9d0ca2fa9fac5d5af49f9c654c3135e266",
+  "dev07ReportSHA256": "61f8f12e6c9908b9f3fba2978ca410d5712eb6a18ecb4cf30ff3d88ac9b8988f",
+  "finalDocumentationUpdate": "Documentation-only commits after CI checkpoint; application/schema/testing harness bytes unchanged relative to b7c7726",
+  "productionChanged": false,
+  "otherPRBranchesChanged": false,
+  "mergedToMain": false,
+  "otherSandboxesChanged": false,
+  "newPRCreated": false,
+  "releaseSHAReady": false
+}

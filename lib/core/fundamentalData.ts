@@ -7,38 +7,36 @@
 // - ن-۱۰ data: { period_end, period_months, standalone: { revenue, ... }, unit, audited }
 //   ⟵ درآمد تجمیعی دوره = standalone.revenue (واحد گزارش خود شرکت).
 //
-// بودجهٔ کوئری: دو درخواست PostgREST با ستون‌های محدود. کش ۱ساعته.
+// دو خواندن مستقل با صفحه‌بندی و ستون‌های محدود؛ کش فقط نتیجهٔ کامل، ۱ساعته.
 // اصل صداقت: نماد بدون هر دو دوره در Map نمی‌آید — false positive ممنوع.
 
-import { unstable_cache } from "next/cache";
+import { createCompleteReader, PagedReadError, readAllPages } from "../supabase/paged-read";
 import { yoyGrowthPercent, type YoYMap } from "./fundamentalPresets";
 
-const SB = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-interface CodalRow {
+export interface CodalRow {
+  id: number;
+  captured_at: string;
   symbol: string | null;
   data: Record<string, unknown> | null;
 }
 
-async function fetchCodal(reportKind: string, limit: number): Promise<CodalRow[]> {
-  if (!SB || !ANON) return [];
-  const url =
-    `${SB}/rest/v1/codal_reports?select=symbol,data` +
-    `&report_kind=eq.${encodeURIComponent(reportKind)}` +
-    `&order=captured_at.desc&limit=${limit}`;
-  try {
-    const res = await fetch(url, {
-      headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    return (await res.json()) as CodalRow[];
-  } catch {
-    return [];
+/** Fetch the whole filtered append-only set, then apply amendment precedence. */
+export async function fetchCodal(reportKind: string) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) throw new PagedReadError("configuration", 0);
+  const result = await readAllPages<CodalRow>({
+    url, anon, table: "codal_reports", select: "id,captured_at,symbol,data",
+    filters: { report_kind: `eq.${reportKind}` },
+  });
+  if (result.data.some(row => typeof row.captured_at !== "string" || !Number.isFinite(Date.parse(row.captured_at)))) {
+    throw new PagedReadError("invalid_capture_time", 0);
   }
+  result.data.sort((a, b) => Date.parse(b.captured_at) - Date.parse(a.captured_at) || b.id - a.id);
+  return result;
 }
-
+const readMonthly = createCompleteReader(() => fetchCodal("ن-۳۰"), () => [] as CodalRow[], 3600000);
+const readQuarterly = createCompleteReader(() => fetchCodal("ن-۱۰"), () => [] as CodalRow[], 3600000);
 function num(x: unknown): number | null {
   return typeof x === "number" && isFinite(x) ? x : null;
 }
@@ -58,8 +56,7 @@ function jym(s: unknown): { y: number; m: number } | null {
  * رشد درآمد ماهانهٔ YoY از ن-۳۰:
  * برای هر نماد، آخرین ماه گزارش‌شده و همان ماهِ سال قبل — هر دو باید موجود باشند.
  */
-export async function buildMonthlyYoY(): Promise<YoYMap> {
-  const rows = await fetchCodal("ن-۳۰", 3000);
+export function monthlyYoYFromRows(rows: readonly CodalRow[]): YoYMap {
   // نماد → (سال×۱۰۰+ماه) → درآمد ماه (period_total_amount، میلیون ریال)
   const bySymbol = new Map<string, Map<number, number>>();
   for (const r of rows) {
@@ -94,8 +91,7 @@ export async function buildMonthlyYoY(): Promise<YoYMap> {
  * فصل خالص = revenue(دورهٔ k ماهه) − revenue(دورهٔ k−3 ماههٔ همان سال مالی).
  * دورهٔ ۳ماهه خودش فصل است. فقط نمادهای دارای فصل جاری و همان فصل سال قبل.
  */
-export async function buildQuarterlyYoY(): Promise<YoYMap> {
-  const rows = await fetchCodal("ن-۱۰", 2000);
+export function quarterlyYoYFromRows(rows: readonly CodalRow[]): YoYMap {
   // نماد → (سال×۱۰۰+ماهِ پایان دوره) → {months, revenue}
   const cum = new Map<string, Map<number, { months: number; revenue: number }>>();
   for (const r of rows) {
@@ -140,15 +136,20 @@ export async function buildQuarterlyYoY(): Promise<YoYMap> {
   return out;
 }
 
-/** نسخهٔ کش‌شدهٔ ۱ساعته برای صفحهٔ /data */
-export const getFundamentalYoY = unstable_cache(
-  async () => {
-    const [monthly, quarterly] = await Promise.all([buildMonthlyYoY(), buildQuarterlyYoY()]);
-    return {
-      monthly: Object.fromEntries(monthly),
-      quarterly: Object.fromEntries(quarterly),
-    };
-  },
-  ["fundamental-yoy-v2"],
-  { revalidate: 3600 }
-);
+/** Compatible radar readers never compute from a partial scan. */
+export async function buildMonthlyYoY(): Promise<YoYMap> {
+  return monthlyYoYFromRows((await readMonthly()).data);
+}
+export async function buildQuarterlyYoY(): Promise<YoYMap> {
+  return quarterlyYoYFromRows((await readQuarterly()).data);
+}
+
+/** Cache only complete report sets for an hour; errors carry coverage alongside values. */
+export async function getFundamentalYoY() {
+  const [monthly, quarterly] = await Promise.all([readMonthly(), readQuarterly()]);
+  return {
+    monthly: Object.fromEntries(monthlyYoYFromRows(monthly.data)),
+    quarterly: Object.fromEntries(quarterlyYoYFromRows(quarterly.data)),
+    coverage: { monthly: monthly.coverage, quarterly: quarterly.coverage },
+  };
+}

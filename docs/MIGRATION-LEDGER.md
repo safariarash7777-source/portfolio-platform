@@ -1,5 +1,42 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## بازتأیید DEV-07 روی 15eebc9 — 2026-10-01
+
+**REVALIDATED_SANDBOX_ONLY؛ نصب تازه انجام نشد.** زنجیرهٔ قبلاً نصب‌شدهphase32→34→35→36→37 در volumeساختگیdev07-1978-data حفظ شد. SHAبرنامه `15eebc97ca650dde5f2687e36d9d98d193d0d543`؛ شاهد2026-10-01T09:21:23.152Z، .task/dev07-preflight-15eebc9.txt و manifestمهاجرت؛14/14جدول،11/11RLS،4RPCدارایPT409 وstatus-onlyبرقرار،cronoff. hashphase37 همچنانb817192469b4f66937f009bf9a9dbb75f4acea41760be1e6be6306b6682834b9. [پذیرش مستقل](./ops/DEV07-FINAL-15EEBC9.md) و [شواهد پروژه](./ops/DEV07-EVIDENCE-15EEBC9.json). هیچ migrationمحیط مشترک/Production/لیارا انجام نشد؛ مراحلAPPLIED/NOT_APPLIEDپایین سابقهٔ زمان خودشان‌اند.
+
+## شاهد جاری DEV-07: APPLIED_SANDBOX_ONLY
+
+phase37 بعد از زنجیرهٔ phase32→34→35→36 فقط در `dev07-1978-local` نصب شد؛ COMMIT موفق. شاهد ثبت‌شده در 2026-09-30T17:21:23.670Z، SHA برنامه `3462f0178ebed6b7a9966b465ba0756119ce267a`، hash فایل phase37 `b817192469b4f66937f009bf9a9dbb75f4acea41760be1e6be6306b6682834b9`. preflight:14/14 جدول حاضر،11/11 جدول RLS، چهار RPC دارای PT409 و فاقد40001، شاخهٔ status-only برقرار. [گزارش نهایی](./ops/DEV07-FINAL-3462F01.md)؛ manifest/خروجی catalog محلی `.task/dev07-migrations.json` و `.task/dev07-preflight-3462f01.txt`. Production و DB بازیابی‌شدهٔ لیارا مقصد نصب نیستند. NOT_APPLIED زیر، وضعیت پیش از این شاهد است. این ثبت پس از آزمون محلی است؛ head آزمون‌شده تغییر نکرد.
+
+## DEV-07 / اصلاح یافتهٔ مستقل (2026-09-30T17:04Z)
+
+`sql/phase37_nonretryable_version_conflicts.sql`: **NOT_APPLIED در زمان ثبت این commit**. پیش‌نیاز و ترتیب: phase32→phase34→phase35→phase36→phase37؛ phase37 بعد از هر اجرای مجدد migrationهای قبلی باید آخر نصب شود. نصب بعدی فقط در sandbox دادهٔ ساختگی مجاز است و شاهد آن در صورت‌جلسهٔ بازآزمایی با SHA/hash/time ثبت می‌شود. وضعیت Production و Preview دارای بکاپ از این سند قابل استنتاج نیست. علت DEV07-F01: تعارض منطقی نسخه نباید serialization_failure قابل retry باشد. rollback عملی این اصلاح، بازاجرای 32/35/36 و بازگشت رفتار قبلیِ معیوب است؛ برای بازگشت برنامه، schema اصلاح‌شده سازگار است و بازنصب قبلی توصیه نمی‌شود.
+
+## sandbox پذیرش DEV-07 — 2026-09-30
+
+روی DB تازه و مستقل `dev07-1978-local` از تصویر Supabase/PostgreSQL 17.6، بدون restore یا دادهٔ واقعی، پیش‌نیازهای مخزن و زنجیرهٔ **phase32→phase34→phase35→phase36** اجرا شدند: **APPLIED_SANDBOX_ONLY**. Auth/roles از سرویس واقعی‌اند؛ `sql/test/*` bootstrap استفاده نشد. preflight پس از نصب: ۱۴/۱۴ پیش‌نیاز موجود، ۱۱/۱۱ جدول مرتبط RLS و status-only phase36 موجود. فایل‌ها/hash و جزئیات وابستگی در [شاهد sandbox](./ops/DEV07-SANDBOX-1978BF5.md). نقش مشاور فقط با UUID واقعیِ حساب Auth آزمایشی این sandbox ثبت شد؛ رابطه را A باید در محصول اعطا کند. هیچ migration روی DB بازیابی‌شدهٔ Preview لیارا یا Production اجرا نشد؛ NOT_APPLIED تاریخیِ آن محیط‌ها بدون شاهد تازه به APPLIED تبدیل نمی‌شود.
+## phase38 — ترازنامهٔ شخصی (2026-09-30)
+
+`sql/phase38_personal_balance_sheet.sql`؛ scaffold CLI: `20260930153150_personal_balance_sheet.sql`، منتقل به قرارداد phase مخزن. [قرارداد و نصب](./ops/PERSONAL-BALANCE-SHEET.md). staging/Production: **NOT_APPLIED**. ترتیب phase32→34→35→36→37→38؛ پس از بازاجرای پیش‌نیازها، اصلاحات جدید نیز دوباره اعمال شوند.
+
+ستون‌های مالکیت/عنوان/ارزش‌گذاری روی `member_holding_positions`، مقدار nullable فقط برای ارزش اظهارشده، جدول `member_debt_positions` با FK به **همان** `member_holding_versions`. RPC اصلی دارایی با امضای قبلی، RPC بدهی و هستهٔ مشترک با قفل موجود؛ بدهی و دارایی هنگام اصلاح طرف دیگر حفظ می‌شوند. خواندن مستقیم owner-only، مشاور با helper رضایت موجود و RPC آخرین/نسخهٔ انتخابی. تریگر/ACL/RLS و retry legacy در دو پروفایل PostgreSQL مصنوعی، شامل نصب دوباره، آزموده شدند. هیچ دفتر نسخه یا رضایت موازی نیست؛ تاریخچه بازنویسی نشد. بازگشت بدون حذف داده؛ محدودیت برنامهٔ قدیمی برای مقدار null/بدهی در سند قرارداد آمده است.
+
+## رفع بازبینی PR #168 — 2026-09-30
+
+`phase36_consultation_review_fixes.sql`: **NOT_APPLIED** در staging/Production این مأموریت؛ فقط در PostgreSQL مصنوعی روی دو پروفایل آزموده شد. وابستگی: phase35 پس از phase32/34. تابع اقدام status-only برای هر دو actor با حفظ مشخصات و نسخهٔ پایه؛ RPC جدید فهرست metadata پژوهش تأییدشده با مجوز رابطه. ترتیب نهایی phase32→34→35→36 است؛ اجرای دوبارهٔ phase35 باید با phase36 دنبال شود. آزمون regression شکست phase35 و موفقیت ارتقا را اثبات می‌کند. [محیط موجود، مانع و دستورکار DEV-07](./ops/DEV07-PR168-REVIEW.md)؛ [preflight فقط‌خواندنی](../sql/staging/dev07_preflight.sql). نصب واقعی در محیط لیارا هنوز اندازه‌گیری نشده است.
+
+## تحویل DEV-01…06 — 2026-09-30
+
+این سه فایل در این مأموریت فقط روی PostgreSQL 17 محلی با دادهٔ مصنوعی و دو پروفایل گرنت اجرا شدند. **در این مأموریت روی Production یا staging اجرا نشدند.** وضعیت نصب واقعی آن‌ها روی دیتابیسِ اکنون متصل به سایت لیارا هنوز تطبیق داده نشده است؛ وضعیت‌های قدیمی پایین، مربوط به ممیزی تاریخی Supabase هستند. بکاپ و تمرین بازیابی ۲۱۵۲ مقایسه در چت دیگر کامل شد و اینجا تکرار نشد.
+
+| فایل | وابستگی واقعی و آزمون |
+|---|---|
+| `phase32_member_holdings.sql` | auth/profiles، تابع موجود `deny_mutation` و جدول `portfolio_versions`؛ اتصال FK به `intel_reference_versions` اختیاری است و با اجرای دوباره پس از phase20 بسته می‌شود. مستقل از phase20/22 آزموده شد؛ phase20 نیز در آزمون holdings جدا بررسی شد. RPC چهارآرگومانی با `p_base_version` اختیاری جای امضای قدیمی را می‌گیرد؛ فراخوانی سه‌آرگومانی با default سازگار است. محدودیت خواندن به مالک عمداً جای دسترسی عمومی admin را می‌گیرد. |
+| `phase34_research_workbook_versions.sql` | auth/profiles؛ بدون phase20/22؛ دو جدول نسخه/بازبینی append-only، RLS ادمین، نویسنده از نشست و تأیید انسانی دارای شاهد. |
+| `phase35_consultation.sql` | پس از phase32 و phase34؛ registry مشاور، رابطه/لغو، جلسه/یادداشت خصوصی/انتشار و اقدام append-only؛ مجوز از رابطه و نشست؛ registry تولید هنوز خالی/نامعلوم، آرش به‌طور خودکار ثبت نشده است. |
+
+ترتیب: تطبیق auth/profiles/deny_mutation/portfolio_versions روی staging → phase32 → phase34 → phase35 → ثبت **UUID احرازشدهٔ آرش** توسط اپراتور → آزمون DEV-07. [دستور انتشار و بازگشت](./ops/PRODUCT-V1-ACCEPTANCE.md). فایل‌های `sql/test/*` فقط fixture هستند و هرگز migration محیط واقعی نیستند.
+
 > منبع: ممیزیِ فقط‌خواندنیِ P0-002 روی `uooeygybrniptzdxuzhj` + مقایسه با `sql/` ریپو.
 > **هیچ Migration در تولیدِ این سند اجرا نشد.**
 >

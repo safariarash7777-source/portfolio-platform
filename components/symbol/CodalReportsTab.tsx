@@ -8,11 +8,12 @@
 // لینک‌ها به codal.ir؛ هیچ واژهٔ تجویزی.
 
 import { useState } from "react";
+import { toPersianDigits } from "@/lib/format";
 
 export type StoredReport = {
   kind: string;          // «ن-۳۰» | «ن-۱۰» | ...
   title: string;
-  jdate: string | null;  // تاریخ انتشار (جلالی)
+  jdate: string | null;  // پایان دورهٔ گزارش؛ تاریخ انتشار نیست
   url: string | null;    // لینک صفحهٔ کدال
 };
 
@@ -20,6 +21,7 @@ type LiveItem = {
   title: string;
   kind: string | null;
   date: string | null;
+  periodEnd: string | null;
   url: string | null;
 };
 
@@ -33,7 +35,7 @@ function normalizeLive(j: unknown): LiveItem[] {
       const s = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
       const title = s(o.title);
       if (!title) return null;
-      return { title, kind: s(o.kind), date: s(o.date), url: s(o.url) };
+      return { title, kind: s(o.kind), date: s(o.date), periodEnd: s(o.periodEnd), url: s(o.url) };
     })
     .filter((x): x is LiveItem => x !== null);
 }
@@ -93,7 +95,7 @@ export default function CodalReportsTab({
                     <span className="font-medium">{r.title}</span>
                   )}
                 </div>
-                <span className="shrink-0 text-muted-foreground">{r.jdate ?? ""}</span>
+                <span className="shrink-0 text-muted-foreground">دوره: {r.jdate ? toPersianDigits(r.jdate) : "نامشخص"}</span>
               </li>
             ))}
           </ul>
@@ -120,7 +122,7 @@ export default function CodalReportsTab({
         </div>
         {liveState === "error" && (
           <p className="mt-3 text-xs text-muted-foreground">
-            دریافت فهرست زنده ممکن نشد. کمی بعد دوباره تلاش کنید.
+            دریافت فهرست ذخیره‌شده ممکن نشد. کمی بعد دوباره تلاش کنید.
           </p>
         )}
         {live !== null && (
@@ -141,7 +143,7 @@ export default function CodalReportsTab({
                         <span className="font-medium">{a.title}</span>
                       )}
                     </div>
-                    <span className="shrink-0 text-muted-foreground">{a.date ?? ""}</span>
+                    <span className="shrink-0 text-muted-foreground">انتشار: {a.date ? toPersianDigits(a.date) : "نامشخص"}{a.periodEnd ? ` · دوره: ${toPersianDigits(a.periodEnd)}` : ""}</span>
                   </div>
                 </li>
               ))}

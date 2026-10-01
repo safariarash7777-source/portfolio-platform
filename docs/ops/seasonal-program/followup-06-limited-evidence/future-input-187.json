@@ -1,0 +1,108 @@
+{
+  "kind": "READ_ONLY_FUTURE_INPUT_NOT_RUNTIME",
+  "readAt": "2026-10-01T19:35:59.220Z",
+  "pr": 187,
+  "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/187",
+  "head": "874c16096d792af2f57fc9142fde3124c0321dc1",
+  "runtime": "4687ceaa05d57233c1d718453016f3f1171aa353",
+  "base": "e5740be93f666dc76a605ccef190f710767ab748",
+  "upstream174": "95cfa3410a97ac0d98cdefcb6671d4cfcb668646",
+  "state": "open",
+  "draft": true,
+  "CI": {
+    "runId": 36912816406,
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36912816406",
+    "jobs": [
+      {
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "allFiveSuccess": true
+  },
+  "files": [
+    "app/api/data/analytics/route.ts",
+    "app/api/market/route.ts",
+    "app/data/page.tsx",
+    "app/market/page.tsx",
+    "components/data/DataExplorer.tsx",
+    "components/data/ScreenerPanel.tsx",
+    "components/data/useAnalytics.ts",
+    "components/landing/LiveMarket.tsx",
+    "components/market/MarketTicker.tsx",
+    "docs/ops/seasonal-program/FOLLOWUP-03-RESULT.md",
+    "docs/ops/seasonal-program/followup03-evidence/BUDGET.md",
+    "docs/ops/seasonal-program/followup03-evidence/README.md",
+    "docs/ops/seasonal-program/followup03-evidence/after.json",
+    "docs/ops/seasonal-program/followup03-evidence/baseline.json",
+    "docs/ops/seasonal-program/followup03-evidence/bench-sample.mjs",
+    "docs/ops/seasonal-program/followup03-evidence/bench.mjs",
+    "docs/ops/seasonal-program/followup03-evidence/browser-controls.json",
+    "docs/ops/seasonal-program/followup03-evidence/browser-result.json",
+    "docs/ops/seasonal-program/followup03-evidence/build.log",
+    "docs/ops/seasonal-program/followup03-evidence/calc.log",
+    "docs/ops/seasonal-program/followup03-evidence/clock.txt",
+    "docs/ops/seasonal-program/followup03-evidence/core.log",
+    "docs/ops/seasonal-program/followup03-evidence/data-desktop.png",
+    "docs/ops/seasonal-program/followup03-evidence/data-mobile.png",
+    "docs/ops/seasonal-program/followup03-evidence/data-stale-mobile.png",
+    "docs/ops/seasonal-program/followup03-evidence/http-cold-db-error.json",
+    "docs/ops/seasonal-program/followup03-evidence/http-fixture.mjs",
+    "docs/ops/seasonal-program/followup03-evidence/http-result.json",
+    "docs/ops/seasonal-program/followup03-evidence/lint.log",
+    "docs/ops/seasonal-program/followup03-evidence/network-guard.cjs",
+    "docs/ops/seasonal-program/followup03-evidence/secrets.log",
+    "docs/ops/seasonal-program/followup03-evidence/sql.log",
+    "docs/ops/seasonal-program/followup03-evidence/verify-browser-controls.mjs",
+    "docs/ops/seasonal-program/followup03-evidence/verify-browser.mjs",
+    "docs/ops/seasonal-program/followup03-evidence/verify-cold.mjs",
+    "docs/ops/seasonal-program/followup03-evidence/verify-http.mjs",
+    "lib/core/avgVolume.ts",
+    "lib/core/fundamentalData.ts",
+    "lib/data-analytics.test.ts",
+    "lib/data-analytics.ts",
+    "lib/deadline.test.ts",
+    "lib/deadline.ts",
+    "lib/market-bounded.test.ts",
+    "lib/market-bounded.ts",
+    "lib/market-ir.ts",
+    "lib/market.ts",
+    "lib/supabase/paged-read.ts",
+    "package.json"
+  ],
+  "overlapWithCurrentChangesAfter182": [
+    "package.json"
+  ],
+  "runtimeToHeadFiles": [
+    "docs/ops/seasonal-program/FOLLOWUP-03-RESULT.md"
+  ],
+  "runtimeToHeadDocsOnly": true,
+  "migrationFiles": [],
+  "handoffRead": "reports/market-latency-delivery-20261001/HANDOFF.fa.md",
+  "includedInCurrentRuntime": false,
+  "acceptanceEvidenceReattributed": false,
+  "nextStep": "Separate authorizedcheckpoint reviews174→182→187, preserving existing coverage, after current limitedacceptance; no newcomposition authorized by inventory",
+  "open": [
+    "quota178 install/baseline/reset",
+    "two live refreshcycles",
+    "TodayMarket15s deadline does not completelycancel olderbackgroundwork",
+    "bulkReturns/largeCSV/history/trendcap/watchlistcoverage",
+    "syntheticbench is notProductionp95"
+  ]
+}

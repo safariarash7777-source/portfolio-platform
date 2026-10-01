@@ -60,6 +60,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "تحلیل و پژوهش",
     items: [
       { key: "research", label: "کاربرگ تحلیل", href: "/admin/research", icon: <BookOpen size={18} /> },
+      { key: "publications", label: "محتوای دوره و دفتر انتشار", href: "/admin/publications", icon: <BookOpen size={18} /> },
       { key: "agents", label: "ایجنت‌های پژوهش", href: "/admin/agents", icon: <Bot size={18} /> },
       { key: "intelligence", label: "گردش هوشمندی دستی", href: "/admin/intelligence", icon: <Telescope size={18} /> },
       { key: "market", label: "رادار بازار", href: "/admin/radar", icon: <LineChart size={18} /> },
@@ -74,6 +75,8 @@ const NAV_GROUPS: NavGroup[] = [
     key: "business",
     label: "مشتری و درآمد",
     items: [
+      { key: "courses", label: "دوره‌ها و ثبت‌نام", href: "/admin/courses", icon: <BookOpen size={18} /> },
+      { key: "leads", label: "درخواست مشاوره و پیگیری", href: "/admin/leads", icon: <Users size={18} /> },
       { key: "users", label: "کاربران", href: "/admin/users", icon: <Users size={18} /> },
       { key: "portfolio", label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio", icon: <PieChart size={18} /> },
       { key: "payments", label: "پرداخت‌ها", href: "/admin/manage?tab=payments", icon: <CreditCard size={18} /> },
@@ -110,6 +113,9 @@ export default function AdminShell({
     if (item.key === "dashboard") return pathname.startsWith("/admin/overview");
     if (item.key === "desk") return pathname.startsWith("/admin/desk");
     if (item.key === "research") return pathname.startsWith("/admin/research");
+    if (item.key === "publications") return pathname.startsWith("/admin/publications");
+    if (item.key === "courses") return pathname.startsWith("/admin/courses");
+    if (item.key === "leads") return pathname.startsWith("/admin/leads");
     if (item.key === "agents") return pathname.startsWith("/admin/agents");
     if (item.key === "drafts") return pathname.startsWith("/admin/drafts");
     if (item.key === "intelligence") return pathname.startsWith("/admin/intelligence");

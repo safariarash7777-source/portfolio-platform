@@ -1,0 +1,406 @@
+{
+  "kind": "READ_ONLY_MARKET_FX_INPUT_INTAKE_NOT_COMPOSITION",
+  "readAt": "2026-10-01 11:53:18 UTC",
+  "existingApplicationSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "existingCI": "b7c77260821cd127c1a7a65eae123022dcf0a43a",
+  "documentationBaseline": "2ec906c74719b9c6ae8f300af766b9bc238a6dea",
+  "runtimeChanged": false,
+  "acceptanceRerun": false,
+  "sharedMigrationOrDeployment": false,
+  "pr175Patch": "await stable delivered patch; no owner code changes by this task",
+  "NEXT06": "await delivered checkpoint before runtime combination",
+  "FOLLOWUP03": {
+    "owner": "Liara owner",
+    "inputStatus": "not delivered; not a composition input"
+  },
+  "inputs": [
+    {
+      "pr": 182,
+      "title": "fix(market): complete paginated readers and five-minute board refresh",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/182",
+      "head": "codex/followup-market-read-20261001",
+      "headSHA": "e5740be93f666dc76a605ccef190f710767ab748",
+      "base": "codex/next-07-market-20260930",
+      "baseSHA": "95cfa3410a97ac0d98cdefcb6671d4cfcb668646",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "mergeable": true,
+      "files": [
+        "app/(protected)/terminal/page.tsx",
+        "app/data/page.tsx",
+        "app/market/funds/page.tsx",
+        "app/market/stocks/page.tsx",
+        "components/market/FundsFullBoard.tsx",
+        "components/market/MarketAutoRefresh.tsx",
+        "components/market/MarketFreshnessBadge.tsx",
+        "components/market/MarketShell.tsx",
+        "components/market/ReadCoverageNotice.tsx",
+        "components/market/StocksBoard.tsx",
+        "components/market/useRetainedBoard.ts",
+        "docs/COMMAND-CENTER.md",
+        "docs/DECISION-LOG.md",
+        "docs/ops/seasonal-program/FOLLOWUP-02-RESULT.md",
+        "docs/ops/seasonal-program/followup02-evidence/README.md",
+        "docs/ops/seasonal-program/followup02-evidence/browser-clock.js",
+        "docs/ops/seasonal-program/followup02-evidence/browser-funds.json",
+        "docs/ops/seasonal-program/followup02-evidence/browser-stocks.json",
+        "docs/ops/seasonal-program/followup02-evidence/controlled-clock.cjs",
+        "docs/ops/seasonal-program/followup02-evidence/fixture-server.mjs",
+        "docs/ops/seasonal-program/followup02-evidence/fixture.sql",
+        "docs/ops/seasonal-program/followup02-evidence/funds-failure-dom.txt",
+        "docs/ops/seasonal-program/followup02-evidence/funds-failure-full390.png",
+        "docs/ops/seasonal-program/followup02-evidence/funds-failure390.png",
+        "docs/ops/seasonal-program/followup02-evidence/funds-refreshed390.png",
+        "docs/ops/seasonal-program/followup02-evidence/install-browser-clock.mjs",
+        "docs/ops/seasonal-program/followup02-evidence/sql-match.log",
+        "docs/ops/seasonal-program/followup02-evidence/stocks-controls.txt",
+        "docs/ops/seasonal-program/followup02-evidence/stocks-failure-dom.txt",
+        "docs/ops/seasonal-program/followup02-evidence/stocks-failure1440.png",
+        "docs/ops/seasonal-program/followup02-evidence/stocks-refreshed1440.png",
+        "docs/ops/seasonal-program/followup02-evidence/verify-browser-funds.mjs",
+        "docs/ops/seasonal-program/followup02-evidence/verify-browser-stocks.mjs",
+        "lib/core/fundamentalData.test.ts",
+        "lib/core/fundamentalData.ts",
+        "lib/core/history.ts",
+        "lib/market-refresh.test.ts",
+        "lib/market-refresh.ts",
+        "lib/supabase/paged-read.integration.test.ts",
+        "lib/supabase/paged-read.test.ts",
+        "lib/supabase/paged-read.ts",
+        "package.json"
+      ],
+      "CI": [
+        {
+          "id": 36855945325,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 359,
+          "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36855945325/jobs",
+          "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36855945325/logs",
+          "workflow_id": 320220968
+        }
+      ],
+      "jobs": [
+        {
+          "id": 110348714279,
+          "name": "Typecheck · Lint · Tests · Build",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110348714522,
+          "name": "Database RLS · Integrity (Postgres)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110348714777,
+          "name": "Secret scan · SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110348714827,
+          "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110349498119,
+          "name": "CI Gate",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "ownership": "Market reader/refresh implementation owner; upstream/quota/deployment and FOLLOWUP03 remain with Liara; preserve NEXT174 finance/unit/access contract",
+      "reportedRuntimeSHA": "e6ed01702e17e21500a5cf45f7507ef83f2dfa7f",
+      "includedIn2605": false,
+      "report": {
+        "localPath": "C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/followup-market-read-20261001/docs/ops/seasonal-program/FOLLOWUP-02-RESULT.md",
+        "repoPath": "docs/ops/seasonal-program/FOLLOWUP-02-RESULT.md",
+        "blob": "1722715cae921784aee7f262815b376bbd975e25",
+        "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/e5740be93f666dc76a605ccef190f710767ab748/docs/ops/seasonal-program/FOLLOWUP-02-RESULT.md"
+      },
+      "contracts": {
+        "reader": "fenced keyset; complete-only result/cache; coverage preserves empty vs stale/error",
+        "historyScope": "existing 30-day filter, not all historical records",
+        "amendments": "captured_at descending then id descending; financial YoY definition unchanged",
+        "cache": "per-process single-flight; 10min history, 1h reports, 30sec error cooldown; no cross-instance/MVCC guarantee",
+        "refresh": "5-minute existing router.refresh; hidden pauses; in-flight lease retained until server readAt ack; transport missing ack requires navigation/reload",
+        "DBbudget": "fence + complete page reads, bounded retry; cold scans increase requests",
+        "liveTwoCycles": "BLOCKED: combined release, installed quota178 and measured shared baseline/reset required",
+        "excluded": "bulkReturns/avgVolume/large-history exports, rapid URL replace race and live p95",
+        "FOLLOWUP03": "must preserve complete coverage while optimizing performance; delegated owner, no input yet"
+      }
+    },
+    {
+      "pr": 183,
+      "title": "Verify portable FX dashboard runtime and document Linux acceptance",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/183",
+      "head": "codex/fx-portable-runtime-20261001",
+      "headSHA": "8723c55766e456c0b519b4ead3c301440b4ff05f",
+      "base": "codex/liara-budget-guard-20261001",
+      "baseSHA": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "mergeable": true,
+      "files": [
+        "docs/ops/fx-maintenance/.gitattributes",
+        "docs/ops/fx-maintenance/DATA-CONTRACTS.md",
+        "docs/ops/fx-maintenance/DECISIONS.md",
+        "docs/ops/fx-maintenance/DEPENDENCIES.md",
+        "docs/ops/fx-maintenance/DOCS-DELIVERY-MANIFEST.json",
+        "docs/ops/fx-maintenance/FRONTEND-CONTRACT.md",
+        "docs/ops/fx-maintenance/FX-LINUX-RUNTIME-RESULT.md",
+        "docs/ops/fx-maintenance/FX-PORTABLE-RUNTIME-RESULT.md",
+        "docs/ops/fx-maintenance/GIT-HANDOFF.md",
+        "docs/ops/fx-maintenance/INSTALL-ROLLBACK.md",
+        "docs/ops/fx-maintenance/PORTABLE-RUNTIME-MANIFEST.json",
+        "docs/ops/fx-maintenance/README.md",
+        "docs/ops/fx-maintenance/TRANSFER-MANIFEST.json",
+        "docs/ops/fx-maintenance/YTM-RESEARCH.md",
+        "docs/ops/fx-maintenance/base-image-id.txt",
+        "docs/ops/fx-maintenance/constraints.local.txt",
+        "docs/ops/fx-maintenance/contract-evidence.json",
+        "docs/ops/fx-maintenance/evidence/fx-agent-isolated-readback-20261001.json",
+        "docs/ops/fx-maintenance/evidence/fx-cbi-mapping-20261001.md",
+        "docs/ops/fx-maintenance/evidence/fx-cbi-model-mapping.json",
+        "docs/ops/fx-maintenance/evidence/fx-maintenance-acceptance-tests-20261001.log",
+        "docs/ops/fx-maintenance/evidence/fx-maintenance-candidate-manifest.json",
+        "docs/ops/fx-maintenance/evidence/fx-maintenance-local-gate-20261001.log",
+        "docs/ops/fx-maintenance/evidence/fx-maintenance-server-candidate-20261001.log",
+        "docs/ops/fx-maintenance/evidence/fx-ytm-delivery-20261001.md",
+        "docs/ops/fx-maintenance/linux-runtime-evidence.json",
+        "docs/ops/fx-maintenance/portable-runtime-evidence.json",
+        "docs/ops/fx-maintenance/production-consumer-hashes.log",
+        "docs/ops/fx-maintenance/production-contract-evidence.json",
+        "docs/ops/fx-maintenance/server-runtime.json",
+        "docs/ops/fx-maintenance/ytm-source-evidence.json",
+        "scripts/fx-maintenance/.gitattributes",
+        "scripts/fx-maintenance/.gitignore",
+        "scripts/fx-maintenance/hermes/fx_economic_preflight.py",
+        "scripts/fx-maintenance/tests/README.md",
+        "scripts/fx-maintenance/tests/network_guard/sitecustomize.py",
+        "scripts/fx-maintenance/tests/runtime_acceptance.py",
+        "scripts/fx-maintenance/work/agent_readiness.py",
+        "scripts/fx-maintenance/work/apply_additional_annual.py",
+        "scripts/fx-maintenance/work/apply_sci_inflation.py",
+        "scripts/fx-maintenance/work/apply_verified_us_gdp.py",
+        "scripts/fx-maintenance/work/cbi_tsd_catalog.py",
+        "scripts/fx-maintenance/work/check_additional_annual.py",
+        "scripts/fx-maintenance/work/check_existing_relay.py",
+        "scripts/fx-maintenance/work/check_ifb_bonds.py",
+        "scripts/fx-maintenance/work/check_worldbank_gdp.py",
+        "scripts/fx-maintenance/work/fetch_fred_metadata.py",
+        "scripts/fx-maintenance/work/fetch_sci_current.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/audit_remaining_inputs.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/.dockerignore",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/.streamlit/config.toml",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/Dockerfile.review",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/agent_bonds_gate.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/agent_status_ui.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/annual-assumptions.json",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/app.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Black.woff2",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Bold.woff2",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Medium.woff2",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Regular.woff2",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-SemiBold.woff2",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/logo-navy.png",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/logo-white.png",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assistant.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/auth_gate.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/backtest.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/bond_status_ui.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/build_stock_analysis.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/data_sources.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/econometrics.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/economic_release_check.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/etfbaz.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/forecast.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/fred_snapshot.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/gemini.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/healthcheck.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/ifb_bonds.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/macro_health.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/maintenance_gate.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/maintenance_status.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/models.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/precise_model_gate.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/psy.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/publication.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/requirements.txt",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/sensitivity.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/source_health.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_fred_snapshot.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_history_calendar.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_missing_inputs.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_psy.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_source_health.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/validate_precise_remote.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/fx_smoke_test.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/publish_additional_annual.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/publish_annual_gdp.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/publish_ifb_bonds.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/publish_sci_inflation.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/publish_verified_fred.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/verify_us_version.py",
+        "scripts/fx-maintenance/work/liara-deploy-20260929/vm_command.py",
+        "scripts/fx-maintenance/work/metadata_contract.py",
+        "scripts/fx-maintenance/work/parse_sci_current_pdf.py",
+        "scripts/fx-maintenance/work/publish_agent_status.py",
+        "scripts/fx-maintenance/work/relay_health_check.py",
+        "scripts/fx-maintenance/work/review_fx_contracts.py",
+        "scripts/fx-maintenance/work/review_ytm_definition.py",
+        "scripts/fx-maintenance/work/validate_cbi_mapping.py",
+        "scripts/fx-maintenance/work/verify_fx_production_contracts.py",
+        "scripts/fx-maintenance/work/write_agent_run_report.py"
+      ],
+      "CI": [
+        {
+          "id": 36857415272,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 361,
+          "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36857415272/jobs",
+          "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36857415272/logs",
+          "workflow_id": 320220968
+        }
+      ],
+      "jobs": [
+        {
+          "id": 110353123888,
+          "name": "Secret scan · SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110353124218,
+          "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110353124287,
+          "name": "Database RLS · Integrity (Postgres)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110353124327,
+          "name": "Typecheck · Lint · Tests · Build",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 110353778647,
+          "name": "CI Gate",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "ownership": "FX model/Hermes runtime owner; quota implementation/deployment belongs to Liara/178; site wrapper/admin acceptance belongs to login/product owner",
+      "reportedRuntimeSHA": "bce2e9e86a21c474742d0bedb76163f753fd7a00",
+      "includedIn2605": false,
+      "scopeVerified": true,
+      "runtimeToHead": {
+        "repository_full_name": "safariarash7777-source/portfolio-platform",
+        "base": "bce2e9e86a21c474742d0bedb76163f753fd7a00",
+        "head": "8723c55766e456c0b519b4ead3c301440b4ff05f",
+        "status": "ahead",
+        "ahead_by": 1,
+        "behind_by": 0,
+        "total_commits": 1,
+        "too_large": null,
+        "base_commit": {
+          "sha": "bce2e9e86a21c474742d0bedb76163f753fd7a00",
+          "url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/commits/bce2e9e86a21c474742d0bedb76163f753fd7a00",
+          "html_url": "https://github.com/safariarash7777-source/portfolio-platform/commit/bce2e9e86a21c474742d0bedb76163f753fd7a00"
+        },
+        "merge_base_commit": {
+          "sha": "bce2e9e86a21c474742d0bedb76163f753fd7a00",
+          "url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/commits/bce2e9e86a21c474742d0bedb76163f753fd7a00",
+          "html_url": "https://github.com/safariarash7777-source/portfolio-platform/commit/bce2e9e86a21c474742d0bedb76163f753fd7a00"
+        },
+        "files": [
+          {
+            "filename": "docs/ops/fx-maintenance/DOCS-DELIVERY-MANIFEST.json",
+            "status": "added",
+            "additions": 32,
+            "deletions": 0,
+            "changes": 32,
+            "previous_filename": null
+          },
+          {
+            "filename": "docs/ops/fx-maintenance/FX-LINUX-RUNTIME-RESULT.md",
+            "status": "added",
+            "additions": 39,
+            "deletions": 0,
+            "changes": 39,
+            "previous_filename": null
+          },
+          {
+            "filename": "docs/ops/fx-maintenance/GIT-HANDOFF.md",
+            "status": "added",
+            "additions": 18,
+            "deletions": 0,
+            "changes": 18,
+            "previous_filename": null
+          },
+          {
+            "filename": "docs/ops/fx-maintenance/linux-runtime-evidence.json",
+            "status": "added",
+            "additions": 76,
+            "deletions": 0,
+            "changes": 76,
+            "previous_filename": null
+          }
+        ]
+      },
+      "contracts": {
+        "runtimeAcceptance": "supplied Windows/Linux isolated runtime evidence; not rerun during intake",
+        "sourceHashes": "owner evidence: same runtime, 105 manifest source hashes matched",
+        "localHermes": "existing five-day Windows cadence preserved; not moved or activated",
+        "separateStatusAxes": [
+          "process result",
+          "source health",
+          "data completeness"
+        ],
+        "publicationReceipt": "exact report bytes SHA/run_id/readback time; publication time is not data observation time",
+        "wrapper": "unchanged existing /admin/fx and independent Streamlit login; iframe load alone is not authentication/health",
+        "providerOrMethodology": "live market freshness, same-definition monthly YTM, financial methodology, D-FX decisions remain open",
+        "publication": "owner fixture transport simulated, not live status/SFTP acceptance",
+        "nativeAdminBrowser": "real-admin 12-tab mobile/fullscreen/download and expired-session acceptance remain open",
+        "quota": "inherits178 as base only; quota NOT DEPLOYED, baseline/reset and live activation open",
+        "dependencies": "observed constraints/versions do not lock all transitive packages; no new dependencies installed by intake"
+      },
+      "references": [
+        {
+          "path": "docs/ops/fx-maintenance/DEPENDENCIES.md",
+          "blob": "52ec0539143472fc42bbe7d1c4bde653bfd4036b",
+          "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/8723c55766e456c0b519b4ead3c301440b4ff05f/docs/ops/fx-maintenance/DEPENDENCIES.md"
+        },
+        {
+          "path": "docs/ops/fx-maintenance/FRONTEND-CONTRACT.md",
+          "blob": "00e62f66df2e2f2b6d0b8b644de08890a530980b",
+          "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/8723c55766e456c0b519b4ead3c301440b4ff05f/docs/ops/fx-maintenance/FRONTEND-CONTRACT.md"
+        },
+        {
+          "path": "docs/ops/fx-maintenance/GIT-HANDOFF.md",
+          "blob": "2d8881f8cddf76d77354f3bac24ab3ed7f495e53",
+          "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/8723c55766e456c0b519b4ead3c301440b4ff05f/docs/ops/fx-maintenance/GIT-HANDOFF.md"
+        },
+        {
+          "path": "docs/ops/fx-maintenance/FX-LINUX-RUNTIME-RESULT.md",
+          "blob": "6342a118e6d84a840d3ecdfe5ee0c8904c1debd6",
+          "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/8723c55766e456c0b519b4ead3c301440b4ff05f/docs/ops/fx-maintenance/FX-LINUX-RUNTIME-RESULT.md"
+        }
+      ]
+    }
+  ],
+  "overlapBetweenInputs": []
+}

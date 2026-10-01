@@ -1,0 +1,16 @@
+{
+  "sha": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "environment": "followup06-limited-native-local",
+  "builtAt": "2026-10-01T19:27:21.697Z",
+  "origin": "http://127.0.0.1:3299",
+  "backend": "same-origin /supabase, retained exclusively synthetic native backend",
+  "build": "production",
+  "cpu": "one reported CPU, max heap768MB",
+  "identityEnabled": true,
+  "identityOfficialMatch": "pending",
+  "mobileProvider": "not configured, fail closed",
+  "emailProvider": "disabled",
+  "newMemberHomeIncluded": true,
+  "baselineRuntime": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "egress": "loopback only"
+}

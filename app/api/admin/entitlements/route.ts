@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     months?: number;
     note?: string;
   } | null;
-  if (!body?.email || !["consulting", "webinar", "manual"].includes(body.kind ?? "")) {
+  if (!body?.email || !["consulting", "webinar", "manual"].includes(body.kind ?? "") || typeof body.note !== "string" || body.note.trim().length < 10) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 
@@ -118,13 +118,17 @@ export async function PATCH(req: Request) {
   const gate = await requireAdmin();
   if (!gate) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
-  const body = (await req.json().catch(() => null)) as { id?: string } | null;
+  const body = (await req.json().catch(() => null)) as { id?: string; reason?: string } | null;
   if (!body?.id) return NextResponse.json({ error: "bad_request" }, { status: 400 });
 
   const svc = gate.supabase;
+  const target = await svc.from("entitlements").select("cohort_id").eq("id",body.id).maybeSingle();
+  if(target.error) return NextResponse.json({error:"بررسی دسترسی انجام نشد."},{status:503});
+  if(target.data?.cohort_id) return NextResponse.json({error:"لغو مجوز دوره باید از عملیات دوره و با ثبت دلیل انجام شود."},{status:409});
+  if(typeof body.reason!=="string"||body.reason.trim().length<10) return NextResponse.json({error:"دلیل لغو لازم است."},{status:422});
   const { error } = await svc
     .from("entitlements")
-    .update({ revoked_at: new Date().toISOString() })
+    .update({ revoked_at: new Date().toISOString(), note: body.reason })
     .eq("id", body.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

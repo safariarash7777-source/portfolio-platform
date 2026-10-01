@@ -1,0 +1,40 @@
+{
+  "sha": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+  "environment": "followup06-limited-native-local",
+  "startedAt": "2026-10-01T19:12:12.933Z",
+  "role": "A",
+  "responses": [
+    {
+      "path": "/login",
+      "http": 200
+    },
+    {
+      "path": "/brand/mark.png",
+      "http": 200
+    },
+    {
+      "path": "/forgot-password",
+      "http": 200
+    },
+    {
+      "path": "/register",
+      "http": 200
+    },
+    {
+      "path": "/login/mobile",
+      "http": 200
+    },
+    {
+      "path": "/supabase/auth/v1/token",
+      "http": 503
+    }
+  ],
+  "tokenHTTP": 503,
+  "tokenPresent": false,
+  "currentPath": "/login",
+  "currentQuery": "?next=%2Fdashboard%2Fholdings",
+  "visibleText": "آرش صفری\nتحلیلگر و مشاور سرمایه‌گذاری\nورود به پلتفرم\nخوش آمدید\n\nاین مسیر با رمز خود سایت کار می‌کند. رمز Google یا Gmail جای رمز سایت نیست.\n\nآدرس ایمیل*\nرمز عبور*\nرمز عبور را فراموش کرده‌اید؟\nسرویس ورود اکنون پاسخ نمی‌دهد. اطلاعات شما حفظ شده؛ دوباره تلاش کنید.\nورود\nحساب کاربری ندارید؟ ثبت‌نام کنید\nوضعیت ورود موبایلی",
+  "cookieNames": [],
+  "identityHTTP": 401,
+  "finishedAt": "2026-10-01T19:12:23.511Z"
+}

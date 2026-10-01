@@ -31,6 +31,12 @@ const config = [
   },
   ...compat.extends("next/core-web-vitals"),
   {
+    // Frozen Node acceptance evidence uses `module` for a course module key.
+    // It is not a Next module export; retain the historical harness unchanged.
+    files: ["docs/ops/seasonal-program/followup-06-auth-storage-evidence/acceptance.mjs"],
+    rules: { "@next/next/no-assign-module-variable": "off" },
+  },
+  {
     rules: {
       // با `noUnusedLocals` در tsconfig هم‌پوشانی دارد؛ TypeScript منبعِ حقیقتِ
       // «متغیرِ بی‌استفاده» است تا دو ابزار دو حرفِ متفاوت نزنند.

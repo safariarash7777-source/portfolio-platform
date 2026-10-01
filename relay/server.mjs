@@ -1,3 +1,4 @@
+import { finiteNumber, navValidity } from "./nav-quality.mjs";
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics } from "./brsapi-transport.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -100,7 +101,7 @@ function sharedBudget() {
     softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
     hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
     leaseSize: Number(process.env.BRSAPI_LEASE_SIZE || 50),
-    degradedCeiling: Number(process.env.BRSAPI_DEGRADED_CEILING || 100),
+    degradedCeiling: 0,
     onError: (e) => console.error("brsapi budget store:", errMsg(e)),
   });
   return sharedBudgetInstance;
@@ -129,7 +130,7 @@ function commodityBudget() {
     softBudget: Number(process.env.BRSAPI_COMMODITY_SOFT || 900),
     hardCeiling: Number(process.env.BRSAPI_COMMODITY_HARD || 1200),
     leaseSize: Number(process.env.BRSAPI_COMMODITY_LEASE || 20),
-    degradedCeiling: Number(process.env.BRSAPI_COMMODITY_DEGRADED || 20),
+    degradedCeiling: 0,
     onError: (e) => console.error("commodity budget store:", errMsg(e)),
   });
   return commodityBudgetInstance;
@@ -285,31 +286,37 @@ async function fetchGoldCurrency() {
     // Gold items
     const gold = (json.gold || []).map((item) => ({
       id: item.symbol,
+      sourceDate: typeof item.date === "string" ? item.date : null,
+      sourceTime: typeof item.time === "string" ? item.time : null,
       faName: item.name,
       price: Number(item.price) || 0,
       unit: (item.unit || "").includes("دلار") ? "usd" : "toman",
-      change: Number(item.change_value) || null,
-      changePercent: Number(item.change_percent) || null,
+      change: finiteNumber(item.change_value),
+      changePercent: finiteNumber(item.change_percent),
     })).filter((r) => r.price > 0);
 
     // Currency items (includes tether)
     const currency = (json.currency || []).map((item) => ({
       id: item.symbol,
+      sourceDate: typeof item.date === "string" ? item.date : null,
+      sourceTime: typeof item.time === "string" ? item.time : null,
       faName: item.name,
       price: Number(item.price) || 0,
       unit: "toman",
-      change: Number(item.change_value) || null,
-      changePercent: Number(item.change_percent) || null,
+      change: finiteNumber(item.change_value),
+      changePercent: finiteNumber(item.change_percent),
     })).filter((r) => r.price > 0);
 
     // Crypto items
     const crypto = (json.cryptocurrency || []).map((item) => ({
       id: item.symbol,
+      sourceDate: typeof item.date === "string" ? item.date : null,
+      sourceTime: typeof item.time === "string" ? item.time : null,
       faName: item.name,
       nameEn: item.name_en,
       price: Number(item.price) || 0,
       unit: "usd",
-      changePercent: Number(item.change_percent) || null,
+      changePercent: finiteNumber(item.change_percent),
       marketCap: Number(item.market_cap) || null,
       description: item.description || null,
     })).filter((r) => r.price > 0);
@@ -376,24 +383,26 @@ async function fetchStocksAndFunds() {
 
       const row = {
         id: item.l18,
+        sourceDate: typeof item.date === "string" ? item.date : null,
+        sourceTime: typeof item.time === "string" ? item.time : null,
         faName: item.l30 || item.l18,
         price: priceToman,
         unit: "toman",
         change: Number(item.plc) ? Math.round(Number(item.plc) / 10) : null,
-        changePercent: Number(item.plp) || null,
+        changePercent: finiteNumber(item.plp),
         closingPrice: closingToman,
-        closingChangePercent: Number(item.pcp) || null,
-        volume: Number(item.tvol) || 0,
-        value: Number(item.tval) || 0,
-        marketValue: Number(item.mv) || null,
+        closingChangePercent: finiteNumber(item.pcp),
+        volume: finiteNumber(item.tvol),
+        value: finiteNumber(item.tval),
+        marketValue: finiteNumber(item.mv),
         industry: item.cs || null,
         industryId: Number(item.cs_id) || null,
-        eps: Number(item.eps) || null,
-        pe: Number(item.pe) || null,
-        buyI: Number(item.Buy_I_Volume) || 0,
-        buyN: Number(item.Buy_N_Volume) || 0,
-        sellI: Number(item.Sell_I_Volume) || 0,
-        sellN: Number(item.Sell_N_Volume) || 0,
+        eps: finiteNumber(item.eps),
+        pe: finiteNumber(item.pe),
+        buyI: finiteNumber(item.Buy_I_Volume),
+        buyN: finiteNumber(item.Buy_N_Volume),
+        sellI: finiteNumber(item.Sell_I_Volume),
+        sellN: finiteNumber(item.Sell_N_Volume),
       };
 
       // M7 — فیلدهای best-effort: سقف/کف روز و تعداد معامله‌گران حقیقی.
@@ -636,6 +645,11 @@ function applyNav(funds) {
   for (const f of funds) {
     const c = navCache.get(f.id);
     if (!c || now - c.at > NAV_STALE_MS) continue;
+    const validity = navValidity(c, f.price, now);
+    f.navDate = c.navDate;
+    f.navTime = c.navTime;
+    f.navStatus = validity.state;
+    if (validity.state !== "ready") continue;
     const navToman = c.nav / 10;
     if (navToman <= 0 || !isFinite(navToman)) continue;
     const ratio = f.price / navToman;
@@ -769,13 +783,13 @@ async function fetchIndex() {
     }
     const indices = {
       total: Number(data.index) || 0,
-      totalChange: Number(data.index_change) || 0,
-      equalWeight: Number(data.index_equalWeight) || 0,
-      equalWeightChange: Number(data.index_equalWeight_change) || 0,
-      marketValue: Number(data.mv) || 0,
-      trades: Number(data.tno) || 0,
-      volume: Number(data.tvol) || 0,
-      value: Number(data.tval) || 0,
+      totalChange: finiteNumber(data.index_change),
+      equalWeight: finiteNumber(data.index_equalWeight),
+      equalWeightChange: finiteNumber(data.index_equalWeight_change),
+      marketValue: finiteNumber(data.mv),
+      trades: finiteNumber(data.tno),
+      volume: finiteNumber(data.tvol),
+      value: finiteNumber(data.tval),
       state: data.state || null,
       date: data.date || null,
       time: data.time || null,
@@ -1202,11 +1216,12 @@ function refresh() {
     try {
       resetBudgetStop();
       const body = await buildPayload();
-      if (budgetStop.active && cache) {
-        // این چرخه ناقص بود. کشِ سالمِ قبلی می‌ماند و سایت دادهٔ **کهنه** با
-        // برچسب نشان می‌دهد — نه یک صفحهٔ خالی.
-        status.lastError = "چرخه به‌خاطرِ سقفِ بودجه ناقص ماند؛ دادهٔ قبلی حفظ شد";
+      if (budgetStop.active) {
+        // Never write an incomplete cycle to persistent snapshots/history,
+        // including a cold start where there is no in-memory cache to preserve.
+        status.lastError = "چرخه به‌خاطرِ کنترل بودجه ناقص ماند؛ دادهٔ قبلی بازنویسی نشد";
         console.warn("brsapi budget: چرخه ناقص — کشِ قبلی حفظ شد", Object.keys(budgetStop.producers).join(","));
+        return;
       } else {
         cache = { body, at: Date.now() };
         status.lastRefresh = Date.now();

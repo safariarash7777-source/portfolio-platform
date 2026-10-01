@@ -26,15 +26,6 @@ const vazirmatn = localFont({
   display: "swap",
 });
 
-const pelak = localFont({
-  src: [
-    { path: "../public/fonts/Pelak-Bold.woff2", weight: "700", style: "normal" },
-    { path: "../public/fonts/Pelak-ExtraBold.woff2", weight: "800", style: "normal" },
-    { path: "../public/fonts/Pelak-Black.woff2", weight: "900", style: "normal" },
-  ],
-  variable: "--font-pelak",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(resolveAppUrl()),
@@ -43,7 +34,7 @@ export const metadata: Metadata = {
     template: "%s · آرش صفری",
   },
   description:
-    "پلتفرم تخصصی تحلیل ریسک و طراحی پرتفوی سرمایه‌گذاری در بازار سرمایه ایران. مبتنی بر نظریه مدرن پرتفوی.",
+    "مسیر راه سرمایه‌گذاری، وبینار فصلی، محتوای آموزشی و داشبوردهای بازار؛ درخواست مستقل وقت مشاوره.",
   keywords: [
     "آرش صفری",
     "تحلیل سرمایه‌گذاری",
@@ -60,7 +51,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری",
     description:
-      "تحلیل علمی پروفایل ریسک و طراحی سبد سرمایه‌گذاری اختصاصی برای بازار ایران.",
+      "آموزش، مطالب منتشرشده و داده‌های بازار سرمایهٔ ایران؛ آشنایی با دوره و درخواست وقت مشاوره.",
     locale: "fa_IR",
     type: "website",
     siteName: "Arash Safari",
@@ -96,7 +87,7 @@ const themeScript = `
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fa" dir="rtl" data-scroll-behavior="smooth" className={`${vazirmatn.variable} ${pelak.variable}`} suppressHydrationWarning>
+    <html lang="fa" dir="rtl" data-scroll-behavior="smooth" className={vazirmatn.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

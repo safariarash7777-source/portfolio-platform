@@ -1,0 +1,862 @@
+{
+  "sha": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+  "environment": "dev07-1978-local",
+  "origin": "http://127.0.0.1:3210",
+  "startedAt": "2026-10-01T09:19:04.621Z",
+  "finishedAt": "2026-10-01T09:25:26.797Z",
+  "reviewer": "Independent Codex reviewer agent /root/dev07_independent (not human; did not author fixes)",
+  "scenarios": {
+    "1": {
+      "status": "PASS",
+      "at": "2026-10-01T09:19:42.235Z",
+      "expected": "Real UI login, requested holdings redirect and GoTrue getUser valid for A/B/advisor",
+      "observed": [
+        {
+          "role": "A",
+          "url": "http://127.0.0.1:3210/dashboard/holdings",
+          "http": 200,
+          "userId": "6528df69-a8e0-49e6-a265-901249b3ac45",
+          "matches": true
+        },
+        {
+          "role": "B",
+          "url": "http://127.0.0.1:3210/dashboard/holdings",
+          "http": 200,
+          "userId": "d4979822-723a-42da-b531-6c3def201ddc",
+          "matches": true
+        },
+        {
+          "role": "advisor",
+          "url": "http://127.0.0.1:3210/dashboard/holdings",
+          "http": 200,
+          "userId": "31147c00-1fb9-498f-b3bc-b2759d898831",
+          "matches": true
+        }
+      ],
+      "UILogout": [
+        {
+          "role": "A",
+          "authHTTP": 204,
+          "url": "http://127.0.0.1:3210/"
+        },
+        {
+          "role": "B",
+          "authHTTP": 204,
+          "url": "http://127.0.0.1:3210/"
+        },
+        {
+          "role": "advisor",
+          "authHTTP": 204,
+          "url": "http://127.0.0.1:3210/"
+        }
+      ]
+    },
+    "2": {
+      "status": "PASS",
+      "at": "2026-10-01T09:21:38.797Z",
+      "expected": "Market/fund/symbol source,time,unit; unknown values remain—; holdings/consultation/learninglinks",
+      "observed": [
+        {
+          "path": "/market",
+          "url": "http://127.0.0.1:3210/market",
+          "hasSyntheticLabel": true,
+          "hasToman": false,
+          "hasUnknownPlaceholder": true,
+          "hasSourceOrTime": true,
+          "links": [
+            "/dashboard/holdings",
+            "/dashboard/consultation",
+            "/learn/glossary",
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": null
+        },
+        {
+          "path": "/market/funds",
+          "url": "http://127.0.0.1:3210/market/funds",
+          "hasSyntheticLabel": false,
+          "hasToman": true,
+          "hasUnknownPlaceholder": true,
+          "hasSourceOrTime": true,
+          "links": [
+            "/dashboard/holdings",
+            "/dashboard/consultation",
+            "/learn/glossary",
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": null
+        },
+        {
+          "path": "/market/stocks",
+          "url": "http://127.0.0.1:3210/market/stocks",
+          "hasSyntheticLabel": true,
+          "hasToman": true,
+          "hasUnknownPlaceholder": true,
+          "hasSourceOrTime": true,
+          "links": [
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": null
+        },
+        {
+          "path": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+          "url": "http://127.0.0.1:3210/symbol/%D9%81%D9%85%D9%84%DB%8C",
+          "hasSyntheticLabel": true,
+          "hasToman": true,
+          "hasUnknownPlaceholder": true,
+          "hasSourceOrTime": true,
+          "links": [
+            "/dashboard/holdings",
+            "/dashboard/consultation",
+            "/learn/glossary",
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": true
+        }
+      ],
+      "limitation": "All synthetic; no externalmarketfeed; market/stocks tested in addition to namedcriteria."
+    },
+    "3": {
+      "status": "PASS",
+      "at": "2026-10-01T09:19:48.804Z",
+      "expected": "UI Persian 12 -> next holding version, 24 -> subsequent version; original v1/v2 remain unchanged; no target does not block valuation",
+      "observed": {
+        "v1": {
+          "status": 200,
+          "body": {
+            "version_id": "d36ef2d4-14c3-47bc-98a5-f83ed221cc4f",
+            "version": 9,
+            "position_count": 1,
+            "reused": false
+          }
+        },
+        "v2": {
+          "status": 200,
+          "body": {
+            "version_id": "c1a6e62e-a1c4-41a3-9d74-ec3258c7e5ea",
+            "version": 10,
+            "position_count": 1,
+            "reused": false
+          }
+        },
+        "positions": {
+          "status": 200,
+          "body": [
+            {
+              "version_id": "d36ef2d4-14c3-47bc-98a5-f83ed221cc4f",
+              "qty": 12,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            },
+            {
+              "version_id": "c1a6e62e-a1c4-41a3-9d74-ec3258c7e5ea",
+              "qty": 24,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            }
+          ]
+        },
+        "openedQty": "12",
+        "hasNoTarget": true,
+        "hasSource": true,
+        "hasValue": true
+      },
+      "limitations": "UI retained the existing position as_of 2026-09-30. No date/source entry fields exist in the holdings form; source is actual synthetic price metadata.",
+      "originalImmutability": {
+        "versions": {
+          "status": 200,
+          "body": [
+            {
+              "id": "9b72c2af-22cc-426d-bd5d-b1c97c325e50",
+              "version": 1,
+              "user_id": "6528df69-a8e0-49e6-a265-901249b3ac45"
+            },
+            {
+              "id": "a18fe585-2ea4-4baa-967e-2a61db92338d",
+              "version": 2,
+              "user_id": "6528df69-a8e0-49e6-a265-901249b3ac45"
+            },
+            {
+              "id": "1b15f63d-2335-4f81-81dc-d1a839d2c941",
+              "version": 5,
+              "user_id": "6528df69-a8e0-49e6-a265-901249b3ac45"
+            },
+            {
+              "id": "74f5241e-fc44-4c03-8308-d6c07f638069",
+              "version": 6,
+              "user_id": "6528df69-a8e0-49e6-a265-901249b3ac45"
+            },
+            {
+              "id": "d36ef2d4-14c3-47bc-98a5-f83ed221cc4f",
+              "version": 9,
+              "user_id": "6528df69-a8e0-49e6-a265-901249b3ac45"
+            },
+            {
+              "id": "c1a6e62e-a1c4-41a3-9d74-ec3258c7e5ea",
+              "version": 10,
+              "user_id": "6528df69-a8e0-49e6-a265-901249b3ac45"
+            }
+          ]
+        },
+        "positions": {
+          "status": 200,
+          "body": [
+            {
+              "version_id": "9b72c2af-22cc-426d-bd5d-b1c97c325e50",
+              "qty": 12,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            },
+            {
+              "version_id": "a18fe585-2ea4-4baa-967e-2a61db92338d",
+              "qty": 24,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            },
+            {
+              "version_id": "1b15f63d-2335-4f81-81dc-d1a839d2c941",
+              "qty": 12,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            },
+            {
+              "version_id": "74f5241e-fc44-4c03-8308-d6c07f638069",
+              "qty": 24,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            },
+            {
+              "version_id": "d36ef2d4-14c3-47bc-98a5-f83ed221cc4f",
+              "qty": 12,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            },
+            {
+              "version_id": "c1a6e62e-a1c4-41a3-9d74-ec3258c7e5ea",
+              "qty": 24,
+              "unit": "سهم",
+              "as_of": "2026-09-30",
+              "symbol": "فملی"
+            }
+          ]
+        },
+        "allOriginalAndNewPairsUnchanged": true
+      }
+    },
+    "4": {
+      "status": "PASS",
+      "at": "2026-10-01T09:19:51.507Z",
+      "expected": "B cannot access A holdings or relation; REST zero rows; relation RPC403; A sees own data",
+      "observed": {
+        "BVersions": {
+          "status": 200,
+          "body": []
+        },
+        "BPositions": {
+          "status": 200,
+          "body": []
+        },
+        "BRelationGET": {
+          "status": 503,
+          "body": {
+            "error": "پرونده در دسترس نیست؛ دوباره تلاش کنید."
+          }
+        },
+        "BRelationRPC": {
+          "status": 403,
+          "body": {
+            "code": "42501",
+            "details": null,
+            "hint": null,
+            "message": "consultation forbidden"
+          }
+        },
+        "pageDenied": true
+      }
+    },
+    "5": {
+      "status": "BLOCKED",
+      "at": "2026-10-01T09:20:12.127Z",
+      "expected": "Valid UI research v1/v2, old version unchanged, independent human approval through UI, client cannot see draft",
+      "observed": {
+        "w1": {
+          "status": 201,
+          "body": {
+            "workbookId": "01d86d7c-7375-40ba-8517-7acf0917fa61",
+            "version": 1,
+            "savedAt": "2026-10-01T09:20:08.717784+00:00"
+          }
+        },
+        "w2": {
+          "status": 201,
+          "body": {
+            "workbookId": "01d86d7c-7375-40ba-8517-7acf0917fa61",
+            "version": 2,
+            "savedAt": "2026-10-01T09:20:08.966997+00:00"
+          }
+        },
+        "versions": {
+          "status": 200,
+          "body": [
+            {
+              "id": "7a63f00b-a025-4648-b4d5-9f0cfa650906",
+              "version": 1,
+              "title": "DEV07 Research v1 synthetic"
+            },
+            {
+              "id": "dc7184aa-c26a-482f-870c-928d4cf38166",
+              "version": 2,
+              "title": "DEV07 Research v2 synthetic"
+            }
+          ]
+        },
+        "oldTitle": "DEV07 Research v1 synthetic",
+        "clientDraft": {
+          "status": 200,
+          "body": []
+        }
+      },
+      "blocker": "No independent human reviewer is present. This reviewer is a Codex agent. Approval UI will be exercised technically for downstream testing, and is not human sign-off.",
+      "technical": {
+        "status": "PASS",
+        "criteria": [
+          "Valid UI research v1/v2 with evidence and dates",
+          "Opening v1 preserves original title",
+          "Actual technical approval UI201",
+          "Client draft REST zero"
+        ]
+      },
+      "human": {
+        "status": "BLOCKED",
+        "instruction": "تأیید انسانی مستقل با UI صف تأیید انجام شود.",
+        "source": "docs/ops/DEV07-PR168-REVIEW.md scenario5",
+        "reason": "No independent human sign-off; reviewer is a Codex agent."
+      }
+    },
+    "6": {
+      "status": "PASS",
+      "at": "2026-10-01T09:19:51.361Z",
+      "expected": "No access before grant; A grants from consent UI; advisor sees only allowed relation/holdings",
+      "observed": {
+        "grant": {
+          "status": 201,
+          "body": {
+            "id": "4b49dbff-c222-4d2e-b771-a7170a5433b0"
+          }
+        },
+        "advisorAfter": {
+          "http": 200,
+          "relations": 1,
+          "holdings": 10,
+          "sessions": 0
+        }
+      }
+    },
+    "7": {
+      "status": "PASS",
+      "at": "2026-10-01T09:20:14.986Z",
+      "expected": "title/version only selector; drafts/old versions absent; stale UUID returned/new draft yields422",
+      "observed": {
+        "initial": [
+          {
+            "id": "dc7184aa-c26a-482f-870c-928d4cf38166",
+            "title": "DEV07 Research v2 synthetic",
+            "version": 2
+          },
+          {
+            "id": "420da211-d872-4aeb-93ac-f139de649bdf",
+            "title": "DEV07 Research v3 draft",
+            "version": 3
+          }
+        ],
+        "returned": {
+          "status": 201,
+          "body": {
+            "version": 2,
+            "decision": "returned",
+            "reviewedAt": "2026-10-01T09:20:13.980696+00:00"
+          }
+        },
+        "stale": {
+          "status": 422,
+          "body": {
+            "error": "ورودی یا نسخهٔ پیوندخورده معتبر نیست؛ پژوهش باید تأیید داخلی شده باشد."
+          }
+        },
+        "newDraft": {
+          "status": 201,
+          "body": {
+            "workbookId": "01d86d7c-7375-40ba-8517-7acf0917fa61",
+            "version": 3,
+            "savedAt": "2026-10-01T09:20:14.693571+00:00"
+          }
+        },
+        "stale2": {
+          "status": 422,
+          "body": {
+            "error": "ورودی یا نسخهٔ پیوندخورده معتبر نیست؛ پژوهش باید تأیید داخلی شده باشد."
+          }
+        },
+        "afterReturned": [
+          {
+            "id": "420da211-d872-4aeb-93ac-f139de649bdf",
+            "title": "DEV07 Research v3 draft",
+            "version": 3
+          }
+        ],
+        "afterNewDraft": [
+          {
+            "id": "420da211-d872-4aeb-93ac-f139de649bdf",
+            "title": "DEV07 Research v3 draft",
+            "version": 3
+          }
+        ]
+      },
+      "approval": "Automated technical decision only; human approval remains blocked scenario5"
+    },
+    "8": {
+      "status": "PASS",
+      "at": "2026-10-01T09:20:50.375Z",
+      "expected": "UI session with holding/approved research; Tehran10:00 storedUTC06:30; other device timezone reopen/edit unchanged; due_on day only",
+      "observed": {
+        "session": {
+          "http": 201,
+          "version": 1,
+          "occurs_at": "2026-10-01T06:30:00+00:00",
+          "holding": "c1a6e62e-a1c4-41a3-9d74-ec3258c7e5ea",
+          "research": "c4800847-d77e-44f2-b30f-767536cbb5b6"
+        },
+        "timezone": "America/Los_Angeles",
+        "reopened": "2026-10-01T10:00",
+        "v2Stored": "2026-10-01T06:30:00+00:00",
+        "taskHTTP": 201,
+        "due_on": "2026-10-05"
+      },
+      "approval": "Research technical approval by agent; human gate blocked scenario5"
+    },
+    "9": {
+      "status": "PASS",
+      "at": "2026-10-01T09:20:47.883Z",
+      "expected": "Explicit publish v1; A only summary; B none; private note absent HTML/GET/REST; v2 draft hidden",
+      "observed": {
+        "prePublishA": 0,
+        "prePublishB": 0,
+        "publish": {
+          "status": 201,
+          "body": {
+            "id": null
+          }
+        },
+        "AAfter": [
+          {
+            "id": "2661e9c0-56c4-4b7f-91c9-c9a748f5f6cd",
+            "version": 1,
+            "summary": "DEV07 published summary synthetic"
+          }
+        ],
+        "notesGET": 0,
+        "notesREST": {
+          "status": 200,
+          "body": []
+        },
+        "privateMarkerInHTML": false,
+        "B": 0,
+        "v2": {
+          "status": 201,
+          "body": {
+            "id": "3b4d9159-75c9-4057-91ca-5ceb8fbf3daf"
+          }
+        },
+        "AAfterV2": [
+          1
+        ]
+      }
+    },
+    "10": {
+      "status": "PASS",
+      "at": "2026-10-01T09:20:52.478Z",
+      "expected": "A UI status-only201 increments version; four fields preserved; actorA; advisor-owned action403",
+      "observed": {
+        "response": {
+          "status": 201,
+          "body": {
+            "id": "58f38233-a600-4782-9790-480522a5a7e5"
+          }
+        },
+        "original": {
+          "id": "e34d54c2-1f24-46e7-a40c-54d59874455a",
+          "relationship_id": "4b49dbff-c222-4d2e-b771-a7170a5433b0",
+          "session_id": "2661e9c0-56c4-4b7f-91c9-c9a748f5f6cd",
+          "action_key": "039e61ad-08bf-42e1-84df-a8f94bb01b4f",
+          "version": 1,
+          "title": "DEV07 Client action",
+          "responsible_id": "6528df69-a8e0-49e6-a265-901249b3ac45",
+          "due_on": "2026-10-05",
+          "status": "open",
+          "actor_id": "31147c00-1fb9-498f-b3bc-b2759d898831",
+          "created_at": "2026-10-01T09:20:50.168032+00:00"
+        },
+        "new": {
+          "id": "58f38233-a600-4782-9790-480522a5a7e5",
+          "relationship_id": "4b49dbff-c222-4d2e-b771-a7170a5433b0",
+          "session_id": "2661e9c0-56c4-4b7f-91c9-c9a748f5f6cd",
+          "action_key": "039e61ad-08bf-42e1-84df-a8f94bb01b4f",
+          "version": 2,
+          "title": "DEV07 Client action",
+          "responsible_id": "6528df69-a8e0-49e6-a265-901249b3ac45",
+          "due_on": "2026-10-05",
+          "status": "doing",
+          "actor_id": "6528df69-a8e0-49e6-a265-901249b3ac45",
+          "created_at": "2026-10-01T09:20:52.172535+00:00"
+        },
+        "preserved": true,
+        "oldRetained": true,
+        "advisorOwnedChange": {
+          "status": 403,
+          "body": {
+            "error": "دسترسی به این پرونده مجاز نیست."
+          }
+        }
+      }
+    },
+    "11": {
+      "status": "PASS",
+      "at": "2026-10-01T09:20:55.503Z",
+      "expected": "Advisor UI status-only201 preserves details; historyUI; stale A/advisor409 no extra rows; actor spoof ignored",
+      "observed": {
+        "dstatus": {
+          "status": 201,
+          "body": {
+            "id": "624e2b81-4413-4ad6-9ed3-b16696634a17"
+          }
+        },
+        "new": {
+          "id": "624e2b81-4413-4ad6-9ed3-b16696634a17",
+          "relationship_id": "4b49dbff-c222-4d2e-b771-a7170a5433b0",
+          "session_id": "2661e9c0-56c4-4b7f-91c9-c9a748f5f6cd",
+          "action_key": "039e61ad-08bf-42e1-84df-a8f94bb01b4f",
+          "version": 3,
+          "title": "DEV07 Client action",
+          "responsible_id": "6528df69-a8e0-49e6-a265-901249b3ac45",
+          "due_on": "2026-10-05",
+          "status": "done",
+          "actor_id": "31147c00-1fb9-498f-b3bc-b2759d898831",
+          "created_at": "2026-10-01T09:20:53.768177+00:00"
+        },
+        "staleA": {
+          "status": 409,
+          "body": {
+            "error": "نسخهٔ تازه‌تری ثبت شده است؛ تغییرهای شما حفظ شده‌اند. آخرین نسخه را جدا باز کنید و سپس اصلاح کنید."
+          }
+        },
+        "staleD": {
+          "status": 409,
+          "body": {
+            "error": "نسخهٔ تازه‌تری ثبت شده است؛ تغییرهای شما حفظ شده‌اند. آخرین نسخه را جدا باز کنید و سپس اصلاح کنید."
+          }
+        },
+        "countAfterStale": 3,
+        "forged": {
+          "status": 201,
+          "body": {
+            "id": "9b1df967-a767-46e8-8e6f-322264e6e609"
+          }
+        },
+        "responseActor": "31147c00-1fb9-498f-b3bc-b2759d898831",
+        "historyVisible": true
+      }
+    },
+    "12": {
+      "status": "PASS",
+      "at": "2026-10-01T09:22:25.593Z",
+      "expected": "Concurrent same base -> one201/one409 and exactlyoneversion; holdingtoken reuse noextra version; staleholdings/session/publish409; failedUItext retained",
+      "observed": {
+        "race": [
+          {
+            "status": 409,
+            "body": {
+              "error": "نسخهٔ تازه‌تری ثبت شده است؛ تغییرهای شما حفظ شده‌اند. آخرین نسخه را جدا باز کنید و سپس اصلاح کنید."
+            }
+          },
+          {
+            "status": 201,
+            "body": {
+              "id": "1127e130-d337-41a4-a14b-1cc64b6842bf"
+            }
+          }
+        ],
+        "base": 4,
+        "countBefore": 4,
+        "countAfter": 5,
+        "holdingBase": 11,
+        "holdingFirst": {
+          "status": 200,
+          "body": {
+            "version_id": "3989a83e-0ed2-436d-87e3-cbee24f5831e",
+            "version": 12,
+            "position_count": 1,
+            "reused": false
+          }
+        },
+        "holdingRepeat": {
+          "status": 200,
+          "body": {
+            "version_id": "3989a83e-0ed2-436d-87e3-cbee24f5831e",
+            "version": 12,
+            "position_count": 1,
+            "reused": true
+          }
+        },
+        "holdingStale": {
+          "status": 409,
+          "body": {
+            "error": "این ثبت قبلاً با محتوای متفاوتی انجام شده است. صفحه را تازه کنید تا آخرین نسخه را ببینید، بعد اصلاح کنید."
+          }
+        },
+        "holdingLatest": {
+          "status": 200,
+          "body": [
+            {
+              "id": "3989a83e-0ed2-436d-87e3-cbee24f5831e",
+              "version": 12
+            }
+          ]
+        },
+        "sessionOutsideSave": {
+          "status": 201,
+          "body": {
+            "id": "f16283a6-ab3a-4ab4-9626-3a0ec843404f"
+          }
+        },
+        "sessionUIStale": {
+          "status": 409,
+          "body": {
+            "error": "نسخهٔ تازه‌تری ثبت شده است؛ تغییرهای شما حفظ شده‌اند. آخرین نسخه را جدا باز کنید و سپس اصلاح کنید."
+          }
+        },
+        "retainedText": "DEV07 stale form text retained",
+        "publishStale": {
+          "status": 409,
+          "body": {
+            "error": "نسخهٔ تازه‌تری ثبت شده است؛ تغییرهای شما حفظ شده‌اند. آخرین نسخه را جدا باز کنید و سپس اصلاح کنید."
+          }
+        },
+        "sessionVersions": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "13": {
+      "status": "PASS",
+      "at": "2026-10-01T09:22:48.201Z",
+      "expected": "A UIrevoke; next stale-profile advisorstatus/session/research403; RESTcase/notes/holdingszero; A retains publishedhistory",
+      "observed": {
+        "revoke": {
+          "status": 201,
+          "body": {
+            "id": null
+          }
+        },
+        "staleProfileURL": "http://127.0.0.1:3210/dashboard/consultation?relation=4b49dbff-c222-4d2e-b771-a7170a5433b0",
+        "status": {
+          "status": 403,
+          "body": {
+            "error": "دسترسی به این پرونده مجاز نیست."
+          }
+        },
+        "sess": {
+          "status": 403,
+          "body": {
+            "error": "دسترسی به این پرونده مجاز نیست."
+          }
+        },
+        "research": {
+          "status": 403,
+          "body": {
+            "code": "42501",
+            "details": null,
+            "hint": null,
+            "message": "consultation forbidden"
+          }
+        },
+        "advisorREST": [
+          {
+            "table": "consultation_relationships",
+            "http": 200,
+            "rows": 0
+          },
+          {
+            "table": "consultation_sessions",
+            "http": 200,
+            "rows": 0
+          },
+          {
+            "table": "consultation_private_notes",
+            "http": 200,
+            "rows": 0
+          },
+          {
+            "table": "member_holding_versions",
+            "http": 200,
+            "rows": 0
+          },
+          {
+            "table": "member_holding_positions",
+            "http": 200,
+            "rows": 0
+          }
+        ],
+        "A": {
+          "http": 200,
+          "sessions": [
+            {
+              "id": "2661e9c0-56c4-4b7f-91c9-c9a748f5f6cd",
+              "version": 1
+            }
+          ],
+          "revoked": true,
+          "UIRetained": true
+        },
+        "B": {
+          "status": 503,
+          "body": {
+            "error": "پرونده در دسترس نیست؛ دوباره تلاش کنید."
+          }
+        }
+      }
+    },
+    "14": {
+      "status": "PASS",
+      "at": "2026-10-01T09:22:08.697Z",
+      "expected": "Scoped actualservice faults -> UIerror/retry, public503 noSQL; research failure preservescase; recovery; stale/missing/unitmismatch null/warning neverfakezero/NaN",
+      "observed": {
+        "research": {
+          "http": 200,
+          "researchUnavailable": true,
+          "sessions": 2
+        },
+        "UIresearch": {
+          "hasResearchError": true,
+          "hasRetry": true,
+          "sessionsRemain": true
+        },
+        "repaired": {
+          "http": 200,
+          "researchUnavailable": false
+        },
+        "unavailable": {
+          "status": 503,
+          "body": {
+            "error": "پرونده در دسترس نیست؛ دوباره تلاش کنید."
+          }
+        },
+        "UIUnavailableHasRetry": true,
+        "recovery": {
+          "http": 200,
+          "sessions": 2
+        },
+        "priceChecks": [],
+        "unitMismatch": {
+          "http": 200,
+          "hasMismatch": false,
+          "hasStale": false,
+          "hasMissing": true,
+          "noNaN": true
+        }
+      },
+      "faultsRestored": true
+    }
+  },
+  "humanHandoff": {
+    "at": "2026-10-01T09:23:03.294Z",
+    "sha": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+    "environment": "dev07-1978-local",
+    "url": "http://127.0.0.1:3210/admin/research",
+    "navigation": "In saved workbooks click the exact title; no automatic ?workbook= deep link is implemented.",
+    "title": "DEV07-HUMAN-PR168-15eebc97ca650dde5f2687e36d9d98d193d0d543",
+    "workbookId": "802d41ba-7194-4971-b6fc-f696cae2b0e8",
+    "versionId": "342f9339-f5da-4ef0-af42-c724418c45e6",
+    "version": 1,
+    "status": "UNAPPROVED — HUMAN ACTION REQUIRED",
+    "UIHTTP": 201,
+    "sourceURL": "http://127.0.0.1:3210/symbol/%D9%81%D9%85%D9%84%DB%8C",
+    "observedOn": "2026-10-01",
+    "sourcePublishedOn": "2026-09-30",
+    "reviewOn": "2026-10-01",
+    "structuralCheckComplete": true,
+    "reviewRows": 0,
+    "approvedByThisAgent": false,
+    "credentialFile": "C:/Users/Asus/.codex/private/dev07-1978bf5/reviewer-credentials.json",
+    "credentialRole": "Use the advisor account from this protected reviewer-only file locally; do not print/share credentials.",
+    "expectedHumanAction": "A human independently examines evidence and dates, then uses the UI internal approval control and records their identity/time/version. Scenario5 remains BLOCKED until that occurs.",
+    "loginURL": "http://127.0.0.1:3210/login?next=%2Fadmin%2Fresearch"
+  },
+  "rootVerification": {
+    "at": "2026-10-01T09:34:58.557Z",
+    "baseApplicationSHA": "3462f0178ebed6b7a9966b465ba0756119ce267a",
+    "integratedMainSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+    "finalApplicationSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+    "conflictsResolved": [
+      "docs/COMMAND-CENTER.md",
+      "next.config.js",
+      "package.json"
+    ],
+    "pullRequest": 168,
+    "merged": false,
+    "mergeable": true,
+    "ci": {
+      "run": 36840882933,
+      "conclusion": "success",
+      "successfulJobs": 5,
+      "core": 1212,
+      "calc": 106,
+      "database": {
+        "passed": 407,
+        "failed": 0,
+        "skipped": 0,
+        "suites": 35
+      }
+    },
+    "authUsers": 3,
+    "humanReviewRows": 0,
+    "restoredGrants": {
+      "sessionsSelect": true,
+      "researchExecute": true
+    },
+    "schema": "previous phase32→34→35→36→37 synthetic installation retained/revalidated; no new migration",
+    "usedSkills": [
+      {
+        "name": "verification-before-completion",
+        "effect": "fresh SHA/build/CI/scenario/fixture evidence checked before final claims"
+      },
+      {
+        "name": "receiving-code-review",
+        "effect": "review feedback and merge conflicts checked technically; both branches preserved"
+      },
+      {
+        "name": "supabase",
+        "effect": "real Auth, isolated backend and schema/permission checks"
+      }
+    ],
+    "publication": {
+      "source": "committed and pushed to PR168",
+      "finalDocumentation": "project files saved locally and PR description published; not a new head commit",
+      "production": false
+    },
+    "dependency": {
+      "pr": 173,
+      "branchChanged": false,
+      "acceptanceGate": "DEV07 scenario5 independent human approval"
+    },
+    "finalStatus": "DEV07_NOT_ACCEPTED_HUMAN_SCENARIO5_BLOCKED"
+  }
+}

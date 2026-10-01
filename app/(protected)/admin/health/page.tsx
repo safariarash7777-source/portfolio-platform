@@ -1,4 +1,5 @@
 import HealthBoard from "@/components/admin/HealthBoard";
+import AuthChannelsStatus from "@/components/account/AuthChannelsStatus";
 
 export const metadata = {
   title: "سلامتِ سامانه | پنل مدیریت",
@@ -42,6 +43,7 @@ export default function AdminHealthPage() {
         </p>
       </div>
       <HealthBoard />
+      <AuthChannelsStatus />
     </div>
   );
 }

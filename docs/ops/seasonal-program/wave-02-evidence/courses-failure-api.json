@@ -1,0 +1,8 @@
+{
+  "status": 503,
+  "body": {
+    "contractVersion": "seasonal.v0.1",
+    "availability": "unavailable",
+    "error": "دریافت اطلاعات دوره انجام نشد. دوباره تلاش کنید."
+  }
+}

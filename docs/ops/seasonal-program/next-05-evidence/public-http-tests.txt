@@ -1,0 +1,11 @@
+✔ verification target is explicitly the synthetic loopback fixture (45.6377ms)
+✔ public pages, old home anchors and protected entry destinations survive (632.2399ms)
+✔ unchanged waitlist endpoint validates, duplicates, fails and acknowledges through synthetic REST (681.3189ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1441.0833

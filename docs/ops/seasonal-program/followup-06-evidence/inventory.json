@@ -1,0 +1,1055 @@
+{
+  "capturedAt": "2026-10-01T09:52:45.866Z",
+  "main": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "prs": [
+    {
+      "number": 168,
+      "title": "نسخهٔ اول: دارایی نسخه‌دار، پژوهش و پروندهٔ مشاوره با دسترسی صریح",
+      "base": "main",
+      "baseSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "head": "codex/product-v1-delivery",
+      "headSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/168",
+      "mergeBase": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "files": [
+        "CLAUDE.md",
+        "app/(protected)/dashboard/DashboardClient.tsx",
+        "app/(protected)/dashboard/consultation/page.tsx",
+        "app/(protected)/dashboard/holdings/page.tsx",
+        "app/(protected)/dashboard/page.tsx",
+        "app/api/admin/intelligence/workbooks/route.ts",
+        "app/api/consultation/route.ts",
+        "app/api/portfolio/holdings/route.ts",
+        "app/api/webinars/list/route.ts",
+        "app/market/funds/page.tsx",
+        "app/market/page.tsx",
+        "app/symbol/[symbol]/page.tsx",
+        "app/webinars/page.tsx",
+        "components/account/CustomerJourney.tsx",
+        "components/admin/ResearchWorkbook.tsx",
+        "components/consultation/ConsultationWorkbench.tsx",
+        "components/dashboard/LivePortfolio.tsx",
+        "components/dashboard/ReadError.tsx",
+        "components/portfolio/HoldingsSummary.tsx",
+        "components/portfolio/HoldingsWorkbench.tsx",
+        "docs/COMMAND-CENTER.md",
+        "docs/DECISION-LOG.md",
+        "docs/MIGRATION-LEDGER.md",
+        "docs/PRODUCT-BLUEPRINT.md",
+        "docs/README.md",
+        "docs/archive/PRODUCT-BLUEPRINT-20260729.md",
+        "docs/ops/DEV07-FINAL-3462F01.md",
+        "docs/ops/DEV07-INDEPENDENT-RESULTS.md",
+        "docs/ops/DEV07-PR168-REVIEW.md",
+        "docs/ops/DEV07-SANDBOX-1978BF5.md",
+        "docs/ops/PRODUCT-DELIVERY-TASKS.md",
+        "docs/ops/PRODUCT-V1-ACCEPTANCE.md",
+        "lib/access.ts",
+        "lib/consultation/consultation.integration.test.ts",
+        "lib/consultation/contracts.test.ts",
+        "lib/consultation/contracts.ts",
+        "lib/consultation/http.test.ts",
+        "lib/consultation/http.ts",
+        "lib/consultation/service.ts",
+        "lib/consultation/time.test.ts",
+        "lib/consultation/time.ts",
+        "lib/core/screener.test.ts",
+        "lib/csp-supabase.test.mjs",
+        "lib/intelligence/workbook-store.integration.test.ts",
+        "lib/intelligence/workbook-store.test.ts",
+        "lib/intelligence/workbook-store.ts",
+        "lib/market-ir.ts",
+        "lib/ops/test-postgres.ts",
+        "lib/portfolio/alerts.test.ts",
+        "lib/portfolio/alerts.ts",
+        "lib/portfolio/contracts.ts",
+        "lib/portfolio/holdings.integration.test.ts",
+        "lib/portfolio/performance.test.ts",
+        "lib/portfolio/performance.ts",
+        "lib/portfolio/prices.test.ts",
+        "lib/portfolio/prices.ts",
+        "lib/portfolio/rebalance.test.ts",
+        "lib/portfolio/rebalance.ts",
+        "lib/portfolio/service.ts",
+        "lib/portfolio/targetContract.test.ts",
+        "lib/portfolio/targetContract.ts",
+        "lib/portfolio/units.test.ts",
+        "lib/portfolio/units.ts",
+        "lib/portfolio/valuation.test.ts",
+        "lib/portfolio/valuation.ts",
+        "lib/portfolio/view.test.ts",
+        "lib/portfolio/view.ts",
+        "lib/read-state.test.ts",
+        "lib/read-state.ts",
+        "lib/webinars-list.test.ts",
+        "lib/webinars-list.ts",
+        "next.config.js",
+        "package.json",
+        "sql/phase32_member_holdings.sql",
+        "sql/phase34_research_workbook_versions.sql",
+        "sql/phase35_consultation.sql",
+        "sql/phase36_consultation_review_fixes.sql",
+        "sql/phase37_nonretryable_version_conflicts.sql",
+        "sql/staging/dev07_preflight.sql",
+        "sql/test/portfolio_precondition.sql"
+      ],
+      "migrations": [
+        {
+          "path": "sql/phase32_member_holdings.sql",
+          "sha256LF": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780",
+          "sha256GitBytes": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780",
+          "gitBlob": "e169d733e75f523597baeb8560fd46f8662d95a5"
+        },
+        {
+          "path": "sql/phase34_research_workbook_versions.sql",
+          "sha256LF": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+          "sha256GitBytes": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+          "gitBlob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba"
+        },
+        {
+          "path": "sql/phase35_consultation.sql",
+          "sha256LF": "63388c8b1b125332eedb405b6da9480da1305bbadbeacf4b5263fdd205299ad2",
+          "sha256GitBytes": "63388c8b1b125332eedb405b6da9480da1305bbadbeacf4b5263fdd205299ad2",
+          "gitBlob": "5019a7e9b2ae5c2c0571527afa1c81fdbd6b8c5a"
+        },
+        {
+          "path": "sql/phase36_consultation_review_fixes.sql",
+          "sha256LF": "e2ca9fde2c02a0457ef70bec541707bebf198afba26c94f5f7b7e47662c6cbd6",
+          "sha256GitBytes": "e2ca9fde2c02a0457ef70bec541707bebf198afba26c94f5f7b7e47662c6cbd6",
+          "gitBlob": "84b534190280ea1a1b28468c6687bc6a70e423c2"
+        },
+        {
+          "path": "sql/phase37_nonretryable_version_conflicts.sql",
+          "sha256LF": "3162ca656b9cdacf11a3f0ba0b79724ab162aa08a74f4bc0a04d4aec5ccbb5bd",
+          "sha256GitBytes": "3162ca656b9cdacf11a3f0ba0b79724ab162aa08a74f4bc0a04d4aec5ccbb5bd",
+          "gitBlob": "562e1302450f28ceff3625e802a8b9f98ef2658a"
+        },
+        {
+          "path": "sql/staging/dev07_preflight.sql",
+          "sha256LF": "89128c85bfa789eabb5338cdbc9af056d174e420758ed5d493169930df9457aa",
+          "sha256GitBytes": "89128c85bfa789eabb5338cdbc9af056d174e420758ed5d493169930df9457aa",
+          "gitBlob": "f8b9ee0b31709c4971d68a10ac4f98609257a790"
+        },
+        {
+          "path": "sql/test/portfolio_precondition.sql",
+          "sha256LF": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b",
+          "sha256GitBytes": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b",
+          "gitBlob": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89"
+        }
+      ],
+      "lockSHA": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings=0",
+        "typecheck": "tsc --noEmit",
+        "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
+        "test:core": "tsx --test lib/telegram/private-chat.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/csp-supabase.test.mjs lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts lib/read-state.test.ts lib/webinars-list.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/performance.test.ts lib/portfolio/prices.test.ts lib/portfolio/units.test.ts lib/portfolio/view.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/valuation.test.ts lib/consultation/contracts.test.ts lib/consultation/http.test.ts lib/consultation/time.test.ts lib/portfolio/alerts.test.ts lib/liara-public-env.test.js",
+        "test:db": "tsx --test --test-concurrency=1 lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts lib/intelligence/workbook-store.integration.test.ts lib/portfolio/holdings.integration.test.ts lib/consultation/consultation.integration.test.ts",
+        "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs",
+        "test:relay": "node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
+        "scan:secrets": "node scripts/scan-secrets.mjs",
+        "validate:sql": "node scripts/validate-sql.mjs",
+        "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
+      }
+    },
+    {
+      "number": 173,
+      "title": "ترازنامهٔ شخصی مشتری: دارایی، بدهی و خالص ثروت ثبت‌شده",
+      "base": "codex/product-v1-delivery",
+      "baseSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+      "head": "codex/customer-balance-sheet",
+      "headSHA": "6787005ad7b65acc49a059c2f9035ab16eb306f2",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/173",
+      "mergeBase": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+      "files": [
+        "app/(protected)/dashboard/consultation/page.tsx",
+        "app/(protected)/dashboard/holdings/page.tsx",
+        "app/(protected)/dashboard/page.tsx",
+        "app/api/portfolio/debts/route.ts",
+        "app/api/portfolio/holdings/route.ts",
+        "components/consultation/ConsultationWorkbench.tsx",
+        "components/portfolio/BalanceSheetSummary.tsx",
+        "components/portfolio/DebtsWorkbench.tsx",
+        "components/portfolio/HoldingsSummary.tsx",
+        "components/portfolio/HoldingsWorkbench.tsx",
+        "docs/COMMAND-CENTER.md",
+        "docs/DECISION-LOG.md",
+        "docs/MIGRATION-LEDGER.md",
+        "docs/PRODUCT-BLUEPRINT.md",
+        "docs/README.md",
+        "docs/assets/balance-sheet/acceptance-20261001/a-revoked-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/a-v2-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/a-v2-negative.png",
+        "docs/assets/balance-sheet/acceptance-20261001/a-v5-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/a-v5-historical-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/advisor-granted-latest-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/advisor-pregrant-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/advisor-revoked-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/advisor-revoked.png",
+        "docs/assets/balance-sheet/acceptance-20261001/advisor-v5-historical-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/app-manifest.json",
+        "docs/assets/balance-sheet/acceptance-20261001/b-foreign-version-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/b-own-dom.txt",
+        "docs/assets/balance-sheet/acceptance-20261001/http-statuses.json",
+        "docs/assets/balance-sheet/acceptance-20261001/human-fixture-v5-full.png",
+        "docs/assets/balance-sheet/acceptance-20261001/human-fixture-v5.png",
+        "docs/assets/balance-sheet/acceptance-20261001/migrations.json",
+        "docs/assets/balance-sheet/acceptance-20261001/rest-results.json",
+        "docs/assets/balance-sheet/acceptance-20261001/stored-synthetic-records.json",
+        "docs/assets/balance-sheet/acceptance-20261001/summary-negative.png",
+        "docs/assets/balance-sheet/acceptance-20261001/validation.json",
+        "docs/assets/balance-sheet/desktop-summary.png",
+        "docs/assets/balance-sheet/mobile-session-error.png",
+        "docs/assets/balance-sheet/mobile-summary.png",
+        "docs/ops/PERSONAL-BALANCE-SHEET.md",
+        "docs/ops/PRODUCT-DELIVERY-TASKS.md",
+        "lib/portfolio/balanceSheet.integration.test.ts",
+        "lib/portfolio/balanceSheet.test.ts",
+        "lib/portfolio/balanceSheet.ts",
+        "lib/portfolio/contracts.ts",
+        "lib/portfolio/financialHttp.test.ts",
+        "lib/portfolio/financialHttp.ts",
+        "lib/portfolio/financialInput.ts",
+        "lib/portfolio/rebalance.test.ts",
+        "lib/portfolio/rebalance.ts",
+        "lib/portfolio/service.ts",
+        "lib/portfolio/valuation.ts",
+        "package.json",
+        "sql/phase38_personal_balance_sheet.sql"
+      ],
+      "migrations": [
+        {
+          "path": "sql/phase38_personal_balance_sheet.sql",
+          "sha256LF": "3572915cb6c3e1bc98f9ead763318bd6400db0d91691ca1dd771c9cac65de247",
+          "sha256GitBytes": "3572915cb6c3e1bc98f9ead763318bd6400db0d91691ca1dd771c9cac65de247",
+          "gitBlob": "e3901db5f8d43bdeafd5fbc53a464e184f7ef060"
+        }
+      ],
+      "lockSHA": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings=0",
+        "typecheck": "tsc --noEmit",
+        "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
+        "test:core": "tsx --test lib/telegram/private-chat.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/csp-supabase.test.mjs lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts lib/read-state.test.ts lib/webinars-list.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/performance.test.ts lib/portfolio/prices.test.ts lib/portfolio/units.test.ts lib/portfolio/view.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/valuation.test.ts lib/consultation/contracts.test.ts lib/consultation/http.test.ts lib/consultation/time.test.ts lib/portfolio/alerts.test.ts lib/liara-public-env.test.js lib/portfolio/balanceSheet.test.ts lib/portfolio/financialHttp.test.ts",
+        "test:db": "tsx --test --test-concurrency=1 lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts lib/intelligence/workbook-store.integration.test.ts lib/portfolio/holdings.integration.test.ts lib/consultation/consultation.integration.test.ts lib/portfolio/balanceSheet.integration.test.ts",
+        "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs",
+        "test:relay": "node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
+        "scan:secrets": "node scripts/scan-secrets.mjs",
+        "validate:sql": "node scripts/validate-sql.mjs",
+        "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
+      }
+    },
+    {
+      "number": 174,
+      "title": "NEXT-07: truthful market dashboards, units, freshness and module access",
+      "base": "codex/wave-02-base-20260930",
+      "baseSHA": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "head": "codex/next-07-market-20260930",
+      "headSHA": "95cfa3410a97ac0d98cdefcb6671d4cfcb668646",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/174",
+      "mergeBase": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "files": [
+        "app/api/codal-list/route.ts",
+        "app/dashboard/market/[module]/page.tsx",
+        "app/market/funds/page.tsx",
+        "app/market/page.tsx",
+        "app/market/stocks/page.tsx",
+        "app/symbol/[symbol]/page.tsx",
+        "components/market/FeaturedTrend.tsx",
+        "components/market/FundsFullBoard.tsx",
+        "components/market/GoldCurrencyBoard.tsx",
+        "components/market/MarketDataStatus.tsx",
+        "components/market/MarketDepthDetails.tsx",
+        "components/market/MarketDesk.tsx",
+        "components/market/MarketKpiRow.tsx",
+        "components/market/MarketPulsePanel.tsx",
+        "components/market/MarketShell.tsx",
+        "components/market/MarketTreemap.tsx",
+        "components/market/StocksBoard.tsx",
+        "components/market/TodayMarket.tsx",
+        "components/market/TrendChart.tsx",
+        "components/symbol/CodalReportsTab.tsx",
+        "components/symbol/SymbolLiveDetail.tsx",
+        "docs/ops/seasonal-program/NEXT-07-RESULT.md",
+        "docs/ops/seasonal-program/next-07-evidence/BROWSER-VERIFICATION.md",
+        "docs/ops/seasonal-program/next-07-evidence/budget-delta.json",
+        "docs/ops/seasonal-program/next-07-evidence/build-tests.log",
+        "docs/ops/seasonal-program/next-07-evidence/calc-tests.log",
+        "docs/ops/seasonal-program/next-07-evidence/core-tests.log",
+        "docs/ops/seasonal-program/next-07-evidence/data-to-dashboard-matrix.csv",
+        "docs/ops/seasonal-program/next-07-evidence/discovered-symbol-runtime-error-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/fixture-server.mjs",
+        "docs/ops/seasonal-program/next-07-evidence/funds-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/funds-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/funds-filter-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/funds-final-cards-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/funds-final-table-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/funds-table-filter-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/funds-table-keyboard-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/lint-tests.log",
+        "docs/ops/seasonal-program/next-07-evidence/local-http-evidence.json",
+        "docs/ops/seasonal-program/next-07-evidence/market-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/market-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/market-unavailable1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/market-unavailable390.png",
+        "docs/ops/seasonal-program/next-07-evidence/matrix-validation.json",
+        "docs/ops/seasonal-program/next-07-evidence/no-upstream.cjs",
+        "docs/ops/seasonal-program/next-07-evidence/relay-tests.log",
+        "docs/ops/seasonal-program/next-07-evidence/run-check.mjs",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-dom.json",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-final-1440.png",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-final-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-final-dom.json",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-final-keyboard-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-keyboard-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/symbol-retry-390.png",
+        "docs/ops/seasonal-program/next-07-evidence/typecheck-tests.log",
+        "lib/core/breadthTrend.ts",
+        "lib/core/bulkReturns.ts",
+        "lib/core/indexTrend.ts",
+        "lib/core/marketCards.ts",
+        "lib/core/marketHeadline.test.ts",
+        "lib/core/marketHeadline.ts",
+        "lib/core/trend.ts",
+        "lib/format.ts",
+        "lib/market-ir.ts",
+        "lib/market-module-access.ts",
+        "lib/market-module-contract.ts",
+        "lib/market-quality.test.ts",
+        "lib/market-quality.ts",
+        "lib/market-read.test.ts",
+        "lib/market-report-date.ts",
+        "package.json",
+        "relay/eod.test.mjs",
+        "relay/nav-quality.mjs",
+        "relay/nav-quality.test.mjs",
+        "relay/server.mjs"
+      ],
+      "migrations": [],
+      "lockSHA": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings=0",
+        "typecheck": "tsc --noEmit",
+        "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
+        "test:core": "tsx --test lib/liara-public-env.test.js lib/telegram/private-chat.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/csp-supabase.test.mjs lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts lib/read-state.test.ts lib/webinars-list.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/performance.test.ts lib/portfolio/prices.test.ts lib/portfolio/units.test.ts lib/portfolio/view.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/valuation.test.ts lib/consultation/contracts.test.ts lib/consultation/http.test.ts lib/consultation/time.test.ts lib/portfolio/alerts.test.ts lib/market-quality.test.ts lib/market-read.test.ts",
+        "test:db": "tsx --test --test-concurrency=1 lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts lib/intelligence/workbook-store.integration.test.ts lib/portfolio/holdings.integration.test.ts lib/consultation/consultation.integration.test.ts",
+        "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs",
+        "test:relay": "node --test relay/nav-quality.test.mjs && node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
+        "scan:secrets": "node scripts/scan-secrets.mjs",
+        "validate:sql": "node scripts/validate-sql.mjs",
+        "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
+      }
+    },
+    {
+      "number": 175,
+      "title": "NEXT-04: verified seasonal enrollment and scoped membership ledger",
+      "base": "codex/wave-02-base-20260930",
+      "baseSHA": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "head": "codex/next-04-core-20260930",
+      "headSHA": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/175",
+      "mergeBase": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "files": [
+        ".gitattributes",
+        ".github/workflows/seasonal-sandbox.yml",
+        "app/(protected)/admin/courses/page.tsx",
+        "app/api/admin/cohort-access/commands/route.ts",
+        "app/api/admin/course-operations/route.ts",
+        "app/api/admin/entitlements/route.ts",
+        "app/api/admin/registration-imports/[id]/commit/route.ts",
+        "app/api/admin/registration-imports/preview/route.ts",
+        "app/api/admin/webinars/route.ts",
+        "app/api/cohorts/[id]/needs-assessment/route.ts",
+        "app/api/cohorts/[id]/resources/[resourceId]/route.ts",
+        "app/api/cohorts/[id]/resources/route.ts",
+        "app/api/cohorts/[id]/route.ts",
+        "app/api/cohorts/[id]/webinars/[webinarId]/join/route.ts",
+        "app/api/courses/route.ts",
+        "app/api/me/cohorts/route.ts",
+        "app/api/me/module-access/route.ts",
+        "app/api/registrations/claim/route.ts",
+        "app/api/webinars/list/route.ts",
+        "app/qa/next04/fixture.tsx",
+        "app/qa/next04/page.tsx",
+        "components/account/loginFlow.test.ts",
+        "components/seasonal/CourseOperations.tsx",
+        "docs/ops/seasonal-program/NEXT-04-RESULT.md",
+        "docs/ops/seasonal-program/next-04-evidence/BROWSER-VERIFICATION.md",
+        "docs/ops/seasonal-program/next-04-evidence/build.log",
+        "docs/ops/seasonal-program/next-04-evidence/qa-courses1440.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-final-table1440.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-final-table390.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-final-top390.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-final390.json",
+        "docs/ops/seasonal-program/next-04-evidence/qa-geometry1440.json",
+        "docs/ops/seasonal-program/next-04-evidence/qa-granted1440.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-keyboard390.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-reviewed-revoked1440.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-revoked390.png",
+        "docs/ops/seasonal-program/next-04-evidence/qa-touch-table390.json",
+        "docs/ops/seasonal-program/next-04-evidence/tests.log",
+        "docs/ops/seasonal-program/next-04-fixtures.csv",
+        "docs/ops/seasonal-program/next-04-ui-fixtures.json",
+        "lib/access-standing.test.ts",
+        "lib/access.ts",
+        "lib/entitlement-filter.ts",
+        "lib/seasonal/contracts.ts",
+        "lib/seasonal/events.ts",
+        "lib/seasonal/http.ts",
+        "lib/seasonal/import.ts",
+        "lib/seasonal/seasonal.integration.test.ts",
+        "lib/seasonal/seasonal.test.ts",
+        "lib/seasonal/server.ts",
+        "lib/seasonal/time.ts",
+        "middleware.ts",
+        "package.json",
+        "scripts/validate-sql-grammar.py",
+        "scripts/validate-sql.mjs",
+        "supabase/migrations/20260930182629_seasonal_course_membership.sql"
+      ],
+      "migrations": [
+        {
+          "path": "supabase/migrations/20260930182629_seasonal_course_membership.sql",
+          "sha256LF": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+          "sha256GitBytes": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+          "gitBlob": "d07215244de0ebc5546c823623833b6e4147bd44"
+        }
+      ],
+      "lockSHA": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings=0",
+        "typecheck": "tsc --noEmit",
+        "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
+        "test:core": "tsx --test lib/liara-public-env.test.js lib/telegram/private-chat.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/csp-supabase.test.mjs lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts lib/read-state.test.ts lib/webinars-list.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/performance.test.ts lib/portfolio/prices.test.ts lib/portfolio/units.test.ts lib/portfolio/view.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/valuation.test.ts lib/consultation/contracts.test.ts lib/consultation/http.test.ts lib/consultation/time.test.ts lib/portfolio/alerts.test.ts",
+        "test:db": "tsx --test --test-concurrency=1 lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts lib/intelligence/workbook-store.integration.test.ts lib/portfolio/holdings.integration.test.ts lib/consultation/consultation.integration.test.ts",
+        "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs",
+        "test:relay": "node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
+        "scan:secrets": "node scripts/scan-secrets.mjs",
+        "validate:sql": "node scripts/validate-sql.mjs",
+        "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py",
+        "test:seasonal": "tsx --test lib/seasonal/seasonal.test.ts",
+        "test:seasonal:db": "tsx --test lib/seasonal/seasonal.integration.test.ts"
+      }
+    },
+    {
+      "number": 176,
+      "title": "NEXT-08: daily research desk and audience-scoped publication queue",
+      "base": "codex/wave-02-base-20260930",
+      "baseSHA": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "head": "codex/next-08-desk-20260930",
+      "headSHA": "d69763563ef695b2d16ea2e52be4a4452b0811dc",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/176",
+      "mergeBase": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "files": [
+        "app/(protected)/admin/leads/page.tsx",
+        "app/(protected)/admin/publications/page.tsx",
+        "app/(protected)/admin/radar/page.tsx",
+        "app/(protected)/admin/research/page.tsx",
+        "app/api/admin/intelligence/course-needs/route.ts",
+        "app/api/admin/intelligence/publications/route.ts",
+        "app/api/admin/intelligence/requests/route.ts",
+        "app/api/publications/[id]/route.ts",
+        "app/publications/[id]/page.tsx",
+        "app/qa/next08/page.tsx",
+        "components/admin/AdminMarketRadar.tsx",
+        "components/admin/AdminShell.tsx",
+        "components/admin/ArashCommandDesk.tsx",
+        "components/admin/DailyPublicationLane.tsx",
+        "components/admin/PublicationRead.tsx",
+        "components/admin/PublicationScenario.tsx",
+        "components/admin/PublicationWorkbench.tsx",
+        "components/admin/ResearchWorkbook.tsx",
+        "components/admin/ServiceRequests.tsx",
+        "docs/ops/seasonal-program/NEXT-08-RESULT.md",
+        "docs/ops/seasonal-program/next-08-evidence/BROWSER-VERIFICATION.md",
+        "docs/ops/seasonal-program/next-08-evidence/build.txt",
+        "docs/ops/seasonal-program/next-08-evidence/core-registration-tests.txt",
+        "docs/ops/seasonal-program/next-08-evidence/production-boundary.txt",
+        "docs/ops/seasonal-program/next-08-evidence/publication-tests.txt",
+        "docs/ops/seasonal-program/next-08-evidence/qa-empty-390.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-error-1440.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-error-390.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-geometry-1440.json",
+        "docs/ops/seasonal-program/next-08-evidence/qa-geometry-390.json",
+        "docs/ops/seasonal-program/next-08-evidence/qa-initial-1440.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-keyboard-1440.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-published-1440.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-published-390.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-ready-390.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-ready-private-1440.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-saved-1440.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-timed-scenario.json",
+        "docs/ops/seasonal-program/next-08-evidence/qa-timer-start.txt",
+        "docs/ops/seasonal-program/next-08-evidence/qa-withdrawn-390.png",
+        "docs/ops/seasonal-program/next-08-evidence/qa-withdrawn-dom.json",
+        "docs/ops/seasonal-program/next-08-evidence/reused-tests.txt",
+        "docs/ops/seasonal-program/next-08-evidence/validation.json",
+        "lib/intelligence/publication-fixture.ts",
+        "lib/intelligence/publication-http.ts",
+        "lib/intelligence/publication-server.ts",
+        "lib/intelligence/publication.integration.test.ts",
+        "lib/intelligence/publication.test.ts",
+        "lib/intelligence/publication.ts",
+        "package.json",
+        "supabase/migrations/20260930182918_research_publication_queue.sql"
+      ],
+      "migrations": [
+        {
+          "path": "supabase/migrations/20260930182918_research_publication_queue.sql",
+          "sha256LF": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+          "sha256GitBytes": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+          "gitBlob": "73bcf4b17c0ec24c43aff2b54e002e1dcc2c322f"
+        }
+      ],
+      "lockSHA": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings=0",
+        "typecheck": "tsc --noEmit",
+        "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
+        "test:core": "tsx --test lib/liara-public-env.test.js lib/telegram/private-chat.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/csp-supabase.test.mjs lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts lib/read-state.test.ts lib/webinars-list.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/performance.test.ts lib/portfolio/prices.test.ts lib/portfolio/units.test.ts lib/portfolio/view.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/valuation.test.ts lib/consultation/contracts.test.ts lib/consultation/http.test.ts lib/consultation/time.test.ts lib/portfolio/alerts.test.ts lib/intelligence/publication.test.ts",
+        "test:publication:db": "tsx --test --test-concurrency=1 lib/intelligence/publication.integration.test.ts",
+        "test:db": "tsx --test --test-concurrency=1 lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts lib/intelligence/workbook-store.integration.test.ts lib/portfolio/holdings.integration.test.ts lib/consultation/consultation.integration.test.ts",
+        "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs",
+        "test:relay": "node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
+        "scan:secrets": "node scripts/scan-secrets.mjs",
+        "validate:sql": "node scripts/validate-sql.mjs",
+        "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
+      }
+    },
+    {
+      "number": 177,
+      "title": "NEXT-05: rebuild public seasonal product and consultation request flow",
+      "base": "codex/wave-02-base-20260930",
+      "baseSHA": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "head": "codex/next-05-public-20260930",
+      "headSHA": "27e59ad8d85f37da32b6f5346d289afdb73b20e6",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/177",
+      "mergeBase": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "files": [
+        ".github/workflows/ci.yml",
+        "app/consultation/page.tsx",
+        "app/globals.css",
+        "app/layout.tsx",
+        "app/page.tsx",
+        "app/sitemap.ts",
+        "app/webinars/page.tsx",
+        "components/landing/Hero.tsx",
+        "components/landing/InsightsPreview.tsx",
+        "components/landing/Method.tsx",
+        "components/landing/TwoProducts.tsx",
+        "components/landing/WaitlistForm.tsx",
+        "components/landing/waitlist-response.test.ts",
+        "components/landing/waitlist-response.ts",
+        "components/layout/Footer.tsx",
+        "components/layout/Navbar.tsx",
+        "components/public/CourseCatalog.tsx",
+        "components/public/MarketEntry.tsx",
+        "components/public/PublicNotice.tsx",
+        "components/public/WebinarsContent.tsx",
+        "components/public/course-catalog.test.ts",
+        "components/public/course-catalog.ts",
+        "components/public/public-boundaries.test.ts",
+        "docs/ops/seasonal-program/NEXT-05-COMPONENT-CONTRACT.md",
+        "docs/ops/seasonal-program/NEXT-05-RESULT.md",
+        "docs/ops/seasonal-program/next-05-evidence/after-consultation-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/after-consultation-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/after-home-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/after-home-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/after-home-dark390.png",
+        "docs/ops/seasonal-program/next-05-evidence/after-webinars-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/after-webinars-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/before-consultation-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/before-consultation-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/before-home-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/before-home-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/before-webinars-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/before-webinars-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/build.txt",
+        "docs/ops/seasonal-program/next-05-evidence/contrast.json",
+        "docs/ops/seasonal-program/next-05-evidence/core-tests.txt",
+        "docs/ops/seasonal-program/next-05-evidence/course-empty390.png",
+        "docs/ops/seasonal-program/next-05-evidence/course-incomplete-fixture390.png",
+        "docs/ops/seasonal-program/next-05-evidence/course-unavailable1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/course-unavailable390.png",
+        "docs/ops/seasonal-program/next-05-evidence/form-duplicate-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/form-network-error390.png",
+        "docs/ops/seasonal-program/next-05-evidence/form-server-error-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/form-success-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/form-success-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/geometry.json",
+        "docs/ops/seasonal-program/next-05-evidence/home-market-unavailable1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/home-market-unavailable390.png",
+        "docs/ops/seasonal-program/next-05-evidence/keyboard-menu-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/keyboard-nav-1440.png",
+        "docs/ops/seasonal-program/next-05-evidence/keyboard-skip-390.png",
+        "docs/ops/seasonal-program/next-05-evidence/keyboard.txt",
+        "docs/ops/seasonal-program/next-05-evidence/login-next390.png",
+        "docs/ops/seasonal-program/next-05-evidence/public-http-tests.txt",
+        "docs/ops/seasonal-program/next-05-evidence/public-tests.txt",
+        "docs/ops/seasonal-program/next-05-evidence/touch-final390.json",
+        "lib/public-claims.test.ts",
+        "package.json",
+        "public/brand-tokens.css",
+        "scripts/testing/local-network-only.cjs",
+        "scripts/testing/public-contrast.ts",
+        "scripts/testing/public-flow.test.mjs",
+        "scripts/testing/public-rest-fixture.mjs"
+      ],
+      "migrations": [],
+      "lockSHA": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings=0",
+        "typecheck": "tsc --noEmit",
+        "test:public": "tsx --test components/public/public-boundaries.test.ts components/public/course-catalog.test.ts components/landing/waitlist-response.test.ts lib/public-claims.test.ts lib/webinars-list.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts lib/core/contrast.test.ts",
+        "test:public:local": "node --test scripts/testing/public-flow.test.mjs",
+        "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
+        "test:core": "tsx --test lib/liara-public-env.test.js lib/telegram/private-chat.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/csp-supabase.test.mjs lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts lib/read-state.test.ts lib/webinars-list.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/performance.test.ts lib/portfolio/prices.test.ts lib/portfolio/units.test.ts lib/portfolio/view.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/valuation.test.ts lib/consultation/contracts.test.ts lib/consultation/http.test.ts lib/consultation/time.test.ts lib/portfolio/alerts.test.ts",
+        "test:db": "tsx --test --test-concurrency=1 lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts lib/intelligence/workbook-store.integration.test.ts lib/portfolio/holdings.integration.test.ts lib/consultation/consultation.integration.test.ts",
+        "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs",
+        "test:relay": "node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
+        "scan:secrets": "node scripts/scan-secrets.mjs",
+        "validate:sql": "node scripts/validate-sql.mjs",
+        "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
+      }
+    },
+    {
+      "number": 178,
+      "title": "Harden shared BrsApi quota and protect persisted market snapshots",
+      "base": "main",
+      "baseSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "head": "codex/liara-budget-guard-20261001",
+      "headSHA": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/178",
+      "mergeBase": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "files": [
+        ".github/workflows/ci.yml",
+        "docs/COMMAND-CENTER.md",
+        "docs/DECISION-LOG.md",
+        "docs/README.md",
+        "docs/ops/RELEASE-brsapi-budget.md",
+        "docs/ops/brsapi-budget-evidence-20261001.json",
+        "docs/ops/market-data-audit-20261001/DEVELOPER-TASK.fa.md",
+        "docs/ops/market-data-audit-20261001/READ-ONLY-QUERIES.sql",
+        "docs/ops/market-data-audit-20261001/README.fa.md",
+        "docs/ops/market-data-audit-20261001/REPORT.fa.md",
+        "docs/ops/market-data-audit-20261001/evidence/audit-summary.json",
+        "docs/ops/market-data-audit-20261001/evidence/baseline-delta.public.json",
+        "docs/ops/market-data-audit-20261001/evidence/liara-db.public.jsonl",
+        "docs/ops/market-data-audit-20261001/evidence/liara-gap.public.jsonl",
+        "docs/ops/market-data-audit-20261001/evidence/probe-status.public.json",
+        "docs/ops/market-data-audit-20261001/evidence/production-api-summary.json",
+        "docs/ops/market-data-audit-20261001/evidence/relay-summary.json",
+        "docs/ops/market-data-audit-20261001/evidence/snapshot-summary.public.json",
+        "package.json",
+        "relay/brsapi-budget-server.test.mjs",
+        "relay/brsapi-budget-store.mjs",
+        "relay/brsapi-budget-store.test.mjs",
+        "relay/brsapi-budget.integration.test.mjs",
+        "relay/brsapi-client.mjs",
+        "relay/brsapi-client.test.mjs",
+        "relay/brsapi-stop-behaviour.test.mjs",
+        "relay/eod.test.mjs",
+        "relay/server.mjs",
+        "sql/phase28_brsapi_budget.sql"
+      ],
+      "migrations": [
+        {
+          "path": "sql/phase28_brsapi_budget.sql",
+          "sha256LF": "490444bf006cadfd5146954f431cafe75e3474baf89465ad4b0efec2b264ab63",
+          "sha256GitBytes": "490444bf006cadfd5146954f431cafe75e3474baf89465ad4b0efec2b264ab63",
+          "gitBlob": "aa3c957420bb7b52f709afda622174d4f69b2559"
+        }
+      ],
+      "lockSHA": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings=0",
+        "typecheck": "tsc --noEmit",
+        "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts",
+        "test:core": "tsx --test lib/liara-public-env.test.js lib/telegram/private-chat.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts",
+        "test:db": "tsx --test --test-concurrency=1 lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts",
+        "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs",
+        "test:relay": "node --test relay/brsapi-transport.test.mjs && node --test relay/brsapi-budget-store.test.mjs && node --test relay/brsapi-budget-server.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
+        "scan:secrets": "node scripts/scan-secrets.mjs",
+        "validate:sql": "node scripts/validate-sql.mjs",
+        "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
+      }
+    }
+  ],
+  "auth": {
+    "checkpoint": "7cb030c140ce143f03c549125c5e647fea22f44c",
+    "branch": "codex/followup-auth-20261001",
+    "publishedRemote": false,
+    "implementationUncommitted": true,
+    "acceptance": "PENDING; not included in the code checkpoint",
+    "dirtyPaths": [
+      "M .github/workflows/ci.yml",
+      " M app/(auth)/forgot-password/page.tsx",
+      " M app/(auth)/login/page.tsx",
+      " M components/account/loginFlow.test.ts",
+      " M components/account/returnPath.ts",
+      " M lib/supabase/admin.ts",
+      " M middleware.ts",
+      " M package.json",
+      "?? app/(auth)/account/",
+      "?? app/(auth)/login/mobile/",
+      "?? app/api/admin/auth-health/",
+      "?? app/api/auth/",
+      "?? app/auth/email-link/",
+      "?? components/account/MobileAccess.tsx",
+      "?? components/account/PrivateIdentityForm.tsx",
+      "?? docs/ops/seasonal-program/followup-auth-evidence/",
+      "?? lib/auth/",
+      "?? scripts/testing/auth-browser-check.mjs",
+      "?? scripts/testing/auth-cookie-regression.mjs",
+      "?? scripts/testing/auth-email-browser-check.mjs",
+      "?? scripts/testing/auth-email-check.mjs",
+      "?? scripts/testing/auth-live-status.py",
+      "?? scripts/testing/auth-local-smtp.mjs",
+      "?? scripts/testing/auth-native-rate-check.mjs",
+      "?? scripts/testing/auth-owner-status.sql",
+      "?? scripts/testing/auth-public-probe.mjs",
+      "?? scripts/testing/auth-sandbox-boundaries.mjs",
+      "?? scripts/testing/auth-sandbox-check.mjs",
+      "?? scripts/testing/auth-sandbox.mjs",
+      "?? services/"
+    ],
+    "worktreeChangesNotCopied": true
+  },
+  "dev07": {
+    "testedSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+    "pass": 13,
+    "fail": 0,
+    "blocked": 1,
+    "scenario5": "independent human approval remains blocked"
+  },
+  "scope": "isolated composition only; no retarget, main/other PR mutation, shared migration or Production",
+  "fileOverlaps": [
+    {
+      "path": "app/(protected)/dashboard/consultation/page.tsx",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "app/(protected)/dashboard/holdings/page.tsx",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "app/(protected)/dashboard/page.tsx",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "app/api/portfolio/holdings/route.ts",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "app/api/webinars/list/route.ts",
+      "prs": [
+        168,
+        175
+      ]
+    },
+    {
+      "path": "app/market/funds/page.tsx",
+      "prs": [
+        168,
+        174
+      ]
+    },
+    {
+      "path": "app/market/page.tsx",
+      "prs": [
+        168,
+        174
+      ]
+    },
+    {
+      "path": "app/symbol/[symbol]/page.tsx",
+      "prs": [
+        168,
+        174
+      ]
+    },
+    {
+      "path": "app/webinars/page.tsx",
+      "prs": [
+        168,
+        177
+      ]
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "prs": [
+        168,
+        176
+      ]
+    },
+    {
+      "path": "components/consultation/ConsultationWorkbench.tsx",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "components/portfolio/HoldingsSummary.tsx",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "components/portfolio/HoldingsWorkbench.tsx",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "docs/COMMAND-CENTER.md",
+      "prs": [
+        168,
+        173,
+        178
+      ]
+    },
+    {
+      "path": "docs/DECISION-LOG.md",
+      "prs": [
+        168,
+        173,
+        178
+      ]
+    },
+    {
+      "path": "docs/MIGRATION-LEDGER.md",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "docs/PRODUCT-BLUEPRINT.md",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "docs/README.md",
+      "prs": [
+        168,
+        173,
+        178
+      ]
+    },
+    {
+      "path": "docs/ops/PRODUCT-DELIVERY-TASKS.md",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "lib/access.ts",
+      "prs": [
+        168,
+        175
+      ]
+    },
+    {
+      "path": "lib/market-ir.ts",
+      "prs": [
+        168,
+        174
+      ]
+    },
+    {
+      "path": "lib/portfolio/contracts.ts",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "lib/portfolio/rebalance.test.ts",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "lib/portfolio/rebalance.ts",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "lib/portfolio/service.ts",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "lib/portfolio/valuation.ts",
+      "prs": [
+        168,
+        173
+      ]
+    },
+    {
+      "path": "package.json",
+      "prs": [
+        168,
+        173,
+        174,
+        175,
+        176,
+        177,
+        178
+      ]
+    },
+    {
+      "path": "relay/eod.test.mjs",
+      "prs": [
+        174,
+        178
+      ]
+    },
+    {
+      "path": "relay/server.mjs",
+      "prs": [
+        174,
+        178
+      ]
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "prs": [
+        177,
+        178
+      ]
+    }
+  ],
+  "docsCommit": "2d7f4a9d0ca2fa9fac5d5af49f9c654c3135e266",
+  "docsOnlyCodeTreeUnchanged": true,
+  "applicationCompositionSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "harnessPatchA762": {
+    "sha": "a762d853bf690e30f065a6a9f59d57d8951f2bd4",
+    "alreadyPresent": true,
+    "emptyCherryPickSkipped": true
+  },
+  "next06": {
+    "status": "IN_PROGRESS_NOT_ACCEPTED",
+    "owner": "existing PR173 chat, functional member home",
+    "designOwner": "existing login/design chat",
+    "input": "NEXT-06-ACTIVATION-20261001.md",
+    "acceptedInput": false
+  },
+  "balance173": {
+    "runtimeSHA": "56deb8c85a2a09009d1624cd07b78ea87535ab2a",
+    "deliverySHA": "6787005ad7b65acc49a059c2f9035ab16eb306f2",
+    "postRuntime": "documentation/evidence only, according to tracked report",
+    "humanUnderstanding": "BLOCKED"
+  },
+  "allowedScope": "isolated trial git merges in own branch only; no PR/main merge, shared DB migration or Production",
+  "testHarnessCommit": "5eb96d4cb83aa3f49d0b1d701109584679deca76",
+  "finalRefsCheckedAt": "2026-10-01T10:14:49.158Z",
+  "finalRefs": [
+    {
+      "sha": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "ref": "refs/heads/main"
+    },
+    {
+      "sha": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+      "ref": "refs/pull/168/head"
+    },
+    {
+      "sha": "6787005ad7b65acc49a059c2f9035ab16eb306f2",
+      "ref": "refs/pull/173/head"
+    },
+    {
+      "sha": "95cfa3410a97ac0d98cdefcb6671d4cfcb668646",
+      "ref": "refs/pull/174/head"
+    },
+    {
+      "sha": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+      "ref": "refs/pull/175/head"
+    },
+    {
+      "sha": "d69763563ef695b2d16ea2e52be4a4452b0811dc",
+      "ref": "refs/pull/176/head"
+    },
+    {
+      "sha": "27e59ad8d85f37da32b6f5346d289afdb73b20e6",
+      "ref": "refs/pull/177/head"
+    },
+    {
+      "sha": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+      "ref": "refs/pull/178/head"
+    }
+  ],
+  "inputsUnchangedAtFinalCheck": true
+}

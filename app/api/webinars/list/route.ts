@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
@@ -26,21 +27,31 @@ export const dynamic = "force-dynamic";
 const PUBLIC_STATUSES = ["published", "live", "ended"] as const;
 
 export async function GET() {
+  try {
+    return await list();
+  } catch { return publicFailure(); }
+}
+
+function publicFailure() {
+  return NextResponse.json({ error: "دریافت فهرست وبینارها انجام نشد. دوباره تلاش کنید.", code: "WEBINARS_LIST_UNAVAILABLE", requestId: randomUUID() }, { status: 503 });
+}
+
+async function list() {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("webinars")
     .select(
-      "id, title, description, starts_at, ends_at, registration_open, max_capacity, price_toman, platform, platform_url, status, created_at"
+      "id, title, description, starts_at, ends_at, registration_open, max_capacity, price_toman, platform, status, created_at"
     )
     .in("status", PUBLIC_STATUSES as unknown as string[])
     .order("starts_at", { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return publicFailure();
   }
 
-  const webinars = data ?? [];
+  const webinars = (data ?? []).map(w => ({ ...w, platform_url: null }));
 
   // شمارش فقط وقتی سکرتِ سرور در دسترس است. نبودش فهرست را نمی‌خواباند.
   const admin = tryCreateAdminClient();
@@ -53,6 +64,7 @@ export async function GET() {
 
   const withCounts = await Promise.all(
     webinars.map(async (w) => {
+      try {
       const { count, error: countError } = await admin
         .from("webinar_registrations")
         .select("*", { count: "exact", head: true })
@@ -60,8 +72,9 @@ export async function GET() {
         .in("payment_status", ["paid", "free"]);
       // شکستِ شمارش هم `null` است، نه صفر — همان قاعده.
       return { ...w, registered_count: countError ? null : count ?? null };
+      } catch { return { ...w, registered_count: null }; }
     })
   );
 
-  return NextResponse.json({ webinars: withCounts, countsAvailable: true });
+  return NextResponse.json({ webinars: withCounts, countsAvailable: withCounts.every(w => w.registered_count !== null) });
 }

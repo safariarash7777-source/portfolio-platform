@@ -1,0 +1,16 @@
+{
+  "environment": "followup06-limited-native-local",
+  "appliedAt": "2026-10-01T19:00:40.731Z",
+  "sourceSHA": "9ab6d256e6bbb7a920e3e9ced372725fc1d4b873",
+  "path": "supabase/migrations/20261001083215_auth_private_identity_versions.sql",
+  "sha256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251",
+  "database": "followup06-accept-db",
+  "syntheticOnly": true,
+  "priorChain": "16 native repository SQL files: see frozen followup-06-auth-storage-evidence/environment.json, phase32→34→35→36→37→38→04→08",
+  "recreated": false,
+  "rows": "6|4|0",
+  "privateRLS": "national_id_registry|t\nnational_id_registry_pkey|f\nprofile_versions|t\nprofile_versions_pkey|f",
+  "clientWriteDenied": "f|f",
+  "clientOwnRead": "t",
+  "privateKeyLocation": "existing ACL-protected private directory; values omitted"
+}

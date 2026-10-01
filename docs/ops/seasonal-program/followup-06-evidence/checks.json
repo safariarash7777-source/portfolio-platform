@@ -1,0 +1,74 @@
+[
+  {
+    "name": "test-core",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:00:22.185Z",
+    "finishedAt": "2026-10-01T10:00:38.123Z",
+    "exitCode": 0,
+    "pass": 1239,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/test-core.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "test-calc",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:00:38.127Z",
+    "finishedAt": "2026-10-01T10:00:39.504Z",
+    "exitCode": 0,
+    "pass": 106,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/test-calc.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "db-financial-consultation",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:00:51.997Z",
+    "finishedAt": "2026-10-01T10:02:06.149Z",
+    "exitCode": 0,
+    "pass": 69,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/db-financial-consultation.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "db-seasonal",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:02:06.154Z",
+    "finishedAt": "2026-10-01T10:02:47.390Z",
+    "exitCode": 0,
+    "pass": 22,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/db-seasonal.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "db-publication",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:02:47.391Z",
+    "finishedAt": "2026-10-01T10:04:12.270Z",
+    "exitCode": 0,
+    "pass": 22,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/db-publication.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "db-budget",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:04:12.276Z",
+    "finishedAt": "2026-10-01T10:05:01.406Z",
+    "exitCode": 0,
+    "pass": 14,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/db-budget.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  }
+]

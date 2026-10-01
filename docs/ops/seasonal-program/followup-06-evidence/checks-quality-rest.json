@@ -1,0 +1,50 @@
+[
+  {
+    "name": "test-public",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:02:26.297Z",
+    "finishedAt": "2026-10-01T10:02:28.704Z",
+    "exitCode": 0,
+    "pass": 57,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/test-public.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "typecheck",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:02:28.707Z",
+    "finishedAt": "2026-10-01T10:02:51.112Z",
+    "exitCode": 0,
+    "pass": 0,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/typecheck.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "lint",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:02:51.113Z",
+    "finishedAt": "2026-10-01T10:03:09.737Z",
+    "exitCode": 0,
+    "pass": 0,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/lint.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  },
+  {
+    "name": "build",
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "startedAt": "2026-10-01T10:03:09.738Z",
+    "finishedAt": "2026-10-01T10:05:52.043Z",
+    "exitCode": 0,
+    "pass": 0,
+    "fail": 0,
+    "skipped": 0,
+    "log": "docs/ops/seasonal-program/followup-06-evidence/build.log",
+    "kind": "isolated synthetic regression; no real Auth acceptance"
+  }
+]

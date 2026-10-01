@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-01T10:08:21.621Z",
+  "synthetic": true,
+  "realSmtpReceipt": true,
+  "signupFragmentConsumed": true,
+  "fragmentCleared": true,
+  "allowedReturnToPreserved": true,
+  "forgotFormRequested": true,
+  "recoveryFormSaved": true,
+  "sameUuidAfterPasswordLogin": true,
+  "width": 390
+}

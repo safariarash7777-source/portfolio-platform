@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-01T19:27:50.601Z",
+  "owner": "PR180/Auth",
+  "integrationFix": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "beforeApplicationSHA": "d941b0b47520449e097dcdb0f31eef77e93cdd3c",
+  "harness": "scripts/testing/auth-session-handler.test.mjs",
+  "before": {
+    "PASS": 5,
+    "FAIL": 3,
+    "observed": "identity Auth failure incorrectly401; real SDK missing and rejected sessions remain401"
+  },
+  "after": {
+    "PASS": 8,
+    "FAIL": 0
+  },
+  "scope": "Behavioral real route functions with actual SDK error classes, isolated client boundary. Native realUI acceptance separately in independent-profile-fault/recheck evidence; fixture boundary is not browser or DB acceptance.",
+  "verification": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "build": "PASS"
+  },
+  "noPhoneProofFabricated": true
+}

@@ -21,6 +21,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import DeskBoard, { type DeskBoardSnapshot } from "@/components/admin/DeskBoard";
+import DailyPublicationLane from "@/components/admin/DailyPublicationLane";
 import IntelligenceDesk from "@/components/admin/IntelligenceDesk";
 import { buildApprovalQueue } from "@/lib/intelligence/approval-queue";
 import { toPersianDigits } from "@/lib/format";
@@ -533,6 +534,7 @@ export default function ArashCommandDesk({ view }: { view: IntelligenceDeskViewM
       </header>
 
       <TriageStrip triage={triage} />
+      <DailyPublicationLane />
 
       <section id="six-questions" aria-labelledby="six-questions-title" className="scroll-mt-20">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">

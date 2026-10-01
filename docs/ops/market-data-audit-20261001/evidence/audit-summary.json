@@ -1,0 +1,57 @@
+{
+  "upstreamTestRequests": 0,
+  "sourceIdChecks": {
+    "codal_reports": {
+      "digest": "77e77ea19dd8ddb901b2a3a616ab188c",
+      "maxId": 9439,
+      "rows": 9439,
+      "matchesDestination": true
+    },
+    "ir_market_history": {
+      "digest": "8be3e878d3a72fad25215acee2e68526",
+      "maxId": 11236,
+      "rows": 11236,
+      "matchesDestination": true
+    },
+    "symbol_history": {
+      "digest": "e1f17b6d59f5aba0694b8c05f628a043",
+      "maxId": 5711547,
+      "rows": 2118029,
+      "matchesDestination": true
+    }
+  },
+  "fullRowContentDigest": "Not completed: SQL statement timeout at 90s",
+  "dateTehran": "2026-10-01",
+  "productionDeployment": "dpl_9suSBhTKxEgEefXoUDr2o6FfmZ56",
+  "productionSha": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "rowCapProbe": {
+    "contentRange": "0-999/18173",
+    "requested": 10000,
+    "returned": 1000,
+    "http": 206,
+    "uniqueSymbols": 62
+  },
+  "destinationLatestSecondSample": "2026-10-01T00:43:07.03+03:30",
+  "mutationsPerformed": false,
+  "nav": {
+    "activeFundsBlacklisted": 308,
+    "blacklistTotal": 325,
+    "sourcePositiveNAV": 38,
+    "sourceFunds": 333,
+    "destinationPositiveNAV": 25,
+    "destinationFunds": 333
+  },
+  "sourceLatestUpdatedAt": "2026-09-21T22:21:38.113Z",
+  "fundamentalCapProbe": {
+    "http": 200,
+    "requested": 3000,
+    "returned": 1000
+  },
+  "dataHttpProbe": {
+    "status": 200,
+    "serverFailureNotProven": true,
+    "browserToolTimedOut": true,
+    "ms": 26406,
+    "bytes": 969423
+  }
+}

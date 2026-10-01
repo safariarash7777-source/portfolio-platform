@@ -1,5 +1,6 @@
 /**
- * رفتارِ توقف — سرتاسری، روی خودِ `server.mjs`، نه فقط واحدها.
+ * قرارداد رفتارِ توقف در harness. آزمون خود server و cold start در
+ * brsapi-budget-server.test.mjs جدا اجرا می‌شود.
  *
  * سه چیزی که باید با هم درست باشند و هیچ‌کدام به‌تنهایی کافی نیست:
  *   ۱) در enforcement بدونِ شمارنده، **ارسال نمی‌شود**.
@@ -35,7 +36,7 @@ function harness({ enforced, budget }) {
   async function refresh() {
     stop.active = false;
     const body = await fetchSection("gold-currency");
-    if (stop.active && cache) return { kept: true, body: cache };
+    if (stop.active) return { kept: Boolean(cache), body: cache };
     cache = body;
     return { kept: false, body };
   }
@@ -74,13 +75,11 @@ t("کشِ سالم با خالی بازنویسی نمی‌شود — دادهٔ
   assert.equal(h.wire, 1, "و هیچ درخواستِ تازه‌ای فرستاده نشد");
 });
 
-t("وقتی هیچ کشِ قبلی نیست، خالی سرو می‌شود — و این عمدی است", async () => {
-  // اینجا چیزی برای کهنه‌نگه‌داشتن وجود ندارد. قاعده «کهنه بهتر از خالی» است،
-  // نه «خالی ممنوع» — وگرنه اولین بوتِ ناموفق سرویس را قفل می‌کرد.
+t("cold start with denied budget does not cache an empty successful cycle", async () => {
   const h = harness({ enforced: true, budget: null });
   const r = await h.refresh();
   assert.equal(r.kept, false);
-  assert.deepEqual(h.cache, [], "خالی، ولی آگاهانه");
+  assert.equal(h.cache, null, "no empty snapshot replaces persisted data");
   assert.equal(h.stop.active, true, "و توقف ثبت شده تا در /debug دیده شود");
 });
 

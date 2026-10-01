@@ -10,6 +10,7 @@
 // فقط ادمین full می‌گیرد و بقیه registered — سایت هرگز نمی‌شکند.
 
 import { createClient } from "@/lib/supabase/server";
+import {activeEntitlementFilter} from "./entitlement-filter";
 
 export type AccessLevel = "visitor" | "registered" | "full";
 
@@ -87,16 +88,17 @@ export async function getAccess(): Promise<AccessInfo> {
 
   // ادمین همیشه full
   try {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
+    if (error) return base;
     if (profile?.role === "admin") {
       return { ...base, level: "full", via: "admin", standing: "active" };
     }
   } catch {
-    /* profiles همیشه هست؛ محض احتیاط */
+    return base;
   }
 
   // دسترسی اعطاشده (مشاوره/وبینار) — جدول ممکن است هنوز ساخته نشده باشد
@@ -106,9 +108,10 @@ export async function getAccess(): Promise<AccessInfo> {
       .from("entitlements")
       .select("kind,expires_at,revoked_at,starts_at")
       .eq("user_id", user.id)
+      .is('cohort_id', null)
       .is("revoked_at", null)
       .lte("starts_at", nowIso)
-      .gt("expires_at", nowIso)
+      .or(activeEntitlementFilter(nowIso))
       .order("expires_at", { ascending: false })
       .limit(1);
     if (!error && ents && ents.length > 0) {
@@ -148,6 +151,7 @@ export async function standingOf(
     .from("entitlements")
     .select("expires_at,revoked_at,starts_at")
     .eq("user_id", userId)
+    .is('cohort_id', null)
     .order("expires_at", { ascending: false })
     .limit(50);
 

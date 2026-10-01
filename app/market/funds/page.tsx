@@ -1,3 +1,6 @@
+import MarketDataStatus from "@/components/market/MarketDataStatus";
+import { withValidNav } from "@/lib/market-quality";
+import CustomerJourney from "@/components/account/CustomerJourney";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
@@ -13,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
   title: "دیده‌بان صندوق‌ها",
   description:
-    "جدول کامل صندوق‌های سرمایه‌گذاری: NAV، بازده روز، خالص دارایی، فیلتر نوع و نقشهٔ بازار.",
+    "دیده‌بان صندوق‌های سرمایه‌گذاری: NAV و تاریخ آن، بازده ثبت‌شده، ارزش بازار نمادها و فیلتر نوع صندوق.",
   path: "/market/funds",
 });
 
@@ -44,7 +47,8 @@ export default async function FundsPage({
   // M6: بازدهٔ دوره‌ای فقط برای نمادهای دارای تاریخچه — بقیه undefined می‌ماند (در UI «—»).
   const funds = (ir?.funds ?? []).map((f) => {
     const r = returns.get(f.id);
-    return r ? { ...f, ret1w: r.w1, ret1m: r.m1, ret3m: r.m3 } : f;
+    const validated = withValidNav(f, ir?.fetchedAt ?? null, Date.now());
+    return r ? { ...validated, ret1w: r.w1, ret1m: r.m1, ret3m: r.m3, lastTradeDate: r.lastTradeDate } : validated;
   });
   const fetchedAt = ir?.fetchedAt ?? null;
 
@@ -52,7 +56,7 @@ export default async function FundsPage({
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <MarketShell
+        <MarketShell autoRefresh
           active="funds"
           title="دیده‌بان صندوق‌ها"
           lead="NAV، حباب و بازدهٔ صندوق‌های سرمایه‌گذاری از آخرین اسنپ‌شات."
@@ -61,9 +65,11 @@ export default async function FundsPage({
           searchIndex={buildSearchIndex(ir?.stocks ?? [], funds)}
           path="/market/funds"
         >
+          <MarketDataStatus market={ir} />
           <FundsFullBoard funds={funds} fetchedAt={fetchedAt} />
           <div className="mt-8">
-            <AccountBridge
+            <CustomerJourney />
+          <AccountBridge
               access={access}
               returnTo={selfHref}
               backTo={{ href: "/market", label: "برگشت به میز بازار" }}

@@ -1,0 +1,710 @@
+{
+  "reviewer": "Independent Codex reviewer agent /root/dev07_independent; did not author FOLLOWUP06 code; agent review is not human research sign-off",
+  "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "environment": "followup06-auth-storage-2605-local",
+  "origin": "http://127.0.0.1:3299",
+  "manifest": {
+    "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+    "environment": "followup06-auth-storage-2605-local",
+    "builtAt": "2026-10-01T10:59:51.399Z",
+    "origin": "http://127.0.0.1:3299",
+    "backend": "same-origin /supabase",
+    "build": "production",
+    "realAuth": "GoTrue v2.197.0",
+    "realStorage": "1.11.2",
+    "CPU": "one reported CPU, max heap768MB",
+    "newAuthBranchIncluded": false,
+    "newMemberHomeIncluded": false
+  },
+  "startedAt": "2026-10-01T11:26:09.668Z",
+  "scenarios": [
+    {
+      "id": "login-A",
+      "roles": [
+        "A"
+      ],
+      "at": "2026-10-01T11:26:12.439Z",
+      "expected": "Fresh context, real UI login, native GoTrue user and holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "90fbdf83-2522-4362-90c3-fde6755e6653",
+        "redirect": "/dashboard/holdings"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-B",
+      "roles": [
+        "B"
+      ],
+      "at": "2026-10-01T11:26:13.905Z",
+      "expected": "Fresh context, real UI login, native GoTrue user and holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "de53f5b7-ab5b-4c14-9c75-b77646073cc2",
+        "redirect": "/dashboard/holdings"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-expired",
+      "roles": [
+        "expired"
+      ],
+      "at": "2026-10-01T11:26:15.309Z",
+      "expected": "Fresh context, real UI login, native GoTrue user and holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "7889b21f-d7df-4738-9561-1730b3a6e09e",
+        "redirect": "/dashboard/holdings"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-cancelled",
+      "roles": [
+        "cancelled"
+      ],
+      "at": "2026-10-01T11:26:16.528Z",
+      "expected": "Fresh context, real UI login, native GoTrue user and holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "317a6a7c-0c5b-4bdc-af41-0c5cceab594d",
+        "redirect": "/dashboard/holdings"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-nonmember",
+      "roles": [
+        "nonmember"
+      ],
+      "at": "2026-10-01T11:26:17.702Z",
+      "expected": "Fresh context, real UI login, native GoTrue user and holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "576a4224-f08b-4850-9b4d-fa3147bdbce1",
+        "redirect": "/dashboard/holdings"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-admin",
+      "roles": [
+        "admin"
+      ],
+      "at": "2026-10-01T11:26:18.761Z",
+      "expected": "Fresh context, real UI login, native GoTrue user and holdings redirect",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "8aa1a685-7065-419a-afae-783aa358c4f1",
+        "redirect": "/dashboard/holdings"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "current-membership-and-foreign-isolation",
+      "roles": [
+        "A",
+        "B",
+        "expired",
+        "cancelled",
+        "nonmember"
+      ],
+      "at": "2026-10-01T11:26:21.291Z",
+      "expected": "Revoked/expired/cancelled/nonmember/foreign receive no files; active B receives only B with exact bytes",
+      "observed": [
+        {
+          "role": "A",
+          "cohort": "A",
+          "listHTTP": 200,
+          "listRows": 0,
+          "downloadHTTP": 403,
+          "restHTTP": 200,
+          "restRows": 0,
+          "rpcHTTP": 200,
+          "rpcAllowed": false,
+          "nativeHTTP": 400,
+          "allowed": false,
+          "byteDigest": null,
+          "ok": true
+        },
+        {
+          "role": "expired",
+          "cohort": "A",
+          "listHTTP": 200,
+          "listRows": 0,
+          "downloadHTTP": 403,
+          "restHTTP": 200,
+          "restRows": 0,
+          "rpcHTTP": 200,
+          "rpcAllowed": false,
+          "nativeHTTP": 400,
+          "allowed": false,
+          "byteDigest": null,
+          "ok": true
+        },
+        {
+          "role": "cancelled",
+          "cohort": "cancel",
+          "listHTTP": 200,
+          "listRows": 0,
+          "downloadHTTP": 403,
+          "restHTTP": 200,
+          "restRows": 0,
+          "rpcHTTP": 200,
+          "rpcAllowed": false,
+          "nativeHTTP": 400,
+          "allowed": false,
+          "byteDigest": null,
+          "ok": true
+        },
+        {
+          "role": "nonmember",
+          "cohort": "A",
+          "listHTTP": 200,
+          "listRows": 0,
+          "downloadHTTP": 403,
+          "restHTTP": 200,
+          "restRows": 0,
+          "rpcHTTP": 200,
+          "rpcAllowed": false,
+          "nativeHTTP": 400,
+          "allowed": false,
+          "byteDigest": null,
+          "ok": true
+        },
+        {
+          "role": "B",
+          "cohort": "A",
+          "listHTTP": 200,
+          "listRows": 0,
+          "downloadHTTP": 403,
+          "restHTTP": 200,
+          "restRows": 0,
+          "rpcHTTP": 200,
+          "rpcAllowed": false,
+          "nativeHTTP": 400,
+          "allowed": false,
+          "byteDigest": null,
+          "ok": true
+        },
+        {
+          "role": "B",
+          "cohort": "B",
+          "listHTTP": 200,
+          "listRows": 1,
+          "downloadHTTP": 200,
+          "restHTTP": 200,
+          "restRows": 1,
+          "rpcHTTP": 200,
+          "rpcAllowed": true,
+          "nativeHTTP": 200,
+          "allowed": true,
+          "byteDigest": "1eac92483419fa0f08f4d4615748e7452b6a7c6d4f196fe62caa623ba2cc3792",
+          "ok": true
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "guest-http-contract",
+      "roles": [
+        "guest"
+      ],
+      "at": "2026-10-01T11:26:21.373Z",
+      "expected": "No-session resource list/download return401",
+      "observed": {
+        "listHTTP": 503,
+        "downloadHTTP": 503,
+        "listError": "دریافت اطلاعات دوره انجام نشد. دوباره تلاش کنید.",
+        "downloadError": "دریافت اطلاعات دوره انجام نشد. دوباره تلاش کنید."
+      },
+      "status": "FAIL",
+      "owner": "NEXT-04"
+    },
+    {
+      "id": "native-guest-private-bucket",
+      "roles": [
+        "guest"
+      ],
+      "at": "2026-10-01T11:26:21.374Z",
+      "expected": "No direct or public private-bucket bytes",
+      "observed": {
+        "authenticatedHTTP": 400,
+        "publicHTTP": 400
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "admin-resource-contract",
+      "roles": [
+        "admin without entitlement"
+      ],
+      "at": "2026-10-01T11:26:21.775Z",
+      "expected": "Admin listed resources must download consistently; permission failure must not be a service outage",
+      "observed": [
+        {
+          "cohort": "A",
+          "listHTTP": 200,
+          "listRows": 1,
+          "downloadHTTP": 503,
+          "nativeHTTP": 400,
+          "downloadError": "دریافت اطلاعات دوره انجام نشد. دوباره تلاش کنید."
+        },
+        {
+          "cohort": "B",
+          "listHTTP": 200,
+          "listRows": 1,
+          "downloadHTTP": 503,
+          "nativeHTTP": 400,
+          "downloadError": "دریافت اطلاعات دوره انجام نشد. دوباره تلاش کنید."
+        }
+      ],
+      "status": "FAIL",
+      "owner": "NEXT-04"
+    },
+    {
+      "id": "non-admin-command-denied",
+      "roles": [
+        "B"
+      ],
+      "at": "2026-10-01T11:26:21.886Z",
+      "expected": "Member cannot grant course access",
+      "observed": {
+        "http": 403
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "temporary-audited-grant",
+      "roles": [
+        "admin",
+        "A"
+      ],
+      "at": "2026-10-01T11:26:22.008Z",
+      "expected": "Actual admin command grants labelled synthetic A access",
+      "observed": {
+        "http": 200,
+        "grantRef": "fbf536bb-848f-4dcd-bd40-cbdc1b05de80"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "positive-real-storage-and-signing",
+      "roles": [
+        "A",
+        "anonymous bearer"
+      ],
+      "at": "2026-10-01T11:26:22.241Z",
+      "expected": "Actual native bytes and60-second signedURL bytes match fixture digest",
+      "observed": {
+        "listHTTP": 200,
+        "listRows": 1,
+        "downloadHTTP": 200,
+        "nativeHTTP": 200,
+        "nativeBytes": 36,
+        "nativeDigest": "773ee1169339e5c25cda05f6c75296a6daeaf02c81a435a60083984598cc8128",
+        "ttlSeconds": 60,
+        "bearerHTTP": 200,
+        "bearerBytes": 36,
+        "bearerDigest": "773ee1169339e5c25cda05f6c75296a6daeaf02c81a435a60083984598cc8128",
+        "signedURLRecorded": false
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "publication-existing-C1-audience",
+      "roles": [
+        "A",
+        "B",
+        "expired",
+        "cancelled",
+        "nonmember",
+        "guest"
+      ],
+      "at": "2026-10-01T11:26:22.423Z",
+      "expected": "Existing published UUID allows newly entitled A only; no PRIVATE content or underlying research",
+      "observed": {
+        "publicationVersion": "f223fd74-02b3-4478-bc3d-2c25a30763ee",
+        "audiences": [
+          {
+            "role": "A",
+            "http": 200,
+            "privateMarkerPresent": false
+          },
+          {
+            "role": "B",
+            "http": 404,
+            "privateMarkerPresent": false
+          },
+          {
+            "role": "expired",
+            "http": 404,
+            "privateMarkerPresent": false
+          },
+          {
+            "role": "cancelled",
+            "http": 404,
+            "privateMarkerPresent": false
+          },
+          {
+            "role": "nonmember",
+            "http": 404,
+            "privateMarkerPresent": false
+          },
+          {
+            "role": "guest",
+            "http": 404,
+            "privateMarkerPresent": false
+          }
+        ],
+        "privateResearchHTTP": 200,
+        "privateResearchRows": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "explicit-revoke-and-capability-window",
+      "roles": [
+        "admin",
+        "A",
+        "anonymous bearer"
+      ],
+      "at": "2026-10-01T11:26:22.782Z",
+      "expected": "New requests denied after revoke; previously signed bearer may remain until providerTTL",
+      "observed": {
+        "revokeHTTP": 200,
+        "downloadHTTP": 403,
+        "listRows": 0,
+        "nativeHTTP": 400,
+        "rpcAllowed": false,
+        "publicationHTTP": 404,
+        "priorBearerHTTP": 200,
+        "signedURLRecorded": false
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "ledger-preserved-A",
+      "roles": [
+        "A"
+      ],
+      "at": "2026-10-01T11:26:23.091Z",
+      "expected": "Own asset/debt ledger survives membership restrictions byte-for-byte and remains visible",
+      "observed": {
+        "before": [
+          {
+            "table": "member_holding_versions",
+            "http": 200,
+            "rows": 3,
+            "digest": "5d0c66c22002a1595f9ccf7ad0126f275a2d2892cb27f40d10f9d5987572e2bc"
+          },
+          {
+            "table": "member_holding_positions",
+            "http": 200,
+            "rows": 3,
+            "digest": "741ee90a4582104a92788ffcfce9d4c65cae4622124ed3326fe5a29c64af5aa4"
+          },
+          {
+            "table": "member_debt_positions",
+            "http": 200,
+            "rows": 1,
+            "digest": "8ebc7a47b49f907a75983199a36ac39f870eb201bb737805113274986f799d33"
+          }
+        ],
+        "after": [
+          {
+            "table": "member_holding_versions",
+            "http": 200,
+            "rows": 3,
+            "digest": "5d0c66c22002a1595f9ccf7ad0126f275a2d2892cb27f40d10f9d5987572e2bc"
+          },
+          {
+            "table": "member_holding_positions",
+            "http": 200,
+            "rows": 3,
+            "digest": "741ee90a4582104a92788ffcfce9d4c65cae4622124ed3326fe5a29c64af5aa4"
+          },
+          {
+            "table": "member_debt_positions",
+            "http": 200,
+            "rows": 1,
+            "digest": "8ebc7a47b49f907a75983199a36ac39f870eb201bb737805113274986f799d33"
+          }
+        ],
+        "UIVisible": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "id": "ledger-preserved-expired",
+      "roles": [
+        "expired"
+      ],
+      "at": "2026-10-01T11:26:23.428Z",
+      "expected": "Own asset/debt ledger survives membership restrictions byte-for-byte and remains visible",
+      "observed": {
+        "before": [
+          {
+            "table": "member_holding_versions",
+            "http": 200,
+            "rows": 2,
+            "digest": "61921651285a2b142ab25b39b48827e91b5d17bad593e2c0592a154ce5d86f8c"
+          },
+          {
+            "table": "member_holding_positions",
+            "http": 200,
+            "rows": 2,
+            "digest": "63ce4899760cb3d9f47ca146469351c57b852aef5970b84aae77af4573ac30b0"
+          },
+          {
+            "table": "member_debt_positions",
+            "http": 200,
+            "rows": 1,
+            "digest": "759d08be953b1023b1d91e5f1ccf66cb4b25f7765de785d3cd5cc13b60cbf884"
+          }
+        ],
+        "after": [
+          {
+            "table": "member_holding_versions",
+            "http": 200,
+            "rows": 2,
+            "digest": "61921651285a2b142ab25b39b48827e91b5d17bad593e2c0592a154ce5d86f8c"
+          },
+          {
+            "table": "member_holding_positions",
+            "http": 200,
+            "rows": 2,
+            "digest": "63ce4899760cb3d9f47ca146469351c57b852aef5970b84aae77af4573ac30b0"
+          },
+          {
+            "table": "member_debt_positions",
+            "http": 200,
+            "rows": 1,
+            "digest": "759d08be953b1023b1d91e5f1ccf66cb4b25f7765de785d3cd5cc13b60cbf884"
+          }
+        ],
+        "UIVisible": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "id": "ledger-preserved-cancelled",
+      "roles": [
+        "cancelled"
+      ],
+      "at": "2026-10-01T11:26:23.786Z",
+      "expected": "Own asset/debt ledger survives membership restrictions byte-for-byte and remains visible",
+      "observed": {
+        "before": [
+          {
+            "table": "member_holding_versions",
+            "http": 200,
+            "rows": 2,
+            "digest": "444608864c258ea72879760caf1ff55037b30b561e4e587cba45e9e2d73a6ae4"
+          },
+          {
+            "table": "member_holding_positions",
+            "http": 200,
+            "rows": 2,
+            "digest": "10e35fc4544edd896d917ebb4e832d13f62a46852a6d7a356abdbac76cf6230e"
+          },
+          {
+            "table": "member_debt_positions",
+            "http": 200,
+            "rows": 1,
+            "digest": "c322bd4f8909566e3cd9b3def89ce3d85e81e99eb13a7643542fac82df826047"
+          }
+        ],
+        "after": [
+          {
+            "table": "member_holding_versions",
+            "http": 200,
+            "rows": 2,
+            "digest": "444608864c258ea72879760caf1ff55037b30b561e4e587cba45e9e2d73a6ae4"
+          },
+          {
+            "table": "member_holding_positions",
+            "http": 200,
+            "rows": 2,
+            "digest": "10e35fc4544edd896d917ebb4e832d13f62a46852a6d7a356abdbac76cf6230e"
+          },
+          {
+            "table": "member_debt_positions",
+            "http": 200,
+            "rows": 1,
+            "digest": "c322bd4f8909566e3cd9b3def89ce3d85e81e99eb13a7643542fac82df826047"
+          }
+        ],
+        "UIVisible": false
+      },
+      "status": "FAIL"
+    },
+    {
+      "id": "personal-ledger-foreign-denial",
+      "roles": [
+        "B"
+      ],
+      "at": "2026-10-01T11:26:23.797Z",
+      "expected": "B cannot read A personal ledger",
+      "observed": {
+        "http": 200,
+        "rows": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "provider-signed-url-expiry",
+      "roles": [
+        "anonymous bearer"
+      ],
+      "at": "2026-10-01T11:27:27.398Z",
+      "expected": "Provider denies previously valid signed URL after60-second TTL",
+      "observed": {
+        "http": 400,
+        "elapsedSeconds": 65,
+        "signedURLRecorded": false
+      },
+      "status": "PASS"
+    }
+  ],
+  "privacy": "Real UI-issued sessions in memory only; no session injection or storageState, HAR, traces, credential screenshots or signed URL tokens saved.",
+  "ledgerBaseline": {
+    "A": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 3,
+        "digest": "5d0c66c22002a1595f9ccf7ad0126f275a2d2892cb27f40d10f9d5987572e2bc"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 3,
+        "digest": "741ee90a4582104a92788ffcfce9d4c65cae4622124ed3326fe5a29c64af5aa4"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "8ebc7a47b49f907a75983199a36ac39f870eb201bb737805113274986f799d33"
+      }
+    ],
+    "expired": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 2,
+        "digest": "61921651285a2b142ab25b39b48827e91b5d17bad593e2c0592a154ce5d86f8c"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 2,
+        "digest": "63ce4899760cb3d9f47ca146469351c57b852aef5970b84aae77af4573ac30b0"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "759d08be953b1023b1d91e5f1ccf66cb4b25f7765de785d3cd5cc13b60cbf884"
+      }
+    ],
+    "cancelled": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 2,
+        "digest": "444608864c258ea72879760caf1ff55037b30b561e4e587cba45e9e2d73a6ae4"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 2,
+        "digest": "10e35fc4544edd896d917ebb4e832d13f62a46852a6d7a356abdbac76cf6230e"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "c322bd4f8909566e3cd9b3def89ce3d85e81e99eb13a7643542fac82df826047"
+      }
+    ]
+  },
+  "publicationVersionId": "f223fd74-02b3-4478-bc3d-2c25a30763ee",
+  "ledgerFinal": {
+    "A": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 3,
+        "digest": "5d0c66c22002a1595f9ccf7ad0126f275a2d2892cb27f40d10f9d5987572e2bc"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 3,
+        "digest": "741ee90a4582104a92788ffcfce9d4c65cae4622124ed3326fe5a29c64af5aa4"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "8ebc7a47b49f907a75983199a36ac39f870eb201bb737805113274986f799d33"
+      }
+    ],
+    "expired": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 2,
+        "digest": "61921651285a2b142ab25b39b48827e91b5d17bad593e2c0592a154ce5d86f8c"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 2,
+        "digest": "63ce4899760cb3d9f47ca146469351c57b852aef5970b84aae77af4573ac30b0"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "759d08be953b1023b1d91e5f1ccf66cb4b25f7765de785d3cd5cc13b60cbf884"
+      }
+    ],
+    "cancelled": [
+      {
+        "table": "member_holding_versions",
+        "http": 200,
+        "rows": 2,
+        "digest": "444608864c258ea72879760caf1ff55037b30b561e4e587cba45e9e2d73a6ae4"
+      },
+      {
+        "table": "member_holding_positions",
+        "http": 200,
+        "rows": 2,
+        "digest": "10e35fc4544edd896d917ebb4e832d13f62a46852a6d7a356abdbac76cf6230e"
+      },
+      {
+        "table": "member_debt_positions",
+        "http": 200,
+        "rows": 1,
+        "digest": "c322bd4f8909566e3cd9b3def89ce3d85e81e99eb13a7643542fac82df826047"
+      }
+    ]
+  },
+  "finishedAt": "2026-10-01T11:27:27.401Z",
+  "counts": {
+    "PASS": 15,
+    "FAIL": 5,
+    "BLOCKED": 0
+  }
+}
