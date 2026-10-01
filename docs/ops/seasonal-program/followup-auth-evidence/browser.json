@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-01T10:01:08.106Z",
+  "synthetic": true,
+  "browser": "Chromium via agent-browser",
+  "wrongOtpRetained": true,
+  "errorVisible": true,
+  "ssrAuthenticated": true,
+  "role": "user",
+  "widths": [
+    390,
+    1440
+  ],
+  "focus": {
+    "tag": "INPUT",
+    "overflow": false,
+    "minButtonHeight": 44
+  }
+}

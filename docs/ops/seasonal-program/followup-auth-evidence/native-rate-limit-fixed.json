@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "gotrue": "v2.197.0",
+  "at": "2026-10-01T09:32:49.822Z",
+  "trustedHeaderOverwrite": true,
+  "clientHeaderSpoofRejected": true,
+  "directVerifyNativeRateLimit": true,
+  "requests": 31,
+  "rateLimitVerify": 30
+}

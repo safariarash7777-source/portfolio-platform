@@ -1,0 +1,20 @@
+{
+  "observed": "2026-10-01",
+  "deployment": "dpl_9suSBhTKxEgEefXoUDr2o6FfmZ56",
+  "deployedSha": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "site": "https://portfolio-platform-fawn.vercel.app",
+  "incidentUtc": "2026-10-01T09:47:14Z",
+  "reportedTehran": "2026-10-01 13:17:50 +03:30",
+  "route": "/dashboard",
+  "method": "GET",
+  "status": 504,
+  "source": "edge-middleware",
+  "message": "Your function was stopped as it did not return an initial response within 25s",
+  "windowStatusCounts": {
+    "200": 5,
+    "304": 25,
+    "307": 5,
+    "504": 1
+  },
+  "correlation": "Same time window; owner browser request id unavailable. No raw HAR/cookies/tokens stored."
+}
