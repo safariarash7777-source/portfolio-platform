@@ -35,6 +35,14 @@ NEXT-01 بخش۵: نقش مدیر فقط برای اعمال مدیریتی مص
 
 ## تحویل و بازگشت
 
-PR مستقل روی شاخه175 ایجاد می‌شود؛ شماره در رکورد پایین ثبت خواهد شد. مسئول FOLLOWUP06 patch77b7b7c را با حفظ بسته‌های دیگر در checkout **جدیدِ خودش** ترکیب کند؛ baseline مستقل18/2 را حذف/بازنویسی نکند. انتظار بازآزمایی مدیر، **list0/download403** است، نه افزودن grantadmin برایdownload200. حالت عضو B باید200 و hash صحیح بماند؛ مهمان401، Auth/Storageقطع503، عدم افشای مسیر/توکن و حفاظت فایلnative بررسی شود.
+[PR184](https://github.com/safariarash7777-source/portfolio-platform/pull/184)، draft وابسته175؛ head ایجادPR `d70b383932a3a17a492cee90d8090422f6c5f3f9`، کد ثابت77b7b7c. secret scan:741فایل،0یافته. مسئول FOLLOWUP06 patch77b7b7c را با حفظ بسته‌های دیگر در checkout **جدیدِ خودش** ترکیب کند؛ baseline مستقل18/2 را حذف/بازنویسی نکند. انتظار بازآزمایی مدیر، **list0/download403** است، نه افزودن grantadmin برایdownload200. حالت عضو B باید200 و hash صحیح بماند؛ مهمان401، Auth/Storageقطع503، عدم افشای مسیر/توکن و حفاظت فایلnative بررسی شود.
 
 بازگشت اپ با revert همین patch؛ هیچ DBdown یا حذف حساب/پرونده وجود ندارد. مستندات مرکزی را مجری مدیریت به‌روز می‌کند؛ این بسته شاخه یا محیط بازبین را تغییر نداد.
+
+## تحویل‌های Auth، CI همان head و Preview
+
+در بازبینی همین روز، PR179head=`ca27b94a44f9a37785df059574a754e170880aac` و PR180head=`bb4f2f3e53859bbecb0ec942975ffb06fd2d2828`، CI Gate/Typecheck-Lint-Tests-Build/Database-RLS/Dependencies/Secret-SQL همگیsuccess؛ isolated-db180 نیزsuccess و SupabasePreview هر دوskipped بودند. نتایج به همین SHAها تعلق دارند؛ head تازه PR184 را سبز اعلام نمی‌کنیم.
+
+دوPreview خودکار179/180 در شاهد11:16UTC بهcloudقدیمی اشاره داشتند؛ سایتProduction درشاهدقبلیLiaraبود. راه رسیدن بهPreviewصحیح: زوج `NEXT_PUBLIC_LIARA_API_URL` و `NEXT_PUBLIC_LIARA_ANON_KEY` به **همانbranchPreview** با مقدار امن محیط موردتوافق، سپسrebuild؛ مقصدserver/service-role وcallbackدقیق جدا تطبیق، سپسbundle/login دوباره مشاهده شود. mobile/emailfragment/signup/identitywriter واقعی پیش‌فرضخاموشبمانند. صرفstatusREADY اتصالصحیح را اثبات نمی‌کند. نصبmigration مشترک یا تغییرGoTrueProduction برای اینکار انجام نشود؛ SMTP/OTP کامل180 فقطsandbox محلی مستقل پذیرفته شده‌اند.
+
+دسترسی موجودVercelconnector برایenvwrite ابزار ندارد؛ دراینsession نهVercelCLIاحراز‌شده، نهVERCEL_TOKEN/OIDC موجود و نهauthfileCLI مشاهده شد. بنابراینenv بیرونی/rebuild سفارشی اجرا نشد و دسترسی جدید/کلید درچت خواسته نشد. اپراتور دارایدسترسیproject اینscopeمحدود را اعمال کند؛ ورودمالکProductionتااستقرارمجازبازاست. Preview عمومی دارایکلیدwriter/featureفعال بهDBواقعی وصل نشود. بازبینی معتبر فعلی محلی8800(01) و8792(07)، با داده مصنوعی است. این مانع مستقل از اصلاح منابع/نمونه فونت است.
