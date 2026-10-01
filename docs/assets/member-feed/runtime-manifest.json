@@ -1,0 +1,8 @@
+{
+  "sha": "eb94b97f50a1b628af4f84554f7a1ce06780910e",
+  "environment": "feed06-local",
+  "builtAt": "2026-10-01T19:00:39.962Z",
+  "origin": "http://127.0.0.1:3540",
+  "backend": "same origin /supabase",
+  "build": "production"
+}
