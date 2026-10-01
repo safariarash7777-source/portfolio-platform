@@ -1,0 +1,260 @@
+{
+  "reviewedAt": "2026-10-01T23:27:31.3606267+00:00",
+  "reviewerThread": "01a0f780-070d-78f2-bbff-242b6a9c9ce8",
+  "productSHA": "fa4b84fd126db70efae6a1b068a6a0e2a98bf3d5",
+  "criteriaSHA": "e143fbbbbd2f3a82c907cf53c6e0ba0e39b1af38",
+  "harnessFileDigest": "cbf932d1da503629b6686c481ae0ced3b7ffe9f0bf9921695d8130b9ae8cd05a",
+  "criteriaByteIdentity": true,
+  "runtimeFiles": [
+    {
+      "path": "lib/core/engine.ts",
+      "gitBlob": "610c107968ca59eda04f38fdb5b7149b5203cedd",
+      "sha256": "7c8051e3038d30a733a82101b87d992aa78693ac7f5986b4624bc9084c67903d"
+    },
+    {
+      "path": "lib/core/quarterly.ts",
+      "gitBlob": "df3f239e54c387c4e27cb650729a6987c228a9b4",
+      "sha256": "ac9b8f49e8408f042b3d372967e561fb95d37240f3beb451c8e970b5adbbc25a"
+    },
+    {
+      "path": "lib/fundamental/calc.ts",
+      "gitBlob": "d9da79ab8ed0fe3c10df13657162cacf5c0834f3",
+      "sha256": "0ea392d16337d38c5114f00ecd59ab6e71b4ce08a6af8192042c835578c219f7"
+    },
+    {
+      "path": "lib/fundamental/types.ts",
+      "gitBlob": "df9112bffcbcdae3bab7803008400cf1206dc69c",
+      "sha256": "27542d40ac85f30ed3b0727493cfe5c974e9f144635f943b836d289a837de112"
+    },
+    {
+      "path": "package.json",
+      "gitBlob": "0f1b417cd1bf0e746efbfb234b0ad3a93224f6d8",
+      "sha256": "72176b4159d88e716346e750db9b23a48682e702dba0c385ff84fc4690f266d5"
+    },
+    {
+      "path": "relay/codal-contract.test.mjs",
+      "gitBlob": "ab8d301517b6fd891f7e152df5ed86616eb1f5c8",
+      "sha256": "b7bcfa442c39f43e7f4feaaa8da5e88d37320398adf5b54dfbd3ffdc72e76124"
+    },
+    {
+      "path": "relay/codal.mjs",
+      "gitBlob": "f45efd7963cb56fa3a6dd644a564698aaea8555b",
+      "sha256": "ffece910e37d88000d316974822c17089705695eddaf13d633af66bd0f4accc9"
+    }
+  ],
+  "inputFixtures": [
+    {
+      "path": "docs/research/intelligence-loop/fixtures/missing.json",
+      "sha256": "824fc4933a826ade30681a83d33571dce6ef8226f09f02b47d9a55dc43b8fb45",
+      "dataClass": "SYNTHETIC_DERIVED_TABLES"
+    },
+    {
+      "path": "docs/research/intelligence-loop/fixtures/correction.json",
+      "sha256": "ecb84ef508879dfddb375f76d28a35e371f752d5395ded19a64f2de13d41af5c",
+      "dataClass": "SYNTHETIC_CORRECTION_PAIR"
+    },
+    {
+      "path": "docs/research/intelligence-loop/fixtures/unit-mismatch.json",
+      "sha256": "9c98a08ad927b07ff0d078de872d39e9553b4700dfe1baf849f6d595b30eb432",
+      "dataClass": "SYNTHETIC_DERIVED_TABLES"
+    }
+  ],
+  "archiveDigest": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+  "allCaseInputDigestsUnchanged": true,
+  "allFixtureBytesUnchanged": true,
+  "runtimeBlobsMatchedBeforeAndAfter": true,
+  "baseline": {
+    "executedAt": "2026-10-01T23:25:15.942Z",
+    "codeSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+    "parserVersion": 2,
+    "PASS": 2,
+    "FAIL": 2
+  },
+  "patched": {
+    "executionTimes": [
+      "2026-10-01T23:26:24.922Z",
+      "2026-10-01T23:26:25.133Z"
+    ],
+    "parserVersion": 3,
+    "PASS": 4,
+    "FAIL": 0,
+    "NOT_EXECUTED": 0,
+    "replayPayloadDigest": "4ffa49fb93b2613ffd658545dfb59457c91a4b00c9fe301d07c126b5a4e6625c"
+  },
+  "cases": [
+    {
+      "caseId": "IE01-C1-COMPLETE",
+      "status": "PASS",
+      "inputDigest": "568a5473a95364530809290b4f305fb7012047250bafa40eb33af2ccaf4ea8d1",
+      "outputDigest": "d35a156ade04633222b39b864d6ee7cbbb886ed40b5254034f5d6ee09b1a47d2",
+      "calculatedAt": "2026-10-01T23:26:24.905Z",
+      "checks": [
+        {
+          "name": "historic current literal: revenue",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: cogs",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: gross_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: operating_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: net_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: eps_rial",
+          "status": "PASS"
+        },
+        {
+          "name": "historic prior literal: revenue",
+          "status": "PASS"
+        },
+        {
+          "name": "historic prior literal: net_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic capital literal",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: gross_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: operating_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: net_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "growth cross-product: revenue_growth",
+          "status": "PASS"
+        },
+        {
+          "name": "growth cross-product: net_profit_growth",
+          "status": "PASS"
+        },
+        {
+          "name": "no price invented for PE",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C2-MISSING",
+      "status": "PASS",
+      "inputDigest": "1d95239a45ba451ccc6ac6f26a5b69d2df751195dac68ba77adf03bde08ba559",
+      "outputDigest": "526e5c52768a939bbdefb9ad526d326762ce53ec718fa2637910f9f621b0f2b7",
+      "calculatedAt": "2026-10-01T23:26:24.912Z",
+      "checks": [
+        {
+          "name": "fixture truly lacks gross row",
+          "status": "PASS"
+        },
+        {
+          "name": "missing gross and gross_margin must stay null",
+          "status": "PASS"
+        },
+        {
+          "name": "independent net field retained",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C3-CORRECTION",
+      "status": "PASS",
+      "inputDigest": "b0d62b857848cdd8e5b92906bc10fbc6ac892eba22ae3a37fe29d2e576d0e0d4",
+      "outputDigest": "736f3c180542039edd084575de4a150f2feb485aa23e8446660b04647009d584",
+      "calculatedAt": "2026-10-01T23:26:24.912Z",
+      "checks": [
+        {
+          "name": "explicit correction wins despite lower insertion ID",
+          "status": "PASS"
+        },
+        {
+          "name": "order independent and single period",
+          "status": "PASS"
+        },
+        {
+          "name": "correction field used",
+          "status": "PASS"
+        },
+        {
+          "name": "new net_margin differs; old result not reused",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C4-UNIT-MISMATCH",
+      "status": "PASS",
+      "inputDigest": "a5413aa31368d39788c30b5e4139496c9ca3231063b80ebd3d5c08c92220faf1",
+      "outputDigest": "49691fe49048e879ffdaf53bf3ee31d7356385e2fc667f91cee0fd5eec2009e8",
+      "calculatedAt": "2026-10-01T23:26:24.918Z",
+      "checks": [
+        {
+          "name": "fixture explicit thousand-rial header present",
+          "status": "PASS"
+        },
+        {
+          "name": "conflicting unit must reject/null affected output",
+          "status": "PASS"
+        },
+        {
+          "name": "input EPS tokens unchanged; present output EPS retained",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    }
+  ],
+  "method": "replace runtime-generated fixture construction with loading frozen PR194 fixture JSON; all evaluate/action/record blocks byte-identical",
+  "scope": "four frozen-input offline contract cases only",
+  "financialDataIncluded": false,
+  "financialValidation": false,
+  "productionAcceptance": false,
+  "upstreamRequests": 0,
+  "liveDBCalls": 0,
+  "modelCalls": 0,
+  "runtimeMutationDuringExecution": 0,
+  "sourceUrl": null,
+  "sourceAt": null,
+  "capturedAt": null,
+  "rightsVerified": false,
+  "limits": [
+    "issuer provenance and statement unit authenticity unresolved",
+    "annual/quarterly UI, storage/approval and full app build not independently run",
+    "no general missing-field guarantee beyond gross_profit",
+    "legacy unitless statement remains unverified",
+    "no release, ingest, DB, migration or service change"
+  ],
+  "IE02Started": false,
+  "IE03Started": false
+}
