@@ -23,9 +23,9 @@ To eliminate this warning, add "type": "module" to \\?\C:\Users\Asus\Documents\C
 test at relay\codal-contract.test.mjs:21:1
 ✖ missing bank gross stays null through parser, ratios, and annual margins (5.2923ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== null
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:24:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
@@ -43,9 +43,9 @@ test at relay\codal-contract.test.mjs:21:1
 test at relay\codal-contract.test.mjs:31:1
 ✖ unreadable current gross does not borrow prior gross or synthesize zero (0.8626ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== null
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:33:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
@@ -65,9 +65,9 @@ test at relay\codal-contract.test.mjs:31:1
 test at relay\codal-contract.test.mjs:43:1
 ✖ quarterly gross stays unknown if either cumulative gross is missing (0.6778ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
-  
+
   0 !== null
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:47:50)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
@@ -88,7 +88,7 @@ test at relay\codal-contract.test.mjs:51:1
 ✖ explicit unsupported amount unit rejects statement, preserves input EPS token (1.1413ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
   + actual - expected
-  
+
   + {
   +   audited: false,
   +   capital: 10,
@@ -118,7 +118,7 @@ test at relay\codal-contract.test.mjs:51:1
   +   unit: 'میلیون ریال'
   + }
   - null
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:53:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
@@ -139,7 +139,7 @@ test at relay\codal-contract.test.mjs:57:1
 ✖ conflicting amount declarations reject; unrelated table cannot override selected statement (0.6021ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
   + actual - expected
-  
+
   + {
   +   audited: false,
   +   capital: 10,
@@ -169,7 +169,7 @@ test at relay\codal-contract.test.mjs:57:1
   +   unit: 'میلیون ریال'
   + }
   - null
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:58:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
@@ -190,10 +190,10 @@ test at relay\codal-contract.test.mjs:62:1
 ✖ million amount plus separate rial EPS accepted; EPS-only unit is no amount proof (0.6673ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
   + actual - expected
-  
+
   + undefined
   - 'legacy_unverified'
-  
+
       at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:66:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1382:25)
