@@ -3,7 +3,7 @@
 2026-10-01. **BUILD/LOCAL ACCEPTANCE PASS؛ انتشار و پذیرش زنده OPEN.** این تحویل روی سایت اصلی نصب نشده است.
 
 ## مبنا، مالکیت و محدوده
-- شاخه `codex/followup-latency-20261001` در worktree مستقل؛ base دقیق PR182=`e5740be93f666dc76a605ccef190f710767ab748`؛ PR182 روی PR174=`95cfa3410a97ac0d98cdefcb6671d4cfcb668646` است. main هنگام شروع=`51fd0661d48d791ce8758a87828a81ce72cac6df`. PR/SHA تحویل پس از ثبت در handoff تکمیل می‌شود.
+- شاخه `codex/followup-latency-20261001` در worktree مستقل؛ base دقیق PR182=`e5740be93f666dc76a605ccef190f710767ab748`؛ PR182 روی PR174=`95cfa3410a97ac0d98cdefcb6671d4cfcb668646` است. main هنگام شروع=`51fd0661d48d791ce8758a87828a81ce72cac6df`. [PR187](https://github.com/safariarash7777-source/portfolio-platform/pull/187)؛ commit کد و شواهد `4687ceaa05d57233c1d718453016f3f1171aa353`. head نهایی پس از ثبت metadata فقط در handoff/CI تحویل ثبت می‌شود تا ارجاع به hash خود سند ایجاد نشود.
 - مالکیت اطلاع داده شد: API عمومی بازار، بانک داده و reader عمومی؛ Auth/Storage/Navbar/tokens، reader پرونده/دارایی و relay تغییر نکردند. اسناد مرکزی در مالکیت هماهنگ‌کننده‌اند؛ ردیف پیشنهادی ثبت این نتیجه به او ارسال می‌شود.
 - هیچ merge، migration، تغییر env مشترک/Production، نصب زیرساخت، درخواست BrsApi، backfill یا پیام به عضو واقعی انجام نشده است.
 
