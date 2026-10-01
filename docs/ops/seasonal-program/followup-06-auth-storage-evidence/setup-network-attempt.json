@@ -1,0 +1,19 @@
+{
+  "environment": "followup06-auth-storage-2605-local",
+  "applicationSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "ciCheckpoint": "b7c77260821cd127c1a7a65eae123022dcf0a43a",
+  "docsBaseline": "630c4bac8ff264b3f9f27464266e50f239707723",
+  "origin": "http://127.0.0.1:3299",
+  "names": {
+    "db": "followup06-accept-db",
+    "auth": "followup06-accept-auth",
+    "rest": "followup06-accept-rest",
+    "storage": "followup06-accept-storage"
+  },
+  "network": "followup06-accept-network",
+  "startedAt": "2026-10-01T10:51:48.754Z",
+  "source": "fresh native GoTrue and Storage migrations, repository production SQL; no sql/test scaffold or restored data",
+  "steps": [],
+  "status": "BLOCKED_SETUP",
+  "blocker": "Real GoTrue not healthy"
+}

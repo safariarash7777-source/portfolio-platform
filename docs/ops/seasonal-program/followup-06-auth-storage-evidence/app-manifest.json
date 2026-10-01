@@ -1,0 +1,13 @@
+{
+  "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "environment": "followup06-auth-storage-2605-local",
+  "builtAt": "2026-10-01T10:59:51.399Z",
+  "origin": "http://127.0.0.1:3299",
+  "backend": "same-origin /supabase",
+  "build": "production",
+  "realAuth": "GoTrue v2.197.0",
+  "realStorage": "1.11.2",
+  "CPU": "one reported CPU, max heap768MB",
+  "newAuthBranchIncluded": false,
+  "newMemberHomeIncluded": false
+}

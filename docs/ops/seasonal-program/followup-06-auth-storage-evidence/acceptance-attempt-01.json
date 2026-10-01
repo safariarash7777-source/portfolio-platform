@@ -1,0 +1,329 @@
+{
+  "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "environment": "followup06-auth-storage-2605-local",
+  "origin": "http://127.0.0.1:3299",
+  "startedAt": "2026-10-01T11:16:27.220Z",
+  "mode": "builder preliminary real-service acceptance; not independent human signoff",
+  "browser": "existing Playwright; no session injection; no HAR/trace/credential screenshots",
+  "scenarios": [
+    {
+      "id": "login-A",
+      "expected": "Actual product UI password login and native auth/user; separate context; correct redirect",
+      "at": "2026-10-01T11:16:28.015Z",
+      "observed": {
+        "role": "A",
+        "userId": "90fbdf83-2522-4362-90c3-fde6755e6653",
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "redirect": "/dashboard/holdings",
+        "cookies": 1,
+        "sessionOrigin": "native GoTrue response from UI login"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-B",
+      "expected": "Actual product UI password login and native auth/user; separate context; correct redirect",
+      "at": "2026-10-01T11:16:30.908Z",
+      "observed": {
+        "role": "B",
+        "userId": "de53f5b7-ab5b-4c14-9c75-b77646073cc2",
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "redirect": "/dashboard/holdings",
+        "cookies": 1,
+        "sessionOrigin": "native GoTrue response from UI login"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-expired",
+      "expected": "Actual product UI password login and native auth/user; separate context; correct redirect",
+      "at": "2026-10-01T11:16:32.221Z",
+      "observed": {
+        "role": "expired",
+        "userId": "7889b21f-d7df-4738-9561-1730b3a6e09e",
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "redirect": "/dashboard/holdings",
+        "cookies": 1,
+        "sessionOrigin": "native GoTrue response from UI login"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-cancelled",
+      "expected": "Actual product UI password login and native auth/user; separate context; correct redirect",
+      "at": "2026-10-01T11:16:33.439Z",
+      "observed": {
+        "role": "cancelled",
+        "userId": "317a6a7c-0c5b-4bdc-af41-0c5cceab594d",
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "redirect": "/dashboard/holdings",
+        "cookies": 1,
+        "sessionOrigin": "native GoTrue response from UI login"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-nonmember",
+      "expected": "Actual product UI password login and native auth/user; separate context; correct redirect",
+      "at": "2026-10-01T11:16:34.792Z",
+      "observed": {
+        "role": "nonmember",
+        "userId": "576a4224-f08b-4850-9b4d-fa3147bdbce1",
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "redirect": "/dashboard/holdings",
+        "cookies": 1,
+        "sessionOrigin": "native GoTrue response from UI login"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "login-admin",
+      "expected": "Actual product UI password login and native auth/user; separate context; correct redirect",
+      "at": "2026-10-01T11:16:36.022Z",
+      "observed": {
+        "role": "admin",
+        "userId": "8aa1a685-7065-419a-afae-783aa358c4f1",
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "redirect": "/dashboard/holdings",
+        "cookies": 1,
+        "sessionOrigin": "native GoTrue response from UI login"
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "audited-grants",
+      "expected": "Admin actual-session API grants A/C1, B/C2, expired/C1, cancelled/C3; member cannot grant",
+      "at": "2026-10-01T11:16:37.458Z",
+      "observed": {
+        "rows": [
+          {
+            "role": "A",
+            "cohort": "A",
+            "http": 200,
+            "grantRef": "bbd5b47d-0670-4ff6-a42b-84254a767f68"
+          },
+          {
+            "role": "B",
+            "cohort": "B",
+            "http": 200,
+            "grantRef": "59c6ce33-2e93-4946-84f0-27cd1ef8a436"
+          },
+          {
+            "role": "expired",
+            "cohort": "A",
+            "http": 200,
+            "grantRef": "e00d78e0-419e-47f6-85a1-68a74784ca29"
+          },
+          {
+            "role": "cancelled",
+            "cohort": "cancel",
+            "http": 200,
+            "grantRef": "d8965dd3-c787-4d5c-91d1-52db122499f9"
+          }
+        ],
+        "nonAdminHTTP": 403
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "resource-cohort-isolation",
+      "expected": "A sees C1 only, B sees C2 only; expired/nonmember no resources; admin sees both",
+      "at": "2026-10-01T11:16:38.144Z",
+      "observed": [
+        {
+          "role": "A",
+          "cohort": "A",
+          "http": 200,
+          "rows": 1
+        },
+        {
+          "role": "A",
+          "cohort": "B",
+          "http": 200,
+          "rows": 0
+        },
+        {
+          "role": "B",
+          "cohort": "B",
+          "http": 200,
+          "rows": 1
+        },
+        {
+          "role": "B",
+          "cohort": "A",
+          "http": 200,
+          "rows": 0
+        },
+        {
+          "role": "expired",
+          "cohort": "A",
+          "http": 200,
+          "rows": 0
+        },
+        {
+          "role": "nonmember",
+          "cohort": "A",
+          "http": 200,
+          "rows": 0
+        },
+        {
+          "role": "admin",
+          "cohort": "A",
+          "http": 200,
+          "rows": 1
+        },
+        {
+          "role": "admin",
+          "cohort": "B",
+          "http": 200,
+          "rows": 1
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "native-storage-private-isolation",
+      "expected": "Native object API returns A bytes; B/expired/nonmember/guest and public path cannot read A; admin can read both",
+      "at": "2026-10-01T11:16:39.261Z",
+      "status": "FAIL",
+      "reason": "admin/A native storage HTTP 400"
+    },
+    {
+      "id": "signed-download-60s",
+      "expected": "API creates real 60-second URL; anonymous bearer fetch matches private bytes; cross-cohort and expired denied",
+      "at": "2026-10-01T11:16:40.265Z",
+      "status": "FAIL",
+      "reason": "Admin signing HTTP 503"
+    },
+    {
+      "id": "guest-HTTP-contract",
+      "expected": "No-session resource/download API returns 401 rather than service-unavailable",
+      "at": "2026-10-01T11:16:40.908Z",
+      "status": "FAIL",
+      "reason": "Guest list/download HTTP 503/503"
+    },
+    {
+      "id": "native-REST-RPC-isolation",
+      "expected": "Actual issued member JWT cannot fetch foreign resource or get foreign module grant",
+      "at": "2026-10-01T11:16:40.925Z",
+      "observed": [
+        {
+          "role": "A",
+          "cohort": "A",
+          "restHTTP": 200,
+          "rows": 1,
+          "rpcHTTP": 200,
+          "allowed": true
+        },
+        {
+          "role": "A",
+          "cohort": "B",
+          "restHTTP": 200,
+          "rows": 0,
+          "rpcHTTP": 200,
+          "allowed": false
+        },
+        {
+          "role": "B",
+          "cohort": "A",
+          "restHTTP": 200,
+          "rows": 0,
+          "rpcHTTP": 200,
+          "allowed": false
+        },
+        {
+          "role": "B",
+          "cohort": "B",
+          "restHTTP": 200,
+          "rows": 1,
+          "rpcHTTP": 200,
+          "allowed": true
+        },
+        {
+          "role": "expired",
+          "cohort": "A",
+          "restHTTP": 200,
+          "rows": 0,
+          "rpcHTTP": 200,
+          "allowed": false
+        },
+        {
+          "role": "nonmember",
+          "cohort": "A",
+          "restHTTP": 200,
+          "rows": 0,
+          "rpcHTTP": 200,
+          "allowed": false
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "personal-assets-baseline",
+      "expected": "Own declared asset and debt snapshots save via product APIs; foreign member REST remains empty",
+      "at": "2026-10-01T11:16:41.107Z",
+      "status": "FAIL",
+      "reason": "A holdings/debts HTTP 201/409"
+    },
+    {
+      "id": "publication-cohort-Auth",
+      "expected": "Existing API08 save/technical approval/ready/publish uses actual admin session; C1-only audience A permitted, B/expired/nonmember/guest denied; private research never exposed",
+      "at": "2026-10-01T11:16:41.327Z",
+      "status": "FAIL",
+      "reason": "Publication version reference missing"
+    },
+    {
+      "id": "cancelled-cohort",
+      "expected": "Actual admin cancel API revokes cancelled member access to resource/API/native Storage/RPC; personal assets unchanged",
+      "at": "2026-10-01T11:16:44.565Z",
+      "status": "FAIL",
+      "reason": "Personal member_holding_positions read HTTP 400"
+    },
+    {
+      "id": "revoked-membership",
+      "expected": "Actual admin revoke API cuts A resource and published cohort content access; prior issued URL capability bounded to TTL; own assets remain",
+      "at": "2026-10-01T11:16:45.541Z",
+      "status": "FAIL",
+      "reason": "Personal member_holding_positions read HTTP 400"
+    },
+    {
+      "id": "expired-personal-assets",
+      "expected": "Expired member has no cohort access while own personal ledger and UI asset remain",
+      "at": "2026-10-01T11:16:46.392Z",
+      "status": "FAIL",
+      "reason": "Personal member_holding_positions read HTTP 400"
+    },
+    {
+      "id": "native-signed-URL-expiry",
+      "expected": "Actual issued signed URLs deny anonymous fetch after TTL, including pre-revoke capability",
+      "at": "2026-10-01T11:16:46.424Z",
+      "observed": [
+        {
+          "name": "initial",
+          "http": 400,
+          "elapsedSeconds": 69,
+          "signedURLRecorded": false
+        },
+        {
+          "name": "pre-revoke",
+          "http": 400,
+          "elapsedSeconds": 64,
+          "signedURLRecorded": false
+        }
+      ],
+      "status": "PASS"
+    }
+  ],
+  "finishedAt": "2026-10-01T11:17:50.284Z",
+  "counts": {
+    "PASS": 10,
+    "FAIL": 8,
+    "BLOCKED": 0
+  }
+}

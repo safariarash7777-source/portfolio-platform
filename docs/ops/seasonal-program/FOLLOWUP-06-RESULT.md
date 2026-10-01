@@ -1,6 +1,29 @@
 # FOLLOWUP-06 — آمادگی تجمیع و پذیرش مستقل
 
-تاریخ: 2026-10-01، تهران. دامنه: inventory واقعی، ترکیب آزمایشی checkpointهای مشخص، regression و نصب schema در دیتابیس ساختگی جدا. **وضعیت: تجمیع نهایی پذیرفته نشده؛ SHA انتشار آماده اعلام نمی‌شود.** ورودی Auth و NEXT06 هنوز در حال ساخت‌اند؛ گیت‌های انسانی و پذیرش کامل Auth/Storage بازند.
+تاریخ: 2026-10-01، تهران. دامنه: inventory واقعی، ترکیب آزمایشی checkpointهای مشخص، regression، نصب schema و بررسی مستقل Auth/Storage واقعی در دیتابیس ساختگی جدا. **وضعیت: تجمیع نهایی پذیرفته نشده؛ SHA انتشار آماده اعلام نمی‌شود.** بررسی مستقل Auth/Storage همین checkpoint **18 PASS / 2 FAIL / 0 BLOCKED** دارد؛ ورودی Auth تازه و NEXT06 خارج از این checkpoint و گیت‌های انسانی همچنان بازند.
+
+## ادامهٔ جاری — Auth/Storage واقعی روی checkpoint ثابت
+
+برنامهٔ runtime/build/UI همچنان **`2605a0ff11ff5cb0f83837528aed230846469b16`**؛ CI موجود **`b7c77260821cd127c1a7a65eae123022dcf0a43a`**؛ baseline اسناد قبل از این ادامه **`630c4bac8ff264b3f9f27464266e50f239707723`** است. این مرحله application/schema/dependency را تغییر نداد؛ CI پیشین به commit تازهٔ اسناد نسبت داده نمی‌شود. Auth جدید و خانهٔ عضو تازه وارد برنامه نشده‌اند. DEV07@15eebc9 و گیت انسانی آن جدا محفوظ‌اند و دوباره اجرا نشدند.
+
+محیط تازهٔ مجاز **`followup06-auth-storage-2605-local`** روی [ورود واقعی محلی3299](http://127.0.0.1:3299/login?next=%2Fdashboard%2Fholdings)، فقط همین دستگاه؛ checkout منفک `portfolio-followup06-acceptance` روی2605a0f. production build در2026-10-01T10:59:51.399Z موفق شد. سرویس‌های واقعی PostgreSQL17.11، GoTrue2.197.0، PostgREST14.17 و Storage1.11.2 با label اختصاصیfollowup06-accept راه افتادند. Storage نسخهٔ cached واقعی آزموده‌شده است؛ از آن آمادگی نسخه‌های دیگر یا Production نتیجه‌گیری نمی‌شود. هیچ restore یا دادهٔ واقعی وجود ندارد، DB پورت عمومی ندارد؛ APIها فقط loopback، CORS همانorigin204/foreign403 و CSP حاضرند.
+
+[شاهد نصب واقعی](followup-06-auth-storage-evidence/environment.json): Auth و Storage migrationهای native خودشان را اجرا کردند، سپس16 فایل SQL واقعی مخزن از پیش‌نیازها تاphase32→34→35→36→37→38 و migrations04/08 نصب شدند. `sql/test` و policy scaffold استفاده نشدند. [بازتأیید فقط‌خواندنی](followup-06-auth-storage-evidence/environment-verification.json):75 migrationAuth،73 migrationStorage، شش حساب واقعی ساختگی، چهار object واقعاً uploadشده، bucketخصوصیfalse و صفرpolicy deliberately_permissive_test_read. این محیط از DB regression/Storage fixture بخش‌های قبلی جداست؛ نصب روی DB مشترک/لیارا/Production انجام نشد.
+
+[جدول تفصیلی و نقص‌ها](followup-06-auth-storage-evidence/README.md)، [شاهد مقدماتی](followup-06-auth-storage-evidence/acceptance.json): ورود هر شش نقش A/B/expired/cancelled/nonmember/admin از فرم محصول، context تازه، پاسخ nativeAuth و getUser200، بازگشت holdings. اجرای سازنده2026-10-01T11:19:52.952Z→11:21:12.284Z UTC: **17 PASS / 2 FAIL / 0 BLOCKED**. دو دوره، فایل خصوصی واقعی و digestbytes، REST/RPC با JWT واقعاً صادرشده، API04grant/revoke/cancel، API08save/technical approval/ready/publish و حفظ دارایی/بدهی با API173 آزموده شدند؛ نشست تزریق نشد. تأیید فنی پژوهش ساختگی، signoff انسانی DEV07 نیست.
+
+[گزارش مستقل تازه](followup-06-auth-storage-evidence/independent.md)، [شواهد مستقل](followup-06-auth-storage-evidence/independent.json): بازبین جدا `/root/dev07_independent`، با شش login/UI/context تازه و هفتم مهمان، **20 بررسی:18 PASS /2 FAIL /0 BLOCKED**؛ اجرا2026-10-01T11:26:09.668Z→11:27:27.401Z UTC و بررسی مجدد نمایشUIتا11:27:39.154Z. دو نقص04مستقلاً بازتولید شدند. بازبین با adminواقعی یکgrantموقتAرا ازAPIداد وrevokedکرد؛ فایل36بایت باdigestمنطبق، signedTTL60، audienceفقطC1 و ردURLقبلی در65ثانیه400 را مستقل مشاهده کرد. تعداد/hashدارایی/بدهی A/expired/cancelled یکسان وUIآن‌ها پس از renderingواقعی حاضر بود. خواندنtextپیش ازrenderدرتلاش اولیه جدا حفظ و باloginوwaitواقعی راستی‌آزمایی شد؛ FAILمحصولی جدید ازآن فرض نشد. هر16hashفایلSQL وpolicyهایcatalogStorageنیز مستقل تطبیق داده شدند. این بازبین عامل است، انسان نیست؛ گیت‌های انسانی قدیمی بسته نشدند.
+
+پس از revoke، درخواست تازهٔresource403، publication404، nativeStorage400 و RPCfalse شدند؛ دارایی/بدهی شخصی تعداد و SHA256 یکسان داشتند. URLامضاشدهٔ قبلی بلافاصله پس از revoke200 بود، سپس در64ثانیه400 شد؛ URLاول نیز در67ثانیه400 شد. بنابراین capability قبلی حداکثر تاTTL60 قابل استفاده است؛ لغو فوری خودتوکن ادعا نمی‌شود. توکن/URLامضاشده یا اطلاعات ورود ذخیره/تصویر/گزارش نشدند.
+
+دو نقص باز با مالک **NEXT04 / PR175**، پیش از هر اصلاح کد:
+
+| نقص | بازتولید و اثر واقعی | اقدام مالک |
+|---|---|---|
+|F06-AS-01،P2|مهمان بدونcookie درGETlist/download منابع هر دو503؛ Authسالم200، انتظار401؛ خصوصی افشا نشد|تشخیص AuthSessionMissingError از اختلال واقعی درهر دوhandler، آزمونHTTP و تحویلSHAثابت برایrecheck|
+|F06-AS-02،P2|مدیر واقعی بدونentitlement، فهرستC1/C2 هر دو200/یکردیف، downloadهر دو503، nativeStorageهر دو400؛ readpolicyادمین را مجاز می‌کند ولیstorage_allowed بهmodulegrant نیاز دارد|قرارداد مجوز مدیر درفهرست/دانلود/policy یکسان شود؛ اگر منع است403 روشن، اگر مجاز استمسیر مجاز؛ بدونfallbackکلیدservice یا بازکردنRLS؛ تحویلpatchبرایبازآزمایی|
+
+این عامل کد مالک04/08 را تصاحب/اصلاح نکرده است. تلاش اول و خطاهای harness جدا محفوظ‌اند: ledgerمالی مشترک/نام ستون‌هایpositions/receiptUUID ابتدا اشتباه فرض شدند و فقط ابزار پذیرش اصلاح شد؛ [attempt01](followup-06-auth-storage-evidence/acceptance-attempt-01.json) شاهد نقص محصول نهایی محسوب نمی‌شود. cohortلغوشده بازنشانی نشد؛ cohortساختگی تازه برایبازآزمایی ساخته شد. مانع اولیهٔ شبکه داخلیDocker رفع شده و درmanifest سابقه مانده، مانع جاری سرویس نیست. محیط‌های انسانیDEV07/173 و سایرAuthها متوقف/دست‌کاری نشدند؛ فقط DBregression قدیمیِ خوداینمأموریت برایحافظه متوقف وvolumeحفظ شد.
 
 ## نسخه و محیط
 
@@ -113,9 +136,9 @@ CI تمام هفت head ورودی مستقیماً از GitHub **success** مش
 |---|---|---|---|---|---|
 |168|کد ثابت15eebc9 و checkpoint ترکیب|DEV07 قبلی13/0/1؛ regression69 مرتبط جدید|32…37 حاضر|در این مأموریت خیر|BLOCKED تأیید انسانی۵|
 |173|6787005 ثابت|regression مالی/مجوز؛ runtime قبلی56deb8c در گزارش173|phase38 حاضر|خیر|فهم مشتری واقعی و تجمیع PENDING|
-|175|bb7c2f9 ثابت|22 DB/HTTP + unitهای core|timestamp04 حاضر؛ Storage fixture|خیر|Auth/Storage provider و policy PENDING|
+|175|bb7c2f9 ثابت|22 DB/HTTP قبلی؛ realAuth/Storage مستقل18PASS/2FAIL|timestamp04 درDBregression وsandboxnativeجدا؛ privatebucket/objectواقعی|خیر|FAIL دو نقص مستقلF06-AS-01/02؛ patchمالک04وrecheckلازم|
 |174|95cfa34 ثابت|core/relay/build ترکیب|schema تازه مستقل ندارد|خیر|تازگی/پوشش داده زنده PENDING|
-|176|d697635 ثابت|22 DB/HTTP + core|timestamp08 حاضر|خیر|نشر با هویت و مخاطب واقعی PENDING|
+|176|d697635 ثابت|22 DB/HTTP قبلی؛ API08باadminAuthواقعی؛ مخاطبC1/منعC2مستقلاًتأییدشد|timestamp08 درهر دوsandboxجدا|خیر|مخاطب/currentcheckpointموفق؛ گیت‌های کل ترکیب باز|
 |177|27e59ad ثابت|57 public/build و قراردادهای موجود|schema مستقل ندارد|خیر|Auth جدید و طراحی/فونت مالک PENDING|
 |178|4ce06b3 ثابت|14 DB + suiteهای relay|phase28 حاضر فقط اینجا|NOT DEPLOYED|baseline مصرف/reset واقعی BLOCKED|
 |Auth|کار مجری فعال و ثبت‌نشده|در این ترکیب آزموده نشد|در این ترکیب نصب نشد|آزمون ارسال/پیکربندی واقعی مستقل باز|PENDING head/قرارداد/پذیرش|
@@ -142,7 +165,7 @@ CI تمام هفت head ورودی مستقیماً از GitHub **success** مش
 |Auth ورودی متغیر و ورود مالک|تحویل PR/head ثابت، حفظ UUID/ایمیل، UI/API و شواهد real Auth/SMTP sandbox؛ رفع AUTH00 فقط با علت واقعی|مجری Auth/زیرساخت|
 |NEXT06 و NEXT09|تحویل مستقل با SHA و fixture/قرارداد فعلی؛ بدون مدل مالی/Auth موازی|مجری173 برای06؛ صاحب09|
 |داده/refresh/quota178|تثبیت baseline مصرف و reset، نصب مصوب، خواندن کامل/تازگی واقعی؛ consumer با baseline UNKNOWN خاموش بماند|چت لیارا؛ قرارداد مدل با ارز|
-|Auth/Storage/publication تجمیع|ورود واقعی حساب‌های ساختگی، دو دوره، resource خصوصی و عدم دسترسی لینک مستقیم در sandbox قابل دسترسی؛ سپس acceptance مستقل|FOLLOWUP06 پس از ورودی ثابت|
+|Auth/Storage/publication تجمیع|مرحله واقعی همینcheckpointاجراشد؛ دو نقص مهمان/مدیر بامالک04باز؛ patchثابت وبازآزمایی مستقل متأثر لازم؛ ورودیAuthجدید/NEXT06هنوزجدا|مالکNEXT04برایاصلاح؛ FOLLOWUP06برایrecheck؛ بازبین مستقل موجود|
 |CI و release gates|CI checkpoint حاضر سبز است؛ پس از Auth/NEXT06/09، CI همان SHA تازه و regression متأثر، بررسی DD034/035/036 و HOLD پرداخت؛ سپس تصمیم ادغام|FOLLOWUP06 و هماهنگ‌کننده|
 
 تغییر/retarget PRهای دیگر، merge بهmain، انتشار Production، نصب مشترک، فرانت/فونت موازی و ارسال پیام/اعلان واقعی انجام نشد. checkout مرکزی و docs/README مرکزی ویرایش نشدند؛ تغییرات inherited اسناد در ترکیب از commitهای ورودی‌اند.

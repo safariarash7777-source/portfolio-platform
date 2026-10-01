@@ -1,0 +1,63 @@
+{
+  "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "environment": "followup06-auth-storage-2605-local",
+  "createdAt": "2026-10-01T11:12:38.465Z",
+  "accounts": {
+    "A": {
+      "id": "90fbdf83-2522-4362-90c3-fde6755e6653",
+      "profileRole": "user"
+    },
+    "B": {
+      "id": "de53f5b7-ab5b-4c14-9c75-b77646073cc2",
+      "profileRole": "user"
+    },
+    "expired": {
+      "id": "7889b21f-d7df-4738-9561-1730b3a6e09e",
+      "profileRole": "user"
+    },
+    "cancelled": {
+      "id": "317a6a7c-0c5b-4bdc-af41-0c5cceab594d",
+      "profileRole": "user"
+    },
+    "nonmember": {
+      "id": "576a4224-f08b-4850-9b4d-fa3147bdbce1",
+      "profileRole": "user"
+    },
+    "admin": {
+      "id": "8aa1a685-7065-419a-afae-783aa358c4f1",
+      "profileRole": "admin"
+    }
+  },
+  "course": "b5a5f4e4-b9f6-434b-9577-146315663316",
+  "cohorts": {
+    "A": "f3ec0953-d248-4838-a6db-e96c84dd434f",
+    "B": "cc97d164-c7f0-4351-8b2a-11e589842289",
+    "cancel": "a7eee768-677a-4036-b74c-00d28832da11"
+  },
+  "resources": {
+    "A": {
+      "id": "da12b1ad-381f-4a85-b8b2-b5c22f433365",
+      "storagePath": "followup06-A/synthetic.txt",
+      "sha256": "773ee1169339e5c25cda05f6c75296a6daeaf02c81a435a60083984598cc8128",
+      "bytes": 36,
+      "uploadHTTP": 200
+    },
+    "B": {
+      "id": "4f213326-96cc-493b-a9df-8fd704cb82ce",
+      "storagePath": "followup06-B/synthetic.txt",
+      "sha256": "1eac92483419fa0f08f4d4615748e7452b6a7c6d4f196fe62caa623ba2cc3792",
+      "bytes": 36,
+      "uploadHTTP": 200
+    },
+    "cancel": {
+      "id": "7443afa9-1a83-4310-8c3b-d7c5a2c9e2f7",
+      "storagePath": "followup06-cancel/synthetic.txt",
+      "sha256": "e0030e2c47d0f32dee9a6eabee3329c8bccfe645b18121716b54fcf63d1ce3af",
+      "bytes": 41,
+      "uploadHTTP": 200
+    }
+  },
+  "accountCreation": "Native GoTrue admin API; email confirmed test users; login must still use product UI",
+  "storage": "Native Storage upload API; real storage.objects; no scaffold objects",
+  "credentialFile": "C:/Users/Asus/.codex/private/followup06-auth-storage/reviewer-credentials.json"
+}

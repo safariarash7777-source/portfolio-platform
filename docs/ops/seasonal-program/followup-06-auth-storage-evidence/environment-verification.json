@@ -1,0 +1,78 @@
+{
+  "sha": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "environment": "followup06-auth-storage-2605-local",
+  "checkedAt": "2026-10-01T11:24:26.783Z",
+  "nativeAuthHealthHTTP": 200,
+  "nativeStorageHealthHTTP": 200,
+  "origin": "http://127.0.0.1:3299",
+  "CORS": {
+    "sameOriginOPTIONS": 204,
+    "allowedOrigin": "http://127.0.0.1:3299",
+    "foreignOriginOPTIONS": 403
+  },
+  "CSP": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; frame-src 'self' http://127.0.0.1:3299; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "schema": {
+    "actualAuthUsers": 6,
+    "nativeStorageObjects": 4,
+    "privateBucketPublic": false,
+    "gotrueMigrationCount": 75,
+    "storageMigrationCount": 73,
+    "deliberatelyPermissiveTestPolicies": 0
+  },
+  "scope": "read-only own synthetic sandbox; no policy changes",
+  "containers": [
+    {
+      "name": "/followup06-accept-db",
+      "image": "postgres:17-alpine",
+      "labels": {
+        "codex.task": "followup06-accept"
+      },
+      "ports": {}
+    },
+    {
+      "name": "/followup06-accept-auth",
+      "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "labels": {
+        "codex.task": "followup06-accept"
+      },
+      "ports": {
+        "9999/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "54341"
+          }
+        ]
+      }
+    },
+    {
+      "name": "/followup06-accept-rest",
+      "image": "dev07/postgrest:14.17",
+      "labels": {
+        "codex.task": "followup06-accept"
+      },
+      "ports": {
+        "3000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "54342"
+          }
+        ]
+      }
+    },
+    {
+      "name": "/followup06-accept-storage",
+      "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "labels": {
+        "codex.task": "followup06-accept"
+      },
+      "ports": {
+        "5000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "54343"
+          }
+        ]
+      }
+    }
+  ]
+}
