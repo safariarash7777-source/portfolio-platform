@@ -32,6 +32,12 @@
 
 ## اصلاح مستقل روی main
 
+### اختلاف قطعی Preview، مستقل از حادثه مالک
+
+در11:16:39 UTC، Preview خودکار `portfolio-platform-5sgpfsnit-safariarash7777-4463s-projects.vercel.app`، deployment `dpl_5b5HcfwdkFR3THgFz4z6DaL1mDSv` رویb17122a، READY وlogin200 بود؛ دهbundle خوانده‌شده URL قدیمیcloud Supabase داشتند و مبدأLiara درآن‌ها یافت نشد. Preview هویت رویcee76cf نیز همان اختلاف را داشت. [شاهد](./followup-auth-evidence/preview-destinations.json). درنتیجه فرض Preview بدون override برای این دو build تأیید شد؛ این علت قطعی ورود مالک روی سایت اصلی نیست، چون bundle Production بهLiara می‌رود.
+
+اصلاح تنظیم محیط نیازمند انتقال امن **هر دو** `NEXT_PUBLIC_LIARA_API_URL` و `NEXT_PUBLIC_LIARA_ANON_KEY` به scope دقیق Preview و rebuild مجاز است؛ helper فعلی زوج کامل را لازم دارد. هماهنگی مقصد server، کلید service-role همانDB، SiteURL وcallback allowlist جدا بررسی شود. env خارجی دراین تسک تغییر نکرد. URL این Preview برای ورود اصلی مالک توصیه نمی‌شود؛ بازبینی معتبر فعلی sandbox8800 است. HTTP402cloud طبق شاهد قبلی است و امروز probe مجدد نشد.
+
 فقط middleware، صفحه ورود و regression مرتبط تغییر کردند؛ اسکریپت آزمون ایزوله نیز اضافه شد. قواعد نقش و entitlements همان main باقی ماندند؛ ستون یا policy دورهٔ NEXT04 به این patch منتقل نشد.
 
 1. middleware از Edge به **Node.js** می‌رود؛ Next15.5.25 موجود این runtime را به‌صورت پایدار پشتیبانی می‌کند. این انتخاب، candidate رفع اختلاف runtime/اتصال است و نیازمند شاهد همان محیط ورسل پس از استقرار مجاز است. [مستند نسخه15](https://nextjs.org/docs/15/app/api-reference/file-conventions/middleware).
@@ -72,4 +78,4 @@ migration: **NONE**. Production mutation/deployment: **NONE**. بازگشت اپ
 
 [PR179](https://github.com/safariarash7777-source/portfolio-platform/pull/179)، draft رویmain51fd066؛ head هنگام ایجاد `b17122a7bca7be1467bb9dc3efa310e820f728dc`. SHA کد اپ `c9ce9e9` است؛ commit مستندات head را تغییر می‌دهد و head جاری از PR خوانده شود. مکمل هویت [PR180](https://github.com/safariarash7777-source/portfolio-platform/pull/180) روی موج دوم است.
 
-در snapshot همین head، GitHub Typecheck/Lint/Tests/Build، Dependencies و Secret/SQL موفق بودند؛ Database RLS درحال اجرا و Supabase Preview skipped بود. Vercel Preview pending بود؛ این وضعیت را به آماده‌بودن Production تعبیر نمی‌کنیم. commit بعدی مستندات CI تازه دارد. بازبینی محلی8800 پذیرفته شد، authenticated Preview و مالک Production هنوز باز هستند.
+در بازبینی نهاییhead `175df6354a3692adf3489e6982695091de760e5c`، GitHub CI Gate، Typecheck/Lint/Tests/Build، Database RLS/Integrity، Dependencies و Secret/SQL همگی موفق؛ Supabase Preview skipped بود. این snapshot از اپ آزموده‌شده به‌علاوه اسناد است؛ commit بعدی صرفاً شواهد/مستندات CI تازه دارد. Preview خودکار قدیمی READY اما مقصدcloud دارد؛ بازبینی محلی8800 پذیرفته شد، authenticated Preview و مالک Production هنوز باز هستند.

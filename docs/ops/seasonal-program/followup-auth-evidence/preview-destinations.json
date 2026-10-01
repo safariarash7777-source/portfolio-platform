@@ -1,0 +1,34 @@
+{
+  "productionChanged": false,
+  "checks": [
+    {
+      "label": "owner-login-preview",
+      "at": "2026-10-01T11:16:39.618Z",
+      "deployment": "dpl_5b5HcfwdkFR3THgFz4z6DaL1mDSv",
+      "sha": "b17122a7bca7be1467bb9dc3efa310e820f728dc",
+      "site": "https://portfolio-platform-5sgpfsnit-safariarash7777-4463s-projects.vercel.app",
+      "deploymentState": "READY",
+      "loginHttp": 200,
+      "scriptsRead": 10,
+      "liaraOrigins": [],
+      "legacyCloudUrlPresent": true,
+      "authenticatedAcceptance": false
+    },
+    {
+      "label": "mobile-email-preview",
+      "at": "2026-10-01T11:16:45.554Z",
+      "deployment": "dpl_9sjeTL4LifpG8qHZfCPon7ARKULT",
+      "sha": "cee76cf454d3c494c3df6dd21fc55a5f1217484d",
+      "site": "https://portfolio-platform-f7w7375xs-safariarash7777-4463s-projects.vercel.app",
+      "deploymentState": "READY",
+      "loginHttp": 200,
+      "scriptsRead": 10,
+      "liaraOrigins": [],
+      "legacyCloudUrlPresent": true,
+      "authenticatedAcceptance": false
+    }
+  ],
+  "serverEffectiveOrigin": "UNKNOWN; bundle read does not prove server network",
+  "configurationChanged": false,
+  "cloudHealthRetested": false
+}
