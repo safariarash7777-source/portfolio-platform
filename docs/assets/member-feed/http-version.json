@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-01T19:02:02.351Z",
+  "source": "real Next + GoTrue + PostgREST on existing feed06 sandbox",
+  "gitHead": "eb94b97f50a1b628af4f84554f7a1ce06780910e",
+  "buildManifest": {
+    "sha": "eb94b97f50a1b628af4f84554f7a1ce06780910e",
+    "environment": "feed06-local",
+    "builtAt": "2026-10-01T19:00:39.962Z",
+    "origin": "http://127.0.0.1:3540",
+    "backend": "same origin /supabase",
+    "build": "production"
+  },
+  "records": [
+    {
+      "case": "first receipt replay identical",
+      "result": "PASS"
+    },
+    {
+      "case": "new version unread",
+      "result": "PASS"
+    },
+    {
+      "case": "old version rejects read replay",
+      "result": "PASS"
+    },
+    {
+      "case": "old first receipt retained",
+      "result": "PASS"
+    }
+  ]
+}

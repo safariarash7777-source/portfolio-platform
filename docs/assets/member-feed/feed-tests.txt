@@ -1,0 +1,35 @@
+▶ publication feed / real SQL permissions / legacy
+  ✔ all direct table privileges denied including service role; RLS FORCE and locked private definers (3366.399ms)
+  ✔ draft/ready and foreign/public content absent; A/B scopes and scoped detail never use another grant (4699.7042ms)
+  ✔ GET is side-effect-free; read is version/user idempotent, emits no new event, and receipt survives newer unread version (13848.8295ms)
+  ✔ keyset pages exclude hidden before limit and preserve ordering across a new publication (10448.7235ms)
+  ✔ tied publication timestamps use UUID keyset and microsecond boundary without rounding (2686.7216ms)
+  ✔ concurrent repeated mark-read creates one receipt with the same first timestamp (3751.3093ms)
+  ✔ withdrawn research approval, new workbook version and publication withdrawal hide detail and reject replay (4759.1443ms)
+  ✔ expiry, revocation, cancellation and wrong module deny next request including old receipts and multi-cohort content (15486.7879ms)
+✔ publication feed / real SQL permissions / legacy (66468.13ms)
+▶ publication feed / real SQL permissions / explicit
+  ✔ all direct table privileges denied including service role; RLS FORCE and locked private definers (6734.9461ms)
+  ✔ draft/ready and foreign/public content absent; A/B scopes and scoped detail never use another grant (14207.2523ms)
+  ✔ GET is side-effect-free; read is version/user idempotent, emits no new event, and receipt survives newer unread version (9661.1079ms)
+  ✔ keyset pages exclude hidden before limit and preserve ordering across a new publication (15654.0496ms)
+  ✔ tied publication timestamps use UUID keyset and microsecond boundary without rounding (4747.3084ms)
+  ✔ concurrent repeated mark-read creates one receipt with the same first timestamp (1592.0173ms)
+  ✔ withdrawn research approval, new workbook version and publication withdrawal hide detail and reject replay (5409.4756ms)
+  ✔ expiry, revocation, cancellation and wrong module deny next request including old receipts and multi-cohort content (13137.4283ms)
+✔ publication feed / real SQL permissions / explicit (75836.2469ms)
+✔ cursor retains six-digit PostgreSQL precision and rejects wrong scope, oversized, extra and malformed fields (8.3144ms)
+✔ feed DTO strips internal metadata from items/sources and binds canonical detail context (14.3433ms)
+✔ HTTP keyset uses exact scoped cursor and bounded limit; malformed input never reaches RPC (47.7579ms)
+✔ HTTP separates session, deny, missing, empty and service outage, without raw errors (5.6141ms)
+✔ mark read accepts only cohortId, never actor/time and only canonical validated receipt (4.0253ms)
+✔ scoped detail handles hidden and stale versions and strips internal metadata (2.4014ms)
+✔ client does not turn failed, malformed or wrong-contract responses into empty success; all requests no-store (1.9941ms)
+ℹ tests 23
+ℹ suites 2
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143285.9812
