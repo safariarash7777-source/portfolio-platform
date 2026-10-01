@@ -49,4 +49,3 @@ try{
  manifest.status='NATIVE_SERVICES_READY';manifest.finishedAt=new Date().toISOString();save();
  console.log(JSON.stringify({status:manifest.status,environment:manifest.environment,authUsers:manifest.initialAuthUsers,gotrue:manifest.gotrueVersion,storage:manifest.storageVersion,migrations:manifest.steps.length}));
 }catch(e){manifest.status='BLOCKED_SETUP';manifest.blocker=e.message;save();console.log(JSON.stringify({status:manifest.status,blocker:manifest.blocker}));process.exitCode=1;}
-

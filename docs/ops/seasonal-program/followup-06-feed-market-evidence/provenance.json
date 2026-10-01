@@ -1,0 +1,59 @@
+{
+  "recordedAt": "2026-10-01T20:53:44.356Z",
+  "fixedBaseline": "be60bf54d64d60cc1c3c5d438034439ce12b9f15",
+  "buildSHA": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "checkoutHead": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "priorCheckpointHead": "be60bf54d64d60cc1c3c5d438034439ce12b9f15",
+  "frozen": [
+    {
+      "file": "docs/ops/seasonal-program/followup-06-limited-evidence/independent.md",
+      "sha256": "d9cfb5143280b8b13cc81e135e5478d0824933340e9ca5712d4b30c3053e15c7",
+      "baselineSha256": "d9cfb5143280b8b13cc81e135e5478d0824933340e9ca5712d4b30c3053e15c7",
+      "unchanged": true
+    },
+    {
+      "file": "docs/ops/seasonal-program/followup-06-limited-evidence/independent.json",
+      "sha256": "53993d3d9b05f688648025956fbac0afecfdfa25ac2d75e72ec0763dd2f964d0",
+      "baselineSha256": "53993d3d9b05f688648025956fbac0afecfdfa25ac2d75e72ec0763dd2f964d0",
+      "unchanged": true
+    },
+    {
+      "file": "docs/ops/seasonal-program/followup-06-auth-storage-evidence/independent.md",
+      "sha256": "42c7c227cc1b298baccde3db6e0e28528410a27eb2817f69ed366a661f862b47",
+      "baselineSha256": "42c7c227cc1b298baccde3db6e0e28528410a27eb2817f69ed366a661f862b47",
+      "unchanged": true
+    },
+    {
+      "file": "docs/ops/seasonal-program/followup-06-auth-storage-evidence/independent.json",
+      "sha256": "33f263fd1c79acc61a43d86e3f26994a7f0a3583f2090c91d152eff66f4bb59e",
+      "baselineSha256": "33f263fd1c79acc61a43d86e3f26994a7f0a3583f2090c91d152eff66f4bb59e",
+      "unchanged": true
+    }
+  ],
+  "authFix": "a49 preserved byte-equivalent; owner180 backport separately",
+  "authDiffEmpty": true,
+  "applicationDiffAfterBuild": [],
+  "composition": [
+    {
+      "pr": 185,
+      "head": "a54b161b8df88f83e8624273b1c4bb2ffd10f787",
+      "base": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+      "overlaps": [
+        ".github/workflows/ci.yml",
+        "package.json"
+      ]
+    },
+    {
+      "pr": 187,
+      "head": "874c16096d792af2f57fc9142fde3124c0321dc1",
+      "base": "e5740be93f666dc76a605ccef190f710767ab748",
+      "overlaps": [
+        "package.json"
+      ]
+    }
+  ],
+  "testScriptUnion": "base+feed185+market187; package dependencies and lockfile unchanged",
+  "dependencyDiffEmpty": true,
+  "NEXT09SourceAbsent": true,
+  "acceptanceSeparation": "old38 not attributed; independent new matrix only"
+}

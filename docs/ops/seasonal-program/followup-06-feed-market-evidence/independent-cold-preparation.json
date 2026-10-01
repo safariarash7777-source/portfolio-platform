@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-01T20:42:45.939Z",
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "fixtureHTTP": 200,
+  "control": {
+    "synthetic": true,
+    "db": "hang",
+    "world": "ready",
+    "analytics": "ready",
+    "pageMs": 40,
+    "stats": {
+      "requests": 97,
+      "world": 5,
+      "history": 66,
+      "monthly": 11,
+      "quarterly": 9,
+      "snapshots": 5,
+      "active": 0,
+      "maxActive": 2
+    }
+  },
+  "clockOffset": 0,
+  "faults": {},
+  "applicationRequestsMade": 0,
+  "nextStep": "Root restart only owned Next3398 same immutable build, then independent cold API first before any page/login/source warmup"
+}

@@ -1,0 +1,558 @@
+{
+  "reviewer": "/root/limited_independent; did not author combined implementation",
+  "kind": "feed",
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "origin": "http://127.0.0.1:3399",
+  "checkoutHead": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "applicationSourceDiffEmpty": true,
+  "startedAt": "2026-10-01T20:33:09.771Z",
+  "scenarios": [
+    {
+      "id": "login-A",
+      "roles": [
+        "A"
+      ],
+      "expected": "Real UI/native session200, canonical UUID and actual return path",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "02363980-3f12-412c-a7a8-dcfa863cfb74",
+        "path": "/dashboard",
+        "capture": "Only HTTP status observed; real UI-issued SDK cookie read in memory, native Auth not intercepted"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:13.159Z"
+    },
+    {
+      "id": "login-B",
+      "roles": [
+        "B"
+      ],
+      "expected": "Real UI/native session200, canonical UUID and actual return path",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "3404646c-bd5e-4f22-88d1-b128a33b92d2",
+        "path": "/dashboard",
+        "capture": "Only HTTP status observed; real UI-issued SDK cookie read in memory, native Auth not intercepted"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:14.640Z"
+    },
+    {
+      "id": "login-admin",
+      "roles": [
+        "admin"
+      ],
+      "expected": "Real UI/native session200, canonical UUID and actual return path",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "9dc3a88a-7be9-478a-9f86-a2f394db764e",
+        "path": "/dashboard",
+        "capture": "Only HTTP status observed; real UI-issued SDK cookie read in memory, native Auth not intercepted"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:15.971Z"
+    },
+    {
+      "id": "feed-current-cohort-pagination",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "expected": "All current A synthetic versions through two scoped pages, no duplicates/private DTO fields; B only B",
+      "observed": {
+        "firstHTTP": 200,
+        "firstRows": 20,
+        "secondHTTP": 200,
+        "secondRows": 4,
+        "ids": [
+          "802e1593-1bc7-4937-a7c4-2d84290fd2dc",
+          "e7d9daf5-848b-4523-9da3-e08fa156ed95",
+          "03542241-830f-413a-9b90-9fe5f317abde",
+          "0fe417a1-58bc-4aa3-8d68-681f44d8359e",
+          "a782e15f-3396-4949-950c-73837ba83bbb",
+          "d81bf14c-d14d-4fdb-9ccc-80b0c367eb33",
+          "94e45022-eab4-48ae-ab46-4e874fa89f13",
+          "e7b714a3-c6d4-49f2-8baf-6c900c031291",
+          "2d415692-8fa0-4a93-a728-d70bc75413ef",
+          "2c82ce8e-b4bf-42dc-b277-bfbd878e44cb",
+          "b3dfb737-e666-4862-953d-9dec93d9c950",
+          "f4887bd0-0a0d-4647-83b5-7cdb7823f7c4",
+          "db1fdba0-8211-4d9c-a999-378484595f70",
+          "0cfe3d9b-7eed-4f2d-88c0-5a0847e6d012",
+          "af5bbc82-46d1-4f04-8304-5c8ca63db0c7",
+          "9b83b381-50e9-4573-8b87-079415451579",
+          "e45104a7-29f8-4116-a462-59d6336b4a5d",
+          "ce6d0616-dc82-4cb4-9b9b-c1e228a8ca2c",
+          "7843ae51-7c3a-4757-aea9-9d4778ae9e0d",
+          "54ee71be-7fed-40d3-9ff6-3ea3b467e84d",
+          "7a162094-b20b-47c4-b25b-255703e4f2e0",
+          "ffbfe572-65ca-4a70-a567-bcb3ac5c5763",
+          "baff4194-fb85-426f-b1bf-ba4b33bf4dfa",
+          "d11cf1a8-2595-4c15-94ad-e0298290b2de"
+        ],
+        "BHTTP": 200,
+        "BIds": [
+          "acdccbd0-5c95-4e16-957c-6c931da7f84b"
+        ],
+        "unknownDTOKeys": []
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:16.690Z",
+      "owner": "185/feed08"
+    },
+    {
+      "id": "feed-rest-rpc-private-isolation",
+      "roles": [
+        "A",
+        "B",
+        "guest",
+        "admin"
+      ],
+      "expected": "Foreign/admin without grant403; guest401; no direct private table reads",
+      "observed": {
+        "foreignHTTP": 403,
+        "guestHTTP": 401,
+        "adminHTTP": 403,
+        "foreignRPCHTTP": 403,
+        "rawForeignHTTP": 200,
+        "rawForeignRows": 0,
+        "privateTableHTTP": 404
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:16.922Z",
+      "owner": "185/RLS"
+    },
+    {
+      "id": "feed-cursor-and-input-scope",
+      "roles": [
+        "A",
+        "B"
+      ],
+      "expected": "Cursor belongs to cohort; malformed/duplicate/oversized controls400",
+      "observed": [
+        {
+          "http": 400
+        },
+        {
+          "http": 400
+        },
+        {
+          "http": 400
+        },
+        {
+          "http": 400
+        }
+      ],
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:17.220Z"
+    },
+    {
+      "id": "noncurrent-unpublished-unapproved-excluded",
+      "roles": [
+        "A"
+      ],
+      "expected": "Public/draft/ready/withdrawn/returned cannot enter private cohort feed or receipt path",
+      "observed": [
+        {
+          "state": "public",
+          "id": "304ce1ac-0d2b-4819-aadf-5b01c1ff7072",
+          "detailHTTP": 404,
+          "markHTTP": 404,
+          "inFeed": false
+        },
+        {
+          "state": "draft",
+          "id": "c9c306b2-2d8d-442c-b2fc-81a65ef3c096",
+          "detailHTTP": 404,
+          "markHTTP": 404,
+          "inFeed": false
+        },
+        {
+          "state": "ready",
+          "id": "cf1aa8a5-e1e5-4344-b917-b57feb87a2d1",
+          "detailHTTP": 404,
+          "markHTTP": 404,
+          "inFeed": false
+        },
+        {
+          "state": "withdraw",
+          "id": "bd8d224e-b529-4cce-a061-6a104c253473",
+          "detailHTTP": 404,
+          "markHTTP": 404,
+          "inFeed": false
+        },
+        {
+          "state": "returned",
+          "id": "4ce760ce-5dee-4368-854b-d14df6be4505",
+          "detailHTTP": 404,
+          "markHTTP": 404,
+          "inFeed": false
+        }
+      ],
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:18.109Z"
+    },
+    {
+      "id": "detail-get-is-not-a-read",
+      "roles": [
+        "A"
+      ],
+      "expected": "Authorized GET never writes read receipt",
+      "observed": {
+        "http": 200,
+        "before": "0|",
+        "after": "0|"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:18.586Z"
+    },
+    {
+      "id": "explicit-ui-read-replay-concurrent",
+      "roles": [
+        "A"
+      ],
+      "expected": "Actual UI read then concurrent/replay keep one uid/version receipt and first timestamp",
+      "observed": {
+        "uiHTTP": 200,
+        "replayHTTP": 200,
+        "readAt": "2026-10-01T20:33:18.992068+00:00",
+        "concurrentHTTP": [
+          200,
+          200
+        ],
+        "concurrentTimes": [
+          "2026-10-01T20:33:18.992068+00:00",
+          "2026-10-01T20:33:18.992068+00:00"
+        ],
+        "catalogReceipt": "1|2026-10-01 20:33:18.992068+00"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:19.555Z"
+    },
+    {
+      "id": "receipt-actor-time-not-client-controlled",
+      "roles": [
+        "A"
+      ],
+      "expected": "Client actor/time fields rejected400",
+      "observed": {
+        "http": 400
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:19.641Z"
+    },
+    {
+      "id": "feed-service-error-keeps-needs-form",
+      "roles": [
+        "A"
+      ],
+      "expected": "Actual REST fault503 is not empty feed, unsaved same-tab needs input preserved",
+      "observed": {
+        "identityHTTP": 503,
+        "feedErrorVisible": true,
+        "inputPreserved": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:23.657Z"
+    },
+    {
+      "id": "identity-feed-recovery-preserves-input",
+      "roles": [
+        "A"
+      ],
+      "expected": "REST recovery returns empty/pending profile and feed; form input remains",
+      "observed": {
+        "identityHTTP": 200,
+        "profileNull": true,
+        "pending": "pending",
+        "inputPreserved": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:24.015Z"
+    },
+    {
+      "id": "new-version-unread-old-receipt-retained",
+      "roles": [
+        "admin",
+        "A"
+      ],
+      "expected": "New08 version unread, old version404, old immutable receipt retained",
+      "observed": {
+        "saveHTTP": 201,
+        "readyHTTP": 201,
+        "publishHTTP": 201,
+        "newVersionId": "c5270a10-9624-4f4a-8dd7-e6598cc61319",
+        "newUnread": true,
+        "oldHTTP": 404,
+        "oldReceipt": "1|2026-10-01 20:33:18.992068+00",
+        "newReceipt": "0|"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:25.240Z"
+    },
+    {
+      "id": "withdraw-denies-existing-receipt-replay",
+      "roles": [
+        "admin",
+        "A"
+      ],
+      "expected": "Actual lifecycle command makes detail/receipt replay404 while historical receipt is retained",
+      "observed": {
+        "initialReadHTTP": 200,
+        "commandHTTP": 201,
+        "detailHTTP": 404,
+        "replayHTTP": 404,
+        "beforeReceipt": "1|2026-10-01 20:33:25.320152+00",
+        "afterReceipt": "1|2026-10-01 20:33:25.320152+00"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:25.918Z"
+    },
+    {
+      "id": "returned-denies-existing-receipt-replay",
+      "roles": [
+        "admin",
+        "A"
+      ],
+      "expected": "Actual lifecycle command makes detail/receipt replay404 while historical receipt is retained",
+      "observed": {
+        "initialReadHTTP": 200,
+        "commandHTTP": 201,
+        "detailHTTP": 404,
+        "replayHTTP": 404,
+        "beforeReceipt": "1|2026-10-01 20:33:25.989699+00",
+        "afterReceipt": "1|2026-10-01 20:33:25.989699+00"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:26.617Z"
+    },
+    {
+      "id": "explicit-revoke-open-page-saved-cursor",
+      "roles": [
+        "admin",
+        "A",
+        "B"
+      ],
+      "expected": "Revoke denies old cursor/detail/readRPC and open page; B unaffected",
+      "observed": {
+        "revokeHTTP": 200,
+        "cursorHTTP": 403,
+        "detailHTTP": 403,
+        "markHTTP": 403,
+        "rpcHTTP": 403,
+        "BHTTP": 200,
+        "BRows": 1,
+        "openPageDenied": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:27.602Z"
+    },
+    {
+      "id": "financial-needs-preserved-A",
+      "roles": [
+        "A"
+      ],
+      "expected": "Financial versions/rows and existing needs version/body byte-identical across feed lifecycle/revoke; real financial UI visible",
+      "observed": {
+        "beforeDigest": "c539b9b3a6e07e82fb1ea99036d364e6deb1bb952c7a9bf3db804ca294dd3ad5",
+        "afterDigest": "c539b9b3a6e07e82fb1ea99036d364e6deb1bb952c7a9bf3db804ca294dd3ad5",
+        "ledger": [
+          {
+            "table": "member_holding_versions",
+            "rows": 3,
+            "digest": "f7b11a404d7deb251a53fdfaff8cb65aa13e265a26f5e0f2618af82ea467b82d"
+          },
+          {
+            "table": "member_holding_positions",
+            "rows": 3,
+            "digest": "ffa7507fcebc62b916445029af61de836277a4ecb6c6ee38aae5559a6e38f173"
+          },
+          {
+            "table": "member_debt_positions",
+            "rows": 1,
+            "digest": "026838a9a7050bbba2d0a577f2c8b2eb938ad5966f5e5172c8b82d926147096b"
+          }
+        ],
+        "needsHTTP": 200,
+        "UIVisible": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:28.327Z"
+    },
+    {
+      "id": "financial-needs-preserved-B",
+      "roles": [
+        "B"
+      ],
+      "expected": "Financial versions/rows and existing needs version/body byte-identical across feed lifecycle/revoke; real financial UI visible",
+      "observed": {
+        "beforeDigest": "df3a60c9d07d43f6ed820f2bbc8d1cdf074f73c0f9d13fb5c1b9af5a0a9c3dfb",
+        "afterDigest": "df3a60c9d07d43f6ed820f2bbc8d1cdf074f73c0f9d13fb5c1b9af5a0a9c3dfb",
+        "ledger": [
+          {
+            "table": "member_holding_versions",
+            "rows": 3,
+            "digest": "fdefe22a16013e6fb6831cd712a327bf2d5338a8f8c686b498a2685fe743fd0a"
+          },
+          {
+            "table": "member_holding_positions",
+            "rows": 3,
+            "digest": "f9c5818c336b5ed11076bf86da980d335ac03f1c3808953cf9c0333ad61488ed"
+          },
+          {
+            "table": "member_debt_positions",
+            "rows": 1,
+            "digest": "a2d3c933faf661720dbcbc0ba7670fc4d724ecf0c87231dedf6bc3f4464469d1"
+          }
+        ],
+        "needsHTTP": 200,
+        "UIVisible": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:29.029Z"
+    },
+    {
+      "id": "foreign-financial-ledger-denied",
+      "roles": [
+        "B"
+      ],
+      "expected": "B cannot read A canonical private ledger",
+      "observed": {
+        "http": 200,
+        "rows": 0
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:33:29.040Z"
+    }
+  ],
+  "privacy": "Fresh actual product UI/native Auth sessions only; no invented JWT/cookies, HAR, traces, signed URLs or secret values in reports.",
+  "baseline": {
+    "A": {
+      "ledger": [
+        {
+          "table": "member_holding_versions",
+          "rows": 3,
+          "digest": "f7b11a404d7deb251a53fdfaff8cb65aa13e265a26f5e0f2618af82ea467b82d"
+        },
+        {
+          "table": "member_holding_positions",
+          "rows": 3,
+          "digest": "ffa7507fcebc62b916445029af61de836277a4ecb6c6ee38aae5559a6e38f173"
+        },
+        {
+          "table": "member_debt_positions",
+          "rows": 1,
+          "digest": "026838a9a7050bbba2d0a577f2c8b2eb938ad5966f5e5172c8b82d926147096b"
+        }
+      ],
+      "needs": {
+        "http": 200,
+        "body": {
+          "contractVersion": "seasonal.v0.1",
+          "data": {
+            "id": "e44b01c4-9a75-475c-9dad-4b7455369bd3",
+            "version": 1,
+            "body": {
+              "goal": "هدف ساختگی مستقل A",
+              "question": "پرسش ساختگی برای حفظ نیازسنجی",
+              "interests": [
+                "مدیریت دارایی"
+              ],
+              "experience": "new"
+            },
+            "submitted_at": "2026-10-01T20:27:56.762987+00:00",
+            "created_at": "2026-10-01T20:27:56.762987+00:00"
+          }
+        }
+      }
+    },
+    "B": {
+      "ledger": [
+        {
+          "table": "member_holding_versions",
+          "rows": 3,
+          "digest": "fdefe22a16013e6fb6831cd712a327bf2d5338a8f8c686b498a2685fe743fd0a"
+        },
+        {
+          "table": "member_holding_positions",
+          "rows": 3,
+          "digest": "f9c5818c336b5ed11076bf86da980d335ac03f1c3808953cf9c0333ad61488ed"
+        },
+        {
+          "table": "member_debt_positions",
+          "rows": 1,
+          "digest": "a2d3c933faf661720dbcbc0ba7670fc4d724ecf0c87231dedf6bc3f4464469d1"
+        }
+      ],
+      "needs": {
+        "http": 200,
+        "body": {
+          "contractVersion": "seasonal.v0.1",
+          "data": {
+            "id": "9b1e4f06-10dd-4f72-8af8-be3b3103c033",
+            "version": 1,
+            "body": {
+              "goal": "هدف ساختگی مستقل B",
+              "question": "پرسش ساختگی برای حفظ نیازسنجی",
+              "interests": [
+                "مدیریت دارایی"
+              ],
+              "experience": "new"
+            },
+            "submitted_at": "2026-10-01T20:27:56.965944+00:00",
+            "created_at": "2026-10-01T20:27:56.965944+00:00"
+          }
+        }
+      }
+    }
+  },
+  "finalGrantRevoked": true,
+  "finishedAt": "2026-10-01T20:33:29.041Z",
+  "counts": {
+    "PASS": 19,
+    "FAIL": 0,
+    "BLOCKED": 0
+  }
+}

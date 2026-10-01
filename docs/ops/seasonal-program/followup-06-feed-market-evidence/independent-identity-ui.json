@@ -1,0 +1,103 @@
+{
+  "reviewer": "/root/limited_independent; did not author combined implementation",
+  "kind": "identity-ui",
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "origin": "http://127.0.0.1:3399",
+  "checkoutHead": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "applicationSourceDiffEmpty": true,
+  "startedAt": "2026-10-01T20:35:56.506Z",
+  "scenarios": [
+    {
+      "id": "login-B",
+      "roles": [
+        "B"
+      ],
+      "expected": "Real UI/native session200, canonical UUID and actual return path",
+      "observed": {
+        "tokenHTTP": 200,
+        "userHTTP": 200,
+        "userId": "3404646c-bd5e-4f22-88d1-b128a33b92d2",
+        "path": "/dashboard",
+        "capture": "Only HTTP status observed; real UI-issued SDK cookie read in memory, native Auth not intercepted"
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:35:58.492Z"
+    },
+    {
+      "id": "native-auth-failure-classification-and-recovery",
+      "roles": [
+        "B"
+      ],
+      "expected": "NEW real UI-issued session: nativeAuth503 => identityGET/POST/status503; healthy/recovered emptyGET200, phone-unverifiedPOST401 and status200true",
+      "observed": {
+        "before": {
+          "get": 200,
+          "post": 401,
+          "status": 200,
+          "authenticated": true
+        },
+        "during": {
+          "native": 503,
+          "get": 503,
+          "post": 503,
+          "status": 503
+        },
+        "after": {
+          "get": 200,
+          "post": 401,
+          "status": 200,
+          "authenticated": true
+        }
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:35:59.328Z"
+    },
+    {
+      "id": "profile-real-ui-unavailable-not-empty",
+      "roles": [
+        "B"
+      ],
+      "expected": "Actual REST503 renders profile-unavailable message, never labels account incomplete from this fault",
+      "observed": {
+        "http": 503,
+        "unavailableVisible": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:36:06.932Z"
+    },
+    {
+      "id": "profile-ui-recovery-preserves-ledger",
+      "roles": [
+        "B"
+      ],
+      "expected": "Explicit profile retry returns empty/pending; financial versions/rows byte-identical",
+      "observed": {
+        "identityHTTP": 200,
+        "profileNull": true,
+        "officialPending": "pending",
+        "beforeDigest": "7a7ab0eb7be00fd317306736797974be7b8076bffe42d98caedf005f96a3d1bf",
+        "afterDigest": "7a7ab0eb7be00fd317306736797974be7b8076bffe42d98caedf005f96a3d1bf",
+        "emptyUIVisible": true
+      },
+      "status": "PASS",
+      "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+      "environment": "followup06-feed-market-native-local",
+      "at": "2026-10-01T20:36:07.295Z"
+    }
+  ],
+  "privacy": "Fresh actual product UI/native Auth sessions only; no invented JWT/cookies, HAR, traces, signed URLs or secret values in reports.",
+  "confirmedPhoneProof": false,
+  "finishedAt": "2026-10-01T20:36:07.296Z",
+  "counts": {
+    "PASS": 4,
+    "FAIL": 0,
+    "BLOCKED": 0
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "builtAt": "2026-10-01T20:30:45.810Z",
+  "origin": "http://127.0.0.1:3399",
+  "backend": "distinct native synthetic GoTrue/PostgREST/Storage;18 repository SQL files",
+  "build": "production",
+  "includes": [
+    "PR185 a54b161b8df88f83e8624273b1c4bb2ffd10f787",
+    "PR187 874c16096d792af2f57fc9142fde3124c0321dc1"
+  ],
+  "baseline": "be60bf54d64d60cc1c3c5d438034439ce12b9f15",
+  "NEXT09Included": false,
+  "egress": "loopback only; three public market datasets and CoinGecko mapped to owned synthetic fixture15913",
+  "identityOfficialMatch": "pending",
+  "phoneProvider": "unconfigured; successful native proof gate open"
+}

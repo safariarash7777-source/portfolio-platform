@@ -1,0 +1,15 @@
+{
+  "stoppedAt": "2026-10-01T20:42:43.4909199Z",
+  "clockReset": 0,
+  "nativeContainersRestarted": false,
+  "stoppedPID": 60820,
+  "databaseChanged": false,
+  "NEXT09Included": false,
+  "sha": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "environment": "followup06-feed-market-native-local",
+  "reason": "Independent cold Iran case needs fresh process cache; same existing immutable build",
+  "startedPID": 58316,
+  "creationTimeUTC": "2026-10-01T20:42:52.1718340Z",
+  "checkedAt": "2026-10-01T20:43:25.8686692Z",
+  "appHTTPRequestSinceRestart": 0
+}

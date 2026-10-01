@@ -1,6 +1,53 @@
 # FOLLOWUP-06 — آمادگی تجمیع و پذیرش مستقل
 
-## ادامهٔ جاری — ترکیب محدود در PR186، جدا از baseline2605
+## وضعیت جاری — پذیرش ترکیب PR185 و PR187 در PR191
+
+نسخهٔ برنامهٔ بررسی‌شده **`be7b7230a50d0f16aba18b408829ccd7f85f1299`** و محیط **`followup06-feed-market-native-local`** است. [ورود محلی3399](http://127.0.0.1:3399/login?next=%2Fdashboard) فقط روی همین دستگاه باز می‌شود. [PR191](https://github.com/safariarash7777-source/portfolio-platform/pull/191) به‌صورت Draft روی پایهٔ ثابت PR186، `be60bf54d64d60cc1c3c5d438034439ce12b9f15`، باز است. تمام نشانی‌ها و SHAهای بخش‌های بعدی سابقه‌اند. هیچ ادغام یا انتشار انجام نشد.
+
+[ورودی‌ها و تعارض‌ها پیش از تغییر](followup-06-feed-market-evidence/prechange-inventory.json) ثبت شدند: PR185 با head `a54b161b8df88f83e8624273b1c4bb2ffd10f787` روی181 و PR187 با head `874c16096d792af2f57fc9142fde3124c0321dc1` روی182/174. فقط تعارض تنظیمات آزمون‌ها حل شد؛ همهٔ آزمون‌های پایه، feed و بازار حفظ شدند. dependency و lockfile ثابت‌اند. [Provenance](followup-06-feed-market-evidence/provenance.json) حفظ اصلاح Auth در a49، چهار شاهد مستقل تاریخی و checkout قبلی186 را تأیید می‌کند. ۳۸ بررسی قبلی به ترکیب جدید نسبت داده نشدند.
+
+### محیط و migrationها
+
+دیتابیس، GoTrue2.197.0، PostgREST14.17 و Storage1.11.2 جدا از محیط186 و محیط مالکان ساخته شدند. دیتابیس از ابتدا خالی بود و فقط دادهٔ ساختگی دارد. [نصب واقعی۱۸ فایل SQL](followup-06-feed-market-evidence/environment.json)، [تطبیق catalog و digest](followup-06-feed-market-evidence/environment-verification.json) و [دفتر مهاجرت همین sandbox](followup-06-feed-market-evidence/MIGRATION-LEDGER.md) زنجیرهٔ phase32→34→35→36→37→38→NEXT04→NEXT08→identity180→feed185 را ثبت می‌کنند. migrationهای native Auth و Storage جداگانه۷۵ و۷۳ موردند. سه حساب واقعی ساختگی و سه فایل واقعاً uploadشدهٔ خصوصی حاضرند؛ identityversion صفر و policy آزمایشی permissive صفر است. Cacheِ PostgREST پس از نصب تازه شد و بازبین RPCها را واقعاً از HTTP بررسی کرد.
+
+[تنظیمات عملیاتی](followup-06-feed-market-evidence/operational-snapshot.json) همان origin را برای CSP، CORS و مسیرهای Auth نشان می‌دهد: preflight همان origin پاسخ۲۰۴ و origin خارجی۴۰۳ دارد. این بررسی آماده‌سازی جای ورود واقعی نیست. حساب‌های A، B و مدیر از فایل ACL-private تحویل می‌شوند؛ هیچ رمز، توکن یا نشست در مخزن، گزارش یا تصویر ثبت نشده است. ورود پذیرش از فرم UI و GoTrue واقعی انجام شد. ورود SDK برای ساخت fixture صرفاً آماده‌سازی بود.
+
+### نتیجهٔ مستقل
+
+بازبین `/root/limited_independent` با سازندهٔ ترکیب متفاوت است. **۳۹ بررسی اجرایی در چهار نوبت: ۳۹ PASS، صفر FAIL و صفر BLOCKED**؛ همه روی SHA برنامهٔ بالا. ورود B در نوبت Auth دوباره اجرا شد، بنابراین عدد۳۹ شمار بررسی‌های اجرایی است. [جدول با SHA، زمان، نقش، انتظار و شاهد هر ردیف](followup-06-feed-market-evidence/assessment.json) و [گزارش بازبین](followup-06-feed-market-evidence/independent.md) مرجع‌اند.
+
+| نوبت | نتیجه | شاهد |
+|---|---|---|
+| ورود واقعی و feed / نسخه / مجوز / حفظ داده |۱۹ PASS|[independent-feed.json](followup-06-feed-market-evidence/independent-feed.json)|
+| اختلال Auth و پروفایل، بازیابی و UI |۴ PASS|[independent-identity-ui.json](followup-06-feed-market-evidence/independent-identity-ui.json)|
+| timeout، cache، پوشش کامل و UI بازار |۱۵ PASS|[independent-market.json](followup-06-feed-market-evidence/independent-market.json)|
+| ایران بدون cache قبلی و بازیابی |۱ PASS|[independent-market-cold.json](followup-06-feed-market-evidence/independent-market-cold.json)|
+
+A فهرست۲۴ موردی با دو صفحهٔ۲۰+۴ و B فقط یک مورد داشت. کنترل scope در UI، REST و RPC، رسید صریح وابسته به uid/version با یک timestamp، نسخهٔ تازهٔ unread، حفظ رسید تاریخی، withdraw، returned و لغو با cursor و صفحهٔ قدیمی بررسی شدند. برای هر دو مشتری hash سه نسخه، سه دارایی، یک بدهی و نیازسنجی ثابت ماند. خطای feed ورودی ذخیره‌نشدهٔ فرم را پاک نکرد.
+
+اختلال واقعی Auth برای identity GET/POST و status پاسخ۵۰۳ داد؛ پس از بازیابی GET۲۰۰، POST۴۰۱ برای حساب فاقد اثبات native phone و status۲۰۰/authenticated true برگشت. UI پروفایل هنگام اختلال REST، unavailable نشان داد؛ retry وضعیت خالی/pending را بدون ادعای تطبیق رسمی یا ثبت موفق هویت بازگرداند.
+
+در بازار، منبع کند مانع منبع سالم نشد و دادهٔ stale زمان منبع اصلی را حفظ کرد. خواندن کامل۲۹۶۱۰ history،۵۹۸۱ monthly و۳۶۳۸ quarterly، خطای میان صفحه‌ها، retry، پایان loading و حفظ تنها cache کامل تأیید شدند. جستجو، sort و عرض۳۹۰ پیکسل نیز بررسی شدند. تماس با upstream واقعی صفر بود؛ داده‌ها و کنترل خطا فقط fixture محلی‌اند. ساعت مصنوعی فقط برای انقضای cache بازار استفاده و در finally به صفر برگردانده شد؛ شاهد Auth با ساعت واقعی است.
+
+مورد بدون cache پس از [شروع فرایند تازهٔ همان build](followup-06-feed-market-evidence/cold-process-restart.json)، بدون Nav یا درخواست گرم‌کننده، اجرا شد. فقط Next3398 دوباره شروع شد؛ دیتابیس و سرویس‌های native تغییر نکردند. ایران در۵۱۱۳ms با null/timeout و منبع جهانی سالم پاسخ داد؛ بازیابی۷۶۰ stock و۳۳۳ fund کامل بود. [تلاش خام نخست](followup-06-feed-market-evidence/independent-market-cold-attempt-01.json) یک FAIL ابزار داشت چون predicate فقط error را می‌پذیرفت؛ بازبین با مراجعه به قرارداد timeout، همان مشاهدات واقعی را بازارزیابی کرد. اجرای تازه یا زمان تازه‌ای جعل نشد و کد محصول تغییر نکرد.
+
+نقص محصول تازه در این دامنه مشاهده نشد. خطاهای دیگر آماده‌سازی، base اشتباه بدهی و نام RPC در probe، فقط در harness اصلاح شدند؛ حذف داده یا نسخهٔ اضافه رخ نداد. تلاش DB test بدون تنظیمات صریح با precondition متوقف شد؛ شاهد نصب یا نتیجهٔ محصول محسوب نمی‌شود.
+
+### CI و نسخهٔ نهایی
+
+Typecheck و lint،۱۲۸۷ آزمون core با صفر fail/skip و۸ رگرسیون Auth روی composition `592727a6c5da197715f2e4f3cd3b89eefcf4ecdd` موفق بودند. سپس فقط ابزار و اسناد پذیرش افزوده شدند. Buildِ be7 با۴۷ صفحه و [CI36922102452](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36922102452) روی SHA برنامه در هر پنج job موفق است. Head نهایی اسناد نیز باید CI مستقل خودش را بگذراند؛ SHA و run دقیق پس از commit در شرح PR191 و فایل محلی `.task/FINAL-CI.json` ثبت می‌شود. موفقیت یک SHA به SHA دیگر نسبت داده نمی‌شود.
+
+### Inventory و گیت‌های باز
+
+[PR190](followup-06-feed-market-evidence/auth190-inventory.json) با head `a92e184a018d7a0da8fffaa9bb981e57a5489769` فقط ثبت شد. سه blob برنامه، blob آزمون و فرمان Auth آن دقیقاً با a49 موجود برابرند؛ patch دوباره اعمال و آزمون اضافه صرفاً بابت این تحویل اجرا نشد.
+
+PR189@804b6ae4 و miniapp5@26c885cd فقط inventory هستند. قرارداد دو مخزن یکسان و CI آن‌ها موفق است؛ runtime آن‌ها اجرا نشد. بازبینی خودکار اجرای built-serverِ NEXT09 را با دلیل عمومی `blocked by policy` رد کرده؛ همان اقدام از ابزار یا چت دیگر تکرار نشد. Notification seen مستقل از publication read است. Migration189 حتی با flag خاموش، legacy grantها را revoke می‌کند و نصب آن نیازمند مرحلهٔ مستقل است؛ در sandbox جاری نصب نشده.
+
+موارد باز: quota178 و baseline/reset/failclosed مشترک، دو چرخهٔ واقعی بازار، محدودیت‌های legacy187 در bulkReturns/history/watchlist و background TodayMarket، provider و اثبات native phone برای ثبت هویت، Auth واقعی دوطرفهٔ بات و channel admission، ورود و تأیید انسانی DEV07/173. بررسی‌های ساختگی حاضر شاهد Production p95، بازار زنده یا تأیید انسانی نیستند.
+
+**DEV-07 پذیرفته نشد؛ مانع انسانی قبلی محفوظ است.** نتیجهٔ تاریخی۱۴ سناریو روی15eebc9 برابر۱۳ PASS/صفر FAIL/یک BLOCKED بود. این ادامه آن۱۴ سناریو یا گیت انسانی را به نسخهٔ جدید نسبت نمی‌دهد؛ فقط ترکیب محدود191 را پذیرفته است. هیچ main merge، Production، migration مشترک، بکاپ/بازیابی، تماس upstream واقعی یا پیام Telegram انجام نشد.
+
+## سابقهٔ ثابت — ترکیب محدود PR186، جدا از baseline2605
 
 برنامهٔ نهایی **`a49e37cecc7922d6d80c174910301e24a1841aee`**، build2026-10-01T19:27:21.697Z، شناسهٔ محیط **`followup06-limited-native-local`** و origin [sandbox محلی3299](http://127.0.0.1:3299/login?next=%2Fdashboard) هستند. [PR186](https://github.com/safariarash7777-source/portfolio-platform/pull/186) Draft/Open است؛ هیچ merge/Production انجام نشده. Previewعمومی یا URL قدیمی مقصد این پذیرش نیست. این نشانی فقط روی دستگاه حاضر باز می‌شود؛ اطلاعات ورود شش حساب واقعی ساختگی از همان پوشهٔ privateمحافظت‌شده تحویل می‌شود، نه چت/مخزن/تصویر.
 
