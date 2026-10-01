@@ -1,0 +1,2 @@
+# Preserve exact fixture/evidence bytes; scope is IE01 documents only.
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

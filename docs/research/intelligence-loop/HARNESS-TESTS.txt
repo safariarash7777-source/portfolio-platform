@@ -1,0 +1,13 @@
+✔ missing-value contract rejects zero and absent output (0.9244ms)
+✔ unit conflict contract rejects unchanged million unit and calculated ratios (0.1909ms)
+✔ fixed-code identity rejects changed source bytes (5.657ms)
+✔ two real executions have identical deterministic payloads and retained failures (4.5519ms)
+✔ offline guard stops network and child-process attempts before execution (1.0794ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.6999

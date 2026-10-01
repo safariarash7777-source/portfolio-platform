@@ -1,0 +1,95 @@
+{
+  "dataClass": "SYNTHETIC_CORRECTION_PAIR",
+  "originalArchiveDigest": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+  "issuerCorrectionObserved": false,
+  "syntheticCorrectionOf": {
+    "correctionId": 76,
+    "initialId": 77
+  },
+  "mutation": {
+    "operation": "test-only net_profit token replacement",
+    "newValue": 188042941,
+    "sourceAt": null,
+    "capturedAt": null
+  },
+  "rows": [
+    {
+      "id": 77,
+      "symbol": "ونوین",
+      "report_kind": "ن-۱۰",
+      "period_end": "1404-12-29",
+      "title": "صورت مالی جداگانه سالانه (حسابرسی نشده)",
+      "source_url": null,
+      "data": {
+        "symbol": "ونوین",
+        "company_name": "بانک اقتصاد نوین",
+        "report_kind": "ن-۱۰",
+        "statement_type": "bank",
+        "period_end": "1404-12-29",
+        "period_months": 12,
+        "audited": false,
+        "restated_prior": false,
+        "unit": "میلیون ریال",
+        "capital": 243145119,
+        "standalone": {
+          "revenue": 741765467,
+          "cogs": 434732521,
+          "gross_profit": 307032946,
+          "operating_profit": 229210778,
+          "net_profit": 188042940,
+          "eps_rial": 773,
+          "prior": {
+            "revenue": 514483893,
+            "cogs": 322090096,
+            "gross_profit": 192393797,
+            "operating_profit": 137401734,
+            "net_profit": 116251941,
+            "eps_rial": 478
+          }
+        }
+      },
+      "raw": {
+        "parser_version": 2
+      }
+    },
+    {
+      "id": 76,
+      "symbol": "ونوین",
+      "report_kind": "ن-۱۰",
+      "period_end": "1404-12-29",
+      "title": "صورت مالی جداگانه سالانه (حسابرسی نشده) (اصلاحیه)",
+      "source_url": null,
+      "data": {
+        "symbol": "ونوین",
+        "company_name": "بانک اقتصاد نوین",
+        "report_kind": "ن-۱۰",
+        "statement_type": "bank",
+        "period_end": "1404-12-29",
+        "period_months": 12,
+        "audited": false,
+        "restated_prior": false,
+        "unit": "میلیون ریال",
+        "capital": 243145119,
+        "standalone": {
+          "revenue": 741765467,
+          "cogs": 434732521,
+          "gross_profit": 307032946,
+          "operating_profit": 229210778,
+          "net_profit": 188042941,
+          "eps_rial": 773,
+          "prior": {
+            "revenue": 514483893,
+            "cogs": 322090096,
+            "gross_profit": 192393797,
+            "operating_profit": 137401734,
+            "net_profit": 116251941,
+            "eps_rial": 478
+          }
+        }
+      },
+      "raw": {
+        "parser_version": 2
+      }
+    }
+  ]
+}

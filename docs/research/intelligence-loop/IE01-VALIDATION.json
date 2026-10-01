@@ -1,0 +1,50 @@
+{
+  "validatedAt": "2026-10-01T22:23:39.6979698+00:00",
+  "fixedBase": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+  "nodeVersion": "v24.19.0",
+  "caseRuns": 2,
+  "casesPerRun": 4,
+  "productContractResults": {
+    "PASS": 2,
+    "FAIL": 2
+  },
+  "harnessTests": {
+    "PASS": 5,
+    "FAIL": 0,
+    "log": "HARNESS-TESTS.txt"
+  },
+  "syntaxCheck": "PASS both .mjs files",
+  "lint": {
+    "status": "PASS",
+    "scope": "two IE01 .mjs files",
+    "usedExistingDependencies": true,
+    "config": "../portfolio-followup06-feed-market/eslint.config.mjs",
+    "resolution": "NODE_PATH points to existing portfolio-v1/node_modules",
+    "firstAttempt": "dependency-resolution failure next/babel, resolved without file/config/dependency change"
+  },
+  "fullAppBuild": "NOT_RUN: offline harness/docs scope, no product/build claim",
+  "replayDigest": "f30374185d80726423dcf3b6c2f29f90fdf1915c69896d8069383419b0666892",
+  "artifacts": [
+    {
+      "path": "scripts/research/ie01/baseline.json",
+      "sha256": "a53fe418c370768a1b1f923181d5af729a26d29db3511c91f2c3f982dedbdba2"
+    },
+    {
+      "path": "docs/research/intelligence-loop/IE01-EVIDENCE.json",
+      "sha256": "3266589553e6be7ab685500a75bfdb3c12ea30273a9dd5ede6079ae307232515"
+    },
+    {
+      "path": "docs/research/intelligence-loop/IE01-REPLAY.json",
+      "sha256": "6f2a5c319c3717c056db31b1d0fc6d1137354b21982b6e286a38e0ab5c4126f0"
+    },
+    {
+      "path": "docs/research/intelligence-loop/HARNESS-TESTS.txt",
+      "sha256": "9c48a836a5e62e978ee9812c419dac3caa3f14a8c0f0ad244daecda94943e9e9"
+    }
+  ],
+  "productDiffEmpty": true,
+  "sourceCodeGuardVerified": true,
+  "networkGuardTestsPassed": true,
+  "IE02Started": false,
+  "IE03Started": false
+}

@@ -1,0 +1,93 @@
+{
+  "selectedBaseSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+  "selectedBasePR": 191,
+  "followup03HeadSHA": "874c16096d792af2f57fc9142fde3124c0321dc1",
+  "followup03RuntimeSHA": "4687ceaa05d57233c1d718453016f3f1171aa353",
+  "compositionRuntimeSHA": "be7b7230a50d0f16aba18b408829ccd7f85f1299",
+  "checkedAt": "2026-10-01T22:14:45.3773612+00:00",
+  "files": [
+    {
+      "path": "relay/codal.mjs",
+      "sha256": "6b144cae020b76df250c9f61fc83abb9ce4438b64389f1eec1d04dc00f5a8cd3",
+      "gitBlobs": {
+        "4687ceaa05d57233c1d718453016f3f1171aa353": "5c19763d7ab65f472576b426d88808a334e1a953",
+        "874c16096d792af2f57fc9142fde3124c0321dc1": "5c19763d7ab65f472576b426d88808a334e1a953",
+        "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "5c19763d7ab65f472576b426d88808a334e1a953",
+        "be7b7230a50d0f16aba18b408829ccd7f85f1299": "5c19763d7ab65f472576b426d88808a334e1a953"
+      }
+    },
+    {
+      "path": "relay/brsapi-transport.mjs",
+      "sha256": "f43fe1ab22b81bfa7aace9be993e925a3290ef88c31fb95dcb2cce8dafa47844",
+      "gitBlobs": {
+        "4687ceaa05d57233c1d718453016f3f1171aa353": "57838c08516e7314ec717f2817d9a39b66925536",
+        "874c16096d792af2f57fc9142fde3124c0321dc1": "57838c08516e7314ec717f2817d9a39b66925536",
+        "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "57838c08516e7314ec717f2817d9a39b66925536",
+        "be7b7230a50d0f16aba18b408829ccd7f85f1299": "57838c08516e7314ec717f2817d9a39b66925536"
+      }
+    },
+    {
+      "path": "lib/core/engine.ts",
+      "sha256": "9b7f198f15009e3ce94629f71ad79d5e248dae297e7f5e3651cc2849fdcf2512",
+      "gitBlobs": {
+        "4687ceaa05d57233c1d718453016f3f1171aa353": "bbc2957a309ee7864607729c4638619948247014",
+        "874c16096d792af2f57fc9142fde3124c0321dc1": "bbc2957a309ee7864607729c4638619948247014",
+        "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "bbc2957a309ee7864607729c4638619948247014",
+        "be7b7230a50d0f16aba18b408829ccd7f85f1299": "bbc2957a309ee7864607729c4638619948247014"
+      }
+    },
+    {
+      "path": "lib/fundamental/supabase.ts",
+      "sha256": "c76593dd12ab1b6853069ec2cd255e68ae331b478ac5a05b8964929061e7ef6c",
+      "gitBlobs": {
+        "4687ceaa05d57233c1d718453016f3f1171aa353": "f9315f142dabf82e60ec5b1a0da332df703f427b",
+        "874c16096d792af2f57fc9142fde3124c0321dc1": "f9315f142dabf82e60ec5b1a0da332df703f427b",
+        "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "f9315f142dabf82e60ec5b1a0da332df703f427b",
+        "be7b7230a50d0f16aba18b408829ccd7f85f1299": "f9315f142dabf82e60ec5b1a0da332df703f427b"
+      }
+    },
+    {
+      "path": "relay/fixtures/vanovin-n10-fy1404.html",
+      "sha256": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+      "gitBlobs": {
+        "4687ceaa05d57233c1d718453016f3f1171aa353": "68f930e542c8ffd5c5bf14074d6957d966713569",
+        "874c16096d792af2f57fc9142fde3124c0321dc1": "68f930e542c8ffd5c5bf14074d6957d966713569",
+        "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "68f930e542c8ffd5c5bf14074d6957d966713569",
+        "be7b7230a50d0f16aba18b408829ccd7f85f1299": "68f930e542c8ffd5c5bf14074d6957d966713569"
+      }
+    },
+    {
+      "path": "relay/codal.test.mjs",
+      "sha256": "33198626aa5fb1b465af1982d04948eece5721609ee5bebeea8b090bd2bd741d",
+      "gitBlobs": {
+        "4687ceaa05d57233c1d718453016f3f1171aa353": "3323c99249b84045c5258d3dec138cb7d249db3b",
+        "874c16096d792af2f57fc9142fde3124c0321dc1": "3323c99249b84045c5258d3dec138cb7d249db3b",
+        "a83f71d922a93ec2bfb398a306d7b282ce1db81f": "3323c99249b84045c5258d3dec138cb7d249db3b",
+        "be7b7230a50d0f16aba18b408829ccd7f85f1299": "3323c99249b84045c5258d3dec138cb7d249db3b"
+      }
+    }
+  ],
+  "sourceIdentity": {
+    "sourceUrl": null,
+    "announcementId": null,
+    "sourceAt": null,
+    "capturedAt": null,
+    "rightsVerified": false,
+    "archiveLastGitTouchSHA": "5fd94b3ccdd4f682898edec7a6f33451f2918936",
+    "archiveLastGitTouchAt": "2026-07-17T06:52:16Z",
+    "gitTouchIsCaptureTime": false,
+    "searchScope": [
+      "fixed checkout tracked files and archive history",
+      "product-direction/docs",
+      "portfolio-v1/docs",
+      "saved market audit reports",
+      "saved FX outputs"
+    ],
+    "searchResult": "Only parser comments and existing test assertions found; no authentic report URL, publication or capture timestamp",
+    "htmlUrlHosts": [
+      "www.w3.org"
+    ],
+    "selectedBankTableIndex": 37,
+    "selectedStatementUnitIndependentlyVerified": false
+  }
+}
