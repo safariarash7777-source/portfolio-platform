@@ -1,0 +1,8 @@
+{
+  "sha": "56deb8c85a2a09009d1624cd07b78ea87535ab2a",
+  "environment": "balance173-local",
+  "builtAt": "2026-10-01T09:28:01.735Z",
+  "origin": "http://127.0.0.1:3310",
+  "backend": "same origin /supabase",
+  "build": "production"
+}
