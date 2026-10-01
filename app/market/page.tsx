@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { withDeadline } from "@/lib/deadline";
 import MarketDataStatus from "@/components/market/MarketDataStatus";
 import { marketProvenance } from "@/lib/market-quality";
 import CustomerJourney from "@/components/account/CustomerJourney";
@@ -36,7 +38,7 @@ import MarketSectionLinks from "@/components/market/MarketSectionLinks";
 import FeaturedTrend from "@/components/market/FeaturedTrend";
 import DetailDisclosure from "@/components/market/DetailDisclosure";
 import AccountBridge from "@/components/account/AccountBridge";
-import { getMarketData } from "@/lib/market";
+import { readGlobalMarket } from "@/lib/market-bounded";
 import { getIrMarket } from "@/lib/market-ir";
 import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
@@ -75,9 +77,8 @@ export default async function MarketPage({
   ).href;
 
   const supabase = await createClient();
-  const [{ data: { user } }, market, ir, access] = await Promise.all([
+  const [{ data: { user } }, ir, access] = await Promise.all([
     supabase.auth.getUser(),
-    getMarketData(),
     getIrMarket(),
     getAccess(),
   ]);
@@ -111,17 +112,8 @@ export default async function MarketPage({
   const funds = ir?.funds ?? [];
 
   // سری‌های تاریخی — همه best-effort؛ نبودشان صفحه را نمی‌شکند.
-  const [flowRead, goldRead, indexRead] = await Promise.all([
-    getFlowTrendState(90),
-    getGoldUsdTrendState(180),
-    getIndexTrendState(180),
-  ]);
+  const trendRead = loadTrends();
 
-  const flowTrend = flowRead.status === "ready" ? flowRead.data : [];
-  const goldUsdSeries = goldRead.status === "ready" ? goldRead.data : [];
-  const indexSeries = indexRead.status === "ready" ? indexRead.data : [];
-
-  // ── محاسبهٔ یک‌باره ──────────────────────────────────────────────────────
   const headline = buildMarketHeadline({
     indices: ir?.indices ?? null,
     stocks,
@@ -159,7 +151,7 @@ export default async function MarketPage({
             {/* ── ردیف ۳: نمودارِ منتخب + نبض بازار ──────────────────────── */}
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
               <div className="min-w-0 lg:col-span-2">
-                <FeaturedTrend indexSeries={indexSeries} goldUsdSeries={goldUsdSeries} indexState={indexRead.status} goldState={goldRead.status} />
+                <Suspense fallback={<p role="status">در حال خواندن روندهای ثبت‌شده…</p>}><TrendFigure read={trendRead} /></Suspense>
               </div>
               <div className="min-w-0">
                 <MarketPulsePanel pulse={pulse} flow={flow} universe={headline.universe} />
@@ -191,20 +183,22 @@ export default async function MarketPage({
                 title="پراکندگی، جریان و روندِ بازار سهام"
                 hint="گسترهٔ مشارکتِ نمادها، جریانِ حقیقی و روندِ ثبت‌شده"
               >
-                <TodayMarket stocks={stocks} fetchedAt={ir?.fetchedAt ?? null} />
+                <Suspense fallback={<p role="status">در حال خواندن رژیم تاریخی؛ دادهٔ روز بازار مستقل است…</p>}><TodayDetails stocks={stocks} fetchedAt={ir?.fetchedAt ?? null} /></Suspense>
               </DetailDisclosure>
 
               <DetailDisclosure
                 title="صف‌ها، روندِ پولِ حقیقی و برترین‌های امروز"
                 hint="جزئیاتِ تخصصیِ تابلو — دفترِ سفارش، سریِ روزانه و صدرنشین‌ها"
               >
-                <MarketDepthDetails
+                <Suspense fallback={<p role="status">در حال خواندن روند جریان…</p>}>
+                <DepthDetails
                   from={selfHref}
                   queues={queues}
                   tops={tops}
-                  flowTrend={flowTrend}
+                  read={trendRead}
                   hasMarket={pulse.totalTraded > 0}
                 />
+                </Suspense>
               </DetailDisclosure>
 
               {/* کریپتو — دسترسی حفظ می‌شود، ولی محورِ این صفحه بازارِ ایران
@@ -214,14 +208,14 @@ export default async function MarketPage({
                 title="بازارهای جهانی و کریپتو"
                 hint="قیمتِ ارزهای دیجیتال، واچ‌لیست و هشدارِ قیمت"
               >
-                <MarketClient
-                  crypto={market.crypto}
-                  sourceOk={market.ok}
+                <Suspense fallback={<p role="status">در حال خواندن منبع جهانی…</p>}>
+                <GlobalMarket
                   isLoggedIn={Boolean(user)}
                   telegramLinked={telegramLinked}
                   initialWatchlist={watchlist}
                   initialAlerts={alerts}
                 />
+                </Suspense>
               </DetailDisclosure>
             </div>
 
@@ -239,4 +233,26 @@ export default async function MarketPage({
       <Footer />
     </>
   );
+}
+
+async function GlobalMarket(props: Omit<Parameters<typeof MarketClient>[0], "crypto" | "sourceOk">) {
+  const read = await readGlobalMarket();
+  return <>
+    {read.availability.state !== "ready" && <p role="status" className="mb-3 text-xs" style={{ color: "var(--text-2)" }}>منبع جهانی اکنون پاسخ کامل نداد؛ دادهٔ ایران مستقل نمایش داده می‌شود.</p>}
+    <MarketClient {...props} crypto={read.data.crypto} sourceOk={read.data.ok} />
+  </>;
+}
+function loadTrends() { return Promise.all([getFlowTrendState(90), getGoldUsdTrendState(180), getIndexTrendState(180)]); }
+type TrendRead = ReturnType<typeof loadTrends>;
+async function TrendFigure({ read }: { read: TrendRead }) {
+  const [, gold, index] = await read;
+  return <FeaturedTrend indexSeries={index.status === "ready" ? index.data : []} goldUsdSeries={gold.status === "ready" ? gold.data : []} indexState={index.status} goldState={gold.status} />;
+}
+async function DepthDetails({ read, ...props }: Omit<Parameters<typeof MarketDepthDetails>[0], "flowTrend"> & { read: TrendRead }) {
+  const [flow] = await read;
+  return <MarketDepthDetails {...props} flowTrend={flow.status === "ready" ? flow.data : []} />;
+}
+async function TodayDetails(props: Parameters<typeof TodayMarket>[0]) {
+  try { return await withDeadline(() => TodayMarket(props), 15000); }
+  catch { return <p role="status">خواندن کامل رژیم تاریخی در مهلت این صفحه تمام نشد؛ دادهٔ روز بازار مستقل نمایش داده می‌شود.</p>; }
 }

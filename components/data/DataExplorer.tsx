@@ -6,6 +6,8 @@
 // قانون سخت: دادهٔ ناموجود «—» — هیچ عدد ساختگی.
 
 import Link from "next/link";
+import useAnalytics from "./useAnalytics";
+import ReadCoverageNotice from "@/components/market/ReadCoverageNotice";
 import { useMemo, useState } from "react";
 import { Search, Database, ArrowUpDown, Clock } from "lucide-react";
 import ScreenerPanel, { type ScreenerPresetConfig } from "@/components/data/ScreenerPanel";
@@ -66,18 +68,12 @@ export default function DataExplorer({
   gold,
   currency,
   fetchedAt,
-  avgVolume30,
-  fundamentalYoY,
 }: {
   stocks: IrStockRow[];
   funds: IrStockRow[];
   gold: IrRow[];
   currency: IrRow[];
   fetchedAt: number | null;
-  /** میانگین حجم ۳۰روزه هر نماد (از سرور) — پایهٔ فیلتر حجم مشکوک */
-  avgVolume30: Array<[string, number]>;
-  /** رشد YoY بنیادی هر نماد (از سرور، codal_reports) — پایهٔ پرست‌های بنیادی T2 */
-  fundamentalYoY?: { monthly: Record<string, number>; quarterly: Record<string, number> };
 }) {
   const [tab, setTab] = useState<Tab>("stocks");
   const [q, setQ] = useState("");
@@ -87,7 +83,9 @@ export default function DataExplorer({
   const [limit, setLimit] = useState(100);
   const [screenerFilter, setScreenerFilter] = useState<string | null>(null);
 
-  const avgVolMap = useMemo(() => new Map(avgVolume30), [avgVolume30]);
+  const analytics = useAnalytics(screenerFilter);
+  const avgVolMap = useMemo(() => new Map(Object.entries(analytics.reads.volume?.data ?? {})), [analytics.reads.volume]);
+  const fundamentalYoY = useMemo(() => ({ monthly: analytics.reads.monthly?.data, quarterly: analytics.reads.quarterly?.data }), [analytics.reads.monthly, analytics.reads.quarterly]);
 
   const fundTypes = useMemo(() => {
     const s = new Set<string>();
@@ -102,6 +100,7 @@ export default function DataExplorer({
       base = base.filter((f) => f.type === fundType);
     }
     if (tab === "stocks" && screenerFilter) {
+      if (analytics.kind && !analytics.reads[analytics.kind]) return [];
       if (screenerFilter === "monthly_rev_yoy" || screenerFilter === "quarterly_rev_yoy") {
         // پرست بنیادی: فقط نمادهای دارای رشد محاسبه‌پذیر، نزولی بر اساس رشد
         const m =
@@ -146,7 +145,7 @@ export default function DataExplorer({
       return (val(b) - val(a)) * (sortDesc ? 1 : -1);
     });
     return sorted;
-  }, [tab, stocks, funds, q, fundType, sortKey, sortDesc, screenerFilter, avgVolMap, fundamentalYoY]);
+  }, [tab, stocks, funds, q, fundType, sortKey, sortDesc, screenerFilter, avgVolMap, fundamentalYoY, analytics.kind, analytics.reads]);
 
   const simpleRows: IrRow[] = useMemo(() => {
     const base = tab === "gold" ? gold : tab === "currency" ? currency : [];
@@ -269,6 +268,14 @@ export default function DataExplorer({
         ) : null}
       </div>
 
+      {analytics.kind && (
+        <div role="status" className="mb-3 text-xs leading-6" style={{ color: "var(--text-2)" }}>
+          {analytics.pending ? "در حال خواندن دادهٔ کامل این فیلتر…" : analytics.failed ? "خواندن دادهٔ این فیلتر کامل نشد." : analytics.reads[analytics.kind] ? "دادهٔ کامل این فیلتر خوانده شد." : null}
+          {analytics.failed && <button type="button" className="ms-3 min-h-11 underline" onClick={analytics.retry}>تلاش دوباره</button>}
+          {analytics.reads[analytics.kind]?.coverage.completedAt && <span className="ms-2">زمان خواندن: {formatJalali(analytics.reads[analytics.kind]!.coverage.completedAt!)}</span>}
+          {analytics.reads[analytics.kind] && <ReadCoverageNotice coverage={analytics.reads[analytics.kind]!.coverage} label="دادهٔ فیلتر" />}
+        </div>
+      )}
       {tab === "stocks" || tab === "funds" ? (
         <ScreenerPanel
           activeFilter={screenerFilter}
@@ -278,14 +285,14 @@ export default function DataExplorer({
             else if (k && k !== null) setTab("stocks");
             setLimit(100);
           }}
-          matchCount={screenerFilter ? rows.length : null}
+          matchCount={screenerFilter && (!analytics.kind || analytics.reads[analytics.kind]) ? rows.length : null}
           historyCoverage={{
-            covered: stocks.filter((s) => avgVolMap.has(s.id)).length,
+            covered: analytics.reads.volume ? stocks.filter((s) => avgVolMap.has(s.id)).length : null,
             total: stocks.length,
           }}
           fundamentalCoverage={{
-            monthly_rev_yoy: Object.keys(fundamentalYoY?.monthly ?? {}).length,
-            quarterly_rev_yoy: Object.keys(fundamentalYoY?.quarterly ?? {}).length,
+            monthly_rev_yoy: fundamentalYoY.monthly ? Object.keys(fundamentalYoY.monthly).length : null,
+            quarterly_rev_yoy: fundamentalYoY.quarterly ? Object.keys(fundamentalYoY.quarterly).length : null,
             fund_low_pnav: funds.filter(
               (f) => num(f.price) != null && num(f.nav) != null && (f.nav as number) > 0
             ).length,
