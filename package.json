@@ -20,7 +20,9 @@
     "test:relay": "node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "validate:sql": "node scripts/validate-sql.mjs",
-    "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py"
+    "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py",
+    "test:seasonal": "tsx --test lib/seasonal/seasonal.test.ts",
+    "test:seasonal:db": "tsx --test lib/seasonal/seasonal.integration.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

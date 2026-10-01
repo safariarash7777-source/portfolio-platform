@@ -1,0 +1,30 @@
+name: Seasonal membership sandbox
+on:
+  pull_request:
+    paths: ['lib/seasonal/**', 'lib/intelligence/publication*', 'supabase/migrations/**', 'app/api/cohorts/**', 'app/api/registrations/**', '.github/workflows/seasonal-sandbox.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Disposable synthetic database (no remote credentials)
+        run: |
+          docker run -d --name portfolio-next04-synthetic-db -e POSTGRES_PASSWORD=postgres --mount "type=bind,source=$GITHUB_WORKSPACE,target=/workspace,readonly" postgres:17-alpine
+          for i in $(seq 1 30); do docker exec portfolio-next04-synthetic-db pg_isready -U postgres && break; sleep 1; done
+      - run: npm run test:seasonal
+      - run: npm run test:seasonal:db
+      - name: Publication permissions when dependent NEXT08 is composed
+        run: |
+          if [ -f lib/intelligence/publication.integration.test.ts ]; then
+            npm run test:publication:db
+          else
+            echo "NEXT08 is not part of this branch; publication acceptance remains on its dependent delivery."
+          fi
