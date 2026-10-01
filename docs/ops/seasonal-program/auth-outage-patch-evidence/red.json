@@ -1,0 +1,8 @@
+{
+  "phase": "RED",
+  "exitCode": 1,
+  "baseSha": "bb4f2f3e53859bbecb0ec942975ffb06fd2d2828",
+  "at": "2026-10-01T20:11:28.6603256Z",
+  "expected": "5PASS/3FAIL",
+  "environment": "actual route/SDK classes, injected client; no native environment rebuilt"
+}

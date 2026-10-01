@@ -1,0 +1,8 @@
+{
+  "phase": "GREEN",
+  "exitCode": 0,
+  "at": "2026-10-01T20:12:41.9664924Z",
+  "result": "8PASS/0FAIL",
+  "integrationSource": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "scope": "only affected route regression; native 38PASS belongs to PR186"
+}

@@ -5,13 +5,16 @@ import {mobileEnabled,sameOrigin} from '@/lib/auth/mobile-server';
 import {nationalIdFormatValid} from '@/lib/auth/mobile';
 import {encryptIdentity,decryptIdentity} from '@/lib/auth/identity-crypto';
 import {toLatinDigits} from '@/lib/format';
+import {authSessionFailure} from '@/lib/auth/session-error';
 export const runtime='nodejs';
 const reply=(status:number,body:object)=>NextResponse.json(body,{status,headers:{'cache-control':'no-store'}});
 export async function GET(){
   if(!mobileEnabled())return reply(503,{error:'مسیر موبایلی فعال نشده است.'});
   try {
     const client=await createClient();const {data:{user},error}=await client.auth.getUser();
-    if(error || !user)return reply(401,{error:'ابتدا وارد شوید.'});
+    const authFailure=authSessionFailure(error);
+    if(authFailure===503)return reply(503,{error:'سرویس ورود اکنون در دسترس نیست؛ دوباره تلاش کنید.'});
+    if(authFailure || !user)return reply(401,{error:'ابتدا وارد شوید.'});
     const {data,error:readError}=await client.rpc('auth_read_private_identity').abortSignal(AbortSignal.timeout(5000));
     if(readError)return reply(503,{error:'پروفایل خصوصی اکنون در دسترس نیست.'});
     if(!data)return reply(200,{profile:null,phoneVerified:!!user.phone_confirmed_at,identityMatch:'pending',phoneNationalIdMatch:'pending'});
@@ -23,7 +26,9 @@ export async function POST(request:Request){
   if(!sameOrigin(request))return reply(403,{error:'مبدأ درخواست معتبر نیست.'});
   try {
     const client=await createClient();const {data:{user},error}=await client.auth.getUser();
-    if(error || !user || !user.phone_confirmed_at)return reply(401,{error:'ابتدا شماره همراه را در حساب خود تأیید کنید.'});
+    const authFailure=authSessionFailure(error);
+    if(authFailure===503)return reply(503,{error:'سرویس ورود اکنون در دسترس نیست؛ ورودی‌ها حفظ شده‌اند.'});
+    if(authFailure || !user || !user.phone_confirmed_at)return reply(401,{error:'ابتدا شماره همراه را در حساب خود تأیید کنید.'});
     if(Number(request.headers.get('content-length')??0)>4096)return reply(413,{error:'درخواست بیش از حد بزرگ است.'});
     const body=await request.json();
     if(Object.keys(body).some(k=>!['firstName','lastName','nationalId','baseVersion','consent'].includes(k)))return reply(400,{error:'فیلد نامعتبر در درخواست.'});

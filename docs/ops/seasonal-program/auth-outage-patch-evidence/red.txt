@@ -1,0 +1,69 @@
+✖ actual identity/status HTTP handlers distinguish Auth service failure: AuthRetryableFetchError (186.3897ms)
+✖ actual identity/status HTTP handlers distinguish Auth service failure: AuthApiError (16.8294ms)
+✖ actual identity/status HTTP handlers distinguish Auth service failure: Error (15.3193ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: empty (15.6338ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: AuthSessionMissingError (12.5836ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: AuthApiError (13.9849ms)
+✔ missing/rejected sessions retain identity401 and status anonymous200: AuthApiError (12.0335ms)
+✔ email-only real account requires native confirmed phone before identity write (13.7727ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 5
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 950.8355
+
+✖ failing tests:
+
+test at scripts\testing\auth-session-handler.test.mjs:10:2
+✖ actual identity/status HTTP handlers distinguish Auth service failure: AuthRetryableFetchError (186.3897ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  401 !== 503
+  
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/ChatGPT/%D8%AA%D9%88%D8%B3%D8%B9%D9%87%20%D8%B3%D8%A7%DB%8C%D8%AA/portfolio-auth-outage-patch/scripts/testing/auth-session-handler.test.mjs:10:294)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 401,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\testing\auth-session-handler.test.mjs:10:2
+✖ actual identity/status HTTP handlers distinguish Auth service failure: AuthApiError (16.8294ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  401 !== 503
+  
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/ChatGPT/%D8%AA%D9%88%D8%B3%D8%B9%D9%87%20%D8%B3%D8%A7%DB%8C%D8%AA/portfolio-auth-outage-patch/scripts/testing/auth-session-handler.test.mjs:10:294)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 401,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts\testing\auth-session-handler.test.mjs:10:2
+✖ actual identity/status HTTP handlers distinguish Auth service failure: Error (15.3193ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  401 !== 503
+  
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/ChatGPT/%D8%AA%D9%88%D8%B3%D8%B9%D9%87%20%D8%B3%D8%A7%DB%8C%D8%AA/portfolio-auth-outage-patch/scripts/testing/auth-session-handler.test.mjs:10:294)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 401,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
