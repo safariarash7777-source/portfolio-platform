@@ -5,7 +5,7 @@
   "dev07TestedSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
   "dev07DocsCommit": "2d7f4a9d0ca2fa9fac5d5af49f9c654c3135e266",
   "dev07ReportSHA256": "61f8f12e6c9908b9f3fba2978ca410d5712eb6a18ecb4cf30ff3d88ac9b8988f",
-  "finalDocumentationUpdate": "docs-only, pending commit; preserves application/schema/testing harness bytes relative to CI checkpoint",
+  "finalDocumentationUpdate": "Documentation-only commits after CI checkpoint; application/schema/testing harness bytes unchanged relative to b7c7726",
   "productionChanged": false,
   "otherPRBranchesChanged": false,
   "mergedToMain": false,
