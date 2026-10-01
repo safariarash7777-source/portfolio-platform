@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-01T09:44:08.856Z",
+  "synthetic": true,
+  "gotrue": "v2.197.0",
+  "smtp": "loopback receiver; no external delivery",
+  "checks": [
+    {
+      "label": "Real GoTrue→local SMTP Persian confirmation; link has fragment, not HTTP token query",
+      "status": "PASS"
+    },
+    {
+      "label": "Confirmation consumed by SSR cookie route; allowed destination, same UUID/role and refresh",
+      "status": "PASS"
+    },
+    {
+      "label": "Consumed/tampered confirmation rejected; public request cannot read private identity/admin health",
+      "status": "PASS"
+    },
+    {
+      "label": "Recovery response is identical for known/missing email; SMTP receives valid recovery link",
+      "status": "PASS"
+    },
+    {
+      "label": "Native email resend limiter rejects repeated request; BFF response stays neutral",
+      "status": "PASS"
+    },
+    {
+      "label": "Recovery link creates real SSR session; password change, logout and same-account login",
+      "status": "FAIL"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-09-30T21:09:00.9715439Z",
+  "method": "Public GitHub REST pulls + head check-runs; observed in this session",
+  "base": "codex/wave-02-base-20260930",
+  "pulls": [
+    {
+      "supabasePreview": "skipped",
+      "number": 174,
+      "head": "95cfa3410a97ac0d98cdefcb6671d4cfcb668646",
+      "ciRun": 36771898821,
+      "ci": "success"
+    },
+    {
+      "supabasePreview": "skipped",
+      "head": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+      "seasonalRun": 36775201175,
+      "seasonal": "success",
+      "number": 175,
+      "ciRun": 36775201105,
+      "ci": "success"
+    },
+    {
+      "supabasePreview": "skipped",
+      "number": 176,
+      "head": "d69763563ef695b2d16ea2e52be4a4452b0811dc",
+      "ciRun": 36774747309,
+      "ci": "success"
+    },
+    {
+      "supabasePreview": "skipped",
+      "number": 177,
+      "head": "27e59ad8d85f37da32b6f5346d289afdb73b20e6",
+      "ciRun": 36774588464,
+      "ci": "success"
+    }
+  ],
+  "scope": "CI gate/dependencies/typecheck-lint-tests-build/secret-SQL/database RLS successful; UI/provider/Production acceptance is separate"
+}

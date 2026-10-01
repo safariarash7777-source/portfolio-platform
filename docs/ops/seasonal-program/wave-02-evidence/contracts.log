@@ -1,0 +1,17 @@
+✔ publication rebuilds allowlist, preserving sources but no private notes or forged author (2.1937ms)
+✔ audience, exact cohort scope, channel and real date boundaries reject contradictory input (0.5433ms)
+✔ ready and publish require separate privacy confirmation and reason; withdraw remains possible (0.2936ms)
+✔ direct access denies unapproved, expired grants, other cohorts, draft and withdrawn versions (0.2727ms)
+✔ three Gregorian months differ from 90 days and clamp month end in Tehran (2.4197ms)
+✔ start inclusive, end exclusive, revoked overrides dates (0.2343ms)
+✔ CSV quoted field, duplicate identity, zone and mapping validation; formula-safe export (1.1547ms)
+✔ needs assessment limits and financial fields are rejected (0.236ms)
+✔ HTTP uses session identity, returns unknown as 503, unauthenticated as 401 (21.441ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 320.0895

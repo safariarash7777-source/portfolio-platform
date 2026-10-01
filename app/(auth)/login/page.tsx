@@ -7,7 +7,7 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
 import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
-
+import {authMessage} from '@/lib/auth/mobile';
 
 function supabaseError(msg: string): string {
   if (msg.includes("Invalid login credentials")) return "ایمیل یا رمز عبور اشتباه است";
@@ -60,7 +60,7 @@ function LoginPageContent() {
     try {
       const supabase = createClient();
       const {error}=await supabase.auth.signInWithPassword({email,password});
-      if(error){setServerError(supabaseError(error.message));return;}
+      if(error){setServerError(authMessage(error) || supabaseError(error.message));return;}
       // Full navigation has a visible network result and avoids a silently stalled
       // App Router transition while the protected middleware is unavailable.
       window.location.assign(returnTo);
@@ -193,7 +193,8 @@ function LoginPageContent() {
               ثبت‌نام کنید
             </Link>
           </div>
-                  </div>
+          <Link className="btn btn-outline w-full mt-5" href={accountEntryHref('/login/mobile',returnTo)}>وضعیت ورود موبایلی</Link>
+        </div>
       </div>
     </div>
   );

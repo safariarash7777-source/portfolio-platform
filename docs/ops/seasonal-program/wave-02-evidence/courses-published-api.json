@@ -1,0 +1,25 @@
+{
+  "contractVersion": "seasonal.v0.1",
+  "courses": [
+    {
+      "id": "99999999-9999-4999-8999-999999999999",
+      "title": "دورهٔ مصنوعی — بازبینی اتصال",
+      "summary": "این نوبت و تاریخ برای آزمون است؛ ثبت‌نام فعال نیست.",
+      "cohorts": [
+        {
+          "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "title": "نوبت مصنوعی A — بازبینی API",
+          "startsAt": "2026-10-01T05:30:00Z",
+          "endsAtExclusive": "2027-01-01T05:30:00Z",
+          "timeZone": "Asia/Tehran",
+          "policyVersion": "sandbox.calendar.v1",
+          "status": "published",
+          "registrationAction": {
+            "enabled": false,
+            "reason": "registration_not_enabled"
+          }
+        }
+      ]
+    }
+  ]
+}
