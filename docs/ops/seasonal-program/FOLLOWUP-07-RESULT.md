@@ -81,4 +81,6 @@ fixture حساب user عادی مصنوعی است؛ userJWT فقط GoTrue صا�
 
 ## رکورد تحویل
 
-PR، head نهایی و CI پس از push ثبت می‌شوند. SHA کد و شواهد بالا مستقل از commit مستندات‌اند. Preview محلی/خودکار، migration مصنوعی/مشترک و Production جدا گزارش شدند.
+[PR180](https://github.com/safariarash7777-source/portfolio-platform/pull/180)، draft روی7cb030c؛ head هنگام ایجاد `cee76cf454d3c494c3df6dd21fc55a5f1217484d`. SHA کد05d5ae6 ثابت است؛ head جاری پس از commit مستندات از PR خوانده شود. اصلاح فوری [PR179](https://github.com/safariarash7777-source/portfolio-platform/pull/179) رویmain مستقل است.
+
+در snapshot همین head، Dependencies، Secret/SQL و isolated-db موفق؛ Typecheck/Lint/Tests/Build و Database RLS درحال اجرا؛ Supabase Preview skipped بودند. Vercel Preview status موفق بود اما مبدأ Auth و ورود واقعی آن آزموده نشده‌اند. commit مستندات CI تازه دارد. Preview محلی8792، migration مصنوعی، محیط مشترک و Production مستقل گزارش شده‌اند؛ موفقیت build شاهد ارسال واقعی یا پذیرش مالک نیست.
