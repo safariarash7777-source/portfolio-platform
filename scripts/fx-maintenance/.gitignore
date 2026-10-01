@@ -1,0 +1,9 @@
+**/.data_health/
+**/*.xlsx
+**/.env*
+**/secrets.toml
+**/access_private.json
+**/vm_known_hosts
+**/vendor/
+**/__pycache__/
+outputs/

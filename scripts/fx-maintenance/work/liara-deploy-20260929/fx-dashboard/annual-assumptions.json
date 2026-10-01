@@ -1,0 +1,7 @@
+{
+  "classified_at": "2026-09-30",
+  "calendar": "Jalali",
+  "years": [1405, 1406],
+  "status": "legacy_current_and_future_assumptions_unverified",
+  "rule": "Do not automatically promote these columns into observed history when time passes. Reclassify only after every required model input has a verified actual observation and provenance."
+}

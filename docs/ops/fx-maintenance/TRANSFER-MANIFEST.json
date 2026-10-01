@@ -1,0 +1,718 @@
+{
+  "prepared_for_existing_repository": true,
+  "destination_checkout_modified": false,
+  "git_commit_created": false,
+  "production_modified": false,
+  "active_hook_modified": false,
+  "compiled_python_files": 62,
+  "credential_pattern_screen": "PASS (bounded formats; project scanner still required)",
+  "raw_workbooks_in_git_tree": false,
+  "source_artifacts_external": "outputs/fx-maintenance-handoff-20261001.tar.gz",
+  "base_image_id": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+  "files": [
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\agent_bonds_gate.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/agent_bonds_gate.py",
+      "source_sha256": "6103b59784989edc54e5fb76f3fc0dd9058772e756b54ac9ef2bbfe4568c52bd",
+      "target_sha256": "6103b59784989edc54e5fb76f3fc0dd9058772e756b54ac9ef2bbfe4568c52bd",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\agent_status_ui.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/agent_status_ui.py",
+      "source_sha256": "9519904ebb4fec9c3ed7a317407b82e5a81b62efc9c4d6af53f1dae8d237ac09",
+      "target_sha256": "9519904ebb4fec9c3ed7a317407b82e5a81b62efc9c4d6af53f1dae8d237ac09",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\app.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/app.py",
+      "source_sha256": "e8abcb60a33c43efcffdeac31f5519c842a8f6d38c007a421ab6d824cf1f9596",
+      "target_sha256": "e8abcb60a33c43efcffdeac31f5519c842a8f6d38c007a421ab6d824cf1f9596",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assistant.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assistant.py",
+      "source_sha256": "89ed164936b15e2f2f738d6d638b591dfa39165881b866abbcb33488addab671",
+      "target_sha256": "89ed164936b15e2f2f738d6d638b591dfa39165881b866abbcb33488addab671",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\auth_gate.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/auth_gate.py",
+      "source_sha256": "a7d233e116addd133d0a24f6db552186b8d183f27f844f04f91d4f7fe9a4700b",
+      "target_sha256": "a7d233e116addd133d0a24f6db552186b8d183f27f844f04f91d4f7fe9a4700b",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\backtest.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/backtest.py",
+      "source_sha256": "876476fce9156c48086a4602df1567e6ec6ea5ea9bbc6495f27e47dbd593a0b9",
+      "target_sha256": "876476fce9156c48086a4602df1567e6ec6ea5ea9bbc6495f27e47dbd593a0b9",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\bond_status_ui.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/bond_status_ui.py",
+      "source_sha256": "21691ecc36642b61ca0d1ede4f2e39e273caeb11e3b5a5a1412f5393b568d8a9",
+      "target_sha256": "21691ecc36642b61ca0d1ede4f2e39e273caeb11e3b5a5a1412f5393b568d8a9",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\build_stock_analysis.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/build_stock_analysis.py",
+      "source_sha256": "385a8cea1517d3265a327a182b0b8aef0b779a9f7e6b0270643308004082bbb1",
+      "target_sha256": "385a8cea1517d3265a327a182b0b8aef0b779a9f7e6b0270643308004082bbb1",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\data_sources.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/data_sources.py",
+      "source_sha256": "e19b86ff02cc51a7dd5ffae92e5031171805e3c5edefca9abfc8389f957fe028",
+      "target_sha256": "e19b86ff02cc51a7dd5ffae92e5031171805e3c5edefca9abfc8389f957fe028",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\econometrics.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/econometrics.py",
+      "source_sha256": "22fa5581aa170cdd420284a0b3fe2cd4c5a9f98d82df4db67ed90e36582e7394",
+      "target_sha256": "22fa5581aa170cdd420284a0b3fe2cd4c5a9f98d82df4db67ed90e36582e7394",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\economic_release_check.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/economic_release_check.py",
+      "source_sha256": "e61a9a108d412e5f280844fd94c6bb195bffa5f1f034d56e00df15f0cedf37f3",
+      "target_sha256": "e61a9a108d412e5f280844fd94c6bb195bffa5f1f034d56e00df15f0cedf37f3",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\etfbaz.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/etfbaz.py",
+      "source_sha256": "1c560db7399a5220f230c87591fc6f40bc39647d51535764e29c42f513121926",
+      "target_sha256": "1c560db7399a5220f230c87591fc6f40bc39647d51535764e29c42f513121926",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\forecast.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/forecast.py",
+      "source_sha256": "65f9a78d5e45a988405f7115d474dd3db007b28ae4c6d6312975240f33fbfc32",
+      "target_sha256": "65f9a78d5e45a988405f7115d474dd3db007b28ae4c6d6312975240f33fbfc32",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\fred_snapshot.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/fred_snapshot.py",
+      "source_sha256": "639250f55076ba0971519b1746134c686c7b5315e0fe75addb178173b60aa5ca",
+      "target_sha256": "639250f55076ba0971519b1746134c686c7b5315e0fe75addb178173b60aa5ca",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\gemini.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/gemini.py",
+      "source_sha256": "2644ee55213814d3aa81ed0e7e85fa530fbba88fdf72ec53681a7c389acd57d4",
+      "target_sha256": "2644ee55213814d3aa81ed0e7e85fa530fbba88fdf72ec53681a7c389acd57d4",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\healthcheck.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/healthcheck.py",
+      "source_sha256": "e7a6e06c25f8b186c4b67b265ef74b64fd80eca82f4a86339486b5ee940ff75e",
+      "target_sha256": "e7a6e06c25f8b186c4b67b265ef74b64fd80eca82f4a86339486b5ee940ff75e",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\ifb_bonds.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/ifb_bonds.py",
+      "source_sha256": "8cda7ea552fada9cc74f921c7ec068adaa3f798fa407ccb12c14059cc7609bda",
+      "target_sha256": "8cda7ea552fada9cc74f921c7ec068adaa3f798fa407ccb12c14059cc7609bda",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\macro_health.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/macro_health.py",
+      "source_sha256": "cc61fbd2f21bdf908a92e4a7bff21683425cfb84215b19716e95bdeb1aaeb51b",
+      "target_sha256": "cc61fbd2f21bdf908a92e4a7bff21683425cfb84215b19716e95bdeb1aaeb51b",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\maintenance_gate.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/maintenance_gate.py",
+      "source_sha256": "1010025bda938f52167c72d70c71427a99287ec7cd94eacba5eb437b276ab90f",
+      "target_sha256": "1010025bda938f52167c72d70c71427a99287ec7cd94eacba5eb437b276ab90f",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\maintenance_status.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/maintenance_status.py",
+      "source_sha256": "d8529ed111c6486840cdba1071ec7358b7eb479f387e7dda0b6384eabc446a34",
+      "target_sha256": "d8529ed111c6486840cdba1071ec7358b7eb479f387e7dda0b6384eabc446a34",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\models.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/models.py",
+      "source_sha256": "51501f8422f443a358746a9e233591c6c4c78e81e9b64874a660f4b745801a01",
+      "target_sha256": "51501f8422f443a358746a9e233591c6c4c78e81e9b64874a660f4b745801a01",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\precise_model_gate.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/precise_model_gate.py",
+      "source_sha256": "a44422451aae777452b95de9e4eb115cb5c6b248af22ddc8bd04ec25fb4cd949",
+      "target_sha256": "a44422451aae777452b95de9e4eb115cb5c6b248af22ddc8bd04ec25fb4cd949",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\psy.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/psy.py",
+      "source_sha256": "1ce5560790263a7c24a9ac7eb4f5fcc71ab161839849ca1d90c1c1e4292d228d",
+      "target_sha256": "1ce5560790263a7c24a9ac7eb4f5fcc71ab161839849ca1d90c1c1e4292d228d",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\publication.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/publication.py",
+      "source_sha256": "e7a0f3e2ee427cca49d3599b843a4b52b8c66f2d9c4eb4bbf8a884ee64ea9eea",
+      "target_sha256": "e7a0f3e2ee427cca49d3599b843a4b52b8c66f2d9c4eb4bbf8a884ee64ea9eea",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\sensitivity.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/sensitivity.py",
+      "source_sha256": "dd39c944813b58610f263d07a3aa828eec00fb9fc4007d79469737e8d6f2ff6a",
+      "target_sha256": "dd39c944813b58610f263d07a3aa828eec00fb9fc4007d79469737e8d6f2ff6a",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\source_health.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/source_health.py",
+      "source_sha256": "75505903e219698016e4b5e274cb2b561f1bbd95491579b75ad9186d791bb562",
+      "target_sha256": "75505903e219698016e4b5e274cb2b561f1bbd95491579b75ad9186d791bb562",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\test_fred_snapshot.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_fred_snapshot.py",
+      "source_sha256": "61d2c6c56f78734dbd75d42156abdbe2b2aa1a007638fd70d30017c8098c35c8",
+      "target_sha256": "61d2c6c56f78734dbd75d42156abdbe2b2aa1a007638fd70d30017c8098c35c8",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\test_history_calendar.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_history_calendar.py",
+      "source_sha256": "33946ee61eaf7d041d2f50ae5a46c21aa2e45544d86b27ab7d7e0c80dd79fa48",
+      "target_sha256": "33946ee61eaf7d041d2f50ae5a46c21aa2e45544d86b27ab7d7e0c80dd79fa48",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\test_missing_inputs.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_missing_inputs.py",
+      "source_sha256": "5aa41b20b210ed1db821e99f487938d7eeb60e10631f200eaa0153ef746d39a1",
+      "target_sha256": "5aa41b20b210ed1db821e99f487938d7eeb60e10631f200eaa0153ef746d39a1",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\test_psy.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_psy.py",
+      "source_sha256": "740f3427aeb3f59c1a9308036c837835dc6ff9bf6988eb7e798b8f3c4dd61cb7",
+      "target_sha256": "740f3427aeb3f59c1a9308036c837835dc6ff9bf6988eb7e798b8f3c4dd61cb7",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\test_source_health.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_source_health.py",
+      "source_sha256": "64c453e397a5db8e4af7e913477219f8fddb4bdeda9a9d9e040ad05b4369b5e9",
+      "target_sha256": "64c453e397a5db8e4af7e913477219f8fddb4bdeda9a9d9e040ad05b4369b5e9",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\validate_precise_remote.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/validate_precise_remote.py",
+      "source_sha256": "ecad5bdf90ec8f98ce4e9e24288b328a4decd29467d232df46d1acf18e23402f",
+      "target_sha256": "ecad5bdf90ec8f98ce4e9e24288b328a4decd29467d232df46d1acf18e23402f",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assets\\fonts\\Pelak-Black.woff2",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Black.woff2",
+      "source_sha256": "358dab98e970d5ebf7e9721bd278494293594b6d2381840988f32934acdd6ef1",
+      "target_sha256": "358dab98e970d5ebf7e9721bd278494293594b6d2381840988f32934acdd6ef1",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assets\\fonts\\Pelak-Bold.woff2",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Bold.woff2",
+      "source_sha256": "aa06eaaa7f803f65df10b4a9c631e7b937dc1cd3fd7630c84c6892aae1aa3b90",
+      "target_sha256": "aa06eaaa7f803f65df10b4a9c631e7b937dc1cd3fd7630c84c6892aae1aa3b90",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assets\\fonts\\Pelak-Medium.woff2",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Medium.woff2",
+      "source_sha256": "8e0ac6e8f27f32ae5e0a24352ab7f5ef24e7fd92e787d43d942cf309fef778e6",
+      "target_sha256": "8e0ac6e8f27f32ae5e0a24352ab7f5ef24e7fd92e787d43d942cf309fef778e6",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assets\\fonts\\Pelak-Regular.woff2",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Regular.woff2",
+      "source_sha256": "1456dc57cbf1dca3e526a34f37190bf0f38995d453bf232a57081ef9135e22bb",
+      "target_sha256": "1456dc57cbf1dca3e526a34f37190bf0f38995d453bf232a57081ef9135e22bb",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assets\\fonts\\Pelak-SemiBold.woff2",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-SemiBold.woff2",
+      "source_sha256": "e3fd8be1446adc30b22a7da50efc27e85809a25fad30b040f0113683f4ef8fcb",
+      "target_sha256": "e3fd8be1446adc30b22a7da50efc27e85809a25fad30b040f0113683f4ef8fcb",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assets\\logo-navy.png",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/logo-navy.png",
+      "source_sha256": "f5726c719c3561fb5ec7f692a7df79d2fb467b0eed5ec882c4922d3e9c466705",
+      "target_sha256": "f5726c719c3561fb5ec7f692a7df79d2fb467b0eed5ec882c4922d3e9c466705",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\assets\\logo-white.png",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/logo-white.png",
+      "source_sha256": "f5dd1915365d1634feef71a44721864c9f8e7528cc053d82e8f479f40c5cda58",
+      "target_sha256": "f5dd1915365d1634feef71a44721864c9f8e7528cc053d82e8f479f40c5cda58",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\requirements.txt",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/requirements.txt",
+      "source_sha256": "08179cf17b094470eda5d9857e89bdaed02e1e17daf2c8f9724f353c1af49e2b",
+      "target_sha256": "08179cf17b094470eda5d9857e89bdaed02e1e17daf2c8f9724f353c1af49e2b",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\annual-assumptions.json",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/annual-assumptions.json",
+      "source_sha256": "2df6d39ed3daa0ca661ee14103c916383d711493b7fe0b8e44406d21a0814a35",
+      "target_sha256": "2df6d39ed3daa0ca661ee14103c916383d711493b7fe0b8e44406d21a0814a35",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx-dashboard\\.streamlit\\config.toml",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/.streamlit/config.toml",
+      "source_sha256": "46bdb0c14d038b4ba9bed47568471f7f7d22af584a94a643536f501205b942d8",
+      "target_sha256": "46bdb0c14d038b4ba9bed47568471f7f7d22af584a94a643536f501205b942d8",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\agent_readiness.py",
+      "target_path": "scripts/fx-maintenance/work/agent_readiness.py",
+      "source_sha256": "c68dd6d7d92623d076d210aa673321728a70a551518b3b335cd8b3eca91ba7e1",
+      "target_sha256": "c68dd6d7d92623d076d210aa673321728a70a551518b3b335cd8b3eca91ba7e1",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\apply_additional_annual.py",
+      "target_path": "scripts/fx-maintenance/work/apply_additional_annual.py",
+      "source_sha256": "114a76400d088512af3b674774cdd4a7245ce3a47648ff87a3f10aa75041e33d",
+      "target_sha256": "1f9342dffb0e21f498d12f9a242466c87a00156a47a56885b419b9b374059c64",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\apply_sci_inflation.py",
+      "target_path": "scripts/fx-maintenance/work/apply_sci_inflation.py",
+      "source_sha256": "c6c9b63c8661669a7ab834571f3cb1ebdbc3fac214e1ddee4b46c0b9b5ee9f4f",
+      "target_sha256": "795a65321ae2c330e0d4b80ec3bf551a70e4b2479b6c3c1a16980221ff1b857b",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\apply_verified_us_gdp.py",
+      "target_path": "scripts/fx-maintenance/work/apply_verified_us_gdp.py",
+      "source_sha256": "a2459d38fa79310418f6e83e2d2fd25e63f4bcd710c003f57bc89397d9f4bf6a",
+      "target_sha256": "a2459d38fa79310418f6e83e2d2fd25e63f4bcd710c003f57bc89397d9f4bf6a",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\cbi_tsd_catalog.py",
+      "target_path": "scripts/fx-maintenance/work/cbi_tsd_catalog.py",
+      "source_sha256": "4dd38793c89dd50aa476484c22c951e4ab280ffa08252b13cbf66a20baa1c62c",
+      "target_sha256": "f071dc31abb46d413a9883145a2ae23ddba093a7e2ac7e9847f5e8bd2e871318",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\check_additional_annual.py",
+      "target_path": "scripts/fx-maintenance/work/check_additional_annual.py",
+      "source_sha256": "5430db8608e3f6b35e4af4fc2e4c1db00692bd0ed10123f71bb716b5e8f349c7",
+      "target_sha256": "6350bf126a1008ad0a736d367e144207dfe2ec088f14a9618631e11c721cd80f",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\check_existing_relay.py",
+      "target_path": "scripts/fx-maintenance/work/check_existing_relay.py",
+      "source_sha256": "f189d7b92770d33c50e690aecf1c1f43da86f52bf1e45222e7c6502641d4cf6b",
+      "target_sha256": "80808cff490b548ad61b7fb5dc46ea4bf93961d659752a7d2a692ba841272ea8",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\check_ifb_bonds.py",
+      "target_path": "scripts/fx-maintenance/work/check_ifb_bonds.py",
+      "source_sha256": "2d2cb76dc46e81106fbc6e8e6bc891f14e03830a09eb7e0c80ce024f4ebb8fd5",
+      "target_sha256": "f2054cae67969e1968ba60f78979abb8a824dd7ed15aaaf1dafc239d660eb022",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\check_worldbank_gdp.py",
+      "target_path": "scripts/fx-maintenance/work/check_worldbank_gdp.py",
+      "source_sha256": "031bbd5317b7b3e04755c059b51b861fa209bdc591e21f2d80c4b586fb8ec066",
+      "target_sha256": "031bbd5317b7b3e04755c059b51b861fa209bdc591e21f2d80c4b586fb8ec066",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\fetch_fred_metadata.py",
+      "target_path": "scripts/fx-maintenance/work/fetch_fred_metadata.py",
+      "source_sha256": "95265eca931e691d1d504b46d1b87d2eeaf7edc0c834acc0e4cff6b0d733a3dd",
+      "target_sha256": "95265eca931e691d1d504b46d1b87d2eeaf7edc0c834acc0e4cff6b0d733a3dd",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\fetch_sci_current.py",
+      "target_path": "scripts/fx-maintenance/work/fetch_sci_current.py",
+      "source_sha256": "dde8b674887d74210ba61d8f7523b1135d2eae9bdfc641a48c9f8e0a8aa572fe",
+      "target_sha256": "e6a11a6816ceebbc05e4ebf43c5a9d41203bd825ef40af21c5fa820867d41cc8",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\audit_remaining_inputs.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/audit_remaining_inputs.py",
+      "source_sha256": "3d771471cd680d96a3fe4ccdc15c8ebdd3c051aeecd0db98f48fb202ed002b9d",
+      "target_sha256": "3d771471cd680d96a3fe4ccdc15c8ebdd3c051aeecd0db98f48fb202ed002b9d",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\fx_smoke_test.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx_smoke_test.py",
+      "source_sha256": "9f055d144dd1c68d8156d297d54eef77060ba4f4e60a8db8334770dd4e02eea5",
+      "target_sha256": "9f055d144dd1c68d8156d297d54eef77060ba4f4e60a8db8334770dd4e02eea5",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\publish_additional_annual.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_additional_annual.py",
+      "source_sha256": "4f6ae6fe026102c2e59e49ba70e3a4344733ac156a8a28f202dfea9456326415",
+      "target_sha256": "af9b0ca532d989a70179b90ab242f0ddd5de42dab22d4b0106ca4a95460ffc8b",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\publish_annual_gdp.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_annual_gdp.py",
+      "source_sha256": "5cc667b1ac1f52f70cdc70aec066196058c813c85c2323fa68962fc67ad0a9c5",
+      "target_sha256": "f7298e4dc3922e925f4d1382bed040ec077e6d5781f28491cbfff3f00ff347b0",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\publish_ifb_bonds.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_ifb_bonds.py",
+      "source_sha256": "b7e44fe55727990bbdb6287cc5627ea174aa114fadbc1973d29dd4e263ffdbd2",
+      "target_sha256": "4fd7d811bf647feeefdd8f3fb50c29885e6c140e4567cb5d656f3b2a96185975",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\publish_sci_inflation.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_sci_inflation.py",
+      "source_sha256": "6a117cb52899ff49b053c3dae68cbabc4861dcafc5c35c91416eaf3e609fd22d",
+      "target_sha256": "e3577aa031c67dbd4fcd396f63a7bfb2654d15e38729a866d5f760b410cee834",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\publish_verified_fred.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_verified_fred.py",
+      "source_sha256": "d6143c0a8fc56040ddbafc873cdce10e2328749a8b9f513a0b9071fcb4d582b9",
+      "target_sha256": "60a22fdab66739e8b8eee5b00949119aa2a37605abcadea29f2725c99227130f",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\verify_us_version.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/verify_us_version.py",
+      "source_sha256": "0c7840e2c0220e2062692cd37b7cd8ed5557525d85778bbdc1a7d6fea3b98db7",
+      "target_sha256": "0c7840e2c0220e2062692cd37b7cd8ed5557525d85778bbdc1a7d6fea3b98db7",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\liara-deploy-20260929\\vm_command.py",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/vm_command.py",
+      "source_sha256": "762654bf97dbb9214a2d4006dc7f50ad2d8c9cc0c5f752fb7c0858b0093edc7f",
+      "target_sha256": "a1be76267cea966393dce518633f0b1f37995436de867de66c213a7513eb272e",
+      "transformations": [
+        "secure VM config/vendor path → FX_VM_CONFIG_DIR; no credentials copied"
+      ]
+    },
+    {
+      "source_path": "work\\metadata_contract.py",
+      "target_path": "scripts/fx-maintenance/work/metadata_contract.py",
+      "source_sha256": "f221199d01cb1120fa0316d0bbf86147100b7e73e24b57d319c6dd73981cf513",
+      "target_sha256": "f221199d01cb1120fa0316d0bbf86147100b7e73e24b57d319c6dd73981cf513",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\parse_sci_current_pdf.py",
+      "target_path": "scripts/fx-maintenance/work/parse_sci_current_pdf.py",
+      "source_sha256": "a62c5f9300e2f2e5ba16f434108d98a62e987e246e47873ef38c4fcabae15fa0",
+      "target_sha256": "022655588d19dbaca1bcca6b0621811e904978c00a1118da7674159c87d10c1b",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\publish_agent_status.py",
+      "target_path": "scripts/fx-maintenance/work/publish_agent_status.py",
+      "source_sha256": "f63a8107625a8dc2918b298c892759f780902df7c295ff10b30395d7361aa757",
+      "target_sha256": "3fd9b05d51f6e583c5e9e50ac738e8797818bf90191702c4933e77aa0dd0069a",
+      "transformations": [
+        "bundled Python path → FX_BUNDLED_PYTHON"
+      ]
+    },
+    {
+      "source_path": "work\\relay_health_check.py",
+      "target_path": "scripts/fx-maintenance/work/relay_health_check.py",
+      "source_sha256": "cf5b84ccdd9e55b11713ae6c188d547f63eadacc91cd0bed9f13ab343d8d6311",
+      "target_sha256": "cf5b84ccdd9e55b11713ae6c188d547f63eadacc91cd0bed9f13ab343d8d6311",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\review_fx_contracts.py",
+      "target_path": "scripts/fx-maintenance/work/review_fx_contracts.py",
+      "source_sha256": "56d7e5fb68cbd02ef45b712a14292591b6d4f78a6c4ef7eab39ee66802db8d80",
+      "target_sha256": "56d7e5fb68cbd02ef45b712a14292591b6d4f78a6c4ef7eab39ee66802db8d80",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\review_ytm_definition.py",
+      "target_path": "scripts/fx-maintenance/work/review_ytm_definition.py",
+      "source_sha256": "69a8084491ee5bac6a41c03f1e747c77716164430bd9980bc4cd0c0c84b212a4",
+      "target_sha256": "69a8084491ee5bac6a41c03f1e747c77716164430bd9980bc4cd0c0c84b212a4",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\validate_cbi_mapping.py",
+      "target_path": "scripts/fx-maintenance/work/validate_cbi_mapping.py",
+      "source_sha256": "51bffc2af6357562d0bf62eb00c5b52ca36d02302347e2a0b43112d8cddfc7ed",
+      "target_sha256": "51bffc2af6357562d0bf62eb00c5b52ca36d02302347e2a0b43112d8cddfc7ed",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\verify_fx_production_contracts.py",
+      "target_path": "scripts/fx-maintenance/work/verify_fx_production_contracts.py",
+      "source_sha256": "bfc3af84abc7513ef07298ab5499dc1be44e2d0f2912f2a1f33d0c6b3c8e6c8b",
+      "target_sha256": "bfc3af84abc7513ef07298ab5499dc1be44e2d0f2912f2a1f33d0c6b3c8e6c8b",
+      "transformations": []
+    },
+    {
+      "source_path": "work\\write_agent_run_report.py",
+      "target_path": "scripts/fx-maintenance/work/write_agent_run_report.py",
+      "source_sha256": "e7f3956afae47634da54f37b8ed2d9fe7456f4b7381308373a4adfada6ed3a62",
+      "target_sha256": "e7f3956afae47634da54f37b8ed2d9fe7456f4b7381308373a4adfada6ed3a62",
+      "transformations": []
+    },
+    {
+      "source_path": "existing Hermes hook (metadata template)",
+      "target_path": "scripts/fx-maintenance/hermes/fx_economic_preflight.py",
+      "source_sha256": "ffc2e9dbb7bf48c66049895165423d0689a4a12ce9c60bfc6a52d8383af33172",
+      "target_sha256": "bba995a1c143051c31b907e2f25503900bc0df67c5328a21e2047a69521f288d",
+      "transformations": [
+        "project root → FX_MAINTENANCE_ROOT",
+        "venv → FX_LOCAL_PYTHON",
+        "template only; active hook unchanged"
+      ]
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\base-image-id.txt",
+      "target_path": "docs/ops/fx-maintenance/base-image-id.txt",
+      "source_sha256": "5863875eea0055c772871bbb06c0b64ec068bbf0c728cc904c1819f67bd849ce",
+      "target_sha256": "5863875eea0055c772871bbb06c0b64ec068bbf0c728cc904c1819f67bd849ce",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\constraints.local.txt",
+      "target_path": "docs/ops/fx-maintenance/constraints.local.txt",
+      "source_sha256": "7c1aadb12722cc51d2065ec2bf1a39b4059bf43cf3b9026e7c6ada4477c670fd",
+      "target_sha256": "7c1aadb12722cc51d2065ec2bf1a39b4059bf43cf3b9026e7c6ada4477c670fd",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\contract-evidence.json",
+      "target_path": "docs/ops/fx-maintenance/contract-evidence.json",
+      "source_sha256": "2b1689da59866c7d73ee9221cd43012b985efcf11afcea8245e38592cd9be3bf",
+      "target_sha256": "2b1689da59866c7d73ee9221cd43012b985efcf11afcea8245e38592cd9be3bf",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\DATA-CONTRACTS.md",
+      "target_path": "docs/ops/fx-maintenance/DATA-CONTRACTS.md",
+      "source_sha256": "5e5ebc2483f493e495ce0ec5bba3139b6975b71fd3ca320a53437c1f55eefc64",
+      "target_sha256": "5e5ebc2483f493e495ce0ec5bba3139b6975b71fd3ca320a53437c1f55eefc64",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\DECISIONS.md",
+      "target_path": "docs/ops/fx-maintenance/DECISIONS.md",
+      "source_sha256": "23848ac8166f0b8b157b61630ce125ac7761a673359705611d65079a7fadf24f",
+      "target_sha256": "23848ac8166f0b8b157b61630ce125ac7761a673359705611d65079a7fadf24f",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\DEPENDENCIES.md",
+      "target_path": "docs/ops/fx-maintenance/DEPENDENCIES.md",
+      "source_sha256": "20a2b67d5ee619162eacb418d4fac0f88203d9fd8651c7dc6829ccc049fdc295",
+      "target_sha256": "20a2b67d5ee619162eacb418d4fac0f88203d9fd8651c7dc6829ccc049fdc295",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\FRONTEND-CONTRACT.md",
+      "target_path": "docs/ops/fx-maintenance/FRONTEND-CONTRACT.md",
+      "source_sha256": "f8750b0691757f64459c41afa93e483013e3f8b76d19496f5041a3b7ea43447d",
+      "target_sha256": "f8750b0691757f64459c41afa93e483013e3f8b76d19496f5041a3b7ea43447d",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\INSTALL-ROLLBACK.md",
+      "target_path": "docs/ops/fx-maintenance/INSTALL-ROLLBACK.md",
+      "source_sha256": "67a5474f1cbd42c5b873f4f6302c59e41aa0336af84c757cff79afc1c90f6ed0",
+      "target_sha256": "67a5474f1cbd42c5b873f4f6302c59e41aa0336af84c757cff79afc1c90f6ed0",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\production-consumer-hashes.log",
+      "target_path": "docs/ops/fx-maintenance/production-consumer-hashes.log",
+      "source_sha256": "d5cd4bdbbda2e96805af05af0da359d74dc05660f0720085f462afd409a70dfc",
+      "target_sha256": "d5cd4bdbbda2e96805af05af0da359d74dc05660f0720085f462afd409a70dfc",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\production-contract-evidence.json",
+      "target_path": "docs/ops/fx-maintenance/production-contract-evidence.json",
+      "source_sha256": "ab7886e6fd12527416d9ee0ad8fd214b4605392029505ab280d5e22adc0bb8cf",
+      "target_sha256": "ab7886e6fd12527416d9ee0ad8fd214b4605392029505ab280d5e22adc0bb8cf",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\README.md",
+      "target_path": "docs/ops/fx-maintenance/README.md",
+      "source_sha256": "40472f10c1791d7f3e10f592953ee7c7442bc3bc10bb378c7f2bdf09406bd526",
+      "target_sha256": "40472f10c1791d7f3e10f592953ee7c7442bc3bc10bb378c7f2bdf09406bd526",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\server-runtime.json",
+      "target_path": "docs/ops/fx-maintenance/server-runtime.json",
+      "source_sha256": "510831656c195252449a25d323a3528add6b73fb942a7eb73013033718f68e57",
+      "target_sha256": "510831656c195252449a25d323a3528add6b73fb942a7eb73013033718f68e57",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\YTM-RESEARCH.md",
+      "target_path": "docs/ops/fx-maintenance/YTM-RESEARCH.md",
+      "source_sha256": "9772696b43918e48adbab4c60d68efc46d9fc7aae29453cdceb492faf3c9cf64",
+      "target_sha256": "9772696b43918e48adbab4c60d68efc46d9fc7aae29453cdceb492faf3c9cf64",
+      "transformations": []
+    },
+    {
+      "source_path": "docs\\ops\\fx-maintenance\\ytm-source-evidence.json",
+      "target_path": "docs/ops/fx-maintenance/ytm-source-evidence.json",
+      "source_sha256": "dbe9539077d41f800688220faaddae3e9a4584fbb45deae19974fcc7f83c7843",
+      "target_sha256": "dbe9539077d41f800688220faaddae3e9a4584fbb45deae19974fcc7f83c7843",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-maintenance-candidate-manifest.json",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-maintenance-candidate-manifest.json",
+      "source_sha256": "0058e68624bf17b68de47cd5b1ca5dbcf8f285fada9a651cc2762c44b822c21c",
+      "target_sha256": "0058e68624bf17b68de47cd5b1ca5dbcf8f285fada9a651cc2762c44b822c21c",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-agent-isolated-readback-20261001.json",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-agent-isolated-readback-20261001.json",
+      "source_sha256": "bac3002ed0f8cdae0988d1889db7a757aae4815c2fa3fd21e4181e642f354cd5",
+      "target_sha256": "bac3002ed0f8cdae0988d1889db7a757aae4815c2fa3fd21e4181e642f354cd5",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-maintenance-local-gate-20261001.log",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-maintenance-local-gate-20261001.log",
+      "source_sha256": "3ad1f5aa9855b1e4782b6253415f0f2446e5a8895ae3057cf3a15ab147b47168",
+      "target_sha256": "3ad1f5aa9855b1e4782b6253415f0f2446e5a8895ae3057cf3a15ab147b47168",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-maintenance-server-candidate-20261001.log",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-maintenance-server-candidate-20261001.log",
+      "source_sha256": "88165f641101ce03b292af18a5e639eb6837113b2dac768e5e9b0fcea9dbebc6",
+      "target_sha256": "88165f641101ce03b292af18a5e639eb6837113b2dac768e5e9b0fcea9dbebc6",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-maintenance-acceptance-tests-20261001.log",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-maintenance-acceptance-tests-20261001.log",
+      "source_sha256": "b546ba57da7eca16fb9b1300d9e87f351e69c0c8501a438d23b8b92fad52c855",
+      "target_sha256": "b546ba57da7eca16fb9b1300d9e87f351e69c0c8501a438d23b8b92fad52c855",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-cbi-mapping-20261001.md",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-cbi-mapping-20261001.md",
+      "source_sha256": "882ba1bfaa05d04d5f30195bd6c1bca042e785d30ec496ec72a99bc0b429cc38",
+      "target_sha256": "882ba1bfaa05d04d5f30195bd6c1bca042e785d30ec496ec72a99bc0b429cc38",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-cbi-model-mapping.json",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-cbi-model-mapping.json",
+      "source_sha256": "92fcc0f31f06639eb73080bba83619c91e71a9f2d2510405f2f3a1bccb92c712",
+      "target_sha256": "92fcc0f31f06639eb73080bba83619c91e71a9f2d2510405f2f3a1bccb92c712",
+      "transformations": []
+    },
+    {
+      "source_path": "outputs\\fx-ytm-delivery-20261001.md",
+      "target_path": "docs/ops/fx-maintenance/evidence/fx-ytm-delivery-20261001.md",
+      "source_sha256": "24d569c1187c2c93d33b8228b379722f585707e5ca03ca6d0c2f3a7ffc302d84",
+      "target_sha256": "24d569c1187c2c93d33b8228b379722f585707e5ca03ca6d0c2f3a7ffc302d84",
+      "transformations": []
+    },
+    {
+      "source_path": "generated transfer configuration",
+      "target_path": "scripts/fx-maintenance/.gitignore",
+      "target_sha256": "61b5176a43201c5341c893e607e3be29c7bb948eb873102a4365e7d8233b3ff2",
+      "transformations": [
+        "review-only generated file"
+      ]
+    },
+    {
+      "source_path": "generated transfer configuration",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/Dockerfile.review",
+      "target_sha256": "5047a04cc1e406a3e860796cca6084f2058455dd404fd2662938fb97485053a1",
+      "transformations": [
+        "review-only generated file"
+      ]
+    },
+    {
+      "source_path": "generated transfer configuration",
+      "target_path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/.dockerignore",
+      "target_sha256": "94971d866815cdeb9b81825533f2b20b16ad974d89958604ae404f0e38732fff",
+      "transformations": [
+        "review-only generated file"
+      ]
+    }
+  ]
+}

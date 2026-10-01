@@ -1,0 +1,430 @@
+{
+  "base_commit": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+  "branch": "codex/fx-portable-runtime-20261001",
+  "input_archive_sha256": "15d83104e2ab9e477e5d7699d6c94aece9a2a579d06c5d9f06f34d452f1c26fc",
+  "runtime": "PASS Windows isolated; Linux container NOT_TESTED",
+  "files": [
+    {
+      "path": "docs/ops/fx-maintenance/.gitattributes",
+      "sha256": "2c90ba926f47b1c2c5f83359918f2ee22bb11604f8f7aefda68ba49355b6d043"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/DATA-CONTRACTS.md",
+      "sha256": "5e5ebc2483f493e495ce0ec5bba3139b6975b71fd3ca320a53437c1f55eefc64"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/DECISIONS.md",
+      "sha256": "23848ac8166f0b8b157b61630ce125ac7761a673359705611d65079a7fadf24f"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/DEPENDENCIES.md",
+      "sha256": "20a2b67d5ee619162eacb418d4fac0f88203d9fd8651c7dc6829ccc049fdc295"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/FRONTEND-CONTRACT.md",
+      "sha256": "f8750b0691757f64459c41afa93e483013e3f8b76d19496f5041a3b7ea43447d"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/FX-PORTABLE-RUNTIME-RESULT.md",
+      "sha256": "e3a1e67742a143655dfe293313209214d7b2c6636cb745872d2a45bc57a45356"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/INSTALL-ROLLBACK.md",
+      "sha256": "f5e462b4ea09ac1e2a8c5338c925de8238344841c8a7b257b6e31dccd216a1fd"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/README.md",
+      "sha256": "1b0c530b4b4d64a896fa2bfd90ebbb20f5a91a0dc80681285dce13afdda9bd0b"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/TRANSFER-MANIFEST.json",
+      "sha256": "34cd100ceaca782cd51037986903735addea351e2a37cfbc71636cd165e33c35"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/YTM-RESEARCH.md",
+      "sha256": "9772696b43918e48adbab4c60d68efc46d9fc7aae29453cdceb492faf3c9cf64"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/base-image-id.txt",
+      "sha256": "198a3c430226812e0a0bfce45c4bfc77d2bca58db86d2af01eb3dff2f099192e"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/constraints.local.txt",
+      "sha256": "7c1aadb12722cc51d2065ec2bf1a39b4059bf43cf3b9026e7c6ada4477c670fd"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/contract-evidence.json",
+      "sha256": "2b1689da59866c7d73ee9221cd43012b985efcf11afcea8245e38592cd9be3bf"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-agent-isolated-readback-20261001.json",
+      "sha256": "bac3002ed0f8cdae0988d1889db7a757aae4815c2fa3fd21e4181e642f354cd5"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-cbi-mapping-20261001.md",
+      "sha256": "882ba1bfaa05d04d5f30195bd6c1bca042e785d30ec496ec72a99bc0b429cc38"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-cbi-model-mapping.json",
+      "sha256": "92fcc0f31f06639eb73080bba83619c91e71a9f2d2510405f2f3a1bccb92c712"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-maintenance-acceptance-tests-20261001.log",
+      "sha256": "b546ba57da7eca16fb9b1300d9e87f351e69c0c8501a438d23b8b92fad52c855"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-maintenance-candidate-manifest.json",
+      "sha256": "0058e68624bf17b68de47cd5b1ca5dbcf8f285fada9a651cc2762c44b822c21c"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-maintenance-local-gate-20261001.log",
+      "sha256": "3ad1f5aa9855b1e4782b6253415f0f2446e5a8895ae3057cf3a15ab147b47168"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-maintenance-server-candidate-20261001.log",
+      "sha256": "0005cf9deec533bd9d1e160ee3b54077bc55d5898ba3c767bc25cb1358782550"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/evidence/fx-ytm-delivery-20261001.md",
+      "sha256": "24d569c1187c2c93d33b8228b379722f585707e5ca03ca6d0c2f3a7ffc302d84"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/portable-runtime-evidence.json",
+      "sha256": "78125ddf260056fc4f5208f8e3be1659964b6a61a41b27713a2e8dfe15584822"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/production-consumer-hashes.log",
+      "sha256": "56e9db17a8c42104158b16d779d20bd4313ae42ea916aba9906ebaf05173505a"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/production-contract-evidence.json",
+      "sha256": "ab7886e6fd12527416d9ee0ad8fd214b4605392029505ab280d5e22adc0bb8cf"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/server-runtime.json",
+      "sha256": "152f8a51458bd3455f0f8521d061ca10717df350fe4f9b574179b2cb3ccd254b"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/ytm-source-evidence.json",
+      "sha256": "dbe9539077d41f800688220faaddae3e9a4584fbb45deae19974fcc7f83c7843"
+    },
+    {
+      "path": "scripts/fx-maintenance/.gitattributes",
+      "sha256": "368cc368c06784033b4f2150804cf3462751d2a2eec9da554f57c7eee9097aa1"
+    },
+    {
+      "path": "scripts/fx-maintenance/.gitignore",
+      "sha256": "61b5176a43201c5341c893e607e3be29c7bb948eb873102a4365e7d8233b3ff2"
+    },
+    {
+      "path": "scripts/fx-maintenance/hermes/fx_economic_preflight.py",
+      "sha256": "bba995a1c143051c31b907e2f25503900bc0df67c5328a21e2047a69521f288d"
+    },
+    {
+      "path": "scripts/fx-maintenance/tests/README.md",
+      "sha256": "18bb131ce3338a91c4b335f1e3b93ee75e3f319538366c900423eea16f7dd67c"
+    },
+    {
+      "path": "scripts/fx-maintenance/tests/network_guard/sitecustomize.py",
+      "sha256": "6fc1eeca25e918d3c8f7c9007b678f37b8fef829f166e4e819127466d0e22a46"
+    },
+    {
+      "path": "scripts/fx-maintenance/tests/runtime_acceptance.py",
+      "sha256": "4a9665ca6febc4734a09b45fc692a8c57ac412e43019d1a83d4c6ab44c50fd0f"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/agent_readiness.py",
+      "sha256": "c68dd6d7d92623d076d210aa673321728a70a551518b3b335cd8b3eca91ba7e1"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/apply_additional_annual.py",
+      "sha256": "1f9342dffb0e21f498d12f9a242466c87a00156a47a56885b419b9b374059c64"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/apply_sci_inflation.py",
+      "sha256": "795a65321ae2c330e0d4b80ec3bf551a70e4b2479b6c3c1a16980221ff1b857b"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/apply_verified_us_gdp.py",
+      "sha256": "a2459d38fa79310418f6e83e2d2fd25e63f4bcd710c003f57bc89397d9f4bf6a"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/cbi_tsd_catalog.py",
+      "sha256": "aa2aca9240117966e5c309d61dfc1c6bb275d036458511ce85b85aeb8d5768e1"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/check_additional_annual.py",
+      "sha256": "6350bf126a1008ad0a736d367e144207dfe2ec088f14a9618631e11c721cd80f"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/check_existing_relay.py",
+      "sha256": "80808cff490b548ad61b7fb5dc46ea4bf93961d659752a7d2a692ba841272ea8"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/check_ifb_bonds.py",
+      "sha256": "f2054cae67969e1968ba60f78979abb8a824dd7ed15aaaf1dafc239d660eb022"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/check_worldbank_gdp.py",
+      "sha256": "031bbd5317b7b3e04755c059b51b861fa209bdc591e21f2d80c4b586fb8ec066"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/fetch_fred_metadata.py",
+      "sha256": "95265eca931e691d1d504b46d1b87d2eeaf7edc0c834acc0e4cff6b0d733a3dd"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/fetch_sci_current.py",
+      "sha256": "e6a11a6816ceebbc05e4ebf43c5a9d41203bd825ef40af21c5fa820867d41cc8"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/audit_remaining_inputs.py",
+      "sha256": "3d771471cd680d96a3fe4ccdc15c8ebdd3c051aeecd0db98f48fb202ed002b9d"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/.dockerignore",
+      "sha256": "94971d866815cdeb9b81825533f2b20b16ad974d89958604ae404f0e38732fff"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/.streamlit/config.toml",
+      "sha256": "46bdb0c14d038b4ba9bed47568471f7f7d22af584a94a643536f501205b942d8"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/Dockerfile.review",
+      "sha256": "5047a04cc1e406a3e860796cca6084f2058455dd404fd2662938fb97485053a1"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/agent_bonds_gate.py",
+      "sha256": "6103b59784989edc54e5fb76f3fc0dd9058772e756b54ac9ef2bbfe4568c52bd"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/agent_status_ui.py",
+      "sha256": "9519904ebb4fec9c3ed7a317407b82e5a81b62efc9c4d6af53f1dae8d237ac09"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/annual-assumptions.json",
+      "sha256": "2df6d39ed3daa0ca661ee14103c916383d711493b7fe0b8e44406d21a0814a35"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/app.py",
+      "sha256": "e8abcb60a33c43efcffdeac31f5519c842a8f6d38c007a421ab6d824cf1f9596"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Black.woff2",
+      "sha256": "358dab98e970d5ebf7e9721bd278494293594b6d2381840988f32934acdd6ef1"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Bold.woff2",
+      "sha256": "aa06eaaa7f803f65df10b4a9c631e7b937dc1cd3fd7630c84c6892aae1aa3b90"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Medium.woff2",
+      "sha256": "8e0ac6e8f27f32ae5e0a24352ab7f5ef24e7fd92e787d43d942cf309fef778e6"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-Regular.woff2",
+      "sha256": "1456dc57cbf1dca3e526a34f37190bf0f38995d453bf232a57081ef9135e22bb"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/fonts/Pelak-SemiBold.woff2",
+      "sha256": "e3fd8be1446adc30b22a7da50efc27e85809a25fad30b040f0113683f4ef8fcb"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/logo-navy.png",
+      "sha256": "f5726c719c3561fb5ec7f692a7df79d2fb467b0eed5ec882c4922d3e9c466705"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assets/logo-white.png",
+      "sha256": "f5dd1915365d1634feef71a44721864c9f8e7528cc053d82e8f479f40c5cda58"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/assistant.py",
+      "sha256": "89ed164936b15e2f2f738d6d638b591dfa39165881b866abbcb33488addab671"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/auth_gate.py",
+      "sha256": "a7d233e116addd133d0a24f6db552186b8d183f27f844f04f91d4f7fe9a4700b"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/backtest.py",
+      "sha256": "876476fce9156c48086a4602df1567e6ec6ea5ea9bbc6495f27e47dbd593a0b9"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/bond_status_ui.py",
+      "sha256": "21691ecc36642b61ca0d1ede4f2e39e273caeb11e3b5a5a1412f5393b568d8a9"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/build_stock_analysis.py",
+      "sha256": "3a6819415bf436451663ab78e4e955466ed33c3751364bcdebe7b17dcae862c6"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/data_sources.py",
+      "sha256": "9ddc691426003eb311bf92b5c31a5f824be8db79fe187268c771e6e6265cc6af"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/econometrics.py",
+      "sha256": "22fa5581aa170cdd420284a0b3fe2cd4c5a9f98d82df4db67ed90e36582e7394"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/economic_release_check.py",
+      "sha256": "e61a9a108d412e5f280844fd94c6bb195bffa5f1f034d56e00df15f0cedf37f3"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/etfbaz.py",
+      "sha256": "1c560db7399a5220f230c87591fc6f40bc39647d51535764e29c42f513121926"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/forecast.py",
+      "sha256": "65f9a78d5e45a988405f7115d474dd3db007b28ae4c6d6312975240f33fbfc32"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/fred_snapshot.py",
+      "sha256": "639250f55076ba0971519b1746134c686c7b5315e0fe75addb178173b60aa5ca"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/gemini.py",
+      "sha256": "2644ee55213814d3aa81ed0e7e85fa530fbba88fdf72ec53681a7c389acd57d4"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/healthcheck.py",
+      "sha256": "e7a6e06c25f8b186c4b67b265ef74b64fd80eca82f4a86339486b5ee940ff75e"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/ifb_bonds.py",
+      "sha256": "8cda7ea552fada9cc74f921c7ec068adaa3f798fa407ccb12c14059cc7609bda"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/macro_health.py",
+      "sha256": "cc61fbd2f21bdf908a92e4a7bff21683425cfb84215b19716e95bdeb1aaeb51b"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/maintenance_gate.py",
+      "sha256": "1010025bda938f52167c72d70c71427a99287ec7cd94eacba5eb437b276ab90f"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/maintenance_status.py",
+      "sha256": "d8529ed111c6486840cdba1071ec7358b7eb479f387e7dda0b6384eabc446a34"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/models.py",
+      "sha256": "51501f8422f443a358746a9e233591c6c4c78e81e9b64874a660f4b745801a01"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/precise_model_gate.py",
+      "sha256": "a44422451aae777452b95de9e4eb115cb5c6b248af22ddc8bd04ec25fb4cd949"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/psy.py",
+      "sha256": "1ce5560790263a7c24a9ac7eb4f5fcc71ab161839849ca1d90c1c1e4292d228d"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/publication.py",
+      "sha256": "e7a0f3e2ee427cca49d3599b843a4b52b8c66f2d9c4eb4bbf8a884ee64ea9eea"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/requirements.txt",
+      "sha256": "08179cf17b094470eda5d9857e89bdaed02e1e17daf2c8f9724f353c1af49e2b"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/sensitivity.py",
+      "sha256": "dd39c944813b58610f263d07a3aa828eec00fb9fc4007d79469737e8d6f2ff6a"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/source_health.py",
+      "sha256": "75505903e219698016e4b5e274cb2b561f1bbd95491579b75ad9186d791bb562"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_fred_snapshot.py",
+      "sha256": "61d2c6c56f78734dbd75d42156abdbe2b2aa1a007638fd70d30017c8098c35c8"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_history_calendar.py",
+      "sha256": "33946ee61eaf7d041d2f50ae5a46c21aa2e45544d86b27ab7d7e0c80dd79fa48"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_missing_inputs.py",
+      "sha256": "5aa41b20b210ed1db821e99f487938d7eeb60e10631f200eaa0153ef746d39a1"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_psy.py",
+      "sha256": "740f3427aeb3f59c1a9308036c837835dc6ff9bf6988eb7e798b8f3c4dd61cb7"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/test_source_health.py",
+      "sha256": "64c453e397a5db8e4af7e913477219f8fddb4bdeda9a9d9e040ad05b4369b5e9"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx-dashboard/validate_precise_remote.py",
+      "sha256": "ecad5bdf90ec8f98ce4e9e24288b328a4decd29467d232df46d1acf18e23402f"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/fx_smoke_test.py",
+      "sha256": "9f055d144dd1c68d8156d297d54eef77060ba4f4e60a8db8334770dd4e02eea5"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_additional_annual.py",
+      "sha256": "af9b0ca532d989a70179b90ab242f0ddd5de42dab22d4b0106ca4a95460ffc8b"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_annual_gdp.py",
+      "sha256": "f7298e4dc3922e925f4d1382bed040ec077e6d5781f28491cbfff3f00ff347b0"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_ifb_bonds.py",
+      "sha256": "4fd7d811bf647feeefdd8f3fb50c29885e6c140e4567cb5d656f3b2a96185975"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_sci_inflation.py",
+      "sha256": "e3577aa031c67dbd4fcd396f63a7bfb2654d15e38729a866d5f760b410cee834"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/publish_verified_fred.py",
+      "sha256": "60a22fdab66739e8b8eee5b00949119aa2a37605abcadea29f2725c99227130f"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/verify_us_version.py",
+      "sha256": "0c7840e2c0220e2062692cd37b7cd8ed5557525d85778bbdc1a7d6fea3b98db7"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/liara-deploy-20260929/vm_command.py",
+      "sha256": "a1be76267cea966393dce518633f0b1f37995436de867de66c213a7513eb272e"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/metadata_contract.py",
+      "sha256": "f221199d01cb1120fa0316d0bbf86147100b7e73e24b57d319c6dd73981cf513"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/parse_sci_current_pdf.py",
+      "sha256": "022655588d19dbaca1bcca6b0621811e904978c00a1118da7674159c87d10c1b"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/publish_agent_status.py",
+      "sha256": "3fd9b05d51f6e583c5e9e50ac738e8797818bf90191702c4933e77aa0dd0069a"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/relay_health_check.py",
+      "sha256": "cf5b84ccdd9e55b11713ae6c188d547f63eadacc91cd0bed9f13ab343d8d6311"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/review_fx_contracts.py",
+      "sha256": "56d7e5fb68cbd02ef45b712a14292591b6d4f78a6c4ef7eab39ee66802db8d80"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/review_ytm_definition.py",
+      "sha256": "69a8084491ee5bac6a41c03f1e747c77716164430bd9980bc4cd0c0c84b212a4"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/validate_cbi_mapping.py",
+      "sha256": "7b11d18e433b12d5b9ff5a030d5a479655ff3b48141e215c7b93cd76c20caffc"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/verify_fx_production_contracts.py",
+      "sha256": "bfc3af84abc7513ef07298ab5499dc1be44e2d0f2912f2a1f33d0c6b3c8e6c8b"
+    },
+    {
+      "path": "scripts/fx-maintenance/work/write_agent_run_report.py",
+      "sha256": "e7f3956afae47634da54f37b8ed2d9fe7456f4b7381308373a4adfada6ed3a62"
+    }
+  ],
+  "raw_workbooks_in_git": false,
+  "production_modified": false
+}
