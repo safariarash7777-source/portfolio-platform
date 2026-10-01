@@ -1,0 +1,2 @@
+# Preserve the frozen manifest and harness bytes within IE01 only.
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

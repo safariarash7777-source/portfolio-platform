@@ -1,0 +1,514 @@
+{
+  "contractVersion": "IE01.offline-document.v1",
+  "preparedAt": "2026-10-01T22:18:13.1188789+03:30",
+  "timezone": "Asia/Tehran",
+  "status": "READY_OFFLINE_DOCUMENTS_OWNER_ALIGNMENT_OPEN",
+  "isOperationalAcceptance": false,
+  "topic": {
+    "symbol": "ونوین",
+    "title": "درآمد عملیاتی و سود خالص بانک اقتصاد نوین در گزارش سال مالی ۱۴۰۴",
+    "scope": "historic document identity and input quality only",
+    "isLatestMarketReport": false
+  },
+  "authorization": {
+    "documentsOnly": true,
+    "liveDBAllowed": false,
+    "extraBrsApiAllowed": false,
+    "providerContactAllowed": false,
+    "purchaseAllowed": false,
+    "codeMutationAllowed": false,
+    "sharedMigrationAllowed": false,
+    "productionMutationAllowed": false,
+    "IE02Authorized": false,
+    "IE03Authorized": false,
+    "humanTenDayCommitmentMade": false
+  },
+  "checkpoint": {
+    "repositoryHead": "042af799eaa5bbfc4c28f59e8ef1578501bc33f5",
+    "branch": "codex/product-two-tracks",
+    "priorIE01FilesFound": false,
+    "priorTaskDirectoryFound": false,
+    "processCheck": "No matching prior IE01/intelligence-loop/REBASELINE process seen other than current inspection; other chats and services not restarted or stopped",
+    "newCommit": null,
+    "newPR": null,
+    "sourceFilesWorkingTreeClean": true
+  },
+  "sourceIdentity": {
+    "archivePath": "relay/fixtures/vanovin-n10-fy1404.html",
+    "archiveClass": "claimed original public-report HTML archive",
+    "originClaim": "relay/codal.test.mjs comments identify excel.codal.ir bank unaudited FY1404 report",
+    "issuerVerifiedNow": false,
+    "sourceUrl": null,
+    "announcementId": null,
+    "sourceAt": null,
+    "capturedAt": null,
+    "inspectedAt": "2026-10-01T22:18:13.1188789+03:30",
+    "fileMtimeUsedAsCaptureTime": false,
+    "lastLocalGitTouchSHA": "5fd94b3ccdd4f682898edec7a6f33451f2918936",
+    "lastLocalGitTouchAt": "2026-07-17T06:52:16Z",
+    "lastGitTouchIsPublicationTime": false,
+    "archiveDigest": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+    "originalArchiveRewritten": false,
+    "rawTransferredToModelProvider": false,
+    "licensingVerified": false,
+    "licensingStatus": "OPEN; no new publication or redistribution"
+  },
+  "sourceFiles": [
+    {
+      "path": "relay/fixtures/vanovin-n10-fy1404.html",
+      "sha256": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+      "bytes": 363389,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    },
+    {
+      "path": "relay/codal.test.mjs",
+      "sha256": "33198626aa5fb1b465af1982d04948eece5721609ee5bebeea8b090bd2bd741d",
+      "bytes": 20090,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    },
+    {
+      "path": "relay/codal.mjs",
+      "sha256": "6b144cae020b76df250c9f61fc83abb9ce4438b64389f1eec1d04dc00f5a8cd3",
+      "bytes": 45094,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    },
+    {
+      "path": "lib/core/engine.ts",
+      "sha256": "9b7f198f15009e3ce94629f71ad79d5e248dae297e7f5e3651cc2849fdcf2512",
+      "bytes": 18012,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    },
+    {
+      "path": "lib/core/quarterly.ts",
+      "sha256": "0ae8764a53e267dd4cfbc8218e803af6a0417f03f43c54e06104781378218352",
+      "bytes": 12157,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    },
+    {
+      "path": "lib/fundamental/supabase.ts",
+      "sha256": "c76593dd12ab1b6853069ec2cd255e68ae331b478ac5a05b8964929061e7ef6c",
+      "bytes": 21631,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    },
+    {
+      "path": "lib/fundamental/fixtures/fameli-1404.fixture.ts",
+      "sha256": "32081c69db5bf50946d03ea2ecd898318c76b779065668660041396d99a4e3c2",
+      "bytes": 3590,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    },
+    {
+      "path": "docs/archive/i1-fameli-1404.md",
+      "sha256": "0f116fde02836e8dbce202c8bf1530618fe75bee257711c1c9571afae4ef6aed",
+      "bytes": 9691,
+      "gitWorkingTreeStatus": [],
+      "sourceAt": null,
+      "capturedAt": null
+    }
+  ],
+  "referenceInputs": {
+    "symbol": "ونوین",
+    "statementType": "bank",
+    "scope": "standalone",
+    "periodEnd": "1404-12-29",
+    "periodMonths": 12,
+    "audited": false,
+    "amountUnit": "میلیون ریال",
+    "epsUnit": "ریال",
+    "capital": 243145119,
+    "current": {
+      "revenue": 741765467,
+      "cogs": 434732521,
+      "gross_profit": 307032946,
+      "operating_profit": 229210778,
+      "net_profit": 188042940,
+      "eps_rial": 773
+    },
+    "prior": {
+      "revenue": 514483893,
+      "net_profit": 116251941
+    }
+  },
+  "referenceInputsClassification": "literal numeric expectations copied from existing tests; not a fresh extraction of issuer cells",
+  "referenceAssertionLocations": {
+    "current.revenue": {
+      "path": "relay/codal.test.mjs",
+      "line": 130,
+      "literal": 741765467,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "current.cogs": {
+      "path": "relay/codal.test.mjs",
+      "line": 131,
+      "literal": 434732521,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "current.gross_profit": {
+      "path": "relay/codal.test.mjs",
+      "line": 132,
+      "literal": 307032946,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "current.operating_profit": {
+      "path": "relay/codal.test.mjs",
+      "line": 133,
+      "literal": 229210778,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "current.net_profit": {
+      "path": "relay/codal.test.mjs",
+      "line": 134,
+      "literal": 188042940,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "current.eps_rial": {
+      "path": "relay/codal.test.mjs",
+      "line": 135,
+      "literal": 773,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "prior.revenue": {
+      "path": "relay/codal.test.mjs",
+      "line": 137,
+      "literal": 514483893,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "prior.net_profit": {
+      "path": "relay/codal.test.mjs",
+      "line": 138,
+      "literal": 116251941,
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value"
+    },
+    "capital": {
+      "interpretation": "historic assertion input; not a fresh parse or verified issuer value",
+      "line": 136,
+      "path": "relay/codal.test.mjs",
+      "literal": 243145119
+    }
+  },
+  "referenceInputsDigest": {
+    "algorithm": "SHA256",
+    "encoding": "UTF-8 without BOM",
+    "serialization": "PowerShell ConvertTo-Json -Compress of the ordered referenceInputs object, exact string stored below",
+    "canonicalUtf8Text": "{\"symbol\":\"ونوین\",\"statementType\":\"bank\",\"scope\":\"standalone\",\"periodEnd\":\"1404-12-29\",\"periodMonths\":12,\"audited\":false,\"amountUnit\":\"میلیون ریال\",\"epsUnit\":\"ریال\",\"capital\":243145119,\"current\":{\"revenue\":741765467,\"cogs\":434732521,\"gross_profit\":307032946,\"operating_profit\":229210778,\"net_profit\":188042940,\"eps_rial\":773},\"prior\":{\"revenue\":514483893,\"net_profit\":116251941}}",
+    "sha256": "08f221a194f095e8d9e28ce28cd8ece5b060b492df7fbd8ddd15e4c41fe3f4d8"
+  },
+  "deterministicCalculation": {
+    "candidatePath": "lib/core/engine.ts",
+    "candidateFunction": "computeRatios",
+    "codeSHA": "042af799eaa5bbfc4c28f59e8ef1578501bc33f5",
+    "codeFileDigest": "9b7f198f15009e3ce94629f71ad79d5e248dae297e7f5e3651cc2849fdcf2512",
+    "parserPath": "relay/codal.mjs",
+    "parserVersion": 2,
+    "parserFileDigest": "6b144cae020b76df250c9f61fc83abb9ce4438b64389f1eec1d04dc00f5a8cd3",
+    "sourceAt": null,
+    "capturedAt": null,
+    "calculatedAt": null,
+    "inputDigest": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+    "normalizedInputDigest": null,
+    "outputDigest": null,
+    "output": null,
+    "execution": "NOT_EXECUTED; no parser/core function or test runner started",
+    "ownerAdapterStatus": "OPEN; do not cast missing numeric input into nonnullable engine fields",
+    "isFinancialCalculationByAI": false
+  },
+  "cases": [
+    {
+      "caseId": "IE01-C1-COMPLETE",
+      "dataClass": "PUBLIC_ORIGIN_ARCHIVE_CLAIM_WITH_HISTORIC_ASSERTIONS",
+      "title": "Complete intended input; provenance remains incomplete",
+      "inputDigest": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+      "inputDigestKind": "sha256 exact original HTML bytes",
+      "referenceInputsRef": "referenceInputs",
+      "referenceInputsDigest": "08f221a194f095e8d9e28ce28cd8ece5b060b492df7fbd8ddd15e4c41fe3f4d8",
+      "unit": "میلیون ریال",
+      "unitBasis": "historic assertion contract and local parser literal; selected statement header independently unverified",
+      "metadata": {
+        "sourceUrl": null,
+        "announcementId": null,
+        "sourceAt": null,
+        "capturedAt": null,
+        "calculatedAt": null,
+        "parserVersion": 2,
+        "parserExecuted": false,
+        "codeSHA": "042af799eaa5bbfc4c28f59e8ef1578501bc33f5",
+        "ownerFinalSHA": null,
+        "executionStatus": "NOT_EXECUTED",
+        "output": null
+      },
+      "coverage": {
+        "definition": "fields with copied numeric assertions, not raw issuer coverage",
+        "currentFields": [
+          "revenue",
+          "cogs",
+          "gross_profit",
+          "operating_profit",
+          "net_profit",
+          "eps_rial"
+        ],
+        "priorFields": [
+          "revenue",
+          "net_profit"
+        ],
+        "currentFieldCount": 6,
+        "priorFieldCount": 2,
+        "rawRequiredFieldCount": null,
+        "rawCoveredFieldCount": null,
+        "rawCoverageFraction": null,
+        "marketUniverseCoverage": null,
+        "quarterChainCoverage": null
+      },
+      "expectedContract": [
+        "source identity and dates must be independently established",
+        "use same period/scope/unit inputs",
+        "numeric outputs only from existing deterministic code after owner alignment",
+        "complete fixture label does not make current evidence ready"
+      ],
+      "qualityReasons": [
+        "source_url_unknown",
+        "issuer_identity_unverified",
+        "source_at_unknown",
+        "captured_at_unknown",
+        "parser_not_executed",
+        "calculation_not_executed",
+        "unit_header_match_unverified",
+        "owner_final_sha_unknown"
+      ],
+      "readiness": "REFERENCE_READY_PROVENANCE_OPEN"
+    },
+    {
+      "caseId": "IE01-C2-MISSING",
+      "dataClass": "SYNTHETIC_CASE_SPECIFICATION_ONLY",
+      "title": "Missing current gross profit",
+      "materialized": false,
+      "basedOn": "IE01-C1-COMPLETE",
+      "plannedMutation": {
+        "location": "current statement gross_profit field/row",
+        "operation": "remove",
+        "originalArchiveIsModified": false
+      },
+      "inputDigest": null,
+      "inputDigestReason": "mutated byte input has not been materialized",
+      "unit": "میلیون ریال",
+      "metadata": {
+        "sourceUrl": null,
+        "announcementId": null,
+        "sourceAt": null,
+        "capturedAt": null,
+        "calculatedAt": null,
+        "parserVersion": 2,
+        "parserExecuted": false,
+        "codeSHA": "042af799eaa5bbfc4c28f59e8ef1578501bc33f5",
+        "ownerFinalSHA": null,
+        "executionStatus": "NOT_EXECUTED",
+        "output": null
+      },
+      "coverage": {
+        "missingFields": [
+          "current.gross_profit"
+        ],
+        "coveredFieldCount": null,
+        "requiredFieldCount": null,
+        "coverageFraction": null
+      },
+      "expectedContract": {
+        "gross_profit": null,
+        "gross_margin": null,
+        "qualityReason": "missing_field",
+        "independentMetrics": "allowed only when their own inputs and units are sufficient",
+        "automaticZeroForbidden": true
+      },
+      "knownStaticRisk": "normalizeN10Bank uses zero fallback for missing gross profit; no new behavioral test executed",
+      "readiness": "SPEC_READY_OWNER_MAPPING_OPEN"
+    },
+    {
+      "caseId": "IE01-C3-CORRECTION",
+      "dataClass": "SYNTHETIC_CASE_SPECIFICATION_ONLY",
+      "title": "Issuer correction pair, distinct from parser version",
+      "materialized": false,
+      "basedOn": "IE01-C1-COMPLETE",
+      "plannedMutation": {
+        "operation": "define two versioned documents with an explicit issuer correction relation for identical period and scope",
+        "initialInput": null,
+        "correctionInput": null,
+        "correctionNumericValues": null,
+        "correctionSourceUrl": null,
+        "correctionSourceAt": null,
+        "originalArchiveIsModified": false
+      },
+      "inputDigest": null,
+      "inputDigestReason": "no authentic second issuer document or synthetic pair was materialized",
+      "unit": "میلیون ریال",
+      "metadata": {
+        "sourceUrl": null,
+        "announcementId": null,
+        "sourceAt": null,
+        "capturedAt": null,
+        "calculatedAt": null,
+        "parserVersion": 2,
+        "parserExecuted": false,
+        "codeSHA": "042af799eaa5bbfc4c28f59e8ef1578501bc33f5",
+        "ownerFinalSHA": null,
+        "executionStatus": "NOT_EXECUTED",
+        "output": null
+      },
+      "coverage": {
+        "versionsRequired": 2,
+        "actualIssuerCorrectionVersionsObserved": 0,
+        "syntheticVersionsMaterialized": 0,
+        "coverageFraction": null
+      },
+      "expectedContract": [
+        "retain both immutable versions",
+        "use issuer identity/correction relation and audited scope; do not infer from file mtime",
+        "parser #pvN is not an issuer correction",
+        "old approval and old calculated output do not transfer to a new version",
+        "owner defines tie-breaking and period matching on final reader SHA"
+      ],
+      "readiness": "SPEC_READY_CORRECTION_SOURCE_AND_POLICY_OPEN"
+    },
+    {
+      "caseId": "IE01-C4-UNIT-MISMATCH",
+      "dataClass": "SYNTHETIC_CASE_SPECIFICATION_ONLY",
+      "title": "Thousands versus millions of rial",
+      "materialized": false,
+      "basedOn": "IE01-C1-COMPLETE",
+      "plannedMutation": {
+        "operation": "create contradictory amount-unit metadata while retaining source value tokens",
+        "claimedAmountUnit": "هزار ریال",
+        "referenceAmountUnit": "میلیون ریال",
+        "epsUnit": "ریال",
+        "originalArchiveIsModified": false
+      },
+      "inputDigest": null,
+      "inputDigestReason": "mutated unit metadata has not been materialized",
+      "unit": null,
+      "metadata": {
+        "sourceUrl": null,
+        "announcementId": null,
+        "sourceAt": null,
+        "capturedAt": null,
+        "calculatedAt": null,
+        "parserVersion": 2,
+        "parserExecuted": false,
+        "codeSHA": "042af799eaa5bbfc4c28f59e8ef1578501bc33f5",
+        "ownerFinalSHA": null,
+        "executionStatus": "NOT_EXECUTED",
+        "output": null
+      },
+      "coverage": {
+        "unitAgreement": "planned conflict",
+        "observedUnitAgreement": null,
+        "coverageFraction": null
+      },
+      "expectedContract": {
+        "affectedNumericOutputs": null,
+        "unit": null,
+        "qualityReason": "unit_conflict",
+        "automaticScalingForbidden": true,
+        "requiresOwnerResolution": true
+      },
+      "knownStaticRisk": "normalizeN10Bank emits fixed million-rial unit; a fresh N10 conflict detector run was not performed",
+      "readiness": "SPEC_READY_OWNER_UNIT_CHECK_OPEN"
+    }
+  ],
+  "dependencies": [
+    {
+      "id": "FOLLOWUP03",
+      "status": "OPEN",
+      "finalSHA": null,
+      "owner": "existing Liara/data implementer",
+      "required": "final reader/code SHA, coverage/unit/error contract and owner alignment",
+      "startedHere": false
+    },
+    {
+      "id": "ORIGINAL_SOURCE_IDENTITY",
+      "status": "OPEN",
+      "required": "stored authentic source URL/issuer version, sourceAt, capturedAt and rights evidence; no new fetch allowed here"
+    },
+    {
+      "id": "NUMERIC_REPLAY",
+      "status": "OPEN",
+      "required": "owner executes existing pure parser/core after source and unit checks and records actual timestamps/input/output digests"
+    },
+    {
+      "id": "BRSAPI_QUOTA178",
+      "status": "OPEN_FOR_ANY_FUTURE_OPTIONAL_CONSUMPTION",
+      "liveStatusRechecked": false,
+      "priorUsage": null,
+      "resetWindow": null,
+      "consumptionInThisPreparation": 0
+    }
+  ],
+  "observations": [
+    {
+      "kind": "STATIC_CODE_REVIEW",
+      "path": "relay/codal.mjs",
+      "function": "normalizeN10Bank",
+      "finding": "missing cogs/gross_profit/operating_profit can fall back to zero",
+      "isExecutedRegressionFailure": false
+    },
+    {
+      "kind": "STATIC_CODE_REVIEW",
+      "path": "relay/codal.mjs",
+      "function": "normalizeN10Bank",
+      "finding": "fixed million-rial unit is not proof of unit extraction from the selected statement",
+      "isExecutedRegressionFailure": false
+    },
+    {
+      "kind": "STATIC_CODE_REVIEW",
+      "path": "lib/core/engine.ts",
+      "function": "computeRatios",
+      "finding": "nonnullable number inputs require a checked adapter for missing values",
+      "isExecutedRegressionFailure": false
+    },
+    {
+      "kind": "STATIC_CODE_REVIEW",
+      "path": "lib/fundamental/supabase.ts",
+      "function": "latestParserRows",
+      "finding": "highest parser version for one announcement is distinct from issuer correction policy",
+      "isExecutedRegressionFailure": false
+    }
+  ],
+  "documentaryValidation": {
+    "jsonParsed": true,
+    "sourceDigestsRechecked": true,
+    "assertionLiteralLocationsRechecked": true,
+    "sourceCodeFilesChanged": false,
+    "programTestsRun": 0,
+    "parserRuns": 0,
+    "financialCalculationsRun": 0,
+    "fixtureCasesMaterialized": 0,
+    "fixtureCasesExecuted": 0,
+    "PASSFinancialCases": 0,
+    "FAILFinancialCases": 0,
+    "NOT_EXECUTEDCases": 4,
+    "liveReads": 0,
+    "extraUpstreamRequests": 0,
+    "unrelatedFilesTouched": false,
+    "referenceInputDigestRechecked": true,
+    "localLinksChecked": 12,
+    "secretPatternScanPassed": true,
+    "validatedAt": "2026-10-01T18:54:57.3453467+00:00"
+  },
+  "handoff": {
+    "ready": "Document contract, archived-byte identity, historic literal input mapping, four case specifications",
+    "blocked": "Source authenticity/dates/rights, final FOLLOWUP03 SHA, null/unit/correction owner mapping and numeric replay",
+    "nextOwnerAction": "Review documents alongside final existing delivery; do not launch an independent runner or IE02/IE03 from this evidence",
+    "newPR": null,
+    "newSHA": null
+  }
+}
