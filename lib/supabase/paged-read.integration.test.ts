@@ -5,7 +5,9 @@ import { createHash, createHmac } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readAllPages } from "./paged-read";
 
-test("real capped PostgREST under SELECT RLS matches SQL count and ID set for each identical filter", { skip: process.env.SYNTHETIC_READ_DB !== "1" }, async () => {
+if (process.env.SYNTHETIC_READ_DB !== "1") throw new Error("Set SYNTHETIC_READ_DB=1 only after creating the isolated local fixture; this test never silently skips.");
+
+test("real capped PostgREST under SELECT RLS matches SQL count and ID set for each identical filter", async () => {
   const url = "http://127.0.0.1:15883";
   const enc = (v: unknown) => Buffer.from(JSON.stringify(v)).toString("base64url");
   const unsigned = `${enc({ alg: "HS256", typ: "JWT" })}.${enc({ role: "fixture_reader", exp: Math.floor(Date.now() / 1000) + 600 })}`;
