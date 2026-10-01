@@ -39,3 +39,7 @@ ESLint چهار فایل متأثر با صفر warning و typecheck محلی PA
 - بازگشت فقط revert این delta اپ/تست؛ هیچ DBdown، حذف حساب/پروفایل یا تنظیم محیط ندارد.
 
 ابزار/مهارت: Git worktree مستقل و تطبیق remote/blobs، Node test با TypeScript transpilation و canonical Supabase SDK، ESLint/TypeScript، secret scan و GitHub CI. مهارت Supabase و verification-before-completion/systematic-debugging از کار Auth قبلی برای تفکیک خطای SDK و شاهد واقعی از fixture رعایت شدند؛ مهارت طراحی یا ساخت provider تازه اجرا نشده است. مبنای قرارداد README/CLAUDE/COMMAND/AUTH-MOBILE از مرحلهٔ Auth قبلی باقی است؛ این continuation فقط source پذیرش محدود را افزوده و اسناد مرکزی را ویرایش نمی‌کند.
+
+## تحویل patch ثابت
+
+[PR190](https://github.com/safariarash7777-source/portfolio-platform/pull/190)، draft روی branch180؛ code commit `411bd92e4d3217fbfcda93756a41a2e715ec763e`. هر سهruntime blob و آزمون باa49 برابرند. commit بعد ازاینcode فقط لینک تحویل را ثبت می‌کند؛ CI head نهایی جدا مشاهده شود. raw red log با whitespace طبیعی Node حفظ شده؛ بررسی diff-check کد با حذف شواهدtxt از دامنه انجام می‌شود، نه دستکاری لاگ. هیچ تغییر به checkout اصلی180 یا runtime186 وارد نشده است.
