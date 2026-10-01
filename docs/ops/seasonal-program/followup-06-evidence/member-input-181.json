@@ -1,0 +1,405 @@
+{
+  "kind": "READ_ONLY_NEXT06_INPUT_INTAKE_NOT_RUNTIME_COMPOSITION",
+  "readAt": "2026-10-01 12:13:06 UTC",
+  "existingApplicationSHA": "2605a0ff11ff5cb0f83837528aed230846469b16",
+  "existingCI": "b7c77260821cd127c1a7a65eae123022dcf0a43a",
+  "documentationBaseline": "004a743d93861b1e5be33cfb9b055fa160ce77cf",
+  "runtimeChanged": false,
+  "acceptanceRerun": false,
+  "sharedMigrationOrDeployment": false,
+  "pr": {
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/181",
+    "number": 181,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "title": "feat(member): scoped course home and resumable needs assessment",
+    "base": "codex/next-06-review-base-20261001",
+    "base_sha": "1d409325f01b2b8f247dffb411b1b10f650b88cf",
+    "head": "codex/next-06-member-home-20261001",
+    "head_sha": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+    "head_repo_id": 1210725423,
+    "head_repo_full_name": "safariarash7777-source/portfolio-platform",
+    "merge_commit_sha": "910881c98886220e119ec934779b1ab04869b18a",
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "created_at": "2026-10-01T11:17:41Z",
+    "updated_at": "2026-10-01T11:59:49Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 4,
+    "changed_files": 40,
+    "additions": 2591,
+    "deletions": 181,
+    "display_url": "https://github.com/safariarash7777-source/portfolio-platform/pull/181",
+    "display_title": "feat(member): scoped course home and resumable needs assessment"
+  },
+  "files": [
+    "app/(protected)/dashboard/page.tsx",
+    "app/(protected)/dashboard/portfolio/page.tsx",
+    "app/member-home-preview/page.tsx",
+    "components/member/AuthorizedLink.tsx",
+    "components/member/MemberHome.tsx",
+    "components/member/NeedsAssessmentPanel.tsx",
+    "components/member/ProfileStatus.tsx",
+    "docs/assets/member-home/build-final.txt",
+    "docs/assets/member-home/checks.json",
+    "docs/assets/member-home/fixture-conflict-mobile.png",
+    "docs/assets/member-home/fixture-error-desktop.png",
+    "docs/assets/member-home/fixture-expired-mobile.png",
+    "docs/assets/member-home/fixture-overlap-desktop.png",
+    "docs/assets/member-home/fixture-overlap-desktop.txt",
+    "docs/assets/member-home/fixture-overlap-mobile.png",
+    "docs/assets/member-home/real-conflict.png",
+    "docs/assets/member-home/real-environment.json",
+    "docs/assets/member-home/real-expired-mobile.png",
+    "docs/assets/member-home/real-expired.txt",
+    "docs/assets/member-home/real-final-read.json",
+    "docs/assets/member-home/real-home-desktop.png",
+    "docs/assets/member-home/real-home-desktop.txt",
+    "docs/assets/member-home/real-home-final-desktop.png",
+    "docs/assets/member-home/real-home-final.txt",
+    "docs/assets/member-home/real-http.json",
+    "docs/assets/member-home/real-member-B-foreign-cohort.txt",
+    "docs/assets/member-home/real-member-B-mobile.png",
+    "docs/assets/member-home/real-member-B.txt",
+    "docs/assets/member-home/real-portfolio-retained.txt",
+    "docs/assets/member-home/real-revocation.json",
+    "docs/assets/member-home/real-revoked-mobile.png",
+    "docs/assets/member-home/real-revoked.txt",
+    "docs/ops/seasonal-program/NEXT-06-RESULT.md",
+    "lib/member/draft.ts",
+    "lib/member/fixture.ts",
+    "lib/member/home.test.ts",
+    "lib/member/home.ts",
+    "lib/member/http.ts",
+    "lib/member/profile.ts",
+    "package.json"
+  ],
+  "CI": [
+    {
+      "id": 36858600105,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 362,
+      "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36858600105/jobs",
+      "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/36858600105/logs",
+      "workflow_id": 320220968
+    }
+  ],
+  "jobs": [
+    {
+      "id": 110356971895,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110356972143,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110356972211,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110356972242,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110357769580,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "reportedRuntimeSHA": "6ffce1b00eb6ee87a788a099a181c16c87549243",
+  "runtimeToHead": {
+    "repository_full_name": "safariarash7777-source/portfolio-platform",
+    "base": "6ffce1b00eb6ee87a788a099a181c16c87549243",
+    "head": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+    "status": "ahead",
+    "ahead_by": 1,
+    "behind_by": 0,
+    "total_commits": 1,
+    "too_large": null,
+    "base_commit": {
+      "sha": "6ffce1b00eb6ee87a788a099a181c16c87549243",
+      "url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/commits/6ffce1b00eb6ee87a788a099a181c16c87549243",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/commit/6ffce1b00eb6ee87a788a099a181c16c87549243"
+    },
+    "merge_base_commit": {
+      "sha": "6ffce1b00eb6ee87a788a099a181c16c87549243",
+      "url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/commits/6ffce1b00eb6ee87a788a099a181c16c87549243",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/commit/6ffce1b00eb6ee87a788a099a181c16c87549243"
+    },
+    "files": [
+      {
+        "filename": "docs/assets/member-home/build-final.txt",
+        "status": "added",
+        "additions": 150,
+        "deletions": 0,
+        "changes": 150,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/checks.json",
+        "status": "added",
+        "additions": 30,
+        "deletions": 0,
+        "changes": 30,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-conflict.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-environment.json",
+        "status": "added",
+        "additions": 179,
+        "deletions": 0,
+        "changes": 179,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-expired-mobile.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-expired.txt",
+        "status": "added",
+        "additions": 169,
+        "deletions": 0,
+        "changes": 169,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-final-read.json",
+        "status": "added",
+        "additions": 30,
+        "deletions": 0,
+        "changes": 30,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-home-desktop.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-home-desktop.txt",
+        "status": "added",
+        "additions": 188,
+        "deletions": 0,
+        "changes": 188,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-home-final-desktop.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-home-final.txt",
+        "status": "added",
+        "additions": 187,
+        "deletions": 0,
+        "changes": 187,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-http.json",
+        "status": "added",
+        "additions": 102,
+        "deletions": 0,
+        "changes": 102,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-member-B-foreign-cohort.txt",
+        "status": "added",
+        "additions": 103,
+        "deletions": 0,
+        "changes": 103,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-member-B-mobile.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-member-B.txt",
+        "status": "added",
+        "additions": 168,
+        "deletions": 0,
+        "changes": 168,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-portfolio-retained.txt",
+        "status": "added",
+        "additions": 172,
+        "deletions": 0,
+        "changes": 172,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-revocation.json",
+        "status": "added",
+        "additions": 41,
+        "deletions": 0,
+        "changes": 41,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-revoked-mobile.png",
+        "status": "added",
+        "additions": 0,
+        "deletions": 0,
+        "changes": 0,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/assets/member-home/real-revoked.txt",
+        "status": "added",
+        "additions": 173,
+        "deletions": 0,
+        "changes": 173,
+        "previous_filename": null
+      },
+      {
+        "filename": "docs/ops/seasonal-program/NEXT-06-RESULT.md",
+        "status": "modified",
+        "additions": 40,
+        "deletions": 3,
+        "changes": 43,
+        "previous_filename": null
+      }
+    ]
+  },
+  "report": {
+    "localPath": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-next-06/docs/ops/seasonal-program/NEXT-06-RESULT.md",
+    "blob": "b787bca973c6e9608ebc8c71457b658733374709",
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/a95aa0c1b45e91a8e23ca89014cb3b13d41f2201/docs/ops/seasonal-program/NEXT-06-RESULT.md"
+  },
+  "ownerEvidence": {
+    "initialWriteStorageHTTPRuntime": "9bd5945102f21ee31ed9d9910f4d391bd907a223",
+    "ownerReportedInitialScenarios": 22,
+    "fullTwentyTwoNotAttributedToFinalRuntime": true,
+    "finalRead": {
+      "runtimeSha": "6ffce1b00eb6ee87a788a099a181c16c87549243",
+      "at": "2026-10-01T11:49:13.074Z",
+      "records": [
+        {
+          "role": "A",
+          "result": "PASS",
+          "sameCanonicalUuid": true,
+          "profileEndpointInPinnedBase": "NOT_INSTALLED_404"
+        },
+        {
+          "role": "B",
+          "result": "PASS",
+          "sameCanonicalUuid": true,
+          "profileEndpointInPinnedBase": "NOT_INSTALLED_404"
+        },
+        {
+          "role": "advisor",
+          "result": "PASS",
+          "sameCanonicalUuid": true,
+          "profileEndpointInPinnedBase": "NOT_INSTALLED_404"
+        }
+      ],
+      "observed": {
+        "anonymousModuleListStatus": 503,
+        "anonymousDataExposed": false
+      },
+      "previousWriteAndStorageEvidenceRuntime": "9bd5945102f21ee31ed9d9910f4d391bd907a223",
+      "changesSinceWriteEvidence": "read-only Auth profile view; no seasonal, financial, Auth or Storage server edits"
+    },
+    "finalReadBlob": "07406963ce24018667e61e8518b1ffd32d40b521",
+    "initialHTTPBlob": "27eead223d854fac4248894478aeff8edc653efe",
+    "localCore1255AndMember16": "owner report; this intake did not rerun tests",
+    "actualIdentity180Acceptance": "OPEN; endpoint absent404 in pinned181base"
+  },
+  "routes": {
+    "/dashboard": "member course home and existing financial summary",
+    "/dashboard/portfolio": "previous DashboardClient and loader preserved",
+    "/dashboard/holdings": "preserved personal route",
+    "/dashboard/consultation": "preserved personal route",
+    "managementLinks": "next combination must target /dashboard/portfolio only where old portfolio management intended; general home remains /dashboard"
+  },
+  "contracts": {
+    "cohorts": "existing seasonal.v0.1; projection grouping cannot authorize; module-access is canonical",
+    "needs": "existing four fields and baseVersion; account/cohort sessionStorage draft, conflict retains input",
+    "financial": "existing173 snapshot/debts/balance-sheet and same Auth UUID; survives grant expiry/revoke",
+    "identity": "read-only auth.identity.v1 status adapter; common /account/mobile?next page owned by180; no parallel form/writer; absent/empty/auth/unavailable states separate",
+    "navigation": "selected cohort uses full document navigation; shared paths still need combined review"
+  },
+  "openItems": {
+    "guestMeCohorts": {
+      "endpoint": "/api/me/cohorts",
+      "observedHTTP": 503,
+      "expectedHTTP": 401,
+      "privateDataExposed": false,
+      "owner": "Auth owner; coordinator referral received",
+      "fixed": false
+    },
+    "feedReadState": {
+      "status": "OPEN_NOT_IMPLEMENTED",
+      "ownership": "extension assigned to NEXT06 owner; publication/backend ownership must remain explicit with08/04",
+      "suggestedRoutesOnly": [
+        "GET /api/cohorts/:id/publications?cursor=...",
+        "POST /api/publications/:versionId/read"
+      ],
+      "currentDetailExists": "GET /api/publications/:versionId",
+      "noAssumedNewTable": true
+    },
+    "NEXT09": {
+      "status": "OPEN",
+      "targetedNotificationAndChallenge": "not implemented here; complete NEXT09 delivery not a prerequisite for limited combined checkpoint test"
+    },
+    "fullNEXT06Acceptance": "OPEN"
+  },
+  "nextAllowedComposition": {
+    "condition": "stable delivered NEXT04/Auth patches; NEXT06 now delivered; no full NEXT09 wait",
+    "inputs": "181 +179 +180 and already stabilized intake inputs; final exact heads must be refreshed at start",
+    "preserve": "current2605 and18PASS/2FAIL evidence; old human DEV07/173 environments",
+    "requiredChecks": [
+      "dashboard home vs previous portfolio route/link compatibility",
+      "identity180 migration and canonical API/page installation in synthetic sandbox",
+      "same Auth UUID and unchanged personal ledger permissions",
+      "cohort isolation and needs draft/version conflict",
+      "guest me/cohorts and resource handlers missing-session vs outage classification",
+      "explicit admin resource authorization contract from04 patch",
+      "new combined CI and independent affected-path acceptance on exactSHA"
+    ],
+    "absentFeatures": "explicit OPEN; never inferred complete from CI or existing detail endpoint"
+  }
+}

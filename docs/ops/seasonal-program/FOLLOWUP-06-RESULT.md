@@ -1,6 +1,6 @@
 # FOLLOWUP-06 — آمادگی تجمیع و پذیرش مستقل
 
-تاریخ: 2026-10-01، تهران. دامنه: inventory واقعی، ترکیب آزمایشی checkpointهای مشخص، regression، نصب schema و بررسی مستقل Auth/Storage واقعی در دیتابیس ساختگی جدا. **وضعیت: تجمیع نهایی پذیرفته نشده؛ SHA انتشار آماده اعلام نمی‌شود.** بررسی مستقل Auth/Storage همین checkpoint **18 PASS / 2 FAIL / 0 BLOCKED** دارد؛ ورودی Auth تازه و NEXT06 خارج از این checkpoint و گیت‌های انسانی همچنان بازند.
+تاریخ: 2026-10-01، تهران. دامنه: inventory واقعی، ترکیب آزمایشی checkpointهای مشخص، regression، نصب schema و بررسی مستقل Auth/Storage واقعی در دیتابیس ساختگی جدا. **وضعیت: تجمیع نهایی پذیرفته نشده؛ SHA انتشار آماده اعلام نمی‌شود.** بررسی مستقل Auth/Storage همین checkpoint **18 PASS / 2 FAIL / 0 BLOCKED** دارد. Auth179/180 و NEXT06@181 تحویل و inventory شده‌اند، اما واردruntime2605 نشده‌اند. شرط ترکیب محدود بعدی، تحویل patch ثابت NEXT04/Auth است؛ گیت‌های انسانی بازند.
 
 ## ادامهٔ جاری — Auth/Storage واقعی روی checkpoint ثابت
 
@@ -56,6 +56,23 @@ migration180 `20261001083215_auth_private_identity_versions.sql` افزایشی 
 
 ## inventory سرشاخه‌ها
 
+### NEXT06 تحویل‌شده در PR181 — intake، خارج runtime فعلی
+
+[inventory و قرارداد181](followup-06-evidence/member-input-181.json) از metadata، فایل‌ها، CI و گزارش همان ref خوانده شد. [PR181، feat(member): scoped course home and resumable needs assessment](https://github.com/safariarash7777-source/portfolio-platform/pull/181) Draft/Open/ادغام‌نشده است؛ head کامل **`a95aa0c1b45e91a8e23ca89014cb3b13d41f2201`**، runtime **`6ffce1b00eb6ee87a788a099a181c16c87549243`**، base بازبینی **`codex/next-06-review-base-20261001@1d409325f01b2b8f247dffb411b1b10f650b88cf`**. این base snapshot ترکیبی168/173/175/174/176/177 است، نه main یا نسخهٔ پذیرفته‌شده. compare ازruntime بهhead یک commit با فایل‌های صرفاًdocs/evidence دارد. [CI36858600105](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36858600105) روی همین head در هر پنج job موفق است.
+
+[گزارش صاحب NEXT06](https://github.com/safariarash7777-source/portfolio-platform/blob/a95aa0c1b45e91a8e23ca89014cb3b13d41f2201/docs/ops/seasonal-program/NEXT-06-RESULT.md) و فایل محلی `portfolio-next-06/docs/ops/seasonal-program/NEXT-06-RESULT.md` خوانده شدند. 1255 آزمون core شامل16member و5seasonal، build/typecheck/lint و22 سناریوی واقعی ایزوله، شواهد گزارش صاحب بسته‌اند؛ این intake آزمون تازه‌ای اجرا نکرد. **۲۲ سناریوی write/Storage روی `9bd5945102f21ee31ed9d9910f4d391bd907a223` ثبت شده‌اند**؛ [real-final-read](https://github.com/safariarash7777-source/portfolio-platform/blob/a95aa0c1b45e91a8e23ca89014cb3b13d41f2201/docs/assets/member-home/real-final-read.json) سه حساب و UUID/مجوز را روی6ffce1b دوباره بررسی کرده و تغییر پس از شاهد اولیه را read-only profile view، بدون ویرایش backend مالی/seasonal/Auth/Storage، معرفی می‌کند. همه22 بهruntimeنهایی یا sandbox2605 نسبت داده نمی‌شوند.
+
+در ترکیب بعدی باید این مرزها بررسی شوند:
+
+- `/dashboard` خانهٔ عضو و خلاصهٔ مالی موجود است؛ نمای قبلی با همان loader و DashboardClient به `/dashboard/portfolio` منتقل شده. لینک‌های مدیریت قبلی سبد باید مقصد portfolio داشته باشند؛ لینک عمومی خانه همچنان dashboard است. مسیرهای شخصی holdings/consultation/market و UUID مالی حفظ شوند. هیچ redirect یا لینک مشترکی در این intake تغییر نکرد.
+- دادهٔ دوره/ماژول و نیازسنجی از قرارداد API04 است. گروه‌بندی grantها مجوز تازه نمی‌سازد؛ انتخاب cohort سند را کامل بازخوانی می‌کند و draft فقط مختص account/cohort می‌ماند. انقضا/revoke نباید دارایی و بدهی شخصی را مخفی یا حذف کند؛ CI و آزمون ترکیبی آینده باید همان قرارداد مالی173 را حفظ کنند.
+- پروفایل181 فقط adapter خواندنی `auth.identity.v1` و لینک صفحهٔ مشترک مالک180 یعنی `/account/mobile?next=…` دارد؛ فرم/writer موازی وجود ندارد. در پایهٔ آزمون181، endpoint180 **404/NOT_INSTALLED** بوده. نصب migration/کلیدهای server-only، endpoint و صفحهٔ180 و پذیرش identity واقعی در sandbox ترکیب **OPEN** است. phone/identity رسمی همچنانpending؛ حالت absent، empty، unauthenticated و503 باید جدا بمانند و خانهٔ ایمیلی را اجباری قفل نکنند.
+- نقص تازهٔ مهمان **`GET /api/me/cohorts` →503 به‌جای401** بدون افشای داده در real-final-read ثبت شده و طبق ارجاع هماهنگ‌کننده با مالک Auth است. مالک NEXT06 آن server را تغییر نداده؛ patch ثابت Auth باید در ترکیب بعدی مستقل راستی‌آزمایی شود. دو نقص F06-AS-01/02 منابع نیز با مالک04 بازند؛ این عامل کد آن‌ها را اصلاح نکرد.
+
+**feed/read-state هنوز ساخته نشده و پذیرش کامل NEXT06 OPEN است.** detail موجود08 جای فهرست مجاز عضو یا mark-read نیست. مسیرهای `GET /api/cohorts/:id/publications?cursor=…` و `POST /api/publications/:versionId/read` در گزارش181 فقط پیشنهادند، نه endpoint نصب‌شده. امتداد به مالک NEXT06 واگذار شده؛ مالکیت backend و predicate انتشار با08/04 باید صریح بماند و notification/account/grant موازی ساخته نشود. NEXT09 اعلان مقصددار/challenge مستقل همچنان OPEN است.
+
+اجازهٔ مرحلهٔ بعد اکنون **ترکیب محدود181+179+180 و ورودی‌های تثبیت‌شده، پس از تحویل patch ثابت NEXT04/Auth** است. برای این ارزیابی لازم نیست منتظر کل NEXT09 بمانیم؛ قابلیت‌های غایب صریحاًOPEN می‌مانند. headهای تازه قبل از شروع باید بازخوانی شوند، delta181 پس ازbase خودش با schema/quota/runtime موجود سازگار شود، سپس CI و پذیرش مستقل مسیرهای متأثر روی SHA دقیق تازه ثبت گردد. تا patch ثابت تحویل نشده، runtime قبلی دوباره آزموده نمی‌شود. محیط‌های انسانی، شواهد18/2 و مرز عدمmerge/Production محفوظ‌اند.
+
 ### ورودی‌های تازه182/183 — فقطinventory؛ خارجruntimeجاری
 
 [snapshotبازخوانیGitHub/CI/قرارداد](followup-06-evidence/market-fx-inputs-182-183.json) شاملhead/base، فایل‌ها، پنجjob هرCI وblob اسنادِ همانref است. گزارش182 در مسیر محلی تحویل‌شده نیز خوانده شد و سندrefimmutable182 مبنای ارجاع است. هیچ build/test/merge/retarget/install/deploy تازه انجام نشد؛ موفقیت قبلی2605 تکرار نشد و شواهد18PASS/2FAIL محفوظ‌اند. **ترکیبruntime بعد ازpatchثابت175 و تحویلNEXT06 می‌ماند. FOLLOWUP03 به مالک لیارا واگذار شده و هنوز ورودیترکیب نیست.**
@@ -106,7 +123,7 @@ flowchart LR
   P175 -. "membership / audiences" .-> P176
   MAIN --> P178["178 / phase28 quota"]
   P178 -. "intake only; not composed" .-> F183["183 / portable FX runtime"]
-  P173 --> N06["NEXT06 pending"]
+  P173 --> N06["181 delivered; full NEXT06 acceptance OPEN"]
   P175 --> N06
   P176 --> N06
   P177 --> N06
@@ -182,7 +199,8 @@ CI تمام هفت head ورودی مستقیماً از GitHub **success** مش
 |177|27e59ad ثابت|57 public/build و قراردادهای موجود|schema مستقل ندارد|خیر|Auth جدید و طراحی/فونت مالک PENDING|
 |178|4ce06b3 ثابت|14 DB + suiteهای relay|phase28 حاضر فقط اینجا|NOT DEPLOYED|baseline مصرف/reset واقعی BLOCKED|
 |Auth|179/180تحویل‌شده؛ بیرونcheckpoint2605|اینمرحلهفقطintake؛ CIخودheadهاسبز؛ درترکیبآزموده‌نشد|migration180دراینsandboxنصب‌نشد|آزمونارسال/پیکربندیواقعی مستقل باز|PENDING ترکیب/پذیرش؛ head/قرارداداکنونمشخص|
-|NEXT06/09|در حال ساخت/وابسته؛ وارد checkpoint نشده|آزموده‌شده اعلام نشد|نصب نشد|خیر|PENDING|
+|NEXT06|181@a95aa0c تحویل؛ runtime6ffce1b بیرون2605|شاهد صاحب بسته وCI181 خوانده شد؛ ترکیب تازه آزموده‌نشد|identity180درپایه181نصب‌نبود؛ دراینsandboxنصب‌نشد|خیر|OPEN اتصال180/feed/read-state وپذیرشکل؛ منتظرpatchثابت04/Auth|
+|NEXT09|وابسته؛ ورودی کامل ندارد|آزموده‌شده اعلام نشد|نصب نشد|خیر|OPEN؛ شرط انتظار کل09برایترکیب محدود برداشته‌شد|
 |کل ترکیب|2605a0f قابل بررسی|build و regression بالا|schema ترکیبی35 جدول|خیر|NOT ACCEPTED؛ SHA انتشار نداریم|
 
 ## ثبت پایدار DEV07 و تفاوت SHA
@@ -203,7 +221,7 @@ CI تمام هفت head ورودی مستقیماً از GitHub **success** مش
 |DEV07 سناریوی۵ انسانی|بررسی منبع/نسخه کاربرگ و تأیید داخلی از UI واقعی؛ ثبت هویت و زمان|آرش/بازبین انسانی مستقل|
 |173 فهم مشتری|ارزیابی فهم خلاصه ناقص/خالص منفی با مشتری مناسب؛ شاهد انسانی جدا|صاحب173 و مشتری|
 |Auth179/180 تحویل‌شده؛ ترکیب و ورودمالک باز|headثابت/قرارداد intakeشد؛ پسpatch175وNEXT06 تطبیقmiddleware/مجوز، نصبsandboxمصوب وCI/پذیرشهمانSHA؛ AUTH00رویURLاصلیشاهدجدا|مجریAuth/زیرساخت؛ FOLLOWUP06درمرحلهبعد|
-|NEXT06 و NEXT09|تحویل مستقل با SHA و fixture/قرارداد فعلی؛ بدون مدل مالی/Auth موازی|مجری173 برای06؛ صاحب09|
+|NEXT06 و NEXT09|181تحویل/intakeشد؛ پسpatchثابت04/Auth ترکیبمحدودبا179/180و181؛ اتصالidentity وfeed/read-state هنوزOPEN؛ انتظارکل09لازم‌نیست|مالکNEXT06برایامتداد؛ صاحب09برایاعلان؛ FOLLOWUP06برایترکیبمحدود|
 |داده/refresh/quota178|تثبیت baseline مصرف و reset، نصب مصوب، خواندن کامل/تازگی واقعی؛ consumer با baseline UNKNOWN خاموش بماند|چت لیارا؛ قرارداد مدل با ارز|
 |Auth/Storage/publication تجمیع|مرحله واقعی همینcheckpointاجراشد؛ دو نقص مهمان/مدیر بامالک04باز؛ patchثابت وبازآزمایی مستقل متأثر لازم؛ ورودیAuthجدید/NEXT06هنوزجدا|مالکNEXT04برایاصلاح؛ FOLLOWUP06برایrecheck؛ بازبین مستقل موجود|
 |CI و release gates|CI checkpoint حاضر سبز است؛ پس از Auth/NEXT06/09، CI همان SHA تازه و regression متأثر، بررسی DD034/035/036 و HOLD پرداخت؛ سپس تصمیم ادغام|FOLLOWUP06 و هماهنگ‌کننده|
