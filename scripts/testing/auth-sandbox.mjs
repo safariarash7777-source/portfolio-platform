@@ -26,7 +26,8 @@ const env={NODE_ENV:'development',SMS_PROVIDER:'local-mock',AUTH_SMS_LOCAL_SANDB
 const inbox=new Map();let outage=false;
 const email=await localSmtp(dir,{sandbox:true});
 startService(readConfig(env),{mockSend:async message=>{if(outage)throw new SmsError('provider_unavailable');inbox.set(message.phone,{otp:message.otp,receivedAt:Date.now()});await fs.writeFile(dir+'/inbox.private.json',JSON.stringify(Object.fromEntries(inbox)));return {accepted:true,costRial:1};}});
-const authEnv={GOTRUE_API_HOST:'0.0.0.0',GOTRUE_API_PORT:'9999',API_EXTERNAL_URL:'http://127.0.0.1:8789/auth/v1',GOTRUE_DB_DRIVER:'postgres',GOTRUE_DB_DATABASE_URL:`postgres://postgres:${dbPassword}@${names.db}:5432/postgres?search_path=auth`,GOTRUE_SITE_URL:'http://127.0.0.1:8792',GOTRUE_URI_ALLOW_LIST:'http://127.0.0.1:8792/**',GOTRUE_JWT_SECRET:jwtSecret,GOTRUE_JWT_EXP:'300',GOTRUE_JWT_DEFAULT_GROUP_NAME:'authenticated',GOTRUE_JWT_ADMIN_ROLES:'service_role',GOTRUE_EXTERNAL_EMAIL_ENABLED:'true',GOTRUE_EXTERNAL_PHONE_ENABLED:'true',GOTRUE_DISABLE_SIGNUP:'false',GOTRUE_SMS_AUTOCONFIRM:'false',GOTRUE_SMS_MAX_FREQUENCY:'60s',GOTRUE_SMS_OTP_EXP:'120',GOTRUE_SMS_OTP_LENGTH:'6',GOTRUE_RATE_LIMIT_SMS_SENT:'100',GOTRUE_HOOK_SEND_SMS_ENABLED:'true',GOTRUE_HOOK_SEND_SMS_URI:'http://host.docker.internal:8788/hooks/send-sms',GOTRUE_HOOK_SEND_SMS_SECRETS:hookSecret};
+const authDatabase=new URL('postgres://' + names.db + ':5432/postgres');authDatabase.username='postgres';authDatabase.password=dbPassword;authDatabase.searchParams.set('search_path','auth');
+const authEnv={GOTRUE_API_HOST:'0.0.0.0',GOTRUE_API_PORT:'9999',API_EXTERNAL_URL:'http://127.0.0.1:8789/auth/v1',GOTRUE_DB_DRIVER:'postgres',GOTRUE_DB_DATABASE_URL:authDatabase.href,GOTRUE_SITE_URL:'http://127.0.0.1:8792',GOTRUE_URI_ALLOW_LIST:'http://127.0.0.1:8792/**',GOTRUE_JWT_SECRET:jwtSecret,GOTRUE_JWT_EXP:'300',GOTRUE_JWT_DEFAULT_GROUP_NAME:'authenticated',GOTRUE_JWT_ADMIN_ROLES:'service_role',GOTRUE_EXTERNAL_EMAIL_ENABLED:'true',GOTRUE_EXTERNAL_PHONE_ENABLED:'true',GOTRUE_DISABLE_SIGNUP:'false',GOTRUE_SMS_AUTOCONFIRM:'false',GOTRUE_SMS_MAX_FREQUENCY:'60s',GOTRUE_SMS_OTP_EXP:'120',GOTRUE_SMS_OTP_LENGTH:'6',GOTRUE_RATE_LIMIT_SMS_SENT:'100',GOTRUE_HOOK_SEND_SMS_ENABLED:'true',GOTRUE_HOOK_SEND_SMS_URI:'http://host.docker.internal:8788/hooks/send-sms',GOTRUE_HOOK_SEND_SMS_SECRETS:hookSecret};
 // v2.197.0 skips verification rate limits when no trusted header is configured.
 authEnv.GOTRUE_RATE_LIMIT_HEADER='X-Auth-Client-IP';
 authEnv.GOTRUE_RATE_LIMIT_VERIFY='30';
@@ -38,7 +39,8 @@ sql("CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $
 sql(await fs.readFile('sql/archive/supabase_schema.sql','utf8'));
 sql('GRANT USAGE ON SCHEMA public TO anon,authenticated,service_role; GRANT SELECT ON public.profiles TO authenticated;');
 sql(await fs.readFile('supabase/migrations/20261001083215_auth_private_identity_versions.sql','utf8'));
-const restEnv={PGRST_DB_URI:`postgres://authenticator:${dbPassword}@${names.db}:5432/postgres`,PGRST_DB_SCHEMAS:'public',PGRST_DB_ANON_ROLE:'anon',PGRST_JWT_SECRET:jwtSecret};
+const restDatabase=new URL('postgres://' + names.db + ':5432/postgres');restDatabase.username='authenticator';restDatabase.password=dbPassword;
+const restEnv={PGRST_DB_URI:restDatabase.href,PGRST_DB_SCHEMAS:'public',PGRST_DB_ANON_ROLE:'anon',PGRST_JWT_SECRET:jwtSecret};
 docker(['run','-d','--name',names.rest,'--network',network,'-p','127.0.0.1:8791:3000',...Object.entries(restEnv).flatMap(([k,v])=>['-e',k+'='+v]),'dev07/postgrest:14.17']);
 const anon=infrastructureKey('anon',jwtSecret),service=infrastructureKey('service_role',jwtSecret);
 const gateway=createServer(async(req,res)=>{
