@@ -45,7 +45,7 @@ Still unaccepted: actual combined191+189+this patch runtime; native two-sided si
 
 ## Fresh scoped validation
 
-- `scope-audit.test.ts` plus affected notification tests:34PASS. New SDK errors/guest/outage classifications, no RPC on Auth failure, scoped next preservation and tampering, draft adapter branches and immediate mock revocation.
+- `scope-audit.test.ts` plus affected notification tests:37PASS. New SDK errors/guest/outage classifications, no RPC on Auth failure, scoped next preservation and tampering, draft adapter branches and immediate mock revocation.
 - `scope-audit.integration.test.ts`:10PASS over two grant profiles. Actual189+read-only185 SQL+new patch installed only into `next09_scope_legacy/explicit` in the dedicated network-disabled PostgreSQL17 container. Baseline189 path observed unscoped, then patch checked existing notice/job behavior, recipient cohort choice/dedupe, independent seen/read, new version unread, canonical admin revocation, account/private-helper isolation, opt-out/unlink, synthetic expiry, withdrawal/history.
 - SQL Auth/session claims are explicit simulation, not native GoTrue-issued-session acceptance. Fixture expiry advances time by changing only temporary synthetic entitlements with triggers restored in the same transaction. First fixture failures (missing policy shape; missing revocation reason) are retained in raw logs; resolved by valid fixture policy and canonical `seasonal_access_command`. They are not product/runtime failures.
 - No unchanged58/1239/68 historical suites rerun merely for activity. Typecheck/lint/build are scoped implementation gates; no server is started by build. CI may run repository regression gates on the new Draft patch.
