@@ -59,7 +59,7 @@ export default function ConsultationWorkbench({data}:{data:ConsultationData}) {
     {message && <p className="card p-4 text-sm leading-7" role="status">{message}</p>}
     <div className="card p-5 space-y-4">
       <h2 className="font-bold text-lg">دادن دسترسی به مشاور</h2>
-      <p className="text-sm leading-7">با ثبت این رابطه، مشاور انتخابی می‌تواند نسخه‌های دارایی و پروندهٔ جلسهٔ شما را در چارچوب خدمت ببیند و جلسه و اقدام ثبت کند. یادداشت داخلی مشاور برای مشتری نمایش داده نمی‌شود. داشتن اشتراک به‌تنهایی این دسترسی را ایجاد نمی‌کند.</p>
+      <p className="text-sm leading-7">با ثبت این رابطه، مشاور انتخابی می‌تواند دارایی‌ها، بدهی‌ها، خلاصهٔ وضعیت مالی و پروندهٔ جلسهٔ شما را در چارچوب خدمت ببیند و جلسه و اقدام ثبت کند. ارقام مالی خصوصی برای مدل زبانی ارسال نمی‌شوند. لغو رابطه، مشاهدهٔ مشاور را در درخواست بعدی متوقف می‌کند. یادداشت داخلی مشاور برای مشتری نمایش داده نمی‌شود. داشتن اشتراک به‌تنهایی این دسترسی را ایجاد نمی‌کند.</p>
       {data.advisors.length ? <>
         {field("نام شما برای این پرونده",clientLabel,setClientLabel)}
         <label className="block space-y-2"><span>مشاور</span><select className="input w-full" value={advisorId} onChange={e=>setAdvisorId(e.target.value)}>{data.advisors.map(a=><option key={a.user_id} value={a.user_id}>{a.display_name}</option>)}</select></label>

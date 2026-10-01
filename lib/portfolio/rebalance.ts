@@ -23,6 +23,7 @@ import type {
 import { conversionFactor, describeUnitProblem } from "./units";
 
 export interface RebalanceOptions {
+  allowEstimates?: boolean;
   /** قیمت از چند روز کهنه‌تر، دیگر مبنای عددِ قطعی نیست. */
   maxPriceAgeDays: number;
   /**
@@ -125,13 +126,29 @@ function isUsable(price: PricePoint | undefined, options: RebalanceOptions): pri
  * گمراه‌کننده است.
  */
 export function valuePosition(pos: HoldingPosition, price: PricePoint | undefined, options: RebalanceOptions): { value: number; price: PricePoint } | { gap: CoverageGap } {
+  const gap = (detail: string): { gap: CoverageGap } => ({ gap: { positionKey: pos.positionKey, reason: "no_price", detail } });
+  const ownership = pos.ownershipPct ?? 100;
+  if (!Number.isFinite(ownership) || ownership <= 0 || ownership > 100) return gap("سهم مالکیت معتبر نیست.");
+  if (pos.valuationMode === "unpriced") return gap("قیمت این دارایی ناموجود ثبت شده؛ ارزش آن صفر فرض نشده است.");
+  if (pos.valuationMode === "declared") {
+    const amount = pos.declaredValue;
+    const source = pos.valuationSource?.trim();
+    const date = pos.valuationAsOf;
+    if (amount === null || amount === undefined || !Number.isSafeInteger(amount) || amount < 0 || !source || UNSOURCED.has(source) || !date || !Number.isFinite(Date.parse(date)) || Date.parse(date) > options.now.getTime() + DAY_MS || !["valid", "estimated"].includes(pos.valuationStatus ?? "")) return gap("ارزش اظهارشده، منبع یا تاریخ آن معتبر نیست.");
+    if (pos.valuationStatus === "estimated" && !options.allowEstimates) return gap("ارزش تخمینی مبنای مقایسهٔ قطعی با هدف نیست.");
+    // Integer money × ownership basis points, rounded once without floating-point loss.
+    const value = Number((BigInt(amount) * BigInt(Math.round(ownership * 100)) + BigInt(5000)) / BigInt(10000));
+    if (!Number.isSafeInteger(value)) return gap("ارزش خارج از محدودهٔ قابل محاسبه است.");
+    return { value, price: { toman: amount, source, asOf: date, unit: "کل قلم", basis: "total", status: pos.valuationStatus as "valid" | "estimated" } };
+  }
   if (!isUsable(price, options)) return { gap: { positionKey: pos.positionKey, reason: "no_price", detail: "قیمت با منبع و زمان معتبر موجود نیست." } };
   const age = priceAgeDays(price, options.now);
   if (age > options.maxPriceAgeDays) return { gap: { positionKey: pos.positionKey, reason: "stale_price", detail: "قیمت کهنه است." } };
   const conv = conversionFactor(pos.unit, price.unit);
   if (!conv.ok) return { gap: { positionKey: pos.positionKey, reason: "unit_mismatch", detail: describeUnitProblem(conv.reason) } };
-  const value = pos.qty * conv.factor * price.toman;
-  if (!Number.isFinite(value) || value <= 0) return { gap: { positionKey: pos.positionKey, reason: "no_price", detail: "مقدار یا حاصل ارزش معتبر نیست." } };
+  const raw = pos.qty === null ? NaN : pos.qty * conv.factor * price.toman * (ownership / 100);
+  const value = Math.round(raw);
+  if (!Number.isFinite(raw) || raw <= 0 || !Number.isSafeInteger(value)) return { gap: { positionKey: pos.positionKey, reason: "no_price", detail: "مقدار یا حاصل ارزش معتبر نیست." } };
   return { value, price };
 }
 
@@ -162,7 +179,7 @@ export function compareHoldingsToTarget(
   // `qty = 1e308` و قیمتِ ۱، هرکدام معتبرند و جمعشان از بردِ `double`
   // بیرون می‌زند. آن‌وقت `valueDelta` به `NaN` می‌رسید و `definitive` هم
   // `true` می‌ماند — یعنی یک «عددِ قطعی» که اصلاً عدد نیست.
-  const totalUsable = Number.isFinite(covered) && covered > 0;
+  const totalUsable = Number.isSafeInteger(covered) && covered > 0;
   const definitive = fullCoverage && holdings.positions.length > 0 && totalUsable;
   const totalValue = definitive ? covered : null;
 

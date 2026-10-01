@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-01T09:49:25.760Z",
+  "codeSHA": "56deb8c85a2a09009d1624cd07b78ea87535ab2a",
+  "parentSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+  "environment": "balance173-local",
+  "core": {
+    "pass": 1223,
+    "fail": 0,
+    "skip": 0
+  },
+  "calc": {
+    "pass": 106,
+    "fail": 0,
+    "skip": 0
+  },
+  "relatedDB": {
+    "pass": 69,
+    "fail": 0,
+    "skip": 0
+  },
+  "typecheck": "PASS",
+  "lintZeroWarnings": "PASS",
+  "productionBuild": "PASS",
+  "sqlPolicy": {
+    "files": 47,
+    "rejected": 0
+  },
+  "sqlGrammar": {
+    "files": 47,
+    "statements": 918,
+    "rejected": 0,
+    "limitation": "Existing trigger function parser limitations"
+  },
+  "realAuthREST": {
+    "pass": 20,
+    "fail": 0
+  },
+  "humanComprehension": "BLOCKED",
+  "parentHumanAcceptance": "BLOCKED",
+  "production": "NOT_APPLIED"
+}

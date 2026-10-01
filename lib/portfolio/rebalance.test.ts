@@ -230,7 +230,7 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
       new Map([["الف", price(1)], ["ب", price(1)]]),
       opts
     );
-    assert.equal(r.fullCoverage, true, "هر دو قلم قیمتِ معتبر دارند");
+    assert.equal(r.fullCoverage, false, "ارزش خارج از محدودهٔ دقیق پول، پوشش معتبر نمی‌سازد");
     assert.equal(r.definitive, false, "ولی جمعشان از بردِ عددی بیرون است");
     assert.equal(r.totalValue, null);
     for (const row of r.rows) {
@@ -241,7 +241,7 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
         "هیچ خروجی‌ای نباید NaN باشد"
       );
     }
-    assert.ok(r.notes.some((n) => /محدودهٔ عددی/.test(n)), "دلیل باید صریح گفته شود");
+    assert.ok(r.gaps.every(g => /مقدار یا حاصل ارزش معتبر نیست/.test(g.detail)), "دلیل باید صریح گفته شود");
   });
 
   test("هیچ خروجی قطعی‌ای NaN یا Infinity نیست", () => {

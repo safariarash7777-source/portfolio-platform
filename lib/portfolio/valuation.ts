@@ -7,7 +7,7 @@ export function valuePositions(positions: readonly HoldingPosition[], rows: read
   const prices = resolvePricesByPosition(positions, buildPriceMap(rows));
   const gaps: CoverageGap[] = [];
   const valued: ValuedPosition[] = positions.map(position => {
-    const priced = valuePosition(position, prices.get(position.positionKey), { now, maxPriceAgeDays: maxAgeDays, maxPriceFutureDays: 1 });
+    const priced = valuePosition(position, prices.get(position.positionKey), { now, maxPriceAgeDays: maxAgeDays, maxPriceFutureDays: 1, allowEstimates: true });
     if ("gap" in priced) {
       gaps.push(priced.gap);
       return { position, price: null, value: null, weightPct: null };
@@ -16,9 +16,9 @@ export function valuePositions(positions: readonly HoldingPosition[], rows: read
   });
   const priced = valued.filter(p => p.value !== null);
   const subtotal = priced.length ? priced.reduce((sum, p) => sum + p.value!, 0) : null;
-  const fullCoverage = positions.length > 0 && gaps.length === 0 && subtotal !== null && Number.isFinite(subtotal);
+  const fullCoverage = positions.length > 0 && gaps.length === 0 && subtotal !== null && Number.isSafeInteger(subtotal);
   if (fullCoverage && subtotal! > 0) for (const p of valued) p.weightPct = p.value! / subtotal! * 100;
-  return { positions: valued, gaps, fullCoverage, totalValue: fullCoverage ? subtotal : null, subtotal: subtotal !== null && Number.isFinite(subtotal) ? subtotal : null };
+  return { positions: valued, gaps, fullCoverage, estimatedCount: valued.filter(p => p.price?.status === "estimated").length, totalValue: fullCoverage ? subtotal : null, subtotal: subtotal !== null && Number.isSafeInteger(subtotal) ? subtotal : null };
 }
 export interface ValueSnapshot { as_of: string; value: number; source?: string; fullCoverage?: boolean; valuationValid?: boolean }
 /** Only a change in recorded value, never a return or profit. */

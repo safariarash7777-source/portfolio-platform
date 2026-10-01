@@ -1,0 +1,244 @@
+[
+  {
+    "phase": "pre",
+    "appSHA": "56deb8c85a2a09009d1624cd07b78ea87535ab2a",
+    "environment": "balance173-local",
+    "startedAt": "2026-10-01T09:31:30.569Z",
+    "finishedAt": "2026-10-01T09:31:32.147Z",
+    "advisorTokenFingerprint": "ca919c11c8c840dd34b422c78bdbd1696cfa606e5dc3a586336e34396cbd5592",
+    "results": [
+      {
+        "name": "B direct member_holding_versions",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "B direct member_holding_positions",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "B direct member_debt_positions",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "advisor direct member_holding_versions",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "advisor direct member_holding_positions",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "advisor direct member_debt_positions",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "unrelated advisor RPC",
+        "actual": 403,
+        "expected": 403,
+        "result": "PASS"
+      }
+    ]
+  },
+  {
+    "phase": "granted",
+    "appSHA": "56deb8c85a2a09009d1624cd07b78ea87535ab2a",
+    "environment": "balance173-local",
+    "startedAt": "2026-10-01T09:40:26.511Z",
+    "finishedAt": "2026-10-01T09:40:28.495Z",
+    "advisorTokenFingerprint": "ca919c11c8c840dd34b422c78bdbd1696cfa606e5dc3a586336e34396cbd5592",
+    "results": [
+      {
+        "name": "advisor latest after actual UI consent",
+        "actual": {
+          "status": 200,
+          "version": 6,
+          "positions": 2,
+          "balance": 800
+        },
+        "expected": {
+          "status": 200,
+          "version": 6,
+          "positions": 2,
+          "balance": 800
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "advisor immutable negative history",
+        "actual": {
+          "status": 200,
+          "balance": 1500
+        },
+        "expected": {
+          "status": 200,
+          "balance": 1500
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "B foreign relationship",
+        "actual": 403,
+        "expected": 403,
+        "result": "PASS"
+      },
+      {
+        "name": "advisor cannot select B version in A case",
+        "actual": 403,
+        "expected": 403,
+        "result": "PASS"
+      },
+      {
+        "name": "B foreign direct version",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "B own nonvacuous debt",
+        "actual": {
+          "status": 200,
+          "rows": 1,
+          "balance": 70
+        },
+        "expected": {
+          "status": 200,
+          "rows": 1,
+          "balance": 70
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "real PostgREST stale code",
+        "actual": {
+          "status": 409,
+          "code": "PT409"
+        },
+        "expected": {
+          "status": 409,
+          "code": "PT409"
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "stale creates no version",
+        "actual": "6",
+        "expected": "6",
+        "result": "PASS"
+      },
+      {
+        "name": "advisor direct A debt hidden",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      },
+      {
+        "name": "B direct A debt hidden",
+        "actual": {
+          "status": 200,
+          "rows": 0
+        },
+        "expected": {
+          "status": 200,
+          "rows": 0
+        },
+        "result": "PASS"
+      }
+    ]
+  },
+  {
+    "phase": "revoked",
+    "appSHA": "56deb8c85a2a09009d1624cd07b78ea87535ab2a",
+    "environment": "balance173-local",
+    "startedAt": "2026-10-01T09:42:12.007Z",
+    "finishedAt": "2026-10-01T09:42:12.676Z",
+    "advisorTokenFingerprint": "ca919c11c8c840dd34b422c78bdbd1696cfa606e5dc3a586336e34396cbd5592",
+    "results": [
+      {
+        "name": "same pregrant real Auth token denied latest",
+        "actual": 403,
+        "expected": 403,
+        "result": "PASS"
+      },
+      {
+        "name": "same pregrant real Auth token denied historical",
+        "actual": 403,
+        "expected": 403,
+        "result": "PASS"
+      },
+      {
+        "name": "owner retains own financial record",
+        "actual": {
+          "status": 200,
+          "rows": 1,
+          "balance": 800
+        },
+        "expected": {
+          "status": 200,
+          "rows": 1,
+          "balance": 800
+        },
+        "result": "PASS"
+      }
+    ]
+  }
+]

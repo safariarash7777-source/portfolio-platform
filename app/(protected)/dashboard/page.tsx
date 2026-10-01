@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import HoldingsSummary from "@/components/portfolio/HoldingsSummary";
-import { loadPortfolioSnapshot, loadPriceRows } from "@/lib/portfolio/service";
+import { loadPortfolioSnapshot, loadPriceRows, loadVersionDebts } from "@/lib/portfolio/service";
+import { buildBalanceSheet } from "@/lib/portfolio/balanceSheet";
+import BalanceSheetSummary from "@/components/portfolio/BalanceSheetSummary";
 import { valuePositions } from "@/lib/portfolio/valuation";
 import type { Assessment, Portfolio } from "./DashboardClient";
 import type { PaidPayment } from "@/components/dashboard/AccessCards";
@@ -111,7 +113,8 @@ export default async function DashboardPage() {
 
   const access = await getAccess();
   const holdingSnapshot = await loadPortfolioSnapshot();
-  const prices = await loadPriceRows(holdingSnapshot.holdings?.positions ?? []);
+  const [prices, debts] = await Promise.all([loadPriceRows(holdingSnapshot.holdings?.positions ?? []), loadVersionDebts(holdingSnapshot.holdings?.id ?? null)]);
+  const sheet = buildBalanceSheet({ positions: holdingSnapshot.holdings?.positions ?? [], debts: debts.debts, priceRows: prices.data ?? [], now: new Date(), recorded: !!holdingSnapshot.holdings, assetsReady: holdingSnapshot.ready, debtsReady: holdingSnapshot.ready && debts.ready, pricesFailed: prices.status === "error" });
   const sectionEntries = {
     profile: profileRes, assessment: assessmentRes, portfolio: portfolioRes, holdings: holdingsRes,
     snapshots: snapshotsRes, transactions: txRes, telegram: telegramRes, payment: paymentRes,
@@ -133,6 +136,7 @@ export default async function DashboardPage() {
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-6 space-y-4">
           {access.standing === null ? <ReadError label="وضعیت دسترسی" code="DASHBOARD_ACCESS" /> : <AccessStatusCard access={access} />}
+            <BalanceSheetSummary sheet={sheet} version={holdingSnapshot.holdings?.version ?? null} />
           {holdingSnapshot.ready ? <HoldingsSummary valuation={valuePositions(holdingSnapshot.holdings?.positions ?? [], prices.data ?? [], new Date())} version={holdingSnapshot.holdings?.version ?? null} pricesFailed={prices.status === "error"} /> : <ReadError label="دارایی‌های نسخه‌دار" code="PORTFOLIO_READ" />}
           <Link href="/dashboard/consultation" className="btn btn-outline min-h-11">پروندهٔ مشاوره و اقدام بعدی</Link>
           {/* بستنِ حلقه: از داشبورد به میزِ بازار. طرفِ دیگرِ همین مسیر در
