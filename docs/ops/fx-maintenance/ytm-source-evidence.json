@@ -1,0 +1,38 @@
+{
+  "source_url": "https://www.ifb.ir/ytm.aspx",
+  "archived_document_sha256": "4f7f5c11d560c9fb30706e54e9f5706f7ccbaa8358697efd11ac73c5db3f8cd6",
+  "controls": [
+    {
+      "id": "YtmHistory",
+      "tag": "div",
+      "label": null
+    },
+    {
+      "id": "ContentPlaceHolder1_btnCalcYtm",
+      "tag": "input",
+      "label": "محاسبه"
+    },
+    {
+      "id": "YtmHistory_tab",
+      "tag": "div",
+      "label": null
+    },
+    {
+      "id": "ContentPlaceHolder1_SymbolComboboxYTMHistory",
+      "tag": "select",
+      "label": null
+    },
+    {
+      "id": "ContentPlaceHolder1_btnYTMHistoryExport",
+      "tag": "input",
+      "label": "خروجی اکسل"
+    },
+    {
+      "id": "ContentPlaceHolder1_ytmHistoryGride",
+      "tag": "table",
+      "label": null
+    }
+  ],
+  "monthly_Pouya_compatible_method_verified": false,
+  "note": "Existence of a history export control is not proof of benchmark identity, weighting or complete monthly periods."
+}
