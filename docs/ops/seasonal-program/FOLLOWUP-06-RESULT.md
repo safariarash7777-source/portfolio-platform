@@ -56,6 +56,25 @@ migration180 `20261001083215_auth_private_identity_versions.sql` افزایشی 
 
 ## inventory سرشاخه‌ها
 
+### ورودی‌های تازه182/183 — فقطinventory؛ خارجruntimeجاری
+
+[snapshotبازخوانیGitHub/CI/قرارداد](followup-06-evidence/market-fx-inputs-182-183.json) شاملhead/base، فایل‌ها، پنجjob هرCI وblob اسنادِ همانref است. گزارش182 در مسیر محلی تحویل‌شده نیز خوانده شد و سندrefimmutable182 مبنای ارجاع است. هیچ build/test/merge/retarget/install/deploy تازه انجام نشد؛ موفقیت قبلی2605 تکرار نشد و شواهد18PASS/2FAIL محفوظ‌اند. **ترکیبruntime بعد ازpatchثابت175 و تحویلNEXT06 می‌ماند. FOLLOWUP03 به مالک لیارا واگذار شده و هنوز ورودیترکیب نیست.**
+
+| ورودی | head دقیق | base دقیق | CI مشاهده‌شده رویهمینhead | حد ادعا |
+|---|---|---|---|---|
+|[182: fix(market): complete paginated readers and five-minute board refresh](https://github.com/safariarash7777-source/portfolio-platform/pull/182)|e5740be93f666dc76a605ccef190f710767ab748|174@95cfa3410a97ac0d98cdefcb6671d4cfcb668646|[36855945325](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36855945325):هرپنجjobموفق|Draft/open/unmerged؛ دوچرخهٔزندهBLOCKED|
+|[183: Verify portable FX dashboard runtime and document Linux acceptance](https://github.com/safariarash7777-source/portfolio-platform/pull/183)|8723c55766e456c0b519b4ead3c301440b4ff05f|178@4ce06b3ffbd6b50125021faeb454fbf11c73b900|[36857415272](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36857415272):هرپنجjobموفق؛ وضعیتقبلاًنامعلوم اکنونمستقیماًتأییدشد|Draft/open/unmerged؛ runtimeآزموده‌شدهbce2e9e86a21c474742d0bedb76163f753fd7a00؛ headپس‌ازآن چهارفایلdocs/evidenceفقط|
+
+182 پساز174، قراردادواحد/null/NAV/مجوز آنرا حفظ می‌کند و quota178را واردنمی‌کند. گزارشصاحب182 implementatione6ed01702e17e21500a5cf45f7507ef83f2dfa7f وfixtureهایPostgREST/مرورگر را جدا ازhead/CIنهایی ثبت کرده؛ این intakeآنآزمون‌ها را اجرا نکرده و بهruntime2605نسبت نمی‌دهد. readerها keyset/fence، نتایج وcacheفقطکامل، coverageتهی/stale/error و تقدمcaptured_at/idاصلاحیه دارند؛ getHistorySymbolsRead همچنان30روز است، نههمهتاریخچه. cache/single-flight درهرprocess وبدونضمانتMVCCیاپایداریcross-instance؛ refreshپنج‌دقیقه ازهمانrouter.refresh، hiddenpause، leaseتاackرندرسِرور، حفظlast-valid/filter/sort/scroll. نبودacktransport بعدخطا نیازبهnavigation/reloadدارد. اسکنکامل درخواستDBبیشتر ازخواندنصفحهٔاول دارد؛ بودجه/latencyزندهاندازه‌گیری‌شده نیست.
+
+گیت182: quota178بایدباbaseline/resetمشترک معلوم درreleaseمصوب نصبشود و بعد دوچرخهٔliveهماننسخه اجرا شوند؛ فعلاًBLOCKED. bulkReturns/avgVolume/large-history-export، raceتعویض‌سریعURL وp95 خارجادعایاینPRاند. مالکreader/refresh182 کد وcoverageرا تحویل داده؛ upstream/quota/install/refreshsharedوFOLLOWUP03با لیارا می‌مانند. FOLLOWUP03در بهینه‌سازی aggregation/cache/progressive render نبایدcoverageیاکامل‌بودنread را حذف کند. package.json182 wiringتستفقط دارد؛ درترکیبآیندهunionآن باscriptsقبلی/179/180 لازم است؛ فعلاًکپی/ترکیب نشده.
+
+183 باbase178، diff110فایلش واقعاً فقط `scripts/fx-maintenance/` و `docs/ops/fx-maintenance/` است؛ تغییرwrapperمرکزی، quotaimplementation، فرمول، Hermesjob/cadence/volume/configفعّال دراین تحویل ادعا/اجرا نشده است. compareGitHub ازruntimebce2e9e بهhead8723c55 دقیقاًیکcommit/چهارفایلdocs/evidence دارد. شواهدصاحببسته ازruntimeیکسانWindows/Linux،105hashmanifest، AppTest/Streamlitایزوله وreceipt/outagefixture محفوظ‌اند؛ CIپنجjobمخزن پذیرشPythonruntimeیاپذیرشمالی/زنده را جایگزین نمی‌کند و intakeتستruntimeرا تکرار نکرد.
+
+[قراردادفرانت183](https://github.com/safariarash7777-source/portfolio-platform/blob/8723c55766e456c0b519b4ead3c301440b4ff05f/docs/ops/fx-maintenance/FRONTEND-CONTRACT.md): نتیجهفرآیند/سلامتمنبع/کامل‌بودنداده سه محور مستقل؛ receiptبایدhashbytes/run_id/readbackزمان داشته باشد، publicationtime≠dataobservation؛ iframe.onloadمعنیAuth/۱۲تبسالم ندارد. مالکمدل/Hermes/تعاریفFX باچتارز؛ quotaوsharedinstallation با لیارا/178؛ wrapper وپذیرشمدیرواقعی `/admin/fx` بامالکورود/محصول `01a0f31c-bc6d-7af3-8194-fd2ad178119e` است. cadenceپنج‌روزهٔWindowsموجود حفظ، انتقالHermesبهLinuxمأموریتاین بسته نیست. dependencies/constraintsفقطنسخه‌های مشاهده‌شده‌اند، lockکاملtransitiveنیستند؛ اینintakedependencyنصب نکرد.
+
+گیت183: D-FX/روشمالی، تاریخچهٔماهانهٔYTMهم‌تعریف، تازگیبازار، سهمیهٔواقعی/reset، transportانتشارزنده ومرورگر/mobile/fullscreen/download باadminواقعی بازند. انتشارfixtureمحلی simulated است؛ readbackآرشیوآزمایشی به‌معنی انتشارSFTPسرویسزنده نیست. rawworkbookها/fixturearchive/runtimearchive/credentials خارجGitمی‌مانند؛ هیچhook/job/providerاختیاری فعال نشد. اینCIمشخص‌شدهرویhead183، CIترکیبفعلییامجوزmerge/deploy نیست.
+
 اطلاعات GitHub و `git ls-remote` واقعاً خوانده شدند؛ SHA کامل، base و merge-base، فایل‌ها، scripts و hashها در [inventory اولیه](followup-06-evidence/inventory.json) ثبت‌اند. جدول زیر snapshotاول قبلتحویل179/180است؛ intakeجدیدبخشبالامرجعAuthتحویل‌شده است. همه هفت PR هنگام بررسی Draft/Open بودند؛ هیچ‌یک retarget یا merge نشد.
 
 | بسته | PR | head دقیق | base جاری | وضعیت ورودی |
@@ -83,8 +102,10 @@ flowchart LR
   BASE --> P176["176 / NEXT08"]
   BASE --> P177["177 / NEXT05"]
   P175 -. "module access" .-> P174
+  P174 -. "intake only; not composed" .-> F182["182 / complete readers + refresh"]
   P175 -. "membership / audiences" .-> P176
   MAIN --> P178["178 / phase28 quota"]
+  P178 -. "intake only; not composed" .-> F183["183 / portable FX runtime"]
   P173 --> N06["NEXT06 pending"]
   P175 --> N06
   P176 --> N06
