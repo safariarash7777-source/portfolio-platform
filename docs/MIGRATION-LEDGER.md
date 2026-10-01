@@ -1,5 +1,9 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## بازتأیید DEV-07 روی 15eebc9 — 2026-10-01
+
+**REVALIDATED_SANDBOX_ONLY؛ نصب تازه انجام نشد.** زنجیرهٔ قبلاً نصب‌شدهphase32→34→35→36→37 در volumeساختگیdev07-1978-data حفظ شد. SHAبرنامه `15eebc97ca650dde5f2687e36d9d98d193d0d543`؛ شاهد2026-10-01T09:21:23.152Z، .task/dev07-preflight-15eebc9.txt و manifestمهاجرت؛14/14جدول،11/11RLS،4RPCدارایPT409 وstatus-onlyبرقرار،cronoff. hashphase37 همچنانb817192469b4f66937f009bf9a9dbb75f4acea41760be1e6be6306b6682834b9. [پذیرش مستقل](./ops/DEV07-FINAL-15EEBC9.md) و [شواهد پروژه](./ops/DEV07-EVIDENCE-15EEBC9.json). هیچ migrationمحیط مشترک/Production/لیارا انجام نشد؛ مراحلAPPLIED/NOT_APPLIEDپایین سابقهٔ زمان خودشان‌اند.
+
 ## شاهد جاری DEV-07: APPLIED_SANDBOX_ONLY
 
 phase37 بعد از زنجیرهٔ phase32→34→35→36 فقط در `dev07-1978-local` نصب شد؛ COMMIT موفق. شاهد ثبت‌شده در 2026-09-30T17:21:23.670Z، SHA برنامه `3462f0178ebed6b7a9966b465ba0756119ce267a`، hash فایل phase37 `b817192469b4f66937f009bf9a9dbb75f4acea41760be1e6be6306b6682834b9`. preflight:14/14 جدول حاضر،11/11 جدول RLS، چهار RPC دارای PT409 و فاقد40001، شاخهٔ status-only برقرار. [گزارش نهایی](./ops/DEV07-FINAL-3462F01.md)؛ manifest/خروجی catalog محلی `.task/dev07-migrations.json` و `.task/dev07-preflight-3462f01.txt`. Production و DB بازیابی‌شدهٔ لیارا مقصد نصب نیستند. NOT_APPLIED زیر، وضعیت پیش از این شاهد است. این ثبت پس از آزمون محلی است؛ head آزمون‌شده تغییر نکرد.

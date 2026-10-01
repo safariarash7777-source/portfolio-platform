@@ -1,5 +1,17 @@
 # پذیرش مستقل DEV-07 برای PR #168
 
+## وضعیت جاری — ادامهٔ پذیرش پس از main، 2026-10-01
+
+مبنای قبلی `3462f0178ebed6b7a9966b465ba0756119ce267a`؛ main واردشده فقط در شاخهٔ PR `51fd0661d48d791ce8758a87828a81ce72cac6df`؛ SHA نهایی برنامه/PR/build/پذیرش `15eebc97ca650dde5f2687e36d9d98d193d0d543`. سه تعارض COMMAND-CENTER/next.config.js/package.json رفع و تغییرات هر دو طرف حفظ شدند؛ گزارش تاریخی3462 نیز در a3d0dd4 ثبت شد. PR #168 باز، draft، ادغام‌نشده و mergeable است؛ branchPR173 تغییر نکرد.
+
+[گزارش مستقل نسخهٔ جاری با جدول۱۴](./DEV07-FINAL-15EEBC9.md): **۱۳ PASS، صفر FAIL، یک BLOCKED**؛ تمام۱۴ دوباره با ورود UI به Auth واقعی، در sandbox صرفاً ساختگی `dev07-1978-local`، اجرا شدند. build2026-10-01T09:13:10.728Z؛ پذیرش09:19:04.621Z→09:25:26.797Z UTC. [شواهد پاک‌سازی‌شدهٔ پروژه](./DEV07-EVIDENCE-15EEBC9.json). شواهد قدیمی یا baseline ترکیبی پذیرش اینSHA نیستند. [CI36840882933](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36840882933): هرپنجjobموفق، core1212، calc106، DB407/0fail/0skip/35suite.
+
+محیط قبلی با همان volume ساختگی راه افتاد؛ نصب phase32→34→35→36→37 محفوظ و بدون اجرای migration تازه بازتأیید شد:14جدول حاضر،11جدولRLS،4RPCباPT409،status-onlyبرقرار وcronخاموش. [PreviewهمانSHA](https://portfolio-platform-kmiyr0cfy-safariarash7777-4463s-projects.vercel.app) READY است؛ پذیرش Auth/RLS مربوط به sandboxمحلی است و به Previewعمومی/DBبکاپ واقعی نسبت داده نمی‌شود.
+
+**DEV-07 پذیرفته نشد؛ تنها مانع پذیرش، تأیید انسانی مستقل پژوهش است.** [ورود واقعی آرش با بازگشت به پژوهش](http://127.0.0.1:3210/login?next=%2Fadmin%2Fresearch)، فقط همین دستگاه؛ اطلاعات ورود حساب‌ها در فایل حفاظت‌شده خارج مخزن. از فهرست کاربرگ‌های ذخیره‌شده عنوان `DEV07-HUMAN-PR168-15eebc97ca650dde5f2687e36d9d98d193d0d543` را باز کند: workbook `802d41ba-7194-4971-b6fc-f696cae2b0e8`، نسخه۱ `342f9339-f5da-4ef0-af42-c724418c45e6`، وضعیت تأییدنشده، صفر تصمیم. منبع و تاریخ‌ها را مستقل بخواند و اگر مناسب دانست کنترل «تأیید داخلی» را خودش اجرا کند؛ نام/زمان/UUIDنسخه/تصمیم ثبت شود. عامل این کاربرگ را تأیید نکرده است. [خروجی تمام پژوهش‌های ساختگی و این کاربرگ](../research/DEV07-SYNTHETIC-RESEARCH-15EEBC9.json) در پروژه محفوظ است.
+
+مهارت‌های استفاده‌شده در این ادامه: verification-before-completion (SHA/build/CI/۱۴شاهد تازه قبل از نتیجه)، receiving-code-review (بررسی فنی تعارض/یافته‌ها و حفظ رفتار هر دو طرف)، supabase (Auth واقعی، backendایزوله و بازتأییدschema/مجوز). مهارت مشروط درخواست بازبینی اضافه اجرا نشد؛ بازبین معتبر موجود استفاده شد. این گزارش و JSONهای نهایی بعد از آزمون در فایل‌های پروژه و توضیحPRثبت می‌شوند و commitتازه ندارند تا headآزمون‌شده عوض نشود؛ فقط فایل محلی به معنای push نیست. READMEمرکزی دست‌نخورده است. PRادغام نشده؛ Production/DBمشترک/بکاپ تغییر نکردند؛ زیر سابقه است.
+
 ## وضعیت جاری نهایی: DEV-07 پذیرفته نشد
 
 نسخهٔ جاری برنامه و head PR: `3462f0178ebed6b7a9966b465ba0756119ce267a`؛ build محلی 2026-09-30T17:21:20.814Z در `dev07-1978-local`، [ورود واقعی sandbox](http://127.0.0.1:3210/login?next=%2Fdashboard%2Fholdings). Preview عمومی [استقرار همان SHA](https://portfolio-platform-38xvtec6s-safariarash7777-4463s-projects.vercel.app) نیز READY است، ولی به sandbox محلی متصل نیست و نتیجهٔ این پذیرش به آن نسبت داده نمی‌شود.

@@ -1,0 +1,519 @@
+{
+  "kind": "acceptance artifacts, not production seed",
+  "sha": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+  "environment": "dev07-1978-local",
+  "exportedAt": "2026-10-01T09:26:14.266Z",
+  "dataClassification": "entirely synthetic, real Auth identities omitted, no client/private consultation data or credentials",
+  "human": {
+    "workbookId": "802d41ba-7194-4971-b6fc-f696cae2b0e8",
+    "versionId": "342f9339-f5da-4ef0-af42-c724418c45e6",
+    "version": 1,
+    "title": "DEV07-HUMAN-PR168-15eebc97ca650dde5f2687e36d9d98d193d0d543",
+    "status": "UNAPPROVED",
+    "reviewRows": 0
+  },
+  "versions": [
+    {
+      "id": "9596fdf4-f634-4f0c-847b-d68e8bdacf99",
+      "body": {
+        "title": "DEV07 Research v1 synthetic",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v1 synthetic",
+      "version": 1,
+      "createdAt": "2026-09-30T16:28:41.394058+00:00",
+      "workbookId": "f6ab65eb-ac4c-4cf3-bae8-4f4436a273a9"
+    },
+    {
+      "id": "76683fb7-b4df-4d7a-b2e8-9818917e35f8",
+      "body": {
+        "title": "DEV07 Research v2 synthetic",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v2 synthetic",
+      "version": 2,
+      "createdAt": "2026-09-30T16:28:41.831661+00:00",
+      "workbookId": "f6ab65eb-ac4c-4cf3-bae8-4f4436a273a9"
+    },
+    {
+      "id": "3b7a0c9b-4385-407a-8418-bb6c40a8533d",
+      "body": {
+        "title": "DEV07 Research v3 draft",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v3 draft",
+      "version": 3,
+      "createdAt": "2026-09-30T16:28:51.277275+00:00",
+      "workbookId": "f6ab65eb-ac4c-4cf3-bae8-4f4436a273a9"
+    },
+    {
+      "id": "9eddeb36-8b46-4d8b-8541-233867f26347",
+      "body": {
+        "title": "DEV07 Research v1 synthetic",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v1 synthetic",
+      "version": 1,
+      "createdAt": "2026-09-30T17:26:04.576699+00:00",
+      "workbookId": "cda4eb3c-e41e-4b29-a53b-4037e1ca1e0d"
+    },
+    {
+      "id": "717dc8c1-f756-4d33-a22f-424048183a61",
+      "body": {
+        "title": "DEV07 Research v2 synthetic",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v2 synthetic",
+      "version": 2,
+      "createdAt": "2026-09-30T17:26:04.746909+00:00",
+      "workbookId": "cda4eb3c-e41e-4b29-a53b-4037e1ca1e0d"
+    },
+    {
+      "id": "420da211-d872-4aeb-93ac-f139de649bdf",
+      "body": {
+        "title": "DEV07 Research v3 draft",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v3 draft",
+      "version": 3,
+      "createdAt": "2026-09-30T17:26:09.90394+00:00",
+      "workbookId": "cda4eb3c-e41e-4b29-a53b-4037e1ca1e0d"
+    },
+    {
+      "id": "7a63f00b-a025-4648-b4d5-9f0cfa650906",
+      "body": {
+        "title": "DEV07 Research v1 synthetic",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v1 synthetic",
+      "version": 1,
+      "createdAt": "2026-10-01T09:20:08.717784+00:00",
+      "workbookId": "01d86d7c-7375-40ba-8517-7acf0917fa61"
+    },
+    {
+      "id": "dc7184aa-c26a-482f-870c-928d4cf38166",
+      "body": {
+        "title": "DEV07 Research v2 synthetic",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v2 synthetic",
+      "version": 2,
+      "createdAt": "2026-10-01T09:20:08.966997+00:00",
+      "workbookId": "01d86d7c-7375-40ba-8517-7acf0917fa61"
+    },
+    {
+      "id": "c4800847-d77e-44f2-b30f-767536cbb5b6",
+      "body": {
+        "title": "DEV07 Research v3 draft",
+        "domain": "macro_ir",
+        "horizon": "DEV07 synthetic acceptance horizon e1",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "https://example.test/dev07-synthetic-evidence",
+            "statement": "DEV07 synthetic acceptance evidence-e1 e1",
+            "observedOn": "2026-09-30",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "DEV07 synthetic acceptance question e1",
+        "reviewOn": "2026-09-30",
+        "scenarios": {
+          "base": {
+            "mechanism": "DEV07 synthetic acceptance base-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance base-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance base-invalidation e1"
+          },
+          "upside": {
+            "mechanism": "DEV07 synthetic acceptance upside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance upside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance upside-invalidation e1"
+          },
+          "downside": {
+            "mechanism": "DEV07 synthetic acceptance downside-mechanism e1",
+            "assumptions": "DEV07 synthetic acceptance downside-assumptions e1",
+            "invalidation": "DEV07 synthetic acceptance downside-invalidation e1"
+          }
+        },
+        "interpretation": "DEV07 synthetic acceptance interpretation e1",
+        "counterEvidence": "DEV07 synthetic acceptance counterEvidence e1",
+        "portfolioImpact": "DEV07 synthetic acceptance portfolioImpact e1"
+      },
+      "title": "DEV07 Research v3 draft",
+      "version": 3,
+      "createdAt": "2026-10-01T09:20:14.693571+00:00",
+      "workbookId": "01d86d7c-7375-40ba-8517-7acf0917fa61"
+    },
+    {
+      "id": "342f9339-f5da-4ef0-af42-c724418c45e6",
+      "body": {
+        "title": "DEV07-HUMAN-PR168-15eebc97ca650dde5f2687e36d9d98d193d0d543",
+        "domain": "macro_ir",
+        "horizon": "محیط صرفاً ساختگی DEV07؛ مشاهده در 2026-10-01؛ قیمت fixture مربوط به 2026-09-30.",
+        "version": 1,
+        "evidence": [
+          {
+            "id": "e1",
+            "sourceUrl": "http://127.0.0.1:3210/symbol/%D9%81%D9%85%D9%84%DB%8C",
+            "statement": "در fixture برچسب‌دار DEV07_SYNTHETIC، قیمت فملی 12000 ریال (1200 تومان) و روز قیمت 2026-09-30 است. این شاهد داده واقعی بازار یا نتیجه سرمایه‌گذاری نیست.",
+            "observedOn": "2026-10-01",
+            "publishedOn": "2026-09-30"
+          }
+        ],
+        "question": "آیا مقدار ساختگی دارایی و قیمت ساختگی فملی با واحد و زمان روشن نمایش داده می‌شود؟ این کاربرگ فقط برای تأیید انسانی پذیرش PR168 است.",
+        "reviewOn": "2026-10-01",
+        "scenarios": {
+          "base": {
+            "mechanism": "تعداد سهم ساختگی در قیمت هر سهم ضرب می‌شود؛ نمایش و تاریخ بررسی می‌شود.",
+            "assumptions": "fixture و واحد سهم معتبر بماند؛ قیمت 1200 تومان به ازای سهم فقط عدد ساختگی است.",
+            "invalidation": "منبع یا واحد نامعتبر شود یا داده از محدوده تازگی خارج شود."
+          },
+          "upside": {
+            "mechanism": "ارزش ثبت‌شده نمونه فرضی افزایش می‌یابد؛ ادعای سود نیست.",
+            "assumptions": "در نمونه ساختگی دیگری، مقدار یا قیمت فرضی بیشتر باشد.",
+            "invalidation": "منبع، واحد یا زمان نمونه فرضی معتبر نباشد."
+          },
+          "downside": {
+            "mechanism": "ارزش باید نامعلوم نمایش داده شود، بدون صفر ساختگی یا NaN.",
+            "assumptions": "قیمت ساختگی کهنه، منبع ناقص یا واحد ناسازگار باشد.",
+            "invalidation": "منبع، واحد و زمان به‌طور مستقل معتبر تأیید شود."
+          }
+        },
+        "interpretation": "e1 فقط تبدیل واحد و نمایش fixture را پشتیبانی می‌کند. مقدار 12 سهم ساختگی در این fixture برابر 14400 تومان است. از این شاهد نمی‌توان پیشنهاد سرمایه‌گذاری استخراج کرد.",
+        "counterEvidence": "fixture مصنوعی است؛ سابقه واقعی، بازده یا جریان پول حقیقی اثبات نشده است. داده غایب باید نامعلوم بماند.",
+        "portfolioImpact": "فقط یک ابزار پذیرش ساختگی برای بررسی واحد، تاریخ و نامعلوم‌بودن است. اجرای معامله، پیشنهاد تخصیص یا نتیجه درباره دارایی واقعی ندارد."
+      },
+      "title": "DEV07-HUMAN-PR168-15eebc97ca650dde5f2687e36d9d98d193d0d543",
+      "version": 1,
+      "createdAt": "2026-10-01T09:23:03.147119+00:00",
+      "workbookId": "802d41ba-7194-4971-b6fc-f696cae2b0e8"
+    }
+  ],
+  "technicalReviewsNotHumanSignoff": [
+    {
+      "note": null,
+      "decision": "approved_internal",
+      "versionId": "76683fb7-b4df-4d7a-b2e8-9818917e35f8",
+      "reviewedAt": "2026-09-30T16:28:45.69586+00:00"
+    },
+    {
+      "note": "DEV07 technical stale reference check",
+      "decision": "returned",
+      "versionId": "76683fb7-b4df-4d7a-b2e8-9818917e35f8",
+      "reviewedAt": "2026-09-30T16:28:49.692003+00:00"
+    },
+    {
+      "note": null,
+      "decision": "approved_internal",
+      "versionId": "3b7a0c9b-4385-407a-8418-bb6c40a8533d",
+      "reviewedAt": "2026-09-30T16:28:51.95253+00:00"
+    },
+    {
+      "note": "DEV07 technical form error retention",
+      "decision": "returned",
+      "versionId": "3b7a0c9b-4385-407a-8418-bb6c40a8533d",
+      "reviewedAt": "2026-09-30T16:58:43.205882+00:00"
+    },
+    {
+      "note": null,
+      "decision": "approved_internal",
+      "versionId": "717dc8c1-f756-4d33-a22f-424048183a61",
+      "reviewedAt": "2026-09-30T17:26:07.976602+00:00"
+    },
+    {
+      "note": "DEV07 technical stale reference check",
+      "decision": "returned",
+      "versionId": "717dc8c1-f756-4d33-a22f-424048183a61",
+      "reviewedAt": "2026-09-30T17:26:09.426066+00:00"
+    },
+    {
+      "note": null,
+      "decision": "approved_internal",
+      "versionId": "420da211-d872-4aeb-93ac-f139de649bdf",
+      "reviewedAt": "2026-09-30T17:26:10.19828+00:00"
+    },
+    {
+      "note": null,
+      "decision": "approved_internal",
+      "versionId": "dc7184aa-c26a-482f-870c-928d4cf38166",
+      "reviewedAt": "2026-10-01T09:20:12.368159+00:00"
+    },
+    {
+      "note": "DEV07 technical stale reference check",
+      "decision": "returned",
+      "versionId": "dc7184aa-c26a-482f-870c-928d4cf38166",
+      "reviewedAt": "2026-10-01T09:20:13.980696+00:00"
+    },
+    {
+      "note": null,
+      "decision": "approved_internal",
+      "versionId": "c4800847-d77e-44f2-b30f-767536cbb5b6",
+      "reviewedAt": "2026-10-01T09:20:15.146544+00:00"
+    }
+  ]
+}
