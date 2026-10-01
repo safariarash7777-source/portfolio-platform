@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-01T09:18:22.624Z",
+  "site": "https://portfolio-platform-fawn.vercel.app",
+  "origin": "https://62.60.191.24/liara-preview",
+  "checks": [
+    {
+      "label": "production-login",
+      "status": 200,
+      "url": "https://portfolio-platform-fawn.vercel.app/login",
+      "cors": "*",
+      "serverDate": "Thu, 01 Oct 2026 09:18:30 GMT"
+    },
+    {
+      "label": "auth-health",
+      "status": 401,
+      "url": "https://62.60.191.24/liara-preview/auth/v1/health",
+      "cors": null,
+      "serverDate": "Thu, 01 Oct 2026 09:19:07 GMT"
+    },
+    {
+      "label": "auth-health-with-public-anon-key",
+      "status": 200,
+      "url": "https://62.60.191.24/liara-preview/auth/v1/health",
+      "cors": null,
+      "serverDate": "Thu, 01 Oct 2026 09:19:09 GMT"
+    },
+    {
+      "label": "auth-preflight-valid",
+      "status": 204,
+      "url": "https://62.60.191.24/liara-preview/auth/v1/token?grant_type=password",
+      "cors": "https://portfolio-platform-fawn.vercel.app",
+      "serverDate": "Thu, 01 Oct 2026 09:19:09 GMT"
+    },
+    {
+      "label": "auth-preflight-unrelated",
+      "status": 401,
+      "url": "https://62.60.191.24/liara-preview/auth/v1/token?grant_type=password",
+      "cors": null,
+      "serverDate": "Thu, 01 Oct 2026 09:19:12 GMT"
+    },
+    {
+      "label": "anonymous-admin",
+      "status": 200,
+      "url": "https://portfolio-platform-fawn.vercel.app/login?next=%2Fadmin",
+      "cors": "*",
+      "serverDate": "Thu, 01 Oct 2026 09:19:22 GMT"
+    }
+  ],
+  "cspAllowsLiara": true,
+  "bundle": {
+    "scripts": 10,
+    "origins": [
+      "https://62.60.191.24/liara-preview"
+    ],
+    "legacySupabaseOriginPresent": false
+  },
+  "authVersion": "v2.197.0"
+}

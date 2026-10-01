@@ -2,6 +2,7 @@
 import fs from 'node:fs/promises';import {spawn,execFile} from 'node:child_process';import {createServer} from 'node:http';import assert from 'node:assert/strict';import {promisify} from 'node:util';
 import {createClient} from '@supabase/supabase-js';
 import {fileURLToPath} from 'node:url';
+import {resolve} from 'node:path';
 const source='../portfolio-followup-auth/.task/auth-sandbox';const secrets=JSON.parse(await fs.readFile(source+'/secrets.private.json','utf8'));
 const dir='.task/owner-sandbox';await fs.mkdir(dir,{recursive:true});
 const evidence='docs/ops/seasonal-program/followup-auth-evidence/';await fs.mkdir(evidence,{recursive:true});
@@ -61,7 +62,7 @@ try{
   // The failure is in the real SDK/network path, not a fake getUser implementation.
   stage='fault';delayUser=true;const started=Date.now();const blocked=await read('/dashboard');const elapsed=Date.now()-started;delayUser=false;
   assert.equal(blocked.status,307);const retry=new URL(blocked.headers.get('location'));assert.equal(retry.searchParams.get('error'),'auth_unavailable');assert.ok(elapsed>=7500 && elapsed<11000);
-  await call('open',site+'/login?next=%2Fdashboard&error=auth_unavailable');await call('screenshot',evidence+'owner-retry-390.png');
+  await call('open',site+'/login?next=%2Fdashboard&error=auth_unavailable');await call('screenshot',resolve(evidence+'owner-retry-390.png'));
   const result={at:new Date().toISOString(),synthetic:true,build:true,realGoTrue:'v2.197.0',browserLogin:true,apiSignoutAndLoginSameUuid:true,role:'user',dashboardStatus:200,refreshPassed:true,adminFxDenied:true,realSdkDelayDenied:true,deadlineMilliseconds:elapsed,unavailableErrorVisible:(await call('eval',"document.body.innerText.includes('بررسی نشست در سرور پاسخ نداد')")).trim()==='true',noNewMigration:true};
   await fs.writeFile(evidence+'owner-sandbox.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));
   console.log('Isolated P0 production-build review server retained at '+site+'/login; synthetic only.');

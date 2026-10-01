@@ -1,0 +1,16 @@
+{
+  "at": "2026-10-01T10:32:59.974Z",
+  "synthetic": true,
+  "build": true,
+  "realGoTrue": "v2.197.0",
+  "browserLogin": true,
+  "apiSignoutAndLoginSameUuid": true,
+  "role": "user",
+  "dashboardStatus": 200,
+  "refreshPassed": true,
+  "adminFxDenied": true,
+  "realSdkDelayDenied": true,
+  "deadlineMilliseconds": 8033,
+  "unavailableErrorVisible": true,
+  "noNewMigration": true
+}
