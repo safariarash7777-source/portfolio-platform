@@ -1,0 +1,32 @@
+{
+  "runtime_sha": "bce2e9e86a21c474742d0bedb76163f753fd7a00",
+  "base_sha": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+  "inherited_pr": 178,
+  "pr_base_branch": "codex/liara-budget-guard-20261001",
+  "docs_only_commit_parent": "bce2e9e86a21c474742d0bedb76163f753fd7a00",
+  "self_hash_excluded": true,
+  "docs_files": [
+    {
+      "path": "docs/ops/fx-maintenance/FX-LINUX-RUNTIME-RESULT.md",
+      "sha256": "f1216c03dda2be00104f6396fcb5ea102c578b1b9c38f86e9c80de45ae7b8b09"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/linux-runtime-evidence.json",
+      "sha256": "d940fb10a398065fa31470b42a8fcf9c1753217d5d7abacfce2cbad86fdf622b"
+    },
+    {
+      "path": "docs/ops/fx-maintenance/GIT-HANDOFF.md",
+      "sha256": "8115258640fd89a0c7a34f634122e629e975d44a085f1c80a13c45e4d2d07c02"
+    }
+  ],
+  "external_artifacts": {
+    "input_git_transfer_sha256": "15d83104e2ab9e477e5d7699d6c94aece9a2a579d06c5d9f06f34d452f1c26fc",
+    "runtime_archive_sha256": "d455bba077d6c9bcf392b1374185cb29e3c29d380bc515cf7296de1ffbc774dc",
+    "runtime_manifest_sha256": "1ccf4e1b4b9afae693bb4c166a8de4d67991a6b20b8717c9e42d1ea0bfa93bd6",
+    "linux_fixture_archive_sha256": "0fa69616d022f9a8d7cfd610a65899a1cc43f906b0d2284dc02cb9c8d0189154",
+    "external_linux_runner_sha256": "d5f99883413372f12a61dcbb4ddcd031bf308b9eee6bdf9390d0325677f4b9ee"
+  },
+  "source_changed": false,
+  "raw_workbooks_in_git": false,
+  "live_deployment": false
+}

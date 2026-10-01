@@ -1,0 +1,7 @@
+C:\Users\Asus\Documents\Codex\2026-09-29\new-chat-2\work\fx-local-venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.039s
+
+OK
