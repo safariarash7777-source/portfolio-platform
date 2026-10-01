@@ -70,4 +70,6 @@ migration: **NONE**. Production mutation/deployment: **NONE**. بازگشت اپ
 
 ## رکورد تحویل
 
-PR و head نهایی پس از push در این بخش درج می‌شوند؛ کد `c9ce9e9` و همه شواهد تاریخ‌دار بالا مستقل از head مستندات هستند. CI و Preview خودکار جدا از آزمون محلی و Production گزارش می‌شوند.
+[PR179](https://github.com/safariarash7777-source/portfolio-platform/pull/179)، draft رویmain51fd066؛ head هنگام ایجاد `b17122a7bca7be1467bb9dc3efa310e820f728dc`. SHA کد اپ `c9ce9e9` است؛ commit مستندات head را تغییر می‌دهد و head جاری از PR خوانده شود. مکمل هویت [PR180](https://github.com/safariarash7777-source/portfolio-platform/pull/180) روی موج دوم است.
+
+در snapshot همین head، GitHub Typecheck/Lint/Tests/Build، Dependencies و Secret/SQL موفق بودند؛ Database RLS درحال اجرا و Supabase Preview skipped بود. Vercel Preview pending بود؛ این وضعیت را به آماده‌بودن Production تعبیر نمی‌کنیم. commit بعدی مستندات CI تازه دارد. بازبینی محلی8800 پذیرفته شد، authenticated Preview و مالک Production هنوز باز هستند.
