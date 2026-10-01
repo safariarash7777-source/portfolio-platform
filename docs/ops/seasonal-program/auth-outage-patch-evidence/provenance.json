@@ -1,0 +1,34 @@
+{
+  "source": "a49e37cecc7922d6d80c174910301e24a1841aee",
+  "base": "bb4f2f3e53859bbecb0ec942975ffb06fd2d2828",
+  "at": "2026-10-01T20:13:54.2967057Z",
+  "blobs": [
+    {
+      "file": "app/api/auth/identity/route.ts",
+      "sourceGitBlob": "c7fa1c866f5f968c79cec74b8ffa43d555d47751",
+      "patchGitBlob": "c7fa1c866f5f968c79cec74b8ffa43d555d47751",
+      "equal": true
+    },
+    {
+      "file": "app/api/auth/status/route.ts",
+      "sourceGitBlob": "e0675cd3af6399d90c3fb4d207b22b1a0300337d",
+      "patchGitBlob": "e0675cd3af6399d90c3fb4d207b22b1a0300337d",
+      "equal": true
+    },
+    {
+      "file": "lib/auth/session-error.ts",
+      "sourceGitBlob": "e3b9e6a9f17675c926bd5173530e41a0369aa6ce",
+      "patchGitBlob": "e3b9e6a9f17675c926bd5173530e41a0369aa6ce",
+      "equal": true
+    },
+    {
+      "file": "scripts/testing/auth-session-handler.test.mjs",
+      "sourceGitBlob": "59de252b46737a833c08fca5ade4b052d4751692",
+      "patchGitBlob": "59de252b46737a833c08fca5ade4b052d4751692",
+      "equal": true
+    }
+  ],
+  "testCommandEqual": true,
+  "migrationChanges": "NONE",
+  "nativeEnvironmentChanges": "NONE"
+}
