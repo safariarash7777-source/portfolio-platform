@@ -5,7 +5,24 @@ import { memberData, MemberReadError, memberAuthErrorStatus } from "./http";
 import { draftKey, restoreDraft } from "./draft";
 import { memberFixtureRequest, MEMBER_FIXTURE_COHORT_A as A, MEMBER_FIXTURE_COHORT_B as B } from "./fixture";
 import { accountEntryHref } from "../../components/account/returnPath";
+import { readMemberProfile } from "./profile";
 const grant: MemberGrant = { grantRef: 1, cohortId: A, title: "A", moduleKeys: ["funds"], startsAt: "2026-10-01T05:30:00Z", endsAtExclusive: "2027-01-01T05:30:00Z", standing: "active" };
+test("shared Auth missing installation, session and service failures remain distinct", async () => {
+  for (const [status, state] of [[404, "not_connected"], [401, "sign_in_required"], [503, "unavailable"]] as const) assert.deepEqual(await readMemberProfile(async () => new Response(null, { status })), { state });
+  assert.deepEqual(await readMemberProfile(async () => { throw Error("network"); }), { state: "unavailable" });
+});
+test("shared profile projection discards identity fields and never claims official verification", async () => {
+  const common = { phoneVerified: false, identityMatch: "pending", phoneNationalIdMatch: "pending" };
+  assert.deepEqual(await readMemberProfile(async () => Response.json({ ...common, profile: null })), { state: "incomplete", phoneVerified: false, version: null });
+  const projected = await readMemberProfile(async () => Response.json({ ...common, version: 2, profile: { firstName: "SYNTHETIC", lastName: "TEST", nationalId: "SYNTHETIC_TEST_ONLY" } }));
+  assert.deepEqual(projected, { state: "recorded", phoneVerified: false, version: 2 });
+  assert.equal(JSON.stringify(projected).includes("nationalId"), false);
+});
+test("unknown shared identity shape is unavailable and read uses private no-store credentials", async () => {
+  let init: RequestInit | undefined;
+  assert.deepEqual(await readMemberProfile(async (_path, i) => { init = i; return Response.json({ profile: {}, phoneVerified: true, identityMatch: "verified", phoneNationalIdMatch: "pending" }); }), { state: "unavailable" });
+  assert.equal(init?.cache, "no-store"); assert.equal(init?.credentials, "same-origin");
+});
 test("an Auth outage is not presented as an expired session", () => {
   assert.equal(memberAuthErrorStatus({ name: "AuthSessionMissingError" }), 401);
   assert.equal(memberAuthErrorStatus({ status: 401 }), 401);

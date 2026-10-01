@@ -10,6 +10,7 @@ import { memberFixtureRequest } from "@/lib/member/fixture";
 import { accountEntryHref } from "@/components/account/returnPath";
 import NeedsAssessmentPanel from "./NeedsAssessmentPanel";
 import AuthorizedLink from "./AuthorizedLink";
+import ProfileStatus from "./ProfileStatus";
 
 type SelectedData = { cohortId: string; metadata: Result<CohortDetail>; resources: Result<MemberResource[]>; decisions: Partial<Record<typeof MODULE_KEYS[number], Result<ModuleDecision>>> };
 const deniedLabels: Record<string, string> = { expired: "پایان دسترسی", revoked: "دسترسی لغوشده", cohort_cancelled: "دوره لغوشده", scheduled: "دسترسی هنوز شروع نشده", module_not_granted: "این بخش در دسترسی دورهٔ شما نیست", sign_in_required: "ورود دوباره لازم است" };
@@ -74,5 +75,6 @@ export default function MemberHome({ userId, selectedCohortId, now, fixtureScena
       <NeedsAssessmentPanel key={cohort.id} cohortId={cohort.id} userId={userId} request={request} preview={!!fixtureScenario} />
       <section className="card space-y-3 p-5"><h2 className="font-display text-xl font-bold">تحلیل‌ها و اعلان‌های دوره</h2><p>فهرست تحلیل‌های مجاز و وضعیت خوانده‌شدن آن‌ها هنوز به این خانه متصل نیست. منابع منتشرشدهٔ دوره را از بخش منابع باز کنید.</p><p className="text-sm">نبود این فهرست به معنی نبود تحلیل یا آرام‌بودن بازار نیست.</p></section>
     </> : null}
+    <ProfileStatus cohortId={selectedCohortId} request={request} />
   </div>;
 }

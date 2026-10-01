@@ -19,6 +19,7 @@ export function memberFixtureRequest(scenario: string): MemberRequest {
   return async (path, init) => {
     const u = new URL(path, "https://example.invalid");
     if (scenario === "error") return response(null, 503);
+    if (u.pathname === "/api/auth/identity") return Response.json({ profile: null, phoneVerified: false, identityMatch: "pending", phoneNationalIdMatch: "pending" });
     if (u.pathname === "/api/me/cohorts") return response(grants);
     const cohort = u.searchParams.get("cohort") ?? u.pathname.split("/")[3];
     const modules = grants.filter(g => g.cohortId === cohort).flatMap(g => g.moduleKeys);
