@@ -23,7 +23,7 @@ export interface QuarterInput {
   /** سرمایه (میلیون ریال) — برای EPS TTM. */
   capital: number;
   revenue: number;
-  gross_profit: number;
+  gross_profit: number | null;
   operating_profit: number;
   net_profit: number;
 }
@@ -147,7 +147,7 @@ function toQuarter(
   return finalize(
     empty,
     rev,
-    cur.gross_profit - prev.gross_profit,
+    cur.gross_profit == null || prev.gross_profit == null ? null : cur.gross_profit - prev.gross_profit,
     cur.operating_profit - prev.operating_profit,
     cur.net_profit - prev.net_profit,
   );
@@ -156,14 +156,14 @@ function toQuarter(
 function finalize(
   base: DerivedQuarter,
   revenue: number,
-  gross: number,
+  gross: number | null,
   op: number,
   net: number,
 ): DerivedQuarter {
   const margins =
     revenue > 0
       ? {
-          grossMargin: (gross / revenue) * 100,
+          grossMargin: gross == null ? null : (gross / revenue) * 100,
           operatingMargin: (op / revenue) * 100,
           netMargin: (net / revenue) * 100,
         }
