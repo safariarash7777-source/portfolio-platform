@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-01T11:49:36.811Z",
+  "at": "2026-10-01T12:14:21.953Z",
   "environment": "readonly existing followup06 synthetic native services; own HTTP route harness",
   "upstreamSha": "2605a0ff11ff5cb0f83837528aed230846469b16",
   "routeCode": true,
@@ -10,6 +10,11 @@
   "checks": [
     {
       "label": "Guest real SDK session missing -> HTTP401; no private data",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "label": "Guest real SDK cohort list -> HTTP401",
       "status": "PASS",
       "http": 401
     },
@@ -63,6 +68,12 @@
     },
     {
       "label": "Actual SDK auth transport failure -> HTTP503 without raw error",
+      "status": "PASS",
+      "http": 503,
+      "syntheticFaultOnly": true
+    },
+    {
+      "label": "Actual SDK Auth transport failure on cohort list -> HTTP503",
       "status": "PASS",
       "http": 503,
       "syntheticFaultOnly": true

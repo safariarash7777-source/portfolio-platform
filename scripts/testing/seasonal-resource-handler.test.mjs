@@ -5,6 +5,12 @@ import {resourceHandlers} from './seasonal-resource-handler.mjs';
 const cohort='synthetic-cohort',resource='synthetic-resource';
 const row={id:resource,title:'Synthetic file',module_key:'resources',created_at:'2026-10-01T00:00:00Z',storage_bucket:'course-private',storage_path:'PRIVATE-PATH',webinar_id:null};
 const request=new Request('http://localhost/resource'),params={params:Promise.resolve({id:cohort,resourceId:resource})};
+test('cohort list: real SDK missing session is401, Auth transport failure stays503; neither queries entitlements',async()=>{
+ for(const [error,expected] of [[new AuthSessionMissingError(),401],[Error('PRIVATE upstream'),503]]){
+  let queries=0;const h=resourceHandlers({auth:{getUser:async()=>({data:{user:null},error})},from:()=>{queries++;throw Error('must not query');}});
+  const r=await h.cohorts();assert.equal(r.status,expected);assert.equal(queries,0);assert.match(r.headers.get('cache-control'),/no-store/);assert.doesNotMatch(await r.text(),/PRIVATE/);
+ }
+});
 function fixture({authError=null,user={id:'synthetic'},rows=[row],allowed=true,rpcError=null,storageError=null}={}){
  const calls={rpc:0,storage:0};
  const db={auth:{getUser:async()=>({data:{user},error:authError})},from:()=>{const q={select:()=>q,eq:()=>q,order:async()=>({data:rows,error:null}),maybeSingle:async()=>({data:rows[0]??null,error:null})};return q;},rpc:async(_name,args)=>{calls.rpc++;assert.equal(args.p_cohort,cohort);assert.equal(args.p_module,'resources');return {data:{allowed},error:rpcError};},storage:{from:()=>({createSignedUrl:async()=>{calls.storage++;return {data:{signedUrl:'https://example.invalid/synthetic-signed'},error:storageError};}})}};

@@ -46,3 +46,11 @@ NEXT-01 بخش۵: نقش مدیر فقط برای اعمال مدیریتی مص
 دوPreview خودکار179/180 در شاهد11:16UTC بهcloudقدیمی اشاره داشتند؛ سایتProduction درشاهدقبلیLiaraبود. راه رسیدن بهPreviewصحیح: زوج `NEXT_PUBLIC_LIARA_API_URL` و `NEXT_PUBLIC_LIARA_ANON_KEY` به **همانbranchPreview** با مقدار امن محیط موردتوافق، سپسrebuild؛ مقصدserver/service-role وcallbackدقیق جدا تطبیق، سپسbundle/login دوباره مشاهده شود. mobile/emailfragment/signup/identitywriter واقعی پیش‌فرضخاموشبمانند. صرفstatusREADY اتصالصحیح را اثبات نمی‌کند. نصبmigration مشترک یا تغییرGoTrueProduction برای اینکار انجام نشود؛ SMTP/OTP کامل180 فقطsandbox محلی مستقل پذیرفته شده‌اند.
 
 دسترسی موجودVercelconnector برایenvwrite ابزار ندارد؛ دراینsession نهVercelCLIاحراز‌شده، نهVERCEL_TOKEN/OIDC موجود و نهauthfileCLI مشاهده شد. بنابراینenv بیرونی/rebuild سفارشی اجرا نشد و دسترسی جدید/کلید درچت خواسته نشد. اپراتور دارایدسترسیproject اینscopeمحدود را اعمال کند؛ ورودمالکProductionتااستقرارمجازبازاست. Preview عمومی دارایکلیدwriter/featureفعال بهDBواقعی وصل نشود. بازبینی معتبر فعلی محلی8800(01) و8792(07)، با داده مصنوعی است. این مانع مستقل از اصلاح منابع/نمونه فونت است.
+
+## تکمیل محدود: نبود نشست در /api/me/cohorts
+
+در ادامهٔ گزارش NEXT06، SDK `AuthSessionMissingError` در همین handler پیش از اصلاح به503 تبدیل می‌شد. regression روی کد handler این شکست را ثبت کرد (expected401/actual503؛ هفت آزمون منابع همچنانPASS). همان classifier استفاده‌شدهٔ منابع در handler فهرست دوره‌ها مصرف شد؛ query، payload، محاسبهٔ standing وRLS تغییری ندارند.
+
+پس از اصلاح: هشت regression handler PASS، شاهد native SDK/HTTP در real-sdk.json اکنون11بررسیPASS دارد: guest/cohorts401 و قطع واقعی مسیر SDK/cohorts503. SDK نشست صادرشدهٔGoTrue همان fixture را مصرف کرده؛ این بررسی هنوز شاهد cookie/browser Next نیست. در harness، standing برای این آزمون Auth به stub ثابت تبدیل شده و سنجش محاسبهٔ زمان به آزمون‌های seasonal موجود تعلق دارد. Typecheck/lint و build39صفحه دوبارهPASS؛ migration/RLS/انتشارNONE. هیچ publication-server، adapter list/read یا migration/test متعلق به feed عضو ویرایش نشد.
+
+برای پذیرش مستقل همان PR184 شامل این تکمیل است؛ guest سه مسیر خصوصی باید401 و اختلال واقعیAuth باید503 بماند. انتظار مدیر منابع همان list0/download403 است.
