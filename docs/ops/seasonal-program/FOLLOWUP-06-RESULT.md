@@ -35,9 +35,28 @@
 - محیط build/regression Node 24.19.0؛ CI موجود Node22 و DB16 دارد. اختلاف محیط پنهان نشده است.
 - native worktree ابزار app مرجع15eebc9 را در مخزن تحت مدیریت خود پیدا نکرد؛ ایجاد checkout با git در مخزن واقعی پروژه انجام شد. این checkout متعلق به همین مأموریت است. checkoutهای دیگر و sandbox انسانی DEV07 حفظ شدند.
 
+## ورودی‌های تازه179/180 — بررسی فقط‌خواندنی برای مرحلهٔ بعد
+
+پس از تحویل گزارش مستقل18PASS/2FAIL، هماهنگ‌کننده دو نقصF06-AS-01/02را به مالک175 ارجاع داد. **تا تحویلpatchثابت175 وNEXT06، ترکیبruntimeتازه انجام نمی‌شود.** آزمون موفق قبلی تکرار و کد175توسطFOLLOWUP06اصلاح نمی‌شود. sandbox3299، شواهد مستقل و گیت‌های انسانی محفوظ‌اند.
+
+[snapshotفقط‌خواندنی179/180](followup-06-evidence/auth-inputs-179-180.json): metadata/head/base، همه فایل‌ها، هم‌پوشانی، CI سرشاخه و blobاسناد/قرارداد ازGitHubخوانده شدند؛ source رویrefهایimmutableبررسی شد. این کار intakeاست، نهbuild/نصب/پذیرش ترکیبی یا آزمونProduction.
+
+| ورودی | head دقیق جاریِ اینsnapshot | base دقیق | CI همانhead | حد پذیرش |
+|---|---|---|---|---|
+|[179: fix(auth): bound server login checks and preserve redirect cookies](https://github.com/safariarash7777-source/portfolio-platform/pull/179)|ca27b94a44f9a37785df059574a754e170880aac|main@51fd0661d48d791ce8758a87828a81ce72cac6df|[36854599890](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36854599890)success|Draft/open/unmerged؛ رفعAuthمالکرویURLاصلی وcorrelationمرورگر/runtime هنوزباز|
+|[180: feat(auth): add isolated mobile OTP and transactional email infrastructure](https://github.com/safariarash7777-source/portfolio-platform/pull/180)|bb4f2f3e53859bbecb0ec942975ffb06fd2d2828|wave-review@7cb030c140ce143f03c549125c5e647fea22f44c|[36854583545](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36854583545) وsandbox36854583557success|Draft/open/unmerged؛ provider/domain/budget/nativeAuthlimits وفعال‌سازی مستقل باز|
+
+179کدappگزارش‌شدهc9ce9e92975d31486518bbb5bd70aec73d6b6ee9دارد؛ diffباheadدرapp/components/lib/middleware/package/schemaخالی است، اما `scripts/testing/auth-owner-sandbox.mjs` نیز تغییر کرده، بنابراین کلdelta راdocs-onlyنمی‌نامیم.180کدappگزارش‌شده05d5ae63f424c556656de2fd267e7ab0d32a4407دارد و deltaپس‌ازآن تاheadخارجdocsخالی است. آزمون‌های صاحباینPRها شاهد همین ترکیب2605نیستند؛ این مرحله خودمان هیچ‌یک راbuild/testنکردیم.
+
+**تفاوت معنایی مهم middleware:** هر دو Node.js، سقف8ثانیه باabort، حفظcookiesredirect و ناوبری کامل ورود را دارند.179 عمداً شرطentitlementsهمانmain را حفظ می‌کند: expires_at>now وبدونفیلترcohort.180 وcheckpoint2605 فعلی `.is('cohort_id',null)` و `activeEntitlementFilter(now)` دارند؛ grantدوره نباید به دسترسی کامل ترمینال تبدیل شود و قراردادnull-expiryنیز جداست. ترکیب آینده باید deadline/cookie/runtimeP0را با قرارداد دسترسی جاری حفظ کند؛ کپی کاملmiddleware179 رویwave بدون بررسی مجوزها مجاز نیست. این اختلاف ثبت شد، حل/ترکیب/تست نشده است. هم‌پوشانی کاملlogin/loginFlow/middlewareوartifactهایAuthدرJSONثبت است؛ هم‌پوشانی فایل الزاماًconflictGitنیست.
+
+[قراردادAuthv1 درhead180](https://github.com/safariarash7777-source/portfolio-platform/blob/bb4f2f3e53859bbecb0ec942975ffb06fd2d2828/docs/ops/seasonal-program/AUTH-API-CONTRACT-v1.md): UUIDهمانauth.users.id، roleازprofiles.role، sessionازcookiescanonical؛ statusبرایUIمجوزنیست. loginemail/passwordوPKCEحفظ؛ mobileخاموش‌پیش‌فرض، شمارهتأییدشده/پروفایل خصوصی ازmembership/رضایت مشاور مستقل‌اند. identityMatch وphoneNationalIdMatchهمیشهpending؛409پروفایل بایدورودیرا حفظ وGETتازه/حل‌تعارض داشته باشد. APIهایstatus/session/mobile/identity/emailوadmin/auth-health فقطبعدنصب/پیکربندی همان نسخه مصرف شوند؛ پاسخ503/غیرفعال را نبایدبا«تکمیل هویت»یا«عضویت»پنهان کرد. پایانعضویت دادهشخصی را حذف نمی‌کند. NEXT05پوسته وNEXT06فرم‌مصرف‌کننده‌اند؛ NEXT09Telegramchallengeمستقل دارد واینAPIپیام/لینکTelegramنمی‌سازد.
+
+migration180 `20261001083215_auth_private_identity_versions.sql` افزایشی بهUUIDموجود است؛ درsandboxپذیرشFOLLOWUP06یاDBمشترک نصب نشده. serviceSMSباامضا/ledger وemailtemplates/nativeSMTP، HMACrotation/reindex، MFA/SIMrecovery وingress/native limits ورودی‌ها وگیت‌های صاحب180هستند؛ ازCIسبز، آمادگیproviderیاارسالواقعی استنتاج نمی‌شود. گزارش‌هایصاحب179/180، Previewهای خودکارِ قبلی را باbundleقدیمیcloudSupabase ثبتکرده‌اند؛ صحتorigin/زوجpublicLiaraenv/SSR/callbackهرPreviewتازه پیش‌نیازآزمونهمانمحیط است، نه علتقطعی حادثهProduction. هیچenvخارجی/کلید/حساب/شماره/رمز تغییر نکرد.
+
 ## inventory سرشاخه‌ها
 
-اطلاعات GitHub و `git ls-remote` واقعاً خوانده شدند؛ SHA کامل، base و merge-base، فایل‌ها، scripts و hashها در [inventory](followup-06-evidence/inventory.json) ثبت‌اند. همه هفت PR هنگام بررسی Draft/Open بودند؛ هیچ‌یک retarget یا merge نشد.
+اطلاعات GitHub و `git ls-remote` واقعاً خوانده شدند؛ SHA کامل، base و merge-base، فایل‌ها، scripts و hashها در [inventory اولیه](followup-06-evidence/inventory.json) ثبت‌اند. جدول زیر snapshotاول قبلتحویل179/180است؛ intakeجدیدبخشبالامرجعAuthتحویل‌شده است. همه هفت PR هنگام بررسی Draft/Open بودند؛ هیچ‌یک retarget یا merge نشد.
 
 | بسته | PR | head دقیق | base جاری | وضعیت ورودی |
 |---|---|---|---|---|
@@ -51,7 +70,7 @@
 | Auth FOLLOWUP01/07 |—|checkpoint محلی7cb030c140ce143f03c549125c5e647fea22f44c|ترکیب موج دوم|تغییرات Auth ثبت‌نشده و فعال؛ کد تازه وارد ترکیب نشده|
 | خانه عضو NEXT06 |درحال ساخت|ورودی پایدار نهایی تحویل نشده|173 + API04 + پوسته05 + انتشار08 + Auth|مالک عملکرد چت173؛ پذیرش PENDING|
 
-snapshot گرفتن از تغییرات Auth فقط شامل نام فایل‌ها و checkpoint است؛ تغییرات در حال ویرایش کپی، commit یا آزموده‌شده اعلام نشدند. مالک باید PR/SHA ثابت، قرارداد API/UI و شواهد ورود ایمیل/موبایل را تحویل بدهد. ایمیل طبق DD033 حفظ می‌شود؛ SMS تولید پیش‌فرض خاموش می‌ماند. فرم تماس177 فعلاً ایمیلی است؛ تغییر موبایلی باید پس از قرارداد backend توسط مالک اصلی انجام شود.
+snapshotاول از تغییراتAuth فقط شامل نامفایل‌ها وcheckpointبود؛ تغییرات درحال ویرایش کپی/commit/آزموده نشدند. اکنون مالک179/180وSHAثابت وقراردادAPI/UI را تحویل داده؛ intakeبالا صرفاًخوانده و ثبت شد، runtimeترکیب نشده است. ایمیل طبقDD033حفظ؛ SMSتولیدپیش‌فرض خاموش است. فرم تماس177 فعلاًایمیلی است؛ تغییرموبایلی پسازقراردادbackendتوسطمالکاصلی می‌ماند.
 
 ## نقشه وابستگی و ترتیب امن
 
@@ -70,7 +89,7 @@ flowchart LR
   P175 --> N06
   P176 --> N06
   P177 --> N06
-  AUTH["Auth stable checkpoint pending"] --> N06
+  AUTH["179/180 delivered; combined acceptance pending"] --> N06
   AUTH -. "shared UI/API contract" .-> P177
   P176 --> N09["NEXT09 pending"]
   P175 --> N09
@@ -141,7 +160,7 @@ CI تمام هفت head ورودی مستقیماً از GitHub **success** مش
 |176|d697635 ثابت|22 DB/HTTP قبلی؛ API08باadminAuthواقعی؛ مخاطبC1/منعC2مستقلاًتأییدشد|timestamp08 درهر دوsandboxجدا|خیر|مخاطب/currentcheckpointموفق؛ گیت‌های کل ترکیب باز|
 |177|27e59ad ثابت|57 public/build و قراردادهای موجود|schema مستقل ندارد|خیر|Auth جدید و طراحی/فونت مالک PENDING|
 |178|4ce06b3 ثابت|14 DB + suiteهای relay|phase28 حاضر فقط اینجا|NOT DEPLOYED|baseline مصرف/reset واقعی BLOCKED|
-|Auth|کار مجری فعال و ثبت‌نشده|در این ترکیب آزموده نشد|در این ترکیب نصب نشد|آزمون ارسال/پیکربندی واقعی مستقل باز|PENDING head/قرارداد/پذیرش|
+|Auth|179/180تحویل‌شده؛ بیرونcheckpoint2605|اینمرحلهفقطintake؛ CIخودheadهاسبز؛ درترکیبآزموده‌نشد|migration180دراینsandboxنصب‌نشد|آزمونارسال/پیکربندیواقعی مستقل باز|PENDING ترکیب/پذیرش؛ head/قرارداداکنونمشخص|
 |NEXT06/09|در حال ساخت/وابسته؛ وارد checkpoint نشده|آزموده‌شده اعلام نشد|نصب نشد|خیر|PENDING|
 |کل ترکیب|2605a0f قابل بررسی|build و regression بالا|schema ترکیبی35 جدول|خیر|NOT ACCEPTED؛ SHA انتشار نداریم|
 
@@ -162,7 +181,7 @@ CI تمام هفت head ورودی مستقیماً از GitHub **success** مش
 |---|---|---|
 |DEV07 سناریوی۵ انسانی|بررسی منبع/نسخه کاربرگ و تأیید داخلی از UI واقعی؛ ثبت هویت و زمان|آرش/بازبین انسانی مستقل|
 |173 فهم مشتری|ارزیابی فهم خلاصه ناقص/خالص منفی با مشتری مناسب؛ شاهد انسانی جدا|صاحب173 و مشتری|
-|Auth ورودی متغیر و ورود مالک|تحویل PR/head ثابت، حفظ UUID/ایمیل، UI/API و شواهد real Auth/SMTP sandbox؛ رفع AUTH00 فقط با علت واقعی|مجری Auth/زیرساخت|
+|Auth179/180 تحویل‌شده؛ ترکیب و ورودمالک باز|headثابت/قرارداد intakeشد؛ پسpatch175وNEXT06 تطبیقmiddleware/مجوز، نصبsandboxمصوب وCI/پذیرشهمانSHA؛ AUTH00رویURLاصلیشاهدجدا|مجریAuth/زیرساخت؛ FOLLOWUP06درمرحلهبعد|
 |NEXT06 و NEXT09|تحویل مستقل با SHA و fixture/قرارداد فعلی؛ بدون مدل مالی/Auth موازی|مجری173 برای06؛ صاحب09|
 |داده/refresh/quota178|تثبیت baseline مصرف و reset، نصب مصوب، خواندن کامل/تازگی واقعی؛ consumer با baseline UNKNOWN خاموش بماند|چت لیارا؛ قرارداد مدل با ارز|
 |Auth/Storage/publication تجمیع|مرحله واقعی همینcheckpointاجراشد؛ دو نقص مهمان/مدیر بامالک04باز؛ patchثابت وبازآزمایی مستقل متأثر لازم؛ ورودیAuthجدید/NEXT06هنوزجدا|مالکNEXT04برایاصلاح؛ FOLLOWUP06برایrecheck؛ بازبین مستقل موجود|
