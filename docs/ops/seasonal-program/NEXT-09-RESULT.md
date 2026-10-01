@@ -48,4 +48,6 @@ Auth/middleware/globals/Navbar/fonts، components/member، publication-server/fe
 
 هر دو Draft/Open و mergeable در snapshot اولیه GitHub بودند؛ ادغام نشدند. مینی‌اپ CI run `36915267470` موفق. سایت seasonal sandbox run `36915223570` موفق؛ CI اولیه `36915223667` در core شکست داشت: dependency جدید در harness قدیمی، ثبت‌نبودن تست‌ها و endpoint بدون زمان‌بندی زیر cron. رفع شد: harness همان helper واقعی را مصرف می‌کند، تست‌ها در package scripts ثبت شدند و worker به `/api/notifications/worker` منتقل شد؛ قاعده cron و زمان‌بندی Production تغییر نکرد. اجرای محلی core پس از اصلاح 1239/1239 موفق بود. snapshot آخر head/checkها در `next09/PR-CHECKPOINT.json` ثبت می‌شود؛ موفقیت محلی جایگزین CI/Preview یا پذیرش بات واقعی نیست.
 
-تاریخچه: 2026-10-01 نسخه 1 — تحویل ایزوله NEXT09؛ ادغام/فعال‌سازی باز.
+snapshot کد اصلاح‌شده در 19:47:33 UTC: سایت head `ad69b6a568fecafdee815d1c29a73c9ba66754d9` با CI run `36916116727`، seasonal run `36916116762` و status Vercel همگی موفق؛ مینی‌اپ head `ade9e916e8e4d01e0c35c607a4c6e3efd29afede` با CI run `36916107701` موفق. این‌ها headهای تأیید کد هستند؛ commit بعدی فقط شواهد نهایی را اضافه می‌کند. SHA و checkهای آخرین head دقیق در کپی هماهنگ‌کننده `next09/FINAL-PR-CHECKPOINT.json` ثبت می‌شوند تا گزارش به SHA خودش ارجاع چرخه‌ای ندهد. Preview فقط status موفق دارد؛ runtime/Production یا ارسال واقعی از آن نتیجه گرفته نشده است.
+
+تاریخچه: 2026-10-01 نسخه 1 — تحویل ایزوله NEXT09؛ نسخه 2 — رفع ناسازگاری گیت‌های مخزن و ثبت CI سبز؛ ادغام/فعال‌سازی باز.
