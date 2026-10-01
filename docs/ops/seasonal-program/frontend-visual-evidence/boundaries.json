@@ -1,0 +1,170 @@
+{
+  "at": "2026-10-01T12:59:32.665Z",
+  "checks": [
+    {
+      "name": "Cold font + 700ms delay",
+      "pass": true,
+      "font": "a",
+      "cls": 0.08132818930041152,
+      "notCoreWebVitalsCertification": true
+    },
+    {
+      "name": "Home -> course focus and registration disabled",
+      "pass": true,
+      "font": "a"
+    },
+    {
+      "name": "Skip on course preserves route",
+      "pass": true,
+      "font": "a"
+    },
+    {
+      "name": "Needs assessment reload/edit (local demo only)",
+      "pass": true,
+      "font": "a"
+    },
+    {
+      "name": "Consultation demo receipt explicitly no reservation",
+      "pass": true,
+      "font": "a"
+    },
+    {
+      "name": "Persian numeric width under tabular-nums",
+      "pass": true,
+      "font": "a",
+      "digitWidths": [
+        10.546875,
+        10.546875,
+        10.546875,
+        10.546875,
+        10.546875,
+        10.546875,
+        10.546875,
+        10.546875,
+        10.546875,
+        10.546875
+      ],
+      "spread": 0,
+      "body": "Vazirmatn, Tahoma, sans-serif"
+    },
+    {
+      "name": "Mobile table keyboard scroll",
+      "pass": true,
+      "font": "a"
+    },
+    {
+      "name": "Cold font + 700ms delay",
+      "pass": true,
+      "font": "b",
+      "cls": 0.04538803814498259,
+      "notCoreWebVitalsCertification": true
+    },
+    {
+      "name": "Home -> course focus and registration disabled",
+      "pass": true,
+      "font": "b"
+    },
+    {
+      "name": "Skip on course preserves route",
+      "pass": true,
+      "font": "b"
+    },
+    {
+      "name": "Needs assessment reload/edit (local demo only)",
+      "pass": true,
+      "font": "b"
+    },
+    {
+      "name": "Consultation demo receipt explicitly no reservation",
+      "pass": true,
+      "font": "b"
+    },
+    {
+      "name": "Persian numeric width under tabular-nums",
+      "pass": true,
+      "font": "b",
+      "digitWidths": [
+        11.84375,
+        11.84375,
+        11.84375,
+        11.84375,
+        11.84375,
+        11.84375,
+        11.84375,
+        11.84375,
+        11.84375,
+        11.84375
+      ],
+      "spread": 0,
+      "body": "Estedad, Tahoma, sans-serif"
+    },
+    {
+      "name": "Mobile table keyboard scroll",
+      "pass": true,
+      "font": "b"
+    },
+    {
+      "name": "Text contrast body",
+      "pass": true,
+      "foreground": "#0F172A",
+      "background": "#F8F7F4",
+      "ratio": 16.66400514392901
+    },
+    {
+      "name": "Text contrast muted",
+      "pass": true,
+      "foreground": "#556274",
+      "background": "#FFFFFF",
+      "ratio": 6.20288245295798
+    },
+    {
+      "name": "Text contrast gold ink",
+      "pass": true,
+      "foreground": "#7A5A08",
+      "background": "#F8F7F4",
+      "ratio": 5.951724577512488
+    },
+    {
+      "name": "Text contrast gold light/navy",
+      "pass": true,
+      "foreground": "#F5D07A",
+      "background": "#0D1F4A",
+      "ratio": 10.812484741158103
+    },
+    {
+      "name": "Text contrast action",
+      "pass": true,
+      "foreground": "#FFFFFF",
+      "background": "#1E3A8A",
+      "ratio": 10.357982247884618
+    },
+    {
+      "name": "Text contrast error",
+      "pass": true,
+      "foreground": "#B91C1C",
+      "background": "#F2F0E8",
+      "ratio": 5.670446835831098
+    },
+    {
+      "name": "Text contrast active",
+      "pass": true,
+      "foreground": "#157038",
+      "background": "#F2F0E8",
+      "ratio": 5.402573110560606
+    }
+  ],
+  "reference": [
+    {
+      "url": "https://www.monarch.com/",
+      "width": 390,
+      "status": "UNKNOWN",
+      "reason": "TimeoutError"
+    },
+    {
+      "url": "https://www.monarch.com/",
+      "width": 1440,
+      "http": 200,
+      "h1": "The modern way to manage your money"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "at": "2026-10-01T12:39:34.749Z",
+  "sha": "27e59ad8d85f37da32b6f5346d289afdb73b20e6",
+  "session": "anonymous own Chromium; no authentication or credentials",
+  "rows": [
+    {
+      "route": "/login",
+      "width": 390,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/login",
+      "h1": [
+        "خوش آمدید"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    },
+    {
+      "route": "/login",
+      "width": 1440,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/login",
+      "h1": [
+        "خوش آمدید"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    },
+    {
+      "route": "/dashboard",
+      "width": 390,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/login?next=%2Fdashboard",
+      "h1": [
+        "خوش آمدید"
+      ],
+      "protectedUI": "UNKNOWN behind login",
+      "overflow": false
+    },
+    {
+      "route": "/dashboard",
+      "width": 1440,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/login?next=%2Fdashboard",
+      "h1": [
+        "خوش آمدید"
+      ],
+      "protectedUI": "UNKNOWN behind login",
+      "overflow": false
+    },
+    {
+      "route": "/admin/desk",
+      "width": 390,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/login?next=%2Fadmin%2Fdesk",
+      "h1": [
+        "خوش آمدید"
+      ],
+      "protectedUI": "UNKNOWN behind login",
+      "overflow": false
+    },
+    {
+      "route": "/admin/desk",
+      "width": 1440,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/login?next=%2Fadmin%2Fdesk",
+      "h1": [
+        "خوش آمدید"
+      ],
+      "protectedUI": "UNKNOWN behind login",
+      "overflow": false
+    },
+    {
+      "route": "/market",
+      "width": 390,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/market",
+      "h1": [
+        "نمای کلان بازار"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    },
+    {
+      "route": "/market",
+      "width": 1440,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/market",
+      "h1": [
+        "نمای کلان بازار"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    },
+    {
+      "route": "/market/funds",
+      "width": 390,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/market/funds",
+      "h1": [
+        "دیده‌بان صندوق‌ها"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    },
+    {
+      "route": "/market/funds",
+      "width": 1440,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/market/funds",
+      "h1": [
+        "دیده‌بان صندوق‌ها"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    },
+    {
+      "route": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "width": 390,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "h1": [
+        "فملی"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    },
+    {
+      "route": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "width": 1440,
+      "http": 200,
+      "url": "https://portfolio-platform-7znmezi57-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "h1": [
+        "فملی"
+      ],
+      "protectedUI": "not applicable",
+      "overflow": false
+    }
+  ]
+}
