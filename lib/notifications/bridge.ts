@@ -9,6 +9,7 @@ export function verifyBridge(secret:string|undefined,timestamp:string|null,signa
 }
 export function publicationLink(origin:string,path:string){
  const u=new URL(origin);if(u.protocol!=='https:' || u.username || u.password || u.pathname!=='/' || u.search || u.hash)throw new Error('invalid origin');
- if(!/^\/publications\/[a-f0-9-]{36}$/.test(path) && path!=='/notifications')throw new Error('invalid path');
+ const uuid='[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}';
+ if(!new RegExp('^/publications/'+uuid+'(?:\\?cohort='+uuid+')?$').test(path) && path!=='/notifications')throw new Error('invalid path');
  return new URL('/login?next='+encodeURIComponent(path),u).href;
 }

@@ -1,0 +1,112 @@
+▶ NEXT09 scoped link patch + read-only feed185: legacy
+  ✖ existing189 notices gain deterministic eligible cohort; no recipient/job duplication
+  ✖ notice seen and actual version read remain independent; a new version starts unread
+  ✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it
+  ✖ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links
+  ✖ withdrawn content does not regain a cohort link or mutate either receipt ledger
+✖ NEXT09 scoped link patch + read-only feed185: legacy (3714.2626ms)
+▶ NEXT09 scoped link patch + read-only feed185: explicit
+  ✖ existing189 notices gain deterministic eligible cohort; no recipient/job duplication
+  ✖ notice seen and actual version read remain independent; a new version starts unread
+  ✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it
+  ✖ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links
+  ✖ withdrawn content does not regain a cohort link or mutate either receipt ledger
+✖ NEXT09 scoped link patch + read-only feed185: explicit (2691.2389ms)
+ℹ tests 10
+ℹ suites 2
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 10
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7005.4626
+
+✖ failing tests:
+
+test at lib\notifications\scope-audit.integration.test.ts:4:1408
+✖ existing189 notices gain deterministic eligible cohort; no recipient/job duplication
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:2237
+✖ notice seen and actual version read remain independent; a new version starts unread
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:3201
+✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:3848
+✖ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:4743
+✖ withdrawn content does not regain a cohort link or mutate either receipt ledger
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:2:2454
+✖ NEXT09 scoped link patch + read-only feed185: legacy (3714.2626ms)
+  Error: Command failed: docker exec -i next09-synthetic-db psql -U postgres -d next09_scope_legacy -X -qAt -v ON_ERROR_STOP=1
+  ERROR:  new row for relation "course_cohorts" violates check constraint "course_cohorts_policy_check"
+  DETAIL:  Failing row contains (11111111-1111-4111-8111-111111111111, 33333333-3333-4333-8333-333333333333, A, 2026-09-30 22:19:51.905614+00, 2026-11-30 22:19:51.905614+00, Asia/Tehran, test, {}, published, f, {webinar,resources}).
+
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at sql (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:11:152)
+      at SuiteContext.<anonymous> (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:34:3)
+      at TestHook.runInAsyncScope (node:async_hooks:227:14)
+      at TestHook.run (node:internal/test_runner/test:1382:25)
+      at TestHook.run (node:internal/test_runner/test:1726:18)
+      at TestHook.run (node:internal/util:581:20) {
+    status: 3,
+    signal: null,
+    output: [ null, '', 'ERROR:  new row for relation "course_cohorts" violates check constraint "course_cohorts_policy_check"\nDETAIL:  Failing row contains (11111111-1111-4111-8111-111111111111, 33333333-3333-4333-8333-333333333333, A, 2026-09-30 22:19:51.905614+00, 2026-11-30 22:19:51.905614+00, Asia/Tehran, test, {}, published, f, {webinar,resources}).\n' ],
+    pid: 55452,
+    stdout: '',
+    stderr: 'ERROR:  new row for relation "course_cohorts" violates check constraint "course_cohorts_policy_check"\nDETAIL:  Failing row contains (11111111-1111-4111-8111-111111111111, 33333333-3333-4333-8333-333333333333, A, 2026-09-30 22:19:51.905614+00, 2026-11-30 22:19:51.905614+00, Asia/Tehran, test, {}, published, f, {webinar,resources}).\n'
+  }
+
+test at lib\notifications\scope-audit.integration.test.ts:4:1408
+✖ existing189 notices gain deterministic eligible cohort; no recipient/job duplication
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:2237
+✖ notice seen and actual version read remain independent; a new version starts unread
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:3201
+✖ revoked chosen cohort switches to another valid cohort; other account cannot borrow it
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:3848
+✖ opt-out/unlink preserve site/receipt history while claimed work is cancelled; expiry removes links
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:4:4743
+✖ withdrawn content does not regain a cohort link or mutate either receipt ledger
+  'test did not finish before its parent and was cancelled'
+
+test at lib\notifications\scope-audit.integration.test.ts:2:2454
+✖ NEXT09 scoped link patch + read-only feed185: explicit (2691.2389ms)
+  Error: Command failed: docker exec -i next09-synthetic-db psql -U postgres -d next09_scope_explicit -X -qAt -v ON_ERROR_STOP=1
+  ERROR:  new row for relation "course_cohorts" violates check constraint "course_cohorts_policy_check"
+  DETAIL:  Failing row contains (11111111-1111-4111-8111-111111111111, 33333333-3333-4333-8333-333333333333, A, 2026-09-30 22:19:54.622248+00, 2026-11-30 22:19:54.622248+00, Asia/Tehran, test, {}, published, f, {webinar,resources}).
+
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at sql (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:11:152)
+      at SuiteContext.<anonymous> (C:\Users\Asus\Documents\ChatGPT\توسعه سایت\portfolio-next09\lib\notifications\scope-audit.integration.test.ts:34:3)
+      at TestHook.runInAsyncScope (node:async_hooks:227:14)
+      at TestHook.run (node:internal/test_runner/test:1382:25)
+      at TestHook.run (node:internal/test_runner/test:1726:18)
+      at TestHook.run (node:internal/util:581:20) {
+    status: 3,
+    signal: null,
+    output: [ null, '', 'ERROR:  new row for relation "course_cohorts" violates check constraint "course_cohorts_policy_check"\nDETAIL:  Failing row contains (11111111-1111-4111-8111-111111111111, 33333333-3333-4333-8333-333333333333, A, 2026-09-30 22:19:54.622248+00, 2026-11-30 22:19:54.622248+00, Asia/Tehran, test, {}, published, f, {webinar,resources}).\n' ],
+    pid: 58644,
+    stdout: '',
+    stderr: 'ERROR:  new row for relation "course_cohorts" violates check constraint "course_cohorts_policy_check"\nDETAIL:  Failing row contains (11111111-1111-4111-8111-111111111111, 33333333-3333-4333-8333-333333333333, A, 2026-09-30 22:19:54.622248+00, 2026-11-30 22:19:54.622248+00, Asia/Tehran, test, {}, published, f, {webinar,resources}).\n'
+  }
