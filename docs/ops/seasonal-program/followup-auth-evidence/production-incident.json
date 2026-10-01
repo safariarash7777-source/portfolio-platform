@@ -1,0 +1,120 @@
+{
+  "windowUtc": {
+    "start": "2026-10-01T09:46:00Z",
+    "end": "2026-10-01T09:52:00Z"
+  },
+  "liveReadOnly": true,
+  "authHttpStatusOnly": [
+    {
+      "time": "2026-10-01T09:46:51Z",
+      "method": "POST",
+      "status": 400,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:46:56Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:46:57Z",
+      "method": "GET",
+      "status": 200,
+      "component": "api",
+      "path": "/user"
+    },
+    {
+      "time": "2026-10-01T09:47:02Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:47:02Z",
+      "method": "GET",
+      "status": 200,
+      "component": "api",
+      "path": "/user"
+    },
+    {
+      "time": "2026-10-01T09:47:09Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:47:10Z",
+      "method": "GET",
+      "status": 200,
+      "component": "api",
+      "path": "/user"
+    },
+    {
+      "time": "2026-10-01T09:47:13Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:47:14Z",
+      "method": "GET",
+      "status": 200,
+      "component": "api",
+      "path": "/user"
+    },
+    {
+      "time": "2026-10-01T09:47:14Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:47:15Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:47:16Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:47:17Z",
+      "method": "POST",
+      "status": 200,
+      "component": "api",
+      "path": "/token"
+    },
+    {
+      "time": "2026-10-01T09:47:40Z",
+      "method": "GET",
+      "status": 200,
+      "component": "api",
+      "path": "/user"
+    }
+  ],
+  "adminAggregateOnly": [
+    {
+      "action": "login",
+      "count": 8,
+      "first": "2026-10-01T09:46:56.161146+00:00",
+      "last": "2026-10-01T09:47:17.062737+00:00"
+    },
+    {
+      "createdSessions": 8,
+      "first": "2026-10-01T09:46:56.165711+00:00",
+      "last": "2026-10-01T09:47:17.066712+00:00"
+    }
+  ]
+}
