@@ -21,7 +21,7 @@
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "validate:sql": "node scripts/validate-sql.mjs",
     "validate:sql:grammar": "python3 scripts/validate-sql-grammar.py",
-    "test:seasonal": "tsx --test lib/seasonal/seasonal.test.ts",
+    "test:seasonal": "node --test scripts/testing/seasonal-resource-handler.test.mjs && tsx --test lib/seasonal/seasonal.test.ts",
     "test:seasonal:db": "tsx --test lib/seasonal/seasonal.integration.test.ts"
   },
   "dependencies": {
