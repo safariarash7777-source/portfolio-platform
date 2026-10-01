@@ -11,6 +11,7 @@ import { accountEntryHref } from "@/components/account/returnPath";
 import NeedsAssessmentPanel from "./NeedsAssessmentPanel";
 import AuthorizedLink from "./AuthorizedLink";
 import ProfileStatus from "./ProfileStatus";
+import PublicationFeed from "./PublicationFeed";
 
 type SelectedData = { cohortId: string; metadata: Result<CohortDetail>; resources: Result<MemberResource[]>; decisions: Partial<Record<typeof MODULE_KEYS[number], Result<ModuleDecision>>> };
 const deniedLabels: Record<string, string> = { expired: "پایان دسترسی", revoked: "دسترسی لغوشده", cohort_cancelled: "دوره لغوشده", scheduled: "دسترسی هنوز شروع نشده", module_not_granted: "این بخش در دسترسی دورهٔ شما نیست", sign_in_required: "ورود دوباره لازم است" };
@@ -73,7 +74,7 @@ export default function MemberHome({ userId, selectedCohortId, now, fixtureScena
         <section className="card space-y-4 p-5" aria-labelledby="member-modules-title"><h2 id="member-modules-title" className="font-display text-xl font-bold">داشبوردهای دوره</h2><p className="text-sm">منبع، واحد و زمان معتبر هر داده را داخل داشبورد بخوانید. نبود داده یا تحلیل به معنی آرام‌بودن بازار نیست.</p><ul className="grid gap-3 sm:grid-cols-2">{MARKET_MODULES.map(module => { const d = selected.decisions[module]; const title = MARKET_MODULE_DESTINATIONS[module].title; return <li key={module} className="space-y-2 border rounded-lg p-4"><h3 className="font-bold">{title}</h3>{d?.state === "ready" && d.data.allowed ? <><p className="text-sm">{d.data.until ? `دسترسی این بخش تا ${dateText(d.data.until)}` : "زمان پایان از سرویس دریافت نشده است."}</p><Link className="inline-flex min-h-12 items-center underline" href={`/dashboard/market/${module}?cohort=${cohort.id}`}>بازکردن {title}</Link></> : <p>{d?.state === "error" ? "وضعیت دسترسی قابل بررسی نیست" : d?.state === "ready" ? deniedLabels[d.data.reason] ?? "این بخش برای حساب شما فعال نیست" : "در حال بررسی دسترسی…"}</p>}</li>; })}</ul><button className="btn btn-outline min-h-12" onClick={retry}>تازه‌کردن وضعیت دوره</button></section>
       </>}
       <NeedsAssessmentPanel key={cohort.id} cohortId={cohort.id} userId={userId} request={request} preview={!!fixtureScenario} />
-      <section className="card space-y-3 p-5"><h2 className="font-display text-xl font-bold">تحلیل‌ها و اعلان‌های دوره</h2><p>فهرست تحلیل‌های مجاز و وضعیت خوانده‌شدن آن‌ها هنوز به این خانه متصل نیست. منابع منتشرشدهٔ دوره را از بخش منابع باز کنید.</p><p className="text-sm">نبود این فهرست به معنی نبود تحلیل یا آرام‌بودن بازار نیست.</p></section>
+      <PublicationFeed key={cohort.id} cohortId={cohort.id} request={request} preview={!!fixtureScenario} />
     </> : null}
     <ProfileStatus cohortId={selectedCohortId} request={request} />
   </div>;

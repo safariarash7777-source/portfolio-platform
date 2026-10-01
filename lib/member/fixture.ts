@@ -37,6 +37,7 @@ export function memberFixtureRequest(scenario: string): MemberRequest {
       return response(assessments.get(cohort) ?? null);
     }
     if (u.pathname.endsWith("/join") || /^\/api\/cohorts\/[^/]+\/resources\/[^/]+$/.test(u.pathname)) return authorized ? response({ url: "https://example.invalid/synthetic-authorized-link", expiresInSeconds: 60 }) : response(null, 403);
+    if (u.pathname.endsWith('/publications')) return Response.json(authorized?{data:{items:[],nextCursor:null},contractVersion:'publication.v1'}:{error:'Synthetic denied'},{status:authorized?200:403});
     if (u.pathname.endsWith("/resources")) return response(!authorized || scenario === "empty" ? [] : [{ resourceRef: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", title: cohort === A ? "منبع ساختگی فقط دورهٔ A" : "منبع ساختگی فقط دورهٔ B", moduleKey: "resources", createdAt: MEMBER_FIXTURE_NOW, resourcePath: `/api/cohorts/${cohort}/resources/cccccccc-cccc-4ccc-8ccc-cccccccccccc` }]);
     if (scenario === "cancelled") return response(null, 404);
     return response({ id: cohort, title: "دورهٔ ساختگی", startsAt: "2026-09-01T05:30:00Z", endsAtExclusive: "2027-01-01T05:30:00Z", timeZone: "Asia/Tehran", policyVersion: "sandbox.explicit.v1", moduleKeys: modules, webinars: scenario === "empty" ? [] : [
