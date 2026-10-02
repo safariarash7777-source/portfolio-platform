@@ -36,7 +36,7 @@ ACK مستقیم P00 محدوده `app/(protected)/admin/desk/page.tsx` و فق�
 
 ## شواهد و قدم بعد
 
-- 52 آزمون سبک:21 اختصاصی P07 و31 regression workbook/store/publication/feed، 0fail/0skip؛ سه گردش transport/handler ساختگی در آن‌ها هستند.
+- 53 آزمون سبک:22 اختصاصی P07 و31 regression workbook/store/publication/feed، 0fail/0skip؛ سه گردش transport/handler ساختگی و پاسخ API نامعتبر در آن‌ها هستند. پاسخ malformed unavailable است، نه empty یا crash.
 - TypeScript و lint کل مخزن موفق. چهار بررسی static React با `tsx docs/ops/p07-desk/static-ui-check.ts`: فرم/برچسب نمونه، preview بدون metadata خصوصی، seed ویرایشگر واقعی، غیرفعال‌بودن fixture خارج development. static markup تعامل مرورگر نیست.
 - build سنگین این تغییر مطابق دستور P00 اجرا نشد؛ build47 قبلی متعلق به کد قبل UI است و به این head انتقال داده نمی‌شود. آزمون کامل CI/native/browser و نمایش P00 بعد نوبت منابع لازم‌اند.
 - React skill: callback/transport پایدار، state فرم حفظ، label/fieldset/role status و کنترل قابل لمس، بدون CSS خارج token یا provider. این مرور جای آزمون keyboard/RTL مرورگر را نمی‌گیرد.

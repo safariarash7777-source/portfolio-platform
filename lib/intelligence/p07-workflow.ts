@@ -1,5 +1,29 @@
 import { parseWorkbook, type ResearchWorkbook } from './research-workbook';
 import { parseManualIntake, type ManualIntake } from './p07-preparation';
+import { parsePublication, publicationId } from './publication';
+
+/** Malformed admin responses are unavailable, never a successful empty queue. */
+export function p07OverviewUsable(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const p = value as Record<string, unknown>;
+  if (p.contractVersion !== 'publication.v1' || !Array.isArray(p.items) || p.items.length > 200 || !Array.isArray(p.workbooks) || p.workbooks.length > 500 || !Array.isArray(p.cohorts) || p.cohorts.length > 50) return false;
+  if (![p.workbooksState, p.cohortsState].every(state => state === 'available' || state === 'unavailable')) return false;
+  try {
+    for (const row of p.items) {
+      parsePublication(row); publicationId(row.id); publicationId(row.publicationId);
+      if (!Number.isInteger(row.version) || row.version < 1 || typeof row.createdAt !== 'string' || typeof row.approvalCurrent !== 'boolean' || !['draft', 'ready', 'published', 'withdrawn', 'approval_invalid'].includes(row.state)) return false;
+    }
+    for (const w of p.workbooks) {
+      publicationId(w.id); publicationId(w.workbookId);
+      if (!Number.isInteger(w.version) || w.version < 1 || typeof w.title !== 'string' || typeof w.approved !== 'boolean' || !Array.isArray(w.sources) || !w.sources.every((s: { url?: unknown; asOf?: unknown } | null) => s && typeof s.url === 'string' && typeof s.asOf === 'string')) return false;
+    }
+    for (const c of p.cohorts) {
+      publicationId(c.id);
+      if (typeof c.title !== 'string' || typeof c.starts_at !== 'string' || typeof c.ends_at !== 'string') return false;
+    }
+    return true;
+  } catch { return false; }
+}
 
 /** Explicit human mapping to existing fields only. Preparation metadata is NOT persisted here. */
 export function mapManualClaim(workbook: ResearchWorkbook, input: unknown, claimId: string, evidenceId?: string): ResearchWorkbook {

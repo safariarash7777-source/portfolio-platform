@@ -2,7 +2,7 @@
 
 ۲ اکتبر ۲۰۲۶. این فهرست معیار اجراست؛ هیچ ردیف اجرا‌نشده PASS نیست. P00 و قرارداد P01 برای کد وابسته/محیط، P02 برای کیفیت منبع، P06 برای معنای اندازه و آرش برای پذیرش انسانی لازم‌اند.
 
-checkpoint UI:52 آزمون سبک/fixture و چهار بررسی static React موفق‌اند؛ این‌ها اثبات browser/native ردیف‌های زیر نیستند. کد همان ResearchWorkbook/PublicationWorkbench و desk موجود را استفاده می‌کند؛ [گزارش UI](UI-DELIVERY.md). build جدید و نمایش P00 در صف، browser/native و سه گردش واقعی NOT_RUN باقی‌اند.
+checkpoint UI:53 آزمون سبک/fixture و چهار بررسی static React موفق‌اند؛ این‌ها اثبات browser/native ردیف‌های زیر نیستند. کد همان ResearchWorkbook/PublicationWorkbench و desk موجود را استفاده می‌کند؛ [گزارش UI](UI-DELIVERY.md). build جدید و نمایش P00 در صف، browser/native و سه گردش واقعی NOT_RUN باقی‌اند.
 
 ## معیارهای فنی بعد از تثبیت قرارداد
 

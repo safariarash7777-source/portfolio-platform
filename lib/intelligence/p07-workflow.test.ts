@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mapManualClaim, p07ReviewCurrent, p07PreparationExport, p07PublicationPreparationIssue } from './p07-workflow';
+import { mapManualClaim, p07ReviewCurrent, p07PreparationExport, p07PublicationPreparationIssue, p07OverviewUsable } from './p07-workflow';
 import { parseWorkbook } from './research-workbook';
 import { createP07WorkflowFixture, p07FixtureWorkbook, P07_FIXTURE_COHORT } from './p07-workflow-fixture';
 import { canReadPublication, type PublicationDraft, type PublicationRow } from './publication';
@@ -10,6 +10,13 @@ const key = (n: number) => `dddddddd-dddd-4ddd-8ddd-${String(n).padStart(12, '0'
 const manual = { kind: 'text', text: 'اصل خصوصی نمونه', transcriptConfirmed: false,
   claims: [{ id: 'c1', kind: 'observation', text: 'گزاره شاهد انتخاب‌شده', evidenceIds: ['e1'] }],
   ambiguities: [{ id: 'a1', text: 'مخرج نامعلوم', resolved: false }], privateNote: 'PRIVATE', approved: true };
+test('malformed overview is unavailable while a genuine empty or source-specific outage remains representable', async () => {
+  const overview = (await createP07WorkflowFixture().transport(PUB)).body;
+  assert.equal(p07OverviewUsable(overview), true);
+  assert.equal(p07OverviewUsable({ ...overview, workbooksState: 'unavailable' }), true);
+  for (const change of [{ items: null }, { cohorts: null }, { contractVersion: 'wrong' }, { workbooks: [null] }, { workbooksState: 'unknown' }]) assert.equal(p07OverviewUsable({ ...overview, ...change }), false);
+  assert.equal(p07OverviewUsable(null), false);
+});
 test('UX preparation binds exact research version and unchanged intake, never another approved workbook', () => {
   const binding = { workbookVersionId: key(1), signature: 'exact-reviewed-preparation' };
   assert.equal(p07PublicationPreparationIssue([], key(1), binding, binding.signature), null);

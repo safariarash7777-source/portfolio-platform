@@ -86,8 +86,8 @@
     "status": "PASS_LIGHTWEIGHT_UI_BUILD_QUEUED",
     "build": "QUEUED_WITH_P00_NOT_RUN_CURRENT_UI",
     "typecheck": "PASS",
-    "tests": 52,
-    "passed": 52,
+    "tests": 53,
+    "passed": 53,
     "lint": "PASS_FULL_REPOSITORY",
     "syntheticOnly": true,
     "failed": 0,
@@ -120,12 +120,13 @@
     "p03ValidityPrinciples": "ACK_DRAFT_df85b5f3b84c6b0bac0fa8b1b4b53fdc8d0cf681",
     "uiBrowser": "NOT_RUN_AWAIT_P00_CANDIDATE",
     "sharedUIOwnership": "P00_ACK_DESK_AND_3_OPTIONAL_RESEARCH_PROPS_ONLY",
-    "testRegistry": "P00_ACK_3_PATHS_ADDITIVE_ONLY"
+    "testRegistry": "P00_ACK_3_PATHS_ADDITIVE_ONLY",
+    "proposalV02": "P04_P08_PRINCIPLES_ACK_MESSAGE_ON_7d284d0_FINAL_WIRE_SCHEMA_OPEN"
   },
   "production": "NOT_CHANGED",
   "providerCalls": 0,
   "customerMessages": 0,
-  "updatedAt": "2026-10-02T17:14:34.2662567Z",
+  "updatedAt": "2026-10-02T17:21:48.9520338Z",
   "previousOfflineTechnical": {
     "codeSHA": "eb8f59931cf4baccfc811de4844b6527d73f4e56",
     "tests": 45,
@@ -143,7 +144,7 @@
     },
     {
       "path": "components/admin/P07ManualDesk.tsx",
-      "worktreeSha256": "1f708b0b2387e9ea8ddcdef612eb038aabb52b1400a30b4706cdcd594a3133d9"
+      "worktreeSha256": "a4e5eb0e49a4e1f4ab3fa0a62bb2483a8dddf73ea2aeba0d113e3ce7aaf40ebc"
     },
     {
       "path": "components/admin/P07AudiencePreview.tsx",
@@ -159,7 +160,7 @@
     },
     {
       "path": "lib/intelligence/p07-workflow.ts",
-      "worktreeSha256": "5136392342c299612fc1e19c8196914353bfd73e75648937f3258236582a0c64"
+      "worktreeSha256": "8e7c62608769b34e103f569c600a6a6a5f384e87e321646451cb6cf63daaf66e"
     },
     {
       "path": "lib/intelligence/p07-workflow-fixture.ts",
@@ -167,7 +168,7 @@
     },
     {
       "path": "lib/intelligence/p07-workflow.test.ts",
-      "worktreeSha256": "8224c3cba2e07895ecd0c77e8ff4854b0d4e958865fdf5027f789d5706132746"
+      "worktreeSha256": "104a5cdab74e8acb1373ec65b38d14efea8f017248236a26e5789a2a19d38bc3"
     },
     {
       "path": "package.json",
