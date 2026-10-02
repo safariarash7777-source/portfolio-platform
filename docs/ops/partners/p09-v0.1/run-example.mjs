@@ -1,0 +1,16 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {preview,reconcile,digest,correctionRef} from './reconcile.mjs';
+const dir=new URL('./',import.meta.url);
+const input=JSON.parse(readFileSync(new URL('example.json',dir),'utf8'));
+const source=readFileSync(new URL('synthetic-source.json',dir));
+const hash=createHash('sha256').update(source).digest('hex');
+if (!input.events.every(e=>e.source_hash===hash)) throw new Error('synthetic source hash mismatch');
+const first=preview(input.events);
+const repeated=preview(input.events,first.journal);
+const original=input.events.find(e=>e.event_type==='commission_reported');
+const corrected={...original,source_revision:2,corrects_event_id:correctionRef(original),amount:'90',received_at:'2026-10-02T12:00:00Z'};
+const late=preview([corrected],repeated.journal);
+const evidence={schema_version:'partner-report.v0.1',environment:'offline-node-synthetic-only',source_hash:hash,input_digest:digest(input),first:reconcile(first.journal),replay:{statuses:repeated.rows.map(r=>r.status),journal_unchanged:digest(first.journal)===digest(repeated.journal)},late_correction:{status:late.rows[0].status,original_retained:late.journal[2].amount==='100',journal_count:late.journal.length,result:reconcile(late.journal)},human_acceptance:'NOT_RUN',independent_review:'NOT_RUN',schema_installed:false,production:false};
+writeFileSync(new URL('evidence.json',dir),JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify({initial:first.rows.length,replay:repeated.rows.map(r=>r.status),correction:late.rows[0].status,verified_aum:evidence.first.verified_aum}));

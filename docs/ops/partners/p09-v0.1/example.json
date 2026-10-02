@@ -1,0 +1,109 @@
+{
+  "label": "نمونه ساختگی؛ قرارداد امضاشده نیست؛ بدون نرخ کارمزد",
+  "events": [
+    {
+      "schema_version": "partner-report.v0.1",
+      "partner_id": "fixture:partner",
+      "contract_id": "fixture:unsigned-contract",
+      "contract_version": "fixture-v1",
+      "offer_id": "fixture:offer",
+      "source_event_id": "referral_clicked",
+      "source_revision": 1,
+      "referral_ids": [
+        "fixture:referral"
+      ],
+      "member_ref": "fixture:canonical-member-ref",
+      "consent_ref": "fixture:partner-consent-unapproved",
+      "external_subject_ref": null,
+      "event_type": "referral_clicked",
+      "occurred_at": "2026-09-30T09:00:00+03:30",
+      "received_at": "2026-10-02T09:00:00+03:30",
+      "period": "fixture-period-2026-09",
+      "source_ref": "synthetic-source.json",
+      "source_hash": "f0b24d4176fda892bbf12c4d65bde8038dd71bccd6862f320bc10e8887bc4d6c",
+      "amount": null,
+      "unit": null,
+      "fee_basis_ref": null,
+      "verification": "reported",
+      "corrects_event_id": null
+    },
+    {
+      "schema_version": "partner-report.v0.1",
+      "partner_id": "fixture:partner",
+      "contract_id": "fixture:unsigned-contract",
+      "contract_version": "fixture-v1",
+      "offer_id": "fixture:offer",
+      "source_event_id": "registration_reported",
+      "source_revision": 1,
+      "referral_ids": [
+        "fixture:referral"
+      ],
+      "member_ref": "fixture:canonical-member-ref",
+      "consent_ref": "fixture:partner-consent-unapproved",
+      "external_subject_ref": null,
+      "event_type": "registration_reported",
+      "occurred_at": "2026-09-30T09:00:00+03:30",
+      "received_at": "2026-10-02T09:00:00+03:30",
+      "period": "fixture-period-2026-09",
+      "source_ref": "synthetic-source.json",
+      "source_hash": "f0b24d4176fda892bbf12c4d65bde8038dd71bccd6862f320bc10e8887bc4d6c",
+      "amount": null,
+      "unit": null,
+      "fee_basis_ref": null,
+      "verification": "reported",
+      "corrects_event_id": null
+    },
+    {
+      "schema_version": "partner-report.v0.1",
+      "partner_id": "fixture:partner",
+      "contract_id": "fixture:unsigned-contract",
+      "contract_version": "fixture-v1",
+      "offer_id": "fixture:offer",
+      "source_event_id": "commission_reported",
+      "source_revision": 1,
+      "referral_ids": [
+        "fixture:referral"
+      ],
+      "member_ref": "fixture:canonical-member-ref",
+      "consent_ref": "fixture:partner-consent-unapproved",
+      "external_subject_ref": null,
+      "event_type": "commission_reported",
+      "occurred_at": "2026-09-30T09:00:00+03:30",
+      "received_at": "2026-10-02T09:00:00+03:30",
+      "period": "fixture-period-2026-09",
+      "source_ref": "synthetic-source.json",
+      "source_hash": "f0b24d4176fda892bbf12c4d65bde8038dd71bccd6862f320bc10e8887bc4d6c",
+      "amount": "100",
+      "unit": "IRT",
+      "fee_basis_ref": null,
+      "verification": "reported",
+      "corrects_event_id": null
+    },
+    {
+      "schema_version": "partner-report.v0.1",
+      "partner_id": "fixture:partner",
+      "contract_id": "fixture:unsigned-contract",
+      "contract_version": "fixture-v1",
+      "offer_id": "fixture:offer",
+      "source_event_id": "invoice_reported",
+      "source_revision": 1,
+      "referral_ids": [
+        "fixture:referral"
+      ],
+      "member_ref": "fixture:canonical-member-ref",
+      "consent_ref": "fixture:partner-consent-unapproved",
+      "external_subject_ref": null,
+      "event_type": "invoice_reported",
+      "occurred_at": "2026-09-30T09:00:00+03:30",
+      "received_at": "2026-10-02T09:00:00+03:30",
+      "period": "fixture-period-2026-09",
+      "source_ref": "synthetic-source.json",
+      "source_hash": "f0b24d4176fda892bbf12c4d65bde8038dd71bccd6862f320bc10e8887bc4d6c",
+      "amount": "90",
+      "unit": "IRT",
+      "fee_basis_ref": null,
+      "verification": "reported",
+      "corrects_event_id": null
+    }
+  ]
+}
