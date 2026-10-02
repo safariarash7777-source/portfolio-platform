@@ -1,0 +1,116 @@
+{
+  "status": "PASS",
+  "checked_at": "2026-10-02T12:00:00+03:30",
+  "source_fetches": 0,
+  "sources": [
+    {
+      "key": "CBI_CPI_annual",
+      "metadata_validation": "PASS",
+      "issues": [],
+      "publication_time_status": "unknown",
+      "source_period": "1404",
+      "period_end_gregorian": "2026-03-20",
+      "model_binding_status": "blocked_base_and_history_contract",
+      "model_write_enabled": false,
+      "financial_model_approved": false
+    },
+    {
+      "key": "CBI_liquidity_quarterly",
+      "metadata_validation": "PASS",
+      "issues": [],
+      "publication_time_status": "unknown",
+      "source_period": "1404-سه ماهه سوم",
+      "period_end_gregorian": "2025-12-21",
+      "model_binding_status": "blocked_frequency_and_stock_definition",
+      "model_write_enabled": false,
+      "financial_model_approved": false
+    },
+    {
+      "key": "CBI_GDP_current_basic_price",
+      "metadata_validation": "PASS",
+      "issues": [],
+      "publication_time_status": "unknown",
+      "source_period": "1403",
+      "period_end_gregorian": "2025-03-20",
+      "model_binding_status": "rejected_currency_and_valuation_mismatch",
+      "model_write_enabled": false,
+      "financial_model_approved": false
+    },
+    {
+      "key": "CBI_GDP_constant1400_basic_price",
+      "metadata_validation": "PASS",
+      "issues": [],
+      "publication_time_status": "unknown",
+      "source_period": "1403",
+      "period_end_gregorian": "2025-03-20",
+      "model_binding_status": "blocked_real_GDP_valuation_contract",
+      "model_write_enabled": false,
+      "financial_model_approved": false
+    },
+    {
+      "key": "CBI_oil_and_gas_exports",
+      "metadata_validation": "PASS",
+      "issues": [],
+      "publication_time_status": "unknown",
+      "source_period": "1404",
+      "period_end_gregorian": "2026-03-20",
+      "model_binding_status": "rejected_oil_only_scope_mismatch",
+      "model_write_enabled": false,
+      "financial_model_approved": false
+    },
+    {
+      "key": "CBI_CPI_monthly",
+      "metadata_validation": "PASS",
+      "issues": [],
+      "publication_time_status": "unknown",
+      "source_period": "1404-اسفند",
+      "period_end_gregorian": "2026-03-20",
+      "model_binding_status": "validated_separate_series",
+      "model_write_enabled": false,
+      "financial_model_approved": false
+    }
+  ],
+  "CPI_full_year_mean_checks": 5,
+  "CPI_full_year_mean_pass": true,
+  "GDP_consecutive_growth_contract_pass": true,
+  "liquidity_missing_Q4_preserved": true,
+  "all_model_bindings_disabled": true,
+  "raw_values_emitted": false,
+  "tests": {
+    "synthetic_cases": 14,
+    "result": "PASS",
+    "network_guard": "loopback-only test guard; no provider requests"
+  },
+  "producer_basis": "PR183@8723c55766e456c0b519b4ead3c301440b4ff05f",
+  "publication_dates_documented": 0,
+  "decisions_approved": 0,
+  "production_modified": false,
+  "hermes_schedule_modified": false,
+  "p00_release_acceptance": "OPEN",
+  "plan_inputs": [
+    {
+      "file": "00-start-here.md",
+      "sha256": "19aa37c4f333653ee752f7e46510272988918ad43073eb263cd5ec29c99e4a21"
+    },
+    {
+      "file": "01-product.md",
+      "sha256": "1a716b5bbc5632df2fae57a0c2f7ac3f1f7d4cc9a3e8dc6d04feb2e6a463d4f7"
+    },
+    {
+      "file": "03-delivery-plan.md",
+      "sha256": "585785092b6d89ed8c0623073c1e27e28f7395e9dd4f50883f294ea43e794ca5"
+    },
+    {
+      "file": "04-handoff.md",
+      "sha256": "103afa9dc25ee1da1762bb08fd3775514062d4cfa3f8477043352120298b2a76"
+    }
+  ],
+  "ownership": [
+    "p02_fx_checks.py",
+    "test_p02_fx_checks.py",
+    "P02-FX-* docs/evidence"
+  ],
+  "financial_raw_values_emitted": false,
+  "evidence_generated_at": "2026-10-02T13:22:50.611521+00:00",
+  "evaluation_clock": "fixed CLI scenario as-of, not latest official release claim"
+}
