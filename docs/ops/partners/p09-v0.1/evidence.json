@@ -1,0 +1,59 @@
+{
+  "schema_version": "partner-report.v0.1",
+  "environment": "offline-node-synthetic-only",
+  "source_hash": "f0b24d4176fda892bbf12c4d65bde8038dd71bccd6862f320bc10e8887bc4d6c",
+  "input_digest": "109965987ab58d031020c2ed39d8661d766103e3f7e613ccb575f226ecf9d5fc",
+  "first": {
+    "label": "نمونه ساختگی؛ تأیید و وصول نشده",
+    "active_events": 4,
+    "queue": [],
+    "comparisons": [
+      {
+        "key": "[\"fixture:partner\",\"fixture:unsigned-contract\",\"fixture-v1\",\"fixture-period-2026-09\",\"IRT\"]",
+        "reported_commission": "100",
+        "reported_invoice": "90",
+        "status": "reported-mismatch"
+      }
+    ],
+    "calculated_fee": null,
+    "verified_commission": null,
+    "collected_amount": null,
+    "verified_aum": null
+  },
+  "replay": {
+    "statuses": [
+      "duplicate",
+      "duplicate",
+      "duplicate",
+      "duplicate"
+    ],
+    "journal_unchanged": true
+  },
+  "late_correction": {
+    "source_hash": "f3dbd7f1bba5d954cd797144a5f5c03a7b9fbf1fb603cb0dfbfa089a2840aa6f",
+    "status": "accepted",
+    "original_retained": true,
+    "journal_count": 5,
+    "result": {
+      "label": "نمونه ساختگی؛ تأیید و وصول نشده",
+      "active_events": 4,
+      "queue": [],
+      "comparisons": [
+        {
+          "key": "[\"fixture:partner\",\"fixture:unsigned-contract\",\"fixture-v1\",\"fixture-period-2026-09\",\"IRT\"]",
+          "reported_commission": "90",
+          "reported_invoice": "90",
+          "status": "reported-match"
+        }
+      ],
+      "calculated_fee": null,
+      "verified_commission": null,
+      "collected_amount": null,
+      "verified_aum": null
+    }
+  },
+  "human_acceptance": "NOT_RUN",
+  "independent_review": "NOT_RUN",
+  "schema_installed": false,
+  "production": false
+}
