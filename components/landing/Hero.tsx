@@ -62,7 +62,7 @@ async function MarketGlance() {
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-[12px] font-bold" style={{ color: "var(--gold-light)" }}>
-          میز بازار — همین حالا
+          آخرین وضعیت بازار
         </p>
         <span className="text-[10.5px]" style={{ color: "rgba(248,250,252,0.62)" }}>
           {fresh.label}
@@ -148,41 +148,24 @@ export default function Hero() {
               fontSize: "clamp(2.1rem, 5.2vw, 3.25rem)",
               fontWeight: 900,
               lineHeight: 1.08,
-              letterSpacing: "-0.03em",
+              letterSpacing: 0,
             }}
           >
             آرش صفری
           </h1>
 
-          {/*
-            ── ادعای همگانی‌ای که اینجا بود و حذف شد ─────────────────────────
-            «هر تحلیل فرض‌ها و سناریوهایش را همراه دارد» یک گزارهٔ **همگانی**
-            بود که همین صفحه نقضش می‌کرد: `InsightsPreview` مطالبِ خامِ تلگرام
-            و اینستاگرام را از `content_hub` رندر می‌کند و آن‌ها فقط عنوان،
-            پلتفرم و تاریخ دارند — نه فرض، نه سناریو. پس «هر تحلیل» روی همین
-            صفحه غلط بود.
-
-            جایش گزارهٔ **شرطی** آمده: «تحلیلی که وارد کارنامه شود…». این دربارهٔ
-            کارنامه است، نه دربارهٔ هر چیزی که در صفحه دیده می‌شود، و پشتوانه‌اش
-            append-only بودنِ `signals` است — نه یک وعده.
-
-            هر سه جمله روی همین صفحه قابلِ راستی‌آزمایی‌اند:
-              ۱ وضعیتِ بازار + زمانِ به‌روزرسانی → MarketTicker و LiveMarket
-              ۲ مطالبِ منتشرشده + منبع و تاریخ   → InsightsPreview
-              ۳ تغییرناپذیریِ کارنامه            → Method و /analyses
-          */}
+          {/* منبع و تاریخ مطالب در InsightsPreview؛ جزئیات کارنامه در /analyses. */}
           <p
             className="anim-rise anim-d3 mt-5 text-base"
             style={{ color: "rgba(248,250,252,0.82)", lineHeight: 1.9 }}
           >
-            وضعیتِ روزِ بازار با زمانِ به‌روزرسانی، و مطالبِ منتشرشده با منبع و
-            تاریخ. تحلیلی که وارد کارنامه شود، پس از انتشار تغییر نمی‌کند.
-            بدونِ وعدهٔ سود.
+            وضعیت بازار با زمان به‌روزرسانی، مطالب منتشرشده و وبینارهای آموزشی.
+            برای مشاورهٔ شخصی، درخواست وقت ثبت کنید.
           </p>
 
           <div className="anim-rise anim-d4 mt-7 flex flex-wrap items-center gap-3">
             <Link href="/market" className="btn btn-gold">
-              ورود به میز بازار
+              مشاهدهٔ بازار
               <ArrowLeft size={16} />
             </Link>
             <Link href="/about" className="btn btn-on-navy">

@@ -96,6 +96,7 @@ export default function LiveMarket() {
     const load = async () => {
       try {
         const res = await fetch("/api/market");
+        if (!res.ok) throw new Error("Market response unavailable");
         const json = (await res.json()) as MarketPayload;
         if (!alive) return;
         const any =
@@ -217,6 +218,9 @@ export default function LiveMarket() {
                 اصلیِ پنل تبدیل شد.
               */}
               <span
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
                 className="flex items-center gap-2 text-sm font-bold"
                 style={{ color: isStale ? "var(--gold)" : "var(--heading)" }}
               >
@@ -261,9 +265,13 @@ export default function LiveMarket() {
 
             {/* بدنه */}
             {failed ? (
-              <div className="px-5 py-12 text-center text-sm" style={{ color: "var(--text-3)" }}>
+              <div role="alert" className="px-5 py-12 text-center text-sm" style={{ color: "var(--text-3)" }}>
                 دادهٔ بازار هم‌اکنون در دسترس نیست. چند دقیقهٔ دیگر دوباره سر بزنید.
               </div>
+            ) : data && !active ? (
+              <p role="status" className="px-5 py-12 text-center text-sm" style={{ color: "var(--text-3)" }}>
+                ردیفی با قیمت معتبر برای نمایش در دسترس نیست. منبع و زمان داده را در صفحهٔ بازار بررسی کنید.
+              </p>
             ) : !active ? (
               /* سه ردیف، نه شش. اسکلتونِ بلند اولین برداشتِ بازدیدکننده را به یک
                  صفحهٔ نیمه‌ساخته تبدیل می‌کرد؛ ارتفاعِ کمتر همان اطلاع را می‌دهد
@@ -283,7 +291,7 @@ export default function LiveMarket() {
                 {active.rows.slice(0, SHOW).map((r, i) => (
                   <li
                     key={r.id}
-                    className="flex items-center justify-between gap-4 px-5 py-3.5 transition-colors hover:bg-[color:var(--surface-2)]"
+                    className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3.5 transition-colors hover:bg-[color:var(--surface-2)]"
                     style={{ borderTop: i ? "1px solid var(--line)" : "none" }}
                   >
                     <span className="flex items-baseline gap-2 min-w-0">
@@ -296,7 +304,7 @@ export default function LiveMarket() {
                         </span>
                       )}
                     </span>
-                    <span className="flex items-center gap-4 flex-shrink-0">
+                    <span className="flex flex-wrap items-center gap-2 sm:gap-4 flex-shrink-0">
                       <span className="text-sm font-bold" style={{ color: "var(--text-2)", fontVariantNumeric: "tabular-nums" }}>
                         {r.priceText}
                       </span>
@@ -325,7 +333,7 @@ export default function LiveMarket() {
 
             {/* فوتر پنل */}
             <div
-              className="flex items-center justify-between gap-3 px-5 py-3.5"
+              className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5"
               style={{ borderTop: "1px solid var(--line)" }}
             >
               <span className="text-[11px]" style={{ color: "var(--text-3)" }}>

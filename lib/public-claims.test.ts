@@ -54,11 +54,14 @@ describe("ادعای همگانی روی مسیرِ عمومی", () => {
     });
   }
 
-  test("هیرو هنوز همان سه چیزِ قابلِ اثبات را می‌گوید", () => {
-    // اگر این‌ها از هیرو حذف شوند یعنی متن دوباره کلی شده.
-    const copy = copyOf("components/landing/Hero.tsx");
-    assert.match(copy, /زمانِ به‌روزرسانی/, "وعدهٔ «زمانِ به‌روزرسانی» باید بماند — MarketTicker/LiveMarket اثباتش می‌کنند");
-    assert.match(copy, /منبع و\s*\n?\s*تاریخ|منبع و تاریخ/, "«منبع و تاریخ» باید بماند — InsightsPreview اثباتش می‌کند");
-    assert.match(copy, /کارنامه/, "ارجاع به کارنامه باید بماند");
+  test("اطلاعات قابلِ اثبات در بخش مربوط به خود باقی می‌ماند", () => {
+    // کوتاه‌شدن معرفی نباید منبع/تاریخ مطالب یا مقصد کارنامه را حذف کند.
+    // جای همهٔ این اطلاعات در متن Hero اجباری نیست.
+    assert.match(copyOf("components/landing/Hero.tsx"), /زمانِ? به‌روزرسانی/);
+    const insights = copyOf("components/landing/InsightsPreview.tsx");
+    assert.match(insights, /href=\{item\.content_url\}/, "کارت باید به منبع واقعی پیوند بدهد");
+    assert.match(insights, /PLATFORM_META\[item\.platform\]/);
+    assert.match(insights, /formatJalali\(item\.published_at\)/, "تاریخ باید از رکورد محتوا بیاید");
+    assert.match(copyOf("components/layout/Navbar.tsx"), /href: "\/analyses", label: "کارنامه"/);
   });
 });
