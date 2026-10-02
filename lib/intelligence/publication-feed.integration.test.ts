@@ -71,10 +71,20 @@ for(const profile of ['legacy','explicit'])describe('publication feed / real SQL
   const last=list(A,C1,null,null,1).nextCursor;const baseline=list(A,C1,last.publishedAt,last.versionId,50).items.map((i:{versionId:string})=>i.versionId);publish(save(w));assert.deepEqual(list(A,C1,last.publishedAt,last.versionId,50).items.map((i:{versionId:string})=>i.versionId),baseline);
   assert.match(denied(db,A,`SELECT public.list_cohort_research_publications('${C1}',now(),NULL,20)`),/22023/);
  });
- test('tied publication timestamps use UUID keyset and microsecond boundary without rounding',()=>{
+ for(const existingFuture of [false,true])test('tied publication timestamps use UUID keyset and microsecond boundary without rounding'+(existingFuture?' with an existing future publication':''),()=>{
+  if(existingFuture){
+   const earlier=save(research());command(earlier,'ready');
+   sql(db,`INSERT INTO public.research_publication_commands(version_id,action,reason,actor_id,created_at,idempotency_key,request_hash) VALUES('${earlier}','publish','Synthetic future fixture','${ADMIN}',clock_timestamp()+interval '2 days','${randomUUID()}','${randomUUID()}')`);
+  }
   const w=research();const ids=[save(w),save(w),save(w)];ids.forEach(v=>command(v,'ready'));
   // Synthetic inserts only: immutable command rows are never updated, even in this test.
-  ids.forEach((v,i)=>sql(db,`INSERT INTO public.research_publication_commands(version_id,action,reason,actor_id,created_at,idempotency_key,request_hash) VALUES('${v}','publish','Synthetic timestamp fixture','${ADMIN}','2026-10-01T23:59:00.${i===2?'123457':'123456'}Z','${randomUUID()}','${randomUUID()}')`));
+  // One database anchor, later than ready and all prior publications, with exact microseconds.
+  sql(db,`WITH anchor AS MATERIALIZED (
+   SELECT date_trunc('second',greatest(clock_timestamp(),(SELECT max(created_at) FROM public.research_publication_commands)))+interval '1 second' AS at
+  ) INSERT INTO public.research_publication_commands(version_id,action,reason,actor_id,created_at,idempotency_key,request_hash)
+   SELECT fixture.version_id,'publish','Synthetic timestamp fixture','${ADMIN}',anchor.at+fixture.microseconds,fixture.key,fixture.hash
+   FROM anchor CROSS JOIN (VALUES ${ids.map((v,i)=>`('${v}'::uuid,interval '${i===2?'123457':'123456'} microseconds','${randomUUID()}'::uuid,'${randomUUID()}')`).join(',')}) AS fixture(version_id,microseconds,key,hash)`);
+  assert.equal(sql(db,`SELECT max(created_at)-min(created_at) = interval '1 microsecond' FROM public.research_publication_commands WHERE version_id IN (${ids.map(q).join(',')}) AND action='publish'`),'t');
   const first=list(A,C1,null,null,1);assert.equal(first.items[0].versionId,ids[2]);assert.match(first.nextCursor.publishedAt,/123457/);
   const second=list(A,C1,first.nextCursor.publishedAt,first.nextCursor.versionId,1);const tied=ids.slice(0,2).sort().reverse();assert.equal(second.items[0].versionId,tied[0]);assert.match(second.nextCursor.publishedAt,/123456/);
   const third=list(A,C1,second.nextCursor.publishedAt,second.nextCursor.versionId,1);assert.equal(third.items[0].versionId,tied[1]);

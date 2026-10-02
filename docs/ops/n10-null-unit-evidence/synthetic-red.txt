@@ -1,0 +1,211 @@
+(node:32556) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/lib/core/engine.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\Asus\Documents\Codex\2026-09-29\c-users-asus-documents-codex-2026\work\n10-null-unit-20261002\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ missing bank gross stays null through parser, ratios, and annual margins (5.2923ms)
+✖ unreadable current gross does not borrow prior gross or synthesize zero (0.8626ms)
+✔ observed zero remains zero; missing metric does not corrupt independent metrics (1.4945ms)
+✖ quarterly gross stays unknown if either cumulative gross is missing (0.6778ms)
+✖ explicit unsupported amount unit rejects statement, preserves input EPS token (1.1413ms)
+✖ conflicting amount declarations reject; unrelated table cannot override selected statement (0.6021ms)
+✖ million amount plus separate rial EPS accepted; EPS-only unit is no amount proof (0.6673ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 1
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 191.5579
+
+✖ failing tests:
+
+test at relay\codal-contract.test.mjs:21:1
+✖ missing bank gross stays null through parser, ratios, and annual margins (5.2923ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  0 !== null
+
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:24:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.start (node:internal/test_runner/test:1242:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at relay\codal-contract.test.mjs:31:1
+✖ unreadable current gross does not borrow prior gross or synthesize zero (0.8626ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  0 !== null
+
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:33:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at relay\codal-contract.test.mjs:43:1
+✖ quarterly gross stays unknown if either cumulative gross is missing (0.6778ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  0 !== null
+
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:47:50)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at relay\codal-contract.test.mjs:51:1
+✖ explicit unsupported amount unit rejects statement, preserves input EPS token (1.1413ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   audited: false,
+  +   capital: 10,
+  +   company_name: 'fixture',
+  +   period_end: '1404-12-29',
+  +   period_months: 12,
+  +   report_kind: 'ن-۱۰',
+  +   restated_prior: false,
+  +   standalone: {
+  +     cogs: 60,
+  +     eps_rial: 2,
+  +     gross_profit: 40,
+  +     net_profit: 20,
+  +     operating_profit: 25,
+  +     prior: {
+  +       cogs: 50,
+  +       eps_rial: 1,
+  +       gross_profit: 30,
+  +       net_profit: 15,
+  +       operating_profit: 20,
+  +       revenue: 80
+  +     },
+  +     revenue: 100
+  +   },
+  +   statement_type: 'bank',
+  +   symbol: 'بانک‌مصنوعی',
+  +   unit: 'میلیون ریال'
+  + }
+  - null
+
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:53:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { symbol: 'بانک‌مصنوعی', company_name: 'fixture', report_kind: 'ن-۱۰', statement_type: 'bank', period_end: '1404-12-29', period_months: 12, audited: false, restated_prior: false, unit: 'میلیون ریال', capital: 10, standalone: { revenue: 100, cogs: 60, gross_profit: 40, operating_profit: 25, net_profit: 20, eps_rial: 2, prior: [Object] } },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at relay\codal-contract.test.mjs:57:1
+✖ conflicting amount declarations reject; unrelated table cannot override selected statement (0.6021ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + {
+  +   audited: false,
+  +   capital: 10,
+  +   company_name: 'fixture',
+  +   period_end: '1404-12-29',
+  +   period_months: 12,
+  +   report_kind: 'ن-۱۰',
+  +   restated_prior: false,
+  +   standalone: {
+  +     cogs: 60,
+  +     eps_rial: 2,
+  +     gross_profit: 40,
+  +     net_profit: 20,
+  +     operating_profit: 25,
+  +     prior: {
+  +       cogs: 50,
+  +       eps_rial: 1,
+  +       gross_profit: 30,
+  +       net_profit: 15,
+  +       operating_profit: 20,
+  +       revenue: 80
+  +     },
+  +     revenue: 100
+  +   },
+  +   statement_type: 'bank',
+  +   symbol: 'بانک‌مصنوعی',
+  +   unit: 'میلیون ریال'
+  + }
+  - null
+
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:58:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { symbol: 'بانک‌مصنوعی', company_name: 'fixture', report_kind: 'ن-۱۰', statement_type: 'bank', period_end: '1404-12-29', period_months: 12, audited: false, restated_prior: false, unit: 'میلیون ریال', capital: 10, standalone: { revenue: 100, cogs: 60, gross_profit: 40, operating_profit: 25, net_profit: 20, eps_rial: 2, prior: [Object] } },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at relay\codal-contract.test.mjs:62:1
+✖ million amount plus separate rial EPS accepted; EPS-only unit is no amount proof (0.6673ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + undefined
+  - 'legacy_unverified'
+
+      at TestContext.<anonymous> (file:///C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002/relay/codal-contract.test.mjs:66:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1382:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)
+      at Test.postRun (node:internal/test_runner/test:1522:19)
+      at Test.run (node:internal/test_runner/test:1447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'legacy_unverified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

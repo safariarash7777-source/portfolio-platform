@@ -8,7 +8,7 @@
 export interface IncomeStatement {
   revenue: number;
   cogs: number;
-  gross_profit: number;
+  gross_profit: number | null;
   sga?: number;
   other_op_income?: number;
   other_op_expense?: number;
@@ -45,6 +45,8 @@ export interface CodalN10Data {
   audited: boolean;
   restated_prior: boolean;
   unit: string; // «میلیون ریال»
+  /** Explicit header acceptance does not verify issuer provenance; legacy missing headers remain unverified. */
+  unit_assessment?: "explicit_million_rial" | "legacy_unverified";
   capital: number;
   auditor?: string;
   standalone: IncomeStatement & { prior?: IncomeStatement };
