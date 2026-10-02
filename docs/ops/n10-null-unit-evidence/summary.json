@@ -1,0 +1,253 @@
+{
+  "preparedAt": "2026-10-01T23:27:15.3093565Z",
+  "productRuntimeSHA": "fa4b84fd126db70efae6a1b068a6a0e2a98bf3d5",
+  "productBase191SHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+  "productPR": 195,
+  "criteriaPR": 194,
+  "criteriaSHA": "e143fbbbbd2f3a82c907cf53c6e0ba0e39b1af38",
+  "criteriaFileSHA256": "cbf932d1da503629b6686c481ae0ced3b7ffe9f0bf9921695d8130b9ae8cd05a",
+  "criteriaModified": false,
+  "manifestOverlay": {
+    "criteriaHeadSHA": "e143fbbbbd2f3a82c907cf53c6e0ba0e39b1af38",
+    "productRuntimeSHA": "fa4b84fd126db70efae6a1b068a6a0e2a98bf3d5",
+    "immutableBase191SHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+    "originalManifestHash": "560edc26cf3e8251ca4ede1f70ee14c104fbc1e53bdac34a0c3601d5035c43f1",
+    "criteriaModified": false,
+    "changedManifestOnlyForRuntimeHashes": true
+  },
+  "originalArchiveDigest": "42b7e4d43b501c6ab7ea39609622e4da1d7eba4429b3fbe36a5a52d2a386c0d8",
+  "originalArchiveUntouched": true,
+  "baselineSummary": {
+    "PASS": 2,
+    "FAIL": 2,
+    "NOT_EXECUTED": 0,
+    "forbiddenAttempts": 0,
+    "upstreamRequests": 0,
+    "liveDBCalls": 0,
+    "modelCalls": 0,
+    "productFilesChanged": 0
+  },
+  "patchedSummary": {
+    "PASS": 4,
+    "FAIL": 0,
+    "NOT_EXECUTED": 0,
+    "forbiddenAttempts": 0,
+    "upstreamRequests": 0,
+    "liveDBCalls": 0,
+    "modelCalls": 0,
+    "productFilesChanged": 0
+  },
+  "baselinePayloadDigest": "fa25bd79d26d43610f75a5c9456865c0c6c5c903ee06733e8dc18403d9129d41",
+  "patchedPayloadDigest": "c76d5d59c156e5c7cdb8b01635eeaa41966c68a16974a8410d529b758f568bbd",
+  "replayPayloadDigest": "c76d5d59c156e5c7cdb8b01635eeaa41966c68a16974a8410d529b758f568bbd",
+  "cases": [
+    {
+      "caseId": "IE01-C1-COMPLETE",
+      "baselineStatus": "PASS",
+      "patchedStatus": "PASS",
+      "baselineInputDigest": "568a5473a95364530809290b4f305fb7012047250bafa40eb33af2ccaf4ea8d1",
+      "patchedInputDigest": "568a5473a95364530809290b4f305fb7012047250bafa40eb33af2ccaf4ea8d1",
+      "baselineOutputDigest": "22192c32399527cf81ee00e80aa27d9145f05862bd3a426aa9537aeb7c381f38",
+      "patchedOutputDigest": "d35a156ade04633222b39b864d6ee7cbbb886ed40b5254034f5d6ee09b1a47d2",
+      "checks": [
+        {
+          "name": "historic current literal: revenue",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: cogs",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: gross_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: operating_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: net_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic current literal: eps_rial",
+          "status": "PASS"
+        },
+        {
+          "name": "historic prior literal: revenue",
+          "status": "PASS"
+        },
+        {
+          "name": "historic prior literal: net_profit",
+          "status": "PASS"
+        },
+        {
+          "name": "historic capital literal",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: gross_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: operating_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "ratio cross-product: net_margin",
+          "status": "PASS"
+        },
+        {
+          "name": "growth cross-product: revenue_growth",
+          "status": "PASS"
+        },
+        {
+          "name": "growth cross-product: net_profit_growth",
+          "status": "PASS"
+        },
+        {
+          "name": "no price invented for PE",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C2-MISSING",
+      "baselineStatus": "FAIL",
+      "patchedStatus": "PASS",
+      "baselineInputDigest": "1d95239a45ba451ccc6ac6f26a5b69d2df751195dac68ba77adf03bde08ba559",
+      "patchedInputDigest": "1d95239a45ba451ccc6ac6f26a5b69d2df751195dac68ba77adf03bde08ba559",
+      "baselineOutputDigest": "f485048d111834bbebe26409a16527c3e4d27c31b9dfa0e2df228b5b975936a0",
+      "patchedOutputDigest": "526e5c52768a939bbdefb9ad526d326762ce53ec718fa2637910f9f621b0f2b7",
+      "checks": [
+        {
+          "name": "fixture truly lacks gross row",
+          "status": "PASS"
+        },
+        {
+          "name": "missing gross and gross_margin must stay null",
+          "status": "PASS"
+        },
+        {
+          "name": "independent net field retained",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C3-CORRECTION",
+      "baselineStatus": "PASS",
+      "patchedStatus": "PASS",
+      "baselineInputDigest": "b0d62b857848cdd8e5b92906bc10fbc6ac892eba22ae3a37fe29d2e576d0e0d4",
+      "patchedInputDigest": "bc2dc73487cacc5ad199a2a11528ba9b16a047da985b3afeb1f017d608ffef3e",
+      "baselineOutputDigest": "736f3c180542039edd084575de4a150f2feb485aa23e8446660b04647009d584",
+      "patchedOutputDigest": "211b7c23cd45624906bccbb492dc25b4ec08186ebb7ec2c0d70deb1c0a334955",
+      "checks": [
+        {
+          "name": "explicit correction wins despite lower insertion ID",
+          "status": "PASS"
+        },
+        {
+          "name": "order independent and single period",
+          "status": "PASS"
+        },
+        {
+          "name": "correction field used",
+          "status": "PASS"
+        },
+        {
+          "name": "new net_margin differs; old result not reused",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "caseId": "IE01-C4-UNIT-MISMATCH",
+      "baselineStatus": "FAIL",
+      "patchedStatus": "PASS",
+      "baselineInputDigest": "a5413aa31368d39788c30b5e4139496c9ca3231063b80ebd3d5c08c92220faf1",
+      "patchedInputDigest": "a5413aa31368d39788c30b5e4139496c9ca3231063b80ebd3d5c08c92220faf1",
+      "baselineOutputDigest": "8ab01fb751d109c20021f30b156cd66eafdb95a39e3ed7e6f000999047e26c06",
+      "patchedOutputDigest": "49691fe49048e879ffdaf53bf3ee31d7356385e2fc667f91cee0fd5eec2009e8",
+      "checks": [
+        {
+          "name": "fixture explicit thousand-rial header present",
+          "status": "PASS"
+        },
+        {
+          "name": "conflicting unit must reject/null affected output",
+          "status": "PASS"
+        },
+        {
+          "name": "input EPS tokens unchanged; present output EPS retained",
+          "status": "PASS"
+        },
+        {
+          "name": "input retained unchanged by product functions",
+          "status": "PASS"
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "nodeVersion": "v24.19.0",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "build": "PASS (local placeholder configuration)",
+    "core": {
+      "skip": 0,
+      "tests": 1287,
+      "fail": 0,
+      "pass": 1287
+    },
+    "calc": {
+      "skip": 0,
+      "tests": 106,
+      "fail": 0,
+      "pass": 106
+    },
+    "syntheticContract": {
+      "skip": 0,
+      "tests": 7,
+      "fail": 0,
+      "redFailures": 6,
+      "pass": 7
+    },
+    "fullOfflineRelay": "PASS",
+    "secretScan": "PASS",
+    "staticSQL": {
+      "files": 51,
+      "fail": 0,
+      "executedSQL": 0
+    },
+    "harnessBaselineHealth": {
+      "skip": 0,
+      "tests": 7,
+      "fail": 0,
+      "pass": 7
+    },
+    "harnessHealthOnPatchedOverlay": "Baseline-preservation suite: 5 PASS / 2 expected mismatches; not patched-product acceptance"
+  },
+  "limitations": [
+    "Archived issuer provenance/rights/actual unit unknown",
+    "C3 input digest changes because its parser-derived data gains unit_assessment",
+    "Legacy stored gross=0 not rewritten; no ingestion performed",
+    "Selected income-table header scope only; report-wide external headers not verified",
+    "No model financial calculation, upstream, live DB, deployment or migration",
+    "Raw harness status/blocker literals describe baseline; evaluated case summary is acceptance evidence",
+    "productFilesChanged=0 means no mutations during execute; seven source overlays applied before execute"
+  ]
+}

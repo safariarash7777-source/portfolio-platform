@@ -6,8 +6,8 @@
 import type { CodalN10Data, CodalN30Data, SalesTrendRow } from "./types";
 
 /** درصد با یک رقم اعشار؛ تقسیم بر صفر → null. */
-export function pct(numerator: number, denominator: number): number | null {
-  if (!isFinite(numerator) || !isFinite(denominator) || denominator === 0) return null;
+export function pct(numerator: number | null, denominator: number): number | null {
+  if (typeof numerator !== "number" || !isFinite(numerator) || !isFinite(denominator) || denominator === 0) return null;
   return Math.round((numerator / denominator) * 1000) / 10;
 }
 
@@ -26,7 +26,7 @@ export interface Margins {
 /** حاشیه‌های سود سه‌گانه از یک صورت سود و زیان. */
 export function margins(s: {
   revenue: number;
-  gross_profit: number;
+  gross_profit: number | null;
   operating_profit: number;
   net_profit: number;
 }): Margins {

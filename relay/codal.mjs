@@ -155,6 +155,27 @@ function findIncomeTable(tables) {
 
 /* ── نرمال‌سازی ن-۱۰ (صورت‌های مالی) ────────────────────────────────────────── */
 
+// N10 amounts use the legacy million-rial contract. An explicit different or
+// contradictory statement unit cannot be converted by guessing. EPS has its
+// own rial unit and is not evidence for the statement amount unit.
+function n10AmountAssessment(inc) {
+  const units = new Set();
+  for (const cell of inc.flat()) {
+    const clauses = String(cell ?? "").replace(/[يى]/g, "ی").replace(/ك/g, "ک")
+      .split(/[؛;]|(?=واحد\s*(?:EPS|هر\s*سهم))/i);
+    for (const clause of clauses) {
+      const text = normLabel(clause);
+      if (!/(?:ارقام|مبالغ|واحدمبلغ|واحدپولی)/.test(text)) continue;
+      if (/(?:EPS|هرسهم)/i.test(text)) continue;
+      const matches = [...text.matchAll(/میلیونریال|هزارریال|ریال|تومان/g)];
+      for (const match of matches) units.add(match[0]);
+      if (!matches.length && /واحد(?:مبلغ|پولی)/.test(text)) units.add("unknown");
+    }
+  }
+  if (!units.size) return "legacy_unverified";
+  return units.size === 1 && units.has("میلیونریال") ? "explicit_million_rial" : null;
+}
+
 /** جدول سود و زیان بانک/بیمه: به جای «درآمدهای عملیاتی»، «درآمد تسهیلات اعطایی»
  * (بانک) یا «درآمد حق بیمه» (بیمه) + «درآمد عملیاتی» + «سود(زیان)خالص» دارد.
  * (تأییدشده با اکسل واقعی ونوین FY1404 — جدول ۳۵سطری پس از عنوان «صورت سود و زیان».) */
@@ -179,6 +200,8 @@ function findBankIncomeTable(tables) {
 export function normalizeN10Bank(tables, meta) {
   const inc = findBankIncomeTable(tables);
   if (!inc) return null;
+  const unitAssessment = n10AmountAssessment(inc);
+  if (!unitAssessment) return null;
 
   const isInsurance = inc.some((r) => normLabel(r[0]).startsWith(normLabel("درآمد حق بیمه")));
   const revenue = rowIn(inc, ["درآمد عملیاتی", "جمع درآمدهای عملیاتی"]);
@@ -224,7 +247,7 @@ export function normalizeN10Bank(tables, meta) {
   const mkIncome = (which) => ({
     revenue: which === "cur" ? revenue.value : revenue.prior,
     cogs: cogs && cogs[which === "cur" ? "value" : "prior"] !== null ? Math.abs(cogs[which === "cur" ? "value" : "prior"]) : 0,
-    gross_profit: gross && gross[which === "cur" ? "value" : "prior"] !== null ? gross[which === "cur" ? "value" : "prior"] : 0,
+    gross_profit: gross?.[which === "cur" ? "value" : "prior"] ?? null,
     operating_profit: op && op[which === "cur" ? "value" : "prior"] !== null ? op[which === "cur" ? "value" : "prior"] : 0,
     net_profit: which === "cur" ? net.value : net.prior,
     ...(eps && eps[which === "cur" ? "value" : "prior"] !== null ? { eps_rial: eps[which === "cur" ? "value" : "prior"] } : {}),
@@ -254,6 +277,7 @@ export function normalizeN10Bank(tables, meta) {
     audited: meta.audited,
     restated_prior: false,
     unit: "میلیون ریال",
+    unit_assessment: unitAssessment,
     capital,
     standalone: prior ? { ...cur, prior } : cur,
   };
@@ -265,6 +289,8 @@ export function normalizeN10(tables, meta) {
   const inc = findIncomeTable(tables);
   // بانک/بیمه صورت سود و زیان متفاوتی دارند (بدون «بهای تمام‌شده»/«ناخالص» صنعتی) — مسیر جدا.
   if (!inc) return normalizeN10Bank(tables, meta);
+  const unitAssessment = n10AmountAssessment(inc);
+  if (!unitAssessment) return null;
 
   const revenue = rowIn(inc, ["درآمدهای عملیاتی"]);
   const cogs = rowIn(inc, ["بهای تمام شده درآمد", "بهاى تمام شده درآمد", "بهای تمام‌شده"]);
@@ -305,7 +331,7 @@ export function normalizeN10(tables, meta) {
   const mkIncome = (which) => ({
     revenue: which === "cur" ? revenue.value : revenue.prior,
     cogs: cogs && cogs[which === "cur" ? "value" : "prior"] !== null ? Math.abs(cogs[which === "cur" ? "value" : "prior"]) : 0,
-    gross_profit: gross && gross[which === "cur" ? "value" : "prior"] !== null ? gross[which === "cur" ? "value" : "prior"] : 0,
+    gross_profit: gross?.[which === "cur" ? "value" : "prior"] ?? null,
     operating_profit: op && op[which === "cur" ? "value" : "prior"] !== null ? op[which === "cur" ? "value" : "prior"] : 0,
     net_profit: which === "cur" ? net.value : net.prior,
     ...(eps && eps[which === "cur" ? "value" : "prior"] !== null ? { eps_rial: eps[which === "cur" ? "value" : "prior"] } : {}),
@@ -339,6 +365,7 @@ export function normalizeN10(tables, meta) {
     audited: meta.audited,
     restated_prior: false,
     unit: "میلیون ریال",
+    unit_assessment: unitAssessment,
     capital,
     standalone: prior ? { ...cur, prior } : cur,
   };
@@ -610,9 +637,9 @@ const SB_HDRS = () => ({
 
 /** نسخهٔ پارسر — با هر بازنویسی منطق پارس، زیاد کنید تا ردیف‌های نسخهٔ قدیم
  * (که در جدول append-only قابل حذف/ویرایش نیستند) دوباره پردازش شوند.
- * ردیف جدید با source_url پسونددار (#pv2) درج می‌شود و لایهٔ خواندن باید
+ * ردیف جدید با source_url پسونددار (#pv3) درج می‌شود و لایهٔ خواندن باید
  * بالاترین parser_version برای هر اطلاعیه را بخواند (raw.parser_version). */
-export const PARSER_VERSION = 2;
+export const PARSER_VERSION = 3;
 
 /** کلید درج برای نسخهٔ فعلی پارسر — نسخهٔ ۱ بدون پسوند بود. */
 const versionedUrl = (link) => (PARSER_VERSION === 1 ? link : `${link}#pv${PARSER_VERSION}`);

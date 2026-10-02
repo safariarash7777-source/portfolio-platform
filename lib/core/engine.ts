@@ -29,7 +29,7 @@ export interface HistoryDay {
 /** ورودی بنیادی از codal_reports.data (ن-۱۰). */
 export interface FundamentalInput {
   revenue: number; // میلیون ریال
-  gross_profit: number;
+  gross_profit: number | null;
   operating_profit: number;
   net_profit: number;
   eps_rial: number | null;
@@ -145,7 +145,9 @@ export interface Ratios {
 }
 
 export function computeRatios(f: FundamentalInput, lastPrice?: number | null): Ratios {
-  const m = (num: number) => (f.revenue > 0 ? (num / f.revenue) * 100 : null);
+  const m = (num: number | null) =>
+    typeof num === "number" && Number.isFinite(num) && f.revenue > 0
+      ? (num / f.revenue) * 100 : null;
   const annualFactor = f.period_months > 0 ? 12 / f.period_months : null;
   const epsAnnualized =
     f.eps_rial != null && annualFactor != null ? f.eps_rial * annualFactor : null;
