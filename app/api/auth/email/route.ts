@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server';
 import {createClient} from '@/lib/supabase/server';
+import {authOrigin} from '@/lib/auth/origin';
 import {sameOrigin} from '@/lib/auth/mobile-server';
 import {emailReturnPath,recoveryPageHref,recoveryDestination,freshEmailRecoveryProof} from '@/lib/auth/email';
 import {emailSignupReady,readEmailAction} from '@/lib/auth/email-server';
@@ -22,7 +23,7 @@ export async function POST(request:Request){
         typeof body.email!=='string' || body.email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email) ||
         typeof body.password!=='string' || body.password.length<12 || body.password.length>128)return reply(400,{error:'نام، ایمیل و رمز ۱۲ تا ۱۲۸ نویسه را بررسی کنید.'});
       if(!await emailSignupReady())return reply(503,{error:'ثبت‌نام ایمیلی هنوز آماده نیست. ورود حساب‌های موجود برقرار است.'});
-      const client=await createClient();const origin=new URL(process.env.NEXT_PUBLIC_APP_URL??request.url).origin;
+      const client=await createClient();const origin=authOrigin(request.url);
       const {error}=await client.auth.signUp({email:body.email.trim(),password:body.password,options:{
         emailRedirectTo:origin+'/auth/callback?next='+encodeURIComponent(emailReturnPath(next)),
         data:{full_name:body.fullName.trim()},
@@ -51,7 +52,7 @@ export async function POST(request:Request){
     if(body.action==='recover'){
       if(typeof body.email!=='string' || body.email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email))return reply(400,{error:'ایمیل معتبر وارد کنید.'});
       // Fixed callback destination; neither an arbitrary redirect nor a contact in logs.
-      const origin=new URL(process.env.NEXT_PUBLIC_APP_URL??request.url).origin;
+      const origin=authOrigin(request.url);
       try{const {error}=await client.auth.resetPasswordForEmail(body.email,{redirectTo:origin+'/auth/callback?next='+encodeURIComponent(recoveryPageHref(next))});if(error)recordEmailFailure();}catch{recordEmailFailure();}
       // Same response for missing account, configured SMTP failure and accepted request.
       return reply(200,{ok:true,status:'recovery_requested',message:'اگر حسابی وجود داشته باشد و سرویس ایمیل آماده باشد، لینک بازیابی دریافت می‌کنید.'});
@@ -61,7 +62,7 @@ export async function POST(request:Request){
     const {error}=await client.auth.verifyOtp({token_hash:body.tokenHash,type:body.type as 'signup'|'recovery'});
     const failure=authActionFailure(error);
     if(failure)return reply(failure,{error:failure===503?'سرویس ورود اکنون پاسخ نمی‌دهد. دوباره لینک اصلی را باز کنید.':failure===429?'تعداد تلاش‌ها زیاد است. کمی صبر کنید.':'لینک نامعتبر، منقضی یا قبلاً استفاده شده است.'});
-    const destination=body.type==='recovery'?recoveryDestination(next,new URL(request.url).origin):emailReturnPath(next);
+    const destination=body.type==='recovery'?recoveryDestination(next,authOrigin(request.url)):emailReturnPath(next);
     return reply(200,{ok:true,next:destination});
   }catch{return reply(503,{error:'سرویس ورود اکنون پاسخ نمی‌دهد.'});}
 }

@@ -2,9 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { accountEntryHref, normalizeReturnPath } from '@/components/account/returnPath'
 import { authSessionFailure } from '@/lib/auth/session-error'
+import { authOrigin } from '@/lib/auth/origin'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
+  const origin = authOrigin(request.url)
   const code = searchParams.get('code')
   // همان قانونی که لینک‌های ورود/ثبت‌نام با آن ساخته می‌شوند. پیش از این
   // اینجا یک بررسیِ جداگانه و سست‌تر بود (backslash و نویسهٔ کنترلی را رد
