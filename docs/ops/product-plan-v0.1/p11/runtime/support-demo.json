@@ -1,0 +1,60 @@
+{
+  "classification": "executed_synthetic_fixture",
+  "clock": "deterministic fixture timestamps; not operational latency",
+  "contract": "p08.handoff.receipt.fixture.v0.1",
+  "receipt": {
+    "contractVersion": "p08.handoff.receipt.fixture.v0.1",
+    "caseRef": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "subjectRef": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "beforeRevision": 1,
+    "afterRevision": 2,
+    "state": "received",
+    "consentVersion": "fixture-consent-v1",
+    "publicationVersionRef": null,
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "sourceRef": "k_406ea889d22a6f64dd120488f802da3a0d8130574a4d9d4ec6fdcac8dc79e100",
+    "transitionHash": "e4c230776754f856edbc1451ca4be497bef479fd49707abab52b69644b3ca210",
+    "environment": "synthetic"
+  },
+  "received": {
+    "status": "ready",
+    "code": "ok",
+    "event": {
+      "type": "support.lifecycle",
+      "occurredAt": "2026-10-02T10:00:00Z",
+      "recordedAt": "2026-10-02T10:00:01Z",
+      "environment": "synthetic",
+      "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "sourceContract": "support-boundary.v0.1",
+      "sourceRef": "k_406ea889d22a6f64dd120488f802da3a0d8130574a4d9d4ec6fdcac8dc79e100",
+      "subjectKey": "k_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "cohortKey": null,
+      "versionKey": null,
+      "dimensions": {
+        "action": "opened",
+        "category": "assistant"
+      },
+      "contractVersion": "measurement.v0.1",
+      "eventId": "k_764a7f7ebd7347273de00b7c3079950d9db96bebac1bb4fa62ddcbdab3743ca1"
+    },
+    "tracking": {
+      "caseKey": "k_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "state": "received",
+      "revision": 2,
+      "receiptAt": "2026-10-02T10:00:00Z",
+      "firstHumanResponseAt": null,
+      "sla": null,
+      "dataKind": "synthetic"
+    }
+  },
+  "replayedUniqueCount": 1,
+  "revoked": {
+    "status": "unavailable",
+    "code": "authority_changed",
+    "event": null,
+    "tracking": null
+  },
+  "eventSchema": "measurement.v0.1",
+  "productionConnected": false,
+  "humanResponseMeasured": false
+}

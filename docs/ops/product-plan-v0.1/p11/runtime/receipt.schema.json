@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:arash:p08-handoff-receipt:fixture:v0.1",
+  "title": "Acknowledged synthetic P08 receipt projection boundary; not a ticket store",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "caseRef", "subjectRef", "beforeRevision", "afterRevision", "state", "consentVersion", "publicationVersionRef", "occurredAt", "sourceRef", "transitionHash", "environment"],
+  "properties": {
+    "contractVersion": {"const": "p08.handoff.receipt.fixture.v0.1"},
+    "caseRef": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "subjectRef": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "beforeRevision": {"type": "integer", "minimum": 0},
+    "afterRevision": {"type": "integer", "minimum": 1},
+    "state": {"enum": ["received", "assigned", "resolved", "closed"]},
+    "consentVersion": {"anyOf": [{"type": "string", "pattern": "^[a-zA-Z0-9._-]{1,80}$"}, {"type": "null"}]},
+    "publicationVersionRef": {"anyOf": [{"type": "string", "pattern": "^[a-f0-9]{64}$"}, {"type": "null"}]},
+    "occurredAt": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"},
+    "sourceRef": {"type": "string", "pattern": "^k_[a-f0-9]{64}$"},
+    "transitionHash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "environment": {"const": "synthetic"}
+  },
+  "$comment": "Semantic checks in support.mjs additionally enforce same case/subject, afterRevision=beforeRevision+1, canonical transition hash, consent, valid lineage and pre/post authority. Hash and synthetic witness are not real server authorization proof."
+}

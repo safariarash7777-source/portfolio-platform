@@ -1,0 +1,44 @@
+{
+  "scope": "independent restricted two-path synthetic recheck",
+  "reviewedAt": "2026-10-02T13:44:31.374Z",
+  "sourceStatus": "FINAL_SHA_BOUND_TO_REVIEWED_SNAPSHOT",
+  "finalP08Sha": "2ca3058db75b44771c748b2673341aff2e84e77f",
+  "hashEncoding": "raw worktree bytes",
+  "hashes": {
+    "fixture-ledger.ts": "c54a2044a114ad50c54cb5799e27c6389ff22223e0f138771b2026caea82dd88",
+    "handoff-fixture.ts": "e7a0549a380bbced025e955d27879b74144858e7d54a7eccd084312dbc97c399"
+  },
+  "passed": 11,
+  "failed": 0,
+  "checks": [
+    "previously-reserved-dispatch-blocked-after-overrun",
+    "normal-existing-reservation-still-dispatches",
+    "valid-consented-transition-opened",
+    "case-mismatch-rejected",
+    "subject-mismatch-rejected",
+    "revision-gap-rejected",
+    "missing-consent-rejected",
+    "no-receipt-not-opened",
+    "assigned-not-responded",
+    "valid-resolution-projected",
+    "closed-not-resolved"
+  ],
+  "networkCalls": 0,
+  "databaseCalls": 0,
+  "modelCalls": 0,
+  "realMemberRecords": 0,
+  "serverReceiptAuthorizationAcceptance": "NOT_RUN",
+  "applicationAcceptance": "NOT_RUN",
+  "finalBinding": {
+    "lib/assistant/fixture-ledger.ts": {
+      "gitBlob": "6098dac35291289ee5ddba8b5bbd96b0a38fa419",
+      "sha256CanonicalLF": "c54a2044a114ad50c54cb5799e27c6389ff22223e0f138771b2026caea82dd88",
+      "matchesReviewedSnapshot": true
+    },
+    "lib/assistant/handoff-fixture.ts": {
+      "gitBlob": "c940595c24d5419f3b7e194b0b1e032fb3d6f4e9",
+      "sha256CanonicalLF": "e7a0549a380bbced025e955d27879b74144858e7d54a7eccd084312dbc97c399",
+      "matchesReviewedSnapshot": true
+    }
+  }
+}

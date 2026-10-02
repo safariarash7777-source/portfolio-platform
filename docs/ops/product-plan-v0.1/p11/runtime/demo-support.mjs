@@ -1,0 +1,14 @@
+import {writeFileSync} from 'node:fs';
+import {projectSupport,handoffTransitionHash} from './support.mjs';
+import {canonicalDigest,uniqueMeasurements} from './measurement.mjs';
+const before={caseRef:'a'.repeat(64),subjectRef:'b'.repeat(64),state:'pending_consent',revision:1,reason:'new-judgement',publicationVersionRef:null,consentVersion:null,ownerRef:null};
+const after={...before,state:'received',revision:2,consentVersion:'fixture-consent-v1'};
+const receipt={contractVersion:'p08.handoff.receipt.fixture.v0.1',caseRef:after.caseRef,subjectRef:after.subjectRef,beforeRevision:1,afterRevision:2,state:after.state,consentVersion:after.consentVersion,publicationVersionRef:after.publicationVersionRef,occurredAt:'2026-10-02T10:00:00Z',sourceRef:'k_'+canonicalDigest(['synthetic',after.caseRef,after.revision]),transitionHash:handoffTransitionHash(before,after),environment:'synthetic'};
+const deps={readAuthority:async()=>({allowed:true,caseRef:after.caseRef,subjectRef:after.subjectRef,revision:after.revision,consentVersion:after.consentVersion}),verifyReceipt:async r=>({valid:r.transitionHash===handoffTransitionHash(before,after),caseKey:'k_'+before.caseRef,subjectKey:'k_'+before.subjectRef,sourceRef:r.sourceRef})};
+const args={before,after,receipt,releaseSha:'31c44ab635b672b589b7833bcbc78b41d36f1e75',recordedAt:'2026-10-02T10:00:01Z'};
+const received=await projectSupport(args,deps);
+const replay=await projectSupport(structuredClone(args),deps);
+let calls=0;const revoked=await projectSupport(args,{...deps,readAuthority:async()=>++calls===1?{allowed:true,caseRef:after.caseRef,subjectRef:after.subjectRef,revision:after.revision,consentVersion:after.consentVersion}:{allowed:false}});
+const artifact={classification:'executed_synthetic_fixture',clock:'deterministic fixture timestamps; not operational latency',contract:'p08.handoff.receipt.fixture.v0.1',receipt,received,replayedUniqueCount:uniqueMeasurements([received.event,replay.event]).length,revoked,eventSchema:'measurement.v0.1',productionConnected:false,humanResponseMeasured:false};
+writeFileSync(new URL('./support-demo.json',import.meta.url),JSON.stringify(artifact,null,2)+'\n');
+console.log(JSON.stringify({received:received.status,revoked:revoked.code,replayUnique:artifact.replayedUniqueCount,piiFieldsIncluded:false}));

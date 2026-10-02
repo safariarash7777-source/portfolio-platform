@@ -1,0 +1,20 @@
+{
+  "kind": "acceptance-criteria-map-not-release-manifest",
+  "measurementContract": "measurement.v0.1",
+  "canonicalManifest": "docs/product-plan-v0.1/P00-RELEASE-MANIFEST.json",
+  "manifestVersionRead": "p00.v0.1",
+  "manifestRecordedAtRead": "2026-10-02T13:16:33.8233863Z",
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "gates": {
+    "G0": {"criteria": ["J00"], "evidence": ["AUDIT.md", "event.schema.json", "validation.json"], "owner": "P00"},
+    "G1": {"criteria": ["J01", "J02", "J08"], "scope": "native Auth/HTTPS/private Storage portion", "owner": "P00/P01"},
+    "G2": {"criteria": ["J02", "J03", "J04", "J05", "J06", "J07", "J08", "J09", "J10", "J11", "J12", "J13"], "scope": "per-package behavior and human review at each wave", "owner": "package owner / P11 evidence"},
+    "G3": {"criteria": ["J01", "J02", "J04", "J05", "J06", "J07", "J08", "J09", "J10", "J11"], "scope": "single-version end-to-end scenario", "owner": "P00 / independent reviewer"},
+    "G4": {"criteria": ["pilot owner decision", "support assigned", "baseline and cost coverage", "blocking incidents resolved", "release rollback reviewed"], "evidence": ["SUPPORT-PILOT.md", "BASELINE.md", "WEEKLY.md"], "owner": "Arash / P00"}
+  },
+  "waveCriteria": {"0": ["J00", "J01", "J02", "J03"], "1": ["J04", "J05", "J06", "J07", "J08"], "2": ["J09", "J10", "J11"], "3": ["J12"], "4": ["J13"]},
+  "executionEvidence": "acceptance-evidence.csv",
+  "instrumentation": "NOT_ACTIVATED; requires shared-file owner's agreement",
+  "pilotSize": "20-30 PROPOSAL_ONLY",
+  "pilotDeadline": null
+}

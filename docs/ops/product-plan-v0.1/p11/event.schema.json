@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:arash:measurement:v0.1",
+  "title": "Restricted measurement projection; not a domain ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "eventId", "type", "occurredAt", "recordedAt", "environment", "releaseSha", "sourceContract", "sourceRef", "subjectKey", "cohortKey", "versionKey", "dimensions"],
+  "properties": {
+    "contractVersion": {"const": "measurement.v0.1"},
+    "eventId": {"$ref": "#/$defs/key"},
+    "type": {"enum": ["access.eligible", "session.started", "meaningful.completed", "membership.renewed", "publication.published", "publication.withdrawn", "notification.result", "notification.seen", "publication.read_declared", "action.recorded", "assistant.result", "support.lifecycle", "service.error"]},
+    "occurredAt": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"},
+    "recordedAt": {"type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"},
+    "environment": {"enum": ["synthetic", "local", "preview", "pilot", "production"]},
+    "releaseSha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "sourceContract": {"enum": ["seasonal.v0.1", "publication.v1", "notifications.v1", "auth-boundary.v0.1", "member-boundary.v0.1", "portfolio-boundary.v0.1", "assistant-boundary.v0.1", "support-boundary.v0.1", "service-boundary.v0.1"]},
+    "sourceRef": {"$ref": "#/$defs/key"},
+    "subjectKey": {"$ref": "#/$defs/nullableKey"},
+    "cohortKey": {"$ref": "#/$defs/nullableKey"},
+    "versionKey": {"$ref": "#/$defs/nullableKey"},
+    "dimensions": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "status": {"enum": ["allowed", "success", "accepted", "retry", "failed", "unknown", "cancelled", "sourced", "referred", "unsourced"]},
+        "action": {"enum": ["read_declared", "lesson_checkpoint", "webinar_participation", "holdings_confirmed", "question_submitted", "action_recorded", "reviewed", "done", "not_done", "question", "opened", "responded", "resolved", "reopened"]},
+        "channel": {"enum": ["site", "telegram", "miniapp"]},
+        "category": {"enum": ["access", "financial", "privacy", "auth", "data", "telegram", "assistant", "content", "export", "usability", "other"]},
+        "reasonCode": {"enum": ["unavailable", "denied", "invalid_input", "stale_version", "unit_conflict", "network_ambiguous", "rate_limit", "authorization_changed", "transport_disabled", "unknown"]},
+        "durationMs": {"type": "integer", "minimum": 0, "maximum": 604800000}
+      }
+    }
+  },
+  "$defs": {
+    "key": {"type": "string", "pattern": "^k_[a-f0-9]{64}$"},
+    "nullableKey": {"anyOf": [{"$ref": "#/$defs/key"}, {"type": "null"}]}
+  },
+  "allOf": [
+    {"if": {"properties": {"type": {"enum": ["access.eligible", "session.started", "meaningful.completed", "membership.renewed", "notification.result", "notification.seen", "publication.read_declared", "action.recorded", "assistant.result", "support.lifecycle"]}}}, "then": {"properties": {"subjectKey": {"$ref": "#/$defs/key"}}}},
+    {"if": {"properties": {"type": {"enum": ["access.eligible", "meaningful.completed", "membership.renewed", "publication.published", "publication.withdrawn", "notification.result", "notification.seen", "publication.read_declared", "action.recorded"]}}}, "then": {"properties": {"cohortKey": {"$ref": "#/$defs/key"}}}},
+    {"if": {"properties": {"type": {"enum": ["publication.published", "publication.withdrawn", "notification.result", "notification.seen", "publication.read_declared", "action.recorded"]}}}, "then": {"properties": {"versionKey": {"$ref": "#/$defs/key"}}}},
+    {"if": {"properties": {"type": {"const": "access.eligible"}}}, "then": {"properties": {"sourceContract": {"const": "seasonal.v0.1"}, "dimensions": {"required": ["status"], "properties": {"status": {"const": "allowed"}}}}}},
+    {"if": {"properties": {"type": {"const": "membership.renewed"}}}, "then": {"properties": {"sourceContract": {"const": "seasonal.v0.1"}}}},
+    {"if": {"properties": {"type": {"enum": ["publication.published", "publication.withdrawn", "publication.read_declared"]}}}, "then": {"properties": {"sourceContract": {"const": "publication.v1"}}}},
+    {"if": {"properties": {"type": {"enum": ["session.started", "meaningful.completed", "membership.renewed", "publication.published", "publication.withdrawn", "notification.seen", "publication.read_declared", "action.recorded"]}}}, "then": {"properties": {"dimensions": {"required": ["status"], "properties": {"status": {"const": "success"}}}}}},
+    {"if": {"properties": {"type": {"const": "session.started"}}}, "then": {"properties": {"sourceContract": {"const": "auth-boundary.v0.1"}}}},
+    {"if": {"properties": {"type": {"const": "meaningful.completed"}}}, "then": {"properties": {"dimensions": {"required": ["action"], "properties": {"action": {"enum": ["read_declared", "lesson_checkpoint", "webinar_participation", "holdings_confirmed", "question_submitted", "action_recorded"]}}}}}},
+    {"if": {"properties": {"type": {"enum": ["notification.result", "notification.seen"]}}}, "then": {"properties": {"sourceContract": {"const": "notifications.v1"}, "dimensions": {"required": ["channel"]}}}},
+    {"if": {"properties": {"type": {"const": "notification.result"}}}, "then": {"properties": {"dimensions": {"required": ["status"], "properties": {"status": {"enum": ["accepted", "retry", "failed", "unknown", "cancelled"]}}}}}},
+    {"if": {"properties": {"type": {"const": "action.recorded"}}}, "then": {"properties": {"sourceContract": {"const": "portfolio-boundary.v0.1"}, "dimensions": {"required": ["action"], "properties": {"action": {"enum": ["reviewed", "done", "not_done", "question"]}}}}}},
+    {"if": {"properties": {"type": {"const": "assistant.result"}}}, "then": {"properties": {"sourceContract": {"const": "assistant-boundary.v0.1"}, "dimensions": {"required": ["status", "durationMs"], "properties": {"status": {"enum": ["sourced", "referred", "unsourced", "failed"]}}}}}},
+    {"if": {"properties": {"type": {"const": "support.lifecycle"}}}, "then": {"properties": {"sourceContract": {"const": "support-boundary.v0.1"}, "dimensions": {"required": ["action", "category"], "properties": {"action": {"enum": ["opened", "responded", "resolved", "reopened"]}}}}}},
+    {"if": {"properties": {"type": {"const": "service.error"}}}, "then": {"properties": {"sourceContract": {"const": "service-boundary.v0.1"}, "dimensions": {"required": ["category", "reasonCode"]}}}}
+  ]
+}

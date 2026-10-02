@@ -1,0 +1,32 @@
+✔ contract consumes access.eligible (5.5102ms)
+✔ contract consumes session.started (0.9319ms)
+✔ contract consumes meaningful.completed (0.5015ms)
+✔ contract consumes membership.renewed (0.5152ms)
+✔ contract consumes publication.published (1.321ms)
+✔ contract consumes publication.withdrawn (0.4763ms)
+✔ contract consumes notification.result (0.4132ms)
+✔ contract consumes notification.seen (0.8098ms)
+✔ contract consumes publication.read_declared (0.6436ms)
+✔ contract consumes action.recorded (0.6502ms)
+✔ contract consumes assistant.result (0.7257ms)
+✔ contract consumes support.lifecycle (0.4039ms)
+✔ contract consumes service.error (0.401ms)
+✔ private/unknown fields rejected instead of silently stripped (0.7753ms)
+✔ calendar/timezone, versions and unsupported result fail closed (0.7429ms)
+✔ stable identity, immutable output, replay and conflict quarantine (2.6263ms)
+✔ consented receipt projects support and tracking without question or promised response (1.3017ms)
+✔ receipt verification and pre/post authority mandatory (0.5705ms)
+✔ lineage/tamper/private/policy boundary rejected without callbacks (1.3906ms)
+✔ callback exception does not export error text (0.3436ms)
+✔ canonical snapshot cannot be mutated during async grant read (0.4158ms)
+✔ assigned/closed not response/resolution; resolved requires witness of original owner/consent (0.2479ms)
+✔ valid resolved receipt projects resolution, without inventing first response (0.4816ms)
+✔ invalid scalar consent and uncloneable extra payload are safe codes only (0.17ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 160.7657
