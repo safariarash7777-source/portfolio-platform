@@ -61,6 +61,7 @@ import ts from "typescript";
 import { NextRequest } from "next/server";
 import * as returnPaths from "./returnPath";
 import * as entitlementFilters from "../../lib/entitlement-filter";
+import * as sessionErrors from "../../lib/auth/session-error";
 
 const localRequire = createRequire(import.meta.url);
 const middlewareModule = { exports: {} as { middleware?: (request: NextRequest) => Promise<Response> } };
@@ -71,7 +72,7 @@ runInNewContext(ts.transpileModule(readFileSync(new URL("../../middleware.ts", i
   require: (name: string) => name === "@supabase/ssr"
     ? { createServerClient: () => ({ auth: { getUser: async () => ({ data: { user: null } }) } }) }
     : name === "./components/account/returnPath" ? returnPaths
-    : name === "./lib/entitlement-filter" ? entitlementFilters : localRequire(name),
+    : name === "./lib/auth/session-error" ? sessionErrors : name === "./lib/entitlement-filter" ? entitlementFilters : localRequire(name),
   process: { env: {} }, URL,AbortController,fetch,setTimeout,clearTimeout,
 });
 
@@ -104,7 +105,7 @@ for(const signedIn of [true,false]) {
     const loadedMiddleware={exports:{} as {middleware:(request:NextRequest)=>Promise<Response>}};
     runInNewContext(ts.transpileModule(readFileSync(new URL('../../middleware.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
       exports:loadedMiddleware.exports,
-      require:(name:string)=>name==='@supabase/ssr'?{createServerClient:(_url:unknown,_key:unknown,options:{cookies:{setAll:(values:object[])=>void}})=>({auth:{getUser:async()=>{options.cookies.setAll([{name:'synthetic-session',value:signedIn?'refreshed':'',options:{path:'/',httpOnly:true,sameSite:'lax',maxAge:signedIn?300:0}}]);return {data:{user:signedIn?{id:'synthetic-user'}:null}};}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{role:'user'}})})})})})}:name==='./components/account/returnPath'?returnPaths:name==='./lib/entitlement-filter'?entitlementFilters:localRequire(name),
+      require:(name:string)=>name==='@supabase/ssr'?{createServerClient:(_url:unknown,_key:unknown,options:{cookies:{setAll:(values:object[])=>void}})=>({auth:{getUser:async()=>{options.cookies.setAll([{name:'synthetic-session',value:signedIn?'refreshed':'',options:{path:'/',httpOnly:true,sameSite:'lax',maxAge:signedIn?300:0}}]);return {data:{user:signedIn?{id:'synthetic-user'}:null}};}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{role:'user'}})})})})})}:name==='./components/account/returnPath'?returnPaths:name==='./lib/auth/session-error'?sessionErrors:name==='./lib/entitlement-filter'?entitlementFilters:localRequire(name),
       process:{env:{}},URL,AbortController,fetch,setTimeout,clearTimeout,
     });
     const response=await loadedMiddleware.exports.middleware(new NextRequest('https://site.example/admin'));
@@ -118,7 +119,7 @@ test('A stalled authenticated gate returns a bounded, explicit retry and never p
   const loadedMiddleware={exports:{} as {middleware:(request:NextRequest)=>Promise<Response>;config:{runtime:string}}};
   runInNewContext(ts.transpileModule(readFileSync(new URL('../../middleware.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
     exports:loadedMiddleware.exports,
-    require:(name:string)=>name==='@supabase/ssr'?{createServerClient:(_url:unknown,_key:unknown,options:{global:{fetch:typeof fetch}})=>({auth:{getUser:()=>{void options.global.fetch('https://not-a-network-request.test').catch(()=>{});return new Promise(()=>{});}}})}:name==='./components/account/returnPath'?returnPaths:name==='./lib/entitlement-filter'?entitlementFilters:localRequire(name),
+    require:(name:string)=>name==='@supabase/ssr'?{createServerClient:(_url:unknown,_key:unknown,options:{global:{fetch:typeof fetch}})=>({auth:{getUser:()=>{void options.global.fetch('https://not-a-network-request.test').catch(()=>{});return new Promise(()=>{});}}})}:name==='./components/account/returnPath'?returnPaths:name==='./lib/auth/session-error'?sessionErrors:name==='./lib/entitlement-filter'?entitlementFilters:localRequire(name),
     process:{env:{}},URL,AbortController,fetch:(_input:unknown,init:RequestInit)=>{init.signal?.addEventListener('abort',()=>{upstreamAborted=true;});return new Promise(()=>{});},
     setTimeout:(callback:()=>void,milliseconds:number)=>{assert.equal(milliseconds,8000);deadline=callback;return 1;},clearTimeout:()=>{},
   });

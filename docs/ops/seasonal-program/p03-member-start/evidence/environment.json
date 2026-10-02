@@ -1,0 +1,51 @@
+{
+  "capturedAt": "2026-10-02T14:18:23.1074925Z",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "baseCommit": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "buildId": "yFdgrBvlgYYJvAFDUqvH6",
+  "nextVersion": "15.5.25",
+  "nodeVersion": "v24.19.0",
+  "origin": "http://127.0.0.1:3620",
+  "nextBind": "127.0.0.1:3600",
+  "networkInternal": true,
+  "nativeSyntheticUserSignIn": true,
+  "provider": "mock example.invalid only; no request sent",
+  "phoneProvider": "disabled; acceptance OPEN",
+  "sqlFilesApplied": 21,
+  "newApplicationMigration": 0,
+  "secretsExported": false,
+  "containers": [
+    {
+      "name": "p03member-db",
+      "image": "public.ecr.aws/supabase/postgres:17.6.1.167",
+      "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "running": true,
+      "health": "healthy",
+      "memoryBytes": 419430400
+    },
+    {
+      "name": "p03member-auth",
+      "image": "public.ecr.aws/supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "imageId": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "running": true,
+      "health": null,
+      "memoryBytes": 83886080
+    },
+    {
+      "name": "p03member-rest",
+      "image": "dev07/postgrest:14.17",
+      "imageId": "sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272",
+      "running": true,
+      "health": "unhealthy",
+      "memoryBytes": 83886080
+    },
+    {
+      "name": "p03member-storage",
+      "image": "public.ecr.aws/supabase/storage-api@sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "imageId": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "running": true,
+      "health": null,
+      "memoryBytes": 188743680
+    }
+  ]
+}

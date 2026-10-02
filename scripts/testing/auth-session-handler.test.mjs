@@ -1,3 +1,5 @@
+import './p01-session-contract.test.mjs';
+import './p01-cookie-scope.test.mjs';
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';import {createRequire} from 'node:module';import {runInNewContext} from 'node:vm';
 import ts from 'typescript';import {AuthSessionMissingError,AuthApiError,AuthRetryableFetchError} from '@supabase/supabase-js';

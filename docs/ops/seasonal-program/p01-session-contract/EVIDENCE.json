@@ -1,0 +1,151 @@
+{
+  "version": "p01.evidence.v1",
+  "recordedAt": "2026-10-02T13:55:31Z",
+  "scope": "isolated Auth/session/access patch; native and Production acceptance remain open",
+  "source": {
+    "main": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+    "base": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "baseTree": "b891e09732872b16768317b506bfb9910cb0fdbf",
+    "codeCommit": "87f6b2250218c661fc3a6ab89fec10d35f6a7467",
+    "branch": "codex/p01-session-contract-20261002",
+    "pullRequestBase": "codex/n10-null-unit-20261002",
+    "appearancePreservedPR": 199
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "authJs": "2.105.1",
+    "ssr": "0.10.2",
+    "next": "15.5.25",
+    "newDependencies": 0
+  },
+  "validation": {
+    "newP01": {
+      "tests": 38,
+      "pass": 38,
+      "fail": 0,
+      "skipped": 0,
+      "kind": "actual TS handlers in VM and real SDK errors/canned transport; no native session or DB acceptance"
+    },
+    "baseline": {
+      "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "tests": 38,
+      "pass": 8,
+      "fail": 30,
+      "skipped": 0,
+      "exitCode": 1,
+      "intentionallyRed": true,
+      "command": "node scripts/testing/p01-session-contract.test.mjs --baseline"
+    },
+    "combinedHttpAndSms": {
+      "tests": 61,
+      "pass": 61,
+      "fail": 0,
+      "skipped": 0,
+      "includesNewP01": true,
+      "command": "node --test scripts/testing/auth-session-handler.test.mjs scripts/testing/seasonal-resource-handler.test.mjs services/auth-sms/core.test.mjs"
+    },
+    "relatedContracts": {
+      "tests": 47,
+      "pass": 47,
+      "fail": 0,
+      "skipped": 0,
+      "command": "node node_modules/tsx/dist/cli.mjs --test lib/auth/mobile.test.ts lib/auth/email.test.ts lib/seasonal/seasonal.test.ts lib/access-standing.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts lib/member/home.test.ts"
+    },
+    "totalTestsWithoutDoubleCounting": 108,
+    "typecheck": "PASS",
+    "lintWithZeroWarnings": "PASS",
+    "build": {
+      "status": "PASS",
+      "staticPages": 47,
+      "serverStarted": false
+    },
+    "secretScan": "PASS",
+    "diffCheck": "PASS",
+    "localLogHashes": {
+      "combined": "A6BB5E55DEDF6F7E3693E90242D047A291EFE4E4A6E3B663D0BCB253754BFED1",
+      "related": "6DFC6686C5DFD608D28FDFFEB841E811FFCE9DCAC83388C35D29842FD3323145",
+      "baseline": "4524743942D2CAED21B391BA83E5EAC781E7170946E57F87FAA874F27E1D322C",
+      "build": "8379BC2907EFDF436E2E741C3578E4F40AFB3A8706DE1A0F0C96F57D1A2719A5"
+    }
+  },
+  "existingLiaraReadOnly": {
+    "observedAt": "2026-10-02T17:03:39.046720+03:30",
+    "environment": "existing service; separate from P00 sandbox",
+    "catalog": {
+      "auth.users": true,
+      "public.profiles": true,
+      "public.entitlements": true,
+      "public.course_cohorts": false,
+      "public.course_resources": false,
+      "public.needs_assessment_versions": false,
+      "identity_private.profile_versions": false,
+      "publication_private.research_publication_reads": false
+    },
+    "canonicalPublicationCatalogObservedAt": "2026-10-02T13:35:24.485399Z",
+    "cron": {
+      "extensionPresent": true,
+      "total": 0,
+      "active": 0,
+      "backupCommands": 0,
+      "rootCrontabReadable": false,
+      "rootCrontabBackupEntries": null,
+      "backupTimerUnits": [
+        [
+          "dpkg-db-backup.timer",
+          "dpkg-db-backup.service"
+        ]
+      ],
+      "portfolioNamedBackupTimers": 0,
+      "applicationSchedule": "UNKNOWN"
+    },
+    "documentedEncryptedArtifact": {
+      "present": true,
+      "bytes": 413798850,
+      "modifiedAt": "2026-09-30T17:48:26.900591+03:30",
+      "hashCheckedToday": false,
+      "restoreCheckedToday": false
+    },
+    "freshBackupAndRestore": "UNKNOWN"
+  },
+  "p00SecondarySnapshot": {
+    "source": "P00 BROWSER-ACCEPTANCE.json; allowlisted metadata copied without observations/credentials",
+    "sourceSha256": "225432993C6C5C4452659C7E3340F4C577C3BD3A4034D2F0B442A257898CFB83",
+    "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "environment": "portfolio-accept195",
+    "origin": "https://62.60.191.24:8443",
+    "startedAt": "2026-10-02T13:36:54.688Z",
+    "finishedAt": "2026-10-02T13:42:00.159Z",
+    "counts": {
+      "PASS": 29,
+      "FAIL": 1,
+      "BLOCKED": 0
+    },
+    "failedScenario": "execution-admin",
+    "cause": "UNKNOWN from allowlisted status; owner P00 to diagnose",
+    "p01CodeInstalled": false,
+    "productionOwnerAcceptance": false
+  },
+  "handoff": {
+    "p00": "install candidate and validate same SHA/native browser/RLS/private Storage/restore evidence",
+    "p03": [
+      "lib/intelligence/publication-server.ts publicationMember mapping",
+      "lib/member/http.ts memberAuthErrorStatus mapping"
+    ],
+    "p04": "lib/portfolio/financialHttp.ts guard outside patch scope",
+    "businessPolicyD034": "OPEN",
+    "paymentD024": "OPEN",
+    "smsCommercialProvider": "DEFERRED",
+    "recoveryDelivery": "UNKNOWN",
+    "ownerProductionLogin": "NOT_ACCEPTED"
+  },
+  "mutations": {
+    "newMigrations": 0,
+    "productionWrites": 0,
+    "productionDeployments": 0,
+    "environmentConfigWrites": 0,
+    "accountOrAdminCreation": 0,
+    "credentialChanges": 0,
+    "providerPurchasesOrMessages": 0,
+    "secretsOrPrivateRecordsEmitted": false
+  }
+}
