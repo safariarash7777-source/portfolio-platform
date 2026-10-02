@@ -1,0 +1,13 @@
+{
+  "sourceZipSha256": "1ce4fb946ec9130cf4320c7bb4290d84172ebfb8659a1e0b60e64461b2ff6360",
+  "liveProject": "C:\\Users\\Asus\\Documents\\ChatGPT\\\u062a\u0648\u0633\u0639\u0647 \u0633\u0627\u06cc\u062a\\portfolio-p11-artifacts\\dashboard",
+  "checks": {
+    "src/content/dashboard/DashboardContent.jsx": true,
+    "src/content/dashboard/dashboard.css": true,
+    "src/data.json": true,
+    "protected-runtime.json": true,
+    "AGENTS.md": true
+  },
+  "whyOutsideProductRepo": "Keep bundled standalone runtime outside eslint . and Next product source discovery; no root policy/config edits. Source zip retains the editable canonical project.",
+  "artifactId": "dashboard:bf45f378-0cb0-44fe-87c7-d82bba5b654f"
+}

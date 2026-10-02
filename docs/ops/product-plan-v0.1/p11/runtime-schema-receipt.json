@@ -1,0 +1,15 @@
+{
+  "validator": "jsonschema Draft202012Validator + FormatChecker",
+  "classification": "independent synthetic schema conformance only",
+  "checks": {
+    "receipt": {
+      "valid": true,
+      "errorCount": 0
+    },
+    "event": {
+      "valid": true,
+      "errorCount": 0
+    }
+  },
+  "productionConnected": false
+}

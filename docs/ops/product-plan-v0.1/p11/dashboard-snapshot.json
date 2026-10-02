@@ -1,0 +1,376 @@
+{
+  "surface": "dashboard",
+  "title": "صف خطا و پذیرش محصول",
+  "generatedAt": "2026-10-02T16:47:49.154Z",
+  "status": "نمونه محلی از شواهد مستند؛ سنجه مشتری واقعی ندارد",
+  "filters": [],
+  "queries": {
+    "incident_queue": {
+      "rows": [
+        {
+          "id": "auth-intake-20261002",
+          "title": "پاسخ Auth قابل‌خواندن نیست",
+          "owner": "P01",
+          "priority": "بالا؛ پیشنهاد P11",
+          "status": "گزارش تاریخی؛ وضعیت فعلی نامعلوم",
+          "kind": "شاهد لاگ واقعی گزارش‌شده",
+          "environment": "Production main51fd066",
+          "evidence": "auth",
+          "next": "علت/رفع و محیط نسخه ترکیبی با شاهد تازه بررسی شود"
+        },
+        {
+          "id": "market-intake-20261002",
+          "title": "نمایش داده بازار؛ گزارش آرش",
+          "owner": "P02",
+          "priority": "بالا؛ پیشنهاد P11",
+          "status": "گزارش کاربر؛ علت نامعلوم",
+          "kind": "گزارش مستقیم کاربر",
+          "environment": "Production؛ مسیر دقیق نامعلوم",
+          "evidence": "market",
+          "next": "مسیر/درخواست مشخص و شاهد تازه از مالک داده"
+        },
+        {
+          "id": "p08-overrun",
+          "title": "dispatch رزرو قبلی پس از overrun",
+          "owner": "P08",
+          "priority": "مسدودکننده پذیرش fixture",
+          "status": "رفع و بازبینی محدود شد",
+          "kind": "اجرای مستقل مصنوعی",
+          "environment": "fixture روی commit2ca3058/e4419f9",
+          "evidence": "review",
+          "next": "پذیرش کامل ledger و authority سرور جداست"
+        },
+        {
+          "id": "p08-lineage",
+          "title": "نگاشت دریافت با پرونده نامرتبط",
+          "owner": "P08",
+          "priority": "مسدودکننده پذیرش fixture",
+          "status": "رفع و بازبینی محدود شد",
+          "kind": "اجرای مستقل مصنوعی",
+          "environment": "fixture روی commit2ca3058/e4419f9",
+          "evidence": "recheck",
+          "next": "receipt واقعی و مجوز pre/post در محیط هدف"
+        },
+        {
+          "id": "p08-ci-registration",
+          "title": "آزمون‌های ثبت‌نشده در test:core",
+          "owner": "P08/P00",
+          "priority": "گیت CI",
+          "status": "رفع؛ CI همان head موفق",
+          "kind": "اجرای CI واقعی روی fixture مخزن",
+          "environment": "GitHub e4419f9",
+          "evidence": "ci",
+          "next": "موفقیت CI پذیرش سرویس مشتری نیست"
+        },
+        {
+          "id": "human-acceptance",
+          "title": "فهم مالی و استفاده واقعی عضو",
+          "owner": "آرش/P00/P03/P04",
+          "priority": "گیت انسانی",
+          "status": "OPEN",
+          "kind": "پذیرش انسانی انجام‌نشده",
+          "environment": "sandbox/پایلوت پیشنهادی",
+          "evidence": "baseline",
+          "next": "فرد کم‌تخصص و محتوای معلم تأیید کند؛ تعداد/موعد باز"
+        }
+      ],
+      "source": {
+        "label": "صف شواهد خطا؛ نه شمار خطای زنده",
+        "files": [
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-AUTH-INTAKE-20261002.md",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-MARKET-VISIBILITY-INTAKE-20261002.md",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW.md",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW-RECHECK.json",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-CI-RECEIPT.json",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md"
+        ],
+        "filters": [
+          "Snapshot bounded to source files read on 2026-10-02; current operational state is not polled",
+          "Synthetic executions and reported Production incidents are explicitly classified per row"
+        ],
+        "metricDefinitions": [
+          {
+            "label": "ردیف خطا",
+            "definition": "یک گزارش یا یافته مستند با نوع شاهد و وضعیت محدود به منبع؛ وضعیت تاریخی جای وضعیت جاری نیست.",
+            "componentIds": [
+              "incident-queue"
+            ]
+          },
+          {
+            "label": "اولویت",
+            "definition": "پیشنهاد triage P11 یا گیت ثبت‌شده؛ SLA یا شدت مصوب مشتری نیست.",
+            "componentIds": [
+              "incident-queue"
+            ]
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "auth",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-AUTH-INTAKE-20261002.md; SHA256 001e0712a7f45ef77c1c03c213a8f6a2204dff34b6cabf550d1438d843f523db"
+          },
+          {
+            "title": "market",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-MARKET-VISIBILITY-INTAKE-20261002.md; SHA256 76baa0b583f9c343d25716819d3baf0649b13156ed4c024dea8b455e12628f2d"
+          },
+          {
+            "title": "review",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW.md; SHA256 d7d7233bd9bcba7960fdccfb917ef734d8ce67a4bdcb83812491eedd28fa3e34"
+          },
+          {
+            "title": "recheck",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW-RECHECK.json; SHA256 786f12e1fd4bfcb4d8af03b57e1a33dc6bd53f360319aabe6cca7e6b4ba7a907"
+          },
+          {
+            "title": "ci",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-CI-RECEIPT.json; SHA256 b561459f2590583fd2395e9b9ffe5ca26c4f2ec25a262de789d6c725fd89419f"
+          },
+          {
+            "title": "baseline",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md; SHA256 be5798eba4438af47361310557f9c2afaa9a3193a6adbaced564c4c4a0856990"
+          }
+        ],
+        "executedAt": "2026-10-02T16:47:49.155Z"
+      }
+    },
+    "package_acceptance": {
+      "rows": [
+        {
+          "packageId": "P00",
+          "capability": "یک نسخه قابل‌آزمایش با schema و مالک معلوم",
+          "evidenceState": "مبنای195 تثبیت؛ candidate208+P03 منتظر رسید",
+          "gates": "G0/G1؛ سفر ترکیبی NOT_RUN",
+          "owner": "P00",
+          "evidence": "baseline",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P01",
+          "capability": "ورود، بازیابی و دسترسی واقعی عضو A؛ منع B",
+          "evidenceState": "شاهد native195 گزارش شده؛ نسخه ترکیبی بررسی نشده",
+          "gates": "G1/G2 و policy/provider",
+          "owner": "P01",
+          "evidence": "baseline",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P02",
+          "capability": "داده معتبر، null/واحد و سهمیه پایدار",
+          "evidenceState": "قرارداد/کد؛ سهمیه و دو چرخه زنده باز",
+          "gates": "G2؛ مجوز provider/priorUsage/reset",
+          "owner": "P02",
+          "evidence": "contracts",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P03",
+          "capability": "شروع عضو، نیازسنجی، درس و وبینار مجاز",
+          "evidenceState": "PR209 جدا؛ ترکیب با208 هنوز پذیرفته نشده",
+          "gates": "G2/G3؛ سه مرور انسانی OPEN",
+          "owner": "P03",
+          "evidence": "contracts",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P04",
+          "capability": "سبد و تصویر مالی معتبر و سابقه مشترک",
+          "evidenceState": "کد موجود؛ شاهد این نوبت عضو ترکیبی نداریم",
+          "gates": "G2؛ فهم انسانی OPEN",
+          "owner": "P04",
+          "evidence": "baseline",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P05",
+          "capability": "اتصال تلگرام و نسخه/سبد یکسان",
+          "evidenceState": "adapter/preview؛ انتقال واقعی و freeze باز",
+          "gates": "G2/G3؛ policy-block محفوظ",
+          "owner": "P05",
+          "evidence": "contracts",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P06",
+          "capability": "تصمیم با مخرج/اندازه و بازتوازن صحیح",
+          "evidenceState": "قرارداد اندازه و اعتبار هنوز DRAFT",
+          "gates": "G2/G3؛ تأیید آرش OPEN",
+          "owner": "P06/P07",
+          "evidence": "contracts",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P07",
+          "capability": "پژوهش دستی تا انتشار، اصلاح و پس‌گرفتن",
+          "evidenceState": "publication موجود؛ افزونه validity هنوز DRAFT",
+          "gates": "G2/G3؛ سه گردش واقعی OPEN",
+          "owner": "P07",
+          "evidence": "contracts",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P08",
+          "capability": "پاسخ با منبع و ارجاع/مصرف قابل‌ردیابی",
+          "evidenceState": "دو یافته fixture مستقل بسته؛ CI موفق",
+          "gates": "G2/G3؛ مدل/هزینه/پاسخ واقعی OPEN",
+          "owner": "P08",
+          "evidence": "review",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P09",
+          "capability": "شریک، انتساب، گزارش و وصول قابل‌اثبات",
+          "evidenceState": "قرارداد و نمونه آفلاین؛ داده واقعی در این snapshot نیست",
+          "gates": "G2/G4؛ قرارداد واقعی OPEN",
+          "owner": "P09",
+          "evidence": "baseline",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P10",
+          "capability": "جریان نقد، بدهی و هدف قابل‌فهم",
+          "evidenceState": "وابسته به پذیرشP04؛ این snapshot بازبینی کد ندارد",
+          "gates": "G2/G4؛ صحت و فهم انسانی OPEN",
+          "owner": "P10",
+          "evidence": "baseline",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        },
+        {
+          "packageId": "P11",
+          "capability": "سنجش بدون PII، پیگیری، خطا و پذیرش مسیر",
+          "evidenceState": "کتابخانه/receipt مصنوعی اجرایی؛ سفر هنوز NOT_RUN",
+          "gates": "G2/G3/G4؛ نام پاسخ‌گو/SLA/پایلوت OPEN",
+          "owner": "P11",
+          "evidence": "support",
+          "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
+        }
+      ],
+      "source": {
+        "label": "پذیرش قابلیت‌ها بر پایه برنامه و شواهد موجود",
+        "files": [
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-CONTRACT-ISSUES.md",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW.md",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\runtime\\support-demo.json"
+        ],
+        "filters": [
+          "Snapshot bounded to source files read on 2026-10-02; current operational state is not polled",
+          "Synthetic executions and reported Production incidents are explicitly classified per row"
+        ],
+        "metricDefinitions": [
+          {
+            "label": "پذیرش",
+            "definition": "قابلیت موردنیاز سند03 و گیت باقی؛ شمار آزمون/PR یا CI اثبات پذیرش عضو نیست. پذیرش انسانی OPEN است.",
+            "componentIds": [
+              "package-acceptance"
+            ]
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "baseline",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md; SHA256 be5798eba4438af47361310557f9c2afaa9a3193a6adbaced564c4c4a0856990"
+          },
+          {
+            "title": "contracts",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-CONTRACT-ISSUES.md; SHA256 013dbb6048248cd289dc1a9d165784b2c0887d8922b69194462d96f685905d00"
+          },
+          {
+            "title": "review",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW.md; SHA256 d7d7233bd9bcba7960fdccfb917ef734d8ce67a4bdcb83812491eedd28fa3e34"
+          },
+          {
+            "title": "support",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\runtime\\support-demo.json; SHA256 3bf2a5dfeb8adc950dd3bf2e7a465461ecaad6172df5757a8c776a71a855f696"
+          }
+        ],
+        "executedAt": "2026-10-02T16:47:49.155Z"
+      }
+    },
+    "support_tracking": {
+      "rows": [
+        {
+          "id": "fixture-received",
+          "state": "received",
+          "result": "ready",
+          "eventAction": "opened",
+          "kind": "اجرای مصنوعی با ساعت قطعی",
+          "firstResponse": "نامعلوم",
+          "sla": "مصوب نیست",
+          "owner": "P08/P11؛ پاسخ‌گوی انسانی تعیین‌نشده",
+          "next": "receipt/authority server نیاز شاهد واقعی دارد"
+        },
+        {
+          "id": "fixture-revoke",
+          "state": "revoked during projection",
+          "result": "authority_changed",
+          "eventAction": "هیچ رخداد",
+          "kind": "اجرای مصنوعی با ساعت قطعی",
+          "firstResponse": "نامعلوم",
+          "sla": "مصوب نیست",
+          "owner": "P01/P08/P11",
+          "next": "سؤال یا پیام واقعی ارسال نشده"
+        }
+      ],
+      "source": {
+        "label": "پیگیری مشتق از receipt مصنوعی اجرایی",
+        "files": [
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\runtime\\support-demo.json"
+        ],
+        "filters": [
+          "Snapshot bounded to source files read on 2026-10-02; current operational state is not polled",
+          "Synthetic executions and reported Production incidents are explicitly classified per row"
+        ],
+        "metricDefinitions": [
+          {
+            "label": "received",
+            "definition": "دریافت پس از consent و receipt fixture معتبر؛ پاسخ انسانی یا SLA را ثابت نمی‌کند.",
+            "componentIds": [
+              "support-tracking"
+            ]
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "support",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\runtime\\support-demo.json; SHA256 3bf2a5dfeb8adc950dd3bf2e7a465461ecaad6172df5757a8c776a71a855f696"
+          }
+        ],
+        "executedAt": "2026-10-02T16:47:49.155Z"
+      }
+    }
+  },
+  "sourceManifest": {
+    "auth": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-AUTH-INTAKE-20261002.md",
+      "sha256": "001e0712a7f45ef77c1c03c213a8f6a2204dff34b6cabf550d1438d843f523db"
+    },
+    "market": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-MARKET-VISIBILITY-INTAKE-20261002.md",
+      "sha256": "76baa0b583f9c343d25716819d3baf0649b13156ed4c024dea8b455e12628f2d"
+    },
+    "baseline": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md",
+      "sha256": "be5798eba4438af47361310557f9c2afaa9a3193a6adbaced564c4c4a0856990"
+    },
+    "contracts": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-CONTRACT-ISSUES.md",
+      "sha256": "013dbb6048248cd289dc1a9d165784b2c0887d8922b69194462d96f685905d00"
+    },
+    "review": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW.md",
+      "sha256": "d7d7233bd9bcba7960fdccfb917ef734d8ce67a4bdcb83812491eedd28fa3e34"
+    },
+    "recheck": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW-RECHECK.json",
+      "sha256": "786f12e1fd4bfcb4d8af03b57e1a33dc6bd53f360319aabe6cca7e6b4ba7a907"
+    },
+    "ci": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-CI-RECEIPT.json",
+      "sha256": "b561459f2590583fd2395e9b9ffe5ca26c4f2ec25a262de789d6c725fd89419f"
+    },
+    "support": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\runtime\\support-demo.json",
+      "sha256": "3bf2a5dfeb8adc950dd3bf2e7a465461ecaad6172df5757a8c776a71a855f696"
+    }
+  }
+}

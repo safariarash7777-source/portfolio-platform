@@ -45,3 +45,10 @@ git diff --check
 - P11: مالک همه موج‌ها؛ جمع‌آوری شاهد J00…J13 و گزارش هفتگی واقعی پس از دسترسی داده معتبر. خالی‌بودن قالب‌ها مانع کار مستقل نبود و اکنون وضعیت دقیق فقدان شاهد است.
 
 بازگشت این تحویل: کنارگذاشتن PR مستندات، بدون migration یا تغییر داده. بازگشت محصول/اعلان با P00 و صاحبان runtime و فقط در دامنه مجاز انجام می‌شود. Production، خرید، پیام واقعی و دورزدن policy خارج مأموریت‌اند.
+## Runtime et dashboard — 2026-10-02
+
+Pure projection is committed at 8eab5d5471d1ed8aa89921e58dc8f476513fb818. P08 ACKs consuming the existing projection port and archiving unchanged modules for its test harness; receipt is fixture-only p08.handoff.receipt.fixture.v0.1. P00 ACKs lib/measurement/p11/**, but no shared instrumentation is activated. 24 focused Node tests pass; independent JSON Schema conformance checks pass for the demo receipt and event. No collector, database, new ticket model, real human reply, cost or SLA is claimed.
+
+A local editable Data dashboard now has six incident rows, twelve capability rows and two executed synthetic support rows. It carries source hashes and keeps reported historical Production errors distinct from current verification. Browser search (overrun → 1 row), owner filter (P08 → 2 rows), acceptance pagination (8+4), support statuses, source inspector and 390×844 viewport were checked. Page scroll width stays within the viewport; long tables scroll inside their own region. Offline export is local; no publication occurred.
+
+The native five-minute journey remains NOT_RUN pending P00 candidate208+P03 URL/SHA, owner-created A/B fixtures and login health. P00 reports fresh demo DB and isolated cookies in preparation; CI/build evidence does not establish member acceptance. Human acceptance remains OPEN for P00 through P11.
