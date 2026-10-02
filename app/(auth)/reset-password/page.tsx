@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { Suspense,useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter,useSearchParams } from "next/navigation";
+import {emailReturnPath,recoveryCheck,type RecoveryCheck} from '@/lib/auth/email';
 import { Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 
 export default function ResetPasswordPage() {
+  return <Suspense fallback={<p role="status" className="p-8">در حال بررسی نشست بازیابی…</p>}><ResetPasswordContent /></Suspense>;
+}
+function ResetPasswordContent() {
   const router = useRouter();
+  const searchParams=useSearchParams();
+  const returnTo=emailReturnPath(searchParams.get('next'));
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState<{ password?: string; confirm?: string }>({});
@@ -15,12 +21,17 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  // null = checking, true/false = has recovery session or not
-  const [hasSession, setHasSession] = useState<boolean | null>(null);
+  const [sessionState,setSessionState]=useState<RecoveryCheck|'checking'>('checking');
+  const [checkAttempt,setCheckAttempt]=useState(0);
 
   useEffect(() => {
-    fetch('/api/auth/status',{cache:'no-store'}).then(response=>response.json()).then(data=>setHasSession(data.authenticated===true)).catch(()=>setHasSession(false));
-  }, []);
+    const controller=new AbortController();
+    setSessionState('checking');
+    fetch('/api/auth/status?scope=email-recovery',{cache:'no-store',signal:controller.signal})
+      .then(recoveryCheck).then(state=>{if(!controller.signal.aborted)setSessionState(state);})
+      .catch(()=>{if(!controller.signal.aborted)setSessionState('unavailable');});
+    return ()=>controller.abort();
+  }, [checkAttempt]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -40,7 +51,7 @@ export default function ResetPasswordPage() {
         return;
       }
       setDone(true);
-      setTimeout(() => { router.push("/dashboard"); router.refresh(); }, 1800);
+      router.push(returnTo);router.refresh();
     } catch {
       setServerError("خطا در اتصال. لطفاً دوباره تلاش کنید");
     } finally {
@@ -77,13 +88,17 @@ export default function ResetPasswordPage() {
                 در حال انتقال به داشبورد...
               </p>
             </div>
-          ) : hasSession === false ? (
+          ) : sessionState === 'checking' ? <p role="status" className="text-sm leading-7">در حال بررسی نشست بازیابی…</p> : sessionState === 'unavailable' ? (
+            <div className="text-center">
+              <p role="alert" className="text-sm leading-7 mb-5">بررسی سرویس ورود انجام نشد. این خطا به معنی منقضی‌شدن لینک نیست.</p>
+              <button type="button" className="btn btn-gold w-full" onClick={()=>setCheckAttempt(value=>value+1)}>بررسی دوباره</button>
+            </div>
+          ) : sessionState === 'proof_required' ? (
             <div className="text-center">
               <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
-                این صفحه فقط از طریق لینکِ بازیابیِ ایمیل قابل دسترسی است و لینک شما نامعتبر یا منقضی
-                شده. لطفاً دوباره درخواست بازیابی دهید.
+                برای انتخاب رمز، لینک بازیابی تازهٔ ایمیل لازم است. دوباره درخواست بازیابی دهید و همان لینک اصلی را باز کنید.
               </p>
-              <Link href="/forgot-password" className="btn btn-gold w-full">
+              <Link href={'/forgot-password?next='+encodeURIComponent(returnTo)} className="btn btn-gold w-full">
                 درخواست لینک جدید
               </Link>
             </div>
@@ -97,6 +112,8 @@ export default function ResetPasswordPage() {
                 <div className="relative">
                   <input
                     id="new-password"
+                    autoComplete="new-password"
+                    maxLength={128}
                     type={showPass ? "text" : "password"}
                     className="input"
                     placeholder="حداقل ۱۲ نویسه"
@@ -109,9 +126,8 @@ export default function ResetPasswordPage() {
                   <button
                     type="button"
                     onClick={() => setShowPass((s) => !s)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2"
+                    className="absolute left-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy)]"
                     style={{ color: "var(--text-3)" }}
-                    tabIndex={-1}
                     aria-label={showPass ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
                   >
                     {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -127,6 +143,8 @@ export default function ResetPasswordPage() {
                 </label>
                 <input
                   id="confirm-password"
+                  autoComplete="new-password"
+                  maxLength={128}
                   type={showPass ? "text" : "password"}
                   className="input"
                   placeholder="رمز عبور را تکرار کنید"
@@ -140,6 +158,7 @@ export default function ResetPasswordPage() {
 
               {serverError && (
                 <div
+                  role="alert"
                   className="rounded-xl px-4 py-3 text-sm"
                   style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.25)", color: "var(--danger)" }}
                 >
@@ -147,7 +166,7 @@ export default function ResetPasswordPage() {
                 </div>
               )}
 
-              <button type="submit" className="btn btn-gold w-full" disabled={loading || hasSession === null}>
+              <button type="submit" className="btn btn-gold w-full" disabled={loading || sessionState!=='ready'}>
                 {loading ? "در حال ذخیره..." : (<><KeyRound size={16} />ذخیره رمز جدید</>)}
               </button>
             </form>

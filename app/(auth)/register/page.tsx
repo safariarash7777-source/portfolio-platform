@@ -4,15 +4,11 @@ import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, UserPlus, CheckCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { toLatinDigits } from "@/lib/format";
 import Logo from "@/components/ui/Logo";
 import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
 
 interface FormFields {
   full_name: string;
-  national_id: string;
-  phone: string;
   email: string;
   password: string;
   confirm_password: string;
@@ -20,8 +16,6 @@ interface FormFields {
 
 const EMPTY: FormFields = {
   full_name: "",
-  national_id: "",
-  phone: "",
   email: "",
   password: "",
   confirm_password: "",
@@ -30,19 +24,10 @@ const EMPTY: FormFields = {
 function validate(f: FormFields): Partial<Record<keyof FormFields, string>> {
   const e: Partial<Record<keyof FormFields, string>> = {};
   if (!f.full_name.trim()) e.full_name = "نام و نام خانوادگی الزامی است";
-  if (!/^\d{10}$/.test(f.national_id)) e.national_id = "کد ملی باید ۱۰ رقم باشد";
-  if (!/^09\d{9}$/.test(f.phone)) e.phone = "شماره موبایل باید با ۰۹ شروع شده و ۱۱ رقم باشد";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = "آدرس ایمیل معتبر نیست";
-  if (f.password.length < 8) e.password = "رمز عبور باید حداقل ۸ کاراکتر باشد";
+  if (f.password.length < 12 || f.password.length>128) e.password = "رمز باید بین ۱۲ تا ۱۲۸ نویسه باشد";
   if (f.password !== f.confirm_password) e.confirm_password = "رمز عبور و تکرار آن یکسان نیستند";
   return e;
-}
-
-function supabaseError(msg: string): string {
-  if (msg.includes("already registered") || msg.includes("already exists"))
-    return "این ایمیل قبلاً ثبت‌نام شده است";
-  if (msg.includes("weak password")) return "رمز عبور بسیار ضعیف است";
-  return "خطایی رخ داد. لطفاً دوباره تلاش کنید";
 }
 
 export default function RegisterPage() {
@@ -73,11 +58,7 @@ function RegisterPageContent() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const set = (k: keyof FormFields) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Normalize Persian/Arabic digits to Latin for numeric fields so validation
-    // and storage are consistent regardless of the user's keyboard.
-    const value =
-      k === "national_id" || k === "phone" ? toLatinDigits(e.target.value) : e.target.value;
-    setFields((f) => ({ ...f, [k]: value }));
+    setFields((f) => ({ ...f, [k]: e.target.value }));
     setErrors((er) => ({ ...er, [k]: undefined }));
   };
 
@@ -89,27 +70,11 @@ function RegisterPageContent() {
     setLoading(true);
     setServerError("");
     try {
-      const supabase = createClient();
-
-      // Pass all profile fields through signUp metadata. The handle_new_user()
-      // trigger persists them — a post-signup .update() would run unauthenticated
-      // (email confirmation = no session yet) and be blocked by RLS, silently
-      // dropping national_id/phone.
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: fields.email,
-        password: fields.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(returnTo)}`,
-          data: {
-            // SECURITY: role عمداً ارسال نمی‌شود — تریگر handle_new_user همیشه 'user' درج می‌کند
-            full_name: fields.full_name,
-            national_id: fields.national_id,
-            phone: fields.phone,
-          },
-        },
-      });
-
-      if (signUpError) { setServerError(supabaseError(signUpError.message)); return; }
+      const response=await fetch('/api/auth/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+        action:'signup',email:fields.email.trim(),password:fields.password,fullName:fields.full_name.trim(),next:returnTo,
+      })});
+      const data=await response.json();
+      if(!response.ok || data.status!=='confirmation_requested'){setServerError(data.error??'ثبت‌نام اکنون انجام نشد. اطلاعات فرم حفظ شده است.');return;}
 
       setSuccess(true);
     } catch {
@@ -133,10 +98,10 @@ function RegisterPageContent() {
             <CheckCircle size={32} />
           </div>
           <h2 className="font-display text-2xl font-bold mb-3" style={{ color: "var(--navy-deep)" }}>
-            ثبت‌نام موفق
+            درخواست تأیید حساب ثبت شد
           </h2>
           <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
-            ایمیل تأیید ارسال شد. لطفاً صندوق ورودی خود را بررسی کرده و ایمیل خود را تأیید کنید.
+            اگر ثبت‌نام پذیرفته شده باشد و سرویس ایمیل آماده باشد، لینک تأیید دریافت می‌کنید. صندوق ورودی و پوشهٔ اسپم را بررسی کنید. ایجاد حساب، عضویت در دوره نیست.
           </p>
           <Link href={accountEntryHref("/login", returnTo)} className="btn btn-gold w-full">
             رفتن به صفحه ورود
@@ -166,6 +131,7 @@ function RegisterPageContent() {
         </div>
 
         <div className="card-elevated p-8">
+          <p className="text-sm leading-7 mb-5" style={{color:'var(--text-2)'}}>حساب با تأیید ایمیل ساخته می‌شود. اطلاعات هویتی خصوصی و اتصال شماره از مسیر حساب تأییدشده تکمیل می‌شوند.</p>
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* full_name */}
             <Field
@@ -178,38 +144,10 @@ function RegisterPageContent() {
                 className="input"
                 placeholder="علی رضایی"
                 value={fields.full_name}
+                autoComplete="name"
+                maxLength={120}
                 onChange={set("full_name")}
                 disabled={loading}
-              />
-            </Field>
-
-            {/* national_id */}
-            <Field label="کد ملی" required error={errors.national_id}>
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength={10}
-                className="input"
-                placeholder="۱۲۳۴۵۶۷۸۹۰"
-                value={fields.national_id}
-                onChange={set("national_id")}
-                disabled={loading}
-                dir="ltr"
-              />
-            </Field>
-
-            {/* phone */}
-            <Field label="شماره موبایل" required error={errors.phone}>
-              <input
-                type="tel"
-                inputMode="numeric"
-                maxLength={11}
-                className="input"
-                placeholder="09121234567"
-                value={fields.phone}
-                onChange={set("phone")}
-                disabled={loading}
-                dir="ltr"
               />
             </Field>
 
@@ -217,6 +155,8 @@ function RegisterPageContent() {
             <Field label="آدرس ایمیل" required error={errors.email}>
               <input
                 type="email"
+                autoComplete="email"
+                maxLength={254}
                 className="input"
                 placeholder="email@example.com"
                 value={fields.email}
@@ -231,8 +171,10 @@ function RegisterPageContent() {
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
+                  autoComplete="new-password"
+                  maxLength={128}
                   className="input"
-                  placeholder="حداقل ۸ کاراکتر"
+                  placeholder="حداقل ۱۲ نویسه"
                   value={fields.password}
                   onChange={set("password")}
                   disabled={loading}
@@ -256,6 +198,8 @@ function RegisterPageContent() {
               <div className="relative">
                 <input
                   type={showConfirm ? "text" : "password"}
+                  autoComplete="new-password"
+                  maxLength={128}
                   className="input"
                   placeholder="رمز عبور را تکرار کنید"
                   value={fields.confirm_password}
@@ -278,6 +222,7 @@ function RegisterPageContent() {
 
             {serverError && (
               <div
+                role="alert"
                 className="rounded-xl px-4 py-3 text-sm"
                 style={{
                   background: "rgba(185,28,28,0.08)",
