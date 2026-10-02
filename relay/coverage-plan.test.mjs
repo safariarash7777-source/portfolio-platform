@@ -133,3 +133,25 @@ test('partial range resumes append-only; persisted ledger cannot rewind with che
   assert.equal(next.completedTaskIds.length, 1); assert.equal(next.checkpoint.simulatedRows.length, 2);
   assert.equal(next.priorRowsPreserved, true); assert.equal(l.days['2026-10-02'].leased, 2);
 });
+test('declared scope daily cap persists through restart independently of larger shared allowance', async () => {
+  const x = input(); x.dailyRequestCap = 1; const plan = buildCoveragePlan(x); const c = clock(); const l = ledger();
+  const responses = Object.fromEntries(plan.tasks.map(t => [t.symbol, fixture(t.symbol)]));
+  const first = await dryRunCoverage(plan, { budget: budget(l, c), clock: c, responses });
+  assert.equal(first.simulatedRequests, 1); assert.equal(first.stopReason, 'declared_daily_request_cap');
+  const restartClock = clock();
+  const resumed = await dryRunCoverage(plan, { budget: budget(l, restartClock), clock: restartClock, checkpoint: first.checkpoint, responses });
+  assert.equal(resumed.simulatedRequests, 0); assert.equal(l.days['2026-10-02'].leased, 1);
+});
+test('pacing crossing Tehran midnight cannot spend the old day; resumed clock retains send gap', async () => {
+  const plan = buildCoveragePlan(input()); const c = clock(); const l = ledger();
+  c.advance(Date.parse('2026-10-02T20:29:59.950Z') - c.now());
+  const stopped = await dryRunCoverage(plan, { budget: budget(l, c), clock: c });
+  assert.equal(stopped.simulatedRequests, 0); assert.equal(l.days['2026-10-02'].leased, 0);
+  assert.equal(stopped.budget.day, '2026-10-03');
+  const x = input(); x.symbols = [x.symbols[0]]; x.cells = [x.cells[0]];
+  const scoped = buildCoveragePlan(x), firstClock = clock(), shared = ledger();
+  const partial = await dryRunCoverage(scoped, { budget: budget(shared, firstClock), clock: firstClock, responses: { 'نمادالف': { ...fixture('نمادالف'), days: [] } } });
+  const restartClock = clock();
+  const next = await dryRunCoverage(scoped, { budget: budget(shared, restartClock), clock: restartClock, checkpoint: partial.checkpoint, responses: { 'نمادالف': fixture('نمادالف') } });
+  assert.ok(Date.parse(next.checkpoint.events[1].at) - Date.parse(next.checkpoint.events[0].at) >= 100);
+});

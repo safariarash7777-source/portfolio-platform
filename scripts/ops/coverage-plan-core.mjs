@@ -1,7 +1,7 @@
 // Metadata-only, offline planning. No prices, network client or live worker.
 import { createHash } from 'node:crypto';
 import { isMainTicker } from '../../relay/symbols-util.mjs';
-import { PersistentDailyBudget } from '../../relay/brsapi-client.mjs';
+import { PersistentDailyBudget, tehranDayKey } from '../../relay/brsapi-client.mjs';
 import { createBrsTransport } from '../../relay/brsapi-transport.mjs';
 import { makeSupabaseLeaseStore } from '../../relay/brsapi-budget-store.mjs';
 
@@ -178,6 +178,9 @@ export async function dryRunCoverage(plan, { budget, responses = {}, checkpoint 
   if (!(budget instanceof PersistentDailyBudget) || !offlineBudgets.has(budget)) throw new Error('isolated PR178 simulation budget required');
   if (!clock || typeof clock.now !== 'function' || typeof clock.advance !== 'function' || !integer(maxRequests, 0, 10000)) throw new Error('bounded simulation clock/request cap required');
   const state = initialCheckpoint(plan, checkpoint);
+  // A restarted synthetic clock cannot send earlier than its saved event log.
+  const lastEvent = Math.max(0, ...state.events.map(e => Date.parse(e.at)));
+  if (clock.now() < lastEvent) clock.advance(lastEvent - clock.now());
   const ledger = offlineLedgers.get(budget);
   for (const [day, floor] of Object.entries(state.leaseFloorByDay)) {
     if (!integer(ledger.days[day]?.leased, floor, 10000)) throw new Error('shared simulated ledger was reset or rewound');
@@ -194,6 +197,14 @@ export async function dryRunCoverage(plan, { budget, responses = {}, checkpoint 
     if (complete(task)) continue;
     if (state.events.filter(e => e.taskId === task.taskId).length >= plan.budget.maxAttempts) continue;
     if (simulatedRequests >= maxRequests) { stopReason = 'batch_request_cap'; break; }
+    // Advance the fixture clock through the post-response interval before
+    // reserving. If midnight passes, PR178 must lease for the new day first.
+    clock.advance(100);
+    const day = tehranDayKey(new Date(clock.now()));
+    const spentInScopeToday = state.events.filter(e => tehranDayKey(new Date(e.at)) === day).length;
+    if (plan.budget.declaredDailyRequestCap !== null && spentInScopeToday >= plan.budget.declaredDailyRequestCap) {
+      stopReason = 'declared_daily_request_cap'; break;
+    }
     await budget.ensure();
     if (!budget.reserve(task.budgetClass)) {
       stopReason = budget.snapshot().remainingKnown ? 'shared_budget_exhausted' : 'shared_baseline_or_store_unknown';
