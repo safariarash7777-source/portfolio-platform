@@ -1,0 +1,93 @@
+{
+  "observedAt": "2026-10-02T13:24:30.121Z",
+  "httpStatus": 200,
+  "ageSec": 80,
+  "lastRefresh": 1790947389224,
+  "counts": {
+    "gold": 9,
+    "currency": 28,
+    "crypto": 19,
+    "funds": 333,
+    "stocks": 760,
+    "options": 1587
+  },
+  "transport": {
+    "enabled": true,
+    "scope": "process",
+    "spacingMs": 100,
+    "pending": 0,
+    "sent": 5240,
+    "minStartGapMs": 109.1348934173584
+  },
+  "legacy": {
+    "enforced": false,
+    "day": null,
+    "requests": null,
+    "total": null,
+    "byProducer": null
+  },
+  "budget": {
+    "day": "2026-10-02",
+    "persistent": true,
+    "softBudget": 6000,
+    "hardCeiling": 9000,
+    "used": 0,
+    "remaining": 9000,
+    "remainingKnown": null,
+    "usedByClass": {
+      "critical": 100,
+      "standard": 0,
+      "bulk": 0
+    },
+    "rejectedByBudget": 1136
+  },
+  "budgetStore": {
+    "healthy": false,
+    "errors": 615,
+    "degradedCeiling": 100,
+    "degradedUsed": 100
+  },
+  "budgetLease": {
+    "granted": 0,
+    "spent": 0,
+    "remaining": 0,
+    "calls": 0
+  },
+  "budgetStop": {
+    "active": false,
+    "servedAgeMs": 79841
+  },
+  "db": {
+    "ok": true,
+    "status": 200,
+    "at": 1790947389885
+  },
+  "clientEnabled": false,
+  "sources": {
+    "brsapi_gold_currency": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_stocks": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_index": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_nav": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_fund_meta": {
+      "ok": true,
+      "count": null,
+      "at": null
+    }
+  }
+}
