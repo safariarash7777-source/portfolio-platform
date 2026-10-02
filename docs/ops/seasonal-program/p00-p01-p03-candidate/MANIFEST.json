@@ -1,6 +1,6 @@
 {
   "at": "2026-10-02T15:03:46.170Z",
-  "status": "LOCAL_ONLY_NOT_DEPLOYED_NOT_ACCEPTED",
+  "status": "SERVER_BUILD_PASS_NATIVE_DEMO_PREPARING_NOT_ACCEPTED",
   "applicationCodeSHA": "844860d2643addce4668f48bf2e475e09c997b28",
   "tree": "9f4f911058f2dad505dba4548a1ae41bcca05eec",
   "base195": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
@@ -18,14 +18,14 @@
       "pr": 209,
       "localDelta": "f669c05baf2cdebfead20999e389c77f19015152",
       "tree": "1c946651db631caed07c53ffb1b650827d9f2799",
-      "remoteHeadLastVerified": "63aeb0f",
-      "deltaPublished": false,
+      "remoteHeadLastVerified": "a44aff3b301cd2d4635f14ac4069e50c466cfe02",
+      "deltaPublished": true,
       "testFollowup": {
         "sha": "1f97cb25d89a983c9641cfdb54e8d2950316f1be",
         "blob": "0b7e352c39b4c449f122d4bbb3e52dfce2207829",
         "candidateBlobIdentical": true,
         "cherryPickedAgain": false,
-        "published": false
+        "published": true
       },
       "documentationEvidenceHead": {
         "sha": "797335c872ea4304aa119ecde32809da4f156e5d",
@@ -157,5 +157,44 @@
     199,
     "policy-blocked Telegram/preview startup",
     "other package PRs"
-  ]
+  ],
+  "serverBuild": {
+    "startedAt": "2026-10-02T16:30:52Z",
+    "applicationSHA": "844860d2643addce4668f48bf2e475e09c997b28",
+    "tree": "9f4f911058f2dad505dba4548a1ae41bcca05eec",
+    "sourceFilesVerified": 1587,
+    "hostAvailableKiB": 5799048,
+    "image": "docker-mirror.liara.ir/library/node@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+    "limits": {
+      "memory": "2g",
+      "memorySwap": "2g",
+      "cpus": 1,
+      "pids": 256,
+      "network": "none"
+    },
+    "servicesCreated": false,
+    "portsPublished": false,
+    "databaseTouched": false,
+    "dependenciesReadOnly": true,
+    "status": "PASS",
+    "existingContainersBefore": [
+      "portfolio-accept195-app 706bdb909bc4",
+      "portfolio-accept195-gateway 54e56f79d27d",
+      "portfolio-accept195-storage 7aa46e2a59e3",
+      "portfolio-accept195-rest 40e5edf87a6b",
+      "portfolio-accept195-auth 1cab06fa6b45",
+      "portfolio-accept195-db b96b02607143",
+      "fx-dashboard 386c98f90a44",
+      "portfolio-stage-gateway-1 10d8dd93463e",
+      "portfolio-stage-auth-1 d18e72a1f11e",
+      "portfolio-stage-rest-1 703c0d4a0273",
+      "portfolio-stage-storage-1 f44d402babd3",
+      "portfolio-stage-db-1 9193dfe09afa",
+      "fx-dashboard-proxy 3433552f37e1"
+    ],
+    "finishedAt": "2026-10-02T16:36:55Z",
+    "exitCode": 0,
+    "existingContainerIDsUnchanged": true,
+    "buildLogSha256": "3b44319b976a849c53c87ae9527547901e665b8615f257f95b5b2f5ba1fe155a"
+  }
 }
