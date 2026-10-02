@@ -26,12 +26,12 @@ function component(file, exports = '') {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX,
       target: ts.ScriptTarget.ES2020, esModuleInterop: true }, fileName: filename,
   }).outputText;
-  const module = { exports: {} };
+  const loadedModule = { exports: {} };
   const localRequire = name => name.startsWith('@/')
     ? require(path.join(root, name.slice(2))) : require(name);
   const run = vm.runInThisContext('(function(require,module,exports){' + js + '\n})', { filename });
-  run(localRequire, module, module.exports);
-  return module.exports;
+  run(localRequire, loadedModule, loadedModule.exports);
+  return loadedModule.exports;
 }
 const { MarginsChart } = component('components/symbol/FundamentalCharts.tsx', '\nexport { MarginsChart };\n');
 const { default: QuarterlyCharts } = component('components/symbol/QuarterlyCharts.tsx');
