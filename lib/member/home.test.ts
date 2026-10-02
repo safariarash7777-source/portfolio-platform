@@ -6,6 +6,8 @@ import { draftKey, restoreDraft } from "./draft";
 import { memberFixtureRequest, MEMBER_FIXTURE_COHORT_A as A, MEMBER_FIXTURE_COHORT_B as B } from "./fixture";
 import { accountEntryHref } from "../../components/account/returnPath";
 import { readMemberProfile } from "./profile";
+import { webinarCalendar, searchResources } from "./start";
+import { formatJalali, formatTehranClock } from "../format";
 const grant: MemberGrant = { grantRef: 1, cohortId: A, title: "A", moduleKeys: ["funds"], startsAt: "2026-10-01T05:30:00Z", endsAtExclusive: "2027-01-01T05:30:00Z", standing: "active" };
 test("shared Auth missing installation, session and service failures remain distinct", async () => {
   for (const [status, state] of [[404, "not_connected"], [401, "sign_in_required"], [503, "unavailable"]] as const) assert.deepEqual(await readMemberProfile(async () => new Response(null, { status })), { state });
@@ -79,4 +81,34 @@ test("preview distinguishes expired/revoked/cancelled and genuine empty resource
   for (const s of ["expired", "revoked", "cancelled"]) assert.equal((await memberData(`/api/me/module-access?module=resources&cohort=${A}`, isDecision, memberFixtureRequest(s))).reason, s === "cancelled" ? "cohort_cancelled" : s);
   assert.deepEqual(await memberData(`/api/cohorts/${A}/resources`, isResources, memberFixtureRequest("empty")), []);
   await assert.rejects(memberData("/api/me/cohorts", isGrants, memberFixtureRequest("error")), MemberReadError);
+});
+
+test("member calendar orders upcoming sessions and archives ended ones without inventing an end or provider", () => {
+  const common: Webinar = { id: A, title: "Synthetic", description: null, starts_at: "2026-10-02T20:00:00Z", ends_at: null, platform: null, status: "published" };
+  const input = [{ ...common, id: B, starts_at: "2026-10-03T20:00:00Z" }, common, { ...common, id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", status: "ended" as const }];
+  const result = webinarCalendar(input, "2026-10-02T21:00:00Z");
+  assert.deepEqual(result.upcoming.map(w => w.id), [A, B]); assert.deepEqual(result.ended.map(w => w.id), [input[2].id]);
+  assert.equal(result.upcoming[0].ends_at, null); assert.equal(result.upcoming[0].platform, null); assert.equal(input[0].id, B);
+  assert.equal(webinarCalendar(input, "unknown").unknown.length, 3);
+});
+
+test("calendar Tehran date crosses UTC midnight consistently with the existing formatter", () => {
+  const time = "2026-10-02T21:00:00Z";
+  assert.equal(formatJalali(time), formatJalali("2026-10-03T01:00:00Z"));
+  assert.equal(formatTehranClock(time), "۰۰:۳۰");
+});
+
+test("resource title search supports Persian variants without adding a content kind or altering authorized rows", () => {
+  const one = { resourceRef: A, title: "كتاب شناخت بازار", moduleKey: "resources", createdAt: grant.startsAt, resourcePath: `/api/cohorts/${A}/resources/${A}` };
+  const two = { ...one, resourceRef: B, title: "آشنایی با ریسک" };
+  assert.deepEqual(searchResources([one, two], "کتاب بازار"), [one]);
+  assert.deepEqual(searchResources([one, two], "ريسك"), [two]);
+  assert.deepEqual(searchResources([one, two], "ضبط"), []); assert.equal("kind" in one, false);
+  assert.deepEqual(searchResources([one, two], " "), [one, two]);
+});
+
+test("webinar-only outage keeps cohort resources accessible and never becomes an empty schedule", async () => {
+  const request = memberFixtureRequest("webinar-error");
+  assert.ok((await memberData(`/api/cohorts/${A}/resources`, isResources, request)).length);
+  await assert.rejects(memberData(`/api/cohorts/${A}`, isCohort, request), (e: unknown) => e instanceof MemberReadError && e.status === 503);
 });

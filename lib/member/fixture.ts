@@ -5,7 +5,7 @@ export const MEMBER_FIXTURE_COHORT_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 export const MEMBER_FIXTURE_COHORT_B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 export const MEMBER_FIXTURE_USER = "11111111-1111-4111-8111-111111111111";
 export const MEMBER_FIXTURE_NOW = "2026-10-01T12:00:00Z";
-export const MEMBER_FIXTURE_SCENARIOS = ["overlap", "active-b", "expired", "revoked", "cancelled", "scheduled", "empty", "never", "error", "save-error", "save-conflict"] as const;
+export const MEMBER_FIXTURE_SCENARIOS = ["overlap", "active-b", "expired", "revoked", "cancelled", "scheduled", "empty", "never", "error", "save-error", "save-conflict", "needs-read-error", "needs-read-slow", "webinar-error", "short-link"] as const;
 const response = (data: unknown, status = 200) => Response.json({ contractVersion: CONTRACT_VERSION, data }, { status });
 const body: NeedsAssessment = { experience: "new", interests: ["صندوق‌ها"], goal: "درک بهتر منبع و تاریخ داده", question: "تاریخ NAV چگونه بررسی می‌شود؟" };
 /** Explicit UI preview only; no Auth, identity claim, Storage or publication proof. */
@@ -34,12 +34,15 @@ export function memberFixtureRequest(scenario: string): MemberRequest {
         const v: AssessmentVersion = { id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", version: b.baseVersion + 1, body: b.body, created_at: MEMBER_FIXTURE_NOW, submitted_at: b.submitted ? MEMBER_FIXTURE_NOW : null };
         assessments.set(cohort, v); return response({ id: v.id, version: v.version });
       }
+      if (scenario === "needs-read-error") return response(null, 503);
+      if (scenario === "needs-read-slow") await new Promise(resolve => setTimeout(resolve, 1600));
       return response(assessments.get(cohort) ?? null);
     }
-    if (u.pathname.endsWith("/join") || /^\/api\/cohorts\/[^/]+\/resources\/[^/]+$/.test(u.pathname)) return authorized ? response({ url: "https://example.invalid/synthetic-authorized-link", expiresInSeconds: 60 }) : response(null, 403);
+    if (u.pathname.endsWith("/join") || /^\/api\/cohorts\/[^/]+\/resources\/[^/]+$/.test(u.pathname)) return authorized ? response({ url: "https://example.invalid/synthetic-authorized-link", expiresInSeconds: scenario === "short-link" ? 1 : 60 }) : response(null, 403);
     if (u.pathname.endsWith('/publications')) return Response.json(authorized?{data:{items:[],nextCursor:null},contractVersion:'publication.v1'}:{error:'Synthetic denied'},{status:authorized?200:403});
     if (u.pathname.endsWith("/resources")) return response(!authorized || scenario === "empty" ? [] : [{ resourceRef: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", title: cohort === A ? "منبع ساختگی فقط دورهٔ A" : "منبع ساختگی فقط دورهٔ B", moduleKey: "resources", createdAt: MEMBER_FIXTURE_NOW, resourcePath: `/api/cohorts/${cohort}/resources/cccccccc-cccc-4ccc-8ccc-cccccccccccc` }]);
     if (scenario === "cancelled") return response(null, 404);
+    if (scenario === "webinar-error") return response(null, 503);
     return response({ id: cohort, title: "دورهٔ ساختگی", startsAt: "2026-09-01T05:30:00Z", endsAtExclusive: "2027-01-01T05:30:00Z", timeZone: "Asia/Tehran", policyVersion: "sandbox.explicit.v1", moduleKeys: modules, webinars: scenario === "empty" ? [] : [
       { id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", title: "وبینار آیندهٔ ساختگی", description: null, starts_at: "2026-10-01T13:00:00Z", ends_at: "2026-10-01T14:00:00Z", platform: "سرویس نمونه", status: "published" },
       { id: "ffffffff-ffff-4fff-8fff-ffffffffffff", title: "وبینار در بازهٔ برگزاری ساختگی", description: null, starts_at: "2026-10-01T11:30:00Z", ends_at: "2026-10-01T12:30:00Z", platform: "سرویس نمونه", status: "live" },

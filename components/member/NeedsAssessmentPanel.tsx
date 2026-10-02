@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { type NeedsAssessment } from "@/lib/seasonal/contracts";
@@ -19,27 +19,35 @@ export default function NeedsAssessmentPanel({ cohortId, userId, request, previe
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<number | null>(null);
   const [base, setBase] = useState<number | null>(null);
+  const edited = useRef(false);
+  const [storedLocally, setStoredLocally] = useState(false);
   const path = `/api/cohorts/${cohortId}/needs-assessment`;
   const key = draftKey(userId, cohortId);
   useEffect(() => {
     let current = true;
+    // Recover before the server read: an outage must not hide the local draft.
+    let draft = null; try { draft = restoreDraft(sessionStorage.getItem(key), Date.now()); } catch { /* Editing in memory remains available. */ }
+    if (draft) {
+      edited.current = true; setBody(draft); setDirty(true); setStoredLocally(true);
+      setMessage("متن ذخیره‌نشدهٔ شما در همین مرورگر بازیابی شد؛ برای ثبت نهایی، دوباره ذخیره کنید.");
+    }
     memberData(path, isAssessment, request).then(data => {
       if (!current) return;
       setRead({ state: "ready", data }); setBase(data?.version ?? 0);
-      let draft = null; try { draft = restoreDraft(sessionStorage.getItem(key), Date.now()); } catch { /* Memory-only editing remains available. */ }
-      setBody(draft ?? data?.body ?? emptyBody); setDirty(!!draft);
-      if (draft) setMessage("متن ذخیره‌نشدهٔ شما در همین مرورگر بازیابی شد؛ برای ثبت نهایی، دوباره ذخیره کنید.");
+      // Preserve edits made while the initial or retried read was in flight.
+      if (!edited.current) setBody(data?.body ?? emptyBody);
     }).catch(e => { if (current) setRead({ state: "error", status: memberErrorStatus(e) }); });
     return () => { current = false; };
   }, [path, key, request]);
-  useEffect(() => {
-    if (!dirty) return;
-    try { sessionStorage.setItem(key, JSON.stringify({ body, savedAt: Date.now() })); } catch { /* Do not erase the form on storage errors. */ }
-  }, [body, dirty, key]);
-  function edit(next: NeedsAssessment) { setBody(next); setDirty(true); setMessage(""); }
+  function edit(next: NeedsAssessment) {
+    edited.current = true; setBody(next); setDirty(true); setMessage("");
+    // Save synchronously before a cohort switch or navigation can unmount the form.
+    try { sessionStorage.setItem(key, JSON.stringify({ body: next, savedAt: Date.now() })); setStoredLocally(true); }
+    catch { setStoredLocally(false); }
+  }
   async function retryRead() {
     setBusy(true); setStatus(null);
-    try { const data = await memberData(path, isAssessment, request); setRead({ state: "ready", data }); setBase(data?.version ?? 0); if (!dirty) setBody(data?.body ?? emptyBody); setMessage(dirty ? "نسخهٔ تازه دریافت شد؛ متن شما حفظ شد. آن را بررسی کنید و در صورت تمایل نسخهٔ تازه بسازید." : "آخرین پاسخ دریافت شد."); }
+    try { const data = await memberData(path, isAssessment, request); setRead({ state: "ready", data }); setBase(data?.version ?? 0); if (!edited.current) setBody(data?.body ?? emptyBody); setMessage(edited.current ? "نسخهٔ تازه دریافت شد؛ متن شما حفظ شد. آن را بررسی کنید و در صورت تمایل نسخهٔ تازه بسازید." : "آخرین پاسخ دریافت شد."); }
     catch (e) { setRead({ state: "error", status: memberErrorStatus(e) }); }
     finally { setBusy(false); }
   }
@@ -54,7 +62,7 @@ export default function NeedsAssessmentPanel({ cohortId, userId, request, previe
         if (auth.data.user.id !== userId) { setMessage("حساب ورود تغییر کرده است. این متن ارسال نشد؛ صفحه را با حساب خودتان دوباره باز کنید."); return; }
       }
       const receipt = await memberData(path, isReceipt, request, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body, baseVersion: base, submitted }) });
-      setBase(receipt.version); setDirty(false); try { sessionStorage.removeItem(key); } catch { /* The durable server record was saved. */ }
+      setBase(receipt.version); edited.current = false; setDirty(false); setStoredLocally(false); try { sessionStorage.removeItem(key); } catch { /* The durable server record was saved. */ }
       setMessage(submitted ? "پاسخ شما ثبت شد؛ می‌توانید بعداً آن را اصلاح کنید." : "پیش‌نویس ذخیره شد؛ هر زمان خواستید ادامه دهید.");
       try { const data = await memberData(path, isAssessment, request); setRead({ state: "ready", data }); }
       catch (e) { setRead({ state: "error", status: memberErrorStatus(e) }); setMessage("ذخیره انجام شد، اما بازخوانی پاسخ در دسترس نیست. برای دیدن نسخهٔ ثبت‌شده دوباره دریافت کنید."); }
@@ -74,13 +82,13 @@ export default function NeedsAssessmentPanel({ cohortId, userId, request, previe
       <label className="block space-y-2"><span>تجربهٔ سرمایه‌گذاری</span><select className="input min-h-12 w-full" value={body.experience} disabled={busy} onChange={e => edit({ ...body, experience: e.target.value as NeedsAssessment["experience"] })}><option value="new">تازه شروع کرده‌ام</option><option value="some">کمی تجربه دارم</option><option value="experienced">تجربه دارم</option></select></label>
       <fieldset><legend>موضوع‌های مورد علاقه (حداکثر پنج مورد)</legend><div className="flex flex-wrap gap-3 pt-2">{choices.map(topic => <label key={topic} className="inline-flex min-h-12 items-center gap-2"><input type="checkbox" checked={body.interests.includes(topic)} disabled={busy || body.interests.length >= 5 && !body.interests.includes(topic)} onChange={e => edit({ ...body, interests: e.target.checked ? [...body.interests, topic] : body.interests.filter(t => t !== topic) })} />{topic}</label>)}</div></fieldset>
       <label className="block space-y-2"><span>از این دوره چه می‌خواهید؟ (اختیاری)</span><textarea className="input min-h-24 w-full" maxLength={500} value={body.goal} disabled={busy} onChange={e => edit({ ...body, goal: e.target.value })} /></label>
-      <label className="block space-y-2"><span>پرسش آموزشی شما (اختیاری)</span><textarea className="input min-h-24 w-full" maxLength={1000} value={body.question} disabled={busy} onChange={e => edit({ ...body, question: e.target.value })} /></label>
+      <label id="member-question" className="block space-y-2"><span>پرسش آموزشی شما (اختیاری)</span><textarea className="input min-h-24 w-full" aria-describedby="member-question-help" maxLength={1000} value={body.question} disabled={busy} onChange={e => edit({ ...body, question: e.target.value })} /><span id="member-question-help" className="block text-sm">این پرسش همراه پاسخ نیازسنجی برای آماده‌سازی آموزش ثبت می‌شود؛ تضمین پاسخ فوری یا رزرو مشاوره نیست. برای ثبت نهایی، «ثبت پاسخ دوره» را بزنید.</span></label>
       <div className="flex flex-wrap gap-3"><button type="button" className="btn btn-outline min-h-12" disabled={busy || base === null} onClick={() => void save(false)}>ذخیره و ادامه در زمان دیگر</button><button className="btn btn-primary min-h-12" disabled={busy || base === null}>{busy ? "در حال ذخیره…" : "ثبت پاسخ دوره"}</button></div>
     </form>
     {message ? <p role={status ? "alert" : "status"}>{message}</p> : null}
     {status === 409 ? <div role="alert"><p>پاسخ در جای دیگری تغییر کرده است. ابتدا نسخهٔ تازه را دریافت و متن خودتان را بررسی کنید.</p><button className="btn btn-outline min-h-12" disabled={busy} onClick={() => void retryRead()}>دریافت نسخهٔ تازه؛ حفظ متن من</button></div> : null}
     {status === 403 ? <p role="alert">ثبت پاسخ برای این دوره با حساب فعلی مجاز نیست.</p> : null}
     {signIn ? <Link className="btn btn-outline min-h-12" href={accountEntryHref("/login", `/dashboard?cohort=${cohortId}`)}>ورود و بازگشت به همین دوره</Link> : null}
-    {dirty ? <p className="text-sm">متن هنوز روی سرور ذخیره نشده است. نسخهٔ موقت آن تا دو ساعت در همین تب مرورگر نگه داشته می‌شود.</p> : null}
+    {dirty ? <p className="text-sm">متن هنوز روی سرور ذخیره نشده است. {storedLocally ? "نسخهٔ موقت آن تا دو ساعت در همین تب مرورگر نگه داشته می‌شود." : "ذخیرهٔ موقت مرورگر در دسترس نیست؛ پیش از ترک صفحه، متن را نگه دارید یا پس از بازیابی سرویس روی سرور ذخیره کنید."}</p> : null}
   </section>;
 }
