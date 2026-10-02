@@ -17,4 +17,3 @@ const server = createServer(async (req, res) => {
   res.end(await readFile(req.url === "/font.woff2" ? "public/fonts/Vazirmatn-Variable.woff2" : path.join(output, req.url === "/" ? "index.html" : req.url.slice(1))));
 });
 server.listen(3444, "127.0.0.1", () => process.stdout.write("P04 synthetic fixture http://127.0.0.1:3444; no database/Next/native API\n"));
-
