@@ -1,0 +1,7 @@
+"symbol","day","status","reason","observedAt","sourceRef","existingRowRef"
+"نمادالف","2026-09-29","gap","verified_trade_and_complete_read_without_row","2026-10-02T06:00:00Z","synthetic:official-metadata",""
+"نمادالف","2026-09-30","holiday","explicit_official_calendar_closed","2026-10-02T06:00:00Z","",""
+"نمادالف2","2026-09-29","unsupported","excluded_subticker_or_rights","2026-10-02T06:00:00Z","",""
+"نمادالف2","2026-09-30","unsupported","excluded_subticker_or_rights","2026-10-02T06:00:00Z","",""
+"نمادب","2026-09-29","gap","verified_trade_and_complete_read_without_row","2026-10-02T06:00:00Z","synthetic:official-metadata",""
+"نمادب","2026-09-30","holiday","explicit_official_calendar_closed","2026-10-02T06:00:00Z","",""

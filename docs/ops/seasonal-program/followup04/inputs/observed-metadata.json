@@ -1,0 +1,100 @@
+{
+  "observedAt": "2026-10-01T22:26:11.282258Z",
+  "dataClass": "OBSERVED_METADATA",
+  "universeComplete": false,
+  "days": [
+    "2026-09-22",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-25",
+    "2026-09-26",
+    "2026-09-27",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30"
+  ],
+  "symbols": [
+    {
+      "id": "فملی",
+      "identitySourceRef": "INCIDENT-MARKET-VISIBILITY-20261002.md:public stocks DOM; partial identity only"
+    }
+  ],
+  "cells": [],
+  "calendar": [],
+  "funds": [],
+  "blacklist": [],
+  "aggregateObservations": [
+    {
+      "kind": "history-day-counts",
+      "observedAt": "2026-10-01T22:26:11.282258Z",
+      "sourceRef": "market-visibility-incident-20261002/evidence.json:coverageSql",
+      "days": [
+        {
+          "tradeDate": "2026-09-22",
+          "rows": 1073,
+          "symbols": 1073
+        },
+        {
+          "tradeDate": "2026-09-23",
+          "rows": 1,
+          "symbols": 1
+        },
+        {
+          "tradeDate": "2026-09-26",
+          "rows": 1,
+          "symbols": 1
+        },
+        {
+          "tradeDate": "2026-09-27",
+          "rows": 1,
+          "symbols": 1
+        },
+        {
+          "tradeDate": "2026-09-28",
+          "rows": 1,
+          "symbols": 1
+        },
+        {
+          "tradeDate": "2026-09-29",
+          "rows": 1,
+          "symbols": 1
+        },
+        {
+          "tradeDate": "2026-09-30",
+          "rows": 1080,
+          "symbols": 1080
+        }
+      ],
+      "classification": "unknown; aggregate counts are not symbol identities/trades"
+    },
+    {
+      "kind": "NAV-field-presence",
+      "observedAt": "2026-10-01T22:18:08.797061Z",
+      "sourceRef": "market-visibility-incident-20261002/evidence.json:snapshotSql",
+      "funds": 333,
+      "fieldsPresent": 25,
+      "validityVerified": false
+    },
+    {
+      "kind": "legacy-initial-backfill",
+      "observedAt": "2026-10-01T22:24:27.6640563Z",
+      "sourceRef": "market-visibility-incident-20261002/evidence.json:relayDebug",
+      "doneCount": 1244,
+      "queueRemaining": 0,
+      "reqDate": "2026-09-30",
+      "verifiedDailyUsage": false,
+      "individualDoneEntriesAvailable": false
+    },
+    {
+      "kind": "older-blacklist-count",
+      "observedAt": "2026-10-01T00:43:07.03+03:30",
+      "sourceRef": "market-data-audit-20261001/evidence/audit-summary.json",
+      "activeFundsBlacklisted": 308,
+      "blacklistTotal": 325,
+      "individualCausesAndDatesAvailable": false,
+      "freshCountNotVerified": true
+    }
+  ],
+  "maxAttempts": 1,
+  "dailyRequestCap": null
+}

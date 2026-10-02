@@ -1,0 +1,24 @@
+✔ matrix requires evidence and does not classify holidays from weekday (17.1065ms)
+✔ covered, holiday, no-trade, gap, adjusted and excluded symbols remain distinct (0.8477ms)
+✔ contradictory metadata, incomplete read or unverified trade does not become a gap (0.6873ms)
+✔ legacy done never hides a new range gap; plan is stable and rejects ambiguous input (0.7167ms)
+✔ NAV blacklist and unknown causes persist; stale/zero/unverified NAV is never current (0.9218ms)
+✔ unknown shared baseline permits zero simulated sends and zero state completion (11.2969ms)
+✔ shared limit stops mid-plan, survives restart and resumes only after a verified new day (24.0906ms)
+✔ replay makes zero duplicate rows and zero additional budget requests (3.405ms)
+✔ empty/partial/wrong-series response never marks whole range done; retries bounded (2.931ms)
+✔ two simulated consumers share allocations; store failure gives no emergency units (2.1193ms)
+✔ reject foreign live budget, tampered plan and checkpoint outside selected range (1.8648ms)
+✔ CSV escapes formula-like external metadata and no full universe is claimed from aggregates (0.4308ms)
+✔ partial range resumes append-only; persisted ledger cannot rewind with checkpoint (3.6589ms)
+✔ declared scope daily cap persists through restart independently of larger shared allowance (2.5565ms)
+✔ pacing crossing Tehran midnight cannot spend the old day; resumed clock retains send gap (4.6587ms)
+✔ actual CLI plan/simulate/resume are offline and require persisted shared ledger (71.0666ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 184.8824

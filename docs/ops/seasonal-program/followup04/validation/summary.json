@@ -1,0 +1,93 @@
+{
+  "preparedAt": "2026-10-02T09:20:22.9221370Z",
+  "implementationSHA": "fe96e619eaefa94f75423608d61f16c51318623b",
+  "fixedBase178SHA": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+  "PR": 198,
+  "contracts": {
+    "pass": 16,
+    "tests": 16,
+    "fail": 0,
+    "includesActualCLINetworkTrap": true,
+    "skip": 0
+  },
+  "core": {
+    "pass": 1091,
+    "tests": 1091,
+    "fail": 0,
+    "skip": 0
+  },
+  "calc": {
+    "pass": 106,
+    "tests": 106,
+    "fail": 0,
+    "skip": 0
+  },
+  "fullRelay": "PASS",
+  "lint": "PASS",
+  "build": "PASS (local placeholder environment)",
+  "secretScan": "PASS",
+  "unchangedSharedFiles": [
+    {
+      "path": "relay/brsapi-client.mjs",
+      "gitBlob": "45effa023a3e4bf7c9632757d70fec49001039e0",
+      "unchanged": true
+    },
+    {
+      "path": "relay/brsapi-budget-store.mjs",
+      "gitBlob": "e198edd8d1aee54f052c4dd349aa758a801057eb",
+      "unchanged": true
+    },
+    {
+      "path": "relay/brsapi-transport.mjs",
+      "gitBlob": "57838c08516e7314ec717f2817d9a39b66925536",
+      "unchanged": true
+    },
+    {
+      "path": "relay/candle-backfill.mjs",
+      "gitBlob": "dc9d2dffaabf46123e85446428be8fe84157f98a",
+      "unchanged": true
+    },
+    {
+      "path": "relay/nav-blacklist.mjs",
+      "gitBlob": "723ec0eb604cf6460344aecec578c1d04eaf2733",
+      "unchanged": true
+    },
+    {
+      "path": "relay/server.mjs",
+      "gitBlob": "e8e976e26f407405787dd2284fa60a33c5d2495e",
+      "unchanged": true
+    },
+    {
+      "path": "relay/codal.mjs",
+      "gitBlob": "5c19763d7ab65f472576b426d88808a334e1a953",
+      "unchanged": true
+    }
+  ],
+  "syntheticEvidence": {
+    "replayRequests": 0,
+    "replayRows": 2,
+    "financialRowsWritten": 0,
+    "rows": 2,
+    "planDigest": "c1f6b57b4b2d3ba720239b43d2bc5d6c5aa06002bb1412a90be084f739a243d5",
+    "isLivePostgresAcceptance": false,
+    "upstreamRequests": 0,
+    "minimumSimulatedGapMs": 100,
+    "legacyDonePreserved": true,
+    "simulatedRequests": 2,
+    "liveDBCalls": 0,
+    "blacklistWrites": 0,
+    "priorRowsPreserved": true,
+    "spacingMs": 100
+  },
+  "observedData": {
+    "futureCoverageNotProven": true,
+    "unknownCells": 9,
+    "liveCapacity": null,
+    "ETA": null,
+    "knownPublicIdentifiers": 1,
+    "completeUniverse": false,
+    "matrixCells": 9
+  },
+  "SQLExportExecuted": false,
+  "ProductionChanged": false
+}

@@ -1,0 +1,3 @@
+"symbol","status","eligible","reason","cause","lastCheckedAt","sourceAt","capability","validResponseVerified"
+"صندوقالف","preserved_blacklist","false","blacklist_never_cleared_or_retested_by_this_tool","","","","true","false"
+"صندوقب","candidate_deferred","false","no_live_nav_retest_authorized","","","","",""
