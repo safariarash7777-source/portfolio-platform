@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-02T14:36:10.549Z",
+  "synthetic": true,
+  "baseline": "7cb030c",
+  "checks": [
+    {
+      "signedIn": false,
+      "before": "cookie_dropped",
+      "after": "cookie_preserved"
+    },
+    {
+      "signedIn": true,
+      "before": "cookie_dropped",
+      "after": "cookie_preserved"
+    }
+  ]
+}

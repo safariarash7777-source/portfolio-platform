@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-02T14:18:14.729Z",
+  "source": "Own real Next/GoTrue/PostgREST/Storage; synthetic accounts, no provider request",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "mode": "history",
+  "records": [
+    {
+      "case": "initial educational answer remains in append-only history",
+      "result": "PASS"
+    },
+    {
+      "case": "own educational history stays readable after course revocation",
+      "result": "PASS"
+    },
+    {
+      "case": "B still has no A educational record after revocation",
+      "result": "PASS"
+    }
+  ]
+}

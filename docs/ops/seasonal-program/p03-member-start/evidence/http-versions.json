@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-02T14:08:38.093Z",
+  "source": "Own real Next/GoTrue/PostgREST/Storage; synthetic accounts, no provider request",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "mode": "versions",
+  "records": [
+    {
+      "case": "per-version explicit receipt idempotent",
+      "result": "PASS"
+    },
+    {
+      "case": "new draft immediately hides old detail",
+      "result": "PASS"
+    },
+    {
+      "case": "new draft immediately rejects old read replay",
+      "result": "PASS"
+    },
+    {
+      "case": "no fallback to old lesson in feed",
+      "result": "PASS"
+    },
+    {
+      "case": "new UUID version is unread",
+      "result": "PASS"
+    },
+    {
+      "case": "old UUID receipt retained",
+      "result": "PASS"
+    }
+  ]
+}

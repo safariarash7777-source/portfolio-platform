@@ -4,12 +4,15 @@ import Link from "next/link";
 import { MODULE_KEYS, type ModuleDecision } from "@/lib/seasonal/contracts";
 import { MARKET_MODULES, MARKET_MODULE_DESTINATIONS } from "@/lib/market-module-contract";
 import { formatJalali, formatTehranClock } from "@/lib/format";
-import { cohortStanding, groupCohorts, isCohort, isDecision, isGrants, isResources, standingLabels, webinarPhase, type CohortDetail, type MemberGrant, type MemberResource, type Result } from "@/lib/member/home";
+import { cohortStanding, groupCohorts, isCohort, isDecision, isGrants, isResources, standingLabels, type CohortDetail, type MemberGrant, type MemberResource, type Result } from "@/lib/member/home";
 import { memberData, memberErrorStatus, type MemberRequest } from "@/lib/member/http";
 import { memberFixtureRequest } from "@/lib/member/fixture";
 import { accountEntryHref } from "@/components/account/returnPath";
 import NeedsAssessmentPanel from "./NeedsAssessmentPanel";
-import AuthorizedLink from "./AuthorizedLink";
+import MemberStartGuide from "./MemberStartGuide";
+import WebinarCalendar from "./WebinarCalendar";
+import MemberResources from "./MemberResources";
+import MemberLearning from "./MemberLearning";
 import ProfileStatus from "./ProfileStatus";
 import PublicationFeed from "./PublicationFeed";
 
@@ -58,19 +61,16 @@ export default function MemberHome({ userId, selectedCohortId, now, fixtureScena
       {cohort ? <div className="space-y-3"><h3 className="text-lg font-bold break-words">{cohort.title}</h3><p role="status">{standingLabels[standing]}</p><details><summary className="min-h-12 cursor-pointer py-3">زمان دسترسی‌های ثبت‌شدهٔ این دوره</summary><ul className="space-y-2">{cohort.grants.map(g => <li key={String(g.grantRef)}>{standingLabels[g.standing]} · از {dateText(g.startsAt)} تا {dateText(g.endsAtExclusive)}؛ در لحظهٔ پایان، دسترسی آن ثبت تمام می‌شود.</li>)}</ul></details><p className="text-sm">زمان‌ها به وقت تهران‌اند. مجوز هر بخش هنگام بازکردن دوباره بررسی می‌شود؛ پایان دوره اطلاعات مالی و پروندهٔ خصوصی را حذف نمی‌کند.</p></div> : null}
     </section>
     {cohort ? <>
+      <MemberStartGuide />
       <section className="card space-y-3 p-5" aria-labelledby="member-next-title"><h2 id="member-next-title" className="font-display text-xl font-bold">اقدام بعدی</h2><p>{standing === "active" ? "برنامهٔ وبینار و منابع دوره را بررسی کنید؛ نیازسنجی را هم می‌توانید کوتاه پاسخ دهید یا بعداً ادامه دهید." : standing === "scheduled" ? "زمان شروع دسترسی را بررسی کنید. در این فاصله می‌توانید نیازسنجی کوتاه را ذخیره کنید." : "دسترسی‌های دوره را بررسی کنید؛ پاسخ نیازسنجی و سوابق شخصی شما همچنان باقی‌اند."}</p><div className="flex flex-wrap gap-3"><a href="#member-webinars" className="btn btn-outline min-h-12">برنامهٔ وبینار</a><a href="#member-needs-title" className="btn btn-outline min-h-12">نیازسنجی کوتاه</a></div></section>
       {!selected ? <p role="status">در حال بررسی برنامه و دسترسی‌های همین دوره…</p> : <>
         <section id="member-webinars" className="card space-y-4 p-5" aria-labelledby="member-webinars-title"><h2 id="member-webinars-title" className="font-display text-xl font-bold">وبینار من</h2>
           {selected.metadata.state === "error" ? <div role="alert"><p>{selected.metadata.status === 404 ? "برنامهٔ منتشرشدهٔ این دوره در دسترس نیست." : "برنامهٔ وبینار قابل دریافت نیست؛ نبود برنامه را از این خطا نتیجه نگیرید."}</p><button className="btn btn-outline min-h-12" onClick={retry}>دریافت دوبارهٔ برنامه</button></div> : null}
-          {selected.metadata.state === "ready" && selected.metadata.data.webinars.length === 0 ? <p>هنوز وبیناری برای این دوره منتشر نشده است.</p> : null}
-          {selected.metadata.state === "ready" ? selected.metadata.data.webinars.map(w => { const phase = webinarPhase(w, now); return <article key={w.id} className="space-y-2 border-t pt-4"><h3 className="font-bold break-words">{w.title}</h3><p>{dateText(w.starts_at)}{w.ends_at ? ` تا ${dateText(w.ends_at)}` : "؛ زمان پایان اعلام نشده"}</p><p>{phase === "before" ? "هنوز آغاز نشده" : phase === "after" ? "وبینار پایان یافته؛ منابع منتشرشده را پایین ببینید" : phase === "during" ? "در بازهٔ برنامه‌ریزی‌شدهٔ برگزاری؛ وضعیت ورود از سرویس بررسی می‌شود" : "زمان برگزاری نامعلوم"}</p>{allowed("webinar") && phase !== "after" ? <AuthorizedLink key={w.id} cohortId={cohort.id} path={`/api/cohorts/${cohort.id}/webinars/${w.id}/join`} label="بررسی دسترسی و دریافت راه ورود" request={request} /> : null}</article>; }) : null}
+          {selected.metadata.state === "ready" ? <WebinarCalendar webinars={selected.metadata.data.webinars} now={now} cohortId={cohort.id} allowed={allowed("webinar")} request={request} /> : null}
           {selected.decisions.webinar?.state === "error" ? <p role="alert">مجوز وبینار قابل بررسی نیست؛ دوباره دوره را دریافت کنید.</p> : selected.decisions.webinar?.state === "ready" && !selected.decisions.webinar.data.allowed ? <p>{deniedLabels[selected.decisions.webinar.data.reason] ?? "ورود به وبینار در دسترسی این حساب تأیید نشده است."}</p> : null}
         </section>
-        <section className="card space-y-4 p-5" aria-labelledby="member-resources-title"><h2 id="member-resources-title" className="font-display text-xl font-bold">منابع تازهٔ دوره و ضبط‌های منتشرشده</h2><p className="text-sm">فقط منابع منتشرشده و مجاز همین دوره نمایش داده می‌شوند؛ وجود ضبط، تا انتشار آن تضمین نشده است.</p>
-          {selected.resources.state === "error" ? <div role="alert"><p>فهرست منابع قابل دریافت نیست؛ این به معنی نبود محتوا نیست.</p><button className="btn btn-outline min-h-12" onClick={retry}>دریافت دوبارهٔ منابع</button></div> : null}
-          {selected.resources.state === "ready" && selected.resources.data.length === 0 ? <p>{allowed("resources") ? "هنوز منبع مجازی برای این دوره منتشر نشده است." : "در این درخواست منبعی در دسترس حساب شما نیست؛ وضعیت دسترسی دوره را بررسی کنید."}</p> : null}
-          {selected.resources.state === "ready" ? <ul className="space-y-4">{selected.resources.data.map(r => <li key={r.resourceRef} className="space-y-2 border-t pt-4"><h3 className="font-bold break-words">{r.title}</h3><p className="text-sm">ثبت منبع: {dateText(r.createdAt)}</p><AuthorizedLink cohortId={cohort.id} path={`/api/cohorts/${cohort.id}/resources/${r.resourceRef}`} label={`دریافت لینک ${r.title}`} request={request} /></li>)}</ul> : null}
-        </section>
+        <MemberResources key={cohort.id} resources={selected.resources} cohortId={cohort.id} allowed={allowed("resources")} retry={retry} request={request} />
+        <MemberLearning />
         <section className="card space-y-4 p-5" aria-labelledby="member-modules-title"><h2 id="member-modules-title" className="font-display text-xl font-bold">داشبوردهای دوره</h2><p className="text-sm">منبع، واحد و زمان معتبر هر داده را داخل داشبورد بخوانید. نبود داده یا تحلیل به معنی آرام‌بودن بازار نیست.</p><ul className="grid gap-3 sm:grid-cols-2">{MARKET_MODULES.map(module => { const d = selected.decisions[module]; const title = MARKET_MODULE_DESTINATIONS[module].title; return <li key={module} className="space-y-2 border rounded-lg p-4"><h3 className="font-bold">{title}</h3>{d?.state === "ready" && d.data.allowed ? <><p className="text-sm">{d.data.until ? `دسترسی این بخش تا ${dateText(d.data.until)}` : "زمان پایان از سرویس دریافت نشده است."}</p><Link className="inline-flex min-h-12 items-center underline" href={`/dashboard/market/${module}?cohort=${cohort.id}`}>بازکردن {title}</Link></> : <p>{d?.state === "error" ? "وضعیت دسترسی قابل بررسی نیست" : d?.state === "ready" ? deniedLabels[d.data.reason] ?? "این بخش برای حساب شما فعال نیست" : "در حال بررسی دسترسی…"}</p>}</li>; })}</ul><button className="btn btn-outline min-h-12" onClick={retry}>تازه‌کردن وضعیت دوره</button></section>
       </>}
       <NeedsAssessmentPanel key={cohort.id} cohortId={cohort.id} userId={userId} request={request} preview={!!fixtureScenario} />

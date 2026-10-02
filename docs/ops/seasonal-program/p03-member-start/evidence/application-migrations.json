@@ -1,0 +1,135 @@
+{
+  "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "environment": "p03member-local",
+  "initialAuthUsers": 0,
+  "noBackup": true,
+  "noTestAuthBootstrap": true,
+  "migrations": [
+    {
+      "file": "sql/archive/supabase_schema.sql",
+      "sha256": "001f52d5f4b1f6fe3d154fafafcabe766e6aa739c24c7ddb2bad5e72c998c0de",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:00.103Z"
+    },
+    {
+      "file": "sql/archive/supabase_portfolio_tracking.sql",
+      "sha256": "0ecc41f5f3a374dc0788d69f06da4413c083a29049d1a65749283d5d30ef2a9c",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:00.258Z"
+    },
+    {
+      "file": "sql/archive/supabase_portfolio_versioning.sql",
+      "sha256": "1f4e2f7ff3d14e2c7a55a4dc65b28aec5651e37c8ab0996173737a0a4284d491",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:00.425Z"
+    },
+    {
+      "file": "sql/staging/g3003_staging_profiles_prereq.sql",
+      "sha256": "5ae35fd4fa21ddec64130e565507164180f42d58bd9864d6fc225ee9bb2fe799",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:00.554Z"
+    },
+    {
+      "file": "sql/phase32_member_holdings.sql",
+      "sha256": "af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:00.707Z"
+    },
+    {
+      "file": "sql/phase34_research_workbook_versions.sql",
+      "sha256": "4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:00.912Z"
+    },
+    {
+      "file": "sql/phase35_consultation.sql",
+      "sha256": "9d9aa2faf3e6306d2f2992382564207f8b1dbe068f4eb209438597705a44ce7e",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:01.091Z"
+    },
+    {
+      "file": "sql/phase36_consultation_review_fixes.sql",
+      "sha256": "bdf127dcee86c26f3e19961fe8b9710385ca965ec649ee61b33cfc38a53c318a",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:01.229Z"
+    },
+    {
+      "file": "sql/phase37_nonretryable_version_conflicts.sql",
+      "sha256": "282b8be6c36b77bd9bf70c0dfd94ac3b8bccbd9cc628b75be1244cf5b1dfdf4d",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:01.360Z"
+    },
+    {
+      "file": "sql/phase38_personal_balance_sheet.sql",
+      "sha256": "2f44201b3aec41e489bf5ac6fd71406ea9d358748e199ca24a1161d644a2f5fb",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:01.505Z"
+    },
+    {
+      "file": "sql/phase5_payments_telegram.sql",
+      "sha256": "4d689f0f45065c1989c8fba6c6b9a24aac9278695742982b5a5f7862b8438e8b",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:01.675Z"
+    },
+    {
+      "file": "sql/phase8_webinars.sql",
+      "sha256": "e4c3faa90c33c58a430880a6448d0fba3be90e60870bb0bbe6ce299fd7e20ccb",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:01.837Z"
+    },
+    {
+      "file": "sql/terminal_t0.sql",
+      "sha256": "58ae2780faaa68d2ff32ac283d5a9233ce043cebc05f77ca94d789b0b8246544",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:02.067Z"
+    },
+    {
+      "file": "sql/ir_market_snapshots.sql",
+      "sha256": "7ee1ba7790fcb7b7972915f9cd096da062da88ad9dbd31d5b2d51898faa01f22",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:02.187Z"
+    },
+    {
+      "file": "sql/ir_market_history.sql",
+      "sha256": "8339830f1f85ccf86ceae62a61aaeae4dd6c9a418ce022e854961215a98f4849",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:02.308Z"
+    },
+    {
+      "file": "sql/phase11_access_tiers.sql",
+      "sha256": "2ad50dd68ce1162fdd84ba627b2b2a7b64a1b97d3348d4035d619a23ed77df15",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:02.467Z"
+    },
+    {
+      "file": "sql/phase27_member_import.sql",
+      "sha256": "4e0085064a18b131e92744fc1987668be775e64aa385975094bdc77a0dece2f5",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:02.711Z"
+    },
+    {
+      "file": "supabase/migrations/20260930182629_seasonal_course_membership.sql",
+      "sha256": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:02.922Z"
+    },
+    {
+      "file": "supabase/migrations/20260930182918_research_publication_queue.sql",
+      "sha256": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:03.089Z"
+    },
+    {
+      "file": "supabase/migrations/20261001083215_auth_private_identity_versions.sql",
+      "sha256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:03.239Z"
+    },
+    {
+      "file": "supabase/migrations/20261001121858_member_publication_feed_reads.sql",
+      "sha256": "db0cb056948ce7cfaf7a7d18472da0ebbddc834248e3f1d3710a90708b8cecdf",
+      "result": "APPLIED_ISOLATED_ONLY",
+      "at": "2026-10-02T13:27:03.370Z"
+    }
+  ]
+}

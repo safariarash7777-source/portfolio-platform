@@ -1,0 +1,134 @@
+{
+  "at": "2026-10-02",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "method": "CUA browser via real UI actions; read-only DOM checks; no session injection",
+  "syntheticOnly": true,
+  "providerInvoked": false,
+  "viewportRestored": true,
+  "humanJourneys": "NOT_RUN",
+  "telegramInAppBrowser": "NOT_RUN",
+  "cases": [
+    {
+      "source": "native",
+      "case": "GoTrue sign-in retains selected course return",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "A selects A/B/A; only selected cohort resources/feed",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "A draft persists across course switch and reload",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "Saved draft receipt visibly confirms existing writer",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "B direct A URL denies section; B own course and empty own draft",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "Resource title search mismatch is not an empty server list",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "Lesson filter hides brief on current page and opens authorized detail",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "No selected content-kind matches is explicitly page scoped",
+      "result": "PASS"
+    },
+    {
+      "source": "native",
+      "case": "Explicit old version read succeeds; new version visibly unread",
+      "result": "PASS",
+      "images": [
+        "native-lesson-receipt.png",
+        "native-new-version-unread.png"
+      ]
+    },
+    {
+      "source": "native",
+      "case": "After revoke next refresh denies feed and removes current resources",
+      "result": "PASS",
+      "images": [
+        "native-revocation.png"
+      ]
+    },
+    {
+      "source": "native",
+      "case": "Ended session disclosure opens, points to same scoped resources without promising recording",
+      "result": "PASS",
+      "images": [
+        "native-mobile-calendar.png"
+      ]
+    },
+    {
+      "source": "native",
+      "case": "390x844 viewport no horizontal overflow; content clientWidth=scrollWidth=375",
+      "result": "PASS",
+      "telegramIAB": false
+    },
+    {
+      "source": "native",
+      "case": "Default desktop no horizontal overflow; clientWidth=scrollWidth=1265",
+      "result": "PASS",
+      "images": [
+        "native-desktop-start.png"
+      ]
+    },
+    {
+      "source": "mixed explicit fixture/native",
+      "case": "All member guide fragment targets exist",
+      "result": "PASS"
+    },
+    {
+      "source": "explicit fixture",
+      "case": "Draft restored before failed GET503 completes",
+      "result": "PASS",
+      "images": [
+        "fixture-draft-outage.png"
+      ]
+    },
+    {
+      "source": "explicit fixture",
+      "case": "New edit before slow1600ms GET survives completed late reply",
+      "result": "PASS"
+    },
+    {
+      "source": "explicit fixture",
+      "case": "Save503 retains text",
+      "result": "PASS"
+    },
+    {
+      "source": "explicit fixture",
+      "case": "Save409 and receive-latest preserve current text",
+      "result": "PASS"
+    },
+    {
+      "source": "explicit fixture",
+      "case": "Webinar metadata503 does not hide authorized resources or claim empty calendar",
+      "result": "PASS"
+    },
+    {
+      "source": "explicit fixture",
+      "case": "1-second announced TTL removes displayed link and presents fresh-request copy",
+      "result": "PASS"
+    },
+    {
+      "source": "native public route",
+      "case": "Learning glossary link navigates successfully to /learn/glossary",
+      "result": "PASS"
+    }
+  ]
+}

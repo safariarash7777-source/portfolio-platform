@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-02T14:41:28.078Z",
+  "codeCommit": "f669c05baf2cdebfead20999e389c77f19015152",
+  "source": "Actual own native GoTrue refresh rejection returned through real SDK; helper and member mapping called directly",
+  "syntheticOnly": true,
+  "tokenInjected": false,
+  "rows": [
+    {
+      "status": 400,
+      "code": "validation_failed",
+      "sharedResult": 503,
+      "memberResult": 503
+    },
+    {
+      "status": 400,
+      "code": "refresh_token_not_found",
+      "sharedResult": 401,
+      "memberResult": 401
+    }
+  ],
+  "notProofOf": "Full P01 Next refresh/logout/recovery integration or real owner/phone login",
+  "result": "PASS"
+}

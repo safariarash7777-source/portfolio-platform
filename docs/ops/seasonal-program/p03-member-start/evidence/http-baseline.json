@@ -1,0 +1,166 @@
+{
+  "at": "2026-10-02T14:04:11.072Z",
+  "source": "Own real Next/GoTrue/PostgREST/Storage; synthetic accounts, no provider request",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "mode": "baseline",
+  "records": [
+    {
+      "case": "A has two active and one expired cohort",
+      "result": "PASS"
+    },
+    {
+      "case": "B has only cohort B",
+      "result": "PASS"
+    },
+    {
+      "case": "A lists exact cohort resource a",
+      "result": "PASS"
+    },
+    {
+      "case": "private projection has no bucket/path/provider",
+      "result": "PASS"
+    },
+    {
+      "case": "resource response no-store",
+      "result": "PASS"
+    },
+    {
+      "case": "A lists exact cohort resource b",
+      "result": "PASS"
+    },
+    {
+      "case": "private projection has no bucket/path/provider",
+      "result": "PASS"
+    },
+    {
+      "case": "resource response no-store",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot list A resources",
+      "result": "PASS",
+      "status": 200
+    },
+    {
+      "case": "B denied /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/resources/88888888-8888-4888-8888-888888888888",
+      "result": "PASS"
+    },
+    {
+      "case": "B denied /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/publications",
+      "result": "PASS"
+    },
+    {
+      "case": "advisor cannot list A resources",
+      "result": "PASS",
+      "status": 200
+    },
+    {
+      "case": "advisor denied /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/resources/88888888-8888-4888-8888-888888888888",
+      "result": "PASS"
+    },
+    {
+      "case": "advisor denied /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/publications",
+      "result": "PASS"
+    },
+    {
+      "case": "anonymous cannot list A resources",
+      "result": "PASS",
+      "status": 401
+    },
+    {
+      "case": "anonymous denied /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/resources/88888888-8888-4888-8888-888888888888",
+      "result": "PASS"
+    },
+    {
+      "case": "anonymous denied /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/publications",
+      "result": "PASS"
+    },
+    {
+      "case": "expired grant denies module",
+      "result": "PASS"
+    },
+    {
+      "case": "B current scoped feed",
+      "result": "PASS"
+    },
+    {
+      "case": "A native brief and lesson share same feed",
+      "result": "PASS"
+    },
+    {
+      "case": "feed has no private notes or financial metadata",
+      "result": "PASS"
+    },
+    {
+      "case": "native cohort calendar includes three sessions",
+      "result": "PASS"
+    },
+    {
+      "case": "calendar hides provider URLs",
+      "result": "PASS"
+    },
+    {
+      "case": "current webinar join returns mock provider link",
+      "result": "PASS"
+    },
+    {
+      "case": "future webinar window not yet open",
+      "result": "PASS"
+    },
+    {
+      "case": "missing webinar provider is unavailable, not empty",
+      "result": "PASS"
+    },
+    {
+      "case": "ended webinar with configured mock remains outside window",
+      "result": "PASS"
+    },
+    {
+      "case": "native Storage link issued for 60 seconds",
+      "result": "PASS"
+    },
+    {
+      "case": "signed private download contains synthetic A bytes",
+      "result": "PASS"
+    },
+    {
+      "case": "private object has no public download",
+      "result": "PASS",
+      "status": 400
+    },
+    {
+      "case": "B does not read A needs",
+      "result": "PASS",
+      "status": 200
+    },
+    {
+      "case": "B cannot read A lesson",
+      "result": "PASS"
+    },
+    {
+      "case": "advisor does not read A needs",
+      "result": "PASS",
+      "status": 200
+    },
+    {
+      "case": "advisor cannot read A lesson",
+      "result": "PASS"
+    },
+    {
+      "case": "native educational draft saved version",
+      "result": "PASS"
+    },
+    {
+      "case": "native educational answer submitted next version",
+      "result": "PASS"
+    },
+    {
+      "case": "B cannot submit A educational question",
+      "result": "PASS"
+    },
+    {
+      "case": "needs receipt does not create consultation booking",
+      "result": "PASS"
+    }
+  ]
+}
