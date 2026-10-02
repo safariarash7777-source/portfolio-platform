@@ -9,3 +9,5 @@
 **موانع دقیق:** buildکاملcandidate اجرا نشد؛ حافظهٔ فیزیکی آزاد دستگاه۰٫۸۲GiB بود و فرایندهای سایرکارها متوقف نشدند. GitHub/SSH/HTTPSsandbox ارتباط قابل‌تأیید نداشتند؛ candidateهنوزnativeenvironment،deployment یاCI ندارد. build/native۶۳ شاهدP03@f889 وDEV07۱۳PASS/۱humanBLOCKED روی195، پذیرش اینSHA نیستند. sandbox195 وکاربرگ انسانی‌اش دست‌نخورده‌اند.
 
 اقدام بعدی: دریافتSHAنهاییtestfix/اسنادP03 و تطبیقblob بهجایاعمالدوباره؛ پسازآزادشدنمنابعbuildهمینcandidate وپسازبازگشتارتباطCIرویSHAنهایی. نصب وپذیرشnative باید namespace/DBساختگی مجزایcandidate داشته باشد؛195/DBواقعی/backup/sharedproxy تغییرنکند. نسخهٔ برنامهٔ نصب‌شده فقطازmanifestهمانمحیط گرفته شود؛ تا آنزمان وضعیت **LOCAL_ONLY_NOT_ACCEPTED** است.
+
+اصلاح بعدی مالکP03 در1f97cb25 باهمانblob آزمون0b7e352 به‌طور مستقیم برابرcandidate است؛ diffصفر. دوبارهcherry-pick یا تست رفتار یکسان انجام نشد؛ typecheckcandidate قبلاًPASS بود. fullcore1313PASS گزارش مالک است و به‌عنوان اجرایP00 یاCIcandidate جمع نمی‌شود.

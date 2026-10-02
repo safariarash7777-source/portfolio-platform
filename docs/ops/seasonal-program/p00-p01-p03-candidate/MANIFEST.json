@@ -19,7 +19,14 @@
       "localDelta": "f669c05baf2cdebfead20999e389c77f19015152",
       "tree": "1c946651db631caed07c53ffb1b650827d9f2799",
       "remoteHeadLastVerified": "63aeb0f",
-      "deltaPublished": false
+      "deltaPublished": false,
+      "testFollowup": {
+        "sha": "1f97cb25d89a983c9641cfdb54e8d2950316f1be",
+        "blob": "0b7e352c39b4c449f122d4bbb3e52dfce2207829",
+        "candidateBlobIdentical": true,
+        "cherryPickedAgain": false,
+        "published": false
+      }
     }
   },
   "helper": {
