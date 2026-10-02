@@ -3,6 +3,7 @@ import {activeEntitlementFilter} from "./lib/entitlement-filter";
 import { NextResponse, type NextRequest } from 'next/server'
 import { accountEntryHref } from './components/account/returnPath'
 import { authSessionFailure } from './lib/auth/session-error'
+import { authOrigin } from './lib/auth/origin'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -14,7 +15,7 @@ export async function middleware(request: NextRequest) {
   // Auth may refresh cookies during getUser even when the eventual result is a
   // redirect. Preserve those updates; dropping them can repeat refresh/failures.
   const redirect = (path: string) => {
-    const response = NextResponse.redirect(new URL(path, request.url))
+    const response = NextResponse.redirect(new URL(path, authOrigin(request.url)))
     supabaseResponse.cookies.getAll().forEach(cookie => response.cookies.set(cookie))
     for (const name of ['cache-control', 'expires', 'pragma']) {
       const value = supabaseResponse.headers.get(name)

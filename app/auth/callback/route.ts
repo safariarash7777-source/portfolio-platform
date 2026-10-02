@@ -1,10 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { accountEntryHref, normalizeReturnPath } from '@/components/account/returnPath'
-import { authSessionFailure } from '@/lib/auth/session-error'
+import { authCallbackFailure } from '@/lib/auth/session-error'
+import { authOrigin } from '@/lib/auth/origin'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
+  const origin = authOrigin(request.url)
   const code = searchParams.get('code')
   // همان قانونی که لینک‌های ورود/ثبت‌نام با آن ساخته می‌شوند. پیش از این
   // اینجا یک بررسیِ جداگانه و سست‌تر بود (backslash و نویسهٔ کنترلی را رد
@@ -31,6 +33,9 @@ export async function GET(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
+        ...(process.env.NEXT_PUBLIC_SUPABASE_COOKIE_NAME
+          ? {cookieOptions:{name:process.env.NEXT_PUBLIC_SUPABASE_COOKIE_NAME}}
+          : {}),
         global: { fetch: (input, init) => fetch(input, { ...init, signal: controller.signal }) },
         cookies: {
           getAll() {
@@ -48,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     return await Promise.race([
       supabase.auth.exchangeCodeForSession(code).then(({error}) => error
-        ? failed(authSessionFailure(error) === 503 ? 'auth_unavailable' : 'auth_callback_failed')
+        ? failed(authCallbackFailure(error))
         : supabaseResponse),
       new Promise<NextResponse>(resolve => {
         deadline = setTimeout(() => { controller.abort(); resolve(failed('auth_unavailable')) }, 8000)

@@ -1,7 +1,8 @@
 import { normaliseDebt, normalisePosition, text } from "./financialInput";
-import { isAuthSessionMissingError } from "@supabase/supabase-js";
+import { authSessionFailure } from "../auth/session-error";
 export function financialAuthentication(user: { id: string } | null, error: unknown) {
-  return { user, error: !!error && !isAuthSessionMissingError(error) };
+  const failure=authSessionFailure(error);
+  return { user: failure?null:user, error: failure===503 };
 }
 export interface FinancialDb {
   authenticate(): Promise<{ user: { id: string } | null; error: boolean }>;

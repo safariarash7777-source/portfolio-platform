@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
+import { useSearchParams } from 'next/navigation';
+import {emailReturnPath} from '@/lib/auth/email';
+import {accountEntryHref} from '@/components/account/returnPath';
 import Link from "next/link";
 import { Mail, ArrowRight, CheckCircle } from "lucide-react";
 import Logo from "@/components/ui/Logo";
@@ -8,6 +11,11 @@ import Logo from "@/components/ui/Logo";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ForgotPasswordPage() {
+  return <Suspense fallback={<p role="status" className="p-8">در حال آماده‌سازی بازیابی…</p>}><ForgotPasswordContent /></Suspense>;
+}
+function ForgotPasswordContent() {
+  const searchParams=useSearchParams();
+  const returnTo=emailReturnPath(searchParams.get('next'));
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [serverError, setServerError] = useState("");
@@ -24,7 +32,7 @@ export default function ForgotPasswordPage() {
     setServerError("");
     setLoading(true);
     try {
-      const response=await fetch('/api/auth/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'recover',email:email.trim()})});
+      const response=await fetch('/api/auth/email',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'recover',email:email.trim(),next:returnTo})});
       const data=await response.json();
       if(!response.ok){setServerError(data.error??'سرویس بازیابی اکنون پاسخ نمی‌دهد.');return;}
       setSent(true);
@@ -64,7 +72,7 @@ export default function ForgotPasswordPage() {
                 اگر حسابی با این ایمیل وجود داشته باشد و سرویس ایمیل آماده باشد، لینک بازیابی را دریافت می‌کنید. صندوق
                 ورودی (و پوشه‌ی اسپم) خود را بررسی کنید.
               </p>
-              <Link href="/login" className="btn btn-outline w-full">
+              <Link href={accountEntryHref('/login',returnTo)} className="btn btn-outline w-full">
                 <ArrowRight size={16} />
                 بازگشت به ورود
               </Link>
@@ -95,6 +103,7 @@ export default function ForgotPasswordPage() {
 
               {serverError && (
                 <div
+                  role="alert"
                   className="rounded-xl px-4 py-3 text-sm"
                   style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.25)", color: "var(--danger)" }}
                 >
@@ -108,7 +117,7 @@ export default function ForgotPasswordPage() {
 
               <div className="text-center text-sm" style={{ color: "var(--text-3)" }}>
                 رمز خود را به یاد آوردید؟{" "}
-                <Link href="/login" className="font-bold" style={{ color: "var(--navy)" }}>
+                <Link href={accountEntryHref('/login',returnTo)} className="font-bold" style={{ color: "var(--navy)" }}>
                   ورود
                 </Link>
               </div>

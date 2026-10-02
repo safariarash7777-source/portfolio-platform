@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
 import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
 import {authMessage} from '@/lib/auth/mobile';
+import {withDeadline} from '@/lib/deadline';
 
 function supabaseError(msg: string): string {
   if (msg.includes("Invalid login credentials")) return "ایمیل یا رمز عبور اشتباه است";
@@ -58,8 +59,8 @@ function LoginPageContent() {
     setLoading(true);
     setServerError("");
     try {
-      const supabase = createClient();
-      const {error}=await supabase.auth.signInWithPassword({email,password});
+      const {error}=await withDeadline(signal =>
+        createClient(signal).auth.signInWithPassword({email,password}), 8000);
       if(error){setServerError(authMessage(error) || supabaseError(error.message));return;}
       // Full navigation has a visible network result and avoids a silently stalled
       // App Router transition while the protected middleware is unavailable.
@@ -150,7 +151,7 @@ function LoginPageContent() {
             </div>
 
             <div className="text-start -mt-2">
-              <Link href="/forgot-password" className="text-sm font-bold" style={{ color: "var(--navy)" }}>
+              <Link href={'/forgot-password?next='+encodeURIComponent(returnTo)} className="text-sm font-bold" style={{ color: "var(--navy)" }}>
                 رمز عبور را فراموش کرده‌اید؟
               </Link>
             </div>

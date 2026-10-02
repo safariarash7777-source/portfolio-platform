@@ -9,7 +9,7 @@ import {fileURLToPath} from 'node:url';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 import {NextRequest} from 'next/server.js';
-import {AuthApiError,AuthSessionMissingError,AuthRetryableFetchError,AuthUnknownError,createClient} from '@supabase/supabase-js';
+import {AuthApiError,AuthPKCECodeVerifierMissingError,AuthSessionMissingError,AuthRetryableFetchError,AuthUnknownError,createClient} from '@supabase/supabase-js';
 const require=createRequire(import.meta.url);
 const root=fileURLToPath(new URL('../../',import.meta.url));
 const baseline=process.argv.includes('--baseline');
@@ -30,7 +30,7 @@ function loader(overrides={},extra={}){
         return load(existsSync(resolve(root,candidate+'.ts'))?candidate+'.ts':candidate+'.tsx');
       }
       return require(name);
-    },process:{env:{}},Request,Response,URL,AbortController,AbortSignal,fetch,setTimeout,clearTimeout,Date,Intl,console,...extra});
+    },process:{env:{}},Buffer,TextDecoder,Request,Response,URL,AbortController,AbortSignal,fetch,setTimeout,clearTimeout,Date,Intl,console,...extra});
     return target.exports;
   }
   return load;
@@ -112,8 +112,18 @@ test('cross-origin and malformed/unknown actions fail before any session operati
   const h=harness(null,{origin:false});const response=await h.load('app/api/auth/session/route.ts').POST(h.request('refresh'));assert.equal(response.status,403);privateResponse(response);assert.equal(h.calls.refresh,0);
   for(const body of ['{','null','[]','{"action":"other"}']){const local=harness(null);const rejected=await local.load('app/api/auth/session/route.ts').POST(local.request(null,body));assert.equal(rejected.status,400);privateResponse(rejected);assert.equal(local.calls.refresh,0);assert.equal(local.calls.signout.length,0);}
 });
-for(const [label,error,reason] of [['expired PKCE',new AuthApiError('PRIVATE expired',400,'flow_state_expired'),'auth_callback_failed'],['gateway outage',new AuthUnknownError('PRIVATE gateway',Error()),'auth_unavailable']])test(`callback preserves destination and cookie/cache updates: ${label}`,async()=>{
+for(const [label,error,reason] of [
+  ['consumed or missing PKCE verifier',new AuthPKCECodeVerifierMissingError(),'auth_callback_failed'],
+  ['expired PKCE',new AuthApiError('PRIVATE expired',400,'flow_state_expired'),'auth_callback_failed'],
+  ['unknown400',new AuthApiError('PRIVATE detail',400,'bad_json'),'auth_unavailable'],
+  ['wrong endpoint404',new AuthApiError('PRIVATE detail',404),'auth_unavailable'],
+  ['rate limited429',new AuthApiError('PRIVATE detail',429),'auth_unavailable'],
+  ['provider500',new AuthApiError('PRIVATE detail',500),'auth_unavailable'],
+  ['provider503',new AuthRetryableFetchError('PRIVATE detail',503),'auth_unavailable'],
+  ['gateway outage',new AuthUnknownError('PRIVATE gateway',Error()),'auth_unavailable'],
+])test(`callback preserves destination and cookie/cache updates: ${label}`,async()=>{
   const h=harness(error);const response=await h.load('app/auth/callback/route.ts').GET(new NextRequest('https://site.example/auth/callback?code=opaque-fixture-code&next=%2Fdashboard%3Fcohort%3Dfixture'));
+  if(error instanceof AuthPKCECodeVerifierMissingError) assert.equal(h.load('lib/auth/session-error.ts').authSessionFailure(error),503);
   const next=new URL(response.headers.get('location'));assert.equal(next.pathname,'/login');assert.equal(next.searchParams.get('next'),'/dashboard?cohort=fixture');assert.equal(next.searchParams.get('error'),reason);assert.equal(next.searchParams.has('code'),false);privateResponse(response);assert.match(response.headers.get('set-cookie'),/fixture-session=opaque-fixture/);assert.equal(response.headers.get('expires'),'0');
 });
 test('successful callback returns only a safe local destination and preserved SSR cookies',async()=>{
