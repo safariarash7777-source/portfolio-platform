@@ -1,6 +1,6 @@
 # P01 — Native Auth handoff for candidate219
 
-2026-10-02, Asia/Tehran. **Preflight specification only; native acceptance NOT_RUN.** No environment, schema, account, template, provider, proxy or Production change in this handoff.
+2026-10-02, Asia/Tehran. **Preflight specification only; P01 native tests NOT_RUN.** Independent execution was subsequently reported IN_PROGRESS on8445; see [runtime receipt](./P01-NATIVE219-RUNTIME-RECEIPT.md) for the unresolved metadata discrepancies. No environment, schema, account, template, provider, proxy or Production change in this handoff.
 
 ## Verified source pin
 
@@ -8,7 +8,7 @@ PR219 is Draft: `codex/p00-auth-next-20261002`, head `a0625a42ad1cb24dd31e561528
 
 Selected Auth runtime, browser factory, callback, email templates/contracts and P01 tests have no Git diff against PR218 final `b2c28322b5918ac3ec34b61b94da6dc1b4ae3331`. Financial Auth adapter has no diff against PR217 `ca2f3e27db8779c6b760c1ac613af8626f419c15`. The actual-submit regression is present. These checks do not establish the new runtime origin, effective settings, delivery, sessions or permissions.
 
-The frozen independent [P00 preflight](<C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-auth-next-20261002/independent-preflight/PREFLIGHT.md>) was read. Its18 groups remain the primary acceptance IDs, all NOT_RUN. The21-row Auth matrix here refines setup/flow subcases, not a second PASS count. N03–N05 map to N219-18 (include late A after healthy B and retained prior session); N06 to N219-19; N07 to N219-09/10; N08 to N219-07/12; N10–N11 to N219-14/15/16; N12–N14 to N219-02/03/04/05/06/11; N18 to N219-14/20/21. N01/N02/N09 supply session, credential and safe-next subcases across those rows. P00 N15–N17 are financial acceptance owned by P04/P11 and are not fully represented or satisfied by this Auth checklist. Retain their ledger/CAS/previous/import/RLS evidence requirements.
+The frozen independent [P00 preflight](<C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-auth-next-20261002/independent-preflight/PREFLIGHT.md>) was read. Its18 groups remain the primary acceptance IDs; all were NOT_RUN at that frozen preflight. The later operator report of IN_PROGRESS is recorded separately. The21-row Auth matrix here refines setup/flow subcases, not a second PASS count. N03–N05 map to N219-18 (include late A after healthy B and retained prior session); N06 to N219-19; N07 to N219-09/10; N08 to N219-07/12; N10–N11 to N219-14/15/16; N12–N14 to N219-02/03/04/05/06/11; N18 to N219-14/20/21. N01/N02/N09 supply session, credential and safe-next subcases across those rows. P00 N15–N17 are financial acceptance owned by P04/P11 and are not fully represented or satisfied by this Auth checklist. Retain their ledger/CAS/previous/import/RLS evidence requirements.
 
 Keep demo8444 frozen. P00 owns a separate synthetic deployment and its manifest; P11 owns independent browser acceptance. Do not reuse the demo8444 DB, Auth credentials, cookie name or inbox. A source SHA remains the same after an origin-specific build, but its configured artifact must receive its own digest and environment receipt.
 
@@ -62,3 +62,4 @@ Required negatives: signup flag/settings failure; forbidden signup fields/Origin
 Rollback for the new candidate: disable its signup/fragment gates, restore its recorded templates/settings or discard only its dedicated synthetic runtime under P00's lifecycle. Do not change demo8444, restore an old DB over writes, delete canonical UUID/history or remove legacy email. No new migration is proposed by this handoff. Native219 remains NOT_RUN until the independent journey is complete.
 
 Tools for this handoff: read-only Git/source diff and GitHub REST metadata/CI, PowerShell. Supabase/Next guidance applies to canonical session/RLS boundaries. No live settings, inbox, credentials, browser login, provider calls, build or deployment performed.
+
