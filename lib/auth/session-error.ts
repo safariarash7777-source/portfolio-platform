@@ -1,4 +1,4 @@
-import {isAuthSessionMissingError} from '@supabase/supabase-js';
+import {isAuthPKCECodeVerifierMissingError, isAuthSessionMissingError} from '@supabase/supabase-js';
 
 const REJECTED_SESSION_CODES = new Set([
   'bad_jwt', 'no_authorization', 'session_expired', 'session_not_found',
@@ -16,6 +16,12 @@ export function authSessionFailure(error: unknown): 401 | 503 | null {
   // wrong-path 404 or rate-limit 429 does not establish that the user signed out.
   if (failure.status === 400 && typeof failure.code === 'string' && REJECTED_SESSION_CODES.has(failure.code)) return 401;
   return 503;
+}
+
+/** A consumed/absent PKCE verifier invalidates this callback, not the session service. */
+export function authCallbackFailure(error: unknown): 'auth_callback_failed' | 'auth_unavailable' {
+  if (isAuthPKCECodeVerifierMissingError(error)) return 'auth_callback_failed';
+  return authSessionFailure(error) === 503 ? 'auth_unavailable' : 'auth_callback_failed';
 }
 
 /** OTP/password actions preserve input errors and limits without calling them logout. */
