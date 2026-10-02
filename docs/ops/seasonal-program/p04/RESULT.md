@@ -45,3 +45,9 @@ metadata زنده GitHub REST در این نوبت PR168=open@15eebc97ca650dde5f
 [قراردادcanonical](CANONICAL-CONTRACT.md)، [نگاشتimport](IMPORT-MAPPING.md) و [شاهدتطبیق](evidence.json) آماده‌اند. پیام هماهنگی محدود به P05 و P07 و تثبیت مالکیت P00 فرستاده شد؛ پاسخ/توافق هنوز ادعا نشده است. فقط همین پوشه در checkout ایزوله تغییر کرده است. runtime/schema/Production/داده مشتری تغییر نکرد؛ migration جدیدی ساخته یا نصب نشد. rollback این تحویل صرفاً revert commit مستندات است.
 
 اقدام بعدی P00: تثبیت SHA و مالکیت/runtime/schema و مسیر قرارداد مشترک؛ P05: inventory دقیق mini5؛ P07: ارجاع publication/decision. سپس P04 ابتدا انتخاب دامنه و preview import را با داده ساختگی، آزمون اعداد قطعی و رفتار409 اجرا می‌کند. P06 و P10 مطابق وابستگی سند مصوب باز هستند؛ زمان/گروه/آستانه/سیاست نگهداری و روش بازده تصویب‌شده فرض نشده‌اند.
+
+## هماهنگی دریافت‌شده — همان نوبت
+
+P05 inventory گزارش داد: `portfolio_assets` در mini5 دارای id/telegramId/assetType/name/quantity/buyPrice/currentPrice/createdAt/updatedAt است؛ واحد پول و مقدار، حساب، مالکیت، منبع/زمان قیمت و جریان ندارد. این گزارش همکار است، نه ممیزی مستقیم schema مینی‌اپ در این checkout. توافق محدوده: pure preview بدون نوشتن، unknownها blocking، بدون GET/import جدید؛ `buyPrice/currentPrice` با فقدان قرارداد واحد/زمان وارد canonical قطعی نمی‌شوند. داده قدیمی حذف یا dual-write نمی‌شود.
+
+P07 گزارش داد publication.v1 همان workbookVersionId/publication aggregate/version UUID/version number را دارد، اما draft فعلی فقط brief/lesson/webinar_plan دارد؛ action/اندازه/مخرج/validity/replacement در DTO انتشار موجود نیست. این افزونه باید در همان مدل انتشار و پس ازP00 تثبیت شود؛ سه نمونه انسانی شرطP06 باقی است. دامنه P07 docs/ops/p07-desk و adapterهای مستقل پیشنهادی است؛ فایلهایP04/P03 لمس نمی‌شوند.
