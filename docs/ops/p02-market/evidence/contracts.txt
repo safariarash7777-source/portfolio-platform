@@ -1,0 +1,17 @@
+✔ NAV منبع تازه با تومان درست پذیرفته می‌شود (20.7538ms)
+✔ کش امروز و NAV هشت روز قبل همچنان کهنه است (0.5134ms)
+✔ واحد ده برابر، ساعت آینده و تاریخ نامعتبر رد می‌شوند (0.7128ms)
+✔ null مقدار مالی صفر نمی‌شود؛ صفر واقعی حفظ می‌شود (0.1746ms)
+✔ stored row/done/source labels cannot invent type2, trade, gap or quota capacity (26.7646ms)
+✔ stale NAV with fresh snapshot and positive ratio remains stale; blacklist retained with unknown cause (1.2088ms)
+✔ source-clock validator rejects invalid Jalali date, missing time and future time (0.7176ms)
+✔ truncated, duplicate or out-of-scope metadata rejects before claiming coverage (1.1076ms)
+✔ actual local file pipeline denies network and escapes CSV formulas without clearing legacy state (43.821ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 222.3429
