@@ -6,27 +6,32 @@
     {
       "path": "relay/brsapi-client.mjs",
       "gitBlob": "45effa023a3e4bf7c9632757d70fec49001039e0",
-      "sha256": "433bb9f1003096782d525db1e712b2e7c9286fab48dd6e473791c1199a42360c"
+      "sha256": "5475ce5ac8c6e8e341498ebd14521ef28b94e193cae8e3e6e423242d68f052da",
+      "windowsCheckoutSha256": "433bb9f1003096782d525db1e712b2e7c9286fab48dd6e473791c1199a42360c"
     },
     {
       "path": "relay/brsapi-budget-store.mjs",
       "gitBlob": "e198edd8d1aee54f052c4dd349aa758a801057eb",
-      "sha256": "273424ccb1a2bbec9e93615187169137b47cf4b0723ed3bf35a7737f332d9264"
+      "sha256": "66cbfe3d859a1114925ab53ab605185eb7cf1c42f3720dacb49cdc66cf0c6ba2",
+      "windowsCheckoutSha256": "273424ccb1a2bbec9e93615187169137b47cf4b0723ed3bf35a7737f332d9264"
     },
     {
       "path": "relay/brsapi-legacy-meter.mjs",
       "gitBlob": "26e06c67aaa5ce7824a13cd2d72d067c470fb760",
-      "sha256": "050435dd1337fee6d1c8e02802b85071de7f19ad46bfaa669f28e5a513242269"
+      "sha256": "12f2e508072a420352559e0e371d1dd49098cd921081c9b9db1a529fd31d019e",
+      "windowsCheckoutSha256": "050435dd1337fee6d1c8e02802b85071de7f19ad46bfaa669f28e5a513242269"
     },
     {
       "path": "relay/brsapi-budget.integration.test.mjs",
       "gitBlob": "6c3dc514c6105e6878d26cd0200fd17d730429af",
-      "sha256": "e254cd7005fbbd6c55c3cb08bd21f0968c2c8cd2d7cd5412dc948caa6f4fbe32"
+      "sha256": "42d7f10bb2e6135f53f9f84ea236ec48e44290984a8c4f34585aa3de1266fe82",
+      "windowsCheckoutSha256": "e254cd7005fbbd6c55c3cb08bd21f0968c2c8cd2d7cd5412dc948caa6f4fbe32"
     },
     {
       "path": "sql/phase28_brsapi_budget.sql",
       "gitBlob": "aa3c957420bb7b52f709afda622174d4f69b2559",
-      "sha256": "7dd7091774815ede7985135836a13c30b6df7fcc20fc158666a77dc8c0db0cc1"
+      "sha256": "490444bf006cadfd5146954f431cafe75e3474baf89465ad4b0efec2b264ab63",
+      "windowsCheckoutSha256": "7dd7091774815ede7985135836a13c30b6df7fcc20fc158666a77dc8c0db0cc1"
     }
   ],
   "ciReuse": {
@@ -62,5 +67,6 @@
     "counterExists": false,
     "leaseExists": false,
     "releaseExists": false
-  }
+  },
+  "hashEncoding": "Git blob bytes; UTF-8 LF; windowsCheckoutSha256 is diagnostic only"
 }
