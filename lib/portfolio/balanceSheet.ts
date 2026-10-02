@@ -9,7 +9,7 @@ export interface DebtPosition {
 export function positionFromStored(p: Record<string, unknown>): HoldingPosition {
   return { positionKey: String(p.position_key), symbol: p.symbol as string | null, manualLabel: p.manual_label as string | null,
     assetClass: String(p.asset_class), qty: p.qty === null ? null : Number(p.qty), unit: String(p.unit),
-    costBasis: p.cost_basis === null ? null : Number(p.cost_basis), asOf: String(p.as_of), title: p.title as string | null,
+    costBasis: p.cost_basis == null ? null : Number(p.cost_basis), asOf: String(p.as_of), title: p.title as string | null,
     ownershipPct: Number(p.ownership_pct), valuationMode: p.valuation_mode as HoldingPosition["valuationMode"],
     declaredValue: p.declared_value === null ? null : Number(p.declared_value), valuationSource: p.valuation_source as string | null,
     valuationAsOf: p.valuation_as_of as string | null, valuationStatus: p.valuation_status as HoldingPosition["valuationStatus"] };
