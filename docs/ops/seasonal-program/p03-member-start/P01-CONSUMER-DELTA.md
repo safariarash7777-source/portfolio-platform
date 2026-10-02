@@ -28,6 +28,8 @@ Two preliminary malformed-token probes returned validation_failed and were not c
 
 ## Delivery
 
-Draft [PR209](https://github.com/safariarash7777-source/portfolio-platform/pull/209) was last verified published at `63aeb0ff21db91b0b07c6fdde5b579cd1747b8fc`, before this delta. Git push and the GitHub connector currently fail through the host's external connection. The tested delta is committed locally; until the remote head is verified, it must not be described as published or CI-green. No DNS/VPN/security setting was changed.
+Git push and the GitHub connector initially failed through the host's external connection, leaving remote head63aeb0f unchanged. Once P00 reported restored connectivity, both the branch and Draft PR were read again: no competing head or base change. Ordinary non-force push then published `797335c872ea4304aa119ecde32809da4f156e5d`, independently confirmed through GitHub. Draft [PR209](https://github.com/safariarash7777-source/portfolio-platform/pull/209) remains open/unmerged on fixedbase19531c44. No DNS/VPN/security setting was changed.
+
+Exact797335c CI37034077505 completed SUCCESS across all five jobs, including1313 core and443 DB tests with zero failures/skips and47-page build; seasonal37034077533 also SUCCESS. See [publication checkpoint](PUBLICATION-CHECKPOINT.md) and [CI snapshot](evidence/p01-delta-ci.json). The earlier network-blocked validation JSON remains a historical snapshot.
 
 Real provider/device/independent human acceptance, P00 release base/manifest and full #208 integrated Auth flow remain open. No Production deployment, merge or shared migration.

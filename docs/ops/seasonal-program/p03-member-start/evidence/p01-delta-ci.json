@@ -1,0 +1,80 @@
+{
+  "codeAndEvidenceHead": "797335c872ea4304aa119ecde32809da4f156e5d",
+  "base": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "draft": true,
+  "merged": false,
+  "runs": [
+    {
+      "id": 37034077533,
+      "name": "Seasonal membership sandbox",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 29,
+      "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/37034077533/jobs",
+      "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/37034077533/logs",
+      "workflow_id": 371553818
+    },
+    {
+      "id": 37034077505,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 430,
+      "jobs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/37034077505/jobs",
+      "logs_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/runs/37034077505/logs",
+      "workflow_id": 320220968
+    }
+  ],
+  "jobs": [
+    {
+      "id": 110927822287,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110927822308,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110927822379,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110927822439,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 110928838172,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "database": [
+    "# tests 443",
+    "# pass 443",
+    "# fail 0",
+    "# skipped 0",
+    "# fail 0"
+  ],
+  "quality": {
+    "core": {
+      "pass": 1313,
+      "fail": 0,
+      "skip": 0
+    },
+    "buildStaticPages": 47
+  },
+  "independentReview": {
+    "P07": "af212ca4c3d6b58e27bf20e9d93a2378b215aaba",
+    "result": "LOCAL_CONSUMER_COMPATIBLE"
+  },
+  "scope": "CI for P03 fixed-base PR; not P00 integrated/native/provider/human acceptance"
+}
