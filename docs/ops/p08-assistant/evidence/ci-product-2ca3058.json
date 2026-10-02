@@ -1,0 +1,57 @@
+{
+  "head": "2ca3058db75b44771c748b2673341aff2e84e77f",
+  "checks": [
+    {
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37015040267/job/110863732164",
+      "head_sha": "2ca3058db75b44771c748b2673341aff2e84e77f"
+    },
+    {
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37015040267/job/110863732098",
+      "head_sha": "2ca3058db75b44771c748b2673341aff2e84e77f"
+    },
+    {
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37015040267/job/110863732050",
+      "head_sha": "2ca3058db75b44771c748b2673341aff2e84e77f"
+    },
+    {
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37015040267/job/110863731758",
+      "head_sha": "2ca3058db75b44771c748b2673341aff2e84e77f"
+    },
+    {
+      "name": "Vercel Preview Comments",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/110863709424",
+      "head_sha": "2ca3058db75b44771c748b2673341aff2e84e77f"
+    },
+    {
+      "name": "Supabase Preview",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/110863702436",
+      "head_sha": "2ca3058db75b44771c748b2673341aff2e84e77f"
+    }
+  ],
+  "runs": [
+    {
+      "id": 37015040267,
+      "name": "CI",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37015040267",
+      "head_sha": "2ca3058db75b44771c748b2673341aff2e84e77f"
+    }
+  ]
+}
