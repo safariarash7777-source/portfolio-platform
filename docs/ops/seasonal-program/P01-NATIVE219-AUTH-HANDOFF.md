@@ -2,7 +2,9 @@
 
 2026-10-02, Asia/Tehran. **Preflight specification only; P01 native tests NOT_RUN.** Independent execution was subsequently reported IN_PROGRESS on8445; see [runtime receipt](./P01-NATIVE219-RUNTIME-RECEIPT.md) for the unresolved metadata discrepancies. No environment, schema, account, template, provider, proxy or Production change in this handoff.
 
-## Verified source pin
+## Verified original source pin — 2026-10-02 preflight history
+
+Current operator handoff2026-10-03 supersedes this original source pin with `9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5` on8445; see [runtime receipt](./P01-NATIVE219-RUNTIME-RECEIPT.md) and [origin fix review](./P01-NATIVE219-ORIGIN-REVIEW.md). The Auth contract and native gates below still apply. The configured public app origin is required behind the proxy; no earlier a062 acceptance is transferred.
 
 PR219 is Draft: `codex/p00-auth-next-20261002`, head `a0625a42ad1cb24dd31e561528fa901758d01f57`, tree `d144d167b16b25ba8cf20a19b0cbd22c4aaa6041`, base `cfa4e211dc1c1dd50141eadd0f2a884151f78e06`. GitHub CI37048341434 is SUCCESS on that exact head, independently read for this handoff. The reported constrained configured build is operator evidence, not a native acceptance performed by P01.
 

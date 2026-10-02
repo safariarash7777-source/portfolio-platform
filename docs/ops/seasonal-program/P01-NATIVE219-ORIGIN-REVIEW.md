@@ -1,5 +1,7 @@
 # P01 — Native219 callback origin review
 
+Update2026-10-03: P00's final8445 deployment receipt now pins9b33 and the independent run is reported IN_PROGRESS; see [updated runtime receipt](./P01-NATIVE219-RUNTIME-RECEIPT.md). The a062 runtime statement below describes the earlier source-review moment, not the current handoff. No native PASS is added by this update.
+
 2026-10-02, Asia/Tehran. **Source review and isolated tests; no deployment or native retry by P01.** PR219 final source reviewed: `9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5`, tree `8900eb7fd8520531828dab3bfe1c0c824922caaa`. Runtime origin fix: `07f05bdf1f1e2c459786e307cf8c3d0fc324eef3`. The operator's last runtime statement still pins the active8445 run to `a0625a42ad1cb24dd31e561528fa901758d01f57`; a source/CI change is not a runtime upgrade.
 
 ## Confirmed evidence and its scope

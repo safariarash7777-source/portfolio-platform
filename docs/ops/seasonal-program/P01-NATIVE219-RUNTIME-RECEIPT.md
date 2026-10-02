@@ -20,3 +20,17 @@ P00 should reconcile its public CURRENT/ENVIRONMENT receipt with the actual app 
 All earlier gates in [Auth handoff](./P01-NATIVE219-AUTH-HANDOFF.md) remain applicable. Two template phases are separate: candidate215 fragment templates, then isolated legacy native ConfirmationURL/PKCE fixtures with their own template digest/preflight receipt. A native recover200 plus internal SMTP message is receipt evidence only; consumption, SSR session, AMR recovery proof and password login remain separately measured.
 
 Demo8444/cfa,195/8443, real providers, owner account and Production remain untouched by P01. Public receipt inspection only; no deployments, environment/schema changes, migrations or sends. Tools: PowerShell and selected-field reads of public operator artifacts. No credential/private file read.
+
+## 2026-10-03 — final-source deployment receipt supersedes provisional metadata
+
+Read-only review of P00's new DEPLOYMENT.json, BUILD.json, DEFAULT-BUILD.json and CURRENT.md establishes the current **operator handoff** for source `9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5`, tree `8900eb7fd8520531828dab3bfe1c0c824922caaa`, origin `https://62.60.191.24:8445`, environment `portfolio-auth219-20261002`.
+
+The final deployment receipt is timestamped2026-10-02T20:34:21Z, **2026-10-03 00:04:21 +03:30 Tehran**, with status `READY_FOR_INDEPENDENT_NATIVE_NOT_ACCEPTED`, appStarted=true and exitCode0. Primary and default-profile builds both record this exact source/tree and PASS. Primary namespace is `portfolio-auth219-20261002-auth`; the default profile intentionally has no override (null), not a missing primary namespace. Default-profile tests require a fresh context and the operator's `X-Candidate-Profile: default219-unset` selector; this is not permission to alter the primary environment.
+
+CURRENT now has the correct primary namespace and points to the final DEPLOYMENT receipt. The earlier `undefined`/pending-app metadata observations above remain historical and are superseded for this handoff. The old backend-only ENVIRONMENT receipt is not the authoritative final app receipt.
+
+Both before/after aggregate witness fields are present and equal for authUsers, profiles, holdingVersions and holdingDigest. The operator receipt also records protectedContainerIDsUnchanged=true. This is inspection of sanitized operator artifacts, not a fresh DB query or a live service probe by P01. No counts, identifiers, digests or credential values were exported.
+
+At receipt creation, nativeAcceptance was `NOT_RUN_FINAL_SHA`; the subsequent CURRENT/operator status is IN_PROGRESS. Those timestamps describe sequence, not an acceptance contradiction. Independent18-group execution must issue its own results on9b33. a062 N07 FAIL/blocked subcases remain history and are not carried as PASS. The source correction/CI distinction is in [origin review](./P01-NATIVE219-ORIGIN-REVIEW.md); fresh PKCE/fragment/role/financial guards remain the runner's responsibility.
+
+P01 made documentation updates only. No parallel native test, public Auth request, credential read, inbox/fault access, deployment, environment/schema change, migration, real send, account change or Production operation.
