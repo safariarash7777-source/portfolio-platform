@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "quotaOwnerSha": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+  "quotaFiles": [
+    {
+      "path": "relay/brsapi-client.mjs",
+      "gitBlob": "45effa023a3e4bf7c9632757d70fec49001039e0",
+      "sha256": "433bb9f1003096782d525db1e712b2e7c9286fab48dd6e473791c1199a42360c"
+    },
+    {
+      "path": "relay/brsapi-budget-store.mjs",
+      "gitBlob": "e198edd8d1aee54f052c4dd349aa758a801057eb",
+      "sha256": "273424ccb1a2bbec9e93615187169137b47cf4b0723ed3bf35a7737f332d9264"
+    },
+    {
+      "path": "relay/brsapi-legacy-meter.mjs",
+      "gitBlob": "26e06c67aaa5ce7824a13cd2d72d067c470fb760",
+      "sha256": "050435dd1337fee6d1c8e02802b85071de7f19ad46bfaa669f28e5a513242269"
+    },
+    {
+      "path": "relay/brsapi-budget.integration.test.mjs",
+      "gitBlob": "6c3dc514c6105e6878d26cd0200fd17d730429af",
+      "sha256": "e254cd7005fbbd6c55c3cb08bd21f0968c2c8cd2d7cd5412dc948caa6f4fbe32"
+    },
+    {
+      "path": "sql/phase28_brsapi_budget.sql",
+      "gitBlob": "aa3c957420bb7b52f709afda622174d4f69b2559",
+      "sha256": "7dd7091774815ede7985135836a13c30b6df7fcc20fc158666a77dc8c0db0cc1"
+    }
+  ],
+  "ciReuse": {
+    "runId": "36843617522",
+    "jobId": "110308383700",
+    "tests": 13,
+    "pass": 13,
+    "fail": 0,
+    "skip": 0,
+    "freshExecution": false
+  },
+  "localReuse": {
+    "postgres": "17.11",
+    "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+    "network": "none",
+    "ports": "none",
+    "tests": 14,
+    "pass": 14,
+    "fail": 0,
+    "skip": 0,
+    "freshExecution": false
+  },
+  "liveInstalled": false,
+  "supplierDailyUsage": null,
+  "supplierReset": null,
+  "allConsumersVerified": false,
+  "twoNaturalCyclesAccepted": false,
+  "newCatalogPreflightExecuted": true,
+  "targetCatalogPreflight": {
+    "observedAt": "2026-10-02T17:07:06.700003Z",
+    "readOnly": "on",
+    "postgres": "17.6",
+    "counterExists": false,
+    "leaseExists": false,
+    "releaseExists": false
+  }
+}

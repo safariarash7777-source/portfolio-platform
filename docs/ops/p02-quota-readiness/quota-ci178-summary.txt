@@ -1,0 +1,17 @@
+# Subtest: brsapi_guard_legacy_test: unknown baseline sends nothing; tomorrow is not assumed unused
+# Subtest: brsapi_guard_legacy_test: 8 concurrent consumers share one real DB ceiling
+# Subtest: brsapi_guard_legacy_test: restart and duplicate release cannot reopen a full day
+# Subtest: brsapi_guard_legacy_test: reduced ceiling freezes allocation; larger request cannot raise it
+# Subtest: brsapi_guard_legacy_test: anon/member cannot call/read/write; service can only read and lease
+# Subtest: brsapi_guard_legacy_test: real persistent budget rejects BEFORE mocked upstream
+# Subtest: brsapi_guard_explicit_test: unknown baseline sends nothing; tomorrow is not assumed unused
+# Subtest: brsapi_guard_explicit_test: 8 concurrent consumers share one real DB ceiling
+# Subtest: brsapi_guard_explicit_test: restart and duplicate release cannot reopen a full day
+# Subtest: brsapi_guard_explicit_test: reduced ceiling freezes allocation; larger request cannot raise it
+# Subtest: brsapi_guard_explicit_test: anon/member cannot call/read/write; service can only read and lease
+# Subtest: brsapi_guard_explicit_test: real persistent budget rejects BEFORE mocked upstream
+# Subtest: DB connection fails across restarts: no critical emergency request
+# tests 13
+# pass 13
+# fail 0
+# skipped 0

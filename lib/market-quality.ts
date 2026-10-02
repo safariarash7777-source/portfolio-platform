@@ -20,6 +20,51 @@ export function sourceTime(date: string | null | undefined, time: string | null 
 }
 
 export type DataQuality = "ready" | "stale" | "unknown-time" | "unavailable";
+export interface FamilyAvailability {
+  state: DataQuality;
+  rows: number;
+  rejectedRows: number;
+  unknownTimeRows: number;
+  staleRows: number;
+  validAt: number | null;
+}
+export type IranFamily = "gold" | "currency" | "funds" | "stocks" | "crypto" | "options" | "indices";
+export interface IranReadQuality {
+  state: "ready" | "stale" | "unknown-time" | "partial" | "error";
+  reason: "empty-source" | "invalid-receipt-time" | "old-receipt" | "rejected-rows" | "missing-price-time" | "old-price-time" | null;
+  receivedAt: number | null;
+  validAt: number | null;
+  families: Record<IranFamily, FamilyAvailability>;
+}
+const STALE_MS = 30 * 60_000;
+const FUTURE_TOLERANCE_MS = 120_000;
+
+/** Counts describe this payload only. Empty families do not prove missing symbols or history. */
+export function iranReadQuality(market: IrMarket | null, now = Date.now()): IranReadQuality {
+  const family = (rows: readonly { sourceDate?: string | null; sourceTime?: string | null }[], inputRows = rows.length): FamilyAvailability => {
+    const clocks = rows.map(row => sourceTime(row.sourceDate, row.sourceTime));
+    const unknownTimeRows = clocks.filter(at => at === null || at > now + FUTURE_TOLERANCE_MS).length;
+    const staleRows = clocks.filter(at => at !== null && now - at >= STALE_MS).length;
+    const validAt = rows.length && !unknownTimeRows ? Math.min(...clocks as number[]) : null;
+    return { rows: rows.length, rejectedRows: Math.max(0, inputRows - rows.length), unknownTimeRows, staleRows, validAt,
+      state: !rows.length ? "unavailable" : unknownTimeRows ? "unknown-time" : staleRows ? "stale" : "ready" };
+  };
+  const families = Object.fromEntries((["gold", "currency", "funds", "stocks", "crypto"] as const).map(key => [key, family(market?.[key] ?? [], market?.inputRows?.[key])])) as Record<IranFamily, FamilyAvailability>;
+  // The option reader has no source-clock contract yet. Never borrow the index or receipt clock.
+  families.options = family((market?.options ?? []).map(() => ({})), market?.inputRows?.options);
+  families.indices = family(market?.indices ? [{ sourceDate: market.indices.date, sourceTime: market.indices.time }] : []);
+  const active = Object.values(families).filter(item => item.rows > 0);
+  const receivedAt = validTimestamp(market?.fetchedAt);
+  const validAt = active.length && active.every(item => item.validAt !== null) ? Math.min(...active.map(item => item.validAt as number)) : null;
+  let state: IranReadQuality["state"] = "ready", reason: IranReadQuality["reason"] = null;
+  if (!market?.ok || !active.length) { state = "error"; reason = "empty-source"; }
+  else if (receivedAt === null || receivedAt > now + FUTURE_TOLERANCE_MS) { state = "unknown-time"; reason = "invalid-receipt-time"; }
+  else if (now - receivedAt >= STALE_MS) { state = "stale"; reason = "old-receipt"; }
+  else if (Object.values(families).some(item => item.rejectedRows > 0)) { state = "partial"; reason = "rejected-rows"; }
+  else if (active.some(item => item.unknownTimeRows > 0)) { state = "unknown-time"; reason = "missing-price-time"; }
+  else if (active.some(item => item.staleRows > 0)) { state = "stale"; reason = "old-price-time"; }
+  return { state, reason, receivedAt, validAt, families };
+}
 export type SessionState = "open" | "closed" | "unknown";
 export interface MarketProvenance {
   source: "BrsApi → رله → اسنپ‌شات";

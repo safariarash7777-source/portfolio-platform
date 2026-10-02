@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-10-02T17:07:45.1979221Z",
+  "readerRegressionBefore": {
+    "tests": 9,
+    "pass": 1,
+    "fail": 8,
+    "skip": 0
+  },
+  "readerRelatedAfter": {
+    "tests": 56,
+    "pass": 56,
+    "fail": 0,
+    "skip": 0
+  },
+  "serverAndStore": {
+    "tests": 6,
+    "pass": 6,
+    "fail": 0,
+    "skip": 0
+  },
+  "targetedLint": "PASS",
+  "secretScan": "PASS",
+  "canonicalSqlValidation": "PASS",
+  "heavyLocalBuildExecuted": false,
+  "liveProviderCalls": 0,
+  "productionWrites": 0,
+  "quotaInstalled": false
+}
