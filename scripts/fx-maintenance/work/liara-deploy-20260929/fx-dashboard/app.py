@@ -123,100 +123,8 @@ def get_iran_monthly(url: str):
 @st.cache_data(show_spinner=False)
 def monthly_fundamental(ppp_annual: pd.Series, usa_infl: pd.Series,
                         month_index: pd.Series, data_version: str = "") -> tuple:
-    """
-    ارزشِ بنیادیِ PPP را روی شبکهٔ **ماهانهٔ** نرخ بازار می‌سازد.
-
-    توجه: `month_index` باید **pd.Series** از تاریخ‌ها باشد نه DatetimeIndex —
-    st.cache_data نمی‌تواند DatetimeIndex را هش کند (UnhashableParamError).
-
-    دو مسیر، به‌ترتیبِ اولویت:
-
-    ۱) «cpi» — از **CPI ماهانهٔ بازسازی‌شدهٔ ایران** (ds.load_cpi_monthly) و تورمِ
-       ماهانهٔ آمریکا (پخشِ هندسیِ تورمِ سالانه: (1+π_us)^(1/12)). شاخصِ نسبیِ
-       ماهانه ساخته می‌شود و سپس **به PPP سالانه بنچ‌مارک می‌شود**: برای هر سالِ
-       شمسی ضریبِ تصحیح c_y = PPP_y ÷ میانگینِ ماهانهٔ شاخص محاسبه و فقط همین
-       ضریبِ کند-حرکت لگاریتم-خطی درون‌یابی می‌گردد.
-
-       چرا بنچ‌مارک لازم است: تورمِ فایلِ ماهانه با infl_cbi سالانهٔ داشبورد
-       ناسازگار است — انباشتِ ۱۳۹۹/۰۱ تا ۱۴۰۵/۰۳ در ماهانه ×۱۲٫۳ و در سالانه
-       ×۹٫۴ است (~۳۰٪ فاصله). بدونِ بنچ‌مارک، سطحِ بنیادیِ ماهانه تا ۴۲٪ از
-       سری سالانهٔ خودِ داشبورد فاصله می‌گیرد و دو تبِ داشبورد دو حرفِ متضاد
-       می‌زنند. با بنچ‌مارک، **سطح** از سری سالانه و **شکلِ درون‌سال** از CPI
-       واقعی می‌آید — همان قاعدهٔ استانداردِ temporal disaggregation.
-
-    ۲) «interp» — پس‌افتِ گریس‌فول وقتی CPI ماهانه نیست: درون‌یابیِ
-       لگاریتم-خطیِ خودِ PPP سالانه. **این مسیر اطلاعاتِ درون‌سال نمی‌سازد**؛
-       آمارهٔ BSADF هموارتر از حقیقت می‌شود و باید در مقاله ذکر شود.
-
-    Returns:
-        (سری بنیادی هم‌ایندکس با month_index، برچسبِ روش: "cpi" | "interp" | "")
-    """
-    if ppp_annual is None or len(ppp_annual) < 2 or month_index is None or len(month_index) == 0:
-        return pd.Series(dtype=float), ""
-
-    month_index = pd.DatetimeIndex(pd.Series(month_index).values)
-    ppp_a = pd.Series(ppp_annual).dropna()
-    ppp_a = ppp_a[ppp_a > 0]
-    if len(ppp_a) < 2:
-        return pd.Series(dtype=float), ""
-
-    def _to_grid(s: pd.Series) -> pd.Series:
-        """درون‌یابیِ لگاریتم-خطیِ زمانی روی شبکهٔ ماهانهٔ بازار."""
-        s = s[s > 0].sort_index()
-        if len(s) < 2:
-            return pd.Series(dtype=float)
-        grid = s.index.union(month_index)
-        v = np.exp(np.log(s).reindex(grid).interpolate(method="time", limit_area="inside"))
-        return v.reindex(month_index).dropna()
-
-    # ── مسیر ۱: CPI ماهانهٔ بازسازی‌شده، بنچ‌مارک‌شده به PPP سالانه ──
-    cpi = ds.load_cpi_monthly()
-    if not cpi.empty and len(cpi) >= 24:
-        us = pd.Series(usa_infl).dropna() if usa_infl is not None else pd.Series(dtype=float)
-
-        # تورمِ ماهانهٔ آمریکا از تورمِ سالانهٔ همان سالِ شمسی (پخشِ هندسی).
-        # نبودِ سال ⇒ صفر: خطایش حداکثر ~۳٪ در سال است، در برابر تورمِ ~۵۰٪ ایران ناچیز.
-        def _us_m(jy):
-            v = us.get(int(jy), np.nan)
-            return (1 + float(v) / 100) ** (1 / 12) if pd.notna(v) else np.nan
-
-        us_fac = np.array([_us_m(jy) for jy in cpi["jy"]])
-        rel = (cpi["cpi"].to_numpy() / us_fac.cumprod())
-        rel = pd.Series(rel / rel[0], index=cpi.index)
-
-        # ضریبِ تصحیحِ سالانه c_y = PPP_y ÷ میانگینِ سالانهٔ شاخصِ نسبی.
-        # دو نکتهٔ ریز که خطای بنچ‌مارک را از ~۵٪ به ~۱٪ می‌رساند:
-        #   • فقط سال‌های **کامل** (≥۶ ماه داده) لنگر می‌شوند؛ سالِ ناقصِ انتهایی
-        #     میانگینش نمایندهٔ سال نیست و ضریبِ سالِ قبل را هم منحرف می‌کند.
-        #   • لنگر روی **میانهٔ سال** (ماه ۷) می‌نشیند نه ماه ۱، چون c بین لنگرها
-        #     لگاریتم-خطی درون‌یابی می‌شود و میانگینِ سال حوالیِ میانهٔ سال رخ می‌دهد.
-        grp = pd.DataFrame({"rel": rel.to_numpy(), "jy": cpi["jy"].to_numpy()}).groupby("jy")["rel"]
-        c = {}
-        for jy, r in grp.mean().items():
-            if jy in ppp_a.index and r > 0 and grp.count().loc[jy] >= 6:
-                g0, _ = ds.shamsi_month_to_gregorian_range(int(jy), 7)
-                c[pd.Timestamp(g0)] = float(ppp_a.loc[jy]) / float(r)
-        if len(c) >= 2:
-            c_s = pd.Series(c).sort_index()
-            grid = rel.index.union(c_s.index)
-            c_m = np.exp(np.log(c_s).reindex(grid).interpolate(method="time")
-                         .ffill().bfill()).reindex(rel.index)
-            fund = _to_grid(rel * c_m)
-            if len(fund) >= 24:
-                return fund, "cpi"
-
-    # ── مسیر ۲: درون‌یابیِ لگاریتم-خطیِ PPP سالانه ──
-    anchors = {}
-    for jy, v in ppp_a.items():
-        try:
-            g0, _ = ds.shamsi_month_to_gregorian_range(int(jy), 1)
-            anchors[pd.Timestamp(g0)] = float(v)
-        except Exception:  # noqa: BLE001
-            continue
-    if len(anchors) < 2:
-        return pd.Series(dtype=float), ""
-    fund = _to_grid(pd.Series(anchors))
-    return (fund, "interp") if not fund.empty else (pd.Series(dtype=float), "")
+    """Cached UI wrapper for the existing model; unapproved official anchors block."""
+    return m.monthly_fundamental(ppp_annual, usa_infl, month_index, data_version)
 
 
 @st.cache_data(ttl=86400, show_spinner="دریافت داده آمریکا از FRED…")
@@ -1241,116 +1149,120 @@ with t5:
 
         # ── متغیرِ هدف: نسبتِ بازار به بنیادی، نه نرخِ اسمی ──
         _usa_infl = df.set_index("year_shamsi")["usa_infl"] if "usa_infl" in df.columns else None
-        fund_m, fund_how = monthly_fundamental(ppp, _usa_infl, pd.Series(monthly.index), macro_health.fingerprint(ds.INFLATION_PATH))
+        fund_m, fund_how = monthly_fundamental(ppp, _usa_infl, pd.Series(monthly.index), ds.cpi_monthly_version())
 
-        if fund_how and len(fund_m) >= 40:
-            target = psy.misalignment_target(monthly.reindex(fund_m.index), fund_m)
-            target_label = "log(بازار ÷ PPP)"
-            if fund_how == "cpi":
-                st.info(
-                    "✅ آزمون روی **نسبتِ نرخ بازار به ارزشِ بنیادیِ PPP** اجرا می‌شود. بنیادیِ ماهانه از "
-                    "**CPI ماهانهٔ بازسازی‌شدهٔ ایران** ساخته و به PPP سالانهٔ داشبورد بنچ‌مارک شده است "
-                    "(سطح از سری سالانه، شکلِ درون‌سال از CPI). اجرای PSY روی لگاریتمِ نرخِ اسمی در "
-                    "اقتصادی با تورمِ ~۵۰٪ ریشهٔ انفجاری را از خودِ روندِ تورمی می‌گیرد، نه از حباب.")
+        if fund_how.startswith("blocked_"):
+            st.warning("ورودی رسمی بانک مرکزی هنوز قرارداد کامل مدل را ندارد؛ آزمون وابسته اجرا نمی‌شود. دادهٔ مفقود یا مبهم جایگزین نمی‌شود.")
+        else:
+
+            if fund_how and len(fund_m) >= 40:
+                target = psy.misalignment_target(monthly.reindex(fund_m.index), fund_m)
+                target_label = "log(بازار ÷ PPP)"
+                if fund_how == "cpi":
+                    st.info(
+                        "✅ آزمون روی **نسبتِ نرخ بازار به ارزشِ بنیادیِ PPP** اجرا می‌شود. بنیادیِ ماهانه از "
+                        "**CPI ماهانهٔ بازسازی‌شدهٔ ایران** ساخته و به PPP سالانهٔ داشبورد بنچ‌مارک شده است "
+                        "(سطح از سری سالانه، شکلِ درون‌سال از CPI). اجرای PSY روی لگاریتمِ نرخِ اسمی در "
+                        "اقتصادی با تورمِ ~۵۰٪ ریشهٔ انفجاری را از خودِ روندِ تورمی می‌گیرد، نه از حباب.")
+                else:
+                    st.warning(
+                        "🟡 آزمون روی **نسبتِ بازار به PPP** اجرا می‌شود، اما CPI ماهانه در دسترس نبود و "
+                        "بنیادی با **درون‌یابیِ لگاریتم-خطیِ PPP سالانه** ساخته شده است. درون‌یابی "
+                        "اطلاعاتِ درون‌سال نمی‌سازد، پس دنبالهٔ BSADF هموارتر از حقیقت است — این محدودیت "
+                        "باید در بخشِ روش‌شناسیِ مقاله ذکر شود.")
             else:
+                target = np.log(monthly)
+                target_label = "log(نرخ اسمی) — ناقص"
+                st.error(
+                    "⚠️ سری بنیادیِ ماهانه ساخته نشد، پس آزمون روی **نرخِ اسمی** اجرا شد. "
+                    "**این نتیجه برای مقاله قابلِ استناد نیست**؛ رفتارِ انفجاری در اینجا عمدتاً بازتابِ "
+                    "روندِ تورمی است، نه حباب.")
+
+            _n_obs = len(target)
+            if _n_obs < 50:
                 st.warning(
-                    "🟡 آزمون روی **نسبتِ بازار به PPP** اجرا می‌شود، اما CPI ماهانه در دسترس نبود و "
-                    "بنیادی با **درون‌یابیِ لگاریتم-خطیِ PPP سالانه** ساخته شده است. درون‌یابی "
-                    "اطلاعاتِ درون‌سال نمی‌سازد، پس دنبالهٔ BSADF هموارتر از حقیقت است — این محدودیت "
-                    "باید در بخشِ روش‌شناسیِ مقاله ذکر شود.")
-        else:
-            target = np.log(monthly)
-            target_label = "log(نرخ اسمی) — ناقص"
-            st.error(
-                "⚠️ سری بنیادیِ ماهانه ساخته نشد، پس آزمون روی **نرخِ اسمی** اجرا شد. "
-                "**این نتیجه برای مقاله قابلِ استناد نیست**؛ رفتارِ انفجاری در اینجا عمدتاً بازتابِ "
-                "روندِ تورمی است، نه حباب.")
+                    f"⚠️ **توانِ آماری پایین:** {_n_obs} مشاهدهٔ ماهانه. آزمونِ PSY زیرِ ~۵۰ مشاهده توانِ "
+                    "کمی دارد؛ نتیجهٔ «بدون رفتارِ انفجاری» را شاهدی بر نبودِ حباب نگیرید "
+                    "(خطای نوع دوم، نه تأییدِ فرضیهٔ صفر).")
 
-        _n_obs = len(target)
-        if _n_obs < 50:
-            st.warning(
-                f"⚠️ **توانِ آماری پایین:** {_n_obs} مشاهدهٔ ماهانه. آزمونِ PSY زیرِ ~۵۰ مشاهده توانِ "
-                "کمی دارد؛ نتیجهٔ «بدون رفتارِ انفجاری» را شاهدی بر نبودِ حباب نگیرید "
-                "(خطای نوع دوم، نه تأییدِ فرضیهٔ صفر).")
+            with st.spinner("اجرای PSY + شبیه‌سازیِ مقادیر بحرانی (بارِ اول کند است، سپس کش می‌شود)…"):
+                res = get_psy(target)
 
-        with st.spinner("اجرای PSY + شبیه‌سازیِ مقادیر بحرانی (بارِ اول کند است، سپس کش می‌شود)…"):
-            res = get_psy(target)
+            sadf = res.table
+            # تاریخ‌گذاری فقط وقتی معتبر است که آزمونِ سوپریمم (GSADF) فرضِ صفر را رد کرده باشد.
+            # قاعدهٔ نقطه‌ای به‌تنهایی روی قدم‌زدنِ تصادفی ۷۷٪ مثبتِ کاذب می‌دهد (مسئلهٔ آزمونِ چندگانه)،
+            # با قاعدهٔ حداقل مدت ۳۴٪، و تنها با گیتِ GSADF به ~۹٪ می‌رسد. (شبیه‌سازیِ ۲۰۰ مسیر، n=120)
+            stamped = sadf["is_explosive"] if res.significant else pd.Series(False, index=sadf.index)
 
-        sadf = res.table
-        # تاریخ‌گذاری فقط وقتی معتبر است که آزمونِ سوپریمم (GSADF) فرضِ صفر را رد کرده باشد.
-        # قاعدهٔ نقطه‌ای به‌تنهایی روی قدم‌زدنِ تصادفی ۷۷٪ مثبتِ کاذب می‌دهد (مسئلهٔ آزمونِ چندگانه)،
-        # با قاعدهٔ حداقل مدت ۳۴٪، و تنها با گیتِ GSADF به ~۹٪ می‌رسد. (شبیه‌سازیِ ۲۰۰ مسیر، n=120)
-        stamped = sadf["is_explosive"] if res.significant else pd.Series(False, index=sadf.index)
+            fig_sadf = go.Figure()
+            fig_sadf.add_trace(go.Scatter(x=sadf.index, y=monthly.reindex(sadf.index).values,
+                                          name="نرخ ماهانه", yaxis="y1",
+                                          line=dict(color=C["navy"], width=2.5)))
+            fig_sadf.add_trace(go.Scatter(x=sadf.index, y=sadf["bsadf"],
+                                          name="آماره BSADF", yaxis="y2",
+                                          line=dict(color=C["gold"], width=2)))
+            fig_sadf.add_trace(go.Scatter(x=sadf.index, y=sadf["cv95"],
+                                          name="CV ۹۵٪ (Monte-Carlo، دنباله‌ای)", yaxis="y2",
+                                          line=dict(color="red", width=1.5, dash="dot")))
+            bubble_pts = sadf[stamped]
+            if not bubble_pts.empty:
+                fig_sadf.add_trace(go.Scatter(
+                    x=bubble_pts.index, y=monthly.reindex(bubble_pts.index).values,
+                    mode="markers", name="دورهٔ انفجاری",
+                    marker=dict(color="red", size=9, symbol="x")))
 
-        fig_sadf = go.Figure()
-        fig_sadf.add_trace(go.Scatter(x=sadf.index, y=monthly.reindex(sadf.index).values,
-                                      name="نرخ ماهانه", yaxis="y1",
-                                      line=dict(color=C["navy"], width=2.5)))
-        fig_sadf.add_trace(go.Scatter(x=sadf.index, y=sadf["bsadf"],
-                                      name="آماره BSADF", yaxis="y2",
-                                      line=dict(color=C["gold"], width=2)))
-        fig_sadf.add_trace(go.Scatter(x=sadf.index, y=sadf["cv95"],
-                                      name="CV ۹۵٪ (Monte-Carlo، دنباله‌ای)", yaxis="y2",
-                                      line=dict(color="red", width=1.5, dash="dot")))
-        bubble_pts = sadf[stamped]
-        if not bubble_pts.empty:
-            fig_sadf.add_trace(go.Scatter(
-                x=bubble_pts.index, y=monthly.reindex(bubble_pts.index).values,
-                mode="markers", name="دورهٔ انفجاری",
-                marker=dict(color="red", size=9, symbol="x")))
+            brand_fig(fig_sadf, height=450, toman_yaxis=False)
+            fig_sadf.update_layout(
+                yaxis=dict(title="نرخ (ﺗﻮﻣﺎن)", tickformat=",.0f", ticksuffix=" ﺗﻮﻣﺎن"),
+                yaxis2=dict(title="BSADF", overlaying="y", side="right", showgrid=False),
+                xaxis_title="تاریخ",
+            )
+            st.plotly_chart(fig_sadf, width="stretch")
 
-        brand_fig(fig_sadf, height=450, toman_yaxis=False)
-        fig_sadf.update_layout(
-            yaxis=dict(title="نرخ (ﺗﻮﻣﺎن)", tickformat=",.0f", ticksuffix=" ﺗﻮﻣﺎن"),
-            yaxis2=dict(title="BSADF", overlaying="y", side="right", showgrid=False),
-            xaxis_title="تاریخ",
-        )
-        st.plotly_chart(fig_sadf, width="stretch")
+            # ── جدولِ گزارش‌شدنی در مقاله ──
+            k1, k2, k3, k4 = st.columns(4)
+            k1.metric("GSADF", f"{res.gsadf:.3f}")
+            k2.metric("CV ۹۵٪", f"{res.gsadf_cv[0.95]:.3f}")
+            k3.metric("p-value", f"{res.gsadf_pvalue:.3f}")
+            k4.metric("تأخیر (BIC)", f"{res.k}")
 
-        # ── جدولِ گزارش‌شدنی در مقاله ──
-        k1, k2, k3, k4 = st.columns(4)
-        k1.metric("GSADF", f"{res.gsadf:.3f}")
-        k2.metric("CV ۹۵٪", f"{res.gsadf_cv[0.95]:.3f}")
-        k3.metric("p-value", f"{res.gsadf_pvalue:.3f}")
-        k4.metric("تأخیر (BIC)", f"{res.k}")
+            n_bub = int(stamped.sum())
+            if res.significant and n_bub > 0:
+                st.error(f"🔴 فرضیهٔ صفرِ ریشهٔ واحد در سطحِ ۵٪ رد شد "
+                         f"(GSADF={res.gsadf:.3f} > CV₉₅={res.gsadf_cv[0.95]:.3f}). "
+                         f"**{n_bub} ماه** در دوره‌های انفجاریِ معتبر قرار دارند "
+                         f"(حداقل مدت {res.min_duration} ماه).")
+            elif res.significant:
+                st.warning("🟡 آمارهٔ GSADF معنادار است اما هیچ دورهٔ پیوسته‌ای قاعدهٔ حداقل مدت "
+                           f"({res.min_duration} ماه) را برآورده نکرد — احتمالاً جهش‌های کوتاه، "
+                           "نه انحرافِ پایدار.")
+            else:
+                st.success(f"🟢 رفتارِ انفجاری معنادار شناسایی نشد "
+                           f"(GSADF={res.gsadf:.3f} ≤ CV₉₅={res.gsadf_cv[0.95]:.3f}).")
+                st.caption("⚠️ «عدمِ شناسایی» نبودِ حباب را اثبات نمی‌کند؛ خطای نوع دوم محتمل است.")
 
-        n_bub = int(stamped.sum())
-        if res.significant and n_bub > 0:
-            st.error(f"🔴 فرضیهٔ صفرِ ریشهٔ واحد در سطحِ ۵٪ رد شد "
-                     f"(GSADF={res.gsadf:.3f} > CV₉₅={res.gsadf_cv[0.95]:.3f}). "
-                     f"**{n_bub} ماه** در دوره‌های انفجاریِ معتبر قرار دارند "
-                     f"(حداقل مدت {res.min_duration} ماه).")
-        elif res.significant:
-            st.warning("🟡 آمارهٔ GSADF معنادار است اما هیچ دورهٔ پیوسته‌ای قاعدهٔ حداقل مدت "
-                       f"({res.min_duration} ماه) را برآورده نکرد — احتمالاً جهش‌های کوتاه، "
-                       "نه انحرافِ پایدار.")
-        else:
-            st.success(f"🟢 رفتارِ انفجاری معنادار شناسایی نشد "
-                       f"(GSADF={res.gsadf:.3f} ≤ CV₉₅={res.gsadf_cv[0.95]:.3f}).")
-            st.caption("⚠️ «عدمِ شناسایی» نبودِ حباب را اثبات نمی‌کند؛ خطای نوع دوم محتمل است.")
+            for w in res.warnings_:
+                st.caption(f"⚠️ {w}")
 
-        for w in res.warnings_:
-            st.caption(f"⚠️ {w}")
-
-        with st.expander("مشخصاتِ آزمون (برای بخشِ روش‌شناسیِ مقاله)"):
-            _how = {"cpi": "CPI ماهانهٔ بازسازی‌شده، بنچ‌مارک‌شده به PPP سالانه",
-                    "interp": "درون‌یابیِ لگاریتم-خطیِ PPP سالانه (محدودیت: بدونِ اطلاعاتِ درون‌سال)",
-                    "": "—"}[fund_how]
-            st.markdown(f"""
-- **متغیرِ هدف:** {target_label}
-- **ساختِ بنیادیِ ماهانه:** {_how}
-- **تصریح:** ADF با ثابت، بدونِ روند؛ تأخیر با BIC از ۰ تا ۴ ⇒ k = {res.k}
-- **پنجرهٔ حداقلی:** r₀ = {res.r0:.3f} ⇒ w₀ = {res.min_window} مشاهده (قاعدهٔ PSY: r₀ = 0.01 + 1.8/√n)
-- **مقادیرِ بحرانی:** Monte-Carlo، {res.n_sim} تکرار، فرضِ صفرِ قدم‌زدنِ تصادفی با εₜ ~ N(0,1)،
-  seed = {res.seed}. CV **دنباله‌ای** (pointwise) است نه ثابت. سوپریمم در شبیه‌سازی روی همان
-  شبکهٔ گامِ ۱ گرفته می‌شود که روی داده — گامِ درشت‌تر CV را پایین و اندازهٔ آزمون را متورم می‌کند.
-- **قاعدهٔ تاریخ‌گذاری:** دورهٔ پیوسته با طول ≥ log(n) = {res.min_duration}، **مشروط به ردِ GSADF**.
-  بدونِ این شرط، قاعدهٔ نقطه‌ای روی قدم‌زدنِ تصادفی ~۷۷٪ مثبتِ کاذب می‌دهد.
-- **تعدادِ مشاهدات:** {_n_obs} (ماهانه)
-- **اصطلاح:** خروجی «رفتارِ انفجاری/انحراف» است، نه اثباتِ حبابِ عقلایی — اثباتِ حباب نیازمندِ
-  ردِ همهٔ مدل‌های بنیادیِ جایگزین است.
-- **مرجع:** Phillips, Shi & Yu (2015), *IER* 56(4), 1043–1078.
-""")
+            with st.expander("مشخصاتِ آزمون (برای بخشِ روش‌شناسیِ مقاله)"):
+                _how = {"cpi": "CPI ماهانهٔ بازسازی‌شده، بنچ‌مارک‌شده به PPP سالانه",
+                        "interp": "درون‌یابیِ لگاریتم-خطیِ PPP سالانه (محدودیت: بدونِ اطلاعاتِ درون‌سال)",
+                        "": "—"}.get(fund_how, "قرارداد مدل تأیید نشده")
+                st.markdown(f"""
+    - **متغیرِ هدف:** {target_label}
+    - **ساختِ بنیادیِ ماهانه:** {_how}
+    - **تصریح:** ADF با ثابت، بدونِ روند؛ تأخیر با BIC از ۰ تا ۴ ⇒ k = {res.k}
+    - **پنجرهٔ حداقلی:** r₀ = {res.r0:.3f} ⇒ w₀ = {res.min_window} مشاهده (قاعدهٔ PSY: r₀ = 0.01 + 1.8/√n)
+    - **مقادیرِ بحرانی:** Monte-Carlo، {res.n_sim} تکرار، فرضِ صفرِ قدم‌زدنِ تصادفی با εₜ ~ N(0,1)،
+      seed = {res.seed}. CV **دنباله‌ای** (pointwise) است نه ثابت. سوپریمم در شبیه‌سازی روی همان
+      شبکهٔ گامِ ۱ گرفته می‌شود که روی داده — گامِ درشت‌تر CV را پایین و اندازهٔ آزمون را متورم می‌کند.
+    - **قاعدهٔ تاریخ‌گذاری:** دورهٔ پیوسته با طول ≥ log(n) = {res.min_duration}، **مشروط به ردِ GSADF**.
+      بدونِ این شرط، قاعدهٔ نقطه‌ای روی قدم‌زدنِ تصادفی ~۷۷٪ مثبتِ کاذب می‌دهد.
+    - **تعدادِ مشاهدات:** {_n_obs} (ماهانه)
+    - **اصطلاح:** خروجی «رفتارِ انفجاری/انحراف» است، نه اثباتِ حبابِ عقلایی — اثباتِ حباب نیازمندِ
+      ردِ همهٔ مدل‌های بنیادیِ جایگزین است.
+    - **مرجع:** Phillips, Shi & Yu (2015), *IER* 56(4), 1043–1078.
+    """)
     else:
         st.info("برای آزمونِ PSY نیاز به دادهٔ زندهٔ tgju است.")
 

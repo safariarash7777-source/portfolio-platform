@@ -4,8 +4,8 @@ import pandas as pd
 def render():
     st.markdown('##### بازده تا سررسید اخزای دولتی — منبع رسمی فرابورس')
     try:
-        from ifb_bonds import load_current
-        meta,body=load_current();derived=body['derived_indicator']
+        from ifb_bonds import load_display
+        meta,body=load_display();derived=body['derived_indicator']
         import json
         from source_health import DATA_DIR
         try:
@@ -13,6 +13,8 @@ def render():
             if checked.get('status')=='official_bond_source_check_failed':st.warning('آخرین تلاش دریافت منبع ناموفق بود؛ نسخهٔ معتبر قبلی با تاریخ معاملهٔ اصلی نمایش داده می‌شود.')
         except (OSError,ValueError):pass
         st.caption('آخرین معامله در منبع: '+meta['last_trade_date']+' · نرخ‌ها درصد سالانه · قیمت ورقه به ریال')
+        if meta.get('stale'):
+            st.warning('آخرین نسخهٔ معتبر آرشیوی نمایش داده می‌شود؛ کهنه یا سررسیدگذشته است و نرخ روز یا ورودی معتبر مدل نیست.')
         if meta.get('age_days',0)>0:st.warning('این نرخ مربوط به آخرین معاملهٔ ثبت‌شده است؛ '+str(meta['age_days'])+' روز از آن گذشته و نرخ لحظه‌ای نیست.')
         st.metric('میانگین محاسبه‌شدهٔ اخزای دارای تاریخ معاملهٔ یکسان',f"{derived['ytm_percent']:.2f}٪")
         st.caption(f"{derived['instrument_count']} نماد در میانگین هم‌وزن؛ محاسبهٔ داشبورد است و شاخص رسمیِ میانگین بازار نیست.")
@@ -22,4 +24,4 @@ def render():
         st.markdown('[مشاهدهٔ جدول رسمی و روش محاسبه در فرابورس]('+meta['source_url']+')')
         st.info('این جدول نرخ روزِ اوراق مشخص است. سری تاریخیِ میانگین ماهانهٔ Pouya تعریف و پوشش متفاوت دارد؛ برای ساختن ماه‌های مفقود، نرخ روز به آن اضافه نشده است. نرخ کوپن و نرخ بین‌بانکی نیز با YTM یکسان نیستند.')
     except (OSError,ValueError,KeyError,TypeError,AssertionError):
-        st.warning('جدول رسمی اخزا هنوز دریافت نشده یا آخرین معامله بیش از پنج روز قدمت دارد؛ نرخ روز نمایش داده نمی‌شود.')
+        st.warning('نسخهٔ قابل اعتبارسنجی اخزا موجود نیست؛ مقدار جایگزین یا نرخ روز ساخته نشد.')

@@ -440,7 +440,16 @@ def load_real_interest_monthly(inflation_path: str = None,
         return pd.DataFrame(columns=cols)
 
 
-def load_cpi_monthly(inflation_path: str = None) -> pd.DataFrame:
+def cpi_monthly_version():
+    selected=os.environ.get('FX_CPI_MONTHLY_SOURCE','reconstructed_sci')
+    if selected=='cbi_official':
+        from pathlib import Path
+        from cbi_model_input import snapshot_version
+        return selected+':'+snapshot_version(os.environ.get('FX_DATA_DIR',str(Path(_HERE)/'.data_health')))
+    from macro_health import fingerprint
+    return selected+':'+fingerprint(INFLATION_PATH)
+
+def load_cpi_monthly(inflation_path: str = None, source: str = None, health_dir=None) -> pd.DataFrame:
     """
     شاخصِ قیمتِ مصرف‌کنندهٔ **ماهانهٔ** ایران را از فایل تورم می‌سازد.
 
@@ -457,6 +466,17 @@ def load_cpi_monthly(inflation_path: str = None) -> pd.DataFrame:
     ستون‌های cpi (شاخص، ماهِ نخست = ۱۰۰)، jy و jm (سال/ماهِ شمسی).
     در صورت نبودِ فایل یا خطای تجزیه، DataFrame خالی (گریس‌فول).
     """
+    selected=source or os.environ.get('FX_CPI_MONTHLY_SOURCE','reconstructed_sci')
+    if selected=='cbi_official':
+        from pathlib import Path
+        from cbi_model_input import load_monthly
+        try:
+            return load_monthly(health_dir or os.environ.get('FX_DATA_DIR',str(Path(_HERE)/'.data_health')))
+        except (OSError,ValueError,KeyError,TypeError,AssertionError):
+            empty=pd.DataFrame(columns=['cpi','jy','jm'])
+            empty.attrs.update(source_kind='cbi_official',validation_status='unavailable_or_invalid',validated_readonly_input=False)
+            return empty
+    if selected!='reconstructed_sci':raise ValueError('Unknown CPI input source')
     import datetime as _dt
 
     cols = ["cpi", "jy", "jm"]

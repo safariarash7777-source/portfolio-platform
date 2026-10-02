@@ -29,9 +29,10 @@ def period(text,frequency):
     assert tail in values,'Unrecognised period'
     return year,values.index(tail)+1
 
-def read(entry):
+def read(entry,health=None):
     frequency=clean(entry['frequency']);contract=CONTRACTS[(entry['id'],frequency)]
-    path=HEALTH/'cbi-tsd'/entry['id']/(entry['sha256']+'.xlsx')
+    folder=Path(health).resolve() if health is not None else HEALTH
+    path=folder/'cbi-tsd'/entry['id']/(entry['sha256']+'.xlsx')
     assert hashlib.sha256(path.read_bytes()).hexdigest()==entry['sha256'],'Checksum mismatch'
     wb=openpyxl.load_workbook(path,read_only=True,data_only=True)
     try:
