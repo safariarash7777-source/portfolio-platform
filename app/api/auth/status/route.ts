@@ -3,7 +3,7 @@ import {createClient} from '@/lib/supabase/server';
 import {authSessionFailure} from '@/lib/auth/session-error';
 import {freshEmailRecoveryProof} from '@/lib/auth/email';
 export const dynamic='force-dynamic';
-export async function GET(request?:Request){
+export async function GET(request:Request){
   try{
     const client=await createClient();const {data:{user},error}=await client.auth.getUser();
     const authFailure=authSessionFailure(error);
