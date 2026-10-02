@@ -5,7 +5,7 @@ import PublicationWorkbench, { publicationApi, type PublicationOverview } from '
 import P07AudiencePreview from './P07AudiencePreview';
 import { emptyWorkbook, type ResearchWorkbook } from '@/lib/intelligence/research-workbook';
 import { manualIntakeIssues, type ManualIntake } from '@/lib/intelligence/p07-preparation';
-import { mapManualClaim, p07PreparationExport, p07PublicationPreparationIssue, type P07PreparationBinding } from '@/lib/intelligence/p07-workflow';
+import { mapManualClaim, p07PreparationExport, p07PublicationPreparationIssue, p07OverviewUsable, type P07PreparationBinding } from '@/lib/intelligence/p07-workflow';
 import type { P07Transport } from '@/lib/intelligence/p07-workflow-fixture';
 import type { PublicationRow } from '@/lib/intelligence/publication';
 import { toPersianDigits } from '@/lib/format';
@@ -49,7 +49,7 @@ export default function P07ManualDesk({ transport = publicationApi, sample = fal
     setLoading(true);
     try {
       const result = await transport(PUB_API);
-      if (result.status !== 200 || result.body.contractVersion !== 'publication.v1' || !Array.isArray(result.body.items) || !Array.isArray(result.body.workbooks)) throw new Error('صف امروز قابل دریافت نیست؛ خالی فرض نشده است.');
+      if (result.status !== 200 || !p07OverviewUsable(result.body)) throw new Error('صف امروز قابل دریافت نیست؛ خالی فرض نشده است.');
       const overview = result.body as unknown as PublicationOverview;
       latestOverview.current = overview; setToday(overview); setMessage('');
       const pending = pendingBinding.current;
@@ -88,7 +88,7 @@ export default function P07ManualDesk({ transport = publicationApi, sample = fal
         if (decision.workbookId && typeof decision.version === 'number') pendingBinding.current = { workbookId: decision.workbookId, version: decision.version, signature: reviewedSignature };
         try {
           const response = await transport(PUB_API);
-          if (response.status === 200 && response.body.contractVersion === 'publication.v1' && Array.isArray(response.body.workbooks)) {
+          if (response.status === 200 && p07OverviewUsable(response.body)) {
             const overview = response.body as unknown as PublicationOverview;
             latestOverview.current = overview; setToday(overview);
             const approved = overview.workbooks.find(w => w.workbookId === decision?.workbookId && w.version === decision?.version && w.approved);
@@ -119,6 +119,7 @@ export default function P07ManualDesk({ transport = publicationApi, sample = fal
     }
     const result = await transport(path, init);
     if (path === PUB_API && !init?.method && result.status === 200) {
+      if (!p07OverviewUsable(result.body)) { latestOverview.current = null; setToday(null); return { status: 503, body: { error: 'ساختار دفتر انتشار قابل دریافت نیست؛ متن حفظ شد.', unavailable: true } }; }
       const overview = result.body as unknown as PublicationOverview;
       latestOverview.current = overview; setToday(overview);
       setPreview(previous => previous ? overview.items.find(row => row.id === previous.id) ?? null : null);
