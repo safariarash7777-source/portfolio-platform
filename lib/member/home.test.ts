@@ -8,6 +8,7 @@ import { accountEntryHref } from "../../components/account/returnPath";
 import { readMemberProfile } from "./profile";
 import { webinarCalendar, searchResources } from "./start";
 import { formatJalali, formatTehranClock } from "../format";
+import { AuthApiError, AuthSessionMissingError, AuthRetryableFetchError } from "@supabase/supabase-js";
 const grant: MemberGrant = { grantRef: 1, cohortId: A, title: "A", moduleKeys: ["funds"], startsAt: "2026-10-01T05:30:00Z", endsAtExclusive: "2027-01-01T05:30:00Z", standing: "active" };
 test("shared Auth missing installation, session and service failures remain distinct", async () => {
   for (const [status, state] of [[404, "not_connected"], [401, "sign_in_required"], [503, "unavailable"]] as const) assert.deepEqual(await readMemberProfile(async () => new Response(null, { status })), { state });
@@ -26,10 +27,21 @@ test("unknown shared identity shape is unavailable and read uses private no-stor
   assert.equal(init?.cache, "no-store"); assert.equal(init?.credentials, "same-origin");
 });
 test("an Auth outage is not presented as an expired session", () => {
-  assert.equal(memberAuthErrorStatus({ name: "AuthSessionMissingError" }), 401);
+  assert.equal(memberAuthErrorStatus(new AuthSessionMissingError()), 401);
   assert.equal(memberAuthErrorStatus({ status: 401 }), 401);
   assert.equal(memberAuthErrorStatus({ status: 503 }), 503);
   assert.equal(memberAuthErrorStatus({ name: "AuthRetryableFetchError" }), 503);
+});
+
+test("member save uses the P01 session rejection codes without calling an unknown 400/404/429 a logout", () => {
+  for (const code of ["bad_jwt", "no_authorization", "session_expired", "session_not_found", "refresh_token_not_found", "refresh_token_already_used", "flow_state_expired", "flow_state_not_found"]) {
+    assert.equal(memberAuthErrorStatus(new AuthApiError("SYNTHETIC session failure", 400, code)), 401);
+  }
+  for (const status of [400, 402, 404, 422, 429, 500, 503]) assert.equal(memberAuthErrorStatus(new AuthApiError("SYNTHETIC service failure", status, "unknown_code")), 503);
+  assert.equal(memberAuthErrorStatus(new AuthRetryableFetchError("SYNTHETIC transport", 503)), 503);
+  assert.equal(memberAuthErrorStatus(null), 503);
+  assert.equal(memberAuthErrorStatus(undefined), 503);
+  assert.equal(memberAuthErrorStatus({ name: "AuthSessionMissingError" }), 503);
 });
 test("overlapping grants are grouped for display without creating an authorization flag or merging module rights", () => {
   const groups = groupCohorts([{ ...grant, cohortId: B, standing: "expired" }, grant, { ...grant, grantRef: 3, moduleKeys: ["resources"], endsAtExclusive: "2027-02-01T05:30:00Z" }]);

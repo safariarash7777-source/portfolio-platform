@@ -1,4 +1,5 @@
 import { CONTRACT_VERSION } from "../seasonal/contracts";
+import { authSessionFailure } from "../auth/session-error";
 export class MemberReadError extends Error { constructor(public status: number) { super("Member request unavailable"); } }
 export type MemberRequest = (path: string, init?: RequestInit) => Promise<Response>;
 export async function memberData<T>(path: string, guard: (v: unknown) => v is T, request: MemberRequest = fetch, init?: RequestInit): Promise<T> {
@@ -14,7 +15,5 @@ export async function memberData<T>(path: string, guard: (v: unknown) => v is T,
 export const memberErrorStatus = (e: unknown): number => e instanceof MemberReadError ? e.status : 503;
 // Presentation of the existing Auth response; this does not create an Auth policy.
 export function memberAuthErrorStatus(error: unknown): 401 | 503 {
-  if (!error || typeof error !== "object") return 503;
-  const e = error as { status?: unknown; name?: unknown };
-  return e.status === 401 || e.status === 403 || e.name === "AuthSessionMissingError" ? 401 : 503;
+  return authSessionFailure(error) ?? 503;
 }

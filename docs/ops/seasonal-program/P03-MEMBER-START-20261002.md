@@ -39,6 +39,8 @@ Delivered [Draft PR #209](https://github.com/safariarash7777-source/portfolio-pl
 
 ## Result
 
+Ownership addendum before P01-dependent edits: coordinator assigned the remaining `memberAuthErrorStatus` and **publicationMember only** in `lib/intelligence/publication-server.ts` to P03. Consume P01's exact `lib/auth/session-error.ts` blob at `87f6b2250218c661fc3a6ab89fec10d35f6a7467`; do not rewrite its policy or import the full #208 patch. P00 combines the identical helper with #208. Add consumer regressions in the existing registered member/feed tests; no package registration changes. publicationAdmin stays P07-owned and unchanged. Prior native/browser proof remains at f889bb3; the Auth-consumer delta will have separate SHA/evidence.
+
 - Four links guide a member through course/access, optional needs/question, calendar/resources and published content. All guide targets exist. Five minutes is a proposed short path, not measured completion evidence.
 - Calendar uses source dates and Tehran formatting, sorts upcoming sessions and collapses ended sessions. An ended session links to the same authorized resource section; it does not promise a recording. A missing provider remains unavailable. The provider adapter is mock in the isolated acceptance environment.
 - Resources search only already authorized titles, normalize Persian spelling variants, and distinguish no matching title, successful empty projection and service failure. The DTO lacks recording/lesson relationships, so no content type was inferred from a title.

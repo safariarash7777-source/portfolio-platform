@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
-import { isAuthSessionMissingError } from '@supabase/supabase-js';
+import { authSessionFailure } from '@/lib/auth/session-error';
 import { latestPerWorkbook } from './workbook-store';
 import { publicationFailure, type PublicationDraft, type PublicationRow } from './publication';
 
 export async function publicationMember() {
   const db = await createClient();
   const {data:{user},error}=await db.auth.getUser();
-  const status=error ? (isAuthSessionMissingError(error)||error.status===401||error.status===403?401:503) : user?200:401;
+  const status=authSessionFailure(error) ?? (user?200:401);
   return {status,rpc:async(name:string,args:Record<string,unknown>)=>await db.rpc(name,args)};
 }
 
