@@ -1,0 +1,105 @@
+{
+  "checkedAt": "2026-10-02",
+  "source": "GitHub connector live PR metadata/diff",
+  "pullRequests": [
+    {
+      "number": 191,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/191",
+      "head": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "base": "be60bf54d64d60cc1c3c5d438034439ce12b9f15",
+      "headRef": "codex/followup06-feed-market-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 195,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/195",
+      "head": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "base": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "headRef": "codex/n10-null-unit-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 181,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/181",
+      "head": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+      "base": "1d409325f01b2b8f247dffb411b1b10f650b88cf",
+      "headRef": "codex/next-06-member-home-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 185,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/185",
+      "head": "a54b161b8df88f83e8624273b1c4bb2ffd10f787",
+      "base": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+      "headRef": "codex/next06-publication-feed-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 197,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/197",
+      "head": "e83c3825ac2cace5524635d49e562f7265ccf04e",
+      "base": "a1bf054b07fd982c9471484204ad3a8bca02093e",
+      "headRef": "codex/next06-feed-clock-fixture-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 175,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/175",
+      "head": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+      "base": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "headRef": "codex/next-04-core-20260930",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 184,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/184",
+      "head": "51ad615b116c7b1283404a60ee1d2081c11c96ca",
+      "base": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+      "headRef": "codex/next04-resource-contract-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 176,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/176",
+      "head": "d69763563ef695b2d16ea2e52be4a4452b0811dc",
+      "base": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "headRef": "codex/next-08-desk-20260930",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    },
+    {
+      "number": 199,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/199",
+      "head": "e1c46e3e0a7d9fb416d7c58acba4d55d569e22de",
+      "base": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "headRef": "codex/frontend-existing-refinement-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "paths": []
+    }
+  ]
+}
