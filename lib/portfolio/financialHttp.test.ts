@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { postFinancialSnapshot, financialAuthentication, type FinancialDb } from "./financialHttp";
-import { AuthSessionMissingError } from "@supabase/supabase-js";
+import { AuthSessionMissingError, AuthApiError, AuthRetryableFetchError, AuthUnknownError } from "@supabase/supabase-js";
 import { parseHoldingsCsv, previewHoldingsImport, IMPORT_FIELDS, canonicalPayload, positionWriteInput } from "./importPreview";
 import { positionFromStored } from "./balanceSheet";
 import { getFinancialSnapshot, lookupFinancialReceipt, type FinancialReadDb } from "./financialReadHttp";
@@ -18,6 +18,30 @@ test("missing session and failed authentication stay distinct and never call RPC
   for (const [error, status] of [[false, 401], [true, 503]] as const) {
     const result = await postFinancialSnapshot(request(payload), "debts", async () => ({ async authenticate() { return { user: null, error }; }, async rpc() { throw new Error("must not execute"); } })); assert.equal(result.status, status);
   }
+});
+
+for(const [label,error,status] of [
+  ['missing',new AuthSessionMissingError(),401],
+  ['JWT rejected',new AuthApiError('PRIVATE rejected',401,'bad_jwt'),401],
+  ['session rejected',new AuthApiError('PRIVATE rejected',403,undefined),401],
+  ['expired',new AuthApiError('PRIVATE expired',400,'refresh_token_not_found'),401],
+  ['unknown400',new AuthApiError('PRIVATE input',400,'bad_json'),503],
+  ['wrong path',new AuthApiError('PRIVATE upstream',404,undefined),503],
+  ['quota',new AuthApiError('PRIVATE limited',429,undefined),503],
+  ['outage',new AuthRetryableFetchError('PRIVATE upstream',503),503],
+  ['nonJSON',new AuthUnknownError('PRIVATE parse',SyntaxError()),503],
+] as const)test(`financial Auth ${label} discards stale user and never calls private RPC`,async()=>{
+  const auth=financialAuthentication({id:'stale-user'},error);
+  assert.equal(auth.user,null);assert.equal(auth.error,status===503);
+  let calls=0;
+  for(const kind of ['holdings','debts'] as const){
+    const response=await postFinancialSnapshot(request(payload),kind,async()=>({authenticate:async()=>auth,rpc:async()=>{calls++;throw Error('must not execute');}}));
+    assert.equal(response.status,status);assert.match(response.headers.get('cache-control')??'',/no-store/);assert.doesNotMatch(await response.text(),/PRIVATE|stale-user/);
+  }
+  assert.equal(calls,0);
+});
+test('successful native identity retains the existing owner contract',()=>{
+  assert.deepEqual(financialAuthentication({id:'same-owner'},null),{user:{id:'same-owner'},error:false});
 });
 test("malformed payload, dates, blank amounts and contingent liabilities return 400", async () => {
   for (const input of [null, [], { ...payload, base_version: null }, { ...payload, debts: [{ ...payload.debts[0], kind: "guarantee" }] }, { ...payload, debts: [{ ...payload.debts[0], balance: "" }] }, { ...payload, debts: [{ ...payload.debts[0], balance_as_of: "2026-02-31" }] }]) {
