@@ -24,7 +24,10 @@ Date/time semantics checked against [PostgreSQL documentation](https://www.postg
 - Local TypeScript typecheck and changed-file ESLint: pass.
 - Negative control: in an isolated temporary copy, replacing the max-command anchor with database clock alone caused both future-publication assertions to fail as intended. The original source stayed unchanged and the temporary file was removed.
 - Secret scan: 1298 files, no secret pattern; SQL policy validator: 51 files, 0 rejected. Inherited archive SQL warnings are unchanged.
-- Reviewable PR and exact-head CI will be recorded after push. The commit is intended for review/consumption by the PR #195 owner; no automatic merge or cherry-pick into their checkout.
+- Reviewable draft: [PR #197](https://github.com/safariarash7777-source/portfolio-platform/pull/197), base PR #195 branch at `a1bf054b07fd982c9471484204ad3a8bca02093e`. Consumable correction commit: **`6d4bb58de67f360c5f24774b38a92436c9d7aa00`**. The commit is intended for review/consumption by the PR #195 owner; no automatic merge or cherry-pick into their checkout.
+- Exact correction-SHA [CI 36987885532](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36987885532): all five jobs passed, including typecheck/lint/tests/build and CI Gate. Actual database job `110776966803` log: **443 tests, 443 pass, 0 fail, 0 skipped**, at 2026-10-02 09:09 UTC. The extra two tests are the future-publication cases (one per privilege profile).
+- Exact correction-SHA [seasonal sandbox 36987885527](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36987885527): passed.
+- This results entry is a documentation-only follow-up to the tested correction commit; it changes no test or runtime source. PR remains open/draft, not merged.
 
 Local reproduction logs are kept in the ignored task workspace (`.task/before.log`, `.task/after.log`, `.task/source-ci.log`); the durable counts, cause, commands and source are recorded here.
 
