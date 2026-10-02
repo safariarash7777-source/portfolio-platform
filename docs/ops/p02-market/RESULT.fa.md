@@ -1,6 +1,6 @@
 # P02 — پوشش واقعی بازار، NAV و سهمیه
 
-گزارش توسعه‌دهنده، ۲ اکتبر ۲۰۲۶. مشاهده دیتابیس: `2026-10-02T13:24:22.955384Z`؛ debug رله: `13:24:30.121Z`. گزارش درباره همین لحظه است، نه تضمین وضعیت آینده.
+گزارش توسعه‌دهنده، ۲ اکتبر ۲۰۲۶. مشاهده دیتابیس: `2026-10-02T13:24:22.955384Z`؛ debug رله: نمونه نخست `13:24:30.121Z` و نمونه تکمیلی شمارنده‌ها `13:44:40.122Z`. گزارش درباره همین مشاهدات است، نه تضمین وضعیت آینده.
 
 ## نتیجه برای آرش
 
@@ -20,7 +20,7 @@
 
 SQL در یک تراکنش `REPEATABLE READ READ ONLY` با timeout۶۰ ثانیه و `psql` کامل اجرا شد؛ محدودیت ردیف PostgREST دخیل نیست. هفت block اجباری با timestamp ثبت شدند. فقط شناسه، تاریخ، واحد، منبع، تعداد ردیف، وضعیت NAV و state قدیمی صادر شد؛ قیمت خام، رکورد مشتری، رمز، body پاسخ قدیمی و کلید API صادر نشد.
 
-[خروجی کامل](evidence/liara-metadata.ndjson)، [خلاصه و hash](evidence/summary.json)، [ماتریس نماد×روز](evidence/symbol-date-matrix.csv)، [ماتریس ابزار/واحد/زمان](evidence/instrument-matrix.csv)، [NAV](evidence/nav-matrix.csv)، [blacklist حفظ‌شده](evidence/preserved-blacklist.csv)، [debug پالایش‌شده](evidence/relay-debug.json).
+[خروجی کامل](evidence/liara-metadata.ndjson)، [خلاصه و hash](evidence/summary.json)، [ماتریس نماد×روز](evidence/symbol-date-matrix.csv)، [ماتریس ابزار/واحد/زمان](evidence/instrument-matrix.csv)، [NAV](evidence/nav-matrix.csv)، [blacklist حفظ‌شده](evidence/preserved-blacklist.csv)، [debug نخست](evidence/relay-debug-132430.json)، [شمارنده‌های تکمیلی پالایش‌شده](evidence/relay-debug.json).
 
 دامنه۱۱ روز:۲۲ سپتامبر تا۲ اکتبر، با اتحاد نمادهای snapshot جاری، تمام نمادهای موجود در تاریخچه DB و done قدیمی.۱۲۷۱ شناسه و۱۳۹۸۱ سلول؛۱۰۹۳ نماد جاری. کامل‌بودن این export به معنی شناخت جهان رسمی ابزارها در همه روزهای گذشته نیست.
 
@@ -81,6 +81,8 @@ node --test scripts/ops/p02-coverage.test.mjs relay/nav-quality.test.mjs
 
 SLAهای زیر **پیشنهاد پذیرش** هستند، نه تعهد مصوب یا تنظیم تازه روی سرور:
 
+از۲۷۴۷ ردیف ابزار فعلی، فقط۱۱ گواهی تاریخ و ساعت منبع صریح دارند؛۲۷۳۶ ردیف دیگر یکی یا هر دو را ندارند. زمان NAV جداست. این فقدان metadata اجازه برچسب «قیمت تازه و قطعی» نمی‌دهد؛ timestamp snapshot صرفاً زمان دریافت/ذخیره است.
+
 - سهام/صندوق/اختیار: در جلسه باز، هدف دریافت≤۵ دقیقه؛ بعد۳۰ دقیقه یا زمان منبع نامعلوم نمایش کهنگی/UNKNOWN؛ بیرون جلسه «آخرین وضعیت» با تاریخ جلسه. وضعیت جلسه از تقویم رسمی؛ آخرهفته حدسی مبنای gap نیست.
 - NAV: حداکثر۲۴ ساعت از زمان منبع، واحد معلوم و نسبت معقول؛ هم‌زمانی قیمت طبق موتور موجود؛ cache تازه این سقف را تمدید نمی‌کند.
 - ارز/طلا/کریپتو: هدف دریافت≤۵ دقیقه و هشدار۳۰ دقیقه؛ زمان قیمت واقعی جدا؛ D-FX و شرایط تعطیلی بازار ارز با مالک FX تصویب شوند.
@@ -89,9 +91,11 @@ SLAهای زیر **پیشنهاد پذیرش** هستند، نه تعهد مصو
 
 ## سهمیه و ظرفیت
 
-شاهد تازه SQL: جدول `brsapi_budget_days` و توابع brsapi در DB هدف غایب‌اند. debug: enforcement مسیر قدیمی=false، client=false، store unhealthy، lease granted/spent=۰، degradedUsed=۱۰۰ و rejected=۱۱۳۶. remaining=۹۰۰۰ با این وضعیت معتبر نیست؛ مصرف واقعی پیشین روز، همه مصرف‌کننده‌های بیرونی همان کلید و پنجره reset تأمین‌کننده UNKNOWN‌اند.
+شاهد تازه SQL: جدول `brsapi_budget_days` و توابع brsapi در DB هدف غایب‌اند. debug: enforcement مسیر قدیمی=false، client=false، store unhealthy، lease granted/spent=۰ و degradedUsed=۱۰۰؛ rejected بودجه از۱۱۳۶ در نمونه نخست به۱۱۵۹ در نمونه تکمیلی رسید. remaining=۹۰۰۰ با این وضعیت معتبر نیست؛ مصرف واقعی پیشین روز، همه مصرف‌کننده‌های بیرونی همان کلید و پنجره reset تأمین‌کننده UNKNOWN‌اند.
 
-transport در همین process فعال است: انتظار۱۰۰ms، کمترین فاصله ثبت‌شده۱۰۹٫۱۳ms و sent۵۲۴۰ از شروع process. این عدد مصرف روز جاری نیست و تضمین چند replica نمی‌دهد. اخطار مستقیم تحویلی آرش حداقل۵۰ms را مشخص کرده؛ بازیابی صفحه قوانین در این بررسی هم502 شد. حد۱۰۰۰۰/روز AIO و برنامه۵۵۰۰ در کاتالوگ داخلی ثبت‌اند، ولی قرارداد جاری و remaining واقعی از آن‌ها استنتاج نشد. URL قوانین: https://brsapi.ir/tsetmc-exchange-free-bourse-api-key-request/
+نمونه تکمیلی actual legacy counters را ثبت می‌کند: gold-currency/all-symbols/market-index/options هرکدام۵۶۶، symbol-detail۱۲۸۵، fund-meta۳۳۴، codal-archive۱۶۰، candle-backfill۴، NAV bulk۱ وcompletion۲۵، گواهی۳۹ وphysical۳. شمارنده overBudgetPassed برای چند producer مثبت است؛ از جمله symbol-detail۱۲۸۵ وoptions۵۶۶. وقتی enforcement خاموش است، رد بودجه جلوی مسیر قدیمی را نگرفته است. این شمارنده‌ها process-local هستند؛ روز/reset/uptime تأیید نشده و از جمعشان مصرف امروز ساخته نمی‌شود. نصب178 و اثبات rollout باید پیش از گسترش مصرف انجام شود.
+
+transport در همین process فعال است: انتظار۱۰۰ms، کمترین فاصله ثبت‌شده۱۰۹٫۱۳ms و sent از۵۲۴۰ به۵۲۶۳ از شروع process رسید. این عدد مصرف روز جاری نیست و تضمین چند replica نمی‌دهد. اخطار مستقیم تحویلی آرش حداقل۵۰ms را مشخص کرده؛ بازیابی صفحه قوانین در این بررسی هم502 شد. حد۱۰۰۰۰/روز AIO و برنامه۵۵۰۰ در کاتالوگ داخلی ثبت‌اند، ولی قرارداد جاری و remaining واقعی از آن‌ها استنتاج نشد. URL قوانین: https://brsapi.ir/tsetmc-exchange-free-bourse-api-key-request/
 
 ظرفیت ترمیم، ETA و تخصیص NAV/candle تا baseline و reset تأیید نشده `null` هستند. همه تولیدکننده‌های همان کلید، از جمله FX، باید سهمیه مشترک178 و همان transport را مصرف کنند. کلید کامودیتی مستقل با همان سقف فرض نشود. ظرفیت مجاز ترمیم = ظرفیت تأییدشده با کسر مصرف پیشین، رزرو چرخه‌های پایه و حاشیه عملیات؛ این گزارش هیچ عدد نامعلوم را صفر نمی‌کند.
 

@@ -1,8 +1,8 @@
 {
-  "observedAt": "2026-10-02T13:44:40.122Z",
+  "observedAt": "2026-10-02T13:24:30.121Z",
   "httpStatus": 200,
-  "ageSec": 90,
-  "lastRefresh": 1790948588890,
+  "ageSec": 80,
+  "lastRefresh": 1790947389224,
   "counts": {
     "gold": 9,
     "currency": 28,
@@ -16,55 +16,15 @@
     "scope": "process",
     "spacingMs": 100,
     "pending": 0,
-    "sent": 5263,
+    "sent": 5240,
     "minStartGapMs": 109.1348934173584
   },
   "legacy": {
     "enforced": false,
-    "used": {
-      "gold-currency": 566,
-      "all-symbols": 566,
-      "market-index": 566,
-      "options": 566,
-      "nav-bulk": 1,
-      "nav-completion": 25,
-      "fund-meta": 334,
-      "ime-certificate": 39,
-      "symbol-detail": 1285,
-      "codal-archive": 160,
-      "candle-backfill": 4,
-      "ime-physical": 3
-    },
-    "rejected": {
-      "options": 566,
-      "nav-bulk": 1,
-      "nav-completion": 25,
-      "fund-meta": 334,
-      "ime-certificate": 39,
-      "symbol-detail": 1285,
-      "codal-archive": 160,
-      "candle-backfill": 4,
-      "ime-physical": 3,
-      "all-symbols": 467,
-      "market-index": 467,
-      "gold-currency": 464
-    },
-    "overBudgetPassed": {
-      "options": 566,
-      "nav-bulk": 1,
-      "nav-completion": 25,
-      "fund-meta": 334,
-      "ime-certificate": 39,
-      "symbol-detail": 1285,
-      "codal-archive": 160,
-      "candle-backfill": 4,
-      "ime-physical": 3,
-      "all-symbols": 467,
-      "market-index": 467,
-      "gold-currency": 464
-    },
-    "unmetered": 0,
-    "scope": "process_counters_not_verified_daily_prior_usage"
+    "day": null,
+    "requests": null,
+    "total": null,
+    "byProducer": null
   },
   "budget": {
     "day": "2026-10-02",
@@ -79,11 +39,11 @@
       "standard": 0,
       "bulk": 0
     },
-    "rejectedByBudget": 1159
+    "rejectedByBudget": 1136
   },
   "budgetStore": {
     "healthy": false,
-    "errors": 626,
+    "errors": 615,
     "degradedCeiling": 100,
     "degradedUsed": 100
   },
@@ -95,12 +55,12 @@
   },
   "budgetStop": {
     "active": false,
-    "servedAgeMs": 89826
+    "servedAgeMs": 79841
   },
   "db": {
     "ok": true,
     "status": 200,
-    "at": 1790948589609
+    "at": 1790947389885
   },
   "clientEnabled": false,
   "sources": {
