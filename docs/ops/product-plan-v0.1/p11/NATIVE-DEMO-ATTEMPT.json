@@ -1,0 +1,95 @@
+{
+  "at": "2026-10-02T17:27:12.037Z",
+  "target": {
+    "origin": "https://62.60.191.24:8444",
+    "runtimeSha": "65c215b801958c32599fafb0f6e331dd5ce3d181",
+    "runtimeEvidence": "demo-guide rendered this exact SHA in independent P11 IAB observation"
+  },
+  "browser": "Codex In-app Browser; normal TLS, no proxy changes",
+  "independent": [
+    {
+      "step": "demo-guide",
+      "result": "PASS",
+      "code": "rendered_exact_candidate_sha"
+    },
+    {
+      "step": "login_form",
+      "result": "PASS",
+      "code": "fallback_recovered_then_email_password_form_mounted"
+    },
+    {
+      "step": "member_A_login",
+      "result": "BLOCKED",
+      "code": "submitted_real_fixture_credentials_no_confirmed_navigation_then_browser_control_timeout"
+    },
+    {
+      "step": "member_A_journey",
+      "result": "NOT_RUN",
+      "code": "no_verified_A_session"
+    },
+    {
+      "step": "member_B_deny",
+      "result": "NOT_RUN",
+      "code": "no_verified_browser_session"
+    },
+    {
+      "step": "new_version_unread",
+      "result": "NOT_RUN",
+      "code": "owner_canonical_new_version_not_created"
+    },
+    {
+      "step": "fault_revoke",
+      "result": "NOT_RUN",
+      "code": "requires_owner_controlled_fixture_action"
+    }
+  ],
+  "credentialHandling": "ACL-restricted reviewer file read only in process; no credential argv, saved session, HAR, token or filled-form screenshot",
+  "observedTimings": {
+    "humanFiveMinute": null,
+    "loginCompletion": null,
+    "reason": "No valid completion; observed loading/control delays cannot establish human time"
+  },
+  "cause": "Unknown; P00 reports Windows proxy enabled and own direct driver working. That is a hypothesis/owner evidence, not diagnosis or independent acceptance.",
+  "humanAcceptance": "OPEN",
+  "independentProductAcceptance": "BLOCKED",
+  "sourceFiles": [
+    {
+      "file": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-demo844-20261002/CURRENT.md",
+      "sha256": "e8130db087280259501b94154ea005b7a1922b4b956c7aba66f358de924fbe87",
+      "classification": "owner reported fixture/environment evidence; not independently executed by P11"
+    },
+    {
+      "file": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-demo844-20261002/CONFIGURED-BUILD.json",
+      "sha256": "4ab6e4703f76d604bde598015e0a1fc5fc38e56e847faa71d45138fab8260d0a",
+      "classification": "owner reported fixture/environment evidence; not independently executed by P11"
+    },
+    {
+      "file": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-demo844-20261002/ENVIRONMENT.json",
+      "sha256": "b04c4ed7881e16a036b60f58d60718fcba6c3401567b93ec607a3104d560b135",
+      "classification": "owner reported fixture/environment evidence; not independently executed by P11"
+    },
+    {
+      "file": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-demo844-20261002/FIXTURE-SQL.json",
+      "sha256": "5c6061735e2c942e0b534a13d23a01d58b1fa386c64b437d502d535060b559b3",
+      "classification": "owner reported fixture/environment evidence; not independently executed by P11"
+    },
+    {
+      "file": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-demo844-20261002/FIXTURE-PUBLISH.json",
+      "sha256": "e0ade78690b0879ce1c23138ab1b779e5c4c81f3448fb755b9f705bc800346e6",
+      "classification": "owner reported fixture/environment evidence; not independently executed by P11"
+    },
+    {
+      "file": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-demo844-20261002/NATIVE-UI-PRELIMINARY.json",
+      "sha256": "fbc3a4b6a2fe3ef57845163ae283f2cb2fea88072a079ba7fa543aaa136bc36c",
+      "classification": "owner reported fixture/environment evidence; not independently executed by P11"
+    },
+    {
+      "file": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-product-direction/docs/ops/seasonal-program/p00-demo844-20261002/CI.json",
+      "sha256": "f330ef7db3aad366258970363fcf213b6a19647b99d68abad2070d66b6823818",
+      "classification": "owner reported fixture/environment evidence; not independently executed by P11"
+    }
+  ],
+  "productionTouched": false,
+  "sharedMutation": false,
+  "collectorActivated": false
+}

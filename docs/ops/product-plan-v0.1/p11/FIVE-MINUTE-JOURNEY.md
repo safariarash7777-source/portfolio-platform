@@ -35,3 +35,7 @@ URL مجاز و SHA runtime ترکیبی؛ manifest schema hashes و status نص
 PR209 a44aff3b301cd2d4635f14ac4069e50c466cfe02 is separate evidence, not the combined target. Native member path is /dashboard?cohort=<exact UUID>; login must retain cohort. Anchors: #member-courses-title, #member-needs-title, #member-webinars, #member-publications-title. Lesson detail /publications/[id]; read POST body {cohortId}, exact server publication UUID/actor/time. Needs draft is same-user/exact-cohort sessionStorage, same tab, two-hour TTL; no cross-device guarantee. Signed resource capability TTL is 60 seconds per owner's statement and revocation must be tested at next issuance.
 
 /member-home-preview is UI fixture only and has an empty publication feed: it cannot establish native Auth, Storage, lesson receipt or A/B isolation. Prior native fixtures are superseded/revoked; P11 must not reset/copy them. Needs, webinar and short-link failure scenarios are owner-provided fixtures, not authorization to cut off a real provider. Teacher approval, inexperienced-person comprehension and real five-minute use remain HUMAN OPEN.
+
+## Execution receipt
+
+Freshdemo65c215b target and canonical lesson/resources received; /demo-guide SHA verified. Native A form submitted but UI/control timed out before confirmed login. Independent journey/Bdeny is BLOCKED/NOT_RUN; new-version action not preseeded. NATIVE-DEMO-ATTEMPT.md/json binds observations and separately hashes owner environment/fixture evidence. Human five-minute use remains OPEN.
