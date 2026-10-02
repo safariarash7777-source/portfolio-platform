@@ -1,0 +1,113 @@
+{
+  "mode": "OFFLINE_SIMULATION",
+  "planDigest": "c1f6b57b4b2d3ba720239b43d2bc5d6c5aa06002bb1412a90be084f739a243d5",
+  "checkpoint": {
+    "schemaVersion": "coverage-repair-simulation.v1",
+    "planDigest": "c1f6b57b4b2d3ba720239b43d2bc5d6c5aa06002bb1412a90be084f739a243d5",
+    "legacyDone": {
+      "نمادالف": 200
+    },
+    "simulatedRows": [
+      {
+        "symbol": "نمادالف",
+        "day": "2026-09-29",
+        "seriesType": 2,
+        "dataClass": "SYNTHETIC"
+      },
+      {
+        "symbol": "نمادب",
+        "day": "2026-09-29",
+        "seriesType": 2,
+        "dataClass": "SYNTHETIC"
+      }
+    ],
+    "events": [
+      {
+        "taskId": "7f80eec25933f26128d46ce52796b2e6772b8b876a2a07bfca353f90346ed708",
+        "at": "2026-10-02T06:00:00.000Z",
+        "result": "simulated_complete"
+      },
+      {
+        "taskId": "6ca9ea2f05ed29631d0d5380ae0348785e6b289b36579bc34baaab6677ffe0e8",
+        "at": "2026-10-02T06:00:00.100Z",
+        "result": "simulated_complete"
+      }
+    ],
+    "leaseFloorByDay": {
+      "2026-10-02": 2
+    }
+  },
+  "simulatedRequests": 2,
+  "upstreamRequests": 0,
+  "liveDBCalls": 0,
+  "historyWrites": 0,
+  "blacklistWrites": 0,
+  "completedTaskIds": [
+    "7f80eec25933f26128d46ce52796b2e6772b8b876a2a07bfca353f90346ed708",
+    "6ca9ea2f05ed29631d0d5380ae0348785e6b289b36579bc34baaab6677ffe0e8"
+  ],
+  "pendingTaskIds": [],
+  "attemptLimitedTaskIds": [],
+  "stopReason": null,
+  "priorRowsPreserved": true,
+  "legacyDonePreserved": true,
+  "transport": {
+    "enabled": true,
+    "scope": "process",
+    "spacingMs": 100,
+    "pending": 0,
+    "sent": 2,
+    "minStartGapMs": 100
+  },
+  "budget": {
+    "day": "2026-10-02",
+    "persistent": true,
+    "remainingIsEstimate": true,
+    "remainingKnown": true,
+    "softBudget": 2,
+    "hardCeiling": 2,
+    "used": 2,
+    "remaining": 0,
+    "remainingByClass": {
+      "critical": 0,
+      "standard": 0,
+      "bulk": 0
+    },
+    "usedByClass": {
+      "critical": 0,
+      "standard": 0,
+      "bulk": 2
+    },
+    "rejectedByBudget": 0,
+    "rejectedByClass": {
+      "critical": 0,
+      "standard": 0,
+      "bulk": 0
+    },
+    "softExhausted": true,
+    "lease": {
+      "size": 1,
+      "granted": 2,
+      "spent": 2,
+      "remaining": 0,
+      "calls": 2,
+      "starved": 0
+    },
+    "store": {
+      "healthy": true,
+      "errors": 0,
+      "lastError": null,
+      "degradedCeiling": 0,
+      "degradedUsed": 0
+    }
+  },
+  "liveGate": {
+    "enabled": false,
+    "blockers": [
+      "planner_has_no_live_mode",
+      "PR178_live_acceptance_required",
+      "supplier_reset_window_and_prior_usage_required",
+      "approved_scope_capacity_and_operator_rollout_required"
+    ]
+  }
+}

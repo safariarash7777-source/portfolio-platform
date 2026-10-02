@@ -1,0 +1,10 @@
+{
+  "dataClass": "SYNTHETIC",
+  "days": {
+    "2026-10-02": {
+      "verified": true,
+      "leased": 2,
+      "hardCeiling": 2
+    }
+  }
+}

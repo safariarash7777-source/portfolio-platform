@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "coverage-plan.v1",
+  "mode": "OFFLINE_ONLY",
+  "observedAt": "2026-10-02T06:00:00Z",
+  "dataClass": "SYNTHETIC",
+  "universeComplete": true,
+  "matrix": [
+    {
+      "symbol": "نمادالف",
+      "day": "2026-09-29",
+      "status": "gap",
+      "reason": "verified_trade_and_complete_read_without_row",
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": "synthetic:official-metadata",
+      "existingRowRef": null
+    },
+    {
+      "symbol": "نمادالف",
+      "day": "2026-09-30",
+      "status": "holiday",
+      "reason": "explicit_official_calendar_closed",
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": null,
+      "existingRowRef": null
+    },
+    {
+      "symbol": "نمادالف2",
+      "day": "2026-09-29",
+      "status": "unsupported",
+      "reason": "excluded_subticker_or_rights",
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": null,
+      "existingRowRef": null
+    },
+    {
+      "symbol": "نمادالف2",
+      "day": "2026-09-30",
+      "status": "unsupported",
+      "reason": "excluded_subticker_or_rights",
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": null,
+      "existingRowRef": null
+    },
+    {
+      "symbol": "نمادب",
+      "day": "2026-09-29",
+      "status": "gap",
+      "reason": "verified_trade_and_complete_read_without_row",
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": "synthetic:official-metadata",
+      "existingRowRef": null
+    },
+    {
+      "symbol": "نمادب",
+      "day": "2026-09-30",
+      "status": "holiday",
+      "reason": "explicit_official_calendar_closed",
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": null,
+      "existingRowRef": null
+    }
+  ],
+  "nav": [
+    {
+      "symbol": "صندوقالف",
+      "status": "preserved_blacklist",
+      "eligible": false,
+      "cause": null,
+      "lastCheckedAt": null,
+      "capability": true,
+      "validResponseVerified": false,
+      "reason": "blacklist_never_cleared_or_retested_by_this_tool"
+    },
+    {
+      "symbol": "صندوقب",
+      "status": "candidate_deferred",
+      "eligible": false,
+      "reason": "no_live_nav_retest_authorized",
+      "lastCheckedAt": null,
+      "sourceAt": null
+    }
+  ],
+  "tasks": [
+    {
+      "symbol": "نمادالف",
+      "seriesType": 2,
+      "targetDays": [
+        "2026-09-29"
+      ],
+      "taskId": "7f80eec25933f26128d46ce52796b2e6772b8b876a2a07bfca353f90346ed708",
+      "endpoint": "Tsetmc/Candlestick.php",
+      "producer": "candle-backfill",
+      "budgetClass": "bulk",
+      "rangeStart": "2026-09-29",
+      "rangeEnd": "2026-09-29",
+      "requestsPerAttempt": 1,
+      "note": "catalog endpoint returns daily history per symbol; range filters local metadata only"
+    },
+    {
+      "symbol": "نمادب",
+      "seriesType": 2,
+      "targetDays": [
+        "2026-09-29"
+      ],
+      "taskId": "6ca9ea2f05ed29631d0d5380ae0348785e6b289b36579bc34baaab6677ffe0e8",
+      "endpoint": "Tsetmc/Candlestick.php",
+      "producer": "candle-backfill",
+      "budgetClass": "bulk",
+      "rangeStart": "2026-09-29",
+      "rangeEnd": "2026-09-29",
+      "requestsPerAttempt": 1,
+      "note": "catalog endpoint returns daily history per symbol; range filters local metadata only"
+    }
+  ],
+  "preservedBlacklistSymbols": [
+    "صندوقالف"
+  ],
+  "legacyStateAvailable": true,
+  "legacyDone": {
+    "نمادالف": 200
+  },
+  "counts": {
+    "covered": 0,
+    "holiday": 2,
+    "no-trade": 0,
+    "unsupported": 2,
+    "gap": 2,
+    "unknown": 0
+  },
+  "budget": {
+    "sharedDependencyPR": 178,
+    "minimumCandleRequests": 2,
+    "maximumRequestsUnderDeclaredAttempts": 4,
+    "maxAttempts": 2,
+    "declaredDailyRequestCap": 2,
+    "verifiedLiveCapacity": null,
+    "completionDays": null,
+    "plannedNAVRequests": 0,
+    "deferredNAVCandidates": 1,
+    "unknownCandidateCells": 0,
+    "spacingMs": 100,
+    "consumers": [
+      "candle-backfill/bulk",
+      "nav-completion/bulk",
+      "nav-bulk/standard",
+      "FX and other shared-key producers"
+    ]
+  },
+  "liveGate": {
+    "enabled": false,
+    "blockers": [
+      "planner_has_no_live_mode",
+      "PR178_live_acceptance_required",
+      "supplier_reset_window_and_prior_usage_required",
+      "approved_scope_capacity_and_operator_rollout_required"
+    ]
+  },
+  "missingUniverseDays": [],
+  "aggregateObservations": [],
+  "planDigest": "c1f6b57b4b2d3ba720239b43d2bc5d6c5aa06002bb1412a90be084f739a243d5"
+}

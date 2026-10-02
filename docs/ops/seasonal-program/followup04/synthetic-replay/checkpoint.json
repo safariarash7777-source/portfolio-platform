@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "coverage-repair-simulation.v1",
+  "planDigest": "c1f6b57b4b2d3ba720239b43d2bc5d6c5aa06002bb1412a90be084f739a243d5",
+  "legacyDone": {
+    "نمادالف": 200
+  },
+  "simulatedRows": [
+    {
+      "symbol": "نمادالف",
+      "day": "2026-09-29",
+      "seriesType": 2,
+      "dataClass": "SYNTHETIC"
+    },
+    {
+      "symbol": "نمادب",
+      "day": "2026-09-29",
+      "seriesType": 2,
+      "dataClass": "SYNTHETIC"
+    }
+  ],
+  "events": [
+    {
+      "taskId": "7f80eec25933f26128d46ce52796b2e6772b8b876a2a07bfca353f90346ed708",
+      "at": "2026-10-02T06:00:00.000Z",
+      "result": "simulated_complete"
+    },
+    {
+      "taskId": "6ca9ea2f05ed29631d0d5380ae0348785e6b289b36579bc34baaab6677ffe0e8",
+      "at": "2026-10-02T06:00:00.100Z",
+      "result": "simulated_complete"
+    }
+  ],
+  "leaseFloorByDay": {
+    "2026-10-02": 2
+  }
+}
