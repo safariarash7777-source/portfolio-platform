@@ -62,4 +62,3 @@ Required negatives: signup flag/settings failure; forbidden signup fields/Origin
 Rollback for the new candidate: disable its signup/fragment gates, restore its recorded templates/settings or discard only its dedicated synthetic runtime under P00's lifecycle. Do not change demo8444, restore an old DB over writes, delete canonical UUID/history or remove legacy email. No new migration is proposed by this handoff. Native219 remains NOT_RUN until the independent journey is complete.
 
 Tools for this handoff: read-only Git/source diff and GitHub REST metadata/CI, PowerShell. Supabase/Next guidance applies to canonical session/RLS boundaries. No live settings, inbox, credentials, browser login, provider calls, build or deployment performed.
-
