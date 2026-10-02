@@ -24,6 +24,8 @@ receipt فقط `p08.handoff.receipt.fixture.v0.1` با case/subject opaque، rev
 
 P11 canonical fixture snapshot در commit`8eab5d5471d1ed8aa89921e58dc8f476513fb818` تثبیت شد و owner archive بدون تغییر را ACK کرد. `support.mjs`، `measurement.mjs`، `receipt.schema.json` و `event.schema.json` با blobهای همان commit دقیقاً برابرند؛ [PROVENANCE.json](fixtures/PROVENANCE.json). هیچ snapshot uncommitted به‌عنوان مرجع نهایی مصرف نشد. این receipt همچنان synthetic-only است و پذیرش receipt server یا پاسخ انسانی نیست.
 
+P11 مستقلاً receipt-handoff.ts را در product SHA cdd51d018cb5400c71e3f50c75394f9fb0e54787 بازبینی و عدم اختلاف با مرز قرارداد fixture را تأیید کرد. اجرای مستقل owner با الگوی receipt/judgement/P11/provenance در fixture-ledger.test.ts: 8 PASS؛ شامل grant revoke، tamper، private fields، stale revision، blob provenance و referral بدون provider. این 8 آزمون از 11 probe مرحله قبل جداست و پذیرش live/human نیست. دو فاصلهٔ انتهای خط در retrieval-schema-red.txt حذف شد؛ محتوای خطا و نتیجهٔ red حفظ شد.
+
 ## مجموعه60 و شواهد
 
 evaluation.json همان60 سؤال و rubric انسانی را نگه می‌دارد و oracle صریحmachine برای sourceKeys و source/deny/noanswer اضافه می‌کند. harness به canonical fixture corpus با UUID نسخه، fake RPC، fake provider و clock قطعی وصل است. نتیجه فعلی60 PASS/0 FAIL:35 منبع،11 deny و14 noanswer. این **امتیاز کیفیت پاسخ نیست**: زبان‌مدل واقعی ارزیابی نشده، humanReviewed=false، answerQualityScore=null و هزینه واقعیnull.
