@@ -16,7 +16,7 @@ The timeout bounds waiting while the browser event loop is responsive; it cannot
 
 ## Verification
 
-- Seven added regressions: baseline pending transport/no signal; network hang; body hang; successful SDK cookie write; credential rejection; fresh retry after expiry; login wiring/loading/input preservation.
+- Seven added regressions: baseline pending transport/no signal; network hang; body hang; successful SDK cookie write; credential rejection; fresh retry after expiry; actual login submit/loading/input/error behavior. The last case executes the page's submit handler with a small React-state/JSX fixture and the real installed SDK; it is not a native DOM/browser acceptance.
 - Network/body/late-write cases use the installed Supabase SDK with offline response fixtures and accelerated test timers. No live account/provider calls, JWT construction, OTP or private credentials.
 -104 Auth/SMS/resource tests passed,0failed/0skipped;47 related TypeScript tests passed. Total151.
 - Typecheck and targeted ESLint with zero warnings passed. Secret scan:1308 files,0 findings. Diff check passed.

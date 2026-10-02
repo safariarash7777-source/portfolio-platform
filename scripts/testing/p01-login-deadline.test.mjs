@@ -7,7 +7,7 @@ import {createBrowserClient} from '@supabase/ssr';
 
 function load(file,imports,globals={}) {
   const target={exports:{}};
-  runInNewContext(ts.transpileModule(readFileSync(new URL('../../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
+  runInNewContext(ts.transpileModule(readFileSync(new URL('../../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,{
     exports:target.exports,require:name=>imports[name],process:{env:{NEXT_PUBLIC_SUPABASE_URL:'https://fixture.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'fixture-public-key',NEXT_PUBLIC_SUPABASE_COOKIE_NAME:'fixture-login-auth'}},
     AbortController,AbortSignal,Response,setTimeout,clearTimeout,...globals,
   });
@@ -70,9 +70,23 @@ test('a new attempt has a fresh signal and succeeds after timeout',async()=>{
   const result=await deadline.withDeadline(signal=>f.createClient(signal).auth.signInWithPassword(credentials),8000);
   assert.equal(result.error,null);assert.equal(signals[0].aborted,true);assert.equal(signals[1].aborted,false);assert.notEqual(signals[0],signals[1]);
 });
-test('login integrates bounded SDK; input state is preserved and loading is released',()=>{
-  const source=readFileSync(new URL('../../app/(auth)/login/page.tsx',import.meta.url),'utf8');
-  assert.match(source,/await withDeadline\(signal =>\s*createClient\(signal\)\.auth\.signInWithPassword/);
-  assert.match(source,/finally\s*\{\s*setLoading\(false\)/);
-  assert.doesNotMatch(source,/setEmail\(""\)|setPassword\(""\)/);
+test('actual login submit recovers loading, preserves inputs and shows network error',async()=>{
+  let receivedSignal;let navigate=0;let cursor=0;
+  const f=fixture((_url,init)=>{receivedSignal=init.signal;return new Promise(()=>{});});
+  const state=[credentials.email,credentials.password,'','','',false,false];
+  const jsx=(type,props)=>({type,props});
+  const page=load('app/(auth)/login/page.tsx',{
+    'react':{Suspense:'suspense',useState:()=>{const i=cursor++;return [state[i],value=>{state[i]=value;}];}},
+    'react/jsx-runtime':{jsx,jsxs:jsx},'next/link':{default:'link'},'next/navigation':{useSearchParams:()=>({get:key=>key==='next'?'/dashboard':null})},
+    'lucide-react':{Eye:'eye',EyeOff:'eye-off',LogIn:'log-in'},'@/components/ui/Logo':{default:'logo'},
+    '@/lib/supabase/client':f,'@/lib/deadline':deadline,'@/lib/auth/mobile':{authMessage:()=>null},
+    '@/components/account/returnPath':load('components/account/returnPath.ts',{}),
+  },{window:{location:{assign:()=>{navigate++;}}}});
+  const entry=page.default();const tree=entry.props.children.type();
+  function find(node){if(!node||typeof node!=='object')return null;if(node.type==='form')return node;const children=node.props?.children;for(const child of Array.isArray(children)?children:[children]){const found=find(child);if(found)return found;}return null;}
+  const form=find(tree);assert.ok(form);
+  const pending=form.props.onSubmit({preventDefault:()=>{}});assert.equal(state[5],true);
+  await pending;
+  assert.equal(state[5],false);assert.equal(state[0],credentials.email);assert.equal(state[1],credentials.password);
+  assert.equal(state[4],'خطا در اتصال. لطفاً دوباره تلاش کنید');assert.equal(navigate,0);assert.equal(receivedSignal.aborted,true);assert.equal(f.writes.length,0);
 });
