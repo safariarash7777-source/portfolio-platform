@@ -1,0 +1,52 @@
+{
+  "at": "2026-10-02T14:52:45.984Z",
+  "source": "Own real Next/GoTrue/PostgREST/Storage; synthetic accounts, no provider request",
+  "codeCommit": "f669c05baf2cdebfead20999e389c77f19015152",
+  "mode": "delta",
+  "records": [
+    {
+      "case": "new build B feed validated native session",
+      "result": "PASS"
+    },
+    {
+      "case": "new build own B canonical detail",
+      "result": "PASS"
+    },
+    {
+      "case": "new build B resources still scoped",
+      "result": "PASS"
+    },
+    {
+      "case": "new build anonymous feed401",
+      "result": "PASS"
+    },
+    {
+      "case": "new build wrong cohort B to A403",
+      "result": "PASS"
+    },
+    {
+      "case": "new build revoked A still denied403",
+      "result": "PASS"
+    },
+    {
+      "case": "new build B denied private A file403",
+      "result": "PASS"
+    },
+    {
+      "case": "new build Auth outage503 /api/cohorts/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/publications",
+      "result": "PASS"
+    },
+    {
+      "case": "new build Auth outage503 /api/publications/5141a9f2-806e-4d2d-bdd4-0b6e87a342cf?cohort=bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "result": "PASS"
+    },
+    {
+      "case": "new build reader recovers after native Auth restart",
+      "result": "PASS",
+      "recoveryStatuses": [
+        503,
+        200
+      ]
+    }
+  ]
+}

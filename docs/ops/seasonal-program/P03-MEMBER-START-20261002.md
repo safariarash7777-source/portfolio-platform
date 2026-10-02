@@ -39,6 +39,8 @@ Delivered [Draft PR #209](https://github.com/safariarash7777-source/portfolio-pl
 
 ## Result
 
+Auth consumer follow-up: [P01 delta report](p03-member-start/P01-CONSUMER-DELTA.md) records runtimef669, test correction1f97cb2, 1313 core PASS and separate native evidence. The initial UI/CI/browser acceptance below remains atf889. The delta is local-only while external GitHub connectivity fails; the last verified remote head is63aeb0f.
+
 Ownership addendum before P01-dependent edits: coordinator assigned the remaining `memberAuthErrorStatus` and **publicationMember only** in `lib/intelligence/publication-server.ts` to P03. Consume P01's exact `lib/auth/session-error.ts` blob at `87f6b2250218c661fc3a6ab89fec10d35f6a7467`; do not rewrite its policy or import the full #208 patch. P00 combines the identical helper with #208. Add consumer regressions in the existing registered member/feed tests; no package registration changes. publicationAdmin stays P07-owned and unchanged. Prior native/browser proof remains at f889bb3; the Auth-consumer delta will have separate SHA/evidence.
 
 - Four links guide a member through course/access, optional needs/question, calendar/resources and published content. All guide targets exist. Five minutes is a proposed short path, not measured completion evidence.

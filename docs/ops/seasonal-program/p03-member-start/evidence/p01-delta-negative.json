@@ -1,0 +1,63 @@
+{
+  "baseline": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "codeCommit": "f669c05baf2cdebfead20999e389c77f19015152",
+  "source": "Actual publicationMember source; real SDK errors; canned transport, not native Auth",
+  "rows": [
+    {
+      "code": "bad_jwt",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    },
+    {
+      "code": "no_authorization",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    },
+    {
+      "code": "session_expired",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    },
+    {
+      "code": "session_not_found",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    },
+    {
+      "code": "refresh_token_not_found",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    },
+    {
+      "code": "refresh_token_already_used",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    },
+    {
+      "code": "flow_state_expired",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    },
+    {
+      "code": "flow_state_not_found",
+      "before": 503,
+      "after": 401,
+      "expected": 401,
+      "result": "REPRODUCED_AND_FIXED"
+    }
+  ]
+}

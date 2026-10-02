@@ -1,0 +1,36 @@
+{
+  "capturedAt": "2026-10-02T15:04:58.7068683Z",
+  "runtimeCommit": "f669c05baf2cdebfead20999e389c77f19015152",
+  "testCommit": "1f97cb25d89a983c9641cfdb54e8d2950316f1be",
+  "buildId": "qNU93b4JpJ7CoOHrhA-gG",
+  "ownerCommit": "87f6b2250218c661fc3a6ab89fec10d35f6a7467",
+  "helperBlob": "60ef5ffa882973ad5400c3b8243e32e94280ea63",
+  "core": {
+    "fail": 0,
+    "skip": 0,
+    "pass": 1313,
+    "tests": 1313
+  },
+  "typecheck": {
+    "command": "node node_modules/typescript/bin/tsc --noEmit",
+    "exitCode": 0
+  },
+  "focused": 49,
+  "existingHandlers": 23,
+  "existingConsumers": 30,
+  "nativeHttp": 10,
+  "nativeSdk": 2,
+  "cookieVM": 2,
+  "negativeBaseline": 8,
+  "newHeadCI": "NOT_VERIFIED",
+  "lastVerifiedRemoteHead": "63aeb0ff21db91b0b07c6fdde5b579cd1747b8fc",
+  "browser": {
+    "syntheticOnly": true,
+    "source": "Native own GoTrue/Next browser reload",
+    "publicationB": true,
+    "screenshot": "native-delta-B.png",
+    "courseB": true,
+    "resourceB": true
+  },
+  "newApplicationMigration": 0
+}
