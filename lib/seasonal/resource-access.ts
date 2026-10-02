@@ -1,8 +1,9 @@
-import {isAuthSessionMissingError} from "@supabase/supabase-js";
+import {authSessionFailure} from "../auth/session-error";
 
 /** A missing SDK session is a login requirement; transport/config failures are outages. */
 export function resourceAuthStatus(error:unknown,user:unknown):401|503|null {
- if(error)return isAuthSessionMissingError(error)?401:503;
+ const failure=authSessionFailure(error);
+ if(failure)return failure;
  return user?null:401;
 }
 

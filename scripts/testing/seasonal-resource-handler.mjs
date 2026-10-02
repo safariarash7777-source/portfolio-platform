@@ -11,7 +11,8 @@ function load(path,dependencies){
  * Native-SDK mode exercises real GoTrue/PostgREST/Storage without service-role.
  * This harness does not prove Next's cookie adapter or a browser login flow. */
 export function resourceHandlers(db){
- const access=load('lib/seasonal/resource-access.ts',{});
+ const session=load('lib/auth/session-error.ts',{});
+ const access=load('lib/seasonal/resource-access.ts',{'../auth/session-error':session});
  const response={seasonalResponse:(data,status=200)=>Response.json({contractVersion:'seasonal.v0.1',data},{status,headers:{'Cache-Control':'private, no-store'}}),seasonalUnavailable:()=>Response.json({contractVersion:'seasonal.v0.1',availability:'unavailable',error:'دریافت اطلاعات دوره انجام نشد. دوباره تلاش کنید.'},{status:503,headers:{'Cache-Control':'private, no-store'}})};
  const deps={'@/lib/supabase/server':{createClient:async()=>db},'@/lib/seasonal/server':response,'@/lib/seasonal/resource-access':access};
  deps['@/lib/seasonal/time']={standing:()=> 'active'};

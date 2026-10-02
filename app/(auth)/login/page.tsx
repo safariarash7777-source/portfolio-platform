@@ -93,6 +93,7 @@ function LoginPageContent() {
         <div className="card-elevated p-8">
           <p className="text-sm leading-7 mb-5">این مسیر با رمز خود سایت کار می‌کند. رمز Google یا Gmail جای رمز سایت نیست.</p>
           {searchParams.get('error')==='auth_unavailable' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>بررسی نشست در سرور پاسخ نداد. رمز را تغییر ندهید؛ کمی بعد دوباره ورود را امتحان کنید.</p>}
+          {searchParams.get('error')==='auth_callback_failed' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>لینک ورود معتبر نیست یا قبلاً استفاده شده است. دوباره ورود را آغاز کنید.</p>}
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* Email */}
             <div className="space-y-1.5">
