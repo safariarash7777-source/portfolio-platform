@@ -1,0 +1,36 @@
+{
+  "environment": "portfolio-accept195",
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "origin": "https://62.60.191.24:8443",
+  "startedAt": "2026-10-02T13:40:35.048Z",
+  "source": "Native SQL synthetic fixtures; actual UI-issued admin login; no issuer data or live provider",
+  "scenarios": [
+    {
+      "id": "financial-real-login",
+      "role": "admin",
+      "expected": "Native GoTrue actual UI login and protected full access",
+      "observed": {
+        "http": 200,
+        "path": "/symbol/SYNTHETIC195_CURRENT"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:41:21.266Z"
+    },
+    {
+      "id": "financial-execution",
+      "role": "admin",
+      "expected": "Complete affected financial UI acceptance",
+      "observed": {
+        "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#chart-margins') to be visible\u001b[22m\n\u001b[2m    62 × locator resolved to hidden <section id=\"chart-margins\" class=\"card p-4 sm:p-5 scroll-mt-24\">…</section>\u001b[22m\n",
+        "path": "/symbol/SYNTHETIC195_CURRENT"
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:41:58.421Z"
+    }
+  ],
+  "finishedAt": "2026-10-02T13:41:58.626Z",
+  "counts": {
+    "PASS": 1,
+    "FAIL": 1
+  }
+}

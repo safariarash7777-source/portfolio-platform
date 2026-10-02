@@ -1,5 +1,11 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## نصب واقعی در sandbox مستقل لیارا — ۲۰۲۶-۱۰-۰۲
+
+**APPLIED_NATIVE_SANDBOX_ONLY؛ محیط portfolio-accept195 و برنامه195@31c44ab635b672b589b7833bcbc78b41d36f1e75.** DB تازه و فقط دادهٔ ساختگی؛ شمار اولیه auth.users صفر. هر۱۸ورودی canonicalGitLF باهش و زمان اجرا نصب شد: پیش‌نیازها → phase32 → phase34 → phase35 → phase36 → phase37 → phase38 → seasonal/publication/private-identity/feed. [فهرست و۱۸هش](./ops/seasonal-program/integration-195-20261002/SANDBOX-MIGRATION-PLAN.json)، [رسید نصب وcatalog](./ops/seasonal-program/integration-195-20261002/LIARA-ENVIRONMENT.json). phase37 اینSHA هش canonical `3162ca656b9cdacf11a3f0ba0b79724ab162aa08a74f4bc0a04d4aec5ccbb5bd` دارد؛ هش‌های WindowsCRLF قدیمی سابقه‌اند و برابری محتوا باGitblob بررسی شد.
+
+پیش‌نیاز موجود terminal_t0.sql همینSHA جدا برای داده‌های ساختگی آزمون مالی نصب شد؛ هش `2bb9656d3c0579f5b357220fa775ec42beba79698eba4e2238714a965e3571c9`. کمبودgrant خواندن nativePostgres برای symbol_history وportfolio_versions در بازبینی پیدا و باحداقل SELECT اصلاح شد؛ RLS/policy قبل/بعد یکسان وDML privilege اضافه نشد. [رسید جدا](./ops/seasonal-program/integration-195-20261002/NATIVE-PRIVILEGE-REPAIR.json). هیچ migration تازهٔ محصول، نصب مشترک، دادهٔ واقعی، Production یا backup/restore انجام نشد. شاهد نصب، پذیرش کامل رفتار یاگیت انسانی نیست؛ [گزارش جاری](./ops/seasonal-program/integration-195-20261002/LIARA-SANDBOX-RESULT.md). سوابق زیر مربوط به نسخه/محیط زمان خود هستند.
+
 ## بازتأیید DEV-07 روی 15eebc9 — 2026-10-01
 
 **REVALIDATED_SANDBOX_ONLY؛ نصب تازه انجام نشد.** زنجیرهٔ قبلاً نصب‌شدهphase32→34→35→36→37 در volumeساختگیdev07-1978-data حفظ شد. SHAبرنامه `15eebc97ca650dde5f2687e36d9d98d193d0d543`؛ شاهد2026-10-01T09:21:23.152Z، .task/dev07-preflight-15eebc9.txt و manifestمهاجرت؛14/14جدول،11/11RLS،4RPCدارایPT409 وstatus-onlyبرقرار،cronoff. hashphase37 همچنانb817192469b4f66937f009bf9a9dbb75f4acea41760be1e6be6306b6682834b9. [پذیرش مستقل](./ops/DEV07-FINAL-15EEBC9.md) و [شواهد پروژه](./ops/DEV07-EVIDENCE-15EEBC9.json). هیچ migrationمحیط مشترک/Production/لیارا انجام نشد؛ مراحلAPPLIED/NOT_APPLIEDپایین سابقهٔ زمان خودشان‌اند.

@@ -1,0 +1,374 @@
+{
+  "manifestVersion": "p00.v0.1",
+  "recordedAt": "2026-10-02T14:24:43.635Z",
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "tree": "b891e09732872b16768317b506bfb9910cb0fdbf",
+  "basePR": 191,
+  "baseSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+  "mainSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "includedFeedFixCommit": "6cba6c1494e7da403b83a08e52b56ad93c56010d",
+  "excludedPRs": [
+    177,
+    188,
+    189,
+    193,
+    198,
+    199
+  ],
+  "schema": [
+    {
+      "order": 1,
+      "file": "sql/archive/supabase_schema.sql",
+      "sha256": "ce42c2f58d94dbc7582bdc9b9f497ffefc7260509c03d6272135f16b42c6b0f8",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "001f52d5f4b1f6fe3d154fafafcabe766e6aa739c24c7ddb2bad5e72c998c0de",
+      "gitBlob": "ca05b0456388403eec127da376277b1a8d914f69",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:07Z"
+    },
+    {
+      "order": 2,
+      "file": "sql/archive/supabase_portfolio_tracking.sql",
+      "sha256": "6c3765e631a4f46ff16ff5d9378997173f9bbb6b6ad2b94dccec34fb56c750d2",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "0ecc41f5f3a374dc0788d69f06da4413c083a29049d1a65749283d5d30ef2a9c",
+      "gitBlob": "b4dca96ac0d0d35d4c476ff02ff3f7a22f5a68b5",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:08Z"
+    },
+    {
+      "order": 3,
+      "file": "sql/archive/supabase_portfolio_versioning.sql",
+      "sha256": "5696de56e8b7cb7406ed8b15fc02857f90ad309a1ee4b0bc6998852d68462550",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "1f4e2f7ff3d14e2c7a55a4dc65b28aec5651e37c8ab0996173737a0a4284d491",
+      "gitBlob": "ad609e4609126292465a0594f62b55f87cf00de9",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:08Z"
+    },
+    {
+      "order": 4,
+      "file": "sql/staging/g3003_staging_profiles_prereq.sql",
+      "sha256": "08c75408e8bbb8c0b2ffaebd3425a71e34bd956447d8e0c82f434bde6ecba55f",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "5ae35fd4fa21ddec64130e565507164180f42d58bd9864d6fc225ee9bb2fe799",
+      "gitBlob": "c4201a76fb00c860f7611825e85da37286ff2294",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:08Z"
+    },
+    {
+      "order": 5,
+      "file": "sql/phase5_payments_telegram.sql",
+      "sha256": "d891ba17c513e0b8aadd36f484fb59811fb84217d981c94628ce4ba7326b858d",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "4d689f0f45065c1989c8fba6c6b9a24aac9278695742982b5a5f7862b8438e8b",
+      "gitBlob": "70387902eb3b4391e70792b9a4b729c26c6f6c40",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:09Z"
+    },
+    {
+      "order": 6,
+      "file": "sql/phase8_webinars.sql",
+      "sha256": "ec44f25997eba57ca8dd11193a677644f63b41640920ccd68cf84bd02fea816d",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "e4c3faa90c33c58a430880a6448d0fba3be90e60870bb0bbe6ce299fd7e20ccb",
+      "gitBlob": "188fbe526ae2496f25ed554ef93e3238406a7a04",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:10Z"
+    },
+    {
+      "order": 7,
+      "file": "sql/phase11_access_tiers.sql",
+      "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "2ad50dd68ce1162fdd84ba627b2b2a7b64a1b97d3348d4035d619a23ed77df15",
+      "gitBlob": "30a1b397ef6026ac7dcf29a7739583a871fcc621",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:10Z"
+    },
+    {
+      "order": 8,
+      "file": "sql/phase27_member_import.sql",
+      "sha256": "69507178be682e1437250292699648555c7e3491b4cad83b18b43019f3667148",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "4e0085064a18b131e92744fc1987668be775e64aa385975094bdc77a0dece2f5",
+      "gitBlob": "869d2f0e10c1ee06181358acec05116becd5a95f",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:11Z"
+    },
+    {
+      "order": 9,
+      "file": "sql/phase32_member_holdings.sql",
+      "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6",
+      "gitBlob": "e169d733e75f523597baeb8560fd46f8662d95a5",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:11Z"
+    },
+    {
+      "order": 10,
+      "file": "sql/phase34_research_workbook_versions.sql",
+      "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8",
+      "gitBlob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:12Z"
+    },
+    {
+      "order": 11,
+      "file": "sql/phase35_consultation.sql",
+      "sha256": "63388c8b1b125332eedb405b6da9480da1305bbadbeacf4b5263fdd205299ad2",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "9d9aa2faf3e6306d2f2992382564207f8b1dbe068f4eb209438597705a44ce7e",
+      "gitBlob": "5019a7e9b2ae5c2c0571527afa1c81fdbd6b8c5a",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:13Z"
+    },
+    {
+      "order": 12,
+      "file": "sql/phase36_consultation_review_fixes.sql",
+      "sha256": "e2ca9fde2c02a0457ef70bec541707bebf198afba26c94f5f7b7e47662c6cbd6",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "bdf127dcee86c26f3e19961fe8b9710385ca965ec649ee61b33cfc38a53c318a",
+      "gitBlob": "84b534190280ea1a1b28468c6687bc6a70e423c2",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:13Z"
+    },
+    {
+      "order": 13,
+      "file": "sql/phase37_nonretryable_version_conflicts.sql",
+      "sha256": "3162ca656b9cdacf11a3f0ba0b79724ab162aa08a74f4bc0a04d4aec5ccbb5bd",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "282b8be6c36b77bd9bf70c0dfd94ac3b8bccbd9cc628b75be1244cf5b1dfdf4d",
+      "gitBlob": "562e1302450f28ceff3625e802a8b9f98ef2658a",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:13Z"
+    },
+    {
+      "order": 14,
+      "file": "sql/phase38_personal_balance_sheet.sql",
+      "sha256": "3572915cb6c3e1bc98f9ead763318bd6400db0d91691ca1dd771c9cac65de247",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "2f44201b3aec41e489bf5ac6fd71406ea9d358748e199ca24a1161d644a2f5fb",
+      "gitBlob": "e3901db5f8d43bdeafd5fbc53a464e184f7ef060",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:14Z"
+    },
+    {
+      "order": 15,
+      "file": "supabase/migrations/20260930182629_seasonal_course_membership.sql",
+      "sha256": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+      "gitBlob": "d07215244de0ebc5546c823623833b6e4147bd44",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:14Z"
+    },
+    {
+      "order": 16,
+      "file": "supabase/migrations/20260930182918_research_publication_queue.sql",
+      "sha256": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+      "gitBlob": "73bcf4b17c0ec24c43aff2b54e002e1dcc2c322f",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:15Z"
+    },
+    {
+      "order": 17,
+      "file": "supabase/migrations/20261001083215_auth_private_identity_versions.sql",
+      "sha256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251",
+      "gitBlob": "e0a26d4320383bcf333720ab2c82cb4580797ee7",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:15Z"
+    },
+    {
+      "order": 18,
+      "file": "supabase/migrations/20261001121858_member_publication_feed_reads.sql",
+      "sha256": "db0cb056948ce7cfaf7a7d18472da0ebbddc834248e3f1d3710a90708b8cecdf",
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "worktreeCRLFSha256": "db0cb056948ce7cfaf7a7d18472da0ebbddc834248e3f1d3710a90708b8cecdf",
+      "gitBlob": "a5c812bab785f86da2c3091388a31fbf9e4ca7ff",
+      "inputEncoding": "Git blob / LF",
+      "appliedAt": "2026-10-02T13:18:15Z"
+    }
+  ],
+  "environment": {
+    "id": "portfolio-accept195",
+    "origin": "https://62.60.191.24:8443",
+    "status": "TECHNICAL_DEV07_PASS_HUMAN_RESEARCH_BLOCKED",
+    "data": "SYNTHETIC_ONLY",
+    "receipt": "../ops/seasonal-program/integration-195-20261002/LIARA-ENVIRONMENT.json",
+    "realUIAuth": {
+      "status": "PASS",
+      "checks": 32,
+      "roles": [
+        "A",
+        "B",
+        "adviser",
+        "admin"
+      ],
+      "evidence": "../ops/seasonal-program/integration-195-20261002/BROWSER-FINAL-SUMMARY.json"
+    },
+    "financialBrowser": {
+      "status": "PASS",
+      "checks": 8,
+      "evidence": "../ops/seasonal-program/integration-195-20261002/BROWSER-FINANCIAL.json"
+    },
+    "independentDEV07": {
+      "counts": {
+        "PASS": 13,
+        "FAIL": 0,
+        "BLOCKED": 1
+      },
+      "completedAt": "2026-10-02T14:21:40.209Z",
+      "report": "../ops/seasonal-program/integration-195-20261002/dev07-independent/independent.md",
+      "freeze": "../ops/seasonal-program/integration-195-20261002/dev07-independent/freeze.json",
+      "accepted": false
+    },
+    "humanResearchApproval": "BLOCKED_REQUIRES_REAL_HUMAN",
+    "certificateExpiresAt": "2026-10-06T23:38:07Z",
+    "sourceVerification": {
+      "files": 629,
+      "mismatches": 0,
+      "evidence": "../ops/seasonal-program/integration-195-20261002/SOURCE-VERIFICATION.json"
+    },
+    "nativePrivilegeRepair": {
+      "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+      "rlsUnchanged": true,
+      "writePrivilegesAdded": false,
+      "evidence": "../ops/seasonal-program/integration-195-20261002/NATIVE-PRIVILEGE-REPAIR.json"
+    },
+    "finalReceipt": "../ops/seasonal-program/integration-195-20261002/LIARA-ENVIRONMENT-FINAL.json",
+    "humanReview": {
+      "status": "UNAPPROVED",
+      "scenario": 5,
+      "workbook": "ffeecd79-5532-48fe-8122-59d19e49a062",
+      "version": 1,
+      "versionId": "c4b9c716-609f-43ed-a655-33f3c5d2088d",
+      "url": "https://62.60.191.24:8443/admin/research?workbook=ffeecd79-5532-48fe-8122-59d19e49a062",
+      "action": "Independent human reviews source/unit/date/interpretation/counter/scenarios then explicitly approves or returns in UI; record identity/time/version/decision"
+    }
+  },
+  "gates": {
+    "G0": "BASELINE_PINNED",
+    "G1": "TECHNICAL_PASS_HUMAN_RESEARCH_BLOCKED",
+    "G2": "PER_PACKAGE_NOT_COMBINED",
+    "G3": "NOT_RUN",
+    "G4": "OPEN"
+  },
+  "ownership": "P00-BASELINE.md",
+  "inventory": "P00-INVENTORY.json",
+  "production": "NOT_CHANGED",
+  "merged": false,
+  "supplementalSchema": {
+    "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "file": "sql/terminal_t0.sql",
+    "sha256": "2bb9656d3c0579f5b357220fa775ec42beba79698eba4e2238714a965e3571c9",
+    "status": "APPLIED_NATIVE_SANDBOX_ONLY",
+    "purpose": "Supplemental canonical prerequisite for synthetic N10 browser acceptance; not a new product migration",
+    "receipt": "../ops/seasonal-program/integration-195-20261002/LIARA-ENVIRONMENT.json#financial.schema"
+  },
+  "packageCheckpoints": [
+    {
+      "pr": 200,
+      "sha": "c25759dac27bda6685c76974a639fde31a9ee129",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "status": "DRAFT_NOT_INSTALLED_IN_SANDBOX195",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/200"
+    },
+    {
+      "pr": 202,
+      "sha": "e4419f96b52dfdb9f94e70b6760fdf1ff62ac63a",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "status": "DRAFT_NOT_INSTALLED_IN_SANDBOX195",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/202"
+    },
+    {
+      "pr": 203,
+      "sha": "bb585f4cd21aaf77e75261b60c9c424508999f7e",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "status": "DRAFT_NOT_INSTALLED_IN_SANDBOX195",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/203"
+    },
+    {
+      "pr": 205,
+      "sha": "90c161b0aa819ab0b34d0584d1cd5dc06bcbf5bb",
+      "baseSHA": "c25759dac27bda6685c76974a639fde31a9ee129",
+      "status": "DRAFT_NOT_INSTALLED_IN_SANDBOX195",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/205"
+    },
+    {
+      "pr": 207,
+      "sha": "81e68e43044b833e8fc112d26a8ed7f0923141e3",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "status": "DRAFT_NOT_INSTALLED_IN_SANDBOX195",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/207"
+    }
+  ],
+  "ci": [
+    {
+      "id": 36988719285,
+      "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36988719285",
+      "verifiedAt": "2026-10-02T14:05:36.552Z"
+    },
+    {
+      "id": 36988718928,
+      "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36988718928",
+      "verifiedAt": "2026-10-02T14:05:51.370Z"
+    },
+    {
+      "id": 37015915730,
+      "sha": "e4419f96b52dfdb9f94e70b6760fdf1ff62ac63a",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37015915730",
+      "verifiedAt": "2026-10-02T14:05:53.659Z"
+    },
+    {
+      "id": 37016337689,
+      "sha": "81e68e43044b833e8fc112d26a8ed7f0923141e3",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37016337689",
+      "verifiedAt": "2026-10-02T14:05:57.051Z"
+    }
+  ],
+  "productionContainment": {
+    "status": "OPEN_HUMAN_DECISION_REQUIRED",
+    "proposalPR": 207,
+    "target": "Liara PaaS app arsadata only",
+    "executed": false,
+    "source": "docs/ops/p02-market/CONTAINMENT.fa.md in PR207",
+    "limits": "No VPS backend/Auth/DB/Vercel target; no Production action authorized by sandbox preparation"
+  },
+  "applicationPR": {
+    "number": 195,
+    "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "baseSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "verifiedAt": "2026-10-02T14:17:53.370Z"
+  },
+  "historicalRequestVersion": {
+    "pr": 168,
+    "requestedFullSHA": "1978bf562078336f21a7397d01acd8786b020f27",
+    "currentPRHead": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "verificationAt": "2026-10-02T14:24:43.638Z",
+    "testedHere": false
+  }
+}

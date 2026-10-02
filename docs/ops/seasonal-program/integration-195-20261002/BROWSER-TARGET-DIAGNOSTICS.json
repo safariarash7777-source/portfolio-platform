@@ -1,0 +1,224 @@
+{
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "environment": "portfolio-accept195",
+  "origin": "https://62.60.191.24:8443",
+  "reviewer": "/root; independent of N10 and feed197 implementation",
+  "startedAt": "2026-10-02T13:30:46.423Z",
+  "scenarios": [
+    {
+      "id": "login-page-A",
+      "role": "A",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:31:01.286Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-A",
+      "role": "A",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:31:03.671Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-A",
+      "role": "A",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "02305121-7521-4f0b-a611-86c3041a4ca7",
+        "path": "/dashboard",
+        "profileHTTP": 200,
+        "profileRole": "user"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:31:19.133Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "execution-A",
+      "role": "A",
+      "expected": "Complete actual browser login lifecycle",
+      "observed": {
+        "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /خروج/ }).first() to be visible\u001b[22m\n",
+        "path": "/dashboard"
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:32:30.842Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "login-page-B",
+      "role": "B",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:33:04.355Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-B",
+      "role": "B",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:33:06.287Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-B",
+      "role": "B",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "75695f88-3565-47aa-b13f-51ed44148ace",
+        "path": "/dashboard",
+        "profileHTTP": 200,
+        "profileRole": "user"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:33:19.410Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "execution-B",
+      "role": "B",
+      "expected": "Complete actual browser login lifecycle",
+      "observed": {
+        "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /خروج/ }).first() to be visible\u001b[22m\n",
+        "path": "/dashboard"
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:33:54.630Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "login-page-adviser",
+      "role": "adviser",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:34:03.003Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-adviser",
+      "role": "adviser",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:34:05.089Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-adviser",
+      "role": "adviser",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "bd23c044-9e39-4c53-acdf-822029a8b461",
+        "path": "/dashboard",
+        "profileHTTP": 200,
+        "profileRole": "admin"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:34:13.750Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "execution-adviser",
+      "role": "adviser",
+      "expected": "Complete actual browser login lifecycle",
+      "observed": {
+        "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /خروج/ }).first() to be visible\u001b[22m\n",
+        "path": "/dashboard"
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:34:47.414Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "login-page-admin",
+      "role": "admin",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:35:00.528Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-admin",
+      "role": "admin",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:35:02.972Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "execution-admin",
+      "role": "admin",
+      "expected": "Complete actual browser login lifecycle",
+      "observed": {
+        "error": "page.waitForURL: Timeout 45000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"domcontentloaded\"\n  navigated to \"https://62.60.191.24:8443/admin/desk\"\n  navigated to \"https://62.60.191.24:8443/admin/desk\"\n============================================================",
+        "path": "/admin/desk"
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:35:48.016Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    }
+  ],
+  "privacy": "Real UI login; no injected session, token/cookie persistence, HAR, or credential screenshots; normal TLS verification",
+  "finishedAt": "2026-10-02T13:35:49.634Z",
+  "counts": {
+    "PASS": 11,
+    "FAIL": 4,
+    "BLOCKED": 0
+  }
+}

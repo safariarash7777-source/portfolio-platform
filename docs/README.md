@@ -1,5 +1,7 @@
 # نقشهٔ اسناد — از کجا شروع کنم؟
 
+> **جاری ۲۰۲۶-۱۰-۰۲:** [برنامهٔ مصوب مسیر راه](./product-plan-v0.1/00-start-here.md)، [مبنا/مالکیتP00](./product-plan-v0.1/P00-BASELINE.md)، [release manifest](./product-plan-v0.1/P00-RELEASE-MANIFEST.json) و [inventory](./product-plan-v0.1/P00-INVENTORY.json). مبنای195 ثابت؛ patch197 تکرار نشود. [sandbox مستقل لیارا](./ops/seasonal-program/integration-195-20261002/ENVIRONMENT-HANDOFF.md) انتخاب و backend با۱۸migration نصب شد؛ source۶۲۹فایل مطابقGit،۳۲بررسی ورود واقعی و۸بررسی مرورگر مالی موفق؛ [جدول۱۴ مستقلDEV07:۱۳PASS/۰FAIL/۱BLOCKED؛ تأیید انسانی هنوز باز](./ops/seasonal-program/integration-195-20261002/LIARA-SANDBOX-RESULT.md). مطالب «مقصد هنوز انتخاب نشده/نصب نشده» زیر سابقهٔ قبل از دستور جدیدند. [تحویل مستقلP11 درPR203](https://github.com/safariarash7777-source/portfolio-platform/pull/203) و [P04 درPR205](https://github.com/safariarash7777-source/portfolio-platform/pull/205) ساخته شده‌اند؛ پذیرش/نصب/انتشار آن‌ها از این لینک نتیجه نمی‌شود.
+
 > **این تنها فهرستِ معتبرِ اسناد است.** اگر سندی اینجا نیست، یا آرشیو است یا باید
 > اینجا اضافه شود.
 >

@@ -1,0 +1,84 @@
+{
+  "recordedAtUtc": "2026-10-02T10:37:26Z",
+  "recordedAtTehran": "2026-10-02T14:07:26+03:30",
+  "kind": "INDEPENDENT_TARGETED_CONSUMER_ACCEPTANCE_AND_READ_ONLY_PROVENANCE",
+  "reviewer": "FOLLOWUP06; not the author of N10 or PR197 changes",
+  "pr195": {
+    "base": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+    "head": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "financialRuntime": "fa4b84fd126db70efae6a1b068a6a0e2a98bf3d5",
+    "state": "open",
+    "draft": true,
+    "baseIsAncestor": true,
+    "ownerCheckoutCleanAfterTests": true
+  },
+  "pr197": {
+    "base": "a1bf054b07fd982c9471484204ad3a8bca02093e",
+    "head": "e83c3825ac2cace5524635d49e562f7265ccf04e",
+    "sourceCommit": "6d4bb58de67f360c5f24774b38a92436c9d7aa00",
+    "sourceIsAncestor195": false,
+    "alreadyAppliedAs": "6cba6c1494e7da403b83a08e52b56ad93c56010d",
+    "appliedCommitIsAncestor195": true,
+    "stablePatchIdBoth": "5fb826880ca9d8545b86ece057a576bd2adffede",
+    "feedTestBlobBoth": "25c62357e3831c0bf79925b7e3c8efab1f53cfe2",
+    "newCherryPickPerformed": false,
+    "newBranchCreated": false
+  },
+  "sevenBlobsEqualFa4b84fdAndFinal195": {
+    "lib/core/engine.ts": "610c107968ca59eda04f38fdb5b7149b5203cedd",
+    "lib/core/quarterly.ts": "df3f239e54c387c4e27cb650729a6987c228a9b4",
+    "lib/fundamental/calc.ts": "d9da79ab8ed0fe3c10df13657162cacf5c0834f3",
+    "lib/fundamental/types.ts": "df9112bffcbcdae3bab7803008400cf1206dc69c",
+    "package.json": "0f1b417cd1bf0e746efbfb234b0ad3a93224f6d8",
+    "relay/codal-contract.test.mjs": "ab8d301517b6fd891f7e152df5ed86616eb1f5c8",
+    "relay/codal.mjs": "f45efd7963cb56fa3a6dd644a564698aaea8555b"
+  },
+  "ci": {
+    "source": "Fresh authenticated GitHub GET; no credential stored or printed",
+    "run": 36988719285,
+    "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": {
+      "Dependencies": "success",
+      "Typecheck · Lint · Tests · Build": "success",
+      "Secret scan · SQL validation": "success",
+      "Database RLS · Integrity (Postgres)": "success",
+      "CI Gate": "success"
+    },
+    "seasonalRun": 36988718928,
+    "seasonalSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "seasonalConclusion": "success",
+    "supersedesFailureRun": 36984900710
+  },
+  "targetedAcceptance": {
+    "source": "targeted-consumers.test.mjs",
+    "productCheckout": "C:/Users/Asus/Documents/Codex/2026-09-29/c-users-asus-documents-codex-2026/work/n10-null-unit-20261002",
+    "fixture": "Only synthetic in-memory statements and quarters",
+    "pass": 6,
+    "fail": 0,
+    "skip": 0,
+    "exitCode": 0,
+    "reportedDurationMs": 11853.8364,
+    "cases": [
+      {"id":"IC195-01","status":"PASS","scope":"deriveN10 current-null, prior-known, narrative suppression, net margin and JSON null retention"},
+      {"id":"IC195-02","status":"PASS","scope":"deriveN10 prior-null and false improvement narrative suppression"},
+      {"id":"IC195-03","status":"PASS","scope":"qualitative mask and score drivers distinguish missing gross from observed zero"},
+      {"id":"IC195-04","status":"PASS","scope":"3/6/9/12 cumulative middle gap, two affected quarters, later recovery and independent net TTM"},
+      {"id":"IC195-05","status":"PASS","scope":"Actual annual component element data excludes unknown gross; retains observed zero and independent net metric"},
+      {"id":"IC195-06","status":"PASS","scope":"Actual quarterly component element data retains null and zero; connectNulls=false; tooltip dash versus zero"}
+    ],
+    "componentMethod": "Real React/Recharts element props from TypeScript-transpiled product component source; private annual export appended only in memory; actual function bodies and product files unchanged",
+    "notObserved": ["browser rendering/hydration/responsive layout", "HTTP or native Auth on final195", "DB persistence or approval for financial records", "issuer provenance, rights or real units"],
+    "serviceStartedOrChanged": false,
+    "databaseWrite": false,
+    "networkProviderCall": false,
+    "productionChange": false,
+    "next09RuntimeAttempt": false
+  },
+  "retainedEvidence": {
+    "191": "39 earlier independent checks on be7b723, not reexecuted or relabelled as final195 acceptance",
+    "196": "Only four frozen offline cases on fa4b84fd; unchanged financial blobs verified, archive not replayed again"
+  },
+  "nextOperatorStep": "Select an authorized synthetic HTTPS sandbox, pin final195 build and backend/schema/callbacks, then independent native login/refresh/logout/login and affected browser checks; no production change is authorized by this report"
+}

@@ -1,0 +1,4868 @@
+{
+  "recordedAt": "2026-10-02T13:10:43.247Z",
+  "repository": "safariarash7777-source/portfolio-platform",
+  "main": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "prs": [
+    {
+      "number": 168,
+      "sha": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+      "baseSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "branch": "codex/product-v1-delivery",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "نسخهٔ اول: دارایی نسخه‌دار، پژوهش و پروندهٔ مشاوره با دسترسی صریح",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/168",
+      "files": [
+        {
+          "file": "CLAUDE.md",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "app/(protected)/dashboard/DashboardClient.tsx",
+          "status": "modified",
+          "additions": 45,
+          "deletions": 12
+        },
+        {
+          "file": "app/(protected)/dashboard/consultation/page.tsx",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "app/(protected)/dashboard/holdings/page.tsx",
+          "status": "added",
+          "additions": 64,
+          "deletions": 0
+        },
+        {
+          "file": "app/(protected)/dashboard/page.tsx",
+          "status": "modified",
+          "additions": 29,
+          "deletions": 9
+        },
+        {
+          "file": "app/api/admin/intelligence/workbooks/route.ts",
+          "status": "added",
+          "additions": 165,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/consultation/route.ts",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/portfolio/holdings/route.ts",
+          "status": "added",
+          "additions": 148,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/webinars/list/route.ts",
+          "status": "modified",
+          "additions": 15,
+          "deletions": 2
+        },
+        {
+          "file": "app/market/funds/page.tsx",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1
+        },
+        {
+          "file": "app/market/page.tsx",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1
+        },
+        {
+          "file": "app/symbol/[symbol]/page.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "app/webinars/page.tsx",
+          "status": "modified",
+          "additions": 18,
+          "deletions": 24
+        },
+        {
+          "file": "components/account/CustomerJourney.tsx",
+          "status": "added",
+          "additions": 13,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/ResearchWorkbook.tsx",
+          "status": "modified",
+          "additions": 127,
+          "deletions": 7
+        },
+        {
+          "file": "components/consultation/ConsultationWorkbench.tsx",
+          "status": "added",
+          "additions": 118,
+          "deletions": 0
+        },
+        {
+          "file": "components/dashboard/LivePortfolio.tsx",
+          "status": "modified",
+          "additions": 29,
+          "deletions": 148
+        },
+        {
+          "file": "components/dashboard/ReadError.tsx",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "components/portfolio/HoldingsSummary.tsx",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "components/portfolio/HoldingsWorkbench.tsx",
+          "status": "added",
+          "additions": 448,
+          "deletions": 0
+        },
+        {
+          "file": "docs/COMMAND-CENTER.md",
+          "status": "modified",
+          "additions": 99,
+          "deletions": 0
+        },
+        {
+          "file": "docs/DECISION-LOG.md",
+          "status": "modified",
+          "additions": 35,
+          "deletions": 3
+        },
+        {
+          "file": "docs/MIGRATION-LEDGER.md",
+          "status": "modified",
+          "additions": 28,
+          "deletions": 0
+        },
+        {
+          "file": "docs/PRODUCT-BLUEPRINT.md",
+          "status": "modified",
+          "additions": 194,
+          "deletions": 428
+        },
+        {
+          "file": "docs/README.md",
+          "status": "modified",
+          "additions": 8,
+          "deletions": 4
+        },
+        {
+          "file": "docs/archive/PRODUCT-BLUEPRINT-20260729.md",
+          "status": "added",
+          "additions": 484,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/DEV07-FINAL-3462F01.md",
+          "status": "added",
+          "additions": 68,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/DEV07-INDEPENDENT-RESULTS.md",
+          "status": "added",
+          "additions": 46,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/DEV07-PR168-REVIEW.md",
+          "status": "added",
+          "additions": 90,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/DEV07-SANDBOX-1978BF5.md",
+          "status": "added",
+          "additions": 46,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/PRODUCT-DELIVERY-TASKS.md",
+          "status": "added",
+          "additions": 164,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/PRODUCT-V1-ACCEPTANCE.md",
+          "status": "added",
+          "additions": 47,
+          "deletions": 0
+        },
+        {
+          "file": "lib/access.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 2
+        },
+        {
+          "file": "lib/consultation/consultation.integration.test.ts",
+          "status": "added",
+          "additions": 198,
+          "deletions": 0
+        },
+        {
+          "file": "lib/consultation/contracts.test.ts",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "lib/consultation/contracts.ts",
+          "status": "added",
+          "additions": 60,
+          "deletions": 0
+        },
+        {
+          "file": "lib/consultation/http.test.ts",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "lib/consultation/http.ts",
+          "status": "added",
+          "additions": 25,
+          "deletions": 0
+        },
+        {
+          "file": "lib/consultation/service.ts",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "lib/consultation/time.test.ts",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "lib/consultation/time.ts",
+          "status": "added",
+          "additions": 31,
+          "deletions": 0
+        },
+        {
+          "file": "lib/core/screener.test.ts",
+          "status": "modified",
+          "additions": 14,
+          "deletions": 1
+        },
+        {
+          "file": "lib/csp-supabase.test.mjs",
+          "status": "added",
+          "additions": 13,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/workbook-store.integration.test.ts",
+          "status": "added",
+          "additions": 203,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/workbook-store.test.ts",
+          "status": "added",
+          "additions": 259,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/workbook-store.ts",
+          "status": "added",
+          "additions": 296,
+          "deletions": 0
+        },
+        {
+          "file": "lib/market-ir.ts",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 7
+        },
+        {
+          "file": "lib/ops/test-postgres.ts",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/alerts.test.ts",
+          "status": "added",
+          "additions": 112,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/alerts.ts",
+          "status": "added",
+          "additions": 107,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/contracts.ts",
+          "status": "added",
+          "additions": 105,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/holdings.integration.test.ts",
+          "status": "added",
+          "additions": 379,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/performance.test.ts",
+          "status": "added",
+          "additions": 83,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/performance.ts",
+          "status": "added",
+          "additions": 115,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/prices.test.ts",
+          "status": "added",
+          "additions": 132,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/prices.ts",
+          "status": "added",
+          "additions": 149,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/rebalance.test.ts",
+          "status": "added",
+          "additions": 371,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/rebalance.ts",
+          "status": "added",
+          "additions": 241,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/service.ts",
+          "status": "added",
+          "additions": 150,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/targetContract.test.ts",
+          "status": "added",
+          "additions": 74,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/targetContract.ts",
+          "status": "added",
+          "additions": 140,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/units.test.ts",
+          "status": "added",
+          "additions": 54,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/units.ts",
+          "status": "added",
+          "additions": 109,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/valuation.test.ts",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/valuation.ts",
+          "status": "added",
+          "additions": 33,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/view.test.ts",
+          "status": "added",
+          "additions": 167,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/view.ts",
+          "status": "added",
+          "additions": 107,
+          "deletions": 0
+        },
+        {
+          "file": "lib/read-state.test.ts",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "lib/read-state.ts",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "lib/webinars-list.test.ts",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "lib/webinars-list.ts",
+          "status": "added",
+          "additions": 24,
+          "deletions": 0
+        },
+        {
+          "file": "next.config.js",
+          "status": "modified",
+          "additions": 64,
+          "deletions": 64
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 2
+        },
+        {
+          "file": "sql/phase32_member_holdings.sql",
+          "status": "added",
+          "additions": 338,
+          "deletions": 0
+        },
+        {
+          "file": "sql/phase34_research_workbook_versions.sql",
+          "status": "added",
+          "additions": 241,
+          "deletions": 0
+        },
+        {
+          "file": "sql/phase35_consultation.sql",
+          "status": "added",
+          "additions": 179,
+          "deletions": 0
+        },
+        {
+          "file": "sql/phase36_consultation_review_fixes.sql",
+          "status": "added",
+          "additions": 41,
+          "deletions": 0
+        },
+        {
+          "file": "sql/phase37_nonretryable_version_conflicts.sql",
+          "status": "added",
+          "additions": 186,
+          "deletions": 0
+        },
+        {
+          "file": "sql/staging/dev07_preflight.sql",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "sql/test/portfolio_precondition.sql",
+          "status": "added",
+          "additions": 141,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 80,
+      "filesComplete": true
+    },
+    {
+      "number": 173,
+      "sha": "6787005ad7b65acc49a059c2f9035ab16eb306f2",
+      "baseSHA": "15eebc97ca650dde5f2687e36d9d98d193d0d543",
+      "branch": "codex/customer-balance-sheet",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "ترازنامهٔ شخصی مشتری: دارایی، بدهی و خالص ثروت ثبت‌شده",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/173",
+      "files": [
+        {
+          "file": "app/(protected)/dashboard/consultation/page.tsx",
+          "status": "modified",
+          "additions": 21,
+          "deletions": 3
+        },
+        {
+          "file": "app/(protected)/dashboard/holdings/page.tsx",
+          "status": "modified",
+          "additions": 12,
+          "deletions": 6
+        },
+        {
+          "file": "app/(protected)/dashboard/page.tsx",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 2
+        },
+        {
+          "file": "app/api/portfolio/debts/route.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/portfolio/holdings/route.ts",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 143
+        },
+        {
+          "file": "components/consultation/ConsultationWorkbench.tsx",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "components/portfolio/BalanceSheetSummary.tsx",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "components/portfolio/DebtsWorkbench.tsx",
+          "status": "added",
+          "additions": 50,
+          "deletions": 0
+        },
+        {
+          "file": "components/portfolio/HoldingsSummary.tsx",
+          "status": "modified",
+          "additions": 10,
+          "deletions": 9
+        },
+        {
+          "file": "components/portfolio/HoldingsWorkbench.tsx",
+          "status": "modified",
+          "additions": 51,
+          "deletions": 17
+        },
+        {
+          "file": "docs/COMMAND-CENTER.md",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "docs/DECISION-LOG.md",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "docs/MIGRATION-LEDGER.md",
+          "status": "modified",
+          "additions": 5,
+          "deletions": 0
+        },
+        {
+          "file": "docs/PRODUCT-BLUEPRINT.md",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "docs/README.md",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/a-revoked-dom.txt",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/a-v2-dom.txt",
+          "status": "added",
+          "additions": 192,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/a-v2-negative.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/a-v5-dom.txt",
+          "status": "added",
+          "additions": 204,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/a-v5-historical-dom.txt",
+          "status": "added",
+          "additions": 218,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/advisor-granted-latest-dom.txt",
+          "status": "added",
+          "additions": 118,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/advisor-pregrant-dom.txt",
+          "status": "added",
+          "additions": 14,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/advisor-revoked-dom.txt",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/advisor-revoked.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/advisor-v5-historical-dom.txt",
+          "status": "added",
+          "additions": 118,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/app-manifest.json",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/b-foreign-version-dom.txt",
+          "status": "added",
+          "additions": 27,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/b-own-dom.txt",
+          "status": "added",
+          "additions": 109,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/http-statuses.json",
+          "status": "added",
+          "additions": 282,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/human-fixture-v5-full.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/human-fixture-v5.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/migrations.json",
+          "status": "added",
+          "additions": 99,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/rest-results.json",
+          "status": "added",
+          "additions": 244,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/stored-synthetic-records.json",
+          "status": "added",
+          "additions": 380,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/summary-negative.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/acceptance-20261001/validation.json",
+          "status": "added",
+          "additions": 41,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/desktop-summary.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/mobile-session-error.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/balance-sheet/mobile-summary.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/PERSONAL-BALANCE-SHEET.md",
+          "status": "added",
+          "additions": 130,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/PRODUCT-DELIVERY-TASKS.md",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/balanceSheet.integration.test.ts",
+          "status": "added",
+          "additions": 112,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/balanceSheet.test.ts",
+          "status": "added",
+          "additions": 47,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/balanceSheet.ts",
+          "status": "added",
+          "additions": 31,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/contracts.ts",
+          "status": "modified",
+          "additions": 10,
+          "deletions": 1
+        },
+        {
+          "file": "lib/portfolio/financialHttp.test.ts",
+          "status": "added",
+          "additions": 33,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/financialHttp.ts",
+          "status": "added",
+          "additions": 40,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/financialInput.ts",
+          "status": "added",
+          "additions": 54,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/rebalance.test.ts",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 2
+        },
+        {
+          "file": "lib/portfolio/rebalance.ts",
+          "status": "modified",
+          "additions": 20,
+          "deletions": 3
+        },
+        {
+          "file": "lib/portfolio/service.ts",
+          "status": "modified",
+          "additions": 18,
+          "deletions": 12
+        },
+        {
+          "file": "lib/portfolio/valuation.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 3
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 2
+        },
+        {
+          "file": "sql/phase38_personal_balance_sheet.sql",
+          "status": "added",
+          "additions": 149,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 54,
+      "filesComplete": true
+    },
+    {
+      "number": 175,
+      "sha": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+      "baseSHA": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "branch": "codex/next-04-core-20260930",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "NEXT-04: verified seasonal enrollment and scoped membership ledger",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/175",
+      "files": [
+        {
+          "file": ".gitattributes",
+          "status": "added",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": ".github/workflows/seasonal-sandbox.yml",
+          "status": "added",
+          "additions": 30,
+          "deletions": 0
+        },
+        {
+          "file": "app/(protected)/admin/courses/page.tsx",
+          "status": "added",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/cohort-access/commands/route.ts",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/course-operations/route.ts",
+          "status": "added",
+          "additions": 5,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/entitlements/route.ts",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 3
+        },
+        {
+          "file": "app/api/admin/registration-imports/[id]/commit/route.ts",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/registration-imports/preview/route.ts",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/webinars/route.ts",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 8
+        },
+        {
+          "file": "app/api/cohorts/[id]/needs-assessment/route.ts",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/cohorts/[id]/resources/[resourceId]/route.ts",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/cohorts/[id]/resources/route.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/cohorts/[id]/route.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/cohorts/[id]/webinars/[webinarId]/join/route.ts",
+          "status": "added",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/courses/route.ts",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/me/cohorts/route.ts",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/me/module-access/route.ts",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/registrations/claim/route.ts",
+          "status": "added",
+          "additions": 5,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/webinars/list/route.ts",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 2
+        },
+        {
+          "file": "app/qa/next04/fixture.tsx",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "app/qa/next04/page.tsx",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "components/account/loginFlow.test.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1
+        },
+        {
+          "file": "components/seasonal/CourseOperations.tsx",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT-04-RESULT.md",
+          "status": "added",
+          "additions": 127,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/BROWSER-VERIFICATION.md",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/build.log",
+          "status": "added",
+          "additions": 136,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-courses1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-final-table1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-final-table390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-final-top390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-final390.json",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-geometry1440.json",
+          "status": "added",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-granted1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-keyboard390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-reviewed-revoked1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-revoked390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/qa-touch-table390.json",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-evidence/tests.log",
+          "status": "added",
+          "additions": 46,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-fixtures.csv",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-04-ui-fixtures.json",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "lib/access-standing.test.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "lib/access.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 1
+        },
+        {
+          "file": "lib/entitlement-filter.ts",
+          "status": "added",
+          "additions": 37,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/contracts.ts",
+          "status": "added",
+          "additions": 25,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/events.ts",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/http.ts",
+          "status": "added",
+          "additions": 57,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/import.ts",
+          "status": "added",
+          "additions": 37,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/seasonal.integration.test.ts",
+          "status": "added",
+          "additions": 153,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/seasonal.test.ts",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/server.ts",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/time.ts",
+          "status": "added",
+          "additions": 45,
+          "deletions": 0
+        },
+        {
+          "file": "middleware.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1
+        },
+        {
+          "file": "scripts/validate-sql-grammar.py",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "scripts/validate-sql.mjs",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "supabase/migrations/20260930182629_seasonal_course_membership.sql",
+          "status": "added",
+          "additions": 462,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 56,
+      "filesComplete": true
+    },
+    {
+      "number": 176,
+      "sha": "d69763563ef695b2d16ea2e52be4a4452b0811dc",
+      "baseSHA": "f6cb560478d51d48dcee2c9b2801eb047f5c7214",
+      "branch": "codex/next-08-desk-20260930",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "NEXT-08: daily research desk and audience-scoped publication queue",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/176",
+      "files": [
+        {
+          "file": "app/(protected)/admin/leads/page.tsx",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "app/(protected)/admin/publications/page.tsx",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "app/(protected)/admin/radar/page.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "app/(protected)/admin/research/page.tsx",
+          "status": "modified",
+          "additions": 8,
+          "deletions": 1
+        },
+        {
+          "file": "app/api/admin/intelligence/course-needs/route.ts",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/intelligence/publications/route.ts",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/intelligence/requests/route.ts",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/publications/[id]/route.ts",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        },
+        {
+          "file": "app/publications/[id]/page.tsx",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "app/qa/next08/page.tsx",
+          "status": "added",
+          "additions": 5,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/AdminMarketRadar.tsx",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/AdminShell.tsx",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/ArashCommandDesk.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/DailyPublicationLane.tsx",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/PublicationRead.tsx",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/PublicationScenario.tsx",
+          "status": "added",
+          "additions": 20,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/PublicationWorkbench.tsx",
+          "status": "added",
+          "additions": 107,
+          "deletions": 0
+        },
+        {
+          "file": "components/admin/ResearchWorkbook.tsx",
+          "status": "modified",
+          "additions": 8,
+          "deletions": 2
+        },
+        {
+          "file": "components/admin/ServiceRequests.tsx",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT-08-RESULT.md",
+          "status": "added",
+          "additions": 129,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/BROWSER-VERIFICATION.md",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/build.txt",
+          "status": "added",
+          "additions": 129,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/core-registration-tests.txt",
+          "status": "added",
+          "additions": 1322,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/production-boundary.txt",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/publication-tests.txt",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-empty-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-error-1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-error-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-geometry-1440.json",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-geometry-390.json",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-initial-1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-keyboard-1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-published-1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-published-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-ready-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-ready-private-1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-saved-1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-timed-scenario.json",
+          "status": "added",
+          "additions": 18,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-timer-start.txt",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-withdrawn-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/qa-withdrawn-dom.json",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/reused-tests.txt",
+          "status": "added",
+          "additions": 43,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next-08-evidence/validation.json",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-fixture.ts",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-http.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-server.ts",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication.integration.test.ts",
+          "status": "added",
+          "additions": 92,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication.test.ts",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication.ts",
+          "status": "added",
+          "additions": 68,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "supabase/migrations/20260930182918_research_publication_queue.sql",
+          "status": "added",
+          "additions": 179,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 51,
+      "filesComplete": true
+    },
+    {
+      "number": 179,
+      "sha": "ca27b94a44f9a37785df059574a754e170880aac",
+      "baseSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "branch": "codex/followup-owner-login-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "fix(auth): bound server login checks and preserve redirect cookies",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/179",
+      "files": [
+        {
+          "file": "app/(auth)/login/page.tsx",
+          "status": "modified",
+          "additions": 13,
+          "deletions": 17
+        },
+        {
+          "file": "components/account/loginFlow.test.ts",
+          "status": "modified",
+          "additions": 32,
+          "deletions": 2
+        },
+        {
+          "file": "docs/ops/seasonal-program/FOLLOWUP-01-RESULT.md",
+          "status": "added",
+          "additions": 81,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/cookie-regression.json",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/liara-status.json",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/owner-retry-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/owner-sandbox.json",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/owner-status.txt",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/preview-destinations.json",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/production-incident.json",
+          "status": "added",
+          "additions": 120,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/production-runtime.json",
+          "status": "added",
+          "additions": 20,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/public-probe.json",
+          "status": "added",
+          "additions": 58,
+          "deletions": 0
+        },
+        {
+          "file": "middleware.ts",
+          "status": "modified",
+          "additions": 33,
+          "deletions": 4
+        },
+        {
+          "file": "scripts/testing/auth-owner-sandbox.mjs",
+          "status": "added",
+          "additions": 70,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 14,
+      "filesComplete": true
+    },
+    {
+      "number": 180,
+      "sha": "bb4f2f3e53859bbecb0ec942975ffb06fd2d2828",
+      "baseSHA": "7cb030c140ce143f03c549125c5e647fea22f44c",
+      "branch": "codex/followup-auth-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "feat(auth): add isolated mobile OTP and transactional email infrastructure",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/180",
+      "files": [
+        {
+          "file": ".github/workflows/ci.yml",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "app/(auth)/account/mobile/page.tsx",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        },
+        {
+          "file": "app/(auth)/forgot-password/page.tsx",
+          "status": "modified",
+          "additions": 5,
+          "deletions": 16
+        },
+        {
+          "file": "app/(auth)/login/mobile/page.tsx",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "app/(auth)/login/page.tsx",
+          "status": "modified",
+          "additions": 13,
+          "deletions": 16
+        },
+        {
+          "file": "app/(auth)/reset-password/page.tsx",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 13
+        },
+        {
+          "file": "app/(protected)/admin/health/page.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/admin/auth-health/route.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/auth/email/route.ts",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/auth/identity/route.ts",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/auth/mobile/route.ts",
+          "status": "added",
+          "additions": 48,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/auth/session/route.ts",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/auth/status/route.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "app/auth/email-link/page.tsx",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "components/account/AuthChannelsStatus.tsx",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "components/account/MobileAccess.tsx",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "components/account/PrivateIdentityForm.tsx",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "components/account/loginFlow.test.ts",
+          "status": "modified",
+          "additions": 29,
+          "deletions": 1
+        },
+        {
+          "file": "components/account/returnPath.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "docs/ops/seasonal-program/AUTH-API-CONTRACT-v1.md",
+          "status": "added",
+          "additions": 68,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/FOLLOWUP-07-RESULT.md",
+          "status": "added",
+          "additions": 88,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/browser.json",
+          "status": "added",
+          "additions": 18,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/cookie-regression.json",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/email-browser.json",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/email-recovery-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/email-sandbox-before-pkce-fix.json",
+          "status": "added",
+          "additions": 32,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/email-sandbox.json",
+          "status": "added",
+          "additions": 40,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/liara-status.json",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/mobile-invalid-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/mobile-login-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/native-rate-limit-fixed.json",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/native-rate-limit.json",
+          "status": "added",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/owner-retry-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/owner-status.txt",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/preview-destinations.json",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/private-profile-empty-1440.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/private-profile-empty-390.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/production-incident.json",
+          "status": "added",
+          "additions": 120,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/production-runtime.json",
+          "status": "added",
+          "additions": 20,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/public-probe.json",
+          "status": "added",
+          "additions": 58,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/sandbox-boundaries.json",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-auth-evidence/sandbox-check.json",
+          "status": "added",
+          "additions": 51,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/email-health.ts",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/email.test.ts",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/email.ts",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/identity-crypto.ts",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/mobile-server.ts",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/mobile.test.ts",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/mobile.ts",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "lib/supabase/admin.ts",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "middleware.ts",
+          "status": "modified",
+          "additions": 31,
+          "deletions": 4
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "scripts/testing/auth-browser-check.mjs",
+          "status": "added",
+          "additions": 40,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-cookie-regression.mjs",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-email-browser-check.mjs",
+          "status": "added",
+          "additions": 30,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-email-check.mjs",
+          "status": "added",
+          "additions": 71,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-incident-window.py",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-live-status.py",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-local-smtp.mjs",
+          "status": "added",
+          "additions": 40,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-native-rate-check.mjs",
+          "status": "added",
+          "additions": 41,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-owner-status.sql",
+          "status": "added",
+          "additions": 13,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-public-probe.mjs",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-sandbox-boundaries.mjs",
+          "status": "added",
+          "additions": 50,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-sandbox-check.mjs",
+          "status": "added",
+          "additions": 46,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/auth-sandbox.mjs",
+          "status": "added",
+          "additions": 72,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-email/README.md",
+          "status": "added",
+          "additions": 52,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-email/confirmation.html",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-email/recovery.html",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-sms/README.md",
+          "status": "added",
+          "additions": 50,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-sms/core.mjs",
+          "status": "added",
+          "additions": 62,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-sms/core.test.mjs",
+          "status": "added",
+          "additions": 60,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-sms/ledger.mjs",
+          "status": "added",
+          "additions": 61,
+          "deletions": 0
+        },
+        {
+          "file": "services/auth-sms/server.mjs",
+          "status": "added",
+          "additions": 48,
+          "deletions": 0
+        },
+        {
+          "file": "supabase/migrations/20261001083215_auth_private_identity_versions.sql",
+          "status": "added",
+          "additions": 51,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 74,
+      "filesComplete": true
+    },
+    {
+      "number": 181,
+      "sha": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+      "baseSHA": "1d409325f01b2b8f247dffb411b1b10f650b88cf",
+      "branch": "codex/next-06-member-home-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "feat(member): scoped course home and resumable needs assessment",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/181",
+      "files": [
+        {
+          "file": "app/(protected)/dashboard/page.tsx",
+          "status": "modified",
+          "additions": 26,
+          "deletions": 180
+        },
+        {
+          "file": "app/(protected)/dashboard/portfolio/page.tsx",
+          "status": "added",
+          "additions": 188,
+          "deletions": 0
+        },
+        {
+          "file": "app/member-home-preview/page.tsx",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "components/member/AuthorizedLink.tsx",
+          "status": "added",
+          "additions": 33,
+          "deletions": 0
+        },
+        {
+          "file": "components/member/MemberHome.tsx",
+          "status": "added",
+          "additions": 80,
+          "deletions": 0
+        },
+        {
+          "file": "components/member/NeedsAssessmentPanel.tsx",
+          "status": "added",
+          "additions": 86,
+          "deletions": 0
+        },
+        {
+          "file": "components/member/ProfileStatus.tsx",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/build-final.txt",
+          "status": "added",
+          "additions": 150,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/checks.json",
+          "status": "added",
+          "additions": 30,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/fixture-conflict-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/fixture-error-desktop.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/fixture-expired-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/fixture-overlap-desktop.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/fixture-overlap-desktop.txt",
+          "status": "added",
+          "additions": 131,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/fixture-overlap-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-conflict.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-environment.json",
+          "status": "added",
+          "additions": 179,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-expired-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-expired.txt",
+          "status": "added",
+          "additions": 169,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-final-read.json",
+          "status": "added",
+          "additions": 30,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-home-desktop.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-home-desktop.txt",
+          "status": "added",
+          "additions": 188,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-home-final-desktop.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-home-final.txt",
+          "status": "added",
+          "additions": 187,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-http.json",
+          "status": "added",
+          "additions": 102,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-member-B-foreign-cohort.txt",
+          "status": "added",
+          "additions": 103,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-member-B-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-member-B.txt",
+          "status": "added",
+          "additions": 168,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-portfolio-retained.txt",
+          "status": "added",
+          "additions": 172,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-revocation.json",
+          "status": "added",
+          "additions": 41,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-revoked-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-home/real-revoked.txt",
+          "status": "added",
+          "additions": 173,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT-06-RESULT.md",
+          "status": "added",
+          "additions": 85,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/draft.ts",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/fixture.ts",
+          "status": "added",
+          "additions": 48,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/home.test.ts",
+          "status": "added",
+          "additions": 82,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/home.ts",
+          "status": "added",
+          "additions": 54,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/http.ts",
+          "status": "added",
+          "additions": 20,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/profile.ts",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        }
+      ],
+      "filesCount": 40,
+      "filesComplete": true
+    },
+    {
+      "number": 184,
+      "sha": "51ad615b116c7b1283404a60ee1d2081c11c96ca",
+      "baseSHA": "bb7c2f9f89ea48929b6fd13a9dc9b16d58efa8a6",
+      "branch": "codex/next04-resource-contract-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "fix(courses): align resource list and download with existing module grants",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/184",
+      "files": [
+        {
+          "file": "app/api/cohorts/[id]/resources/[resourceId]/route.ts",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 2
+        },
+        {
+          "file": "app/api/cohorts/[id]/resources/route.ts",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 3
+        },
+        {
+          "file": "app/api/me/cohorts/route.ts",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT04-RESOURCE-CONTRACT-RESULT.md",
+          "status": "added",
+          "additions": 56,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/resource-contract-evidence/real-sdk-before-fault-harness-fix.json",
+          "status": "added",
+          "additions": 68,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/resource-contract-evidence/real-sdk.json",
+          "status": "added",
+          "additions": 88,
+          "deletions": 0
+        },
+        {
+          "file": "lib/seasonal/resource-access.ts",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "scripts/testing/seasonal-resource-handler.mjs",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/seasonal-resource-handler.test.mjs",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/testing/seasonal-resource-real-check.mjs",
+          "status": "added",
+          "additions": 40,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 11,
+      "filesComplete": true
+    },
+    {
+      "number": 185,
+      "sha": "a54b161b8df88f83e8624273b1c4bb2ffd10f787",
+      "baseSHA": "a95aa0c1b45e91a8e23ca89014cb3b13d41f2201",
+      "branch": "codex/next06-publication-feed-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "feat(member): canonical cohort publication feed and version read state",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/185",
+      "files": [
+        {
+          "file": ".github/workflows/ci.yml",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "app/api/cohorts/[id]/publications/route.ts",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/publications/[id]/read/route.ts",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/publications/[id]/route.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 1
+        },
+        {
+          "file": "app/publications/[id]/page.tsx",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 1
+        },
+        {
+          "file": "components/admin/PublicationRead.tsx",
+          "status": "modified",
+          "additions": 29,
+          "deletions": 5
+        },
+        {
+          "file": "components/member/MemberHome.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "components/member/PublicationFeed.tsx",
+          "status": "added",
+          "additions": 37,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/account-B.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/advisors.json",
+          "status": "added",
+          "additions": 1937,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/browser-B.json",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/code-ci-jobs.json",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/feed-tests.txt",
+          "status": "added",
+          "additions": 35,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-baseline.json",
+          "status": "added",
+          "additions": 139,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-outage.json",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-revoke.json",
+          "status": "added",
+          "additions": 31,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-version.json",
+          "status": "added",
+          "additions": 31,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/local-checks.json",
+          "status": "added",
+          "additions": 24,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/migrations.json",
+          "status": "added",
+          "additions": 129,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/mobile-page-two.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/new-version-unread.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/page-two.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/read-receipt.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/revoked-feed.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/runtime-manifest.json",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/service-unavailable.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT-06-FEED-RESULT.md",
+          "status": "added",
+          "additions": 70,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed-http.ts",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed.integration.test.ts",
+          "status": "added",
+          "additions": 107,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed.test.ts",
+          "status": "added",
+          "additions": 51,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed.ts",
+          "status": "added",
+          "additions": 49,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-server.ts",
+          "status": "modified",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/fixture.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/publication.ts",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 5,
+          "deletions": 3
+        },
+        {
+          "file": "supabase/migrations/20261001121858_member_publication_feed_reads.sql",
+          "status": "added",
+          "additions": 88,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 36,
+      "filesComplete": true
+    },
+    {
+      "number": 189,
+      "sha": "804b6ae4f231a0c7fd2bc6e01121843fafc4e345",
+      "baseSHA": "bb4f2f3e53859bbecb0ec942975ffb06fd2d2828",
+      "branch": "codex/next09-telegram-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "NEXT09: verified Telegram connection and optional publication notifications",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/189",
+      "files": [
+        {
+          "file": "app/account/telegram/page.tsx",
+          "status": "added",
+          "additions": 5,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/leads/webhook/route.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/notifications/route.ts",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/notifications/worker/route.ts",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/telegram/connection-proof/route.ts",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/telegram/webhook/route.ts",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "app/notifications/page.tsx",
+          "status": "added",
+          "additions": 5,
+          "deletions": 0
+        },
+        {
+          "file": "app/qa/next09/page.tsx",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "components/dashboard/AccessCards.tsx",
+          "status": "modified",
+          "additions": 5,
+          "deletions": 100
+        },
+        {
+          "file": "components/notifications/NotificationCenter.tsx",
+          "status": "added",
+          "additions": 50,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT-09-RESULT.md",
+          "status": "added",
+          "additions": 53,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/COORDINATOR-INTEGRATION.md",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/OWNERSHIP-INTEGRATION.md",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/PR-CHECKPOINT.json",
+          "status": "added",
+          "additions": 75,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/README.md",
+          "status": "added",
+          "additions": 86,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/browser-results.json",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/build.txt",
+          "status": "added",
+          "additions": 159,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/ci-regression-tests.txt",
+          "status": "added",
+          "additions": 45,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/core-tests.txt",
+          "status": "added",
+          "additions": 1345,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/lint.txt",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/postgres-tests.txt",
+          "status": "added",
+          "additions": 70,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/secret-scan.txt",
+          "status": "added",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/sql-grammar.txt",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/sql-validation.txt",
+          "status": "added",
+          "additions": 74,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/transport-tests.txt",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/typecheck.txt",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/ui-desktop.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/ui-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "lib/leads/webhook.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 1
+        },
+        {
+          "file": "lib/notifications/bridge.ts",
+          "status": "added",
+          "additions": 14,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/http.ts",
+          "status": "added",
+          "additions": 28,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/notifications.integration.test.ts",
+          "status": "added",
+          "additions": 101,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/notifications.test.ts",
+          "status": "added",
+          "additions": 14,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/webhook.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/worker.ts",
+          "status": "added",
+          "additions": 29,
+          "deletions": 0
+        },
+        {
+          "file": "lib/telegram/private-chat.test.ts",
+          "status": "modified",
+          "additions": 12,
+          "deletions": 2
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "scripts/qa-next09-browser.cjs",
+          "status": "added",
+          "additions": 42,
+          "deletions": 0
+        },
+        {
+          "file": "supabase/migrations/20261001125428_next09_notifications.sql",
+          "status": "added",
+          "additions": 225,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 39,
+      "filesComplete": true
+    },
+    {
+      "number": 190,
+      "sha": "a92e184a018d7a0da8fffaa9bb981e57a5489769",
+      "baseSHA": "bb4f2f3e53859bbecb0ec942975ffb06fd2d2828",
+      "branch": "codex/auth-outage-classification-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "Auth180: preserve outage responses for identity and session status",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/190",
+      "files": [
+        {
+          "file": "app/api/auth/identity/route.ts",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 2
+        },
+        {
+          "file": "app/api/auth/status/route.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 1
+        },
+        {
+          "file": "docs/ops/seasonal-program/FOLLOWUP-07-OUTAGE-PATCH-RESULT.md",
+          "status": "added",
+          "additions": 45,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/FOLLOWUP-07-RESULT.md",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/auth-outage-patch-evidence/green.json",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/auth-outage-patch-evidence/green.txt",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/auth-outage-patch-evidence/provenance.json",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/auth-outage-patch-evidence/red.json",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/auth-outage-patch-evidence/red.txt",
+          "status": "added",
+          "additions": 69,
+          "deletions": 0
+        },
+        {
+          "file": "lib/auth/session-error.ts",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "scripts/testing/auth-session-handler.test.mjs",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 12,
+      "filesComplete": true
+    },
+    {
+      "number": 191,
+      "sha": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "baseSHA": "be60bf54d64d60cc1c3c5d438034439ce12b9f15",
+      "branch": "codex/followup06-feed-market-20261001",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "FOLLOWUP06: isolated PR185 feed and PR187 market acceptance on fixed PR186",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/191",
+      "files": [
+        {
+          "file": ".github/workflows/ci.yml",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "app/api/cohorts/[id]/publications/route.ts",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/data/analytics/route.ts",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/market/route.ts",
+          "status": "modified",
+          "additions": 5,
+          "deletions": 5
+        },
+        {
+          "file": "app/api/publications/[id]/read/route.ts",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "app/api/publications/[id]/route.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 1
+        },
+        {
+          "file": "app/data/page.tsx",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 12
+        },
+        {
+          "file": "app/market/page.tsx",
+          "status": "modified",
+          "additions": 36,
+          "deletions": 20
+        },
+        {
+          "file": "app/publications/[id]/page.tsx",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 1
+        },
+        {
+          "file": "components/admin/PublicationRead.tsx",
+          "status": "modified",
+          "additions": 29,
+          "deletions": 5
+        },
+        {
+          "file": "components/data/DataExplorer.tsx",
+          "status": "modified",
+          "additions": 19,
+          "deletions": 12
+        },
+        {
+          "file": "components/data/ScreenerPanel.tsx",
+          "status": "modified",
+          "additions": 7,
+          "deletions": 4
+        },
+        {
+          "file": "components/data/useAnalytics.ts",
+          "status": "added",
+          "additions": 42,
+          "deletions": 0
+        },
+        {
+          "file": "components/landing/LiveMarket.tsx",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "components/market/MarketTicker.tsx",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 3
+        },
+        {
+          "file": "components/member/MemberHome.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "components/member/PublicationFeed.tsx",
+          "status": "added",
+          "additions": 37,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/account-B.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/advisors.json",
+          "status": "added",
+          "additions": 1937,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/browser-B.json",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/code-ci-jobs.json",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/feed-tests.txt",
+          "status": "added",
+          "additions": 35,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-baseline.json",
+          "status": "added",
+          "additions": 139,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-outage.json",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-revoke.json",
+          "status": "added",
+          "additions": 31,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/http-version.json",
+          "status": "added",
+          "additions": 31,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/local-checks.json",
+          "status": "added",
+          "additions": 24,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/migrations.json",
+          "status": "added",
+          "additions": 129,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/mobile-page-two.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/new-version-unread.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/page-two.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/read-receipt.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/revoked-feed.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/runtime-manifest.json",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "docs/assets/member-feed/service-unavailable.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/FOLLOWUP-03-RESULT.md",
+          "status": "added",
+          "additions": 69,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/FOLLOWUP-06-RESULT.md",
+          "status": "modified",
+          "additions": 48,
+          "deletions": 1
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT-06-FEED-RESULT.md",
+          "status": "added",
+          "additions": 70,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/MIGRATION-LEDGER.md",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/README.md",
+          "status": "added",
+          "additions": 13,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/app-manifest.json",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/app.mjs",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/assessment.json",
+          "status": "added",
+          "additions": 1124,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/auth-regression.txt",
+          "status": "added",
+          "additions": 16,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/auth190-inventory.json",
+          "status": "added",
+          "additions": 52,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/cold-process-restart.json",
+          "status": "added",
+          "additions": 15,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/core.txt",
+          "status": "added",
+          "additions": 1393,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/environment-verification.json",
+          "status": "added",
+          "additions": 161,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/environment.json",
+          "status": "added",
+          "additions": 115,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/fixtures.json",
+          "status": "added",
+          "additions": 51,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/fixtures.mjs",
+          "status": "added",
+          "additions": 28,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/gateway.mjs",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-cold-finalize.mjs",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-cold-preparation.json",
+          "status": "added",
+          "additions": 27,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-cold-prepare.mjs",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-core.mjs",
+          "status": "added",
+          "additions": 48,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-feed.json",
+          "status": "added",
+          "additions": 558,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-feed.mjs",
+          "status": "added",
+          "additions": 50,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-finalize.mjs",
+          "status": "added",
+          "additions": 35,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-identity-ui.json",
+          "status": "added",
+          "additions": 103,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-identity-ui.mjs",
+          "status": "added",
+          "additions": 14,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-integrity.json",
+          "status": "added",
+          "additions": 266,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-integrity.mjs",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-market-cold-attempt-01.json",
+          "status": "added",
+          "additions": 80,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-market-cold.json",
+          "status": "added",
+          "additions": 93,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-market-cold.mjs",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-market.json",
+          "status": "added",
+          "additions": 451,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-market.mjs",
+          "status": "added",
+          "additions": 42,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent-plan.md",
+          "status": "added",
+          "additions": 28,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent.json",
+          "status": "added",
+          "additions": 1155,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/independent.md",
+          "status": "added",
+          "additions": 84,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/lint.txt",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/local-checks.json",
+          "status": "added",
+          "additions": 46,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/market-fixture.mjs",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/operational-snapshot.json",
+          "status": "added",
+          "additions": 129,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/personal-fixtures.json",
+          "status": "added",
+          "additions": 87,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/prechange-inventory.json",
+          "status": "added",
+          "additions": 211,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/privacy-check.json",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/provenance.json",
+          "status": "added",
+          "additions": 59,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/publication-fixtures.json",
+          "status": "added",
+          "additions": 197,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/resource-guard.cjs",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/seed-personal.mts",
+          "status": "added",
+          "additions": 14,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/seed-publications.mts",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/setup.mjs",
+          "status": "added",
+          "additions": 51,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup-06-feed-market-evidence/typecheck.txt",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/BUDGET.md",
+          "status": "added",
+          "additions": 6,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/README.md",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/after.json",
+          "status": "added",
+          "additions": 6878,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/baseline.json",
+          "status": "added",
+          "additions": 8238,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/bench-sample.mjs",
+          "status": "added",
+          "additions": 45,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/bench.mjs",
+          "status": "added",
+          "additions": 12,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/browser-controls.json",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/browser-result.json",
+          "status": "added",
+          "additions": 295,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/build.log",
+          "status": "added",
+          "additions": 125,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/calc.log",
+          "status": "added",
+          "additions": 127,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/clock.txt",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/core.log",
+          "status": "added",
+          "additions": 1354,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/data-desktop.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/data-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/data-stale-mobile.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/http-cold-db-error.json",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/http-fixture.mjs",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/http-result.json",
+          "status": "added",
+          "additions": 113,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/lint.log",
+          "status": "added",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/network-guard.cjs",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/secrets.log",
+          "status": "added",
+          "additions": 4,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/sql.log",
+          "status": "added",
+          "additions": 70,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/verify-browser-controls.mjs",
+          "status": "added",
+          "additions": 9,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/verify-browser.mjs",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/verify-cold.mjs",
+          "status": "added",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup03-evidence/verify-http.mjs",
+          "status": "added",
+          "additions": 23,
+          "deletions": 0
+        },
+        {
+          "file": "lib/core/avgVolume.ts",
+          "status": "modified",
+          "additions": 14,
+          "deletions": 71
+        },
+        {
+          "file": "lib/core/fundamentalData.ts",
+          "status": "modified",
+          "additions": 10,
+          "deletions": 4
+        },
+        {
+          "file": "lib/data-analytics.test.ts",
+          "status": "added",
+          "additions": 50,
+          "deletions": 0
+        },
+        {
+          "file": "lib/data-analytics.ts",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "lib/deadline.test.ts",
+          "status": "added",
+          "additions": 41,
+          "deletions": 0
+        },
+        {
+          "file": "lib/deadline.ts",
+          "status": "added",
+          "additions": 25,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed-http.ts",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed.integration.test.ts",
+          "status": "added",
+          "additions": 107,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed.test.ts",
+          "status": "added",
+          "additions": 51,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed.ts",
+          "status": "added",
+          "additions": 49,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-server.ts",
+          "status": "modified",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "lib/market-bounded.test.ts",
+          "status": "added",
+          "additions": 52,
+          "deletions": 0
+        },
+        {
+          "file": "lib/market-bounded.ts",
+          "status": "added",
+          "additions": 28,
+          "deletions": 0
+        },
+        {
+          "file": "lib/market-ir.ts",
+          "status": "modified",
+          "additions": 31,
+          "deletions": 13
+        },
+        {
+          "file": "lib/market.ts",
+          "status": "modified",
+          "additions": 14,
+          "deletions": 7
+        },
+        {
+          "file": "lib/member/fixture.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "lib/member/publication.ts",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "lib/supabase/paged-read.ts",
+          "status": "modified",
+          "additions": 17,
+          "deletions": 10
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 5,
+          "deletions": 3
+        },
+        {
+          "file": "supabase/migrations/20261001121858_member_publication_feed_reads.sql",
+          "status": "added",
+          "additions": 88,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 131,
+      "filesComplete": true
+    },
+    {
+      "number": 193,
+      "sha": "712ff1c2d9ff95419c0cd1fab91a91901b509835",
+      "baseSHA": "804b6ae4f231a0c7fd2bc6e01121843fafc4e345",
+      "branch": "codex/next09-contract-audit-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "NEXT09: preserve publication cohort links and classify session errors",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/193",
+      "files": [
+        {
+          "file": "app/account/telegram/page.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "app/api/notifications/route.ts",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "app/notifications/page.tsx",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/CHANNEL-ADAPTER.md",
+          "status": "added",
+          "additions": 27,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/CONTRACT-AUDIT.md",
+          "status": "added",
+          "additions": 59,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/OWNER-ACCEPTANCE.md",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/POLICY-REJECTION.json",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/RESULT.md",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/build.txt",
+          "status": "added",
+          "additions": 159,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/db-first-fixture-failure.txt",
+          "status": "added",
+          "additions": 112,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/db-revoke-fixture-failure.txt",
+          "status": "added",
+          "additions": 70,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/db.txt",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/lint.txt",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/typecheck.txt",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/next09/continuation-20261002/unit.txt",
+          "status": "added",
+          "additions": 45,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/bridge.ts",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "lib/notifications/channel-plan.ts",
+          "status": "added",
+          "additions": 21,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/http.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 2
+        },
+        {
+          "file": "lib/notifications/scope-audit.integration.test.ts",
+          "status": "added",
+          "additions": 71,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/scope-audit.test.ts",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "lib/notifications/session-status.ts",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 2,
+          "deletions": 1
+        },
+        {
+          "file": "supabase/migrations/20261001221342_next09_scoped_notification_links.sql",
+          "status": "added",
+          "additions": 53,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 23,
+      "filesComplete": true
+    },
+    {
+      "number": 195,
+      "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "baseSHA": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+      "branch": "codex/n10-null-unit-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "fix: retain missing N10 gross values and reject conflicting amount units",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/195",
+      "files": [
+        {
+          "file": "docs/ops/N10-NULL-UNIT-RESULT.md",
+          "status": "added",
+          "additions": 62,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/n10-null-unit-evidence/summary.json",
+          "status": "added",
+          "additions": 253,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/n10-null-unit-evidence/synthetic-green.txt",
+          "status": "added",
+          "additions": 56,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/n10-null-unit-evidence/synthetic-red.txt",
+          "status": "added",
+          "additions": 211,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/NEXT-06-FEED-CLOCK-FIX-20261002.md",
+          "status": "added",
+          "additions": 35,
+          "deletions": 0
+        },
+        {
+          "file": "lib/core/engine.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 2
+        },
+        {
+          "file": "lib/core/quarterly.ts",
+          "status": "modified",
+          "additions": 4,
+          "deletions": 4
+        },
+        {
+          "file": "lib/fundamental/calc.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 3
+        },
+        {
+          "file": "lib/fundamental/types.ts",
+          "status": "modified",
+          "additions": 3,
+          "deletions": 1
+        },
+        {
+          "file": "lib/intelligence/publication-feed.integration.test.ts",
+          "status": "modified",
+          "additions": 12,
+          "deletions": 2
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "relay/codal-contract.test.mjs",
+          "status": "added",
+          "additions": 68,
+          "deletions": 0
+        },
+        {
+          "file": "relay/codal.mjs",
+          "status": "modified",
+          "additions": 31,
+          "deletions": 4
+        }
+      ],
+      "filesCount": 13,
+      "filesComplete": true
+    },
+    {
+      "number": 197,
+      "sha": "e83c3825ac2cace5524635d49e562f7265ccf04e",
+      "baseSHA": "a1bf054b07fd982c9471484204ad3a8bca02093e",
+      "branch": "codex/next06-feed-clock-fixture-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "test(member): remove calendar deadline from feed keyset fixture",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/197",
+      "files": [
+        {
+          "file": "docs/ops/seasonal-program/NEXT-06-FEED-CLOCK-FIX-20261002.md",
+          "status": "added",
+          "additions": 38,
+          "deletions": 0
+        },
+        {
+          "file": "lib/intelligence/publication-feed.integration.test.ts",
+          "status": "modified",
+          "additions": 12,
+          "deletions": 2
+        }
+      ],
+      "filesCount": 2,
+      "filesComplete": true
+    },
+    {
+      "number": 198,
+      "sha": "9380772cb7251bcdeeed0a031d38dda4d29fc5ce",
+      "baseSHA": "4ce06b3ffbd6b50125021faeb454fbf11c73b900",
+      "branch": "codex/followup04-coverage-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "FOLLOWUP04: offline history/NAV coverage planner and resumable dry run",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/198",
+      "files": [
+        {
+          "file": "docs/ops/seasonal-program/FOLLOWUP-04-RESULT.md",
+          "status": "added",
+          "additions": 81,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/inputs/observed-metadata.json",
+          "status": "added",
+          "additions": 100,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/inputs/synthetic-metadata.json",
+          "status": "added",
+          "additions": 122,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/inputs/synthetic-responses.json",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/observed-plan/nav-classification.csv",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/observed-plan/plan.json",
+          "status": "added",
+          "additions": 215,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/observed-plan/symbol-date-matrix.csv",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-plan/checkpoint.json",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-plan/nav-classification.csv",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-plan/plan.json",
+          "status": "added",
+          "additions": 161,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-plan/simulated-shared-ledger.json",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-plan/simulation.json",
+          "status": "added",
+          "additions": 113,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-plan/symbol-date-matrix.csv",
+          "status": "added",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-replay/checkpoint.json",
+          "status": "added",
+          "additions": 36,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-replay/nav-classification.csv",
+          "status": "added",
+          "additions": 3,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-replay/plan.json",
+          "status": "added",
+          "additions": 161,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-replay/simulated-shared-ledger.json",
+          "status": "added",
+          "additions": 10,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-replay/simulation.json",
+          "status": "added",
+          "additions": 113,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/synthetic-replay/symbol-date-matrix.csv",
+          "status": "added",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/validation/contracts.txt",
+          "status": "added",
+          "additions": 24,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/followup04/validation/summary.json",
+          "status": "added",
+          "additions": 93,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        },
+        {
+          "file": "relay/coverage-plan.test.mjs",
+          "status": "added",
+          "additions": 157,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/coverage-metadata-export.sql",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/coverage-plan-core.mjs",
+          "status": "added",
+          "additions": 244,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/coverage-plan.mjs",
+          "status": "added",
+          "additions": 53,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/coverage-plan.test.mjs",
+          "status": "added",
+          "additions": 32,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 27,
+      "filesComplete": true
+    },
+    {
+      "number": 199,
+      "sha": "e1c46e3e0a7d9fb416d7c58acba4d55d569e22de",
+      "baseSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+      "branch": "codex/frontend-existing-refinement-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "fix: refine the existing public frontend and request error states",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/199",
+      "files": [
+        {
+          "file": "app/webinars/page.tsx",
+          "status": "modified",
+          "additions": 44,
+          "deletions": 22
+        },
+        {
+          "file": "components/landing/Hero.tsx",
+          "status": "modified",
+          "additions": 6,
+          "deletions": 23
+        },
+        {
+          "file": "components/landing/LiveMarket.tsx",
+          "status": "modified",
+          "additions": 12,
+          "deletions": 4
+        },
+        {
+          "file": "components/landing/Method.tsx",
+          "status": "modified",
+          "additions": 8,
+          "deletions": 8
+        },
+        {
+          "file": "components/landing/TwoProducts.tsx",
+          "status": "modified",
+          "additions": 9,
+          "deletions": 9
+        },
+        {
+          "file": "components/landing/WaitlistForm.tsx",
+          "status": "modified",
+          "additions": 14,
+          "deletions": 8
+        },
+        {
+          "file": "components/layout/Navbar.tsx",
+          "status": "modified",
+          "additions": 13,
+          "deletions": 5
+        },
+        {
+          "file": "docs/ops/seasonal-program/FRONTEND-EXISTING-RESULT.md",
+          "status": "added",
+          "additions": 83,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/frontend-existing-evidence/CHECKS.json",
+          "status": "added",
+          "additions": 20,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/frontend-existing-evidence/before-home-1440-historical.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/frontend-existing-evidence/before-home-390-historical.png",
+          "status": "added",
+          "additions": 0,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/frontend-existing-evidence/before-source.json",
+          "status": "added",
+          "additions": 48,
+          "deletions": 0
+        },
+        {
+          "file": "lib/public-claims.test.ts",
+          "status": "modified",
+          "additions": 9,
+          "deletions": 6
+        },
+        {
+          "file": "scripts/testing/frontend-existing.test.mjs",
+          "status": "added",
+          "additions": 129,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 14,
+      "filesComplete": true
+    },
+    {
+      "number": 200,
+      "sha": "c25759dac27bda6685c76974a639fde31a9ee129",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "branch": "codex/p04-canonical-contract-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "P04: canonical holdings reuse, import mapping and acceptance gates",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/200",
+      "files": [
+        {
+          "file": "docs/ops/seasonal-program/p04/CANONICAL-CONTRACT.md",
+          "status": "added",
+          "additions": 47,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/p04/IMPORT-MAPPING.md",
+          "status": "added",
+          "additions": 28,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/p04/RESULT.md",
+          "status": "added",
+          "additions": 55,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/p04/evidence.json",
+          "status": "added",
+          "additions": 203,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 4,
+      "filesComplete": true
+    },
+    {
+      "number": 202,
+      "sha": "e4419f96b52dfdb9f94e70b6760fdf1ff62ac63a",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "branch": "codex/p08-assistant-contract-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "P08: offline assistant contracts, privacy rehearsal and 60-question evaluation",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/202",
+      "files": [
+        {
+          "file": "docs/ops/p08-assistant/BASELINE195-AND-P11.md",
+          "status": "added",
+          "additions": 58,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/PR-BODY.md",
+          "status": "added",
+          "additions": 11,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/README.md",
+          "status": "added",
+          "additions": 22,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/RESULT.md",
+          "status": "added",
+          "additions": 56,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/acceptance.md",
+          "status": "added",
+          "additions": 13,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/contract.md",
+          "status": "added",
+          "additions": 39,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evaluation.json",
+          "status": "added",
+          "additions": 488,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/baseline195-blobs.json",
+          "status": "added",
+          "additions": 85,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/baseline195-build.txt",
+          "status": "added",
+          "additions": 160,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/baseline195-ledger-tests.txt",
+          "status": "added",
+          "additions": 61,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/build.txt",
+          "status": "added",
+          "additions": 160,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/ci-failure-2ca3058.txt",
+          "status": "added",
+          "additions": 8328,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/ci-product-2ca3058.json",
+          "status": "added",
+          "additions": 57,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/delivery.json",
+          "status": "added",
+          "additions": 28,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/final-p08-tests.txt",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/fixture-and-reused-tests.txt",
+          "status": "added",
+          "additions": 78,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/fixture-tests.txt",
+          "status": "added",
+          "additions": 42,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/evidence/registration-and-p08-tests.txt",
+          "status": "added",
+          "additions": 63,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p08-assistant/inventory-policy.md",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "lib/assistant/baseline-195.test.ts",
+          "status": "added",
+          "additions": 13,
+          "deletions": 0
+        },
+        {
+          "file": "lib/assistant/fixture-ledger-worker.ts",
+          "status": "added",
+          "additions": 8,
+          "deletions": 0
+        },
+        {
+          "file": "lib/assistant/fixture-ledger.test.ts",
+          "status": "added",
+          "additions": 106,
+          "deletions": 0
+        },
+        {
+          "file": "lib/assistant/fixture-ledger.ts",
+          "status": "added",
+          "additions": 138,
+          "deletions": 0
+        },
+        {
+          "file": "lib/assistant/fixture-service.test.ts",
+          "status": "added",
+          "additions": 145,
+          "deletions": 0
+        },
+        {
+          "file": "lib/assistant/fixture-service.ts",
+          "status": "added",
+          "additions": 150,
+          "deletions": 0
+        },
+        {
+          "file": "lib/assistant/handoff-fixture.ts",
+          "status": "added",
+          "additions": 47,
+          "deletions": 0
+        },
+        {
+          "file": "package.json",
+          "status": "modified",
+          "additions": 1,
+          "deletions": 1
+        }
+      ],
+      "filesCount": 27,
+      "filesComplete": true
+    },
+    {
+      "number": 203,
+      "sha": "bb585f4cd21aaf77e75261b60c9c424508999f7e",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "branch": "codex/p11-measurement-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "P11: measurement, support and wave acceptance contracts",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/203",
+      "files": [
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/ACCEPTANCE.md",
+          "status": "added",
+          "additions": 46,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/AUDIT.md",
+          "status": "added",
+          "additions": 29,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/BASELINE.md",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/EVENT-CONTRACT.md",
+          "status": "added",
+          "additions": 41,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/HANDOFF.md",
+          "status": "added",
+          "additions": 47,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/METRICS.md",
+          "status": "added",
+          "additions": 26,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/P08-CI-RECEIPT.json",
+          "status": "added",
+          "additions": 62,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/P08-COORDINATION.md",
+          "status": "added",
+          "additions": 47,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/P08-REVIEW-RECHECK.json",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/P08-REVIEW.md",
+          "status": "added",
+          "additions": 45,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/README.md",
+          "status": "added",
+          "additions": 38,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/SUPPORT-PILOT.md",
+          "status": "added",
+          "additions": 34,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/WEEKLY.md",
+          "status": "added",
+          "additions": 19,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/acceptance-evidence.csv",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/baseline.csv",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/event.schema.json",
+          "status": "added",
+          "additions": 54,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/gate-map.json",
+          "status": "added",
+          "additions": 20,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/incidents.csv",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/synthetic-events.json",
+          "status": "added",
+          "additions": 230,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/validation.json",
+          "status": "added",
+          "additions": 204,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/product-plan-v0.1/p11/verify.py",
+          "status": "added",
+          "additions": 152,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 21,
+      "filesComplete": true
+    },
+    {
+      "number": 205,
+      "sha": "90c161b0aa819ab0b34d0584d1cd5dc06bcbf5bb",
+      "baseSHA": "c25759dac27bda6685c76974a639fde31a9ee129",
+      "branch": "codex/p04-investment-scope-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "P04: select an explicit reviewed investment denominator",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/205",
+      "files": [
+        {
+          "file": "docs/ops/seasonal-program/p04/INVESTMENT-SCOPE-RESULT.md",
+          "status": "added",
+          "additions": 32,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/seasonal-program/p04/P07-DECISION-ACK.md",
+          "status": "added",
+          "additions": 30,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/investmentScope.ts",
+          "status": "added",
+          "additions": 80,
+          "deletions": 0
+        },
+        {
+          "file": "lib/portfolio/rebalance.test.ts",
+          "status": "modified",
+          "additions": 75,
+          "deletions": 1
+        }
+      ],
+      "filesCount": 4,
+      "filesComplete": true
+    },
+    {
+      "number": 207,
+      "sha": "81e68e43044b833e8fc112d26a8ed7f0923141e3",
+      "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "branch": "codex/p02-market-coverage-20261002",
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "title": "P02: complete read-only market coverage and live quota acceptance gates",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/207",
+      "files": [
+        {
+          "file": "docs/ops/p02-market/CONTAINMENT.fa.md",
+          "status": "added",
+          "additions": 72,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/RESULT.fa.md",
+          "status": "added",
+          "additions": 121,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/adapter-result.json",
+          "status": "added",
+          "additions": 1,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/build.txt",
+          "status": "added",
+          "additions": 161,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/containment-observations.json",
+          "status": "added",
+          "additions": 87,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/contracts.txt",
+          "status": "added",
+          "additions": 17,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/instrument-matrix.csv",
+          "status": "added",
+          "additions": 2748,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/liara-metadata.ndjson",
+          "status": "added",
+          "additions": 7,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/nav-matrix.csv",
+          "status": "added",
+          "additions": 334,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/preserved-blacklist.csv",
+          "status": "added",
+          "additions": 326,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/relay-debug-132430.json",
+          "status": "added",
+          "additions": 93,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/relay-debug.json",
+          "status": "added",
+          "additions": 133,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/reused-validity-tests.txt",
+          "status": "added",
+          "additions": 44,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/secret-scan.txt",
+          "status": "added",
+          "additions": 2,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/summary.json",
+          "status": "added",
+          "additions": 253,
+          "deletions": 0
+        },
+        {
+          "file": "docs/ops/p02-market/evidence/symbol-date-matrix.csv",
+          "status": "added",
+          "additions": 13982,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/coverage-plan-core.mjs",
+          "status": "added",
+          "additions": 244,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/p02-coverage.mjs",
+          "status": "added",
+          "additions": 133,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/p02-coverage.test.mjs",
+          "status": "added",
+          "additions": 60,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/p02-export-ro.mjs",
+          "status": "added",
+          "additions": 18,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/p02-metadata-export.sql",
+          "status": "added",
+          "additions": 62,
+          "deletions": 0
+        },
+        {
+          "file": "scripts/ops/p02-read-debug.mjs",
+          "status": "added",
+          "additions": 28,
+          "deletions": 0
+        }
+      ],
+      "filesCount": 22,
+      "filesComplete": true
+    }
+  ],
+  "checkpointAt": "2026-10-02T14:05:33.794Z"
+}

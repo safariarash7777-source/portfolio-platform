@@ -1,0 +1,126 @@
+{
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "environment": "portfolio-accept195",
+  "origin": "https://62.60.191.24:8443",
+  "reviewer": "/root; independent of N10 and feed197 implementation",
+  "startedAt": "2026-10-02T13:43:56.693Z",
+  "scenarios": [
+    {
+      "id": "login-page-admin",
+      "role": "admin",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:44:09.057Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-admin",
+      "role": "admin",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:44:10.697Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-admin",
+      "role": "admin",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "4f99a737-1c26-4d2b-b52f-fc333a5a6018",
+        "path": "/admin/desk",
+        "profileHTTP": 200,
+        "profileRole": "admin"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:44:25.066Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "reload-admin",
+      "role": "admin",
+      "expected": "Protected page remains authenticated on server reload",
+      "observed": {
+        "path": "/admin/desk",
+        "pageErrors": []
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:44:47.276Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-refresh-admin",
+      "role": "admin",
+      "expected": "Refresh real UI-issued session through native Auth",
+      "observed": {
+        "http": 200,
+        "userId": "4f99a737-1c26-4d2b-b52f-fc333a5a6018",
+        "automaticSDKRenewal": "NOT_TESTED"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:44:51.158Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "logout-admin",
+      "role": "admin",
+      "expected": "UI logout and subsequent protected access redirect to login",
+      "observed": {
+        "logoutHTTP": 204,
+        "path": "/login"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:01.435Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "relogin-admin",
+      "role": "admin",
+      "expected": "Second real UI login restores protected page",
+      "observed": {
+        "http": 200,
+        "path": "/admin/desk"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:31.878Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "browser-isolation-admin",
+      "role": "admin",
+      "expected": "Only sandbox network targets, no hydration errors",
+      "observed": {
+        "externalRequestsBlocked": 0,
+        "pageErrors": [],
+        "timezone": "Asia/Tehran"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:31.878Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    }
+  ],
+  "privacy": "Real UI login; no injected session, token/cookie persistence, HAR, or credential screenshots; normal TLS verification",
+  "finishedAt": "2026-10-02T13:45:32.080Z",
+  "counts": {
+    "PASS": 8,
+    "FAIL": 0,
+    "BLOCKED": 0
+  }
+}
