@@ -91,6 +91,8 @@ SLAهای زیر **پیشنهاد پذیرش** هستند، نه تعهد مصو
 
 ## سهمیه و ظرفیت
 
+اقدام مهار مشخص پیش از پذیرش178 در [طرح اپراتور](CONTAINMENT.fa.md) آمده: توقف موقت فقط app رلهarsadata با کنترل موجود، اثر روی تازگی داده، preflight هدف، receipt توقف و rollback مشروط. این طرح اجرا نشده و تصمیم Production از آرش/P00 لازم دارد؛ فعال‌کردن صرف flaglegacy درbinaryقدیمی مهار کامل نیست.
+
 شاهد تازه SQL: جدول `brsapi_budget_days` و توابع brsapi در DB هدف غایب‌اند. debug: enforcement مسیر قدیمی=false، client=false، store unhealthy، lease granted/spent=۰ و degradedUsed=۱۰۰؛ rejected بودجه از۱۱۳۶ در نمونه نخست به۱۱۵۹ در نمونه تکمیلی رسید. remaining=۹۰۰۰ با این وضعیت معتبر نیست؛ مصرف واقعی پیشین روز، همه مصرف‌کننده‌های بیرونی همان کلید و پنجره reset تأمین‌کننده UNKNOWN‌اند.
 
 نمونه تکمیلی actual legacy counters را ثبت می‌کند: gold-currency/all-symbols/market-index/options هرکدام۵۶۶، symbol-detail۱۲۸۵، fund-meta۳۳۴، codal-archive۱۶۰، candle-backfill۴، NAV bulk۱ وcompletion۲۵، گواهی۳۹ وphysical۳. شمارنده overBudgetPassed برای چند producer مثبت است؛ از جمله symbol-detail۱۲۸۵ وoptions۵۶۶. وقتی enforcement خاموش است، رد بودجه جلوی مسیر قدیمی را نگرفته است. این شمارنده‌ها process-local هستند؛ روز/reset/uptime تأیید نشده و از جمعشان مصرف امروز ساخته نمی‌شود. نصب178 و اثبات rollout باید پیش از گسترش مصرف انجام شود.

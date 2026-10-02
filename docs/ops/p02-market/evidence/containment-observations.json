@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "p02-containment-ro.v1",
+  "beforeAt": "2026-10-02T13:24:30.121Z",
+  "afterAt": "2026-10-02T13:44:40.122Z",
+  "observationIntervalSeconds": 1210.001,
+  "counters": [
+    {
+      "field": "transport.sent",
+      "before": 5240,
+      "after": 5263,
+      "displayedDifference": 23,
+      "processContinuityVerified": false,
+      "currentRate": null
+    },
+    {
+      "field": "budget.rejectedByBudget",
+      "before": 1136,
+      "after": 1159,
+      "displayedDifference": 23,
+      "processContinuityVerified": false,
+      "currentRate": null
+    },
+    {
+      "field": "store.errors",
+      "before": 615,
+      "after": 626,
+      "displayedDifference": 11,
+      "processContinuityVerified": false,
+      "currentRate": null
+    }
+  ],
+  "legacyOverBudgetPassedDelta": null,
+  "firstProducerSnapshotAvailable": false,
+  "afterProducerCounters": {
+    "enforced": false,
+    "used": {
+      "gold-currency": 566,
+      "all-symbols": 566,
+      "market-index": 566,
+      "options": 566,
+      "nav-bulk": 1,
+      "nav-completion": 25,
+      "fund-meta": 334,
+      "ime-certificate": 39,
+      "symbol-detail": 1285,
+      "codal-archive": 160,
+      "candle-backfill": 4,
+      "ime-physical": 3
+    },
+    "rejected": {
+      "options": 566,
+      "nav-bulk": 1,
+      "nav-completion": 25,
+      "fund-meta": 334,
+      "ime-certificate": 39,
+      "symbol-detail": 1285,
+      "codal-archive": 160,
+      "candle-backfill": 4,
+      "ime-physical": 3,
+      "all-symbols": 467,
+      "market-index": 467,
+      "gold-currency": 464
+    },
+    "overBudgetPassed": {
+      "options": 566,
+      "nav-bulk": 1,
+      "nav-completion": 25,
+      "fund-meta": 334,
+      "ime-certificate": 39,
+      "symbol-detail": 1285,
+      "codal-archive": 160,
+      "candle-backfill": 4,
+      "ime-physical": 3,
+      "all-symbols": 467,
+      "market-index": 467,
+      "gold-currency": 464
+    },
+    "unmetered": 0,
+    "scope": "process_counters_not_verified_daily_prior_usage"
+  },
+  "processIdentity": null,
+  "uptime": null,
+  "supplierReset": null,
+  "dailyPriorUsage": null,
+  "productionActionPerformed": false,
+  "operatorDecisionRequired": true
+}
