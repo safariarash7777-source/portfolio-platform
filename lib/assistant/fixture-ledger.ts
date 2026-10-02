@@ -111,6 +111,7 @@ export class FixtureBudgetLedger {
       const {rows,entries} = this.replay(hash); const row = rows.get(key);
       if (!row) throw Error('reservation-missing');
       if (row.state !== 'reserved') return false;
+      if ([...rows.values()].some(r => r.actualTokens !== null && r.actualTokens > r.reservedTokens)) throw Error('reconciliation-required');
       this.append(hash,entries,{...row,state:'dispatched'}); return true;
     });
   }

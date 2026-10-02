@@ -51,6 +51,11 @@ test('late settlement records actual in original expired window while new dispat
   const expired=new FixtureBudgetLedger(d,policy,()=>1000);assert.equal((await expired.settle(key,8)).actualTokens,8);
   await assert.rejects(expired.reserve(randomUUID(),other,1),/outside-window/);
 });
+test('independent P11 overrun probe: already reserved second request cannot dispatch after first overrun',async()=>{
+  const l=await fresh(dir(),{...policy,subjectConcurrency:2}),first=randomUUID(),second=randomUUID();
+  await l.reserve(first,subject,30);await l.reserve(second,subject,30);await l.claimDispatch(first);await l.settle(first,40);
+  await assert.rejects(l.claimDispatch(second),/reconciliation-required/);
+});
 test('partial crash journal is refused rather than silently reset',async()=>{
   const d=dir(); await fresh(d); await ledger(d).reserve(randomUUID(),subject,10); appendFileSync(join(d,'budget.jsonl'),'{broken');
   await assert.rejects(ledger(d).reserve(randomUUID(),other,10),/corrupt/);
@@ -92,4 +97,10 @@ test('consent revocation closes locally without fabricating resolution or human 
   const b=transitionHandoff(initial(),0,{kind:'consent',consentVersion:'v1'},member);
   const c=transitionHandoff(b,1,{kind:'revoke-consent'},member);assert.equal(c.consentVersion,null);assert.equal(p11SupportDimensions(b,c,true),null);
   assert.deepEqual(Object.keys(handoffMetric(c)).sort(),['caseRef','contract','reason','revision','state']);
+});
+test('independent P11 lineage probe rejects different case/member and revision jumps',()=>{
+  const a=initial(),b=transitionHandoff(a,0,{kind:'consent',consentVersion:'v1'},member);
+  for(const invalid of [{...b,caseRef:other},{...b,subjectRef:other},{...b,revision:99},{...b,caseRef:'invalid'}, {...b,ownerRef:other}, {...b,reason:'conflict' as const}]) {
+    assert.equal(p11SupportDimensions(a,invalid,true),null);
+  }
 });

@@ -34,8 +34,14 @@ export function handoffMetric(row: Handoff) {
 /** Only project a witnessed canonical transition. This emits dimensions, not a collector event. */
 export function p11SupportDimensions(before: Handoff, after: Handoff, receiptWitnessed: boolean) {
   if (!receiptWitnessed) return null;
-  if (before.state === 'pending_consent' && after.state === 'received' && after.consentVersion) return { action:'opened', category:'assistant' } as const;
-  if (before.state === 'assigned' && after.state === 'resolved') return { action:'resolved', category:'assistant' } as const;
+  if (!opaque.test(before.caseRef) || !opaque.test(before.subjectRef) || before.caseRef !== after.caseRef || before.subjectRef !== after.subjectRef
+    || !Number.isSafeInteger(before.revision) || before.revision < 0 || after.revision !== before.revision + 1
+    || before.reason !== after.reason || before.publicationVersionRef !== after.publicationVersionRef) return null;
+  if (before.state === 'pending_consent' && after.state === 'received' && before.consentVersion === null && before.ownerRef === null
+    && after.ownerRef === null && after.consentVersion !== null && /^[a-z0-9._-]{1,80}$/i.test(after.consentVersion)) return { action:'opened', category:'assistant' } as const;
+  if (before.state === 'assigned' && after.state === 'resolved' && before.consentVersion !== null
+    && before.consentVersion === after.consentVersion && before.ownerRef !== null && opaque.test(before.ownerRef)
+    && before.ownerRef === after.ownerRef) return { action:'resolved', category:'assistant' } as const;
   // assigned != responded; closed != resolved. No invented response receipt.
   return null;
 }
