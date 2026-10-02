@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-02T14:11:16.894Z",
+  "source": "Own real Next/GoTrue/PostgREST/Storage; synthetic accounts, no provider request",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "mode": "revoke",
+  "records": [
+    {
+      "case": "revocation removes all resources next list",
+      "result": "PASS"
+    },
+    {
+      "case": "revocation denies next request /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/resources/88888888-8888-4888-8888-888888888888",
+      "result": "PASS"
+    },
+    {
+      "case": "revocation denies next request /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/publications",
+      "result": "PASS"
+    },
+    {
+      "case": "revocation denies next request /api/publications/b0752c17-eeec-4f5a-a050-7411f81462c2?cohort=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "result": "PASS"
+    },
+    {
+      "case": "revocation denies next mark",
+      "result": "PASS"
+    },
+    {
+      "case": "already-issued capability can remain usable within its native 60s TTL",
+      "result": "PASS",
+      "ttlSeconds": 60,
+      "limitation": "Revocation prevents new issuance; existing signed capability is not instantly revocable"
+    },
+    {
+      "case": "A distinct current B course remains allowed",
+      "result": "PASS"
+    },
+    {
+      "case": "B current B unaffected",
+      "result": "PASS"
+    }
+  ]
+}

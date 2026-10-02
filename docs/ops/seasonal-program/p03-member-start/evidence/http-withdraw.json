@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-02T14:11:12.277Z",
+  "source": "Own real Next/GoTrue/PostgREST/Storage; synthetic accounts, no provider request",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "mode": "withdraw",
+  "records": [
+    {
+      "case": "withdrawn detail hidden",
+      "result": "PASS"
+    },
+    {
+      "case": "withdrawn read denied",
+      "result": "PASS"
+    },
+    {
+      "case": "withdrawn lesson absent from current feed",
+      "result": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-02T14:09:49.653Z",
+  "source": "Own real Next/GoTrue/PostgREST/Storage; synthetic accounts, no provider request",
+  "codeCommit": "f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6",
+  "mode": "outage",
+  "records": [
+    {
+      "case": "auth outage remains 503 /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/publications",
+      "result": "PASS",
+      "status": 503
+    },
+    {
+      "case": "auth outage remains 503 /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/resources",
+      "result": "PASS",
+      "status": 503
+    },
+    {
+      "case": "rest outage remains 503 /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/publications",
+      "result": "PASS",
+      "status": 503
+    },
+    {
+      "case": "rest outage remains 503 /api/cohorts/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/resources",
+      "result": "PASS",
+      "status": 503
+    }
+  ]
+}
