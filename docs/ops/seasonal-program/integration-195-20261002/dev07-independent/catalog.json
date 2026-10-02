@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-02T14:05:52.980Z",
+  "environment": "portfolio-accept195",
+  "container": "portfolio-accept195-db",
+  "query": "select version(); select t.name,has_table_privilege('authenticated',t.name,'select'),has_table_privilege('anon',t.name,'select') from (values('public.symbol_history'),('public.portfolio_versions'),('public.codal_reports'),('public.consultation_sessions'))t(name); select user_id,enabled from public.consultation_advisors; select symbol,trade_date,close,source from public.symbol_history where source like 'DEV07%';",
+  "observation": "PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit\npublic.symbol_history|f|f\npublic.portfolio_versions|f|f\npublic.codal_reports|t|t\npublic.consultation_sessions|t|f\nbd23c044-9e39-4c53-acdf-822029a8b461|t\nDEV07_195_SYNTHETIC|2026-10-02|12000|DEV07_195_SYNTHETIC\nDEV07STALE|2020-01-01|12000|DEV07_SYNTHETIC"
+}

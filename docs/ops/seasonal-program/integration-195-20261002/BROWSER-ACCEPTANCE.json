@@ -1,0 +1,429 @@
+{
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "environment": "portfolio-accept195",
+  "origin": "https://62.60.191.24:8443",
+  "reviewer": "/root; independent of N10 and feed197 implementation",
+  "startedAt": "2026-10-02T13:36:54.688Z",
+  "scenarios": [
+    {
+      "id": "login-page-A",
+      "role": "A",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:37:10.357Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-A",
+      "role": "A",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:37:11.513Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-A",
+      "role": "A",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "02305121-7521-4f0b-a611-86c3041a4ca7",
+        "path": "/dashboard",
+        "profileHTTP": 200,
+        "profileRole": "user"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:37:22.574Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "reload-A",
+      "role": "A",
+      "expected": "Protected page remains authenticated on server reload",
+      "observed": {
+        "path": "/dashboard",
+        "pageErrors": []
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:37:27.593Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-refresh-A",
+      "role": "A",
+      "expected": "Refresh real UI-issued session through native Auth",
+      "observed": {
+        "http": 200,
+        "userId": "02305121-7521-4f0b-a611-86c3041a4ca7",
+        "automaticSDKRenewal": "NOT_TESTED"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:37:32.275Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "logout-A",
+      "role": "A",
+      "expected": "UI logout and subsequent protected access redirect to login",
+      "observed": {
+        "logoutHTTP": 204,
+        "path": "/login"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:37:47.401Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "relogin-A",
+      "role": "A",
+      "expected": "Second real UI login restores protected page",
+      "observed": {
+        "http": 200,
+        "path": "/dashboard"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:38:06.277Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "browser-isolation-A",
+      "role": "A",
+      "expected": "Only sandbox network targets, no hydration errors",
+      "observed": {
+        "externalRequestsBlocked": 0,
+        "pageErrors": [],
+        "timezone": "Asia/Tehran"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:38:06.278Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "login-page-B",
+      "role": "B",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:38:18.612Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-B",
+      "role": "B",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:38:24.416Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-B",
+      "role": "B",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "75695f88-3565-47aa-b13f-51ed44148ace",
+        "path": "/dashboard",
+        "profileHTTP": 200,
+        "profileRole": "user"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:38:42.641Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "reload-B",
+      "role": "B",
+      "expected": "Protected page remains authenticated on server reload",
+      "observed": {
+        "path": "/dashboard",
+        "pageErrors": []
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:38:49.974Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-refresh-B",
+      "role": "B",
+      "expected": "Refresh real UI-issued session through native Auth",
+      "observed": {
+        "http": 200,
+        "userId": "75695f88-3565-47aa-b13f-51ed44148ace",
+        "automaticSDKRenewal": "NOT_TESTED"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:38:55.405Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "logout-B",
+      "role": "B",
+      "expected": "UI logout and subsequent protected access redirect to login",
+      "observed": {
+        "logoutHTTP": 204,
+        "path": "/login"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:39:12.178Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "relogin-B",
+      "role": "B",
+      "expected": "Second real UI login restores protected page",
+      "observed": {
+        "http": 200,
+        "path": "/dashboard"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:39:29.507Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "browser-isolation-B",
+      "role": "B",
+      "expected": "Only sandbox network targets, no hydration errors",
+      "observed": {
+        "externalRequestsBlocked": 0,
+        "pageErrors": [],
+        "timezone": "America/Los_Angeles"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:39:29.508Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "login-page-adviser",
+      "role": "adviser",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:39:41.680Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-adviser",
+      "role": "adviser",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:39:43.840Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-adviser",
+      "role": "adviser",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "bd23c044-9e39-4c53-acdf-822029a8b461",
+        "path": "/dashboard",
+        "profileHTTP": 200,
+        "profileRole": "admin"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:39:55.572Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "reload-adviser",
+      "role": "adviser",
+      "expected": "Protected page remains authenticated on server reload",
+      "observed": {
+        "path": "/dashboard",
+        "pageErrors": []
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:39:59.315Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-refresh-adviser",
+      "role": "adviser",
+      "expected": "Refresh real UI-issued session through native Auth",
+      "observed": {
+        "http": 200,
+        "userId": "bd23c044-9e39-4c53-acdf-822029a8b461",
+        "automaticSDKRenewal": "NOT_TESTED"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:40:03.512Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "logout-adviser",
+      "role": "adviser",
+      "expected": "UI logout and subsequent protected access redirect to login",
+      "observed": {
+        "logoutHTTP": 204,
+        "path": "/login"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:40:20.277Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "relogin-adviser",
+      "role": "adviser",
+      "expected": "Second real UI login restores protected page",
+      "observed": {
+        "http": 200,
+        "path": "/dashboard"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:40:44.225Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "browser-isolation-adviser",
+      "role": "adviser",
+      "expected": "Only sandbox network targets, no hydration errors",
+      "observed": {
+        "externalRequestsBlocked": 0,
+        "pageErrors": [],
+        "timezone": "Asia/Tehran"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:40:44.225Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "login-page-admin",
+      "role": "admin",
+      "expected": "Normal TLS, meaningful login UI, sandbox origin in CSP",
+      "observed": {
+        "http": 200,
+        "emailField": 1,
+        "cspSandboxOrigin": true
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:41:14.418Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-token-admin",
+      "role": "admin",
+      "expected": "Real UI/password login through native GoTrue returns200",
+      "observed": {
+        "http": 200,
+        "endpoint": "/supabase/auth/v1/token"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:41:17.948Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "identity-role-admin",
+      "role": "admin",
+      "expected": "Canonical native UUID, protected return path and profile role",
+      "observed": {
+        "userHTTP": 200,
+        "userId": "4f99a737-1c26-4d2b-b52f-fc333a5a6018",
+        "path": "/admin/desk",
+        "profileHTTP": 200,
+        "profileRole": "admin"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:41:31.038Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "reload-admin",
+      "role": "admin",
+      "expected": "Protected page remains authenticated on server reload",
+      "observed": {
+        "path": "/admin/desk",
+        "pageErrors": []
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:41:35.549Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "native-refresh-admin",
+      "role": "admin",
+      "expected": "Refresh real UI-issued session through native Auth",
+      "observed": {
+        "http": 200,
+        "userId": "4f99a737-1c26-4d2b-b52f-fc333a5a6018",
+        "automaticSDKRenewal": "NOT_TESTED"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:41:39.961Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    },
+    {
+      "id": "execution-admin",
+      "role": "admin",
+      "expected": "Complete actual browser login lifecycle",
+      "observed": {
+        "error": "page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+        "path": "/admin/desk"
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:41:59.980Z",
+      "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "environment": "portfolio-accept195"
+    }
+  ],
+  "privacy": "Real UI login; no injected session, token/cookie persistence, HAR, or credential screenshots; normal TLS verification",
+  "finishedAt": "2026-10-02T13:42:00.159Z",
+  "counts": {
+    "PASS": 29,
+    "FAIL": 1,
+    "BLOCKED": 0
+  }
+}

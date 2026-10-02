@@ -1,0 +1,174 @@
+{
+  "recordedAt": "2026-10-02T10:52:16.508Z",
+  "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "files": [
+    {
+      "order": 1,
+      "file": "sql/archive/supabase_schema.sql",
+      "sha256": "ce42c2f58d94dbc7582bdc9b9f497ffefc7260509c03d6272135f16b42c6b0f8",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "001f52d5f4b1f6fe3d154fafafcabe766e6aa739c24c7ddb2bad5e72c998c0de",
+      "gitBlob": "ca05b0456388403eec127da376277b1a8d914f69",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 2,
+      "file": "sql/archive/supabase_portfolio_tracking.sql",
+      "sha256": "6c3765e631a4f46ff16ff5d9378997173f9bbb6b6ad2b94dccec34fb56c750d2",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "0ecc41f5f3a374dc0788d69f06da4413c083a29049d1a65749283d5d30ef2a9c",
+      "gitBlob": "b4dca96ac0d0d35d4c476ff02ff3f7a22f5a68b5",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 3,
+      "file": "sql/archive/supabase_portfolio_versioning.sql",
+      "sha256": "5696de56e8b7cb7406ed8b15fc02857f90ad309a1ee4b0bc6998852d68462550",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "1f4e2f7ff3d14e2c7a55a4dc65b28aec5651e37c8ab0996173737a0a4284d491",
+      "gitBlob": "ad609e4609126292465a0594f62b55f87cf00de9",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 4,
+      "file": "sql/staging/g3003_staging_profiles_prereq.sql",
+      "sha256": "08c75408e8bbb8c0b2ffaebd3425a71e34bd956447d8e0c82f434bde6ecba55f",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "5ae35fd4fa21ddec64130e565507164180f42d58bd9864d6fc225ee9bb2fe799",
+      "gitBlob": "c4201a76fb00c860f7611825e85da37286ff2294",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 5,
+      "file": "sql/phase5_payments_telegram.sql",
+      "sha256": "d891ba17c513e0b8aadd36f484fb59811fb84217d981c94628ce4ba7326b858d",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "4d689f0f45065c1989c8fba6c6b9a24aac9278695742982b5a5f7862b8438e8b",
+      "gitBlob": "70387902eb3b4391e70792b9a4b729c26c6f6c40",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 6,
+      "file": "sql/phase8_webinars.sql",
+      "sha256": "ec44f25997eba57ca8dd11193a677644f63b41640920ccd68cf84bd02fea816d",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "e4c3faa90c33c58a430880a6448d0fba3be90e60870bb0bbe6ce299fd7e20ccb",
+      "gitBlob": "188fbe526ae2496f25ed554ef93e3238406a7a04",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 7,
+      "file": "sql/phase11_access_tiers.sql",
+      "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "2ad50dd68ce1162fdd84ba627b2b2a7b64a1b97d3348d4035d619a23ed77df15",
+      "gitBlob": "30a1b397ef6026ac7dcf29a7739583a871fcc621",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 8,
+      "file": "sql/phase27_member_import.sql",
+      "sha256": "69507178be682e1437250292699648555c7e3491b4cad83b18b43019f3667148",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "4e0085064a18b131e92744fc1987668be775e64aa385975094bdc77a0dece2f5",
+      "gitBlob": "869d2f0e10c1ee06181358acec05116becd5a95f",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 9,
+      "file": "sql/phase32_member_holdings.sql",
+      "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6",
+      "gitBlob": "e169d733e75f523597baeb8560fd46f8662d95a5",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 10,
+      "file": "sql/phase34_research_workbook_versions.sql",
+      "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8",
+      "gitBlob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 11,
+      "file": "sql/phase35_consultation.sql",
+      "sha256": "63388c8b1b125332eedb405b6da9480da1305bbadbeacf4b5263fdd205299ad2",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "9d9aa2faf3e6306d2f2992382564207f8b1dbe068f4eb209438597705a44ce7e",
+      "gitBlob": "5019a7e9b2ae5c2c0571527afa1c81fdbd6b8c5a",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 12,
+      "file": "sql/phase36_consultation_review_fixes.sql",
+      "sha256": "e2ca9fde2c02a0457ef70bec541707bebf198afba26c94f5f7b7e47662c6cbd6",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "bdf127dcee86c26f3e19961fe8b9710385ca965ec649ee61b33cfc38a53c318a",
+      "gitBlob": "84b534190280ea1a1b28468c6687bc6a70e423c2",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 13,
+      "file": "sql/phase37_nonretryable_version_conflicts.sql",
+      "sha256": "3162ca656b9cdacf11a3f0ba0b79724ab162aa08a74f4bc0a04d4aec5ccbb5bd",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "282b8be6c36b77bd9bf70c0dfd94ac3b8bccbd9cc628b75be1244cf5b1dfdf4d",
+      "gitBlob": "562e1302450f28ceff3625e802a8b9f98ef2658a",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 14,
+      "file": "sql/phase38_personal_balance_sheet.sql",
+      "sha256": "3572915cb6c3e1bc98f9ead763318bd6400db0d91691ca1dd771c9cac65de247",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "2f44201b3aec41e489bf5ac6fd71406ea9d358748e199ca24a1161d644a2f5fb",
+      "gitBlob": "e3901db5f8d43bdeafd5fbc53a464e184f7ef060",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 15,
+      "file": "supabase/migrations/20260930182629_seasonal_course_membership.sql",
+      "sha256": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "509a6a8c17d47e26bd4adfbe438e02f80b6da225da778b0f124825bfe4f9e71b",
+      "gitBlob": "d07215244de0ebc5546c823623833b6e4147bd44",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 16,
+      "file": "supabase/migrations/20260930182918_research_publication_queue.sql",
+      "sha256": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229",
+      "gitBlob": "73bcf4b17c0ec24c43aff2b54e002e1dcc2c322f",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 17,
+      "file": "supabase/migrations/20261001083215_auth_private_identity_versions.sql",
+      "sha256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "7969634e0b0d564f97e5a43eae823441182fbb42aa1a2d1728d81b142bf08251",
+      "gitBlob": "e0a26d4320383bcf333720ab2c82cb4580797ee7",
+      "inputEncoding": "Git blob / LF"
+    },
+    {
+      "order": 18,
+      "file": "supabase/migrations/20261001121858_member_publication_feed_reads.sql",
+      "sha256": "db0cb056948ce7cfaf7a7d18472da0ebbddc834248e3f1d3710a90708b8cecdf",
+      "status": "VERIFIED_INPUT_NOT_APPLIED",
+      "worktreeCRLFSha256": "db0cb056948ce7cfaf7a7d18472da0ebbddc834248e3f1d3710a90708b8cecdf",
+      "gitBlob": "a5c812bab785f86da2c3091388a31fbf9e4ca7ff",
+      "inputEncoding": "Git blob / LF"
+    }
+  ],
+  "scope": "Only a fresh synthetic isolated backend; native Auth/Storage schemas must exist separately",
+  "source": "Exact pinned Git blobs (LF); legacy191 Windows worktree hashes retained separately and verified equivalent after CRLF normalization",
+  "migrationExecuted": 0,
+  "liveDatabaseAccess": false,
+  "status": "PREPARED_FOR_LIARA_SYNTHETIC",
+  "canonicalizedAt": "2026-10-02T13:17:52.936Z"
+}

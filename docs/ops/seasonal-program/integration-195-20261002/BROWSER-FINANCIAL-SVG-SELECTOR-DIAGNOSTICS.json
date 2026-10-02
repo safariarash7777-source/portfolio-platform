@@ -1,0 +1,146 @@
+{
+  "environment": "portfolio-accept195",
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "origin": "https://62.60.191.24:8443",
+  "startedAt": "2026-10-02T13:44:08.359Z",
+  "source": "Native SQL synthetic fixtures; actual UI-issued admin login; no issuer data or live provider",
+  "scenarios": [
+    {
+      "id": "financial-real-login",
+      "role": "admin",
+      "expected": "Native GoTrue actual UI login and protected full access",
+      "observed": {
+        "http": 200,
+        "path": "/symbol/SYNTHETIC195_CURRENT"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:44:48.138Z"
+    },
+    {
+      "id": "SYNTHETIC195_CURRENT-annual-null",
+      "role": "admin",
+      "expected": "Unknown current/prior gross pair omitted, operating/net categories and four bars remain",
+      "observed": {
+        "http": 200,
+        "axisLabels": [
+          "عملیاتی",
+          "خالص",
+          "٪۰",
+          "٪۲۵",
+          "٪۵۰",
+          "٪۷۵",
+          "٪۱۰۰"
+        ],
+        "bars": 4,
+        "grossCategoryPresent": false
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:06.939Z"
+    },
+    {
+      "id": "SYNTHETIC195_CURRENT-quarterly-null",
+      "role": "admin",
+      "expected": "Gross missing quarters stay gaps; net/operating four quarters remain; no false zero",
+      "observed": {
+        "lines": [
+          {
+            "dots": 0,
+            "path": "M46,93.75Z"
+          },
+          {
+            "dots": 0,
+            "path": "M46,4C93.889,48.875,141.778,93.75,189.667,93.75C237.556,93.75,285.444,93.75,333.333,93.75C381.222,93.75,429.111,93.75,477,93.75"
+          },
+          {
+            "dots": 0,
+            "path": "M46,93.75C93.889,93.75,141.778,93.75,189.667,93.75C237.556,93.75,285.444,93.75,333.333,93.75C381.222,93.75,429.111,93.75,477,93.75"
+          }
+        ],
+        "expectedGrossDots": 1
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:45:07.067Z"
+    },
+    {
+      "id": "SYNTHETIC195_CURRENT-tooltip",
+      "role": "admin",
+      "expected": "Rendered annual tooltip contains operating category and omits unavailable gross",
+      "observed": {
+        "text": "عملیاتی\n\n۱۴۰۳ : ٪۲۲٫۲\n۱۴۰۴ : ٪۲۵"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:07.408Z"
+    },
+    {
+      "id": "SYNTHETIC195_PRIOR-annual-null",
+      "role": "admin",
+      "expected": "Unknown current/prior gross pair omitted, operating/net categories and four bars remain",
+      "observed": {
+        "http": 200,
+        "axisLabels": [
+          "عملیاتی",
+          "خالص",
+          "٪۰",
+          "٪۲۵",
+          "٪۵۰",
+          "٪۷۵",
+          "٪۱۰۰"
+        ],
+        "bars": 4,
+        "grossCategoryPresent": false
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:19.603Z"
+    },
+    {
+      "id": "SYNTHETIC195_PRIOR-quarterly-null",
+      "role": "admin",
+      "expected": "Gross missing quarters stay gaps; net/operating four quarters remain; no false zero",
+      "observed": {
+        "lines": [
+          {
+            "dots": 0,
+            "path": "M46,138.625ZM477,4Z"
+          },
+          {
+            "dots": 0,
+            "path": "M46,93.75C93.889,116.188,141.778,138.625,189.667,138.625C237.556,138.625,285.444,138.625,333.333,138.625C381.222,138.625,429.111,138.625,477,138.625"
+          },
+          {
+            "dots": 0,
+            "path": "M46,138.625C93.889,138.625,141.778,138.625,189.667,138.625C237.556,138.625,285.444,138.625,333.333,138.625C381.222,138.625,429.111,138.625,477,138.625"
+          }
+        ],
+        "expectedGrossDots": 2
+      },
+      "status": "FAIL",
+      "at": "2026-10-02T13:45:19.761Z"
+    },
+    {
+      "id": "SYNTHETIC195_PRIOR-tooltip",
+      "role": "admin",
+      "expected": "Rendered annual tooltip contains operating category and omits unavailable gross",
+      "observed": {
+        "text": "عملیاتی\n\n۱۴۰۳ : ٪۲۲٫۲\n۱۴۰۴ : ٪۲۵"
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:20.124Z"
+    },
+    {
+      "id": "financial-browser-isolation",
+      "role": "admin",
+      "expected": "Hydration succeeds without external provider requests",
+      "observed": {
+        "pageErrors": [],
+        "externalRequestsBlocked": 0
+      },
+      "status": "PASS",
+      "at": "2026-10-02T13:45:20.250Z"
+    }
+  ],
+  "finishedAt": "2026-10-02T13:45:20.781Z",
+  "counts": {
+    "PASS": 6,
+    "FAIL": 2
+  }
+}

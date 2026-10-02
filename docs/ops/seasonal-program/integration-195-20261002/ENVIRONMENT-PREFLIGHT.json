@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-02T10:50:19.518Z",
+  "origin": "https://portfolio-platform-jhcvi11hp-safariarash7777-4463s-projects.vercel.app",
+  "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "deployment": "dpl_9L7pQAVXx4JAb3uFLwnLGuXhqk7C",
+  "scope": "Public login/JS only; no account or Auth API requests",
+  "assetsRead": 10,
+  "backendDestinations": [
+    "https://uooeygybrniptzdxuzhj.supabase.co"
+  ],
+  "loginStatus": 200,
+  "csp": "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; frame-src 'self' https://62.60.191.24; object-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "status": "PUBLIC_PREVIEW_INSPECTED_NOT_AUTH_ACCEPTANCE",
+  "finishedAt": "2026-10-02T10:50:25.385Z"
+}

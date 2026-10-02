@@ -1,5 +1,11 @@
 # پذیرش مستقل DEV-07 برای PR #168
 
+## محیط جاری اجرای مستقل195 — ۲۰۲۶-۱۰-۰۲
+
+دستور ادامه،sandbox مستقل لیارا را انتخاب کرد. برنامهٔ مستقر اکنون **PR195@31c44ab635b672b589b7833bcbc78b41d36f1e75**، tree b891e09732872b16768317b506bfb9910cb0fdbf؛ [origin](https://62.60.191.24:8443) و شناسه portfolio-accept195. این نسخه زنجیرهٔ اصلاح168 را مصرف کرده است؛ پذیرش قدیمی168@1978bf5 یا15eebc9 به آن نسبت داده نمی‌شود. هر۱۸migration وnativeAuth/Storage در DB تازه نصب‌اند. [گزارش و شواهد جاری](./seasonal-program/integration-195-20261002/LIARA-SANDBOX-RESULT.md)، [manifest نسخه/محیط](../product-plan-v0.1/P00-RELEASE-MANIFEST.json).
+
+چهار حساب واقعی ساختگی A/B/adviser/admin آماده‌اند؛۳۲بررسی ورودUI/refresh/logout/relogin و۸مرورگرمالی موفق. بازبین مستقل ازسازنده،همین۱۴سناریو را باAuthواقعی درمحیط تازه اجرا می‌کند؛ جدول کامل اکنون [۱۳PASS،صفرFAIL،یکBLOCKED انسانی](./seasonal-program/integration-195-20261002/dev07-independent/independent.md) دارد؛ DEV07 پذیرفته نشده وگیت تأیید پژوهش توسط انسان مستقل BLOCKED است. credential فقط فایل ACLمحدود C:/Users/Asus/.codex/private/accept195-liara/reviewer.json روی همین دستگاه؛ رمز/توکن داخل این دستورکار نیست. SMTP/SMS delivery وSDK refreshزمانی خودکار پذیرفته نشده‌اند. گواهیorigin فعلی تا۲۰۲۶-۱۰-۰۶ ساعت۲۳:۳۸UTC معتبر است؛ پذیرش بعدازآن بهTLSمعتبر وابسته است. DBPreview بازیابی‌شده مقصد نیست؛ merge/Production/backup/restore خارج مأموریت. مطالب زیر سابقه‌اند و تعریف۱۴سناریوی اصلی حفظ می‌شود.
+
 ## وضعیت جاری — ادامهٔ پذیرش پس از main، 2026-10-01
 
 مبنای قبلی `3462f0178ebed6b7a9966b465ba0756119ce267a`؛ main واردشده فقط در شاخهٔ PR `51fd0661d48d791ce8758a87828a81ce72cac6df`؛ SHA نهایی برنامه/PR/build/پذیرش `15eebc97ca650dde5f2687e36d9d98d193d0d543`. سه تعارض COMMAND-CENTER/next.config.js/package.json رفع و تغییرات هر دو طرف حفظ شدند؛ گزارش تاریخی3462 نیز در a3d0dd4 ثبت شد. PR #168 باز، draft، ادغام‌نشده و mergeable است؛ branchPR173 تغییر نکرد.

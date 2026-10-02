@@ -1,0 +1,53 @@
+{
+    admin off
+    auto_https off
+    default_sni 62.60.191.24
+}
+https://62.60.191.24:8443 {
+    tls /cert/leaf.crt /cert/leaf.key
+    @origin header Origin https://62.60.191.24:8443
+    header @origin {
+        Access-Control-Allow-Origin "https://62.60.191.24:8443"
+        Access-Control-Allow-Methods "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "authorization, apikey, content-type, x-client-info, prefer, range, x-supabase-api-version"
+        Access-Control-Expose-Headers "content-range, x-supabase-api-version"
+        Vary Origin
+    }
+    @preflight {
+        method OPTIONS
+        header Origin https://62.60.191.24:8443
+    }
+    handle @preflight {
+        respond 204
+    }
+    handle /sandbox-health {
+        respond "portfolio-accept195 / 31c44ab635b672b589b7833bcbc78b41d36f1e75" 200
+    }
+    @backend path /supabase/*
+    handle @backend {
+        @key expression `{http.request.header.apikey} == "{$SANDBOX_ANON}" || {http.request.header.apikey} == "{$SANDBOX_SERVICE}"`
+        handle @key {
+            handle_path /supabase/auth/v1/* {
+                reverse_proxy portfolio-accept195-auth:9999 {
+                    header_down -Access-Control-Allow-Origin
+                    header_down -Access-Control-Allow-Credentials
+                }
+            }
+            handle_path /supabase/rest/v1/* {
+                reverse_proxy portfolio-accept195-rest:3000 {
+                    header_down -Access-Control-Allow-Origin
+                }
+            }
+            handle_path /supabase/storage/v1/* {
+                reverse_proxy portfolio-accept195-storage:5000 {
+                    header_down -Access-Control-Allow-Origin
+                }
+            }
+            respond 404
+        }
+        respond 401
+    }
+    handle {
+        reverse_proxy portfolio-accept195-app:3000
+    }
+}

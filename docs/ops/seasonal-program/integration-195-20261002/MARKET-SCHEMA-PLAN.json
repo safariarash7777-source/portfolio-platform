@@ -1,0 +1,7 @@
+{
+  "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "file": "sql/terminal_t0.sql",
+  "sha256": "2bb9656d3c0579f5b357220fa775ec42beba79698eba4e2238714a965e3571c9",
+  "status": "NOT_APPLIED",
+  "purpose": "Supplemental canonical prerequisite for synthetic N10 browser acceptance; not a new product migration"
+}

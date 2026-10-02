@@ -1,0 +1,1064 @@
+{
+  "reviewer": "Independent Codex reviewer agent /root/dev07_independent; separate from builder; agent is not human",
+  "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "environment": "portfolio-accept195",
+  "origin": "https://62.60.191.24:8443",
+  "startedAt": "2026-10-02T13:52:14.605Z",
+  "scenarios": {
+    "1": {
+      "status": "PASS",
+      "at": "2026-10-02T13:58:03.719Z",
+      "expected": "Real UI login, requested holdings redirect and GoTrue getUser valid for A/B/advisor",
+      "observed": [
+        {
+          "role": "A",
+          "url": "https://62.60.191.24:8443/dashboard/holdings",
+          "http": 200,
+          "userId": "02305121-7521-4f0b-a611-86c3041a4ca7",
+          "matches": true
+        },
+        {
+          "role": "B",
+          "url": "https://62.60.191.24:8443/dashboard/holdings",
+          "http": 200,
+          "userId": "75695f88-3565-47aa-b13f-51ed44148ace",
+          "matches": true
+        },
+        {
+          "role": "advisor",
+          "url": "https://62.60.191.24:8443/dashboard/holdings",
+          "http": 200,
+          "userId": "bd23c044-9e39-4c53-acdf-822029a8b461",
+          "matches": true
+        }
+      ]
+    },
+    "2": {
+      "status": "FAIL",
+      "at": "2026-10-02T14:01:09.967Z",
+      "expected": "Market/fund/symbol source,time,unit; unknown values remain—; holdings/consultation/learninglinks",
+      "observed": [
+        {
+          "path": "/market",
+          "url": "https://62.60.191.24:8443/market",
+          "hasSyntheticLabel": false,
+          "hasToman": false,
+          "hasUnknownPlaceholder": true,
+          "hasSourceOrTime": true,
+          "links": [
+            "/dashboard/holdings",
+            "/dashboard/consultation",
+            "/learn/glossary",
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": null,
+          "sample": "رفتن به محتوای اصلی\nآرش صفری\nتحلیلگر و مشاور سرمایه‌گذاری\nدوره و وبینار\nبازار و صندوق‌ها\nمطالب\nدرخواست مشاوره\nپنل عضو\n\nمیز بازار\n\nنمای کلان بازار\nزمان دریافت بسته نامشخص\n\nنمای آخرین داده‌های ثبت‌شدهٔ بازار ایران؛ وضعیت منبع و تاریخ هر بخش را همراه عدد بخوانید.\n\nجست‌وجوی نماد یا صندوق\nنمای کلان\nسهام\nصندوق‌ها\nطلا و ارز\nبخش\nنقشه و صنایع\nاختیار معامله\n\nدادهٔ بازار در دسترس نیست\n\nزمان منبع شاخص: نامشخص\nدریافت بسته: نامشخص\nمنبع: BrsApi → رله → اسنپ‌شات\n\nزمان شاخص، زمان همهٔ قیمت‌ها نیست. تاریخ NAV و آخرین روز تاریخچه کنار همان بخش آمده است.\n\nشاخص کل\n\n—\n\nشاخص در آخرین اسنپ‌شات ثبت نشده\n\nاعتبار و جزئیات\n\nشاخص هم‌وزن\n\n—\n\nشاخص هم‌وزن در آخرین اسنپ‌شات ثبت نشده\n\nاعتبار و جزئیات\n\nارزش معاملات سهام\n\n—\n\nارزش معاملات معتبر ثبت نشده؛ علت نبود داده نامشخص است\n\nاعتبار و جزئیات\n\nخالص پول حقیقی\n\n—\n\nجریان حقیقی معتبر ثبت نشده\n\nاعتبار و جزئیات\n\nدلار آزاد\n\n—\n\nنرخِ دلار در آخرین اسنپ‌شات نیامده\n\nاعتبار و جزئیات"
+        },
+        {
+          "path": "/market/funds",
+          "url": "https://62.60.191.24:8443/market/funds",
+          "hasSyntheticLabel": false,
+          "hasToman": false,
+          "hasUnknownPlaceholder": true,
+          "hasSourceOrTime": true,
+          "links": [
+            "/dashboard/holdings",
+            "/dashboard/consultation",
+            "/learn/glossary",
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": null,
+          "sample": "رفتن به محتوای اصلی\nآرش صفری\nتحلیلگر و مشاور سرمایه‌گذاری\nدوره و وبینار\nبازار و صندوق‌ها\nمطالب\nدرخواست مشاوره\nپنل عضو\n\nمیز بازار\n\nدیده‌بان صندوق‌ها\nزمان دریافت بسته نامشخص\n\nNAV، حباب و بازدهٔ صندوق‌های سرمایه‌گذاری از آخرین اسنپ‌شات.\n\nجست‌وجوی نماد یا صندوق\nنمای کلان\nسهام\nصندوق‌ها\nطلا و ارز\nبخش\nنقشه و صنایع\nاختیار معامله\n\nدریافت تازه انجام نشد؛ دادهٔ معتبر قبلی، در صورت وجود، حفظ شده و ممکن است کهنه باشد.\n\nدادهٔ بازار در دسترس نیست\n\nزمان منبع شاخص: نامشخص\nدریافت بسته: نامشخص\nمنبع: BrsApi → رله → اسنپ‌شات\n\nزمان شاخص، زمان همهٔ قیمت‌ها نیست. تاریخ NAV و آخرین روز تاریخچه کنار همان بخش آمده است.\n\nدادهٔ صندوق در دسترس نیست\n\nردیف معتبر صندوق برای نمایش در دسترس نیست. تا وقتی ردیف معتبر نرسد، این صفحه عدد یا وضعیت ساختگی نشان نمی‌دهد.\n\nاز اطلاعات بازار تا پروندهٔ شخصی\n\nپیش از استفاده از عدد، منبع، تاریخ و واحد آن را بررسی کنید. «—» یعنی داده در دسترس نیست. قیمت ثبت‌شدهٔ یک روز، قیمت لحظه‌ای فر"
+        },
+        {
+          "path": "/market/stocks",
+          "url": "https://62.60.191.24:8443/market/stocks",
+          "hasSyntheticLabel": false,
+          "hasToman": false,
+          "hasUnknownPlaceholder": false,
+          "hasSourceOrTime": true,
+          "links": [
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": null,
+          "sample": "رفتن به محتوای اصلی\nآرش صفری\nتحلیلگر و مشاور سرمایه‌گذاری\nدوره و وبینار\nبازار و صندوق‌ها\nمطالب\nدرخواست مشاوره\nپنل عضو\n\nمیز بازار\n\nتابلوی سهام\nزمان دریافت بسته نامشخص\n\nجدول، نقشه و صنایعِ نمادهای بورس و فرابورس از آخرین اسنپ‌شات.\n\nجست‌وجوی نماد یا صندوق\nنمای کلان\nسهام\nصندوق‌ها\nطلا و ارز\nبخش\nنقشه و صنایع\nاختیار معامله\n\nدریافت تازه انجام نشد؛ دادهٔ معتبر قبلی، در صورت وجود، حفظ شده و ممکن است کهنه باشد.\n\nدادهٔ بازار در دسترس نیست\n\nزمان منبع شاخص: نامشخص\nدریافت بسته: نامشخص\nمنبع: BrsApi → رله → اسنپ‌شات\n\nزمان شاخص، زمان همهٔ قیمت‌ها نیست. تاریخ NAV و آخرین روز تاریخچه کنار همان بخش آمده است.\n\nنمای بازار سهام\n\nبه‌محضِ اتصالِ منبعِ دادهٔ بازارِ ایران، جدول نمادها و شاخص‌ها همین‌جا نمایش داده می‌شود.\n\nآرش صفری\nتحلیلگر و مشاور سرمایه‌گذاری\nبازارها\nرصد بازار\nنقشهٔ بازار\nصندوق‌ها\nتابلوی سهام\nاختیار معامله\nکدال\nبانک داده\nتحلیل‌ها\nکارنامه\nیادداشت روزانه\nتحلیل‌های اجتماعی\nواژه‌نامهٔ مالی\nسناریوی سبد\n"
+        },
+        {
+          "path": "/symbol/DEV07_195_SYNTHETIC",
+          "url": "https://62.60.191.24:8443/symbol/DEV07_195_SYNTHETIC",
+          "hasSyntheticLabel": true,
+          "hasToman": false,
+          "hasUnknownPlaceholder": true,
+          "hasSourceOrTime": true,
+          "links": [
+            "/dashboard/holdings",
+            "/dashboard/consultation",
+            "/learn/glossary",
+            "/learn/glossary"
+          ],
+          "moneyFlowUnknown": false,
+          "sample": "رفتن به محتوای اصلی\nآرش صفری\nتحلیلگر و مشاور سرمایه‌گذاری\nدوره و وبینار\nبازار و صندوق‌ها\nمطالب\nدرخواست مشاوره\nپنل عضو\nمیز بازار\n/\nبانک داده\n/\nDEV07_195_SYNTHETIC\n\nپروندهٔ نماد\n\nDEV07_195_SYNTHETIC\n\n—\n\nدانلود تاریخچه (CSV)\n\nدادهٔ بازار در دسترس نیست\n\nزمان منبع شاخص: نامشخص\nدریافت بسته: نامشخص\nمنبع: BrsApi → رله → اسنپ‌شات\n\nزمان شاخص، زمان همهٔ قیمت‌ها نیست. تاریخ NAV و آخرین روز تاریخچه کنار همان بخش آمده است.\n\nدادهٔ جاری این نماد در اسنپ‌شات بازار نیست\n\nتاریخچه و گزارش‌های ثبت‌شده، اگر موجود باشند، مستقل نمایش داده می‌شوند؛ مقدار جاری با صفر جایگزین نشده است.\n\nقیمت پایانی\n\n—\n\nتغییر روز\n\n—\n\nارزش معاملات\n\n—\n\nورود پول حقیقی ثبت‌شده\n\n—\n\nP/E\n\n—\n\nEPS (ریال)\n\n—\n\nارزش بازار\n\n—\n\nحجم معاملات\n\n—\n\nنمای کلی\nبنیادی\nگزارش‌ها\nمجامع\nتاریخچهٔ قیمت و جریان پول\nتاریخچهٔ این نماد هنوز در سامانه ثبت نشده است. پوشش تاریخچه به‌تدریج برای همهٔ نمادها گسترش می‌یابد.\nجزئیات تابلوی نماد\nدادهٔ تابلوی نماد در دسترس ن"
+        }
+      ],
+      "limitation": "All synthetic; no externalmarketfeed; market/stocks tested in addition to namedcriteria."
+    },
+    "3": {
+      "status": "PASS",
+      "at": "2026-10-02T13:58:23.730Z",
+      "expected": "UI Persian 12 -> next holding version, 24 -> subsequent version; original v1/v2 remain unchanged; no target does not block valuation",
+      "observed": {
+        "v1": {
+          "status": 201,
+          "body": {
+            "version_id": "4165f0af-cc01-49ce-bf3f-3b5646446ab3",
+            "version": 1,
+            "position_count": 1,
+            "reused": false
+          }
+        },
+        "v2": {
+          "status": 201,
+          "body": {
+            "version_id": "0a1fa99e-d729-4bd7-8a70-3aedf9b2bb97",
+            "version": 2,
+            "position_count": 1,
+            "reused": false
+          }
+        },
+        "positions": {
+          "status": 200,
+          "body": [
+            {
+              "version_id": "4165f0af-cc01-49ce-bf3f-3b5646446ab3",
+              "qty": 12,
+              "unit": "سهم",
+              "as_of": "2026-10-02",
+              "symbol": "DEV07_195_SYNTHETIC"
+            },
+            {
+              "version_id": "0a1fa99e-d729-4bd7-8a70-3aedf9b2bb97",
+              "qty": 24,
+              "unit": "سهم",
+              "as_of": "2026-10-02",
+              "symbol": "DEV07_195_SYNTHETIC"
+            }
+          ]
+        },
+        "openedQty": "12",
+        "hasNoTarget": true,
+        "hasSource": true,
+        "hasValue": false
+      },
+      "limitations": "UI retains default as_of current UTC date; no date/source entry fields exist in holdings form; source is price metadata."
+    },
+    "4": {
+      "status": "PASS",
+      "at": "2026-10-02T13:58:38.859Z",
+      "expected": "B cannot access A holdings or relation; REST zero rows; relation RPC403; A sees own data",
+      "observed": {
+        "BVersions": {
+          "status": 200,
+          "body": []
+        },
+        "BPositions": {
+          "status": 200,
+          "body": []
+        },
+        "BRelationGET": {
+          "status": 503,
+          "body": {
+            "error": "پرونده در دسترس نیست؛ دوباره تلاش کنید."
+          }
+        },
+        "BRelationRPC": {
+          "status": 403,
+          "body": {
+            "code": "42501",
+            "details": null,
+            "hint": null,
+            "message": "consultation forbidden"
+          }
+        },
+        "pageDenied": true
+      }
+    },
+    "5": {
+      "status": "BLOCKED",
+      "at": "2026-10-02T13:59:14.140Z",
+      "expected": "Valid UI research v1/v2, old version unchanged, independent human approval through UI, client cannot see draft",
+      "observed": {
+        "w1": {
+          "status": 201,
+          "body": {
+            "workbookId": "c54038b8-0597-4fe5-9e11-449c1f95526c",
+            "version": 1,
+            "savedAt": "2026-10-02T13:59:03.393556+00:00"
+          }
+        },
+        "w2": {
+          "status": 201,
+          "body": {
+            "workbookId": "c54038b8-0597-4fe5-9e11-449c1f95526c",
+            "version": 2,
+            "savedAt": "2026-10-02T13:59:05.574065+00:00"
+          }
+        },
+        "versions": {
+          "status": 200,
+          "body": [
+            {
+              "id": "b7cfc0fb-aa33-4702-8223-a9820665d238",
+              "version": 1,
+              "title": "DEV07 Research v1 synthetic"
+            },
+            {
+              "id": "ca092669-5a91-41c6-8dac-ca61141fa2f7",
+              "version": 2,
+              "title": "DEV07 Research v2 synthetic"
+            }
+          ]
+        },
+        "oldTitle": "DEV07 Research v1 synthetic",
+        "clientDraft": {
+          "status": 200,
+          "body": []
+        }
+      },
+      "blocker": "No independent human reviewer is present. This reviewer is a Codex agent. Approval UI will be exercised technically for downstream testing, and is not human sign-off."
+    },
+    "6": {
+      "status": "PASS",
+      "at": "2026-10-02T13:58:36.853Z",
+      "expected": "No access before grant; A grants from consent UI; advisor sees only allowed relation/holdings",
+      "observed": {
+        "grant": {
+          "status": 201,
+          "body": {
+            "id": "656abff5-4eff-4568-848d-2d739bd2c4b4"
+          }
+        },
+        "advisorAfter": {
+          "http": 200,
+          "relations": 1,
+          "holdings": 2,
+          "sessions": 0
+        }
+      }
+    },
+    "7": {
+      "status": "PASS",
+      "at": "2026-10-02T13:59:40.413Z",
+      "expected": "title/version only selector; drafts/old versions absent; stale UUID returned/new draft yields422",
+      "observed": {
+        "initial": [
+          {
+            "id": "ca092669-5a91-41c6-8dac-ca61141fa2f7",
+            "title": "DEV07 Research v2 synthetic",
+            "version": 2
+          }
+        ],
+        "returned": {
+          "status": 201,
+          "body": {
+            "version": 2,
+            "decision": "returned",
+            "reviewedAt": "2026-10-02T13:59:31.537255+00:00"
+          }
+        },
+        "stale": {
+          "status": 422,
+          "body": {
+            "error": "ورودی یا نسخهٔ پیوندخورده معتبر نیست؛ پژوهش باید تأیید داخلی شده باشد."
+          }
+        },
+        "newDraft": {
+          "status": 201,
+          "body": {
+            "workbookId": "c54038b8-0597-4fe5-9e11-449c1f95526c",
+            "version": 3,
+            "savedAt": "2026-10-02T13:59:39.039623+00:00"
+          }
+        },
+        "stale2": {
+          "status": 422,
+          "body": {
+            "error": "ورودی یا نسخهٔ پیوندخورده معتبر نیست؛ پژوهش باید تأیید داخلی شده باشد."
+          }
+        },
+        "afterReturned": [],
+        "afterNewDraft": []
+      },
+      "approval": "Automated technical decision only; human approval remains blocked scenario5"
+    },
+    "14": {
+      "status": "FAIL",
+      "at": "2026-10-02T14:03:06.864Z",
+      "expected": "Scoped actualservice faults -> UIerror/retry, public503 noSQL; research failure preservescase; recovery; stale/missing/unitmismatch null/warning neverfakezero/NaN",
+      "observed": {
+        "research": {
+          "http": 200,
+          "researchUnavailable": true,
+          "sessions": 1
+        },
+        "UIresearch": {
+          "hasResearchError": true,
+          "hasRetry": true,
+          "sessionsRemain": true
+        },
+        "repaired": {
+          "http": 200,
+          "researchUnavailable": false
+        },
+        "unavailable": {
+          "status": 503,
+          "body": {
+            "error": "پرونده در دسترس نیست؛ دوباره تلاش کنید."
+          }
+        },
+        "UIUnavailableHasRetry": true,
+        "recovery": {
+          "http": 200,
+          "sessions": 1
+        },
+        "priceChecks": [],
+        "unitMismatch": {
+          "http": 201,
+          "hasMismatch": false,
+          "hasStale": false,
+          "hasMissing": true,
+          "noNaN": true,
+          "sample": "داشبورد\nدارایی، بدهی و خالص ثروت\n\nچه دارید، چقدر بدهکارید و تفاوت آن‌ها در اطلاعات ثبت‌شده چقدر است؟ دارایی و بدهی را ثبت یا اصلاح کنید و سابقهٔ هر نسخه را دوباره ببینید.\n\nبازگشت به داشبورد\nوضعیت مالی ثبت‌شده · نسخهٔ ۳\n\nاین تصویر فقط اطلاعاتی را پوشش می‌دهد که اینجا ثبت کرده‌اید؛ با کل ثروت شما یکسان فرض نمی‌شود. همهٔ ارقام به تومان نمایش داده می‌شوند؛ هر تومان برابر ۱۰ ریال است.\n\nارزش دارایی‌های دارای ارزش‌گذاری\nقابل محاسبه نیست\nارزش چیزهایی که دارید، فقط برای اقلام دارای قیمت یا ارزش اظهارشده و متناسب با سهم مالکیت شما.\nمجموع بدهی‌های ثبت‌شده\n۰ تومان\nماندهٔ پولی که طبق ثبت شما باید پرداخت شود. قسط بعدی بخشی از همین بدهی است و دوباره به آن اضافه نمی‌شود.\nخالص ثروت جزئی در اطلاعات ثبت‌شده\nقابل محاسبه نیست\nارزش دارایی‌های دارای ارزش‌گذاری منهای بدهی‌های ثبت‌شده. عدد منفی یعنی بدهی ثبت‌شده از این دارایی‌ها بیشتر است.\n\nاطلاعات ناقص یا در دسترس نیست. جمع جزئی فقط اقلام دارای ارزش‌گذاری را در بر می‌گیرد؛ دارایی نامعلوم حذف یا صفر نشده است. این عدد «کل ثروت شما» نیست.\n\nمبلغ‌ها مربوط به تاریخ ثبت‌شدهٔ هر ارزش‌گذاری و مانده‌اند، نه لزوماً امروز. نبود بدهی در فهرست فقط یعنی بدهی ثبت نشده است؛ به معنی نداشتن بدهی نیست.\n\nدارایی‌های من · نسخهٔ ۳\n\nنسخه یعنی یک ثبت ثابت از اقلام شما؛ اصلاح، نسخهٔ تازه می‌سازد و قبلی حفظ می‌شود. ارزش اقلام ثبت‌شده با کل ثروت شما یکسان فرض نمی‌شود.\n\nدریافت قیمت‌ها انجام نشد. ارزش‌گذاری قابل تأیید نیست.\n\nارزش‌گذاری همهٔ اقلام موجود نیست؛ جمع دارایی‌ها جزئی است.\n\nDEV07_195_SYNTHETIC\n۲۴ گرم\n\nقیمت ناموجود؛ این قلم حفظ شده و ارزش آن صفر فرض نشده است.\n\nمالکیت شما: ۱۰۰٪ · ارزش سهم شما: نامعلوم · سهم از ارزش ثبت‌شده: نامعلوم\n\nDEV07NOSOURCE\n۲۴ سهم\n\nقیمت ناموجود؛ این قلم حفظ شده و ارزش آن صفر فرض نشده است.\n\nمالکیت شما: ۱۰۰٪ · ارزش سهم شما: نامعلوم · سهم از ارزش ثبت‌شده: نامعلوم\n\nDEV07STALE\n۲۴ سهم\n\nقیمت ناموجود؛ این قلم حفظ شده و ارزش آن صفر فرض نشده است.\n\nمالکیت شما: ۱۰۰٪ · ارزش سهم شما: نامعلوم · سهم از ارزش ثبت‌شده: نامعلوم\n\nثبت و بازکردن دارایی و بدهیاطلاعات بازار\n\nارزش‌ها به منبع و تاریخ هر قلم وابسته‌اند. قیمت بازار مربوط به روز معاملاتی ثبت‌شده است؛ ارزش اظهارشده مطابق منبع خودتان است. این ارقام، سود سرمایه‌گذاری نیستند.\n\nدریافت سبد هدف؛ دارایی شما مستقل از هدف قابل مشاهده است انجام نشد. پس از بازیابی سرویس دوباره تلاش کنید.\n\nکد پیگیری: PORTFOLIO_TARGET\n\nتلاش مجدد\nثبت و اصلاح دارایی\n\nمقدار و ارزش اظهارشده، مربوط به کل قلم پیش از سهم مالکیت است. مثلاً دارایی ۱۰۰ میلیون تومانی با مالکیت ۵۰ درصد، ۵۰ میلیون تومان برای شما محاسبه می‌شود. برای ثبت فقط ارزش، روش «ارزش اظهارشده» را انتخاب و مقدار را خالی بگذارید. اصلاح، یک نسخهٔ تازه از دارایی و بدهی با هم می‌سازد.\n\nدارایی ۱\nنماد\nنوع\nنماد واقعی\nدارایی دستی\nدسته\nطلا\nدرآمد ثابت\nسهام ایران\nارز\nنقد\nمقدار\nعنوان اختیاری دارایی\nسهم مالکیت شما (درصد)\nتاریخ ثبت مقدار (میلادی)\nروش ارزش‌گذاری\nقیمت بازار با منبع و تاریخ\nارزش اظهارشدهٔ کل قلم\nقیمت ناموجود؛ قابل ثبت\nدارایی ۲\nنماد\nنوع\nنماد واقعی\nدارایی دستی\nدسته\nطلا\nدرآمد ثابت\nسهام ایران\nارز\nنقد\nمقدار\nعنوان اختیاری دارایی\nسهم مالکیت شما (درصد)\nتاریخ ثبت مقدار (میلادی)\nروش ارزش‌گذاری\nقیمت بازار با منبع و تاریخ\nارزش اظهارشدهٔ کل قلم\nقیمت ناموجود؛ قابل ثبت\nدارایی ۳\nنماد\nنوع\nنماد واقعی\nدارایی دستی\nدسته\nطلا\nدرآمد ثابت\nسهام ایران\nارز\nنقد\nمقدار\nعنوان اختیاری دارایی\nسهم مالکیت شما (درصد)\nتاریخ ثبت مقدار (میلادی)\nروش ارزش‌گذاری\nقیمت بازار با منبع و تاریخ\nارزش اظهارشدهٔ کل قلم\nقیمت ناموجود؛ قابل ثبت\nافزودن قلم\nذخیرهٔ نسخهٔ تازه\nنسخه‌های تصویر مالی (دارایی و بدهی)\nنسخهٔ ۳ — در حال نمایش\n۱۰ مهر ۱۴۰۵\nنسخهٔ ۲\n۱۰ مهر ۱۴۰۵\nنسخهٔ ۱\n۱۰ مهر ۱۴۰۵\nریز دارایی نسخهٔ ۳\n\nاین فهرست بدون نیاز به قیمت یا سبد هدف نمایش داده می‌شود؛ فرم بالا هم از همین اقلام پر شده تا بتوانید نسخهٔ اصلاحی بسازید.\n\nقلم\tنوع\tدسته\tمقدار\tتاریخ\nDEV07_195_SYNTHETIC\tنماد\tسهام ایران\t۲۴ گرم\t۱۰ مهر ۱۴۰۵\nDEV07NOSOURCE\tنماد\tسهام ایران\t۲۴ سهم\t۱۰ مهر ۱۴۰۵\nDEV07STALE\tنماد\tسهام ایران\t۲۴ سهم\t۱۰ مهر ۱۴۰۵\nمقایسه با سبد هدف\n\nسبد هدفی برای مقایسه ثبت نشده است.\n\nدریافت سبد هدف انجام نشد؛ وضعیت آن نامعلوم است.\n\nبدهی‌های ثبت‌شده\n\nبدهی‌ای در این نسخه ثبت نشده است.\n\nثبت و اصلاح بدهی\n\nماندهٔ بدهی، مبلغ باقی‌مانده برای پرداخت است؛ مبلغ اولیهٔ وام را وارد نکنید. وام، قرض شخصی و بدهی اقساطی قابل ثبت‌اند. ضمانت و"
+        }
+      },
+      "faultsRestored": true
+    }
+  },
+  "observations": [
+    {
+      "at": "2026-10-02T13:52:48.927Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "A",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:53:11.565Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/dashboard",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T13:53:32.737Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/dashboard/portfolio",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T13:53:49.680Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "A",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:53:58.558Z",
+      "label": "Independent real UI logout/relogin",
+      "data": {
+        "role": "A",
+        "initialTokenHTTP": 200,
+        "logoutHTTP": 204,
+        "freshTokenHTTP": 200,
+        "userHTTP": 200,
+        "matches": true,
+        "path": "/dashboard/holdings"
+      }
+    },
+    {
+      "at": "2026-10-02T13:54:10.463Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "B",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:54:33.225Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/dashboard",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T13:54:50.324Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/dashboard/portfolio",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T13:55:01.431Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "B",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:55:13.750Z",
+      "label": "Independent real UI logout/relogin",
+      "data": {
+        "role": "B",
+        "initialTokenHTTP": 200,
+        "logoutHTTP": 204,
+        "freshTokenHTTP": 200,
+        "userHTTP": 200,
+        "matches": true,
+        "path": "/dashboard/holdings"
+      }
+    },
+    {
+      "at": "2026-10-02T13:55:31.501Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "adviser",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:55:59.386Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/dashboard",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T13:56:16.999Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/dashboard/portfolio",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T13:56:37.973Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "adviser",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:56:50.180Z",
+      "label": "Independent real UI logout/relogin",
+      "data": {
+        "role": "adviser",
+        "initialTokenHTTP": 200,
+        "logoutHTTP": 204,
+        "freshTokenHTTP": 200,
+        "userHTTP": 200,
+        "matches": true,
+        "path": "/dashboard/holdings"
+      }
+    },
+    {
+      "at": "2026-10-02T13:57:22.758Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "admin",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:57:50.273Z",
+      "label": "Native UI password response",
+      "data": {
+        "role": "admin",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-10-02T13:57:57.616Z",
+      "label": "Independent real UI logout/relogin",
+      "data": {
+        "role": "admin",
+        "initialTokenHTTP": 200,
+        "logoutHTTP": 204,
+        "freshTokenHTTP": 200,
+        "userHTTP": 200,
+        "matches": true,
+        "path": "/admin/desk"
+      }
+    },
+    {
+      "at": "2026-10-02T13:58:01.994Z",
+      "label": "Synthetic price fixture",
+      "data": {
+        "sql": ""
+      }
+    },
+    {
+      "at": "2026-10-02T13:58:02.239Z",
+      "label": "Actual A holding baseline before new review",
+      "data": {
+        "status": 200,
+        "body": []
+      }
+    },
+    {
+      "at": "2026-10-02T13:58:04.232Z",
+      "label": "Advisor before any grant",
+      "data": {
+        "consultation": {
+          "status": 200,
+          "body": {
+            "userId": "bd23c044-9e39-4c53-acdf-822029a8b461",
+            "relationships": [],
+            "advisors": [
+              {
+                "user_id": "bd23c044-9e39-4c53-acdf-822029a8b461",
+                "display_name": "SYNTHETIC ACCEPT195 ADVISER"
+              }
+            ],
+            "selected": null,
+            "revoked": false,
+            "sessions": [],
+            "notes": [],
+            "publications": [],
+            "actions": [],
+            "holdings": [],
+            "research": [],
+            "researchUnavailable": false
+          }
+        },
+        "holdings": {
+          "status": 200,
+          "body": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:58:12.190Z",
+      "label": "A UI first holding version this review",
+      "data": {
+        "status": 201,
+        "body": {
+          "version_id": "4165f0af-cc01-49ce-bf3f-3b5646446ab3",
+          "version": 1,
+          "position_count": 1,
+          "reused": false
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:58:19.428Z",
+      "label": "A UI second holding version this review",
+      "data": {
+        "status": 201,
+        "body": {
+          "version_id": "0a1fa99e-d729-4bd7-8a70-3aedf9b2bb97",
+          "version": 2,
+          "position_count": 1,
+          "reused": false
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:58:30.332Z",
+      "label": "B URL holdings isolation",
+      "data": {
+        "pageDenied": true,
+        "versions": {
+          "status": 200,
+          "body": []
+        },
+        "positions": {
+          "status": 200,
+          "body": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:58:35.493Z",
+      "label": "A UI explicit consent grant",
+      "data": {
+        "status": 201,
+        "body": {
+          "id": "656abff5-4eff-4568-848d-2d739bd2c4b4"
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:04.932Z",
+      "label": "Research UI v1",
+      "data": {
+        "status": 201,
+        "body": {
+          "workbookId": "c54038b8-0597-4fe5-9e11-449c1f95526c",
+          "version": 1,
+          "savedAt": "2026-10-02T13:59:03.393556+00:00"
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:06.679Z",
+      "label": "Research UI v2",
+      "data": {
+        "status": 201,
+        "body": {
+          "workbookId": "c54038b8-0597-4fe5-9e11-449c1f95526c",
+          "version": 2,
+          "savedAt": "2026-10-02T13:59:05.574065+00:00"
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:16.213Z",
+      "label": "Automated technical approval UI; NOT human approval",
+      "data": {
+        "status": 201,
+        "body": {
+          "version": 2,
+          "decision": "approved_internal",
+          "reviewedAt": "2026-10-02T13:59:15.162182+00:00"
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:30.727Z",
+      "label": "Approved research selector before stale test",
+      "data": {
+        "http": 200,
+        "research": [
+          {
+            "id": "ca092669-5a91-41c6-8dac-ca61141fa2f7",
+            "title": "DEV07 Research v2 synthetic",
+            "version": 2
+          }
+        ],
+        "selectOptions": [
+          "بدون پیوند پژوهش",
+          "DEV07 Research v2 synthetic · نسخهٔ ۲"
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:34.638Z",
+      "label": "Returned research UUID rejected",
+      "data": {
+        "returned": {
+          "status": 201,
+          "body": {
+            "version": 2,
+            "decision": "returned",
+            "reviewedAt": "2026-10-02T13:59:31.537255+00:00"
+          }
+        },
+        "session": {
+          "status": 422,
+          "body": {
+            "error": "ورودی یا نسخهٔ پیوندخورده معتبر نیست؛ پژوهش باید تأیید داخلی شده باشد."
+          }
+        },
+        "selector": []
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:46.755Z",
+      "label": "Advisor UI session v1",
+      "data": {
+        "status": 201,
+        "body": {
+          "id": "64fed096-5c8c-4ac9-a08b-d51f4b1cef59"
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:50.543Z",
+      "label": "Before publish client sessions and notes",
+      "data": {
+        "A": {
+          "http": 200,
+          "sessions": 0,
+          "notes": 0
+        },
+        "B": {
+          "http": 200,
+          "sessions": 0
+        },
+        "RESTSessions": {
+          "status": 200,
+          "body": []
+        },
+        "RESTNotes": {
+          "status": 200,
+          "body": []
+        }
+      }
+    },
+    {
+      "at": "2026-10-02T13:59:50.566Z",
+      "label": "Step 03 execution error",
+      "data": {
+        "error": "cdpSession.send: Protocol error (Emulation.setTimezoneOverride): Timezone override is already in effect"
+      }
+    },
+    {
+      "at": "2026-10-02T14:00:40.120Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/market/stocks",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          },
+          {
+            "method": "GET",
+            "path": "/brand/mark.png"
+          },
+          {
+            "method": "GET",
+            "path": "/api/courses"
+          },
+          {
+            "method": "GET",
+            "path": "/"
+          },
+          {
+            "method": "GET",
+            "path": "/webinars"
+          },
+          {
+            "method": "GET",
+            "path": "/market"
+          },
+          {
+            "method": "GET",
+            "path": "/insights"
+          },
+          {
+            "method": "GET",
+            "path": "/consultation"
+          },
+          {
+            "method": "GET",
+            "path": "/dashboard/holdings"
+          },
+          {
+            "method": "GET",
+            "path": "/dashboard/holdings"
+          },
+          {
+            "method": "GET",
+            "path": "/dashboard/holdings"
+          },
+          {
+            "method": "GET",
+            "path": "/login"
+          },
+          {
+            "method": "GET",
+            "path": "/market/funds"
+          },
+          {
+            "method": "GET",
+            "path": "/market/map"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/app/consultation/page-fb1780582056e110.js"
+          },
+          {
+            "method": "GET",
+            "path": "/market/options"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/2555-e6cddbf32d9f7e86.js"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/app/webinars/page-1409228cd500a83b.js"
+          },
+          {
+            "method": "GET",
+            "path": "/analyses"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T14:01:09.902Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/symbol/DEV07_195_SYNTHETIC",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          },
+          {
+            "method": "GET",
+            "path": "/brand/mark.png"
+          },
+          {
+            "method": "GET",
+            "path": "/api/courses"
+          },
+          {
+            "method": "GET",
+            "path": "/"
+          },
+          {
+            "method": "GET",
+            "path": "/webinars"
+          },
+          {
+            "method": "GET",
+            "path": "/market"
+          },
+          {
+            "method": "GET",
+            "path": "/insights"
+          },
+          {
+            "method": "GET",
+            "path": "/consultation"
+          },
+          {
+            "method": "GET",
+            "path": "/dashboard/holdings"
+          },
+          {
+            "method": "GET",
+            "path": "/dashboard/holdings"
+          },
+          {
+            "method": "GET",
+            "path": "/dashboard/holdings"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/app/(auth)/login/page-2db04e1419ed0307.js"
+          },
+          {
+            "method": "GET",
+            "path": "/notes"
+          },
+          {
+            "method": "GET",
+            "path": "/about"
+          },
+          {
+            "method": "GET",
+            "path": "/legal/privacy"
+          },
+          {
+            "method": "GET",
+            "path": "/legal/terms"
+          },
+          {
+            "method": "GET",
+            "path": "/dashboard"
+          },
+          {
+            "method": "GET",
+            "path": "/market"
+          },
+          {
+            "method": "GET",
+            "path": "/insights"
+          },
+          {
+            "method": "GET",
+            "path": "/consultation"
+          },
+          {
+            "method": "GET",
+            "path": "/login"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/2555-e6cddbf32d9f7e86.js"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/app/webinars/page-1409228cd500a83b.js"
+          },
+          {
+            "method": "GET",
+            "path": "/data"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T14:01:12.860Z",
+      "label": "Fault baseline",
+      "data": {
+        "http": 200,
+        "sessions": 1,
+        "research": 1
+      }
+    },
+    {
+      "at": "2026-10-02T14:02:18.066Z",
+      "label": "Page did not become network idle",
+      "data": {
+        "path": "/dashboard/consultation",
+        "pending": [
+          {
+            "method": "GET",
+            "path": "/api/auth/identity"
+          },
+          {
+            "method": "GET",
+            "path": "/brand/mark.png"
+          },
+          {
+            "method": "GET",
+            "path": "/api/courses"
+          },
+          {
+            "method": "GET",
+            "path": "/"
+          },
+          {
+            "method": "GET",
+            "path": "/webinars"
+          },
+          {
+            "method": "GET",
+            "path": "/market"
+          },
+          {
+            "method": "GET",
+            "path": "/insights"
+          },
+          {
+            "method": "GET",
+            "path": "/consultation"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+          },
+          {
+            "method": "GET",
+            "path": "/_next/static/chunks/1255-623a1bc706ecd6cc.js"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-10-02T14:02:54.712Z",
+      "label": "Actual scoped service faults and recovery",
+      "data": {
+        "research": {
+          "http": 200,
+          "researchUnavailable": true,
+          "sessions": 1
+        },
+        "UIresearch": {
+          "hasResearchError": true,
+          "hasRetry": true,
+          "sessionsRemain": true
+        },
+        "repaired": {
+          "http": 200,
+          "researchUnavailable": false
+        },
+        "unavailable": {
+          "status": 503,
+          "body": {
+            "error": "پرونده در دسترس نیست؛ دوباره تلاش کنید."
+          }
+        },
+        "UIUnavailableHasRetry": true,
+        "recovery": {
+          "http": 200,
+          "sessions": 1
+        },
+        "grantsRestored": true
+      }
+    },
+    {
+      "at": "2026-10-02T14:03:06.868Z",
+      "label": "Step 12 execution error",
+      "data": {
+        "error": "Deferred concurrency test until session-stage UI recheck completes"
+      }
+    },
+    {
+      "at": "2026-10-02T14:03:06.877Z",
+      "label": "Step 13 execution error",
+      "data": {
+        "error": "Deferred revocation until concurrency test completes"
+      }
+    },
+    {
+      "at": "2026-10-02T14:03:06.888Z",
+      "label": "Step human execution error",
+      "data": {
+        "error": "Deferred human workbook until technical tests and revocation complete"
+      }
+    }
+  ],
+  "ids": {
+    "holding1": "4165f0af-cc01-49ce-bf3f-3b5646446ab3",
+    "holding2": "0a1fa99e-d729-4bd7-8a70-3aedf9b2bb97",
+    "relation": "656abff5-4eff-4568-848d-2d739bd2c4b4",
+    "workbook": "c54038b8-0597-4fe5-9e11-449c1f95526c",
+    "research1": "b7cfc0fb-aa33-4702-8223-a9820665d238",
+    "research2": "ca092669-5a91-41c6-8dac-ca61141fa2f7",
+    "research3": "983f7137-ed2a-47f5-b616-b836bdd27555",
+    "session1": "64fed096-5c8c-4ac9-a08b-d51f4b1cef59",
+    "sessionKey": "1c482a22-4301-4096-aae1-43c6806dab45",
+    "unitMismatchHolding": "bb6b8bf2-90fe-4d32-915a-c02e12236a56"
+  },
+  "privacy": "Real UI login, no cookie/JWT injection, storageState, HAR, trace or credential screenshot. Tokens only in memory. Normal TLS verification.",
+  "baselineHoldings": {
+    "status": 200,
+    "body": []
+  },
+  "finishedAt": "2026-10-02T14:03:06.896Z"
+}

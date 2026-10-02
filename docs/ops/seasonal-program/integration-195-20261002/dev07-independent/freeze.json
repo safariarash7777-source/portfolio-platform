@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-02T14:21:40.209Z",
+  "sha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "environment": "portfolio-accept195",
+  "counts": {
+    "PASS": 13,
+    "FAIL": 0,
+    "BLOCKED": 1
+  },
+  "humanApproval": "BLOCKED",
+  "privacyCheck": {
+    "scanned": 25,
+    "secretValuesFound": false
+  },
+  "files": [
+    {
+      "file": "results.json",
+      "sha256": "3ebbb64fbde2d9723ce77f54dc7f8cfb4fc715ed17e1c42e861fefb26e8718f1"
+    },
+    {
+      "file": "results-initial-stage.json",
+      "sha256": "fb0c0fe7901e9d6de21122e0b219d58d62fdd929e93690fc47f6638a9352f077"
+    },
+    {
+      "file": "catalog.json",
+      "sha256": "3619246a57efac2f2d8321febe7e9ad8ad662396d0b0e0ea5825933b8a1f5197"
+    },
+    {
+      "file": "synthetic-research.json",
+      "sha256": "505f401756ffdf7c904232f6a8d2d1c5bab0b759e56863a14a0829c75adcebda"
+    },
+    {
+      "file": "independent.md",
+      "sha256": "e765f00414ee685baa17533ad6fad11b1c2db57fe7cbb68ca70ea8b3daaa3fb5"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-02T14:26:03.875Z",
+  "applicationSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "independentCounts": {
+    "PASS": 13,
+    "FAIL": 0,
+    "BLOCKED": 1
+  },
+  "frozenWitnessesByteIdentical": 5,
+  "normalizedCopiedScriptWhitespace": [
+    "finalize.mjs",
+    "step-03-resume.mjs",
+    "step-03.mjs",
+    "step-14-recheck.mjs",
+    "step-audit.mjs"
+  ],
+  "centralIndependentFilesChanged": false,
+  "secretScan": {
+    "checkedTextFiles": 78,
+    "findings": 0
+  },
+  "migrationReceipt": 18,
+  "existingContainersUnchanged": true,
+  "originalSixSourceFilesByteIdentical": true
+}

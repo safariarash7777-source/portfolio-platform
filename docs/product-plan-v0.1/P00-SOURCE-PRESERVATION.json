@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-02T14:14:06.672Z",
+  "method": "Original six files copied byte for byte; source package remains unchanged",
+  "files": [
+    {
+      "file": "00-start-here.md",
+      "sha256": "19aa37c4f333653ee752f7e46510272988918ad43073eb263cd5ec29c99e4a21",
+      "matchesSource": true
+    },
+    {
+      "file": "01-product.md",
+      "sha256": "1a716b5bbc5632df2fae57a0c2f7ac3f1f7d4cc9a3e8dc6d04feb2e6a463d4f7",
+      "matchesSource": true
+    },
+    {
+      "file": "02-current-state.md",
+      "sha256": "a061072eaeaaca074db90590e99fab1df35f3effc25d29908846902a125a1115",
+      "matchesSource": true
+    },
+    {
+      "file": "03-delivery-plan.md",
+      "sha256": "585785092b6d89ed8c0623073c1e27e28f7395e9dd4f50883f294ea43e794ca5",
+      "matchesSource": true
+    },
+    {
+      "file": "04-handoff.md",
+      "sha256": "103afa9dc25ee1da1762bb08fd3775514062d4cfa3f8477043352120298b2a76",
+      "matchesSource": true
+    },
+    {
+      "file": "evidence.json",
+      "sha256": "b3b6d4eee08f1dc9704346bdb76e040a3f65dbcfa63076c5a76b375a5f7c4406",
+      "matchesSource": true
+    }
+  ]
+}
