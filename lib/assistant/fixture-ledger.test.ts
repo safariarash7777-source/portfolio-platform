@@ -1,0 +1,95 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { mkdtempSync, appendFileSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawn } from 'node:child_process';
+import { FixtureBudgetLedger, type BudgetPolicy } from './fixture-ledger';
+import { transitionHandoff, p11SupportDimensions, handoffMetric, type Handoff } from './handoff-fixture';
+const subject='a'.repeat(64), other='b'.repeat(64);
+const policy: BudgetPolicy={version:'fixture-v1',window:'synthetic-window',startsAt:0,endsAt:1000,totalTokens:100,subjectTokens:60,concurrency:2,subjectConcurrency:1};
+const dir=()=>mkdtempSync(join(tmpdir(),'p08-budget-fixture-'));
+const ledger=(d=dir(),p:BudgetPolicy|null=policy)=>new FixtureBudgetLedger(d,p,()=>100);
+const fresh=async(d=dir(),p:BudgetPolicy=policy)=>{const l=ledger(d,p);await l.initialize();return l;};
+test('reservations survive reopen, cannot reset consumption or cancel uncertain dispatch',async()=>{
+  const d=dir(),key=randomUUID(); await fresh(d); await ledger(d).reserve(key,subject,60); assert.equal(await ledger(d).claimDispatch(key),true);
+  await assert.rejects(ledger(d).cancelBeforeDispatch(key),/uncertain/);
+  await assert.rejects(ledger(d).reserve(randomUUID(),subject,1),/budget/);
+  assert.equal(await ledger(d).claimDispatch(key),false);
+  await ledger(d).settle(key,30); await ledger(d).reserve(randomUUID(),subject,30);
+});
+test('reserve idempotency never duplicates spend or grants duplicate dispatch',async()=>{
+  const l=await fresh(),key=randomUUID(); await l.reserve(key,subject,10); await l.reserve(key,subject,10);
+  await assert.rejects(l.reserve(key,other,10),/idempotency/); await assert.rejects(l.reserve(key,subject,20),/idempotency/);
+  assert.equal(await l.claimDispatch(key),true); assert.equal(await l.claimDispatch(key),false);
+  await l.settle(key,9); await l.settle(key,9); await assert.rejects(l.settle(key,8),/conflict/);
+});
+test('only undispatched cancellation returns reservation to pool',async()=>{
+  const l=await fresh(),key=randomUUID(); await l.reserve(key,subject,60); await l.cancelBeforeDispatch(key); await l.cancelBeforeDispatch(key);
+  await l.reserve(randomUUID(),subject,60);
+});
+test('global and subject concurrency held independently',async()=>{
+  const l=await fresh(); await l.reserve(randomUUID(),subject,10);
+  await assert.rejects(l.reserve(randomUUID(),subject,10),/concurrency/);
+  await l.reserve(randomUUID(),other,10); await assert.rejects(l.reserve(randomUUID(),'c'.repeat(64),10),/concurrency/);
+});
+test('unknown policy/cap, changed policy and window expiry fail closed',async()=>{
+  await assert.rejects(ledger(dir(),null).reserve(randomUUID(),subject,1),/policy/);
+  await assert.rejects(ledger(dir(),{...policy,totalTokens:null}).reserve(randomUUID(),subject,1),/policy/);
+  const d=dir(); await fresh(d); await ledger(d).reserve(randomUUID(),subject,1);
+  await assert.rejects(ledger(d,{...policy,totalTokens:200}).reserve(randomUUID(),other,1),/policy-changed/);
+  await assert.rejects(new FixtureBudgetLedger(d,policy,()=>1000).reserve(randomUUID(),other,1),/outside-window/);
+});
+test('unknown usage cannot release reservation; overrun is recorded then blocks new work',async()=>{
+  const l=await fresh(),key=randomUUID(); await l.reserve(key,subject,10); await l.claimDispatch(key);
+  await assert.rejects(l.settle(key,Number.NaN),/usage/); await l.settle(key,11);
+  await assert.rejects(l.reserve(randomUUID(),other,1),/reconciliation/);
+});
+test('late settlement records actual in original expired window while new dispatch stays closed',async()=>{
+  const d=dir(),key=randomUUID();await fresh(d);await ledger(d).reserve(key,subject,10);await ledger(d).claimDispatch(key);
+  const expired=new FixtureBudgetLedger(d,policy,()=>1000);assert.equal((await expired.settle(key,8)).actualTokens,8);
+  await assert.rejects(expired.reserve(randomUUID(),other,1),/outside-window/);
+});
+test('partial crash journal is refused rather than silently reset',async()=>{
+  const d=dir(); await fresh(d); await ledger(d).reserve(randomUUID(),subject,10); appendFileSync(join(d,'budget.jsonl'),'{broken');
+  await assert.rejects(ledger(d).reserve(randomUUID(),other,10),/corrupt/);
+});
+test('two OS processes contend on persistent global concurrency; exactly one is admitted',async()=>{
+  const d=dir(); await fresh(d,{...policy,concurrency:1}); const run=(s:string)=>new Promise<string>((resolve,reject)=>{
+    const child=spawn(process.execPath,[join(process.cwd(),'node_modules/tsx/dist/cli.mjs'),join(process.cwd(),'lib/assistant/fixture-ledger-worker.ts'),d,randomUUID(),s,JSON.stringify({...policy,concurrency:1})]);
+    let out='';child.stdout.on('data',v=>out+=String(v));child.on('error',reject);child.on('close',()=>resolve(out));
+  });
+  assert.deepEqual((await Promise.all([run(subject),run(other)])).sort(),['denied','reserved']);
+});
+test('journal stores only token accounting and opaque refs, no text/cost guesses',async()=>{
+  const d=dir();await fresh(d);await ledger(d).reserve(randomUUID(),subject,10); const raw=readFileSync(join(d,'budget.jsonl'),'utf8');
+  for(const key of ['question','answer','phone','amount','cost','providerKey']) assert.ok(!raw.includes(key));
+});
+test('missing initialized ledger does not reset budget, and orphan crash lock is not stolen',async()=>{
+  const d=dir();await fresh(d);await ledger(d).reserve(randomUUID(),subject,60);unlinkSync(join(d,'budget.jsonl'));
+  await assert.rejects(ledger(d).reserve(randomUUID(),other,10),/missing/);
+  const crash=dir();await fresh(crash);writeFileSync(join(crash,'budget.lock'),'crashed owner');
+  await assert.rejects(ledger(crash).reserve(randomUUID(),subject,1),/lock-unavailable/);
+});
+const initial=():Handoff=>({caseRef:'c'.repeat(64),subjectRef:subject,state:'pending_consent',revision:0,reason:'new-judgement',publicationVersionRef:null,consentVersion:null,ownerRef:null});
+const member={role:'member',subjectRef:subject} as const, operator={role:'operator',hasCaseGrant:true} as const;
+test('consent→received→assigned→resolved, with revision and case authority',()=>{
+  const a=initial(),b=transitionHandoff(a,0,{kind:'consent',consentVersion:'policy-v1'},member);
+  assert.equal(p11SupportDimensions(a,b,false),null); assert.deepEqual(p11SupportDimensions(a,b,true),{action:'opened',category:'assistant'});
+  const c=transitionHandoff(b,1,{kind:'assign',ownerRef:other},operator); assert.equal(p11SupportDimensions(b,c,true),null);
+  const d=transitionHandoff(c,2,{kind:'resolve'},operator);assert.deepEqual(p11SupportDimensions(c,d,true),{action:'resolved',category:'assistant'});
+  assert.equal(a.state,'pending_consent'); assert.equal(b.state,'received');
+});
+test('no consent/grant, other member, stale revision and unassigned resolution are denied',()=>{
+  assert.throws(()=>transitionHandoff(initial(),0,{kind:'assign',ownerRef:other},operator),/consent/);
+  assert.throws(()=>transitionHandoff(initial(),0,{kind:'consent',consentVersion:'v1'},{role:'member',subjectRef:other}),/denied/);
+  assert.throws(()=>transitionHandoff(initial(),0,{kind:'close'},{role:'operator',hasCaseGrant:false}),/denied/);
+  assert.throws(()=>transitionHandoff(initial(),1,{kind:'close'},member),/version/);
+  const b=transitionHandoff(initial(),0,{kind:'consent',consentVersion:'v1'},member);assert.throws(()=>transitionHandoff(b,1,{kind:'resolve'},operator),/denied/);
+});
+test('consent revocation closes locally without fabricating resolution or human response',()=>{
+  const b=transitionHandoff(initial(),0,{kind:'consent',consentVersion:'v1'},member);
+  const c=transitionHandoff(b,1,{kind:'revoke-consent'},member);assert.equal(c.consentVersion,null);assert.equal(p11SupportDimensions(b,c,true),null);
+  assert.deepEqual(Object.keys(handoffMetric(c)).sort(),['caseRef','contract','reason','revision','state']);
+});

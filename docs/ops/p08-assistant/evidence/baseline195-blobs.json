@@ -1,0 +1,85 @@
+{
+  "base191": "a83f71d922a93ec2bfb398a306d7b282ce1db81f",
+  "files": [
+    {
+      "path": "lib/intelligence/publication.ts",
+      "blob191": "da2eeaf65f905676dc1ab31a774d66b385471336",
+      "blob195": "da2eeaf65f905676dc1ab31a774d66b385471336",
+      "equal": true
+    },
+    {
+      "path": "lib/intelligence/publication-feed.ts",
+      "blob191": "9a99853aee9da84f67b5e907503ce4f7a6c281a6",
+      "blob195": "9a99853aee9da84f67b5e907503ce4f7a6c281a6",
+      "equal": true
+    },
+    {
+      "path": "lib/intelligence/research-workbook.ts",
+      "blob191": "8c87738ec41c327a8b2cd6947b8bcb71228eaeb9",
+      "blob195": "8c87738ec41c327a8b2cd6947b8bcb71228eaeb9",
+      "equal": true
+    },
+    {
+      "path": "lib/intelligence/workbook-store.ts",
+      "blob191": "b3e92e04ce1a03223bce45441c9b54fd2f119c74",
+      "blob195": "b3e92e04ce1a03223bce45441c9b54fd2f119c74",
+      "equal": true
+    },
+    {
+      "path": "lib/intelligence/agent-readiness.ts",
+      "blob191": "11073ddbb6289768173255da80998d81f611de8c",
+      "blob195": "11073ddbb6289768173255da80998d81f611de8c",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/rebalance.ts",
+      "blob191": "9efdf8aeb50d5f887ae939cc7ddd02f779de3eb2",
+      "blob195": "9efdf8aeb50d5f887ae939cc7ddd02f779de3eb2",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/balanceSheet.ts",
+      "blob191": "2b3ada50babec99a9a9700cb890ce6a58a594220",
+      "blob195": "2b3ada50babec99a9a9700cb890ce6a58a594220",
+      "equal": true
+    },
+    {
+      "path": "lib/core/narrative.ts",
+      "blob191": "acdbbb7958522450aa9e1167f4b9b5787e62625d",
+      "blob195": "acdbbb7958522450aa9e1167f4b9b5787e62625d",
+      "equal": true
+    },
+    {
+      "path": "lib/core/engine.ts",
+      "blob191": "bbc2957a309ee7864607729c4638619948247014",
+      "blob195": "610c107968ca59eda04f38fdb5b7149b5203cedd",
+      "equal": false
+    },
+    {
+      "path": "lib/core/quarterly.ts",
+      "blob191": "e7f9b03a65e70ff502b99acf58db5d6d6d9f481e",
+      "blob195": "df3f239e54c387c4e27cb650729a6987c228a9b4",
+      "equal": false
+    },
+    {
+      "path": "lib/fundamental/calc.ts",
+      "blob191": "1fa992450c477a1e8f4c93bf9b1b15c68d511f38",
+      "blob195": "d9da79ab8ed0fe3c10df13657162cacf5c0834f3",
+      "equal": false
+    },
+    {
+      "path": "lib/fundamental/types.ts",
+      "blob191": "f468be7f9724c6a3a2883cfcdebbf42c2fd6e839",
+      "blob195": "df9112bffcbcdae3bab7803008400cf1206dc69c",
+      "equal": false
+    },
+    {
+      "path": "package-lock.json",
+      "blob191": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "blob195": "3ee7ea720671675d4e41423bf9fef8b2ecec485a",
+      "equal": true
+    }
+  ],
+  "selectedP00": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "mergeCommit": "b813d2e23d79af06938b83fb6084bc266027509c"
+}

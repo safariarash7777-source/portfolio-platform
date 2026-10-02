@@ -2,6 +2,8 @@
 
 مرجع دامنه: برنامه مصوب `arash-product-plan-v0.1`، سندهای 00/01/03/04 در checkout `portfolio-product-direction/docs/product-plan-v0.1`. تاریخ 2026-10-02. این پرونده شاهد فنی P08 است؛ دفتر وضعیت محصول، تصمیم و جهت همچنان COMMAND-CENTER / DECISION-LOG / PRODUCT-BLUEPRINT هستند و انتقال مدخل‌ها با مالک P00 است.
 
+**Checkpoint جدید:** مبنایP00=195@31c44ab مصرف شد؛ [تطبیق195 و ledger/ارجاع باP11](BASELINE195-AND-P11.md). بخش زیر و گزارش اولیه، سابقه شروع191 هستند؛ مجهول‌بودن انتخابP00 دیگر وضعیت جاری نیست.
+
 ## تطبیق P00 و مالکیت پیش از کد
 
 - checkout مستقل: `portfolio-p08-assistant`؛ شاخه `codex/p08-assistant-contract-20261002`.
