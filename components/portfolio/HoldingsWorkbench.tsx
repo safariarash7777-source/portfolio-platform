@@ -6,6 +6,8 @@ import { Plus, Trash2, Save, AlertCircle, CheckCircle2, History, Info } from "lu
 import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
 import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
 import { normalisePosition } from "@/lib/portfolio/financialInput";
+import { positionFromStored } from "@/lib/portfolio/balanceSheet";
+import HoldingsImportPreview from "./HoldingsImportPreview";
 
 /**
  * یک ردیفِ فرم.
@@ -91,6 +93,7 @@ export default function HoldingsWorkbench({
   definitive,
   notes,
   totalValue,
+  showComparison = true,
 }: {
   ready: boolean;
   targetFailed: boolean;
@@ -104,6 +107,7 @@ export default function HoldingsWorkbench({
   definitive: boolean;
   notes: readonly string[];
   totalValue: number | null;
+  showComparison?: boolean;
 }) {
   const router = useRouter();
 
@@ -146,6 +150,17 @@ export default function HoldingsWorkbench({
 
   const patch = (i: number, p: Partial<Row>) =>
     setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...p } : r)));
+
+  const draftInput = (r: Row) => ({ position_key: r.positionKey.trim() || r.label.trim(), symbol: r.kind === "symbol" ? r.label.trim() : null,
+    manual_label: r.kind === "manual" ? r.label.trim() : null, asset_class: r.assetClass, qty: r.qty.trim() === "" ? null : toLatinDigits(r.qty),
+    unit: r.unit.trim(), cost_basis: r.costBasis.trim() || null, as_of: r.asOf, title: r.title, ownership_pct: r.ownershipPct,
+    valuation_mode: r.valuationMode, declared_value: r.declaredValue, currency: r.currency, valuation_source: r.valuationSource,
+    valuation_as_of: r.valuationAsOf, valuation_status: r.valuationStatus });
+  let importCurrent: HoldingPosition[] | null = null;
+  try {
+    const nonblank = rows.filter(r => r.label || r.qty || r.costBasis || r.title || r.declaredValue);
+    importCurrent = nonblank.map(r => positionFromStored(normalisePosition(draftInput(r))));
+  } catch { /* Incomplete unsaved rows must not disappear when a file is applied. */ }
 
   const submit = async () => {
     if (saveLock.current) return;
@@ -227,6 +242,10 @@ export default function HoldingsWorkbench({
 
   return (
     <div className="space-y-6">
+      <HoldingsImportPreview current={importCurrent ?? []} disabled={saving || importCurrent === null || (activeVersion !== null && activeVersion !== latestVersion)} onApply={positions => {
+        setRows(fromPositions(positions.map(positionFromStored))); setSaved(null); setError("");
+      }} />
+      {importCurrent === null && <p role="status">برای ورود فایل، ابتدا ردیف‌های نیمه‌کارهٔ فرم را تکمیل کنید؛ ورودی فعلی شما حفظ شده است.</p>}
       {/* ثبت */}
       <div className="card-elevated p-6 space-y-4">
         <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
@@ -402,7 +421,7 @@ export default function HoldingsWorkbench({
       )}
 
       {/* مقایسه */}
-      <div className="card-elevated p-6">
+      {showComparison && <div className="card-elevated p-6">
         <h3 className="font-display font-bold text-lg mb-3" style={{ color: "var(--navy-deep)" }}>
           مقایسه با سبد هدف
         </h3>
@@ -476,7 +495,7 @@ export default function HoldingsWorkbench({
             )}
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

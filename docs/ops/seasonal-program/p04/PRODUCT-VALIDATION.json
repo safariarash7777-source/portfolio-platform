@@ -1,0 +1,62 @@
+{
+  "sourceSha": "7b92b165d0f389cf8531dc64788f377c93825758",
+  "codeCheckpoint": "f58f6f0baea9a24987a7b7a7c4099b5a9d205804",
+  "checkedAtUtc": "2026-10-02T17:19:49.1237352Z",
+  "local": {
+    "calc": 106,
+    "diff": "PASS",
+    "core": 1301,
+    "targeted": 54,
+    "typecheck": "PASS",
+    "fullLint": "PASS",
+    "secrets": "PASS"
+  },
+  "ci": [
+    {
+      "name": "Vercel Preview Comments",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/110946756403"
+    },
+    {
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37039269342/job/110946685894"
+    },
+    {
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37039269342/job/110945521029"
+    },
+    {
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37039269342/job/110945520978"
+    },
+    {
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37039269342/job/110945520922"
+    },
+    {
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37039269342/job/110945520446"
+    },
+    {
+      "name": "Supabase Preview",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/110945082508"
+    }
+  ],
+  "nativeAcceptance": "OPEN",
+  "humanAcceptance": "OPEN",
+  "fixtureSynthetic": true,
+  "writeCommitBlocked": true
+}
