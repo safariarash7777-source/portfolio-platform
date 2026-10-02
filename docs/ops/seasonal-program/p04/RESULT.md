@@ -1,0 +1,55 @@
+# P04/P06/P10 — تحویل مستقل قرارداد و شکاف
+
+2026-10-02، تهران؛ تحویل مستند، نه پذیرش نهایی محصول. جهت و وضعیت کل پروژه همان PRODUCT-BLUEPRINT/COMMAND-CENTER/DECISION-LOG با مالک P00 می‌ماند؛ این پرونده شاهد بسته است.
+
+## تطبیق مبنا
+
+metadata زنده GitHub REST در این نوبت PR168=open@15eebc97ca650dde5f2687e36d9d98d193d0d543، PR173=open@6787005ad7b65acc49a059c2f9035ab16eb306f2، PR191=open@a83f71d922a93ec2bfb398a306d7b282ce1db81f و PR195=open@31c44ab635b672b589b7833bcbc78b41d36f1e75 را برگرداند. CI/Production در این نوبت بازخوانی یا آزمون نشده‌اند. git ls-remote نخست connection reset شد؛ این خطای انتقال بود و شاهد نبود PR نیست. gh در PATH نبود؛ خواندن metadata عمومی از REST موفق شد.
+
+`git diff 6787005 31c44ab -- lib/portfolio app/api/portfolio sql/phase32_member_holdings.sql sql/phase38_personal_balance_sheet.sql` خالی است: runtime مالی173 در195 حاضر است؛ patch173 دوباره اعمال نشود. تفاوت168 تا195 شامل افزوده‌های ترازنامه173 است. شواهد سازنده173 در PERSONAL-BALANCE-SHEET شامل Auth/REST واقعی با داده ساختگی محلی و گیت فهم مشتری باز است؛ این نوبت آن آزمون‌ها بازاجرا نشدند.195 اصلاح N10 و fixture feed197 دارد؛ آن‌ها در P04 تغییر نمی‌کنند. hash schema و blobهای مقایسه در evidence.json ثبت‌اند.
+
+## شکاف و ترتیب اجرا
+
+| خروجی | موجود | کار باقی و صاحب/گیت |
+|---|---|---|
+| canonical نسخه دارایی+بدهی | phase32/38، قفل مالک، idempotency، سابقه | P04 بازاستفاده؛ ترتیب schema نهایی P00 |
+| ریال/تومان و مالکیت جزئی | financialInput/valuePosition | نگاشت هزینه مبنا و واحدهای import؛ P04/P02 |
+| قلم بی‌قیمت/خالص منفی | balanceSheet و partial | پذیرش توضیح مشتری؛ انسان، نه عامل |
+| رضایت و لغو | consultation_balance_sheet | بازآزمایی همان SHA و Auth هدف P01/P00 |
+| حساب/تأیید عضو/کاربرد دارایی | فیلد canonical فعلی ندارد | افزونه نسخه موجود؛ قرارداد P04/P05 و migration P00 |
+| ورود فایل و رسید انتقال | API فعلی فقط ثبت فهرست کامل | preview/validation/dedup/reconciliation؛ P04/P05 |
+| دو تب و حفظ سابقه | base_version/client_token/PT409 | آزمون ورود فایل و retry روی نسخه منتخب |
+| تفکیک ترازنامه و مخرج سبد | موتور همه positions ورودی را می‌گیرد | انتخاب صریح قابل تخصیص با metadata؛ پیش‌نیاز P06 |
+| جریان نقد و عملکرد | تابع خالص موجود؛ transactions legacy | اتصال نسخه/حساب و completeness/روش؛ نمودار بازده فعال نشود |
+| الگو/تصمیم | target/reference و publication موجود | P06 پس از P02/P04/P07 و سه نمونه انسانی آرش |
+| مالی کامل | بدهی/قسط بعدی موجود173 | P10 پس از پذیرشP04؛ درآمد/هزینه/انتقال/هدف/سناریو |
+
+## ماتریس پذیرش مصوب
+
+| بسته | معیار سند03 | شاهد و وضعیت این تحویل |
+|---|---|---|
+| P04 | ریال/تومان، مالکیت50٪، بی‌قیمت، بدهی، خالص منفی | بازاستفاده کد؛ شاهد قدیمی سازنده، بازاجرای این تحویل ندارد |
+| P04 | خطای فایل، دو تب، نسخه پیشین | قرارداد import و رفتار موجود409؛ import runtime باز |
+| P04 | مشاور مجاز سپس لغو نامجاز | گیت موجود؛ پذیرش نسخه/محیط نهایی باز |
+| P04 | فهم دارایی/بدهی/خالص/ارزش ناقص | فقط جلسه انسانی؛ هر چهار پاسخ واقعی بدون راهنمایی ثبت شود |
+| P06 | وزن غیر100 رد، مخرج نامعلوم متوقف | رد وزن در موتور موجود؛ مخرج صریح شکاف |
+| P06 | فروش موقعیت≠وزن هدف، داده لازم اقدام | قرارداد P07 و رویداد P04 باز |
+| P06 | اصلاح تصمیم صف قدیمی را متوقف کند؛ تکرار قیمت اعلان نسازد | مالک publication=P07 و outbox=P05؛ تست مشترک لازم |
+| P06 | توقف و فعال هم‌زمان عرضه نشوند؛ سه نمونه تاریخی | پذیرش مشترک و قضاوت آرش باز |
+| P10 | انتقال داخلی دوبار درآمد/هزینه نشود؛ اصل/سود جدا | پس ازP04؛ طراحی رویداد مشترک |
+| P10 | موعد تهران/نامعلوم، درآمد نامنظم، کسری نقد | قرارداد تاریخ و سناریو بعدP04 |
+| P10 | هدف بازتولیدپذیر و فرض تورم/نرخ نسخه‌دار | داده P02 و ورودی مصوب؛ عدد فرضی قطعی ساخته نشود |
+
+## تحویل و اقدام بعدی
+
+[قراردادcanonical](CANONICAL-CONTRACT.md)، [نگاشتimport](IMPORT-MAPPING.md) و [شاهدتطبیق](evidence.json) آماده‌اند. پیام هماهنگی محدود به P05 و P07 و تثبیت مالکیت P00 فرستاده شد؛ پاسخ/توافق هنوز ادعا نشده است. فقط همین پوشه در checkout ایزوله تغییر کرده است. runtime/schema/Production/داده مشتری تغییر نکرد؛ migration جدیدی ساخته یا نصب نشد. rollback این تحویل صرفاً revert commit مستندات است.
+
+اقدام بعدی P00: تثبیت SHA و مالکیت/runtime/schema و مسیر قرارداد مشترک؛ P05: inventory دقیق mini5؛ P07: ارجاع publication/decision. سپس P04 ابتدا انتخاب دامنه و preview import را با داده ساختگی، آزمون اعداد قطعی و رفتار409 اجرا می‌کند. P06 و P10 مطابق وابستگی سند مصوب باز هستند؛ زمان/گروه/آستانه/سیاست نگهداری و روش بازده تصویب‌شده فرض نشده‌اند.
+
+## هماهنگی دریافت‌شده — همان نوبت
+
+P05 inventory گزارش داد: `portfolio_assets` در mini5 دارای id/telegramId/assetType/name/quantity/buyPrice/currentPrice/createdAt/updatedAt است؛ واحد پول و مقدار، حساب، مالکیت، منبع/زمان قیمت و جریان ندارد. این گزارش همکار است، نه ممیزی مستقیم schema مینی‌اپ در این checkout. توافق محدوده: pure preview بدون نوشتن، unknownها blocking، بدون GET/import جدید؛ `buyPrice/currentPrice` با فقدان قرارداد واحد/زمان وارد canonical قطعی نمی‌شوند. داده قدیمی حذف یا dual-write نمی‌شود.
+
+P07 گزارش داد publication.v1 همان workbookVersionId/publication aggregate/version UUID/version number را دارد، اما draft فعلی فقط brief/lesson/webinar_plan دارد؛ action/اندازه/مخرج/validity/replacement در DTO انتشار موجود نیست. این افزونه باید در همان مدل انتشار و پس ازP00 تثبیت شود؛ سه نمونه انسانی شرطP06 باقی است. دامنه P07 docs/ops/p07-desk و adapterهای مستقل پیشنهادی است؛ فایلهایP04/P03 لمس نمی‌شوند.
+
+checkpoint بعدی P05: اسناد `telegram-p05-portfolio-20261002/docs/p05/CONTRACT.md` و `P04-ACK.md` و کد unmounted `server/p05/portfolio-preview.ts` مستقیم خوانده شدند. candidate فقط unpriced و cost_basis=null است؛ context تأیید به digest/baseVersion/linkEpoch/adapterVersion مقید، unknownها unresolved، receipt/key collision تضاد و commitBlocked همواره true است. انطباق قرارداد read-only تأیید شد؛ اجرای تست/build/بات/مهاجرت در این بازبینی انجام نشد. `already_imported` فقط receipt/key/source را تطبیق می‌دهد و برابری مبلغ جاری canonical را اثبات نمی‌کند؛ merge/write آینده همچنان current payload، conflict handling و durable receipt می‌خواهد. GET/receipt/account/memberConfirmedAt و actual writer freeze همچنان OPEN هستند.
