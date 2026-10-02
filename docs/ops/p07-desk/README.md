@@ -2,7 +2,7 @@
 
 ۲ اکتبر ۲۰۲۶، تهران. مالک: چت `01a0f780-070d-78f2-bbff-242b6a9c9ce8`. برنامهٔ مصوب v0.1 در checkout جهت محصول، فایل‌های 00/01/03/04 و EXECUTION-ORDER خوانده شد و اصل آن‌ها تغییر نکرد.
 
-**وضعیت این تحویل: تطبیق مستقل، قرارداد پیشنهادی و adapter آماده‌سازی آفلاین؛ manifest/مالکیت P00 دریافت شد، اتصال وابسته منتظر قرارداد پایدار P01 و سازگاری P03 است.** این تحویل P07 کامل، نصب schema یا پذیرش انسانی نیست. شواهد IE01 و PR196 حفظ شده‌اند؛ آزمون چهار حالت مالی دوباره ساخته نشده است.
+**وضعیت این تحویل: UI دستی به desk/workbook/publication موجود متصل شد؛ fixture و آزمون سبک آماده، build/نمایش candidate در صف P00 و افزونه schema/قرار‌داد نهایی باز است.** این تحویل P07 کامل، نصب schema یا پذیرش انسانی نیست. [تحویل UI و سه گردش](UI-DELIVERY.md) و [پیشنهاد فنی نسخه0.2](DECISION-EXTENSION-PROPOSAL-v0.2.md) وضعیت جاری این بسته‌اند. شواهد IE01 و PR196 حفظ شده‌اند؛ آزمون چهار حالت مالی دوباره ساخته نشده است.
 
 ## مبنا و بازاستفاده
 
@@ -23,7 +23,7 @@
 
 ## مالکیت و وابستگی
 
-مالکیت تثبیت‌شده در P00-BASELINE و پیام P00: **`docs/ops/p07-desk/**`، `lib/intelligence/p07-*` و `components/admin/P07*`**. P07 نویسندهٔ افزونهٔ تصمیم است؛ قبل از تغییر publication.v1 سازگاری با P03 و مصرف P06/P08 ثبت شود. اتصال به ResearchWorkbook/PublicationWorkbench/ArashCommandDesk و مسیرهای admin، API/RPC و migrationهای publication/workbook نیازمند هماهنگی مالک فایل است؛ این تحویل آن فایل‌های موجود را تغییر نمی‌دهد.
+مالکیت تثبیت‌شده در P00-BASELINE و پیام P00: **`docs/ops/p07-desk/**`، `lib/intelligence/p07-*` و `components/admin/P07*`**. ACK محدود بعدی، اتصال صفحه desk و سه props اختیاری ResearchWorkbook و افزودن سه مسیر test:core را مجاز کرد؛ همان تغییر کمینه انجام شد. PublicationWorkbench/ArashCommandDesk/Auth/API/migration تغییر نکردند. P07 نویسندهٔ افزونهٔ تصمیم است؛ قبل از تغییر publication.v1 سازگاری با P03 و مصرف P06/P08 ثبت شود.
 
 P01 مالک Auth/session/error classification؛ P00 مالک محیط و ترتیب schema؛ P03 مالک feed/member UI؛ P05 مالک ارسال/opt-in/outbox؛ P06 مالک معنای اندازه/مخرج و موتور مالی؛ P08 مالک assistant/provider. با P06/P08 مستقیم هماهنگ شده است. قرارداد مالی P04@`ab2a0fd` خوانده شد؛ private holdingVersionId در publication عمومی قرار نمی‌گیرد.
 
@@ -33,7 +33,7 @@ P01 مالک Auth/session/error classification؛ P00 مالک محیط و ترت
 
 `lib/intelligence/p07-preparation.ts` افزونهٔ آفلاین است: parseManualIntake ورودی دستی را محدود و allowlist می‌کند، manualIntakeIssues ابهام/رونویسی تأییدنشده/اتصال شاهد ناقص را گزارش می‌دهد و prepareAudiencePreview با parsePublication موجود فقط متن و مخاطب مجاز را بازسازی می‌کند. source URL، مقدار مالی، هویت و approval تولید نمی‌شود. موارد checklist صرفاً ادعای ساختاری کاربرند؛ فهرست خالی اثبات صحت، مجوز یا تأیید انسانی نیست.
 
-این adapter به route/UI/server متصل نیست و metadata آن با parser/SQL فعلی ذخیره نمی‌شود؛ وضعیت دقیق PERSISTENCE_NOT_IMPLEMENTED است. preview پیش‌نمایش نویسندهٔ draft است، نه خواندن واقعی عضو و نه ایجاد grant. متن آزاد و URL مجاز ساختاری هنوز بازبینی حریم خصوصی می‌خواهند. زمان اعتبار/تصمیم/جایگزینی در آن پیاده نشده و قرارداد مالی DRAFT باقی است. آزمون‌های این adapter همگی نمونه ساختگی‌اند؛ شواهد اجرا در BASELINE.json ثبت می‌شود.
+adapter اکنون در UI اختصاصی استفاده می‌شود؛ metadata آن با parser/SQL فعلی ذخیره نمی‌شود و برای metadata وضعیت PERSISTENCE_NOT_IMPLEMENTED است. خود workbook/publication از API موجود ذخیره می‌شوند. preview پیش‌نمایش نویسندهٔ draft است، نه خواندن واقعی عضو و نه ایجاد grant. متن آزاد و URL مجاز ساختاری هنوز بازبینی حریم خصوصی می‌خواهند. زمان اعتبار/تصمیم/جایگزینی جدید پیاده نشده و قرارداد مالی DRAFT باقی است. آزمون‌های این adapter همگی نمونه ساختگی‌اند؛ شواهد اجرا در BASELINE.json ثبت می‌شود.
 
 `p07-validity-draft.ts` فقط مدل اجرایی قرارداد پیشنهادی `p07.validity.draft.v1` برای fixture است: ساعت صریح، offset، بازه نیمه‌باز و دقت microsecond؛ ساعت مرورگر یا Date.now نمی‌گیرد. خروجی `within_time_window` صرفاً زمان را توصیف می‌کند، نه active/grant/approval. شش آزمون ساختگی مرز شروع/پایان، زمان مجهول/نامعتبر، offset، microsecond و استقلال grant/زمان را پوشش می‌دهند. canonical reader هنوز deadline ندارد؛ هیچ import به UI/API/reader موجود اضافه نشده است. این مدل، قرارداد نهایی یا اجرای native SQL نیست.
 
@@ -45,4 +45,4 @@ P01 مالک Auth/session/error classification؛ P00 مالک محیط و ترت
 4. تاریخچهٔ اصلاح/پس‌گرفتن از همان tables/commands/events، بدون mutation نسخه قدیم؛ consumers P03/P05/P08 از یک effective-state contract استفاده کنند.
 5. اجرای سه گردش واقعی با آرش و ثبت دقیقه‌ها؛ fixture فنی فقط برچسب ساختگی دارد و آن گیت را نمی‌بندد.
 
-خط مبنای زمان انسان، تعداد گروه‌ها، دامنه خدمات کانال، واژگان قدیمی UI، سیاست نگهداری صوت و provider باز هستند. تصویب برنامه مقدار این تصمیم‌ها را تعیین نمی‌کند. استفاده دستی میز به AI وابسته نیست. در این مرحله فقط adapter مستقل و اسناد/آزمون آن اضافه شده‌اند؛ صفحهٔ قابل استفاده، schema، سرویس، Production، provider، خرید یا پیام واقعی تغییر نکرده است.
+خط مبنای زمان انسان، تعداد گروه‌ها، دامنه خدمات کانال، واژگان قدیمی UI، سیاست نگهداری صوت و provider باز هستند. تصویب برنامه مقدار این تصمیم‌ها را تعیین نمی‌کند. استفاده دستی میز به AI وابسته نیست. UI و اتصال مجاز اکنون در شاخهٔ مستقل اضافه شده‌اند؛ نمایش/پذیرش candidate هنوز اجرا نشده و schema، سرویس، Production، provider، خرید یا پیام واقعی تغییر نکرده است.

@@ -83,22 +83,23 @@
     "pr176To191SelectedFourFiles": "NO_DIFF"
   },
   "technical": {
-    "status": "PASS_OFFLINE_ONLY",
-    "build": "PASS_47_STATIC_PAGES",
+    "status": "PASS_LIGHTWEIGHT_UI_BUILD_QUEUED",
+    "build": "QUEUED_WITH_P00_NOT_RUN_CURRENT_UI",
     "typecheck": "PASS",
-    "tests": 45,
-    "passed": 45,
+    "tests": 52,
+    "passed": 52,
     "lint": "PASS_FULL_REPOSITORY",
     "syntheticOnly": true,
     "failed": 0,
     "commands": [
-      "tsx --test lib/intelligence/p07-validity-draft.test.ts lib/intelligence/p07-preparation.test.ts lib/intelligence/publication.test.ts lib/intelligence/publication-feed.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/workbook-store.test.ts",
+      "tsx --test lib/intelligence/p07-workflow.test.ts lib/intelligence/p07-preparation.test.ts lib/intelligence/p07-validity-draft.test.ts lib/intelligence/publication.test.ts lib/intelligence/publication-feed.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/workbook-store.test.ts",
       "tsc --noEmit",
       "eslint . --max-warnings=0",
-      "next build"
+      "next build: NOT_RUN_CURRENT_UI_RESOURCE_QUEUE"
     ],
-    "secretScan": "PASS_1307_FILES",
-    "diffCheck": "PASS"
+    "secretScan": "PASS_1318_FILES",
+    "diffCheck": "PASS",
+    "staticReact": "4_CASES_PASS_BROWSER_NOT_RUN"
   },
   "gates": {
     "p01StableContract": "OPEN",
@@ -111,15 +112,66 @@
     "humanMinutes": null,
     "p00Baseline": "RECEIVED",
     "nativeSandbox": "NOT_CONNECTED",
-    "persistence": "NOT_IMPLEMENTED",
+    "persistence": "WORKBOOK_PUBLICATION_EXISTING_API_METADATA_NOT_IMPLEMENTED",
     "decisionMetadata": "DRAFT_NOT_IMPLEMENTED",
     "p03CurrentReaderContract": "RECEIVED_ACK_73c768cdfa06a18e02776c2e62eae7ad70de6c03",
     "validityReplacementAgreement": "DRAFT_OPEN",
     "p08ValidityInterpretation": "ACK_ON_0e9e41e_DRAFT_ONLY",
-    "p03ValidityPrinciples": "ACK_DRAFT_df85b5f3b84c6b0bac0fa8b1b4b53fdc8d0cf681"
+    "p03ValidityPrinciples": "ACK_DRAFT_df85b5f3b84c6b0bac0fa8b1b4b53fdc8d0cf681",
+    "uiBrowser": "NOT_RUN_AWAIT_P00_CANDIDATE",
+    "sharedUIOwnership": "P00_ACK_DESK_AND_3_OPTIONAL_RESEARCH_PROPS_ONLY",
+    "testRegistry": "P00_ACK_3_PATHS_ADDITIVE_ONLY"
   },
   "production": "NOT_CHANGED",
   "providerCalls": 0,
   "customerMessages": 0,
-  "updatedAt": "2026-10-02T13:56:01.8753446Z"
+  "updatedAt": "2026-10-02T17:14:34.2662567Z",
+  "previousOfflineTechnical": {
+    "codeSHA": "eb8f59931cf4baccfc811de4844b6527d73f4e56",
+    "tests": 45,
+    "build": "PASS_47_STATIC_PAGES_BEFORE_UI"
+  },
+  "sourceFilesSnapshot": "Original PR195 input objects; these hashes predate current UI changes",
+  "uiWorktreeSources": [
+    {
+      "path": "app/(protected)/admin/desk/page.tsx",
+      "worktreeSha256": "61ff25950d4a1e5362f99d0d29e7a6db338df76e37c445286147fb1660de1f8e"
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "worktreeSha256": "3be68a39d30c2e62a33b2acf2f11090122a2850e5e090451b49267b0ec4d9ef6"
+    },
+    {
+      "path": "components/admin/P07ManualDesk.tsx",
+      "worktreeSha256": "1f708b0b2387e9ea8ddcdef612eb038aabb52b1400a30b4706cdcd594a3133d9"
+    },
+    {
+      "path": "components/admin/P07AudiencePreview.tsx",
+      "worktreeSha256": "95885a0d10a8c625cdae911ab92f74ace846eb178fbf061eb11985448dd682bb"
+    },
+    {
+      "path": "components/admin/P07DeskIntegration.tsx",
+      "worktreeSha256": "0c1fb4d26a293c9f1d98664df494f6be0c025b228c0f1045afce8886205bf300"
+    },
+    {
+      "path": "components/admin/P07DeskScenario.tsx",
+      "worktreeSha256": "e750a6028e50e6fb681c718101e343eaf01f10a7e2087264cf41e37a7793ea00"
+    },
+    {
+      "path": "lib/intelligence/p07-workflow.ts",
+      "worktreeSha256": "5136392342c299612fc1e19c8196914353bfd73e75648937f3258236582a0c64"
+    },
+    {
+      "path": "lib/intelligence/p07-workflow-fixture.ts",
+      "worktreeSha256": "ebaedfa43fb9d2c5fb16f22c3b84c257b9dc528d9b5630ad2a7456d7ac8b3344"
+    },
+    {
+      "path": "lib/intelligence/p07-workflow.test.ts",
+      "worktreeSha256": "8224c3cba2e07895ecd0c77e8ff4854b0d4e958865fdf5027f789d5706132746"
+    },
+    {
+      "path": "package.json",
+      "worktreeSha256": "b90f9264b1aede984f2bcb028c2346b627e22c8f5c8449842a54046a935ed08b"
+    }
+  ]
 }
