@@ -112,7 +112,9 @@
     "p00Baseline": "RECEIVED",
     "nativeSandbox": "NOT_CONNECTED",
     "persistence": "NOT_IMPLEMENTED",
-    "decisionMetadata": "DRAFT_NOT_IMPLEMENTED"
+    "decisionMetadata": "DRAFT_NOT_IMPLEMENTED",
+    "p03CurrentReaderContract": "RECEIVED_ACK_73c768cdfa06a18e02776c2e62eae7ad70de6c03",
+    "validityReplacementAgreement": "DRAFT_OPEN"
   },
   "production": "NOT_CHANGED",
   "providerCalls": 0,

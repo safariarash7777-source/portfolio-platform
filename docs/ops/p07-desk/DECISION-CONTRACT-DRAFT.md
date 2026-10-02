@@ -71,3 +71,27 @@ P04/P06 نسخهٔ این قرارداد در PR206@`52cd3a9490d7116c5e115be390f
 | اعلان | replaced/withdrawn/expired از صف فعال خارج شوند؛ تغییر قیمت صرف با اصلاح مادی تصمیم یکی نیست. آستانه/گروه‌ها باز و ارسال با P05 |
 
 ردیف actionKind بالای سند توصیف اولیهٔ مسئله است؛ enum بالا پیشنهاد دقیق‌تر P06 است و هیچ‌یک enum نصب‌شده یا سیاست UI محسوب نمی‌شود. افزایش/کاهش، نقدشوندگی، افق و مخاطب باید از تصمیم و شاهد انسانی آرش بیاید. سازگاری publication.v1 و رفتار read-state همچنان منتظر توافق P03 است. هیچ parser، SQL، schema، محاسبه یا وضعیت انتشار با این ACK تغییر نمی‌کند.
+
+## رسید تطبیق P03 — 2026-10-02
+
+P07 سند `docs/ops/seasonal-program/p03-member-start/FEED-READ-CONTRACT-v1.md` را در checkout P03 مستقیم خواند؛ commit شاهد `73c768cdfa06a18e02776c2e62eae7ad70de6c03`، base195@31c44ab. **قرارداد موجود پذیرفته شد؛ قرارداد افزونه هنوز DRAFT / OPEN است.** publication.v1 و seasonal.v0.1 تغییر نمی‌کنند.
+
+توافق رفتار موجود:
+
+- receipt به UUID نسخه تعلق دارد؛ نسخه جدید unread است و receipt قبلی منتقل/حذف نمی‌شود. receipt خواندن، مجوز یا اقدام مالی نیست.
+- ساخت draft جدید بلافاصله نسخه قبلی aggregate را non-current می‌کند؛ fallback سمت UI یا assistant ممنوع است. withdrawal، returned یا پژوهش جدید، list/detail را پنهان و mark-read تازه/تکراری را رد می‌کند.
+- grant همان cohort در هر درخواست بررسی می‌شود؛ grant دوره دیگر، لینک یا نقش admin جای آن نیست. 401/403/404/503 و ورودی نامعتبر400 از empty موفق جدا بمانند؛ cursor هم grant نیست.
+- publishedAt و sources.asOf مهلت تصمیم نیستند. زمان اعتبار امروز در SQL/DTO اجرا نشده؛ محتوای legacy را تصمیم دائماً فعال معرفی نکنیم.
+
+| موضوع افزونه | موضع پیشنهادی P07 — DRAFT، نیازمند توافق P03/P00/P06/P08 |
+|---|---|
+| لحظه جایگزینی | تا تغییر مصوب، رفتار save-immediate موجود حفظ شود. delayed-until-publish انتخاب محصول باز است و فقط با predicate/transaction مشترک تغییر کند، نه fallback در مصرف‌کننده |
+| ساعت و زمان | timestamp دارای offset در ورودی، مقایسه با ساعت authoritative سرور/DB و instant یکسان؛ نمایش Asia/Tehran به معنای مقایسه رشته محلی یا ساعت مرورگر نباشد |
+| مرز بازه | برای تصمیم `[validFrom, validUntil)`؛ شروع شامل و پایان غیرشامل، بنابراین now=validUntil منقضی. validUntil باید بعد از validFrom باشد |
+| زمان مجهول | برای decision، فقدان هر مرز/زمان نامعتبر UNKNOWN و خروج از تصمیم فعال؛ نه تبدیل به now یا بی‌نهایت. محتوای آموزشی بدون metadata به‌خودی‌خود تصمیم فعال یا منقضی معرفی نشود |
+| مجوز و مهلت | انقضای تصمیم از انقضای grant جداست؛ معتبر بودن یکی، دیگری را معتبر نمی‌کند. cohort grant موجود با منطق P01/seasonal سنجیده شود |
+| predicate مشترک | list/detail/mark همان canonical reader را مصرف کنند: state/current/approval/grant و برای decision زمان/رفع ابهام معتبر. P05/P08 نیز در لحظه مصرف همان نتیجه معتبر را بگیرند؛ DTO یا cache منبع active مستقل نباشد |
+| تاریخچه عضو | فعلاً مسیر active قدیم را hidden نگه دارد؛ history داخلی admin موجود حفظ شود. member archive جدید OPEN، بدون fallback یا endpoint تازه تا قرارداد grant/projection جدا |
+| توقف و رسید | توقف از withdraw/retraction همان دفتر، بدون تصمیم فعال موازی؛ replay mark برای withdrawn/replaced/expired طبق predicate مشترک رد و receipt قدیمی محفوظ بماند |
+
+پذیرش افزونه باید now دقیقاً برابر validFrom/validUntil، مرز مجهول، اختلاف ساعت مرورگر، خواندن v1 سپس v2، receipt قدیمی، revoke grant، draft جایگزین و replay mark را پوشش دهد. این‌ها پیشنهاد معیار آینده‌اند؛ آزمون‌های آفلاین فعلی اجرای deadline یا مسیر عضو جدید را اثبات نمی‌کنند. نویسنده مشترک reader/feed با P03 و schema/order با P00 هماهنگ شود؛ هیچ runtime/schema از این رسید تغییر نمی‌کند.
