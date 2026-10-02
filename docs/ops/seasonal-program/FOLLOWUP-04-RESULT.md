@@ -6,7 +6,7 @@
 
 - [PR198](https://github.com/safariarash7777-source/portfolio-platform/pull/198)، draft، شاخه `codex/followup04-coverage-20261002`.
 - پایهٔ ثابت [PR178](https://github.com/safariarash7777-source/portfolio-platform/pull/178): `4ce06b3ffbd6b50125021faeb454fbf11c73b900`؛ main مشاهده‌شده `51fd0661d48d791ce8758a87828a81ce72cac6df`.
-- commit پیاده‌سازی و fixtureهای ورودی: `9b0a978100723059f8363eccaba04b57a894a26c`؛ commitهای شواهد جدا هستند.
+- commit نهایی پیاده‌سازی: `fe96e619eaefa94f75423608d61f16c51318623b`؛ commit اولیه و fixtureها `9b0a978100723059f8363eccaba04b57a894a26c` بود. commitهای شواهد جدا هستند.
 - برنامه در `scripts/ops/coverage-plan-core.mjs` و CLI در `scripts/ops/coverage-plan.mjs` است. هیچ worker جدیدی داخل رله نصب یا import نشده است.
 - با مالک «داشبورد نرخ ارز» بر سر کلید، صف و counter مشترک178 هماهنگ شد. Hermes/FX، Auth، کدال و فایل‌های store/transport/candle-backfill/server دست‌نخورده‌اند؛ PR187 و پذیرش196 حفظ شده‌اند.
 
@@ -43,7 +43,7 @@ NAV: اعضای blacklist حفظ می‌شوند؛ علت/تاریخِ نامع�
 | بودجهٔ مشترکِ نامعلوم | lease تأییدنشده | صفر send و remaining=null |
 | توقف وسط صف / restart / روز تازه | task ناتمام باقی | ادامه فقط با baseline مصنوعی معتبر؛ lease قبلی صفر نمی‌شود |
 
-بودجهٔ مثال مصنوعی ۲ درخواست برای همان روزِ مصنوعی است؛ ظرفیت واقعی نیست. حداقل برنامه = تعداد نماد دارای GAP؛ کران تحت فرض صریح تلاش‌ها = تعداد task × maxAttempts. هر retry هم از counter مشترک مصرف می‌کند. lease سوخته، همهٔ تولیدکنندگان FX/market/nav/codal و مصرف مستقیم بیرون counter باید در ظرفیت واقعی لحاظ شوند. declaredDailyRequestCap فقط سقف پیشنهادی دامنه است؛ مجوز مستقل ارسال نیست. daily live capacity، بودجهٔ مجاز NAV و ETA واقعی **UNKNOWN/null** باقی‌اند. ۱۰۰ms در شبیه‌سازی ≥۵۰ms اخطار مستقیم کاربر است؛ این شاهد هماهنگی همهٔ replicaها یا ظرفیت روزانهٔ کلید نیست.
+بودجهٔ مثال مصنوعی ۲ درخواست برای همان روزِ مصنوعی است؛ ظرفیت واقعی نیست. حداقل برنامه = تعداد نماد دارای GAP؛ کران تحت فرض صریح تلاش‌ها = تعداد task × maxAttempts. هر retry هم از counter مشترک مصرف می‌کند. lease سوخته، همهٔ تولیدکنندگان FX/market/nav/codal و مصرف مستقیم بیرون counter باید در ظرفیت واقعی لحاظ شوند. declaredDailyRequestCap از eventهای پایدار همان scope در روز تهران کنترل می‌شود و restart آن را پاک نمی‌کند؛ مجوز مستقل ارسال نیست. ساعت شبیه‌سازی هم به قبل از event ذخیره‌شده برنمی‌گردد و فاصله پیش از رزرو بررسی می‌شود؛ عبور از نیمه‌شب بدون lease روز تازه متوقف می‌شود. daily live capacity، بودجهٔ مجاز NAV و ETA واقعی **UNKNOWN/null** باقی‌اند. ۱۰۰ms در شبیه‌سازی ≥۵۰ms اخطار مستقیم کاربر است؛ این شاهد هماهنگی همهٔ replicaها یا ظرفیت روزانهٔ کلید نیست.
 
 محدودهٔ ورودی حداکثر۳۶۶روز و۲۰۰هزار سلول است؛ دامنهٔ بزرگ‌تر به بسته‌های مصوب کوچک‌تر تقسیم شود. شمار درخواست/تلاش و cursor، چیزی به تاریخچهٔ واقعی اضافه نمی‌کنند. شناسه‌های قدیمی DB در این بسته قابل حذف نیستند چون مسیر نوشتن DB وجود ندارد؛ پذیرش بعدی باید ID-set قدیمی با cutoff ثابت و پوشش واقعی را دوباره مقایسه کند.
 
@@ -60,7 +60,7 @@ node --test relay/coverage-plan.test.mjs scripts/ops/coverage-plan.test.mjs
 
 ## آزمون و ابزار
 
-۱۴ آزمون رفتاری/CLI، صفر fail/skip: شواهد هر کلاس، تناقض/خواندن ناقص، نماد ممنوع، blacklist و NAV کهنه/صفر/عضویت نامعلوم، صفر ارسال در baseline نامعلوم، دو consumer مشترک، قطع store، توقف و resume/restart/روز جدید، response ناقص، سقف تلاش، replay و رد counter عقب‌رفته. آزمون CLI با trap واقعی fetch/socket، تلاش شبکه را صفر مشاهده کرد.
+۱۶ آزمون رفتاری/CLI، صفر fail/skip: شواهد هر کلاس، تناقض/خواندن ناقص، نماد ممنوع، blacklist و NAV کهنه/صفر/عضویت نامعلوم، صفر ارسال در baseline نامعلوم، دو consumer مشترک، قطع store، توقف و resume/restart/روز جدید، response ناقص، سقف تلاش/روز، حفظ فاصله و عبور از نیمه‌شب، replay و رد counter عقب‌رفته. آزمون CLI با trap واقعی fetch/socket، تلاش شبکه را صفر مشاهده کرد.
 
 core=1091 PASS و calc=106 PASS، صفر fail/skip؛ کل test:relay، lint و build محلی و secret scan قبول شدند. تعداد core متفاوت از PR195 است چون پایه178 قدیمی‌تر و ثابت است؛ شمارها جمع یا به نسخهٔ دیگر منتقل نمی‌شوند. build با تنظیمات placeholder انجام شد. گزارش test خامی که ممکن است خروجی fixture مالی داشته باشد منتشر نشده؛ فقط [قراردادهای metadata](followup04/validation/contracts.txt) و [خلاصهٔ بررسی](followup04/validation/summary.json) منتشر می‌شود.
 
