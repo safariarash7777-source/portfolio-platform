@@ -1,0 +1,204 @@
+{
+  "scope": "offline synthetic contract only",
+  "applicationAcceptance": "NOT_RUN",
+  "measuredAt": "2026-10-02T16:54:13.040856+03:30",
+  "baseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "schemaSha256": "1c37bb077d126d3403786c4377cfa26924389e9e9a7dabb5d83df0fc43b60674",
+  "schemaHashEncoding": "UTF-8 / LF canonical",
+  "passed": 47,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "valid:access.eligible",
+      "passed": true
+    },
+    {
+      "name": "valid:session.started",
+      "passed": true
+    },
+    {
+      "name": "valid:meaningful.completed",
+      "passed": true
+    },
+    {
+      "name": "valid:membership.renewed",
+      "passed": true
+    },
+    {
+      "name": "valid:publication.published",
+      "passed": true
+    },
+    {
+      "name": "valid:publication.withdrawn",
+      "passed": true
+    },
+    {
+      "name": "valid:notification.result",
+      "passed": true
+    },
+    {
+      "name": "valid:notification.seen",
+      "passed": true
+    },
+    {
+      "name": "valid:publication.read_declared",
+      "passed": true
+    },
+    {
+      "name": "valid:action.recorded",
+      "passed": true
+    },
+    {
+      "name": "valid:assistant.result",
+      "passed": true
+    },
+    {
+      "name": "valid:support.lifecycle",
+      "passed": true
+    },
+    {
+      "name": "valid:service.error",
+      "passed": true
+    },
+    {
+      "name": "reject-top-level:text",
+      "passed": true
+    },
+    {
+      "name": "reject-top-level:amount",
+      "passed": true
+    },
+    {
+      "name": "reject-top-level:telegramId",
+      "passed": true
+    },
+    {
+      "name": "reject-top-level:email",
+      "passed": true
+    },
+    {
+      "name": "reject-top-level:url",
+      "passed": true
+    },
+    {
+      "name": "reject-dimension:question",
+      "passed": true
+    },
+    {
+      "name": "reject-dimension:holdings",
+      "passed": true
+    },
+    {
+      "name": "reject-dimension:amount",
+      "passed": true
+    },
+    {
+      "name": "reject-dimension:reason",
+      "passed": true
+    },
+    {
+      "name": "reject-dimension:token",
+      "passed": true
+    },
+    {
+      "name": "reject-invalid:occurredAt",
+      "passed": true
+    },
+    {
+      "name": "reject-invalid:releaseSha",
+      "passed": true
+    },
+    {
+      "name": "reject-invalid:subjectKey",
+      "passed": true
+    },
+    {
+      "name": "reject-invalid:type",
+      "passed": true
+    },
+    {
+      "name": "reject-impossible-calendar-date",
+      "passed": true
+    },
+    {
+      "name": "reject-lifecycle:8:versionKey",
+      "passed": true
+    },
+    {
+      "name": "reject-lifecycle:8:sourceContract",
+      "passed": true
+    },
+    {
+      "name": "reject-lifecycle:6:dimensions",
+      "passed": true
+    },
+    {
+      "name": "reject-lifecycle:10:dimensions",
+      "passed": true
+    },
+    {
+      "name": "reject-lifecycle:9:dimensions",
+      "passed": true
+    },
+    {
+      "name": "replay-does-not-double-count",
+      "passed": true
+    },
+    {
+      "name": "conflicting-identity-quarantined",
+      "passed": true
+    },
+    {
+      "name": "unstable-source-identity-quarantined",
+      "passed": true
+    },
+    {
+      "name": "accepted-status-valid",
+      "passed": true
+    },
+    {
+      "name": "accepted-does-not-prove-read",
+      "passed": true
+    },
+    {
+      "name": "old-read-does-not-read-new-version",
+      "passed": true
+    },
+    {
+      "name": "A-receipt-does-not-read-B",
+      "passed": true
+    },
+    {
+      "name": "no-fabricated-measurements:baseline.csv",
+      "passed": true
+    },
+    {
+      "name": "no-fabricated-measurements:acceptance-evidence.csv",
+      "passed": true
+    },
+    {
+      "name": "no-fabricated-measurements:incidents.csv",
+      "passed": true
+    },
+    {
+      "name": "G0-G4-canonical-gate-map",
+      "passed": true
+    },
+    {
+      "name": "gate-map-base-pinned",
+      "passed": true
+    },
+    {
+      "name": "wave-0-through-4-complete",
+      "passed": true
+    },
+    {
+      "name": "pilot-deadline-not-invented",
+      "passed": true
+    }
+  ],
+  "networkCalls": 0,
+  "databaseCalls": 0,
+  "modelCalls": 0,
+  "realMemberRecords": 0
+}

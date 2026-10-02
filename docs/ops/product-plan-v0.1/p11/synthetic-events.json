@@ -1,0 +1,230 @@
+[
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_7fd570d0e10931a7e23ee3e127d9ec3cbd1a1a3311c52fb94849f61852044027",
+    "type": "access.eligible",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "seasonal.v0.1",
+    "sourceRef": "k_d041f81542f7a2955c5c535b632cd74e493d0b25ca73d9be11e3f208f853e220",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "allowed"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_efcf305070f1c7d7c3559e4fbc4d9d8f13d8445d48cb827913cef9810fb2863e",
+    "type": "session.started",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "auth-boundary.v0.1",
+    "sourceRef": "k_fc906b9b68315082c440a0e14e6d08c1353ceeac6715a5fa38d9966fa4e4f131",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_76e501df4dfe55412ca563d02b65940c92fdc18717f9b1a8d41f4050ded96262",
+    "type": "meaningful.completed",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "member-boundary.v0.1",
+    "sourceRef": "k_ebad73dfd8e2c2a4d8a0b10187d5f242c068f6bfc55debb8c49f9db0716d59fd",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success",
+      "action": "lesson_checkpoint"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_689491a27bf15edbe330ec2173d4a41fab4bece2bfb329eba130e62dd0e2db7d",
+    "type": "membership.renewed",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "seasonal.v0.1",
+    "sourceRef": "k_73eff40b001dbe15a95386038d91a468d354bb25a2ea53b77fc46a70b61076e9",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_dac5dab8af6afca01ed11559dae009996c93f2831d7fa375587f5fc17dd1e3dc",
+    "type": "publication.published",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "publication.v1",
+    "sourceRef": "k_df285573d11163c943ac22ffc6142bbf83705cb02f41f320e4f097f8c955d075",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_50035da2975fd0874d578343e8ff716553d947c0a4c735ab257a5d1899c6f455",
+    "type": "publication.withdrawn",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "publication.v1",
+    "sourceRef": "k_1644d783e082743533cb16092496119edb7d7da45f19ff9f1adb03ab7dea0f29",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_dac8554c260eae60967ba3cac76f21e4a636db1338863d6d478f8ad77e08b5b5",
+    "type": "notification.result",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "notifications.v1",
+    "sourceRef": "k_4cefa98b889236d562035aaf36b179f53aa0acf5529ea4918d19d1ef32a38635",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "unknown",
+      "channel": "telegram"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_7740bb8ee29fe10a1ce6cfe3f0276e60dff4eab877532e499b9193b51b4cbe80",
+    "type": "notification.seen",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "notifications.v1",
+    "sourceRef": "k_ac0be2702c83551af1b6b1a42656704d0ce348888334794bcc46ff02d150a369",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success",
+      "channel": "site"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_4f3f69046f4219794b17fd44c1f7cc0c85479be8271c2bec64d43c02557aecb1",
+    "type": "publication.read_declared",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "publication.v1",
+    "sourceRef": "k_424048370b9cab5008dc777d3623648124281b9c49f62c561b23712e377547d3",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_c9d9d1765fae8e33c2e9bcb4fb5dcdad79cebfc7f6783c3ba3f9c596552173be",
+    "type": "action.recorded",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "portfolio-boundary.v0.1",
+    "sourceRef": "k_37866ee41d48af87c0c4bc84566219a921365bbe464590395015a84875438d9e",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "success",
+      "action": "done"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_e555985b9fb7c8b57bec5dae3cf4dc16f05efb3b355baf0b708ffe8c4105776b",
+    "type": "assistant.result",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "assistant-boundary.v0.1",
+    "sourceRef": "k_83a2b99827351b8db0b00078b6d538c0d2b5d031c05fd3ce9febab83f2149c58",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "status": "referred",
+      "durationMs": 300
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_91deb4a1abe98e5b9216b386d8408a9ef9336d479b4d2a0a8edeee9590d2a570",
+    "type": "support.lifecycle",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "support-boundary.v0.1",
+    "sourceRef": "k_6438812b8474a814d28a70c8a00f636a9164a8aeb15328842fa8ca56732c83cd",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "action": "opened",
+      "category": "export"
+    }
+  },
+  {
+    "contractVersion": "measurement.v0.1",
+    "eventId": "k_3eda1a404eec8e510f2573d640b7bb16442f6214da6ea2265931823313b9340e",
+    "type": "service.error",
+    "occurredAt": "2026-10-02T10:00:00Z",
+    "recordedAt": "2026-10-02T10:00:01Z",
+    "environment": "synthetic",
+    "releaseSha": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+    "sourceContract": "service-boundary.v0.1",
+    "sourceRef": "k_cacf03fad810a483e6f0f14e3c0cfe3e43f29f7dc8736d42881d6c54850d228e",
+    "subjectKey": "k_d526a74be21e66eb5687b288e88e8b4565884559b5adb656aa6d44345aef962a",
+    "cohortKey": "k_d265fae3d7101ada9966adfebc3126678cffb04be8d1f8d63198b14b2e4549c7",
+    "versionKey": "k_1f3c29e48a5a627af96d8855e8cfbb6678f46a9f06c85f42e9191ccf3c485715",
+    "dimensions": {
+      "category": "auth",
+      "reasonCode": "unavailable"
+    }
+  }
+]
