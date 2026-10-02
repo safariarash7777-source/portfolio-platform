@@ -31,6 +31,9 @@ export async function GET(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
+        ...(process.env.NEXT_PUBLIC_SUPABASE_COOKIE_NAME
+          ? {cookieOptions:{name:process.env.NEXT_PUBLIC_SUPABASE_COOKIE_NAME}}
+          : {}),
         global: { fetch: (input, init) => fetch(input, { ...init, signal: controller.signal }) },
         cookies: {
           getAll() {

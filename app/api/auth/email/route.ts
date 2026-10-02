@@ -28,7 +28,8 @@ export async function POST(request:Request){
         data:{full_name:body.fullName.trim()},
       }});
       const failure=authActionFailure(error);
-      if(failure)return reply(failure,{error:failure===503?'سرویس ثبت‌نام اکنون پاسخ نمی‌دهد. اطلاعات فرم حفظ شده است.':failure===429?'تعداد تلاش‌ها زیاد است. کمی صبر کنید.':'درخواست ثبت‌نام پذیرفته نشد. ورودی‌ها را بررسی کنید یا وارد حساب موجود شوید.'});
+      const duplicate=error?.status===400 && ['user_already_exists','email_exists'].includes(error.code??'');
+      if(failure && !duplicate)return reply(failure,{error:failure===503?'سرویس ثبت‌نام اکنون پاسخ نمی‌دهد. اطلاعات فرم حفظ شده است.':failure===429?'تعداد تلاش‌ها زیاد است. کمی صبر کنید.':'درخواست ثبت‌نام پذیرفته نشد. ورودی‌ها را بررسی کنید یا وارد حساب موجود شوید.'});
       // A receipt is neither delivery nor membership; native Auth owns confirmation/UUID.
       return reply(200,{ok:true,status:'confirmation_requested',message:'اگر ثبت‌نام پذیرفته شده باشد و سرویس ایمیل آماده باشد، لینک تأیید دریافت می‌کنید.'});
     }

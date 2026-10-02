@@ -62,11 +62,18 @@ for(const extra of [{national_id:'private-id'},{phone:'private-phone'},{role:'ad
   const h=harness();assert.equal((await h.email({...signup,...extra})).status,400);assert.equal(h.calls.signup.length,0);assert.equal(h.calls.settings,0);
 });
 for(const [name,options,status] of [
-  ['duplicate/invalid input',{actionError:new AuthApiError('PRIVATE duplicate',400,'user_already_exists')},400],
+  ['invalid input',{actionError:new AuthApiError('PRIVATE invalid',400,'validation_failed')},400],
   ['quota',{actionError:new AuthApiError('PRIVATE quota',429)},429],
   ['provider outage',{actionError:new AuthRetryableFetchError('PRIVATE smtp',503)},503],
 ])test(`signup ${name} never claims completion`,async()=>{
   const h=harness(options);const response=await h.email(signup);assert.equal(response.status,status);const body=await privateResponse(response);assert.equal(body.ok,undefined);
+});
+test('duplicate signup returns the same neutral receipt, never changes existing credentials or grants',async()=>{
+  for(const code of [undefined,'user_already_exists','email_exists']){
+    const h=harness({actionError:code?new AuthApiError('PRIVATE duplicate',400,code):null});
+    const response=await h.email(signup);assert.equal(response.status,200);const receipt=await privateResponse(response);
+    assert.equal(receipt.status,'confirmation_requested');assert.match(receipt.message,/اگر ثبت/);assert.equal(h.calls.updates,0);assert.equal(h.calls.privateReads,0);
+  }
 });
 test('cross-origin and malformed/oversized actions stop before Auth/network',async()=>{
   const foreign=harness({origin:false});assert.equal((await foreign.email(signup)).status,403);assert.equal(foreign.calls.clients,0);
