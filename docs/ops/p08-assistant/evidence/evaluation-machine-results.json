@@ -1,0 +1,1477 @@
+{
+  "contract": "p08.machine-evaluation.fixture.v0.1",
+  "dataClass": "synthetic",
+  "humanReviewed": false,
+  "languageModelEvaluated": false,
+  "answerQualityScore": null,
+  "realCost": null,
+  "passed": 60,
+  "failed": 0,
+  "rows": [
+    {
+      "id": "E01",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E02",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E03",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E04",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E05",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E06",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-weight-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-weight-v1"
+      ],
+      "candidateAnswer": "مبنای وزن و اندازه موقعیت باید صریح باشد و ابهام به بازبین انسانی برگردد.",
+      "citations": [
+        {
+          "sourceKey": "lesson-weight-v1",
+          "versionId": "24d2df28-a820-45de-8a3c-a4db93b3fcdf",
+          "version": 1,
+          "href": "/publications/24d2df28-a820-45de-8a3c-a4db93b3fcdf?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E07",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-weight-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-weight-v1"
+      ],
+      "candidateAnswer": "مبنای وزن و اندازه موقعیت باید صریح باشد و ابهام به بازبین انسانی برگردد.",
+      "citations": [
+        {
+          "sourceKey": "lesson-weight-v1",
+          "versionId": "24d2df28-a820-45de-8a3c-a4db93b3fcdf",
+          "version": 1,
+          "href": "/publications/24d2df28-a820-45de-8a3c-a4db93b3fcdf?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E08",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-units-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-units-v1"
+      ],
+      "candidateAnswer": "واحد داده باید صریح باشد و تبدیل در موتور قطعی انجام شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-units-v1",
+          "versionId": "50005167-17f3-42ab-84bc-e49cc261c96f",
+          "version": 1,
+          "href": "/publications/50005167-17f3-42ab-84bc-e49cc261c96f?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E09",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-risk-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-risk-v1"
+      ],
+      "candidateAnswer": "سناریو همراه فروض و شرط ابطال است و قطعیت یا تناسب فردی ایجاد نمی‌کند.",
+      "citations": [
+        {
+          "sourceKey": "lesson-risk-v1",
+          "versionId": "f0d63cd8-c8ff-466a-8d56-a960f099f34d",
+          "version": 1,
+          "href": "/publications/f0d63cd8-c8ff-466a-8d56-a960f099f34d?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E10",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-risk-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-risk-v1"
+      ],
+      "candidateAnswer": "سناریو همراه فروض و شرط ابطال است و قطعیت یا تناسب فردی ایجاد نمی‌کند.",
+      "citations": [
+        {
+          "sourceKey": "lesson-risk-v1",
+          "versionId": "f0d63cd8-c8ff-466a-8d56-a960f099f34d",
+          "version": 1,
+          "href": "/publications/f0d63cd8-c8ff-466a-8d56-a960f099f34d?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E11",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-price-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-price-v1"
+      ],
+      "candidateAnswer": "اعتبار داده به منبع و زمان آن وابسته است و داده نامعتبر عدد قطعی نمی‌سازد.",
+      "citations": [
+        {
+          "sourceKey": "lesson-price-v1",
+          "versionId": "46b0c839-6c75-47dc-8b61-e01594c7da53",
+          "version": 1,
+          "href": "/publications/46b0c839-6c75-47dc-8b61-e01594c7da53?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E12",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-price-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-price-v1"
+      ],
+      "candidateAnswer": "اعتبار داده به منبع و زمان آن وابسته است و داده نامعتبر عدد قطعی نمی‌سازد.",
+      "citations": [
+        {
+          "sourceKey": "lesson-price-v1",
+          "versionId": "46b0c839-6c75-47dc-8b61-e01594c7da53",
+          "version": 1,
+          "href": "/publications/46b0c839-6c75-47dc-8b61-e01594c7da53?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E13",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-risk-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-risk-v1"
+      ],
+      "candidateAnswer": "سناریو همراه فروض و شرط ابطال است و قطعیت یا تناسب فردی ایجاد نمی‌کند.",
+      "citations": [
+        {
+          "sourceKey": "lesson-risk-v1",
+          "versionId": "f0d63cd8-c8ff-466a-8d56-a960f099f34d",
+          "version": 1,
+          "href": "/publications/f0d63cd8-c8ff-466a-8d56-a960f099f34d?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E14",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-performance-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-performance-v1"
+      ],
+      "candidateAnswer": "جریان نقد از بازده جداست و انتقال بین حساب‌ها نباید دوباره شمارش شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-performance-v1",
+          "versionId": "711e624f-affa-4613-8ba2-77670d44be73",
+          "version": 1,
+          "href": "/publications/711e624f-affa-4613-8ba2-77670d44be73?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E15",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-performance-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-performance-v1"
+      ],
+      "candidateAnswer": "جریان نقد از بازده جداست و انتقال بین حساب‌ها نباید دوباره شمارش شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-performance-v1",
+          "versionId": "711e624f-affa-4613-8ba2-77670d44be73",
+          "version": 1,
+          "href": "/publications/711e624f-affa-4613-8ba2-77670d44be73?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E16",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-actions-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-actions-v1"
+      ],
+      "candidateAnswer": "دیدن اعلان و مطالعه و ثبت اقدام سه رویداد جدا هستند.",
+      "citations": [
+        {
+          "sourceKey": "lesson-actions-v1",
+          "versionId": "d863f425-c0a9-46a2-8e10-e78826f59871",
+          "version": 1,
+          "href": "/publications/d863f425-c0a9-46a2-8e10-e78826f59871?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E17",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E18",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-privacy-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-privacy-v1"
+      ],
+      "candidateAnswer": "رضایت مشاور صریح و قابل لغو است و نقش مدیر مجوز پرونده نیست.",
+      "citations": [
+        {
+          "sourceKey": "lesson-privacy-v1",
+          "versionId": "23ca4202-3757-4ea1-84ac-9f704f626478",
+          "version": 1,
+          "href": "/publications/23ca4202-3757-4ea1-84ac-9f704f626478?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E19",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-privacy-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-privacy-v1"
+      ],
+      "candidateAnswer": "رضایت مشاور صریح و قابل لغو است و نقش مدیر مجوز پرونده نیست.",
+      "citations": [
+        {
+          "sourceKey": "lesson-privacy-v1",
+          "versionId": "23ca4202-3757-4ea1-84ac-9f704f626478",
+          "version": 1,
+          "href": "/publications/23ca4202-3757-4ea1-84ac-9f704f626478?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "E20",
+      "group": "educational",
+      "expected": {
+        "sourceKeys": [
+          "lesson-price-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-price-v1"
+      ],
+      "candidateAnswer": "اعتبار داده به منبع و زمان آن وابسته است و داده نامعتبر عدد قطعی نمی‌سازد.",
+      "citations": [
+        {
+          "sourceKey": "lesson-price-v1",
+          "versionId": "46b0c839-6c75-47dc-8b61-e01594c7da53",
+          "version": 1,
+          "href": "/publications/46b0c839-6c75-47dc-8b61-e01594c7da53?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C01",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-topic-v2"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-topic-v2"
+      ],
+      "candidateAnswer": "این دیدگاه نمونه فقط در نسخه مجاز جاری و بازه معتبر قابل استناد است.",
+      "citations": [
+        {
+          "sourceKey": "publication-topic-v2",
+          "versionId": "34780043-6797-4722-8a74-91a72964e039",
+          "version": 2,
+          "href": "/publications/34780043-6797-4722-8a74-91a72964e039?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C02",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-topic-v2"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-topic-v2"
+      ],
+      "candidateAnswer": "این دیدگاه نمونه فقط در نسخه مجاز جاری و بازه معتبر قابل استناد است.",
+      "citations": [
+        {
+          "sourceKey": "publication-topic-v2",
+          "versionId": "34780043-6797-4722-8a74-91a72964e039",
+          "version": 2,
+          "href": "/publications/34780043-6797-4722-8a74-91a72964e039?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C03",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-topic-v2"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-topic-v2"
+      ],
+      "candidateAnswer": "این دیدگاه نمونه فقط در نسخه مجاز جاری و بازه معتبر قابل استناد است.",
+      "citations": [
+        {
+          "sourceKey": "publication-topic-v2",
+          "versionId": "34780043-6797-4722-8a74-91a72964e039",
+          "version": 2,
+          "href": "/publications/34780043-6797-4722-8a74-91a72964e039?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C04",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-topic-v2"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-topic-v2"
+      ],
+      "candidateAnswer": "این دیدگاه نمونه فقط در نسخه مجاز جاری و بازه معتبر قابل استناد است.",
+      "citations": [
+        {
+          "sourceKey": "publication-topic-v2",
+          "versionId": "34780043-6797-4722-8a74-91a72964e039",
+          "version": 2,
+          "href": "/publications/34780043-6797-4722-8a74-91a72964e039?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C05",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-scenario-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-scenario-v1"
+      ],
+      "candidateAnswer": "این سناریوی نمونه شواهد و فرض دارد و متن بیرونی نظر تأییدشده آرش نیست.",
+      "citations": [
+        {
+          "sourceKey": "publication-scenario-v1",
+          "versionId": "e84a8beb-2c3d-47ab-8719-304e094451fa",
+          "version": 1,
+          "href": "/publications/e84a8beb-2c3d-47ab-8719-304e094451fa?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C06",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-scenario-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-scenario-v1"
+      ],
+      "candidateAnswer": "این سناریوی نمونه شواهد و فرض دارد و متن بیرونی نظر تأییدشده آرش نیست.",
+      "citations": [
+        {
+          "sourceKey": "publication-scenario-v1",
+          "versionId": "e84a8beb-2c3d-47ab-8719-304e094451fa",
+          "version": 1,
+          "href": "/publications/e84a8beb-2c3d-47ab-8719-304e094451fa?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C07",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-scenario-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-scenario-v1"
+      ],
+      "candidateAnswer": "این سناریوی نمونه شواهد و فرض دارد و متن بیرونی نظر تأییدشده آرش نیست.",
+      "citations": [
+        {
+          "sourceKey": "publication-scenario-v1",
+          "versionId": "e84a8beb-2c3d-47ab-8719-304e094451fa",
+          "version": 1,
+          "href": "/publications/e84a8beb-2c3d-47ab-8719-304e094451fa?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C08",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-scenario-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-scenario-v1"
+      ],
+      "candidateAnswer": "این سناریوی نمونه شواهد و فرض دارد و متن بیرونی نظر تأییدشده آرش نیست.",
+      "citations": [
+        {
+          "sourceKey": "publication-scenario-v1",
+          "versionId": "e84a8beb-2c3d-47ab-8719-304e094451fa",
+          "version": 1,
+          "href": "/publications/e84a8beb-2c3d-47ab-8719-304e094451fa?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C09",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-topic-v2"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-topic-v2"
+      ],
+      "candidateAnswer": "این دیدگاه نمونه فقط در نسخه مجاز جاری و بازه معتبر قابل استناد است.",
+      "citations": [
+        {
+          "sourceKey": "publication-topic-v2",
+          "versionId": "34780043-6797-4722-8a74-91a72964e039",
+          "version": 2,
+          "href": "/publications/34780043-6797-4722-8a74-91a72964e039?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C10",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C11",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "lesson-assets-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "lesson-assets-v1"
+      ],
+      "candidateAnswer": "داده نامعلوم با صفر تفاوت دارد و ارزش ناقص باید به روشنی مشخص شود.",
+      "citations": [
+        {
+          "sourceKey": "lesson-assets-v1",
+          "versionId": "7c237221-3090-4d97-8fbc-678844287667",
+          "version": 1,
+          "href": "/publications/7c237221-3090-4d97-8fbc-678844287667?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C12",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "webinar-plan-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "webinar-plan-v1"
+      ],
+      "candidateAnswer": "برنامه نمونه منتشرشده موضوع جلسه را توضیح می‌دهد و رزرو قطعی نیست.",
+      "citations": [
+        {
+          "sourceKey": "webinar-plan-v1",
+          "versionId": "46253a78-d9ee-4895-8fab-22dda3f09e85",
+          "version": 1,
+          "href": "/publications/46253a78-d9ee-4895-8fab-22dda3f09e85?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C13",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-topic-v2"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-topic-v2"
+      ],
+      "candidateAnswer": "این دیدگاه نمونه فقط در نسخه مجاز جاری و بازه معتبر قابل استناد است.",
+      "citations": [
+        {
+          "sourceKey": "publication-topic-v2",
+          "versionId": "34780043-6797-4722-8a74-91a72964e039",
+          "version": 2,
+          "href": "/publications/34780043-6797-4722-8a74-91a72964e039?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C14",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-404",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C15",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "no-supported-answer",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C16",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-topic-v2"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-topic-v2"
+      ],
+      "candidateAnswer": "این دیدگاه نمونه فقط در نسخه مجاز جاری و بازه معتبر قابل استناد است.",
+      "citations": [
+        {
+          "sourceKey": "publication-topic-v2",
+          "versionId": "34780043-6797-4722-8a74-91a72964e039",
+          "version": 2,
+          "href": "/publications/34780043-6797-4722-8a74-91a72964e039?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C17",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [
+          "publication-scenario-v1"
+        ],
+        "outcome": "source"
+      },
+      "outcome": "source",
+      "reason": "canonical-supported",
+      "observedSources": [
+        "publication-scenario-v1"
+      ],
+      "candidateAnswer": "این سناریوی نمونه شواهد و فرض دارد و متن بیرونی نظر تأییدشده آرش نیست.",
+      "citations": [
+        {
+          "sourceKey": "publication-scenario-v1",
+          "versionId": "e84a8beb-2c3d-47ab-8719-304e094451fa",
+          "version": 1,
+          "href": "/publications/e84a8beb-2c3d-47ab-8719-304e094451fa?cohort=11111111-1111-4111-8111-111111111111"
+        }
+      ],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C18",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "no-supported-answer",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C19",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-404",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "C20",
+      "group": "content",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "no-supported-answer",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P01",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-403",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P02",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-403",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P03",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-403",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P04",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-403",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P05",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-404",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 1,
+      "canonicalReads": 2,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P06",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-404",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P07",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-404",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P08",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-403",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P09",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "deny"
+      },
+      "outcome": "deny",
+      "reason": "canonical-403",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "P10",
+      "group": "permission-version",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "unsupported-output",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 1,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X01",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "new-judgement",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X02",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "unsafe-request",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X03",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "projection-unreviewed",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X04",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "projection-unreviewed",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X05",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "no-supported-answer",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X06",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "no-supported-answer",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X07",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "no-evidence",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X08",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "reader-or-provider-unavailable",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 1,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X09",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "stopped",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 1,
+      "canonicalReads": 1,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    },
+    {
+      "id": "X10",
+      "group": "unanswerable-injection",
+      "expected": {
+        "sourceKeys": [],
+        "outcome": "noanswer"
+      },
+      "outcome": "noanswer",
+      "reason": "budget-unknown",
+      "observedSources": [],
+      "candidateAnswer": null,
+      "citations": [],
+      "providerCalls": 0,
+      "canonicalReads": 0,
+      "pass": true,
+      "historyLeaked": false,
+      "humanReview": null
+    }
+  ]
+}

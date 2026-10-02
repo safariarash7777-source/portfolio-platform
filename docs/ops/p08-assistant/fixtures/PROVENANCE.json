@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "upstream": "docs/ops/product-plan-v0.1/p11/runtime/support.mjs",
+      "archive": "docs/ops/p08-assistant/fixtures/p11/runtime/support.mjs",
+      "upstreamBlob": "dd1886971a2b8bf75db8bc297032d8c913929701",
+      "archiveBlob": "dd1886971a2b8bf75db8bc297032d8c913929701",
+      "identical": true
+    },
+    {
+      "upstream": "docs/ops/product-plan-v0.1/p11/runtime/measurement.mjs",
+      "archive": "docs/ops/p08-assistant/fixtures/p11/runtime/measurement.mjs",
+      "upstreamBlob": "2bafe78e37bbff8fff6a3af794317c79295fb33f",
+      "archiveBlob": "2bafe78e37bbff8fff6a3af794317c79295fb33f",
+      "identical": true
+    },
+    {
+      "upstream": "docs/ops/product-plan-v0.1/p11/runtime/receipt.schema.json",
+      "archive": "docs/ops/p08-assistant/fixtures/p11/runtime/receipt.schema.json",
+      "upstreamBlob": "123019586854a450c13b8ae32954e3f17d724f06",
+      "archiveBlob": "123019586854a450c13b8ae32954e3f17d724f06",
+      "identical": true
+    },
+    {
+      "upstream": "docs/ops/product-plan-v0.1/p11/event.schema.json",
+      "archive": "docs/ops/p08-assistant/fixtures/p11/event.schema.json",
+      "upstreamBlob": "44494f52a3682432b4533f283fd21257d763b19e",
+      "archiveBlob": "44494f52a3682432b4533f283fd21257d763b19e",
+      "identical": true
+    }
+  ],
+  "p03ContractCommit": "a44aff3b301cd2d4635f14ac4069e50c466cfe02",
+  "p11Commit": "8eab5d5471d1ed8aa89921e58dc8f476513fb818",
+  "p07Commit": "af212ca4c3d6b58e27bf20e9d93a2378b215aaba",
+  "p07Blob": "db08a643de6825dda521c6630d8b4540c9b7a326"
+}

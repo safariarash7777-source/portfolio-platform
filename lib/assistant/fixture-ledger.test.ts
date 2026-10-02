@@ -1,12 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { mkdtempSync, appendFileSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { FixtureBudgetLedger, type BudgetPolicy } from './fixture-ledger';
 import { transitionHandoff, p11SupportDimensions, handoffMetric, type Handoff } from './handoff-fixture';
+import { forwardJudgementFixture, answerAndReferFixture, type HandoffReceipt, type ReceiptDependencies } from './receipt-handoff';
+import { CanonicalFixtureEnvironment, FIXTURE_COHORT } from './evaluation-harness';
+import { evaluateDraftValidity } from '../../docs/ops/p08-assistant/fixtures/p07-validity-source';
+import { projectSupport, handoffTransitionHash } from '../../docs/ops/p08-assistant/fixtures/p11/runtime/support.mjs';
 const subject='a'.repeat(64), other='b'.repeat(64);
 const policy: BudgetPolicy={version:'fixture-v1',window:'synthetic-window',startsAt:0,endsAt:1000,totalTokens:100,subjectTokens:60,concurrency:2,subjectConcurrency:1};
 const dir=()=>mkdtempSync(join(tmpdir(),'p08-budget-fixture-'));
@@ -102,5 +106,60 @@ test('independent P11 lineage probe rejects different case/member and revision j
   const a=initial(),b=transitionHandoff(a,0,{kind:'consent',consentVersion:'v1'},member);
   for(const invalid of [{...b,caseRef:other},{...b,subjectRef:other},{...b,revision:99},{...b,caseRef:'invalid'}, {...b,ownerRef:other}, {...b,reason:'conflict' as const}]) {
     assert.equal(p11SupportDimensions(a,invalid,true),null);
+  }
+});
+function receiptFixture(){
+  let current=initial();let allowed=true;let consent:string|null='fixture-consent-v1';let commits=0;let witness=true;let reads=0;
+  const stored=new Map<string,HandoffReceipt>();
+  const deps:ReceiptDependencies={now:()=> '2026-10-02T10:00:00Z',releaseSha:'31c44ab635b672b589b7833bcbc78b41d36f1e75',
+    readAuthority:async()=>{reads++;return {allowed,row:structuredClone(current),consentVersion:consent};},
+    commit:async(before,after,occurredAt)=>{
+      if(!allowed||before.revision!==current.revision||consent!==after.consentVersion)throw Error('owner-compare-and-set-denied');
+      const receipt:HandoffReceipt={contractVersion:'p08.handoff.receipt.fixture.v0.1',caseRef:after.caseRef,subjectRef:after.subjectRef,beforeRevision:before.revision,afterRevision:after.revision,
+        state:after.state,consentVersion:after.consentVersion,publicationVersionRef:after.publicationVersionRef,occurredAt,sourceRef:'k_'+'d'.repeat(64),transitionHash:handoffTransitionHash(before,after),environment:'synthetic'};
+      commits++;current=structuredClone(after);stored.set(receipt.sourceRef,structuredClone(receipt));return receipt;
+    },
+    verifyReceipt:async receipt=>({valid:witness&&JSON.stringify(stored.get(receipt.sourceRef))===JSON.stringify(receipt),subjectKey:'k_'+subject,caseKey:'k_'+'c'.repeat(64),sourceRef:receipt.sourceRef}),
+    project:projectSupport,
+  };
+  return {deps,get commits(){return commits;},get reads(){return reads;},get row(){return current;},revoke(){allowed=false;},noConsent(){consent=null;},badWitness(){witness=false;}};
+}
+test('judgement handoff consumes existing P11 projectSupport receipt, without promised human response',async()=>{
+  const f=receiptFixture(),r=await forwardJudgementFixture(subject,f.deps);
+  assert.equal(r.status,'received');assert.equal(f.commits,1);assert.ok(f.reads>=4);assert.equal(r.firstHumanResponseAt,null);assert.equal(r.sla,null);
+  const again=await forwardJudgementFixture(subject,f.deps);assert.equal(again.status,'unavailable');assert.equal(f.commits,1);
+});
+test('no consent or wrong actor cannot commit a judgement referral',async()=>{
+  const a=receiptFixture();a.noConsent();assert.equal((await forwardJudgementFixture(subject,a.deps)).status,'pending_consent');assert.equal(a.commits,0);
+  const b=receiptFixture();assert.equal((await forwardJudgementFixture(other,b.deps)).status,'unavailable');assert.equal(b.commits,0);
+});
+test('P11 invalid receipt and post-response revocation suppress received confirmation',async()=>{
+  const a=receiptFixture();a.badWitness();assert.equal((await forwardJudgementFixture(subject,a.deps)).status,'unavailable');
+  const b=receiptFixture();const verify=b.deps.verifyReceipt;b.deps.verifyReceipt=async receipt=>{const proof=await verify(receipt);b.revoke();return proof;};
+  assert.equal((await forwardJudgementFixture(subject,b.deps)).status,'unavailable');
+});
+test('receipt tampering/private field and stale revision fail through P11 canonical validator',async()=>{
+  for(const change of ['case','revision','private','hash'] as const){
+    const f=receiptFixture(),commit=f.deps.commit;f.deps.commit=async(...args)=>{
+      const r=await commit(...args);
+      if(change==='case')r.caseRef=other;if(change==='revision')r.afterRevision=99;if(change==='hash')r.transitionHash='e'.repeat(64);
+      if(change==='private')(r as unknown as Record<string,unknown>).question='123456 private';return r;
+    };const result=await forwardJudgementFixture(subject,f.deps);assert.equal(result.status,'unavailable');assert.equal(result.receiptRef,null);
+  }
+});
+test('new-judgement response routes to verified P11 receipt with zero provider work',async()=>{
+  const env=new CanonicalFixtureEnvironment(evaluateDraftValidity);env.plans.q={intent:'current-view',disposition:'new-judgement',references:[]};
+  const f=receiptFixture();
+  const r=await answerAndReferFixture({questionKey:'q',history:['123456 private amount']},{subjectRef:subject,cohortId:FIXTURE_COHORT},env.dependencies(),f.deps);
+  assert.equal(r.response.outcome,'noanswer');assert.equal(r.response.needsHuman,true);assert.equal(r.referral?.status,'received');assert.equal(env.providerCalls,0);
+  assert.ok(!JSON.stringify(r).includes('123456'));assert.equal(r.referral?.firstHumanResponseAt,null);
+});
+test('P11 fixture imports exactly the committed owner blobs and schemas',()=>{
+  const provenance=JSON.parse(readFileSync(join(process.cwd(),'docs/ops/p08-assistant/fixtures/PROVENANCE.json'),'utf8'));
+  assert.equal(provenance.p11Commit,'8eab5d5471d1ed8aa89921e58dc8f476513fb818');
+  for(const file of provenance.files){
+    const raw=readFileSync(join(process.cwd(),file.archive),'utf8').replaceAll('\r\n','\n');
+    const blob=createHash('sha1').update(`blob ${Buffer.byteLength(raw)}\0`).update(raw).digest('hex');
+    assert.equal(blob,file.upstreamBlob);assert.equal(file.identical,true);
   }
 });

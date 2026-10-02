@@ -4,6 +4,8 @@
 
 **Checkpoint جدید:** مبنایP00=195@31c44ab مصرف شد؛ [تطبیق195 و ledger/ارجاع باP11](BASELINE195-AND-P11.md). بخش زیر و گزارش اولیه، سابقه شروع191 هستند؛ مجهول‌بودن انتخابP00 دیگر وضعیت جاری نیست.
 
+**مرحله retrieval:** [اتصال آفلاین P03/P07، receipt P11 و harness60](STAGE-RETRIEVAL-RESULT.md). شاهد کنترل منبع/مجوز است؛ quality انسانی و runtime زنده همچنان پذیرفته نشده‌اند.
+
 ## تطبیق P00 و مالکیت پیش از کد
 
 - checkout مستقل: `portfolio-p08-assistant`؛ شاخه `codex/p08-assistant-contract-20261002`.
