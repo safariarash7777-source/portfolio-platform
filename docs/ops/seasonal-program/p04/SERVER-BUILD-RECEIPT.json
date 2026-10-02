@@ -1,0 +1,20 @@
+{
+  "authority": "P00 isolated server build receipt; current local handoff output read",
+  "applicationSHA": "7b92b165d0f389cf8531dc64788f377c93825758",
+  "status": "PASS",
+  "exitCode": 0,
+  "startedAtUtc": "2026-10-02T17:18:17.0000000Z",
+  "finishedAtUtc": "2026-10-02T17:24:17.0000000Z",
+  "sourceFilesVerified": 1580,
+  "limits": {
+    "memory": "2g",
+    "memorySwap": "2g",
+    "cpus": 1,
+    "pids": 256,
+    "network": "none"
+  },
+  "existingContainerIDsUnchanged": true,
+  "nativeAcceptance": "OPEN",
+  "deployed": false,
+  "databaseConnected": false
+}
