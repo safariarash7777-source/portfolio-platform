@@ -19,6 +19,7 @@
 | [AUDIT.md](AUDIT.md) | شواهد ابزار/رخداد فعلی و شکاف با نسخه دقیق |
 | [EVENT-CONTRACT.md](EVENT-CONTRACT.md) / [schema](event.schema.json) | قرارداد محدود داده و محل اتصال هر مجری |
 | [P08-COORDINATION.md](P08-COORDINATION.md) | نگاشت مصرف، رزرو نامطمئن و ارجاع انسانی P08 به سنجش موجود |
+| [P08-REVIEW.md](P08-REVIEW.md) | بازبینی مستقل snapshot آفلاین P08 و یافته‌های باز با hash |
 | [METRICS.md](METRICS.md) | جمعیت، مخرج، بازه، قواعد حذف تکرار و تصمیمی که سنجه پشتیبانی می‌کند |
 | [ACCEPTANCE.md](ACCEPTANCE.md) / [evidence](acceptance-evidence.csv) | معیار خروج همه موج‌ها و ثبت شاهد مستقل/انسانی |
 | [gate-map.json](gate-map.json) | اتصال معیارهای P11 به G0…G4 در manifest اصلی P00 |
