@@ -26,6 +26,13 @@
         "candidateBlobIdentical": true,
         "cherryPickedAgain": false,
         "published": false
+      },
+      "documentationEvidenceHead": {
+        "sha": "797335c872ea4304aa119ecde32809da4f156e5d",
+        "verifiedDocsOnly": true,
+        "published": false,
+        "importedIntoCandidate": false,
+        "ownerEvidenceNotCandidateAcceptance": true
       }
     }
   },
