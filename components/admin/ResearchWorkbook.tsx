@@ -16,6 +16,7 @@ interface ListItem { workbookId: string; version: number; title: string; savedAt
 interface ReviewItem { version: number | null; decision: 'approved_internal' | 'returned'; note: string | null; reviewedAt: string }
 type ServerState = 'checking' | 'ready' | 'unavailable' | 'error';
 
+export type WorkbookTransport = (input: string, init?: RequestInit) => Promise<{ status: number; body: Record<string, unknown> }>;
 async function call(input: string, init?: RequestInit): Promise<{ status: number; body: Record<string, unknown> }> {
   const res = await fetch(input, { ...init, headers: { 'content-type': 'application/json' }, cache: 'no-store' });
   let body: Record<string, unknown> = {};
@@ -23,13 +24,17 @@ async function call(input: string, init?: RequestInit): Promise<{ status: number
   return { status: res.status, body };
 }
 
-export default function ResearchWorkbook({ initialSource, initialWorkbookId }: { initialSource?: string; initialWorkbookId?: string } = {}) {
+export default function ResearchWorkbook({ initialSource, initialWorkbookId, transport = call, initialWorkbook, onWorkbookChange }: {
+  initialSource?: string; initialWorkbookId?: string; transport?: WorkbookTransport;
+  initialWorkbook?: Workbook; onWorkbookChange?: (workbook: Workbook) => void;
+} = {}) {
   const [workbook, setWorkbook] = useState(() => {
+    if (initialWorkbook) return parseWorkbook(JSON.stringify(initialWorkbook));
     const w=emptyWorkbook();
     if(initialSource){w.evidence[0].sourceUrl=initialSource;w.question='این منبع چه تغییری را نشان می‌دهد و کدام محدودیت نیاز به بررسی دارد؟';}
     return w;
   });
-  const [dirty, setDirty] = useState(false);
+  const [dirty, setDirty] = useState(!!initialWorkbook);
   const [checked, setChecked] = useState(false);
   const [message, setMessage] = useState('');
   const file = useRef<HTMLInputElement>(null);
@@ -44,12 +49,13 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId }: {
   function setBusy(value: boolean) { busyRef.current = value; setBusyState(value); }
   async function refreshList() {
     try {
-      const r = await call(API);
+      const r = await transport(API);
       if (r.status === 200) { setList(r.body.items as ListItem[]); setServer('ready'); }
       else setServer(r.body.unavailable ? 'unavailable' : 'error');
     } catch { setServer('error'); }
   }
-  useEffect(() => { void refreshList(); }, []);
+  useEffect(() => { void refreshList(); }, [transport]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { onWorkbookChange?.(workbook); }, [workbook, onWorkbookChange]);
   useEffect(() => { if(initialWorkbookId)void openFromServer(initialWorkbookId,null); }, [initialWorkbookId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!dirty) return;
@@ -74,7 +80,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId }: {
     if (busyRef.current) return;
     setBusy(true);
     try {
-      const r = await call(API, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
+      const r = await transport(API, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
       if (r.status === 201) {
         const version = r.body.version as number;
         setSaved({ workbookId: r.body.workbookId as string, version, latestVersion: version, savedAt: r.body.savedAt as string });
@@ -94,7 +100,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId }: {
     if (dirty && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی جایگزین می‌شود. ادامه می‌دهید؟')) return;
     setBusy(true);
     try {
-      const r = await call(`${API}?id=${encodeURIComponent(workbookId)}${version ? `&version=${version}` : ''}`);
+      const r = await transport(`${API}?id=${encodeURIComponent(workbookId)}${version ? `&version=${version}` : ''}`);
       if (r.status !== 200) { setMessage(String(r.body.error ?? 'کاربرگ باز نشد.')); return; }
       setWorkbook(r.body.workbook as Workbook);
       setSaved({ workbookId, version: r.body.version as number, latestVersion: r.body.latestVersion as number, savedAt: r.body.savedAt as string });
@@ -116,7 +122,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId }: {
     if (decision === 'approved_internal' && !window.confirm(`نسخهٔ ${toPersianDigits(saved.version)} تأیید داخلی شود؟ این کار انتشار نیست و نسخه‌های بعدی تأیید را به ارث نمی‌برند.`)) return;
     setBusy(true);
     try {
-      const r = await call(API, { method: 'POST', body: JSON.stringify({ action: 'decide', workbookId: saved.workbookId, version: saved.version, decision, note }) });
+      const r = await transport(API, { method: 'POST', body: JSON.stringify({ action: 'decide', workbookId: saved.workbookId, version: saved.version, decision, note }) });
       if (r.status === 201) {
         setReviews(x => [...x, { version: saved.version, decision, note: note ?? null, reviewedAt: r.body.reviewedAt as string }]);
         setMessage(decision === 'approved_internal' ? `نسخهٔ ${toPersianDigits(saved.version)} تأیید داخلی شد؛ منتشر نشده است.` : `نسخهٔ ${toPersianDigits(saved.version)} با علت بازگردانده شد.`);

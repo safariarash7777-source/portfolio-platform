@@ -1,0 +1,203 @@
+{
+  "schema": "p04-contract-evidence.v0.1",
+  "observedAtUtc": "2026-10-02T13:10:47.1542978Z",
+  "base": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "kind": "read-only-source-comparison",
+  "runtimeTestsThisTask": "not-run",
+  "humanAcceptance": "open",
+  "production": "not-changed-or-verified",
+  "comparison": [
+    {
+      "path": "app/(protected)/dashboard/holdings/page.tsx",
+      "pr173Blob": "9f75856a8e9b7768931223af55fd4d4eb6a89a1a",
+      "pr195Blob": "9f75856a8e9b7768931223af55fd4d4eb6a89a1a",
+      "equal": true
+    },
+    {
+      "path": "app/api/portfolio/debts/route.ts",
+      "pr173Blob": "4d83b5649dff9a8e42e723786c1647f508561f49",
+      "pr195Blob": "4d83b5649dff9a8e42e723786c1647f508561f49",
+      "equal": true
+    },
+    {
+      "path": "app/api/portfolio/holdings/route.ts",
+      "pr173Blob": "6f279ac683ced74018fbbd5b1f74ad9051fec495",
+      "pr195Blob": "6f279ac683ced74018fbbd5b1f74ad9051fec495",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/alerts.test.ts",
+      "pr173Blob": "cadb2edd4f8a16a169aadb39b5d3212c9543b3bb",
+      "pr195Blob": "cadb2edd4f8a16a169aadb39b5d3212c9543b3bb",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/alerts.ts",
+      "pr173Blob": "e3d597d1d5834166b010ed15feab6ec10af9a131",
+      "pr195Blob": "e3d597d1d5834166b010ed15feab6ec10af9a131",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/balanceSheet.integration.test.ts",
+      "pr173Blob": "584e062ebda4cbceb30928bdc0d1154b959076ef",
+      "pr195Blob": "584e062ebda4cbceb30928bdc0d1154b959076ef",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/balanceSheet.test.ts",
+      "pr173Blob": "181f4296364a36cd2bae67d99d0b6caa04fb7762",
+      "pr195Blob": "181f4296364a36cd2bae67d99d0b6caa04fb7762",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/balanceSheet.ts",
+      "pr173Blob": "2b3ada50babec99a9a9700cb890ce6a58a594220",
+      "pr195Blob": "2b3ada50babec99a9a9700cb890ce6a58a594220",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/contracts.ts",
+      "pr173Blob": "89d9aee2211596e1777ee879cf6cc48cdf4b7135",
+      "pr195Blob": "89d9aee2211596e1777ee879cf6cc48cdf4b7135",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/financialHttp.test.ts",
+      "pr173Blob": "2db57c8361da194e0db8615b0134390e8a564018",
+      "pr195Blob": "2db57c8361da194e0db8615b0134390e8a564018",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/financialHttp.ts",
+      "pr173Blob": "541e6971781fe892449e0e4e21479ef35e71a92e",
+      "pr195Blob": "541e6971781fe892449e0e4e21479ef35e71a92e",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/financialInput.ts",
+      "pr173Blob": "30511a982a542f390a3fabffa326d70caac480c7",
+      "pr195Blob": "30511a982a542f390a3fabffa326d70caac480c7",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/holdings.integration.test.ts",
+      "pr173Blob": "5a8d03681e9de17bf8b8df56854ea87cff6eb44f",
+      "pr195Blob": "5a8d03681e9de17bf8b8df56854ea87cff6eb44f",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/performance.test.ts",
+      "pr173Blob": "9db54559dd00a2838b421183d1f753f76301ed5e",
+      "pr195Blob": "9db54559dd00a2838b421183d1f753f76301ed5e",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/performance.ts",
+      "pr173Blob": "32fefe2ab1dbf300e3decc366067d5b9702b7480",
+      "pr195Blob": "32fefe2ab1dbf300e3decc366067d5b9702b7480",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/prices.test.ts",
+      "pr173Blob": "265a9853ed3c3f3fb98c42b31111773227d2e0f6",
+      "pr195Blob": "265a9853ed3c3f3fb98c42b31111773227d2e0f6",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/prices.ts",
+      "pr173Blob": "df490a2722331ba2da53143a9711b1c3b0711b43",
+      "pr195Blob": "df490a2722331ba2da53143a9711b1c3b0711b43",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/rebalance.test.ts",
+      "pr173Blob": "2d5545da63b15add0f5475a9b16fe2595a69290d",
+      "pr195Blob": "2d5545da63b15add0f5475a9b16fe2595a69290d",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/rebalance.ts",
+      "pr173Blob": "9efdf8aeb50d5f887ae939cc7ddd02f779de3eb2",
+      "pr195Blob": "9efdf8aeb50d5f887ae939cc7ddd02f779de3eb2",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/service.ts",
+      "pr173Blob": "7d6d9ab13258a6335dcbe45be17bb227411de273",
+      "pr195Blob": "7d6d9ab13258a6335dcbe45be17bb227411de273",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/targetContract.test.ts",
+      "pr173Blob": "28b1c09cc74be676065a2b0abb2942acb0de7141",
+      "pr195Blob": "28b1c09cc74be676065a2b0abb2942acb0de7141",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/targetContract.ts",
+      "pr173Blob": "af07521b2a9a4d82de37e4e8dae9a0843f154b5a",
+      "pr195Blob": "af07521b2a9a4d82de37e4e8dae9a0843f154b5a",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/units.test.ts",
+      "pr173Blob": "33f284b962613cf47db83314f99ab9372ccf94fc",
+      "pr195Blob": "33f284b962613cf47db83314f99ab9372ccf94fc",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/units.ts",
+      "pr173Blob": "94f4ea53e946808681563c8c78eb1f8b1767a8e7",
+      "pr195Blob": "94f4ea53e946808681563c8c78eb1f8b1767a8e7",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/valuation.test.ts",
+      "pr173Blob": "958d4582c754f9491359010277241f6e163dfc55",
+      "pr195Blob": "958d4582c754f9491359010277241f6e163dfc55",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/valuation.ts",
+      "pr173Blob": "0cd429e5825ce6651759c38c19ec28e78ce54162",
+      "pr195Blob": "0cd429e5825ce6651759c38c19ec28e78ce54162",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/view.test.ts",
+      "pr173Blob": "43b61d7350d3c10e2cc957c945000f1a606b47b1",
+      "pr195Blob": "43b61d7350d3c10e2cc957c945000f1a606b47b1",
+      "equal": true
+    },
+    {
+      "path": "lib/portfolio/view.ts",
+      "pr173Blob": "1e90a2032f327d255b5d4fbb3481bb77f527fd79",
+      "pr195Blob": "1e90a2032f327d255b5d4fbb3481bb77f527fd79",
+      "equal": true
+    },
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "pr173Blob": "e169d733e75f523597baeb8560fd46f8662d95a5",
+      "pr195Blob": "e169d733e75f523597baeb8560fd46f8662d95a5",
+      "equal": true
+    },
+    {
+      "path": "sql/phase38_personal_balance_sheet.sql",
+      "pr173Blob": "e3901db5f8d43bdeafd5fbc53a464e184f7ef060",
+      "pr195Blob": "e3901db5f8d43bdeafd5fbc53a464e184f7ef060",
+      "equal": true
+    }
+  ],
+  "migrations": [
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "sha256": "af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6",
+      "appliedThisTask": false
+    },
+    {
+      "path": "sql/phase38_personal_balance_sheet.sql",
+      "sha256": "2f44201b3aec41e489bf5ac6fd71406ea9d358748e199ca24a1161d644a2f5fb",
+      "appliedThisTask": false
+    }
+  ]
+}

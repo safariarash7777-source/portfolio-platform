@@ -1,0 +1,178 @@
+{
+  "contract": "p07.evidence.v1",
+  "recordedAt": "2026-10-02T13:26:02.3280764Z",
+  "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "baseTree": "b891e09732872b16768317b506bfb9910cb0fdbf",
+  "basePR": 195,
+  "ownership": "P00-BASELINE.md at recorded digest",
+  "sourceFiles": [
+    {
+      "path": "lib/intelligence/research-workbook.ts",
+      "gitBlob": "8c87738ec41c327a8b2cd6947b8bcb71228eaeb9",
+      "worktreeSha256": "3b5788358b7bef962f0fdfc0f026e634f542ee0f90d205d6493f5cd857c2bdc8"
+    },
+    {
+      "path": "lib/intelligence/workbook-store.ts",
+      "gitBlob": "b3e92e04ce1a03223bce45441c9b54fd2f119c74",
+      "worktreeSha256": "4dfed3199aab4208b5396bae5e320af37f1c266b8c549172a71f78331d95ddb2"
+    },
+    {
+      "path": "lib/intelligence/publication.ts",
+      "gitBlob": "da2eeaf65f905676dc1ab31a774d66b385471336",
+      "worktreeSha256": "9e69b6341df8f6b6432b276a3d16bd926275a1772feff17d5bf7358ea2cb54fa"
+    },
+    {
+      "path": "lib/intelligence/publication-feed.ts",
+      "gitBlob": "9a99853aee9da84f67b5e907503ce4f7a6c281a6",
+      "worktreeSha256": "b17c53c8ed1d1fa6d3aa6b4421818fc73484cbd51f8ab85392eccb4b493f7c39"
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "gitBlob": "5520fa8bbbb167774e3fb7e3fc1af2a7fd5b74b4",
+      "worktreeSha256": "c1687b91a3a94da5758ede888d9bc4aeec2a1aff88078e59dc8b2bbadc38ae98"
+    },
+    {
+      "path": "components/admin/PublicationWorkbench.tsx",
+      "gitBlob": "b32cb80f9ee5dc2f05f33e4dd3fe89ac6e2daed0",
+      "worktreeSha256": "4a6d1f3b1739f3f3fbce7e7137c7ccfad1db5d5d93a7e61c7c8e094e1e61a347"
+    },
+    {
+      "path": "sql/phase34_research_workbook_versions.sql",
+      "gitBlob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+      "worktreeSha256": "4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8"
+    },
+    {
+      "path": "supabase/migrations/20260930182918_research_publication_queue.sql",
+      "gitBlob": "73bcf4b17c0ec24c43aff2b54e002e1dcc2c322f",
+      "worktreeSha256": "c72828b50e66843d594c6be710f6ba813fb7ff8e7591581f6f4e2c1ecc1f5229"
+    }
+  ],
+  "externalPlanWorktreeHashes": [
+    {
+      "path": "00-start-here.md",
+      "sha256": "19aa37c4f333653ee752f7e46510272988918ad43073eb263cd5ec29c99e4a21"
+    },
+    {
+      "path": "01-product.md",
+      "sha256": "1a716b5bbc5632df2fae57a0c2f7ac3f1f7d4cc9a3e8dc6d04feb2e6a463d4f7"
+    },
+    {
+      "path": "03-delivery-plan.md",
+      "sha256": "585785092b6d89ed8c0623073c1e27e28f7395e9dd4f50883f294ea43e794ca5"
+    },
+    {
+      "path": "04-handoff.md",
+      "sha256": "103afa9dc25ee1da1762bb08fd3775514062d4cfa3f8477043352120298b2a76"
+    },
+    {
+      "path": "EXECUTION-ORDER.md",
+      "sha256": "0ba7befd603c04d34b5e0268d3d1d665e1defac2cb9b8b693eb5f0f08ae463af"
+    },
+    {
+      "path": "P00-BASELINE.md",
+      "sha256": "d81810421bd3fd12e0a48830e1c4ba26be2bd66dd7d31bf22a62343deb755e1b"
+    },
+    {
+      "path": "P00-RELEASE-MANIFEST.json",
+      "sha256": "5fe65af958bb8a43fa24f34511627590820f376ac65a83b719cf33ee0561d94d"
+    }
+  ],
+  "hashNote": "worktreeSha256 hashes physical bytes; gitBlob identifies canonical Git object, LF/CRLF may differ",
+  "reuse": {
+    "pr168To195SelectedThreeFiles": "NO_DIFF",
+    "pr176To191SelectedFourFiles": "NO_DIFF"
+  },
+  "technical": {
+    "status": "PASS_LIGHTWEIGHT_UI_BUILD_QUEUED",
+    "build": "QUEUED_WITH_P00_NOT_RUN_CURRENT_UI",
+    "typecheck": "PASS",
+    "tests": 53,
+    "passed": 53,
+    "lint": "PASS_FULL_REPOSITORY",
+    "syntheticOnly": true,
+    "failed": 0,
+    "commands": [
+      "tsx --test lib/intelligence/p07-workflow.test.ts lib/intelligence/p07-preparation.test.ts lib/intelligence/p07-validity-draft.test.ts lib/intelligence/publication.test.ts lib/intelligence/publication-feed.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/workbook-store.test.ts",
+      "tsc --noEmit",
+      "eslint . --max-warnings=0",
+      "next build: NOT_RUN_CURRENT_UI_RESOURCE_QUEUE"
+    ],
+    "secretScan": "PASS_1318_FILES",
+    "diffCheck": "PASS",
+    "staticReact": "4_CASES_PASS_BROWSER_NOT_RUN"
+  },
+  "gates": {
+    "p01StableContract": "OPEN",
+    "humanWorkflows": [
+      "NOT_RUN",
+      "NOT_RUN",
+      "NOT_RUN"
+    ],
+    "p03PublicationCompatibility": "OPEN",
+    "humanMinutes": null,
+    "p00Baseline": "RECEIVED",
+    "nativeSandbox": "NOT_CONNECTED",
+    "persistence": "WORKBOOK_PUBLICATION_EXISTING_API_METADATA_NOT_IMPLEMENTED",
+    "decisionMetadata": "DRAFT_NOT_IMPLEMENTED",
+    "p03CurrentReaderContract": "RECEIVED_ACK_73c768cdfa06a18e02776c2e62eae7ad70de6c03",
+    "validityReplacementAgreement": "DRAFT_OPEN",
+    "p08ValidityInterpretation": "ACK_ON_0e9e41e_DRAFT_ONLY",
+    "p03ValidityPrinciples": "ACK_DRAFT_df85b5f3b84c6b0bac0fa8b1b4b53fdc8d0cf681",
+    "uiBrowser": "NOT_RUN_AWAIT_P00_CANDIDATE",
+    "sharedUIOwnership": "P00_ACK_DESK_AND_3_OPTIONAL_RESEARCH_PROPS_ONLY",
+    "testRegistry": "P00_ACK_3_PATHS_ADDITIVE_ONLY",
+    "proposalV02": "P04_P08_PRINCIPLES_ACK_MESSAGE_ON_7d284d0_FINAL_WIRE_SCHEMA_OPEN"
+  },
+  "production": "NOT_CHANGED",
+  "providerCalls": 0,
+  "customerMessages": 0,
+  "updatedAt": "2026-10-02T17:21:48.9520338Z",
+  "previousOfflineTechnical": {
+    "codeSHA": "eb8f59931cf4baccfc811de4844b6527d73f4e56",
+    "tests": 45,
+    "build": "PASS_47_STATIC_PAGES_BEFORE_UI"
+  },
+  "sourceFilesSnapshot": "Original PR195 input objects; these hashes predate current UI changes",
+  "uiWorktreeSources": [
+    {
+      "path": "app/(protected)/admin/desk/page.tsx",
+      "worktreeSha256": "61ff25950d4a1e5362f99d0d29e7a6db338df76e37c445286147fb1660de1f8e"
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "worktreeSha256": "3be68a39d30c2e62a33b2acf2f11090122a2850e5e090451b49267b0ec4d9ef6"
+    },
+    {
+      "path": "components/admin/P07ManualDesk.tsx",
+      "worktreeSha256": "a4e5eb0e49a4e1f4ab3fa0a62bb2483a8dddf73ea2aeba0d113e3ce7aaf40ebc"
+    },
+    {
+      "path": "components/admin/P07AudiencePreview.tsx",
+      "worktreeSha256": "95885a0d10a8c625cdae911ab92f74ace846eb178fbf061eb11985448dd682bb"
+    },
+    {
+      "path": "components/admin/P07DeskIntegration.tsx",
+      "worktreeSha256": "0c1fb4d26a293c9f1d98664df494f6be0c025b228c0f1045afce8886205bf300"
+    },
+    {
+      "path": "components/admin/P07DeskScenario.tsx",
+      "worktreeSha256": "e750a6028e50e6fb681c718101e343eaf01f10a7e2087264cf41e37a7793ea00"
+    },
+    {
+      "path": "lib/intelligence/p07-workflow.ts",
+      "worktreeSha256": "8e7c62608769b34e103f569c600a6a6a5f384e87e321646451cb6cf63daaf66e"
+    },
+    {
+      "path": "lib/intelligence/p07-workflow-fixture.ts",
+      "worktreeSha256": "ebaedfa43fb9d2c5fb16f22c3b84c257b9dc528d9b5630ad2a7456d7ac8b3344"
+    },
+    {
+      "path": "lib/intelligence/p07-workflow.test.ts",
+      "worktreeSha256": "104a5cdab74e8acb1373ec65b38d14efea8f017248236a26e5789a2a19d38bc3"
+    },
+    {
+      "path": "package.json",
+      "worktreeSha256": "b90f9264b1aede984f2bcb028c2346b627e22c8f5c8449842a54046a935ed08b"
+    }
+  ]
+}

@@ -6,7 +6,8 @@ import {
   exceedsThreshold,
   InvalidTargetError,
 } from "./rebalance";
-import type { HoldingVersion, PricePoint, TargetVersion } from "./contracts";
+import type { HoldingPosition, HoldingVersion, PricePoint, TargetVersion } from "./contracts";
+import { selectInvestmentScope, type InvestmentScopeReview } from "./investmentScope";
 
 const NOW = new Date("2026-09-16T00:00:00Z");
 const opts = { maxPriceAgeDays: 3, maxPriceFutureDays: 1, now: NOW };
@@ -368,4 +369,77 @@ describe("مقایسهٔ دارایی با سبد هدف (#140)", () => {
     assert.equal(exceedsThreshold(r, 20), true);
     assert.equal(exceedsThreshold(r, 21), false);
   });
+});
+
+const now = new Date("2026-10-02T10:00:00Z");
+const position = (positionKey: string, value: number): HoldingPosition => ({
+  positionKey, symbol: null, manualLabel: positionKey, assetClass: positionKey === "cash" ? "cash" : "gold",
+  qty: null, unit: "کل قلم", costBasis: null, asOf: "2026-10-02", ownershipPct: 100,
+  valuationMode: "declared", declaredValue: value, valuationSource: "اظهار عضو",
+  valuationAsOf: "2026-10-02", valuationStatus: "valid",
+});
+const snapshot: HoldingVersion = { id: "snapshot-a", version: 2, positions: [position("house", 9000), position("gold", 600), position("cash", 400)] };
+const review: InvestmentScopeReview = {
+  holdingVersionId: "snapshot-a", holdingVersion: 2, rulesVersion: "member-reviewed.v0.1",
+  memberConfirmedAt: "2026-10-02T09:59:00Z",
+  assignments: [{ positionKey: "house", use: "excluded" }, { positionKey: "gold", use: "allocatable" }, { positionKey: "cash", use: "allocatable" }],
+};
+const reason = (r: ReturnType<typeof selectInvestmentScope>) => {
+  assert.equal(r.status, "blocked");
+  if (r.status !== "blocked") throw new Error("expected blocked");
+  assert.equal(r.holdings, null);
+  return r.reasons[0];
+};
+
+test("explicit scope excludes a consumption asset and preserves cash without mutating the full balance sheet", () => {
+  const before = JSON.stringify(snapshot);
+  const scope = selectInvestmentScope(snapshot, review, now);
+  assert.equal(scope.status, "ready");
+  if (scope.status !== "ready") throw new Error("expected ready");
+  const result = compareHoldingsToTarget(scope.holdings, {
+    id: "target-a", version: 1, referenceVersionId: null, problems: [],
+    weights: [{ assetClass: "gold", weightPct: 50 }, { assetClass: "cash", weightPct: 50 }],
+  }, new Map(), { now, maxPriceAgeDays: 3, maxPriceFutureDays: 1 });
+  assert.equal(result.totalValue, 1000);
+  assert.equal(result.rows.find(r => r.assetClass === "gold")?.valueDelta, -100);
+  assert.equal(result.rows.find(r => r.assetClass === "cash")?.valueDelta, 100);
+  assert.deepEqual(scope.denominator.excludedPositionKeys, ["house"]);
+  assert.equal(JSON.stringify(snapshot), before);
+});
+
+test("unreviewed, incomplete and unknown scope never exposes a partial denominator", () => {
+  assert.equal(reason(selectInvestmentScope(snapshot, null, now)), "member_scope_confirmation_required");
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, assignments: review.assignments.slice(1) }, now)), "scope_assignment_incomplete");
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, assignments: [{ positionKey: "house", use: "unknown" }, ...review.assignments.slice(1)] }, now)), "scope_contains_unknown_use");
+});
+
+test("review of another member snapshot or an earlier version fails closed", () => {
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, holdingVersionId: "snapshot-b" }, now)), "scope_version_mismatch");
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, holdingVersion: 1 }, now)), "scope_version_mismatch");
+});
+
+test("foreign, duplicate and all-excluded positions are not silently dropped", () => {
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, assignments: [...review.assignments, { positionKey: "foreign", use: "allocatable" }] }, now)), "scope_contains_foreign_position");
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, assignments: [...review.assignments, review.assignments[0]] }, now)), "duplicate_scope_assignment");
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, assignments: review.assignments.map(a => ({ ...a, use: "excluded" })) }, now)), "scope_has_no_allocatable_assets");
+});
+
+test("missing timezone, future confirmation and unnamed selection rules block", () => {
+  for (const invalid of ["2026-10-02", "2026-10-02T10:00:01Z", "invalid"]) {
+    assert.equal(reason(selectInvestmentScope(snapshot, { ...review, memberConfirmedAt: invalid }, now)), "scope_confirmation_invalid");
+  }
+  assert.equal(reason(selectInvestmentScope(snapshot, { ...review, rulesVersion: " " }, now)), "scope_confirmation_invalid");
+});
+
+test("selection does not make an unpriced investment definitively valued", () => {
+  const unpriced = { ...snapshot, positions: snapshot.positions.map(p => p.positionKey === "gold" ? { ...p, valuationMode: "unpriced" as const, declaredValue: null } : p) };
+  const scope = selectInvestmentScope(unpriced, review, now);
+  assert.equal(scope.status, "ready");
+  if (scope.status !== "ready") throw new Error("expected ready");
+  const result = compareHoldingsToTarget(scope.holdings, {
+    id: "target-a", version: 1, referenceVersionId: null, problems: [], weights: [{ assetClass: "gold", weightPct: 100 }],
+  }, new Map(), { now, maxPriceAgeDays: 3, maxPriceFutureDays: 1 });
+  assert.equal(result.definitive, false);
+  assert.equal(result.totalValue, null);
+  assert.ok(result.rows.every(r => r.valueDelta === null));
 });

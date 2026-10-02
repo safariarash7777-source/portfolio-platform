@@ -1,5 +1,7 @@
 import ArashCommandDesk from "@/components/admin/ArashCommandDesk";
 import { loadAdminIntelligenceView } from "@/lib/intelligence/admin-view";
+import P07DeskIntegration from "@/components/admin/P07DeskIntegration";
+import P07DeskScenario from "@/components/admin/P07DeskScenario";
 
 export const metadata = {
   title: "میز فرماندهی هوشمندی آرش | پنل مدیریت",
@@ -15,7 +17,9 @@ export const dynamic = "force-dynamic";
  * `loadAdminIntelligenceView` و سلامت منابع را از `DeskBoard` می‌گیرد، سپس
  * آن‌ها را در شش سؤال مصوب کنار هم می‌چیند.
  */
-export default async function AdminDeskPage() {
+export default async function AdminDeskPage({ searchParams }: { searchParams: Promise<{ p07?: string }> }) {
   const view = await loadAdminIntelligenceView();
-  return <ArashCommandDesk view={view} />;
+  const params = await searchParams;
+  const sample = process.env.NODE_ENV === 'development' && params.p07 === 'sample';
+  return <div className="space-y-8"><ArashCommandDesk view={view} />{sample ? <P07DeskScenario/> : <P07DeskIntegration/>}</div>;
 }

@@ -1,0 +1,3 @@
+position_key,manual_label,asset_class,qty,unit,as_of,ownership_pct,valuation_mode,declared_value,currency,valuation_source,valuation_as_of,valuation_status
+imported,دارایی اظهارشده نمونه,gold,,کل قلم,2026-10-02,50,declared,2000000,IRR,اظهار ساختگی,2026-10-02,valid
+unpriced,قلم بی‌قیمت نمونه,gold,12.5,گرم,2026-10-02,100,unpriced,,,,,
