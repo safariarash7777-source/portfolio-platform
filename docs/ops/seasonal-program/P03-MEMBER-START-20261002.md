@@ -33,4 +33,59 @@ Reports from #181/#185/#184 are prior evidence, not today's live environment pro
 
 ## Status
 
-Discovery and ownership recorded before code changes. Live GitHub connector reconciliation confirmed #191/#195/#181/#185/#197/#175/#184/#176/#199 all open/draft; exact heads are recorded in [snapshot](p03-member-start/reuse-pr-snapshot.json). PR #199 changes public webinar/landing/Navbar and does not overlap the owned member components; its unapproved alternatives are not imported. Direct GitHub REST requests timed out; the connector succeeded without changing scope or accessing another environment. Implementation, verification and deliverable SHA/PR are pending. P00/P01/provider/lesson and human acceptance gates are not closed by this document.
+Discovery and ownership were recorded before code changes. Live connector reconciliation confirmed #191/#195/#181/#185/#197/#175/#184/#176/#199 all open/draft; exact heads and file paths from exact base/head diffs are in [snapshot](p03-member-start/reuse-pr-snapshot.json). #199 changes public webinar/landing/Navbar and does not overlap owned member components. Its unapproved alternatives were not imported.
+
+Delivered [Draft PR #209](https://github.com/safariarash7777-source/portfolio-platform/pull/209), code commit **`f889bb3f351182dcf1d04d82cdd7ec9b47ad12d6`**. Review base `codex/p03-review-base-195-31c44ab` pins the exact #195 SHA above, so an advancing parent PR does not silently change the independent diff. This is a review candidate, not a release. P00's baseline/environment acceptance is separate; its latest checkpoint reported 13 successful scenarios and one blocked on independent human research review. That does not accept P03 or authorize deployment.
+
+## Result
+
+- Four links guide a member through course/access, optional needs/question, calendar/resources and published content. All guide targets exist. Five minutes is a proposed short path, not measured completion evidence.
+- Calendar uses source dates and Tehran formatting, sorts upcoming sessions and collapses ended sessions. An ended session links to the same authorized resource section; it does not promise a recording. A missing provider remains unavailable. The provider adapter is mock in the isolated acceptance environment.
+- Resources search only already authorized titles, normalize Persian spelling variants, and distinguish no matching title, successful empty projection and service failure. The DTO lacks recording/lesson relationships, so no content type was inferred from a title.
+- Cohort lessons use the existing publication.v1 `contentKind=lesson` reader. The display filter is explicitly **current-page only**, with unchanged keyset/cursor/API/read contract. Public unapproved lesson placeholders remain unpublished. The glossary link resolves to `/learn/glossary`.
+- Educational drafts are restored before GET; edits persist synchronously before navigation; a late response cannot overwrite a new edit. Storage failure copy avoids claiming persistence. Submit/draft receipts use the existing versioned writer and do not book a consultation or guarantee a reply. No new question/ticket model.
+- A private link is removed from the UI after its announced TTL; getting a new link checks authorization again. Native Storage independently enforces its signed capability expiry.
+- Existing financial routes/components remain outside the P03 diff. No private financial input, LLM call, financial calculation, Auth model, publication model, shared API or migration was added.
+
+## Verification and evidence
+
+Local Node v24.19.0 / Next 15.5.25, production build at code commit above: full typecheck, full lint zero warnings, build **47 static pages**, secret scan and diff-check PASS. `test:core`: **1291 PASS / 0 fail / 0 skip**, including the four added member tests. Focused member/feed run: **27 PASS** (included in core, not an additional total). The four tests cover calendar source preservation/order, Tehran midnight, authorized Persian title search and webinar-only outage.
+
+[CI run 37018723701](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37018723701) at code commit `f889bb3`: all five jobs PASS; database **443 PASS / 0 fail / 0 skip**, with the existing publication feed, financial and RLS regressions. See [CI snapshot](p03-member-start/evidence/code-ci.json). PR checks remain the authoritative status for any later documentation head.
+
+Own fresh **p03member** local environment used real GoTrue sign-in, PostgREST, native Storage and the production Next build. No existing backup, test Auth bootstrap or injected member JWT. All accounts/contents are synthetic. Twenty-one existing application SQL files were installed only here; **zero new application migrations**. SQL order/hash and image identities are in [environment](p03-member-start/evidence/environment.json) and [migration manifest](p03-member-start/evidence/application-migrations.json). Internal Docker network, loopback gateway, no real SMS/voice/webinar provider. Native `pg_cron` extension was not installed; no `cron.job` scheduler exists. REST's inherited health probe reports unhealthy because it probes a local DB; actual HTTP/RPC tests succeeded. That health signal is disclosed, not called a deployment health PASS.
+
+| Native acceptance group | Result | Evidence |
+|---|---|---|
+| Two active cohorts plus expired grant; A/B/admin/no-grant; private list/download; mock join/window; educational writer | 38 PASS | [baseline](p03-member-start/evidence/http-baseline.json) |
+| Real Storage rejects signed URL after its 60s TTL | 1 PASS, HTTP400 | [expiry](p03-member-start/evidence/http-expiry.json) |
+| Explicit idempotent old receipt; save new draft hides old; no fallback; new UUID unread; old receipt retained | 6 PASS | [versions](p03-member-start/evidence/http-versions.json) |
+| Withdrawal hides detail/feed and denies new read | 3 PASS | [withdraw](p03-member-start/evidence/http-withdraw.json) |
+| Revocation takes effect next request; other cohort/account unaffected; prior capability TTL limitation | 8 PASS | [revoke](p03-member-start/evidence/http-revoke.json) |
+| Auth and REST outages remain503 rather than successful empty | 4 PASS | [outage](p03-member-start/evidence/http-outage.json) |
+| Initial educational version retained, owner's history remains readable after revoke, B cannot read A | 3 PASS | [history](p03-member-start/evidence/http-history.json) |
+
+Total **63 native HTTP checks PASS**. Resource-list contract is allowlisted200/empty for an authenticated denied account, while private file issuance is403. Needs GET is own-user200/null when no own record exists; it never returns A to B. Feed/detail/read permission errors are403, hidden versions404. These distinctions preserve the installed contract; they were not standardized by an unapproved API change.
+
+Browser verification used the real synthetic sign-in and separate explicit fixture scenarios. A switched A→B→A with exact scoped resources/feed and persistent draft; B's direct A URL showed no member content and its own B form had no A draft. The lesson filter opened the authorized detail, explicit read succeeded, and a new version showed unread. Revoke refreshed into a denied feed and unavailable resources. Narrow viewport390×844 had no horizontal overflow (375px content area including scrollbar), and the ended-session disclosure worked. See [browser record](p03-member-start/evidence/browser.json), [desktop](p03-member-start/evidence/native-desktop-start.png), [calendar mobile](p03-member-start/evidence/native-mobile-calendar.png), [receipt](p03-member-start/evidence/native-lesson-receipt.png), [new unread](p03-member-start/evidence/native-new-version-unread.png) and [B denied](p03-member-start/evidence/native-B-denied-A.png).
+
+Fixture-only checks covered early local recovery during503, editing before a1600ms GET finishes, save503/conflict preserving text, isolated webinar failure with resources still available, and a1s announced TTL clearing the UI link. They do not prove native storage/network/Auth/provider behavior; native checks above provide their separate evidence.
+
+## Contract checkpoint and release gates
+
+[P03/P07/P00 checkpoint](p03-member-start/P07-P00-CHECKPOINT-20261002.md) records the direct P07@0e9e41e1 read and P03@df85b5f acknowledgement. Current reader semantics agree. Proposed decision validity `[from,until)`, DB clock/offset, UNKNOWN, independent grant expiry and one predicate remain **DRAFT / NOT IMPLEMENTED**. Member history access, delayed-until-publish replacement, enums/DTO/schema are open; save-draft-immediate behavior is preserved. No expiry claim is inferred from `asOf` or `publishedAt`.
+
+| Gate | Status / owner |
+|---|---|
+| P03 independent implementation, local automated/native/desktop/mobile checks | PASS as scoped above |
+| Exact accepted release base, consolidated manifest and integration sandbox | P00; independent review still required, this PR is fixed to195 |
+| Real provider choice, join/playback/embed, mobile/SMS delivery and Auth release flow | P01; OPEN. This sandbox disables phone provider, so profile endpoint503 displays unavailable correctly |
+| Three independent human journeys, comprehension and real completion time | **NOT_RUN**; follow [human guide](p03-member-start/HUMAN-ACCEPTANCE.md) |
+| Useful real lesson/recording content approved for the intended audience | Publisher/teacher; OPEN. Synthetic publication approval is not human content acceptance |
+| Actual Telegram in-app-browser on an authorized device | **NOT_RUN**; 390px is responsive evidence only |
+| Decision validity/replacement extension | DRAFT; owners must agree version/predicate/migration before implementation |
+| Production/merge/shared migration | **NOT_PERFORMED**, remains outside authorization |
+
+Known limitations: already displayed content cannot be retroactively unseen; new requests recheck access. Already issued Storage capability may remain usable until its60s TTL after revocation; new issuance is denied. UI TTL starts at receipt arrival and is approximate; native Storage is authoritative. Draft persistence is same-tab/sessionStorage, user+cohort scoped and bounded to two hours; not cross-device or durable until saved. Calendar phase uses server-provided page time and requires refresh as time advances; it is not a live-stream detector. Resource search and content-kind filter cover the fetched authorized rows/current page, not a full library search.
+
+No real customer/amount/identity, credential, signed URL or session is exported in the evidence. No purchase, message to a customer, provider request, Production deployment, merge or shared migration.
