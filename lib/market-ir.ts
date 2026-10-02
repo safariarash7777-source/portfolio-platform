@@ -139,6 +139,8 @@ export interface IrMarket {
   indices: IrIndices | null;
   fetchedAt: number | null;
   ok: boolean;
+  /** Input counts before validation; omitted by older callers, never an expected market universe. */
+  inputRows?: Partial<Record<"gold" | "currency" | "funds" | "stocks" | "crypto" | "options", number>>;
 }
 
 // خلاصهٔ تشخیصیِ آخرین تلاش — امن برای نمایشِ عمومی (هیچ توکن/کلیدی).
@@ -214,7 +216,8 @@ export function asStockRows(v: unknown): IrStockRow[] {
         typeof r.id === "string" &&
         typeof r.faName === "string" &&
         typeof r.price === "number" &&
-        isFinite(r.price)
+        isFinite(r.price) &&
+        (r.unit === "toman" || r.unit === "usd")
     )
     .map((r) => ({
       id: r.id,
@@ -222,7 +225,7 @@ export function asStockRows(v: unknown): IrStockRow[] {
       sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
       faName: r.faName,
       price: r.price,
-      unit: (r.unit === "usd" ? "usd" : "toman") as "toman" | "usd",
+      unit: r.unit,
       change: typeof r.change === "number" && isFinite(r.change) ? r.change : null,
       changePercent: typeof r.changePercent === "number" && isFinite(r.changePercent) ? r.changePercent : null,
       ...(typeof r.type === "string" && r.type ? { type: r.type } : {}),
@@ -304,7 +307,8 @@ function asCryptoRows(v: unknown): IrCryptoRow[] {
         typeof r.faName === "string" &&
         typeof r.price === "number" &&
         isFinite(r.price) &&
-        r.price > 0
+        r.price > 0 &&
+        r.unit === "usd"
     )
     .map((r) => ({
       id: r.id,
@@ -354,8 +358,9 @@ export function toMarket(payload: unknown): IrMarket {
     indices: asIndices(p.indices),
     fetchedAt,
     ok: false,
+    inputRows: Object.fromEntries(["gold", "currency", "funds", "stocks", "crypto", "options"].map(key => [key, Array.isArray(p[key]) ? p[key].length : 0])),
   };
-  data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length > 0;
+  data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length + data.crypto.length + data.options.length > 0 || data.indices !== null;
   return data;
 }
 

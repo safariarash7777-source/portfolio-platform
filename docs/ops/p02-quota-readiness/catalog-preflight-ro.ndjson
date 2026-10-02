@@ -1,0 +1,5 @@
+{"readOnly": "on", "observedAt": "2026-10-02T17:07:06.700003+00:00", "leaseExists": false, "counterExists": false, "releaseExists": false, "serverVersion": "17.6"}
+{"role": "postgres", "bypassRls": true, "superuser": false}
+{"role": "authenticated", "bypassRls": false, "superuser": false}
+{"role": "anon", "bypassRls": false, "superuser": false}
+{"role": "service_role", "bypassRls": true, "superuser": false}
