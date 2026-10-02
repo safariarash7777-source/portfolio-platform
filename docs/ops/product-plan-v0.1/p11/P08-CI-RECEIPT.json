@@ -1,0 +1,62 @@
+{
+  "kind": "P08 later-head receipt; reviewed product files unchanged",
+  "p08PR": 202,
+  "p08Head": "e4419f96b52dfdb9f94e70b6760fdf1ff62ac63a",
+  "baseSHA": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "reviewedProductSHA": "2ca3058db75b44771c748b2673341aff2e84e77f",
+  "assistantDirectoryDiff": [],
+  "ledgerBlob": "6098dac35291289ee5ddba8b5bbd96b0a38fa419",
+  "handoffBlob": "c940595c24d5419f3b7e194b0b1e032fb3d6f4e9",
+  "laterChangedPaths": [
+    "docs/ops/p08-assistant/BASELINE195-AND-P11.md",
+    "docs/ops/p08-assistant/PR-BODY.md",
+    "docs/ops/p08-assistant/evidence/ci-failure-2ca3058.txt",
+    "docs/ops/p08-assistant/evidence/ci-product-2ca3058.json",
+    "docs/ops/p08-assistant/evidence/registration-and-p08-tests.txt",
+    "package.json"
+  ],
+  "ci": {
+    "runId": 37015915730,
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37015915730",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 110866609011,
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 110866609332,
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 110866609349,
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 110866609414,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 110867544216,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "source": "GitHub commit workflow runs queried for exact head plus run jobs; fresh connector read"
+  },
+  "independentReviewAssertions": 11,
+  "testsRepeatedForUnchangedFiles": false,
+  "applicationAcceptance": "NOT_RUN",
+  "serverReceiptAuthorizationAcceptance": "NOT_RUN",
+  "productionChanged": false
+}
