@@ -2,7 +2,7 @@ import { loadPortfolioSnapshot, loadPriceRows, loadVersionDebts } from "@/lib/po
 import { buildBalanceSheet } from "@/lib/portfolio/balanceSheet";
 import BalanceSheetSummary from "@/components/portfolio/BalanceSheetSummary";
 import DebtsWorkbench from "@/components/portfolio/DebtsWorkbench";
-import { buildHoldingsView } from "@/lib/portfolio/view";
+import InvestmentScopeWorkbench from "@/components/portfolio/InvestmentScopeWorkbench";
 import HoldingsSummary from "@/components/portfolio/HoldingsSummary";
 import ReadError from "@/components/dashboard/ReadError";
 import Link from "next/link";
@@ -25,14 +25,6 @@ export default async function HoldingsPage({
   // ⚠️ صفحه خودش چیزی حساب نمی‌کند. همان ترکیبی را صدا می‌زند که مستقیم
   // آزمون می‌شود، وگرنه اتصالِ «خواندنِ هدف + خواندنِ قیمت + محاسبه» بی‌آزمون
   // می‌ماند — و هر سه ایرادِ بازبینی دقیقاً در همین اتصال بودند.
-  const view = buildHoldingsView({
-    holdings: snapshot.holdings,
-    storedTarget: snapshot.storedTarget,
-    priceRows: prices.data ?? [],
-    maxPriceAgeDays: 3,
-    maxPriceFutureDays: 1,
-    now: new Date(),
-  });
 
   return (
     <div className="space-y-6">
@@ -50,6 +42,7 @@ export default async function HoldingsPage({
       <BalanceSheetSummary sheet={sheet} version={snapshot.holdings?.version ?? null} />
       {snapshot.ready ? <HoldingsSummary valuation={valuePositions(snapshot.holdings?.positions ?? [], prices.data ?? [], new Date())} version={snapshot.holdings?.version ?? null} pricesFailed={prices.status === "error"} /> : <ReadError label={snapshot.holdingsState === "not_found" ? "نسخهٔ انتخابی؛ در دسترس حساب شما نیست" : "دارایی‌ها"} code="PORTFOLIO_READ" />}
       {snapshot.targetState === "error" && <ReadError label="سبد هدف؛ دارایی شما مستقل از هدف قابل مشاهده است" code="PORTFOLIO_TARGET" />}
+      {snapshot.ready && snapshot.holdings && <InvestmentScopeWorkbench key={`scope-${snapshot.holdings.id}`} holdings={snapshot.holdings} storedTarget={snapshot.storedTarget} priceRows={prices.data ?? []} pricesFailed={prices.status === "error"} />}
       <HoldingsWorkbench
         key={snapshot.holdings?.id ?? "new"}
         ready={snapshot.ready}
@@ -58,11 +51,12 @@ export default async function HoldingsPage({
         history={snapshot.history}
         activeVersion={snapshot.holdings?.version ?? null}
         activePositions={snapshot.holdings?.positions ?? []}
-        rows={view.rows}
-        gaps={view.gaps}
-        definitive={view.definitive}
-        notes={view.notes}
-        totalValue={view.totalValue}
+        rows={[]}
+        gaps={[]}
+        definitive={false}
+        notes={[]}
+        totalValue={null}
+        showComparison={false}
       />
       <DebtsWorkbench key={`debts-${snapshot.holdings?.id ?? "new"}`} debts={debts.debts} ready={snapshot.ready && debts.ready} activeVersion={snapshot.holdings?.version ?? null} latestVersion={snapshot.history[0]?.version ?? 0} />
     </div>

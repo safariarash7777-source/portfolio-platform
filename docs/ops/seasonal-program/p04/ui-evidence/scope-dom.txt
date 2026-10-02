@@ -1,0 +1,579 @@
+- main:
+  - heading "نمونهٔ نمایشی P04 · اجزای واقعی، دادهٔ ساختگی" [level=1]
+  - paragraph: هیچ ورود، دیتابیس، کارگزاری یا ارسال واقعی وجود ندارد. نخستین ثبت فقط پاسخ تعارض ساختگی می‌دهد.
+  - region "خلاصهٔ وضعیت مالی ثبت‌شده":
+    - heading "وضعیت مالی ثبت‌شده · نسخهٔ ۲" [level=2]
+    - paragraph: این تصویر فقط اطلاعاتی را پوشش می‌دهد که اینجا ثبت کرده‌اید؛ با کل ثروت شما یکسان فرض نمی‌شود. همهٔ ارقام به تومان نمایش داده می‌شوند؛ هر تومان برابر ۱۰ ریال است.
+    - term: ارزش دارایی‌های دارای ارزش‌گذاری
+    - definition: ۱۰۱٬۰۰۰٬۰۰۰ تومان
+    - definition: ارزش چیزهایی که دارید، فقط برای اقلام دارای قیمت یا ارزش اظهارشده و متناسب با سهم مالکیت شما.
+    - term: مجموع بدهی‌های ثبت‌شده
+    - definition: ۱۲۰٬۰۰۰٬۰۰۰ تومان
+    - definition: ماندهٔ پولی که طبق ثبت شما باید پرداخت شود. قسط بعدی بخشی از همین بدهی است و دوباره به آن اضافه نمی‌شود.
+    - term: خالص ثروت در اطلاعات ثبت‌شده
+    - definition: "-۱۹٬۰۰۰٬۰۰۰ تومان"
+    - definition: ارزش دارایی‌های دارای ارزش‌گذاری منهای بدهی‌های ثبت‌شده. عدد منفی یعنی بدهی ثبت‌شده از این دارایی‌ها بیشتر است.
+    - paragraph: مبلغ‌ها مربوط به تاریخ ثبت‌شدهٔ هر ارزش‌گذاری و مانده‌اند، نه لزوماً امروز. نبود بدهی در فهرست فقط یعنی بدهی ثبت نشده است؛ به معنی نداشتن بدهی نیست.
+  - region "محدوده سرمایه‌گذاری":
+    - heading "کدام دارایی‌ها در سبد سرمایه‌گذاری شما قرار دارند؟" [level=2]
+    - paragraph: ترازنامه همهٔ اقلام و بدهی‌ها را نشان می‌دهد. مقایسه با الگو فقط از اقلامی انجام می‌شود که برای تخصیص سرمایه انتخاب می‌کنید؛ خانه مصرفی یا بدهی خودکار وارد مخرج نمی‌شود. وجه نقد مربوط به همین سبد را هم انتخاب کنید.
+    - text: خانه مصرفی نمونه
+    - combobox "خانه مصرفی نمونه":
+      - option "هنوز مشخص نکرده‌ام"
+      - option "در سبد قابل تخصیص"
+      - option "خارج از این سبد" [selected]
+    - text: طلای سرمایه‌گذاری نمونه
+    - combobox "طلای سرمایه‌گذاری نمونه":
+      - option "هنوز مشخص نکرده‌ام"
+      - option "در سبد قابل تخصیص" [selected]
+      - option "خارج از این سبد"
+    - text: وجه نقد نمونه
+    - combobox "وجه نقد نمونه":
+      - option "هنوز مشخص نکرده‌ام"
+      - option "در سبد قابل تخصیص" [selected]
+      - option "خارج از این سبد"
+    - button "محدودهٔ این نسخه را بررسی و تأیید کردم"
+    - paragraph: "آخرین بررسی در این صفحه: ۱۰ مهر ۱۴۰۵؛ با تغییر نسخه یا انتخاب‌ها تأیید دوباره لازم است."
+    - paragraph: این بررسی هنوز در سابقهٔ حساب ذخیره نمی‌شود؛ مقایسهٔ زیر پیش‌نمایش است و اعلان یا تغییر دارایی ایجاد نمی‌کند.
+    - paragraph: این سبد هدف به هیچ نسخهٔ مرجعی متصل نیست.
+    - paragraph: "ارزش سبد منتخب: ۱٬۰۰۰٬۰۰۰ تومان"
+    - table:
+      - rowgroup:
+        - row "دسته وزن فعلی وزن الگو فاصله ارزش (تومان)":
+          - columnheader "دسته"
+          - columnheader "وزن فعلی"
+          - columnheader "وزن الگو"
+          - columnheader "فاصله ارزش (تومان)"
+      - rowgroup:
+        - row "نقد ۴۰.۰٪ ۵۰٪ ۱۰۰٬۰۰۰ تومان":
+          - cell "نقد"
+          - cell "۴۰.۰٪"
+          - cell "۵۰٪"
+          - cell "۱۰۰٬۰۰۰ تومان"
+        - row "طلا ۶۰.۰٪ ۵۰٪ -۱۰۰٬۰۰۰ تومان":
+          - cell "طلا"
+          - cell "۶۰.۰٪"
+          - cell "۵۰٪"
+          - cell "-۱۰۰٬۰۰۰ تومان"
+  - region "ورود فایل دارایی":
+    - heading "ورود فایل با پیش‌نمایش" [level=2]
+    - paragraph: فایل CSV با عنوان ستون، حداکثر ۵۰۰ قلم و یک مگابایت انتخاب کنید. فایل در همین مرورگر بررسی می‌شود؛ پیش‌نمایش چیزی ثبت نمی‌کند. اقلام خارج از فایل حفظ می‌شوند.
+    - paragraph: دسته‌های طلا، درآمد ثابت، سهام ایران، ارز و نقد؛ روش‌های «قیمت بازار»، «ارزش اظهارشده» و «بدون قیمت»؛ واحد پول ریال یا تومان پذیرفته می‌شوند. تاریخ به شکل YYYY-MM-DD است. مقدار و ارزش مربوط به کل قلم پیش از سهم مالکیت‌اند.
+    - link "دریافت نمونهٔ فایل قابل ویرایش":
+      - /url: data:text/csv;charset=utf-8,%EF%BB%BFposition_key%2Cmanual_label%2Casset_class%2Cqty%2Cunit%2Cas_of%2Cownership_pct%2Cvaluation_mode%2Cdeclared_value%2Ccurrency%2Cvaluation_source%2Cvaluation_as_of%2Cvaluation_status%0Aexample%2C%D9%86%D9%85%D9%88%D9%86%D9%87%20%D9%82%D8%A7%D8%A8%D9%84%20%D9%88%DB%8C%D8%B1%D8%A7%DB%8C%D8%B4%2C%D8%B7%D9%84%D8%A7%2C1%2C%DA%AF%D8%B1%D9%85%2CYYYY-MM-DD%2C100%2C%D8%A8%D8%AF%D9%88%D9%86%20%D9%82%DB%8C%D9%85%D8%AA%2C%2C%2C%2C%2C%0A
+    - button "فایل CSV دارایی"
+    - generic "بررسی و تغییر تطبیق ستون‌های فایل"
+    - option "ستون انتخاب نشده"
+    - option "position_key" [selected]
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده" [selected]
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label" [selected]
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class" [selected]
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty" [selected]
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit" [selected]
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of" [selected]
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct" [selected]
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode" [selected]
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value" [selected]
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency" [selected]
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source" [selected]
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of" [selected]
+    - option "valuation_status"
+    - option "ستون انتخاب نشده"
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status" [selected]
+    - option "ستون انتخاب نشده" [selected]
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده" [selected]
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - option "ستون انتخاب نشده" [selected]
+    - option "position_key"
+    - option "manual_label"
+    - option "asset_class"
+    - option "qty"
+    - option "unit"
+    - option "as_of"
+    - option "ownership_pct"
+    - option "valuation_mode"
+    - option "declared_value"
+    - option "currency"
+    - option "valuation_source"
+    - option "valuation_as_of"
+    - option "valuation_status"
+    - checkbox "اصلاح اقلام موجود با همان شناسه را می‌خواهم"
+    - text: اصلاح اقلام موجود با همان شناسه را می‌خواهم
+    - table:
+      - rowgroup:
+        - row "ردیف قلم مقدار و واحد مالکیت ارزش کل به تومان نتیجه":
+          - columnheader "ردیف"
+          - columnheader "قلم"
+          - columnheader "مقدار و واحد"
+          - columnheader "مالکیت"
+          - columnheader "ارزش کل به تومان"
+          - columnheader "نتیجه"
+      - rowgroup:
+        - row "۲ دارایی اظهارشده نمونه — کل قلم ۵۰ بدون ارزش قطعی این قلم موجود است؛ اصلاح اقلام موجود را صریح تأیید کنید.":
+          - cell "۲"
+          - cell "دارایی اظهارشده نمونه"
+          - cell "— کل قلم"
+          - cell "۵۰"
+          - cell "بدون ارزش قطعی"
+          - cell "این قلم موجود است؛ اصلاح اقلام موجود را صریح تأیید کنید."
+        - row "۳ قلم بی‌قیمت نمونه ۱۲.۵ گرم ۱۰۰ بدون ارزش قطعی این قلم موجود است؛ اصلاح اقلام موجود را صریح تأیید کنید.":
+          - cell "۳"
+          - cell "قلم بی‌قیمت نمونه"
+          - cell "۱۲.۵ گرم"
+          - cell "۱۰۰"
+          - cell "بدون ارزش قطعی"
+          - cell "این قلم موجود است؛ اصلاح اقلام موجود را صریح تأیید کنید."
+    - alert: این قلم موجود است؛ اصلاح اقلام موجود را صریح تأیید کنید.؛ این قلم موجود است؛ اصلاح اقلام موجود را صریح تأیید کنید.
+    - checkbox "واحد، مالکیت و اقلام پیش‌نمایش را بررسی کردم" [disabled]
+    - text: واحد، مالکیت و اقلام پیش‌نمایش را بررسی کردم
+    - button "انتقال پیش‌نمایش به فرم اصلاح" [disabled]
+    - paragraph: پس از انتقال به فرم، اقلام را دوباره بررسی و با دکمهٔ ثبت نسخه ذخیره کنید؛ فایل به‌تنهایی معامله یا موجودی تأییدشدهٔ کارگزاری نیست.
+  - heading "ثبت و اصلاح دارایی" [level=3]
+  - paragraph: مقدار و ارزش اظهارشده، مربوط به کل قلم پیش از سهم مالکیت است. مثلاً دارایی ۱۰۰ میلیون تومانی با مالکیت ۵۰ درصد، ۵۰ میلیون تومان برای شما محاسبه می‌شود. برای ثبت فقط ارزش، روش «ارزش اظهارشده» را انتخاب و مقدار را خالی بگذارید. اصلاح، یک نسخهٔ تازه از دارایی و بدهی با هم می‌سازد.
+  - group "دارایی ۱":
+    - generic: دارایی ۱
+    - generic: برچسب دستی
+    - textbox "عنوان دارایی دستی": خانه مصرفی نمونه
+    - generic: نوع
+    - combobox "نوع ثبت دارایی":
+      - option "نماد واقعی"
+      - option "دارایی دستی" [selected]
+    - generic: دسته
+    - combobox "دستهٔ دارایی":
+      - option "«property» (دستهٔ ناشناخته)" [selected]
+      - option "طلا"
+      - option "درآمد ثابت"
+      - option "سهام ایران"
+      - option "ارز"
+      - option "نقد"
+    - generic: مقدار
+    - textbox "مقدار کل دارایی"
+    - textbox "واحد": کل قلم
+    - button "حذف قلم از نسخهٔ تازه":
+    - text: عنوان اختیاری دارایی
+    - textbox "عنوان اختیاری دارایی"
+    - text: سهم مالکیت شما (درصد)
+    - textbox "سهم مالکیت شما (درصد)": "50"
+    - text: تاریخ ثبت مقدار (میلادی)
+    - textbox "تاریخ ثبت مقدار (میلادی)": 2026-10-02
+    - text: روش ارزش‌گذاری
+    - combobox "روش ارزش‌گذاری":
+      - option "قیمت بازار با منبع و تاریخ"
+      - option "ارزش اظهارشدهٔ کل قلم" [selected]
+      - option "قیمت ناموجود؛ قابل ثبت"
+    - text: ارزش کل قلم پیش از سهم مالکیت
+    - textbox "ارزش کل قلم پیش از سهم مالکیت": "200000000"
+    - text: واحد پول ارزش اظهارشده
+    - combobox "واحد پول ارزش اظهارشده":
+      - option "تومان" [selected]
+      - option "ریال (۱۰ ریال = ۱ تومان)"
+    - text: منبع ارزش‌گذاری
+    - textbox "منبع ارزش‌گذاری": اظهار ساختگی
+    - text: تاریخ ارزش‌گذاری (میلادی)
+    - textbox "تاریخ ارزش‌گذاری (میلادی)": 2026-10-02
+    - text: وضعیت ارزش اظهارشده
+    - combobox "وضعیت ارزش اظهارشده":
+      - option "تخمینی"
+      - option "معتبر طبق منبع ثبت‌شده" [selected]
+  - group "دارایی ۲":
+    - generic: دارایی ۲
+    - generic: برچسب دستی
+    - textbox "عنوان دارایی دستی": طلای سرمایه‌گذاری نمونه
+    - generic: نوع
+    - combobox "نوع ثبت دارایی":
+      - option "نماد واقعی"
+      - option "دارایی دستی" [selected]
+    - generic: دسته
+    - combobox "دستهٔ دارایی":
+      - option "طلا" [selected]
+      - option "درآمد ثابت"
+      - option "سهام ایران"
+      - option "ارز"
+      - option "نقد"
+    - generic: مقدار
+    - textbox "مقدار کل دارایی"
+    - textbox "واحد": کل قلم
+    - button "حذف قلم از نسخهٔ تازه":
+    - text: عنوان اختیاری دارایی
+    - textbox "عنوان اختیاری دارایی"
+    - text: سهم مالکیت شما (درصد)
+    - textbox "سهم مالکیت شما (درصد)": "100"
+    - text: تاریخ ثبت مقدار (میلادی)
+    - textbox "تاریخ ثبت مقدار (میلادی)": 2026-10-02
+    - text: روش ارزش‌گذاری
+    - combobox "روش ارزش‌گذاری":
+      - option "قیمت بازار با منبع و تاریخ"
+      - option "ارزش اظهارشدهٔ کل قلم" [selected]
+      - option "قیمت ناموجود؛ قابل ثبت"
+    - text: ارزش کل قلم پیش از سهم مالکیت
+    - textbox "ارزش کل قلم پیش از سهم مالکیت": "600000"
+    - text: واحد پول ارزش اظهارشده
+    - combobox "واحد پول ارزش اظهارشده":
+      - option "تومان" [selected]
+      - option "ریال (۱۰ ریال = ۱ تومان)"
+    - text: منبع ارزش‌گذاری
+    - textbox "منبع ارزش‌گذاری": اظهار ساختگی
+    - text: تاریخ ارزش‌گذاری (میلادی)
+    - textbox "تاریخ ارزش‌گذاری (میلادی)": 2026-10-02
+    - text: وضعیت ارزش اظهارشده
+    - combobox "وضعیت ارزش اظهارشده":
+      - option "تخمینی"
+      - option "معتبر طبق منبع ثبت‌شده" [selected]
+  - group "دارایی ۳":
+    - generic: دارایی ۳
+    - generic: برچسب دستی
+    - textbox "عنوان دارایی دستی": وجه نقد نمونه
+    - generic: نوع
+    - combobox "نوع ثبت دارایی":
+      - option "نماد واقعی"
+      - option "دارایی دستی" [selected]
+    - generic: دسته
+    - combobox "دستهٔ دارایی":
+      - option "طلا"
+      - option "درآمد ثابت"
+      - option "سهام ایران"
+      - option "ارز"
+      - option "نقد" [selected]
+    - generic: مقدار
+    - textbox "مقدار کل دارایی"
+    - textbox "واحد": کل قلم
+    - button "حذف قلم از نسخهٔ تازه":
+    - text: عنوان اختیاری دارایی
+    - textbox "عنوان اختیاری دارایی"
+    - text: سهم مالکیت شما (درصد)
+    - textbox "سهم مالکیت شما (درصد)": "100"
+    - text: تاریخ ثبت مقدار (میلادی)
+    - textbox "تاریخ ثبت مقدار (میلادی)": 2026-10-02
+    - text: روش ارزش‌گذاری
+    - combobox "روش ارزش‌گذاری":
+      - option "قیمت بازار با منبع و تاریخ"
+      - option "ارزش اظهارشدهٔ کل قلم" [selected]
+      - option "قیمت ناموجود؛ قابل ثبت"
+    - text: ارزش کل قلم پیش از سهم مالکیت
+    - textbox "ارزش کل قلم پیش از سهم مالکیت": "400000"
+    - text: واحد پول ارزش اظهارشده
+    - combobox "واحد پول ارزش اظهارشده":
+      - option "تومان" [selected]
+      - option "ریال (۱۰ ریال = ۱ تومان)"
+    - text: منبع ارزش‌گذاری
+    - textbox "منبع ارزش‌گذاری": اظهار ساختگی
+    - text: تاریخ ارزش‌گذاری (میلادی)
+    - textbox "تاریخ ارزش‌گذاری (میلادی)": 2026-10-02
+    - text: وضعیت ارزش اظهارشده
+    - combobox "وضعیت ارزش اظهارشده":
+      - option "تخمینی"
+      - option "معتبر طبق منبع ثبت‌شده" [selected]
+  - group "دارایی ۴":
+    - generic: دارایی ۴
+    - generic: برچسب دستی
+    - textbox "عنوان دارایی دستی": دارایی اظهارشده نمونه
+    - generic: نوع
+    - combobox "نوع ثبت دارایی":
+      - option "نماد واقعی"
+      - option "دارایی دستی" [selected]
+    - generic: دسته
+    - combobox "دستهٔ دارایی":
+      - option "طلا" [selected]
+      - option "درآمد ثابت"
+      - option "سهام ایران"
+      - option "ارز"
+      - option "نقد"
+    - generic: مقدار
+    - textbox "مقدار کل دارایی"
+    - textbox "واحد": کل قلم
+    - button "حذف قلم از نسخهٔ تازه":
+    - text: عنوان اختیاری دارایی
+    - textbox "عنوان اختیاری دارایی"
+    - text: سهم مالکیت شما (درصد)
+    - textbox "سهم مالکیت شما (درصد)": "50"
+    - text: تاریخ ثبت مقدار (میلادی)
+    - textbox "تاریخ ثبت مقدار (میلادی)": 2026-10-02
+    - text: روش ارزش‌گذاری
+    - combobox "روش ارزش‌گذاری":
+      - option "قیمت بازار با منبع و تاریخ"
+      - option "ارزش اظهارشدهٔ کل قلم" [selected]
+      - option "قیمت ناموجود؛ قابل ثبت"
+    - text: ارزش کل قلم پیش از سهم مالکیت
+    - textbox "ارزش کل قلم پیش از سهم مالکیت": "200000"
+    - text: واحد پول ارزش اظهارشده
+    - combobox "واحد پول ارزش اظهارشده":
+      - option "تومان" [selected]
+      - option "ریال (۱۰ ریال = ۱ تومان)"
+    - text: منبع ارزش‌گذاری
+    - textbox "منبع ارزش‌گذاری": اظهار ساختگی
+    - text: تاریخ ارزش‌گذاری (میلادی)
+    - textbox "تاریخ ارزش‌گذاری (میلادی)": 2026-10-02
+    - text: وضعیت ارزش اظهارشده
+    - combobox "وضعیت ارزش اظهارشده":
+      - option "تخمینی"
+      - option "معتبر طبق منبع ثبت‌شده" [selected]
+  - group "دارایی ۵":
+    - generic: دارایی ۵
+    - generic: برچسب دستی
+    - textbox "عنوان دارایی دستی": قلم بی‌قیمت نمونه
+    - generic: نوع
+    - combobox "نوع ثبت دارایی":
+      - option "نماد واقعی"
+      - option "دارایی دستی" [selected]
+    - generic: دسته
+    - combobox "دستهٔ دارایی":
+      - option "طلا" [selected]
+      - option "درآمد ثابت"
+      - option "سهام ایران"
+      - option "ارز"
+      - option "نقد"
+    - generic: مقدار
+    - textbox "مقدار کل دارایی": "12.5"
+    - textbox "واحد": گرم
+    - button "حذف قلم از نسخهٔ تازه":
+    - text: عنوان اختیاری دارایی
+    - textbox "عنوان اختیاری دارایی"
+    - text: سهم مالکیت شما (درصد)
+    - textbox "سهم مالکیت شما (درصد)": "100"
+    - text: تاریخ ثبت مقدار (میلادی)
+    - textbox "تاریخ ثبت مقدار (میلادی)": 2026-10-02
+    - text: روش ارزش‌گذاری
+    - combobox "روش ارزش‌گذاری":
+      - option "قیمت بازار با منبع و تاریخ"
+      - option "ارزش اظهارشدهٔ کل قلم"
+      - option "قیمت ناموجود؛ قابل ثبت" [selected]
+  - button "افزودن قلم":
+    - text: افزودن قلم
+  - alert:
+    - text: نمونهٔ تعارض دو تب؛ فرم حفظ می‌شود.
+  - button "ذخیرهٔ نسخهٔ تازه":
+    - text: ذخیرهٔ نسخهٔ تازه
+  - heading "ریز دارایی نسخهٔ ۲" [level=3]
+  - paragraph: این فهرست بدون نیاز به قیمت یا سبد هدف نمایش داده می‌شود؛ فرم بالا هم از همین اقلام پر شده تا بتوانید نسخهٔ اصلاحی بسازید.
+  - table:
+    - rowgroup:
+      - row "قلم نوع دسته مقدار تاریخ":
+        - columnheader "قلم"
+        - columnheader "نوع"
+        - columnheader "دسته"
+        - columnheader "مقدار"
+        - columnheader "تاریخ"
+    - rowgroup:
+      - row "خانه مصرفی نمونه دستی «property» (دستهٔ ناشناخته) فقط ارزش اظهارشده ۱۰ مهر ۱۴۰۵":
+        - cell "خانه مصرفی نمونه"
+        - cell "دستی"
+        - cell "«property» (دستهٔ ناشناخته)"
+        - cell "فقط ارزش اظهارشده"
+        - cell "۱۰ مهر ۱۴۰۵"
+      - row "طلای سرمایه‌گذاری نمونه دستی طلا فقط ارزش اظهارشده ۱۰ مهر ۱۴۰۵":
+        - cell "طلای سرمایه‌گذاری نمونه"
+        - cell "دستی"
+        - cell "طلا"
+        - cell "فقط ارزش اظهارشده"
+        - cell "۱۰ مهر ۱۴۰۵"
+      - row "وجه نقد نمونه دستی نقد فقط ارزش اظهارشده ۱۰ مهر ۱۴۰۵":
+        - cell "وجه نقد نمونه"
+        - cell "دستی"
+        - cell "نقد"
+        - cell "فقط ارزش اظهارشده"
+        - cell "۱۰ مهر ۱۴۰۵"
+  - generic "شاهد درخواست ساختگی"
