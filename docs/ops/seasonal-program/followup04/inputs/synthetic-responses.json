@@ -1,0 +1,36 @@
+{
+  "dataClass": "SYNTHETIC",
+  "clockAt": "2026-10-02T06:00:00Z",
+  "softBudget": 2,
+  "hardCeiling": 2,
+  "ledger": {
+    "dataClass": "SYNTHETIC",
+    "days": {
+      "2026-10-02": {
+        "verified": true,
+        "leased": 0,
+        "hardCeiling": 2
+      }
+    }
+  },
+  "responses": {
+    "نمادالف": {
+      "status": 200,
+      "dataClass": "SYNTHETIC",
+      "seriesType": 2,
+      "symbol": "نمادالف",
+      "days": [
+        "2026-09-29"
+      ]
+    },
+    "نمادب": {
+      "status": 200,
+      "dataClass": "SYNTHETIC",
+      "seriesType": 2,
+      "symbol": "نمادب",
+      "days": [
+        "2026-09-29"
+      ]
+    }
+  }
+}
