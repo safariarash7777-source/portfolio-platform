@@ -7,6 +7,7 @@ import ts from 'typescript';
 import {createBrowserClient,createServerClient} from '@supabase/ssr';
 import {NextRequest} from 'next/server.js';
 const require=createRequire(import.meta.url);
+const deadline=load('lib/deadline.ts',{},{});
 function load(path,imports,env){
   const target={exports:{}};
   runInNewContext(ts.transpileModule(readFileSync(new URL('../../'+path,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:target.exports,require:name=>name in imports?imports[name]:require(name),process:{env:{NEXT_PUBLIC_SUPABASE_URL:'https://fixture.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'fixture-public-key',...env}},URL,AbortController,setTimeout,clearTimeout});
@@ -17,7 +18,7 @@ const error=load('lib/auth/session-error.ts',{},{});
 for(const name of [undefined,'fixture-demo-auth'])test(`client/server/middleware share SDK cookie name ${name??'default'}`,async()=>{
   const env=name?{NEXT_PUBLIC_SUPABASE_COOKIE_NAME:name}:{};const expected=name??'sb-fixture-auth-token';
   const cookies={getAll:()=>[],set:()=>{}};
-  const client=load('lib/supabase/client.ts',{'@supabase/ssr':{createBrowserClient}},env).createClient();assert.equal(client.auth.storageKey,expected);
+  const client=load('lib/supabase/client.ts',{'@supabase/ssr':{createBrowserClient},'../deadline':deadline},env).createClient();assert.equal(client.auth.storageKey,expected);
   const server=await load('lib/supabase/server.ts',{'@supabase/ssr':{createServerClient},'next/headers':{cookies:async()=>cookies}},env).createClient();assert.equal(server.auth.storageKey,expected);
   let received;
   const sdk={createServerClient:(url,key,options)=>{
