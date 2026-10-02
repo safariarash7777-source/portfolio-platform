@@ -1,12 +1,23 @@
 {
   "surface": "dashboard",
   "title": "صف خطا و پذیرش محصول",
-  "generatedAt": "2026-10-02T16:47:49.154Z",
+  "generatedAt": "2026-10-02T17:31:36.925Z",
   "status": "نمونه محلی از شواهد مستند؛ سنجه مشتری واقعی ندارد",
   "filters": [],
   "queries": {
     "incident_queue": {
       "rows": [
+        {
+          "id": "native-browser-8444",
+          "title": "ورود دمو؛ نتیجه درخواست تأیید نشد",
+          "owner": "P00/P11",
+          "priority": "مسدودکننده پذیرش مستقل",
+          "status": "BLOCKED TOOL_BROWSER؛ علت نامعلوم",
+          "kind": "مشاهده مستقل روی داده ساختگی",
+          "environment": "demo8444 @65c215b",
+          "evidence": "native",
+          "next": "بازیابی کنترل مرورگر، سپس مسیر A و منع B؛ وضعیت HTTP نامعلوم"
+        },
         {
           "id": "auth-intake-20261002",
           "title": "پاسخ Auth قابل‌خواندن نیست",
@@ -77,6 +88,8 @@
       "source": {
         "label": "صف شواهد خطا؛ نه شمار خطای زنده",
         "files": [
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\NATIVE-DEMO-ATTEMPT.json",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\p00-demo844-20261002\\CURRENT.md",
           "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-AUTH-INTAKE-20261002.md",
           "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-MARKET-VISIBILITY-INTAKE-20261002.md",
           "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW.md",
@@ -106,6 +119,14 @@
         ],
         "evidenceFlow": [
           {
+            "title": "native",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\NATIVE-DEMO-ATTEMPT.json; SHA256 6697f56075948af20d219f163236a58362b0bcd6004f5cb14bfa5efd687c15b8"
+          },
+          {
+            "title": "demo",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\p00-demo844-20261002\\CURRENT.md; SHA256 e8130db087280259501b94154ea005b7a1922b4b956c7aba66f358de924fbe87"
+          },
+          {
             "title": "auth",
             "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-AUTH-INTAKE-20261002.md; SHA256 001e0712a7f45ef77c1c03c213a8f6a2204dff34b6cabf550d1438d843f523db"
           },
@@ -130,7 +151,7 @@
             "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md; SHA256 be5798eba4438af47361310557f9c2afaa9a3193a6adbaced564c4c4a0856990"
           }
         ],
-        "executedAt": "2026-10-02T16:47:49.155Z"
+        "executedAt": "2026-10-02T17:31:36.926Z"
       }
     },
     "package_acceptance": {
@@ -138,8 +159,8 @@
         {
           "packageId": "P00",
           "capability": "یک نسخه قابل‌آزمایش با schema و مالک معلوم",
-          "evidenceState": "مبنای195 تثبیت؛ candidate208+P03 منتظر رسید",
-          "gates": "G0/G1؛ سفر ترکیبی NOT_RUN",
+          "evidenceState": "دموی65c215b و receipt تازه؛ صفحه SHA مستقل دیده شد",
+          "gates": "G0/G1؛ پذیرش مستقل مرورگر BLOCKED",
           "owner": "P00",
           "evidence": "baseline",
           "human": "OPEN؛ هیچ پذیرش انسانی از این snapshot استنتاج نشود"
@@ -147,7 +168,7 @@
         {
           "packageId": "P01",
           "capability": "ورود، بازیابی و دسترسی واقعی عضو A؛ منع B",
-          "evidenceState": "شاهد native195 گزارش شده؛ نسخه ترکیبی بررسی نشده",
+          "evidenceState": "فرم native8444 ارسال؛ نتیجه ورود در مرورگر تأیید نشد",
           "gates": "G1/G2 و policy/provider",
           "owner": "P01",
           "evidence": "baseline",
@@ -165,7 +186,7 @@
         {
           "packageId": "P03",
           "capability": "شروع عضو، نیازسنجی، درس و وبینار مجاز",
-          "evidenceState": "PR209 جدا؛ ترکیب با208 هنوز پذیرفته نشده",
+          "evidenceState": "داده native8444 ثابت؛ مسیر عضو به علت مرورگر NOT_RUN",
           "gates": "G2/G3؛ سه مرور انسانی OPEN",
           "owner": "P03",
           "evidence": "contracts",
@@ -237,7 +258,7 @@
         {
           "packageId": "P11",
           "capability": "سنجش بدون PII، پیگیری، خطا و پذیرش مسیر",
-          "evidenceState": "کتابخانه/receipt مصنوعی اجرایی؛ سفر هنوز NOT_RUN",
+          "evidenceState": "24 بررسی کتابخانه و receipt؛ سفر native BLOCKED",
           "gates": "G2/G3/G4؛ نام پاسخ‌گو/SLA/پایلوت OPEN",
           "owner": "P11",
           "evidence": "support",
@@ -247,6 +268,8 @@
       "source": {
         "label": "پذیرش قابلیت‌ها بر پایه برنامه و شواهد موجود",
         "files": [
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\NATIVE-DEMO-ATTEMPT.json",
+          "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\p00-demo844-20261002\\CURRENT.md",
           "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md",
           "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-CONTRACT-ISSUES.md",
           "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\P08-REVIEW.md",
@@ -267,6 +290,14 @@
         ],
         "evidenceFlow": [
           {
+            "title": "native",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\NATIVE-DEMO-ATTEMPT.json; SHA256 6697f56075948af20d219f163236a58362b0bcd6004f5cb14bfa5efd687c15b8"
+          },
+          {
+            "title": "demo",
+            "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\p00-demo844-20261002\\CURRENT.md; SHA256 e8130db087280259501b94154ea005b7a1922b4b956c7aba66f358de924fbe87"
+          },
+          {
             "title": "baseline",
             "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\product-plan-v0.1\\P00-BASELINE.md; SHA256 be5798eba4438af47361310557f9c2afaa9a3193a6adbaced564c4c4a0856990"
           },
@@ -283,7 +314,7 @@
             "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\runtime\\support-demo.json; SHA256 3bf2a5dfeb8adc950dd3bf2e7a465461ecaad6172df5757a8c776a71a855f696"
           }
         ],
-        "executedAt": "2026-10-02T16:47:49.155Z"
+        "executedAt": "2026-10-02T17:31:36.926Z"
       }
     },
     "support_tracking": {
@@ -335,11 +366,19 @@
             "detail": "Read local source C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\runtime\\support-demo.json; SHA256 3bf2a5dfeb8adc950dd3bf2e7a465461ecaad6172df5757a8c776a71a855f696"
           }
         ],
-        "executedAt": "2026-10-02T16:47:49.155Z"
+        "executedAt": "2026-10-02T17:31:36.926Z"
       }
     }
   },
   "sourceManifest": {
+    "native": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-p11-measurement\\docs\\ops\\product-plan-v0.1\\p11\\NATIVE-DEMO-ATTEMPT.json",
+      "sha256": "6697f56075948af20d219f163236a58362b0bcd6004f5cb14bfa5efd687c15b8"
+    },
+    "demo": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\p00-demo844-20261002\\CURRENT.md",
+      "sha256": "e8130db087280259501b94154ea005b7a1922b4b956c7aba66f358de924fbe87"
+    },
     "auth": {
       "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\portfolio-product-direction\\docs\\ops\\seasonal-program\\INCIDENT-AUTH-INTAKE-20261002.md",
       "sha256": "001e0712a7f45ef77c1c03c213a8f6a2204dff34b6cabf550d1438d843f523db"
