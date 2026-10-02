@@ -89,13 +89,23 @@
     "build": {
       "status": "BLOCKED_RESOURCE",
       "freePhysicalGiB": 0.82,
-      "run": false
+      "run": false,
+      "latestResourceRecheck": {
+        "at": "2026-10-02T15:11:56.188Z",
+        "freePhysicalGiB": 0.73,
+        "run": false
+      }
     },
     "ci": {
       "status": "NOT_RUN_UNPUBLISHED_NETWORK_BLOCKED"
     },
     "native": {
-      "status": "NOT_RUN_NETWORK_BLOCKED"
+      "status": "NOT_RUN_NETWORK_BLOCKED",
+      "latestReachabilityRecheck": {
+        "at": "2026-10-02T15:11:56.190Z",
+        "status": "UNVERIFIED_REACHABILITY",
+        "cause": "UND_ERR_CONNECT_TIMEOUT"
+      }
     },
     "receipts": [
       {
