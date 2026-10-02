@@ -42,7 +42,13 @@ digest خروجی قطعی دو اجرای اصلاحی برابر است: `c76d
 
 شواهد منتشرشده فقط metadata و آزمون‌های مصنوعی‌اند: [summary.json](n10-null-unit-evidence/summary.json)، [synthetic-red.txt](n10-null-unit-evidence/synthetic-red.txt)، [synthetic-green.txt](n10-null-unit-evidence/synthetic-green.txt). ارقام صورت مالیِ آرشیو یا خروجی محاسبات آن در این بسته منتشر نشده‌اند. ابزار: Git، Node/tsx، TypeScript/ESLint/Next build و GitHub CI؛ محاسبات مالی را کد قطعی موجود انجام داده است.
 
-## موارد باز و تحویل به دولوپر
+## بازبینی مستقل و CI
+
+بازبینی مستقل [PR196](https://github.com/safariarash7777-source/portfolio-platform/pull/196)، head `804a7f86fe62d91bb228889dd13469fe09c5ff11`، همین runtime محصول `fa4b84fd…` را با پایهٔ معیار `e143fbbb…` بررسی کرده است: پایه 2 PASS/2 FAIL، اصلاح 4 PASS/0 FAIL در دو اجرای قطعی. digest مستقل `4ffa49fb93b2613ffd658545dfb59457c91a4b00c9fe301d07c126b5a4e6625c` است. این بازبین fixtureهای ثابت PR194 را بارگذاری کرده تا metadata پارسر ورودی C3 را هم تغییر ندهد؛ بلوک action/evaluation و شروط عیناً حفظ شده‌اند. بنابراین digest مستقل با اجرای سازنده فرق دارد و هر دو جدا گزارش شده‌اند. طبق شواهد همان بازبینی، چهار input digest، سه fixture hash و بایت‌های آرشیو ثابت مانده‌اند؛ هفت blob محصول قبل/بعد کنترل شده‌اند. این شاهد فقط پذیرش چهار case آفلاین است، نه تأیید ناشر، UI، ذخیره یا Production.
+
+CI در head مستندات `5f708ec4fe2e9a536f2527763a6820c2261e0f5e`، [اجرای36941109188](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/36941109188)، success است. commitهای بعد از runtime تا آن head فقط شواهد/مستندات‌اند؛ نتیجهٔ آخرین head PR نیز باید هنگام تجمیع دوباره تطبیق داده شود.
+
+## گیت‌های باقی
 
 1. URL واقعی ناشر، نسخهٔ اطلاعیه، sourceAt، capturedAt، حقوق استفاده و واحد واقعی آرشیو هنوز تأیید نشده‌اند. replay تطابق literal و حساب را نشان می‌دهد، نه صحت دادهٔ ناشر.
 2. معنای اقلام بانکی مبهم و پیش‌فرض‌های قدیمیِ سایر اقلام خارج از این اصلاح محدود‌اند. سرآیند واحد در جدولی جدا از صورت انتخاب‌شده نیز پوشش تأییدشده ندارد.
