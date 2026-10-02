@@ -1,13 +1,13 @@
-✔ click and registration do not create activity, fee or AUM (2.1845ms)
-✔ repeated report and later received_at never double counted (1.6451ms)
-✔ same identity with changed amount quarantined (0.2234ms)
-✔ late correction retains original and changes effective reported amount (0.3208ms)
-✔ missing original, gap and competing corrections stop (0.2646ms)
-✔ mid-period contract change never overwrites old context (0.3054ms)
-✔ unmatched member, two codes and missing consent need operations review (0.3332ms)
-✔ unit errors rejected; IRR and IRT never guessed or compared (0.2502ms)
-✔ invoice mismatch and absent amount remain explicit, never verified (0.2526ms)
-✔ reject unverifiable claims, private extra fields, future/no-offset and numeric money (0.2805ms)
+✔ click and registration do not create activity, fee or AUM (3.2985ms)
+✔ repeated report and later received_at never double counted (2.1596ms)
+✔ same identity with changed amount quarantined (0.2455ms)
+✔ late correction retains original and changes effective reported amount (0.3613ms)
+✔ missing original, gap and competing corrections stop (0.5146ms)
+✔ mid-period contract change never overwrites old context (0.3112ms)
+✔ unmatched member, two codes and missing consent need operations review (0.3544ms)
+✔ unit errors rejected; IRR and IRT never guessed or compared (0.2619ms)
+✔ invoice mismatch and absent amount remain explicit, never verified (0.2835ms)
+✔ reject unverifiable claims, private extra fields, future/no-offset and numeric money (0.3114ms)
 ℹ tests 10
 ℹ suites 0
 ℹ pass 10
@@ -15,4 +15,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 94.1637
+ℹ duration_ms 121.7841

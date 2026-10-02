@@ -30,6 +30,7 @@
     "journal_unchanged": true
   },
   "late_correction": {
+    "source_hash": "f3dbd7f1bba5d954cd797144a5f5c03a7b9fbf1fb603cb0dfbfa089a2840aa6f",
     "status": "accepted",
     "original_retained": true,
     "journal_count": 5,
