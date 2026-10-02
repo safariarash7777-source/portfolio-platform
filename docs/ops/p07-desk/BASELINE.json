@@ -115,10 +115,11 @@
     "decisionMetadata": "DRAFT_NOT_IMPLEMENTED",
     "p03CurrentReaderContract": "RECEIVED_ACK_73c768cdfa06a18e02776c2e62eae7ad70de6c03",
     "validityReplacementAgreement": "DRAFT_OPEN",
-    "p08ValidityInterpretation": "ACK_ON_0e9e41e_DRAFT_ONLY"
+    "p08ValidityInterpretation": "ACK_ON_0e9e41e_DRAFT_ONLY",
+    "p03ValidityPrinciples": "ACK_DRAFT_df85b5f3b84c6b0bac0fa8b1b4b53fdc8d0cf681"
   },
   "production": "NOT_CHANGED",
   "providerCalls": 0,
   "customerMessages": 0,
-  "updatedAt": "2026-10-02T13:50:37.1050529Z"
+  "updatedAt": "2026-10-02T13:56:01.8753446Z"
 }

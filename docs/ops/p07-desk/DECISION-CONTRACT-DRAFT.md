@@ -99,3 +99,7 @@ P07 سند `docs/ops/seasonal-program/p03-member-start/FEED-READ-CONTRACT-v1.md`
 ### مدل اجرایی نمونهٔ قرارداد زمان
 
 `lib/intelligence/p07-validity-draft.ts`، نسخه `p07.validity.draft.v1`، پیشنهاد بازه بالا را فقط در fixture مستقل اجرا می‌کند؛ native SQL یا canonical predicate نیست. timestamp ورودی تاریخ واقعی، زمان تا ثانیه با offset صریح و fraction حداکثر6 رقم دارد. مدل instant را با microsecond مقایسه می‌کند تا برابری پایان بر اثر گردشدن millisecond جابه‌جا نشود. بازه تهی/معکوس، مرز مجهول یا ساعت نامعتبر UNKNOWN است. خروجی `within_time_window` مجوز استفاده یا active state نیست؛ دریافت authoritative clock در محیط و enforcement مشترک SQL همچنان باز است. شش آزمون ساختگی و regressionهای موجود جای پذیرش native/list/detail/mark و سه گردش واقعی را نمی‌گیرند.
+
+### ACK مصرف‌کننده P03
+
+P07 رسید `P07-P00-CHECKPOINT-20261002.md` را با `git show` روی commit P03@`df85b5f3b84c6b0bac0fa8b1b4b53fdc8d0cf681` مستقیم خواند. P03 سند P07@0e9e41e را بررسی کرده و با اصول پیشنهادی offset/ساعت authoritative، بازه نیمه‌باز، UNKNOWN برای تصمیم، استقلال grant، predicate مشترک و receipt نسخه موافق است؛ اختلاف فنی در این اصول گزارش نشده است. این **ACK اصول DRAFT** است، نه توافق enum/DTO/schema یا پذیرش مدل eb8f599 در reader. P08 نیز در پیام هماهنگی همین تفسیر را پذیرفته؛ ACK او اجرای native نیست. تصمیم archive عضو و delayed replacement، قرارداد نهایی نسخه/enum و migration/hash/order همچنان OPEN است. رفتار save-immediate موجود حفظ و پذیرش native مرزهای list/detail/mark/notification/assistant هنوز NOT_RUN است.
