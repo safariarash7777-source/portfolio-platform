@@ -1,6 +1,6 @@
 # P01 — ادامهٔ ثبت‌نام و بازیابی ایمیل؛ 2026-10-02
 
-**کد مستقل آماده؛ پذیرش UI/provider واقعی OPEN.** PR208 ثابت ماند. این ادامه روی PR211@`04651152ed3828c52a0dfa36eef57286f899bef7` ساخته شد؛ parent آن208@`f0e002bc7c9f22f0425adc41b8b6b81c3a1fcc11` و مبنای محصول195@`31c44ab635b672b589b7833bcbc78b41d36f1e75` است. commitهای کد جدید `c1bf80c` و **`ac8a6012168cb63ccc46562ac28c8b271f79dbc2`**؛ تغییرهای211 دوباره cherry-pick نشوند. main51fd066 و199@e1c46e3 پیش از ساخت تطبیق شدند. P00 مالک manifest، نصب و منابع محیط است؛ Auth/API/callback و این فرم‌های حساب متعلق بهP01‌اند.
+**کد مستقل آماده؛ پذیرش UI/provider واقعی OPEN.** PR208 ثابت ماند. این ادامه روی PR211@`04651152ed3828c52a0dfa36eef57286f899bef7` ساخته شد؛ parent آن208@`f0e002bc7c9f22f0425adc41b8b6b81c3a1fcc11` و مبنای محصول195@`31c44ab635b672b589b7833bcbc78b41d36f1e75` است. commitهای کد جدید `c1bf80c`، `ac8a6012168cb63ccc46562ac28c8b271f79dbc2` و اصلاح امضای Next route در **`639ee3420ee071352086eb81b83b005da14e30d8`**؛ تغییرهای211 دوباره cherry-pick نشوند. main51fd066 و199@e1c46e3 پیش از ساخت تطبیق شدند. P00 مالک manifest، نصب و منابع محیط است؛ Auth/API/callback و این فرم‌های حساب متعلق بهP01‌اند.
 
 ## نقص مشخص و اصلاح
 
@@ -56,6 +56,8 @@ node node_modules/eslint/bin/eslint.js . --max-warnings=0
 ```
 
 **build محلی NOT_RUN**: درخواست P00 منع build سنگین، لپ‌تاپ حدود1GiB حافظه آزاد از8GiB داشت؛ build نهایی باید CI همانhead را بگذراند. builtِ208 یا typecheck به‌معنی build این کد نیست. نتیجه CI در PR exacthead سنجیده شود.
+
+CI اولیه215@f1eb9f8، run37039326938: typecheck/lint/test وDBRLS/dependencies/secretSQL PASS؛ Build FAIL به‌علت `GET(request?:Request)` که با validator مسیرNext سازگار نبود.639ee34 امضا را بهGET(request:Request) اصلاح کرد؛ رفتارJS آن ثابت است. typecheck تازه گذشت؛ CI تازه باید نصب‌پذیری را تأیید کند، شکست اولیه به سلامتAuth یاprovider نسبت داده نشود.
 
 **candidate ثانویه P00**: اپراتور گزارش داد0ed89c2 درcandidate با `65c215b801958c32599fafb0f6e331dd5ce3d181` مصرف و49Auth/typecheck گذشت؛ دموی8444 password-only و ready-to-launch بود. این ادامهٔ email روی آن نصب نشده؛ PKCE/provider acceptance از آن استنتاج نمی‌شود.1958443 مستقل باقی است.
 
