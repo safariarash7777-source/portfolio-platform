@@ -35,6 +35,8 @@ P01 مالک Auth/session/error classification؛ P00 مالک محیط و ترت
 
 این adapter به route/UI/server متصل نیست و metadata آن با parser/SQL فعلی ذخیره نمی‌شود؛ وضعیت دقیق PERSISTENCE_NOT_IMPLEMENTED است. preview پیش‌نمایش نویسندهٔ draft است، نه خواندن واقعی عضو و نه ایجاد grant. متن آزاد و URL مجاز ساختاری هنوز بازبینی حریم خصوصی می‌خواهند. زمان اعتبار/تصمیم/جایگزینی در آن پیاده نشده و قرارداد مالی DRAFT باقی است. آزمون‌های این adapter همگی نمونه ساختگی‌اند؛ شواهد اجرا در BASELINE.json ثبت می‌شود.
 
+`p07-validity-draft.ts` فقط مدل اجرایی قرارداد پیشنهادی `p07.validity.draft.v1` برای fixture است: ساعت صریح، offset، بازه نیمه‌باز و دقت microsecond؛ ساعت مرورگر یا Date.now نمی‌گیرد. خروجی `within_time_window` صرفاً زمان را توصیف می‌کند، نه active/grant/approval. شش آزمون ساختگی مرز شروع/پایان، زمان مجهول/نامعتبر، offset، microsecond و استقلال grant/زمان را پوشش می‌دهند. canonical reader هنوز deadline ندارد؛ هیچ import به UI/API/reader موجود اضافه نشده است. این مدل، قرارداد نهایی یا اجرای native SQL نیست.
+
 ## نخستین کارهای اجرایی پس از گیت
 
 1. افزودن preview allowlist و حفظ متن در خطا به Workbench موجود؛ نمای مخاطب نباید از body کامل پژوهش ساخته شود.

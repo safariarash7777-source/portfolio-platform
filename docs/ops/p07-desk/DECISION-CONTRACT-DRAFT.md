@@ -95,3 +95,7 @@ P07 سند `docs/ops/seasonal-program/p03-member-start/FEED-READ-CONTRACT-v1.md`
 | توقف و رسید | توقف از withdraw/retraction همان دفتر، بدون تصمیم فعال موازی؛ replay mark برای withdrawn/replaced/expired طبق predicate مشترک رد و receipt قدیمی محفوظ بماند |
 
 پذیرش افزونه باید now دقیقاً برابر validFrom/validUntil، مرز مجهول، اختلاف ساعت مرورگر، خواندن v1 سپس v2، receipt قدیمی، revoke grant، draft جایگزین و replay mark را پوشش دهد. این‌ها پیشنهاد معیار آینده‌اند؛ آزمون‌های آفلاین فعلی اجرای deadline یا مسیر عضو جدید را اثبات نمی‌کنند. نویسنده مشترک reader/feed با P03 و schema/order با P00 هماهنگ شود؛ هیچ runtime/schema از این رسید تغییر نمی‌کند.
+
+### مدل اجرایی نمونهٔ قرارداد زمان
+
+`lib/intelligence/p07-validity-draft.ts`، نسخه `p07.validity.draft.v1`، پیشنهاد بازه بالا را فقط در fixture مستقل اجرا می‌کند؛ native SQL یا canonical predicate نیست. timestamp ورودی تاریخ واقعی، زمان تا ثانیه با offset صریح و fraction حداکثر6 رقم دارد. مدل instant را با microsecond مقایسه می‌کند تا برابری پایان بر اثر گردشدن millisecond جابه‌جا نشود. بازه تهی/معکوس، مرز مجهول یا ساعت نامعتبر UNKNOWN است. خروجی `within_time_window` مجوز استفاده یا active state نیست؛ دریافت authoritative clock در محیط و enforcement مشترک SQL همچنان باز است. شش آزمون ساختگی و regressionهای موجود جای پذیرش native/list/detail/mark و سه گردش واقعی را نمی‌گیرند.

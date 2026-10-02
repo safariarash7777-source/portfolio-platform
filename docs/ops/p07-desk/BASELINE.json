@@ -86,18 +86,18 @@
     "status": "PASS_OFFLINE_ONLY",
     "build": "PASS_47_STATIC_PAGES",
     "typecheck": "PASS",
-    "tests": 39,
-    "passed": 39,
+    "tests": 45,
+    "passed": 45,
     "lint": "PASS_FULL_REPOSITORY",
     "syntheticOnly": true,
     "failed": 0,
     "commands": [
-      "tsx --test lib/intelligence/p07-preparation.test.ts lib/intelligence/publication.test.ts lib/intelligence/publication-feed.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/workbook-store.test.ts",
+      "tsx --test lib/intelligence/p07-validity-draft.test.ts lib/intelligence/p07-preparation.test.ts lib/intelligence/publication.test.ts lib/intelligence/publication-feed.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/workbook-store.test.ts",
       "tsc --noEmit",
       "eslint . --max-warnings=0",
       "next build"
     ],
-    "secretScan": "PASS_1305_FILES",
+    "secretScan": "PASS_1307_FILES",
     "diffCheck": "PASS"
   },
   "gates": {
@@ -114,9 +114,11 @@
     "persistence": "NOT_IMPLEMENTED",
     "decisionMetadata": "DRAFT_NOT_IMPLEMENTED",
     "p03CurrentReaderContract": "RECEIVED_ACK_73c768cdfa06a18e02776c2e62eae7ad70de6c03",
-    "validityReplacementAgreement": "DRAFT_OPEN"
+    "validityReplacementAgreement": "DRAFT_OPEN",
+    "p08ValidityInterpretation": "ACK_ON_0e9e41e_DRAFT_ONLY"
   },
   "production": "NOT_CHANGED",
   "providerCalls": 0,
-  "customerMessages": 0
+  "customerMessages": 0,
+  "updatedAt": "2026-10-02T13:50:37.1050529Z"
 }
