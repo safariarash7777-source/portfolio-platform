@@ -1,0 +1,20 @@
+{
+  "dateTehran": "2026-10-02",
+  "baseSha": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "branch": "codex/frontend-existing-refinement-20261002",
+  "codeSha": "03bb28955efc7a8b7f55d78845cadbca49a3c9ff",
+  "offlineBehavior": {"passed": 17, "failed": 0, "skipped": 0, "realBrowser": false, "liveDatabase": false},
+  "baselineBehavior": {"passed": 2, "failed": 15, "timezoneFailedOnBaseline": false},
+  "existingRelatedTests": {"passed": 59, "failed": 0, "skipped": 0},
+  "typecheck": "PASS",
+  "lint": "PASS, zero warnings",
+  "build": "PASS, Next 15.5.25, 38 static pages",
+  "historicalBefore": {"sourceSha": "f6cb560478d51d48dcee2c9b2801eb047f5c7214", "sourceReport": "NEXT-05-RESULT.md", "url": "http://127.0.0.1:8780", "viewports": ["1440x1000", "390x844"], "homeSourceMatchesBase": true, "freshBrowserObservation": false, "webinarsSourceMatchesBase": false},
+  "afterBrowser": {"status": "BLOCKED", "reason": "Local server creation rejected by automatic tool policy before process creation; no detailed reason returned; no workaround attempted", "screenshots": false, "keyboardAcceptance": false},
+  "unchanged": ["app/page.tsx", "app/globals.css", "app/layout.tsx", "font assets", "financial engine", "API handlers", "Auth middleware"],
+  "productionChanged": false,
+  "migrationApplied": false,
+  "deploymentPerformed": false,
+  "ownerLoginAccepted": false,
+  "priorPrototype188Approved": false
+}

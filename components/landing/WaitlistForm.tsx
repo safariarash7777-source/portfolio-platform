@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -10,6 +10,7 @@ type Status = "idle" | "loading" | "success" | "error";
  * همان endpoint (`/api/waitlist`)، همان بدنهٔ درخواست و همان وضعیت‌ها.
  */
 export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onNavy" }) {
+  const messageId = useId();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -17,16 +18,17 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus("loading");
+    setErrorMessage("");
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
-      if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success !== true) {
         setStatus("error");
-        setErrorMessage(data.error || "خطایی رخ داد.");
+        setErrorMessage(data?.error || "ثبت درخواست انجام نشد. دوباره تلاش کنید.");
       } else {
         setStatus("success");
         setEmail("");
@@ -72,7 +74,11 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
           disabled={busy}
           dir="ltr"
           aria-label="آدرس ایمیل"
-          className="input flex-1"
+          aria-describedby={messageId}
+          aria-invalid={status === "error"}
+          autoComplete="email"
+          maxLength={254}
+          className="input min-w-0 flex-1"
           style={{
             border: "none",
             boxShadow: "none",
@@ -94,10 +100,10 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
         </button>
       </form>
 
-      <div className="h-6 mt-2 px-1">
+      <div id={messageId} className="min-h-6 mt-2 px-1" role="status" aria-live="polite" aria-atomic="true">
         {status === "success" && (
           <p className="text-sm" style={{ color: onNavy ? "var(--gold-soft)" : "var(--success)" }}>
-            ثبت شد! برای هماهنگی مشاوره و خبرهای مهم، از همین ایمیل با شما در تماس خواهیم بود.
+            درخواست دریافت شد. ایمیل شما برای پیگیری ثبت شد؛ وقت جلسه هنوز رزرو نشده است.
           </p>
         )}
         {status === "error" && (
@@ -107,7 +113,7 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
         )}
         {status === "idle" && (
           <p className="text-xs" style={{ color: hintColor }}>
-            اطلاعات شما فقط برای ارتباط با شما استفاده می‌شود.
+            ایمیل برای پیگیری درخواست وقت مشاوره استفاده می‌شود.
           </p>
         )}
       </div>

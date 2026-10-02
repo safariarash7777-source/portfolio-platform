@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { toPersianDigits } from "@/lib/format";
+import { accountEntryHref } from "@/components/account/returnPath";
 
 interface Webinar {
   id: string;
@@ -45,6 +46,7 @@ function formatDate(iso: string) {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Tehran",
   });
 }
 
@@ -71,6 +73,8 @@ function WebinarsContent() {
   const searchParams = useSearchParams();
   const [webinars, setWebinars] = useState<Webinar[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [registering, setRegistering] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -78,19 +82,29 @@ function WebinarsContent() {
   useEffect(() => {
     const status = searchParams.get("status");
     if (status === "success") {
-      setMessage({ type: "success", text: "پرداخت موفق! ثبت‌نام شما تأیید شد." });
+      setMessage({ type: "success", text: "نتیجهٔ پرداخت دریافت شد؛ وضعیت ثبت‌نام را در حساب خود بررسی کنید." });
     } else if (status === "failed") {
       setMessage({ type: "error", text: "پرداخت ناموفق بود. لطفاً دوباره تلاش کنید." });
     }
   }, [searchParams]);
 
   useEffect(() => {
-    fetch("/api/webinars/list")
-      .then((r) => r.json())
-      .then((data) => setWebinars(data.webinars ?? []))
-      .catch(() => setMessage({ type: "error", text: "خطا در بارگذاری وبینارها." }))
-      .finally(() => setLoading(false));
-  }, []);
+    let active = true;
+    const controller = new AbortController();
+    const deadline = setTimeout(() => controller.abort(), 12000);
+    setLoading(true);
+    setListError(false);
+    fetch("/api/webinars/list", { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Webinar list unavailable");
+        const data = await response.json();
+        if (!Array.isArray(data.webinars)) throw new Error("Invalid webinar list");
+        if (active) setWebinars(data.webinars);
+      })
+      .catch(() => { if (active) setListError(true); })
+      .finally(() => { clearTimeout(deadline); if (active) setLoading(false); });
+    return () => { active = false; clearTimeout(deadline); controller.abort(); };
+  }, [retry]);
 
   const handleRegister = async (webinarId: string, priceToman: number) => {
     setRegistering(webinarId);
@@ -108,7 +122,7 @@ function WebinarsContent() {
       if (!res.ok) {
         if (res.status === 401) {
           // کاربر لاگین نیست → هدایت به صفحه ورود
-          window.location.href = `/login?redirect=/webinars`;
+          window.location.href = accountEntryHref("/login", "/webinars");
           return;
         }
         throw new Error(data.error || "خطا در ثبت‌نام");
@@ -131,8 +145,8 @@ function WebinarsContent() {
 
       // وبینار رایگان → ثبت‌نام موفق
       setMessage({ type: "success", text: "ثبت‌نام شما با موفقیت انجام شد!" });
-    } catch (e: any) {
-      setMessage({ type: "error", text: e.message });
+    } catch (error: unknown) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "ثبت‌نام انجام نشد. دوباره تلاش کنید." });
     } finally {
       setRegistering(null);
     }
@@ -147,19 +161,19 @@ function WebinarsContent() {
         className="border-b"
         style={{ background: "var(--surface)", borderColor: "var(--line)" }}
       >
-        <div className="max-w-4xl mx-auto px-5 py-6 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-5 py-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black" style={{ color: "var(--text-1)" }}>
+            <h1 className="text-2xl font-black" style={{ color: "var(--heading)" }}>
               وبینارها
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-3)" }}>
-              رویدادهای آنلاین آرش صفری
+              رویدادهای آنلاین آرش صفری · زمان‌ها به وقت تهران
             </p>
           </div>
           <Link
             href="/"
-            className="text-sm font-bold rounded-xl px-4 py-2"
-            style={{ color: "var(--navy)" }}
+            className="inline-flex items-center min-h-11 text-sm font-bold rounded-xl px-4 py-2"
+            style={{ color: "var(--navy-ink)" }}
           >
             بازگشت به سایت
           </Link>
@@ -170,6 +184,8 @@ function WebinarsContent() {
         {/* Messages */}
         {message && (
           <div
+            role={message.type === "error" ? "alert" : "status"}
+            aria-live="polite"
             className="mb-6 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2"
             style={{
               background: message.type === "success" ? "color-mix(in srgb, var(--success) 12%, transparent)" : "color-mix(in srgb, var(--danger) 12%, transparent)",
@@ -183,8 +199,14 @@ function WebinarsContent() {
 
         {/* Loading */}
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 size={24} className="animate-spin" style={{ color: "var(--text-3)" }} />
+          <div role="status" aria-live="polite" className="flex items-center justify-center gap-3 py-16">
+            <Loader2 size={24} aria-hidden className="animate-spin" style={{ color: "var(--text-3)" }} />
+            <p className="text-sm" style={{ color: "var(--text-3)" }}>در حال دریافت وبینارها…</p>
+          </div>
+        ) : listError ? (
+          <div className="text-center py-16 rounded-2xl border px-5" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
+            <p role="alert" className="text-sm" style={{ color: "var(--text-2)" }}>فهرست وبینارها دریافت نشد. دوباره تلاش کنید.</p>
+            <button type="button" className="btn btn-outline mt-4" onClick={() => setRetry((value) => value + 1)}>تلاش دوباره</button>
           </div>
         ) : webinars.length === 0 ? (
           <div
@@ -193,10 +215,10 @@ function WebinarsContent() {
           >
             <Video size={48} className="mx-auto mb-4" style={{ color: "var(--text-3)" }} />
             <p className="text-base font-bold" style={{ color: "var(--text-2)" }}>
-              در حال حاضر وبیناری برنامه‌ریزی نشده.
+              وبیناری برای نمایش ثبت نشده است.
             </p>
             <p className="text-sm mt-2" style={{ color: "var(--text-3)" }}>
-              به‌زودی وبینار بعدی اعلام می‌شود.
+              زمان و جزئیات وبینار بعدی پس از اعلام، اینجا نمایش داده می‌شود.
             </p>
           </div>
         ) : (
@@ -235,7 +257,7 @@ function WebinarsContent() {
                       <div>
                         <h2
                           className="text-lg font-black mb-1"
-                          style={{ color: "var(--text-1)" }}
+                          style={{ color: "var(--heading)" }}
                         >
                           {w.title}
                         </h2>
@@ -243,7 +265,7 @@ function WebinarsContent() {
                       </div>
                       <div
                         className="text-lg font-black shrink-0"
-                        style={{ color: "var(--navy)" }}
+                        style={{ color: "var(--navy-ink)" }}
                       >
                         {formatPrice(w.price_toman)}
                       </div>
@@ -281,7 +303,7 @@ function WebinarsContent() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                       {canRegister && (
                         <button
                           onClick={() => handleRegister(w.id, w.price_toman)}
