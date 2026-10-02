@@ -1,0 +1,137 @@
+{
+  "at": "2026-10-02T15:03:46.170Z",
+  "status": "LOCAL_ONLY_NOT_DEPLOYED_NOT_ACCEPTED",
+  "applicationCodeSHA": "844860d2643addce4668f48bf2e475e09c997b28",
+  "tree": "9f4f911058f2dad505dba4548a1ae41bcca05eec",
+  "base195": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+  "parents": [
+    "f0e002bc7c9f22f0425adc41b8b6b81c3a1fcc11",
+    "f669c05baf2cdebfead20999e389c77f19015152"
+  ],
+  "inputs": {
+    "P01": {
+      "pr": 208,
+      "head": "f0e002bc7c9f22f0425adc41b8b6b81c3a1fcc11",
+      "runtime": "87f6b2250218c661fc3a6ab89fec10d35f6a7467"
+    },
+    "P03": {
+      "pr": 209,
+      "localDelta": "f669c05baf2cdebfead20999e389c77f19015152",
+      "tree": "1c946651db631caed07c53ffb1b650827d9f2799",
+      "remoteHeadLastVerified": "63aeb0f",
+      "deltaPublished": false
+    }
+  },
+  "helper": {
+    "blob": "60ef5ffa882973ad5400c3b8243e32e94280ea63",
+    "duplicateFileCopies": 1
+  },
+  "sharedFilesUnchanged": [
+    "package.json",
+    "package-lock.json",
+    "sql",
+    "supabase/migrations",
+    ".github",
+    "next.config.js"
+  ],
+  "rootFix": {
+    "file": "lib/intelligence/publication-feed.test.ts",
+    "before": "TS2554 twice: expected3arguments got2",
+    "after": "Explicit thirdargumentundefined preserves401/403 semantics; tsc exit0 and28feedtests pass",
+    "finalBlob": "0b7e352c39b4c449f122d4bbb3e52dfce2207829"
+  },
+  "validation": {
+    "handlers": {
+      "tests": 61,
+      "pass": 61,
+      "fail": 0,
+      "skip": 0
+    },
+    "contractsMemberFeed": {
+      "tests": 72,
+      "pass": 72,
+      "fail": 0,
+      "skip": 0
+    },
+    "cookieVM": {
+      "checks": 2,
+      "status": "PASS",
+      "synthetic": true,
+      "nativeAcceptance": false
+    },
+    "typecheckInitial": "FAIL_TS2554",
+    "typecheckRecheck": "PASS_EXIT0",
+    "feedRecheck": {
+      "tests": 28,
+      "pass": 28,
+      "fail": 0,
+      "skip": 0,
+      "countedAgainInUniqueTotal": false
+    },
+    "uniqueNodeTests": 133,
+    "lint": "PASS_EXIT0_ZERO_WARNINGS",
+    "secretScan": "PASS_ZERO_FINDINGS",
+    "diffCheck": "PASS",
+    "build": {
+      "status": "BLOCKED_RESOURCE",
+      "freePhysicalGiB": 0.82,
+      "run": false
+    },
+    "ci": {
+      "status": "NOT_RUN_UNPUBLISHED_NETWORK_BLOCKED"
+    },
+    "native": {
+      "status": "NOT_RUN_NETWORK_BLOCKED"
+    },
+    "receipts": [
+      {
+        "file": ".task/p01-p03/handlers.txt",
+        "sha256": "5036bd98140e4a8fe557e705ba5e06044f4ca50cf288e063bb378fbfb522405c"
+      },
+      {
+        "file": ".task/p01-p03/contracts.txt",
+        "sha256": "edb6c629058e4b4676620a10cb1a7d49731145276277f7957ec46664dffed9e0"
+      },
+      {
+        "file": ".task/p01-p03/cookie-regression.json",
+        "sha256": "8c226a7ec02fe2f8bb33c1b170a43c4e6376c39d1b2873cd5b987113e414ac52"
+      },
+      {
+        "file": ".task/p01-p03/typecheck.txt",
+        "sha256": "58db8c5bfee251fd95c3f2f8109799316f8ecd0e9c5eb96a5603e50ccd051977"
+      },
+      {
+        "file": ".task/p01-p03/typecheck-recheck.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "file": ".task/p01-p03/lint.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "file": ".task/p01-p03/feed-recheck.txt",
+        "sha256": "245e3389c01134b3f98bba48b3df0f63d8290ec996ff308c91e9f59d94db5b0f"
+      }
+    ]
+  },
+  "historicalEvidence": {
+    "P03Native63": {
+      "applicationCode": "f889bb3",
+      "transferredToThisCandidate": false
+    },
+    "DEV07": {
+      "applicationCode": "31c44ab635b672b589b7833bcbc78b41d36f1e75",
+      "independent": "13PASS_0FAIL_1HUMANBLOCKED",
+      "environment": "portfolio-accept195",
+      "modified": false
+    }
+  },
+  "publication": "NONE",
+  "production": "UNCHANGED",
+  "mergePullRequests": false,
+  "excludedIncrementalWork": [
+    199,
+    "policy-blocked Telegram/preview startup",
+    "other package PRs"
+  ]
+}
