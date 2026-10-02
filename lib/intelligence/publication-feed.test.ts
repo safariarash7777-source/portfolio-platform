@@ -28,7 +28,7 @@ function sessionAdapter(error: unknown, user: {id: string} | null) {
 }
 for(const [label,error,status] of [
  ['no session',null,401],['SDK missing session',new AuthSessionMissingError(),401],
- ['rejected401',new AuthApiError('PRIVATE synthetic reject',401),401],['rejected403',new AuthApiError('PRIVATE synthetic reject',403),401],
+ ['rejected401',new AuthApiError('PRIVATE synthetic reject',401,undefined),401],['rejected403',new AuthApiError('PRIVATE synthetic reject',403,undefined),401],
  ...['bad_jwt','no_authorization','session_expired','session_not_found','refresh_token_not_found','refresh_token_already_used','flow_state_expired','flow_state_not_found'].map(code=>[code,new AuthApiError('PRIVATE synthetic expired',400,code),401]),
  ...[400,402,404,422,429,503].map(status=>['unknown'+status,new AuthApiError('PRIVATE synthetic outage',status,'unknown_code'),503]),
  ['transport',new AuthRetryableFetchError('PRIVATE synthetic transport',503),503],['configuration',Error('PRIVATE synthetic configuration'),503],
