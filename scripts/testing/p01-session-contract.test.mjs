@@ -30,7 +30,7 @@ function loader(overrides={},extra={}){
         return load(existsSync(resolve(root,candidate+'.ts'))?candidate+'.ts':candidate+'.tsx');
       }
       return require(name);
-    },process:{env:{}},Request,Response,URL,AbortController,AbortSignal,fetch,setTimeout,clearTimeout,Date,Intl,console,...extra});
+    },process:{env:{}},Buffer,TextDecoder,Request,Response,URL,AbortController,AbortSignal,fetch,setTimeout,clearTimeout,Date,Intl,console,...extra});
     return target.exports;
   }
   return load;

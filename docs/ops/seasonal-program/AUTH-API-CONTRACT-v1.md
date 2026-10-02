@@ -52,12 +52,19 @@ GET پروفایل خالی:profile=null و version ممکن است نباشد؛
 
 ```ts
 type EmailRequest =
- | {action:'recover';email:string}
+ | {action:'signup';fullName:string;email:string;password:string;next?:string}
+ | {action:'recover';email:string;next?:string}
  | {action:'verify';type:'signup'|'recovery';tokenHash:string;next?:string}
  | {action:'set-password';password:string};
 ```
 
-recover:200پیام یکسان درخواست برای ایمیل موجود/ناموجود وSMTPموقتاًقطع؛ هیچ وعدهٔ ارسال قطعی. verifyجدید با AUTH_EMAIL_ENABLED،TokenHash استاندارد یاpkce_، یک‌بارمصرفGoTrue؛ پاسخ `{ok:true,next:string}`، نه session. recovery همیشه/reset-password؛ confirmation فقط ریشه‌های مجاز موجود یا/dashboard. لینکfragment در/auth/email-link فوراً ازaddress حذف می‌شود وTokenHashدرbodyPOSTمصرف می‌شود. رمزجدید باconfirmedemail وAMR معتبرOTP/recovery در5دقیقه اخیر؛ password-only اثبات بازیابی نیست. PKCEcallback قدیمی حفظ شده، queryآن درAPM/ingress باید حذف شود. loginemail/password بهSMS یا readinessflag وابسته نیست.
+افزودنی P01: signup فقط با `AUTH_EMAIL_ALLOW_SIGNUP=true` و `AUTH_EMAIL_ENABLED=true`، سپس settings واقعیِ GoTrue شامل external.email=true، disable_signup=false و mailer_autoconfirm=false انجام می‌شود. فقط full_name وارد metadata می‌شود؛ phone/national_id/role/data اضافه400 هستند. پاسخ200 `{ok:true,status:'confirmation_requested',message:string}` رسید شرطی است؛ نه عضویت، ارسال قطعی، session یا UUID. کدِ duplicate شناخته‌شده همان رسید را می‌دهد و credential/grant قبلی تغییر نمی‌کند. سایر ورودی نامعتبر400، محدودیت429 و اختلال503 هستند. سقف واقعی stream4096byte پیش از Auth اعمال می‌شود؛ Origin همان قرارداد قبلی است. این BFF جای محدودیت/disable_signupِ endpoint بومی GoTrue نیست.
+
+recover:200پیام یکسان درخواست برای ایمیل موجود/ناموجود وSMTPموقتاًقطع؛ هیچ وعدهٔ ارسال قطعی. verifyجدید با AUTH_EMAIL_ENABLED،TokenHash استاندارد یاpkce_، یک‌بارمصرفGoTrue؛ پاسخ `{ok:true,next:string}`، نه session. recovery همیشه به/reset-password یا/reset-password?next=مقصدِمحلیِمجاز می‌رود؛ confirmation فقط ریشه‌های مجاز موجود یا/dashboard. لینکfragment در/auth/email-link فوراً ازaddress حذف می‌شود وTokenHashدرbodyPOSTمصرف می‌شود. رمزجدید باconfirmedemail وAMR معتبرOTP/recovery در5دقیقه اخیر و غیرآینده؛ password-only اثبات بازیابی نیست. PKCEcallback قدیمی حفظ شده، queryآن درAPM/ingress باید حذف شود. loginemail/password بهSMS یا readinessflag وابسته نیست.
+
+`GET /api/auth/status?scope=email-recovery`: پس از getUser معتبر و getClaims، `{authenticated:true,recovery:'ready'|'proof_required'}` بدون role/UUID/AMR خام؛ خطای claims/session ردشده401 و اختلال503. حالت ناشناسِ status همچنان200 authenticated=false است. UI checking/ready/proof_required/unavailable را جدا نشان می‌دهد؛ retry سرویس ورودی رمز را پاک نمی‌کند. GET بدون scope همان قرارداد قبلی role/profileRead را دارد.
+
+`NEXT_PUBLIC_SUPABASE_COOKIE_NAME` اختیاری باید در build browser، server، middleware و callback یکی باشد؛ unset default قبلی. دو محیط روی یکIP با port جدا به نام مستقل نیاز دارند. هر چهار factory در ادامه P01 هماهنگ شده‌اند؛ تغییر این تنظیم با پذیرش همان build در sandbox، نه Production انجام شود.
 
 ## fixture و مصرف
 

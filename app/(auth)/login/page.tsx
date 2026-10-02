@@ -150,7 +150,7 @@ function LoginPageContent() {
             </div>
 
             <div className="text-start -mt-2">
-              <Link href="/forgot-password" className="text-sm font-bold" style={{ color: "var(--navy)" }}>
+              <Link href={'/forgot-password?next='+encodeURIComponent(returnTo)} className="text-sm font-bold" style={{ color: "var(--navy)" }}>
                 رمز عبور را فراموش کرده‌اید؟
               </Link>
             </div>
