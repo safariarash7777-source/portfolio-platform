@@ -3,6 +3,7 @@ import {createClient} from '@/lib/supabase/server';
 import {sameOrigin} from '@/lib/auth/mobile-server';
 import {emailReturnPath} from '@/lib/auth/email';
 import {recordEmailFailure} from '@/lib/auth/email-health';
+import {authSessionFailure,authActionFailure} from '@/lib/auth/session-error';
 export const runtime='nodejs';
 const reply=(status:number,body:object)=>NextResponse.json(body,{status,headers:{'cache-control':'no-store'}});
 export async function POST(request:Request){
@@ -12,12 +13,18 @@ export async function POST(request:Request){
     const body=await request.json();const client=await createClient();
     if(body.action==='set-password'){
       const {data:{user},error}=await client.auth.getUser();
-      const {data:claims}=await client.auth.getClaims();
+      const failure=authSessionFailure(error);
+      if(failure)return reply(failure,{error:failure===401?'نشست معتبر نیست. دوباره وارد شوید.':'بررسی نشست اکنون انجام نشد. دوباره تلاش کنید.'});
+      if(!user)return reply(401,{error:'ابتدا وارد شوید.'});
+      const {data:claims,error:claimsError}=await client.auth.getClaims();
+      const claimsFailure=authSessionFailure(claimsError);
+      if(claimsFailure)return reply(claimsFailure,{error:claimsFailure===401?'نشست معتبر نیست. دوباره وارد شوید.':'بررسی نشست اکنون انجام نشد. دوباره تلاش کنید.'});
       const amr=claims?.claims?.amr as {method:string;timestamp:number}[]|undefined;
-      if(error || !user?.email_confirmed_at || !amr?.some(value=>['otp','recovery'].includes(value.method) && value.timestamp>Date.now()/1000-300))return reply(403,{error:'برای انتخاب رمز، ابتدا لینک بازیابی تازه را مصرف کنید.'});
+      if(!user.email_confirmed_at || !amr?.some(value=>['otp','recovery'].includes(value.method) && value.timestamp>Date.now()/1000-300))return reply(403,{error:'برای انتخاب رمز، ابتدا لینک بازیابی تازه را مصرف کنید.'});
       if(typeof body.password!=='string' || body.password.length<12 || body.password.length>128)return reply(400,{error:'رمز باید بین ۱۲ تا ۱۲۸ نویسه باشد.'});
       const {error:saveError}=await client.auth.updateUser({password:body.password});
-      return saveError?reply(400,{error:'رمز ذخیره نشد. ورودی‌ها حفظ شده‌اند.'}):reply(200,{ok:true});
+      const saveFailure=authActionFailure(saveError);
+      return saveFailure?reply(saveFailure,{error:saveFailure===503?'سرویس ورود اکنون پاسخ نمی‌دهد. ورودی‌ها حفظ شده‌اند.':saveFailure===429?'تعداد تلاش‌ها زیاد است. کمی صبر کنید.':'رمز ذخیره نشد. ورودی‌ها حفظ شده‌اند.'}):reply(200,{ok:true});
     }
     if(body.action==='recover'){
       if(typeof body.email!=='string' || body.email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email))return reply(400,{error:'ایمیل معتبر وارد کنید.'});
@@ -30,7 +37,8 @@ export async function POST(request:Request){
     if(process.env.AUTH_EMAIL_ENABLED!=='true')return reply(503,{error:'مسیر تازهٔ لینک ایمیل هنوز آماده نشده است. ورود با رمز فعلی برقرار است.'});
     if(body.action!=='verify' || !['signup','recovery'].includes(body.type) || typeof body.tokenHash!=='string' || !/^(?:pkce_)?[a-f0-9]{40,128}$/.test(body.tokenHash))return reply(400,{error:'لینک معتبر نیست.'});
     const {error}=await client.auth.verifyOtp({token_hash:body.tokenHash,type:body.type});
-    if(error)return reply(error.status===429?429:400,{error:'لینک نامعتبر، منقضی یا قبلاً استفاده شده است.'});
+    const failure=authActionFailure(error);
+    if(failure)return reply(failure,{error:failure===503?'سرویس ورود اکنون پاسخ نمی‌دهد. دوباره لینک اصلی را باز کنید.':failure===429?'تعداد تلاش‌ها زیاد است. کمی صبر کنید.':'لینک نامعتبر، منقضی یا قبلاً استفاده شده است.'});
     return reply(200,{ok:true,next:body.type==='recovery'?'/reset-password':emailReturnPath(body.next)});
   }catch{return reply(503,{error:'سرویس ورود اکنون پاسخ نمی‌دهد.'});}
 }

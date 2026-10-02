@@ -3,6 +3,7 @@ import {createClient} from '@/lib/supabase/server';
 import {toLatinDigits} from '@/lib/format';
 import {normalizeMobile,authMessage} from '@/lib/auth/mobile';
 import {mobileEnabled,sameOrigin,admitMobile} from '@/lib/auth/mobile-server';
+import {authSessionFailure,authActionFailure} from '@/lib/auth/session-error';
 export const runtime='nodejs';
 export async function POST(request:Request) {
   const reply=(status:number,body:object)=>NextResponse.json(body,{status,headers:{'cache-control':'no-store'}});
@@ -18,11 +19,15 @@ export async function POST(request:Request) {
     const supabase=await createClient();
     if(action==='link' || action==='verify-link' || action==='set-password') {
       const {data:{user},error}=await supabase.auth.getUser();
-      if(error || !user)return reply(401,{error:'برای این کار ابتدا وارد حساب فعلی شوید.'});
+      const failure=authSessionFailure(error);
+      if(failure===503)return reply(503,{error:'بررسی نشست اکنون انجام نشد. اطلاعات فرم حفظ شده است.'});
+      if(failure===401 || !user)return reply(401,{error:'برای این کار ابتدا وارد حساب فعلی شوید.'});
       if(action==='link' && user.phone && normalizeMobile(user.phone)!==phone)return reply(409,{error:'تغییر شمارهٔ تأییدشده به بررسی و بازیابی جدا نیاز دارد.'});
       if(action==='verify-link' && normalizeMobile(user.phone??'')!==phone && normalizeMobile(user.new_phone??'')!==phone)return reply(403,{error:'درخواست اتصال شماره برای این حساب نیست.'});
       if(action==='set-password') {
-        const {data:claims}=await supabase.auth.getClaims();
+        const {data:claims,error:claimsError}=await supabase.auth.getClaims();
+        const claimsFailure=authSessionFailure(claimsError);
+        if(claimsFailure)return reply(claimsFailure,{error:claimsFailure===503?'بررسی نشست اکنون انجام نشد. اطلاعات فرم حفظ شده است.':'نشست معتبر نیست. دوباره وارد شوید.'});
         const amr=claims?.claims?.amr as {method:string;timestamp:number}[]|undefined;
         if(normalizeMobile(user.phone??'')!==phone || !user.phone_confirmed_at || !amr?.some(x=>x.method==='otp' && x.timestamp>Date.now()/1000-300))return reply(403,{error:'برای تعیین رمز، ابتدا با کد پیامکی تازه وارد شوید.'});
       }
@@ -38,7 +43,8 @@ export async function POST(request:Request) {
       if(typeof body.password!=='string' || body.password.length<12 || body.password.length>128)return reply(400,{error:'رمز باید بین ۱۲ تا ۱۲۸ نویسه باشد.'});
       result=action==='password'?await supabase.auth.signInWithPassword({phone,password:body.password}):await supabase.auth.updateUser({password:body.password});
     }
-    if(result.error)return reply(result.error.status===429?429:400,{error:authMessage(result.error)});
+    const failure=authActionFailure(result.error);
+    if(failure)return reply(failure,{error:failure===503?'سرویس ورود اکنون پاسخ نمی‌دهد. اطلاعات فرم حفظ شده است.':authMessage(result.error)});
     // Never return session, token, contact details or provider receipt.
     return reply(200,{ok:true,status:action==='send'||action==='link'?'code_requested':'completed',identity:'pending'});
   } catch(error) {
