@@ -94,6 +94,7 @@ export default function HoldingsWorkbench({
   notes,
   totalValue,
   showComparison = true,
+  showImport = true,
 }: {
   ready: boolean;
   targetFailed: boolean;
@@ -108,6 +109,7 @@ export default function HoldingsWorkbench({
   notes: readonly string[];
   totalValue: number | null;
   showComparison?: boolean;
+  showImport?: boolean;
 }) {
   const router = useRouter();
 
@@ -242,10 +244,10 @@ export default function HoldingsWorkbench({
 
   return (
     <div className="space-y-6">
-      <HoldingsImportPreview current={importCurrent ?? []} disabled={saving || importCurrent === null || (activeVersion !== null && activeVersion !== latestVersion)} onApply={positions => {
+      {showImport && <HoldingsImportPreview current={importCurrent ?? []} disabled={saving || importCurrent === null || (activeVersion !== null && activeVersion !== latestVersion)} onApply={positions => {
         setRows(fromPositions(positions.map(positionFromStored))); setSaved(null); setError("");
-      }} />
-      {importCurrent === null && <p role="status">برای ورود فایل، ابتدا ردیف‌های نیمه‌کارهٔ فرم را تکمیل کنید؛ ورودی فعلی شما حفظ شده است.</p>}
+      }} />}
+      {showImport && importCurrent === null && <p role="status">برای ورود فایل، ابتدا ردیف‌های نیمه‌کارهٔ فرم را تکمیل کنید؛ ورودی فعلی شما حفظ شده است.</p>}
       {/* ثبت */}
       <div className="card-elevated p-6 space-y-4">
         <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>

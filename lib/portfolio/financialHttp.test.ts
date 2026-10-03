@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { postFinancialSnapshot, financialAuthentication, type FinancialDb } from "./financialHttp";
+import { postInvestmentScope } from "./scopeHttp";
+import { scopeReviewFromStored } from "./scopeContract";
+import { selectInvestmentScope } from "./investmentScope";
 import { AuthSessionMissingError } from "@supabase/supabase-js";
 import { parseHoldingsCsv, previewHoldingsImport, IMPORT_FIELDS, canonicalPayload, positionWriteInput } from "./importPreview";
 import { positionFromStored } from "./balanceSheet";
@@ -108,3 +111,35 @@ test("receipt validates original normalized holdings and note without conflating
   assert.equal((await lookupFinancialReceipt(req([{ ...importRow, ownership_pct: "100" }]), async () => source)).status, 409);
   assert.equal((await lookupFinancialReceipt(req([importRow], "changed"), async () => source)).status, 409);
 });
+
+// RECOVERY-01: durable scope HTTP and version binding.
+{
+const id="00000000-0000-4000-8000-000000000001", reviewId="00000000-0000-4000-8000-000000000002";
+const assignments=[{positionKey:"gold",use:"allocatable"}];
+const body={holding_version_id:id,rules_version:"member-selected.v0.1",base_scope_version:0,client_token:"scope-request",assignments};
+const request=(value:unknown)=>new Request("http://localhost/api/portfolio/holdings/scope",{method:"POST",body:JSON.stringify(value)});
+const result={id:reviewId,scopeVersion:1,holdingVersionId:id,holdingVersion:2,rulesVersion:"member-selected.v0.1",memberConfirmedAt:"2026-10-03T09:00:00Z",assignments,reused:false};
+function db(code?:string):FinancialDb {return {async authenticate(){return {user:{id:"native-owner"},error:false};},async rpc(name,args){assert.equal(name,"record_member_investment_scope");assert.equal(args.p_holding_version_id,id);assert.equal(Object.hasOwn(args,"p_member_confirmed_at"),false);assert.equal(Object.hasOwn(args,"p_user_id"),false);return {data:result,error:code?{code}:null};}};}
+test("scope save derives native owner and server timestamp, private response, exact replay200",async()=>{
+ const first=await postInvestmentScope(request(body),async()=>db());assert.equal(first.status,201);assert.equal(first.headers.get("cache-control"),"private, no-store");assert.equal((await first.json()).memberConfirmedAt,result.memberConfirmedAt);
+ const reused=db();reused.rpc=async()=>({data:{...result,reused:true},error:null});assert.equal((await postInvestmentScope(request(body),async()=>reused)).status,200);
+});
+test("client timestamp/owner, unknown rules, malformed/duplicate/unknown choices and base cannot become confirmation",async()=>{
+ for(const value of [null,[],{...body,memberConfirmedAt:"2020-01-01T00:00:00Z"},{...body,user_id:"foreign"},{...body,rules_version:"guessed"},{...body,base_scope_version:null},{...body,assignments:[]},{...body,assignments:[...assignments,...assignments]},{...body,assignments:[{positionKey:"gold",use:"unknown"}]}]){
+  assert.equal((await postInvestmentScope(request(value),async()=>db())).status,400);
+ }
+});
+test("scope session, read outage, stale financial/scope and foreign owner fail closed",async()=>{
+ for(const [error,status] of [[false,401],[true,503]] as const){const source=db();source.authenticate=async()=>({user:null,error});source.rpc=async()=>{throw new Error("must not write");};assert.equal((await postInvestmentScope(request(body),async()=>source)).status,status);}
+ for(const [code,status] of [["42501",403],["PT409",409],["40001",409],["22023",400],["PGRST202",503]])assert.equal((await postInvestmentScope(request(body),async()=>db(String(code)))).status,status);
+ const malformed=db();malformed.rpc=async()=>({data:{...result,assignments:[{positionKey:"foreign",use:"allocatable"}]},error:null});assert.equal((await postInvestmentScope(request(body),async()=>malformed)).status,503);
+});
+test("durable review is tied to exact financial UUID/version; next snapshot requires new confirmation",()=>{
+ const stored=scopeReviewFromStored({id:reviewId,holding_version_id:id,scope_version:1,rules_version:body.rules_version,member_confirmed_at:result.memberConfirmedAt,assignments},{id,version:2});
+ const holdings={id,version:2,positions:[{positionKey:"gold",symbol:null,manualLabel:"طلا",assetClass:"gold",qty:1,unit:"گرم",costBasis:null,asOf:"2026-10-03"}]};
+ assert.equal(selectInvestmentScope(holdings,stored,new Date("2026-10-03T10:00:00Z")).status,"ready");
+ assert.equal(selectInvestmentScope({...holdings,id:reviewId,version:3},stored,new Date("2026-10-03T10:00:00Z")).status,"blocked");
+ assert.throws(()=>scopeReviewFromStored({id:reviewId,holding_version_id:id,scope_version:1,rules_version:body.rules_version,member_confirmed_at:"2026-10-03T09:00:00",assignments},{id,version:2}));
+});
+
+}
