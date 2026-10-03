@@ -8,6 +8,11 @@ function material(){
   if(!version || !/^[a-zA-Z0-9-]{1,40}$/.test(version) || encryption.length!==32 || hmac.length<32)throw new Error('identity_keys_unavailable');
   return {version,encryption,hmac};
 }
+// Check configuration before reporting an empty profile as incomplete. Never
+// return key material or treat missing/invalid keys as an empty identity record.
+export function identityKeysReady(){
+  try {material();return true;}catch{return false;}
+}
 export function encryptIdentity(userId:string,value:PrivateIdentity){
   const keys=material();const nonce=randomBytes(12);
   const cipher=createCipheriv('aes-256-gcm',keys.encryption,nonce);

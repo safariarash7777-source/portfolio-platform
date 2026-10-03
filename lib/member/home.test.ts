@@ -16,10 +16,17 @@ test("shared Auth missing installation, session and service failures remain dist
 });
 test("shared profile projection discards identity fields and never claims official verification", async () => {
   const common = { phoneVerified: false, identityMatch: "pending", phoneNationalIdMatch: "pending" };
-  assert.deepEqual(await readMemberProfile(async () => Response.json({ ...common, profile: null })), { state: "incomplete", phoneVerified: false, version: null });
+  assert.deepEqual(await readMemberProfile(async () => Response.json({ ...common, profile: null })), { state: "incomplete", phoneVerified: false, version: null, writeEnabled: false });
   const projected = await readMemberProfile(async () => Response.json({ ...common, version: 2, profile: { firstName: "SYNTHETIC", lastName: "TEST", nationalId: "SYNTHETIC_TEST_ONLY" } }));
-  assert.deepEqual(projected, { state: "recorded", phoneVerified: false, version: 2 });
+  assert.deepEqual(projected, { state: "recorded", phoneVerified: false, version: 2, writeEnabled: false });
   assert.equal(JSON.stringify(projected).includes("nationalId"), false);
+});
+test("disabled profile capability is distinct from an outage and write capability is explicit", async () => {
+  assert.deepEqual(await readMemberProfile(async () => Response.json({ code: "profile_disabled" }, { status: 503 })), { state: "disabled" });
+  assert.deepEqual(await readMemberProfile(async () => Response.json({ code: "profile_disabled" }, { status: 500 })), { state: "unavailable" });
+  assert.deepEqual(await readMemberProfile(async () => Response.json({ error: "service error" }, { status: 503 })), { state: "unavailable" });
+  const result = await readMemberProfile(async () => Response.json({ profile: null, phoneVerified: false, identityMatch: "pending", phoneNationalIdMatch: "pending", profileWriteEnabled: true }));
+  assert.deepEqual(result, { state: "incomplete", phoneVerified: false, version: null, writeEnabled: true });
 });
 test("unknown shared identity shape is unavailable and read uses private no-store credentials", async () => {
   let init: RequestInit | undefined;
