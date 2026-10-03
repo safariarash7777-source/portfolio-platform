@@ -1,0 +1,43 @@
+{
+  "authority": "P00 read-only P2 review checkpoint fb73; bounded form followup",
+  "sourceSelectedBy": "Git blobs below plus resulting pushed commit",
+  "files": [
+    {
+      "path": "components/portfolio/DebtsWorkbench.tsx",
+      "gitBlob": "bd0b4d2c46dd50a3e7b60a1968d915f606b5e73f"
+    },
+    {
+      "path": "components/portfolio/HoldingsWorkbench.tsx",
+      "gitBlob": "5d6be30e3dc5a00e10359f90ff20b20e8801a35c"
+    },
+    {
+      "path": "lib/portfolio/saveAttempt.ts",
+      "gitBlob": "32eca25e26e8efbcbb06a18b34a71561f1518981"
+    },
+    {
+      "path": "components/portfolio/financial-form-test-host.ts",
+      "gitBlob": "3872ae832707247458273d94531bbe3079cc3506"
+    },
+    {
+      "path": "components/portfolio/financial-forms.test.ts",
+      "gitBlob": "dab1935f07e51a7748ad5a38454e8a2580165ce2"
+    }
+  ],
+  "behavior": [
+    "Unknown outcome locks row editing/add/delete/import and retains exact URL/serialized request/token/base.",
+    "Retry uses the same original bytes; confirmed receipt validates UUID, base+1 version and submitted side count.",
+    "Definitive 4xx preserves draft, clears pending request and refreshes token; 409 blocks blind retry/rebase and offers latest version in separate tab.",
+    "No root service/Auth/global UI changes; no new schema, ledger, receipt route or real DB writes."
+  ],
+  "local": {
+    "nativeOrProductionReproduction": false,
+    "changedFileLint": "PASS",
+    "targetedTotal": 35,
+    "typecheck": "PASS",
+    "actualComponentHandlerCases": 12
+  },
+  "mainPackageRule": "Register financial-forms.test.ts in main core/targeted invocation; do not copy branch package.json.",
+  "receiptRouteRequired": false,
+  "schemaChanged": false,
+  "mainDomainAcceptance": "PENDING"
+}

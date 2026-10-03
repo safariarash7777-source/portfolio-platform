@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { formatJalali, formatToman, toPersianDigits } from "@/lib/format";
 import { DEBT_LABELS, normaliseDebt, type Currency, type DebtKind } from "@/lib/portfolio/financialInput";
 import type { DebtPosition } from "@/lib/portfolio/balanceSheet";
+import { financialSaveAttempt, sendFinancialAttempt, type FinancialSaveAttempt } from "@/lib/portfolio/saveAttempt";
 interface Row { debt_key: string; title: string; kind: DebtKind; balance: string; currency: Currency; balance_as_of: string; next_installment: string; next_due_on: string; note: string }
 const blank = (): Row => ({ debt_key: crypto.randomUUID(), title: "", kind: "loan", balance: "", currency: "IRT", balance_as_of: new Date().toISOString().slice(0, 10), next_installment: "", next_due_on: "", note: "" });
 export function DebtList({ debts }: { debts: readonly DebtPosition[] }) {
@@ -14,37 +15,43 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
   const [rows, setRows] = useState<Row[]>(() => debts.map(d => ({ ...d, balance: String(d.balance_toman), currency: "IRT", next_installment: d.next_installment_toman === null ? "" : String(d.next_installment_toman), next_due_on: d.next_due_on ?? "", note: d.note ?? "" })));
   const [token, setToken] = useState(() => crypto.randomUUID());
   const [busy, setBusy] = useState(false), [message, setMessage] = useState("");
+  const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
+  const pending = useRef<FinancialSaveAttempt | null>(null);
+  const editingLocked = busy || uncertain;
   const historical = activeVersion !== null && activeVersion !== latestVersion;
   const patch = (index: number, values: Partial<Row>) => setRows(old => old.map((r, i) => i === index ? { ...r, ...values } : r));
   async function save(event: React.FormEvent) {
-    event.preventDefault(); if (lock.current || historical || !ready) return;
+    event.preventDefault(); if (lock.current || historical || !ready || conflict) return;
     try { rows.forEach(normaliseDebt); } catch (error) { setMessage(error instanceof Error ? error.message : "اطلاعات معتبر نیست."); return; }
     lock.current = true; setBusy(true); setMessage("");
     try {
-      const response = await fetch("/api/portfolio/debts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ debts: rows, base_version: activeVersion ?? 0, client_token: token }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? "ذخیره انجام نشد.");
+      pending.current ??= financialSaveAttempt("/api/portfolio/debts", { debts: rows, base_version: activeVersion ?? 0, client_token: token });
+      const outcome = await sendFinancialAttempt(pending.current);
+      if (outcome.status === "unknown") { setUncertain(true); setMessage("نتیجهٔ ثبت دریافت نشد. متن فرم حفظ و ویرایش موقتاً متوقف شد؛ همین ثبت را دوباره بررسی کنید."); return; }
+      pending.current = null; setUncertain(false);
+      if (outcome.status === "rejected") { setToken(crypto.randomUUID()); setConflict(outcome.httpStatus === 409); setMessage(outcome.message); return; }
+      const result = outcome.receipt;
       setMessage(`تصویر مالی نسخهٔ ${toPersianDigits(result.version)} ذخیره شد؛ دارایی‌ها و سابقه حفظ شدند.`);
       setToken(crypto.randomUUID()); router.push(`/dashboard/holdings?v=${result.version_id}`); router.refresh();
-    } catch (error) { setMessage(error instanceof Error ? error.message : "ارتباط برقرار نشد؛ متن فرم حفظ شده است."); }
-    finally { lock.current = false; setBusy(false); }
+    } finally { lock.current = false; setBusy(false); }
   }
   if (!ready) return <p className="card p-5" role="alert">دریافت بدهی‌ها انجام نشد؛ وضعیت آن‌ها صفر فرض نمی‌شود. صفحه را تازه کنید.</p>;
-  const field = (i: number, key: keyof Row, label: string, type = "text") => <label className="space-y-1"><span className="text-xs">{label}</span><input className="input w-full" type={type} value={rows[i][key]} disabled={busy} onChange={e => patch(i, { [key]: e.target.value })} /></label>;
+  const field = (i: number, key: keyof Row, label: string, type = "text") => <label className="space-y-1"><span className="text-xs">{label}</span><input className="input w-full" type={type} value={rows[i][key]} disabled={editingLocked} onChange={e => patch(i, { [key]: e.target.value })} /></label>;
   return <div className="space-y-5"><DebtList debts={debts} /><form className="card p-5 space-y-4" onSubmit={save}>
     <h2 className="font-bold text-lg">ثبت و اصلاح بدهی</h2><p className="text-sm leading-7">ماندهٔ بدهی، مبلغ باقی‌مانده برای پرداخت است؛ مبلغ اولیهٔ وام را وارد نکنید. وام، قرض شخصی و بدهی اقساطی قابل ثبت‌اند. ضمانت و تعهد احتمالی به بدهی قطعی اضافه نمی‌شوند. مبالغ فرم هنگام بازکردن نسخه به تومان‌اند.</p>
     {historical && <p role="alert">این نسخه سابقه است؛ برای اصلاح <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
     {rows.map((r, i) => <fieldset key={r.debt_key} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}><legend>بدهی {toPersianDigits(i + 1)}</legend><div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {field(i, "title", "عنوان بدهی")}
-      <label className="space-y-1"><span className="text-xs">نوع بدهی</span><select className="input w-full" value={r.kind} disabled={busy} onChange={e => patch(i, { kind: e.target.value as DebtKind })}>{Object.entries(DEBT_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+      <label className="space-y-1"><span className="text-xs">نوع بدهی</span><select className="input w-full" value={r.kind} disabled={editingLocked} onChange={e => patch(i, { kind: e.target.value as DebtKind })}>{Object.entries(DEBT_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
       {field(i, "balance", "ماندهٔ بدهی")}
-      <label className="space-y-1"><span className="text-xs">واحد پول مانده و قسط</span><select className="input w-full" value={r.currency} disabled={busy} onChange={e => patch(i, { currency: e.target.value as Currency })}><option value="IRT">تومان</option><option value="IRR">ریال (۱۰ ریال = ۱ تومان)</option></select></label>
+      <label className="space-y-1"><span className="text-xs">واحد پول مانده و قسط</span><select className="input w-full" value={r.currency} disabled={editingLocked} onChange={e => patch(i, { currency: e.target.value as Currency })}><option value="IRT">تومان</option><option value="IRR">ریال (۱۰ ریال = ۱ تومان)</option></select></label>
       {field(i, "balance_as_of", "تاریخ اعتبار مانده (میلادی)", "date")}{field(i, "next_installment", "مبلغ قسط بعدی (اختیاری)")}{field(i, "next_due_on", "موعد قسط بعدی (میلادی، اختیاری)", "date")}
-      <label className="space-y-1 md:col-span-2"><span className="text-xs">توضیح اختیاری</span><textarea className="input w-full" value={r.note} maxLength={2000} disabled={busy} onChange={e => patch(i, { note: e.target.value })} /></label>
-    </div><button className="btn btn-outline" type="button" disabled={busy} onClick={() => setRows(old => old.filter((_, n) => n !== i))}>حذف از نسخهٔ تازه؛ سابقه حفظ می‌شود</button></fieldset>)}
-    <button className="btn btn-outline" type="button" disabled={busy} onClick={() => setRows(old => [...old, blank()])}>افزودن بدهی</button>
+      <label className="space-y-1 md:col-span-2"><span className="text-xs">توضیح اختیاری</span><textarea className="input w-full" value={r.note} maxLength={2000} disabled={editingLocked} onChange={e => patch(i, { note: e.target.value })} /></label>
+    </div><button className="btn btn-outline" type="button" disabled={editingLocked} onClick={() => setRows(old => old.filter((_, n) => n !== i))}>حذف از نسخهٔ تازه؛ سابقه حفظ می‌شود</button></fieldset>)}
+    <button className="btn btn-outline" type="button" disabled={editingLocked} onClick={() => setRows(old => [...old, blank()])}>افزودن بدهی</button>
     {message && <p role="status" className="text-sm leading-7">{message}</p>}
-    <button className="btn btn-gold" type="submit" disabled={busy || historical}>{busy ? "در حال ذخیره…" : "ذخیرهٔ بدهی‌ها در نسخهٔ تازه"}</button>
+    {conflict && <p role="alert">متن فرم شما حفظ شده است. پیش از ثبت دوباره، <a className="underline" href="/dashboard/holdings" target="_blank" rel="noopener noreferrer">نسخهٔ تازه را در صفحهٔ جدا بررسی کنید</a>؛ این فرم خودکار روی اطلاعات تازه نوشته نمی‌شود.</p>}
+    <button className="btn btn-gold" type="submit" disabled={busy || historical || conflict}>{busy ? "در حال ذخیره…" : uncertain ? "بررسی دوبارهٔ همین ثبت" : "ذخیرهٔ بدهی‌ها در نسخهٔ تازه"}</button>
     <p className="text-xs leading-7">اصلاح این فهرست، دارایی‌های همان نسخه را حفظ می‌کند. پس از اصلاح دارایی‌ها نیز ماندهٔ بدهی‌ها حفظ می‌شود.</p>
   </form></div>;
 }
