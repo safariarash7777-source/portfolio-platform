@@ -1,0 +1,1 @@
+{"observedAt": "2026-10-03T08:53:12.045054+00:00", "mutation": false, "container": "portfolio-demo844-app", "workingDir": "/app", "configuredPort": "UNSET", "exposedPorts": [], "runtimeAndInternalAnonymousRouteProbe": [{"runtimeMobileEnabled": false, "port": "3000", "routeBundlePresent": true}, {"status": "UNKNOWN", "networkError": true}]}

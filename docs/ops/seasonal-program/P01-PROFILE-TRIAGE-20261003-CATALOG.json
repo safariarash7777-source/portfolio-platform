@@ -1,0 +1,1 @@
+{"observedAt": "2026-10-03T08:57:11.838713+00:00", "mutation": false, "catalogOnly": true, "dbContainerExists": true, "readStatus": "ok", "catalog": [{"privateProfileTablePresent": true, "nationalIdRegistryPresent": true, "readRPCPresent": true, "writeRPCPresent": true}]}
