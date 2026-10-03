@@ -17,6 +17,7 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
   const [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
   const pending = useRef<FinancialSaveAttempt | null>(null);
+  const unresolved = useRef(false);
   const editingLocked = busy || uncertain;
   const historical = activeVersion !== null && activeVersion !== latestVersion;
   const patch = (index: number, values: Partial<Row>) => setRows(old => old.map((r, i) => i === index ? { ...r, ...values } : r));
@@ -26,9 +27,9 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
     lock.current = true; setBusy(true); setMessage("");
     try {
       pending.current ??= financialSaveAttempt("/api/portfolio/debts", { debts: rows, base_version: activeVersion ?? 0, client_token: token });
-      const outcome = await sendFinancialAttempt(pending.current);
-      if (outcome.status === "unknown") { setUncertain(true); setMessage("نتیجهٔ ثبت دریافت نشد. متن فرم حفظ و ویرایش موقتاً متوقف شد؛ همین ثبت را دوباره بررسی کنید."); return; }
-      pending.current = null; setUncertain(false);
+      const outcome = await sendFinancialAttempt(pending.current, unresolved.current);
+      if (outcome.status === "unknown") { unresolved.current = true; setUncertain(true); setMessage(outcome.message ?? "نتیجهٔ ثبت دریافت نشد. متن فرم حفظ و ویرایش موقتاً متوقف شد؛ همین ثبت را دوباره بررسی کنید."); return; }
+      pending.current = null; unresolved.current = false; setUncertain(false);
       if (outcome.status === "rejected") { setToken(crypto.randomUUID()); setConflict(outcome.httpStatus === 409); setMessage(outcome.message); return; }
       const result = outcome.receipt;
       setMessage(`تصویر مالی نسخهٔ ${toPersianDigits(result.version)} ذخیره شد؛ دارایی‌ها و سابقه حفظ شدند.`);

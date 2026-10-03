@@ -146,6 +146,7 @@ export default function HoldingsWorkbench({
   const [saving, setSaving] = useState(false);
   const saveLock = useRef(false);
   const pending = useRef<FinancialSaveAttempt | null>(null);
+  const unresolved = useRef(false);
   const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
   const editingLocked = saving || uncertain;
   const [error, setError] = useState("");
@@ -207,9 +208,9 @@ export default function HoldingsWorkbench({
     setSaving(true);
     try {
       pending.current ??= financialSaveAttempt("/api/portfolio/holdings", { positions, client_token: token, base_version: activeVersion ?? 0 });
-      const outcome = await sendFinancialAttempt(pending.current);
-      if (outcome.status === "unknown") { setUncertain(true); setError("نتیجهٔ ثبت دریافت نشد. متن فرم حفظ و ویرایش موقتاً متوقف شد؛ همین ثبت را دوباره بررسی کنید."); return; }
-      pending.current = null; setUncertain(false);
+      const outcome = await sendFinancialAttempt(pending.current, unresolved.current);
+      if (outcome.status === "unknown") { unresolved.current = true; setUncertain(true); setError(outcome.message ?? "نتیجهٔ ثبت دریافت نشد. متن فرم حفظ و ویرایش موقتاً متوقف شد؛ همین ثبت را دوباره بررسی کنید."); return; }
+      pending.current = null; unresolved.current = false; setUncertain(false);
       if (outcome.status === "rejected") { setToken(crypto.randomUUID()); setConflict(outcome.httpStatus === 409); setError(outcome.message); return; }
       const json = outcome.receipt;
       setSaved(

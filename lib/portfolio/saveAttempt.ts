@@ -4,12 +4,16 @@ export interface FinancialSaveReceipt { version_id: string; version: number; pos
 export type FinancialSaveOutcome =
  | { status: "confirmed"; receipt: FinancialSaveReceipt }
  | { status: "rejected"; httpStatus: number; message: string }
- | { status: "unknown" };
+ | { status: "unknown"; message?: string };
 export const financialSaveAttempt = (url: string, payload: unknown): FinancialSaveAttempt => Object.freeze({ url, body: JSON.stringify(payload) });
-export async function sendFinancialAttempt(attempt: FinancialSaveAttempt, transport: typeof fetch = fetch): Promise<FinancialSaveOutcome> {
+export async function sendFinancialAttempt(attempt: FinancialSaveAttempt, unresolvedPrior = false, transport: typeof fetch = fetch): Promise<FinancialSaveOutcome> {
  try {
   const response = await transport(attempt.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: attempt.body });
   if(response.status >= 400 && response.status < 500) {
+   // A denied retry cannot prove whether the original, unanswered request committed.
+   if(unresolvedPrior && [401,403,429].includes(response.status)) return { status: "unknown", message: response.status === 429
+    ? "این تلاش به محدودیت موقت سرویس رسید؛ نتیجهٔ ثبت اول هنوز مشخص نیست. متن فرم و همان درخواست حفظ شدند؛ پس از رفع محدودیت، همین ثبت را دوباره بررسی کنید."
+    : "این تلاش به مشکل نشست یا دسترسی رسید؛ نتیجهٔ ثبت اول هنوز مشخص نیست. متن فرم و همان درخواست حفظ شدند؛ نشست و دسترسی را در صفحهٔ جدا بررسی و سپس همین ثبت را دوباره بررسی کنید." };
    let message = "ثبت رد شد؛ متن فرم حفظ شده است.";
    try { const error = await response.json(); if(typeof error?.error === "string") message = error.error; } catch { /* The rejection status is definitive even if its body is unreadable. */ }
    return { status: "rejected", httpStatus: response.status, message };

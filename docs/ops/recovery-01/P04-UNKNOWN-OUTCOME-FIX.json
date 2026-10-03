@@ -4,15 +4,15 @@
   "files": [
     {
       "path": "components/portfolio/DebtsWorkbench.tsx",
-      "gitBlob": "bd0b4d2c46dd50a3e7b60a1968d915f606b5e73f"
+      "gitBlob": "9c0cba9273ea6564beac2487fe2c5af919a83e57"
     },
     {
       "path": "components/portfolio/HoldingsWorkbench.tsx",
-      "gitBlob": "5d6be30e3dc5a00e10359f90ff20b20e8801a35c"
+      "gitBlob": "e02697359f7801e39bd6bc5ee0cca823f7965972"
     },
     {
       "path": "lib/portfolio/saveAttempt.ts",
-      "gitBlob": "32eca25e26e8efbcbb06a18b34a71561f1518981"
+      "gitBlob": "0403f1f4f1d278872ebd7409e639e5bf60511ae7"
     },
     {
       "path": "components/portfolio/financial-form-test-host.ts",
@@ -20,24 +20,35 @@
     },
     {
       "path": "components/portfolio/financial-forms.test.ts",
-      "gitBlob": "dab1935f07e51a7748ad5a38454e8a2580165ce2"
+      "gitBlob": "364eff665053533a9fddadd4a281510d06b49316"
     }
   ],
   "behavior": [
     "Unknown outcome locks row editing/add/delete/import and retains exact URL/serialized request/token/base.",
     "Retry uses the same original bytes; confirmed receipt validates UUID, base+1 version and submitted side count.",
-    "Definitive 4xx preserves draft, clears pending request and refreshes token; 409 blocks blind retry/rebase and offers latest version in separate tab.",
+    "Initial definitive 4xx preserves draft and refreshes token; after an unanswered original request, retry401/403/429 retains exact request/token/freeze. 409 CAS remains separate with no blind rebase and latest version in a separate tab.",
     "No root service/Auth/global UI changes; no new schema, ledger, receipt route or real DB writes."
   ],
   "local": {
     "nativeOrProductionReproduction": false,
     "changedFileLint": "PASS",
-    "targetedTotal": 35,
+    "targetedTotal": 41,
     "typecheck": "PASS",
-    "actualComponentHandlerCases": 12
+    "actualComponentHandlerCases": 18
   },
   "mainPackageRule": "Register financial-forms.test.ts in main core/targeted invocation; do not copy branch package.json.",
   "receiptRouteRequired": false,
   "schemaChanged": false,
-  "mainDomainAcceptance": "PENDING"
+  "mainDomainAcceptance": "PENDING",
+  "followup": {
+    "finding": "P00 independent d465 review: denied retry does not determine prior commit",
+    "chains": [
+      "holdings/debts lost-after-commit -> 401 -> successful exact retry",
+      "holdings/debts lost-after-commit -> 403 -> successful exact retry",
+      "holdings/debts lost-after-commit -> 429 -> successful exact retry"
+    ],
+    "sourceCheckpoint": "d465c1252f933adbaed7eb776f1a8c7e27ee0a14 CI PASS predates this followup",
+    "newCi": "PENDING",
+    "unresolvedMarker": "Synchronous ref, not a stale render closure"
+  }
 }

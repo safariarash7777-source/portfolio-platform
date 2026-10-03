@@ -8,6 +8,23 @@ const debt = { debt_key: "d", title: "وام ساختگی", kind: "loan", balanc
 for(const kind of ["holdings", "debts"] as const) {
  const mount = () => kind === "holdings" ? mountFinancialForm("components/portfolio/HoldingsWorkbench.tsx", { ready: true, targetFailed: false, activeVersion: 1, latestVersion: 1, history: [], activePositions: [asset], rows: [], gaps: [], definitive: false, notes: [], totalValue: null, showComparison: false, showImport: false }) : mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 1, latestVersion: 1, debts: [debt] });
  const saveLabel = kind === "holdings" ? "ذخیرهٔ نسخهٔ تازه" : "ذخیرهٔ بدهی‌ها";
+ for(const status of [401,403,429])test(`${kind} actual form: lost commit then retry ${status} retains original attempt until access recovers`,async()=>{
+  const prior=globalThis.fetch,bodies:string[]=[];let stored:string|null=null,writes=0;
+  globalThis.fetch=async(url,options)=>{
+   bodies.push(String(options?.body));
+   if(bodies.length === 2)return Response.json({error:"Synthetic denied retry"},{status});
+   const result=await postFinancialSnapshot(new Request(`http://localhost${url}`,options),kind,async()=>({async authenticate(){return {user:{id:"synthetic-owner"},error:false};},async rpc(_name,args){const value=JSON.stringify(args);if(stored!==null && stored!==value)return {data:null,error:{code:"PT409"}};const reused=stored!==null;if(!reused){stored=value;writes++;}return {data:[{...receipt,reused}],error:null};}}));
+   if(bodies.length === 1)throw new Error("Synthetic response lost after commit");return result;
+  };
+  try {
+   const ui=mount();await ui.submit(saveLabel);await ui.submit("بررسی دوبارهٔ همین ثبت");
+   assert.equal(bodies[1],bodies[0]);assert.equal(writes,1);assert.equal(ui.navigation.length,0);
+   assert.ok(ui.elements().filter(e=>["input","select","textarea"].includes(String(e.type))).every(e=>e.props.disabled === true));
+   assert.equal(ui.button(kind === "holdings"?"افزودن قلم":"افزودن بدهی").props.disabled,true);
+   await ui.submit("بررسی دوبارهٔ همین ثبت");assert.equal(bodies[2],bodies[0]);assert.equal(writes,1);assert.equal(ui.navigation.length,1);
+   assert.match(ui.navigation[0],new RegExp(receipt.version_id));
+  }finally{globalThis.fetch=prior;}
+ });
  test(`${kind} actual form: committed response lost freezes all editing; retry preserves exact request and reuses version`, async()=>{
   const prior = globalThis.fetch, bodies: string[] = []; let stored: string | null = null, writes = 0;
   globalThis.fetch = async (url, options) => {
