@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
+import { authSessionFailure } from "@/lib/auth/session-error";
 import {
   classifyStoreError,
   decideWorkbook,
@@ -17,6 +18,9 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+function privateJson(body: Record<string, unknown>, status: number) {
+  return NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
+}
 
 /**
  * `/api/admin/intelligence/workbooks` — ذخیره/بازکردن/نسخهٔ دوم/تأییدِ داخلیِ
@@ -113,7 +117,10 @@ async function gateway(): Promise<WorkbookGateway> {
   return {
     privatePreparationWritable: process.env.P07_PRIVATE_PREPARATION_ENABLED === 'true',
     async getUser() {
-      const { data } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
+      const status = authSessionFailure(error);
+      if (status === 503) throw new Error('session lookup unavailable');
+      if (status === 401) return null;
       return data.user ? { id: data.user.id } : null;
     },
     async getRole(userId) {
@@ -127,7 +134,7 @@ async function gateway(): Promise<WorkbookGateway> {
 }
 
 export async function GET(request: Request) {
-  try { return await read(request); } catch { return NextResponse.json({ error: "دریافت کاربرگ انجام نشد؛ دوباره تلاش کنید." }, { status: 503 }); }
+  try { return await read(request); } catch { return privateJson({ error: "دریافت کاربرگ انجام نشد؛ دوباره تلاش کنید." }, 503); }
 }
 async function read(request: Request) {
   const url = new URL(request.url);
@@ -136,17 +143,17 @@ async function read(request: Request) {
   const result = id
     ? await openWorkbook(await gateway(), id, v === null ? null : Number(v))
     : await listWorkbooks(await gateway());
-  return NextResponse.json(result.body, { status: result.status });
+  return privateJson(result.body, result.status);
 }
 
 export async function POST(request: Request) {
-  try { return await write(request); } catch { return NextResponse.json({ error: "ذخیره انجام نشد؛ متن را نگه دارید و دوباره تلاش کنید." }, { status: 503 }); }
+  try { return await write(request); } catch { return privateJson({ error: "ذخیره انجام نشد؛ متن را نگه دارید و دوباره تلاش کنید." }, 503); }
 }
 async function write(request: Request) {
   // سقفِ بدنه پیش از پارس: JSONِ چندمگابایتی نباید اول کامل در حافظه ساخته شود.
   const declared = Number(request.headers.get("content-length") ?? "0");
   if (declared > MAX_STORED_BYTES * 2) {
-    return NextResponse.json({ error: "درخواست بیش از حد بزرگ است" }, { status: 413 });
+    return privateJson({ error: "درخواست بیش از حد بزرگ است" }, 413);
   }
   let body: Record<string, unknown>;
   try {
@@ -154,7 +161,7 @@ async function write(request: Request) {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("shape");
     body = parsed as Record<string, unknown>;
   } catch {
-    return NextResponse.json({ error: "بدنهٔ درخواست نامعتبر است" }, { status: 400 });
+    return privateJson({ error: "بدنهٔ درخواست نامعتبر است" }, 400);
   }
   const result =
     body.action === "save"
@@ -162,5 +169,5 @@ async function write(request: Request) {
       : body.action === "decide"
         ? await decideWorkbook(await gateway(), body)
         : { status: 400 as const, body: { error: "کنشِ نامعتبر" } };
-  return NextResponse.json(result.body, { status: result.status });
+  return privateJson(result.body, result.status);
 }
