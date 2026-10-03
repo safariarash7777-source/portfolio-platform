@@ -43,4 +43,3 @@
 probeهای اولیه باNodefetch نتیجهUNKNOWN دادند و HTTPstatus محسوب نشدند؛ probe نهایی باNodehttp داخل همان کانتینر503 را ثبت کرد. هیچ endpoint عمومی جایگزین، tunnel، تغییرproxy/TLS یا مرورگر دیگر برای عبور از محدودیت مرورگر استفاده نشد. درخواست داخلی diagnostic، مشاهدهUI یا ورود واقعی نیست. rawlog، HAR، cookie/token، UUID، ایمیل، password/hash، nationalId، ciphertext و کلید صادر نشدند.
 
 ابزار: PowerShell، SSH مجاز، Dockerinspect whitelist، Nodehttp داخلی، PostgreSQL catalog درtransaction READ ONLY و Git source inspection. مهارتSupabase برای canonicalAuth/privateprofile/RLS به‌کاررفته؛ آزمون احراز هویت، ارسال فرم یا build سنگین اجرا نشد. فایل جدید این ممیزی تنها خروجی مشترکP01 است؛ سایر فایل‌های ممیزی و فایل‌های اجرایی مالکان دیگر ویرایش نشدند.
-
