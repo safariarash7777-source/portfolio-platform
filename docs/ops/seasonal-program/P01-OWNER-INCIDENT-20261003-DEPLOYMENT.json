@@ -1,0 +1,30 @@
+{
+  "observationDate": "2026-10-03",
+  "mutation": false,
+  "production": {
+    "origin": "https://portfolio-platform-fawn.vercel.app",
+    "deploymentId": "dpl_9suSBhTKxEgEefXoUDr2o6FfmZ56",
+    "readyState": "READY",
+    "target": "production",
+    "sha": "51fd0661d48d791ce8758a87828a81ce72cac6df"
+  },
+  "runtimeErrors": {
+    "selector": "1h",
+    "routes": ["/dashboard", "/login", "/auth/callback"],
+    "toolReportedNoErrorClusters": true,
+    "ownerAttemptCorrelated": false
+  },
+  "minimalCandidate": {
+    "pr": 179,
+    "draft": true,
+    "merged": false,
+    "head": "ca27b94a44f9a37785df059574a754e170880aac",
+    "base": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+    "workflowRun": 36854599890,
+    "status": "completed",
+    "conclusion": "success",
+    "deployedByThisTask": false
+  },
+  "ownerNativeAcceptance": "PENDING",
+  "migration": "NONE"
+}
