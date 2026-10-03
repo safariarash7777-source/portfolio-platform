@@ -1,0 +1,144 @@
+{
+  "status": "READY_FOR_P00_SELECTIVE_INTEGRATION_NOT_DEPLOYED",
+  "task": "RECOVERY-01",
+  "owner": "P01",
+  "targetOrigin": "https://portfolio-platform-fawn.vercel.app",
+  "productionBaselineSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "sourceHead": "aafe8b02b12d2d48129c3a99879e8f716f16c1c1",
+  "branch": "codex/p01-recovery-20261003",
+  "worktree": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-p01-recovery-20261003",
+  "selectedCommits": [
+    {
+      "sha": "c9ce9e92975d31486518bbb5bd70aec73d6b6ee9",
+      "scope": "179 original runtime: bounded Node middleware, redirect cookies, full login navigation, regressions, sandbox harness"
+    },
+    {
+      "sha": "9a8bc09e178d2d60bdb0972d8f5d7e93ca4ea627",
+      "scope": "Ambiguous/rejected session distinction, role/entitlement outage, abort cookie protection"
+    },
+    {
+      "sha": "9f0eb9cca7c06e8f98d637332a45acd46c1301c5",
+      "scope": "Regression EOF normalization"
+    },
+    {
+      "sha": "9fad35eef13c9c48747fd7f530d33bdad74393fa",
+      "scope": "Existing market boards null/unit/source-time display and shared headline math; no skin replacement"
+    },
+    {
+      "sha": "84184b3ca382578dc6aa40df8d165d8ac9bda01a",
+      "scope": "Shared narrow session predicate byte-identical to P07"
+    },
+    {
+      "sha": "aafe8b02b12d2d48129c3a99879e8f716f16c1c1",
+      "scope": "Login mixed line-ending cleanup only"
+    }
+  ],
+  "alreadySelectedP02DoNotDuplicate": [
+    "603877f6a3c2f70d25c073ce748f55945e2e76c9",
+    "4213dda041f8aaaf8a98d7e24047ca47564e6230"
+  ],
+  "files": [
+    "middleware.ts",
+    "app/(auth)/login/page.tsx",
+    "lib/auth/session-error.ts",
+    "components/account/loginFlow.test.ts",
+    "scripts/testing/auth-owner-sandbox.mjs",
+    "components/market/GoldCurrencyBoard.tsx",
+    "components/market/StocksBoard.tsx",
+    "components/market/OptionsBoard.tsx",
+    "components/market/recovery-null-render.test.ts",
+    "lib/core/marketHeadline.ts",
+    "lib/core/marketHeadline.test.ts"
+  ],
+  "sharedSessionPredicate": {
+    "path": "lib/auth/session-error.ts",
+    "blob": "21cec39715c005b3f89638f76b1dc575bd545851",
+    "sha256LF": "EB0748D2F3A8753F60AD79AA6FD717AC2C4F457F2439DC3AB3629B9B8D72BD80",
+    "sameAsP07c3d282e": true
+  },
+  "sourceChecks": {
+    "authAndReturnPath": "30 PASS",
+    "marketHeadline": "16 PASS",
+    "marketReader": "13 PASS",
+    "optionMapper": "4 PASS",
+    "actualReactStaticRender": "3 PASS",
+    "typecheck": "PASS heap768MiB",
+    "scopedEslint": "PASS",
+    "diffCheck": "PASS",
+    "secretScan": "645 files / 0 findings",
+    "combinedCI": "NOT_RUN_P00_OWNER",
+    "build": "NOT_RUN_P00_CI_REQUIRED",
+    "ownerNativeLogin": "NOT_ACCEPTED_PENDING_OWNER",
+    "newUIBrowserAfterDeployment": "NOT_RUN",
+    "sourceMainBeforeScreenshots": "ACTUALLY_OBSERVED_390_1440"
+  },
+  "additionalCICommand": "node node_modules/tsx/dist/cli.mjs --test components/market/recovery-null-render.test.ts",
+  "preserved": "Main globals/layout/Navbar/Footer/fonts/tokens/package/lock unmodified by P01. Canonical UUID/cookies/Auth pair, no new account/grant/identity model.",
+  "productionActions": {
+    "deployed": false,
+    "ddl": false,
+    "rolesOrAccountsChanged": false,
+    "smsProviderActivated": false
+  },
+  "backup": {
+    "status": "PASS",
+    "checkedAt": "2026-10-03T10:36:46.704608+00:00",
+    "source": "portfolio-stage-db-1",
+    "inventoryItems": 1516,
+    "targetStopped": true,
+    "sourceHealthy": true,
+    "receipt": "P01-LIARA-BACKUP-RESTORE-RECEIPT.json",
+    "report": "P01-LIARA-BACKUP-RESTORE.md",
+    "sourcePrivateDirectory": "/root/portfolio-recovery-backups/20261003T101406Z",
+    "beforeProductionDdl": "P00 tests exact selected migration hashes on isolated proof restore; no Production DDL by P01",
+    "limitations": "No all-row content digest, Storage binary backup, offsite copy or main login acceptance inferred."
+  },
+  "handoffDocument": "P01-AUTH-HANDOFF.md",
+  "baselineDocument": "P01-AUTH-AND-VISUAL-BASELINE.md",
+  "rootSelectedFiles": [
+    {
+      "path": "middleware.ts",
+      "blob": "c81b575cc7d947d2026036a46330db098273a263"
+    },
+    {
+      "path": "app/(auth)/login/page.tsx",
+      "blob": "a1a7e23d139224c28a5e9b537d03e1e24b7c1a50"
+    },
+    {
+      "path": "lib/auth/session-error.ts",
+      "blob": "21cec39715c005b3f89638f76b1dc575bd545851"
+    },
+    {
+      "path": "components/account/loginFlow.test.ts",
+      "blob": "360041765e1b6546922e199bc47ab3da063142e3"
+    },
+    {
+      "path": "scripts/testing/auth-owner-sandbox.mjs",
+      "blob": "6416d8588989664782700198b27f6821efe522a6"
+    },
+    {
+      "path": "components/market/GoldCurrencyBoard.tsx",
+      "blob": "e1a3f25f353ce7f44186e5671016298609cf540b"
+    },
+    {
+      "path": "components/market/StocksBoard.tsx",
+      "blob": "095c75c07c1ac696a14b4ff7d96ae35684bd3b2e"
+    },
+    {
+      "path": "components/market/OptionsBoard.tsx",
+      "blob": "d14d0626117788e5e0829cb22d24892187d23cf8"
+    },
+    {
+      "path": "components/market/recovery-null-render.test.ts",
+      "blob": "d8b1bb49144820b5367c90f7500f7449c9fd941c"
+    },
+    {
+      "path": "lib/core/marketHeadline.ts",
+      "blob": "19382f616cd574161397d0dbbf05a1e3f7dbf9f2"
+    },
+    {
+      "path": "lib/core/marketHeadline.test.ts",
+      "blob": "395040f6fcc2788725892118dfc92bb1ec548777"
+    }
+  ]
+}
