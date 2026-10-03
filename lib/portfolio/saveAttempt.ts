@@ -6,16 +6,24 @@ export type FinancialSaveOutcome =
  | { status: "rejected"; httpStatus: number; message: string }
  | { status: "unknown"; message?: string };
 export const financialSaveAttempt = (url: string, payload: unknown): FinancialSaveAttempt => Object.freeze({ url, body: JSON.stringify(payload) });
+// Existing postFinancialSnapshot wire response. Different/malformed 409 stays unknown.
+const canonicalConflict = "نسخهٔ تازه‌تری ثبت شده یا این شناسه با محتوای متفاوت استفاده شده است. آخرین نسخه را باز کنید؛ متن فرم شما حفظ شده است.";
 export async function sendFinancialAttempt(attempt: FinancialSaveAttempt, unresolvedPrior = false, transport: typeof fetch = fetch): Promise<FinancialSaveOutcome> {
  try {
   const response = await transport(attempt.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: attempt.body });
   if(response.status >= 400 && response.status < 500) {
-   // A denied retry cannot prove whether the original, unanswered request committed.
-   if(unresolvedPrior && [401,403,429].includes(response.status)) return { status: "unknown", message: response.status === 429
-    ? "این تلاش به محدودیت موقت سرویس رسید؛ نتیجهٔ ثبت اول هنوز مشخص نیست. متن فرم و همان درخواست حفظ شدند؛ پس از رفع محدودیت، همین ثبت را دوباره بررسی کنید."
-    : "این تلاش به مشکل نشست یا دسترسی رسید؛ نتیجهٔ ثبت اول هنوز مشخص نیست. متن فرم و همان درخواست حفظ شدند؛ نشست و دسترسی را در صفحهٔ جدا بررسی و سپس همین ثبت را دوباره بررسی کنید." };
-   let message = "ثبت رد شد؛ متن فرم حفظ شده است.";
-   try { const error = await response.json(); if(typeof error?.error === "string") message = error.error; } catch { /* The rejection status is definitive even if its body is unreadable. */ }
+   if(response.status === 429) return { status: "unknown", message: "این تلاش به محدودیت موقت سرویس رسید؛ نتیجهٔ ثبت هنوز مشخص نیست. متن فرم و همان درخواست حفظ شدند؛ پس از رفع محدودیت، همین ثبت را دوباره بررسی کنید." };
+   let error: unknown;
+   try { error = await response.json(); } catch { return { status: "unknown" }; }
+   const valid = error !== null && typeof error === "object" && !Array.isArray(error) && Object.keys(error).length === 1
+    && typeof (error as { error?: unknown }).error === "string" && Boolean((error as { error: string }).error.trim());
+   if(!valid || ![400,401,403,409].includes(response.status)) return { status: "unknown" };
+   const message = (error as { error: string }).error;
+   if(response.status === 409 && message !== canonicalConflict) return { status: "unknown" };
+   // Only a valid canonical CAS conflict can resolve a previously unanswered attempt.
+   if(unresolvedPrior && response.status !== 409) return { status: "unknown", message: [401,403].includes(response.status)
+    ? "این تلاش به مشکل نشست یا دسترسی رسید؛ نتیجهٔ ثبت اول هنوز مشخص نیست. متن فرم و همان درخواست حفظ شدند؛ نشست و دسترسی را در صفحهٔ جدا بررسی و سپس همین ثبت را دوباره بررسی کنید."
+    : "این پاسخ نتیجهٔ ثبت اول را مشخص نمی‌کند. متن فرم و همان درخواست حفظ شدند؛ پس از رفع مشکل، همین ثبت را دوباره بررسی کنید." };
    return { status: "rejected", httpStatus: response.status, message };
   }
   if(!response.ok) return { status: "unknown" };

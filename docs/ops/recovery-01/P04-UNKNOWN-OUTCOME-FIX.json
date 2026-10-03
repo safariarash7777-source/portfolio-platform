@@ -12,7 +12,7 @@
     },
     {
       "path": "lib/portfolio/saveAttempt.ts",
-      "gitBlob": "0403f1f4f1d278872ebd7409e639e5bf60511ae7"
+      "gitBlob": "960c5c8a6138c14de840a265651152adbb9417c6"
     },
     {
       "path": "components/portfolio/financial-form-test-host.ts",
@@ -20,34 +20,35 @@
     },
     {
       "path": "components/portfolio/financial-forms.test.ts",
-      "gitBlob": "364eff665053533a9fddadd4a281510d06b49316"
+      "gitBlob": "44debe85ce5954ed493fe8013132bc74e4605c06"
     }
   ],
   "behavior": [
     "Unknown outcome locks row editing/add/delete/import and retains exact URL/serialized request/token/base.",
     "Retry uses the same original bytes; confirmed receipt validates UUID, base+1 version and submitted side count.",
-    "Initial definitive 4xx preserves draft and refreshes token; after an unanswered original request, retry401/403/429 retains exact request/token/freeze. 409 CAS remains separate with no blind rebase and latest version in a separate tab.",
+    "After prior unknown, EVERY 4xx remains unknown except a well-formed recognized canonical CAS409. Initial out-of-contract404/408/429 or malformed4xx also stays unknown. Initial valid contract400/401/403 can reject; canonical409 enters preserved-draft review with no blind rebase.",
     "No root service/Auth/global UI changes; no new schema, ledger, receipt route or real DB writes."
   ],
   "local": {
     "nativeOrProductionReproduction": false,
     "changedFileLint": "PASS",
-    "targetedTotal": 41,
+    "targetedTotal": 63,
     "typecheck": "PASS",
-    "actualComponentHandlerCases": 18
+    "actualComponentHandlerCases": 40
   },
   "mainPackageRule": "Register financial-forms.test.ts in main core/targeted invocation; do not copy branch package.json.",
   "receiptRouteRequired": false,
   "schemaChanged": false,
   "mainDomainAcceptance": "PENDING",
   "followup": {
-    "finding": "P00 independent d465 review: denied retry does not determine prior commit",
+    "finding": "P00 independent a0f review: 404/408 and malformed4xx do not resolve an unanswered request",
     "chains": [
-      "holdings/debts lost-after-commit -> 401 -> successful exact retry",
-      "holdings/debts lost-after-commit -> 403 -> successful exact retry",
-      "holdings/debts lost-after-commit -> 429 -> successful exact retry"
+      "Both forms lost-after-commit -> 401/403/429/404/408/400 -> exact reused receipt with 1 write",
+      "Both forms lost-after-commit -> nonJSON400/nonJSON409/noncanonical409 -> restored exact reused receipt",
+      "Both forms initial404/408 and malformed400/409 -> freeze and exact retry",
+      "Both forms priorUnknown -> valid canonicalCAS409 -> preserved draft and separate review, no overwrite"
     ],
-    "sourceCheckpoint": "d465c1252f933adbaed7eb776f1a8c7e27ee0a14 CI PASS predates this followup",
+    "sourceCheckpoint": "a0f4486d95037d60e176592ac6710bc6390bbc17 all CI PASS predates this final conservative followup",
     "newCi": "PENDING",
     "unresolvedMarker": "Synchronous ref, not a stale render closure"
   }
