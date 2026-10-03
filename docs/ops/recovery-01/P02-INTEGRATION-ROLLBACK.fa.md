@@ -29,3 +29,5 @@ receipt نسخه زنده Vercel و PaaS قبل نصب باید در manifest م
 ## وضعیت فعلی
 
 کد ثبت‌شده و آزمون موضعی موفق؛ نصبProduction و پذیرش عددی/بصری انجام نشده. پیشرفت P02 از این نقطه به ترکیب نسخه و رسید نصب P00/P01 وابسته است؛ این سند اعلام پایان RECOVERY-01 نیست.
+
+الحاق بازبینی: بعد از دو commit بالا، `4e5cb64f86f89956d5eb7b0b20ab456d1f1613f3` فقط quality/test را برای منع حباب با source NAV غیرready تغییر می‌دهد. این commit سوم هم در integration انتخاب شود؛ invocation همان فایل تست است و اکنون15PASS دارد. manifest به بایت9فایل در همین commit نهایی به‌روز شده است. تغییر schema/config/UI اضافه نشده؛ بازگشت source guard باید با patch و adapters متناظر هماهنگ بماند. جزئیات قرارداد و شاهد red/green در P02-LIARA-ACCESS-ADDENDUM.fa.md ثبت است.

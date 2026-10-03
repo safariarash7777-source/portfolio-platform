@@ -2,9 +2,10 @@
   "base": "51fd0661d48d791ce8758a87828a81ce72cac6df",
   "commits": [
     "603877f6a3c2f70d25c073ce748f55945e2e76c9",
-    "4213dda041f8aaaf8a98d7e24047ca47564e6230"
+    "4213dda041f8aaaf8a98d7e24047ca47564e6230",
+    "4e5cb64f86f89956d5eb7b0b20ab456d1f1613f3"
   ],
-  "hashMethod": "sha256 of Git blob bytes at final patch commit",
+  "hashMethod": "sha256 of Git blob bytes at final patch commit 4e5cb64f86f89956d5eb7b0b20ab456d1f1613f3",
   "files": [
     {
       "path": "relay/options.mjs",
@@ -38,8 +39,8 @@
     },
     {
       "path": "lib/market-quality.ts",
-      "bytes": 7289,
-      "sha256": "d7cbf20c2b5e7da71db717bb47b6b17b8a5be2b2f24ca938599be46979a42a8e"
+      "bytes": 8017,
+      "sha256": "7315603178fd8783670db597f7558a048fdd54de3dc024bd33193573db2c4e43"
     },
     {
       "path": "lib/market-bounded.ts",
@@ -48,8 +49,8 @@
     },
     {
       "path": "lib/market-bounded.test.ts",
-      "bytes": 10465,
-      "sha256": "f78fb6812354562095dde4a340571b3eb02de0f9cd53c66447dfb4e037ecb3fb"
+      "bytes": 12478,
+      "sha256": "ebabdac06141734cadfd0a16b7aace7224651067ecc428e8d36a7d5383f5dc2c"
     }
   ],
   "checks": {
@@ -59,14 +60,25 @@
       "skip": 0
     },
     "readerTests": {
-      "pass": 13,
+      "pass": 15,
       "fail": 0,
       "skip": 0
     },
     "tsLint": "pass",
     "relaySyntax": "pass",
     "standaloneTypecheck": "10 nullable consumer errors; P01 integration required",
-    "productionInstalled": false
+    "productionInstalled": false,
+    "navRejectionRegression": {
+      "before": {
+        "pass": 14,
+        "fail": 1
+      },
+      "after": {
+        "pass": 15,
+        "fail": 0
+      },
+      "sourceContract": "reuse214 nav-quality/applyNav rejects explicit non-ready status"
+    }
   },
   "dependencies": [
     "P01 same-style nullable/unit/clock adapters",
@@ -83,5 +95,11 @@
     "CI"
   ],
   "quotaGuardInstalled": false,
-  "numericalSourceAcceptance": "not completed"
+  "numericalSourceAcceptance": "not completed",
+  "livePaasInventory": {
+    "release": "UNKNOWN",
+    "replicas": "UNKNOWN",
+    "env": "UNKNOWN",
+    "access": "console.liara.ir/auth in exposed IAB; no callable Liara connector/CLI found in checked locations"
+  }
 }
