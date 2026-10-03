@@ -1,0 +1,87 @@
+{
+  "base": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "commits": [
+    "603877f6a3c2f70d25c073ce748f55945e2e76c9",
+    "4213dda041f8aaaf8a98d7e24047ca47564e6230"
+  ],
+  "hashMethod": "sha256 of Git blob bytes at final patch commit",
+  "files": [
+    {
+      "path": "relay/options.mjs",
+      "bytes": 5865,
+      "sha256": "b5bf9807681cb9a17858e70d0d3268320cc50bca1c4a9574005bd6a5a9a84434"
+    },
+    {
+      "path": "relay/options.test.mjs",
+      "bytes": 2144,
+      "sha256": "d77c4c7dd900d4437b884ec64d53c83cff36679fa1a261183a78b50955a67ad7"
+    },
+    {
+      "path": "app/api/market/route.ts",
+      "bytes": 1311,
+      "sha256": "978a44ab37479815f08b5bd1ca3103821d8737f4f0f6740394ddf10f90555545"
+    },
+    {
+      "path": "lib/deadline.ts",
+      "bytes": 1048,
+      "sha256": "9630550571134fa0dffd4cdea85e1479cc3dc91025a58f2cf2f75d0880ea4099"
+    },
+    {
+      "path": "lib/market-ir.ts",
+      "bytes": 22319,
+      "sha256": "465bb3da922814b9a78f794ad216ed3b481574b841c639a11eb5f576c31f4f3c"
+    },
+    {
+      "path": "lib/market.ts",
+      "bytes": 8701,
+      "sha256": "aac2e45e98e07fccfaf68f0126bc82fb1ca6b9135d9836f63c2c8566078ae41c"
+    },
+    {
+      "path": "lib/market-quality.ts",
+      "bytes": 7289,
+      "sha256": "d7cbf20c2b5e7da71db717bb47b6b17b8a5be2b2f24ca938599be46979a42a8e"
+    },
+    {
+      "path": "lib/market-bounded.ts",
+      "bytes": 2331,
+      "sha256": "ae71dd2acb0558e80ac129f00475c1becd9a45afe791a88f0d09ff613e1992af"
+    },
+    {
+      "path": "lib/market-bounded.test.ts",
+      "bytes": 10465,
+      "sha256": "f78fb6812354562095dde4a340571b3eb02de0f9cd53c66447dfb4e037ecb3fb"
+    }
+  ],
+  "checks": {
+    "optionTests": {
+      "pass": 4,
+      "fail": 0,
+      "skip": 0
+    },
+    "readerTests": {
+      "pass": 13,
+      "fail": 0,
+      "skip": 0
+    },
+    "tsLint": "pass",
+    "relaySyntax": "pass",
+    "standaloneTypecheck": "10 nullable consumer errors; P01 integration required",
+    "productionInstalled": false
+  },
+  "dependencies": [
+    "P01 same-style nullable/unit/clock adapters",
+    "P00 package/CI registration and combined typecheck/build",
+    "current Liara backup/restore receipt and release/replica inventory before live effects"
+  ],
+  "noChanges": [
+    "schema",
+    "config",
+    "assets",
+    "UI",
+    "Auth",
+    "package",
+    "CI"
+  ],
+  "quotaGuardInstalled": false,
+  "numericalSourceAcceptance": "not completed"
+}

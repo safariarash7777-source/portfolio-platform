@@ -1,0 +1,169 @@
+{
+  "observedAt": "2026-10-03T10:07:13.932Z",
+  "base": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "method": "actual unchanged reader, anon GET against Liara, metadata only",
+  "providerCalls": 0,
+  "requests": [
+    {
+      "symbol": "eq.فولاد",
+      "kind": "eq.ن-۱۰",
+      "httpStatus": 200,
+      "elapsedMs": 529
+    },
+    {
+      "symbol": "eq.فولاد",
+      "kind": "eq.ن-۳۰",
+      "httpStatus": 200,
+      "elapsedMs": 502
+    },
+    {
+      "symbol": "eq.فملی",
+      "kind": "eq.ن-۱۰",
+      "httpStatus": 200,
+      "elapsedMs": 577
+    },
+    {
+      "symbol": "eq.فملی",
+      "kind": "eq.ن-۳۰",
+      "httpStatus": 200,
+      "elapsedMs": 579
+    },
+    {
+      "symbol": "eq.وبملت",
+      "kind": "eq.ن-۱۰",
+      "httpStatus": 200,
+      "elapsedMs": 147
+    },
+    {
+      "symbol": "eq.وبملت",
+      "kind": "eq.ن-۳۰",
+      "httpStatus": 200,
+      "elapsedMs": 151
+    },
+    {
+      "symbol": "eq.بپاس",
+      "kind": "eq.ن-۱۰",
+      "httpStatus": 200,
+      "elapsedMs": 125
+    },
+    {
+      "symbol": "eq.بپاس",
+      "kind": "eq.ن-۳۰",
+      "httpStatus": 200,
+      "elapsedMs": 263
+    },
+    {
+      "symbol": "eq.شستا",
+      "kind": "eq.ن-۱۰",
+      "httpStatus": 200,
+      "elapsedMs": 121
+    },
+    {
+      "symbol": "eq.شستا",
+      "kind": "eq.ن-۳۰",
+      "httpStatus": 200,
+      "elapsedMs": 127
+    }
+  ],
+  "entries": [
+    {
+      "symbol": "فولاد",
+      "returned": true,
+      "n10": {
+        "periodEnd": "1404-12-29",
+        "periodMonths": 12,
+        "unit": "میلیون ریال",
+        "scope": "consolidated_ambiguous",
+        "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=TTKOOObOOOXJNiU1kizwMnWsrUeg%3d%3d&rt=0&let=6&ct=0&ft=-1",
+        "incomeMissingFields": []
+      },
+      "n30": {
+        "rows": 26,
+        "newestPeriod": "1405-05-31"
+      },
+      "selectedPeriodIds": [
+        4047,
+        24,
+        25,
+        40,
+        43
+      ]
+    },
+    {
+      "symbol": "فملی",
+      "returned": true,
+      "n10": {
+        "periodEnd": "1404-12-29",
+        "periodMonths": 12,
+        "unit": "میلیون ریال",
+        "scope": "consolidated_ambiguous",
+        "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=f7CWBx0JQQQaQQQdM0pmYwVNwKjQ%3d%3d&rt=0&let=6&ct=0&ft=-1",
+        "incomeMissingFields": []
+      },
+      "n30": {
+        "rows": 26,
+        "newestPeriod": "1405-05-31"
+      },
+      "selectedPeriodIds": [
+        3652,
+        21,
+        36,
+        37,
+        9043,
+        9045
+      ]
+    },
+    {
+      "symbol": "وبملت",
+      "returned": true,
+      "n10": {
+        "periodEnd": "1404-12-29",
+        "periodMonths": 12,
+        "unit": "میلیون ریال",
+        "scope": "company",
+        "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=Oys43as4R9IO1t1qxSSGfw%3d%3d&rt=3&let=6&ct=0&ft=-1",
+        "incomeMissingFields": []
+      },
+      "n30": null,
+      "selectedPeriodIds": [
+        2217,
+        783,
+        134,
+        135,
+        138,
+        230,
+        233,
+        6426,
+        6429,
+        6431
+      ]
+    },
+    {
+      "symbol": "بپاس",
+      "returned": false,
+      "n10": null,
+      "n30": null,
+      "selectedPeriodIds": []
+    },
+    {
+      "symbol": "شستا",
+      "returned": true,
+      "n10": {
+        "periodEnd": "1405-03-31",
+        "periodMonths": 12,
+        "unit": "میلیون ریال",
+        "scope": "consolidated_ambiguous",
+        "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=kPXTo6XlAxewQQQaQQQOQaE6eqnA%3d%3d&rt=2&let=6&ct=0&ft=-1",
+        "incomeMissingFields": []
+      },
+      "n30": null,
+      "selectedPeriodIds": [
+        9753,
+        2987,
+        84,
+        86
+      ]
+    }
+  ],
+  "limitation": "stored report selection does not attest upstream latest, numerical correctness or browser display"
+}

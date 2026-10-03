@@ -1,0 +1,2 @@
+{"kind": "codalRepresentativeFailures", "rows": [], "limitation": "failure state stores counts, not reason", "observedAt": "2026-10-03T10:06:09.755234+00:00"}
+{"kind": "codalRepresentativeBlocked", "rows": []}
