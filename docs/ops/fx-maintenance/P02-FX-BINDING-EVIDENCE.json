@@ -1,0 +1,280 @@
+{
+  "generated_at": "2026-10-02T16:54:55.923578+00:00",
+  "base_pr": 204,
+  "base_sha": "27b39902733c7e8c15fd02c9aa3d1b4c79342e28",
+  "tests_pass": 30,
+  "source_fetches": 0,
+  "production_modified": false,
+  "annual_legacy_workbook_modified": false,
+  "monthly_legacy_workbook_modified": false,
+  "sample": {
+    "method": "cbi_official_sample",
+    "rows": 60,
+    "finite": true,
+    "source_sha256": "d29b554cf68652f85c0b5878f5b2588d8d670279eeab631913f794238481e279",
+    "synthetic_anchors": true,
+    "financial_model_approved": false,
+    "artifact_sha256": "50b04a2431ff2714cbc47b35910ec317f66402f404816ece5c9ee2751b380953"
+  },
+  "sources": [
+    {
+      "key": "CBI_CPI_annual",
+      "unit": "بدون واحد",
+      "title": "شاخص کل",
+      "path": [
+        "شاخص بهای کالاها و خدمات مصرفی(100=1400)"
+      ],
+      "base_year": 1400,
+      "target": "Data!row4 → cpi_cbi / Data!row5 → infl_cbi",
+      "binding_status": "blocked_base_and_history_contract",
+      "binding_reason": "پایه تاریخچه قدیمی و تعریف تورم ردیف مدل تأیید نشده؛ CPI پایه ۱۴۰۰ به پایه قدیمی چسبانده نمی‌شود.",
+      "id": "3505fc25-6651-8f09-e063-4ceaa8c0b336",
+      "frequency": "سالانه",
+      "source_sha256": "c0e3cff2aad14bfb54d45ab5a188a5b028cacb3834df8910fafaf4c3a4df02fa",
+      "source_sheet": "سالانه",
+      "source_period_column": "A9:A13",
+      "source_value_column": "B9:B13",
+      "definition_cell": "B7",
+      "unit_cell": "B8",
+      "calendar": "Jalali",
+      "source_definition": "شاخص های قیمت/شاخص بهای کالاها و خدمات مصرفی/شاخص بهای کالاها و خدمات مصرفی(100=1400)",
+      "first_period": "1400",
+      "last_period": "1404",
+      "observation_count": 5,
+      "missing_periods": [],
+      "provisional_periods": [],
+      "publication_date": null,
+      "report_generated_date": "1405/07/09",
+      "report_generated_date_is_publication": false,
+      "status": "definition_and_snapshot_validated",
+      "model_write_enabled": false,
+      "checks": [
+        "source checksum",
+        "sheet frequency/title/definition/unit",
+        "unique ordered Jalali periods",
+        "finite positive observed values",
+        "missing observations preserved"
+      ]
+    },
+    {
+      "key": "CBI_liquidity_quarterly",
+      "unit": "هزار میلیارد ریال",
+      "title": "نقدینگی بر حسب عوامل موثر بر عرضه آن",
+      "path": [
+        "متغیرهای پولی و اعتباری/ نقدینگی"
+      ],
+      "base_year": null,
+      "target": "Data!row8 → m2_irr; row9 → m2_growth; M2_Iran monthly slot",
+      "binding_status": "blocked_frequency_and_stock_definition",
+      "binding_reason": "تقسیم بر ۱۰، همت تومان می‌سازد؛ فقط فصل چهارم می‌تواند موجودی پایان سال باشد. تعریف موجودی پایان سال در ردیف قدیمی مدل مستند نیست؛ فصل سوم و داده فصلی جای سال کامل یا ماهانه قرار نمی‌گیرد.",
+      "id": "3505fc25-5fec-8f09-e063-4ceaa8c0b336",
+      "frequency": "فصلی",
+      "source_sha256": "50a472833de4a648208c79d5669939145921fcb123056c2a7d48fd0b7c536d54",
+      "source_sheet": "فصلي",
+      "source_period_column": "A9:A220",
+      "source_value_column": "B9:B220",
+      "definition_cell": "B7",
+      "unit_cell": "B8",
+      "calendar": "Jalali",
+      "source_definition": "متغیرهای پولی و اعتباری/ نقدینگی",
+      "first_period": "1352-سه ماهه چهارم",
+      "last_period": "1404-سه ماهه سوم",
+      "observation_count": 208,
+      "missing_periods": [
+        "1352-سه ماهه اول",
+        "1352-سه ماهه دوم",
+        "1352-سه ماهه سوم",
+        "1404-سه ماهه چهارم"
+      ],
+      "provisional_periods": [],
+      "publication_date": null,
+      "report_generated_date": "1405/07/09",
+      "report_generated_date_is_publication": false,
+      "status": "definition_and_snapshot_validated",
+      "model_write_enabled": false,
+      "checks": [
+        "source checksum",
+        "sheet frequency/title/definition/unit",
+        "unique ordered Jalali periods",
+        "finite positive observed values",
+        "missing observations preserved"
+      ]
+    },
+    {
+      "key": "CBI_GDP_current_basic_price",
+      "unit": "میلیارد ریال",
+      "title": "تولید ناخالص داخلی به قیمت پایه",
+      "path": [
+        "به قیمت های جاری"
+      ],
+      "base_year": null,
+      "target": "Data!row11 → gdp_usd",
+      "binding_status": "rejected_currency_and_valuation_mismatch",
+      "binding_reason": "GDP قیمت پایه به ریال، GDP قیمت بازار به دلار جاری نیست؛ نرخ تبدیل سالانه هم‌تعریف موجود نیست.",
+      "id": "3505fc25-6648-8f09-e063-4ceaa8c0b336",
+      "frequency": "سالانه",
+      "source_sha256": "17729b9f44fd118ab25b566c741a4e0dbdb6eb9b87a68a47c15a97f6886345b4",
+      "source_sheet": "سالانه",
+      "source_period_column": "A9:A18",
+      "source_value_column": "B9:B18",
+      "definition_cell": "B7",
+      "unit_cell": "B8",
+      "calendar": "Jalali",
+      "source_definition": "حساب های ملی/ حساب های ملی بر اساس سال پایه (100=1400)/ تولید(درآمد) ناخالص ملی بر حسب فعالیت های اقتصادی(به قیمت های جاری)",
+      "first_period": "1395",
+      "last_period": "1403",
+      "observation_count": 9,
+      "missing_periods": [
+        "1404"
+      ],
+      "provisional_periods": [
+        "1402",
+        "1403"
+      ],
+      "publication_date": null,
+      "report_generated_date": "1405/07/09",
+      "report_generated_date_is_publication": false,
+      "status": "definition_and_snapshot_validated",
+      "model_write_enabled": false,
+      "checks": [
+        "source checksum",
+        "sheet frequency/title/definition/unit",
+        "unique ordered Jalali periods",
+        "finite positive observed values",
+        "missing observations preserved"
+      ]
+    },
+    {
+      "key": "CBI_GDP_constant1400_basic_price",
+      "unit": "میلیارد ریال",
+      "title": "تولید ناخالص داخلی به قیمت پایه",
+      "path": [
+        "به قیمت های ثابت سال 1400"
+      ],
+      "base_year": 1400,
+      "target": "Data!row10 → gdp_growth; GDP_Iran_Real slot",
+      "binding_status": "blocked_real_GDP_valuation_contract",
+      "binding_reason": "رشد سطح ثابت ۱۴۰۰ با سال متوالی قابل محاسبه است؛ تعریف قیمت پایه در رشد قدیمی مدل مستند نیست و واحد سطح GDP با شاخص عمومی جایگزین نمی‌شود.",
+      "id": "3505fc25-665f-8f09-e063-4ceaa8c0b336",
+      "frequency": "سالانه",
+      "source_sha256": "7674542191d52f944adab40f6377b4b570e9c6e6a4e3bdfb8cddfcde919065e2",
+      "source_sheet": "سالانه",
+      "source_period_column": "A9:A18",
+      "source_value_column": "B9:B18",
+      "definition_cell": "B7",
+      "unit_cell": "B8",
+      "calendar": "Jalali",
+      "source_definition": "حساب های ملی/ حساب های ملی بر اساس سال پایه (100=1400)/ تولید(درآمد) ناخالص ملی بر حسب فعالیت های اقتصادی(به قیمت های ثابت سال 1400)",
+      "first_period": "1395",
+      "last_period": "1403",
+      "observation_count": 9,
+      "missing_periods": [
+        "1404"
+      ],
+      "provisional_periods": [
+        "1402",
+        "1403"
+      ],
+      "publication_date": null,
+      "report_generated_date": "1405/07/09",
+      "report_generated_date_is_publication": false,
+      "status": "definition_and_snapshot_validated",
+      "model_write_enabled": false,
+      "checks": [
+        "source checksum",
+        "sheet frequency/title/definition/unit",
+        "unique ordered Jalali periods",
+        "finite positive observed values",
+        "missing observations preserved"
+      ]
+    },
+    {
+      "key": "CBI_oil_and_gas_exports",
+      "unit": "میلیون دلار",
+      "title": "صادرات نفت و گاز",
+      "path": [
+        "استاندارد شماره 4",
+        "صادرات"
+      ],
+      "base_year": null,
+      "target": "Data!row12 → oil_exports",
+      "binding_status": "rejected_oil_only_scope_mismatch",
+      "binding_reason": "جمع نفت و گاز جای نفت تنها یا حجم بشکه قرار نمی‌گیرد؛ تبدیل واحد این اختلاف دامنه را حل نمی‌کند.",
+      "id": "3505fc25-5fb9-8f09-e063-4ceaa8c0b336",
+      "frequency": "سالانه",
+      "source_sha256": "482a921f7c2e1fc64eb77d4cea28490b98c559802cac7f8bc02b9b90a1b3ef4f",
+      "source_sheet": "سالانه",
+      "source_period_column": "A9:A61",
+      "source_value_column": "B9:B61",
+      "definition_cell": "B7",
+      "unit_cell": "B8",
+      "calendar": "Jalali",
+      "source_definition": "بخش خارجی/ موازنه پرداخت ها/ استاندارد شماره 4/ تراز حساب جاری (حساب جاری)/ تراز بازرگانی (حساب کالا)/ صادرات",
+      "first_period": "1352",
+      "last_period": "1404",
+      "observation_count": 53,
+      "missing_periods": [],
+      "provisional_periods": [
+        "1402",
+        "1403",
+        "1404"
+      ],
+      "publication_date": null,
+      "report_generated_date": "1405/07/09",
+      "report_generated_date_is_publication": false,
+      "status": "definition_and_snapshot_validated",
+      "model_write_enabled": false,
+      "checks": [
+        "source checksum",
+        "sheet frequency/title/definition/unit",
+        "unique ordered Jalali periods",
+        "finite positive observed values",
+        "missing observations preserved"
+      ]
+    },
+    {
+      "key": "CBI_CPI_monthly",
+      "unit": "بدون واحد",
+      "title": "شاخص کل",
+      "path": [
+        "شاخص بهای کالاها و خدمات مصرفی(100=1400)"
+      ],
+      "base_year": 1400,
+      "target": "CPI_Iran_CB (Google Sheet slot; currently not configured)",
+      "binding_status": "validated_separate_series",
+      "binding_reason": "CPI رسمی ماهانه بانک مرکزی مستقل معتبر است؛ با CPI مرکز آمار یا سری بازسازی‌شده مخلوط نمی‌شود.",
+      "id": "3505fc25-6651-8f09-e063-4ceaa8c0b336",
+      "frequency": "ماهانه",
+      "source_sha256": "d29b554cf68652f85c0b5878f5b2588d8d670279eeab631913f794238481e279",
+      "source_sheet": "ماهانه",
+      "source_period_column": "A9:A68",
+      "source_value_column": "B9:B68",
+      "definition_cell": "B7",
+      "unit_cell": "B8",
+      "calendar": "Jalali",
+      "source_definition": "شاخص های قیمت/شاخص بهای کالاها و خدمات مصرفی/شاخص بهای کالاها و خدمات مصرفی(100=1400)",
+      "first_period": "1400-فروردین",
+      "last_period": "1404-اسفند",
+      "observation_count": 60,
+      "missing_periods": [],
+      "provisional_periods": [],
+      "publication_date": null,
+      "report_generated_date": "1405/07/09",
+      "report_generated_date_is_publication": false,
+      "status": "definition_and_snapshot_validated",
+      "model_write_enabled": false,
+      "checks": [
+        "source checksum",
+        "sheet frequency/title/definition/unit",
+        "unique ordered Jalali periods",
+        "finite positive observed values",
+        "missing observations preserved"
+      ]
+    }
+  ],
+  "publication_dates_known": false,
+  "YTM_monthly_history_complete": false,
+  "quota_live_installed": false,
+  "admin_fx_real_login_accepted": false,
+  "Hermes_schedule_modified": false
+}

@@ -1,0 +1,45 @@
+test_blocked_UI_skips_dependent_PSY_without_stopping_other_tabs (test_fx_model_binding.Binding.test_blocked_UI_skips_dependent_PSY_without_stopping_other_tabs) ... ok
+test_gap_cannot_be_interpolated (test_fx_model_binding.Binding.test_gap_cannot_be_interpolated) ... C:\Users\Asus\Documents\Codex\2026-09-29\new-chat-2\work\fx-local-venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+ok
+test_legacy_model_numerical_parity (test_fx_model_binding.Binding.test_legacy_model_numerical_parity) ... C:\Users\Asus\Documents\Codex\2026-09-29\new-chat-2\work\fx-local-venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+ok
+test_official_corruption_no_fallback_and_cache_invalidation (test_fx_model_binding.Binding.test_official_corruption_no_fallback_and_cache_invalidation) ... ok
+test_official_identity_and_direct_source_match (test_fx_model_binding.Binding.test_official_identity_and_direct_source_match) ... C:\Users\Asus\Documents\Codex\2026-09-29\new-chat-2\work\fx-local-venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+ok
+test_sample_uses_existing_model_and_metadata (test_fx_model_binding.Binding.test_sample_uses_existing_model_and_metadata) ... C:\Users\Asus\Documents\Codex\2026-09-29\new-chat-2\work\fx-local-venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+ok
+test_six_source_contracts_and_CPI_aggregation (test_fx_model_binding.Binding.test_six_source_contracts_and_CPI_aggregation) ... C:\Users\Asus\Documents\Codex\2026-09-29\new-chat-2\work\fx-local-venv\Lib\site-packages\openpyxl\styles\stylesheet.py:237: UserWarning: Workbook contains no default style, apply openpyxl's default
+  warn("Workbook contains no default style, apply openpyxl's default")
+ok
+test_unapproved_annual_anchor_blocks (test_fx_model_binding.Binding.test_unapproved_annual_anchor_blocks) ... ok
+test_five_day_overdue_not_healthy (test_fx_model_binding.HermesStatus.test_five_day_overdue_not_healthy) ... ok
+test_publication_requires_same_run_and_bytes (test_fx_model_binding.HermesStatus.test_publication_requires_same_run_and_bytes) ... ok
+test_corrupt_archive_rejected (test_fx_model_binding.YTM.test_corrupt_archive_rejected) ... ok
+test_retry_bounded_and_snapshot_retained (test_fx_model_binding.YTM.test_retry_bounded_and_snapshot_retained) ... ok
+test_schema_failure_retains_snapshot (test_fx_model_binding.YTM.test_schema_failure_retains_snapshot) ... ok
+test_size_cap_retains_snapshot (test_fx_model_binding.YTM.test_size_cap_retains_snapshot) ... ok
+test_stale_archive_display_only (test_fx_model_binding.YTM.test_stale_archive_display_only) ... ok
+test_stream_deadline_retains_snapshot (test_fx_model_binding.YTM.test_stream_deadline_retains_snapshot) ... ok
+test_complete_cpi_mean_only (test_p02_fx_checks.Contracts.test_complete_cpi_mean_only) ... ok
+test_conflicting_unit_and_base_are_rejected (test_p02_fx_checks.Contracts.test_conflicting_unit_and_base_are_rejected) ... ok
+test_current_annual_period_not_complete (test_p02_fx_checks.Contracts.test_current_annual_period_not_complete) ... ok
+test_decimal_ytm_not_already_percent (test_p02_fx_checks.Contracts.test_decimal_ytm_not_already_percent) ... ok
+test_download_generation_never_approves_binding (test_p02_fx_checks.Contracts.test_download_generation_never_approves_binding) ... ok
+test_future_publication_rejected (test_p02_fx_checks.Contracts.test_future_publication_rejected) ... ok
+test_future_trade_cannot_be_current (test_p02_fx_checks.Contracts.test_future_trade_cannot_be_current) ... ok
+test_missing_growth_stays_null (test_p02_fx_checks.Contracts.test_missing_growth_stays_null) ... ok
+test_missing_year_cannot_be_skipped (test_p02_fx_checks.Contracts.test_missing_year_cannot_be_skipped) ... ok
+test_naive_time_rejected (test_p02_fx_checks.Contracts.test_naive_time_rejected) ... ok
+test_q3_is_not_annual_q4 (test_p02_fx_checks.Contracts.test_q3_is_not_annual_q4) ... ok
+test_q4_conversion_is_invertible (test_p02_fx_checks.Contracts.test_q4_conversion_is_invertible) ... ok
+test_quote_stale_and_matured_are_distinct (test_p02_fx_checks.Contracts.test_quote_stale_and_matured_are_distinct) ... ok
+test_real_proxy_requires_same_month (test_p02_fx_checks.Contracts.test_real_proxy_requires_same_month) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 0.575s
+
+OK

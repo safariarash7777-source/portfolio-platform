@@ -1,6 +1,7 @@
 """Official treasury quotes, deterministic validation and immutable vintages."""
 import datetime as dt,hashlib,json,math,re,time,os
 from lxml import html
+from lxml.etree import ParserError
 import requests
 from data_sources import _jalali_to_gregorian
 from source_health import DATA_DIR,atomic_write
@@ -55,7 +56,7 @@ def ingest_capture(content,observed_at):
 
 def collect():
     checked=dt.datetime.now(dt.timezone.utc).isoformat();folder=DATA_DIR/'ifb-treasury';folder.mkdir(parents=True,exist_ok=True)
-    attempts=[];deadline=time.monotonic()+60
+    attempts=[];deadline=time.monotonic()+60;session=None
     try:
         try:
             import truststore
@@ -66,22 +67,50 @@ def collect():
             remaining=deadline-time.monotonic()
             if remaining<9:raise requests.Timeout('Bounded collection deadline')
             if index and os.name=='nt':session.proxies={'https':'http://127.0.0.1:2080'}
+            r=None
             try:
-                r=session.get(SOURCE,timeout=(8,min(20,remaining-8)));r.raise_for_status()
+                r=session.get(SOURCE,timeout=(8,min(5,remaining-8)),stream=True);r.raise_for_status()
+                content=[];size=0
+                try:
+                    for chunk in r.iter_content(chunk_size=16384):
+                        if time.monotonic()>deadline:raise requests.Timeout('Absolute collection deadline')
+                        size+=len(chunk)
+                        if size>8*1024*1024:raise ValueError('Official page size limit')
+                        content.append(chunk)
+                finally:r.close()
+                payload=b''.join(content)
                 attempts.append({'attempt':index+1,'status':'received'});break
             except requests.RequestException as error:
+                if r is not None:r.close()
                 attempts.append({'attempt':index+1,'status':'failed','error_type':type(error).__name__})
                 if index==1:raise
                 time.sleep(1)
-        out=ingest_capture(r.content,checked)
+        out=ingest_capture(payload,checked)
         out['attempts']=attempts
-    except (requests.RequestException,AssertionError,ValueError,KeyError,TypeError,OverflowError) as e:
+    except (requests.RequestException,AssertionError,ValueError,KeyError,TypeError,OverflowError,ParserError) as e:
         out={'status':'official_bond_source_check_failed','checked_at':checked,'source_url':SOURCE,'error_type':type(e).__name__,'attempts':attempts,'max_attempts_per_location':2,'previous_snapshot_retained':(folder/'latest.json').exists()}
         if (folder/'latest.json').exists():
             previous=json.loads((folder/'latest.json').read_text(encoding='utf-8'))
             out['retained_last_trade_date']=previous.get('last_trade_date');out['retained_snapshot_sha256']=previous.get('snapshot_sha256')
         atomic_write(DATA_DIR/'ifb-bond-health.json',out)
+    finally:
+        if session is not None:session.close()
     return out
+
+def load_display():
+    """Retain dated valid archive for display; stale never becomes current/model input."""
+    try:
+        meta,body=load_current()
+        return dict(meta,stale=False,eligible_for_current=True),body
+    except AssertionError:
+        folder=DATA_DIR/'ifb-treasury';meta=json.loads((folder/'latest.json').read_text(encoding='utf-8'))
+        path=folder/meta['snapshot_file']
+        assert path.parent==folder and hashlib.sha256(path.read_bytes()).hexdigest()==meta['snapshot_sha256']
+        body=json.loads(path.read_text(encoding='utf-8'))
+        today=dt.datetime.now(dt.timezone(dt.timedelta(hours=3,minutes=30))).date()
+        last=dt.date.fromisoformat(meta['last_trade_date']);assert last<=today
+        assert body['records'] and all(dt.date.fromisoformat(r['trade_date'])<=today for r in body['records'])
+        return dict(meta,stale=True,eligible_for_current=False,age_days=(today-last).days),body
 def load_current():
     folder=DATA_DIR/'ifb-treasury';meta=json.loads((folder/'latest.json').read_text(encoding='utf-8'));path=folder/meta['snapshot_file'];assert path.parent==folder and hashlib.sha256(path.read_bytes()).hexdigest()==meta['snapshot_sha256']
     body=json.loads(path.read_text(encoding='utf-8'));today=dt.datetime.now(dt.timezone(dt.timedelta(hours=3,minutes=30))).date();assert 0<=(today-dt.date.fromisoformat(meta['last_trade_date'])).days<=5

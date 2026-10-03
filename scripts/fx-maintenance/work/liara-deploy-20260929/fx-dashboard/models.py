@@ -21,6 +21,7 @@ UI نمایش می‌دهد.
 """
 import numpy as np
 import pandas as pd
+import data_sources as ds
 
 from data_sources import forward_month_labels, parse_shamsi_date
 
@@ -437,3 +438,113 @@ def bubble_gap(market: pd.Series, model: pd.Series) -> pd.Series:
     a, b = market.align(model, join="inner")
     mask = b.notna() & (b != 0)
     return ((a[mask] - b[mask]) / b[mask] * 100).round(1)
+
+
+def monthly_fundamental(ppp_annual: pd.Series, usa_infl: pd.Series,
+                        month_index: pd.Series, data_version: str = "", cpi_frame=None, annual_anchor_verified=False, sample_only=False) -> tuple:
+    """
+    ارزشِ بنیادیِ PPP را روی شبکهٔ **ماهانهٔ** نرخ بازار می‌سازد.
+
+    توجه: `month_index` باید **pd.Series** از تاریخ‌ها باشد نه DatetimeIndex —
+    st.cache_data نمی‌تواند DatetimeIndex را هش کند (UnhashableParamError).
+
+    ورودی رسمی بانک مرکزی فقط با checksum و قرارداد لنگر سالانه تأییدشده مجاز است؛
+    شاخهٔ رسمی ناقص به درون‌یابی سالانه بازنمی‌گردد. نمونه با لنگر مصنوعی برچسب دارد.
+
+    دو مسیر پیش‌فرض قبلی، به‌ترتیبِ اولویت:
+
+    ۱) «cpi» — از **CPI ماهانهٔ بازسازی‌شدهٔ ایران** (ds.load_cpi_monthly) و تورمِ
+       ماهانهٔ آمریکا (پخشِ هندسیِ تورمِ سالانه: (1+π_us)^(1/12)). شاخصِ نسبیِ
+       ماهانه ساخته می‌شود و سپس **به PPP سالانه بنچ‌مارک می‌شود**: برای هر سالِ
+       شمسی ضریبِ تصحیح c_y = PPP_y ÷ میانگینِ ماهانهٔ شاخص محاسبه و فقط همین
+       ضریبِ کند-حرکت لگاریتم-خطی درون‌یابی می‌گردد.
+
+       چرا بنچ‌مارک لازم است: تورمِ فایلِ ماهانه با infl_cbi سالانهٔ داشبورد
+       ناسازگار است — انباشتِ ۱۳۹۹/۰۱ تا ۱۴۰۵/۰۳ در ماهانه ×۱۲٫۳ و در سالانه
+       ×۹٫۴ است (~۳۰٪ فاصله). بدونِ بنچ‌مارک، سطحِ بنیادیِ ماهانه تا ۴۲٪ از
+       سری سالانهٔ خودِ داشبورد فاصله می‌گیرد و دو تبِ داشبورد دو حرفِ متضاد
+       می‌زنند. با بنچ‌مارک، **سطح** از سری سالانه و **شکلِ درون‌سال** از CPI
+       واقعی می‌آید — همان قاعدهٔ استانداردِ temporal disaggregation.
+
+    ۲) «interp» — پس‌افتِ گریس‌فول وقتی CPI ماهانه نیست: درون‌یابیِ
+       لگاریتم-خطیِ خودِ PPP سالانه. **این مسیر اطلاعاتِ درون‌سال نمی‌سازد**؛
+       آمارهٔ BSADF هموارتر از حقیقت می‌شود و باید در مقاله ذکر شود.
+
+    Returns:
+        (سری بنیادی هم‌ایندکس با month_index، برچسبِ روش: "cpi" | "interp" | "")
+    """
+    if ppp_annual is None or len(ppp_annual) < 2 or month_index is None or len(month_index) == 0:
+        return pd.Series(dtype=float), ""
+
+    month_index = pd.DatetimeIndex(pd.Series(month_index).values)
+    ppp_a = pd.Series(ppp_annual).dropna()
+    ppp_a = ppp_a[ppp_a > 0]
+    if len(ppp_a) < 2:
+        return pd.Series(dtype=float), ""
+
+    def _to_grid(s: pd.Series) -> pd.Series:
+        """درون‌یابیِ لگاریتم-خطیِ زمانی روی شبکهٔ ماهانهٔ بازار."""
+        s = s[s > 0].sort_index()
+        if len(s) < 2:
+            return pd.Series(dtype=float)
+        grid = s.index.union(month_index)
+        v = np.exp(np.log(s).reindex(grid).interpolate(method="time", limit_area="inside"))
+        return v.reindex(month_index).dropna()
+
+    # ── مسیر ۱: CPI ماهانهٔ بازسازی‌شده، بنچ‌مارک‌شده به PPP سالانه ──
+    cpi = ds.load_cpi_monthly() if cpi_frame is None else cpi_frame
+    official = cpi.attrs.get("source_kind") == "cbi_official"
+    if official and (not cpi.attrs.get("validated_readonly_input") or not annual_anchor_verified):
+        return pd.Series(dtype=float), "blocked_annual_anchor_contract"
+    if official and (cpi.empty or cpi["cpi"].isna().any()):
+        return pd.Series(dtype=float), "blocked_incomplete_official_CPI"
+    if not cpi.empty and len(cpi) >= 24:
+        us = pd.Series(usa_infl).dropna() if usa_infl is not None else pd.Series(dtype=float)
+
+        # تورمِ ماهانهٔ آمریکا از تورمِ سالانهٔ همان سالِ شمسی (پخشِ هندسی).
+        # نبودِ سال ⇒ NaN؛ خروجی رسمی با پوشش ناقص ساخته نمی‌شود.
+        def _us_m(jy):
+            v = us.get(int(jy), np.nan)
+            return (1 + float(v) / 100) ** (1 / 12) if pd.notna(v) else np.nan
+
+        us_fac = np.array([_us_m(jy) for jy in cpi["jy"]])
+        rel = (cpi["cpi"].to_numpy() / us_fac.cumprod())
+        rel = pd.Series(rel / rel[0], index=cpi.index)
+
+        # ضریبِ تصحیحِ سالانه c_y = PPP_y ÷ میانگینِ سالانهٔ شاخصِ نسبی.
+        # دو نکتهٔ ریز که خطای بنچ‌مارک را از ~۵٪ به ~۱٪ می‌رساند:
+        #   • فقط سال‌های **کامل** (≥۶ ماه داده) لنگر می‌شوند؛ سالِ ناقصِ انتهایی
+        #     میانگینش نمایندهٔ سال نیست و ضریبِ سالِ قبل را هم منحرف می‌کند.
+        #   • لنگر روی **میانهٔ سال** (ماه ۷) می‌نشیند نه ماه ۱، چون c بین لنگرها
+        #     لگاریتم-خطی درون‌یابی می‌شود و میانگینِ سال حوالیِ میانهٔ سال رخ می‌دهد.
+        grp = pd.DataFrame({"rel": rel.to_numpy(), "jy": cpi["jy"].to_numpy()}).groupby("jy")["rel"]
+        c = {}
+        for jy, r in grp.mean().items():
+            if jy in ppp_a.index and r > 0 and grp.count().loc[jy] >= (12 if official else 6):
+                g0, _ = ds.shamsi_month_to_gregorian_range(int(jy), 7)
+                c[pd.Timestamp(g0)] = float(ppp_a.loc[jy]) / float(r)
+        if len(c) >= 2:
+            c_s = pd.Series(c).sort_index()
+            grid = rel.index.union(c_s.index)
+            c_m = np.exp(np.log(c_s).reindex(grid).interpolate(method="time")
+                         .ffill().bfill()).reindex(rel.index)
+            fund = _to_grid(rel * c_m)
+            if len(fund) >= 24:
+                fund.attrs.update(source_kind=cpi.attrs.get("source_kind","reconstructed_sci"), source_sha256=cpi.attrs.get("source_sha256"), sample_only=sample_only, annual_anchor_verified=annual_anchor_verified)
+                return fund, "cbi_official_sample" if official and sample_only else "cbi_official" if official else "cpi"
+
+    if official:
+        return pd.Series(dtype=float), "blocked_official_model_coverage"
+
+    # ── مسیر ۲: درون‌یابیِ لگاریتم-خطیِ PPP سالانه ──
+    anchors = {}
+    for jy, v in ppp_a.items():
+        try:
+            g0, _ = ds.shamsi_month_to_gregorian_range(int(jy), 1)
+            anchors[pd.Timestamp(g0)] = float(v)
+        except Exception:  # noqa: BLE001
+            continue
+    if len(anchors) < 2:
+        return pd.Series(dtype=float), ""
+    fund = _to_grid(pd.Series(anchors))
+    return (fund, "interp") if not fund.empty else (pd.Series(dtype=float), "")

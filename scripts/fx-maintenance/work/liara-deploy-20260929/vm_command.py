@@ -14,7 +14,8 @@ sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 root = Path(os.environ["FX_VM_CONFIG_DIR"]).resolve()
 auth = json.loads((Path.home() / ".liara-auth.json").read_text(encoding="utf-8"))
 token = auth["accounts"]["safariarash7777"]["api_token"]
-proxy = urllib.request.ProxyHandler({"https": "http://127.0.0.1:2080"})
+from liara_connection import proxy_mapping
+proxy = urllib.request.ProxyHandler(proxy_mapping())
 opener = urllib.request.build_opener(proxy)
 
 

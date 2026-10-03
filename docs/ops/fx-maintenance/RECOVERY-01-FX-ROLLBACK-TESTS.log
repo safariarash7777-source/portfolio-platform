@@ -1,0 +1,10 @@
+test_bad_receipt_blocks_before_mutation (test_recovery_fx_release.Release.test_bad_receipt_blocks_before_mutation) ... ok
+test_create_failure_restores_name_before_original_stopped (test_recovery_fx_release.Release.test_create_failure_restores_name_before_original_stopped) ... ok
+test_install_preserves_env_network_mount_and_old_container (test_recovery_fx_release.Release.test_install_preserves_env_network_mount_and_old_container) ... ok
+test_prepare_backs_up_without_container_effect (test_recovery_fx_release.Release.test_prepare_backs_up_without_container_effect) ... ok
+test_start_failure_restores_original_runtime (test_recovery_fx_release.Release.test_start_failure_restores_original_runtime) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.109s
+
+OK
