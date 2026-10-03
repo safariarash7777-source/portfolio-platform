@@ -197,4 +197,3 @@ test('Entitlement outage returns retry; genuine absence returns dashboard', asyn
     assert.equal(target.searchParams.get('error'), unavailable ? 'auth_unavailable' : null);
   }
 });
-
