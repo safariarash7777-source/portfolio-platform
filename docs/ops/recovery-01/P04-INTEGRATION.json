@@ -1,0 +1,235 @@
+{
+  "status": "SELECTED_UNCOMMITTED_NOT_DEPLOYED",
+  "sourceSHA": "f54255c7fcacaeb8bf68344ac83809375628a590",
+  "baseSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "files": [
+    {
+      "path": "app/(protected)/dashboard/holdings/page.tsx",
+      "category": "runtime",
+      "sourceSHA256": "119087b1f5de4e1e960f2f2fa6e50dffaa83d0ffe17753222e9e2e775b851d05"
+    },
+    {
+      "path": "app/api/portfolio/debts/route.ts",
+      "category": "runtime",
+      "sourceSHA256": "a05d6276b59ed4c0e57084c786e6bc5cd144b94d0a044ad99aa885eef007a509"
+    },
+    {
+      "path": "app/api/portfolio/holdings/route.ts",
+      "category": "runtime",
+      "sourceSHA256": "0f966eba9ae3e0349401b4aef8e336a40b339acbdf13c34b26b2e1d0888e6d15"
+    },
+    {
+      "path": "app/api/portfolio/holdings/scope/route.ts",
+      "category": "runtime",
+      "sourceSHA256": "fb8d380eb6fa874178eee3c3b00f509067669645559bf594ac6d6a4e8f2ca6ad"
+    },
+    {
+      "path": "components/dashboard/ReadError.tsx",
+      "category": "runtime",
+      "sourceSHA256": "e30c741c6a79cd7e3b8936550c210f1b4ae961a08fe00f04fc0530d3507c5b20"
+    },
+    {
+      "path": "components/portfolio/BalanceSheetSummary.tsx",
+      "category": "runtime",
+      "sourceSHA256": "8ffe6cac7a0405f5217edc37dde93483b6c1b455b181f3d2c5b5a0c816aaf4c2"
+    },
+    {
+      "path": "components/portfolio/DebtsWorkbench.tsx",
+      "category": "runtime",
+      "sourceSHA256": "2762eeeb3ba92041f56772db27ad47036f21493cbdd1a54585de5919329c6286"
+    },
+    {
+      "path": "components/portfolio/HoldingsImportPreview.tsx",
+      "category": "runtime",
+      "sourceSHA256": "35b25687127a7ffcc6368ce4dbf66c2f33de66f5af2a88bd7e60a32936963eb9"
+    },
+    {
+      "path": "components/portfolio/HoldingsSummary.tsx",
+      "category": "runtime",
+      "sourceSHA256": "79da91ef5b8ba5f4bb47737c013aa6d0e0ab4638e6da3160e8cf9260d5856acf"
+    },
+    {
+      "path": "components/portfolio/HoldingsWorkbench.tsx",
+      "category": "runtime",
+      "sourceSHA256": "bdaef775de7527c97460c919ec3e4fa79f31755556189a65e008d349089e0283"
+    },
+    {
+      "path": "components/portfolio/InvestmentScopeWorkbench.tsx",
+      "category": "runtime",
+      "sourceSHA256": "ac6a6c8495683369d36adb438b2183c14fbfe1641bb9f9127208983d804b03bf"
+    },
+    {
+      "path": "lib/portfolio/balanceSheet.ts",
+      "category": "runtime",
+      "sourceSHA256": "e6001e0958984c74725e62bbf9ad48f47d8a8dba4544c00392fc44f2f5cd4223"
+    },
+    {
+      "path": "lib/portfolio/contracts.ts",
+      "category": "runtime",
+      "sourceSHA256": "d8125f956cb561c89999bd9872a41773a1d8852b6ce6e4ff202926bb146b2c79"
+    },
+    {
+      "path": "lib/portfolio/financialHttp.ts",
+      "category": "runtime",
+      "sourceSHA256": "a25cecc1fd117ccb5824ed431d6f0ad4444aeb3760a2bccf984197d923d53db1"
+    },
+    {
+      "path": "lib/portfolio/financialInput.ts",
+      "category": "runtime",
+      "sourceSHA256": "55625ce83f9ea9335030de45af33be82c58ac0194850b1127ff6289cb92216fe"
+    },
+    {
+      "path": "lib/portfolio/financialReadHttp.ts",
+      "category": "runtime",
+      "sourceSHA256": "a3a2bf89963c42e1f2db1c4a53e8279ae6ffe908fe176177d7bcbd093cf5f044"
+    },
+    {
+      "path": "lib/portfolio/importPreview.ts",
+      "category": "runtime",
+      "sourceSHA256": "7cdde5a9f5b3a268e9c4d8f39feb5fa27bf1a45aca1276c4883689cca6b0d2ff"
+    },
+    {
+      "path": "lib/portfolio/investmentScope.ts",
+      "category": "runtime",
+      "sourceSHA256": "3872e7ed9d3ae4ee1ab7dff547942ff896d174a63be87543665dbc10bbfcbbfb"
+    },
+    {
+      "path": "lib/portfolio/prices.ts",
+      "category": "runtime",
+      "sourceSHA256": "79a6e25be429657716577785f5cd7d02f6ff4e1cdaaa37d79706e8f3ddf48f7d"
+    },
+    {
+      "path": "lib/portfolio/readDb.ts",
+      "category": "runtime",
+      "sourceSHA256": "2e2280af4c5b2f17fb60879d9b799e2dc975d18d93eb8fd80406f9d17b75fb77"
+    },
+    {
+      "path": "lib/portfolio/rebalance.ts",
+      "category": "runtime",
+      "sourceSHA256": "19140d43e4c14874ea1746d619a77f2b973b7c243c07bc530ef3d141e627c8cf"
+    },
+    {
+      "path": "lib/portfolio/scopeContract.ts",
+      "category": "runtime",
+      "sourceSHA256": "6f2d5918369c2dacd14762f0b20b24be6357a4e1abe20e58ff5056671caced62"
+    },
+    {
+      "path": "lib/portfolio/scopeHttp.ts",
+      "category": "runtime",
+      "sourceSHA256": "5a0a3c0350802276236b4f36337aec55a2d90927e0634e7cdf0c76a77c81b630"
+    },
+    {
+      "path": "lib/portfolio/scopeService.ts",
+      "category": "runtime",
+      "sourceSHA256": "9110726667882cb64b885db605c9ec19a4840ae378e160136a96076b1f1ca4d9"
+    },
+    {
+      "path": "lib/portfolio/service.ts",
+      "category": "runtime",
+      "sourceSHA256": "5c6b246372d638145c4a1ede4555f75fef6ba219678be42dd1cfc1bb93604f3a"
+    },
+    {
+      "path": "lib/portfolio/targetContract.ts",
+      "category": "runtime",
+      "sourceSHA256": "f6654ee5439c0b81279e5bd6347b5d2630ea54233a67be9175d7ad0241cd8905"
+    },
+    {
+      "path": "lib/portfolio/units.ts",
+      "category": "runtime",
+      "sourceSHA256": "8278b3e20e182fcfef1569487790ead83e9db453f30832e6eadcb4b3284327c7"
+    },
+    {
+      "path": "lib/portfolio/valuation.ts",
+      "category": "runtime",
+      "sourceSHA256": "ab0d4550627a31d5629cb6615b87c62b8778518171b45f890bdba14b648e3665"
+    },
+    {
+      "path": "lib/portfolio/view.ts",
+      "category": "runtime",
+      "sourceSHA256": "81a9d1bff50cab2b815efa9d9449f5d44272cbb1db4a013d5c98cc0985fdc629"
+    },
+    {
+      "path": "lib/read-state.ts",
+      "category": "runtime",
+      "sourceSHA256": "76df4ff64d6a697cfff2fec42332424e21ecb3938a434af00a7958cb7d08c3fc"
+    },
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "category": "schema_not_installed",
+      "sourceSHA256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+    },
+    {
+      "path": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "category": "schema_not_installed",
+      "sourceSHA256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+    },
+    {
+      "path": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "category": "schema_not_installed",
+      "sourceSHA256": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+    },
+    {
+      "path": "supabase/migrations/20261003100542_recovery_legacy_holdings_owner_only.sql",
+      "category": "schema_not_installed",
+      "sourceSHA256": "5ae23c1716a8bc0f077a1085f9035def910b40813352e264865ff077225f7f6b"
+    },
+    {
+      "path": "lib/portfolio/balanceSheet.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "cb3fb6fefd22a25f80bba7accd535edf94681b4da35e637316543da93d5bf775"
+    },
+    {
+      "path": "lib/portfolio/financialHttp.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "d98b6be217d373c5873e2d5770b4fe86d43c0e19e569b260f47b8fc91e2d835a"
+    },
+    {
+      "path": "lib/portfolio/prices.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "4eeaec2cb8fd2fb8ce0d702d594b5aaddea60ca05aa169c8644f48ca5920441a"
+    },
+    {
+      "path": "lib/portfolio/rebalance.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "d0aa2ca3bad708de269bfd1f5614ff91ffdaec3f46cf7edde5b8a7c238b7b2be"
+    },
+    {
+      "path": "lib/portfolio/targetContract.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "0f8b1ef160df05258fdaa705c8b031b9c61ac8bd6957f96558f6d664cf9d64ec"
+    },
+    {
+      "path": "lib/portfolio/units.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "d507113e43c04dd1579aec691dd999add9859515b05d60d0fd866e5af8975a1d"
+    },
+    {
+      "path": "lib/portfolio/valuation.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "ec90928b5cff2f337f99b5c2037b0f704ad2a1efe2c4ce2d9cc0ab986944e174"
+    },
+    {
+      "path": "lib/portfolio/view.test.ts",
+      "category": "test_or_rollback",
+      "sourceSHA256": "a934ca478c073230585b3af402d199a77753fbe649671391673a1c813bf26b6d"
+    },
+    {
+      "path": "sql/test/portfolio_precondition.sql",
+      "category": "test_or_rollback",
+      "sourceSHA256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b"
+    },
+    {
+      "path": "docs/ops/recovery-01/P04-ROLLBACK-FREEZE.sql",
+      "category": "test_or_rollback",
+      "sourceSHA256": "6d32723326fe9227457ac69a70c5d7d4cdc01ef5fa7f76cbcd5f5a83d1e32ef2"
+    }
+  ],
+  "integrationAdaptations": [
+    "Legacy target projection excludes absent reference_version_id; null provenance retained",
+    "Unused adviser RPC reader removed",
+    "New finance page uses unchanged main Navbar/Footer"
+  ],
+  "schemaInstalled": false,
+  "legacyDataConverted": false,
+  "securityRollback": "Keep owner-only legacy policy even on application rollback"
+}

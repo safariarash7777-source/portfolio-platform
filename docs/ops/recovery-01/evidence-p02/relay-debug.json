@@ -1,0 +1,133 @@
+{
+  "observedAt": "2026-10-03T09:30:58.742Z",
+  "httpStatus": 200,
+  "ageSec": 167,
+  "lastRefresh": 1791019691502,
+  "counts": {
+    "gold": 9,
+    "currency": 28,
+    "crypto": 19,
+    "funds": 333,
+    "stocks": 762,
+    "options": 1114
+  },
+  "transport": {
+    "enabled": true,
+    "scope": "process",
+    "spacingMs": 100,
+    "pending": 0,
+    "sent": 7165,
+    "minStartGapMs": 108.6488037109375
+  },
+  "legacy": {
+    "enforced": false,
+    "used": {
+      "gold-currency": 803,
+      "all-symbols": 803,
+      "market-index": 803,
+      "options": 803,
+      "nav-bulk": 1,
+      "nav-completion": 25,
+      "fund-meta": 335,
+      "ime-certificate": 53,
+      "symbol-detail": 1697,
+      "codal-archive": 220,
+      "candle-backfill": 5,
+      "ime-physical": 3
+    },
+    "rejected": {
+      "options": 803,
+      "nav-bulk": 1,
+      "nav-completion": 25,
+      "fund-meta": 335,
+      "ime-certificate": 53,
+      "symbol-detail": 1697,
+      "codal-archive": 220,
+      "candle-backfill": 5,
+      "ime-physical": 3,
+      "all-symbols": 671,
+      "market-index": 671,
+      "gold-currency": 667
+    },
+    "overBudgetPassed": {
+      "options": 803,
+      "nav-bulk": 1,
+      "nav-completion": 25,
+      "fund-meta": 335,
+      "ime-certificate": 53,
+      "symbol-detail": 1697,
+      "codal-archive": 220,
+      "candle-backfill": 5,
+      "ime-physical": 3,
+      "all-symbols": 671,
+      "market-index": 671,
+      "gold-currency": 667
+    },
+    "unmetered": 0,
+    "scope": "process_counters_not_verified_daily_prior_usage"
+  },
+  "budget": {
+    "day": "2026-10-03",
+    "persistent": true,
+    "softBudget": 6000,
+    "hardCeiling": 9000,
+    "used": 0,
+    "remaining": 9000,
+    "remainingKnown": null,
+    "usedByClass": {
+      "critical": 100,
+      "standard": 0,
+      "bulk": 0
+    },
+    "rejectedByBudget": 857
+  },
+  "budgetStore": {
+    "healthy": false,
+    "errors": 478,
+    "degradedCeiling": 100,
+    "degradedUsed": 100
+  },
+  "budgetLease": {
+    "granted": 0,
+    "spent": 0,
+    "remaining": 0,
+    "calls": 0
+  },
+  "budgetStop": {
+    "active": false,
+    "servedAgeMs": 167235
+  },
+  "db": {
+    "ok": true,
+    "status": 200,
+    "at": 1791019692059
+  },
+  "clientEnabled": false,
+  "sources": {
+    "brsapi_gold_currency": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_stocks": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_index": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_nav": {
+      "ok": true,
+      "count": null,
+      "at": null
+    },
+    "brsapi_fund_meta": {
+      "ok": true,
+      "count": null,
+      "at": null
+    }
+  }
+}

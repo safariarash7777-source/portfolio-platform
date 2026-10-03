@@ -1,0 +1,166 @@
+{
+  "status": "PREPARING_NOT_DEPLOYED",
+  "owner": "P00",
+  "mission": "RECOVERY-01 existing main site, current appearance, bounded repair",
+  "targetOrigin": "https://portfolio-platform-fawn.vercel.app",
+  "baselineSourceSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "baselineRemoteMainVerified": "2026-10-03",
+  "baselineDeploymentFromMission": "dpl_9suSBhTKxEgEefXoUDr2o6FfmZ56",
+  "freshDeploymentReceipt": "P01-AUTH-AND-VISUAL-BASELINE.md: main51fd and dpl_9suSBhTKxEgEefXoUDr2o6FfmZ56 verified",
+  "branch": "codex/recovery-01-20261003",
+  "worktree": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-recovery-01-20261003",
+  "currentCandidateSHA": null,
+  "patchesInstalled": [
+    {
+      "owner": "FX",
+      "scope": "Existing status panel, metadata and local existing-job ticker only",
+      "installedImage": "sha256:486452d0eb49480e9821ca3a3c3898858954cd1325fd2f682ee0d7f99c00e6e6",
+      "receipt": "RECOVERY-01-FX-DELIVERY-RECEIPT.json",
+      "observedAt": "2026-10-03T10:27:18.548987+00:00",
+      "serviceHealth": "healthy",
+      "financialDataPreserved": true,
+      "realMainAdminAcceptance": "NOT_ACCEPTED"
+    }
+  ],
+  "candidatePatches": [
+    {
+      "owner": "P01",
+      "scope": "Minimum Auth/role/profile repair compatible with actual main baseline; no wholesale219",
+      "status": "ELEVEN_PATHS_SELECTED; REAL_OWNER_LOGIN_PENDING",
+      "observedPreparedSource": "aafe8b02b12d2d48129c3a99879e8f716f16c1c1",
+      "integration": "P01-INTEGRATION.json"
+    },
+    {
+      "owner": "P02",
+      "scope": "Thin existing reader/relay null, source-time and contract-size repair; no unknown-unit conversion or extra provider calls",
+      "status": "SELECTED_THIN_CODE_AND_P01_EXISTING_UI_NOT_DEPLOYED",
+      "sources": [
+        "603877f6a3c2f70d25c073ce748f55945e2e76c9",
+        "4213dda041f8aaaf8a98d7e24047ca47564e6230",
+        "4e5cb64f86f89956d5eb7b0b20ab456d1f1613f3"
+      ],
+      "accessBlocker": "P02-LIARA-ACCESS-ADDENDUM.fa.md: unauthenticated console/no available CLI; operator runtime receipt required"
+    },
+    {
+      "owner": "P04",
+      "scope": "Canonical owner-only asset/debt core, preserved legacy holdings and target history, minimum durable scope",
+      "status": "SELECTED_CODE_SCHEMA_NOT_INSTALLED_MAIN; UNKNOWN_OUTCOME_SOURCE_FINDING_CLOSED",
+      "runtimeSource": "a994c3d3436475b697ba2a6b85f475d81e91c4b4",
+      "securitySource": "f54255c7fcacaeb8bf68344ac83809375628a590",
+      "verificationSource": "1b19bcd006d58d7a15f6bbabc266470ea604fdda",
+      "sourceCI": "37115748896 SUCCESS, independent of release CI",
+      "integration": "portfolio-recovery-01-20261003/docs/ops/recovery-01/P04-INTEGRATION.json",
+      "formFixSource": "3ace1fbf1c40ea3842cfa9aa368cf95f5e91aeb3",
+      "formFixStatus": "40 actual component handler cases included in root full core; independent read-only source review finds no remaining issue in selected closure"
+    },
+    {
+      "owner": "P07",
+      "scope": "Existing ResearchWorkbook persistence/privatePreparation and current review rule; preserve public shell and ArashCommandDesk",
+      "status": "SELECTED_CODE_NOT_INSTALLED_WRITER_OFF",
+      "sourceSHA": "c3d282ed30c9400227d598db9395476e71f110f3",
+      "sourceCI": "37116444698 SUCCESS, core1321 DB447, independent of release CI",
+      "integration": "portfolio-recovery-01-20261003/docs/ops/recovery-01/P07-INTEGRATION.json"
+    },
+    {
+      "owner": "FX",
+      "scope": "Existing connection/scheduler/status panel only, unchanged cadence/model/provider and data mount",
+      "status": "LIMITED_SCOPE_INSTALLED_AUTHENTICATED_MAIN_ACCEPTANCE_PENDING",
+      "approval": "RECOVERY-01-FX-P00-APPROVAL.json",
+      "candidateImage": "sha256:486452d0eb49480e9821ca3a3c3898858954cd1325fd2f682ee0d7f99c00e6e6",
+      "receipt": "RECOVERY-01-FX-DELIVERY-RECEIPT.json"
+    }
+  ],
+  "schema": {
+    "destination": "portfolio-stage-db-1, backend currently used by main site",
+    "witness": "P00-PRODUCTION-SCHEMA.json",
+    "legacyWitness": "P00-LEGACY-SCHEMA.json",
+    "memberFinancialCore": "ABSENT",
+    "researchVersionsAndReviews": "ABSENT",
+    "migrationSelection": "Exact five selected files installed successfully ONLY on isolated restored PG17.6; hashes in P00-ISOLATED-SCHEMA-COMPATIBILITY.json; main DB not installed",
+    "installedByRecovery": false,
+    "backupCurrentDestination": "PASS current Liara dump f725d1b... and isolated PG17.6 restore; P01-LIARA-BACKUP-RESTORE-RECEIPT.json",
+    "restoreProofAndCompatibleRollback": "PASS isolated restore and five-schema compatibility; PASS writer freezes/privilege assertions and ten table counts preserved; real main acceptance pending",
+    "historicalSupabaseBackupNotCurrentLiaraProof": true,
+    "legacyRlsWitness": "P00-LEGACY-RLS-EXPRESSIONS.json",
+    "legacyPrivacyFinding": "holdings SELECT and ALL both permit owner OR admin; owner-only correction prepared by P04, not installed"
+  },
+  "assets": {
+    "baseline": "Live main51fd, existing header/footer/font/colors/navigation",
+    "viewportWitnesses": "P01-visual-baseline/home1440.jpg, home390.jpg, market1440.jpg, market390.jpg and ASSET-HASHES.json",
+    "newShell177188199": "EXCLUDED"
+  },
+  "config": {
+    "backendObservedByP01": "https://62.60.191.24/liara-preview",
+    "newProviderOrSMS": "EXCLUDED",
+    "secretsInManifest": false,
+    "finalFlags": "PENDING_EXPLICIT_READINESS"
+  },
+  "acceptance": {
+    "origin": "SAME_MAIN_SITE",
+    "ownerLogin": "NOT_ACCEPTED_PENDING_SECURE_OWNER_ATTEMPT",
+    "memberPersistence": "NOT_ACCEPTED",
+    "privacyAToB": "NOT_ACCEPTED",
+    "researchHumanApproval": "HUMAN_REQUIRED",
+    "dataSourceToUI": "IN_PROGRESS_BY_FAMILY",
+    "syntheticEvidenceTransferred": false
+  },
+  "rollback": {
+    "code": "Retain previous main deployment/asset baseline; final tested steps pending",
+    "schema": "Additive compatible migration, retain immutable histories; writer freeze where old readers/writers lose metadata",
+    "validated": false,
+    "plan": "portfolio-recovery-01-20261003/docs/ops/recovery-01/INSTALL-AND-ROLLBACK.md",
+    "isolatedPg17Validated": true,
+    "isolatedProof": "P00-ISOLATED-ROLLBACK-PROOF.json"
+  },
+  "productionChangesByP00": false,
+  "selectedNotCommitted": [],
+  "releaseCI": "NOT_RUN_FOR_FINAL_COMBINATION",
+  "native219Frozen": {
+    "sha": "2e44dc1d7008acf0b0c76e8679238514f4f7bab2",
+    "pass": 16,
+    "fail": 0,
+    "blocked": 2,
+    "status": "PARTIAL_FROZEN_PRIORITY_CHANGED",
+    "evidenceTransferred": false
+  },
+  "currentCandidateStatus": "SELECTED_CODE_READY_FOR_COMBINED_CI; REAL_MAIN_ACCEPTANCE_PENDING",
+  "lastReconciledAt": "2026-10-03T11:06:55.267Z",
+  "authoritativeReleaseWorktree": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/portfolio-recovery-01-20261003",
+  "mainFrontendDeploymentPerformed": false,
+  "mainMergePerformed": false,
+  "coordinatedChanges": {
+    "mainFrontend": false,
+    "database": false,
+    "fxStatusRuntime": true,
+    "localExistingJobTicker": true,
+    "financialValues": false
+  },
+  "localChecks": {
+    "fullCore": {
+      "pass": 1296,
+      "fail": 0,
+      "skip": 0
+    },
+    "typecheck": "PASS current combined working selection",
+    "lint": "PASS full current combined tree",
+    "calc": {
+      "pass": 106,
+      "fail": 0,
+      "skip": 0
+    },
+    "deployCanonicalGitLf": {
+      "pass": 69,
+      "fail": 0,
+      "skip": 1,
+      "skipReason": "existing Linux-only process fixture on Windows; final Linux CI required"
+    },
+    "sqlValidator": {
+      "files": 43,
+      "failed": 0
+    },
+    "native": "NOT_ACCEPTED",
+    "finalCI": "NOT_RUN"
+  },
+  "previousCodeCheckpointSHA": "ffccbfcd4a738b69d9db31dd635639ebe1a3f4d1",
+  "candidateCommitResolution": "Resolve HEAD of codex/recovery-01-20261003 containing this manifest; exact final CI/deployment receipt maintained separately by P00"
+}

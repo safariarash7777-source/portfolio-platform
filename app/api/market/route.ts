@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getMarketData } from "@/lib/market";
-import { getIrMarket, getLastIrDiag } from "@/lib/market-ir";
+import { readGlobalMarket, readIranMarket } from "@/lib/market-bounded";
+import { getLastIrDiag } from "@/lib/market-ir";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,10 +10,10 @@ export const dynamic = "force-dynamic";
 // ?diag=1 → فیلدِ irDiag با خلاصهٔ عیب‌یابیِ اتصالِ رله (بدونِ سکرت) اضافه می‌شود؛
 //           برای فهمیدنِ اینکه چرا ir=null است (env؟ توکن؟ رلهٔ خاموش؟ منبعِ خالی؟).
 export async function GET(req: Request) {
-  const [data, ir] = await Promise.all([getMarketData(), getIrMarket()]);
-  const body: Record<string, unknown> = { ...data, ir };
+  const [global, iran] = await Promise.all([readGlobalMarket(), readIranMarket()]);
+  const body: Record<string, unknown> = { ...global.data, ir: iran.data, partial: global.availability.state !== "ready" || iran.availability.state !== "ready", availability: { global: global.availability, iran: iran.availability } };
   if (new URL(req.url).searchParams.get("diag") === "1") {
     body.irDiag = getLastIrDiag();
   }
-  return NextResponse.json(body);
+  return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
 }

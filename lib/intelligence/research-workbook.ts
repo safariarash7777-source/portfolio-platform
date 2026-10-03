@@ -1,5 +1,8 @@
 /** Preparation for the existing human intelligence workflow; never approval or publication. */
 import { INTEL_DOMAINS, type IntelDomain } from './contracts';
+import { parseManualIntake, manualIntakeIssues, type ManualIntake } from './manual-intake';
+
+export const PRIVATE_PREPARATION_CONTRACT = 'p07.private-preparation.v1';
 
 export const MAX_WORKBOOK_BYTES = 8_000_000;
 export const SCENARIO_KEYS = ['base', 'upside', 'downside'] as const;
@@ -13,6 +16,8 @@ export interface ResearchWorkbook {
   evidence: ResearchEvidence[]; interpretation: string; counterEvidence: string;
   scenarios: Record<typeof SCENARIO_KEYS[number], ResearchScenario>;
   portfolioImpact: string; reviewOn: string;
+  /** Admin research only. Never part of the publication/member DTO. */
+  privatePreparation?: { contract: typeof PRIVATE_PREPARATION_CONTRACT; intake: ManualIntake };
 }
 export function emptyWorkbook(): ResearchWorkbook {
   return { version: 1, title: '', domain: 'macro_ir', question: '', horizon: '',
@@ -36,6 +41,10 @@ export interface WorkbookIssue { field: string; message: string; }
 /** Structural checklist only: does not verify source contents or analytical truth. */
 export function reviewWorkbook(w: ResearchWorkbook): WorkbookIssue[] {
   const issues: WorkbookIssue[] = [];
+  if (w.privatePreparation) {
+    if (!w.privatePreparation.intake.text.trim()) issues.push({ field: 'privatePreparation', message: 'اصل ورودی آماده‌سازی را تکمیل کنید.' });
+    for (const code of manualIntakeIssues(w.privatePreparation.intake, w)) issues.push({ field: 'privatePreparation', message: `آماده‌سازی نیازمند بازبینی است: ${code}` });
+  }
   const required = (field: string, value: string, message: string) => {
     if (!value.trim()) issues.push({ field, message });
   };
@@ -74,6 +83,11 @@ export function parseWorkbook(text: string): ResearchWorkbook {
   if (d.version !== 1 || !INTEL_DOMAINS.includes(d.domain as IntelDomain)) throw new Error('نسخه یا حوزهٔ فایل معتبر نیست.');
   if (!Array.isArray(d.evidence) || d.evidence.length > 30) throw new Error('حداکثر سی شاهد قابل بارگذاری است.');
   const result = emptyWorkbook();
+  if (d.privatePreparation !== undefined) {
+    const preparation = object(d.privatePreparation);
+    if (preparation.contract !== PRIVATE_PREPARATION_CONTRACT) throw new Error('نسخه آماده‌سازی خصوصی پشتیبانی نمی‌شود؛ متن را حفظ کنید.');
+    result.privatePreparation = { contract: PRIVATE_PREPARATION_CONTRACT, intake: parseManualIntake(preparation.intake, true) };
+  }
   result.domain = d.domain as IntelDomain;
   for (const key of ['title', 'question', 'horizon', 'interpretation', 'counterEvidence', 'portfolioImpact', 'reviewOn'] as const) result[key] = str(d[key]);
   const ids = new Set<string>();

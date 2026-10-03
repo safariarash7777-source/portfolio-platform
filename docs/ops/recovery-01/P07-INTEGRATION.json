@@ -1,0 +1,205 @@
+{
+  "status": "SELECTED_NOT_DEPLOYED",
+  "sourceSHA": "c3d282ed30c9400227d598db9395476e71f110f3",
+  "baseSHA": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "privateWriterDefault": "OFF",
+  "schemaInstalled": false,
+  "files": [
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "sha256": "0E4CDE3EF4F06D4724F8E42F91E5998AF5A564AFC666899CB523FE8E9FCECE91",
+      "sourceWorkingtreeSHA256": "339A4FD43F0D36DF1F4335E653841E0A6DC0855E9BC69A06099A92CADA493C1E",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "components/admin/ResearchPreparationFields.tsx",
+      "sha256": "225C7D355CDAFCFF800869D19EDAA6F16F72E060CFEC0D8A45B862923710F513",
+      "sourceWorkingtreeSHA256": "225C7D355CDAFCFF800869D19EDAA6F16F72E060CFEC0D8A45B862923710F513",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "lib/intelligence/research-workbook.ts",
+      "sha256": "EBD689D54ECF46B80B7B880FDDC532E3485E2411A52008A241623F67DF2EAC63",
+      "sourceWorkingtreeSHA256": "D97F48CD220B17D1691BCBE80AE20CF4DAE0246DECC47BAA5E8C2BB75F533958",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "lib/intelligence/manual-intake.ts",
+      "sha256": "D68360CB63AD7C27DCBA0F052C954FD1BB547D38709A318B59D5074C1409CA5B",
+      "sourceWorkingtreeSHA256": "D68360CB63AD7C27DCBA0F052C954FD1BB547D38709A318B59D5074C1409CA5B",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "lib/intelligence/workbook-review.ts",
+      "sha256": "D0EF34AF3CD0B2071A94FA1ADAE91CE24F0408B784B094CC233C4BF7A2C0DFA1",
+      "sourceWorkingtreeSHA256": "D0EF34AF3CD0B2071A94FA1ADAE91CE24F0408B784B094CC233C4BF7A2C0DFA1",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "lib/intelligence/workbook-store.ts",
+      "sha256": "A79843FEB7766F7572EBFBFFB0B2C13FD66106B6E9B1F10962352CDDF82BA3EB",
+      "sourceWorkingtreeSHA256": "459A02F3CF0DB77D7C732936DF553B025F03E5DB0CF44D80CAB09177C57A7203",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "app/api/admin/intelligence/workbooks/route.ts",
+      "sha256": "3CED20943FB3B6164136BF8D74FF2449501D8634346C809D3DF829741881FD3E",
+      "sourceWorkingtreeSHA256": "08F66DCECBC631FC2509DFF7628AC173B103E84EA764BAB19BF457BB565B6ECF",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "sql/phase34_research_workbook_versions.sql",
+      "sha256": "D3193CAC78F70B4D0A25372CF8927AACE9933B5E117B2E2EBE7806110CDC4148",
+      "sourceWorkingtreeSHA256": "4EC5C4D1068B5CBE29A9F05E25FB9819ACB0FA1CC53F2FB783C28621E368F3D8",
+      "lineEndingWitness": "git LF equals source after CRLF normalization",
+      "runtime": true
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.test.ts",
+      "sha256": "0ba0a0f334560d29a4a6d073ce94209afcb7e9bb85664e6e5c482d8aa6002e92",
+      "runtime": false
+    },
+    {
+      "path": "components/admin/p07-component-test-host.ts",
+      "sha256": "0e3065f1e6a99ca770bd67f0317fd21dda0370599905b0840851a2c3288c2d32",
+      "runtime": false
+    },
+    {
+      "path": "lib/intelligence/p07-private-persistence.test.ts",
+      "sha256": "9c47218277e95207ccf002f648c04ea1d645664de1caf69b120d747a5875d1ca",
+      "runtime": false
+    },
+    {
+      "path": "lib/intelligence/workbook-store.test.ts",
+      "sha256": "6c42bea69038885f101d56ef730223979846f6b6f3e33cca13f5ff7ef413384a",
+      "runtime": false
+    },
+    {
+      "path": "lib/intelligence/workbook-store.integration.test.ts",
+      "sha256": "f0e235fa3bccb7c82475d5fdb8933b793fe12362269ad6368050e2232d9fc88e",
+      "runtime": false
+    },
+    {
+      "path": "lib/intelligence/p07-workflow-fixture.ts",
+      "sha256": "a580670e438d73792ff75b76b1165ac9cd83576dade48f540fd77ee518f3fc7e",
+      "runtime": false
+    },
+    {
+      "path": "lib/intelligence/publication.ts",
+      "sha256": "ca2491ca4966c918d3ed93046f0506deb6673ed4c0d4ba7d13a046d70ac45e16",
+      "runtime": false
+    },
+    {
+      "path": "lib/ops/test-postgres.ts",
+      "sha256": "6a7473c005dfb677b5b878634070ccf230467e9afadafccaddb16ca79a4136a8",
+      "runtime": false
+    }
+  ],
+  "testOnlyPublicationParser": true,
+  "publicShellChanged": false,
+  "history": [
+    {
+      "sourceSHA": "66f47ab59bf342d7ad8ed8a35e188c3b98205adc",
+      "validation": "21 targeted PASS; source scope selected"
+    }
+  ],
+  "transferWitness": {
+    "commit": "c3d282ed30c9400227d598db9395476e71f110f3",
+    "digestSource": "exact raw Git blob bytes LF",
+    "supersedes": "all prior runtime Git transfer digests; original tracked manifest used working CRLF bytes",
+    "sessionPredicateReference": "2e44dc1d7008acf0b0c76e8679238514f4f7bab2 session subset only; P01 dependency",
+    "fields": [
+      {
+        "path": "components/admin/ResearchWorkbook.tsx",
+        "gitBlob": "23100f67604b9b6ad9da0458afc7e64f64b85431",
+        "sha256": "0E4CDE3EF4F06D4724F8E42F91E5998AF5A564AFC666899CB523FE8E9FCECE91",
+        "bytes": 28673
+      },
+      {
+        "path": "components/admin/ResearchPreparationFields.tsx",
+        "gitBlob": "d35eab3d349707c5ade049f69f5d2191c2b8343e",
+        "sha256": "225C7D355CDAFCFF800869D19EDAA6F16F72E060CFEC0D8A45B862923710F513",
+        "bytes": 5180
+      },
+      {
+        "path": "lib/intelligence/research-workbook.ts",
+        "gitBlob": "4d8b3b431b15dfe9d1aa70de095b1c4610d5d1c9",
+        "sha256": "EBD689D54ECF46B80B7B880FDDC532E3485E2411A52008A241623F67DF2EAC63",
+        "bytes": 8776
+      },
+      {
+        "path": "lib/intelligence/manual-intake.ts",
+        "gitBlob": "5cf9eaad01c630ccf89d17af7e24b0b8aeee2dad",
+        "sha256": "D68360CB63AD7C27DCBA0F052C954FD1BB547D38709A318B59D5074C1409CA5B",
+        "bytes": 3655
+      },
+      {
+        "path": "lib/intelligence/workbook-review.ts",
+        "gitBlob": "ca2dfdf20cef4a3ffaec41fd5309c4c60a892118",
+        "sha256": "D0EF34AF3CD0B2071A94FA1ADAE91CE24F0408B784B094CC233C4BF7A2C0DFA1",
+        "bytes": 695
+      },
+      {
+        "path": "lib/intelligence/workbook-store.ts",
+        "gitBlob": "ca736f3899d75c9bd1fd13c3de19758f9eebb4ef",
+        "sha256": "F3CF00B93989F94AC98B285EDBED70938DD2EFD810B131AEB99FFC14F69440E8",
+        "bytes": 15821
+      },
+      {
+        "path": "app/api/admin/intelligence/workbooks/route.ts",
+        "gitBlob": "16fbe97e9c3c9ef063f707ddc9033c828d625d36",
+        "sha256": "9888B159BA59A7B893A0B685F76AB2FC1B600B9A240F6CAC733617FFDDC8F79D",
+        "bytes": 6756
+      },
+      {
+        "path": "sql/phase34_research_workbook_versions.sql",
+        "gitBlob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+        "sha256": "D3193CAC78F70B4D0A25372CF8927AACE9933B5E117B2E2EBE7806110CDC4148",
+        "bytes": 15203
+      },
+      {
+        "path": "lib/auth/session-error.ts",
+        "gitBlob": "21cec39715c005b3f89638f76b1dc575bd545851",
+        "sha256": "EB0748D2F3A8753F60AD79AA6FD717AC2C4F457F2439DC3AB3629B9B8D72BD80",
+        "bytes": 997
+      },
+      {
+        "path": "sql/P07-ROLLBACK-FREEZE.sql",
+        "gitBlob": "a5bda0d5a8a6e301699c4ecde44fa38fa22d3537",
+        "sha256": "76B4DB1AFAE60E75BC36A82DF342366659834732C1E47A1403E8789EC7A0CC1A",
+        "bytes": 624
+      },
+      {
+        "path": "app/api/admin/intelligence/workbooks/route.test.ts",
+        "gitBlob": "65334a382764602f8546e3e3e1bcf0ab804b9ca4",
+        "sha256": "E18F03E3F265CE444DBF3EB4BD42AE5786CCE01729BC8DF08C1309FCFB3696B4",
+        "bytes": 6482
+      },
+      {
+        "path": "lib/intelligence/workbook-store.test.ts",
+        "gitBlob": "21ab34a4d843ba509525a7f00ca17e6cea0c0ff9",
+        "sha256": "41FC39917FCBC447786C43E0926B23F68BF893E7672F381C46E40D8238AE7B5B",
+        "bytes": 15402
+      },
+      {
+        "path": "lib/intelligence/workbook-store.integration.test.ts",
+        "gitBlob": "1b5ca3fc94470078e081ebba342b273e13e4bb62",
+        "sha256": "6E5FC639B4669B7C5578182E93F73B2CA5C97AA84802024D66226D14233B6F17",
+        "bytes": 16597
+      }
+    ]
+  },
+  "corrections": [
+    "SDK errors preserved and narrowly classified",
+    "Role outage503 distinct from permission403",
+    "All private API responses no-store",
+    "Independent DB INSERT freeze before previous binary"
+  ]
+}

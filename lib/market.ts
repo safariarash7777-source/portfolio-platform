@@ -1,4 +1,5 @@
 import "server-only";
+import { withDeadline } from "./deadline";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendMessage } from "@/lib/telegram";
 import { toPersianDigits } from "@/lib/format";
@@ -44,15 +45,18 @@ const COINGECKO = "https://api.coingecko.com/api/v3";
 
 let cache: MarketData | null = null;
 let inflight: Promise<MarketData> | null = null;
+let retryAt = 0;
 
 /** دادهٔ بازار با کشِ ۵دقیقه. روی هر refresh، هشدارهای فعال ارزیابی می‌شوند. */
 export async function getMarketData(): Promise<MarketData> {
+  if (Date.now() < retryAt) return { ...(cache ?? { crypto: [], goldGlobal: [], fetchedAt: 0 }), ok: false };
   if (cache && Date.now() - cache.fetchedAt < CACHE_MS) return cache;
   if (inflight) return inflight;
 
   inflight = (async () => {
-    const fresh = await fetchCrypto();
-    cache = fresh;
+    const fresh = await withDeadline(signal => fetchCrypto(signal), 1900).catch(() => ({ crypto: [], goldGlobal: [], fetchedAt: 0, ok: false } as MarketData));
+    if (fresh.ok) { cache = fresh; retryAt = 0; }
+    else retryAt = Date.now() + 30000;
     // ارزیابیِ هشدارها فقط روی داده‌ی معتبر و در همان چرخهٔ کش.
     if (fresh.ok) {
       try {
@@ -61,7 +65,7 @@ export async function getMarketData(): Promise<MarketData> {
         console.error("alert evaluation error:", e instanceof Error ? e.message : "unknown");
       }
     }
-    return fresh;
+    return fresh.ok ? fresh : { ...(cache ?? fresh), ok: false };
   })();
 
   try {
@@ -71,12 +75,12 @@ export async function getMarketData(): Promise<MarketData> {
   }
 }
 
-async function fetchCrypto(): Promise<MarketData> {
+async function fetchCrypto(signal: AbortSignal): Promise<MarketData> {
   const ids = [...CRYPTO, ...GOLD_TOKENS].map((c) => c.id).join(",");
   const url = `${COINGECKO}/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&sparkline=false&price_change_percentage=24h`;
   try {
-    const res = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
-    if (!res.ok) return { crypto: [], goldGlobal: [], fetchedAt: Date.now(), ok: false };
+    const res = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store", signal });
+    if (!res.ok) return { crypto: [], goldGlobal: [], fetchedAt: 0, ok: false };
     const json = (await res.json()) as Array<{
       id: string;
       symbol: string;
@@ -96,7 +100,7 @@ async function fetchCrypto(): Promise<MarketData> {
     const goldGlobal = rows.filter((r) => GOLD_IDS.has(r.id));
     return { crypto, goldGlobal, fetchedAt: Date.now(), ok: crypto.length > 0 };
   } catch {
-    return { crypto: [], goldGlobal: [], fetchedAt: Date.now(), ok: false };
+    return { crypto: [], goldGlobal: [], fetchedAt: 0, ok: false };
   }
 }
 
@@ -200,3 +204,6 @@ function alertMessage(id: string, condition: string, target: number, price: numb
     `این پیام صرفاً اطلاع‌رسانیِ قیمت است و توصیهٔ خرید یا فروش نیست.`
   );
 }
+
+/** Public source cache only; no account records. Original source timestamp retained. */
+export function getCachedGlobalMarket(): MarketData | null { return cache; }

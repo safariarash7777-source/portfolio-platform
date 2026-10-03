@@ -12,6 +12,8 @@ import {
   toPersianDigits,
   formatToman,
   formatTomanShort,
+  formatRialAsToman,
+  rialToToman,
   formatJalali,
 } from "@/lib/format";
 import type { IrOptionRow } from "@/lib/market-ir";
@@ -56,7 +58,15 @@ export default function OptionsBoard({
         (o) => o.id.includes(qq) || o.faName.includes(qq) || o.baseId.includes(qq)
       );
     }
-    const val = (o: IrOptionRow): number => num(o[sortKey]) ?? -Infinity;
+    const val = (o: IrOptionRow): number => {
+      if (sortKey === 'value') {
+        const value = num(o.value);
+        if (value == null || !o.valueUnit) return -Infinity;
+        return o.valueUnit === 'rial' ? rialToToman(value) : value;
+      }
+      if (sortKey === 'strike' && o.priceUnit !== 'toman') return -Infinity;
+      return num(o[sortKey]) ?? -Infinity;
+    };
     return [...base].sort((a, b) => (val(b) - val(a)) * (sortDesc ? 1 : -1));
   }, [options, typeFilter, baseFilter, q, sortKey, sortDesc]);
 
@@ -92,9 +102,9 @@ export default function OptionsBoard({
         {fetchedAt ? (
           <p className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-3)" }}>
             <Clock size={13} />
-            به‌روزرسانی: {formatJalali(fetchedAt)}
+            دریافت اسنپ‌شات: {formatJalali(fetchedAt)}
           </p>
-        ) : null}
+        ) : <p className="text-xs" style={{ color: "var(--text-3)" }}>زمان دریافت نامعلوم</p>}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -166,7 +176,7 @@ export default function OptionsBoard({
             دادهٔ اختیار معامله در اسنپ‌شات فعلی موجود نیست.
           </p>
           <p className="max-w-md text-xs leading-6" style={{ color: "var(--text-3)" }}>
-            دادهٔ این تابلو در چرخهٔ ۵دقیقه‌ای ساعات بازار به‌روز می‌شود. اگر خارج از ساعت معاملات هستید
+            اگر خارج از ساعت معاملات هستید
             یا منبع داده موقتاً در دسترس نیست، این صفحه به‌جای عدد ساختگی، همین پیام را نشان می‌دهد.
           </p>
         </div>
@@ -205,6 +215,12 @@ export default function OptionsBoard({
                       {o.id}
                     </span>
                     {/* C1 — UI نمادمحور: نام کامل حذف شد (در title) */}
+                    <span className="block text-[10px]" style={{ color: "var(--text-3)" }}>
+                      زمان منبع: {o.sourceDate && o.sourceTime ? toPersianDigits(`${o.sourceDate} ${o.sourceTime}`) : 'نامعلوم'}
+                    </span>
+                    <span className="block text-[10px]" style={{ color: "var(--text-3)" }}>
+                      اندازه قرارداد: {num(o.contractSize) != null ? toPersianDigits(o.contractSize!) : 'نامعلوم'}
+                    </span>
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {o.baseId || "—"}
@@ -222,7 +238,7 @@ export default function OptionsBoard({
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
-                    {num(o.strike) != null ? formatToman(o.strike as number) : "—"}
+                    {o.priceUnit === 'toman' ? num(o.strike) != null ? formatToman(o.strike as number) : '—' : 'واحد نامعلوم'}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.dayRemain) != null ? toPersianDigits(o.dayRemain as number) : "—"}
@@ -234,7 +250,7 @@ export default function OptionsBoard({
                     {num(o.openInterest) != null ? toPersianDigits(Math.round(o.openInterest as number).toLocaleString("en-US")) : "—"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
-                    {num(o.price) != null && (o.price as number) > 0 ? formatToman(o.price as number) : "—"}
+                    {o.priceUnit === 'toman' ? num(o.price) != null && (o.price as number) > 0 ? formatToman(o.price as number) : '—' : 'واحد نامعلوم'}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
                     {num(o.volume) != null && (o.volume as number) > 0
@@ -242,7 +258,9 @@ export default function OptionsBoard({
                       : "—"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
-                    {num(o.value) != null && (o.value as number) > 0 ? formatTomanShort(o.value as number) : "—"}
+                    {!o.valueUnit ? 'واحد نامعلوم' : num(o.value) != null && (o.value as number) >= 0
+                      ? o.valueUnit === 'rial' ? formatRialAsToman(o.value) : formatTomanShort(o.value as number)
+                      : '—'}
                   </td>
                 </tr>
               ))}
@@ -269,7 +287,8 @@ export default function OptionsBoard({
       )}
 
       <p className="mt-4 text-xs leading-6" style={{ color: "var(--text-3)" }}>
-        منبع داده: اسنپ‌شات رسمی بازار (رلهٔ داخلی، چرخهٔ ~۵دقیقه‌ای). قیمت‌ها به تومان.
+        منبع داده: اسنپ‌شات ذخیره‌شدهٔ رلهٔ داخلی. زمان دریافت با زمان قیمت یکسان نیست.
+        قیمت و ارزش معاملات فقط با واحد مشخص نمایش داده می‌شوند.
         این صفحه صرفاً دادهٔ قراردادهای اختیار معامله را نمایش می‌دهد و هیچ ارزیابی یا توصیه‌ای ارائه نمی‌کند.
       </p>
     </section>
