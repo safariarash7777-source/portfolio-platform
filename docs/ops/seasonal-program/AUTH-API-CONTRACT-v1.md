@@ -12,7 +12,7 @@
 | `GET /api/auth/status` | `{authenticated:false,role:null}` یا `{authenticated:true,role:'user'\|'admin'\|null\|…,profileRead:'ok'\|'unavailable'}`؛ خطای شبکه503 باstatus؛ مقدار role برایUI است و جای مجوز سرور نیست |
 | `POST /api/auth/session` | `{action:'refresh'\|'signout'}`؛200 `{ok:true}` یا401/503؛ same-origin؛ token/UUID/contact در پاسخ نیست |
 | `POST /api/auth/mobile` | قرارداد زیر؛ same-origin؛ نام‌های action ثابت؛ feature غیرفعال503 |
-| `GET/POST /api/auth/identity` | پروفایل خصوصی خودفرد، شرح پایین؛ featureغیرفعال503 |
+| `GET/POST /api/auth/identity` | پروفایل خصوصی خودفرد، شرح پایین؛ GET با قابلیت مستقل خواندن، POST با گیت موبایل موجود؛ featureغیرفعال503 |
 | `POST /api/auth/email` | recover/verify/set-password؛ کانال مستقل ازSMS؛ شرح پایین |
 | `GET /api/admin/auth-health` | roleadmin ازDB لازم؛401/403 براینامرتبط؛ بو‌لیَن آمادگی کانال‌ها و خطای اخیر همینinstance، هیچ secret/contact؛ در `/admin/health` مصرف می‌شود |
 
@@ -38,11 +38,14 @@ type PrivateProfile = {firstName:string;lastName:string;nationalId:string};
 type IdentityRead = {
   profile:PrivateProfile|null; version?:number;
   phoneVerified:boolean; nationalIdFormatValid?:true;
+  profileWriteEnabled?:boolean; // Always emitted by the 2026-10-03 producer; absent in older builds.
   phoneNationalIdMatch:'pending'; identityMatch:'pending';
 };
 type IdentityWrite = PrivateProfile & {baseVersion:number;consent:'identity-v1'};
 type IdentitySaved = {ok:true;version:number;phoneNationalIdMatch:'pending';identityMatch:'pending'};
 ```
+
+تکمیل ایزولهٔ2026-10-03: GET پس از احراز هویت، فقط با `AUTH_PROFILE_READ_ENABLED=true` سمت سرور فعال می‌شود؛ unset/false غیرفعال است و به AUTH_MOBILE_ENABLED وابسته نیست. کاربر ناشناس401، اختلالAuth503؛ کاربر احرازشده با قابلیت خاموش503 `{code:'profile_disabled',error:…}` می‌گیرد. حالتdisabled را ازunavailable وprofile=null جدا نمایش دهید. کلیدهای معتبر server-only پیش ازRPC بررسی می‌شوند؛ کلید غایب/نامعتبر، خطایRPC وdecrypt/schema،503 عمومی‌اند و profile=null/recorded نمی‌شوند. DTO موفق، فیلد افزایشی `profileWriteEnabled:boolean` دارد؛ true فقط گیت مسیر نوشتن موجود را نشان می‌دهد و جای اثبات phone/مجوزPOST نیست. مصرف‌کنندهٔ فاقداینفیلد، مسیر ویرایش را فعال فرض نکند. POST همچنان AUTH_MOBILE_ENABLED، same-origin، getUser و phoneconfirmed قبلی را لازم دارد؛ خواندن مستقل، SMS/OTP/ثبتنام/نوشتن را فعال نمی‌کند. RPCخواندن بی‌پارامتر و محدود بهauth.uid() موجود است؛ UUID و scope حساب از ورودی درخواست گرفته نمی‌شوند. این تکمیل مستقر یا پذیرفتهNative نیست.
 
 GET پروفایل خالی:profile=null و version ممکن است نباشد؛ baseVersionUI=0. هیچ UUID/شماره در DTO نیست. nationalId رشته است و صفر نخست حفظ می‌شود؛ checksum فقط format است. POSTنام80/نام‌خانوادگی100نویسه، کدملی معتبر ازنظر قالب، baseVersionصحیح و رضایت صریح لازم دارد؛ نویسنده userId را ازgetUser می‌گیرد و فیلد اضافه را رد می‌کند. phoneconfirmed لازم است. موفقیت نسخه جدید append می‌کند؛ نسخه قدیمی حذف/بازنویسی نمی‌شود.409یعنی نسخه تازه‌تر ثبت شده؛ دوبارهGET و حل اختلاف توسطکاربر، بدون پاک‌کردن ورودی.403تعارض هویت/اثبات نیازمند بررسی؛503migration/writer/key/شبکه آماده نیست. نمایش«اطلاعات ناقص/مسیر غیرفعال/خطا/درانتظار» جدا باشد؛ نیازسنجی دوره، رضایت مشاور و membership از این DTO استنتاج نشوند.
 

@@ -3,22 +3,28 @@ import {createClient} from '@/lib/supabase/server';
 import {createAdminClient} from '@/lib/supabase/admin';
 import {mobileEnabled,sameOrigin} from '@/lib/auth/mobile-server';
 import {nationalIdFormatValid} from '@/lib/auth/mobile';
-import {encryptIdentity,decryptIdentity} from '@/lib/auth/identity-crypto';
+import {encryptIdentity,decryptIdentity,identityKeysReady} from '@/lib/auth/identity-crypto';
+import {profileReadEnabled} from '@/lib/auth/profile-server';
 import {toLatinDigits} from '@/lib/format';
 import {authSessionFailure} from '@/lib/auth/session-error';
 export const runtime='nodejs';
 const reply=(status:number,body:object)=>NextResponse.json(body,{status,headers:{'cache-control':'no-store'}});
 export async function GET(){
-  if(!mobileEnabled())return reply(503,{error:'مسیر موبایلی فعال نشده است.'});
   try {
     const client=await createClient();const {data:{user},error}=await client.auth.getUser();
     const authFailure=authSessionFailure(error);
     if(authFailure===503)return reply(503,{error:'سرویس ورود اکنون در دسترس نیست؛ دوباره تلاش کنید.'});
     if(authFailure || !user)return reply(401,{error:'ابتدا وارد شوید.'});
+    if(!profileReadEnabled())return reply(503,{code:'profile_disabled',error:'پروفایل خصوصی در این محیط فعال نشده است.'});
+    if(!identityKeysReady())return reply(503,{error:'پروفایل خصوصی اکنون در دسترس نیست.'});
     const {data,error:readError}=await client.rpc('auth_read_private_identity').abortSignal(AbortSignal.timeout(5000));
     if(readError)return reply(503,{error:'پروفایل خصوصی اکنون در دسترس نیست.'});
-    if(!data)return reply(200,{profile:null,phoneVerified:!!user.phone_confirmed_at,identityMatch:'pending',phoneNationalIdMatch:'pending'});
-    return reply(200,{profile:decryptIdentity(user.id,data.ciphertext,data.keyVersion),version:data.version,phoneVerified:!!user.phone_confirmed_at,nationalIdFormatValid:true,identityMatch:data.identityMatch,phoneNationalIdMatch:data.phoneNationalIdMatch});
+    const capabilities={profileWriteEnabled:mobileEnabled()};
+    if(data===null)return reply(200,{profile:null,phoneVerified:!!user.phone_confirmed_at,identityMatch:'pending',phoneNationalIdMatch:'pending',...capabilities});
+    if(!data || !Number.isInteger(data.version) || data.version<1 || typeof data.ciphertext!=='string' || typeof data.keyVersion!=='string' || data.identityMatch!=='pending' || data.phoneNationalIdMatch!=='pending')return reply(503,{error:'پروفایل خصوصی اکنون در دسترس نیست.'});
+    const profile=decryptIdentity(user.id,data.ciphertext,data.keyVersion);
+    if(!profile || ![profile.firstName,profile.lastName,profile.nationalId].every(value=>typeof value==='string' && value.trim().length>0))return reply(503,{error:'پروفایل خصوصی اکنون در دسترس نیست.'});
+    return reply(200,{profile,version:data.version,phoneVerified:!!user.phone_confirmed_at,nationalIdFormatValid:true,identityMatch:data.identityMatch,phoneNationalIdMatch:data.phoneNationalIdMatch,...capabilities});
   }catch{return reply(503,{error:'پروفایل خصوصی اکنون در دسترس نیست.'});}
 }
 export async function POST(request:Request){
