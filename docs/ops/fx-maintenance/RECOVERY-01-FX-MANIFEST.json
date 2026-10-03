@@ -1,0 +1,57 @@
+{
+  "mission": "RECOVERY-01",
+  "scope": "status-only; no app/models/auth/data source change",
+  "source_pr": 212,
+  "source_sha": "bd3e5de36e9ec007f1da7f9ae0cd9ae56c7507fd",
+  "base_image_tag": "fx-dashboard:20261001-agent-health",
+  "base_image_id": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+  "changed_runtime_files": {
+    "agent_status_ui.py": {
+      "previous_sha256": "079632d589236f421d941d6684368c4869f5a4684ff1741bdf3025fd5392b091",
+      "candidate_sha256": "9519904ebb4fec9c3ed7a317407b82e5a81b62efc9c4d6af53f1dae8d237ac09"
+    },
+    "maintenance_status.py": {
+      "previous_sha256": null,
+      "candidate_sha256": "d8529ed111c6486840cdba1071ec7358b7eb479f387e7dda0b6384eabc446a34"
+    }
+  },
+  "unchanged_runtime_files": {
+    "app.py": "e8abcb60a33c43efcffdeac31f5519c842a8f6d38c007a421ab6d824cf1f9596",
+    "models.py": "51501f8422f443a358746a9e233591c6c4c78e81e9b64874a660f4b745801a01",
+    "data_sources.py": "e19b86ff02cc51a7dd5ffae92e5031171805e3c5edefca9abfc8389f957fe028",
+    "ifb_bonds.py": "821f82ce21c6c5fb662769501259953152736ffcccdfa5a5e8f32a1a80f7dd2d",
+    "bond_status_ui.py": "74ea56483bb4d93227130fb2e20d17f03a7aef95c7c6557ba3dfd4352f469f21",
+    "source_health.py": "75505903e219698016e4b5e274cb2b561f1bbd95491579b75ad9186d791bb562",
+    "runtime_paths.py": null,
+    "macro_health.py": "cc61fbd2f21bdf908a92e4a7bff21683425cfb84215b19716e95bdeb1aaeb51b"
+  },
+  "archive_sha256": "d31ceea141e0d393dcb482bc9df060bd12567c993910dbbb245431ec82b02151",
+  "data_mount_preserved": "/opt/fx-dashboard/data-health:/data-health",
+  "financial_data_modified": false,
+  "full_212_model_delta_installed": false,
+  "candidate_image_tag": "fx-dashboard:recovery01-status-20261003",
+  "candidate_image_id": "sha256:486452d0eb49480e9821ca3a3c3898858954cd1325fd2f682ee0d7f99c00e6e6",
+  "installed": false,
+  "rollback": "Retain previous container/image and metadata backup; restore original name/config/data mount without DB changes.",
+  "helper_tests_pass": 5,
+  "local_tick_test": {
+    "exit_code": 0,
+    "economic_job_due_at_start": false,
+    "started_at": "2026-10-03T09:43:13+00:00"
+  },
+  "scheduler_install_pending": true,
+  "status_panel_test": {
+    "status": "PASS",
+    "three_axes_visible": true,
+    "exceptions": 0,
+    "provider_requests": 0,
+    "financial_models_executed": 0
+  },
+  "rollback_script_sha256": "d836fee6d90c2f7bda24db71076f67c7a9f20e78c16504af1e88f6e2977697f2",
+  "rollback_tests_pass": 5,
+  "guest_admin_fx_observed": {
+    "url": "https://portfolio-platform-fawn.vercel.app/login?next=%2Fadmin%2Ffx",
+    "outcome": "redirected_to_login",
+    "real_admin_acceptance": "pending_P01"
+  }
+}

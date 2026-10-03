@@ -1,0 +1,10 @@
+test_closed_local_proxy_uses_verified_direct_route (test_recovery_fx_connection.Connection.test_closed_local_proxy_uses_verified_direct_route) ... ok
+test_explicit_direct_requires_no_probe (test_recovery_fx_connection.Connection.test_explicit_direct_requires_no_probe) ... ok
+test_explicit_proxy_has_no_silent_fallback (test_recovery_fx_connection.Connection.test_explicit_proxy_has_no_silent_fallback) ... ok
+test_invalid_setting_rejected (test_recovery_fx_connection.Connection.test_invalid_setting_rejected) ... ok
+test_open_existing_proxy_preserved (test_recovery_fx_connection.Connection.test_open_existing_proxy_preserved) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+OK
