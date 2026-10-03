@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { accountEntryHref } from './components/account/returnPath'
+import { authSessionFailure } from './lib/auth/session-error'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -16,6 +17,7 @@ export async function middleware(request: NextRequest) {
       cookies: {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
+          if (controller.signal.aborted) return
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
@@ -37,7 +39,9 @@ export async function middleware(request: NextRequest) {
   const unavailable = () => redirect(accountEntryHref('/login', pathname + request.nextUrl.search) + '&error=auth_unavailable')
   const runGate = async () => {
   const { data: { user }, error } = await supabase.auth.getUser()
-  if (error && (!error.status || error.status >= 500)) return unavailable()
+  const authFailure = authSessionFailure(error)
+  if (authFailure === 503) return unavailable()
+  if (authFailure === 401) return redirect(accountEntryHref('/login', pathname + request.nextUrl.search))
 
   const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/terminal')
   if (isProtected && !user) {
@@ -46,11 +50,12 @@ export async function middleware(request: NextRequest) {
 
   // Admin gate — DB-backed (single source of truth)
   if (pathname.startsWith('/admin') && user) {
-    const { data: profile } = await supabase
+    const { data: profile, error: roleError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .maybeSingle()
+    if (roleError) return unavailable()
     if (profile?.role !== 'admin') {
       return redirect('/dashboard')
     }
@@ -59,11 +64,12 @@ export async function middleware(request: NextRequest) {
   // Terminal gate — دسترسی کامل: ادمین یا entitlement فعّال (مشاوره/وبینار)
   // هم‌خوان با lib/access.ts و layout ترمینال؛ مشتری «۳ ماه دسترسی کامل» باید عبور کند
   if (pathname.startsWith('/terminal') && user) {
-    const { data: profile } = await supabase
+    const { data: profile, error: roleError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .maybeSingle()
+    if (roleError) return unavailable()
     if (profile?.role !== 'admin') {
       let entitled = false
       try {
@@ -77,9 +83,10 @@ export async function middleware(request: NextRequest) {
           .lte('starts_at', nowIso)
           .gt('expires_at', nowIso)
           .limit(1)
-        entitled = !error && !!ents && ents.length > 0
+        if (error) return unavailable()
+        entitled = !!ents && ents.length > 0
       } catch {
-        entitled = false
+        return unavailable()
       }
       if (!entitled) {
         return redirect('/dashboard')
