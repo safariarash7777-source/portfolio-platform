@@ -1,0 +1,65 @@
+{
+  "sourceSha": "a994c3d3436475b697ba2a6b85f475d81e91c4b4",
+  "checkedAtUtc": "2026-10-03T09:58:43.7911466Z",
+  "local": {
+    "calc": 106,
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "core": 1305,
+    "staticComponentChecks": 4,
+    "targeted": 58
+  },
+  "ci": [
+    {
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37114637308/job/111179371228"
+    },
+    {
+      "name": "Supabase Preview",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/111179163687"
+    },
+    {
+      "name": "Vercel Preview Comments",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/111179160606"
+    },
+    {
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37114637308/job/111178945919"
+    },
+    {
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37114637308/job/111178945899"
+    },
+    {
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37114637308/job/111178945871"
+    },
+    {
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37114637308/job/111178945786"
+    },
+    {
+      "name": "isolated-db",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37114637243/job/111178945134"
+    }
+  ],
+  "installed": false,
+  "mainDomainAcceptance": "PENDING",
+  "legacyAdminPolicyPredicate": "P00 live metadata requested; no inferred PASS"
+}

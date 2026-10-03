@@ -29,6 +29,14 @@
       "path": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
       "gitBlob": "49f473822d107c6fada8a2801bdfbc6143b3cdcd",
       "sha256Lf": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+    },
+    {
+      "path": "supabase/migrations/20261003100542_recovery_legacy_holdings_owner_only.sql",
+      "gitBlob": "c096769e6ce00cb35e470ce5a37e8da84e064c35",
+      "sha256Lf": "5ae23c1716a8bc0f077a1085f9035def910b40813352e264865ff077225f7f6b",
+      "independent": true,
+      "authority": "P00 delegated 2026-10-03T10:04:14Z live policy receipt",
+      "rollback": "Keep owner-only policy/ACL; never restore is_admin exception"
     }
   ],
   "installed": false,
@@ -39,5 +47,6 @@
     "portfolio_versions",
     "dashboard existing appearance"
   ],
-  "researchConsultationDependency": false
+  "researchConsultationDependency": false,
+  "independentSecurityMigration": "supabase/migrations/20261003100542_recovery_legacy_holdings_owner_only.sql"
 }

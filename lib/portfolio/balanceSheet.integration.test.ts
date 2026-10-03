@@ -29,6 +29,44 @@ async function post(db: string, id: string | null, kind: "holdings" | "debts", b
     },
   }));
 }
+
+for(const profile of ["legacy","explicit"])describe(`RECOVERY legacy holdings privacy / Postgres / ${profile}`,()=>{
+ const db=`recovery_legacy_privacy_${profile}`;let legacyRow:string,targetRow:string;
+ const applyPrivacy=()=>execFileSync("psql",["-d",db,"-X","-q","-v","ON_ERROR_STOP=1","-f",join(process.cwd(),"supabase/migrations/20261003100542_recovery_legacy_holdings_owner_only.sql")],{env:ENV,encoding:"utf8",stdio:["ignore","pipe","pipe"]});
+ before(()=>{
+  sql("postgres",`DROP DATABASE IF EXISTS ${db}`);sql("postgres",`CREATE DATABASE ${db}`);
+  for(const file of ["sql/test/supabase_bootstrap.sql",`sql/test/profile_${profile==="legacy"?"legacy_default_privileges":"explicit_grants"}.sql`,"sql/test/portfolio_precondition.sql"]){execFileSync("psql",["-d",db,"-X","-q","-v","ON_ERROR_STOP=1","-f",join(process.cwd(),file)],{env:ENV,encoding:"utf8",stdio:["ignore","pipe","pipe"]});}
+  sql(db,`INSERT INTO auth.users(id) VALUES('${A}'),('${B}'),('${ADMIN}'); INSERT INTO public.profiles(id,role) VALUES('${A}','user'),('${B}','user'),('${ADMIN}','admin'); INSERT INTO public.holdings(user_id,symbol,name,qty,current_price) VALUES('${A}','LEGACY','ساختگی',12.5,100); INSERT INTO public.portfolio_versions(user_id,version,allocations,notes) VALUES('${A}',7,'[{"asset":"طلا","pct":100}]','ساختگی')`);
+  legacyRow=as(db,A,"SELECT to_jsonb(h) FROM public.holdings h");targetRow=as(db,A,"SELECT to_jsonb(p) FROM public.portfolio_versions p");
+  assert.equal(as(db,ADMIN,"SELECT count(*) FROM public.holdings"),"1","precondition reproduces actual admin exposure");
+  applyPrivacy();applyPrivacy();
+ });
+ after(()=>{sql("postgres",`DROP DATABASE IF EXISTS ${db}`);});
+ test("existing owner row and admin-assigned target are unchanged; no new tables required",()=>{
+  assert.equal(as(db,A,"SELECT to_jsonb(h) FROM public.holdings h"),legacyRow);
+  assert.equal(as(db,A,"SELECT to_jsonb(p) FROM public.portfolio_versions p"),targetRow);
+  assert.equal(as(db,ADMIN,"SELECT to_jsonb(p) FROM public.portfolio_versions p"),targetRow);
+  assert.equal(sql(db,"SELECT to_regclass('public.member_holding_versions') IS NULL AND to_regclass('public.consultation_relationships') IS NULL"),"t");
+ });
+ test("B/admin/anon cannot read or change A, including permissive ALL and TRUNCATE",()=>{
+  for(const actor of [B,ADMIN,null]){
+   assert.equal(as(db,actor,"SELECT count(*) FROM public.holdings"),"0");
+   assert.equal(as(db,actor,`WITH changed AS (UPDATE public.holdings SET qty=999 WHERE user_id='${A}' RETURNING id) SELECT count(*) FROM changed`),"0");
+   assert.equal(as(db,actor,`WITH changed AS (DELETE FROM public.holdings WHERE user_id='${A}' RETURNING id) SELECT count(*) FROM changed`),"0");
+   assert.match(denied(db,actor,`INSERT INTO public.holdings(user_id,symbol,name) VALUES('${A}','FOREIGN','ساختگی')`),/42501/);
+   assert.match(denied(db,actor,"TRUNCATE public.holdings"),/42501/);
+  }
+  assert.match(denied(db,A,"TRUNCATE public.holdings"),/42501/);
+  assert.equal(as(db,A,"SELECT to_jsonb(h) FROM public.holdings h"),legacyRow);
+ });
+ test("owner retains own row insert/update/delete; cannot reassign ownership",()=>{
+  as(db,A,`INSERT INTO public.holdings(user_id,symbol,name,qty) VALUES('${A}','NEW','ساختگی',1)`);
+  assert.equal(as(db,A,"WITH changed AS (UPDATE public.holdings SET qty=2 WHERE symbol='NEW' RETURNING id) SELECT count(*) FROM changed"),"1");
+  assert.match(denied(db,A,`UPDATE public.holdings SET user_id='${B}' WHERE symbol='NEW'`),/42501/);
+  assert.equal(as(db,A,"WITH changed AS (DELETE FROM public.holdings WHERE symbol='NEW' RETURNING id) SELECT count(*) FROM changed"),"1");
+  assert.equal(as(db,A,"SELECT to_jsonb(h) FROM public.holdings h"),legacyRow);
+ });
+});
 for (const profile of ["legacy", "explicit"]) describe(`personal balance sheet / real Postgres / ${profile}`, () => {
   const db=`balance_sheet_${profile}`;let h1:string,h2:string,h3:string,relation:string;
   before(() => {
@@ -128,18 +166,26 @@ const choices=[{positionKey:"gold",use:"allocatable"},{positionKey:"unpriced",us
 const assets=[{position_key:"gold",manual_label:"طلای ساختگی",asset_class:"gold",unit:"کل قلم",qty:null,as_of:"2026-10-03",ownership_pct:50,valuation_mode:"declared",declared_value:2000,valuation_source:"اظهار ساختگی",valuation_as_of:"2026-10-03",valuation_status:"valid"},{position_key:"unpriced",manual_label:"قلم بی‌قیمت ساختگی",asset_class:"gold",unit:"گرم",qty:12.5,as_of:"2026-10-03",ownership_pct:100,valuation_mode:"unpriced",valuation_status:"missing"}];
 const debt=[{debt_key:"debt",title:"بدهی ساختگی",kind:"loan",balance_toman:1500,currency:"IRR",balance_as_of:"2026-10-03",next_installment_toman:null,next_due_on:null,note:null}];
 for(const profile of ["legacy","explicit"])describe(`RECOVERY scope/minimum core / Postgres / ${profile}`,()=>{
- const db=`recovery_scope_${profile}`;let first:string,second:string,review:Record<string,unknown>;
+ const db=`recovery_scope_${profile}`;let first:string,second:string,review:Record<string,unknown>,legacyTarget:string,legacyHolding:string;
  const scopeSql=(version:string,base:number,token:string,assignments:unknown=choices,rules="member-selected.v0.1")=>`SELECT public.record_member_investment_scope(${quote(version)}::uuid,${quote(rules)},${quote(assignments)}::jsonb,${base},${quote(token)})`;
  before(()=>{
   sql("postgres",`DROP DATABASE IF EXISTS ${db}`);sql("postgres",`CREATE DATABASE ${db}`);
-  for(const file of ["sql/test/supabase_bootstrap.sql",`sql/test/profile_${profile==="legacy"?"legacy_default_privileges":"explicit_grants"}.sql`,"sql/test/portfolio_precondition.sql","sql/phase32_member_holdings.sql","supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql","supabase/migrations/20261003094327_member_investment_scope_reviews.sql"]){execFileSync("psql",["-d",db,"-X","-q","-v","ON_ERROR_STOP=1","-f",join(process.cwd(),file)],{env:ENV,encoding:"utf8",stdio:["ignore","pipe","pipe"]});}
-  sql(db,`INSERT INTO auth.users(id) VALUES('${A}'),('${B}'),('${ADMIN}'); INSERT INTO public.profiles(id,role) VALUES('${A}','user'),('${B}','user'),('${ADMIN}','admin')`);
+  for(const file of ["sql/test/supabase_bootstrap.sql",`sql/test/profile_${profile==="legacy"?"legacy_default_privileges":"explicit_grants"}.sql`,"sql/test/portfolio_precondition.sql","sql/phase32_member_holdings.sql","supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql","supabase/migrations/20261003094327_member_investment_scope_reviews.sql"]){
+   execFileSync("psql",["-d",db,"-X","-q","-v","ON_ERROR_STOP=1","-f",join(process.cwd(),file)],{env:ENV,encoding:"utf8",stdio:["ignore","pipe","pipe"]});
+   if(file==="sql/test/portfolio_precondition.sql"){
+    sql(db,`INSERT INTO auth.users(id) VALUES('${A}'),('${B}'),('${ADMIN}'); INSERT INTO public.profiles(id,role) VALUES('${A}','user'),('${B}','user'),('${ADMIN}','admin'); INSERT INTO public.portfolio_versions(user_id,version,allocations,notes) VALUES('${A}',7,'[{"asset":"طلا","pct":50},{"asset":"نقد","pct":50}]','سابقهٔ ساختگی'); INSERT INTO public.holdings(user_id,symbol,name,qty,current_price) VALUES('${A}','نمونه','سابقهٔ ساختگی',10,100)`);
+    legacyTarget=as(db,A,"SELECT jsonb_build_object('id',id,'version',version,'allocations',allocations,'notes',notes,'created_at',created_at) FROM public.portfolio_versions");
+    legacyHolding=as(db,A,"SELECT to_jsonb(h) FROM public.holdings h");
+   }
+  }
   first=JSON.parse(as(db,A,`SELECT to_jsonb(r) FROM public.record_member_holdings(${quote(assets)}::jsonb,NULL,'first-assets',0) r`)).version_id;
  });
  after(()=>{sql("postgres",`DROP DATABASE IF EXISTS ${db}`);});
  test("minimum closure needs no research or consultation schema; old target ledger unchanged",()=>{
   assert.equal(sql(db,"SELECT to_regclass('public.research_workbook_versions') IS NULL AND to_regclass('public.consultation_relationships') IS NULL AND to_regprocedure('public.consultation_balance_sheet(uuid,uuid)') IS NULL"),"t");
   assert.equal(sql(db,"SELECT to_regclass('public.portfolio_versions') IS NOT NULL"),"t");
+  assert.equal(as(db,A,"SELECT jsonb_build_object('id',id,'version',version,'allocations',allocations,'notes',notes,'created_at',created_at) FROM public.portfolio_versions"),legacyTarget);
+  assert.equal(as(db,A,"SELECT to_jsonb(h) FROM public.holdings h"),legacyHolding);
   assert.equal(sql(db,"SELECT has_function_privilege('anon','public.record_member_investment_scope(uuid,text,jsonb,integer,text)','EXECUTE')"),"f");
   assert.equal(sql(db,"SELECT has_function_privilege('authenticated','portfolio_scope_private.record_review(uuid,text,jsonb,integer,text)','EXECUTE')"),"t");
  });
@@ -202,6 +248,17 @@ for(const profile of ["legacy","explicit"])describe(`RECOVERY scope/minimum core
   // otherwise its stale financial UUID is rejected. It never migrates to version3.
   if(outcomes[1].status==="rejected")assert.match(String(outcomes[1].reason),/PT409/);
   assert.equal(as(db,A,"SELECT count(*) FROM public.member_investment_scope_reviews r JOIN public.member_holding_versions h ON h.id=r.holding_version_id WHERE h.version=3"),"0");
+ });
+ test("rollback freezes new RPC writes while preserving new and legacy UUID histories",()=>{
+  const scopeCount=as(db,A,"SELECT count(*) FROM public.member_investment_scope_reviews");
+  execFileSync("psql",["-d",db,"-X","-q","-v","ON_ERROR_STOP=1","-f",join(process.cwd(),"docs/ops/recovery-01/P04-ROLLBACK-FREEZE.sql")],{env:ENV,encoding:"utf8",stdio:["ignore","pipe","pipe"]});
+  assert.match(denied(db,A,scopeSql(second,1,"after-freeze")),/42501/);
+  assert.match(denied(db,A,`SELECT public.record_member_holdings(${quote(assets)}::jsonb,NULL,'after-freeze',3)`),/42501/);
+  assert.match(denied(db,A,`SELECT public.record_member_debts(${quote(debt)}::jsonb,3,'after-freeze')`),/42501/);
+  assert.equal(as(db,A,"SELECT count(*) FROM public.member_holding_versions"),"3");
+  assert.equal(as(db,A,"SELECT count(*) FROM public.member_investment_scope_reviews"),scopeCount);
+  assert.equal(as(db,A,"SELECT jsonb_build_object('id',id,'version',version,'allocations',allocations,'notes',notes,'created_at',created_at) FROM public.portfolio_versions"),legacyTarget);
+  assert.equal(as(db,A,"SELECT to_jsonb(h) FROM public.holdings h"),legacyHolding);
  });
 });
 
