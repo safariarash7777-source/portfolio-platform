@@ -20,13 +20,13 @@ function loader(env, overrides = {}) {
   function load(file) {
     const full = resolve(root, file);
     if (cache.has(full)) return cache.get(full);
-    const module = { exports: {} };
-    cache.set(full, module.exports);
+    const loaded = { exports: {} };
+    cache.set(full, loaded.exports);
     const source = ts.transpileModule(readFileSync(full, 'utf8'), {
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
     }).outputText;
     runInNewContext(source, {
-      exports: module.exports, Buffer, AbortSignal, Request, Response, URL, process: { env }, console,
+      exports: loaded.exports, Buffer, AbortSignal, Request, Response, URL, process: { env }, console,
       require: name => {
         if (name in overrides) return overrides[name];
         if (name === 'server-only') return {};
@@ -37,7 +37,7 @@ function loader(env, overrides = {}) {
         return require(name);
       },
     });
-    return module.exports;
+    return loaded.exports;
   }
   return load;
 }
