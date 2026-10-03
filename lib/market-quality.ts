@@ -88,9 +88,16 @@ export function marketProvenance(market: IrMarket | null, now = Date.now()): Mar
 
 /** Reuse the core bubble engine; a stale/unsynchronised NAV never becomes a current table ranking. */
 export function withValidNav<T extends IrStockRow>(row: T, priceAt: number | null, now: number): T & { bubblePercent: number | null; navState: DataQuality; navReason: string | null } {
+  // Source rejection is independent of clock arithmetic. Retain the original
+  // NAV/price metadata, but never resurrect a rejected NAV as a live bubble.
+  if (row.navStatus != null && row.navStatus !== "ready") {
+    const navState: DataQuality = row.navStatus === "stale" ? "stale" : row.navStatus === "invalid-unit" || row.navStatus === "unavailable" ? "unavailable" : "unknown-time";
+    const navReason = row.navStatus === "stale" ? "NAV منبع کهنه است" : row.navStatus === "invalid-time" ? "زمان NAV نامعتبر است" : row.navStatus === "invalid-unit" ? "واحد یا نسبت NAV منبع معتبر نیست" : row.navStatus === "unavailable" ? "NAV معتبر در منبع در دسترس نیست" : "وضعیت اعتبار NAV منبع نامشخص است";
+    return { ...row, bubblePercent: null, navState, navReason };
+  }
   priceAt = sourceTime(row.sourceDate, row.sourceTime);
   const at = navAtIso(row.navDate, row.navTime, jalaliYmdToGregorian);
   const result = liveBubble({ priceToman: row.closingPrice ?? row.price, navToman: row.nav, navAt: at?.iso, navPrecision: at?.precision, priceAt: priceAt == null ? null : new Date(priceAt).toISOString(), now: new Date(now) });
   const missingPriceTime = sourceTime(row.sourceDate, row.sourceTime) == null;
-  return { ...row, bubblePercent: result.state === "ready" && !missingPriceTime ? result.bubblePercent : null, navState: missingPriceTime && result.state === "ready" ? "unknown-time" : result.state === "ready" ? "ready" : result.state === "stale" ? "stale" : "unavailable", navReason: row.navStatus === "stale" ? "NAV منبع کهنه است" : row.navStatus === "invalid-time" ? "زمان NAV نامعتبر است" : missingPriceTime && result.state === "ready" ? "زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص" : result.reason };
+  return { ...row, bubblePercent: result.state === "ready" && !missingPriceTime ? result.bubblePercent : null, navState: missingPriceTime && result.state === "ready" ? "unknown-time" : result.state === "ready" ? "ready" : result.state === "stale" ? "stale" : "unavailable", navReason: missingPriceTime && result.state === "ready" ? "زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص" : result.reason };
 }

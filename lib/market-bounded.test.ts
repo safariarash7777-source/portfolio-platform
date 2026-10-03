@@ -1,6 +1,36 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import Module, { createRequire } from "node:module";
+import { withValidNav } from "./market-quality";
+
+const navNow = Date.parse("2026-09-30T10:00:00Z");
+const navRow = { id: "synthetic-fund", faName: "نمونه", unit: "toman" as const, price: 110, nav: 100, navIssue: 101, navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
+
+test("a rejected source NAV cannot become a live bubble through fresh-looking clocks", () => {
+  for (const navStatus of ["stale", "invalid-time", "invalid-unit", "unavailable", "unexpected-status"]) {
+    const row = { ...navRow, navStatus };
+    const result = withValidNav(row, navNow, navNow);
+    assert.equal(result.bubblePercent, null, navStatus);
+    assert.notEqual(result.navState, "ready", navStatus);
+    assert.equal(result.navState, navStatus === "stale" ? "stale" : navStatus === "invalid-unit" || navStatus === "unavailable" ? "unavailable" : "unknown-time");
+    assert.ok(result.navReason);
+    assert.equal(result.price, row.price); assert.equal(result.nav, row.nav); assert.equal(result.navIssue, row.navIssue);
+    assert.equal(result.navDate, row.navDate); assert.equal(result.navTime, row.navTime); assert.equal(result.navStatus, navStatus);
+    assert.equal(row.bubblePercent, 999, "source row is not mutated");
+  }
+});
+
+test("source ready or absent flag still requires independently valid paired clocks", () => {
+  for (const navStatus of [undefined, "ready"]) {
+    const result = withValidNav({ ...navRow, navStatus }, null, navNow);
+    assert.equal(result.navState, "ready");
+    assert.ok(Math.abs((result.bubblePercent ?? 0) - 10) < 1e-9);
+    const old = withValidNav({ ...navRow, navStatus, navDate: "1405-07-06" }, navNow, navNow);
+    assert.equal(old.navState, "stale"); assert.equal(old.bubblePercent, null);
+    const missingPriceClock = withValidNav({ ...navRow, navStatus, sourceTime: null }, navNow, navNow);
+    assert.equal(missingPriceClock.navState, "unknown-time"); assert.equal(missingPriceClock.bubblePercent, null);
+  }
+});
 
 // Match Next's server-only build alias, without adding a dependency to the app.
 const require = createRequire(import.meta.url);
