@@ -213,5 +213,54 @@
   ],
   "schemaManifest": "P04-SCHEMA-CANDIDATE.json",
   "rollback": "P04-ROLLBACK-FREEZE.sql",
-  "installed": false
+  "installed": false,
+  "verification": {
+    "command": "tsx --test --test-concurrency=1 lib/portfolio/recovery.integration.test.ts",
+    "script": "test:recovery:db",
+    "files": [
+      {
+        "path": "lib/portfolio/recovery.integration.test.ts",
+        "gitBlob": "e533ba75184f51ea8ff3277d0fe26ae75c2e3e4a"
+      },
+      {
+        "path": "lib/ops/test-postgres.ts",
+        "gitBlob": "500a8871959c71be837ded6a80ed8e45c37e8d28"
+      },
+      {
+        "path": "sql/test/supabase_bootstrap.sql",
+        "gitBlob": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e"
+      },
+      {
+        "path": "sql/test/profile_legacy_default_privileges.sql",
+        "gitBlob": "5566d922f68fe40321203f9d6609e489278f3832"
+      },
+      {
+        "path": "sql/test/profile_explicit_grants.sql",
+        "gitBlob": "94639f289300a48d388b47ab2cc5da6868f8894c"
+      },
+      {
+        "path": "sql/test/portfolio_precondition.sql",
+        "gitBlob": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89"
+      },
+      {
+        "path": "docs/ops/recovery-01/P04-ROLLBACK-FREEZE.sql",
+        "gitBlob": "dc5f9526bd258bc8e08a4ab4717be52e2a430241"
+      }
+    ],
+    "sqlFilesAreCIOnly": [
+      "sql/test/supabase_bootstrap.sql",
+      "sql/test/profile_legacy_default_privileges.sql",
+      "sql/test/profile_explicit_grants.sql",
+      "sql/test/portfolio_precondition.sql"
+    ],
+    "excluded": [
+      "balanceSheet.integration.test.ts",
+      "phase34",
+      "phase35",
+      "phase36",
+      "phase37",
+      "full phase38"
+    ],
+    "packageRule": "Register only test:recovery:db in main package; do not copy this branch package or old test:db list."
+  }
 }
