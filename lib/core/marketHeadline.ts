@@ -65,9 +65,9 @@ export const MAX_INDEX_DAILY_MOVE_PCT = 25;
  * منبع (`tsetmc`) تغییر را به **امتیاز** می‌دهد نه درصد؛ مبنای دیروز =
  * مقدارِ امروز منهای تغییر. اگر مبنا معتبر نباشد → `null`.
  */
-export function indexChangePercent(value: number, changePoints: number): number | null {
-  if (!isFinite(value) || !(value > 0)) return null;
-  if (!isFinite(changePoints)) return null;
+export function indexChangePercent(value: number | null, changePoints: number | null): number | null {
+  if (typeof value !== 'number' || !isFinite(value) || !(value > 0)) return null;
+  if (typeof changePoints !== 'number' || !isFinite(changePoints)) return null;
   const base = value - changePoints;
   if (!(base > 0)) return null;
   const pct = (changePoints / base) * 100;
@@ -123,10 +123,10 @@ export function buildMarketHeadline(input: HeadlineInput): MarketHeadline {
     {
       key: "index-equal",
       label: "شاخص هم‌وزن",
-      value: idx && idx.equalWeight > 0 ? idx.equalWeight : null,
+      value: idx && idx.equalWeight != null && idx.equalWeight > 0 ? idx.equalWeight : null,
       unit: "index",
       changePercent: idx ? indexChangePercent(idx.equalWeight, idx.equalWeightChange) : null,
-      absentReason: idx && idx.equalWeight > 0 ? null : "شاخص هم‌وزن در آخرین اسنپ‌شات ثبت نشده",
+      absentReason: idx && idx.equalWeight != null && idx.equalWeight > 0 ? null : "شاخص هم‌وزن در آخرین اسنپ‌شات ثبت نشده",
       coverage: null,
       note: "وزنِ برابر برای همهٔ نمادها",
     },

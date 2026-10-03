@@ -30,6 +30,17 @@ test("تغییرِ صفر، صفرِ واقعی است (نه null)", () => {
   assert.equal(indexChangePercent(2_000_000, 0), 0);
 });
 
+test('تغییر یا مقدار ناموجود، صفر یا درصد ساختگی نمی‌شود', () => {
+  assert.equal(indexChangePercent(2_000_000, null), null);
+  assert.equal(indexChangePercent(null, 0), null);
+  const h = buildMarketHeadline({indices: {...IDX, totalChange: null, equalWeight: null, equalWeightChange: null}, stocks: [], gold: [], currency: []});
+  assert.equal(h.metrics.find(m => m.key === 'index-total')!.changePercent, null);
+  const equal = h.metrics.find(m => m.key === 'index-equal')!;
+  assert.equal(equal.value, null);
+  assert.equal(equal.changePercent, null);
+  assert.ok(equal.absentReason);
+});
+
 test("جهشِ نامعقولِ شاخص null می‌دهد، نه عددِ غلط", () => {
   const huge = 2_000_000 * (MAX_INDEX_DAILY_MOVE_PCT / 100) * 2;
   assert.equal(indexChangePercent(2_000_000, huge), null);
