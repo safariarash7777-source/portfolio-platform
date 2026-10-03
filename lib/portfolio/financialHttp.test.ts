@@ -10,6 +10,24 @@ import { positionFromStored } from "./balanceSheet";
 import { getFinancialSnapshot, lookupFinancialReceipt, type FinancialReadDb } from "./financialReadHttp";
 const request = (body: unknown) => new Request("http://localhost/api/portfolio/debts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 const payload = { base_version: 0, client_token: "synthetic", debts: [{ debt_key: "d", title: "وام نمونه", kind: "loan", balance: "۱۰۰۰", currency: "IRR", balance_as_of: "2026-09-30" }], user_id: "spoofed-owner" };
+test("financial HTTP denies expired sessions and preserves service failures without calling RPC", async () => {
+  const cases: [unknown, number][] = [
+    [new AuthSessionMissingError(), 401], [{ status: 401 }, 401], [{ status: 403 }, 401],
+    [{ status: 400, code: "session_expired" }, 401], [{ status: 400, code: "bad_jwt" }, 401],
+    [{ status: 400 }, 503], [{ status: 404 }, 503], [{ status: 429 }, 503], [{ status: 500 }, 503],
+    [new Error("synthetic transport failure"), 503],
+  ];
+  for (const [error, expected] of cases) {
+    let writes = 0;
+    const response = await postFinancialSnapshot(request(payload), "debts", async () => ({
+      async authenticate() { return financialAuthentication({ id: "synthetic-stale-owner" }, error); },
+      async rpc() { writes++; throw new Error("unexpected write"); },
+    }));
+    assert.equal(response.status, expected);
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.equal(writes, 0);
+  }
+});
 const db = (code?: string): FinancialDb => ({ async authenticate() { return { user: { id: "actual-owner" }, error: false }; }, async rpc() { return { data: [{ version_id: "v", version: 1, reused: false }], error: code ? { code } : null }; } });
 test("server normalizes unit exactly once, ignores forged identity and emits private no-store", async () => {
   const source = db(); source.rpc = async (name, args) => { assert.equal(name, "record_member_debts"); assert.equal((args.p_debts as Record<string, unknown>[])[0].balance_toman, 100); assert.equal(Object.hasOwn(args, "user_id"), false); return { data: [{ version: 1, reused: false }], error: null }; };

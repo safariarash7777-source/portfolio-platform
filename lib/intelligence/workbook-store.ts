@@ -84,7 +84,7 @@ async function authorize(gateway: WorkbookGateway): Promise<StoreResult | null> 
   try {
     role = await gateway.getRole(user.id);
   } catch {
-    return { status: 403, body: { error: "دسترسی مجاز نیست" } };
+    return { status: 503, body: { error: "بررسی نقش انجام نشد؛ دوباره تلاش کنید." } };
   }
   return role === "admin" ? null : { status: 403, body: { error: "دسترسی مجاز نیست" } };
 }

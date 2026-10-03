@@ -1,4 +1,4 @@
--- P00/operator only, AFTER restoring the previous application/config.
+-- P00/operator only, BEFORE restoring the previous application/config.
 -- Preserve all old and new histories. No DROP/TRUNCATE/DELETE/UPDATE.
 -- Do not execute on the main DB before backup/restore proof + release manifest.
 BEGIN;
