@@ -43,7 +43,8 @@ export function mapManualClaim(workbook: ResearchWorkbook, input: unknown, claim
   return next;
 }
 
-export interface P07Review { version: number | null; decision: 'approved_internal' | 'returned'; reviewedAt: string }
+export { p07ReviewCurrent } from './workbook-review';
+export type { P07Review } from './workbook-review';
 export interface P07PreparationBinding { workbookVersionId: string; signature: string }
 /** UX binding only; canonical server approval/grant/current remain mandatory. */
 export function p07PublicationPreparationIssue(issues: readonly string[], workbookVersionId: string, binding: P07PreparationBinding | null, signature: string): string | null {
@@ -52,14 +53,6 @@ export function p07PublicationPreparationIssue(issues: readonly string[], workbo
     return 'پس از تغییر آماده‌سازی، نسخه پژوهش را دوباره ذخیره و بازبینی کنید؛ همان پژوهش را برای انتشار انتخاب کنید.';
   return null;
 }
-/** Match authoritative latest-review semantics, including a returned review tied at the latest time. */
-export function p07ReviewCurrent(version: number, latestVersion: number, reviews: readonly P07Review[]): boolean {
-  if (version !== latestVersion) return false;
-  const here = reviews.filter(item => item.version === version);
-  const latest = [...here].sort((a, b) => b.reviewedAt.localeCompare(a.reviewedAt))[0];
-  return !!latest && latest.decision === 'approved_internal' && !here.some(item => item.reviewedAt === latest.reviewedAt && item.decision === 'returned');
-}
-
 /** A bounded local preparation file, not a new server ledger or a publication DTO. */
 export function p07PreparationExport(input: unknown, workbook?: ResearchWorkbook): { contract: 'p07.preparation.draft.v1'; intake: ManualIntake; canonicalWorkbookDraft: ResearchWorkbook | null; persisted: false } {
   return { contract: 'p07.preparation.draft.v1', intake: parseManualIntake(input), canonicalWorkbookDraft: workbook ? parseWorkbook(JSON.stringify(workbook)) : null, persisted: false };

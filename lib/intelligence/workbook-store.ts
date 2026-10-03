@@ -61,6 +61,8 @@ export interface WorkbookStore {
 }
 
 export interface WorkbookGateway {
+  /** Defaults off. Enable only with P00 destination/backup/rollback acceptance. */
+  privatePreparationWritable?: boolean;
   getUser(): Promise<{ id: string } | null>;
   getRole(userId: string): Promise<string | null>;
   createStore(): WorkbookStore;
@@ -142,6 +144,7 @@ export async function listWorkbooks(gateway: WorkbookGateway): Promise<StoreResu
     return {
       status: 200,
       body: {
+        privatePreparationWritable: gateway.privatePreparationWritable === true,
         items: rows.map((r) => ({ workbookId: r.workbookId, version: r.version, title: r.title, savedAt: r.createdAt })),
       },
     };
@@ -213,12 +216,25 @@ export async function saveWorkbook(
   }
   const clean = sanitize(payload.workbook);
   if (typeof clean === "string") return { status: 400, body: { error: clean } };
+  if (clean.privatePreparation && gateway.privatePreparationWritable !== true) {
+    return { status: 503, body: { error: "ذخیرهٔ آماده‌سازی خصوصی هنوز فعال نشده است؛ متن را نگه دارید.", unavailable: true } };
+  }
   if (new TextEncoder().encode(JSON.stringify(clean)).length > MAX_STORED_BYTES) {
     return { status: 413, body: { error: "کاربرگ برای ذخیرهٔ سروری بیش از یک مگابایت است؛ از فایل استفاده کنید." } };
   }
 
   try {
     const workbookId = isNew ? gateway.newId() : (payload.workbookId as string);
+    if (!isNew) {
+      const prior = (await gateway.createStore().versions(workbookId)).sort((a, b) => b.version - a.version)[0];
+      const priorBody = prior?.body as Record<string, unknown> | undefined;
+      if (priorBody?.privatePreparation !== undefined && !clean.privatePreparation) {
+        return { status: 409, body: { error: "این نسخه آماده‌سازی خصوصی دارد؛ با ویرایشگر سازگار باز کنید تا اطلاعات حذف نشود." } };
+      }
+      if (priorBody?.privatePreparation !== undefined && gateway.privatePreparationWritable !== true) {
+        return { status: 503, body: { error: "نوشتن آماده‌سازی خصوصی متوقف است؛ نسخهٔ ذخیره‌شده محفوظ است.", unavailable: true } };
+      }
+    }
     const row = await gateway.createStore().insertVersion({
       workbookId,
       version: base + 1,
@@ -259,6 +275,9 @@ export async function decideWorkbook(
     const all = (await store.versions(payload.workbookId)).sort((a, b) => a.version - b.version);
     const target = all.find((v) => v.version === payload.version);
     if (!target) return { status: 404, body: { error: "این نسخه پیدا نشد" } };
+    if ((target.body as Record<string, unknown>)?.privatePreparation !== undefined && gateway.privatePreparationWritable !== true) {
+      return { status: 503, body: { error: "نوشتن و بازبینی نسخهٔ دارای آماده‌سازی خصوصی متوقف است؛ نسخه محفوظ است.", unavailable: true } };
+    }
     if (target.version !== all[all.length - 1].version) {
       return { status: 409, body: { error: "فقط آخرین نسخه قابلِ تصمیم است." } };
     }

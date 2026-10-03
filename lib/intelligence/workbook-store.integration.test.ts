@@ -199,5 +199,23 @@ for (const [profileName, profile] of Object.entries(PROFILES)) {
         JOIN public.research_workbook_versions v ON v.id = r.version_id WHERE r.decision='approved_internal'`);
       assert.equal(approvals, "3", "تأیید به نسخهٔ ۳ بسته ماند؛ نسخهٔ ۴ به ارث نبرد");
     });
+    test("private preparation stays under admin RLS and return requires a fresh CAS version for another approval", () => {
+      const aggregate = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+      const privateBody = JSON.stringify({ evidence: JSON.parse(EVIDENCE), privatePreparation: { contract: 'p07.private-preparation.v1',
+        intake: {kind:'text',text:'PRIVATE_SQL_ORIGINAL',transcriptConfirmed:false,claims:[],ambiguities:[]} } });
+      const save = (version: number) => `INSERT INTO public.research_workbook_versions(workbook_id,version,title,body) VALUES('${aggregate}',${version},'private test','${privateBody}'::jsonb) RETURNING id`;
+      const v1 = last(asRole(db,'authenticated',ADMIN,save(1)));
+      assert.equal(last(asRole(db,'authenticated',USER,`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id='${aggregate}'`)), '0');
+      assert.equal(last(asRole(db,'authenticated',ADMIN,`SELECT body->'privatePreparation'->'intake'->>'text' FROM public.research_workbook_versions WHERE id='${v1}'`)), 'PRIVATE_SQL_ORIGINAL');
+      asRole(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${v1}','approved_internal')`);
+      asRole(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision,note) VALUES('${v1}','returned','Synthetic return')`);
+      assert.match(asRoleError(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${v1}','approved_internal')`), /duplicate key|one_approval/);
+      const v2 = last(asRole(db,'authenticated',ADMIN,save(2)));
+      assert.match(asRoleError(db,'authenticated',ADMIN,save(2)),/duplicate key|research_workbook_versions_unique/);
+      assert.equal(psql(db,`SELECT count(*) FROM public.research_workbook_reviews WHERE version_id='${v2}'`),'0');
+      asRole(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${v2}','approved_internal')`);
+      assert.equal(psql(db,`SELECT count(*) FROM public.research_workbook_reviews WHERE version_id='${v1}'`),'2');
+      assert.equal(psql(db,`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id='${aggregate}'`),'2');
+    });
   });
 }

@@ -111,6 +111,7 @@ function supabaseStore(db: SessionClient): WorkbookStore {
 async function gateway(): Promise<WorkbookGateway> {
   const supabase = await createClient();
   return {
+    privatePreparationWritable: process.env.P07_PRIVATE_PREPARATION_ENABLED === 'true',
     async getUser() {
       const { data } = await supabase.auth.getUser();
       return data.user ? { id: data.user.id } : null;
