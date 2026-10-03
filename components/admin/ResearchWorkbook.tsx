@@ -6,6 +6,7 @@ import { Download, FileUp, Plus, Trash2, ClipboardCheck, Save, FolderOpen, Check
 import { DOMAIN_LABEL, INTEL_DOMAINS } from '@/lib/intelligence/contracts';
 import { toPersianDigits, formatJalali } from '@/lib/format';
 import { isCalendarDate, MAX_WORKBOOK_BYTES, emptyWorkbook, parseWorkbook, reviewWorkbook, workbookMarkdown, SCENARIO_KEYS, SCENARIO_NAMES, type ResearchWorkbook as Workbook } from '@/lib/intelligence/research-workbook';
+import { p07ReviewCurrent } from '@/lib/intelligence/p07-workflow';
 
 const inputClass = 'w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
@@ -135,7 +136,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setDirty(false); setChecked(false); setMessage('');
   }
   const canDecide = server === 'ready' && !!saved && !dirty && saved.version === saved.latestVersion && !busy;
-  const approvedHere = saved ? reviews.some(r => r.version === saved.version && r.decision === 'approved_internal') : false;
+  const approvedHere = saved ? p07ReviewCurrent(saved.version, saved.latestVersion, reviews) : false;
   function download(kind: 'json' | 'md') {
     const text = kind === 'json' ? JSON.stringify(workbook, null, 2) : workbookMarkdown(workbook);
     const url = URL.createObjectURL(new Blob([text], { type: kind === 'json' ? 'application/json' : 'text/markdown;charset=utf-8' }));
