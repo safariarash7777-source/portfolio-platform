@@ -1,0 +1,273 @@
+{
+  "authority": "RECOVERY-01 / P00 selected files only",
+  "productionSource": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "runtimeSource": "a994c3d3436475b697ba2a6b85f475d81e91c4b4",
+  "roots": [
+    "app/(protected)/dashboard/holdings/page.tsx",
+    "app/api/portfolio/holdings/route.ts",
+    "app/api/portfolio/debts/route.ts",
+    "app/api/portfolio/holdings/scope/route.ts"
+  ],
+  "files": [
+    {
+      "path": "app/(protected)/dashboard/holdings/page.tsx",
+      "gitBlob": "54f3b3eb83947ae6433778f37f33e6793f998341",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "app/api/portfolio/debts/route.ts",
+      "gitBlob": "4d83b5649dff9a8e42e723786c1647f508561f49",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "app/api/portfolio/holdings/route.ts",
+      "gitBlob": "fd7dd869b6b275edf84282bbd394c49efd357700",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "app/api/portfolio/holdings/scope/route.ts",
+      "gitBlob": "3e0c6150465f0109801133761f338a5f30b6450a",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "components/dashboard/ReadError.tsx",
+      "gitBlob": "da0bade391ec740b5a293cea6ee19470d1e2e0cf",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "components/portfolio/BalanceSheetSummary.tsx",
+      "gitBlob": "cde0e895e3be3a4c8db6f1bf00691bab29689ec2",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "components/portfolio/DebtsWorkbench.tsx",
+      "gitBlob": "9c0cba9273ea6564beac2487fe2c5af919a83e57",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "components/portfolio/HoldingsImportPreview.tsx",
+      "gitBlob": "2bce7f7e05874d758ca5618a3b8bf78f7deaa8d5",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "components/portfolio/HoldingsSummary.tsx",
+      "gitBlob": "98e407f6adf8c985a00f0528cd3ae73e5a87ac5d",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "components/portfolio/HoldingsWorkbench.tsx",
+      "gitBlob": "e02697359f7801e39bd6bc5ee0cca823f7965972",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "components/portfolio/InvestmentScopeWorkbench.tsx",
+      "gitBlob": "46108857ad7fdfee00dc6c5f08bcc55eceedc5ea",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/format.ts",
+      "gitBlob": "73c303df57c41cb472013cbf678e070c3652a3c7",
+      "productionBasePresent": true,
+      "action": "REUSE_P00_P01_OWNER_VERSION"
+    },
+    {
+      "path": "lib/portfolio/balanceSheet.ts",
+      "gitBlob": "a6ad0e074a7f98425525db378aee5c595811f14f",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/contracts.ts",
+      "gitBlob": "89d9aee2211596e1777ee879cf6cc48cdf4b7135",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/financialHttp.ts",
+      "gitBlob": "541e6971781fe892449e0e4e21479ef35e71a92e",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/financialInput.ts",
+      "gitBlob": "30511a982a542f390a3fabffa326d70caac480c7",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/financialReadHttp.ts",
+      "gitBlob": "d377b216a3084ac87e1be2737df266a8b2183927",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/importPreview.ts",
+      "gitBlob": "a1d3deabaf35f6d4d77af52375791faa2fcd1848",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/investmentScope.ts",
+      "gitBlob": "4f772ae14f986c470edde34e8c03cac49e16398e",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/prices.ts",
+      "gitBlob": "df490a2722331ba2da53143a9711b1c3b0711b43",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/readDb.ts",
+      "gitBlob": "58ef2848f6d16d5df0df2b35f7ed4269ee25d9bf",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/rebalance.ts",
+      "gitBlob": "9efdf8aeb50d5f887ae939cc7ddd02f779de3eb2",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/scopeContract.ts",
+      "gitBlob": "3db009a8d01b99ebcfb76491f7c8faecd7423cef",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/scopeHttp.ts",
+      "gitBlob": "b284c6ba7874a8f5596edffad97b112078d2cb34",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/scopeService.ts",
+      "gitBlob": "0b5c940b81726296a9349a0869db9199c2c9f9bf",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/service.ts",
+      "gitBlob": "7d6d9ab13258a6335dcbe45be17bb227411de273",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/targetContract.ts",
+      "gitBlob": "af07521b2a9a4d82de37e4e8dae9a0843f154b5a",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/units.ts",
+      "gitBlob": "94f4ea53e946808681563c8c78eb1f8b1767a8e7",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/valuation.ts",
+      "gitBlob": "0cd429e5825ce6651759c38c19ec28e78ce54162",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/portfolio/view.ts",
+      "gitBlob": "1e90a2032f327d255b5d4fbb3481bb77f527fd79",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/read-state.ts",
+      "gitBlob": "eaefcefe7e23b44910aca67fed92e9fbedfb70ab",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    },
+    {
+      "path": "lib/supabase/server.ts",
+      "gitBlob": "98bbcea208cf89a190a4367899fc2726803f1b13",
+      "productionBasePresent": true,
+      "action": "REUSE_P00_P01_OWNER_VERSION"
+    },
+    {
+      "path": "lib/portfolio/saveAttempt.ts",
+      "gitBlob": "960c5c8a6138c14de840a265651152adbb9417c6",
+      "productionBasePresent": false,
+      "action": "SELECT_ADD"
+    }
+  ],
+  "rules": [
+    "Do not merge parent branch or layouts/globals/public/Auth files.",
+    "Mount finance page under original main shell; P00 owns navigation entry.",
+    "lib/supabase/server.ts and lib/format.ts stay P00/P01 owned; verify required exports.",
+    "Remove unused loadAdvisorBalanceSheet from copied service.ts; no advisor RPC installed.",
+    "Existing scope comparison target read reference_version_id is absent in main metadata; use main legacy-compatible owner target projection without adding reference schema.",
+    "CSV UI is disabled (showImport=false); preview module remains internal compile/read-payload dependency only.",
+    "No alerts/performance/AI/P06/P10 or receipt route is required."
+  ],
+  "schemaManifest": "P04-SCHEMA-CANDIDATE.json",
+  "rollback": "P04-ROLLBACK-FREEZE.sql",
+  "installed": false,
+  "verification": {
+    "command": "tsx --test --test-concurrency=1 lib/portfolio/recovery.integration.test.ts",
+    "script": "test:recovery:db",
+    "files": [
+      {
+        "path": "lib/portfolio/recovery.integration.test.ts",
+        "gitBlob": "e533ba75184f51ea8ff3277d0fe26ae75c2e3e4a"
+      },
+      {
+        "path": "lib/ops/test-postgres.ts",
+        "gitBlob": "500a8871959c71be837ded6a80ed8e45c37e8d28"
+      },
+      {
+        "path": "sql/test/supabase_bootstrap.sql",
+        "gitBlob": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e"
+      },
+      {
+        "path": "sql/test/profile_legacy_default_privileges.sql",
+        "gitBlob": "5566d922f68fe40321203f9d6609e489278f3832"
+      },
+      {
+        "path": "sql/test/profile_explicit_grants.sql",
+        "gitBlob": "94639f289300a48d388b47ab2cc5da6868f8894c"
+      },
+      {
+        "path": "sql/test/portfolio_precondition.sql",
+        "gitBlob": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89"
+      },
+      {
+        "path": "docs/ops/recovery-01/P04-ROLLBACK-FREEZE.sql",
+        "gitBlob": "dc5f9526bd258bc8e08a4ab4717be52e2a430241"
+      }
+    ],
+    "sqlFilesAreCIOnly": [
+      "sql/test/supabase_bootstrap.sql",
+      "sql/test/profile_legacy_default_privileges.sql",
+      "sql/test/profile_explicit_grants.sql",
+      "sql/test/portfolio_precondition.sql"
+    ],
+    "excluded": [
+      "balanceSheet.integration.test.ts",
+      "phase34",
+      "phase35",
+      "phase36",
+      "phase37",
+      "full phase38"
+    ],
+    "packageRule": "Register only test:recovery:db in main package; do not copy this branch package or old test:db list."
+  },
+  "runtimeFollowup": "P04-UNKNOWN-OUTCOME-FIX.json overrides two forms and adds exact-request helper; financial baseline a994 remains provenance, not current form pin."
+}

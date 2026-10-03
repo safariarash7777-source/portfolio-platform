@@ -1,0 +1,55 @@
+{
+  "authority": "P00 read-only P2 review checkpoint fb73; bounded form followup",
+  "sourceSelectedBy": "Git blobs below plus resulting pushed commit",
+  "files": [
+    {
+      "path": "components/portfolio/DebtsWorkbench.tsx",
+      "gitBlob": "9c0cba9273ea6564beac2487fe2c5af919a83e57"
+    },
+    {
+      "path": "components/portfolio/HoldingsWorkbench.tsx",
+      "gitBlob": "e02697359f7801e39bd6bc5ee0cca823f7965972"
+    },
+    {
+      "path": "lib/portfolio/saveAttempt.ts",
+      "gitBlob": "960c5c8a6138c14de840a265651152adbb9417c6"
+    },
+    {
+      "path": "components/portfolio/financial-form-test-host.ts",
+      "gitBlob": "3872ae832707247458273d94531bbe3079cc3506"
+    },
+    {
+      "path": "components/portfolio/financial-forms.test.ts",
+      "gitBlob": "44debe85ce5954ed493fe8013132bc74e4605c06"
+    }
+  ],
+  "behavior": [
+    "Unknown outcome locks row editing/add/delete/import and retains exact URL/serialized request/token/base.",
+    "Retry uses the same original bytes; confirmed receipt validates UUID, base+1 version and submitted side count.",
+    "After prior unknown, EVERY 4xx remains unknown except a well-formed recognized canonical CAS409. Initial out-of-contract404/408/429 or malformed4xx also stays unknown. Initial valid contract400/401/403 can reject; canonical409 enters preserved-draft review with no blind rebase.",
+    "No root service/Auth/global UI changes; no new schema, ledger, receipt route or real DB writes."
+  ],
+  "local": {
+    "nativeOrProductionReproduction": false,
+    "changedFileLint": "PASS",
+    "targetedTotal": 63,
+    "typecheck": "PASS",
+    "actualComponentHandlerCases": 40
+  },
+  "mainPackageRule": "Register financial-forms.test.ts in main core/targeted invocation; do not copy branch package.json.",
+  "receiptRouteRequired": false,
+  "schemaChanged": false,
+  "mainDomainAcceptance": "PENDING",
+  "followup": {
+    "finding": "P00 independent a0f review: 404/408 and malformed4xx do not resolve an unanswered request",
+    "chains": [
+      "Both forms lost-after-commit -> 401/403/429/404/408/400 -> exact reused receipt with 1 write",
+      "Both forms lost-after-commit -> nonJSON400/nonJSON409/noncanonical409 -> restored exact reused receipt",
+      "Both forms initial404/408 and malformed400/409 -> freeze and exact retry",
+      "Both forms priorUnknown -> valid canonicalCAS409 -> preserved draft and separate review, no overwrite"
+    ],
+    "sourceCheckpoint": "a0f4486d95037d60e176592ac6710bc6390bbc17 all CI PASS predates this final conservative followup",
+    "newCi": "PENDING",
+    "unresolvedMarker": "Synchronous ref, not a stale render closure"
+  }
+}

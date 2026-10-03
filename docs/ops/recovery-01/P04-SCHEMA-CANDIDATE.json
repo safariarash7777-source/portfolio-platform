@@ -1,0 +1,52 @@
+{
+  "authority": "RECOVERY-01 section6 / P00 selected-files",
+  "productionSource": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "patchBase": "1fcb3a1c596d8031686d8725aafcaed91d3645c8",
+  "financialCoreSource": "sql/phase38_personal_balance_sheet.sql at patchBase",
+  "financialCoreExactBlock": true,
+  "schemaOrder": [
+    "sql/phase32_member_holdings.sql",
+    "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+    "supabase/migrations/20261003094327_member_investment_scope_reviews.sql"
+  ],
+  "files": [
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "gitBlob": "e169d733e75f523597baeb8560fd46f8662d95a5",
+      "sha256Lf": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+    },
+    {
+      "path": "sql/phase38_personal_balance_sheet.sql",
+      "gitBlob": "e3901db5f8d43bdeafd5fbc53a464e184f7ef060",
+      "sha256Lf": "3572915cb6c3e1bc98f9ead763318bd6400db0d91691ca1dd771c9cac65de247"
+    },
+    {
+      "path": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "gitBlob": "2553c1585912156506476025a36ce5b93d5babbd",
+      "sha256Lf": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+    },
+    {
+      "path": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "gitBlob": "49f473822d107c6fada8a2801bdfbc6143b3cdcd",
+      "sha256Lf": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+    },
+    {
+      "path": "supabase/migrations/20261003100542_recovery_legacy_holdings_owner_only.sql",
+      "gitBlob": "c096769e6ce00cb35e470ce5a37e8da84e064c35",
+      "sha256Lf": "5ae23c1716a8bc0f077a1085f9035def910b40813352e264865ff077225f7f6b",
+      "independent": true,
+      "authority": "P00 delegated 2026-10-03T10:04:14Z live policy receipt",
+      "rollback": "Keep owner-only policy/ACL; never restore is_admin exception"
+    }
+  ],
+  "installed": false,
+  "productionWrites": false,
+  "backupInstallGate": "P00 pending destination-specific proof",
+  "legacyPreserved": [
+    "holdings",
+    "portfolio_versions",
+    "dashboard existing appearance"
+  ],
+  "researchConsultationDependency": false,
+  "independentSecurityMigration": "supabase/migrations/20261003100542_recovery_legacy_holdings_owner_only.sql"
+}

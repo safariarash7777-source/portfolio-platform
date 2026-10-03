@@ -1,0 +1,77 @@
+{
+  "sourceSha": "1b19bcd006d58d7a15f6bbabc266470ea604fdda",
+  "checkedAtUtc": "2026-10-03T10:17:54.6677771Z",
+  "local": {
+    "calc": 106,
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "core": 1305,
+    "staticComponentChecks": 4,
+    "targeted": 58
+  },
+  "ci": [
+    {
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37115748896/job/111182519139"
+    },
+    {
+      "name": "Vercel Preview Comments",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/111182351178"
+    },
+    {
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37115748896/job/111182123789"
+    },
+    {
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37115748896/job/111182123674"
+    },
+    {
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37115748896/job/111182123605"
+    },
+    {
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37115748896/job/111182123511"
+    },
+    {
+      "name": "isolated-db",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37115748799/job/111182122927"
+    },
+    {
+      "name": "Supabase Preview",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/runs/111182112603"
+    }
+  ],
+  "installed": false,
+  "mainDomainAcceptance": "PENDING",
+  "legacyAdminPolicyPredicate": "CONFIRMED by P00 live 2026-10-03T10:04:14Z; independent owner-only candidate DB/CI PASS, NOT_INSTALLED",
+  "independentRecoveryDb": {
+    "file": "lib/portfolio/recovery.integration.test.ts",
+    "declaredCases": 24,
+    "privilegeProfiles": [
+      "legacy",
+      "explicit"
+    ],
+    "ciJob": "Database RLS · Integrity (Postgres)",
+    "status": "PASS",
+    "mainDomainHttp": "PENDING",
+    "researchConsultationInstalled": false
+  }
+}
