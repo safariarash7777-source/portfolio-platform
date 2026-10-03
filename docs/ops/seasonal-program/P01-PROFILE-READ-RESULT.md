@@ -1,6 +1,6 @@
 # P01 — خواندن مستقل پروفایل، 2026-10-03
 
-وضعیت: **اصلاح محدود ساخته و آزموده در شاخهٔ ایزوله؛ محیط‌ها و Production تغییر نکرده‌اند.** PR/CI/SHA نهایی در رکورد پایین اضافه می‌شود. این تکمیل، فعال‌سازیSMS، حل ورود مالک یا پذیرشNative219 نیست.
+وضعیت: **اصلاح محدود ساخته و آزموده در شاخهٔ ایزوله؛ CI/build موفق؛ محیط‌ها و Production تغییر نکرده‌اند.** PR/CI/SHA در رکورد پایین آمده است. این تکمیل، فعال‌سازیSMS، حل ورود مالک یا پذیرشNative219 نیست.
 
 ## مشکل و رفتار تازه
 
@@ -52,4 +52,6 @@ Auth/getUser درharness به‌صورتfixture است؛ RPC ازSDKواقعی �
 
 ## رکورد تحویل
 
-[Draft PR221](https://github.com/safariarash7777-source/portfolio-platform/pull/221)، روی شاخهٔ P00 `codex/p00-auth-next-20261002@2e44dc1d7008acf0b0c76e8679238514f4f7bab2`. SHA کد آزموده‌شده **`b9bf993d10902f1b23d8e4319d56121b30137b16`** است؛ commit مستندات ممکن است head را تغییر دهد. CI اولیه37112497268 هنگام ثبت این رکورد in_progress بود؛ Native این بسته **NOT_RUN** است. نتیجه تازهٔ CI باید با head جاری تطبیق شود؛ ساخته، CI، نصب و پذیرش چهار وضعیت مستقل‌اند.
+[Draft PR221](https://github.com/safariarash7777-source/portfolio-platform/pull/221)، روی شاخهٔ P00 `codex/p00-auth-next-20261002@2e44dc1d7008acf0b0c76e8679238514f4f7bab2`. SHA کد اجرایی **`b9bf993d10902f1b23d8e4319d56121b30137b16`** است؛ اصلاح harness آزمون head را به **`5f4820fd493a48879e89ed507387d746f3abe831`** رساند. [CI37112677406](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/37112677406) برای همین5f4820f: Typecheck/Lint/Tests/Build، Secret/SQL، DatabaseRLS/Integrity، Dependencies وCI Gate همگی SUCCESS. گیتDB مربوط به regression موجود پروژه است؛ permissionNative پروفایل جدید ازآن استنتاج نمی‌شود.
+
+CI نخست37112497268 در نام متغیر `module` در harness جدید lint شکست خورد؛ نام به `loaded` تغییر کرد، lintMJS و26 آزمون تازه دوباره PASS و سپس CI کامل5f4820f موفق شد. هیچ کد اجرایی برای رفع lint تغییر نکرد. commit بعدی فقط همین رکورد مستندات را تکمیل می‌کند؛ وضعیت head نهایی ازPR و artifact تحویل مشترک P01-PROFILE-READ-HANDOFF خوانده شود. Native این بسته **NOT_RUN**؛ نصب **NOT_PERFORMED**. ساخته، CI، نصب و پذیرش چهار وضعیت مستقل‌اند.
