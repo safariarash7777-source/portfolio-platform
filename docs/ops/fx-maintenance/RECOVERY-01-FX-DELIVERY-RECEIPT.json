@@ -1,0 +1,62 @@
+{
+  "checked_at": "2026-10-03T10:27:18.548987+00:00",
+  "status_runtime_installed": true,
+  "installed_image_id": "sha256:486452d0eb49480e9821ca3a3c3898858954cd1325fd2f682ee0d7f99c00e6e6",
+  "service_health": "healthy",
+  "preservation": {
+    "environment": true,
+    "network_mode": true,
+    "network_names": true,
+    "restart_policy": true,
+    "data_mounts": true,
+    "cmd": true,
+    "entrypoint": true,
+    "working_dir": true
+  },
+  "original_app_models_data_sources_auth_hashes_preserved": true,
+  "four_financial_workbooks_preserved": true,
+  "old_container_retained": true,
+  "old_image_id": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+  "metadata_publication_verified": true,
+  "last_report": {
+    "run_id": "20260930T221759Z",
+    "updated_at": "2026-09-30T22:21:28.922931+00:00",
+    "finished_at": "2026-09-30T22:21:28.922931+00:00",
+    "execution_result": "completed",
+    "source_health": "degraded",
+    "data_completeness": "incomplete",
+    "schedule": {
+      "id": "9f78482170f4",
+      "enabled": true,
+      "last_run_at": "2026-10-01T01:51:55.048648+03:30",
+      "last_status": "ok",
+      "next_run_at": "2026-10-06T01:51:55.048648+03:30"
+    }
+  },
+  "scheduler": {
+    "TaskName": "Hermes-FX-ExistingJob-Ticker",
+    "State": "Ready",
+    "LogonType": "Interactive",
+    "RunLevel": "Limited",
+    "StartWhenAvailable": true,
+    "MultipleInstances": "IgnoreNew",
+    "LastRunTime": "2026-10-03T13:44:14+03:30",
+    "LastTaskResult": 0,
+    "NextTickAt": "2026-10-03T13:59:29+03:30",
+    "TriggerTypes": [
+      "MSFT_TaskLogonTrigger",
+      "MSFT_TaskTimeTrigger"
+    ],
+    "Cadence": "PT15M"
+  },
+  "laptop_timezone": "Iran Standard Time / Asia-Tehran",
+  "VM_timezone": "Etc/UTC",
+  "job_store_byte_identical": true,
+  "extra_economic_runs": 0,
+  "direct_provider_requests_for_acceptance": 0,
+  "helper_legacy_config_preserved": true,
+  "helper_final_sha256": "afc8a58e29d292711840c9ac58d29ce7de409ece4150153a9d17615ea74f0d46",
+  "main_admin_fx_acceptance": "NOT_ACCEPTED; waiting P01 real principal/main Auth",
+  "member_denial_acceptance": "NOT_TESTED",
+  "guest_route": "main /admin/fx redirects to /login?next=%2Fadmin%2Ffx"
+}

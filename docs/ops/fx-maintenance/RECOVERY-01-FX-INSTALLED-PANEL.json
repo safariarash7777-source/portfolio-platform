@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "installed_runtime_panel": [
+    {
+      "status": "PASS",
+      "three_axes_visible": true,
+      "exceptions": 0,
+      "provider_requests": 0,
+      "financial_models_executed": 0
+    }
+  ],
+  "main_admin_acceptance": "NOT_ACCEPTED"
+}

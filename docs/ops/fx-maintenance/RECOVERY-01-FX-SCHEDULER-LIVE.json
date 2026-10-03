@@ -1,0 +1,16 @@
+{
+  "TaskName": "Hermes-FX-ExistingJob-Ticker",
+  "State": "Ready",
+  "LogonType": "Interactive",
+  "RunLevel": "Limited",
+  "StartWhenAvailable": true,
+  "MultipleInstances": "IgnoreNew",
+  "LastRunTime": "2026-10-03T13:44:14+03:30",
+  "LastTaskResult": 0,
+  "NextTickAt": "2026-10-03T13:59:29+03:30",
+  "TriggerTypes": [
+    "MSFT_TaskLogonTrigger",
+    "MSFT_TaskTimeTrigger"
+  ],
+  "Cadence": "PT15M"
+}
