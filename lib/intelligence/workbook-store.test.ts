@@ -63,8 +63,8 @@ function complete(title = "اثر نرخ ارز بر سبد"): ResearchWorkbook 
   return w;
 }
 
-test("بی‌نشست ۴۰۱، غیرادمین و خطای خواندنِ نقش ۴۰۳ — و مخزن اصلاً ساخته نمی‌شود", async () => {
-  for (const [opts, status] of [[{ user: null }, 401], [{ role: "user" }, 403], [{ roleThrows: true }, 403], [{ role: null }, 403]] as const) {
+test("بی‌نشست ۴۰۱، غیرادمین ۴۰۳ و اختلال خواندنِ نقش ۵۰۳ — و مخزن اصلاً ساخته نمی‌شود", async () => {
+  for (const [opts, status] of [[{ user: null }, 401], [{ role: "user" }, 403], [{ roleThrows: true }, 503], [{ role: null }, 403]] as const) {
     const h = harness(opts);
     const results = [
       await listWorkbooks(h.gw),

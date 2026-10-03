@@ -22,6 +22,7 @@ const ENV = {
 const ROOT = process.cwd();
 const BOOTSTRAP = join(ROOT, "sql", "test", "supabase_bootstrap.sql");
 const PHASE34 = join(ROOT, "sql", "phase34_research_workbook_versions.sql");
+const ROLLBACK_FREEZE = join(ROOT, "sql", "P07-ROLLBACK-FREEZE.sql");
 const PROFILES = {
   legacy: join(ROOT, "sql", "test", "profile_legacy_default_privileges.sql"),
   explicit: join(ROOT, "sql", "test", "profile_explicit_grants.sql"),
@@ -39,6 +40,7 @@ function psql(db: string, sql: string): string {
 function psqlFile(db: string, file: string): string {
   return execFileSync("psql", ["-d", db, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", file], {
     env: ENV, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"],
+
   });
 }
 function expectError(db: string, sql: string): string {
@@ -198,6 +200,55 @@ for (const [profileName, profile] of Object.entries(PROFILES)) {
       const approvals = psql(db, `SELECT string_agg(v.version::text, ',') FROM public.research_workbook_reviews r
         JOIN public.research_workbook_versions v ON v.id = r.version_id WHERE r.decision='approved_internal'`);
       assert.equal(approvals, "3", "تأیید به نسخهٔ ۳ بسته ماند؛ نسخهٔ ۴ به ارث نبرد");
+    });
+    test("private preparation stays under admin RLS and return requires a fresh CAS version for another approval", () => {
+      const aggregate = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+      const privateBody = JSON.stringify({ evidence: JSON.parse(EVIDENCE), privatePreparation: { contract: 'p07.private-preparation.v1',
+        intake: {kind:'text',text:'PRIVATE_SQL_ORIGINAL',transcriptConfirmed:false,claims:[],ambiguities:[]} } });
+      const save = (version: number) => `INSERT INTO public.research_workbook_versions(workbook_id,version,title,body) VALUES('${aggregate}',${version},'private test','${privateBody}'::jsonb) RETURNING id`;
+      const v1 = last(asRole(db,'authenticated',ADMIN,save(1)));
+      assert.equal(last(asRole(db,'authenticated',USER,`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id='${aggregate}'`)), '0');
+      assert.equal(last(asRole(db,'authenticated',ADMIN,`SELECT body->'privatePreparation'->'intake'->>'text' FROM public.research_workbook_versions WHERE id='${v1}'`)), 'PRIVATE_SQL_ORIGINAL');
+      asRole(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${v1}','approved_internal')`);
+      asRole(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision,note) VALUES('${v1}','returned','Synthetic return')`);
+      assert.match(asRoleError(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${v1}','approved_internal')`), /duplicate key|one_approval/);
+      const v2 = last(asRole(db,'authenticated',ADMIN,save(2)));
+      assert.match(asRoleError(db,'authenticated',ADMIN,save(2)),/duplicate key|research_workbook_versions_unique/);
+      assert.equal(psql(db,`SELECT count(*) FROM public.research_workbook_reviews WHERE version_id='${v2}'`),'0');
+      asRole(db,'authenticated',ADMIN,`INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${v2}','approved_internal')`);
+      assert.equal(psql(db,`SELECT count(*) FROM public.research_workbook_reviews WHERE version_id='${v1}'`),'2');
+      assert.equal(psql(db,`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id='${aggregate}'`),'2');
+    });
+    test("rollback freeze denies old-binary writes and reviews while preserving private reader/history", () => {
+      const snapshot = () => psql(db, `SELECT jsonb_build_object(
+        'versions',(SELECT jsonb_agg(to_jsonb(v) ORDER BY id) FROM public.research_workbook_versions v),
+        'reviews',(SELECT jsonb_agg(to_jsonb(r) ORDER BY id) FROM public.research_workbook_reviews r))::text`);
+      const beforeFreeze = snapshot();
+      // Simulate an accidental public grant as well as both tested default profiles.
+      psql(db, `GRANT INSERT ON public.research_workbook_versions, public.research_workbook_reviews TO PUBLIC, anon`);
+      psqlFile(db, ROLLBACK_FREEZE);
+      psqlFile(db, ROLLBACK_FREEZE);
+      const v4 = versionId(db, 4);
+      for (const [role, sub] of [['authenticated', ADMIN], ['authenticated', USER], ['anon', null]] as const) {
+        assert.match(asRoleError(db, role, sub, insertVersion(5)), /permission denied/);
+        for (const decision of ['returned', 'approved_internal']) {
+          assert.match(asRoleError(db, role, sub,
+            `INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${v4}','${decision}')`), /permission denied/);
+        }
+      }
+      for (const table of ['research_workbook_versions', 'research_workbook_reviews']) {
+        for (const role of ['authenticated', 'anon']) {
+          assert.equal(psql(db, `SELECT has_table_privilege('${role}','public.${table}','INSERT')`), 'f');
+        }
+        assert.equal(psql(db, `SELECT has_table_privilege('authenticated','public.${table}','SELECT')`), 't');
+      }
+      assert.equal(last(asRole(db, 'authenticated', ADMIN, `SELECT count(*) FROM public.research_workbook_versions`)), '6');
+      assert.equal(last(asRole(db, 'authenticated', ADMIN, `SELECT count(*) FROM public.research_workbook_reviews`)), '5');
+      assert.equal(last(asRole(db, 'authenticated', ADMIN,
+        `SELECT body->'privatePreparation'->'intake'->>'text' FROM public.research_workbook_versions WHERE workbook_id='dddddddd-dddd-4ddd-8ddd-dddddddddddd' AND version=2`)), 'PRIVATE_SQL_ORIGINAL');
+      assert.equal(last(asRole(db, 'authenticated', USER, `SELECT count(*) FROM public.research_workbook_versions`)), '0');
+      assert.equal(last(asRole(db, 'authenticated', USER, `SELECT count(*) FROM public.research_workbook_reviews`)), '0');
+      assert.equal(snapshot(), beforeFreeze, 'freeze must preserve every body and history row exactly');
     });
   });
 }

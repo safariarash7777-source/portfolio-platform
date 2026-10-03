@@ -1,0 +1,74 @@
+{
+  "productionBase": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "reusedFix": "f0857a8898120cf0c6e7a9cac9021a7b4c6c9806",
+  "sourceBranch": "codex/p07-recovery-persistence-20261003",
+  "productionWrites": "NOT_RUN",
+  "privateWriterDefault": "off",
+  "fields": [
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "sha256": "339A4FD43F0D36DF1F4335E653841E0A6DC0855E9BC69A06099A92CADA493C1E"
+    },
+    {
+      "path": "components/admin/ResearchPreparationFields.tsx",
+      "sha256": "225C7D355CDAFCFF800869D19EDAA6F16F72E060CFEC0D8A45B862923710F513"
+    },
+    {
+      "path": "lib/intelligence/research-workbook.ts",
+      "sha256": "D97F48CD220B17D1691BCBE80AE20CF4DAE0246DECC47BAA5E8C2BB75F533958"
+    },
+    {
+      "path": "lib/intelligence/manual-intake.ts",
+      "sha256": "D68360CB63AD7C27DCBA0F052C954FD1BB547D38709A318B59D5074C1409CA5B"
+    },
+    {
+      "path": "lib/intelligence/workbook-review.ts",
+      "sha256": "D0EF34AF3CD0B2071A94FA1ADAE91CE24F0408B784B094CC233C4BF7A2C0DFA1"
+    },
+    {
+      "path": "lib/intelligence/workbook-store.ts",
+      "sha256": "459A02F3CF0DB77D7C732936DF553B025F03E5DB0CF44D80CAB09177C57A7203"
+    },
+    {
+      "path": "app/api/admin/intelligence/workbooks/route.ts",
+      "sha256": "08F66DCECBC631FC2509DFF7628AC173B103E84EA764BAB19BF457BB565B6ECF"
+    },
+    {
+      "path": "sql/phase34_research_workbook_versions.sql",
+      "sha256": "4EC5C4D1068B5CBE29A9F05E25FB9819ACB0FA1CC53F2FB783C28621E368F3D8"
+    }
+  ],
+  "schema": "phase34 unchanged; P00 install only after backup/restore",
+  "preserve51fd": [
+    "AdminShell",
+    "ArashCommandDesk",
+    "admin/desk",
+    "admin/research page",
+    "public shell/assets"
+  ],
+  "notRequired": [
+    "P07ManualDesk",
+    "PublicationWorkbench",
+    "publication queue",
+    "seasonal/cohort migrations",
+    "research query route change"
+  ],
+  "runtimePrerequisites": [
+    "session createClient",
+    "auth.users/auth.uid()",
+    "profiles(id,role)",
+    "anon/authenticated/service_role roles",
+    "gen_random_uuid()"
+  ],
+  "testSources": [
+    "components/admin/ResearchWorkbook.test.ts",
+    "components/admin/p07-component-test-host.ts",
+    "lib/intelligence/p07-private-persistence.test.ts",
+    "lib/intelligence/workbook-store.test.ts",
+    "lib/intelligence/workbook-store.integration.test.ts",
+    "lib/intelligence/p07-workflow-fixture.ts",
+    "lib/intelligence/publication.ts"
+  ],
+  "testsNote": "fixture publication parser is synthetic test dependency, not a runtime publication service or SQL install",
+  "rollback": "independent workbook write freeze before old binary; never delete history or drop populated tables"
+}

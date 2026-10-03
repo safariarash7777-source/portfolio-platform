@@ -6,7 +6,9 @@ import { Download, FileUp, Plus, Trash2, ClipboardCheck, Save, FolderOpen, Check
 import { DOMAIN_LABEL, INTEL_DOMAINS } from '@/lib/intelligence/contracts';
 import { toPersianDigits, formatJalali } from '@/lib/format';
 import { isCalendarDate, MAX_WORKBOOK_BYTES, emptyWorkbook, parseWorkbook, reviewWorkbook, workbookMarkdown, SCENARIO_KEYS, SCENARIO_NAMES, type ResearchWorkbook as Workbook } from '@/lib/intelligence/research-workbook';
-import { p07ReviewCurrent } from '@/lib/intelligence/p07-workflow';
+import { p07ReviewCurrent } from '@/lib/intelligence/workbook-review';
+import { PRIVATE_PREPARATION_CONTRACT } from '@/lib/intelligence/research-workbook';
+import ResearchPreparationFields from './ResearchPreparationFields';
 
 const inputClass = 'w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
@@ -35,12 +37,16 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     if(initialSource){w.evidence[0].sourceUrl=initialSource;w.question='این منبع چه تغییری را نشان می‌دهد و کدام محدودیت نیاز به بررسی دارد؟';}
     return w;
   });
-  const [dirty, setDirty] = useState(!!initialWorkbook);
+  const [dirty, setDirty] = useState(!!initialWorkbook && !initialWorkbookId);
+  const [pendingPreparation, setPendingPreparation] = useState(false);
+  const [preparationEpoch, setPreparationEpoch] = useState(0);
+  const editRevision = useRef(0);
   const [checked, setChecked] = useState(false);
   const [message, setMessage] = useState('');
   const file = useRef<HTMLInputElement>(null);
   const issues = reviewWorkbook(workbook);
   const [server, setServer] = useState<ServerState>('checking');
+  const [privateWriterReady, setPrivateWriterReady] = useState(false);
   const [saved, setSaved] = useState<SavedRef | null>(null);
   const [versions, setVersions] = useState<Array<{ version: number; savedAt: string }>>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
@@ -51,7 +57,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   async function refreshList() {
     try {
       const r = await transport(API);
-      if (r.status === 200) { setList(r.body.items as ListItem[]); setServer('ready'); }
+      if (r.status === 200) { setList(r.body.items as ListItem[]); setServer('ready'); setPrivateWriterReady(r.body.privatePreparationWritable === true); }
       else setServer(r.body.unavailable ? 'unavailable' : 'error');
     } catch { setServer('error'); }
   }
@@ -59,7 +65,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   useEffect(() => { onWorkbookChange?.(workbook); }, [workbook, onWorkbookChange]);
   useEffect(() => { if(initialWorkbookId)void openFromServer(initialWorkbookId,null); }, [initialWorkbookId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty && !pendingPreparation) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
     const guardLink = (event: MouseEvent) => {
       const anchor = event.target instanceof Element ? event.target.closest('a') : null;
@@ -73,21 +79,24 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     window.addEventListener('beforeunload', warn);
     document.addEventListener('click', guardLink, true);
     return () => { window.removeEventListener('beforeunload', warn); document.removeEventListener('click', guardLink, true); };
-  }, [dirty]);
+  }, [dirty, pendingPreparation]);
   function change(update: (previous: Workbook) => Workbook) {
+    editRevision.current++;
     setWorkbook(update); setDirty(true); setMessage('');
   }
   async function saveToServer() {
     if (busyRef.current) return;
+    if (pendingPreparation) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
     setBusy(true);
+    const savingRevision = editRevision.current;
     try {
       const r = await transport(API, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
       if (r.status === 201) {
         const version = r.body.version as number;
         setSaved({ workbookId: r.body.workbookId as string, version, latestVersion: version, savedAt: r.body.savedAt as string });
         setVersions(v => [...v, { version, savedAt: r.body.savedAt as string }]);
-        setDirty(false);
-        setMessage(`نسخهٔ ${toPersianDigits(version)} ذخیره شد. ذخیره به معنی تأیید نیست.`);
+        setDirty(editRevision.current !== savingRevision);
+        setMessage(editRevision.current === savingRevision ? `نسخهٔ ${toPersianDigits(version)} ذخیره شد. ذخیره به معنی تأیید نیست.` : 'نسخه ذخیره شد؛ تغییر تازهٔ حین ذخیره هنوز ذخیره نشده و روی صفحه حفظ شده است.');
         void refreshList();
       } else {
         if (r.body.unavailable) setServer('unavailable');
@@ -98,16 +107,19 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   }
   async function openFromServer(workbookId: string, version: number | null) {
     if (busyRef.current) return;
-    if (dirty && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی جایگزین می‌شود. ادامه می‌دهید؟')) return;
+    if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی جایگزین می‌شود. ادامه می‌دهید؟')) return;
     setBusy(true);
+    const openingRevision = editRevision.current;
     try {
       const r = await transport(`${API}?id=${encodeURIComponent(workbookId)}${version ? `&version=${version}` : ''}`);
       if (r.status !== 200) { setMessage(String(r.body.error ?? 'کاربرگ باز نشد.')); return; }
+      if (editRevision.current !== openingRevision) { setMessage('هنگام دریافت، متن تغییر کرد؛ تغییر تازه حفظ شد. دوباره باز کنید.'); return; }
       setWorkbook(r.body.workbook as Workbook);
       setSaved({ workbookId, version: r.body.version as number, latestVersion: r.body.latestVersion as number, savedAt: r.body.savedAt as string });
       setVersions(r.body.versions as Array<{ version: number; savedAt: string }>);
       setReviews(r.body.reviews as ReviewItem[]);
-      setDirty(false); setChecked(false);
+      setDirty(false); setPendingPreparation(false); setChecked(false);
+      setPreparationEpoch(value => value + 1);
       const v = r.body.version as number; const latest = r.body.latestVersion as number;
       setMessage(v === latest
         ? `نسخهٔ ${toPersianDigits(v)} باز شد.`
@@ -132,12 +144,17 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     finally { setBusy(false); }
   }
   function startNew() {
-    if (dirty && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی کنار گذاشته می‌شود. ادامه می‌دهید؟')) return;
-    setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setDirty(false); setChecked(false); setMessage('');
+    if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی کنار گذاشته می‌شود. ادامه می‌دهید؟')) return;
+    setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setDirty(false); setPendingPreparation(false); setChecked(false); setMessage('');
+    editRevision.current++; setPreparationEpoch(value => value + 1);
   }
-  const canDecide = server === 'ready' && !!saved && !dirty && saved.version === saved.latestVersion && !busy;
+  const canDecide = server === 'ready' && !!saved && !dirty && !pendingPreparation && saved.version === saved.latestVersion && !busy;
   const approvedHere = saved ? p07ReviewCurrent(saved.version, saved.latestVersion, reviews) : false;
+  // phase34 allows one approval per version. A returned approved version needs a
+  // new append-only version before another explicit human approval.
+  const needsReviewVersion = !!saved && !approvedHere && reviews.some(r => r.version === saved.version && r.decision === 'approved_internal');
   function download(kind: 'json' | 'md') {
+    if (pendingPreparation) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید تا در فایل از دست نرود.'); return; }
     const text = kind === 'json' ? JSON.stringify(workbook, null, 2) : workbookMarkdown(workbook);
     const url = URL.createObjectURL(new Blob([text], { type: kind === 'json' ? 'application/json' : 'text/markdown;charset=utf-8' }));
     const link = document.createElement('a'); link.href = url;
@@ -150,8 +167,9 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     try {
       if (selected.size > MAX_WORKBOOK_BYTES) throw new Error('فایل بیش از حد بزرگ است.');
       const imported = parseWorkbook(await selected.text());
-      if (dirty && !window.confirm('متن فعلی جایگزین می‌شود. فایل فعلی را دریافت کرده‌اید؟')) return;
+      if ((dirty || pendingPreparation) && !window.confirm('متن فعلی جایگزین می‌شود. فایل فعلی را دریافت کرده‌اید؟')) return;
       setWorkbook(imported); setSaved(null); setVersions([]); setReviews([]); setDirty(true); setChecked(false); setMessage('پیش‌نویس بارگذاری شد؛ تأیید انسانی از فایل وارد نمی‌شود. ذخیره، کاربرگ تازه‌ای می‌سازد.');
+      editRevision.current++; setPendingPreparation(false); setPreparationEpoch(value => value + 1);
     } catch { setMessage('فایل خوانده نشد؛ یک فایل JSON کاربرگ معتبر با حجم کمتر از ۸ مگابایت انتخاب کنید. متن فعلی حفظ شد.'); }
     finally { if (file.current) file.current.value = ''; }
   }
@@ -210,6 +228,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           </fieldset>)}
           <button type="button" className="btn btn-secondary min-h-11" disabled={workbook.evidence.length >= 30} onClick={() => change(w => ({ ...w, evidence: [...w.evidence, { id: crypto.randomUUID(), statement: '', sourceUrl: '', observedOn: '', publishedOn: '' }] }))}><Plus size={16} aria-hidden="true" /> افزودن شاهد</button>
         </section>
+        <ResearchPreparationFields key={preparationEpoch} value={workbook.privatePreparation?.intake} evidence={workbook.evidence} onPendingChange={pending => { editRevision.current++; setPendingPreparation(pending); }} onChange={intake => change(previous => ({ ...previous, privatePreparation: { contract: PRIVATE_PREPARATION_CONTRACT, intake } }))}/>
+        {!privateWriterReady && <p role="status" className="text-sm leading-7">ذخیرهٔ سروری آماده‌سازی خصوصی هنوز فعال نیست؛ متن را در فایل قابل ادامه نگه دارید. این بخش هنوز ابزار آمادهٔ روزانه نیست.</p>}
         <section className="card space-y-4 p-5" aria-labelledby="causal"><h2 id="causal" className="text-lg font-bold">۳. استدلال و نقد</h2>
           {textField('interpretation', 'تفسیر: رخداد چگونه و از چه مسیری اثر می‌گذارد؟ به شناسهٔ شاهد ارجاع دهید.')}
           {textField('counterEvidence', 'شاهد مخالف، توضیح جایگزین و آنچه هنوز نمی‌دانیم')}
@@ -239,7 +259,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         <input ref={file} type="file" accept=".json,application/json" className="sr-only" aria-label="فایل کاربرگ" onChange={e => void importFile(e.target.files?.[0])} />
         {server === 'ready' && saved && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <h3 className="text-sm font-bold">بازبینی انسانی</h3>
-          <button type="button" className="btn btn-secondary min-h-11 w-full" disabled={!canDecide || issues.length > 0 || approvedHere} onClick={() => void decide('approved_internal')}><CheckCircle2 size={16} aria-hidden="true" /> تأیید داخلی نسخهٔ {toPersianDigits(saved.version)}</button>
+          <button type="button" className="btn btn-secondary min-h-11 w-full" disabled={!canDecide || issues.length > 0 || approvedHere || needsReviewVersion} onClick={() => void decide('approved_internal')}><CheckCircle2 size={16} aria-hidden="true" /> تأیید داخلی نسخهٔ {toPersianDigits(saved.version)}</button>
+          {needsReviewVersion && <><p className="text-sm leading-7">این نسخه پس از تأیید بازگردانده شده است؛ برای بازبینی دوباره، نسخهٔ تازه ذخیره کنید. سابقهٔ قبلی حفظ می‌شود و نسخهٔ تازه هنوز تأیید نشده است.</p>{!dirty && <button type="button" className="btn btn-secondary min-h-11 w-full" disabled={!canDecide} onClick={() => void saveToServer()}>ایجاد نسخهٔ تازه برای بازبینی</button>}</>}
           <button type="button" className="btn btn-ghost min-h-11 w-full" disabled={!canDecide} onClick={() => void decide('returned')}><Undo2 size={16} aria-hidden="true" /> بازگرداندن با علت</button>
           {!canDecide && <p className="text-sm leading-7" style={{ color: 'var(--text-2)' }}>تصمیم فقط روی آخرین نسخهٔ ذخیره‌شده و بدون تغییرِ ذخیره‌نشده ممکن است.</p>}
           {canDecide && issues.length > 0 && <p className="text-sm leading-7" style={{ color: 'var(--text-2)' }}>تا {toPersianDigits(issues.length)} مورد چک‌لیست باز است، تأیید ممکن نیست.</p>}

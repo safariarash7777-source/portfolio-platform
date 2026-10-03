@@ -1,6 +1,6 @@
 /** Synthetic, in-memory UI fixture only. No fetch, provider, database or production authority. */
 import { emptyWorkbook, parseWorkbook, type ResearchWorkbook } from './research-workbook';
-import { listWorkbooks, openWorkbook, saveWorkbook, decideWorkbook, type WorkbookStore, type StoredVersion, type StoredReview } from './workbook-store';
+import { listWorkbooks, openWorkbook, saveWorkbook, decideWorkbook, StoreError, type WorkbookStore, type StoredVersion, type StoredReview } from './workbook-store';
 import { publicationCommand, type PublicationRow } from './publication';
 
 export const P07_FIXTURE_COHORT = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -27,13 +27,16 @@ export function createP07WorkflowFixture() {
     reviews: async versionIds => reviews.filter(row => versionIds.includes(row.versionId)),
     insertVersion: async row => {
       const last = versions.filter(v => v.workbookId === row.workbookId).at(-1);
-      if (row.version !== (last?.version ?? 0) + 1) throw { code: '23505' };
+      if (row.version !== (last?.version ?? 0) + 1) throw new StoreError('conflict');
       const saved = { ...row, body: parseWorkbook(JSON.stringify(row.body)), id: id(), createdAt: clock() };
       versions.push(saved); return saved;
     },
-    insertReview: async row => { const saved = { ...row, id: id(), reviewedAt: clock() }; reviews.push(saved); return saved; },
+    insertReview: async row => {
+      if (row.decision === 'approved_internal' && reviews.some(review => review.versionId === row.versionId && review.decision === 'approved_internal')) throw new StoreError('conflict');
+      const saved = { ...row, id: id(), reviewedAt: clock() }; reviews.push(saved); return saved;
+    },
   };
-  const gateway = { getUser: async () => ({ id: P07_FIXTURE_COHORT }), getRole: async () => 'admin', createStore: () => store, newId: id };
+  const gateway = { privatePreparationWritable: true, getUser: async () => ({ id: P07_FIXTURE_COHORT }), getRole: async () => 'admin', createStore: () => store, newId: id };
   function approved(versionId: string) {
     const version = versions.find(row => row.id === versionId);
     if (!version || versions.filter(row => row.workbookId === version.workbookId).at(-1)?.id !== version.id) return false;
