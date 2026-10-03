@@ -52,4 +52,4 @@ Auth/getUser درharness به‌صورتfixture است؛ RPC ازSDKواقعی �
 
 ## رکورد تحویل
 
-PR و exacthead پس ازpush ثبت می‌شوند؛ CI/Native دراینمرحله PENDING / NOT_RUN هستند. ساخته، CI، نصب و پذیرش چهار وضعیت مستقل‌اند.
+[Draft PR221](https://github.com/safariarash7777-source/portfolio-platform/pull/221)، روی شاخهٔ P00 `codex/p00-auth-next-20261002@2e44dc1d7008acf0b0c76e8679238514f4f7bab2`. SHA کد آزموده‌شده **`b9bf993d10902f1b23d8e4319d56121b30137b16`** است؛ commit مستندات ممکن است head را تغییر دهد. CI اولیه37112497268 هنگام ثبت این رکورد in_progress بود؛ Native این بسته **NOT_RUN** است. نتیجه تازهٔ CI باید با head جاری تطبیق شود؛ ساخته، CI، نصب و پذیرش چهار وضعیت مستقل‌اند.
