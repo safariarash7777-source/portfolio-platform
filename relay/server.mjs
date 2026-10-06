@@ -1,5 +1,6 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics } from "./brsapi-transport.mjs";
+import { retainMarketFamilies, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
 // رلهٔ بازارِ ایران — باید روی هاستِ «داخل ایران» اجرا شود (لیارا/آروان/پارس‌پک).
 // چرا: منابعِ ایرانی (BrsApi) به IPِ خارجی ۴۰۳ می‌دهند؛ این سرویسِ
@@ -19,7 +20,7 @@ import { brsTransportMetrics } from "./brsapi-transport.mjs";
 //        GET /            → راهنمای ساده
 //
 // هر ردیف: { id, faName, price, unit: "toman"|"usd"|"rial", change, changePercent }
-// اگر منبعی پاسخ ندهد، بخشِ مربوطه آرایهٔ خالی می‌ماند — هیچ عددِ ساختگی.
+// شکست منبع: آخرین دادهٔ سالم همان خانواده با ساعت قبلی و وضعیت stale حفظ می‌شود.
 //
 // کش در پس‌زمینه رفرش می‌شود (بوت + هر ۵ دقیقه)، پس /market.json همیشه فوری
 // جواب می‌دهد و درخواستِ سایت روی build کندِ منبع تایم‌اوت نمی‌شود.
@@ -223,7 +224,8 @@ async function releaseBudgetOnShutdown(signal) {
 }
 const DEFAULT_RATE_NOTE = `${process.env.BRSAPI_RATE_PER_SEC || 10} req/s, concurrency ${process.env.BRSAPI_CONCURRENCY || 4}`;
 
-let cache = null; // { body: string, at: number }
+let cache = null; // at: polling clock; receivedAt: conservative data receipt clock
+let baselineResolved = false;
 // T5-2 — کش ۱۰دقیقه‌ای فهرست اطلاعیه‌های کدال (هر نماد یک entry)
 const codalListCache = new Map(); // symbol → { body, at }
 // فهرست نمادهای آخرین اسنپ‌شات (سهام+صندوق) — ورودی صف بک‌فیل کندل (M8-الف).
@@ -283,27 +285,32 @@ async function fetchGoldCurrency() {
     }
 
     // Gold items
-    const gold = (json.gold || []).map((item) => ({
+    const rawGold = Array.isArray(json?.gold) ? json.gold : [];
+    const rawCurrency = Array.isArray(json?.currency) ? json.currency : [];
+    const rawCrypto = Array.isArray(json?.cryptocurrency) ? json.cryptocurrency : [];
+    const gold = rawGold.filter(item => item && typeof item === 'object').map((item) => ({
       id: item.symbol,
       faName: item.name,
       price: Number(item.price) || 0,
       unit: (item.unit || "").includes("دلار") ? "usd" : "toman",
       change: Number(item.change_value) || null,
       changePercent: Number(item.change_percent) || null,
+      ...sourceClock(item),
     })).filter((r) => r.price > 0);
 
     // Currency items (includes tether)
-    const currency = (json.currency || []).map((item) => ({
+    const currency = rawCurrency.filter(item => item && typeof item === 'object').map((item) => ({
       id: item.symbol,
       faName: item.name,
       price: Number(item.price) || 0,
       unit: "toman",
       change: Number(item.change_value) || null,
       changePercent: Number(item.change_percent) || null,
+      ...sourceClock(item),
     })).filter((r) => r.price > 0);
 
     // Crypto items
-    const crypto = (json.cryptocurrency || []).map((item) => ({
+    const crypto = rawCrypto.filter(item => item && typeof item === 'object').map((item) => ({
       id: item.symbol,
       faName: item.name,
       nameEn: item.name_en,
@@ -312,16 +319,22 @@ async function fetchGoldCurrency() {
       changePercent: Number(item.change_percent) || null,
       marketCap: Number(item.market_cap) || null,
       description: item.description || null,
+      ...sourceClock(item),
     })).filter((r) => r.price > 0);
 
+    const familyOk = {
+      gold: Array.isArray(json?.gold) && (!rawGold.length || gold.length > 0),
+      currency: Array.isArray(json?.currency) && (!rawCurrency.length || currency.length > 0),
+      crypto: Array.isArray(json?.cryptocurrency) && (!rawCrypto.length || crypto.length > 0),
+    };
     status.sources.brsapi_gold_currency = {
-      ok: gold.length + currency.length > 0,
+      ok: Object.values(familyOk).every(Boolean),
       gold: gold.length,
       currency: currency.length,
       crypto: crypto.length,
-      error: null,
+      error: Object.values(familyOk).every(Boolean) ? null : "family response schema invalid",
     };
-    return { gold, currency, crypto };
+    return { gold, currency, crypto, familyOk };
   } catch (e) {
     const err = errMsg(e);
     status.sources.brsapi_gold_currency = { ok: false, gold: 0, currency: 0, error: err };
@@ -367,6 +380,7 @@ async function fetchStocksAndFunds() {
     const stocks = [];
 
     for (const item of items) {
+      if (!item || typeof item !== 'object') continue;
       // قیمت‌ها ریال هستند — تبدیل به تومان
       const lastPrice = Number(item.pl) || 0;
       if (lastPrice <= 0) continue;
@@ -394,6 +408,7 @@ async function fetchStocksAndFunds() {
         buyN: Number(item.Buy_N_Volume) || 0,
         sellI: Number(item.Sell_I_Volume) || 0,
         sellN: Number(item.Sell_N_Volume) || 0,
+        ...sourceClock(item),
       };
 
       // M7 — فیلدهای best-effort: سقف/کف روز و تعداد معامله‌گران حقیقی.
@@ -439,15 +454,25 @@ async function fetchStocksAndFunds() {
     stocks.sort((a, b) => (b.value || 0) - (a.value || 0));
     funds.sort((a, b) => (b.value || 0) - (a.value || 0));
 
+    // One successful stock must not disguise an unusable fund family (or vice versa).
+    const sourceShapeOk = items.every(item => item && typeof item === 'object' && typeof item.l18 === 'string' && item.l18.trim());
+    const eligible = items.filter(item => item && typeof item.l18 === 'string' && !isSubTicker(item.l18));
+    const rawFunds = eligible.filter(item => Number(item.cs_id) === 68 && !isRightsIssue(item.l18));
+    const rawStocks = eligible.filter(item => Number(item.cs_id) !== 68 || isRightsIssue(item.l18));
+    const familyOk = {
+      stocks: sourceShapeOk && (!rawStocks.length || stocks.length > 0),
+      funds: sourceShapeOk && (!rawFunds.length || funds.length > 0),
+    };
+    const received = familyOk.stocks && familyOk.funds;
     status.sources.brsapi_stocks = {
-      ok: funds.length + stocks.length > 0,
+      ok: received,
       funds: funds.length,
       stocks: stocks.length,
-      error: null,
+      error: received ? null : "all-symbols response schema invalid",
     };
     // لاگِ موفقیت — فقط در گذار «خطا → سالم» تا لاگ شلوغ نشود.
     if (recoveredFrom("stocks")) console.log(`brsapi stocks/funds recovered: ${stocks.length} stocks, ${funds.length} funds`);
-    return { funds, stocks };
+    return { funds, stocks, received, familyOk };
   } catch (e) {
     const err = errMsg(e);
     status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: err };
@@ -791,6 +816,13 @@ async function fetchIndex() {
 }
 
 // ── ساختِ payload نهایی ───────────────────────────────────────────────────────
+function sourceClock(item) {
+  const result = {};
+  if (typeof item.date === 'string' && item.date.trim()) result.sourceDate = item.date;
+  if (typeof item.time === 'string' && item.time.trim()) result.sourceTime = item.time;
+  return result;
+}
+
 async function buildPayload() {
   const [gc, sf, indices, options] = await Promise.all([
     fetchGoldCurrency(),
@@ -823,8 +855,42 @@ async function buildPayload() {
     fetchedAt: Date.now(),
   };
   // صف بک‌فیل کندل (M8-الف) از همین فهرست نمادهای زنده تغذیه می‌شود.
-  latestSnapshotSymbols = [...sf.stocks, ...sf.funds];
-  return JSON.stringify(payload);
+  if (sf.received) latestSnapshotSymbols = [...sf.stocks, ...sf.funds];
+  const outcome = (ok, error) => ({ ok: Boolean(ok), error: ok ? null : sourceErrorCategory(error) });
+  const outcomes = {
+    gold: outcome(gc.familyOk?.gold, status.sources.brsapi_gold_currency?.error),
+    currency: outcome(gc.familyOk?.currency, status.sources.brsapi_gold_currency?.error),
+    crypto: outcome(gc.familyOk?.crypto, status.sources.brsapi_gold_currency?.error),
+    stocks: outcome(sf.familyOk?.stocks, status.sources.brsapi_stocks?.error),
+    funds: outcome(sf.familyOk?.funds, status.sources.brsapi_stocks?.error),
+    options: outcome(optionsStatus.ok, optionsStatus.error),
+    indices: outcome(status.sources.brsapi_index?.ok, status.sources.brsapi_index?.error),
+  };
+  return { payload, outcomes };
+}
+
+async function hydrateBaseline() {
+  if (baselineResolved) return;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) { baselineResolved = true; return; }
+  try {
+    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?key=eq.latest&select=payload&limit=1`, {
+      headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) throw new Error('baseline HTTP');
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length > 1 || (rows.length && !validStoredSnapshot(rows[0]?.payload))) throw new Error('baseline schema');
+    const stored = rows[0]?.payload;
+    if (stored) {
+      const p = mergeStoredBaseline(cache ? JSON.parse(cache.body) : null, stored);
+      cache = { body: JSON.stringify(p), at: Date.now(), receivedAt: typeof p.fetchedAt === 'number' ? p.fetchedAt : null };
+    }
+    baselineResolved = true;
+    status.baseline = { state: stored ? 'loaded' : 'absent', error: null };
+  } catch (e) {
+    // Retry on the next natural cycle; unknown persisted rows must not be erased.
+    status.baseline = { state: 'unknown', error: sourceErrorCategory(e?.message) };
+  }
 }
 
 // ── Push به Supabase ──────────────────────────────────────────────────────────
@@ -1201,32 +1267,45 @@ function refresh() {
   refreshing = (async () => {
     try {
       resetBudgetStop();
-      const body = await buildPayload();
-      if (budgetStop.active && cache) {
-        // این چرخه ناقص بود. کشِ سالمِ قبلی می‌ماند و سایت دادهٔ **کهنه** با
-        // برچسب نشان می‌دهد — نه یک صفحهٔ خالی.
-        status.lastError = "چرخه به‌خاطرِ سقفِ بودجه ناقص ماند؛ دادهٔ قبلی حفظ شد";
-        console.warn("brsapi budget: چرخه ناقص — کشِ قبلی حفظ شد", Object.keys(budgetStop.producers).join(","));
-      } else {
-        cache = { body, at: Date.now() };
-        status.lastRefresh = Date.now();
-        status.lastError = null;
-      }
-      await pushToSupabase(body);
-      await pushHistory(body);
+      await hydrateBaseline();
+      const { payload, outcomes } = await buildPayload();
+      const attemptedAt = Date.now();
+      const result = retainMarketFamilies(cache ? JSON.parse(cache.body) : null, payload, outcomes, attemptedAt);
+      // These caches refresh on their own schedule; never borrow the core receipt.
+      const cert = imeStatus().certificate;
+      const commodity = commodityStatus();
+      result.payload.snapshotQuality.auxiliary = Object.fromEntries([
+        ['imeCertificates', cert], ['commodities', commodity],
+      ].map(([name, s]) => [name, {
+        receivedAt: s.lastFetchAt > 0 ? s.lastFetchAt : null,
+        state: s.lastFetchAt > 0 ? (s.lastError ? 'stale' : 'cached') : 'unavailable',
+        error: s.lastError ? sourceErrorCategory(s.lastError) : null,
+      }]));
+      const body = JSON.stringify(result.payload);
+      status.lastAttempt = attemptedAt;
+      status.snapshotQuality = result.payload.snapshotQuality;
+      status.lastError = result.complete ? null : `market cycle ${result.payload.snapshotQuality.state}: ${Object.keys(outcomes).filter(k => !outcomes[k].ok).join(',')}`;
+      if (result.canServe) cache = { body, at: attemptedAt, receivedAt: result.payload.fetchedAt };
+      status.lastRefresh = result.payload.fetchedAt;
+      // Unknown baseline permits a complete replacement, but never a partial one.
+      if (!result.successes || budgetStop.active) return;
+      if (baselineResolved || result.complete) await pushToSupabase(body);
+      const freshBody = JSON.stringify(result.fresh);
+      await pushHistory(freshBody);
       // `budgetStop.active` همین چرخه را می‌گوید (در ابتدای refresh صفر می‌شود).
-      await pushDailyHistory(body, { cycleComplete: !budgetStop.active });
-      await pushDailyFx(body);
-      await pushDailyIndex(body);
-      await pushDailyBreadth({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, EOD_AFTER_HOUR }, body);
+      await pushDailyHistory(freshBody, { cycleComplete: outcomes.stocks.ok && outcomes.funds.ok && outcomes.indices.ok });
+      await pushDailyFx(freshBody);
+      await pushDailyIndex(freshBody);
+      await pushDailyBreadth({ SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, EOD_AFTER_HOUR }, freshBody);
       // T5-1 فیکس معماری: چرخش دیتای جامع نمادهای پرارزش ← Supabase (ترانسپورت به سایت)
       try {
-        const p = JSON.parse(body);
+        const p = result.fresh;
         // ردیف‌های payload نماد را در `id` دارند (mapStock: id = item.l18)
         const topSymbols = (p.stocks || [])
           .filter((s) => s && s.id && Number.isFinite(Number(s.value)))
           .sort((a, b) => Number(b.value) - Number(a.value))
           .map((s) => s.id);
+        if (!topSymbols.length) return;
         await refreshSymbolDetailsRotation({
           base: BRSAPI_BASE,
           key: BRSAPI_KEY,
@@ -1269,8 +1348,11 @@ function debugPayload() {
   return JSON.stringify({
     now: Date.now(),
     warmedUp: Boolean(cache),
-    ageSec: cache ? Math.round((Date.now() - cache.at) / 1000) : null,
+    ageSec: cache?.receivedAt ? Math.round((Date.now() - cache.receivedAt) / 1000) : null,
     lastRefresh: status.lastRefresh,
+    lastAttempt: status.lastAttempt ?? null,
+    snapshotQuality: status.snapshotQuality ?? null,
+    baseline: status.baseline ?? { state: 'unknown', error: null },
     lastError: status.lastError,
     brsapiKeyConfigured: Boolean(BRSAPI_KEY),
     tokenRequired: Boolean(TOKEN),
@@ -1292,7 +1374,7 @@ function debugPayload() {
     brsapiBudgetStop: {
       ...budgetStop,
       /** سنِ دادهٔ سروشده — وقتی چرخه ناقص مانده، همین عدد «کهنگی» است. */
-      servedAgeMs: cache ? Date.now() - cache.at : null,
+      servedAgeMs: cache?.receivedAt ? Date.now() - cache.receivedAt : null,
     },
     brsapiCommodityLegacy: commodityMeter.snapshot(),
     brsapiLegacy: {
@@ -1416,7 +1498,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-export { server };
+export { server, refresh };
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   // Liara روی دیپلوی `SIGTERM` می‌فرستد. مهلت کوتاه است، پس پس‌دادنِ اجاره

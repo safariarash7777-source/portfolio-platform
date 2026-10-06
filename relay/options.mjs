@@ -106,6 +106,11 @@ export async function fetchOptions(brsapiBase, brsapiKey, { client = null, count
         sellN: num(it.Sell_N_Volume),
       });
     }
+    if (items.length && !out.length) {
+      optionsStatus.ok = false;
+      optionsStatus.error = "option response schema invalid";
+      return [];
+    }
     optionsStatus.ok = true;
     optionsStatus.contracts = out.length;
     optionsStatus.calls = out.filter((o) => o.type === "call").length;
