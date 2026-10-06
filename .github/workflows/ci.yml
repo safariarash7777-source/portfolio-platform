@@ -195,6 +195,16 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: postgres
 
+      - name: Profile role guard and member ledger regression
+        run: |
+          python3 scripts/testing/profile-member-access-regression.py
+          node node_modules/tsx/dist/cli.mjs --test components/account/loginFlow.test.ts components/account/returnPath.test.ts components/account/profile-admin-gate.test.ts
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5433"
+          PGUSER: postgres
+          PGPASSWORD: postgres
+
       # چرا شمردنِ pass لازم است و گرپِ `# skip` کافی نیست:
       #
       # ⚠️ این گارد بلافاصله کارش را کرد. اولین اجرای مشترکِ leads + cron در CI
