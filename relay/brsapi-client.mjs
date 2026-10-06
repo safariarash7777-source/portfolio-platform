@@ -523,6 +523,12 @@ export class BrsApiClient {
     p[field] = (p[field] ?? 0) + 1;
   }
 
+  #noteBudgetStop(producer, error) {
+    if (typeof this.o.onBudgetStop === "function") {
+      try { this.o.onBudgetStop(producer, error); } catch { /* observer cannot change admission */ }
+    }
+  }
+
   /** تنها راهِ تماس با BrsApi. */
   async request({ endpoint, params = {}, producer = "unknown",
                   priority = "background", budgetClass = "standard",
@@ -555,7 +561,9 @@ export class BrsApiClient {
     if (!this.budget.wouldAdmit(budgetClass)) {
       if (typeof this.budget.noteRejected === "function") this.budget.noteRejected(budgetClass);
       this.m.rejectedByBudget += 1; this.#bump(producer, "rejectedByBudget");
-      throw new BudgetExceededError(budgetClass, this.budget.snapshot());
+      const error = new BudgetExceededError(budgetClass, this.budget.snapshot());
+      this.#noteBudgetStop(producer, error);
+      throw error;
     }
 
     const p = this.#run({ endpoint, params, producer, priority, budgetClass, dedupeTtlMs, dk, timeoutMs })
@@ -633,6 +641,7 @@ export class BrsApiClient {
       if (!this.budget.reserve(job.budgetClass)) {
         this.m.rejectedByBudget += 1; this.#bump(job.producer, "rejectedByBudget");
         const err = new BudgetExceededError(job.budgetClass, this.budget.snapshot());
+        this.#noteBudgetStop(job.producer, err);
         if (attempt === 1) throw err;
         // اگر تلاشِ اول رفته و بودجه وسطِ کار ته کشیده، همان خطای آخر را
         // برمی‌گردانیم ولی علتِ واقعی را هم می‌چسبانیم.

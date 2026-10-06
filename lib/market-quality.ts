@@ -129,6 +129,12 @@ export function failedIranReadQuality(market: IrMarket | null, now = Date.now())
 export function marketQualityLabel(state: FamilyAvailability["state"] | IranReadQuality["state"]): string {
   return state === "ready" ? "زمان منبع و دریافت معتبر است" : state === "empty" ? "منبع پاسخ معتبر بدون داده داده است" : state === "stale" ? "دادهٔ کهنه؛ آخرین دادهٔ ثبت‌شده" : state === "partial" ? "دریافت ناقص؛ وضعیت هر بخش مستقل است" : state === "error" ? "دریافت تازه ناموفق بود" : state === "unavailable" ? "دادهٔ این بخش در دسترس نیست" : "زمان معتبر منبع یا دریافت نامشخص است";
 }
+
+/** Page badge covers both rendered sources; an old index cannot hide behind fresh stocks. */
+export function stocksPageQuality(stocks: FamilyAvailability | undefined, indices: FamilyAvailability | undefined, showsIndices: boolean): FamilyAvailability["state"] | "partial" {
+  const state = stocks?.state ?? "unavailable";
+  return showsIndices && indices?.state !== "ready" && (state === "ready" || state === "empty") ? "partial" : state;
+}
 export type SessionState = "open" | "closed" | "unknown";
 export interface MarketProvenance {
   source: "BrsApi → رله → اسنپ‌شات";

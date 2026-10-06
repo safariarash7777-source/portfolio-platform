@@ -21,9 +21,11 @@ import {
   deltaColor,
   describeDelta,
   formatJalali,
+  formatTehranClock,
 } from "@/lib/format";
 import type { IrIndices } from "@/lib/market-ir";
 import { indexChangePercent } from "@/lib/core/marketHeadline";
+import { marketQualityLabel, type FamilyAvailability } from "@/lib/market-quality";
 
 export interface StockRow {
   id: string;
@@ -86,6 +88,7 @@ interface Props {
   stocks: StockRow[];
   indices: IrIndices | null;
   fetchedAt: number | null;
+  indexAvailability?: FamilyAvailability;
 }
 
 type ViewKey = StockView;
@@ -104,7 +107,7 @@ const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).
 /** بیشینهٔ کاشیِ نقشه. متنِ پوششِ زیرِ نقشه همین را می‌نویسد. */
 const MAP_CELL_LIMIT = 30;
 
-export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
+export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailability }: Props) {
   // نما، جست‌وجو و فیلترِ صنعت در URL می‌نشینند تا back/forward و برگشت از
   // صفحهٔ نماد وضعیت را حفظ کنند. مرتب‌سازی عمداً محلی می‌ماند: حالتِ گذرایی
   // است که کاربر انتظارِ اشتراک‌گذاری‌اش را ندارد.
@@ -238,6 +241,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
 
       {/* Indices */}
       {indices && (
+        <>
+        <p className="text-xs" style={{ color: "var(--text-3)" }} role="status">
+          شاخص: {marketQualityLabel(indexAvailability?.state ?? "unknown-time")}
+          {" · "}دریافت شاخص: {indexAvailability?.receivedAt ? `${formatJalali(indexAvailability.receivedAt)} · ${formatTehranClock(indexAvailability.receivedAt)}` : "نامعلوم"}
+          {" · "}زمان منبع شاخص: {indices.date && indices.time ? toPersianDigits(`${indices.date} ${indices.time}`) : "نامعلوم"}
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <IndexCard
             label="شاخص کل"
@@ -262,6 +271,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
             </p>
           </div>
         </div>
+        </>
       )}
 
 

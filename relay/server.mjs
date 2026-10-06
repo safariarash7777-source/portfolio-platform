@@ -181,7 +181,7 @@ function brsClient() {
   if (!clientEnabled()) return null;
   if (!brs) {
     const budget = sharedBudget() ?? undefined;
-    brs = new BrsApiClient({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, budget });
+    brs = new BrsApiClient({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, budget, onBudgetStop: noteBudgetStop });
     console.log(
       `brsapi client enabled: ${DEFAULT_RATE_NOTE}, budget=${budget ? "persistent(supabase)" : "IN-MEMORY (restart صفر می‌کند)"}`,
     );

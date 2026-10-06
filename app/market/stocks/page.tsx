@@ -5,6 +5,7 @@ import MarketShell from "@/components/market/MarketShell";
 import { readIranMarket } from "@/lib/market-bounded";
 import { pageMetadata } from "@/lib/metadata";
 import { buildSearchIndex } from "@/lib/market-nav";
+import { stocksPageQuality } from "@/lib/market-quality";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
@@ -29,12 +30,12 @@ export default async function StocksPage() {
           title="تابلوی سهام"
           lead="جدول، نقشه و صنایعِ نمادهای بورس و فرابورس از آخرین اسنپ‌شات."
           fetchedAt={fetchedAt}
-          qualityState={availability.families?.stocks.state ?? "unavailable"}
+          qualityState={stocksPageQuality(availability.families?.stocks, availability.families?.indices, stocks.length > 0 && indices !== null)}
           boardState={availability.families?.indices.state === "ready" ? indices?.state : null}
           searchIndex={buildSearchIndex(stocks, ir?.funds ?? [])}
           path="/market/stocks"
         >
-          <StocksBoard stocks={stocks} indices={indices} fetchedAt={fetchedAt} />
+          <StocksBoard stocks={stocks} indices={indices} fetchedAt={fetchedAt} indexAvailability={availability.families?.indices} />
         </MarketShell>
       </main>
       <Footer />

@@ -142,6 +142,22 @@ function loadGate(client: object) {
   return loaded.exports.middleware;
 }
 
+for (const role of ['user', 'admin']) {
+  test('The protected admin page keeps its database role gate: ' + role, async () => {
+    const gate = loadGate({
+      auth: {getUser: async () => ({data: {user: {id: 'synthetic-user'}}, error: null})},
+      from: () => ({select: () => ({eq: () => ({maybeSingle: async () => ({data: {role}, error: null})})})}),
+    });
+    const response = await gate(new NextRequest('https://site.example/admin/fx'));
+    if (role === 'admin') {
+      assert.equal(response.headers.get('x-middleware-next'), '1');
+      assert.equal(response.headers.get('location'), null);
+    } else {
+      assert.equal(new URL(response.headers.get('location')!).pathname, '/dashboard');
+    }
+  });
+}
+
 for (const error of [
   {status: 400}, {status: 404}, {status: 429}, {status: 500}, {status: 503},
   {message: 'network failure'}, {status: 400, code: 'unknown_refresh_error'},
