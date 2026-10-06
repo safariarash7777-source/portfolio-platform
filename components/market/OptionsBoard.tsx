@@ -17,6 +17,7 @@ import {
   formatJalali,
 } from "@/lib/format";
 import type { IrOptionRow } from "@/lib/market-ir";
+import { marketQualityLabel, type FamilyAvailability } from "@/lib/market-quality";
 
 type TypeFilter = "all" | "call" | "put";
 type SortKey = "value" | "volume" | "openInterest" | "dayRemain" | "strike" | "trades";
@@ -28,9 +29,11 @@ function num(x: unknown): number | null {
 export default function OptionsBoard({
   options,
   fetchedAt,
+  availability,
 }: {
   options: IrOptionRow[];
   fetchedAt: number | null;
+  availability?: FamilyAvailability;
 }) {
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
@@ -105,6 +108,7 @@ export default function OptionsBoard({
             دریافت اسنپ‌شات: {formatJalali(fetchedAt)}
           </p>
         ) : <p className="text-xs" style={{ color: "var(--text-3)" }}>زمان دریافت نامعلوم</p>}
+        {availability ? <p className="text-xs" style={{ color: "var(--text-3)" }} role="status">{marketQualityLabel(availability.state)}</p> : null}
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">

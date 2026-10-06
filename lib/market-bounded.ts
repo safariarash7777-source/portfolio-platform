@@ -1,10 +1,10 @@
 import { getMarketData, getCachedGlobalMarket, type MarketData } from "./market";
 import { getIrMarket, getCachedIrMarket, getLastIrDiag, type IrMarket } from "./market-ir";
 import { withDeadline } from "./deadline";
-import { iranReadQuality, validTimestamp, type IranReadQuality } from "./market-quality";
+import { iranReadQuality, failedIranReadQuality, validTimestamp, type IranReadQuality } from "./market-quality";
 
 export interface SourceAvailability {
-  state: "ready" | "stale" | "error" | "timeout" | "unknown-time" | "partial";
+  state: "ready" | "stale" | "error" | "timeout" | "unknown-time" | "partial" | "empty";
   /** Compatibility alias for receipt time, never a price-source clock. */
   sourceAt: number | null;
   receivedAt: number | null;
@@ -12,6 +12,7 @@ export interface SourceAvailability {
   readAt: number;
   reason?: IranReadQuality["reason"] | "read-error" | "read-timeout";
   families?: IranReadQuality["families"];
+  snapshotState?: IranReadQuality["snapshotState"];
 }
 export async function readGlobalMarket(): Promise<{ data: MarketData; availability: SourceAvailability }> {
   try {
@@ -26,11 +27,11 @@ export async function readIranMarket(): Promise<{ data: IrMarket | null; availab
   try {
     const data = await withDeadline(() => getIrMarket(), 5100);
     const failed = getLastIrDiag()?.error;
-    const readAt = Date.now(), quality = iranReadQuality(data, readAt);
+    const readAt = Date.now(), quality = failed ? failedIranReadQuality(data, readAt) : iranReadQuality(data, readAt);
     return { data, availability: { ...quality, state: !data ? failed === "DeadlineError" ? "timeout" : "error" : failed ? "stale" : quality.state, reason: failed ? failed === "DeadlineError" ? "read-timeout" : "read-error" : quality.reason, sourceAt: quality.receivedAt, readAt } };
   } catch {
     const data = getCachedIrMarket();
-    const readAt = Date.now(), quality = iranReadQuality(data, readAt);
+    const readAt = Date.now(), quality = failedIranReadQuality(data, readAt);
     return { data, availability: { ...quality, state: data ? "stale" : "timeout", reason: "read-timeout", sourceAt: quality.receivedAt, readAt } };
   }
 }

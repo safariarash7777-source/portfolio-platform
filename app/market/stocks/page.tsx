@@ -2,7 +2,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StocksBoard from "@/components/market/StocksBoard";
 import MarketShell from "@/components/market/MarketShell";
-import { getIrMarket } from "@/lib/market-ir";
+import { readIranMarket } from "@/lib/market-bounded";
 import { pageMetadata } from "@/lib/metadata";
 import { buildSearchIndex } from "@/lib/market-nav";
 
@@ -15,10 +15,10 @@ export const metadata = pageMetadata({
 });
 
 export default async function StocksPage() {
-  const ir = await getIrMarket();
+  const { data: ir, availability } = await readIranMarket();
   const stocks = ir?.stocks ?? [];
   const indices = ir?.indices ?? null;
-  const fetchedAt = ir?.fetchedAt ?? null;
+  const fetchedAt = availability.families?.stocks.receivedAt ?? null;
 
   return (
     <>
@@ -29,7 +29,8 @@ export default async function StocksPage() {
           title="تابلوی سهام"
           lead="جدول، نقشه و صنایعِ نمادهای بورس و فرابورس از آخرین اسنپ‌شات."
           fetchedAt={fetchedAt}
-          boardState={indices?.state ?? null}
+          qualityState={availability.families?.stocks.state ?? "unavailable"}
+          boardState={availability.families?.indices.state === "ready" ? indices?.state : null}
           searchIndex={buildSearchIndex(stocks, ir?.funds ?? [])}
           path="/market/stocks"
         >

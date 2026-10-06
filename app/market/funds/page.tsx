@@ -3,7 +3,7 @@ import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
 import MarketShell from "@/components/market/MarketShell";
 import AccountBridge from "@/components/account/AccountBridge";
-import { getIrMarket } from "@/lib/market-ir";
+import { readIranMarket } from "@/lib/market-bounded";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
 import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
@@ -23,7 +23,7 @@ export default async function FundsPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = searchParams ? await searchParams : {};
-  const [ir, returns, access] = await Promise.all([getIrMarket(), getBulkReturns(), getAccess()]);
+  const [{ data: ir, availability }, returns, access] = await Promise.all([readIranMarket(), getBulkReturns(), getAccess()]);
 
   /**
    * مسیرِ بازگشت از حساب باید وضعیتِ همین صفحه را نگه دارد؛ وگرنه کاربری که
@@ -46,7 +46,7 @@ export default async function FundsPage({
     const r = returns.get(f.id);
     return r ? { ...f, ret1w: r.w1, ret1m: r.m1, ret3m: r.m3 } : f;
   });
-  const fetchedAt = ir?.fetchedAt ?? null;
+  const fetchedAt = availability.families?.funds.receivedAt ?? null;
 
   return (
     <>
@@ -57,7 +57,8 @@ export default async function FundsPage({
           title="دیده‌بان صندوق‌ها"
           lead="NAV، حباب و بازدهٔ صندوق‌های سرمایه‌گذاری از آخرین اسنپ‌شات."
           fetchedAt={fetchedAt}
-          boardState={ir?.indices?.state ?? null}
+          qualityState={availability.families?.funds.state ?? "unavailable"}
+          boardState={availability.families?.indices.state === "ready" ? ir?.indices?.state : null}
           searchIndex={buildSearchIndex(ir?.stocks ?? [], funds)}
           path="/market/funds"
         >

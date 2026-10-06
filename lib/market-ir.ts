@@ -1,5 +1,5 @@
 import { withDeadline } from "./deadline";
-import { validTimestamp } from "./market-quality";
+import { validTimestamp, parseSnapshotQuality, type SnapshotQuality } from "./market-quality";
 // دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
 //
 // معماری (چرا این‌طوری): منابعِ ایرانی به IPِ خارجی ۴۰۳ می‌دهند، پس یک «رلهٔ
@@ -136,6 +136,7 @@ export interface IrIndices {
 }
 
 export interface IrMarket {
+  snapshotQuality?: SnapshotQuality | null;
   gold: IrRow[];
   currency: IrRow[];
   funds: IrStockRow[];
@@ -361,6 +362,11 @@ function asIndices(v: unknown): IrIndices | null {
 export function toMarket(payload: unknown): IrMarket {
   const p = (payload ?? {}) as Record<string, unknown>;
   const fetchedAt = validTimestamp(p.fetchedAt);
+  const snapshotQuality = parseSnapshotQuality(p.snapshotQuality);
+  if (snapshotQuality) for (const [key, f] of Object.entries(snapshotQuality.families)) {
+    // Empty is authoritative only when the corresponding raw field is actually empty.
+    if (f?.state === "empty" && !(key === "indices" ? p.indices === null : Array.isArray(p[key]) && p[key].length === 0)) delete snapshotQuality.families[key as keyof typeof snapshotQuality.families];
+  }
   const data: IrMarket = {
     gold: asRows(p.gold),
     currency: asRows(p.currency),
@@ -370,10 +376,13 @@ export function toMarket(payload: unknown): IrMarket {
     options: asOptionRows(p.options),
     indices: asIndices(p.indices),
     fetchedAt,
+    snapshotQuality,
     ok: false,
     inputRows: Object.fromEntries(["gold", "currency", "funds", "stocks", "crypto", "options"].map(key => [key, Array.isArray(p[key]) ? p[key].length : 0])),
   };
   data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length + data.crypto.length + data.options.length > 0 || data.indices !== null;
+  // A successful authoritative empty snapshot replaces cached rows; no fallback fetch.
+  if (!data.ok && data.snapshotQuality) data.ok = Object.entries(data.snapshotQuality.families).some(([key, f]) => f?.state === "empty" && f.receivedAt !== null && (key === "indices" ? p.indices === null : Array.isArray(p[key]) && p[key].length === 0));
   return data;
 }
 

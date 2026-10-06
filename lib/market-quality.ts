@@ -21,7 +21,10 @@ export function sourceTime(date: string | null | undefined, time: string | null 
 
 export type DataQuality = "ready" | "stale" | "unknown-time" | "unavailable";
 export interface FamilyAvailability {
-  state: DataQuality;
+  state: DataQuality | "empty";
+  receivedAt: number | null;
+  retained: boolean;
+  sourceState: RelayFamilyState | null;
   rows: number;
   rejectedRows: number;
   unknownTimeRows: number;
@@ -29,9 +32,33 @@ export interface FamilyAvailability {
   validAt: number | null;
 }
 export type IranFamily = "gold" | "currency" | "funds" | "stocks" | "crypto" | "options" | "indices";
+export type RelayFamilyState = "received" | "empty" | "stale" | "unavailable";
+export interface SnapshotQuality {
+  version: 1;
+  state: "complete" | "partial" | "error";
+  attemptedAt: number | null;
+  families: Partial<Record<IranFamily, { state: RelayFamilyState; receivedAt: number | null; retained: boolean }>>;
+}
+const FAMILY_KEYS: IranFamily[] = ["gold", "currency", "funds", "stocks", "crypto", "options", "indices"];
+const object = (v: unknown): Record<string, unknown> | null => v !== null && typeof v === "object" && !Array.isArray(v) ? v as Record<string, unknown> : null;
+
+/** Versioned, allowlisted metadata only; undefined means legacy, null means invalid. */
+export function parseSnapshotQuality(value: unknown): SnapshotQuality | null | undefined {
+  if (value === undefined) return undefined;
+  const q = object(value), raw = object(q?.families);
+  if (q?.version !== 1 || !["complete", "partial", "error"].includes(String(q.state)) || !raw) return null;
+  const families: SnapshotQuality["families"] = {};
+  for (const key of FAMILY_KEYS) {
+    const f = object(raw[key]);
+    if (!f || !["received", "empty", "stale", "unavailable"].includes(String(f.state))) continue;
+    families[key] = { state: f.state as RelayFamilyState, receivedAt: validTimestamp(f.receivedAt), retained: f.retained === true || f.state === "stale" };
+  }
+  return { version: 1, state: q.state as SnapshotQuality["state"], attemptedAt: validTimestamp(q.attemptedAt), families };
+}
 export interface IranReadQuality {
-  state: "ready" | "stale" | "unknown-time" | "partial" | "error";
-  reason: "empty-source" | "invalid-receipt-time" | "old-receipt" | "rejected-rows" | "missing-price-time" | "old-price-time" | null;
+  state: "ready" | "stale" | "unknown-time" | "partial" | "error" | "empty";
+  reason: "empty-source" | "invalid-receipt-time" | "old-receipt" | "rejected-rows" | "missing-price-time" | "old-price-time" | "source-partial" | "source-error" | "invalid-family-metadata" | null;
+  snapshotState?: SnapshotQuality["state"] | null;
   receivedAt: number | null;
   validAt: number | null;
   families: Record<IranFamily, FamilyAvailability>;
@@ -41,29 +68,66 @@ const FUTURE_TOLERANCE_MS = 120_000;
 
 /** Counts describe this payload only. Empty families do not prove missing symbols or history. */
 export function iranReadQuality(market: IrMarket | null, now = Date.now()): IranReadQuality {
-  const family = (rows: readonly { sourceDate?: string | null; sourceTime?: string | null }[], inputRows = rows.length): FamilyAvailability => {
+  const hasMetadata = market?.snapshotQuality !== undefined;
+  const family = (key: IranFamily, rows: readonly { sourceDate?: string | null; sourceTime?: string | null }[], inputRows = rows.length): FamilyAvailability => {
     const clocks = rows.map(row => sourceTime(row.sourceDate, row.sourceTime));
     const unknownTimeRows = clocks.filter(at => at === null || at > now + FUTURE_TOLERANCE_MS).length;
     const staleRows = clocks.filter(at => at !== null && now - at >= STALE_MS).length;
     const validAt = rows.length && !unknownTimeRows ? Math.min(...clocks as number[]) : null;
+    const metadata = market?.snapshotQuality?.families[key];
+    const rawReceipt = validTimestamp(hasMetadata ? metadata?.receivedAt : market?.fetchedAt);
+    const receivedAt = rawReceipt !== null && rawReceipt <= now + FUTURE_TOLERANCE_MS ? rawReceipt : null;
+    let state: FamilyAvailability["state"] = !rows.length ? "unavailable" : unknownTimeRows ? "unknown-time" : staleRows ? "stale" : "ready";
+    if (hasMetadata) {
+      if (!metadata) state = rows.length ? "unknown-time" : "unavailable";
+      else if (metadata.state === "unavailable") state = "unavailable";
+      else if (metadata.retained || metadata.state === "stale") state = "stale";
+      else if (metadata.state === "empty" && !rows.length && inputRows === 0 && receivedAt !== null) state = now - receivedAt >= STALE_MS ? "stale" : "empty";
+      else if (metadata.state === "empty" || receivedAt === null) state = "unknown-time";
+      else if (now - receivedAt >= STALE_MS && rows.length) state = "stale";
+      if (market?.snapshotQuality?.state === "error" && state !== "unavailable") state = "stale";
+    } else if (rows.length && (receivedAt === null || (rawReceipt !== null && rawReceipt > now + FUTURE_TOLERANCE_MS))) state = "unknown-time";
+    else if (rows.length && receivedAt !== null && now - receivedAt >= STALE_MS) state = "stale";
     return { rows: rows.length, rejectedRows: Math.max(0, inputRows - rows.length), unknownTimeRows, staleRows, validAt,
-      state: !rows.length ? "unavailable" : unknownTimeRows ? "unknown-time" : staleRows ? "stale" : "ready" };
+      receivedAt, retained: metadata?.retained ?? false, sourceState: metadata?.state ?? null, state };
   };
-  const families = Object.fromEntries((["gold", "currency", "funds", "stocks", "crypto"] as const).map(key => [key, family(market?.[key] ?? [], market?.inputRows?.[key])])) as Record<IranFamily, FamilyAvailability>;
+  const families = Object.fromEntries((["gold", "currency", "funds", "stocks", "crypto"] as const).map(key => [key, family(key, market?.[key] ?? [], market?.inputRows?.[key])])) as Record<IranFamily, FamilyAvailability>;
   // A supplied option clock is independent of index and receipt clocks.
-  families.options = family(market?.options ?? [], market?.inputRows?.options);
-  families.indices = family(market?.indices ? [{ sourceDate: market.indices.date, sourceTime: market.indices.time }] : []);
+  families.options = family("options", market?.options ?? [], market?.inputRows?.options);
+  families.indices = family("indices", market?.indices ? [{ sourceDate: market.indices.date, sourceTime: market.indices.time }] : []);
   const active = Object.values(families).filter(item => item.rows > 0);
   const receivedAt = validTimestamp(market?.fetchedAt);
   const validAt = active.length && active.every(item => item.validAt !== null) ? Math.min(...active.map(item => item.validAt as number)) : null;
   let state: IranReadQuality["state"] = "ready", reason: IranReadQuality["reason"] = null;
-  if (!market?.ok || !active.length) { state = "error"; reason = "empty-source"; }
+  if (hasMetadata) {
+    const values = Object.values(families);
+    if (!market?.snapshotQuality) { state = "unknown-time"; reason = "invalid-family-metadata"; }
+    else if (market.snapshotQuality.state === "error") { state = "error"; reason = "source-error"; }
+    else if (market.snapshotQuality.state === "partial") { state = "partial"; reason = "source-partial"; }
+    else if (values.some(item => item.rejectedRows > 0)) { state = "partial"; reason = "rejected-rows"; }
+    else if (values.some(item => item.state === "unavailable")) { state = "partial"; reason = "source-partial"; }
+    else if (values.some(item => item.state === "stale")) { state = "stale"; reason = "old-receipt"; }
+    else if (values.some(item => item.state === "unknown-time")) { state = "unknown-time"; reason = "missing-price-time"; }
+    else if (values.every(item => item.state === "empty")) state = "empty";
+  } else if (!market?.ok || !active.length) { state = "error"; reason = "empty-source"; }
   else if (receivedAt === null || receivedAt > now + FUTURE_TOLERANCE_MS) { state = "unknown-time"; reason = "invalid-receipt-time"; }
   else if (now - receivedAt >= STALE_MS) { state = "stale"; reason = "old-receipt"; }
   else if (Object.values(families).some(item => item.rejectedRows > 0)) { state = "partial"; reason = "rejected-rows"; }
   else if (active.some(item => item.unknownTimeRows > 0)) { state = "unknown-time"; reason = "missing-price-time"; }
   else if (active.some(item => item.staleRows > 0)) { state = "stale"; reason = "old-price-time"; }
-  return { state, reason, receivedAt, validAt, families };
+  return { state, reason, receivedAt, validAt, families, ...(hasMetadata ? { snapshotState: market?.snapshotQuality?.state ?? null } : {}) };
+}
+
+/** A failed bounded read cannot freshen any cached family, even if its receipt is recent. */
+export function failedIranReadQuality(market: IrMarket | null, now = Date.now()): IranReadQuality {
+  const quality = iranReadQuality(market, now);
+  return { ...quality, families: Object.fromEntries(Object.entries(quality.families).map(([key, f]) => [key, {
+    ...f, state: f.rows > 0 || f.state === "empty" ? "stale" : "unavailable", retained: f.rows > 0 || f.retained,
+  }])) as IranReadQuality["families"] };
+}
+
+export function marketQualityLabel(state: FamilyAvailability["state"] | IranReadQuality["state"]): string {
+  return state === "ready" ? "زمان منبع و دریافت معتبر است" : state === "empty" ? "منبع پاسخ معتبر بدون داده داده است" : state === "stale" ? "دادهٔ کهنه؛ آخرین دادهٔ ثبت‌شده" : state === "partial" ? "دریافت ناقص؛ وضعیت هر بخش مستقل است" : state === "error" ? "دریافت تازه ناموفق بود" : state === "unavailable" ? "دادهٔ این بخش در دسترس نیست" : "زمان معتبر منبع یا دریافت نامشخص است";
 }
 export type SessionState = "open" | "closed" | "unknown";
 export interface MarketProvenance {
@@ -79,7 +143,8 @@ export interface MarketProvenance {
 export function marketProvenance(market: IrMarket | null, now = Date.now()): MarketProvenance {
   const receivedAt = validTimestamp(market?.fetchedAt);
   const validAt = sourceTime(market?.indices?.date, market?.indices?.time);
-  const quality: DataQuality = !market?.ok ? "unavailable" : validAt == null || validAt > now + 120_000 ? "unknown-time" : now - validAt >= 30 * 60_000 ? "stale" : "ready";
+  const indexQuality = iranReadQuality(market, now).families.indices;
+  const quality: DataQuality = indexQuality.state === "empty" ? "unavailable" : indexQuality.state;
   const raw = market?.indices?.state ?? "";
   const session: SessionState = quality !== "ready" ? "unknown" : /بسته|تعطیل/.test(raw) ? "closed" : /باز است|باز می/.test(raw) ? "open" : "unknown";
   const label = quality === "unavailable" ? "دادهٔ بازار در دسترس نیست" : quality === "stale" ? "دادهٔ کهنه؛ آخرین وضعیت ثبت‌شده" : quality === "unknown-time" ? "زمان معتبر منبع نامشخص" : session === "closed" ? "بازار بسته؛ دادهٔ معتبر ثبت‌شده" : "زمان شاخص معتبر است؛ زمان هر قیمت مستقل است";
