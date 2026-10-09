@@ -4,6 +4,7 @@ import FundsFullBoard from "@/components/market/FundsFullBoard";
 import MarketShell from "@/components/market/MarketShell";
 import AccountBridge from "@/components/account/AccountBridge";
 import { readIranMarket } from "@/lib/market-bounded";
+import { withValidNav } from "@/lib/market-quality";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
 import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
@@ -42,7 +43,10 @@ export default async function FundsPage({
     label: "دیده‌بان صندوق‌ها",
   }).href;
   // M6: بازدهٔ دوره‌ای فقط برای نمادهای دارای تاریخچه — بقیه undefined می‌ماند (در UI «—»).
-  const funds = (ir?.funds ?? []).map((f) => {
+  // Validate each row's own price/NAV clocks before table, rankings or stats;
+  // the snapshot receipt and a raw source bubble are not NAV attestation.
+  const funds = (ir?.funds ?? []).map((row) => {
+    const f = withValidNav(row, null, availability.readAt);
     const r = returns.get(f.id);
     return r ? { ...f, ret1w: r.w1, ret1m: r.m1, ret3m: r.m3 } : f;
   });
