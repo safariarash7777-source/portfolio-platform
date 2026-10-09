@@ -138,6 +138,9 @@ export default async function DashboardPage() {
               <ArrowLeft size={15} strokeWidth={2.2} aria-hidden />
             </span>
           </Link>
+          <Link href="/dashboard/holdings" className="card block px-4 py-3.5 text-sm font-semibold" style={{ color: "var(--navy)" }}>
+            ثبت و اصلاح دارایی و بدهی · با حفظ سابقهٔ نسخه‌ها
+          </Link>
         </div>
         <DashboardClient
           userId={user.id}

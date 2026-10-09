@@ -1,3 +1,5 @@
+import { withDeadline } from "./deadline";
+import { validTimestamp, parseSnapshotQuality, type SnapshotQuality } from "./market-quality";
 // دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
 //
 // معماری (چرا این‌طوری): منابعِ ایرانی به IPِ خارجی ۴۰۳ می‌دهند، پس یک «رلهٔ
@@ -21,6 +23,8 @@ export interface IrRow {
   change?: number | null;  // مقدار تغییر (تومان/دلار)
   changePercent?: number | null; // درصد تغییر
   type?: string;           // دستهٔ فارسیِ صندوق (طلا/سهامی/اهرمی/…) — فقط برای funds
+  sourceDate?: string | null;
+  sourceTime?: string | null;
   assetB?: number | null;  // خالص دارایی، میلیارد تومان — فقط برای funds
 }
 
@@ -43,6 +47,7 @@ export interface IrStockRow extends IrRow {
   nav?: number | null;
   /** NAV صدور (تومان) */
   navIssue?: number | null;
+  navStatus?: string | null;
   navDate?: string | null;
   navTime?: string | null;
   /** حباب ٪ = (قیمت − NAV ابطال) ÷ NAV ابطال × ۱۰۰ — محاسبهٔ قطعیِ رله */
@@ -72,6 +77,13 @@ export interface IrStockRow extends IrRow {
 /** ردیف قرارداد اختیار معامله (M8-ب) — قیمت‌ها تومان */
 export interface IrOptionRow {
   id: string;
+  sourceDate?: string | null;
+  sourceTime?: string | null;
+  contractSize?: number | null;
+  /** Derived price unit; independent of the provider's transaction-value unit. */
+  priceUnit?: "toman" | null;
+  valueUnit?: "rial" | "toman" | null;
+  valueSourceField?: "tval" | null;
   faName: string;
   /** نماد پایه (مثلاً وبملت) */
   baseId: string;
@@ -89,13 +101,15 @@ export interface IrOptionRow {
   /** قیمت پایانی (تومان) */
   closingPrice: number | null;
   volume: number | null;
-  /** ارزش معاملات (تومان) */
+  /** Transaction value in valueUnit; missing unit is unknown, never inferred. */
   value: number | null;
   trades: number | null;
 }
 
 /** ردیفِ کریپتو (از BrsApi) */
 export interface IrCryptoRow {
+  sourceDate?: string | null;
+  sourceTime?: string | null;
   id: string;
   faName: string;
   nameEn?: string;
@@ -109,19 +123,20 @@ export interface IrCryptoRow {
 /** شاخص بورس */
 export interface IrIndices {
   total: number;
-  totalChange: number;
-  equalWeight: number;
-  equalWeightChange: number;
-  marketValue: number;
-  trades: number;
-  volume: number;
-  value: number;
+  totalChange: number | null;
+  equalWeight: number | null;
+  equalWeightChange: number | null;
+  marketValue: number | null;
+  trades: number | null;
+  volume: number | null;
+  value: number | null;
   state: string | null;
   date: string | null;
   time: string | null;
 }
 
 export interface IrMarket {
+  snapshotQuality?: SnapshotQuality | null;
   gold: IrRow[];
   currency: IrRow[];
   funds: IrStockRow[];
@@ -130,8 +145,10 @@ export interface IrMarket {
   /** تابلوی اختیار معامله (M8-ب) — خالی اگر رله هنوز نفرستاده */
   options: IrOptionRow[];
   indices: IrIndices | null;
-  fetchedAt: number;
+  fetchedAt: number | null;
   ok: boolean;
+  /** Input counts before validation; omitted by older callers, never an expected market universe. */
+  inputRows?: Partial<Record<"gold" | "currency" | "funds" | "stocks" | "crypto" | "options", number>>;
 }
 
 // خلاصهٔ تشخیصیِ آخرین تلاش — امن برای نمایشِ عمومی (هیچ توکن/کلیدی).
@@ -151,7 +168,7 @@ export interface IrDiag {
 }
 
 const CACHE_MS = 60 * 1000; // کشِ کوتاهِ سایت؛ رله هر ~۵دقیقه به Supabase می‌نویسد.
-const READ_TIMEOUT_MS = 8000;
+const READ_TIMEOUT_MS = 5000;
 let cache: IrMarket | null = null;
 let cacheAt = 0;
 let cacheSource: "supabase" | "relay" | null = null;
@@ -186,6 +203,8 @@ function asRows(v: unknown): IrRow[] {
     )
     .map((r) => ({
       id: r.id,
+      sourceDate: typeof r.sourceDate === "string" ? r.sourceDate : null,
+      sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
       faName: r.faName,
       price: r.price,
       unit: r.unit,
@@ -196,7 +215,7 @@ function asRows(v: unknown): IrRow[] {
     }));
 }
 
-function asStockRows(v: unknown): IrStockRow[] {
+export function asStockRows(v: unknown): IrStockRow[] {
   if (!Array.isArray(v)) return [];
   return v
     .filter(
@@ -205,32 +224,36 @@ function asStockRows(v: unknown): IrStockRow[] {
         typeof r.id === "string" &&
         typeof r.faName === "string" &&
         typeof r.price === "number" &&
-        isFinite(r.price)
+        isFinite(r.price) &&
+        (r.unit === "toman" || r.unit === "usd")
     )
     .map((r) => ({
       id: r.id,
+      sourceDate: typeof r.sourceDate === "string" ? r.sourceDate : null,
+      sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
       faName: r.faName,
       price: r.price,
-      unit: (r.unit === "usd" ? "usd" : "toman") as "toman" | "usd",
+      unit: r.unit,
       change: typeof r.change === "number" && isFinite(r.change) ? r.change : null,
       changePercent: typeof r.changePercent === "number" && isFinite(r.changePercent) ? r.changePercent : null,
       ...(typeof r.type === "string" && r.type ? { type: r.type } : {}),
       closingPrice: typeof r.closingPrice === "number" ? r.closingPrice : undefined,
       closingChangePercent: typeof r.closingChangePercent === "number" ? r.closingChangePercent : null,
-      volume: typeof r.volume === "number" ? r.volume : 0,
-      value: typeof r.value === "number" ? r.value : 0,
+      volume: typeof r.volume === "number" && isFinite(r.volume) && r.volume >= 0 ? r.volume : undefined,
+      value: typeof r.value === "number" && isFinite(r.value) && r.value >= 0 ? r.value : undefined,
       marketValue: typeof r.marketValue === "number" ? r.marketValue : null,
       industry: typeof r.industry === "string" ? r.industry : null,
       industryId: typeof r.industryId === "number" ? r.industryId : null,
       eps: typeof r.eps === "number" ? r.eps : null,
       pe: typeof r.pe === "number" ? r.pe : null,
-      buyI: typeof r.buyI === "number" ? r.buyI : 0,
-      buyN: typeof r.buyN === "number" ? r.buyN : 0,
-      sellI: typeof r.sellI === "number" ? r.sellI : 0,
-      sellN: typeof r.sellN === "number" ? r.sellN : 0,
+      buyI: typeof r.buyI === "number" && isFinite(r.buyI) && r.buyI >= 0 ? r.buyI : undefined,
+      buyN: typeof r.buyN === "number" && isFinite(r.buyN) && r.buyN >= 0 ? r.buyN : undefined,
+      sellI: typeof r.sellI === "number" && isFinite(r.sellI) && r.sellI >= 0 ? r.sellI : undefined,
+      sellN: typeof r.sellN === "number" && isFinite(r.sellN) && r.sellN >= 0 ? r.sellN : undefined,
       nav: typeof r.nav === "number" && isFinite(r.nav) && r.nav > 0 ? r.nav : null,
       navIssue:
         typeof r.navIssue === "number" && isFinite(r.navIssue) && r.navIssue > 0 ? r.navIssue : null,
+      navStatus: typeof r.navStatus === "string" ? r.navStatus : null,
       navDate: typeof r.navDate === "string" ? r.navDate : null,
       navTime: typeof r.navTime === "string" ? r.navTime : null,
       bubblePercent:
@@ -267,6 +290,12 @@ function asOptionRows(v: unknown): IrOptionRow[] {
     )
     .map((r) => ({
       id: String(r.id),
+      sourceDate: typeof r.sourceDate === "string" ? r.sourceDate : null,
+      sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
+      contractSize: typeof r.contractSize === "number" && Number.isSafeInteger(r.contractSize) && r.contractSize > 0 ? r.contractSize : null,
+      priceUnit: r.priceUnit === "toman" ? "toman" as const : null,
+      valueUnit: r.valueUnit === "rial" || r.valueUnit === "toman" ? r.valueUnit : null,
+      valueSourceField: r.valueSourceField === "tval" ? "tval" as const : null,
       faName: typeof r.faName === "string" ? r.faName : String(r.id),
       baseId: typeof r.baseId === "string" ? r.baseId : "",
       type: r.type as "call" | "put",
@@ -292,10 +321,13 @@ function asCryptoRows(v: unknown): IrCryptoRow[] {
         typeof r.faName === "string" &&
         typeof r.price === "number" &&
         isFinite(r.price) &&
-        r.price > 0
+        r.price > 0 &&
+        r.unit === "usd"
     )
     .map((r) => ({
       id: r.id,
+      sourceDate: typeof r.sourceDate === "string" ? r.sourceDate : null,
+      sourceTime: typeof r.sourceTime === "string" ? r.sourceTime : null,
       faName: r.faName,
       nameEn: typeof r.nameEn === "string" ? r.nameEn : undefined,
       price: r.price,
@@ -313,13 +345,13 @@ function asIndices(v: unknown): IrIndices | null {
   if (!isFinite(total) || total <= 0) return null;
   return {
     total,
-    totalChange: Number(d.totalChange) || 0,
-    equalWeight: Number(d.equalWeight) || 0,
-    equalWeightChange: Number(d.equalWeightChange) || 0,
-    marketValue: Number(d.marketValue) || 0,
-    trades: Number(d.trades) || 0,
-    volume: Number(d.volume) || 0,
-    value: Number(d.value) || 0,
+    totalChange: typeof d.totalChange === "number" && Number.isFinite(d.totalChange) ? d.totalChange : null,
+    equalWeight: typeof d.equalWeight === "number" && Number.isFinite(d.equalWeight) ? d.equalWeight : null,
+    equalWeightChange: typeof d.equalWeightChange === "number" && Number.isFinite(d.equalWeightChange) ? d.equalWeightChange : null,
+    marketValue: typeof d.marketValue === "number" && Number.isFinite(d.marketValue) ? d.marketValue : null,
+    trades: typeof d.trades === "number" && Number.isFinite(d.trades) ? d.trades : null,
+    volume: typeof d.volume === "number" && Number.isFinite(d.volume) ? d.volume : null,
+    value: typeof d.value === "number" && Number.isFinite(d.value) ? d.value : null,
     state: typeof d.state === "string" ? d.state : null,
     date: typeof d.date === "string" ? d.date : null,
     time: typeof d.time === "string" ? d.time : null,
@@ -327,9 +359,14 @@ function asIndices(v: unknown): IrIndices | null {
 }
 
 /** payload خام (از Supabase یا رله) → IrMarket با اعتبارسنجیِ سخت‌گیرانه. */
-function toMarket(payload: unknown): IrMarket {
+export function toMarket(payload: unknown): IrMarket {
   const p = (payload ?? {}) as Record<string, unknown>;
-  const fetchedAt = Number(p.fetchedAt);
+  const fetchedAt = validTimestamp(p.fetchedAt);
+  const snapshotQuality = parseSnapshotQuality(p.snapshotQuality);
+  if (snapshotQuality) for (const [key, f] of Object.entries(snapshotQuality.families)) {
+    // Empty is authoritative only when the corresponding raw field is actually empty.
+    if (f?.state === "empty" && !(key === "indices" ? p.indices === null : Array.isArray(p[key]) && p[key].length === 0)) delete snapshotQuality.families[key as keyof typeof snapshotQuality.families];
+  }
   const data: IrMarket = {
     gold: asRows(p.gold),
     currency: asRows(p.currency),
@@ -338,15 +375,19 @@ function toMarket(payload: unknown): IrMarket {
     crypto: asCryptoRows(p.crypto),
     options: asOptionRows(p.options),
     indices: asIndices(p.indices),
-    fetchedAt: Number.isFinite(fetchedAt) ? fetchedAt : Date.now(),
+    fetchedAt,
+    snapshotQuality,
     ok: false,
+    inputRows: Object.fromEntries(["gold", "currency", "funds", "stocks", "crypto", "options"].map(key => [key, Array.isArray(p[key]) ? p[key].length : 0])),
   };
-  data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length > 0;
+  data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length + data.crypto.length + data.options.length > 0 || data.indices !== null;
+  // A successful authoritative empty snapshot replaces cached rows; no fallback fetch.
+  if (!data.ok && data.snapshotQuality) data.ok = Object.entries(data.snapshotQuality.families).some(([key, f]) => f?.state === "empty" && f.receivedAt !== null && (key === "indices" ? p.indices === null : Array.isArray(p[key]) && p[key].length === 0));
   return data;
 }
 
 /** منبعِ اول: آخرین اسنپ‌شاتِ بازار از Supabase (از همه‌جای دنیا در دسترس). */
-async function readSupabase(diag: IrDiag): Promise<IrMarket | null> {
+async function readSupabase(diag: IrDiag, signal: AbortSignal): Promise<IrMarket | null> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) return null;
@@ -356,21 +397,22 @@ async function readSupabase(diag: IrDiag): Promise<IrMarket | null> {
     {
       headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
       cache: "no-store",
-      signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+      signal,
     }
   );
   diag.reached = true;
   diag.status = res.status;
-  if (!res.ok) return null;
+  if (!res.ok) { diag.error = `http_${res.status}`; return null; }
   const rows = (await res.json()) as Array<{ payload?: unknown }>;
   const payload = Array.isArray(rows) && rows[0] ? rows[0].payload : null;
-  if (!payload) return null;
+  if (!payload) { diag.error = "empty_source"; return null; }
   const data = toMarket(payload);
+  if (!data.ok) diag.error = "empty_source";
   return data.ok ? data : null;
 }
 
 /** منبعِ دوم (فقط وقتی Supabase نبود/خالی بود): fetchِ زندهٔ رله. */
-async function readRelay(diag: IrDiag): Promise<IrMarket | null> {
+async function readRelay(diag: IrDiag, signal: AbortSignal): Promise<IrMarket | null> {
   const base = process.env.IR_MARKET_RELAY_URL;
   if (!base) return null;
   diag.relayUrlConfigured = true;
@@ -380,17 +422,18 @@ async function readRelay(diag: IrDiag): Promise<IrMarket | null> {
   const res = await fetch(`${base.replace(/\/+$/, "")}/market.json`, {
     headers,
     cache: "no-store",
-    signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+    signal,
   });
   diag.reached = true;
   diag.status = res.status;
-  if (!res.ok) return null;
+  if (!res.ok) { diag.error = `http_${res.status}`; return null; }
   const data = toMarket(await res.json());
+  if (!data.ok) diag.error = "empty_source";
   return data.ok ? data : null;
 }
 
 /** دادهٔ بازار ایران؛ Supabase (اول) → رله (دوم) → null. در خطا کشِ کهنه یا null. */
-export async function getIrMarket(): Promise<IrMarket | null> {
+async function loadIrMarket(signal: AbortSignal): Promise<IrMarket | null> {
   const started = Date.now();
   const diag: IrDiag = {
     at: started,
@@ -407,7 +450,7 @@ export async function getIrMarket(): Promise<IrMarket | null> {
     ms: 0,
   };
   const finish = <T>(value: T): T => {
-    if (cache) diag.ageSec = Math.round((Date.now() - cache.fetchedAt) / 1000);
+    if (cache?.fetchedAt != null) diag.ageSec = Math.round((Date.now() - cache.fetchedAt) / 1000);
     diag.ms = Date.now() - started;
     lastDiag = diag;
     return value;
@@ -421,8 +464,9 @@ export async function getIrMarket(): Promise<IrMarket | null> {
   }
   // منبعِ اول: Supabase
   try {
-    const fromSupabase = await readSupabase(diag);
-    if (fromSupabase) {
+    const fromSupabase = await readSupabase(diag, signal);
+    if (fromSupabase && !signal.aborted) {
+      diag.error = null;
       diag.source = "supabase";
       diag.ok = true;
       diag.counts = countsOf(fromSupabase);
@@ -436,8 +480,9 @@ export async function getIrMarket(): Promise<IrMarket | null> {
   }
   // منبعِ دوم: رلهٔ زنده (وقتی لینکِ بین‌الملل بالا باشد)
   try {
-    const fromRelay = await readRelay(diag);
-    if (fromRelay) {
+    const fromRelay = signal.aborted ? null : await readRelay(diag, signal);
+    if (fromRelay && !signal.aborted) {
+      diag.error = null;
       diag.source = "relay";
       diag.ok = true;
       diag.counts = countsOf(fromRelay);
@@ -457,4 +502,17 @@ export async function getIrMarket(): Promise<IrMarket | null> {
     diag.counts = countsOf(cache);
   }
   return finish(cache);
+}
+
+let inflight: Promise<IrMarket | null> | null = null;
+let retryAt = 0;
+export function getCachedIrMarket(): IrMarket | null { return cache; }
+export async function getIrMarket(): Promise<IrMarket | null> {
+  if (Date.now() < retryAt) return cache;
+  if (inflight) return inflight;
+  inflight = withDeadline(loadIrMarket, READ_TIMEOUT_MS).catch(() => {
+    lastDiag = { at: Date.now(), source: cacheSource, supabaseConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL), relayUrlConfigured: Boolean(process.env.IR_MARKET_RELAY_URL), reached: false, status: null, ok: Boolean(cache), fromCache: Boolean(cache), ageSec: cache?.fetchedAt ? Math.round((Date.now() - cache.fetchedAt) / 1000) : null, counts: cache ? countsOf(cache) : null, error: "DeadlineError", ms: READ_TIMEOUT_MS };
+    return cache;
+  }).then(result => { retryAt = lastDiag?.error ? Date.now() + 30000 : 0; return result; }).finally(() => { inflight = null; });
+  return inflight;
 }

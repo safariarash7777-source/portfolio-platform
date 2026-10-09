@@ -21,7 +21,7 @@ interface IrRow {
 interface Props {
   gold: IrRow[];
   currency: IrRow[];
-  fetchedAt: number;
+  fetchedAt: number | null;
 }
 
 type Tab = "gold" | "currency";
@@ -47,12 +47,12 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
             طلا و ارز
           </h2>
         </div>
-        {fetchedAt && (
+        {fetchedAt != null ? (
           <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
             <Clock size={12} />
-            <span>آخرین به‌روزرسانی: {formatJalali(fetchedAt)}</span>
+            <span>دریافت اسنپ‌شات: {formatJalali(fetchedAt)}</span>
           </div>
-        )}
+        ) : <span className="text-[11px]" style={{ color: "var(--text-3)" }}>زمان دریافت نامعلوم</span>}
       </div>
 
       {/* Tabs */}

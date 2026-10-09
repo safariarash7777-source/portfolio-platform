@@ -34,7 +34,7 @@ import FeaturedTrend from "@/components/market/FeaturedTrend";
 import DetailDisclosure from "@/components/market/DetailDisclosure";
 import AccountBridge from "@/components/account/AccountBridge";
 import { getMarketData } from "@/lib/market";
-import { getIrMarket } from "@/lib/market-ir";
+import { readIranMarket } from "@/lib/market-bounded";
 import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
 import { buildSearchIndex, resolveBackTarget } from "@/lib/market-nav";
@@ -72,10 +72,10 @@ export default async function MarketPage({
   ).href;
 
   const supabase = await createClient();
-  const [{ data: { user } }, market, ir, access] = await Promise.all([
+  const [{ data: { user } }, market, { data: ir, availability }, access] = await Promise.all([
     supabase.auth.getUser(),
     getMarketData(),
-    getIrMarket(),
+    readIranMarket(),
     getAccess(),
   ]);
 
@@ -140,7 +140,8 @@ export default async function MarketPage({
           title="نمای کلان بازار"
           lead="تصویرِ امروزِ بازارِ ایران از آخرین اسنپ‌شات. همهٔ ارقام مشاهده‌اند، نه پیشنهادِ اقدام."
           fetchedAt={ir?.fetchedAt ?? null}
-          boardState={ir?.indices?.state ?? null}
+          qualityState={availability.state}
+          boardState={availability.families?.indices.state === "ready" ? ir?.indices?.state : null}
           searchIndex={searchIndex}
           path="/market"
         >

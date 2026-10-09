@@ -21,8 +21,11 @@ import {
   deltaColor,
   describeDelta,
   formatJalali,
+  formatTehranClock,
 } from "@/lib/format";
 import type { IrIndices } from "@/lib/market-ir";
+import { indexChangePercent } from "@/lib/core/marketHeadline";
+import { marketQualityLabel, type FamilyAvailability } from "@/lib/market-quality";
 
 export interface StockRow {
   id: string;
@@ -85,6 +88,7 @@ interface Props {
   stocks: StockRow[];
   indices: IrIndices | null;
   fetchedAt: number | null;
+  indexAvailability?: FamilyAvailability;
 }
 
 type ViewKey = StockView;
@@ -103,7 +107,7 @@ const isSortDir = (v: string): v is SortDir => (SORT_DIRS as readonly string[]).
 /** بیشینهٔ کاشیِ نقشه. متنِ پوششِ زیرِ نقشه همین را می‌نویسد. */
 const MAP_CELL_LIMIT = 30;
 
-export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
+export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailability }: Props) {
   // نما، جست‌وجو و فیلترِ صنعت در URL می‌نشینند تا back/forward و برگشت از
   // صفحهٔ نماد وضعیت را حفظ کنند. مرتب‌سازی عمداً محلی می‌ماند: حالتِ گذرایی
   // است که کاربر انتظارِ اشتراک‌گذاری‌اش را ندارد.
@@ -237,6 +241,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
 
       {/* Indices */}
       {indices && (
+        <>
+        <p className="text-xs" style={{ color: "var(--text-3)" }} role="status">
+          شاخص: {marketQualityLabel(indexAvailability?.state ?? "unknown-time")}
+          {" · "}دریافت شاخص: {indexAvailability?.receivedAt ? `${formatJalali(indexAvailability.receivedAt)} · ${formatTehranClock(indexAvailability.receivedAt)}` : "نامعلوم"}
+          {" · "}زمان منبع شاخص: {indices.date && indices.time ? toPersianDigits(`${indices.date} ${indices.time}`) : "نامعلوم"}
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <IndexCard
             label="شاخص کل"
@@ -251,16 +261,17 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش بازار</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-              {indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
+              {indices.marketValue != null && indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
             </p>
           </div>
           <div className="card p-4">
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش معاملات</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-              {indices.value > 0 ? fmtValue(indices.value) : "—"}
+              {indices.value != null && indices.value > 0 ? fmtValue(indices.value) : "—"}
             </p>
           </div>
         </div>
+        </>
       )}
 
 
@@ -534,16 +545,16 @@ export default function StocksBoard({ stocks, indices, fetchedAt }: Props) {
 
 // ── Helper Components ────────────────────────────────────────────────────────
 
-function IndexCard({ label, value, change }: { label: string; value: number; change: number }) {
-  const pct = value > 0 ? (change / value) * 100 : 0;
-  const Icon = change >= 0 ? TrendingUp : TrendingDown;
+function IndexCard({ label, value, change }: { label: string; value: number | null; change: number | null }) {
+  const pct = indexChangePercent(value, change);
+  const Icon = change != null && change >= 0 ? TrendingUp : TrendingDown;
   return (
     <div className="card p-4">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
       <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
-        {toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬")}
+        {value != null && Number.isFinite(value) && value > 0 ? toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬") : "—"}
       </p>
-      <div className="flex items-center gap-1 mt-1">
+      {pct != null && change != null ? <div className="flex items-center gap-1 mt-1">
         <Icon size={12} style={{ color: deltaColor(change) }} />
         <span className="text-xs font-bold" style={{ color: deltaColor(change), fontVariantNumeric: "tabular-nums" }}>
           {formatSignedPercent(pct)}
@@ -551,7 +562,7 @@ function IndexCard({ label, value, change }: { label: string; value: number; cha
         <span className="text-[10px]" style={{ color: "var(--text-3)" }}>
           ({toPersianDigits(Math.abs(Math.round(change)).toLocaleString("en-US")).replace(/,/g, "٬")})
         </span>
-      </div>
+      </div> : <p className="text-[10px] mt-1" style={{ color: "var(--text-3)" }}>تغییر ناموجود</p>}
     </div>
   );
 }

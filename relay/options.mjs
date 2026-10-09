@@ -20,13 +20,14 @@ const HDRS = { Accept: "application/json", "User-Agent": BROWSER_UA };
 
 export const optionsStatus = { ok: false, contracts: 0, calls: 0, puts: 0, error: null, lastOk: 0 };
 
-const toToman = (rial) => {
-  const n = Number(rial);
-  return isFinite(n) && n > 0 ? Math.round(n / 10) : null;
-};
 const num = (x) => {
+  if ((typeof x !== "number" && typeof x !== "string") || (typeof x === "string" && !x.trim())) return null;
   const n = Number(x);
   return isFinite(n) ? n : null;
+};
+const toToman = (rial) => {
+  const n = num(rial);
+  return n !== null && n > 0 ? Math.round(n / 10) : null;
 };
 
 /**
@@ -75,11 +76,20 @@ export async function fetchOptions(brsapiBase, brsapiKey, { client = null, count
         : String(it.type ?? "").toLowerCase() === "put" ? "put"
         : null;
       if (!type) continue; // بدون نوع معتبر → ردیف کنار گذاشته می‌شود
+      const contractSize = num(it.size_contract);
       out.push({
         id,
+        sourceDate: typeof it.date === "string" ? it.date : null,
+        sourceTime: typeof it.time === "string" ? it.time : null,
         faName: it.l30 || id,
         baseId: it.base_l18 || null,
         type, // call = اختیار خرید | put = اختیار فروش
+        contractSize: Number.isSafeInteger(contractSize) && contractSize > 0 ? contractSize : null,
+        // Derived price output retains the existing conversion. The source's
+        // transaction-value unit is not yet attested by a same-cycle sample.
+        priceUnit: "toman",
+        valueUnit: null,
+        valueSourceField: "tval",
         strike: toToman(it.price_strike),
         dateEnd: it.date_end ?? null,          // تاریخ سررسید (جلالی متنی منبع)
         dayRemain: num(it.day_remain),
@@ -88,13 +98,18 @@ export async function fetchOptions(brsapiBase, brsapiKey, { client = null, count
         closingPrice: toToman(it.pc),
         changePercent: num(it.plp),
         volume: num(it.tvol),
-        value: num(it.tval),                   // ریال — UI با همان قاعدهٔ بقیه نمایش می‌دهد
+        value: num(it.tval),                   // raw tval retained; unit unknown until attested
         trades: num(it.tno),
         buyI: num(it.Buy_I_Volume),
         sellI: num(it.Sell_I_Volume),
         buyN: num(it.Buy_N_Volume),
         sellN: num(it.Sell_N_Volume),
       });
+    }
+    if (items.length && !out.length) {
+      optionsStatus.ok = false;
+      optionsStatus.error = "option response schema invalid";
+      return [];
     }
     optionsStatus.ok = true;
     optionsStatus.contracts = out.length;

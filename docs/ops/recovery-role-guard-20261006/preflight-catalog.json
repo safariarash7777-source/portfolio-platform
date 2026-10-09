@@ -1,0 +1,402 @@
+{
+  "tables": [
+    {
+      "table": "entitlements",
+      "owner": "postgres",
+      "rls": true,
+      "force_rls": false,
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "anon=arwdDxtm/postgres",
+        "authenticated=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ]
+    },
+    {
+      "table": "payments",
+      "owner": "postgres",
+      "rls": true,
+      "force_rls": false,
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "anon=arwdDxtm/postgres",
+        "authenticated=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ]
+    },
+    {
+      "table": "profiles",
+      "owner": "postgres",
+      "rls": true,
+      "force_rls": false,
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "anon=arwdDxtm/postgres",
+        "authenticated=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ]
+    }
+  ],
+  "column_acls": [
+    {
+      "table": "entitlements",
+      "column": "id",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "user_id",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "kind",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "source",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "starts_at",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "expires_at",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "revoked_at",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "granted_by",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "note",
+      "acl": null
+    },
+    {
+      "table": "entitlements",
+      "column": "created_at",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "id",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "user_id",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "amount",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "authority",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "ref_id",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "status",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "invite_link",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "created_at",
+      "acl": null
+    },
+    {
+      "table": "payments",
+      "column": "verified_at",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "id",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "full_name",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "national_id",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "phone",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "email",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "role",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "created_at",
+      "acl": null
+    },
+    {
+      "table": "profiles",
+      "column": "updated_at",
+      "acl": null
+    }
+  ],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "entitlements",
+      "policyname": "entitlements_insert_admin",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "entitlements",
+      "policyname": "entitlements_select_admin",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "entitlements",
+      "policyname": "entitlements_select_own",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "entitlements",
+      "policyname": "entitlements_update_admin",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payments",
+      "policyname": "payments_self_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = user_id) OR is_admin())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "is_admin()",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_self_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_self_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = id) OR is_admin())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_self_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = id)",
+      "with_check": null
+    }
+  ],
+  "triggers": [
+    {
+      "table": "payments",
+      "name": "payments_guard_update",
+      "enabled": "O",
+      "definition": "CREATE TRIGGER payments_guard_update BEFORE UPDATE ON public.payments FOR EACH ROW EXECUTE FUNCTION payments_guard()"
+    },
+    {
+      "table": "payments",
+      "name": "payments_no_delete",
+      "enabled": "O",
+      "definition": "CREATE TRIGGER payments_no_delete BEFORE DELETE ON public.payments FOR EACH ROW EXECUTE FUNCTION payments_guard()"
+    },
+    {
+      "table": "entitlements",
+      "name": "trg_entitlements_guard",
+      "enabled": "O",
+      "definition": "CREATE TRIGGER trg_entitlements_guard BEFORE DELETE OR UPDATE ON public.entitlements FOR EACH ROW EXECUTE FUNCTION fn_entitlements_guard()"
+    }
+  ],
+  "functions": [
+    {
+      "signature": "is_admin()",
+      "acl": [
+        "postgres=X/postgres",
+        "anon=X/postgres",
+        "authenticated=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "definition_digest": "0b1499ddd10411e7c9bb9c5020c65683"
+    },
+    {
+      "signature": "create_payment(integer,text)",
+      "acl": [
+        "postgres=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "definition_digest": "16f97a269acfa33433a9ee7bc0c49948"
+    },
+    {
+      "signature": "fail_payment(text)",
+      "acl": [
+        "postgres=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "definition_digest": "141329ef31bb479e885fb8d3f1e53cfd"
+    },
+    {
+      "signature": "fn_user_access(uuid)",
+      "acl": [
+        "postgres=X/postgres",
+        "anon=X/postgres",
+        "authenticated=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "definition_digest": "5ad19a23dadb52618527fcfa419521d4"
+    },
+    {
+      "signature": "verify_payment(text,text,integer,text)",
+      "acl": [
+        "postgres=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "definition_digest": "4781bfbba348a56bf8759c28909a05a4"
+    }
+  ],
+  "status": "SNAPSHOT_OBSERVED",
+  "checked_at_utc": "2026-10-06T08:55:30.2446270+00:00",
+  "main_mutation": false,
+  "private_rows_exported": false,
+  "source_states": [
+    {
+      "name": "portfolio-stage-db-1",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-06T07:31:51.050049772Z"
+    },
+    {
+      "name": "portfolio-stage-auth-1",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-06T07:32:19.927006553Z"
+    },
+    {
+      "name": "portfolio-stage-storage-1",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-06T07:32:19.870537574Z"
+    },
+    {
+      "name": "portfolio-stage-rest-1",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-06T07:31:50.764483573Z"
+    },
+    {
+      "name": "portfolio-stage-gateway-1",
+      "running": true,
+      "health": "healthy",
+      "started_at": "2026-10-06T07:31:50.786022074Z"
+    }
+  ],
+  "remaining_disposable_proof_containers": 0,
+  "source_runtime_probe": {
+    "server_version": "17.6",
+    "in_recovery": false,
+    "default_transaction_read_only": "off",
+    "probe_transaction_read_only": "on",
+    "mode": "READ_ONLY"
+  }
+}

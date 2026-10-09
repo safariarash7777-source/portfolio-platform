@@ -1,0 +1,443 @@
+{
+  "observedAt": "2026-10-03T10:02:09.326Z",
+  "httpStatus": 200,
+  "lastRefresh": 1791021491621,
+  "ageSec": 238,
+  "counts": {
+    "gold": 9,
+    "currency": 28,
+    "crypto": 19,
+    "funds": 333,
+    "stocks": 762,
+    "options": 1114
+  },
+  "lastError": null,
+  "jobs": {
+    "sources": {
+      "present": true,
+      "fields": [
+        "brsapi_gold_currency",
+        "brsapi_stocks",
+        "brsapi_index",
+        "brsapi_nav",
+        "brsapi_fund_meta"
+      ],
+      "metadata": {
+        "brsapi_gold_currency": {
+          "ok": true,
+          "gold": 9,
+          "currency": 28,
+          "crypto": 19,
+          "error": null
+        },
+        "brsapi_stocks": {
+          "ok": true,
+          "funds": 333,
+          "stocks": 762,
+          "error": null
+        },
+        "brsapi_index": {
+          "ok": true,
+          "error": null
+        },
+        "brsapi_nav": {
+          "ok": true,
+          "mode": "per-symbol",
+          "cached": 25,
+          "updated": 25,
+          "failed": 1,
+          "error": null
+        },
+        "brsapi_fund_meta": {
+          "ok": true,
+          "cached": 335,
+          "updated": 1,
+          "failed": 0,
+          "error": null
+        }
+      }
+    },
+    "supabase": {
+      "present": true,
+      "fields": [
+        "enabled",
+        "ok",
+        "status",
+        "at",
+        "error"
+      ],
+      "metadata": {
+        "enabled": true,
+        "ok": true,
+        "status": 200,
+        "at": 1791021492130,
+        "error": null
+      }
+    },
+    "eodHistory": {
+      "present": true,
+      "fields": [
+        "lastRun",
+        "lastDate",
+        "rows",
+        "result",
+        "skipped",
+        "error"
+      ],
+      "metadata": {
+        "lastRun": 1790779089109,
+        "lastDate": "2026-09-30",
+        "rows": 1080,
+        "result": {
+          "tradeDate": "2026-09-30",
+          "planned": 1080,
+          "inserted": 1080,
+          "alreadyDone": 0,
+          "displaced": 0,
+          "occupiedByOtherSource": 0,
+          "complete": true
+        },
+        "skipped": null,
+        "error": null
+      }
+    },
+    "indexHistory": {
+      "present": true,
+      "fields": [
+        "lastJdate",
+        "error"
+      ],
+      "metadata": {
+        "lastJdate": "1405-07-08",
+        "error": null
+      }
+    },
+    "historySections": {
+      "present": true,
+      "fields": [
+        "written",
+        "missing"
+      ],
+      "metadata": {
+        "written": [
+          "gold",
+          "currency"
+        ],
+        "missing": []
+      }
+    },
+    "codalEngine": {
+      "present": true,
+      "fields": [
+        "mode",
+        "ok",
+        "lastRun",
+        "lastError",
+        "feed",
+        "feedTable",
+        "backfill",
+        "ledgerSize"
+      ],
+      "metadata": {
+        "mode": "v3",
+        "ok": true,
+        "lastRun": 1791016734029,
+        "lastError": null,
+        "feed": {
+          "pages": 2,
+          "seen": 34,
+          "matched": 6,
+          "downloaded": 6,
+          "inserted": 4,
+          "parseFailed": 2,
+          "watermark": 14050711120512
+        },
+        "feedTable": {
+          "attempted": 291,
+          "inserted": 291,
+          "lastError": null
+        },
+        "backfill": {
+          "cursor": 1064,
+          "queueSize": 200,
+          "inserted": 3,
+          "parseFailed": 5,
+          "skippedCovered": 0
+        },
+        "ledgerSize": 607
+      }
+    },
+    "codalArchive": {
+      "present": true,
+      "fields": [
+        "ok",
+        "lastRun",
+        "lastError",
+        "dailyCap",
+        "usedToday",
+        "budgetDate",
+        "cursor",
+        "queueSize",
+        "doneSymbols",
+        "lastCycle",
+        "coverage"
+      ],
+      "metadata": {
+        "ok": true,
+        "lastRun": 1791019441507,
+        "lastError": null,
+        "dailyCap": 200,
+        "usedToday": 178,
+        "budgetDate": "2026-10-03",
+        "cursor": 1092,
+        "queueSize": 300,
+        "doneSymbols": 87,
+        "lastCycle": {
+          "pages": 3,
+          "downloaded": 14,
+          "inserted": 13,
+          "parseFailed": 1
+        },
+        "coverage": {
+          "n30Symbols": 102,
+          "n10Symbols": 232,
+          "lastChecked": "2026-10-03T09:24:01.585Z"
+        }
+      }
+    },
+    "options": {
+      "present": true,
+      "fields": [
+        "ok",
+        "contracts",
+        "calls",
+        "puts",
+        "error",
+        "lastOk"
+      ],
+      "metadata": {
+        "ok": true,
+        "contracts": 1114,
+        "calls": 581,
+        "puts": 533,
+        "error": null,
+        "lastOk": 1791021491583
+      }
+    },
+    "candleBackfill": {
+      "present": true,
+      "fields": [
+        "enabled",
+        "queueRemaining",
+        "doneCount",
+        "insertedTotal",
+        "insertedToday",
+        "reqToday",
+        "reqDate",
+        "hourWindowStart",
+        "reqThisHour",
+        "lastSymbol",
+        "lastRun",
+        "lastError",
+        "errors",
+        "emptyResponses"
+      ],
+      "metadata": {
+        "enabled": true,
+        "queueRemaining": 0,
+        "doneCount": 1245,
+        "insertedTotal": 2047815,
+        "insertedToday": 19,
+        "reqToday": 1,
+        "reqDate": "2026-10-03",
+        "hourWindowStart": 1791005889966,
+        "reqThisHour": 1,
+        "lastRun": 1791021490102,
+        "lastError": null,
+        "errors": 0,
+        "emptyResponses": 2
+      }
+    },
+    "navBlacklist": {
+      "present": true,
+      "fields": [
+        "loaded",
+        "size",
+        "pendingFailCounts",
+        "threshold",
+        "lastSaveError"
+      ],
+      "metadata": {
+        "loaded": true,
+        "size": 326,
+        "pendingFailCounts": 0,
+        "threshold": 2,
+        "lastSaveError": null
+      }
+    },
+    "navCompletion": {
+      "present": true,
+      "fields": [
+        "lastRoundAt",
+        "targeted",
+        "updated",
+        "failed",
+        "skipped"
+      ],
+      "metadata": {
+        "lastRoundAt": 1790995391282,
+        "targeted": 0,
+        "updated": 0,
+        "failed": 0,
+        "skipped": null
+      }
+    },
+    "symbolRotation": {
+      "present": true,
+      "fields": [
+        "topN",
+        "perCycleMax",
+        "lastTake",
+        "creditCarried",
+        "budgetRemaining",
+        "cursor",
+        "lastRunAt",
+        "lastPushed",
+        "lastError"
+      ],
+      "metadata": {
+        "topN": 60,
+        "perCycleMax": 6,
+        "lastTake": 2,
+        "creditCarried": 0.53,
+        "budgetRemaining": 219,
+        "cursor": 27,
+        "lastRunAt": 1791021498878,
+        "lastPushed": 118,
+        "lastError": null
+      }
+    },
+    "brsapiBudgetStop": {
+      "present": true,
+      "fields": [
+        "active",
+        "cycle",
+        "lastAt",
+        "producers",
+        "servedAgeMs"
+      ],
+      "metadata": {
+        "active": false,
+        "cycle": 0,
+        "lastAt": null,
+        "producers": {},
+        "servedAgeMs": 237720
+      }
+    },
+    "brsapiLegacy": {
+      "present": true,
+      "fields": [
+        "enforced",
+        "used",
+        "rejected",
+        "overBudgetPassed",
+        "unmetered",
+        "unmeteredByProducer",
+        "alert",
+        "budget"
+      ],
+      "metadata": {
+        "enforced": false,
+        "used": {
+          "gold-currency": 809,
+          "all-symbols": 809,
+          "market-index": 809,
+          "options": 809,
+          "nav-bulk": 1,
+          "nav-completion": 25,
+          "fund-meta": 335,
+          "ime-certificate": 54,
+          "symbol-detail": 1707,
+          "codal-archive": 220,
+          "candle-backfill": 5,
+          "ime-physical": 3
+        },
+        "rejected": {
+          "options": 809,
+          "nav-bulk": 1,
+          "nav-completion": 25,
+          "fund-meta": 335,
+          "ime-certificate": 54,
+          "symbol-detail": 1707,
+          "codal-archive": 220,
+          "candle-backfill": 5,
+          "ime-physical": 3,
+          "all-symbols": 677,
+          "market-index": 677,
+          "gold-currency": 673
+        },
+        "overBudgetPassed": {
+          "options": 809,
+          "nav-bulk": 1,
+          "nav-completion": 25,
+          "fund-meta": 335,
+          "ime-certificate": 54,
+          "symbol-detail": 1707,
+          "codal-archive": 220,
+          "candle-backfill": 5,
+          "ime-physical": 3,
+          "all-symbols": 677,
+          "market-index": 677,
+          "gold-currency": 673
+        },
+        "unmetered": 0,
+        "unmeteredByProducer": {},
+        "alert": null,
+        "budget": {
+          "day": "2026-10-03",
+          "persistent": true,
+          "softBudget": 6000,
+          "hardCeiling": 9000,
+          "used": 0,
+          "remaining": 9000,
+          "remainingByClass": {
+            "critical": 9000,
+            "standard": 7500,
+            "bulk": 6000
+          },
+          "usedByClass": {
+            "critical": 100,
+            "standard": 0,
+            "bulk": 0
+          },
+          "rejectedByBudget": 892,
+          "rejectedByClass": {
+            "critical": 386,
+            "standard": 173,
+            "bulk": 333
+          },
+          "softExhausted": false,
+          "lease": {
+            "size": 50,
+            "granted": 0,
+            "spent": 0,
+            "remaining": 0,
+            "calls": 0,
+            "starved": 0
+          },
+          "store": {
+            "healthy": false,
+            "errors": 495,
+            "lastError": {
+              "code": "PGRST202",
+              "httpStatus": null,
+              "category": "budget"
+            },
+            "degradedCeiling": 100,
+            "degradedUsed": 100
+          }
+        }
+      }
+    }
+  }
+}

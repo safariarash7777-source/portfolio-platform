@@ -1,7 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import OptionsBoard from "@/components/market/OptionsBoard";
-import { getIrMarket } from "@/lib/market-ir";
+import { readIranMarket } from "@/lib/market-bounded";
 import { pageMetadata } from "@/lib/metadata";
 
 
@@ -15,13 +15,13 @@ export const metadata = pageMetadata({
 });
 
 export default async function OptionsPage() {
-  const ir = await getIrMarket();
+  const { data: ir, availability } = await readIranMarket();
   return (
     <>
       <Navbar />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-7xl px-5 pt-8 pb-16">
-          <OptionsBoard options={ir?.options ?? []} fetchedAt={ir?.fetchedAt ?? null} />
+          <OptionsBoard options={ir?.options ?? []} fetchedAt={availability.families?.options.receivedAt ?? null} availability={availability.families?.options} />
         </div>
       </main>
       <Footer />

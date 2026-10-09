@@ -17,6 +17,7 @@ import Link from "next/link";
 import { MARKET_SECTIONS, type MarketSectionKey, type MarketSearchEntry } from "@/lib/market-nav";
 import { computeFreshness } from "@/lib/market-freshness";
 import { formatJalali, formatTehranClock } from "@/lib/format";
+import { marketQualityLabel, type FamilyAvailability, type IranReadQuality } from "@/lib/market-quality";
 import MarketSearch from "./MarketSearch";
 
 export interface MarketShellProps {
@@ -27,6 +28,7 @@ export interface MarketShellProps {
   lead?: string;
   /** مهرِ زمانیِ اسنپ‌شاتِ فیدِ ایران */
   fetchedAt: number | null;
+  qualityState?: FamilyAvailability["state"] | IranReadQuality["state"] | "timeout";
   /** وضعیتِ تابلو از شاخص (مثلِ «بازار باز است») — رشتهٔ منبع، بدونِ تفسیر */
   boardState?: string | null;
   searchIndex: readonly MarketSearchEntry[];
@@ -35,7 +37,7 @@ export interface MarketShellProps {
   children: React.ReactNode;
 }
 
-function FreshnessBadge({ fetchedAt }: { fetchedAt: number | null }) {
+function FreshnessBadge({ fetchedAt, qualityState }: Pick<MarketShellProps, "fetchedAt" | "qualityState">) {
   const f = computeFreshness({
     irFetchedAt: fetchedAt,
     usesIr: true,
@@ -43,7 +45,7 @@ function FreshnessBadge({ fetchedAt }: { fetchedAt: number | null }) {
     now: Date.now(),
   });
   const tone =
-    f.state === "fresh"
+    qualityState ? qualityState === "ready" || qualityState === "empty" ? { dot: "var(--success)", text: "var(--text-2)" } : { dot: "var(--warning)", text: "var(--warning)" } : f.state === "fresh"
       ? { dot: "var(--success)", text: "var(--text-2)" }
       : f.state === "stale"
         ? { dot: "var(--warning)", text: "var(--warning)" }
@@ -56,7 +58,7 @@ function FreshnessBadge({ fetchedAt }: { fetchedAt: number | null }) {
     >
       {/* رنگ تنها حاملِ معنا نیست: متنِ کنارش همیشه وضعیت را می‌گوید. */}
       <span aria-hidden className="inline-block rounded-full" style={{ width: 6, height: 6, background: tone.dot }} />
-      {f.label}
+      {qualityState ? marketQualityLabel(qualityState === "timeout" ? "error" : qualityState) : f.label}
     </span>
   );
 }
@@ -66,6 +68,7 @@ export default function MarketShell({
   title,
   lead,
   fetchedAt,
+  qualityState,
   boardState,
   searchIndex,
   path,
@@ -99,7 +102,7 @@ export default function MarketShell({
                 {boardState}
               </span>
             ) : null}
-            <FreshnessBadge fetchedAt={fetchedAt} />
+            <FreshnessBadge fetchedAt={fetchedAt} qualityState={qualityState} />
           </div>
         </div>
 

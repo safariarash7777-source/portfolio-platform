@@ -60,6 +60,8 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import { NextRequest } from "next/server";
 import * as returnPaths from "./returnPath";
+import * as sessionErrors from "../../lib/auth/session-error";
+
 
 const localRequire = createRequire(import.meta.url);
 const middlewareModule = { exports: {} as { middleware?: (request: NextRequest) => Promise<Response> } };
@@ -69,8 +71,9 @@ runInNewContext(ts.transpileModule(readFileSync(new URL("../../middleware.ts", i
   exports: middlewareModule.exports,
   require: (name: string) => name === "@supabase/ssr"
     ? { createServerClient: () => ({ auth: { getUser: async () => ({ data: { user: null } }) } }) }
-    : name === "./components/account/returnPath" ? returnPaths : localRequire(name),
-  process: { env: {} }, URL,
+    : name === "./components/account/returnPath" ? returnPaths
+    : name === "./lib/auth/session-error" ? sessionErrors : localRequire(name),
+  process: { env: {} }, URL,AbortController,fetch,setTimeout,clearTimeout,
 });
 
 for (const path of ["/dashboard?tab=portfolio", "/admin/research", "/terminal/فملی?tab=financials"]) {
@@ -95,4 +98,118 @@ test("nested external next remains data on a local protected path", async () => 
   const response = await middlewareModule.exports.middleware!(request);
   const redirect = new URL(response.headers.get("location")!);
   assert.equal(redirect.searchParams.get("next"), "/dashboard?next=https%3A%2F%2Fevil.example");
+});
+
+for(const signedIn of [true,false]) {
+  test(`middleware redirect preserves Auth cookie updates: authenticated=${signedIn}`,async()=>{
+    const loadedMiddleware={exports:{} as {middleware:(request:NextRequest)=>Promise<Response>}};
+    runInNewContext(ts.transpileModule(readFileSync(new URL('../../middleware.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
+      exports:loadedMiddleware.exports,
+      require:(name:string)=>name==='@supabase/ssr'?{createServerClient:(_url:unknown,_key:unknown,options:{cookies:{setAll:(values:object[])=>void}})=>({auth:{getUser:async()=>{options.cookies.setAll([{name:'synthetic-session',value:signedIn?'refreshed':'',options:{path:'/',httpOnly:true,sameSite:'lax',maxAge:signedIn?300:0}}]);return {data:{user:signedIn?{id:'synthetic-user'}:null}};}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{role:'user'}})})})})})}:name==='./components/account/returnPath'?returnPaths:name==="./lib/auth/session-error"?sessionErrors:localRequire(name),
+      process:{env:{}},URL,AbortController,fetch,setTimeout,clearTimeout,
+    });
+    const response=await loadedMiddleware.exports.middleware(new NextRequest('https://site.example/admin'));
+    assert.match(response.headers.get('set-cookie')??'',signedIn?/synthetic-session=refreshed/:/Max-Age=0/);
+    assert.equal(new URL(response.headers.get('location')!).pathname,signedIn?'/dashboard':'/login');
+  });
+}
+
+test('A stalled authenticated gate returns a bounded, explicit retry and never private access',async()=>{
+  let deadline:(()=>void)|undefined;let upstreamAborted=false;
+  const loadedMiddleware={exports:{} as {middleware:(request:NextRequest)=>Promise<Response>;config:{runtime:string}}};
+  runInNewContext(ts.transpileModule(readFileSync(new URL('../../middleware.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
+    exports:loadedMiddleware.exports,
+    require:(name:string)=>name==='@supabase/ssr'?{createServerClient:(_url:unknown,_key:unknown,options:{global:{fetch:typeof fetch}})=>({auth:{getUser:()=>{void options.global.fetch('https://not-a-network-request.test').catch(()=>{});return new Promise(()=>{});}}})}:name==='./components/account/returnPath'?returnPaths:name==="./lib/auth/session-error"?sessionErrors:localRequire(name),
+    process:{env:{}},URL,AbortController,fetch:(_input:unknown,init:RequestInit)=>{init.signal?.addEventListener('abort',()=>{upstreamAborted=true;});return new Promise(()=>{});},
+    setTimeout:(callback:()=>void,milliseconds:number)=>{assert.equal(milliseconds,8000);deadline=callback;return 1;},clearTimeout:()=>{},
+  });
+  const pending=loadedMiddleware.exports.middleware(new NextRequest('https://site.example/admin/fx'));
+  assert.ok(deadline);deadline();const response=await pending;
+  const target=new URL(response.headers.get('location')!);assert.equal(target.pathname,'/login');assert.equal(target.searchParams.get('error'),'auth_unavailable');assert.equal(target.searchParams.get('next'),'/admin/fx');assert.equal(upstreamAborted,true);assert.equal(loadedMiddleware.exports.config.runtime,'nodejs');
+});
+
+function loadGate(client: object) {
+  const loaded = {exports: {} as {middleware: (request: NextRequest) => Promise<Response>}};
+  runInNewContext(ts.transpileModule(readFileSync(new URL('../../middleware.ts', import.meta.url), 'utf8'), {
+    compilerOptions: {module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022},
+  }).outputText, {
+    exports: loaded.exports,
+    require: (name: string) => name === '@supabase/ssr' ? {createServerClient: () => client}
+      : name === './components/account/returnPath' ? returnPaths
+      : name === './lib/auth/session-error' ? sessionErrors : localRequire(name),
+    process: {env: {}}, URL, AbortController, fetch, setTimeout, clearTimeout,
+  });
+  return loaded.exports.middleware;
+}
+
+for (const role of ['user', 'admin']) {
+  test('The protected admin page keeps its database role gate: ' + role, async () => {
+    const gate = loadGate({
+      auth: {getUser: async () => ({data: {user: {id: 'synthetic-user'}}, error: null})},
+      from: () => ({select: () => ({eq: () => ({maybeSingle: async () => ({data: {role}, error: null})})})}),
+    });
+    const response = await gate(new NextRequest('https://site.example/admin/fx'));
+    if (role === 'admin') {
+      assert.equal(response.headers.get('x-middleware-next'), '1');
+      assert.equal(response.headers.get('location'), null);
+    } else {
+      assert.equal(new URL(response.headers.get('location')!).pathname, '/dashboard');
+    }
+  });
+}
+
+for (const error of [
+  {status: 400}, {status: 404}, {status: 429}, {status: 500}, {status: 503},
+  {message: 'network failure'}, {status: 400, code: 'unknown_refresh_error'},
+]) {
+  test('Ambiguous session fault preserves intended destination and offers explicit retry: ' + JSON.stringify(error), async () => {
+    const gate = loadGate({auth: {getUser: async () => ({data: {user: null}, error})}});
+    const response = await gate(new NextRequest('https://site.example/admin/fx'));
+    const target = new URL(response.headers.get('location')!);
+    assert.equal(target.searchParams.get('error'), 'auth_unavailable');
+    assert.equal(target.searchParams.get('next'), '/admin/fx');
+    assert.equal(target.pathname, '/login');
+  });
+}
+
+for (const error of [
+  {status: 401}, {status: 403}, {status: 400, code: 'refresh_token_not_found'},
+  {status: 400, code: 'session_expired'},
+]) {
+  test('Known rejected session goes to login without private access: ' + JSON.stringify(error), async () => {
+    const gate = loadGate({auth: {getUser: async () => ({data: {user: null}, error})}});
+    const response = await gate(new NextRequest('https://site.example/admin/fx'));
+    const target = new URL(response.headers.get('location')!);
+    assert.equal(target.pathname, '/login');
+    assert.equal(target.searchParams.get('error'), null);
+  });
+}
+
+for (const path of ['/admin/fx', '/terminal/فملی']) {
+  test('Role query outage does not classify administrator as ordinary member: ' + path, async () => {
+    const gate = loadGate({
+      auth: {getUser: async () => ({data: {user: {id: 'synthetic-user'}}, error: null})},
+      from: () => ({select: () => ({eq: () => ({maybeSingle: async () => ({data: null, error: {message: 'query unavailable'}})})})}),
+    });
+    const response = await gate(new NextRequest(new URL(path, 'https://site.example')));
+    assert.equal(new URL(response.headers.get('location')!).searchParams.get('error'), 'auth_unavailable');
+  });
+}
+
+test('Entitlement outage returns retry; genuine absence returns dashboard', async () => {
+  for (const unavailable of [true, false]) {
+    const terminalQuery = {
+      is: () => terminalQuery, lte: () => terminalQuery, gt: () => terminalQuery,
+      limit: async () => ({data: unavailable ? null : [], error: unavailable ? {message: 'query unavailable'} : null}),
+    };
+    const gate = loadGate({
+      auth: {getUser: async () => ({data: {user: {id: 'synthetic-user'}}, error: null})},
+      from: (table: string) => ({select: () => ({eq: () => table === 'profiles'
+        ? {maybeSingle: async () => ({data: {role: 'user'}, error: null})} : terminalQuery})}),
+    });
+    const response = await gate(new NextRequest('https://site.example/terminal/فملی'));
+    const target = new URL(response.headers.get('location')!);
+    assert.equal(target.pathname, unavailable ? '/login' : '/dashboard');
+    assert.equal(target.searchParams.get('error'), unavailable ? 'auth_unavailable' : null);
+  }
 });
