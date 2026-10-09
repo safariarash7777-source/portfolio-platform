@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Mail, ArrowRight, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
+import { passwordRecoveryRequestError } from "@/lib/auth/password-recovery";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -29,13 +30,9 @@ export default function ForgotPasswordPage() {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
       });
-      // Always show success even if the email isn't registered — avoids leaking
-      // which emails have accounts (account-enumeration protection).
-      if (error && !error.message.includes("rate")) {
-        console.error("resetPasswordForEmail:", error.message);
-      }
-      if (error && error.message.toLowerCase().includes("rate")) {
-        setServerError("تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.");
+      const requestError = passwordRecoveryRequestError(error);
+      if (requestError) {
+        setServerError(requestError);
         return;
       }
       setSent(true);
@@ -69,10 +66,10 @@ export default function ForgotPasswordPage() {
                 <CheckCircle size={32} />
               </div>
               <h2 className="font-display text-lg font-bold mb-2" style={{ color: "var(--navy-deep)" }}>
-                ایمیل بازیابی ارسال شد
+                درخواست بازیابی ثبت شد
               </h2>
               <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
-                اگر حسابی با این ایمیل وجود داشته باشد، لینک بازیابی رمز عبور برایتان ارسال شد. صندوق
+                اگر حسابی با این ایمیل وجود داشته باشد، لینک بازیابی برای آن ارسال می‌شود. صندوق
                 ورودی (و پوشه‌ی اسپم) خود را بررسی کنید.
               </p>
               <Link href="/login" className="btn btn-outline w-full">
@@ -106,6 +103,7 @@ export default function ForgotPasswordPage() {
 
               {serverError && (
                 <div
+                  role="alert"
                   className="rounded-xl px-4 py-3 text-sm"
                   style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.25)", color: "var(--danger)" }}
                 >
