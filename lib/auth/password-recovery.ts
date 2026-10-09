@@ -1,3 +1,4 @@
+import { AuthInvalidJwtError } from '@supabase/supabase-js'
 import { authSessionFailure } from './session-error'
 
 export type PasswordRecoveryStatus = 'ready' | 'invalid' | 'unavailable'
@@ -39,11 +40,11 @@ export async function initializePasswordRecovery(input: {
     if (hasCredentials && access_token && refresh_token) {
       // GoTrue-issued tokens only: the SDK validates/refreshes and writes its own cookies.
       const { error } = await auth.setSession({ access_token, refresh_token })
-      if (error) return authSessionFailure(error) === 401 ? 'invalid' : 'unavailable'
+      if (error) return error instanceof AuthInvalidJwtError || authSessionFailure(error) === 401 ? 'invalid' : 'unavailable'
     }
     // Also handles the existing PKCE callback's already established session.
     const { data, error } = await auth.getUser()
-    if (error) return authSessionFailure(error) === 401 ? 'invalid' : 'unavailable'
+    if (error) return error instanceof AuthInvalidJwtError || authSessionFailure(error) === 401 ? 'invalid' : 'unavailable'
     return data.user ? 'ready' : 'invalid'
   } catch {
     return 'unavailable'

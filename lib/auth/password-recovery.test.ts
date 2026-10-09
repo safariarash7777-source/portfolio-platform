@@ -1,3 +1,4 @@
+import { AuthInvalidJwtError } from '@supabase/supabase-js'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readFileSync } from 'node:fs'
@@ -71,6 +72,14 @@ test('a forged/rejected session cannot make the password form ready', async () =
   assert.equal(f.calls.includes('getUser'), false)
 })
 
+test('the real SDK malformed JWT error is invalid, not a temporary outage', async () => {
+  const error = new AuthInvalidJwtError('Synthetic malformed token')
+  assert.equal(error.status, 400)
+  assert.equal(error.code, 'invalid_jwt')
+  const f = fixture({ setError: error })
+  assert.equal(await recovery.initializePasswordRecovery(f.input), 'invalid')
+  assert.deepEqual(f.calls, ['clearFragment', 'createAuth', 'setSession'])
+})
 test('transport failure is unavailable, not a claim that the recovery link expired', async () => {
   const f = fixture({ throwSet: true })
   assert.equal(await recovery.initializePasswordRecovery(f.input), 'unavailable')
