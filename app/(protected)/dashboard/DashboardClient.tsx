@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { saveRiskAssessment } from "@/components/dashboard/saveRiskAssessment";
 import RiskProfileQuiz from "@/components/quiz/RiskProfileQuiz";
 import { RISK_PROFILES } from "@/components/quiz/quizData";
 import type { RiskCategory } from "@/components/quiz/quizData";
@@ -122,6 +123,9 @@ export default function DashboardClient({
   const [assessment, setAssessment] = useState<Assessment | null>(initialAssessment);
   const [showQuiz, setShowQuiz] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const pendingSave = useRef(false);
+  const pendingAnswers = useRef<{ score: number; category: RiskCategory; answers: Record<number, number> } | null>(null);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -132,27 +136,30 @@ export default function DashboardClient({
 
   const handleQuizComplete = useCallback(
     async (score: number, category: RiskCategory, answers: Record<number, number>) => {
+      if (pendingSave.current) return;
+      pendingSave.current = true;
+      pendingAnswers.current = { score, category, answers };
       setSaving(true);
+      setSaveError(false);
       try {
         const supabase = createClient();
-        const { data } = await supabase
+        const saved = await saveRiskAssessment(() => supabase
           .from("risk_assessments")
-          .insert({
-            user_id: userId,
-            total_score: score,
-            risk_category: category,
-            answers_json: answers,
-          })
+          .insert({ user_id: userId, total_score: score, risk_category: category, answers_json: answers })
           .select()
-          .maybeSingle();
-        if (data) {
-          setAssessment(data);
-          setShowQuiz(false);
+          .maybeSingle());
+        if (!saved) {
+          setSaveError(true);
+          return;
         }
+        setAssessment(saved);
+        setShowQuiz(false);
+        pendingAnswers.current = null;
         router.refresh();
-      } catch (err) {
-        console.error("Failed to save assessment:", err);
+      } catch {
+        setSaveError(true);
       } finally {
+        pendingSave.current = false;
         setSaving(false);
       }
     },
@@ -170,6 +177,15 @@ export default function DashboardClient({
           بازگشت به داشبورد
         </button>
         <RiskProfileQuiz userId={userId} onComplete={handleQuizComplete} />
+        {saveError && (
+          <div role="alert" className="card p-4 mt-4 space-y-3">
+            <p>ذخیرهٔ نتیجه تأیید نشد. پاسخ‌های شما در این صفحه حفظ شده‌اند. پیش از ارسال دوباره، داشبورد را در یک صفحهٔ دیگر بررسی کنید؛ ممکن است درخواست قبلی ثبت شده باشد.</p>
+            <button type="button" className="btn btn-outline" disabled={saving} onClick={() => {
+              const draft = pendingAnswers.current;
+              if (draft) void handleQuizComplete(draft.score, draft.category, draft.answers);
+            }}>ارسال دوبارهٔ همین پاسخ‌ها</button>
+          </div>
+        )}
         {saving && (
           <p className="text-center text-sm mt-4" style={{ color: "var(--text-3)" }}>
             در حال ذخیره نتایج...

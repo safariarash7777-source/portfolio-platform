@@ -102,6 +102,22 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false }),
   ]);
 
+  // A failed read is not a new member or an empty risk history.
+  if (profileRes.error || !profileRes.data || assessmentRes.error || scoreHistoryRes.error) {
+    return (
+      <>
+        <Navbar />
+        <main className="mx-auto w-full max-w-3xl px-5 py-10">
+          <div role="alert" className="card p-6 space-y-4">
+            <p>اطلاعات پروفایل یا سابقهٔ ارزیابی ریسک دریافت نشد. برای جلوگیری از نمایش نتیجهٔ ناقص، داشبورد فعلاً باز نمی‌شود.</p>
+            <a href="/dashboard" className="btn btn-outline">تلاش دوباره</a>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   const access = await getAccess();
 
   const seenSet = new Set((seenRes.data ?? []).map((d) => d.announcement_id));
