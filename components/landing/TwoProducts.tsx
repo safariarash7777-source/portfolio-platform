@@ -12,8 +12,8 @@ import WaitlistForm from "./WaitlistForm";
  *    و منطقِ `/api/waitlist` عیناً دست‌نخورده است.
  *  - واژگانِ داخلی حذف شد: «چارچوب تحلیلی داخلی»، «کارت امتیاز سه‌محوره»،
  *    «واچ‌لیست امتیازی»، «رژیم بازار» → «ابزارهای تحلیلی پلتفرم».
- *  - ادعای کادنسِ «هر سه ماه یک‌بار» برداشته شد؛ تاریخ‌های واقعی در `/webinars`
- *    است و همان مرجع می‌ماند (آن صفحه در مالکیتِ PR #113 است و دست‌نخورده ماند).
+ *  - خدمت فصلی و سه ماه همراهی مطابق قرارداد مالک معرفی می‌شوند؛ تاریخ،
+ *    قیمت و آغاز/پایان واقعی از همین متن ثابت ساخته نمی‌شوند.
  *  - دو کارتِ جعبه‌ای → دو ستون با یک خطِ جداکنندهٔ نازک.
  */
 const WEBINAR_POINTS = [
@@ -25,7 +25,7 @@ const WEBINAR_POINTS = [
 const ADVISORY_POINTS = [
   "جلسهٔ اختصاصی با آرش صفری",
   "سنجش پروفایل ریسک و طراحی سبدِ متناسب با شرایط شما",
-  "دسترسی به ابزارهای تحلیلی پلتفرم",
+  "تعیین موضوع و شرایط جلسه پس از پیگیری درخواست",
 ];
 
 function Points({ items }: { items: string[] }) {
@@ -61,10 +61,10 @@ export default function TwoProducts() {
               fontSize: "clamp(1.6rem, 3.4vw, 2.4rem)",
               fontWeight: 800,
               lineHeight: 1.3,
-              letterSpacing: "-0.02em",
+              letterSpacing: 0,
             }}
           >
-            دو مسیر برای کار با آرش
+            وبینار و مشاوره
           </h2>
           <div aria-hidden className="divider-gold mt-4" />
         </Reveal>
@@ -76,14 +76,14 @@ export default function TwoProducts() {
               className="font-display text-xl font-bold"
               style={{ color: "var(--heading)" }}
             >
-              وبینار تحلیل بازار
+              وبینار و مسیر راه
             </h3>
             <p className="mt-2 text-sm" style={{ color: "var(--text-3)" }}>
-              دوره‌ای · گروهی
+              وبینار فصلی و سه ماه همراهی؛ زمان و شرایط هر دوره در صفحهٔ وبینارها اعلام می‌شود.
             </p>
             <Points items={WEBINAR_POINTS} />
             <Link href="/webinars" className="btn btn-outline mt-7">
-              دیدن وبینارها
+              وبینار دورهٔ پیش‌رو
               <ArrowLeft size={16} />
             </Link>
           </Reveal>
@@ -98,7 +98,7 @@ export default function TwoProducts() {
                 مشاورهٔ اختصاصی
               </h3>
               <p className="mt-2 text-sm" style={{ color: "var(--text-3)" }}>
-                جلسهٔ شخصی · یک‌به‌یک
+                درخواست وقت برای جلسهٔ شخصی؛ دریافت درخواست به معنی رزرو جلسه نیست.
               </p>
               <Points items={ADVISORY_POINTS} />
               <div className="mt-7">

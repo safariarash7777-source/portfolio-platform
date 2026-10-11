@@ -1,0 +1,48 @@
+{
+  "recordedAt": "2026-10-02T08:45:43.958Z",
+  "sha": "51fd0661d48d791ce8758a87828a81ce72cac6df",
+  "files": [
+    {
+      "path": "app/page.tsx",
+      "blob": "d4a5e48dc877a96010155deaf00041280d81f72c"
+    },
+    {
+      "path": "app/globals.css",
+      "blob": "0b547bf2c586edc53e5870c6afb56292c2554855"
+    },
+    {
+      "path": "app/layout.tsx",
+      "blob": "19e85ed19a456265480dfab6c93125288002540c"
+    },
+    {
+      "path": "components/landing/Hero.tsx",
+      "blob": "8363b93a1444c920d8461a3ab59369b0f2c943b7"
+    },
+    {
+      "path": "components/landing/Method.tsx",
+      "blob": "c796c1db8d68532a221d74c69508f928a64fcf4b"
+    },
+    {
+      "path": "components/landing/TwoProducts.tsx",
+      "blob": "95035da9c2b2d28e7893b4ad742fc3b839e6c1a7"
+    },
+    {
+      "path": "components/landing/WaitlistForm.tsx",
+      "blob": "c2dd5f06511b9b45e22cb6fe0d1f32a3dedf0818"
+    },
+    {
+      "path": "components/landing/LiveMarket.tsx",
+      "blob": "c2b6c8bbce8a36958fb862374c942c9089531d8d"
+    },
+    {
+      "path": "components/layout/Navbar.tsx",
+      "blob": "f16e3860d4d1364c31a512b22ca5dbc9053d6232"
+    },
+    {
+      "path": "app/webinars/page.tsx",
+      "blob": "badafca024444bd356f68ad36cdf95b3e82f8e64"
+    }
+  ],
+  "visualEvidence": "existing historical public-rebaseline home images; not a fresh browser observation",
+  "freshServerAttempt": "rejected before process creation by policy; not retried"
+}

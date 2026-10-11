@@ -35,9 +35,9 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     key: "products",
-    label: "محصولات",
+    label: "خدمات",
     items: [
-      { href: "/webinars", label: "وبینار" },
+      { href: "/webinars", label: "وبینار و مسیر راه" },
       { href: "/#waitlist", label: "مشاورهٔ اختصاصی" },
     ],
   },
@@ -49,6 +49,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 6);
@@ -63,7 +64,13 @@ export default function Navbar() {
       if (navRef.current && !navRef.current.contains(e.target as Node)) setOpenGroup(null);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenGroup(null);
+      if (e.key === "Escape") {
+        setOpenGroup(null);
+        if (open) {
+          setOpen(false);
+          menuButtonRef.current?.focus();
+        }
+      }
     };
     const onFocusOut = (e: FocusEvent) => {
       const next = e.relatedTarget as Node | null;
@@ -78,7 +85,7 @@ export default function Navbar() {
       document.removeEventListener("keydown", onKey);
       el?.removeEventListener("focusout", onFocusOut);
     };
-  }, []);
+  }, [open]);
 
   return (
     <header
@@ -190,6 +197,7 @@ export default function Navbar() {
           </div>
 
           <button
+            ref={menuButtonRef}
             type="button"
             className="md:hidden btn btn-ghost"
             aria-label={open ? "بستن منو" : "باز کردن منو"}
@@ -246,7 +254,7 @@ export default function Navbar() {
             )}
             <div className="mt-4 flex flex-col gap-2">
               <Link href="/#waitlist" onClick={() => setOpen(false)} className="btn btn-gold w-full">
-                درخواست مشاوره
+                درخواست وقت مشاوره
               </Link>
               <Link href="/dashboard" onClick={() => setOpen(false)} className="btn btn-outline w-full">
                 ورود
