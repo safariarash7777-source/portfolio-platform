@@ -13,7 +13,6 @@ before(() => {
   sql(`DROP DATABASE IF EXISTS ${db}`, "postgres"); sql(`CREATE DATABASE ${db}`, "postgres");
   file("sql/test/supabase_bootstrap.sql");
   sql(`ALTER TABLE auth.users ADD COLUMN email text, ADD COLUMN raw_user_meta_data jsonb;
-    CREATE FUNCTION public.is_admin() RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM public.profiles WHERE id=auth.uid() AND role='admin') $$;
     CREATE POLICY profiles_self_insert ON public.profiles FOR INSERT WITH CHECK(auth.uid()=id);
     CREATE POLICY profiles_self_update ON public.profiles FOR UPDATE USING(auth.uid()=id);
     CREATE POLICY profiles_admin_update ON public.profiles FOR UPDATE USING(public.is_admin());
@@ -36,9 +35,15 @@ test("role guard and RLS still reject member elevation", () => {
   assert.throws(() => sql(`BEGIN; SELECT set_config('request.jwt.claims','{"sub":"${A}","role":"authenticated"}',true); SET LOCAL ROLE authenticated; UPDATE public.profiles SET role='admin' WHERE id='${A}'; COMMIT;`));
   assert.equal(sql(`SELECT role FROM public.profiles WHERE id='${A}'`), "user");
 });
+test("missing optional metadata creates a default user without fabricated contact details", () => {
+  sql("INSERT INTO auth.users(id,email) VALUES('22222222-2222-4222-8222-222222222222','empty@example.test')");
+  assert.deepEqual(JSON.parse(sql("SELECT json_build_object('role',role,'phone',phone,'national_id',national_id) FROM public.profiles WHERE id='22222222-2222-4222-8222-222222222222'")), { role: "user", phone: null, national_id: null });
+});
 test("profile function is not a public RPC and repeat installation fails without alteration", () => {
-  assert.equal(sql("SELECT has_function_privilege('authenticated','public.handle_new_user()','EXECUTE')"), "f");
+  for (const role of ["anon", "authenticated", "service_role"]) {
+    assert.equal(sql(`SELECT has_function_privilege('${role}','public.handle_new_user()','EXECUTE')`), "f");
+  }
   assert.throws(() => file("sql/recovery_signup_profile_trigger_20261011.sql"));
-  assert.equal(sql(`SELECT count(*) FROM public.profiles`), "2");
+  assert.equal(sql(`SELECT count(*) FROM public.profiles`), "3");
   assert.equal(sql(`SELECT tgenabled FROM pg_trigger WHERE tgrelid='auth.users'::regclass AND tgname='on_auth_user_created'`), "O");
 });
