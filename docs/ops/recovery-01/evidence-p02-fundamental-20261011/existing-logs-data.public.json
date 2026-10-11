@@ -1,0 +1,103 @@
+{
+  "name": "existing-logs-data",
+  "observedAt": "2026-10-11T11:04:37.244464+00:00",
+  "readOnly": true,
+  "appInvocations": 0,
+  "providerApiRequests": 0,
+  "deploymentId": "dpl_6Pv1xqVx995XbpUux5UBaCZ9tMkx",
+  "windowStartUtc": "2026-10-11T10:19:37.237000+00:00",
+  "windowEndUtc": "2026-10-11T11:04:37.237000+00:00",
+  "onePageOnly": true,
+  "routeFilter": "/data",
+  "httpStatus": 200,
+  "privateSha256": "0d0ee1380bc2e214d0b5d80d47e52982d7694637ee25014a11de768901e777c7",
+  "returnedRows": 5,
+  "hasMoreRows": false,
+  "entries": [
+    {
+      "path": "/data",
+      "timestamp": "2026-10-11T11:00:20.936Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/data",
+      "timestamp": "2026-10-11T10:55:03.369Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/data",
+      "timestamp": "2026-10-11T10:49:36.949Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/data",
+      "timestamp": "2026-10-11T10:49:06.450Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/data",
+      "timestamp": "2026-10-11T10:47:01.045Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    }
+  ]
+}

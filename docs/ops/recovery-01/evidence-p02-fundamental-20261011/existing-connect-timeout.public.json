@@ -1,0 +1,258 @@
+{
+  "timestamp": "2026-10-11T10:47:04.141Z",
+  "route": "/market",
+  "durationMs": 52419,
+  "httpStatus": 200,
+  "signals": [
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": true,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": true,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": true,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": true,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": true,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": false,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": false,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": true,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": false,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    },
+    {
+      "level": "error",
+      "logFieldNames": [
+        "functionRuntime",
+        "level",
+        "message",
+        "pathType",
+        "source",
+        "timestamp"
+      ],
+      "targetSignals": {
+        "62.60.191.24": false,
+        "liara-preview": false,
+        "arsadata.liara.run": false,
+        "api.coingecko.com": false,
+        "api.telegram.org": false,
+        "api.brsapi.ir": false,
+        "auth/v1": false,
+        "rest/v1": false,
+        "@supabase": false,
+        "getAccess": false,
+        "market-ir": false,
+        "fundamental": false
+      }
+    }
+  ]
+}

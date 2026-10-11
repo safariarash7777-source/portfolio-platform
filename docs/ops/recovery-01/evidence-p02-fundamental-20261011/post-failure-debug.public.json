@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-10-11T10:57:18.142892+00:00",
+  "name": "post-failure-debug",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "restartCollectDeployCalls": 0,
+  "tlsVerified": true,
+  "transport": "direct",
+  "errorType": "URLError",
+  "errorStatus": null
+}

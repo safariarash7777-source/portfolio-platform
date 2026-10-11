@@ -12,31 +12,46 @@
 
 import { unstable_cache } from "next/cache";
 import { yoyGrowthPercent, type YoYMap } from "./fundamentalPresets";
+import { dedupeByPeriod, latestParserRows, isConsolidatedTitle, isMillionRialUnit, type CodalRow } from "../fundamental/supabase";
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-interface CodalRow {
-  symbol: string | null;
-  data: Record<string, unknown> | null;
+interface Coverage {
+  rowsRead: number;
+  totalRows: number | null;
+  complete: boolean;
 }
 
-async function fetchCodal(reportKind: string, limit: number): Promise<CodalRow[]> {
-  if (!SB || !ANON) return [];
+async function fetchCodal(reportKind: string, limit: number): Promise<{ rows: CodalRow[]; coverage: Coverage }> {
+  if (!SB || !ANON) throw new Error("fundamental_read_not_configured");
   const url =
-    `${SB}/rest/v1/codal_reports?select=symbol,data` +
+    `${SB}/rest/v1/codal_reports?select=id,symbol,report_kind,period_end,title,source_url,data,raw` +
     `&report_kind=eq.${encodeURIComponent(reportKind)}` +
-    `&order=captured_at.desc&limit=${limit}`;
-  try {
+    `&data=not.is.null&order=period_end.desc,id.desc&limit=${limit}`;
     const res = await fetch(url, {
-      headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
+      headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, Prefer: "count=exact" },
       cache: "no-store",
+      signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return [];
-    return (await res.json()) as CodalRow[];
-  } catch {
-    return [];
+    if (!res.ok) throw new Error(`fundamental_read_http_${res.status}`);
+    const rows = await res.json();
+    if (!Array.isArray(rows)) throw new Error("fundamental_read_invalid_response");
+    const count = res.headers.get("content-range")?.match(/\/(\d+)$/);
+    const totalRows = count ? Number(count[1]) : null;
+    return { rows, coverage: { rowsRead: rows.length, totalRows, complete: totalRows !== null && rows.length === totalRows } };
+}
+
+/** Reuse the company reader's parser/amendment/scope selection, separately per symbol. */
+function selectedRows(rows: CodalRow[], monthly: boolean): CodalRow[] {
+  const grouped = new Map<string, CodalRow[]>();
+  for (const row of rows) {
+    if (!row.symbol || !row.data) continue;
+    const group = grouped.get(row.symbol) ?? [];
+    group.push(monthly ? { ...row, data: { ...row.data, period_months: 1 } } : row);
+    grouped.set(row.symbol, group);
   }
+  return [...grouped.values()].flatMap(group => dedupeByPeriod(latestParserRows(group)));
 }
 
 function num(x: unknown): number | null {
@@ -59,12 +74,16 @@ function jym(s: unknown): { y: number; m: number } | null {
  * برای هر نماد، آخرین ماه گزارش‌شده و همان ماهِ سال قبل — هر دو باید موجود باشند.
  */
 export async function buildMonthlyYoY(): Promise<YoYMap> {
-  const rows = await fetchCodal("ن-۳۰", 3000);
+  return (await readMonthlyYoY()).values;
+}
+async function readMonthlyYoY(): Promise<{ values: YoYMap; coverage: Coverage }> {
+  const result = await fetchCodal("ن-۳۰", 3000);
+  const rows = selectedRows(result.rows, true);
   // نماد → (سال×۱۰۰+ماه) → درآمد ماه (period_total_amount، میلیون ریال)
   const bySymbol = new Map<string, Map<number, number>>();
   for (const r of rows) {
     const d = r.data;
-    if (!d || !r.symbol) continue;
+    if (!d || !r.symbol || !isMillionRialUnit(d["unit"])) continue;
     const pe = jym(d["period_end"]);
     const amt = num(d["period_total_amount"]);
     if (!pe || amt == null) continue;
@@ -74,7 +93,7 @@ export async function buildMonthlyYoY(): Promise<YoYMap> {
       bySymbol.set(r.symbol, m);
     }
     const key = pe.y * 100 + pe.m;
-    // rows به ترتیب captured_at نزولی — اولین دیده‌شده جدیدترین نسخه (اصلاحیه) است
+    // One canonical selected report per symbol/period.
     if (!m.has(key)) m.set(key, amt);
   }
   const out: YoYMap = new Map();
@@ -86,7 +105,7 @@ export async function buildMonthlyYoY(): Promise<YoYMap> {
     const g = yoyGrowthPercent(months.get(latest), months.get(prior));
     if (g != null) out.set(sym, g);
   }
-  return out;
+  return { values: out, coverage: result.coverage };
 }
 
 /**
@@ -95,12 +114,17 @@ export async function buildMonthlyYoY(): Promise<YoYMap> {
  * دورهٔ ۳ماهه خودش فصل است. فقط نمادهای دارای فصل جاری و همان فصل سال قبل.
  */
 export async function buildQuarterlyYoY(): Promise<YoYMap> {
-  const rows = await fetchCodal("ن-۱۰", 2000);
+  return (await readQuarterlyYoY()).values;
+}
+async function readQuarterlyYoY(): Promise<{ values: YoYMap; coverage: Coverage }> {
+  const result = await fetchCodal("ن-۱۰", 2000);
+  const rows = selectedRows(result.rows, false);
   // نماد → (سال×۱۰۰+ماهِ پایان دوره) → {months, revenue}
   const cum = new Map<string, Map<number, { months: number; revenue: number }>>();
   for (const r of rows) {
     const d = r.data;
-    if (!d || !r.symbol) continue;
+    // A company screener must not subtract group figures from company figures.
+    if (!d || !r.symbol || isConsolidatedTitle(r.title) || !isMillionRialUnit(d["unit"])) continue;
     const pe = jym(d["period_end"]);
     const pm = num(d["period_months"]);
     const st = (d["standalone"] ?? null) as Record<string, unknown> | null;
@@ -137,18 +161,20 @@ export async function buildQuarterlyYoY(): Promise<YoYMap> {
     const g = yoyGrowthPercent(quarterOf(latest), quarterOf(latest - 100));
     if (g != null) out.set(sym, g);
   }
-  return out;
+  return { values: out, coverage: result.coverage };
 }
 
 /** نسخهٔ کش‌شدهٔ ۱ساعته برای صفحهٔ /data */
-export const getFundamentalYoY = unstable_cache(
-  async () => {
-    const [monthly, quarterly] = await Promise.all([buildMonthlyYoY(), buildQuarterlyYoY()]);
+export async function readFundamentalYoY() {
+    const [monthly, quarterly] = await Promise.all([readMonthlyYoY(), readQuarterlyYoY()]);
     return {
-      monthly: Object.fromEntries(monthly),
-      quarterly: Object.fromEntries(quarterly),
+      monthly: Object.fromEntries(monthly.values),
+      quarterly: Object.fromEntries(quarterly.values),
+      coverage: { monthly: monthly.coverage, quarterly: quarterly.coverage },
     };
-  },
-  ["fundamental-yoy-v2"],
+}
+export const getFundamentalYoY = unstable_cache(
+  readFundamentalYoY,
+  ["fundamental-yoy-v3"],
   { revalidate: 3600 }
 );

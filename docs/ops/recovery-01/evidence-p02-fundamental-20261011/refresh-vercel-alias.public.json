@@ -1,0 +1,21 @@
+{
+  "name": "refresh-vercel-alias",
+  "observedAt": "2026-10-11T10:47:47.059718+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "contentRange": null,
+  "encoding": null,
+  "privateSha256": "98cad11889da5c6073dd4bd147e93dd076ce82842d79a54a48206c794ecdaf17",
+  "alias": {
+    "alias": "portfolio-platform-fawn.vercel.app",
+    "deploymentId": "dpl_6Pv1xqVx995XbpUux5UBaCZ9tMkx",
+    "updatedAt": 1791715111851,
+    "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp"
+  },
+  "deployment": {
+    "id": "dpl_6Pv1xqVx995XbpUux5UBaCZ9tMkx",
+    "url": "portfolio-platform-f92jbwyiv-safariarash7777-4463s-projects.vercel.app"
+  }
+}

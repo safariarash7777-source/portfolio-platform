@@ -1,0 +1,51 @@
+{
+  "observedAt": "2026-10-11T11:00:05.133Z",
+  "proof": "offline actual readers and calculation functions with captured Liara rows; input subset only",
+  "liveUiAcceptance": false,
+  "networkRequests": 0,
+  "providerApiRequests": 0,
+  "stubbedReads": 5,
+  "samples": [
+    {
+      "symbol": "فملی",
+      "sourceRowId": 10122,
+      "reportPeriod": "1405-06-31",
+      "amountUnit": "میلیون ریال",
+      "unitBasis": "header+arithmetic",
+      "sourceQuantityUnit": null,
+      "readerVerified": true,
+      "cardEmitsConvertedMoney": true,
+      "cardEmitsNarrative": true,
+      "monthlyEmitsAmount": true,
+      "selectedAnnualPeriod": "1404-12-29",
+      "annualScope": "consolidated_ambiguous",
+      "n10PeriodRows": 2
+    },
+    {
+      "symbol": "فولاد",
+      "sourceRowId": 7947,
+      "reportPeriod": "1405-05-31",
+      "amountUnit": null,
+      "unitBasis": null,
+      "sourceQuantityUnit": null,
+      "readerVerified": true,
+      "cardEmitsConvertedMoney": true,
+      "cardEmitsNarrative": true,
+      "monthlyEmitsAmount": true,
+      "selectedAnnualPeriod": "1404-12-29",
+      "annualScope": "consolidated_ambiguous",
+      "n10PeriodRows": 2
+    }
+  ],
+  "realAmendmentSelection": {
+    "symbol": "قلرست",
+    "selectedId": 10587,
+    "discardedHigherId": 10589,
+    "selectionPass": true
+  },
+  "screenerOnDatabase503": {
+    "returnsEmptyWithoutThrow": true,
+    "mapSize": 0,
+    "productionCacheEffectMeasured": false
+  }
+}

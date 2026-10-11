@@ -1,0 +1,49 @@
+{
+  "name": "fameli-n30-full",
+  "observedAt": "2026-10-11T10:40:31.412101+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "encoding": "gzip",
+  "contentLength": "1127",
+  "privateSha256": "4e080a92444da0d264ed0345b678fc64aa912488f6a091400c3f6bc4814022d3",
+  "rows": 1,
+  "metadata": [
+    {
+      "id": 10122,
+      "symbol": "\u0641\u0645\u0644\u06cc",
+      "report_kind": "\u0646-\u06f3\u06f0",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-10-06T14:22:48.984229+00:00",
+      "dataKeys": [
+        "fiscal_year",
+        "fy_cumulative_amount",
+        "period_end",
+        "period_months",
+        "period_total_amount",
+        "products",
+        "qty_unit",
+        "report_kind",
+        "symbol",
+        "unit",
+        "unit_basis",
+        "unit_header",
+        "unit_inferred"
+      ],
+      "unit": "\u0645\u06cc\u0644\u06cc\u0648\u0646 \u0631\u06cc\u0627\u0644",
+      "unitBasis": "header+arithmetic",
+      "qtyUnit": null,
+      "dataPeriod": "1405-06-31",
+      "periodMonths": 1,
+      "parser": 2,
+      "sourceDate": "\u06f1\u06f4\u06f0\u06f5/\u06f0\u06f7/\u06f0\u06f6",
+      "sourceTime": "\u06f1\u06f9:\u06f5\u06f2:\u06f4\u06f2",
+      "productRows": 10,
+      "hasStandalone": false,
+      "hasConsolidated": false,
+      "isConsolidatedTitle": false,
+      "isAmendmentTitle": false
+    }
+  ]
+}

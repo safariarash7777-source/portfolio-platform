@@ -1,0 +1,30 @@
+{
+  "name": "qlerest-n10-meta",
+  "observedAt": "2026-10-11T10:40:32.363407+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "encoding": null,
+  "contentLength": "414",
+  "privateSha256": "b4242970b706dc850f373f0115bf166e6e8fc944d3feaf4840f8ed772ea05bf4",
+  "rows": 1,
+  "metadata": [
+    {
+      "id": 10589,
+      "symbol": "\u0642\u0644\u0631\u0633\u062a",
+      "report_kind": "\u0646-\u06f1\u06f0",
+      "period_end": "2026-07-22",
+      "captured_at": "2026-10-11T07:37:39.692576+00:00",
+      "unit": "\u0645\u06cc\u0644\u06cc\u0648\u0646 \u0631\u06cc\u0627\u0644",
+      "unitBasis": null,
+      "qtyUnit": null,
+      "parser": 2,
+      "sourceDate": "\u06f1\u06f4\u06f0\u06f5/\u06f0\u06f7/\u06f1\u06f9",
+      "sourceTime": "\u06f0\u06f8:\u06f1\u06f4:\u06f1\u06f5",
+      "dataPeriod": "1405-04-31",
+      "isConsolidatedTitle": false,
+      "isAmendmentTitle": false
+    }
+  ]
+}

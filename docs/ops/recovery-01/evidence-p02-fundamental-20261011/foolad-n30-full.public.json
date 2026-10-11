@@ -1,0 +1,33 @@
+{
+  "name": "foolad-n30-full",
+  "observedAt": "2026-10-11T10:41:48.151778+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "encoding": "gzip",
+  "privateSha256": "20c1c66782b2e34736447a85c9d5308709807bc683bd96754147b1d778f7053c",
+  "rows": 1,
+  "metadata": [
+    {
+      "id": 7947,
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "report_kind": "\u0646-\u06f3\u06f0",
+      "period_end": "2026-08-22",
+      "captured_at": "2026-09-07T20:10:43.960091+00:00",
+      "unit": null,
+      "unitBasis": null,
+      "qtyUnit": null,
+      "dataPeriod": "1405-05-31",
+      "periodMonths": null,
+      "parser": 2,
+      "sourceDate": "\u06f1\u06f4\u06f0\u06f5/\u06f0\u06f6/\u06f0\u06f4",
+      "sourceTime": "\u06f1\u06f5:\u06f2\u06f3:\u06f5\u06f2",
+      "productRows": 10,
+      "hasStandalone": false,
+      "hasConsolidated": false,
+      "isConsolidatedTitle": false,
+      "isAmendmentTitle": false
+    }
+  ]
+}

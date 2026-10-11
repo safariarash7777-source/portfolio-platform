@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-10-11T10:57:05.863789+00:00",
+  "name": "post-failure-releases",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "restartCollectDeployCalls": 0,
+  "tlsVerified": true,
+  "transport": "existing_local_proxy",
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}

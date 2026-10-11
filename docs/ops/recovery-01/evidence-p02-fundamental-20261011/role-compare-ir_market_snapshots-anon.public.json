@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-10-11T11:15:21.823381+00:00",
+  "table": "ir_market_snapshots",
+  "role": "anon",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "credentialReference": "existing private credential; fresh GET validation",
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "rows": 1,
+  "metadata": [
+    {
+      "key": "latest",
+      "updated_at": "2026-10-11T11:12:48.801+00:00",
+      "receiptClock": 1791717168721,
+      "stockId": "فملی",
+      "stockDate": null,
+      "stockTime": null,
+      "quality": null
+    }
+  ]
+}

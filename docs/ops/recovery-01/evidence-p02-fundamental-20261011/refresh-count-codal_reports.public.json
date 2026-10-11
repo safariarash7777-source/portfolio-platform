@@ -1,0 +1,11 @@
+{
+  "name": "refresh-count-codal_reports",
+  "observedAt": "2026-10-11T10:47:47.907682+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 206,
+  "contentRange": "0-0/10634",
+  "encoding": null,
+  "exactRows": 10634
+}

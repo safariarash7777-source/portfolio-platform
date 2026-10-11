@@ -1,0 +1,486 @@
+{
+  "existing-logs-data.private": [
+    {
+      "route": "/data",
+      "path": "/data",
+      "timestamp": "2026-10-11T11:00:20.936Z",
+      "httpStatus": 200,
+      "requestDurationMs": 131,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 31,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/data",
+      "path": "/data",
+      "timestamp": "2026-10-11T10:55:03.369Z",
+      "httpStatus": 200,
+      "requestDurationMs": 127,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 10,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/data",
+      "path": "/data",
+      "timestamp": "2026-10-11T10:49:36.949Z",
+      "httpStatus": 200,
+      "requestDurationMs": 108,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 4,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/data",
+      "path": "/data",
+      "timestamp": "2026-10-11T10:49:06.450Z",
+      "httpStatus": 200,
+      "requestDurationMs": 130,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 10,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/data",
+      "path": "/data",
+      "timestamp": "2026-10-11T10:47:01.045Z",
+      "httpStatus": 200,
+      "requestDurationMs": 250,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 95,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    }
+  ],
+  "existing-logs-market.private": [
+    {
+      "route": "/market/funds",
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T11:01:53.707Z",
+      "httpStatus": 200,
+      "requestDurationMs": 10446,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 10345,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market/funds",
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T11:01:51.040Z",
+      "httpStatus": 200,
+      "requestDurationMs": 10620,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 10505,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market",
+      "path": "/market",
+      "timestamp": "2026-10-11T11:01:41.037Z",
+      "httpStatus": 200,
+      "requestDurationMs": 197,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 72,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market/stocks",
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T11:00:23.891Z",
+      "httpStatus": 200,
+      "requestDurationMs": 315,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 42,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market",
+      "path": "/market",
+      "timestamp": "2026-10-11T11:00:22.045Z",
+      "httpStatus": 200,
+      "requestDurationMs": 3655,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 3542,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": [
+        {
+          "timeout": false,
+          "DeadlineError": false,
+          "AbortError": false,
+          "SSL": false,
+          "Direct IP": false,
+          "codal_reports": false,
+          "fetch failed": false,
+          "ECONN": false
+        }
+      ]
+    },
+    {
+      "route": "/market",
+      "path": "/market",
+      "timestamp": "2026-10-11T10:59:53.471Z",
+      "httpStatus": 200,
+      "requestDurationMs": 155,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 36,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market",
+      "path": "/market",
+      "timestamp": "2026-10-11T10:59:25.979Z",
+      "httpStatus": 200,
+      "requestDurationMs": 3547,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 3441,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": [
+        {
+          "timeout": false,
+          "DeadlineError": false,
+          "AbortError": false,
+          "SSL": false,
+          "Direct IP": false,
+          "codal_reports": false,
+          "fetch failed": false,
+          "ECONN": false
+        }
+      ]
+    },
+    {
+      "route": "/market/funds",
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T10:59:19.399Z",
+      "httpStatus": 200,
+      "requestDurationMs": 156,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 24,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market/stocks",
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T10:59:19.383Z",
+      "httpStatus": 200,
+      "requestDurationMs": 155,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 29,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market",
+      "path": "/market",
+      "timestamp": "2026-10-11T10:54:44.072Z",
+      "httpStatus": 200,
+      "requestDurationMs": 165,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 88,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market/stocks",
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T10:50:04.084Z",
+      "httpStatus": 200,
+      "requestDurationMs": 180,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 55,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market/funds",
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T10:50:04.084Z",
+      "httpStatus": 200,
+      "requestDurationMs": 137,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 27,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market/stocks",
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T10:49:33.087Z",
+      "httpStatus": 200,
+      "requestDurationMs": 828,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 471,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market/funds",
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T10:49:33.087Z",
+      "httpStatus": 200,
+      "requestDurationMs": 832,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 468,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market",
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:30.288Z",
+      "httpStatus": 200,
+      "requestDurationMs": 10145,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 10042,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/market",
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:30.044Z",
+      "httpStatus": 200,
+      "requestDurationMs": 10390,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 10280,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    }
+  ],
+  "existing-logs-symbol.private": [
+    {
+      "route": "/symbol/[symbol]",
+      "path": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "timestamp": "2026-10-11T11:00:32.935Z",
+      "httpStatus": 200,
+      "requestDurationMs": 139,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 29,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/symbol/[symbol]",
+      "path": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "timestamp": "2026-10-11T11:00:32.680Z",
+      "httpStatus": 200,
+      "requestDurationMs": 228,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 25,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    },
+    {
+      "route": "/symbol/[symbol]",
+      "path": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "timestamp": "2026-10-11T11:00:31.680Z",
+      "httpStatus": 200,
+      "requestDurationMs": 1133,
+      "cache": "MISS",
+      "hasFunctionCrashed": false,
+      "functionEvents": [
+        {
+          "source": "serverless",
+          "durationMs": 940,
+          "runtime": "nodejs24.x",
+          "region": "iad1",
+          "httpStatus": 200
+        }
+      ],
+      "logClasses": []
+    }
+  ]
+}

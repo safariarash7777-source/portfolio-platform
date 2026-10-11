@@ -1,0 +1,23 @@
+{
+  "name": "refresh-vercel-deployment",
+  "observedAt": "2026-10-11T10:47:48.614307+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "contentRange": null,
+  "encoding": "gzip",
+  "privateSha256": "e8d8bfd80b4350703f101525b50a764f3040b089fead7f870b537127af039c02",
+  "deployment": {
+    "id": "dpl_6Pv1xqVx995XbpUux5UBaCZ9tMkx",
+    "url": "portfolio-platform-f92jbwyiv-safariarash7777-4463s-projects.vercel.app",
+    "readyState": "READY",
+    "target": "production",
+    "createdAt": 1791715043287,
+    "ready": 1791715111694
+  },
+  "gitMetadata": {
+    "githubCommitRef": "main",
+    "githubCommitSha": "6ee6fc4ae65c35b7beafe6717fd9ae56b557fd11"
+  }
+}

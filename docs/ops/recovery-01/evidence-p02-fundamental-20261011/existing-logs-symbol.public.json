@@ -1,0 +1,834 @@
+{
+  "name": "existing-logs-symbol",
+  "observedAt": "2026-10-11T11:04:37.244464+00:00",
+  "readOnly": true,
+  "appInvocations": 0,
+  "providerApiRequests": 0,
+  "deploymentId": "dpl_6Pv1xqVx995XbpUux5UBaCZ9tMkx",
+  "windowStartUtc": "2026-10-11T10:19:37.237000+00:00",
+  "windowEndUtc": "2026-10-11T11:04:37.237000+00:00",
+  "onePageOnly": true,
+  "routeFilter": "/symbol",
+  "httpStatus": 200,
+  "privateSha256": "cbcf6501d5f6400222fbdab6af0862d3c1c7fe4c17dd23ae5539abc6115f2f7c",
+  "returnedRows": 50,
+  "hasMoreRows": true,
+  "entries": [
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T11:01:48.319Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T11:01:48.089Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T11:01:48.088Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T11:01:48.078Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%D8%A8%D8%A7%D8%AF",
+      "timestamp": "2026-10-11T11:01:47.881Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3",
+      "timestamp": "2026-10-11T11:01:47.809Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%20%D8%B3%20%D9%BE",
+      "timestamp": "2026-10-11T11:01:47.809Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3",
+      "timestamp": "2026-10-11T11:01:44.890Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3",
+      "timestamp": "2026-10-11T11:01:44.658Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%20%D8%B3%20%D9%BE",
+      "timestamp": "2026-10-11T11:01:44.658Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%D8%A8%D8%A7%D8%AF",
+      "timestamp": "2026-10-11T11:01:44.658Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T11:01:44.010Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T11:01:44.009Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T11:01:44.009Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%D8%A8%D8%A7%D8%AF",
+      "timestamp": "2026-10-11T11:01:43.109Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%20%D8%B3%20%D9%BE",
+      "timestamp": "2026-10-11T11:01:42.900Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3",
+      "timestamp": "2026-10-11T11:01:42.899Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T11:01:42.886Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T11:01:42.878Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T11:01:42.878Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "timestamp": "2026-10-11T11:00:32.935Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "timestamp": "2026-10-11T11:00:32.680Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%81%D9%85%D9%84%DB%8C",
+      "timestamp": "2026-10-11T11:00:31.680Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%DA%A9%D8%B1%D9%85%D8%A7%D9%86",
+      "timestamp": "2026-10-11T11:00:24.109Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%D8%A8%D8%A7%D8%AF",
+      "timestamp": "2026-10-11T11:00:14.449Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T11:00:14.418Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%D8%A8%D8%A7%D8%AF",
+      "timestamp": "2026-10-11T11:00:11.099Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3",
+      "timestamp": "2026-10-11T11:00:10.895Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%20%D8%B3%20%D9%BE",
+      "timestamp": "2026-10-11T11:00:10.892Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T11:00:10.867Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T11:00:10.867Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T11:00:10.859Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T11:00:07.184Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T11:00:07.181Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T11:00:07.181Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T11:00:06.233Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T11:00:06.233Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T11:00:06.233Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%D8%A8%D8%A7%D8%AF",
+      "timestamp": "2026-10-11T10:59:56.079Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%20%D8%B3%20%D9%BE",
+      "timestamp": "2026-10-11T10:59:55.838Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3",
+      "timestamp": "2026-10-11T10:59:55.838Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D8%A7%D8%B1%D8%A7%20%DB%8C%DA%A9%D9%85",
+      "timestamp": "2026-10-11T10:59:55.838Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D9%85%D8%A7%D9%84%DA%A9%20%D8%A2%D8%AA%DB%8C%D9%87",
+      "timestamp": "2026-10-11T10:59:55.824Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T10:59:55.824Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%D8%A8%D8%A7%D8%AF",
+      "timestamp": "2026-10-11T10:59:52.542Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3",
+      "timestamp": "2026-10-11T10:59:52.379Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%A2%20%D8%B3%20%D9%BE",
+      "timestamp": "2026-10-11T10:59:52.379Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/symbol/%D8%B9%D9%85%D8%A7%D8%B1%D8%AA%20%D8%AF%DB%8C",
+      "timestamp": "2026-10-11T10:59:52.291Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    }
+  ]
+}

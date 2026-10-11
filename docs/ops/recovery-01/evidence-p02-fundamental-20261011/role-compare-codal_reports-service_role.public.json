@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-11T11:15:22.630960+00:00",
+  "table": "codal_reports",
+  "role": "service_role",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "credentialReference": "existing private credential; fresh GET validation",
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "rows": 1,
+  "metadata": [
+    {
+      "id": 10122,
+      "symbol": "فملی",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-10-06T14:22:48.984229+00:00",
+      "unit": "میلیون ریال",
+      "parser": 2
+    }
+  ]
+}

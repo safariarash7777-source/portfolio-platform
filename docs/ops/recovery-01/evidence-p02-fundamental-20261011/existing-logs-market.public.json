@@ -1,0 +1,800 @@
+{
+  "name": "existing-logs-market",
+  "observedAt": "2026-10-11T11:04:37.243464+00:00",
+  "readOnly": true,
+  "appInvocations": 0,
+  "providerApiRequests": 0,
+  "deploymentId": "dpl_6Pv1xqVx995XbpUux5UBaCZ9tMkx",
+  "windowStartUtc": "2026-10-11T10:19:37.237000+00:00",
+  "windowEndUtc": "2026-10-11T11:04:37.237000+00:00",
+  "onePageOnly": true,
+  "routeFilter": "/market",
+  "httpStatus": 200,
+  "privateSha256": "94b53dc98141b7c36a277fc286b1f731fc7308055d5d1d6586489f81c4ee1691",
+  "returnedRows": 50,
+  "hasMoreRows": true,
+  "entries": [
+    {
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T11:01:53.707Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T11:01:51.040Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T11:01:41.037Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T11:01:39.900Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T11:01:39.340Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T11:00:29.380Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T11:00:23.891Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T11:00:22.970Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T11:00:22.045Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 1,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T11:00:17.988Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T11:00:17.036Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:59:53.471Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:59:25.979Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 1,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T10:59:22.229Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T10:59:21.970Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T10:59:21.722Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T10:59:21.193Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/options",
+      "timestamp": "2026-10-11T10:59:19.492Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T10:59:19.399Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T10:59:19.399Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T10:59:19.383Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:54:44.072Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/options",
+      "timestamp": "2026-10-11T10:50:04.084Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T10:50:04.084Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T10:50:04.084Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T10:50:04.084Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/options",
+      "timestamp": "2026-10-11T10:49:33.319Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/map",
+      "timestamp": "2026-10-11T10:49:33.250Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/stocks",
+      "timestamp": "2026-10-11T10:49:33.087Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market/funds",
+      "timestamp": "2026-10-11T10:49:33.087Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:30.288Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:30.044Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:29.788Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:29.519Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:24.075Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:23.799Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:23.559Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:23.329Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:22.389Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:20.954Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:19.930Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:19.290Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:11.839Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:49:04.464Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:47:04.141Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 10,
+      "failureSignals": {
+        "timeout": true,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": true,
+        "ECONN": false
+      }
+    },
+    {
+      "path": "/market",
+      "timestamp": "2026-10-11T10:47:01.347Z",
+      "status": 200,
+      "environment": "production",
+      "logCount": 0,
+      "failureSignals": {
+        "timeout": false,
+        "DeadlineError": false,
+        "AbortError": false,
+        "SSL": false,
+        "Direct IP": false,
+        "codal_reports": false,
+        "fetch failed": false,
+        "ECONN": false
+      }
+    }
+  ]
+}

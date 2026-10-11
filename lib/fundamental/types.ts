@@ -83,7 +83,11 @@ export interface CodalN30Data {
   fiscal_year: number;
   products: N30ProductRow[];
   period_total_amount: number;
-  fy_cumulative_amount: number;
+  fy_cumulative_amount: number | null;
+  /** Declared by the producer; absence must never imply million rial. */
+  unit?: string | null;
+  unit_basis?: string | null;
+  qty_unit?: string | null;
 }
 
 /** متادیتای منبع هر گزارش — شفافیت مبدأ داده در UI (قانون ۳). */
@@ -104,6 +108,8 @@ export interface SymbolFundamentals {
   symbol: string;
   n10: { data: CodalN10Data; source: ReportSource } | null;
   n30: { data: CodalN30Data[]; source: ReportSource } | null;
+  /** Stored monthly reports omitted from calculations because the amount unit is unknown. */
+  n30Unavailable?: { unitUnknown: number; latestPeriod: string | null };
   /**
    * T3: ورودیِ فصل‌سازی — **یک ردیف برای هر دوره**، همان که `dedupeByPeriod`
    * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ

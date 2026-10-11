@@ -1,0 +1,72 @@
+[
+  {
+    "path": "/market",
+    "timestamp": "2026-10-11T11:00:22.045Z",
+    "status": 200,
+    "durationMs": 3655,
+    "classifications": {
+      "timeout": false,
+      "DeadlineError": false,
+      "AbortError": false,
+      "SSL": false,
+      "Direct IP": false,
+      "codal_reports": false,
+      "fetch failed": false,
+      "ECONN": false,
+      "Telegram": false,
+      "Supabase": false,
+      "CoinGecko": false,
+      "alert": false
+    },
+    "errorCodes": []
+  },
+  {
+    "path": "/market",
+    "timestamp": "2026-10-11T10:59:25.979Z",
+    "status": 200,
+    "durationMs": 3547,
+    "classifications": {
+      "timeout": false,
+      "DeadlineError": false,
+      "AbortError": false,
+      "SSL": false,
+      "Direct IP": false,
+      "codal_reports": false,
+      "fetch failed": false,
+      "ECONN": false,
+      "Telegram": false,
+      "Supabase": false,
+      "CoinGecko": false,
+      "alert": false
+    },
+    "errorCodes": []
+  },
+  {
+    "path": "/market",
+    "timestamp": "2026-10-11T10:47:04.141Z",
+    "status": 200,
+    "durationMs": 52419,
+    "classifications": {
+      "timeout": true,
+      "DeadlineError": false,
+      "AbortError": false,
+      "SSL": false,
+      "Direct IP": false,
+      "codal_reports": false,
+      "fetch failed": true,
+      "ECONN": false,
+      "Telegram": false,
+      "Supabase": false,
+      "CoinGecko": false,
+      "alert": false
+    },
+    "errorCodes": [
+      "UND_ERR_CONNECT_TIMEOUT",
+      "UND_ERR_CONNECT_TIMEOUT",
+      "UND_ERR_CONNECT_TIMEOUT",
+      "UND_ERR_CONNECT_TIMEOUT",
+      "UND_ERR_CONNECT_TIMEOUT",
+      "UND_ERR_CONNECT_TIMEOUT"
+    ]
+  }
+]

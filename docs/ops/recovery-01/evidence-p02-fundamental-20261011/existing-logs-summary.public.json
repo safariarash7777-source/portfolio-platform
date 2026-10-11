@@ -1,0 +1,102 @@
+{
+  "existing-logs-data.public": {
+    "httpStatus": 200,
+    "returnedRows": 5,
+    "hasMoreRows": false,
+    "statusCounts": {
+      "200": 5
+    },
+    "errorSignalRows": 0,
+    "loggedMessageCount": 0
+  },
+  "existing-logs-market.public": {
+    "httpStatus": 200,
+    "returnedRows": 50,
+    "hasMoreRows": true,
+    "statusCounts": {
+      "200": 46
+    },
+    "errorSignalRows": 1,
+    "loggedMessageCount": 12
+  },
+  "existing-logs-symbol.public": {
+    "httpStatus": 200,
+    "returnedRows": 50,
+    "hasMoreRows": true,
+    "statusCounts": {
+      "200": 48
+    },
+    "errorSignalRows": 0,
+    "loggedMessageCount": 0
+  },
+  "privateSchema": {
+    "rowKeys": [
+      "asnId",
+      "asnName",
+      "botCategory",
+      "botName",
+      "botVerified",
+      "branch",
+      "cache",
+      "cacheReason",
+      "callingService",
+      "clientIpCountry",
+      "clientRegion",
+      "clientUserAgent",
+      "deploymentDomain",
+      "deploymentId",
+      "domain",
+      "environment",
+      "errorCode",
+      "events",
+      "functionEvents",
+      "hasFunctionCrashed",
+      "isPrefetchRequest",
+      "isVercelTrace",
+      "logs",
+      "microfrontendsDefaultAppDeploymentId",
+      "microfrontendsMatchedPath",
+      "microfrontendsResponseReason",
+      "pprState",
+      "proxyEvents",
+      "requestDurationMs",
+      "requestId",
+      "requestMethod",
+      "requestPath",
+      "requestReferer",
+      "requestSearchParams",
+      "requestTags",
+      "resolvedDynamicPath",
+      "route",
+      "service",
+      "sessionId",
+      "statusCode",
+      "timestamp",
+      "traceId",
+      "wafAction",
+      "wafRuleId",
+      "workflowRunId",
+      "workflowStepId"
+    ],
+    "eventKeys": [
+      [
+        "concurrency",
+        "durationMs",
+        "functionColdStartDurationMs",
+        "functionMaxDuration",
+        "functionMaxMemoryUsed",
+        "functionMemorySize",
+        "functionRuntime",
+        "functionStartType",
+        "httpStatus",
+        "instanceId",
+        "invocationId",
+        "pathType",
+        "region",
+        "route",
+        "source",
+        "timestamp"
+      ]
+    ]
+  }
+}

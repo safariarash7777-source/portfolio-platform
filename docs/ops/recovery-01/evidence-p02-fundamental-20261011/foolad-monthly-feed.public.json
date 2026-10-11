@@ -1,0 +1,23 @@
+{
+  "name": "foolad-monthly-feed",
+  "observedAt": "2026-10-11T10:41:49.021777+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "encoding": null,
+  "privateSha256": "3c9c80f166095c4b9a1ad6dd42e134bd2177612aae8904d09b5c5aa1818b8f00",
+  "rows": 1,
+  "metadata": [
+    {
+      "id": 1293,
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "sent_date": "\u06f1\u06f4\u06f0\u06f5/\u06f0\u06f4/\u06f3\u06f0",
+      "sent_time": "\u06f2\u06f2:\u06f0\u06f3:\u06f2\u06f0",
+      "report_code": "\u0646-\u06f3\u06f0",
+      "category": "\u0645\u0627\u0647\u0627\u0646\u0647",
+      "isConsolidatedTitle": false,
+      "isAmendmentTitle": true
+    }
+  ]
+}

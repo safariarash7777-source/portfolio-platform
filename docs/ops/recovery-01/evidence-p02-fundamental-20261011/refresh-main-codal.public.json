@@ -1,0 +1,14 @@
+{
+  "name": "refresh-main-codal",
+  "observedAt": "2026-10-11T10:47:49.745442+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "contentRange": null,
+  "encoding": "gzip",
+  "privateSha256": "7feae18df739abcc50f0029665f01e1ba5cf3c19a1e9e42abcc771d49f8a55fc",
+  "rows": 12,
+  "source": "codal_feed",
+  "coverage": "stored-announcements"
+}

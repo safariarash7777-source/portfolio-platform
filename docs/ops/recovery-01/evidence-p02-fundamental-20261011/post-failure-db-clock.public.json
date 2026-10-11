@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-11T10:57:18.831754+00:00",
+  "name": "post-failure-db-clock",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "restartCollectDeployCalls": 0,
+  "tlsVerified": true,
+  "transport": "existing_local_proxy",
+  "httpStatus": 200,
+  "privateSha256": "2644564c9eed6c8aacbad771f89f390c59cd6af49265335d5ad692335ade6a66",
+  "metadata": [
+    {
+      "key": "latest",
+      "updated_at": "2026-10-11T10:52:48.618+00:00",
+      "receiptClock": 1791715968509
+    }
+  ]
+}

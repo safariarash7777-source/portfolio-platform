@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-11T11:15:22.977260+00:00",
+  "table": "symbol_history",
+  "role": "service_role",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "credentialReference": "existing private credential; fresh GET validation",
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "rows": 1,
+  "metadata": [
+    {
+      "id": 5747586,
+      "symbol": "فملی",
+      "trade_date": "2026-10-11",
+      "captured_at": "2026-10-11T10:32:46.747479+00:00"
+    }
+  ]
+}

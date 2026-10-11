@@ -1,0 +1,30 @@
+{
+  "name": "foolad-n30-meta",
+  "observedAt": "2026-10-11T10:40:33.132950+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "encoding": null,
+  "contentLength": "383",
+  "privateSha256": "617cd167f88ea2554135ff218d66abdc88202916db533e60b0bf4b2327d8f5a1",
+  "rows": 1,
+  "metadata": [
+    {
+      "id": 7947,
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "report_kind": "\u0646-\u06f3\u06f0",
+      "period_end": "2026-08-22",
+      "captured_at": "2026-09-07T20:10:43.960091+00:00",
+      "unit": null,
+      "unitBasis": null,
+      "qtyUnit": null,
+      "parser": 2,
+      "sourceDate": "\u06f1\u06f4\u06f0\u06f5/\u06f0\u06f6/\u06f0\u06f4",
+      "sourceTime": "\u06f1\u06f5:\u06f2\u06f3:\u06f5\u06f2",
+      "dataPeriod": "1405-05-31",
+      "isConsolidatedTitle": false,
+      "isAmendmentTitle": false
+    }
+  ]
+}

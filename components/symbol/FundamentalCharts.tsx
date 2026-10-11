@@ -498,10 +498,12 @@ function ProdVsSalesChart({ d30 }: { d30: N30Derived }) {
 
 export default function FundamentalCharts({
   fundamentals,
+  readFailed = false,
   fxRate = null,
   fxRateDate = null,
 }: {
   fundamentals: SymbolFundamentals;
+  readFailed?: boolean;
   /** آخرین نرخ دلار بازار آزاد (تومان) از fx_rates — null یعنی فید هنوز داده ندارد. */
   fxRate?: number | null;
   fxRateDate?: string | null;
@@ -523,8 +525,9 @@ export default function FundamentalCharts({
         className="rounded-xl p-6 text-center text-[14px]"
         style={{ background: "var(--surface-2)", border: "1px dashed var(--line-strong)", color: "var(--text-3)" }}
       >
-        برای این نماد هنوز گزارش بنیادی پردازش‌شده‌ای ثبت نشده است. پس از آپلود گزارش کدال
-        توسط ادمین، ۶ نمودار استاندارد این‌جا نمایش داده می‌شود.
+        {readFailed
+          ? "گزارش‌های بنیادی در این لحظه قابل خواندن نیستند. پس از بازیابی اتصال دوباره بررسی کنید."
+          : "در نتیجهٔ خواندن فعلی، صورت مالی قابل نمایش برای این نماد در دسترس نیست. گزارش‌های ماهانه، در صورت وجود دادهٔ معتبر، جدا نمایش داده می‌شوند."}
       </div>
     );
   }

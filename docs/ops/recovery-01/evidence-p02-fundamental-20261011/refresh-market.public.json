@@ -1,0 +1,12 @@
+{
+  "name": "refresh-market",
+  "observedAt": "2026-10-11T10:47:47.056717+00:00",
+  "readOnly": true,
+  "providerApiRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "contentRange": "0-0/*",
+  "encoding": "gzip",
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}
