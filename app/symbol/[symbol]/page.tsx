@@ -18,11 +18,12 @@ import SymbolTabs from "@/components/symbol/SymbolTabs";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
+import FundamentalReadNotice from "@/components/symbol/FundamentalReadNotice";
 import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
 import { getAccess } from "@/lib/access";
 import { resolveBackTarget } from "@/lib/market-nav";
 import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
-import { getFundamentals } from "@/lib/fundamental/registry";
+import { readFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
 import {
   deriveQuarters,
@@ -93,14 +94,15 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const sym = decodeURIComponent(symbol);
   const sp = searchParams ? await searchParams : {};
 
-  const [ir, history, fundamentals, fxRates, navHistory, access] = await Promise.all([
+  const [ir, history, fundamentalRead, fxRates, navHistory, access] = await Promise.all([
     getIrMarket(),
     getSymbolHistory(sym, 400),
-    getFundamentals(sym),
+    readFundamentals(sym),
     getFxRates(),
     getNavHistory(sym, 400),
     getAccess(),
   ]);
+  const fundamentals = fundamentalRead.data;
   const fx = latestRate(fxRates);
 
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
@@ -283,6 +285,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
       </section>
 
       {/* T1 — شناسنامهٔ بنیادی: فروش ماهانهٔ ن-۳۰ — فقط وقتی داده هست (قانون ۲) */}
+      <FundamentalReadNotice readFailed={fundamentalRead.state === "error"} unitUnknown={fundamentals?.n30Unavailable?.unitUnknown} />
       {fundamentals?.n30 && fundamentals.n30.data.length > 0 ? (
         <section>
           <MonthlySalesCharts
@@ -314,6 +317,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
           تحلیل بنیادی (گزارش‌های کدال)
         </h2>
         <FundamentalCharts
+          readFailed={fundamentalRead.state === "error"}
           fundamentals={fundamentals ?? { symbol: sym, n10: null, n30: null }}
           fxRate={fx?.usd_toman ?? null}
           fxRateDate={fx?.rate_date ?? null}

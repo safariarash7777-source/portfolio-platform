@@ -39,6 +39,11 @@ export interface CodalRow {
 const REVALIDATE_MS = 10 * 60 * 1000;
 const cache = new Map<string, { at: number; value: SymbolFundamentals | null }>();
 
+export interface FundamentalRead {
+  data: SymbolFundamentals | null;
+  state: "ready" | "empty" | "error";
+}
+
 function env(): { url: string; anon: string } | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -74,7 +79,10 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
 
 async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
   const e = env();
-  if (!e) return null;
+  if (!e) {
+    console.warn("fundamental_read_failed", { phase: "configuration" });
+    return null;
+  }
   try {
     const parts = await Promise.all(
       fetchQueries(symbol).map(async ({ kind, qs }) => {
@@ -83,8 +91,15 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
           signal: AbortSignal.timeout(8000),
           next: { revalidate: 600 },
         });
-        if (!res.ok) return null;
+        if (!res.ok) {
+          console.warn("fundamental_read_failed", { phase: "headers", status: res.status, kind });
+          return null;
+        }
         const rows = (await res.json()) as CodalRow[];
+        if (!Array.isArray(rows)) {
+          console.warn("fundamental_read_failed", { phase: "body", reason: "invalid-response", kind });
+          return null;
+        }
         if (rows.length >= FETCH_LIMITS[kind]) {
           // برش رخ داد: قدیمی‌ترین دوره‌ها بیرون ماندند. بی‌صدا نباشد.
           console.warn(`codal_reports: ${symbol} ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
@@ -94,7 +109,8 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
     );
     if (parts.some((p) => p === null)) return null;
     return parts.flat() as CodalRow[];
-  } catch {
+  } catch (error) {
+    console.warn("fundamental_read_failed", { phase: "request-or-body", reason: error instanceof Error ? error.name : "read-error" });
     return null;
   }
 }
@@ -112,7 +128,7 @@ function parserVersion(row: CodalRow): number {
 }
 
 /** حذف نسخه‌های تکراری: هر اطلاعیه فقط با بالاترین نسخهٔ پارسر. */
-function latestParserRows(rows: CodalRow[]): CodalRow[] {
+export function latestParserRows(rows: CodalRow[]): CodalRow[] {
   const byAnnouncement = new Map<string, CodalRow>();
   for (const r of rows) {
     const key = cleanUrl(r) ?? String(r.id);
@@ -120,6 +136,10 @@ function latestParserRows(rows: CodalRow[]): CodalRow[] {
     if (!prev || parserVersion(r) > parserVersion(prev)) byAnnouncement.set(key, r);
   }
   return [...byAnnouncement.values()];
+}
+
+export function isMillionRialUnit(unit: unknown): boolean {
+  return typeof unit === "string" && unit.replace(/\s+/g, " ").trim() === "میلیون ریال";
 }
 
 /**
@@ -286,14 +306,22 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   const annuals = n10all.filter((r) => (r.data as CodalN10Data).period_months === 12);
   const main = annuals[0] ?? n10all[0] ?? null;
 
-  const n30rows = fresh
+  // Monthly periods are selected before the window is cut; duplicate amendments
+  // must not consume the slots intended for the prior fiscal year.
+  const monthlySelected = dedupeByPeriod(fresh
     .filter((r) => r.report_kind === "ن-۳۰" && Array.isArray((r.data as CodalN30Data).products))
+    .map((r) => ({ ...r, data: { ...r.data, period_months: 1 } })))
     .sort((a, b) =>
       (b.data as CodalN30Data).period_end.localeCompare((a.data as CodalN30Data).period_end),
     )
     .slice(0, 26); // T1: تا ۲۶ گزارش ماهانه — پوشش سال مالی جاری + سال قبل برای مقایسه
 
-  if (!main && n30rows.length === 0) return null;
+  const knownUnit = (row: CodalRow) =>
+    isMillionRialUnit((row.data as CodalN30Data).unit);
+  const n30rows = monthlySelected.filter(knownUnit);
+  const omitted = monthlySelected.filter((row) => !knownUnit(row));
+
+  if (!main && monthlySelected.length === 0) return null;
 
   let n10: SymbolFundamentals["n10"] = null;
   if (main) {
@@ -335,7 +363,8 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
       source: {
         title: "گزارش‌های فعالیت ماهانه (ن-۳۰) کدال",
         source_url: cleanUrl(n30rows[0]),
-        verified: true,
+        verified: n30rows.every((row) =>
+          ["arithmetic", "header+arithmetic"].includes((row.data as CodalN30Data).unit_basis ?? "")),
       },
     };
   }
@@ -370,6 +399,10 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
     symbol,
     n10,
     n30,
+    ...(omitted.length > 0 ? { n30Unavailable: {
+      unitUnknown: omitted.length,
+      latestPeriod: (omitted[0].data as CodalN30Data).period_end,
+    } } : {}),
     n10Periods: n10Periods.length > 0 ? n10Periods : undefined,
     n10PeriodsScope: n10Periods.length > 0 ? n10PeriodsScope : undefined,
   };
@@ -379,11 +412,17 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
 export async function getFundamentalsFromSupabase(
   symbol: string,
 ): Promise<SymbolFundamentals | null> {
+  return (await readFundamentalsFromSupabase(symbol)).data;
+}
+
+/** Preserve read failures for the routed page; successful empty is a separate result. */
+export async function readFundamentalsFromSupabase(symbol: string): Promise<FundamentalRead> {
   const hit = cache.get(symbol);
-  if (hit && Date.now() - hit.at < REVALIDATE_MS) return hit.value;
+  if (hit && Date.now() - hit.at < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
   const rows = await fetchRows(symbol);
+  if (rows === null) return { data: null, state: "error" };
   const value = rows && rows.length > 0 ? buildFundamentals(symbol, rows) : null;
   // خطای شبکه (rows=null) کش نمی‌شود تا درخواست بعدی دوباره تلاش کند.
   if (rows !== null) cache.set(symbol, { at: Date.now(), value });
-  return value;
+  return { data: value, state: value ? "ready" : "empty" };
 }

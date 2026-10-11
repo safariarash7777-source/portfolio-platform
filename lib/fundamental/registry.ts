@@ -6,6 +6,7 @@
 
 import type { SymbolFundamentals } from "./types";
 import { getFundamentalsFromSupabase } from "./supabase";
+export { readFundamentalsFromSupabase as readFundamentals } from "./supabase";
 
 /** دادهٔ بنیادی نماد؛ اگر گزارشی پردازش نشده باشد null (بدون عدد ساختگی).*/
 export async function getFundamentals(symbol: string): Promise<SymbolFundamentals | null> {
