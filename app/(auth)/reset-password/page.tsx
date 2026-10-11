@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/ui/Logo";
+import { initializePasswordRecovery, type PasswordRecoveryStatus } from "@/lib/auth/password-recovery";
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState<{ password?: string; confirm?: string }>({});
@@ -16,16 +15,23 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  // null = checking, true/false = has recovery session or not
-  const [hasSession, setHasSession] = useState<boolean | null>(null);
+  const [recoveryStatus, setRecoveryStatus] = useState<PasswordRecoveryStatus | 'checking'>('checking');
+  const recoveryCheck = useRef<Promise<PasswordRecoveryStatus> | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setHasSession(!!data.user));
+    let active = true;
+    recoveryCheck.current ??= initializePasswordRecovery({
+      fragment: window.location.hash,
+      clearFragment: () => window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search),
+      createAuth: () => createClient().auth,
+    });
+    void recoveryCheck.current.then(status => { if (active) setRecoveryStatus(status); });
+    return () => { active = false; };
   }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (recoveryStatus !== 'ready') return;
     const errs: { password?: string; confirm?: string } = {};
     if (password.length < 8) errs.password = "رمز عبور باید حداقل ۸ کاراکتر باشد";
     if (password !== confirm) errs.confirm = "رمز عبور و تکرار آن یکسان نیستند";
@@ -46,7 +52,7 @@ export default function ResetPasswordPage() {
         return;
       }
       setDone(true);
-      setTimeout(() => { router.push("/dashboard"); router.refresh(); }, 1800);
+      setTimeout(() => { window.location.assign('/dashboard'); }, 1800);
     } catch {
       setServerError("خطا در اتصال. لطفاً دوباره تلاش کنید");
     } finally {
@@ -83,16 +89,19 @@ export default function ResetPasswordPage() {
                 در حال انتقال به داشبورد...
               </p>
             </div>
-          ) : hasSession === false ? (
+          ) : recoveryStatus === 'invalid' || recoveryStatus === 'unavailable' ? (
             <div className="text-center">
               <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
-                این صفحه فقط از طریق لینکِ بازیابیِ ایمیل قابل دسترسی است و لینک شما نامعتبر یا منقضی
-                شده. لطفاً دوباره درخواست بازیابی دهید.
+                {recoveryStatus === 'unavailable'
+                  ? 'بررسی نشست بازیابی در دسترس نیست. لطفاً کمی بعد دوباره تلاش کنید.'
+                  : 'این صفحه به نشست معتبر بازیابی نیاز دارد. لینک نامعتبر یا منقضی شده است؛ دوباره درخواست بازیابی دهید.'}
               </p>
               <Link href="/forgot-password" className="btn btn-gold w-full">
                 درخواست لینک جدید
               </Link>
             </div>
+          ) : recoveryStatus === 'checking' ? (
+            <p role="status" className="text-sm leading-7">در حال بررسی نشست بازیابی…</p>
           ) : (
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="space-y-1.5">
@@ -146,6 +155,7 @@ export default function ResetPasswordPage() {
 
               {serverError && (
                 <div
+                  role="alert"
                   className="rounded-xl px-4 py-3 text-sm"
                   style={{ background: "rgba(185,28,28,0.08)", border: "1px solid rgba(185,28,28,0.25)", color: "var(--danger)" }}
                 >
@@ -153,7 +163,7 @@ export default function ResetPasswordPage() {
                 </div>
               )}
 
-              <button type="submit" className="btn btn-gold w-full" disabled={loading || hasSession === null}>
+              <button type="submit" className="btn btn-gold w-full" disabled={loading}>
                 {loading ? "در حال ذخیره..." : (<><KeyRound size={16} />ذخیره رمز جدید</>)}
               </button>
             </form>
