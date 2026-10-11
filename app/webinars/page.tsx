@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { toPersianDigits } from "@/lib/format";
+import { accountEntryHref } from "@/components/account/returnPath";
 
 interface Webinar {
   id: string;
@@ -108,7 +109,7 @@ function WebinarsContent() {
       if (!res.ok) {
         if (res.status === 401) {
           // کاربر لاگین نیست → هدایت به صفحه ورود
-          window.location.href = `/login?redirect=/webinars`;
+          window.location.href = accountEntryHref("/login", "/webinars");
           return;
         }
         throw new Error(data.error || "خطا در ثبت‌نام");

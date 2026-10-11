@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toLatinDigits } from "@/lib/format";
 import Logo from "@/components/ui/Logo";
 import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
+import { signupAndReturn } from "@/components/account/signupFlow";
 
 interface FormFields {
   full_name: string;
@@ -36,13 +37,6 @@ function validate(f: FormFields): Partial<Record<keyof FormFields, string>> {
   if (f.password.length < 8) e.password = "رمز عبور باید حداقل ۸ کاراکتر باشد";
   if (f.password !== f.confirm_password) e.confirm_password = "رمز عبور و تکرار آن یکسان نیستند";
   return e;
-}
-
-function supabaseError(msg: string): string {
-  if (msg.includes("already registered") || msg.includes("already exists"))
-    return "این ایمیل قبلاً ثبت‌نام شده است";
-  if (msg.includes("weak password")) return "رمز عبور بسیار ضعیف است";
-  return "خطایی رخ داد. لطفاً دوباره تلاش کنید";
 }
 
 export default function RegisterPage() {
@@ -91,11 +85,13 @@ function RegisterPageContent() {
     try {
       const supabase = createClient();
 
-      // Pass all profile fields through signUp metadata. The handle_new_user()
-      // trigger persists them — a post-signup .update() would run unauthenticated
-      // (email confirmation = no session yet) and be blocked by RLS, silently
-      // dropping national_id/phone.
-      const { error: signUpError } = await supabase.auth.signUp({
+      // Metadata is submitted to Auth; persistence requires an installed profile
+      // trigger. Never attempt an unauthenticated profile update here.
+      const outcome = await signupAndReturn({
+        signUp: (values) => supabase.auth.signUp(values),
+        returnTo,
+        navigate: (destination) => window.location.assign(destination),
+        values: {
         email: fields.email,
         password: fields.password,
         options: {
@@ -107,11 +103,11 @@ function RegisterPageContent() {
             phone: fields.phone,
           },
         },
+        },
       });
 
-      if (signUpError) { setServerError(supabaseError(signUpError.message)); return; }
-
-      setSuccess(true);
+      if (outcome.status === "error") { setServerError(outcome.message); return; }
+      if (outcome.status === "confirmation") setSuccess(true);
     } catch {
       setServerError("خطا در اتصال. لطفاً دوباره تلاش کنید");
     } finally {
@@ -133,10 +129,10 @@ function RegisterPageContent() {
             <CheckCircle size={32} />
           </div>
           <h2 className="font-display text-2xl font-bold mb-3" style={{ color: "var(--navy-deep)" }}>
-            ثبت‌نام موفق
+            تأیید ایمیل لازم است
           </h2>
           <p className="text-sm leading-7 mb-6" style={{ color: "var(--text-2)" }}>
-            ایمیل تأیید ارسال شد. لطفاً صندوق ورودی خود را بررسی کرده و ایمیل خود را تأیید کنید.
+            برای ادامه، ایمیل باید تأیید شود. صندوق ورودی و پوشهٔ هرزنامه را بررسی کنید؛ اگر پیام تأیید دریافت کردید، پیوند آن را باز کنید.
           </p>
           <Link href={accountEntryHref("/login", returnTo)} className="btn btn-gold w-full">
             رفتن به صفحه ورود
