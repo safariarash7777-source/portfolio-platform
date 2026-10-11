@@ -205,6 +205,21 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: postgres
 
+      - name: Persistent relay budget integration (isolated Postgres)
+        run: |
+          set -o pipefail
+          npm run test:relay:budget:db 2>&1 | tee /tmp/relay-budget-db.log
+          grep -qx '# pass 13' /tmp/relay-budget-db.log
+          grep -qx '# fail 0' /tmp/relay-budget-db.log
+          grep -qx '# cancelled 0' /tmp/relay-budget-db.log
+          grep -qx '# skipped 0' /tmp/relay-budget-db.log
+        env:
+          BRSAPI_BUDGET_TEST_ISOLATED: "1"
+          PGHOST: 127.0.0.1
+          PGPORT: "5433"
+          PGUSER: postgres
+          PGPASSWORD: postgres
+
       # چرا شمردنِ pass لازم است و گرپِ `# skip` کافی نیست:
       #
       # ⚠️ این گارد بلافاصله کارش را کرد. اولین اجرای مشترکِ leads + cron در CI

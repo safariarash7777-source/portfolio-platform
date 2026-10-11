@@ -101,7 +101,7 @@ function sharedBudget() {
     softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
     hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
     leaseSize: Number(process.env.BRSAPI_LEASE_SIZE || 50),
-    degradedCeiling: Number(process.env.BRSAPI_DEGRADED_CEILING || 100),
+    degradedCeiling: 0,
     onError: (e) => console.error("brsapi budget store:", errMsg(e)),
   });
   return sharedBudgetInstance;
@@ -130,7 +130,7 @@ function commodityBudget() {
     softBudget: Number(process.env.BRSAPI_COMMODITY_SOFT || 900),
     hardCeiling: Number(process.env.BRSAPI_COMMODITY_HARD || 1200),
     leaseSize: Number(process.env.BRSAPI_COMMODITY_LEASE || 20),
-    degradedCeiling: Number(process.env.BRSAPI_COMMODITY_DEGRADED || 20),
+    degradedCeiling: 0,
     onError: (e) => console.error("commodity budget store:", errMsg(e)),
   });
   return commodityBudgetInstance;
@@ -202,17 +202,17 @@ const countLegacy = async (producer, budgetClass) => {
 
 
 /**
- * خاموشیِ مرتب: اجارهٔ خرج‌نشدهٔ بودجه را پس می‌دهد تا با هر دیپلوی یک بلوک
- * نسوزد. **بهترین‌کوشش** — اگر فرایند کشته شود این اجرا نمی‌شود و همان بلوک
- * تا پایانِ روز سوخته می‌ماند. نبودنش ایمن است (کم‌مصرفی، نه پرمصرفی).
+ * خاموشیِ مرتب: release فقط hook سازگار است و ظرفیت سهمیه را باز نمی‌کند.
+ * تخصیص خرج‌نشده تا پایان پنجرهٔ سهمیه سوخته می‌ماند؛ counter/leased کاهش
+ * نمی‌یابد. نبود اجرای hook ظرفیت تازه‌ای ایجاد نمی‌کند.
  */
 let shuttingDown = false;
 async function releaseBudgetOnShutdown(signal) {
   if (shuttingDown) return;
   shuttingDown = true;
   try {
-    // بودجهٔ **مشترک** را پس می‌دهیم، نه بودجهٔ داخلِ کلاینت — چون وقتی پرچم
-    // خاموش است `brs` اصلاً ساخته نمی‌شود ولی اجاره‌ها هنوز گرفته شده‌اند.
+    // hook خاموشیِ بودجهٔ مشترک را فراخوانی می‌کنیم؛ release منتخب no-op است،
+    // حتی وقتی کلاینت مرکزی خاموش است و `brs` ساخته نمی‌شود.
     const b = sharedBudgetResolved ? sharedBudgetInstance : null;
     if (b && typeof b.release === "function") {
       const back = await b.release();
@@ -1483,8 +1483,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname !== "/market.json") { res.writeHead(404); return res.end("not found"); }
 
   try {
-    if (!cache) await refresh();
-    if (cache && Date.now() - cache.at > CACHE_MS) refresh(); // کهنه → رفرش پس‌زمینه
+    // Read only: boot/timers own collection; cold cache remains unavailable.
     if (!cache) {
       res.writeHead(503, { "Content-Type": "application/json; charset=utf-8" });
       return res.end('{"error":"warming up"}');
@@ -1501,8 +1500,8 @@ const server = http.createServer(async (req, res) => {
 export { server, refresh };
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  // Liara روی دیپلوی `SIGTERM` می‌فرستد. مهلت کوتاه است، پس پس‌دادنِ اجاره
-  // هم مهلتِ خودش را دارد و اگر نرسید، خاموشی را نگه نمی‌دارد.
+  // Liara هنگام deploy `SIGTERM` می‌فرستد؛ hook سازگار خاموشی حداکثر سه ثانیه
+  // فرصت دارد و در guard منتخب ظرفیت برنمی‌گرداند یا خاموشی را نگه نمی‌دارد.
   for (const sig of ["SIGTERM", "SIGINT"]) {
     process.on(sig, () => {
       Promise.race([

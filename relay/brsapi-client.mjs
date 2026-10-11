@@ -182,7 +182,6 @@ export class PersistentDailyBudget {
     hardCeiling,
     leaseSize = 50,
     lowWaterRatio = 0.4,
-    degradedCeiling = 100,
     now = () => Date.now(),
     onError = null,
   }) {
@@ -192,7 +191,9 @@ export class PersistentDailyBudget {
     this.hardCeiling = hardCeiling;
     this.leaseSize = Math.max(1, leaseSize);
     this.lowWaterRatio = lowWaterRatio;
-    this.degradedCeiling = Math.max(0, degradedCeiling);
+    // Process-local emergency units would renew on restart or with replicas.
+    // Keep the option compatible, but never send without a database lease.
+    this.degradedCeiling = 0;
     this.now = now;
     this.onError = onError;
     this.day = "";
@@ -213,6 +214,7 @@ export class PersistentDailyBudget {
     this.degradedUsed = 0;
     this.lastStoreError = null;
     this.storeHealthy = true;
+    this.baselineKnown = false;
     this.pending = null;
   }
 
@@ -266,7 +268,7 @@ export class PersistentDailyBudget {
     this.rejectedByClass[budgetClass] = (this.rejectedByClass[budgetClass] ?? 0) + 1;
   }
 
-  /** مجوزِ اضطراری فقط برای `critical` و فقط وقتی انبار در دسترس نیست. */
+  /** Compatibility metric: no process-local emergency allowance is issued. */
   degradedRemaining(budgetClass) {
     if (this.storeHealthy || budgetClass !== "critical") return 0;
     return Math.max(0, this.degradedCeiling - this.degradedUsed);
@@ -301,14 +303,16 @@ export class PersistentDailyBudget {
           this.hardCeiling = Math.min(this.hardCeiling, r.hardCeiling);
         }
         this.storeHealthy = true;
+        this.baselineKnown = true;
         this.lastStoreError = null;
       } catch (e) {
+        if (day !== this.day) return;
         this.storeErrors += 1;
         this.storeHealthy = false;
         this.lastStoreError = String(e && e.message ? e.message : e).slice(0, 200);
         if (this.onError) { try { this.onError(e); } catch { /* لاگ نباید مسیر را بشکند */ } }
       } finally {
-        this.pending = null;
+        if (day === this.day) this.pending = null;
       }
     })();
     return this.pending;
@@ -338,7 +342,7 @@ export class PersistentDailyBudget {
       return false;
     }
 
-    // انبار در دسترس نیست: مجوزِ اضطراریِ محدود، فقط `critical`.
+    // Compatibility path: degradedCeiling is always zero; fail closed.
     if (this.degradedRemaining(budgetClass) > 0) {
       this.degradedUsed += 1;
       this.usedByClass[budgetClass] = (this.usedByClass[budgetClass] ?? 0) + 1;
@@ -350,20 +354,9 @@ export class PersistentDailyBudget {
     return false;
   }
 
-  /** پس‌دادنِ اجارهٔ خرج‌نشده روی خاموشیِ مرتب. بهترین‌کوشش. */
+  /** Unused leases are burned; anonymous release is not safely retryable. */
   async release() {
-    const back = this.leaseRemaining;
-    if (back <= 0) return 0;
-    try {
-      const n = await this.store.release(this.day, back);
-      this.granted -= n;
-      this.globalLeased = Math.max(0, this.globalLeased - n);
-      return n;
-    } catch (e) {
-      this.storeErrors += 1;
-      this.lastStoreError = String(e && e.message ? e.message : e).slice(0, 200);
-      return 0;
-    }
+    return 0;
   }
 
   snapshot() {
@@ -372,12 +365,14 @@ export class PersistentDailyBudget {
     return {
       day: this.day,
       persistent: true,
+      remainingIsEstimate: true,
+      remainingKnown: this.baselineKnown && this.storeHealthy,
       softBudget: this.softBudget,
       hardCeiling: this.hardCeiling,
       used: u,
-      remaining: Math.max(0, this.hardCeiling - u),
+      remaining: this.baselineKnown && this.storeHealthy ? Math.max(0, this.hardCeiling - u) : null,
       remainingByClass: Object.fromEntries(
-        BUDGET_CLASSES.map((c) => [c, Math.max(0, classCeiling(c, this) - u)]),
+        BUDGET_CLASSES.map((c) => [c, this.baselineKnown && this.storeHealthy ? Math.max(0, classCeiling(c, this) - u) : null]),
       ),
       usedByClass: { ...this.usedByClass },
       rejectedByBudget: this.rejected,

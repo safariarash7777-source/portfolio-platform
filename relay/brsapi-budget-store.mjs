@@ -11,14 +11,12 @@
  * `fetch`). پس به‌جای یک round-trip به‌ازای هر درخواست، بلوکی از واحدها یک‌جا
  * و اتمیک اجاره می‌شود و محلی خرج می‌شود.
  *
- * خطا همیشه در جهتِ **کم‌مصرفی** است: اجارهٔ خرج‌نشدهٔ یک فرایندِ مرده سوخته
- * حساب می‌شود، نه آزاد. حداکثر اتلافِ هر restart = اندازهٔ یک بلوک.
+ * اجارهٔ خرج‌نشده سوخته حساب می‌شود؛ RPC قدیمی release بدون شناسهٔ اجاره
+ * نمی‌تواند پس‌دادنِ تکراری را تشخیص دهد و اکنون یک no-op سازگار است.
  *
  * ── وقتی انبار در دسترس نیست ────────────────────────────────────────────────
- * دو رفتارِ بد ممکن است: «همه را رد کن» (یک قطعیِ لحظه‌ایِ دیتابیس رله را
- * می‌خواباند) و «همه را بپذیر» (بودجه دور زده می‌شود). هیچ‌کدام.
- * رفتارِ انتخابی: یک **مجوزِ اضطراریِ کوچک، شمرده‌شده و فقط برای `critical`** —
- * محدود و قابلِ‌مشاهده. بعد از آن رد می‌شود.
+ * فقط واحدهای قبلاً اجاره‌شده قابل خرج‌اند؛ مجوز اضطراری حافظه‌ای نداریم.
+ * بدون اجارهٔ معتبر، ارسال متوقف می‌شود و باقی‌مانده نامعلوم گزارش می‌شود.
  */
 
 /** فراخوانیِ یک تابعِ Postgres از راهِ PostgREST. */
@@ -39,10 +37,12 @@ export function makeSupabaseLeaseStore({ url, serviceKey, fetchImpl = globalThis
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      // متنِ خطا ممکن است حاویِ چیزی نباشد که بخواهیم لاگ کنیم؛ فقط کد و
-      // ۲۰۰ نویسهٔ اول. کلید هرگز در این مسیر لاگ نمی‌شود.
-      throw new Error(`rpc ${fn} → ${res.status}: ${text.slice(0, 200)}`);
+      let body;
+      try { body = await res.json(); } catch { body = {}; }
+      const code = /^[A-Z0-9]{5,12}$/.test(body.code ?? "") ? body.code : "UNKNOWN";
+      const error = new Error(`rpc ${fn} → ${res.status} (${code})`);
+      error.code = code;
+      throw error;
     }
     return res.json();
   }
@@ -53,7 +53,10 @@ export function makeSupabaseLeaseStore({ url, serviceKey, fetchImpl = globalThis
         p_day: dayKey, p_want: want, p_hard: hardCeiling,
       });
       const r = Array.isArray(rows) ? rows[0] : rows;
-      if (!r || typeof r.granted !== "number") {
+      if (!r || !Number.isSafeInteger(r.granted) || r.granted < 0 || r.granted > want
+        || !Number.isSafeInteger(r.leased_before) || r.leased_before < 0
+        || !Number.isSafeInteger(r.hard_ceiling) || r.hard_ceiling <= 0
+        || r.leased_before + r.granted > r.hard_ceiling) {
         throw new Error("rpc brsapi_budget_lease پاسخِ بی‌شکل داد");
       }
       return {
