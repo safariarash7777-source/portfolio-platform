@@ -362,7 +362,56 @@ test("گزارش: بازگشت، پذیرشِ نسخهٔ هدف را «اعما�
 // متنِ همان فایل ادعا می‌شود تا رگرسیونِ خاموش ممکن نباشد.
 
 import { readFileSync } from "node:fs";
-const WF = readFileSync(new URL("../../.github/workflows/deploy-relay.yml", import.meta.url), "utf8");
+const WF = readFileSync(new URL("../../.github/workflows/deploy-relay.yml", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+
+// Exercise the actual job condition: a workflow_run can carry a successful CI
+// result without authorizing a deployment. Manual dispatch still uses all of
+// the existing downstream CI, ancestry, baseline and live preflight gates.
+const jobCondition = WF.match(/    if: >-\n([\s\S]*?)    steps:/)?.[1].trim();
+assert.ok(jobCondition, "deploy job admission condition must exist");
+const evaluateCondition = new Function("github", "vars", `return (${jobCondition});`);
+// This condition compares strings only. Actions string equality ignores case;
+// JavaScript does not. Normalize context strings for this focused condition
+// fixture, rather than treating a JavaScript evaluator as a general Actions
+// expression interpreter. Repository configuration variables are strings.
+function foldStrings(value) {
+  if (typeof value === "string") return value.toLowerCase();
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, foldStrings(item)]));
+  }
+  return value;
+}
+const admitsJob = (github, vars) => evaluateCondition(foldStrings(github), foldStrings(vars));
+const completedCI = (overrides = {}) => ({
+  event_name: "workflow_run",
+  event: { workflow_run: { conclusion: "success", head_branch: "main", event: "push", ...overrides } },
+});
+
+test("workflow: automatic deployment requires explicit true admission using Actions string equality", () => {
+  for (const value of [undefined, "", "false", "1", "0", "yes"]) {
+    assert.equal(admitsJob(completedCI(), { RELAY_AUTO_DEPLOY: value }), false);
+  }
+  for (const value of ["true", "TRUE", "True"]) {
+    assert.equal(admitsJob(completedCI(), { RELAY_AUTO_DEPLOY: value }), true);
+  }
+  assert.equal(admitsJob(completedCI({ conclusion: "SUCCESS" }), { RELAY_AUTO_DEPLOY: "TRUE" }), true);
+});
+
+test("workflow: enabling automatic admission preserves CI, main and push gates", () => {
+  for (const overrides of [
+    { conclusion: "failure" }, { conclusion: "cancelled" },
+    { head_branch: "codex/relay-auto-admission-20261011" },
+    { event: "pull_request" }, { event: "workflow_dispatch" },
+  ]) {
+    assert.equal(admitsJob(completedCI(overrides), { RELAY_AUTO_DEPLOY: "true" }), false);
+  }
+});
+
+test("workflow: manual job admission remains available without automatic opt-in", () => {
+  for (const vars of [{}, { RELAY_AUTO_DEPLOY: "false" }, { RELAY_AUTO_DEPLOY: "true" }]) {
+    assert.equal(admitsJob({ event_name: "workflow_dispatch" }, vars), true);
+  }
+});
 
 test("workflow: checkout صریحاً به main مقید است", () => {
   assert.match(WF, /uses: actions\/checkout@v4\s*\n\s*with:\s*\n\s*ref: main\b/);
