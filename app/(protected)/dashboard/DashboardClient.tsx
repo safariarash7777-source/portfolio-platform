@@ -156,6 +156,8 @@ export default function DashboardClient({
         setShowQuiz(false);
         pendingAnswers.current = null;
         router.refresh();
+      } catch {
+        setSaveError(true);
       } finally {
         pendingSave.current = false;
         setSaving(false);

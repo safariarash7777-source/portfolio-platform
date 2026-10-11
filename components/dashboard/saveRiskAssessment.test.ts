@@ -25,7 +25,7 @@ test("a transport failure is surfaced as unconfirmed without automatic resubmiss
 });
 
 // Execute the routed dashboard component's real handler, with SDK/React seams only.
-function dashboard(response: Promise<{ data: typeof row | null; error: unknown }>) {
+function dashboard(response: Promise<{ data: typeof row | null; error: unknown }>, clientUnavailable = false) {
   const states: unknown[] = [null, true, false, false];
   const refs: { current: unknown }[] = [];
   let stateIndex = 0, refIndex = 0, inserts = 0, refreshes = 0;
@@ -43,10 +43,10 @@ function dashboard(response: Promise<{ data: typeof row | null; error: unknown }
     if (name === "react/jsx-runtime") return { jsx, jsxs: jsx };
     if (name === "next/navigation") return { useRouter: () => ({ refresh: () => refreshes++ }) };
     if (name === "@/components/dashboard/saveRiskAssessment") return { saveRiskAssessment };
-    if (name === "@/lib/supabase/client") return { createClient: () => ({ from: (table: string) => {
+    if (name === "@/lib/supabase/client") return { createClient: () => { if (clientUnavailable) throw new Error("SDK initialization unavailable"); return ({ from: (table: string) => {
       assert.equal(table, "risk_assessments");
       return { insert: (value: unknown) => { inserts++; payload = value; return { select: () => ({ maybeSingle: () => response }) }; } };
-    } }) };
+    } }); } };
     if (name === "@/components/quiz/RiskProfileQuiz") return { default: "ExistingQuiz", __esModule: true };
     return { default: () => null, __esModule: true };
   } });
@@ -79,4 +79,15 @@ test("dashboard appends using its authenticated member and blocks simultaneous d
   assert.equal(ui.states[1], false);
   assert.equal(ui.refs[1].current, null);
   assert.equal(ui.refreshes, 1);
+});
+
+test("dashboard displays SDK initialization failure and preserves answers without a request", async () => {
+  const ui = dashboard(Promise.resolve({ data: null, error: null }), true);
+  const answers = { 1: 2 };
+  await ui.complete(2, "test", answers);
+  assert.equal(ui.states[3], true);
+  assert.equal(ui.states[1], true);
+  assert.equal(ui.inserts, 0);
+  assert.equal(ui.refreshes, 0);
+  assert.deepEqual(JSON.parse(JSON.stringify(ui.refs[1].current)), { score: 2, category: "test", answers });
 });
