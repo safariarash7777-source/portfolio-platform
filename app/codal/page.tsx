@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toPersianDigits } from "@/lib/format";
 import { pageMetadata } from "@/lib/metadata";
+import { codalFeedFailure } from "@/lib/codal-feed";
 
 
 export const dynamic = "force-dynamic";
@@ -43,20 +44,24 @@ export default async function CodalFeedPage({
   const cat = CATEGORIES.includes((sp.cat ?? "") as (typeof CATEGORIES)[number]) ? sp.cat! : "همه";
   const q = (sp.q ?? "").trim().slice(0, 30);
 
-  const supabase = await createClient();
   let rows: FeedRow[] = [];
-  let tableMissing = false;
-  {
+  let feedFailure: "missing" | "unavailable" | null = null;
+  try {
+    const supabase = await createClient();
     let query = supabase
       .from("codal_feed")
       .select("id, symbol, company_name, title, report_code, category, sent_date, sent_time, link, link_pdf, link_excel")
+      .order("sent_date", { ascending: false, nullsFirst: false })
+      .order("sent_time", { ascending: false, nullsFirst: false })
       .order("id", { ascending: false })
       .limit(80);
     if (cat !== "همه") query = query.eq("category", cat);
     if (q) query = query.ilike("symbol", `%${q}%`);
     const { data, error } = await query;
-    if (error) tableMissing = true;
+    feedFailure = codalFeedFailure(error);
     rows = (data ?? []) as FeedRow[];
+  } catch {
+    feedFailure = "unavailable";
   }
 
   const qs = (nextCat: string) => {
@@ -78,8 +83,8 @@ export default async function CodalFeedPage({
               فید اطلاعیه‌های کدال
             </h1>
             <p className="text-sm md:text-base mt-3 leading-8" style={{ color: "var(--text-2)" }}>
-              آخرین اطلاعیه‌های منتشرشده در سامانهٔ کدال — به‌محض دیده‌شدن توسط موتور پایش، این‌جا
-              فهرست می‌شود. متن کامل هر اطلاعیه در خود codal.ir است.
+              اطلاعیه‌های دریافت‌شده از سامانهٔ کدال، به‌ترتیب زمان ارسال در منبع.
+              فهرست کامل و متن هر اطلاعیه در خود codal.ir است.
             </p>
           </header>
 
@@ -114,14 +119,14 @@ export default async function CodalFeedPage({
           </div>
 
           {/* فهرست */}
-          {tableMissing ? (
+          {feedFailure ? (
             <div className="card p-8 text-center">
               <FileText size={28} className="mx-auto mb-3" style={{ color: "var(--text-3)" }} />
               <p className="text-sm font-medium" style={{ color: "var(--text-2)" }}>
-                فید کدال هنوز راه‌اندازی نشده است.
+                {feedFailure === "missing" ? "مسیر خواندن فید کدال در پایگاه داده در دسترس نیست." : "دریافت فید کدال فعلاً ممکن نشد."}
               </p>
               <p className="text-xs mt-2" style={{ color: "var(--text-3)" }}>
-                زیرساخت این بخش آماده است و پس از فعال‌سازی پایگاه داده، اطلاعیه‌ها به‌صورت خودکار این‌جا ظاهر می‌شوند.
+                {feedFailure === "missing" ? "فهرست اطلاعیه‌ها از این مسیر خوانده نشد؛ این وضعیت نیاز به بررسی دارد." : "این خطا به معنی نبودن اطلاعیه‌ها نیست؛ کمی بعد دوباره بررسی کنید."}
               </p>
             </div>
           ) : rows.length === 0 ? (

@@ -2,17 +2,18 @@
 
 // T5-2 — تب «گزارش‌های کدال» نماد:
 // ۱) فهرست گزارش‌های پردازش‌شده (codal_reports — از سرور به‌صورت prop می‌آید).
-// ۲) دکمهٔ «دریافت فهرست» → /api/codal-list که از Supabase (جدول codal_reports) می‌خواند؛
-//    Vercel→Liara مسدود است، پس فراخوانی زندهٔ رله حذف شد (فیکس معماری T5).
+// ۲) دکمهٔ «دریافت فهرست» → /api/codal-list که metadata جدول codal_feed را می‌خواند.
+//    اطلاعیه‌ها و گزارش‌های مالیِ پردازش‌شده دو مجموعهٔ جدا هستند؛ این مسیر رله را فراخوانی نمی‌کند.
 // ۳) لینک جست‌وجوی رسمی codal.ir همیشه نمایش داده می‌شود — صادقانه و بدون دادهٔ ساختگی.
 // لینک‌ها به codal.ir؛ هیچ واژهٔ تجویزی.
 
 import { useState } from "react";
+import { toPersianDigits } from "@/lib/format";
 
 export type StoredReport = {
   kind: string;          // «ن-۳۰» | «ن-۱۰» | ...
   title: string;
-  jdate: string | null;  // تاریخ انتشار (جلالی)
+  periodEnd: string | null; // پایان دورهٔ مالی، نه تاریخ انتشار
   url: string | null;    // لینک صفحهٔ کدال
 };
 
@@ -20,6 +21,7 @@ type LiveItem = {
   title: string;
   kind: string | null;
   date: string | null;
+  time: string | null;
   url: string | null;
 };
 
@@ -33,7 +35,7 @@ function normalizeLive(j: unknown): LiveItem[] {
       const s = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
       const title = s(o.title);
       if (!title) return null;
-      return { title, kind: s(o.kind), date: s(o.date), url: s(o.url) };
+      return { title, kind: s(o.kind), date: s(o.date), time: s(o.time), url: s(o.url) };
     })
     .filter((x): x is LiveItem => x !== null);
 }
@@ -93,7 +95,7 @@ export default function CodalReportsTab({
                     <span className="font-medium">{r.title}</span>
                   )}
                 </div>
-                <span className="shrink-0 text-muted-foreground">{r.jdate ?? ""}</span>
+                <span className="shrink-0 text-muted-foreground">دورهٔ مالی: {r.periodEnd ? toPersianDigits(r.periodEnd) : "نامعلوم"}</span>
               </li>
             ))}
           </ul>
@@ -106,7 +108,7 @@ export default function CodalReportsTab({
 
       <div className="card p-4">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-bold">همهٔ اطلاعیه‌های کدال</h3>
+          <h3 className="text-sm font-bold">اطلاعیه‌های ذخیره‌شدهٔ کدال</h3>
           {live === null && (
             <button
               type="button"
@@ -120,7 +122,7 @@ export default function CodalReportsTab({
         </div>
         {liveState === "error" && (
           <p className="mt-3 text-xs text-muted-foreground">
-            دریافت فهرست زنده ممکن نشد. کمی بعد دوباره تلاش کنید.
+            دریافت فهرست ذخیره‌شده ممکن نشد. کمی بعد دوباره تلاش کنید.
           </p>
         )}
         {live !== null && (
@@ -141,7 +143,7 @@ export default function CodalReportsTab({
                         <span className="font-medium">{a.title}</span>
                       )}
                     </div>
-                    <span className="shrink-0 text-muted-foreground">{a.date ?? ""}</span>
+                    <span className="shrink-0 text-muted-foreground">{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}</span>
                   </div>
                 </li>
               ))}

@@ -232,7 +232,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
     storedReports.push({
       kind: "ن-۳۰",
       title: fundamentals.n30.source.title,
-      jdate: fundamentals.n30.data[0]?.period_end ?? null,
+      periodEnd: fundamentals.n30.data[0]?.period_end ?? null,
       url: fundamentals.n30.source.source_url ?? null,
     });
   }
@@ -240,7 +240,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
     storedReports.push({
       kind: "ن-۱۰",
       title: fundamentals.n10.source.title,
-      jdate: fundamentals.n10.data.period_end ?? null,
+      periodEnd: fundamentals.n10.data.period_end ?? null,
       url: fundamentals.n10.source.source_url ?? null,
     });
   }
