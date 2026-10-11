@@ -1,0 +1,50 @@
+{
+  "name": "codal-report-tail",
+  "observedAt": "2026-10-11T09:01:11.216998+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "transfer": {
+    "Content-Length": "663",
+    "Transfer-Encoding": null,
+    "Content-Encoding": null,
+    "Connection": "close",
+    "Content-Type": "application/json; charset=utf-8"
+  },
+  "metadata": [
+    {
+      "id": 10609,
+      "symbol": "\u0641\u0628\u0627\u0647\u0646\u0631",
+      "report_kind": "\u0646-\u06f1\u06f0",
+      "period_end": "2022-03-20",
+      "published_at": null,
+      "captured_at": "2026-10-11T08:23:29.11043+00:00",
+      "date": "\u06f1\u06f4\u06f0\u06f1/\u06f0\u06f3/\u06f0\u06f1",
+      "time": "\u06f1\u06f5:\u06f3\u06f6:\u06f5\u06f5",
+      "parser": 2
+    },
+    {
+      "id": 10608,
+      "symbol": "\u0641\u0628\u0627\u0647\u0646\u0631",
+      "report_kind": "\u0646-\u06f1\u06f0",
+      "period_end": "2022-06-21",
+      "published_at": null,
+      "captured_at": "2026-10-11T08:23:27.805004+00:00",
+      "date": "\u06f1\u06f4\u06f0\u06f1/\u06f0\u06f4/\u06f3\u06f1",
+      "time": "\u06f0\u06f7:\u06f3\u06f5:\u06f5\u06f5",
+      "parser": 2
+    },
+    {
+      "id": 10607,
+      "symbol": "\u0641\u0628\u0627\u0647\u0646\u0631",
+      "report_kind": "\u0646-\u06f1\u06f0",
+      "period_end": "2022-09-22",
+      "published_at": null,
+      "captured_at": "2026-10-11T08:23:26.706307+00:00",
+      "date": "\u06f1\u06f4\u06f0\u06f1/\u06f0\u06f7/\u06f3\u06f0",
+      "time": "\u06f1\u06f7:\u06f2\u06f8:\u06f1\u06f2",
+      "parser": 2
+    }
+  ]
+}

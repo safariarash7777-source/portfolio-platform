@@ -1,0 +1,9 @@
+{
+  "name": "family-samples",
+  "observedAt": "2026-10-11T09:05:18.279191+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "tlsVerified": true,
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}

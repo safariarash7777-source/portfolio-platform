@@ -1,0 +1,12 @@
+{
+  "name": "crypto",
+  "observedAt": "2026-10-11T09:03:30.845520+00:00",
+  "readOnly": true,
+  "transport": "existing_local_proxy",
+  "directProviderRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "headersReceivedAt": "2026-10-11T09:03:31.488933+00:00",
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}

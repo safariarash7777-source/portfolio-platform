@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-11T08:51:38.905107+00:00",
+  "httpStatus": null,
+  "attempts": [
+    {
+      "transport": "direct",
+      "errorType": "URLError",
+      "status": null
+    }
+  ],
+  "tlsVerified": true,
+  "kind": "passive_existing_database_snapshot",
+  "credentialProvenance": "previous_credentials_reference_only; fresh configuration unavailable",
+  "directProviderRequests": 0,
+  "dbWritten": false,
+  "configChanged": false
+}

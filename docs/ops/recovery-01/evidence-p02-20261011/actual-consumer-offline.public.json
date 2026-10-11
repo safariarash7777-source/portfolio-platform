@@ -1,0 +1,60 @@
+{
+  "observedAt": "2026-10-11T09:19:08.635Z",
+  "proof": "offline actual consumers with freshly captured DB samples",
+  "deployedUiAcceptance": false,
+  "runtimeInstalled": false,
+  "networkRequests": 0,
+  "providerRequests": 0,
+  "receiptClock": "not projected; left null rather than inferred from updated_at",
+  "sampleSizePerFamily": 1,
+  "families": {
+    "stocks": {
+      "rows": 1,
+      "state": "unknown-time"
+    },
+    "funds": {
+      "rows": 1,
+      "state": "unknown-time"
+    },
+    "options": {
+      "rows": 1,
+      "state": "unknown-time"
+    },
+    "gold": {
+      "rows": 1,
+      "state": "unknown-time"
+    },
+    "currency": {
+      "rows": 1,
+      "state": "unknown-time"
+    },
+    "crypto": {
+      "rows": 1,
+      "state": "unknown-time"
+    }
+  },
+  "fund": {
+    "id": "اهرم",
+    "positiveRawNav": true,
+    "acceptedBubble": false,
+    "navState": "unknown-time",
+    "reason": "زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص"
+  },
+  "option": {
+    "id": "ضهرم7064",
+    "priceUnit": null,
+    "valueUnit": null,
+    "contractSizeKnown": false,
+    "actualBoardUnknownUnitLabels": 3
+  },
+  "codal": {
+    "symbol": "داریوش بازار",
+    "announcementId": 12240,
+    "routeHttpStatus": 200,
+    "routeRows": 1,
+    "source": "codal_feed",
+    "coverage": "stored-announcements",
+    "dateKind": "sent",
+    "stubbedDatabaseReads": 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "options",
+  "observedAt": "2026-10-11T08:57:00.885926+00:00",
+  "readOnly": true,
+  "transport": "existing_local_proxy",
+  "directProviderRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "headersReceivedAt": "2026-10-11T08:57:06.671302+00:00",
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}

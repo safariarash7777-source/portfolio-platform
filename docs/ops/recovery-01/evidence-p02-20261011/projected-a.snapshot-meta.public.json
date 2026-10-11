@@ -1,0 +1,19 @@
+{
+  "name": "snapshot-meta",
+  "observedAt": "2026-10-11T08:56:18.908195+00:00",
+  "readOnly": true,
+  "transport": "existing_local_proxy",
+  "directProviderRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "headersReceivedAt": "2026-10-11T08:56:19.559819+00:00",
+  "privateSha256": "df57ef7facf14ec3bb309099d2369843cbea98a55cb6abc09c9fa61eadda2446",
+  "bytes": 385,
+  "updatedAt": "2026-10-11T08:52:48.612+00:00",
+  "receivedAt": 1791708768487,
+  "hasQuality": false,
+  "indicesClock": {
+    "date": "1405-07-19",
+    "time": "12:22:19"
+  }
+}

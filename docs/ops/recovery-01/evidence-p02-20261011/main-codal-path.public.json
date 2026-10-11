@@ -1,0 +1,12 @@
+{
+  "observedAt": "2026-10-11T09:11:56.352667+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "mainAlias": "portfolio-platform-fawn.vercel.app",
+  "symbol": "\u062f\u0627\u0631\u06cc\u0648\u0634 \u0628\u0627\u0632\u0627\u0631",
+  "path": "/api/codal-list",
+  "httpStatus": 200,
+  "rows": 0,
+  "hasOfficialSourceLink": true,
+  "source": null
+}

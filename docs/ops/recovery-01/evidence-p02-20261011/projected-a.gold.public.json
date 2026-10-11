@@ -1,0 +1,36 @@
+{
+  "name": "gold",
+  "observedAt": "2026-10-11T08:57:26.687758+00:00",
+  "readOnly": true,
+  "transport": "existing_local_proxy",
+  "directProviderRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "headersReceivedAt": "2026-10-11T08:57:27.276414+00:00",
+  "privateSha256": "f5f8fa523bcd157e106579663558049a78c17620f2b187e99e09efa209ddfecf",
+  "bytes": 1315,
+  "updatedAt": "2026-10-11T08:52:48.612+00:00",
+  "receivedAt": 1791708768487,
+  "rows": 9,
+  "sourceClockKnown": 0,
+  "fieldNames": [
+    "change",
+    "changePercent",
+    "faName",
+    "id",
+    "price",
+    "unit"
+  ],
+  "units": {
+    "unit": {
+      "toman": 8,
+      "usd": 1
+    },
+    "priceUnit": {
+      "unknown": 9
+    },
+    "valueUnit": {
+      "unknown": 9
+    }
+  }
+}

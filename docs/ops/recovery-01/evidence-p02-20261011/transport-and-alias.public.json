@@ -1,0 +1,44 @@
+{
+  "readOnly": true,
+  "rawValuesExported": false,
+  "vercelMainAlias": {
+    "observedAt": "2026-10-11T08:53:14.919269+00:00",
+    "transport": "existing_local_proxy",
+    "tlsVerified": true,
+    "httpStatus": 200,
+    "alias": {
+      "alias": "portfolio-platform-fawn.vercel.app",
+      "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+      "deploymentId": "dpl_53Ku3bPtADC48JYT8tGgGGBzSnrU",
+      "updatedAt": 1791581246874
+    },
+    "deployment": {
+      "id": "dpl_53Ku3bPtADC48JYT8tGgGGBzSnrU",
+      "url": "portfolio-platform-2676rhv90-safariarash7777-4463s-projects.vercel.app"
+    }
+  },
+  "existingDatabaseViaProxyMetadata": {
+    "observedAt": "2026-10-11T08:53:17.953665+00:00",
+    "transport": "existing_local_proxy",
+    "tlsVerified": true,
+    "httpStatus": 200,
+    "latestMetadata": {
+      "key": "latest",
+      "updated_at": "2026-10-11T08:52:48.612+00:00"
+    }
+  },
+  "dns": {
+    "api.liara.ir": [
+      "185.208.181.175"
+    ],
+    "arsadata.liara.run": [
+      "185.208.181.161"
+    ],
+    "api.vercel.com": [
+      "76.76.21.112"
+    ],
+    "github.com": [
+      "140.82.121.4"
+    ]
+  }
+}

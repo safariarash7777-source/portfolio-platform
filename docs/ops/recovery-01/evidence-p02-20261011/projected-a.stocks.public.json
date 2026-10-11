@@ -1,0 +1,12 @@
+{
+  "name": "stocks",
+  "observedAt": "2026-10-11T08:56:19.564215+00:00",
+  "readOnly": true,
+  "transport": "existing_local_proxy",
+  "directProviderRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "headersReceivedAt": "2026-10-11T08:56:20.289668+00:00",
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}

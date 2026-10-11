@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-10-11T08:54:19.255815+00:00",
+  "httpStatus": null,
+  "attempts": [
+    {
+      "transport": "existing_local_proxy",
+      "errorType": "TimeoutError",
+      "status": null
+    }
+  ],
+  "tlsVerified": true,
+  "kind": "passive_existing_debug",
+  "credentialProvenance": "previous_credentials_reference_only; fresh configuration unavailable",
+  "directProviderRequests": 0
+}

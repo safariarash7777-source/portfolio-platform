@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-11T08:51:14.741897+00:00",
+  "httpStatus": 200,
+  "transport": "existing_local_proxy",
+  "attempts": [
+    {
+      "transport": "direct",
+      "errorType": "URLError",
+      "status": null
+    }
+  ],
+  "tlsVerified": true,
+  "vm": {
+    "_id": "6aba73dd7622ce31c95d80ef",
+    "name": "arsadata-backend",
+    "state": "CREATED",
+    "power": "POWERED_ON",
+    "guestState": "RUNNING",
+    "OS": "ubuntu-24.04"
+  }
+}

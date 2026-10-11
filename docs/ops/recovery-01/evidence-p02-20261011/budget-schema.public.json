@@ -1,0 +1,9 @@
+{
+  "observedAt": "2026-10-11T09:13:30.594817+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "budgetReservationCalls": 0,
+  "wholeKeyUsage": "UNKNOWN",
+  "httpStatus": 404,
+  "postgrestCode": "PGRST205"
+}

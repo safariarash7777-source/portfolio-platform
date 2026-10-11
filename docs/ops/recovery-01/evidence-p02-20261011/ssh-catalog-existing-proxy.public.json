@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-10-11T09:15:10.427391+00:00",
+  "readOnly": true,
+  "host": "62.60.191.24",
+  "transport": "existing_local_proxy_native_ssh",
+  "hostKeyChecking": "strict",
+  "providerRequests": 0,
+  "exitCode": 255,
+  "errorCategory": "timeout",
+  "stderrSha256": "5cb0c1231d33323ce235f9f008691e9d3289a9f68bba908efbb9e27d3d565890"
+}

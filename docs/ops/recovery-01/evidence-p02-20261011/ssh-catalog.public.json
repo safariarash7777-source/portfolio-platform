@@ -1,0 +1,8 @@
+{
+  "observedAt": "2026-10-11T08:51:16.701959+00:00",
+  "readOnly": true,
+  "host": "62.60.191.24",
+  "exitCode": 255,
+  "errorCategory": "timeout",
+  "stderrSha256": "7f89557c6484875894fa2e1bea0e093768da7f2165917f9910b91b0660ef8464"
+}

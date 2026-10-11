@@ -1,0 +1,17 @@
+{
+  "observedAt": "2026-10-11T08:51:01.399204+00:00",
+  "httpStatus": null,
+  "attempts": [
+    {
+      "transport": "direct",
+      "errorType": "URLError",
+      "status": null
+    },
+    {
+      "transport": "existing_local_proxy",
+      "errorType": "TimeoutError",
+      "status": null
+    }
+  ],
+  "tlsVerified": true
+}

@@ -1,0 +1,10 @@
+{
+  "observedAt": "2026-10-11T09:13:31.143028+00:00",
+  "readOnly": true,
+  "url": "https://62.60.191.24/_stcore/health",
+  "sourceFreshness": "UNKNOWN; health response is not source freshness",
+  "tlsVerified": true,
+  "providerRequests": 0,
+  "httpStatus": 200,
+  "healthOk": true
+}

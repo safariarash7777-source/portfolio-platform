@@ -1,0 +1,12 @@
+{
+  "name": "currency",
+  "observedAt": "2026-10-11T08:57:27.281151+00:00",
+  "readOnly": true,
+  "transport": "existing_local_proxy",
+  "directProviderRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "headersReceivedAt": "2026-10-11T08:57:27.891476+00:00",
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}

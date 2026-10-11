@@ -1,0 +1,12 @@
+{
+  "name": "history-tail",
+  "observedAt": "2026-10-11T08:59:10.799880+00:00",
+  "readOnly": true,
+  "transport": "existing_local_proxy",
+  "directProviderRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "headersReceivedAt": "2026-10-11T08:59:11.469065+00:00",
+  "errorType": "TimeoutError",
+  "errorStatus": null
+}

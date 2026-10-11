@@ -1,0 +1,24 @@
+{
+  "observedAt": "2026-10-11T09:23:00.850773+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "coverage": "two symbols only; not a complete migration reconciliation",
+  "samples": [
+    {
+      "symbol": "\u0641\u0645\u0644\u06cc",
+      "httpStatus": 200,
+      "metadata": [
+        {
+          "symbol": "\u0641\u0645\u0644\u06cc",
+          "trade_date": "2026-10-10",
+          "captured_at": "2026-10-10T10:32:46.723315+00:00"
+        }
+      ]
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "errorType": "URLError",
+      "httpStatus": null
+    }
+  ]
+}

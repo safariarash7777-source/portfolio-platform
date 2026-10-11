@@ -1,0 +1,36 @@
+{
+  "family": "currency",
+  "observedAt": "2026-10-11T09:08:53.858567+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "sampleSize": 1,
+  "coverage": "first-row-only; not family completeness",
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "updatedAt": "2026-10-11T09:07:44.805+00:00",
+  "privateSha256": "b77cdc9235c8df1a9f5c957bac03e437f1eaa575e1ebbb5a99a2e151e86f1969",
+  "rowExists": true,
+  "bytes": 177,
+  "metadata": {
+    "id": "USDT_IRT",
+    "sourceDate": null,
+    "sourceTime": null,
+    "date": null,
+    "time": null,
+    "navDate": null,
+    "navTime": null,
+    "unit": "toman",
+    "priceUnit": null,
+    "valueUnit": null
+  },
+  "fieldNames": [
+    "change",
+    "changePercent",
+    "faName",
+    "id",
+    "price",
+    "unit"
+  ],
+  "hasPositiveNav": false,
+  "hasContractSize": false
+}

@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-10-11T09:20:57.901749+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "credentialSource": "prior private Vercel export; authenticated via fresh GET",
+  "role": "anon",
+  "table": "codal_feed",
+  "httpStatus": 200,
+  "metadata": [
+    {
+      "id": 12240,
+      "sent_date": "\u06f1\u06f4\u06f0\u06f5/\u06f0\u06f7/\u06f1\u06f9",
+      "sent_time": "\u06f1\u06f1:\u06f0\u06f4:\u06f3\u06f7"
+    }
+  ]
+}

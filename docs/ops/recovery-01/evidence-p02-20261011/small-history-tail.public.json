@@ -1,0 +1,35 @@
+{
+  "name": "history-tail",
+  "observedAt": "2026-10-11T09:01:12.490262+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "transfer": {
+    "Content-Length": "337",
+    "Transfer-Encoding": null,
+    "Content-Encoding": null,
+    "Connection": "close",
+    "Content-Type": "application/json; charset=utf-8"
+  },
+  "metadata": [
+    {
+      "id": 5745614,
+      "symbol": "\u062a\u0627\u0628\u0627",
+      "trade_date": "2026-07-20",
+      "captured_at": "2026-10-11T07:57:42.030913+00:00"
+    },
+    {
+      "id": 5745613,
+      "symbol": "\u062a\u0627\u0628\u0627",
+      "trade_date": "2026-07-22",
+      "captured_at": "2026-10-11T07:57:42.030913+00:00"
+    },
+    {
+      "id": 5745612,
+      "symbol": "\u062a\u0627\u0628\u0627",
+      "trade_date": "2026-07-26",
+      "captured_at": "2026-10-11T07:57:42.030913+00:00"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "observedAt": "2026-10-11T09:11:58.172251+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "table": "codal_reports",
+  "httpStatus": 200,
+  "metadata": [
+    {
+      "id": 10587,
+      "symbol": "\u0642\u0644\u0631\u0633\u062a",
+      "report_kind": "\u0646-\u06f1\u06f0",
+      "period_end": "2026-07-22",
+      "unit": "\u0645\u06cc\u0644\u06cc\u0648\u0646 \u0631\u06cc\u0627\u0644",
+      "period": "1405-04-31",
+      "parser": 2
+    }
+  ]
+}

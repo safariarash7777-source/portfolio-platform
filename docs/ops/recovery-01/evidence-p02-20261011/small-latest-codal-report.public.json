@@ -1,0 +1,28 @@
+{
+  "name": "latest-codal-report",
+  "observedAt": "2026-10-11T09:05:32.146174+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "transfer": {
+    "Content-Length": "218",
+    "Transfer-Encoding": null,
+    "Content-Encoding": null,
+    "Connection": "close",
+    "Content-Type": "application/json; charset=utf-8"
+  },
+  "metadata": [
+    {
+      "id": 10587,
+      "symbol": "\u0642\u0644\u0631\u0633\u062a",
+      "report_kind": "\u0646-\u06f1\u06f0",
+      "period_end": "2026-07-22",
+      "published_at": null,
+      "captured_at": "2026-10-11T07:37:38.829249+00:00",
+      "date": "\u06f1\u06f4\u06f0\u06f5/\u06f0\u06f7/\u06f1\u06f9",
+      "time": "\u06f0\u06f9:\u06f5\u06f9:\u06f3\u06f7",
+      "parser": 2
+    }
+  ]
+}

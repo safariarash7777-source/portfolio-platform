@@ -1,0 +1,38 @@
+{
+  "family": "crypto",
+  "observedAt": "2026-10-11T09:08:53.953535+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "sampleSize": 1,
+  "coverage": "first-row-only; not family completeness",
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "updatedAt": "2026-10-11T09:07:44.805+00:00",
+  "privateSha256": "5f605aad296d5e1012495c388cc0d463e3ca3db5523367e4ea9faf719ee170c2",
+  "rowExists": true,
+  "bytes": 381,
+  "metadata": {
+    "id": "BTC",
+    "sourceDate": null,
+    "sourceTime": null,
+    "date": null,
+    "time": null,
+    "navDate": null,
+    "navTime": null,
+    "unit": "usd",
+    "priceUnit": null,
+    "valueUnit": null
+  },
+  "fieldNames": [
+    "changePercent",
+    "description",
+    "faName",
+    "id",
+    "marketCap",
+    "nameEn",
+    "price",
+    "unit"
+  ],
+  "hasPositiveNav": false,
+  "hasContractSize": false
+}

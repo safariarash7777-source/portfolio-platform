@@ -1,0 +1,36 @@
+{
+  "family": "gold",
+  "observedAt": "2026-10-11T09:08:53.319342+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "sampleSize": 1,
+  "coverage": "first-row-only; not family completeness",
+  "tlsVerified": true,
+  "httpStatus": 200,
+  "updatedAt": "2026-10-11T09:07:44.805+00:00",
+  "privateSha256": "d80339b87c10d7dbb739cdb43015ba74d3653bbc38044b634e7e2632859a5f63",
+  "rowExists": true,
+  "bytes": 189,
+  "metadata": {
+    "id": "IR_GOLD_18K",
+    "sourceDate": null,
+    "sourceTime": null,
+    "date": null,
+    "time": null,
+    "navDate": null,
+    "navTime": null,
+    "unit": "toman",
+    "priceUnit": null,
+    "valueUnit": null
+  },
+  "fieldNames": [
+    "change",
+    "changePercent",
+    "faName",
+    "id",
+    "price",
+    "unit"
+  ],
+  "hasPositiveNav": false,
+  "hasContractSize": false
+}
