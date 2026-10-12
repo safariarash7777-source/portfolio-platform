@@ -112,6 +112,104 @@ test('edits while save is in flight stay dirty and do not masquerade as the save
   }
 });
 
+test('workbook replacement cannot cross an in-flight save, open or review response', async () => {
+  const priorWindow = Object.getOwnPropertyDescriptor(globalThis, 'window'), priorDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { confirm: () => true, prompt: () => 'Synthetic return', addEventListener() {}, removeEventListener() {} } });
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { addEventListener() {}, removeEventListener() {} } });
+  try {
+    for (const operation of ['save', 'open', 'approve', 'return'] as const) {
+      const fixture = createP07WorkflowFixture(), path = '/api/admin/intelligence/workbooks';
+      const saved = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+      const id = String(saved.body.workbookId);
+      let pause = false, release: (() => void) | undefined, fileReads = 0;
+      const transport: WorkbookTransport = async (url, init) => {
+        if (pause && (init?.method === 'POST' || url.includes('?id='))) {
+          pause = false;
+          await new Promise<void>(done => { release = done; });
+        }
+        return fixture.transport(url, init);
+      };
+      const ui = mount(transport, id); await ui.settle();
+      const title = () => ui.find('input', node => node.props.id === 'title');
+      const newHandler = ui.button('تازه').props.onClick as () => void;
+      const importHandler = ui.find('input', node => node.props.type === 'file').props.onChange as (event: unknown) => void;
+      const file = { size: 1, text: async () => { fileReads++; return JSON.stringify({ ...p07FixtureWorkbook(), title: 'Synthetic B' }); } };
+      if (operation === 'save') {
+        (title().props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic A edited' } }); await ui.settle();
+      }
+      pause = true;
+      const action = operation === 'save' ? ui.button('ذخیره به‌عنوان') : operation === 'approve' ? ui.button('تأیید داخلی نسخه')
+        : operation === 'return' ? ui.button('بازگرداندن با علت') : ui.button(p07FixtureWorkbook().title);
+      (action.props.onClick as () => void)();
+      // Invoke handlers from the earlier render before disabled attributes update.
+      newHandler(); importHandler({ target: { files: [file] } }); await ui.settle();
+      assert.equal(fileReads, 0, operation);
+      assert.equal(ui.button('تازه').props.disabled, true, operation);
+      assert.equal(ui.button('ادامه از فایل').props.disabled, true, operation);
+      assert.equal(ui.find('input', node => node.props.type === 'file').props.disabled, true, operation);
+      assert.equal(title().props.value, operation === 'save' ? 'Synthetic A edited' : p07FixtureWorkbook().title);
+      assert.ok(release); release(); await ui.settle();
+      assert.equal(ui.button('تازه').props.disabled, false);
+      await ui.click('تازه');
+      (title().props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic B' } }); await ui.settle();
+      await ui.click('ذخیرهٔ نسخهٔ ۱');
+      const rows = fixture.snapshot().versions;
+      assert.equal(rows.at(-1)?.title, 'Synthetic B');
+      assert.notEqual(rows.at(-1)?.workbookId, id, 'late response must not attach B to A');
+      assert.equal(rows.at(-1)?.version, 1);
+      assert.equal(ui.badge(), false, 'a fresh workbook never inherits the prior review');
+    }
+  } finally {
+    if (priorWindow) Object.defineProperty(globalThis, 'window', priorWindow); else Reflect.deleteProperty(globalThis, 'window');
+    if (priorDocument) Object.defineProperty(globalThis, 'document', priorDocument); else Reflect.deleteProperty(globalThis, 'document');
+  }
+});
+
+test('a deferred file read owns the replacement boundary until the import completes', async () => {
+  const fixture = createP07WorkflowFixture(), path = '/api/admin/intelligence/workbooks';
+  const saved = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const priorWindow = Object.getOwnPropertyDescriptor(globalThis, 'window'), priorDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { confirm: () => true, addEventListener() {}, removeEventListener() {} } });
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { addEventListener() {}, removeEventListener() {} } });
+  try {
+    const ui = mount(fixture.transport, String(saved.body.workbookId)); await ui.settle();
+    const title = () => ui.find('input', node => node.props.id === 'title');
+    (title().props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic A edited' } }); await ui.settle();
+    const saveHandler = ui.button('ذخیره به‌عنوان').props.onClick as () => void;
+    const newHandler = ui.button('تازه').props.onClick as () => void;
+    const importHandler = ui.find('input', node => node.props.type === 'file').props.onChange as (event: unknown) => void;
+    let release: ((text: string) => void) | undefined, secondRead = false;
+    importHandler({ target: { files: [{ size: 1, text: () => new Promise<string>(done => { release = done; }) }] } });
+    saveHandler(); newHandler();
+    importHandler({ target: { files: [{ size: 1, text: async () => { secondRead = true; return '{}'; } }] } });
+    await ui.settle();
+    assert.equal(secondRead, false); assert.equal(fixture.snapshot().versions.length, 1);
+    assert.equal(title().props.value, 'Synthetic A edited');
+    assert.equal(ui.button('ذخیره به‌عنوان').props.disabled, true);
+    assert.ok(release); release(JSON.stringify({ ...p07FixtureWorkbook(), title: 'Synthetic imported B' })); await ui.settle();
+    assert.equal(title().props.value, 'Synthetic imported B');
+    assert.equal(ui.button('تازه').props.disabled, false);
+    await ui.click('ذخیرهٔ نسخهٔ ۱');
+    const last = fixture.snapshot().versions.at(-1);
+    assert.equal(last?.title, 'Synthetic imported B'); assert.equal(last?.version, 1);
+    assert.notEqual(last?.workbookId, saved.body.workbookId);
+    let nextRelease: ((text: string) => void) | undefined;
+    const nextImport = ui.find('input', node => node.props.type === 'file').props.onChange as (event: unknown) => void;
+    nextImport({ target: { files: [{ size: 1, text: () => new Promise<string>(done => { nextRelease = done; }) }] } });
+    (title().props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic edit during file read' } }); await ui.settle();
+    assert.ok(nextRelease); nextRelease(JSON.stringify({ ...p07FixtureWorkbook(), title: 'Synthetic stale import' })); await ui.settle();
+    assert.equal(title().props.value, 'Synthetic edit during file read', 'late file contents must not discard a newer edit');
+    assert.equal(ui.button('ذخیره به‌عنوان').props.disabled, false);
+    assert.equal(ui.button('تأیید داخلی نسخه').props.disabled, true);
+    nextImport({ target: { files: [{ size: 1, text: async () => 'invalid JSON' }] } }); await ui.settle();
+    assert.equal(ui.button('تازه').props.disabled, false, 'failed import releases the boundary');
+    assert.equal(title().props.value, 'Synthetic edit during file read');
+  } finally {
+    if (priorWindow) Object.defineProperty(globalThis, 'window', priorWindow); else Reflect.deleteProperty(globalThis, 'window');
+    if (priorDocument) Object.defineProperty(globalThis, 'document', priorDocument); else Reflect.deleteProperty(globalThis, 'document');
+  }
+});
+
 test('actual UI respects returned ties, old versions, dirty state and in-flight decisions', async () => {
   const fixture = createP07WorkflowFixture(), path = '/api/admin/intelligence/workbooks';
   const saved = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: null, baseVersion: 0, workbook: p07FixtureWorkbook() }) });

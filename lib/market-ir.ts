@@ -1,4 +1,5 @@
 import { withDeadline } from "./deadline";
+import { hasRealPrice } from "./market-price";
 import { validTimestamp, parseSnapshotQuality, type SnapshotQuality } from "./market-quality";
 // دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
 //
@@ -198,7 +199,7 @@ function asRows(v: unknown): IrRow[] {
         typeof r.id === "string" &&
         typeof r.faName === "string" &&
         typeof r.price === "number" &&
-        isFinite(r.price) &&
+        hasRealPrice(r.price) &&
         (r.unit === "toman" || r.unit === "usd")
     )
     .map((r) => ({
@@ -224,7 +225,7 @@ export function asStockRows(v: unknown): IrStockRow[] {
         typeof r.id === "string" &&
         typeof r.faName === "string" &&
         typeof r.price === "number" &&
-        isFinite(r.price) &&
+        hasRealPrice(r.price) &&
         (r.unit === "toman" || r.unit === "usd")
     )
     .map((r) => ({
