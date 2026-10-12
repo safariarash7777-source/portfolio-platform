@@ -67,6 +67,8 @@ export interface CodalN10Data {
  *  ناتهی؛ `sales_qty` در ۴٬۷۶۴ و `sales_rate` در ۴٬۷۵۹ گزارش موجود).
  *  مصرف‌کننده: `lib/core/monthlyReport.ts` (سریِ نرخ، ترکیبِ محصول، تولید/فروش). */
 export interface N30ProductRow {
+  /** Explicit row denominator, when present; null never inherits a report unit. */
+  qty_unit?: string | null;
   product_name: string;
   market: "داخلی" | "صادراتی";
   production_qty: number | null;

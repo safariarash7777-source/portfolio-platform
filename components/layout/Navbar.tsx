@@ -44,7 +44,7 @@ const NAV_GROUPS: NavGroup[] = [
   { key: "about", label: "دربارهٔ آرش", href: "/about" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export default function Navbar() {
       }}
     >
       <div className="mx-auto w-full max-w-6xl px-5 h-[72px] flex items-center justify-between gap-4">
-        <Link
+        <Link prefetch={prefetch}
           href="/"
           className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--navy)]"
         >
@@ -103,7 +103,7 @@ export default function Navbar() {
           {NAV_GROUPS.map((g) => {
             if (g.href) {
               return (
-                <Link
+                <Link prefetch={prefetch}
                   key={g.key}
                   href={g.href}
                   className="inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-[color:var(--surface-2)]"
@@ -147,7 +147,7 @@ export default function Navbar() {
                     }}
                   >
                     {g.items.map((item) => (
-                      <Link
+                      <Link prefetch={prefetch}
                         key={item.href}
                         role="menuitem"
                         href={item.href}
@@ -177,10 +177,10 @@ export default function Navbar() {
           */}
           <div className="hidden items-center gap-2 sm:flex">
             {/* یک اقدامِ اصلی در این ناحیه */}
-            <Link href="/#waitlist" className="btn btn-gold">
+            <Link prefetch={prefetch} href="/#waitlist" className="btn btn-gold">
               مشاوره
             </Link>
-            <Link
+            <Link prefetch={prefetch}
               href="/dashboard"
               className="inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-[color:var(--surface-2)]"
               style={{ color: "var(--text-2)", minHeight: 44 }}
@@ -216,7 +216,7 @@ export default function Navbar() {
           <div className="mx-auto flex w-full max-w-6xl flex-col px-5 py-3">
             {NAV_GROUPS.map((g) =>
               g.href ? (
-                <Link
+                <Link prefetch={prefetch}
                   key={g.key}
                   href={g.href}
                   onClick={() => setOpen(false)}
@@ -231,7 +231,7 @@ export default function Navbar() {
                     {g.label}
                   </div>
                   {g.items?.map((item) => (
-                    <Link
+                    <Link prefetch={prefetch}
                       key={item.href}
                       href={item.href}
                       onClick={() => setOpen(false)}
@@ -245,10 +245,10 @@ export default function Navbar() {
               )
             )}
             <div className="mt-4 flex flex-col gap-2">
-              <Link href="/#waitlist" onClick={() => setOpen(false)} className="btn btn-gold w-full">
+              <Link prefetch={prefetch} href="/#waitlist" onClick={() => setOpen(false)} className="btn btn-gold w-full">
                 درخواست مشاوره
               </Link>
-              <Link href="/dashboard" onClick={() => setOpen(false)} className="btn btn-outline w-full">
+              <Link prefetch={prefetch} href="/dashboard" onClick={() => setOpen(false)} className="btn btn-outline w-full">
                 ورود
               </Link>
             </div>

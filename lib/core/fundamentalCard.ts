@@ -14,6 +14,8 @@
 // - خروجی متن با ارقام لاتین؛ لایهٔ UI با toPersianDigits نمایش می‌دهد.
 
 import type { CodalN30Data } from "@/lib/fundamental/types";
+import { withKnownMonthlyQuantities } from './monthly-quantity';
+import { meaningfulRate } from './monthlyReport';
 
 /* ── واحدها ── */
 
@@ -80,6 +82,7 @@ export interface FundamentalCardData {
   monthlyYoY: Array<{ month: string; yoyPct: number | null }>;
   /** شکاف تولید−فروش آخرین ماه (واحد کالا) — کشف انبارش */
   prodSalesGap: number | null;
+  quantityUnit: string | null;
   /** نرخ فروش محصول اصلی در آخرین ماه (ریال بر واحد) */
   topProductRate: number | null;
   /** جدول خام محصولات آخرین ماه (لایهٔ ۳) */
@@ -171,7 +174,7 @@ export function buildFundamentalCard(
   reports: CodalN30Data[],
   source?: { title: string | null; url: string | null }
 ): FundamentalCardData {
-  const series = monthSeries(reports);
+  const series = monthSeries(reports.map(withKnownMonthlyQuantities));
   const monthKeys = [...series.keys()];
   const latestMonth = monthKeys.length > 0 ? monthKeys[monthKeys.length - 1] : null;
   const latest = latestMonth ? series.get(latestMonth)! : null;
@@ -229,7 +232,7 @@ export function buildFundamentalCard(
         if (amt > best) {
           best = amt;
           topProductName = p.product_name;
-          topProductRate = p.sales_rate;
+          topProductRate = meaningfulRate(p);
         }
       }
       if (p.production_qty != null && p.sales_qty != null) {
@@ -265,6 +268,7 @@ export function buildFundamentalCard(
     months12,
     monthlyYoY,
     prodSalesGap,
+    quantityUnit: latest?.qty_unit ?? null,
     topProductRate,
     latestProducts,
     sourceUrl: source?.url ?? null,

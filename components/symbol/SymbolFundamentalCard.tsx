@@ -136,7 +136,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
             </div>
             <div className="rounded-lg px-3 py-2" style={{ background: "var(--surface-2)" }}>
               <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                شکاف تولید−فروش (واحد کالا)
+                شکاف تولید−فروش ({card.quantityUnit ?? 'واحد نامعلوم'})
               </div>
               <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--heading)" }} dir="ltr">
                 {card.prodSalesGap != null ? fa(card.prodSalesGap.toLocaleString("en-US")) : "—"}
@@ -147,7 +147,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
             </div>
             <div className="rounded-lg px-3 py-2" style={{ background: "var(--surface-2)" }}>
               <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                نرخ فروش {card.topProductName ? `«${card.topProductName}»` : "محصول اصلی"} (ریال/واحد)
+                نرخ فروش {card.topProductName ? `«${card.topProductName}»` : "محصول اصلی"} ({card.quantityUnit ? `ریال/${card.quantityUnit}` : 'واحد نامعلوم'})
               </div>
               <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--heading)" }} dir="ltr">
                 {card.topProductRate != null ? fa(card.topProductRate.toLocaleString("en-US")) : "—"}

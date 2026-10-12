@@ -411,6 +411,23 @@ async function readSupabase(diag: IrDiag, signal: AbortSignal): Promise<IrMarket
   return data.ok ? data : null;
 }
 
+// DB-only views must not borrow the legacy reader's relay cache or in-flight job.
+let storedInflight: Promise<IrMarket | null> | null = null;
+/** Read the stored snapshot only; any failed/absent read remains unavailable. */
+export function getStoredIrMarket(): Promise<IrMarket | null> {
+  if (storedInflight) return storedInflight;
+  const diag: IrDiag = {
+    at: Date.now(), source: null, supabaseConfigured: false, relayUrlConfigured: false,
+    reached: false, status: null, ok: false, fromCache: false, ageSec: null,
+    counts: null, error: null, ms: 0,
+  };
+  storedInflight = withDeadline(async signal => {
+    const data = await readSupabase(diag, signal);
+    return signal.aborted ? null : data;
+  }, READ_TIMEOUT_MS).catch(() => null).finally(() => { storedInflight = null; });
+  return storedInflight;
+}
+
 /** منبعِ دوم (فقط وقتی Supabase نبود/خالی بود): fetchِ زندهٔ رله. */
 async function readRelay(diag: IrDiag, signal: AbortSignal): Promise<IrMarket | null> {
   const base = process.env.IR_MARKET_RELAY_URL;

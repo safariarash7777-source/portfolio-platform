@@ -70,7 +70,7 @@ const GROUPS = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({ prefetch }: { prefetch?: boolean } = {}) {
   return (
     <footer className="border-t" style={{ background: "var(--surface)", borderColor: "var(--line)" }}>
       <div className="mx-auto w-full max-w-6xl px-5 py-14">
@@ -111,7 +111,7 @@ export default function Footer() {
               <ul className="flex flex-col">
                 {g.links.map((l) => (
                   <li key={l.href}>
-                    <Link
+                    <Link prefetch={prefetch}
                       href={l.href}
                       className="flex items-center text-sm transition-colors hover:underline"
                       style={{ color: "var(--text-2)", minHeight: 44 }}

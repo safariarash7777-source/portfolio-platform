@@ -33,6 +33,8 @@ function report(month: string, total: number, products: N30ProductRow[]): CodalN
     products,
     period_total_amount: total,
     fy_cumulative_amount: total,
+    unit: 'میلیون ریال',
+    qty_unit: 'تن',
   };
 }
 
@@ -136,6 +138,29 @@ test("ورودی خالی → کارت null-safe (بدون throw، بدون عد
   assert.equal(card.latestMonth, null);
   assert.equal(card.narrative, null);
   assert.equal(card.months12.length, 0);
+});
+
+test('unknown or mixed quantity units suppress quantity aggregates/rates, preserving monthly money', () => {
+  const original = report('1405-06', 450_000, [prod()]);
+  for (const input of [
+    { ...original, qty_unit: null },
+    { ...original, qty_unit: 'واحد' },
+    { ...original, products: [prod({qty_unit:'تن'}),prod({qty_unit:'کیلوگرم'})] },
+    { ...original, products: [prod({qty_unit:null})] },
+  ]) {
+    const card = buildFundamentalCard('فملی',[input]);
+    assert.equal(card.prodSalesGap,null);assert.equal(card.topProductRate,null);
+    assert.equal(card.quantityUnit,null);assert.equal(card.latestSalesBToman,45);
+    assert.equal(card.latestProducts[0].salesQty,null);assert.equal(card.latestProducts[0].salesRate,null);
+  }
+  assert.equal(original.products[0].sales_qty,90,'input source rows remain unchanged');
+});
+
+test('declared common quantity and money units retain rates/gap with a denominator label', () => {
+  const known=report('1405-06',450_000,[prod()]);
+  const card=buildFundamentalCard('فملی',[known]);
+  assert.equal(card.quantityUnit,'تن');assert.equal(card.prodSalesGap,10);assert.equal(card.topProductRate,5_000_000);
+  assert.equal(buildFundamentalCard('فملی',[{...known,unit:null}]).topProductRate,null,'unverified numerator money unit suppresses rate');
 });
 
 test("واژگان ممنوع در خروجی روایت نیست (قانون Blueprint)", () => {

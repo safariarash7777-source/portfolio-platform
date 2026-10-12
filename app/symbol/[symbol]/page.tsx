@@ -18,11 +18,12 @@ import SymbolTabs from "@/components/symbol/SymbolTabs";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
+import { withKnownMonthlyQuantities } from '@/lib/core/monthly-quantity';
 import FundamentalReadNotice from "@/components/symbol/FundamentalReadNotice";
 import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
 import { getAccess } from "@/lib/access";
 import { resolveBackTarget } from "@/lib/market-nav";
-import { getIrMarket, type IrStockRow } from "@/lib/market-ir";
+import { getStoredIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { readFundamentals } from "@/lib/fundamental/registry";
 import { getSymbolHistory } from "@/lib/core/history";
 import {
@@ -95,14 +96,17 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const sp = searchParams ? await searchParams : {};
 
   const [ir, history, fundamentalRead, fxRates, navHistory, access] = await Promise.all([
-    getIrMarket(),
+    getStoredIrMarket(),
     getSymbolHistory(sym, 400),
     readFundamentals(sym),
     getFxRates(),
     getNavHistory(sym, 400),
     getAccess(),
   ]);
-  const fundamentals = fundamentalRead.data;
+  const storedFundamentals = fundamentalRead.data;
+  const fundamentals = storedFundamentals?.n30 ? {
+    ...storedFundamentals, n30: { ...storedFundamentals.n30, data: storedFundamentals.n30.data.map(withKnownMonthlyQuantities) },
+  } : storedFundamentals;
   const fx = latestRate(fxRates);
 
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
@@ -328,11 +332,16 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
   return (
     <>
-      <Navbar />
+      <Navbar prefetch={false} />
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16 space-y-6">
+          {!ir ? (
+            <p role="status" className="rounded-xl border p-4 text-sm" style={{ borderColor: "var(--line-strong)", color: "var(--warning-ink)" }}>
+              دادهٔ تابلوی بازار از بانک داده در این بارگذاری دریافت نشد. گزارش‌های بنیادی از مسیر جداگانه خوانده می‌شوند؛ این وضعیت به معنی نبود گزارش شرکت نیست.
+            </p>
+          ) : null}
           <nav className="flex flex-wrap items-center gap-1 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
-            <Link href="/market" className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>میز بازار</Link>
+            <Link prefetch={false} href="/market" className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>میز بازار</Link>
             <span aria-hidden="true">/</span>
             {/* ── مسیرِ بازگشتِ متناسب با مبدأ ────────────────────────────
                 تا امروز ثابت بود: کاربری که از تابلوی سهام با فیلترِ صنعت آمده
@@ -340,7 +349,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 `?from=` که جست‌وجو می‌گذارد خوانده می‌شود، و
                 `resolveBackTarget` آن را با فهرستِ سفید می‌سنجد تا این پارامتر
                 نتواند به مقصدِ بیرونی تبدیل شود. */}
-            <Link href={back.href} className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>
+            <Link prefetch={false} href={back.href} className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>
               {back.label}
             </Link>
             <span aria-hidden="true">/</span>
@@ -565,7 +574,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
           {/* مسیرِ رفت‌وبرگشت: از این نماد به داشبورد، و از اینجا برگشت به میزِ بازار.
               فقط لینک — هیچ گیتِ دسترسی‌ای اینجا تصمیم نمی‌گیرد. */}
-          <AccountBridge
+          <AccountBridge prefetch={false}
             access={access}
             /* مبدأ همراهِ مسیرِ بازگشت از حساب می‌رود؛ بدونِ آن، کاربری که از
                صفحهٔ نماد وارد می‌شود، لینکِ «برگشت»ش به پیش‌فرض برمی‌گردد. */
@@ -581,7 +590,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
           </p>
         </div>
       </main>
-      <Footer />
+      <Footer prefetch={false} />
     </>
   );
 }

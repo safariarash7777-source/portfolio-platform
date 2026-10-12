@@ -19,10 +19,12 @@ import { accountSubtitle } from "./accountSubtitle";
 
 export default function AccountBridge({
   access,
+  prefetch,
   backTo,
   returnTo = "/market",
 }: {
   access: AccessInfo;
+  prefetch?: boolean;
   /** اگر داده شود، یک راهِ برگشت به همان صفحه‌ای که کاربر از آن آمده نشان می‌دهد. */
   backTo?: { href: string; label: string };
   /** مقصد امنی که پس از ورود باید حفظ شود. فقط مسیر محلی پذیرفته می‌شود. */
@@ -47,7 +49,7 @@ export default function AccountBridge({
 
       <div className="flex items-center gap-2 flex-wrap">
         {backTo ? (
-          <Link
+          <Link prefetch={prefetch}
             href={backTo.href}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{ color: "var(--navy-ink)", background: "var(--surface-2)" }}
@@ -58,7 +60,7 @@ export default function AccountBridge({
         ) : null}
 
         {signedIn ? (
-          <Link
+          <Link prefetch={prefetch}
             href="/dashboard"
             className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{ background: "var(--navy)", color: "var(--text-on-navy)", boxShadow: "var(--shadow-sm)" }}
@@ -68,7 +70,7 @@ export default function AccountBridge({
           </Link>
         ) : (
           <>
-            <Link
+            <Link prefetch={prefetch}
               href={accountEntryHref("/login", safeReturnTo)}
               className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-[12.5px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
               style={{ color: "var(--navy-ink)", background: "var(--surface-2)" }}
@@ -76,7 +78,7 @@ export default function AccountBridge({
               <LogIn size={15} strokeWidth={2.2} aria-hidden />
               ورود
             </Link>
-            <Link
+            <Link prefetch={prefetch}
               href={accountEntryHref("/register", safeReturnTo)}
               className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3.5 text-[12.5px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
               style={{ background: "var(--navy)", color: "var(--text-on-navy)", boxShadow: "var(--shadow-sm)" }}
