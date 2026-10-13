@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "p02-coverage.v1",
+  "observedAt": "2026-10-02T13:24:22.955384+00:00",
+  "range": {
+    "start": "2026-09-22",
+    "end": "2026-10-02"
+  },
+  "exportComplete": true,
+  "officialHistoricalUniverseKnown": false,
+  "scopeSymbols": 1271,
+  "currentSymbols": 1093,
+  "snapshotRows": 2747,
+  "snapshotAt": "2026-10-02T13:23:09.289+00:00",
+  "snapshotAgeSeconds": 73.666,
+  "familyCounts": {
+    "stocks": 760,
+    "funds": 333,
+    "gold": 9,
+    "currency": 28,
+    "crypto": 19,
+    "options": 1587,
+    "imeCertificates": 11,
+    "commodities": 0
+  },
+  "familyClocks": {
+    "crypto": {
+      "withSourceDateAndTime": 0,
+      "withoutSourceDateOrTime": 19
+    },
+    "currency": {
+      "withSourceDateAndTime": 0,
+      "withoutSourceDateOrTime": 28
+    },
+    "funds": {
+      "withSourceDateAndTime": 0,
+      "withoutSourceDateOrTime": 333
+    },
+    "gold": {
+      "withSourceDateAndTime": 0,
+      "withoutSourceDateOrTime": 9
+    },
+    "imeCertificates": {
+      "withSourceDateAndTime": 11,
+      "withoutSourceDateOrTime": 0
+    },
+    "options": {
+      "withSourceDateAndTime": 0,
+      "withoutSourceDateOrTime": 1587
+    },
+    "stocks": {
+      "withSourceDateAndTime": 0,
+      "withoutSourceDateOrTime": 760
+    }
+  },
+  "perDay": [
+    {
+      "day": "2026-09-22",
+      "storedSymbols": 1073,
+      "storedCurrentSymbols": 1037,
+      "storedRows": 1073
+    },
+    {
+      "day": "2026-09-23",
+      "storedSymbols": 1,
+      "storedCurrentSymbols": 1,
+      "storedRows": 1
+    },
+    {
+      "day": "2026-09-24",
+      "storedSymbols": 0,
+      "storedCurrentSymbols": 0,
+      "storedRows": 0
+    },
+    {
+      "day": "2026-09-25",
+      "storedSymbols": 0,
+      "storedCurrentSymbols": 0,
+      "storedRows": 0
+    },
+    {
+      "day": "2026-09-26",
+      "storedSymbols": 1,
+      "storedCurrentSymbols": 1,
+      "storedRows": 1
+    },
+    {
+      "day": "2026-09-27",
+      "storedSymbols": 1,
+      "storedCurrentSymbols": 1,
+      "storedRows": 1
+    },
+    {
+      "day": "2026-09-28",
+      "storedSymbols": 1,
+      "storedCurrentSymbols": 1,
+      "storedRows": 1
+    },
+    {
+      "day": "2026-09-29",
+      "storedSymbols": 1,
+      "storedCurrentSymbols": 1,
+      "storedRows": 1
+    },
+    {
+      "day": "2026-09-30",
+      "storedSymbols": 1080,
+      "storedCurrentSymbols": 1075,
+      "storedRows": 1080
+    },
+    {
+      "day": "2026-10-01",
+      "storedSymbols": 0,
+      "storedCurrentSymbols": 0,
+      "storedRows": 0
+    },
+    {
+      "day": "2026-10-02",
+      "storedSymbols": 0,
+      "storedCurrentSymbols": 0,
+      "storedRows": 0
+    }
+  ],
+  "classification": {
+    "covered": 0,
+    "holiday": 0,
+    "no-trade": 0,
+    "unsupported": 1177,
+    "gap": 0,
+    "unknown": 12804
+  },
+  "storedCells": 2158,
+  "unitCounts": {
+    "usd": 20,
+    "toman": 1129,
+    "UNKNOWN": 1598
+  },
+  "blacklist": {
+    "storedEntries": 325,
+    "uniqueEntries": 325,
+    "currentFundsBlacklisted": 308,
+    "updatedAt": "2026-09-21T16:06:39.672+00:00",
+    "perSymbolCauseKnown": false,
+    "perSymbolLastCheckedKnown": false,
+    "preserved": true
+  },
+  "nav": {
+    "currentFunds": 333,
+    "withStoredNAV": 25,
+    "positiveAndPlausible": 25,
+    "verifiedFreshNAV": 0,
+    "storedNAVSourceStale": 25,
+    "storedNAVSourceUnknown": 0,
+    "staleAgeMinHours": 46.8374875,
+    "note": "Snapshot age and positive ratio do not prove provider NAV freshness/capability."
+  },
+  "legacy": {
+    "doneSymbols": 1244,
+    "updatedAt": "2026-09-30T14:41:10.012+00:00",
+    "reqDate": "2026-09-30",
+    "doneWithAnyRowInRange": 1105,
+    "doneWithoutAnyRowInRange": 139,
+    "completionNotRangeProof": true
+  },
+  "budget": {
+    "tablePresent": false,
+    "functions": [],
+    "state": {
+      "kind": "budgetState",
+      "rows": null,
+      "status": "table_absent"
+    },
+    "priorUsage": null,
+    "supplierReset": null,
+    "verifiedRemaining": null,
+    "completionETA": null
+  },
+  "planner": {
+    "digest": "70f3ecc59b6474ddaf87f6927800cc027378fcfa49f7e9bfd31775a593e93e0d",
+    "requests": 0,
+    "liveGate": {
+      "enabled": false,
+      "blockers": [
+        "planner_has_no_live_mode",
+        "PR178_live_acceptance_required",
+        "supplier_reset_window_and_prior_usage_required",
+        "approved_scope_capacity_and_operator_rollout_required"
+      ]
+    }
+  },
+  "families": {
+    "kind": "families",
+    "codal": [
+      {
+        "rows": 3659,
+        "symbols": 484,
+        "report_kind": "ن-۱۰",
+        "latest_ingest": "2026-10-02T06:23:26.351756+00:00"
+      },
+      {
+        "rows": 6090,
+        "symbols": 344,
+        "report_kind": "ن-۳۰",
+        "latest_ingest": "2026-10-02T11:38:25.029569+00:00"
+      }
+    ],
+    "imeTables": [
+      "ime_snapshots"
+    ],
+    "snapshots": [
+      {
+        "key": "latest",
+        "updated_at": "2026-10-02T13:23:09.289+00:00",
+        "payloadKeys": [
+          "gold",
+          "funds",
+          "crypto",
+          "stocks",
+          "indices",
+          "options",
+          "currency",
+          "fetchedAt",
+          "commodities",
+          "imeCertificates"
+        ],
+        "indices_date": "1405-07-08",
+        "indices_time": "18:16:15"
+      }
+    ],
+    "marketHistory": [
+      {
+        "rows": 3046,
+        "section": "currency",
+        "latest_ingest": "2026-10-02T13:18:13.743384+00:00"
+      },
+      {
+        "rows": 2656,
+        "section": "funds",
+        "latest_ingest": "2026-09-15T09:42:35.617203+00:00"
+      },
+      {
+        "rows": 3046,
+        "section": "gold",
+        "latest_ingest": "2026-10-02T13:18:13.743384+00:00"
+      },
+      {
+        "rows": 2656,
+        "section": "stocks",
+        "latest_ingest": "2026-09-15T09:42:35.617203+00:00"
+      }
+    ]
+  },
+  "exportSHA256": "9e782cd38ac0ba4ae4bf2a1e8cb0c4e4cbe33a2ff0d870a0e1b0e6288d276c9f"
+}

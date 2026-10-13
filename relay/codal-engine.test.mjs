@@ -1,20 +1,8 @@
-// تست‌های موتور کدال v3 — واحد (واترمارک/کلید زمان) + دراى‌ران فید واقعی.
-// اجرا: node relay/codal-engine.test.mjs   (بدون درج در دیتابیس)
+// تست‌های واحد موتور کدال v3 — بدون شبکه و بدون درج در دیتابیس.
+// اجرا: node relay/codal-engine.test.mjs
 import assert from "node:assert";
-import { classifyAnnouncement, faToEn, fetchAnnouncementsPage } from "./codal.mjs";
-import { feedCategory } from "./codal-engine.mjs";
-
-// sentKey از codal-engine.mjs خصوصی است — همان منطق را این‌جا بازتولید و
-// روی نمونه‌های واقعی صحت‌سنجی می‌کنیم (اگر منطق موتور عوض شود این تست باید همگام شود).
-function sentKey(a) {
-  const d = faToEn(String(a.date_send || ""));
-  const t = faToEn(String(a.time_send || ""));
-  const dm = d.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/);
-  const tm = t.match(/(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
-  if (!dm) return 0;
-  const pad = (x) => String(x).padStart(2, "0");
-  return Number(`${dm[1]}${pad(dm[2])}${pad(dm[3])}${tm ? pad(tm[1]) + pad(tm[2]) + pad(tm[3] || 0) : "000000"}`);
-}
+import { classifyAnnouncement } from "./codal.mjs";
+import { feedCategory, sentKey } from "./codal-engine.mjs";
 
 let pass = 0, fail = 0;
 function t(name, fn) {
@@ -69,34 +57,6 @@ t("feedCategory: مجمع", () => {
 t("feedCategory: ناشناخته → سایر", () => {
   assert.equal(feedCategory({ code: "", title: "معرفی یا تغییر در ترکیب اعضای هیئت مدیره" }), "سایر");
 });
-
-// دراى‌ران فید واقعی (فقط خواندن؛ بدون دانلود اکسل و بدون درج)
-const live = process.env.SKIP_LIVE !== "1";
-if (live) {
-  console.log("\nlive feed dry-run (2 pages):");
-  try {
-    const p1 = await fetchAnnouncementsPage({ page: 1 });
-    const p2 = await fetchAnnouncementsPage({ page: 2 });
-    const all = [...p1, ...p2];
-    assert.ok(p1.length > 0, "صفحهٔ ۱ خالی است");
-    // فید باید نزولی-زمانی باشد (جدیدترین اول) — با تلورانس هم‌زمانی
-    let ordered = 0, total = 0;
-    for (let i = 1; i < all.length; i++) {
-      const a = sentKey(all[i - 1]), b = sentKey(all[i]);
-      if (a && b) { total++; if (a >= b) ordered++; }
-    }
-    const kinds = all.map(classifyAnnouncement);
-    const matched = kinds.filter(Boolean).length;
-    console.log(`  items=${all.length} ordered=${ordered}/${total} matched(ن-۱۰/ن-۳۰)=${matched}`);
-    assert.ok(ordered / total > 0.95, "فید مرتب نزولی نیست");
-    pass += 2;
-    console.log("  ✓ فید سراسری زنده و مرتب است");
-    console.log("  ✓ طبقه‌بندی روی فید واقعی کار می‌کند");
-  } catch (e) {
-    fail++;
-    console.error(`  ✗ live feed: ${e.message}`);
-  }
-}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

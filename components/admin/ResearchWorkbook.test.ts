@@ -44,6 +44,70 @@ test('actual workbook UI returns, reopens, creates a fresh version and requires 
   }
 });
 
+test('approval label follows clean displayed content while saved review history survives edits', async () => {
+  const fixture = createP07WorkflowFixture(), path = '/api/admin/intelligence/workbooks';
+  const saved = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const priorWindow = Object.getOwnPropertyDescriptor(globalThis, 'window'), priorDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { confirm: () => true, prompt: () => 'Synthetic return', addEventListener() {}, removeEventListener() {} } });
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { addEventListener() {}, removeEventListener() {} } });
+  try {
+    const ui = mount(fixture.transport, String(saved.body.workbookId)); await ui.settle();
+    await ui.click('تأیید داخلی نسخه'); assert.equal(ui.badge(), true);
+    const title = () => ui.find('input', node => node.props.id === 'title');
+    (title().props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic revised title' } }); await ui.settle();
+    assert.equal(ui.badge(), false, 'unsaved content must not appear approved');
+    assert.equal(ui.button('تأیید داخلی نسخه').props.disabled, true);
+    assert.equal(ui.button('بازگرداندن با علت').props.disabled, true);
+    ui.find('li', node => JSON.stringify(node.props.children).includes('تأیید داخلی'));
+    assert.equal(fixture.snapshot().reviews.length, 1, 'the saved version keeps its approval history');
+    await ui.click('ذخیره به‌عنوان'); assert.equal(ui.badge(), false);
+    assert.equal(ui.button('تأیید داخلی نسخه').props.disabled, false);
+    assert.equal(fixture.snapshot().versions.length, 2);
+    assert.equal(fixture.snapshot().reviews.length, 1, 'v2 needs a new approval');
+    await ui.click('تأیید داخلی نسخه'); assert.equal(ui.badge(), true);
+    await ui.click('بازگرداندن با علت'); assert.equal(ui.badge(), false);
+    (title().props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic revision after return' } }); await ui.settle();
+    await ui.click('ذخیره به‌عنوان'); assert.equal(ui.badge(), false);
+    await ui.click('تأیید داخلی نسخه'); assert.equal(ui.badge(), true);
+    assert.equal(fixture.snapshot().versions.length, 3);
+    assert.deepEqual(fixture.snapshot().reviews.map(row => row.decision), ['approved_internal', 'approved_internal', 'returned', 'approved_internal']);
+  } finally {
+    if (priorWindow) Object.defineProperty(globalThis, 'window', priorWindow); else Reflect.deleteProperty(globalThis, 'window');
+    if (priorDocument) Object.defineProperty(globalThis, 'document', priorDocument); else Reflect.deleteProperty(globalThis, 'document');
+  }
+});
+
+test('pending preparation text hides the clean approval label without changing saved decisions', async () => {
+  const fixture = createP07WorkflowFixture(), path = '/api/admin/intelligence/workbooks';
+  const saved = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const priorWindow = Object.getOwnPropertyDescriptor(globalThis, 'window'), priorDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { confirm: () => true, addEventListener() {}, removeEventListener() {} } });
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { addEventListener() {}, removeEventListener() {} } });
+  try {
+    const ui = mount(fixture.transport, String(saved.body.workbookId)); await ui.settle();
+    await ui.click('تأیید داخلی نسخه'); assert.equal(ui.badge(), true);
+    const fields = mountComponent('components/admin/ResearchPreparationFields.tsx', ui.find(ResearchPreparationFields, () => true).props);
+    await fields.settle();
+    for (const rows of [3, 2]) {
+      const input = () => fields.find('textarea', node => node.props.rows === rows);
+      (input().props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic pending text' } }); await fields.settle(); await ui.settle();
+      assert.equal(ui.badge(), false, 'pending claim/ambiguity text is not approved content');
+      assert.equal(ui.button('تأیید داخلی نسخه').props.disabled, true);
+      assert.equal(ui.button('بازگرداندن با علت').props.disabled, true);
+      ui.find('li', node => JSON.stringify(node.props.children).includes('تأیید داخلی'));
+      ui.find('p', node => node.props['aria-live'] === 'polite' && JSON.stringify(node.props.children).includes('تغییرات ذخیره‌نشده'));
+      assert.equal(fixture.snapshot().reviews.length, 1);
+      (input().props.onChange as (event: unknown) => void)({ target: { value: '' } }); await fields.settle(); await ui.settle();
+      assert.equal(ui.badge(), true, 'discarding pending text restores the unchanged saved approval label');
+    }
+    assert.equal(fixture.snapshot().versions.length, 1);
+    assert.equal(fixture.snapshot().reviews.length, 1);
+  } finally {
+    if (priorWindow) Object.defineProperty(globalThis, 'window', priorWindow); else Reflect.deleteProperty(globalThis, 'window');
+    if (priorDocument) Object.defineProperty(globalThis, 'document', priorDocument); else Reflect.deleteProperty(globalThis, 'document');
+  }
+});
+
 test('actual workbook private fields survive an independent reopen and pending entry cannot be dropped', async () => {
   const fixture=createP07WorkflowFixture(), path='/api/admin/intelligence/workbooks';
   const saved=await fixture.transport(path,{method:'POST',body:JSON.stringify({action:'save',baseVersion:0,workbook:p07FixtureWorkbook()})});

@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import { loadPortfolioSnapshot, loadPriceRows, loadVersionDebts } from "@/lib/portfolio/service";
 import { buildBalanceSheet } from "@/lib/portfolio/balanceSheet";
 import BalanceSheetSummary from "@/components/portfolio/BalanceSheetSummary";
+import FinancialEditors from "@/components/portfolio/FinancialEditors";
 import DebtsWorkbench from "@/components/portfolio/DebtsWorkbench";
 import InvestmentScopeWorkbench from "@/components/portfolio/InvestmentScopeWorkbench";
 import HoldingsSummary from "@/components/portfolio/HoldingsSummary";
@@ -44,6 +45,7 @@ export default async function HoldingsPage({
 
       <Link href="/dashboard" className="btn btn-outline">بازگشت به داشبورد</Link>
       <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>این صفحه فقط ثبت‌های نسخه‌دار دارایی و بدهی را نشان می‌دهد. سوابق سبد قبلی و الگوهای تخصیص در <Link href="/dashboard" className="underline">داشبورد قبلی</Link> محفوظ‌اند؛ به این فهرست تبدیل یا منتقل نشده‌اند. برای جلوگیری از محاسبهٔ حدسی، مقدار بدون واحد، مالکیت یا منبع معتبر را جدا بررسی و ثبت کنید.</p>
+      <FinancialEditors key={`financial-editors-${snapshot.holdings?.id ?? "new"}`}>
       <BalanceSheetSummary sheet={sheet} version={snapshot.holdings?.version ?? null} />
       {snapshot.ready ? <HoldingsSummary valuation={valuePositions(snapshot.holdings?.positions ?? [], prices.data ?? [], new Date())} version={snapshot.holdings?.version ?? null} pricesFailed={prices.status === "error"} /> : <ReadError label={snapshot.holdingsState === "not_found" ? "نسخهٔ انتخابی؛ در دسترس حساب شما نیست" : "دارایی‌ها"} code="PORTFOLIO_READ" />}
       {snapshot.targetState === "error" && <ReadError label="سبد هدف؛ دارایی شما مستقل از هدف قابل مشاهده است" code="PORTFOLIO_TARGET" />}
@@ -65,6 +67,7 @@ export default async function HoldingsPage({
         showImport={false}
       />
       <DebtsWorkbench key={`debts-${snapshot.holdings?.id ?? "new"}`} debts={debts.debts} ready={snapshot.ready && debts.ready} activeVersion={snapshot.holdings?.version ?? null} latestVersion={snapshot.history[0]?.version ?? 0} />
+      </FinancialEditors>
     </main><Footer /></>
   );
 }

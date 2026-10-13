@@ -252,7 +252,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         <h2 className="text-lg font-bold">پروندهٔ پژوهش</h2>
         <p className="text-sm leading-7">بررسی ساختار، جایگزین بررسی صحت منبع یا قضاوت تحلیلی نیست.</p>
         {saved && <p className="text-sm leading-7" aria-live="polite">
-          نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere ? ' · تأیید داخلی شده' : ''}
+          نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty || pendingPreparation ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere && !dirty && !pendingPreparation ? ' · تأیید داخلی شده' : ''}
         </p>}
         {server === 'ready' && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!dirty && !!saved)} onClick={() => void saveToServer()}><Save size={16} aria-hidden="true" /> {saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
         <button type="button" className="btn btn-primary w-full min-h-11" onClick={() => { setChecked(true); setMessage(issues.length ? `${toPersianDigits(issues.length)} مورد نیازمند تکمیل است.` : 'ساختار کامل است؛ صحت شواهد و نتیجه هنوز بازبینی انسانی می‌خواهد.'); }}><ClipboardCheck size={16} aria-hidden="true" /> بررسی ساختار</button>

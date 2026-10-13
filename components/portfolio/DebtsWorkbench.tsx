@@ -1,6 +1,7 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFinancialEditor } from "./FinancialEditors";
 import { formatJalali, formatToman, toPersianDigits } from "@/lib/format";
 import { DEBT_LABELS, normaliseDebt, type Currency, type DebtKind } from "@/lib/portfolio/financialInput";
 import type { DebtPosition } from "@/lib/portfolio/balanceSheet";
@@ -11,18 +12,39 @@ export function DebtList({ debts }: { debts: readonly DebtPosition[] }) {
   return <section className="card p-5 space-y-4" aria-label="بدهی‌های ثبت‌شده"><h2 className="font-bold text-lg">بدهی‌های ثبت‌شده</h2>{debts.length === 0 ? <p>بدهی‌ای در این نسخه ثبت نشده است.</p> : <ul className="space-y-4">{debts.map(d => <li className="border-t pt-3 space-y-2" style={{ borderColor: "var(--line)" }} key={d.debt_key}><p className="font-bold">{d.title} · {DEBT_LABELS[d.kind]}</p><p>مانده: {formatToman(d.balance_toman)} · معتبر برای تاریخ {formatJalali(d.balance_as_of)}</p>{d.next_installment_toman !== null && <p>قسط بعدی: {formatToman(d.next_installment_toman)} · موعد {formatJalali(d.next_due_on!)} (در ماندهٔ بدهی منظور شده است)</p>}{d.note && <p className="text-sm">{d.note}</p>}</li>)}</ul>}</section>;
 }
 export default function DebtsWorkbench({ debts, ready, activeVersion, latestVersion }: { debts: readonly DebtPosition[]; ready: boolean; activeVersion: number | null; latestVersion: number }) {
-  const router = useRouter(), lock = useRef(false);
+  const router = useRouter();
+  const editor = useFinancialEditor("debts");
+  const lock = useRef(false);
   const [rows, setRows] = useState<Row[]>(() => debts.map(d => ({ ...d, balance: String(d.balance_toman), currency: "IRT", next_installment: d.next_installment_toman === null ? "" : String(d.next_installment_toman), next_due_on: d.next_due_on ?? "", note: d.note ?? "" })));
+  const completed = useRef(false);
+  const initialRows = useRef(JSON.stringify(rows));
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [token, setToken] = useState(() => crypto.randomUUID());
   const [busy, setBusy] = useState(false), [message, setMessage] = useState("");
   const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
   const pending = useRef<FinancialSaveAttempt | null>(null);
   const unresolved = useRef(false);
-  const editingLocked = busy || uncertain;
+  const editingLocked = busy || uncertain || receiptUrl !== null || editor.locked;
+  const needsWarning = receiptUrl === null && (JSON.stringify(rows) !== initialRows.current || busy || uncertain);
+  useEffect(() => {
+    if (!needsWarning) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [needsWarning]);
   const historical = activeVersion !== null && activeVersion !== latestVersion;
-  const patch = (index: number, values: Partial<Row>) => setRows(old => old.map((r, i) => i === index ? { ...r, ...values } : r));
+  const editRows = (update: React.SetStateAction<Row[]>) => {
+    if (lock.current || unresolved.current || completed.current || !editor.acquire()) return;
+    setRows(update);
+  };
+  const patch = (index: number, values: Partial<Row>) => editRows(old => old.map((r, i) => i === index ? { ...r, ...values } : r));
+  const cancel = () => {
+    if (lock.current || unresolved.current || completed.current) return;
+    setRows(JSON.parse(initialRows.current)); setMessage(""); setConflict(false);
+    pending.current = null; setToken(crypto.randomUUID()); editor.release();
+  };
   async function save(event: React.FormEvent) {
-    event.preventDefault(); if (lock.current || historical || !ready || conflict) return;
+    event.preventDefault(); if (lock.current || completed.current || historical || !ready || conflict || !editor.acquire()) return;
     try { rows.forEach(normaliseDebt); } catch (error) { setMessage(error instanceof Error ? error.message : "اطلاعات معتبر نیست."); return; }
     lock.current = true; setBusy(true); setMessage("");
     try {
@@ -31,9 +53,14 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
       if (outcome.status === "unknown") { unresolved.current = true; setUncertain(true); setMessage(outcome.message ?? "نتیجهٔ ثبت دریافت نشد. متن فرم حفظ و ویرایش موقتاً متوقف شد؛ همین ثبت را دوباره بررسی کنید."); return; }
       pending.current = null; unresolved.current = false; setUncertain(false);
       if (outcome.status === "rejected") { setToken(crypto.randomUUID()); setConflict(outcome.httpStatus === 409); setMessage(outcome.message); return; }
+      completed.current = true;
       const result = outcome.receipt;
       setMessage(`تصویر مالی نسخهٔ ${toPersianDigits(result.version)} ذخیره شد؛ دارایی‌ها و سابقه حفظ شدند.`);
-      setToken(crypto.randomUUID()); router.push(`/dashboard/holdings?v=${result.version_id}`); router.refresh();
+      setToken(crypto.randomUUID()); setReceiptUrl(`/dashboard/holdings?v=${result.version_id}`);
+      if (editor.navigate()) {
+        router.push(`/dashboard/holdings?v=${result.version_id}`);
+        router.refresh();
+      }
     } finally { lock.current = false; setBusy(false); }
   }
   if (!ready) return <p className="card p-5" role="alert">دریافت بدهی‌ها انجام نشد؛ وضعیت آن‌ها صفر فرض نمی‌شود. صفحه را تازه کنید.</p>;
@@ -48,11 +75,13 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
       <label className="space-y-1"><span className="text-xs">واحد پول مانده و قسط</span><select className="input w-full" value={r.currency} disabled={editingLocked} onChange={e => patch(i, { currency: e.target.value as Currency })}><option value="IRT">تومان</option><option value="IRR">ریال (۱۰ ریال = ۱ تومان)</option></select></label>
       {field(i, "balance_as_of", "تاریخ اعتبار مانده (میلادی)", "date")}{field(i, "next_installment", "مبلغ قسط بعدی (اختیاری)")}{field(i, "next_due_on", "موعد قسط بعدی (میلادی، اختیاری)", "date")}
       <label className="space-y-1 md:col-span-2"><span className="text-xs">توضیح اختیاری</span><textarea className="input w-full" value={r.note} maxLength={2000} disabled={editingLocked} onChange={e => patch(i, { note: e.target.value })} /></label>
-    </div><button className="btn btn-outline" type="button" disabled={editingLocked} onClick={() => setRows(old => old.filter((_, n) => n !== i))}>حذف از نسخهٔ تازه؛ سابقه حفظ می‌شود</button></fieldset>)}
-    <button className="btn btn-outline" type="button" disabled={editingLocked} onClick={() => setRows(old => [...old, blank()])}>افزودن بدهی</button>
+    </div><button className="btn btn-outline" type="button" disabled={editingLocked} onClick={() => editRows(old => old.filter((_, n) => n !== i))}>حذف از نسخهٔ تازه؛ سابقه حفظ می‌شود</button></fieldset>)}
+    <button className="btn btn-outline" type="button" disabled={editingLocked} onClick={() => editRows(old => [...old, blank()])}>افزودن بدهی</button>
+    {receiptUrl && <p role="status" className="text-sm leading-7">در حال بازکردن نسخهٔ ثبت‌شده هستیم؛ خلاصه و سابقهٔ این صفحه هنوز مربوط به نسخهٔ قبلی‌اند.</p>}
     {message && <p role="status" className="text-sm leading-7">{message}</p>}
+    {editor.active && receiptUrl === null && <button className="btn btn-outline" type="button" onClick={cancel} disabled={busy || uncertain}>لغو تغییرات؛ بازگشت به نسخهٔ بازشده</button>}
     {conflict && <p role="alert">متن فرم شما حفظ شده است. پیش از ثبت دوباره، <a className="underline" href="/dashboard/holdings" target="_blank" rel="noopener noreferrer">نسخهٔ تازه را در صفحهٔ جدا بررسی کنید</a>؛ این فرم خودکار روی اطلاعات تازه نوشته نمی‌شود.</p>}
-    <button className="btn btn-gold" type="submit" disabled={busy || historical || conflict}>{busy ? "در حال ذخیره…" : uncertain ? "بررسی دوبارهٔ همین ثبت" : "ذخیرهٔ بدهی‌ها در نسخهٔ تازه"}</button>
+    <button className="btn btn-gold" type="submit" disabled={busy || editor.locked || receiptUrl !== null || historical || conflict}>{busy ? "در حال ذخیره…" : uncertain ? "بررسی دوبارهٔ همین ثبت" : "ذخیرهٔ بدهی‌ها در نسخهٔ تازه"}</button>
     <p className="text-xs leading-7">اصلاح این فهرست، دارایی‌های همان نسخه را حفظ می‌کند. پس از اصلاح دارایی‌ها نیز ماندهٔ بدهی‌ها حفظ می‌شود.</p>
   </form></div>;
 }

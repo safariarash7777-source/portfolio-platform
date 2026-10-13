@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFinancialEditor } from "./FinancialEditors";
 import { Plus, Trash2, Save, AlertCircle, CheckCircle2, History, Info } from "lucide-react";
 import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
 import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
@@ -112,8 +113,9 @@ export default function HoldingsWorkbench({
   showComparison?: boolean;
   showImport?: boolean;
 }) {
-  const router = useRouter();
 
+  const router = useRouter();
+  const editor = useFinancialEditor("holdings");
   const fromPositions = (ps: readonly HoldingPosition[]): Row[] =>
     ps.length === 0
       ? [blank()]
@@ -135,6 +137,9 @@ export default function HoldingsWorkbench({
   // خالی بود، پس «اصلاح» یعنی تایپِ دوبارهٔ همه‌چیز از صفر — و ریزِ اقلامِ
   // ذخیره‌شده اصلاً هیچ‌جا دیده نمی‌شد.
   const [rows, setRows] = useState<Row[]>(() => fromPositions(activePositions));
+  const completed = useRef(false);
+  const initialRows = useRef(JSON.stringify(rows));
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [seededFrom, setSeededFrom] = useState<number | null>(activeVersion);
 
   // با تعویضِ نسخه (کلیک روی تاریخچه) فرم دوباره از همان نسخه پر می‌شود.
@@ -148,15 +153,31 @@ export default function HoldingsWorkbench({
   const pending = useRef<FinancialSaveAttempt | null>(null);
   const unresolved = useRef(false);
   const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
-  const editingLocked = saving || uncertain;
+  const editingLocked = saving || uncertain || receiptUrl !== null || editor.locked;
+  const needsWarning = receiptUrl === null && (JSON.stringify(rows) !== initialRows.current || saving || uncertain);
+  useEffect(() => {
+    if (!needsWarning) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [needsWarning]);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState<string | null>(null);
   // توکن در همان نشستِ فرم ثابت می‌ماند: دوبار کلیک یا retry نسخهٔ تکراری
   // نمی‌سازد. پس از ثبتِ موفق، توکنِ تازه برای ثبتِ بعدی ساخته می‌شود.
   const [token, setToken] = useState(() => crypto.randomUUID());
 
+  const editRows = (update: React.SetStateAction<Row[]>) => {
+    if (saveLock.current || unresolved.current || completed.current || !editor.acquire()) return;
+    setRows(update);
+  };
   const patch = (i: number, p: Partial<Row>) =>
-    setRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...p } : r)));
+    editRows((rs) => rs.map((r, j) => (j === i ? { ...r, ...p } : r)));
+  const cancel = () => {
+    if (saveLock.current || unresolved.current || completed.current) return;
+    setRows(JSON.parse(initialRows.current)); setError(""); setSaved(null); setConflict(false);
+    pending.current = null; setToken(crypto.randomUUID()); editor.release();
+  };
 
   const draftInput = (r: Row) => ({ position_key: r.positionKey.trim() || r.label.trim(), symbol: r.kind === "symbol" ? r.label.trim() : null,
     manual_label: r.kind === "manual" ? r.label.trim() : null, asset_class: r.assetClass, qty: r.qty.trim() === "" ? null : toLatinDigits(r.qty),
@@ -170,7 +191,7 @@ export default function HoldingsWorkbench({
   } catch { /* Incomplete unsaved rows must not disappear when a file is applied. */ }
 
   const submit = async () => {
-    if (saveLock.current || conflict || activeVersion !== null && activeVersion !== latestVersion) return;
+    if (saveLock.current || completed.current || conflict || activeVersion !== null && activeVersion !== latestVersion || !editor.acquire()) return;
     setError("");
     setSaved(null);
     // ⚠️ رفت‌وبرگشتِ بی‌اتلاف: کلید، برچسب و بهای تمام‌شده هرکدام جدا حمل
@@ -212,6 +233,7 @@ export default function HoldingsWorkbench({
       if (outcome.status === "unknown") { unresolved.current = true; setUncertain(true); setError(outcome.message ?? "نتیجهٔ ثبت دریافت نشد. متن فرم حفظ و ویرایش موقتاً متوقف شد؛ همین ثبت را دوباره بررسی کنید."); return; }
       pending.current = null; unresolved.current = false; setUncertain(false);
       if (outcome.status === "rejected") { setToken(crypto.randomUUID()); setConflict(outcome.httpStatus === 409); setError(outcome.message); return; }
+      completed.current = true;
       const json = outcome.receipt;
       setSaved(
         json.reused
@@ -219,11 +241,11 @@ export default function HoldingsWorkbench({
           : `نسخهٔ ${toPersianDigits(json.version)} با ${toPersianDigits(json.position_count)} قلم ذخیره شد.`
       );
       setToken(crypto.randomUUID());
-      // ⚠️ فقط `router.refresh()` کافی نیست: اگر کاربر روی `?v=نسخهٔ قدیمی`
-      // بود، پس از ذخیرهٔ موفق همان نسخهٔ قدیمی انتخاب می‌ماند و نسخهٔ تازه‌ای
-      // که همین الان ساخت را نمی‌بیند. پس صریح به نسخهٔ برگشتی می‌رویم.
-      router.push(`?v=${json.version_id}`);
-      router.refresh();
+      setReceiptUrl(`/dashboard/holdings?v=${json.version_id}`);
+      if (editor.navigate()) {
+        router.push(`/dashboard/holdings?v=${json.version_id}`);
+        router.refresh();
+      }
     } finally {
       saveLock.current = false;
       setSaving(false);
@@ -247,7 +269,7 @@ export default function HoldingsWorkbench({
   return (
     <div className="space-y-6">
       {showImport && <HoldingsImportPreview current={importCurrent ?? []} disabled={editingLocked || importCurrent === null || (activeVersion !== null && activeVersion !== latestVersion)} onApply={positions => {
-        setRows(fromPositions(positions.map(positionFromStored))); setSaved(null); setError("");
+        editRows(fromPositions(positions.map(positionFromStored)));
       }} />}
       {showImport && importCurrent === null && <p role="status">برای ورود فایل، ابتدا ردیف‌های نیمه‌کارهٔ فرم را تکمیل کنید؛ ورودی فعلی شما حفظ شده است.</p>}
       {/* ثبت */}
@@ -305,7 +327,7 @@ export default function HoldingsWorkbench({
                   aria-label="واحد"
                   onChange={(e) => patch(i, { unit: e.target.value })} />
                 <button type="button" aria-label="حذف قلم از نسخهٔ تازه" disabled={editingLocked}
-                  onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}
+                  onClick={() => editRows((rs) => rs.filter((_, j) => j !== i))}
                   className="px-2 rounded-lg disabled:opacity-40"
                   style={{ border: "1px solid var(--line)", color: "var(--danger)" }}>
                   <Trash2 size={14} />
@@ -329,7 +351,7 @@ export default function HoldingsWorkbench({
           ))}
         </div>
 
-        <button type="button" onClick={() => setRows((rs) => [...rs, blank()])} disabled={editingLocked}
+        <button type="button" onClick={() => editRows((rs) => [...rs, blank()])} disabled={editingLocked}
           className="flex items-center gap-1.5 text-xs font-bold" style={{ color: "var(--navy)" }}>
           <Plus size={13} /> افزودن قلم
         </button>
@@ -339,6 +361,7 @@ export default function HoldingsWorkbench({
             <AlertCircle size={15} /> {error}
           </div>
         )}
+        {receiptUrl && <p role="status" className="text-sm leading-7">در حال بازکردن نسخهٔ ثبت‌شده هستیم؛ خلاصه و سابقهٔ این صفحه هنوز مربوط به نسخهٔ قبلی‌اند.</p>}
         {saved && (
           <div role="status" className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
             style={{ background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.25)", color: "var(--success)" }}>
@@ -346,8 +369,9 @@ export default function HoldingsWorkbench({
           </div>
         )}
 
+        {editor.active && receiptUrl === null && <button className="btn btn-outline" type="button" onClick={cancel} disabled={saving || uncertain}>لغو تغییرات؛ بازگشت به نسخهٔ بازشده</button>}
         {conflict && <p role="alert">متن فرم شما حفظ شده است. پیش از ثبت دوباره، <a className="underline" href="/dashboard/holdings" target="_blank" rel="noopener noreferrer">نسخهٔ تازه را در صفحهٔ جدا بررسی کنید</a>؛ این فرم خودکار روی اطلاعات تازه نوشته نمی‌شود.</p>}
-        <button type="button" onClick={submit} disabled={saving || conflict || activeVersion !== null && activeVersion !== latestVersion} className="btn btn-gold">
+        <button type="button" onClick={submit} disabled={saving || editor.locked || receiptUrl !== null || conflict || activeVersion !== null && activeVersion !== latestVersion} className="btn btn-gold">
           <Save size={16} />
           {saving ? "در حال ذخیره..." : uncertain ? "بررسی دوبارهٔ همین ثبت" : "ذخیرهٔ نسخهٔ تازه"}
         </button>

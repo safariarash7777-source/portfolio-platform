@@ -257,7 +257,7 @@ export default function OptionsBoard({
                     {o.priceUnit === 'toman' ? num(o.price) != null && (o.price as number) > 0 ? formatToman(o.price as number) : '—' : 'واحد نامعلوم'}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5" style={{ color: "var(--heading)" }}>
-                    {num(o.volume) != null && (o.volume as number) > 0
+                    {num(o.volume) != null && (o.volume as number) >= 0
                       ? toPersianDigits(Math.round(o.volume as number).toLocaleString("en-US"))
                       : "—"}
                   </td>

@@ -12,6 +12,9 @@
 //
 // واحد مبالغ: میلیون ریال (مطابق موتور پارس کدال). eps بر حسب ریال.
 
+import { isMillionRialUnit } from "../fundamental/units";
+import type { ReportScope } from "../fundamental/types";
+
 export interface QuarterInput {
   /** شناسهٔ یکتای ردیف در codal_reports — برای تقدم اصلاحیهٔ متأخر. */
   id: number;
@@ -20,6 +23,9 @@ export interface QuarterInput {
   /** طول دورهٔ تجمیعی: ۳ | ۶ | ۹ | ۱۲. */
   period_months: number;
   audited: boolean;
+  /** Producer evidence must be forwarded by the caller; absence is unknown. */
+  unit?: string | null;
+  scope?: ReportScope;
   /** سرمایه (میلیون ریال) — برای EPS TTM. */
   capital: number;
   revenue: number;
@@ -30,7 +36,7 @@ export interface QuarterInput {
 
 /** یک فصل مشتق‌شده؛ مقادیر null یعنی زنجیرهٔ لازم موجود نبود. */
 export interface DerivedQuarter {
-  /** سال مالی جلالی (سال period_end گزارش ۱۲ماهه یا ابتدای زنجیره). */
+  /** سال جلالیِ شروع زنجیره؛ در سال مالی غیرتقویمی با سال پایان متفاوت است. */
   fy: number;
   /** شمارهٔ فصل ۱..۴. */
   q: 1 | 2 | 3 | 4;
@@ -65,14 +71,14 @@ export interface TtmPoint {
 
 /* ---------- انتخاب نسخهٔ معتبر هر دوره ---------- */
 
-/** برای هر (fy, months) یک گزارش: حسابرسی‌شده مقدم، سپس id بزرگ‌تر (اصلاحیهٔ متأخر). */
+/** برای هر (ماه شروع زنجیره، طول دوره) یک گزارش؛ کلید مثل 1404-07|3 است. */
 export function dedupePeriods(reports: QuarterInput[]): Map<string, QuarterInput> {
   const byPeriod = new Map<string, QuarterInput>();
   for (const r of reports) {
     if (!r || !r.period_end || ![3, 6, 9, 12].includes(r.period_months)) continue;
-    const fy = fyOf(r);
-    if (!fy) continue;
-    const key = `${fy}|${r.period_months}`;
+    const chain = fiscalChainKey(r);
+    if (!chain) continue;
+    const key = `${chain}|${r.period_months}`;
     const prev = byPeriod.get(key);
     if (!prev) {
       byPeriod.set(key, r);
@@ -84,31 +90,39 @@ export function dedupePeriods(reports: QuarterInput[]): Map<string, QuarterInput
   return byPeriod;
 }
 
-/** سال مالی = سال جلالیِ پایان دوره منهای صفر/یک بسته به ماه — چون period_end تجمیعی
- * درون همان سال مالی است، سال مالی را از پایانِ دورهٔ ۱۲ماهه یا از خود دوره می‌گیریم.
- * سادهٔ صادق: fy = سال جلالی پایان سال مالی. برای دوره‌های میانی (۳/۶/۹ماهه) پایان دوره
- * ممکن است در سال تقویمی قبل از پایان سال مالی باشد (سال مالی غیرتقویمی).
- * قاعدهٔ به‌کاررفته: fy از پایان دورهٔ ۱۲ماههٔ همان زنجیره؛ اگر نبود، از تخمین
- * end-of-FY = period_end + (12 − months) ماه استفاده نمی‌کنیم (حدس ممنوع) —
- * بلکه زنجیره را با «فاصلهٔ ماه» گروه می‌کنیم: دو دوره هم‌زنجیره‌اند اگر
- * پایان‌هایشان دقیقاً به اندازهٔ اختلاف months (در تقویم جلالی) فاصله داشته باشد.
- * برای سادگی و درستیِ قابل‌آزمون، از «سال شروع دوره» استفاده می‌کنیم:
- * شروع = period_end منهای months ماه؛ سال مالی = سال جلالی ماهِ بعد از شروع. */
-export function fyOf(r: QuarterInput): number {
-  const m = String(r.period_end).match(/^(\d{4})-(\d{2})/);
-  if (!m) return 0;
+/** هویت زنجیره از ماه اول دورهٔ تجمیعی، بدون تخمین رقم یا پایان سال مالی.
+ * سال تنها کافی نیست: دو زنجیره با ماه شروع متفاوت می‌توانند در یک سال باشند.
+ * برای سال مالی شهریور: 1404-09/3 و 1405-06/12 هر دو کلید 1404-07 دارند. */
+export function fiscalChainKey(r: Pick<QuarterInput, "period_end" | "period_months">): string | null {
+  const m = String(r.period_end).match(/^(1[34]\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+  if (!m || ![3, 6, 9, 12].includes(r.period_months)) return null;
   const y = Number(m[1]);
   const mo = Number(m[2]);
   // شروع دوره = (y, mo) منهای months ماه + ۱ ماه (ماه اول دوره)
-  let total = y * 12 + (mo - 1) - r.period_months; // ماهِ قبل از شروع
-  total += 1; // ماه اول دوره
+  const total = y * 12 + (mo - 1) - r.period_months + 1;
   const startYear = Math.floor(total / 12);
-  return startYear;
+  return `${startYear}-${String(total % 12 + 1).padStart(2, "0")}`;
+}
+
+export function fyOf(r: Pick<QuarterInput, "period_end" | "period_months">): number {
+  return Number(fiscalChainKey(r)?.slice(0, 4)) || 0;
 }
 
 /* ---------- فصل‌سازی با تفاضل زنجیره‌ای ---------- */
 
-const FIELDS = ["revenue", "gross_profit", "operating_profit", "net_profit"] as const;
+function finiteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function comparable(r: QuarterInput | undefined): r is QuarterInput {
+  return !!r && r.scope === "company" && isMillionRialUnit(r.unit);
+}
+
+function difference(current: unknown, prior: unknown): number | null {
+  if (!finiteNumber(current) || !finiteNumber(prior)) return null;
+  const value = current - prior;
+  return Number.isFinite(value) ? value : null;
+}
 
 function toQuarter(
   fy: number,
@@ -130,65 +144,62 @@ function toQuarter(
     operatingMargin: null,
     netMargin: null,
     adjusted: false,
-    capital: cur?.capital && cur.capital > 0 ? cur.capital : null,
+    capital: comparable(cur) && finiteNumber(cur.capital) && cur.capital > 0 ? cur.capital : null,
   };
-  if (!cur) return empty;
+  if (!comparable(cur)) return empty;
   if (q === 1) {
     // Q1 مستقیم از گزارش ۳ماهه
-    const rev = cur.revenue;
-    return finalize(empty, rev, cur.gross_profit, cur.operating_profit, cur.net_profit);
+    return finalize(empty, cur.revenue, cur.gross_profit, cur.operating_profit, cur.net_profit);
   }
-  if (!prev) return empty; // حلقهٔ غایب → null (هرگز تقسیم نمی‌کنیم)
-  const rev = cur.revenue - prev.revenue;
-  if (rev < 0) {
+  if (!comparable(prev)) return empty; // حلقهٔ غایب/ناسازگار → null
+  const rev = difference(cur.revenue, prev.revenue);
+  if (rev !== null && rev < 0) {
     // تعدیل گزارش قبلی — فصل نامعتبر است؛ پرچم بزنیم و null بدهیم.
     return { ...empty, adjusted: true };
   }
   return finalize(
     empty,
     rev,
-    cur.gross_profit - prev.gross_profit,
-    cur.operating_profit - prev.operating_profit,
-    cur.net_profit - prev.net_profit,
+    difference(cur.gross_profit, prev.gross_profit),
+    difference(cur.operating_profit, prev.operating_profit),
+    difference(cur.net_profit, prev.net_profit),
   );
 }
 
 function finalize(
   base: DerivedQuarter,
-  revenue: number,
-  gross: number,
-  op: number,
-  net: number,
+  revenue: number | null,
+  gross: number | null,
+  op: number | null,
+  net: number | null,
 ): DerivedQuarter {
-  const margins =
-    revenue > 0
-      ? {
-          grossMargin: (gross / revenue) * 100,
-          operatingMargin: (op / revenue) * 100,
-          netMargin: (net / revenue) * 100,
-        }
-      : { grossMargin: null, operatingMargin: null, netMargin: null };
+  const margin = (value: unknown) => {
+    if (!finiteNumber(revenue) || revenue <= 0 || !finiteNumber(value)) return null;
+    const ratio = (value / revenue) * 100;
+    return Number.isFinite(ratio) ? ratio : null;
+  };
   return {
     ...base,
-    revenue,
-    grossProfit: gross,
-    operatingProfit: op,
-    netProfit: net,
-    ...margins,
+    revenue: finiteNumber(revenue) ? revenue : null,
+    grossProfit: finiteNumber(gross) ? gross : null,
+    operatingProfit: finiteNumber(op) ? op : null,
+    netProfit: finiteNumber(net) ? net : null,
+    grossMargin: margin(gross), operatingMargin: margin(op), netMargin: margin(net),
   };
 }
 
 /** فصل‌سازی همهٔ سال‌های مالی موجود؛ خروجی مرتب از قدیم به جدید. */
 export function deriveQuarters(reports: QuarterInput[]): DerivedQuarter[] {
   const byPeriod = dedupePeriods(reports);
-  const fys = new Set<number>();
-  for (const key of byPeriod.keys()) fys.add(Number(key.split("|")[0]));
+  const chains = new Set<string>();
+  for (const key of byPeriod.keys()) chains.add(key.split("|")[0]);
   const out: DerivedQuarter[] = [];
-  for (const fy of [...fys].sort((a, b) => a - b)) {
-    const m3 = byPeriod.get(`${fy}|3`);
-    const m6 = byPeriod.get(`${fy}|6`);
-    const m9 = byPeriod.get(`${fy}|9`);
-    const m12 = byPeriod.get(`${fy}|12`);
+  for (const chain of [...chains].sort()) {
+    const fy = Number(chain.slice(0, 4));
+    const m3 = byPeriod.get(`${chain}|3`);
+    const m6 = byPeriod.get(`${chain}|6`);
+    const m9 = byPeriod.get(`${chain}|9`);
+    const m12 = byPeriod.get(`${chain}|12`);
     if (!m3 && !m6 && !m9 && !m12) continue;
     out.push(toQuarter(fy, 1, m3, undefined));
     out.push(toQuarter(fy, 2, m6, m3));
@@ -221,23 +232,26 @@ export function ttmSeries(quarters: DerivedQuarter[]): TtmPoint[] {
       const b = win[k];
       const expectedQ = a.q === 4 ? 1 : a.q + 1;
       const expectedFy = a.q === 4 ? a.fy + 1 : a.fy;
-      if (b.q !== expectedQ || b.fy !== expectedFy) {
+      const monthIndex = (end: string) => Number(end.slice(0, 4)) * 12 + Number(end.slice(5, 7));
+      if (b.q !== expectedQ || b.fy !== expectedFy || monthIndex(b.periodEnd) - monthIndex(a.periodEnd) !== 3) {
         consecutive = false;
         break;
       }
     }
     if (!consecutive) continue;
-    if (win.some((w) => w.netProfit === null)) continue; // ۴ فصل کامل شرط سخت
+    if (win.some((w) => !finiteNumber(w.netProfit))) continue; // ۴ فصل کامل شرط سخت
     const last = win[3];
     if (!last.capital || last.capital <= 0 || !last.periodEnd) continue;
     const netTtm = win.reduce((s, w) => s + (w.netProfit as number), 0);
+    const epsTtm = (netTtm * 1000) / last.capital;
+    if (!Number.isFinite(netTtm) || !Number.isFinite(epsTtm)) continue;
     out.push({
       label: last.label,
       periodEnd: last.periodEnd,
       netProfitTtm: netTtm,
       // سرمایه میلیون ریال، سهم ۱۰۰۰ریالی → تعداد سهم = capital×۱۰۰۰؛
       // EPS = سود(میلیون ریال)×۱۰^۶ ÷ (capital×۱۰۰۰) = سود×۱۰۰۰÷capital (ریال).
-      epsTtm: (netTtm * 1000) / last.capital,
+      epsTtm,
     });
   }
   return out;

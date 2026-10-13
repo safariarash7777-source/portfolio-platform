@@ -24,7 +24,9 @@ import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
 import { getAccess } from "@/lib/access";
 import { resolveBackTarget } from "@/lib/market-nav";
 import { getStoredIrMarket, type IrStockRow } from "@/lib/market-ir";
+import { iranReadQuality, marketQualityLabel, sourceTime, withValidNav } from "@/lib/market-quality";
 import { readFundamentals } from "@/lib/fundamental/registry";
+import { isMillionRialUnit } from "@/lib/fundamental/units";
 import { getSymbolHistory } from "@/lib/core/history";
 import {
   deriveQuarters,
@@ -34,7 +36,7 @@ import {
 } from "@/lib/core/quarterly";
 import { jalaliYmdToGregorian } from "@/lib/core/jalali";
 import { getNavHistory } from "@/lib/core/navHistory";
-import { bubbleSeries, summarizeBubble, bubbleWindow, liveBubble, navAtIso } from "@/lib/core/fundBubble";
+import { bubbleSeries, summarizeBubble, bubbleWindow, liveBubble, navAtIso, type LiveBubble } from "@/lib/core/fundBubble";
 import { peerGroupStats, peerPosition, liquidityStats, type PeerRow } from "@/lib/core/fundPeers";
 import { getFxRates, latestRate } from "@/lib/core/fx";
 import { netIndividualFlow } from "@/lib/core/engine";
@@ -42,9 +44,11 @@ import {
   toPersianDigits,
   formatToman,
   formatTomanShort,
+  formatRialAsToman,
   formatSignedPercent,
   deltaColor,
   formatJalali,
+  formatTehranClock,
 } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -112,6 +116,16 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
   const quote = all.find((r) => r.id === sym) ?? null;
   const isFund = (ir?.funds ?? []).some((r) => r.id === sym);
+  const now = Date.now();
+  const quoteFamily = isFund ? "funds" : "stocks";
+  // Same market quality rules, applied to this symbol's clock and family receipt.
+  const quoteQuality = iranReadQuality(ir ? { ...ir, [quoteFamily]: quote ? [quote] : [] } : null, now).families[quoteFamily];
+  const priceAt = sourceTime(quote?.sourceDate, quote?.sourceTime);
+  const funds = (ir?.funds ?? []).map((row) => withValidNav(row, null, now));
+  const fundQuote = funds.find((row) => row.id === sym) ?? null;
+  const fundNavNote = fundQuote && fundQuote.navState !== "ready"
+    ? `NAV: ${marketQualityLabel(fundQuote.navState)}${fundQuote.navReason ? ` · ${toPersianDigits(fundQuote.navReason)}` : ""}`
+    : fundQuote?.navReason ? toPersianDigits(fundQuote.navReason) : undefined;
   // پیش‌فرض به نوعِ ابزار بستگی دارد؛ `?from=`ِ معتبر بر آن مقدم است.
   const back = resolveBackTarget(
     sp.from,
@@ -141,6 +155,8 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
     period_end: p.data.period_end,
     period_months: p.data.period_months,
     audited: p.data.audited,
+    unit: p.data.unit,
+    scope: p.scope,
     capital: p.data.capital,
     revenue: p.data.standalone.revenue,
     gross_profit: p.data.standalone.gross_profit,
@@ -149,6 +165,13 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   }));
   const quarters = deriveQuarters(quarterInputs);
   const ttm = ttmSeries(quarters);
+  const hasQuarterMetrics = quarters.some(q => [q.revenue, q.grossProfit, q.operatingProfit, q.netProfit].some(value => num(value) !== null));
+  const quarterlySourceTitle = `گزارش‌های ن-۱۰ شرکت — دوره‌های ${[...new Set(quarterInputs
+    .filter(p => p.scope === "company" && isMillionRialUnit(p.unit))
+    .map(p => toPersianDigits(p.period_end)))].join("، ")}`;
+  // Report amounts validate comparability; eps_rial already means rial/share.
+  const reportEps = fundamentals?.n10?.source.scope === "company" && isMillionRialUnit(fundamentals.n10.data.unit)
+    ? num(fundamentals.n10.data.standalone.eps_rial) : null;
 
   // قیمت پایان فصل: تاریخچهٔ بلندتر فقط وقتی فصلی داریم (close به ریال است)
   const peHistory = ttm.length > 0 ? await getSymbolHistory(sym, 1500) : [];
@@ -195,22 +218,26 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
   // زمانِ NAV با **دقتش** می‌آید؛ اگر ساعت ثبت نشده باشد نما باید همین را بگوید.
   const fundNavAt = navAtIso(quote?.navDate ?? null, quote?.navTime ?? null, jalaliYmdToGregorian);
-  // زمانِ قیمت = لحظهٔ اسنپ‌شاتِ رله. بدونِ آن، هم‌زمانیِ دو ورودی سنجیده نمی‌شود.
-  const fundPriceAt = ir?.fetchedAt ? new Date(ir.fetchedAt).toISOString() : null;
-  const fundLive = liveBubble({
+  // Receipt time cannot attest the price/NAV pairing. Keep diagnostic ages,
+  // but take validity, reason and bubble from the same guard as the funds table.
+  const fundLive: LiveBubble = { ...liveBubble({
     priceToman: num(quote?.closingPrice) ?? num(quote?.price),
     navToman: num(quote?.nav),
     navAt: fundNavAt?.iso ?? null,
     navPrecision: fundNavAt?.precision,
-    priceAt: fundPriceAt,
-    now: new Date(),
-  });
+    priceAt: priceAt == null ? null : new Date(priceAt).toISOString(),
+    now: new Date(now),
+  }),
+    state: fundQuote?.navState === "ready" ? "ready" : fundQuote?.navState === "stale" ? "stale" : "unavailable",
+    bubblePercent: fundQuote?.bubblePercent ?? null,
+    reason: fundQuote?.navReason ?? null,
+  };
 
   // هم‌گروه: فقط صندوق‌های هم‌نوع، و فقط آن‌هایی که حبابِ معتبر دارند.
-  const peerRows: PeerRow[] = (ir?.funds ?? []).map((f) => ({
+  const peerRows: PeerRow[] = funds.map((f) => ({
     id: f.id,
     type: f.type ?? null,
-    value: typeof f.bubblePercent === "number" && isFinite(f.bubblePercent) ? f.bubblePercent : null,
+    value: f.bubblePercent,
   }));
   const fundPeer = isFund
     ? peerPosition(
@@ -301,17 +328,13 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
       ) : null}
 
       {/* T3 — تحلیل فصلی ن-۱۰: فقط وقتی حداقل یک فصل مشتق شده (قانون ۲) */}
-      {quarters.length > 0 ? (
+      {hasQuarterMetrics ? (
         <QuarterlyCharts
           quarters={quarters}
           ttm={ttm}
           peSeries={peSeries}
           currentPe={currentPe}
-          sourceTitle={
-            fundamentals?.n10PeriodsScope === "consolidated_ambiguous"
-              ? `${fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال"} — شاملِ گزارشِ تلفیقی؛ ممکن است رقمِ گروه باشد، نه شرکتِ اصلی`
-              : (fundamentals?.n10?.source.title ?? "گزارش‌های ن-۱۰ کدال")
-          }
+          sourceTitle={quarterlySourceTitle}
         />
       ) : null}
 
@@ -369,7 +392,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 {isFund && quote?.type ? ` · ${quote.type}` : ""}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <a
                 href={`/api/data/${encodeURIComponent(sym)}/history.csv`}
                 className="btn-outline inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-semibold"
@@ -377,11 +400,11 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               >
                 دانلود تاریخچه (CSV)
               </a>
-              {ir?.fetchedAt ? (
-                <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                  آخرین به‌روزرسانی بازار: {formatJalali(ir.fetchedAt)}
-                </p>
-              ) : null}
+              <div className="space-y-1 text-[11px]" style={{ color: "var(--text-3)" }}>
+                <p role="status" style={{ color: quoteQuality.state === "ready" ? "var(--text-3)" : "var(--warning-ink)" }}>{marketQualityLabel(quoteQuality.state)}</p>
+                <p>{priceAt != null ? `زمان قیمت: ${formatJalali(priceAt)} · ${formatTehranClock(priceAt)}` : "زمان معتبر قیمت نامشخص است"}</p>
+                <p>{quoteQuality.receivedAt != null ? `دریافت اسنپ‌شات: ${formatJalali(quoteQuality.receivedAt)} · ${formatTehranClock(quoteQuality.receivedAt)}` : "زمان دریافت نامعلوم"}</p>
+              </div>
             </div>
           </header>
 
@@ -429,7 +452,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
             />
             <Stat
               label="ارزش معاملات"
-              value={num(quote?.value) != null ? formatTomanShort(quote!.value as number) : "—"}
+              value={formatRialAsToman(quote?.value)}
             />
             <Stat
               label="ورود پول حقیقی (امروز)"
@@ -443,10 +466,12 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               <Stat
                 label="NAV ابطال"
                 value={num(quote?.nav) != null ? formatToman(quote!.nav as number) : "—"}
+                note={fundNavNote}
               />
               <Stat
                 label="NAV صدور"
                 value={num(quote?.navIssue) != null ? formatToman(quote!.navIssue as number) : "—"}
+                note={fundNavNote}
               />
               {/* ── حباب: یک عدد، یک موتور ────────────────────────────────
                   این کارت تا امروز `quote.bubblePercent` را نشان می‌داد — عددی
@@ -465,13 +490,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                     : "—"
                 }
                 color={fundLive.bubblePercent != null ? "var(--gold-ink)" : undefined}
-                note={
-                  fundLive.state === "stale"
-                    ? `کهنه — ${fundLive.reason ?? ""}`
-                    : fundLive.state === "unavailable"
-                      ? (fundLive.reason ?? undefined)
-                      : undefined
-                }
+                note={fundNavNote}
               />
               <Stat label="تاریخ NAV" value={quote?.navDate ? toPersianDigits(quote.navDate) : "—"} />
             </div>
@@ -486,9 +505,9 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 value={
                   num(quote?.eps) != null
                     ? toPersianDigits(Math.round(quote!.eps as number).toLocaleString("en-US")).replace(/,/g, "٬")
-                    : fundamentals?.n10?.data.standalone.eps_rial != null
+                    : reportEps !== null
                       ? toPersianDigits(
-                          fundamentals.n10.data.standalone.eps_rial.toLocaleString("en-US")
+                          reportEps.toLocaleString("en-US")
                         ).replace(/,/g, "٬")
                       : "—"
                 }
@@ -496,7 +515,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               <Stat
                 label="ارزش بازار"
                 value={
-                  num(quote?.marketValue) != null ? formatTomanShort(quote!.marketValue as number) : "—"
+                  formatRialAsToman(quote?.marketValue)
                 }
               />
               <Stat

@@ -344,6 +344,20 @@ async function fetchGoldCurrency() {
 }
 
 // ── BrsApi: سهام + صندوق‌ها (AllSymbols type=1) ──────────────────────────────
+// Missing/empty/non-numeric input is unknown, never an implicit zero. Changes,
+// EPS and PE may be signed; quantities/values must be nonnegative. Prices and
+// industry IDs are positive. Keep the existing integer-toman price boundary.
+const equityNumber = (value) => {
+  if ((typeof value !== "number" && typeof value !== "string") ||
+      (typeof value === "string" && !value.trim())) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
+const equityNonnegative = (value) => {
+  const n = equityNumber(value);
+  return n !== null && n >= 0 ? n : null;
+};
+
 async function fetchStocksAndFunds() {
   if (!BRSAPI_KEY) {
     status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: "BRSAPI_KEY ست نشده" };
@@ -382,60 +396,62 @@ async function fetchStocksAndFunds() {
     for (const item of items) {
       if (!item || typeof item !== 'object') continue;
       // قیمت‌ها ریال هستند — تبدیل به تومان
-      const lastPrice = Number(item.pl) || 0;
-      if (lastPrice <= 0) continue;
+      const lastPrice = equityNumber(item.pl);
+      if (lastPrice === null || lastPrice <= 0) continue;
       const priceToman = Math.round(lastPrice / 10);
-      const closingPrice = Number(item.pc) || 0;
-      const closingToman = closingPrice > 0 ? Math.round(closingPrice / 10) : priceToman;
+      const closingPrice = equityNumber(item.pc);
+      const closingToman = closingPrice !== null && closingPrice > 0 ? Math.round(closingPrice / 10) : null;
+      const changeRial = equityNumber(item.plc);
+      const industryId = equityNumber(item.cs_id);
 
       const row = {
         id: item.l18,
         faName: item.l30 || item.l18,
         price: priceToman,
         unit: "toman",
-        change: Number(item.plc) ? Math.round(Number(item.plc) / 10) : null,
-        changePercent: Number(item.plp) || null,
+        change: changeRial !== null ? Math.round(changeRial / 10) : null,
+        changePercent: equityNumber(item.plp),
         closingPrice: closingToman,
-        closingChangePercent: Number(item.pcp) || null,
-        volume: Number(item.tvol) || 0,
-        value: Number(item.tval) || 0,
-        marketValue: Number(item.mv) || null,
+        closingChangePercent: equityNumber(item.pcp),
+        volume: equityNonnegative(item.tvol),
+        value: equityNonnegative(item.tval),
+        marketValue: equityNonnegative(item.mv),
         industry: item.cs || null,
-        industryId: Number(item.cs_id) || null,
-        eps: Number(item.eps) || null,
-        pe: Number(item.pe) || null,
-        buyI: Number(item.Buy_I_Volume) || 0,
-        buyN: Number(item.Buy_N_Volume) || 0,
-        sellI: Number(item.Sell_I_Volume) || 0,
-        sellN: Number(item.Sell_N_Volume) || 0,
+        industryId: Number.isSafeInteger(industryId) && industryId > 0 ? industryId : null,
+        eps: equityNumber(item.eps),
+        pe: equityNumber(item.pe),
+        buyI: equityNonnegative(item.Buy_I_Volume),
+        buyN: equityNonnegative(item.Buy_N_Volume),
+        sellI: equityNonnegative(item.Sell_I_Volume),
+        sellN: equityNonnegative(item.Sell_N_Volume),
         ...sourceClock(item),
       };
 
       // M7 — فیلدهای best-effort: سقف/کف روز و تعداد معامله‌گران حقیقی.
       // نام فیلد در پاسخ BrsApi ممکن است سبک tsetmc (pmax/pmin) یا سبک مستندات (PriceMax/PriceMin) باشد؛
       // هر دو چک می‌شود. اگر هیچ‌کدام نبود، کلید در payload درج نمی‌شود — هیچ عدد ساختگی.
-      const dayHighRial = Number(item.pmax ?? item.PriceMax ?? item.tmax);
-      const dayLowRial = Number(item.pmin ?? item.PriceMin ?? item.tmin);
-      if (isFinite(dayHighRial) && dayHighRial > 0) row.dayHigh = Math.round(dayHighRial / 10);
-      if (isFinite(dayLowRial) && dayLowRial > 0) row.dayLow = Math.round(dayLowRial / 10);
-      const buyCountI = Number(item.Buy_CountI ?? item.Buy_I_Count);
-      const sellCountI = Number(item.Sell_CountI ?? item.Sell_I_Count);
-      if (isFinite(buyCountI) && buyCountI > 0) row.buyCountI = buyCountI;
-      if (isFinite(sellCountI) && sellCountI > 0) row.sellCountI = sellCountI;
+      const dayHighRial = equityNumber(item.pmax ?? item.PriceMax ?? item.tmax);
+      const dayLowRial = equityNumber(item.pmin ?? item.PriceMin ?? item.tmin);
+      if (dayHighRial !== null && dayHighRial > 0) row.dayHigh = Math.round(dayHighRial / 10);
+      if (dayLowRial !== null && dayLowRial > 0) row.dayLow = Math.round(dayLowRial / 10);
+      const buyCountI = equityNonnegative(item.Buy_CountI ?? item.Buy_I_Count);
+      const sellCountI = equityNonnegative(item.Sell_CountI ?? item.Sell_I_Count);
+      if (buyCountI !== null) row.buyCountI = buyCountI;
+      if (sellCountI !== null) row.sellCountI = sellCountI;
 
       // داشبورد «امروز بازار» — فیلدهای تشخیص صف (best-effort، مستند brsapi.ir):
       // tmin/tmax = آستانهٔ مجاز دامنه؛ pd1/qd1 = قیمت/حجم بهترین تقاضا؛ po1/qo1 = بهترین عرضه.
       // قیمت‌ها ریال → تومان (همان قاعدهٔ موجود). غایب → کلید درج نمی‌شود — هیچ عدد ساختگی.
-      const bandLow = Number(item.tmin);
-      const bandHigh = Number(item.tmax);
-      if (isFinite(bandHigh) && bandHigh > 0) row.bandHigh = Math.round(bandHigh / 10);
-      if (isFinite(bandLow) && bandLow > 0) row.bandLow = Math.round(bandLow / 10);
-      const bidP = Number(item.pd1), bidQ = Number(item.qd1);
-      const askP = Number(item.po1), askQ = Number(item.qo1);
-      if (isFinite(bidP) && bidP > 0) row.bestBidPrice = Math.round(bidP / 10);
-      if (isFinite(bidQ) && bidQ >= 0) row.bestBidVolume = bidQ;
-      if (isFinite(askP) && askP > 0) row.bestAskPrice = Math.round(askP / 10);
-      if (isFinite(askQ) && askQ >= 0) row.bestAskVolume = askQ;
+      const bandLow = equityNumber(item.tmin);
+      const bandHigh = equityNumber(item.tmax);
+      if (bandHigh !== null && bandHigh > 0) row.bandHigh = Math.round(bandHigh / 10);
+      if (bandLow !== null && bandLow > 0) row.bandLow = Math.round(bandLow / 10);
+      const bidP = equityNumber(item.pd1), bidQ = equityNonnegative(item.qd1);
+      const askP = equityNumber(item.po1), askQ = equityNonnegative(item.qo1);
+      if (bidP !== null && bidP > 0) row.bestBidPrice = Math.round(bidP / 10);
+      if (bidQ !== null) row.bestBidVolume = bidQ;
+      if (askP !== null && askP > 0) row.bestAskPrice = Math.round(askP / 10);
+      if (askQ !== null) row.bestAskVolume = askQ;
 
       // C1 — فیلتر در مبدأ ingest: زیرنماد رقم‌دار (فملی2، آوند4، …) اصلاً وارد
       // خروجی stocks/funds نمی‌شود (نه اسنپ‌شات، نه UI، نه هیچ صفی).
@@ -1483,8 +1499,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname !== "/market.json") { res.writeHead(404); return res.end("not found"); }
 
   try {
-    if (!cache) await refresh();
-    if (cache && Date.now() - cache.at > CACHE_MS) refresh(); // کهنه → رفرش پس‌زمینه
+    // Read only: boot/timers own collection; cold cache remains unavailable.
     if (!cache) {
       res.writeHead(503, { "Content-Type": "application/json; charset=utf-8" });
       return res.end('{"error":"warming up"}');
