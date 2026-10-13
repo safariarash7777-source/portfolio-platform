@@ -1,6 +1,7 @@
 // Deterministic integration mocks only: every unmatched fetch fails closed.
 import test from "node:test";
 import assert from "node:assert/strict";
+import { industrial, bank } from "./fixtures/n10-admission-fixtures.mjs";
 
 process.env.BRSAPI_KEY = "mock-key";
 process.env.BRSAPI_BASE = "https://provider.invalid";
@@ -24,16 +25,11 @@ const response = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "Content-Type": "application/json" },
 });
 const financial = n => announcement(n, { code: "ن-۱۰", link_excel: `https://excel.invalid/${n}`, date_title: "1404/12/29" });
-const mockIncomeHtml = `<table><tr><td>ارقام به میلیون ریال</td></tr>
-<tr><td>درآمدهای عملیاتی</td><td>100</td></tr>
-<tr><td>بهای تمام شده درآمد</td><td>(60)</td></tr>
-<tr><td>سود(زیان) ناخالص</td><td>40</td></tr>
-<tr><td>سود(زیان) عملیاتی</td><td>30</td></tr>
-<tr><td>سود(زیان) خالص</td><td>20</td></tr></table>`;
+const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: false });
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [] };
+  const calls = { pages: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
@@ -63,6 +59,12 @@ async function fixture(options = {}) {
       return response(options.reportBody ?? inserted);
     }
     if (url.pathname.endsWith("/codal_reports") && !init.method) {
+      if (url.searchParams.get("select") === "id,symbol") {
+        calls.coverageReads.push(url.searchParams.get("id"));
+        if (options.failCoverageAfter === calls.coverageReads.length) return response({}, 503);
+        const before = Number(url.searchParams.get("id")?.slice(3) ?? Infinity);
+        return response((options.coverageRows ?? []).filter(r => r.id < before).slice(0, 500));
+      }
       const dataFilter = url.searchParams.get("data");
       const stored = [...reports.values()].filter(r => dataFilter !== "not.is.null" || r.data != null);
       if (url.searchParams.has("source_url")) {
@@ -407,4 +409,59 @@ test("valid collision acknowledges persistence with inserted zero for fails 0/1/
       });
     }
   }
+});
+
+test("N10 admission rejection keeps inserted zero, watermark and ledger", async t => {
+  const common = { period: "1404/12/29", months: 12, prior: false };
+  for (const [name, options, announcementFields] of [
+    ["unknown unit", { unit: "" }], ["unknown scope", { scope: "" }],
+    ["consolidated", { scope: "تلفیقی" }], ["blank operating", { current: [100, "(60)", 40, "", 20] }],
+    ["missing capital", { capital: false }],
+    ["bank current EPS zero pv2 blocker", { html: bank({ eps: 0 }) },
+      { date_title: "1404/03/31", title: "صورت های مالی دوره 3 ماهه منتهی به 1404/03/31" }],
+  ]) {
+    await t.test(name, async () => {
+      const a = { ...financial(1), ...announcementFields };
+      const f = await fixture({ pages: [[a, boundary], []], excelHtml: options.html ?? industrial({ ...common, ...options }),
+        initialState: { watermark, backfillCursor: 0, fails: { [a.link]: 1 } } });
+      await f.engine.runEngineCycle();
+      assert.equal(f.engine.engineStatus.ok, false);
+      assert.equal(f.engine.engineStatus.feed.inserted, 0);
+      assert.equal(f.engine.engineStatus.feed.parseFailed, 1);
+      assert.deepEqual(f.persisted.watermark, watermark);
+      assert.equal(f.persisted.fails[a.link], 2);
+      assert.equal(f.calls.reportWrites.length, 0);
+    });
+  }
+});
+
+test("prospective N10 rejection preserves full paginated coverage without scheduling redundant backfill", async () => {
+  const a = financial(1);
+  const coverageRows = Array.from({ length: 1008 }, (_, n) => ({ id: 1008 - n, symbol: n < 1000 ? "الف" : "ب" }));
+  const f = await fixture({ pages: [[a, boundary], []],
+    excelHtml: industrial({ period: "1404/12/29", months: 12, prior: false, unit: "" }),
+    marketBody: [{ payload: { stocks: [{ id: "الف", value: 2 }, { id: "ب", value: 1 }] } }],
+    coverageRows,
+  });
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.feed.parseFailed, 1);
+  assert.equal(f.calls.reportWrites.length, 0);
+  assert.deepEqual(f.persisted.watermark, watermark);
+  assert.equal(f.persisted.fails[a.link], 1);
+  assert.deepEqual(f.calls.coverageReads, [null, "lt.509", "lt.9", "lt.1"]);
+  assert.equal(f.engine.engineStatus.backfill.skippedCovered, 2);
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols, []);
+  assert.deepEqual(f.calls.pages, [1, 2]);
+});
+
+test("a failed later coverage page stops backfill requests rather than using partial counts", async () => {
+  const coverageRows = Array.from({ length: 508 }, (_, n) => ({ id: 508 - n, symbol: n < 500 ? "الف" : "ب" }));
+  const f = await fixture({ pages: [[]], failCoverageAfter: 2, coverageRows,
+    marketBody: [{ payload: { stocks: [{ id: "الف", value: 2 }, { id: "ب", value: 1 }] } }],
+  });
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.ok, false);
+  assert.match(f.engine.engineStatus.lastError, /covered reports HTTP 503/);
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols, []);
+  assert.deepEqual(f.calls.pages, [1]);
 });
