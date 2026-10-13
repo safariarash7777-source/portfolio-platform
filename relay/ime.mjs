@@ -22,7 +22,7 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 //   - append پایان‌روز گواهی‌ها → جدول ime_certificate_history (همان قاعده).
 //   - بودجه: گواهی ~۲۲/روز + فیزیکی ۱-۲/روز — در status شمرده می‌شود.
 
-import { tehranHour as tehranHourH23 } from "./eod.mjs";
+import { tehranHour as tehranHourH23, tehranNow, sessionTradeDate } from "./eod.mjs";
 const CERT_INTERVAL_MS = 30 * 60 * 1000;
 
 let lastCertFetch = 0;
@@ -30,7 +30,7 @@ let certRows = [];         // آخرین ردیف‌های خام گواهی (ر
 let certAt = null;         // زمان آخرین دریافت موفق
 let certError = null;
 let certReqToday = 0;
-let physState = { lastRunDay: null, inserted: 0, lastError: null, table: "unknown", backfillCursor: 0 };
+let physState = { lastAttemptDay: null, lastRunDay: null, inserted: 0, lastError: null, table: "unknown", backfillCursor: 0 };
 let certEodState = { lastPushDay: null, pushed: 0, lastError: null, table: "unknown" };
 let dayKey = "";
 
@@ -40,8 +40,7 @@ function tehranDayKey() {
 // ساعت از `eod.mjs` (h23) — `hour12: false` در بعضی ICUها نیمه‌شب را «24» می‌خواند و
 // دروازهٔ «پس از بازار» را باز می‌کرد (B-055). جدول‌های تاریخچهٔ کالا هنوز روی
 // Production ساخته نشده‌اند، پس اینجا دادهٔ خرابی نیست؛ این اصلاح پیشگیرانه است.
-// ⚠️ برچسبِ `trade_date` در این فایل هنوز از `tehranDayKey()` (ساعتِ دیواری) می‌آید —
-// پیش از ساختنِ آن جدول‌ها باید مثلِ `eod.mjs` به تاریخِ جلسهٔ منبع وصل شود.
+// تاریخ هر ردیف تاریخچه از date_update همان گواهی می‌آید؛ زمان دریافت جای آن نیست.
 function tehranHour() {
   return tehranHourH23();
 }
@@ -51,6 +50,8 @@ function rollDay() {
 }
 
 const num = (v) => {
+  if (v === null || v === undefined || typeof v === "boolean"
+      || (typeof v === "string" && v.trim() === "")) return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
@@ -125,28 +126,45 @@ export function certificatesForPayload() {
 }
 
 // ── append پایان‌روز گواهی‌ها → ime_certificate_history ─────────────────────
+// No date is synthesized from receipt time. Retained quotes keep their original
+// source day, and missing/future source dates cannot create historical records.
+export function planCertEod(rows, now = new Date()) {
+  const current = tehranNow(now);
+  if (!(current.hour >= 19)) return { rows: [], rejected: 0, skip: "before-close" };
+  let rejected = 0;
+  const result = [];
+  for (const r of rows) {
+    const sourceDay = sessionTradeDate(r.date);
+    if (!r.id || !sourceDay || sourceDay > current.date) { rejected++; continue; }
+    result.push({
+      trade_date: sourceDay,
+      contract_code: r.id,
+      commodity: r.commodity,
+      title: r.title,
+      close_toman: r.close,
+      last_toman: r.price,
+      high_toman: r.high,
+      low_toman: r.low,
+      change_percent: r.changePercent,
+      trade_count: r.tradeCount,
+      volume: r.volume,
+      value_toman: r.valueToman,
+      source: "brsapi_ime_cert",
+    });
+  }
+  return { rows: result, rejected, skip: result.length ? null : "no-source-session-date" };
+}
+
 export async function pushCertEod({ supabaseUrl, serviceKey }) {
   rollDay();
   if (!supabaseUrl || !serviceKey) return;
   if (certRows.length === 0 || !certAt) return;
   const day = tehranDayKey();
   if (certEodState.lastPushDay === day) return;
-  if (tehranHour() < 19) return; // فقط بعد از پایان بازار
-  const rows = certRows.map((r) => ({
-    trade_date: day,
-    contract_code: r.id,
-    commodity: r.commodity,
-    title: r.title,
-    close_toman: r.close,
-    last_toman: r.price,
-    high_toman: r.high,
-    low_toman: r.low,
-    change_percent: r.changePercent,
-    trade_count: r.tradeCount,
-    volume: r.volume,
-    value_toman: r.valueToman,
-    source: "brsapi_ime_cert",
-  }));
+  const plan = planCertEod(certRows);
+  certEodState.skippedSourceDate = plan.rejected;
+  if (plan.skip) { certEodState.skip = plan.skip; return; }
+  const rows = plan.rows;
   try {
     const res = await fetch(`${supabaseUrl}/rest/v1/ime_certificate_history?on_conflict=trade_date,contract_code`, {
       method: "POST",
@@ -160,7 +178,8 @@ export async function pushCertEod({ supabaseUrl, serviceKey }) {
     });
     if (res.status === 404) { certEodState.table = "missing (run phase19 SQL)"; return; }
     if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 120)}`);
-    certEodState = { lastPushDay: day, pushed: rows.length, lastError: null, table: "ok" };
+    certEodState = { lastPushDay: day, pushed: rows.length, lastError: null,
+      table: "ok", skippedSourceDate: plan.rejected, skip: null };
   } catch (e) {
     certEodState.lastError = e?.message ?? String(e);
   }
@@ -240,14 +259,15 @@ function tehranJalaliDaysAgo(n) {
 export async function runPhysicalDaily({ base, key, headers, supabaseUrl, serviceKey, client = null, countLegacy = null }) {
   if (!supabaseUrl || !serviceKey || !key) return;
   const day = tehranDayKey();
-  if (physState.lastRunDay === day) return;
+  // Keep the existing one-attempt/day provider cap, including failures.
+  // Completion is separate so a missing table is never reported as success.
+  if (physState.lastAttemptDay === day) return;
   if (tehranHour() < 15) return;
-  physState.lastRunDay = day;
+  physState.lastAttemptDay = day;
   try {
     const today = tehranJalaliToday();
     // بک‌فیل تدریجی: هر روز یک روزِ گذشته (۱..۷) هم گرفته می‌شود.
     const backDay = tehranJalaliDaysAgo(1 + (physState.backfillCursor % 7));
-    physState.backfillCursor++;
     let inserted = 0;
     for (const jd of [today, backDay]) {
       const arr = await fetchPhysicalDay(jd, { base, key, headers, client, countLegacy });
@@ -263,13 +283,19 @@ export async function runPhysicalDaily({ base, key, headers, supabaseUrl, servic
         },
         body: JSON.stringify(rows),
       });
-      if (res.status === 404) { physState.table = "missing (run phase19 SQL)"; return; }
+      if (res.status === 404) {
+        physState.table = "missing (run phase19 SQL)";
+        physState.lastError = "storage table missing";
+        return;
+      }
       if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 120)}`);
       inserted += rows.length;
       physState.table = "ok";
     }
     physState.inserted = inserted;
     physState.lastError = null;
+    physState.lastRunDay = day;
+    physState.backfillCursor++;
   } catch (e) {
     physState.lastError = e?.message ?? String(e);
   }
