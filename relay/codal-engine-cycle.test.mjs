@@ -2,6 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { industrial, bank } from "./fixtures/n10-admission-fixtures.mjs";
+import { admissionCounts, admissionEvent } from "./codal-admission-diagnostics.mjs";
 
 process.env.BRSAPI_KEY = "mock-key";
 process.env.BRSAPI_BASE = "https://provider.invalid";
@@ -493,6 +494,9 @@ test("content-free diagnostics distinguish report failure stages in feed and bac
           expected[stage][reason] = 1;
           assert.deepEqual(f.persisted.failureDiagnostics, { version: 1, totals: expected, lastCycle: expected });
           assert.deepEqual(f.engine.engineStatus.failureDiagnostics, f.persisted.failureDiagnostics);
+          const admission = admissionCounts();
+          if (stage === "admission") admission["ن-۱۰"].scope_unsupported = 1;
+          assert.deepEqual(f.persisted.admissionDiagnostics, { version: 1, totals: admission, lastCycle: admission });
           assert.equal(f.persisted.fails[a.link], 1, "one ledger attempt, including the existing three download tries");
           assert.equal(f.engine.engineStatus[route].parseFailed, 1);
           assert.equal(f.calls.excel.length, downloads);
@@ -547,4 +551,91 @@ test("untrusted diagnostic fields are discarded and counters saturate without bl
   const unknownVersion = await fixture({ pages: [[]], initialState: { ...f.persisted, failureDiagnostics: { version: 2, totals: expected } } });
   await unknownVersion.engine.runEngineCycle();
   assert.deepEqual(unknownVersion.persisted.failureDiagnostics.totals, zeroFailureCounts());
+});
+
+test("reason diagnostics preserve retry/block, requests, ledger, state writes and watermark in feed and backfill", async t => {
+  // Accelerate only the existing mock-only delays; no collector/runtime is started.
+  const realTimeout = globalThis.setTimeout;
+  const delay = t.mock.method(globalThis, "setTimeout", (fn, _ms, ...args) => realTimeout(fn, 0, ...args));
+  const shortMonthly = '<table><tr><td>دوره یک ماهه</td></tr><tr><td>نام محصول</td></tr><tr><td>محصول</td><td>تن</td></tr></table>';
+  try {
+    for (const route of ["feed", "backfill"]) for (const [kind, reason, html] of [
+      ["ن-۱۰", "scope_unknown", industrial({ period: "1404/12/29", months: 12, prior: false, scope: "" })],
+      ["ن-۱۰", "unit_unverified", industrial({ period: "1404/12/29", months: 12, prior: false, unit: "" })],
+      ["ن-۳۰", "short_rows", shortMonthly],
+    ]) await t.test(`${route}: ${kind}/${reason}`, async () => {
+      const a = { ...financial(1), code: kind };
+      const f = await fixture({ excelHtml: html,
+        pages: route === "feed" ? [[a, boundary], []] : [[]],
+        ...(route === "backfill" ? { backfillPages: [a], marketBody: [{ payload: { stocks: [{ id: a.l18, value: 1 }] } }] } : {}),
+      });
+      const requestCount = route === "feed" ? 2 : 3;
+      for (let attempt = 1; attempt <= 4; attempt++) {
+        await f.engine.runEngineCycle();
+        const rejected = Math.min(attempt, 3);
+        const totals = admissionCounts(), lastCycle = admissionCounts();
+        totals[kind][reason] = rejected;
+        lastCycle[kind][reason] = attempt <= 3 ? 1 : 0;
+        assert.deepEqual(f.persisted.admissionDiagnostics, { version: 1, totals, lastCycle });
+        assert.deepEqual(f.engine.engineStatus.admissionDiagnostics, f.persisted.admissionDiagnostics);
+        assert.equal(f.persisted.failureDiagnostics.totals.admission.rejected, rejected);
+        assert.equal(f.calls.excel.length, rejected, "one existing download per rejected attempt; none after blocking");
+        assert.equal(f.calls.pages.length, attempt * requestCount, "no extra provider page requests");
+        assert.equal(f.calls.saves.length, attempt, "one existing state write per cycle");
+        assert.equal(f.calls.reportWrites.length, 0);
+        assert.equal(f.persisted.fails[a.link], rejected, "unchanged three-attempt blocking ledger");
+        assert.deepEqual(f.persisted.watermark, watermark);
+        assert.equal(f.engine.engineStatus[route].inserted, 0);
+        assert.equal(f.engine.engineStatus[route].parseFailed, attempt <= 3 ? 1 : 0);
+        assert.equal(f.persisted.backfillCursor, route === "feed" ? 0 : attempt);
+        if (route === "feed") assert.equal(f.engine.engineStatus.feed.incompleteReason, attempt <= 3 ? "report_failure" : "blocked_report");
+        assert.doesNotMatch(JSON.stringify(f.persisted.admissionDiagnostics), /https|اطلاعیه|محصول|1404|scope.*html/i);
+      }
+      const saved = structuredClone(f.persisted);
+      // A new module instance with persisted mock state, not a service restart.
+      const restarted = await fixture({ pages: [[]], initialState: saved });
+      await restarted.engine.runEngineCycle();
+      assert.deepEqual(restarted.persisted.admissionDiagnostics.totals, saved.admissionDiagnostics.totals);
+      assert.deepEqual(restarted.persisted.admissionDiagnostics.lastCycle, admissionCounts());
+      assert.deepEqual(restarted.persisted.failureDiagnostics.totals, saved.failureDiagnostics.totals);
+      assert.deepEqual(restarted.persisted.watermark, saved.watermark);
+      assert.deepEqual(restarted.persisted.fails, saved.fails);
+      assert.equal(restarted.calls.saves.length, 1);
+      assert.equal(restarted.calls.excel.length, 0);
+      assert.equal(restarted.calls.reportWrites.length, 0);
+    });
+  } finally { delay.mock.restore(); }
+});
+
+test("reason diagnostics whitelist persisted enums and safe bounded counters; legacy and unknown versions reset", async () => {
+  const a = financial(1);
+  const f = await fixture({ pages: [[a, boundary], []], excelHtml: "unsupported",
+    initialState: { watermark, backfillCursor: 0, fails: {}, admissionDiagnostics: {
+      version: 1, title: "SYNTHETIC_SECRET", totals: {
+        "ن-۱۰": { scope_unsupported: Number.MAX_SAFE_INTEGER, context_invalid: -1, scope_unknown: "7", eps_unverified: 1.2,
+          unit_unverified: Number.MAX_SAFE_INTEGER + 1, html: "SYNTHETIC_SECRET" },
+        "ن-۳۰": { short_rows: 2, url: "https://private.invalid" }, secretKind: { message: "SYNTHETIC_SECRET" },
+      }, lastCycle: { "ن-۱۰": { capital_unverified: 9 }, raw: "SYNTHETIC_SECRET" },
+    } },
+  });
+  await f.engine.runEngineCycle();
+  const totals = admissionCounts(), lastCycle = admissionCounts();
+  totals["ن-۱۰"].scope_unsupported = Number.MAX_SAFE_INTEGER;
+  totals["ن-۳۰"].short_rows = 2;
+  lastCycle["ن-۱۰"].scope_unsupported = 1;
+  assert.deepEqual(f.persisted.admissionDiagnostics, { version: 1, totals, lastCycle });
+  assert.equal(f.persisted.fails[a.link], 1);
+  assert.equal(f.calls.saves.length, 1);
+  assert.doesNotMatch(JSON.stringify(f.persisted.admissionDiagnostics), /SECRET|html|url|title|message|private|raw|secretKind/);
+  assert.deepEqual(admissionEvent({ kind: "ن-۱۰", reason: "scope_unknown", html: "SYNTHETIC_SECRET" }, "ن-۱۰"), { kind: "ن-۱۰", reason: "scope_unknown" });
+  assert.equal(admissionEvent({ kind: "ن-۳۰", reason: "scope_unknown" }, "ن-۱۰"), null);
+  assert.equal(admissionEvent({ kind: "ن-۱۰", reason: "SYNTHETIC_SECRET" }, "ن-۱۰"), null);
+  for (const admissionDiagnostics of [undefined, { version: 2, totals }]) {
+    const legacy = await fixture({ pages: [[]], initialState: { watermark, backfillCursor: 7, fails: { [a.link]: 2 }, admissionDiagnostics } });
+    await legacy.engine.runEngineCycle();
+    assert.deepEqual(legacy.persisted.admissionDiagnostics, { version: 1, totals: admissionCounts(), lastCycle: admissionCounts() });
+    assert.equal(legacy.persisted.backfillCursor, 7);
+    assert.equal(legacy.persisted.fails[a.link], 2);
+    assert.deepEqual(legacy.persisted.watermark, watermark);
+  }
 });

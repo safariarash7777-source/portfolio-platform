@@ -1,4 +1,5 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
+import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -508,31 +509,38 @@ function n10Core(rows, bankKind) {
 
 /** Strictly restrict new admission; never synthesize nullable fields or alter a
  * valid pv2 numeric result. Unknown/incompatible contexts return null. */
-export function admitN10Html(html, meta) {
+export function admitN10Html(html, meta, onRejected) {
+  const reject = reason => notifyAdmissionRejection(onRejected, "ن-۱۰", reason);
   try {
     const contexts = extractN10Tables(html);
     const incomes = contexts.filter(c => findIncomeTable([c.rows]) || findBankIncomeTable([c.rows]));
-    if (incomes.some(c => !c.contextValid || c.columnsAmbiguous || !n10Scope(c))) return null;
+    let contextReason;
+    if (incomes.some(c => {
+      const invalid = !c.contextValid || c.columnsAmbiguous || !n10Scope(c);
+      if (invalid) contextReason = !c.contextValid ? "context_invalid" : c.columnsAmbiguous ? "geometry_ambiguous" : "scope_unknown";
+      return invalid;
+    })) return reject(contextReason);
     const independent = incomes.filter(c => n10Scope(c) === "standalone");
-    if (independent.length !== 1) return null;
+    if (independent.length !== 1) return reject(independent.length === 0 ? "scope_unsupported" : "statement_ambiguous");
     const inc = independent[0];
-    if (!n10Million(inc)) return null;
+    if (!n10Million(inc)) return reject("unit_unverified");
     const isBank = !!findBankIncomeTable([inc.rows]);
-    if (isBank && findIncomeTable([inc.rows])) return null;
+    if (isBank && findIncomeTable([inc.rows])) return reject("statement_ambiguous");
     const bankKind = isBank ? (inc.rows.some(r => normLabel(r[0]).startsWith(normLabel("درآمد حق بیمه"))) ? "insurance" : "bank") : null;
     const core = n10Core(inc.rows, bankKind);
-    if (Object.values(core).some(r => !r || !Number.isFinite(cellNum(r[1])))) return null;
+    if (Object.values(core).some(r => !r || !Number.isFinite(cellNum(r[1])))) return reject("values_unobserved");
     const period = n10Period(inc, meta, Object.values(core));
-    if (!period || (period.prior && Object.values(core).some(r => !Number.isFinite(cellNum(r[2]))))) return null;
+    if (!period) return reject("period_unverified");
+    if (period.prior && Object.values(core).some(r => !Number.isFinite(cellNum(r[2])))) return reject("values_unobserved");
     for (const col of period.prior ? [1, 2] : [1]) {
       const gross = cellNum(core.gross_profit[col]);
-      if (Math.abs(cellNum(core.revenue[col]) + cellNum(core.cogs[col]) - gross) > Math.max(Math.abs(gross) * .02, 10)) return null;
+      if (Math.abs(cellNum(core.revenue[col]) + cellNum(core.cogs[col]) - gross) > Math.max(Math.abs(gross) * .02, 10)) return reject("arithmetic_mismatch");
     }
     let capital;
     const legacyTables = [inc.rows];
     if (isBank) {
       const caps = inc.rows.filter(r => normLabel(r[0]) === normLabel("سرمایه"));
-      if (caps.length !== 1 || !Number.isFinite(cellNum(caps[0][1])) || cellNum(caps[0][1]) <= 0) return null;
+      if (caps.length !== 1 || !Number.isFinite(cellNum(caps[0][1])) || cellNum(caps[0][1]) <= 0) return reject("capital_unverified");
       capital = cellNum(caps[0][1]);
     } else {
       const equities = contexts.filter(c => c.contextValid && !c.columnsAmbiguous && n10Scope(c) === "standalone" &&
@@ -550,28 +558,28 @@ export function admitN10Html(html, meta) {
         const current = c.rows.slice(1).filter(r => normLabel(r[0]).includes(normLabel("مانده")) && n10Dates(r[0]).length === 1 && n10Dates(r[0])[0] === meta.period_end);
         if (current.length === 1 && last === current[0]) proofs.push({ rows: c.rows, value: cellNum(last[col]) });
       }
-      if (proofs.length !== 1) return null;
+      if (proofs.length !== 1) return reject("capital_unverified");
       capital = proofs[0].value; legacyTables.push(proofs[0].rows);
     }
     const data = isBank ? normalizeN10Bank(legacyTables, meta) : normalizeN10(legacyTables, meta);
-    if (!data || data.capital !== capital || data.unit !== "میلیون ریال") return null;
+    if (!data || data.capital !== capital || data.unit !== "میلیون ریال") return reject("normalized_identity_mismatch");
     for (const [name, row] of Object.entries(core)) {
-      if (data.standalone[name] !== (name === "cogs" ? Math.abs(cellNum(row[1])) : cellNum(row[1]))) return null;
-      if (period.prior && data.standalone.prior?.[name] !== (name === "cogs" ? Math.abs(cellNum(row[2])) : cellNum(row[2]))) return null;
+      if (data.standalone[name] !== (name === "cogs" ? Math.abs(cellNum(row[1])) : cellNum(row[1]))) return reject("normalized_identity_mismatch");
+      if (period.prior && data.standalone.prior?.[name] !== (name === "cogs" ? Math.abs(cellNum(row[2])) : cellNum(row[2]))) return reject("normalized_identity_mismatch");
     }
     const primaryEps = inc.rows.filter(r => normLabel(r[0]).includes(normLabel("خالص هر سهم")));
     const fallbackEps = inc.rows.filter(r => /ناشیازعملیاتدرحالتداوم|پایههرسهم/.test(normLabel(r[0])) && cellNum(r[1]) !== null);
     const epsRows = primaryEps.length ? primaryEps : fallbackEps;
-    if (epsRows.length > 1) return null;
+    if (epsRows.length > 1) return reject("eps_unverified");
     if (epsRows.length) {
       const row = epsRows[0], label = normLabel(row[0]);
       if (!label.includes("ریال") || /هزارریال|میلیونریال|تومان/.test(label) ||
           !Number.isFinite(cellNum(row[1])) || data.standalone.eps_rial !== cellNum(row[1]) ||
-          (period.prior && (!Number.isFinite(cellNum(row[2])) || data.standalone.prior?.eps_rial !== cellNum(row[2])))) return null;
-    } else if (data.standalone.eps_rial !== undefined) return null;
-    if (!period.prior && data.standalone.prior) return null;
+          (period.prior && (!Number.isFinite(cellNum(row[2])) || data.standalone.prior?.eps_rial !== cellNum(row[2])))) return reject("eps_unverified");
+    } else if (data.standalone.eps_rial !== undefined) return reject("eps_unverified");
+    if (!period.prior && data.standalone.prior) return reject("period_unverified");
     return data;
-  } catch { return null; }
+  } catch { return reject("internal_exception"); }
 }
 
 /* ── نرمال‌سازی ن-۳۰ (فعالیت ماهانه) ────────────────────────────────────────── */
@@ -671,8 +679,10 @@ export function resolveAmountUnit(tables, products) {
   return { ...base, unit: null, basis: "unresolved" };
 }
 
-export function normalizeN30(tables, meta) {
+export function normalizeN30(tables, meta, onRejected) {
   const products = [];
+  let supportedLayout = false;
+  const skippedReasons = new Set(); // At most four fixed row-guard categories.
   let periodTotal = null;
   let fyCumulative = null;
 
@@ -682,6 +692,7 @@ export function normalizeN30(tables, meta) {
     if (h1Idx < 0) continue;
     const h0 = t[h1Idx - 1] ?? [];
     if (!h0.some((c) => c.includes("دوره یک ماهه") || c.includes("دوره یکماهه") || c.includes("ماهه منتهی"))) continue;
+    supportedLayout = true;
 
     // بلوک‌بندی ثابت طبق ساختار استاندارد ن-۳۰ (۲۶ ستون):
     //   2..5 تجمعی گزارش قبل | 6..8 اصلاحات | 9..12 تجمعی اصلاح‌شده
@@ -694,7 +705,7 @@ export function normalizeN30(tables, meta) {
     for (const row of t.slice(h1Idx + 1)) {
       const name = (row[0] || "").trim();
       if (!name) continue;
-      if (row.length < expectCols - 2) continue; // سطرهای بخشی کوتاه‌ترند
+      if (row.length < expectCols - 2) { skippedReasons.add("short_rows"); continue; } // سطرهای بخشی کوتاه‌ترند
       if (name.includes("جمع")) {
         const vM = cellNum(row[M.amount]);
         const vC = cellNum(row[C.amount]);
@@ -707,12 +718,12 @@ export function normalizeN30(tables, meta) {
       const qty = cellNum(row[M.qty]);
       const amount = cellNum(row[M.amount]);
       const rate = cellNum(row[M.rate]);
-      if (qty === null && amount === null) continue;
-      if ((qty === 0 || qty === null) && (amount === 0 || amount === null)) continue; // بدون فروش در ماه
+      if (qty === null && amount === null) { skippedReasons.add("missing_sales"); continue; }
+      if ((qty === 0 || qty === null) && (amount === 0 || amount === null)) { skippedReasons.add("zero_sales_only"); continue; } // بدون فروش در ماه
       // اعتبارسنجی مبلغ ≈ فروش×نرخ÷10^6 (مبلغ به میلیون ریال است).
       if (qty && rate && amount) {
         const calc = (qty * rate) / 1e6;
-        if (calc > 0 && Math.abs(calc - amount) / Math.max(amount, 1) > 0.05) continue; // ستون اشتباه — رد
+        if (calc > 0 && Math.abs(calc - amount) / Math.max(amount, 1) > 0.05) { skippedReasons.add("arithmetic_mismatch"); continue; } // ستون اشتباه — رد
       }
       products.push({
         product_name: name,
@@ -727,7 +738,8 @@ export function normalizeN30(tables, meta) {
     if (products.length) break; // فقط جدول محصول اصلی
   }
 
-  if (products.length === 0) return null;
+  if (products.length === 0) return notifyAdmissionRejection(onRejected, "ن-۳۰",
+    !supportedLayout ? "unsupported_layout" : skippedReasons.size > 1 ? "mixed_rows" : [...skippedReasons][0] ?? "no_product_rows");
   const unitInfo = resolveAmountUnit(tables, products);
   if (periodTotal === null) {
     periodTotal = products.reduce((s, p) => s + (p.sales_amount ?? 0), 0);
@@ -1004,12 +1016,12 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
 }
 
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
-export async function downloadAndParse(a, kind, onDownloaded = () => {}) {
+export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
   const html = await downloadExcelHtml(a.link_excel);
   // Stage boundary only: never pass report content to diagnostics.
   onDownloaded();
   const meta = metaFrom(a, kind);
-  return kind === "ن-۱۰" ? admitN10Html(html, meta) : normalizeN30(parseHtmlTables(html), meta);
+  return kind === "ن-۱۰" ? admitN10Html(html, meta, onRejected) : normalizeN30(parseHtmlTables(html), meta, onRejected);
 }
 
 /** Returns the actual 0/1 count; zero resolves only after confirming the exact

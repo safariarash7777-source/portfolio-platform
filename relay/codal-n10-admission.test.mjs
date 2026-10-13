@@ -239,3 +239,77 @@ test("unrelated independence words and negated declarations are not witnesses", 
   assert.equal(admit(industrial({ scope: "مستقل نیست" })), null);
   assert.equal(admit(industrial({ unit: "مبالغ به میلیون ریال نیست" })), null);
 });
+
+test("fixed rejection reasons retain the real Vanovin scope and period limitations", () => {
+  const m = { ...meta, symbol: "ونوین", period_end: "1404-12-29", period_months: 12 };
+  const events = [];
+  assert.equal(codal.admitN10Html(fixture, m, event => events.push(event)), null);
+  assert.deepEqual(events, [{ kind: "ن-۱۰", reason: "scope_unknown" }]);
+  events.length = 0;
+  const scopeOnly = fixture.replace('class="table-title ng-binding ng-scope">صورت سود و زیان',
+    'class="table-title ng-binding ng-scope">صورت سود و زیان جداگانه شرکت اصلی');
+  assert.equal(codal.admitN10Html(scopeOnly, m, event => events.push(event)), null);
+  assert.deepEqual(events, [{ kind: "ن-۱۰", reason: "period_unverified" }]);
+});
+
+test("fixed rejection reasons describe the first existing N10 guard without report content", async t => {
+  const identity = industrial().replace('<td>درآمدهای عملیاتی</td>',
+    '<td>درآمدهای عملیاتی یادداشت</td><td>999</td><td>850</td></tr><tr><td>درآمدهای عملیاتی</td>');
+  for (const [reason, html, m] of [
+    ["context_invalid", industrial().replace('<div class="table-description">ارقام به میلیون ریال</div>', "")],
+    ["geometry_ambiguous", industrial().replace("<td>100</td>", '<td colspan="2">100</td>')],
+    ["scope_unknown", industrial({ scope: "" })],
+    ["scope_unsupported", industrial({ scope: "تلفیقی" })],
+    ["statement_ambiguous", industrial() + industrial()],
+    ["unit_unverified", industrial({ unit: "ارقام به ریال" })],
+    ["values_unobserved", industrial({ current: [100, "", 40, 30, 20] })],
+    ["values_unobserved", industrial({ before: [80, "", 30, 20, 10] })],
+    ["period_unverified", industrial({ months: 6 })],
+    ["arithmetic_mismatch", industrial({ current: [100, "(60)", 99, 30, 20] })],
+    ["capital_unverified", industrial({ capital: false })],
+    ["normalized_identity_mismatch", identity],
+    ["eps_unverified", industrial().replace("هر سهم – ریال", "هر سهم – هزار ریال")],
+    ["eps_unverified", bank({ eps: 0 })],
+    ["internal_exception", industrial(), { ...meta, get period_end() { throw Error("SYNTHETIC_SECRET https://private.invalid/?token=fixture"); } }],
+  ]) {
+    await t.test(reason, () => {
+      const events = [];
+      assert.equal(codal.admitN10Html(html, m ?? meta, event => events.push(event)), null);
+      assert.deepEqual(events, [{ kind: "ن-۱۰", reason }]);
+    });
+  }
+});
+
+test("fixed rejection reasons aggregate N30 row guards once per rejected report only", async t => {
+  const row = (qty, rate, amount) => { const r = Array(26).fill(""); r[0] = "محصول نمونه"; r[14] = qty; r[15] = rate; r[16] = amount; return r; };
+  const layout = rows => [[ ["ارقام به میلیون ریال", "دوره یک ماهه"], ["نام محصول"], ...rows ]];
+  for (const [reason, tables] of [
+    ["unsupported_layout", []], ["short_rows", layout([["محصول نمونه", "تن"]])],
+    ["missing_sales", layout([row("", "", "")])], ["zero_sales_only", layout([row(0, 0, 0)])],
+    ["arithmetic_mismatch", layout([row(100, 1000000, 50)])],
+    ["mixed_rows", layout([row("", "", ""), row(0, 0, 0)])],
+    ["no_product_rows", layout([])],
+  ]) await t.test(reason, () => {
+    const events = [];
+    assert.equal(codal.normalizeN30(tables, meta, event => events.push(event)), null);
+    assert.deepEqual(events, [{ kind: "ن-۳۰", reason }]);
+  });
+  const events = [], tables = layout([row(100, 1000000, 100), row(0, 0, 0)]);
+  assert.deepEqual(codal.normalizeN30(tables, meta, event => events.push(event)), codal.normalizeN30(tables, meta));
+  assert.deepEqual(events, [], "accepted partial rows retain the existing result and do not record report rejection");
+  const conflict = [[ ["ارقام به ریال", "دوره یک ماهه"], ["نام محصول"], row(100, 1000000, 100) ]];
+  const conflictData = codal.normalizeN30(conflict, meta, event => events.push(event));
+  assert.equal(conflictData.unit, null);
+  assert.deepEqual(conflictData, codal.normalizeN30(conflict, meta));
+  assert.deepEqual(events, [], "an existing accepted unknown-unit result is not turned into a rejection");
+});
+
+test("a failing diagnostic observer cannot change admission outputs", () => {
+  const fail = () => { throw Error("SYNTHETIC_SECRET observer"); };
+  assert.equal(codal.admitN10Html(industrial({ scope: "" }), meta, fail), null);
+  assert.equal(codal.normalizeN30([], meta, fail), null);
+  assert.deepEqual(codal.admitN10Html(industrial(), meta, fail), admit(industrial()));
+  const events = [];
+  assert.deepEqual(codal.admitN10Html(industrial(), meta, event => events.push(event)), admit(industrial()));
+  assert.deepEqual(events, []);
+});
