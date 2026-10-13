@@ -6,6 +6,7 @@
 // همگام می‌شود تا لینک مستقیم به هر تب ممکن باشد.
 
 import { useEffect, useState, type ReactNode } from "react";
+import MarketAutoRefresh from "../market/MarketAutoRefresh";
 
 const TABS = [
   { key: "overview", label: "نمای کلی" },
@@ -43,6 +44,7 @@ export default function SymbolTabs({
 
   return (
     <div>
+      <MarketAutoRefresh />
       <div
         role="tablist"
         aria-label="بخش‌های صفحهٔ نماد"

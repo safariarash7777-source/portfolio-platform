@@ -47,7 +47,7 @@ export function buildIndexSeries(rows: IndexHistRow[]): IndexSeries[] {
   return out;
 }
 
-const REVALIDATE_MS = 10 * 60 * 1000;
+const REVALIDATE_MS = 60 * 1000;
 let cached: { at: number; value: IndexSeries[] } | null = null;
 
 function env(): { url: string; anon: string } | null {

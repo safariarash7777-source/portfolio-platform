@@ -14,6 +14,7 @@
  * داشت و ساختارِ سرفصل برای صفحه‌خوان شکسته بود.
  */
 import Link from "next/link";
+import MarketAutoRefresh from "./MarketAutoRefresh";
 import { MARKET_SECTIONS, type MarketSectionKey, type MarketSearchEntry } from "@/lib/market-nav";
 import { computeFreshness } from "@/lib/market-freshness";
 import { formatJalali, formatTehranClock } from "@/lib/format";
@@ -76,6 +77,7 @@ export default function MarketShell({
 }: MarketShellProps) {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-5 sm:px-5 md:pt-6">
+      <MarketAutoRefresh />
       {/* ── ردیفِ اول: سربرگِ بازار، زمان و جست‌وجو ───────────────────────── */}
       <header className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">

@@ -3,7 +3,7 @@
 // قانون سخت: جدول هنوز ساخته‌نشده/خالی → آرایهٔ خالی (حالت خالی صادق در UI)؛ هیچ عدد ساختگی.
 import { buildFlowTrend, type BreadthRow, type FlowTrendPoint } from "./marketToday";
 
-const REVALIDATE_MS = 10 * 60 * 1000;
+const REVALIDATE_MS = 60 * 1000;
 let cached: { at: number; value: FlowTrendPoint[] } | null = null;
 
 function env(): { url: string; anon: string } | null {
@@ -27,7 +27,7 @@ export async function getFlowTrend(days = 90): Promise<FlowTrendPoint[]> {
     const res = await fetch(`${e.url}/rest/v1/market_breadth?${qs}`, {
       headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
       signal: AbortSignal.timeout(15000),
-      next: { revalidate: 600 },
+      cache: "no-store",
     });
     if (!res.ok) return []; // جدول هنوز migrate نشده → خالی صادق
     const rows = (await res.json()) as BreadthRow[];

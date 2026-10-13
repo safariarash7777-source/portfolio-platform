@@ -4,7 +4,7 @@
 // فقط ردیف‌های دارای nav_toman را می‌خواند؛ روز بدون NAV در سری نمی‌آید (هیچ
 // درون‌یابی). قیمت پایانی ریال است → تومان (÷۱۰) تا با NAV هم‌واحد شود.
 
-const REVALIDATE_MS = 10 * 60 * 1000;
+const REVALIDATE_MS = 60 * 1000;
 const cache = new Map<string, { at: number; value: NavDay[] }>();
 
 export interface NavDay {
@@ -51,7 +51,7 @@ export async function getNavHistory(symbol: string, days = 400): Promise<NavDay[
     const res = await fetch(`${e.url}/rest/v1/symbol_history?${qs}`, {
       headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
       signal: AbortSignal.timeout(10000),
-      next: { revalidate: 600 },
+      cache: "no-store",
     });
     if (!res.ok) return [];
     rows = (await res.json()) as Row[];

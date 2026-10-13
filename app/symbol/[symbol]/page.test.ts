@@ -6,6 +6,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import type { IrMarket, IrStockRow } from "../../../lib/market-ir";
 import { withValidNav, marketQualityLabel } from "../../../lib/market-quality";
 import { formatRialAsToman, formatJalali, formatTehranClock, toPersianDigits } from "../../../lib/format";
@@ -51,7 +52,9 @@ async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolF
   // Only the VM's clock is fixed; no global clock or real source is touched.
   class FixedDate extends Date { constructor(value: string | number = now) { super(value); } static now() { return now; } }
   vm.runInNewContext(js, { module: pageModule, exports: pageModule.exports, require: fakeRequire, Date: FixedDate });
-  const tree = await pageModule.exports.default({ params: Promise.resolve({ symbol }) });
+  const page = await pageModule.exports.default({ params: Promise.resolve({ symbol }) });
+  const router = { back() {}, forward() {}, push() {}, replace() {}, refresh() {}, hmrRefresh() {}, async prefetch() {} };
+  const tree = React.createElement(AppRouterContext.Provider, { value: router }, page);
   const nodes: React.ReactElement<Record<string, unknown>>[] = [];
   const walk = (node: unknown) => {
     if (Array.isArray(node)) { node.forEach(walk); return; }

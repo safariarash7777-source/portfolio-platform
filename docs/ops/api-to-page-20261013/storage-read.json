@@ -1,0 +1,328 @@
+{
+  "checkedAt": "2026-10-13T15:08:52.779Z",
+  "snapshot": {
+    "status": 200,
+    "updatedAt": "2026-10-13T15:07:47.792+00:00",
+    "fetchedAt": 1791904067702,
+    "keys": [
+      "gold",
+      "funds",
+      "crypto",
+      "stocks",
+      "indices",
+      "options",
+      "currency",
+      "fetchedAt",
+      "commodities",
+      "imeCertificates"
+    ],
+    "families": {
+      "stocks": {
+        "rows": 784,
+        "withSourceClock": 0,
+        "fields": [
+          "id",
+          "pe",
+          "eps",
+          "buyI",
+          "buyN",
+          "unit",
+          "price",
+          "sellI",
+          "sellN",
+          "value",
+          "change",
+          "dayLow",
+          "faName",
+          "volume",
+          "bandLow",
+          "dayHigh",
+          "bandHigh",
+          "industry",
+          "buyCountI",
+          "industryId",
+          "sellCountI",
+          "marketValue",
+          "bestAskPrice",
+          "bestBidPrice",
+          "closingPrice",
+          "bestAskVolume",
+          "bestBidVolume",
+          "changePercent",
+          "closingChangePercent"
+        ]
+      },
+      "funds": {
+        "rows": 337,
+        "withSourceClock": 0,
+        "fields": [
+          "id",
+          "pe",
+          "eps",
+          "nav",
+          "buyI",
+          "buyN",
+          "type",
+          "unit",
+          "price",
+          "sellI",
+          "sellN",
+          "value",
+          "change",
+          "dayLow",
+          "faName",
+          "volume",
+          "bandLow",
+          "dayHigh",
+          "navDate",
+          "navTime",
+          "bandHigh",
+          "industry",
+          "navIssue",
+          "buyCountI",
+          "industryId",
+          "sellCountI",
+          "marketValue",
+          "bestAskPrice",
+          "bestBidPrice",
+          "closingPrice",
+          "bestAskVolume",
+          "bestBidVolume",
+          "bubblePercent",
+          "changePercent",
+          "closingChangePercent"
+        ]
+      },
+      "gold": {
+        "rows": 9,
+        "withSourceClock": 0,
+        "fields": [
+          "id",
+          "unit",
+          "price",
+          "change",
+          "faName",
+          "changePercent"
+        ]
+      },
+      "currency": {
+        "rows": 28,
+        "withSourceClock": 0,
+        "fields": [
+          "id",
+          "unit",
+          "price",
+          "change",
+          "faName",
+          "changePercent"
+        ]
+      },
+      "options": {
+        "rows": 1100,
+        "withSourceClock": 0,
+        "fields": [
+          "id",
+          "buyI",
+          "buyN",
+          "type",
+          "price",
+          "sellI",
+          "sellN",
+          "value",
+          "baseId",
+          "faName",
+          "strike",
+          "trades",
+          "volume",
+          "dateEnd",
+          "dayRemain",
+          "closingPrice",
+          "openInterest",
+          "changePercent"
+        ]
+      },
+      "commodities": {
+        "rows": 0,
+        "withSourceClock": 0,
+        "fields": []
+      },
+      "imeCertificates": {
+        "rows": 11,
+        "withSourceClock": 0,
+        "fields": [
+          "id",
+          "low",
+          "date",
+          "high",
+          "time",
+          "close",
+          "price",
+          "title",
+          "volume",
+          "commodity",
+          "yesterday",
+          "tradeCount",
+          "valueToman",
+          "contractSize",
+          "changePercent"
+        ]
+      }
+    }
+  },
+  "details": {
+    "status": 200,
+    "rows": 120,
+    "batchAt": 1791904068813,
+    "oldestEntryAt": 1791855171507,
+    "newestEntryAt": 1791904068702
+  },
+  "reports": {
+    "checkedAt": "2026-10-13T15:15:21.248Z",
+    "status": 200,
+    "rows": [
+      {
+        "id": 10934,
+        "symbol": "کی ام سی",
+        "kind": "ن-۳۰",
+        "periodEnd": "2025-10-22"
+      },
+      {
+        "id": 10933,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2025-09-22"
+      },
+      {
+        "id": 10932,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2025-10-22"
+      },
+      {
+        "id": 10931,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2025-11-21"
+      },
+      {
+        "id": 10930,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-02-19"
+      },
+      {
+        "id": 10929,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-03-20"
+      },
+      {
+        "id": 10928,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-04-20"
+      },
+      {
+        "id": 10927,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-05-21"
+      },
+      {
+        "id": 10926,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-06-21"
+      },
+      {
+        "id": 10925,
+        "symbol": "کسعدی",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-09-22"
+      },
+      {
+        "id": 10924,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-07-22"
+      },
+      {
+        "id": 10923,
+        "symbol": "هانیکو",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-09-22"
+      },
+      {
+        "id": 10922,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-08-22"
+      },
+      {
+        "id": 10921,
+        "symbol": "بمولد",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-09-22"
+      },
+      {
+        "id": 10920,
+        "symbol": "سهرمز",
+        "kind": "ن-۳۰",
+        "periodEnd": "2026-09-22"
+      },
+      {
+        "id": 10919,
+        "symbol": "احیا",
+        "kind": "ن-۳۰",
+        "periodEnd": "2024-07-21"
+      },
+      {
+        "id": 10918,
+        "symbol": "احیا",
+        "kind": "ن-۳۰",
+        "periodEnd": "2024-08-21"
+      },
+      {
+        "id": 10917,
+        "symbol": "احیا",
+        "kind": "ن-۳۰",
+        "periodEnd": "2024-06-20"
+      },
+      {
+        "id": 10916,
+        "symbol": "احیا",
+        "kind": "ن-۳۰",
+        "periodEnd": "2024-07-21"
+      },
+      {
+        "id": 10915,
+        "symbol": "احیا",
+        "kind": "ن-۳۰",
+        "periodEnd": "2024-08-21"
+      }
+    ],
+    "errorCode": null
+  },
+  "storageErrorClassification": [
+    {
+      "path": "ime.certificate.lastError",
+      "kind": "none"
+    },
+    {
+      "path": "ime.certificate.eod.lastError",
+      "kind": "network"
+    },
+    {
+      "path": "ime.physical.lastError",
+      "kind": "other-error"
+    },
+    {
+      "path": "commodity.enabled",
+      "kind": false
+    },
+    {
+      "path": "commodity.lastError",
+      "kind": "configuration"
+    }
+  ]
+}

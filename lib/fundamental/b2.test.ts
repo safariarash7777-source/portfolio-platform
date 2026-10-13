@@ -50,6 +50,51 @@ function html(f: SymbolFundamentals) {
   return renderToStaticMarkup(React.createElement(FundamentalCharts, { fundamentals: f }));
 }
 
+test("freshness: latest interim drives the card and margins instead of the previous annual", async () => {
+  const symbol = "freshness-interim";
+  const annual = row(90, symbol, "1404-12-29", 12, 1000);
+  const interim = row(2, symbol, "1405-06-31", 6, 700);
+  const result = await read(symbol, [annual, interim]);
+  assert.equal(result.data?.n10?.data.period_end, "1405-06-31");
+  assert.equal(result.data?.n10?.data.period_months, 6);
+  assert.match(result.data?.n10?.source.title ?? "", /۶ماهه/);
+  assert.equal(deriveN10(result.data!.n10!.data).margins.net, 20);
+  assert.equal(result.data?.n10Periods?.length, 2);
+});
+
+test("freshness: a newer invalid report stays disclosed alongside the dated usable report", async () => {
+  const symbol = "freshness-invalid-latest";
+  const latest = row(2, symbol, "1405-06-31", 6, 700);
+  latest.data.unit = null;
+  const result = await read(symbol, [row(90, symbol, "1404-12-29", 12, 1000), latest]);
+  assert.equal(result.data?.n10?.data.period_end, "1404-12-29");
+  assert.equal(result.data?.n10Unavailable?.latestPeriod, "1405-06-31");
+});
+
+test("freshness: a newly stored report replaces the cached card after one minute without a second Next cache", async () => {
+  const symbol = "freshness-cache";
+  const now = Date.now;
+  let clock = now();
+  Date.now = () => clock;
+  try {
+    await read(symbol, [row(1, symbol, "1404-12-29", 12, 1000)]);
+    let requests = 0;
+    globalThis.fetch = async (input, options) => {
+      assert.equal(new URL(String(input)).hostname, "b2-fixture.invalid");
+      assert.equal(options?.cache, "no-store");
+      assert.equal((options as { next?: unknown })?.next, undefined);
+      requests++;
+      return Response.json(String(input).includes(encodeURIComponent("ن-۱۰")) ? [row(2, symbol, "1405-06-31", 6, 700)] : []);
+    };
+    clock += 59_999;
+    assert.equal((await readFundamentalsFromSupabase(symbol)).data?.n10?.data.period_months, 12);
+    assert.equal(requests, 0);
+    clock += 2;
+    assert.equal((await readFundamentalsFromSupabase(symbol)).data?.n10?.data.period_months, 6);
+    assert.equal(requests, 2);
+  } finally { Date.now = now; }
+});
+
 test("B2: null, undefined, strings and nonfinite inputs never become zero percentages", () => {
   for (const value of [null, undefined, "0", "10", false, NaN, Infinity, -Infinity]) {
     assert.equal(pct(value as never, 10), null, `numerator ${String(value)}`);
