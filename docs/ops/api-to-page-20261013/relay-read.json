@@ -1,0 +1,81 @@
+{
+  "checkedAt": "2026-10-13T15:08:19.316Z",
+  "lastRefresh": 1791904067721,
+  "ageSec": 31,
+  "snapshotQuality": null,
+  "db": {
+    "ok": true,
+    "at": 1791904068344,
+    "status": 200
+  },
+  "sourceStates": {
+    "brsapi_gold_currency": {
+      "ok": true,
+      "errorPresent": false
+    },
+    "brsapi_stocks": {
+      "ok": true,
+      "errorPresent": false
+    },
+    "brsapi_index": {
+      "ok": true,
+      "errorPresent": false
+    },
+    "brsapi_nav": {
+      "ok": true,
+      "errorPresent": false
+    },
+    "brsapi_fund_meta": {
+      "ok": true,
+      "errorPresent": false
+    }
+  },
+  "codal": {
+    "mode": "v3",
+    "ok": true,
+    "lastRun": 1791898666204,
+    "ledgerSize": 403
+  },
+  "history": {
+    "lastRun": 1791887569979,
+    "lastDate": "2026-10-13",
+    "rows": 1097,
+    "result": {
+      "tradeDate": "2026-10-13",
+      "planned": 1097,
+      "inserted": 1097,
+      "alreadyDone": 0,
+      "displaced": 0,
+      "occupiedByOtherSource": 0,
+      "complete": true
+    }
+  },
+  "nav": {
+    "keys": [
+      "loaded",
+      "size",
+      "pendingFailCounts",
+      "threshold",
+      "lastSaveError"
+    ]
+  },
+  "commodity": {
+    "keys": [
+      "enabled",
+      "rows",
+      "lastFetchAt",
+      "reqToday",
+      "lastError"
+    ]
+  },
+  "ime": {
+    "keys": [
+      "certificate",
+      "physical"
+    ]
+  },
+  "quota": {
+    "enabled": false,
+    "enforced": false
+  }
+}

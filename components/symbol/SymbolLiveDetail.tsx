@@ -6,6 +6,7 @@
 // همهٔ قیمت‌های خام ریال است → نمایش تومان (÷۱۰). دادهٔ ناموجود → حالت خالی صادق.
 
 import { useEffect, useState } from "react";
+import { browserPollEnvironment, startVisiblePoll } from "@/lib/visible-poll";
 import { formatTomanShort, toPersianDigits } from "@/lib/format";
 
 /** عدد فارسی با جداکنندهٔ هزارگان (نمایشی). */
@@ -59,7 +60,11 @@ export default function SymbolLiveDetail({
 
   useEffect(() => {
     let alive = true;
-    fetch(`/api/symbol-detail?l18=${encodeURIComponent(symbol)}`)
+    setData(null);
+    setState("loading");
+    const stop = startVisiblePoll((signal) => fetch(`/api/symbol-detail?l18=${encodeURIComponent(symbol)}`, {
+      cache: "no-store", signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
+    })
       .then((r) => {
         if (r.ok) return r.json();
         return Promise.reject(new Error(String(r.status)));
@@ -70,15 +75,16 @@ export default function SymbolLiveDetail({
           setData(j.data);
           // دادهٔ چرخشی قدیمی‌تر از ۱۵ دقیقه ← برچسب «آخرین اسنپ‌شات» (صادقانه)
           const at = typeof j.at === "number" ? j.at : null;
-          setStale(Boolean(j.stale) || (at !== null && Date.now() - at > 15 * 60 * 1000));
+          setStale(Boolean(j.stale) || at === null || !Number.isFinite(at) || at <= 0
+            || at > Date.now() + 120_000 || Date.now() - at > 15 * 60 * 1000);
           setState("ok");
         } else setState("unavailable");
       })
       .catch((e: Error) => {
         if (!alive) return;
         setState(e.message === "404" ? "notInRotation" : "unavailable");
-      });
-    return () => { alive = false; };
+      }), browserPollEnvironment(), 60_000, true);
+    return () => { alive = false; stop(); };
   }, [symbol]);
 
   if (state === "loading") {

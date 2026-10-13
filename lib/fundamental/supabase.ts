@@ -6,7 +6,7 @@
 // ۲) بالاترین raw.parser_version برای هر اطلاعیه (پسوند #pvN در source_url).
 // ۳) برای هر (period_end, period_months): جداگانه بر تلفیقی، حسابرسی‌شده بر نشده،
 //    اصلاحیه بر اولیه، انتشارِ دیرتر، سپس id — جزئیات در `dedupeByPeriod`.
-// ۴) n10 اصلی صفحه = جدیدترین گزارش سالانه (۱۲ماهه)؛ اگر نبود جدیدترین میان‌دوره.
+// ۴) n10 اصلی صفحه = جدیدترین دورهٔ منتشرشده، حتی اگر میان‌دوره باشد.
 // ۵) سری روند فروش از دل همهٔ دوره‌های ۱۲ماههٔ موجود ساخته می‌شود.
 
 import type {
@@ -40,7 +40,7 @@ export interface CodalRow {
   } | null;
 }
 
-const REVALIDATE_MS = 10 * 60 * 1000;
+const REVALIDATE_MS = 60 * 1000;
 const cache = new Map<string, { at: number; value: SymbolFundamentals | null }>();
 
 export interface FundamentalRead {
@@ -93,7 +93,7 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
         const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
           headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
           signal: AbortSignal.timeout(8000),
-          next: { revalidate: 600 },
+          cache: "no-store",
         });
         if (!res.ok) {
           console.warn("fundamental_read_failed", { phase: "headers", status: res.status, kind });
@@ -321,7 +321,10 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   const n10all = n10Selected.filter(r => isMillionRialUnit((r.data as CodalN10Data).unit));
 
   const annuals = n10all.filter((r) => (r.data as CodalN10Data).period_months === 12);
-  const main = annuals[0] ?? n10all[0] ?? null;
+  // A previous annual must not hide a newer usable interim period. The source
+  // label preserves its actual period; omitted newer reports remain visible in
+  // n10Unavailable. Annual reports still feed the separate annual trend.
+  const main = n10all[0] ?? null;
 
   // Monthly periods are selected before the window is cut; duplicate amendments
   // must not consume the slots intended for the prior fiscal year.

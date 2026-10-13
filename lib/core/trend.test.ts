@@ -2,11 +2,45 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { extractDailySeries } from "./trend";
+import { extractDailySeries, getGoldUsdTrend } from "./trend";
 
 function row(capturedAt: string, section: string, payload: object[]) {
   return { captured_at: capturedAt, section, payload } as Parameters<typeof extractDailySeries>[0][number];
 }
+
+test("history pagination retains recent samples despite a server row cap and separates cached windows", async () => {
+  const previous = { fetch: globalThis.fetch, url: process.env.NEXT_PUBLIC_SUPABASE_URL, key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY };
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://database.example.test";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  const offsets: number[] = [];
+  const data = [
+    row("2026-07-14T16:00:00Z", "gold", [{ id: "IR_GOLD_18K", price: 30 }]),
+    row("2026-07-14T09:00:00Z", "gold", [{ id: "IR_GOLD_18K", price: 20 }]),
+    row("2026-07-13T09:00:00Z", "gold", [{ id: "IR_GOLD_18K", price: 10 }]),
+  ];
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(String(input));
+    assert.equal(url.searchParams.get("order"), "captured_at.desc,section.asc");
+    assert.ok(url.searchParams.get("and")?.includes("captured_at.lte."));
+    assert.equal(init?.cache, "no-store");
+    const offset = Number(url.searchParams.get("offset"));
+    offsets.push(offset);
+    return Response.json(data.slice(offset, offset + 2));
+  };
+  try {
+    const result = await getGoldUsdTrend(180);
+    assert.deepEqual(result[0].points, [{ date: "2026-07-13", price: 10 }, { date: "2026-07-14", price: 30 }]);
+    assert.deepEqual(offsets, [0, 2, 3]);
+    await getGoldUsdTrend(180);
+    assert.equal(offsets.length, 3);
+    await getGoldUsdTrend(30);
+    assert.equal(offsets.length, 6, "a different window must not reuse the 180-day cache");
+  } finally {
+    globalThis.fetch = previous.fetch;
+    if (previous.url === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL; else process.env.NEXT_PUBLIC_SUPABASE_URL = previous.url;
+    if (previous.key === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY; else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = previous.key;
+  }
+});
 
 test("extractDailySeries: آخرین نمونهٔ هر روز برنده می‌شود", () => {
   const rows = [

@@ -1,7 +1,7 @@
 // بازدهٔ دوره‌ای گروهی از symbol_history — M6 رصد بازار.
 //
 // چرا bulk: صفحهٔ صندوق‌ها ~۱۵۰ نماد دارد؛ ۱۵۰ درخواست جدا به PostgREST هم کند
-// است هم بی‌ادب. یک کوئری: همهٔ ردیف‌های ~۱۰۵ روز اخیر (پنجرهٔ ۳ماهه + تلورانس)
+// است. یک مسیر گروهیِ صفحه‌بندی‌شده: ردیف‌های ~۱۰۵ روز اخیر (۳ماهه + تلورانس)
 // فقط با ستون‌های لازم، بعد گروه‌بندی سمت سرور Next و محاسبهٔ بازده خالص.
 //
 // صداقت داده: نمادی که تاریخچه ندارد در Map نمی‌آید → UI «—» نشان می‌دهد.
@@ -9,7 +9,7 @@
 import type { HistoryDay } from "./engine";
 import { periodicReturns, type PeriodicReturns, RETURN_WINDOWS, TOLERANCE_DAYS } from "./fundReturns";
 
-const REVALIDATE_MS = 10 * 60 * 1000;
+const REVALIDATE_MS = 60 * 1000;
 let cacheAt = 0;
 let cacheVal: Map<string, PeriodicReturns> | null = null;
 
@@ -40,30 +40,38 @@ export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
   const sinceDays = RETURN_WINDOWS.m3 + TOLERANCE_DAYS + 5;
   const since = new Date(Date.now() - sinceDays * 86_400_000).toISOString().slice(0, 10);
 
-  // صفحه‌بندی — جدول بزرگ می‌شود (بک‌فیل کندل کل بازار). سقف امن ۸ صفحهٔ ۵۰k.
+  // Keyset pagination survives PostgREST's row cap and concurrent new inserts.
+  // Never publish a partial window or silently reuse an expired result on failure.
   const rows: SlimRow[] = [];
-  const PAGE = 50_000;
+  const PAGE = 1000;
   try {
-    for (let page = 0; page < 8; page++) {
+    const signal = AbortSignal.timeout(20000);
+    let before: number | null = null;
+    for (;;) {
       const qs = new URLSearchParams({
         select: "id,symbol,trade_date,close,last_price",
         trade_date: `gte.${since}`,
-        order: "id.asc",
+        order: "id.desc",
         limit: String(PAGE),
-        offset: String(page * PAGE),
       });
+      if (before !== null) qs.set("id", `lt.${before}`);
       const res = await fetch(`${e.url}/rest/v1/symbol_history?${qs}`, {
         headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
-        signal: AbortSignal.timeout(20000),
-        next: { revalidate: 600 },
+        signal,
+        cache: "no-store",
       });
-      if (!res.ok) break;
+      if (!res.ok) return new Map();
       const batch = (await res.json()) as SlimRow[];
+      if (!Array.isArray(batch)) return new Map();
+      if (batch.length === 0) break;
+      const next = batch[batch.length - 1].id;
+      if (!Number.isSafeInteger(next) || (before !== null && next >= before)) return new Map();
+      before = next;
       rows.push(...batch);
-      if (batch.length < PAGE) break;
+      if (rows.length > 400_000) return new Map();
     }
   } catch {
-    return cacheVal ?? new Map();
+    return new Map();
   }
 
   // گروه‌بندی نماد → روزها (dedupe هر trade_date: بزرگ‌ترین id برنده)

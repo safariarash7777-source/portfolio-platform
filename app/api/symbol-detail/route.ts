@@ -44,8 +44,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "not in rotation" }, { status: 404 });
     }
     return NextResponse.json(
-      { data: entry.data, at: entry.at ?? payload?.at ?? null },
-      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" } },
+      // The batch clock cannot establish freshness for an individual retained row.
+      { data: entry.data, at: entry.at ?? null },
+      { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {
     return NextResponse.json(

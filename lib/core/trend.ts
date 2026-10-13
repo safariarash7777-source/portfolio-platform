@@ -26,8 +26,8 @@ interface HistRow {
   }>;
 }
 
-const REVALIDATE_MS = 10 * 60 * 1000;
-let cached: { at: number; value: TrendSeries[] } | null = null;
+const REVALIDATE_MS = 60 * 1000;
+let cached: { at: number; days: number; value: TrendSeries[] } | null = null;
 
 /** سری‌های هدف: طلای ۱۸ عیار (بازار طلا) و دلار (بازار ارز). */
 const TARGETS: Array<{ section: string; id: string }> = [
@@ -44,14 +44,14 @@ function env(): { url: string; anon: string } | null {
 
 /**
  * استخراج «آخرین نمونهٔ هر روز» برای هر سری هدف از ردیف‌های تاریخچه — تابع خالص.
- * ردیف‌ها باید صعودی بر اساس captured_at باشند تا آخرین نمونه برنده شود.
+ * ترتیب پاسخ دیتابیس اهمیتی ندارد؛ آخرین نمونهٔ هر روز برنده است.
  */
 export function extractDailySeries(rows: HistRow[]): TrendSeries[] {
   const bySeries = new Map<string, { faName: string; unit: string; byDate: Map<string, number> }>();
 
   for (const t of TARGETS) bySeries.set(`${t.section}|${t.id}`, { faName: t.id, unit: "toman", byDate: new Map() });
 
-  for (const row of rows) {
+  for (const row of [...rows].sort((a, b) => Date.parse(a.captured_at) - Date.parse(b.captured_at))) {
     if (!Array.isArray(row.payload)) continue;
     const date = row.captured_at?.slice(0, 10);
     if (!date) continue;
@@ -79,7 +79,7 @@ export function extractDailySeries(rows: HistRow[]): TrendSeries[] {
 
 /** خواندن تاریخچهٔ gold/currency از Supabase و ساخت سری روزانه. */
 export async function getGoldUsdTrend(days = 180): Promise<TrendSeries[]> {
-  if (cached && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
+  if (cached && cached.days === days && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
   const e = env();
   if (!e) return [];
 
@@ -88,20 +88,31 @@ export async function getGoldUsdTrend(days = 180): Promise<TrendSeries[]> {
     select: "captured_at,section,payload",
     section: "in.(gold,currency)",
     captured_at: `gte.${since}`,
-    order: "captured_at.asc",
-    limit: "20000",
+    and: `(captured_at.lte.${new Date().toISOString()})`,
+    order: "captured_at.desc,section.asc",
+    limit: "1000",
   });
 
   try {
-    const res = await fetch(`${e.url}/rest/v1/ir_market_history?${qs}`, {
-      headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
-      signal: AbortSignal.timeout(15000),
-      next: { revalidate: 600 },
-    });
-    if (!res.ok) return [];
-    const rows = (await res.json()) as HistRow[];
+    const rows: HistRow[] = [];
+    const signal = AbortSignal.timeout(15000);
+    // PostgREST can cap a response below the requested limit. Advance by actual
+    // rows received until empty, within one bounded timeout and snapshot window.
+    for (;;) {
+      qs.set("offset", String(rows.length));
+      const res = await fetch(`${e.url}/rest/v1/ir_market_history?${qs}`, {
+        headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
+        signal,
+        cache: "no-store",
+      });
+      if (!res.ok) return [];
+      const page = await res.json() as HistRow[];
+      if (!Array.isArray(page)) return [];
+      if (page.length === 0) break;
+      rows.push(...page);
+    }
     const value = extractDailySeries(rows);
-    cached = { at: Date.now(), value };
+    cached = { at: Date.now(), days, value };
     return value;
   } catch {
     return [];

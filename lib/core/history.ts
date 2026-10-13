@@ -12,7 +12,7 @@ interface HistoryRow extends HistoryDay {
   symbol: string;
 }
 
-const REVALIDATE_MS = 10 * 60 * 1000;
+const REVALIDATE_MS = 60 * 1000;
 const cache = new Map<string, { at: number; value: HistoryDay[] }>();
 
 function env(): { url: string; anon: string } | null {
@@ -55,7 +55,7 @@ export async function getSymbolHistory(
     const res = await fetch(`${e.url}/rest/v1/symbol_history?${qs}`, {
       headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
       signal: AbortSignal.timeout(10000),
-      next: { revalidate: 600 },
+      cache: "no-store",
     });
     if (!res.ok) return [];
     rows = (await res.json()) as HistoryRow[];
@@ -113,7 +113,7 @@ export async function getHistorySymbols(): Promise<string[]> {
           Authorization: `Bearer ${e.anon}`,
         },
         signal: AbortSignal.timeout(10000),
-        next: { revalidate: 600 },
+        cache: "no-store",
       }
     );
     if (!res.ok) return [];
