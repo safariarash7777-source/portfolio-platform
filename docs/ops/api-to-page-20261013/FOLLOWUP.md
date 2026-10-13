@@ -5,6 +5,44 @@ and IME storage), with parent integration and cross-review. These are not websit
 agents. No model runtime, agent scheduler, new collector, or automatic publication
 has been activated.
 
+## Integrated continuation
+
+The data-related overlap from the verified local delivery bundle has now been
+selected onto PR #231; unrelated authentication, payments, tooltip and B34 work
+was not imported. The bundle patch hash was
+`532fc3bb90cdd3441f5725397cef28e94d0616542f6dc454b858d8017a4bc5a0`.
+The parent owns integration on `codex/data-pipeline-closure-20261013`; this is not
+ownership of another task's checkout or permission to deploy it.
+
+- Four prospective N10 admission files match the separate PR #229 candidate.
+  The capped-read correction stays intact. Combined regressions prove rejected
+  N10 reports retain watermark/ledger behavior, complete coverage crosses the
+  1,000-row cap, and a later read failure never schedules partial-count backfill.
+  Historical records, parser version 2 and the inactive backlog prototype are
+  unchanged. Admission can reject real but unproven reports; that is not recovery.
+- Daily FX persistence requires an explicit source unit, valid same-day source
+  clock and a positive numeric price. HTTP 409 is accepted only after exact
+  database readback. Main retention logic is preserved. See
+  [FX candidate and runtime evidence](DAILY-FX-CANDIDATE.md).
+- IME keeps one provider attempt per target (today and one backfill date). Only
+  cached, validated rows retry storage, at most three attempts with one/two-hour
+  backoff. A successful neighboring target is retained. Source envelope, date and
+  complete conflict identity are checked before writing; rejection stays visible
+  and incomplete. Unknown fields are never replaced with zero. This stricter
+  collector admission does not rewrite the nullable SQL identity or existing data.
+- All daily IME target state expires at Tehran day rollover, including successful
+  empty results. Expired incomplete targets/pending row counts are exposed. Retry
+  state is process-local; restart resets it, and expiration is not recovery.
+- New FX and N10 tests are registered in `test:relay`. IME regressions remain in
+  the existing registered test file. Exact combined-head CI and any later restore
+  receipt are recorded in PR #231; earlier-head green CI is not reused as proof.
+
+The preliminary extraction failure of Liara v50 is now confirmed by official build
+logs, but no particular archive filename is identified. Direct repository linkage
+and the exclusive release owner remain unverified; replica count is not proof of
+publishing ownership. No runtime or database installation follows merely from
+combining these patches.
+
 ## Verified current distinction
 
 The website changes in PR #230 were merged and browser-checked on the main
