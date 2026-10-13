@@ -1,0 +1,41 @@
+{
+  "label": "SYNTHETIC_ONLY_NOT_GATE3",
+  "description": "نمونهٔ خطای کاملاً مصنوعی؛ منبع و انسان واقعی نیستند",
+  "expectedIssueCodes": ["changed_workbook_content", "existing_review_missing", "dependent_unit_unattested", "dependent_scope_unknown"],
+  "input": {
+    "version": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "workbookId": "00000000-0000-4000-8000-000000000002",
+      "version": 3,
+      "title": "SYNTHETIC ONLY",
+      "createdAt": "2026-10-13T10:00:00Z",
+      "body": {
+        "version": 1, "title": "SYNTHETIC ONLY", "domain": "macro_ir", "question": "Synthetic question", "horizon": "short_term",
+        "evidence": [{ "id": "local-e1", "statement": "Synthetic dependent claim", "sourceUrl": "https://example.invalid/synthetic", "observedOn": "2026-10-13", "publishedOn": "2026-10-13" }],
+        "interpretation": "Synthetic interpretation", "counterEvidence": "Synthetic limitation",
+        "scenarios": {
+          "base": { "assumptions": "Synthetic", "mechanism": "Synthetic", "invalidation": "Synthetic" },
+          "upside": { "assumptions": "Synthetic", "mechanism": "Synthetic", "invalidation": "Synthetic" },
+          "downside": { "assumptions": "Synthetic", "mechanism": "Synthetic", "invalidation": "Synthetic" }
+        },
+        "portfolioImpact": "No real recommendation", "reviewOn": "2026-10-14", "status": "published", "approved": true
+      }
+    },
+    "review": null,
+    "reference": {
+      "workbookId": "00000000-0000-4000-8000-000000000002", "versionId": "00000000-0000-4000-8000-000000000001", "versionNo": 3,
+      "workbookHash": "0000000000000000000000000000000000000000000000000000000000000000", "reviewId": "00000000-0000-4000-8000-000000000003",
+      "evidence": [{ "workbookEvidenceId": "local-e1", "evidenceId": "00000000-0000-4000-8000-000000000005", "contentHash": "SYNTHETIC_HASH_NOT_SOURCE_PROOF", "claimId": "00000000-0000-4000-8000-000000000007", "requiresUnit": true, "requiresScope": true }]
+    },
+    "evidence": [{ "id": "00000000-0000-4000-8000-000000000005", "sourceId": "00000000-0000-4000-8000-000000000006", "excerpt": "Synthetic dependent claim", "contentUrl": "https://example.invalid/synthetic", "observedAt": "2026-10-13T09:00:00Z", "publishedAt": "2026-10-13T08:00:00Z", "contentHash": "SYNTHETIC_HASH_NOT_SOURCE_PROOF" }],
+    "sources": [{ "id": "00000000-0000-4000-8000-000000000006", "kind": "manual", "name": "SYNTHETIC", "url": "https://example.invalid/synthetic", "trustTier": "unverified", "approved": true, "approvedBy": null, "approvedAt": null }],
+    "claims": [{ "id": "00000000-0000-4000-8000-000000000007", "analysisId": "00000000-0000-4000-8000-000000000008", "eventId": null, "kind": "FACT", "statement": "Synthetic dependent claim", "confidence": 80, "scenarioLabel": null }],
+    "events": [], "links": [{ "claimId": "00000000-0000-4000-8000-000000000007", "evidenceId": "00000000-0000-4000-8000-000000000005" }],
+    "checkedAt": "2026-10-14T10:00:00Z"
+  },
+  "rehearsals": [{
+    "declaredOrigin": "synthetic",
+    "day": { "rehearsalDate": "2026-10-13", "dayIndex": 1, "briefProduced": true, "minutesToApproval": null, "absentSources": [], "staleSources": [], "humanCorrections": 0, "rejectedConclusions": 0, "missedEvents": 0 },
+    "run": null
+  }]
+}
