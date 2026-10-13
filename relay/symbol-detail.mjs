@@ -142,6 +142,58 @@ let lastRotationAt = 0;
 let lastRotationPushed = 0;
 let lastRotationError = null;
 let lastRotationTake = 0;
+let rotationInflight = null;
+
+const record = value => value && typeof value === "object" && !Array.isArray(value);
+const clockRank = at => typeof at === "number" && Number.isFinite(at) && at > 0 && at <= Date.now() ? at : -Infinity;
+
+// Every publication rereads the canonical snapshot. In-memory hydration alone
+// cannot protect a snapshot restored or advanced after this process started.
+async function readStoredDetails(supabaseUrl, serviceKey) {
+  const res = await fetch(`${supabaseUrl.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?key=eq.symbol_details&select=payload&limit=2`, {
+    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) throw new Error(`symbol baseline HTTP ${res.status}`);
+  const rows = await res.json();
+  if (!Array.isArray(rows) || rows.length > 1) throw new Error("symbol baseline invalid schema");
+  if (!rows.length) return new Map();
+  const payload = rows[0]?.payload;
+  if (!record(payload) || !record(payload.details)) throw new Error("symbol baseline invalid schema");
+  const entries = Object.entries(payload.details);
+  if (payload.count !== undefined && (!Number.isInteger(payload.count) || payload.count !== entries.length)) {
+    throw new Error("symbol baseline invalid count");
+  }
+  const stored = new Map();
+  for (const [symbol, entry] of entries) {
+    if (!isMainTicker(symbol) || !record(entry) || !record(entry.data) || entry.data.l18 !== symbol ||
+        (entry.at != null && (typeof entry.at !== "number" || !Number.isFinite(entry.at)))) {
+      throw new Error("symbol baseline invalid entry");
+    }
+    stored.set(symbol, { data: entry.data, at: entry.at ?? null });
+  }
+  return stored;
+}
+
+function mergeStoredDetails(stored) {
+  const merged = new Map(stored);
+  for (const [symbol, entry] of cache) {
+    const previous = merged.get(symbol);
+    if (!previous || clockRank(entry.at) > clockRank(previous.at)) merged.set(symbol, entry);
+  }
+  // Retain the newest known observations, then keep a deterministic bounded map.
+  const newest = [...merged].sort((a, b) => clockRank(b[1].at) - clockRank(a[1].at)).slice(0, CACHE_MAX);
+  cache.clear();
+  for (const [symbol, entry] of newest.reverse()) cache.set(symbol, entry);
+}
+
+function detailsChanged(stored) {
+  if (stored.size !== cache.size) return true;
+  for (const [symbol, entry] of cache) {
+    if (JSON.stringify(entry) !== JSON.stringify(stored.get(symbol))) return true;
+  }
+  return false;
+}
 
 /** طولِ چرخهٔ میزبان (`CACHE_MS` در server.mjs) — مبنای پخشِ بودجه. */
 const ROTATION_CYCLE_MS = Number(process.env.RELAY_CACHE_MS || 5 * 60 * 1000);
@@ -162,11 +214,19 @@ export function symbolRotationStatus() {
 
 // یک قدم چرخش: K نماد بعدی از فهرست پرارزش‌ترین‌ها را تازه می‌کند
 // و کل کش موجود را یک‌جا در Supabase آپسرت می‌کند. symbols: آرایهٔ l18 مرتب به ارزش.
-export async function refreshSymbolDetailsRotation({ base, key, headers, supabaseUrl, serviceKey, symbols, client = null, countLegacy = null }) {
+export function refreshSymbolDetailsRotation(options) {
+  if (rotationInflight) return rotationInflight;
+  rotationInflight = rotateSymbolDetails(options).finally(() => { rotationInflight = null; });
+  return rotationInflight;
+}
+
+async function rotateSymbolDetails({ base, key, headers, supabaseUrl, serviceKey, symbols, client = null, countLegacy = null }) {
   try {
     // C1 — فقط نمادهای اصلی وارد چرخش دیتای جامع می‌شوند (نه زیرنماد، نه حق تقدم).
     const top = (symbols || []).filter((s) => isMainTicker(s)).slice(0, ROTATION_TOP_N);
     if (!top.length || !supabaseUrl || !serviceKey) return;
+    lastRotationPushed = 0;
+    mergeStoredDetails(await readStoredDetails(supabaseUrl, serviceKey));
 
     // بودجهٔ این چرخه از سهمیهٔ باقی‌ماندهٔ روز درمی‌آید، نه از یک عددِ ثابت.
     rollDay();
@@ -193,12 +253,16 @@ export async function refreshSymbolDetailsRotation({ base, key, headers, supabas
     for (const l18 of picked) {
       await getSymbolDetail(l18, { base, key, headers, client, countLegacy });
     }
-    // آپسرت کل کش (فقط نمادهای داخل فهرست چرخش + هر نماد تازهٔ دیگر در کش)
-    const details = {};
-    for (const [l18, c] of cache) details[l18] = { at: c.at, data: c.data };
+    // A concurrent restore/newer stored row must win over an older local cache.
+    const stored = await readStoredDetails(supabaseUrl, serviceKey);
+    mergeStoredDetails(stored);
+    lastRotationAt = Date.now();
+    if (!cache.size || !detailsChanged(stored)) { lastRotationError = null; return; }
+    const details = Object.fromEntries(cache);
+    const newestAt = Math.max(...[...cache.values()].map(c => clockRank(c.at)));
     const body = JSON.stringify({
       key: "symbol_details",
-      payload: { at: Date.now(), count: Object.keys(details).length, details },
+      payload: { at: Number.isFinite(newestAt) ? newestAt : null, count: Object.keys(details).length, details },
       updated_at: new Date().toISOString(),
     });
     const res = await fetch(`${supabaseUrl}/rest/v1/ir_market_snapshots?on_conflict=key`, {
@@ -225,7 +289,7 @@ export async function getSymbolDetail(l18, { base, key, headers, client = null, 
   rollDay();
   const now = Date.now();
   const c = cacheGet(l18);
-  if (c && now - c.at < TTL_MS) return { ok: true, data: c.data, stale: false };
+  if (c && clockRank(c.at) > 0 && now - c.at < TTL_MS) return { ok: true, data: c.data, stale: false };
 
   if (usedToday >= DAILY_CAP) {
     // سقف روزانه — کش کهنه بهتر از هیچ است؛ صادقانه stale برمی‌گردد.
@@ -255,7 +319,7 @@ export async function getSymbolDetail(l18, { base, key, headers, client = null, 
       j = await res.json();
     }
     const d = Array.isArray(j) ? j[0] : j;
-    if (!d || typeof d !== "object" || !d.l18) throw new Error("empty response");
+    if (!record(d) || d.l18 !== l18) throw new Error("invalid symbol response");
     cacheSet(l18, { data: d, at: now });
     lastError = null;
     return { ok: true, data: d, stale: false };
