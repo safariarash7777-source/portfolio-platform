@@ -23,7 +23,11 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 //   - بودجه: گواهی ~۲۲/روز + فیزیکی ۱-۲/روز — در status شمرده می‌شود.
 
 import { tehranHour as tehranHourH23, tehranNow, sessionTradeDate } from "./eod.mjs";
+import { jalaliTextToIso } from "./codal.mjs";
 const CERT_INTERVAL_MS = 30 * 60 * 1000;
+const certSourceCalendar = new Intl.DateTimeFormat("en-US-u-ca-persian", {
+  timeZone: "Asia/Tehran", year: "numeric", month: "numeric", day: "numeric",
+});
 
 let lastCertFetch = 0;
 let certRows = [];         // آخرین ردیف‌های خام گواهی (ریال)
@@ -136,6 +140,14 @@ export function planCertEod(rows, now = new Date()) {
   for (const r of rows) {
     const sourceDay = sessionTradeDate(r.date);
     if (!r.id || !sourceDay || sourceDay > current.date) { rejected++; continue; }
+    // Calendar conversion can normalize non-leap Esfand 30 into next year.
+    // History must preserve a real source date, never that normalized substitute.
+    const expected = jalaliTextToIso(r.date).split("-").map(Number);
+    const parts = certSourceCalendar.formatToParts(new Date(`${sourceDay}T12:00:00+03:30`));
+    if (["year", "month", "day"].some((key, i) =>
+      Number(parts.find(part => part.type === key)?.value) !== expected[i])) {
+      rejected++; continue;
+    }
     result.push({
       trade_date: sourceDay,
       contract_code: r.id,

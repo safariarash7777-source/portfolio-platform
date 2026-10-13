@@ -70,6 +70,15 @@ test("certificate history rejects missing, invalid and future source dates", () 
   assert.equal(plan.skip, "no-source-session-date");
 });
 
+test("certificate history rejects normalized non-leap dates but keeps a real leap day", () => {
+  const rows = ["1404/12/30", "۱۴۰۴/۱۲/۳۰", "1403/12/30"].map(date =>
+    mapCertRow({ contract_code: "SYNTHETIC", pl: 123, date_update: date }));
+  const plan = planCertEod(rows, new Date("2026-10-13T16:00:00Z"));
+  assert.equal(plan.rejected, 2);
+  assert.equal(plan.rows.length, 1);
+  assert.equal(plan.rows[0].trade_date, "2025-03-20");
+});
+
 test("physical storage failure stays incomplete without extra same-day provider requests", async (t) => {
   t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-09-16T13:00:00Z") });
   const ime = await import(`./ime.mjs?storage-failure=${Date.now()}`);
