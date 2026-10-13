@@ -10,6 +10,7 @@ import {
   XCircle,
   Loader2,
   ExternalLink,
+  Info,
 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -73,7 +74,7 @@ function WebinarsContent() {
   const [webinars, setWebinars] = useState<Webinar[]>([]);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
 
   // بررسی پارامترهای callback پرداخت
   useEffect(() => {
@@ -82,6 +83,8 @@ function WebinarsContent() {
       setMessage({ type: "success", text: "پرداخت موفق! ثبت‌نام شما تأیید شد." });
     } else if (status === "failed") {
       setMessage({ type: "error", text: "پرداخت ناموفق بود. لطفاً دوباره تلاش کنید." });
+    } else if (status === "unknown") {
+      setMessage({ type: "info", text: "نتیجهٔ پرداخت هنوز مشخص نیست. این وضعیت به معنی لغو پرداخت یا بازگشت وجه نیست. پیش از پرداخت جدید، همان درخواست را با پشتیبانی پیگیری کنید." });
     }
   }, [searchParams]);
 
@@ -171,14 +174,18 @@ function WebinarsContent() {
         {/* Messages */}
         {message && (
           <div
+            role="status"
             className="mb-6 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2"
             style={{
-              background: message.type === "success" ? "color-mix(in srgb, var(--success) 12%, transparent)" : "color-mix(in srgb, var(--danger) 12%, transparent)",
-              color: message.type === "success" ? "var(--success)" : "var(--danger)",
+              background: `color-mix(in srgb, var(--${message.type === "success" ? "success" : message.type === "info" ? "info" : "danger"}) 12%, transparent)`,
+              color: `var(--${message.type === "success" ? "success" : message.type === "info" ? "info" : "danger"})`,
             }}
           >
-            {message.type === "success" ? <CheckCircle size={16} /> : <XCircle size={16} />}
+            {message.type === "success" ? <CheckCircle size={16} /> : message.type === "info" ? <Info size={16} /> : <XCircle size={16} />}
             {message.text}
+            {message.type === "info" && searchParams.get("authority") && (
+              <span className="text-xs break-all" dir="ltr">{searchParams.get("authority")}</span>
+            )}
           </div>
         )}
 

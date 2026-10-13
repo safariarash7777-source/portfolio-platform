@@ -16,6 +16,14 @@ export async function GET(req: NextRequest) {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL ||
     "https://portfolio-platform-fawn.vercel.app";
+  const unknown = (webinarId: string) => {
+    const url = new URL("/webinars", baseUrl);
+    for (const [key, value] of Object.entries({ status: "unknown", authority: authority ?? "",
+      webinar_id: webinarId, registration_id: registrationId ?? "", payment_id: paymentId ?? "" })) {
+      url.searchParams.set(key, value);
+    }
+    return NextResponse.redirect(url);
+  };
 
   if (!authority || !registrationId || !paymentId) {
     return NextResponse.redirect(`${baseUrl}/webinars?error=invalid_callback`);
@@ -38,31 +46,14 @@ export async function GET(req: NextRequest) {
   const amount = webinar?.price_toman ?? 0;
 
   if (status !== "OK") {
-    // پرداخت ناموفق
-    await admin
-      .from("payments")
-      .update({ status: "failed" })
-      .eq("id", paymentId);
-
-    await admin
-      .from("audit_log")
-      .insert({
-        actor_id: reg.user_id,
-        action: "webinar.payment_failed",
-        entity: "webinar_registration",
-        target_user_id: reg.user_id,
-        after: { webinar_id: reg.webinar_id, registration_id: registrationId },
-      });
-
-    return NextResponse.redirect(
-      `${baseUrl}/webinars?status=failed&webinar_id=${reg.webinar_id}`
-    );
+    return unknown(reg.webinar_id);
   }
 
   // تأیید پرداخت با زرین‌پال
   const verification = await verifyPayment(authority, amount);
 
-  if (!verification.ok) {
+  if (verification.outcome === "unknown") return unknown(reg.webinar_id);
+  if (verification.outcome === "rejected") {
     await admin
       .from("payments")
       .update({ status: "failed" })

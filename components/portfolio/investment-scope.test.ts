@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mountFinancialForm } from "./financial-form-test-host";
 import { postInvestmentScope } from "../../lib/portfolio/scopeHttp";
+import type { ScopeRead } from "../../lib/portfolio/scopeContract";
 
 const holdingId = "11111111-1111-4111-8111-111111111111";
 const receipt = { id: "22222222-2222-4222-8222-222222222222", scopeVersion: 1, holdingVersionId: holdingId, holdingVersion: 1, rulesVersion: "member-selected.v0.1", memberConfirmedAt: "2026-10-09T12:00:00Z", assignments: [{ positionKey: "gold", use: "allocatable" }], reused: false };
@@ -12,6 +13,40 @@ const mount = () => {
 };
 const save = "محدودهٔ این نسخه";
 const retryLabel = "بررسی دوبارهٔ همین ثبت";
+
+test('committed scope allows read-only refresh retries through stale/error/wrong receipts and unlocks only matching ready readback', async () => {
+  const { createFinancialEditor } = await import('./financialEditor');
+  const { scopeReviewFromStored } = await import('../../lib/portfolio/scopeContract');
+  const editor = createFinancialEditor();
+  const position = { positionKey: 'gold', manualLabel: 'synthetic gold', symbol: null, assetClass: 'gold', qty: null, unit: 'قلم', costBasis: null, asOf: '2026-10-09', ownershipPct: 50, valuationMode: 'declared', declaredValue: 2000, valuationSource: 'synthetic', valuationAsOf: '2026-10-09', valuationStatus: 'valid' };
+  const holding = { id: holdingId, version: 1, positions: [position] };
+  const stored = scopeReviewFromStored({ id: receipt.id, scope_version: 1, holding_version_id: holdingId, rules_version: receipt.rulesVersion, member_confirmed_at: receipt.memberConfirmedAt, assignments: receipt.assignments }, holding);
+  const props = { holdings: holding, storedTarget: null, priceRows: [], pricesFailed: false, scopeState: { status: 'ready', review: null } as ScopeRead, editable: true };
+  let scope = mountFinancialForm('components/portfolio/InvestmentScopeWorkbench.tsx', props, editor);
+  const assets = mountFinancialForm('components/portfolio/HoldingsWorkbench.tsx', { ready: true, targetFailed: false, activeVersion: 1, latestVersion: 1, history: [], activePositions: [position], rows: [], gaps: [], definitive: false, notes: [], totalValue: null, showComparison: false, showImport: false }, editor);
+  const prior = globalThis.fetch; let writes = 0;
+  globalThis.fetch = async () => { writes++; return Response.json(receipt); };
+  try {
+    (scope.find('select', () => true).props.onChange as (e: unknown) => void)({ target: { value: 'allocatable' } }); scope.render();
+    await scope.submit(save); assert.equal(writes, 1); assert.equal(scope.refreshes, 1);
+    const readRetry = 'بررسی دوبارهٔ نسخهٔ ثبت‌شده';
+    for (const state of [{ status: 'ready', review: null }, { status: 'error', review: null }, { status: 'ready', review: { ...stored, id: '33333333-3333-4333-8333-333333333333' } }, { status: 'error', review: stored }] as ScopeRead[]) {
+      props.scopeState = state; scope.render(); assets.render();
+      assert.equal(editor.navigating, true); assert.equal(scope.find('select', () => true).props.disabled, true); assert.equal(scope.button(save).props.disabled, true);
+      assert.equal(assets.button('ذخیرهٔ نسخهٔ تازه').props.disabled, true);
+      const before: number = scope.refreshes; await scope.submit(readRetry); await scope.submit(readRetry);
+      assert.equal(scope.refreshes, before + 2); assert.equal(writes, 1, 'readback retry must never POST again');
+    }
+    // Retry remains visible across a remount while the provider retains the lease.
+    props.scopeState = { status: 'error', review: null };
+    scope = mountFinancialForm('components/portfolio/InvestmentScopeWorkbench.tsx', props, editor);
+    await scope.submit(readRetry); assert.equal(writes, 1); assert.equal(editor.navigating, true);
+    props.scopeState = { status: 'ready', review: stored }; scope.render(); scope.render(); assets.render();
+    assert.equal(editor.navigating, false); assert.equal(editor.active, null);
+    assert.equal(scope.find('select', () => true).props.disabled, false); assert.equal(assets.button('ذخیرهٔ نسخهٔ تازه').props.disabled, false);
+    assert.equal(writes, 1);
+  } finally { globalThis.fetch = prior; }
+});
 
 for (const retry of [{ status: 401, nonJson: false }, { status: 403, nonJson: false }, { status: 429, nonJson: false }, { status: 404, nonJson: false }, { status: 408, nonJson: false }, { status: 400, nonJson: false }, { status: 400, nonJson: true }, { status: 409, nonJson: true }, { status: 409, nonJson: false }]) test(`scope actual handler: lost commit then ${retry.status}/${retry.nonJson ? "HTML" : "non-canonical JSON"} preserves original replay`, async () => {
   const prior = globalThis.fetch, bodies: string[] = []; let stored: string | null = null, writes = 0;
@@ -57,4 +92,25 @@ test("scope actual handler: definitive first rejection permits correction; canon
     assert.equal(ui.find("select", () => true).props.value, "excluded"); assert.equal(ui.button(save).props.disabled, true); assert.equal(ui.refreshes, 0);
     assert.equal(ui.find("a", element => element.props.href === "/dashboard/holdings").props.target, "_blank");
   } finally { globalThis.fetch = prior; }
+});
+
+test('scope draft shares financial lease, cancel restores choices; pending/unknown scope keeps financial edits blocked until receipt readback',async()=>{
+ const {createFinancialEditor}=await import('./financialEditor');const editor=createFinancialEditor();
+ const position={positionKey:'gold',manualLabel:'synthetic gold',symbol:null,assetClass:'gold',qty:null,unit:'قلم',costBasis:null,asOf:'2026-10-09',ownershipPct:50,valuationMode:'declared',declaredValue:2000,valuationSource:'synthetic',valuationAsOf:'2026-10-09',valuationStatus:'valid'};
+ const holding={id:holdingId,version:1,positions:[position]};
+ const props={holdings:holding,storedTarget:null,priceRows:[],pricesFailed:false,scopeState:{status:'ready',review:null},editable:true};
+ const scope=mountFinancialForm('components/portfolio/InvestmentScopeWorkbench.tsx',props,editor);
+ const assets=mountFinancialForm('components/portfolio/HoldingsWorkbench.tsx',{ready:true,targetFailed:false,activeVersion:1,latestVersion:1,history:[],activePositions:[position],rows:[],gaps:[],definitive:false,notes:[],totalValue:null,showComparison:false,showImport:false},editor);
+ const choose=scope.find('select',()=>true).props.onChange as (e:{target:{value:string}})=>void;
+ choose({target:{value:'excluded'}});scope.render();assets.render();assert.equal(assets.button('ذخیرهٔ نسخهٔ تازه').props.disabled,true);assert.equal(scope.beforeUnload(),true);
+ await scope.submit('لغو تغییرات محدوده');assets.render();assert.equal(assets.button('ذخیرهٔ نسخهٔ تازه').props.disabled,false);assert.equal(scope.find('select',()=>true).props.value,'unknown');
+ choose({target:{value:'allocatable'}});scope.render();const prior=globalThis.fetch;let calls=0;
+ globalThis.fetch=async()=>{if(++calls===1)throw new Error('Synthetic response lost');return Response.json(receipt);};
+ try {
+  await scope.submit(save);assets.render();assert.equal(scope.button('لغو تغییرات محدوده').props.disabled,true);assert.equal(assets.button('ذخیرهٔ نسخهٔ تازه').props.disabled,true);
+  await scope.submit(retryLabel);assets.render();assert.equal(scope.refreshes,1);assert.equal(editor.navigating,true);assert.equal(assets.button('ذخیرهٔ نسخهٔ تازه').props.disabled,true);
+  const {scopeReviewFromStored}=await import('../../lib/portfolio/scopeContract');
+  const stored=scopeReviewFromStored({id:receipt.id,scope_version:1,holding_version_id:holdingId,rules_version:receipt.rulesVersion,member_confirmed_at:receipt.memberConfirmedAt,assignments:receipt.assignments},holding);
+  mountFinancialForm('components/portfolio/InvestmentScopeWorkbench.tsx',{...props,scopeState:{status:'ready',review:stored}},editor);assets.render();assert.equal(editor.active,null);assert.equal(assets.button('ذخیرهٔ نسخهٔ تازه').props.disabled,false);
+ }finally{globalThis.fetch=prior;}
 });

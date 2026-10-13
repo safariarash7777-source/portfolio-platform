@@ -20,9 +20,10 @@ function resultUrl(req: NextRequest, params: Record<string, string>): URL {
 export async function GET(req: NextRequest) {
   const authority = req.nextUrl.searchParams.get("Authority") ?? "";
   const status = req.nextUrl.searchParams.get("Status") ?? "";
+  const unknown = () => NextResponse.redirect(resultUrl(req, { status: "unknown", authority }));
 
   if (!authority) {
-    return NextResponse.redirect(resultUrl(req, { status: "failed" }));
+    return unknown();
   }
 
   const admin = createAdminClient();
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (!payment) {
-    return NextResponse.redirect(resultUrl(req, { status: "failed" }));
+    return unknown();
   }
 
   // قبلاً تأیید شده → idempotent، دعوتِ دوباره نمی‌فرستیم.
@@ -43,14 +44,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(resultUrl(req, { status: "success" }));
   }
 
-  // کاربر پرداخت را لغو کرد یا زرین‌پال ناموفق برگشت.
+  // Query parameters are not authenticated evidence of non-payment.
   if (status !== "OK") {
-    await admin.rpc("fail_payment", { p_authority: authority });
-    return NextResponse.redirect(resultUrl(req, { status: "failed" }));
+    return unknown();
   }
 
   const verify = await verifyPayment(authority, payment.amount);
-  if (!verify.ok) {
+  if (verify.outcome === "unknown") return unknown();
+  if (verify.outcome === "rejected") {
     await admin.rpc("fail_payment", { p_authority: authority });
     return NextResponse.redirect(resultUrl(req, { status: "failed" }));
   }
@@ -67,13 +68,13 @@ export async function GET(req: NextRequest) {
 
   const { error: verifyErr } = await admin.rpc("verify_payment", {
     p_authority: authority,
-    p_ref_id: verify.refId ?? "",
+    p_ref_id: verify.refId,
     p_amount: payment.amount,
     p_invite_link: inviteLink,
   });
   if (verifyErr) {
     console.error("verify_payment error:", verifyErr.message);
-    return NextResponse.redirect(resultUrl(req, { status: "failed" }));
+    return unknown();
   }
 
   // تلگرام لینک شده → DM دعوت. در غیر این صورت لینک در داشبورد نشان داده می‌شود.
@@ -108,6 +109,6 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.redirect(
-    resultUrl(req, { status: "success", ref: verify.refId ?? "" })
+    resultUrl(req, { status: "success", ref: verify.refId })
   );
 }

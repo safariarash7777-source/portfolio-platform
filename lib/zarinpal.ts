@@ -58,11 +58,13 @@ export async function requestPayment(
   return { ok: false, code, message: errMsg ?? "خطا در ایجاد تراکنش." };
 }
 
-export interface ZarinpalVerifyResult {
-  ok: boolean;
-  refId?: string;
-  code?: number;
-  message?: string;
+export type ZarinpalVerifyResult =
+  | { outcome: "verified"; refId: string; code: 100 | 101 }
+  | { outcome: "rejected"; code: -51 }
+  | { outcome: "unknown"; reason: "configuration" | "input" | "transport" | "http" | "body" | "response" };
+
+function record(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 /** تأیید تراکنش. amount باید همان مبلغِ ردیفِ pending خودمان باشد. */
@@ -71,19 +73,45 @@ export async function verifyPayment(
   amountToman: number
 ): Promise<ZarinpalVerifyResult> {
   const merchant_id = process.env.ZARINPAL_MERCHANT_ID;
-  if (!merchant_id) return { ok: false, message: "درگاه پرداخت پیکربندی نشده است." };
-
-  const res = await fetch(`${BASE}/pg/v4/payment/verify.json`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ merchant_id, amount: amountToman * 10, authority }),
-  });
-
-  const json = await res.json().catch(() => null);
-  const code = json?.data?.code;
-  // 100 = تأیید موفق، 101 = قبلاً تأیید شده
-  if (code === 100 || code === 101) {
-    return { ok: true, refId: String(json?.data?.ref_id ?? ""), code };
+  if (!merchant_id?.trim()) return { outcome: "unknown", reason: "configuration" };
+  if (!authority.trim() || !Number.isSafeInteger(amountToman) || amountToman <= 0 ||
+      !Number.isSafeInteger(amountToman * 10)) {
+    return { outcome: "unknown", reason: "input" };
   }
-  return { ok: false, code, message: "تأیید پرداخت ناموفق بود." };
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/pg/v4/payment/verify.json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ merchant_id, amount: amountToman * 10, authority }),
+    });
+  } catch {
+    return { outcome: "unknown", reason: "transport" };
+  }
+  if (!res.ok) return { outcome: "unknown", reason: "http" };
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch {
+    return { outcome: "unknown", reason: "body" };
+  }
+  if (!record(json)) return { outcome: "unknown", reason: "response" };
+  const { data, errors } = json;
+  // Official v4 contract: ref_id is an integer; 101 is a previously verified payment.
+  // https://www.zarinpal.com/docs/paymentGateway/connectToGateway
+  if (record(data) && Array.isArray(errors) && errors.length === 0 &&
+      (data.code === 100 || data.code === 101) && typeof data.ref_id === "number" &&
+      Number.isSafeInteger(data.ref_id) && data.ref_id > 0) {
+    return { outcome: "verified", refId: String(data.ref_id), code: data.code };
+  }
+  // Only -51 denotes unsuccessful PaymentVerify in the documented error list.
+  // Amount/merchant/configuration errors and unknown codes do not establish non-payment.
+  // Require a consistent error envelope; never infer rejection from the callback query.
+  // https://www.zarinpal.com/docs/paymentGateway/errorList
+  if (Array.isArray(data) && data.length === 0 && record(errors) && errors.code === -51 &&
+      typeof errors.message === "string" && errors.message.trim().length > 0) {
+    return { outcome: "rejected", code: -51 };
+  }
+  return { outcome: "unknown", reason: "response" };
 }

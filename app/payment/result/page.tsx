@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Info } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toPersianDigits } from "@/lib/format";
@@ -12,10 +12,13 @@ export const metadata = {
 export default async function PaymentResultPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; ref?: string }>;
+  searchParams: Promise<{ status?: string; ref?: string; authority?: string }>;
 }) {
-  const { status, ref } = await searchParams;
+  const { status, ref, authority } = await searchParams;
   const success = status === "success";
+  const unknown = status !== "success" && status !== "failed";
+  const color = success ? "var(--success)" : unknown ? "var(--info)" : "var(--danger)";
+  const recheck = authority ? `/api/payment/callback?${new URLSearchParams({ Authority: authority, Status: "OK" })}` : null;
 
   return (
     <>
@@ -26,31 +29,33 @@ export default async function PaymentResultPage({
       >
         <div
           className="card-elevated p-8 md:p-12 text-center max-w-md w-full"
-          style={{ borderTop: `4px solid ${success ? "var(--success)" : "var(--danger)"}` }}
+          style={{ borderTop: `4px solid ${color}` }}
         >
           <div
             className="mx-auto mb-6 flex items-center justify-center rounded-2xl"
             style={{
               width: 72,
               height: 72,
-              background: success ? "rgba(21,128,61,0.1)" : "rgba(185,28,28,0.08)",
-              color: success ? "var(--success)" : "var(--danger)",
+              background: `color-mix(in srgb, ${color} 10%, transparent)`,
+              color,
             }}
           >
-            {success ? <CheckCircle2 size={36} /> : <XCircle size={36} />}
+            {success ? <CheckCircle2 size={36} /> : unknown ? <Info size={36} /> : <XCircle size={36} />}
           </div>
 
           <h1
             className="font-display text-2xl font-bold mb-3"
             style={{ color: "var(--navy-deep)" }}
           >
-            {success ? "پرداخت موفق بود" : "پرداخت ناموفق"}
+            {success ? "پرداخت موفق بود" : unknown ? "نتیجهٔ پرداخت هنوز مشخص نیست" : "پرداخت ناموفق"}
           </h1>
 
-          <p className="text-sm leading-8 mb-6" style={{ color: "var(--text-2)" }}>
+          <p role="status" className="text-sm leading-8 mb-6" style={{ color: "var(--text-2)" }}>
             {success
               ? "دسترسی شما به دورهٔ وبینار و کانال اختصاصی فعال شد. اگر حساب تلگرام‌تان متصل باشد، لینک دعوت در پیام خصوصی برایتان ارسال شده است؛ در غیر این صورت از داشبورد می‌توانید حساب تلگرام را متصل کنید و لینک دعوت را ببینید."
-              : "پرداخت شما تکمیل نشد یا لغو شد. در صورت کسر وجه، مبلغ طبق قوانین بانکی طی چند روز کاری بازمی‌گردد. می‌توانید دوباره تلاش کنید."}
+              : unknown
+              ? "نتیجهٔ این پرداخت قابل تأیید نبود. این وضعیت به معنی لغو پرداخت یا بازگشت وجه نیست. پیش از پرداخت جدید، همین درخواست را دوباره بررسی کنید یا با پشتیبانی پیگیری کنید."
+              : "درگاه، این پرداخت را ناموفق اعلام کرده است. در صورت کسر وجه، برای بررسی همان پرداخت با پشتیبانی پیگیری کنید."}
           </p>
 
           {success && ref && (
@@ -65,6 +70,16 @@ export default async function PaymentResultPage({
             </div>
           )}
 
+          {unknown && authority && (
+            <p className="text-xs break-all mb-4" style={{ color: "var(--text-3)" }}>
+              شماره درخواست: <span dir="ltr">{authority}</span>
+            </p>
+          )}
+          {unknown && recheck && (
+            <a href={recheck} className="btn w-full mb-3" style={{ color: "var(--info)" }}>
+              بررسی دوبارهٔ همین پرداخت
+            </a>
+          )}
           <Link href="/dashboard" className="btn btn-gold w-full">
             بازگشت به داشبورد
           </Link>

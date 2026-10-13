@@ -53,6 +53,9 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const [list, setList] = useState<ListItem[]>([]);
   const [busy, setBusyState] = useState(false);
   const busyRef = useRef(false);
+  const pendingCreation = useRef<{ body: string; revision: number; id: string } | null>(null);
+  const unknownCreation = useRef(false);
+  const [uncertainCreation, setUncertainCreation] = useState(false);
   function setBusy(value: boolean) { busyRef.current = value; setBusyState(value); }
   async function refreshList() {
     try {
@@ -81,17 +84,25 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     return () => { window.removeEventListener('beforeunload', warn); document.removeEventListener('click', guardLink, true); };
   }, [dirty, pendingPreparation]);
   function change(update: (previous: Workbook) => Workbook) {
+    if (unknownCreation.current) return;
     editRevision.current++;
     setWorkbook(update); setDirty(true); setMessage('');
   }
   async function saveToServer() {
     if (busyRef.current) return;
-    if (pendingPreparation) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
+    if (pendingPreparation && !pendingCreation.current) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
     setBusy(true);
-    const savingRevision = editRevision.current;
+    if (!saved && !pendingCreation.current) {
+      const id = crypto.randomUUID();
+      pendingCreation.current = { id, revision: editRevision.current, body: JSON.stringify({ action: 'save', workbookId: id, creationId: id, baseVersion: 0, workbook }) };
+    }
+    const attempt = pendingCreation.current;
+    const savingRevision = attempt?.revision ?? editRevision.current;
     try {
-      const r = await transport(API, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
-      if (r.status === 201) {
+      const r = await transport(API, { method: 'POST', body: attempt?.body ?? JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
+      if (r.status === 201 || r.status === 200 && r.body.reused === true) {
+        if (attempt && (r.body.workbookId !== attempt.id || r.body.version !== 1 || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt)))) throw new Error('creation receipt mismatch');
+        pendingCreation.current = null; unknownCreation.current = false; setUncertainCreation(false);
         const version = r.body.version as number;
         setSaved({ workbookId: r.body.workbookId as string, version, latestVersion: version, savedAt: r.body.savedAt as string });
         setVersions(v => [...v, { version, savedAt: r.body.savedAt as string }]);
@@ -99,14 +110,21 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         setMessage(editRevision.current === savingRevision ? `نسخهٔ ${toPersianDigits(version)} ذخیره شد. ذخیره به معنی تأیید نیست.` : 'نسخه ذخیره شد؛ تغییر تازهٔ حین ذخیره هنوز ذخیره نشده و روی صفحه حفظ شده است.');
         void refreshList();
       } else {
+        if (attempt) {
+          if (!unknownCreation.current && [400, 401, 403, 413, 422].includes(r.status)) pendingCreation.current = null;
+          else { unknownCreation.current = true; setUncertainCreation(true); }
+        }
         if (r.body.unavailable) setServer('unavailable');
         setMessage(`${String(r.body.error ?? 'ذخیره انجام نشد.')} متن روی صفحه حفظ شد.`);
       }
-    } catch { setMessage('ارتباط با سرور برقرار نشد؛ متن روی صفحه حفظ شد.'); }
+    } catch {
+      if (attempt) { unknownCreation.current = true; setUncertainCreation(true); }
+      setMessage(attempt ? 'نتیجهٔ ثبت دریافت نشد؛ متن و شناسهٔ ثبت اولیه حفظ شدند. همین ثبت را دوباره بررسی کنید؛ دفتر تازه‌ای ساخته نمی‌شود.' : 'ارتباط با سرور برقرار نشد؛ متن روی صفحه حفظ شد.');
+    }
     finally { setBusy(false); }
   }
   async function openFromServer(workbookId: string, version: number | null) {
-    if (busyRef.current) return;
+    if (busyRef.current || unknownCreation.current) return;
     if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی جایگزین می‌شود. ادامه می‌دهید؟')) return;
     setBusy(true);
     const openingRevision = editRevision.current;
@@ -144,7 +162,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     finally { setBusy(false); }
   }
   function startNew() {
-    if (busyRef.current) return;
+    if (busyRef.current || unknownCreation.current) return;
     if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی کنار گذاشته می‌شود. ادامه می‌دهید؟')) return;
     setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setDirty(false); setPendingPreparation(false); setChecked(false); setMessage('');
     editRevision.current++; setPreparationEpoch(value => value + 1);
@@ -164,7 +182,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     setMessage('فایل برای دریافت آماده شد؛ ذخیره‌شدن آن را در دستگاه بررسی کنید. دریافت فایل نسخهٔ سروری نمی‌سازد.');
   }
   async function importFile(selected: File | undefined) {
-    if (!selected || busyRef.current) return;
+    if (!selected || busyRef.current || unknownCreation.current) return;
     setBusy(true);
     const importingRevision = editRevision.current;
     try {
@@ -182,8 +200,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     return <div className="space-y-2" key={id}>
       <label htmlFor={id} className="block text-sm font-bold">{label}</label>
       {type === 'textarea'
-        ? <textarea id={id} rows={3} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />
-        : <input id={id} type={type} dir={type === 'url' || type === 'date' ? 'ltr' : undefined} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />}
+        ? <textarea disabled={uncertainCreation} id={id} rows={3} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />
+        : <input disabled={uncertainCreation} id={id} type={type} dir={type === 'url' || type === 'date' ? 'ltr' : undefined} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />}
       {type === 'date' && isCalendarDate(value) && <p className="text-sm">{formatJalali(value + 'T12:00:00Z')}</p>}
       {error && <p id={`${id}-error`} className="text-sm" style={{ color: 'var(--text)' }}>{error}</p>}
     </div>;
@@ -210,7 +228,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           <h2 id="research-question" className="text-lg font-bold">۱. پرسش و دامنه</h2>
           {textField('title', 'عنوان تحلیل', 'text')}
           <label className="block space-y-2"><span className="text-sm font-bold">حوزه</span>
-            <select className={inputClass} style={inputStyle} value={workbook.domain} onChange={e => change(w => ({ ...w, domain: e.target.value as Workbook['domain'] }))}>
+            <select disabled={uncertainCreation} className={inputClass} style={inputStyle} value={workbook.domain} onChange={e => change(w => ({ ...w, domain: e.target.value as Workbook['domain'] }))}>
               {INTEL_DOMAINS.map(domain => <option key={domain} value={domain}>{DOMAIN_LABEL[domain]}</option>)}
             </select>
           </label>
@@ -232,7 +250,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           </fieldset>)}
           <button type="button" className="btn btn-secondary min-h-11" disabled={workbook.evidence.length >= 30} onClick={() => change(w => ({ ...w, evidence: [...w.evidence, { id: crypto.randomUUID(), statement: '', sourceUrl: '', observedOn: '', publishedOn: '' }] }))}><Plus size={16} aria-hidden="true" /> افزودن شاهد</button>
         </section>
-        <ResearchPreparationFields key={preparationEpoch} value={workbook.privatePreparation?.intake} evidence={workbook.evidence} onPendingChange={pending => { editRevision.current++; setPendingPreparation(pending); }} onChange={intake => change(previous => ({ ...previous, privatePreparation: { contract: PRIVATE_PREPARATION_CONTRACT, intake } }))}/>
+        <fieldset disabled={uncertainCreation}><ResearchPreparationFields key={preparationEpoch} value={workbook.privatePreparation?.intake} evidence={workbook.evidence} onPendingChange={pending => { if (unknownCreation.current) return; editRevision.current++; setPendingPreparation(pending); }} onChange={intake => change(previous => ({ ...previous, privatePreparation: { contract: PRIVATE_PREPARATION_CONTRACT, intake } }))}/></fieldset>
         {!privateWriterReady && <p role="status" className="text-sm leading-7">ذخیرهٔ سروری آماده‌سازی خصوصی هنوز فعال نیست؛ متن را در فایل قابل ادامه نگه دارید. این بخش هنوز ابزار آمادهٔ روزانه نیست.</p>}
         <section className="card space-y-4 p-5" aria-labelledby="causal"><h2 id="causal" className="text-lg font-bold">۳. استدلال و نقد</h2>
           {textField('interpretation', 'تفسیر: رخداد چگونه و از چه مسیری اثر می‌گذارد؟ به شناسهٔ شاهد ارجاع دهید.')}
@@ -254,13 +272,13 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         {saved && <p className="text-sm leading-7" aria-live="polite">
           نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty || pendingPreparation ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere && !dirty && !pendingPreparation ? ' · تأیید داخلی شده' : ''}
         </p>}
-        {server === 'ready' && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!dirty && !!saved)} onClick={() => void saveToServer()}><Save size={16} aria-hidden="true" /> {saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
+        {(server === 'ready' || uncertainCreation) && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!dirty && !!saved)} onClick={() => void saveToServer()}><Save size={16} aria-hidden="true" /> {uncertainCreation ? 'بررسی دوبارهٔ همین ثبت' : saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
         <button type="button" className="btn btn-primary w-full min-h-11" onClick={() => { setChecked(true); setMessage(issues.length ? `${toPersianDigits(issues.length)} مورد نیازمند تکمیل است.` : 'ساختار کامل است؛ صحت شواهد و نتیجه هنوز بازبینی انسانی می‌خواهد.'); }}><ClipboardCheck size={16} aria-hidden="true" /> بررسی ساختار</button>
         {checked && issues.length > 0 && <ul className="max-h-64 space-y-2 overflow-y-auto text-sm">{issues.map((issue, i) => <li key={`${issue.field}-${i}`}><a className="underline" href={`#${issue.field}`}>{issue.message}</a></li>)}</ul>}
         <button type="button" className="btn btn-secondary min-h-11 w-full" onClick={() => download('json')}><Download size={16} aria-hidden="true" /> دریافت فایل قابل ادامه</button>
         <button type="button" className="btn btn-secondary min-h-11 w-full" onClick={() => download('md')}>دریافت متن تحلیل</button>
-        <button type="button" className="btn btn-ghost min-h-11 w-full" disabled={busy} onClick={() => { if (!busyRef.current) file.current?.click(); }}><FileUp size={16} aria-hidden="true" /> ادامه از فایل</button>
-        <input ref={file} type="file" accept=".json,application/json" className="sr-only" aria-label="فایل کاربرگ" disabled={busy} onChange={e => void importFile(e.target.files?.[0])} />
+        <button type="button" className="btn btn-ghost min-h-11 w-full" disabled={busy || uncertainCreation} onClick={() => { if (!busyRef.current) file.current?.click(); }}><FileUp size={16} aria-hidden="true" /> ادامه از فایل</button>
+        <input ref={file} type="file" accept=".json,application/json" className="sr-only" aria-label="فایل کاربرگ" disabled={busy || uncertainCreation} onChange={e => void importFile(e.target.files?.[0])} />
         {server === 'ready' && saved && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <h3 className="text-sm font-bold">بازبینی انسانی</h3>
           <button type="button" className="btn btn-secondary min-h-11 w-full" disabled={!canDecide || issues.length > 0 || approvedHere || needsReviewVersion} onClick={() => void decide('approved_internal')}><CheckCircle2 size={16} aria-hidden="true" /> تأیید داخلی نسخهٔ {toPersianDigits(saved.version)}</button>
@@ -278,11 +296,11 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         <p role="status" className="text-sm leading-7">{message}</p>
         {server === 'ready' && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold">کاربرگ‌های ذخیره‌شده</h3>
-            <button type="button" className="btn btn-ghost min-h-11" disabled={busy} onClick={startNew}><Plus size={16} aria-hidden="true" /> تازه</button></div>
+            <button type="button" className="btn btn-ghost min-h-11" disabled={busy || uncertainCreation} onClick={startNew}><Plus size={16} aria-hidden="true" /> تازه</button></div>
           {list.length === 0
             ? <p className="text-sm leading-7" style={{ color: 'var(--text-2)' }}>هنوز کاربرگی ذخیره نشده است.</p>
             : <ul className="max-h-72 space-y-1 overflow-y-auto text-sm">{list.map(item => <li key={item.workbookId}>
-                <button type="button" className="flex min-h-11 w-full items-center gap-2 text-start underline" disabled={busy} onClick={() => void openFromServer(item.workbookId, null)}>
+                <button type="button" className="flex min-h-11 w-full items-center gap-2 text-start underline" disabled={busy || uncertainCreation} onClick={() => void openFromServer(item.workbookId, null)}>
                   <FolderOpen size={16} aria-hidden="true" className="shrink-0" /><span className="min-w-0 truncate">{item.title}</span>
                   <span className="shrink-0" style={{ color: 'var(--text-2)' }}>نسخهٔ {toPersianDigits(item.version)}</span>
                 </button></li>)}</ul>}

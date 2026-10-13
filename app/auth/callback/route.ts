@@ -30,11 +30,18 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return supabaseResponse
+    try {
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (!error) {
+        return supabaseResponse
+      }
+    } catch {
+      // Transport failures use the same generic redirect; never reflect SDK details.
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
+  const failure = new URL('/login', origin)
+  failure.searchParams.set('error', 'auth_callback_failed')
+  failure.searchParams.set('next', next)
+  return NextResponse.redirect(failure)
 }

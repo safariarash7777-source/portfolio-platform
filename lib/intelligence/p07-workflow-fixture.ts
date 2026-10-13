@@ -28,7 +28,7 @@ export function createP07WorkflowFixture() {
     insertVersion: async row => {
       const last = versions.filter(v => v.workbookId === row.workbookId).at(-1);
       if (row.version !== (last?.version ?? 0) + 1) throw new StoreError('conflict');
-      const saved = { ...row, body: parseWorkbook(JSON.stringify(row.body)), id: id(), createdAt: clock() };
+      const saved = { ...row, body: parseWorkbook(JSON.stringify(row.body)), id: id(), createdAt: clock(), createdBy: P07_FIXTURE_COHORT };
       versions.push(saved); return saved;
     },
     insertReview: async row => {
