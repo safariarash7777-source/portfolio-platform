@@ -578,7 +578,17 @@ async function fetchAnnouncements(symbol, category) {
     if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
     json = await res.json();
   }
-  return Array.isArray(json?.announcement) ? json.announcement : [];
+  return announcementRows(json);
+}
+
+function announcementRows(json) {
+  if (!Array.isArray(json?.announcement) || json.announcement.some(a =>
+      !a || typeof a !== "object" || Array.isArray(a) || typeof a.link !== "string" || !a.link.trim())) {
+    const error = new Error("announcement invalid schema");
+    error.name = "AnnouncementSchemaError";
+    throw error;
+  }
+  return json.announcement;
 }
 
 async function downloadExcelHtml(url) {
@@ -620,14 +630,18 @@ const versionedUrl = (link) => (PARSER_VERSION === 1 ? link : `${link}#pv${PARSE
 /** source_urlهای موجود برای نماد — تا اطلاعیهٔ تکراری دوباره دانلود نشود.
  * فقط ردیف‌های نسخهٔ فعلی ملاک‌اند (پسوند #pv جدا می‌شود). */
 async function existingUrls(symbol) {
-  const qs = new URLSearchParams({ select: "source_url", symbol: `eq.${symbol}`, limit: "500" });
+  const qs = new URLSearchParams({ select: "source_url", symbol: `eq.${symbol}`, data: "not.is.null", limit: "500" });
   const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
     headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
   });
   if (!res.ok) throw new Error(`existing HTTP ${res.status}`);
   const rows = await res.json();
+  if (!Array.isArray(rows) || rows.some(r => !r || (r.source_url != null && typeof r.source_url !== "string"))) {
+    throw new Error("existing reports invalid schema");
+  }
   const cur = new Set();
   for (const r of rows) {
+    if (!r.source_url) continue; // legacy metadata-only rows may have no source_url
     const m = String(r.source_url || "").match(/^(.*?)#pv(\d+)$/);
     const [base, ver] = m ? [m[1], Number(m[2])] : [r.source_url, 1];
     if (ver >= PARSER_VERSION) cur.add(base);
@@ -635,10 +649,34 @@ async function existingUrls(symbol) {
   return cur;
 }
 
+// A zero insert count is a duplicate, not proof that parsed data was persisted.
+// Confirm the exact versioned identity; a same-URL metadata-only row is a failure.
+async function confirmStoredReport(row) {
+  try {
+    const qs = new URLSearchParams({
+      select: "source_url,symbol,data", source_url: `eq.${row.source_url}`,
+      symbol: `eq.${row.symbol}`, data: "not.is.null", limit: "1",
+    });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
+      headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) throw new Error(`confirmation HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length !== 1 || rows[0]?.source_url !== row.source_url ||
+        rows[0]?.symbol !== row.symbol || rows[0]?.data == null) {
+      throw new Error("exact stored report with non-null data not found");
+    }
+  } catch (e) {
+    const error = new Error(`report persistence unconfirmed: ${e?.message ?? e}`);
+    error.name = "ReportPersistenceError";
+    throw error;
+  }
+}
+
 async function insertReport(row) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?on_conflict=source_url`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?on_conflict=source_url&select=source_url`, {
     method: "POST",
-    headers: { ...SB_HDRS(), Prefer: "resolution=ignore-duplicates,return=minimal" },
+    headers: { ...SB_HDRS(), Prefer: "resolution=ignore-duplicates,return=representation" },
     body: JSON.stringify([row]),
     signal: AbortSignal.timeout(20000),
   });
@@ -646,6 +684,13 @@ async function insertReport(row) {
     const t = await res.text().catch(() => "");
     throw new Error(`insert HTTP ${res.status} ${t.slice(0, 120)}`);
   }
+  const inserted = await res.json();
+  if (!Array.isArray(inserted) || inserted.length > 1 ||
+      inserted.some(r => !r || r.source_url !== row.source_url)) {
+    throw new Error("report insert invalid schema");
+  }
+  if (inserted.length === 0) await confirmStoredReport(row);
+  return inserted.length;
 }
 
 /* ── طبقه‌بندی اطلاعیه ──────────────────────────────────────────────────────── */
@@ -725,7 +770,7 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
     if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
     json = await res.json();
   }
-  return Array.isArray(json?.announcement) ? json.announcement : [];
+  return announcementRows(json);
 }
 
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
@@ -736,8 +781,9 @@ export async function downloadAndParse(a, kind) {
   return kind === "ن-۱۰" ? normalizeN10(tables, meta) : normalizeN30(tables, meta);
 }
 
-/** درج ردیف پارس‌شده — دقیقاً همان قرارداد درج processSymbol
- * (source_url نسخه‌دار، dedup روی on_conflict، raw کامل). */
+/** Returns the actual 0/1 count; zero resolves only after confirming the exact
+ * stored report with non-null data. Unconfirmed persistence rejects before any
+ * caller can clear its failure ledger or mark the URL as known. */
 export async function insertParsedReport(a, kind, data) {
   const meta = metaFrom(a, kind);
   const row = {
@@ -763,7 +809,7 @@ export async function insertParsedReport(a, kind, data) {
       discovered_by: "engine-v3",
     },
   };
-  await insertReport(row);
+  return await insertReport(row);
 }
 
 /** دامپ تشخیصی ساختار جدول‌های یک اکسل واقعی به Supabase — وقتی لبهٔ لیارا از خارج در دسترس نیست.

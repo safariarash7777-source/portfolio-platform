@@ -74,3 +74,89 @@ for(const kind of ["holdings", "debts"] as const) {
   }finally{globalThis.fetch=prior;}
  });
 }
+
+// The same page-local coordinator is used by the actual wrapper and both handlers.
+import { createFinancialEditor, type FinancialEditorKind } from "./financialEditor";
+import { readFileSync } from "node:fs";
+const labelFor = (kind: FinancialEditorKind) => kind === "holdings" ? "ذخیرهٔ نسخهٔ تازه" : "ذخیرهٔ بدهی‌ها";
+function pair(version = 1, editor = createFinancialEditor()) {
+ const holdings=mountFinancialForm("components/portfolio/HoldingsWorkbench.tsx",{ready:true,targetFailed:false,activeVersion:version,latestVersion:version,history:[],activePositions:[asset],rows:[],gaps:[],definitive:false,notes:[],totalValue:null,showComparison:false,showImport:false},editor);
+ const debts=mountFinancialForm("components/portfolio/DebtsWorkbench.tsx",{ready:true,activeVersion:version,latestVersion:version,debts:[debt]},editor);
+ return {holdings,debts,editor,render(){holdings.render();debts.render();}};
+}
+function change(ui: ReturnType<typeof mountFinancialForm>, kind: FinancialEditorKind, value: string) {
+ const input=ui.find("input",e=>kind === "holdings" ? e.props["aria-label"] === "عنوان دارایی دستی" : e.props.value === "1500");
+ (input.props.onChange as (event:{target:{value:string}})=>void)({target:{value}});
+ ui.render();
+}
+for(const first of ["holdings","debts"] as const) {
+ const second=first === "holdings" ? "debts" : "holdings";
+ test(`${first} first: normal save navigates to receipt, remount lets ${second} save on new base`,async()=>{
+  const prior=globalThis.fetch,bodies:Record<string,unknown>[]=[];
+  globalThis.fetch=async(_url,options)=>{bodies.push(JSON.parse(String(options?.body)));return Response.json({...receipt,version:bodies.length+1,version_id:bodies.length === 1?receipt.version_id:"22222222-2222-4222-8222-222222222222"});};
+  try {
+   const page=pair();change(page[first],first,first === "holdings"?"ویرایش ساختگی":"1600");page.render();
+   assert.equal(page[second].button(labelFor(second)).props.disabled,true);
+   await page[first].submit(labelFor(first));page.render();
+   assert.equal(page[first].navigation[0],`/dashboard/holdings?v=${receipt.version_id}`);assert.equal(page[first].refreshes,1);
+   assert.equal(page.editor.navigating,true);assert.equal(page[second].button(labelFor(second)).props.disabled,true);
+   assert.match(page[first].text(),/خلاصه و سابقهٔ این صفحه هنوز مربوط به نسخهٔ قبلی‌اند/);
+   // Returned UUID changes the real page wrapper key, giving both forms a new lease/base.
+   const reloaded=pair(2);change(reloaded[second],second,second === "holdings"?"ویرایش ساختگی":"1700");reloaded.render();
+   assert.equal(reloaded[second].button(labelFor(second)).props.disabled,false);
+   await reloaded[second].submit(labelFor(second));
+   assert.deepEqual(bodies.map(body=>body.base_version),[1,2]);assert.equal(reloaded[second].navigation.length,1);
+  }finally{globalThis.fetch=prior;}
+ });
+ test(`${first} draft prevents sibling edits/stale submit; explicit cancel restores original and releases ${second}`,async()=>{
+  const prior=globalThis.fetch;let writes=0;globalThis.fetch=async()=>{writes++;return Response.json(receipt);};
+  try {
+   const page=pair();
+   const staleEdit=page[second].find("input",e=>second === "holdings"?e.props["aria-label"] === "عنوان دارایی دستی":e.props.value === "1500").props.onChange as (event:{target:{value:string}})=>void;
+   const staleSave=second === "holdings"? page.holdings.button(labelFor(second)).props.onClick as ()=>Promise<void> : ()=> (page.debts.find("form",()=>true).props.onSubmit as (event:{preventDefault():void})=>Promise<void>)({preventDefault(){}});
+   change(page[first],first,first === "holdings"?"پیش‌نویس ساختگی":"1600");page.render();
+   staleEdit({target:{value:"stale"}});await staleSave();page.render();assert.equal(writes,0);
+   assert.equal(page[second].find("input",e=>second === "holdings"?e.props["aria-label"] === "عنوان دارایی دستی":e.props.value === "1500").props.value,second === "holdings"?asset.manualLabel:"1500");
+   assert.equal(page[first].beforeUnload(),true);
+   await page[first].submit("لغو تغییرات");page.render();assert.equal(page.editor.active,null);assert.equal(page[first].beforeUnload(),false);
+   assert.equal(page[first].find("input",e=>first === "holdings"?e.props["aria-label"] === "عنوان دارایی دستی":e.props.value === "1500").props.value,first === "holdings"?asset.manualLabel:"1500");
+   assert.equal(page[second].button(labelFor(second)).props.disabled,false);
+   await page[second].submit(labelFor(second));assert.equal(writes,1);assert.equal(page[second].navigation.length,1);
+  }finally{globalThis.fetch=prior;}
+ });
+ test(`${first} pending/unknown attempt blocks cancel and ${second}; retry exact body returns UUID without duplicate write`,async()=>{
+  const prior=globalThis.fetch,bodies:string[]=[];let resolve!: (response:Response)=>void;
+  globalThis.fetch=async(_url,options)=>{bodies.push(String(options?.body));return bodies.length === 1 ? new Promise<Response>(done=>{resolve=done;}) : Response.json({...receipt,reused:true});};
+  try {
+   const page=pair();const saving=page[first].submit(labelFor(first));page.render();
+   assert.equal(page[second].button(labelFor(second)).props.disabled,true);assert.equal(page[first].button("لغو تغییرات").props.disabled,true);assert.equal(page[first].beforeUnload(),true);
+   const cancel=page[first].button("لغو تغییرات").props.onClick as ()=>void;cancel();page.render();assert.equal(page.editor.active,first);
+   resolve(new Response("synthetic unavailable",{status:503}));await saving;page.render();
+   assert.equal(page[first].button("لغو تغییرات").props.disabled,true);cancel();page.render();assert.equal(page.editor.active,first);
+   assert.equal(page[second].button(labelFor(second)).props.disabled,true);assert.equal(page[first].beforeUnload(),true);
+   await page[first].submit("بررسی دوبارهٔ همین ثبت");page.render();assert.equal(bodies[0],bodies[1]);assert.equal(page[first].navigation[0],`/dashboard/holdings?v=${receipt.version_id}`);assert.equal(page[first].beforeUnload(),false);
+  }finally{globalThis.fetch=prior;}
+ });
+ test(`${first} external-device CAS409 keeps original base/draft, blocks ${second}, then allows explicit discard`,async()=>{
+  const prior=globalThis.fetch,bodies:Record<string,unknown>[]=[];
+  globalThis.fetch=async(url,options)=>{bodies.push(JSON.parse(String(options?.body)));return postFinancialSnapshot(new Request(`http://localhost${url}`,options),first,async()=>({async authenticate(){return {user:{id:"synthetic-owner"},error:false};},async rpc(){return {data:null,error:{code:"PT409"}};}}));};
+  try {
+   const page=pair();change(page[first],first,first === "holdings"?"پیش‌نویس ساختگی":"1600");await page[first].submit(labelFor(first));page.render();
+   assert.equal(bodies[0].base_version,1);assert.equal(page[first].navigation.length,0);
+   assert.equal(page[first].find("input",e=>first === "holdings"?e.props["aria-label"] === "عنوان دارایی دستی":e.props.value === "1600").props.value,first === "holdings"?"پیش‌نویس ساختگی":"1600");
+   assert.equal(page[first].button(labelFor(first)).props.disabled,true);assert.equal(page[second].button(labelFor(second)).props.disabled,true);
+   assert.equal(page[first].find("a",e=>e.props.href === "/dashboard/holdings").props.target,"_blank");
+   assert.equal(page[first].button("لغو تغییرات").props.disabled,false);await page[first].submit("لغو تغییرات");page.render();assert.equal(page.editor.active,null);assert.equal(page[first].beforeUnload(),false);
+  }finally{globalThis.fetch=prior;}
+ });
+}
+test("actual FinancialEditors wrapper rerenders lease status and page keys it by returned snapshot identity",()=>{
+ const ui=mountFinancialForm("components/portfolio/FinancialEditors.tsx",{children:null});
+ const context=()=>ui.elements().find(element=>typeof element.props.value === "object" && element.props.value !== null)!;
+ const lease=context().props.value as ReturnType<typeof createFinancialEditor>;
+ assert.equal(lease.acquire("holdings"),true);assert.equal(lease.acquire("debts"),false);ui.render();assert.match(ui.text(),/لغو تغییرات/);
+ lease.release("holdings");ui.render();assert.equal((context().props.value as ReturnType<typeof createFinancialEditor>).active,null);
+ lease.acquire("debts");lease.navigate("debts");ui.render();assert.match(ui.text(),/نسخهٔ قبلی/);
+ const page=readFileSync("app/(protected)/dashboard/holdings/page.tsx","utf8");
+ assert.match(page,/<FinancialEditors key=\{`financial-editors-\$\{snapshot.holdings\?\.id \?\? "new"\}`\}>[\s\S]*<HoldingsWorkbench[\s\S]*<DebtsWorkbench[\s\S]*<\/FinancialEditors>/);
+});

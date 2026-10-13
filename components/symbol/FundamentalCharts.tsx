@@ -3,8 +3,8 @@
 // ۶ خروجی نموداری WP4 — قرارداد قطعی بریف §WP4-۳ + روایت template-ای زیر هر چارت.
 // اصل حاکم (قانون ۳/۷): چارتی که دادهٔ واقعی‌اش هنوز نیامده (فصلی، ن-۳۰، نرخ دلار)
 // با کارت «به‌زودی» و توضیحِ «منتظر چه داده‌ای است» رندر می‌شود — عدد جایگزین ممنوع.
-// با دادهٔ ن-۱۰ فعلی (سالانه) چارت‌های ۲ و ۳ در «نمای سالانه» با اعداد واقعی
-// رندر می‌شوند و نمای فصلی‌شان بعد از رسیدن گزارش‌های میان‌دوره‌ای فعال می‌شود.
+// مقایسهٔ ن-۱۰ با طول واقعی دورهٔ تجمیعی برچسب می‌خورد؛ دادهٔ فاقد واحد/دامنه
+// معتبر به نمودار یا روایت عددی راه ندارد.
 
 import { useMemo, useState } from "react";
 import {
@@ -24,6 +24,7 @@ import {
 import { Link2, Check, Info } from "lucide-react";
 import { toPersianDigits } from "@/lib/format";
 import type { SymbolFundamentals } from "@/lib/fundamental/types";
+import { isMillionRialUnit } from "@/lib/fundamental/units";
 import {
   deriveN10,
   deriveN30,
@@ -57,13 +58,11 @@ function fmtPctFa(v: number): string {
 
 /** فرمتر برچسب نمودار — ورودی recharts ممکن است غیرعددی باشد. */
 function fmtLabelPct(label: unknown): string {
-  const n = Number(label);
-  return isFinite(n) ? fmtPctFa(n) : "";
+  return typeof label === "number" && Number.isFinite(label) ? fmtPctFa(label) : "";
 }
 
 function fmtLabelMillionRial(label: unknown): string {
-  const n = Number(label);
-  return isFinite(n) ? fmtMillionRial(n) : "";
+  return typeof label === "number" && Number.isFinite(label) ? fmtMillionRial(label) : "";
 }
 
 /** میلیون ریال → دلار (با نرخ تومان) — فقط وقتی نرخ رسمی fx_rates موجود است. */
@@ -509,11 +508,12 @@ export default function FundamentalCharts({
   fxRateDate?: string | null;
 }) {
   const n10 = fundamentals.n10;
-  const derived = useMemo(() => (n10 ? deriveN10(n10.data) : null), [n10]);
+  const n10Comparable = !!n10 && isMillionRialUnit(n10.data.unit) && n10.source.scope === "company";
+  const derived = useMemo(() => (n10Comparable && n10 ? deriveN10(n10.data) : null), [n10, n10Comparable]);
   const n30 = fundamentals.n30;
   const n30d = useMemo(() => (n30 ? deriveN30(n30.data) : null), [n30]);
   const [usd, setUsd] = useState(false);
-  const fxEnabled = typeof fxRate === "number" && fxRate > 0;
+  const fxEnabled = typeof fxRate === "number" && Number.isFinite(fxRate) && fxRate > 0;
   const usdRate = usd && fxEnabled ? fxRate : null;
   const currencyToggle = (
     <CurrencyToggle usd={usd && fxEnabled} onChange={setUsd} enabled={fxEnabled} />
@@ -527,15 +527,34 @@ export default function FundamentalCharts({
       >
         {readFailed
           ? "گزارش‌های بنیادی در این لحظه قابل خواندن نیستند. پس از بازیابی اتصال دوباره بررسی کنید."
+          : (n10 && !isMillionRialUnit(n10.data.unit)) || (!n10 && fundamentals.n10Unavailable?.unitUnknown)
+          ? "صورت‌های مالی موجودند، اما واحد مبالغ نامشخص یا با میلیون ریال ناسازگار است؛ محاسبات و نمودار مالی نمایش داده نمی‌شوند."
+          : n10?.source.scope === "consolidated_ambiguous"
+          ? "ارقام موجود از گزارش تلفیقی‌اند؛ دامنهٔ شرکت اصلی تأیید نشده و محاسبات و نمودار مالی نمایش داده نمی‌شوند."
+          : n10 || fundamentals.n10Unavailable?.scopeUnknown
+          ? "صورت‌های مالی موجودند، اما دامنهٔ ارقام مشخص نیست؛ محاسبات و نمودار مالی نمایش داده نمی‌شوند."
           : "در نتیجهٔ خواندن فعلی، صورت مالی قابل نمایش برای این نماد در دسترس نیست. گزارش‌های ماهانه، در صورت وجود دادهٔ معتبر، جدا نمایش داده می‌شوند."}
       </div>
     );
   }
 
   const d = n10.data;
-  const fyLabel = toPersianDigits(String(Number(d.period_end.slice(0, 4))));
-  const priorLabel = toPersianDigits(String(Number(d.period_end.slice(0, 4)) - 1));
+  const year = Number(d.period_end.slice(0, 4));
+  const annual = d.period_months === 12;
+  const period = `دورهٔ ${toPersianDigits(String(d.period_months))}ماهه`;
+  const endLabel = toPersianDigits(d.period_end.replace(/-/g, "/"));
+  const fyLabel = annual ? toPersianDigits(String(year)) : `${period}ٔ منتهی به ${endLabel}`;
+  const priorLabel = annual ? toPersianDigits(String(year - 1)) : `${period}ٔ مشابه سال قبل`;
   const s = d.standalone;
+  const comparison = s.prior
+    ? `${annual ? "مقایسهٔ سال مالی" : "مقایسهٔ"} ${fyLabel} با ${priorLabel}${d.restated_prior === true ? " (تجدید ارائه)" : ""}`
+    : `${annual ? "سال مالی" : "گزارش"} ${fyLabel} · دادهٔ مقایسه‌ای دورهٔ مشابه سال قبل موجود نیست`;
+  const unavailable = fundamentals.n10Unavailable;
+  const omittedNote = [
+    unavailable?.unitUnknown ? `${unavailable.unitUnknown} صورت مالی به علت واحد نامشخص یا ناسازگار از محاسبات کنار گذاشته شد.` : null,
+    unavailable?.scopeUnknown ? `${unavailable.scopeUnknown} صورت مالی به علت دامنهٔ نامشخص از محاسبات کنار گذاشته شد.` : null,
+    unavailable?.scopeAmbiguous ? `${unavailable.scopeAmbiguous} گزارش تلفیقی به علت تأیید نشدن دامنهٔ شرکت اصلی از محاسبات کنار گذاشته شد.` : null,
+  ].filter(Boolean).join(" ") || null;
 
   return (
     <div className="space-y-5">
@@ -550,7 +569,7 @@ export default function FundamentalCharts({
         </span>
         <span>واحد ارقام: {d.unit}</span>
         {d.audited ? <span style={{ color: "var(--success)" }}>حسابرسی‌شده ✓</span> : null}
-        {n10.source.verified ? <span title={n10.source.verification_note}>اعتبارسنجی متقاطع ✓</span> : null}
+        {n10.source.verified ? <span title={n10.source.verification_note}>اعتبارسنجی حسابی ✓</span> : null}
         {n10.source.scope === "consolidated_ambiguous" ? (
           // B-056: فقط رنگ کافی نیست — متن خودش ابهام را می‌گوید.
           <span className="basis-full" style={{ color: "var(--warning-ink)" }}>
@@ -562,6 +581,8 @@ export default function FundamentalCharts({
         ) : null}
       </div>
 
+      <Narrative text={omittedNote} />
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* چارت ۱ — P/E فصلی TTM: نیازمند EPS فصلی + قیمت روز → به‌زودی */}
         <ComingSoon
@@ -570,22 +591,22 @@ export default function FundamentalCharts({
           waitingFor="نیازمند EPS فصلی (گزارش‌های میان‌دوره‌ای) و قیمت روز نماد (فید WP1) است؛ پس از اتصال، به‌صورت خودکار محاسبه و رندر می‌شود."
         />
 
-        {/* چارت ۲ — حاشیهٔ سود: نمای سالانه با دادهٔ واقعی؛ فصلی بعداً */}
+        {/* چارت ۲ — حاشیهٔ سود در دورهٔ تجمیعیِ واقعی گزارش */}
         <ChartCard
           id="chart-margins"
           title="۲) حاشیه‌های سود (ناخالص / عملیاتی / خالص)"
-          subtitle={`مقایسهٔ سال ${fyLabel} با سال ${priorLabel} (تجدید ارائه) · نمای فصلی پس از گزارش‌های میان‌دوره‌ای فعال می‌شود`}
+          subtitle={comparison}
           narrative={narrativeGrossMargin(derived)}
         >
           <MarginsChart derived={derived} fyLabel={fyLabel} priorLabel={priorLabel} />
         </ChartCard>
 
-        {/* چارت ۳ — سود خالص: نمای سالانه با دادهٔ واقعی؛ فصلی ۳ سال بعداً */}
+        {/* چارت ۳ — سود خالص در دورهٔ تجمیعیِ واقعی گزارش */}
         <ChartCard
           id="chart-net-profit"
           title="۳) سود خالص"
-          subtitle={`سال ${fyLabel} در برابر ${priorLabel} · نمای فصلی ۳ساله پس از گزارش‌های میان‌دوره‌ای`}
-          narrative={narrativeNetProfit(derived, fyLabel)}
+          subtitle={comparison}
+          narrative={narrativeNetProfit(derived, annual ? fyLabel : endLabel, d.period_months)}
           currencyToggle={currencyToggle}
         >
           {s.prior ? (
@@ -661,11 +682,11 @@ export default function FundamentalCharts({
       </div>
 
       {/* روند ۵ساله — دادهٔ واقعی جدول رسمی خود گزارش (مکمل چارت‌های بالا) */}
-      <ChartCard
+      {derived.trend.length > 0 ? <ChartCard
         id="chart-5y-trend"
-        title="روند ۵سالهٔ فروش و حاشیهٔ ناخالص"
-        subtitle="از جدول رسمی خود گزارش — ستون: فروش (میلیون ریال) · خط: حاشیهٔ ناخالص"
-        narrative={[narrativeRevenueGrowth(derived, fyLabel), narrativeConsecutiveGrowth(derived)]
+        title="روند سالانهٔ فروش و حاشیهٔ ناخالص"
+        subtitle="از گزارش‌های سالانهٔ کدال — ستون: فروش (میلیون ریال) · خط: حاشیهٔ ناخالص"
+        narrative={[narrativeRevenueGrowth(derived, annual ? fyLabel : endLabel, d.period_months), narrativeConsecutiveGrowth(derived)]
           .filter(Boolean)
           .join(" ") || null}
         currencyToggle={currencyToggle}
@@ -676,7 +697,7 @@ export default function FundamentalCharts({
             تبدیل همهٔ سال‌ها با نرخ روز {toPersianDigits(Math.round(usdRate).toLocaleString("en-US")).replace(/,/g, "٬")} تومان ({toPersianDigits(fxRateDate)}) — برای مقایسهٔ تاریخی دقیق، میانگین نرخ هر سال پس از تجمیع دادهٔ تاریخی fx_rates فعال می‌شود.
           </p>
         ) : null}
-      </ChartCard>
+      </ChartCard> : <Narrative text={narrativeRevenueGrowth(derived, annual ? fyLabel : endLabel, d.period_months)} />}
 
       {/* کیفیت سود — روایت تسعیر ارز (شفافیت، نه توصیه) */}
       <Narrative text={narrativeFxShare(derived)} />

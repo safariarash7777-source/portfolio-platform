@@ -133,10 +133,10 @@ export default async function CodalFeedPage({
             <div className="card p-8 text-center">
               <FileText size={28} className="mx-auto mb-3" style={{ color: "var(--text-3)" }} />
               <p className="text-sm font-medium" style={{ color: "var(--text-2)" }}>
-                {q || cat !== "همه" ? "اطلاعیه‌ای با این فیلتر یافت نشد." : "هنوز اطلاعیه‌ای ثبت نشده است."}
+                  {q || cat !== "همه" ? "اطلاعیهٔ ذخیره‌شده‌ای با این فیلتر یافت نشد." : "در این پاسخ، اطلاعیهٔ ذخیره‌شده‌ای دیده نمی‌شود."}
               </p>
               <p className="text-xs mt-2" style={{ color: "var(--text-3)" }}>
-                موتور پایش کدال هر چند دقیقه یک‌بار فید سراسری را می‌خواند؛ اولین اطلاعیه‌های تازه به‌زودی این‌جا می‌نشینند.
+                  آخرین دریافت این مسیر از پاسخ فعلی معلوم نیست؛ فهرست کامل و وضعیت انتشار اطلاعیه‌ها را در خود کدال بررسی کنید.
               </p>
             </div>
           ) : (

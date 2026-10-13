@@ -11,6 +11,7 @@ import {
 } from "@/lib/core/fundCategory";
 import { FUND_SORT_KEYS, SORT_DIRS, type FundSortKey, type SortDirection } from "@/lib/market-nav";
 import Term from "@/components/learn/Term";
+import { marketQualityLabel, type DataQuality } from "@/lib/market-quality";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import {
   toPersianDigits,
@@ -43,6 +44,8 @@ export interface FundRow {
   navDate?: string | null;
   navTime?: string | null;
   bubblePercent?: number | null;
+  navState?: DataQuality;
+  navReason?: string | null;
   /** بازدهٔ دوره‌ای از symbol_history (M6) — null = دادهٔ کافی نیست */
   ret1w?: number | null;
   ret1m?: number | null;
@@ -236,8 +239,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
   const visible = useMemo(() => sorted.slice(0, rowLimit), [sorted, rowLimit]);
   const hiddenCount = Math.max(0, sorted.length - visible.length);
 
-  // آیا دست‌کم یک صندوق NAV دارد؟ (ستون‌های NAV/حباب فقط در این حالت)
-  const hasNav = useMemo(() => funds.some((f) => f.nav != null), [funds]);
+  // Keep validity/rejection visible even when no numeric NAV is available.
+  const hasNav = useMemo(() => funds.some((f) => f.nav != null || f.navState != null), [funds]);
   // آیا دست‌کم یک صندوق بازدهٔ دوره‌ای دارد؟ (M6 — ستون‌ها فقط وقتی داده هست)
   const hasReturns = useMemo(
     () => funds.some((f) => f.ret1w != null || f.ret1m != null || f.ret3m != null),
@@ -694,6 +697,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                     <>
                       <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
                         {f.nav != null ? formatToman(f.nav) : "—"}
+                        <NavNotice fund={f} />
                       </td>
                       <td
                         className="py-3 px-4 text-left font-bold"
@@ -703,6 +707,7 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                         }}
                       >
                         {f.bubblePercent != null ? formatSignedPercent(f.bubblePercent) : "—"}
+                        <NavNotice fund={f} />
                       </td>
                     </>
                   )}
@@ -771,14 +776,15 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
                 <span>{formatToman(f.price)}</span>
                 {f.value ? <span>ارزش: {fmtValue(f.value)}</span> : null}
               </div>
-              {f.nav != null && (
-                <div className="flex items-center justify-between mt-1.5 text-xs" style={{ color: "var(--text-2)" }}>
-                  <span>NAV ابطال: {formatToman(f.nav)}</span>
-                  {f.bubblePercent != null && (
-                    <span className="font-bold" style={{ color: bubbleColor(f.bubblePercent), fontVariantNumeric: "tabular-nums" }}>
-                      حباب: {formatSignedPercent(f.bubblePercent)}
+              {hasNav && (
+                <div className="mt-1.5 text-xs" style={{ color: "var(--text-2)" }}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span>NAV ابطال: {f.nav != null ? formatToman(f.nav) : "—"}</span>
+                    <span className="font-bold" style={{ color: f.bubblePercent != null ? bubbleColor(f.bubblePercent) : "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
+                      حباب: {f.bubblePercent != null ? formatSignedPercent(f.bubblePercent) : "—"}
                     </span>
-                  )}
+                  </div>
+                  <NavNotice fund={f} />
                 </div>
               )}
               {(f.ret1w != null || f.ret1m != null || f.ret3m != null) && (
@@ -848,6 +854,14 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
 }
 
 // ── Helper Components ────────────────────────────────────────────────────────
+
+/** Visible beside retained NAV and unavailable bubble on both screen sizes. */
+function NavNotice({ fund }: { fund: FundRow }) {
+  const reason = fund.navReason ? toPersianDigits(fund.navReason) : null;
+  const note = fund.navState === "ready" ? reason
+    : `NAV: ${marketQualityLabel(fund.navState ?? "unknown-time")}${reason ? ` · ${reason}` : ""}`;
+  return note ? <span className="mt-0.5 block max-w-xs text-[11px] font-normal leading-5" style={{ color: "var(--warning-ink)" }}>{note}</span> : null;
+}
 
 /** سلول بازدهٔ دوره‌ای — null = «—» (دادهٔ کافی نیست) */
 function RetCell({ v }: { v: number | null | undefined }) {

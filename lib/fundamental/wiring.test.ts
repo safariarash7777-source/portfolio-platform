@@ -37,6 +37,7 @@ const annual = (id: number, date: string, time: string, revenue: number, netProf
     period_end: "1403-12-30",
     period_months: 12,
     audited: false,
+    unit: "میلیون ریال",
     capital: 10_000_000,
     standalone: {
       revenue,
@@ -112,13 +113,15 @@ after(() => {
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = saved.anon;
 });
 
-/** عیناً نگاشتِ `app/symbol/[symbol]/page.tsx` (بخشِ T3) از `n10Periods` به ورودیِ فصلی. */
+/** Consumer contract: the page owner must forward unit and row scope (B2). */
 const toQuarterInputs = (periods: NonNullable<Awaited<ReturnType<typeof getFundamentalsFromSupabase>>>["n10Periods"]) =>
   (periods ?? []).map((p): QuarterInput => ({
     id: p.id,
     period_end: p.data.period_end,
     period_months: p.data.period_months,
     audited: p.data.audited,
+    unit: p.data.unit,
+    scope: p.scope,
     capital: p.data.capital,
     revenue: p.data.standalone.revenue,
     gross_profit: p.data.standalone.gross_profit,
@@ -164,6 +167,7 @@ const mk = (
     period_end: pe,
     period_months: pm,
     audited: false,
+    unit: "میلیون ریال",
     capital: 10_000_000,
     standalone: {
       revenue: o.revenue, cogs: -o.revenue * 0.6, gross_profit: o.revenue * 0.4,
@@ -186,14 +190,16 @@ test("گزارشِ جداگانه بر تلفیقیِ همان دوره مقدم
   assert.equal(f?.n10PeriodsScope, "company");
 });
 
-test("دورهٔ فقط‌تلفیقی: نمایش داده می‌شود ولی قطعی به شرکت نسبت داده نمی‌شود", async () => {
+test("دورهٔ فقط‌تلفیقی: منبع با هشدار حفظ می‌شود ولی وارد فصل‌ها نمی‌شود", async () => {
   DATASET = [mk(9101, "تستب", "1404-12-29", 12, { consolidated: true, revenue: 105, netProfit: 12 })];
   const f = await getFundamentalsFromSupabase("تستب");
   assert.equal(f?.n10?.source.scope, "consolidated_ambiguous");
   assert.equal(f?.n10?.source.verified, false, "تیکِ «اعتبارسنجی متقاطع» برای دامنهٔ مبهم نباید باشد");
   assert.match(f?.n10?.source.title ?? "", /تلفیقی/);
   assert.match(f?.n10?.source.verification_note ?? "", /گروه/);
-  assert.equal(f?.n10PeriodsScope, "consolidated_ambiguous");
+  assert.equal(f?.n10PeriodsScope, undefined);
+  assert.equal(f?.n10Periods?.length ?? 0, 0);
+  assert.equal(f?.n10Unavailable?.scopeAmbiguous, 1);
 });
 
 test("زنجیرهٔ فصلی دامنه‌ها را قاطی نمی‌کند: ۳ماههٔ جداگانه + ۶ماههٔ فقط‌تلفیقی ⇒ Q2 تهی", async () => {

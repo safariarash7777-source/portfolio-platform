@@ -262,9 +262,9 @@ export function asStockRows(v: unknown): IrStockRow[] {
       dayHigh: typeof r.dayHigh === "number" && isFinite(r.dayHigh) && r.dayHigh > 0 ? r.dayHigh : null,
       dayLow: typeof r.dayLow === "number" && isFinite(r.dayLow) && r.dayLow > 0 ? r.dayLow : null,
       buyCountI:
-        typeof r.buyCountI === "number" && isFinite(r.buyCountI) && r.buyCountI > 0 ? r.buyCountI : null,
+        typeof r.buyCountI === "number" && isFinite(r.buyCountI) && r.buyCountI >= 0 ? r.buyCountI : null,
       sellCountI:
-        typeof r.sellCountI === "number" && isFinite(r.sellCountI) && r.sellCountI > 0 ? r.sellCountI : null,
+        typeof r.sellCountI === "number" && isFinite(r.sellCountI) && r.sellCountI >= 0 ? r.sellCountI : null,
       // فیلدهای تشخیص صف — حجم صفر معنادار است (عرضهٔ صفر = شرط صف خرید)، پس >=0 پذیرفته می‌شود.
       bandHigh: typeof r.bandHigh === "number" && isFinite(r.bandHigh) && r.bandHigh > 0 ? r.bandHigh : null,
       bandLow: typeof r.bandLow === "number" && isFinite(r.bandLow) && r.bandLow > 0 ? r.bandLow : null,

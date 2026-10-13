@@ -20,6 +20,8 @@ function rep(over: Partial<QuarterInput>): QuarterInput {
     period_end: "1403-03-31",
     period_months: 3,
     audited: false,
+    unit: "میلیون ریال",
+    scope: "company",
     capital: 1_000_000,
     revenue: 100,
     gross_profit: 40,
@@ -78,14 +80,14 @@ test("دو نسخه از یک دوره: حسابرسی‌شده مقدم است"
   const b = rep({ period_end: "1403-03-31", period_months: 3, revenue: 950, audited: true });
   const c = rep({ period_end: "1403-03-31", period_months: 3, revenue: 999, audited: false }); // id بزرگ‌تر ولی نشده
   const m = dedupePeriods([a, b, c]);
-  assert.equal(m.get("1403|3")!.revenue, 950);
+  assert.equal(m.get("1403-01|3")!.revenue, 950);
 });
 
 test("اصلاحیهٔ متأخر (id بزرگ‌تر) در نسخه‌های هم‌سطح مقدم است", () => {
   const a = rep({ period_end: "1403-03-31", period_months: 3, revenue: 900, audited: false });
   const b = rep({ period_end: "1403-03-31", period_months: 3, revenue: 950, audited: false });
   const m = dedupePeriods([a, b]);
-  assert.equal(m.get("1403|3")!.revenue, 950);
+  assert.equal(m.get("1403-01|3")!.revenue, 950);
 });
 
 test("تفاضل منفی نامعقول در درآمد → فصل null + پرچم adjusted", () => {

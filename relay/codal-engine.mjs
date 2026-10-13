@@ -50,31 +50,40 @@ export const engineStatus = {
   ok: false,
   lastRun: 0,
   lastError: null,
-  feed: { pages: 0, seen: 0, matched: 0, downloaded: 0, inserted: 0, parseFailed: 0, watermark: null },
-  feedTable: { attempted: 0, inserted: 0, lastError: null }, // جدول codal_feed (M4 رصد بازار)
+  feed: { pages: 0, seen: 0, matched: 0, downloaded: 0, inserted: 0, parseFailed: 0, watermark: null, complete: false, incompleteReason: null },
+  // codal_feed has no publish_time/raw column; only date_publish can be stored here.
+  feedTable: { attempted: 0, inserted: 0, duplicates: 0, lastError: null, publishTimeStored: false },
   backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, parseFailed: 0, skippedCovered: 0 },
   ledgerSize: 0,
 };
 
 /* ── وضعیت پایدار در Supabase ──────────────────────────────────────────────── */
 const STATE_KEY = "codal_engine_state";
-let state = null; // { watermark: {sent, link}, backfillCursor, fails: {url: n}, blocked: {url: reason} }
+let state = null; // { watermark: {key, links}, backfillCursor, fails: {url: n} }
 
 async function loadState() {
   if (state) return state;
-  try {
-    const qs = new URLSearchParams({ select: "payload", key: `eq.${STATE_KEY}`, limit: "1" });
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
-      headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
-    });
-    if (res.ok) {
-      const rows = await res.json();
-      if (rows[0]?.payload && typeof rows[0].payload === "object") {
-        state = rows[0].payload;
-      }
-    }
-  } catch { /* از نو شروع می‌کنیم */ }
-  if (!state || typeof state !== "object") state = {};
+  const qs = new URLSearchParams({ select: "payload", key: `eq.${STATE_KEY}`, limit: "1" });
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
+    headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) throw new Error(`state load HTTP ${res.status}`);
+  const rows = await res.json();
+  if (!Array.isArray(rows) || rows.length > 1 || (rows.length &&
+      (!rows[0]?.payload || typeof rows[0].payload !== "object" || Array.isArray(rows[0].payload)))) {
+    throw new Error("state load invalid schema");
+  }
+  const payload = rows[0]?.payload ?? {};
+  if (payload.watermark != null && (!Number.isFinite(payload.watermark.key) ||
+      !Array.isArray(payload.watermark.links) || !payload.watermark.links.every(l => typeof l === "string"))) {
+    throw new Error("state watermark invalid schema");
+  }
+  if ((payload.backfillCursor != null && (!Number.isInteger(payload.backfillCursor) || payload.backfillCursor < 0)) ||
+      (payload.fails != null && (typeof payload.fails !== "object" || Array.isArray(payload.fails) ||
+       Object.values(payload.fails).some(n => !Number.isInteger(n) || n < 0)))) {
+    throw new Error("state cursor/ledger invalid schema");
+  }
+  state = payload;
   state.watermark ??= null;
   state.backfillCursor ??= 0;
   state.fails ??= {};
@@ -98,17 +107,19 @@ async function saveState() {
     if (!res.ok) throw new Error(`state save HTTP ${res.status}`);
   } catch (e) {
     console.error("codal-engine state save:", e?.message ?? e);
+    throw e;
   }
 }
 
 /* ── ابزار واترمارک ────────────────────────────────────────────────────────── */
 // کلید ترتیب اطلاعیه: تاریخ/ساعت ارسال (جلالی متنی) به‌صورت عدد قابل مقایسه.
-function sentKey(a) {
+export function sentKey(a) {
   const d = faToEn(String(a.date_send || ""));
   const t = faToEn(String(a.time_send || ""));
-  const dm = d.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/);
-  const tm = t.match(/(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
-  if (!dm) return 0;
+  const dm = d.trim().match(/^(1[34]\d{2})\/(\d{1,2})\/(\d{1,2})$/);
+  const tm = t.trim().match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?$/);
+  if (!dm || +dm[2] < 1 || +dm[2] > 12 || +dm[3] < 1 || +dm[3] > 31 ||
+      (t && !tm) || (tm && (+tm[1] > 23 || +tm[2] > 59 || +(tm[3] || 0) > 59))) return 0;
   const pad = (x) => String(x).padStart(2, "0");
   return Number(
     `${dm[1]}${pad(dm[2])}${pad(dm[3])}${tm ? pad(tm[1]) + pad(tm[2]) + pad(tm[3] || 0) : "000000"}`
@@ -139,7 +150,7 @@ export function feedCategory(a) {
 /**
  * M4: درج متادیتای اطلاعیه‌های تازهٔ چرخه در codal_feed (append-only، dedup با link unique).
  * تکراری‌ها با Prefer: resolution=ignore-duplicates بی‌صدا رد می‌شوند.
- * جدول نساخته (قبل از اجرای phase14) → فقط ثبت خطا در /debug، بدون شکستن چرخه.
+ * Failed/unknown writes must propagate so the watermark cannot acknowledge them.
  */
 async function pushFeedRows(items) {
   const st = engineStatus.feedTable;
@@ -153,7 +164,7 @@ async function pushFeedRows(items) {
       category: feedCategory(a),
       sent_date: a.date_send || null,
       sent_time: a.time_send || null,
-      publish_date: a.date_title || null,
+      publish_date: a.date_publish || null,
       link: a.link,
       link_pdf: a.link_pdf || null,
       link_excel: a.link_excel || null,
@@ -162,48 +173,69 @@ async function pushFeedRows(items) {
   if (!rows.length) return;
   st.attempted += rows.length;
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_feed?on_conflict=link`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_feed?on_conflict=link&select=link`, {
       method: "POST",
-      headers: { ...SB_HDRS(), Prefer: "resolution=ignore-duplicates,return=minimal" },
+      headers: { ...SB_HDRS(), Prefer: "resolution=ignore-duplicates,return=representation" },
       body: JSON.stringify(rows),
       signal: AbortSignal.timeout(20000),
     });
     if (!res.ok) throw new Error(`codal_feed HTTP ${res.status}: ${(await res.text()).slice(0, 120)}`);
-    st.inserted += rows.length; // سقف تقریبی — تکراری‌ها بی‌صدا رد شده‌اند
+    const inserted = await res.json();
+    const links = new Set(rows.map(r => r.link));
+    if (!Array.isArray(inserted) || inserted.length > rows.length ||
+        inserted.some(r => !r || !links.has(r.link)) || new Set(inserted.map(r => r.link)).size !== inserted.length) {
+      throw new Error("codal_feed insert invalid schema");
+    }
+    st.inserted += inserted.length;
+    st.duplicates += rows.length - inserted.length;
     st.lastError = null;
   } catch (e) {
     st.lastError = String(e?.message ?? e);
     console.error("codal_feed push:", st.lastError);
+    throw e;
   }
 }
 
 /** یک صفحه با یک تلاش مجدد — BrsApi گاه اتصال را گذرا قطع می‌کند. */
 async function fetchPageWithRetry(params) {
   try { return await fetchAnnouncementsPage(params); }
-  catch { await new Promise((r) => setTimeout(r, 4000)); return await fetchAnnouncementsPage(params); }
+  catch (e) {
+    if (e?.name === "AnnouncementSchemaError") throw e;
+    await new Promise((r) => setTimeout(r, 4000));
+    return await fetchAnnouncementsPage(params);
+  }
 }
 
 async function pollGlobalFeed() {
   const st = engineStatus.feed;
   st.pages = 0; st.seen = 0; st.matched = 0; st.downloaded = 0; st.inserted = 0; st.parseFailed = 0;
+  st.complete = false; st.incompleteReason = "page_limit";
+  st.watermark = state.watermark?.key ?? null;
 
   const wm = state.watermark; // { key: number, links: string[] } — links برای هم‌زمان‌های هم‌کلید
   const newestSeen = { key: 0, links: [] };
   const candidates = [];
   const feedItems = []; // M4: متادیتای همهٔ اطلاعیه‌های تازه، نه فقط ن-۱۰/ن-۳۰
+  let previousKey = Infinity;
 
   outer:
   for (let page = 1; page <= FEED_MAX_PAGES; page++) {
     const items = await fetchPageWithRetry({ page }); // بدون l18 → کل بازار
     st.pages = page;
-    if (!items.length) break;
+    if (!items.length) { st.complete = true; st.incompleteReason = null; break; }
     for (const a of items) {
       st.seen++;
       const k = sentKey(a);
+      if (!k || typeof a.link !== "string" || !a.link.trim() || k > previousKey) {
+        st.incompleteReason = "invalid_order_or_identity";
+        throw new Error("announcement invalid date/link or feed order");
+      }
+      previousKey = k;
+      // Only an older timestamp proves the same-time group is exhausted.
+      if (wm && k < wm.key) { st.complete = true; st.incompleteReason = null; break outer; }
+      if (wm && k === wm.key && wm.links.includes(a.link)) continue;
       if (k > newestSeen.key) { newestSeen.key = k; newestSeen.links = [a.link]; }
       else if (k === newestSeen.key) newestSeen.links.push(a.link);
-      // به واترمارک رسیدیم → تمام
-      if (wm && (k < wm.key || (k === wm.key && wm.links?.includes(a.link)))) break outer;
       if (a.link) feedItems.push(a); // M4
       const kind = classifyAnnouncement(a);
       if (!kind || !a.link || !a.link_excel) continue;
@@ -213,37 +245,41 @@ async function pollGlobalFeed() {
   }
 
   // M4: فید عمومی کدال — متادیتا قبل از دانلودها درج می‌شود تا فید عقب نماند
-  await pushFeedRows(feedItems);
+  try { await pushFeedRows(feedItems); }
+  catch (e) { st.complete = false; st.incompleteReason = "feed_write_failure"; throw e; }
 
   // دانلود و درج (جدیدترین‌ها اول)
   let dl = 0;
   for (const { a, kind } of candidates) {
-    if (dl >= FEED_MAX_DL) break;
-    if (isBlocked(a.link)) continue;
     // dedup با ردیف‌های موجودِ همان نماد
-    const known = await existingUrlsFor(a.l18).catch(() => new Set());
-    if (known.has(a.link)) continue;
+    const known = await existingUrlsFor(a.l18);
+    if (known.has(a.link)) { delete state.fails[a.link]; continue; }
+    if (isBlocked(a.link)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
+    if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
     dl++;
     st.downloaded = dl;
     try {
       const data = await downloadAndParse(a, kind);
       if (data) {
-        await insertParsedReport(a, kind, data);
-        st.inserted++;
+        st.inserted += await insertParsedReport(a, kind, data);
         delete state.fails[a.link];
       } else {
         st.parseFailed++;
         recordFail(a.link);
+        st.complete = false; st.incompleteReason = "report_failure";
       }
     } catch (e) {
       st.parseFailed++;
       recordFail(a.link);
+      st.complete = false; st.incompleteReason = "report_failure";
       console.error(`codal-engine feed ${a.l18}: ${e?.message ?? e}`);
     }
   }
 
   // واترمارک فقط وقتی جلو می‌رود که چرخه سالم تمام شده باشد
-  if (newestSeen.key > 0 && (!wm || newestSeen.key >= wm.key)) {
+  if (st.complete && newestSeen.key > 0 && (!wm || newestSeen.key >= wm.key)) {
+    if (wm && newestSeen.key === wm.key) newestSeen.links.push(...wm.links);
+    newestSeen.links = [...new Set(newestSeen.links)];
     state.watermark = newestSeen;
   }
   st.watermark = state.watermark?.key ?? null;
@@ -252,38 +288,41 @@ async function pollGlobalFeed() {
 /* ── مسیر ۲: بک‌فیل اولویت‌دار ──────────────────────────────────────────────── */
 async function topSymbolsByValue() {
   // پرمعامله‌ترین سهم‌ها از اسنپ‌شات بازار (صندوق‌ها گزارش کدال ن-۱۰ ندارند)
-  try {
-    const qs = new URLSearchParams({ select: "payload", key: "eq.latest", limit: "1" });
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
-      headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
-    });
-    if (!res.ok) return [];
-    const rows = await res.json();
-    const stocks = rows[0]?.payload?.stocks || [];
-    // نمادهای مشتق حذف: حق تقدم (پسوند ح) و عرضه/بلوکی (پسوند رقم، مثل ونوین4)
-    // — گزارش کدال زیر نماد اصلی منتشر می‌شود نه مشتق.
-    const isDerivative = (id) => /[0-9۰-۹]$/.test(id) || /ح$/.test(id);
-    return stocks
-      .map((s) => ({ ...s, id: String(s?.id || "").trim() }))
-      .filter((s) => s.id && (s.value || 0) > 0 && !isDerivative(s.id))
-      .sort((x, y) => (y.value || 0) - (x.value || 0))
-      .slice(0, BACKFILL_TOP)
-      .map((s) => s.id);
-  } catch { return []; }
+  const qs = new URLSearchParams({ select: "payload", key: "eq.latest", limit: "1" });
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
+    headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) throw new Error(`market snapshot HTTP ${res.status}`);
+  const rows = await res.json();
+  if (!Array.isArray(rows) || rows.length > 1 || (rows.length && !Array.isArray(rows[0]?.payload?.stocks))) {
+    throw new Error("market snapshot invalid schema");
+  }
+  const stocks = rows[0]?.payload?.stocks ?? [];
+  // نمادهای مشتق حذف: حق تقدم (پسوند ح) و عرضه/بلوکی (پسوند رقم، مثل ونوین4)
+  // — گزارش کدال زیر نماد اصلی منتشر می‌شود نه مشتق.
+  const isDerivative = (id) => /[0-9۰-۹]$/.test(id) || /ح$/.test(id);
+  return stocks
+    .map((s) => ({ ...s, id: String(s?.id || "").trim() }))
+    .filter((s) => s.id && (s.value || 0) > 0 && !isDerivative(s.id))
+    .sort((x, y) => (y.value || 0) - (x.value || 0))
+    .slice(0, BACKFILL_TOP)
+    .map((s) => s.id);
 }
 
 async function coveredCounts(symbols) {
   // تعداد ردیف‌های موجود هر نماد — برای رد کردن نمادهای دارای پوشش کافی
   const out = new Map();
-  try {
-    const list = symbols.map((s) => `"${s}"`).join(",");
-    const qs = `select=symbol&symbol=in.(${encodeURIComponent(list)})&limit=10000`;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
-      headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
-    });
-    if (!res.ok) return out;
-    for (const r of await res.json()) out.set(r.symbol, (out.get(r.symbol) || 0) + 1);
-  } catch { /* بدون شمارش، بک‌فیل ادامه می‌یابد */ }
+  const list = symbols.map((s) => `"${s}"`).join(",");
+  const qs = `select=symbol&symbol=in.(${encodeURIComponent(list)})&limit=10000`;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
+    headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) throw new Error(`covered reports HTTP ${res.status}`);
+  const rows = await res.json();
+  if (!Array.isArray(rows) || rows.some(r => !r || typeof r.symbol !== "string")) {
+    throw new Error("covered reports invalid schema");
+  }
+  for (const r of rows) out.set(r.symbol, (out.get(r.symbol) || 0) + 1);
   return out;
 }
 
@@ -323,8 +362,7 @@ async function backfillSome() {
         try {
           const data = await downloadAndParse(a, kind);
           if (data) {
-            await insertParsedReport(a, kind, data);
-            st.inserted++;
+            st.inserted += await insertParsedReport(a, kind, data);
             delete state.fails[a.link];
           } else {
             st.parseFailed++;
@@ -337,7 +375,7 @@ async function backfillSome() {
       }
       console.log(`codal-engine backfill ${sym}: inserted=${st.inserted} parseFailed=${st.parseFailed}`);
     } catch (e) {
-      engineStatus.lastError = `backfill ${sym}: ${e?.message ?? e}`;
+      engineStatus.lastError = [engineStatus.lastError, `backfill ${sym}: ${e?.message ?? e}`].filter(Boolean).join("; ");
       console.error("codal-engine backfill:", sym, e?.message ?? e);
     }
     await new Promise((r) => setTimeout(r, 1500));
@@ -346,25 +384,43 @@ async function backfillSome() {
 
 /* ── اجرای یک چرخهٔ کامل موتور ─────────────────────────────────────────────── */
 export async function runEngineCycle() {
+  engineStatus.ok = false;
+  engineStatus.lastError = null;
+  engineStatus.lastRun = Date.now();
+  Object.assign(engineStatus.feedTable, { attempted: 0, inserted: 0, duplicates: 0, lastError: null });
   if (!BRSAPI_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     engineStatus.lastError = "env ناقص (BRSAPI_KEY/SUPABASE)";
     return;
   }
-  await loadState();
+  try { await loadState(); }
+  catch (e) { engineStatus.lastError = `state load: ${e?.message ?? e}`; return; }
+  const watermarkBefore = state.watermark;
   try {
     await pollGlobalFeed();
   } catch (e) {
+    engineStatus.feed.complete = false;
+    engineStatus.feed.incompleteReason ??= "feed_failure";
     engineStatus.lastError = `feed: ${e?.message ?? e}`;
     console.error("codal-engine feed error:", e?.message ?? e);
   }
   try {
     await backfillSome();
   } catch (e) {
-    engineStatus.lastError = `backfill: ${e?.message ?? e}`;
+    engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine backfill error:", e?.message ?? e);
   }
   engineStatus.ledgerSize = Object.keys(state.fails).length;
-  engineStatus.ok = true;
-  engineStatus.lastRun = Date.now();
-  await saveState();
+  if (!engineStatus.lastError && !engineStatus.feed.complete) {
+    engineStatus.lastError = `feed incomplete: ${engineStatus.feed.incompleteReason}`;
+  }
+  if (!engineStatus.lastError && (engineStatus.feed.parseFailed || engineStatus.backfill.parseFailed)) {
+    engineStatus.lastError = "report parsing/insertion failed";
+  }
+  try { await saveState(); }
+  catch (e) {
+    state.watermark = watermarkBefore;
+    engineStatus.feed.watermark = state.watermark?.key ?? null;
+    engineStatus.lastError = [engineStatus.lastError, `state save: ${e?.message ?? e}`].filter(Boolean).join("; ");
+  }
+  engineStatus.ok = !engineStatus.lastError;
 }

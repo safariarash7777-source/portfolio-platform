@@ -49,7 +49,7 @@ export const archiveStatus = {
   cursor: 0,
   queueSize: 0,
   doneSymbols: 0,
-  lastCycle: { symbols: [], pages: 0, downloaded: 0, inserted: 0, parseFailed: 0 },
+  lastCycle: { symbols: [], pages: 0, downloaded: 0, inserted: 0, parseFailed: 0, persistenceUnconfirmed: 0 },
   coverage: { n30Symbols: 0, n10Symbols: 0, lastChecked: null },
 };
 
@@ -171,6 +171,7 @@ export async function runArchiveCycle() {
   await loadState();
   const st = archiveStatus.lastCycle;
   st.symbols = []; st.pages = 0; st.downloaded = 0; st.inserted = 0; st.parseFailed = 0;
+  st.persistenceUnconfirmed = 0;
   archiveStatus.lastError = null;
 
   try {
@@ -227,17 +228,20 @@ export async function runArchiveCycle() {
               try {
                 const data = await downloadAndParse(a, kind);
                 if (data) {
-                  await insertParsedReport(a, kind, data);
-                  st.inserted++;
+                  st.inserted += await insertParsedReport(a, kind, data);
                   known.add(a.link);
-                  if (state.fails?.[a.link]) delete state.fails[a.link];
+                  delete state.fails?.[a.link];
                 } else {
                   st.parseFailed++;
                   recordFail(a.link);
                 }
-              } catch {
+              } catch (e) {
                 st.parseFailed++;
                 recordFail(a.link);
+                if (e?.name === "ReportPersistenceError") {
+                  st.persistenceUnconfirmed++;
+                  archiveStatus.lastError = e.message;
+                }
               }
               await new Promise((r) => setTimeout(r, 800));
             }
@@ -257,7 +261,7 @@ export async function runArchiveCycle() {
   archiveStatus.cursor = state.cursor;
   archiveStatus.usedToday = state.budget.used;
   archiveStatus.budgetDate = state.budget.date;
-  archiveStatus.ok = true;
+  archiveStatus.ok = st.persistenceUnconfirmed === 0;
   archiveStatus.lastRun = Date.now();
   await refreshCoverage();
   await saveState();

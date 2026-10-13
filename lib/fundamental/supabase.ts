@@ -13,7 +13,11 @@ import type {
   CodalN10Data,
   CodalN30Data,
   SymbolFundamentals,
+  ReportScope,
 } from "./types";
+import { fiscalChainKey } from "../core/quarterly";
+import { isMillionRialUnit } from "./units";
+export { isMillionRialUnit } from "./units";
 
 export interface CodalRow {
   id: number;
@@ -138,10 +142,6 @@ export function latestParserRows(rows: CodalRow[]): CodalRow[] {
   return [...byAnnouncement.values()];
 }
 
-export function isMillionRialUnit(unit: unknown): boolean {
-  return typeof unit === "string" && unit.replace(/\s+/g, " ").trim() === "میلیون ریال";
-}
-
 /**
  * آیا عنوانِ اطلاعیه می‌گوید این یک **اصلاحیه** است.
  *
@@ -165,6 +165,13 @@ export function isConsolidatedTitle(title: string | null | undefined): boolean {
   if (!title) return false;
   const norm = String(title).replace(/[يى]/g, "ی").replace(/ك/g, "ک");
   return norm.includes("تلفیقی");
+}
+
+/** A missing/unrecognized title cannot establish company scope. */
+export function reportScope(title: string | null | undefined): ReportScope {
+  if (isConsolidatedTitle(title)) return "consolidated_ambiguous";
+  const compact = String(title ?? "").replace(/[يى]/g, "ی").replace(/ك/g, "ک").replace(/[\s\u200c]+/g, "");
+  return /صورت(?:های|ها)?مالی/.test(compact) ? "company" : "unknown";
 }
 
 export function isAmendmentTitle(title: string | null | undefined): boolean {
@@ -250,10 +257,9 @@ export function dedupeByPeriod(rows: CodalRow[]): CodalRow[] {
     // کارت دربارهٔ شرکت است؛ `standalone`ِ گزارشِ تلفیقی در ۶۹٪ جفت‌های قابلِ
     // مقایسه از رقمِ جداگانهٔ همان دوره بزرگ‌تر است (B-056)، پس حسابرسی یا
     // اصلاحیه بودنِ آن رقم را به دامنهٔ درست نمی‌برد.
-    const pCons = isConsolidatedTitle(prev.title);
-    const cCons = isConsolidatedTitle(r.title);
-    if (pCons !== cCons) {
-      if (!cCons) byPeriod.set(key, r);
+    const scopeRank = (row: CodalRow) => ({ company: 2, consolidated_ambiguous: 1, unknown: 0 })[reportScope(row.title)];
+    if (r.report_kind === "ن-۱۰" && scopeRank(prev) !== scopeRank(r)) {
+      if (scopeRank(r) > scopeRank(prev)) byPeriod.set(key, r);
       continue;
     }
 
@@ -286,6 +292,14 @@ export function dedupeByPeriod(rows: CodalRow[]): CodalRow[] {
 /** متنِ یکسانِ هشدارِ دامنه برای کارت و فصل‌ها. */
 export const CONSOLIDATED_SCOPE_NOTE =
   "این ارقام از گزارشِ تلفیقی استخراج شده‌اند و ممکن است رقمِ گروه باشند، نه شرکتِ اصلی — تطبیق با سندِ کدال انجام نشده.";
+export const UNKNOWN_SCOPE_NOTE = "دامنهٔ ارقام از عنوانِ موجود مشخص نیست؛ انتساب به شرکت و تطبیق با سندِ کدال تأیید نشده است.";
+
+function arithmeticVerified(d: CodalN10Data): boolean {
+  const s = d.standalone;
+  const finite = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+  return finite(s.revenue) && finite(s.cogs) && finite(s.gross_profit)
+    && Math.abs(s.gross_profit - (s.revenue - Math.abs(s.cogs))) <= 1;
+}
 
 /** سال مالی جلالی از period_end مثل "1404-12-29" → 1404. */
 function fyOf(d: CodalN10Data): number {
@@ -295,13 +309,16 @@ function fyOf(d: CodalN10Data): number {
 function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals | null {
   const fresh = latestParserRows(rows);
 
-  const n10all = dedupeByPeriod(
+  const n10Selected = dedupeByPeriod(
     fresh.filter((r) => r.report_kind === "ن-۱۰" && (r.data as CodalN10Data).standalone),
   ).sort((a, b) => {
     const da = a.data as CodalN10Data;
     const db = b.data as CodalN10Data;
     return db.period_end.localeCompare(da.period_end) || db.period_months - da.period_months;
   });
+  // Select the canonical version first; unknown units never revive an older version.
+  const n10UnitOmitted = n10Selected.filter(r => !isMillionRialUnit((r.data as CodalN10Data).unit));
+  const n10all = n10Selected.filter(r => isMillionRialUnit((r.data as CodalN10Data).unit));
 
   const annuals = n10all.filter((r) => (r.data as CodalN10Data).period_months === 12);
   const main = annuals[0] ?? n10all[0] ?? null;
@@ -321,14 +338,17 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   const n30rows = monthlySelected.filter(knownUnit);
   const omitted = monthlySelected.filter((row) => !knownUnit(row));
 
-  if (!main && monthlySelected.length === 0) return null;
+  if (n10Selected.length === 0 && monthlySelected.length === 0) return null;
 
   let n10: SymbolFundamentals["n10"] = null;
   if (main) {
     const d = { ...(main.data as CodalN10Data) };
     // روند فروش چندساله از خود گزارش‌های سالانهٔ موجود (فقط دوره‌های ۱۲ماهه).
-    if (!d.sales_trend_5y && annuals.length >= 2) {
-      d.sales_trend_5y = annuals
+    const scope = reportScope(main.title);
+    const comparableAnnuals = annuals.filter(r => reportScope(r.title) === "company"
+      && fiscalChainKey(r.data as CodalN10Data)?.slice(5) === fiscalChainKey(d)?.slice(5));
+    if (!d.sales_trend_5y && scope === "company" && comparableAnnuals.length >= 2) {
+      d.sales_trend_5y = comparableAnnuals
         .map((r) => {
           const a = r.data as CodalN10Data;
           return { fy: fyOf(a), revenue: a.standalone.revenue, cogs: a.standalone.cogs };
@@ -339,7 +359,8 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
     const faDigits = (v: number | string) =>
       String(v).replace(/\d/g, (c) => "۰۱۲۳۴۵۶۷۸۹"[Number(c)]);
     const periodLabel = d.period_months === 12 ? "۱۲ماههٔ" : `${faDigits(d.period_months)}ماههٔ`;
-    const consolidated = isConsolidatedTitle(main.title);
+    const consolidated = scope === "consolidated_ambiguous";
+    const verified = scope === "company" && arithmeticVerified(d);
     n10 = {
       data: d,
       source: {
@@ -347,11 +368,13 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
         source_url: cleanUrl(main),
         // «اعتبارسنجی متقاطع» فقط حسابی است (ناخالص = فروش − بها) و دامنه را اثبات
         // نمی‌کند؛ برای گزارشِ تلفیقی تیکِ سبز گمراه‌کننده بود (B-056).
-        verified: !consolidated,
+        verified,
         verification_note: consolidated
           ? CONSOLIDATED_SCOPE_NOTE
-          : "استخراج خودکار از اکسل رسمی کدال با اعتبارسنجی حسابی (ناخالص = فروش − بها)",
-        scope: consolidated ? "consolidated_ambiguous" : "company",
+          : scope === "unknown" ? UNKNOWN_SCOPE_NOTE
+          : verified ? "اعتبارسنجی حسابی (ناخالص = فروش − بها) انجام شد؛ دامنه از عنوان گزارش شناخته شده و تطبیق سندی انجام نشده است."
+          : "استخراج خودکار از گزارش کدال؛ اعتبارسنجی حسابی تأیید نشده است.",
+        scope,
       },
     };
   }
@@ -382,29 +405,32 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   //
   // دامنه در زنجیرهٔ فصلی (B-056): Q2 = ۶ماهه − ۳ماهه. اگر ۳ماهه جداگانه و ۶ماهه
   // تلفیقی باشد، تفاضل رقمِ گروه منهای رقمِ شرکت است — عددی بی‌معنا با ظاهرِ
-  // دقیق. پس در هر سالِ مالی که گزارشِ جداگانه دارد، گزارش‌های تلفیقیِ همان سال
-  // کنار می‌روند؛ حلقهٔ غایب فصل را null می‌کند (قاعدهٔ D2)، نه حدس.
-  const fyHasCompany = new Set(
-    n10all.filter((r) => !isConsolidatedTitle(r.title)).map((r) => fyOf(r.data as CodalN10Data)),
-  );
+  // دقیق. فقط دوره‌های دارای واحد و دامنهٔ شرکت در زنجیره می‌مانند؛ حلقهٔ غایب
+  // فصل را null می‌کند (قاعدهٔ D2)، نه حدس.
+  // The reader and quarterly engine use the exact same fiscal-start year+month.
+  // Ambiguous/unknown scopes are quarantined even when an entire chain is ambiguous;
+  // a subsequent TTM window must not join a company year to a group year.
   const periodRows = n10all.filter(
-    (r) => !isConsolidatedTitle(r.title) || !fyHasCompany.has(fyOf(r.data as CodalN10Data)),
+    (r) => reportScope(r.title) === "company" && fiscalChainKey(r.data as CodalN10Data) !== null,
   );
-  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data }));
-  const n10PeriodsScope: SymbolFundamentals["n10PeriodsScope"] = periodRows.some((r) => isConsolidatedTitle(r.title))
-    ? "consolidated_ambiguous"
-    : "company";
+  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data, scope: "company" as const }));
+  const scopeUnknown = n10all.filter(r => reportScope(r.title) === "unknown").length;
+  const scopeAmbiguous = n10all.filter(r => reportScope(r.title) === "consolidated_ambiguous").length;
 
   return {
     symbol,
     n10,
     n30,
+    ...(n10UnitOmitted.length + scopeUnknown + scopeAmbiguous > 0 ? { n10Unavailable: {
+      unitUnknown: n10UnitOmitted.length, scopeUnknown, scopeAmbiguous,
+      latestPeriod: (n10Selected[0].data as CodalN10Data).period_end,
+    } } : {}),
     ...(omitted.length > 0 ? { n30Unavailable: {
       unitUnknown: omitted.length,
       latestPeriod: (omitted[0].data as CodalN30Data).period_end,
     } } : {}),
     n10Periods: n10Periods.length > 0 ? n10Periods : undefined,
-    n10PeriodsScope: n10Periods.length > 0 ? n10PeriodsScope : undefined,
+    n10PeriodsScope: n10Periods.length > 0 ? "company" : undefined,
   };
 }
 

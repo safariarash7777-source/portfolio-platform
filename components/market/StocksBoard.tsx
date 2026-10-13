@@ -468,7 +468,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
                     {pct != null ? formatSignedPercent(pct) : "—"}
                   </td>
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
-                    {s.value ? fmtValue(s.value) : "—"}
+                    {fmtValue(s.value)}
                   </td>
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
                     {s.pe ? toPersianDigits(s.pe.toFixed(1)) : "—"}
@@ -521,7 +521,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
               </div>
               <div className="flex items-center justify-between mt-2 text-xs" style={{ color: "var(--text-2)" }}>
                 <span>{formatToman(s.price)}</span>
-                {s.value ? <span>ارزش: {fmtValue(s.value)}</span> : null}
+                {s.value != null ? <span>ارزش: {fmtValue(s.value)}</span> : null}
               </div>
             </div>
           );

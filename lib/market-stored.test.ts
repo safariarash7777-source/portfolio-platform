@@ -3,6 +3,23 @@ import assert from 'node:assert/strict';
 import { getStoredIrMarket, getIrMarket } from './market-ir';
 import { toMarket } from './market-ir';
 import { iranReadQuality } from './market-quality';
+import { computeMoneyFlow } from './core/marketToday';
+
+test('stored zero individual counts remain observed zero while per-capita zero denominators remain unavailable', () => {
+  const row = { id: 'count-fixture', faName: 'Synthetic count', price: 101, closingPrice: 101, unit: 'toman',
+    volume: 100, value: 10100, buyI: 1000, sellI: 500, buyCountI: 0, sellCountI: 0 };
+  const market = toMarket({ stocks: [row] });
+  assert.equal(market.stocks[0].buyCountI, 0); assert.equal(market.stocks[0].sellCountI, 0);
+  const flow = computeMoneyFlow(market.stocks);
+  assert.equal(flow.netRealFlowToman, 50500);
+  assert.equal(flow.perCapitaBuyToman, null); assert.equal(flow.perCapitaSellToman, null); assert.equal(flow.powerRatio, null);
+  const valid = computeMoneyFlow(toMarket({ stocks: [{ ...row, buyCountI: 2, sellCountI: 1 }] }).stocks);
+  assert.equal(valid.perCapitaBuyToman, 50500); assert.equal(valid.perCapitaSellToman, 50500); assert.equal(valid.powerRatio, 1);
+  for (const count of [null, undefined, -1, NaN, Infinity, '0']) {
+    const stock = toMarket({ stocks: [{ ...row, buyCountI: count, sellCountI: count }] }).stocks[0];
+    assert.equal(stock.buyCountI, null); assert.equal(stock.sellCountI, null);
+  }
+});
 
 test('snapshot reader rejects non-positive quotes while preserving observed zero activity and clocks', () => {
   // Boundary cases only: these quotes are not evidence of live market data.

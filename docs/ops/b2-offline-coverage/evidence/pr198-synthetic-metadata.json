@@ -1,0 +1,122 @@
+{
+  "observedAt": "2026-10-02T06:00:00Z",
+  "dataClass": "SYNTHETIC",
+  "universeComplete": true,
+  "days": [
+    "2026-09-29",
+    "2026-09-30"
+  ],
+  "symbols": [
+    {
+      "id": "نمادالف",
+      "capability": {
+        "verified": true,
+        "observedAt": "2026-10-02T06:00:00Z",
+        "sourceRef": "synthetic:official-metadata",
+        "type2": true
+      }
+    },
+    {
+      "id": "نمادب",
+      "capability": {
+        "verified": true,
+        "observedAt": "2026-10-02T06:00:00Z",
+        "sourceRef": "synthetic:official-metadata",
+        "type2": true
+      }
+    },
+    {
+      "id": "نمادالف2",
+      "capability": {
+        "verified": true,
+        "observedAt": "2026-10-02T06:00:00Z",
+        "sourceRef": "synthetic:official-metadata",
+        "type2": true
+      }
+    }
+  ],
+  "cells": [
+    {
+      "verified": true,
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": "synthetic:official-metadata",
+      "symbol": "نمادالف",
+      "day": "2026-09-29",
+      "traded": true,
+      "present": false,
+      "completeRead": true
+    },
+    {
+      "verified": true,
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": "synthetic:official-metadata",
+      "symbol": "نمادب",
+      "day": "2026-09-29",
+      "traded": true,
+      "present": false,
+      "completeRead": true
+    }
+  ],
+  "calendar": [
+    {
+      "verified": true,
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": "synthetic:official-metadata",
+      "day": "2026-09-29",
+      "state": "open"
+    },
+    {
+      "verified": true,
+      "observedAt": "2026-10-02T06:00:00Z",
+      "sourceRef": "synthetic:official-metadata",
+      "day": "2026-09-30",
+      "state": "closed"
+    }
+  ],
+  "initialState": {
+    "done": {
+      "نمادالف": 200
+    }
+  },
+  "funds": [
+    {
+      "id": "صندوقالف",
+      "membership": {
+        "verified": true,
+        "observedAt": "2026-10-02T06:00:00Z",
+        "sourceRef": "synthetic:official-metadata",
+        "cs_id": 68,
+        "active": true
+      },
+      "navCapability": {
+        "verified": true,
+        "observedAt": "2026-10-02T06:00:00Z",
+        "sourceRef": "synthetic:official-metadata",
+        "supported": true
+      }
+    },
+    {
+      "id": "صندوقب",
+      "membership": {
+        "verified": true,
+        "observedAt": "2026-10-02T06:00:00Z",
+        "sourceRef": "synthetic:official-metadata",
+        "cs_id": 68,
+        "active": true
+      },
+      "navCapability": {
+        "verified": true,
+        "observedAt": "2026-10-02T06:00:00Z",
+        "sourceRef": "synthetic:official-metadata",
+        "supported": true
+      }
+    }
+  ],
+  "blacklist": [
+    {
+      "symbol": "صندوقالف"
+    }
+  ],
+  "maxAttempts": 2,
+  "dailyRequestCap": 2
+}

@@ -4,17 +4,24 @@
 // اگر ورودیِ محاسبه‌ای موجود نیست، خروجی null است — عدد جایگزین ممنوع (قانون ۳/۷).
 
 import type { CodalN10Data, CodalN30Data, SalesTrendRow } from "./types";
+import { isMillionRialUnit } from "./units";
+
+function finiteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
 
 /** درصد با یک رقم اعشار؛ تقسیم بر صفر → null. */
-export function pct(numerator: number, denominator: number): number | null {
-  if (!isFinite(numerator) || !isFinite(denominator) || denominator === 0) return null;
-  return Math.round((numerator / denominator) * 1000) / 10;
+export function pct(numerator: unknown, denominator: unknown): number | null {
+  if (!finiteNumber(numerator) || !finiteNumber(denominator) || denominator === 0) return null;
+  const value = Math.round((numerator / denominator) * 1000) / 10;
+  return Number.isFinite(value) ? value : null;
 }
 
 /** رشد نسبت به مقدار قبلی، درصد با یک رقم اعشار؛ پایهٔ صفر/نامعتبر → null. */
-export function growthPct(current: number, prior: number): number | null {
-  if (!isFinite(current) || !isFinite(prior) || prior === 0) return null;
-  return Math.round(((current - prior) / Math.abs(prior)) * 1000) / 10;
+export function growthPct(current: unknown, prior: unknown): number | null {
+  if (!finiteNumber(current) || !finiteNumber(prior) || prior === 0) return null;
+  const value = Math.round(((current - prior) / Math.abs(prior)) * 1000) / 10;
+  return Number.isFinite(value) ? value : null;
 }
 
 export interface Margins {
@@ -85,6 +92,11 @@ export interface N10Derived {
 
 /** همهٔ مشتق‌های استاندارد ن-۱۰ در یک پاس — ورودی ناقص → فیلد null. */
 export function deriveN10(d: CodalN10Data): N10Derived {
+  if (!isMillionRialUnit(d.unit)) return {
+    margins: { gross: null, operating: null, net: null }, priorMargins: null,
+    revenueGrowthPct: null, netProfitGrowthPct: null, epsGrowthPct: null,
+    effectiveTaxRatePct: null, financeCostToRevenuePct: null, otherOpIncomeShareOfOpPct: null, trend: [],
+  };
   const s = d.standalone;
   const p = s.prior ?? null;
   return {
@@ -239,11 +251,12 @@ function pctText(v: number): string {
 }
 
 /** روایت رشد فروش سال جاری. */
-export function narrativeRevenueGrowth(derived: N10Derived, fyLabel: string): string | null {
+export function narrativeRevenueGrowth(derived: N10Derived, fyLabel: string, periodMonths = 12): string | null {
   const g = derived.revenueGrowthPct;
   if (g === null) return null;
-  if (g > 0) return `فروش سال ${fyLabel} نسبت به سال قبل ${pctText(g)} رشد کرده است.`;
-  if (g < 0) return `فروش سال ${fyLabel} نسبت به سال قبل ${pctText(g)} کاهش یافته است.`;
+  const period = periodMonths === 12 ? `سال ${fyLabel} نسبت به سال قبل` : `دورهٔ ${periodMonths}ماههٔ منتهی به ${fyLabel} نسبت به دورهٔ مشابه سال قبل`;
+  if (g > 0) return `فروش ${period} ${pctText(g)} رشد کرده است.`;
+  if (g < 0) return `فروش ${period} ${pctText(g)} کاهش یافته است.`;
   return null;
 }
 
@@ -275,10 +288,11 @@ export function narrativeFxShare(derived: N10Derived): string | null {
 }
 
 /** روایت رشد سود خالص و EPS. */
-export function narrativeNetProfit(derived: N10Derived, fyLabel: string): string | null {
+export function narrativeNetProfit(derived: N10Derived, fyLabel: string, periodMonths = 12): string | null {
   const g = derived.netProfitGrowthPct;
   if (g === null) return null;
-  if (g > 0) return `سود خالص سال ${fyLabel} نسبت به سال قبل ${pctText(g)} رشد کرده است.`;
-  if (g < 0) return `سود خالص سال ${fyLabel} نسبت به سال قبل ${pctText(g)} کاهش یافته است.`;
+  const period = periodMonths === 12 ? `سال ${fyLabel} نسبت به سال قبل` : `دورهٔ ${periodMonths}ماههٔ منتهی به ${fyLabel} نسبت به دورهٔ مشابه سال قبل`;
+  if (g > 0) return `سود خالص ${period} ${pctText(g)} رشد کرده است.`;
+  if (g < 0) return `سود خالص ${period} ${pctText(g)} کاهش یافته است.`;
   return null;
 }
