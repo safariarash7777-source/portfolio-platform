@@ -26,6 +26,7 @@ import {
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
 import { readStoredReportCounts } from "./codal-coverage.mjs";
+import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -86,6 +87,7 @@ export const engineStatus = {
   backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, parseFailed: 0, skippedCovered: 0 },
   ledgerSize: 0,
   failureDiagnostics: readFailureDiagnostics(),
+  admissionDiagnostics: readAdmissionDiagnostics(),
 };
 
 /* ── وضعیت پایدار در Supabase ──────────────────────────────────────────────── */
@@ -122,6 +124,8 @@ async function loadState() {
   // debug output or the next persisted diagnostic object.
   state.failureDiagnostics = readFailureDiagnostics(payload.failureDiagnostics);
   engineStatus.failureDiagnostics = state.failureDiagnostics;
+  state.admissionDiagnostics = readAdmissionDiagnostics(payload.admissionDiagnostics);
+  engineStatus.admissionDiagnostics = state.admissionDiagnostics;
   return state;
 }
 
@@ -294,14 +298,17 @@ async function pollGlobalFeed() {
     dl++;
     st.downloaded = dl;
     let stage = "download";
+    let rejection = null;
     try {
-      const data = await downloadAndParse(a, kind, () => { stage = "admission"; });
+      const data = await downloadAndParse(a, kind, () => { stage = "admission"; },
+        event => { rejection ??= admissionEvent(event, kind); });
       if (data) {
         stage = "persistence";
         st.inserted += await insertParsedReport(a, kind, data);
         delete state.fails[a.link];
       } else {
         recordFailureDiagnostic("admission", "rejected");
+        recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
         st.parseFailed++;
         recordFail(a.link);
         st.complete = false; st.incompleteReason = "report_failure";
@@ -389,14 +396,17 @@ async function backfillSome() {
         if (dl >= BACKFILL_MAX_DL) break;
         dl++;
         let stage = "download";
+        let rejection = null;
         try {
-          const data = await downloadAndParse(a, kind, () => { stage = "admission"; });
+          const data = await downloadAndParse(a, kind, () => { stage = "admission"; },
+            event => { rejection ??= admissionEvent(event, kind); });
           if (data) {
             stage = "persistence";
             st.inserted += await insertParsedReport(a, kind, data);
             delete state.fails[a.link];
           } else {
             recordFailureDiagnostic("admission", "rejected");
+            recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
             st.parseFailed++;
             recordFail(a.link);
           }
@@ -428,6 +438,7 @@ export async function runEngineCycle() {
   try { await loadState(); }
   catch (e) { engineStatus.lastError = `state load: ${e?.message ?? e}`; return; }
   state.failureDiagnostics.lastCycle = failureCounts();
+  state.admissionDiagnostics.lastCycle = admissionCounts();
   const watermarkBefore = state.watermark;
   try {
     await pollGlobalFeed();
