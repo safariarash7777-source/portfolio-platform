@@ -1,0 +1,17 @@
+{
+  "target": "portfolio-stage-db-1",
+  "database": "postgres",
+  "installed": "PASS",
+  "verifier": "PASS",
+  "unrelatedStructure": "PASS",
+  "concurrentCountChanges": [],
+  "newInventoryEntries": 89,
+  "runtimePrerequisite": {
+    "sha": "c50f2fc3be583db0b014a1438598a8596e522539",
+    "release": "6ace9571a7a0a8faa95f62dc",
+    "verifiedRuntimeFiles": 8
+  },
+  "sqlSha256": "76d69ca8e91850bdbcc5f94db536524c73c75aff00bc50959cba38c441730e5b",
+  "rowsExpectedInitially": 0,
+  "naturalCycleAccepted": false
+}
