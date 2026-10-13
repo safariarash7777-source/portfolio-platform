@@ -1,5 +1,6 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics } from "./brsapi-transport.mjs";
+import { writeDailyFx } from "./daily-fx.mjs";
 import { retainMarketFamilies, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
 // رلهٔ بازارِ ایران — باید روی هاستِ «داخل ایران» اجرا شود (لیارا/آروان/پارس‌پک).
@@ -302,8 +303,10 @@ async function fetchGoldCurrency() {
     const currency = rawCurrency.filter(item => item && typeof item === 'object').map((item) => ({
       id: item.symbol,
       faName: item.name,
-      price: Number(item.price) || 0,
+      // Share the strict numeric boundary; true/[1] must not become a USD quote.
+      price: equityNumber(item.price),
       unit: "toman",
+      sourceUnit: typeof item.unit === "string" ? item.unit : null,
       change: Number(item.change_value) || null,
       changePercent: Number(item.change_percent) || null,
       ...sourceClock(item),
@@ -1128,7 +1131,7 @@ async function pushDailyHistory(body, { cycleComplete = true } = {}) {
 
 // ── نرخ دلار روزانه (fx_rates، append-only، روزی یک‌بار بعد از ساعت بازار) — T6 ──
 // منبع: ردیف USD بخش currency اسنپ‌شات (تومان). درج فقط وقتی نرخ معتبر هست.
-// جدول append-only است — روزی یک ردیف؛ تکرار (409 به دلیل unique rate_date) بی‌خطر رد می‌شود.
+// جدول append-only است؛ 409 تنها با تطبیق دقیق ردیف ذخیره‌شده تکمیل محسوب می‌شود.
 let fxStatus = { lastDate: null, lastRate: null, error: null };
 async function pushDailyFx(body) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
@@ -1137,33 +1140,17 @@ async function pushDailyFx(body) {
   // برچسبِ امروز ثبت می‌شد (B-055 — ۶۷ از ۶۸ ردیف ساعتِ ۰۰).
   if (!isAfterClose(t.hour, EOD_AFTER_HOUR)) return; // بعد از ساعت بازار — نرخ پایان روز
   if (fxStatus.lastDate === t.date) return;
-  const p = typeof body === "string" ? JSON.parse(body) : body;
-  const usd = (p.currency || []).find((r) => r?.id === "USD");
-  const rate = Number(usd?.price);
-  if (!isFinite(rate) || rate <= 0) return; // نرخ نامعتبر → هیچ درجی
   try {
-    const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/fx_rates`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify([{ rate_date: t.date, usd_toman: rate, source: "brsapi" }]),
-      signal: AbortSignal.timeout(15000),
+    const payload = typeof body === "string" ? JSON.parse(body) : body;
+    const result = await writeDailyFx({ payload, afterHour: EOD_AFTER_HOUR,
+      request: (method, path, rows) => fetch(`${SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/${path}`, {
+        method, headers: { "Content-Type": "application/json", apikey: SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, Prefer: "return=minimal" },
+        ...(rows ? { body: JSON.stringify(rows) } : {}), signal: AbortSignal.timeout(15000),
+      }),
     });
-    if (res.ok || res.status === 409) {
-      // 409 = امروز قبلاً درج شده (مثلاً بعد از ری‌دیپلوی) — هدف محقق است.
-      fxStatus = { lastDate: t.date, lastRate: rate, error: null };
-      if (res.ok) console.log(`fx push ok: ${rate} toman for ${t.date}`);
-    } else if (res.status === 404) {
-      // جدول هنوز ساخته نشده (phase13 اجرا نشده) — بی‌صدا ولی در /debug پیداست.
-      fxStatus = { ...fxStatus, error: "fx_rates table missing (run phase13)" };
-    } else {
-      fxStatus = { ...fxStatus, error: `HTTP ${res.status}` };
-      console.error(`fx push: HTTP ${res.status}`);
-    }
+    fxStatus = result.complete ? { lastDate: result.row.rate_date, lastRate: result.row.usd_toman, error: null }
+      : { ...fxStatus, error: result.reason };
   } catch (e) {
     fxStatus = { ...fxStatus, error: errMsg(e) };
     console.error("fx push error:", fxStatus.error);
