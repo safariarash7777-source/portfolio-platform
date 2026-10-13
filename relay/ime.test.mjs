@@ -75,9 +75,9 @@ test("physical storage failure stays incomplete without extra same-day provider 
   const ime = await import(`./ime.mjs?storage-failure=${Date.now()}`);
   let providerCalls = 0;
   let storageAvailable = false;
-  const client = { request: async () => {
+  const client = { request: async ({ params }) => {
     providerCalls++;
-    return [{ date_trade: "1405/06/25", l18: "SYNTHETIC", pl: 123 }];
+    return [{ date_trade: params.date_start, l18: "SYNTHETIC", pl: 123, producer: "synthetic", volume_contract: 1 }];
   } };
   t.mock.method(globalThis, "fetch", async (url) => {
     assert.match(String(url), /^https:\/\/storage\.invalid\/rest\/v1\/ime_physical_trades/);
@@ -89,13 +89,13 @@ test("physical storage failure stays incomplete without extra same-day provider 
   assert.equal(ime.imeStatus().physical.lastAttemptDay, "2026-09-16");
   assert.equal(ime.imeStatus().physical.lastRunDay, null);
   assert.equal(ime.imeStatus().physical.backfillCursor, 0);
-  assert.equal(providerCalls, 1);
+  assert.equal(providerCalls, 2);
   storageAvailable = true;
   await ime.runPhysicalDaily(config);
-  assert.equal(providerCalls, 1, "same-day failure cannot multiply provider traffic");
+  assert.equal(providerCalls, 2, "same-day failure cannot multiply provider traffic");
   t.mock.timers.tick(24 * 60 * 60_000);
   await ime.runPhysicalDaily(config);
-  assert.equal(providerCalls, 3);
+  assert.equal(providerCalls, 4);
   assert.equal(ime.imeStatus().physical.lastRunDay, "2026-09-17");
   assert.equal(ime.imeStatus().physical.backfillCursor, 1);
   assert.equal(ime.imeStatus().physical.lastError, null);
@@ -166,4 +166,222 @@ test("mapCommodityRow: دلار خام می‌ماند (هیچ تبدیل ریا
   assert.equal(r.price, 3352.5);
   assert.equal(r.changePercent, -0.4);
   assert.equal(r.unit, "دلار/اونس");
+});
+
+let physicalHarnessId = 0;
+async function physicalHarness(t) {
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-10-13T12:00:00Z") });
+  const api = await import(`./ime.mjs?bounded-storage=${physicalHarnessId++}`);
+  const dates = [], posts = [], legacy = [];
+  const row = date => ({ date_trade: date, l18: "SYNTHETIC", producer: "synthetic", pl: 123, volume_contract: 1 });
+  let source = date => [row(date)];
+  let storage = () => new Response(null, { status: 201 });
+  const client = { request: async ({ params }) => {
+    assert.equal(params.date_start, params.date_end);
+    dates.push(params.date_start);
+    return source(params.date_start);
+  } };
+  t.mock.method(globalThis, "fetch", async (url, init) => {
+    const u = new URL(url);
+    assert.equal(u.hostname, "offline.invalid", "unexpected network destination is blocked");
+    if (u.pathname === "/IME/Physical.php") return Response.json(await client.request({ params: Object.fromEntries(u.searchParams) }));
+    assert.equal(u.pathname, "/rest/v1/ime_physical_trades");
+    assert.equal(u.searchParams.get("on_conflict"), "trade_jdate,symbol_code,producer,price_close_rial,volume_contract");
+    assert.match(init.headers.Prefer, /resolution=ignore-duplicates/);
+    const rows = JSON.parse(init.body);
+    posts.push(rows);
+    return storage(rows);
+  });
+  const options = { base: "https://offline.invalid", key: "synthetic", headers: {}, client,
+    supabaseUrl: "https://offline.invalid", serviceKey: "synthetic" };
+  return { api, dates, posts, row, legacy, run: () => api.runPhysicalDaily(options),
+    status: () => api.imeStatus().physical, advance: ms => t.mock.timers.tick(ms),
+    setSource: fn => { source = fn; }, setStorage: fn => { storage = fn; },
+    useLegacy: () => { options.client = null; options.countLegacy = async (...args) => legacy.push(args); } };
+}
+const HOUR = 60 * 60_000;
+
+test("physical DB retries are bounded, retain pending rows, and never refetch today's provider", async (t) => {
+  const h = await physicalHarness(t);
+  h.setStorage(() => new Response(null, { status: 404 }));
+  await h.run();
+  assert.equal(h.dates.length, 2);
+  assert.equal(h.posts.length, 2);
+  for (let i = 0; i < 5; i++) await h.run();
+  assert.equal(h.posts.length, 2);
+  h.advance(HOUR);
+  await h.run();
+  assert.equal(h.posts.length, 4);
+  h.advance(HOUR);
+  await h.run();
+  assert.equal(h.posts.length, 4, "second storage backoff is two hours");
+  h.advance(HOUR);
+  await h.run();
+  assert.equal(h.posts.length, 6);
+  h.advance(HOUR);
+  await h.run();
+  assert.equal(h.posts.length, 6);
+  assert.equal(h.dates.length, 2);
+  assert.equal(h.status().lastRunDay, null);
+  assert.equal(h.status().backfillCursor, 0);
+  assert.ok(h.status().targets.every(target => target.storageAttempts === 3 && target.pendingRows === 1 && target.nextRetryAt === null));
+});
+
+test("physical partial success is retained while only the failed DB target retries", async (t) => {
+  const h = await physicalHarness(t);
+  h.setStorage(rows => new Response(null, { status: rows[0].trade_jdate === "1405-07-20" ? 503 : 201 }));
+  await h.run();
+  assert.deepEqual(h.status().targets.map(target => target.complete), [true, false]);
+  assert.equal(h.status().lastRunDay, null);
+  h.setStorage(() => new Response(null, { status: 201 }));
+  h.advance(HOUR);
+  await h.run();
+  assert.equal(h.posts.length, 3);
+  assert.equal(h.posts.filter(rows => rows[0].trade_jdate === "1405-07-21").length, 1);
+  assert.equal(h.dates.length, 2);
+  assert.equal(h.status().lastRunDay, "2026-10-13");
+  assert.equal(h.status().backfillCursor, 1);
+  assert.equal(h.status().lastError, null);
+});
+
+test("physical lost response replays identical complete keys without a provider retry", async (t) => {
+  const h = await physicalHarness(t);
+  const persisted = new Map();
+  let lost = true;
+  h.setStorage(rows => {
+    for (const row of rows) {
+      const key = JSON.stringify([row.trade_jdate, row.symbol_code, row.producer, row.price_close_rial, row.volume_contract]);
+      if (!persisted.has(key)) persisted.set(key, row);
+    }
+    if (lost) { lost = false; throw new Error("synthetic response lost after commit"); }
+    return new Response(null, { status: 201 });
+  });
+  await h.run();
+  assert.equal(persisted.size, 2);
+  h.advance(HOUR);
+  await h.run();
+  assert.deepEqual(h.posts[2], h.posts[0]);
+  assert.equal(persisted.size, 2);
+  assert.equal(h.dates.length, 2);
+  assert.equal(h.status().lastRunDay, "2026-10-13");
+});
+
+test("physical source failures never retry same day, including the permissive legacy path", async (t) => {
+  const h = await physicalHarness(t);
+  h.useLegacy();
+  h.setSource(() => { throw new Error("synthetic provider failure"); });
+  await h.run();
+  for (let i = 0; i < 4; i++) { h.advance(HOUR); await h.run(); }
+  assert.equal(h.dates.length, 2);
+  assert.deepEqual(h.legacy, [["ime-physical", "bulk"], ["ime-physical", "bulk"]]);
+  assert.equal(h.posts.length, 0);
+  assert.equal(h.status().backfillCursor, 0);
+});
+
+test("physical day rollover expires exhausted storage and reports abandoned pending observations", async (t) => {
+  const h = await physicalHarness(t);
+  h.setStorage(() => new Response(null, { status: 503 }));
+  await h.run();
+  h.advance(HOUR); await h.run();
+  h.advance(2 * HOUR); await h.run();
+  h.advance(21 * HOUR);
+  h.setStorage(() => new Response(null, { status: 201 }));
+  await h.run();
+  assert.deepEqual(h.status().expired, { day: "2026-10-13", incompleteTargets: 2, pendingRows: 2 });
+  assert.equal(h.status().cycleDay, "2026-10-14");
+  assert.equal(h.status().targets.length, 2);
+  assert.equal(h.status().lastRunDay, "2026-10-14");
+  assert.equal(h.dates.length, 4);
+  assert.ok(h.status().targets.every(target => target.storageAttempts === 1));
+});
+
+test("completed empty physical targets expire so a later backfill re-reads the source", async (t) => {
+  const h = await physicalHarness(t);
+  h.setSource(() => ({ successful: true, code_http: 200, status: "no_data" }));
+  await h.run();
+  assert.equal(h.status().backfillCursor, 1);
+  assert.equal(h.posts.length, 0);
+  h.advance(24 * HOUR);
+  h.setSource(date => [h.row(date)]);
+  await h.run();
+  assert.deepEqual(h.dates, ["1405-07-21", "1405-07-20", "1405-07-22", "1405-07-20"]);
+  assert.equal(h.posts.length, 2);
+  assert.equal(h.status().targets.length, 2);
+});
+
+for (const [name, envelope] of [
+  ["unknown", {}], ["unverified no_data", { status: "no_data", data: [] }],
+  ["contradictory no_data", { successful: true, code_http: 200, status: "no_data", data: [{}] }],
+  ["rejected", { successful: false, code_http: 200, data: [] }],
+  ["error", { status: "error", data: [] }], ["unknown status", { status: "unknown", data: [] }],
+]) test(`physical ${name} cannot certify an empty successful day`, async (t) => {
+  const h = await physicalHarness(t);
+  h.setSource(() => envelope);
+  await h.run();
+  assert.equal(h.status().lastRunDay, null);
+  assert.equal(h.status().backfillCursor, 0);
+  assert.equal(h.posts.length, 0);
+  assert.ok(h.status().lastError);
+});
+
+for (const [name, change] of [
+  ["null producer", { producer: null }], ["blank price", { pl: " " }],
+  ["boolean volume", { volume_contract: false }], ["array price", { pl: [] }],
+  ["invalid date", { date_trade: "invalid" }], ["wrong date", { date_trade: "1405-07-01" }],
+]) test(`physical ${name} blocks the entire target and exposes rejection count`, async (t) => {
+  const h = await physicalHarness(t);
+  h.setSource(date => [h.row(date), { ...h.row(date), l18: "SYNTHETIC-SECOND", ...change }]);
+  await h.run();
+  assert.equal(h.posts.length, 0);
+  assert.equal(h.status().lastRunDay, null);
+  assert.equal(h.status().backfillCursor, 0);
+  assert.ok(h.status().targets.every(target => target.sourceRows === 2 && target.rejectedRows === 1 && !target.complete));
+});
+
+test("physical valid zero values survive admission; simultaneous callers share one cycle", async (t) => {
+  const h = await physicalHarness(t);
+  h.setSource(date => [{ ...h.row(date), pl: "0", volume_contract: 0 }]);
+  await Promise.all([h.run(), h.run(), h.run()]);
+  assert.equal(h.dates.length, 2);
+  assert.equal(h.posts.length, 2);
+  assert.equal(h.posts[0][0].price_close_rial, 0);
+  assert.equal(h.posts[0][0].volume_contract, 0);
+  assert.equal(h.status().lastRunDay, "2026-10-13");
+});
+
+test("a rejected target does not discard its successful neighbour or claim cycle completeness", async (t) => {
+  const h = await physicalHarness(t);
+  h.setSource(date => [{ ...h.row(date), ...(date === "1405-07-21" ? { producer: null } : {}) }]);
+  await h.run();
+  assert.equal(h.posts.length, 1);
+  assert.equal(h.posts[0][0].trade_jdate, "1405-07-20");
+  assert.deepEqual(h.status().targets.map(target => target.complete), [false, true]);
+  assert.equal(h.status().targets[0].rejectedRows, 1);
+  assert.equal(h.status().lastRunDay, null);
+  assert.equal(h.status().backfillCursor, 0);
+  h.advance(HOUR);
+  await h.run();
+  assert.equal(h.posts.length, 1);
+  assert.equal(h.dates.length, 2);
+});
+
+test("a valid empty array completes a target without fabricating a database row", async (t) => {
+  const h = await physicalHarness(t);
+  h.setSource(() => []);
+  await h.run();
+  assert.equal(h.posts.length, 0);
+  assert.equal(h.status().lastRunDay, "2026-10-13");
+  assert.equal(h.status().backfillCursor, 1);
+});
+
+test("physical request spanning midnight does not start a second old-cycle provider job", async (t) => {
+  const h = await physicalHarness(t);
+  h.setSource(date => { h.advance(10 * HOUR); return [h.row(date)]; });
+  await h.run();
+  assert.equal(h.dates.length, 1);
+  assert.equal(h.status().lastRunDay, null);
+  assert.equal(h.status().targets[1].sourceAttempts, 0);
+  await h.run(); // now before the next day's 15:00 gate: just expire state
+  assert.equal(h.status().cycleDay, null);
+  assert.equal(h.dates.length, 1);
 });

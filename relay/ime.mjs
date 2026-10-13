@@ -240,9 +240,17 @@ async function fetchPhysicalDay(jdate, { base, key, headers, client = null, coun
     if (!res.ok) throw new Error(`http ${res.status}`);
     j = await res.json();
   }
-  if (j && !Array.isArray(j) && j.status === "no_data") return [];
-  const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
-  return arr;
+  if ((j?.successful !== undefined && j.successful !== true)
+      || (j?.code_http !== undefined && j.code_http !== 200)) throw new Error("physical source rejected request");
+  if (j?.status === "no_data") {
+    if (j.successful === true && j.code_http === 200
+        && (j.data == null || (Array.isArray(j.data) && j.data.length === 0))) return [];
+    throw new Error("unverified physical no_data response");
+  }
+  if (j?.status !== undefined) throw new Error("unrecognized physical response status");
+  if (Array.isArray(j)) return j;
+  if (Array.isArray(j?.data)) return j.data;
+  throw new Error("unknown physical response schema");
 }
 
 // جلالی n روز قبل (تقریب با شمارش روز میلادی و فرمت مجدد — دقیق است چون
@@ -255,49 +263,106 @@ function tehranJalaliDaysAgo(n) {
   return `${g("year")}-${g("month")}-${g("day")}`;
 }
 
-// روزی یک‌بار (بعد از ۱۵ تهران): امروز + یک روزِ بک‌فیل از ۷ روز اخیر.
-export async function runPhysicalDaily({ base, key, headers, supabaseUrl, serviceKey, client = null, countLegacy = null }) {
-  if (!supabaseUrl || !serviceKey || !key) return;
-  const day = tehranDayKey();
-  // Keep the existing one-attempt/day provider cap, including failures.
-  // Completion is separate so a missing table is never reported as success.
-  if (physState.lastAttemptDay === day) return;
-  if (tehranHour() < 15) return;
-  physState.lastAttemptDay = day;
-  try {
-    const today = tehranJalaliToday();
-    // بک‌فیل تدریجی: هر روز یک روزِ گذشته (۱..۷) هم گرفته می‌شود.
-    const backDay = tehranJalaliDaysAgo(1 + (physState.backfillCursor % 7));
-    let inserted = 0;
-    for (const jd of [today, backDay]) {
-      const arr = await fetchPhysicalDay(jd, { base, key, headers, client, countLegacy });
-      const rows = arr.map((d) => mapPhysicalRow(d, day)).filter((r) => r.symbol_code && r.trade_jdate);
-      if (rows.length === 0) continue;
-      const res = await fetch(`${supabaseUrl}/rest/v1/ime_physical_trades?on_conflict=trade_jdate,symbol_code,producer,price_close_rial,volume_contract`, {
-        method: "POST",
-        headers: {
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-          "Content-Type": "application/json",
-          Prefer: "resolution=ignore-duplicates,return=minimal",
-        },
-        body: JSON.stringify(rows),
-      });
-      if (res.status === 404) {
-        physState.table = "missing (run phase19 SQL)";
-        physState.lastError = "storage table missing";
-        return;
-      }
-      if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 120)}`);
-      inserted += rows.length;
-      physState.table = "ok";
+// One source attempt for each of today's two targets. Only storage is retried.
+// State is process-local, single-flight and bounded to one Tehran-day cycle.
+const PHYSICAL_STORAGE_MAX_ATTEMPTS = 3;
+const PHYSICAL_STORAGE_RETRY_MS = 60 * 60_000;
+let physicalCycle = null;
+let physicalInflight = null;
+
+function completePhysicalConflictIdentity(raw) {
+  const text = value => typeof value === "string" && value.trim().length > 0;
+  return raw && typeof raw === "object" && !Array.isArray(raw)
+    && text(raw.l18) && text(raw.producer)
+    && num(raw.pl) !== null && num(raw.volume_contract) !== null;
+}
+
+async function runPhysicalTarget(target, cycle, ports) {
+  if (target.complete || target.source === "failed") return;
+  if (target.source === "unattempted") {
+    // A request that spans midnight must not start the other day's source job.
+    if (tehranDayKey() !== cycle.day) return;
+    target.source = "failed"; // set before I/O: a failure never refetches today
+    target.sourceAttempts++;
+    try {
+      const arr = await fetchPhysicalDay(target.date, ports);
+      // A NULL conflict component makes replay non-idempotent under the existing
+      // SQL constraint. Keep the whole target incomplete instead of dropping a
+      // bad row silently or manufacturing zero. Do not change the SQL identity.
+      target.sourceRows = arr.length;
+      target.rejectedRows = arr.filter(raw => !completePhysicalConflictIdentity(raw)).length;
+      if (target.rejectedRows > 0) throw new Error("incomplete physical conflict identity");
+      const rows = arr.map(raw => mapPhysicalRow(raw, cycle.day));
+      target.rejectedRows = rows.filter(row => row.trade_jdate !== target.date).length;
+      if (target.rejectedRows > 0) throw new Error("physical source date mismatch");
+      target.rows = rows;
+      target.source = "ready";
+      if (rows.length === 0) { target.complete = true; return; }
+    } catch (error) {
+      target.error = error?.message ?? String(error);
+      return;
     }
-    physState.inserted = inserted;
+  }
+  if (target.storageAttempts >= PHYSICAL_STORAGE_MAX_ATTEMPTS || Date.now() < target.nextRetryAt) return;
+  target.storageAttempts++;
+  try {
+    const res = await fetch(`${ports.supabaseUrl}/rest/v1/ime_physical_trades?on_conflict=trade_jdate,symbol_code,producer,price_close_rial,volume_contract`, {
+      method: "POST",
+      headers: { apikey: ports.serviceKey, Authorization: `Bearer ${ports.serviceKey}`,
+        "Content-Type": "application/json", Prefer: "resolution=ignore-duplicates,return=minimal" },
+      body: JSON.stringify(target.rows), signal: AbortSignal.timeout(15000),
+    });
+    if (res.status === 404) {
+      physState.table = "missing (run phase19 SQL)";
+      throw new Error("physical table missing");
+    }
+    if (!res.ok) throw new Error(`physical persistence HTTP ${res.status}`);
+    target.submitted = target.rows.length;
+    target.complete = true;
+    target.rows = null;
+    target.error = null;
+    target.nextRetryAt = 0;
+    physState.table = "ok";
+  } catch (error) {
+    target.error = error?.message ?? String(error);
+    target.nextRetryAt = target.storageAttempts < PHYSICAL_STORAGE_MAX_ATTEMPTS
+      ? Date.now() + PHYSICAL_STORAGE_RETRY_MS * 2 ** (target.storageAttempts - 1) : null;
+  }
+}
+
+export function runPhysicalDaily(options) {
+  if (physicalInflight) return physicalInflight;
+  physicalInflight = runPhysicalDailyOnce(options).finally(() => { physicalInflight = null; });
+  return physicalInflight;
+}
+
+async function runPhysicalDailyOnce(ports) {
+  if (!ports.supabaseUrl || !ports.serviceKey || !ports.key) return;
+  const day = tehranDayKey();
+  if (physicalCycle && physicalCycle.day !== day) {
+    const unresolved = physicalCycle.targets.filter(target => !target.complete);
+    physState.expired = { day: physicalCycle.day, incompleteTargets: unresolved.length,
+      pendingRows: unresolved.reduce((total, target) => total + (target.rows?.length ?? 0), 0) };
+    physicalCycle = null;
+  }
+  if (!(tehranHour() >= 15)) return;
+  if (physState.lastRunDay === day) return;
+  if (!physicalCycle) {
+    // Daily scope expires completed/failed targets too: later backfill must read
+    // the provider again, rather than freezing an old authoritative-empty result.
+    physicalCycle = { day, targets: [tehranJalaliToday(), tehranJalaliDaysAgo(1 + (physState.backfillCursor % 7))]
+      .map(date => ({ date, source: "unattempted", sourceAttempts: 0, storageAttempts: 0,
+        nextRetryAt: 0, rows: null, sourceRows: 0, rejectedRows: 0, submitted: 0, complete: false, error: null })) };
+    physState.lastAttemptDay = day;
+  }
+  for (const target of physicalCycle.targets) await runPhysicalTarget(target, physicalCycle, ports);
+  physState.inserted = physicalCycle.targets.reduce((total, target) => total + target.submitted, 0);
+  if (physicalCycle.targets.every(target => target.complete)) {
     physState.lastError = null;
-    physState.lastRunDay = day;
+    physState.lastRunDay = physicalCycle.day;
     physState.backfillCursor++;
-  } catch (e) {
-    physState.lastError = e?.message ?? String(e);
+  } else {
+    physState.lastError = physicalCycle.targets.find(target => target.error)?.error ?? "physical cycle incomplete";
   }
 }
 
@@ -310,6 +375,12 @@ export function imeStatus() {
       lastError: certError,
       eod: certEodState,
     },
-    physical: physState,
+    physical: { ...physState, retryScope: "process-memory-tehran-day", maxProviderRequestsPerDay: 2,
+      maxStorageAttemptsPerTarget: PHYSICAL_STORAGE_MAX_ATTEMPTS, cycleDay: physicalCycle?.day ?? null,
+      targets: (physicalCycle?.targets ?? []).map(target => ({ date: target.date, source: target.source,
+        sourceAttempts: target.sourceAttempts, storageAttempts: target.storageAttempts,
+        nextRetryAt: target.nextRetryAt, complete: target.complete, pendingRows: target.rows?.length ?? 0,
+        sourceRows: target.sourceRows, rejectedRows: target.rejectedRows, error: target.error })),
+    },
   };
 }
