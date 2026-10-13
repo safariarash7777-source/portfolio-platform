@@ -1,6 +1,7 @@
 // Deterministic integration mocks only: every unmatched fetch fails closed.
 import test from "node:test";
 import assert from "node:assert/strict";
+import { industrial, bank } from "./fixtures/n10-admission-fixtures.mjs";
 
 process.env.BRSAPI_KEY = "mock-key";
 process.env.BRSAPI_BASE = "https://provider.invalid";
@@ -24,12 +25,7 @@ const response = (body, status = 200) => new Response(JSON.stringify(body), {
   status, headers: { "Content-Type": "application/json" },
 });
 const financial = n => announcement(n, { code: "ن-۱۰", link_excel: `https://excel.invalid/${n}`, date_title: "1404/12/29" });
-const mockIncomeHtml = `<table><tr><td>ارقام به میلیون ریال</td></tr>
-<tr><td>درآمدهای عملیاتی</td><td>100</td></tr>
-<tr><td>بهای تمام شده درآمد</td><td>(60)</td></tr>
-<tr><td>سود(زیان) ناخالص</td><td>40</td></tr>
-<tr><td>سود(زیان) عملیاتی</td><td>30</td></tr>
-<tr><td>سود(زیان) خالص</td><td>20</td></tr></table>`;
+const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: false });
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
@@ -406,5 +402,29 @@ test("valid collision acknowledges persistence with inserted zero for fails 0/1/
         assert.equal(f.calls.reportWrites.length, 1);
       });
     }
+  }
+});
+
+test("N10 admission rejection keeps inserted zero, watermark and ledger", async t => {
+  const common = { period: "1404/12/29", months: 12, prior: false };
+  for (const [name, options, announcementFields] of [
+    ["unknown unit", { unit: "" }], ["unknown scope", { scope: "" }],
+    ["consolidated", { scope: "تلفیقی" }], ["blank operating", { current: [100, "(60)", 40, "", 20] }],
+    ["missing capital", { capital: false }],
+    ["bank current EPS zero pv2 blocker", { html: bank({ eps: 0 }) },
+      { date_title: "1404/03/31", title: "صورت های مالی دوره 3 ماهه منتهی به 1404/03/31" }],
+  ]) {
+    await t.test(name, async () => {
+      const a = { ...financial(1), ...announcementFields };
+      const f = await fixture({ pages: [[a, boundary], []], excelHtml: options.html ?? industrial({ ...common, ...options }),
+        initialState: { watermark, backfillCursor: 0, fails: { [a.link]: 1 } } });
+      await f.engine.runEngineCycle();
+      assert.equal(f.engine.engineStatus.ok, false);
+      assert.equal(f.engine.engineStatus.feed.inserted, 0);
+      assert.equal(f.engine.engineStatus.feed.parseFailed, 1);
+      assert.deepEqual(f.persisted.watermark, watermark);
+      assert.equal(f.persisted.fails[a.link], 2);
+      assert.equal(f.calls.reportWrites.length, 0);
+    });
   }
 });

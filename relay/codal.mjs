@@ -344,6 +344,236 @@ export function normalizeN10(tables, meta) {
   };
 }
 
+/* N10 prospective admission: context and observed values, without changing pv2
+ * numeric normalization. Legacy table-only parsing and N30 remain unchanged. */
+function n10Text(html) {
+  return html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+    .replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&zwnj;/gi, "\u200c")
+    .replace(/&#(x[\da-f]+|\d+);/gi, (_, code) => {
+      const n = code[0].toLowerCase() === "x" ? parseInt(code.slice(1), 16) : Number(code);
+      return n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : "";
+    }).replace(/\s+/g, " ").trim();
+}
+
+/** Only explicit table-containet/table-container ownership supplies context.
+ * No workbook, heading, nearest-text or ancestor-description fallback. Spans are
+ * UTF-16 offsets into the original HTML, end-exclusive. */
+export function extractN10Tables(html) {
+  const root = { tag: "root", start: 0, end: html.length, closed: true, parent: null };
+  const stack = [root], nodes = [], tables = [];
+  const tokens = /<!--[\s\S]*?-->|<![^>]*>|<\/?([a-z][\w:-]*)\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi;
+  const voids = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+  let token;
+  while ((token = tokens.exec(html))) {
+    if (!token[1]) continue;
+    const tag = token[1].toLowerCase();
+    if (token[0].startsWith("</")) {
+      let at = stack.length - 1;
+      while (at > 0 && stack[at].tag !== tag) at--;
+      if (!at) continue;
+      for (let i = stack.length - 1; i >= at; i--) {
+        const node = stack.pop(); node.end = tokens.lastIndex;
+        node.closed = i === at;
+        if (!node.closed) node.malformed = true;
+      }
+      continue;
+    }
+    const cls = token[0].match(/\bclass\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+    const node = { tag, start: token.index, openEnd: tokens.lastIndex, end: tokens.lastIndex, closed: false, parent: stack.at(-1),
+      classes: String(cls?.[1] ?? cls?.[2] ?? cls?.[3] ?? "").toLowerCase().split(/\s+/) };
+    nodes.push(node); if (tag === "table") tables.push(node);
+    if (["script", "style"].includes(tag)) {
+      const close = new RegExp(`</${tag}\\s*>`, "gi"); close.lastIndex = tokens.lastIndex;
+      const end = close.exec(html);
+      node.end = end ? close.lastIndex : html.length; node.closed = !!end;
+      tokens.lastIndex = node.end; continue;
+    }
+    if (voids.has(tag) || /\/\s*>$/.test(token[0])) node.closed = true;
+    else stack.push(node);
+  }
+  const isContainer = n => ["div", "section"].includes(n.tag) &&
+    n.classes.some(c => c === "table-containet" || c === "table-container");
+  const owner = node => {
+    for (let n = node; n && n !== root; n = n.parent) if (isContainer(n)) return n;
+    return null;
+  };
+  return tables.map((table, index) => {
+    const context = owner(table);
+    const owned = context ? nodes.filter(n => owner(n) === context) : [];
+    const titles = owned.filter(n => n.classes.includes("table-title"));
+    const descriptions = owned.filter(n => n.classes.includes("table-description"));
+    const tableHtml = html.slice(table.start, table.end);
+    const geometry = nodes.filter(n => ["td", "th"].includes(n.tag) && n.start > table.start && n.end <= table.end);
+    const badSpan = geometry.some(n => {
+      const opening = html.slice(n.start, n.openEnd);
+      const colspan = opening.match(/\bcolspan\s*=\s*["']?([^\s"'>]+)/i);
+      const rowspan = opening.match(/\browspan\s*=\s*["']?([^\s"'>]+)/i);
+      return (colspan && colspan[1] !== "1") || (n.tag === "td" && rowspan && rowspan[1] !== "1");
+    });
+    const text = list => list.length === 1 ? n10Text(html.slice(list[0].start, list[0].end)) : "";
+    return {
+      index, rows: parseHtmlTables(tableHtml)[0] ?? [],
+      localTitle: text(titles), localDescription: text(descriptions),
+      span: { start: context?.start ?? table.start, end: context?.end ?? table.end },
+      contextValid: !!context?.closed && table.closed && titles.length === 1 && descriptions.length === 1 &&
+        [...titles, ...descriptions].every(n => n.closed && n.end <= table.start) &&
+        owned.filter(n => n.tag === "table").length === 1 && owned.every(n => !n.malformed),
+      columnsAmbiguous: !!badSpan || /<(script|style)\b/i.test(tableHtml),
+    };
+  });
+}
+
+// Monetary observations bound the header of this table only; EPS rows below
+// them are not evidence for the amount columns' unit or statement scope.
+function n10Headers(context) {
+  const core = new Set([null, "bank", "insurance"].flatMap(kind => Object.values(n10Core(context.rows, kind))).filter(Boolean));
+  const firstData = context.rows.findIndex(r => core.has(r) ||
+    (normLabel(r[0]).includes("مانده") && r.slice(1).some(cell => Number.isFinite(cellNum(cell)))));
+  return context.rows.slice(0, firstData < 0 ? context.rows.length : firstData);
+}
+
+function n10Scope(context) {
+  const headers = n10Headers(context).flat().map(normLabel);
+  const texts = [context.localTitle, context.localDescription].map(normLabel).concat(headers);
+  const text = texts.join(" ");
+  const statement = "(?:صورتسودوزیان|صورتتغییراتحقوقمالکانه)";
+  const marker = "(?:جداگانه|غیرتلفیقی|مستقل)(?:شرکتاصلی)?|شرکتاصلی";
+  const controlled = new RegExp(statement + "(?:" + marker + ")(?=[-،:؛]*(?:$|دوره|ارقام|مبالغ|مبلغ))");
+  const candidate = new RegExp(statement + "(?:" + marker + ")", "g");
+  const bareHeader = new RegExp("^(?:" + marker + ")$");
+  if (texts.some(t => [...t.matchAll(candidate)].some(m => controlled.exec(t.slice(m.index))?.index !== 0)) ||
+      headers.some(t => /^(?:جداگانه|غیرتلفیقی|مستقل)/.test(t) && !bareHeader.test(t))) return null;
+  const explicit = texts.some(t => controlled.test(t)) || headers.some(t => bareHeader.test(t));
+  const consolidated = /تلفیقی/.test(text.replace(/غیرتلفیقی/g, ""));
+  if (/زیرمجموعه|نیست|نمیباشد|غیرمستقل/.test(text) || (explicit && consolidated)) return null;
+  return consolidated ? "consolidated" : explicit ? "standalone" : null;
+}
+
+function n10Million(context) {
+  const text = [context.localTitle, context.localDescription, ...n10Headers(context).flat()]
+    .map(value => normLabel(value)
+      // Only explicit unscaled rial/share annotations have a separate dimension.
+      // Mixed or scaled amount declarations remain visible and must agree.
+      .replace(/سود(?:زیان)?(?:خالص|پایه)?هرسهم[–\-:]*ریال|(^|[؛،;])ریال(?:\/(?:هر)?سهم|بهازایهرسهم)(?=$|[؛،;])/g, "$1"))
+    .join("\n");
+  if (/نیست|نمیباشد/.test(normLabel(text))) return false;
+  const units = [...text.matchAll(/(?:(میلیون|هزار|میلیارد)\s*)?(ریال|تومان|دلار|یورو)/g)]
+    .map(m => (m[1] ? m[1] + " " : "") + m[2]);
+  return units.length > 0 && units.every(u => u === "میلیون ریال");
+}
+
+function n10Dates(text) {
+  return [...faToEnDigits(text).matchAll(/(1[34]\d{2})[\/-](\d{1,2})[\/-](\d{1,2})/g)]
+    .filter(m => +m[2] >= 1 && +m[2] <= 12 && +m[3] >= 1 && +m[3] <= (+m[2] <= 6 ? 31 : 30))
+    .map(m => `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`);
+}
+
+function n10Period(context, meta, coreRows) {
+  const firstData = Math.min(...coreRows.map(r => context.rows.indexOf(r)));
+  const headers = context.rows.slice(0, firstData);
+  const current = [...new Set(headers.flatMap(r => n10Dates(r[1] ?? "")))];
+  const prior = [...new Set(headers.flatMap(r => n10Dates(r[2] ?? "")))];
+  const getMonths = text => [...faToEnDigits(text).matchAll(/دوره\s*(\d{1,2})\s*ماهه/g)].map(m => +m[1]);
+  const contextMonths = getMonths(context.localTitle + " " + context.localDescription);
+  const months = [...contextMonths, ...getMonths(headers.map(r => r[1] ?? "").join(" "))];
+  if (current.length !== 1 || current[0] !== meta.period_end || !months.length ||
+      months.some(n => n !== meta.period_months) || ![1, 3, 6, 9, 12].includes(meta.period_months) || prior.length > 1) return null;
+  if (prior.length) {
+    const c = current[0].split("-").map(Number), p = prior[0].split("-").map(Number);
+    const priorMonths = getMonths(headers.map(r => r[2] ?? "").join(" "));
+    const evidence = priorMonths.length ? priorMonths : contextMonths;
+    if (!evidence.length || evidence.some(n => n !== meta.period_months) ||
+        p[0] !== c[0] - 1 || p[1] !== c[1] || Math.abs(p[2] - c[2]) > 1) return null;
+  } else if (coreRows.some(r => cellNum(r[2]) !== null)) return null;
+  return { prior: prior.length === 1 };
+}
+
+function n10Core(rows, bankKind) {
+  const pick = predicate => {
+    const found = rows.filter(r => predicate(normLabel(r[0])));
+    return found.length === 1 ? found[0] : null;
+  };
+  const has = (label, patterns) => patterns.some(p => label.includes(normLabel(p)));
+  return {
+    revenue: pick(l => bankKind ? ["درآمد عملیاتی", "جمع درآمدهای عملیاتی"].some(p => l === normLabel(p))
+      : ["درآمدهای عملیاتی", "جمع درآمدهای عملیاتی"].some(p => l === normLabel(p))),
+    cogs: pick(l => has(l, bankKind === "insurance" ? ["هزینه خسارت", "هزینه‌های بیمه‌ای", "هزینه های بیمه ای"]
+      : bankKind ? ["هزینه سود سپرده"] : ["بهای تمام شده درآمد", "بهاى تمام شده درآمد", "بهای تمام‌شده"])),
+    gross_profit: pick(l => l === normLabel("سود(زیان) ناخالص")),
+    operating_profit: pick(l => l === normLabel("سود(زیان) عملیاتی")),
+    net_profit: pick(l => l === normLabel("سود(زیان) خالص")),
+  };
+}
+
+/** Strictly restrict new admission; never synthesize nullable fields or alter a
+ * valid pv2 numeric result. Unknown/incompatible contexts return null. */
+export function admitN10Html(html, meta) {
+  try {
+    const contexts = extractN10Tables(html);
+    const incomes = contexts.filter(c => findIncomeTable([c.rows]) || findBankIncomeTable([c.rows]));
+    if (incomes.some(c => !c.contextValid || c.columnsAmbiguous || !n10Scope(c))) return null;
+    const independent = incomes.filter(c => n10Scope(c) === "standalone");
+    if (independent.length !== 1) return null;
+    const inc = independent[0];
+    if (!n10Million(inc)) return null;
+    const isBank = !!findBankIncomeTable([inc.rows]);
+    if (isBank && findIncomeTable([inc.rows])) return null;
+    const bankKind = isBank ? (inc.rows.some(r => normLabel(r[0]).startsWith(normLabel("درآمد حق بیمه"))) ? "insurance" : "bank") : null;
+    const core = n10Core(inc.rows, bankKind);
+    if (Object.values(core).some(r => !r || !Number.isFinite(cellNum(r[1])))) return null;
+    const period = n10Period(inc, meta, Object.values(core));
+    if (!period || (period.prior && Object.values(core).some(r => !Number.isFinite(cellNum(r[2]))))) return null;
+    for (const col of period.prior ? [1, 2] : [1]) {
+      const gross = cellNum(core.gross_profit[col]);
+      if (Math.abs(cellNum(core.revenue[col]) + cellNum(core.cogs[col]) - gross) > Math.max(Math.abs(gross) * .02, 10)) return null;
+    }
+    let capital;
+    const legacyTables = [inc.rows];
+    if (isBank) {
+      const caps = inc.rows.filter(r => normLabel(r[0]) === normLabel("سرمایه"));
+      if (caps.length !== 1 || !Number.isFinite(cellNum(caps[0][1])) || cellNum(caps[0][1]) <= 0) return null;
+      capital = cellNum(caps[0][1]);
+    } else {
+      const equities = contexts.filter(c => c.contextValid && !c.columnsAmbiguous && n10Scope(c) === "standalone" &&
+        n10Million(c) && normLabel(c.localTitle).includes(normLabel("تغییرات حقوق مالکانه")));
+      const proofs = [];
+      for (const c of equities) {
+        const months = [...faToEnDigits(c.localTitle + " " + c.localDescription).matchAll(/دوره\s*(\d{1,2})\s*ماهه/g)].map(m => +m[1]);
+        const dates = [...new Set(n10Dates(c.localTitle + " " + c.localDescription))];
+        if (!months.length || months.some(n => n !== meta.period_months) || dates.length !== 1 || dates[0] !== meta.period_end) continue;
+        const columns = (c.rows[0] ?? []).flatMap((cell, col) => normLabel(cell) === normLabel("سرمایه") ? [col] : []);
+        if (columns.length !== 1 || columns[0] < 1) continue;
+        const col = columns[0];
+        const balances = c.rows.slice(1).filter(r => normLabel(r[0]).includes(normLabel("مانده")) && Number.isFinite(cellNum(r[col])) && cellNum(r[col]) > 0);
+        const last = balances.at(-1);
+        const current = c.rows.slice(1).filter(r => normLabel(r[0]).includes(normLabel("مانده")) && n10Dates(r[0]).length === 1 && n10Dates(r[0])[0] === meta.period_end);
+        if (current.length === 1 && last === current[0]) proofs.push({ rows: c.rows, value: cellNum(last[col]) });
+      }
+      if (proofs.length !== 1) return null;
+      capital = proofs[0].value; legacyTables.push(proofs[0].rows);
+    }
+    const data = isBank ? normalizeN10Bank(legacyTables, meta) : normalizeN10(legacyTables, meta);
+    if (!data || data.capital !== capital || data.unit !== "میلیون ریال") return null;
+    for (const [name, row] of Object.entries(core)) {
+      if (data.standalone[name] !== (name === "cogs" ? Math.abs(cellNum(row[1])) : cellNum(row[1]))) return null;
+      if (period.prior && data.standalone.prior?.[name] !== (name === "cogs" ? Math.abs(cellNum(row[2])) : cellNum(row[2]))) return null;
+    }
+    const primaryEps = inc.rows.filter(r => normLabel(r[0]).includes(normLabel("خالص هر سهم")));
+    const fallbackEps = inc.rows.filter(r => /ناشیازعملیاتدرحالتداوم|پایههرسهم/.test(normLabel(r[0])) && cellNum(r[1]) !== null);
+    const epsRows = primaryEps.length ? primaryEps : fallbackEps;
+    if (epsRows.length > 1) return null;
+    if (epsRows.length) {
+      const row = epsRows[0], label = normLabel(row[0]);
+      if (!label.includes("ریال") || /هزارریال|میلیونریال|تومان/.test(label) ||
+          !Number.isFinite(cellNum(row[1])) || data.standalone.eps_rial !== cellNum(row[1]) ||
+          (period.prior && (!Number.isFinite(cellNum(row[2])) || data.standalone.prior?.eps_rial !== cellNum(row[2])))) return null;
+    } else if (data.standalone.eps_rial !== undefined) return null;
+    if (!period.prior && data.standalone.prior) return null;
+    return data;
+  } catch { return null; }
+}
+
 /* ── نرمال‌سازی ن-۳۰ (فعالیت ماهانه) ────────────────────────────────────────── */
 
 /** از جدول‌های اکسل ن-۳۰، CodalN30Data می‌سازد.
@@ -776,9 +1006,8 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind) {
   const html = await downloadExcelHtml(a.link_excel);
-  const tables = parseHtmlTables(html);
   const meta = metaFrom(a, kind);
-  return kind === "ن-۱۰" ? normalizeN10(tables, meta) : normalizeN30(tables, meta);
+  return kind === "ن-۱۰" ? admitN10Html(html, meta) : normalizeN30(parseHtmlTables(html), meta);
 }
 
 /** Returns the actual 0/1 count; zero resolves only after confirming the exact
@@ -871,7 +1100,7 @@ export async function codalTest(symbol) {
       s.tables = tables.length;
       s.bytes = html.length;
       const meta = metaFrom(a, kind);
-      const data = kind === "ن-۱۰" ? normalizeN10(tables, meta) : normalizeN30(tables, meta);
+      const data = kind === "ن-۱۰" ? admitN10Html(html, meta) : normalizeN30(tables, meta);
       if (data) {
         s.parsed = true;
         s.summary = kind === "ن-۱۰"
