@@ -10,6 +10,7 @@ import { AlertTriangle, Clock, Eye, HelpCircle, Layers, TrendingUp } from "lucid
 import { buildDesk, type DeskBand, type DeskKind, type DeskFund, type DeskStock, type DeskObservation } from "@/lib/core/marketDesk";
 import { formatJalali, toPersianDigits } from "@/lib/format";
 import type { IrMarket } from "@/lib/market-ir";
+import { withValidNav } from "@/lib/market-quality";
 
 const KIND_META: Record<DeskKind, { label: string; Icon: typeof Clock }> = {
   nav_stale:       { label: "کهنگیِ NAV",      Icon: Clock },
@@ -122,7 +123,8 @@ export default function MarketDesk({
   maxPerKind?: number;
   from?: string;
 }) {
-  const funds: DeskFund[] = (ir?.funds ?? []).map((f) => ({
+  const now = Date.now();
+  const funds: DeskFund[] = (ir?.funds ?? []).map(f => withValidNav(f, null, now)).map((f) => ({
     id: f.id, faName: f.faName, price: f.price ?? null, type: f.type ?? null,
     nav: f.nav ?? null, bubblePercent: f.bubblePercent ?? null,
     navDate: f.navDate ?? null, navTime: f.navTime ?? null,
@@ -134,7 +136,7 @@ export default function MarketDesk({
     volume: s.volume ?? null,
   }));
 
-  const desk = buildDesk({ funds, stocks }, { limit });
+  const desk = buildDesk({ funds, stocks }, { limit, now });
 
   // نمای خلاصه: متنوع و کوتاه. فهرستِ کامل هیچ‌وقت دور انداخته نمی‌شود.
   const diversified = maxPerKind ? diversify(desk.observations, maxPerKind) : desk.observations;

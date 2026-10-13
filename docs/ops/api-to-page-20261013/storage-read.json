@@ -324,5 +324,24 @@
       "path": "commodity.lastError",
       "kind": "configuration"
     }
-  ]
+  ],
+  "imeTables": {
+    "checkedAt": "2026-10-13T15:24:00Z",
+    "rest": {
+      "ime_physical_trades": {
+        "status": 404,
+        "code": "PGRST205"
+      },
+      "ime_certificate_history": {
+        "status": 404,
+        "code": "PGRST205"
+      }
+    },
+    "postgres": {
+      "version": "17.6",
+      "database": "postgres",
+      "matchedTables": 0,
+      "readOnly": true
+    }
+  }
 }
