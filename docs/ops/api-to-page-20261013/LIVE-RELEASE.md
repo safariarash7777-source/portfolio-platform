@@ -64,3 +64,18 @@ are recorded in the accompanying repair PR; this paragraph alone is not proof
 that those later steps completed.
 
 No permanent website agent, model scheduler or extra data producer was activated.
+
+## Codal failure-stage follow-up
+
+Read-only comparison of preserved state and existing Liara logs identified six
+new failures and six retries in the first natural backfill cycle. The old ledger
+kept only attempt counts; its `parseFailed` label also included download and
+storage exceptions. The twelve historical causes cannot be reconstructed.
+
+PR233 merged the symbol-retention repair as `c3d751a`. The subsequent diagnostic
+patch adds fixed-size, content-free counters for download exceptions, admission
+rejection/exceptions and persistence exceptions to existing state/debug output.
+It does not change financial admission, the three-attempt ledger, quotas, timers,
+or provider requests. Engine integration passed 51 tests; N10/coverage passed 57;
+legacy Codal tests passed. These are offline results, not report-ingestion proof.
+Final deployment and natural-cycle receipts belong in the accompanying PR.
