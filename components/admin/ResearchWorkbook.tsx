@@ -144,6 +144,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     finally { setBusy(false); }
   }
   function startNew() {
+    if (busyRef.current) return;
     if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی کنار گذاشته می‌شود. ادامه می‌دهید؟')) return;
     setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setDirty(false); setPendingPreparation(false); setChecked(false); setMessage('');
     editRevision.current++; setPreparationEpoch(value => value + 1);
@@ -163,15 +164,18 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     setMessage('فایل برای دریافت آماده شد؛ ذخیره‌شدن آن را در دستگاه بررسی کنید. دریافت فایل نسخهٔ سروری نمی‌سازد.');
   }
   async function importFile(selected: File | undefined) {
-    if (!selected) return;
+    if (!selected || busyRef.current) return;
+    setBusy(true);
+    const importingRevision = editRevision.current;
     try {
       if (selected.size > MAX_WORKBOOK_BYTES) throw new Error('فایل بیش از حد بزرگ است.');
       const imported = parseWorkbook(await selected.text());
+      if (editRevision.current !== importingRevision) { setMessage('هنگام دریافت، متن تغییر کرد؛ تغییر تازه حفظ شد. دوباره باز کنید.'); return; }
       if ((dirty || pendingPreparation) && !window.confirm('متن فعلی جایگزین می‌شود. فایل فعلی را دریافت کرده‌اید؟')) return;
       setWorkbook(imported); setSaved(null); setVersions([]); setReviews([]); setDirty(true); setChecked(false); setMessage('پیش‌نویس بارگذاری شد؛ تأیید انسانی از فایل وارد نمی‌شود. ذخیره، کاربرگ تازه‌ای می‌سازد.');
       editRevision.current++; setPendingPreparation(false); setPreparationEpoch(value => value + 1);
     } catch { setMessage('فایل خوانده نشد؛ یک فایل JSON کاربرگ معتبر با حجم کمتر از ۸ مگابایت انتخاب کنید. متن فعلی حفظ شد.'); }
-    finally { if (file.current) file.current.value = ''; }
+    finally { if (file.current) file.current.value = ''; setBusy(false); }
   }
   function field(id: string, label: string, value: string, update: (value: string) => void, type = 'textarea') {
     const error = checked ? issues.find(i => i.field === id)?.message : undefined;
@@ -255,8 +259,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         {checked && issues.length > 0 && <ul className="max-h-64 space-y-2 overflow-y-auto text-sm">{issues.map((issue, i) => <li key={`${issue.field}-${i}`}><a className="underline" href={`#${issue.field}`}>{issue.message}</a></li>)}</ul>}
         <button type="button" className="btn btn-secondary min-h-11 w-full" onClick={() => download('json')}><Download size={16} aria-hidden="true" /> دریافت فایل قابل ادامه</button>
         <button type="button" className="btn btn-secondary min-h-11 w-full" onClick={() => download('md')}>دریافت متن تحلیل</button>
-        <button type="button" className="btn btn-ghost min-h-11 w-full" onClick={() => file.current?.click()}><FileUp size={16} aria-hidden="true" /> ادامه از فایل</button>
-        <input ref={file} type="file" accept=".json,application/json" className="sr-only" aria-label="فایل کاربرگ" onChange={e => void importFile(e.target.files?.[0])} />
+        <button type="button" className="btn btn-ghost min-h-11 w-full" disabled={busy} onClick={() => { if (!busyRef.current) file.current?.click(); }}><FileUp size={16} aria-hidden="true" /> ادامه از فایل</button>
+        <input ref={file} type="file" accept=".json,application/json" className="sr-only" aria-label="فایل کاربرگ" disabled={busy} onChange={e => void importFile(e.target.files?.[0])} />
         {server === 'ready' && saved && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <h3 className="text-sm font-bold">بازبینی انسانی</h3>
           <button type="button" className="btn btn-secondary min-h-11 w-full" disabled={!canDecide || issues.length > 0 || approvedHere || needsReviewVersion} onClick={() => void decide('approved_internal')}><CheckCircle2 size={16} aria-hidden="true" /> تأیید داخلی نسخهٔ {toPersianDigits(saved.version)}</button>
@@ -274,7 +278,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         <p role="status" className="text-sm leading-7">{message}</p>
         {server === 'ready' && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold">کاربرگ‌های ذخیره‌شده</h3>
-            <button type="button" className="btn btn-ghost min-h-11" onClick={startNew}><Plus size={16} aria-hidden="true" /> تازه</button></div>
+            <button type="button" className="btn btn-ghost min-h-11" disabled={busy} onClick={startNew}><Plus size={16} aria-hidden="true" /> تازه</button></div>
           {list.length === 0
             ? <p className="text-sm leading-7" style={{ color: 'var(--text-2)' }}>هنوز کاربرگی ذخیره نشده است.</p>
             : <ul className="max-h-72 space-y-1 overflow-y-auto text-sm">{list.map(item => <li key={item.workbookId}>

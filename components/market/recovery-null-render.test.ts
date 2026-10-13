@@ -5,6 +5,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import OptionsBoard from './OptionsBoard';
 import GoldCurrencyBoard from './GoldCurrencyBoard';
 import type {IrOptionRow} from '../../lib/market-ir';
+import {toMarket} from '../../lib/market-ir';
 
 // tsx's isolated renderer uses the classic JSX runtime; Next uses its own build.
 Object.assign(globalThis, {React});
@@ -43,4 +44,21 @@ test('Gold quote without receipt time remains visible without epoch date or inve
   assert.match(html, /زمان دریافت نامعلوم/);
   assert.match(html, /طلای آزمایشی/);
   assert.doesNotMatch(html, /آخرین به‌روزرسانی/);
+});
+
+test('Snapshot quotes reach the actual board with unchanged units and rejected prices omitted', () => {
+  // Offline boundary fixture, not a captured live snapshot.
+  const parsed = toMarket({ gold: [
+    {id: 'valid-boundary', faName: 'نمونه معتبر آزمون', price: 101, unit: 'toman', changePercent: 0},
+    {id: 'zero-boundary', faName: 'قیمت صفر نامعتبر', price: 0, unit: 'toman'},
+    {id: 'negative-boundary', faName: 'قیمت منفی نامعتبر', price: -1, unit: 'toman'},
+  ] });
+  const html = renderToStaticMarkup(React.createElement(GoldCurrencyBoard, {
+    gold: parsed.gold, currency: parsed.currency, fetchedAt: parsed.fetchedAt,
+  }));
+  assert.match(html, /نمونه معتبر آزمون/);
+  assert.match(html, /۱۰۱ تومان/);
+  assert.match(html, /• ٪۰٫۰/);
+  assert.match(html, /زمان دریافت نامعلوم/);
+  assert.doesNotMatch(html, /قیمت صفر نامعتبر|قیمت منفی نامعتبر|۰ تومان/);
 });
