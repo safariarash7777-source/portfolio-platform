@@ -23,6 +23,14 @@ not deploy the separate Liara relay or install SQL.
 - IME storage preparation adds explicit minimal grants, RLS checks, append-only
   guards including TRUNCATE, and atomic installation that refuses existing
   history objects. It does not create a second storage model or rewrite history.
+- The candidate certificate writer uses each quote's source date, rejects missing
+  or future source dates, and cannot relabel an overnight retained quote as today.
+  Physical collection now separates the attempted day from successful completion;
+  failed storage does not advance its cursor or increase same-day provider calls.
+- Cross-review removed a proposed null-equal physical-trade constraint because it
+  could discard distinguishable rows. Existing nullable identity semantics remain;
+  duplicates under null fields need a provider identity contract. Disposable test
+  databases use random names and are removed only if created by that test run.
 
 See [Codal evidence](codal-coverage-followup.md),
 [relay reconciliation](RELAY-RECONCILIATION.md), and

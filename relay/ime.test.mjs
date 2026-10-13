@@ -42,7 +42,7 @@ test("mapCertRow: pc غایب → close از pl پر می‌شود", () => {
 });
 
 test("IME numeric absence stays null; genuine zero is retained", () => {
-  for (const value of [null, undefined, "", "  ", true, false, "invalid"]) {
+  for (const value of [null, undefined, "", "  ", true, false, [], [12], {}, NaN, Infinity, "invalid"]) {
     assert.equal(mapCertRow({ pl: value, tval: value }).price, null);
     assert.equal(mapCertRow({ pl: value, tval: value }).valueToman, null);
     assert.equal(mapPhysicalRow({ pl: value, tval: value }, "2026-01-01").price_close_rial, null);

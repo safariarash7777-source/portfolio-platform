@@ -1,6 +1,7 @@
 -- Read-only post-installation checks. No sample records or provider calls.
 -- Run with psql -X -v ON_ERROR_STOP=1 -f sql/test/verify_ime_storage.sql.
-BEGIN READ ONLY;
+BEGIN;
+SET TRANSACTION READ ONLY;
 SET LOCAL statement_timeout = '15s';
 DO $$
 DECLARE t text; r text; p text; s text;

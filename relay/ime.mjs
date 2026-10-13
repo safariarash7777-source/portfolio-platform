@@ -50,8 +50,8 @@ function rollDay() {
 }
 
 const num = (v) => {
-  if (v === null || v === undefined || typeof v === "boolean"
-      || (typeof v === "string" && v.trim() === "")) return null;
+  if (typeof v !== "number" && typeof v !== "string") return null;
+  if (typeof v === "string" && v.trim() === "") return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
