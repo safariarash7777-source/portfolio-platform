@@ -38,10 +38,45 @@ ownership of another task's checkout or permission to deploy it.
   receipt are recorded in PR #231; earlier-head green CI is not reused as proof.
 
 The preliminary extraction failure of Liara v50 is now confirmed by official build
-logs, but no particular archive filename is identified. Direct repository linkage
-and the exclusive release owner remain unverified; replica count is not proof of
-publishing ownership. No runtime or database installation follows merely from
-combining these patches.
+logs, but no particular archive filename is identified. Authenticated GitHub
+settings showed no repository or environment variables: `RELAY_AUTO_DEPLOY` is
+unset, so the workflow's automatic relay deployment condition is false. Manual
+dispatch remains possible. Liara's GitHub deployment page showed a repository
+picker; this did not establish a direct auto-deploy binding or exclusive release
+owner. No publishing settings were changed. Replica count is not ownership proof.
+
+Exact code head `6eaf64f4ee393d38127ae4117edb7983775eebe0` passed all five CI
+jobs in [run 38459139150](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/38459139150)
+and its Vercel Preview completed. This includes the final Jalali round-trip check:
+invalid non-leap Esfand 30 cannot silently become next year's Farvardin 1.
+The Supabase Preview check was skipped, not a database deployment.
+
+## Backup and isolated installation rehearsal
+
+A fresh custom-format dump and source inventory shared one exported repeatable-read
+snapshot. The dump was encrypted and both checksums retained. Full restore to the
+same PostgreSQL image completed with restored role attributes/grants. The temporary
+container had network `none`, no published ports or mounts, disabled cron, and a
+matching `supabase_admin` bootstrap role. No auth/API services were started.
+
+The first inventory comparison reported 58 differences caused by different
+`search_path` deparsing (4 defaults, 12 foreign keys, 42 policies). Matching the
+target session's `search_path=public` to the saved source inventory yielded all
+2,391 entries byte-identical, SHA256
+`72823930e7ae63dda64071a06aa0ed7b730244fefcba194a52cf56029b03db79`.
+No source counts were recaptured after the snapshot. The original failed report
+was retained; no schema definitions or comparison rules were relaxed.
+
+The reviewed phase19 SQL then installed successfully on that isolated restored
+database. The read-only schema/ACL verifier passed. Excluding exactly the two new
+relations, their indexes/sequences and the new guard function left the original
+inventory unchanged; 89 expected inventory entries were added. The owned
+temporary container was removed after verification. Backups and private logs
+remain on the database host; only the sanitized [receipt](restore-rehearsal-receipt.json)
+is committed. This establishes public structural inventory and public/auth/storage
+row counts, not full row-content hashes, login acceptance, stored-file recovery or
+vault-secret decryption. The comparator's legacy fixed message about unknown CLI
+snapshot support does not describe this direct `pg_dump --snapshot` execution.
 
 ## Verified current distinction
 
@@ -88,10 +123,10 @@ See [Codal evidence](codal-coverage-followup.md),
 4. Installing IME tables beneath the old certificate writer would allow retained
    quotes to be labelled with the current wall-clock day. Storage installation
    must follow verification of the source-date writer, not precede it.
-5. A fresh custom database dump and encrypted copy were created privately on the
-   database host. Both checksums and archive listing passed. This backup has not
-   been restore-tested, so it is not a completed migration prerequisite. No live
-   migration or data mutation was performed.
+5. Backup restore and phase19 rehearsal now pass as described above. Live
+   installation still requires the verified corrected writer, sole publishing
+   ownership and current configuration/quota prerequisites. No live migration,
+   relay replacement, forced provider refresh or historical recovery was run.
 
 ## Website agent status and next sequence
 

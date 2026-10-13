@@ -41,8 +41,9 @@ sensitive environment name. Its counters were network=0, childProcess=0,
 sensitiveEnvironment=1, privateFile=0. The guard was not weakened. Normal isolated
 tests above passed; they are not claimed as a pass of this stricter harness.
 
-Parent integration must add `node --test relay/daily-fx.test.mjs` to test:relay and
-run full release CI. The existing retention-server hook already covers that file.
+Parent integration added `node --test relay/daily-fx.test.mjs` to test:relay.
+Combined code head `6eaf64f` passed full CI run 38459139150. The existing
+retention-server hook covers that file. This is candidate CI, not relay release.
 
 ## Additional read-only runtime evidence
 
@@ -55,9 +56,12 @@ filename or archive defect. No app-build success or newer runtime is inferred.
 Current release still v49 (`6abd1ec2f9f9fa3c1e852cb3`). v50's recorded client was
 `@liara/cli/9.5.1 linux-x64 node-v22.23.3`, with no git commit/remote metadata.
 That identifies the client used for this attempt, not the active publishing owner.
-The read-only app configuration has no repository-link field. The GitHub connector
-rejected workflow-list URLs, so RELAY_AUTO_DEPLOY and competing publisher ownership
-remain unverified. No undocumented endpoints were guessed.
+The read-only app configuration has no repository-link field. Subsequent parent
+inspection of authenticated GitHub settings found no repository/environment
+variables: RELAY_AUTO_DEPLOY is unset, disabling the workflow's automatic path.
+Liara's deployment page displayed a repository picker but did not prove a direct
+auto-deploy binding. Competing publisher ownership remains unverified. No settings
+were changed and no undocumented endpoints were guessed.
 
 Commodity credential availability was checked by NAME only in the current Liara
 configuration and three known migration environment files: `liara-stage.env`,
