@@ -43,6 +43,7 @@ function toVersion(r: Record<string, unknown>): StoredVersion {
     title: String(r.title),
     body: r.body,
     createdAt: String(r.created_at),
+    ...(typeof r.created_by === "string" ? { createdBy: r.created_by } : {}),
   };
 }
 
@@ -64,7 +65,7 @@ function supabaseStore(db: SessionClient): WorkbookStore {
     async versions(workbookId) {
       const { data, error } = await db
         .from("research_workbook_versions")
-        .select(`${VERSION_COLUMNS},body`)
+        .select(`${VERSION_COLUMNS},body,created_by`)
         .eq("workbook_id", workbookId)
         .order("version", { ascending: true });
       if (error) throw classifyStoreError(error);

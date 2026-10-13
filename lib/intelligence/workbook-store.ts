@@ -35,6 +35,7 @@ export interface StoredVersion {
   title: string;
   body: unknown;
   createdAt: string;
+  createdBy?: string;
 }
 export interface StoredReview {
   id: string;
@@ -201,12 +202,16 @@ export async function openWorkbook(
 
 export async function saveWorkbook(
   gateway: WorkbookGateway,
-  payload: { workbookId?: unknown; baseVersion?: unknown; workbook?: unknown },
+  payload: { workbookId?: unknown; creationId?: unknown; baseVersion?: unknown; workbook?: unknown },
 ): Promise<StoreResult> {
   const denied = await authorize(gateway);
   if (denied) return denied;
 
-  const isNew = payload.workbookId === null || payload.workbookId === undefined;
+  const creationId = payload.creationId;
+  const isNew = payload.workbookId === null || payload.workbookId === undefined || (payload.baseVersion === 0 && typeof creationId === "string" && payload.workbookId === creationId);
+  if (creationId !== undefined && (!isNew || typeof creationId !== "string" || !UUID.test(creationId))) {
+    return { status: 400, body: { error: "شناسهٔ ثبت اولیه نامعتبر است" } };
+  }
   if (!isNew && (typeof payload.workbookId !== "string" || !UUID.test(payload.workbookId))) {
     return { status: 400, body: { error: "شناسهٔ کاربرگ نامعتبر است" } };
   }
@@ -224,7 +229,24 @@ export async function saveWorkbook(
   }
 
   try {
-    const workbookId = isNew ? gateway.newId() : (payload.workbookId as string);
+    const workbookId = isNew ? (typeof creationId === "string" ? creationId.toLowerCase() : gateway.newId()) : (payload.workbookId as string);
+    const store = gateway.createStore();
+    // Stable creation UUID + existing UNIQUE(workbook_id,version) is the
+    // idempotency key. Replay is bound to the native author and exact content.
+    const replay = async (): Promise<StoreResult | null> => {
+      if (creationId === undefined) return null;
+      const prior = (await store.versions(workbookId)).find(row => row.version === 1);
+      if (!prior) return null;
+      const actor = await gateway.getUser();
+      const stored = sanitize(prior.body);
+      const canonical = (value: unknown) => JSON.stringify(value, (_key, item) => item && typeof item === "object" && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
+      if (!actor || prior.createdBy !== actor.id || typeof stored === "string" || canonical(stored) !== canonical(clean)) {
+        return failure(new StoreError("conflict"));
+      }
+      return { status: 200, body: { workbookId: prior.workbookId, version: prior.version, savedAt: prior.createdAt, reused: true } };
+    };
+    const existing = await replay();
+    if (existing) return existing;
     if (!isNew) {
       const prior = (await gateway.createStore().versions(workbookId)).sort((a, b) => b.version - a.version)[0];
       const priorBody = prior?.body as Record<string, unknown> | undefined;
@@ -235,12 +257,19 @@ export async function saveWorkbook(
         return { status: 503, body: { error: "نوشتن آماده‌سازی خصوصی متوقف است؛ نسخهٔ ذخیره‌شده محفوظ است.", unavailable: true } };
       }
     }
-    const row = await gateway.createStore().insertVersion({
+    let row: StoredVersion;
+    try { row = await store.insertVersion({
       workbookId,
       version: base + 1,
       title: clean.title.trim(),
       body: clean,
-    });
+    }); } catch (error) {
+      if (error instanceof StoreError && error.code === "conflict") {
+        const recovered = await replay();
+        if (recovered) return recovered;
+      }
+      throw error;
+    }
     return { status: 201, body: { workbookId: row.workbookId, version: row.version, savedAt: row.createdAt } };
   } catch (error) {
     return failure(error);

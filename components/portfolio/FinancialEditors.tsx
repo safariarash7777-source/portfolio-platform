@@ -22,8 +22,10 @@ export function useFinancialEditor(kind: FinancialEditorKind) {
   return {
     locked: editor.navigating || editor.active !== null && editor.active !== kind,
     active: editor.active === kind,
+    awaitingReadback: editor.active === kind && editor.navigating,
     acquire: () => editor.acquire(kind),
     release: () => editor.release(kind),
-    navigate: () => editor.navigate(kind),
+    navigate: (target?: string) => editor.navigate(kind, target),
+    settle: (target: string | null) => editor.settle(kind, target),
   };
 }

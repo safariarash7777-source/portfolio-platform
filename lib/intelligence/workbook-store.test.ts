@@ -38,7 +38,7 @@ function harness(opts: { user?: string | null; role?: string | null; roleThrows?
           gate();
           if (versions.some((v) => v.workbookId === row.workbookId && v.version === row.version)) throw new StoreError("conflict");
           if (row.version > 1 && !versions.some((v) => v.workbookId === row.workbookId && v.version === row.version - 1)) throw new StoreError("conflict");
-          const v: StoredVersion = { id: uuid(), workbookId: row.workbookId, version: row.version, title: row.title, body: structuredClone(row.body), createdAt: now() };
+          const v: StoredVersion = { id: uuid(), workbookId: row.workbookId, version: row.version, title: row.title, body: structuredClone(row.body), createdAt: now(), createdBy: opts.user ?? "admin-1" };
           versions.push(v);
           return v;
         },
@@ -256,4 +256,19 @@ test("latestPerWorkbook: یک ردیف برای هر کاربرگ، بالاتر
     { workbookId: "a", version: 2, createdAt: "2026-09-22T00:00:00Z" },
   ];
   assert.deepEqual(latestPerWorkbook(rows).map((r) => `${r.workbookId}${r.version}`), ["a2", "b1"]);
+});
+
+test('stable creation replay returns original timestamp/UUID, concurrent retry cannot add a workbook, mismatch/foreign author conflict', async () => {
+ const opts={user:'synthetic-admin-A'};const h=harness(opts), creationId='11111111-1111-4111-8111-111111111111';
+ const payload={workbookId:null,creationId,baseVersion:0,workbook:complete('synthetic creation')};
+ const [first,second]=await Promise.all([saveWorkbook(h.gw,payload),saveWorkbook(h.gw,payload)]);
+ assert.equal((await saveWorkbook(h.gw,{...payload,workbookId:creationId})).status,200);
+ assert.equal((await saveWorkbook(h.gw,{workbookId:creationId,baseVersion:0,workbook:payload.workbook})).status,400);
+ assert.deepEqual([first.status,second.status].sort(),[200,201]);assert.equal(h.versions.length,1);
+ assert.equal(first.body.workbookId,creationId);assert.equal(second.body.savedAt,first.body.savedAt);
+ assert.equal((await saveWorkbook(h.gw,{...payload,workbook:complete('different content')})).status,409);
+ opts.user='synthetic-admin-B';assert.equal((await saveWorkbook(h.gw,payload)).status,409);assert.equal(h.versions.length,1);
+ opts.user='synthetic-admin-A';const replay=await saveWorkbook(h.gw,payload);assert.equal(replay.status,200);assert.equal(replay.body.version,1);
+ assert.equal((await saveWorkbook(h.gw,{...payload,creationId:'invalid'})).status,400);
+ assert.equal((await saveWorkbook(h.gw,{...payload,workbookId:creationId,baseVersion:1})).status,400);
 });
