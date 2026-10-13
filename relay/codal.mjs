@@ -1004,8 +1004,10 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
 }
 
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
-export async function downloadAndParse(a, kind) {
+export async function downloadAndParse(a, kind, onDownloaded = () => {}) {
   const html = await downloadExcelHtml(a.link_excel);
+  // Stage boundary only: never pass report content to diagnostics.
+  onDownloaded();
   const meta = metaFrom(a, kind);
   return kind === "ن-۱۰" ? admitN10Html(html, meta) : normalizeN30(parseHtmlTables(html), meta);
 }

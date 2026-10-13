@@ -39,6 +39,35 @@ const COVERED_MIN_ROWS = Number(process.env.CODAL_COVERED_MIN || 8);   // این
 const MAX_FAILS = 3;                                                    // بعد از این تعداد شکست، اطلاعیه بلاک می‌شود
 const LEDGER_CAP = 600;                                                 // سقف دفتر خطا (قدیمی‌ها حذف می‌شوند)
 
+// Fixed-cardinality, content-free counters. They describe observed failures,
+// not a classification of historical ledger entries or an extraction fix.
+const failureCounts = () => ({
+  download: { exception: 0 },
+  admission: { rejected: 0, exception: 0 },
+  persistence: { exception: 0 },
+});
+function readFailureCounts(value) {
+  const clean = failureCounts();
+  for (const [stage, reasons] of Object.entries(clean)) {
+    for (const reason of Object.keys(reasons)) {
+      const count = value?.[stage]?.[reason];
+      if (Number.isSafeInteger(count) && count >= 0) clean[stage][reason] = count;
+    }
+  }
+  return clean;
+}
+function readFailureDiagnostics(value) {
+  return { version: 1,
+    totals: readFailureCounts(value?.version === 1 ? value.totals : null),
+    lastCycle: readFailureCounts(value?.version === 1 ? value.lastCycle : null),
+  };
+}
+function recordFailureDiagnostic(stage, reason) {
+  for (const counts of [state.failureDiagnostics.totals, state.failureDiagnostics.lastCycle]) {
+    counts[stage][reason] = Math.min(Number.MAX_SAFE_INTEGER, counts[stage][reason] + 1);
+  }
+}
+
 const SB_HDRS = () => ({
   "Content-Type": "application/json",
   apikey: SUPABASE_SERVICE_ROLE_KEY,
@@ -56,6 +85,7 @@ export const engineStatus = {
   feedTable: { attempted: 0, inserted: 0, duplicates: 0, lastError: null, publishTimeStored: false },
   backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, parseFailed: 0, skippedCovered: 0 },
   ledgerSize: 0,
+  failureDiagnostics: readFailureDiagnostics(),
 };
 
 /* ── وضعیت پایدار در Supabase ──────────────────────────────────────────────── */
@@ -88,6 +118,10 @@ async function loadState() {
   state.watermark ??= null;
   state.backfillCursor ??= 0;
   state.fails ??= {};
+  // Older payloads have no diagnostics; unknown/malformed fields never reach
+  // debug output or the next persisted diagnostic object.
+  state.failureDiagnostics = readFailureDiagnostics(payload.failureDiagnostics);
+  engineStatus.failureDiagnostics = state.failureDiagnostics;
   return state;
 }
 
@@ -259,21 +293,25 @@ async function pollGlobalFeed() {
     if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
     dl++;
     st.downloaded = dl;
+    let stage = "download";
     try {
-      const data = await downloadAndParse(a, kind);
+      const data = await downloadAndParse(a, kind, () => { stage = "admission"; });
       if (data) {
+        stage = "persistence";
         st.inserted += await insertParsedReport(a, kind, data);
         delete state.fails[a.link];
       } else {
+        recordFailureDiagnostic("admission", "rejected");
         st.parseFailed++;
         recordFail(a.link);
         st.complete = false; st.incompleteReason = "report_failure";
       }
     } catch (e) {
+      recordFailureDiagnostic(stage, "exception");
       st.parseFailed++;
       recordFail(a.link);
       st.complete = false; st.incompleteReason = "report_failure";
-      console.error(`codal-engine feed ${a.l18}: ${e?.message ?? e}`);
+      console.error(`codal-engine report failure: ${stage}/exception`);
     }
   }
 
@@ -350,16 +388,20 @@ async function backfillSome() {
         if (known.has(a.link) || isBlocked(a.link)) continue;
         if (dl >= BACKFILL_MAX_DL) break;
         dl++;
+        let stage = "download";
         try {
-          const data = await downloadAndParse(a, kind);
+          const data = await downloadAndParse(a, kind, () => { stage = "admission"; });
           if (data) {
+            stage = "persistence";
             st.inserted += await insertParsedReport(a, kind, data);
             delete state.fails[a.link];
           } else {
+            recordFailureDiagnostic("admission", "rejected");
             st.parseFailed++;
             recordFail(a.link);
           }
         } catch (e) {
+          recordFailureDiagnostic(stage, "exception");
           st.parseFailed++;
           recordFail(a.link);
         }
@@ -385,6 +427,7 @@ export async function runEngineCycle() {
   }
   try { await loadState(); }
   catch (e) { engineStatus.lastError = `state load: ${e?.message ?? e}`; return; }
+  state.failureDiagnostics.lastCycle = failureCounts();
   const watermarkBefore = state.watermark;
   try {
     await pollGlobalFeed();
