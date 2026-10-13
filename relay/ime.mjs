@@ -22,15 +22,19 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 //   - append پایان‌روز گواهی‌ها → جدول ime_certificate_history (همان قاعده).
 //   - بودجه: گواهی ~۲۲/روز + فیزیکی ۱-۲/روز — در status شمرده می‌شود.
 
-import { tehranHour as tehranHourH23 } from "./eod.mjs";
+import { tehranHour as tehranHourH23, tehranNow, sessionTradeDate } from "./eod.mjs";
+import { jalaliTextToIso } from "./codal.mjs";
 const CERT_INTERVAL_MS = 30 * 60 * 1000;
+const certSourceCalendar = new Intl.DateTimeFormat("en-US-u-ca-persian", {
+  timeZone: "Asia/Tehran", year: "numeric", month: "numeric", day: "numeric",
+});
 
 let lastCertFetch = 0;
 let certRows = [];         // آخرین ردیف‌های خام گواهی (ریال)
 let certAt = null;         // زمان آخرین دریافت موفق
 let certError = null;
 let certReqToday = 0;
-let physState = { lastRunDay: null, inserted: 0, lastError: null, table: "unknown", backfillCursor: 0 };
+let physState = { lastAttemptDay: null, lastRunDay: null, inserted: 0, lastError: null, table: "unknown", backfillCursor: 0 };
 let certEodState = { lastPushDay: null, pushed: 0, lastError: null, table: "unknown" };
 let dayKey = "";
 
@@ -40,8 +44,7 @@ function tehranDayKey() {
 // ساعت از `eod.mjs` (h23) — `hour12: false` در بعضی ICUها نیمه‌شب را «24» می‌خواند و
 // دروازهٔ «پس از بازار» را باز می‌کرد (B-055). جدول‌های تاریخچهٔ کالا هنوز روی
 // Production ساخته نشده‌اند، پس اینجا دادهٔ خرابی نیست؛ این اصلاح پیشگیرانه است.
-// ⚠️ برچسبِ `trade_date` در این فایل هنوز از `tehranDayKey()` (ساعتِ دیواری) می‌آید —
-// پیش از ساختنِ آن جدول‌ها باید مثلِ `eod.mjs` به تاریخِ جلسهٔ منبع وصل شود.
+// تاریخ هر ردیف تاریخچه از date_update همان گواهی می‌آید؛ زمان دریافت جای آن نیست.
 function tehranHour() {
   return tehranHourH23();
 }
@@ -51,6 +54,8 @@ function rollDay() {
 }
 
 const num = (v) => {
+  if (typeof v !== "number" && typeof v !== "string") return null;
+  if (typeof v === "string" && v.trim() === "") return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
@@ -125,28 +130,53 @@ export function certificatesForPayload() {
 }
 
 // ── append پایان‌روز گواهی‌ها → ime_certificate_history ─────────────────────
+// No date is synthesized from receipt time. Retained quotes keep their original
+// source day, and missing/future source dates cannot create historical records.
+export function planCertEod(rows, now = new Date()) {
+  const current = tehranNow(now);
+  if (!(current.hour >= 19)) return { rows: [], rejected: 0, skip: "before-close" };
+  let rejected = 0;
+  const result = [];
+  for (const r of rows) {
+    const sourceDay = sessionTradeDate(r.date);
+    if (!r.id || !sourceDay || sourceDay > current.date) { rejected++; continue; }
+    // Calendar conversion can normalize non-leap Esfand 30 into next year.
+    // History must preserve a real source date, never that normalized substitute.
+    const expected = jalaliTextToIso(r.date).split("-").map(Number);
+    const parts = certSourceCalendar.formatToParts(new Date(`${sourceDay}T12:00:00+03:30`));
+    if (["year", "month", "day"].some((key, i) =>
+      Number(parts.find(part => part.type === key)?.value) !== expected[i])) {
+      rejected++; continue;
+    }
+    result.push({
+      trade_date: sourceDay,
+      contract_code: r.id,
+      commodity: r.commodity,
+      title: r.title,
+      close_toman: r.close,
+      last_toman: r.price,
+      high_toman: r.high,
+      low_toman: r.low,
+      change_percent: r.changePercent,
+      trade_count: r.tradeCount,
+      volume: r.volume,
+      value_toman: r.valueToman,
+      source: "brsapi_ime_cert",
+    });
+  }
+  return { rows: result, rejected, skip: result.length ? null : "no-source-session-date" };
+}
+
 export async function pushCertEod({ supabaseUrl, serviceKey }) {
   rollDay();
   if (!supabaseUrl || !serviceKey) return;
   if (certRows.length === 0 || !certAt) return;
   const day = tehranDayKey();
   if (certEodState.lastPushDay === day) return;
-  if (tehranHour() < 19) return; // فقط بعد از پایان بازار
-  const rows = certRows.map((r) => ({
-    trade_date: day,
-    contract_code: r.id,
-    commodity: r.commodity,
-    title: r.title,
-    close_toman: r.close,
-    last_toman: r.price,
-    high_toman: r.high,
-    low_toman: r.low,
-    change_percent: r.changePercent,
-    trade_count: r.tradeCount,
-    volume: r.volume,
-    value_toman: r.valueToman,
-    source: "brsapi_ime_cert",
-  }));
+  const plan = planCertEod(certRows);
+  certEodState.skippedSourceDate = plan.rejected;
+  if (plan.skip) { certEodState.skip = plan.skip; return; }
+  const rows = plan.rows;
   try {
     const res = await fetch(`${supabaseUrl}/rest/v1/ime_certificate_history?on_conflict=trade_date,contract_code`, {
       method: "POST",
@@ -160,7 +190,8 @@ export async function pushCertEod({ supabaseUrl, serviceKey }) {
     });
     if (res.status === 404) { certEodState.table = "missing (run phase19 SQL)"; return; }
     if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 120)}`);
-    certEodState = { lastPushDay: day, pushed: rows.length, lastError: null, table: "ok" };
+    certEodState = { lastPushDay: day, pushed: rows.length, lastError: null,
+      table: "ok", skippedSourceDate: plan.rejected, skip: null };
   } catch (e) {
     certEodState.lastError = e?.message ?? String(e);
   }
@@ -221,9 +252,17 @@ async function fetchPhysicalDay(jdate, { base, key, headers, client = null, coun
     if (!res.ok) throw new Error(`http ${res.status}`);
     j = await res.json();
   }
-  if (j && !Array.isArray(j) && j.status === "no_data") return [];
-  const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
-  return arr;
+  if ((j?.successful !== undefined && j.successful !== true)
+      || (j?.code_http !== undefined && j.code_http !== 200)) throw new Error("physical source rejected request");
+  if (j?.status === "no_data") {
+    if (j.successful === true && j.code_http === 200
+        && (j.data == null || (Array.isArray(j.data) && j.data.length === 0))) return [];
+    throw new Error("unverified physical no_data response");
+  }
+  if (j?.status !== undefined) throw new Error("unrecognized physical response status");
+  if (Array.isArray(j)) return j;
+  if (Array.isArray(j?.data)) return j.data;
+  throw new Error("unknown physical response schema");
 }
 
 // جلالی n روز قبل (تقریب با شمارش روز میلادی و فرمت مجدد — دقیق است چون
@@ -236,42 +275,106 @@ function tehranJalaliDaysAgo(n) {
   return `${g("year")}-${g("month")}-${g("day")}`;
 }
 
-// روزی یک‌بار (بعد از ۱۵ تهران): امروز + یک روزِ بک‌فیل از ۷ روز اخیر.
-export async function runPhysicalDaily({ base, key, headers, supabaseUrl, serviceKey, client = null, countLegacy = null }) {
-  if (!supabaseUrl || !serviceKey || !key) return;
-  const day = tehranDayKey();
-  if (physState.lastRunDay === day) return;
-  if (tehranHour() < 15) return;
-  physState.lastRunDay = day;
-  try {
-    const today = tehranJalaliToday();
-    // بک‌فیل تدریجی: هر روز یک روزِ گذشته (۱..۷) هم گرفته می‌شود.
-    const backDay = tehranJalaliDaysAgo(1 + (physState.backfillCursor % 7));
-    physState.backfillCursor++;
-    let inserted = 0;
-    for (const jd of [today, backDay]) {
-      const arr = await fetchPhysicalDay(jd, { base, key, headers, client, countLegacy });
-      const rows = arr.map((d) => mapPhysicalRow(d, day)).filter((r) => r.symbol_code && r.trade_jdate);
-      if (rows.length === 0) continue;
-      const res = await fetch(`${supabaseUrl}/rest/v1/ime_physical_trades?on_conflict=trade_jdate,symbol_code,producer,price_close_rial,volume_contract`, {
-        method: "POST",
-        headers: {
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-          "Content-Type": "application/json",
-          Prefer: "resolution=ignore-duplicates,return=minimal",
-        },
-        body: JSON.stringify(rows),
-      });
-      if (res.status === 404) { physState.table = "missing (run phase19 SQL)"; return; }
-      if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 120)}`);
-      inserted += rows.length;
-      physState.table = "ok";
+// One source attempt for each of today's two targets. Only storage is retried.
+// State is process-local, single-flight and bounded to one Tehran-day cycle.
+const PHYSICAL_STORAGE_MAX_ATTEMPTS = 3;
+const PHYSICAL_STORAGE_RETRY_MS = 60 * 60_000;
+let physicalCycle = null;
+let physicalInflight = null;
+
+function completePhysicalConflictIdentity(raw) {
+  const text = value => typeof value === "string" && value.trim().length > 0;
+  return raw && typeof raw === "object" && !Array.isArray(raw)
+    && text(raw.l18) && text(raw.producer)
+    && num(raw.pl) !== null && num(raw.volume_contract) !== null;
+}
+
+async function runPhysicalTarget(target, cycle, ports) {
+  if (target.complete || target.source === "failed") return;
+  if (target.source === "unattempted") {
+    // A request that spans midnight must not start the other day's source job.
+    if (tehranDayKey() !== cycle.day) return;
+    target.source = "failed"; // set before I/O: a failure never refetches today
+    target.sourceAttempts++;
+    try {
+      const arr = await fetchPhysicalDay(target.date, ports);
+      // A NULL conflict component makes replay non-idempotent under the existing
+      // SQL constraint. Keep the whole target incomplete instead of dropping a
+      // bad row silently or manufacturing zero. Do not change the SQL identity.
+      target.sourceRows = arr.length;
+      target.rejectedRows = arr.filter(raw => !completePhysicalConflictIdentity(raw)).length;
+      if (target.rejectedRows > 0) throw new Error("incomplete physical conflict identity");
+      const rows = arr.map(raw => mapPhysicalRow(raw, cycle.day));
+      target.rejectedRows = rows.filter(row => row.trade_jdate !== target.date).length;
+      if (target.rejectedRows > 0) throw new Error("physical source date mismatch");
+      target.rows = rows;
+      target.source = "ready";
+      if (rows.length === 0) { target.complete = true; return; }
+    } catch (error) {
+      target.error = error?.message ?? String(error);
+      return;
     }
-    physState.inserted = inserted;
+  }
+  if (target.storageAttempts >= PHYSICAL_STORAGE_MAX_ATTEMPTS || Date.now() < target.nextRetryAt) return;
+  target.storageAttempts++;
+  try {
+    const res = await fetch(`${ports.supabaseUrl}/rest/v1/ime_physical_trades?on_conflict=trade_jdate,symbol_code,producer,price_close_rial,volume_contract`, {
+      method: "POST",
+      headers: { apikey: ports.serviceKey, Authorization: `Bearer ${ports.serviceKey}`,
+        "Content-Type": "application/json", Prefer: "resolution=ignore-duplicates,return=minimal" },
+      body: JSON.stringify(target.rows), signal: AbortSignal.timeout(15000),
+    });
+    if (res.status === 404) {
+      physState.table = "missing (run phase19 SQL)";
+      throw new Error("physical table missing");
+    }
+    if (!res.ok) throw new Error(`physical persistence HTTP ${res.status}`);
+    target.submitted = target.rows.length;
+    target.complete = true;
+    target.rows = null;
+    target.error = null;
+    target.nextRetryAt = 0;
+    physState.table = "ok";
+  } catch (error) {
+    target.error = error?.message ?? String(error);
+    target.nextRetryAt = target.storageAttempts < PHYSICAL_STORAGE_MAX_ATTEMPTS
+      ? Date.now() + PHYSICAL_STORAGE_RETRY_MS * 2 ** (target.storageAttempts - 1) : null;
+  }
+}
+
+export function runPhysicalDaily(options) {
+  if (physicalInflight) return physicalInflight;
+  physicalInflight = runPhysicalDailyOnce(options).finally(() => { physicalInflight = null; });
+  return physicalInflight;
+}
+
+async function runPhysicalDailyOnce(ports) {
+  if (!ports.supabaseUrl || !ports.serviceKey || !ports.key) return;
+  const day = tehranDayKey();
+  if (physicalCycle && physicalCycle.day !== day) {
+    const unresolved = physicalCycle.targets.filter(target => !target.complete);
+    physState.expired = { day: physicalCycle.day, incompleteTargets: unresolved.length,
+      pendingRows: unresolved.reduce((total, target) => total + (target.rows?.length ?? 0), 0) };
+    physicalCycle = null;
+  }
+  if (!(tehranHour() >= 15)) return;
+  if (physState.lastRunDay === day) return;
+  if (!physicalCycle) {
+    // Daily scope expires completed/failed targets too: later backfill must read
+    // the provider again, rather than freezing an old authoritative-empty result.
+    physicalCycle = { day, targets: [tehranJalaliToday(), tehranJalaliDaysAgo(1 + (physState.backfillCursor % 7))]
+      .map(date => ({ date, source: "unattempted", sourceAttempts: 0, storageAttempts: 0,
+        nextRetryAt: 0, rows: null, sourceRows: 0, rejectedRows: 0, submitted: 0, complete: false, error: null })) };
+    physState.lastAttemptDay = day;
+  }
+  for (const target of physicalCycle.targets) await runPhysicalTarget(target, physicalCycle, ports);
+  physState.inserted = physicalCycle.targets.reduce((total, target) => total + target.submitted, 0);
+  if (physicalCycle.targets.every(target => target.complete)) {
     physState.lastError = null;
-  } catch (e) {
-    physState.lastError = e?.message ?? String(e);
+    physState.lastRunDay = physicalCycle.day;
+    physState.backfillCursor++;
+  } else {
+    physState.lastError = physicalCycle.targets.find(target => target.error)?.error ?? "physical cycle incomplete";
   }
 }
 
@@ -284,6 +387,12 @@ export function imeStatus() {
       lastError: certError,
       eod: certEodState,
     },
-    physical: physState,
+    physical: { ...physState, retryScope: "process-memory-tehran-day", maxProviderRequestsPerDay: 2,
+      maxStorageAttemptsPerTarget: PHYSICAL_STORAGE_MAX_ATTEMPTS, cycleDay: physicalCycle?.day ?? null,
+      targets: (physicalCycle?.targets ?? []).map(target => ({ date: target.date, source: target.source,
+        sourceAttempts: target.sourceAttempts, storageAttempts: target.storageAttempts,
+        nextRetryAt: target.nextRetryAt, complete: target.complete, pendingRows: target.rows?.length ?? 0,
+        sourceRows: target.sourceRows, rejectedRows: target.rejectedRows, error: target.error })),
+    },
   };
 }

@@ -15,7 +15,7 @@ async function probe(scenario) {
     const fund={...stock,l18:'isolated-fund',cs_id:68};
     const option={l18:'isolated-option',type:'call',pl:2000,date:'1405-07-14',time:'09:31:00'};
     const gc={gold:[{symbol:'isolated-gold',price:1000,date:'1405-07-14',time:'09:30:00'}],
-      currency:[{symbol:'USD',price:2000,date:'1405-07-14',time:'09:30:00'}],
+      currency:[{symbol:'USD',price:2000,unit:'تومان',date:'1405-07-14',time:'09:30:00'}],
       cryptocurrency:[{symbol:'isolated-crypto',price:3000,date:'1405-07-14',time:'09:30:00'}]};
     const failure=()=>{ const e=new Error('synthetic timeout');e.name='TimeoutError';throw e; };
     const failed=()=>scenario==='cold-all-failed'||(['cold-partial','unknown-baseline','malformed-baseline','retry-baseline'].includes(scenario))||(phase===1&&['partial-recovery','warm-all-failed','hydrated-partial','daily-partial','daily-recovery','client-source-timeout'].includes(scenario));
@@ -26,7 +26,15 @@ async function probe(scenario) {
         const core=/Gold_Currency|AllSymbols|Index|Option/.test(u.pathname);
         if(core&&phase===1&&scenario==='malformed-sources')return reply(/Option/.test(u.pathname)?[{}]:{});
         if(core&&failed()&&(!/Option/.test(u.pathname)||scenario==='warm-all-failed'||scenario==='cold-all-failed'))failure();
-        if(/Gold_Currency/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?{gold:[],currency:[],cryptocurrency:[]}:phase===1&&scenario==='missing-currency'?{gold:gc.gold,cryptocurrency:gc.cryptocurrency}:gc);
+        if(/Gold_Currency/.test(u.pathname)) {
+          const currency=gc.currency.map(row=>({...row,
+            ...(phase===2&&scenario==='daily-recovery'?{time:'14:30:00'}:{}),
+            ...(scenario==='daily-old-fx'?{date:'1405-07-13'}:{}),
+            ...(scenario==='daily-unknown-fx-unit'?{unit:null}:{}),
+            ...(scenario==='daily-coerced-fx-price'?{price:true,time:'14:00:00'}:{}),
+          }));
+          return reply(phase===1&&scenario==='authoritative-empty'?{gold:[],currency:[],cryptocurrency:[]}:phase===1&&scenario==='missing-currency'?{gold:gc.gold,cryptocurrency:gc.cryptocurrency}:{...gc,currency});
+        }
         if(/AllSymbols/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:phase===1&&scenario==='invalid-fund'?[stock,{...fund,pl:0}]:[stock,fund]);
         if(/Index/.test(u.pathname))return reply({index:100,index_change:0,date:'1405-07-14',time:'09:30:00'});
         if(/Option/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:[{...option,pl:2000+phase*1000}]);
@@ -215,6 +223,24 @@ test('actual relay: retained rows do not become EOD stock/FX/index/breadth recor
 test('actual relay: recovered sources do reach the existing EOD writers after close',async()=>{
   const r=await probe('daily-recovery');
   for(const path of ['symbol_history','fx_rates','index_history','market_breadth'])assert.ok(r.daily.some(x=>x.path.endsWith('/'+path)),path);
+});
+
+test('actual relay: fresh transport cannot relabel yesterday USD as today or attest an absent source unit',async()=>{
+  for(const [scenario,reason] of [['daily-old-fx','usd-source-not-today'],['daily-unknown-fx-unit','unverified-usd-unit']]) {
+    const r=await probe(scenario);
+    assert.equal(r.daily.some(x=>x.path.endsWith('/fx_rates')),false);
+    assert.equal(r.debug.fxRates.lastDate,null);
+    assert.equal(r.debug.fxRates.error,reason);
+    assert.equal(r.blockedHosts,0);
+  }
+});
+
+test('actual relay: boolean source USD price cannot become a synthetic daily observation',async()=>{
+  const r=await probe('daily-coerced-fx-price');
+  assert.equal(r.daily.some(x=>x.path.endsWith('/fx_rates')),false);
+  assert.equal(r.debug.fxRates.lastDate,null);
+  assert.equal(r.debug.fxRates.error,'invalid-usd-price');
+  assert.equal(r.blockedHosts,0);
 });
 
 test('actual relay: valid stocks cannot disguise an unusable nonempty fund family',async()=>{

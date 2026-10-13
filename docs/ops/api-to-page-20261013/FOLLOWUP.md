@@ -1,0 +1,156 @@
+# Data pipeline follow-up — 2026-10-13
+
+This follow-up uses three temporary development helpers (relay/runtime, Codal,
+and IME storage), with parent integration and cross-review. These are not website
+agents. No model runtime, agent scheduler, new collector, or automatic publication
+has been activated.
+
+## Integrated continuation
+
+The data-related overlap from the verified local delivery bundle has now been
+selected onto PR #231; unrelated authentication, payments, tooltip and B34 work
+was not imported. The bundle patch hash was
+`532fc3bb90cdd3441f5725397cef28e94d0616542f6dc454b858d8017a4bc5a0`.
+The parent owns integration on `codex/data-pipeline-closure-20261013`; this is not
+ownership of another task's checkout or permission to deploy it.
+
+- Four prospective N10 admission files match the separate PR #229 candidate.
+  The capped-read correction stays intact. Combined regressions prove rejected
+  N10 reports retain watermark/ledger behavior, complete coverage crosses the
+  1,000-row cap, and a later read failure never schedules partial-count backfill.
+  Historical records, parser version 2 and the inactive backlog prototype are
+  unchanged. Admission can reject real but unproven reports; that is not recovery.
+- Daily FX persistence requires an explicit source unit, valid same-day source
+  clock and a positive numeric price. HTTP 409 is accepted only after exact
+  database readback. Main retention logic is preserved. See
+  [FX candidate and runtime evidence](DAILY-FX-CANDIDATE.md).
+- IME keeps one provider attempt per target (today and one backfill date). Only
+  cached, validated rows retry storage, at most three attempts with one/two-hour
+  backoff. A successful neighboring target is retained. Source envelope, date and
+  complete conflict identity are checked before writing; rejection stays visible
+  and incomplete. Unknown fields are never replaced with zero. This stricter
+  collector admission does not rewrite the nullable SQL identity or existing data.
+- All daily IME target state expires at Tehran day rollover, including successful
+  empty results. Expired incomplete targets/pending row counts are exposed. Retry
+  state is process-local; restart resets it, and expiration is not recovery.
+- New FX and N10 tests are registered in `test:relay`. IME regressions remain in
+  the existing registered test file. Exact combined-head CI and any later restore
+  receipt are recorded in PR #231; earlier-head green CI is not reused as proof.
+
+The preliminary extraction failure of Liara v50 is now confirmed by official build
+logs, but no particular archive filename is identified. Authenticated GitHub
+settings showed no repository or environment variables: `RELAY_AUTO_DEPLOY` is
+unset, so the workflow's automatic relay deployment condition is false. Manual
+dispatch remains possible. Liara's GitHub deployment page showed a repository
+picker; this did not establish a direct auto-deploy binding or exclusive release
+owner. No publishing settings were changed. Replica count is not ownership proof.
+
+Exact code head `6eaf64f4ee393d38127ae4117edb7983775eebe0` passed all five CI
+jobs in [run 38459139150](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/38459139150)
+and its Vercel Preview completed. This includes the final Jalali round-trip check:
+invalid non-leap Esfand 30 cannot silently become next year's Farvardin 1.
+The Supabase Preview check was skipped, not a database deployment.
+
+## Backup and isolated installation rehearsal
+
+A fresh custom-format dump and source inventory shared one exported repeatable-read
+snapshot. The dump was encrypted and both checksums retained. Full restore to the
+same PostgreSQL image completed with restored role attributes/grants. The temporary
+container had network `none`, no published ports or mounts, disabled cron, and a
+matching `supabase_admin` bootstrap role. No auth/API services were started.
+
+The first inventory comparison reported 58 differences caused by different
+`search_path` deparsing (4 defaults, 12 foreign keys, 42 policies). Matching the
+target session's `search_path=public` to the saved source inventory yielded all
+2,391 entries byte-identical, SHA256
+`72823930e7ae63dda64071a06aa0ed7b730244fefcba194a52cf56029b03db79`.
+No source counts were recaptured after the snapshot. The original failed report
+was retained; no schema definitions or comparison rules were relaxed.
+
+The reviewed phase19 SQL then installed successfully on that isolated restored
+database. The read-only schema/ACL verifier passed. Excluding exactly the two new
+relations, their indexes/sequences and the new guard function left the original
+inventory unchanged; 89 expected inventory entries were added. The owned
+temporary container was removed after verification. Backups and private logs
+remain on the database host; only the sanitized [receipt](restore-rehearsal-receipt.json)
+is committed. This establishes public structural inventory and public/auth/storage
+row counts, not full row-content hashes, login acceptance, stored-file recovery or
+vault-secret decryption. The comparator's legacy fixed message about unknown CLI
+snapshot support does not describe this direct `pg_dump --snapshot` execution.
+
+## Verified current distinction
+
+The website changes in PR #230 were merged and browser-checked on the main
+deployment. This follow-up addresses remaining collector/storage defects. Its
+code is a release candidate until the relay and database changes are installed
+and their natural collection cycles verified. A successful web deployment does
+not deploy the separate Liara relay or install SQL.
+
+- Codal's previous single read stopped at the Data API's 1,000-row cap. A bounded
+  read of the same 200-symbol universe returned 5,200 rows. Consequently 112
+  symbols with at least eight stored reports were incorrectly eligible for
+  backfill. The correction paginates by descending ID and rejects incomplete
+  reads. Stored row count still does not prove correct financial extraction.
+- Commodity mapping now preserves missing/invalid values as null rather than
+  silently converting them to zero. Valid zero and source units are retained.
+- IME storage preparation adds explicit minimal grants, RLS checks, append-only
+  guards including TRUNCATE, and atomic installation that refuses existing
+  history objects. It does not create a second storage model or rewrite history.
+- The candidate certificate writer uses each quote's source date, rejects missing
+  or future source dates, and cannot relabel an overnight retained quote as today.
+  Physical collection now separates the attempted day from successful completion;
+  failed storage does not advance its cursor or increase same-day provider calls.
+- Cross-review removed a proposed null-equal physical-trade constraint because it
+  could discard distinguishable rows. Existing nullable identity semantics remain;
+  duplicates under null fields need a provider identity contract. Disposable test
+  databases use random names and are removed only if created by that test run.
+
+See [Codal evidence](codal-coverage-followup.md),
+[relay reconciliation](RELAY-RECONCILIATION.md), and
+[IME installation runbook](../RELEASE-ime-storage.md).
+
+## Why live closure remains open
+
+1. Active Liara release is v49; v50 failed. Four runtime file hashes match the
+   older relay, and source-clock retention code is absent. Review the selected
+   delta and preserve config/cache/rollback before replacing this runtime.
+2. The separate commodity feed credential is absent from active configuration.
+   Installing code cannot supply that missing configuration. No key value is
+   recorded here, and the main market key was not substituted.
+3. The budget lease RPC is missing and an authoritative provider daily balance
+   has not been established. Codal archive usage was 198/200 at observation time;
+   no forced refresh or bulk recovery was run.
+4. Installing IME tables beneath the old certificate writer would allow retained
+   quotes to be labelled with the current wall-clock day. Storage installation
+   must follow verification of the source-date writer, not precede it.
+5. Backup restore and phase19 rehearsal now pass as described above. Live
+   installation still requires the verified corrected writer, sole publishing
+   ownership and current configuration/quota prerequisites. No live migration,
+   relay replacement, forced provider refresh or historical recovery was run.
+
+## Website agent status and next sequence
+
+`lib/intelligence/agent-readiness.ts` explicitly reports runtime missing: the
+existing role map/readiness UI has neither model calls nor a scheduler.
+`PRODUCT-BLUEPRINT.md` Gate 4 starts with one Research & Market Monitoring Agent.
+The existing stages are monitor → source-linked evidence → draft analysis;
+approval, sensitive publication and portfolio mutation remain outside its powers.
+
+1. Complete the above data release, validate source dates/units/nulls and compare
+   database receipts with actual cards over natural cycles.
+2. Use the existing research workbook, approval queue and analysis memory rather
+   than building parallel models. Specify the first agent's read tools, evidence
+   contract, qualitative inputs from deterministic calculations, evaluation cases,
+   failure behavior and human correction workflow.
+3. Resolve the existing open source and model/access/budget decisions D-022 and
+   D-023; do not mark them approved merely because a plugin is installed.
+4. Build and evaluate an inactive/shadow draft-producing runtime first. Test on
+   real approved examples with provenance and invalidation conditions. Learning
+   initially means reviewed feedback and versioned knowledge/evaluation updates,
+   not unreviewed self-modification.
+5. Add the lower-cost user-support role after the research workflow is accepted,
+   with existing member permissions and escalation boundaries. Activation remains
+   a separate step; the user's current no-activation instruction remains in force.
+
+This is implementation sequencing for the existing product plan, not a claim
+that the planned five-role team has been built or accepted.

@@ -1,0 +1,29 @@
+{
+  "target": "portfolio-data-audit-restore-20261013",
+  "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+  "network": "none",
+  "ports": false,
+  "mounts": false,
+  "cron": "off",
+  "backup": {
+    "database.dump": "2362711ef603450716afbc01a9c1210cb69057a565fd64abf073d83e7888e6e9",
+    "database.dump.p7m": "e8a7af2fb24490a78cfd4d3aa088c48b85be3354e1a24bc8bdb3eaf225cda4ee"
+  },
+  "isolatedContainerRemoved": true,
+  "inventoryEntries": 2391,
+  "inventorySha256": "72823930e7ae63dda64071a06aa0ed7b730244fefcba194a52cf56029b03db79",
+  "restore": "PASS",
+  "inventory": "PASS",
+  "inventorySearchPath": "public (matching saved source snapshot)",
+  "sourceSnapshot": "shared pg_dump/inventory exported repeatable-read snapshot",
+  "phase19Rehearsal": "PASS",
+  "phase19Verifier": "PASS",
+  "unrelatedInventory": "PASS",
+  "newInventoryEntries": 89,
+  "phase19Sha256": "76d69ca8e91850bdbcc5f94db536524c73c75aff00bc50959cba38c441730e5b",
+  "limits": [
+    "public structural inventory and public/auth/storage row counts; not full content hashes",
+    "no login, storage blob or vault decryption acceptance",
+    "no production migration or relay publication"
+  ]
+}

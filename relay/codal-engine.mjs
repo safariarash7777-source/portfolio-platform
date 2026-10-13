@@ -25,6 +25,7 @@ import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
+import { readStoredReportCounts } from "./codal-coverage.mjs";
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -310,20 +311,10 @@ async function topSymbolsByValue() {
 }
 
 async function coveredCounts(symbols) {
-  // تعداد ردیف‌های موجود هر نماد — برای رد کردن نمادهای دارای پوشش کافی
-  const out = new Map();
-  const list = symbols.map((s) => `"${s}"`).join(",");
-  const qs = `select=symbol&symbol=in.(${encodeURIComponent(list)})&limit=10000`;
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
-    headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
+  // Count through the server's row cap before spending any backfill quota.
+  return readStoredReportCounts(symbols, {
+    baseUrl: SUPABASE_URL, headers: SB_HDRS(),
   });
-  if (!res.ok) throw new Error(`covered reports HTTP ${res.status}`);
-  const rows = await res.json();
-  if (!Array.isArray(rows) || rows.some(r => !r || typeof r.symbol !== "string")) {
-    throw new Error("covered reports invalid schema");
-  }
-  for (const r of rows) out.set(r.symbol, (out.get(r.symbol) || 0) + 1);
-  return out;
 }
 
 async function backfillSome() {
