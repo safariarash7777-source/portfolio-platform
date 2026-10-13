@@ -34,9 +34,10 @@ BEGIN
       END IF;
     END LOOP;
   END LOOP;
-  IF NOT EXISTS (SELECT 1 FROM pg_index WHERE indrelid='public.ime_physical_trades'::regclass
-    AND indisunique AND indnullsnotdistinct) THEN
-    RAISE EXCEPTION 'IME null-equal retry uniqueness missing';
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.ime_physical_trades'::regclass
+    AND contype='u' AND pg_get_constraintdef(oid) =
+      'UNIQUE (trade_jdate, symbol_code, producer, price_close_rial, volume_contract)') THEN
+    RAISE EXCEPTION 'IME existing conflict tuple changed';
   END IF;
   IF (SELECT prosecdef FROM pg_proc WHERE oid='public.reject_mutation_ime()'::regprocedure) THEN
     RAISE EXCEPTION 'IME guard must remain SECURITY INVOKER';

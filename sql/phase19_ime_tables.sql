@@ -20,9 +20,6 @@ SET LOCAL statement_timeout = '30s';
 -- A second installation deliberately fails; run read-only verification instead.
 DO $$
 BEGIN
-  IF current_setting('server_version_num')::integer < 150000 THEN
-    RAISE EXCEPTION 'phase19 requires PostgreSQL 15+ for null-equal deduplication';
-  END IF;
   IF to_regclass('public.ime_certificate_history') IS NOT NULL
      OR to_regclass('public.ime_physical_trades') IS NOT NULL
      OR to_regprocedure('public.reject_mutation_ime()') IS NOT NULL THEN
@@ -87,9 +84,10 @@ CREATE TABLE public.ime_physical_trades (
   -- کلید یکتای عمل‌گرایانه: یک روز ممکن است چند معاملهٔ یک نماد با قیمت/حجم
   -- متفاوت داشته باشد؛ این ترکیب ردیف تکراریِ واقعی را می‌گیرد و معاملات
   -- مستقل را نگه می‌دارد (همان on_conflict که رله استفاده می‌کند).
-  -- Missing values must not make identical retries distinct (PostgreSQL 15+).
-  -- The existing relay ON CONFLICT column tuple remains valid.
-  UNIQUE NULLS NOT DISTINCT (trade_jdate, symbol_code, producer, price_close_rial, volume_contract)
+  -- Keep existing nullable-key semantics: do not collapse distinguishable rows
+  -- with unknown producer/price/volume. A provider trade identity is still needed
+  -- for reliable deduplication when any of these fields is NULL.
+  UNIQUE (trade_jdate, symbol_code, producer, price_close_rial, volume_contract)
 );
 
 CREATE INDEX ime_physical_trades_producer_idx

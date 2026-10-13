@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { after, before, describe, test } from "node:test";
@@ -38,9 +39,11 @@ function forbidden(db: string, role: string, query: string) {
 
 for (const profile of ["legacy_default_privileges", "explicit_grants"]) {
   describe(`IME absent-table installation: ${profile}`, () => {
-    const db = `ime_test_${profile}_${process.pid}`;
+    const db = `ime_test_${profile}_${randomUUID().replaceAll("-", "").slice(0, 12)}`;
+    let createdByThisRun = false;
     before(() => {
       sql("postgres", `CREATE DATABASE ${db}`);
+      createdByThisRun = true;
       sql(db, readFileSync(join(root, "sql/test/supabase_bootstrap.sql"), "utf8"));
       sql(db, readFileSync(join(root, `sql/test/profile_${profile}.sql`), "utf8"));
       // Include sequence defaults and PUBLIC to make revocation non-vacuous.
@@ -50,23 +53,27 @@ for (const profile of ["legacy_default_privileges", "explicit_grants"]) {
       sql(db, "CREATE TABLE public.ime_snapshots (marker text); INSERT INTO public.ime_snapshots VALUES ('retained');");
       sql(db, migration);
     });
-    after(() => sql("postgres", `DROP DATABASE IF EXISTS ${db} WITH (FORCE)`));
+    after(() => { if (createdByThisRun) sql("postgres", `DROP DATABASE ${db} WITH (FORCE)`); });
 
-    test("service role can append and null-valued retries deduplicate", () => {
+    test("writer appends, complete-key retries deduplicate, distinct nullable rows survive", () => {
       asRole(db, "service_role", `
         INSERT INTO public.ime_certificate_history (trade_date, contract_code) VALUES ('2026-01-01','SYNTHETIC')
           ON CONFLICT (trade_date, contract_code) DO NOTHING;
         INSERT INTO public.ime_certificate_history (trade_date, contract_code) VALUES ('2026-01-01','SYNTHETIC')
           ON CONFLICT (trade_date, contract_code) DO NOTHING;
-        INSERT INTO public.ime_physical_trades (trade_jdate, symbol_code) VALUES ('1404-10-11','SYNTHETIC')
+        INSERT INTO public.ime_physical_trades (trade_jdate, symbol_code, supplier, type_contract)
+          VALUES ('1404-10-11','SYNTHETIC','supplier-a','cash')
           ON CONFLICT (trade_jdate,symbol_code,producer,price_close_rial,volume_contract) DO NOTHING;
-        INSERT INTO public.ime_physical_trades (trade_jdate, symbol_code) VALUES ('1404-10-11','SYNTHETIC')
+        INSERT INTO public.ime_physical_trades (trade_jdate, symbol_code, supplier, type_contract)
+          VALUES ('1404-10-11','SYNTHETIC','supplier-b','forward')
           ON CONFLICT (trade_jdate,symbol_code,producer,price_close_rial,volume_contract) DO NOTHING`);
-      for (const table of tables) assert.equal(sql(db, `SELECT count(*) FROM public.${table}`), "1");
-      asRole(db, "service_role", `INSERT INTO public.ime_physical_trades
-        (trade_jdate,symbol_code,price_close_rial) VALUES ('1404-10-11','SYNTHETIC',123)
-        ON CONFLICT (trade_jdate,symbol_code,producer,price_close_rial,volume_contract) DO NOTHING`);
+      assert.equal(sql(db, "SELECT count(*) FROM public.ime_certificate_history"), "1");
       assert.equal(sql(db, "SELECT count(*) FROM public.ime_physical_trades"), "2");
+      for (let attempt = 0; attempt < 2; attempt++) asRole(db, "service_role", `INSERT INTO public.ime_physical_trades
+        (trade_jdate,symbol_code,producer,price_close_rial,volume_contract)
+        VALUES ('1404-10-11','SYNTHETIC','producer-a',123,10)
+        ON CONFLICT (trade_jdate,symbol_code,producer,price_close_rial,volume_contract) DO NOTHING`);
+      assert.equal(sql(db, "SELECT count(*) FROM public.ime_physical_trades"), "3");
     });
 
     test("anonymous and signed-in users can read but cannot write", () => {
@@ -117,12 +124,14 @@ for (const profile of ["legacy_default_privileges", "explicit_grants"]) {
 }
 
 describe("IME installation transaction boundaries", () => {
-  const db = `ime_test_atomic_${process.pid}`;
+  const db = `ime_test_atomic_${randomUUID().replaceAll("-", "")}`;
+  let createdByThisRun = false;
   before(() => {
     sql("postgres", `CREATE DATABASE ${db}`);
+    createdByThisRun = true;
     sql(db, readFileSync(join(root, "sql/test/supabase_bootstrap.sql"), "utf8"));
   });
-  after(() => sql("postgres", `DROP DATABASE IF EXISTS ${db} WITH (FORCE)`));
+  after(() => { if (createdByThisRun) sql("postgres", `DROP DATABASE ${db} WITH (FORCE)`); });
   test("mid-installation failure leaves no history table or guard behind", () => {
     assert.match(failure(db, migration.replace("COMMIT;", "SELECT 1/0; COMMIT;")), /division by zero/);
     assert.equal(sql(db, `SELECT to_regclass('public.ime_certificate_history') IS NULL

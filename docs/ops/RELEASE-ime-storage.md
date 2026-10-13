@@ -10,26 +10,26 @@ Installing the two missing tables only makes those existing writes possible. Cur
 
 ## Preflight
 
-1. Confirm target identity, PostgreSQL version (15 or newer), sole relay owner and the exact current runtime. Read the active configuration without logging credentials.
+1. Confirm target identity, PostgreSQL version, sole relay owner and the exact current runtime. Read the active configuration without logging credentials.
 2. Take a fresh private backup, record checksums and restore it into an isolated database. Verify the restore; never run integration fixtures against the operational database.
 3. Confirm both history tables **and** `public.reject_mutation_ime()` are absent. The candidate deliberately aborts if any object exists. Capture existing `ime_snapshots` count and a database schema fingerprint, excluding only the new objects for the after comparison.
 4. Check API roles, schema USAGE, and `service_role` BYPASSRLS. The collector must use its existing service key server-side. No global default ACL changes are required.
 5. Run `lib/security/ime-storage.integration.test.ts` on a disposable PostgreSQL 15+ instance. Tests use only synthetic values, create dedicated databases, and test permissive and strict default grants. They deliberately fail if PostgreSQL is unavailable. Local Docker/psql availability is an execution prerequisite, not evidence that tests passed.
-6. Check receipt-versus-source dates in the current relay. The existing certificate EOD path labels rows with Tehran's current day; installing storage alone cannot prove that a retained quote belongs to that day. Physical `trade_jdate` comes from provider `date_trade`. Resolve this distinction before claiming daily completeness.
+6. Check receipt-versus-source dates in the current relay. The corrected certificate EOD path uses each quote's date_update via the existing source-session parser and skips absent, invalid or future dates. Confirm that this exact writer is deployed; the old writer used Tehran's current day. Physical `trade_jdate` comes from provider `date_trade`. Resolve this distinction before claiming daily completeness.
 
 ## Installation and verification
 
 Run the reviewed `sql/phase19_ime_tables.sql` as the schema owner, using `psql -X -v ON_ERROR_STOP=1` with the existing private connection mechanism. The script uses one transaction, a five-second lock timeout and thirty-second statement timeout. It creates only the two tables, their indexes and identity sequences, one invoker trigger function, policies and mutation guards; explicit grants override legacy default privileges on these objects only. `NOTIFY pgrst, 'reload schema'` is delivered after commit.
 
-Run `sql/test/verify_ime_storage.sql` through the same connection. This is read-only and raises on incomplete RLS, table/sequence/function permissions, row/TRUNCATE guards, or missing null-equal uniqueness. It prints aggregate row counts and dates, never raw trades. Compare the unrelated schema/data fingerprints with preflight.
+Run `sql/test/verify_ime_storage.sql` through the same connection. This is read-only and raises on incomplete RLS, table/sequence/function permissions, row/TRUNCATE guards, or a changed conflict tuple. It prints aggregate row counts and dates, never raw trades. Compare the unrelated schema/data fingerprints with preflight.
 
-Use existing REST credentials for bounded read-only `limit=0` requests on both tables to confirm schema-cache visibility. Do not seed sample rows into production. Wait for the existing natural collector cycle; verify `/debug` storage success and aggregate database receipts. The physical collector marks a day attempted before a storage failure, so fixing the table may not retry until the next day. Do not restart or force a backfill simply to accelerate acceptance without checking ownership and quota.
+Use existing REST credentials for bounded read-only `limit=0` requests on both tables to confirm schema-cache visibility. Do not seed sample rows into production. Wait for the existing natural collector cycle; verify `/debug` storage success and aggregate database receipts. The physical collector records lastAttemptDay separately from lastRunDay (completed storage). Its existing daily provider-attempt cap is retained, so fixing the table does not retry until the next day. Do not restart or force a backfill simply to accelerate acceptance without checking ownership and quota.
 
 ## Regression coverage and limits
 
-The integration suite checks service-role append, normal and null-valued conflict deduplication, distinct rows retained, public reads, denied public writes, denied writer mutations/TRUNCATE, owner-trigger enforcement, exact ACLs, installation re-run refusal, partial-existing-table refusal, unrelated snapshot preservation, and rollback after an injected mid-installation failure.
+The integration suite checks service-role append, complete-key conflict deduplication and distinct nullable-key records, distinct rows retained, public reads, denied public writes, denied writer mutations/TRUNCATE, owner-trigger enforcement, exact ACLs, installation re-run refusal, partial-existing-table refusal, unrelated snapshot preservation, and rollback after an injected mid-installation failure.
 
-`UNIQUE NULLS NOT DISTINCT` retains the relay's exact conflict tuple. Identical tuples with missing values now deduplicate; differing known price or volume remain separate. This preserves the existing heuristic identity, not a provider-issued unique trade ID. Two truly distinct trades sharing every field in that tuple cannot be distinguished by the current payload contract. No historic rows are rewritten.
+The existing nullable conflict tuple is preserved. When producer, price or volume is missing, retries can still duplicate rows. Collapsing those NULL values would discard distinguishable trades with different suppliers or contract types; reliable deduplication needs a separate, verified provider trade-identity contract. No historic rows are rewritten.
 
 ## Recovery
 
