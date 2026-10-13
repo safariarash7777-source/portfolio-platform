@@ -28,6 +28,9 @@ function rollDay() {
 }
 
 const num = (v) => {
+  // Missing provider values must not become invented zero quotes or changes.
+  if ((typeof v !== "number" && typeof v !== "string") ||
+      (typeof v === "string" && v.trim() === "")) return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
