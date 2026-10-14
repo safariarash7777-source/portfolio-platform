@@ -136,6 +136,20 @@ export interface IrIndices {
   time: string | null;
 }
 
+/** Commodity units and source clocks are supplied by the provider, never inferred. */
+export interface IrCommodityRow {
+  id: string;
+  name: string | null;
+  price: number | null;
+  changePercent: number | null;
+  unit: string | null;
+  date: string | null;
+  time: string | null;
+  /** Provider Unix seconds, distinct from the feed receipt in milliseconds. */
+  timeUnix: number | null;
+}
+export type CommodityState = "received" | "stale" | "unavailable" | "disabled" | "unknown";
+
 export interface IrMarket {
   snapshotQuality?: SnapshotQuality | null;
   gold: IrRow[];
@@ -143,6 +157,9 @@ export interface IrMarket {
   funds: IrStockRow[];
   stocks: IrStockRow[];
   crypto: IrCryptoRow[];
+  commodities?: IrCommodityRow[];
+  commodityFetchedAt?: number | null;
+  commodityState?: CommodityState;
   /** تابلوی اختیار معامله (M8-ب) — خالی اگر رله هنوز نفرستاده */
   options: IrOptionRow[];
   indices: IrIndices | null;
@@ -359,6 +376,24 @@ function asIndices(v: unknown): IrIndices | null {
   };
 }
 
+function asCommodityRows(value: unknown): IrCommodityRow[] {
+  if (!Array.isArray(value)) return [];
+  const text = (v: unknown) => typeof v === "string" && v.trim() ? v.trim() : null;
+  const number = (v: unknown) => typeof v === "number" && Number.isFinite(v) ? v : null;
+  return value.flatMap(raw => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return [];
+    const row = raw as Record<string, unknown>;
+    const id = text(row.id);
+    if (!id) return [];
+    const unix = number(row.timeUnix);
+    return [{
+      id, name: text(row.name), price: number(row.price), changePercent: number(row.changePercent),
+      unit: text(row.unit), date: text(row.date), time: text(row.time),
+      timeUnix: unix !== null && validTimestamp(unix * 1000) !== null ? unix : null,
+    }];
+  });
+}
+
 /** payload خام (از Supabase یا رله) → IrMarket با اعتبارسنجیِ سخت‌گیرانه. */
 export function toMarket(payload: unknown): IrMarket {
   const p = (payload ?? {}) as Record<string, unknown>;
@@ -374,6 +409,9 @@ export function toMarket(payload: unknown): IrMarket {
     funds: asStockRows(p.funds),
     stocks: asStockRows(p.stocks),
     crypto: asCryptoRows(p.crypto),
+    commodities: asCommodityRows(p.commodities),
+    commodityFetchedAt: validTimestamp(p.commodityFetchedAt),
+    commodityState: ["received", "stale", "unavailable", "disabled"].includes(String(p.commodityState)) ? p.commodityState as CommodityState : "unknown",
     options: asOptionRows(p.options),
     indices: asIndices(p.indices),
     fetchedAt,
@@ -381,7 +419,7 @@ export function toMarket(payload: unknown): IrMarket {
     ok: false,
     inputRows: Object.fromEntries(["gold", "currency", "funds", "stocks", "crypto", "options"].map(key => [key, Array.isArray(p[key]) ? p[key].length : 0])),
   };
-  data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length + data.crypto.length + data.options.length > 0 || data.indices !== null;
+  data.ok = data.gold.length + data.currency.length + data.funds.length + data.stocks.length + data.crypto.length + data.options.length + (data.commodities?.length ?? 0) > 0 || data.indices !== null;
   // A successful authoritative empty snapshot replaces cached rows; no fallback fetch.
   if (!data.ok && data.snapshotQuality) data.ok = Object.entries(data.snapshotQuality.families).some(([key, f]) => f?.state === "empty" && f.receivedAt !== null && (key === "indices" ? p.indices === null : Array.isArray(p[key]) && p[key].length === 0));
   return data;

@@ -23,6 +23,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MarketClient from "@/components/market/MarketClient";
 import GoldCurrencyBoard from "@/components/market/GoldCurrencyBoard";
+import CommodityBoard from "@/components/market/CommodityBoard";
 import TodayMarket from "@/components/market/TodayMarket";
 import MarketDesk from "@/components/market/MarketDesk";
 import MarketShell from "@/components/market/MarketShell";
@@ -176,6 +177,11 @@ export default async function MarketPage({
                 <GoldCurrencyBoard gold={ir.gold} currency={ir.currency} fetchedAt={ir.fetchedAt} />
               </section>
             ) : null}
+
+            {/* Commodity quotes read only from the stored market snapshot. */}
+            <section id="commodities" className="scroll-mt-24">
+              <CommodityBoard rows={ir?.commodities ?? []} fetchedAt={ir?.commodityFetchedAt ?? null} state={ir?.commodityState ?? "unknown"} />
+            </section>
 
             {/* ── جزئیاتِ بلند — بسته، نه حذف‌شده ────────────────────────── */}
             <div className="space-y-2.5">

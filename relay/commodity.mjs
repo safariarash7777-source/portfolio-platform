@@ -1,26 +1,27 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
-// commodity.mjs — T5-6: کامودیتی جهانی (Market/Commodity.php) — کلید رایگان جدا
-//
-// مستند رسمی (راستی‌آزمایی‌شده): https://brsapi.ir/free-api-commodity-webservice/
-//   GET https://BrsApi.ir/Api/Market/Commodity.php?key=FREE_KEY
-//   (بیس متفاوت از Api.BrsApi.ir! با env جدا قابل تغییر)
-//   پاسخ: آرایهٔ آیتم‌ها با فیلدهای symbol, name (فارسی), price, change_percent,
-//   unit (دلار/اونس و ...)، date, time.
-//
-// قواعد:
-//   - کلید جدا BRSAPI_COMMODITY_KEY (پلن رایگان ~۱۵۰۰ درخواست/روز).
-//   - هر چرخهٔ ۵دقیقه‌ای یک درخواست (~۲۸۸/روز) — کاملاً داخل سهمیهٔ رایگان.
-//   - بدون کلید → غیرفعالِ صادق (status: disabled)، هیچ خطای مزاحمی.
-//   - اعداد دلاری همان خام می‌ماند (هیچ تبدیل ریالی) — واحد در فیلد unit صریح است.
+// Official contract: https://brsapi.ir/free-api-commodity-webservice/
+// One account key serves all services; reuse is opt-in, never an implicit activation.
+// https://brsapi.ir/tsetmc-exchange-free-bourse-api-key-request/
+const COMMODITY_BASE = (process.env.BRSAPI_COMMODITY_BASE || "https://Api.BrsApi.ir").replace(/\/+$/, "");
+const explicitKey = process.env.BRSAPI_COMMODITY_KEY?.trim() || "";
+const COMMODITY_KEY = explicitKey || (process.env.BRSAPI_COMMODITY_ENABLED === "1" ? process.env.BRSAPI_KEY?.trim() || "" : "");
+const ENABLED = process.env.BRSAPI_COMMODITY_ENABLED !== "0" && Boolean(COMMODITY_KEY);
+const configuredCap = process.env.BRSAPI_COMMODITY_DAILY_CAP;
+const DAILY_CAP = configuredCap === undefined ? 300 :
+  (/^\d+$/.test(configuredCap) ? Math.min(300, Number(configuredCap)) : 0);
+const GROUPS = ["metal_precious", "metal_base", "energy"];
 
-const COMMODITY_BASE = (process.env.BRSAPI_COMMODITY_BASE || "https://BrsApi.ir/Api").replace(/\/+$/, "");
-const COMMODITY_KEY = process.env.BRSAPI_COMMODITY_KEY || "";
+// Internal wiring only: never expose this object through an HTTP/debug response.
+export function commodityConfig() {
+  return { enabled: ENABLED, base: COMMODITY_BASE, key: COMMODITY_KEY };
+}
 
 let rows = [];
 let at = null;
 let lastError = null;
 let reqToday = 0;
 let dayKey = "";
+let inflight = null;
 
 function rollDay() {
   const k = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tehran" }).format(new Date());
@@ -35,30 +36,56 @@ const num = (v) => {
   return Number.isFinite(n) ? n : null;
 };
 
-export function mapCommodityRow(d) {
+export function mapCommodityRow(d, group = null) {
+  const unix = num(d.time_unix);
   return {
     id: typeof d.symbol === "string" ? d.symbol : null,
     name: typeof d.name === "string" ? d.name : null,
     price: num(d.price),
     changePercent: num(d.change_percent),
+    changeValue: num(d.change_value),
     unit: typeof d.unit === "string" ? d.unit : null,
     date: typeof d.date === "string" ? d.date : null,
     time: typeof d.time === "string" ? d.time : null,
+    timeUnix: unix !== null && Number.isSafeInteger(unix) && unix > 0 ? unix : null,
+    group,
   };
 }
 
-/**
- * ⚠️ این ماژول روی **کلیدِ دیگری** کار می‌کند (`BRSAPI_COMMODITY_KEY`، پلنِ
- * رایگان ~۱۵۰۰/روز) — پس سهمیه‌اش با سهمیهٔ اصلیِ ۱۰٬۰۰۰ **یکی نیست** و
- * ریختنش در همان شمارنده، هر دو عدد را بی‌معنا می‌کرد.
- *
- * بنابراین بودجهٔ خودش را می‌گیرد: همان `PersistentDailyBudget`، ولی با
- * فضای‌نامِ روزِ جدا. `countLegacy` اینجا هم همان قراردادِ بقیهٔ ماژول‌هاست.
- */
-export async function refreshCommodities(headers, { client = null, countLegacy = null } = {}) {
-  if (!COMMODITY_KEY) return; // غیرفعالِ صادق
+export function parseCommodityResponse(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload) ||
+      GROUPS.some(group => !Array.isArray(payload[group]))) throw new Error("invalid commodity groups");
+  const mapped = [];
+  const seen = new Set();
+  for (const group of GROUPS) {
+    for (const raw of payload[group]) {
+      if (!raw || typeof raw !== "object" || Array.isArray(raw) ||
+          typeof raw.symbol !== "string" || !raw.symbol.trim() || seen.has(raw.symbol)) {
+        throw new Error("invalid commodity row");
+      }
+      seen.add(raw.symbol);
+      mapped.push(mapCommodityRow(raw, group));
+    }
+  }
+  // Keep individual missing quotes as null, but an empty/unusable batch cannot
+  // replace a known-good snapshot or advance its receipt timestamp.
+  if (!mapped.length || !mapped.some(row => row.price !== null)) throw new Error("empty commodity response");
+  return mapped;
+}
+
+export function refreshCommodities(headers, options = {}) {
+  if (inflight) return inflight;
+  if (!ENABLED) return Promise.resolve();
   rollDay();
+  if (reqToday >= DAILY_CAP) { lastError = "commodity daily cap reached"; return Promise.resolve(); }
+  inflight = refresh(headers, options).finally(() => { inflight = null; });
+  return inflight;
+}
+
+async function refresh(headers, { client = null, countLegacy = null } = {}) {
   try {
+    // A conservative process-local attempt cap, not a claim about provider usage.
+    // Existing caller scheduling and shared paced transport remain unchanged.
     reqToday++;
     let j;
     if (client) {
@@ -70,21 +97,23 @@ export async function refreshCommodities(headers, { client = null, countLegacy =
       });
     } else {
       if (countLegacy) await countLegacy("commodity", "standard");
-      const res = await fetch(`${COMMODITY_BASE}/Market/Commodity.php?key=${COMMODITY_KEY}`, {
+      const res = await fetch(`${COMMODITY_BASE}/Market/Commodity.php?key=${encodeURIComponent(COMMODITY_KEY)}`, {
         headers,
         signal: AbortSignal.timeout(20000),
       });
       if (!res.ok) throw new Error(`http ${res.status}`);
       j = await res.json();
     }
-    const arr = Array.isArray(j) ? j : (Array.isArray(j?.data) ? j.data : []);
-    const mapped = arr.map(mapCommodityRow).filter((r) => r.id && r.price !== null);
-    if (mapped.length === 0) throw new Error("empty commodity response");
+    const mapped = parseCommodityResponse(j);
     rows = mapped;
     at = Date.now();
     lastError = null;
   } catch (e) {
-    lastError = e?.message ?? String(e);
+    // An upstream/client error may contain a URL with its key. Expose only
+    // known local contract errors or the HTTP status, never the raw message.
+    const message = e?.message || "";
+    lastError = /^(invalid commodity (groups|row)|empty commodity response|http \d{3})$/.test(message)
+      ? message : "commodity request failed";
   }
 }
 
@@ -93,11 +122,16 @@ export function commoditiesForPayload() {
 }
 
 export function commodityStatus() {
+  rollDay();
   return {
-    enabled: Boolean(COMMODITY_KEY),
+    enabled: ENABLED,
     rows: rows.length,
     lastFetchAt: at,
     reqToday,
-    lastError: COMMODITY_KEY ? lastError : "BRSAPI_COMMODITY_KEY not set (disabled)",
+    dailyCap: DAILY_CAP,
+    remaining: Math.max(0, DAILY_CAP - reqToday),
+    counterScope: "process",
+    dayKey,
+    lastError: ENABLED ? lastError : "commodity disabled (explicit key or enable flag required)",
   };
 }

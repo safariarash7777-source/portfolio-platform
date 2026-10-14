@@ -18,6 +18,30 @@ tgju/fipiran/brsapi ─▶ رله (داخل ایران) ─push─▶ Supabase (
 
 رله جدولِ `ir_market_snapshots` را با `key='latest'` به‌روز می‌کند (upsert). ساختِ جدول در `sql/ir_market_snapshots.sql` است (RLS: خواندنِ عمومی، نوشتن فقط service_role). سایت با همان `NEXT_PUBLIC_SUPABASE_URL/ANON_KEY` می‌خواند — env جدیدی روی Vercel لازم نیست.
 
+## Commodity feed (verified contract 2026-10-14)
+
+The existing account key supports all entitled services; commodity does not require
+a separate key. Set `BRSAPI_COMMODITY_ENABLED=1` to explicitly reuse server-side
+`BRSAPI_KEY`. An existing `BRSAPI_COMMODITY_KEY` override remains supported;
+`BRSAPI_COMMODITY_ENABLED=0` stops collection. Never expose either key to the UI.
+Default base is `https://Api.BrsApi.ir`; endpoint is `Market/Commodity.php`.
+The response has `metal_precious`, `metal_base`, and `energy` arrays. Preserve
+each row's unit and source clocks. The existing market cycle awaits this bounded
+request before persisting it, and `/market#commodities` reads the stored snapshot.
+Failures retain the last rows and their independent receipt across restarts.
+The optional feed never changes the core market's completeness classification.
+
+The local attempt ceiling `BRSAPI_COMMODITY_DAILY_CAP` defaults to 300 and can only
+be lowered; it resets on a Tehran day change **or process restart**, and is not a
+durable/shared/provider counter. Singleflight prevents overlapping local refreshes.
+At the existing five-minute cycle the nominal maximum is 288/day, plus startup.
+No timer, account plan, or optional persistent-budget feature is enabled by code.
+Provider quota is 1500/day; other consumers must be included in account monitoring.
+Official sources: [commodity contract](https://brsapi.ir/free-api-commodity-webservice/)
+and [account-key/rate rules](https://brsapi.ir/tsetmc-exchange-free-bourse-api-key-request/).
+Rollback: set the enable flag to `0`; keep stored quotes labelled disabled, or
+redeploy the preceding successful release through the existing workflow.
+
 ## راه‌اندازی روی لیارا (حدود ۱۰ دقیقه)
 1. در [liara.ir](https://liara.ir) ثبت‌نام کنید و یک برنامهٔ **Node.js** بسازید (کوچک‌ترین پلن کافی است).
 2. محتوای همین پوشهٔ `relay/` (دو فایل `server.mjs` و `package.json`) را در آن برنامه دیپلوی کنید — یا این پوشه را به توسعه‌دهنده/پشتیبان لیارا بدهید، خودش دو دقیقه‌ای بالا می‌آورد.
