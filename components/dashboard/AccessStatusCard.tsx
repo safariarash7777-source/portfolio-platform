@@ -1,5 +1,5 @@
 // کارت وضعیت دسترسی در داشبورد — سند مانیتایز (فاز ۱۱).
-// registered: دو مسیر ارتقا (وبینار فصلی / مشاوره) + لینک ترمینال قفل‌شده
+// registered: وبینار با دسترسی مستقل همان محصول / مسیر مشاورهٔ موجود
 // full: نمایش نوع دسترسی و تاریخ انقضا + لینک مستقیم ترمینال
 import Link from "next/link";
 import type { AccessInfo } from "@/lib/access";
@@ -8,7 +8,7 @@ import { formatJalali, toPersianDigits } from "@/lib/format";
 const VIA_LABEL: Record<string, string> = {
   admin: "مدیر سامانه",
   consulting: "مشتری مشاوره",
-  webinar: "شرکت‌کنندهٔ وبینار",
+  webinar: "اعطای ثبت‌شدهٔ قدیمی وبینار",
   manual: "اعطای ویژه",
 };
 
@@ -65,8 +65,8 @@ export default function AccessStatusCard({ access }: { access: AccessInfo }) {
         کاربر ثبت‌نام‌شده
       </p>
       <p className="mt-2 text-sm leading-7" style={{ color: "var(--text-2)" }}>
-        برای دسترسی کامل به ترمینال تحلیلگر (کارت امتیاز نمادها، بازهٔ ارزش‌گذاری، جریان پول
-        هوشمند و ابزارهای کوانت) یکی از دو مسیر زیر را انتخاب کنید:
+        دسترسی به وبینار و دسترسی به ترمینال تحلیلگر جداگانه تعیین می‌شود.
+        جزئیات هر مسیر را پیش از ثبت‌نام بررسی کنید:
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div
@@ -74,18 +74,18 @@ export default function AccessStatusCard({ access }: { access: AccessInfo }) {
           style={{ borderColor: "var(--line)", background: "var(--surface-2, var(--surface))" }}
         >
           <p className="font-semibold" style={{ color: "var(--navy-deep)" }}>
-            وبینار فصلی
+            وبینارها
           </p>
           <p className="mt-1 text-xs leading-6" style={{ color: "var(--text-2)" }}>
-            هر {toPersianDigits("3")} ماه یک‌بار برگزار می‌شود؛ شرکت‌کنندگان تا وبینار بعدی
-            دسترسی کامل + عضویت کانال دارند.
+            زمان برگزاری و بازهٔ دسترسی را مدیر برای هر وبینار تعیین می‌کند.
+            ثبت‌نام معتبر فقط دسترسی همان وبینار را طبق تنظیمات آن باز می‌کند.
           </p>
           <Link
-            href="/#waitlist"
+            href="/webinars"
             className="mt-3 inline-block rounded-full px-4 py-1.5 text-xs font-semibold"
             style={{ background: "var(--gold)", color: "var(--text-on-gold)" }}
           >
-            ثبت‌نام وبینار بعدی
+            مشاهدهٔ وبینارها
           </Link>
         </div>
         <div

@@ -1,103 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
-import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 import { requestPayment } from "@/lib/zarinpal";
+import { record, uuid, amount, authority, paymentUrl } from "@/lib/webinars/contracts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const unknown = (status = 503) => NextResponse.json({ error: "نتیجهٔ درخواست پرداخت مشخص نیست. برای بررسی همان ثبت‌نام با پشتیبانی پیگیری کنید.",
+  paymentOutcome: "unknown", recovery: "reconcile_same_registration" }, { status });
 
-// POST /api/webinars/payment — شروع پرداخت برای ثبت‌نام وبینار
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
-  }
-
-  const { registration_id } = await req.json();
-  if (!registration_id) {
-    return NextResponse.json(
-      { error: "registration_id الزامی است." },
-      { status: 400 }
-    );
-  }
-
+  const session = await createClient();
+  const { data: { user } } = await session.auth.getUser();
+  if (!user) return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
+  const body: unknown = await req.json().catch(() => null);
+  const registrationId = record(body) ? body.registration_id : null;
+  if (!uuid(registrationId)) return NextResponse.json({ error: "ثبت‌نام نامعتبر است." }, { status: 400 });
   const admin = tryCreateAdminClient();
-  if (!admin)
-    return NextResponse.json(serviceRoleGap("پرداختِ وبینار"), { status: SERVICE_ROLE_GAP_STATUS });
+  if (!admin) return unknown();
 
-  // دریافت اطلاعات ثبت‌نام و وبینار
-  const { data: reg, error: regErr } = await admin
-    .from("webinar_registrations")
-    .select("id, webinar_id, user_id, payment_status, webinars(title, price_toman)")
-    .eq("id", registration_id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (regErr || !reg) {
-    return NextResponse.json(
-      { error: "ثبت‌نام یافت نشد." },
-      { status: 404 }
-    );
+  // Atomic, durable reservation BEFORE requesting an authority. Missing proposal RPC fails closed.
+  const { data: prepared, error } = await session.rpc("prepare_webinar_payment", { p_registration_id: registrationId });
+  if (error || !record(prepared) || prepared.registration_id !== registrationId || prepared.user_id !== user.id ||
+      !uuid(prepared.webinar_id) || !amount(prepared.amount) || prepared.amount <= 0) return unknown();
+  if (prepared.state === "ready" && uuid(prepared.payment_id) && authority(prepared.authority) && paymentUrl(prepared.payment_url, prepared.authority)) {
+    return NextResponse.json({ payment_url: prepared.payment_url });
   }
-
-  if (reg.payment_status === "paid") {
-    return NextResponse.json(
-      { error: "این ثبت‌نام قبلاً پرداخت شده." },
-      { status: 400 }
-    );
+  if (prepared.started !== true) return unknown(409);
+  const markUnknown = async () => { await admin.rpc("mark_webinar_payment_unknown", { p_registration_id: registrationId }); };
+  if (prepared.state !== "requesting" || !uuid(prepared.webinar_id) || !amount(prepared.amount) || prepared.amount <= 0 ||
+      typeof prepared.title !== "string" || !prepared.title.trim()) {
+    await markUnknown(); return unknown();
   }
-
-  const webinar = (reg as any).webinars;
-  if (!webinar || webinar.price_toman <= 0) {
-    return NextResponse.json(
-      { error: "این وبینار رایگان است و نیاز به پرداخت ندارد." },
-      { status: 400 }
-    );
+  try {
+    const returnUrl = new URL("/api/webinars/payment/callback", process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin);
+    returnUrl.searchParams.set("registration_id", registrationId);
+    const requested = await requestPayment(prepared.amount, `ثبت‌نام وبینار: ${prepared.title}`, returnUrl.href);
+    if (!requested.ok || !authority(requested.authority) || !paymentUrl(requested.startPayUrl, requested.authority)) {
+      await markUnknown(); return unknown();
+    }
+    const { data: bound, error: bindError } = await admin.rpc("attach_webinar_payment", {
+      p_registration_id: registrationId, p_authority: requested.authority,
+      p_payment_url: requested.startPayUrl, p_amount: prepared.amount,
+    });
+    if (bindError || !record(bound) || bound.state !== "ready" || bound.registration_id !== registrationId ||
+        bound.user_id !== user.id || bound.webinar_id !== prepared.webinar_id || bound.amount !== prepared.amount ||
+        !uuid(bound.payment_id) || bound.authority !== requested.authority || bound.payment_url !== requested.startPayUrl) {
+      await markUnknown(); return unknown();
+    }
+    return NextResponse.json({ payment_url: bound.payment_url });
+  } catch {
+    // This does not cancel/reverse a provider request or authorize a new charge.
+    await markUnknown().catch(() => undefined); return unknown();
   }
-
-  // ساخت رکورد پرداخت
-  const { data: payment, error: payErr } = await admin
-    .from("payments")
-    .insert({
-      user_id: user.id,
-      amount_toman: webinar.price_toman,
-      status: "pending",
-      description: `ثبت‌نام وبینار: ${webinar.title}`,
-    })
-    .select("id")
-    .single();
-
-  if (payErr || !payment) {
-    return NextResponse.json(
-      { error: "خطا در ساخت رکورد پرداخت." },
-      { status: 500 }
-    );
-  }
-
-  // لینک‌کردن پرداخت به ثبت‌نام
-  await admin
-    .from("webinar_registrations")
-    .update({ payment_id: payment.id })
-    .eq("id", registration_id);
-
-  // درخواست پرداخت از زرین‌پال
-  // requestPayment(amountToman, description) → ZarinpalRequestResult
-  const result = await requestPayment(
-    webinar.price_toman,
-    `ثبت‌نام وبینار: ${webinar.title}`
-  );
-
-  if (!result.ok || !result.startPayUrl) {
-    return NextResponse.json(
-      { error: result.message || "خطا در اتصال به درگاه پرداخت." },
-      { status: 502 }
-    );
-  }
-
-  return NextResponse.json({ payment_url: result.startPayUrl });
 }

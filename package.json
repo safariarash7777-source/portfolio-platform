@@ -24,7 +24,8 @@
     "test:recovery:db": "tsx --test --test-concurrency=1 lib/portfolio/recovery.integration.test.ts",
     "test:auth-ui": "node --import ./scripts/testing/b2-offline-guard.mjs scripts/testing/auth-offline-tests.cjs",
     "test:payment": "node --test lib/zarinpal.test.mjs",
-    "test:research-provenance": "tsx --test lib/intelligence/research-provenance.test.ts"
+    "test:research-provenance": "tsx --test lib/intelligence/research-provenance.test.ts",
+    "test:webinars": "node --test lib/webinars/lifecycle.test.mjs lib/webinars/ui.test.mjs docs/m2/proposed-exact-webinar.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createSingleUseInvite, sendMessage } from "@/lib/telegram";
+import { record, uuid, webinarFields, webinarInput } from "@/lib/webinars/contracts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type SessionClient = Awaited<ReturnType<typeof createClient>>;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 /**
@@ -63,23 +62,11 @@ export async function POST(req: NextRequest) {
   if ("error" in auth)
     return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const body = await req.json();
-  const {
-    title,
-    description,
-    starts_at,
-    ends_at,
-    registration_open,
-    max_capacity,
-    price_toman,
-    platform,
-    platform_url,
-    status,
-  } = body;
-
-  if (!title || !starts_at) {
+  const body: unknown = await req.json().catch(() => null);
+  const values = webinarInput(body);
+  if (!values || !record(body) || Object.keys(body).some(key => !webinarFields.includes(key as typeof webinarFields[number]))) {
     return NextResponse.json(
-      { error: "title و starts_at الزامی هستند." },
+      { error: "قیمت و زمان رویداد را مشخص کنید؛ فعال‌سازی دسترسی به بازه و لینک معتبر نیاز دارد." },
       { status: 400 }
     );
   }
@@ -87,18 +74,7 @@ export async function POST(req: NextRequest) {
   const admin = auth.supabase;
   const { data, error } = await admin
     .from("webinars")
-    .insert({
-      title,
-      description: description || null,
-      starts_at,
-      ends_at: ends_at || null,
-      registration_open: registration_open ?? false,
-      max_capacity: max_capacity || null,
-      price_toman: price_toman ?? 0,
-      platform: platform || "link",
-      platform_url: platform_url || null,
-      status: status || "draft",
-    })
+    .insert(values)
     .select()
     .single();
 
@@ -114,9 +90,10 @@ export async function PATCH(req: NextRequest) {
   if ("error" in auth)
     return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const body = await req.json();
+  const body: unknown = await req.json().catch(() => null);
+  if (!record(body)) return NextResponse.json({ error: "درخواست نامعتبر است." }, { status: 400 });
   const { id, ...updates } = body;
-  if (!id) {
+  if (!uuid(id)) {
     return NextResponse.json({ error: "id الزامی است." }, { status: 400 });
   }
 
@@ -124,12 +101,20 @@ export async function PATCH(req: NextRequest) {
 
   // اگر action = send_invites → ارسال دعوت کانال به شرکت‌کنندگان
   if (updates.action === "send_invites") {
-    return await handleSendInvites(admin, id);
+    return NextResponse.json({ error: "دعوت کانال تا تعیین سیاست جداگانه غیرفعال است. دسترسی این بسته فقط برای همان وبینار است." }, { status: 503 });
   }
+
+  if (Object.keys(updates).some(key => !webinarFields.includes(key as typeof webinarFields[number]))) {
+    return NextResponse.json({ error: "فیلد ویرایش نامعتبر است." }, { status: 400 });
+  }
+  const { data: existing, error: readError } = await admin.from("webinars").select("*").eq("id", id).maybeSingle();
+  if (readError || !existing) return NextResponse.json({ error: "وبینار یافت نشد." }, { status: 404 });
+  const values = webinarInput({ ...existing, ...updates });
+  if (!values) return NextResponse.json({ error: "قیمت، بازه یا لینک دسترسی نامعتبر است." }, { status: 400 });
 
   const { data, error } = await admin
     .from("webinars")
-    .update(updates)
+    .update(values)
     .eq("id", id)
     .select()
     .single();
@@ -157,76 +142,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });
-}
-
-// ── ارسال دعوت کانال به شرکت‌کنندگان ─────────────────────────────────────────
-async function handleSendInvites(
-  admin: SessionClient,
-  webinarId: string
-) {
-  const channelId = process.env.TELEGRAM_CHANNEL_ID;
-  if (!channelId) {
-    return NextResponse.json(
-      { error: "TELEGRAM_CHANNEL_ID تنظیم نشده." },
-      { status: 500 }
-    );
-  }
-
-  // دریافت ثبت‌نام‌های پرداخت‌شده/رایگان که حضور داشتند و دعوت نگرفتند
-  const { data: regs, error } = await admin
-    .from("webinar_registrations")
-    .select("id, user_id")
-    .eq("webinar_id", webinarId)
-    .eq("attended", true)
-    .eq("invite_sent", false)
-    .in("payment_status", ["paid", "free"]);
-
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
-
-  if (!regs || regs.length === 0) {
-    return NextResponse.json({
-      ok: true,
-      message: "هیچ شرکت‌کننده واجد شرایطی یافت نشد.",
-      sent: 0,
-    });
-  }
-
-  let sent = 0;
-  for (const reg of regs) {
-    // یافتن telegram_user_id از telegram_links
-    const { data: link } = await admin
-      .from("telegram_links")
-      .select("telegram_user_id")
-      .eq("user_id", reg.user_id)
-      .maybeSingle();
-
-    if (!link?.telegram_user_id) continue;
-
-    // ساخت لینک دعوت تک‌نفره
-    const inviteLink = await createSingleUseInvite();
-    if (!inviteLink) continue;
-
-    // ارسال پیام به کاربر
-    await sendMessage(
-      link.telegram_user_id,
-      `🎉 تبریک! شما در وبینار شرکت کردید.\n\nلینک دعوت اختصاصی کانال خصوصی:\n${inviteLink}\n\n⚠️ این لینک تک‌بار مصرف است و فقط برای شما معتبر است.`
-    );
-
-    // آپدیت رکورد
-    await admin
-      .from("webinar_registrations")
-      .update({ invite_sent: true, invite_link: inviteLink })
-      .eq("id", reg.id);
-
-    sent++;
-  }
-
-  // علامت‌گذاری وبینار
-  await admin
-    .from("webinars")
-    .update({ invites_sent: true })
-    .eq("id", webinarId);
-
-  return NextResponse.json({ ok: true, sent });
 }

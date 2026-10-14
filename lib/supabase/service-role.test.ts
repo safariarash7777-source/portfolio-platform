@@ -47,7 +47,6 @@ const ALLOWED = new Map<string, string>([
 
   // ── تشخیص و افزونهٔ اختیاری ──
   ["app/api/admin/health/route.ts", "حضورِ خودِ کلید را گزارش می‌کند"],
-  ["app/api/webinars/list/route.ts", "شمارشِ ثبت‌نام افزونهٔ اختیاری است؛ نبودش `null` می‌دهد"],
 ]);
 
 /**
