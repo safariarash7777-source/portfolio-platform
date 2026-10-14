@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-10-14T05:53:01.098Z",
+  "sha": "065c293afa9a30ca2bd213c1936abaa92918cb57",
+  "files": {
+    "server.mjs": {
+      "expected": "843a4a3cecc0f596a10095ed187cc351001226af65a86f1e598bca29cee1eed2",
+      "actual": "843a4a3cecc0f596a10095ed187cc351001226af65a86f1e598bca29cee1eed2",
+      "match": true
+    },
+    "commodity.mjs": {
+      "expected": "f447ba5d14dfe4233b90d5f8403cdb942586d69ce36daf545726c67ffc9d138d",
+      "actual": "f447ba5d14dfe4233b90d5f8403cdb942586d69ce36daf545726c67ffc9d138d",
+      "match": true
+    },
+    "market-retention.mjs": {
+      "expected": "f6ca5b3f578f7ab8a404dddc77ddae351b64c305ebb291f033d5dad0c9d207ab",
+      "actual": "f6ca5b3f578f7ab8a404dddc77ddae351b64c305ebb291f033d5dad0c9d207ab",
+      "match": true
+    },
+    "options.mjs": {
+      "expected": "92318df93e2fc832bc17fdf2558cf8e13acd3ca0717c4ad89dc5ce468971044e",
+      "actual": "92318df93e2fc832bc17fdf2558cf8e13acd3ca0717c4ad89dc5ce468971044e",
+      "match": true
+    },
+    "package.json": {
+      "expected": "165301461fdfc895571541de575aba6db6bd5c5080e6b01d50959f51818b3558",
+      "actual": "165301461fdfc895571541de575aba6db6bd5c5080e6b01d50959f51818b3558",
+      "match": true
+    },
+    "daily-fx.mjs": {
+      "expected": "ede11760d4033c093e874f2298ba60cb05646fccbd53bbaab60f568665ce0a87",
+      "actual": "ede11760d4033c093e874f2298ba60cb05646fccbd53bbaab60f568665ce0a87",
+      "match": true
+    },
+    "ime.mjs": {
+      "expected": "15045ba1d439487a8b6529640e38945b1a49de1cf1b602720b052f93d1889fa5",
+      "actual": "15045ba1d439487a8b6529640e38945b1a49de1cf1b602720b052f93d1889fa5",
+      "match": true
+    },
+    "codal-engine.mjs": {
+      "expected": "9a7f04b7e3975a4287050a851c4fe485bc75fab3f963f8952f9a1b0001875a3b",
+      "actual": "9a7f04b7e3975a4287050a851c4fe485bc75fab3f963f8952f9a1b0001875a3b",
+      "match": true
+    },
+    "symbol-detail.mjs": {
+      "expected": "6702a559e0222a56fcfdc9211d83ca9f17526eff0d6e409dfa0f046534d98fb3",
+      "actual": "6702a559e0222a56fcfdc9211d83ca9f17526eff0d6e409dfa0f046534d98fb3",
+      "match": true
+    },
+    "codal.mjs": {
+      "expected": "695a3522026eeb347f4f5f13ad97d607e420f1118b0e833ddf81ae27a91a6e58",
+      "actual": "695a3522026eeb347f4f5f13ad97d607e420f1118b0e833ddf81ae27a91a6e58",
+      "match": true
+    }
+  },
+  "pass": true
+}
