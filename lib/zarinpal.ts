@@ -32,7 +32,8 @@ export interface ZarinpalRequestResult {
 /** ساخت تراکنش. amount به تومان؛ زرین‌پال به ریال می‌گیرد (×۱۰). */
 export async function requestPayment(
   amountToman: number,
-  description: string
+  description: string,
+  returnUrl: string = callbackUrl()
 ): Promise<ZarinpalRequestResult> {
   const merchant_id = process.env.ZARINPAL_MERCHANT_ID;
   if (!merchant_id) return { ok: false, message: "درگاه پرداخت پیکربندی نشده است." };
@@ -43,11 +44,12 @@ export async function requestPayment(
     body: JSON.stringify({
       merchant_id,
       amount: amountToman * 10,
-      callback_url: callbackUrl(),
+      callback_url: returnUrl,
       description,
     }),
   });
 
+  if (!res.ok) return { ok: false, message: "نتیجهٔ درخواست پرداخت مشخص نیست." };
   const json = await res.json().catch(() => null);
   const code = json?.data?.code;
   const authority = json?.data?.authority;

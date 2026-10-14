@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { record, uuid } from "@/lib/webinars/contracts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,8 +16,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
   }
 
-  const { webinar_id } = await req.json();
-  if (!webinar_id) {
+  const body: unknown = await req.json().catch(() => null);
+  const webinar_id = record(body) ? body.webinar_id : null;
+  if (!uuid(webinar_id)) {
     return NextResponse.json(
       { error: "webinar_id الزامی است." },
       { status: 400 }
@@ -44,6 +46,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  // اگر وبینار پولی باشد، needs_payment = true → فرانت باید به صفحه پرداخت هدایت کند
+  // An old/incomplete response cannot authorize UI guesses about free access or another payment.
+  if (!record(data) || !uuid(data.registration_id) || data.webinar_id !== webinar_id ||
+      typeof data.needs_payment !== "boolean" || typeof data.already_registered !== "boolean" ||
+      !["pending", "paid", "free"].includes(String(data.payment_status)) ||
+      data.needs_payment !== (data.payment_status === "pending")) {
+    return NextResponse.json({ error: "قرارداد ثبت‌نام هنوز آماده نیست." }, { status: 503 });
+  }
   return NextResponse.json({ registration: data });
 }

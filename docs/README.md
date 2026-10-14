@@ -36,6 +36,7 @@
 | [`PRODUCTION-ARCHITECTURE.md`](./PRODUCTION-ARCHITECTURE.md) | معماریِ تولید | سرویس‌ها، جریانِ داده، مرزها |
 | [`ONBOARDING.md`](./ONBOARDING.md) | ورودِ توسعه‌دهنده | دستورها، محیط، دام‌های شناخته‌شده |
 | [`ops/RELEASE-payment-containment.md`](./ops/RELEASE-payment-containment.md) | بستهٔ انتشارِ مهارِ `create_payment` | ترتیبِ انتشار، اثرِ authorityِ بی‌رکورد، پذیرش، بازگشت |
+| [`m2/EXACT-WEBINAR-HANDOFF.fa.md`](./m2/EXACT-WEBINAR-HANDOFF.fa.md) | قرارداد و تحویل محلی دسترسی به همان وبینار | سیاست صریح مدیر، ثبت‌نام/settlement، SQL پیشنهادی و پذیرش‌های ناتمام روی main تازه؛ منتشر نشده |
 | [`RUNBOOK-relay-deploy.md`](./RUNBOOK-relay-deploy.md) | استقرارِ رله + `B-053` | پیش‌پروازِ پرچم‌ها، مسیرِ استقرار، پذیرشِ دو چرخه |
 | [`ops/RELEASE-history-sections.md`](./ops/RELEASE-history-sections.md) | بستهٔ انتشارِ توقفِ نوشتنِ بخش‌های بی‌خواننده | شاهدِ قبل/بعد، مصرف‌کننده‌ها، بازگشت |
 | [`ops/RELEASE-ime-storage.md`](./ops/RELEASE-ime-storage.md) | نصب محدود جدول‌های تاریخچهٔ بورس کالا | پیش‌نیاز بکاپ/بازیابی، آزمون دسترسی‌ها، پذیرش چرخهٔ طبیعی و حفظ تاریخچه |

@@ -31,12 +31,25 @@ export async function GET(req: NextRequest) {
   // ردیفِ pending خودمان — مرجعِ معتبرِ مبلغ و کاربر.
   const { data: payment } = await admin
     .from("payments")
-    .select("user_id, amount, status")
+    .select("id, user_id, amount, status")
     .eq("authority", authority)
     .maybeSingle();
 
   if (!payment) {
     return unknown();
+  }
+
+  // A webinar ledger must never enter the generic channel-invite/payment flow.
+  const { data: registration, error: registrationError } = await admin.from("webinar_registrations")
+    .select("id").eq("payment_id", payment.id).maybeSingle();
+  if (registrationError) return unknown();
+  if (registration) {
+    if (typeof registration.id !== "string" || !registration.id) return unknown();
+    const callback = new URL("/api/webinars/payment/callback", process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin);
+    callback.searchParams.set("Authority", authority);
+    callback.searchParams.set("Status", status);
+    callback.searchParams.set("registration_id", registration.id);
+    return NextResponse.redirect(callback);
   }
 
   // قبلاً تأیید شده → idempotent، دعوتِ دوباره نمی‌فرستیم.
