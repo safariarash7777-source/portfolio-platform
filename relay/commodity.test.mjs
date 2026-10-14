@@ -57,7 +57,7 @@ test("malformed, missing-group, duplicate and empty batches are rejected atomica
 });
 
 test("existing account key does not implicitly enable the feed", async () => {
-  const mod = await fresh({ BRSAPI_KEY: "synthetic-main" });
+  const mod = await fresh({ BRSAPI_KEY: "dummy-main" });
   let calls = 0;
   await mod.refreshCommodities({}, { client: { request: () => { calls++; throw new Error("must not call"); } } });
   assert.equal(calls, 0);
@@ -66,9 +66,9 @@ test("existing account key does not implicitly enable the feed", async () => {
 });
 
 test("explicit activation reuses the account key; explicit key and disable remain supported", async () => {
-  const reuse = await fresh({ BRSAPI_COMMODITY_ENABLED: "1", BRSAPI_KEY: "synthetic-main" });
-  assert.deepEqual(reuse.commodityConfig(), { enabled: true, base: "https://Api.BrsApi.ir", key: "synthetic-main" });
-  const explicit = await fresh({ BRSAPI_COMMODITY_KEY: "synthetic-explicit", BRSAPI_KEY: "synthetic-main", BRSAPI_COMMODITY_ENABLED: "1", BRSAPI_COMMODITY_BASE: "https://example.invalid/" });
+  const reuse = await fresh({ BRSAPI_COMMODITY_ENABLED: "1", BRSAPI_KEY: "dummy-main" });
+  assert.deepEqual(reuse.commodityConfig(), { enabled: true, base: "https://Api.BrsApi.ir", key: "dummy-main" });
+  const explicit = await fresh({ BRSAPI_COMMODITY_KEY: "synthetic-explicit", BRSAPI_KEY: "dummy-main", BRSAPI_COMMODITY_ENABLED: "1", BRSAPI_COMMODITY_BASE: "https://example.invalid/" });
   assert.deepEqual(explicit.commodityConfig(), { enabled: true, base: "https://example.invalid", key: "synthetic-explicit" });
   const off = await fresh({ BRSAPI_COMMODITY_KEY: "synthetic-explicit", BRSAPI_COMMODITY_ENABLED: "0" });
   assert.equal(off.commodityStatus().enabled, false);
@@ -77,14 +77,14 @@ test("explicit activation reuses the account key; explicit key and disable remai
 });
 
 test("legacy fetch uses documented endpoint and shared transport with one metered attempt", async t => {
-  const mod = await fresh({ BRSAPI_KEY: "synthetic/key?", BRSAPI_COMMODITY_ENABLED: "1" });
+  const mod = await fresh({ BRSAPI_KEY: "dummy/key?", BRSAPI_COMMODITY_ENABLED: "1" });
   let calls = 0, metered = 0;
   t.mock.method(globalThis, "fetch", async (url, options) => {
     calls++;
     const parsed = new URL(url);
     assert.equal(parsed.origin, "https://api.brsapi.ir");
     assert.equal(parsed.pathname, "/Market/Commodity.php");
-    assert.equal(parsed.searchParams.get("key"), "synthetic/key?");
+    assert.equal(parsed.searchParams.get("key"), "dummy/key?");
     assert.equal(options.redirect, "error");
     assert.equal(options.headers["User-Agent"], "synthetic-browser");
     return { ok: true, json: async () => grouped() };
