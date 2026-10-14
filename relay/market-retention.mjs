@@ -25,6 +25,11 @@ export function mergeStoredBaseline(current, stored) {
   if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return current;
   if (!current) return stored;
   const p = structuredClone(current);
+  if (!p.commodities?.length && Array.isArray(stored.commodities) && stored.commodities.length) {
+    p.commodities = structuredClone(stored.commodities);
+    p.commodityFetchedAt = commodityReceipt(stored);
+    p.commodityState = 'stale';
+  }
   for (const k of MARKET_FAMILIES) {
     if (familyKnown(p, k) || !familyKnown(stored, k)) continue;
     p[k] = structuredClone(stored[k]);
@@ -35,6 +40,25 @@ export function mergeStoredBaseline(current, stored) {
     };
   }
   return p;
+}
+
+function commodityReceipt(p) {
+  // Legacy auxiliary metadata is commodity-specific; the core clock is not.
+  return clock(p?.commodityFetchedAt) ?? clock(p?.snapshotQuality?.auxiliary?.commodities?.receivedAt);
+}
+
+export function retainCommoditySnapshot(previous, candidate, status, attemptedAt) {
+  const receipt = clock(status.lastFetchAt);
+  const currentKnown = Array.isArray(candidate?.commodities) && candidate.commodities.length > 0 && receipt !== null && receipt <= attemptedAt;
+  const previousKnown = Array.isArray(previous?.commodities) && previous.commodities.length > 0;
+  const received = status.enabled && !status.lastError && currentKnown;
+  const selected = currentKnown ? candidate : previousKnown ? previous : null;
+  const savedReceipt = currentKnown ? receipt : commodityReceipt(previous);
+  return {
+    commodities: selected ? structuredClone(selected.commodities) : [],
+    commodityFetchedAt: selected && savedReceipt !== null && savedReceipt <= attemptedAt ? savedReceipt : null,
+    commodityState: !status.enabled ? 'disabled' : received ? 'received' : selected ? 'stale' : 'unavailable',
+  };
 }
 
 export function retainMarketFamilies(previous, candidate, outcomes, attemptedAt) {

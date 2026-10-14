@@ -1,7 +1,7 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics } from "./brsapi-transport.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
-import { retainMarketFamilies, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
+import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
 // رلهٔ بازارِ ایران — باید روی هاستِ «داخل ایران» اجرا شود (لیارا/آروان/پارس‌پک).
 // چرا: منابعِ ایرانی (BrsApi) به IPِ خارجی ۴۰۳ می‌دهند؛ این سرویسِ
@@ -38,7 +38,7 @@ import { pushDailyBreadth, breadthStatus } from "./breadth.mjs";
 // T5 — سرویس‌های تکمیلی BrsApi
 import { getSymbolDetail, symbolDetailStatus, refreshSymbolDetailsRotation, symbolRotationStatus } from "./symbol-detail.mjs";
 import { refreshCertificates, certificatesForPayload, pushCertEod, runPhysicalDaily, imeStatus } from "./ime.mjs";
-import { refreshCommodities, commoditiesForPayload, commodityStatus } from "./commodity.mjs";
+import { refreshCommodities, commoditiesForPayload, commodityStatus, commodityConfig } from "./commodity.mjs";
 // C1 — قرنطینهٔ زیرنمادها و فهرست سیاه NAV (اخطار رسمی BrsApi)
 import { isSubTicker, isRightsIssue } from "./symbols-util.mjs";
 import { tehranNow, isAfterClose, planEodHistory, writeEodHistory } from "./eod.mjs";
@@ -139,12 +139,13 @@ function commodityBudget() {
 
 let commodityBrs = null;
 function commodityClient() {
-  if (!clientEnabled()) return null;
+  const config = commodityConfig();
+  if (!clientEnabled() || !config.enabled) return null;
   if (!commodityBrs) {
     const budget = commodityBudget() ?? undefined;
     commodityBrs = new BrsApiClient({
-      base: (process.env.BRSAPI_COMMODITY_BASE || "https://BrsApi.ir/Api").replace(/\/+$/, ""),
-      key: process.env.BRSAPI_COMMODITY_KEY || "",
+      base: config.base,
+      key: config.key,
       headers: HDRS, budget,
     });
   }
@@ -856,9 +857,9 @@ async function buildPayload() {
   // T5-3 — دور تکمیلی NAV برای صندوق‌های فاقد NAV (۲ بار در روز)
   refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
-  // T5-4/6 — گواهی کالایی (هر ۳۰ دقیقه در ساعات بازار) و کامودیتی جهانی (کلید جدا)
+  // Commodity receipt belongs to this cycle, not the next background cycle.
   refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient(), countLegacy }).catch((e) => console.error("ime cert error:", errMsg(e)));
-  refreshCommodities(HDRS, { client: commodityClient(), countLegacy: countLegacyCommodity }).catch((e) => console.error("commodity error:", errMsg(e)));
+  await refreshCommodities(HDRS, { client: commodityClient(), countLegacy: countLegacyCommodity });
   applyNav(sf.funds);
   applyFundTypes(sf.funds);
   const payload = {
@@ -869,7 +870,7 @@ async function buildPayload() {
     stocks: sf.stocks,
     options,
     imeCertificates: certificatesForPayload(), // T5-4 — گواهی سپردهٔ کالایی (تومان)
-    commodities: commoditiesForPayload(),      // T5-6 — کامودیتی جهانی (دلار، کلید جدا)
+    commodities: commoditiesForPayload(), // Preserve each provider unit.
     indices,
     fetchedAt: Date.now(),
   };
@@ -1277,6 +1278,7 @@ function refresh() {
       // These caches refresh on their own schedule; never borrow the core receipt.
       const cert = imeStatus().certificate;
       const commodity = commodityStatus();
+      Object.assign(result.payload, retainCommoditySnapshot(cache ? JSON.parse(cache.body) : null, payload, commodity, attemptedAt));
       result.payload.snapshotQuality.auxiliary = Object.fromEntries([
         ['imeCertificates', cert], ['commodities', commodity],
       ].map(([name, s]) => [name, {
@@ -1284,6 +1286,11 @@ function refresh() {
         state: s.lastFetchAt > 0 ? (s.lastError ? 'stale' : 'cached') : 'unavailable',
         error: s.lastError ? sourceErrorCategory(s.lastError) : null,
       }]));
+      result.payload.snapshotQuality.auxiliary.commodities = {
+        receivedAt: result.payload.commodityFetchedAt,
+        state: result.payload.commodityState,
+        error: commodity.lastError ? sourceErrorCategory(commodity.lastError) : null,
+      };
       const body = JSON.stringify(result.payload);
       status.lastAttempt = attemptedAt;
       status.snapshotQuality = result.payload.snapshotQuality;

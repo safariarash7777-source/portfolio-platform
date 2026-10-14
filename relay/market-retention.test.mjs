@@ -1,12 +1,36 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MARKET_FAMILIES, retainMarketFamilies, familyKnown, mergeStoredBaseline, validStoredSnapshot, sourceErrorCategory } from './market-retention.mjs';
+import { MARKET_FAMILIES, retainMarketFamilies, retainCommoditySnapshot, familyKnown, mergeStoredBaseline, validStoredSnapshot, sourceErrorCategory } from './market-retention.mjs';
 const now = 1770000000000;
 const fixture = receipt => Object.fromEntries([
   ...MARKET_FAMILIES.map(k => [k, k === 'indices' ? { total: 123, date: '1404-11-14', time: '10:00:00' } : [{ id: k, price: 123, sourceDate: '1404-11-14', sourceTime: '10:00:00' }]]),
   ['fetchedAt', receipt],
 ]);
 const outcomes = ok => Object.fromEntries(MARKET_FAMILIES.map(k => [k, { ok, error: ok ? null : 'timeout' }]));
+
+test('commodity survives restart failure with its own receipt and never borrows a core clock', () => {
+  const previous = { ...fixture(now), commodities: [{ id: 'TEST', price: 12, unit: 'USD/test', date: 'synthetic' }], commodityFetchedAt: now - 5000 };
+  const status = { enabled: true, lastFetchAt: null, lastError: 'timeout' };
+  const retained = retainCommoditySnapshot(previous, { commodities: [] }, status, now);
+  assert.deepEqual(retained.commodities, previous.commodities);
+  assert.equal(retained.commodityFetchedAt, now - 5000);
+  assert.equal(retained.commodityState, 'stale');
+  assert.equal(retainCommoditySnapshot({ ...previous, commodityFetchedAt: null }, {}, status, now).commodityFetchedAt, null);
+  assert.equal(retainCommoditySnapshot(null, {}, status, now).commodityState, 'unavailable');
+  assert.equal(retainCommoditySnapshot(previous, {}, { ...status, enabled: false }, now).commodityState, 'disabled');
+});
+
+test('commodity success uses this cycle; failed refresh retains original receipt; legacy receipt is specific', () => {
+  const candidate = { commodities: [{ id: 'TEST', price: null, unit: null }] };
+  const status = { enabled: true, lastFetchAt: now - 100, lastError: null };
+  assert.deepEqual(retainCommoditySnapshot(null, candidate, status, now), { ...candidate, commodityFetchedAt: now - 100, commodityState: 'received' });
+  assert.equal(retainCommoditySnapshot(null, candidate, { ...status, lastError: 'schema' }, now).commodityState, 'stale');
+  const stored = { ...candidate, snapshotQuality: { auxiliary: { commodities: { receivedAt: now - 1000 } } } };
+  const merged = mergeStoredBaseline(fixture(now), stored);
+  assert.equal(merged.commodityFetchedAt, now - 1000);
+  assert.equal(merged.commodityState, 'stale');
+  assert.equal(retainCommoditySnapshot(null, candidate, { ...status, lastFetchAt: now + 1 }, now).commodityFetchedAt, null);
+});
 
 test('retains rows/source clocks immutably, and gives fresh history only to successful families', () => {
   const previous = fixture(now - 60000), candidate = fixture(now);
