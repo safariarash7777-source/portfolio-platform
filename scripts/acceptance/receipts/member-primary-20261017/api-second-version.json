@@ -1,0 +1,138 @@
+{
+  "at": "2026-10-17T18:28:23.467370+00:00",
+  "marker": "member-primary-20261017-01",
+  "status": "PASS",
+  "memberHomeHttp": {
+    "status": 200,
+    "holdingsLink": true,
+    "adminEntryAbsent": true,
+    "knownProfileVisible": true
+  },
+  "save": {
+    "status": 201,
+    "cache": "private, no-store",
+    "body": {
+      "version_id": "bf667161-12f0-4e91-915f-4096888ac9b7",
+      "version": 2,
+      "position_count": 1,
+      "reused": false
+    }
+  },
+  "globalLogoutStatus": 204,
+  "freshAnonymousStatus": 401,
+  "freshAuthenticatedRead": {
+    "status": 200,
+    "cache": "private, no-store",
+    "body": {
+      "contractVersion": "p04-canonical-read.v0.1",
+      "ownerId": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+      "supportedAssetClasses": [
+        "gold",
+        "fixed_income",
+        "equity_ir",
+        "fx",
+        "cash"
+      ],
+      "memberConfirmedAt": null,
+      "accountRef": null,
+      "state": "ready",
+      "version": {
+        "id": "bf667161-12f0-4e91-915f-4096888ac9b7",
+        "version": 2
+      },
+      "positions": [
+        {
+          "position_key": "member-primary-20261017-01-gold",
+          "symbol": null,
+          "manual_label": "آزمون کنترل‌شده عضو | member-primary-20261017-01",
+          "asset_class": "gold",
+          "qty": 3,
+          "unit": "گرم",
+          "as_of": "2026-10-17",
+          "title": "اصلاح نسخه دوم | member-primary-20261017-01",
+          "ownership_pct": 100,
+          "valuation_mode": "unpriced",
+          "declared_value": null,
+          "valuation_source": null,
+          "valuation_as_of": null,
+          "valuation_status": "missing",
+          "cost_basis": null
+        }
+      ],
+      "debts": []
+    }
+  },
+  "checks": {
+    "twoVersions": true,
+    "firstVersionUnchanged": true,
+    "firstPositionsUnchanged": true,
+    "reauthenticatedRead": true,
+    "allValuesUnpriced": true,
+    "secondTitleVisible": true
+  },
+  "db": {
+    "versions": [
+      {
+        "id": "c8250246-22d6-43cc-b2fa-c493316765bc",
+        "user_id": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+        "version": 1,
+        "client_token": "54a9d34b-c87d-4508-ab47-23a720cfcbf6",
+        "content_hash": "0f7fdcbb5d252b24ee8c30deb08b0c5d",
+        "note": null,
+        "created_at": "2026-10-17T18:27:53.964562+00:00"
+      },
+      {
+        "id": "bf667161-12f0-4e91-915f-4096888ac9b7",
+        "user_id": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+        "version": 2,
+        "client_token": "840755dc-e351-4884-9826-b1761516ff28",
+        "content_hash": "a42450c7a90c59df7cb920fe8461a131",
+        "note": null,
+        "created_at": "2026-10-17T18:28:19.082565+00:00"
+      }
+    ],
+    "positions": [
+      {
+        "version_id": "bf667161-12f0-4e91-915f-4096888ac9b7",
+        "position_key": "member-primary-20261017-01-gold",
+        "symbol": null,
+        "manual_label": "آزمون کنترل‌شده عضو | member-primary-20261017-01",
+        "asset_class": "gold",
+        "qty": 3,
+        "unit": "گرم",
+        "cost_basis": null,
+        "as_of": "2026-10-17",
+        "created_at": "2026-10-17T18:28:19.082565+00:00",
+        "title": "اصلاح نسخه دوم | member-primary-20261017-01",
+        "ownership_pct": 100,
+        "valuation_mode": "unpriced",
+        "declared_value": null,
+        "valuation_source": null,
+        "valuation_as_of": null,
+        "valuation_status": "missing"
+      },
+      {
+        "version_id": "c8250246-22d6-43cc-b2fa-c493316765bc",
+        "position_key": "member-primary-20261017-01-gold",
+        "symbol": null,
+        "manual_label": "آزمون کنترل‌شده عضو | member-primary-20261017-01",
+        "asset_class": "gold",
+        "qty": 3,
+        "unit": "گرم",
+        "cost_basis": null,
+        "as_of": "2026-10-17",
+        "created_at": "2026-10-17T18:27:53.964562+00:00",
+        "title": null,
+        "ownership_pct": 100,
+        "valuation_mode": "unpriced",
+        "declared_value": null,
+        "valuation_source": null,
+        "valuation_as_of": null,
+        "valuation_status": "missing"
+      }
+    ],
+    "debts": [],
+    "scopes": []
+  },
+  "limitation": "Native HTTP/Auth/session acceptance only; no browser UI login/save/logout proof. Already-issued JWTs may remain valid until expiry."
+}

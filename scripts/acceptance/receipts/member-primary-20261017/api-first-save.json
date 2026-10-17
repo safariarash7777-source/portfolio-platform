@@ -1,0 +1,118 @@
+{
+  "at": "2026-10-17T18:28:02.367306+00:00",
+  "marker": "member-primary-20261017-01",
+  "status": "PASS",
+  "checks": {
+    "nativeBRead": true,
+    "foreignRead404": true,
+    "foreignRpc403": true,
+    "foreignPatch403": true,
+    "foreignContentAbsent": true,
+    "AUnchanged": true,
+    "BEmpty": true
+  },
+  "save": {
+    "status": 201,
+    "cache": "private, no-store",
+    "body": {
+      "version_id": "c8250246-22d6-43cc-b2fa-c493316765bc",
+      "version": 1,
+      "position_count": 1,
+      "reused": false
+    }
+  },
+  "independentRead": {
+    "status": 200,
+    "cache": "private, no-store",
+    "body": {
+      "contractVersion": "p04-canonical-read.v0.1",
+      "ownerId": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+      "supportedAssetClasses": [
+        "gold",
+        "fixed_income",
+        "equity_ir",
+        "fx",
+        "cash"
+      ],
+      "memberConfirmedAt": null,
+      "accountRef": null,
+      "state": "ready",
+      "version": {
+        "id": "c8250246-22d6-43cc-b2fa-c493316765bc",
+        "version": 1
+      },
+      "positions": [
+        {
+          "position_key": "member-primary-20261017-01-gold",
+          "symbol": null,
+          "manual_label": "آزمون کنترل‌شده عضو | member-primary-20261017-01",
+          "asset_class": "gold",
+          "qty": 3,
+          "unit": "گرم",
+          "as_of": "2026-10-17",
+          "title": null,
+          "ownership_pct": 100,
+          "valuation_mode": "unpriced",
+          "declared_value": null,
+          "valuation_source": null,
+          "valuation_as_of": null,
+          "valuation_status": "missing",
+          "cost_basis": null
+        }
+      ],
+      "debts": []
+    }
+  },
+  "replay": {
+    "status": 200,
+    "cache": "private, no-store",
+    "body": {
+      "version_id": "c8250246-22d6-43cc-b2fa-c493316765bc",
+      "version": 1,
+      "position_count": 1,
+      "reused": true
+    }
+  },
+  "foreignStatuses": {
+    "read": 404,
+    "rpc": 403,
+    "patch": 403
+  },
+  "db": {
+    "versions": [
+      {
+        "id": "c8250246-22d6-43cc-b2fa-c493316765bc",
+        "user_id": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+        "version": 1,
+        "client_token": "54a9d34b-c87d-4508-ab47-23a720cfcbf6",
+        "content_hash": "0f7fdcbb5d252b24ee8c30deb08b0c5d",
+        "note": null,
+        "created_at": "2026-10-17T18:27:53.964562+00:00"
+      }
+    ],
+    "positions": [
+      {
+        "version_id": "c8250246-22d6-43cc-b2fa-c493316765bc",
+        "position_key": "member-primary-20261017-01-gold",
+        "symbol": null,
+        "manual_label": "آزمون کنترل‌شده عضو | member-primary-20261017-01",
+        "asset_class": "gold",
+        "qty": 3,
+        "unit": "گرم",
+        "cost_basis": null,
+        "as_of": "2026-10-17",
+        "created_at": "2026-10-17T18:27:53.964562+00:00",
+        "title": null,
+        "ownership_pct": 100,
+        "valuation_mode": "unpriced",
+        "declared_value": null,
+        "valuation_source": null,
+        "valuation_as_of": null,
+        "valuation_status": "missing"
+      }
+    ],
+    "debts": [],
+    "scopes": []
+  },
+  "limitation": "Committed API response consumed/discarded then retried; not a real browser dropped-response test."
+}
