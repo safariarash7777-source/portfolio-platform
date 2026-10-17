@@ -438,7 +438,7 @@ function n10Scope(context) {
   const headers = n10Headers(context).flat().map(normLabel);
   const texts = [context.localTitle, context.localDescription].map(normLabel).concat(headers);
   const text = texts.join(" ");
-  const statement = "(?:صورتسودوزیان|صورتتغییراتحقوقمالکانه)";
+  const statement = "(?:صورتسودوزیان|صورتتغییرات(?:در)?حقوقمالکانه)";
   const marker = "(?:جداگانه|غیرتلفیقی|مستقل)(?:شرکتاصلی)?|شرکتاصلی";
   const controlled = new RegExp(statement + "(?:" + marker + ")(?=[-،:؛]*(?:$|دوره|ارقام|مبالغ|مبلغ))");
   const candidate = new RegExp(statement + "(?:" + marker + ")", "g");
@@ -544,7 +544,7 @@ export function admitN10Html(html, meta, onRejected) {
       capital = cellNum(caps[0][1]);
     } else {
       const equities = contexts.filter(c => c.contextValid && !c.columnsAmbiguous && n10Scope(c) === "standalone" &&
-        n10Million(c) && normLabel(c.localTitle).includes(normLabel("تغییرات حقوق مالکانه")));
+        n10Million(c) && /تغییرات(?:در)?حقوقمالکانه/.test(normLabel(c.localTitle)));
       const proofs = [];
       for (const c of equities) {
         const months = [...faToEnDigits(c.localTitle + " " + c.localDescription).matchAll(/دوره\s*(\d{1,2})\s*ماهه/g)].map(m => +m[1]);
