@@ -31,7 +31,17 @@
     "lastExitCode": 0,
     "nextRunAtVerification": "2026-10-17T13:00:08Z"
   },
-  "panelProduction": "PENDING",
+  "panelProduction": {
+    "status": "DEPLOYED",
+    "sha": "4da7b3918e8811b98a3bf7419a7bebca82e6a8a2",
+    "deployment": "dpl_AJuwmXPfG7SpFwQ8SnqYF2dbnriY",
+    "primaryAlias": "portfolio-platform-fawn.vercel.app",
+    "aliasVerified": true,
+    "pr": 246,
+    "ciRun": 39034169996,
+    "ciHead": "8be74239cc21cb517d5c1a4508523cf5df401b0d",
+    "ciConclusion": "success"
+  },
   "browserAcceptance": "LOGIN_REQUIRED",
   "customerSupport": "NOT_ENABLED",
   "naturalRunIds": {
