@@ -44,7 +44,7 @@ export default function PublicDesignFrame({
     else url.searchParams.set("design", String(next));
     // Keep the exact same loaded data, filters and scroll; this is presentation only.
     window.history.replaceState(
-      window.history.state,
+      null,
       "",
       `${url.pathname}${url.search}${url.hash}`,
     );

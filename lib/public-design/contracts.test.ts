@@ -176,6 +176,7 @@ function elements(
 }
 test("actual frame follows URL across same-route navigation/back and native replacement, preserving loaded children", () => {
   let href = "https://site.example.test/market?design=2&find=TEST#report";
+  let routerHref = href;
   const entries = [href];
   let cursor = 0;
   const navigate = (url: string) => {
@@ -183,16 +184,20 @@ test("actual frame follows URL across same-route navigation/back and native repl
     entries.push(url);
     cursor += 1;
     href = url;
+    routerHref = href;
   };
   const move = (delta: number) => {
     cursor += delta;
     href = entries[cursor];
+    routerHref = href;
   };
-  const historyState = { retained: "router state" };
+  const historyState = { __NA: true, retained: "router state" };
   const Frame = component(
     "PublicDesignFrame",
     {
-      "next/navigation": { useSearchParams: () => new URL(href).searchParams },
+      "next/navigation": {
+        useSearchParams: () => new URL(routerHref).searchParams,
+      },
     },
     {
       location: {
@@ -203,9 +208,11 @@ test("actual frame follows URL across same-route navigation/back and native repl
       history: {
         state: historyState,
         replaceState: (state: unknown, _title: string, url: string) => {
-          assert.equal(state, historyState);
           href = new URL(url, href).href;
           entries[cursor] = href;
+          // Next's native-history patch skips its router update for internal __NA entries.
+          if (state && typeof state === "object" && "__NA" in state) return;
+          routerHref = href;
         },
       },
     },
@@ -255,6 +262,7 @@ test("actual frame follows URL across same-route navigation/back and native repl
     1,
   );
   href = "https://site.example.test/market?design=2&design=3";
+  routerHref = href;
   assert.equal(Frame(props).props["data-public-layout"], 1);
 });
 test("actual market header shows raw board state only with independently ready index family", () => {
