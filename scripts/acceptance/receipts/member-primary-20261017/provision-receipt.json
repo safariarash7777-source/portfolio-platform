@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-17T18:14:59.930085+00:00",
+  "marker": "member-primary-20261017-01",
+  "actors": {
+    "A": {
+      "id": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+      "role": "user"
+    },
+    "B": {
+      "id": "aa8514f2-feda-4f89-ae8c-85019ab7bece",
+      "role": "user"
+    }
+  }
+}

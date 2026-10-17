@@ -1,0 +1,97 @@
+{
+  "functions": [
+    {
+      "signature": "record_member_investment_scope(uuid,text,jsonb,integer,text)",
+      "owner": "postgres",
+      "language": "sql",
+      "securityDefiner": false,
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "definitionMd5": "7b86465786374f3b1b1ee0fd757e497f",
+      "authenticatedExecute": false,
+      "sourceFile": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "bodyExactAfterLineEndingTrim": true,
+      "securityModeMatches": true,
+      "languageMatches": true,
+      "expectedBodySha256": "b8fa38719b80b332a55f4e179697ac9a509803a2d474d81555c51ad05a15bb5d",
+      "installedBodySha256": "b8fa38719b80b332a55f4e179697ac9a509803a2d474d81555c51ad05a15bb5d"
+    },
+    {
+      "signature": "portfolio_private.record_snapshot(text,jsonb,text,text,integer)",
+      "owner": "postgres",
+      "language": "plpgsql",
+      "securityDefiner": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}",
+      "definitionMd5": "0c4a99cf3b3b07ba3b9e5474d539c418",
+      "authenticatedExecute": false,
+      "sourceFile": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "bodyExactAfterLineEndingTrim": true,
+      "securityModeMatches": true,
+      "languageMatches": true,
+      "expectedBodySha256": "a0c62d9b14b52957eec2ccffecae1cd1a87dc91eb6dfa5b053670a2a46a3cca7",
+      "installedBodySha256": "a0c62d9b14b52957eec2ccffecae1cd1a87dc91eb6dfa5b053670a2a46a3cca7"
+    },
+    {
+      "signature": "record_member_holdings(jsonb,text,text,integer)",
+      "owner": "postgres",
+      "language": "sql",
+      "securityDefiner": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "definitionMd5": "06152c855716d0890632d0845760471f",
+      "authenticatedExecute": false,
+      "sourceFile": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "bodyExactAfterLineEndingTrim": true,
+      "securityModeMatches": true,
+      "languageMatches": true,
+      "expectedBodySha256": "568aeeb32b5eb2adf0108209b7bc6cd2c9aa1ed0c16639bb8a58fc5478e876ad",
+      "installedBodySha256": "568aeeb32b5eb2adf0108209b7bc6cd2c9aa1ed0c16639bb8a58fc5478e876ad"
+    },
+    {
+      "signature": "record_member_debts(jsonb,integer,text)",
+      "owner": "postgres",
+      "language": "plpgsql",
+      "securityDefiner": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "definitionMd5": "560a02ee66335a3dbaa2bfdea927359b",
+      "authenticatedExecute": false,
+      "sourceFile": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "bodyExactAfterLineEndingTrim": true,
+      "securityModeMatches": true,
+      "languageMatches": true,
+      "expectedBodySha256": "3c99ade8822e8f89ada9a0710c0f21e80cd54cc4edb03c1f3fb9aa68ef6f7052",
+      "installedBodySha256": "3c99ade8822e8f89ada9a0710c0f21e80cd54cc4edb03c1f3fb9aa68ef6f7052"
+    },
+    {
+      "signature": "portfolio_scope_private.record_review(uuid,text,jsonb,integer,text)",
+      "owner": "postgres",
+      "language": "plpgsql",
+      "securityDefiner": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}",
+      "definitionMd5": "3b5dd03da6ca1b27392aa70e33b2789f",
+      "authenticatedExecute": false,
+      "sourceFile": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "bodyExactAfterLineEndingTrim": true,
+      "securityModeMatches": true,
+      "languageMatches": true,
+      "expectedBodySha256": "eb9159d30e5ad82208e58d4cc72dcfa60ee11dc61b4a6001eadc9c3177a1202b",
+      "installedBodySha256": "eb9159d30e5ad82208e58d4cc72dcfa60ee11dc61b4a6001eadc9c3177a1202b"
+    }
+  ],
+  "privateScopeUsage": true,
+  "privateFinancialUsage": false,
+  "bodyDiffs": []
+}

@@ -1,0 +1,13 @@
+{
+  "marker": "member-primary-20261017-01",
+  "id": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+  "role": "user",
+  "profileRepaired": true,
+  "customerRowsChanged": 0,
+  "financialRowsWritten": 0,
+  "status": "PASS",
+  "action": "controlled-A-profile-repair",
+  "sqlSha256": "d96faa4bd3e619aafe1de6acfe9af6a3ed32ff1f50598e72b4199e67be05003d",
+  "at": "2026-10-17T18:14:56.228373+00:00",
+  "nativeInstallSha256": "c36a8c3e9c2a5aed58921a10b99cbcb2ef0da08db331abe76a75c5e9603c715c"
+}

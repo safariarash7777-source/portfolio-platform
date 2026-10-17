@@ -1,0 +1,14 @@
+{
+  "recordedAt": "2026-10-17T18:22:55.493892+00:00",
+  "marker": "member-primary-20261017-01",
+  "route": "POST /api/portfolio/holdings",
+  "status": 403,
+  "bodyCaptured": false,
+  "originalBodyLimitation": "The failed runner stopped after status check; response body was not retained. No exact response code/body is asserted.",
+  "originHeaderSent": false,
+  "ownedVersionCountsAfter": {
+    "A": 0,
+    "B": 0
+  },
+  "readOnlyAclFinding": "authenticated lacks EXECUTE on all three public financial RPCs and scope private helper; bodies match approved source."
+}
