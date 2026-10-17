@@ -120,11 +120,11 @@ export function seriesColor(p: ChartPalette, index: number): string {
 /** گزینه‌های ظاهریِ مشترکِ نمودار — همان‌هایی که با تغییرِ تم باید عوض شوند. */
 export function chartThemeOptions(p: ChartPalette) {
   return {
-    layout: { background: { color: p.bg }, textColor: p.text },
+    layout: { background: { color: p.bg }, textColor: p.text, fontSize: 11 },
     // خطِ راهنما از `--grid` می‌آید نه `--line`: مرزِ کارت و شبکهٔ نمودار دو
     // نقشِ متفاوت‌اند و وقتی یک رنگ بودند، شبکه به‌اندازهٔ قابِ کارت پررنگ
     // می‌شد و چشم را از خطِ داده می‌دزدید.
-    grid: { vertLines: { color: p.grid }, horzLines: { color: p.grid } },
+    grid: { vertLines: { color: p.grid, style: 2 as const }, horzLines: { color: p.grid, style: 2 as const } },
     rightPriceScale: { borderColor: p.line },
     timeScale: { borderColor: p.line },
   };

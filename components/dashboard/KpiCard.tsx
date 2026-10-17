@@ -10,13 +10,13 @@ interface Props {
 /** Dashboard KPI card — matches the project's .card / CSS-variable design system. */
 export default function KpiCard({ label, value, delta, hint }: Props) {
   return (
-    <div className="card p-5">
+    <div className="card workspace-kpi p-5">
       <p className="text-xs" style={{ color: "var(--text-3)" }}>
         {label}
       </p>
       <p
         className="font-display text-2xl md:text-3xl font-bold mt-2"
-        style={{ color: "var(--navy-deep)", fontVariantNumeric: "tabular-nums" }}
+        style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}
       >
         {value}
       </p>

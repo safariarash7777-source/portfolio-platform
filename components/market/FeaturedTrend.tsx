@@ -67,7 +67,7 @@ export default function FeaturedTrend({
   // هیچ‌کدام داده ندارند → حالتِ خالیِ صادق، نه قابِ محورِ خالی.
   if (!hasIndex && !hasGold) {
     return (
-      <div className="card flex flex-col justify-center px-5 py-10 text-center" style={{ minHeight: 320 }}>
+      <div className="card workspace-chart flex flex-col justify-center px-5 py-10 text-center" style={{ minHeight: 320 }}>
         <p className="text-sm font-semibold" style={{ color: "var(--text-2)" }}>
           هنوز سری زمانی‌ای برای رسم ثبت نشده
         </p>
@@ -90,7 +90,7 @@ export default function FeaturedTrend({
   ];
 
   return (
-    <div className="card flex flex-col px-4 py-4 sm:px-5">
+    <div className="card workspace-chart flex flex-col px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="eyebrow">روند بازار</p>

@@ -1,0 +1,80 @@
+/* Arash workspace language. Surfaces gain depth; data and chart axes stay flat.
+   Shared by public cards, member cards, market shells and the admin workspace.
+   All colors derive from the existing light/dark brand tokens. */
+:root {
+  --panel-radius: 22px;
+  --panel-motion: 180ms;
+  --panel-shadow: inset 0 1px 0 var(--sheen), 0 3px 0 color-mix(in srgb, var(--line) 55%, transparent), var(--shadow);
+  --panel-raised: inset 0 1px 0 var(--sheen), 0 5px 0 color-mix(in srgb, var(--line) 55%, transparent), var(--shadow-lg);
+  --panel-wash: linear-gradient(145deg, var(--surface), color-mix(in srgb, var(--surface) 94%, var(--navy)));
+}
+
+.card, .card-elevated {
+  border-radius: var(--panel-radius);
+  background: var(--panel-wash);
+  box-shadow: var(--panel-shadow);
+}
+.card-elevated { box-shadow: var(--panel-raised); }
+.card :where(table, input, textarea), .workspace-chart { font-variant-numeric: tabular-nums; }
+.card:focus-within { border-color: var(--line-strong); }
+a.card, button.card { transition: transform var(--panel-motion), box-shadow var(--panel-motion); }
+.btn { border-radius: 12px; }
+.btn-primary, .btn-gold { box-shadow: inset 0 1px 0 var(--sheen), var(--shadow); }
+
+.site-navigation > div:first-child { max-width: 84rem; }
+.site-navigation nav[aria-label="ناوبری اصلی"] {
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.site-navigation nav[aria-label="ناوبری اصلی"] > a,
+.site-navigation nav[aria-label="ناوبری اصلی"] > div > button { border-radius: 12px; }
+
+.workspace-header {
+  padding: 24px;
+  background: var(--panel-wash);
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--panel-shadow);
+}
+.workspace-tabs {
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.workspace-tabs a { border-radius: 12px; }
+.workspace-chart { box-shadow: var(--panel-raised); }
+.workspace-chart [role="tablist"] { border-radius: 24px; padding: 4px; }
+.workspace-chart [role="tab"] { border-radius: 20px; }
+.workspace-chart canvas { border-radius: 8px; }
+.workspace-kpi { border-top: 2px solid var(--gold); }
+.workspace-kpi > p:nth-child(2) { letter-spacing: -.025em; }
+.admin-workspace > div > aside {
+  border-radius: 22px;
+  margin: 16px 16px 16px 0;
+  top: 16px;
+  height: calc(100dvh - 32px);
+  border: 1px solid var(--line);
+  box-shadow: var(--panel-shadow);
+}
+.admin-workspace main > .space-y-6 > header { padding-block: 8px 12px; }
+.admin-workspace nav a[aria-current="page"] { box-shadow: var(--shadow-sm); }
+
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  a.card:hover, button.card:hover { transform: translateY(-3px); box-shadow: var(--panel-raised); }
+}
+@media (max-width:700px) {
+  :root { --panel-radius: 18px; }
+  .workspace-header { padding: 18px 16px; }
+  .workspace-tabs { padding: 4px; border-radius: 14px; }
+  .workspace-tabs a { font-size: 12px; }
+  .card, .card-elevated { box-shadow: var(--panel-shadow); }
+}
+@media (prefers-reduced-motion:reduce) {
+  html { scroll-behavior: auto!important; }
+  a.card:hover, button.card:hover { transform: none; }
+}
