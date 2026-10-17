@@ -137,13 +137,36 @@ try:
          "-c","cron.launch_active_jobs=off","-c","shared_buffers=128MB","-c","maintenance_work_mem=64MB",
          "-c","max_connections=15"])
     target_created=True
+    # pg_isready also succeeds against the image's temporary bootstrap server.
+    # Restoring global roles at that point races the init scripts (for example,
+    # both sessions can try to create anon). Wait for entrypoint initialization
+    # to finish before opening the restore session.
     ready=False
     for _ in range(90):
+        logs=subprocess.run(["docker","logs",TARGET],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        init_done=b"PostgreSQL init process complete" in (logs.stdout+logs.stderr)
         p=subprocess.run(["docker","exec",TARGET,"pg_isready","-U","postgres","-d","postgres"],
             stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        if p.returncode==0: ready=True; break
+        if init_done and p.returncode==0: ready=True; break
         time.sleep(2)
     if not ready: raise RuntimeError("target_not_ready")
+    # The fully initialized image contains a graphql_public function that
+    # depends on its schema. pg_restore --clean cannot drop the schema while
+    # that bootstrap function remains. This is the isolated target only.
+    sql(TARGET,"DROP SCHEMA IF EXISTS graphql_public CASCADE;",user="supabase_admin")
+    # Bootstrap also gives supabase_admin broad default privileges in public.
+    # Objects created by pg_restore would retain those extra grants even after
+    # their owner is changed to postgres, so a superficially successful restore
+    # would not match the source ACLs. Remove only target-only defaults.
+    if not any(line.startswith("defaultacl|supabase_admin.public.") for line in source_inventory.splitlines()):
+        sql(TARGET,"""
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE ALL ON TABLES FROM postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE ALL ON FUNCTIONS FROM postgres, anon, authenticated, service_role;
+""",user="supabase_admin")
     # Preserve source role attributes/memberships without duplicate CREATE ROLE failure on same-image defaults.
     globals_sql=(ROOT/"globals.private.sql").read_text()
     globals_sql=re.sub(r"^CREATE ROLE ([^\n;]+);$",lambda m:
