@@ -1,3 +1,5 @@
+import { readUniqueHistoryRows } from "./history";
+
 // تاریخچهٔ NAV صندوق از symbol_history (ستون raw.nav_toman ردیف‌های relay_eod) — M6.
 //
 // رلهٔ EOD روزی یک‌بار NAV ابطال (تومان) را در raw ثبت می‌کند. این خواننده
@@ -38,34 +40,18 @@ export async function getNavHistory(symbol: string, days = 400): Promise<NavDay[
   const e = env();
   if (!e) return [];
 
+  if (!Number.isSafeInteger(days) || days <= 0) return [];
   const qs = new URLSearchParams({
-    select: "id,trade_date,close,raw",
-    symbol: `eq.${symbol}`,
+    select: "id,trade_date,close,raw", symbol: `eq.${symbol}`,
     "raw->>nav_toman": "not.is.null",
-    order: "trade_date.desc,id.desc",
-    limit: String(Math.min(days * 2, 2000)),
   });
+  const rows = await readUniqueHistoryRows<Row>(e, qs, days, row => {
+    const nav = Number(row.raw?.nav_toman);
+    return Number.isFinite(nav) && nav > 0;
+  });
+  if (rows === null) return [];
 
-  let rows: Row[] = [];
-  try {
-    const res = await fetch(`${e.url}/rest/v1/symbol_history?${qs}`, {
-      headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
-      signal: AbortSignal.timeout(10000),
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    rows = (await res.json()) as Row[];
-  } catch {
-    return [];
-  }
-
-  // dedupe هر تاریخ: جدیدترین id برنده (order از قبل نزولی است)
-  const byDate = new Map<string, Row>();
-  for (const r of rows) {
-    if (!byDate.has(r.trade_date)) byDate.set(r.trade_date, r);
-  }
-
-  const out: NavDay[] = [...byDate.values()]
+  const out: NavDay[] = rows
     .map((r) => {
       const nav = Number(r.raw?.nav_toman);
       if (!isFinite(nav) || nav <= 0) return null;

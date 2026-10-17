@@ -1,3 +1,5 @@
+import { toLatinDigits } from '../format';
+
 // حبابِ صندوق (اختلافِ قیمتِ بازار با NAV ابطال) — جاری و سریِ تاریخی.
 //
 // ── چرا این فایل وجود دارد ───────────────────────────────────────────────
@@ -370,6 +372,9 @@ export function liveBubble(args: {
  * است؛ اگر روزی برگردد این تابع باید عوض شود و همین کامنت نشانه‌اش است.
  */
 export const TEHRAN_UTC_OFFSET = "+03:30";
+const navCalendar = new Intl.DateTimeFormat('en-US-u-ca-persian', {
+  timeZone: 'Asia/Tehran', year: 'numeric', month: 'numeric', day: 'numeric',
+});
 
 export interface NavAt {
   iso: string;
@@ -386,13 +391,23 @@ export function navAtIso(
   navTime: string | null | undefined,
   jalaliToGregorian: (jymd: string) => string | null,
 ): NavAt | null {
-  if (!navDate) return null;
-  const g = jalaliToGregorian(navDate.trim());
+  if (typeof navDate !== 'string' || !navDate.trim()) return null;
+  const date = toLatinDigits(navDate.trim()).replaceAll('/', '-');
+  if (!/^\d{4}-\d{1,2}-\d{1,2}$/.test(date)) return null;
+  const g = jalaliToGregorian(date);
   if (!g) return null;
-  const t = (navTime ?? "").trim();
-  const hasClock = /^\d{1,2}:\d{2}(:\d{2})?$/.test(t);
-  const clock = hasClock ? (t.length === 5 ? `${t}:00` : t).padStart(8, "0") : "00:00:00";
+  if (navTime != null && typeof navTime !== 'string') return null;
+  const t = toLatinDigits((navTime ?? '').trim());
+  const hasClock = t.length > 0;
+  if (hasClock && !/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)) return null;
+  const [hour = 0, minute = 0, second = 0] = hasClock ? t.split(':').map(Number) : [];
+  if (hour > 23 || minute > 59 || second > 59) return null;
+  const clock = [hour, minute, second].map(n => String(n).padStart(2, '0')).join(':');
   const iso = `${g}T${clock}${TEHRAN_UTC_OFFSET}`;
   if (!isFinite(Date.parse(iso))) return null;
+  // The converter accepts numeric components; roundtrip prevents normalized invalid days.
+  const parts = navCalendar.formatToParts(new Date(iso));
+  const actual = ['year', 'month', 'day'].map(key => Number(parts.find(p => p.type === key)?.value));
+  if (actual.some((n, index) => n !== date.split('-').map(Number)[index])) return null;
   return { iso, precision: hasClock ? "minute" : "day" };
 }

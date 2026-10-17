@@ -129,3 +129,37 @@ It does not change financial admission, the three-attempt ledger, quotas, timers
 or provider requests. Engine integration passed 51 tests; N10/coverage passed 57;
 legacy Codal tests passed. These are offline results, not report-ingestion proof.
 Final deployment and natural-cycle receipts belong in the accompanying PR.
+
+## Market freshness repair — 2026-10-17
+
+Scope: follow the operational monitor's stale/unknown findings into the stored
+snapshot and rendered cards/history. No extra provider requests, synthetic dates,
+backfills, schema changes or new schedules.
+
+Read-only production evidence at 13:05 UTC: latest snapshot receipt
+2026-10-17T13:05:37.279Z; all seven family receipts complete, not retained.
+Counts: gold 9, currency 28, funds 336, stocks 769, crypto 19, options 1155,
+commodities 14. Stocks/funds/options observed clocks lack a source date.
+Official https://brsapi.ir/ documents AllSymbols `time` but no quote-date field;
+option start/end dates are contract dates, not quote dates. Receipt must never
+supply the missing date. Older commodity quotes alone do not prove feed failure.
+
+History checks: Ahram 1083, Ayar 2008, Foolad 4642 unique trading days, all ending
+2026-10-17. Thus these stored histories were current before this repair.
+The reader nevertheless silently truncated longer requested series at the REST
+row cap. Keyset pagination now reads unique days across bounded pages, preserving
+newest append-only versions and refusing failed/partial results. CSV exports no
+longer cache responses for an hour. No historical rows were modified.
+
+UI repairs: gold/currency cards display each quote's actual date/time separately
+from its family receipt; commodity receipt status ages at read time; the ticker
+uses the selected quote clocks and retained state. Missing/future clocks cannot
+borrow another source's fresh receipt. Single-digit hours and Persian/Arabic
+digits now parse correctly; impossible dates/times remain unknown.
+
+Validation: core 1650 + isolated offline groups 11/6/5 passed; calculation tests
+125 passed; changed-file lint, TypeScript and secret scan passed. Production
+publication and live browser/CSV acceptance will be appended after verification.
+Remaining: absent quote dates, genuinely older source observations, and untested
+full-universe financial-report coverage are not declared repaired by these checks.
+Rollback: revert the repair commit; preserve stored history and existing timers.
