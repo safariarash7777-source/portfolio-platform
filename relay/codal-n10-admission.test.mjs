@@ -313,3 +313,35 @@ test("a failing diagnostic observer cannot change admission outputs", () => {
   assert.deepEqual(codal.admitN10Html(industrial(), meta, event => events.push(event)), admit(industrial()));
   assert.deepEqual(events, []);
 });
+
+test("observed equity title with در preserves qualified proof and rejects incompatible proof", async t => {
+  // Public spelling witness only: its generic title does not establish standalone
+  // scope. Do not qualify or otherwise edit the real Vanovin HTML.
+  const witnessed = codal.extractN10Tables(fixture).find(c => c.localTitle === "صورت تغییرات در حقوق مالکانه");
+  assert.ok(witnessed?.contextValid);
+  assert.equal(witnessed.columnsAmbiguous, false);
+  const spelling = html => html.replace("صورت تغییرات حقوق مالکانه", "صورت تغییرات در حقوق مالکانه");
+
+  await t.test("only the witnessed grammatical word changes; observed normalized data stays identical", () => {
+    const canonical = industrial();
+    const expected = admit(canonical);
+    assert.ok(expected);
+    const events = [];
+    assert.deepEqual(codal.admitN10Html(spelling(canonical), meta, e => events.push(e)), expected);
+    assert.deepEqual(events, []);
+  });
+
+  for (const [name, options] of [
+    ["scope unknown", { capitalScope: "" }],
+    ["consolidated scope", { capitalScope: "تلفیقی" }],
+    ["independent from inflation is not standalone", { capitalScope: "مستقل از تورم" }],
+    ["explicitly negated standalone scope", { capitalScope: "جداگانه شرکت اصلی نیست" }],
+    ["different period", { capitalPeriod: "1403/03/31" }],
+    ["different amount unit", { capitalUnit: "ارقام به ریال" }],
+    ["non-positive capital", { capital: 0 }],
+  ]) await t.test(name, () => {
+    const events = [];
+    assert.equal(codal.admitN10Html(spelling(industrial(options)), meta, e => events.push(e)), null);
+    assert.deepEqual(events, [{ kind: "ن-۱۰", reason: "capital_unverified" }]);
+  });
+});

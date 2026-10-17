@@ -639,3 +639,44 @@ test("reason diagnostics whitelist persisted enums and safe bounded counters; le
     assert.deepEqual(legacy.persisted.watermark, watermark);
   }
 });
+
+test("observed equity title with در retains engine write identity and request limits", async t => {
+  const common = { period: "1404/12/29", months: 12, prior: false };
+  for (const [name, options, accepted] of [
+    ["qualified local capital proof", common, true],
+    ["unknown capital scope stays rejected", { ...common, capitalScope: "" }, false],
+  ]) await t.test(name, async () => {
+    const a = financial(1);
+    const canonical = industrial(options);
+    const html = canonical.replace("صورت تغییرات حقوق مالکانه", "صورت تغییرات در حقوق مالکانه");
+    const f = await fixture({ pages: [[a, boundary], []], excelHtml: html });
+    await f.engine.runEngineCycle();
+    assert.equal(f.calls.pages.length, 2);
+    assert.equal(f.calls.excel.length, 1);
+    assert.equal(f.calls.saves.length, 1);
+    assert.equal(f.engine.engineStatus.feed.inserted, accepted ? 1 : 0);
+    assert.equal(f.engine.engineStatus.feed.parseFailed, accepted ? 0 : 1);
+    assert.equal(f.engine.engineStatus.feed.complete, accepted);
+    assert.equal(f.engine.engineStatus.ok, accepted);
+    if (accepted) {
+      assert.equal(f.calls.reportWrites.length, 1);
+      assert.equal(f.persisted.fails[a.link], undefined);
+      assert.equal(f.persisted.watermark.key, 14050701000001);
+      const written = f.calls.reportWrites[0][0];
+      assert.equal(written.source_url, `${a.link}#pv2`);
+      assert.equal(written.symbol, a.l18);
+      assert.deepEqual(written.data, codal.admitN10Html(canonical, {
+        symbol: a.l18, company_name: a.name || a.l18, period_end: "1404-12-29", period_months: 12, audited: false,
+      }));
+      const qs = new URLSearchParams({ select: "source_url,symbol,data", source_url: `eq.${written.source_url}`, symbol: `eq.${a.l18}`, data: "not.is.null" });
+      const stored = await (await globalThis.fetch(`https://storage.invalid/rest/v1/codal_reports?${qs}`)).json();
+      assert.deepEqual(stored, [{ source_url: written.source_url, symbol: a.l18, data: written.data }]);
+      assert.deepEqual(f.persisted.admissionDiagnostics.totals, admissionCounts());
+    } else {
+      assert.equal(f.calls.reportWrites.length, 0);
+      assert.equal(f.persisted.fails[a.link], 1);
+      assert.deepEqual(f.persisted.watermark, watermark);
+      assert.equal(f.persisted.admissionDiagnostics.lastCycle["ن-۱۰"].capital_unverified, 1);
+    }
+  });
+});
