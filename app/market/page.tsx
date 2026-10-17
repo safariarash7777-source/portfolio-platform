@@ -52,12 +52,13 @@ import PublicDesignFrame from "@/components/public-design/PublicDesignFrame";
 import PublicMarketHeader from "@/components/public-design/PublicMarketHeader";
 import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
 import PublicReports from "@/components/public-design/PublicReports";
-import { publicLayout } from "@/lib/public-design/layout";
+import { readSiteAppearance } from "@/lib/appearance/site-layout-server";
 import { publicMetricLabels } from "@/lib/public-design/metrics";
 import { publicReports } from "@/lib/public-design/reports";
 import s from "@/components/public-design/PublicDesign.module.css";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata = pageMetadata({
   title: "میز بازار",
@@ -92,11 +93,13 @@ export default async function MarketPage({
     market,
     { data: ir, availability },
     access,
+    appearance,
   ] = await Promise.all([
     supabase.auth.getUser(),
     getMarketData(),
     readIranMarket(),
     getAccess(),
+    readSiteAppearance(supabase, sp),
   ]);
 
   let watchlist: string[] = [];
@@ -162,7 +165,7 @@ export default async function MarketPage({
 
   return (
     <PublicDesignFrame
-      initialLayout={publicLayout(sp.design)}
+      appearance={appearance}
       page="market"
       navigation={<Navbar />}
       footer={<Footer />}

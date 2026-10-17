@@ -27,7 +27,11 @@ test("only three URL presentation choices; unknown or repeated choices use defau
   for (const value of [undefined, "", "0", "4", "02", "admin", ["2", "3"]])
     assert.equal(publicLayout(value), 1);
   assert.equal(publicLayoutHref("/", 1), "/");
-  assert.equal(publicLayoutHref("/market", 3), "/market?design=3");
+  assert.equal(publicLayoutHref("/market", 3), "/market");
+  assert.equal(
+    publicLayoutHref("/market", 3, true),
+    "/market?appearance_preview=1&design=3",
+  );
 });
 const exported = {} as {
   publicReports: (client: unknown) => Promise<DeskRead<DeskCompanyReport[]>>;
@@ -115,6 +119,8 @@ test("metadata times stay independent and unknown; unsafe source URL is never re
 });
 
 const nodeRequire = createRequire(import.meta.url);
+const PreviewSlot = () => null;
+const WarningSlot = () => null;
 function component(
   name: string,
   additional: Record<string, unknown> = {},
@@ -138,6 +144,8 @@ function component(
       __esModule: true,
     },
     "@/lib/public-design/layout": { publicLayout, publicLayoutHref },
+    "./SiteLayoutPreview": { __esModule: true, default: PreviewSlot },
+    "./SiteAppearanceWarning": { __esModule: true, default: WarningSlot },
     "./PublicDesign.module.css": {
       __esModule: true,
       default: new Proxy({}, { get: (_target, key) => String(key) }),
@@ -178,8 +186,9 @@ function elements(
       : elements(children as React.ReactNode)),
   ];
 }
-test("actual frame follows URL across same-route navigation/back and native replacement, preserving loaded children", () => {
-  let href = "https://site.example.test/market?design=2&find=TEST#report";
+test("authorized preview follows URL across navigation/back and native replacement, preserving loaded children", () => {
+  let href =
+    "https://site.example.test/market?appearance_preview=1&design=2&find=TEST#report";
   let routerHref = href;
   const entries = [href];
   let cursor = 0;
@@ -225,7 +234,7 @@ test("actual frame follows URL across same-route navigation/back and native repl
     defaultValue: "retained filter",
   });
   const props = {
-    initialLayout: 1,
+    appearance: { state: "ready", globalLayout: 2, previewLayout: 2 },
     page: "market",
     navigation: null,
     footer: null,
@@ -233,41 +242,71 @@ test("actual frame follows URL across same-route navigation/back and native repl
   };
   let tree = Frame(props);
   assert.equal(tree.props["data-public-layout"], 2);
-  const first = elements(tree).find(
-    (el) => el.type === "button" && el.props.children === "دید بازار",
-  )!;
-  (first.props.onClick as () => void)();
-  assert.equal(new URL(href).searchParams.get("design"), null);
+  const first = elements(tree).find((el) => el.type === PreviewSlot)!;
+  (first.props.onChoose as (value: number) => void)(1);
+  assert.equal(new URL(href).searchParams.get("design"), "1");
   assert.equal(new URL(href).searchParams.get("find"), "TEST");
   assert.equal(new URL(href).hash, "#report");
-  tree = Frame({ ...props, initialLayout: 2 });
+  tree = Frame(props);
   assert.equal(tree.props["data-public-layout"], 1);
   assert.ok(elements(tree).some((element) => Object.is(element, child)));
-  navigate("https://site.example.test/market?design=3");
+  navigate("https://site.example.test/market?appearance_preview=1&design=3");
   assert.equal(Frame(props).props["data-public-layout"], 3);
   navigate("https://site.example.test/market");
-  assert.equal(
-    Frame({ ...props, initialLayout: 3 }).props["data-public-layout"],
-    1,
-  );
+  assert.equal(Frame(props).props["data-public-layout"], 2);
   // The router supplies these URLs after backward/forward navigation. Browser integration is checked separately.
   move(-1);
   assert.equal(Frame(props).props["data-public-layout"], 3);
   move(-1);
-  assert.equal(
-    Frame({ ...props, initialLayout: 2 }).props["data-public-layout"],
-    1,
-  );
+  assert.equal(Frame(props).props["data-public-layout"], 1);
   move(1);
   assert.equal(Frame(props).props["data-public-layout"], 3);
   move(1);
-  assert.equal(
-    Frame({ ...props, initialLayout: 3 }).props["data-public-layout"],
-    1,
-  );
-  href = "https://site.example.test/market?design=2&design=3";
+  assert.equal(Frame(props).props["data-public-layout"], 2);
+  href =
+    "https://site.example.test/market?appearance_preview=1&design=2&design=3";
   routerHref = href;
   assert.equal(Frame(props).props["data-public-layout"], 1);
+});
+
+test("public frame cannot override saved layout through URL and explicit fallback retains content", () => {
+  let href =
+    "https://site.example.test/?appearance_preview=1&design=3#layout=3";
+  const Frame = component("PublicDesignFrame", {
+    "next/navigation": { useSearchParams: () => new URL(href).searchParams },
+  });
+  const content = React.createElement(
+    "p",
+    null,
+    "existing factual home content",
+  );
+  const props = {
+    appearance: { state: "ready", globalLayout: 2, previewLayout: null },
+    page: "home",
+    navigation: null,
+    footer: null,
+    children: content,
+  };
+  let tree = Frame(props);
+  assert.equal(tree.props["data-public-layout"], 2);
+  assert.equal(
+    elements(tree).some((el) => el.type === PreviewSlot),
+    false,
+  );
+  assert.ok(elements(tree).some((el) => Object.is(el, content)));
+  href = "https://site.example.test/?design=1";
+  assert.equal(Frame(props).props["data-public-layout"], 2);
+  tree = Frame({
+    ...props,
+    appearance: {
+      state: "unavailable",
+      globalLayout: null,
+      previewLayout: null,
+    },
+  });
+  assert.equal(tree.props["data-public-layout"], "fallback");
+  assert.ok(elements(tree).some((el) => el.type === WarningSlot));
+  assert.ok(elements(tree).some((el) => Object.is(el, content)));
 });
 test("actual market header shows raw board state only with independently ready index family", () => {
   const Header = component("PublicMarketHeader", {

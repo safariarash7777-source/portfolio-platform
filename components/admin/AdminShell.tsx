@@ -25,6 +25,7 @@ import {
   CalendarDays,
   Bot,
   BookOpen,
+  Settings2,
 } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { createClient } from "@/lib/supabase/client";
@@ -85,6 +86,7 @@ const NAV_GROUPS: NavGroup[] = [
     key: "operations",
     label: "عملیات سامانه",
     items: [
+      { key: "appearance", label: "چیدمان سایت", href: "/admin/appearance", icon: <Settings2 size={18} /> },
       { key: "dashboard", label: "نمای مدیریتی", href: "/admin/overview", icon: <LayoutDashboard size={18} /> },
       { key: "news", label: "اطلاعیه‌ها", href: "/admin/announcements", icon: <Bell size={18} /> },
       { key: "health", label: "سلامت سامانه", href: "/admin/health", icon: <Activity size={18} /> },
@@ -114,6 +116,7 @@ export default function AdminShell({
     if (item.key === "drafts") return pathname.startsWith("/admin/drafts");
     if (item.key === "intelligence") return pathname.startsWith("/admin/intelligence");
     if (item.key === "health") return pathname.startsWith("/admin/health");
+    if (item.key === "appearance") return pathname.startsWith("/admin/appearance");
     if (item.key === "users") return pathname.startsWith("/admin/users");
     if (item.key === "news") return pathname.startsWith("/admin/announcements");
     if (item.key === "notes") return pathname.startsWith("/admin/notes");

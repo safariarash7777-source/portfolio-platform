@@ -1,6 +1,7 @@
 import type { ContentItem } from "@/lib/content-hub";
+import type { SiteLayout } from "@/lib/appearance/site-layout";
 
-export type MediaLayout = 1 | 2 | 3;
+export type MediaLayout = SiteLayout;
 export interface MediaAppearance { layout: MediaLayout; covers: "editorial" | "source"; featured: string[] }
 export interface MediaItem extends ContentItem { dateLabel?: string | null }
 export const APPEARANCE_KEY = "arash.media.preview.v1";

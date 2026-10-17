@@ -17,17 +17,18 @@ import {
   type PublicLayout,
 } from "@/lib/public-design/layout";
 import s from "./PublicDesign.module.css";
-
-const VIEWS = ["دید بازار", "میز شواهد", "پایش"];
+import type { SiteAppearance } from "@/lib/appearance/site-layout";
+import SiteLayoutPreview from "./SiteLayoutPreview";
+import SiteAppearanceWarning from "./SiteAppearanceWarning";
 
 export default function PublicDesignFrame({
-  initialLayout,
+  appearance,
   page,
   navigation,
   footer,
   children,
 }: {
-  initialLayout: PublicLayout;
+  appearance: SiteAppearance;
   page: "home" | "market";
   navigation: ReactNode;
   footer: ReactNode;
@@ -35,13 +36,20 @@ export default function PublicDesignFrame({
 }) {
   const query = useSearchParams();
   const values = query?.getAll("design");
-  const layout = values
-    ? publicLayout(values.length > 1 ? values : values[0])
-    : initialLayout;
+  const preview =
+    appearance.state === "ready" && appearance.previewLayout !== null;
+  const globalLayout = appearance.globalLayout ?? 1;
+  const layout =
+    preview && query?.get("appearance_preview") === "1"
+      ? publicLayout(values && values.length > 1 ? values : values?.[0])
+      : preview && !query
+        ? appearance.previewLayout!
+        : globalLayout;
   function choose(next: PublicLayout) {
+    if (!preview) return;
     const url = new URL(window.location.href);
-    if (next === 1) url.searchParams.delete("design");
-    else url.searchParams.set("design", String(next));
+    url.searchParams.set("appearance_preview", "1");
+    url.searchParams.set("design", String(next));
     // Keep the exact same loaded data, filters and scroll; this is presentation only.
     window.history.replaceState(
       null,
@@ -51,25 +59,29 @@ export default function PublicDesignFrame({
   }
   const entries = [
     {
-      href: publicLayoutHref("/", layout),
+      href: publicLayoutHref("/", layout, preview),
       label: "خانه",
       Icon: Home,
       active: page === "home",
     },
     {
-      href: publicLayoutHref("/market", layout),
+      href: publicLayoutHref("/market", layout, preview),
       label: "بازار",
       Icon: LineChart,
       active: page === "market",
     },
-    { href: "/insights", label: "رسانه", Icon: Newspaper },
+    {
+      href: publicLayoutHref("/insights", layout, preview),
+      label: "رسانه",
+      Icon: Newspaper,
+    },
     { href: "/learn", label: "یادگیری", Icon: BookOpen },
     { href: "/dashboard", label: "میز من", Icon: LayoutDashboard },
   ];
   return (
     <div
       dir="rtl"
-      data-public-layout={layout}
+      data-public-layout={appearance.state === "ready" ? layout : "fallback"}
       className={`${s.site} ${s[`layout${layout}`]} ${s[page]}`}
     >
       {navigation}
@@ -88,30 +100,20 @@ export default function PublicDesignFrame({
               <span>{label}</span>
             </Link>
           ))}
-          <a
-            className={s.railSettings}
-            href="#public-appearance"
-            aria-label="انتخاب چیدمان"
-          >
-            <SlidersHorizontal size={21} aria-hidden />
-            <span>چیدمان</span>
-          </a>
+          {preview && (
+            <a
+              className={s.railSettings}
+              href="#public-appearance"
+              aria-label="انتخاب چیدمان"
+            >
+              <SlidersHorizontal size={21} aria-hidden />
+              <span>چیدمان</span>
+            </a>
+          )}
         </aside>
         <main id="public-main" className={s.main}>
-          <div className={s.appearance} id="public-appearance">
-            <span>چیدمان این صفحه</span>
-            <div aria-label="چیدمان صفحه">
-              {VIEWS.map((name, i) => (
-                <button
-                  key={name}
-                  aria-pressed={layout === i + 1}
-                  onClick={() => choose((i + 1) as PublicLayout)}
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
-          </div>
+          {appearance.state === "unavailable" && <SiteAppearanceWarning />}
+          {preview && <SiteLayoutPreview layout={layout} onChoose={choose} />}
           {children}
         </main>
       </div>

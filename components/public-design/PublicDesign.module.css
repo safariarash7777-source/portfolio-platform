@@ -88,6 +88,28 @@
   color: var(--text-3);
   font-size: 11px;
 }
+.appearance > a {
+  color: var(--navy-ink);
+  font-size: 12px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.appearanceWarning {
+  border: 1px solid var(--gold);
+  background: var(--surface-2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-block: 12px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.9;
+}
+.appearanceWarning button {
+  color: var(--navy-ink);
+  min-height: 44px;
+  text-decoration: underline;
+}
 .appearance > div {
   display: flex;
   gap: 4px;
