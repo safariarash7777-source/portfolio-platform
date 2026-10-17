@@ -1,6 +1,7 @@
 import type { MediaLayout } from "./presentation";
+import { isSiteLayout } from "@/lib/appearance/site-layout";
 
-export const isMediaLayout = (value: unknown): value is MediaLayout => value === 1 || value === 2 || value === 3;
+export const isMediaLayout = isSiteLayout;
 
 export function mediaLayoutInput(value: unknown): MediaLayout | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;

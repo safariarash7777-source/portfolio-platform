@@ -14,9 +14,11 @@ import PublicMarketProvenance from "@/components/public-design/PublicMarketProve
 import MarketKpiRow from "@/components/market/MarketKpiRow";
 import { readIranMarket } from "@/lib/market-bounded";
 import { buildMarketHeadline } from "@/lib/core/marketHeadline";
-import { publicLayout } from "@/lib/public-design/layout";
+import { readSiteAppearance } from "@/lib/appearance/site-layout-server";
 import { publicMetricLabels } from "@/lib/public-design/metrics";
 import s from "@/components/public-design/PublicDesign.module.css";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /**
  * صفحهٔ اصلی — P2-PUBLIC-EXPERIENCE-REBASELINE-001
@@ -37,9 +39,10 @@ export default async function LandingPage({
 }) {
   const sp = searchParams ? await searchParams : {};
   const supabase = await createClient();
-  const [market, media] = await Promise.all([
+  const [market, media, appearance] = await Promise.all([
     readIranMarket(),
     readHomeMedia(supabase),
+    readSiteAppearance(supabase, sp),
   ]);
   const headline = buildMarketHeadline({
     indices: market.data?.indices ?? null,
@@ -49,7 +52,7 @@ export default async function LandingPage({
   });
   return (
     <PublicDesignFrame
-      initialLayout={publicLayout(sp.design)}
+      appearance={appearance}
       page="home"
       navigation={<Navbar />}
       footer={<Footer />}

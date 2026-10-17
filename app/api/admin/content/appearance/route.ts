@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isMediaLayout, mediaLayoutInput } from "@/lib/media/layout-setting";
+import { revalidatePath } from "next/cache";
+import { SITE_APPEARANCE_PATHS } from "@/lib/appearance/site-layout";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +22,7 @@ export async function GET() {
   const auth = await adminSession();
   if ("error" in auth) return auth.error;
   const { data, error } = await auth.session.rpc("get_media_layout");
-  if (error || !isMediaLayout(data)) return NextResponse.json({ error: "خواندن تنظیم ظاهر رسانه ممکن نشد." }, { status: 503, headers });
+  if (error || !isMediaLayout(data)) return NextResponse.json({ error: "خواندن چیدمان ذخیره‌شدهٔ سایت ممکن نشد." }, { status: 503, headers });
   return NextResponse.json({ media_layout: data }, { headers });
 }
 
@@ -33,5 +35,6 @@ export async function PATCH(req: NextRequest) {
   // the same transaction that appends the audit/version row.
   const { data, error } = await auth.session.rpc("set_media_layout", { p_media_layout: layout });
   if (error || data !== layout) return NextResponse.json({ error: "ذخیره تأیید نشد؛ تنظیم قبلی را دوباره بررسی کنید." }, { status: 503, headers });
+  for (const path of SITE_APPEARANCE_PATHS) revalidatePath(path, "page");
   return NextResponse.json({ media_layout: data }, { headers });
 }

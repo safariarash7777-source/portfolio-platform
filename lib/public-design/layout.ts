@@ -1,6 +1,11 @@
-export type PublicLayout = 1 | 2 | 3;
+import {
+  sitePreviewHref,
+  type SiteLayout,
+  type SiteAppearancePath,
+} from "@/lib/appearance/site-layout";
+export type PublicLayout = SiteLayout;
 
-/** A view of this URL only. It never reads or writes any global/account setting. */
+/** Parse a presentation value only after server-authorized administrator preview. */
 export function publicLayout(
   value: string | string[] | undefined,
 ): PublicLayout {
@@ -8,8 +13,9 @@ export function publicLayout(
 }
 
 export function publicLayoutHref(
-  path: "/" | "/market",
+  path: SiteAppearancePath,
   layout: PublicLayout,
+  preview = false,
 ): string {
-  return layout === 1 ? path : `${path}?design=${layout}`;
+  return preview ? sitePreviewHref(path, layout) : path;
 }
