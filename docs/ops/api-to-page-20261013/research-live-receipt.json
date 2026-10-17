@@ -21,16 +21,25 @@
   "toolCallCount": 0,
   "published": false,
   "bridgeSha256": "96487f35a46945d43ee94fb7940f409666817be6d7f6b433ac72eb61be9b9290",
-  "panelProduction": "PENDING",
+  "panelProduction": {
+    "status": "DEPLOYED",
+    "sha": "955490f8ab2543a7a39cdb02b609810f6293c611",
+    "deployment": "dpl_BSYdRNaD9U5TiSMmB5tj3Vf4W1Mb",
+    "primaryAlias": "portfolio-platform-fawn.vercel.app",
+    "aliasVerified": true,
+    "browserAcceptance": "LOGIN_REQUIRED"
+  },
   "scheduler": {
     "task": "Portfolio-Research-Hermes",
     "enabled": true,
     "interval": "PT1H",
     "lastResult": 0,
-    "lastRun": "2026-10-17T15:39:09.0000000+03:30",
-    "nextRun": "2026-10-17T16:39:09.0000000+03:30",
+    "lastRun": "2026-10-17T15:39:09+03:30",
+    "nextRun": "2026-10-17T16:39:09+03:30",
     "action": "direct-node",
     "duplicateModelCall": false,
     "dependency": "Windows user logged in, machine awake and connected"
-  }
+  },
+  "forcedCommandNegativeTest": "PASS",
+  "firstScheduledUnchangedRun": "2026-10-17T12:09:25.303Z"
 }
