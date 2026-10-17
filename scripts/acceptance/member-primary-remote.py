@@ -137,6 +137,14 @@ def financial(config, uid):
         "'scopes',coalesce((SELECT json_agg(r ORDER BY scope_version) FROM public.member_investment_scope_reviews r WHERE user_id='" + uid + "'),'[]'::json))")
 
 
+def auth_session_state(config, uid):
+    require(uid, r"[a-f0-9-]{36}", "owned_id")
+    return database(config, "SELECT json_build_object("
+        "'sessions',(SELECT count(*) FROM auth.sessions WHERE user_id='" + uid + "'),"
+        "'refreshTokens',(SELECT count(*) FROM auth.refresh_tokens WHERE user_id='" + uid + "'),"
+        "'activeRefresh',(SELECT count(*) FROM auth.refresh_tokens WHERE user_id='" + uid + "' AND revoked IS FALSE))")
+
+
 def auth(config, method, suffix, body):
     channel = config["authAdminChannel"]
     target = channel["baseUrl"]
@@ -349,6 +357,34 @@ def main(request):
                     if after["status"] == 200 and after["body"] == 1:
                         result["status"] = "PASS"
             result["accountId"] = uid
+        elif action == "desk-negative":
+            release = "0e49f88fd60af829ccb551cb120da96576d5613a"
+            if request.get("reviewedReleaseSha") != release:
+                raise ValueError("desk_release_gate")
+            cookie, _, uid = login(config, "B", request["password"])
+            query = "SELECT json_build_object('rows',(SELECT count(*) FROM public.admin_desk_preference_versions WHERE actor_id='" + uid + "'))"
+            before = database(config, query)
+            if before["rows"] != 0:
+                raise ValueError("unexpected_owned_desk_baseline")
+            endpoint = ORIGIN + "/api/admin/desk/preferences"
+            anonymous = http(endpoint)
+            result = {"status": "FAIL", "marker": marker, "actor": "B", "role": "user",
+                "reviewedReleaseSha": release, "anonymousStatus": anonymous["status"],
+                "getStatus": None, "putStatus": None, "ownedPreferenceRowsBefore": before["rows"],
+                "limitation": "Native HTTP nonadmin route acceptance, not browser UI proof."}
+            # Every unexpected authorization response stops subsequent requests.
+            if anonymous["status"] == 401:
+                read = http(endpoint, headers=cookie)
+                result["getStatus"] = read["status"]
+                if read["status"] == 403:
+                    write = http(endpoint, "PUT", {"schemaVersion": 1, "layout": 2,
+                        "hiddenTools": [], "expectedRevision": 0}, {**cookie, "Origin": ORIGIN})
+                    result["putStatus"] = write["status"]
+                    if write["status"] == 403:
+                        after = database(config, query)
+                        result["ownedPreferenceRowsAfter"] = after["rows"]
+                        if after == before:
+                            result["status"] = "PASS"
         elif action == "api-second-version":
             if request.get("writeMarker") != marker:
                 raise ValueError("write_gate")
@@ -397,25 +433,34 @@ def main(request):
             if request.get("writeMarker") != marker:
                 raise ValueError("write_gate")
             rows = owned(config, request["actor"])
-            if len(rows) != 1:
+            if len(rows) != 1 or rows[0]["role"] != "user":
                 raise ValueError("owned_identity_missing")
             uid = require(rows[0]["id"], r"[a-f0-9-]{36}", "owned_id")
-            session_state = database(config, "SELECT json_build_object("
-                "'sessions',(SELECT count(*) FROM auth.sessions WHERE user_id='" + uid + "'),"
-                "'activeRefresh',(SELECT count(*) FROM auth.refresh_tokens WHERE user_id='" + uid + "' AND revoked IS FALSE))")
+            if uid != request.get("expectedId"):
+                raise ValueError("owned_identity_changed")
+            session_state = auth_session_state(config, uid)
+            history = financial(config, uid)
             if rows[0]["banned"]:
-                if session_state["sessions"] or session_state["activeRefresh"]:
+                if any(session_state.values()):
                     raise ValueError("banned_with_sessions_requires_coordinator")
                 print(json.dumps({"ok": True, "result": {"id": uid, "disabled": True,
-                    "reused": True, "sessions": 0, "activeRefresh": 0, "financialHistory": "preserved"}}))
+                    "reused": True, **session_state,
+                    "historyCounts": {k: len(v) for k, v in history.items()}, "financialHistory": "preserved"}}))
                 return
-            _, native, _ = login(config, request["actor"], request["password"], allow_missing_profile=True)
+            _, native, _ = login(config, request["actor"], request["password"])
             logout = http(BACKEND + "/auth/v1/logout?scope=global", "POST", {}, native)
             if logout["status"] not in (200, 204):
                 raise ValueError("session_revocation_failed")
             status, _ = auth(config, "PUT", "/admin/users/" + uid, {"ban_duration": "876000h"})
+            after = owned(config, request["actor"])
+            sessions = auth_session_state(config, uid)
+            unchanged = financial(config, uid) == history
+            if len(after) != 1 or after[0]["id"] != uid or not after[0]["banned"] or any(sessions.values()) or not unchanged:
+                raise ValueError("retirement_postcondition_failed")
             result = {"id": uid, "disabled": True, "status": status,
-                      "globalLogoutStatus": logout["status"],
+                      "globalLogoutStatus": logout["status"], **sessions,
+                      "historyUnchanged": unchanged,
+                      "historyCounts": {k: len(v) for k, v in history.items()},
                       "financialHistory": "preserved"}
         else:
             raise ValueError("unsupported_action")
