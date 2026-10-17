@@ -33,6 +33,8 @@ interface Props {
   readErrors?: Partial<Record<"holdings" | "snapshots" | "transactions", boolean>>;
 }
 
+const nonnegative = (value: number) => Number.isFinite(value) && value >= 0;
+
 /** Legacy holdings/performance only; never merged with the versioned balance sheet. */
 export default function LivePortfolio({ holdings, snapshots, transactions, readErrors = {} }: Props) {
   const emptyState = !readErrors.holdings && !readErrors.snapshots && holdings.length === 0 && snapshots.length === 0 ? (
@@ -51,16 +53,21 @@ export default function LivePortfolio({ holdings, snapshots, transactions, readE
     ) : null;
 
   const withValue = holdings.map((h) => ({ ...h, value: h.qty * h.current_price }));
-  const valuesKnown = holdings.length > 0 && withValue.every(h => Number.isFinite(h.value) && Number.isFinite(h.qty) && Number.isFinite(h.current_price));
-  const total = valuesKnown ? withValue.reduce((s, h) => s + h.value, 0) : null;
-  const dayPnl = valuesKnown && withValue.every(h => Number.isFinite(h.day_change_pct))
+  const valuesKnown = holdings.length > 0 && withValue.every(h => nonnegative(h.qty) && nonnegative(h.current_price) && nonnegative(h.value));
+  const totalCandidate = valuesKnown ? withValue.reduce((s, h) => s + h.value, 0) : null;
+  const total = totalCandidate !== null && nonnegative(totalCandidate) ? totalCandidate : null;
+  const dayPnlCandidate = valuesKnown && withValue.every(h => Number.isFinite(h.day_change_pct))
     ? withValue.reduce((s, h) => s + (h.value * h.day_change_pct) / 100, 0) : null;
-  const dayChangePct = total !== null && total > 0 && dayPnl !== null ? (dayPnl / total) * 100 : null;
+  const dayPnl = dayPnlCandidate !== null && Number.isFinite(dayPnlCandidate) ? dayPnlCandidate : null;
+  const dayChangeCandidate = total !== null && total > 0 && dayPnl !== null ? (dayPnl / total) * 100 : null;
+  const dayChangePct = dayChangeCandidate !== null && Number.isFinite(dayChangeCandidate) ? dayChangeCandidate : null;
 
-  const periodReturn =
-    snapshots.length >= 2 && snapshots[0].value > 0 && snapshots.every(s => Number.isFinite(s.value))
+  const seriesKnown = snapshots.every(s => nonnegative(s.value));
+  const periodCandidate =
+    seriesKnown && snapshots.length >= 2 && snapshots[0].value > 0
       ? ((snapshots[snapshots.length - 1].value - snapshots[0].value) / snapshots[0].value) * 100
       : null;
+  const periodReturn = periodCandidate !== null && Number.isFinite(periodCandidate) ? periodCandidate : null;
 
   // allocation grouped by asset class
   const byClass = new Map<string, number>();
@@ -107,12 +114,31 @@ export default function LivePortfolio({ holdings, snapshots, transactions, readE
           {total !== null && total > 0 ? <AllocationDonut data={allocation} centerLabel="ارزش ثبت‌شده" centerValue={formatTomanShort(total)} /> : <p className="text-sm">اطلاعات کافی برای نمایش ترکیب دارایی در سوابق قبلی موجود نیست.</p>}
         </div>}
         <div className="lg:col-span-2">
-          {readErrors.snapshots ? <ReadError label="روند ارزش سبد" code="DASHBOARD_SNAPSHOTS" /> : <PerformanceChart data={periodReturn === null ? [] : perf} />}
+          {readErrors.snapshots ? <ReadError label="روند ارزش سبد" code="DASHBOARD_SNAPSHOTS" /> : seriesKnown && (snapshots.length < 2 || periodReturn !== null)
+            ? <PerformanceChart data={perf} />
+            : <div className="card p-5 space-y-3">
+              <h3 className="font-display font-bold text-lg">ثبت‌های ارزش در سوابق قبلی</h3>
+              <p role="status" className="text-sm leading-7">{!seriesKnown ? "بخشی از مقادیر ثبت‌شده نامعتبر است؛ نمودار و بازده قابل تأیید نیست." : snapshots[0]?.value === 0 ? "ثبت آغازین صفر است؛ درصد بازده از این مبنا قابل محاسبه نیست. ثبت‌های ارزش حفظ شده‌اند." : "نسبت تغییر این مقادیر قابل محاسبه نیست؛ نمودار درصدی نمایش داده نمی‌شود و ثبت‌های ارزش حفظ شده‌اند."}</p>
+              <ul className="text-sm space-y-2">{snapshots.map((s, i) => <li key={`${s.as_of}-${i}`}>{formatJalali(s.as_of)} · ارزش ثبت‌شده: {nonnegative(s.value) ? formatToman(s.value) : "نامشخص"}</li>)}</ul>
+            </div>}
         </div>
       </div>
 
       {/* Holdings */}
-      {!readErrors.holdings && valuesKnown && total !== null && total > 0 && <HoldingsTable rows={holdingRows} />}
+      {!readErrors.holdings && holdingRows.length > 0 && (valuesKnown && total !== null && total > 0 && withValue.every(h => Number.isFinite(h.day_change_pct))
+        ? <HoldingsTable rows={holdingRows} />
+        : <div className="card p-5 space-y-4">
+          <h3 className="font-display font-bold text-lg">اقلام ثبت‌شده در سوابق قبلی</h3>
+          <p role="status" className="text-sm leading-7">اطلاعات معتبر برای نمایش همهٔ جمع‌ها و درصدها موجود نیست. اقلام حذف نشده‌اند؛ هر مقدار ناموجود یا نامعتبر «نامشخص» می‌ماند.</p>
+          <ul className="space-y-4">{withValue.map(h => {
+            const valueKnown = nonnegative(h.qty) && nonnegative(h.current_price) && nonnegative(h.value);
+            return <li key={h.id} className="border-t pt-3 space-y-2" style={{ borderColor: "var(--line)" }}>
+              <p className="font-bold">{h.symbol} · {h.name}</p>
+              <p className="text-sm">تعداد: {nonnegative(h.qty) ? toPersianDigits(h.qty) : "نامشخص"} · قیمت ثبت‌شده: {nonnegative(h.current_price) ? formatToman(h.current_price) : "نامشخص"}</p>
+              <p className="text-sm">ارزش ثبت‌شده: {valueKnown ? formatToman(h.value) : "نامشخص"} · تغییر روز: {Number.isFinite(h.day_change_pct) ? formatSignedPercent(h.day_change_pct) : "نامشخص"} · وزن: {valueKnown && total !== null && total > 0 ? `${toPersianDigits(((h.value / total) * 100).toFixed(1))}٪` : "نامشخص"}</p>
+            </li>;
+          })}</ul>
+        </div>)}
       </>}
 
       {/* Recent transactions */}

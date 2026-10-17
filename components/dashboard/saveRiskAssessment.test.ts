@@ -269,6 +269,7 @@ test('one legacy snapshot has unknown period return, not a fabricated zero perce
   const html = await render(f);
   assert.match(html, /بازده دوره: نامشخص/);
   assert.doesNotMatch(html, /بازده دوره: [۰0]/);
+  assert.ok(html.includes(JSON.stringify([{ date: snapshots[0].as_of, value: snapshots[0].value }]).replaceAll('"', '&quot;')));
 });
 
 test('legacy snapshots cannot supply a zero current-asset total when no legacy holdings exist', async () => {
@@ -278,6 +279,68 @@ test('legacy snapshots cannot supply a zero current-asset total when no legacy h
   assert.match(html, /سود\/زیان ثبت‌شدهٔ روز: نامشخص/);
   assert.match(html, /PerformanceChart/);
   assert.doesNotMatch(html, /ارزش ثبت‌شدهٔ دارایی: [۰0]/);
+});
+
+test('one missing legacy price preserves all recorded rows and known fields while totals/weights stay unknown', async () => {
+  const f = fixture();
+  f.holdings = ok([holding, { ...holding, id: 'missing', symbol: 'UNKNOWN', name: 'قلم با قیمت ناموجود', qty: 3, current_price: null, day_change_pct: null }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/);
+  assert.match(html, /UNKNOWN · قلم با قیمت ناموجود/);
+  assert.match(html, /اقلام حذف نشده‌اند/);
+  assert.match(html, /تعداد: ۲ · قیمت ثبت‌شده: ۱٬۰۰۰ تومان/);
+  assert.match(html, /تعداد: ۳ · قیمت ثبت‌شده: نامشخص/);
+  assert.match(html, /ارزش ثبت‌شده: ۲٬۰۰۰ تومان/);
+  assert.match(html, /ارزش ثبت‌شده: نامشخص/);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی: نامشخص/);
+  assert.match(html, /وزن: نامشخص/);
+  assert.doesNotMatch(html, /NaN|Infinity|قیمت ثبت‌شده: ۰|وزن: ۰/);
+});
+
+test('a known zero-value legacy row is retained with unknown percentage weight', async () => {
+  const f = fixture(); f.holdings = ok([{ ...holding, qty: 0 }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/);
+  assert.match(html, /تعداد: ۰/);
+  assert.match(html, /وزن: نامشخص/);
+});
+
+test('negative legacy quantity/price fields stay unknown while valid fields and all row identities remain visible', async () => {
+  const f = fixture(); f.holdings = ok([holding,
+    { ...holding, id: 'negative-price', symbol: 'BADPRICE', name: 'قیمت منفی', current_price: -99 },
+    { ...holding, id: 'negative-qty', symbol: 'BADQTY', name: 'تعداد منفی', qty: -2 }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/);
+  assert.match(html, /BADPRICE · قیمت منفی/);
+  assert.match(html, /BADQTY · تعداد منفی/);
+  assert.match(html, /تعداد: ۲ · قیمت ثبت‌شده: نامشخص/);
+  assert.match(html, /تعداد: نامشخص · قیمت ثبت‌شده: ۱٬۰۰۰ تومان/);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی: نامشخص/);
+  assert.doesNotMatch(html, /قیمت ثبت‌شده: -|تعداد: -|NaN|Infinity/);
+  assert.doesNotMatch(html.slice(html.indexOf('دارایی و عملکرد ثبت‌شده')), /data-component="AllocationDonut"/);
+});
+
+test('zero-start snapshot series retains both actual recorded values with an explicit reason instead of an empty series', async () => {
+  const f = fixture(); f.portfolio_snapshots = ok([{ as_of: '2026-10-12', value: 0 }, { as_of: '2026-10-13', value: 100 }]);
+  const html = await render(f);
+  assert.match(html, /بازده دوره: نامشخص/);
+  assert.match(html, /ثبت آغازین صفر است/);
+  assert.match(html, /ارزش ثبت‌شده: ۰ تومان/);
+  assert.match(html, /ارزش ثبت‌شده: ۱۰۰ تومان/);
+  assert.doesNotMatch(html, /NaN|Infinity/);
+});
+
+test('finite positive rows with overflowing aggregates keep their identities but never display an infinite total or chart', async () => {
+  const f = fixture(); f.holdings = ok([
+    { ...holding, qty: 1, current_price: Number.MAX_VALUE },
+    { ...holding, id: 'large-two', symbol: 'LARGE2', name: 'قلم بزرگ دوم', qty: 1, current_price: Number.MAX_VALUE }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/); assert.match(html, /LARGE2 · قلم بزرگ دوم/);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی: نامشخص/);
+  assert.match(html, /سود\/زیان ثبت‌شدهٔ روز: نامشخص/);
+  assert.match(html, /وزن: نامشخص/);
+  assert.doesNotMatch(html, /Infinity|NaN/);
+  assert.doesNotMatch(html.slice(html.indexOf('دارایی و عملکرد ثبت‌شده')), /data-component="AllocationDonut"/);
 });
 
 test('canonical readers follow each authenticated session and only the chosen own version, without writes', async () => {
