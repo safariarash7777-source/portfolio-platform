@@ -1,5 +1,5 @@
 import "server-only";
-import { tryCreateAdminClient } from "@/lib/supabase/admin";
+import { tryCreateContentSyncClient } from "@/lib/supabase/content-sync";
 import { datedFeedPosts, freshFeedPosts, parseChannelFeed } from "@/lib/telegram-feed";
 
 // منطقِ مشترکِ همگام‌سازیِ هابِ محتوا با فیدِ عمومیِ تلگرام. هم کرانِ زمان‌بندی‌شده
@@ -68,7 +68,7 @@ export async function runTelegramFeedSync(): Promise<SyncResult> {
   //
   // `content_hub` سیاستِ INSERT ندارد، پس نوشتن واقعاً سکرت می‌خواهد؛ چیزی که
   // عوض می‌شود شکلِ شکست است، نه نیاز.
-  const admin = tryCreateAdminClient();
+  const admin = tryCreateContentSyncClient();
   if (!admin) {
     return { ok: false, found: posts.length, inserted: 0, skippedUndated, reason: "service_role_missing", channel };
   }

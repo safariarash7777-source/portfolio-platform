@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isPlatform, isKind, detectPlatform } from "@/lib/content-hub";
 import { runTelegramFeedSync } from "@/lib/telegram-sync";
-import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -83,8 +82,10 @@ export async function PUT(req: NextRequest) {
     // می‌کند و دیگری را تنظیماتِ کانال. یک پیامِ مشترک هر دو را کور می‌کرد.
     if (result.reason === "service_role_missing") {
       return NextResponse.json(
-        { ...result, ...serviceRoleGap("همگام‌سازیِ هابِ محتوا") },
-        { status: SERVICE_ROLE_GAP_STATUS }
+        { ...result, error: "content_sync_service_role_unavailable",
+          missingEnv: "CONTENT_SYNC_SERVICE_ROLE_KEY",
+          detail: "کلیدِ همگام‌سازیِ محتوای سرور تنظیم نشده است." },
+        { status: 503 }
       );
     }
     const reason =
