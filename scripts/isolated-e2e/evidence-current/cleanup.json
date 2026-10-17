@@ -1,0 +1,35 @@
+{
+  "runId": "e2e228-a67f5937",
+  "status": "PASS",
+  "resources": [
+    {
+      "type": "network",
+      "name": "e2e228-a67f5937-net"
+    },
+    {
+      "type": "container",
+      "name": "e2e228-a67f5937-db"
+    },
+    {
+      "type": "container",
+      "name": "e2e228-a67f5937-auth"
+    },
+    {
+      "type": "container",
+      "name": "e2e228-a67f5937-rest"
+    },
+    {
+      "type": "container",
+      "name": "e2e228-a67f5937-web"
+    },
+    {
+      "type": "network",
+      "name": "e2e228-a67f5937-edge"
+    },
+    {
+      "type": "container",
+      "name": "e2e228-a67f5937-ingress"
+    }
+  ],
+  "at": "2026-10-17T13:58:20.366Z"
+}

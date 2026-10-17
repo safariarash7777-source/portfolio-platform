@@ -1,0 +1,71 @@
+{
+  "runId": "e2e228-a67f5937",
+  "base": "582fba194b2565f6dee046deafbff147bffcf375",
+  "origin": "http://127.0.0.1:32188",
+  "internalNetwork": "d457e3dcfd914d642f2155d7598c978944d78302232a7f244eba7a1b11499c71",
+  "containers": [
+    {
+      "name": "e2e228-a67f5937-db",
+      "id": "edd86fb2a32d28d7bc8a7e72ab51ebc7f34df350e364561aac74e614d1e58479",
+      "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24"
+    },
+    {
+      "name": "e2e228-a67f5937-auth",
+      "id": "366005620d44d6c87e446d77b4267bf8d88454ed75f37657fb7bd957fbf6a396",
+      "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b"
+    },
+    {
+      "name": "e2e228-a67f5937-rest",
+      "id": "5f8039f8954383bb0a48ce2d82076ab6a8b4afe6028aea06fc81672bb0f22b65",
+      "image": "sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272"
+    },
+    {
+      "name": "e2e228-a67f5937-web",
+      "id": "f082105650cbd895f7463128595286c41c9d7b168e627928661d60543ae6fe18",
+      "image": "sha256:ceacae303527a0652b6f0adfd85c5bbe38fbc89bd6ffe20ee2ce5f6141addc96"
+    },
+    {
+      "name": "e2e228-a67f5937-ingress",
+      "id": "1dc711d4bbbabff5ec68d55e92f794d3f7607382127fa1f9f1d6c00d1aa7146e",
+      "image": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+      "role": "Fixed target ingress web:32188; no Auth or DB credentials"
+    }
+  ],
+  "defaultRoutes": 0,
+  "checkedAt": "2026-10-17T13:53:38.288Z",
+  "outbound": "Docker internal network; no SMTP/SMS/payment/market credentials; no collectors",
+  "migrations": [
+    {
+      "file": "sql/test/supabase_bootstrap.sql",
+      "sha256": "70705b75e96b5154af449d37590c0943d4907bffc0d26f531bf2275cded96d0b"
+    },
+    {
+      "file": "sql/test/profile_explicit_grants.sql",
+      "sha256": "1e01602612356327be4da4aaad20bfe989b638d29369d76055b6389fcd9b5b6f"
+    },
+    {
+      "file": "sql/test/portfolio_precondition.sql",
+      "sha256": "efdcc9d0e79a7970984437d7ed8c6dd86c6a3cbd4eb7335e2e4899e7cc9e3345"
+    },
+    {
+      "file": "sql/phase32_member_holdings.sql",
+      "sha256": "af0a234728302da1687d57e6569c964cf3e056cd4ce1a6cf0e8ad9f12c014fc6"
+    },
+    {
+      "file": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "sha256": "0e8f386faf93433fa82996edc6e5521a4c1e8da3d607df6c042026e00421e7bc"
+    },
+    {
+      "file": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "sha256": "d76c1ece06acc29ff4fbb5b532a57f78551e443f6c7e4058e3bbff1efd3f5898"
+    },
+    {
+      "file": "supabase/migrations/20261003100542_recovery_legacy_holdings_owner_only.sql",
+      "sha256": "bdf727e73de1073eda81ac890bc655bf3ac7b35eb5a987a176bfbe32f2005afd"
+    },
+    {
+      "file": "sql/phase34_research_workbook_versions.sql",
+      "sha256": "4ec5c4d1068b5cbe29a9f05e25fb9819acb0fa1cc53f2fb783c28621e368f3d8"
+    }
+  ]
+}

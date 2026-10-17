@@ -1,0 +1,21 @@
+{
+  "runId": "e2e228-a67f5937",
+  "rows": [
+    {
+      "id": "ebdc956e-b7c1-4951-a0b3-e608896a6d60",
+      "user_id": "22322cb2-622c-41c0-94e8-31e962a7cf58",
+      "holding_version_id": "378ea513-880b-48d0-9982-5dade57953b6",
+      "scope_version": 1,
+      "rules_version": "member-selected.v0.1",
+      "member_confirmed_at": "2026-10-17T13:56:07.290568+00:00",
+      "assignments": [
+        {
+          "use": "excluded",
+          "positionKey": "دارایی ساختگی مرورگر"
+        }
+      ],
+      "client_token": "e228cb9d-734f-4f33-aa32-b1c54c681367",
+      "content_hash": "8793c08121a5d47e43afd84d867c8d24"
+    }
+  ]
+}
