@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-17T18:17:17.089857+00:00",
+  "marker": "member-primary-20261017-01",
+  "status": "PASS",
+  "layer": "Native HTTP/Auth/DB; NOT BROWSER",
+  "actors": {
+    "A": {
+      "httpStatus": 200,
+      "cacheControl": "private, no-store",
+      "ownerId": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+      "ownedCounts": {
+        "versions": 0,
+        "positions": 0,
+        "debts": 0,
+        "scopes": 0
+      }
+    },
+    "B": {
+      "httpStatus": 200,
+      "cacheControl": "private, no-store",
+      "ownerId": "aa8514f2-feda-4f89-ae8c-85019ab7bece",
+      "ownedCounts": {
+        "versions": 0,
+        "positions": 0,
+        "debts": 0,
+        "scopes": 0
+      }
+    }
+  }
+}

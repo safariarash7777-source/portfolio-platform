@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-17T18:25:33.130436+00:00",
+  "origin": "https://portfolio-platform-fawn.vercel.app",
+  "backend": "https://62.60.191.24/liara-preview",
+  "status": "PASS",
+  "marker": "member-primary-20261017-01",
+  "actor": "B",
+  "role": "user",
+  "reviewedReleaseSha": "c042a2b4109ff33a5bb8b3e033093ed3c2dcbf23",
+  "publicBefore": {
+    "status": 200,
+    "cache": null,
+    "body": 1
+  },
+  "getStatus": 403,
+  "patchStatus": 403,
+  "limitation": "Native HTTP nonadmin route acceptance, not browser UI proof.",
+  "publicAfter": {
+    "status": 200,
+    "cache": null,
+    "body": 1
+  },
+  "accountId": "aa8514f2-feda-4f89-ae8c-85019ab7bece"
+}

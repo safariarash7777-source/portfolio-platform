@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "scope": "Liara primary database financial member EXECUTE grants only",
+  "primaryContainer": "portfolio-stage-db-1",
+  "database": "postgres",
+  "installSqlSha256": "47ac49ed37e03cbc71af8b54f55be8194abac5a0532f708845b921ed770cd919",
+  "rollbackSqlSha256": "285bab9e6737053941ede75e67dda1b3ca28660c5a03e04874e05f8271fcae17",
+  "primaryPostcondition": {
+    "memberExecuteFunctions": 4,
+    "anonymousExecuteFunctions": 0,
+    "checkedFunctionBodiesOwnersAndAcls": "5/5 exact",
+    "memberPrivateKernelSchemaUsage": false,
+    "memberScopeImplementationSchemaUsage": true,
+    "financialTableRlsEnabled": true,
+    "memberDirectFinancialTableWrites": false,
+    "financialVersions": 0,
+    "positions": 0,
+    "debts": 0,
+    "scopeReviews": 0
+  },
+  "liveDataMutation": "none",
+  "provenance": "Subset of coordinator/data-owner live install receipt; installation performed separately, not by acceptance runner."
+}
