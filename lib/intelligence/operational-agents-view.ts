@@ -6,7 +6,7 @@ export type OperationalRole = typeof OPERATIONAL_ROLES[number];
 export type OperationalState = 'ok' | 'stale' | 'failed' | 'unknown';
 interface OperationalReport {
   summary: string;
-  checks: { key: string; label: string; state: OperationalState; detail: string }[];
+  checks: { key: string; label: string; state: OperationalState; detail: string; lastAt: string | null }[];
   actions: string[];
 }
 export interface OperationalAgentView {
@@ -50,7 +50,9 @@ function parse(role: OperationalRole, input: unknown, now: number): OperationalA
   if (!Array.isArray(report.checks) || report.checks.length > 100 || !Array.isArray(report.actions) || report.actions.length > 30) throw new Error('invalid_operational_report');
   const checks = report.checks.map(input => {
     const check = object(input);
-    return { key: text(check.key, 100), label: text(check.label, 200), state: state(check.state), detail: text(check.detail, 1800) };
+    const lastAt = check.lastAt == null ? null : text(check.lastAt, 60);
+    if (lastAt !== null && !Number.isFinite(Date.parse(lastAt))) throw new Error('invalid_check_time');
+    return { key: text(check.key, 100), label: text(check.label, 200), state: state(check.state), detail: text(check.detail, 1800), lastAt };
   });
   if (new Set(checks.map(check => check.key)).size !== checks.length) throw new Error('duplicate_operational_check');
   const actions = report.actions.map(value => text(value, 1800));

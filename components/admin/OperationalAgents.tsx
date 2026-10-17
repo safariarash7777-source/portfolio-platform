@@ -32,7 +32,7 @@ export default async function OperationalAgents() {
             <caption className="pb-2 text-right font-bold">بررسی‌های ثبت‌شدهٔ {roles[agent.role]}</caption>
             <thead><tr className="border-b" style={{ borderColor: 'var(--line)' }}><th scope="col" className="p-2">بررسی</th><th scope="col" className="p-2">نتیجه</th><th scope="col" className="p-2">جزئیات</th></tr></thead>
             <tbody>{agent.report.checks.map(check => <tr key={check.key} className="border-b align-top" style={{ borderColor: 'var(--line)' }}>
-              <th scope="row" className="p-2 font-medium">{check.label}</th><td className="p-2">{labels[check.state]}</td><td className="whitespace-pre-wrap p-2">{check.detail}</td>
+              <th scope="row" className="p-2 font-medium">{check.label}</th><td className="p-2">{labels[check.state]}</td><td className="whitespace-pre-wrap p-2">{toPersianDigits(check.detail)}{check.lastAt && <p className="mt-1" style={{ color: 'var(--text-2)' }}>زمان شاهد: {dateLabel(check.lastAt)}</p>}</td>
             </tr>)}</tbody>
           </table>
         </div>

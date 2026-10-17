@@ -90,6 +90,15 @@ test('future clock skew up to two minutes is tolerated; larger skew is unknown',
     assert.equal(agent.report === null, offset > 120_000);
   }
 });
+test('source evidence clocks remain distinct from report creation and invalid clocks are rejected', async () => {
+  const lastAt = new Date(NOW - 86_400_000).toISOString();
+  const row = { ...record('data_quality', 'stale'), report: { summary: 'گزارش', checks: [{ key: 'source', label: 'زمان منبع', state: 'stale', detail: 'زمان قیمت قدیمی است', lastAt }], actions: [] } };
+  const view = await harness({ rows: [row] }).read();
+  assert.equal(view.agents[0].report?.checks[0].lastAt, lastAt);
+  assert.notEqual(view.agents[0].createdAt, lastAt);
+  row.report.checks[0].lastAt = 'invalid';
+  assert.equal((await harness({ rows: [row] }).read()).agents[0].report, null);
+});
 
 test('heartbeat becomes stale only after thirty minutes and preserves failed or unknown results', async () => {
   const edge = await harness({ rows: [record('data_quality', 'ok', -30 * 60_000)] }).read();

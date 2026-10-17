@@ -26,9 +26,21 @@
     "enabled": true,
     "intervalMinutes": 10,
     "persistent": true,
-    "firstNaturalRun": "PENDING"
+    "firstNaturalRun": "2026-10-17T12:50:06Z",
+    "firstNaturalStoredAt": "2026-10-17T12:50:14.155517Z",
+    "lastExitCode": 0,
+    "nextRunAtVerification": "2026-10-17T13:00:08Z"
   },
   "panelProduction": "PENDING",
   "browserAcceptance": "LOGIN_REQUIRED",
-  "customerSupport": "NOT_ENABLED"
+  "customerSupport": "NOT_ENABLED",
+  "naturalRunIds": {
+    "data_quality": "61f0dc75-3c5e-44c7-a42b-44e2539f3940",
+    "site_monitor": "4f409e12-85b4-4d7d-82a6-ca0ca7c722c2",
+    "coordinator": "0f6ed850-034b-4ceb-9462-79fbe5e02524"
+  },
+  "dedicatedTests": 19,
+  "isolatedContainerRemoved": true,
+  "privateBackupRetained": true,
+  "anonymousHttpProbe": "NOT_RUN_LOCAL_PUBLIC_CONFIG_ABSENT"
 }
