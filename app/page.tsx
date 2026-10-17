@@ -1,5 +1,4 @@
 import Navbar from "@/components/layout/Navbar";
-import Hero from "@/components/landing/Hero";
 import MarketTicker from "@/components/market/MarketTicker";
 import LiveMarket from "@/components/landing/LiveMarket";
 import InsightsPreview from "@/components/landing/InsightsPreview";
@@ -8,6 +7,14 @@ import TwoProducts from "@/components/landing/TwoProducts";
 import TrackRecordStrip from "@/components/landing/TrackRecordStrip";
 import AboutStrip from "@/components/landing/AboutStrip";
 import Footer from "@/components/layout/Footer";
+import PublicDesignFrame from "@/components/public-design/PublicDesignFrame";
+import PublicHome from "@/components/public-design/PublicHome";
+import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
+import MarketKpiRow from "@/components/market/MarketKpiRow";
+import { readIranMarket } from "@/lib/market-bounded";
+import { buildMarketHeadline } from "@/lib/core/marketHeadline";
+import { publicLayout } from "@/lib/public-design/layout";
+import s from "@/components/public-design/PublicDesign.module.css";
 
 /**
  * صفحهٔ اصلی — P2-PUBLIC-EXPERIENCE-REBASELINE-001
@@ -25,12 +32,41 @@ import Footer from "@/components/layout/Footer";
  * FinalCTA (+ PortfolioPreviewCardِ مرده). دلیلِ هر کدام در
  * `docs/P2-PUBLIC-REBASELINE-AUDIT.md`.
  */
-export default function LandingPage() {
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = searchParams ? await searchParams : {};
+  const market = await readIranMarket();
+  const headline = buildMarketHeadline({
+    indices: market.data?.indices ?? null,
+    stocks: market.data?.stocks ?? [],
+    gold: market.data?.gold ?? [],
+    currency: market.data?.currency ?? [],
+  });
   return (
-    <>
-      <Navbar />
-      <main>
-        <Hero />
+    <PublicDesignFrame
+      initialLayout={publicLayout(sp.design)}
+      page="home"
+      navigation={<Navbar />}
+      footer={<Footer />}
+    >
+      <PublicHome />
+      <section className={s.homeMarket} id="market-glance">
+        <header>
+          <h2>بازار در یک نگاه</h2>
+          <a href="/market">مشاهدهٔ کامل بازار</a>
+        </header>
+        <div className={s.marketRibbon}>
+          <MarketKpiRow metrics={headline.metrics} />
+        </div>
+        <PublicMarketProvenance
+          ir={market.data}
+          availability={market.availability}
+        />
+      </section>
+      <div className={s.legacySections}>
         <MarketTicker />
         <LiveMarket />
         <InsightsPreview />
@@ -38,8 +74,7 @@ export default function LandingPage() {
         <TwoProducts />
         <TrackRecordStrip />
         <AboutStrip />
-      </main>
-      <Footer />
-    </>
+      </div>
+    </PublicDesignFrame>
   );
 }
