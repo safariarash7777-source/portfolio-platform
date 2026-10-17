@@ -161,15 +161,38 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
     dialog.current?.close();
   }
   function sourceClock(symbol: string) {
-    const fund = data.market.data?.funds.find(row => row.id === symbol);
-    const stock = data.market.data?.stocks.find(row => row.id === symbol);
+    const fund = data.market.data?.funds.find((row) => row.id === symbol);
+    const stock = data.market.data?.stocks.find((row) => row.id === symbol);
     const row = fund ?? stock;
     const family = fund ? quality.families?.funds : quality.families?.stocks;
-    return <p className={s.note}>منبع: فید بازار ایران · {family ? marketQualityLabel(family.state) : "کیفیت زمان نامشخص"}<br />زمان قیمت در منبع: {row?.sourceDate ? toPersianDigits(`${row.sourceDate} ${row.sourceTime ?? ""}`) : "ثبت نشده"}<br />{fund && <>زمان NAV در منبع: {fund.navDate ? toPersianDigits(`${fund.navDate} ${fund.navTime ?? ""}`) : "ثبت نشده"}<br /></>}دریافت این خانواده: {stamp(family?.receivedAt)}<br />خواندن بازار: {stamp(quality.readAt)}</p>;
+    return (
+      <p className={s.note}>
+        منبع: فید بازار ایران ·{" "}
+        {family ? marketQualityLabel(family.state) : "کیفیت زمان نامشخص"}
+        <br />
+        زمان قیمت در منبع:{" "}
+        {row?.sourceDate
+          ? toPersianDigits(`${row.sourceDate} ${row.sourceTime ?? ""}`)
+          : "ثبت نشده"}
+        <br />
+        {fund && (
+          <>
+            زمان NAV در منبع:{" "}
+            {fund.navDate
+              ? toPersianDigits(`${fund.navDate} ${fund.navTime ?? ""}`)
+              : "ثبت نشده"}
+            <br />
+          </>
+        )}
+        دریافت این خانواده: {stamp(family?.receivedAt)}
+        <br />
+        خواندن بازار: {stamp(quality.readAt)}
+      </p>
+    );
   }
   const observationList = (rows: typeof engine.observations) =>
     rows.length ? (
-      <ul className={s.list}>
+      <ul className={s.list} data-scroll-container>
         {rows.slice(0, 8).map((row) => (
           <li key={row.id}>
             <button
@@ -219,11 +242,15 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
     );
   const chart = (
     <>
-      <div className={s.chartStage}>{data.chart.state === "ready" ? (
-        <IndexTrendChart series={series} />
-      ) : (
-        <Empty>{data.chart.reason ?? "تاریخچهٔ شاخص هنوز ثبت نشده است."}</Empty>
-      )}</div>
+      <div className={s.chartStage}>
+        {data.chart.state === "ready" ? (
+          <IndexTrendChart series={series} />
+        ) : (
+          <Empty>
+            {data.chart.reason ?? "تاریخچهٔ شاخص هنوز ثبت نشده است."}
+          </Empty>
+        )}
+      </div>
       <p className={s.note}>
         منبع: تاریخچهٔ شاخص، پایان روز · آخرین تاریخ هر سری:{" "}
         {data.chart.data
@@ -297,7 +324,10 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
       {dirty && (
         <div className={s.notice}>
           این انتخاب هنوز در حساب ذخیره نشده است.{" "}
-          <button disabled={prefs.saving} onClick={() => void prefs.save()}>
+          <button
+            disabled={prefs.saving || prefs.loading}
+            onClick={() => void prefs.save()}
+          >
             {prefs.saving ? "در حال ذخیره…" : "ذخیره در حساب"}
           </button>
         </div>
@@ -347,7 +377,8 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
               </div>
             </div>
             <p className={s.note}>
-              منبع: فید بازار ایران · خواندن بازار: {stamp(quality.readAt)} · وضعیت شاخص:{" "}
+              منبع: فید بازار ایران · خواندن بازار: {stamp(quality.readAt)} ·
+              وضعیت شاخص:{" "}
               {quality.families
                 ? marketQualityLabel(quality.families.indices.state)
                 : "نامشخص"}{" "}
@@ -459,7 +490,7 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
             {data.reports.state === "unavailable" ? (
               <Empty>{data.reports.reason}</Empty>
             ) : reports.length ? (
-              <ul className={s.list}>
+              <ul className={s.list} data-scroll-container>
                 {reports.map((row) => (
                   <li key={row.id}>
                     <button

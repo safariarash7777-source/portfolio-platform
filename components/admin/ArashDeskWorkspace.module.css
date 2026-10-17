@@ -603,6 +603,65 @@
   }
 }
 
-.chartStage { min-height: 280px; display: grid; align-content: center; }
-.grid > .panel:only-child { grid-column: 1 / -1; }
-.heading h1, .panelHeader h2, .dialog h2 { font-family: var(--font-display); }
+.chartStage {
+  min-height: 280px;
+  display: grid;
+  align-content: center;
+}
+.grid > .panel:only-child {
+  grid-column: 1 / -1;
+}
+.heading h1,
+.panelHeader h2,
+.dialog h2 {
+  font-family: var(--font-display);
+}
+.heading {
+  margin-bottom: 16px;
+}
+.heading h1 {
+  font-size: clamp(24px, 2.2vw, 28px);
+  margin: 4px 0;
+}
+.toolbar {
+  margin-bottom: 16px;
+}
+.market .panelHeader {
+  margin-bottom: 12px;
+}
+.market .panelHeader > div {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.market .panelHeader p {
+  margin: 0;
+}
+.metrics > div {
+  gap: 5px;
+}
+.market .note {
+  margin: 10px 0 0;
+}
+.reports .list,
+.opportunities .list {
+  max-height: 380px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.alerts .list {
+  max-height: 245px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+@media (min-width: 761px) {
+  .market { order: 0; }
+  .chart { order: 1; }
+  .alerts { order: 2; }
+  .opportunities { order: 3; }
+  .reports { order: 4; }
+  .research { order: 5; }
+  .layout2 .opportunities { order: 2; }
+  .layout2 .alerts { order: 3; }
+}
