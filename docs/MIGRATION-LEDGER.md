@@ -1,5 +1,17 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## تنظیم رسانه و پیش‌نیاز عضو — ۲۰۲۶-۱۰-۱۷
+
+مقصد هر سه مورد، PostgreSQL17.6 عملیاتی لیارا در `portfolio-stage-db-1` است؛ نام stage تاریخی است. بکاپ تازه `20261017T174657Z` با SHA256 `3d000898706687c47b08aaeb37d37c18d4cdc9369842091df5b038709040623c` خصوصی محفوظ است. اجرای اولیه ابزار restore شکست خورد؛ پس از اصلاح آماده‌سازی کپی بدون شبکه، بازیابی همان dump و تطبیق 1781/1781 مورد موفق شد. این گزارش موفقیت full-script اولیه را ادعا نمی‌کند.
+
+| بسته | وضعیت و شاهد |
+|---|---|
+| `sql/media_layout_settings_20261017.sql` | **APPLIED**؛ SHA256 `2d99f121a297835b3f411cfdc51139c73b1d9892dcfec5eca43c84b08e060b2c`، نصب18:05:46Z؛ فقط اشیای افزایشی، RLS اجباری و مجوزهای صریح. REST واقعی و سپس ذخیره۱/۲/۳ مدیر و رد عضو پذیرفته شدند. [پذیرش](ops/release-audit-20261017/MEDIA-GLOBAL-ACCEPTANCE.md) |
+| `sql/recovery_signup_profile_trigger_20261011.sql` | **APPLIED**؛ SHA256 `c36a8c3e9c2a5aed58921a10b99cbcb2ef0da08db331abe76a75c5e9603c715c`، نصب18:13:33Z؛ تابع/trigger فقط، RLS و guard نقش حفظ؛ شمار حساب‌ها و پروفایل‌های قبلی ثابت. تعریف و ACL قبلی برای rollback خصوصی محفوظ؛ ساخت حساب B واقعی پس از نصب، profile role=user تولید کرد. |
+| `scripts/acceptance/restore-member-financial-execute.sql` در بسته پذیرش عضو | **APPLIED**؛ SHA256 `47ac49ed37e03cbc71af8b54f55be8194abac5a0532f708845b921ed770cd919`؛ فقط چهار EXECUTE مصوب authenticated بازگردانده شدند. پنج بدنه/مالک تابع با main برابر بودند؛ anon و kernel خصوصی همچنان بسته، RLS و منع نوشتن مستقیم ثابت. تمرین نصب، ثبت ساختگی، منع B و rollback دقیق ACL/inventory روی کپی PASS؛ سپس v1/v2 و جداسازی روی حساب‌های ساختگی اصلی PASS شدند. |
+
+تنظیم حساب میز نیز **APPLIED** شد: `sql/admin_desk_account_preferences_20261017.sql` با SHA256 `fa55c4cb410a42a9945340703a4b5d65a8ddafdeb46611dd0fb0b4138d4b3e5e`؛ preflight بدون برخورد، تاریخچه اولیه صفر، RLS اجباری، فقط SELECT مالک مدیر و getter/setter محدود، جدول/sequence بدون نوشتن عضو. 21 مدخل جدید اضافه شد و هیچ مدخل قبلی تغییر نکرد. آزمون جداسازی دو مدیر/CAS/رد عضو و rollback پیش‌تر روی کپی PASS بود؛ پذیرش رابط اصلی جداست. `phase21_cron_runs.sql` پس از تمرین کپی، روی primary در 18:41:43Z نصب و PASS شد؛ SHA256 `c75ebb54a891f2f2d35cf57fe1ae9f7c1de243ea45ac19ca0c1bf677996edae6`، history0، RLS فعال، anon بدونSELECT، عضو فقطSELECT تحتpolicyمدیر و service_role فقطSELECT/INSERT/UPDATE؛ 1728مدخل قدیمی بدونتغییر و29مدخل تازه. این نصب شاهد اجرای cron نیست؛ envاختصاصیهنوزتنظیم‌نشده. M2 نصب نشده است. مقدار یا اعتبارنامه‌ای از DB در این دفتر نگهداری نمی‌شود.
+
 ## نصب مخزن پایش داخلی — ۲۰۲۶-۱۰-۱۷
 
 `sql/site_agent_runs_20261017.sql` روی Supabase واقعی لیارا **APPLIED** است. پیش از نصب، بکاپ تازه با SHA `60f67fa41ccb2737023466dbceb052d8639276cdd151c9c01c390455f006188a` بازیابی و ۱۷۶۱ مورد تطبیق داده شد. اجرای دوبارهٔ migration و آزمون نقش‌ها روی کپی بدون شبکه موفق بود. مقایسهٔ ساختار قبلی فقط افزودن صریح USAGE برای `site_monitor_writer` را مجاز دانست و PASS شد. جدول جدید FORCE RLS دارد؛ مدیر فقط خواندن، نویسندهٔ NOLOGIN فقط INSERT/SELECT؛ anon و service_role مجوز جدول ندارند. هیچ JWT یا دسترسی مدل اضافه نشد. [رسید](ops/api-to-page-20261013/operational-agents-receipt.json).
