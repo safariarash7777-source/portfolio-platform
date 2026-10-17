@@ -17,7 +17,8 @@
     "postgresV1Scenarios": 12,
     "diff": "PASS",
     "targetedLintFiveFiles": "PASS",
-    "typecheck": "PASS"
+    "typecheck": "PASS",
+    "fullNextBuild": "PASS Next15.5.25 once on code08fc03980202e6f21642806ab4ca5b35fe53da4f"
   },
   "runtime": {
     "syntheticPostgres": "17.11",
@@ -28,7 +29,7 @@
   },
   "limits": [
     "No live writes, new backup/restore, main merge, push or deploy",
-    "No full Next build or browser acceptance claimed",
+    "No real browser, paid gateway or live acceptance claimed",
     "Precommit transactional rollback verified; postcommit operational rollback remains",
     "Exact17.6 restore acceptance must use coordinator existing proof, no second restore",
     "Archive/Q&A resources served only if actually present; no fabricated media or global entitlement"
@@ -78,5 +79,6 @@
       "file": "app/(protected)/admin/webinars/page.tsx",
       "sha256": "7296c373bbb0755f673df56f6e5de3c0c8520413a240c163d368168bc7d8767e"
     }
-  ]
+  ],
+  "buildLogSHA256": "89e52c6af9218c4344ede930429c87f98d079c4d17498154321a4385876ba932"
 }
