@@ -1,0 +1,15 @@
+{
+  "base": "582fba194b2565f6dee046deafbff147bffcf375",
+  "currentHead": "582fba194b2565f6dee046deafbff147bffcf375",
+  "productDiffClean": true,
+  "oldLabSha256": "d1173b1d5e6198a504d10a0762db59ac5def5bd7629c7a9b9e8a3fac1ed05c6f",
+  "adaptedLabSha256": "aeca679d425ad831f1e6197259bcdb48b16ad6ebd572b653e9ca4fe5712df7a7",
+  "adaptations": [
+    "baseline573bd081 to582fba194",
+    "distinct image isolated-financial-582fba1",
+    "strengthened exact HEAD guard",
+    "database ownership/internal network/no bind/no port gate before every query"
+  ],
+  "schemaPrivilegeChanges": false,
+  "browserSuiteInvoked": false
+}
