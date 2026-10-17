@@ -1,0 +1,34 @@
+{
+  "installed": true,
+  "at": "2026-10-17T12:41:31.137315Z",
+  "roles": [
+    "data_quality",
+    "site_monitor",
+    "coordinator"
+  ],
+  "runtime": "deterministic rules, no LLM",
+  "storage": "site_agent_runs",
+  "migrationSha256": "c1b31f22b1e20267b184b1dd5cee1348bc092a428277b2d8c1c97c49da7c35b3",
+  "backupSha256": "60f67fa41ccb2737023466dbceb052d8639276cdd151c9c01c390455f006188a",
+  "backupInventoryItems": 1761,
+  "isolatedAclTests": "PASS",
+  "repeatMigration": "PASS",
+  "unrelatedStructure": "PASS",
+  "workerSha256": "b457efa8b837c0713c8e90216ec3648abf6cdfde6a2bd9cf7ef963cc593a2673",
+  "firstRealReports": {
+    "data_quality": "28334bcf-c7a1-4765-b628-368c3d78c381",
+    "site_monitor": "ea45e001-16ed-4e58-97f6-a3576bcaf78c",
+    "coordinator": "71c7c515-a1ed-4928-ab9a-32874b9b95a2"
+  },
+  "duplicateReplayInserted": 0,
+  "timer": {
+    "name": "portfolio-operational.timer",
+    "enabled": true,
+    "intervalMinutes": 10,
+    "persistent": true,
+    "firstNaturalRun": "PENDING"
+  },
+  "panelProduction": "PENDING",
+  "browserAcceptance": "LOGIN_REQUIRED",
+  "customerSupport": "NOT_ENABLED"
+}

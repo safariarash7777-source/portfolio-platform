@@ -1,5 +1,10 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## نصب مخزن پایش داخلی — ۲۰۲۶-۱۰-۱۷
+
+`sql/site_agent_runs_20261017.sql` روی Supabase واقعی لیارا **APPLIED** است. پیش از نصب، بکاپ تازه با SHA `60f67fa41ccb2737023466dbceb052d8639276cdd151c9c01c390455f006188a` بازیابی و ۱۷۶۱ مورد تطبیق داده شد. اجرای دوبارهٔ migration و آزمون نقش‌ها روی کپی بدون شبکه موفق بود. مقایسهٔ ساختار قبلی فقط افزودن صریح USAGE برای `site_monitor_writer` را مجاز دانست و PASS شد. جدول جدید FORCE RLS دارد؛ مدیر فقط خواندن، نویسندهٔ NOLOGIN فقط INSERT/SELECT؛ anon و service_role مجوز جدول ندارند. هیچ JWT یا دسترسی مدل اضافه نشد. [رسید](ops/api-to-page-20261013/operational-agents-receipt.json).
+
+
 ## مخزن پژوهش Hermes — ۲۰۲۶-۱۰-۱۷
 
 `sql/research_agent_drafts_20261017.sql` در `portfolio-stage-db-1` لیارا، **APPLIED** در `2026-10-17T12:04:16Z`. بکاپ ۲٫۳۸ گیگابایتی با SHA256 `1ed1428213f5e70d60c211984b4b1b1f661962dfe30912992ba3e0fc3059250f` خارج از Git محفوظ است؛ بازیابی بدون شبکه/پورت/cron و تطبیق ۱۷۳۷ مورد موفق شد. نقش نویسنده بدون LOGIN، بدون ارث‌بری و بدون عضویت authenticator است؛ postgres فقط امکان SET ROLE صریح دارد. جدول RLS اجباری، خواندن مدیر از نقش DB، ثبت append-only، digest یکتا و وضعیت صرفاً draft دارد. آزمون عضو عادی، جعل metadata، مدیر، نویسنده، منع تغییر/حذف/TRUNCATE و ورودی نامعتبر روی کپی بازیابی‌شده PASS شد. اضافه‌شدن USAGE نقش جدید به public تنها تغییر مجوز schema بود؛ اشیای قبلی تغییر نکردند. [رسید نصب و اجرای واقعی](ops/api-to-page-20261013/research-live-receipt.json).

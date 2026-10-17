@@ -2,9 +2,10 @@ import Link from 'next/link';
 import { Bot, ArrowLeft } from 'lucide-react';
 import { loadResearchDraftsView } from '@/lib/intelligence/research-drafts-view';
 import { formatJalali, formatTehranClock, toPersianDigits } from '@/lib/format';
+import OperationalAgents from '@/components/admin/OperationalAgents';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'ایجنت‌های پژوهش | پنل مدیریت', robots: { index: false, follow: false } };
+export const metadata = { title: 'ایجنت‌های سایت | پنل مدیریت', robots: { index: false, follow: false } };
 function dateLabel(value: string | null): string {
   return value ? `${formatJalali(value)}، ساعت ${formatTehranClock(value)} تهران` : 'در منبع ثبت نشده';
 }
@@ -16,7 +17,7 @@ export default async function AgentsPage() {
   return <div className="mx-auto max-w-6xl space-y-6" style={{ color: 'var(--text)' }}>
     <header className="space-y-3">
       <Bot size={28} aria-hidden="true" />
-      <h1 className="font-display text-2xl font-extrabold">ایجنت‌های پژوهش</h1>
+      <h1 className="font-display text-2xl font-extrabold">ایجنت‌های سایت</h1>
       <p className="max-w-3xl text-base leading-8">پیش‌نویس‌های داخلی پژوهش، همراه شواهد و سناریوها؛ نتیجهٔ مدل پیش از استفاده نیازمند بازبینی انسانی است.</p>
       <div className="rounded-xl border p-4 text-sm leading-7" style={{ background: 'var(--surface-2)', borderColor: 'var(--line)' }}>
         {view.unavailableReason ?? (latest ? `آخرین پیش‌نویس قابل نمایش: ${dateLabel(latest.createdAt)}.` : view.invalidCount ? 'هیچ پیش‌نویس معتبری برای نمایش وجود ندارد؛ رکوردهای ناسازگار باید بررسی شوند.' : 'هنوز پیش‌نویسی در مخزن ثبت نشده است. وجود این صفحه به معنی اجرای ایجنت نیست.')}
@@ -24,6 +25,7 @@ export default async function AgentsPage() {
       </div>
       {view.invalidCount > 0 && <p role="status" className="text-sm leading-7">{toPersianDigits(view.invalidCount)} رکورد به دلیل ناسازگاری ساختار یا شواهد نمایش داده نشد و نیازمند بررسی است.</p>}
     </header>
+    <OperationalAgents />
     <section aria-labelledby="research-drafts" className="space-y-5">
       <h2 id="research-drafts" className="text-lg font-bold">تازه‌ترین پیش‌نویس‌های ثبت‌شده</h2>
       <p className="text-sm leading-7" style={{ color: 'var(--text-2)' }}>این نما حداکثر {toPersianDigits(20)} رکورد اخیر را می‌خواند. زمان دریافت داده با تاریخ انتشار گزارش و دورهٔ مالی تفاوت دارد؛ تازه بودن دریافت، تازه بودن دورهٔ گزارش را تضمین نمی‌کند.</p>
