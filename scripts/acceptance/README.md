@@ -21,7 +21,7 @@ against the current running Auth container IP before each administration call.
 No JWT is minted by the harness.
 
 Actions are `preflight`, `provision`, `read`, `api-first-save`,
-`api-second-version`, `media-negative` and `retire`. Provision and all later
+`api-second-version`, `media-negative`, `desk-negative` and `retire`. Provision and all later
 actions require the reviewed run marker. Financial scenarios additionally use
 separate approval markers. Each financial payload and idempotency token is
 persisted before any network request; reuse it after an unknown response.
@@ -43,8 +43,12 @@ login/save/fault/logout remains blocked without a documented secure credential
 handoff; it must not be inferred from these API results. The earlier isolated
 14-PASS evidence remains separately recorded in `scripts/isolated-e2e/`.
 
-The two controlled accounts remain active for a separately coordinated B desk
-authorization check. Do not retire them early. Reviewed retirement globally
-revokes their refresh sessions and bans only the marker-bound users while
-preserving their immutable synthetic ledger; already-issued JWTs can remain
-valid until expiry.
+The final B desk authorization check passed on coordinator-attested Production
+`0e49f88fd60af829ccb551cb120da96576d5613a`: anonymous401, member GET403 and
+valid PUT403, with B preference rows remaining zero. Both controlled accounts
+were then retired. Retirement requires all four native scenario receipts PASS,
+pins each UUID to private state plus Auth marker/role, globally revokes native
+sessions, bans the owned user, and verifies zero sessions/total refresh tokens/
+active refresh tokens and identical full synthetic ledger. Interrupted recovery
+can verify an already-banned user without another login. Already-issued JWTs can
+remain valid until expiry. No real owner browser session was modified.
