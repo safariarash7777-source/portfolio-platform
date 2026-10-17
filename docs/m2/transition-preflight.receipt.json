@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-17",
+  "status": "INSTALLATION_SAFETY_PROPOSAL_ONLY_NOT_PRODUCTION_READY",
+  "base_pr": 237,
+  "base_head": "ced8a32ee48557378dc152769922b8cd029ae91b",
+  "scope": "Reject legacy registrations and incompatible known RLS/policy/ACL prerequisites before any M2 DDL; no legacy promotion or business policy",
+  "source_sha256_normalized_lf": {
+    "docs/m2/proposed-exact-webinar.sql": "0966358adf5cffffe739091b087c813476ffbb439d44e590077945ff76f53a45",
+    "docs/m2/transition-preflight.test.mjs": "8b214e7bc443c33f7bef80fb4ffb895ac9ad7adaa7c9c3f9c64818407642b35e",
+    "docs/m2/isolated-acceptance.mjs": "76e56622fee8aee162c27b268254e4c26456408bb8d265e93449df55fd934033"
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "postgres": "17.11",
+    "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+    "network": "none",
+    "host_ports": [],
+    "host_mounts": [],
+    "data": "synthetic only",
+    "memory_limit_mib": 512,
+    "cpus": 1,
+    "cleanup": "All containers created by this work removed after exact name and ownership-label verification; unrelated containers untouched"
+  },
+  "checks": [
+    {
+      "command": "node --test docs/m2/transition-preflight.test.mjs",
+      "result": "PASS",
+      "independent_scenarios": 32,
+      "tap_tests_including_parent": 33,
+      "failed": 0,
+      "skipped": 0,
+      "profiles": ["legacy defaults", "strict explicit grants"],
+      "coverage": ["empty baseline installation", "pending/paid/free/refunded legacy rejection", "RLS drift", "missing table grants", "extra/mutated/missing policies", "canonical settlement RPC exposure", "concurrent old writer lock timeout 55P03", "atomic rejection before DDL"]
+    },
+    {
+      "command": "node docs/m2/isolated-acceptance.mjs --container <owned-m2-webinar-sql-container>",
+      "result": "PASS",
+      "scenarios": 44,
+      "failed": 0,
+      "notes": "Legacy transition abort is checked on original synthetic legacy databases. New-registration flows use separately created fresh databases. Real register/payment/callback/access/list route code talks to real local PostgreSQL RPCs with synthetic provider/Auth. No claim of legacy access preservation or migration success.",
+      "local_log_sha256": "bcb24bbfd907cfa2e68b2d741c2f735986e13eda6d6f2015a095cc687ceee261"
+    },
+    {
+      "command": "node --test docs/m2/proposed-exact-webinar.test.mjs",
+      "result": "PASS",
+      "tests": 16,
+      "failed": 0,
+      "skipped": 0,
+      "notes": "Static contract checks only; PostgreSQL acceptance is reported separately"
+    },
+    { "command": "git diff --check", "result": "PASS" }
+  ],
+  "superseded_harness_failures": [
+    "Initial transition test used a 128MiB tmpfs and accumulated case databases; PostgreSQL ran out of test-container space after 12 successful scenarios. Not counted as acceptance. Final harness drops previous case databases and uses a bounded 512MiB tmpfs.",
+    "First adapted flow-harness launch occurred before the local PostgreSQL socket was ready. No product SQL ran in that attempt. The successful launch used pg_isready before the harness."
+  ],
+  "automatic_ci": "New transition-preflight test and real PostgreSQL acceptance script are not registered in package.json or automatic CI; explicit commands above were run. Existing SQL static test remains in test:webinars. No redundant full build, full Node webinar suite or full CI rerun was started for this SQL/test-only patch.",
+  "unresolved": [
+    "Installed production schema/function/policy/ACL snapshot and reviewed migration/rollback package",
+    "Evidence-based reconciliation of legitimate legacy registrations, historical payment provenance, and explicit access windows; the current proposal intentionally refuses any existing registration",
+    "Coordinated callback drain and application/SQL release acceptance",
+    "Paid capped-capacity reservation/release policy remains disabled; no new policy introduced",
+    "Real browser, real Auth, real gateway and production acceptance not performed"
+  ],
+  "production_or_external_mutations": false
+}
