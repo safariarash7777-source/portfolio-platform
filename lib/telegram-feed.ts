@@ -13,6 +13,40 @@ export interface FeedPost {
   kind: "post" | "video";
 }
 
+/** A source time must be explicit and timezone-qualified before it is stored. */
+export function sourcePublishedAt(value: string | null): string | null {
+  const parts = value?.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|([+-])(\d{2}):(\d{2}))$/i);
+  if (!value || !parts) return null;
+  const [, year, month, day, hour, minute, second, , offsetHour, offsetMinute] = parts;
+  const y = Number(year), m = Number(month), d = Number(day);
+  if (m < 1 || m > 12 || d < 1 || d > new Date(Date.UTC(y, m, 0)).getUTCDate()
+    || Number(hour) > 23 || Number(minute) > 59 || Number(second) > 59
+    || (offsetHour !== undefined && (Number(offsetHour) > 23 || Number(offsetMinute) > 59))) return null;
+  const time = Date.parse(value);
+  return Number.isFinite(time) ? new Date(time).toISOString() : null;
+}
+
+export interface DatedFeedPost extends FeedPost { publishedAt: string }
+
+/** Undated items cannot enter content_hub, whose publication field is required. */
+export function datedFeedPosts(posts: FeedPost[]): { eligible: DatedFeedPost[]; skippedUndated: number } {
+  const eligible = posts.flatMap((post) => {
+    const publishedAt = sourcePublishedAt(post.publishedAt);
+    return publishedAt ? [{ ...post, publishedAt }] : [];
+  });
+  return { eligible, skippedUndated: posts.length - eligible.length };
+}
+
+/** The public feed can repeat a message marker within one response. */
+export function freshFeedPosts(posts: DatedFeedPost[], existingUrls: Set<string>): DatedFeedPost[] {
+  const seen = new Set<string>();
+  return posts.filter((post) => {
+    if (existingUrls.has(post.url) || seen.has(post.url)) return false;
+    seen.add(post.url);
+    return true;
+  });
+}
+
 /** رمزگشاییِ چند entityِ پرکاربردِ HTML + تبدیلِ <br>/</p> به خطِ جدید و حذفِ تگ‌ها. */
 function htmlToText(html: string): string {
   return html

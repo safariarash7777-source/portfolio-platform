@@ -25,9 +25,12 @@ import type { CronLedgerStore, FinishRunInput, StartRunInput } from "@/lib/cron/
  * حالا نبودِ سکرت مثلِ نبودِ جدول رفتار می‌کند: دفتر ثبت نمی‌شود، ولی job
  * اجرا می‌شود. `error` همان شکلِ همیشگی را دارد، پس فراخوان تغییری لازم ندارد.
  */
-export function createCronLedgerStore(): CronLedgerStore {
-  const admin = tryCreateAdminClient();
-  if (!admin) return unrecordedStore();
+export function createCronLedgerStore(
+  client?: ReturnType<typeof tryCreateAdminClient>,
+  missingKey = "SUPABASE_SERVICE_ROLE_KEY"
+): CronLedgerStore {
+  const admin = client === undefined ? tryCreateAdminClient() : client;
+  if (!admin) return unrecordedStore(missingKey);
 
   return {
     async startRun(input: StartRunInput) {
@@ -79,9 +82,9 @@ export function createCronLedgerStore(): CronLedgerStore {
  * از قبل با آن کنار می‌آید. `error` صریح است تا در لاگ معلوم باشد چرا دفتر
  * خالی مانده — «ثبت نشد» و «چیزی برای ثبت نبود» نباید یکی به‌نظر برسند.
  */
-function unrecordedStore(): CronLedgerStore {
+function unrecordedStore(missingKey: string): CronLedgerStore {
   const error = new Error(
-    "دفترِ اجرا ثبت نشد: متغیرِ سرورِ «SUPABASE_SERVICE_ROLE_KEY» تنظیم نشده"
+    `دفترِ اجرا ثبت نشد: متغیرِ سرورِ «${missingKey}» تنظیم نشده`
   );
   return {
     async startRun() {
