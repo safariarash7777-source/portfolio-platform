@@ -1,6 +1,6 @@
 import "server-only";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
-import { parseChannelFeed } from "@/lib/telegram-feed";
+import { datedFeedPosts, freshFeedPosts, parseChannelFeed } from "@/lib/telegram-feed";
 
 // منطقِ مشترکِ همگام‌سازیِ هابِ محتوا با فیدِ عمومیِ تلگرام. هم کرانِ زمان‌بندی‌شده
 // (/api/cron/telegram-sync) و هم دکمهٔ دستیِ ادمین از همین تابع استفاده می‌کنند تا
@@ -17,8 +17,9 @@ export interface SyncResult {
   ok: boolean;
   found: number;
   inserted: number;
-  /** در صورتِ خطا: feed_unreachable | fetch_failed | insert_failed | service_role_missing */
+  /** شناسهٔ کوتاهِ علت شکست؛ متن/URL خامِ فید در پاسخ قرار نمی‌گیرد. */
   reason?: string;
+  skippedUndated?: number;
   channel: string;
 }
 
@@ -45,7 +46,16 @@ export async function runTelegramFeedSync(): Promise<SyncResult> {
 
   const posts = parseChannelFeed(html, channel);
   if (posts.length === 0) {
-    return { ok: true, found: 0, inserted: 0, channel };
+    // A 200 response can be a login/error page or an empty feed. Without a
+    // post marker it cannot certify that the scheduled sync succeeded.
+    return { ok: false, found: 0, inserted: 0, reason: "feed_empty", channel };
+  }
+
+  // content_hub.published_at is NOT NULL and is displayed as publication time.
+  // Never substitute the capture time when Telegram omits or mangles <time>.
+  const { eligible: dated, skippedUndated } = datedFeedPosts(posts);
+  if (dated.length === 0) {
+    return { ok: false, found: posts.length, inserted: 0, skippedUndated, reason: "source_date_missing", channel };
   }
 
   // ⚠️ این ماژول **هرگز** نباید سکرتِ غایب را به فراخوان پرتاب کند.
@@ -60,20 +70,24 @@ export async function runTelegramFeedSync(): Promise<SyncResult> {
   // عوض می‌شود شکلِ شکست است، نه نیاز.
   const admin = tryCreateAdminClient();
   if (!admin) {
-    return { ok: false, found: posts.length, inserted: 0, reason: "service_role_missing", channel };
+    return { ok: false, found: posts.length, inserted: 0, skippedUndated, reason: "service_role_missing", channel };
   }
 
   // dedup: لینک‌های موجود را کنار بگذار (append-only).
-  const urls = posts.map((p) => p.url);
-  const { data: existingRows } = await admin
+  const urls = [...new Set(dated.map((p) => p.url))];
+  const { data: existingRows, error: lookupError } = await admin
     .from("content_hub")
     .select("content_url")
     .in("content_url", urls);
+  if (lookupError) {
+    return { ok: false, found: posts.length, inserted: 0, skippedUndated, reason: "dedup_lookup_failed", channel };
+  }
   const existing = new Set((existingRows ?? []).map((r) => r.content_url));
 
-  const fresh = posts.filter((p) => !existing.has(p.url));
+  const fresh = freshFeedPosts(dated, existing);
   if (fresh.length === 0) {
-    return { ok: true, found: posts.length, inserted: 0, channel };
+    return { ok: skippedUndated === 0, found: posts.length, inserted: 0, skippedUndated,
+      ...(skippedUndated ? { reason: "source_date_missing" } : {}), channel };
   }
 
   const rows = fresh.map((p) => {
@@ -87,7 +101,7 @@ export async function runTelegramFeedSync(): Promise<SyncResult> {
       content_url: p.url,
       title: lines[0] ?? null,
       description: lines.slice(1).join("\n") || null,
-      published_at: p.publishedAt ?? new Date().toISOString(),
+      published_at: p.publishedAt,
     };
   });
 
@@ -98,16 +112,20 @@ export async function runTelegramFeedSync(): Promise<SyncResult> {
 
   if (error) {
     console.error("telegram-sync insert error:", error.message);
-    return { ok: false, found: posts.length, inserted: 0, reason: "insert_failed", channel };
+    return { ok: false, found: posts.length, inserted: 0, skippedUndated, reason: "insert_failed", channel };
   }
 
   const count = inserted?.length ?? 0;
-  await admin.from("audit_log").insert({
+  const { error: auditError } = await admin.from("audit_log").insert({
     actor_id: null,
     action: "content.sync",
     entity: "content_hub",
-    after: { source: "telegram_feed", channel, found: posts.length, inserted: count },
+    after: { source: "telegram_feed", channel, found: posts.length, inserted: count, skippedUndated },
   });
+  if (auditError) {
+    return { ok: false, found: posts.length, inserted: count, skippedUndated, reason: "audit_failed", channel };
+  }
 
-  return { ok: true, found: posts.length, inserted: count, channel };
+  return { ok: skippedUndated === 0, found: posts.length, inserted: count, skippedUndated,
+    ...(skippedUndated ? { reason: "source_date_missing" } : {}), channel };
 }

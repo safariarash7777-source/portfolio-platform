@@ -90,6 +90,14 @@ export async function PUT(req: NextRequest) {
     const reason =
       result.reason === "feed_unreachable" || result.reason === "fetch_failed"
         ? "فیدِ عمومیِ کانال خوانده نشد. مطمئن شوید کانال عمومی است و نمایشِ عمومی‌اش فعال است."
+        : result.reason === "feed_empty"
+          ? "فید پاسخ داده، اما پستی از کانال استخراج نشد؛ همگام‌سازی نیاز به بررسی دارد."
+        : result.reason === "source_date_missing"
+          ? "تاریخِ منبعِ بعضی پست‌ها مشخص نبود؛ آن پست‌ها ثبت نشدند."
+        : result.reason === "dedup_lookup_failed"
+          ? "بررسیِ پست‌های موجود ناموفق بود؛ برای جلوگیری از تکرار، ثبت تازه انجام نشد."
+        : result.reason === "audit_failed"
+          ? "پست‌های تازه ثبت شدند، ولی رسیدِ ثبت بررسی شود."
         : "خطا در ذخیرهٔ پست‌ها.";
     return NextResponse.json({ ...result, error: reason }, { status: 502 });
   }
