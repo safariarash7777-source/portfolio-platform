@@ -7,7 +7,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "test:research-agent": "tsx --test lib/intelligence/research-agent.test.ts",
+    "test:research-agent": "tsx --test lib/intelligence/research-agent.test.ts lib/intelligence/research-inputs.test.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
