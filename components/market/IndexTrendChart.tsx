@@ -11,7 +11,7 @@ import { toPersianDigits } from "@/lib/format";
 /** «1405/04/27» → «۰۴/۲۷» برای برچسب محور؛ سال در تولتیپ کامل می‌آید. */
 const shortJdate = (j: string) => toPersianDigits(j.slice(5));
 
-export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
+export default function IndexTrendChart({ series, height = 280 }: { series: IndexSeries[]; height?: number }) {
   const [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -46,7 +46,7 @@ export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
         },
       },
       autoSize: true,
-      height: 280,
+      height,
     });
     const line = chart.addSeries(LineSeries, { color, lineWidth: 2 });
     line.setData(
@@ -63,7 +63,7 @@ export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
       seriesRef.current = null;
       chart.remove();
     };
-  }, [current]);
+  }, [current, height]);
 
   /**
    * تغییرِ تم → فقط رنگ‌ها.
@@ -102,7 +102,7 @@ export default function IndexTrendChart({ series }: { series: IndexSeries[] }) {
           </button>
         ))}
       </div>
-      <div ref={ref} className="mt-3 w-full" style={{ minHeight: 280 }} />
+      <div ref={ref} className="mt-3 w-full" style={{ minHeight: height }} />
       <p className="mt-2 text-[11px]" style={{ color: "var(--text-3)" }}>
         یک نقطه به‌ازای هر روز معاملاتی (رقم پایان روز). تاریخچه از زمان راه‌اندازی سامانهٔ ثبت
         جمع می‌شود — منبع: پایگاه دادهٔ ثبت روزانهٔ سکو.
