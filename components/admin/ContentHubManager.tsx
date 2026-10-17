@@ -6,6 +6,7 @@ import {
   Sparkles, Send, Instagram, Twitter, Link2, CheckCircle2, AlertCircle, EyeOff, ExternalLink, RefreshCw,
 } from "lucide-react";
 import { formatJalali } from "@/lib/format";
+import MediaAppearanceSettings from "@/components/insights/MediaAppearanceSettings";
 import {
   type Platform, type ContentKind,
   PLATFORMS, KINDS, PLATFORM_META, KIND_LABEL, detectPlatform, guessKind,
@@ -144,6 +145,8 @@ export default function ContentHubManager({ items }: { items: Row[] }) {
           اضافه کنید یا در تلگرام برای بات بفرستید.
         </p>
       </header>
+
+      <MediaAppearanceSettings />
 
       {/* همگام‌سازیِ تلگرام */}
       <div className="card-elevated p-6 space-y-4">

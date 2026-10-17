@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import InsightsGrid from "@/components/insights/InsightsGrid";
+import MediaHub from "@/components/insights/MediaHub";
 import Link from "next/link";
 import { Send, Instagram } from "lucide-react";
 import { type ContentItem, isPlatform, isKind, PLATFORM_META } from "@/lib/content-hub";
@@ -17,7 +18,8 @@ export const metadata = pageMetadata({
   path: "/insights",
 });
 
-export default async function InsightsPage() {
+export default async function InsightsPage({ searchParams }: { searchParams: Promise<{ mediaPreview?: string }> }) {
+  const query = await searchParams;
   const supabase = await createClient();
   const { data } = await supabase
     .from("content_hub")
@@ -39,6 +41,9 @@ export default async function InsightsPage() {
       description: r.description,
       published_at: r.published_at,
     }));
+
+  // Explicit opt-in retains the existing public layout until visual acceptance.
+  if (query.mediaPreview === "1") return <MediaHub items={items} preview sourceMode="existing" />;
 
   return (
     <>
