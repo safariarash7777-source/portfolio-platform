@@ -163,3 +163,38 @@ publication and live browser/CSV acceptance will be appended after verification.
 Remaining: absent quote dates, genuinely older source observations, and untested
 full-universe financial-report coverage are not declared repaired by these checks.
 Rollback: revert the repair commit; preserve stored history and existing timers.
+
+## Release acceptance — 2026-10-17
+
+PR247 is published and accepted on the primary alias: Foolad CSV now returns
+4642 unique days through 2026-10-17 with `Cache-Control: no-store`; gold/currency
+and commodity cards distinguish quote time from family receipt. Browser checks
+found a separate default-timezone date discrepancy near midnight. PR249 fixes
+that; primary source 1405/07/25 at 01:00 now renders 25 Mehr at 01:00 in both
+cards. The operational worker's reviewed replacement passed its next natural
+13:50 UTC cycle and appended three reports; legitimate stale/unknown findings
+remain visible.
+
+PR248's hourly deep model policy uses gpt-6.1-sol/high on the existing Hermes
+subscription. The real draft and six sources were accepted in the primary
+browser. The unchanged replay did not call the model; the next NATURAL scheduled
+17:39 Tehran execution stored a new private draft at 14:10:37 UTC and exited 0.
+The existing task was retargeted, not duplicated. Coordinator independently
+accepted the public help and role explanation after publication.
+
+PR241 relay publication used successful exact-target CI and the existing manual
+workflow, with one app replica and a verified encrypted backup of configuration
+and persisted states. Runtime ten-file hashes match target 29de2b8; codal.mjs is
+1ccf387b26c7a03800b4cef5a385f527e2051fdc39c75c34f865cdf009e0dd5a.
+Natural Codal execution stored two N30 reports. The cycle remains incomplete:
+eight feed failures, twelve backfill failures, one download exception and nineteen
+admission rejections; zero persistence exceptions. N10 success for the specific
+optional-word spelling is NOT proven. Archive retained 198/200 usage and its
+existing budget stop; no quota, flags or provider calls were forced.
+
+[Machine-readable receipt](agent-data-release-20261017.json) records exact SHAs,
+deployments, CI/workflow IDs, natural-cycle times, checksum/backup evidence,
+state-preservation counts, remaining limits and the coordinator's attributed UI
+acceptance. Configuration/state capture was sequential, not transactional; counts
+are not a full content comparison. No raw financial values or credentials are
+included. Canonical project-status reconciliation remains with the coordinator.
