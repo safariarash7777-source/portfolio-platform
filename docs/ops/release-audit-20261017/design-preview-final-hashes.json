@@ -1,0 +1,47 @@
+{
+  "sourceSHA": "23e2c3529d37add64af2cd080b911462b3272c0e",
+  "results": [
+    {
+      "file": "index.html",
+      "expected": "fedcb3b9db1e96ee61a7c9d47a68344a3619c9c0ee7920e65e7e06c0390443da",
+      "actual": "fedcb3b9db1e96ee61a7c9d47a68344a3619c9c0ee7920e65e7e06c0390443da",
+      "pass": true,
+      "status": 200
+    },
+    {
+      "file": "assets/index-CIMrnpJl.js",
+      "expected": "13924b371f60ab0384ff40940ba2d2a74bf3ffef9ca09813c5feca5280d6a5d9",
+      "actual": "13924b371f60ab0384ff40940ba2d2a74bf3ffef9ca09813c5feca5280d6a5d9",
+      "pass": true,
+      "status": 200
+    },
+    {
+      "file": "assets/index-Y-9cglU6.css",
+      "expected": "9740239633f014135196929254cd220d0d9bb321f35ea04d47aa9d529c77f022",
+      "actual": "9740239633f014135196929254cd220d0d9bb321f35ea04d47aa9d529c77f022",
+      "pass": true,
+      "status": 200
+    },
+    {
+      "file": "brand/mark.png",
+      "expected": "cf07aa36ea37ddfa95f247e2d3cd6288a7870e00a1e3ff1041f908d1b6ad4c6d",
+      "actual": "cf07aa36ea37ddfa95f247e2d3cd6288a7870e00a1e3ff1041f908d1b6ad4c6d",
+      "pass": true,
+      "status": 200
+    },
+    {
+      "file": "fonts/Vazirmatn-OFL.txt",
+      "expected": "49afd4e4bfb3728ad16b7a2882ae0e36bf70e44c1c92de76623cc8cb21d8579f",
+      "actual": "49afd4e4bfb3728ad16b7a2882ae0e36bf70e44c1c92de76623cc8cb21d8579f",
+      "pass": true,
+      "status": 200
+    },
+    {
+      "file": "fonts/Vazirmatn-Variable.woff2",
+      "expected": "4e3fa217d38fdafc1fea4414ceb58ca5e662cf0ab5fa735a8c8c20e8b42cad92",
+      "actual": "4e3fa217d38fdafc1fea4414ceb58ca5e662cf0ab5fa735a8c8c20e8b42cad92",
+      "pass": true,
+      "status": 200
+    }
+  ]
+}

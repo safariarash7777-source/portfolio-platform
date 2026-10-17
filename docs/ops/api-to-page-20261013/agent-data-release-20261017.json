@@ -1,0 +1,289 @@
+{
+  "recordedAt": "2026-10-17T14:11:39.379Z",
+  "scope": "Observed release acceptance; not full-universe data or semantic research acceptance",
+  "web": {
+    "freshness": {
+      "pr": 247,
+      "head": "246bd3a08838f560eba230e4bb5c040d303edd1b",
+      "merge": "582fba194b2565f6dee046deafbff147bffcf375",
+      "deployment": "dpl_5LSx3tFRLxCfirePaQU4siF9Vpmd",
+      "primaryAliasVerified": true,
+      "csv": {
+        "symbol": "فولاد",
+        "rows": 4642,
+        "uniqueDays": 4642,
+        "first": "2007-03-11",
+        "last": "2026-10-17",
+        "cacheControl": "no-store",
+        "priorRows": 1000
+      },
+      "browser": {
+        "goldSourceVsReceipt": "PASS",
+        "currencyTabSourceVsReceipt": "PASS",
+        "commodityOldQuoteVsRecentReceipt": "PASS",
+        "marketDailyTrendThrough": "1405/07/25"
+      }
+    },
+    "dateFix": {
+      "pr": 249,
+      "head": "54a9178f2959cba86545e3ae7376c46505ce77c4",
+      "merge": "0ad85378d574f697a4feebaf40844d384b192533",
+      "deployment": "dpl_3t3ZLyG1L2soxGA138m8ejrNbToo",
+      "primaryAliasVerified": true,
+      "browser": {
+        "sourceDate": "1405/07/25",
+        "sourceTime": "01:00",
+        "renderedDate": "25 Mehr 1405",
+        "renderedTime": "01:00",
+        "surfaces": [
+          "gold",
+          "commodity"
+        ],
+        "result": "PASS"
+      }
+    },
+    "agentControls": {
+      "pr": 248,
+      "head": "9d54b9199ab11c3980201612251918993990e225",
+      "merge": "b6d3c2ed786493f84a084acd761ba998979fb810",
+      "helpAndRolePanelAcceptance": "Coordinator reported PASS on primary; not repeated here"
+    }
+  },
+  "operationalWorker": {
+    "sha256": "ed3f9d07e571fd88f2dacefbe38d0fb5355ddc143aec6f6d727530f31242e184",
+    "backupPreserved": true,
+    "existingTimerRetained": true,
+    "naturalRun": {
+      "startedAt": "2026-10-17T13:50:07Z",
+      "endedAt": "2026-10-17T13:50:10Z",
+      "exit": 0,
+      "reportsCreatedAt": "2026-10-17T13:50:10.401958Z",
+      "statuses": {
+        "data_quality": "stale",
+        "site_monitor": "ok",
+        "coordinator": "stale"
+      }
+    }
+  },
+  "research": {
+    "provider": "openai-codex",
+    "model": "gpt-6.1-sol",
+    "reasoningEffort": "high",
+    "billingModeObserved": "subscription_included",
+    "maxAttemptsPerHour": 1,
+    "maxAttemptsPerRollingDay": 24,
+    "maxTurns": 1,
+    "runBudgetSeconds": 180,
+    "hardTokenCap": false,
+    "paidFallback": false,
+    "firstRealDraft": {
+      "id": "f6e927bd-2fd1-49bd-a680-9049735b9df1",
+      "primaryBrowser": "PASS",
+      "evidenceExpanded": 6,
+      "inputTokens": 1601,
+      "outputTokens": 1579,
+      "reasoningTokens": 388
+    },
+    "naturalScheduledRun": {
+      "task": "Portfolio-Research-Hermes",
+      "startTehran": "2026-10-17 17:39:09",
+      "endedAt": "2026-10-17T14:10:37.632Z",
+      "lastTaskResult": 0,
+      "status": "stored",
+      "draftId": "ee57b692-6f3b-4e1d-9a82-42d245ce3be5",
+      "issuers": 8,
+      "eligible": 6,
+      "excluded": 2
+    },
+    "duplicateSchedulerCreated": false
+  },
+  "relay": {
+    "target": "29de2b84c224101a57caa67dca961d75b2c8f4fe",
+    "ciRun": 39038252036,
+    "deployRun": 39038663105,
+    "deployWorkflow": "deploy-relay.yml",
+    "workflowResult": "success",
+    "replicas": 1,
+    "releaseId": "6ad37ec877b9f9b4324de29e",
+    "tag": "v55",
+    "image": "registry.c1.liara.ir/apps/6a5351feb95bf1e50c1ee34f:12qvoyo45aeb",
+    "previousRelease": "6acf18866de510a731ee30f3",
+    "previousImage": "registry.c1.liara.ir/apps/6a5351feb95bf1e50c1ee34f:copewixp2ed3",
+    "backup": {
+      "file": "20261017T135410Z-runtime.dpapi",
+      "ciphertextSha256": "67B03250351189759E5CCBB7C10D3A1391F6EED9FEFF2225D7CA136ABDF54E10",
+      "decryptedReadbackVerified": true,
+      "scope": "Sequential API/config/debug/persisted state; not transactional or a full process-memory dump"
+    },
+    "runtime": {
+      "checkedAt": "2026-10-17T14:05:31.461Z",
+      "sha": "29de2b84c224101a57caa67dca961d75b2c8f4fe",
+      "files": {
+        "server.mjs": {
+          "actual": "843a4a3cecc0f596a10095ed187cc351001226af65a86f1e598bca29cee1eed2",
+          "expected": "843a4a3cecc0f596a10095ed187cc351001226af65a86f1e598bca29cee1eed2",
+          "match": true
+        },
+        "commodity.mjs": {
+          "actual": "f447ba5d14dfe4233b90d5f8403cdb942586d69ce36daf545726c67ffc9d138d",
+          "expected": "f447ba5d14dfe4233b90d5f8403cdb942586d69ce36daf545726c67ffc9d138d",
+          "match": true
+        },
+        "market-retention.mjs": {
+          "actual": "f6ca5b3f578f7ab8a404dddc77ddae351b64c305ebb291f033d5dad0c9d207ab",
+          "expected": "f6ca5b3f578f7ab8a404dddc77ddae351b64c305ebb291f033d5dad0c9d207ab",
+          "match": true
+        },
+        "options.mjs": {
+          "actual": "92318df93e2fc832bc17fdf2558cf8e13acd3ca0717c4ad89dc5ce468971044e",
+          "expected": "92318df93e2fc832bc17fdf2558cf8e13acd3ca0717c4ad89dc5ce468971044e",
+          "match": true
+        },
+        "package.json": {
+          "actual": "165301461fdfc895571541de575aba6db6bd5c5080e6b01d50959f51818b3558",
+          "expected": "165301461fdfc895571541de575aba6db6bd5c5080e6b01d50959f51818b3558",
+          "match": true
+        },
+        "daily-fx.mjs": {
+          "actual": "ede11760d4033c093e874f2298ba60cb05646fccbd53bbaab60f568665ce0a87",
+          "expected": "ede11760d4033c093e874f2298ba60cb05646fccbd53bbaab60f568665ce0a87",
+          "match": true
+        },
+        "ime.mjs": {
+          "actual": "15045ba1d439487a8b6529640e38945b1a49de1cf1b602720b052f93d1889fa5",
+          "expected": "15045ba1d439487a8b6529640e38945b1a49de1cf1b602720b052f93d1889fa5",
+          "match": true
+        },
+        "codal-engine.mjs": {
+          "actual": "9a7f04b7e3975a4287050a851c4fe485bc75fab3f963f8952f9a1b0001875a3b",
+          "expected": "9a7f04b7e3975a4287050a851c4fe485bc75fab3f963f8952f9a1b0001875a3b",
+          "match": true
+        },
+        "symbol-detail.mjs": {
+          "actual": "6702a559e0222a56fcfdc9211d83ca9f17526eff0d6e409dfa0f046534d98fb3",
+          "expected": "6702a559e0222a56fcfdc9211d83ca9f17526eff0d6e409dfa0f046534d98fb3",
+          "match": true
+        },
+        "codal.mjs": {
+          "actual": "1ccf387b26c7a03800b4cef5a385f527e2051fdc39c75c34f865cdf009e0dd5a",
+          "expected": "1ccf387b26c7a03800b4cef5a385f527e2051fdc39c75c34f865cdf009e0dd5a",
+          "match": true
+        }
+      },
+      "pass": true
+    },
+    "statePreservation": [
+      {
+        "key": "nav_blacklist",
+        "unchanged": true,
+        "updatedAt": "2026-10-13T10:54:38.565+03:30"
+      },
+      {
+        "key": "codal_engine_state",
+        "beforeLedger": 600,
+        "afterLedger": 600,
+        "beforeAdmissionRejected": 471,
+        "afterAdmissionRejected": 490,
+        "updatedAt": "2026-10-17T17:36:16.741+03:30"
+      },
+      {
+        "key": "codal_archive_state",
+        "beforeUsed": 198,
+        "afterUsed": 198,
+        "sameDay": true,
+        "beforeSymbols": 135,
+        "afterSymbols": 135,
+        "updatedAt": "2026-10-17T17:36:49.582+03:30"
+      },
+      {
+        "key": "candle_backfill_state",
+        "beforeRequests": 3,
+        "afterRequests": 3,
+        "beforeDone": 209,
+        "afterDone": 209,
+        "updatedAt": "2026-10-17T11:55:35.595+03:30"
+      },
+      {
+        "key": "symbol_details",
+        "beforeCount": 120,
+        "afterCount": 120,
+        "updatedAt": "2026-10-17T17:35:58.618+03:30"
+      }
+    ],
+    "naturalCycle": {
+      "checkedAt": "2026-10-17T14:10:57.064Z",
+      "engine": {
+        "ok": false,
+        "lastRun": 1792245739398,
+        "errorPresent": true,
+        "feed": {
+          "pages": 6,
+          "seen": 120,
+          "downloaded": 10,
+          "inserted": 2,
+          "parseFailed": 8,
+          "complete": false,
+          "incompleteReason": "download_limit"
+        },
+        "backfill": {
+          "inserted": 0,
+          "parseFailed": 12
+        },
+        "failureDiagnostics": {
+          "version": 1,
+          "totals": {
+            "download": {
+              "exception": 5
+            },
+            "admission": {
+              "rejected": 490,
+              "exception": 0
+            },
+            "persistence": {
+              "exception": 0
+            }
+          },
+          "lastCycle": {
+            "download": {
+              "exception": 1
+            },
+            "admission": {
+              "rejected": 19,
+              "exception": 0
+            },
+            "persistence": {
+              "exception": 0
+            }
+          }
+        }
+      },
+      "archive": {
+        "ok": true,
+        "lastRun": 1792246009488,
+        "errorPresent": true,
+        "used": 198,
+        "cap": 200,
+        "day": "2026-10-17",
+        "inserted": 0
+      }
+    },
+    "databaseInsertion": {
+      "reportKind": "ن-۳۰",
+      "count": 2,
+      "firstAt": "2026-10-17T14:02:44.159261Z",
+      "lastAt": "2026-10-17T14:02:44.289890Z"
+    },
+    "specificOptionalWordN10LiveSuccess": "NOT_PROVEN",
+    "providerCallsForced": false,
+    "writerOrBudgetFlagsChanged": false
+  },
+  "remaining": [
+    "Stock/fund/option quote source dates missing",
+    "Some source observations genuinely old; trading calendar not fully assessed",
+    "Codal cycle incomplete: download limit and rejected/failed reports; no full extraction claim",
+    "Archive at198/200 keeps defensive stop; cap not increased",
+    "Comprehensive technical, cash-flow, commodity, gold/FX research and semantic evaluations incomplete",
+    "Research depends on powered-on signed-in Windows and network; independent always-on hosting not installed",
+    "Exact per-run token telemetry not shown in site panel"
+  ]
+}
