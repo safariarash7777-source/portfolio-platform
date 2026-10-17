@@ -460,6 +460,7 @@
   color:var(--gold-on-tint)
 }
 .tableWrap {
+  position:relative;
   overflow-x:auto;
   margin-top:20px
 }
