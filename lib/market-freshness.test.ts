@@ -1,11 +1,36 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { computeFreshness, STALE_AFTER_MIN } from "./market-freshness";
+import { computeFreshness, computeTickerFreshness, STALE_AFTER_MIN } from "./market-freshness";
 
 const NOW = 1_700_000_000_000;
 const minsAgo = (m: number) => NOW - m * 60_000;
 
+test('one rendered origin with no valid clock cannot borrow another origin clock', () => {
+  assert.equal(computeFreshness({usesIr:true,usesGlobal:true,irFetchedAt:null,globalFetchedAt:NOW,now:NOW}).state,'unknown');
+  assert.equal(computeFreshness({usesIr:true,usesGlobal:true,irFetchedAt:NOW,globalFetchedAt:NOW+3600000,now:NOW}).showLiveDot,false);
+});
+test('ticker uses selected quote time and retained state, never receipt as quote time', () => {
+  const now=Date.parse('2026-10-17T09:00:00Z');
+  const row={id:'USD',price:100,sourceDate:'1405/07/25',sourceTime:'12:25'};
+  const payload={fetchedAt:now,crypto:[{id:'bitcoin',price:1}],ir:{fetchedAt:now,currency:[row],gold:[{id:'unrendered',price:10,sourceDate:'1405/07/01',sourceTime:'01:00'}]}};
+  assert.equal(computeTickerFreshness(payload,now).state,'fresh');
+  row.sourceTime='10:00';
+  assert.equal(computeTickerFreshness(payload,now).state,'stale');
+  row.sourceDate='';
+  assert.equal(computeTickerFreshness(payload,now).state,'unknown');
+  row.sourceDate='1405/07/25';row.sourceTime='12:25';
+  const retained={...payload,ir:{...payload.ir,snapshotQuality:{version:1,state:'partial',families:{currency:{state:'stale',receivedAt:now,retained:true}}}}};
+  assert.equal(computeTickerFreshness(retained,now).showLiveDot,false);
+  assert.equal(computeTickerFreshness(retained,now).state,'stale');
+});
+
 describe("مهرِ زمانیِ منبعِ درست انتخاب می‌شود", () => {
+  test('duplicate IDs use the same last valid row as the rendered price', () => {
+    const now = Date.parse('2026-10-17T09:00:00Z');
+    const row = {id:'USD',price:100,sourceDate:'1405/07/25',sourceTime:'12:25'};
+    const payload = {ir:{fetchedAt:now,currency:[{...row,sourceDate:''}],gold:[row,{...row,price:0,sourceDate:''}]}};
+    assert.equal(computeTickerFreshness(payload,now).state,'fresh');
+  });
   test("وقتی فقط ردیفِ ایران رندر شده، سنِ فیدِ ایران گزارش می‌شود — نه جهانی", () => {
     const f = computeFreshness({
       irFetchedAt: minsAgo(45),

@@ -27,7 +27,7 @@
     "deployment": "dpl_BSYdRNaD9U5TiSMmB5tj3Vf4W1Mb",
     "primaryAlias": "portfolio-platform-fawn.vercel.app",
     "aliasVerified": true,
-    "browserAcceptance": "LOGIN_REQUIRED"
+    "browserAcceptance": "PASS"
   },
   "scheduler": {
     "task": "Portfolio-Research-Hermes",
@@ -41,5 +41,14 @@
     "dependency": "Windows user logged in, machine awake and connected"
   },
   "forcedCommandNegativeTest": "PASS",
-  "firstScheduledUnchangedRun": "2026-10-17T12:09:25.303Z"
+  "firstScheduledUnchangedRun": "2026-10-17T12:09:25.303Z",
+  "browserVerification": {
+    "at": "2026-10-17T16:33:34.507942+03:30",
+    "verifiedOnRelease": "4da7b3918e8811b98a3bf7419a7bebca82e6a8a2",
+    "draftVisible": true,
+    "claimsVisible": 4,
+    "scenariosVisible": 3,
+    "evidenceExpanded": 6,
+    "semanticAccuracyAccepted": false
+  }
 }

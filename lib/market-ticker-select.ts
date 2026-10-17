@@ -64,6 +64,8 @@ export interface SourceRow {
   unit?: unknown;
   change24h?: unknown;
   changePercent?: unknown;
+  sourceDate?: unknown;
+  sourceTime?: unknown;
 }
 
 export interface TickerPayload {

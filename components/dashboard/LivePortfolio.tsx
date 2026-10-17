@@ -4,6 +4,7 @@ import PerformanceChart from "./PerformanceChart";
 import HoldingsTable from "./HoldingsTable";
 import { Wallet } from "lucide-react";
 import { formatTomanShort, formatToman, formatJalali, toPersianDigits } from "@/lib/format";
+import ReadError from "./ReadError";
 
 export interface HoldingDB {
   id: string;
@@ -29,13 +30,13 @@ interface Props {
   holdings: HoldingDB[];
   snapshots: SnapshotDB[];
   transactions: TxDB[];
+  readErrors?: Partial<Record<"holdings" | "snapshots" | "transactions", boolean>>;
 }
 
 /** "پرتفوی زنده" — KPI cards, allocation donut, performance chart, holdings & transactions.
  *  Computed from live Supabase data; falls back to a friendly empty state. */
-export default function LivePortfolio({ holdings, snapshots, transactions }: Props) {
-  if (holdings.length === 0 && snapshots.length === 0) {
-    return (
+export default function LivePortfolio({ holdings, snapshots, transactions, readErrors = {} }: Props) {
+  const emptyState = !readErrors.holdings && !readErrors.snapshots && holdings.length === 0 && snapshots.length === 0 ? (
       <div className="card p-8 text-center">
         <div className="mx-auto mb-4 flex items-center justify-center rounded-2xl"
              style={{ width: 56, height: 56, background: "var(--gold-tint)", color: "var(--navy-deep)" }}>
@@ -49,8 +50,7 @@ export default function LivePortfolio({ holdings, snapshots, transactions }: Pro
           نمایش داده خواهد شد.
         </p>
       </div>
-    );
-  }
+    ) : null;
 
   const withValue = holdings.map((h) => ({ ...h, value: h.qty * h.current_price }));
   const total = withValue.reduce((s, h) => s + h.value, 0);
@@ -81,6 +81,7 @@ export default function LivePortfolio({ holdings, snapshots, transactions }: Pro
 
   return (
     <div className="space-y-5">
+      {emptyState ?? <>
       <div>
         <span className="eyebrow">پرتفوی زنده</span>
         <h2 className="font-display text-xl md:text-2xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
@@ -90,30 +91,31 @@ export default function LivePortfolio({ holdings, snapshots, transactions }: Pro
 
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="ارزش کل دارایی" value={formatTomanShort(total)} />
-        <KpiCard label="بازده دوره" value={formatTomanShort(snapshots.at(-1)?.value ?? total).replace(" تومان", " ت")} delta={periodReturn} hint="بر اساس روند ثبت‌شده" />
-        <KpiCard label="سود/زیان امروز" value={formatToman(Math.round(dayPnl))} delta={dayChangePct} />
-        <KpiCard label="تعداد دارایی" value={toPersianDigits(holdings.length)} hint="نماد فعال در سبد" />
+        {!readErrors.holdings && <KpiCard label="ارزش کل دارایی" value={formatTomanShort(total)} />}
+        {!readErrors.snapshots && (!readErrors.holdings || snapshots.length > 0) && <KpiCard label="بازده دوره" value={formatTomanShort(snapshots.at(-1)?.value ?? total).replace(" تومان", " ت")} delta={periodReturn} hint="بر اساس روند ثبت‌شده" />}
+        {!readErrors.holdings && <KpiCard label="سود/زیان امروز" value={formatToman(Math.round(dayPnl))} delta={dayChangePct} />}
+        {!readErrors.holdings && <KpiCard label="تعداد دارایی" value={toPersianDigits(holdings.length)} hint="نماد فعال در سبد" />}
       </div>
 
       {/* Donut + performance */}
       <div className="grid gap-5 lg:grid-cols-3">
-        <div className="card p-5 lg:col-span-1">
+        {readErrors.holdings ? <ReadError label="دارایی‌ها" code="DASHBOARD_HOLDINGS" /> : <div className="card p-5 lg:col-span-1">
           <h3 className="font-display font-bold text-lg mb-4" style={{ color: "var(--navy-deep)" }}>
             تخصیص دارایی
           </h3>
           <AllocationDonut data={allocation} centerLabel="ارزش کل" centerValue={formatTomanShort(total)} />
-        </div>
+        </div>}
         <div className="lg:col-span-2">
-          <PerformanceChart data={perf} />
+          {readErrors.snapshots ? <ReadError label="روند ارزش سبد" code="DASHBOARD_SNAPSHOTS" /> : <PerformanceChart data={perf} />}
         </div>
       </div>
 
       {/* Holdings */}
-      {holdingRows.length > 0 && <HoldingsTable rows={holdingRows} />}
+      {!readErrors.holdings && holdingRows.length > 0 && <HoldingsTable rows={holdingRows} />}
+      </>}
 
       {/* Recent transactions */}
-      {transactions.length > 0 && (
+      {readErrors.transactions ? <ReadError label="تراکنش‌های اخیر" code="DASHBOARD_TRANSACTIONS" /> : transactions.length > 0 && (
         <div className="card p-5">
           <h3 className="font-display font-bold text-lg mb-4" style={{ color: "var(--navy-deep)" }}>
             تراکنش‌های اخیر

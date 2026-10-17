@@ -174,6 +174,14 @@ export default async function DashboardPage() {
           revalidationExpiredAt={revalidationRes.data?.expired_at ?? null}
           announcements={announcements}
           portfolioVersions={portfolioVersionsRes.data ?? []}
+          financialReadErrors={{
+            portfolio: Boolean(portfolioRes.error),
+            holdings: Boolean(holdingsRes.error),
+            snapshots: Boolean(snapshotsRes.error),
+            transactions: Boolean(txRes.error),
+            payment: Boolean(paymentRes.error),
+            portfolioVersions: Boolean(portfolioVersionsRes.error),
+          }}
         />
       </main>
       <Footer />
