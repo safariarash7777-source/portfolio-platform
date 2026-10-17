@@ -36,7 +36,6 @@ const ALLOWED = new Map<string, string>([
   ["app/api/telegram/webhook/route.ts", "وبهوکِ تلگرام — فراخوانِ سرورِ تلگرام"],
   ["app/api/leads/webhook/route.ts", "وبهوکِ Mini App — احراز با رمزِ مشترک"],
   ["lib/cron/store.ts", "دفترِ اجرای cron — بدونِ کاربر"],
-  ["lib/telegram-sync.ts", "cronِ همگام‌سازی — بدونِ کاربر"],
   ["lib/market.ts", "`evaluateAlerts` از cronِ هشدار صدا زده می‌شود"],
   ["lib/fx/seedStore.ts", "آپلودِ بذرِ ارز از اسکریپتِ بیرونی"],
 

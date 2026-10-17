@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { runTelegramFeedSync } from "@/lib/telegram-sync";
 import { runWithLedger } from "@/lib/cron/ledger";
 import { createCronLedgerStore, currentDeploymentSha } from "@/lib/cron/store";
+import { tryCreateContentSyncClient } from "@/lib/supabase/content-sync";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,8 +21,8 @@ export async function GET(req: NextRequest) {
   // چرا لازم بود: این job فقط وقتی در `content_hub` درج می‌کند که پستِ تازه‌ای
   // باشد. پس «ردیفِ تازه نیست» یعنی «کانال ساکت بوده» **یا** «سه روز است اجرا
   // نشده» — و آن دو از بیرون یکسان به‌نظر می‌رسیدند.
-  const { result } = await runWithLedger({
-    store: createCronLedgerStore(),
+  const { result, ledgerRecorded, runId } = await runWithLedger({
+    store: createCronLedgerStore(tryCreateContentSyncClient(), "CONTENT_SYNC_SERVICE_ROLE_KEY"),
     jobKey: "telegram-sync",
     deploymentSha: currentDeploymentSha(),
     job: async () => {
@@ -40,5 +41,10 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  return NextResponse.json(result, { status: result.ok ? 200 : 502 });
+  // runWithLedger records an unexpected job exception and returns no value.
+  // Keep the failure and its ledger receipt visible instead of throwing a 500.
+  if (!result) {
+    return NextResponse.json({ ok: false, reason: "unhandled_exception", ledgerRecorded, runId }, { status: 502 });
+  }
+  return NextResponse.json({ ...result, ledgerRecorded, runId }, { status: result.ok ? 200 : 502 });
 }

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isPlatform, isKind, detectPlatform } from "@/lib/content-hub";
 import { runTelegramFeedSync } from "@/lib/telegram-sync";
-import { serviceRoleGap, SERVICE_ROLE_GAP_STATUS } from "@/lib/supabase/service-role";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -83,13 +82,23 @@ export async function PUT(req: NextRequest) {
     // می‌کند و دیگری را تنظیماتِ کانال. یک پیامِ مشترک هر دو را کور می‌کرد.
     if (result.reason === "service_role_missing") {
       return NextResponse.json(
-        { ...result, ...serviceRoleGap("همگام‌سازیِ هابِ محتوا") },
-        { status: SERVICE_ROLE_GAP_STATUS }
+        { ...result, error: "content_sync_service_role_unavailable",
+          missingEnv: "CONTENT_SYNC_SERVICE_ROLE_KEY",
+          detail: "کلیدِ همگام‌سازیِ محتوای سرور تنظیم نشده است." },
+        { status: 503 }
       );
     }
     const reason =
       result.reason === "feed_unreachable" || result.reason === "fetch_failed"
         ? "فیدِ عمومیِ کانال خوانده نشد. مطمئن شوید کانال عمومی است و نمایشِ عمومی‌اش فعال است."
+        : result.reason === "feed_empty"
+          ? "فید پاسخ داده، اما پستی از کانال استخراج نشد؛ همگام‌سازی نیاز به بررسی دارد."
+        : result.reason === "source_date_missing"
+          ? "تاریخِ منبعِ بعضی پست‌ها مشخص نبود؛ آن پست‌ها ثبت نشدند."
+        : result.reason === "dedup_lookup_failed"
+          ? "بررسیِ پست‌های موجود ناموفق بود؛ برای جلوگیری از تکرار، ثبت تازه انجام نشد."
+        : result.reason === "audit_failed"
+          ? "پست‌های تازه ثبت شدند، ولی رسیدِ ثبت بررسی شود."
         : "خطا در ذخیرهٔ پست‌ها.";
     return NextResponse.json({ ...result, error: reason }, { status: 502 });
   }
