@@ -7,7 +7,10 @@ import {
   formatSignedPercent,
   deltaColor,
   formatJalali,
+  formatTehranClock,
 } from "@/lib/format";
+import { sourceTime, type FamilyAvailability } from "@/lib/market-quality";
+import { quoteClock, quoteClockLabel } from "@/lib/commodity-quality";
 
 interface IrRow {
   id: string;
@@ -16,19 +19,34 @@ interface IrRow {
   unit: "toman" | "usd";
   change?: number | null;
   changePercent?: number | null;
+  sourceDate?: string | null;
+  sourceTime?: string | null;
 }
 
 interface Props {
   gold: IrRow[];
   currency: IrRow[];
   fetchedAt: number | null;
+  availability?: { gold?: FamilyAvailability; currency?: FamilyAvailability };
+  now?: number;
 }
 
 type Tab = "gold" | "currency";
 
-export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) {
-  const [tab, setTab] = useState<Tab>("gold");
+export default function GoldCurrencyBoard({ gold, currency, fetchedAt, availability, now = Date.now() }: Props) {
+  const [tab, setTab] = useState<Tab>(gold.length ? "gold" : "currency");
   const rows = tab === "gold" ? gold : currency;
+  const family = availability?.[tab];
+  // When family metadata exists, a missing family receipt must not borrow the batch clock.
+  const receivedAt = availability ? family?.receivedAt ?? null : fetchedAt;
+  const receipt = quoteClock(receivedAt, now);
+  const retained = family?.retained === true || family?.sourceState === "stale";
+  const receiptText = retained ? "دریافت تازهٔ این بخش احراز نشده؛ آخرین دادهٔ ذخیره‌شده حفظ شده است."
+    : family?.sourceState === "unavailable" || family?.state === "unavailable" ? "دریافت دادهٔ این بخش در دسترس نیست."
+    : receipt.state === "future" ? "زمان دریافت جلوتر از ساعت ارزیابی است و معتبر محسوب نمی‌شود."
+    : receipt.state === "old" ? "دریافت تازهٔ این بخش در نیم ساعت اخیر ثبت نشده است."
+    : receipt.state === "unknown" ? "زمان دریافت این بخش نامعلوم است."
+    : "دریافت این بخش در بازهٔ اخیر ثبت شده؛ زمان قیمت هر ردیف مستقل است.";
 
   if (gold.length === 0 && currency.length === 0) return null;
 
@@ -47,13 +65,14 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
             طلا و ارز
           </h2>
         </div>
-        {fetchedAt != null ? (
+        {receipt.at != null ? (
           <div className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--text-3)" }}>
             <Clock size={12} />
-            <span>دریافت اسنپ‌شات: {formatJalali(fetchedAt)}</span>
+            <span>دریافت {tab === "gold" ? "طلا و سکه" : "ارز"}: {formatJalali(receipt.at)} · {formatTehranClock(receipt.at)} (تهران)</span>
           </div>
         ) : <span className="text-[11px]" style={{ color: "var(--text-3)" }}>زمان دریافت نامعلوم</span>}
       </div>
+      <p className="text-xs leading-6" style={{ color: "var(--text-2)" }}>{receiptText}</p>
 
       {/* Tabs */}
       <div className="flex gap-2">
@@ -65,6 +84,7 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {rows.map((r) => {
           const pct = r.changePercent ?? null;
+          const priceClock = quoteClock(sourceTime(r.sourceDate, r.sourceTime), now);
           return (
             <div key={r.id} className="card p-4 flex items-center justify-between gap-3">
               <div className="min-w-0">
@@ -76,6 +96,9 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
                     ? `$${toPersianDigits(r.price.toLocaleString("en-US")).replace(/,/g, "٬")}`
                     : formatToman(r.price)}
                 </span>
+                <p className="mt-2 text-xs leading-6" style={{ color: "var(--text-3)" }}>تاریخ منبع: <bdi>{r.sourceDate ? toPersianDigits(r.sourceDate) : "نامعلوم"}</bdi> · ساعت منبع: <bdi>{r.sourceTime ? toPersianDigits(r.sourceTime) : "نامعلوم"}</bdi></p>
+                {priceClock.at !== null ? <p className="text-xs leading-6" style={{ color: "var(--text-3)" }}>زمان قیمت (تهران): {formatJalali(priceClock.at)} · {formatTehranClock(priceClock.at)}</p> : null}
+                <p className="text-xs leading-6" style={{ color: "var(--text-3)" }}>{quoteClockLabel[priceClock.state]}</p>
               </div>
               {pct != null && (
                 <span
@@ -96,6 +119,8 @@ export default function GoldCurrencyBoard({ gold, currency, fetchedAt }: Props) 
 function TabBtn({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count: number }) {
   return (
     <button
+      type="button"
+      aria-pressed={active}
       onClick={onClick}
       className="inline-flex items-center rounded-lg px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
       style={{

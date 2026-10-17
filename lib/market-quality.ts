@@ -1,6 +1,7 @@
 import { jalaliYmdToGregorian } from "./core/jalali";
 import { navAtIso, liveBubble } from "./core/fundBubble";
 import type { IrMarket, IrStockRow } from "./market-ir";
+import { toLatinDigits } from './format';
 const sourceCalendar = new Intl.DateTimeFormat("en-US-u-ca-persian", { timeZone: "Asia/Tehran", year: "numeric", month: "numeric", day: "numeric" });
 
 /** Source time is independent of transport/cache time. Never replace missing time with now. */
@@ -12,7 +13,7 @@ export function validTimestamp(value: unknown): number | null {
 export function sourceTime(date: string | null | undefined, time: string | null | undefined): number | null {
   const at = navAtIso(date, time, jalaliYmdToGregorian);
   if (!at || at.precision !== "minute") return null;
-  const normalized = (date ?? "").replaceAll("/", "-").split("-").map(Number);
+  const normalized = toLatinDigits(date ?? "").replaceAll("/", "-").split("-").map(Number);
   const actual = sourceCalendar.formatToParts(new Date(at.iso));
   const n = (part: string) => Number(actual.find(p => p.type === part)?.value);
   if (n("year") !== normalized[0] || n("month") !== normalized[1] || n("day") !== normalized[2]) return null;

@@ -42,34 +42,12 @@ export async function getSymbolHistory(
   const e = env();
   if (!e) return [];
 
-  // چون ممکن است یک تاریخ چند نسخه داشته باشد، کمی بیشتر می‌خوانیم و dedupe می‌کنیم.
-  const qs = new URLSearchParams({
-    select: SELECT_COLS,
-    symbol: `eq.${symbol}`,
-    order: "trade_date.desc,id.desc",
-    limit: String(Math.min(days * 2, 12000)),
-  });
+  if (!Number.isSafeInteger(days) || days <= 0) return [];
+  const qs = new URLSearchParams({ select: SELECT_COLS, symbol: `eq.${symbol}` });
+  const rows = await readUniqueHistoryRows<HistoryRow>(e, qs, days);
+  if (rows === null) return []; // Incomplete reads are never cached as complete history.
 
-  let rows: HistoryRow[] = [];
-  try {
-    const res = await fetch(`${e.url}/rest/v1/symbol_history?${qs}`, {
-      headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
-      signal: AbortSignal.timeout(10000),
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    rows = (await res.json()) as HistoryRow[];
-  } catch {
-    return [];
-  }
-
-  // dedupe: اولین ردیف هر trade_date (چون order = date desc, id desc → جدیدترین id)
-  const byDate = new Map<string, HistoryRow>();
-  for (const r of rows) {
-    if (!byDate.has(r.trade_date)) byDate.set(r.trade_date, r);
-  }
-
-  const out: HistoryDay[] = [...byDate.values()]
+  const out: HistoryDay[] = rows
     .slice(0, days)
     .map((r) => ({
       trade_date: r.trade_date,
@@ -132,4 +110,47 @@ function numOrNull(x: unknown): number | null {
   if (x == null) return null;
   const n = typeof x === "number" ? x : Number(x);
   return isFinite(n) ? n : null;
+}
+
+/** Keyset pagination survives server row caps and duplicate append-only versions.
+ * null means failed/incomplete; [] means a verified empty response. A short page
+ * is not EOF because PostgREST may impose a cap smaller than our requested limit.
+ */
+export async function readUniqueHistoryRows<T extends { id: number; trade_date: string }>(
+  credentials: { url: string; anon: string }, query: URLSearchParams, days: number,
+  eligible: (row: T) => boolean = () => true,
+): Promise<T[] | null> {
+  const byDate = new Map<string, T>();
+  const signal = AbortSignal.timeout(20_000);
+  let cursor: T | null = null;
+  let accepted = 0;
+  try {
+    for (let page = 0; page < 24; page++) {
+      const qs = new URLSearchParams(query);
+      qs.set('order', 'trade_date.desc,id.desc'); qs.set('limit', '500');
+      if (cursor) qs.set('or', `(trade_date.lt.${cursor.trade_date},and(trade_date.eq.${cursor.trade_date},id.lt.${cursor.id}))`);
+      const response = await fetch(`${credentials.url}/rest/v1/symbol_history?${qs}`, {
+        headers: { apikey: credentials.anon, Authorization: `Bearer ${credentials.anon}` },
+        signal, cache: 'no-store', redirect: 'error',
+      });
+      if (!response.ok) return null;
+      const rows: unknown = await response.json();
+      if (!Array.isArray(rows) || rows.length > 500) return null;
+      if (!rows.length) return [...byDate.values()];
+      for (const item of rows) {
+        const row = item as T;
+        if (!row || !Number.isSafeInteger(row.id) || row.id <= 0 || typeof row.trade_date !== 'string' ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(row.trade_date) || !Number.isFinite(Date.parse(row.trade_date)) ||
+          new Date(row.trade_date).toISOString().slice(0,10) !== row.trade_date) return null;
+        if (cursor && (row.trade_date > cursor.trade_date || (row.trade_date === cursor.trade_date && row.id >= cursor.id))) return null;
+        cursor = row;
+        if (!byDate.has(row.trade_date)) {
+          byDate.set(row.trade_date, row);
+          if (eligible(row)) accepted++;
+        }
+        if (accepted >= days) return [...byDate.values()];
+      }
+    }
+  } catch { return null; }
+  return null; // Explicit scan bound reached without proving requested coverage or EOF.
 }

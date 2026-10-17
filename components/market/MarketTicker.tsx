@@ -5,7 +5,7 @@ import {
   formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor,
 } from "@/lib/format";
 import { selectTickerAssets, type TickerAsset } from "@/lib/market-ticker-select";
-import { computeFreshness } from "@/lib/market-freshness";
+import { computeTickerFreshness, type TickerFreshnessPayload } from "@/lib/market-freshness";
 
 const REFRESH_MS = 5 * 60 * 1000; // هم‌گام با کشِ سرور
 const TICK_MS = 30 * 1000;        // فقط ساعتِ نمایش؛ درخواستِ تازه نمی‌زند
@@ -30,7 +30,7 @@ const TICK_MS = 30 * 1000;        // فقط ساعتِ نمایش؛ درخواس
  */
 export default function MarketTicker() {
   const [assets, setAssets] = useState<TickerAsset[] | null>(null);
-  const [stamps, setStamps] = useState<{ ir: number | null; global: number | null }>({ ir: null, global: null });
+  const [payload, setPayload] = useState<TickerFreshnessPayload>({});
   const [now, setNow] = useState<number>(() => Date.now());
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -50,10 +50,7 @@ export default function MarketTicker() {
         const json = await res.json();
         if (!alive) return;
         setAssets(selectTickerAssets(json));
-        setStamps({
-          ir: typeof json?.ir?.fetchedAt === "number" ? json.ir.fetchedAt : null,
-          global: typeof json?.fetchedAt === "number" ? json.fetchedAt : null,
-        });
+        setPayload(json);
       } catch {
         if (alive) setAssets([]);
       }
@@ -73,13 +70,7 @@ export default function MarketTicker() {
   // لودینگ یا نبودِ داده → نوار اصلاً ظاهر نمی‌شود (ارتفاعِ صفر از ابتدا، بدون CLS).
   if (!assets || assets.length === 0) return null;
 
-  const freshness = computeFreshness({
-    irFetchedAt: stamps.ir,
-    globalFetchedAt: stamps.global,
-    usesIr: assets.some((a) => a.origin === "ir"),
-    usesGlobal: assets.some((a) => a.origin === "global"),
-    now,
-  });
+  const freshness = computeTickerFreshness(payload, now);
 
   const row = (a: TickerAsset) => (
     <li key={a.id} className="inline-flex items-center gap-2 px-5 text-xs whitespace-nowrap">

@@ -208,6 +208,6 @@ describe("ساختارِ نوار — دسترس‌پذیری و حرکت", () =
   });
 
   test("نوار روی مهرِ زمانیِ مشترک حساب می‌کند، نه Date.now()ِ خام", () => {
-    assert.match(src(), /computeFreshness\(/, "تازگی باید از ماژولِ مشترک بیاید");
+    assert.match(src(), /computeTickerFreshness\(payload, now\)/, "تازگی باید از ساعت قیمت و دریافتِ ماژول مشترک بیاید");
   });
 });
