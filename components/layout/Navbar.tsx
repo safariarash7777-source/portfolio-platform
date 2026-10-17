@@ -82,7 +82,7 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
 
   return (
     <header
-      className="sticky top-0 z-50 transition-all"
+      className="site-navigation sticky top-0 z-50 transition-all"
       style={{
         background: "var(--nav-bg)",
         backdropFilter: "saturate(180%) blur(12px)",

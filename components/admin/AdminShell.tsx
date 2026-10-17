@@ -214,7 +214,7 @@ export default function AdminShell({
   );
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+    <div className="admin-workspace min-h-screen" style={{ background: "var(--bg)" }}>
       {/* Mobile top bar */}
       <div
         className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-16 border-b"

@@ -10,7 +10,7 @@
   max-width:1360px;
   margin:auto;
   padding:24px 40px 40px;
-  background:var(--bg);
+  background:radial-gradient(ellipse at 90% 5%, color-mix(in srgb, var(--gold) 5%, transparent), transparent 35%),var(--bg);
   color:var(--text);
   font-size:14px;
   min-height:100vh
@@ -212,16 +212,16 @@
   scroll-margin-top:20px
 }
 .metric {
-  background:var(--surface);
+  background:var(--panel-wash);
   padding:20px 24px;
   border:1px solid var(--line);
   border-radius:var(--desk-radius);
-  box-shadow:var(--shadow-sm);
+  box-shadow:var(--panel-shadow);
   min-width:0
 }
 .metric:hover {
   transform:translateY(-3px);
-  box-shadow:var(--shadow)
+  box-shadow:var(--panel-raised)
 }
 .metric>div,.metric>p {
   display:flex;
@@ -265,7 +265,7 @@
   background:var(--surface);
   border:1px solid var(--line);
   border-radius:var(--desk-radius);
-  box-shadow:var(--shadow);
+  box-shadow:var(--panel-raised);
   min-width:0;
   scroll-margin-top:20px
 }
@@ -847,3 +847,18 @@ to {
 }
 
 }
+
+/* Second pass: compact working density, with raised controls and a flat plot. */
+.header { padding-block: 18px; }
+.intro { padding-block: 24px 18px; }
+.intro h1 { font-size:clamp(26px,2.6vw,34px); }
+.toolbar { box-shadow:var(--panel-shadow); }
+.monogram, .orbit { box-shadow:var(--panel-raised); }
+.orbit { border-bottom:3px solid var(--line-strong); }
+.chart { border-radius:16px; background:var(--surface); }
+.chartTools { padding:12px 14px; border:1px solid var(--line); border-radius:16px; background:var(--bg); }
+.pills button[aria-pressed=true] { box-shadow:inset 0 -2px 0 var(--gold),var(--shadow-sm); }
+.metric { border-top:2px solid var(--line-strong); }
+.metric:first-child { border-top-color:var(--gold); }
+@media(min-width:1500px){.intro{padding-top:28px}}
+@media(max-width:700px){.intro{padding-block:22px 18px}.chartTools{padding:10px}.card{box-shadow:var(--panel-shadow)}}

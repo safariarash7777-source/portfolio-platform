@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { resolveAppUrl } from "@/lib/site-url";
 import localFont from "next/font/local";
 import "./globals.css";
+import "./workspace.css";
 
 /**
  * Vazirmatn — سلف‌هاست، طبقِ قانونِ `CLAUDE.md`: «فونت از CDN لود نکن».
