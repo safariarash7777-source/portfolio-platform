@@ -3,7 +3,7 @@ import AllocationDonut from "./AllocationDonut";
 import PerformanceChart from "./PerformanceChart";
 import HoldingsTable from "./HoldingsTable";
 import { Wallet } from "lucide-react";
-import { formatTomanShort, formatToman, formatJalali, toPersianDigits } from "@/lib/format";
+import { formatTomanShort, formatToman, formatJalali, formatSignedPercent, toPersianDigits } from "@/lib/format";
 import ReadError from "./ReadError";
 
 export interface HoldingDB {
@@ -33,8 +33,7 @@ interface Props {
   readErrors?: Partial<Record<"holdings" | "snapshots" | "transactions", boolean>>;
 }
 
-/** "پرتفوی زنده" — KPI cards, allocation donut, performance chart, holdings & transactions.
- *  Computed from live Supabase data; falls back to a friendly empty state. */
+/** Legacy holdings/performance only; never merged with the versioned balance sheet. */
 export default function LivePortfolio({ holdings, snapshots, transactions, readErrors = {} }: Props) {
   const emptyState = !readErrors.holdings && !readErrors.snapshots && holdings.length === 0 && snapshots.length === 0 ? (
       <div className="card p-8 text-center">
@@ -43,24 +42,25 @@ export default function LivePortfolio({ holdings, snapshots, transactions, readE
           <Wallet size={24} />
         </div>
         <h3 className="font-display font-bold text-lg mb-2" style={{ color: "var(--navy-deep)" }}>
-          پرتفوی زنده‌ی شما هنوز خالی است
+          سوابق قبلی سبد هنوز خالی است
         </h3>
         <p className="text-sm leading-7 max-w-sm mx-auto" style={{ color: "var(--text-2)" }}>
-          پس از ثبت دارایی‌ها توسط مشاور، ارزش لحظه‌ای، تخصیص دارایی و روند عملکرد سبد شما در همین بخش
-          نمایش داده خواهد شد.
+          این بخش سوابق قبلی سبد را نشان می‌دهد. برای ثبت و اصلاح دارایی و بدهی خود، از پروندهٔ مالی بالای صفحه استفاده کنید؛ ثبت‌های نسخه‌دار به این سوابق تبدیل نمی‌شوند.
         </p>
       </div>
     ) : null;
 
   const withValue = holdings.map((h) => ({ ...h, value: h.qty * h.current_price }));
-  const total = withValue.reduce((s, h) => s + h.value, 0);
-  const dayPnl = withValue.reduce((s, h) => s + (h.value * h.day_change_pct) / 100, 0);
-  const dayChangePct = total ? (dayPnl / total) * 100 : 0;
+  const valuesKnown = holdings.length > 0 && withValue.every(h => Number.isFinite(h.value) && Number.isFinite(h.qty) && Number.isFinite(h.current_price));
+  const total = valuesKnown ? withValue.reduce((s, h) => s + h.value, 0) : null;
+  const dayPnl = valuesKnown && withValue.every(h => Number.isFinite(h.day_change_pct))
+    ? withValue.reduce((s, h) => s + (h.value * h.day_change_pct) / 100, 0) : null;
+  const dayChangePct = total !== null && total > 0 && dayPnl !== null ? (dayPnl / total) * 100 : null;
 
   const periodReturn =
-    snapshots.length >= 2
+    snapshots.length >= 2 && snapshots[0].value > 0 && snapshots.every(s => Number.isFinite(s.value))
       ? ((snapshots[snapshots.length - 1].value - snapshots[0].value) / snapshots[0].value) * 100
-      : 0;
+      : null;
 
   // allocation grouped by asset class
   const byClass = new Map<string, number>();
@@ -74,7 +74,7 @@ export default function LivePortfolio({ holdings, snapshots, transactions, readE
     price: h.current_price,
     value: h.value,
     dayChangePct: h.day_change_pct,
-    weight: total ? +((h.value / total) * 100).toFixed(1) : 0,
+    weight: total !== null && total > 0 ? +((h.value / total) * 100).toFixed(1) : 0,
   }));
 
   const perf = snapshots.map((s) => ({ date: s.as_of, value: s.value }));
@@ -83,17 +83,18 @@ export default function LivePortfolio({ holdings, snapshots, transactions, readE
     <div className="space-y-5">
       {emptyState ?? <>
       <div>
-        <span className="eyebrow">پرتفوی زنده</span>
+        <span className="eyebrow">سوابق قبلی سبد</span>
         <h2 className="font-display text-xl md:text-2xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
-          نمای کلی دارایی‌ها
+          دارایی و عملکرد ثبت‌شده در سوابق قبلی
         </h2>
+        <p className="text-sm leading-7 mt-2" style={{ color: "var(--text-3)" }}>این سوابق از ثبت‌های نسخه‌دار دارایی و بدهی بالای صفحه جداست. ارقام این بخش، خالص ثروت یا ارزش کل دارایی‌های شما نیست.</p>
       </div>
 
       {/* KPI row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {!readErrors.holdings && <KpiCard label="ارزش کل دارایی" value={formatTomanShort(total)} />}
-        {!readErrors.snapshots && (!readErrors.holdings || snapshots.length > 0) && <KpiCard label="بازده دوره" value={formatTomanShort(snapshots.at(-1)?.value ?? total).replace(" تومان", " ت")} delta={periodReturn} hint="بر اساس روند ثبت‌شده" />}
-        {!readErrors.holdings && <KpiCard label="سود/زیان امروز" value={formatToman(Math.round(dayPnl))} delta={dayChangePct} />}
+        {!readErrors.holdings && <KpiCard label="ارزش ثبت‌شدهٔ دارایی" value={total === null ? "نامشخص" : formatTomanShort(total)} />}
+        {!readErrors.snapshots && (!readErrors.holdings || snapshots.length > 0) && <KpiCard label="بازده دوره" value={periodReturn === null ? "نامشخص" : formatSignedPercent(periodReturn)} hint={periodReturn === null ? "برای بازده، حداقل دو ثبت معتبر با مقدار آغازین مثبت لازم است." : "بر اساس روند ثبت‌شدهٔ قبلی"} />}
+        {!readErrors.holdings && <KpiCard label="سود/زیان ثبت‌شدهٔ روز" value={dayPnl === null ? "نامشخص" : formatToman(Math.round(dayPnl))} delta={dayChangePct ?? undefined} />}
         {!readErrors.holdings && <KpiCard label="تعداد دارایی" value={toPersianDigits(holdings.length)} hint="نماد فعال در سبد" />}
       </div>
 
@@ -103,15 +104,15 @@ export default function LivePortfolio({ holdings, snapshots, transactions, readE
           <h3 className="font-display font-bold text-lg mb-4" style={{ color: "var(--navy-deep)" }}>
             تخصیص دارایی
           </h3>
-          <AllocationDonut data={allocation} centerLabel="ارزش کل" centerValue={formatTomanShort(total)} />
+          {total !== null && total > 0 ? <AllocationDonut data={allocation} centerLabel="ارزش ثبت‌شده" centerValue={formatTomanShort(total)} /> : <p className="text-sm">اطلاعات کافی برای نمایش ترکیب دارایی در سوابق قبلی موجود نیست.</p>}
         </div>}
         <div className="lg:col-span-2">
-          {readErrors.snapshots ? <ReadError label="روند ارزش سبد" code="DASHBOARD_SNAPSHOTS" /> : <PerformanceChart data={perf} />}
+          {readErrors.snapshots ? <ReadError label="روند ارزش سبد" code="DASHBOARD_SNAPSHOTS" /> : <PerformanceChart data={periodReturn === null ? [] : perf} />}
         </div>
       </div>
 
       {/* Holdings */}
-      {!readErrors.holdings && holdingRows.length > 0 && <HoldingsTable rows={holdingRows} />}
+      {!readErrors.holdings && valuesKnown && total !== null && total > 0 && <HoldingsTable rows={holdingRows} />}
       </>}
 
       {/* Recent transactions */}
