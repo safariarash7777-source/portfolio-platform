@@ -656,12 +656,52 @@
   scrollbar-gutter: stable;
 }
 @media (min-width: 761px) {
-  .market { order: 0; }
-  .chart { order: 1; }
-  .alerts { order: 2; }
-  .opportunities { order: 3; }
-  .reports { order: 4; }
-  .research { order: 5; }
-  .layout2 .opportunities { order: 2; }
-  .layout2 .alerts { order: 3; }
+  .heading {
+    margin-bottom: 12px;
+  }
+  .heading .eyebrow {
+    display: none;
+  }
+  .heading h1 {
+    font-size: 24px;
+  }
+  .market {
+    padding: 16px 21px;
+  }
+  .market .panelHeader {
+    margin-bottom: 8px;
+  }
+  .metrics strong {
+    font-size: 26px;
+  }
+  .metrics .sourceDate {
+    font-size: 15px;
+  }
+  .market {
+    order: 0;
+  }
+  .chart {
+    order: 1;
+  }
+  .alerts {
+    order: 2;
+  }
+  .opportunities {
+    order: 3;
+  }
+  .reports {
+    order: 4;
+  }
+  .research {
+    order: 5;
+  }
+  .layout2 .opportunities {
+    order: 2;
+  }
+  .layout2 .alerts {
+    order: 3;
+  }
 }
+.chartStage > div > p {
+  display: none;
+} /* Source/coverage text is shown once in the workspace footer. */

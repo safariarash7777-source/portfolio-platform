@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { authSessionFailure } from "@/lib/auth/session-error";
 import {
   parseDeskPreferenceReceipt,
   parseDeskPreferenceWrite,
@@ -14,7 +15,11 @@ async function gate() {
     data: { user },
     error,
   } = await client.auth.getUser();
-  if (error || !user) return { error: failure("نشست معتبر لازم است.", 401) };
+  const authFailure = authSessionFailure(error);
+  if (authFailure === 503)
+    return { error: failure("بررسی نشست اکنون ممکن نیست.", 503) };
+  if (authFailure === 401 || !user)
+    return { error: failure("نشست معتبر لازم است.", 401) };
   const { data: profile, error: roleError } = await client
     .from("profiles")
     .select("role")
@@ -36,7 +41,7 @@ export async function GET() {
     if (error)
       return failure(
         "تنظیمات حساب خوانده نشد؛ مقدار پیش‌فرض به‌عنوان ذخیره‌شده نمایش داده نمی‌شود.",
-        503,
+        error.code === "42501" ? 403 : 503,
       );
     return NextResponse.json(parseDeskPreferenceReceipt(data), { headers });
   } catch {
@@ -72,7 +77,7 @@ export async function PUT(req: NextRequest) {
         error.code === "40001"
           ? "تنظیمات در نشست دیگری تغییر کرده؛ ورودی شما حفظ شده است."
           : "ذخیره تأیید نشد؛ ورودی شما حفظ شده است.",
-        error.code === "40001" ? 409 : 503,
+        error.code === "40001" ? 409 : error.code === "42501" ? 403 : 503,
       );
     return NextResponse.json(parseDeskPreferenceReceipt(data), { headers });
   } catch {

@@ -235,33 +235,40 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
       </ul>
     ) : (
       <Empty>
-        {data.market.data
-          ? "در دادهٔ قابل بررسی، موردی مطابق این قواعد ثبت نشد."
-          : "دادهٔ بازار در دسترس نیست؛ نبود مشاهده به معنی نبود مسئله نیست."}
+        {quality.state === "empty"
+          ? "منبع پاسخ معتبر بدون داده داده است؛ داده‌ای برای اجرای قواعد نیست."
+          : data.market.data
+            ? engine.coverage.some((row) => row.examined > 0)
+              ? "در دادهٔ قابل بررسی، موردی مطابق این قواعد ثبت نشد."
+              : "دادهٔ کافی برای اجرای قواعد وجود ندارد؛ پوشش را بررسی کنید."
+            : "دادهٔ بازار در دسترس نیست؛ نبود مشاهده به معنی نبود مسئله نیست."}
       </Empty>
     );
   const chart = (
     <>
       <div className={s.chartStage}>
         {data.chart.state === "ready" ? (
-          <IndexTrendChart series={series} />
+          <IndexTrendChart series={series} height={220} />
         ) : (
           <Empty>
             {data.chart.reason ?? "تاریخچهٔ شاخص هنوز ثبت نشده است."}
           </Empty>
         )}
       </div>
-      <p className={s.note}>
-        منبع: تاریخچهٔ شاخص، پایان روز · آخرین تاریخ هر سری:{" "}
-        {data.chart.data
-          .map(
-            (row) =>
-              `${row.faName}: ${toPersianDigits(row.points.at(-1)?.jdate ?? "—")}`,
-          )
-          .join(" · ") || "ثبت نشده"}
+      <details className={s.note}>
+        <summary>
+          منبع و زمان تاریخچه · آخرین نقطه:{" "}
+          {data.chart.data
+            .map(
+              (row) =>
+                `${row.faName}: ${toPersianDigits(row.points.at(-1)?.jdate ?? "—")}`,
+            )
+            .join(" · ") || "ثبت نشده"}
+        </summary>
+        منبع: تاریخچهٔ شاخص، یک نقطه به‌ازای پایان هر روز معاملاتی.
         <br />
         زمان دریافت تاریخچه ثبت نشده · خواندن صفحه: {stamp(data.readAt)}
-      </p>
+      </details>
     </>
   );
   return (
