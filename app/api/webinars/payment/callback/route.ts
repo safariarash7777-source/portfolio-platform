@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { verifyPayment } from "@/lib/zarinpal";
-import { uuid, authority as validAuthority, refId, paymentContext, settledReceipt, rejectedReceipt } from "@/lib/webinars/contracts";
+import { uuid, authority as validAuthority, refId, paymentContext, settledReceipt, rejectedReceipt, record } from "@/lib/webinars/contracts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await admin.rpc("read_webinar_payment_context", { p_authority: authority, p_registration_id: registrationId });
     const context = error ? null : paymentContext(data, authority, registrationId);
     if (!context) return result("unknown");
-    if (context.payment_status === "paid") return result("success", context.webinar_id);
+    if (context.payment_status === "paid") return result(context.access_qualified ? "success" : "paid_pending_resolution", context.webinar_id);
     if (context.payment_status === "failed") return result("failed", context.webinar_id);
     const proof = await verifyPayment(authority, context.amount);
     if (proof.outcome === "unknown") return result("unknown", context.webinar_id);
@@ -35,7 +35,9 @@ export async function GET(req: NextRequest) {
     }
     if (proof.outcome !== "verified" || ![100, 101].includes(proof.code) || !refId(proof.refId)) return result("unknown", context.webinar_id);
     const { data: receipt, error: settleError } = await admin.rpc("settle_webinar_payment", { ...binding, p_ref_id: proof.refId });
-    return result(!settleError && settledReceipt(receipt, context, proof.refId) ? "success" : "unknown", context.webinar_id);
+    return result(!settleError && settledReceipt(receipt, context, proof.refId)
+      ? (record(receipt) && receipt.fulfillment_state === "paid_pending_resolution" ? "paid_pending_resolution" : "success")
+      : "unknown", context.webinar_id);
   } catch {
     return result("unknown");
   }

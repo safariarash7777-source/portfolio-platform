@@ -1,0 +1,1108 @@
+{
+  "capturedAt": "2026-10-17T18:01:06.130Z",
+  "mode": "READ_ONLY_CATALOG_AND_AGGREGATES",
+  "target": "attested primary portfolio-stage-db-1/postgres",
+  "sqlSHA256": "3f0dcdb3bbad0619ce521c2ecb437c03b24cc414613d93589deb3be310363ae6",
+  "statementTimeout": "10s",
+  "lockTimeout": "1s",
+  "transactionEnd": "ROLLBACK",
+  "sections": [
+    {
+      "roles": [
+        {
+          "role": "postgres",
+          "inherit": true,
+          "superuser": false,
+          "bypass_rls": true
+        },
+        {
+          "role": "authenticated",
+          "inherit": true,
+          "superuser": false,
+          "bypass_rls": false
+        },
+        {
+          "role": "anon",
+          "inherit": true,
+          "superuser": false,
+          "bypass_rls": false
+        },
+        {
+          "role": "service_role",
+          "inherit": true,
+          "superuser": false,
+          "bypass_rls": true
+        }
+      ],
+      "tables": [
+        {
+          "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+          "rls": true,
+          "name": "audit_log",
+          "owner": "postgres",
+          "columns": [
+            {
+              "name": "id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "actor_id",
+              "type": "uuid",
+              "not_null": false
+            },
+            {
+              "name": "action",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "entity",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "target_user_id",
+              "type": "uuid",
+              "not_null": false
+            },
+            {
+              "name": "before",
+              "type": "jsonb",
+              "not_null": false
+            },
+            {
+              "name": "after",
+              "type": "jsonb",
+              "not_null": false
+            },
+            {
+              "name": "created_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            }
+          ],
+          "triggers": [
+            {
+              "name": "no_mutation",
+              "enabled": "O",
+              "definition_hash": "d4f7811d2a02cf3f4d86bb68b2a2b19b"
+            }
+          ],
+          "force_rls": false,
+          "constraints": [
+            {
+              "name": "audit_log_pkey",
+              "type": "p",
+              "definition_hash": "4c6419b3704337bbfe50f018842a9ad3"
+            }
+          ],
+          "effective_acl": [
+            {
+              "role": "anon",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "authenticated",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "service_role",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=arwdDxtm/postgres,anon=arwdm/postgres,authenticated=arwdm/postgres,service_role=arwdm/postgres}",
+          "rls": true,
+          "name": "entitlements",
+          "owner": "postgres",
+          "columns": [
+            {
+              "name": "id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "user_id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "kind",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "source",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "starts_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            },
+            {
+              "name": "expires_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            },
+            {
+              "name": "revoked_at",
+              "type": "timestamp with time zone",
+              "not_null": false
+            },
+            {
+              "name": "granted_by",
+              "type": "uuid",
+              "not_null": false
+            },
+            {
+              "name": "note",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "created_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            }
+          ],
+          "triggers": [
+            {
+              "name": "trg_entitlements_guard",
+              "enabled": "O",
+              "definition_hash": "21b7f0f088a7973da86b059388a9d064"
+            }
+          ],
+          "force_rls": false,
+          "constraints": [
+            {
+              "name": "entitlements_granted_by_fkey",
+              "type": "f",
+              "definition_hash": "fa6ce2a8c9d9973a6c49cd26bce25d81"
+            },
+            {
+              "name": "entitlements_kind_check",
+              "type": "c",
+              "definition_hash": "22101e9b70446f7f5a7d2d50039edb77"
+            },
+            {
+              "name": "entitlements_pkey",
+              "type": "p",
+              "definition_hash": "4c6419b3704337bbfe50f018842a9ad3"
+            },
+            {
+              "name": "entitlements_user_id_fkey",
+              "type": "f",
+              "definition_hash": "f52ea365e97de6e8cafd675b03a940e4"
+            }
+          ],
+          "effective_acl": [
+            {
+              "role": "anon",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": false
+            },
+            {
+              "role": "authenticated",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": false
+            },
+            {
+              "role": "service_role",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": false
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=arwdDxtm/postgres,anon=arwdm/postgres,authenticated=arwdm/postgres,service_role=arwdm/postgres}",
+          "rls": true,
+          "name": "payments",
+          "owner": "postgres",
+          "columns": [
+            {
+              "name": "id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "user_id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "amount",
+              "type": "integer",
+              "not_null": true
+            },
+            {
+              "name": "authority",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "ref_id",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "invite_link",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "created_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            },
+            {
+              "name": "verified_at",
+              "type": "timestamp with time zone",
+              "not_null": false
+            }
+          ],
+          "triggers": [
+            {
+              "name": "payments_guard_update",
+              "enabled": "O",
+              "definition_hash": "cc3311c31d3f52c3d59505b6b6d1daa6"
+            },
+            {
+              "name": "payments_no_delete",
+              "enabled": "O",
+              "definition_hash": "ecc7e9b5aead82437b84c4f83aed4d64"
+            }
+          ],
+          "force_rls": false,
+          "constraints": [
+            {
+              "name": "payments_authority_key",
+              "type": "u",
+              "definition_hash": "2275ee91b3b50ff47640d42841efaa39"
+            },
+            {
+              "name": "payments_pkey",
+              "type": "p",
+              "definition_hash": "4c6419b3704337bbfe50f018842a9ad3"
+            },
+            {
+              "name": "payments_status_check",
+              "type": "c",
+              "definition_hash": "61c8f98747d5e7bf1db80852f01a5976"
+            }
+          ],
+          "effective_acl": [
+            {
+              "role": "anon",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": false
+            },
+            {
+              "role": "authenticated",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": false
+            },
+            {
+              "role": "service_role",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": false
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+          "rls": true,
+          "name": "profiles",
+          "owner": "postgres",
+          "columns": [
+            {
+              "name": "id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "full_name",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "national_id",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "phone",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "email",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "role",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "created_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            },
+            {
+              "name": "updated_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            }
+          ],
+          "triggers": [
+            {
+              "name": "recovery_profile_role_guard",
+              "enabled": "O",
+              "definition_hash": "96995b24da2b11f0e31e3affedfcaf40"
+            }
+          ],
+          "force_rls": false,
+          "constraints": [
+            {
+              "name": "profiles_id_fkey",
+              "type": "f",
+              "definition_hash": "0061c9fb3a9abcf2edbcd4a42467a9c3"
+            },
+            {
+              "name": "profiles_pkey",
+              "type": "p",
+              "definition_hash": "4c6419b3704337bbfe50f018842a9ad3"
+            },
+            {
+              "name": "profiles_role_check",
+              "type": "c",
+              "definition_hash": "abef0a2c4476fb05e68bd9a7a260e478"
+            }
+          ],
+          "effective_acl": [
+            {
+              "role": "anon",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "authenticated",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "service_role",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+          "rls": true,
+          "name": "webinar_registrations",
+          "owner": "postgres",
+          "columns": [
+            {
+              "name": "id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "webinar_id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "user_id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "payment_status",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "payment_id",
+              "type": "uuid",
+              "not_null": false
+            },
+            {
+              "name": "attended",
+              "type": "boolean",
+              "not_null": true
+            },
+            {
+              "name": "invite_sent",
+              "type": "boolean",
+              "not_null": true
+            },
+            {
+              "name": "invite_link",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "registered_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            }
+          ],
+          "triggers": null,
+          "force_rls": false,
+          "constraints": [
+            {
+              "name": "webinar_registrations_payment_id_fkey",
+              "type": "f",
+              "definition_hash": "e8df284440e06d0e7f0503e22a1daa2b"
+            },
+            {
+              "name": "webinar_registrations_payment_status_check",
+              "type": "c",
+              "definition_hash": "fe8a0e7657001d1d22cdf8681b47518d"
+            },
+            {
+              "name": "webinar_registrations_pkey",
+              "type": "p",
+              "definition_hash": "4c6419b3704337bbfe50f018842a9ad3"
+            },
+            {
+              "name": "webinar_registrations_user_id_fkey",
+              "type": "f",
+              "definition_hash": "85d8b2f5f0c0f6b4dcb854efb61a8cb1"
+            },
+            {
+              "name": "webinar_registrations_webinar_id_fkey",
+              "type": "f",
+              "definition_hash": "d878b90632c36dcdac891ef01f8494f2"
+            },
+            {
+              "name": "webinar_registrations_webinar_id_user_id_key",
+              "type": "u",
+              "definition_hash": "7d46038cf110ebd1ab8953a4c2dfe2e7"
+            }
+          ],
+          "effective_acl": [
+            {
+              "role": "anon",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "authenticated",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "service_role",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+          "rls": true,
+          "name": "webinars",
+          "owner": "postgres",
+          "columns": [
+            {
+              "name": "id",
+              "type": "uuid",
+              "not_null": true
+            },
+            {
+              "name": "title",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "starts_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            },
+            {
+              "name": "ends_at",
+              "type": "timestamp with time zone",
+              "not_null": false
+            },
+            {
+              "name": "registration_open",
+              "type": "boolean",
+              "not_null": true
+            },
+            {
+              "name": "max_capacity",
+              "type": "integer",
+              "not_null": false
+            },
+            {
+              "name": "price_toman",
+              "type": "integer",
+              "not_null": true
+            },
+            {
+              "name": "platform",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "platform_url",
+              "type": "text",
+              "not_null": false
+            },
+            {
+              "name": "status",
+              "type": "text",
+              "not_null": true
+            },
+            {
+              "name": "invites_sent",
+              "type": "boolean",
+              "not_null": true
+            },
+            {
+              "name": "created_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            },
+            {
+              "name": "updated_at",
+              "type": "timestamp with time zone",
+              "not_null": true
+            }
+          ],
+          "triggers": [
+            {
+              "name": "webinars_updated_at",
+              "enabled": "O",
+              "definition_hash": "5b71bd1fb5f2719c63c1b5e0fdc52fc4"
+            }
+          ],
+          "force_rls": false,
+          "constraints": [
+            {
+              "name": "webinars_pkey",
+              "type": "p",
+              "definition_hash": "4c6419b3704337bbfe50f018842a9ad3"
+            },
+            {
+              "name": "webinars_status_check",
+              "type": "c",
+              "definition_hash": "381968a2fb988fbb1ab9cfedf1c45c16"
+            }
+          ],
+          "effective_acl": [
+            {
+              "role": "anon",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "authenticated",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            },
+            {
+              "role": "service_role",
+              "delete": true,
+              "insert": true,
+              "select": true,
+              "update": true,
+              "truncate": true
+            }
+          ]
+        }
+      ],
+      "section": "catalog",
+      "policies": [
+        {
+          "name": "entitlements_insert_admin",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "entitlements",
+          "command": "a",
+          "check_hash": "787d8c38f72e6a03d54005aa3f18d39a",
+          "permissive": true,
+          "using_hash": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "entitlements_select_admin",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "entitlements",
+          "command": "r",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "787d8c38f72e6a03d54005aa3f18d39a"
+        },
+        {
+          "name": "entitlements_select_own",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "entitlements",
+          "command": "r",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "19300d155780585259ede73ac370586c"
+        },
+        {
+          "name": "entitlements_update_admin",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "entitlements",
+          "command": "w",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "787d8c38f72e6a03d54005aa3f18d39a"
+        },
+        {
+          "name": "payments_self_read",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "payments",
+          "command": "r",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "6742181ab65a8d27c5ff8bcd47790404"
+        },
+        {
+          "name": "profiles_admin_update",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "profiles",
+          "command": "w",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "5533b5b0c6cb6bc41c771c2f6a2c8f37"
+        },
+        {
+          "name": "profiles_self_insert",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "profiles",
+          "command": "a",
+          "check_hash": "0f075cd605740edc109c4117b369cb4f",
+          "permissive": true,
+          "using_hash": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "profiles_self_read",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "profiles",
+          "command": "r",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "822e421dda501eb75fa06e2612916f2b"
+        },
+        {
+          "name": "profiles_self_update",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "profiles",
+          "command": "w",
+          "check_hash": "0f075cd605740edc109c4117b369cb4f",
+          "permissive": true,
+          "using_hash": "bc9c729a84690340789a4e4f01175335"
+        },
+        {
+          "name": "wr_admin_all",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "webinar_registrations",
+          "command": "*",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "5533b5b0c6cb6bc41c771c2f6a2c8f37"
+        },
+        {
+          "name": "wr_user_insert",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "webinar_registrations",
+          "command": "a",
+          "check_hash": "19300d155780585259ede73ac370586c",
+          "permissive": true,
+          "using_hash": "d41d8cd98f00b204e9800998ecf8427e"
+        },
+        {
+          "name": "wr_user_read",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "webinar_registrations",
+          "command": "r",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "19300d155780585259ede73ac370586c"
+        },
+        {
+          "name": "webinars_admin_all",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "webinars",
+          "command": "*",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "5533b5b0c6cb6bc41c771c2f6a2c8f37"
+        },
+        {
+          "name": "webinars_public_read",
+          "roles": [
+            "PUBLIC"
+          ],
+          "table": "webinars",
+          "command": "r",
+          "check_hash": "d41d8cd98f00b204e9800998ecf8427e",
+          "permissive": true,
+          "using_hash": "23d6d182e12705f03a05895dd466025f"
+        }
+      ],
+      "functions": [
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=public"
+          ],
+          "signature": "create_payment(integer,text)",
+          "definition_hash": "16f97a269acfa33433a9ee7bc0c49948",
+          "security_definer": true,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": false
+            },
+            {
+              "role": "authenticated",
+              "execute": false
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=public"
+          ],
+          "signature": "fail_payment(text)",
+          "definition_hash": "141329ef31bb479e885fb8d3f1e53cfd",
+          "security_definer": true,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": false
+            },
+            {
+              "role": "authenticated",
+              "execute": false
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "fn_entitlements_guard()",
+          "definition_hash": "47d9751d7239084cb890638cac0dacfd",
+          "security_definer": false,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": false
+            },
+            {
+              "role": "authenticated",
+              "execute": false
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "fn_user_access(uuid)",
+          "definition_hash": "5ad19a23dadb52618527fcfa419521d4",
+          "security_definer": false,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": true
+            },
+            {
+              "role": "authenticated",
+              "execute": true
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=public"
+          ],
+          "signature": "is_admin()",
+          "definition_hash": "0b1499ddd10411e7c9bb9c5020c65683",
+          "security_definer": true,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": true
+            },
+            {
+              "role": "authenticated",
+              "execute": true
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "payments_guard()",
+          "definition_hash": "d911a4f6c2b59bc947bde99f667f0cac",
+          "security_definer": false,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": false
+            },
+            {
+              "role": "authenticated",
+              "execute": false
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=public"
+          ],
+          "signature": "register_for_webinar(uuid)",
+          "definition_hash": "1fef0c5c8a70a4d67deddd0ca9ae489d",
+          "security_definer": true,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": false
+            },
+            {
+              "role": "authenticated",
+              "execute": true
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=public"
+          ],
+          "signature": "verify_payment(text,text,integer,text)",
+          "definition_hash": "4781bfbba348a56bf8759c28909a05a4",
+          "security_definer": true,
+          "effective_execute": [
+            {
+              "role": "anon",
+              "execute": false
+            },
+            {
+              "role": "authenticated",
+              "execute": false
+            },
+            {
+              "role": "service_role",
+              "execute": true
+            }
+          ]
+        }
+      ],
+      "read_only": "on",
+      "captured_at": "2026-10-17T18:01:06.04768+00:00",
+      "default_acl": [
+        {
+          "acl": "{postgres=rwU/postgres,anon=rwU/postgres,authenticated=rwU/postgres,service_role=rwU/postgres}",
+          "type": "S",
+          "owner": "postgres",
+          "schema": "public"
+        },
+        {
+          "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+          "type": "f",
+          "owner": "postgres",
+          "schema": "public"
+        },
+        {
+          "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+          "type": "r",
+          "owner": "postgres",
+          "schema": "public"
+        }
+      ],
+      "schema_usage": [
+        {
+          "role": "anon",
+          "public_usage": true,
+          "public_create": false
+        },
+        {
+          "role": "authenticated",
+          "public_usage": true,
+          "public_create": false
+        },
+        {
+          "role": "service_role",
+          "public_usage": true,
+          "public_create": false
+        }
+      ],
+      "server_version": "17.6"
+    },
+    {
+      "rows": 0,
+      "table": "entitlements",
+      "section": "aggregate"
+    },
+    {
+      "rows": 0,
+      "table": "payments",
+      "section": "aggregate"
+    },
+    {
+      "rows": 0,
+      "table": "webinar_registrations",
+      "section": "aggregate"
+    },
+    {
+      "rows": 0,
+      "table": "webinars",
+      "section": "aggregate"
+    },
+    {
+      "free": 0,
+      "paid": 0,
+      "other": 0,
+      "pending": 0,
+      "section": "registration_status_counts",
+      "refunded": 0
+    }
+  ]
+}
