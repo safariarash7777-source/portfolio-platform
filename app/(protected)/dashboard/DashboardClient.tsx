@@ -31,6 +31,7 @@ import type { ScorePoint } from "@/components/dashboard/ScoreEvolution";
 import RiskRevalidationBanner from "@/components/dashboard/RiskRevalidationBanner";
 import RiskPlanCard from "@/components/dashboard/RiskPlanCard";
 import PortfolioVersionHistory from "@/components/dashboard/PortfolioVersionHistory";
+import ReadError from "@/components/dashboard/ReadError";
 import { formatJalali } from "@/lib/format";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -94,6 +95,7 @@ interface Props {
   revalidationExpiredAt: string | null;
   announcements: UserAnnouncement[];
   portfolioVersions: Portfolio[];
+  financialReadErrors?: Partial<Record<"portfolio" | "holdings" | "snapshots" | "transactions" | "payment" | "portfolioVersions", boolean>>;
 }
 
 
@@ -113,6 +115,7 @@ export default function DashboardClient({
   revalidationExpiredAt,
   announcements,
   portfolioVersions,
+  financialReadErrors = {},
 }: Props) {
   const isAdmin = userRole === "admin";
   const { isExpired, daysLeft } = computeRevalidation(
@@ -269,10 +272,14 @@ export default function DashboardClient({
         <WithAssessment
           assessment={assessment}
           portfolio={portfolio}
+          portfolioReadFailed={financialReadErrors.portfolio}
           onRetake={() => setShowQuiz(true)}
         />
       ) : (
-        <NoAssessment onStart={() => setShowQuiz(true)} />
+        <>
+          <NoAssessment onStart={() => setShowQuiz(true)} />
+          {financialReadErrors.portfolio && <ReadError label="سبد تخصیص‌یافته" code="DASHBOARD_PORTFOLIO" />}
+        </>
       )}
 
       {/* Risk plan & products — based on assessed profile */}
@@ -290,7 +297,7 @@ export default function DashboardClient({
       )}
 
       {/* Portfolio version history */}
-      {portfolioVersions.length > 1 && (
+      {financialReadErrors.portfolioVersions ? <ReadError label="سابقهٔ نسخه‌های سبد" code="DASHBOARD_PORTFOLIO_HISTORY" /> : portfolioVersions.length > 1 && (
         <div className="mt-6">
           <PortfolioVersionHistory versions={portfolioVersions} />
         </div>
@@ -298,12 +305,12 @@ export default function DashboardClient({
 
       {/* Telegram connection + channel access (payment) */}
       <div className="mt-8">
-        <AccessCards telegramLinked={telegramLinked} payment={payment} />
+        <AccessCards telegramLinked={telegramLinked} payment={payment} paymentReadFailed={financialReadErrors.payment} />
       </div>
 
       {/* Live portfolio overview — KPIs, allocation donut, performance, holdings */}
       <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
-        <LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} />
+        <LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} readErrors={financialReadErrors} />
       </div>
     </div>
   );
@@ -402,10 +409,12 @@ function NoAssessment({ onStart }: { onStart: () => void }) {
 function WithAssessment({
   assessment,
   portfolio,
+  portfolioReadFailed,
   onRetake,
 }: {
   assessment: Assessment;
   portfolio: Portfolio | null;
+  portfolioReadFailed?: boolean;
   onRetake: () => void;
 }) {
   const profile = RISK_PROFILES[assessment.risk_category as RiskCategory];
@@ -499,7 +508,7 @@ function WithAssessment({
       </div>
 
       {/* Portfolio section */}
-      {portfolio ? (
+      {portfolioReadFailed ? <ReadError label="سبد تخصیص‌یافته" code="DASHBOARD_PORTFOLIO" /> : portfolio ? (
         <AdminPortfolio portfolio={portfolio} />
       ) : (
         <WaitingPortfolio />

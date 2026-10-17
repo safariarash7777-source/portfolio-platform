@@ -238,6 +238,8 @@ test("جاری: زمانِ قیمتِ آینده هم رد می‌شود", () =>
 /* ── زمانِ NAV از فیدِ جلالیِ رله ─────────────────────────────────────── */
 
 import { navAtIso, TEHRAN_UTC_OFFSET } from "./fundBubble";
+import { sourceTime, iranReadQuality } from '../market-quality';
+import { toMarket } from '../market-ir';
 import { jalaliYmdToGregorian } from "./jalali";
 
 test("navAtIso: تاریخِ جلالی + ساعتِ تهران → ISO درست", () => {
@@ -253,6 +255,47 @@ test("navAtIso: ساعتِ بدونِ ثانیه پذیرفته می‌شود", 
   assert.deepEqual(navAtIso("1405-06-15", "09:05", jalaliYmdToGregorian), { iso: `2026-09-06T09:05:00${TEHRAN_UTC_OFFSET}`, precision: "minute" });
 });
 
+test('source clocks accept equivalent Persian, Arabic and single-digit-hour forms', () => {
+  const expected = sourceTime('1405-07-14', '09:05:07');
+  assert.ok(expected !== null);
+  for (const [date, time] of [
+    ['1405/07/14', '9:05:07'], ['۱۴۰۵/۰۷/۱۴', '۹:۰۵:۰۷'], ['١٤٠٥/٠٧/١٤', '٩:٠٥:٠٧'],
+  ]) {
+    assert.equal(sourceTime(date, time), expected);
+    assert.equal(Date.parse(navAtIso(date, time, jalaliYmdToGregorian)!.iso), expected);
+  }
+  for (const time of ['09:05', '9:05', '۹:۰۵', '٩:٠٥']) {
+    assert.equal(sourceTime('1405-07-14', time), sourceTime('1405-07-14', '09:05:00'));
+  }
+});
+
+test('invalid supplied source date or time never becomes an inferred midnight', () => {
+  for (const time of ['xx:yy', '24:00:00', '12:60', '12:00:60', '-1:00', '9:5', '12:00:00Z']) {
+    assert.equal(navAtIso('1405-07-14', time, jalaliYmdToGregorian), null, time);
+    assert.equal(sourceTime('1405-07-14', time), null, time);
+  }
+  for (const date of ['1405-07-31', '1405-12-30', '1405-00-01', '1405-13-01', '1405-07-00', '', null]) {
+    assert.equal(navAtIso(date, '09:05', jalaliYmdToGregorian), null, String(date));
+    assert.equal(sourceTime(date, '09:05'), null, String(date));
+  }
+  assert.ok(navAtIso('1403-12-30', '09:05', jalaliYmdToGregorian), 'valid leap day stays valid');
+  assert.equal(sourceTime('1405-07-14', null), null);
+});
+
+test('explicit midnight is retained and source freshness never borrows a receipt clock', () => {
+  const now = Date.parse('2026-10-06T05:35:00Z'); // Tehran 09:05
+  const quality = (sourceDate: string | null, sourceClock: string | null) => iranReadQuality(toMarket({
+    fetchedAt: now,
+    gold: [{ id: 'synthetic', faName: 'نمونه', price: 100, unit: 'toman', sourceDate, sourceTime: sourceClock }],
+  }), now).families.gold;
+  assert.equal(sourceTime('۱۴۰۵/۰۷/۱۴', '۰۰:۰۰:۰۰'), Date.parse('2026-10-06T00:00:00+03:30'));
+  assert.equal(quality('۱۴۰۵/۰۷/۱۴', '۹:۰۵').state, 'ready');
+  assert.equal(quality('۱۴۰۵/۰۷/۱۴', '۰۰:۰۰:۰۰').state, 'stale');
+  assert.equal(quality('1405-07-14', '09:08').state, 'unknown-time');
+  assert.equal(quality(null, '09:05').state, 'unknown-time');
+  assert.equal(quality('1405-07-14', null).state, 'unknown-time');
+});
+
 test("navAtIso: ورودیِ ناقص → null، نه زمانِ حدسی", () => {
   assert.equal(navAtIso(null, "16:40:00", jalaliYmdToGregorian), null);
   assert.equal(navAtIso("", "16:40:00", jalaliYmdToGregorian), null);
@@ -261,7 +304,7 @@ test("navAtIso: ورودیِ ناقص → null، نه زمانِ حدسی", () =
 
 test("navAtIso: نبودِ ساعت با دقتِ «روز» برمی‌گردد، نه دقتِ ساختگی", () => {
   // نبودِ ساعت نباید کلِ روز را دور بیندازد؛ ولی نباید وانمود کند ساعت را می‌داند
-  for (const bad of ["xx:yy", null, ""]) {
+  for (const bad of [null, ""]) {
     const at = navAtIso("1405-06-15", bad as string, jalaliYmdToGregorian)!;
     assert.equal(at.iso, `2026-09-06T00:00:00${TEHRAN_UTC_OFFSET}`, "از ابتدای روز — سنِ حداکثری");
     assert.equal(at.precision, "day", "دقت باید صریحاً «روز» باشد");

@@ -174,13 +174,13 @@ export default async function MarketPage({
             {/* ── طلا و ارز ──────────────────────────────────────────────── */}
             {ir && (ir.gold.length > 0 || ir.currency.length > 0) ? (
               <section id="gold-currency" className="scroll-mt-24">
-                <GoldCurrencyBoard gold={ir.gold} currency={ir.currency} fetchedAt={ir.fetchedAt} />
+                <GoldCurrencyBoard gold={ir.gold} currency={ir.currency} fetchedAt={ir.fetchedAt} availability={{ gold: availability.families?.gold, currency: availability.families?.currency }} now={availability.readAt} />
               </section>
             ) : null}
 
             {/* Commodity quotes read only from the stored market snapshot. */}
             <section id="commodities" className="scroll-mt-24">
-              <CommodityBoard rows={ir?.commodities ?? []} fetchedAt={ir?.commodityFetchedAt ?? null} state={ir?.commodityState ?? "unknown"} />
+              <CommodityBoard rows={ir?.commodities ?? []} fetchedAt={ir?.commodityFetchedAt ?? null} state={ir?.commodityState ?? "unknown"} now={availability.readAt} />
             </section>
 
             {/* ── جزئیاتِ بلند — بسته، نه حذف‌شده ────────────────────────── */}

@@ -23,7 +23,7 @@ export async function GET(
   const { symbol } = await params;
   const sym = decodeURIComponent(symbol);
 
-  // سقف بزرگ: کل تاریخچهٔ ۲۰ ساله (~۴۶۰۰ روز) — getSymbolHistory سقف limit=4000×… دارد
+  // خواندن صفحه‌بندی‌شده تا پایان تاریخچه، با سقف زمانی و تعداد صفحات در خواننده.
   const rows = await getSymbolHistory(sym, 20000);
 
   const lines = [HEADER];
@@ -51,7 +51,7 @@ export async function GET(
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="${encodeURIComponent(sym)}-history.csv"`,
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": "no-store",
     },
   });
 }

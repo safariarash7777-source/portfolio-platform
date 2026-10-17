@@ -36,3 +36,26 @@ test('received quotes retain source unit, zero change and seconds without synthe
   assert.deepEqual(toMarket({}).commodities, []);
   assert.equal(toMarket({ commodityState: 'private-error' }).commodityState, 'unknown');
 });
+
+test('old received commodity feed ages without discarding stored prices', () => {
+  const now = 1800000000000;
+  const rows = [{ id: 'OLD', name: 'Stored quote', price: 12.25, changePercent: 0, unit: 'USD/test', date: null, time: null, timeUnix: now / 1000 }];
+  const html = renderToStaticMarkup(React.createElement(CommodityBoard, { rows, fetchedAt: now - 3600000, state: 'received', now }));
+  assert.match(html, /دریافت تازهٔ فید احراز نشده/);
+  assert.match(html, /آخرین دادهٔ ذخیره‌شده/);
+  assert.match(html, /۱۲٫۲۵/);
+  assert.doesNotMatch(html, /دریافت فید کالا در بازهٔ اخیر ثبت شده/);
+});
+
+test('old quote does not imply feed failure; future source and receipt times remain uncertain', () => {
+  const now = 1800000000000;
+  const row = { id: 'OLD', name: 'Stored quote', price: 12.25, changePercent: null, unit: 'USD/test', date: null, time: null, timeUnix: (now - 3600000) / 1000 };
+  const html = renderToStaticMarkup(React.createElement(CommodityBoard, { rows: [row], fetchedAt: now, state: 'received', now }));
+  assert.match(html, /دریافت فید کالا در بازهٔ اخیر ثبت شده/);
+  assert.match(html, /آخرین قیمت ثبت‌شده قدیمی‌تر از نیم ساعت/);
+  assert.doesNotMatch(html, /دریافت تازهٔ فید احراز نشده/);
+  const future = renderToStaticMarkup(React.createElement(CommodityBoard, { rows: [{ ...row, timeUnix: (now + 180000) / 1000 }], fetchedAt: now + 180000, state: 'received', now }));
+  assert.match(future, /زمان قیمت جلوتر از ساعت ارزیابی/);
+  assert.match(future, /زمان دریافت جلوتر از ساعت ارزیابی/);
+  assert.doesNotMatch(future, /دریافت فید کالا در بازهٔ اخیر ثبت شده/);
+});

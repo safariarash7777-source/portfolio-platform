@@ -1,29 +1,30 @@
 import { Boxes } from "lucide-react";
-import { deltaColor, describeDelta, formatOrDash, formatSignedPercent, toPersianDigits } from "@/lib/format";
+import { deltaColor, describeDelta, formatOrDash, formatSignedPercent, toPersianDigits, formatJalali, formatTehranClock } from "@/lib/format";
 import type { CommodityState, IrCommodityRow } from "@/lib/market-ir";
+import { commodityReadQuality, quoteClock, quoteClockLabel } from "@/lib/commodity-quality";
+import { sourceTime } from "@/lib/market-quality";
 
 const CARD_LIMIT = 24;
-const tehranClock = new Intl.DateTimeFormat("fa-IR", {
-  timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit",
-  hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-});
 const formatPrice = (value: number) => toPersianDigits(value.toLocaleString("en-US", { maximumSignificantDigits: 15 })).replaceAll(",", "٬").replace(".", "٫");
-const clock = (ms: number | null) => ms !== null && Number.isFinite(ms) && ms > 0 && Number.isFinite(new Date(ms).getTime()) ? tehranClock.format(ms) : null;
+const clock = (ms: number | null) => ms !== null && Number.isFinite(ms) && ms > 0 && Number.isFinite(new Date(ms).getTime()) ? `${formatJalali(ms)} · ${formatTehranClock(ms)}` : null;
 const stateText: Record<CommodityState, string> = {
-  received: "زمان دریافت فید با زمان قیمت هر کالا متفاوت است.",
-  stale: "به‌روزرسانی اخیر ناموفق؛ آخرین دادهٔ ذخیره‌شده نمایش داده می‌شود.",
+  received: "دریافت فید کالا در بازهٔ اخیر ثبت شده؛ زمان قیمت هر کالا مستقل است.",
+  stale: "دریافت تازهٔ فید احراز نشده؛ آخرین دادهٔ ذخیره‌شده نمایش داده می‌شود.",
   unavailable: "دریافت دادهٔ کالا در دسترس نیست.",
   disabled: "دریافت فید کالا غیرفعال است.",
   unknown: "وضعیت دریافت این فید مشخص نیست.",
 };
 
 /** Stored quotes only: no provider requests, inferred units, or synthetic history. */
-export default function CommodityBoard({ rows, fetchedAt, state = "unknown" }: {
+export default function CommodityBoard({ rows, fetchedAt, state = "unknown", now = Date.now() }: {
   rows: readonly IrCommodityRow[];
   fetchedAt: number | null;
   state?: CommodityState;
+  now?: number;
 }) {
   const received = clock(fetchedAt);
+  const receiptClock = quoteClock(fetchedAt, now);
+  const quality = commodityReadQuality(state, fetchedAt, now);
   const visible = rows.slice(0, CARD_LIMIT);
   return (
     <div className="space-y-4" dir="rtl">
@@ -38,13 +39,16 @@ export default function CommodityBoard({ rows, fetchedAt, state = "unknown" }: {
       </div>
       <div className="space-y-1 text-xs" style={{ color: "var(--text-2)" }}>
         <p>آخرین دریافت فید کالا: {received ?? "زمان دریافت نامعلوم"}{received ? " (تهران)" : ""}</p>
-        <p>{stateText[state]}</p>
+        <p>{stateText[quality]}</p>
+        {receiptClock.state === "future" ? <p>زمان دریافت جلوتر از ساعت ارزیابی است و معتبر محسوب نمی‌شود.</p> : null}
         {rows.length > CARD_LIMIT ? <p>نمایش {toPersianDigits(visible.length)} از {toPersianDigits(rows.length)} کالا</p> : null}
       </div>
       {visible.length === 0 ? <p className="card p-4 text-sm" style={{ color: "var(--text-2)" }}>قیمت کالایی برای نمایش ثبت نشده است.</p> : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((row, index) => {
-            const sourceClock = row.timeUnix === null ? null : clock(row.timeUnix * 1000);
+            const sourceAt = row.timeUnix == null ? sourceTime(row.date, row.time) : row.timeUnix * 1000;
+            const priceClock = quoteClock(sourceAt, now);
+            const sourceClock = clock(priceClock.at);
             const change = typeof row.changePercent === "number" && Number.isFinite(row.changePercent) ? row.changePercent : null;
             return (
               <article key={`${row.id}-${index}`} className="card min-w-0 space-y-3 p-4">
@@ -59,7 +63,8 @@ export default function CommodityBoard({ rows, fetchedAt, state = "unknown" }: {
                 </dl>
                 <div className="space-y-1 text-xs" style={{ color: "var(--text-3)" }}>
                   <p>تاریخ منبع: <bdi>{row.date ? toPersianDigits(row.date) : "نامعلوم"}</bdi> · ساعت منبع: <bdi>{row.time ? toPersianDigits(row.time) : "نامعلوم"}</bdi></p>
-                  {sourceClock ? <p>زمان ثبت منبع (تهران): {sourceClock}</p> : !row.date || !row.time ? <p>زمان کامل قیمت نامعلوم است.</p> : null}
+                  {sourceClock ? <p>زمان ثبت منبع (تهران): {sourceClock}</p> : null}
+                  <p>{quoteClockLabel[priceClock.state]}</p>
                 </div>
               </article>
             );

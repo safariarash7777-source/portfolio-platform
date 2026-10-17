@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatToman, toPersianDigits } from "@/lib/format";
+import ReadError from "./ReadError";
 
 export interface PaidPayment {
   status: string;
@@ -22,18 +23,19 @@ export interface PaidPayment {
 interface Props {
   telegramLinked: boolean;
   payment: PaidPayment | null;
+  paymentReadFailed?: boolean;
 }
 
 const BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "";
 const PRICE = Number(process.env.NEXT_PUBLIC_COURSE_PRICE_TOMAN ?? "") || 0;
 
-export default function AccessCards({ telegramLinked, payment }: Props) {
+export default function AccessCards({ telegramLinked, payment, paymentReadFailed = false }: Props) {
   const paid = payment?.status === "paid";
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <TelegramCard linked={telegramLinked} />
-      <ChannelCard paid={paid} inviteLink={payment?.invite_link ?? null} linked={telegramLinked} />
+      {paymentReadFailed ? <ReadError label="وضعیت پرداخت" code="DASHBOARD_PAYMENT" /> : <ChannelCard paid={paid} inviteLink={payment?.invite_link ?? null} linked={telegramLinked} />}
     </div>
   );
 }
