@@ -12,7 +12,9 @@ DO $$ BEGIN
     RAISE EXCEPTION 'writer_role_excess_privilege';
   END IF;
   IF EXISTS (SELECT 1 FROM pg_auth_members WHERE
-      (roleid='research_agent_writer'::regrole AND (member <> 'postgres'::regrole OR inherit_option OR NOT set_option))
+      -- PG17 also records the creator's admin-only grant (SET false) from
+      -- supabase_admin. Neither grant may inherit; effective SET is checked below.
+      (roleid='research_agent_writer'::regrole AND (member <> 'postgres'::regrole OR inherit_option))
       OR member='research_agent_writer'::regrole) THEN
     RAISE EXCEPTION 'writer_unexpected_membership';
   END IF;
