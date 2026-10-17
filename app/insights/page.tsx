@@ -1,113 +1,39 @@
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import InsightsGrid from "@/components/insights/InsightsGrid";
 import MediaHub from "@/components/insights/MediaHub";
-import Link from "next/link";
-import { Send, Instagram } from "lucide-react";
-import { type ContentItem, isPlatform, isKind, PLATFORM_META } from "@/lib/content-hub";
+import { type ContentItem, isPlatform, isKind } from "@/lib/content-hub";
+import { isMediaLayout } from "@/lib/media/layout-setting";
 import { pageMetadata } from "@/lib/metadata";
 
-
 export const dynamic = "force-dynamic";
-
+export const revalidate = 0;
 export const metadata = pageMetadata({
   title: "تحلیل‌های اجتماعی",
-  description:
-    "بازنشر محتوای کانال تلگرام آرش صفری — تحلیل‌ها و دیدگاه‌های منتشرشده، بدون ویرایش. توصیهٔ خرید یا فروش نیست.",
+  description: "بازنشر محتوای کانال تلگرام آرش صفری — تحلیل‌ها و دیدگاه‌های منتشرشده، بدون ویرایش. توصیهٔ خرید یا فروش نیست.",
   path: "/insights",
 });
 
-export default async function InsightsPage({ searchParams }: { searchParams: Promise<{ mediaPreview?: string }> }) {
-  const query = await searchParams;
+export default async function InsightsPage() {
   const supabase = await createClient();
-  const { data, error: contentError } = await supabase
-    .from("content_hub")
-    .select("id, platform, kind, content_url, title, description, published_at")
-    .is("deleted_at", null)
-    .not("published_at", "is", null)
-    .order("published_at", { ascending: false })
-    .limit(60);
-
-  // فقط ردیف‌هایی با پلتفرم/نوعِ معتبر (نگهبانِ نمایش).
+  const [{ data, error: contentError }, setting] = await Promise.all([
+    supabase.from("content_hub")
+      .select("id, platform, kind, content_url, title, description, published_at")
+      .is("deleted_at", null).not("published_at", "is", null)
+      .order("published_at", { ascending: false }).limit(60),
+    supabase.rpc("get_media_layout"),
+  ]);
   const items: ContentItem[] = (data ?? [])
-    .filter((r) => isPlatform(r.platform) && isKind(r.kind))
-    .map((r) => ({
-      id: r.id,
-      platform: r.platform,
-      kind: r.kind,
-      content_url: r.content_url,
-      title: r.title,
-      description: r.description,
-      published_at: r.published_at,
-    }));
-
-  // Explicit opt-in retains the existing public layout until visual acceptance.
-  if (query.mediaPreview === "1") return <MediaHub items={items} preview sourceMode="existing" initialMode={contentError ? "error" : "ready"} />;
-
-  return (
-    <>
-      <Navbar />
-      <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <div className="mx-auto w-full max-w-6xl px-5 pt-10 pb-16">
-          <header className="mb-8">
-            <span className="eyebrow">ناحیهٔ تحلیل‌ها · شبکه‌های اجتماعی</span>
-            <h1
-              className="font-display text-3xl md:text-4xl font-bold mt-2"
-              style={{ color: "var(--navy-deep)" }}
-            >
-              تحلیل‌های اجتماعی
-            </h1>
-            <p className="text-sm md:text-base mt-3 leading-8 max-w-2xl" style={{ color: "var(--text-2)" }}>
-              تجمیعِ جدیدترین تحلیل‌ها، ویدیوها و پست‌های آرش صفری از شبکه‌های اجتماعی، یک‌جا. برای دیدنِ
-              کاملِ هر مطلب روی کارت بزنید تا به منبعِ اصلی بروید. در همین ناحیه،{" "}
-              <Link href="/notes" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
-                یادداشت روزانهٔ بازار
-              </Link>{" "}
-              (نگاه کوتاه روزانهٔ خود سایت) و{" "}
-              <Link href="/analyses" className="font-bold hover:underline" style={{ color: "var(--navy)" }}>
-                کارنامهٔ قابل راستی‌آزمایی
-              </Link>{" "}
-              را هم ببینید.
-            </p>
-
-            {/* دکمه‌های دنبال‌کردن */}
-            <div className="flex flex-wrap gap-3 mt-5">
-              {PLATFORM_META.telegram.followUrl && (
-                <a
-                  href={PLATFORM_META.telegram.followUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline"
-                  style={{ fontSize: "0.8rem" }}
-                >
-                  <Send size={15} />
-                  کانالِ تلگرام
-                </a>
-              )}
-              {PLATFORM_META.instagram.followUrl && (
-                <a
-                  href={PLATFORM_META.instagram.followUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline"
-                  style={{ fontSize: "0.8rem" }}
-                >
-                  <Instagram size={15} />
-                  اینستاگرام
-                </a>
-              )}
-            </div>
-          </header>
-
-          <InsightsGrid items={items} />
-
-          <p className="text-[11px] leading-6 mt-8" style={{ color: "var(--text-3)" }}>
-            محتوا صرفاً اطلاع‌رسانی و آموزشی است؛ توصیهٔ مستقیمِ خرید/فروش یا وعدهٔ بازدهی نیست.
-          </p>
-        </div>
-      </main>
-      <Footer />
-    </>
-  );
+    .filter(r => isPlatform(r.platform) && isKind(r.kind))
+    .map(r => ({ id: r.id, platform: r.platform, kind: r.kind, content_url: r.content_url,
+      title: r.title, description: r.description, published_at: r.published_at }));
+  // Only the RPC defines the initial default. A failed read is not a guessed
+  // global decision, and browser prefs/hash cannot override a successful read.
+  const layout = !setting.error && isMediaLayout(setting.data) ? setting.data : null;
+  return <><Navbar />{layout === null ? <main className="mx-auto max-w-6xl px-5 py-12" role="alert">
+    <h1 className="text-2xl font-bold">رسانهٔ آرش</h1>
+    <p className="mt-4">خواندن تنظیم چیدمان ممکن نشد. دوباره صفحه را باز کنید.</p>
+    <a href="/insights" className="btn btn-outline mt-4">تلاش مجدد</a>
+  </main> : <MediaHub items={items} globalLayout={layout} sourceMode="existing" initialMode={contentError ? "error" : "ready"} />}
+  <Footer /></>;
 }

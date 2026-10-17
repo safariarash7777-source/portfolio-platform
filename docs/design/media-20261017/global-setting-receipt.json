@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-17",
+  "status": "CODE_AND_ISOLATED_SQL_VERIFIED_RELEASE_CANDIDATE",
+  "design_base": "257dea828275abf05537c0c3924f9d0877234a4c",
+  "main_integrated": "1b6218c",
+  "coordination_docs_source": "c4e3df1750c585ba81db2568040e4ba080370bae",
+  "sql": {
+    "path": "sql/media_layout_settings_20261017.sql",
+    "sha256_normalized_lf": "2d99f121a297835b3f411cfdc51139c73b1d9892dcfec5eca43c84b08e060b2c",
+    "status": "NOT_INSTALLED_BY_THIS_WORK",
+    "table": "public.media_layout_versions",
+    "public_projection": "get_media_layout() returns integer 1/2/3 only; no actor/history",
+    "write_authority": "session auth.uid plus locked current profiles.role admin; no JWT metadata authorization",
+    "history": "append only actor/time/version rows; UPDATE/DELETE/TRUNCATE guards; no seed actor/data",
+    "acl": "RLS+FORCE and explicit table/sequence/function revokes from PUBLIC,anon,authenticated,service_role; getter exec narrowly granted, setter authenticated only",
+    "owner_requirement": "Migration owner must retain SUPERUSER/BYPASSRLS for FORCE-RLS definer projection"
+  },
+  "checks": {
+    "real_postgresql": {
+      "result": "PASS",
+      "command": "node --test lib/media/layout-setting.integration.test.mjs",
+      "version": "17.11",
+      "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "independent_scenarios": 10,
+      "tap_tests_including_parent": 11,
+      "profiles": ["legacy broad default grants", "strict explicit grants"],
+      "failed": 0,
+      "skipped": 0,
+      "network": "none",
+      "host_ports": [],
+      "host_mounts": [],
+      "data": "synthetic only",
+      "cleanup": "Owned randomly named container removed after exact name and label check",
+      "coverage": ["scalar default/public reads", "actor/history read denied", "anon/member/missing uid/metadata spoof denied", "admin saves 1/2/3 across independent connections", "invalid values leave no history", "UPDATE/DELETE/TRUNCATE denied including owner SQL", "revoked DB role defeats stale claims"]
+    },
+    "actual_route_component_rsc": { "result": "PASS", "command": "node --test lib/media/global-layout.test.mjs", "tests": 6, "failed": 0, "notes": "Actual compiled route/TSX/RSC with synthetic adapters; not browser reconciliation or live Auth" },
+    "test_core": {
+      "main_tap": { "passed": 1654, "failed": 0, "skipped": 0 },
+      "symbol_page_tap": { "passed": 11, "failed": 0, "skipped": 0 },
+      "coverage_plan_tap": { "passed": 6, "failed": 0, "skipped": 0 },
+      "p02_coverage_tap": { "passed": 5, "failed": 0, "skipped": 0 },
+      "notes": "Updated test:core main group ran once. Windows cmd wrapper then treated the historical escaped quote around app/symbol/[symbol]/page.test.ts as a literal filename. Remaining three groups passed via structured argv; the passed main group was not repeated. No assertion failures. Wrapper exit is not recorded as a successful npm invocation.",
+      "automatic_ci": "global-layout.test.mjs and presentation.test.ts added to existing test:core. Real Docker SQL suite remains an explicit standalone release check."
+    },
+    "typecheck": { "result": "PASS", "command": "node node_modules/typescript/bin/tsc --noEmit" },
+    "lint": { "result": "PASS", "scope": "seven changed source/test files", "warnings": 0 },
+    "build": { "result": "PASS", "command": "node node_modules/next/dist/bin/next build", "next": "15.5.25", "dynamic_routes": ["/insights", "/api/admin/content/appearance"] },
+    "sql_validator": { "result": "PASS", "files": 55, "rejected": 0 },
+    "diff_check": "PASS"
+  },
+  "local_log_sha256": {
+    "media-layout-build.log": "53e168e1ccf49bc9d29f02aa167cac8ead785e3c90a5e6993bbdd014cec52f04",
+    "media-layout-tests.log": "0bcaebc0075b7c0c730d8cb897113dd3dfe1f4d7823191248916ef857e423a22",
+    "media-layout-core.log": "40ae82d28dec6bd8572072cc1343fe969bc8ab9c253bf06948ee83d7c563dea8"
+  },
+  "no_live_actions_by_implementer": ["production SQL", "production content writes", "social sync or backfill", "real payment", "image generation or paid service", "main merge", "manual deployment"],
+  "release_owner": "coordinator: independent review, backup/restore, sole SQL installer, exact-head CI, deployment and real admin/public browser acceptance",
+  "rollback": "Return to verified preceding application release; retain the installed layout audit history and do not reset/delete it. Installation status belongs in MIGRATION-LEDGER."
+}
