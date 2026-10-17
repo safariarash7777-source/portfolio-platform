@@ -1,0 +1,82 @@
+{
+  "status": "PROPOSAL_CANDIDATE_NOT_INSTALLED",
+  "base": "6df58979cd5188e4b5eaaacd4adabc83cdec7176",
+  "decision": "M2-PACKAGE-POLICY-20261017 canonical coordinator Decision Log c4e3 / PR254 43c7508",
+  "snapshot": "installed-snapshot-20261017.json",
+  "liveCounts": {
+    "registrations": 0,
+    "entitlements": 0,
+    "payments": 0,
+    "webinars": 0
+  },
+  "checks": {
+    "postgresTapIncludingParent": 13,
+    "secretScan": "PASS",
+    "baseStaticTests": 16,
+    "routeUiContractTests": 194,
+    "postgresV1Scenarios": 12,
+    "diff": "PASS",
+    "targetedLintFiveFiles": "PASS",
+    "typecheck": "PASS"
+  },
+  "runtime": {
+    "syntheticPostgres": "17.11",
+    "hostMounts": [],
+    "livePostgres": "17.6",
+    "network": "none",
+    "hostPorts": []
+  },
+  "limits": [
+    "No live writes, new backup/restore, main merge, push or deploy",
+    "No full Next build or browser acceptance claimed",
+    "Precommit transactional rollback verified; postcommit operational rollback remains",
+    "Exact17.6 restore acceptance must use coordinator existing proof, no second restore",
+    "Archive/Q&A resources served only if actually present; no fabricated media or global entitlement"
+  ],
+  "hashes": [
+    {
+      "file": "docs/m2/proposed-exact-webinar.sql",
+      "sha256": "c8ff7cbe1e781735afc31e23dcfcee62e9faba11d6ff119f135a455abe47a67b"
+    },
+    {
+      "file": "docs/m2/proposed-package-policy-v1.sql",
+      "sha256": "f8aa957aa73a3681cd34f9a97c02b7a0c20c604b015bfed2cd2cd377ffabdb31"
+    },
+    {
+      "file": "docs/m2/proposed-install-package-v1.sql",
+      "sha256": "d72326ac1e1857e1bbc846e922389103e65a1e7cb6ea6e7979088951db029cf9"
+    },
+    {
+      "file": "docs/m2/build-package-policy-proposal.mjs",
+      "sha256": "d632561617bf85f96bfffcc431e6d493bfdcd09af2575880ea9454aa699422a0"
+    },
+    {
+      "file": "docs/m2/package-policy-v1.test.mjs",
+      "sha256": "70cf9b5ac4e6b11716e5de635efb7f7708c5ac3c48bfc73f5fdd60da33f869c6"
+    },
+    {
+      "file": "lib/webinars/contracts.ts",
+      "sha256": "1dd6463c2dc5c20c980f3ef7cb8fb8833f34381e731b4ed55564763c1969485c"
+    },
+    {
+      "file": "lib/webinars/package-policy.test.mjs",
+      "sha256": "616e02ebac3ddefb3e6700571aeb6ecae4c0b69a0cf3824423cd2d0a45248891"
+    },
+    {
+      "file": "app/api/webinars/register/route.ts",
+      "sha256": "61e07fc5786510b46003be6a6e4bafa4d49ae7a4dcc2137afd17a1911a778d6b"
+    },
+    {
+      "file": "app/api/webinars/payment/callback/route.ts",
+      "sha256": "cb2a7437ca13fec6c7e65b122ec61d63697f03eb0ac3b51470c13f58e974e912"
+    },
+    {
+      "file": "app/webinars/page.tsx",
+      "sha256": "d14302af9dc3971776acdb46bb5b7d087fc13c595242fb00161236e812d0ad3b"
+    },
+    {
+      "file": "app/(protected)/admin/webinars/page.tsx",
+      "sha256": "7296c373bbb0755f673df56f6e5de3c0c8520413a240c163d368168bc7d8767e"
+    }
+  ]
+}

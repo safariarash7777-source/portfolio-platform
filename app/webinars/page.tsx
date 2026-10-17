@@ -94,7 +94,7 @@ function WebinarsContent() {
   const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string; authority?: string } | null>(null);
   const lifetime = useRef({ active: true });
   const callbackBlocks = (webinarId: string) => searchParams.get("webinar_id") === webinarId &&
-    ["unknown", "failed"].includes(searchParams.get("status") ?? "");
+    ["unknown", "failed", "paid_pending_resolution"].includes(searchParams.get("status") ?? "");
 
   useEffect(() => {
     const scope = { active: true };
@@ -110,6 +110,8 @@ function WebinarsContent() {
     const status = searchParams.get("status");
     if (status === "success") {
       setMessage({ type: "success", text: "پرداخت موفق! ثبت‌نام شما تأیید شد." });
+    } else if (status === "paid_pending_resolution") {
+      setMessage({ type: "info", text: "پرداخت تأیید شده، اما ظرفیت وبینار تکمیل است. ثبت‌نام و حق ورود ایجاد نشده و پرداخت برای رسیدگی یا بازپرداخت ثبت شده است؛ بازپرداخت خودکار انجام نمی‌شود. برای پیگیری با پشتیبانی تماس بگیرید." });
     } else if (status === "failed") {
       setPaymentAuthority(searchParams.get("authority"));
       setMessage({ type: "info", text: "درگاه، پرداخت را ناموفق گزارش کرده است. پیش از پرداخت تازه، همان پرداخت را با پشتیبانی بررسی و پیگیری کنید.", authority: searchParams.get("authority") ?? undefined });
@@ -208,6 +210,10 @@ function WebinarsContent() {
       if (registration.payment_status !== "paid" && registration.payment_status !== "free") {
         throw new Error("وضعیت ثبت‌نام هنوز تأیید نشده است. با پشتیبانی پیگیری کنید.");
       }
+      if (registration.fulfillment_state === "paid_pending_resolution") {
+        setMessage({ type: "info", text: "پرداخت محفوظ است، اما ثبت‌نام به علت نبود ظرفیت تأیید نشده و نیازمند رسیدگی یا بازپرداخت است. حق ورود و بازپرداخت خودکار ایجاد نشده است." });
+        return;
+      }
       setMessage({ type: "success", text: registration.already_registered ? "ثبت‌نام شما قبلاً تأیید شده است. با دکمهٔ دسترسی، ورود به همین وبینار را بررسی کنید." : "ثبت‌نام شما تأیید شد. با دکمهٔ دسترسی، ورود به همین وبینار را بررسی کنید." });
     } catch (e: unknown) {
       if (!scope.active || lifetime.current !== scope) return;
@@ -249,6 +255,7 @@ function WebinarsContent() {
           not_registered: "برای این وبینار ثبت‌نام تأییدشده‌ای ندارید.",
           payment_required: "پرداخت ثبت‌نام این وبینار هنوز تأیید نشده است.",
           payment_pending: "نتیجهٔ پرداخت این وبینار هنوز در حال بررسی است.",
+          paid_pending_resolution: "پرداخت تأیید شده، اما صندلی تخصیص نیافته است. برای رسیدگی یا بازپرداخت با پشتیبانی پیگیری کنید؛ حق ورود ایجاد نشده است.",
           access_disabled: "دسترسی این وبینار هنوز توسط مدیر فعال نشده است.",
           outside_window: "اکنون خارج از بازهٔ دسترسی این وبینار است.",
           not_started: "بازهٔ دسترسی این وبینار هنوز شروع نشده است.",

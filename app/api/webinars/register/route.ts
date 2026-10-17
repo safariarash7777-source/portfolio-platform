@@ -53,5 +53,9 @@ export async function POST(req: NextRequest) {
       data.needs_payment !== (data.payment_status === "pending")) {
     return NextResponse.json({ error: "قرارداد ثبت‌نام هنوز آماده نیست." }, { status: 503 });
   }
+  if (data.fulfillment_state === "paid_pending_resolution" &&
+      (data.payment_status !== "paid" || data.needs_payment || data.resolution_kind !== "refund_due")) {
+    return NextResponse.json({ error: "وضعیت پرداخت نیازمند بررسی معتبر است." }, { status: 503 });
+  }
   return NextResponse.json({ registration: data });
 }

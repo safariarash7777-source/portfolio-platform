@@ -193,9 +193,6 @@ export default function AdminWebinarsPage() {
       if (capacity && (!/^\d+$/.test(capacity) || !Number.isSafeInteger(Number(capacity)) || Number(capacity) < 1)) {
         throw new Error("ظرفیت باید عدد صحیحِ مثبت باشد یا خالی بماند.");
       }
-      if (form.access_enabled && form.registration_open && Number(price) > 0 && capacity) {
-        throw new Error("بازکردن ثبت‌نام وبینار پولی با ظرفیت محدود، به تصمیم صریح دربارهٔ رزرو و آزادسازی ظرفیت نیاز دارد. فعلاً ثبت‌نام را بسته نگه دارید یا ظرفیت را خالی بگذارید.");
-      }
       const timestamp = (value: string, label: string) => {
         if (!value) return null;
         const date = new Date(value);
@@ -204,7 +201,8 @@ export default function AdminWebinarsPage() {
       };
       const accessStart = timestamp(form.access_starts_at, "شروع دسترسی");
       const accessEnd = timestamp(form.access_ends_at, "پایان دسترسی");
-      if (form.access_enabled && (!accessStart || !accessEnd || Date.parse(accessEnd) <= Date.parse(accessStart))) {
+      const defaultWindow = !accessStart && !accessEnd && Boolean(timestamp(form.ends_at, "پایان رویداد"));
+      if (form.access_enabled && !defaultWindow && (!accessStart || !accessEnd || Date.parse(accessEnd) <= Date.parse(accessStart))) {
         throw new Error("برای فعال‌کردن دسترسی، شروع و پایان آن را صریح انتخاب کنید؛ پایان باید بعد از شروع باشد.");
       }
       if (form.access_enabled) {
@@ -311,9 +309,6 @@ export default function AdminWebinarsPage() {
     try {
       if (!w.registration_open && !hasAccessWindow(w)) {
         throw new Error("پیش از بازکردن ثبت‌نام، بازهٔ دسترسی همین وبینار را تنظیم و فعال کنید.");
-      }
-      if (!w.registration_open && w.price_toman > 0 && w.max_capacity !== null) {
-        throw new Error("ثبت‌نام وبینار پولی با ظرفیت محدود تا تعیین سیاست رزرو و آزادسازی ظرفیت بسته می‌ماند.");
       }
       const res = await fetch("/api/admin/webinars", {
         method: "PATCH",
@@ -489,7 +484,7 @@ export default function AdminWebinarsPage() {
                 placeholder="خالی = بدون محدودیت"
               />
               <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--text-3)" }}>
-                برای وبینار پولی، ثبت‌نام با ظرفیت محدود تا تعیین سیاست رزرو و آزادسازی ظرفیت بسته می‌ماند. ظرفیت خالی یعنی بدون محدودیت.
+                رزرو صندلی پرداخت ۱۵ دقیقه است. پرداخت دیررس تنها در صورت ظرفیت آزاد ثبت‌نام می‌شود؛ در غیر این صورت برای رسیدگی ثبت می‌شود. ظرفیت خالی یعنی بدون محدودیت.
               </p>
             </div>
 
@@ -560,7 +555,7 @@ export default function AdminWebinarsPage() {
                   بازهٔ دسترسی را فعال می‌کنم
                 </label>
                 <p className="text-xs mt-2 leading-relaxed" style={{ color: "var(--text-3)" }}>
-                  شروع و پایان دسترسی را جدا از زمان برگزاری انتخاب کنید. تا زمان فعال‌سازی، ثبت‌نام بسته می‌ماند. ثبت‌نام فقط دسترسی به همین وبینار را باز می‌کند.
+                  ثبت‌نام تأییدشده فقط دسترسی به همین بسته را باز می‌کند. با خالی‌گذاشتن هر دو زمان، پایان دسترسی ۹۰ روز پس از پایان رویداد است؛ بدون پایان رویداد، بازه را صریح تعیین کنید. منابع و آرشیو فقط در صورت وجود ارائه می‌شوند.
                 </p>
               </div>
               <div>
@@ -569,7 +564,7 @@ export default function AdminWebinarsPage() {
                   type="datetime-local"
                   id="access_starts_at"
                   step="0.001"
-                  required={form.access_enabled}
+                  required={form.access_enabled && !form.ends_at}
                   value={form.access_starts_at}
                   onChange={(e) => setForm({ ...form, access_starts_at: e.target.value })}
                   className="w-full rounded-xl border px-4 py-2.5 text-sm"
@@ -582,7 +577,7 @@ export default function AdminWebinarsPage() {
                   type="datetime-local"
                   id="access_ends_at"
                   step="0.001"
-                  required={form.access_enabled}
+                  required={form.access_enabled && !form.ends_at}
                   value={form.access_ends_at}
                   onChange={(e) => setForm({ ...form, access_ends_at: e.target.value })}
                   className="w-full rounded-xl border px-4 py-2.5 text-sm"

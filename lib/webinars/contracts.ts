@@ -49,18 +49,20 @@ export function webinarInput(value: unknown): Record<string, unknown> | null {
   if (!starts || (value.ends_at != null && value.ends_at !== "" && !ends) || (ends && ends <= starts)) return null;
   const enabled = value.access_enabled ?? false;
   if (typeof enabled !== "boolean") return null;
-  const accessStarts = value.access_starts_at == null || value.access_starts_at === "" ? null : timestamp(value.access_starts_at);
-  const accessEnds = value.access_ends_at == null || value.access_ends_at === "" ? null : timestamp(value.access_ends_at);
+  let accessStarts = value.access_starts_at == null || value.access_starts_at === "" ? null : timestamp(value.access_starts_at);
+  let accessEnds = value.access_ends_at == null || value.access_ends_at === "" ? null : timestamp(value.access_ends_at);
   if ((value.access_starts_at != null && value.access_starts_at !== "" && !accessStarts) ||
       (value.access_ends_at != null && value.access_ends_at !== "" && !accessEnds)) return null;
+  if (enabled && !accessStarts && !accessEnds && ends) {
+    accessStarts = new Date().toISOString();
+    accessEnds = new Date(Date.parse(ends) + 90 * 24 * 60 * 60 * 1000).toISOString();
+  }
   if ((enabled || accessStarts || accessEnds) && (!accessStarts || !accessEnds || accessEnds <= accessStarts)) return null;
   if (enabled && !safeSessionUrl(value.platform_url)) return null;
   if (value.platform_url != null && value.platform_url !== "" && !safeSessionUrl(value.platform_url)) return null;
   if (value.registration_open != null && typeof value.registration_open !== "boolean") return null;
   if (value.registration_open === true && !enabled) return null;
   if (value.max_capacity != null && (!Number.isSafeInteger(value.max_capacity) || Number(value.max_capacity) <= 0)) return null;
-  // The source has no pending-seat reservation/release rule for capped paid events.
-  if (value.registration_open === true && value.price_toman > 0 && value.max_capacity != null) return null;
   const status = value.status ?? "draft", platform = value.platform ?? "link";
   if (!["draft", "published", "live", "ended", "cancelled"].includes(String(status)) ||
       !["link", "skyroom", "zoom", "google_meet"].includes(String(platform))) return null;
@@ -76,6 +78,8 @@ export interface PaymentContext {
   amount: number; authority: string; payment_status: "pending" | "paid" | "failed";
   registration_payment_status: "pending" | "paid"; ref_id: string | null; verified_at: string | null;
   access_qualified: boolean; access_enabled: boolean; access_starts_at: string; access_ends_at: string;
+  fulfillment_state?: "pending" | "confirmed" | "paid_pending_resolution";
+  resolution_kind?: "refund_due" | null;
 }
 export function paymentContext(value: unknown, expectedAuthority: string, registrationId: string): PaymentContext | null {
   if (!record(value) || !uuid(value.registration_id) || value.registration_id !== registrationId ||
@@ -85,8 +89,15 @@ export function paymentContext(value: unknown, expectedAuthority: string, regist
   if (!starts || !ends || ends <= starts || !["pending", "paid", "failed"].includes(String(value.payment_status)) ||
       !["pending", "paid"].includes(String(value.registration_payment_status))) return null;
   if (value.registration_payment_status !== (value.payment_status === "failed" ? "pending" : value.payment_status)) return null;
-  if (value.payment_status === "paid" && (value.access_qualified !== true || !refId(value.ref_id) || !timestamp(value.verified_at))) return null;
+  if (value.payment_status === "paid") {
+    const pendingResolution = value.access_qualified === false && value.fulfillment_state === "paid_pending_resolution" &&
+      value.resolution_kind === "refund_due" && value.confirmed_at == null;
+    if ((!pendingResolution && value.access_qualified !== true) || !refId(value.ref_id) || !timestamp(value.verified_at)) return null;
+    if (value.access_qualified === true && value.fulfillment_state != null &&
+        (value.fulfillment_state !== "confirmed" || value.resolution_kind != null || !timestamp(value.confirmed_at))) return null;
+  }
   if (value.payment_status !== "paid" && (value.access_qualified !== false || value.ref_id != null || value.verified_at != null)) return null;
+  if (value.payment_status !== "paid" && value.fulfillment_state != null && value.fulfillment_state !== "pending") return null;
   return { ...value, access_starts_at: starts, access_ends_at: ends,
     verified_at: value.verified_at == null ? null : timestamp(value.verified_at) } as unknown as PaymentContext;
 }
