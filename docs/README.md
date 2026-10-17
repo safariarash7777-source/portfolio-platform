@@ -40,6 +40,10 @@
 | [`ops/RELEASE-history-sections.md`](./ops/RELEASE-history-sections.md) | بستهٔ انتشارِ توقفِ نوشتنِ بخش‌های بی‌خواننده | شاهدِ قبل/بعد، مصرف‌کننده‌ها، بازگشت |
 | [`ops/RELEASE-ime-storage.md`](./ops/RELEASE-ime-storage.md) | نصب محدود جدول‌های تاریخچهٔ بورس کالا | پیش‌نیاز بکاپ/بازیابی، آزمون دسترسی‌ها، پذیرش چرخهٔ طبیعی و حفظ تاریخچه |
 | [`MIGRATION-LEDGER.md`](./MIGRATION-LEDGER.md) | دفترِ مهاجرت‌ها | `APPLIED` / `NOT_APPLIED` — **مرجعِ نهایی** |
+| [`INTELLIGENCE-OPERATING-DESIGN.md`](./INTELLIGENCE-OPERATING-DESIGN.md) | طراحیِ عملیاتیِ هوشمندی | نقشهٔ واقعیِ سیستم · شش سؤالِ روزانهٔ میز · سه مخاطب — `P2-INTELLIGENCE-OPERATING-DESIGN-001` |
+| [`SOURCE-REGISTRY-AND-DATA-CONTRACTS.md`](./SOURCE-REGISTRY-AND-DATA-CONTRACTS.md) | ثبتِ منابع و قراردادِ داده | هر فید، تناوبِ واقعی، مصرف‌کننده و قراردادِ نگه‌داری |
+| [`REFERENCE-PORTFOLIO-V1-DESIGN.md`](./REFERENCE-PORTFOLIO-V1-DESIGN.md) | طراحیِ سبدِ مرجع ۷۰/۱۵/۱۵ | ابزارهای نامزد، Benchmark، و تصمیم‌های بازِ مالک (`D-1`..`D-6`) |
+| [`WORK-PACKAGES-AND-GATES.md`](./WORK-PACKAGES-AND-GATES.md) | ده بستهٔ کاری با ترتیبِ الزامی | `WP-01`..`WP-10` و گیت‌های `G-1`..`G-10` |
 | [`ENVIRONMENT-MATRIX.md`](./ENVIRONMENT-MATRIX.md) | نامِ متغیرهای محیطی | فقط **نام**، هرگز مقدار |
 | [`SERVICE-OWNERSHIP.md`](./SERVICE-OWNERSHIP.md) | مالکِ هر سرویس | پاسخ‌گوییِ عملیاتی |
 | [`MARKET-CORE-AUDIT.md`](./MARKET-CORE-AUDIT.md) | وضعیتِ **هستهٔ تحلیل بازار** | پنج قابلیت (صندوق، نماد، رادار، میز، پنلِ عضو) با برچسبِ وضعیت + ممیزیِ مصرفِ داده + ترتیبِ اجرا · اندازه‌گیریِ زندهٔ ۲۰۲۶-۰۹-۰۶ |
