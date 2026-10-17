@@ -33,19 +33,19 @@ test("content sync cannot silently use the shared service-role key", () => {
   };
   const sharedOnly = load(source, imports, {
     NEXT_PUBLIC_SUPABASE_URL: "https://database.example.invalid",
-    SUPABASE_SERVICE_ROLE_KEY: "synthetic-shared-key",
+    SUPABASE_SERVICE_ROLE_KEY: "example-shared-key",
   });
   assert.equal(sharedOnly.tryCreateContentSyncClient(), null);
   assert.equal(calls.length, 0);
 
   const dedicated = load(source, imports, {
     NEXT_PUBLIC_SUPABASE_URL: "https://database.example.invalid",
-    CONTENT_SYNC_SERVICE_ROLE_KEY: "synthetic-content-key",
+    CONTENT_SYNC_SERVICE_ROLE_KEY: "example-content-key",
   });
   assert.deepEqual(dedicated.tryCreateContentSyncClient(), { marker: "content-client" });
   assert.equal(calls.length, 1);
   assert.equal(calls[0].url, "https://database.example.invalid");
-  assert.equal(calls[0].key, "synthetic-content-key");
+  assert.equal(calls[0].key, "example-content-key");
   assert.deepEqual(JSON.parse(JSON.stringify(calls[0].options)), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -84,7 +84,7 @@ function cronRoute(options: { ledgerRecorded: boolean; runId: string | null; syn
       const { value } = await args.job();
       return { result: value, ledgerRecorded: options.ledgerRecorded, runId: options.runId };
     } },
-  }, { CRON_SECRET: "synthetic-cron-secret" });
+  }, { CRON_SECRET: "example-cron-secret" });
   return {
     get: exports.GET as (request: { headers: { get: () => string | null } }) => Promise<JsonResult>,
     get clientCalls() { return clientCalls; },
@@ -100,7 +100,7 @@ test("cron authenticates before client creation and reports whether its ledger w
   assert.equal(route.clientCalls, 0);
   assert.equal(route.jobCalls, 0);
 
-  const success = await route.get({ headers: { get: () => "Bearer synthetic-cron-secret" } });
+  const success = await route.get({ headers: { get: () => "Bearer example-cron-secret" } });
   assert.equal(success.status, 200);
   assert.equal(success.body.ok, true);
   assert.equal(success.body.ledgerRecorded, true);
@@ -113,7 +113,7 @@ test("cron authenticates before client creation and reports whether its ledger w
 
 test("a successful sync does not pretend an unrecorded ledger is healthy", async () => {
   const route = cronRoute({ ledgerRecorded: false, runId: null, syncOk: true });
-  const response = await route.get({ headers: { get: () => "Bearer synthetic-cron-secret" } });
+  const response = await route.get({ headers: { get: () => "Bearer example-cron-secret" } });
   assert.equal(response.status, 200);
   assert.equal(response.body.ledgerRecorded, false);
   assert.equal(response.body.runId, null);
@@ -121,7 +121,7 @@ test("a successful sync does not pretend an unrecorded ledger is healthy", async
 
 test("a failed sync reports its failure and ledger receipt separately", async () => {
   const route = cronRoute({ ledgerRecorded: true, runId: "synthetic-failed-run", syncOk: false });
-  const response = await route.get({ headers: { get: () => "Bearer synthetic-cron-secret" } });
+  const response = await route.get({ headers: { get: () => "Bearer example-cron-secret" } });
   assert.equal(response.status, 502);
   assert.equal(response.body.reason, "feed_unreachable");
   assert.equal(response.body.ledgerRecorded, true);
@@ -131,7 +131,7 @@ test("a failed sync reports its failure and ledger receipt separately", async ()
 test("an unexpected job exception stays a bounded failure with its ledger receipt", async () => {
   const route = cronRoute({ ledgerRecorded: true, runId: "synthetic-exception-run",
     syncOk: false, unexpectedFailure: true });
-  const response = await route.get({ headers: { get: () => "Bearer synthetic-cron-secret" } });
+  const response = await route.get({ headers: { get: () => "Bearer example-cron-secret" } });
   assert.equal(response.status, 502);
   assert.equal(response.body.ok, false);
   assert.equal(response.body.reason, "unhandled_exception");
