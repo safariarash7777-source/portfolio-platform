@@ -1,14 +1,15 @@
 import Navbar from "@/components/layout/Navbar";
 import MarketTicker from "@/components/market/MarketTicker";
 import LiveMarket from "@/components/landing/LiveMarket";
-import InsightsPreview from "@/components/landing/InsightsPreview";
 import Method from "@/components/landing/Method";
 import TwoProducts from "@/components/landing/TwoProducts";
 import TrackRecordStrip from "@/components/landing/TrackRecordStrip";
-import AboutStrip from "@/components/landing/AboutStrip";
 import Footer from "@/components/layout/Footer";
 import PublicDesignFrame from "@/components/public-design/PublicDesignFrame";
 import PublicHome from "@/components/public-design/PublicHome";
+import PublicHomeMedia from "@/components/public-design/PublicHomeMedia";
+import { createClient } from "@/lib/supabase/server";
+import { readHomeMedia } from "@/lib/public-design/home-media";
 import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
 import MarketKpiRow from "@/components/market/MarketKpiRow";
 import { readIranMarket } from "@/lib/market-bounded";
@@ -20,14 +21,10 @@ import s from "@/components/public-design/PublicDesign.module.css";
 /**
  * صفحهٔ اصلی — P2-PUBLIC-EXPERIENCE-REBASELINE-001
  *
- * ترتیب (۷ سکشن، از ۱۲):
- *  1. Hero — انسانی و کوتاه، محورِ آرش. بدونِ فرم، بدونِ داشبوردِ ساختگی.
- *  2. MarketTicker + LiveMarket — آخرین وضعیتِ واقعیِ بازار (لنگرِ `#market`).
- *  3. InsightsPreview — تحلیلِ اخیرِ واقعی. بدونِ محتوا ⇒ خودش را مخفی می‌کند.
- *  4. Method — روشِ کار، سه گزاره (لنگرِ `#features`).
- *  5. TwoProducts — وبینار و مشاورهٔ اختصاصی (لنگرِ `#waitlist`).
- *  6. TrackRecordStrip — کارنامه. بدونِ رکوردِ بسته‌شدهٔ واقعی ⇒ رندر نمی‌شود.
- *  7. AboutStrip — معرفیِ کوتاهِ آرش → `/about`.
+ * ترتیب محصول در هر سه زبان بصری ثابت است:
+ *  1. معرفی واقعی آرش؛ 2. رسانهٔ موجود (حتی حالت خالی/خطا)؛
+ *  3. نمای عمومی بازار؛ 4. خدمات و روش همکاری.
+ * لنگرهای #market، #features و #waitlist و منطق دسترسی قبلی محفوظ‌اند.
  *
  * حذف‌شده: ProductFacts · ThreeSteps · Capabilities · WhyArash · LandingFAQ ·
  * FinalCTA (+ PortfolioPreviewCardِ مرده). دلیلِ هر کدام در
@@ -39,7 +36,11 @@ export default async function LandingPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = searchParams ? await searchParams : {};
-  const market = await readIranMarket();
+  const supabase = await createClient();
+  const [market, media] = await Promise.all([
+    readIranMarket(),
+    readHomeMedia(supabase),
+  ]);
   const headline = buildMarketHeadline({
     indices: market.data?.indices ?? null,
     stocks: market.data?.stocks ?? [],
@@ -54,9 +55,10 @@ export default async function LandingPage({
       footer={<Footer />}
     >
       <PublicHome />
+      <PublicHomeMedia read={media} />
       <section className={s.homeMarket} id="market-glance">
         <header>
-          <h2>بازار در یک نگاه</h2>
+          <h2>نمای عمومی بازار</h2>
           <a href="/market">مشاهدهٔ کامل بازار</a>
         </header>
         <div className={s.marketRibbon}>
@@ -68,15 +70,15 @@ export default async function LandingPage({
           ir={market.data}
           availability={market.availability}
         />
+        <div className={s.homeMarketTools}>
+          <MarketTicker />
+          <LiveMarket />
+        </div>
       </section>
       <div className={s.legacySections}>
-        <MarketTicker />
-        <LiveMarket />
-        <InsightsPreview />
-        <Method />
         <TwoProducts />
+        <Method />
         <TrackRecordStrip />
-        <AboutStrip />
       </div>
     </PublicDesignFrame>
   );

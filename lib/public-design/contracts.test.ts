@@ -11,6 +11,10 @@ import { marketQualityLabel } from "../market-quality";
 import { publicMetricLabels } from "./metrics";
 import type { HeadlineMetric } from "../core/marketHeadline";
 import { publicLayout, publicLayoutHref } from "./layout";
+import { isKind, isPlatform, KIND_LABEL, PLATFORM_META } from "../content-hub";
+import { editorialCover, sourceUrl, uniqueMedia } from "../media/presentation";
+import { formatJalali } from "../format";
+import type { HomeMediaRead } from "./home-media";
 import {
   approvedCodalUrl,
   type DeskCompanyReport,
@@ -312,4 +316,158 @@ test("source failure changes only missing-value explanation, never any engine nu
   assert.equal(failure[0].absentReason, "دادهٔ منبع در دسترس نیست");
   assert.equal(failure[1], known);
   assert.equal(missing.absentReason, "outside hours");
+});
+
+const homeMediaModule = {} as {
+  readHomeMedia: (client: unknown) => Promise<HomeMediaRead>;
+};
+vm.runInNewContext(
+  ts.transpileModule(
+    readFileSync(new URL("./home-media.ts", import.meta.url), "utf8"),
+    {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+      },
+    },
+  ).outputText,
+  {
+    exports: homeMediaModule,
+    require: (id: string) => {
+      if (id === "server-only") return {};
+      if (id === "@/lib/content-hub") return { isKind, isPlatform };
+      if (id === "@/lib/media/presentation") return { uniqueMedia };
+      throw new Error(id);
+    },
+  },
+);
+function mediaClient(data: unknown[], error: unknown = null) {
+  const query = {
+    select: (columns: string) => {
+      assert.equal(
+        columns,
+        "id, platform, kind, content_url, title, published_at",
+      );
+      return query;
+    },
+    is: (key: string, value: unknown) => {
+      assert.equal(key, "deleted_at");
+      assert.equal(value, null);
+      return query;
+    },
+    not: (key: string, op: string, value: unknown) => {
+      assert.equal(key, "published_at");
+      assert.equal(op, "is");
+      assert.equal(value, null);
+      return query;
+    },
+    order: () => query,
+    limit: async (limit: number) => {
+      assert.equal(limit, 60);
+      return { data, error };
+    },
+  };
+  return {
+    from: (table: string) => {
+      assert.equal(table, "content_hub");
+      return query;
+    },
+  };
+}
+test("home media keeps existing projection, deduplicates public source links and distinguishes failed read from empty", async () => {
+  const row = {
+    id: "synthetic",
+    platform: "telegram",
+    kind: "post",
+    title: "fixture",
+    content_url: "https://t.me/public_fixture/1",
+    published_at: "2026-01-01",
+    description: "must not be projected",
+    likes: 500,
+  };
+  const result = await homeMediaModule.readHomeMedia(
+    mediaClient([
+      row,
+      { ...row, id: "duplicate" },
+      { ...row, id: "private", content_url: "https://t.me/c/123/456" },
+    ]),
+  );
+  assert.equal(result.state, "ready");
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].description, null);
+  assert.equal("likes" in result.items[0], false);
+  assert.equal(result.items[0].published_at, "2026-01-01");
+  assert.ok(
+    Date.parse(result.readAt) > Date.parse(result.items[0].published_at!),
+  );
+  assert.equal(
+    (await homeMediaModule.readHomeMedia(mediaClient([]))).state,
+    "empty",
+  );
+  assert.equal(
+    (await homeMediaModule.readHomeMedia(mediaClient([], { code: "offline" })))
+      .state,
+    "unavailable",
+  );
+  assert.equal(
+    (
+      await homeMediaModule.readHomeMedia({
+        from: () => {
+          throw new Error("offline");
+        },
+      })
+    ).state,
+    "unavailable",
+  );
+});
+test("home media remains visible in empty/error, labels old record date separately and never renders a pretend player", () => {
+  const Media = component("PublicHomeMedia", {
+    "@/lib/content-hub": { KIND_LABEL, PLATFORM_META },
+    "@/lib/format": { formatJalali },
+    "@/lib/media/presentation": { editorialCover, sourceUrl },
+    "./PublicMediaArtwork": {
+      __esModule: true,
+      default: () => React.createElement("span", null, "editorial fixture"),
+    },
+  });
+  const read = { state: "empty", items: [], readAt: "2026-10-17T12:00:00Z" };
+  for (const state of ["empty", "unavailable"]) {
+    const html = renderToStaticMarkup(Media({ read: { ...read, state } }));
+    assert.match(html, /id="home-media"/);
+    assert.match(html, /رفتن به رسانهٔ آرش/);
+    assert.match(
+      html,
+      state === "empty" ? /هنوز محتوای قابل‌نمایشی/ : /role="alert"/,
+    );
+  }
+  const html = renderToStaticMarkup(
+    Media({
+      read: {
+        ...read,
+        state: "ready",
+        items: [
+          {
+            id: "fixture",
+            platform: "instagram",
+            kind: "reel",
+            title: "synthetic title",
+            content_url: "https://www.instagram.com/reel/fixture/",
+            published_at: "2026-01-01",
+            description: null,
+          },
+        ],
+      },
+    }),
+  );
+  assert.match(html, /بیش از هفت روز/);
+  assert.match(html, /تاریخ ثبت‌شدهٔ قبلی الزاماً زمان انتشار/);
+  assert.match(html, /آخرین همگام‌سازی جداگانه/);
+  assert.match(html, /مشاهده در اینستاگرام/);
+  assert.doesNotMatch(html, /<video|<audio|<iframe/);
+  const home = renderToStaticMarkup(component("PublicHome")({}));
+  assert.match(home, /id="public-home-title">آرش صفری/);
+  assert.doesNotMatch(
+    home,
+    /دید روشن‌تر|امروز را از کجا شروع|ورود به نمای بازار/,
+  );
 });
