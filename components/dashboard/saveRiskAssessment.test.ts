@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { saveRiskAssessment } from "./saveRiskAssessment";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { posix } from "node:path";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import React, { type ReactNode } from "react";
@@ -106,78 +107,97 @@ const assessment = { id: 'a', total_score: 40, risk_category: 'synthetic', creat
 const ok = (data: unknown): Result => ({ data, error: null });
 function fixture(): Record<string, Result> {
   return { profiles: ok({ full_name: 'عضو نمونه', role: 'user' }), risk_assessments: ok(assessment), risk_history: ok([]),
-    portfolios: ok(portfolio), portfolio_versions: ok([portfolio, { ...portfolio, id: 'older' }]), holdings: ok([holding]),
+    portfolios: ok(portfolio), portfolio_history: ok([portfolio, { ...portfolio, id: 'older' }]), portfolio_versions: ok(null), member_holding_versions: ok([]), member_holding_positions: ok([]), member_debt_positions: ok([]), member_investment_scope_reviews: ok(null), holdings: ok([holding]),
     portfolio_snapshots: ok(snapshots), transactions: ok([transaction]), telegram_links: ok({ user_id: 'member' }),
     payments: ok({ status: 'paid', invite_link: 'https://example.invalid/channel', ref_id: 'synthetic' }), risk_revalidations: ok(null), announcements: ok([]), announcement_deliveries: ok([]) };
 }
-async function render(results = fixture()) {
-  const loaded = new Map<string, { exports: { default?: unknown } }>();
+async function render(results = fixture(), member = "member", queries: { table: string; filters: [string, unknown][] }[] = []) {
+  const loaded = new Map<string, { exports: Record<string, unknown> }>();
   const leaf = (name: string) => function FinancialLeaf(props: Props) { return React.createElement('output', { 'data-component': name },
     name === 'KpiCard' ? `${props.label}: ${props.value}` : ['PerformanceChart', 'AllocationDonut'].includes(name) ? JSON.stringify(props.data) : name === 'HoldingsTable' ? 'دارایی سالم' : name); };
-  function load(file: string): unknown {
-    const cached = loaded.get(file); if (cached) return cached.exports.default;
-    const compiledModule = { exports: {} as { default?: unknown } }; loaded.set(file, compiledModule);
+  function load(file: string): Record<string, unknown> {
+    const cached = loaded.get(file); if (cached) return cached.exports;
+    const compiledModule = { exports: {} as Record<string, unknown> }; loaded.set(file, compiledModule);
     const code = ts.transpileModule(readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText;
     runInNewContext(code, { exports: compiledModule.exports, process: { env: {} }, require(name: string) {
       if (name === 'react') return React;
-      if (name === 'react/jsx-runtime') { const jsx = (type: React.ElementType, props: Props, key?: string) => React.createElement(type, { ...props, key }); return { jsx, jsxs: jsx, Fragment: React.Fragment }; }
+      if (name === 'server-only') return {};
+      if (name === 'next/link') return { __esModule: true, default: ({ href, children, ...props }: Props) => React.createElement('a', { href, ...props }, children as ReactNode) };
+      if (name === 'react/jsx-runtime') { const jsx = (type: React.ElementType, props: Props, key?: string) => { const { children, ...rest } = props; return React.createElement(type, { ...rest, key }, ...React.Children.toArray(children as ReactNode)); }; return { jsx, jsxs: jsx, Fragment: React.Fragment }; }
       if (name === 'next/navigation') return { useRouter: () => ({ refresh() {} }), redirect() { throw Error('Unexpected redirect'); } };
       if (name === 'lucide-react') return new Proxy({}, { get: () => () => React.createElement('i') });
       if (name === '@/lib/format') return format;
       if (name === '@/components/quiz/quizData') return { RISK_PROFILES: {} };
       if (name === '@/lib/access') return { getAccess: async () => ({ level: 'full', standing: 'active' }) };
-      if (name === '@/lib/supabase/server') return { createClient: async () => ({ auth: { getUser: async () => ({ data: { user: { id: 'member', email: 'synthetic@example.invalid' } } }) }, from(table: string) {
-        let selected = ''; const query = { select(columns: string) { selected = columns; return query; }, eq() { return query; }, order() { return query; }, limit() { return query; }, maybeSingle() { return query; }, not() { return query; },
-          then(resolve: (r: Result) => unknown) { const key = table === 'risk_assessments' && selected !== '*' ? 'risk_history' : table === 'portfolios' && selected !== '*' ? 'portfolio_versions' : table; assert.ok(results[key], key); return Promise.resolve(resolve(results[key])); } }; return query;
+      if (name === '@/lib/supabase/server') return { createClient: async () => ({ auth: { getUser: async () => ({ data: { user: { id: member, email: 'synthetic@example.invalid' } }, error: null }) }, from(table: string) {
+        let selected = '', ordered = '', ascending = true, maximum = Infinity, single = false;
+        const filters: [string, unknown][] = []; queries.push({ table, filters });
+        const canonical = ['member_holding_versions', 'member_holding_positions', 'member_debt_positions', 'member_investment_scope_reviews', 'portfolio_versions'].includes(table);
+        const query = { select(columns: string) { selected = columns; return query; }, eq(column: string, value: unknown) { filters.push([column, value]); return query; },
+          order(column: string, options?: { ascending: boolean }) { ordered = column; ascending = options?.ascending ?? true; return query; }, limit(value: number) { maximum = value; return query; }, maybeSingle() { single = true; return query; }, not() { return query; },
+          then(resolve: (r: Result) => unknown) {
+            const key = table === 'risk_assessments' && selected !== '*' ? 'risk_history' : table === 'portfolios' && selected !== '*' ? 'portfolio_history' : table;
+            assert.ok(results[key], key); const result = results[key];
+            if (!canonical || !Array.isArray(result.data)) return Promise.resolve(resolve(result));
+            let rows = result.data.filter(row => filters.every(([column, value]) => row[column] === value));
+            if (ordered) rows = rows.toSorted((a, b) => (a[ordered] > b[ordered] ? 1 : a[ordered] < b[ordered] ? -1 : 0) * (ascending ? 1 : -1));
+            rows = rows.slice(0, maximum);
+            return Promise.resolve(resolve({ ...result, data: single ? rows[0] ?? null : rows }));
+          } }; return query;
       } }) };
       if (name === '@/lib/supabase/client') return { createClient() { throw Error('No client writes in render test'); } };
       const actual: Record<string, string> = { './DashboardClient': 'app/(protected)/dashboard/DashboardClient.tsx', '@/components/dashboard/LivePortfolio': 'components/dashboard/LivePortfolio.tsx', '@/components/dashboard/AccessCards': 'components/dashboard/AccessCards.tsx', '@/components/dashboard/ReadError': 'components/dashboard/ReadError.tsx', './ReadError': 'components/dashboard/ReadError.tsx' };
-      if (actual[name]) return { __esModule: true, default: load(actual[name]) };
+      if (actual[name]) return load(actual[name]);
+      if (name.startsWith('@/lib/portfolio/') || name === '@/lib/read-state' || name.startsWith('.') && file.startsWith('lib/')) {
+        const target = name.startsWith('@/') ? name.slice(2) : posix.join(posix.dirname(file), name);
+        const resolved = target.endsWith('.ts') ? target : target + '.ts';
+        assert.ok(existsSync(resolved), resolved); return load(resolved);
+      }
       return { __esModule: true, default: leaf(name.split('/').at(-1)!) };
     } });
-    return compiledModule.exports.default;
+    return compiledModule.exports;
   }
-  const page = load('app/(protected)/dashboard/page.tsx') as () => Promise<ReactNode>;
+  const page = (load('app/(protected)/dashboard/page.tsx') as { default: () => Promise<ReactNode> }).default;
   return renderToStaticMarkup(await page());
 }
 
 test('healthy financial data renders current holdings, history, target and channel without alerts', async () => {
-  const html = await render(); assert.doesNotMatch(html, /role="alert"/); assert.match(html, /دارایی سالم/); assert.match(html, /ارزش کل دارایی/); assert.match(html, /هدف سالم/); assert.match(html, /PerformanceChart/); assert.match(html, /example.invalid\/channel/);
+  const html = await render(); assert.doesNotMatch(html, /role="alert"/); assert.match(html, /دارایی سالم/); assert.match(html, /ارزش ثبت‌شدهٔ دارایی/); assert.match(html, /هدف سالم/); assert.match(html, /PerformanceChart/); assert.match(html, /example.invalid\/channel/);
 });
 test('genuinely empty successful reads retain empty and waiting states without errors', async () => {
-  const f = fixture(); for (const key of ['holdings', 'portfolio_snapshots', 'transactions', 'portfolio_versions']) f[key] = ok([]); f.portfolios = ok(null); f.payments = ok(null);
-  const html = await render(f); assert.doesNotMatch(html, /role="alert"/); assert.match(html, /پرتفوی زنده‌ی شما هنوز خالی است/); assert.match(html, /در انتظار/);
+  const f = fixture(); for (const key of ['holdings', 'portfolio_snapshots', 'transactions', 'portfolio_history']) f[key] = ok([]); f.portfolios = ok(null); f.payments = ok(null);
+  const html = await render(f); assert.doesNotMatch(html, /role="alert"/); assert.match(html, /سوابق قبلی سبد هنوز خالی است/); assert.match(html, /در انتظار/);
 });
 for (const [key, label, missing] of [
-  ['holdings', 'دارایی‌ها', 'ارزش کل دارایی'], ['portfolio_snapshots', 'روند ارزش سبد', 'data-component="PerformanceChart"'],
-  ['portfolios', 'سبد تخصیص‌یافته', 'در انتظار تخصیص'], ['portfolio_versions', 'سابقهٔ نسخه‌های سبد', 'data-component="PortfolioVersionHistory"'],
+  ['holdings', 'دارایی‌ها', 'ارزش ثبت‌شدهٔ دارایی'], ['portfolio_snapshots', 'روند ارزش سبد', 'data-component="PerformanceChart"'],
+  ['portfolios', 'سبد تخصیص‌یافته', 'در انتظار تخصیص'], ['portfolio_history', 'سابقهٔ نسخه‌های سبد', 'data-component="PortfolioVersionHistory"'],
   ['transactions', 'تراکنش‌های اخیر', 'تراکنش سالم'], ['payments', 'وضعیت پرداخت', 'example.invalid/channel'],
 ] as const) test(`${key} failure is an alert, never a successful empty financial section`, async () => {
   const f = fixture(); f[key] = { data: null, error: { code: '42501' } }; const html = await render(f);
-  assert.match(html, new RegExp(`دریافت ${label} انجام نشد`)); assert.doesNotMatch(html, new RegExp(missing)); assert.doesNotMatch(html, /پرتفوی زنده‌ی شما هنوز خالی است/);
+  assert.match(html, new RegExp(`دریافت ${label} انجام نشد`)); assert.doesNotMatch(html, new RegExp(missing)); assert.doesNotMatch(html, /سوابق قبلی سبد هنوز خالی است/);
   if (key !== 'holdings') assert.match(html, /دارایی سالم/);
   if (key !== 'portfolio_snapshots') assert.match(html, /data-component="PerformanceChart"/);
   if (key !== 'payments') assert.match(html, /example.invalid\/channel/);
 });
 test('holdings failure preserves a healthy snapshot chart and transactions, without zero-value holdings KPIs', async () => {
   const f = fixture(); f.holdings = { data: [], error: { code: '503' } }; const html = await render(f);
-  assert.match(html, /PerformanceChart/); assert.match(html, /تراکنش سالم/); assert.doesNotMatch(html, /ارزش کل دارایی|تعداد دارایی|تخصیص دارایی/);
+  assert.match(html, /PerformanceChart/); assert.match(html, /تراکنش سالم/); assert.doesNotMatch(html, /ارزش ثبت‌شدهٔ دارایی|تعداد دارایی|تخصیص دارایی/);
 });
 test('snapshot failure preserves holdings while suppressing period-return fallback and chart', async () => {
   const f = fixture(); f.portfolio_snapshots = { data: [], error: { code: '503' } }; const html = await render(f);
-  assert.match(html, /ارزش کل دارایی/); assert.match(html, /دارایی سالم/); assert.doesNotMatch(html, /بازده دوره|PerformanceChart/);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی/); assert.match(html, /دارایی سالم/); assert.doesNotMatch(html, /بازده دوره|PerformanceChart/);
 });
 test('simultaneous holdings and snapshot failures retain healthy transactions and risk assessment', async () => {
   const f = fixture(); f.holdings = { data: null, error: { code: '503' } }; f.portfolio_snapshots = { data: null, error: { code: '503' } }; const html = await render(f);
-  assert.match(html, /تراکنش سالم/); assert.match(html, /دریافت دارایی‌ها انجام نشد/); assert.match(html, /دریافت روند ارزش سبد انجام نشد/); assert.doesNotMatch(html, /هنوز خالی|ارزش کل دارایی/);
+  assert.match(html, /تراکنش سالم/); assert.match(html, /دریافت دارایی‌ها انجام نشد/); assert.match(html, /دریافت روند ارزش سبد انجام نشد/); assert.doesNotMatch(html, /هنوز خالی|ارزش ثبت‌شدهٔ دارایی/);
 });
 test('failed reads with residual rows cannot render those rows as confirmed financial data', async () => {
   const f = fixture(); f.holdings.error = { code: '503' }; f.payments.error = { code: '503' }; const html = await render(f);
-  assert.doesNotMatch(html, /دارایی سالم|ارزش کل دارایی|example.invalid\/channel/); assert.match(html, /دریافت دارایی‌ها انجام نشد/);
+  assert.doesNotMatch(html, /دارایی سالم|ارزش ثبت‌شدهٔ دارایی|example.invalid\/channel/); assert.match(html, /دریافت دارایی‌ها انجام نشد/);
 });
 test('empty successful snapshot history cannot use a failed holdings read as a period-value fallback', async () => {
   const f = fixture(); f.holdings.error = { code: '503' }; f.portfolio_snapshots = ok([]); const html = await render(f);
-  assert.match(html, /دریافت دارایی‌ها انجام نشد/); assert.doesNotMatch(html, /بازده دوره|ارزش کل دارایی|تعداد دارایی/);
+  assert.match(html, /دریافت دارایی‌ها انجام نشد/); assert.doesNotMatch(html, /بازده دوره|ارزش ثبت‌شدهٔ دارایی|تعداد دارایی/);
 });
 test('portfolio read error remains visible when a genuine risk assessment is not yet present', async () => {
   const f = fixture(); f.risk_assessments = ok(null); f.portfolios = { data: null, error: { code: '503' } }; const html = await render(f);
@@ -185,9 +205,161 @@ test('portfolio read error remains visible when a genuine risk assessment is not
 });
 test('genuinely empty holdings/history remain empty when transactions fail, with a separate error instead of zero KPIs', async () => {
   const f = fixture(); f.holdings = ok([]); f.portfolio_snapshots = ok([]); f.transactions = { data: null, error: { code: '503' } }; const html = await render(f);
-  assert.match(html, /پرتفوی زنده‌ی شما هنوز خالی است/); assert.match(html, /دریافت تراکنش‌های اخیر انجام نشد/); assert.doesNotMatch(html, /ارزش کل دارایی|تعداد دارایی/);
+  assert.match(html, /سوابق قبلی سبد هنوز خالی است/); assert.match(html, /دریافت تراکنش‌های اخیر انجام نشد/); assert.doesNotMatch(html, /ارزش ثبت‌شدهٔ دارایی|تعداد دارایی/);
 });
 test('healthy transactions remain visible alongside genuinely empty holdings and history', async () => {
   const f = fixture(); f.holdings = ok([]); f.portfolio_snapshots = ok([]); const html = await render(f);
-  assert.match(html, /پرتفوی زنده‌ی شما هنوز خالی است/); assert.match(html, /تراکنش سالم/); assert.doesNotMatch(html, /ارزش کل دارایی|تعداد دارایی/);
+  assert.match(html, /سوابق قبلی سبد هنوز خالی است/); assert.match(html, /تراکنش سالم/); assert.doesNotMatch(html, /ارزش ثبت‌شدهٔ دارایی|تعداد دارایی/);
+});
+
+function canonicalFixture(member = 'member', version = 2) {
+  const f = fixture();
+  f.holdings = ok([]); f.portfolio_snapshots = ok([]); f.portfolios = ok(null); f.portfolio_history = ok([]);
+  f.member_holding_versions = ok([{ id: `${member}-v${version}`, user_id: member, version, note: null, created_at: '2026-10-17T10:00:00Z' }]);
+  f.member_holding_positions = ok([{ version_id: `${member}-v${version}`, position_key: `${member}-gold`, symbol: null, manual_label: 'ساختگی بدون قیمت', asset_class: 'gold', qty: 3,
+    unit: 'گرم', cost_basis: null, as_of: '2026-10-17', title: null, ownership_pct: 100, valuation_mode: 'unpriced', declared_value: null, valuation_source: null, valuation_as_of: null, valuation_status: 'missing' }]);
+  return f;
+}
+
+test('canonical-only v2 is visible before legacy records with three real existing workspace links', async () => {
+  const queries: { table: string; filters: [string, unknown][] }[] = [];
+  const html = await render(canonicalFixture(), 'member', queries);
+  assert.match(html, /آرش صفری · فضای مالی شخصی/);
+  assert.match(html, /نسخهٔ ۲/); assert.match(html, /۱ قلم در آخرین نسخه ثبت شده است/);
+  assert.doesNotMatch(html, /هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید/);
+  assert.ok(html.indexOf('دارایی، بدهی و سبد من') < html.indexOf('سوابق قبلی سبد'));
+  for (const label of ['مشاهده و ثبت دارایی', 'مشاهده و ثبت بدهی', 'بررسی محدودهٔ سبد']) assert.match(html, new RegExp(`href="/dashboard/holdings"[^>]*>${label}`));
+  assert.ok(queries.some(q => q.table === 'member_holding_versions' && q.filters.some(([key, value]) => key === 'user_id' && value === 'member')));
+});
+
+test('unpriced/null canonical position is recorded without fabricating a monetary total, yield or price read', async () => {
+  const queries: { table: string; filters: [string, unknown][] }[] = [];
+  const html = await render(canonicalFixture(), 'member', queries);
+  assert.match(html, /۱ قلم در آخرین نسخه ثبت شده است/);
+  assert.match(html, /بدهی‌ای در این نسخه ثبت نشده است؛ این به معنی نداشتن بدهی نیست/);
+  assert.match(html, /محدودهٔ سرمایه‌گذاری این نسخه هنوز تأیید نشده است/);
+  assert.doesNotMatch(html.match(/<section aria-label="وضعیت مالی شخصی"[\s\S]*?<\/section>/)![0], /ارزش ثبت‌شدهٔ دارایی|بازده دوره|تومان/);
+  assert.ok(!queries.some(q => q.table === 'symbol_history'));
+});
+
+test('genuinely empty canonical reads request first recording and never claim zero wealth or zero debt', async () => {
+  const f = canonicalFixture(); f.member_holding_versions = ok([]);
+  const html = await render(f);
+  assert.match(html, /هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید/);
+  assert.match(html, /پس از اولین ثبت دارایی/);
+  assert.doesNotMatch(html.match(/<section aria-label="وضعیت مالی شخصی"[\s\S]*?<\/section>/)![0], /نسخهٔ ۲|۱ قلم در آخرین نسخه|بدهی‌ای در این نسخه ثبت نشده|تومان/);
+});
+
+for (const table of ['member_holding_versions', 'member_holding_positions']) test(`${table} read error cannot turn residual canonical rows into an empty or completed record`, async () => {
+  const f = canonicalFixture(); f[table].error = { code: '503' };
+  const html = await render(f);
+  assert.match(html, /دریافت ثبت‌های دارایی انجام نشد/);
+  assert.doesNotMatch(html, /۱ قلم در آخرین نسخه|نسخهٔ ۲|هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید/);
+});
+
+for (const [table, label] of [['member_debt_positions', 'بدهی‌های این نسخه'], ['member_investment_scope_reviews', 'محدودهٔ سبد این نسخه'], ['portfolio_versions', 'هدف ثبت‌شدهٔ سبد']] as const) test(`${table} failure stays separate from a healthy canonical asset record`, async () => {
+  const f = canonicalFixture(); f[table] = { data: null, error: { code: '503' } };
+  const html = await render(f);
+  assert.match(html, new RegExp(`دریافت ${label} انجام نشد`));
+  assert.match(html, /۱ قلم در آخرین نسخه ثبت شده است/);
+});
+
+test('one legacy snapshot has unknown period return, not a fabricated zero percent', async () => {
+  const f = fixture(); f.portfolio_snapshots = ok([snapshots[0]]);
+  const html = await render(f);
+  assert.match(html, /بازده دوره: نامشخص/);
+  assert.doesNotMatch(html, /بازده دوره: [۰0]/);
+  assert.ok(html.includes(JSON.stringify([{ date: snapshots[0].as_of, value: snapshots[0].value }]).replaceAll('"', '&quot;')));
+});
+
+test('legacy snapshots cannot supply a zero current-asset total when no legacy holdings exist', async () => {
+  const f = fixture(); f.holdings = ok([]);
+  const html = await render(f);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی: نامشخص/);
+  assert.match(html, /سود\/زیان ثبت‌شدهٔ روز: نامشخص/);
+  assert.match(html, /PerformanceChart/);
+  assert.doesNotMatch(html, /ارزش ثبت‌شدهٔ دارایی: [۰0]/);
+});
+
+test('one missing legacy price preserves all recorded rows and known fields while totals/weights stay unknown', async () => {
+  const f = fixture();
+  f.holdings = ok([holding, { ...holding, id: 'missing', symbol: 'UNKNOWN', name: 'قلم با قیمت ناموجود', qty: 3, current_price: null, day_change_pct: null }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/);
+  assert.match(html, /UNKNOWN · قلم با قیمت ناموجود/);
+  assert.match(html, /اقلام حذف نشده‌اند/);
+  assert.match(html, /تعداد: ۲ · قیمت ثبت‌شده: ۱٬۰۰۰ تومان/);
+  assert.match(html, /تعداد: ۳ · قیمت ثبت‌شده: نامشخص/);
+  assert.match(html, /ارزش ثبت‌شده: ۲٬۰۰۰ تومان/);
+  assert.match(html, /ارزش ثبت‌شده: نامشخص/);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی: نامشخص/);
+  assert.match(html, /وزن: نامشخص/);
+  assert.doesNotMatch(html, /NaN|Infinity|قیمت ثبت‌شده: ۰|وزن: ۰/);
+});
+
+test('a known zero-value legacy row is retained with unknown percentage weight', async () => {
+  const f = fixture(); f.holdings = ok([{ ...holding, qty: 0 }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/);
+  assert.match(html, /تعداد: ۰/);
+  assert.match(html, /وزن: نامشخص/);
+});
+
+test('negative legacy quantity/price fields stay unknown while valid fields and all row identities remain visible', async () => {
+  const f = fixture(); f.holdings = ok([holding,
+    { ...holding, id: 'negative-price', symbol: 'BADPRICE', name: 'قیمت منفی', current_price: -99 },
+    { ...holding, id: 'negative-qty', symbol: 'BADQTY', name: 'تعداد منفی', qty: -2 }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/);
+  assert.match(html, /BADPRICE · قیمت منفی/);
+  assert.match(html, /BADQTY · تعداد منفی/);
+  assert.match(html, /تعداد: ۲ · قیمت ثبت‌شده: نامشخص/);
+  assert.match(html, /تعداد: نامشخص · قیمت ثبت‌شده: ۱٬۰۰۰ تومان/);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی: نامشخص/);
+  assert.doesNotMatch(html, /قیمت ثبت‌شده: -|تعداد: -|NaN|Infinity/);
+  assert.doesNotMatch(html.slice(html.indexOf('دارایی و عملکرد ثبت‌شده')), /data-component="AllocationDonut"/);
+});
+
+test('zero-start snapshot series retains both actual recorded values with an explicit reason instead of an empty series', async () => {
+  const f = fixture(); f.portfolio_snapshots = ok([{ as_of: '2026-10-12', value: 0 }, { as_of: '2026-10-13', value: 100 }]);
+  const html = await render(f);
+  assert.match(html, /بازده دوره: نامشخص/);
+  assert.match(html, /ثبت آغازین صفر است/);
+  assert.match(html, /ارزش ثبت‌شده: ۰ تومان/);
+  assert.match(html, /ارزش ثبت‌شده: ۱۰۰ تومان/);
+  assert.doesNotMatch(html, /NaN|Infinity/);
+});
+
+test('finite positive rows with overflowing aggregates keep their identities but never display an infinite total or chart', async () => {
+  const f = fixture(); f.holdings = ok([
+    { ...holding, qty: 1, current_price: Number.MAX_VALUE },
+    { ...holding, id: 'large-two', symbol: 'LARGE2', name: 'قلم بزرگ دوم', qty: 1, current_price: Number.MAX_VALUE }]);
+  const html = await render(f);
+  assert.match(html, /SYN · دارایی سالم/); assert.match(html, /LARGE2 · قلم بزرگ دوم/);
+  assert.match(html, /ارزش ثبت‌شدهٔ دارایی: نامشخص/);
+  assert.match(html, /سود\/زیان ثبت‌شدهٔ روز: نامشخص/);
+  assert.match(html, /وزن: نامشخص/);
+  assert.doesNotMatch(html, /Infinity|NaN/);
+  assert.doesNotMatch(html.slice(html.indexOf('دارایی و عملکرد ثبت‌شده')), /data-component="AllocationDonut"/);
+});
+
+test('canonical readers follow each authenticated session and only the chosen own version, without writes', async () => {
+  const a = canonicalFixture('member-A', 2), b = canonicalFixture('member-B', 9);
+  const f = canonicalFixture();
+  f.member_holding_versions = ok([...(a.member_holding_versions.data as unknown[]), ...(b.member_holding_versions.data as unknown[])]);
+  const bPosition = (b.member_holding_positions.data as Record<string, unknown>[])[0];
+  f.member_holding_positions = ok([...(a.member_holding_positions.data as unknown[]), bPosition, { ...bPosition, position_key: 'B-second' }]);
+  for (const [member, version, count, foreignVersion] of [['member-A', '۲', '۱', '۹'], ['member-B', '۹', '۲', '۲']] as const) {
+    const queries: { table: string; filters: [string, unknown][] }[] = [];
+    const html = await render(f, member, queries);
+    assert.match(html, new RegExp(`نسخهٔ ${version}`));
+    assert.match(html, new RegExp(`${count} قلم در آخرین نسخه ثبت شده است`));
+    assert.doesNotMatch(html, new RegExp(`نسخهٔ ${foreignVersion}`));
+    for (const table of ['member_holding_versions', 'portfolio_versions', 'member_investment_scope_reviews']) {
+      assert.ok(queries.some(q => q.table === table && q.filters.some(([key, value]) => key === 'user_id' && value === member)), table);
+    }
+    for (const table of ['member_holding_positions', 'member_debt_positions']) {
+      assert.ok(queries.some(q => q.table === table && q.filters.some(([key, value]) => key === 'version_id' && value === `${member}-v${member === 'member-A' ? 2 : 9}`)), table);
+    }
+  }
 });

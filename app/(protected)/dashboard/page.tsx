@@ -4,13 +4,15 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import DashboardClient from "./DashboardClient";
+import DashboardClient, { type MemberFinanceSummary } from "./DashboardClient";
 import AccessStatusCard from "@/components/dashboard/AccessStatusCard";
 import { getAccess } from "@/lib/access";
+import { loadPortfolioSnapshot, loadVersionDebts } from "@/lib/portfolio/service";
+import { loadInvestmentScope } from "@/lib/portfolio/scopeService";
 
 export const metadata = {
-  title: "داشبورد",
-  description: "داشبورد کاربری برای ارزیابی ریسک و مدیریت سبد سرمایه‌گذاری.",
+  title: "فضای مالی شخصی",
+  description: "حساب شخصی شما در پلتفرم آرش صفری؛ دارایی، بدهی و محدودهٔ سبد سرمایه‌گذاری.",
 };
 
 export default async function DashboardPage() {
@@ -24,7 +26,7 @@ export default async function DashboardPage() {
   const [
     profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes,
     telegramRes, paymentRes, scoreHistoryRes, revalidationRes, announcementsRes, seenRes,
-    portfolioVersionsRes,
+    portfolioVersionsRes, memberSnapshot,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase
@@ -100,6 +102,8 @@ export default async function DashboardPage() {
       .select("id, allocations, notes, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
+    // Reuse the same owner-filtered reader as the versioned holdings workspace.
+    loadPortfolioSnapshot(undefined, async () => supabase),
   ]);
 
   // A failed read is not a new member or an empty risk history.
@@ -111,6 +115,7 @@ export default async function DashboardPage() {
           <div role="alert" className="card p-6 space-y-4">
             <p>اطلاعات پروفایل یا سابقهٔ ارزیابی ریسک دریافت نشد. برای جلوگیری از نمایش نتیجهٔ ناقص، داشبورد فعلاً باز نمی‌شود.</p>
             <a href="/dashboard" className="btn btn-outline">تلاش دوباره</a>
+            <Link href="/dashboard/holdings" className="btn btn-outline">دارایی و بدهی من</Link>
           </div>
         </main>
         <Footer />
@@ -119,6 +124,25 @@ export default async function DashboardPage() {
   }
 
   const access = await getAccess();
+  const [memberDebts, memberScope] = await Promise.all([
+    memberSnapshot.ready && memberSnapshot.holdings
+      ? loadVersionDebts(memberSnapshot.holdings.id).catch(() => ({ ready: false, debts: [] }))
+      : Promise.resolve({ ready: false, debts: [] }),
+    memberSnapshot.ready && memberSnapshot.holdings
+      ? loadInvestmentScope(memberSnapshot.holdings)
+      : Promise.resolve({ status: "error" as const, review: null }),
+  ]);
+  const assetsState = !memberSnapshot.ready ? "error" : memberSnapshot.holdings ? "ready" : "empty";
+  const memberFinance: MemberFinanceSummary = {
+    assetsState,
+    version: memberSnapshot.holdings?.version ?? null,
+    recordedAt: memberSnapshot.holdings ? memberSnapshot.history[0]?.createdAt ?? null : null,
+    assetCount: memberSnapshot.ready && memberSnapshot.holdings ? memberSnapshot.holdings.positions.length : null,
+    debtsState: assetsState === "empty" ? "empty" : !memberDebts.ready ? "error" : "ready",
+    debtCount: assetsState === "ready" && memberDebts.ready ? memberDebts.debts.length : null,
+    scopeState: assetsState === "empty" ? "empty" : memberScope.status === "error" ? "error" : memberScope.review ? "confirmed" : "unconfirmed",
+    targetState: memberSnapshot.targetState ?? "error",
+  };
 
   const seenSet = new Set((seenRes.data ?? []).map((d) => d.announcement_id));
   const announcements = (announcementsRes.data ?? []).map((a) => ({
@@ -132,6 +156,34 @@ export default async function DashboardPage() {
       <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-6 space-y-4">
           <AccessStatusCard access={access} />
+        </div>
+        <DashboardClient
+          userId={user.id}
+          userEmail={user.email ?? ""}
+          userName={profileRes.data?.full_name ?? "سرمایه‌گذار"}
+          userRole={profileRes.data?.role ?? "user"}
+          memberFinance={memberFinance}
+          assessment={assessmentRes.data ?? null}
+          portfolio={portfolioRes.data ?? null}
+          holdings={holdingsRes.data ?? []}
+          snapshots={snapshotsRes.data ?? []}
+          transactions={txRes.data ?? []}
+          telegramLinked={Boolean(telegramRes.data)}
+          payment={paymentRes.data ?? null}
+          scoreHistory={scoreHistoryRes.data ?? []}
+          revalidationExpiredAt={revalidationRes.data?.expired_at ?? null}
+          announcements={announcements}
+          portfolioVersions={portfolioVersionsRes.data ?? []}
+          financialReadErrors={{
+            portfolio: Boolean(portfolioRes.error),
+            holdings: Boolean(holdingsRes.error),
+            snapshots: Boolean(snapshotsRes.error),
+            transactions: Boolean(txRes.error),
+            payment: Boolean(paymentRes.error),
+            portfolioVersions: Boolean(portfolioVersionsRes.error),
+          }}
+        />
+        <div className="mx-auto w-full max-w-6xl px-5 pb-8">
           {/* بستنِ حلقه: از داشبورد به میزِ بازار. طرفِ دیگرِ همین مسیر در
               `/market` و `/symbol/[symbol]` است. */}
           <Link
@@ -154,35 +206,7 @@ export default async function DashboardPage() {
               <ArrowLeft size={15} strokeWidth={2.2} aria-hidden />
             </span>
           </Link>
-          <Link href="/dashboard/holdings" className="card block px-4 py-3.5 text-sm font-semibold" style={{ color: "var(--navy)" }}>
-            ثبت و اصلاح دارایی و بدهی · با حفظ سابقهٔ نسخه‌ها
-          </Link>
         </div>
-        <DashboardClient
-          userId={user.id}
-          userEmail={user.email ?? ""}
-          userName={profileRes.data?.full_name ?? "سرمایه‌گذار"}
-          userRole={profileRes.data?.role ?? "user"}
-          assessment={assessmentRes.data ?? null}
-          portfolio={portfolioRes.data ?? null}
-          holdings={holdingsRes.data ?? []}
-          snapshots={snapshotsRes.data ?? []}
-          transactions={txRes.data ?? []}
-          telegramLinked={Boolean(telegramRes.data)}
-          payment={paymentRes.data ?? null}
-          scoreHistory={scoreHistoryRes.data ?? []}
-          revalidationExpiredAt={revalidationRes.data?.expired_at ?? null}
-          announcements={announcements}
-          portfolioVersions={portfolioVersionsRes.data ?? []}
-          financialReadErrors={{
-            portfolio: Boolean(portfolioRes.error),
-            holdings: Boolean(holdingsRes.error),
-            snapshots: Boolean(snapshotsRes.error),
-            transactions: Boolean(txRes.error),
-            payment: Boolean(paymentRes.error),
-            portfolioVersions: Boolean(portfolioVersionsRes.error),
-          }}
-        />
       </main>
       <Footer />
     </>

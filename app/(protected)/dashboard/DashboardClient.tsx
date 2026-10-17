@@ -32,7 +32,7 @@ import RiskRevalidationBanner from "@/components/dashboard/RiskRevalidationBanne
 import RiskPlanCard from "@/components/dashboard/RiskPlanCard";
 import PortfolioVersionHistory from "@/components/dashboard/PortfolioVersionHistory";
 import ReadError from "@/components/dashboard/ReadError";
-import { formatJalali } from "@/lib/format";
+import { formatJalali, toPersianDigits } from "@/lib/format";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const VALIDITY_DAYS = 180;
@@ -79,11 +79,24 @@ interface Portfolio {
   created_at: string;
 }
 
+/** Display-only state from the existing canonical readers, never a saved model. */
+export interface MemberFinanceSummary {
+  assetsState: "ready" | "empty" | "error";
+  version: number | null;
+  recordedAt: string | null;
+  assetCount: number | null;
+  debtsState: "ready" | "empty" | "error";
+  debtCount: number | null;
+  scopeState: "confirmed" | "unconfirmed" | "empty" | "error";
+  targetState: "ready" | "empty" | "error";
+}
+
 interface Props {
   userId: string;
   userEmail: string;
   userName: string;
   userRole?: string;
+  memberFinance?: MemberFinanceSummary;
   assessment: Assessment | null;
   portfolio: Portfolio | null;
   holdings: HoldingDB[];
@@ -104,6 +117,7 @@ export default function DashboardClient({
   userEmail,
   userName,
   userRole,
+  memberFinance,
   assessment: initialAssessment,
   portfolio,
   holdings,
@@ -204,13 +218,13 @@ export default function DashboardClient({
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
         <div>
           <span className="eyebrow">
-            {isAdmin ? "پنل مدیریت" : "داشبورد کاربری"}
+            آرش صفری · فضای مالی شخصی
           </span>
           <h1
             className="font-display text-2xl md:text-3xl font-bold mt-1"
             style={{ color: "var(--navy-deep)" }}
           >
-            {isAdmin ? "خوش آمدید، مدیر سیستم" : `خوش آمدید، ${userName}`}
+            {`خوش آمدید، ${userName}`}
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-3)" }}>
             {userEmail}
@@ -236,7 +250,7 @@ export default function DashboardClient({
             }}
           >
             <ShieldCheck size={13} style={{ color: "var(--success)" }} />
-            داده‌ها رمزنگاری شده
+            اطلاعات حساب شخصی شما
           </div>
           <button
             type="button"
@@ -249,6 +263,8 @@ export default function DashboardClient({
           </button>
         </div>
       </div>
+
+      <PersonalFinance summary={memberFinance} />
 
       {/* Risk-profile 180-day revalidation banner */}
       {assessment && (
@@ -308,12 +324,43 @@ export default function DashboardClient({
         <AccessCards telegramLinked={telegramLinked} payment={payment} paymentReadFailed={financialReadErrors.payment} />
       </div>
 
-      {/* Live portfolio overview — KPIs, allocation donut, performance, holdings */}
+      {/* Legacy records stay separate from the canonical personal balance sheet. */}
       <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
         <LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} readErrors={financialReadErrors} />
       </div>
     </div>
   );
+}
+
+function PersonalFinance({ summary }: { summary?: MemberFinanceSummary }) {
+  const assetsFailed = !summary || summary.assetsState === "error";
+  return <section aria-label="وضعیت مالی شخصی" className="card-elevated p-5 md:p-6 mb-8 space-y-5">
+    <div>
+      <span className="eyebrow">پروندهٔ مالی شما</span>
+      <h2 className="font-display text-xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>دارایی، بدهی و سبد من</h2>
+      <p className="text-sm leading-7 mt-2" style={{ color: "var(--text-2)" }}>این وضعیت از آخرین ثبت نسخه‌دار همین حساب خوانده می‌شود. ثبت چند قلم به معنی کامل‌بودن اطلاعات مالی یا تأیید ارزش کل ثروت شما نیست.</p>
+      {summary?.assetsState === "ready" && <p className="text-xs mt-2" style={{ color: "var(--text-3)" }}>نسخهٔ {toPersianDigits(summary.version!)}{summary.recordedAt && ` · ثبت در ${formatJalali(summary.recordedAt)}`}</p>}
+    </div>
+    <div className="grid gap-4 md:grid-cols-3">
+      <div className="card p-4 space-y-3">
+        <h3 className="font-bold">دارایی‌های من</h3>
+        {assetsFailed ? <ReadError label="ثبت‌های دارایی" code="MEMBER_ASSETS" /> : <p className="text-sm leading-7">{summary.assetsState === "empty" ? "هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید." : `${toPersianDigits(summary.assetCount!)} قلم در آخرین نسخه ثبت شده است.`}</p>}
+        <Link href="/dashboard/holdings" className="btn btn-outline min-h-11 w-full">مشاهده و ثبت دارایی</Link>
+      </div>
+      <div className="card p-4 space-y-3">
+        <h3 className="font-bold">بدهی‌های من</h3>
+        {!summary || summary.debtsState === "error" ? <ReadError label="بدهی‌های این نسخه" code="MEMBER_DEBTS" /> : <p className="text-sm leading-7">{summary.debtsState === "empty" ? "پس از اولین ثبت دارایی، بدهی‌های همان نسخه را ثبت کنید." : summary.debtCount === 0 ? "بدهی‌ای در این نسخه ثبت نشده است؛ این به معنی نداشتن بدهی نیست." : `${toPersianDigits(summary.debtCount!)} بدهی در این نسخه ثبت شده است.`}</p>}
+        <Link href="/dashboard/holdings" className="btn btn-outline min-h-11 w-full">مشاهده و ثبت بدهی</Link>
+      </div>
+      <div className="card p-4 space-y-3">
+        <h3 className="font-bold">سبد سرمایه‌گذاری من</h3>
+        {!summary || summary.scopeState === "error" ? <ReadError label="محدودهٔ سبد این نسخه" code="MEMBER_SCOPE" /> : <p className="text-sm leading-7">{summary.scopeState === "empty" ? "برای تعیین اقلام سبد، ابتدا دارایی‌ها را ثبت کنید." : summary.scopeState === "confirmed" ? "محدودهٔ سرمایه‌گذاری این نسخه تأیید شده است." : "محدودهٔ سرمایه‌گذاری این نسخه هنوز تأیید نشده است."}</p>}
+        {!summary || summary.targetState === "error" ? <ReadError label="هدف ثبت‌شدهٔ سبد" code="MEMBER_TARGET" /> : <p className="text-xs leading-6" style={{ color: "var(--text-3)" }}>{summary.targetState === "ready" ? "هدف ثبت‌شدهٔ حساب موجود است؛ مقایسه به اطلاعات معتبر نیاز دارد." : "هنوز هدفی در ثبت‌های نسخه‌دار حساب موجود نیست."}</p>}
+        <Link href="/dashboard/holdings" className="btn btn-outline min-h-11 w-full">بررسی محدودهٔ سبد</Link>
+      </div>
+    </div>
+    <p className="text-xs leading-7" style={{ color: "var(--text-3)" }}>هر سه مسیر در صفحهٔ موجود دارایی و بدهی باز می‌شوند. ارزش‌گذاری و اطلاعات ناموجود در همان صفحه بررسی می‌شوند؛ مبلغ یا بازدهی از سوابق قبلی به این ثبت‌ها اضافه نمی‌شود.</p>
+  </section>;
 }
 
 // ─── No assessment state ──────────────────────────────────────────────────
