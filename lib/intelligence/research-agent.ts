@@ -56,6 +56,7 @@ Do not invent prices, ratios, forecasts, quotes, sources, or numerical valuation
 Unknown bands must remain unknown. Distinguish evidence from inference.
 Return only JSON: {"summary":"...","claims":[{"kind":"FACT|INFERENCE","text":"...","evidence":["E1"]}],"scenarios":[{"label":"base|upside|downside","text":"...","invalidation":"...","evidence":["E1"]}],"limitations":["..."]}.
 Include all three distinct scenarios. Every claim and scenario must cite supplied evidence aliases.
+Evidence aliases belong ONLY in evidence arrays. All free-text fields must contain no digits, URLs, HTML, or evidence aliases; write quantities in words only when describing the structure, never invent financial quantities.
 This is a draft for human review, never approval, publication, messaging, or a portfolio action.
 Never use trading imperatives, guaranteed returns, or these words: سیگنال خرید فروش توصیه پیشنهاد.`;
 
