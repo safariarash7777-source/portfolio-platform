@@ -4,8 +4,9 @@ import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { RESEARCH_INSTRUCTIONS, validateResearchDraft, type ResearchPacket } from '../../lib/intelligence/research-agent';
+import { RESEARCH_POLICY } from '../../lib/intelligence/research-policy';
 
-export const RESEARCH_MODEL = 'gpt-6-luna';
+export const RESEARCH_MODEL = RESEARCH_POLICY.model;
 export async function inferResearch(packet: ResearchPacket) {
   const directory = await mkdtemp(join(tmpdir(), 'portfolio-hermes-research-'));
   try {
@@ -15,8 +16,9 @@ export async function inferResearch(packet: ResearchPacket) {
     const env = { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !/KEY|TOKEN|SECRET|PASSWORD|SUPABASE/i.test(key))), NODE_ENV: process.env.NODE_ENV };
     const { stdout } = await promisify(execFile)(executable, [
       'chat', '--safe-mode', '--provider', 'openai-codex', '--model', RESEARCH_MODEL,
-      '--toolsets', 'none', '--max-turns', '1', '--run-budget', '90', '--oneshot', '--quiet', '--query-file', input,
-    ], { cwd: directory, env, timeout: 120000, maxBuffer: 1024 * 1024, windowsHide: true });
+      '--reasoning', RESEARCH_POLICY.effort, '--toolsets', 'none', '--max-turns', String(RESEARCH_POLICY.maxTurns),
+      '--run-budget', String(RESEARCH_POLICY.runSeconds), '--oneshot', '--quiet', '--query-file', input,
+    ], { cwd: directory, env, timeout: RESEARCH_POLICY.timeoutMs, maxBuffer: 1024 * 1024, windowsHide: true });
     const start = stdout.indexOf('{'), end = stdout.lastIndexOf('}');
     if (start < 0 || end <= start) throw new Error('missing_structured_draft');
     return validateResearchDraft(JSON.parse(stdout.slice(start, end + 1)), packet);

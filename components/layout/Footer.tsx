@@ -63,6 +63,7 @@ const GROUPS = [
     title: "درباره و قوانین",
     links: [
       { href: "/about", label: "دربارهٔ آرش صفری" },
+      { href: "/help", label: "راهنمای استفاده از سایت" },
       { href: "/legal/privacy", label: "حریم خصوصی" },
       { href: "/legal/terms", label: "شرایط استفاده" },
       { href: "/legal/disclaimer", label: "سلب مسئولیت" },
