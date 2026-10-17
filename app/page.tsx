@@ -14,6 +14,7 @@ import MarketKpiRow from "@/components/market/MarketKpiRow";
 import { readIranMarket } from "@/lib/market-bounded";
 import { buildMarketHeadline } from "@/lib/core/marketHeadline";
 import { publicLayout } from "@/lib/public-design/layout";
+import { publicMetricLabels } from "@/lib/public-design/metrics";
 import s from "@/components/public-design/PublicDesign.module.css";
 
 /**
@@ -59,7 +60,9 @@ export default async function LandingPage({
           <a href="/market">مشاهدهٔ کامل بازار</a>
         </header>
         <div className={s.marketRibbon}>
-          <MarketKpiRow metrics={headline.metrics} />
+          <MarketKpiRow
+            metrics={publicMetricLabels(headline.metrics, market.data !== null)}
+          />
         </div>
         <PublicMarketProvenance
           ir={market.data}

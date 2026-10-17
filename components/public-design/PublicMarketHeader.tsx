@@ -10,10 +10,12 @@ export default function PublicMarketHeader({
   index,
   from,
   availability,
+  boardState,
 }: {
   index: readonly MarketSearchEntry[];
   from: string;
   availability: SourceAvailability;
+  boardState?: string | null;
 }) {
   return (
     <>
@@ -27,6 +29,9 @@ export default function PublicMarketHeader({
               availability.state === "timeout" ? "error" : availability.state,
             )}
           </p>
+          {availability.families?.indices.state === "ready" && boardState && (
+            <p className={s.boardState}>{boardState}</p>
+          )}
         </div>
         <div className={s.search}>
           <MarketSearch index={index} from={from} />

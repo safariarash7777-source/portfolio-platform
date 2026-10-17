@@ -53,6 +53,7 @@ import PublicMarketHeader from "@/components/public-design/PublicMarketHeader";
 import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
 import PublicReports from "@/components/public-design/PublicReports";
 import { publicLayout } from "@/lib/public-design/layout";
+import { publicMetricLabels } from "@/lib/public-design/metrics";
 import { publicReports } from "@/lib/public-design/reports";
 import s from "@/components/public-design/PublicDesign.module.css";
 
@@ -170,11 +171,18 @@ export default async function MarketPage({
         index={searchIndex}
         from={selfHref}
         availability={availability}
+        boardState={
+          availability.families?.indices.state === "ready"
+            ? ir?.indices?.state
+            : null
+        }
       />
       <div className={s.marketGrid}>
         {/* ── ردیف ۲: سنجه‌های اصلی ─────────────────────────────────── */}
         <div className={s.marketRibbon}>
-          <MarketKpiRow metrics={headline.metrics} />
+          <MarketKpiRow
+            metrics={publicMetricLabels(headline.metrics, ir !== null)}
+          />
         </div>
 
         {/* ── ردیف ۳: نمودارِ منتخب + نبض بازار ──────────────────────── */}

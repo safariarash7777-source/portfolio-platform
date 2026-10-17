@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   BookOpen,
   Home,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import {
   publicLayoutHref,
+  publicLayout,
   type PublicLayout,
 } from "@/lib/public-design/layout";
 import s from "./PublicDesign.module.css";
@@ -31,9 +33,12 @@ export default function PublicDesignFrame({
   footer: ReactNode;
   children: ReactNode;
 }) {
-  const [layout, setLayout] = useState(initialLayout);
+  const query = useSearchParams();
+  const values = query?.getAll("design");
+  const layout = values
+    ? publicLayout(values.length > 1 ? values : values[0])
+    : initialLayout;
   function choose(next: PublicLayout) {
-    setLayout(next);
     const url = new URL(window.location.href);
     if (next === 1) url.searchParams.delete("design");
     else url.searchParams.set("design", String(next));

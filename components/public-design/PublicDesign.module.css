@@ -3,7 +3,7 @@
   background: var(--bg);
   min-height: 100vh;
 }
-.site > header > div {
+.site > header > div:first-child {
   max-width: 1540px;
   height: 82px;
   padding-inline: 24px;
@@ -736,7 +736,7 @@
   }
 }
 @media (max-width: 800px) {
-  .site > header > div {
+  .site > header > div:first-child {
     height: 72px;
     padding-inline: 16px;
   }
@@ -903,4 +903,15 @@
   margin-inline-start: 6px;
   color: var(--text-3);
   font-size: 9px;
+}
+
+.boardState {
+  display: inline-flex;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--text-2);
+  background: var(--surface);
 }

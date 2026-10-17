@@ -3,6 +3,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { createRequire } from "node:module";
+import { MARKET_SECTIONS } from "../market-nav";
+import { marketQualityLabel } from "../market-quality";
+import { publicMetricLabels } from "./metrics";
+import type { HeadlineMetric } from "../core/marketHeadline";
 import { publicLayout, publicLayoutHref } from "./layout";
 import {
   approvedCodalUrl,
@@ -101,4 +108,200 @@ test("metadata times stay independent and unknown; unsafe source URL is never re
   assert.equal(row.recordedAt, null);
   assert.equal(row.url, null);
   assert.equal(row.id, "7");
+});
+
+const nodeRequire = createRequire(import.meta.url);
+function component(
+  name: string,
+  additional: Record<string, unknown> = {},
+  window?: unknown,
+) {
+  const result = {} as {
+    default: (
+      props: Record<string, unknown>,
+    ) => React.ReactElement<Record<string, unknown>>;
+  };
+  const source = readFileSync(
+    new URL(`../../components/public-design/${name}.tsx`, import.meta.url),
+    "utf8",
+  );
+  const dependencies: Record<string, unknown> = {
+    "react/jsx-runtime": nodeRequire("react/jsx-runtime"),
+    "lucide-react": nodeRequire("lucide-react"),
+    "next/link": {
+      default: ({ children }: { children: React.ReactNode }) =>
+        React.createElement(React.Fragment, null, children),
+      __esModule: true,
+    },
+    "@/lib/public-design/layout": { publicLayout, publicLayoutHref },
+    "./PublicDesign.module.css": {
+      __esModule: true,
+      default: new Proxy({}, { get: (_target, key) => String(key) }),
+    },
+    ...additional,
+  };
+  vm.runInNewContext(
+    ts.transpileModule(source, {
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        target: ts.ScriptTarget.ES2022,
+        jsx: ts.JsxEmit.ReactJSX,
+        esModuleInterop: true,
+      },
+    }).outputText,
+    {
+      exports: result,
+      window,
+      URL,
+      require: (id: string) => {
+        if (id in dependencies) return dependencies[id];
+        throw new Error(id);
+      },
+    },
+  );
+  return result.default;
+}
+function elements(
+  node: React.ReactNode,
+): React.ReactElement<Record<string, unknown>>[] {
+  if (!React.isValidElement(node)) return [];
+  const element = node as React.ReactElement<Record<string, unknown>>;
+  const children = element.props.children;
+  return [
+    element,
+    ...(Array.isArray(children)
+      ? children.flat(Infinity).flatMap(elements)
+      : elements(children as React.ReactNode)),
+  ];
+}
+test("actual frame follows URL across same-route navigation/back and native replacement, preserving loaded children", () => {
+  let href = "https://site.example.test/market?design=2&find=TEST#report";
+  const entries = [href];
+  let cursor = 0;
+  const navigate = (url: string) => {
+    entries.splice(cursor + 1);
+    entries.push(url);
+    cursor += 1;
+    href = url;
+  };
+  const move = (delta: number) => {
+    cursor += delta;
+    href = entries[cursor];
+  };
+  const historyState = { retained: "router state" };
+  const Frame = component(
+    "PublicDesignFrame",
+    {
+      "next/navigation": { useSearchParams: () => new URL(href).searchParams },
+    },
+    {
+      location: {
+        get href() {
+          return href;
+        },
+      },
+      history: {
+        state: historyState,
+        replaceState: (state: unknown, _title: string, url: string) => {
+          assert.equal(state, historyState);
+          href = new URL(url, href).href;
+          entries[cursor] = href;
+        },
+      },
+    },
+  );
+  const child = React.createElement("input", {
+    defaultValue: "retained filter",
+  });
+  const props = {
+    initialLayout: 1,
+    page: "market",
+    navigation: null,
+    footer: null,
+    children: child,
+  };
+  let tree = Frame(props);
+  assert.equal(tree.props["data-public-layout"], 2);
+  const first = elements(tree).find(
+    (el) => el.type === "button" && el.props.children === "دید بازار",
+  )!;
+  (first.props.onClick as () => void)();
+  assert.equal(new URL(href).searchParams.get("design"), null);
+  assert.equal(new URL(href).searchParams.get("find"), "TEST");
+  assert.equal(new URL(href).hash, "#report");
+  tree = Frame({ ...props, initialLayout: 2 });
+  assert.equal(tree.props["data-public-layout"], 1);
+  assert.ok(elements(tree).some((element) => Object.is(element, child)));
+  navigate("https://site.example.test/market?design=3");
+  assert.equal(Frame(props).props["data-public-layout"], 3);
+  navigate("https://site.example.test/market");
+  assert.equal(
+    Frame({ ...props, initialLayout: 3 }).props["data-public-layout"],
+    1,
+  );
+  // The router supplies these URLs after backward/forward navigation. Browser integration is checked separately.
+  move(-1);
+  assert.equal(Frame(props).props["data-public-layout"], 3);
+  move(-1);
+  assert.equal(
+    Frame({ ...props, initialLayout: 2 }).props["data-public-layout"],
+    1,
+  );
+  move(1);
+  assert.equal(Frame(props).props["data-public-layout"], 3);
+  move(1);
+  assert.equal(
+    Frame({ ...props, initialLayout: 3 }).props["data-public-layout"],
+    1,
+  );
+  href = "https://site.example.test/market?design=2&design=3";
+  assert.equal(Frame(props).props["data-public-layout"], 1);
+});
+test("actual market header shows raw board state only with independently ready index family", () => {
+  const Header = component("PublicMarketHeader", {
+    "@/components/market/MarketAutoRefresh": {
+      __esModule: true,
+      default: () => null,
+    },
+    "@/components/market/MarketSearch": {
+      __esModule: true,
+      default: () => null,
+    },
+    "@/lib/market-nav": { MARKET_SECTIONS },
+    "@/lib/market-quality": { marketQualityLabel },
+  });
+  const props = {
+    index: [],
+    from: "/market",
+    boardState: "synthetic-board-open",
+  };
+  for (const state of ["ready", "stale", "unknown-time"]) {
+    const html = renderToStaticMarkup(
+      Header({
+        ...props,
+        availability: { state: "ready", families: { indices: { state } } },
+      }),
+    );
+    assert.equal(html.includes("synthetic-board-open"), state === "ready");
+  }
+});
+test("source failure changes only missing-value explanation, never any engine number or valid coverage", () => {
+  const missing = {
+    key: "net",
+    label: "synthetic",
+    value: null,
+    unit: "toman",
+    changePercent: null,
+    absentReason: "outside hours",
+    coverage: null,
+    note: null,
+  } satisfies HeadlineMetric;
+  const known = { ...missing, key: "known", value: 100, absentReason: null };
+  const data = [missing, known];
+  assert.equal(publicMetricLabels(data, true), data);
+  const failure = publicMetricLabels(data, false);
+  assert.equal(failure[0].value, null);
+  assert.equal(failure[0].absentReason, "دادهٔ منبع در دسترس نیست");
+  assert.equal(failure[1], known);
+  assert.equal(missing.absentReason, "outside hours");
 });
