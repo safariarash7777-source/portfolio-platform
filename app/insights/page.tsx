@@ -19,7 +19,7 @@ export default async function InsightsPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-} = {}) {
+}) {
   const search = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const [{ data, error: contentError }, setting] = await Promise.all([
