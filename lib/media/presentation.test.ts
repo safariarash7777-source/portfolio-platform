@@ -16,3 +16,21 @@ test("repeated content is shown once without deleting source records", () => {
   assert.equal(uniqueMedia(list).length, 1);
   assert.equal(list.length, 2);
 });
+
+test("Telegram dedupe normalizes channel case and trailing slash without merging case-sensitive post IDs", () => {
+  const item = { id: "one", platform: "telegram" as const, kind: "post" as const, title: null, description: null, published_at: null, content_url: "https://t.me/Public_Channel/123" };
+  const rows = [item, { ...item, id: "two", content_url: "https://t.me/public_channel/123/" }, { ...item, id: "three", content_url: "https://t.me/PUBLIC_CHANNEL/123/?track=1" }];
+  assert.equal(uniqueMedia(rows).length, 1);
+  assert.equal(rows.length, 3);
+  const instagram = { ...item, platform: "instagram" as const };
+  assert.equal(uniqueMedia([{ ...instagram, content_url: "https://www.instagram.com/p/CaseID/" }, { ...instagram, id: "different", content_url: "https://www.instagram.com/p/caseid/" }]).length, 2);
+});
+
+test("public Twitter aliases retain path case and deduplicate to X while rejecting spoofed hosts and private Telegram", () => {
+  assert.equal(sourceUrl("https://twitter.com/Person/status/AbC?tracking=1"), "https://x.com/Person/status/AbC");
+  assert.equal(sourceUrl("https://www.twitter.com/Person/status/AbC"), "https://x.com/Person/status/AbC");
+  assert.equal(sourceUrl("https://www.x.com/Person/status/AbC"), "https://x.com/Person/status/AbC");
+  const item = { id: "one", platform: "twitter" as const, kind: "post" as const, title: null, description: null, published_at: null, content_url: "https://twitter.com/Person/status/AbC" };
+  assert.equal(uniqueMedia([item, { ...item, id: "two", content_url: "https://x.com/Person/status/AbC/" }]).length, 1);
+  for (const url of ["https://twitter.com.evil.test/u/1", "https://twitter.com@evil.test/u/1", "https://t.me/C/123/456", "https://t.me/JoinChat/private", "https://t.me/+invite"]) assert.equal(sourceUrl(url), null);
+});

@@ -471,3 +471,43 @@ test("home media remains visible in empty/error, labels old record date separate
     /دید روشن‌تر|امروز را از کجا شروع|ورود به نمای بازار/,
   );
 });
+
+test("actual home reader keeps Twitter aliases and one canonical Telegram post instead of false empty or duplicate cards", async () => {
+  const row = {
+    id: "tg",
+    platform: "telegram",
+    kind: "post",
+    title: "fixture",
+    content_url: "https://t.me/Public_Fixture/123",
+    published_at: "2026-01-01",
+  };
+  const result = await homeMediaModule.readHomeMedia(
+    mediaClient([
+      row,
+      {
+        ...row,
+        id: "tg-duplicate",
+        content_url: "https://t.me/public_fixture/123/",
+      },
+      {
+        ...row,
+        id: "twitter",
+        platform: "twitter",
+        content_url: "https://www.twitter.com/PublicFixture/status/AbC",
+      },
+    ]),
+  );
+  assert.equal(result.state, "ready");
+  assert.equal(result.items.length, 2);
+  assert.equal(result.items[1].platform, "twitter");
+  const onlyTwitter = await homeMediaModule.readHomeMedia(
+    mediaClient([
+      {
+        ...row,
+        platform: "twitter",
+        content_url: "https://twitter.com/PublicFixture/status/AbC",
+      },
+    ]),
+  );
+  assert.equal(onlyTwitter.state, "ready");
+});
