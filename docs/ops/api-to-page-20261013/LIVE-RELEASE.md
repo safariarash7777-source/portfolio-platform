@@ -1,5 +1,55 @@
 # Live data release — 2026-10-14 Tehran
 
+## Commodity connection follow-up — 2026-10-14
+
+PR [#239](https://github.com/safariarash7777-source/portfolio-platform/pull/239)
+merged as `065c293afa9a30ca2bd213c1936abaa92918cb57`. Exact-main
+[CI 38518502712](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/38518502712)
+passed all five jobs. Manual [relay release 38518920086](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/38518920086)
+passed all gates. Liara release `6acf18866de510a731ee30f3`; ten runtime file hashes
+matched the selected Git blobs. Vercel Production `dpl_EsYSfjfLQj1E49yyTMjeQSc9qhBk`
+is READY at the same commit and assigned to the public aliases.
+
+The owner signed into BrsApi. The account panel showed an active commodity
+entitlement (108/1500 used) and AIO (2949/20000 used) at inspection. Official
+[key rules](https://brsapi.ir/tsetmc-exchange-free-bourse-api-key-request/) establish
+one account key for all services. The previous separate-key assumption was wrong.
+The old endpoint base and flat-response parser also disagreed with the official
+[commodity contract](https://brsapi.ir/free-api-commodity-webservice/).
+
+Only `BRSAPI_COMMODITY_ENABLED=1` was added to existing Liara configuration;
+readback confirmed all nine original variables unchanged and scale=1. No key was
+copied, created, or printed. Existing optional budget flags remain off. Encrypted
+pre-change preservation of configuration and six DB state rows passed readback.
+Changing environment variables restarts Liara; the subsequent deployment also
+restarts the process. Existing process-local counters therefore reset, whereas
+persisted archive/candle/NAV state remains stored. No account-wide or durable quota
+guarantee is claimed; commodity local cap is 300 per process/Tehran day.
+
+At 05:53:29 UTC, the first natural startup cycle had stored **14 rows**: precious
+metals 4, base metals 5, energy 5. All 14 had source units and Unix clocks; source
+date was `1405/07/22`, source times ranged from 08:23 to 09:21 Tehran, and the
+independent receipt was 05:53:09.861 UTC. DB and live receipt matched, state was
+`received`, commodity error was null, and core snapshot state remained `complete`.
+An early post-release response still showed old metadata; acceptance used a
+fresh read and actual runtime hashes, not health status alone.
+
+The next scheduled cycle (no forced refresh) advanced the receipt to 05:58:12.436 UTC, with two attempts total, 14 rows, no error, matching DB/debug/auxiliary clocks, and core state complete. The public page then displayed the new 09:28 Tehran receipt. See [sanitized live receipt](commodity-live-receipt.json) and [runtime hash comparison](commodity-runtime-receipt.json).
+
+The public `/market#commodities` rendered 14 cards and 14 source-clock labels,
+without unknown units or empty-state text. Browser screenshot retained privately
+as `commodity-live-page.png`. Receipt and source validity remain distinct; this
+does not assert every upstream quote is contemporaneous with the feed receipt.
+No synthetic commodity history/chart or LLM scheduler was added. Permanent OpenAI
+agents remain inactive, with secure API credential setup unresolved.
+
+Rollback: set `BRSAPI_COMMODITY_ENABLED=0` through the existing configuration API
+(retained quotes remain labelled disabled), or deploy the preceding successful
+relay SHA via the existing workflow. The new UI handles absent legacy fields.
+
+The following sections describe earlier release stages, not the current commodity
+activation result above.
+
 PR #231 was merged as `c50f2fc3be583db0b014a1438598a8596e522539`.
 Exact-main [CI run 38463083380](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/38463083380)
 passed all five jobs. The existing manual [relay workflow 38463617631](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/38463617631)

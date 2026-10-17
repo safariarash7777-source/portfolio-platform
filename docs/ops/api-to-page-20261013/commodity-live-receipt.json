@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-14T05:58:39.255Z",
+  "currentRelease": "6acf18866de510a731ee30f3",
+  "scale": 1,
+  "enabled": true,
+  "overrideKeyPresent": false,
+  "debug": {
+    "enabled": true,
+    "rows": 14,
+    "lastFetchAt": 1791957492436,
+    "reqToday": 2,
+    "dailyCap": 300,
+    "remaining": 298,
+    "counterScope": "process",
+    "dayKey": "2026-10-14",
+    "lastError": null
+  },
+  "coreState": "complete",
+  "storage": {
+    "updatedAt": "2026-10-14T05:58:12.684+00:00",
+    "state": "received",
+    "receivedAt": 1791957492436,
+    "count": 14,
+    "groups": {
+      "metal_precious": 4,
+      "metal_base": 5,
+      "energy": 5
+    },
+    "sourceDates": [
+      "1405/07/22"
+    ],
+    "sourceTimes": [
+      "09:25",
+      "09:26",
+      "09:13"
+    ],
+    "withSourceUnix": 14,
+    "withUnit": 14,
+    "missingPrice": 0,
+    "receiptMatchesDebug": true,
+    "auxiliaryMatches": true
+  },
+  "symbolBudget": {
+    "used": 5,
+    "cap": 500
+  }
+}
