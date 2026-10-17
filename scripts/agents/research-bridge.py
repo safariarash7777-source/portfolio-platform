@@ -62,7 +62,7 @@ def main():
         draft = request['draft']
         if set(draft) != {'input_digest', 'model', 'body', 'provenance'}:
             raise ValueError('invalid_draft')
-        if not re.fullmatch('[a-f0-9]{64}', draft['input_digest']) or draft['model'] != 'gpt-6-luna':
+        if not re.fullmatch('[a-f0-9]{64}', draft['input_digest']) or draft['model'] not in ('gpt-6-luna', 'gpt-6.1-sol'):
             raise ValueError('invalid_draft')
         # Fixed INSERT only. Conflict returns existing ID after a lost response.
         result = sql("""DO $$ BEGIN PERFORM pg_advisory_xact_lock(731904221); END $$;

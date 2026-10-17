@@ -3,6 +3,7 @@ import { Bot, ArrowLeft } from 'lucide-react';
 import { loadResearchDraftsView } from '@/lib/intelligence/research-drafts-view';
 import { formatJalali, formatTehranClock, toPersianDigits } from '@/lib/format';
 import OperationalAgents from '@/components/admin/OperationalAgents';
+import AgentTeamGuide from '@/components/admin/AgentTeamGuide';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'ایجنت‌های سایت | پنل مدیریت', robots: { index: false, follow: false } };
@@ -25,6 +26,7 @@ export default async function AgentsPage() {
       </div>
       {view.invalidCount > 0 && <p role="status" className="text-sm leading-7">{toPersianDigits(view.invalidCount)} رکورد به دلیل ناسازگاری ساختار یا شواهد نمایش داده نشد و نیازمند بررسی است.</p>}
     </header>
+    <AgentTeamGuide />
     <OperationalAgents />
     <section aria-labelledby="research-drafts" className="space-y-5">
       <h2 id="research-drafts" className="text-lg font-bold">تازه‌ترین پیش‌نویس‌های ثبت‌شده</h2>
@@ -67,6 +69,7 @@ export default async function AgentsPage() {
       </article>)}
     </section>
     <section className="grid gap-4 sm:grid-cols-2" aria-label="ادامهٔ کار">
+      <Link className="card flex min-h-16 items-center justify-between gap-3 p-5 focus-visible:outline focus-visible:outline-2" href="/help"><span>راهنمای خودکار کاربران — بدون مصرف مدل</span><ArrowLeft size={20} aria-hidden="true" /></Link>
       <Link className="card flex min-h-16 items-center justify-between gap-3 p-5 focus-visible:outline focus-visible:outline-2" href="/admin/research"><span>کاربرگ پژوهش و بازبینی تحلیل</span><ArrowLeft size={20} aria-hidden="true" /></Link>
       <Link className="card flex min-h-16 items-center justify-between gap-3 p-5 focus-visible:outline focus-visible:outline-2" href="/admin/intelligence"><span>گردش تحلیل و بازبینی انسانی</span><ArrowLeft size={20} aria-hidden="true" /></Link>
     </section>
