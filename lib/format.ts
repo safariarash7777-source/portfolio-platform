@@ -109,6 +109,7 @@ const FA_MONTHS = [
 ];
 
 const jalaliParts = new Intl.DateTimeFormat("en-US-u-ca-persian", {
+  timeZone: "Asia/Tehran",
   year: "numeric",
   month: "numeric",
   day: "numeric",

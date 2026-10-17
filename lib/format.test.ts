@@ -11,7 +11,18 @@ import {
   formatTomanShort,
   rialToToman,
   formatRialAsToman,
+  formatJalali,
+  formatJalaliShort,
 } from "./format";
+
+test('Jalali date and Tehran clock remain on the same local day around midnight', () => {
+  const midnight = '2026-10-16T20:30:00Z';
+  assert.equal(formatJalali(midnight, false), '۱۴۰۵/۰۷/۲۵');
+  assert.equal(formatJalaliShort(midnight), '۲۵ مهر');
+  assert.equal(formatTehranClock(midnight), '۰۰:۰۰');
+  assert.equal(formatJalali('2026-10-16T20:29:59Z', false), '۱۴۰۵/۰۷/۲۴');
+  assert.equal(formatJalali('2026-10-17', false), '۱۴۰۵/۰۷/۲۵');
+});
 
 /* ── واحدِ درصد در برابرِ درصد ────────────────────────────────────────────── */
 
