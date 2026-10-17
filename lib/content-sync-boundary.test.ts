@@ -53,7 +53,7 @@ test("content sync cannot silently use the shared service-role key", () => {
 
 type JsonResult = { status: number; body: Record<string, unknown> };
 
-function cronRoute(options: { ledgerRecorded: boolean; runId: string | null; syncOk: boolean }) {
+function cronRoute(options: { ledgerRecorded: boolean; runId: string | null; syncOk: boolean; unexpectedFailure?: boolean }) {
   const source = readFileSync(new URL("../app/api/cron/telegram-sync/route.ts", import.meta.url), "utf8");
   const dedicatedClient = { marker: "dedicated" };
   let clientCalls = 0;
@@ -78,6 +78,9 @@ function cronRoute(options: { ledgerRecorded: boolean; runId: string | null; syn
     "@/lib/cron/ledger": { runWithLedger: async (args: {
       job: () => Promise<{ value: unknown }>;
     }) => {
+      if (options.unexpectedFailure) {
+        return { result: undefined, ledgerRecorded: options.ledgerRecorded, runId: options.runId };
+      }
       const { value } = await args.job();
       return { result: value, ledgerRecorded: options.ledgerRecorded, runId: options.runId };
     } },
@@ -123,4 +126,15 @@ test("a failed sync reports its failure and ledger receipt separately", async ()
   assert.equal(response.body.reason, "feed_unreachable");
   assert.equal(response.body.ledgerRecorded, true);
   assert.equal(response.body.runId, "synthetic-failed-run");
+});
+
+test("an unexpected job exception stays a bounded failure with its ledger receipt", async () => {
+  const route = cronRoute({ ledgerRecorded: true, runId: "synthetic-exception-run",
+    syncOk: false, unexpectedFailure: true });
+  const response = await route.get({ headers: { get: () => "Bearer synthetic-cron-secret" } });
+  assert.equal(response.status, 502);
+  assert.equal(response.body.ok, false);
+  assert.equal(response.body.reason, "unhandled_exception");
+  assert.equal(response.body.ledgerRecorded, true);
+  assert.equal(response.body.runId, "synthetic-exception-run");
 });

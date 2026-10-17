@@ -41,5 +41,10 @@ export async function GET(req: NextRequest) {
     },
   });
 
+  // runWithLedger records an unexpected job exception and returns no value.
+  // Keep the failure and its ledger receipt visible instead of throwing a 500.
+  if (!result) {
+    return NextResponse.json({ ok: false, reason: "unhandled_exception", ledgerRecorded, runId }, { status: 502 });
+  }
   return NextResponse.json({ ...result, ledgerRecorded, runId }, { status: result.ok ? 200 : 502 });
 }
