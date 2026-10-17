@@ -42,7 +42,7 @@
     "ciHead": "8be74239cc21cb517d5c1a4508523cf5df401b0d",
     "ciConclusion": "success"
   },
-  "browserAcceptance": "LOGIN_REQUIRED",
+  "browserAcceptance": "PASS",
   "customerSupport": "NOT_ENABLED",
   "naturalRunIds": {
     "data_quality": "61f0dc75-3c5e-44c7-a42b-44e2539f3940",
@@ -52,5 +52,26 @@
   "dedicatedTests": 19,
   "isolatedContainerRemoved": true,
   "privateBackupRetained": true,
-  "anonymousHttpProbe": "NOT_RUN_LOCAL_PUBLIC_CONFIG_ABSENT"
+  "anonymousHttpProbe": "NOT_RUN_LOCAL_PUBLIC_CONFIG_ABSENT",
+  "browserVerification": {
+    "at": "2026-10-17T16:33:34.507942+03:30",
+    "url": "https://portfolio-platform-fawn.vercel.app/admin/agents",
+    "authenticatedAdmin": true,
+    "visibleRoles": [
+      "data_quality",
+      "site_monitor",
+      "coordinator"
+    ],
+    "visibleLatestReportTehran": "2026-10-17T16:30:00+03:30",
+    "visibleStates": {
+      "data_quality": "stale",
+      "site_monitor": "ok",
+      "coordinator": "stale"
+    },
+    "sourceEvidenceTimestampsVisible": true,
+    "researchDraftVisible": true,
+    "researchEvidenceExpanded": true,
+    "evidenceEntries": 6,
+    "scope": "Authenticated rendering and evidence disclosure only; no financial semantic accuracy or complete data coverage claim"
+  }
 }
