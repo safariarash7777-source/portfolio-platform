@@ -21,7 +21,7 @@ export const metadata = pageMetadata({
 export default async function InsightsPage({ searchParams }: { searchParams: Promise<{ mediaPreview?: string }> }) {
   const query = await searchParams;
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error: contentError } = await supabase
     .from("content_hub")
     .select("id, platform, kind, content_url, title, description, published_at")
     .is("deleted_at", null)
@@ -43,7 +43,7 @@ export default async function InsightsPage({ searchParams }: { searchParams: Pro
     }));
 
   // Explicit opt-in retains the existing public layout until visual acceptance.
-  if (query.mediaPreview === "1") return <MediaHub items={items} preview sourceMode="existing" />;
+  if (query.mediaPreview === "1") return <MediaHub items={items} preview sourceMode="existing" initialMode={contentError ? "error" : "ready"} />;
 
   return (
     <>
