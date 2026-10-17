@@ -46,9 +46,11 @@ const expect = (name, fn) => { fn(); passed++; console.log('PASS ' + name); };
 const expectAsync = async (name, fn) => { await fn(); passed++; console.log('PASS ' + name); };
 
 for (const profile of ['legacy', 'strict']) {
-  const db = prefix + '_' + profile;
+  const legacyDb = prefix + '_' + profile;
+  let db = legacyDb;
   docker(['exec', container, 'createdb', '-U', 'postgres', db]);
-  const args = ['exec', '-i', container, 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', db];
+  const dbArgs = name => ['exec', '-i', container, 'psql', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', name];
+  let args = dbArgs(db);
   function raw(sql, shouldFail = false) {
     const r = spawnSync('docker', args, { input: sql, encoding: 'utf8', timeout: 12000, maxBuffer: 4 * 1024 * 1024 });
     if (shouldFail) { assert.notEqual(r.status, 0, 'SQL unexpectedly succeeded'); return r.stderr; }
@@ -120,31 +122,53 @@ for (const profile of ['legacy', 'strict']) {
     })));
   }
 
-  raw(source('sql/test/supabase_bootstrap.sql'));
-  raw(source(profile === 'legacy' ? 'sql/test/profile_legacy_default_privileges.sql' : 'sql/test/profile_explicit_grants.sql'));
-  raw(portfolioTable + '\n' + source('sql/archive/supabase_portfolio_versioning.sql'));
-  raw(source('sql/phase5_payments_telegram.sql') + '\n' + source('sql/phase8_webinars.sql') + '\n' + source('sql/phase11_access_tiers.sql'));
-  raw(phase15 + '\n' + source('sql/phase30_contain_create_payment.sql'));
+  const installSource = () => {
+    raw(source('sql/test/supabase_bootstrap.sql'));
+    raw(source(profile === 'legacy' ? 'sql/test/profile_legacy_default_privileges.sql' : 'sql/test/profile_explicit_grants.sql'));
+    raw(portfolioTable + '\n' + source('sql/archive/supabase_portfolio_versioning.sql'));
+    raw(source('sql/phase5_payments_telegram.sql') + '\n' + source('sql/phase8_webinars.sql') + '\n' + source('sql/phase11_access_tiers.sql'));
+    raw(phase15 + '\n' + source('sql/phase30_contain_create_payment.sql'));
+    raw(`GRANT SELECT ON public.webinars TO anon,authenticated;
+      GRANT SELECT,INSERT,UPDATE,DELETE ON public.webinars,public.webinar_registrations TO authenticated;
+      GRANT SELECT ON public.entitlements TO authenticated;
+      INSERT INTO auth.users(id) VALUES('${admin}'),('${member}'),('${other}');
+      INSERT INTO public.profiles(id,role) VALUES('${admin}','admin'),('${member}','user'),('${other}','user');`);
+  };
+  installSource();
   // Explicit app/admin table grants make the strict profile runnable; the broad
   // legacy default grants remain, so RLS must prevent forged member writes.
-  raw(`GRANT SELECT ON public.webinars TO anon,authenticated;
-    GRANT SELECT,INSERT,UPDATE,DELETE ON public.webinars,public.webinar_registrations TO authenticated;
-    GRANT SELECT ON public.entitlements TO authenticated;
-    INSERT INTO auth.users(id) VALUES('${admin}'),('${member}'),('${other}');
-    INSERT INTO public.profiles(id,role) VALUES('${admin}','admin'),('${member}','user'),('${other}','user');
-    INSERT INTO public.webinars(id,title,starts_at,price_toman,status,platform_url)
+  const unqualifiedFixture = `INSERT INTO public.webinars(id,title,starts_at,price_toman,status,platform_url)
       VALUES('${uuid(80)}','Legacy free',now(),0,'published','https://session.invalid/legacy-free'),
         ('${uuid(81)}','Legacy paid',now(),100,'published','https://session.invalid/legacy-paid');
     INSERT INTO public.webinar_registrations(webinar_id,user_id,payment_status)
       VALUES('${uuid(80)}','${member}','free'),('${uuid(81)}','${member}','paid');
     INSERT INTO public.entitlements(user_id,kind,source,starts_at,expires_at)
-      VALUES('${other}','manual','synthetic-legitimate-grant',now()-interval '1 day',now()+interval '1 day');`);
+      VALUES('${other}','manual','synthetic-legitimate-grant',now()-interval '1 day',now()+interval '1 day');`;
+  raw(unqualifiedFixture);
   expect(profile + ' original public whole-row session URL leak is reproduced only on synthetic rows', () =>
     assert.equal(raw(claims('anon') + "SELECT count(*) FROM public.webinars WHERE platform_url IS NOT NULL;"), '2'));
   expect(profile + ' original member INSERT can forge paid on a closed synthetic webinar', () => {
     raw(claims('authenticated',other) + `INSERT INTO public.webinar_registrations(webinar_id,user_id,payment_status) VALUES('${uuid(80)}','${other}','paid');`);
   });
+  expect(profile + ' legacy installation aborts atomically; rights/schema transition stays blocked', () => {
+    assert.match(raw(source('docs/m2/proposed-exact-webinar.sql'), true), /legacy registrations require reviewed reconciliation/);
+    assert.equal(raw("SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='webinars' AND column_name='access_enabled';"), '0');
+    assert.equal(raw('SELECT count(*) FROM public.webinar_registrations;'), '3');
+    assert.equal(raw("SELECT count(*) FROM pg_policies WHERE schemaname='public' AND tablename='webinars' AND policyname='webinars_public_read';"), '1');
+    assert.equal(count('entitlements'), 1);
+  });
+  // A separate empty database exercises NEW registrations. Do not delete,
+  // promote or relabel the legacy rows to make installation appear accepted.
+  db = prefix + '_' + profile + '_fresh';
+  docker(['exec', container, 'createdb', '-U', 'postgres', db]);
+  args = dbArgs(db);
+  installSource();
   raw(source('docs/m2/proposed-exact-webinar.sql'));
+  // These post-install synthetic unqualified states test denial/counting only.
+  // They are not a legacy migration or proof of preserved legacy access.
+  raw(unqualifiedFixture);
+  raw(`INSERT INTO public.webinar_registrations(webinar_id,user_id,payment_status)
+    VALUES('${uuid(80)}','${other}','paid');`);
   expect(profile + ' full proposal grammar and DDL apply on PostgreSQL 17', () => {
     assert.equal(raw("SELECT count(*) FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname IN ('webinar_access','prepare_webinar_payment','attach_webinar_payment','settle_webinar_payment');"), '4');
   });
@@ -156,10 +180,11 @@ for (const profile of ['legacy', 'strict']) {
     assert.equal(raw(claims('authenticated') + 'SELECT count(*) FROM public.webinars;'), '0');
     assert.equal(raw(claims('authenticated', admin) + 'SELECT count(*) FROM public.webinars;'), '2');
   });
-  expect(profile + ' legacy rows stay unqualified; legitimate global grant stays intact', () => {
+  expect(profile + ' new synthetic unqualified rows deny access; separate legacy records remain untouched', () => {
     assert.equal(raw("SELECT count(*) FROM public.webinar_registrations WHERE access_qualified;"), '0');
     assert.equal(raw(claims('authenticated', other) + `SELECT public.fn_user_access('${other}');`), 'full');
     assert.equal(count('entitlements'), 1);
+    assert.equal(docker(dbArgs(legacyDb), 'SELECT count(*) FROM public.webinar_registrations;'), '3');
   });
   const a = uuid(11), b = uuid(12), free = uuid(13), capped = uuid(14), closed = uuid(15), draft = uuid(16);
   webinar(a); webinar(b); webinar(free, 0, 1); webinar(capped, 100, 1); webinar(closed, 0, 'NULL', 'published', false); webinar(draft, 0, 'NULL', 'draft');
@@ -324,9 +349,9 @@ for (const profile of ['legacy', 'strict']) {
     assert.ok(exports.settledReceipt(settle(reg.registration_id,'SYNTHETIC_CLOSED',bound.payment_id,'205'),proof,'205'));
     assert.equal(access(id).allowed,false); assert.equal(count('entitlements'),1);
   });
-  expect(profile + ' unconfigured/legacy remains denied and source paid/free occupied count stays unchanged', () => {
+  expect(profile + ' unconfigured synthetic rows deny access and source paid/free occupied count stays unchanged', () => {
     raw(claims('authenticated',admin) + `UPDATE public.webinars SET access_enabled=true,access_starts_at='2020-01-01',access_ends_at='2099-01-01' WHERE id='${uuid(81)}';`,true);
-    // The immutable legacy window needs separate reconciliation, never retroactive auto-qualification.
+    // This exercises immutable unqualified states, not legacy reconciliation.
     assert.equal(access(uuid(80)).allowed,false); assert.equal(access(uuid(81)).allowed,false);
     const list=call('public.list_public_webinars()','anon');
     assert.equal(list.find(w=>w.id===uuid(80)).registered_count,2);

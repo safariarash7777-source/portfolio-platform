@@ -22,6 +22,73 @@ BEGIN;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '30s';
 
+-- This proposal is only an empty-registration transition. Legacy paid/free is
+-- not proof of a legitimate right: the old member INSERT policy could forge it.
+-- Refuse BEFORE any DDL instead of silently locking every old window at NULL
+-- and removing access. A reviewed legacy reconciliation is a separate release.
+-- Hold the old writers out until COMMIT/ROLLBACK so the emptiness check cannot
+-- race an old registration, callback, or administrator update.
+LOCK TABLE public.webinars,public.webinar_registrations IN SHARE ROW EXCLUSIVE MODE;
+DO $m2_preflight$
+DECLARE
+  prerequisite text;
+BEGIN
+  IF EXISTS (SELECT 1 FROM public.webinar_registrations) THEN
+    RAISE EXCEPTION USING ERRCODE='PT409', MESSAGE='M2 legacy registrations require reviewed reconciliation before installation';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.pg_class
+    WHERE oid IN ('public.webinars'::regclass,'public.webinar_registrations'::regclass)
+      AND (NOT relrowsecurity OR relforcerowsecurity)) THEN
+    RAISE EXCEPTION USING ERRCODE='PT409', MESSAGE='M2 existing table RLS differs from the reviewed source';
+  END IF;
+  -- The admin route uses the session client. RLS alone does not supply these
+  -- table privileges; the old isolated harness supplied them outside this SQL.
+  FOREACH prerequisite IN ARRAY ARRAY['SELECT','INSERT','UPDATE','DELETE'] LOOP
+    IF NOT pg_catalog.has_table_privilege('authenticated','public.webinars',prerequisite) THEN
+      RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='M2 authenticated webinar table privileges require reviewed installation';
+    END IF;
+  END LOOP;
+  IF NOT pg_catalog.has_table_privilege('authenticated','public.webinar_registrations','SELECT')
+    OR NOT pg_catalog.has_function_privilege('authenticated','public.is_admin()','EXECUTE') THEN
+    RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='M2 session admin prerequisites are missing';
+  END IF;
+  -- Reject additional or modified policies, including an alternative public
+  -- URL/read or member-write path. Do not guess names and drop unknown policies.
+  IF EXISTS (
+    WITH expected(table_name,policy_name,command,qual,with_check) AS (VALUES
+      ('webinars','webinars_public_read','r',
+        '(status = ANY (ARRAY[''published''::text, ''live''::text, ''ended''::text]))',NULL::text),
+      ('webinars','webinars_admin_all','*','is_admin()',NULL),
+      ('webinar_registrations','wr_user_read','r','(auth.uid() = user_id)',NULL),
+      ('webinar_registrations','wr_user_insert','a',NULL,'(auth.uid() = user_id)'),
+      ('webinar_registrations','wr_admin_all','*','is_admin()',NULL)
+    ), actual AS (
+      SELECT c.relname::text AS table_name,p.polname::text AS policy_name,p.polcmd::text AS command,
+        pg_catalog.pg_get_expr(p.polqual,p.polrelid) AS qual,
+        pg_catalog.pg_get_expr(p.polwithcheck,p.polrelid) AS with_check,
+        p.polpermissive AND p.polroles=ARRAY[0::oid] AS source_roles
+      FROM pg_catalog.pg_policy p JOIN pg_catalog.pg_class c ON c.oid=p.polrelid
+      WHERE p.polrelid IN ('public.webinars'::regclass,'public.webinar_registrations'::regclass)
+    )
+    SELECT 1 FROM expected e FULL JOIN actual a USING(table_name,policy_name)
+    WHERE e.command IS DISTINCT FROM a.command OR e.qual IS DISTINCT FROM a.qual
+      OR e.with_check IS DISTINCT FROM a.with_check OR a.source_roles IS DISTINCT FROM true
+  ) THEN
+    RAISE EXCEPTION USING ERRCODE='PT409', MESSAGE='M2 existing webinar policies differ from the reviewed source';
+  END IF;
+  FOREACH prerequisite IN ARRAY ARRAY[
+    'public.verify_payment(text,text,integer,text)','public.fail_payment(text)'
+  ] LOOP
+    IF pg_catalog.to_regprocedure(prerequisite) IS NULL
+      OR NOT pg_catalog.has_function_privilege('service_role',prerequisite,'EXECUTE')
+      OR pg_catalog.has_function_privilege('anon',prerequisite,'EXECUTE')
+      OR pg_catalog.has_function_privilege('authenticated',prerequisite,'EXECUTE') THEN
+      RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='M2 canonical settlement RPC privileges differ from the reviewed source';
+    END IF;
+  END LOOP;
+END;
+$m2_preflight$;
+
 ALTER TABLE public.webinars
   ALTER COLUMN price_toman DROP DEFAULT,
   ADD COLUMN access_enabled boolean NOT NULL DEFAULT false,
