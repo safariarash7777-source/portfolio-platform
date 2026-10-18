@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_noStore as noStore } from "next/cache";
 import type { createClient } from "@/lib/supabase/server";
+import { withDeadline } from "@/lib/deadline";
 import {
   isSiteLayout,
   requestedPreviewLayout,
@@ -15,44 +16,40 @@ export async function readSiteAppearance(
   search: Record<string, string | string[] | undefined> = {},
 ): Promise<SiteAppearance> {
   noStore();
-  let globalLayout;
-  try {
-    const { data, error } = await client
-      .rpc("get_media_layout")
-      .abortSignal(AbortSignal.timeout(4000));
-    if (error || !isSiteLayout(data))
-      return { state: "unavailable", globalLayout: null, previewLayout: null };
-    globalLayout = data;
-  } catch {
-    return { state: "unavailable", globalLayout: null, previewLayout: null };
-  }
-  const canonical: SiteAppearance = {
-    state: "ready",
-    globalLayout,
-    previewLayout: null,
+  // One request-local budget covers the setting and optional preview checks.
+  // If preview lookup stalls, keep a global choice already read successfully.
+  let fallback: SiteAppearance = {
+    state: "unavailable", globalLayout: null, previewLayout: null,
   };
-  const requested =
-    search.appearance_preview === "1"
-      ? requestedPreviewLayout(search.design)
-      : null;
-  if (requested === null) return canonical;
-  // URL values never establish authority. Current DB role, not JWT metadata,
-  // grants this explicitly labelled, non-persistent administrator preview only.
   try {
-    const {
-      data: { user },
-      error: authError,
-    } = await client.auth.getUser();
-    if (authError || !user) return canonical;
-    const { data: profile, error } = await client
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (!error && profile?.role === "admin")
-      return { ...canonical, previewLayout: requested };
+    return await withDeadline(async (signal) => {
+      const { data, error } = await client.rpc("get_media_layout").abortSignal(signal);
+      if (signal.aborted || error || !isSiteLayout(data)) return fallback;
+      const canonical: SiteAppearance = {
+        state: "ready", globalLayout: data, previewLayout: null,
+      };
+      fallback = canonical;
+      const requested = search.appearance_preview === "1"
+        ? requestedPreviewLayout(search.design) : null;
+      if (requested === null) return canonical;
+      // URL values never establish authority. Current DB role, not JWT metadata,
+      // grants this explicitly labelled, non-persistent administrator preview only.
+      const {
+        data: { user }, error: authError,
+      } = await client.auth.getUser();
+      if (signal.aborted || authError || !user) return canonical;
+      const { data: profile, error: profileError } = await client
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .abortSignal(signal)
+        .maybeSingle();
+      if (!signal.aborted && !profileError && profile?.role === "admin")
+        return { ...canonical, previewLayout: requested };
+      return canonical;
+    }, 4000);
   } catch {
-    /* Fail closed for preview; the successfully read global choice remains. */
+    // The existing helper also observes late rejections from abort-ignoring work.
+    return fallback;
   }
-  return canonical;
 }

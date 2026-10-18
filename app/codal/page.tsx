@@ -9,6 +9,7 @@ import Footer from "@/components/layout/Footer";
 import { toPersianDigits } from "@/lib/format";
 import { pageMetadata } from "@/lib/metadata";
 import { codalFeedFailure } from "@/lib/codal-feed";
+import { withDeadline } from "@/lib/deadline";
 
 
 export const dynamic = "force-dynamic";
@@ -47,17 +48,19 @@ export default async function CodalFeedPage({
   let rows: FeedRow[] = [];
   let feedFailure: "missing" | "unavailable" | null = null;
   try {
-    const supabase = await createClient();
-    let query = supabase
-      .from("codal_feed")
-      .select("id, symbol, company_name, title, report_code, category, sent_date, sent_time, link, link_pdf, link_excel")
-      .order("sent_date", { ascending: false, nullsFirst: false })
-      .order("sent_time", { ascending: false, nullsFirst: false })
-      .order("id", { ascending: false })
-      .limit(80);
-    if (cat !== "همه") query = query.eq("category", cat);
-    if (q) query = query.ilike("symbol", `%${q}%`);
-    const { data, error } = await query;
+    const { data, error } = await withDeadline(async (signal) => {
+      const supabase = await createClient();
+      let query = supabase
+        .from("codal_feed")
+        .select("id, symbol, company_name, title, report_code, category, sent_date, sent_time, link, link_pdf, link_excel")
+        .order("sent_date", { ascending: false, nullsFirst: false })
+        .order("sent_time", { ascending: false, nullsFirst: false })
+        .order("id", { ascending: false })
+        .limit(80);
+      if (cat !== "همه") query = query.eq("category", cat);
+      if (q) query = query.ilike("symbol", `%${q}%`);
+      return await query.abortSignal(signal);
+    }, 4000);
     feedFailure = codalFeedFailure(error);
     rows = (data ?? []) as FeedRow[];
   } catch {
