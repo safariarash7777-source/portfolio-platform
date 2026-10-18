@@ -1,4 +1,5 @@
 // An unknown outcome must retry the exact original request, never an edited draft.
+import { withDeadline } from "../deadline";
 export interface FinancialSaveAttempt { readonly url: string; readonly body: string }
 export interface FinancialSaveReceipt { version_id: string; version: number; position_count: number; reused: boolean }
 export type FinancialSaveOutcome =
@@ -10,7 +11,9 @@ export const financialSaveAttempt = (url: string, payload: unknown): FinancialSa
 const canonicalConflict = "نسخهٔ تازه‌تری ثبت شده یا این شناسه با محتوای متفاوت استفاده شده است. آخرین نسخه را باز کنید؛ متن فرم شما حفظ شده است.";
 export async function sendFinancialAttempt(attempt: FinancialSaveAttempt, unresolvedPrior = false, transport: typeof fetch = fetch): Promise<FinancialSaveOutcome> {
  try {
-  const response = await transport(attempt.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: attempt.body });
+  // A timeout says nothing about commit: preserve the exact attempt for replay.
+  return await withDeadline(async (signal): Promise<FinancialSaveOutcome> => {
+  const response = await transport(attempt.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: attempt.body, signal });
   if(response.status >= 400 && response.status < 500) {
    if(response.status === 429) return { status: "unknown", message: "این تلاش به محدودیت موقت سرویس رسید؛ نتیجهٔ ثبت هنوز مشخص نیست. متن فرم و همان درخواست حفظ شدند؛ پس از رفع محدودیت، همین ثبت را دوباره بررسی کنید." };
    let error: unknown;
@@ -33,5 +36,6 @@ export async function sendFinancialAttempt(attempt: FinancialSaveAttempt, unreso
    || !Number.isSafeInteger(payload.base_version) || row.version !== payload.base_version + 1 || !Array.isArray(items)
    || !Number.isSafeInteger(row.position_count) || row.position_count !== items.length || typeof row.reused !== "boolean") return { status: "unknown" };
   return { status: "confirmed", receipt: row };
+  }, 15000);
  } catch { return { status: "unknown" }; }
 }

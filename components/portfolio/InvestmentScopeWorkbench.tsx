@@ -7,6 +7,7 @@ import { selectInvestmentScope } from "@/lib/portfolio/investmentScope";
 import { scopeReviewFromStored, type ScopeRead, type StoredScopeReview } from "@/lib/portfolio/scopeContract";
 import { buildHoldingsView, type BuildViewInput } from "@/lib/portfolio/view";
 import { formatToman, formatJalali, toPersianDigits } from "@/lib/format";
+import { withDeadline } from "@/lib/deadline";
 const assetLabels: Record<string, string> = { gold: "طلا", cash: "نقد", fixed_income: "درآمد ثابت", equity_ir: "سهام ایران", fx: "ارز" };
 export default function InvestmentScopeWorkbench({ holdings, storedTarget, priceRows, pricesFailed, scopeState = { status: "error", review: null }, editable = false }: { holdings: HoldingVersion; storedTarget: BuildViewInput["storedTarget"]; priceRows: BuildViewInput["priceRows"]; pricesFailed: boolean; scopeState?: ScopeRead; editable?: boolean }) {
   const router = useRouter();
@@ -57,8 +58,11 @@ export default function InvestmentScopeWorkbench({ holdings, storedTarget, price
       const assignments = holdings.positions.map(p => ({ positionKey: p.positionKey, use: uses[p.positionKey] ?? "unknown" }));
       const baseScopeVersion = savedReview?.scopeVersion ?? 0;
       pending.current ??= { assignments, baseScopeVersion, body: JSON.stringify({ holding_version_id: holdings.id, rules_version: "member-selected.v0.1", assignments, base_scope_version: baseScopeVersion, client_token: token.current }) };
-      const response = await fetch("/api/portfolio/holdings/scope", { method: "POST", headers: { "Content-Type": "application/json" }, body: pending.current.body });
-      const result = await response.json();
+      const body = pending.current.body;
+      const { response, result } = await withDeadline(async (signal) => {
+        const response = await fetch("/api/portfolio/holdings/scope", { method: "POST", headers: { "Content-Type": "application/json" }, body, signal });
+        return { response, result: await response.json() };
+      }, 15000);
       if (!response.ok) {
         const valid = result && typeof result === "object" && !Array.isArray(result) && Object.keys(result).length === 1 && typeof result.error === "string" && result.error.trim();
         const canonicalConflict = valid && response.status === 409 && result.error === "نسخهٔ دارایی یا محدوده تغییر کرده است؛ انتخاب‌های شما حفظ شد. آخرین نسخه را دوباره باز کنید.";
