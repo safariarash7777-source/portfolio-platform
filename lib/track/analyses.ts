@@ -205,26 +205,30 @@ function anonClient() {
   return createClient(url, anon, { auth: { persistSession: false } });
 }
 
-export async function fetchAnalyses(limit = 100): Promise<AnalysisRecord[]> {
+export async function fetchAnalyses(limit = 100, signal?: AbortSignal): Promise<AnalysisRecord[]> {
+  if (signal?.aborted) return [];
   const sb = anonClient();
   if (!sb) return [];
-  const { data: sigs, error } = await sb
+  const signalsQuery = sb
     .from("signals")
     .select(
       "id, seq, symbol, direction, entry_price, entry_date, horizon, reasons, published_at, prev_hash, record_hash"
     )
     .order("seq", { ascending: false })
     .limit(limit);
-  if (error || !sigs) return [];
+  const { data: sigs, error } = await (signal ? signalsQuery.abortSignal(signal) : signalsQuery);
+  if (signal?.aborted || error || !sigs) return [];
   const ids = sigs.map((s) => s.id);
   let outcomes: OutcomeRecord[] = [];
   if (ids.length > 0) {
-    const { data: outs } = await sb
+    const outcomesQuery = sb
       .from("signal_outcomes")
       .select(
         "id, seq, signal_id, exit_price, exit_date, outcome, note, closed_at, prev_hash, record_hash"
       )
       .in("signal_id", ids);
+    const { data: outs } = await (signal ? outcomesQuery.abortSignal(signal) : outcomesQuery);
+    if (signal?.aborted) return [];
     outcomes = (outs ?? []) as OutcomeRecord[];
   }
   const byId = new Map(outcomes.map((o) => [o.signal_id, o]));

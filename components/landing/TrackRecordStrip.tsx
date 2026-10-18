@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { fetchAnalyses, computeTrackStats } from "@/lib/track/analyses";
 import { toPersianDigits } from "@/lib/format";
+import { withDeadline } from "@/lib/deadline";
 
 /**
  * نوارِ کارنامه — P2-PUBLIC-EXPERIENCE-REBASELINE-001
@@ -14,7 +15,9 @@ import { toPersianDigits } from "@/lib/format";
  * محیطِ بدونِ کلید هم امن است — فقط مخفی می‌ماند.
  */
 export default async function TrackRecordStrip() {
-  const records = await fetchAnalyses(100);
+  // Bound both underlying reads even when their transport ignores cancellation.
+  const records = await withDeadline((signal) => fetchAnalyses(100, signal), 4000).catch(() => null);
+  if (records === null) return null;
   const stats = computeTrackStats(records);
 
   // بدونِ نتیجهٔ بسته‌شده، کارنامه‌ای برای نشان‌دادن نیست.
