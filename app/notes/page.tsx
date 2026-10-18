@@ -3,6 +3,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import NotesFeed, { type Note } from "@/components/notes/NotesFeed";
 import Link from "next/link";
+import { withDeadline } from "@/lib/deadline";
 
 export const dynamic = "force-dynamic";
 
@@ -13,21 +14,30 @@ export const metadata = {
 };
 
 export default async function NotesPage() {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("market_notes")
-    .select("id, title, body_md, tags, published_at")
-    .not("published_at", "is", null)
-    .order("published_at", { ascending: false })
-    .limit(60);
-
-  const notes: Note[] = (data ?? []).map((n) => ({
-    id: n.id,
-    title: n.title,
-    body_md: n.body_md,
-    tags: n.tags ?? [],
-    published_at: n.published_at,
-  }));
+  let notes: Note[] = [];
+  let readFailed = false;
+  try {
+    const { data, error } = await withDeadline(async (signal) => {
+      const supabase = await createClient();
+      return await supabase
+        .from("market_notes")
+        .select("id, title, body_md, tags, published_at")
+        .not("published_at", "is", null)
+        .order("published_at", { ascending: false })
+        .limit(60)
+        .abortSignal(signal);
+    }, 4000);
+    readFailed = Boolean(error);
+    if (!error) notes = (data ?? []).map((n) => ({
+      id: n.id,
+      title: n.title,
+      body_md: n.body_md,
+      tags: n.tags ?? [],
+      published_at: n.published_at,
+    }));
+  } catch {
+    readFailed = true;
+  }
 
   return (
     <>
@@ -53,7 +63,10 @@ export default async function NotesPage() {
             </p>
           </header>
 
-          <NotesFeed notes={notes} />
+          {readFailed ? <div role="alert" className="card p-6 space-y-3">
+            <p>دریافت یادداشت‌ها فعلاً ممکن نشد. این خطا به معنی نبودن یادداشت‌ها نیست.</p>
+            <a href="/notes" className="btn btn-outline">تلاش دوباره</a>
+          </div> : <NotesFeed notes={notes} />}
         </div>
       </main>
       <Footer />

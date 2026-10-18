@@ -2,6 +2,7 @@ import "server-only";
 import type { createClient } from "@/lib/supabase/server";
 import { isKind, isPlatform, type ContentItem } from "@/lib/content-hub";
 import { uniqueMedia } from "@/lib/media/presentation";
+import { withDeadline } from "@/lib/deadline";
 
 export interface HomeMediaRead {
   state: "ready" | "empty" | "unavailable";
@@ -17,13 +18,14 @@ export async function readHomeMedia(
 ): Promise<HomeMediaRead> {
   const readAt = new Date().toISOString();
   try {
-    const { data, error } = await client
+    const { data, error } = await withDeadline(async (signal) => await client
       .from("content_hub")
       .select("id, platform, kind, content_url, title, published_at")
       .is("deleted_at", null)
       .not("published_at", "is", null)
       .order("published_at", { ascending: false })
-      .limit(60);
+      .abortSignal(signal)
+      .limit(60), 4000);
     if (error) return { state: "unavailable", items: [], readAt };
     const items = uniqueMedia(
       (data ?? [])
