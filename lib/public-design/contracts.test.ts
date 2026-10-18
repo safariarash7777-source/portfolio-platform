@@ -15,6 +15,7 @@ import { isKind, isPlatform, KIND_LABEL, PLATFORM_META } from "../content-hub";
 import { editorialCover, sourceUrl, uniqueMedia } from "../media/presentation";
 import { formatJalali } from "../format";
 import type { HomeMediaRead } from "./home-media";
+import { withDeadline } from "../deadline";
 import {
   approvedCodalUrl,
   type DeskCompanyReport,
@@ -376,6 +377,7 @@ vm.runInNewContext(
       if (id === "server-only") return {};
       if (id === "@/lib/content-hub") return { isKind, isPlatform };
       if (id === "@/lib/media/presentation") return { uniqueMedia };
+      if (id === "@/lib/deadline") return { withDeadline };
       throw new Error(id);
     },
   },
@@ -401,6 +403,10 @@ function mediaClient(data: unknown[], error: unknown = null) {
       return query;
     },
     order: () => query,
+    abortSignal: (signal: AbortSignal) => {
+      assert.ok(signal instanceof AbortSignal);
+      return query;
+    },
     limit: async (limit: number) => {
       assert.equal(limit, 60);
       return { data, error };
