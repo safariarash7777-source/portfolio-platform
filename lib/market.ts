@@ -44,34 +44,43 @@ const CACHE_MS = 5 * 60 * 1000;
 const COINGECKO = "https://api.coingecko.com/api/v3";
 
 let cache: MarketData | null = null;
-let inflight: Promise<MarketData> | null = null;
+let inflight: Promise<{ data: MarketData; alertEvaluation?: AlertEvaluationResult }> | null = null;
 let retryAt = 0;
 
 /** دادهٔ بازار با کشِ ۵دقیقه. روی هر refresh، هشدارهای فعال ارزیابی می‌شوند. */
-export async function getMarketData(): Promise<MarketData> {
+export async function getMarketData(options?: {
+  onAlertEvaluation?: (result: AlertEvaluationResult) => void;
+}): Promise<MarketData> {
   if (Date.now() < retryAt) return { ...(cache ?? { crypto: [], goldGlobal: [], fetchedAt: 0 }), ok: false };
-  if (cache && Date.now() - cache.fetchedAt < CACHE_MS) return cache;
-  if (inflight) return inflight;
-
-  inflight = (async () => {
+  // Public readers can use the filled cache while dispatch is still running.
+  // Observers must join that refresh to see its eventual evaluation outcome.
+  if (cache && Date.now() - cache.fetchedAt < CACHE_MS && (!options?.onAlertEvaluation || !inflight)) return cache;
+  if (!inflight) inflight = (async () => {
     const fresh = await withDeadline(signal => fetchCrypto(signal), 1900).catch(() => ({ crypto: [], goldGlobal: [], fetchedAt: 0, ok: false } as MarketData));
     if (fresh.ok) { cache = fresh; retryAt = 0; }
     else retryAt = Date.now() + 30000;
     // ارزیابیِ هشدارها فقط روی داده‌ی معتبر و در همان چرخهٔ کش.
+    let alertEvaluation: AlertEvaluationResult | undefined;
     if (fresh.ok) {
       try {
-        await evaluateAlerts(fresh.crypto);
+        alertEvaluation = await evaluateAlerts(fresh.crypto);
       } catch (e) {
+        alertEvaluation = { ok: false, evaluated: false, reason: "alert_evaluation_failed" };
         console.error("alert evaluation error:", e instanceof Error ? e.message : "unknown");
       }
     }
-    return fresh.ok ? fresh : { ...(cache ?? fresh), ok: false };
+    return { data: fresh.ok ? fresh : { ...(cache ?? fresh), ok: false }, alertEvaluation };
   })();
 
+  const joinedRefresh = inflight;
   try {
-    return await inflight;
+    const refresh = await joinedRefresh;
+    // Observe only this refresh (including joined readers), never a cached
+    // historical evaluation; the public MarketData DTO remains unchanged.
+    if (refresh.alertEvaluation) options?.onAlertEvaluation?.(refresh.alertEvaluation);
+    return refresh.data;
   } finally {
-    inflight = null;
+    if (inflight === joinedRefresh) inflight = null;
   }
 }
 
@@ -144,24 +153,36 @@ export async function getOhlc(id: string): Promise<Candle[]> {
 // export شده تا cron هم بتواند صریحاً و تضمینی همان منطق را اجرا کند (بدون
 // duplicate). idempotent است: غیرفعال‌سازیِ اتمیک (claim_alert) قبل از DM،
 // پس اجرای هم‌زمانِ cron و ترافیک هرگز DMِ تکراری نمی‌فرستد.
-export async function evaluateAlerts(crypto: CryptoRow[]) {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return; // بدون service role نمی‌شود
+export type AlertEvaluationResult =
+  | { ok: true; evaluated: true }
+  | { ok: false; evaluated: false; reason: "alerts_backend_unavailable" | "alerts_read_failed" |
+      "telegram_links_read_failed" | "alert_claim_failed" | "alert_delivery_failed" | "alert_evaluation_failed" };
+
+// evaluated=false means evaluation did not complete successfully. Some alerts
+// may already have been claimed/delivered; this receipt never requests a retry.
+export async function evaluateAlerts(crypto: CryptoRow[]): Promise<AlertEvaluationResult> {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { ok: false, evaluated: false, reason: "alerts_backend_unavailable" };
+  }
   const priceMap = new Map(crypto.map((c) => [c.id, c.price]));
   const admin = createAdminClient();
 
-  const { data: alerts } = await admin
+  const { data: alerts, error: alertsError } = await admin
     .from("price_alerts")
     .select("id, user_id, symbol, condition, target_price")
     .eq("active", true)
     .eq("market", "crypto");
-  if (!alerts || alerts.length === 0) return;
+  if (alertsError || !alerts) return { ok: false, evaluated: false, reason: "alerts_read_failed" };
+  if (alerts.length === 0) return { ok: true, evaluated: true };
 
   const userIds = [...new Set(alerts.map((a) => a.user_id))];
-  const { data: links } = await admin
+  const { data: links, error: linksError } = await admin
     .from("telegram_links")
     .select("user_id, telegram_user_id")
     .in("user_id", userIds);
   const tgMap = new Map((links ?? []).map((l) => [l.user_id, l.telegram_user_id]));
+  let failure: Extract<AlertEvaluationResult, { ok: false }>["reason"] | null =
+    linksError || !links ? "telegram_links_read_failed" : null;
 
   for (const a of alerts) {
     const price = priceMap.get(a.symbol);
@@ -175,18 +196,22 @@ export async function evaluateAlerts(crypto: CryptoRow[]) {
     const channel = tgId ? "telegram" : "in_app";
     try {
       // شلیکِ اتمیک: غیرفعال‌سازی + ثبت رویداد. اگر باخت (رقابت) → NULL.
-      const { data: claimed } = await admin.rpc("claim_alert", {
+      const { data: claimed, error: claimError } = await admin.rpc("claim_alert", {
         p_alert_id: a.id,
         p_price: price,
         p_channel: channel,
       });
+      if (claimError) failure ??= "alert_claim_failed";
       if (claimed && tgId) {
-        await sendMessage(tgId, alertMessage(a.symbol, a.condition, Number(a.target_price), price));
+        const delivered = await sendMessage(tgId, alertMessage(a.symbol, a.condition, Number(a.target_price), price));
+        if (!delivered) failure ??= "alert_delivery_failed";
       }
     } catch (e) {
+      failure ??= "alert_evaluation_failed";
       console.error("claim_alert error:", e instanceof Error ? e.message : "unknown");
     }
   }
+  return failure ? { ok: false, evaluated: false, reason: failure } : { ok: true, evaluated: true };
 }
 
 function fmtUsd(n: number): string {

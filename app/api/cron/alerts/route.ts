@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMarketData, evaluateAlerts } from "@/lib/market";
+import { getMarketData, evaluateAlerts, type AlertEvaluationResult } from "@/lib/market";
 import { runWithLedger } from "@/lib/cron/ledger";
 import { createCronLedgerStore, currentDeploymentSha } from "@/lib/cron/store";
 
@@ -25,26 +25,40 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  const { result } = await runWithLedger({
+  const { result, ledgerRecorded, runId } = await runWithLedger<{
+    ok: boolean; evaluated: boolean; at: number; reason?: string;
+  }>({
     store: createCronLedgerStore(),
     jobKey: "alerts",
     deploymentSha: currentDeploymentSha(),
     job: async () => {
       // قیمتِ تازه از همان کشِ موجود؛ سپس ارزیابیِ صریحِ هشدارهای active.
-      const data = await getMarketData();
+      let refreshFailure: Extract<AlertEvaluationResult, { ok: false }> | undefined;
+      const data = await getMarketData({ onAlertEvaluation: (evaluation) => {
+        if (!evaluation.ok) refreshFailure = evaluation;
+      } });
       if (!data.ok) {
         return {
           outcome: { ok: false, processedCount: 0, errorCode: "market_data_unavailable", rawError: null },
-          value: { ok: true, evaluated: false, at: data.fetchedAt },
+          value: { ok: false, reason: "market_data_unavailable", evaluated: false, at: data.fetchedAt },
         };
       }
-      await evaluateAlerts(data.crypto);
+      const explicitEvaluation = await evaluateAlerts(data.crypto);
+      // A refresh can claim an alert before its delivery fails. The explicit
+      // pass may then be empty; it must not erase the first failure.
+      const evaluation = refreshFailure ?? explicitEvaluation;
       return {
-        outcome: { ok: true, processedCount: null, errorCode: null, rawError: null },
-        value: { ok: true, evaluated: true, at: data.fetchedAt },
+        // A failed evaluation may be partial: claims/DMs are never retried here.
+        outcome: { ok: evaluation.ok, processedCount: null, errorCode: evaluation.ok ? null : evaluation.reason, rawError: null },
+        value: { ...evaluation, at: data.fetchedAt },
       };
     },
   });
 
-  return NextResponse.json(result);
+  // An unexpected job exception is recorded by runWithLedger with no result.
+  // Keep that failure bounded, and report job success separately from recording.
+  if (!result) {
+    return NextResponse.json({ ok: false, reason: "unhandled_exception", ledgerRecorded, runId }, { status: 502 });
+  }
+  return NextResponse.json({ ...result, ledgerRecorded, runId }, { status: result.ok ? 200 : 502 });
 }
