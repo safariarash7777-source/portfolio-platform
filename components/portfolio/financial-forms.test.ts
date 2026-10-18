@@ -131,7 +131,7 @@ for(const first of ["holdings","debts"] as const) {
    const page=pair();const saving=page[first].submit(labelFor(first));page.render();
    assert.equal(page[second].button(labelFor(second)).props.disabled,true);assert.equal(page[first].button("لغو تغییرات").props.disabled,true);assert.equal(page[first].beforeUnload(),true);
    const cancel=page[first].button("لغو تغییرات").props.onClick as ()=>void;cancel();page.render();assert.equal(page.editor.active,first);
-   resolve(new Response("synthetic unavailable",{status:503}));await saving;page.render();
+   await new Promise<void>(done=>setImmediate(done));resolve(new Response("synthetic unavailable",{status:503}));await saving;page.render();
    assert.equal(page[first].button("لغو تغییرات").props.disabled,true);cancel();page.render();assert.equal(page.editor.active,first);
    assert.equal(page[second].button(labelFor(second)).props.disabled,true);assert.equal(page[first].beforeUnload(),true);
    await page[first].submit("بررسی دوبارهٔ همین ثبت");page.render();assert.equal(bodies[0],bodies[1]);assert.equal(page[first].navigation[0],`/dashboard/holdings?v=${receipt.version_id}`);assert.equal(page[first].beforeUnload(),false);
@@ -159,4 +159,37 @@ test("actual FinancialEditors wrapper rerenders lease status and page keys it by
  lease.acquire("debts");lease.navigate("debts");ui.render();assert.match(ui.text(),/نسخهٔ قبلی/);
  const page=readFileSync("app/(protected)/dashboard/holdings/page.tsx","utf8");
  assert.match(page,/<FinancialEditors key=\{`financial-editors-\$\{snapshot.holdings\?\.id \?\? "new"\}`\}>[\s\S]*<HoldingsWorkbench[\s\S]*<DebtsWorkbench[\s\S]*<\/FinancialEditors>/);
+});
+
+for (const kind of ["holdings", "debts"] as const) for (const phase of ["fetch", "body"] as const) test(`${kind} actual form: ${phase} hang becomes unknown at deadline and late completion cannot duplicate commit`, async t => {
+ const prior = globalThis.fetch, bodies: string[] = [], signals: AbortSignal[] = [];
+ let finishLate!: () => void, writes = 0, settled = false;
+ t.mock.timers.enable({ apis: ["setTimeout"] });
+ globalThis.fetch = async (_url, options) => {
+  bodies.push(String(options?.body)); signals.push(options?.signal as AbortSignal);
+  if (bodies.length > 1) { assert.equal(writes, 1); return Response.json({ ...receipt, reused: true }); }
+  if (phase === "fetch") return new Promise<Response>(resolve => { finishLate = () => { writes++; resolve(Response.json(receipt)); }; });
+  writes++;
+  const response = Response.json(receipt);
+  response.json = () => new Promise((_resolve, reject) => { finishLate = () => reject(new Error("Synthetic late body rejection")); });
+  return response;
+ };
+ try {
+  const page = pair(), ui = page[kind], sibling = kind === "holdings" ? "debts" : "holdings";
+  const saving = ui.submit(labelFor(kind)).then(() => { settled = true; });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  t.mock.timers.tick(14999); await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(settled, false);
+  t.mock.timers.tick(1); await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(settled, true, "a never-settling write must reach the existing unknown/retry state");
+  await saving; page.render();
+  assert.equal(signals[0].aborted, true); assert.equal(ui.button("بررسی دوبارهٔ همین ثبت").props.disabled, false);
+  assert.equal(ui.button("لغو تغییرات").props.disabled, true); assert.equal(page[sibling].button(labelFor(sibling)).props.disabled, true);
+  assert.equal(ui.beforeUnload(), true); assert.equal(ui.navigation.length, 0);
+  finishLate(); await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(ui.navigation.length, 0, "a late response never confirms the timed-out handler");
+  await ui.submit("بررسی دوبارهٔ همین ثبت");
+  assert.equal(bodies[1], bodies[0]); assert.equal(writes, 1); assert.equal(ui.navigation.length, 1);
+  assert.equal(JSON.parse(bodies[1]).base_version, 1); assert.match(ui.navigation[0], new RegExp(receipt.version_id));
+ } finally { globalThis.fetch = prior; t.mock.timers.reset(); }
 });

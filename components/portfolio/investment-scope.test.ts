@@ -14,6 +14,36 @@ const mount = () => {
 const save = "محدودهٔ این نسخه";
 const retryLabel = "بررسی دوبارهٔ همین ثبت";
 
+for (const phase of ["fetch", "body"] as const) test(`scope actual handler: ${phase} hang reaches unknown and exact retry recovers one late commit`, async t => {
+  const prior = globalThis.fetch, bodies: string[] = [], signals: AbortSignal[] = [];
+  let finishLate!: () => void, writes = 0, settled = false;
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  globalThis.fetch = async (_url, options) => {
+    bodies.push(String(options?.body)); signals.push(options?.signal as AbortSignal);
+    if (bodies.length > 1) { assert.equal(writes, 1); return Response.json({ ...receipt, reused: true }); }
+    if (phase === "fetch") return new Promise<Response>(resolve => { finishLate = () => { writes++; resolve(Response.json(receipt)); }; });
+    writes++;
+    const response = Response.json(receipt);
+    response.json = () => new Promise((_resolve, reject) => { finishLate = () => reject(new Error("Synthetic late body rejection")); });
+    return response;
+  };
+  try {
+    const ui = mount(), saving = ui.submit(save).then(() => { settled = true; });
+    await new Promise<void>(resolve => setImmediate(resolve));
+    t.mock.timers.tick(14999); await new Promise<void>(resolve => setImmediate(resolve)); assert.equal(settled, false);
+    t.mock.timers.tick(1); await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(settled, true, "a stalled scope response must become unknown rather than stay busy forever");
+    await saving;
+    assert.equal(signals[0].aborted, true); assert.equal(ui.button(retryLabel).props.disabled, false);
+    assert.equal(ui.find("select", () => true).props.disabled, true); assert.equal(ui.beforeUnload(), true); assert.equal(ui.refreshes, 0);
+    finishLate(); await new Promise<void>(resolve => setImmediate(resolve)); assert.equal(ui.refreshes, 0);
+    await ui.submit(retryLabel);
+    assert.equal(bodies[1], bodies[0]); assert.equal(writes, 1); assert.equal(ui.refreshes, 1);
+    assert.equal(ui.find("select", () => true).props.value, "allocatable");
+    assert.equal(JSON.parse(bodies[1]).base_scope_version, 0);
+  } finally { globalThis.fetch = prior; t.mock.timers.reset(); }
+});
+
 test('committed scope allows read-only refresh retries through stale/error/wrong receipts and unlocks only matching ready readback', async () => {
   const { createFinancialEditor } = await import('./financialEditor');
   const { scopeReviewFromStored } = await import('../../lib/portfolio/scopeContract');
