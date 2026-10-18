@@ -57,6 +57,23 @@ test("fresh receipt cannot replace an unknown option source clock; stale/unavail
   }
 });
 
+test("aggregate reason distinguishes an old quote from an old family receipt", () => {
+  const recent = { ...payload(), gold: [{ ...stock, id: "synthetic-gold", sourceTime: "10:00:00" }],
+    stocks: [{ ...stock, sourceDate: null }] };
+  recent.snapshotQuality.families.gold = { state: "received", receivedAt: start, retained: false };
+  const quoteOld = iranReadQuality(toMarket(recent), start);
+  assert.equal(quoteOld.state, "stale");
+  assert.equal(quoteOld.reason, "old-price-time");
+  assert.equal(quoteOld.families.gold.receivedAt, start);
+  assert.equal(quoteOld.families.gold.staleRows, 1);
+  assert.equal(quoteOld.families.stocks.state, "unknown-time");
+
+  recent.snapshotQuality.families.gold = { state: "received", receivedAt: start - 3600000, retained: false };
+  const receiptOld = iranReadQuality(toMarket(recent), start);
+  assert.equal(receiptOld.state, "stale");
+  assert.equal(receiptOld.reason, "old-receipt");
+});
+
 test("legacy uses its original clock conservatively; malformed metadata does not enable freshness", () => {
   const p = payload();
   const legacy = { ...p, fetchedAt: start - 3600000, snapshotQuality: undefined };

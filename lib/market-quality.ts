@@ -107,7 +107,15 @@ export function iranReadQuality(market: IrMarket | null, now = Date.now()): Iran
     else if (market.snapshotQuality.state === "partial") { state = "partial"; reason = "source-partial"; }
     else if (values.some(item => item.rejectedRows > 0)) { state = "partial"; reason = "rejected-rows"; }
     else if (values.some(item => item.state === "unavailable")) { state = "partial"; reason = "source-partial"; }
-    else if (values.some(item => item.state === "stale")) { state = "stale"; reason = "old-receipt"; }
+    else if (values.some(item => item.state === "stale")) {
+      state = "stale";
+      const stale = values.filter(item => item.state === "stale");
+      // A fresh family receipt can carry an older source quote. Name the
+      // actual clock that is old; never imply that collection stopped.
+      reason = stale.some(item => item.retained || item.sourceState === "stale"
+        || (item.receivedAt !== null && now - item.receivedAt >= STALE_MS))
+        ? "old-receipt" : "old-price-time";
+    }
     else if (values.some(item => item.state === "unknown-time")) { state = "unknown-time"; reason = "missing-price-time"; }
     else if (values.every(item => item.state === "empty")) state = "empty";
   } else if (!market?.ok || !active.length) { state = "error"; reason = "empty-source"; }
