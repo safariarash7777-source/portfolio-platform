@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { toPersianDigits } from "@/lib/format";
+import { approvedCodalUrl } from "@/lib/desk/workspace-model";
 
 export type StoredReport = {
   kind: string;          // «ن-۳۰» | «ن-۱۰» | ...
@@ -40,18 +41,16 @@ function normalizeLive(j: unknown): LiveItem[] {
     .filter((x): x is LiveItem => x !== null);
 }
 
-const codalHref = (u: string | null): string | null => {
-  if (!u) return null;
-  if (u.startsWith("http")) return u;
-  return `https://codal.ir${u.startsWith("/") ? "" : "/"}${u}`;
-};
+const codalHref = approvedCodalUrl;
 
 export default function CodalReportsTab({
   symbol,
   stored,
+  readFailed = false,
 }: {
   symbol: string;
   stored: StoredReport[];
+  readFailed?: boolean;
 }) {
   const [live, setLive] = useState<LiveItem[] | null>(null);
   const [liveState, setLiveState] = useState<"idle" | "loading" | "error">("idle");
@@ -76,15 +75,19 @@ export default function CodalReportsTab({
         <p className="mt-1 text-[11px] text-muted-foreground">
           گزارش‌هایی که موتور دادهٔ ما از کدال دریافت و پردازش کرده است (منبع نمودارهای بنیادی).
         </p>
-        {stored.length > 0 ? (
+        {readFailed ? (
+          <p role="status" className="mt-3 text-xs text-muted-foreground">
+            خواندن گزارش‌های پردازش‌شده موفق نشد؛ نبود فهرست به معنی پردازش‌نشدن گزارش نیست. دوباره صفحه را باز کنید.
+          </p>
+        ) : stored.length > 0 ? (
           <ul className="mt-3 divide-y divide-border">
             {stored.map((r, i) => (
               <li key={i} className="flex items-center justify-between gap-2 py-2 text-xs">
                 <div className="min-w-0">
                   <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{r.kind}</span>
-                  {r.url ? (
+                  {codalHref(r.url) ? (
                     <a
-                      href={codalHref(r.url) ?? "#"}
+                      href={codalHref(r.url)!}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium hover:underline"

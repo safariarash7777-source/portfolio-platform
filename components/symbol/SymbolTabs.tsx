@@ -32,9 +32,28 @@ export default function SymbolTabs({
 
   // خواندن hash اولیه (لینک مستقیم به تب)
   useEffect(() => {
-    const h = window.location.hash.replace("#", "");
-    if (TABS.some((t) => t.key === h)) setActive(h as TabKey);
+    const sync = () => {
+      const h = window.location.hash.slice(1);
+      const panel = document.getElementById(h)?.closest("[data-symbol-tab]");
+      const key = TABS.some((t) => t.key === h) ? h : panel?.getAttribute("data-symbol-tab");
+      if (TABS.some((t) => t.key === key)) setActive(key as TabKey);
+    };
+    sync();
+    window.addEventListener("hashchange", sync);
+    window.addEventListener("popstate", sync);
+    return () => {
+      window.removeEventListener("hashchange", sync);
+      window.removeEventListener("popstate", sync);
+    };
   }, []);
+
+  // A chart anchor exists inside its initially hidden tab. Scroll after that
+  // panel is visible, without treating arbitrary URL text as a CSS selector.
+  useEffect(() => {
+    const target = document.getElementById(window.location.hash.slice(1));
+    if (target?.closest("[data-symbol-tab]")?.getAttribute("data-symbol-tab") === active)
+      target.scrollIntoView({ block: "start" });
+  }, [active]);
 
   const select = (key: TabKey) => {
     setActive(key);
@@ -70,10 +89,10 @@ export default function SymbolTabs({
       </div>
 
       <div className="mt-5 space-y-6">
-        <div hidden={active !== "overview"}>{overview}</div>
-        <div hidden={active !== "fundamental"}>{fundamental}</div>
-        <div hidden={active !== "reports"}>{reports}</div>
-        <div hidden={active !== "assembly"}>{assembly}</div>
+        <div data-symbol-tab="overview" hidden={active !== "overview"}>{overview}</div>
+        <div data-symbol-tab="fundamental" hidden={active !== "fundamental"}>{fundamental}</div>
+        <div data-symbol-tab="reports" hidden={active !== "reports"}>{reports}</div>
+        <div data-symbol-tab="assembly" hidden={active !== "assembly"}>{assembly}</div>
       </div>
     </div>
   );
