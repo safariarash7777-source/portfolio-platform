@@ -18,6 +18,7 @@ import SymbolTabs from "@/components/symbol/SymbolTabs";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
+import styles from "@/components/symbol/SymbolDossier.module.css";
 import { withKnownMonthlyQuantities } from '@/lib/core/monthly-quantity';
 import FundamentalReadNotice from "@/components/symbol/FundamentalReadNotice";
 import { buildFundamentalCard } from "@/lib/core/fundamentalCard";
@@ -75,7 +76,7 @@ function num(x: unknown): number | null {
 
 function Stat({ label, value, color, note }: { label: string; value: string; color?: string; note?: string }) {
   return (
-    <div className="card px-4 py-3">
+    <div className={`card px-4 py-3 ${styles.stat}`}>
       <p className="text-[11px]" style={{ color: "var(--text-3)" }}>
         {label}
       </p>
@@ -357,14 +358,14 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   return (
     <>
       <Navbar prefetch={false} />
-      <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
+      <main className={styles.page} style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <div className="mx-auto w-full max-w-6xl px-5 pt-8 pb-16 space-y-6">
           {!ir ? (
             <p role="status" className="rounded-xl border p-4 text-sm" style={{ borderColor: "var(--line-strong)", color: "var(--warning-ink)" }}>
               دادهٔ تابلوی بازار از بانک داده در این بارگذاری دریافت نشد. گزارش‌های بنیادی از مسیر جداگانه خوانده می‌شوند؛ این وضعیت به معنی نبود گزارش شرکت نیست.
             </p>
           ) : null}
-          <nav className="flex flex-wrap items-center gap-1 text-xs" aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
+          <nav className={`flex flex-wrap items-center gap-1 text-xs ${styles.breadcrumb}`} aria-label="مسیر صفحه" style={{ color: "var(--text-3)" }}>
             <Link prefetch={false} href="/market" className="inline-flex min-h-11 items-center hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>میز بازار</Link>
             <span aria-hidden="true">/</span>
             {/* ── مسیرِ بازگشتِ متناسب با مبدأ ────────────────────────────
@@ -381,7 +382,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
           </nav>
 
           {/* سرصفحهٔ نماد */}
-          <header className="flex flex-wrap items-end justify-between gap-3">
+          <header className={`flex flex-wrap items-end justify-between gap-3 ${styles.header}`}>
             <div>
               <p className="text-xs font-bold" style={{ color: "var(--gold-ink)" }}>{isFund ? "پروندهٔ صندوق" : "پروندهٔ نماد"}</p>
               <h1 className="mt-1 font-display text-3xl font-extrabold" style={{ color: "var(--heading)" }}>
@@ -393,7 +394,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 {isFund && quote?.type ? ` · ${quote.type}` : ""}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className={`flex flex-wrap items-center gap-2 ${styles.headerActions}`}>
               <a
                 href={`/api/data/${encodeURIComponent(sym)}/history.csv`}
                 className="btn-outline inline-flex min-h-11 items-center rounded-full border px-4 text-xs font-semibold"
@@ -401,7 +402,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               >
                 دانلود تاریخچه (CSV)
               </a>
-              <div className="space-y-1 text-[11px]" style={{ color: "var(--text-3)" }}>
+              <div className={`space-y-1 text-[11px] ${styles.quoteMeta}`} style={{ color: "var(--text-3)" }}>
                 <p role="status" style={{ color: quoteQuality.state === "ready" ? "var(--text-3)" : "var(--warning-ink)" }}>{marketQualityLabel(quoteQuality.state)}</p>
                 <p>{priceAt != null ? `زمان قیمت: ${formatJalali(priceAt)} · ${formatTehranClock(priceAt)}` : "زمان معتبر قیمت نامشخص است"}</p>
                 <p>{quoteQuality.receivedAt != null ? `دریافت اسنپ‌شات: ${formatJalali(quoteQuality.receivedAt)} · ${formatTehranClock(quoteQuality.receivedAt)}` : "زمان دریافت نامعلوم"}</p>
