@@ -233,12 +233,12 @@ function alertsRoute(options: {
       if (!(name in imports)) throw new Error(`Unexpected dependency: ${name}`);
       return imports[name];
     },
-    process: { env: { CRON_SECRET: "synthetic-cron-secret" } },
+    process: { env: { CRON_SECRET: "example-cron-secret" } },
   });
   return {
     calls, finishes,
     get: (authorized = true) => routeModule.exports.GET({ headers: new Headers({
-      authorization: authorized ? "Bearer synthetic-cron-secret" : "wrong",
+      authorization: authorized ? "Bearer example-cron-secret" : "wrong",
     }) }),
   };
 }
@@ -376,7 +376,7 @@ function alertEvaluator(options: {
       if (!(name in imports)) throw new Error(`Unexpected dependency: ${name}`);
       return imports[name];
     },
-    process: { env: options.missingKey ? {} : { SUPABASE_SERVICE_ROLE_KEY: "synthetic-service-key" } },
+    process: { env: options.missingKey ? {} : { SUPABASE_SERVICE_ROLE_KEY: "example-service-key" } },
     console: { error: () => undefined },
     fetch: async () => {
       calls.push("market-fetch-stub");
