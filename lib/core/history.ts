@@ -31,21 +31,32 @@ const SELECT_COLS =
  * آخرین `days` روز معاملاتی نماد را برمی‌گرداند، مرتب صعودی بر اساس تاریخ.
  * دادهٔ ناموجود = آرایهٔ خالی (هرگز دادهٔ ساختگی).
  */
-export async function getSymbolHistory(
+export interface SymbolHistoryRead {
+  data: HistoryDay[];
+  state: "ready" | "empty" | "error";
+}
+
+/** Compatibility getter for existing calculations, CSV and terminal callers. */
+export async function getSymbolHistory(symbol: string, days = 400): Promise<HistoryDay[]> {
+  return (await readSymbolHistory(symbol, days)).data;
+}
+
+/** The routed page distinguishes unavailable/incomplete reads from verified empty history. */
+export async function readSymbolHistory(
   symbol: string,
   days = 400
-): Promise<HistoryDay[]> {
+): Promise<SymbolHistoryRead> {
   const key = `${symbol}|${days}`;
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < REVALIDATE_MS) return hit.value;
+  if (hit && Date.now() - hit.at < REVALIDATE_MS) return { data: hit.value, state: hit.value.length ? "ready" : "empty" };
 
   const e = env();
-  if (!e) return [];
+  if (!e) return { data: [], state: "error" };
 
-  if (!Number.isSafeInteger(days) || days <= 0) return [];
+  if (!Number.isSafeInteger(days) || days <= 0) return { data: [], state: "error" };
   const qs = new URLSearchParams({ select: SELECT_COLS, symbol: `eq.${symbol}` });
   const rows = await readUniqueHistoryRows<HistoryRow>(e, qs, days);
-  if (rows === null) return []; // Incomplete reads are never cached as complete history.
+  if (rows === null) return { data: [], state: "error" }; // Never cache incomplete reads.
 
   const out: HistoryDay[] = rows
     .slice(0, days)
@@ -66,7 +77,7 @@ export async function getSymbolHistory(
     .reverse(); // صعودی
 
   cache.set(key, { at: Date.now(), value: out });
-  return out;
+  return { data: out, state: out.length ? "ready" : "empty" };
 }
 
 /** فهرست نمادهایی که در symbol_history داده دارند (برای صفحهٔ فهرست ترمینال). */

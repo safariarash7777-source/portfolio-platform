@@ -27,7 +27,7 @@ import { getStoredIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { iranReadQuality, marketQualityLabel, sourceTime, withValidNav } from "@/lib/market-quality";
 import { readFundamentals } from "@/lib/fundamental/registry";
 import { isMillionRialUnit } from "@/lib/fundamental/units";
-import { getSymbolHistory } from "@/lib/core/history";
+import { getSymbolHistory, readSymbolHistory } from "@/lib/core/history";
 import {
   deriveQuarters,
   ttmSeries,
@@ -99,14 +99,15 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const sym = decodeURIComponent(symbol);
   const sp = searchParams ? await searchParams : {};
 
-  const [ir, history, fundamentalRead, fxRates, navHistory, access] = await Promise.all([
+  const [ir, historyRead, fundamentalRead, fxRates, navHistory, access] = await Promise.all([
     getStoredIrMarket(),
-    getSymbolHistory(sym, 400),
+    readSymbolHistory(sym, 400),
     readFundamentals(sym),
     getFxRates(),
     getNavHistory(sym, 400),
     getAccess(),
   ]);
+  const history = historyRead.data;
   const storedFundamentals = fundamentalRead.data;
   const fundamentals = storedFundamentals?.n30 ? {
     ...storedFundamentals, n30: { ...storedFundamentals.n30, data: storedFundamentals.n30.data.map(withKnownMonthlyQuantities) },
@@ -567,8 +568,9 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                       className="rounded-xl border border-dashed p-6 text-center text-sm"
                       style={{ borderColor: "var(--line-strong)", color: "var(--text-3)" }}
                     >
-                      تاریخچهٔ این نماد هنوز در سامانه ثبت نشده است. پوشش تاریخچه به‌تدریج برای همهٔ
-                      نمادها گسترش می‌یابد.
+                      {historyRead.state === "error"
+                        ? "خواندن تاریخچهٔ این نماد موفق نشد؛ این وضعیت به معنی نبود تاریخچه در سامانه نیست. دوباره صفحه را باز کنید."
+                        : "در نتیجهٔ خواندن فعلی، تاریخچه‌ای برای این نماد ثبت نشده است."}
                     </div>
                   )}
                 </section>
@@ -587,7 +589,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
             fundamental={
               <div className="space-y-6">{fundamentalTab}</div>
             }
-            reports={<CodalReportsTab symbol={sym} stored={storedReports} />}
+            reports={<CodalReportsTab symbol={sym} stored={storedReports} readFailed={fundamentalRead.state === "error"} />}
             assembly={<SymbolLiveDetail symbol={sym} sections="assembly" />}
           />
 

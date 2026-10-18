@@ -21,27 +21,28 @@ const stock: IrStockRow = { id: "fixture", faName: "نمونهٔ آزمون", un
 const fund: IrStockRow = { ...stock, type: "سهامی", nav: 100, navIssue: 101, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", bubblePercent: 999 };
 const market = (row: IrStockRow, isFund = false): IrMarket => ({ ok: true, fetchedAt: now, gold: [], currency: [], crypto: [], options: [], indices: null, stocks: isFund ? [] : [row], funds: isFund ? [row] : [] });
 
-async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolFundamentals | null = null) {
+async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolFundamentals | null = null,
+  reads: { history?: "empty" | "error"; fundamental?: "empty" | "error" } = {}) {
   const source = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
   const js = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const pageModule = { exports: {} as { default: (props: object) => Promise<React.ReactElement> } };
   const traces = { inputs: [] as QuarterInput[], quarters: [] as DerivedQuarter[], ttm: [] as TtmPoint[] };
   const stubs: Record<string, unknown> = {
     "@/lib/market-ir": { getStoredIrMarket: async () => ir },
-    "@/lib/fundamental/registry": { readFundamentals: async () => ({ state: fundamentals ? "ready" : "empty", data: fundamentals }) },
+    "@/lib/fundamental/registry": { readFundamentals: async () => ({ state: reads.fundamental ?? (fundamentals ? "ready" : "empty"), data: fundamentals }) },
     "@/lib/core/quarterly": {
       peOf,
       deriveQuarters: (inputs: QuarterInput[]) => { traces.inputs = inputs; traces.quarters = deriveQuarters(inputs); return traces.quarters; },
       ttmSeries: (quarters: DerivedQuarter[]) => { traces.ttm = ttmSeries(quarters); return traces.ttm; },
     },
-    "@/lib/core/history": { getSymbolHistory: async () => [] },
+    "@/lib/core/history": { getSymbolHistory: async () => [], readSymbolHistory: async () => ({ data: [], state: reads.history ?? "empty" }) },
     "@/lib/core/navHistory": { getNavHistory: async () => [] },
     "@/lib/core/fx": { getFxRates: async () => [], latestRate: () => null },
     "@/lib/access": { getAccess: async () => ({ tier: "guest" }) },
   };
   const fakeRequire = (specifier: string) => {
     if (specifier in stubs) return stubs[specifier];
-    if (specifier === "@/components/symbol/FundamentalCharts" || specifier === "@/components/symbol/SymbolTabs") return require(`../../../${specifier.slice(2)}`);
+    if (["@/components/symbol/FundamentalCharts", "@/components/symbol/SymbolTabs", "@/components/symbol/CodalReportsTab"].includes(specifier)) return require(`../../../${specifier.slice(2)}`);
     if (specifier.startsWith("@/components/")) {
       const Stub = (props: { children?: React.ReactNode; overview?: React.ReactNode }) => React.createElement(React.Fragment, null, props.children, props.overview);
       Object.defineProperty(Stub, "name", { value: specifier });
@@ -217,4 +218,80 @@ test("actual symbol EPS keeps quote priority and raw rial-per-share, while repor
   }
   const unknownUnit = reportSet(companyPeriods()); delete (unknownUnit.n10!.data as Partial<Period["data"]>).unit;
   assert.equal((await actualPage(market(stock), stock.id, unknownUnit)).stat("EPS (ریال)").value, "—");
+});
+
+test("actual routed history/report failures stay unavailable while successful empty reads remain empty", async () => {
+  const failure = await actualPage(market(stock), stock.id, null, { history: "error", fundamental: "error" });
+  assert.match(failure.html, /خواندن تاریخچهٔ این نماد موفق نشد/);
+  assert.match(failure.html, /خواندن گزارش‌های پردازش‌شده موفق نشد/);
+  assert.doesNotMatch(failure.html, /تاریخچه‌ای برای این نماد ثبت نشده|هنوز گزارشی برای این نماد پردازش نشده/);
+  const empty = await actualPage(market(stock));
+  assert.match(empty.html, /تاریخچه‌ای برای این نماد ثبت نشده/);
+  assert.match(empty.html, /هنوز گزارشی برای این نماد پردازش نشده/);
+});
+
+test("actual financial chart source is a usable Codal link or explicit unknown, never another host", async () => {
+  const reports = reportSet(companyPeriods());
+  reports.n10!.source.source_url = "https://outside.test/pretend-codal";
+  const invalid = await actualPage(market(stock), stock.id, reports);
+  assert.doesNotMatch(invalid.html, /outside\.test/);
+  assert.match(invalid.html, /پیوند معتبر اطلاعیهٔ کدال در دسترس نیست/);
+  reports.n10!.source.source_url = "/Reports/Decision.aspx?id=7";
+  assert.match((await actualPage(market(stock), stock.id, reports)).html, /href="https:\/\/codal.ir\/Reports\/Decision.aspx\?id=7"/);
+});
+
+function clientComponent(name: string, hooks: unknown, globals: Record<string, unknown> = {}) {
+  const exported = {} as { default: (props: Record<string, unknown>) => React.ReactElement };
+  const js = ts.transpileModule(readFileSync(new URL(`../../../components/symbol/${name}.tsx`, import.meta.url), "utf8"), {
+    compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  vm.runInNewContext(js, { exports: exported, ...globals, require: (id: string) => {
+    if (id === "react") return hooks;
+    if (id === "../market/MarketAutoRefresh") return { __esModule: true, default: () => null };
+    return require(id.startsWith("@/") ? `../../../${id.slice(2)}` : id);
+  } });
+  return exported.default;
+}
+
+test("actual live detail preserves null/blank as unknown, observed numeric zero as zero and neutral stale copy", () => {
+  for (const value of [null, undefined, "", "  ", false, [], NaN, Infinity, 0, "0"]) {
+    const data: Record<string, unknown> = { eps: value, pe: value, g_pe: value, ps: value, pmin_1y: value, pmax_1y: value, pl: value };
+    for (let i = 1; i <= 5; i++) for (const field of ["zd", "qd", "pd", "po", "qo", "zo"]) data[`${field}${i}`] = value;
+    let index = 0;
+    const values = [data, true, "ok", null];
+    const Detail = clientComponent("SymbolLiveDetail", { ...React, useEffect() {}, useState: () => [values[index++], () => {}] });
+    const html = renderToStaticMarkup(React.createElement(Detail, { symbol: stock.id, sections: "market" }));
+    const observed = value === 0 || value === "0";
+    assert.match(html, new RegExp(`EPS \\(ریال\\)<\\/p><p[^>]*>${observed ? "۰" : "—"}<\\/p>`));
+    assert.equal(html.includes("قیمت تقاضا"), observed, "missing prices cannot manufacture an order book");
+    assert.match(html, /تازگی دریافت تأیید نشده/);
+    assert.doesNotMatch(html, /خارج از ساعات بازار|دادهٔ زنده|NaN|Infinity/);
+  }
+});
+
+test("actual symbol tabs open chart/monthly anchors and follow hash/back navigation before scrolling", () => {
+  let active = "overview", effectIndex = 0, scrolled = 0;
+  const effects: Array<() => unknown> = [], deps = new Map<number, unknown[]>(), events: Record<string, () => void> = {};
+  const location = { hash: "#chart-margins" };
+  const chart = { closest: () => ({ getAttribute: () => "fundamental" }), scrollIntoView: () => { scrolled++; } };
+  const hooks = { ...React, useState: () => [active, (next: string) => { active = next; }], useEffect: (fn: () => unknown, values: unknown[]) => {
+    const n = effectIndex++, previous = deps.get(n);
+    if (!previous || values.some((value, i) => value !== previous[i])) effects.push(fn);
+    deps.set(n, values);
+  } };
+  const Tabs = clientComponent("SymbolTabs", hooks, {
+    window: { location, addEventListener: (name: string, fn: () => void) => { events[name] = fn; }, removeEventListener() {} },
+    document: { getElementById: (id: string) => ["chart-margins", "q-monthly-sales"].includes(id) ? chart : null },
+  });
+  const settle = () => {
+    let tree: React.ReactElement = React.createElement(React.Fragment);
+    for (let i = 0; i < 3; i++) { effectIndex = 0; tree = Tabs({ overview: "overview-fixture", fundamental: "fundamental-fixture", reports: "reports-fixture", assembly: null }); effects.splice(0).forEach(fn => fn()); }
+    return renderToStaticMarkup(tree);
+  };
+  assert.match(settle(), /data-symbol-tab="fundamental">fundamental-fixture/);
+  assert.ok(scrolled > 0);
+  location.hash = "#reports"; events.hashchange();
+  assert.match(settle(), /data-symbol-tab="reports">reports-fixture/);
+  location.hash = "#q-monthly-sales"; events.popstate();
+  assert.match(settle(), /data-symbol-tab="fundamental">fundamental-fixture/);
 });

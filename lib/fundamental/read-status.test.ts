@@ -32,6 +32,19 @@ function stub(rows: CodalRow[]) {
   };
 }
 
+test("reader projects only approved official source URLs without changing report data", async () => {
+  for (const [index, url] of ["https://evil.test/report#pv2", "https://codal.ir.evil.test/report", "http://codal.ir/report", "javascript:alert(1)", "/Reports/Decision.aspx?id=7#pv2"].entries()) {
+    const symbol = `source-url-${index}`;
+    const row = monthly(symbol, index + 1, "1405-05-31");
+    row.source_url = url;
+    stub([row]);
+    const result = await readFundamentalsFromSupabase(symbol);
+    assert.equal(result.state, "ready");
+    assert.equal(result.data?.n30?.data[0].period_total_amount, 2);
+    assert.equal(result.data?.n30?.source.source_url, index === 4 ? "https://codal.ir/Reports/Decision.aspx?id=7" : null);
+  }
+});
+
 test("database failure is separate from successful empty and is retried", async () => {
   let calls = 0;
   globalThis.fetch = async () => { calls++; return new Response("", { status: 503 }); };

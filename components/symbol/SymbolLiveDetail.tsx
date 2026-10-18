@@ -16,6 +16,7 @@ const fmtNum = (v: number): string =>
 type Raw = Record<string, unknown>;
 
 const num = (v: unknown): number | null => {
+  if (v == null || (typeof v !== "number" && typeof v !== "string") || (typeof v === "string" && !v.trim())) return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 };
@@ -163,7 +164,7 @@ export default function SymbolLiveDetail({
     <div className="space-y-4">
       {(stale || updated) && (
         <p className="text-xs text-muted-foreground">
-          {stale ? "آخرین اسنپ‌شات موجود (خارج از ساعات بازار)" : "دادهٔ زنده"}
+          {stale ? "آخرین اسنپ‌شات موجود؛ تازگی دریافت تأیید نشده است" : "اسنپ‌شات با دریافت تازه"}
           {updated ? ` — به‌روزرسانی: ${updated}` : ""}
         </p>
       )}
@@ -240,7 +241,7 @@ export default function SymbolLiveDetail({
               </tbody>
             </table>
           ) : (
-            <p className="mt-3 text-xs text-muted-foreground">دفتر سفارش در دسترس نیست (خارج از ساعات بازار).</p>
+            <p className="mt-3 text-xs text-muted-foreground">دفتر سفارش در اسنپ‌شات موجود در دسترس نیست.</p>
           )}
           <p className="mt-2 text-[11px] text-muted-foreground">قیمت‌ها به تومان.</p>
         </div>
