@@ -1,6 +1,14 @@
 // تست‌های ماژول کارنامه — توابع خالص: بازده، آمار، راستی‌آزمایی زنجیره.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import vm from "node:vm";
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import ts from "typescript";
+import { withDeadline } from "../deadline";
+import { toPersianDigits } from "../format";
 import {
   realizedReturnPct,
   computeTrackStats,
@@ -12,6 +20,139 @@ import {
   type WeeklyOutlookRecord,
   type RawChainRow,
 } from "./analyses";
+
+function actualTrackStrip(fetch: (signal: AbortSignal) => Promise<AnalysisRecord[]>) {
+  const require = createRequire(import.meta.url);
+  const source = readFileSync(new URL("../../components/landing/TrackRecordStrip.tsx", import.meta.url), "utf8");
+  const code = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+  }).outputText;
+  const component = { exports: {} as { default: () => Promise<React.ReactElement | null> } };
+  const budgets: number[] = [], signals: AbortSignal[] = [];
+  let reads = 0, computations = 0;
+  const load = (name: string) => {
+    if (name === "@/lib/track/analyses") return {
+      fetchAnalyses: (limit: number, signal: AbortSignal) => {
+        reads++; assert.equal(limit, 100); assert.equal(signal, signals[0]); return fetch(signal);
+      },
+      computeTrackStats: (records: AnalysisRecord[]) => { computations++; return computeTrackStats(records); },
+    };
+    if (name === "@/lib/deadline") return {
+      withDeadline: (read: (signal: AbortSignal) => Promise<unknown>, ms: number) => {
+        budgets.push(ms);
+        assert.equal(ms, 4000);
+        return withDeadline((signal) => { signals.push(signal); return read(signal); }, 20);
+      },
+    };
+    if (name === "@/lib/format") return { toPersianDigits };
+    if (name === "next/link") return { __esModule: true, default: (props: { href: string; children: React.ReactNode }) => React.createElement("a", { href: props.href }, props.children) };
+    if (name === "lucide-react") return { ArrowLeft: () => null };
+    return require(name);
+  };
+  vm.runInNewContext(code, { module: component, exports: component.exports, require: load });
+  return { render: component.exports.default, budgets, signals, reads: () => reads, computations: () => computations };
+}
+
+test("actual home track strip settles ignored cancellation and observes late rejection without invented stats", async () => {
+  let rejectLate!: (error: Error) => void;
+  const pending = new Promise<AnalysisRecord[]>((_resolve, reject) => { rejectLate = reject; });
+  const strip = actualTrackStrip(() => pending);
+  assert.equal(await strip.render(), null);
+  assert.deepEqual(strip.budgets, [4000]);
+  assert.equal(strip.signals[0].aborted, true);
+  assert.equal(strip.reads(), 1);
+  assert.equal(strip.computations(), 0);
+  rejectLate(new Error("late unavailable response"));
+  await new Promise<void>((resolve) => setImmediate(resolve));
+});
+
+test("actual home track strip hides rejected or genuinely empty reads", async () => {
+  for (const fetch of [async (): Promise<AnalysisRecord[]> => { throw new Error("unavailable"); }, async () => []]) {
+    const strip = actualTrackStrip(fetch);
+    assert.equal(await strip.render(), null);
+    assert.equal(strip.reads(), 1);
+    assert.deepEqual(strip.budgets, [4000]);
+  }
+});
+
+test("actual home track strip preserves valid closed record statistics", async () => {
+  const strip = actualTrackStrip(async () => [rec({
+    outcome: {
+      id: "closed", seq: 1, signal_id: "x", exit_price: 1200, exit_date: "2026-02-01",
+      outcome: "manual_close", note: null, closed_at: "2026-02-01T00:00:00Z",
+      prev_hash: "GENESIS", record_hash: "h",
+    },
+  }), rec({ id: "open", seq: 2 })]);
+  const html = renderToStaticMarkup(await strip.render());
+  assert.match(html, /تحلیل منتشرشده/);
+  assert.match(html, /بسته‌شده با نتیجهٔ ثبت‌شده/);
+  assert.match(html, /میانگین بازدهٔ محقق‌شده/);
+  assert.match(html, /<dd[^>]*>۲<\/dd>/);
+  assert.match(html, /<dd[^>]*>۱<\/dd>/);
+  assert.ok(html.includes("+۲۰٪"));
+  assert.ok(html.includes('href="/analyses"'));
+  assert.equal(strip.computations(), 1);
+  assert.equal(strip.reads(), 1);
+  assert.deepEqual(strip.budgets, [4000]);
+});
+
+type AnalysisReply = { data: unknown[] | null; error: unknown };
+function actualAnalysisReader(first: Promise<AnalysisReply>, outcomes: unknown[] = []) {
+  const require = createRequire(import.meta.url);
+  const source = readFileSync(new URL("./analyses.ts", import.meta.url), "utf8");
+  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+  const reader = { exports: {} as { fetchAnalyses: (limit?: number, signal?: AbortSignal) => Promise<AnalysisRecord[]> } };
+  const tables: string[] = [], signals: AbortSignal[] = [];
+  const from = (table: string) => {
+    tables.push(table);
+    assert.ok(table === "signals" || table === "signal_outcomes");
+    const reply = table === "signals" ? first : Promise.resolve({ data: outcomes, error: null });
+    const query = {
+      select: () => query, order: () => query, limit: () => query, in: () => query,
+      abortSignal: (signal: AbortSignal) => { signals.push(signal); return query; },
+      then: (resolve: (value: AnalysisReply) => unknown, reject?: (reason: unknown) => unknown) => reply.then(resolve, reject),
+    };
+    return query;
+  };
+  vm.runInNewContext(code, {
+    module: reader, exports: reader.exports,
+    require: (name: string) => name === "@supabase/supabase-js" ? { createClient: () => ({ from }) } : require(name),
+    process: { env: { NEXT_PUBLIC_SUPABASE_URL: "https://synthetic.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "synthetic-public-fixture" } },
+  });
+  return { read: reader.exports.fetchAnalyses, tables, signals };
+}
+
+test("actual analysis reader forwards one optional cancellation signal to both reads and preserves results", async () => {
+  const record = rec({});
+  const outcome = {
+    id: "outcome", seq: 1, signal_id: record.id, exit_price: 1200, exit_date: "2026-02-01",
+    outcome: "manual_close", note: null, closed_at: "2026-02-01T00:00:00Z",
+    prev_hash: "GENESIS", record_hash: "h",
+  };
+  for (const signal of [undefined, new AbortController().signal]) {
+    const reader = actualAnalysisReader(Promise.resolve({ data: [record], error: null }), [outcome]);
+    const result = await reader.read(100, signal);
+    assert.deepEqual(reader.tables, ["signals", "signal_outcomes"]);
+    assert.deepEqual(reader.signals, signal ? [signal, signal] : []);
+    assert.equal(result.length, 1);
+    assert.equal(result[0].outcome?.exit_price, 1200);
+    assert.equal(computeTrackStats(result).avgReturnPct, 20);
+  }
+});
+
+test("actual analysis reader never starts outcomes after a cancelled first read resolves late", async () => {
+  let resolveFirst!: (value: AnalysisReply) => void;
+  const reader = actualAnalysisReader(new Promise((resolve) => { resolveFirst = resolve; }));
+  const controller = new AbortController();
+  const pending = reader.read(100, controller.signal);
+  controller.abort();
+  resolveFirst({ data: [rec({})], error: null });
+  assert.equal((await pending).length, 0);
+  assert.deepEqual(reader.tables, ["signals"]);
+  assert.deepEqual(reader.signals, [controller.signal]);
+  await reader.read(100, controller.signal);
+  assert.deepEqual(reader.tables, ["signals"], "an already-cancelled read never starts a query");
+});
 
 // ── realizedReturnPct ────────────────────────────────────────────────
 
