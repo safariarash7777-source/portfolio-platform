@@ -17,6 +17,7 @@ import type {
 } from "./types";
 import { fiscalChainKey } from "../core/quarterly";
 import { isMillionRialUnit } from "./units";
+import { approvedCodalUrl } from "../desk/workspace-model";
 export { isMillionRialUnit } from "./units";
 
 export interface CodalRow {
@@ -368,7 +369,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
       data: d,
       source: {
         title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${faDigits(fyOf(d))}${consolidated ? " — گزارشِ تلفیقی" : ""} (کدال)`,
-        source_url: cleanUrl(main),
+        source_url: approvedCodalUrl(cleanUrl(main)),
         // «اعتبارسنجی متقاطع» فقط حسابی است (ناخالص = فروش − بها) و دامنه را اثبات
         // نمی‌کند؛ برای گزارشِ تلفیقی تیکِ سبز گمراه‌کننده بود (B-056).
         verified,
@@ -388,7 +389,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
       data: n30rows.map((r) => r.data as CodalN30Data),
       source: {
         title: "گزارش‌های فعالیت ماهانه (ن-۳۰) کدال",
-        source_url: cleanUrl(n30rows[0]),
+        source_url: approvedCodalUrl(cleanUrl(n30rows[0])),
         verified: n30rows.every((row) =>
           ["arithmetic", "header+arithmetic"].includes((row.data as CodalN30Data).unit_basis ?? "")),
       },

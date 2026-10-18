@@ -1,9 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getSymbolHistory, readUniqueHistoryRows } from './history';
+import { getSymbolHistory, readSymbolHistory, readUniqueHistoryRows } from './history';
 import { getNavHistory } from './navHistory';
 const credentials = { url: 'https://history.test', anon: 'synthetic' };
 const row = (id: number, trade_date: string, close = id) => ({ id, trade_date, close, raw: { nav_toman: id } });
+
+test('status reader separates failed, empty and observed history while preserving the array getter', async () => {
+  const oldUrl=process.env.NEXT_PUBLIC_SUPABASE_URL, oldKey=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  process.env.NEXT_PUBLIC_SUPABASE_URL=credentials.url;process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY=credentials.anon;
+  try {
+    await mocked([new Response('',{status:503}), [], [row(11,'2026-10-17',0)]], async calls=>{
+      assert.deepEqual(await readSymbolHistory('history-status-error',1),{data:[],state:'error'});
+      assert.deepEqual(await readSymbolHistory('history-status-empty',1),{data:[],state:'empty'});
+      const ready=await readSymbolHistory('history-status-observed',1);
+      assert.equal(ready.state,'ready');assert.equal(ready.data[0].close,0);
+      assert.deepEqual(await getSymbolHistory('history-status-observed',1),ready.data);
+      assert.equal(calls.length,3,'compatibility getter shares the successful cache');
+    });
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    assert.equal((await readSymbolHistory('history-status-unconfigured',1)).state,'error');
+    assert.deepEqual(await getSymbolHistory('history-compat-unconfigured',1),[]);
+  } finally {
+    if(oldUrl===undefined)delete process.env.NEXT_PUBLIC_SUPABASE_URL;else process.env.NEXT_PUBLIC_SUPABASE_URL=oldUrl;
+    if(oldKey===undefined)delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY=oldKey;
+  }
+});
 async function mocked<T>(pages: unknown[], run: (calls: URL[]) => Promise<T>) {
   const original = globalThis.fetch;
   const calls: URL[] = [];
