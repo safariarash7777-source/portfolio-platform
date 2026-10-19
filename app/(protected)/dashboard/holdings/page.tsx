@@ -12,6 +12,8 @@ import Link from "next/link";
 import { valuePositions } from "@/lib/portfolio/valuation";
 import HoldingsWorkbench from "@/components/portfolio/HoldingsWorkbench";
 import { loadInvestmentScope } from "@/lib/portfolio/scopeService";
+import DebtSchedule from "@/components/portfolio/DebtSchedule";
+import { paymentReferenceDay } from "@/lib/portfolio/paymentSchedule";
 
 export const metadata = { title: "دارایی، بدهی و خالص ثروت" };
 export const dynamic = "force-dynamic";
@@ -47,6 +49,7 @@ export default async function HoldingsPage({
       <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>این صفحه فقط ثبت‌های نسخه‌دار دارایی و بدهی را نشان می‌دهد. سوابق سبد قبلی و الگوهای تخصیص در <Link href="/dashboard" className="underline">داشبورد قبلی</Link> محفوظ‌اند؛ به این فهرست تبدیل یا منتقل نشده‌اند. برای جلوگیری از محاسبهٔ حدسی، مقدار بدون واحد، مالکیت یا منبع معتبر را جدا بررسی و ثبت کنید.</p>
       <FinancialEditors key={`financial-editors-${snapshot.holdings?.id ?? "new"}`}>
       <BalanceSheetSummary sheet={sheet} version={snapshot.holdings?.version ?? null} />
+      <DebtSchedule debts={debts.debts} ready={snapshot.ready && debts.ready} version={snapshot.holdings?.version ?? null} referenceDay={paymentReferenceDay(new Date())} historical={snapshot.holdings !== null && snapshot.holdings.version !== snapshot.history[0]?.version} />
       {snapshot.ready ? <HoldingsSummary valuation={valuePositions(snapshot.holdings?.positions ?? [], prices.data ?? [], new Date())} version={snapshot.holdings?.version ?? null} pricesFailed={prices.status === "error"} /> : <ReadError label={snapshot.holdingsState === "not_found" ? "نسخهٔ انتخابی؛ در دسترس حساب شما نیست" : "دارایی‌ها"} code="PORTFOLIO_READ" />}
       {snapshot.targetState === "error" && <ReadError label="سبد هدف؛ دارایی شما مستقل از هدف قابل مشاهده است" code="PORTFOLIO_TARGET" />}
       {snapshot.ready && snapshot.holdings && <InvestmentScopeWorkbench key={`scope-${snapshot.holdings.id}-${scopeState.review?.id ?? scopeState.status}`} holdings={snapshot.holdings} scopeState={scopeState} editable={snapshot.holdings.version === snapshot.history[0]?.version} storedTarget={snapshot.storedTarget} priceRows={prices.data ?? []} pricesFailed={prices.status === "error"} />}
@@ -66,7 +69,7 @@ export default async function HoldingsPage({
         showComparison={false}
         showImport={false}
       />
-      <DebtsWorkbench key={`debts-${snapshot.holdings?.id ?? "new"}`} debts={debts.debts} ready={snapshot.ready && debts.ready} activeVersion={snapshot.holdings?.version ?? null} latestVersion={snapshot.history[0]?.version ?? 0} />
+      <section id="debt-editor" aria-label="ثبت و مشاهدهٔ بدهی"><DebtsWorkbench key={`debts-${snapshot.holdings?.id ?? "new"}`} debts={debts.debts} ready={snapshot.ready && debts.ready} activeVersion={snapshot.holdings?.version ?? null} latestVersion={snapshot.history[0]?.version ?? 0} /></section>
       </FinancialEditors>
     </main><Footer /></>
   );
