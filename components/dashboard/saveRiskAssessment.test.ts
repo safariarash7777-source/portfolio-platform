@@ -29,6 +29,71 @@ test("a transport failure is surfaced as unconfirmed without automatic resubmiss
   assert.equal(attempts, 1);
 });
 
+function readErrorControl(label: string) {
+  // Execute the shipped component/handler. The React transition scheduler and
+  // Next router are seams; this host does not claim browser/RSC acceptance.
+  let pending = false, withinTransition = false, refreshes = 0;
+  const loaded = { exports: {} as { default: (props: { label: string; code: string }) => React.ReactElement } };
+  const jsx = (type: React.ElementType, props: Props) => React.createElement(type, props);
+  runInNewContext(ts.transpileModule(readFileSync(new URL('./ReadError.tsx', import.meta.url), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+  }).outputText, { exports: loaded.exports, require(name: string) {
+    if (name === 'react') return { useTransition: () => [pending, (action: () => void) => {
+      pending = true; withinTransition = true;
+      try { action(); } finally { withinTransition = false; }
+    }] };
+    if (name === 'react/jsx-runtime') return { jsx, jsxs: jsx };
+    if (name === 'next/navigation') return { useRouter: () => ({ refresh() {
+      assert.equal(withinTransition, true, 'refresh must be scheduled in the actual transition handler'); refreshes++;
+    } }) };
+    throw new Error(`Unexpected dependency: ${name}`);
+  } });
+  const render = () => loaded.exports.default({ label, code: 'SYNTHETIC_READ_ERROR' });
+  function findButton(node: React.ReactNode): React.ReactElement<Props> | null {
+    if (React.isValidElement<Props>(node)) {
+      if (node.type === 'button') return node;
+      for (const child of React.Children.toArray(node.props.children as ReactNode)) {
+        const found = findButton(child); if (found) return found;
+      }
+    }
+    return null;
+  }
+  return { render, button: () => { const button = findButton(render()); assert.ok(button); return button; }, refreshes: () => refreshes, finishTransition: () => { pending = false; } };
+}
+
+test('actual member read errors give each repeated retry control its section name', () => {
+  for (const label of ['دارایی‌ها', 'تراکنش‌ها']) {
+    const ui = readErrorControl(label), button = ui.button();
+    assert.equal(button.props.type, 'button');
+    assert.equal(button.props['aria-label'], `تلاش مجدد برای دریافت ${label}`);
+    const html = renderToStaticMarkup(ui.render());
+    assert.match(html, /SYNTHETIC_READ_ERROR/);
+    assert.ok(html.includes(`دریافت ${label} انجام نشد`));
+    assert.equal(ui.refreshes(), 0);
+  }
+});
+
+test('actual member retry refreshes once, exposes pending state and never invents success', () => {
+  const ui = readErrorControl('دارایی‌ها');
+  (ui.button().props.onClick as () => void)();
+  assert.equal(ui.refreshes(), 1);
+  assert.equal(ui.button().props.disabled, true);
+  assert.equal(ui.button().props['aria-busy'], true);
+  const pendingHtml = renderToStaticMarkup(ui.render());
+  assert.match(pendingHtml, /role="status"/);
+  assert.match(pendingHtml, /در حال بازخوانی دارایی‌ها/);
+  assert.match(pendingHtml, /دریافت دارایی‌ها انجام نشد/);
+  (ui.button().props.onClick as () => void)();
+  assert.equal(ui.refreshes(), 1, 'a pending control must not schedule another refresh');
+  ui.finishTransition();
+  assert.equal(ui.button().props.disabled, false);
+  assert.equal(ui.button().props['aria-busy'], false);
+  assert.doesNotMatch(renderToStaticMarkup(ui.render()), /در حال بازخوانی|با موفقیت|دریافت شد/);
+  assert.equal(ui.refreshes(), 1, 'transition completion does not auto retry');
+  (ui.button().props.onClick as () => void)();
+  assert.equal(ui.refreshes(), 2);
+});
+
 // Execute the routed dashboard component's real handler, with SDK/React seams only.
 function dashboard(response: Promise<{ data: typeof row | null; error: unknown }>, clientUnavailable = false) {
   const states: unknown[] = [null, true, false, false];
