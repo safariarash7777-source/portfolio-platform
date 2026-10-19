@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { withDeadline } from "../../lib/deadline";
 import { saveRiskAssessment } from "./saveRiskAssessment";
 import { existsSync, readFileSync } from "node:fs";
 import { posix } from "node:path";
@@ -127,6 +128,7 @@ async function render(results = fixture(), member = "member", queries: { table: 
       if (name === 'next/navigation') return { useRouter: () => ({ refresh() {} }), redirect() { throw Error('Unexpected redirect'); } };
       if (name === 'lucide-react') return new Proxy({}, { get: () => () => React.createElement('i') });
       if (name === '@/lib/format') return format;
+      if (name === '@/lib/deadline') return { withDeadline };
       if (name === '@/components/quiz/quizData') return { RISK_PROFILES: {} };
       if (name === '@/lib/access') return { getAccess: async () => ({ level: 'full', standing: 'active' }) };
       if (name === '@/lib/supabase/server') return { createClient: async () => ({ auth: { getUser: async () => ({ data: { user: { id: member, email: 'synthetic@example.invalid' } }, error: null }) }, from(table: string) {
@@ -135,6 +137,7 @@ async function render(results = fixture(), member = "member", queries: { table: 
         const canonical = ['member_holding_versions', 'member_holding_positions', 'member_debt_positions', 'member_investment_scope_reviews', 'portfolio_versions'].includes(table);
         const query = { select(columns: string) { selected = columns; return query; }, eq(column: string, value: unknown) { filters.push([column, value]); return query; },
           order(column: string, options?: { ascending: boolean }) { ordered = column; ascending = options?.ascending ?? true; return query; }, limit(value: number) { maximum = value; return query; }, maybeSingle() { single = true; return query; }, not() { return query; },
+          abortSignal(signal: AbortSignal) { assert.ok(signal instanceof AbortSignal); return query; },
           then(resolve: (r: Result) => unknown) {
             const key = table === 'risk_assessments' && selected !== '*' ? 'risk_history' : table === 'portfolios' && selected !== '*' ? 'portfolio_history' : table;
             assert.ok(results[key], key); const result = results[key];
