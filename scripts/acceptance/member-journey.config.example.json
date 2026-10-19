@@ -1,0 +1,12 @@
+{
+  "marker": "member-journey-20261019-01",
+  "origin": "https://portfolio-platform-fawn.vercel.app",
+  "backend": "https://62.60.191.24/liara-preview",
+  "dbContainer": "portfolio-stage-db-1",
+  "authAdminBase": "http://172.19.0.4:9999",
+  "sshTarget": "root@62.60.191.24",
+  "identityFile": "C:/Users/Asus/.ssh/codex-liara-portfolio",
+  "soleWriter": false,
+  "writeApprovalMarker": null,
+  "retireApprovalMarker": null
+}

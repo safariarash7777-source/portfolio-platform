@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "marker": "member-journey-20261019-01",
+  "syntheticAccountId": "55868f39-de3d-48a6-bbe2-8f6c887b7bcb",
+  "origin": "https://portfolio-platform-fawn.vercel.app",
+  "backend": "https://62.60.191.24/liara-preview",
+  "database": {
+    "database": "postgres",
+    "version": "17.6",
+    "dbContainer": "portfolio-stage-db-1",
+    "authAdminBase": "http://172.19.0.4:9999",
+    "existingKeyRolesVerified": true
+  },
+  "independentReadbackAt": "2026-10-19T14:13:44.251300+00:00",
+  "readbackSource": "Exact owned UUID; BEGIN READ ONLY on existing primary PostgreSQL",
+  "versions": [
+    {
+      "id": "5acc9e72-b35c-44a3-b045-e90d23adefe8",
+      "version": 1
+    },
+    {
+      "id": "a2238f73-aed0-4e23-aee4-f2447da3b5cc",
+      "version": 2
+    },
+    {
+      "id": "c0ac7a0e-a3c3-4120-afeb-b8cdd8003f37",
+      "version": 3
+    }
+  ],
+  "counts": {
+    "versions": 3,
+    "positions": 4,
+    "debts": 2,
+    "scopes": 1
+  },
+  "checks": {
+    "nativeProfileUser": true,
+    "exactThreeVersions": true,
+    "oneVersionPerDistinctAttempt": true,
+    "exactPositionDebtScopeCounts": true,
+    "declaredOwnershipPreserved": true,
+    "unpricedQuantityNeverZeroed": true,
+    "canonicalDebtAndInstallmentPreserved": true,
+    "firstHistoryVersionHasNoDebtRows": true,
+    "scopeBelongsOnlyToConfirmedVersionTwo": true,
+    "nativeRetirementAndZeroTokens": true,
+    "fullLedgerUnchangedByRetirement": true
+  },
+  "scenarioAmountsToman": {
+    "wholeDeclaredAsset": 2000000,
+    "ownershipPercent": 50,
+    "knownOwnedAssets": 1000000,
+    "debtBalance": 200000,
+    "nextInstallmentAlreadyIncluded": 10000,
+    "knownSubtotalNet": 800000
+  },
+  "unknownAsset": {
+    "quantity": 3,
+    "unit": "گرم",
+    "valuationMode": "unpriced",
+    "declaredValue": null
+  },
+  "retirement": {
+    "checkedAt": "2026-10-19T14:13:10.085130+00:00",
+    "globalLogoutStatus": 204,
+    "banStatus": 200,
+    "banned": true,
+    "sessions": 0,
+    "refreshTokens": 0,
+    "activeRefresh": 0,
+    "historyPreserved": true,
+    "reused": false,
+    "limitation": "Already-issued access JWTs may remain valid until expiry."
+  },
+  "coordinatorReportedBrowserAcceptance": {
+    "source": "Root coordinator's separate CUA run; not performed by this Python harness",
+    "normalLogin": "PASS",
+    "assetOwnershipSave": "PASS",
+    "debtUnitsAndInstallment": "PASS",
+    "versionTwoScopeAndReload": "PASS",
+    "versionThreeUnknownAttemptRecovery": "PASS",
+    "versionOneHistory": "PASS",
+    "logoutLoginPersistence": "PASS",
+    "mobileNoHorizontalOverflow": "PASS"
+  },
+  "limitations": [
+    "Browser deployment/SHA and screenshots are attested separately by the coordinator, not by this DB runner.",
+    "The first unanswered v3 attempt had no v3 row at the initial independent read; this does not prove an already-committed response was lost.",
+    "Scope remains confirmed for v2 only; a new financial version requires its own confirmation.",
+    "No real customer data or old retired accounts were accessed. Raw state, passwords, JWTs, cookies and Auth metadata remain outside Git."
+  ],
+  "offlineSafetyTests": 9,
+  "harnessSha256": {
+    "member-journey.py": "dc311f7cb7f64b9aad81090c83f3b7e6f22ab20fff47a8bc7cdc01857575c116",
+    "member-journey-remote.py": "b6f96369dcd660288b4f91a83a63b5387d1805cc0e369b1bffa61b89a3e940f3",
+    "member-journey.test.py": "0b53b645f87aedebb22a8621c263ba1dc569b64a774260a3bba06c421d7a88ed",
+    "member-journey.config.example.json": "909ee83d75e91c1ba807bae0c6b11b0f0a4d2549f3f73eaf0a3ed62168ca107c"
+  }
+}
