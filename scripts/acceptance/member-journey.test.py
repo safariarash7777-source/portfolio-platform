@@ -54,6 +54,8 @@ class JourneySafety(unittest.TestCase):
              patch.object(remote, "http") as http, patch.object(remote, "admin") as admin:
             result = remote.execute({"config": cfg, "action": "retire", "id": UID})
             self.assertTrue(result["historyPreserved"])
+            self.assertTrue(result["reused"])
+            self.assertIsNone(result["globalLogoutStatus"])
             http.assert_not_called()
             admin.assert_not_called()
 
@@ -88,6 +90,8 @@ class JourneySafety(unittest.TestCase):
             self.assertEqual(http.call_args_list[1].args[0], remote.BACKEND + "/auth/v1/logout?scope=global")
             admin.assert_called_once_with("PUT", "/admin/users/" + UID, {"ban_duration": "876000h"})
             self.assertTrue(result["historyPreserved"])
+            self.assertEqual(result["globalLogoutStatus"], 204)
+            self.assertEqual(result["banStatus"], 200)
 
     def test_http_never_sends_key_or_password_to_unapproved_destination(self):
         for url in ("https://example.invalid/auth/v1/token", remote.ADMIN + "/admin/users/foreign/other"):

@@ -161,19 +161,22 @@ def execute(request):
     if action == "readback":
         return {"id": uid, "role": "user", "ledger": before, "writes": False}
     check(cfg.get("soleWriter") is True and cfg.get("retireApprovalMarker") == MARKER, "retirement_not_coordinated")
-    if not rows[0]["banned"]:
+    already_banned = rows[0]["banned"]
+    logout_status = ban_status = None
+    if not already_banned:
         _, anon = keys()
         _, session = http(BACKEND + "/auth/v1/token?grant_type=password", "POST",
             {"email": EMAIL, "password": request["password"]}, {"apikey": anon})
         check(session.get("user", {}).get("id") == uid, "native_login_identity")
-        status, _ = http(BACKEND + "/auth/v1/logout?scope=global", "POST", {},
+        logout_status, _ = http(BACKEND + "/auth/v1/logout?scope=global", "POST", {},
             {"apikey": anon, "Authorization": "Bearer " + session["access_token"]})
-        check(status in (200, 204), "native_global_logout_failed")
-        admin("PUT", "/admin/users/" + uid, {"ban_duration": "876000h"})
+        check(logout_status in (200, 204), "native_global_logout_failed")
+        ban_status, _ = admin("PUT", "/admin/users/" + uid, {"ban_duration": "876000h"})
     counts = session_counts(uid)
     check(owned(uid)[0]["banned"] and all(value == 0 for value in counts.values()), "retirement_verification_failed")
     check(ledger(uid) == before, "financial_history_changed")
-    return {"id": uid, "banned": True, **counts, "historyPreserved": True,
+    return {"id": uid, "banned": True, **counts, "historyPreserved": True, "reused": already_banned,
+        "globalLogoutStatus": logout_status, "banStatus": ban_status,
         "limitation": "Already-issued access JWTs may remain valid until expiry."}
 
 
