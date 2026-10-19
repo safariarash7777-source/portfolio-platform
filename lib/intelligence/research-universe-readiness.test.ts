@@ -68,3 +68,12 @@ test('absent payload is unavailable, not an authoritative empty market', () => {
   assert.equal(inspect(null).snapshotState, 'unavailable');
   assert.equal(inspect(null).pilotShortfall, 5);
 });
+test('snapshot-wide error rejects an otherwise valid received family and retains audit evidence', () => {
+  const payload = snapshot(); payload.snapshotQuality.state = 'error';
+  const result = inspect(payload);
+  assert.equal(result.rows[0].candidate, null);
+  assert.ok(result.rows[0].reasons.includes('snapshot_error'));
+  assert.equal(result.rows[0].mappingEvidenceRef, 'synthetic-identity-proof');
+  assert.equal(result.rows[0].capitalizationEvidenceRef, 'synthetic-cap-contract');
+  assert.equal(result.universe.selected.length, 0);
+});

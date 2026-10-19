@@ -51,6 +51,7 @@ export function inspectResearchUniverseReadiness(payload: unknown, options: Rese
     const stock = object(raw);
     const symbol = text(stock?.id);
     const reasons: string[] = [];
+    if (quality?.state === 'error') reasons.push('snapshot_error');
     if (!symbol) reasons.push('missing_symbol');
     else if (/[0-9۰-۹٠-٩ح]$/.test(symbol)) reasons.push('quarantined_ticker');
     if (!observedAt) reasons.push('missing_or_future_receipt');
@@ -74,7 +75,9 @@ export function inspectResearchUniverseReadiness(payload: unknown, options: Rese
       issuerId: mapping!.issuerId, symbol: symbol!, securityType: 'ordinary-share', marketCapRial, unit: 'IRR',
       source: capEvidence!.evidenceRef, sourceAt: new Date(source!).toISOString(), observedAt,
     };
-    return { index, symbol, marketCapRial, issuerId: mapping?.issuerId ?? null, reasons, candidate };
+    return { index, symbol, marketCapRial, issuerId: mapping?.issuerId ?? null,
+      mappingEvidenceRef: mapping?.evidenceRef ?? null,
+      capitalizationEvidenceRef: capVerified ? capEvidence!.evidenceRef : null, reasons, candidate };
   });
   // Duplicate rows cannot be used to silently resolve a snapshot ambiguity.
   const symbolCounts = new Map<string, number>();
