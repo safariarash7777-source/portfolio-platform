@@ -349,6 +349,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
           fundamentals={fundamentals ?? { symbol: sym, n10: null, n30: null }}
           fxRate={fx?.usd_toman ?? null}
           fxRateDate={fx?.rate_date ?? null}
+          quarterlyPeChartReady={peSeries.filter(point => point.pe !== null).length >= 2}
         />
       </section>
     </>

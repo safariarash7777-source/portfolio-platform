@@ -501,12 +501,15 @@ export default function FundamentalCharts({
   readFailed = false,
   fxRate = null,
   fxRateDate = null,
+  quarterlyPeChartReady = false,
 }: {
   fundamentals: SymbolFundamentals;
   readFailed?: boolean;
   /** آخرین نرخ دلار بازار آزاد (تومان) از fx_rates — null یعنی فید هنوز داده ندارد. */
   fxRate?: number | null;
   fxRateDate?: string | null;
+  /** The separate quarterly section has at least two real historical P/E points. */
+  quarterlyPeChartReady?: boolean;
 }) {
   const n10 = fundamentals.n10;
   const n10Comparable = !!n10 && isMillionRialUnit(n10.data.unit) && n10.source.scope === "company";
@@ -569,6 +572,8 @@ export default function FundamentalCharts({
         <span className="font-bold" style={{ color: "var(--navy-ink)" }}>
           منبع: {n10.source.title}
         </span>
+        <span>پایان دورهٔ مالی: {toPersianDigits(d.period_end.replace(/-/g, "/"))}</span>
+        <span>انتشار در کدال: {n10.source.publishedAt ? toPersianDigits(n10.source.publishedAt) : "زمان نامشخص"}</span>
         <span>واحد ارقام: {d.unit}</span>
         {d.audited ? <span style={{ color: "var(--success)" }}>حسابرسی‌شده ✓</span> : null}
         {n10.source.verified ? <span title={n10.source.verification_note}>اعتبارسنجی حسابی ✓</span> : null}
@@ -586,12 +591,20 @@ export default function FundamentalCharts({
       <Narrative text={omittedNote} />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {/* چارت ۱ — P/E فصلی TTM: نیازمند EPS فصلی + قیمت روز → به‌زودی */}
-        <ComingSoon
-          id="chart-pe-ttm"
-          title="۱) روند P/E فصلی TTM"
-          waitingFor="نیازمند EPS فصلی (گزارش‌های میان‌دوره‌ای) و قیمت روز نماد (فید WP1) است؛ پس از اتصال، به‌صورت خودکار محاسبه و رندر می‌شود."
-        />
+        {/* The actual P/E chart is rendered once in the quarterly section above. */}
+        {quarterlyPeChartReady ? (
+          <section id="chart-pe-ttm" className="rounded-xl p-4 sm:p-5 scroll-mt-24" style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>
+            <h3 className="text-[15px] font-bold">۱) روند P/E فصلی TTM</h3>
+            <p className="mt-2 text-[13px] leading-6">نمودار با گزارش‌های فصلی و قیمت‌های تاریخی موجود، در بخش تحلیل فصلی همین صفحه نمایش داده می‌شود.</p>
+            <a href="#quarterly" className="mt-3 inline-block text-[13px] underline underline-offset-4">مشاهدهٔ نمودار P/E</a>
+          </section>
+        ) : (
+          <ComingSoon
+            id="chart-pe-ttm"
+            title="۱) روند P/E فصلی TTM"
+            waitingFor="برای رسم روند، چهار فصل مالی متوالی و دست‌کم دو قیمت تاریخیِ معتبر در پایان فصل لازم است. وضعیت دادهٔ همین نماد در بخش تحلیل فصلی مشخص می‌شود."
+          />
+        )}
 
         {/* چارت ۲ — حاشیهٔ سود در دورهٔ تجمیعیِ واقعی گزارش */}
         <ChartCard
@@ -640,7 +653,11 @@ export default function FundamentalCharts({
           <ComingSoon
             id="chart-sales-mix"
             title="۴) ترکیب فروش داخلی/صادراتی و سهم محصولات"
-            waitingFor="نیازمند جدول «فروش به تفکیک محصول» از اکسل گزارش‌های ماهانهٔ ن-۳۰ است — برای این نماد هنوز گزارش ن-۳۰ پردازش نشده است."
+            waitingFor={fundamentals.n30Unavailable?.unitUnknown
+              ? "گزارش‌های ماهانهٔ ن-۳۰ ذخیره شده‌اند، اما واحد مبلغ آن‌ها مشخص نیست؛ ترکیب فروش تا تأیید واحد محاسبه نمی‌شود."
+              : readFailed
+                ? "خواندن گزارش‌های بنیادی ناموفق بود؛ وجود یا نبود گزارش ماهانه در بانک داده در این لحظه مشخص نیست."
+                : "در خواندن فعلی، گزارش ماهانهٔ ن-۳۰ با واحد مبلغ معتبر برای ترکیب فروش در دسترس نیست."}
           />
         )}
 

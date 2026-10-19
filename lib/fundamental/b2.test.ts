@@ -46,8 +46,8 @@ function input(r: CodalRow, scope = "company", unit: string | null = "میلیو
   return { id: r.id, period_end: d.period_end, period_months: d.period_months, audited: d.audited, capital: d.capital,
     ...d.standalone, scope, unit } as QuarterInput;
 }
-function html(f: SymbolFundamentals) {
-  return renderToStaticMarkup(React.createElement(FundamentalCharts, { fundamentals: f }));
+function html(f: SymbolFundamentals, quarterlyPeChartReady = false) {
+  return renderToStaticMarkup(React.createElement(FundamentalCharts, { fundamentals: f, quarterlyPeChartReady }));
 }
 
 test("freshness: latest interim drives the card and margins instead of the previous annual", async () => {
@@ -60,6 +60,35 @@ test("freshness: latest interim drives the card and margins instead of the previ
   assert.match(result.data?.n10?.source.title ?? "", /۶ماهه/);
   assert.equal(deriveN10(result.data!.n10!.data).margins.net, 20);
   assert.equal(result.data?.n10Periods?.length, 2);
+});
+
+test("selected financial report shows its own period and Codal publication time, without inventing a missing time", async () => {
+  const symbol = "publication-provenance";
+  const older = row(90, symbol, "1404-12-29", 12, 1000);
+  older.raw = { ...older.raw, date_publish: "1405/02/01", time_publish: "09:00:00" };
+  const current = row(2, symbol, "1405-06-31", 6, 700);
+  current.raw = { ...current.raw, date_publish: "1405/07/10", time_publish: "11:42:03" };
+  const selected = (await read(symbol, [older, current])).data;
+  assert.equal(selected?.n10?.source.publishedAt, "1405/07/10 11:42:03");
+  const rendered = html(selected!);
+  assert.match(rendered, /پایان دورهٔ مالی: ۱۴۰۵\/۰۶\/۳۱/);
+  assert.match(rendered, /انتشار در کدال: ۱۴۰۵\/۰۷\/۱۰ ۱۱:۴۲:۰۳/);
+  assert.doesNotMatch(rendered, /انتشار در کدال: ۱۴۰۵\/۰۲\/۰۱/);
+
+  const missing = row(3, "publication-missing", "1405-06-31", 6, 700);
+  const unknown = (await read("publication-missing", [missing])).data;
+  assert.equal(unknown?.n10?.source.publishedAt, null);
+  assert.match(html(unknown!), /انتشار در کدال: زمان نامشخص/);
+});
+
+test("fundamental chart states agree with the available quarterly chart and stored monthly reports", async () => {
+  const symbol = "chart-state";
+  const result = (await read(symbol, [row(1, symbol, "1405-06-31", 6, 700)])).data!;
+  const rendered = html({ ...result, n30Unavailable: { unitUnknown: 1, latestPeriod: "1405-06-31" } }, true);
+  assert.match(rendered, /مشاهدهٔ نمودار P\/E/);
+  assert.doesNotMatch(rendered, /نیازمند EPS فصلی/);
+  assert.match(rendered, /گزارش‌های ماهانهٔ ن-۳۰ ذخیره شده‌اند، اما واحد مبلغ آن‌ها مشخص نیست/);
+  assert.doesNotMatch(rendered, /هنوز گزارش ن-۳۰ پردازش نشده است/);
 });
 
 test("freshness: a newer invalid report stays disclosed alongside the dated usable report", async () => {
