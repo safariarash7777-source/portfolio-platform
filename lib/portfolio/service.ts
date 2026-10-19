@@ -4,6 +4,7 @@ import { safeRead, readState, type ReadState } from "@/lib/read-state";
 import type { HoldingPosition, HoldingVersion } from "./contracts";
 import { priceableSymbols, type SymbolHistoryRow } from "./prices";
 import { positionFromStored, debtFromStored, type DebtPosition } from "./balanceSheet";
+import { withDeadline } from "@/lib/deadline";
 
 /**
  * خواندنِ داراییِ **خودِ کاربرِ نشست** و هدفِ او.
@@ -45,11 +46,16 @@ export interface PortfolioSnapshot {
 
 export async function loadPortfolioSnapshot(versionId?: string, connect = createClient): Promise<PortfolioSnapshot> {
   const failed: PortfolioSnapshot = { holdings: null, storedTarget: null, ready: false, holdingsState: "error", targetState: "error", history: [] };
+  let fallback = failed;
+  try {
+  return await withDeadline(async signal => {
   let supabase: Awaited<ReturnType<typeof createClient>>;
   let user: { id: string };
   try {
     supabase = await connect();
+    if (signal.aborted) return fallback;
     const auth = await supabase.auth.getUser();
+    if (signal.aborted) return fallback;
     if (auth.error || !auth.data.user) return failed;
     user = auth.data.user;
   } catch { return failed; }
@@ -58,7 +64,8 @@ export async function loadPortfolioSnapshot(versionId?: string, connect = create
     .from("member_holding_versions")
     .select("id, version, note, created_at")
     .eq("user_id", user.id)
-    .order("version", { ascending: false }));
+    .order("version", { ascending: false }).abortSignal(signal));
+  if (signal.aborted) return fallback;
 
   if (listRes.error) {
     return { holdings: null, storedTarget: null, ready: false, holdingsState: "error", targetState: "error", history: [] };
@@ -70,6 +77,7 @@ export async function loadPortfolioSnapshot(versionId?: string, connect = create
     note: (v.note as string | null) ?? null,
     createdAt: v.created_at as string,
   }));
+  fallback = { ...failed, history };
 
   const chosen = versionId
     ? history.find((v) => v.id === versionId) ?? null
@@ -82,7 +90,8 @@ export async function loadPortfolioSnapshot(versionId?: string, connect = create
     const posRes = await safeRead(supabase
       .from("member_holding_positions")
       .select("position_key, symbol, manual_label, asset_class, qty, unit, cost_basis, as_of, title, ownership_pct, valuation_mode, declared_value, valuation_source, valuation_as_of, valuation_status")
-      .eq("version_id", chosen.id));
+      .eq("version_id", chosen.id).abortSignal(signal));
+    if (signal.aborted) return fallback;
     if (posRes.error) holdingsState = "error";
     if (!posRes.error) {
       holdings = {
@@ -93,13 +102,18 @@ export async function loadPortfolioSnapshot(versionId?: string, connect = create
     }
   }
 
+  // A stalled target must not discard holdings/history already read successfully.
+  fallback = { holdings, storedTarget: null, ready: holdingsState !== "error", holdingsState, targetState: "error", history };
+
   const tgtRes = await safeRead(supabase
     .from("portfolio_versions")
     .select("id, version, allocations")
     .eq("user_id", user.id)
     .order("version", { ascending: false })
     .limit(1)
+    .abortSignal(signal)
     .maybeSingle());
+  if (signal.aborted) return fallback;
 
   const storedTarget =
     !tgtRes.error && tgtRes.data
@@ -112,13 +126,22 @@ export async function loadPortfolioSnapshot(versionId?: string, connect = create
       : null;
 
   return { holdings, storedTarget, ready: holdingsState !== "error", holdingsState, targetState: tgtRes.error ? "error" : storedTarget ? "ready" : "empty", history };
+  }, 10000);
+  } catch { return fallback; }
 }
 
-export async function loadVersionDebts(versionId: string | null): Promise<{ ready: boolean; debts: DebtPosition[] }> {
+export async function loadVersionDebts(versionId: string | null, connect = createClient): Promise<{ ready: boolean; debts: DebtPosition[] }> {
   if (!versionId) return { ready: true, debts: [] };
-  const db = await createClient();
-  const result = await safeRead(db.from("member_debt_positions").select("*").eq("version_id", versionId).order("debt_key"));
-  return { ready: !result.error, debts: (result.data ?? []).map(debtFromStored) };
+  const failed = { ready: false, debts: [] as DebtPosition[] };
+  try {
+    return await withDeadline(async signal => {
+      const db = await connect();
+      if (signal.aborted) return failed;
+      const result = await safeRead(db.from("member_debt_positions").select("*").eq("version_id", versionId).order("debt_key").abortSignal(signal));
+      if (signal.aborted) return failed;
+      return { ready: !result.error, debts: (result.data ?? []).map(debtFromStored) };
+    }, 10000);
+  } catch { return failed; }
 }
 /**
  * قیمت‌ها از `symbol_history` — با زمان، منبع و واحدِ روشن.
@@ -132,12 +155,16 @@ export async function loadVersionDebts(versionId: string | null): Promise<{ read
  * ناقص» می‌شود — که همان حقیقت است، نه یک خطا.
  */
 export async function loadPriceRows(
-  positions: readonly HoldingPosition[]
+  positions: readonly HoldingPosition[], connect = createClient,
 ): Promise<ReadState<SymbolHistoryRow[]>> {
   const symbols = priceableSymbols(positions.filter(p => !p.valuationMode || p.valuationMode === "market"));
   if (symbols.length === 0) return { status: "empty", data: null };
 
-  const supabase = await createClient();
+  const failed: ReadState<SymbolHistoryRow[]> = { status: "error", data: null, code: "PORTFOLIO_PRICES" };
+  try {
+  return await withDeadline(async signal => {
+  const supabase = await connect();
+  if (signal.aborted) return failed;
   // سقفِ محافظه‌کارانه: جدول append-only است و یک روز ممکن است چند بار درج
   // شده باشد؛ انتخابِ بیشینه در `buildPriceMap` این را پوشش می‌دهد.
   const res = await safeRead(supabase
@@ -145,7 +172,10 @@ export async function loadPriceRows(
     .select("symbol, trade_date, close, last_price, source")
     .in("symbol", symbols)
     .order("trade_date", { ascending: false })
-    .limit(Math.min(symbols.length * 10, 500)));
+    .limit(Math.min(symbols.length * 10, 500)).abortSignal(signal));
+  if (signal.aborted) return failed;
 
   return readState(res, "PORTFOLIO_PRICES");
+  }, 10000);
+  } catch { return failed; }
 }
