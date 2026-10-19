@@ -15,8 +15,8 @@
 
 | سند برنامه | نقش |
 |---|---|
-| [فرانت‌اند](https://github.com/safariarash7777-source/portfolio-platform/blob/7ede8a367222aeb35278f57dc91ce709b8cd32eb/docs/plan/FRONTEND-20261020.md) | اجزای مشترک، تجربهٔ عضو/مدیر، سه طرح، دسترس‌پذیری و کارایی |
-| [مالی شخصی](https://github.com/safariarash7777-source/portfolio-platform/blob/1367f1ade37758f3c5e6878d9ed0c96178077ba9/docs/plan/PERSONAL-FINANCE-20261020.md) | تصویر مالی و اقساط → جریان نقد و بودجه → هدف و مسیر بدهی |
+| [فرانت‌اند](./plan/FRONTEND-20261020.md) | اجزای مشترک، تجربهٔ عضو/مدیر، سه طرح، دسترس‌پذیری و کارایی |
+| [مالی شخصی](https://github.com/safariarash7777-source/portfolio-platform/blob/1c1773ee0e5aed7caeda56206a555511f0185a95/docs/plan/PERSONAL-FINANCE-20261020.md) | تصویر مالی و اقساط → جریان نقد و بودجه → هدف و مسیر بدهی |
 | [پژوهش بازار](./plan/MARKET-RESEARCH-20261020.md) | جهان ناشران، پوشش منابع، پایلوت، ارزیابی پیش‌بینی و فهرست خصوصی فرصت‌ها |
 
 پروژه سه سؤالِ متفاوت دارد و هر کدام **دقیقاً یک** مرجع:
