@@ -73,5 +73,3 @@ export function selectResearchUniverse(rows: readonly ResearchUniverseRow[], opt
     excluded: excluded.sort((a, b) => compareId(a.issuerId, b.issuerId) || compareId(a.reason, b.reason)),
   };
 }
-
-
