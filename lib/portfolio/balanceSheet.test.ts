@@ -113,10 +113,11 @@ test("actual installments panel separates reader error, first recording and empt
 
 test("actual holdings page connects its existing debt reader and a real edit anchor without another query", async () => {
   const calls: [string, unknown][] = [], holding = { id: "owned-v2", version: 2, positions: [asset] };
+  let history = [{ ...holding, version: 3 }];
   const panel = scheduleComponent();
   const page = actualComponent("app/(protected)/dashboard/holdings/page.tsx", {
     "@/lib/portfolio/service": {
-      async loadPortfolioSnapshot(id: string) { calls.push(["snapshot", id]); return { holdings: holding, history: [{ ...holding, version: 3 }], ready: true, targetState: "empty", storedTarget: null }; },
+      async loadPortfolioSnapshot(id: string) { calls.push(["snapshot", id]); return { holdings: holding, history, ready: true, targetState: "empty", storedTarget: null }; },
       async loadVersionDebts(id: string) { calls.push(["debts", id]); return { ready: true, debts: [debt] }; },
       async loadPriceRows(positions: unknown) { calls.push(["prices", positions]); return { status: "empty", data: null }; },
     },
@@ -130,6 +131,10 @@ test("actual holdings page connects its existing debt reader and a real edit anc
   assert.match(html, /id="debt-editor"/); assert.match(html, /href="#debt-editor"/);
   assert.deepEqual(calls.map(([name]) => name), ["snapshot", "prices", "debts", "scope"]);
   assert.equal(calls[0][1], "owned-v2"); assert.equal(calls[2][1], holding.id);
+  history = [];
+  const withoutHistory = renderToStaticMarkup(await page({ searchParams: Promise.resolve({ v: "owned-v2" }) }));
+  assert.doesNotMatch(withoutHistory, /نسخهٔ قبلی/, "unavailable history does not establish that the known snapshot is historical");
+  assert.match(withoutHistory, /۱۰۰ تومان/, "known installment remains visible when history is unavailable");
 });
 test("unpriced asset remains null and visible, subtotal and net worth explicitly partial", () => {
   const r = sheet([asset, { ...asset, positionKey: "unknown", qty: 10, unit: "گرم", valuationMode: "unpriced", declaredValue: null }]);
