@@ -9,6 +9,7 @@ import { isCalendarDate, MAX_WORKBOOK_BYTES, emptyWorkbook, parseWorkbook, revie
 import { p07ReviewCurrent } from '@/lib/intelligence/workbook-review';
 import { PRIVATE_PREPARATION_CONTRACT } from '@/lib/intelligence/research-workbook';
 import ResearchPreparationFields from './ResearchPreparationFields';
+import { withDeadline } from '@/lib/deadline';
 
 const inputClass = 'w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
@@ -21,10 +22,14 @@ type ServerState = 'checking' | 'ready' | 'unavailable' | 'error';
 
 export type WorkbookTransport = (input: string, init?: RequestInit) => Promise<{ status: number; body: Record<string, unknown> }>;
 async function call(input: string, init?: RequestInit): Promise<{ status: number; body: Record<string, unknown> }> {
-  const res = await fetch(input, { ...init, headers: { 'content-type': 'application/json' }, cache: 'no-store' });
-  let body: Record<string, unknown> = {};
-  try { body = await res.json() as Record<string, unknown>; } catch { /* بدنهٔ خالی */ }
-  return { status: res.status, body };
+  // Bound fetch and body together, even if the transport ignores abort. A
+  // timeout does not prove rollback: saveToServer retains its creation attempt.
+  return withDeadline(async signal => {
+    const res = await fetch(input, { ...init, signal, headers: { 'content-type': 'application/json' }, cache: 'no-store' });
+    let body: Record<string, unknown> = {};
+    try { body = await res.json() as Record<string, unknown>; } catch { /* بدنهٔ خالی */ }
+    return { status: res.status, body };
+  }, 15000, init?.signal ?? undefined);
 }
 
 export default function ResearchWorkbook({ initialSource, initialWorkbookId, transport = call, initialWorkbook, onWorkbookChange }: {
@@ -46,6 +51,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const file = useRef<HTMLInputElement>(null);
   const issues = reviewWorkbook(workbook);
   const [server, setServer] = useState<ServerState>('checking');
+  const listBusy = useRef(false);
   const [privateWriterReady, setPrivateWriterReady] = useState(false);
   const [saved, setSaved] = useState<SavedRef | null>(null);
   const [versions, setVersions] = useState<Array<{ version: number; savedAt: string }>>([]);
@@ -58,11 +64,14 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const [uncertainCreation, setUncertainCreation] = useState(false);
   function setBusy(value: boolean) { busyRef.current = value; setBusyState(value); }
   async function refreshList() {
+    if (listBusy.current) return;
+    listBusy.current = true; setServer('checking');
     try {
       const r = await transport(API);
       if (r.status === 200) { setList(r.body.items as ListItem[]); setServer('ready'); setPrivateWriterReady(r.body.privatePreparationWritable === true); }
       else setServer(r.body.unavailable ? 'unavailable' : 'error');
     } catch { setServer('error'); }
+    finally { listBusy.current = false; }
   }
   useEffect(() => { void refreshList(); }, [transport]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { onWorkbookChange?.(workbook); }, [workbook, onWorkbookChange]);
@@ -221,6 +230,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
             ? 'در حال بررسی ذخیرهٔ سروری…'
             : 'ذخیرهٔ سروری در دسترس نیست؛ پیش‌نویس فقط در همین صفحه است. پیش از خروج، فایل قابل ادامه را دریافت کنید. ارسال به مدل و انتشار انجام نمی‌شود.'}
       </div>
+      {(server === 'error' || server === 'unavailable') && <button type="button" className="btn btn-secondary min-h-11" disabled={busy} onClick={() => void refreshList()}>بررسی دوبارهٔ ذخیرهٔ سروری</button>}
     </header>
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="min-w-0 space-y-6">

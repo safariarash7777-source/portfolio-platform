@@ -12,6 +12,121 @@ import ResearchPreparationFields from './ResearchPreparationFields';
 import type { ManualIntake } from '../../lib/intelligence/manual-intake';
 const mount = (transport: WorkbookTransport, workbookId: string) => mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbookId: workbookId });
 
+function workbookBrowserFixture() {
+  const oldWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const oldDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  const oldFetch = globalThis.fetch;
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { confirm: () => true, addEventListener() {}, removeEventListener() {} } });
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { addEventListener() {}, removeEventListener() {} } });
+  return () => {
+    globalThis.fetch = oldFetch;
+    if (oldWindow) Object.defineProperty(globalThis, 'window', oldWindow); else Reflect.deleteProperty(globalThis, 'window');
+    if (oldDocument) Object.defineProperty(globalThis, 'document', oldDocument); else Reflect.deleteProperty(globalThis, 'document');
+  };
+}
+
+// Actual default transport + handlers; only fetch is replaced by the existing
+// in-memory server fixture. No browser, DB, model or external HTTP is involved.
+for (const phase of ['fetch', 'body'] as const) test(`default workbook creation: ${phase} hang preserves the exact attempt for explicit recovery`, async t => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const bodies: string[] = [], signals: AbortSignal[] = [];
+  let finishLate: (() => void) | undefined;
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  globalThis.fetch = async (url, init) => {
+    const result = await fixture.transport(String(url), init);
+    const response = Response.json(result.body, { status: result.status });
+    if (init?.method !== 'POST') return response;
+    bodies.push(String(init.body)); signals.push(init.signal as AbortSignal);
+    if (bodies.length > 1) return response;
+    // Commit happened, but fetch/body ignores abort and completes much later.
+    if (phase === 'fetch') return new Promise<Response>(resolve => { finishLate = () => resolve(response); });
+    response.json = () => new Promise(resolve => { finishLate = () => resolve(result.body); });
+    return response;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ');
+    assert.equal(fixture.snapshot().versions.length, 1);
+    t.mock.timers.tick(14999); await ui.settle();
+    assert.equal(ui.button('ذخیرهٔ نسخهٔ').props.disabled, true);
+    t.mock.timers.tick(1); await ui.settle();
+    assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, false);
+    assert.equal(signals[0].aborted, true);
+    assert.equal(ui.button('تازه').props.disabled, true);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.value, p07FixtureWorkbook().title);
+    assert.ok(finishLate); finishLate(); await ui.settle();
+    assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, false, 'late response cannot confirm the timed-out handler');
+    await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(bodies.length, 2); assert.equal(bodies[1], bodies[0]);
+    const attempt = JSON.parse(bodies[0]); assert.equal(attempt.workbookId, attempt.creationId);
+    assert.equal(fixture.snapshot().versions.length, 1, 'manual recovery reuses the first committed creation');
+    assert.equal(ui.button('تازه').props.disabled, false);
+  } finally { finishLate?.(); t.mock.timers.reset(); restore(); }
+});
+
+for (const phase of ['fetch', 'body'] as const) test(`default workbook listing: ${phase} hang reaches an actual retry without losing the draft`, async t => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  let calls = 0, finishLate: (() => void) | undefined, signal: AbortSignal | undefined;
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  globalThis.fetch = async (url, init) => {
+    const result = await fixture.transport(String(url), init);
+    const response = Response.json(result.body, { status: result.status });
+    if (++calls > 1) return response;
+    signal = init?.signal as AbortSignal;
+    if (phase === 'fetch') return new Promise<Response>(resolve => { finishLate = () => resolve(response); });
+    response.json = () => new Promise(resolve => { finishLate = () => resolve(result.body); });
+    return response;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    t.mock.timers.tick(15000); await ui.settle();
+    assert.equal(signal?.aborted, true);
+    await ui.click('بررسی دوبارهٔ ذخیرهٔ سروری');
+    assert.equal(calls, 2);
+    assert.equal(ui.button('ذخیرهٔ نسخهٔ').props.disabled, false);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.value, p07FixtureWorkbook().title);
+    assert.ok(finishLate); finishLate(); await ui.settle();
+    assert.equal(ui.button('ذخیرهٔ نسخهٔ').props.disabled, false);
+    assert.equal(calls, 2, 'late list completion does not trigger another read');
+  } finally { finishLate?.(); t.mock.timers.reset(); restore(); }
+});
+
+for (const action of ['open', 'review'] as const) for (const phase of ['fetch', 'body'] as const) test(`default workbook ${action}: ${phase} hang releases controls and late completion cannot overwrite current state`, async t => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture(), path = '/api/admin/intelligence/workbooks';
+  const saved = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  let pause = false, finishLate: (() => void) | undefined, signal: AbortSignal | undefined;
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  globalThis.fetch = async (url, init) => {
+    const result = await fixture.transport(String(url), init);
+    const response = Response.json(result.body, { status: result.status });
+    if (!pause || (action === 'open' ? !String(url).includes('?id=') : init?.method !== 'POST')) return response;
+    pause = false; signal = init?.signal as AbortSignal;
+    if (phase === 'fetch') return new Promise<Response>(resolve => { finishLate = () => resolve(response); });
+    response.json = () => new Promise(resolve => { finishLate = () => resolve(result.body); });
+    return response;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { initialWorkbookId: String(saved.body.workbookId) }); await ui.settle();
+    pause = true;
+    await ui.click(action === 'open' ? p07FixtureWorkbook().title : 'تأیید داخلی نسخه');
+    assert.equal(ui.button('تازه').props.disabled, true);
+    t.mock.timers.tick(15000); await ui.settle();
+    assert.equal(signal?.aborted, true);
+    assert.equal(ui.button('تازه').props.disabled, false);
+    assert.equal(ui.badge(), false, 'a timed-out review receipt is not a confirmed approval');
+    const title = ui.find('input', e => e.props.id === 'title');
+    (title.props.onChange as (event: unknown) => void)({ target: { value: 'Synthetic newer draft after deadline' } }); await ui.settle();
+    assert.ok(finishLate); finishLate(); await ui.settle();
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.value, 'Synthetic newer draft after deadline');
+    assert.equal(ui.badge(), false);
+    // Explicit reopening independently reconciles a review that committed.
+    await ui.click(p07FixtureWorkbook().title);
+    assert.equal(ui.badge(), action === 'review');
+    assert.equal(fixture.snapshot().reviews.length, action === 'review' ? 1 : 0);
+  } finally { finishLate?.(); t.mock.timers.reset(); restore(); }
+});
+
 // Execute the actual component and its event handlers with a minimal hook host.
 // No copied approval expressions, DOM dependency, browser or Native DB acceptance.
 test('actual workbook UI returns, reopens, creates a fresh version and requires another human approval', async () => {
