@@ -1,4 +1,5 @@
 import 'server-only';
+import { withDeadline } from '@/lib/deadline';
 import { createClient } from '@/lib/supabase/server';
 import { validateResearchDraft, type ResearchDraft } from '@/lib/intelligence/research-agent';
 
@@ -60,20 +61,26 @@ function parseStoredDraft(value: unknown): StoredResearchDraft {
 export async function loadResearchDraftsView(): Promise<ResearchDraftsView> {
   const unavailable = (unavailableReason: string): ResearchDraftsView => ({ drafts: [], invalidCount: 0, unavailableReason });
   try {
-    const client = await createClient();
-    const { data: { user }, error: authError } = await client.auth.getUser();
-    if (authError || !user) return unavailable('برای مشاهدهٔ پیش‌نویس‌ها، نشست معتبر مدیریت لازم است.');
-    const { data: profile, error: profileError } = await client.from('profiles').select('role').eq('id', user.id).maybeSingle();
-    if (profileError || profile?.role !== 'admin') return unavailable('دسترسی مدیریتی احراز نشد.');
-    const { data, error } = await client.from('research_agent_drafts')
-      .select('id,created_at,provider,model,status,body,provenance').order('created_at', { ascending: false }).limit(20);
-    if (error) return unavailable('خواندن مخزن پیش‌نویس‌ها ممکن نیست؛ اتصال، نصب جدول و مجوز خواندن باید بررسی شود.');
-    const drafts: StoredResearchDraft[] = [];
-    let invalidCount = 0;
-    for (const row of data ?? []) {
-      try { drafts.push(parseStoredDraft(row)); } catch { invalidCount += 1; }
-    }
-    return { drafts, unavailableReason: null, invalidCount };
+    return await withDeadline(async signal => {
+      const client = await createClient();
+      signal.throwIfAborted();
+      const { data: { user }, error: authError } = await client.auth.getUser();
+      signal.throwIfAborted();
+      if (authError || !user) return unavailable('برای مشاهدهٔ پیش‌نویس‌ها، نشست معتبر مدیریت لازم است.');
+      const { data: profile, error: profileError } = await client.from('profiles').select('role').eq('id', user.id).abortSignal(signal).maybeSingle();
+      signal.throwIfAborted();
+      if (profileError || profile?.role !== 'admin') return unavailable('دسترسی مدیریتی احراز نشد.');
+      const { data, error } = await client.from('research_agent_drafts')
+        .select('id,created_at,provider,model,status,body,provenance').order('created_at', { ascending: false }).limit(20).abortSignal(signal);
+      signal.throwIfAborted();
+      if (error || !Array.isArray(data)) return unavailable('خواندن مخزن پیش‌نویس‌ها ممکن نیست؛ اتصال، نصب جدول و مجوز خواندن باید بررسی شود.');
+      const drafts: StoredResearchDraft[] = [];
+      let invalidCount = 0;
+      for (const row of data ?? []) {
+        try { drafts.push(parseStoredDraft(row)); } catch { invalidCount += 1; }
+      }
+      return { drafts, unavailableReason: null, invalidCount };
+    }, 4000);
   } catch {
     return unavailable('مخزن پیش‌نویس‌ها اکنون در دسترس نیست؛ وضعیت اجرای ایجنت از این صفحه قابل احراز نیست.');
   }
