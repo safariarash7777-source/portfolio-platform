@@ -370,6 +370,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
       source: {
         title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${faDigits(fyOf(d))}${consolidated ? " — گزارشِ تلفیقی" : ""} (کدال)`,
         source_url: approvedCodalUrl(cleanUrl(main)),
+        publishedAt: publishKey(main),
         // «اعتبارسنجی متقاطع» فقط حسابی است (ناخالص = فروش − بها) و دامنه را اثبات
         // نمی‌کند؛ برای گزارشِ تلفیقی تیکِ سبز گمراه‌کننده بود (B-056).
         verified,

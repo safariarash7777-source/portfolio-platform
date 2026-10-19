@@ -98,6 +98,8 @@ export type ReportScope = "company" | "consolidated_ambiguous" | "unknown";
 export interface ReportSource {
   title: string; // مثل «صورت‌های مالی ۱۲ماههٔ حسابرسی‌شدهٔ ۱۴۰۴»
   source_url: string | null; // URL اطلاعیهٔ codal.ir؛ تا نیامده null می‌ماند
+  /** Publication clock from the selected stored Codal disclosure, in Tehran local time. */
+  publishedAt?: string | null;
   verified: boolean; // اعتبارسنجی حسابی انجام شده؟ جزئیات در verification_note.
   verification_note?: string;
   /**
