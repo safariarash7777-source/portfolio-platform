@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { selectResearchUniverse, type ResearchUniverseRow } from './research-universe';
 const options = { asOf: '2026-10-20T12:00:00Z', target: 30, maxAgeMs: 86400000 };
-const row = (issuerId: string, cap = '100'): ResearchUniverseRow => ({ issuerId, symbol: issuerId, securityType: 'ordinary-share', marketCapRial: cap, unit: 'IRR', source: 'synthetic-test', sourceAt: '2026-10-20T11:00:00Z', observedAt: '2026-10-20T11:01:00Z' });
+const row = (issuerId: string, cap = '100'): ResearchUniverseRow => ({ issuerId, symbol: 'فملی', securityType: 'ordinary-share', marketCapRial: cap, unit: 'IRR', source: 'synthetic-test', sourceAt: '2026-10-20T11:00:00Z', observedAt: '2026-10-20T11:01:00Z' });
 test('ranks exact large IRR integers; target and tie ordering are deterministic', () => {
   const rows = Array.from({ length: 55 }, (_, n) => row(String(n).padStart(3, '0'), String(BigInt('90071992547409930') + BigInt(n))));
   const result = selectResearchUniverse(rows, options);
@@ -31,4 +31,16 @@ test('unknown observation time blocks an undatable revision rather than silently
   const result = selectResearchUniverse([row('a'), { ...row('a', '999'), observedAt: null }], options);
   assert.equal(result.selected.length, 0);
   assert.equal(result.excluded[0].reason, 'unknown_observation_time');
+});
+
+test('C1 quarantine rejects Latin, Persian and Arabic digit suffixes and rights despite ordinary-share metadata', () => {
+  for (const symbol of ['فملی2', 'فملی۲', 'فملی٢', 'فملیح', 'فملی2 ']) assert.equal(selectResearchUniverse([{ ...row('a'), symbol }], options).selected.length, 0);
+  assert.equal(selectResearchUniverse([{ ...row('a'), symbol: 'فملی' }], options).selected.length, 1);
+});
+test('calendar rollover and malformed clock are rejected at cutoff, observation and source', () => {
+  for (const at of ['2026-02-30T12:00:00Z', '2026-10-20T24:00:00Z', '2026-10-20T12:60:00Z']) {
+    assert.throws(() => selectResearchUniverse([], { ...options, asOf: at }));
+    assert.equal(selectResearchUniverse([{ ...row('a'), observedAt: at }], options).selected.length, 0);
+    assert.equal(selectResearchUniverse([{ ...row('a'), sourceAt: at }], options).selected.length, 0);
+  }
 });

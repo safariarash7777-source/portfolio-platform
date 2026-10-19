@@ -1,3 +1,4 @@
+import { dateInput } from '../portfolio/financialInput';
 /** Pure point-in-time ranking. No collector, inference or trading side effects. */
 export interface ResearchUniverseRow {
   issuerId: string;
@@ -15,7 +16,14 @@ export interface ResearchUniverseOptions {
   target: number;
   maxAgeMs: number;
 }
-const instant = (value: string | null) => value && /^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value) ? Date.parse(value) : NaN;
+function instant(value: string | null): number {
+  if (!value || !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.test(value)) return NaN;
+  try { dateInput(value.slice(0, 10)); } catch { return NaN; }
+  return Date.parse(value);
+}
+// Same C1 policy as relay/symbols-util.mjs: ordinary-equity metadata cannot
+// override the quarantine of digit-suffixed tickers or rights ending in ح.
+const mainTicker = (symbol: string) => !!symbol.trim() && !/[0-9۰-۹٠-٩ح]$/.test(symbol.trim());
 const compareId = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 export function selectResearchUniverse(rows: readonly ResearchUniverseRow[], options: ResearchUniverseOptions) {
   const cutoff = instant(options.asOf);
@@ -40,7 +48,7 @@ export function selectResearchUniverse(rows: readonly ResearchUniverseRow[], opt
     let reason: string | null = null;
     // Ambiguous parallel observations are not resolved by input order.
     if (versions.some(item => JSON.stringify(item) !== JSON.stringify(row))) reason = 'conflicting_latest_observation';
-    else if (row.securityType !== 'ordinary-share') reason = 'not_verified_ordinary_share';
+    else if (row.securityType !== 'ordinary-share' || !mainTicker(row.symbol)) reason = 'not_verified_ordinary_share';
     else if (!row.symbol.trim() || !row.source.trim()) reason = 'missing_provenance';
     else if (row.unit !== 'IRR' || typeof row.marketCapRial !== 'string' || !/^[1-9]\d*$/.test(row.marketCapRial)) reason = 'invalid_capitalization_or_unit';
     else {
@@ -65,4 +73,5 @@ export function selectResearchUniverse(rows: readonly ResearchUniverseRow[], opt
     excluded: excluded.sort((a, b) => compareId(a.issuerId, b.issuerId) || compareId(a.reason, b.reason)),
   };
 }
+
 
