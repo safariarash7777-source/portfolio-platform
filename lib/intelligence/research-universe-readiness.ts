@@ -60,8 +60,14 @@ export function inspectResearchUniverseReadiness(payload: unknown, options: Rese
     if (source === null) reasons.push('missing_or_invalid_source_clock');
     else if (observed === null || source > observed) reasons.push('source_after_receipt');
     else if (cutoff - source > options.maxAgeMs) reasons.push('stale_source');
-    const marketCapRial = exactCap(stock?.marketValue);
-    if (marketCapRial === null) reasons.push(typeof stock?.marketValue === 'number' && !Number.isSafeInteger(stock.marketValue) ? 'unsafe_cap_precision' : 'missing_or_invalid_cap');
+    // PR292 stores marketValueExact from the untouched provider numeric token.
+    // Its presence is authoritative, including null: never repair it by falling
+    // back to the legacy (possibly rounded) number. Precision alone proves no
+    // unit, issuer-total-equity semantics, source clock, or issuer mapping.
+    const hasExactCap = stock !== null && Object.prototype.hasOwnProperty.call(stock, 'marketValueExact');
+    const capValue = hasExactCap ? stock.marketValueExact : stock?.marketValue;
+    const marketCapRial = hasExactCap && typeof capValue !== 'string' ? null : exactCap(capValue);
+    if (marketCapRial === null) reasons.push(typeof capValue === 'number' && !Number.isSafeInteger(capValue) ? 'unsafe_cap_precision' : 'missing_or_invalid_cap');
     if (!capVerified) reasons.push('capitalization_contract_unverified');
     const mappings = evidence.mappings.filter(mapping => {
       const known = time(mapping.knownAt), from = time(mapping.validFrom), until = mapping.validUntil === null ? Infinity : time(mapping.validUntil);
