@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-MARKER = "member-journey-20261019-01"
+MARKER = "member-payments-20261020-01"
 EMAIL = MARKER + "-a@example.invalid"
 ORIGIN = "https://portfolio-platform-fawn.vercel.app"
 BACKEND = "https://62.60.191.24/liara-preview"

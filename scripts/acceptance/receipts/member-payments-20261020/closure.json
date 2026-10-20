@@ -1,0 +1,91 @@
+{
+  "status": "PASS",
+  "marker": "member-payments-20261020-01",
+  "syntheticAccountId": "45a131e0-a125-4518-b88a-a6fa70320093",
+  "normalRole": "user",
+  "counts": {
+    "versions": 2,
+    "positions": 2,
+    "debts": 1,
+    "scopes": 0
+  },
+  "scenarioAmountsToman": {
+    "wholeDeclaredAsset": 2000000,
+    "ownershipPercent": 50,
+    "knownOwnedAssets": 1000000,
+    "debtBalance": 200000,
+    "nextInstallmentAlreadyIncluded": 10000,
+    "knownSubtotalNet": 800000
+  },
+  "versions": [
+    {
+      "id": "a5159c3a-ed24-4364-ad4f-6478fa71baca",
+      "version": 1
+    },
+    {
+      "id": "6e7c53af-b182-4e11-8662-0d9bfa5f7ccf",
+      "version": 2
+    }
+  ],
+  "retirement": {
+    "id": "45a131e0-a125-4518-b88a-a6fa70320093",
+    "banned": true,
+    "sessions": 0,
+    "refreshTokens": 0,
+    "activeRefresh": 0,
+    "historyPreserved": true,
+    "reused": false,
+    "globalLogoutStatus": 204,
+    "banStatus": 200,
+    "limitation": "Already-issued access JWTs may remain valid until expiry.",
+    "checkedAt": "2026-10-20T07:24:49.150956+00:00"
+  },
+  "preview": {
+    "head": "1c1773ee0e5aed7caeda56206a555511f0185a95",
+    "deploymentId": "dpl_HrJXE73pDSUyyb2kJdpJ8KDv4jLZ",
+    "alias": "portfolio-platform-git-co-116693-safariarash7777-4463s-projects.vercel.app",
+    "restoredDeploymentId": "dpl_B58p21DduMet2HJKpE3fkL8R939T",
+    "aliasRestoreVerified": true
+  },
+  "production": {
+    "origin": "https://portfolio-platform-fawn.vercel.app",
+    "mergeSha": "4dbd0c0906fd5dfdfae6461d403ca9cda3bc95cb",
+    "deploymentId": "dpl_9ypJuxdZZexL5uxqNN14SpGedTZd",
+    "readyAliasVerified": true,
+    "memberBrowserReadback": "PASS"
+  },
+  "coordinatorBrowserChecks": {
+    "normalLogin": "PASS",
+    "normalFormAssetAndDebtSave": "PASS",
+    "pastDuePaymentUnknown": "PASS",
+    "noDoubleDeduction": "PASS",
+    "historyVersionOneHasNoDebt": "PASS",
+    "currentVersionReload": "PASS",
+    "editAnchor": "PASS",
+    "mobile390": "PASS",
+    "mobileClientWidth": 375,
+    "mobileScrollWidth": 375,
+    "primaryAndPreviewRedirectAfterRetirement": "PASS"
+  },
+  "screenshots": [
+    {
+      "artifact": "member-payments-20261020-preview-desktop.png",
+      "sha256": "b7376b96075f95f0306ee9bb7f9734c008592aefc5268dde7d0114913f9c949c"
+    },
+    {
+      "artifact": "member-payments-20261020-preview-mobile-schedule.png",
+      "sha256": "b7e4893ae6e60ac3d1e611384aafb84f6240f7593cfb7df8e3702470fd2afe3d"
+    },
+    {
+      "artifact": "member-payments-20261020-production.png",
+      "sha256": "09461eb807b95a32c8c5c01a0d54d6dd381ed83c1c59aa2537c9c0b566991569"
+    }
+  ],
+  "limitations": [
+    "Only synthetic owned data was written through the normal member forms. No customer data was changed.",
+    "This receipt covers installments and balance-sheet persistence, not a complete personal-finance product or live cash-flow UI.",
+    "Unique Preview origin was rejected by existing exact-origin CORS; the existing allowed Preview alias was temporarily reassigned then restored. Original Caddy configuration file was restored exactly; admin-disabled reload failed, no restart or active configuration change occurred.",
+    "Browser checks are coordinator CUA observations, separate from the Python independent DB readback.",
+    "Already-issued JWT access tokens may remain valid until expiry; native global logout, ban and zero sessions/refresh tokens were independently verified."
+  ]
+}
