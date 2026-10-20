@@ -5,10 +5,12 @@
 // همهٔ اعداد از lib/core/fundamentalCard می‌آیند — این کامپوننت فقط نمایش است.
 // دادهٔ غایب = بند/سطر حذف؛ هیچ عدد ساختگی. واژگان ممنوع در UI هرگز.
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { ChevronDown, ExternalLink } from "lucide-react";
 import type { FundamentalCardData } from "@/lib/core/fundamentalCard";
 import { toPersianDigits } from "@/lib/format";
 import Term from "@/components/learn/Term";
+import styles from "./SymbolDossier.module.css";
 
 function fa(x: string | number): string {
   return toPersianDigits(String(x));
@@ -26,11 +28,8 @@ function yoyBadge(v: number | null) {
   const up = v >= 0;
   return (
     <span
-      className="rounded-full px-2 py-0.5 text-[11px] font-bold"
-      style={{
-        background: up ? "rgba(16,129,88,.12)" : "rgba(178,58,58,.12)",
-        color: up ? "var(--green-strong, #0f7a54)" : "var(--red-strong, #b23a3a)",
-      }}
+      className={styles.yoyBadge}
+      style={{ color: up ? "var(--success)" : "var(--danger)" }}
       dir="ltr"
     >
       {up ? "▲" : "▼"} {fa(Math.abs(v))}٪
@@ -41,6 +40,8 @@ function yoyBadge(v: number | null) {
 export default function SymbolFundamentalCard({ card }: { card: FundamentalCardData }) {
   const [openTrend, setOpenTrend] = useState(false);
   const [openRaw, setOpenRaw] = useState(false);
+  const trendId = useId();
+  const rawId = useId();
 
   // بدون هیچ داده‌ای، کارت اصلاً رندر نمی‌شود (قانون ۲ — تصمیم در والد هم تکرار شده)
   if (!card.latestMonth || card.narrative == null) return null;
@@ -48,31 +49,31 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
   const maxTotal = Math.max(1, ...card.months12.map((m) => m.totalAmount));
 
   return (
-    <section
-      className="rounded-xl px-5 py-4"
-      style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <section className={styles.fundamentalCard}>
+      <header className={styles.cardHeader}>
+        <div>
+        <p className={styles.period}>دورهٔ فعالیت: <span dir="ltr">{fa(card.latestMonth)}</span></p>
         <h2 className="font-display text-lg font-bold" style={{ color: "var(--heading)" }}>
           کارت بنیادی — فعالیت ماهانه (<Term id="n10-n30">ن-۳۰</Term>)
         </h2>
+        {card.sourceTitle ? <p className={styles.sourceTitle}>{card.sourceTitle}</p> : null}
+        </div>
         {card.sourceUrl ? (
           <a
             href={card.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[11px] hover:underline"
+            className={styles.sourceLink}
             style={{ color: "var(--navy-ink)" }}
           >
-            منبع رسمی: کدال ↗
+            منبع رسمی: کدال <ExternalLink size={14} aria-hidden="true" />
           </a>
         ) : null}
-      </div>
+      </header>
 
       {/* لایهٔ ۱ — روایت یک‌خطی (همیشه باز) */}
       <p
-        className="mt-3 rounded-lg px-4 py-3 text-[14px] font-medium leading-7"
-        style={{ background: "var(--surface-2)", color: "var(--text-1)" }}
+        className={styles.narrative}
       >
         {fa(card.narrative)}
       </p>
@@ -81,18 +82,19 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
       <button
         type="button"
         onClick={() => setOpenTrend((v) => !v)}
-        className="mt-3 flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-bold"
-        style={{ background: "var(--surface-2)", color: "var(--heading)" }}
+        className={styles.disclosure}
         aria-expanded={openTrend}
+        aria-controls={trendId}
       >
         <span>روند و ترکیب فروش (۱۲ ماه)</span>
-        <span aria-hidden>{openTrend ? "−" : "+"}</span>
+        <ChevronDown size={16} aria-hidden="true" />
       </button>
+      <div id={trendId} hidden={!openTrend}>
       {openTrend ? (
-        <div className="mt-2 space-y-4 px-1">
+        <div className={`mt-2 space-y-4 ${styles.detail}`}>
           {/* روند فروش ماهانه + YoY */}
           <div>
-            <div className="mb-1 flex items-center justify-between">
+            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-[12px] font-bold" style={{ color: "var(--text-2)" }}>
                 فروش ماهانه (میلیارد تومان)
               </h3>
@@ -100,7 +102,8 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
                 درصدها: تغییر نسبت به همین ماه سال قبل
               </span>
             </div>
-            <div className="space-y-1">
+            <div className={styles.trendScroll}>
+            <div className={`space-y-1 ${styles.trendRows}`}>
               {card.months12.map((m) => {
                 const yoy = card.monthlyYoY.find((x) => x.month === m.month)?.yoyPct ?? null;
                 const w = Math.max(2, Math.round((m.totalAmount / maxTotal) * 100));
@@ -112,7 +115,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
                     <div className="h-4 flex-1 rounded bg-transparent">
                       <div
                         className="flex h-4 items-center rounded"
-                        style={{ width: `${w}%`, background: "var(--navy)", minWidth: 8 }}
+                        style={{ width: `${w}%`, background: "var(--data-1)", minWidth: 8 }}
                         title={`${faAmountBToman(m.totalAmount)} میلیارد تومان`}
                       />
                     </div>
@@ -123,6 +126,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
                   </div>
                 );
               })}
+            </div>
             </div>
           </div>
 
@@ -156,6 +160,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
           </div>
         </div>
       ) : null}
+      </div>
 
       {/* لایهٔ ۳ — دادهٔ خام محصولات آخرین ماه (تاشو) */}
       {card.latestProducts.length > 0 ? (
@@ -163,16 +168,18 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
           <button
             type="button"
             onClick={() => setOpenRaw((v) => !v)}
-            className="mt-3 flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] font-bold"
-            style={{ background: "var(--surface-2)", color: "var(--heading)" }}
+            className={styles.disclosure}
             aria-expanded={openRaw}
+            aria-controls={rawId}
           >
             <span>جدول محصولات آخرین ماه (دادهٔ خام)</span>
-            <span aria-hidden>{openRaw ? "−" : "+"}</span>
+            <ChevronDown size={16} aria-hidden="true" />
           </button>
+          <div id={rawId} hidden={!openRaw}>
           {openRaw ? (
-            <div className="mt-2 overflow-x-auto">
+            <div className={`mt-2 ${styles.rawTable}`}>
               <table className="w-full text-[12px]">
+                <caption className="sr-only">محصولات گزارش فعالیت ماهانه؛ نرخ به ریال و مبلغ به میلیارد تومان</caption>
                 <thead>
                   <tr style={{ color: "var(--text-3)" }}>
                     <th className="py-1 text-right font-medium">محصول</th>
@@ -186,7 +193,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
                 <tbody>
                   {card.latestProducts.map((p, i) => (
                     <tr key={`${p.name}-${p.market}-${i}`} style={{ borderTop: "1px solid var(--line)" }}>
-                      <td className="py-1.5 pr-1 font-medium" style={{ color: "var(--text-1)" }}>{p.name}</td>
+                      <td className="py-1.5 pr-1 font-medium" style={{ color: "var(--text)" }}>{p.name}</td>
                       <td className="py-1.5" style={{ color: "var(--text-2)" }}>{p.market}</td>
                       <td className="py-1.5 text-left" dir="ltr" style={{ color: "var(--text-2)" }}>
                         {p.productionQty != null ? fa(p.productionQty.toLocaleString("en-US")) : "—"}
@@ -211,6 +218,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
               ) : null}
             </div>
           ) : null}
+          </div>
         </>
       ) : null}
     </section>

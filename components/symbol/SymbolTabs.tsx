@@ -5,8 +5,9 @@
 // ReactNode می‌آید (server components داخل تب‌ها). تب فعال با hash در URL
 // همگام می‌شود تا لینک مستقیم به هر تب ممکن باشد.
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import MarketAutoRefresh from "../market/MarketAutoRefresh";
+import styles from "./SymbolDossier.module.css";
 
 const TABS = [
   { key: "overview", label: "نمای کلی" },
@@ -29,6 +30,7 @@ export default function SymbolTabs({
   assembly: ReactNode;
 }) {
   const [active, setActive] = useState<TabKey>("overview");
+  const tabId = useId();
 
   // خواندن hash اولیه (لینک مستقیم به تب)
   useEffect(() => {
@@ -62,37 +64,51 @@ export default function SymbolTabs({
   };
 
   return (
-    <div>
+    <div className={styles.tabs}>
       <MarketAutoRefresh />
       <div
         role="tablist"
         aria-label="بخش‌های صفحهٔ نماد"
-        className="sticky top-[64px] z-10 -mx-1 flex gap-1 overflow-x-auto rounded-xl p-1"
-        style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
+        className={styles.tabList}
       >
         {TABS.map((t) => (
           <button
             key={t.key}
+            type="button"
+            id={`${tabId}-${t.key}-tab`}
             role="tab"
+            aria-controls={`${tabId}-${t.key}-panel`}
             aria-selected={active === t.key}
+            tabIndex={active === t.key ? 0 : -1}
             onClick={() => select(t.key)}
-            className="inline-flex min-h-11 min-w-fit flex-1 items-center justify-center whitespace-nowrap rounded-lg px-4 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
-            style={
-              active === t.key
-                ? { background: "var(--navy-deep)", color: "#fff" }
-                : { color: "var(--text-2)" }
-            }
+            onKeyDown={(event) => {
+              const index = TABS.findIndex((tab) => tab.key === t.key);
+              const nextIndex = event.key === "Home" ? 0
+                : event.key === "End" ? TABS.length - 1
+                : event.key === "ArrowLeft" ? (index + 1) % TABS.length
+                : event.key === "ArrowRight" ? (index - 1 + TABS.length) % TABS.length
+                : null;
+              if (nextIndex === null) return;
+              event.preventDefault();
+              const next = TABS[nextIndex].key;
+              select(next);
+              document.getElementById(`${tabId}-${next}-tab`)?.focus();
+            }}
+            className={styles.tab}
           >
             {t.label}
           </button>
         ))}
       </div>
 
-      <div className="mt-5 space-y-6">
-        <div data-symbol-tab="overview" hidden={active !== "overview"}>{overview}</div>
-        <div data-symbol-tab="fundamental" hidden={active !== "fundamental"}>{fundamental}</div>
-        <div data-symbol-tab="reports" hidden={active !== "reports"}>{reports}</div>
-        <div data-symbol-tab="assembly" hidden={active !== "assembly"}>{assembly}</div>
+      <div className={styles.tabContent}>
+        {TABS.map((tab) => (
+          <div key={tab.key} role="tabpanel" id={`${tabId}-${tab.key}-panel`}
+            aria-labelledby={`${tabId}-${tab.key}-tab`} tabIndex={0}
+            data-symbol-tab={tab.key} hidden={active !== tab.key}>
+            {{ overview, fundamental, reports, assembly }[tab.key]}
+          </div>
+        ))}
       </div>
     </div>
   );
