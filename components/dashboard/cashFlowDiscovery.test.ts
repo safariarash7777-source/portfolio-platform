@@ -24,9 +24,9 @@ test("ordinary-member dashboard exposes the real independent cash-flow route wit
   } });
   const html = renderToStaticMarkup(loaded.exports.default({ userId: "synthetic-member", userName: "عضو مصنوعی", userEmail: "", userRole: "user", assessment: null, portfolio: null, holdings: [], snapshots: [], transactions: [], telegramLinked: false, payment: null, scoreHistory: [], revalidationExpiredAt: null, announcements: [], portfolioVersions: [] }));
   assert.match(html, /href="\/dashboard\/cashflow"[^>]*>بازکردن دفتر جریان نقد/);
-  assert.match(html, /آرش سفری · فضای مالی شخصی/);
+  assert.match(html, /آرش صفری · فضای مالی شخصی/);
   assert.match(html, /نبود ثبت، درآمد یا هزینهٔ صفر را تأیید نمی‌کند/);
   assert.match(html, /دارایی و قسط خودکار به این دفتر منتقل نمی‌شوند/);
-  assert.doesNotMatch(html, /آرش صفری|آرش سفاری|href="\/admin/);
+  assert.doesNotMatch(html, /آرش سفری|آرش سفاری|href="\/admin/);
   for (const label of ["مشاهده و ثبت دارایی", "مشاهده و ثبت بدهی", "بررسی محدودهٔ سبد"]) assert.match(html, new RegExp(`href="/dashboard/holdings"[^>]*>${label}`));
 });
