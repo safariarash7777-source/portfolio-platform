@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 export const metadata: Metadata = {
   title: "دربارهٔ آرش سفری",
   description:
-    "آرش سفری؛ تحلیل و پژوهش بازار، دارایی و ثروت. روش کار، محتوای منتشرشده و مسیرهای همکاری.",
+    "آرش سفری، تحلیلگر و مشاور سرمایه‌گذاری؛ تحلیل و پژوهش بازار، دارایی و ثروت. روش کار، محتوای منتشرشده و مسیرهای همکاری.",
 };
 
 /**
@@ -56,7 +56,7 @@ export default function AboutPage() {
           <div className="mx-auto w-full max-w-6xl px-5 pt-20 pb-16 sm:pt-24 sm:pb-20">
             <div className="max-w-2xl">
               <p className="text-xs sm:text-sm font-bold tracking-wide" style={{ color: "var(--gold-light)" }}>
-                تحلیل بازار و پژوهش سرمایه‌گذاری · ایران
+                تحلیلگر و مشاور سرمایه‌گذاری
               </p>
               <div
                 aria-hidden

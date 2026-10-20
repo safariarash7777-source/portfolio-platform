@@ -31,7 +31,7 @@ export default function AboutStrip() {
                 letterSpacing: "-0.01em",
               }}
             >
-              تحلیل بازار و پژوهش سرمایه‌گذاری، با تمرکز بر ایران.
+              تحلیلگر و مشاور سرمایه‌گذاری، با تمرکز بر بازار سرمایهٔ ایران.
               تحلیل با نامِ مشخص منتشر می‌شود و نتیجه‌اش پیگیری‌پذیر است.
             </p>
             <Link href="/about" className="btn btn-outline mt-8">

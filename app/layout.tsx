@@ -39,7 +39,7 @@ const pelak = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(resolveAppUrl()),
   title: {
-    default: "آرش سفری · تحلیل بازار و مدیریت ثروت",
+    default: "آرش سفری · تحلیلگر و مشاور سرمایه‌گذاری",
     template: "%s · آرش سفری",
   },
   description:
@@ -59,13 +59,13 @@ export const metadata: Metadata = {
   applicationName: "پلتفرم آرش سفری",
   robots: { index: true, follow: true },
   openGraph: {
-    title: "آرش سفری · تحلیل بازار و مدیریت ثروت",
+    title: "آرش سفری · تحلیلگر و مشاور سرمایه‌گذاری",
     description:
       "رسانه و تحلیل بازار، با فضای خصوصی ثبت و بررسی دارایی، بدهی و اطلاعات مالی شخصی.",
     locale: "fa_IR",
     type: "website",
     siteName: "آرش سفری",
-    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "آرش سفری · تحلیل بازار و مدیریت ثروت" }],
+    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "آرش سفری · تحلیلگر و مشاور سرمایه‌گذاری" }],
   },
   icons: {
     icon: "/brand/mark.png",

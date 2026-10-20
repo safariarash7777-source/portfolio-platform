@@ -66,7 +66,7 @@ export default function Logo({
               marginTop: 2,
             }}
           >
-            تحلیل بازار و مدیریت ثروت
+            تحلیلگر و مشاور سرمایه‌گذاری
           </span>
         </div>
       )}
