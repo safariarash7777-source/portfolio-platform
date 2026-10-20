@@ -18,14 +18,14 @@ function emailHtml(title: string, bodyMd: string): string {
 <body style="margin:0;background:#F8FAFC;font-family:Tahoma,Arial,sans-serif;color:#0F172A;">
   <div style="max-width:560px;margin:0 auto;padding:24px;">
     <div style="background:#172554;border-radius:14px 14px 0 0;padding:20px 24px;">
-      <div style="color:#D4A22B;font-weight:bold;font-size:14px;letter-spacing:1px;">آرش صفری · مشاور سرمایه‌گذاری</div>
+      <div style="color:#D4A22B;font-weight:bold;font-size:14px;letter-spacing:1px;">آرش سفری · مشاور سرمایه‌گذاری</div>
     </div>
     <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-top:none;border-radius:0 0 14px 14px;padding:24px;">
       <h1 style="font-size:20px;color:#172554;margin:0 0 16px;">${title}</h1>
       <div style="font-size:15px;line-height:1.9;color:#334155;">${body}</div>
     </div>
     <p style="text-align:center;color:#64748B;font-size:12px;margin-top:16px;">
-      این پیام از سامانهٔ مشاورهٔ سرمایه‌گذاری آرش صفری ارسال شده است.
+      این پیام از سامانهٔ مشاورهٔ سرمایه‌گذاری آرش سفری ارسال شده است.
     </p>
   </div>
 </body></html>`;
