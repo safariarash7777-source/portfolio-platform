@@ -75,14 +75,17 @@ export function parseChannelFeed(html: string, username: string): FeedPost[] {
 
   // هر حبابِ پیام با data-post="username/<id>" لنگر می‌خورد.
   const anchor = /data-post="([^"/]+)\/(\d+)"/g;
-  const marks: { id: number; index: number }[] = [];
+  const marks: { username: string; id: number; index: number }[] = [];
   let m: RegExpExecArray | null;
   while ((m = anchor.exec(html)) !== null) {
-    if (m[1].toLowerCase() !== uname) continue;
-    marks.push({ id: Number(m[2]), index: m.index });
+    // Keep foreign markers as boundaries too: otherwise their time/text/video
+    // can be attributed to the preceding own-channel post (including an
+    // undated post that would then incorrectly become eligible for storage).
+    marks.push({ username: m[1].toLowerCase(), id: Number(m[2]), index: m.index });
   }
 
   for (let i = 0; i < marks.length; i++) {
+    if (marks[i].username !== uname) continue;
     const start = marks[i].index;
     const end = i + 1 < marks.length ? marks[i + 1].index : html.length;
     const chunk = html.slice(start, end);
