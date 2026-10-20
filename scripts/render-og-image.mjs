@@ -26,9 +26,10 @@ const element = {
     style: {
       width: "1200px",
       height: "630px",
+      boxSizing: "border-box",
       display: "flex",
       flexDirection: "column",
-      alignItems: "flex-end",
+      alignItems: "flex-start",
       justifyContent: "flex-end",
       padding: "64px 72px",
       background: "linear-gradient(135deg, #0a1628 0%, #0d2045 55%, #1a3a6e 100%)",
