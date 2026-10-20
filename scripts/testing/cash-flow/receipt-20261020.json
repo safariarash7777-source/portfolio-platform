@@ -1,0 +1,223 @@
+{
+  "candidateOnly": true,
+  "primaryMigrationInstalled": false,
+  "primaryWrites": false,
+  "primarySchemaInventory": {
+    "readOnly": true,
+    "pgVersion": "17.6",
+    "candidateCashObjects": 0,
+    "customerRowsRead": false,
+    "privateArtifact": "pf2b-primary-schema-inventory-20261020.json"
+  },
+  "isolated": {
+    "postgres": "PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+    "network": "none",
+    "publishedPorts": [],
+    "persistentMounts": [],
+    "readOnlyRoot": true,
+    "migrationSha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d",
+    "testedDockerHarnessSha256": "f27923228d865a9dbed98fc4fd735fd45937c4e0ece3b16aaee92ca6944c8b90",
+    "summary": {
+      "passed": 36,
+      "failed": 0
+    },
+    "results": [
+      {
+        "profile": "cash_flow_explicit",
+        "name": "RLS forced; private kernel and anon/service execution closed",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "first append and independent connection owner read",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "same attempt replays one version; reordered arrays canonicalize consistently",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "same token changed amount/base/period conflicts without another version",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "second version preserves first amount and old token replay still returns v1",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "B cannot read A headers/entries, own same token is independent; anon cannot call/read",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "owner and foreign direct writes, TRUNCATE and private kernel are denied",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "forged owner/account/source/basis and unknown complete fields reject atomically",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "fixed limits and calendar/numeric validation reject without partial headers",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "unknown and partial persist null; no automatic complete zero assertion",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "one transfer persists once; foreign endpoints and malformed same-account transfer rejected",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "failure after header insert rolls back entire version and does not consume base",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "overlapping independent sessions: same base creates exactly one version",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "another period starts its own series; overlapping ranges remain separate snapshots",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "simultaneous identical token/body returns same UUID exactly once",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "ownerwide same-token race across periods conflicts instead of duplicate or unique-error fallback",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "accepted boundary limits: 366 days,50 definitions,500 events,160 label,2000 note",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_explicit",
+        "name": "rollback refuses absent marker then restores exact existing schema/functions/ACL inventory",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "RLS forced; private kernel and anon/service execution closed",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "first append and independent connection owner read",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "same attempt replays one version; reordered arrays canonicalize consistently",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "same token changed amount/base/period conflicts without another version",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "second version preserves first amount and old token replay still returns v1",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "B cannot read A headers/entries, own same token is independent; anon cannot call/read",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "owner and foreign direct writes, TRUNCATE and private kernel are denied",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "forged owner/account/source/basis and unknown complete fields reject atomically",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "fixed limits and calendar/numeric validation reject without partial headers",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "unknown and partial persist null; no automatic complete zero assertion",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "one transfer persists once; foreign endpoints and malformed same-account transfer rejected",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "failure after header insert rolls back entire version and does not consume base",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "overlapping independent sessions: same base creates exactly one version",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "another period starts its own series; overlapping ranges remain separate snapshots",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "simultaneous identical token/body returns same UUID exactly once",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "ownerwide same-token race across periods conflicts instead of duplicate or unique-error fallback",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "accepted boundary limits: 366 days,50 definitions,500 events,160 label,2000 note",
+        "status": "PASS"
+      },
+      {
+        "profile": "cash_flow_legacy",
+        "name": "rollback refuses absent marker then restores exact existing schema/functions/ACL inventory",
+        "status": "PASS"
+      }
+    ],
+    "containerRemoved": true
+  },
+  "laterCiTransport": {
+    "syntax": "PASS",
+    "strictLint": "PASS",
+    "nonCiFailClosedGuard": "PASS",
+    "positiveExecution": "PENDING_PR_CI",
+    "sqlChangedAfter36Tests": false
+  },
+  "limitations": [
+    "PG17.11 isolated vs PG17.6 operational; exact-minor compatibility not established.",
+    "SQL synthetic claims fixture; not native Auth/JWT/PostgREST/browser acceptance.",
+    "JSONB canonical size guarded; raw HTTP body limit requires future app/ingress adapter.",
+    "No app routes, durable live records, primary ACL changes or production rollback authorization.",
+    "Candidate requires root review before any install."
+  ]
+}
