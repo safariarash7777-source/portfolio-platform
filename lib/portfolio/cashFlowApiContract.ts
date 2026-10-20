@@ -145,6 +145,7 @@ export function validateCashFlowRead(value: unknown, expected: { period: CashFlo
   const items = history.items.map(metadata);
   if (history.state === "error") { if (items.length || history.nextBeforeVersion !== null) throw new Error("Invalid history error"); }
   else if (history.state !== "ready" || items.some((item, index) => index > 0 && item.version >= items[index - 1].version || expected.beforeVersion !== undefined && item.version >= expected.beforeVersion) || new Set(items.map(item => item.id)).size !== items.length || history.nextBeforeVersion !== null && (items.length !== 20 || history.nextBeforeVersion !== items.at(-1)?.version)) throw new Error("Invalid history cursor/order");
+  if (latest.state === "ready" && items.some(item => item.version > (latest.version as number) || item.version === latest.version && item.id !== latest.id)) throw new Error("History/latest mismatch");
   let snapshot: CashFlowRead["snapshot"] = null, report: CashFlowReport | null = null;
   if (row.state === "empty") {
     if (expected.version || row.snapshot !== null || row.report !== null || latest.state !== "ready" || latest.version !== 0 || history.state !== "ready" || items.length || history.nextBeforeVersion !== null) throw new Error("Invalid cash-flow empty state");
@@ -153,6 +154,7 @@ export function validateCashFlowRead(value: unknown, expected: { period: CashFlo
     const info = metadata({ id: selected.id, version: selected.version, createdAt: selected.createdAt }), payload = validateCashFlowPayload(selected.payload);
     if (expected.version !== undefined && info.id !== expected.version || payload.period.startOn !== period.startOn || payload.period.endOn !== period.endOn || latest.state === "ready" && ((latest.version as number) < info.version || latest.version === info.version && latest.id !== info.id) || expected.version === undefined && (latest.state !== "ready" || latest.id !== info.id || latest.version !== info.version)) throw new Error("Invalid selected cash-flow version");
     snapshot = { ...info, payload }; report = cashFlowReport(payload, row.ownerId);
+    if (items.some(item => item.version === info.version && item.id !== info.id)) throw new Error("History/selected mismatch");
     if (stableJson(row.report) !== stableJson(report)) throw new Error("Invalid cash-flow report");
   } else throw new Error("Invalid cash-flow state");
   return { contractVersion: "cash-flow-read.v1", state: row.state, ownerId: row.ownerId, period, snapshot, report,
