@@ -7,7 +7,7 @@ export default function PublicHome() {
     <section className={s.homeHero} aria-labelledby="public-home-title">
       <div className={s.heroCopy}>
         <p className={s.eyebrow}>تحلیلگر و مشاور سرمایه‌گذاری</p>
-        <h1 id="public-home-title">آرش سفری</h1>
+        <h1 id="public-home-title">آرش صفری</h1>
         <p>مطالب و تحلیل‌های بازار، با ابزارهای ثبت و بررسی اطلاعات مالی شخصی.</p>
         <p>بازار ایران را دنبال می‌کنم و تحلیلم را با نام خودم منتشر می‌کنم.</p>
         <div className={s.actions}>
@@ -25,7 +25,7 @@ export default function PublicHome() {
           <BookOpen size={22} aria-hidden />
           <h2 id="home-intro-title">در این وب‌سایت</h2>
         </header>
-        <p>مطالب منتشرشده و روش کار آرش سفری؛ همراه با فضای مالی شخصی اعضا.</p>
+        <p>مطالب منتشرشده و روش کار آرش صفری؛ همراه با فضای مالی شخصی اعضا.</p>
         <nav className={s.introLinks} aria-label="مسیرهای آشنایی با آرش">
           <a href="#home-media">
             محتوای منتشرشده <ArrowUpLeft size={16} aria-hidden />

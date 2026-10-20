@@ -18,7 +18,7 @@
 import type { Metadata } from "next";
 
 interface PageMetadataOptions {
-  /** Page title — will be combined with root template "%s · آرش سفری" */
+  /** Page title — will be combined with root template "%s · آرش صفری" */
   title: string;
   /** Full meta description for the page (120–160 chars recommended) */
   description: string;
@@ -34,7 +34,7 @@ interface PageMetadataOptions {
 const OG_SHARED = {
   locale: "fa_IR",
   type: "website" as const,
-  siteName: "آرش سفری",
+  siteName: "آرش صفری",
 };
 
 export function pageMetadata({
@@ -49,7 +49,7 @@ export function pageMetadata({
     description,
     openGraph: {
       ...OG_SHARED,
-      title: ogTitle ?? `${title} · آرش سفری`,
+      title: ogTitle ?? `${title} · آرش صفری`,
       description: ogDescription ?? description,
       url: path, // relative — metadataBase in root layout resolves to full URL
     },

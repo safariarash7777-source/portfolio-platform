@@ -151,7 +151,7 @@ export default function Hero() {
               letterSpacing: "-0.03em",
             }}
           >
-            آرش سفری
+            آرش صفری
           </h1>
 
           {/*

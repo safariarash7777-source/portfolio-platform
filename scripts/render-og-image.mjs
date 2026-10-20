@@ -69,7 +69,7 @@ const element = {
             textAlign: "right",
             maxWidth: "900px",
           },
-          children: "\u202Bآرش سفری\u202C",
+          children: "\u202Bآرش صفری\u202C",
         },
       },
       // Subtitle

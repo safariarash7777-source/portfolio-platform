@@ -36,7 +36,7 @@ export default function Logo({
       >
         <Image
           src="/brand/mark.png"
-          alt="نشان آرش سفری"
+          alt="نشان آرش صفری"
           width={markW}
           height={size}
           priority
@@ -56,7 +56,7 @@ export default function Logo({
               letterSpacing: "-0.01em",
             }}
           >
-            آرش سفری
+            آرش صفری
           </span>
           <span
             style={{

@@ -247,7 +247,7 @@ export default function RiskProfileResult({
           </div>
           <div>
             <p className="text-xs font-bold mb-1" style={{ color: "var(--navy-deep)" }}>
-              یادداشت تحلیلگر — آرش سفری
+              یادداشت تحلیلگر — آرش صفری
             </p>
             <p className="text-sm leading-7" style={{ color: "var(--navy-deep)" }}>
               {profile.tip}
