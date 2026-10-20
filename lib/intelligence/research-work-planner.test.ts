@@ -109,6 +109,32 @@ test('future and ambiguous coverage cannot unlock historical research', () => {
     assert.equal(planResearchWork({ ...input(), coverage: rows }).jobs[0].state, 'blocked');
   }
 });
+test('future coverage and evidence revisions cannot alter historical jobs or expansion', () => {
+  const original = { ...input(30), stage: 30 as const, expansionReviewRef: 'review' };
+  const baseline = planResearchWork(original);
+  const future = '2026-10-21T11:00:00Z';
+  const revised = {
+    ...original,
+    coverage: [...original.coverage, ...original.coverage.map(row => ({ ...row, knownAt: future, periods: 0 }))],
+    evidence: [
+      ...original.evidence,
+      ...original.evidence.map(row => ({ ...row, observedAt: future, unit: null })),
+      // A future different role reusing an ID must not poison today's ID checks.
+      { ...original.evidence[0], role: 'gold' as const, issuerId: null, observedAt: future },
+    ],
+  };
+  assert.deepEqual(planResearchWork(revised), baseline);
+});
+test('unknown timestamps remain blocking revisions rather than silently restoring older evidence', () => {
+  const original = input();
+  const badCoverage = { ...original, coverage: [...original.coverage, { ...original.coverage[0], knownAt: 'unknown' }] };
+  assert.equal(planResearchWork(badCoverage).jobs[0].state, 'blocked');
+  const badEvidence = { ...original, evidence: [...original.evidence, { ...original.evidence[0], observedAt: null }] };
+  const job = planResearchWork(badEvidence).jobs[0];
+  assert.equal(job.state, 'blocked');
+  assert.ok(job.blockers.includes('ambiguous_evidence_identity'));
+  assert.ok(job.blockers.includes('invalid_source_or_receipt_time'));
+});
 test('duplicate evidence fails closed and detached plans do not mutate input', () => {
   const data = input();
   data.evidence = [...data.evidence, { ...data.evidence[0] }];

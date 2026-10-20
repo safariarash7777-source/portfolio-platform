@@ -43,7 +43,10 @@ function coverageBlockers(coverage: readonly ResearchCoverageEvidence[], require
   // Historical accounting coverage, not calibrated forecast quality. Monthly means
   // reported monthly activity/sales; it is not monthly net profit or stock return.
   return requirements.flatMap(({ axis, minimumPeriods }) => {
-    const entries = coverage.filter(row => row.issuerId === issuerId && row.axis === axis);
+    // Known future records cannot change a historical plan. Undated records stay:
+    // they could be a newer malformed revision and must block silent fallback.
+    const entries = coverage.filter(row => row.issuerId === issuerId && row.axis === axis
+      && !(instant(row.knownAt) > cutoff));
     const entry = entries[0];
     return entries.length === 1 && text(entry.evidenceRef) && Number.isSafeInteger(entry.periods)
       && entry.periods >= minimumPeriods && Number.isFinite(instant(entry.knownAt)) && instant(entry.knownAt) <= cutoff
@@ -62,6 +65,7 @@ export function planResearchWork(input: ResearchWorkInput) {
     asOf: input.asOf, maxAgeMs: input.maxAgeMs, target: input.stage === 50 ? 50 : 30,
   });
   const cutoff = instant(input.asOf);
+  const knownEvidence = input.evidence.filter(row => !(instant(row.observedAt) > cutoff));
   const expansionBlockers: string[] = [];
   if (input.stage !== 5) {
     if (!text(input.expansionReviewRef) || !Number.isFinite(instant(input.expansionReviewedAt))
@@ -75,12 +79,12 @@ export function planResearchWork(input: ResearchWorkInput) {
   const selected = universe.selected.slice(0, effectiveStage);
   const jobs: ResearchWorkJob[] = [];
   function job(role: ResearchRole, issuerId: string | null) {
-    const evidence = input.evidence.filter(row => row.role === role && row.issuerId === issuerId);
+    const evidence = knownEvidence.filter(row => row.role === role && row.issuerId === issuerId);
     const blockers: string[] = [];
     if (!evidence.length) blockers.push('evidence_unavailable');
     if (role === 'equities' && issuerId) blockers.push(...coverageBlockers(input.coverage, input.coverageRequirements, issuerId, cutoff));
     for (const row of evidence) {
-      if (!text(row.id) || input.evidence.filter(item => item.id === row.id).length !== 1) blockers.push('ambiguous_evidence_identity');
+      if (!text(row.id) || knownEvidence.filter(item => item.id === row.id).length !== 1) blockers.push('ambiguous_evidence_identity');
       if (!text(row.sourceRef) || !text(row.sourceApprovalRef)) blockers.push('source_unverified');
       if (!Number.isFinite(instant(row.contractKnownAt)) || instant(row.contractKnownAt) > cutoff) blockers.push('measurement_contract_not_known_at_cutoff');
       if (![row.period, row.unit, row.definition, row.scope].every(text)) blockers.push('incomplete_measurement_contract');
