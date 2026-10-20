@@ -6,7 +6,7 @@ export default function PublicHome() {
   return (
     <section className={s.homeHero} aria-labelledby="public-home-title">
       <div className={s.heroCopy}>
-        <p className={s.eyebrow}>تحلیل بازار، دارایی و ثروت</p>
+        <p className={s.eyebrow}>تحلیلگر و مشاور سرمایه‌گذاری</p>
         <h1 id="public-home-title">آرش سفری</h1>
         <p>مطالب و تحلیل‌های بازار، با ابزارهای ثبت و بررسی اطلاعات مالی شخصی.</p>
         <p>بازار ایران را دنبال می‌کنم و تحلیلم را با نام خودم منتشر می‌کنم.</p>

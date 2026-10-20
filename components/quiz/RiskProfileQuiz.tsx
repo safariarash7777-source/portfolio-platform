@@ -135,7 +135,7 @@ export default function RiskProfileQuiz({ userId, onComplete }: RiskProfileQuizP
             <BarChart3 size={26} />
           </div>
           <div>
-            <span className="eyebrow">آرش سفری · تحلیلگر سرمایه‌گذاری</span>
+            <span className="eyebrow">آرش سفری · تحلیلگر و مشاور سرمایه‌گذاری</span>
             <h2
               className="font-display text-2xl md:text-3xl font-bold mt-1"
               style={{ color: "var(--navy-deep)" }}
