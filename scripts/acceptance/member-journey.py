@@ -15,7 +15,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-MARKER = "member-journey-20261019-01"
+MARKER = "member-payments-20261020-01"
 ORIGIN = "https://portfolio-platform-fawn.vercel.app"
 BACKEND = "https://62.60.191.24/liara-preview"
 PRIVATE = ROOT / "scripts/isolated-e2e/.local-member-journey"
