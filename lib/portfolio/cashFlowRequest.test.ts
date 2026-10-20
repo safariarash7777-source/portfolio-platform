@@ -87,6 +87,7 @@ test("read checks owner/period/version and report integrity rather than acceptin
   assert.throws(() => validateCashFlowRead(ready(), { period, version: other }));
   const wrong = ready(); wrong.report.actual.netToman = 0; assert.throws(() => validateCashFlowRead(wrong, { period }));
   const history = ready(); history.history.items.push({ ...history.history.items[0] }); assert.throws(() => validateCashFlowRead(history, { period }));
+  const mismatched = ready(); mismatched.history.items[0].id = other; assert.throws(() => validateCashFlowRead(mismatched, { period }));
 });
 test("empty has no numeric report; malformed or body-stalled read is an error", async t => {
   const empty = { contractVersion: "cash-flow-read.v1", state: "empty", ownerId: owner, period, snapshot: null, report: null, latest: { state: "ready", id: null, version: 0 }, history: { state: "ready", items: [], nextBeforeVersion: null } };
