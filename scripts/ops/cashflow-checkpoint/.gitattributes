@@ -1,0 +1,3 @@
+# Preserve the exact reviewed/tested operator source bytes across checkout.
+*.ps1 -text
+*.cs -text
