@@ -1,6 +1,13 @@
 // دروس ناحیهٔ یادگیری (WP-G) — SPEC-learning-hub §۲
-// قید BRIEF: متن دروس نیاز به تأیید آرش دارد → همهٔ دروس placeholder و published=false.
-// هیچ متن آموزشی حساسی اینجا منتشر نمی‌شود؛ فقط عنوان/شرح کوتاه/واژه‌های کلیدی.
+// سرفصل‌های قبلی تا آماده‌شدن متن، پیش‌نویس باقی می‌مانند.
+import { netWorthContent } from "@/lib/learn/net-worth";
+
+export interface LessonContent {
+  sections: { heading: string; paragraphs: string[] }[];
+  selfCheck: { question: string; answer: string };
+  tools: { label: string; href: string; description: string }[];
+  sources: { label: string; href: string; scope: string }[];
+}
 
 export interface Lesson {
   slug: string;
@@ -10,8 +17,9 @@ export interface Lesson {
   summary: string;
   /** idهای واژه‌نامهٔ مرتبط با این درس. */
   glossaryIds: string[];
-  /** متن کامل فقط پس از تأیید آرش منتشر می‌شود. */
+  /** درس کاملِ آمادهٔ نمایش؛ انتشار سایت پس از بازبینی بستهٔ تحویل انجام می‌شود. */
   published: boolean;
+  content?: LessonContent;
 }
 
 export const LESSONS: Lesson[] = [
@@ -62,6 +70,15 @@ export const LESSONS: Lesson[] = [
     summary: "چطور از خود محصول استفاده کنم: کارت نماد، کارنامه، رصد.",
     glossaryIds: ["per-capita-buy", "buyer-power", "fund-premium"],
     published: false,
+  },
+  {
+    slug: "assets-debts-net-worth",
+    order: 7,
+    title: "دارایی، بدهی و خالص ثروت",
+    summary: "یک تصویر از داشته‌ها و بدهی‌ها؛ با مثال تومان و تمرین در ابزار تصویر مالی.",
+    glossaryIds: [],
+    published: true,
+    content: netWorthContent,
   },
 ];
 
