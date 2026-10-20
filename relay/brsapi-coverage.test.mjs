@@ -49,6 +49,26 @@ export const CALL_SITES = [
 const MODULES = readdirSync(DIR).filter((f) => f.endsWith(".mjs") && !f.includes(".test."));
 
 function sourceOf(f) { return readFileSync(join(DIR, f), "utf8"); }
+// This one declaration selects a parser for an already-received Response; it
+// does not send a request. Keep its exception narrower than a whole-file skip.
+function isPureResponseStrategy(file, line, source) {
+  if (file !== 'capitalization-response.mjs'
+    || line.trim() !== "const EXACT_ENDPOINTS = new Set(['Tsetmc/AllSymbols.php', 'Tsetmc/Symbol.php']);") return false;
+  const imports = source.match(/^import .*;$/gm) ?? [];
+  if (imports.length !== 1 || imports[0] !== "import { parseCapitalizationJson } from './capitalization-json.mjs';") return false;
+  return !/\b(fetch|request|require|process|globalThis|eval|Function|XMLHttpRequest|WebSocket|Worker|constructor|Reflect)\b|\bimport\s*\(/.test(source);
+}
+
+t("parser strategy is not a provider call; new transport or import removes its narrow exception", () => {
+  const source = sourceOf('capitalization-response.mjs');
+  const line = source.split('\n').find(line => line.startsWith('const EXACT_ENDPOINTS'));
+  assert.ok(isPureResponseStrategy('capitalization-response.mjs', line, source));
+  for (const added of ["fetch('https://example.invalid');", 'client.request({});', "import x from 'node:http';", "import('node:https');"]) {
+    assert.equal(isPureResponseStrategy('capitalization-response.mjs', line, source + '\n' + added), false);
+  }
+  assert.equal(isPureResponseStrategy('unregistered.mjs', line, source), false);
+  assert.equal(isPureResponseStrategy('capitalization-response.mjs', "fetch('Tsetmc/AllSymbols.php');", source), false);
+});
 
 t("شمارش‌ها با هم قاطی نمی‌شوند — call site و endpoint و کلید سه چیزند", () => {
   const endpoints = new Set(CALL_SITES.map((r) => r[2]));
@@ -89,6 +109,7 @@ t("هیچ endpointِ BrsApiای بیرون از سقف نمانده", () => {
       const hit = [...ENDPOINTS].find((e) => line.includes(e));
       if (!hit) return;
       if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;                    // کامنت
+      if (isPureResponseStrategy(f, line, lines.join("\n"))) return;
       const window = lines.slice(Math.max(0, i - 16), i + 17).join("\n");
       const covered = /\.request\(\{/.test(window) || /countLegacy\w*\(/.test(window);
       if (!covered) offenders.push(`${f}:${i + 1}  ${hit}`);

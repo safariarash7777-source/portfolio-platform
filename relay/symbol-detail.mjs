@@ -1,3 +1,4 @@
+import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 // symbol-detail.mjs — T5-1: دیتای جامع نماد (Tsetmc/Symbol.php) با کش ۳دقیقه‌ای per-symbol
 //
@@ -316,7 +317,7 @@ export async function getSymbolDetail(l18, { base, key, headers, client = null, 
       if (countLegacy) await countLegacy("symbol-detail", budgetClass);
       const res = await fetch(url, { headers, signal: AbortSignal.timeout(15000) });
       if (!res.ok) throw new Error(`http ${res.status}`);
-      j = await res.json();
+      j = await readProviderJson(res, 'Tsetmc/Symbol.php');
     }
     const d = Array.isArray(j) ? j[0] : j;
     if (!record(d) || d.l18 !== l18) throw new Error("invalid symbol response");

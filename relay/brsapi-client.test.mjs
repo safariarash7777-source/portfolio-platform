@@ -24,7 +24,7 @@ function fakeClock() {
 }
 
 function okRes(body = { ok: true }) {
-  return { ok: true, status: 200, json: async () => body, headers: { get: () => null } };
+  return { ok: true, status: 200, json: async () => body, text: async () => JSON.stringify(body), headers: { get: () => null } };
 }
 function errRes(status, retryAfter = null) {
   return { ok: false, status, json: async () => ({}), headers: { get: (h) => (h === "retry-after" ? retryAfter : null) } };

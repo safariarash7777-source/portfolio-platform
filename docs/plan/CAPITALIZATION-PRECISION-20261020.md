@@ -25,3 +25,11 @@ Do not parse JSON.stringify of a previously parsed response: precision has alrea
 5. Acceptance: same natural request count and quota behavior; hostile/malformed text bounded; exact original token survives response → mapper → stored JSONB → readiness; old field/API consumers unchanged; isolated synthetic fixtures first, then inspect one natural receipt without starting collection.
 
 Files owned by candidate: capitalization-json.mjs, its test, this document. Existing server/client/transport/collector files are untouched. This pure parser is not deployed or wired; it removes the local parsing limitation only once the next scoped integration is accepted.
+
+## Stacked wiring candidate (not installed)
+
+`capitalization-response.mjs` now uses the parser on raw response text only for exact endpoint strings `Tsetmc/AllSymbols.php` and `Tsetmc/Symbol.php`. It separately retains the native JSON result and reconstructs top-level row `marketValueExact` from exact `mv`. All original fields, including numeric/string/null `mv`, remain unchanged. Provider-supplied marketValueExact is overwritten; missing/invalid mv gives null. No currency is inferred.
+
+The budget client uses this fixed endpoint strategy, without changing request parameters, cache keys, in-flight dedupe, budgets or transport. Legacy AllSymbols and Symbol use the same helper. The AllSymbols mapper forwards only the additive field into the normal snapshot. Existing site readers and schemas are untouched. Historical cached rows without this field stay as they are; next natural successful receipts can populate it once separately deployed.
+
+Isolated acceptance covers concurrent budget requests and subsequent cache hit (one transport request), legacy request count, actual AllSymbols mapping and JSON serialization, and actual Symbol cache behavior. Existing budget-client and Symbol retention/budget tests remain passing. Tests do not call provider, install code, or write a remote database. An isolated full-server retention suite checks the server with all network ports mocked. Exact JSONB storage and live consumer acceptance still require a later deployment and read-only observation of a natural receipt.

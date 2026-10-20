@@ -1,3 +1,4 @@
+import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch } from "./brsapi-transport.mjs";
 // brsapi-client.mjs — تنها درگاهِ تماس با BrsApi.
 //
@@ -659,7 +660,7 @@ export class BrsApiClient {
           signal: AbortSignal.timeout(job.timeoutMs ?? this.o.timeoutMs),
         });
         if (res.ok) {
-          const body = await res.json();
+          const body = await readProviderJson(res, job.endpoint);
           this.m.ok += 1; this.#bump(job.producer, "ok");
           return body;
         }

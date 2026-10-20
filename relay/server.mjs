@@ -1,3 +1,4 @@
+import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics } from "./brsapi-transport.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
@@ -387,7 +388,7 @@ async function fetchStocksAndFunds() {
         status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: err };
         return { funds: [], stocks: [] };
       }
-      items = await res.json();
+      items = await readProviderJson(res, 'Tsetmc/AllSymbols.php');
     }
     if (!Array.isArray(items)) {
       status.sources.brsapi_stocks = { ok: false, funds: 0, stocks: 0, error: "response is not array" };
@@ -420,6 +421,7 @@ async function fetchStocksAndFunds() {
         volume: equityNonnegative(item.tvol),
         value: equityNonnegative(item.tval),
         marketValue: equityNonnegative(item.mv),
+        marketValueExact: typeof item.marketValueExact === 'string' ? item.marketValueExact : null,
         industry: item.cs || null,
         industryId: Number.isSafeInteger(industryId) && industryId > 0 ? industryId : null,
         eps: equityNumber(item.eps),
