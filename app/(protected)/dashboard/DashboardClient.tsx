@@ -218,7 +218,7 @@ export default function DashboardClient({
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
         <div>
           <span className="eyebrow">
-            آرش سفری · فضای مالی شخصی
+            آرش صفری · فضای مالی شخصی
           </span>
           <h1
             className="font-display text-2xl md:text-3xl font-bold mt-1"

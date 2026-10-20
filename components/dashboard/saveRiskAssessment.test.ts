@@ -292,7 +292,7 @@ function canonicalFixture(member = 'member', version = 2) {
 test('canonical-only v2 is visible before legacy records with three real existing workspace links', async () => {
   const queries: { table: string; filters: [string, unknown][] }[] = [];
   const html = await render(canonicalFixture(), 'member', queries);
-  assert.match(html, /آرش سفری · فضای مالی شخصی/);
+  assert.match(html, /آرش صفری · فضای مالی شخصی/);
   assert.match(html, /نسخهٔ ۲/); assert.match(html, /۱ قلم در آخرین نسخه ثبت شده است/);
   assert.doesNotMatch(html, /هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید/);
   assert.ok(html.indexOf('دارایی، بدهی و سبد من') < html.indexOf('سوابق قبلی سبد'));
