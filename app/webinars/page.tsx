@@ -157,7 +157,7 @@ function WebinarsContent() {
               وبینارها
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-3)" }}>
-              رویدادهای آنلاین آرش صفری
+              رویدادهای آنلاین آرش سفری
             </p>
           </div>
           <Link
