@@ -12,7 +12,7 @@ import { loadInvestmentScope } from "@/lib/portfolio/scopeService";
 
 export const metadata = {
   title: "فضای مالی شخصی",
-  description: "حساب شخصی شما در پلتفرم آرش صفری؛ دارایی، بدهی و محدودهٔ سبد سرمایه‌گذاری.",
+  description: "حساب شخصی شما در پلتفرم آرش سفری؛ دارایی، بدهی و محدودهٔ سبد سرمایه‌گذاری.",
 };
 
 export default async function DashboardPage() {

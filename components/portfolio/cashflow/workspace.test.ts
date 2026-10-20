@@ -176,6 +176,7 @@ test("actual member page forwards only native owner/selected period and separate
     return await taskModule.exports.default({ searchParams: Promise.resolve({ ...period, version: id }) });
   }
   const tree = await page({ id: owner }, null), workspace = nodes(tree).find(node => node.type === "mock-workspace");
+  assert.match(words(tree), /فضای مالی شخصی · آرش سفری/);
   assert.ok(workspace); assert.equal(workspace.props.expectedOwnerId, owner); assert.deepEqual(workspace.props.initialPeriod, period); assert.equal(workspace.props.initialVersion, id);
   const failure = await page(null, { status: 503 }); assert.doesNotMatch(words(failure), /در این دوره هنوز نسخه‌ای/);
   assert.ok(nodes(failure).some(node => node.props.code === "CASHFLOW_AUTH"));
