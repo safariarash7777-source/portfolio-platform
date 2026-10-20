@@ -52,43 +52,43 @@ SELECT format('table|%s.%s|%s;owner=%s;rls=%s;forced=%s;acl=%s',
  n.nspname,c.relname,c.relkind,pg_get_userbyid(c.relowner),c.relrowsecurity,c.relforcerowsecurity,
  coalesce(c.relacl::text,'-'))
 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE n.nspname IN ('public','auth','storage','identity_private') AND c.relkind IN ('r','p','S','v','m') ORDER BY 1;
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') AND c.relkind IN ('r','p','S','v','m') ORDER BY 1;
 SELECT format('column|%s.%s.%s|%s;notnull=%s;default=%s;identity=%s;generated=%s',
  n.nspname,c.relname,a.attname,format_type(a.atttypid,a.atttypmod),a.attnotnull,
  coalesce(md5(pg_get_expr(d.adbin,d.adrelid)),'-'),a.attidentity,a.attgenerated)
 FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace
 LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum
-WHERE n.nspname IN ('public','auth','storage','identity_private') AND c.relkind IN ('r','p')
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') AND c.relkind IN ('r','p')
  AND a.attnum>0 AND NOT a.attisdropped ORDER BY 1;
 SELECT format('constraint|%s.%s.%s|%s',n.nspname,c.relname,k.conname,md5(pg_get_constraintdef(k.oid)))
 FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE n.nspname IN ('public','auth','storage','identity_private') ORDER BY 1;
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') ORDER BY 1;
 SELECT format('policy|%s.%s.%s|%s;%s;%s;%s;%s',n.nspname,c.relname,p.polname,p.polcmd,p.polpermissive,
  coalesce((SELECT string_agg(r.rolname,',' ORDER BY r.rolname) FROM pg_roles r WHERE r.oid=ANY(p.polroles)),'PUBLIC'),
  coalesce(md5(pg_get_expr(p.polqual,p.polrelid)),'-'),coalesce(md5(pg_get_expr(p.polwithcheck,p.polrelid)),'-'))
 FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE n.nspname IN ('public','auth','storage','identity_private') ORDER BY 1;
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') ORDER BY 1;
 SELECT format('index|%s.%s|%s',schemaname,indexname,md5(indexdef)) FROM pg_indexes
-WHERE schemaname IN ('public','auth','storage','identity_private') ORDER BY 1;
+WHERE schemaname IN ('public','auth','storage','identity_private','cash_flow_private') ORDER BY 1;
 SELECT format('function|%s.%s(%s)|owner=%s;acl=%s;def=%s',n.nspname,p.proname,
  pg_get_function_identity_arguments(p.oid),pg_get_userbyid(p.proowner),coalesce(p.proacl::text,'-'),md5(pg_get_functiondef(p.oid)))
 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-WHERE n.nspname IN ('public','auth','storage','identity_private') AND p.prokind IN ('f','p')
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') AND p.prokind IN ('f','p')
  AND NOT EXISTS(SELECT 1 FROM pg_depend d WHERE d.objid=p.oid AND d.deptype='e') ORDER BY 1;
 SELECT format('trigger|%s.%s.%s|%s',n.nspname,c.relname,t.tgname,md5(pg_get_triggerdef(t.oid)))
 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE n.nspname IN ('public','auth','storage','identity_private') AND NOT t.tgisinternal ORDER BY 1;
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') AND NOT t.tgisinternal ORDER BY 1;
 SELECT format('schema|%s|%s;%s',nspname,pg_get_userbyid(nspowner),coalesce(nspacl::text,'-'))
-FROM pg_namespace WHERE nspname IN ('public','auth','storage','identity_private') ORDER BY 1;
+FROM pg_namespace WHERE nspname IN ('public','auth','storage','identity_private','cash_flow_private') ORDER BY 1;
 SELECT format('defaultacl|%s.%s.%s|%s',pg_get_userbyid(d.defaclrole),n.nspname,d.defaclobjtype,d.defaclacl)
 FROM pg_default_acl d JOIN pg_namespace n ON n.oid=d.defaclnamespace
-WHERE n.nspname IN ('public','auth','storage','identity_private') ORDER BY 1;
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') ORDER BY 1;
 SELECT format('view|%s.%s|%s',schemaname,viewname,md5(definition)) FROM pg_views
-WHERE schemaname IN ('public','auth','storage','identity_private') ORDER BY 1;
+WHERE schemaname IN ('public','auth','storage','identity_private','cash_flow_private') ORDER BY 1;
 SELECT format('rowcount|%s.%s|%s',n.nspname,c.relname,
 (xpath('/row/c/text()',query_to_xml(format('SELECT count(*) AS c FROM %I.%I',n.nspname,c.relname),false,true,'')))[1]::text::bigint)
 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
-WHERE n.nspname IN ('public','auth','storage','identity_private') AND c.relkind IN ('r','p')
+WHERE n.nspname IN ('public','auth','storage','identity_private','cash_flow_private') AND c.relkind IN ('r','p')
  AND NOT EXISTS(SELECT 1 FROM pg_inherits i WHERE i.inhrelid=c.oid) ORDER BY 1;
 SELECT 'identity-ids|auth.users|' || coalesce(md5(string_agg(id::text,',' ORDER BY id)),'empty') FROM auth.users;
 SELECT 'identity-ids|public.profiles|' || coalesce(md5(string_agg(id::text,',' ORDER BY id)),'empty') FROM public.profiles;
