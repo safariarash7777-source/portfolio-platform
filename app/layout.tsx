@@ -39,13 +39,13 @@ const pelak = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(resolveAppUrl()),
   title: {
-    default: "آرش سفری · تحلیلگر و مشاور سرمایه‌گذاری",
-    template: "%s · آرش سفری",
+    default: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری",
+    template: "%s · آرش صفری",
   },
   description:
-    "پلتفرم آرش سفری برای تحلیل و پژوهش بازار، ثبت و بررسی اطلاعات مالی شخصی و مدیریت دارایی و ثروت.",
+    "پلتفرم آرش صفری برای تحلیل و پژوهش بازار، ثبت و بررسی اطلاعات مالی شخصی و مدیریت دارایی و ثروت.",
   keywords: [
-    "آرش سفری",
+    "آرش صفری",
     "تحلیل سرمایه‌گذاری",
     "مدیریت دارایی",
     "پرتفوی",
@@ -54,18 +54,18 @@ export const metadata: Metadata = {
     "مالی شخصی",
     "مدیریت ثروت",
   ],
-  authors: [{ name: "آرش سفری" }],
-  creator: "آرش سفری",
-  applicationName: "پلتفرم آرش سفری",
+  authors: [{ name: "آرش صفری" }],
+  creator: "آرش صفری",
+  applicationName: "پلتفرم آرش صفری",
   robots: { index: true, follow: true },
   openGraph: {
-    title: "آرش سفری · تحلیلگر و مشاور سرمایه‌گذاری",
+    title: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری",
     description:
       "رسانه و تحلیل بازار، با فضای خصوصی ثبت و بررسی دارایی، بدهی و اطلاعات مالی شخصی.",
     locale: "fa_IR",
     type: "website",
-    siteName: "آرش سفری",
-    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "آرش سفری · تحلیلگر و مشاور سرمایه‌گذاری" }],
+    siteName: "آرش صفری",
+    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری" }],
   },
   icons: {
     icon: "/brand/mark.png",

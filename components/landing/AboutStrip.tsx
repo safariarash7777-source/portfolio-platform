@@ -19,7 +19,7 @@ export default function AboutStrip() {
         <Reveal>
           <div className="max-w-2xl">
             <p className="text-xs font-bold tracking-wide" style={{ color: "var(--gold-ink)" }}>
-              دربارهٔ آرش سفری
+              دربارهٔ آرش صفری
             </p>
             <p
               className="font-display mt-4"

@@ -5,9 +5,9 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "دربارهٔ آرش سفری",
+  title: "دربارهٔ آرش صفری",
   description:
-    "آرش سفری، تحلیلگر و مشاور سرمایه‌گذاری؛ تحلیل و پژوهش بازار، دارایی و ثروت. روش کار، محتوای منتشرشده و مسیرهای همکاری.",
+    "آرش صفری، تحلیلگر و مشاور سرمایه‌گذاری؛ تحلیل و پژوهش بازار، دارایی و ثروت. روش کار، محتوای منتشرشده و مسیرهای همکاری.",
 };
 
 /**
@@ -73,7 +73,7 @@ export default function AboutPage() {
                   letterSpacing: "-0.03em",
                 }}
               >
-                آرش سفری
+                آرش صفری
               </h1>
               <p
                 className="mt-6 text-base sm:text-lg"
