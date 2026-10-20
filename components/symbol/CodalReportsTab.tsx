@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { toPersianDigits } from "@/lib/format";
-import { approvedCodalUrl } from "@/lib/desk/workspace-model";
+import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 
 export type StoredReport = {
   kind: string;          // «ن-۳۰» | «ن-۱۰» | ...
@@ -40,8 +40,6 @@ function normalizeLive(j: unknown): LiveItem[] {
     })
     .filter((x): x is LiveItem => x !== null);
 }
-
-const codalHref = approvedCodalUrl;
 
 export default function CodalReportsTab({
   symbol,
@@ -85,18 +83,9 @@ export default function CodalReportsTab({
               <li key={i} className="flex items-center justify-between gap-2 py-2 text-xs">
                 <div className="min-w-0">
                   <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{r.kind}</span>
-                  {codalHref(r.url) ? (
-                    <a
-                      href={codalHref(r.url)!}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium hover:underline"
-                    >
-                      {r.title}
-                    </a>
-                  ) : (
-                    <span className="font-medium">{r.title}</span>
-                  )}
+                  <CodalSourceLink url={r.url} className="font-medium hover:underline" fallback={<span className="font-medium">{r.title}</span>}>
+                    {r.title}
+                  </CodalSourceLink>
                 </div>
                 <span className="shrink-0 text-muted-foreground">دورهٔ مالی: {r.periodEnd ? toPersianDigits(r.periodEnd) : "نامعلوم"}</span>
               </li>
@@ -138,13 +127,9 @@ export default function CodalReportsTab({
                       {a.kind && (
                         <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{a.kind}</span>
                       )}
-                      {codalHref(a.url) ? (
-                        <a href={codalHref(a.url)!} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline">
-                          {a.title}
-                        </a>
-                      ) : (
-                        <span className="font-medium">{a.title}</span>
-                      )}
+                      <CodalSourceLink url={a.url} className="font-medium hover:underline" fallback={<span className="font-medium">{a.title}</span>}>
+                        {a.title}
+                      </CodalSourceLink>
                     </div>
                     <span className="shrink-0 text-muted-foreground">{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}</span>
                   </div>
