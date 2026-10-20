@@ -12,10 +12,12 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, "..");
 
+// Optional CLI: regular.ttf bold.ttf output.png. Defaults preserve the QA workflow.
+const [regularFontPath = "/tmp/Vazirmatn-Regular.ttf", boldFontPath = "/tmp/Vazirmatn-Bold.ttf", outputPath] = process.argv.slice(2);
 // Load Vazirmatn font
 // satori requires static-weight TTF (not variable fonts or woff2)
-const fontDataRegular = await readFile("/tmp/Vazirmatn-Regular.ttf");
-const fontDataBold = await readFile("/tmp/Vazirmatn-Bold.ttf");
+const fontDataRegular = await readFile(regularFontPath);
+const fontDataBold = await readFile(boldFontPath);
 
 // JSX-like element tree (satori accepts plain objects)
 const element = {
@@ -24,9 +26,10 @@ const element = {
     style: {
       width: "1200px",
       height: "630px",
+      boxSizing: "border-box",
       display: "flex",
       flexDirection: "column",
-      alignItems: "flex-end",
+      alignItems: "flex-start",
       justifyContent: "flex-end",
       padding: "64px 72px",
       background: "linear-gradient(135deg, #0a1628 0%, #0d2045 55%, #1a3a6e 100%)",
@@ -66,7 +69,7 @@ const element = {
             textAlign: "right",
             maxWidth: "900px",
           },
-          children: "\u202Bآرش صفری\u202C",
+          children: "\u202Bآرش سفری\u202C",
         },
       },
       // Subtitle
@@ -82,7 +85,7 @@ const element = {
             textAlign: "right",
             maxWidth: "900px",
           },
-          children: "\u202Bتحلیلگر و مشاور سرمایه‌گذاری · بازار سرمایهٔ ایران\u202C",
+          children: "\u202Bتحلیل بازار و مدیریت ثروت · ایران\u202C",
         },
       },
       // Pills container
@@ -146,9 +149,9 @@ const resvg = new Resvg(svg, {
 const pngData = resvg.render();
 const pngBuffer = pngData.asPng();
 
-const outDir = path.join(projectRoot, "docs", "assets", "public-experience");
+const outDir = outputPath ? path.dirname(path.resolve(outputPath)) : path.join(projectRoot, "docs", "assets", "public-experience");
 await mkdir(outDir, { recursive: true });
-const outPath = path.join(outDir, "og-image-qa.png");
+const outPath = outputPath ? path.resolve(outputPath) : path.join(outDir, "og-image-qa.png");
 
 import { writeFile } from "node:fs/promises";
 await writeFile(outPath, pngBuffer);

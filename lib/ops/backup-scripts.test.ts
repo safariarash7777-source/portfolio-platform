@@ -36,6 +36,21 @@ const ps1 = ps1Bytes.toString("utf8").replace(/^﻿/, "");
 const inventory = existsSync(INVENTORY) ? readFileSync(INVENTORY, "utf8") : "";
 const compare = existsSync(COMPARE) ? readFileSync(COMPARE, "utf8") : "";
 
+test("native financial backup inventory includes private cash-flow schema, functions and ACL in both comparisons", () => {
+  // Static coverage guard only; an owned-PG catalog rehearsal is separate evidence,
+  // and neither is a fresh Production backup/restore proof.
+  const native = readFileSync(join(ROOT, "docs/ops/recovery-01/p01-scripts/liara-native-backup-restore.py"), "utf8");
+  const sql = native.match(/INVENTORY = r"""([\s\S]*?)"""/)?.[1];
+  assert.ok(sql, "native inventory literal is required");
+  const filters = [...sql.matchAll(/(?:n\.)?(?:nspname|schemaname) IN \(([^)]+)\)/g)];
+  assert.ok(filters.length >= 11, "all existing catalog/aggregate sections must be covered");
+  for (const [, filter] of filters) for (const schema of ["public", "auth", "storage", "identity_private", "cash_flow_private"]) assert.ok(filter.includes(`'${schema}'`), `missing managed schema ${schema}`);
+  assert.match(sql, /function\|[\s\S]*?p\.proacl[\s\S]*?pg_get_functiondef/);
+  assert.match(sql, /schema\|[\s\S]*?nspacl/);
+  assert.match(native, /source_inventory=sql\(SOURCE,prefix\+INVENTORY/);
+  assert.match(native, /target_inventory=sql\(TARGET,[^\n]*\+INVENTORY/);
+});
+
 /**
  * خطوطِ **اجرایی**، بدونِ کامنت.
  *

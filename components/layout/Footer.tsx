@@ -62,7 +62,7 @@ const GROUPS = [
   {
     title: "درباره و قوانین",
     links: [
-      { href: "/about", label: "دربارهٔ آرش صفری" },
+      { href: "/about", label: "دربارهٔ آرش سفری" },
       { href: "/help", label: "راهنمای استفاده از سایت" },
       { href: "/legal/privacy", label: "حریم خصوصی" },
       { href: "/legal/terms", label: "شرایط استفاده" },
@@ -138,7 +138,7 @@ export default function Footer({ prefetch }: { prefetch?: boolean } = {}) {
             {/* بدونِ whitespace-nowrap: ظرفِ بیرونی flex-shrink-0 است و خودش
                 نگهش می‌دارد؛ nowrap فقط یک خطرِ سرریزِ بی‌فایده اضافه می‌کرد. */}
             <p className="text-xs" style={{ color: "var(--text-3)" }}>
-              © ۱۴۰۵ آرش صفری
+              © ۱۴۰۵ آرش سفری
             </p>
             {PREVIEW_SHA && !IS_PRODUCTION && (
               <a

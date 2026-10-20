@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readProviderJson } from '../../relay/capitalization-response.mjs';
 import { inspectResearchUniverseReadiness, type IssuerMappingEvidence, type CapitalizationEvidence } from './research-universe-readiness';
 const options = { asOf: '2026-10-20T12:00:00Z', target: 30, maxAgeMs: 86400000 };
 const received = Date.parse('2026-10-20T11:40:00Z');
@@ -30,6 +31,49 @@ test('unsafe number is null; exact decimal string survives without numeric coerc
   assert.equal(unsafe.rows[0].marketCapRial, null);
   assert.ok(unsafe.rows[0].reasons.includes('unsafe_cap_precision'));
   assert.equal(inspect(snapshot([stock('فملی', '900719925474099300')])).rows[0].candidate?.marketCapRial, '900719925474099300');
+});
+
+test('stored raw-token exact cap wins over the rounded legacy number without losing a digit', async () => {
+  const parsed = await readProviderJson(new Response('{"mv":90071992547409931}'), 'Tsetmc/Symbol.php');
+  const persisted = JSON.parse(JSON.stringify(snapshot([{ ...stock('فملی', parsed.mv), marketValueExact: parsed.marketValueExact }])));
+  assert.equal(Number.isSafeInteger(persisted.stocks[0].marketValue), false);
+  const result = inspect(persisted);
+  assert.equal(result.rows[0].candidate?.marketCapRial, '90071992547409931');
+  assert.deepEqual(result.rows[0].reasons, []);
+  assert.equal(result.universe.selected[0].marketCapRial, '90071992547409931');
+});
+
+test('present invalid exact cap never falls back to an otherwise valid legacy cap', () => {
+  for (const marketValueExact of [null, undefined, 100, Number.MAX_SAFE_INTEGER + 1, '', '0', '-1', '01', '1.0', '1e2', ' 100', '100 ', '۱۰۰', {}, []]) {
+    const row = inspect(snapshot([{ ...stock(), marketValueExact }])).rows[0];
+    assert.equal(row.marketCapRial, null, String(marketValueExact));
+    assert.equal(row.candidate, null);
+    assert.ok(row.reasons.some(reason => reason === 'missing_or_invalid_cap' || reason === 'unsafe_cap_precision'));
+  }
+  // Old snapshots without the additive field retain the exact legacy contract.
+  assert.equal(inspect(snapshot()).rows[0].candidate?.marketCapRial, '100');
+});
+
+test('exact cap still requires semantic, source-time, receipt, and issuer evidence', () => {
+  const exactStock = { ...stock('فملی', Number.MAX_SAFE_INTEGER + 1), marketValueExact: '90071992547409931' };
+  for (const capitalization of [null, { ...cap, unit: 'IRT' }, { ...cap, definition: 'instrument-value' }, { ...cap, evidenceRef: '' }, { ...cap, knownAt: '2026-10-21T00:00:00Z' }]) {
+    // Malformed external evidence is intentionally exercised at the boundary.
+    const result = inspectResearchUniverseReadiness(snapshot([exactStock]), options, { capitalization: capitalization as CapitalizationEvidence | null, mappings: [mapping()] });
+    assert.equal(result.rows[0].candidate, null);
+    assert.ok(result.rows[0].reasons.includes('capitalization_contract_unverified'));
+  }
+  const cases = [
+    { payload: snapshot([{ ...exactStock, sourceDate: null }]), mappings: [mapping()], reason: 'missing_or_invalid_source_clock' },
+    { payload: snapshot([{ ...exactStock, sourceDate: '1405-07-26' }]), mappings: [mapping()], reason: 'stale_source' },
+    { payload: { stocks: [exactStock], fetchedAt: received }, mappings: [mapping()], reason: 'missing_or_future_receipt' },
+    { payload: snapshot([exactStock]), mappings: [], reason: 'issuer_mapping_unverified' },
+  ];
+  for (const { payload, mappings, reason } of cases) {
+    const row = inspect(payload, mappings).rows[0];
+    assert.equal(row.marketCapRial, '90071992547409931');
+    assert.equal(row.candidate, null);
+    assert.ok(row.reasons.includes(reason));
+  }
 });
 test('receipt cannot fall back to snapshot write/fetch time; retained family abstains', () => {
   const result = inspect({ stocks: [stock()], updated_at: options.asOf, fetchedAt: received });
