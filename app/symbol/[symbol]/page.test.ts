@@ -12,10 +12,17 @@ import { withValidNav, marketQualityLabel } from "../../../lib/market-quality";
 import { formatRialAsToman, formatJalali, formatTehranClock, toPersianDigits } from "../../../lib/format";
 import { deriveQuarters, ttmSeries, peOf, type QuarterInput, type DerivedQuarter, type TtmPoint } from "../../../lib/core/quarterly";
 import type { SymbolFundamentals, ReportScope } from "../../../lib/fundamental/types";
+import type { FundamentalCardData } from "../../../lib/core/fundamentalCard";
 
 Object.assign(globalThis, { React });
 
 const require = createRequire(import.meta.url);
+const cssModule = { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
+// Only the offline Node renderer needs this; Next compiles the actual stylesheet.
+require.extensions[".css"] = (loaded, filename) => {
+  assert.ok(filename.endsWith(".module.css"));
+  loaded.exports = cssModule;
+};
 const now = Date.parse("2026-09-30T10:00:00Z");
 const stock: IrStockRow = { id: "fixture", faName: "نمونهٔ آزمون", unit: "toman", price: 110, closingPrice: 110, value: 50_000_000_000, marketValue: 700_000_000_000, sourceDate: "1405-07-08", sourceTime: "13:25:00" };
 const fund: IrStockRow = { ...stock, type: "سهامی", nav: 100, navIssue: 101, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", bubblePercent: 999 };
@@ -41,6 +48,7 @@ async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolF
     "@/lib/access": { getAccess: async () => ({ tier: "guest" }) },
   };
   const fakeRequire = (specifier: string) => {
+    if (specifier.endsWith(".module.css")) return cssModule;
     if (specifier in stubs) return stubs[specifier];
     if (["@/components/symbol/FundamentalCharts", "@/components/symbol/SymbolTabs", "@/components/symbol/CodalReportsTab"].includes(specifier)) return require(`../../../${specifier.slice(2)}`);
     if (specifier.startsWith("@/components/")) {
@@ -254,6 +262,7 @@ function clientComponent(name: string, hooks: unknown, globals: Record<string, u
   }).outputText;
   vm.runInNewContext(js, { exports: exported, ...globals, require: (id: string) => {
     if (id === "react") return hooks;
+    if (id.endsWith(".module.css")) return cssModule;
     if (id === "../market/MarketAutoRefresh") return { __esModule: true, default: () => null };
     return require(id.startsWith("@/") ? `../../../${id.slice(2)}` : id);
   } });
@@ -281,7 +290,7 @@ test("actual symbol tabs open chart/monthly anchors and follow hash/back navigat
   const effects: Array<() => unknown> = [], deps = new Map<number, unknown[]>(), events: Record<string, () => void> = {};
   const location = { hash: "#chart-margins" };
   const chart = { closest: () => ({ getAttribute: () => "fundamental" }), scrollIntoView: () => { scrolled++; } };
-  const hooks = { ...React, useState: () => [active, (next: string) => { active = next; }], useEffect: (fn: () => unknown, values: unknown[]) => {
+  const hooks = { ...React, useId: () => "symbol-tabs-test", useState: () => [active, (next: string) => { active = next; }], useEffect: (fn: () => unknown, values: unknown[]) => {
     const n = effectIndex++, previous = deps.get(n);
     if (!previous || values.some((value, i) => value !== previous[i])) effects.push(fn);
     deps.set(n, values);
@@ -301,4 +310,104 @@ test("actual symbol tabs open chart/monthly anchors and follow hash/back navigat
   assert.match(settle(), /data-symbol-tab="reports">reports-fixture/);
   location.hash = "#q-monthly-sales"; events.popstate();
   assert.match(settle(), /data-symbol-tab="fundamental">fundamental-fixture/);
+});
+
+function presentationNodes(node: React.ReactNode): React.ReactElement<Record<string, unknown>>[] {
+  if (Array.isArray(node)) return node.flatMap(presentationNodes);
+  if (!React.isValidElement(node)) return [];
+  const element = node as React.ReactElement<Record<string, unknown>>;
+  return [element, ...presentationNodes(element.props.children as React.ReactNode)];
+}
+
+test("symbol tabs preserve click/hash navigation and expose RTL keyboard selection with linked panels", () => {
+  let active = "overview", prevented = 0;
+  const hashes: string[] = [], focused: string[] = [];
+  const Tabs = clientComponent("SymbolTabs", {
+    ...React, useId: () => "keyboard-tabs", useEffect() {},
+    useState: () => [active, (next: string) => { active = next; }],
+  }, {
+    history: { replaceState: (_state: unknown, _title: string, hash: string) => { hashes.push(hash); } },
+    document: { getElementById: (id: string) => ({ focus: () => { focused.push(id); } }) },
+  });
+  const render = () => presentationNodes(Tabs({ overview: "overview", fundamental: "fundamental", reports: "reports", assembly: "assembly" }));
+  const selected = () => {
+    const nodes = render(), tab = nodes.find(n => n.props.role === "tab" && n.props["aria-selected"]);
+    assert.ok(tab);
+    assert.equal(tab.props.tabIndex, 0);
+    assert.equal(nodes.filter(n => n.props.role === "tab" && n.props.tabIndex === 0).length, 1);
+    const panel = nodes.find(n => n.props.id === tab.props["aria-controls"]);
+    assert.ok(panel);
+    assert.equal(panel.props["aria-labelledby"], tab.props.id);
+    assert.equal(panel.props.hidden, false);
+    assert.equal(nodes.filter(n => n.props.role === "tabpanel" && !n.props.hidden).length, 1);
+    return tab;
+  };
+  for (const [key, expected] of [["ArrowLeft", "fundamental"], ["End", "assembly"], ["ArrowLeft", "overview"], ["ArrowRight", "assembly"], ["Home", "overview"]]) {
+    (selected().props.onKeyDown as (event: object) => void)({ key, preventDefault: () => { prevented++; } });
+    assert.equal(active, expected);
+    assert.equal(hashes.at(-1), `#${expected}`);
+    assert.equal(focused.at(-1), `keyboard-tabs-${expected}-tab`);
+    selected();
+  }
+  (selected().props.onKeyDown as (event: object) => void)({ key: "Tab", preventDefault: () => { prevented++; } });
+  assert.equal(prevented, 5, "Tab keeps native navigation");
+  const reports = render().find(n => n.props.id === "keyboard-tabs-reports-tab");
+  (reports!.props.onClick as () => void)();
+  assert.equal(active, "reports");
+  assert.equal(hashes.at(-1), "#reports");
+});
+
+// Synthetic offline fixture only; never served as company data.
+const cardFixture: FundamentalCardData = {
+  symbol: "fixture", latestMonth: "1405-06", latestSalesBToman: 1, yoyPct: null,
+  topProductName: null, exportSharePct: null, narrative: "روایت نمونهٔ آزمون",
+  months12: [{ month: "1405-06", totalAmount: 10_000, domesticAmount: 10_000, exportAmount: 0 }],
+  monthlyYoY: [{ month: "1405-06", yoyPct: null }], prodSalesGap: null, quantityUnit: null,
+  topProductRate: null, latestProducts: [{ name: "محصول آزمون", market: "داخلی", productionQty: null, salesQty: null, salesRate: null, salesAmount: null }],
+  sourceUrl: "https://codal.ir/Reports/Decision.aspx?LetterSerial=fixture", sourceTitle: "گزارش رسمی نمونهٔ آزمون",
+};
+
+test("fundamental disclosure preserves unknown units/nulls and source while opening and closing linked details", () => {
+  const states = [false, false];
+  let stateIndex = 0, idIndex = 0;
+  const Card = clientComponent("SymbolFundamentalCard", {
+    ...React, useId: () => `card-detail-${idIndex++}`,
+    useState: () => {
+      const index = stateIndex++;
+      return [states[index], (next: (value: boolean) => boolean) => { states[index] = next(states[index]); }];
+    },
+  });
+  const original = JSON.stringify(cardFixture);
+  const render = (card = cardFixture) => {
+    stateIndex = 0; idIndex = 0;
+    const tree = Card({ card });
+    return { nodes: presentationNodes(tree), html: renderToStaticMarkup(tree) };
+  };
+  const closed = render();
+  assert.match(closed.html, /دورهٔ فعالیت:/);
+  assert.match(closed.html, /۱۴۰۵-۰۶/);
+  assert.match(closed.html, /گزارش رسمی نمونهٔ آزمون/);
+  assert.ok(closed.html.includes(cardFixture.sourceUrl!));
+  const buttons = closed.nodes.filter(n => n.type === "button" && n.props["aria-controls"]);
+  assert.equal(buttons.length, 2);
+  for (const button of buttons) {
+    assert.equal(button.props["aria-expanded"], false);
+    const panel = closed.nodes.find(n => n.props.id === button.props["aria-controls"]);
+    assert.equal(panel?.props.hidden, true);
+    (button.props.onClick as () => void)();
+  }
+  const open = render();
+  for (const button of open.nodes.filter(n => n.type === "button" && n.props["aria-controls"])) {
+    assert.equal(button.props["aria-expanded"], true);
+    assert.equal(open.nodes.find(n => n.props.id === button.props["aria-controls"])?.props.hidden, false);
+    (button.props.onClick as () => void)();
+  }
+  assert.match(open.html, /واحد نامعلوم/);
+  const cells = open.nodes.filter(n => n.type === "td");
+  assert.deepEqual(cells.slice(2).map(n => n.props.children), ["—", "—", "—", "—"]);
+  assert.doesNotMatch(open.html, /NaN|Infinity|۰٪/);
+  assert.equal(render().nodes.filter(n => n.type === "button" && n.props["aria-expanded"]).length, 0);
+  assert.equal(JSON.stringify(cardFixture), original);
+  assert.equal(render({ ...cardFixture, narrative: null }).html, "");
+  assert.equal(render({ ...cardFixture, latestMonth: null }).html, "");
 });
