@@ -31,7 +31,7 @@ const words = (node: unknown): string => Array.isArray(node) ? node.map(words).j
 const deferred = <T,>() => { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; };
 
 /** Runs actual TSX handlers and effects with bounded hooks + API/auth seams; no DOM, network or RLS claim. */
-function mount(reads: unknown[], writes: unknown[] = [], initialVersion?: string, attemptError?: Error) {
+function mount(reads: unknown[], writes: unknown[] = [], initialVersion?: string, attemptError?: Error, actualTransport?: typeof fetch) {
   const slots: unknown[] = []; let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
   const effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: Record<string, unknown>[] = [], attempts: unknown[] = [], writeCalls: unknown[][] = [];
   const urls: string[] = [];
@@ -43,10 +43,11 @@ function mount(reads: unknown[], writes: unknown[] = [], initialVersion?: string
     useEffect(effect: () => void | (() => void), deps: unknown[]) { const i = cursor++, previous = slots[i] as { deps: unknown[]; cleanup?: () => void } | undefined; if (!previous || deps.some((dep, index) => !Object.is(dep, previous.deps[index]))) effects.push(() => { previous?.cleanup?.(); const cleanup = effect(); slots[i] = { deps, cleanup }; if (cleanup) cleanups.push(cleanup); }); },
   };
   const filename = resolve("components/portfolio/cashflow/CashFlowWorkspace.tsx"), local = createRequire(filename), taskModule = { exports: {} as { default: (props: unknown) => unknown } };
+  const actual = actualTransport ? local(resolve("lib/portfolio/cashFlowRequest.ts")) as typeof import("@/lib/portfolio/cashFlowRequest") : null;
   const request = {
-    createCashFlowAttempt(input: unknown) { if (attemptError) throw attemptError; const attempt = Object.freeze({ seamRequest: input }); attempts.push(attempt); return attempt; },
-    async readCashFlow(options: Record<string, unknown>) { readCalls.push(options); assert.ok(reads.length, "unexpected read"); return await reads.shift(); },
-    async sendCashFlowAttempt(...args: unknown[]) { writeCalls.push(args); assert.ok(writes.length, "unexpected write"); return await writes.shift(); },
+    createCashFlowAttempt(input: unknown) { if (attemptError) throw attemptError; const attempt = actual ? actual.createCashFlowAttempt(input as Parameters<typeof actual.createCashFlowAttempt>[0]) : Object.freeze({ seamRequest: input }); attempts.push(attempt); return attempt; },
+    async readCashFlow(options: Record<string, unknown>) { readCalls.push(options); if (actual) return await actual.readCashFlow({ ...options as Parameters<typeof actual.readCashFlow>[0], transport: actualTransport }); assert.ok(reads.length, "unexpected read"); return await reads.shift(); },
+    async sendCashFlowAttempt(...args: unknown[]) { writeCalls.push(args); if (actual) return await actual.sendCashFlowAttempt(args[0] as Parameters<typeof actual.sendCashFlowAttempt>[0], { ...args[1] as Parameters<typeof actual.sendCashFlowAttempt>[1], transport: actualTransport }); assert.ok(writes.length, "unexpected write"); return await writes.shift(); },
   };
   const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
   const load = (name: string) => name === "react" ? hooks : name === "@/lib/portfolio/cashFlowRequest" ? request : name === "@/lib/supabase/client" ? { createClient: () => ({ auth: { onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; } } }) } : local(name.startsWith("@/") ? resolve(name.slice(2)) : name);
@@ -122,6 +123,22 @@ test("internal canonical validation errors stay Persian and do not submit or loc
   const view = mount([result()], [], undefined, new Error("Invalid cash-flow internal detail")); await view.auth(); view.beginSave(); await view.flush();
   assert.match(view.text(), /اطلاعات فرم با قرارداد ثبت سازگار نیست/); assert.doesNotMatch(view.text(), /Invalid cash-flow/);
   assert.equal(view.writeCalls.length, 0); assert.equal(view.attempts.length, 0); assert.equal(view.editor().props.locked, false); view.unmount();
+});
+
+test("actual workspace plus real request helpers recover byte-identical POST and independently parse canonical readback", async () => {
+  const bodies: string[] = []; let gets = 0;
+  const next = ready({ snapshot: { ...ready().snapshot!, id: second, version: 2 }, latest: { state: "ready", id: second, version: 2 }, history: { state: "ready", items: [{ id: second, version: 2, createdAt: "2026-10-20T10:00:00Z" }], nextBeforeVersion: null } });
+  const transport = (async (_url, options) => {
+    if (options?.method === "POST") {
+      bodies.push(String(options.body));
+      return bodies.length === 1 ? Response.json({ state: "error", code: "WRITE_UNAVAILABLE", error: "نتیجهٔ ثبت مصنوعی نامعلوم است." }, { status: 503 }) : Response.json({ ...receipt, reused: true }, { status: 200 });
+    }
+    return Response.json(gets++ === 0 ? ready() : next);
+  }) as typeof fetch;
+  const view = mount([], [], undefined, undefined, transport); await view.auth(); view.beginSave(); await view.flush();
+  assert.equal(view.editor().props.locked, true); await view.click("بررسی دوبارهٔ همین ثبت");
+  assert.equal(bodies.length, 2); assert.equal(bodies[0], bodies[1]); assert.equal(JSON.parse(bodies[0]).expectedOwnerId, owner); assert.equal(view.attempts.length, 1);
+  assert.equal(gets, 2); assert.match(view.text(), /همان تلاش قبلی بازیابی شد/); assert.match(view.text(), /نسخهٔ تأییدشده مستقل بازخوانی شد/); view.unmount();
 });
 
 test("confirmed snapshot needs readback then explicit edit before next token/base; dirty cancel warns and preserves stored values", async () => {
