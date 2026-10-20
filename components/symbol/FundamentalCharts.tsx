@@ -25,7 +25,7 @@ import { Link2, Check, Info } from "lucide-react";
 import { toPersianDigits } from "@/lib/format";
 import type { SymbolFundamentals } from "@/lib/fundamental/types";
 import { isMillionRialUnit } from "@/lib/fundamental/units";
-import { approvedCodalUrl } from "@/lib/desk/workspace-model";
+import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 import {
   deriveN10,
   deriveN30,
@@ -543,7 +543,6 @@ export default function FundamentalCharts({
   }
 
   const d = n10.data;
-  const sourceUrl = approvedCodalUrl(n10.source.source_url);
   const year = Number(d.period_end.slice(0, 4));
   const annual = d.period_months === 12;
   const period = `دورهٔ ${toPersianDigits(String(d.period_months))}ماهه`;
@@ -583,9 +582,7 @@ export default function FundamentalCharts({
             ⚠ {n10.source.verification_note}
           </span>
         ) : null}
-        {sourceUrl ? (
-          <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">مشاهدهٔ اطلاعیه در کدال</a>
-        ) : <span style={{ color: "var(--text-3)" }}>پیوند معتبر اطلاعیهٔ کدال در دسترس نیست</span>}
+        <CodalSourceLink url={n10.source.source_url} className="underline" fallback={<span style={{ color: "var(--text-3)" }}>پیوند معتبر اطلاعیهٔ کدال در دسترس نیست</span>}>مشاهدهٔ اطلاعیه در کدال</CodalSourceLink>
       </div>
 
       <Narrative text={omittedNote} />

@@ -236,8 +236,15 @@ test("actual financial chart source is a usable Codal link or explicit unknown, 
   const invalid = await actualPage(market(stock), stock.id, reports);
   assert.doesNotMatch(invalid.html, /outside\.test/);
   assert.match(invalid.html, /پیوند معتبر اطلاعیهٔ کدال در دسترس نیست/);
+  for (const sourceUrl of [null, "", "  ", "https://user:pass@codal.ir/report", "javascript:alert(1)"]) {
+    reports.n10!.source.source_url = sourceUrl;
+    const html = (await actualPage(market(stock), stock.id, reports)).html;
+    assert.match(html, /پیوند معتبر اطلاعیهٔ کدال در دسترس نیست/);
+    assert.doesNotMatch(html, /user:pass|javascript:|href="#"/);
+  }
   reports.n10!.source.source_url = "/Reports/Decision.aspx?id=7";
-  assert.match((await actualPage(market(stock), stock.id, reports)).html, /href="https:\/\/codal.ir\/Reports\/Decision.aspx\?id=7"/);
+  const valid = (await actualPage(market(stock), stock.id, reports)).html;
+  assert.ok(valid.includes('<a href="https://codal.ir/Reports/Decision.aspx?id=7" target="_blank" rel="noopener noreferrer" class="underline">مشاهدهٔ اطلاعیه در کدال</a>'));
 });
 
 function clientComponent(name: string, hooks: unknown, globals: Record<string, unknown> = {}) {
