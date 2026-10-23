@@ -1,0 +1,17 @@
+{
+  "status": "static_layout_checked",
+  "checkedOn": "2026-10-24",
+  "method": "Actual consultation React components rendered with synthetic data and compiled project CSS; CUA browser inspection",
+  "issueFound": "Global button white-space nowrap overrode plain whitespace-normal; long member label caused horizontal overflow",
+  "fix": "Consultation-only important whitespace wrapping, bounded width and word wrapping; no global CSS change",
+  "geometry": [
+    { "route": "owner", "viewport": 320, "clientWidth": 305, "scrollWidth": 305, "overflowButtons": 0 },
+    { "route": "owner", "viewport": 390, "clientWidth": 375, "scrollWidth": 375 },
+    { "route": "member", "viewport": 320, "clientWidth": 305, "scrollWidth": 305, "overflowButtons": 0 },
+    { "route": "editor", "viewport": 390, "clientWidth": 375, "scrollWidth": 375 },
+    { "route": "editor", "viewport": 1280, "clientWidth": 1265, "scrollWidth": 1265 }
+  ],
+  "viewportReset": true,
+  "temporaryTabClosed": true,
+  "limitations": ["No hydration or API/authentication in fixture", "Not proof of interactive mobile flow", "Not Arash visual acceptance"]
+}

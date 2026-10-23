@@ -1,0 +1,45 @@
+{
+  "enabledOwners": 1,
+  "actors": [
+    {
+      "sessions": 0,
+      "historyPreserved": true,
+      "refreshTokens": 0,
+      "banned": true,
+      "actor": "owner",
+      "checkedAt": "2026-10-24T00:52:27.993974+03:30"
+    },
+    {
+      "sessions": 0,
+      "historyPreserved": true,
+      "refreshTokens": 0,
+      "banned": true,
+      "actor": "a",
+      "checkedAt": "2026-10-24T00:52:17.672188+03:30"
+    },
+    {
+      "sessions": 0,
+      "historyPreserved": true,
+      "refreshTokens": 0,
+      "banned": true,
+      "actor": "b",
+      "checkedAt": "2026-10-24T00:52:23.086499+03:30"
+    },
+    {
+      "sessions": 0,
+      "historyPreserved": true,
+      "refreshTokens": 0,
+      "banned": true,
+      "actor": "admin",
+      "checkedAt": "2026-10-24T00:52:32.544997+03:30"
+    }
+  ],
+  "nativeAccessJwtLimitation": "Previously issued JWTs may remain valid until expiry; application getUser gate tested independently",
+  "ownerEmailCommitted": false,
+  "syntheticAdminRolesDemoted": true,
+  "status": "PASS",
+  "realOwnerBound": true,
+  "browserSessionAfterRetirement": "redirected to login",
+  "productionRelease": "PENDING",
+  "freshBrowserLogin": "rejected"
+}

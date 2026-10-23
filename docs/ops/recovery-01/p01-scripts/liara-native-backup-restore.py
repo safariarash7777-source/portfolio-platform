@@ -74,6 +74,11 @@ def bounded_acl_plan(src, dst):
         'schema|cash_flow_private|postgres;-',
         'GRANT USAGE,CREATE ON SCHEMA cash_flow_private TO postgres;',
         'cash_flow_private')
+    # Exact seventh pair observed in checkpoint 20261023T204308Z after goals install.
+    pairs['schema|goals_private|postgres;{postgres=UC/postgres}'] = (
+        'schema|goals_private|postgres;-',
+        'GRANT USAGE,CREATE ON SCHEMA goals_private TO postgres;',
+        'goals_private')
     source_only, target_only = src-dst, dst-src
     if not source_only and not target_only:
         return '', []
@@ -239,7 +244,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
     if src != dst:
         # Archive the original mismatch. Never relabel a failed comparison or
         # normalize away authorizations; permit only the independently reviewed
-        # six-object correction on this owned isolated target.
+        # seven-object correction on this owned isolated target.
         (ROOT/"comparison-before-correction.private.json").write_text(json.dumps(
             {"sourceOnly": sorted(src-dst), "targetOnly": sorted(dst-src)}, indent=2))
         correction_sql, correction_names = bounded_acl_plan(src, dst)
@@ -249,7 +254,7 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
             if sql(TARGET,"SHOW cron.launch_active_jobs;").strip() != "off":
                 raise RuntimeError("correction_cron_not_disabled")
             (ROOT/"target-inventory-before-correction.private").write_text(target_inventory)
-            receipt["aclCorrection"]={"policy":"observed-six-acls-v1",
+            receipt["aclCorrection"]={"policy":"observed-seven-acls-v1",
                 "objects":correction_names,"sourceSqlMutation":False,
                 "applied":False,"objectCount":len(correction_names),
                 "preCorrectionComparisonEqual":False,

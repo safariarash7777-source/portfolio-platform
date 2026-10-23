@@ -376,6 +376,11 @@ function PersonalFinance({ summary }: { summary?: MemberFinanceSummary }) {
         <Link href="/dashboard/goals" className="btn btn-outline min-h-11">ثبت و پیگیری هدف مالی</Link>
       </div>
     </div>
+    <div className="card p-4 space-y-3">
+      <h3 className="font-bold">پروندهٔ مشاوره و پیگیری</h3>
+      <p className="text-sm leading-7">دسترسی مشاور به پرونده را خودتان فعال یا لغو کنید؛ نسخهٔ منتشرشده برای شما و اقدام بعدی را ببینید و پرسش خود را برای مشاور ثبت کنید.</p>
+      <Link href="/dashboard/consultation" className="btn btn-outline min-h-11">بازکردن پروندهٔ مشاوره</Link>
+    </div>
     <p className="text-xs leading-7" style={{ color: "var(--text-3)" }}>مسیرهای دارایی، بدهی و سبد در صفحهٔ دارایی و بدهی باز می‌شوند؛ دفتر جریان نقد دوره و نسخه‌های مستقل دارد. مبلغ یا بازدهی از سوابق قبلی به این ثبت‌ها اضافه نمی‌شود.</p>
   </section>;
 }

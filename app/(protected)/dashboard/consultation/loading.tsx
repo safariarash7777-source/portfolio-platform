@@ -1,0 +1,1 @@
+export default function ConsultationLoading() { return <main id="main-content" dir="rtl" className="mx-auto max-w-6xl space-y-4 px-4 py-8"><h1 className="font-display text-2xl font-bold">پروندهٔ مشاوره و پیگیری</h1><p role="status" className="card p-5">در حال بررسی نشست و دسترسی؛ هنوز محتوای پرونده یا نبود رکورد تأیید نشده است.</p></main>; }

@@ -1,0 +1,1 @@
+export default function AdvisorLoading() { return <section dir="rtl" className="card space-y-3 p-5"><h1 className="font-display text-2xl font-bold">میز مشاوره</h1><p role="status">در حال بررسی دسترسی و خواندن پرونده‌ها…</p></section>; }

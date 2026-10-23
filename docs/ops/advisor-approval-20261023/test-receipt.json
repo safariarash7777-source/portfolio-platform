@@ -1,0 +1,133 @@
+{
+  "status": "technical_native_and_mobile_acceptance_passed_production_pending",
+  "checkedOn": "2026-10-24",
+  "sqlSha256": "4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91",
+  "consultationTests": {
+    "passed": 41,
+    "failed": 0
+  },
+  "postgresTests": {
+    "passed": 44,
+    "failed": 0,
+    "profiles": [
+      "explicit",
+      "legacy",
+      "registry_explicit",
+      "registry_legacy"
+    ],
+    "server": "17.11",
+    "network": "none",
+    "publishedPorts": [],
+    "testContainerRemoved": true,
+    "populatedSqlDossiersValidatedByTypeScript": 2
+  },
+  "checks": [
+    "targeted ESLint",
+    "TypeScript",
+    "secret scan",
+    "SQL static validation"
+  ],
+  "integrationRun": {
+    "core": 1987,
+    "symbolPage": 17,
+    "coverage": 6,
+    "offlineCoverage": 5,
+    "productionBuild": "passed including mobile wrapping and duplicate consent guard",
+    "ci": {
+      "head": "b2c46cb21d6519d265de714134cffbc1563bb1f7",
+      "run": 40024713604,
+      "status": "success",
+      "allJobs": "success"
+    }
+  },
+  "nativeDriverOfflineGuards": {
+    "passed": 3,
+    "failed": 0
+  },
+  "verifiedBoundaries": [
+    "explicit member consent",
+    "owner-only approval",
+    "unrelated admin denied",
+    "member isolation",
+    "private notes hidden",
+    "exact attempt replay",
+    "financial and research writer concurrency",
+    "ambiguous research approval rejected",
+    "old published version withdrawal",
+    "revoked advisor denied",
+    "member historical access",
+    "lab rollback preserves previous inventory"
+  ],
+  "notProvenByThisReceipt": [
+    "production release on final SHA after final CI",
+    "Arash visual and usability acceptance"
+  ],
+  "operationalInstallation": {
+    "status": "APPLIED",
+    "receipt": "source-install-receipt.json",
+    "existingCatalogUnchanged": true
+  },
+  "encryptedBackupVerification": {
+    "status": "PASS",
+    "receipt": "encrypted-backup-verified.json",
+    "checkpoint": "20261023T204308Z",
+    "files": 7
+  },
+  "nativeApiAcceptance": {
+    "status": "PASS_NATIVE_API",
+    "receipt": "native-api-receipt.json",
+    "scenarios": 20,
+    "postAttempts": 17,
+    "financialLedgerWrites": 0
+  },
+  "mobileBrowserAcceptance": {
+    "status": "PASS",
+    "receipt": "browser-receipt.json",
+    "testedHead": "b2c46cb21d6519d265de714134cffbc1563bb1f7",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "overflow": {
+      "scrollWidth": 375,
+      "clientWidth": 375
+    },
+    "passed": [
+      "member consent",
+      "draft save",
+      "submit",
+      "owner approve",
+      "publish",
+      "member view",
+      "member reported done"
+    ],
+    "screenshots": [
+      "mobile-owner-published.png",
+      "mobile-member-followup.png"
+    ],
+    "financialLedgerWrites": 0
+  },
+  "retirementAndOwnerBinding": {
+    "status": "PASS",
+    "receipt": "retirement-owner-receipt.json",
+    "syntheticActorsRetired": 4,
+    "sessions": 0,
+    "refreshTokens": 0,
+    "historyPreserved": true,
+    "syntheticAdminRolesDemoted": true,
+    "realOwnerBound": true,
+    "enabledOwners": 1,
+    "oldBrowserSession": "redirected to login",
+    "freshLogin": "rejected",
+    "nativeAccessJwtLimitation": "Previously issued JWTs may remain valid until expiry"
+  },
+  "browserCleanup": {
+    "temporaryAliasRestored": "dpl_B58p21DduMet2HJKpE3fkL8R939T",
+    "viewportReset": true,
+    "testTabClosed": true
+  },
+  "productionRelease": {
+    "status": "PENDING",
+    "gate": "successful final CI for exact final SHA"
+  }
+}
