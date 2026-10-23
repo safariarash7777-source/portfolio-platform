@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "startedAt": "20261023T204308Z",
+  "finishedAt": "2026-10-24T00:27:11.056481+03:30",
+  "dumpBytes": 2393665795,
+  "dumpSha256": "38966bfde8f0d5a3ec44b5acfa0b2ac19c241ab2253a78d189dcd5e254c6977f",
+  "inventoryLines": {
+    "source": 1951,
+    "target": 1951
+  },
+  "mismatchCounts": {
+    "sourceOnly": 0,
+    "targetOnly": 0
+  },
+  "comparisonEqual": true,
+  "sourceContainerUnchanged": true,
+  "sourceHealthyAfter": true,
+  "targetStopped": true,
+  "network": "none",
+  "portsPublished": false,
+  "cronEnabledOnTarget": false,
+  "reconciliation": {
+    "reason": "Restored snapshot differed only in the exact seven independently reviewed ACL pairs; original failed proof retained.",
+    "helperSha256": "1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2",
+    "originalReceiptSha256": "8dcd7cde8d0344547c2f4a89bab102aab1f37fd4a1a0c6c323246d0db78646c4",
+    "sourceSqlMutation": false,
+    "redump": false,
+    "applied": true,
+    "startedAt": "2026-10-24T00:26:54.332913+03:30",
+    "status": "verified"
+  },
+  "nativeReceiptSha256": "b4e0f2a8e0a84f1709ef76975c52429c8840e22831e7fae1b12b9520558cb55d",
+  "initialFailedReceiptPreserved": true
+}

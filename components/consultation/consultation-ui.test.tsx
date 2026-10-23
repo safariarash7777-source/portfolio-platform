@@ -65,3 +65,14 @@ test("only registry owner is offered for consent; unavailable owner never become
   const html = renderToStaticMarkup(<ConsultationPanel data={memberData} locked={false} selectionLocked={false} onCommand={async () => true} onSelect={() => {}} onDirty={() => {}} onPeriod={() => {}} onDiscard={() => {}} />);
   assert.match(html, /دسترسی آرش برای این محیط هنوز/); assert.doesNotMatch(html, /<option value="11111111/); assert.match(html, /فیلتر ریسک، دارایی و نقص اطلاعات هنوز/);
 });
+
+test("consent form hides for existing active current-owner relation and returns after revocation", () => {
+  const memberData: ConsultationRead = { ...data, actor: { id: member, isOwner: false, isAdvisor: false }, selected: null, dossier: null, sessions: [], notes: [] };
+  const render = (value: ConsultationRead) => renderToStaticMarkup(<ConsultationPanel data={value} locked={false} selectionLocked={false} onCommand={async () => true} onSelect={() => {}} onDirty={() => {}} onPeriod={() => {}} onDiscard={() => {}} />);
+  assert.doesNotMatch(render(memberData), /aria-label="رضایت و دسترسی مشاور"/);
+  assert.match(render({ ...memberData, relationships: [] }), /aria-label="رضایت و دسترسی مشاور"/);
+  assert.match(render({ ...memberData, relationships: memberData.relationships.map(item => ({ ...item, revoked: true })) }), /aria-label="رضایت و دسترسی مشاور"/);
+  const unavailable = render({ ...memberData, advisors: [] });
+  assert.match(unavailable, /دسترسی آرش برای این محیط هنوز/);
+  assert.match(unavailable, /aria-label="رضایت و دسترسی مشاور"/);
+});

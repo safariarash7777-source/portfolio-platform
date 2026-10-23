@@ -2,11 +2,66 @@
   "status": "local_and_isolated_tests_passed",
   "checkedOn": "2026-10-24",
   "sqlSha256": "4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91",
-  "consultationTests": { "passed": 40, "failed": 0 },
-  "postgresTests": { "passed": 34, "failed": 0, "profiles": ["explicit", "legacy"], "server": "17.11", "network": "none", "publishedPorts": [], "testContainerRemoved": true, "populatedSqlDossiersValidatedByTypeScript": 2 },
-  "checks": ["targeted ESLint", "TypeScript", "secret scan", "SQL static validation"],
-  "integrationRun": { "core": 1987, "symbolPage": 17, "coverage": 6, "offlineCoverage": 5, "productionBuild": "passed; later expiry-button change separately tested", "ci": { "head": "855ebf124adfa0c5f74af453845f086773f8f470", "run": 40021871416, "status": "success" } },
-  "nativeDriverOfflineGuards": { "passed": 3, "failed": 0 },
-  "verifiedBoundaries": ["explicit member consent", "owner-only approval", "unrelated admin denied", "member isolation", "private notes hidden", "exact attempt replay", "financial and research writer concurrency", "ambiguous research approval rejected", "old published version withdrawal", "revoked advisor denied", "member historical access", "lab rollback preserves previous inventory"],
-  "notProvenByThisReceipt": ["native Auth/PostgREST", "operational installation", "browser/mobile acceptance", "production release", "Arash acceptance"]
+  "consultationTests": {
+    "passed": 41,
+    "failed": 0
+  },
+  "postgresTests": {
+    "passed": 44,
+    "failed": 0,
+    "profiles": [
+      "explicit",
+      "legacy",
+      "registry_explicit",
+      "registry_legacy"
+    ],
+    "server": "17.11",
+    "network": "none",
+    "publishedPorts": [],
+    "testContainerRemoved": true,
+    "populatedSqlDossiersValidatedByTypeScript": 2
+  },
+  "checks": [
+    "targeted ESLint",
+    "TypeScript",
+    "secret scan",
+    "SQL static validation"
+  ],
+  "integrationRun": {
+    "core": 1987,
+    "symbolPage": 17,
+    "coverage": 6,
+    "offlineCoverage": 5,
+    "productionBuild": "passed including mobile wrapping and duplicate consent guard",
+    "ci": {
+      "head": "855ebf124adfa0c5f74af453845f086773f8f470",
+      "run": 40021871416,
+      "status": "success"
+    }
+  },
+  "nativeDriverOfflineGuards": {
+    "passed": 3,
+    "failed": 0
+  },
+  "verifiedBoundaries": [
+    "explicit member consent",
+    "owner-only approval",
+    "unrelated admin denied",
+    "member isolation",
+    "private notes hidden",
+    "exact attempt replay",
+    "financial and research writer concurrency",
+    "ambiguous research approval rejected",
+    "old published version withdrawal",
+    "revoked advisor denied",
+    "member historical access",
+    "lab rollback preserves previous inventory"
+  ],
+  "notProvenByThisReceipt": [
+    "native Auth/PostgREST",
+    "operational installation",
+    "browser/mobile acceptance",
+    "production release",
+    "Arash acceptance"
+  ]
 }
