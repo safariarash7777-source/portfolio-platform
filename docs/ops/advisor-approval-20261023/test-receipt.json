@@ -1,5 +1,5 @@
 {
-  "status": "technical_native_and_mobile_acceptance_passed_production_pending",
+  "status": "technical_native_mobile_passed_and_production_released",
   "checkedOn": "2026-10-24",
   "sqlSha256": "4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91",
   "consultationTests": {
@@ -38,6 +38,11 @@
       "run": 40024713604,
       "status": "success",
       "allJobs": "success"
+    },
+    "finalCi": {
+      "head": "8488b512a38a72188b18bca34d112354701a9f93",
+      "run": 40026529882,
+      "status": "success"
     }
   },
   "nativeDriverOfflineGuards": {
@@ -59,8 +64,8 @@
     "lab rollback preserves previous inventory"
   ],
   "notProvenByThisReceipt": [
-    "production release on final SHA after final CI",
-    "Arash visual and usability acceptance"
+    "Arash visual and usability acceptance",
+    "authenticated real-owner Production browser flow"
   ],
   "operationalInstallation": {
     "status": "APPLIED",
@@ -127,7 +132,10 @@
     "testTabClosed": true
   },
   "productionRelease": {
-    "status": "PENDING",
-    "gate": "successful final CI for exact final SHA"
+    "status": "READY",
+    "receipt": "release-receipt.json",
+    "mainSha": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+    "deployment": "dpl_869L2ruy6KqAbT9upyqD65aqdU5S",
+    "ciRun": 40026529882
   }
 }
