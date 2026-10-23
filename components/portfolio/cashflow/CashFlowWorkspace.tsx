@@ -7,6 +7,7 @@ import { dateInput } from "@/lib/portfolio/financialInput";
 import { formatJalali, toPersianDigits } from "@/lib/format";
 import CashFlowSummary from "./CashFlowSummary";
 import CashFlowEditor from "./CashFlowEditor";
+import BudgetPanel from "../budget/BudgetPanel";
 import { cashFlowDraft, draftPayload, type CashFlowDraft } from "./draft";
 
 type Period = { startOn: string; endOn: string };
@@ -149,6 +150,7 @@ export default function CashFlowWorkspace({ expectedOwnerId, initialPeriod, init
     {identity !== "checking" && <button type="button" className="btn btn-outline" onClick={() => window.location.reload()}>بازکردن دوبارهٔ صفحه و بررسی نشست</button>}
   </section>;
   return <div className="min-w-0 space-y-6">
+    <nav aria-label="بخش‌های جریان نقد و بودجه" className="flex flex-wrap gap-3"><a className="btn btn-outline" href="#period-budget">بودجهٔ دوره</a><a className="btn btn-outline" href="#cashflow-editor">ثبت برنامه و عملکرد</a></nav>
     <form className="card space-y-4 p-5" aria-label="انتخاب دورهٔ جریان نقد" onSubmit={event => { event.preventDefault(); if (!requestLocked && !reading) void load(selection); }}>
       <h2 className="font-display text-xl font-bold">دورهٔ کدام روزها؟</h2>
       <p className="text-sm leading-7">شروع و پایان با تقویم میلادی؛ هر دو روز در دوره‌اند. حداکثر {toPersianDigits(366)} روز. برای تغییر دوره ابتدا پیش‌نویس را لغو یا ثبت را تعیین تکلیف کنید.</p>
@@ -178,10 +180,11 @@ export default function CashFlowWorkspace({ expectedOwnerId, initialPeriod, init
         {data.history.state === "error" && <button type="button" className="btn btn-outline" disabled={reading || requestLocked} onClick={() => void load(data.period, data.snapshot?.id, "history")}>دوباره خواندن سابقه</button>}
       </section>
       {data.report && <CashFlowSummary report={data.report} />}
+      <BudgetPanel data={data} stale={reading || Boolean(readError)} dirty={dirty} />
       {message && <p role="alert" className="card p-4 text-sm leading-7">{message}</p>}
       {saving && <p role="status">{receipt ? "رسید ثبت دریافت شد؛ در حال بازخوانی همان نسخه هستیم." : "در حال ارسال همان تلاش ثبت؛ هنوز موفقیت تأیید نشده است."}</p>}
       {(uncertain || conflict) && <section className="card space-y-3 p-5"><p className="text-sm leading-7">ویرایش و تغییر دوره قفل است. شناسه، نسخهٔ پایه و محتوای همان درخواست حفظ شده‌اند؛ درخواست تازه‌ای ساخته نمی‌شود.</p>{!conflict && <button type="button" className="btn btn-gold" disabled={saving || reading} onClick={() => void save()}>بررسی دوبارهٔ همین ثبت</button>}<a className="btn btn-outline" href={url(data.period)} target="_blank" rel="noopener noreferrer">بررسی آخرین نسخه در صفحهٔ جدا</a></section>}
-      {draft && <><p className="text-sm leading-7">خلاصهٔ بالا فقط نسخهٔ خوانده‌شده است؛ تغییرات فرم، عدد ذخیره‌شده را عوض نمی‌کند. دورهٔ فرم: <bdi>{toPersianDigits(draft.period.startOn)} — {toPersianDigits(draft.period.endOn)}</bdi>.</p><CashFlowEditor draft={draft} locked={locked} onChange={next => { if (!locked && live.current) { setDraft(next); setDirty(true); setMessage(""); } }} onSave={() => void save()} onCancel={() => { if (!locked && data) { setDraft(cashFlowDraft(data.period, data.snapshot?.payload)); setDirty(false); setMessage(""); } }} /></>}
+      {draft && <section id="cashflow-editor" className="scroll-mt-6 space-y-4"><p className="text-sm leading-7">خلاصهٔ بالا فقط نسخهٔ خوانده‌شده است؛ تغییرات فرم، عدد ذخیره‌شده را عوض نمی‌کند. دورهٔ فرم: <bdi>{toPersianDigits(draft.period.startOn)} — {toPersianDigits(draft.period.endOn)}</bdi>.</p><CashFlowEditor draft={draft} locked={locked} onChange={next => { if (!locked && live.current) { setDraft(next); setDirty(true); setMessage(""); } }} onSave={() => void save()} onCancel={() => { if (!locked && data) { setDraft(cashFlowDraft(data.period, data.snapshot?.payload)); setDirty(false); setMessage(""); } }} /></section>}
     </>}
   </div>;
 }

@@ -1,5 +1,9 @@
 # Arash Digital Platform — Command Center
 
+## بودجه و هدف‌های مالی — در حال پذیرش، ۲۰۲۶-۱۰-۲۳
+
+[بسته اجرایی](ops/member-budget-goals-20261023/DELIVERY.md) روی main پس از PR308 ساخته شد: بودجه از نسخه موجود جریان نقد؛ هدف عمومی پس‌انداز با مبلغ/موعد و پیشرفت اظهارشده منبع‌دار، نسخه و تاریخچه. build/typecheck/lint و core و ۲۲ سناریوی پایگاه مصنوعی موفق‌اند. این رسید آماده‌سازی است؛ نصب عملیاتی/CI/پذیرش native/موبایل/انتشار باید جدا بسته شوند. مسئول ادامه root است؛ کار موجود دوباره ساخته نشده و عامل بازار یا فراخوان مدل فعال نشده است.
+
 ## تحویل فنی جریان نقد — ۲۰۲۶-۱۰-۲۳
 
 PR297 پس از نصب و پذیرش فنی در main `eb15b1d368c39c4ebaf53f0c432a3cae5a34ad55` ادغام شد. head آزموده `fc32fceee77ab5b8f45dac084bb7d89d2d4e2af2`، CI39963120333 موفق و پیش‌نمایش native `dpl_FtHcDeWEoKaFCMjWRYHYZSiuK5km` است. Production روی `dpl_B5HmGQE7fcn2uLboA6UY2JQi3BdB` با همین merge SHA آماده و alias اصلی تأیید شد؛ صفحه مالی مهمان 307 به login و API مهمان 401/AUTH_REQUIRED دارد. [رسید انتشار](ops/cashflow-release-20261023/production-receipt.json). پذیرش مرورگر احرازشده روی Preview native انجام شده؛ پذیرش بصری آرش هنوز جدا و باز است. این تحویل پایان کل مدیریت مالی یا کل محصول نیست.

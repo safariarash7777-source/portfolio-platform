@@ -27,6 +27,18 @@ def fixtures():
     return normalize('\n'.join(source)), normalize('\n'.join(target))
 
 class CorrectionTests(unittest.TestCase):
+    def test_all_inventory_schema_predicates_cover_financial_private_schemas(self):
+        # Literal extraction is offline: never import this operational module.
+        inventory = next(ast.literal_eval(n.value) for n in tree.body
+                         if isinstance(n, ast.Assign)
+                         and any(isinstance(t, ast.Name) and t.id == 'INVENTORY' for t in n.targets))
+        predicates = re.findall(r'\b(?:n\.)?(?:nspname|schemaname)\s+IN\s*\(([^)]+)\)', inventory)
+        self.assertEqual(len(predicates), 11, 'Review every inventory selector when adding a new one')
+        expected = {'public', 'auth', 'storage', 'identity_private', 'cash_flow_private', 'goals_private'}
+        for predicate in predicates:
+            names = re.findall(r"'([^']+)'", predicate)
+            self.assertEqual(set(names), expected)
+            self.assertEqual(len(names), len(expected))
     def test_exact_five_discrepancies(self):
         src, dst = fixtures()
         sql, names = plan(src, dst)

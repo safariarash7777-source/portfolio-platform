@@ -25,7 +25,7 @@ export default async function CashFlowPage({ searchParams }: { searchParams: Pro
       <h1 className="font-display text-2xl font-bold md:text-3xl" style={{ color: "var(--navy-deep)" }}>جریان نقد شخصی</h1>
       <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>چه پولی در این دوره برنامه‌ریزی شده و چه پولی واقعاً جابه‌جا شده است؟ حساب‌ها، دوره و میزان پوشش اطلاعات را خودتان مشخص کنید.</p>
     </header>
-    <nav aria-label="مسیرهای مالی عضو" className="flex flex-wrap gap-3"><Link href="/dashboard" className="btn btn-outline">داشبورد</Link><Link href="/dashboard/holdings" className="btn btn-outline">دارایی و بدهی</Link></nav>
+    <nav aria-label="مسیرهای مالی عضو" className="flex flex-wrap gap-3"><Link href="/dashboard" className="btn btn-outline">داشبورد</Link><Link href="/dashboard/holdings" className="btn btn-outline">دارایی و بدهی</Link><Link href="/dashboard/goals" className="btn btn-outline">هدف‌های مالی</Link><a href="#period-budget" className="btn btn-outline">بودجهٔ دوره</a></nav>
     <p className="text-sm leading-7">این دفتر مستقل از دارایی‌ها و اقساط است؛ قسط یا ماندهٔ بدهی خودکار پرداخت واقعی نمی‌شود. حساب نقدیِ اینجا یک عنوان ثبت‌شده توسط شماست، نه اتصال یا تأیید بانک.</p>
     {unavailable || !ownerId ? <ReadError label="نشستِ جریان نقد؛ ورود شما هنوز بررسی نشده است" code="CASHFLOW_AUTH" />
       : <CashFlowWorkspace key={`${ownerId}:${selected.startOn ?? ""}:${selected.endOn ?? ""}:${selected.version ?? ""}`} expectedOwnerId={ownerId} initialPeriod={{ startOn: selected.startOn ?? "", endOn: selected.endOn ?? "" }} initialVersion={selected.version} />}

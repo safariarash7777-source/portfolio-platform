@@ -364,6 +364,18 @@ function PersonalFinance({ summary }: { summary?: MemberFinanceSummary }) {
       <p className="text-sm leading-7">دفتر مستقلِ برنامه و واقعیت برای حساب‌ها و دورهٔ انتخابی شما؛ نبود ثبت، درآمد یا هزینهٔ صفر را تأیید نمی‌کند. دارایی و قسط خودکار به این دفتر منتقل نمی‌شوند.</p>
       <Link href="/dashboard/cashflow" className="btn btn-outline min-h-11">بازکردن دفتر جریان نقد</Link>
     </div>
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="card p-4 space-y-3">
+        <h3 className="font-bold">بودجهٔ دوره</h3>
+        <p className="text-sm leading-7">برنامهٔ درآمد و هزینه را با ثبت‌های واقعی همان دوره و حساب‌ها مقایسه کنید. دسته‌های هزینه از همان دفتر جریان نقد خوانده می‌شوند.</p>
+        <Link href="/dashboard/cashflow#period-budget" className="btn btn-outline min-h-11">بررسی بودجه و هزینه‌ها</Link>
+      </div>
+      <div className="card p-4 space-y-3">
+        <h3 className="font-bold">هدف‌های مالی من</h3>
+        <p className="text-sm leading-7">برای پس‌انداز خود مبلغ و موعد تعیین کنید؛ مقدار کنارگذاشته‌شده را همراه منبع ثبت و پیشرفت هدف را پیگیری کنید.</p>
+        <Link href="/dashboard/goals" className="btn btn-outline min-h-11">ثبت و پیگیری هدف مالی</Link>
+      </div>
+    </div>
     <p className="text-xs leading-7" style={{ color: "var(--text-3)" }}>مسیرهای دارایی، بدهی و سبد در صفحهٔ دارایی و بدهی باز می‌شوند؛ دفتر جریان نقد دوره و نسخه‌های مستقل دارد. مبلغ یا بازدهی از سوابق قبلی به این ثبت‌ها اضافه نمی‌شود.</p>
   </section>;
 }

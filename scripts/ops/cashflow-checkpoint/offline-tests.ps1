@@ -1,7 +1,7 @@
 $ErrorActionPreference='Stop'
 $stage='setup';$results=[Collections.Generic.List[object]]::new();$master=$null
 $script=Join-Path $PSScriptRoot 'backup-checkpoint.ps1'
-$pin='31f86d429a3609d4f1d235842a4784866591c3b4c8b1fc77c73b92f701a37aef'
+$pin='160870bef69b42014ca26c9dd26c1a3dfe93915bebd99c2e08840312c4e00f6d'
 $stamp='20261020T235959Z'
 $run=Join-Path (Join-Path $PSScriptRoot 'test-output') ([guid]::NewGuid().ToString('N'))
 $source=Join-Path $run 'source';$good=Join-Path $run 'good'
