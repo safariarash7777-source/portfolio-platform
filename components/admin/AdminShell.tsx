@@ -76,6 +76,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "مشتری و درآمد",
     items: [
       { key: "users", label: "کاربران", href: "/admin/users", icon: <Users size={18} /> },
+      { key: "consultation", label: "میز مشاوره و تأیید", href: "/admin/consultation", icon: <ClipboardCheck size={18} /> },
       { key: "portfolio", label: "پرتفوی‌ها", href: "/admin/manage?tab=portfolio", icon: <PieChart size={18} /> },
       { key: "payments", label: "پرداخت‌ها", href: "/admin/manage?tab=payments", icon: <CreditCard size={18} /> },
       { key: "waitlist", label: "لیست انتظار", href: "/admin/manage?tab=waitlist", icon: <Mail size={18} /> },
