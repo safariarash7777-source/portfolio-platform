@@ -181,6 +181,12 @@ try{
   const researchApproval=asyncSql(as('authenticated',O,call(workflow('approve',sourcedSession))));
   const [researchWriteResult,researchApprovalResult]=await Promise.all([researchWriter,researchApproval]);
   check('approval waits research writer then rejects superseded source; no approval appended',()=>{assert.equal(researchWriteResult.code,0,researchWriteResult.err);assert.notEqual(researchApprovalResult.code,0);assert.match(researchApprovalResult.err,/22023/);assert.equal(read(O,relation).sessions.find(s=>s.id===sourcedSession.id).state,'submitted');});
+  check('same-transaction approved and returned research timestamps fail closed',()=>{
+   const tieId=randomUUID(),tieWorkbook=randomUUID();
+   sql(as('authenticated',O,`INSERT INTO public.research_workbook_versions(id,workbook_id,version,title,body) VALUES('${tieId}','${tieWorkbook}',1,'Synthetic tie',${quote(researchBody)}::jsonb);INSERT INTO public.research_workbook_reviews(version_id,decision) VALUES('${tieId}','approved_internal'),('${tieId}','returned')`));
+   const tieDraft=req(O,{...draft.command,sessionKey:randomUUID(),baseVersion:0,body:{...sourcedBody,researchVersionIds:[tieId]}});
+   denied(as('authenticated',O,call(tieDraft)),'22023');
+  });
   check('member revocation blocks advisor next read and all new mutations; member history retained',()=>{
    const input=req(A,{kind:'revoke',relationshipId:relation});send(A,input);assert.equal(send(A,input).reused,true);
    denied(as('authenticated',O,`SELECT public.load_consultation('${relation}','2026-10-01','2026-10-31')`),'42501');
