@@ -24,6 +24,8 @@ def fixtures():
     prefix = 'table|public.media_layout_versions|r;owner=postgres;rls=t;forced=t;acl='
     source.append(prefix+'{postgres=arwdDxtm/postgres}')
     target.append(prefix+'-')
+    source.append('schema|cash_flow_private|postgres;{postgres=UC/postgres}')
+    target.append('schema|cash_flow_private|postgres;-')
     return normalize('\n'.join(source)), normalize('\n'.join(target))
 
 class CorrectionTests(unittest.TestCase):
@@ -39,25 +41,42 @@ class CorrectionTests(unittest.TestCase):
             names = re.findall(r"'([^']+)'", predicate)
             self.assertEqual(set(names), expected)
             self.assertEqual(len(names), len(expected))
-    def test_exact_five_discrepancies(self):
+    def test_exact_six_discrepancies(self):
         src, dst = fixtures()
         sql, names = plan(src, dst)
-        self.assertEqual(len(names), 5)
+        self.assertEqual(len(names), 6)
         self.assertEqual(sql.count('REVOKE ALL ON SEQUENCE'), 4)
         self.assertEqual(sql.count('GRANT USAGE ON SEQUENCE'), 2)
         self.assertIn('GRANT ALL ON TABLE public.media_layout_versions TO postgres;', sql)
+        self.assertIn('GRANT USAGE,CREATE ON SCHEMA cash_flow_private TO postgres;', sql)
         self.assertTrue(sql.startswith('BEGIN;') and sql.endswith('COMMIT;'))
     def test_equal_inventory_is_noop(self):
         src, _ = fixtures()
         self.assertEqual(plan(src, src), ('', []))
-    def test_all_32_subsets_of_known_pairs(self):
+    def test_all_64_subsets_of_known_pairs(self):
         src, dst = fixtures()
         target_by_id = {s.split('|')[1]: s for s in dst}
-        for mask in range(32):
+        for mask in range(64):
             selected = {target_by_id[line.split('|')[1]] if mask & (1 << i) else line
                         for i, line in enumerate(sorted(src))}
             _, names = plan(src, selected)
             self.assertEqual(len(names), mask.bit_count())
+    def test_schema_pair_is_exact_not_general_schema_acl_repair(self):
+        src, dst = fixtures()
+        source_row = 'schema|cash_flow_private|postgres;{postgres=UC/postgres}'
+        target_row = 'schema|cash_flow_private|postgres;-'
+        for changed in [source_row.replace('cash_flow_private', 'goals_private'),
+                        source_row.replace('UC/postgres', 'U/postgres'),
+                        source_row.replace('UC/postgres', 'UC*/postgres'),
+                        source_row.replace('UC/postgres}', 'UC/postgres,authenticated=U/postgres}'),
+                        source_row.replace('|postgres;', '|anon;')]:
+            with self.subTest(source=changed):
+                with self.assertRaises(RuntimeError): plan(src - {source_row} | {changed}, dst)
+        for changed in [target_row.replace('cash_flow_private', 'goals_private'),
+                        'schema|cash_flow_private|postgres;{anon=UC/postgres}',
+                        target_row.replace('|postgres;', '|anon;')]:
+            with self.subTest(target=changed):
+                with self.assertRaises(RuntimeError): plan(src, dst - {target_row} | {changed})
     def test_permission_grantor_owner_rls_and_extra_drift_rejected(self):
         src, dst = fixtures()
         for before, after in [('rwU/postgres','rwU*/postgres'), ('/postgres','/supabase_admin'),

@@ -1,0 +1,22 @@
+{
+  "status": "APPLIED",
+  "sha256": "f4d6479699e5083c1c69ad62ebf51f51ce41ff13dea8a792df9de89c290f744c",
+  "checkpoint": "20261023T154032Z",
+  "startedAt": "2026-10-23T15:59:24.137968+00:00",
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "checks": {
+    "forcedRls": true,
+    "tableOwner": true,
+    "ownerReadPolicy": true,
+    "authenticatedRead": true,
+    "noDirectWrites": true,
+    "noAnonRead": true,
+    "privateSchemaClosed": true,
+    "privateFunctionsClosed": true,
+    "wrapperOwnerAndDefinition": true,
+    "wrapperRestricted": true,
+    "immutableTriggers": true,
+    "emptyAtInstall": true
+  },
+  "finishedAt": "2026-10-23T15:59:24.850828+00:00"
+}
