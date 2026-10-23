@@ -359,7 +359,12 @@ function PersonalFinance({ summary }: { summary?: MemberFinanceSummary }) {
         <Link href="/dashboard/holdings" className="btn btn-outline min-h-11 w-full">بررسی محدودهٔ سبد</Link>
       </div>
     </div>
-    <p className="text-xs leading-7" style={{ color: "var(--text-3)" }}>هر سه مسیر در صفحهٔ موجود دارایی و بدهی باز می‌شوند. ارزش‌گذاری و اطلاعات ناموجود در همان صفحه بررسی می‌شوند؛ مبلغ یا بازدهی از سوابق قبلی به این ثبت‌ها اضافه نمی‌شود.</p>
+    <div className="card p-4 space-y-3">
+      <h3 className="font-bold">درآمد، هزینه و جریان نقد</h3>
+      <p className="text-sm leading-7">دفتر مستقلِ برنامه و واقعیت برای حساب‌ها و دورهٔ انتخابی شما؛ نبود ثبت، درآمد یا هزینهٔ صفر را تأیید نمی‌کند. دارایی و قسط خودکار به این دفتر منتقل نمی‌شوند.</p>
+      <Link href="/dashboard/cashflow" className="btn btn-outline min-h-11">بازکردن دفتر جریان نقد</Link>
+    </div>
+    <p className="text-xs leading-7" style={{ color: "var(--text-3)" }}>مسیرهای دارایی، بدهی و سبد در صفحهٔ دارایی و بدهی باز می‌شوند؛ دفتر جریان نقد دوره و نسخه‌های مستقل دارد. مبلغ یا بازدهی از سوابق قبلی به این ثبت‌ها اضافه نمی‌شود.</p>
   </section>;
 }
 
