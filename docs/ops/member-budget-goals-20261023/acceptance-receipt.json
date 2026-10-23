@@ -1,10 +1,9 @@
 {
   "contractVersion": 1,
-  "status": "PASS_TECHNICAL_ACCEPTANCE_PUBLICATION_PENDING",
+  "status": "PASS_TECHNICAL_ACCEPTANCE_PRODUCTION_PUBLISHED",
   "evidenceBasis": "Observed runtime/browser results reported by root; reviewed SHA and Preview read from reviewed-pin.mjs. Consolidation did not rerun acceptance.",
   "reviewedHead": "73f909bedfcd7950acce2e88e44a43b59a61eafc",
   "preview": "https://portfolio-platform-axcrvm04j-safariarash7777-4463s-projects.vercel.app",
-  "deploymentReportedShortReference": "8Cxc",
   "nativeGoalsApi": {
     "status": "PASS",
     "scenarioCount": 14,
@@ -97,13 +96,20 @@
     "status": "PENDING"
   },
   "productionAcceptance": {
-    "status": "NOT_MERGED_NOT_PUBLISHED_FOR_THIS_PACKAGE",
-    "note": "Authenticated acceptance was on reviewed Preview; encryption Verify, merge and Production publication are pending."
+    "status": "PUBLISHED_READY",
+    "pullRequest": 310,
+    "mergeSha": "c421458b2af20761623ad87c2296cdc6b1bb57ef",
+    "deploymentId": "dpl_22fKC5SLDLGL3zWsvNGLcSiMyZTV",
+    "readyState": "READY",
+    "receipt": "production-receipt.json",
+    "authenticatedProductionRerun": false,
+    "note": "Authenticated mobile/API acceptance used the same application code on reviewed Preview. Production checks here establish deployment/alias and anonymous access controls only."
   },
   "ci": {
-    "runId": 39983119201,
+    "runId": 39985106609,
     "status": "PASS",
-    "head": "73f909bedfcd7950acce2e88e44a43b59a61eafc"
+    "head": "a07120dc05cc7db12f538cda3a0ac5460e9f575d",
+    "note": "Final PR310 documentation/delivery head; authenticated runtime acceptance remains pinned to reviewedHead 73f909b."
   },
   "browserMemberB": {
     "status": "PASS",
@@ -114,14 +120,26 @@
   },
   "browserCleanup": {
     "temporaryAliasRestored": true,
-    "restoredDeploymentReportedShortReference": "B58",
     "restorationIndependentlyQueried": true,
     "restoredDeploymentState": "READY",
     "viewportReset": true,
-    "ownedTab12Closed": true
+    "ownedTab12Closed": true,
+    "restoredDeploymentId": "dpl_B58p21DduMet2HJKpE3fkL8R939T"
   },
   "encryptedBackup": {
-    "status": "CAPTURE_IN_PROGRESS_VERIFY_PENDING",
-    "note": "Capture progressing; encrypted Verify success not yet evidenced."
-  }
+    "status": "PASS",
+    "captureFileCount": 7,
+    "verifyReceipt": "encrypted-backup-verified.json",
+    "checkpoint": "20261023T154032Z",
+    "manifestSha256": "98d6afdce1148e866ffa0e6498f4eb1390ddb1d8da7fcbdb6e8ffea13ac862be",
+    "verifiedAt": "2026-10-23T16:24:19.1381986Z",
+    "verification": "HMAC before decrypt; complete plaintext SHA256/length to memory-only hashing sink",
+    "limitation": "DPAPI recovery depends on the current Windows profile; portable off-device disaster recovery is not claimed."
+  },
+  "runtimeCi": {
+    "runId": 39983119201,
+    "status": "PASS",
+    "head": "73f909bedfcd7950acce2e88e44a43b59a61eafc"
+  },
+  "previewDeploymentId": "dpl_8Cxc7WNC5sJnGvFZjr9XxDT4hB1M"
 }
