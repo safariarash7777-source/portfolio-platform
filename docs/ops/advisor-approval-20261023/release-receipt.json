@@ -1,0 +1,24 @@
+{
+  "status": "PRODUCTION_READY",
+  "featurePr": 312,
+  "acceptedHead": "8488b512a38a72188b18bca34d112354701a9f93",
+  "ciRun": 40026529882,
+  "ci": "success",
+  "mainSha": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+  "deployment": "dpl_869L2ruy6KqAbT9upyqD65aqdU5S",
+  "productionAlias": "https://portfolio-platform-fawn.vercel.app",
+  "aliasShaVerified": true,
+  "guestChecks": {
+    "/admin/consultation": "307 login",
+    "/dashboard/consultation": "307 login",
+    "/api/consultation": "401 AUTH_REQUIRED; private, no-store"
+  },
+  "nativeAcceptance": "native-api-receipt.json",
+  "browserAcceptance": "browser-receipt.json",
+  "ownerBinding": "retirement-owner-receipt.json",
+  "rollbackDeployment": "dpl_FQgnvdENojfgdXHpAdvPEx3DyFXX",
+  "rollbackSha": "353214fa6eb63fa5e0dd3cb9a368a11409832176",
+  "authenticatedProductionBrowser": "not run as real owner; synthetic native flow verified on Preview",
+  "arashAcceptance": "PENDING",
+  "checkedAt": "2026-10-23T21:32:07.372006+00:00"
+}

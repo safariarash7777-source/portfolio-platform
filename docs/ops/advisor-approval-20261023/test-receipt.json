@@ -127,7 +127,10 @@
     "testTabClosed": true
   },
   "productionRelease": {
-    "status": "PENDING",
-    "gate": "successful final CI for exact final SHA"
+    "status": "READY",
+    "receipt": "release-receipt.json",
+    "mainSha": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+    "deployment": "dpl_869L2ruy6KqAbT9upyqD65aqdU5S",
+    "ciRun": 40026529882
   }
 }
