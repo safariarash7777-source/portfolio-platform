@@ -1,0 +1,52 @@
+{
+  "contractVersion": 1,
+  "status": "PASS_PRODUCTION_PUBLICATION",
+  "evidenceBasis": "Deployment, independent alias resolution and anonymous route checks observed by root.",
+  "deploymentId": "dpl_22fKC5SLDLGL3zWsvNGLcSiMyZTV",
+  "gitSha": "c421458b2af20761623ad87c2296cdc6b1bb57ef",
+  "target": "production",
+  "readyState": "READY",
+  "alias": {
+    "host": "portfolio-platform-fawn.vercel.app",
+    "independentlyResolved": true,
+    "deploymentId": "dpl_22fKC5SLDLGL3zWsvNGLcSiMyZTV",
+    "gitSha": "c421458b2af20761623ad87c2296cdc6b1bb57ef",
+    "readyState": "READY"
+  },
+  "anonymousChecks": {
+    "checkedAt": "2026-10-23T16:26:25.269894Z",
+    "goalsPage": {
+      "status": 307,
+      "destination": "/login"
+    },
+    "goalsApi": {
+      "status": 401,
+      "code": "AUTH_REQUIRED"
+    },
+    "cashFlowPage": {
+      "status": 307,
+      "destination": "/login"
+    },
+    "cashFlowApi": {
+      "status": 401,
+      "code": "AUTH_REQUIRED"
+    }
+  },
+  "links": {
+    "goals": "https://portfolio-platform-fawn.vercel.app/dashboard/goals",
+    "cashFlowBudget": "https://portfolio-platform-fawn.vercel.app/dashboard/cashflow#period-budget"
+  },
+  "authenticatedAcceptance": {
+    "environment": "PINNED_NATIVE_PREVIEW",
+    "head": "73f909bedfcd7950acce2e88e44a43b59a61eafc",
+    "productionAuthenticatedRerun": false,
+    "note": "Authenticated mobile/API acceptance used the same application code on reviewed Preview. Production checks here establish deployment/alias and anonymous access controls only."
+  },
+  "encryptedBackup": {
+    "status": "PASS",
+    "receipt": "encrypted-backup-verified.json",
+    "limitation": "DPAPI recovery is bound to the current Windows profile; portable off-device disaster recovery is not claimed."
+  },
+  "ownerVisualAcceptance": "PENDING",
+  "nextStep": "Small pilot with current members and owner usability review, followed by advisor dossier/draft/owner-approval/publication/follow-up workflow."
+}
