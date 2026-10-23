@@ -19,7 +19,7 @@ export default function AboutStrip() {
         <Reveal>
           <div className="max-w-2xl">
             <p className="text-xs font-bold tracking-wide" style={{ color: "var(--gold-ink)" }}>
-              دربارهٔ آرش سفری
+              دربارهٔ آرش صفری
             </p>
             <p
               className="font-display mt-4"
@@ -31,7 +31,7 @@ export default function AboutStrip() {
                 letterSpacing: "-0.01em",
               }}
             >
-              تحلیل بازار و پژوهش سرمایه‌گذاری، با تمرکز بر ایران.
+              تحلیلگر و مشاور سرمایه‌گذاری، با تمرکز بر بازار سرمایهٔ ایران.
               تحلیل با نامِ مشخص منتشر می‌شود و نتیجه‌اش پیگیری‌پذیر است.
             </p>
             <Link href="/about" className="btn btn-outline mt-8">

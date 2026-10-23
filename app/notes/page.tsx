@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "یادداشت روزانهٔ بازار",
   description:
-    "نگاهِ کوتاهِ روزانهٔ آرش سفری به بازار طلا، ارز، بورس و کریپتو — چند بولت و یک جمع‌بندی.",
+    "نگاهِ کوتاهِ روزانهٔ آرش صفری به بازار طلا، ارز، بورس و کریپتو — چند بولت و یک جمع‌بندی.",
 };
 
 export default async function NotesPage() {

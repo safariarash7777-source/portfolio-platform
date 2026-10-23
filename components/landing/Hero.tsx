@@ -132,7 +132,7 @@ export default function Hero() {
             className="anim-rise anim-d1 text-xs sm:text-sm font-bold tracking-wide"
             style={{ color: "var(--gold-light)" }}
           >
-            تحلیل بازار و پژوهش سرمایه‌گذاری · ایران
+            تحلیلگر و مشاور سرمایه‌گذاری
           </p>
 
           <div
@@ -151,7 +151,7 @@ export default function Hero() {
               letterSpacing: "-0.03em",
             }}
           >
-            آرش سفری
+            آرش صفری
           </h1>
 
           {/*

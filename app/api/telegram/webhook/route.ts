@@ -79,7 +79,7 @@ async function handle(text: string, tgUserId: number, chatId: number, firstName:
   if (text === "/start" || text.startsWith("/start ")) {
     // پیام خوش‌آمدگویی + دکمه مینی‌اپ + راهنمای اتصال حساب
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    const welcomeMsg = `👋 سلام ${firstName} عزیز!\n\nبه بات <b>آرش سفری</b> — مشاور سرمایه‌گذاری خوش آمدید.\n\n📊 <b>امکانات مینی‌اپ:</b>\n• قیمت زنده طلا، سکه، ارز و بورس\n• ماشین‌حساب سرمایه‌گذاری\n• تحلیل‌های اقتصادی\n• درخواست مشاوره\n\n🔗 <b>اتصال حساب وب:</b>\nبرای اتصال حساب داشبورد، کد ۶رقمی‌ای را که در داشبورد وب می‌بینید همین‌جا ارسال کنید.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — آخرین اعلامیه‌ها\n/help — راهنما`;
+    const welcomeMsg = `👋 سلام ${firstName} عزیز!\n\nبه بات <b>آرش صفری</b> — مشاور سرمایه‌گذاری خوش آمدید.\n\n📊 <b>امکانات مینی‌اپ:</b>\n• قیمت زنده طلا، سکه، ارز و بورس\n• ماشین‌حساب سرمایه‌گذاری\n• تحلیل‌های اقتصادی\n• درخواست مشاوره\n\n🔗 <b>اتصال حساب وب:</b>\nبرای اتصال حساب داشبورد، کد ۶رقمی‌ای را که در داشبورد وب می‌بینید همین‌جا ارسال کنید.\n\nدستورها:\n/portfolio — آخرین نسخهٔ پرتفوی شما\n/announcements — آخرین اعلامیه‌ها\n/help — راهنما`;
 
     if (token && MINI_APP_URL) {
       await sendMessageWithMiniApp(token, chatId, welcomeMsg, MINI_APP_URL);

@@ -69,7 +69,7 @@ const element = {
             textAlign: "right",
             maxWidth: "900px",
           },
-          children: "\u202Bآرش سفری\u202C",
+          children: "\u202Bآرش صفری\u202C",
         },
       },
       // Subtitle
@@ -85,7 +85,7 @@ const element = {
             textAlign: "right",
             maxWidth: "900px",
           },
-          children: "\u202Bتحلیل بازار و مدیریت ثروت · ایران\u202C",
+          children: "\u202Bتحلیلگر و مشاور سرمایه‌گذاری\u202C",
         },
       },
       // Pills container

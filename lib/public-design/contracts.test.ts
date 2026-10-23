@@ -510,7 +510,7 @@ test("home media remains visible in empty/error, labels old record date separate
   assert.match(html, /مشاهده در اینستاگرام/);
   assert.doesNotMatch(html, /<video|<audio|<iframe/);
   const home = renderToStaticMarkup(component("PublicHome")({}));
-  assert.match(home, /id="public-home-title">آرش سفری/);
+  assert.match(home, /id="public-home-title">آرش صفری/);
   assert.doesNotMatch(
     home,
     /دید روشن‌تر|امروز را از کجا شروع|ورود به نمای بازار/,

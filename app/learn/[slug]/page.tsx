@@ -1,6 +1,5 @@
 // /learn/[slug] — صفحهٔ هر درس (WP-G)
-// قید BRIEF: متن دروس نیاز به تأیید آرش دارد → بدنهٔ درس placeholder است و منتشر نمی‌شود.
-// فقط عنوان، شرح کوتاه (از SPEC)، واژه‌های کلیدی لینک‌دار و «قدم بعدی» نمایش داده می‌شود.
+// متن کامل فقط برای درس منتشرشدهٔ دارای محتوا نمایش داده می‌شود.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -41,7 +40,7 @@ export default async function LessonPage({
   const lesson = getLesson(slug);
   if (!lesson) notFound();
 
-  const next = LESSONS.find((l) => l.order === lesson.order + 1) ?? null;
+  const next = LESSONS.find((l) => l.order > lesson.order && l.published) ?? null;
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
@@ -60,7 +59,31 @@ export default async function LessonPage({
           {lesson.summary}
         </p>
 
-        {/* بدنهٔ درس — placeholder تا تأیید متن توسط آرش (قید BRIEF/SPEC §۶) */}
+        {lesson.published && lesson.content ? <article className="mt-6 space-y-6" aria-label="متن درس">
+          {lesson.content.sections.map(section => <section key={section.heading}>
+            <h2 className="font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>{section.heading}</h2>
+            {section.paragraphs.map(paragraph => <p key={paragraph} className="mt-2 text-sm leading-8" style={{ color: "var(--text-2)" }}>{paragraph}</p>)}
+          </section>)}
+          <section className="card p-5" aria-label="خودآزمایی">
+            <h2 className="font-display text-lg font-bold">خودآزمایی</h2>
+            <p className="mt-2 text-sm leading-8">{lesson.content.selfCheck.question}</p>
+            <details className="mt-3 text-sm leading-8"><summary className="cursor-pointer font-bold">دیدن پاسخ و دلیل</summary><p>{lesson.content.selfCheck.answer}</p></details>
+          </section>
+          <section aria-label="تمرین در ابزارهای مالی">
+            <h2 className="font-display text-lg font-bold">حالا در ابزار تمرین کنید</h2>
+            <ul className="mt-3 space-y-3">{lesson.content.tools.map(tool => <li key={tool.href}>
+              <Link href={tool.href} className="font-bold underline" style={{ color: "var(--navy)" }}>{tool.label}</Link>
+              <p className="mt-1 text-sm leading-7" style={{ color: "var(--text-2)" }}>{tool.description}</p>
+            </li>)}</ul>
+          </section>
+          <section aria-label="منابع درس">
+            <h2 className="font-display text-lg font-bold">منبع و دامنهٔ استفاده</h2>
+            <ul className="mt-3 space-y-3">{lesson.content.sources.map(source => <li key={source.href}>
+              <a href={source.href} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: "var(--navy)" }}>{source.label}</a>
+              <p className="mt-1 text-xs leading-7" style={{ color: "var(--text-2)" }}>{source.scope}</p>
+            </li>)}</ul>
+          </section>
+        </article> : (
         <section
           className="mt-6 rounded-xl px-5 py-6 text-center"
           style={{ background: "var(--surface)", border: "1px dashed var(--line-strong)" }}
@@ -73,6 +96,7 @@ export default async function LessonPage({
             واژه‌های کلیدی همین درس را در واژه‌نامه بخوانید.
           </p>
         </section>
+        )}
 
         {/* واژه‌های کلیدی درس — لینک‌دار به واژه‌نامه */}
         {lesson.glossaryIds.length > 0 ? (
