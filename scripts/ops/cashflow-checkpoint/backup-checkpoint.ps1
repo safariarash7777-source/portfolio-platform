@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $stage='parameters';$master=$null;$macKey=$null
-$approvedHelper='31f86d429a3609d4f1d235842a4784866591c3b4c8b1fc77c73b92f701a37aef'
+$approvedHelper='850822a79dc2e9e7838fd890294bc9e3758a6ef8b8a7e2388efe0cac3c5cbec2'
 $files=@('postgres.dump','globals.private.sql','cron.private.json','source-inventory.private','target-inventory.private','comparison.private.json','receipt.json')
 $utf8=[Text.UTF8Encoding]::new($false,$true)
 $entropy=$utf8.GetBytes('cashflow-backup-checkpoint.v1')

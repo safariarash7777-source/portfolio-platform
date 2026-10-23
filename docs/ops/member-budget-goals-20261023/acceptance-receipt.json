@@ -1,0 +1,127 @@
+{
+  "contractVersion": 1,
+  "status": "PASS_TECHNICAL_ACCEPTANCE_PUBLICATION_PENDING",
+  "evidenceBasis": "Observed runtime/browser results reported by root; reviewed SHA and Preview read from reviewed-pin.mjs. Consolidation did not rerun acceptance.",
+  "reviewedHead": "73f909bedfcd7950acce2e88e44a43b59a61eafc",
+  "preview": "https://portfolio-platform-axcrvm04j-safariarash7777-4463s-projects.vercel.app",
+  "deploymentReportedShortReference": "8Cxc",
+  "nativeGoalsApi": {
+    "status": "PASS",
+    "scenarioCount": 14,
+    "scope": "Owned A/B native sessions; empty reads; anonymous/origin/owner rejection; versioned writes; identical replay; conflicting token/stale base; independent payload readback; historical preservation; cross-owner isolation."
+  },
+  "budgetSeed": {
+    "status": "PASS",
+    "versionCount": 1,
+    "entryCount": 5,
+    "expenseDifferenceToman": -50000,
+    "incomeDifferenceToman": 0,
+    "internalTransferExcluded": true,
+    "independentReadback": true
+  },
+  "independentOwnedLedgerReadback": {
+    "status": "PASS_ROOT_REPORTED",
+    "a": {
+      "goalVersionCount": 3,
+      "cashFlowVersionCount": 1,
+      "cashFlowEntryCount": 5,
+      "otherFinancialLedgersCount": 0
+    },
+    "b": {
+      "goalVersionCount": 1,
+      "cashFlowVersionCount": 0,
+      "otherFinancialLedgersCount": 0
+    }
+  },
+  "browserGoals": {
+    "status": "PASS_REPORTED_SCOPE",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "documentScrollWidth": 375,
+    "actions": [
+      "Changed declared saved amount from 3000000 to 4000000 Toman",
+      "Saved goal list version 3",
+      "Confirmed receipt and independent readback",
+      "Opened version 1: original 2000000 Toman and 20 percent preserved; historical editor disabled",
+      "Opened version 3: 4000000 Toman and 40 percent displayed"
+    ],
+    "screenshot": "goals-mobile.png",
+    "realCustomerDataUsed": false
+  },
+  "browserBudget": {
+    "status": "PASS",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "documentScrollWidth": 375,
+    "plannedExpenseToman": 100000,
+    "actualExpenseToman": 150000,
+    "expenseDifferenceToman": -50000,
+    "incomeDifferenceToman": 0,
+    "internalTransferExcluded": true,
+    "draftIsolation": {
+      "editedActualExpenseToman": 175000,
+      "persistedActualExpenseToman": 150000,
+      "persistedDifferenceToman": -50000,
+      "warningShown": true,
+      "cancelRestored": true,
+      "financialPostSent": false
+    },
+    "screenshot": "budget-mobile.png"
+  },
+  "retirement": {
+    "status": "PASS_OBSERVED_SCOPE",
+    "a": {
+      "retiredAt": "2026-10-23T16:10:05Z",
+      "banned": true,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "historyPreserved": true,
+      "browserReload": "LOGIN",
+      "newLogin": "REJECTED"
+    },
+    "b": {
+      "retiredAt": "2026-10-23T16:11:12Z",
+      "banned": true,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "historyPreserved": true,
+      "browserReload": "LOGIN"
+    },
+    "limitation": "Previously issued JWTs may remain valid until expiry; universal immediate JWT invalidation is not claimed."
+  },
+  "ownerVisualAcceptance": {
+    "status": "PENDING"
+  },
+  "productionAcceptance": {
+    "status": "NOT_MERGED_NOT_PUBLISHED_FOR_THIS_PACKAGE",
+    "note": "Authenticated acceptance was on reviewed Preview; encryption Verify, merge and Production publication are pending."
+  },
+  "ci": {
+    "runId": 39983119201,
+    "status": "PASS",
+    "head": "73f909bedfcd7950acce2e88e44a43b59a61eafc"
+  },
+  "browserMemberB": {
+    "status": "PASS",
+    "visibleGoalCount": 1,
+    "declaredSaved": "نامعلوم",
+    "remaining": "نامعلوم",
+    "progress": "نامعلوم"
+  },
+  "browserCleanup": {
+    "temporaryAliasRestored": true,
+    "restoredDeploymentReportedShortReference": "B58",
+    "restorationIndependentlyQueried": true,
+    "restoredDeploymentState": "READY",
+    "viewportReset": true,
+    "ownedTab12Closed": true
+  },
+  "encryptedBackup": {
+    "status": "CAPTURE_IN_PROGRESS_VERIFY_PENDING",
+    "note": "Capture progressing; encrypted Verify success not yet evidenced."
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "task": "RECOVERY-01",
+  "source": "portfolio-stage-db-1",
+  "startedAt": "20261023T154032Z",
+  "sourceImage": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+  "target": "portfolio-recovery-proof-20261023t154032z",
+  "status": "passed",
+  "productionDdl": false,
+  "sourceCredentialRead": false,
+  "storageBinaryBackup": false,
+  "cronEnabledOnTarget": false,
+  "portsPublished": false,
+  "network": "none",
+  "privateDirectory": "/root/portfolio-recovery-backups/20261023T154032Z",
+  "sourceContainerId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "sourceCronJobsEnabled": "off",
+  "stage": "isolated_restore",
+  "dumpBytes": 2393290348,
+  "dumpSha256": "3a7d29a92e91b86ff1718a5c9c0f0242ea455c0b8a25769dfbe86c142f0204ab",
+  "targetStopped": true,
+  "finishedAt": "2026-10-23T15:57:54.806459+00:00",
+  "reconciliation": {
+    "reason": "Restored snapshot differed only in the exact six independently reviewed ACL pairs; original failed proof retained.",
+    "helperSha256": "850822a79dc2e9e7838fd890294bc9e3758a6ef8b8a7e2388efe0cac3c5cbec2",
+    "originalReceiptSha256": "9f9689b396d95ad442b5ad3997af6c604c3ebcf2706139dbad76bc230e63c852",
+    "sourceSqlMutation": false,
+    "redump": false,
+    "applied": true,
+    "startedAt": "2026-10-23T15:57:30.862421+00:00",
+    "status": "verified"
+  },
+  "comparisonEqual": true,
+  "mismatchCounts": {
+    "sourceOnly": 0,
+    "targetOnly": 0
+  },
+  "inventoryLines": {
+    "source": 1918,
+    "target": 1918
+  },
+  "aclCorrection": {
+    "policy": "observed-six-acls-v1",
+    "objects": [
+      "cash_flow_private",
+      "public.admin_desk_preference_versions_revision_seq",
+      "public.ime_certificate_history_id_seq",
+      "public.ime_physical_trades_id_seq",
+      "public.media_layout_versions_version_seq",
+      "public.media_layout_versions"
+    ],
+    "objectCount": 6,
+    "applied": true,
+    "sourceSqlMutation": false,
+    "preCorrectionComparisonEqual": false,
+    "beforeMismatchCounts": {
+      "sourceOnly": 6,
+      "targetOnly": 6
+    },
+    "status": "verified",
+    "sqlSha256": "fb1fc3df905cefefe3967ea3d414da9b4882ea9996e4a2ee9328e25d467b884e"
+  },
+  "rowcountEqual": true,
+  "identity-idsEqual": true,
+  "policyEqual": true,
+  "tableEqual": true,
+  "functionEqual": true,
+  "defaultaclEqual": true,
+  "extensionEqual": true,
+  "sourceContainerUnchanged": true,
+  "sourceHealthyAfter": true
+}
