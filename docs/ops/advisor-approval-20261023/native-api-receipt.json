@@ -1,0 +1,13 @@
+{
+  "status": "PASS_NATIVE_API",
+  "scenarios": 20,
+  "postAttempts": 17,
+  "sessionVersions": 2,
+  "publishedVersions": 1,
+  "feedbackEvents": 5,
+  "relationshipRevoked": true,
+  "financialLedgerWrites": 0,
+  "browser": "NOT_RUN",
+  "retirement": "PENDING_SEPARATE_HELPER",
+  "checkedAt": "2026-10-23T21:17:57.145Z"
+}

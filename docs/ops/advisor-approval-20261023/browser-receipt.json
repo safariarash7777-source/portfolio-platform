@@ -1,0 +1,44 @@
+{
+  "retirementSessionRedirect": "login",
+  "privateNoteVisibleToMember": false,
+  "checkedAt": "2026-10-23T21:23:30.6025099Z",
+  "previewDeployment": "dpl_FpYDCVqhGxg66yKTEprV3U76VEdq",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "temporaryAliasRestored": "dpl_B58p21DduMet2HJKpE3fkL8R939T",
+  "testTabClosed": true,
+  "testedHead": "b2c46cb21d6519d265de714134cffbc1563bb1f7",
+  "arashAcceptance": "PENDING",
+  "financialLedgerWrites": 0,
+  "status": "PASS",
+  "screenshots": [
+    "mobile-owner-published.png",
+    "mobile-member-followup.png"
+  ],
+  "independentNativeReadback": {
+    "publications": 1,
+    "feedback": 2,
+    "sessions": 1,
+    "events": 3,
+    "receipts": 7,
+    "relationships": 1
+  },
+  "viewportReset": true,
+  "overflow": {
+    "scrollWidth": 375,
+    "clientWidth": 375
+  },
+  "retirementFreshLogin": "rejected",
+  "paths": [
+    "member consent",
+    "owner draft save",
+    "submit",
+    "owner approval without automatic publication",
+    "explicit publication",
+    "member published version",
+    "member viewed",
+    "member reported done"
+  ]
+}

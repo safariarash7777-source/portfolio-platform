@@ -1,0 +1,25 @@
+{
+  "status": "APPLIED",
+  "mode": "source",
+  "sqlSha256": "4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91",
+  "checkpoint": "20261023T204308Z",
+  "checkpointReceiptSha256": "b4e0f2a8e0a84f1709ef76975c52429c8840e22831e7fae1b12b9520558cb55d",
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "encryptedBackupVerification": "external_coordinator_gate_not_attested_here",
+  "existingCatalogUnchanged": true,
+  "catalogBeforeSha256": "dcfd7452243ac37136eaba5ef835d73da9f03c48a4c178d41d714e74020aa382",
+  "catalogAfterSha256": "dcfd7452243ac37136eaba5ef835d73da9f03c48a4c178d41d714e74020aa382",
+  "checks": {
+    "nineTablesForced": true,
+    "directTablesClosed": true,
+    "privateSchemaClosed": true,
+    "privateFunctionsClosed": true,
+    "wrappersRestricted": true,
+    "immutableHistory": true,
+    "emptyOwnerRegistry": true,
+    "emptyRelations": true,
+    "emptySessions": true,
+    "emptyReceipts": true
+  },
+  "finishedAt": "2026-10-23T21:15:33.414974+00:00"
+}
