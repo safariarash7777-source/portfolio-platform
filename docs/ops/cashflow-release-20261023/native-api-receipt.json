@@ -1,0 +1,27 @@
+{
+  "status": "PASS_API_AND_NATIVE_LEDGER",
+  "checkedAt": "2026-10-23T13:56:35.290Z",
+  "head": "fc32fceee77ab5b8f45dac084bb7d89d2d4e2af2",
+  "deployment": "dpl_FtHcDeWEoKaFCMjWRYHYZSiuK5km",
+  "runnerSha256": "065e9537b54f8daa9d94ff2bf03a2754dac67ccd91413a3d739598e892a5378b",
+  "scenarioCount": 14,
+  "negativeAnonymous": "PASS",
+  "negativeOrigin": "PASS_MISSING_AND_WRONG",
+  "negativeOwner": "PASS",
+  "replay": "PASS_NO_DUPLICATE",
+  "revision": "PASS_HISTORY_RETAINED",
+  "partialNull": "PASS",
+  "nativeOctoberCounts": {
+    "a": {
+      "versions": 2,
+      "entries": 10
+    },
+    "b": {
+      "versions": 1,
+      "entries": 2
+    }
+  },
+  "otherFinancialTablesCounts": 0,
+  "browser": "IN_PROGRESS",
+  "retirement": "PENDING"
+}

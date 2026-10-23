@@ -1,0 +1,14 @@
+{
+  "status": "READY_ALIAS_AND_AUTH_GATES_VERIFIED",
+  "head": "eb15b1d368c39c4ebaf53f0c432a3cae5a34ad55",
+  "reviewedPreviewHead": "fc32fceee77ab5b8f45dac084bb7d89d2d4e2af2",
+  "deployment": "dpl_B5HmGQE7fcn2uLboA6UY2JQi3BdB",
+  "target": "production",
+  "alias": "portfolio-platform-fawn.vercel.app",
+  "cashflowAnonymousPageStatus": 307,
+  "cashflowAnonymousApiStatus": 401,
+  "cashflowAnonymousApiCode": "AUTH_REQUIRED",
+  "authenticatedBrowserAcceptance": "PASSED_ON_NATIVE_PREVIEW_SAME_APPLICATION_CHANGE",
+  "ownerVisualAcceptance": "PENDING",
+  "checkedAt": "2026-10-23T14:09:12.6775804Z"
+}

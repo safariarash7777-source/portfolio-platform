@@ -8,7 +8,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $stage='parameters';$master=$null;$macKey=$null
-$approvedHelper='2c07a483ef318a3b381e4b832b0de9a5c3fc874a69d131af2f515e475b84c30b'
+$approvedHelper='31f86d429a3609d4f1d235842a4784866591c3b4c8b1fc77c73b92f701a37aef'
 $files=@('postgres.dump','globals.private.sql','cron.private.json','source-inventory.private','target-inventory.private','comparison.private.json','receipt.json')
 $utf8=[Text.UTF8Encoding]::new($false,$true)
 $entropy=$utf8.GetBytes('cashflow-backup-checkpoint.v1')
@@ -117,7 +117,7 @@ try{
       $header=([ordered]@{version=1;checkpoint=$CheckpointId;helperSha256=$approvedHelper;sourceMode=$sourceMode;name=$entry.name;length=[long]$entry.length;sha256=$entry.sha256}|ConvertTo-Json -Compress)
       $cipherPath=Join-Path $Destination ($entry.name+'.enc')
       if($OfflineFixture){$sourceStream=[IO.File]::OpenRead((Join-Path $FixtureDirectory $entry.name));try{[CheckpointCrypto]::Encrypt($sourceStream,$cipherPath,$header,[long]$entry.length,$entry.sha256,$master)}finally{$sourceStream.Dispose()}}
-      else{$ssh=[CheckpointSsh]::new('python3 -',(RemoteScript 'file' $entry.name),900);try{[CheckpointCrypto]::Encrypt($ssh.Output,$cipherPath,$header,[long]$entry.length,$entry.sha256,$master);$ssh.Complete()}finally{$ssh.Dispose()}}
+      else{$ssh=[CheckpointSsh]::new('python3 -',(RemoteScript 'file' $entry.name),1800);try{[CheckpointCrypto]::Encrypt($ssh.Output,$cipherPath,$header,[long]$entry.length,$entry.sha256,$master);$ssh.Complete()}finally{$ssh.Dispose()}}
       $records+=,[ordered]@{name=$entry.name;length=[long]$entry.length;sha256=$entry.sha256;header=$header;cipherLength=([IO.FileInfo]$cipherPath).Length;cipherSha256=[CheckpointCrypto]::FileHash($cipherPath)}
     }
     $stage='manifest';$manifest=JsonBytes ([ordered]@{version=1;checkpoint=$CheckpointId;helperSha256=$approvedHelper;sourceMode=$sourceMode;files=$records})

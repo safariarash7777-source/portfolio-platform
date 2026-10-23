@@ -1,3 +1,4 @@
 test-output/
 offline-receipt-*.json
 !offline-receipt-20261020.json
+!offline-receipt-20261023.json

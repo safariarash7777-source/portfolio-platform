@@ -1,0 +1,51 @@
+{
+  "status": "PASS_PREVIEW_API_BROWSER_RETIREMENT",
+  "head": "fc32fceee77ab5b8f45dac084bb7d89d2d4e2af2",
+  "deployment": "dpl_FtHcDeWEoKaFCMjWRYHYZSiuK5km",
+  "mobileViewport": {
+    "height": 844,
+    "width": 390
+  },
+  "mobileSave": "PASS",
+  "mobileRevision": "PASS",
+  "historicalVersion": "PASS_READONLY_ORIGINAL_AMOUNT",
+  "accountIsolation": "PASS_B_FOREIGN_VERSION_REJECTED",
+  "nullDisplay": "PASS_B_PARTIAL_AMOUNT_2000000_UNKNOWN_TOTAL",
+  "nativeFinalCounts": {
+    "b": {
+      "entries": 2,
+      "versions": 1
+    },
+    "a": {
+      "entries": 12,
+      "versions": 4
+    }
+  },
+  "retirement": [
+    {
+      "actor": "a",
+      "banned": true,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "activeRefresh": 0,
+      "historyPreserved": true,
+      "checkedAt": "2026-10-23T17:34:09.335317+03:30"
+    },
+    {
+      "actor": "b",
+      "banned": true,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "activeRefresh": 0,
+      "historyPreserved": true,
+      "checkedAt": "2026-10-23T17:34:13.63277+03:30"
+    }
+  ],
+  "existingBrowserSessionAfterRetirement": "REDIRECTED_TO_LOGIN",
+  "freshBrowserSigninAfterRetirement": "REJECTED",
+  "allowedPreviewAlias": "RESTORED_TO_dpl_B58p21DduMet2HJKpE3fkL8R939T",
+  "productionAcceptance": "NOT_YET",
+  "ownerVisualAcceptance": "PENDING",
+  "screenshot": "mobile-cashflow-v2.png",
+  "checkedAt": "2026-10-23T14:05:41.0407297Z"
+}

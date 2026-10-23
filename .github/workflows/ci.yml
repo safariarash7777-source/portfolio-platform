@@ -147,6 +147,9 @@ jobs:
       - name: اعتبارسنجیِ گرامرِ SQL (libpg_query — بدونِ اجرا)
         run: python3 scripts/validate-sql-grammar.py
 
+      - name: Native recovery ACL guard (offline)
+        run: python3 docs/ops/recovery-01/p01-scripts/test_bounded_acl.py
+
   # ── ۴) رفتارِ واقعیِ RLS، گرنت و یکپارچگیِ دیتابیس ─────────────────────────
   # چرا جدا از `quality`: این تنها jobی است که یک Postgres لازم دارد.
   #

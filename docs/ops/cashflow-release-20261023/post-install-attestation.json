@@ -1,0 +1,285 @@
+{
+  "tables": [
+    {
+      "owner": "postgres",
+      "relname": "member_cash_flow_entries",
+      "description": "PF2 one dated planned/actual event; transfer is one row and never inferred from a debt.",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "owner": "postgres",
+      "relname": "member_cash_flow_versions",
+      "description": "PF2 cash-only append-only version; not assets, investment scope, or bank ownership verification.",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    }
+  ],
+  "wrapper": {
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "prosecdef": true,
+    "body_sha256": "3aece0e57d51e879a39d9aebc82cf82b8a43f44cf2fe04f0f5e3f7e75dce17c8",
+    "public_execute": false
+  },
+  "database": "postgres",
+  "policies": [
+    {
+      "roles": [
+        "authenticated"
+      ],
+      "polcmd": "r",
+      "polname": "cash_flow_entry_owner_read",
+      "relname": "member_cash_flow_entries",
+      "polpermissive": true,
+      "check_expression": null,
+      "using_expression": "(EXISTS ( SELECT 1\n   FROM member_cash_flow_versions v\n  WHERE ((v.id = member_cash_flow_entries.version_id) AND (v.user_id = ( SELECT auth.uid() AS uid)))))"
+    },
+    {
+      "roles": [
+        "authenticated"
+      ],
+      "polcmd": "r",
+      "polname": "cash_flow_owner_read",
+      "relname": "member_cash_flow_versions",
+      "polpermissive": true,
+      "check_expression": null,
+      "using_expression": "(user_id = ( SELECT auth.uid() AS uid))"
+    }
+  ],
+  "tableAcl": [
+    {
+      "role": "anon",
+      "relname": "member_cash_flow_entries",
+      "can_delete": false,
+      "can_insert": false,
+      "can_select": false,
+      "can_update": false,
+      "can_trigger": false,
+      "can_truncate": false,
+      "can_reference": false
+    },
+    {
+      "role": "authenticated",
+      "relname": "member_cash_flow_entries",
+      "can_delete": false,
+      "can_insert": false,
+      "can_select": true,
+      "can_update": false,
+      "can_trigger": false,
+      "can_truncate": false,
+      "can_reference": false
+    },
+    {
+      "role": "service_role",
+      "relname": "member_cash_flow_entries",
+      "can_delete": false,
+      "can_insert": false,
+      "can_select": false,
+      "can_update": false,
+      "can_trigger": false,
+      "can_truncate": false,
+      "can_reference": false
+    },
+    {
+      "role": "anon",
+      "relname": "member_cash_flow_versions",
+      "can_delete": false,
+      "can_insert": false,
+      "can_select": false,
+      "can_update": false,
+      "can_trigger": false,
+      "can_truncate": false,
+      "can_reference": false
+    },
+    {
+      "role": "authenticated",
+      "relname": "member_cash_flow_versions",
+      "can_delete": false,
+      "can_insert": false,
+      "can_select": true,
+      "can_update": false,
+      "can_trigger": false,
+      "can_truncate": false,
+      "can_reference": false
+    },
+    {
+      "role": "service_role",
+      "relname": "member_cash_flow_versions",
+      "can_delete": false,
+      "can_insert": false,
+      "can_select": false,
+      "can_update": false,
+      "can_trigger": false,
+      "can_truncate": false,
+      "can_reference": false
+    }
+  ],
+  "triggers": [
+    {
+      "tgname": "no_mutation",
+      "relname": "member_cash_flow_entries",
+      "function": "cash_flow_private.reject_mutation()",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER no_mutation BEFORE DELETE OR UPDATE ON public.member_cash_flow_entries FOR EACH ROW EXECUTE FUNCTION cash_flow_private.reject_mutation()"
+    },
+    {
+      "tgname": "no_truncate",
+      "relname": "member_cash_flow_entries",
+      "function": "cash_flow_private.reject_mutation()",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER no_truncate BEFORE TRUNCATE ON public.member_cash_flow_entries FOR EACH STATEMENT EXECUTE FUNCTION cash_flow_private.reject_mutation()"
+    },
+    {
+      "tgname": "no_mutation",
+      "relname": "member_cash_flow_versions",
+      "function": "cash_flow_private.reject_mutation()",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER no_mutation BEFORE DELETE OR UPDATE ON public.member_cash_flow_versions FOR EACH ROW EXECUTE FUNCTION cash_flow_private.reject_mutation()"
+    },
+    {
+      "tgname": "no_truncate",
+      "relname": "member_cash_flow_versions",
+      "function": "cash_flow_private.reject_mutation()",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER no_truncate BEFORE TRUNCATE ON public.member_cash_flow_versions FOR EACH STATEMENT EXECUTE FUNCTION cash_flow_private.reject_mutation()"
+    }
+  ],
+  "wrapperAcl": [
+    {
+      "role": "anon",
+      "execute": false
+    },
+    {
+      "role": "authenticated",
+      "execute": true
+    },
+    {
+      "role": "service_role",
+      "execute": false
+    }
+  ],
+  "databaseUser": "postgres",
+  "postgresMajor": 17,
+  "privateFunctions": [
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.\"normalize\"(jsonb)",
+      "body_sha256": "683e57e7f071ddd9f1d788e38584d98dc37db2cc738ec4293b911449a4090d25",
+      "client_execute": false,
+      "public_execute": false
+    },
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.amount(jsonb,boolean)",
+      "body_sha256": "5de5d8246d099045bc3bc1012a624e29a04e456ae5312986eba95fc0a24f09c4",
+      "client_execute": false,
+      "public_execute": false
+    },
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.day(jsonb,boolean)",
+      "body_sha256": "e0bf37cdd754b7567ee9e7e307493a04a3cb8f7d9d44b7c567e86e9762c1e64f",
+      "client_execute": false,
+      "public_execute": false
+    },
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.keys(jsonb,text[],text[])",
+      "body_sha256": "28a74c93a76ea7115f34af6a417557cf0cee226b32284c29466c9c36952f5e7d",
+      "client_execute": false,
+      "public_execute": false
+    },
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.record_snapshot(jsonb,text,integer)",
+      "body_sha256": "1361089ceab846fe1f0d557a77fbd39b36e4ebc79ae5f56601838a71ce5386f8",
+      "client_execute": false,
+      "public_execute": false
+    },
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.reject_mutation()",
+      "body_sha256": "28ad2a3ac3ba5c28adb1fba5bd73bfe8bc295f629f93988c7a76b0b1dc5baa58",
+      "client_execute": false,
+      "public_execute": false
+    },
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.source(jsonb)",
+      "body_sha256": "f35f07c4662ad8a4b6756a0b0176bb7ca29fa51d7ba8f06f093552074db52388",
+      "client_execute": false,
+      "public_execute": false
+    },
+    {
+      "owner": "postgres",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "signature": "cash_flow_private.txt(jsonb,integer,boolean)",
+      "body_sha256": "e76003046d0197aadb60600e67047317c7e8b85d98109b6af1c5a93e7e657510",
+      "client_execute": false,
+      "public_execute": false
+    }
+  ],
+  "privateSchemaAcl": [
+    {
+      "role": "anon",
+      "can_use": false,
+      "can_create": false
+    },
+    {
+      "role": "authenticated",
+      "can_use": false,
+      "can_create": false
+    },
+    {
+      "role": "service_role",
+      "can_use": false,
+      "can_create": false
+    }
+  ],
+  "structuralChecks": {
+    "reviewedWrapper": true,
+    "twoSelectPolicies": true,
+    "twoForcedRlsTables": true,
+    "privateSchemaClosed": true,
+    "wrapperEmptySearchPath": true,
+    "selectOnlyAuthenticated": true,
+    "wrapperOnlyAuthenticated": true,
+    "eightPrivateFunctionsClosed": true,
+    "fourEnabledAppendOnlyTriggers": true,
+    "privateFunctionsEmptySearchPath": true
+  }
+}

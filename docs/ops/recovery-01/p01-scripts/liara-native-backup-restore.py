@@ -46,6 +46,55 @@ def normalize_inventory(text):
             raise RuntimeError('quoted_acl_requires_sql_normalization')
         return 'acl={'+','.join(sorted(values))+'}'
     return set(re.sub(r'acl=\{([^}]*)\}',acl,line) for line in text.splitlines() if line)
+def bounded_acl_plan(src, dst):
+    """Accept only exact known ACL pairs. Never infer equivalence or permissions.
+
+    Inputs are the existing strict normalized full inventory sets. Every
+    discrepancy must be allowlisted before any corrective SQL is returned.
+    """
+    pairs = {}
+    for name in ('admin_desk_preference_versions_revision_seq',
+                 'ime_certificate_history_id_seq', 'ime_physical_trades_id_seq',
+                 'media_layout_versions_version_seq'):
+        qualified = 'public.' + name
+        prefix = 'table|' + qualified + '|S;owner=postgres;rls=f;forced=f;acl='
+        use_service = name in ('ime_certificate_history_id_seq', 'ime_physical_trades_id_seq')
+        source_acl = '{postgres=rwU/postgres' + (',service_role=U/postgres' if use_service else '') + '}'
+        target_acl = '{anon=rwU/postgres,authenticated=rwU/postgres,postgres=rwU/postgres,service_role=rwU/postgres}'
+        command = 'REVOKE ALL ON SEQUENCE ' + qualified + ' FROM anon,authenticated,service_role;'
+        if use_service:
+            command += '\nGRANT USAGE ON SEQUENCE ' + qualified + ' TO service_role;'
+        pairs[prefix + source_acl] = (prefix + target_acl, command, qualified)
+    prefix = 'table|public.media_layout_versions|r;owner=postgres;rls=t;forced=t;acl='
+    pairs[prefix+'{postgres=arwdDxtm/postgres}'] = (
+        prefix+'-', 'GRANT ALL ON TABLE public.media_layout_versions TO postgres;',
+        'public.media_layout_versions')
+    source_only, target_only = src-dst, dst-src
+    if not source_only and not target_only:
+        return '', []
+    if not source_only or any(line not in pairs for line in source_only):
+        raise RuntimeError('unrecognized_restore_discrepancy')
+    if {pairs[line][0] for line in source_only} != target_only:
+        raise RuntimeError('unrecognized_restore_acl_pair')
+    selected = [pairs[line] for line in sorted(source_only)]
+    sql_text = "BEGIN;\nSET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='30s';\n"
+    sql_text += '\n'.join(item[1] for item in selected) + '\nCOMMIT;'
+    return sql_text, [item[2] for item in selected]
+
+
+def attest_acl_target(state, source_name, target_name, image, root):
+    """Fail closed before target SQL if ownership/isolation identity drifted."""
+    if (target_name == source_name or not target_name.startswith('portfolio-recovery-proof-')
+        or state.get('Name') != '/' + target_name or state.get('Image') != image
+        or state.get('State', {}).get('Running') is not True
+        or state.get('HostConfig', {}).get('NetworkMode') != 'none'
+        or state.get('HostConfig', {}).get('PortBindings')
+        or state.get('Config', {}).get('Labels', {}).get('portfolio.recovery') != 'isolated-proof'
+        or not any(m.get('Destination') == '/recovery' and m.get('Source') == root
+                   and m.get('RW') is False and m.get('Type') == 'bind'
+                   for m in state.get('Mounts', []))):
+        raise RuntimeError('correction_target_attestation_failed')
+
 # Pure catalog/aggregate inventory; no account/contact/amount/password fields.
 INVENTORY = r"""
 SELECT format('table|%s.%s|%s;owner=%s;rls=%s;forced=%s;acl=%s',
@@ -182,6 +231,33 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
     (ROOT/"target-inventory.private").write_text(target_inventory)
     src=normalize_inventory(source_inventory)
     dst=normalize_inventory(target_inventory)
+    if src != dst:
+        # Archive the original mismatch. Never relabel a failed comparison or
+        # normalize away authorizations; permit only the independently reviewed
+        # five-object correction on this owned isolated target.
+        (ROOT/"comparison-before-correction.private.json").write_text(json.dumps(
+            {"sourceOnly": sorted(src-dst), "targetOnly": sorted(dst-src)}, indent=2))
+        correction_sql, correction_names = bounded_acl_plan(src, dst)
+        if correction_sql:
+            isolated=json.loads(run(["docker","inspect",TARGET]))[0]
+            attest_acl_target(isolated, SOURCE, TARGET, IMAGE, str(ROOT))
+            if sql(TARGET,"SHOW cron.launch_active_jobs;").strip() != "off":
+                raise RuntimeError("correction_cron_not_disabled")
+            (ROOT/"target-inventory-before-correction.private").write_text(target_inventory)
+            receipt["aclCorrection"]={"policy":"observed-five-acls-v1",
+                "objects":correction_names,"sourceSqlMutation":False,
+                "applied":False,"objectCount":len(correction_names),
+                "preCorrectionComparisonEqual":False,
+                "sqlSha256":hashlib.sha256(correction_sql.encode()).hexdigest(),
+                "beforeMismatchCounts":{"sourceOnly":len(src-dst),"targetOnly":len(dst-src)},
+                "status":"started"}
+            save()
+            sql(TARGET,correction_sql,user="postgres")
+            receipt["aclCorrection"]["applied"]=True
+            target_inventory=sql(TARGET,"BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;\n"+INVENTORY+"\nCOMMIT;")
+            (ROOT/"target-inventory.private").write_text(target_inventory)
+            dst=normalize_inventory(target_inventory)
+            receipt["aclCorrection"]["status"]="verified" if src==dst else "comparison_failed"
     diff={"sourceOnly":sorted(src-dst),"targetOnly":sorted(dst-src)}
     (ROOT/"comparison.private.json").write_text(json.dumps(diff,indent=2))
     receipt["inventoryLines"]={"source":len(src),"target":len(dst)}

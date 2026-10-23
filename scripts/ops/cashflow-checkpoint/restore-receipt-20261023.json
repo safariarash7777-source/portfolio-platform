@@ -1,0 +1,60 @@
+{
+  "task": "RECOVERY-01",
+  "source": "portfolio-stage-db-1",
+  "startedAt": "20261023T125904Z",
+  "sourceImage": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+  "target": "portfolio-recovery-proof-20261023t125904z",
+  "status": "passed",
+  "productionDdl": false,
+  "sourceCredentialRead": false,
+  "storageBinaryBackup": false,
+  "cronEnabledOnTarget": false,
+  "portsPublished": false,
+  "network": "none",
+  "privateDirectory": "/root/portfolio-recovery-backups/20261023T125904Z",
+  "sourceContainerId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "sourceCronJobsEnabled": "off",
+  "stage": "isolated_restore",
+  "dumpBytes": 2393066233,
+  "dumpSha256": "e188b943328c5ddad30521ab2f130f5d85bcf34d8e283706cd4434896c2593d0",
+  "aclCorrection": {
+    "policy": "observed-five-acls-v1",
+    "objects": [
+      "public.admin_desk_preference_versions_revision_seq",
+      "public.ime_certificate_history_id_seq",
+      "public.ime_physical_trades_id_seq",
+      "public.media_layout_versions_version_seq",
+      "public.media_layout_versions"
+    ],
+    "sourceSqlMutation": false,
+    "applied": true,
+    "objectCount": 5,
+    "preCorrectionComparisonEqual": false,
+    "sqlSha256": "878b3725a36379966eb215c5206c1922b11c57927cd37c0940b33ef0fb6f26e8",
+    "beforeMismatchCounts": {
+      "sourceOnly": 5,
+      "targetOnly": 5
+    },
+    "status": "verified"
+  },
+  "inventoryLines": {
+    "source": 1848,
+    "target": 1848
+  },
+  "comparisonEqual": true,
+  "mismatchCounts": {
+    "sourceOnly": 0,
+    "targetOnly": 0
+  },
+  "rowcountEqual": true,
+  "identity-idsEqual": true,
+  "policyEqual": true,
+  "tableEqual": true,
+  "functionEqual": true,
+  "defaultaclEqual": true,
+  "extensionEqual": true,
+  "sourceContainerUnchanged": true,
+  "sourceHealthyAfter": true,
+  "targetStopped": true,
+  "finishedAt": "2026-10-23T13:09:53.246982+00:00"
+}

@@ -1,0 +1,1 @@
+{"status":"PASS","checkpoint":"20261023T125904Z","sourceMode":"native-ssh","files":7,"manifestSha256":"99ee70eeea2be0648882d18f5e415ce33170be70c1eca10d73503474597ac14b","verifiedAt":"2026-10-23T13:44:16.4744112Z","verification":"HMAC before decrypt; complete plaintext SHA256/length to memory-only hashing sink"}
