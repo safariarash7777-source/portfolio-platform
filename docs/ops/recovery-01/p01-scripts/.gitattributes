@@ -1,0 +1,2 @@
+# The checkpoint validator pins the exact reviewed helper bytes.
+liara-native-backup-restore.py -text
