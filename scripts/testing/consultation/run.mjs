@@ -101,6 +101,21 @@ try{
    denied(as('authenticated',B,`SELECT public.load_consultation('${relation}','2026-10-01','2026-10-31')`),'42501');
    denied(as('authenticated',A,call(req(A,{kind:'grant',advisorId:O,clientLabel:'changed'}))),'PT409');
   });
+  check('canonical populated holdings debt and cashflow dossier preserve mapping provenance and unknowns',()=>{
+   const holdings=[{position_key:'declared',manual_label:'Synthetic declared asset',symbol:null,asset_class:'other',qty:null,unit:'item',cost_basis:null,as_of:'2026-10-23',title:'Declared title',ownership_pct:50,valuation_mode:'declared',declared_value:1000000,valuation_source:'Synthetic member declaration',valuation_as_of:'2026-10-23',valuation_status:'estimated'},{position_key:'unpriced',manual_label:'Synthetic unpriced asset',symbol:null,asset_class:'other',qty:2.5,unit:'item',cost_basis:null,as_of:'2026-10-23',title:null,ownership_pct:100,valuation_mode:'unpriced',declared_value:null,valuation_source:null,valuation_as_of:null,valuation_status:'missing'}];
+   const debts=[{debt_key:'loan',title:'Synthetic loan',kind:'loan',balance_toman:250000,currency:'IRT',balance_as_of:'2026-10-23',next_installment_toman:10000,next_due_on:'2026-11-01',note:null},{debt_key:'unknown-installment',title:'Synthetic personal debt',kind:'personal',balance_toman:20000,currency:'IRR',balance_as_of:'2026-10-23',next_installment_toman:null,next_due_on:null,note:null}];
+   sql(as('authenticated',A,`SELECT * FROM public.record_member_holdings(${quote(holdings)}::jsonb,NULL,'consultation-holdings',0);SELECT * FROM public.record_member_debts(${quote(debts)}::jsonb,1,'consultation-debts')`));
+   const source={label:'Synthetic member declaration',observedOn:'2026-10-23'};
+   const cash={contractVersion:1,period:{startOn:'2026-10-01',endOn:'2026-10-31'},accountDefinitions:[{accountKey:'cash',label:'Cash'},{accountKey:'bank',label:'Bank'}],scopeAccountKeys:['cash','bank'],opening:{amountToman:null,atStartOn:'2026-10-01',source:null},coverage:{planned:{status:'partial',memberAffirmed:false,source},actual:{status:'complete',memberAffirmed:true,source}},entries:[{entryKey:'actual-income',basis:'actual',kind:'income',accountKey:'bank',amountToman:1000,occurredOn:'2026-10-01',source,category:null,note:null},{entryKey:'planned-expense',basis:'planned',kind:'expense',accountKey:'cash',amountToman:null,occurredOn:null,source:null,category:null,note:null},{entryKey:'transfer',basis:'actual',kind:'transfer',fromAccountKey:'bank',toAccountKey:'cash',amountToman:300,occurredOn:'2026-10-02',source,category:null,note:null}]};
+   sql(as('authenticated',A,`SELECT public.record_member_cash_flow(${quote(cash)}::jsonb,'consultation-cashflow',0)`));
+   const loaded=read(O,relation),d=loaded.dossier;
+   assert.equal(d.holdings.version,2);assert.equal(d.holdings.positions.length,2);assert.equal(d.holdings.debts.length,2);
+   assert.deepEqual(d.holdings.positions[0],{key:'declared',title:'Declared title',quantity:null,unit:'item',ownershipPercent:'50',declaredValueToman:1000000,source:'Synthetic member declaration',asOf:'2026-10-23'});
+   assert.equal(d.holdings.positions[1].quantity,'2.5');assert.equal(d.holdings.positions[1].declaredValueToman,null);assert.equal(d.holdings.positions[1].source,null);
+   assert.equal(d.holdings.debts[0].balanceToman,250000);assert.equal(d.holdings.debts[0].nextInstallmentToman,10000);assert.equal(d.holdings.debts[1].nextDueOn,null);
+   assert.deepEqual(d.cashFlow.payload,{...cash,accountDefinitions:[cash.accountDefinitions[1],cash.accountDefinitions[0]],scopeAccountKeys:['bank','cash']});assert.equal(d.basis.holdingsVersionId,d.holdings.id);assert.equal(d.basis.cashFlowVersionId,d.cashFlow.id);assert.equal(d.goals,null);
+   console.log(JSON.stringify({syntheticDossierFixture:loaded,profile:database}));
+  });
   check('strict direct-RPC keys, actor, empty limitations, bad dates/URL and whitespace validation',()=>{
    const base=body(read(O,relation).dossier.basis);
    const save=b=>req(O,{kind:'save',relationshipId:relation,sessionKey:KEY,baseVersion:0,body:b,privateNote:'PRIVATE_CANARY'});
