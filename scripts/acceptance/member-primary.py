@@ -160,6 +160,17 @@ def run(action, config_path):
             "publicAfter": result.get("publicAfter", {}).get("body")}))
         if result["status"] != "PASS":
             sys.exit(1)
+    elif action == "desk-negative":
+        check(state and state.get("marker") == MARKER, "owned_state_missing")
+        result = remote(config, action, password=state["users"]["B"]["password"],
+            reviewedReleaseSha="0e49f88fd60af829ccb551cb120da96576d5613a")
+        receipt("desk-negative.json", {"at": now(), "origin": ORIGIN, "backend": BACKEND, **result})
+        print(json.dumps({"status": result["status"], "action": action,
+            "anonymousStatus": result["anonymousStatus"], "getStatus": result["getStatus"],
+            "putStatus": result["putStatus"], "ownedRowsBefore": result["ownedPreferenceRowsBefore"],
+            "ownedRowsAfter": result.get("ownedPreferenceRowsAfter")}))
+        if result["status"] != "PASS":
+            sys.exit(1)
     elif action == "api-second-version":
         check(config.get("secondVersionApprovalMarker") == MARKER, "second_version_review_gate_missing")
         check(state and state.get("marker") == MARKER and "firstFinancialAttempt" in state, "owned_first_attempt_missing")
@@ -177,9 +188,13 @@ def run(action, config_path):
             sys.exit(1)
     elif action == "retire":
         check(state and state.get("marker") == MARKER, "owned_state_missing")
+        for name in ("api-first-save.json", "api-second-version.json", "media-negative.json", "desk-negative.json"):
+            evidence = json.loads((PRIVATE / name).read_text(encoding="utf-8"))
+            check(evidence.get("marker") == MARKER and evidence.get("status") == "PASS", "native_acceptance_not_complete")
         outcomes = []
         for actor in ("A", "B"):
-            disabled = remote(config, "disable", actor=actor, password=state["users"][actor]["password"], writeMarker=MARKER)
+            disabled = remote(config, "disable", actor=actor, password=state["users"][actor]["password"],
+                expectedId=state["users"][actor]["id"], writeMarker=MARKER)
             outcomes.append({"actor": actor, **disabled})
         state["retiredAt"] = now()
         state.pop("sessions", None)

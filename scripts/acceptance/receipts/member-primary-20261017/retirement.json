@@ -1,0 +1,43 @@
+{
+  "at": "2026-10-17T18:37:12.589053+00:00",
+  "marker": "member-primary-20261017-01",
+  "outcomes": [
+    {
+      "actor": "A",
+      "id": "0e3e636a-5d5f-49e0-9207-c5cc7c6147ba",
+      "disabled": true,
+      "status": 200,
+      "globalLogoutStatus": 204,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "activeRefresh": 0,
+      "historyUnchanged": true,
+      "historyCounts": {
+        "versions": 2,
+        "positions": 2,
+        "debts": 0,
+        "scopes": 0
+      },
+      "financialHistory": "preserved"
+    },
+    {
+      "actor": "B",
+      "id": "aa8514f2-feda-4f89-ae8c-85019ab7bece",
+      "disabled": true,
+      "status": 200,
+      "globalLogoutStatus": 204,
+      "sessions": 0,
+      "refreshTokens": 0,
+      "activeRefresh": 0,
+      "historyUnchanged": true,
+      "historyCounts": {
+        "versions": 0,
+        "positions": 0,
+        "debts": 0,
+        "scopes": 0
+      },
+      "financialHistory": "preserved"
+    }
+  ],
+  "limitation": "Existing access JWTs can remain valid until expiry; controlled accounts are banned and refresh sessions revoked."
+}
