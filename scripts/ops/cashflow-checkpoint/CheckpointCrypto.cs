@@ -85,7 +85,7 @@ public sealed class CheckpointSsh : IDisposable {
     public Stream Output=>process.StandardOutput.BaseStream;
     public CheckpointSsh(string program,string script,int seconds) {
         var psi=new ProcessStartInfo("ssh.exe"){UseShellExecute=false,CreateNoWindow=true,RedirectStandardInput=true,RedirectStandardOutput=true,RedirectStandardError=true};
-        foreach(var arg in new[]{"-T","-o","BatchMode=yes","-o","StrictHostKeyChecking=yes","-o","ConnectTimeout=15","-o","ConnectionAttempts=1","-o","ServerAliveInterval=15","-o","ServerAliveCountMax=2","-i","C:/Users/Asus/.ssh/codex-liara-portfolio","root@62.60.191.24",program})psi.ArgumentList.Add(arg);
+        foreach(var arg in new[]{"-T","-C","-o","BatchMode=yes","-o","StrictHostKeyChecking=yes","-o","ConnectTimeout=15","-o","ConnectionAttempts=1","-o","ServerAliveInterval=15","-o","ServerAliveCountMax=2","-i","C:/Users/Asus/.ssh/codex-liara-portfolio","root@62.60.191.24",program})psi.ArgumentList.Add(arg);
         process=new Process{StartInfo=psi};process.ErrorDataReceived+=(s,e)=>{};
         if(!process.Start())throw new IOException();process.BeginErrorReadLine();
         deadline=new Timer(_=>{timedOut=true;try{process.Kill(true);}catch{}},null,TimeSpan.FromSeconds(seconds),Timeout.InfiniteTimeSpan);
