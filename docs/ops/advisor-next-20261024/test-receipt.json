@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-24",
+  "baseline": "2d98df6a6f7615438882b0435b2211fcac392e87",
+  "branch": "codex/advisor-next-20261024",
+  "core": {"status": "PASS", "groups": [2019,17,6,5], "failed": 0},
+  "typecheck": {"status": "PASS", "incremental": false},
+  "build": {"status": "PASS", "command": "next build"},
+  "targetedLint": {"status": "PASS", "warnings": 0},
+  "sqlPolicy": {"status": "PASS", "files": 60},
+  "sqlGrammar": {"status": "PASS", "pglast": "8.4", "files": 60, "statements": 1120, "limit": "Known trigger-body parser exclusions remain; new migration bodies parsed"},
+  "secretScan": {"status": "PASS", "files": 1164},
+  "isolatedSql": {
+    "roster": {"status": "PASS", "checks": 24, "receipt": "../../../scripts/testing/consultation-roster/receipt.json"},
+    "replies": {"status": "PASS", "checks": 32, "receipt": "replies-sql-receipt.json"},
+    "replySqlToTypescriptFixtures": {"status": "PASS", "profiles": 2},
+    "rosterSqlToTypescriptFixtures": {"status": "PASS", "profiles": 2},
+    "nativeAuth": false
+  },
+  "initialFailure": {"test": "UI vocabulary", "resolution": "Changed reply helper copy to existing جمع‌بندی vocabulary; scanner unchanged; complete core rerun passed"},
+  "baselineMigrationUnchanged": true,
+  "operationalInstall": "NOT_APPLIED",
+  "nativeAcceptance": "NOT_RUN",
+  "production": "NOT_RELEASED",
+  "humanAcceptance": "OPEN"
+}
