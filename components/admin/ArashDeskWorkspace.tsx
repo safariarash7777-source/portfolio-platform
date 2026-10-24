@@ -19,7 +19,7 @@ import {
   ShieldAlert,
   X,
 } from "lucide-react";
-import IndexTrendChart from "@/components/market/IndexTrendChart";
+import DeskChartContent from "./DeskChartContent";
 import {
   formatCount,
   formatJalali,
@@ -245,31 +245,7 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
       </Empty>
     );
   const chart = (
-    <>
-      <div className={s.chartStage}>
-        {data.chart.state === "ready" ? (
-          <IndexTrendChart series={series} height={220} />
-        ) : (
-          <Empty>
-            {data.chart.reason ?? "تاریخچهٔ شاخص هنوز ثبت نشده است."}
-          </Empty>
-        )}
-      </div>
-      <details className={s.note}>
-        <summary>
-          منبع و زمان تاریخچه · آخرین نقطه:{" "}
-          {data.chart.data
-            .map(
-              (row) =>
-                `${row.faName}: ${toPersianDigits(row.points.at(-1)?.jdate ?? "—")}`,
-            )
-            .join(" · ") || "ثبت نشده"}
-        </summary>
-        منبع: تاریخچهٔ شاخص، یک نقطه به‌ازای پایان هر روز معاملاتی.
-        <br />
-        زمان دریافت تاریخچه ثبت نشده · خواندن صفحه: {stamp(data.readAt)}
-      </details>
-    </>
+    <DeskChartContent read={data.chart} series={series} readAtLabel={stamp(data.readAt)} />
   );
   return (
     <div
@@ -414,10 +390,12 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
               </button>
             }
           >
-            <div className={s.ranges} aria-label="تعداد نقاط نمودار">
+            <div className={s.ranges} role="group" aria-label="تعداد نقاط نمودار">
               {[30, 90, 180].map((n) => (
                 <button
                   key={n}
+                  type="button"
+                  style={{ minHeight: 44 }}
                   aria-pressed={range === n}
                   onClick={() => setRange(n)}
                 >

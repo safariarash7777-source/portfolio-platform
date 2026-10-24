@@ -1,5 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import vm from "node:vm";
+import ts from "typescript";
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { chartWindow, type ArashDeskData } from "./workspace-model";
+import type { IndexSeries } from "../core/indexTrend";
+import { formatCount, toPersianDigits } from "../format";
 import {
   DATA_STATE_LABEL,
   DESK_SECTIONS,
@@ -313,4 +322,74 @@ test("منبعِ در دسترس نبودن، هیچ زمانی ادعا نمی�
   assert.equal(src.state, "unavailable");
   assert.equal(src.observedAt, null);
   assert.equal(src.count, null, "شمارشِ نخوانده null است، نه صفر");
+});
+
+// Offline rendering of the actual admin chart content; no browser or backend.
+const require = createRequire(import.meta.url);
+const chartJs = ts.transpileModule(readFileSync(new URL("../../components/admin/DeskChartContent.tsx", import.meta.url), "utf8"), {
+  compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+function chartPresentation(read: ArashDeskData["chart"], series: IndexSeries[]) {
+  type ChartProps = { series: IndexSeries[]; height: number };
+  type ContentProps = { read: ArashDeskData["chart"]; series: IndexSeries[]; readAtLabel: string };
+  const component = { exports: {} as { default: (props: ContentProps) => React.ReactElement } };
+  const capture: { chart: ChartProps | null } = { chart: null };
+  vm.runInNewContext(chartJs, { module: component, exports: component.exports, require: (name: string) => {
+    if (name.endsWith(".module.css")) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
+    if (name === "@/components/market/IndexTrendChart") return { __esModule: true, default: (props: ChartProps) => {
+      capture.chart = props;
+      return React.createElement("div", { "data-chart": "rendered" });
+    } };
+    return require(name.startsWith("@/") ? `../../${name.slice(2)}` : name);
+  } });
+  return { html: renderToStaticMarkup(React.createElement(component.exports.default, { read, series, readAtLabel: "زمان خواندن آزمون" })), chart: capture.chart };
+}
+
+const indexFixture: IndexSeries[] = [
+  { id: "total", faName: "شاخص کل", points: Array.from({ length: 190 }, (_, i) => ({
+    jdate: `1405/${String(1 + Math.floor(i / 28)).padStart(2, "0")}/${String(i % 28 + 1).padStart(2, "0")}`,
+    value: 1000 + i,
+  })) },
+  { id: "equal_weight", faName: "شاخص هم‌وزن", points: [{ jdate: "1405/07/22", value: 12345.6 }] },
+];
+
+test("admin chart table and canvas receive the exact 30/90/180 point window without rebasing or interpolation", () => {
+  const original = JSON.stringify(indexFixture);
+  for (const limit of [30, 90, 180]) {
+    const series = chartWindow(indexFixture, limit);
+    const shown = chartPresentation({ state: "ready", data: indexFixture, reason: null }, series);
+    assert.ok(shown.chart);
+    assert.equal(shown.chart.series, series);
+    assert.equal(shown.chart.height, 220);
+    assert.equal((shown.html.match(/<tbody>/g) ?? []).length, 2);
+    const rows = [...shown.html.matchAll(/<tbody>([\s\S]*?)<\/tbody>/g)].flatMap(match => [...match[1].matchAll(/<tr>/g)]);
+    assert.equal(rows.length, limit + 1, "sparse second series stays sparse");
+    for (const row of series) for (const point of row.points) {
+      assert.ok(shown.html.includes(`<bdi>${toPersianDigits(point.jdate)}</bdi>`));
+      assert.ok(shown.html.includes(`<bdi>${formatCount(point.value)}</bdi>`));
+    }
+    assert.ok(!shown.html.includes(`<bdi>${formatCount(indexFixture[0].points[0].value)}</bdi>`));
+    assert.match(shown.html, /واحد: شاخص/);
+    assert.match(shown.html, /زمان دریافت تاریخچه ثبت نشده/);
+    assert.match(shown.html, /خواندن صفحه: زمان خواندن آزمون/);
+    assert.match(shown.html, /role="region"[^>]*tabindex="0"/);
+  }
+  assert.equal(JSON.stringify(indexFixture), original);
+});
+
+test("admin chart unavailable and empty reads stay distinct without manufacturing a table or chart", () => {
+  const unavailable = chartPresentation({ state: "unavailable", reason: null, data: [] }, indexFixture);
+  assert.equal(unavailable.chart, null);
+  assert.match(unavailable.html, /role="alert"/);
+  assert.match(unavailable.html, /این وضعیت به معنی نبود داده نیست/);
+  assert.doesNotMatch(unavailable.html, /<table|data-chart="rendered"/);
+  const empty = chartPresentation({ state: "empty", reason: "تاریخچهٔ آزمون خالی است", data: [] }, []);
+  assert.equal(empty.chart, null);
+  assert.match(empty.html, /role="status"/);
+  assert.match(empty.html, /تاریخچهٔ آزمون خالی است/);
+  assert.doesNotMatch(empty.html, /role="alert"|<table/);
+  const noPoints = chartPresentation({ state: "ready", reason: null, data: [] }, []);
+  assert.equal(noPoints.chart, null);
+  assert.match(noPoints.html, /در این بازه نقطه‌ای برای نمایش ثبت نشده است/);
+  assert.doesNotMatch(noPoints.html, /<table|NaN|Infinity/);
 });

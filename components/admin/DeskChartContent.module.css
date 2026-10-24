@@ -1,0 +1,153 @@
+.content {
+  min-width: 0;
+  color: var(--text);
+}
+
+.unit,
+.note {
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.9;
+}
+
+.unit {
+  margin: 0 0 10px;
+}
+
+.stage {
+  display: grid;
+  align-content: center;
+  min-height: 280px;
+  min-width: 0;
+}
+
+/* The existing chart's source paragraph is provided once in the source details. */
+.stage > div > p {
+  display: none;
+}
+
+.empty {
+  padding: 28px 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 2;
+  text-align: center;
+}
+
+.coverage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.coverage > div {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+}
+
+.coverage dt {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.coverage dd {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 1.9;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.coverage strong {
+  color: var(--heading);
+  font-size: 13px;
+}
+
+.dataDetails,
+.source {
+  min-width: 0;
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 2;
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+}
+
+.dataDetails > summary,
+.source > summary {
+  min-height: 44px;
+  padding-block: 10px;
+  cursor: pointer;
+}
+
+.dataDetails > summary {
+  color: var(--navy-ink);
+  font-weight: 650;
+  border-block: 1px solid var(--line);
+}
+
+.dataDetails[open] > summary {
+  margin-bottom: 12px;
+}
+
+.tableScroll {
+  max-width: 100%;
+  max-height: 280px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-top: 12px;
+}
+
+.tableScroll table {
+  width: 100%;
+  min-width: 280px;
+  border-collapse: collapse;
+  color: var(--text-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tableScroll caption {
+  padding: 12px;
+  text-align: start;
+  font-weight: 700;
+  color: var(--heading);
+  background: var(--surface-2);
+}
+
+.tableScroll th,
+.tableScroll td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  text-align: start;
+}
+
+.tableScroll th:last-child,
+.tableScroll td:last-child {
+  text-align: end;
+}
+
+.content summary:focus-visible,
+.tableScroll:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .coverage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
