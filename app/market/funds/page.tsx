@@ -48,7 +48,7 @@ export default async function FundsPage({
   const funds = (ir?.funds ?? []).map((row) => {
     const f = withValidNav(row, null, availability.readAt);
     const r = returns.get(f.id);
-    return r ? { ...f, ret1w: r.w1, ret1m: r.m1, ret3m: r.m3 } : f;
+    return r ? { ...f, ret1w: r.w1, ret1m: r.m1, ret3m: r.m3, returnObservations: r.observations } : f;
   });
   const fetchedAt = availability.families?.funds.receivedAt ?? null;
 
