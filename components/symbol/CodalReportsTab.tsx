@@ -7,9 +7,10 @@
 // ۳) لینک جست‌وجوی رسمی codal.ir همیشه نمایش داده می‌شود — صادقانه و بدون دادهٔ ساختگی.
 // لینک‌ها به codal.ir؛ هیچ واژهٔ تجویزی.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toPersianDigits } from "@/lib/format";
 import CodalSourceLink from "@/components/symbol/CodalSourceLink";
+import { companyReportKinds, discoverCompanyReports, EMPTY_REPORT_FILTER, type CompanyAnnouncement, type CompanyReportFilter } from "@/lib/core/companyReportDiscovery";
 
 export type StoredReport = {
   kind: string;          // «ن-۳۰» | «ن-۱۰» | ...
@@ -18,17 +19,12 @@ export type StoredReport = {
   url: string | null;    // لینک صفحهٔ کدال
 };
 
-type LiveItem = {
-  title: string;
-  kind: string | null;
-  date: string | null;
-  time: string | null;
-  url: string | null;
-};
+type LiveItem = CompanyAnnouncement;
 
 function normalizeLive(j: unknown): LiveItem[] {
   const root = (j && typeof j === "object" ? (j as Record<string, unknown>) : {});
-  const arr = Array.isArray(root.data) ? root.data : [];
+  if (!Array.isArray(root.data)) throw new Error("invalid_stored_announcements");
+  const arr = root.data;
   return arr
     .map((a): LiveItem | null => {
       if (!a || typeof a !== "object") return null;
@@ -50,20 +46,34 @@ export default function CodalReportsTab({
   stored: StoredReport[];
   readFailed?: boolean;
 }) {
-  const [live, setLive] = useState<LiveItem[] | null>(null);
+  const [received, setReceived] = useState<{ symbol: string; items: LiveItem[] } | null>(null);
+  const live = received?.symbol === symbol ? received.items : null;
   const [liveState, setLiveState] = useState<"idle" | "loading" | "error">("idle");
+  const [filter, setFilter] = useState<CompanyReportFilter>(EMPTY_REPORT_FILTER);
+  const activeRequest = useRef({ version: 0 });
+  useEffect(() => {
+    const requests = activeRequest.current;
+    requests.version++;
+    setReceived(null); setLiveState('idle'); setFilter(EMPTY_REPORT_FILTER);
+    // A reused dossier must ignore a late response belonging to the old company.
+    return () => { requests.version++; };
+  }, [symbol]);
+  const discovered = discoverCompanyReports(live ?? [], filter);
+  const kinds = companyReportKinds(live ?? []);
 
   const codalSearchUrl = `https://codal.ir/ReportList.aspx?search&Symbol=${encodeURIComponent(symbol)}`;
 
   const loadAll = () => {
+    const request = ++activeRequest.current.version;
     setLiveState("loading");
     fetch(`/api/codal-list?symbol=${encodeURIComponent(symbol)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((j) => {
-        setLive(normalizeLive(j));
+        if (request !== activeRequest.current.version) return;
+        setReceived({ symbol, items: normalizeLive(j) });
         setLiveState("idle");
       })
-      .catch(() => setLiveState("error"));
+      .catch(() => { if (request === activeRequest.current.version) setLiveState("error"); });
   };
 
   return (
@@ -118,12 +128,62 @@ export default function CodalReportsTab({
           </p>
         )}
         {live !== null && (
-          live.length > 0 ? (
+          live.length > 0 ? (<>
+            <p className="mt-3 text-xs text-muted-foreground">
+              جست‌وجو فقط در همین فهرست دریافت‌شده است: حداکثر ۳۰ اطلاعیهٔ ذخیره‌شده، نه تاریخچهٔ کامل شرکت. تاریخ ارسال با پایان دورهٔ مالی متفاوت است.
+            </p>
+            <fieldset className="mt-3 grid gap-3 sm:grid-cols-3">
+              <legend className="sr-only">فیلتر اطلاعیه‌های دریافت‌شده</legend>
+              <label className="grid gap-1 text-xs">
+                جست‌وجو در عنوان
+                <input type="search" value={filter.query} maxLength={200}
+                  onChange={event => setFilter(previous => ({ ...previous, query: event.target.value }))}
+                  className="min-h-11 min-w-0 rounded-md border border-border bg-background px-3 text-base text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" />
+              </label>
+              <label className="grid gap-1 text-xs">
+                نوع اطلاعیه
+                <select value={filter.kind === null ? "all" : `kind:${filter.kind}`}
+                  onChange={event => setFilter(previous => ({ ...previous, kind: event.target.value === "all" ? null : event.target.value.slice(5) }))}
+                  className="min-h-11 min-w-0 rounded-md border border-border bg-background px-3 text-base text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                  <option value="all">همهٔ انواع</option>
+                  {kinds.map(kind => <option key={kind.value} value={`kind:${kind.value}`}>{kind.label}</option>)}
+                  <option value="kind:">نوع ثبت‌نشده</option>
+                </select>
+              </label>
+              <label className="grid gap-1 text-xs">
+                ثبت تاریخ ارسال
+                <select value={filter.sentDate}
+                  onChange={event => setFilter(previous => ({ ...previous, sentDate: event.target.value as CompanyReportFilter['sentDate'] }))}
+                  className="min-h-11 min-w-0 rounded-md border border-border bg-background px-3 text-base text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                  <option value="all">همهٔ تاریخ‌ها</option>
+                  <option value="present">تاریخ ثبت‌شده</option>
+                  <option value="missing">تاریخ ثبت‌نشده</option>
+                </select>
+              </label>
+            </fieldset>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <p role="status" aria-live="polite" className="text-xs text-muted-foreground">
+                {toPersianDigits(discovered.items.length)} نتیجه از {toPersianDigits(discovered.total)} اطلاعیهٔ دریافت‌شده؛ {toPersianDigits(discovered.excluded.length)} مورد با فیلتر کنار گذاشته شد. تاریخ ارسال {toPersianDigits(discovered.missingSentDate)} مورد ثبت نشده است.
+              </p>
+              <button type="button" onClick={() => setFilter(EMPTY_REPORT_FILTER)}
+                disabled={!filter.query && filter.kind === null && filter.sentDate === 'all'}
+                className="min-h-11 rounded-md border border-border px-3 text-xs hover:bg-muted disabled:opacity-50">
+                پاک‌کردن فیلترها
+              </button>
+            </div>
+            {discovered.excluded.length > 0 && <details className="mt-2 text-xs text-muted-foreground">
+              <summary className="cursor-pointer py-3">علت کنارگذاری از نتیجه</summary>
+              <p>عنوان: {toPersianDigits(discovered.reasonCounts.title_mismatch)}؛ نوع: {toPersianDigits(discovered.reasonCounts.kind_mismatch)}؛ ثبت تاریخ: {toPersianDigits(discovered.reasonCounts.sent_date_presence_mismatch)}. یک اطلاعیه ممکن است چند علت داشته باشد.</p>
+              <ul className="mt-2 space-y-2">{discovered.excluded.map(entry => <li key={entry.index} className="break-words">
+                {entry.row.title} — {entry.reasons.map(reason => ({ title_mismatch: 'عنوان منطبق نیست', kind_mismatch: 'نوع منطبق نیست', sent_date_presence_mismatch: 'وضعیت ثبت تاریخ منطبق نیست' })[reason]).join('؛ ')}
+              </li>)}</ul>
+            </details>}
+            {discovered.items.length > 0 ? (
             <ul className="mt-3 divide-y divide-border">
-              {live.map((a, i) => (
+              {discovered.items.map((a, i) => (
                 <li key={i} className="py-2 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 break-words">
                       {a.kind && (
                         <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{a.kind}</span>
                       )}
@@ -135,8 +195,8 @@ export default function CodalReportsTab({
                   </div>
                 </li>
               ))}
-            </ul>
-          ) : (
+            </ul>) : <p className="mt-3 text-sm">در فهرست دریافت‌شده موردی با این فیلتر پیدا نشد. فیلترها را پاک کنید یا در کدال جست‌وجو کنید.</p>}
+          </>) : (
             <p className="mt-3 text-xs text-muted-foreground">
               هنوز اطلاعیهٔ ذخیره‌شده‌ای برای این نماد نداریم؛ فهرست کامل را در خود کدال ببینید.
             </p>
