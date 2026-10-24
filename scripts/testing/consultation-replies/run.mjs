@@ -138,8 +138,10 @@ try{
    denied(as('authenticated',O,replyCall(input)),'42501');assert.equal(replies(session).readOnlyReason,'not_owner');
    sql(`UPDATE public.consultation_advisors SET is_owner=true WHERE user_id='${O}'`);assert.equal(reply(input).reused,true);
   });
-  const disable=asyncSql(`BEGIN;UPDATE public.consultation_advisors SET enabled=false WHERE user_id='${O}';SELECT pg_sleep(2);COMMIT;`);
-  let registryHeld=false;for(let i=0;i<30;i++){if(Number(sql("SELECT count(*) FROM pg_locks WHERE relation='public.consultation_advisors'::regclass AND mode='RowExclusiveLock' AND granted"))>0){registryHeld=true;break;}await new Promise(r=>setTimeout(r,25));}assert.ok(registryHeld);
+  // Docker attestation/exec roundtrips can outlast a 2s lock window under load.
+  // Keep the lock observable for 10s (below asyncSql's 30s bound); never skip the observation assertion.
+  const disable=asyncSql(`BEGIN;UPDATE public.consultation_advisors SET enabled=false WHERE user_id='${O}';SELECT pg_sleep(10);COMMIT;`);
+  let registryHeld=false;for(let i=0;i<40;i++){if(Number(sql("SELECT count(*) FROM pg_locks WHERE relation='public.consultation_advisors'::regclass AND mode='RowExclusiveLock' AND granted"))>0){registryHeld=true;break;}await new Promise(r=>setTimeout(r,25));}assert.ok(registryHeld);
   const disabledWriter=await asyncSql(as('authenticated',O,replyCall(requestReply(session,q,2))));const disabledResult=await disable;
   check('in-flight owner disable serializes and blocks publication without appending',()=>{assert.equal(disabledResult.code,0,disabledResult.err);assert.ok(disabledWriter.err.includes('42501'),disabledWriter.err);assert.equal(replies(session,A).replies.length,2);});
   sql(`UPDATE public.consultation_advisors SET enabled=true WHERE user_id='${O}'`);
@@ -152,8 +154,8 @@ try{
    assert.ok(sameToken.every(x=>x.code===0),JSON.stringify(sameToken));const receipts=sameToken.map(x=>pick(x.out,'consultation-reply-write.v1'));
    assert.equal(receipts[0].id,receipts[1].id);assert.deepEqual(receipts.map(x=>x.reused).sort(),[false,true]);assert.equal(replies(retrySession).replies.length,1);
   });
-  const withdrawRun=asyncSql(`BEGIN;SELECT pg_advisory_xact_lock(hashtext('consultation_actor'),hashtext('${O}'));SELECT pg_advisory_xact_lock(hashtext('consultation_relation'),hashtext('${relation}'));SELECT pg_sleep(2);SELECT set_config('request.jwt.claims',${quote({sub:O,role:'authenticated'})},true);SET LOCAL ROLE authenticated;${call(req(O,{kind:'withdraw',relationshipId:relation,sessionId:retrySession.id,contentHash:retrySession.contentHash,note:null}))};COMMIT;`);
-  let withdrawHeld=false;for(let i=0;i<20;i++){if(sql(`SELECT EXISTS(SELECT FROM pg_locks WHERE locktype='advisory' AND granted AND classid=hashtext('consultation_relation')::oid AND objid=hashtext('${relation}')::oid)`)==='t'){withdrawHeld=true;break;}await new Promise(r=>setTimeout(r,50));}assert.ok(withdrawHeld);
+  const withdrawRun=asyncSql(`BEGIN;SELECT pg_advisory_xact_lock(hashtext('consultation_actor'),hashtext('${O}'));SELECT pg_advisory_xact_lock(hashtext('consultation_relation'),hashtext('${relation}'));SELECT pg_sleep(10);SELECT set_config('request.jwt.claims',${quote({sub:O,role:'authenticated'})},true);SET LOCAL ROLE authenticated;${call(req(O,{kind:'withdraw',relationshipId:relation,sessionId:retrySession.id,contentHash:retrySession.contentHash,note:null}))};COMMIT;`);
+  let withdrawHeld=false;for(let i=0;i<40;i++){if(sql(`SELECT EXISTS(SELECT FROM pg_locks WHERE locktype='advisory' AND granted AND classid=hashtext('consultation_relation')::oid AND objid=hashtext('${relation}')::oid)`)==='t'){withdrawHeld=true;break;}await new Promise(r=>setTimeout(r,50));}assert.ok(withdrawHeld);
   const afterWithdraw=await asyncSql(as('authenticated',O,replyCall(requestReply(retrySession,retryQuestion,1))));const withdrawal=await withdrawRun;
   check('withdraw and reply serialize; new write blocked while exact historical receipt survives',()=>{assert.equal(withdrawal.code,0,withdrawal.err);assert.ok(afterWithdraw.err.includes('PT409'),afterWithdraw.err);assert.equal(replies(retrySession,A).readOnlyReason,'withdrawn');assert.equal(reply(retryInput).reused,true);});
   check('new draft makes old published session read only; replay is receipt not a fresh write',()=>{
@@ -183,8 +185,8 @@ try{
   });
   // Hold the same relationship lock as revoke; signal readiness from pg_locks before queuing the writer.
   const revokeInput=req(A,{kind:'revoke',relationshipId:relation});
-  const revokeRun=asyncSql(`BEGIN;SELECT pg_advisory_xact_lock(hashtext('consultation_relation'),hashtext('${relation}'));SELECT pg_sleep(2);SELECT set_config('request.jwt.claims',${quote({sub:A,role:'authenticated'})},true);SET LOCAL ROLE authenticated;${call(revokeInput)};COMMIT;`);
-  let held=false;for(let i=0;i<20;i++){if(sql(`SELECT EXISTS(SELECT FROM pg_locks WHERE locktype='advisory' AND granted AND classid=hashtext('consultation_relation')::oid AND objid=hashtext('${relation}')::oid)`)==='t'){held=true;break;}await new Promise(r=>setTimeout(r,50));}assert.ok(held);
+  const revokeRun=asyncSql(`BEGIN;SELECT pg_advisory_xact_lock(hashtext('consultation_relation'),hashtext('${relation}'));SELECT pg_sleep(10);SELECT set_config('request.jwt.claims',${quote({sub:A,role:'authenticated'})},true);SET LOCAL ROLE authenticated;${call(revokeInput)};COMMIT;`);
+  let held=false;for(let i=0;i<40;i++){if(sql(`SELECT EXISTS(SELECT FROM pg_locks WHERE locktype='advisory' AND granted AND classid=hashtext('consultation_relation')::oid AND objid=hashtext('${relation}')::oid)`)==='t'){held=true;break;}await new Promise(r=>setTimeout(r,50));}assert.ok(held);
   const afterRevoke=await asyncSql(as('authenticated',O,replyCall(input)));const revokeResult=await revokeRun;
   check('revoke/write serialize; even exact receipt retry denied after revoke, member keeps history',()=>{
    assert.equal(revokeResult.code,0,revokeResult.err);assert.ok(afterRevoke.err.includes('42501'),afterRevoke.err);
