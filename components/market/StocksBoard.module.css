@@ -1,0 +1,192 @@
+.board {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.snapshot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  line-height: 1.9;
+}
+
+.provenance {
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+
+.metrics {
+  min-width: 0;
+}
+
+.metric,
+.controls,
+.tablePanel,
+.map,
+.stockCard,
+.empty {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.metric {
+  padding: 20px;
+}
+
+.metric > p {
+  overflow-wrap: anywhere;
+}
+
+.controls {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  scroll-margin-top: 110px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+}
+
+.search {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.industry {
+  flex: 0 1 260px;
+  min-width: 0;
+}
+
+.filters input,
+.filters select {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.views button {
+  border-radius: 10px;
+}
+
+.results {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.tablePanel table {
+  min-width: 720px;
+}
+
+.tablePanel thead {
+  background: var(--surface-2);
+}
+
+.tablePanel td {
+  padding: 10px 18px;
+}
+
+.tablePanel tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.tablePanel tbody tr:focus-within {
+  background: var(--surface-2);
+}
+
+.mobileCards {
+  min-width: 0;
+}
+
+.symbolLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.mobileValues {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  line-height: 1.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.disclaimer {
+  padding-inline: 4px;
+}
+
+.board input:focus-visible,
+.board select:focus-visible,
+.board button:focus-visible,
+.board a:focus-visible,
+.empty a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stockCard {
+    transition: box-shadow 160ms ease;
+  }
+
+  .stockCard:hover {
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+@media (max-width: 767px) {
+  .board {
+    gap: 16px;
+  }
+
+  .controls,
+  .metric {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .industry {
+    flex-basis: 100%;
+  }
+
+  .views {
+    width: 100%;
+  }
+
+  .views button {
+    flex: 1;
+    padding-inline: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board *,
+  .board *::before,
+  .board *::after {
+    transition: none;
+    scroll-behavior: auto;
+  }
+}

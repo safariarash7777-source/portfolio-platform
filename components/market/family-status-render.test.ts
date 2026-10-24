@@ -1,3 +1,4 @@
+import "../../scripts/testing/css-module-stub.cjs";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";

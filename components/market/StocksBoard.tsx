@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useUrlState, useUrlBackedText, useCurrentHref } from "@/lib/useUrlState";
 import IndustryDesk from "./IndustryDesk";
+import styles from "./StocksBoard.module.css";
 import {
   STOCK_VIEWS,
   STOCK_SORT_KEYS,
@@ -206,7 +207,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
   // Empty state
   if (stocks.length === 0) {
     return (
-      <div className="card p-6 flex items-start gap-3">
+      <div className={`card p-6 flex items-start gap-3 ${styles.empty}`}>
         <span
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
           style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
@@ -226,12 +227,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.board}>
       {/* ── سربرگ ────────────────────────────────────────────────────────────
           عنوانِ صفحه، تاریخ و وضعیتِ تابلو حالا در پوستهٔ مشترک (`MarketShell`)
           هستند. تکرارشان اینجا یعنی دو عنوان و دو مهرِ زمانی روی یک صفحه — پس
           فقط چیزی می‌ماند که پوسته نمی‌گوید: شمارِ نمادها و راهِ بانکِ داده. */}
-      <p className="text-xs" style={{ color: "var(--text-3)" }}>
+      <p className={`text-xs ${styles.snapshot}`} style={{ color: "var(--text-3)" }}>
         {toPersianDigits(stocks.length)} نماد در آخرین اسنپ‌شات
         {" · "}
         <Link href="/data" className="inline-flex min-h-11 items-center font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)] rounded" style={{ color: "var(--navy-ink)" }}>
@@ -242,12 +243,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
       {/* Indices */}
       {indices && (
         <>
-        <p className="text-xs" style={{ color: "var(--text-3)" }} role="status">
+        <p className={`text-xs ${styles.provenance}`} style={{ color: "var(--text-3)" }} role="status">
           شاخص: {marketQualityLabel(indexAvailability?.state ?? "unknown-time")}
           {" · "}دریافت شاخص: {indexAvailability?.receivedAt ? `${formatJalali(indexAvailability.receivedAt)} · ${formatTehranClock(indexAvailability.receivedAt)}` : "نامعلوم"}
           {" · "}زمان منبع شاخص: {indices.date && indices.time ? toPersianDigits(`${indices.date} ${indices.time}`) : "نامعلوم"}
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${styles.metrics}`}>
           <IndexCard
             label="شاخص کل"
             value={indices.total}
@@ -258,13 +259,13 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
             value={indices.equalWeight}
             change={indices.equalWeightChange}
           />
-          <div className="card p-4">
+          <div className={`card p-4 ${styles.metric}`}>
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش بازار</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
               {indices.marketValue != null && indices.marketValue > 0 ? fmtMarketCap(indices.marketValue) : "—"}
             </p>
           </div>
-          <div className="card p-4">
+          <div className={`card p-4 ${styles.metric}`}>
             <p className="text-xs" style={{ color: "var(--text-3)" }}>ارزش معاملات</p>
             <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
               {indices.value != null && indices.value > 0 ? fmtValue(indices.value) : "—"}
@@ -278,10 +279,13 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
 
 
       {/* Search + Filter */}
-      <div ref={tableAnchorRef} className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <section ref={tableAnchorRef} className={styles.controls} aria-label="فیلتر و نمای تابلوی سهام">
+      <div className={styles.filters}>
+        <label className={`relative ${styles.search}`}>
+          <span className="sr-only">جستجوی نماد یا نام</span>
           <Search
             size={16}
+            aria-hidden="true"
             className="absolute top-1/2 -translate-y-1/2 start-3"
             style={{ color: "var(--text-3)" }}
           />
@@ -298,8 +302,9 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
               color: "var(--text)",
             }}
           />
-        </div>
-        <div className="relative">
+        </label>
+        <label className={`relative ${styles.industry}`}>
+          <span className="sr-only">فیلتر صنعت</span>
           <select
             value={industryFilter}
             onChange={(e) => setIndustryFilter(e.target.value)}
@@ -319,10 +324,11 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
           </select>
           <ChevronDown
             size={14}
+            aria-hidden="true"
             className="absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none"
             style={{ color: "var(--text-3)" }}
           />
-        </div>
+        </label>
       </div>
 
       {/* ── انتخابِ نما ──────────────────────────────────────────────────────
@@ -333,13 +339,12 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
 
           فیلترِ صنعت و جست‌وجو بالای این سوییچ‌اند، پس بینِ نماها **مشترک**
           می‌مانند: نقشه و جدول همیشه یک جامعه را نشان می‌دهند. */}
-      <div role="tablist" aria-label="نمای تابلوی سهام" className="flex flex-wrap gap-1 rounded-lg p-0.5" style={{ background: "var(--surface-2)", width: "fit-content" }}>
+      <div role="group" aria-label="نمای تابلوی سهام" className={styles.views}>
         {VIEWS.map((v) => (
           <button
             key={v.key}
             type="button"
-            role="tab"
-            aria-selected={view === v.key}
+            aria-pressed={view === v.key}
             onClick={() => setView(v.key)}
             className="rounded-md px-4 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--navy-ink)]"
             style={{
@@ -355,17 +360,18 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
       </div>
 
       {/* شمارشِ نتیجه و جامعه — همیشه، در هر نما. */}
-      <p className="text-[11.5px]" style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
+      <p className={`text-[11.5px] ${styles.results}`} style={{ color: "var(--text-3)", fontVariantNumeric: "tabular-nums" }} role="status" aria-live="polite">
         {`${toPersianDigits(filtered.length)} نتیجه از ${toPersianDigits(stocks.length)} نماد`}
         {industryFilter !== "همه" ? ` · صنعت: ${industryFilter}` : ""}
         {search.trim() ? ` · جست‌وجو: «${search.trim()}»` : ""}
       </p>
+      </section>
 
       {view === "map" ? (
         <>
       {/* Heatmap */}
       {mapCells.length > 0 && mapCells.some((c) => c.marketValue && c.marketValue > 0) && (
-        <div className="card p-5">
+        <div className={`card p-5 ${styles.map}`}>
           <h3 className="font-display font-bold mb-1" style={{ color: "var(--heading)" }}>
             نقشهٔ بازار
           </h3>
@@ -428,8 +434,9 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
       ) : (
         <>
       {/* Table — Desktop */}
-      <div className="hidden md:block card overflow-x-auto">
+      <div className={`hidden md:block card overflow-x-auto ${styles.tablePanel}`}>
         <table className="w-full text-sm" style={{ color: "var(--text)" }}>
+          <caption className="sr-only">تابلوی سهام؛ قیمت به تومان، ارزش معاملات و بازار با واحد درج‌شده</caption>
           <thead>
             <tr style={{ borderBottom: "1px solid var(--line)" }}>
               <SortTh label="نماد" sortKey="faName" current={sortKey} dir={sortDir} onSort={toggleSort} />
@@ -494,21 +501,22 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
       </div>
 
       {/* Cards — Mobile */}
-      <div className="md:hidden space-y-3">
+      <div className={`md:hidden space-y-3 ${styles.mobileCards}`}>
         {sorted.slice(0, 50).map((s) => {
           const pct = s.changePercent ?? s.closingChangePercent ?? null;
           return (
-            <div key={s.id} className="card p-4">
+            <div key={s.id} className={`card p-4 ${styles.stockCard}`}>
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <Link
                     href={`/symbol/${encodeURIComponent(s.id)}?from=${encodeURIComponent(from)}`}
-                    className="font-bold text-sm hover:underline"
+                    className={`font-bold text-sm hover:underline ${styles.symbolLink}`}
                     style={{ color: "var(--heading)" }}
                   >
                     {s.id}
                   </Link>
                   {/* C1 — UI نمادمحور: نام کامل حذف شد */}
+                  {s.industry && <p className="text-[11px]" style={{ color: "var(--text-3)" }}>{s.industry}</p>}
                 </div>
                 {pct != null && (
                   <span
@@ -519,7 +527,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
                   </span>
                 )}
               </div>
-              <div className="flex items-center justify-between mt-2 text-xs" style={{ color: "var(--text-2)" }}>
+              <div className={`flex items-center justify-between mt-2 text-xs ${styles.mobileValues}`} style={{ color: "var(--text-2)" }}>
                 <span>{formatToman(s.price)}</span>
                 {s.value != null ? <span>ارزش: {fmtValue(s.value)}</span> : null}
               </div>
@@ -536,7 +544,7 @@ export default function StocksBoard({ stocks, indices, fetchedAt, indexAvailabil
       )}
 
       {/* Disclaimer */}
-      <p className="text-[11px] leading-6" style={{ color: "var(--text-3)" }}>
+      <p className={`text-[11px] leading-6 ${styles.disclaimer}`} style={{ color: "var(--text-3)" }}>
         داده از بازار بورس و فرابورس (منبع رسمی)؛ صرفاً اطلاع‌رسانی و بدون توصیهٔ خرید/فروش.
       </p>
     </div>
@@ -549,7 +557,7 @@ function IndexCard({ label, value, change }: { label: string; value: number | nu
   const pct = indexChangePercent(value, change);
   const Icon = change != null && change >= 0 ? TrendingUp : TrendingDown;
   return (
-    <div className="card p-4">
+    <div className={`card p-4 ${styles.metric}`}>
       <p className="text-xs" style={{ color: "var(--text-3)" }}>{label}</p>
       <p className="font-display font-bold mt-1.5 text-lg" style={{ color: "var(--heading)", fontVariantNumeric: "tabular-nums" }}>
         {value != null && Number.isFinite(value) && value > 0 ? toPersianDigits(Math.round(value).toLocaleString("en-US")).replace(/,/g, "٬") : "—"}
