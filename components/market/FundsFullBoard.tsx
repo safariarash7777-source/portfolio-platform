@@ -11,6 +11,8 @@ import {
 } from "@/lib/core/fundCategory";
 import { FUND_SORT_KEYS, SORT_DIRS, type FundSortKey, type SortDirection } from "@/lib/market-nav";
 import Term from "@/components/learn/Term";
+import FundComparisonPanel from "./FundComparisonPanel";
+import type { FundComparisonRow } from "@/lib/core/fundComparison";
 import { marketQualityLabel, type DataQuality } from "@/lib/market-quality";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import {
@@ -25,7 +27,7 @@ import {
   formatRialAsToman,
 } from "@/lib/format";
 
-export interface FundRow {
+export interface FundRow extends FundComparisonRow {
   id: string;
   faName: string;
   price: number;
@@ -313,6 +315,8 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
         {toPersianDigits(funds.length)} صندوق در آخرین اسنپ‌شات · برای دیدنِ NAV، حباب و تاریخچه روی
         نمادِ صندوق بزنید.
       </p>
+
+      <FundComparisonPanel funds={funds} from={from} />
 
       {/* KPIs */}
       <div className={hasNav ? "grid grid-cols-2 md:grid-cols-5 gap-3" : "grid grid-cols-2 md:grid-cols-4 gap-3"}>
