@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-26T21:23:13.636553+00:00",
+  "source": "public stored-data endpoints; no upstream refresh",
+  "results": [
+    {
+      "path": "/api/codal-list?symbol=%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "httpStatus": 502,
+      "error": "fetch failed"
+    },
+    {
+      "path": "/api/symbol-detail?l18=%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "httpStatus": 502,
+      "error": "fetch failed"
+    }
+  ]
+}

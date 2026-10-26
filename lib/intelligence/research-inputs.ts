@@ -30,10 +30,17 @@ function validJalali(value: string): string | null {
   return `${get('year')}-${get('month')}-${get('day')}` === value.replaceAll('/', '-') ? gregorian : null;
 }
 
+/** Require a complete source clock; Date.parse alone normalizes impossible days. */
+function timestamp(value: unknown): number {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.test(value)) return NaN;
+  const day = new Date(`${value.slice(0, 10)}T00:00:00Z`);
+  if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0, 10) !== value.slice(0, 10)) return NaN;
+  return Date.parse(value);
+}
+
 function publication(row: StoredResearchCodalRow): string | null {
   if (row.published_at != null) {
-    if (!/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(row.published_at)) return null;
-    const at = Date.parse(row.published_at);
+    const at = timestamp(row.published_at);
     return Number.isFinite(at) ? new Date(at).toISOString() : null;
   }
   const key = publishKey(row);
@@ -66,6 +73,10 @@ export function prepareCodalResearchInputs(rows: StoredResearchCodalRow[], symbo
       const publishedAt = publication(selected);
       const periodDate = validJalali(data.period_end)!;
       if (!publishedAt || Date.parse(publishedAt) > now || now - Date.parse(publishedAt) > maxReportAgeMs || Date.parse(`${periodDate}T00:00:00+03:30`) > Date.parse(publishedAt) || now - Date.parse(`${periodDate}T00:00:00+03:30`) > maxReportAgeMs) throw new Error('stale_or_invalid_report_date');
+      const captured = selected.captured_at == null ? null : timestamp(selected.captured_at);
+      // An explicit invalid/future receipt is a contradiction, not missing metadata.
+      // Reject the selected revision rather than reviving a superseded report.
+      if (captured !== null && (!Number.isFinite(captured) || captured > now || captured < Date.parse(publishedAt))) throw new Error('invalid_report_capture_time');
       const sourceUrl = (selected.raw?.announcement_link ?? selected.source_url ?? '').replace(/#pv\d+$/, '');
       // Prior values come only from this disclosure's comparable prior-period columns.
       const prior = s.prior && finite(s.prior.revenue) && finite(s.prior.net_profit) ? { revenue: s.prior.revenue, net_profit: s.prior.net_profit } : null;
@@ -76,8 +87,7 @@ export function prepareCodalResearchInputs(rows: StoredResearchCodalRow[], symbo
       };
       prepareResearchPacket([observation], now, maxReportAgeMs);
       result.observations.push(observation);
-      const captured = selected.captured_at ? Date.parse(selected.captured_at) : NaN;
-      result.provenance.push({ evidence: `E${result.observations.length}`, symbol, reportId: selected.id, sourceUrl, periodEnd: data.period_end, periodMonths: data.period_months, publishedAt, capturedAt: Number.isFinite(captured) && captured <= now ? new Date(captured).toISOString() : null, fetchedAt: new Date(now).toISOString(), unit: 'میلیون ریال', scope: 'company' });
+      result.provenance.push({ evidence: `E${result.observations.length}`, symbol, reportId: selected.id, sourceUrl, periodEnd: data.period_end, periodMonths: data.period_months, publishedAt, capturedAt: captured === null ? null : new Date(captured).toISOString(), fetchedAt: new Date(now).toISOString(), unit: 'میلیون ریال', scope: 'company' });
     } catch (error) {
       const message = error instanceof Error ? error.message : '';
       result.excluded.push({ symbol, reason: /^[a-z_]+$/.test(message) ? message : 'invalid_stored_report' });
