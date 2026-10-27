@@ -1,0 +1,57 @@
+name: Restore existing backend VM
+
+# Routine restoration only: exact existing target, OFF -> start. No force/reboot.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Inspect first; start only the existing powered-off backend
+        type: choice
+        options:
+          - inspect
+          - start-existing-backend
+        default: inspect
+        required: true
+      expected_sha:
+        description: Full reviewed main commit SHA
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: backend-vm-recovery
+  cancel-in-progress: false
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Require reviewed main commit
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check existing target and record bounded recovery
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+          RECOVERY_MODE: ${{ inputs.mode }}
+        run: |
+          case "$RECOVERY_MODE" in
+            inspect) node scripts/ops/liara-backend-recovery.mjs --inspect ;;
+            start-existing-backend) node scripts/ops/liara-backend-recovery.mjs --start-existing ;;
+            *) exit 1 ;;
+          esac
+      - name: Preserve recovery intent and readback
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-recovery-receipt
+          path: backend-recovery-receipt.json
+          if-no-files-found: error
+          retention-days: 30
