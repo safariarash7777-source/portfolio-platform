@@ -1,5 +1,11 @@
 # Arash Digital Platform — Command Center
 
+## ادامهٔ پژوهش — ۲۷ اکتبر ۲۰۲۶؛ دسترسی و رله
+
+[پایش واقعی رله](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40475246990) در ۱۲:۱۱ تا ۱۲:۱۲ تهران موفق شد: healthz و debug gate پاسخ معتبر؛ شمار درخواست process از۶۵۰۷ به۶۵۰۸ رسید. این شاهد سلامت ذخیره/سهمیه حساب یا نسخه دقیق نصب نیست. خواندن عمومی کدال و جزئیات فولاد همچنان۵۰۲/fetch failed است. [رسید دسترسی و پایش](ops/research-pilot-20261026/access-followup-20261027.json).
+
+آرش اعلام کرد Hermes روی لپ‌تاپ باز است؛ محیط این جلسه هنوز ابری، فاقد اتصال لپ‌تاپ/PortfolioResearch و credential binding است. قفل/intent تغییر نکرده است. مسیر مستقل root/runtime: توسعه محدود همان پایش GitHub برای رسید پالایش‌شدهٔ داده/ذخیره و خطای TLS پایگاه با اعتبارنامه موجود؛ بدون نصب رله، دریافت بالادست یا زمان‌بند تازه. مالک فایل workflow و script متخصص runtime، root مسئول بازبینی و ادغام؛ ورودی debug فقط‌خواندنی، پذیرش عدم نشت اطلاعات/عدم نوشتن و سپس رسید واقعی است.
+
 ## پایلوت پژوهش — اجرای ۲۶ اکتبر ۲۰۲۶؛ باز
 
 main تازه `2d98df6a6f7615438882b0435b2211fcac392e87` و alias اصلی Vercel در همین نوبت تطبیق داده شدند: `dpl_D9BxXudCEj7bN73iVtCv9grx6rvY`، Production، READY، SHA یکسان. رسیدهای نصب ۲۳ اکتبر سابقه‌اند؛ schema و runtime امروز هنوز مستقل خوانده نشده‌اند. PRهای۳۱۴–۳۱۶ و کارهای عضو/صندوق/شرکت حفظ می‌شوند. هزینه با [PR317](https://github.com/safariarash7777-source/portfolio-platform/pull/317) هماهنگ است؛ مبلغ حساب و مصرف امروز نامعلوم‌اند.

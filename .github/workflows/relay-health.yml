@@ -106,6 +106,21 @@ jobs:
           console.log('Per-process spacing verified; replica count and external key users remain separate checks.');
           NODE
 
+      - name: Single passive health and storage receipt
+        if: always()
+        env:
+          RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
+        run: node scripts/ops/relay-health-receipt.mjs
+
+      - name: Preserve sanitized receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relay-health-receipt
+          path: relay-health-receipt.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: گزارش
         if: always()
         env:
