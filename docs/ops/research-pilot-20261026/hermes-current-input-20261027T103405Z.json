@@ -1,0 +1,66 @@
+{
+  "checkedAt": "2026-10-27T10:34:05.328Z",
+  "modelCalled": false,
+  "appendCalled": false,
+  "sourceReadAt": "2026-10-27T14:04:08.870817+03:30",
+  "collectorAt": "2026-10-26T02:31:15.886+03:30",
+  "collectorAgeMs": 127972494,
+  "issuers": 8,
+  "eligible": 6,
+  "excluded": [
+    "ambiguous_report_scope",
+    "ambiguous_report_scope"
+  ],
+  "requestDigest": "db78435f0b65d530b8e2734dbbc30159e2e42abc7fbb94e013cd7eff73a714a0",
+  "requestContract": "source-bound-research-v1",
+  "sources": [
+    {
+      "reportId": 7546,
+      "publishedAt": "2026-07-28T14:20:49Z",
+      "capturedAt": "2026-09-05T02:10:40.531Z"
+    },
+    {
+      "reportId": 10935,
+      "publishedAt": "2026-10-13T15:37:43Z",
+      "capturedAt": "2026-10-13T16:37:38.653Z"
+    },
+    {
+      "reportId": 917,
+      "publishedAt": "2026-07-21T18:22:24Z",
+      "capturedAt": "2026-07-23T02:10:33.466Z"
+    },
+    {
+      "reportId": 10841,
+      "publishedAt": "2026-09-05T07:41:12Z",
+      "capturedAt": "2026-10-13T01:37:51.914Z"
+    },
+    {
+      "reportId": 2486,
+      "publishedAt": "2026-05-18T13:29:06Z",
+      "capturedAt": "2026-08-01T14:11:10.623Z"
+    },
+    {
+      "reportId": 583,
+      "publishedAt": "2026-07-20T10:48:28Z",
+      "capturedAt": "2026-07-20T11:11:17.007Z"
+    }
+  ],
+  "status": "input_inspected_only",
+  "inferenceReadiness": "not_established; collector freshness and historical identity migration require review",
+  "integrity": {
+    "state.json": {
+      "sha256": "a3ad441f7f62261f8b39af71d90a8b69dd6e75b9e2ab5ece74c83f55061c7eae",
+      "unchanged": true
+    },
+    "worker.lock": {
+      "sha256": "93cc5ed3ab9697dded96513a3787b1f9bb50fe8b64b5876e4e7f3b144f0a06da",
+      "unchanged": true
+    },
+    "last-run.json": {
+      "sha256": "a6b7cbf4ec193b13d37717521a87cc01738801e36c3c6051af33691de4060f8f",
+      "unchanged": true
+    }
+  },
+  "codeBaseSHA": "3acbab90d101620591f44ee9967adbac123d4a28",
+  "policyFileSHA256": "2d24c7dde1579422b83649910394a8e221c01d9faee5751db6f20e536231b3ff"
+}
