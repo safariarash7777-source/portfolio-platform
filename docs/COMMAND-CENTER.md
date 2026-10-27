@@ -1,5 +1,13 @@
 # Arash Digital Platform — Command Center
 
+## بازیابی روشنایی سرور؛ مسیر داده هنوز بسته — ۲۷ اکتبر ۲۰۲۶، ۱۳:۰۰ تهران
+
+PR321 با CI40480108549 موفق در main `03ac31d` ادغام شد. بررسی فقط‌خواندنی40480749416 همان ماشین خاموش و آخرین عملیات SUCCEEDED را یافت. [اجرای بازیابی40481175366](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40481175366) فقط یک PATCH start فرستاد: HTTP200/accepted، readback فوری هنوزOFF؛ نتیجه صادقانه outcome_requires_review و exit1 شد. هیچ retry انجام نشد. [خواندن مستقل40481243686](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40481243686) در09:30:13UTC ماشین را POWERED_ON یافت. [intent/پاسخ](ops/research-pilot-20261026/backend-start-20261027.json)، [رسید روشن‌شدن](ops/research-pilot-20261026/backend-powered-on-20261027.json). علت خاموش‌شدن اولیه نامعلوم است.
+
+[رسید پس از روشن‌شدن](ops/research-pilot-20261026/relay-after-backend-start-20261027.json) از40481249803 نشان داد backend از connect-timeout به HTTP502 رسیده است؛ خطای سرویس داخلی هنوز رفع نشده. موفقیت workflow قدیمی با HTTP502 یک نقص گیت است، نه سلامت backend؛ شرط non2xx اصلاح می‌شود. storage ثبت‌شده در این نمونه متعلق به چرخه پیش از روشن‌شدن است و شاهد پس از بازیابی محسوب نمی‌شود. [خواندن فولاد](ops/research-pilot-20261026/foolad-read-after-start-20261027.json): APIها502، SSR200 اما readFailed=true و N10/N30null؛ صفر گزارش موجود نتیجه‌گیری نمی‌شود.
+
+دسترسی مدیریتی لیارا امکان روشن‌کردن را داد، اما این محیط اتصال guest SSH/کنسول یا لپ‌تاپ ندارد. گام بعد با مجری محلی: [تحویل دقیق Hermes و سرویس‌های سرور](ops/research-pilot-20261026/LOCAL-HERMES-HANDOFF.fa.md). اول علت سرویس‌های داخل VPS و مسیر DB خوانده و همان مورد اصلاح شود؛ سپس outcome قبلی worker تطبیق و بازیابی کنترل‌شده انجام شود. قفل/ledger لپ‌تاپ دست‌نخورده‌اند. پرونده معتبر فولاد، ثبت روی میز آرش و پنج شرکت هنوز تحویل نشده‌اند؛ root مسئول ادامه پس از رسید دسترسی است. هیچ داده مالی یا موفقیت ساختگی جای آن‌ها ننشسته است.
+
 ## علت توقف backend — ۲۷ اکتبر ۲۰۲۶، ۱۲:۴۲ تهران
 
 [خواندن رسمی لیارا](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40479020782) روی main `916a2ef` با HTTP200 دقیقاً یک `arsadata-backend` یافت: state=CREATED و power=POWERED_OFF. [رسید](ops/research-pilot-20261026/backend-vm-20261027.json). این وضعیت امروز است؛ رسید روشن‌بودن۲۰اکتبر جای آن را نمی‌گیرد. خاموش‌بودن VPS با timeout backend، شکست ذخیره رله و۵۰۲خواندن فولاد منطبق است؛ علت/عامل خاموشی هنوز اثبات نشده.
