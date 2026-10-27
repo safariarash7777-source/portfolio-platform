@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "read_only_reconciliation_evidence",
+  "coordinator": {
+    "threadId": "01a17cdc-cf6b-7b82-882f-e5d04e837353",
+    "hostId": "local"
+  },
+  "checkedAt": "2026-10-27T10:19:44.638Z",
+  "codeSHA": "310125a7a58b2f9c17d4baeaaee94f9ce42dd098",
+  "task": "Portfolio-Research-Hermes",
+  "scheduledCodeSHA": "9d54b9199ab11c3980201612251918993990e225",
+  "scheduledLastResult": 1,
+  "ledger": {
+    "attemptCount": 41,
+    "pendingWithProvenance": 0,
+    "version": 2,
+    "pendingReady": 0,
+    "storedHistorical": 29,
+    "pendingStarted": 1,
+    "pendingFailed": 12,
+    "pendingWithDraft": 0
+  },
+  "reconciliation": {
+    "pending": 13,
+    "stored": 0,
+    "modelCalled": false,
+    "unknown": 0,
+    "absent": 13,
+    "mode": "read_only_reconciliation",
+    "exitCode": 0,
+    "appendCalled": false
+  },
+  "integrity": {
+    "beforeAfterUnchanged": {
+      "state.json": true,
+      "last-run.json": true,
+      "worker.lock": true
+    },
+    "hashesCapturedAfterDiagnostic": {
+      "state.json": "a3ad441f7f62261f8b39af71d90a8b69dd6e75b9e2ab5ece74c83f55061c7eae",
+      "last-run.json": "a6b7cbf4ec193b13d37717521a87cc01738801e36c3c6051af33691de4060f8f",
+      "worker.lock": "93cc5ed3ab9697dded96513a3787b1f9bb50fe8b64b5876e4e7f3b144f0a06da"
+    }
+  },
+  "runtimeObservation": {
+    "researchWorkerObserved": false,
+    "overlapDuringDiagnostic": "no worker observed; diagnostic does not acquire or remove lock",
+    "lockReferencedProcessExists": false
+  },
+  "changes": {
+    "runtimeInstalled": false,
+    "ledger": false,
+    "database": false,
+    "task": false,
+    "lock": false
+  },
+  "recovery": {
+    "status": "held_for_review",
+    "sameInputNonRepeat": "not_live_verified",
+    "oldModelOutcome": "unknown",
+    "oldModelCost": "unknown",
+    "controlledRunPerformed": false,
+    "reason": "Absent destination records do not establish whether prior inference ran. Pending entries have no saved draft/provenance."
+  },
+  "cost": {
+    "data": "unknown",
+    "modelInvocationsInDiagnostic": 0,
+    "historicalModel": "unknown",
+    "infrastructure": "unknown"
+  },
+  "nextOwner": "local coordinator after ownership handoff; server/Folad remains with existing durable executor",
+  "source": "Existing reviewed --reconcile worker, existing restricted bridge; SHA256 before/after comparison in same command"
+}

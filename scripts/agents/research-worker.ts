@@ -3,13 +3,13 @@ import { execFile } from 'node:child_process';
 import { reconcileResearchState } from './research-reconcile';
 import { readFile, writeFile, rename, mkdir, open, unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { prepareResearchPacket, type ResearchDraft } from '../../lib/intelligence/research-agent';
+import { prepareResearchPacket, RESEARCH_INSTRUCTIONS, type ResearchDraft } from '../../lib/intelligence/research-agent';
 import { prepareCodalResearchInputs, DEFAULT_REPORT_MAX_AGE_MS, type StoredResearchCodalRow, type ResearchProvenance } from '../../lib/intelligence/research-inputs';
 import { inferResearch, RESEARCH_MODEL } from './hermes-inference';
-import { researchRunDigest, inferenceAdmission } from '../../lib/intelligence/research-policy';
+import { researchRequestDigest, inferenceAdmission, requestIdentityAdmission, REQUEST_IDENTITY_VERSION } from '../../lib/intelligence/research-policy';
 
 type Entry = { at: string; status: 'started' | 'ready' | 'stored' | 'failed'; draft?: ResearchDraft; provenance?: ResearchProvenance[]; id?: string };
-type State = { version: 1 | 2; entries: Record<string, Entry>; attempts?: Array<{ at: string }> };
+type State = { version: 1 | 2; entries: Record<string, Entry>; attempts?: Array<{ at: string }>; requestIdentity?: string };
 const root = resolve(process.env.PORTFOLIO_RESEARCH_HOME ?? join(process.env.LOCALAPPDATA ?? '', 'PortfolioResearch'));
 async function atomic(name: string, value: unknown) {
   await writeFile(join(root, name + '.tmp'), JSON.stringify(value), { mode: 0o600 });
@@ -65,15 +65,16 @@ async function main() {
     if (process.argv[2] === '--inspect-input') { console.log(JSON.stringify(summary)); return; }
     if (!selected.observations.length) throw new Error('no_eligible_real_reports');
     const packet = prepareResearchPacket(selected.observations, now, DEFAULT_REPORT_MAX_AGE_MS);
-    const digest = researchRunDigest(selected.observations, now);
+    const digest = researchRequestDigest(selected.observations, selected.provenance, RESEARCH_INSTRUCTIONS);
     let state: State;
     try { state = JSON.parse(await readFile(join(root, 'state.json'), 'utf8')) as State; }
     catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; state = { version: 2, entries: {}, attempts: [] }; }
     if (!state.entries || Array.isArray(state.entries) || typeof state.entries !== 'object') throw new Error('invalid_attempt_ledger');
-    // Legacy entry timestamps were refreshed by unchanged reads, so they are not
-    // inference receipts. Start a separate durable ledger for the new deep policy.
-    if (state.version === 1) { state.version = 2; state.attempts = []; }
-    if (state.version !== 2 || !Array.isArray(state.attempts)) throw new Error('invalid_attempt_ledger');
+    const identityAdmission = requestIdentityAdmission(state);
+    if (identityAdmission !== 'allowed') throw new Error(identityAdmission);
+    // Explicit adoption is required for nonempty historical ledgers. Never reset attempts.
+    state.requestIdentity = REQUEST_IDENTITY_VERSION;
+    if (!Array.isArray(state.attempts)) throw new Error('invalid_attempt_ledger');
     const existing = await bridge<{ id: string } | null>({ action: 'find', digest });
     if (existing) {
       state.entries[digest] = { at: state.entries[digest]?.at ?? new Date(now).toISOString(), status: 'stored', id: existing.id };
