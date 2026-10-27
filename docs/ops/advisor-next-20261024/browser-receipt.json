@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-24",
+  "scope": "Actual RepliesPanel and RosterPanel components, synthetic local React fixture",
+  "url": "http://127.0.0.1:4318/",
+  "nativeAuth": false,
+  "operationalApi": false,
+  "realMemberMessages": 0,
+  "checks": [
+    {"case": "320px compose and preview", "status": "PASS", "clientWidth": 305, "scrollWidth": 305},
+    {"case": "Synthetic reply publish and member read-only view", "status": "PASS", "image": "member-reply-320.png"},
+    {"case": "390px risk category filter removes unmatched row", "status": "PASS", "clientWidth": 375, "scrollWidth": 375, "image": "advisor-filter-390.png"},
+    {"case": "Reply correction creates version 2, member expands version 1 history", "status": "PASS", "clientWidth": 390, "scrollWidth": 390, "image": "member-history-390.png"}
+  ],
+  "cleanup": {"viewportReset": true, "agentTabClosed": true},
+  "limits": ["Synthetic in-memory callback only, not persistence proof", "Not authenticated whole-page acceptance", "Actual member-to-owner native API journey and Arash acceptance remain open"]
+}
