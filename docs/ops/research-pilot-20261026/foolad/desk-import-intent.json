@@ -1,0 +1,33 @@
+{
+  "status": "prepared_not_saved",
+  "creationId": "6df811b5-72e4-5e89-aecf-3fd981ac9091",
+  "workbookFile": "foolad-workbook.json",
+  "workbookSha256": "2e981b5db03a0c6afe54d8178ebdbf5e4d3af9a22896b510184be7640881dc0a",
+  "payloadFile": "desk-save-payload.json",
+  "payloadSha256": "8016169daa80b12edfae00f99f93bc31566258cec12d262fa324740d998b4bf2",
+  "contract": "baseline; privatePreparation absent",
+  "validation": {
+    "parse": "passed",
+    "structuralIssues": [],
+    "primarySourceVerification": "passed",
+    "independentArithmetic": "passed"
+  },
+  "allowedAction": "Save draft through existing authenticated admin UI, then reload and compare content. No approval/publication.",
+  "recovery": "If save response is lost, read back first; preserve existing UI creation identity. Do not create duplicate workbook. Payload creationId is for documented API contract only; UI may generate its own identity, record actual ID.",
+  "limitations": [
+    "Six-month N10 not verified; N10 is Q1 and N30 September, not same-period.",
+    "Revenue sensitivity only, no future earnings or valuation.",
+    "Stored parser corrections and collector freshness remain separate pending work."
+  ],
+  "readbackFields": [
+    "id",
+    "version",
+    "title",
+    "evidence",
+    "interpretation",
+    "counterEvidence",
+    "scenarios",
+    "portfolioImpact",
+    "reviewOn"
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "missingPriorYearPreserved": true,
-  "monthlyCoreSha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0",
+  "monthlyCoreSha256": "1463dae7ef82203f1e3115439b12ae051aadfadc3879151aac4121644ea91b79",
   "method": "Independent Python integer/Decimal reconstruction; not primary-source verification",
   "grossProfitExpected": 232658542,
   "grossProfitMatches": true,
