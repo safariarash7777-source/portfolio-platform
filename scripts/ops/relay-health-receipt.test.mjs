@@ -7,6 +7,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectReceipt, sanitizeDebug, errorCategory, transportError } from './relay-health-receipt.mjs';
+const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
+const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
 function debug() {
   return { now: 1793066400000, warmedUp: true, lastRefresh: 1793066300000, ageSec: 100,
@@ -42,20 +44,21 @@ test('missing or malformed fields remain unknown rather than zero or raw strings
   assert.equal(d.transport.scope, null);
   assert.equal(JSON.stringify(d).includes(secret), false);
 });
-test('one sample uses only three fixed passive GETs, rejects redirects and sends token only to relay debug', async () => {
+test('one sample uses only four fixed passive GETs, rejects redirects and sends token only to relay debug', async () => {
   const calls = [];
   const result = await collectReceipt({ token: secret, fetchImpl: async (url, init) => {
     calls.push([url, init]);
-    return new Response(url.endsWith('/debug') ? JSON.stringify(debug()) : url.endsWith('/healthz') ? 'ok' : secret);
+    return new Response(url === storedUrl ? JSON.stringify(storedBody) : url.endsWith('/debug') ? JSON.stringify(debug()) : url.endsWith('/healthz') ? 'ok' : secret);
   } });
-  assert.equal(calls.length, 3);
-  assert.deepEqual(calls.map(([url]) => url).sort(), ['https://62.60.191.24/liara-preview/', 'https://arsadata.liara.run/debug', 'https://arsadata.liara.run/healthz']);
+  assert.equal(calls.length, 4);
+  assert.deepEqual(calls.map(([url]) => url).sort(), ['https://62.60.191.24/liara-preview/', 'https://arsadata.liara.run/debug', 'https://arsadata.liara.run/healthz', storedUrl]);
   for (const [url, init] of calls) {
     assert.equal(init.method, 'GET'); assert.equal(init.redirect, 'error'); assert.ok(init.signal);
     assert.deepEqual(init.headers, url.endsWith('/debug') ? { Authorization: `Bearer ${secret}` } : {});
     assert.equal(init.dispatcher, undefined);
   }
   assert.equal(result.debug.acceptance, 'passed'); assert.equal(result.debug.spacing, 'passed');
+  assert.equal(result.storedRead.status, 'read'); assert.equal(result.storedRead.rowCount, 1);
   assert.equal(result.sampleCount, 1); assert.equal(result.backend.status, 'reachable');
   assert.equal(JSON.stringify(result).includes(secret), false);
 });
@@ -66,7 +69,7 @@ test('missing credential skips debug; TLS failures preserve only exact allowed c
     if (url.includes('62.60')) throw Object.assign(new Error(secret), { cause: { code: 'ERR_TLS_CERT_ALTNAME_INVALID', cert: secret } });
     return new Response('ok');
   } });
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 3);
   assert.equal(result.debug.status, 'missing_credential');
   assert.equal(result.backend.error, 'ERR_TLS_CERT_ALTNAME_INVALID');
   assert.equal(result.backend.httpStatus, null);
@@ -81,7 +84,7 @@ test('HTTP failure bodies are discarded and malformed/oversize debug is rejected
       if (url.endsWith('/debug')) return new Response(body);
       return new Response(secret, { status: 503 });
     } });
-    assert.equal(calls, 3);
+    assert.equal(calls, 4);
     assert.equal(result.health.httpStatus, 503);
     assert.equal(result.backend.httpStatus, 503);
     assert.equal(result.backend.status, 'reachable');
@@ -151,16 +154,17 @@ test('IME actual debug shape preserves day precision, storage completion and bou
   assert.equal(missing.certificate.eod.pushed, null);
 });
 
-test('actual CLI fails reachable HTTP 502 while preserving transport distinction; HTTP 200 passes', async () => {
+test('actual CLI accepts protected root401 only with valid public stored read; rejects502 and invalid read', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'relay-availability-'));
   try {
     const preload = join(directory, 'fake-fetch.mjs');
     const script = fileURLToPath(new URL('./relay-health-receipt.mjs', import.meta.url));
-    for (const status of [502, 200]) {
+    for (const [status, body, expectedExit] of [[502, storedBody, 1], [200, storedBody, 0], [401, storedBody, 0], [401, { ...storedBody, data: null }, 1], [401, { ...storedBody, source: 'other' }, 1]]) {
       await writeFile(preload, `globalThis.fetch = async (url) => {
         if (url === 'https://arsadata.liara.run/debug') return Response.json(${JSON.stringify(debug())});
         if (url === 'https://arsadata.liara.run/healthz') return new Response('ok');
         if (url === 'https://62.60.191.24/liara-preview/') return new Response('fixture only', {status: ${status}});
+        if (url === ${JSON.stringify(storedUrl)}) return Response.json(${JSON.stringify(body)});
         throw new Error('unexpected destination');
       };`);
       let exitCode = 0;
@@ -169,7 +173,7 @@ test('actual CLI fails reachable HTTP 502 while preserving transport distinction
           cwd: directory, env: { ...process.env, RELAY_TOKEN: 'synthetic', GITHUB_STEP_SUMMARY: '' }, timeout: 10000,
         });
       } catch (error) { exitCode = error.code; }
-      assert.equal(exitCode, status === 200 ? 0 : 1);
+      assert.equal(exitCode, expectedExit);
       const receipt = JSON.parse(await readFile(join(directory, 'relay-health-receipt.json'), 'utf8'));
       assert.equal(receipt.backend.status, 'reachable');
       assert.equal(receipt.backend.httpStatus, status);
