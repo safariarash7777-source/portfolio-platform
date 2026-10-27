@@ -16,6 +16,16 @@ export function requestIdentityAdmission(state: { version: number; entries: Reco
   if (state.requestIdentity !== undefined || Object.keys(state.entries).length || state.attempts.length) return 'legacy_identity_requires_review';
   return 'allowed';
 }
+/** Only an explicitly reviewed alias to a known stored outcome can reuse a legacy key. */
+export function researchDestinationDigest(requestDigest: string, state: { requestAliases?: Record<string, string>; entries: Record<string, { status: string; id?: string }> }): string {
+  const target = state.requestAliases?.[requestDigest];
+  if (target === undefined) return requestDigest;
+  if (!/^[a-f0-9]{64}$/.test(target) || target === requestDigest || state.requestAliases?.[target] !== undefined ||
+      state.entries[target]?.status !== 'stored' || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(state.entries[target].id ?? '')) {
+    throw new Error('invalid_reviewed_request_alias');
+  }
+  return target;
+}
 export function researchRunDigest(observations: unknown, now: number): string {
   if (!Number.isFinite(now)) throw new Error('invalid_run_clock');
   return createHash('sha256').update(JSON.stringify({ contract: RESEARCH_POLICY.version,

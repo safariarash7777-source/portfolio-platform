@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { researchRunDigest, researchRequestDigest, inferenceAdmission, requestIdentityAdmission, REQUEST_IDENTITY_VERSION } from './research-policy';
+import { researchRunDigest, researchRequestDigest, inferenceAdmission, requestIdentityAdmission, REQUEST_IDENTITY_VERSION, researchDestinationDigest } from './research-policy';
 import type { ResearchObservation } from './research-agent';
 import type { ResearchProvenance } from './research-inputs';
 const now = Date.parse('2026-10-17T12:10:00Z');
@@ -56,4 +56,15 @@ test('identity migration holds historical attempts for review and never resets t
   assert.equal(requestIdentityAdmission({ version: 2, entries: {}, attempts: [] }), 'allowed');
   assert.equal(requestIdentityAdmission({ version: 1, entries: {} }), 'invalid_ledger');
   assert.equal(requestIdentityAdmission({ version: 2, entries: {}, attempts: legacy.attempts }), 'legacy_identity_requires_review');
+});
+
+test('reviewed aliases reuse only an existing stored legacy outcome; missing, pending and chained aliases fail closed', () => {
+  const current = 'a'.repeat(64), old = 'b'.repeat(64), older = 'c'.repeat(64);
+  const stored = { status: 'stored', id: '12345678-1234-1234-1234-123456789abc' };
+  assert.equal(researchDestinationDigest(current, { entries: {} }), current);
+  assert.equal(researchDestinationDigest(current, { requestAliases: { [current]: old }, entries: { [old]: stored } }), old);
+  for (const entries of [{}, { [old]: { status: 'started' } }, { [old]: { status: 'stored', id: 'bad' } }]) {
+    assert.throws(() => researchDestinationDigest(current, { requestAliases: { [current]: old }, entries }), /invalid_reviewed_request_alias/);
+  }
+  assert.throws(() => researchDestinationDigest(current, { requestAliases: { [current]: old, [old]: older }, entries: { [old]: stored } }), /invalid_reviewed_request_alias/);
 });

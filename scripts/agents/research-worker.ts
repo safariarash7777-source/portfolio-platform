@@ -6,10 +6,10 @@ import { join, resolve } from 'node:path';
 import { prepareResearchPacket, RESEARCH_INSTRUCTIONS, type ResearchDraft } from '../../lib/intelligence/research-agent';
 import { prepareCodalResearchInputs, DEFAULT_REPORT_MAX_AGE_MS, type StoredResearchCodalRow, type ResearchProvenance } from '../../lib/intelligence/research-inputs';
 import { inferResearch, RESEARCH_MODEL } from './hermes-inference';
-import { researchRequestDigest, inferenceAdmission, requestIdentityAdmission, REQUEST_IDENTITY_VERSION } from '../../lib/intelligence/research-policy';
+import { researchRequestDigest, inferenceAdmission, requestIdentityAdmission, REQUEST_IDENTITY_VERSION, researchDestinationDigest } from '../../lib/intelligence/research-policy';
 
 type Entry = { at: string; status: 'started' | 'ready' | 'stored' | 'failed'; draft?: ResearchDraft; provenance?: ResearchProvenance[]; id?: string };
-type State = { version: 1 | 2; entries: Record<string, Entry>; attempts?: Array<{ at: string }>; requestIdentity?: string };
+type State = { version: 1 | 2; entries: Record<string, Entry>; attempts?: Array<{ at: string }>; requestIdentity?: string; requestAliases?: Record<string, string> };
 const root = resolve(process.env.PORTFOLIO_RESEARCH_HOME ?? join(process.env.LOCALAPPDATA ?? '', 'PortfolioResearch'));
 async function atomic(name: string, value: unknown) {
   await writeFile(join(root, name + '.tmp'), JSON.stringify(value), { mode: 0o600 });
@@ -75,12 +75,14 @@ async function main() {
     // Explicit adoption is required for nonempty historical ledgers. Never reset attempts.
     state.requestIdentity = REQUEST_IDENTITY_VERSION;
     if (!Array.isArray(state.attempts)) throw new Error('invalid_attempt_ledger');
-    const existing = await bridge<{ id: string } | null>({ action: 'find', digest });
+    const destinationDigest = researchDestinationDigest(digest, state);
+    const existing = await bridge<{ id: string } | null>({ action: 'find', digest: destinationDigest });
+    if (destinationDigest !== digest && (!existing || existing.id !== state.entries[destinationDigest].id)) throw new Error('reviewed_destination_mismatch');
     if (existing) {
-      state.entries[digest] = { at: state.entries[digest]?.at ?? new Date(now).toISOString(), status: 'stored', id: existing.id };
+      if (destinationDigest === digest) state.entries[digest] = { at: state.entries[digest]?.at ?? new Date(now).toISOString(), status: 'stored', id: existing.id };
       await atomic('state.json', state);
-      await atomic('last-run.json', { at: new Date().toISOString(), status: 'unchanged', ...summary });
-      console.log(JSON.stringify({ status: 'unchanged', modelCalled: false, ...summary })); return;
+      await atomic('last-run.json', { at: new Date().toISOString(), status: 'unchanged', id: existing.id, requestDigest: digest, destinationDigest, modelCalled: false, ...summary });
+      console.log(JSON.stringify({ status: 'unchanged', id: existing.id, requestDigest: digest, destinationDigest, modelCalled: false, ...summary })); return;
     }
     let entry = state.entries[digest];
     if (entry && entry.status !== 'ready') throw new Error('prior_attempt_requires_review');

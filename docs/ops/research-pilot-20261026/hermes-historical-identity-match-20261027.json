@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-27T10:42:48.129Z",
+  "status": "historical_input_match_found_not_adopted",
+  "sourceReadAt": "2026-10-27T10:42:47.3926+00:00",
+  "collectorAt": "2026-10-25T23:01:15.886+00:00",
+  "storedCount": 29,
+  "fullLegacyDigestAndProvenanceMatches": 28,
+  "requestDigest": "db78435f0b65d530b8e2734dbbc30159e2e42abc7fbb94e013cd7eff73a714a0",
+  "pendingSameLegacyInputCount": 13,
+  "selectedLegacyMatch": {
+    "id": "2c23fe8c-7491-4a72-90de-47274b30d26d",
+    "digest": "78032468a5de08372cb55331268b18da8302f3b0ca1455e2542c1bd2c2d51d4b",
+    "createdAt": "2026-10-20T13:10:29.165337+00:00"
+  },
+  "compared": "legacy digest recomputed from current observations at original local attempt clock; exact source provenance except read receipt fetchedAt; model and destination/local ID matched",
+  "instructionsUnchangedFromScheduledCode": true,
+  "modelCalled": false,
+  "appendCalled": false,
+  "stateChanged": false,
+  "aliasInstalled": false,
+  "limitation": "Does not establish old failed/started model outcomes, current collector health, or Arash content acceptance"
+}
