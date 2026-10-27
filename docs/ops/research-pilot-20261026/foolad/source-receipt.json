@@ -14,5 +14,7 @@
   "statement": "Stored public-page snapshot, not direct primary-document verification. No authenticated user/customer data included.",
   "persistedToDesk": false,
   "primaryVerification": "pending",
-  "humanAcceptance": "pending"
+  "humanAcceptance": "pending",
+  "calculationRevision": "Regenerated with exact previous-fiscal-year correction; immutable SSR input unchanged.",
+  "monthlyCoreSha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0"
 }

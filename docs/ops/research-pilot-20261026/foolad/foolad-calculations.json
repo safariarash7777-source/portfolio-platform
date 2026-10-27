@@ -20,7 +20,7 @@
   },
   "monthly": {
     "currentFY": 1405,
-    "priorFY": 1403,
+    "priorFY": null,
     "currentMonths": [
       {
         "monthNo": 1,
@@ -107,95 +107,10 @@
         "cumulative": null
       }
     ],
-    "priorMonths": [
-      {
-        "monthNo": 1,
-        "monthLabel": "فروردین",
-        "monthKey": "1403-01",
-        "amount": null,
-        "cumulative": null
-      },
-      {
-        "monthNo": 2,
-        "monthLabel": "اردیبهشت",
-        "monthKey": "1403-02",
-        "amount": null,
-        "cumulative": null
-      },
-      {
-        "monthNo": 3,
-        "monthLabel": "خرداد",
-        "monthKey": "1403-03",
-        "amount": 257124127,
-        "cumulative": 739049516
-      },
-      {
-        "monthNo": 4,
-        "monthLabel": "تیر",
-        "monthKey": "1403-04",
-        "amount": 233395915,
-        "cumulative": 972445431
-      },
-      {
-        "monthNo": 5,
-        "monthLabel": "مرداد",
-        "monthKey": "1403-05",
-        "amount": 244533719,
-        "cumulative": 1216979150
-      },
-      {
-        "monthNo": 6,
-        "monthLabel": "شهریور",
-        "monthKey": "1403-06",
-        "amount": 228636798,
-        "cumulative": 1445615948
-      },
-      {
-        "monthNo": 7,
-        "monthLabel": "مهر",
-        "monthKey": "1403-07",
-        "amount": 207128684,
-        "cumulative": 1652744632
-      },
-      {
-        "monthNo": 8,
-        "monthLabel": "آبان",
-        "monthKey": "1403-08",
-        "amount": 210509740,
-        "cumulative": 1863254372
-      },
-      {
-        "monthNo": 9,
-        "monthLabel": "آذر",
-        "monthKey": "1403-09",
-        "amount": 166965489,
-        "cumulative": 2030219861
-      },
-      {
-        "monthNo": 10,
-        "monthLabel": "دی",
-        "monthKey": "1403-10",
-        "amount": 233119754,
-        "cumulative": 2263339615
-      },
-      {
-        "monthNo": 11,
-        "monthLabel": "بهمن",
-        "monthKey": "1403-11",
-        "amount": 257289594,
-        "cumulative": 2520629209
-      },
-      {
-        "monthNo": 12,
-        "monthLabel": "اسفند",
-        "monthKey": "1403-12",
-        "amount": null,
-        "cumulative": null
-      }
-    ],
+    "priorMonths": null,
     "avgCurrent": 639418160,
     "cumulativeCurrent": 2509422184,
-    "cumulativePriorSamePoint": 1445615948,
+    "cumulativePriorSamePoint": null,
     "rateSeries": [
       {
         "productName": "محصولات گرم",

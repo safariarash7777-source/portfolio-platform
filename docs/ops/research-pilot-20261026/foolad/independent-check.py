@@ -8,7 +8,13 @@ f = json.loads((root / 'foolad-fundamentals-resolved.json').read_text())
 n = f['n10']['data']['standalone']
 m = f['n30']['data'][0]
 D = Decimal
+calculated = json.loads((root / 'foolad-calculations.json').read_text())
+assert calculated['monthly']['priorFY'] is None
+assert calculated['monthly']['priorMonths'] is None
+assert calculated['monthly']['cumulativePriorSamePoint'] is None
 result = {
+    'missingPriorYearPreserved': True,
+    'monthlyCoreSha256': hashlib.sha256((root.parents[3] / 'lib/core/monthlyReport.ts').read_bytes()).hexdigest(),
     'method': 'Independent Python integer/Decimal reconstruction; not primary-source verification',
     'grossProfitExpected': n['revenue'] - n['cogs'],
     'grossProfitMatches': n['revenue'] - n['cogs'] == n['gross_profit'],
