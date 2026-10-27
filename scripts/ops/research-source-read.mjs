@@ -64,7 +64,7 @@ export async function remoteRead(sources, project, env = process.env, fetchImpl 
 }
 export function command() {
   const source = `(${remoteRead.toString()})(${JSON.stringify(SOURCES)},${projectRow.toString()}).then(packet=>console.log('FOLAD_PACKET='+Buffer.from(JSON.stringify({ok:true,packet})).toString('base64'))).catch(error=>{console.log('FOLAD_PACKET='+Buffer.from(JSON.stringify({ok:false,failure:(${safeRemoteFailure.toString()})(error)})).toString('base64'));process.exitCode=1})`;
-  const cmd = encodeURIComponent(`node -e eval(require('node:zlib').inflateRawSync(Buffer.from('${deflateRawSync(source).toString('base64')}','base64')).toString())`);
+  const cmd = encodeURIComponent(`node -e eval(require(/node:zlib/.source).inflateRawSync(Buffer.from(/${deflateRawSync(source).toString('base64url')}/.source,/base64url/.source)).toString())`);
   if (cmd.length > 6000) throw new Error('command_limit');
   return cmd;
 }

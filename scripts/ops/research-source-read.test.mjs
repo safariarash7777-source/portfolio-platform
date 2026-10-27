@@ -47,7 +47,10 @@ test('CLI exit zero alone is not completion proof and failure/raw logs are never
 test('generated single-token compressed command executes fixed reads and produces a validated completion marker', async () => {
   const decoded = decodeURIComponent(command());
   assert.equal(decoded.split(' ').length, 3);
-  assert.equal(decoded.startsWith("node -e eval(require('node:zlib').inflateRawSync(Buffer.from("), true);
+  assert.equal(decoded.startsWith('node -e eval(require(/node:zlib/.source).inflateRawSync(Buffer.from('), true);
+  const loader = decoded.slice('node -e '.length);
+  assert.doesNotMatch(loader, /[\s'"+&?#%]/);
+  assert.match(loader, /Buffer\.from\(\/[A-Za-z0-9_-]+\/\.source,\/base64url\/\.source\)/);
   assert.equal(decoded.includes(secret), false);
   assert.ok(command().length <= 6000);
   const output = []; let calls = 0;
