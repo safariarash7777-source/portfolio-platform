@@ -2,12 +2,12 @@
 
 ## بازآماده‌سازی همان PR315 — ۲۰۲۶-۱۰-۲۷
 
-با واگذاری صریح مالکیت محدود `package.json` و `docs/README.md` از هماهنگ‌کننده محلی، `main` تا `98a9f345a0cc33babffa25eae9445893fb7cfd09` به همین شاخه با merge معمول و بدون بازنویسی تاریخچه وارد شد. نویسنده فعال دیگری برای این شاخه گزارش نشد؛ worktree پیش از کار پاک بود. تعارض متنی رخ نداد. تمام scriptها و وابستگی‌های مبنا حفظ شدند؛ اختلاف package نسبت به مبنا صرفاً ثبت `companyReportDiscovery.test.ts` در `test:core` است. مسیر آزمون R5 یا advisor-next که فایلش در این مبنا نیست اضافه نشد.
+با واگذاری صریح مالکیت محدود `package.json` و `docs/README.md` از هماهنگ‌کننده محلی، `main` تا `536f955a9dc60683d8edeedd4b4f5c4488fd8ff4` (حاوی میز پژوهش R5) به همین شاخه با merge معمول و بدون بازنویسی تاریخچه وارد شد. نویسنده فعال دیگری برای این شاخه گزارش نشد؛ worktree پیش از کار پاک بود. تعارض `package.json` با حفظ نسخه تازه scripts مبنا و افزودن فقط آزمون شرکت در محل خودش حل شد؛ تمام tokenهای آزمون‌های قبلی و ثبت R5 حفظ شدند و وجود فایل R5 بررسی شد. اختلاف package نسبت به مبنا صرفاً ثبت `companyReportDiscovery.test.ts` در `test:core` است؛ مسیر advisor-next که فایلش در این مبنا نیست اضافه نشد.
 
-در بازخوانی تازه پس از هماهنگ‌سازی اولیه، فرمان هدفمند زیر **۲۲ آزمون، صفر شکست/skip** داشت؛ دو آزمون بیشتر متعلق به کنترل diagnostics مسیر کدال در main هستند. TypeScript کل پروژه و اسکن همه فایل‌های tracked نیز موفق شدند؛ اسکن ۱۱۸۳ فایل متنی را بررسی کرد. merge بعدی `98a9f34` فقط اصلاحات worker/research-policy و رسیدهای مستقل آن‌ها را وارد کرد؛ کد اختصاصی این بسته تغییر نکرد. نتیجه build و مجموعه کامل آزمون‌های head نهایی از CI همان PR خوانده می‌شود، نه از CI قدیمی ۲۴ اکتبر.
+در بازخوانی تازه روی همین مبنا، فرمان هدفمند زیر **۳۶ آزمون، صفر شکست/skip** داشت: ۲۲ آزمون شرکت و مسیر کدال، و ۱۴ آزمون دو فایل R5 برای کنترل اجتماع ثبت‌ها. TypeScript کل پروژه و اسکن همه فایل‌های tracked نیز موفق شدند؛ اسکن ۱۱۸۹ فایل متنی را بررسی کرد. کد اختصاصی این بسته نسبت به تحویل ۲۴ اکتبر تغییر نکرد. نتیجه build و مجموعه کامل آزمون‌های head نهایی از CI همان PR خوانده می‌شود، نه از CI قدیمی ۲۴ اکتبر.
 
 ```text
-node node_modules/tsx/dist/cli.mjs --test lib/core/companyReportDiscovery.test.ts components/symbol/CodalReportsTab.test.ts lib/codal-feed.test.ts app/api/codal-list/route.test.ts
+node node_modules/tsx/dist/cli.mjs --test lib/core/companyReportDiscovery.test.ts components/symbol/CodalReportsTab.test.ts lib/codal-feed.test.ts app/api/codal-list/route.test.ts components/admin/ResearchCaseFiles.test.tsx lib/intelligence/research-drafts-view.test.ts
 node node_modules/typescript/bin/tsc --noEmit
 node scripts/scan-secrets.mjs
 ```
