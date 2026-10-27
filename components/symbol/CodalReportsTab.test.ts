@@ -9,6 +9,8 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import CodalReportsTab from "./CodalReportsTab";
 import CodalSourceLink from "./CodalSourceLink";
+import { EMPTY_REPORT_FILTER } from "../../lib/core/companyReportDiscovery";
+import { mountComponent } from "../admin/p07-component-test-host";
 Object.assign(globalThis, { React });
 
 test("shared Codal link fixes external navigation attributes and renders the supplied fallback verbatim", () => {
@@ -62,7 +64,7 @@ test("actual live report renderer preserves source classes, title and stored dat
   const rows = ["https://www.codal.ir/report?id=9", "https://codal.ir.evil.test/report", null]
     .map((url, i) => ({ title: `live-source-${i}`, kind: "ن-۳۰", date: "1405/05/03", time: "16:54:53", url }));
   let index = 0;
-  const states = [rows, "idle"];
+  const states = [{ symbol: 'نماد', items: rows }, "idle", EMPTY_REPORT_FILTER];
   const taskModule = { exports: {} as { default: typeof CodalReportsTab } };
   const localRequire = createRequire(new URL("./CodalReportsTab.tsx", import.meta.url));
   runInNewContext(ts.transpileModule(readFileSync(new URL("./CodalReportsTab.tsx", import.meta.url), "utf8"), {
@@ -76,4 +78,77 @@ test("actual live report renderer preserves source classes, title and stored dat
   for (const i of [1, 2]) assert.ok(html.includes(`<span class="font-medium">live-source-${i}</span>`));
   assert.ok(html.includes("۱۴۰۵/۰۵/۰۳")); assert.ok(html.includes("۱۶:۵۴:۵۳"));
   assert.doesNotMatch(html, /evil\.test|href="#"/);
+});
+
+test('actual discovery controls filter the loaded subset and reset without another request', async () => {
+  const oldFetch = globalThis.fetch;
+  let requests = 0;
+  globalThis.fetch = async () => {
+    requests++;
+    return Response.json({ data: [
+      { title: 'صورت‌هاي مالي شركت ۱۴۰۵', kind: 'ن-۱۰', date: '1405/04/31', time: '12:00:00', url: null },
+      { title: 'اصلاحیه صورت‌های مالی شرکت 1405', kind: 'ن-10', date: null, time: null, url: null },
+      { title: 'فعالیت ماهانه', kind: 'ن-۳۰', date: null, time: null, url: null },
+    ] });
+  };
+  try {
+    const host = mountComponent('components/symbol/CodalReportsTab.tsx', { symbol: 'نمونه', stored: [] });
+    await host.settle();
+    await host.click('دریافت فهرست');
+    const search = host.find('input', node => node.props.type === 'search');
+    (search.props.onChange as (event: unknown) => void)({ target: { value: 'مالي شركت ١٤٠٥' } });
+    await host.settle();
+    const status = () => host.find('p', node => node.props.role === 'status').props.children as unknown[];
+    assert.ok(JSON.stringify(status()).includes('۲'));
+    const dateFilter = host.find('select', node => node.props.value === 'all' && JSON.stringify(node.props.children).includes('تاریخ ثبت‌نشده'));
+    (dateFilter.props.onChange as (event: unknown) => void)({ target: { value: 'missing' } });
+    await host.settle();
+    assert.ok(JSON.stringify(status()).includes('۱'));
+    host.find('li', node => JSON.stringify(node.props.children).includes('اصلاحیه صورت‌های مالی شرکت 1405'));
+    await host.click('پاک‌کردن فیلترها');
+    assert.ok(JSON.stringify(status()).includes('۳'));
+    assert.equal(requests, 1);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('malformed stored-announcement response remains an error with retry rather than an empty list', async () => {
+  const oldFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({ error: 'missing data' });
+  try {
+    const host = mountComponent('components/symbol/CodalReportsTab.tsx', { symbol: 'نمونه', stored: [] });
+    await host.settle();
+    await host.click('دریافت فهرست');
+    host.find('p', node => JSON.stringify(node.props.children).includes('دریافت فهرست ذخیره‌شده ممکن نشد'));
+    assert.equal(host.button('دریافت فهرست').props.disabled, false);
+    assert.throws(() => host.find('input', node => node.props.type === 'search'), /not found/);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
+test('reusing the dossier for another symbol clears filters and ignores a late old-company response', async () => {
+  const oldFetch = globalThis.fetch;
+  let finishOld: ((response: Response) => void) | undefined;
+  globalThis.fetch = async input => String(input).includes(encodeURIComponent('اول'))
+    ? new Promise<Response>(resolve => { finishOld = resolve; })
+    : Response.json({ data: [{ title: 'اطلاعیه شرکت دوم', kind: null, date: null, time: null, url: null }] });
+  try {
+    const props = { symbol: 'اول', stored: [] };
+    const host = mountComponent('components/symbol/CodalReportsTab.tsx', props);
+    await host.settle();
+    await host.click('دریافت فهرست');
+    assert.equal(host.button('در حال دریافت').props.disabled, true);
+    props.symbol = 'دوم';
+    await host.settle();
+    await host.click('دریافت فهرست');
+    finishOld!(Response.json({ data: [{ title: 'اطلاعیه شرکت اول', kind: null, date: null, time: null, url: null }] }));
+    await host.settle();
+    host.find('li', node => JSON.stringify(node.props.children).includes('اطلاعیه شرکت دوم'));
+    assert.throws(() => host.find('li', node => JSON.stringify(node.props.children).includes('اطلاعیه شرکت اول')), /not found/);
+    const search = host.find('input', node => node.props.type === 'search');
+    (search.props.onChange as (event: unknown) => void)({ target: { value: 'نامنطبق' } });
+    await host.settle();
+    props.symbol = 'سوم';
+    await host.settle();
+    await host.click('دریافت فهرست');
+    assert.equal(host.find('input', node => node.props.type === 'search').props.value, '');
+  } finally { globalThis.fetch = oldFetch; }
 });
