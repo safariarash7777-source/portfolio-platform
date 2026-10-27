@@ -1,0 +1,77 @@
+{
+  "runId": 40481175366,
+  "receipts": [
+    {
+      "schemaVersion": 1,
+      "target": "arsadata-backend",
+      "startedAt": "2026-10-27T09:29:39.163Z",
+      "mode": "start_existing_if_off",
+      "status": "start_intent",
+      "before": {
+        "status": "found",
+        "matchCount": 1,
+        "state": "CREATED",
+        "power": "POWERED_OFF",
+        "createdAt": "2026-09-28T14:04:13.834Z",
+        "guestState": null,
+        "targetFingerprint": "3a6586dbd45733a7c46c2dd3d6a7bd42da48bd921a325c4c7dac80ae6b3f7a4d"
+      },
+      "operation": {
+        "name": null,
+        "state": "SUCCEEDED",
+        "at": "2026-10-11T14:31:11.100Z"
+      },
+      "action": {
+        "method": "PATCH",
+        "action": "start",
+        "status": "intent",
+        "httpStatus": null,
+        "targetFingerprint": "3a6586dbd45733a7c46c2dd3d6a7bd42da48bd921a325c4c7dac80ae6b3f7a4d"
+      },
+      "after": null,
+      "guestHealth": "unknown",
+      "databaseHealth": "unknown",
+      "updatedAt": "2026-10-27T09:29:40.890Z"
+    },
+    {
+      "schemaVersion": 1,
+      "target": "arsadata-backend",
+      "startedAt": "2026-10-27T09:29:39.163Z",
+      "mode": "start_existing_if_off",
+      "status": "outcome_requires_review",
+      "before": {
+        "status": "found",
+        "matchCount": 1,
+        "state": "CREATED",
+        "power": "POWERED_OFF",
+        "createdAt": "2026-09-28T14:04:13.834Z",
+        "guestState": null,
+        "targetFingerprint": "3a6586dbd45733a7c46c2dd3d6a7bd42da48bd921a325c4c7dac80ae6b3f7a4d"
+      },
+      "operation": {
+        "name": null,
+        "state": "SUCCEEDED",
+        "at": "2026-10-11T14:31:11.100Z"
+      },
+      "action": {
+        "method": "PATCH",
+        "action": "start",
+        "status": "accepted",
+        "httpStatus": 200,
+        "targetFingerprint": "3a6586dbd45733a7c46c2dd3d6a7bd42da48bd921a325c4c7dac80ae6b3f7a4d"
+      },
+      "after": {
+        "status": "found",
+        "matchCount": 1,
+        "state": "CREATED",
+        "power": "POWERED_OFF",
+        "createdAt": "2026-09-28T14:04:13.834Z",
+        "guestState": null,
+        "targetFingerprint": "3a6586dbd45733a7c46c2dd3d6a7bd42da48bd921a325c4c7dac80ae6b3f7a4d"
+      },
+      "guestHealth": "unknown",
+      "databaseHealth": "unknown",
+      "updatedAt": "2026-10-27T09:29:41.294Z"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 /** Local subscription worker. No general SSH key, API key or admin JWT needed. */
 import { execFile } from 'node:child_process';
+import { reconcileResearchState } from './research-reconcile';
 import { readFile, writeFile, rename, mkdir, open, unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { prepareResearchPacket, type ResearchDraft } from '../../lib/intelligence/research-agent';
@@ -27,7 +28,13 @@ async function bridge<T>(request: unknown): Promise<T> {
   });
 }
 async function main() {
-  if (process.argv.length !== 3 || !['--run', '--inspect-input'].includes(process.argv[2])) throw new Error('explicit_worker_mode_required');
+  if (process.argv.length !== 3 || !['--run', '--inspect-input', '--reconcile'].includes(process.argv[2])) throw new Error('explicit_worker_mode_required');
+  if (process.argv[2] === '--reconcile') {
+    const report = await reconcileResearchState(root, bridge);
+    console.log(JSON.stringify(report));
+    if (report.entries.some(entry => entry.destination === 'unknown')) process.exitCode = 1;
+    return;
+  }
   await mkdir(root, { recursive: true });
   const lockPath = join(root, 'worker.lock');
   let lock;
@@ -108,6 +115,8 @@ async function main() {
 main().catch(async (error: unknown) => {
   const message = error instanceof Error ? error.message : '';
   const reason = /^[a-z_]+$/.test(message) ? message : 'worker_failed';
-  await atomic('last-run.json', { at: new Date().toISOString(), status: 'failed', reason }).catch(() => {});
+  if (process.argv[2] !== '--reconcile') {
+    await atomic('last-run.json', { at: new Date().toISOString(), status: 'failed', reason }).catch(() => {});
+  }
   console.error(JSON.stringify({ status: 'failed', reason })); process.exitCode = 1;
 });

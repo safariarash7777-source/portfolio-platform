@@ -1,0 +1,42 @@
+[
+  {
+    "name": "codal0",
+    "at": "2026-10-27T09:59:34.798999+00:00",
+    "status": 200,
+    "elapsedMs": 1703,
+    "vercelId": "cle1::iad1::nww49-1793095173447-1de87f500ad0",
+    "cache": "MISS",
+    "error": null,
+    "rows": 21
+  },
+  {
+    "name": "codal1",
+    "at": "2026-10-27T09:59:34.293198+00:00",
+    "status": 200,
+    "elapsedMs": 1196,
+    "vercelId": "cle1::iad1::sktxr-1793095173415-c86d6b61d0bf",
+    "cache": "MISS",
+    "error": null,
+    "rows": 21
+  },
+  {
+    "name": "detail0",
+    "at": "2026-10-27T09:59:36.110971+00:00",
+    "status": 200,
+    "elapsedMs": 1818,
+    "vercelId": "cle1::iad1::l972d-1793095174626-db1863878fea",
+    "cache": "MISS",
+    "error": null,
+    "rows": null
+  },
+  {
+    "name": "detail1",
+    "at": "2026-10-27T09:59:36.262101+00:00",
+    "status": 200,
+    "elapsedMs": 1463,
+    "vercelId": "cle1::iad1::fhnzn-1793095175057-22b0a28c217b",
+    "cache": "MISS",
+    "error": null,
+    "rows": null
+  }
+]

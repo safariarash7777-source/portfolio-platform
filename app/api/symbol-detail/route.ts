@@ -1,3 +1,4 @@
+import { logStoredReadFailure, type StoredReadPhase } from "@/lib/stored-read-diagnostics";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -24,6 +25,9 @@ export async function GET(req: Request) {
   if (!url || !anon) {
     return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
   }
+  const startedAt = Date.now();
+  let phase: StoredReadPhase = "request";
+  let upstreamStatus: number | undefined;
   try {
     const res = await fetch(
       `${url.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?key=eq.symbol_details&select=payload&limit=1`,
@@ -33,9 +37,13 @@ export async function GET(req: Request) {
         signal: AbortSignal.timeout(15000),
       },
     );
+    phase = "headers";
+    upstreamStatus = res.status;
     if (!res.ok) {
+      logStoredReadFailure({ route: "symbol-detail", phase, elapsedMs: Date.now() - startedAt, upstreamStatus });
       return NextResponse.json({ error: `supabase ${res.status}` }, { status: 502 });
     }
+    phase = "body";
     const rows = (await res.json()) as Array<{ payload?: DetailsPayload }>;
     const payload = Array.isArray(rows) && rows[0] ? rows[0].payload : null;
     const entry = payload?.details?.[l18];
@@ -49,6 +57,7 @@ export async function GET(req: Request) {
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {
+    logStoredReadFailure({ route: "symbol-detail", phase, elapsedMs: Date.now() - startedAt, upstreamStatus, error: e });
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "fetch failed" },
       { status: 502 },

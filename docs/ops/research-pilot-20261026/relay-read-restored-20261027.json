@@ -1,0 +1,340 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-27T10:04:58.562Z",
+  "completedAt": "2026-10-27T10:04:59.576Z",
+  "sampleCount": 1,
+  "mode": "passive",
+  "health": {
+    "status": "ok",
+    "httpStatus": 200,
+    "error": null
+  },
+  "debug": {
+    "status": "read",
+    "httpStatus": 200,
+    "error": null,
+    "acceptance": "passed",
+    "spacing": "passed",
+    "data": {
+      "relayAt": "2026-10-27T10:04:59.212Z",
+      "warmedUp": true,
+      "ageSec": 198,
+      "lastRefresh": "2026-10-27T10:01:41.607Z",
+      "lastAttempt": "2026-10-27T10:01:41.607Z",
+      "error": null,
+      "counts": {
+        "gold": 9,
+        "currency": 28,
+        "crypto": 19,
+        "stocks": 766,
+        "funds": 339,
+        "options": 1105,
+        "indices": null
+      },
+      "snapshot": {
+        "state": "complete",
+        "attemptedAt": "2026-10-27T10:01:41.607Z",
+        "families": {
+          "gold": {
+            "state": "received",
+            "receivedAt": "2026-10-27T10:01:41.607Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "currency": {
+            "state": "received",
+            "receivedAt": "2026-10-27T10:01:41.607Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "crypto": {
+            "state": "received",
+            "receivedAt": "2026-10-27T10:01:41.607Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "stocks": {
+            "state": "received",
+            "receivedAt": "2026-10-27T10:01:41.607Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "funds": {
+            "state": "received",
+            "receivedAt": "2026-10-27T10:01:41.607Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "options": {
+            "state": "received",
+            "receivedAt": "2026-10-27T10:01:41.607Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "indices": {
+            "state": "received",
+            "receivedAt": "2026-10-27T10:01:41.607Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          }
+        }
+      },
+      "baseline": {
+        "state": "loaded",
+        "error": null
+      },
+      "sources": {
+        "brsapi_gold_currency": {
+          "ok": true,
+          "gold": 9,
+          "currency": 28,
+          "stocks": null,
+          "funds": null,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_stocks": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": 766,
+          "funds": 339,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_index": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_nav": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": 333,
+          "updated": 150,
+          "failed": 0,
+          "error": null
+        },
+        "brsapi_fund_meta": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": 343,
+          "updated": 1,
+          "failed": 0,
+          "error": null
+        }
+      },
+      "storage": {
+        "enabled": true,
+        "ok": true,
+        "httpStatus": 200,
+        "at": "2026-10-27T10:01:42.406Z",
+        "error": null
+      },
+      "codal": {
+        "ok": false,
+        "lastRun": "2026-10-27T09:11:40.215Z",
+        "lastDate": null,
+        "rows": null,
+        "error": "network",
+        "skipped": null,
+        "feed": {
+          "pages": 0,
+          "seen": 0,
+          "matched": 0,
+          "downloaded": 0,
+          "inserted": 0,
+          "parseFailed": 0,
+          "complete": false,
+          "incompleteReason": null
+        },
+        "feedTable": {
+          "attempted": 0,
+          "inserted": 0,
+          "duplicates": 0,
+          "error": null
+        },
+        "backfill": {
+          "queueSize": 0,
+          "inserted": 0,
+          "parseFailed": 0,
+          "skippedCovered": 0
+        }
+      },
+      "history": {
+        "eodHistory": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": 0,
+          "error": null,
+          "skipped": null
+        },
+        "indexHistory": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "marketBreadth": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "historyPrune": {
+          "ok": null,
+          "lastRun": "2026-10-27T09:31:42.893Z",
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        }
+      },
+      "commodity": {
+        "enabled": true,
+        "rows": 14,
+        "reqToday": 155,
+        "dailyCap": 300,
+        "remaining": 145,
+        "lastFetchAt": "2026-10-27T10:01:41.604Z",
+        "counterScope": "process",
+        "dayKey": "2026-10-27",
+        "error": null
+      },
+      "ime": {
+        "certificate": {
+          "rows": 11,
+          "reqToday": 11,
+          "lastFetchAt": "2026-10-27T10:01:41.492Z",
+          "error": null,
+          "eod": {
+            "dayCalendar": "gregorian",
+            "dayTimezone": "Asia/Tehran",
+            "lastPushDay": null,
+            "pushed": 0,
+            "skippedSourceDate": 0,
+            "table": "unknown",
+            "skip": "before-close",
+            "error": null
+          }
+        },
+        "physical": {
+          "dayCalendar": "gregorian",
+          "dayTimezone": "Asia/Tehran",
+          "lastAttemptDay": null,
+          "lastRunDay": null,
+          "cycleDay": null,
+          "inserted": 0,
+          "maxProviderRequestsPerDay": 2,
+          "maxStorageAttemptsPerTarget": 3,
+          "table": "unknown",
+          "error": null,
+          "retryScope": "process-memory-tehran-day",
+          "targetCount": 0,
+          "targetsTruncated": false,
+          "targets": []
+        }
+      },
+      "transport": {
+        "enabled": true,
+        "scope": "process",
+        "spacingMs": 100,
+        "pending": 0,
+        "sent": 6789,
+        "minStartGapMs": 109.65783882141113
+      },
+      "budget": {
+        "providerAccountUsage": null,
+        "providerResetAt": null,
+        "liaraCost": null,
+        "clientEnabled": false,
+        "client": {
+          "available": null,
+          "persistent": null,
+          "day": null,
+          "softBudget": null,
+          "hardCeiling": null,
+          "used": null,
+          "remaining": null,
+          "rejectedByBudget": null,
+          "softExhausted": null,
+          "store": {
+            "healthy": null,
+            "errors": null,
+            "error": null
+          }
+        },
+        "legacy": {
+          "enforced": false,
+          "usedAggregate": 4684,
+          "rejectedAggregate": 4584,
+          "overBudgetPassedAggregate": 4584,
+          "unmetered": 0,
+          "budget": {
+            "available": null,
+            "persistent": true,
+            "day": "2026-10-27",
+            "softBudget": 6000,
+            "hardCeiling": 9000,
+            "used": 0,
+            "remaining": 9000,
+            "rejectedByBudget": 4584,
+            "softExhausted": false,
+            "store": {
+              "healthy": false,
+              "errors": 1443,
+              "error": "budget_or_rate_limit"
+            }
+          }
+        },
+        "stopped": false,
+        "servedAgeMs": 197605
+      }
+    }
+  },
+  "backend": {
+    "status": "reachable",
+    "httpStatus": 401,
+    "httpOk": false,
+    "error": null
+  },
+  "storedRead": {
+    "status": "read",
+    "httpStatus": 200,
+    "error": null,
+    "rowCount": 21
+  },
+  "limitations": [
+    "No source quote clocks are exposed by this debug contract; receipt time is not source time.",
+    "Process counters are not provider account usage or Liara billing.",
+    "Backend root HTTP 401 is an expected authentication challenge; HTTP 2xx or 401 alone do not prove database health. A successful stored Codal read proves that bounded public read only, may be cached, and does not prove all database services, deployed identity or fresh/complete reports."
+  ]
+}

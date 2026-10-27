@@ -1,0 +1,36 @@
+name: Folad primary sources
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: folad-primary-sources
+  cancel-in-progress: false
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Two fixed Codal documents; one relay request each, no outer retry.
+      - name: Retrieve public primary documents
+        env:
+          RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
+        run: node scripts/ops/folad-primary-sources.mjs
+      - name: Preserve public documents and sanitized receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: folad-primary-sources
+          path: folad-primary-sources/
+          if-no-files-found: error
+          retention-days: 14

@@ -220,7 +220,8 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
   const byFY = groupByFY(byMonth);
   const years = [...byFY.keys()].sort((a, b) => b - a);
   const currentFY = years[0];
-  const priorFY = years.length > 1 ? years[1] : null;
+  // A missing prior fiscal year is a gap, not permission to compare two years apart.
+  const priorFY = byFY.has(currentFY - 1) ? currentFY - 1 : null;
 
   const currentMonths = buildFYMonths(currentFY, byFY.get(currentFY));
   const priorMonths = priorFY !== null ? buildFYMonths(priorFY, byFY.get(priorFY)) : null;

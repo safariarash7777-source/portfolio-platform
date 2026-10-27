@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "sourceUrl": "https://portfolio-platform-fawn.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+  "httpStatusObserved": 200,
+  "captureCompletedAt": "2026-10-27T09:36:08.296501956Z",
+  "captureClockBasis": "local output-file modification time after bounded curl completed; not source publication time",
+  "sourceHtmlSha256": "f391a7209199c35718daa86939aa41d0cd79f0040b66699f1b51a16983b2299c",
+  "sourceHtmlBytes": 155213,
+  "sourceRetention": "Original HTML retained privately in execution workspace; only public financial payload copied here.",
+  "extraction": "JSON-only parsing of self.__next_f.push arrays; fundamentals.n30.data Flight reference resolved via record1d props.children[3].props.children.props.reports; no script execution",
+  "canonicalInputSha256": "add5c4d6cb90fdca0676222c2229a65b94b097fe83e41c26b6ea2eca2612c581",
+  "coreReferenceCommit": "03ac31d",
+  "integrationReference": "PR322 head c367943; merged as 58f5c42; core calculations unchanged",
+  "statement": "Stored public-page snapshot, not direct primary-document verification. No authenticated user/customer data included.",
+  "persistedToDesk": false,
+  "primaryVerification": "pending",
+  "humanAcceptance": "pending",
+  "calculationRevision": "Regenerated with exact previous-fiscal-year correction; immutable SSR input unchanged.",
+  "monthlyCoreSha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0",
+  "storedSourcePacket": {
+    "workflowRunId": 40486868612,
+    "readAt": "2026-10-27T10:14:16.301Z",
+    "file": "stored-source-packet.json",
+    "sha256": "ee1b47147dcd62341ba722509fe5cfc3fa4cfb7da2d32b8b6b4ac3d43f6234f3",
+    "n10ReportId": 4047,
+    "n30ReportId": 11653,
+    "primaryDocumentsFetched": false
+  }
+}
