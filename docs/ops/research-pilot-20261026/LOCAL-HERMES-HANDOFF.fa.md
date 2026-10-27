@@ -46,8 +46,8 @@
 
 ```powershell
 $key = Join-Path $env:USERPROFILE '.ssh/codex-liara-portfolio'
-Get-Content -Raw '.\docs\ops\recovery-01\P02-VPS-readonly.py' | ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -i $key root@62.60.191.24 python3 -
-ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -i $key root@62.60.191.24 'systemctl is-active docker; docker ps -a --filter name=portfolio-stage- --format "{{.Names}} {{.Status}}"'
+Get-Content -Raw '.\docs\ops\recovery-01\P02-VPS-readonly.py' | ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=yes -i $key root@62.60.191.24 python3 -
+ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=yes -i $key root@62.60.191.24 'systemctl is-active docker; docker ps -a --filter name=portfolio-stage- --format={{.Names}}:{{.Status}}'
 ```
 
 اگر SSH همان حساب برقرار نیست، کنسول «دورنما»ی همین VPS در لیارا مسیر جایگزین است؛ رمز/کلید در چت لازم نیست. وضعیت listenerهای۲۲/۴۴۳، سیاست restart و علت توقف پنج سرویس gateway/rest/auth/storage/db را محلی بررسی کن؛ خروجی خام env، inspect و لاگ حاوی اطلاعات خصوصی ارسال نشود. فقط سرویس معیوبِ اثبات‌شده را با پیکربندی فعلی بازیابی کن؛ شاخه قدیمی selfhost و compose متفاوت جایگزین نشوند. پذیرش: اتصال DB و خواندن واقعی گزارش فولاد، سپس دو چرخه طبیعی ذخیره/مصرف؛ HTTP۲۰۰ پوسته صفحه کافی نیست. بعد از بازگشت مقصد، بخش۲ این تحویل برای intent قدیمی Hermes اجرا شود.
