@@ -13,8 +13,8 @@
 //   sales_rate «ریال بر واحد» — بدون تبدیل، فقط برچسب.
 // - خروجی متن با ارقام لاتین؛ لایهٔ UI با toPersianDigits نمایش می‌دهد.
 
-import type { CodalN30Data } from "@/lib/fundamental/types";
-import { withKnownMonthlyQuantities } from './monthly-quantity';
+import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
+import { withKnownMonthlyQuantities, isGoodsMarket } from './monthly-quantity';
 import { meaningfulRate } from './monthlyReport';
 
 /* ── واحدها ── */
@@ -55,7 +55,7 @@ export interface CardMonth {
 
 export interface CardProduct {
   name: string;
-  market: "داخلی" | "صادراتی";
+  market: N30Market;
   productionQty: number | null;
   salesQty: number | null;
   salesRate: number | null; // ریال بر واحد
@@ -186,11 +186,11 @@ export function buildFundamentalCard(
     for (const p of r.products) {
       const amt = p.sales_amount ?? 0;
       if (p.market === "صادراتی") exp += amt;
-      else dom += amt;
+      else if (p.market === "داخلی") dom += amt;
     }
     return {
       month,
-      totalAmount: r.period_total_amount ?? dom + exp,
+      totalAmount: r.period_total_amount ?? r.products.reduce((sum, p) => sum + (p.sales_amount ?? 0), 0),
       domesticAmount: dom,
       exportAmount: exp,
     };
@@ -229,7 +229,7 @@ export function buildFundamentalCard(
       if (amt != null) {
         all += amt;
         if (p.market === "صادراتی") exp += amt;
-        if (amt > best) {
+        if (isGoodsMarket(p.market) && amt > best) {
           best = amt;
           topProductName = p.product_name;
           topProductRate = meaningfulRate(p);
@@ -240,7 +240,8 @@ export function buildFundamentalCard(
         gapSeen++;
       }
     }
-    exportSharePct = all > 0 ? pctOf(exp, all) : null;
+    const total = latest.period_total_amount ?? all;
+    exportSharePct = total > 0 ? pctOf(exp, total) : null;
     prodSalesGap = gapSeen > 0 ? gap : null;
   }
 

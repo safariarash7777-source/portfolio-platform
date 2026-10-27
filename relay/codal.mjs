@@ -253,7 +253,7 @@ export function normalizeN10Bank(tables, meta) {
     period_end: meta.period_end,
     period_months: meta.period_months,
     audited: meta.audited,
-    restated_prior: false,
+    restated_prior: normLabel(inc[0]?.[2]).includes(normLabel("تجدید ارائه شده")),
     unit: "میلیون ریال",
     capital,
     standalone: prior ? { ...cur, prior } : cur,
@@ -338,7 +338,7 @@ export function normalizeN10(tables, meta) {
     period_end: meta.period_end,
     period_months: meta.period_months,
     audited: meta.audited,
-    restated_prior: false,
+    restated_prior: normLabel(inc[0]?.[2]).includes(normLabel("تجدید ارائه شده")),
     unit: "میلیون ریال",
     capital,
     standalone: prior ? { ...cur, prior } : cur,
@@ -702,9 +702,18 @@ export function normalizeN30(tables, meta, onRejected) {
     const C = { qty: 18, amount: 20 };
 
     let cumTotal = null;
+    let sectionMarket = "نامشخص";
     for (const row of t.slice(h1Idx + 1)) {
       const name = (row[0] || "").trim();
       if (!name) continue;
+      // Section labels carry market provenance; product names usually do not.
+      if (name.endsWith(":")) {
+        const section = normLabel(name.slice(0, -1));
+        sectionMarket = section === normLabel("فروش داخلی") ? "داخلی"
+          : section === normLabel("فروش صادراتی") ? "صادراتی"
+          : section === normLabel("درآمد ارائه خدمات") ? "خدمات" : "نامشخص";
+        continue;
+      }
       if (row.length < expectCols - 2) { skippedReasons.add("short_rows"); continue; } // سطرهای بخشی کوتاه‌ترند
       if (name.includes("جمع")) {
         const vM = cellNum(row[M.amount]);
@@ -714,7 +723,6 @@ export function normalizeN30(tables, meta, onRejected) {
         if (vC !== null) cumTotal = vC;
         continue;
       }
-      if (name.endsWith(":")) continue; // عنوان بخش (فروش داخلی:/صادراتی:)
       const qty = cellNum(row[M.qty]);
       const amount = cellNum(row[M.amount]);
       const rate = cellNum(row[M.rate]);
@@ -727,7 +735,9 @@ export function normalizeN30(tables, meta, onRejected) {
       }
       products.push({
         product_name: name,
-        market: name.includes("صادرات") ? "صادراتی" : "داخلی",
+        market: sectionMarket,
+        market_basis: sectionMarket === "نامشخص" ? "unknown" : "section_header",
+        qty_unit: normLabel(row[1]) === normLabel("هزار تن") ? "هزار تن" : (row[1]?.trim() || null),
         production_qty: cellNum(row[M.prod]),
         sales_qty: qty,
         sales_rate: rate,
@@ -761,7 +771,7 @@ export function normalizeN30(tables, meta, onRejected) {
     // ── واحدها: سه چیزِ متفاوت که نباید با هم قاطی شوند ─────────────────
     // `unit`            واحدِ **مبلغ** (میلیون ریال / هزار ریال / ریال)
     // `qty_unit`        واحدِ **مقدارِ کالا** — کدال آن را در ستونِ جدا می‌دهد
-    //                   و ما اینجا استخراجش نمی‌کنیم، پس `null` می‌ماند.
+    //                   در هر ردیف استخراج می‌شود؛ گزارش فقط واحد مشترک را دارد.
     // `sales_rate`      نرخِ فروش، در خودِ هر محصول.
     //
     // `unit` از خودِ گزارش استخراج می‌شود، نه از عادت. `null` یعنی قابلِ اثبات
@@ -772,7 +782,7 @@ export function normalizeN30(tables, meta, onRejected) {
     unit_inferred: unitInfo.inferred,
     // ⚠️ صریح `null` است، نه غایب: «نمی‌دانیم» با «ندارد» فرق دارد و
     // خالی‌گذاشتنِ کلید، بعداً به «فرض کن دانه» تفسیر می‌شود.
-    qty_unit: null,
+    qty_unit: products[0].qty_unit && products.every(p => p.qty_unit === products[0].qty_unit) ? products[0].qty_unit : null,
     // ن-۳۰ گزارش ماهانه است — دورهٔ مقایسه تعریفاً یک ماه.
     period_months: 1,
   };
@@ -860,11 +870,14 @@ const SB_HDRS = () => ({
   Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
 });
 
-/** نسخهٔ پارسر — با هر بازنویسی منطق پارس، زیاد کنید تا ردیف‌های نسخهٔ قدیم
- * (که در جدول append-only قابل حذف/ویرایش نیستند) دوباره پردازش شوند.
- * ردیف جدید با source_url پسونددار (#pv2) درج می‌شود و لایهٔ خواندن باید
- * بالاترین parser_version برای هر اطلاعیه را بخواند (raw.parser_version). */
-export const PARSER_VERSION = 2;
+/** New append-only writes identify their interpretation version. Coverage has
+ * a separate explicit floor: a version change does not authorize refetching
+ * every historical document. Readers select the highest parser_version. */
+export const PARSER_VERSION = 3;
+// v3 is a bounded interpretation correction, not authorization for a historical
+// provider backfill. Existing v2 documents remain covered; explicit repairs use
+// already retrieved source bytes and append #pv3 without deleting old versions.
+export const COVERAGE_PARSER_VERSION = 2;
 
 /** کلید درج برای نسخهٔ فعلی پارسر — نسخهٔ ۱ بدون پسوند بود. */
 const versionedUrl = (link) => (PARSER_VERSION === 1 ? link : `${link}#pv${PARSER_VERSION}`);
@@ -886,7 +899,7 @@ async function existingUrls(symbol) {
     if (!r.source_url) continue; // legacy metadata-only rows may have no source_url
     const m = String(r.source_url || "").match(/^(.*?)#pv(\d+)$/);
     const [base, ver] = m ? [m[1], Number(m[2])] : [r.source_url, 1];
-    if (ver >= PARSER_VERSION) cur.add(base);
+    if (ver >= COVERAGE_PARSER_VERSION) cur.add(base);
   }
   return cur;
 }

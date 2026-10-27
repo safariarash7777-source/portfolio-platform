@@ -1,3 +1,4 @@
+import { isGoodsMarket } from "./monthly-quantity";
 // لایهٔ دادهٔ سرور «پنل رصد ادمین» — SPEC-admin-market-radar.md
 //
 // فقط خواندن از symbol_history و codal_reports (append-only دست‌نخورده).
@@ -135,7 +136,7 @@ export function deriveN30Extras(rows: CodalRow[]): Map<string, N30Extras> {
     for (const p of products) {
       const pq = num(p["production_qty"]);
       const sq = num(p["sales_qty"]);
-      if (pq != null && sq != null) {
+      if (isGoodsMarket(p["market"]) && pq != null && sq != null) {
         prod += pq;
         sales += sq;
         seen++;
@@ -146,6 +147,7 @@ export function deriveN30Extras(rows: CodalRow[]): Map<string, N30Extras> {
         if (p["market"] === "صادراتی") expAmt += amt;
       }
     }
+    totalAmt = num(data["period_total_amount"]) ?? totalAmt;
     out.set(sym, {
       prodSalesGap: seen > 0 ? prod - sales : null,
       exportSharePct: totalAmt > 0 ? (expAmt / totalAmt) * 100 : null,

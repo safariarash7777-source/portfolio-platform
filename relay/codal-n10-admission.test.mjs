@@ -43,7 +43,8 @@ test("industrial valid admission does not reinterpret the legacy output", () => 
   const html = industrial();
   assert.deepEqual(admit(html), codal.normalizeN10(codal.parseHtmlTables(html), meta));
   assert.equal(admit(html).unit, "میلیون ریال");
-  assert.equal(codal.PARSER_VERSION, 2);
+  assert.equal(codal.PARSER_VERSION, 3);
+  assert.equal(codal.COVERAGE_PARSER_VERSION, 2);
 });
 
 test("unit elsewhere in the workbook cannot rescue the income statement", () => {

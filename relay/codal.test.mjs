@@ -237,7 +237,7 @@ if (n30) {
   check("واحدِ ن-۳۰ از خودِ گزارش استخراج شد", n30.unit === "میلیون ریال", String(n30.unit));
   check("پایهٔ اثباتِ واحد ثبت شد", typeof n30.unit_basis === "string" && n30.unit_basis.length > 0, String(n30.unit_basis));
   check("دورهٔ مقایسه یک ماه است", n30.period_months === 1);
-  check("واحدِ مقدارِ کالا استخراج نشده و صریح null است", n30.qty_unit === null, String(n30.qty_unit));
+  check("واحدِ مقدارِ کالا از ستون ردیف استخراج شد", n30.products.every(p => p.qty_unit === "متر مکعب"), JSON.stringify(n30.products.map(p => p.qty_unit)));
   check("واحدِ مبلغ با واحدِ مقدار قاطی نشده", n30.unit !== n30.qty_unit);
 }
 

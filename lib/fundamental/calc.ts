@@ -4,6 +4,7 @@
 // اگر ورودیِ محاسبه‌ای موجود نیست، خروجی null است — عدد جایگزین ممنوع (قانون ۳/۷).
 
 import type { CodalN10Data, CodalN30Data, SalesTrendRow } from "./types";
+import { isGoodsMarket } from "../core/monthly-quantity";
 import { isMillionRialUnit } from "./units";
 
 function finiteNumber(value: unknown): value is number {
@@ -170,9 +171,9 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
     for (const p of r.products) {
       const amt = p.sales_amount ?? 0;
       if (p.market === "صادراتی") exp += amt;
-      else dom += amt;
+      else if (p.market === "داخلی") dom += amt;
     }
-    return { month, totalAmount: r.period_total_amount ?? dom + exp, domesticAmount: dom, exportAmount: exp };
+    return { month, totalAmount: r.period_total_amount ?? r.products.reduce((sum, p) => sum + (p.sales_amount ?? 0), 0), domesticAmount: dom, exportAmount: exp };
   });
 
   // تجمیع محصولی در کل بازه.
@@ -180,7 +181,8 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
   for (const [, r] of sorted) {
     for (const p of r.products) {
       if (!p.product_name || p.sales_amount == null) continue;
-      prodTotals.set(p.product_name, (prodTotals.get(p.product_name) ?? 0) + p.sales_amount);
+      const name = isGoodsMarket(p.market) ? p.product_name : `${p.product_name} — ${p.market === "خدمات" ? "خدمات" : "نامشخص"}`;
+      prodTotals.set(name, (prodTotals.get(name) ?? 0) + p.sales_amount);
     }
   }
   const grand = [...prodTotals.values()].reduce((a, b) => a + b, 0);
@@ -193,13 +195,18 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
   if (rest > 0) productMix.push({ name: "سایر", amount: rest, sharePct: pct(rest, grand) });
 
   const exportTotal = months.reduce((a, m) => a + m.exportAmount, 0);
-  const allTotal = months.reduce((a, m) => a + m.domesticAmount + m.exportAmount, 0);
+  const allTotal = months.reduce((a, m) => a + m.totalAmount, 0);
 
   // محصول پرفروش‌ترین: سری نرخ/مقدار ماهانه.
-  const topProductName = rankedAll[0]?.[0] ?? null;
+  const goodsTotals = new Map<string, number>();
+  for (const [, r] of sorted) for (const p of r.products) {
+    if (isGoodsMarket(p.market) && p.product_name && p.sales_amount != null)
+      goodsTotals.set(p.product_name, (goodsTotals.get(p.product_name) ?? 0) + p.sales_amount);
+  }
+  const topProductName = [...goodsTotals].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   const topProductMonths: N30ProductMonth[] = topProductName
     ? sorted.map(([month, r]) => {
-        const p = r.products.find((x) => x.product_name === topProductName) ?? null;
+        const p = r.products.find((x) => x.product_name === topProductName && isGoodsMarket(x.market)) ?? null;
         return {
           month,
           rate: p?.sales_rate ?? null,
@@ -215,7 +222,7 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
     .map(([month, r]) => {
       let production = 0, sales = 0, seen = 0;
       for (const p of r.products) {
-        if (p.production_qty == null || p.sales_qty == null) continue;
+        if (!isGoodsMarket(p.market) || p.production_qty == null || p.sales_qty == null) continue;
         production += p.production_qty;
         sales += p.sales_qty;
         seen++;

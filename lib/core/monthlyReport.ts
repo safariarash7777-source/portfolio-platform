@@ -5,7 +5,9 @@
 // relay/codal.mjs خط ۳۹۲: اعتبارسنجی مبلغ ≈ فروش×نرخ÷10^6).
 // روایت‌ها فقط template‌ای و قطعی‌اند — هیچ ارزش‌داوری تجویزی.
 
-import type { CodalN30Data } from "@/lib/fundamental/types";
+import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
+
+import { isGoodsMarket, monthlyMarket } from "./monthly-quantity";
 
 /* ── انواع خروجی ─────────────────────────────────────────────────────────── */
 
@@ -40,7 +42,7 @@ export interface RateSeries {
 /** یک قلم از ترکیب فروش آخرین ماه. */
 export interface MixSlice {
   name: string;
-  market: "داخلی" | "صادراتی" | null; // null برای «سایر» ترکیبی
+  market: N30Market | null; // null برای «سایر» ترکیبی
   amount: number; // میلیون ریال
   sharePct: number | null;
 }
@@ -254,7 +256,8 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     const r = byMonth.get(key)!;
     for (const p of r.products) {
       if (!p.product_name || p.sales_amount == null) continue;
-      const market: "داخلی" | "صادراتی" = p.market === "صادراتی" ? "صادراتی" : "داخلی";
+      const market = monthlyMarket(p.market);
+      if (!isGoodsMarket(market)) continue;
       const ck = `${p.product_name}|${market}`;
       const prev = comboTotals.get(ck);
       if (prev) prev.amount += p.sales_amount;
@@ -269,7 +272,7 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     points: sortedKeys.map((key) => {
       const r = byMonth.get(key)!;
       const p = r.products.find(
-        (x) => x.product_name === c.name && (x.market === "صادراتی" ? "صادراتی" : "داخلی") === c.market,
+        (x) => x.product_name === c.name && x.market === c.market,
       );
       const mo = Number(key.slice(5, 7));
       return { monthKey: key, monthLabel: JALALI_MONTHS[mo - 1], rate: meaningfulRate(p ?? null) };
@@ -287,14 +290,14 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     const r = byMonth.get(latestKey)!;
     latestMonthLabel = JALALI_MONTHS[Number(latestKey.slice(5, 7)) - 1];
     let dom = 0, exp = 0;
-    const items: { name: string; market: "داخلی" | "صادراتی"; amount: number }[] = [];
+    const items: { name: string; market: N30Market; amount: number }[] = [];
     for (const p of r.products) {
       if (!p.product_name || p.sales_amount == null || p.sales_amount <= 0) continue;
-      const market: "داخلی" | "صادراتی" = p.market === "صادراتی" ? "صادراتی" : "داخلی";
-      if (market === "صادراتی") exp += p.sales_amount; else dom += p.sales_amount;
+      const market = monthlyMarket(p.market);
+      if (market === "صادراتی") exp += p.sales_amount; else if (market === "داخلی") dom += p.sales_amount;
       items.push({ name: p.product_name, market, amount: p.sales_amount });
     }
-    const total = dom + exp;
+    const total = r.period_total_amount ?? items.reduce((sum, p) => sum + p.amount, 0);
     latestDomesticAmount = dom;
     latestExportAmount = exp;
     latestExportSharePct = total > 0 ? pct(exp, total) : null;
@@ -311,7 +314,7 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
   const prodTotals = new Map<string, number>();
   for (const key of sortedKeys) {
     for (const p of byMonth.get(key)!.products) {
-      if (!p.product_name || p.sales_amount == null) continue;
+      if (!p.product_name || p.sales_amount == null || !isGoodsMarket(p.market)) continue;
       prodTotals.set(p.product_name, (prodTotals.get(p.product_name) ?? 0) + p.sales_amount);
     }
   }
@@ -322,7 +325,7 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
       const r = byMonth.get(key)!;
       let production = 0, sales = 0, seen = false;
       for (const p of r.products) {
-        if (p.product_name !== mainProductName) continue;
+        if (p.product_name !== mainProductName || !isGoodsMarket(p.market)) continue;
         if (p.production_qty == null || p.sales_qty == null) continue;
         production += p.production_qty;
         sales += p.sales_qty;
