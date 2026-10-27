@@ -41,6 +41,36 @@ export function errorCategory(value) {
 const operation = x => ({ ok: boolean(x?.ok), lastRun: clock(x?.lastRun), lastDate: date(x?.lastDate ?? x?.lastJdate), rows: number(x?.rows), error: errorCategory(x?.error ?? x?.lastError), skipped: x?.skipped == null ? null : true });
 const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError) } });
 
+// IME scheduling days are Gregorian Tehran days, not timestamps. Target
+// disclosure dates are Jalali days. Preserve both precisions explicitly.
+function imeReceipt(ime) {
+  const cert = ime?.certificate, eod = cert?.eod, physical = ime?.physical;
+  const table = value => value === 'missing (run phase19 SQL)' ? 'missing' : choice(value, ['ok', 'unknown']);
+  const targets = Array.isArray(physical?.targets) ? physical.targets : null;
+  return {
+    certificate: {
+      ...counts(cert, ['rows', 'reqToday']), lastFetchAt: clock(cert?.lastFetchAt), error: errorCategory(cert?.lastError),
+      eod: { dayCalendar: 'gregorian', dayTimezone: 'Asia/Tehran', lastPushDay: date(eod?.lastPushDay),
+        ...counts(eod, ['pushed', 'skippedSourceDate']), table: table(eod?.table),
+        skip: choice(eod?.skip, ['before-close', 'no-source-session-date']), error: errorCategory(eod?.lastError) },
+    },
+    physical: {
+      dayCalendar: 'gregorian', dayTimezone: 'Asia/Tehran', lastAttemptDay: date(physical?.lastAttemptDay),
+      lastRunDay: date(physical?.lastRunDay), cycleDay: date(physical?.cycleDay),
+      ...counts(physical, ['inserted', 'maxProviderRequestsPerDay', 'maxStorageAttemptsPerTarget']),
+      table: table(physical?.table), error: errorCategory(physical?.lastError),
+      retryScope: choice(physical?.retryScope, ['process-memory-tehran-day']),
+      targetCount: targets?.length ?? null, targetsTruncated: targets === null ? null : targets.length > 2,
+      targets: targets === null ? null : targets.slice(0, 2).map(target => ({
+        date: date(target?.date), dateCalendar: 'jalali', datePrecision: 'day',
+        source: choice(target?.source, ['unattempted', 'failed', 'ready']),
+        ...counts(target, ['sourceAttempts', 'storageAttempts', 'pendingRows', 'sourceRows', 'rejectedRows']),
+        complete: boolean(target?.complete), nextRetryAt: clock(target?.nextRetryAt), error: errorCategory(target?.error),
+      })),
+    },
+  };
+}
+
 export function sanitizeDebug(d) {
   const familyStatus = x => ({ state: choice(x?.state, ['received', 'empty', 'retained', 'stale', 'cached', 'unavailable']), receivedAt: clock(x?.receivedAt), retained: boolean(x?.retained), error: errorCategory(x?.error), sourceAt: null });
   const sources = ['brsapi_gold_currency', 'brsapi_stocks', 'brsapi_index', 'brsapi_nav', 'brsapi_fund_meta'];
@@ -54,7 +84,7 @@ export function sanitizeDebug(d) {
     codal: { ...operation(d?.codalEngine), feed: { ...counts(d?.codalEngine?.feed, ['pages', 'seen', 'matched', 'downloaded', 'inserted', 'parseFailed']), complete: boolean(d?.codalEngine?.feed?.complete), incompleteReason: errorCategory(d?.codalEngine?.feed?.incompleteReason) }, feedTable: { ...counts(d?.codalEngine?.feedTable, ['attempted', 'inserted', 'duplicates']), error: errorCategory(d?.codalEngine?.feedTable?.lastError) }, backfill: counts(d?.codalEngine?.backfill, ['queueSize', 'inserted', 'parseFailed', 'skippedCovered']) },
     history: Object.fromEntries(['eodHistory', 'indexHistory', 'marketBreadth', 'historyPrune'].map(k => [k, operation(d?.[k])])),
     commodity: { enabled: boolean(d?.commodity?.enabled), ...counts(d?.commodity, ['rows', 'reqToday', 'dailyCap', 'remaining']), lastFetchAt: clock(d?.commodity?.lastFetchAt), counterScope: choice(d?.commodity?.counterScope, ['process']), dayKey: date(d?.commodity?.dayKey), error: errorCategory(d?.commodity?.lastError) },
-    ime: { certificate: { ...counts(d?.ime?.certificate, ['rows', 'reqToday']), lastFetchAt: clock(d?.ime?.certificate?.lastFetchAt), error: errorCategory(d?.ime?.certificate?.lastError), eod: operation(d?.ime?.certificate?.eod) }, physical: operation(d?.ime?.physical) },
+    ime: imeReceipt(d?.ime),
     transport: { enabled: boolean(d?.brsapiTransport?.enabled), scope: choice(d?.brsapiTransport?.scope, ['process']), ...counts(d?.brsapiTransport, ['spacingMs', 'pending', 'sent', 'minStartGapMs']) },
     budget: { providerAccountUsage: null, providerResetAt: null, liaraCost: null, clientEnabled: boolean(d?.brsapiClient?.enabled), client: budget(d?.brsapiClient?.budget), legacy: { enforced: boolean(d?.brsapiLegacy?.enforced), usedAggregate: sum(d?.brsapiLegacy?.used), rejectedAggregate: sum(d?.brsapiLegacy?.rejected), overBudgetPassedAggregate: sum(d?.brsapiLegacy?.overBudgetPassed), unmetered: number(d?.brsapiLegacy?.unmetered), budget: budget(d?.brsapiLegacy?.budget) }, stopped: boolean(d?.brsapiBudgetStop?.active), servedAgeMs: number(d?.brsapiBudgetStop?.servedAgeMs) },
   };

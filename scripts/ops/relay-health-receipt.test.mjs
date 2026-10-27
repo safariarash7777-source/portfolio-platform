@@ -102,3 +102,46 @@ test('workflow preserves existing gates and adds one receipt invocation with san
   assert.match(workflow, /path: relay-health-receipt.json/);
   assert.match(workflow, /contents: read/);
 });
+
+test('IME actual debug shape preserves day precision, storage completion and bounded sanitized targets', () => {
+  const ime = {
+    certificate: { rows: 14, reqToday: 8, lastFetchAt: 1793066300000, lastError: null,
+      eod: { lastPushDay: '2026-10-26', pushed: 12, skippedSourceDate: 2, table: 'ok', skip: null, lastError: null } },
+    physical: { lastAttemptDay: '2026-10-27', lastRunDay: '2026-10-26', cycleDay: '2026-10-27', inserted: 7,
+      lastError: 'physical persistence HTTP 503 ' + secret, table: 'missing (run phase19 SQL)',
+      retryScope: 'process-memory-tehran-day', maxProviderRequestsPerDay: 2, maxStorageAttemptsPerTarget: 3,
+      targets: [
+        { date: '1405-08-05', source: 'ready', sourceAttempts: 1, storageAttempts: 2, nextRetryAt: 1793066400000, complete: false, pendingRows: 5, sourceRows: 5, rejectedRows: 0, error: 'physical persistence HTTP 503 ' + secret, rows: [secret] },
+        { date: '1405-08-04', source: 'ready', sourceAttempts: 1, storageAttempts: 1, nextRetryAt: 0, complete: true, pendingRows: 0, sourceRows: 7, rejectedRows: 1, error: null },
+        { date: secret, error: secret },
+      ] },
+  };
+  const out = sanitizeDebug({ ime }).ime;
+  assert.equal(out.certificate.eod.lastPushDay, '2026-10-26');
+  assert.equal(out.certificate.eod.pushed, 12);
+  assert.equal(out.certificate.eod.skippedSourceDate, 2);
+  assert.equal(out.physical.lastAttemptDay, '2026-10-27');
+  assert.equal(out.physical.lastRunDay, '2026-10-26');
+  assert.equal(out.physical.dayTimezone, 'Asia/Tehran');
+  assert.equal(out.physical.dayCalendar, 'gregorian');
+  assert.equal(out.physical.inserted, 7);
+  assert.equal(out.physical.table, 'missing');
+  assert.equal(out.physical.targetCount, 3);
+  assert.equal(out.physical.targetsTruncated, true);
+  assert.equal(out.physical.targets.length, 2);
+  assert.equal(out.physical.targets[0].date, '1405-08-05');
+  assert.equal(out.physical.targets[0].dateCalendar, 'jalali');
+  assert.equal(out.physical.targets[0].datePrecision, 'day');
+  assert.equal(out.physical.targets[0].storageAttempts, 2);
+  assert.equal(out.physical.targets[0].complete, false);
+  assert.equal(out.physical.targets[0].error, 'upstream_server');
+  assert.equal(out.physical.targets[0].nextRetryAt, new Date(1793066400000).toISOString());
+  assert.equal(out.physical.targets[1].nextRetryAt, null);
+  assert.equal(out.physical.targets[1].complete, true);
+  assert.equal('lastRun' in out.physical, false);
+  assert.equal(JSON.stringify(out).includes(secret), false);
+  const missing = sanitizeDebug({}).ime;
+  assert.equal(missing.physical.targets, null);
+  assert.equal(missing.physical.inserted, null);
+  assert.equal(missing.certificate.eod.pushed, null);
+});
