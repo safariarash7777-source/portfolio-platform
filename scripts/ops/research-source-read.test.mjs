@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import * as zlib from 'node:zlib';
 import assert from 'node:assert/strict';
-import { SOURCES, remoteRead, projectRow, command, parseCapture } from './research-source-read.mjs';
+import { SOURCES, remoteRead, projectRow, command, parseCapture, safeRemoteFailure, failureReceipt } from './research-source-read.mjs';
 const secret = 'SECRET_DO_NOT_EMIT';
 const env = { SUPABASE_URL: 'https://62.60.191.24/liara-preview', SUPABASE_SERVICE_ROLE_KEY: secret };
 const row = source => ({ id: 4047, symbol: 'فولاد', report_kind: source.kind, title: 'صورت‌های مالی اصلاحیه', source_url: source.url + '#pv3', published_at: null, captured_at: '2026-10-27T10:00:00Z',
@@ -38,7 +38,7 @@ test('wrong endpoint, wrong symbol/source, excessive versions, and remote HTTP e
   for (const result of [[{ ...row(SOURCES[0]), symbol: 'دیگر' }], [{ ...row(SOURCES[0]), announcement_link: 'https://evil.test' }], Array(11).fill(row(SOURCES[0]))]) {
     await assert.rejects(remoteRead(SOURCES, projectRow, env, async () => Response.json(result)));
   }
-  await assert.rejects(remoteRead(SOURCES, projectRow, env, async () => new Response(secret, { status: 500 })), /stored_read_failed/);
+  await assert.rejects(remoteRead(SOURCES, projectRow, env, async () => new Response(secret, { status: 500 })), /stored_http_error/);
 });
 test('CLI exit zero alone is not completion proof and failure/raw logs are never returned', () => {
   for (const capture of ['', secret, 'FOLAD_PACKET=' + Buffer.from(JSON.stringify({ ok: false, reason: secret })).toString('base64')]) assert.throws(() => parseCapture(capture, 0));
@@ -61,4 +61,25 @@ test('generated single-token compressed command executes fixed reads and produce
   assert.equal(output.length, 1);
   assert.equal(parseCapture(output[0], 0).packets.length, 2);
   assert.equal(JSON.stringify(parseCapture(output[0], 0)).includes(secret), false);
+  const failed = [];
+  await runInNewContext(decoded.slice('node -e '.length), {
+    require: () => zlib, Buffer, URL, URLSearchParams, AbortSignal, process: { env: {} },
+    console: { log: line => failed.push(line) }, fetch: async () => { throw new Error('must not call'); },
+  });
+  assert.throws(() => parseCapture(failed[0], 0), error => failureReceipt(error).remoteFailure.reason === 'endpoint_missing');
+});
+
+test('safe capture diagnosis distinguishes CLI, marker and explicit remote failures without raw log reflection', () => {
+  const check = (raw, code) => { try { parseCapture(raw, code); assert.fail('must fail'); } catch (error) { return failureReceipt(error); } };
+  assert.equal(check(secret, 2).reason, 'cli_exit');
+  assert.equal(check(secret, 0).reason, 'completion_marker_missing');
+  assert.equal(check('FOLAD_PACKET=invalid!', 0).reason, 'malformed_marker');
+  const remote = failure => 'FOLAD_PACKET=' + Buffer.from(JSON.stringify({ ok: false, failure })).toString('base64');
+  const failure = check(remote({ reason: 'stored_http_error', httpStatus: 400, body: secret }), 0);
+  assert.equal(failure.reason, 'remote_failure');
+  assert.deepEqual(failure.remoteFailure, { reason: 'stored_http_error', httpStatus: 400 });
+  assert.equal(check(remote({ reason: secret, httpStatus: secret }), 0).remoteFailure.reason, 'unknown_remote_failure');
+  assert.deepEqual(safeRemoteFailure(new Error(secret)), { reason: 'unknown_remote_failure', httpStatus: null });
+  assert.equal(JSON.stringify(failure).includes(secret), false);
+  assert.equal(JSON.stringify(failureReceipt({ message: secret, stack: secret })).includes(secret), false);
 });
