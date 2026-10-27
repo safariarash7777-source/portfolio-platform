@@ -69,7 +69,20 @@ export function command() {
   return cmd;
 }
 export function parseCapture(raw, exitCode) {
-  if (!Number.isInteger(exitCode) || exitCode !== 0) throw Object.assign(new Error('cli_exit'), { exitCode });
+  if (!Number.isInteger(exitCode) || exitCode !== 0) {
+    let markerPresent = false, remoteFailure;
+    if (typeof raw === 'string' && Buffer.byteLength(raw) <= 2 * 1024 * 1024) {
+      const markers = raw.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '').split(/\r?\n/).filter(line => line.startsWith('FOLAD_PACKET='));
+      markerPresent = markers.length > 0;
+      if (markers.length === 1 && /^FOLAD_PACKET=[A-Za-z0-9+/]+={0,2}$/.test(markers[0])) {
+        try {
+          const result = JSON.parse(Buffer.from(markers[0].slice(13), 'base64').toString('utf8'));
+          if (result?.ok === false) remoteFailure = result.failure;
+        } catch { /* Malformed output is never reflected into diagnostics. */ }
+      }
+    }
+    throw Object.assign(new Error('cli_exit'), { exitCode, markerPresent, remoteFailure });
+  }
   if (typeof raw !== 'string' || Buffer.byteLength(raw) > 2 * 1024 * 1024) throw new Error('capture_limit');
   const lines = raw.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '').split(/\r?\n/).filter(line => line.startsWith('FOLAD_PACKET='));
   if (!lines.length) throw new Error('completion_marker_missing');
@@ -91,12 +104,12 @@ export function failureReceipt(error) {
   const local = ['cli_exit', 'capture_limit', 'completion_marker_missing', 'ambiguous_marker', 'malformed_marker', 'remote_failure', 'invalid_packet', 'invalid_packet_source', 'invalid_report', 'invalid_report_data', 'invalid_products', 'command_limit', 'explicit_mode_required'];
   const reason = local.includes(error?.message) ? error.message : 'unknown_capture_failure';
   const remote = error?.remoteFailure;
-  const remoteFailure = reason === 'remote_failure' ? safeRemoteFailure({ message: remote?.reason, httpStatus: remote?.httpStatus }) : null;
+  const remoteFailure = (reason === 'remote_failure' || reason === 'cli_exit' && remote !== undefined) ? safeRemoteFailure({ message: remote?.reason, httpStatus: remote?.httpStatus }) : null;
   // Preserve fixed remote fallback classes without reflecting arbitrary text.
   if (remoteFailure && ['timeout', 'transport_or_type_error', 'unknown_remote_failure'].includes(remote?.reason)) remoteFailure.reason = remote.reason;
   return { schemaVersion: 1, status: 'failed', reason,
     exitCode: reason === 'cli_exit' && Number.isInteger(error?.exitCode) && error.exitCode >= 0 && error.exitCode <= 255 ? error.exitCode : null,
-    remoteFailure };
+    markerPresent: reason === 'cli_exit' ? error?.markerPresent === true : null, remoteFailure };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {

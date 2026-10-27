@@ -83,3 +83,17 @@ test('safe capture diagnosis distinguishes CLI, marker and explicit remote failu
   assert.equal(JSON.stringify(failure).includes(secret), false);
   assert.equal(JSON.stringify(failureReceipt({ message: secret, stack: secret })).includes(secret), false);
 });
+
+test('nonzero CLI always fails but preserves one valid sanitized remote failure marker', () => {
+  const diagnostic = value => { try { parseCapture(value, 2); assert.fail('nonzero exit must fail'); } catch (error) { return failureReceipt(error); } };
+  const remote = payload => 'FOLAD_PACKET=' + Buffer.from(JSON.stringify(payload)).toString('base64');
+  const failed = diagnostic(remote({ ok: false, failure: { reason: 'stored_http_error', httpStatus: 403, body: secret } }));
+  assert.equal(failed.reason, 'cli_exit'); assert.equal(failed.exitCode, 2); assert.equal(failed.markerPresent, true);
+  assert.deepEqual(failed.remoteFailure, { reason: 'stored_http_error', httpStatus: 403 });
+  assert.equal(diagnostic(remote({ ok: true, packet: secret })).remoteFailure, null);
+  assert.equal(diagnostic(remote({ ok: true, packet: secret })).reason, 'cli_exit');
+  assert.equal(diagnostic(secret).markerPresent, false);
+  assert.equal(diagnostic(remote({ ok: false, failure: { reason: secret } })).remoteFailure.reason, 'unknown_remote_failure');
+  assert.equal(diagnostic(remote({ ok: false }) + '\n' + remote({ ok: false })).remoteFailure, null);
+  assert.equal(JSON.stringify(failed).includes(secret), false);
+});
