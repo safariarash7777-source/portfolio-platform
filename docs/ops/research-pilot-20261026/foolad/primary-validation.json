@@ -1,0 +1,212 @@
+{
+  "scope": "Independent fixed primary-document reconstruction; no database mutation or forecast",
+  "references": "zero-based tr rows and td/th cell indices in exported rows; spans not expanded",
+  "primaryHashes": {
+    "N10": "90009e9eba89ae41eea7d581687585d25b070b3962398fafcb46941f5f2b879e",
+    "N30": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62"
+  },
+  "n10": {
+    "period": "1405-03-31/3",
+    "priorPeriod": "1404-03-31/3",
+    "priorColumnRestated": true,
+    "restatedFlagMismatch": true,
+    "revenue": "834166799",
+    "cogs": "601508257",
+    "grossProfit": "232658542",
+    "netProfit": "120356493",
+    "basicEPSRial": "63",
+    "netProfitPerShareRial": "62",
+    "storedEPSDefinition": "63 matches basic EPS; do not relabel as the separate net-profit-per-share row",
+    "costOfGoods": "357577824",
+    "costOfServices": "243930433",
+    "directMaterials": "332767708",
+    "directLabour": "10758596",
+    "productionOverhead": "141267260",
+    "costOfServicesSharePct": "40.55313125984237320286693920"
+  },
+  "n30": {
+    "period": "1405-06-31/1",
+    "unit": "million IRR",
+    "monthly": {
+      "domestic": "432531365",
+      "exports": "79130673",
+      "services": "127756122"
+    },
+    "monthlyTotal": "639418160",
+    "monthlySharePct": {
+      "domestic": "67.64452310832085219475155351",
+      "exports": "12.37541845855613484609195335",
+      "services": "19.98005843312301295915649315"
+    },
+    "cumulative": {
+      "domestic": "1729345463",
+      "exports": "150432227",
+      "services": "629644494"
+    },
+    "cumulativePriorSamePeriod": {
+      "domestic": "1082757065",
+      "exports": "224382630",
+      "services": "301594542"
+    },
+    "cumulativeTotal": "2509422184",
+    "priorCumulativeTotal": "1608734237",
+    "cumulativeGrowthPct": "55.98736735283392865343736698",
+    "products": [
+      {
+        "row": 3,
+        "product": "محصولات سرد",
+        "category": "domestic",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "138",
+        "rateRialPerThousandTonnes": "1084861500000",
+        "salesMillionRial": "149710887",
+        "amountMinusQuantityTimesRateMillionRial": "0"
+      },
+      {
+        "row": 4,
+        "product": "محصولات گرم",
+        "category": "domestic",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "238",
+        "rateRialPerThousandTonnes": "921256487395",
+        "salesMillionRial": "219259044",
+        "amountMinusQuantityTimesRateMillionRial": "-0.00001"
+      },
+      {
+        "row": 5,
+        "product": "محصولات پوشش دار",
+        "category": "domestic",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "22",
+        "rateRialPerThousandTonnes": "1765051954545",
+        "salesMillionRial": "38831143",
+        "amountMinusQuantityTimesRateMillionRial": "0.00001"
+      },
+      {
+        "row": 6,
+        "product": "تختال",
+        "category": "domestic",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "22",
+        "rateRialPerThousandTonnes": "660313000000",
+        "salesMillionRial": "14526886",
+        "amountMinusQuantityTimesRateMillionRial": "0"
+      },
+      {
+        "row": 7,
+        "product": "گندله",
+        "category": "domestic",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "110",
+        "rateRialPerThousandTonnes": "92758227273",
+        "salesMillionRial": "10203405",
+        "amountMinusQuantityTimesRateMillionRial": "-0.00003"
+      },
+      {
+        "row": 8,
+        "product": "آهن اسفنجي",
+        "category": "domestic",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "0",
+        "rateRialPerThousandTonnes": null,
+        "salesMillionRial": "0",
+        "amountMinusQuantityTimesRateMillionRial": null
+      },
+      {
+        "row": 11,
+        "product": "محصولات پوشش دار",
+        "category": "exports",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "2",
+        "rateRialPerThousandTonnes": "950737000000",
+        "salesMillionRial": "1901474",
+        "amountMinusQuantityTimesRateMillionRial": "0"
+      },
+      {
+        "row": 12,
+        "product": "محصولات گرم",
+        "category": "exports",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "66",
+        "rateRialPerThousandTonnes": "797718772727",
+        "salesMillionRial": "52649439",
+        "amountMinusQuantityTimesRateMillionRial": "0.000018"
+      },
+      {
+        "row": 13,
+        "product": "محصولات سرد",
+        "category": "exports",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "3",
+        "rateRialPerThousandTonnes": "781581333333",
+        "salesMillionRial": "2344744",
+        "amountMinusQuantityTimesRateMillionRial": "0.000001"
+      },
+      {
+        "row": 14,
+        "product": "تختال",
+        "category": "exports",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "31",
+        "rateRialPerThousandTonnes": "717258580645",
+        "salesMillionRial": "22235016",
+        "amountMinusQuantityTimesRateMillionRial": "0.000005"
+      },
+      {
+        "row": 15,
+        "product": "گندله",
+        "category": "exports",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "0",
+        "rateRialPerThousandTonnes": "0",
+        "salesMillionRial": "0",
+        "amountMinusQuantityTimesRateMillionRial": "0"
+      },
+      {
+        "row": 16,
+        "product": "آهن اسفنجي",
+        "category": "exports",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "0",
+        "rateRialPerThousandTonnes": "0",
+        "salesMillionRial": "0",
+        "amountMinusQuantityTimesRateMillionRial": "0"
+      },
+      {
+        "row": 19,
+        "product": "محصولات گرم",
+        "category": "services",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "140",
+        "rateRialPerThousandTonnes": "912543728571",
+        "salesMillionRial": "127756122",
+        "amountMinusQuantityTimesRateMillionRial": "0.00006"
+      },
+      {
+        "row": 20,
+        "product": "ساير",
+        "category": "services",
+        "quantityUnit": "thousand tonnes",
+        "salesQuantity": "0",
+        "rateRialPerThousandTonnes": "0",
+        "salesMillionRial": "0",
+        "amountMinusQuantityTimesRateMillionRial": "0"
+      }
+    ],
+    "sourceNoteRow61": "درآمد حاصل از ارائه خدمات مربوط به عملکرد شرکت نورد فولاد سبا اصفهان می باشد.",
+    "classificationMismatch": "Stored export and service rows labeled domestic; raw qty_unit missing despite primary thousand-tonne cells."
+  },
+  "sensitivity": {
+    "kind": "Mechanical sensitivity, not a forecast or calibrated scenario",
+    "scope": "Only domestic hot-products monthly revenue; other revenue held fixed; no cost/profit projection",
+    "sourceRow": 4,
+    "baseRevenue": "639418160",
+    "baseAffectedAmount": "219259044",
+    "upsideRateChangePct": 10,
+    "upsideRevenue": "661344064.4",
+    "downsideRateChangePct": -10,
+    "downsideRevenue": "617492255.6",
+    "totalRevenueChangePct": "3.429039988479526449483386584",
+    "assumptions": "Quantity, other product rates/mix, service revenue and exchange conversion held constant; no probability assigned."
+  }
+}

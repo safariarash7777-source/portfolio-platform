@@ -6,7 +6,7 @@
   "monthlyAmountsUnitBasisMarketsMatch": true,
   "afterExistingQuantityMaskMatches": true,
   "rawQuantitiesAndRatesPresentButUnitUnknown": true,
-  "primaryDocumentsFetched": false,
+  "primaryDocumentsFetchedAtPacketRead": false,
   "limitations": [
     "Stored market labels agree with SSR; this does not independently establish domestic/export classification.",
     "SSR hides quantity/rate due to unknown qty_unit; raw stored numbers are not accepted quantities/rates.",
