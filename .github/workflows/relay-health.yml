@@ -30,7 +30,17 @@ env:
   PHASE28_APPLIED: "false"
 
 jobs:
+  configuration:
+    if: inputs.note == 'inspect-auto-deploy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read only the resolved automatic-deploy flag
+        env:
+          RELAY_AUTO_DEPLOY_VALUE: ${{ vars.RELAY_AUTO_DEPLOY }}
+        run: |
+          node -e 'const v=process.env.RELAY_AUTO_DEPLOY_VALUE; console.log(JSON.stringify({name:"RELAY_AUTO_DEPLOY",state:v==="true"?"true":v==="false"?"false":v?"invalid":"unset"}))'
   check:
+    if: inputs.note != 'inspect-auto-deploy'
     name: Relay health → arsadata
     runs-on: ubuntu-latest
     steps:
