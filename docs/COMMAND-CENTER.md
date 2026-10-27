@@ -1,5 +1,11 @@
 # Arash Digital Platform — Command Center
 
+## علت توقف backend — ۲۷ اکتبر ۲۰۲۶، ۱۲:۴۲ تهران
+
+[خواندن رسمی لیارا](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40479020782) روی main `916a2ef` با HTTP200 دقیقاً یک `arsadata-backend` یافت: state=CREATED و power=POWERED_OFF. [رسید](ops/research-pilot-20261026/backend-vm-20261027.json). این وضعیت امروز است؛ رسید روشن‌بودن۲۰اکتبر جای آن را نمی‌گیرد. خاموش‌بودن VPS با timeout backend، شکست ذخیره رله و۵۰۲خواندن فولاد منطبق است؛ علت/عامل خاموشی هنوز اثبات نشده.
+
+root مسئول بازگرداندن همان ماشین موجود است: ابتدا رویدادهای رسمی و نبود عملیات نیمه‌تمام، سپس فقط start برای همان هویت با وضعیت CREATED/OFF، ثبت intent و readback؛ بدون reboot، خرید، تغییر پلن، پاک‌سازی یا retry خودکار. موفقیت روشن‌شدن جدا از سلامت DB و API ثبت می‌شود. قفل Hermes همچنان دست‌نخورده است؛ [تحویل مجری محلی](ops/research-pilot-20261026/LOCAL-HERMES-HANDOFF.fa.md) مسیر مستقل تطبیق و بازیابی را مشخص می‌کند.
+
 ## نتیجهٔ زندهٔ پژوهش/داده — ۲۷ اکتبر ۲۰۲۶، ۱۲:۲۵ تهران
 
 [رسید زنده](ops/research-pilot-20261026/relay-health-20261027.json) از [اجرای40476800310](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40476800310) روی main `8975663` نتیجهٔ پایش را تفکیک کرد: رله و دریافت تازه برقرار، اما ذخیره و اتصال backend خراب است. PR319 با CI40476193173 موفق ادغام شد؛ وب روی `dpl_GaxrCzLqUP2gEq9Meb4bGgJGgpHn` با همین main و alias اصلی READY تأیید شد. این انتشار ابزار تشخیص است، نه اصلاح backend یا اجرای Hermes.
