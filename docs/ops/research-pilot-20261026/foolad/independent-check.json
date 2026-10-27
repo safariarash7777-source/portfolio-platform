@@ -1,0 +1,22 @@
+{
+  "missingPriorYearPreserved": true,
+  "monthlyCoreSha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0",
+  "method": "Independent Python integer/Decimal reconstruction; not primary-source verification",
+  "grossProfitExpected": 232658542,
+  "grossProfitMatches": true,
+  "monthlyProductSum": 639418160,
+  "monthlyTotalMatches": true,
+  "revenueGrowthPct": "-1.598285572426162767488242760",
+  "grossMarginPct": "27.89112948140723112141028763",
+  "priorGrossMarginPct": "31.34975460175406892921863804",
+  "cogsGrowthPct": "3.359229720200869161005385100",
+  "hashes": {
+    "foolad-fundamentals-resolved.json": "add5c4d6cb90fdca0676222c2229a65b94b097fe83e41c26b6ea2eca2612c581",
+    "foolad-calculations.json": "c0c4681eb36c4fd9cd1301ed60eb81eecc610a6d3302c204b23b4ff3d0d8ba8c",
+    "reproduce.mts": "6c40d5aaa398b3eea173277e3c4830620ad24eaa7fd89d538ebe1f06b6758694",
+    "foolad-workbook.json": "fc344a585a3b918e65e5dee02f117a949f50969b02b34cca10298105fc9c403a",
+    "source-receipt.json": "10f6f2509afafa4165633c6083bb8a7c02959ee8dcfd0b30473fd7e099445b64",
+    "stored-source-packet.json": "ee1b47147dcd62341ba722509fe5cfc3fa4cfb7da2d32b8b6b4ac3d43f6234f3",
+    "stored-vs-ssr.json": "713f054bd5799fddbdb87e3313786af426e4df8d1b82555f17215a91085c3898"
+  }
+}
