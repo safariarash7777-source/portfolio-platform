@@ -1,0 +1,38 @@
+name: Backend VM status
+
+# Manual metadata-only inspection. No VM detail, SSH, deployment or mutation.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-vm-status
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    name: Read backend VM metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Read backend VM metadata only
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        run: node scripts/ops/liara-vm-status.mjs
+
+      - name: Preserve sanitized VM metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: liara-vm-status
+          path: liara-vm-status.json
+          if-no-files-found: error
+          retention-days: 14
