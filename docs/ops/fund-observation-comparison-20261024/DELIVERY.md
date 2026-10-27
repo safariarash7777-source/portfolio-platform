@@ -2,12 +2,12 @@
 
 ## بازآماده‌سازی همان PR316 — ۲۰۲۶-۱۰-۲۷
 
-با واگذاری صریح مالکیت محدود `package.json` و `docs/README.md` از هماهنگ‌کننده محلی، `main` تا `98a9f345a0cc33babffa25eae9445893fb7cfd09` با merge معمول و بدون force-push وارد همین شاخه شد. worktree اولیه پاک و شاخه فاقد نویسنده فعال دیگر بود؛ تعارض متنی رخ نداد. تمام scriptها و وابستگی‌های مبنا حفظ شدند؛ اختلاف package نسبت به مبنا فقط دو ثبت آزمون مقایسه و دستور `test:fund-comparison` است. مسیر آزمون R5 یا advisor-next بدون فایل موجود در مبنا اضافه نشد.
+با واگذاری صریح مالکیت محدود `package.json` و `docs/README.md` از هماهنگ‌کننده محلی، `main` تا `597539e84cf2bb93387205a5c4ad68e4b7cd9b6a` (حاوی R5 و شرکت‌ها/PR315) با merge معمول و بدون force-push وارد همین شاخه شد. worktree اولیه پاک و شاخه فاقد نویسنده فعال دیگر بود. تعارض package با حفظ scripts تازه مبنا و افزودن فقط دو آزمون صندوق و دستور خودش حل شد؛ تمام tokenهای ثبت آزمون‌های R5، شرکت و صندوق و وجود فایل‌هایشان بررسی شدند. تعارض README نیز با حفظ دقیق هر دو بخش و پیوند شرکت/صندوق حل شد. وابستگی و lockfile تغییر ندارند و مسیر advisor-next فاقد فایل اضافه نشد.
 
-پس از هماهنگ‌سازی اولیه، فرمان زیر **۲۴ آزمون، صفر شکست/skip** داشت؛ TypeScript کل پروژه و اسکن همه فایل‌های tracked نیز موفق شدند (۱۱۸۵ فایل متنی). merge بعدی `98a9f34` فقط worker/research-policy و رسیدهای مستقل آن‌ها را وارد کرد و کد اختصاصی صندوق تغییر نکرد. CI همان PR روی head نهایی مرجع build و آزمون کامل تازه است؛ نتیجه CI قدیمی به head تازه تعمیم داده نمی‌شود.
+روی همین مبنای ترکیبی، فرمان زیر **۶۰ آزمون، صفر شکست/skip** داشت: ۲۴ صندوق، ۲۲ شرکت/کدال و ۱۴ R5. TypeScript کل پروژه و اسکن همه فایل‌های tracked نیز موفق شدند (۱۱۹۵ فایل متنی). کد اختصاصی صندوق نسبت به تحویل ۲۴ اکتبر تغییر نکرد. تطبیق ساختاری package با مبنا فقط دو ثبت تست صندوق و دستور خودش را نشان می‌دهد؛ تمام scripts دیگر عین مبنا هستند. CI همان PR روی head نهایی مرجع build و آزمون کامل تازه است؛ نتیجه CI قدیمی به head تازه تعمیم داده نمی‌شود.
 
 ```text
-node node_modules/tsx/dist/cli.mjs --test lib/core/fundComparison.test.ts components/market/FundComparisonPanel.test.tsx lib/core/fundReturns.test.ts lib/core/bulkReturns.test.ts app/market/funds/page.test.ts
+node node_modules/tsx/dist/cli.mjs --test lib/core/fundComparison.test.ts components/market/FundComparisonPanel.test.tsx lib/core/fundReturns.test.ts lib/core/bulkReturns.test.ts app/market/funds/page.test.ts lib/core/companyReportDiscovery.test.ts components/symbol/CodalReportsTab.test.ts lib/codal-feed.test.ts app/api/codal-list/route.test.ts components/admin/ResearchCaseFiles.test.tsx lib/intelligence/research-drafts-view.test.ts
 node node_modules/typescript/bin/tsc --noEmit
 node scripts/scan-secrets.mjs
 ```
