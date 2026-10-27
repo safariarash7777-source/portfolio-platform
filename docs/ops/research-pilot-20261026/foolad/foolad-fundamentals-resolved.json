@@ -1,0 +1,1176 @@
+{
+  "symbol": "فولاد",
+  "n10": {
+    "data": {
+      "unit": "میلیون ریال",
+      "symbol": "فولاد",
+      "audited": false,
+      "capital": 1935000000,
+      "period_end": "1405-03-31",
+      "standalone": {
+        "cogs": 601508257,
+        "prior": {
+          "cogs": 581958920,
+          "revenue": 847715717,
+          "eps_rial": 84,
+          "net_profit": 161823705,
+          "gross_profit": 265756797,
+          "operating_profit": 234582596
+        },
+        "revenue": 834166799,
+        "eps_rial": 63,
+        "net_profit": 120356493,
+        "gross_profit": 232658542,
+        "operating_profit": 197995135
+      },
+      "report_kind": "ن-۱۰",
+      "company_name": "فولاد مبارکه اصفهان",
+      "period_months": 3,
+      "restated_prior": false,
+      "sales_trend_5y": [
+        {
+          "fy": 1402,
+          "revenue": 2410860380,
+          "cogs": 1537363945
+        },
+        {
+          "fy": 1403,
+          "revenue": 2763555713,
+          "cogs": 1797898245
+        }
+      ]
+    },
+    "source": {
+      "title": "صورت‌های مالی ۳ماههٔ حسابرسی‌نشدهٔ سال مالی ۱۴۰۵ (کدال)",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1",
+      "publishedAt": "1405/05/03 16:54:53",
+      "verified": true,
+      "verification_note": "اعتبارسنجی حسابی (ناخالص = فروش − بها) انجام شد؛ دامنه از عنوان گزارش شناخته شده و تطبیق سندی انجام نشده است.",
+      "scope": "company"
+    }
+  },
+  "n30": {
+    "data": [
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 149710887,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 219259044,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 38831143,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 14526886,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "گندله",
+            "sales_amount": 10203405,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 1901474,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 52649439,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 2344744,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 22235016,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 127756122,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1405-06-31",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1405,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 639418160,
+        "fy_cumulative_amount": 2509422184
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 50699136,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 28499301,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 14152034,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 95997884,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 51257955,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 584015,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 15509556,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 589713,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-11-30",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 257289594,
+        "fy_cumulative_amount": 2520629209
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 42282563,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 18210180,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 11206178,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 89074916,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 63711015,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 89449,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 7108492,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 1436961,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-10-30",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 233119754,
+        "fy_cumulative_amount": 2263339615
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 37289794,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 10355623,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 11210133,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 79220929,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 23041088,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 257638,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 4906255,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 684029,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-09-30",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 166965489,
+        "fy_cumulative_amount": 2030219861
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 41479267,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 117364242,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 12018260,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 12977531,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 157855,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 6254974,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 133151,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 20124460,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-08-30",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 210509740,
+        "fy_cumulative_amount": 1863254372
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 4273183,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 10124458,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 147384049,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 40465747,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 451048,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 282150,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 4148049,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-07-30",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 207128684,
+        "fy_cumulative_amount": 1652744632
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 16306477,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 11379072,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 149245341,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 37685711,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 10503263,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 352434,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 3164500,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-06-31",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 228636798,
+        "fy_cumulative_amount": 1445615948
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 20983474,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 11812310,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 145945318,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 44786465,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 16337214,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 193683,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 4475255,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-05-31",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 244533719,
+        "fy_cumulative_amount": 1216979150
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 26202199,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 10604129,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 138239297,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 44591188,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 10778919,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 63779,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 2916404,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-04-31",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 233395915,
+        "fy_cumulative_amount": 972445431
+      },
+      {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "products": [
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 23893446,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 12479335,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 153567082,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات سرد",
+            "sales_amount": 48692859,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "تختال",
+            "sales_amount": 16518644,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات پوشش دار",
+            "sales_amount": 14516,
+            "production_qty": null
+          },
+          {
+            "market": "داخلی",
+            "sales_qty": null,
+            "sales_rate": null,
+            "product_name": "محصولات گرم",
+            "sales_amount": 1958245,
+            "production_qty": null
+          }
+        ],
+        "qty_unit": null,
+        "period_end": "1403-03-31",
+        "unit_basis": "header+arithmetic",
+        "fiscal_year": 1403,
+        "report_kind": "ن-۳۰",
+        "unit_header": "میلیون ریال",
+        "period_months": 1,
+        "unit_inferred": "میلیون ریال",
+        "period_total_amount": 257124127,
+        "fy_cumulative_amount": 739049516
+      }
+    ],
+    "source": {
+      "title": "گزارش‌های فعالیت ماهانه (ن-۳۰) کدال",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "verified": true
+    }
+  },
+  "n10Unavailable": {
+    "unitUnknown": 0,
+    "scopeUnknown": 0,
+    "scopeAmbiguous": 3,
+    "latestPeriod": "1405-03-31"
+  },
+  "n30Unavailable": {
+    "unitUnknown": 16,
+    "latestPeriod": "1405-05-31"
+  },
+  "n10Periods": [
+    {
+      "id": 4047,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 1935000000,
+        "period_end": "1405-03-31",
+        "standalone": "$2b:props:children:1:props:fundamentals:n10:data:standalone",
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 3,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 24,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 1500000000,
+        "period_end": "1404-09-30",
+        "standalone": {
+          "cogs": 1753617291,
+          "prior": {
+            "cogs": 1214238324,
+            "revenue": 2030219862,
+            "eps_rial": 460,
+            "net_profit": 686605859,
+            "gross_profit": 815981538,
+            "operating_profit": 776977394
+          },
+          "revenue": 2488064414,
+          "eps_rial": 297,
+          "net_profit": 442844831,
+          "gross_profit": 734447123,
+          "operating_profit": 636995667
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 9,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 25,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": true,
+        "capital": 1500000000,
+        "period_end": "1404-06-31",
+        "standalone": {
+          "cogs": 1341816786,
+          "prior": {
+            "cogs": 932189593,
+            "revenue": 1713715337,
+            "eps_rial": 474,
+            "net_profit": 775024721,
+            "gross_profit": 781525744,
+            "operating_profit": 737323903
+          },
+          "revenue": 2168181094,
+          "eps_rial": 344,
+          "net_profit": 602004618,
+          "gross_profit": 826364308,
+          "operating_profit": 696763056
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 6,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 40,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 1500000000,
+        "period_end": "1404-03-31",
+        "standalone": {
+          "cogs": 581958920,
+          "prior": {
+            "cogs": 426759759,
+            "revenue": 739049516,
+            "eps_rial": 179,
+            "net_profit": 267654907,
+            "gross_profit": 312289757,
+            "operating_profit": 285612856
+          },
+          "revenue": 804688698,
+          "eps_rial": 108,
+          "net_profit": 161823705,
+          "gross_profit": 222729778,
+          "operating_profit": 191555577
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 3,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 43,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 1500000000,
+        "period_end": "1403-12-30",
+        "standalone": {
+          "cogs": 1797898245,
+          "prior": {
+            "cogs": 1540546968,
+            "revenue": 2410860380,
+            "eps_rial": 622,
+            "net_profit": 925510397,
+            "gross_profit": 870313412,
+            "operating_profit": 779345085
+          },
+          "revenue": 2763555713,
+          "eps_rial": 603,
+          "net_profit": 899272265,
+          "gross_profit": 965657468,
+          "operating_profit": 902454522
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 12,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 10080,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 1080000000,
+        "period_end": "1403-09-30",
+        "standalone": {
+          "cogs": 1214238324,
+          "prior": {
+            "cogs": 1041753809,
+            "revenue": 1803854203,
+            "eps_rial": 619,
+            "net_profit": 658617919,
+            "gross_profit": 762100394,
+            "operating_profit": 693602037
+          },
+          "revenue": 2030219861,
+          "eps_rial": 639,
+          "net_profit": 686605859,
+          "gross_profit": 815981537,
+          "operating_profit": 776977392
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 9,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 10081,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 1080000000,
+        "period_end": "1403-03-31",
+        "standalone": {
+          "cogs": 426759759,
+          "prior": {
+            "cogs": 336215537,
+            "revenue": 630834205,
+            "eps_rial": 229,
+            "net_profit": 247571033,
+            "gross_profit": 294618668,
+            "operating_profit": 270723073
+          },
+          "revenue": 739049516,
+          "eps_rial": 249,
+          "net_profit": 267654907,
+          "gross_profit": 312289757,
+          "operating_profit": 285612856
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 3,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 10085,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 1080000000,
+        "period_end": "1402-12-29",
+        "standalone": {
+          "cogs": 1537363945,
+          "prior": {
+            "cogs": 1039222069,
+            "revenue": 1607038537,
+            "eps_rial": 634,
+            "net_profit": 679240817,
+            "gross_profit": 567816468,
+            "operating_profit": 538318065
+          },
+          "revenue": 2410860380,
+          "eps_rial": 738,
+          "net_profit": 793737124,
+          "gross_profit": 873496435,
+          "operating_profit": 788008940
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 12,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 10088,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 800000000,
+        "period_end": "1402-09-30",
+        "standalone": {
+          "cogs": 1041753809,
+          "prior": {
+            "cogs": 699482419,
+            "revenue": 1156373480,
+            "eps_rial": 441,
+            "net_profit": 353565112,
+            "gross_profit": 456891061,
+            "operating_profit": 419684476
+          },
+          "revenue": 1803854203,
+          "eps_rial": 831,
+          "net_profit": 658617919,
+          "gross_profit": 762100394,
+          "operating_profit": 693602037
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 9,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 10089,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 800000000,
+        "period_end": "1402-06-31",
+        "standalone": {
+          "cogs": 681686166,
+          "prior": {
+            "cogs": 453578928,
+            "revenue": 807673722,
+            "eps_rial": 519,
+            "net_profit": 270375900,
+            "gross_profit": 354094794,
+            "operating_profit": 333738793
+          },
+          "revenue": 1235265296,
+          "eps_rial": 655,
+          "net_profit": 524473098,
+          "gross_profit": 553579130,
+          "operating_profit": 512857131
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 6,
+        "restated_prior": false
+      },
+      "scope": "company"
+    },
+    {
+      "id": 10091,
+      "data": {
+        "unit": "میلیون ریال",
+        "symbol": "فولاد",
+        "audited": false,
+        "capital": 800000000,
+        "period_end": "1402-03-31",
+        "standalone": {
+          "cogs": 336215537,
+          "prior": {
+            "cogs": 250964524,
+            "revenue": 481494914,
+            "eps_rial": 260,
+            "net_profit": 206919620,
+            "gross_profit": 230530390,
+            "operating_profit": 217237673
+          },
+          "revenue": 630834205,
+          "eps_rial": 333,
+          "net_profit": 267412290,
+          "gross_profit": 294618668,
+          "operating_profit": 270723073
+        },
+        "report_kind": "ن-۱۰",
+        "company_name": "فولاد مبارکه اصفهان",
+        "period_months": 3,
+        "restated_prior": false
+      },
+      "scope": "company"
+    }
+  ],
+  "n10PeriodsScope": "company"
+}
