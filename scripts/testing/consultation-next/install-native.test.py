@@ -137,6 +137,19 @@ class MockExecutionTests(unittest.TestCase):
         self.a['encryptedBackupVerification']['checkpointReceiptSha256'] = m.digest(raw)
         self.stack = contextlib.ExitStack()
         self.addCleanup(self.stack.close)
+        # These execution tests mock operational files as well as Docker. The
+        # historical production baseline pin refers to exact deployed bytes,
+        # whose CRLF differs from a Linux Git checkout. Do not weaken that pin
+        # or make these mocks depend on the developer's checkout line endings.
+        fixture_repo = root / 'synthetic-repo'
+        (fixture_repo / 'sql').mkdir(parents=True)
+        for relative in m.SQL_HASHES:
+            (fixture_repo / relative).write_bytes((m.REPO / relative).read_bytes())
+        baseline = b'-- synthetic baseline; never executed\n'
+        self.baseline_file = fixture_repo / 'sql/consultation_workflow.sql'
+        self.baseline_file.write_bytes(baseline)
+        self.stack.enter_context(patch.object(m, 'REPO', fixture_repo))
+        self.stack.enter_context(patch.object(m, 'BASELINE_SHA', m.digest(baseline)))
         self.stack.enter_context(patch.object(m, 'BACKUPS', root))
         self.stack.enter_context(patch.object(m, 'HELPER', self.helper))
         self.stack.enter_context(patch.dict('sys.modules', {'fcntl': types.SimpleNamespace(LOCK_EX=1, LOCK_NB=2, flock=lambda *a: None)}))
@@ -213,6 +226,12 @@ class MockExecutionTests(unittest.TestCase):
     def test_changed_checkpoint_receipt_never_executes(self):
         (self.checkpoint / 'receipt.json').write_text('{}')
         with self.assertRaisesRegex(RuntimeError, 'checkpoint_receipt_changed'):
+            m.run('copy', self.a)
+        self.assertEqual(self.ddl, [])
+
+    def test_changed_baseline_bytes_never_execute(self):
+        self.baseline_file.write_bytes(b'-- altered baseline\n')
+        with self.assertRaisesRegex(RuntimeError, 'baseline_hash_changed'):
             m.run('copy', self.a)
         self.assertEqual(self.ddl, [])
 

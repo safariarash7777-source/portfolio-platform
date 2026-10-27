@@ -111,18 +111,22 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
       }
       receiptRef.current = result.receipt; pending.current = null; unresolved.current = false; setUncertain(false); setConfirmed(true); setReadbackVerified(false); setDirty(false);
       const reloaded = await load(result.receipt.command.kind === "grant" ? result.receipt.id : selected.current);
-      setMessage(reloaded ? "سرور ثبت را تأیید کرد و پرونده مستقل بازخوانی شد." : "سرور ثبت را تأیید کرد؛ بازخوانی مستقل هنوز تأیید نشده است. ثبت را تکرار نکنید.");
       return reloaded;
     } catch { if (live.current && generation === sequence.current) { unresolved.current = true; setUncertain(true); setMessage("نتیجهٔ ثبت نامعلوم است؛ درخواست تازه‌ای ساخته نمی‌شود."); } return false; }
     finally { lock.current = false; setSaving(false); }
   };
   if (identity !== "ready") return <section className="card space-y-3 p-5"><p role={identity === "checking" ? "status" : "alert"}>{identity === "checking" ? "در حال تأیید نشست؛ اطلاعات خصوصی نمایش داده نمی‌شود." : identity === "changed" ? "حساب یا نشست تغییر کرد؛ پرونده و تلاش قبلی از صفحه پاک شدند. دوباره وارد حساب مربوط شوید." : "نشست مرورگر تأیید نشد؛ اطلاعات پرونده نمایش داده نمی‌شود."}</p>{identity !== "checking" && <button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" onClick={() => window.location.reload()}>بازکردن دوبارهٔ صفحه</button>}</section>;
   const locked = saving || reading || uncertain || confirmed || Boolean(error);
+  // Derive the receipt banner from current readback state, including manual GET recovery.
+  // A past send result must not contradict a later verified read or write after auth reset.
+  const statusMessage = confirmed
+    ? readbackVerified ? "سرور ثبت را تأیید کرد و پرونده مستقل بازخوانی شد." : "سرور ثبت را تأیید کرد؛ بازخوانی مستقل هنوز تأیید نشده است. ثبت را تکرار نکنید."
+    : message;
   return <div className="min-w-0 space-y-5">
     {isAdvisor && <AdvisorRoster key={expectedActorId} actorId={expectedActorId} locked={locked || dirty} selectedId={selected.current} period={period.current.startOn && period.current.endOn ? { startOn: period.current.startOn, endOn: period.current.endOn } : undefined} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} />}
     {reading && <p role="status">در حال خواندن پرونده و مجوز جاری…</p>}
     {error && <section className="card space-y-3 p-4"><p role="alert">{error}</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={reading || saving || uncertain || dirty} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button></section>}
-    {message && <p className="card p-4 text-sm leading-7" role="status">{message}</p>}
+    {statusMessage && <p className="card p-4 text-sm leading-7" role="status">{statusMessage}</p>}
     {saving && <p role="status">در حال ثبت همان درخواست؛ هنوز موفقیت اعلام نشده است.</p>}
     {uncertain && <section className="card space-y-3 p-5"><p>تا تعیین تکلیف، ویرایش و تغییر پرونده بسته است؛ متن و شناسهٔ همان درخواست حفظ شده‌اند.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving || reading} onClick={() => void send()}>بررسی دوبارهٔ همین ثبت</button></section>}
     {confirmed && !readbackVerified && !error && !reading && <section className="card space-y-3 p-4"><p role="status">رسید ثبت محفوظ است؛ بازخوانی مستقل همان اثر هنوز تأیید نشده است. ثبت دوباره انجام نمی‌شود.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button></section>}

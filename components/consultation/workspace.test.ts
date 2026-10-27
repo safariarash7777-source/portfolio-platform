@@ -123,3 +123,24 @@ test("roster stays mounted independently of dossier revision and disappears on a
   late.done(result(advisorData)); await view.flush(); assert.ok(view.roster());
   await view.auth("SIGNED_IN", advisor); assert.equal(view.roster(), undefined); view.unmount();
 });
+test("manual GET recovery after saved reply replaces pending readback banner without another POST", async () => {
+  const failure = { status: "error", error: { code: "READ_UNAVAILABLE" } };
+  const view = mount([result(dossierWithQuestion()), failure, result(dossierWithQuestion())], [], [{ status: "ready", data: replyRead }, { status: "ready", data: savedReplyRead }], [{ status: "saved", receipt: replyReceipt }]);
+  await view.auth(); view.sendReply(replyCommand); await view.flush();
+  assert.match(view.text(), /بازخوانی مستقل هنوز تأیید نشده/); assert.equal(view.panel().props.locked, true);
+  assert.doesNotMatch(view.text(), /ادامه با پروندهٔ بازخوانی‌شده/);
+  await view.click("دوباره خواندن پرونده");
+  assert.match(view.text(), /سرور ثبت را تأیید کرد و پرونده مستقل بازخوانی شد/);
+  assert.doesNotMatch(view.text(), /بازخوانی مستقل هنوز تأیید نشده|خواندن پرونده انجام نشد/);
+  assert.ok(view.button("ادامه با پروندهٔ بازخوانی‌شده"));
+  assert.equal((view.panel().props.replies as Record<string, ReplyRead>)[sessionId].replies[0].id, replyReceipt.id);
+  assert.equal(view.writeCalls.length, 1); assert.equal(view.attempts.length, 1);
+  await view.click("ادامه با پروندهٔ بازخوانی‌شده"); assert.equal(view.panel().props.locked, false); view.unmount();
+});
+test("stale reply GET keeps receipt banner pending until exact reply effect is verified", async () => {
+  const view = mount([result(dossierWithQuestion()), result(dossierWithQuestion()), result(dossierWithQuestion())], [], [{ status: "ready", data: replyRead }, { status: "ready", data: replyRead }, { status: "ready", data: savedReplyRead }], [{ status: "saved", receipt: replyReceipt }]);
+  await view.auth(); view.sendReply(replyCommand); await view.flush();
+  assert.match(view.text(), /بازخوانی مستقل هنوز تأیید نشده/); assert.doesNotMatch(view.text(), /پرونده مستقل بازخوانی شد/);
+  await view.click("دوباره خواندن پرونده"); assert.match(view.text(), /پرونده مستقل بازخوانی شد/); assert.doesNotMatch(view.text(), /بازخوانی مستقل هنوز تأیید نشده/);
+  assert.equal(view.writeCalls.length, 1); view.unmount();
+});
