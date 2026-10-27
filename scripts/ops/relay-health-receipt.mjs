@@ -128,7 +128,7 @@ export async function collectReceipt({ token, fetchImpl = fetch, now = () => new
   const startedAt = now();
   const [health, debug, backend] = await Promise.all([request(HEALTH, 'health'), request(DEBUG, 'debug'), request(BACKEND, 'backend')]);
   return { schemaVersion: 1, startedAt, completedAt: now(), sampleCount: 1, mode: 'passive', health, debug, backend,
-    limitations: ['No source quote clocks are exposed by this debug contract; receipt time is not source time.', 'Process counters are not provider account usage or Liara billing.', 'HTTP availability and legacy acceptance do not prove deployed commit identity or complete data.'] };
+    limitations: ['No source quote clocks are exposed by this debug contract; receipt time is not source time.', 'Process counters are not provider account usage or Liara billing.', 'Transport reachability includes HTTP errors; only HTTP 2xx passes application availability. HTTP 2xx and legacy acceptance do not prove database health, deployed commit identity or complete data.'] };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
@@ -136,6 +136,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     await writeFile('relay-health-receipt.json', JSON.stringify(receipt, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify(receipt));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, '```json\n' + JSON.stringify(receipt, null, 2) + '\n```\n');
-    if (receipt.health.status !== 'ok' || receipt.debug.acceptance !== 'passed' || receipt.debug.spacing !== 'passed' || receipt.backend.status !== 'reachable') process.exitCode = 1;
+    if (receipt.health.status !== 'ok' || receipt.debug.acceptance !== 'passed' || receipt.debug.spacing !== 'passed' || receipt.backend.status !== 'reachable' || receipt.backend.httpOk !== true) process.exitCode = 1;
   } catch { console.error('receipt_capture_failed'); process.exitCode = 1; }
 }

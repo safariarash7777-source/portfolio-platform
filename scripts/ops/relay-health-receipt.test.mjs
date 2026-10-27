@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { collectReceipt, sanitizeDebug, errorCategory, transportError } from './relay-health-receipt.mjs';
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
 function debug() {
@@ -144,4 +149,33 @@ test('IME actual debug shape preserves day precision, storage completion and bou
   assert.equal(missing.physical.targets, null);
   assert.equal(missing.physical.inserted, null);
   assert.equal(missing.certificate.eod.pushed, null);
+});
+
+test('actual CLI fails reachable HTTP 502 while preserving transport distinction; HTTP 200 passes', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'relay-availability-'));
+  try {
+    const preload = join(directory, 'fake-fetch.mjs');
+    const script = fileURLToPath(new URL('./relay-health-receipt.mjs', import.meta.url));
+    for (const status of [502, 200]) {
+      await writeFile(preload, `globalThis.fetch = async (url) => {
+        if (url === 'https://arsadata.liara.run/debug') return Response.json(${JSON.stringify(debug())});
+        if (url === 'https://arsadata.liara.run/healthz') return new Response('ok');
+        if (url === 'https://62.60.191.24/liara-preview/') return new Response('fixture only', {status: ${status}});
+        throw new Error('unexpected destination');
+      };`);
+      let exitCode = 0;
+      try {
+        await promisify(execFile)(process.execPath, ['--import', preload, script], {
+          cwd: directory, env: { ...process.env, RELAY_TOKEN: 'synthetic', GITHUB_STEP_SUMMARY: '' }, timeout: 10000,
+        });
+      } catch (error) { exitCode = error.code; }
+      assert.equal(exitCode, status === 200 ? 0 : 1);
+      const receipt = JSON.parse(await readFile(join(directory, 'relay-health-receipt.json'), 'utf8'));
+      assert.equal(receipt.backend.status, 'reachable');
+      assert.equal(receipt.backend.httpStatus, status);
+      assert.equal(receipt.backend.httpOk, status === 200);
+      assert.equal(receipt.backend.error, null);
+      assert.ok(receipt.limitations.some(text => text.includes('do not prove database health')));
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });
