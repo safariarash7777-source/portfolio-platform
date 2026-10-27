@@ -5,6 +5,7 @@ import { evaluateDebug } from '../deploy/relay-gate.mjs';
 
 const DEBUG = 'https://arsadata.liara.run/debug';
 const HEALTH = 'https://arsadata.liara.run/healthz';
+const STORED_READ = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const BACKEND = 'https://62.60.191.24/liara-preview/';
 const families = ['gold', 'currency', 'crypto', 'stocks', 'funds', 'options', 'indices'];
 const number = x => typeof x === 'number' && Number.isFinite(x) && x >= 0 ? x : null;
@@ -113,22 +114,26 @@ export async function collectReceipt({ token, fetchImpl = fetch, now = () => new
       if (kind === 'backend') { await response.body?.cancel(); return { status: 'reachable', httpStatus, httpOk: response.ok, error: null }; }
       if (!response.ok) { await response.body?.cancel(); return { status: 'http_error', httpStatus, error: null }; }
       let raw;
-      try { raw = await readBounded(response, kind === 'debug' ? 1024 * 1024 : 32); }
+      try { raw = await readBounded(response, kind === 'health' ? 32 : 1024 * 1024); }
       catch { return { status: 'invalid_response', httpStatus, error: 'body_unreadable_or_too_large' }; }
       if (kind === 'health') return { status: raw.trim() === 'ok' ? 'ok' : 'invalid_response', httpStatus, error: null };
       try {
         const d = JSON.parse(raw);
         if (!d || typeof d !== 'object' || Array.isArray(d)) throw new Error();
+        if (kind === 'storedRead') {
+          if (d.source !== 'codal_feed' || d.coverage !== 'stored-announcements' || !Array.isArray(d.data)) throw new Error();
+          return { status: 'read', httpStatus, error: null, rowCount: d.data.length };
+        }
         const t = d.brsapiTransport;
         const spacingPassed = t?.enabled === true && t.scope === 'process' && t.spacingMs === 100 && Number.isSafeInteger(t.sent) && t.sent >= 2 && Number.isFinite(t.minStartGapMs) && t.minStartGapMs >= 100;
         return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied: false }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
-      } catch { return { status: 'invalid_response', httpStatus, error: 'invalid_debug_payload' }; }
+      } catch { return { status: 'invalid_response', httpStatus, error: kind === 'storedRead' ? 'invalid_stored_read_payload' : 'invalid_debug_payload' }; }
     } catch (error) { return { status: 'connection_error', httpStatus: null, error: transportError(error) }; }
   };
   const startedAt = now();
-  const [health, debug, backend] = await Promise.all([request(HEALTH, 'health'), request(DEBUG, 'debug'), request(BACKEND, 'backend')]);
-  return { schemaVersion: 1, startedAt, completedAt: now(), sampleCount: 1, mode: 'passive', health, debug, backend,
-    limitations: ['No source quote clocks are exposed by this debug contract; receipt time is not source time.', 'Process counters are not provider account usage or Liara billing.', 'HTTP availability and legacy acceptance do not prove deployed commit identity or complete data.'] };
+  const [health, debug, backend, storedRead] = await Promise.all([request(HEALTH, 'health'), request(DEBUG, 'debug'), request(BACKEND, 'backend'), request(STORED_READ, 'storedRead')]);
+  return { schemaVersion: 1, startedAt, completedAt: now(), sampleCount: 1, mode: 'passive', health, debug, backend, storedRead,
+    limitations: ['No source quote clocks are exposed by this debug contract; receipt time is not source time.', 'Process counters are not provider account usage or Liara billing.', 'Backend root HTTP 401 is an expected authentication challenge; HTTP 2xx or 401 alone do not prove database health. A successful stored Codal read proves that bounded public read only, may be cached, and does not prove all database services, deployed identity or fresh/complete reports.'] };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
@@ -136,6 +141,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     await writeFile('relay-health-receipt.json', JSON.stringify(receipt, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify(receipt));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, '```json\n' + JSON.stringify(receipt, null, 2) + '\n```\n');
-    if (receipt.health.status !== 'ok' || receipt.debug.acceptance !== 'passed' || receipt.debug.spacing !== 'passed' || receipt.backend.status !== 'reachable') process.exitCode = 1;
+    if (receipt.health.status !== 'ok' || receipt.debug.acceptance !== 'passed' || receipt.debug.spacing !== 'passed' || receipt.backend.status !== 'reachable' || (receipt.backend.httpOk !== true && receipt.backend.httpStatus !== 401) || receipt.storedRead.status !== 'read') process.exitCode = 1;
   } catch { console.error('receipt_capture_failed'); process.exitCode = 1; }
 }
