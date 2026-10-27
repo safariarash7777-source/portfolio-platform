@@ -1,12 +1,14 @@
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { recoverBackend } from './liara-backend-recovery.mjs';
 const id = '1234567890abcdef12345678', secret = 'DO_NOT_PUBLISH';
+const fingerprint = createHash('sha256').update(id).digest('hex');
 const vm = () => ({ _id: id, name: 'arsadata-backend', state: 'CREATED', power: 'POWERED_OFF', createdAt: '2026-10-01T00:00:00Z', config: { rootPassword: secret } });
 const event = { name: 'shutdown', state: 'SUCCEEDED', createdAt: '2026-10-26T12:00:00Z', secret };
 function harness({ rows = [vm()], events = [event], patch, after = [{ ...vm(), power: 'POWERED_ON' }] } = {}) {
   const calls = [], saved = []; let reads = 0;
-  return { calls, saved, options: { token: secret, execute: true, persist: async r => saved.push(r), fetchImpl: async (url, init) => {
+  return { calls, saved, options: { token: secret, execute: true, expectedFingerprint: fingerprint, persist: async r => saved.push(r), fetchImpl: async (url, init) => {
     calls.push({ url, init });
     assert.ok(url.startsWith('https://iaas-api.liara.ir/vm'));
     assert.equal(init.redirect, 'error'); assert.ok(init.signal); assert.equal(init.dispatcher, undefined);
@@ -16,6 +18,8 @@ function harness({ rows = [vm()], events = [event], patch, after = [{ ...vm(), p
     assert.equal(url, `https://iaas-api.liara.ir/vm/power/${id}`);
     assert.equal(init.method, 'PATCH'); assert.deepEqual(JSON.parse(init.body), { action: 'start' });
     assert.equal(saved.at(-1).action.status, 'intent');
+    assert.equal(saved.at(-1).action.targetFingerprint, fingerprint);
+    assert.equal(saved.at(-1).before.targetFingerprint, fingerprint);
     return patch ? patch() : new Response(secret);
   } } };
 }
@@ -31,7 +35,7 @@ test('already ON is no-op; absent, duplicate, suspended, frozen, deleting and in
   for (const rows of [[], [vm(), vm()], [{ ...vm(), power: 'SUSPENDED' }], [{ ...vm(), state: 'FROZEN' }], [{ ...vm(), state: 'DELETING' }], [{ ...vm(), _id: '../other' }], [{ ...vm(), power: 'POWERED_ON' }]]) {
     const h = harness({ rows }); const result = await recoverBackend(h.options);
     assert.equal(h.calls.length, 1); assert.equal(result.action.status, 'not_sent');
-    assert.equal(result.status, rows[0]?.power === 'POWERED_ON' ? 'already_on' : 'precondition_rejected');
+    assert.ok(['already_on', 'precondition_rejected', 'target_fingerprint_rejected'].includes(result.status));
   }
 });
 test('unresolved, malformed or unavailable operations stop start; inspect records eligibility without mutation', async () => {
@@ -42,6 +46,7 @@ test('unresolved, malformed or unavailable operations stop start; inspect record
   }
   const h = harness(); const result = await recoverBackend({ ...h.options, execute: false });
   assert.equal(result.status, 'eligible_off'); assert.equal(h.calls.length, 2);
+  assert.equal(result.before.targetFingerprint, fingerprint);
 });
 test('lost PATCH response is read back without retry; OFF or changed identity remains unknown', async () => {
   for (const after of [[{ ...vm(), power: 'POWERED_ON' }], [vm()], [{ ...vm(), _id: 'abcdef1234567890abcdef12', power: 'POWERED_ON' }]]) {
@@ -66,4 +71,18 @@ test('missing credential and failed durable intent cannot send a mutation', asyn
   await assert.rejects(recoverBackend({ ...h.options, persist: async () => { throw new Error('disk failure'); } }));
   assert.equal(h.calls.some(c => c.init.method === 'PATCH'), false);
   await assert.rejects(recoverBackend({ ...h.options, persist: undefined }), /durable_receipt_required/);
+});
+
+test('start requires the stable fingerprint from inspect, and mismatches never send PATCH', async () => {
+  for (const expectedFingerprint of [undefined, '', '0'.repeat(64), secret]) {
+    const h = harness();
+    const result = await recoverBackend({ ...h.options, expectedFingerprint });
+    assert.equal(result.status, 'target_fingerprint_rejected');
+    assert.equal(h.calls.length, 1);
+    assert.equal(result.action.status, 'not_sent');
+  }
+  const h = harness();
+  const result = await recoverBackend(h.options);
+  assert.equal(result.after.targetFingerprint, fingerprint);
+  assert.equal(JSON.stringify(h.saved).includes(id), false);
 });
