@@ -1,4 +1,4 @@
-import { isGoodsMarket } from "./monthly-quantity";
+import { hasUnknownMarketQuantities, hasUnknownMarketRevenue, isGoodsMarket } from "./monthly-quantity";
 // لایهٔ دادهٔ سرور «پنل رصد ادمین» — SPEC-admin-market-radar.md
 //
 // فقط خواندن از symbol_history و codal_reports (append-only دست‌نخورده).
@@ -149,8 +149,8 @@ export function deriveN30Extras(rows: CodalRow[]): Map<string, N30Extras> {
     }
     totalAmt = num(data["period_total_amount"]) ?? totalAmt;
     out.set(sym, {
-      prodSalesGap: seen > 0 ? prod - sales : null,
-      exportSharePct: totalAmt > 0 ? (expAmt / totalAmt) * 100 : null,
+      prodSalesGap: !hasUnknownMarketQuantities(products) && seen > 0 ? prod - sales : null,
+      exportSharePct: !hasUnknownMarketRevenue(products) && totalAmt > 0 ? (expAmt / totalAmt) * 100 : null,
     });
   }
   return out;

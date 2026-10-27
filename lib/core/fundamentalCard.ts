@@ -14,7 +14,7 @@
 // - خروجی متن با ارقام لاتین؛ لایهٔ UI با toPersianDigits نمایش می‌دهد.
 
 import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
-import { withKnownMonthlyQuantities, isGoodsMarket } from './monthly-quantity';
+import { hasUnknownMarketQuantities, hasUnknownMarketRevenue, withKnownMonthlyQuantities, isGoodsMarket } from './monthly-quantity';
 import { meaningfulRate } from './monthlyReport';
 
 /* ── واحدها ── */
@@ -241,8 +241,8 @@ export function buildFundamentalCard(
       }
     }
     const total = latest.period_total_amount ?? all;
-    exportSharePct = total > 0 ? pctOf(exp, total) : null;
-    prodSalesGap = gapSeen > 0 ? gap : null;
+    exportSharePct = !hasUnknownMarketRevenue(latest.products) && total > 0 ? pctOf(exp, total) : null;
+    prodSalesGap = !hasUnknownMarketQuantities(latest.products) && gapSeen > 0 ? gap : null;
   }
 
   const latestSalesM = latest ? (latest.period_total_amount ?? null) : null;

@@ -13,6 +13,16 @@ export function isGoodsMarket(value: unknown): value is 'داخلی' | 'صادر
   return value === 'داخلی' || value === 'صادراتی';
 }
 
+/** Unknown rows with nonzero or unavailable revenue prevent an exact export share. */
+export function hasUnknownMarketRevenue(products: ReadonlyArray<{ market?: unknown; sales_amount?: unknown }>): boolean {
+  return products.some(p => monthlyMarket(p.market) === 'نامشخص' && p.sales_amount !== 0);
+}
+
+/** An unclassified quantity row may be goods, so a report-wide gap is incomplete. */
+export function hasUnknownMarketQuantities(products: ReadonlyArray<{ market?: unknown; production_qty?: unknown; sales_qty?: unknown }>): boolean {
+  return products.some(p => monthlyMarket(p.market) === 'نامشخص' && (p.production_qty !== 0 || p.sales_qty !== 0));
+}
+
 /** Preserve money; quantity aggregates require a declared common denominator. */
 export function withKnownMonthlyQuantities(report: CodalN30Data): CodalN30Data {
   const units = report.products.filter(p => isGoodsMarket(p.market)).map(p => knownUnit(Object.prototype.hasOwnProperty.call(p,'qty_unit') ? p.qty_unit : report.qty_unit));

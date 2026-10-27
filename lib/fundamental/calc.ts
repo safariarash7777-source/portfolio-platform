@@ -4,7 +4,7 @@
 // اگر ورودیِ محاسبه‌ای موجود نیست، خروجی null است — عدد جایگزین ممنوع (قانون ۳/۷).
 
 import type { CodalN10Data, CodalN30Data, SalesTrendRow } from "./types";
-import { isGoodsMarket } from "../core/monthly-quantity";
+import { hasUnknownMarketRevenue, isGoodsMarket } from "../core/monthly-quantity";
 import { isMillionRialUnit } from "./units";
 
 function finiteNumber(value: unknown): value is number {
@@ -234,7 +234,7 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
   return {
     months,
     productMix,
-    exportSharePct: allTotal > 0 ? pct(exportTotal, allTotal) : null,
+    exportSharePct: !sorted.some(([, r]) => hasUnknownMarketRevenue(r.products)) && allTotal > 0 ? pct(exportTotal, allTotal) : null,
     topProductName,
     topProductMonths,
     prodVsSales,

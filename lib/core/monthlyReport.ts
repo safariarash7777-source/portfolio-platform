@@ -7,7 +7,7 @@
 
 import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
 
-import { isGoodsMarket, monthlyMarket } from "./monthly-quantity";
+import { hasUnknownMarketRevenue, isGoodsMarket, monthlyMarket } from "./monthly-quantity";
 
 /* ── انواع خروجی ─────────────────────────────────────────────────────────── */
 
@@ -300,7 +300,7 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     const total = r.period_total_amount ?? items.reduce((sum, p) => sum + p.amount, 0);
     latestDomesticAmount = dom;
     latestExportAmount = exp;
-    latestExportSharePct = total > 0 ? pct(exp, total) : null;
+    latestExportSharePct = !hasUnknownMarketRevenue(r.products) && total > 0 ? pct(exp, total) : null;
     const ranked = items.sort((a, b) => b.amount - a.amount);
     const top = ranked.slice(0, 6);
     const rest = ranked.slice(6).reduce((a, x) => a + x.amount, 0);
