@@ -72,7 +72,7 @@ export function parseCapture(raw, exitCode) {
   if (!Number.isInteger(exitCode) || exitCode !== 0) {
     let markerPresent = false, remoteFailure;
     if (typeof raw === 'string' && Buffer.byteLength(raw) <= 2 * 1024 * 1024) {
-      const markers = raw.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '').split(/\r?\n/).filter(line => line.startsWith('FOLAD_PACKET='));
+      const markers = raw.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '').split(/[\r\n]+/).map(line => line.trim()).filter(line => line.startsWith('FOLAD_PACKET='));
       markerPresent = markers.length > 0;
       if (markers.length === 1 && /^FOLAD_PACKET=[A-Za-z0-9+/]+={0,2}$/.test(markers[0])) {
         try {
@@ -84,7 +84,7 @@ export function parseCapture(raw, exitCode) {
     throw Object.assign(new Error('cli_exit'), { exitCode, markerPresent, remoteFailure });
   }
   if (typeof raw !== 'string' || Buffer.byteLength(raw) > 2 * 1024 * 1024) throw new Error('capture_limit');
-  const lines = raw.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '').split(/\r?\n/).filter(line => line.startsWith('FOLAD_PACKET='));
+  const lines = raw.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '').split(/[\r\n]+/).map(line => line.trim()).filter(line => line.startsWith('FOLAD_PACKET='));
   if (!lines.length) throw new Error('completion_marker_missing');
   if (lines.length !== 1) throw new Error('ambiguous_marker');
   if (!/^FOLAD_PACKET=[A-Za-z0-9+/]+={0,2}$/.test(lines[0])) throw new Error('malformed_marker');

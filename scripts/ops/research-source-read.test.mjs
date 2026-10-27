@@ -30,6 +30,7 @@ test('two fixed stored-source queries use existing credential in-place, bounded 
   const parsed = parseCapture('CLI banner ' + secret + '\n' + marker(packet), 0);
   assert.equal(JSON.stringify(parsed).includes(secret), false);
   assert.equal(parsed.primaryDocumentsFetched, false);
+  assert.deepEqual(parseCapture('\x1b[?25l\r\x1b[2K  ' + marker(packet).trim() + '  \r\n\x1b[?25h', 0), parsed);
 });
 test('wrong endpoint, wrong symbol/source, excessive versions, and remote HTTP errors fail closed', async () => {
   let calls = 0;
