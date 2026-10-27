@@ -92,7 +92,7 @@ function supabaseStore(db: SessionClient): WorkbookStore {
         .insert({ workbook_id: row.workbookId, version: row.version, title: row.title, body: row.body })
         .select(VERSION_COLUMNS)
         .single();
-      if (error) throw classifyStoreError(error);
+      if (error) throw classifyStoreError(error, 'write');
       return toVersion(data as Record<string, unknown>);
     },
     async insertReview(row) {
@@ -101,7 +101,7 @@ function supabaseStore(db: SessionClient): WorkbookStore {
         .insert({ version_id: row.versionId, decision: row.decision, note: row.note })
         .select("id,version_id,decision,note,reviewed_at")
         .single();
-      if (error) throw classifyStoreError(error);
+      if (error) throw classifyStoreError(error, 'write');
       return {
         id: String(data.id),
         versionId: String(data.version_id),

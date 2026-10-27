@@ -58,7 +58,7 @@ for (const phase of ['fetch', 'body'] as const) test(`default workbook creation:
     assert.ok(finishLate); finishLate(); await ui.settle();
     assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, false, 'late response cannot confirm the timed-out handler');
     await ui.click('بررسی دوبارهٔ همین ثبت');
-    assert.equal(bodies.length, 2); assert.equal(bodies[1], bodies[0]);
+    assert.equal(bodies.length, 1, 'recovery reads the saved version without another POST');
     const attempt = JSON.parse(bodies[0]); assert.equal(attempt.workbookId, attempt.creationId);
     assert.equal(fixture.snapshot().versions.length, 1, 'manual recovery reuses the first committed creation');
     assert.equal(ui.button('تازه').props.disabled, false);
@@ -430,7 +430,7 @@ test('actual UI respects returned ties, old versions, dirty state and in-flight 
   }
 });
 
-test('real workbook handler retries unknown creation with frozen request and same server receipt, never abandons it via New/edit',async()=>{
+test('real workbook handler reads unknown creation without POST and never abandons it via New/edit',async()=>{
  const fixture=createP07WorkflowFixture(),bodies:string[]=[];let calls=0;
  const transport:WorkbookTransport=async(path,init)=>{
   if(init?.method==='POST'){bodies.push(String(init.body));if(++calls===1){await fixture.transport(path,init);throw new Error('Synthetic response lost after commit');}}
@@ -445,7 +445,7 @@ test('real workbook handler retries unknown creation with frozen request and sam
   await ui.click('ذخیرهٔ نسخهٔ');assert.equal(fixture.snapshot().versions.length,1);assert.equal(ui.button('تازه').props.disabled,true);
   const title=ui.find('input',e=>e.props.id==='title');assert.equal(title.props.disabled,true);
   (title.props.onChange as (e:{target:{value:string}})=>void)({target:{value:'Must not replace unknown draft'}});newButton();await ui.settle();
-  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies[0],bodies[1]);assert.equal(JSON.parse(bodies[0]).workbookId,JSON.parse(bodies[0]).creationId);assert.equal(fixture.snapshot().versions.length,1);
+  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies.length,1);assert.equal(JSON.parse(bodies[0]).workbookId,JSON.parse(bodies[0]).creationId);assert.equal(fixture.snapshot().versions.length,1);
   assert.equal(ui.find('input',e=>e.props.id==='title').props.value,p07FixtureWorkbook().title);assert.equal(ui.button('تازه').props.disabled,false);
  }finally{if(oldWindow)Object.defineProperty(globalThis,'window',oldWindow);else Reflect.deleteProperty(globalThis,'window');if(oldDocument)Object.defineProperty(globalThis,'document',oldDocument);else Reflect.deleteProperty(globalThis,'document');}
 });
@@ -463,24 +463,28 @@ test('late creation response lost preserves newer edits; exact receipt recovery 
   const ui=mountComponent('components/admin/ResearchWorkbook.tsx',{transport,initialWorkbook:p07FixtureWorkbook()});await ui.settle();await ui.click('ذخیرهٔ نسخهٔ');
   (ui.find('input',e=>e.props.id==='title').props.onChange as (e:{target:{value:string}})=>void)({target:{value:'Synthetic late edit'}});
   (ui.find(ResearchPreparationFields,()=>true).props.onPendingChange as (pending:boolean)=>void)(true);await ui.settle();release();await ui.settle();
-  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies[0],bodies[1]);assert.equal(fixture.snapshot().versions.length,1);assert.equal(ui.find('input',e=>e.props.id==='title').props.value,'Synthetic late edit');assert.equal(ui.button('تأیید داخلی نسخه').props.disabled,true);
+  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies.length,1);assert.equal(fixture.snapshot().versions.length,1);assert.equal(ui.find('input',e=>e.props.id==='title').props.value,'Synthetic late edit');assert.equal(ui.button('تأیید داخلی نسخه').props.disabled,true);
   (ui.find(ResearchPreparationFields,()=>true).props.onPendingChange as (pending:boolean)=>void)(false);await ui.settle();
   await ui.click('ذخیره به‌عنوان');assert.equal(fixture.snapshot().versions.length,2);assert.equal(fixture.snapshot().versions[1].workbookId,fixture.snapshot().versions[0].workbookId);assert.equal(fixture.snapshot().versions[1].title,'Synthetic late edit');
  }finally{release();if(oldWindow)Object.defineProperty(globalThis,'window',oldWindow);else Reflect.deleteProperty(globalThis,'window');if(oldDocument)Object.defineProperty(globalThis,'document',oldDocument);else Reflect.deleteProperty(globalThis,'document');}
 });
 
-for (const initial of ['lost-response', 'initial-503'] as const) test(`creation ${initial} keeps exact retry reachable through unavailable, respects rejection and blocks concurrent replay`, async () => {
+for (const initial of ['lost-response', 'initial-503'] as const) test(`creation ${initial} uses read-only recovery and requires a separate same-intent retry after proven absence`, async () => {
   const fixture = createP07WorkflowFixture(), bodies: string[] = [], responses: Record<string, unknown>[] = [];
+  const readPaths: string[] = [];
   let recovering = false, release: (() => void) | undefined, fileReads = 0;
   const transport: WorkbookTransport = async (path, init) => {
-    if (init?.method !== 'POST') return fixture.transport(path, init);
-    bodies.push(String(init.body));
-    if (bodies.length === 1 && initial === 'lost-response') {
-      const committed = await fixture.transport(path, init); responses.push(committed.body);
-      throw new Error('Synthetic committed response lost');
+    if (init?.method === 'POST') {
+      bodies.push(String(init.body));
+      if (bodies.length === 1) {
+        if (initial === 'lost-response') { await fixture.transport(path, init); throw new Error('Synthetic committed response lost'); }
+        fixture.failNext(503);
+      }
+    } else if (path.includes('?id=')) {
+      readPaths.push(path);
+      if (!recovering) return { status: 503, body: { unavailable: true } };
+      await new Promise<void>(done => { release = done; });
     }
-    if (!recovering) fixture.failNext(503);
-    else await new Promise<void>(done => { release = done; });
     const response = await fixture.transport(path, init); responses.push(response.body); return response;
   };
   const oldWindow = Object.getOwnPropertyDescriptor(globalThis, 'window'), oldDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
@@ -491,7 +495,6 @@ for (const initial of ['lost-response', 'initial-503'] as const) test(`creation 
     const newHandler = ui.button('تازه').props.onClick as () => void;
     const importHandler = ui.find('input', e => e.props.type === 'file').props.onChange as (e: unknown) => void;
     await ui.click('ذخیرهٔ نسخهٔ');
-    if (initial === 'lost-response') await ui.click('بررسی دوبارهٔ همین ثبت');
     assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, false);
     assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
     assert.equal(ui.button('ادامه از فایل').props.disabled, true);
@@ -499,22 +502,125 @@ for (const initial of ['lost-response', 'initial-503'] as const) test(`creation 
     (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'Forbidden replacement' } }); await ui.settle();
     assert.equal(fileReads, 0); assert.equal(ui.find('input', e => e.props.id === 'title').props.value, p07FixtureWorkbook().title);
     await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(bodies.length, 1, 'unavailable read cannot become a write');
     assert.equal(fixture.snapshot().versions.length, initial === 'lost-response' ? 1 : 0, 'unavailable rejection cannot bypass the writer gate');
     recovering = true;
     const retry = ui.button('بررسی دوبارهٔ همین ثبت').props.onClick as () => void;
-    retry(); const inflight = bodies.length; retry(); await ui.settle();
-    assert.equal(bodies.length, inflight); assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, true);
+    retry(); const inflight = readPaths.length; retry(); await ui.settle();
+    assert.equal(readPaths.length, inflight); assert.equal(bodies.length, 1); assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, true);
     assert.ok(release); release(); await ui.settle();
+    if (initial === 'initial-503') {
+      assert.equal(fixture.snapshot().versions.length, 0);
+      assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true, '404 is not a successful save');
+      await ui.click('ارسال دوبارهٔ همین ثبت');
+      assert.equal(bodies.length, 2);
+    } else assert.equal(bodies.length, 1);
     assert.ok(bodies.every(body => body === bodies[0]));
     const envelope = JSON.parse(bodies[0]); assert.equal(envelope.workbookId, envelope.creationId);
     const stored = fixture.snapshot().versions; assert.equal(stored.length, 1); assert.equal(stored[0].workbookId, envelope.creationId);
-    const recovered = responses.at(-1)!;
+    const recovered = responses.findLast(body => body.workbookId === envelope.creationId && typeof body.savedAt === 'string')!;
     assert.equal(recovered.savedAt, stored[0].createdAt); assert.equal(recovered.workbookId, stored[0].workbookId); assert.equal(recovered.version, 1);
-    if (initial === 'lost-response') { assert.equal(recovered.savedAt, responses[0].savedAt); assert.equal(recovered.reused, true); }
+    assert.ok(readPaths.every(path => path.endsWith(`?id=${envelope.creationId}&version=1`)));
+    if (initial === 'lost-response') assert.equal(recovered.authorMatchesSession, true);
     assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, false); assert.equal(ui.button('تازه').props.disabled, false);
   } finally {
     release?.();
     if (oldWindow) Object.defineProperty(globalThis, 'window', oldWindow); else Reflect.deleteProperty(globalThis, 'window');
     if (oldDocument) Object.defineProperty(globalThis, 'document', oldDocument); else Reflect.deleteProperty(globalThis, 'document');
   }
+});
+
+for (const [label, change] of [
+  ['body', (body: Record<string, unknown>) => ({ ...body, workbook: { ...(body.workbook as object), title: 'Different stored content' } })],
+  ['author', (body: Record<string, unknown>) => ({ ...body, authorMatchesSession: false })],
+  ['version', (body: Record<string, unknown>) => ({ ...body, version: 2 })],
+  ['stale', (body: Record<string, unknown>) => ({ ...body, latestVersion: 2 })],
+  ['time', (body: Record<string, unknown>) => ({ ...body, savedAt: 'invalid' })],
+  ['id', (body: Record<string, unknown>) => ({ ...body, workbookId: '11111111-1111-4111-8111-111111111111' })],
+] as const) test(`unknown creation rejects ${label} mismatch without POST or replacing the pending draft`, async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  let posts = 0, altered = true;
+  const reads: string[] = [];
+  const transport: WorkbookTransport = async (path, init) => {
+    if (init?.method === 'POST') { posts++; await fixture.transport(path, init); throw new Error('Synthetic lost response'); }
+    const result = await fixture.transport(path, init);
+    if (path.includes('?id=')) { reads.push(path); return altered ? { status: result.status, body: change(result.body) } : result; }
+    return result;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(fixture.snapshot().versions.length, 1);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.value, p07FixtureWorkbook().title);
+    altered = false; await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(new Set(reads).size, 1);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, false);
+  } finally { restore(); }
+});
+
+test('a generic or wrong-ID 404 never confirms absence or enables a write retry', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  let posts = 0;
+  const transport: WorkbookTransport = async (path, init) => {
+    if (init?.method === 'POST') { posts++; return { status: 503, body: { unavailable: true } }; }
+    if (path.includes('?id=')) return { status: 404, body: { absent: true, workbookId: 'wrong-id', requestedVersion: 1 } };
+    return fixture.transport(path, init);
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.throws(() => ui.button('ارسال دوبارهٔ همین ثبت'));
+  } finally { restore(); }
+});
+
+test('a stale retry handler cannot write after a newer recovery invalidates its absence proof', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const bodies: string[] = [];
+  let unavailable = false;
+  const transport: WorkbookTransport = async (path, init) => {
+    if (init?.method === 'POST') {
+      bodies.push(String(init.body));
+      if (bodies.length === 1) return { status: 503, body: { unavailable: true } };
+    } else if (path.includes('?id=') && unavailable) return { status: 503, body: { unavailable: true } };
+    return fixture.transport(path, init);
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    const oldRetry = ui.button('ارسال دوبارهٔ همین ثبت').props.onClick as () => void;
+    unavailable = true; await ui.click('بررسی دوبارهٔ همین ثبت'); oldRetry(); await ui.settle();
+    assert.equal(bodies.length, 1); assert.equal(fixture.snapshot().versions.length, 0);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    unavailable = false; await ui.click('بررسی دوبارهٔ همین ثبت'); await ui.click('ارسال دوبارهٔ همین ثبت');
+    assert.equal(bodies.length, 2); assert.equal(bodies[1], bodies[0]); assert.equal(fixture.snapshot().versions.length, 1);
+  } finally { restore(); }
+});
+
+for (const phase of ['fetch', 'body'] as const) test(`read-only recovery ${phase} timeout keeps the attempt locked and ignores late success`, async t => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  let posts = 0, reads = 0, finishLate: (() => void) | undefined;
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  globalThis.fetch = async (path, init) => {
+    const result = await fixture.transport(String(path), init);
+    if (init?.method === 'POST') { posts++; return Response.json({ error: 'Synthetic lost response' }, { status: 500 }); }
+    const response = Response.json(result.body, { status: result.status });
+    if (!String(path).includes('?id=') || ++reads > 1) return response;
+    if (phase === 'fetch') return new Promise<Response>(resolve => { finishLate = () => resolve(response); });
+    response.json = () => new Promise(resolve => { finishLate = () => resolve(result.body); });
+    return response;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, true);
+    t.mock.timers.tick(15000); await ui.settle();
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.equal(posts, 1); assert.ok(finishLate); finishLate(); await ui.settle();
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(reads, 2); assert.equal(fixture.snapshot().versions.length, 1);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, false);
+  } finally { finishLate?.(); t.mock.timers.reset(); restore(); }
 });

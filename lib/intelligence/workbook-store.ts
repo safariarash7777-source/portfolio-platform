@@ -47,7 +47,7 @@ export interface StoredReview {
 
 /** خطای شناخته‌شدهٔ مخزن؛ هر چیزِ دیگر به پیامِ عمومی سقوط می‌کند. */
 export class StoreError extends Error {
-  constructor(readonly code: "conflict" | "unavailable" | "no_evidence" | "not_found") {
+  constructor(readonly code: "conflict" | "unavailable" | "writer_unavailable" | "no_evidence" | "not_found") {
     super(code);
   }
 }
@@ -77,7 +77,7 @@ export interface StoreResult {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function authorize(gateway: WorkbookGateway): Promise<StoreResult | null> {
+async function authorize(gateway: WorkbookGateway, onAuthorized?: (userId: string) => void): Promise<StoreResult | null> {
   let user: { id: string } | null;
   try { user = await gateway.getUser(); } catch { return { status: 503, body: { error: "بررسی نشست انجام نشد؛ دوباره تلاش کنید." } }; }
   if (!user) return { status: 401, body: { error: "ورود لازم است" } };
@@ -87,7 +87,9 @@ async function authorize(gateway: WorkbookGateway): Promise<StoreResult | null> 
   } catch {
     return { status: 503, body: { error: "بررسی نقش انجام نشد؛ دوباره تلاش کنید." } };
   }
-  return role === "admin" ? null : { status: 403, body: { error: "دسترسی مجاز نیست" } };
+  if (role !== "admin") return { status: 403, body: { error: "دسترسی مجاز نیست" } };
+  onAuthorized?.(user.id);
+  return null;
 }
 
 function failure(error: unknown): StoreResult {
@@ -97,6 +99,9 @@ function failure(error: unknown): StoreResult {
     }
     if (error.code === "unavailable") {
       return { status: 503, body: { error: "ذخیرهٔ سروری هنوز فعال نیست؛ تا اجرای زیرساخت از فایل استفاده کنید.", unavailable: true } };
+    }
+    if (error.code === "writer_unavailable") {
+      return { status: 503, body: { error: "نوشتن کاربرگ یا بازبینی فعلاً مجاز نیست؛ متن و شناسهٔ ثبت را نگه دارید و نتیجهٔ همان ثبت را بررسی کنید.", unavailable: true, writerUnavailable: true } };
     }
     if (error.code === "no_evidence") {
       return { status: 422, body: { error: "نسخهٔ بدون شاهدِ منبع‌دار و تاریخ‌دار تأیید نمی‌شود." } };
@@ -159,7 +164,8 @@ export async function openWorkbook(
   workbookId: string,
   version: number | null,
 ): Promise<StoreResult> {
-  const denied = await authorize(gateway);
+  let authorizedActorId: string | null = null;
+  const denied = await authorize(gateway, userId => { authorizedActorId = userId; });
   if (denied) return denied;
   if (!UUID.test(workbookId)) return { status: 400, body: { error: "شناسهٔ کاربرگ نامعتبر است" } };
   if (version !== null && (!Number.isInteger(version) || version < 1)) {
@@ -168,7 +174,7 @@ export async function openWorkbook(
   try {
     const store = gateway.createStore();
     const all = (await store.versions(workbookId)).sort((a, b) => a.version - b.version);
-    if (all.length === 0) return { status: 404, body: { error: "کاربرگ پیدا نشد" } };
+    if (all.length === 0) return { status: 404, body: { error: "کاربرگ پیدا نشد", workbookId, requestedVersion: version, absent: true } };
     const target = version === null ? all[all.length - 1] : all.find((v) => v.version === version);
     if (!target) return { status: 404, body: { error: "این نسخه پیدا نشد" } };
     let workbook: ResearchWorkbook;
@@ -187,6 +193,7 @@ export async function openWorkbook(
         version: target.version,
         latestVersion: all[all.length - 1].version,
         savedAt: target.createdAt,
+        authorMatchesSession: target.createdBy === authorizedActorId,
         workbook,
         openIssues: reviewWorkbook(workbook).length,
         versions: all.map((v) => ({ version: v.version, savedAt: v.createdAt })),
@@ -333,9 +340,10 @@ export async function decideWorkbook(
  * نگاشتِ خطای PostgREST/Postgres به `StoreError`. متنِ خام هرگز به کلاینت
  * نمی‌رود؛ فقط کُد و الگوهای شناخته‌شده خوانده می‌شوند.
  */
-export function classifyStoreError(error: { code?: string; message?: string } | null): StoreError | Error {
+export function classifyStoreError(error: { code?: string; message?: string } | null, operation: 'read' | 'write' = 'read'): StoreError | Error {
   const code = error?.code ?? "";
   const message = error?.message ?? "";
+  if (code === "42501") return new StoreError(operation === 'write' ? "writer_unavailable" : "unavailable");
   if (code === "23505" || /version gap|stale version/i.test(message)) return new StoreError("conflict");
   if (code === "42P01" || code === "PGRST205" || code === "PGRST202") return new StoreError("unavailable");
   if (/approval requires evidence/i.test(message)) return new StoreError("no_evidence");

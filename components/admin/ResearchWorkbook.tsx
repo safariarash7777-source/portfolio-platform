@@ -14,6 +14,7 @@ import { withDeadline } from '@/lib/deadline';
 const inputClass = 'w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
 const API = '/api/admin/intelligence/workbooks';
+const canonical = (value: unknown): string => JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
 
 interface SavedRef { workbookId: string; version: number; latestVersion: number; savedAt: string }
 interface ListItem { workbookId: string; version: number; title: string; savedAt: string }
@@ -62,6 +63,9 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const pendingCreation = useRef<{ body: string; revision: number; id: string } | null>(null);
   const unknownCreation = useRef(false);
   const [uncertainCreation, setUncertainCreation] = useState(false);
+  const retryCreationAllowed = useRef(false);
+  const [creationAbsent, setCreationAbsent] = useState(false);
+  function allowCreationRetry(value: boolean) { retryCreationAllowed.current = value; setCreationAbsent(value); }
   function setBusy(value: boolean) { busyRef.current = value; setBusyState(value); }
   async function refreshList() {
     if (listBusy.current) return;
@@ -97,9 +101,11 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     editRevision.current++;
     setWorkbook(update); setDirty(true); setMessage('');
   }
-  async function saveToServer() {
+  async function saveToServer(retryAbsent = false) {
     if (busyRef.current) return;
+    if (unknownCreation.current && (!retryAbsent || !retryCreationAllowed.current || !pendingCreation.current)) return;
     if (pendingPreparation && !pendingCreation.current) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
+    allowCreationRetry(false);
     setBusy(true);
     if (!saved && !pendingCreation.current) {
       const id = crypto.randomUUID();
@@ -130,6 +136,38 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       if (attempt) { unknownCreation.current = true; setUncertainCreation(true); }
       setMessage(attempt ? 'نتیجهٔ ثبت دریافت نشد؛ متن و شناسهٔ ثبت اولیه حفظ شدند. همین ثبت را دوباره بررسی کنید؛ دفتر تازه‌ای ساخته نمی‌شود.' : 'ارتباط با سرور برقرار نشد؛ متن روی صفحه حفظ شد.');
     }
+    finally { setBusy(false); }
+  }
+  async function recoverCreation() {
+    const attempt = pendingCreation.current;
+    if (busyRef.current || !unknownCreation.current || !attempt) return;
+    allowCreationRetry(false); setBusy(true);
+    try {
+      const r = await transport(`${API}?id=${encodeURIComponent(attempt.id)}&version=1`);
+      if (r.status === 404 && r.body.absent === true && r.body.workbookId === attempt.id && r.body.requestedVersion === 1) {
+        allowCreationRetry(true);
+        setMessage('در این بررسی، همان کاربرگ در مخزن وجود نداشت. هنوز ذخیره تأیید نشده است؛ در صورت نیاز، ارسال دوبارهٔ همین ثبت را جداگانه انتخاب کنید.');
+        return;
+      }
+      if (r.status !== 200 || r.body.workbookId !== attempt.id || r.body.version !== 1 || r.body.latestVersion !== 1 ||
+          r.body.authorMatchesSession !== true || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt))) {
+        setMessage('نتیجهٔ همان ثبت هنوز تأیید نشد؛ متن و شناسه محفوظ‌اند. نسخه، نویسنده یا پاسخ مخزن نیاز به بررسی دارد.');
+        return;
+      }
+      const expected = parseWorkbook(JSON.stringify(JSON.parse(attempt.body).workbook));
+      const stored = parseWorkbook(JSON.stringify(r.body.workbook));
+      if (canonical(expected) !== canonical(stored)) {
+        setMessage('متن نسخهٔ خوانده‌شده با همین ثبت یکسان نیست؛ متن و شناسه محفوظ‌اند و ثبت تازه‌ای انجام نشد.');
+        return;
+      }
+      pendingCreation.current = null; unknownCreation.current = false; setUncertainCreation(false);
+      setSaved({ workbookId: attempt.id, version: 1, latestVersion: 1, savedAt: r.body.savedAt });
+      setVersions([{ version: 1, savedAt: r.body.savedAt }]);
+      setReviews(Array.isArray(r.body.reviews) ? r.body.reviews as ReviewItem[] : []);
+      setDirty(editRevision.current !== attempt.revision);
+      setMessage(editRevision.current === attempt.revision ? 'نسخهٔ ۱ با خواندن مستقل همان ثبت تأیید شد؛ این کار تأیید تحلیل یا انتشار نیست.' : 'نسخهٔ ۱ همان ثبت بازخوانی شد؛ تغییرات تازهٔ شما هنوز ذخیره نشده و روی صفحه حفظ شده‌اند.');
+      void refreshList();
+    } catch { setMessage('خواندن نتیجهٔ همان ثبت انجام نشد؛ متن و شناسه محفوظ‌اند و هیچ ثبت تازه‌ای ارسال نشد.'); }
     finally { setBusy(false); }
   }
   async function openFromServer(workbookId: string, version: number | null) {
@@ -282,7 +320,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         {saved && <p className="text-sm leading-7" aria-live="polite">
           نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty || pendingPreparation ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere && !dirty && !pendingPreparation ? ' · تأیید داخلی شده' : ''}
         </p>}
-        {(server === 'ready' || uncertainCreation) && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!dirty && !!saved)} onClick={() => void saveToServer()}><Save size={16} aria-hidden="true" /> {uncertainCreation ? 'بررسی دوبارهٔ همین ثبت' : saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
+        {(server === 'ready' || uncertainCreation) && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!dirty && !!saved)} onClick={() => void (uncertainCreation ? recoverCreation() : saveToServer())}><Save size={16} aria-hidden="true" /> {uncertainCreation ? 'بررسی دوبارهٔ همین ثبت' : saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
+        {uncertainCreation && creationAbsent && <button type="button" className="btn btn-secondary w-full min-h-11" disabled={busy} onClick={() => void saveToServer(true)}>ارسال دوبارهٔ همین ثبت</button>}
         <button type="button" className="btn btn-primary w-full min-h-11" onClick={() => { setChecked(true); setMessage(issues.length ? `${toPersianDigits(issues.length)} مورد نیازمند تکمیل است.` : 'ساختار کامل است؛ صحت شواهد و نتیجه هنوز بازبینی انسانی می‌خواهد.'); }}><ClipboardCheck size={16} aria-hidden="true" /> بررسی ساختار</button>
         {checked && issues.length > 0 && <ul className="max-h-64 space-y-2 overflow-y-auto text-sm">{issues.map((issue, i) => <li key={`${issue.field}-${i}`}><a className="underline" href={`#${issue.field}`}>{issue.message}</a></li>)}</ul>}
         <button type="button" className="btn btn-secondary min-h-11 w-full" onClick={() => download('json')}><Download size={16} aria-hidden="true" /> دریافت فایل قابل ادامه</button>

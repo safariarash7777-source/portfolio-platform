@@ -243,10 +243,38 @@ test("نگاشتِ خطای مخزن: کُدها و الگوهای شناخته�
   assert.equal(code(classifyStoreError({ code: "P0001", message: "research workbook: stale version" })), "conflict");
   assert.equal(code(classifyStoreError({ code: "PGRST205", message: "Could not find the table" })), "unavailable");
   assert.equal(code(classifyStoreError({ code: "42P01", message: "relation does not exist" })), "unavailable");
+  assert.equal(code(classifyStoreError({ code: "42501", message: "RAW_PRIVATE_PERMISSION" }, 'write')), "writer_unavailable");
+  assert.equal(code(classifyStoreError({ code: "42501", message: "RAW_PRIVATE_PERMISSION" })), "unavailable");
+  assert.equal(code(classifyStoreError({ code: "XX000", message: "42501 writer unavailable" }, 'write')), "generic");
   assert.equal(code(classifyStoreError({ code: "P0001", message: "research workbook: approval requires evidence" })), "no_evidence");
   const generic = classifyStoreError({ code: "XX000", message: "password=hunter2 host=db" });
   assert.equal(code(generic), "generic");
   assert.ok(!generic.message.includes("hunter2"));
+});
+
+test('independent version read reports only a session-author match and distinguishes proven absence from a missing version', async () => {
+  const opts = { user: 'synthetic-admin-A' }, h = harness(opts), creationId = '11111111-1111-4111-8111-111111111111';
+  const absent = await openWorkbook(h.gw, creationId, 1);
+  assert.equal(absent.status, 404); assert.equal(absent.body.absent, true);
+  assert.equal(absent.body.workbookId, creationId); assert.equal(absent.body.requestedVersion, 1);
+  await saveWorkbook(h.gw, { workbookId: creationId, creationId, baseVersion: 0, workbook: complete() });
+  const own = await openWorkbook(h.gw, creationId, 1);
+  assert.equal(own.status, 200); assert.equal(own.body.authorMatchesSession, true);
+  assert.equal(own.body.createdBy, undefined); assert.ok(!JSON.stringify(own.body).includes(opts.user));
+  opts.user = 'synthetic-admin-B';
+  assert.equal((await openWorkbook(h.gw, creationId, 1)).body.authorMatchesSession, false);
+  const missingVersion = await openWorkbook(h.gw, creationId, 2);
+  assert.equal(missingVersion.status, 404); assert.equal(missingVersion.body.absent, undefined);
+  assert.equal(h.versions.length, 1);
+});
+
+test('readback author match is bound to the same actor whose admin role was authorized', async () => {
+  const h = harness({ user: 'synthetic-admin-A' }), creationId = '11111111-1111-4111-8111-111111111111';
+  await saveWorkbook(h.gw, { workbookId: creationId, creationId, baseVersion: 0, workbook: complete() });
+  let lookups = 0;
+  h.gw.getUser = async () => ({ id: ++lookups === 1 ? 'synthetic-admin-A' : 'different-later-user' });
+  const result = await openWorkbook(h.gw, creationId, 1);
+  assert.equal(result.status, 200); assert.equal(result.body.authorMatchesSession, true); assert.equal(lookups, 1);
 });
 
 test("latestPerWorkbook: یک ردیف برای هر کاربرگ، بالاترین نسخه، جدیدترین اول", () => {
