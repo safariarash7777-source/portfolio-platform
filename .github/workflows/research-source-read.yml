@@ -1,0 +1,40 @@
+name: Read stored Folad research sources
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: research-source-read
+  cancel-in-progress: false
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Read fixed public reports inside existing relay
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+          LIARA_CLI: "@liara/cli@9.5.1"
+          APP: arsadata
+        run: |
+          set +e
+          CMD="$(node scripts/ops/research-source-read.mjs command)"
+          test -n "$CMD" || exit 1
+          export CMD
+          RAW="$RUNNER_TEMP/folad-source-private-capture.log"
+          timeout 150 bash scripts/deploy/liara-shell-probe.sh > "$RAW" 2>&1
+          RC=$?
+          node scripts/ops/research-source-read.mjs parse "$RAW" "$RC"
+      - name: Preserve only validated public financial packet
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-source-folad
+          path: research-source-folad.json
+          if-no-files-found: error
+          retention-days: 14

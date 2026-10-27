@@ -45,6 +45,28 @@ test('arithmetic, missing values and invalid source fail before any model input'
   const injected = row(); injected.source_url = 'https://evil.test/';
   assert.equal(run([injected]).excluded[0].reason, 'unapproved_source');
 });
+test('known capture contradictions block model input without reviving an older revision', () => {
+  for (const captured_at of ['2026-10-18T00:00:00Z', '2026-10-11T00:00:00Z', '2026-10-13', '', '2026-09-31T00:00:00Z']) {
+    const original = row(9), amendment = row(2);
+    amendment.title = 'صورت‌های مالی اصلاحیه'; amendment.captured_at = captured_at;
+    const out = run([original, amendment]);
+    assert.equal(out.observations.length, 0, captured_at);
+    assert.equal(out.provenance.length, 0);
+    assert.equal(out.excluded[0].reason, 'invalid_report_capture_time');
+  }
+});
+test('publication rejects impossible Gregorian dates and incomplete clocks', () => {
+  for (const published_at of ['2026-09-31T08:30:00Z', '2026-10-12T08:30Z', '2026-10-12T24:00:00Z']) {
+    const r = row(); r.published_at = published_at;
+    assert.equal(run([r]).excluded[0].reason, 'stale_or_invalid_report_date');
+  }
+});
+test('unknown capture remains unknown and explicit offset clocks keep their actual instant', () => {
+  const unknown = row(); unknown.captured_at = null;
+  assert.equal(run([unknown]).provenance[0].capturedAt, null);
+  const r = row(); r.published_at = '2026-10-12T12:00:00+03:30'; r.captured_at = '2026-10-12T12:00:00.123456+03:30';
+  assert.equal(run([r]).provenance[0].capturedAt, '2026-10-12T08:30:00.123Z');
+});
 test('REST reader is stored-data only, fails closed on errors and truncated reads', async () => {
   let count = 0;
   const fetchImpl = (async (url, init) => {

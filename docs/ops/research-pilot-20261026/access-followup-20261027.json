@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-27T08:41:53Z",
+  "clientTimezone": "Asia/Tehran",
+  "main": "5f2c2faabbc71ff48d894b92f284cc67745f2cbb",
+  "environment": {
+    "revision": "2",
+    "network": "unrestricted/enforced",
+    "credentialBindings": 0,
+    "runtimeVariables": 0,
+    "outboundIdentities": 0,
+    "localResearchHome": "absent",
+    "laptopHermes": "User reports open; laptop not attached to cloud executor"
+  },
+  "publicStoredData": {
+    "codalFolad": {
+      "httpStatus": 502,
+      "error": "fetch failed"
+    },
+    "symbolDetailFolad": {
+      "httpStatus": 502,
+      "error": "fetch failed"
+    }
+  },
+  "relayPassiveHealth": {
+    "runId": 40475246990,
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40475246990",
+    "conclusion": "success",
+    "healthz": "ok",
+    "debugGate": "passed",
+    "processSentSamples": [
+      6507,
+      6507,
+      6508
+    ],
+    "spacingMs": 100,
+    "minStartGapMs": 109.65783882141113,
+    "providerAccountQuota": "unknown",
+    "storageSuccess": "not established",
+    "deployedSha": "not established by health gate"
+  },
+  "workerReconciled": false,
+  "lockRemoved": false,
+  "providerFetchTriggered": false
+}

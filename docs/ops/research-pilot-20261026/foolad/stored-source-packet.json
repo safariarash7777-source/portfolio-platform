@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "symbol": "فولاد",
+  "readAt": "2026-10-27T10:14:16.301Z",
+  "source": "stored_codal_reports",
+  "primaryDocumentsFetched": false,
+  "packets": [
+    {
+      "kind": "ن-۱۰",
+      "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1",
+      "status": "read",
+      "rows": [
+        {
+          "id": 4047,
+          "symbol": "فولاد",
+          "report_kind": "ن-۱۰",
+          "period_end": "2026-06-21",
+          "title": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۳ ماهه منتهی به  ۱۴۰۵/۰۳/۳۱ (حسابرسی نشده)(اصلاحیه)",
+          "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1#pv2",
+          "published_at": null,
+          "captured_at": "2026-08-12T23:10:45.09058+00:00",
+          "data": {
+            "symbol": "فولاد",
+            "report_kind": "ن-۱۰",
+            "period_end": "1405-03-31",
+            "unit": "میلیون ریال",
+            "unit_basis": null,
+            "qty_unit": null,
+            "period_months": 3,
+            "audited": false,
+            "restated_prior": false,
+            "capital": 1935000000,
+            "standalone": {
+              "revenue": 834166799,
+              "cogs": 601508257,
+              "gross_profit": 232658542,
+              "sga": null,
+              "other_op_income": null,
+              "other_op_expense": null,
+              "operating_profit": 197995135,
+              "finance_cost": null,
+              "pretax_profit": null,
+              "tax": null,
+              "net_profit": 120356493,
+              "eps_rial": 63,
+              "prior": {
+                "revenue": 847715717,
+                "cogs": 581958920,
+                "gross_profit": 265756797,
+                "sga": null,
+                "other_op_income": null,
+                "other_op_expense": null,
+                "operating_profit": 234582596,
+                "finance_cost": null,
+                "pretax_profit": null,
+                "tax": null,
+                "net_profit": 161823705,
+                "eps_rial": 84
+              }
+            }
+          },
+          "raw": {
+            "announcement_link": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1",
+            "link_excel": "https://excel.codal.ir/service/Excel/GetAll/yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d/0",
+            "link_pdf": "https://codal.ir/DownloadFile.aspx?hs=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&ft=1005&let=6",
+            "date_publish": "۱۴۰۵/۰۵/۰۳",
+            "time_publish": "۱۶:۵۴:۵۳",
+            "period_end_jalali": "1405-03-31",
+            "parser_version": 2,
+            "audited": false,
+            "period_months": 3
+          }
+        }
+      ]
+    },
+    {
+      "kind": "ن-۳۰",
+      "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "status": "read",
+      "rows": [
+        {
+          "id": 11653,
+          "symbol": "فولاد",
+          "report_kind": "ن-۳۰",
+          "period_end": "2026-09-22",
+          "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۶/۳۱(اصلاحیه)",
+          "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "published_at": null,
+          "captured_at": "2026-10-25T10:15:56.894105+00:00",
+          "data": {
+            "symbol": "فولاد",
+            "report_kind": "ن-۳۰",
+            "period_end": "1405-06-31",
+            "unit": "میلیون ریال",
+            "unit_basis": "header+arithmetic",
+            "qty_unit": null,
+            "fiscal_year": 1405,
+            "period_total_amount": 639418160,
+            "fy_cumulative_amount": 2509422184,
+            "products": [
+              {
+                "product_name": "محصولات سرد",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 128,
+                "sales_qty": 138,
+                "sales_rate": 1084861500000,
+                "sales_amount": 149710887
+              },
+              {
+                "product_name": "محصولات گرم",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 279,
+                "sales_qty": 238,
+                "sales_rate": 921256487395,
+                "sales_amount": 219259044
+              },
+              {
+                "product_name": "محصولات پوشش دار",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 22,
+                "sales_qty": 22,
+                "sales_rate": 1765051954545,
+                "sales_amount": 38831143
+              },
+              {
+                "product_name": "تختال",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 7,
+                "sales_qty": 22,
+                "sales_rate": 660313000000,
+                "sales_amount": 14526886
+              },
+              {
+                "product_name": "گندله",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 110,
+                "sales_qty": 110,
+                "sales_rate": 92758227273,
+                "sales_amount": 10203405
+              },
+              {
+                "product_name": "محصولات پوشش دار",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 0,
+                "sales_qty": 2,
+                "sales_rate": 950737000000,
+                "sales_amount": 1901474
+              },
+              {
+                "product_name": "محصولات گرم",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 0,
+                "sales_qty": 66,
+                "sales_rate": 797718772727,
+                "sales_amount": 52649439
+              },
+              {
+                "product_name": "محصولات سرد",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 0,
+                "sales_qty": 3,
+                "sales_rate": 781581333333,
+                "sales_amount": 2344744
+              },
+              {
+                "product_name": "تختال",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 0,
+                "sales_qty": 31,
+                "sales_rate": 717258580645,
+                "sales_amount": 22235016
+              },
+              {
+                "product_name": "محصولات گرم",
+                "market": "داخلی",
+                "qty_unit": null,
+                "production_qty": 150,
+                "sales_qty": 140,
+                "sales_rate": 912543728571,
+                "sales_amount": 127756122
+              }
+            ]
+          },
+          "raw": {
+            "announcement_link": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+            "link_excel": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+            "link_pdf": "https://codal.ir/DownloadFile.aspx?hs=UF9BctCE5jV6HYNuyA8yYA%3d%3d&ft=1005&let=58",
+            "date_publish": "۱۴۰۵/۰۷/۲۹",
+            "time_publish": "۲۰:۵۰:۲۶",
+            "period_end_jalali": "1405-06-31",
+            "parser_version": 2,
+            "audited": false,
+            "period_months": 1
+          }
+        }
+      ]
+    }
+  ]
+}

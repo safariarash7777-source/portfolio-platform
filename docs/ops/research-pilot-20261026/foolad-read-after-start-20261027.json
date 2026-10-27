@@ -1,0 +1,33 @@
+{
+  "sourceFile": "/workspace/scratch/post-backend-start/page.txt",
+  "sha256": "cafe276a1a69be070f92e1309836a639d625a0eb20b5475170d39afa59d4ace2",
+  "observedPayloads": [
+    {
+      "readFailed": true,
+      "fundamentals": {
+        "symbol": "فولاد",
+        "n10": null,
+        "n30": null
+      }
+    }
+  ],
+  "financialInputStatus": "unavailable_due_to_read_failure",
+  "numericalDossierComputed": false,
+  "storedReportCountNotEstablished": true,
+  "readAt": "2026-10-27T09:30:27.635805Z",
+  "pageHttpStatus": 200,
+  "apiReads": [
+    {
+      "path": "/api/codal-list?symbol=فولاد",
+      "httpStatus": 502,
+      "at": "2026-10-27T09:30:26.077247Z",
+      "error": "fetch failed"
+    },
+    {
+      "path": "/api/symbol-detail?l18=فولاد",
+      "httpStatus": 502,
+      "at": "2026-10-27T09:30:26.689413Z",
+      "error": "fetch failed"
+    }
+  ]
+}

@@ -100,6 +100,27 @@ test("مقایسهٔ سال جاری با سال قبل و تجمیعی هم‌�
   assert.ok(n && n.includes("بیشتر")); // 350 > 220
 });
 
+test("missing immediately prior year never labels an older year as prior-year growth", () => {
+  const current = report("1405-06-31", 300, [prod({ product_name: "الف", sales_amount: 300 })], 1500);
+  const older = report("1403-06-31", 100, [prod({ product_name: "الف", sales_amount: 100 })], 600);
+  const gap = buildMonthlySales([current, older]);
+  assert.ok(gap);
+  assert.equal(gap.currentFY, 1405);
+  assert.equal(gap.priorFY, null);
+  assert.equal(gap.priorMonths, null);
+  assert.equal(gap.cumulativePriorSamePoint, null);
+  assert.equal(narrativeCumulative(gap), null);
+  assert.equal(gap.cumulativeCurrent, 1500);
+  assert.equal(gap.reportCount, 2); // Older evidence remains available for other series.
+
+  const contiguous = buildMonthlySales([current,
+    report("1404-06-31", 200, [prod({ product_name: "الف", sales_amount: 200 })], 1000), older]);
+  assert.ok(contiguous);
+  assert.equal(contiguous.priorFY, 1404);
+  assert.equal(contiguous.cumulativePriorSamePoint, 1000);
+  assert.ok(narrativeCumulative(contiguous)?.includes("بیشتر"));
+});
+
 test("واحد حفظ می‌شود: مقادیر میلیون ریال بدون تبدیل در خروجی", () => {
   const r = buildMonthlySales([
     report("1405-03-31", 545_287_525, [prod({ product_name: "شمش", sales_amount: 545_287_525 })]),
