@@ -13,8 +13,10 @@
   "hashes": {
     "foolad-fundamentals-resolved.json": "add5c4d6cb90fdca0676222c2229a65b94b097fe83e41c26b6ea2eca2612c581",
     "foolad-calculations.json": "c0c4681eb36c4fd9cd1301ed60eb81eecc610a6d3302c204b23b4ff3d0d8ba8c",
-    "reproduce.mts": "c8a2165a3b1e46108dca70aa6aaa4ba2ced33b48cd9d0fe21d7af1b0f7572c20",
-    "foolad-workbook.json": "88f37a460484b8e66119356bcfd16fe184cb83f2d5ac8ce55035d372d6d1e69b",
-    "source-receipt.json": "87df7ebda091dea2d31e5fb87bfbe2d309d1a938725dd600c7958eb67859afe3"
+    "reproduce.mts": "6c40d5aaa398b3eea173277e3c4830620ad24eaa7fd89d538ebe1f06b6758694",
+    "foolad-workbook.json": "fc344a585a3b918e65e5dee02f117a949f50969b02b34cca10298105fc9c403a",
+    "source-receipt.json": "10f6f2509afafa4165633c6083bb8a7c02959ee8dcfd0b30473fd7e099445b64",
+    "stored-source-packet.json": "ee1b47147dcd62341ba722509fe5cfc3fa4cfb7da2d32b8b6b4ac3d43f6234f3",
+    "stored-vs-ssr.json": "713f054bd5799fddbdb87e3313786af426e4df8d1b82555f17215a91085c3898"
   }
 }

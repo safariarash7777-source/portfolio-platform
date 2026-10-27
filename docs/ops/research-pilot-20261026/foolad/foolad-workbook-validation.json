@@ -1,11 +1,6 @@
 {
   "parse": "passed",
-  "structuralIssues": [
-    {
-      "field": "published-n30-amendment",
-      "message": "تاریخ انتشار منبع را مشخص کنید."
-    }
-  ],
+  "structuralIssues": [],
   "humanReview": "pending",
   "deepDossierAcceptance": false,
   "persisted": false
