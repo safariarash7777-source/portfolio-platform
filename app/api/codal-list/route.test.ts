@@ -40,3 +40,41 @@ test("announcement list reads feed metadata, including unparsed notices, without
 test("missing symbol is rejected before DB or provider access", async () => {
   assert.equal((await GET(new Request("https://site.example.test/api/codal-list"))).status, 400);
 });
+
+test('transport failure logs only an allowlisted cause and preserves the existing 502 response', async () => {
+  const previous = { fetch: globalThis.fetch, warn: console.warn, url: process.env.NEXT_PUBLIC_SUPABASE_URL, key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY };
+  const logs: unknown[][] = [];
+  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://database.example.test';
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'SECRET_KEY';
+  console.warn = (...args: unknown[]) => { logs.push(args); };
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; throw new TypeError('fetch failed', { cause: Object.assign(new Error('SECRET_URL_TOKEN'), { code: 'UND_ERR_CONNECT_TIMEOUT' }) }); };
+  try {
+    const response = await GET(new Request('https://site.example.test/api/codal-list?symbol=SECRET_SYMBOL'));
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).error, 'fetch failed');
+    assert.equal(calls, 1);
+    assert.equal(logs.length, 1);
+    const fields = logs[0][1] as Record<string, unknown>;
+    assert.equal(logs[0][0], 'stored_read_failed');
+    assert.equal(fields.phase, 'request');
+    assert.equal(fields.causeCode, 'UND_ERR_CONNECT_TIMEOUT');
+    assert.equal(fields.errorName, 'TypeError');
+    assert.equal(fields.upstreamStatus, null);
+    assert.equal(typeof fields.elapsedMs, 'number');
+    assert.doesNotMatch(JSON.stringify(logs), /SECRET/);
+  } finally {
+    globalThis.fetch = previous.fetch; console.warn = previous.warn;
+    if (previous.url === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL; else process.env.NEXT_PUBLIC_SUPABASE_URL = previous.url;
+    if (previous.key === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY; else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = previous.key;
+  }
+});
+
+test('diagnostic helper drops injected names/codes and cannot change responses if logging fails', async () => {
+  const { logStoredReadFailure } = await import('../../../lib/stored-read-diagnostics');
+  const logs: unknown[] = [];
+  logStoredReadFailure({ route: 'codal-list', phase: 'request', elapsedMs: NaN, error: { name: 'SECRET_NAME', message: 'SECRET_MESSAGE', code: 'SECRET_CODE', cause: { code: 'SECRET_CAUSE' } } }, (_event, fields) => logs.push(fields));
+  assert.doesNotMatch(JSON.stringify(logs), /SECRET/);
+  assert.equal((logs[0] as Record<string, unknown>).causeCode, 'unknown');
+  assert.doesNotThrow(() => logStoredReadFailure({ route: 'codal-list', phase: 'request', elapsedMs: 1 }, () => { throw new Error('logger failed'); }));
+});
