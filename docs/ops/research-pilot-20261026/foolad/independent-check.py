@@ -8,7 +8,13 @@ f = json.loads((root / 'foolad-fundamentals-resolved.json').read_text())
 n = f['n10']['data']['standalone']
 m = f['n30']['data'][0]
 D = Decimal
+calculated = json.loads((root / 'foolad-calculations.json').read_text())
+assert calculated['monthly']['priorFY'] is None
+assert calculated['monthly']['priorMonths'] is None
+assert calculated['monthly']['cumulativePriorSamePoint'] is None
 result = {
+    'missingPriorYearPreserved': True,
+    'monthlyCoreSha256': hashlib.sha256((root.parents[3] / 'lib/core/monthlyReport.ts').read_bytes()).hexdigest(),
     'method': 'Independent Python integer/Decimal reconstruction; not primary-source verification',
     'grossProfitExpected': n['revenue'] - n['cogs'],
     'grossProfitMatches': n['revenue'] - n['cogs'] == n['gross_profit'],
@@ -20,7 +26,7 @@ result = {
     'cogsGrowthPct': str((D(n['cogs']) / D(n['prior']['cogs']) - 1) * 100),
     'hashes': {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in [
         'foolad-fundamentals-resolved.json', 'foolad-calculations.json',
-        'reproduce.mts', 'foolad-workbook.json', 'source-receipt.json']},
+        'reproduce.mts', 'foolad-workbook.json', 'source-receipt.json', 'stored-source-packet.json', 'stored-vs-ssr.json']},
 }
 (root / 'independent-check.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
 print(json.dumps(result, ensure_ascii=False, indent=2))

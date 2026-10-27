@@ -14,5 +14,16 @@
   "statement": "Stored public-page snapshot, not direct primary-document verification. No authenticated user/customer data included.",
   "persistedToDesk": false,
   "primaryVerification": "pending",
-  "humanAcceptance": "pending"
+  "humanAcceptance": "pending",
+  "calculationRevision": "Regenerated with exact previous-fiscal-year correction; immutable SSR input unchanged.",
+  "monthlyCoreSha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0",
+  "storedSourcePacket": {
+    "workflowRunId": 40486868612,
+    "readAt": "2026-10-27T10:14:16.301Z",
+    "file": "stored-source-packet.json",
+    "sha256": "ee1b47147dcd62341ba722509fe5cfc3fa4cfb7da2d32b8b6b4ac3d43f6234f3",
+    "n10ReportId": 4047,
+    "n30ReportId": 11653,
+    "primaryDocumentsFetched": false
+  }
 }
