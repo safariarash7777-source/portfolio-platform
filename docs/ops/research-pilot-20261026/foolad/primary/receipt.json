@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "purpose": "primary-document-retrieval",
+  "limitation": "Retrieved documents require separate financial and source validation.",
+  "documents": [
+    {
+      "reportKind": "N10",
+      "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d/0",
+      "startedAt": "2026-10-27T10:27:53.223Z",
+      "httpStatus": 200,
+      "status": "retrieved",
+      "filename": "N10.html",
+      "bytes": 629474,
+      "sha256": "90009e9eba89ae41eea7d581687585d25b070b3962398fafcb46941f5f2b879e",
+      "completedAt": "2026-10-27T10:28:02.032Z"
+    },
+    {
+      "reportKind": "N30",
+      "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+      "startedAt": "2026-10-27T10:28:02.032Z",
+      "httpStatus": 200,
+      "status": "retrieved",
+      "filename": "N30.html",
+      "bytes": 192342,
+      "sha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+      "completedAt": "2026-10-27T10:28:02.765Z"
+    }
+  ]
+}

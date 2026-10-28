@@ -273,3 +273,65 @@ test("نرخ: تناقضِ علامت حتی با نرخِ مثبت هم رد م
   assert.equal(meaningfulRate({ sales_qty: 5, sales_rate: 250, sales_amount: -1250 }), null);
   assert.equal(meaningfulRate({ sales_qty: -5, sales_rate: 250, sales_amount: 1250 }), null);
 });
+
+test('section markets preserve service revenue without domestic classification or goods-rate collisions', async () => {
+  const { buildFundamentalCard } = await import('./fundamentalCard');
+  const { deriveN30 } = await import('../fundamental/calc');
+  const { deriveN30Extras } = await import('./radarData');
+  const { withKnownMonthlyQuantities } = await import('./monthly-quantity');
+  const r = report('1405-06-31', 1000, [
+    prod({ product_name: 'گرم', market: 'خدمات', qty_unit: null, sales_amount: 600, sales_rate: 999, sales_qty: 300, production_qty: 400 }),
+    prod({ product_name: 'گرم', market: 'داخلی', qty_unit: 'هزارتن', sales_amount: 200, sales_rate: 20, sales_qty: 10, production_qty: 12 }),
+    prod({ product_name: 'گرم', market: 'صادراتی', qty_unit: 'هزار تن', sales_amount: 100, sales_rate: 25, sales_qty: 4, production_qty: 0 }),
+    prod({ product_name: 'گرم', market: undefined as unknown as N30ProductRow['market'], sales_amount: 100, sales_rate: 888, sales_qty: 40, production_qty: 80 }),
+  ]);
+  r.unit = 'میلیون ریال';
+  const quantities = withKnownMonthlyQuantities(r);
+  assert.equal(quantities.qty_unit, 'هزار تن');
+  assert.equal(quantities.products[0].sales_qty, null);
+  assert.equal(quantities.products[1].sales_qty, 10);
+  assert.equal(quantities.products[3].market, 'نامشخص');
+  const monthly = buildMonthlySales([r])!;
+  assert.equal(monthly.latestDomesticAmount, 200);
+  assert.equal(monthly.latestExportAmount, 100);
+  assert.equal(monthly.latestExportSharePct, null);
+  assert.deepEqual(monthly.rateSeries.map(s => s.points[0].rate), [20, 25]);
+  assert.deepEqual(monthly.prodVsSales.map(p => [p.production, p.sales]), [[12, 14]]);
+  assert.equal(monthly.latestMix.find(p => p.market === 'خدمات')?.amount, 600);
+  const card = buildFundamentalCard('فولاد', [r]);
+  assert.equal(card.months12[0].totalAmount, 1000);
+  assert.equal(card.months12[0].domesticAmount, 200);
+  assert.equal(card.exportSharePct, null);
+  assert.equal(card.topProductRate, 20);
+  assert.equal(card.prodSalesGap, null);
+  const derived = deriveN30([r]);
+  assert.equal(derived.exportSharePct, null);
+  assert.equal(derived.topProductMonths[0].rate, 20);
+  assert.equal(derived.months[0].domesticAmount, 200);
+  assert.deepEqual(derived.prodVsSales.map(p => [p.production, p.sales]), [[12, 14]]);
+  const radar = deriveN30Extras([{ symbol: 'فولاد', data: r as unknown as Record<string, unknown> }]).get('فولاد')!;
+  assert.equal(radar.exportSharePct, null);
+  assert.equal(radar.prodSalesGap, null);
+});
+
+
+test('export shares require complete market classification; known services stay in revenue denominator', async () => {
+  const { buildFundamentalCard } = await import('./fundamentalCard');
+  const { deriveN30 } = await import('../fundamental/calc');
+  const { deriveN30Extras } = await import('./radarData');
+  const shares = (r: CodalN30Data) => [
+    buildMonthlySales([r])!.latestExportSharePct,
+    buildFundamentalCard('فولاد', [r]).exportSharePct,
+    deriveN30([r]).exportSharePct,
+    deriveN30Extras([{ symbol: 'فولاد', data: r as unknown as Record<string, unknown> }]).get('فولاد')!.exportSharePct,
+  ];
+  const known = [prod({product_name:'محصول',market:'داخلی',sales_amount:200}), prod({product_name:'محصول',market:'صادراتی',sales_amount:100}), prod({product_name:'محصول',market:'خدمات',sales_amount:700})];
+  assert.deepEqual(shares(report('1405-06-31',1000,known)), [10,10,10,10]);
+  assert.deepEqual(shares(report('1405-06-31',900,known.filter(p => p.market !== 'صادراتی'))), [0,0,0,0]);
+  for (const amount of [100, -100, null, undefined, NaN]) {
+    const row = prod({product_name:'محصول',market:'نامشخص',sales_amount:amount as number | null});
+    assert.deepEqual(shares(report('1405-06-31',1000,[...known,row])), [null,null,null,null]);
+    assert.deepEqual(shares(report('1405-06-31',1000,[known[0],row])), [null,null,null,null]);
+  }
+  assert.deepEqual(shares(report('1405-06-31',1000,[...known,prod({product_name:'محصول',market:'نامشخص',sales_amount:0})])), [10,10,10,10]);
+});

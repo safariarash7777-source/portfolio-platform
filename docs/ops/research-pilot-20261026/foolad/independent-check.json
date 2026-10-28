@@ -1,6 +1,6 @@
 {
   "missingPriorYearPreserved": true,
-  "monthlyCoreSha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0",
+  "monthlyCoreSha256": "1463dae7ef82203f1e3115439b12ae051aadfadc3879151aac4121644ea91b79",
   "method": "Independent Python integer/Decimal reconstruction; not primary-source verification",
   "grossProfitExpected": 232658542,
   "grossProfitMatches": true,
@@ -13,10 +13,12 @@
   "hashes": {
     "foolad-fundamentals-resolved.json": "add5c4d6cb90fdca0676222c2229a65b94b097fe83e41c26b6ea2eca2612c581",
     "foolad-calculations.json": "c0c4681eb36c4fd9cd1301ed60eb81eecc610a6d3302c204b23b4ff3d0d8ba8c",
-    "reproduce.mts": "6c40d5aaa398b3eea173277e3c4830620ad24eaa7fd89d538ebe1f06b6758694",
-    "foolad-workbook.json": "fc344a585a3b918e65e5dee02f117a949f50969b02b34cca10298105fc9c403a",
-    "source-receipt.json": "10f6f2509afafa4165633c6083bb8a7c02959ee8dcfd0b30473fd7e099445b64",
+    "reproduce.mts": "f23c7b304bce41bb7c725c8c0448776ecc1b78519c5f7b65d7959765f8667a88",
+    "foolad-workbook.json": "2e981b5db03a0c6afe54d8178ebdbf5e4d3af9a22896b510184be7640881dc0a",
+    "source-receipt.json": "f6f099d13c54d057aa47991ff92ec4ca7b8543dc81b1718879373217b74eb4ea",
     "stored-source-packet.json": "ee1b47147dcd62341ba722509fe5cfc3fa4cfb7da2d32b8b6b4ac3d43f6234f3",
-    "stored-vs-ssr.json": "713f054bd5799fddbdb87e3313786af426e4df8d1b82555f17215a91085c3898"
+    "stored-vs-ssr.json": "af8d7af484975624f0f176e5b1e5909ab49a92e2e9d7890b18c79fcd4099789a",
+    "primary-validation.json": "9ab630a1d97ddb2120816940dce61d242a0258184096634c8f98ab7e8d8366f6",
+    "verify-primary.py": "a76a6e3723896a757ed71ea399ff17b966a35c5c7ef35733d21b8b902a19af88"
   }
 }

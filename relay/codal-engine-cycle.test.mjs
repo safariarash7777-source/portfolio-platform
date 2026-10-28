@@ -325,7 +325,7 @@ test("archive duplicate response counts zero actual inserts", async () => {
     marketBody: [{ payload: { stocks: [{ id: a.l18, value: 100 }] } }],
     // Simulate a stale dedup read followed by the DB ignoring an existing URL.
     existingBody: [],
-    initialReports: [{ symbol: a.l18, source_url: `${a.link}#pv2`, data: { standalone: { revenue: 100, net_profit: 20 } } }],
+    initialReports: [{ symbol: a.l18, source_url: `${a.link}#pv3`, data: { standalone: { revenue: 100, net_profit: 20 } } }],
   });
   codal.setCodalBudgetPorts({ client: { request: async job => {
     f.calls.pages.push(Number(job.params.page));
@@ -350,7 +350,7 @@ async function collisionFixture(route, fails, data) {
     marketBody: route === "archive" ? [{ payload: { stocks: [{ id: a.l18, value: 100 }] } }] : [],
     // Force the zero-return branch, including a stale read of a valid stored row.
     existingBody: [],
-    initialReports: [{ symbol: a.l18, source_url: `${a.link}#pv2`, data }],
+    initialReports: [{ symbol: a.l18, source_url: `${a.link}#pv3`, data }],
   });
   let archive;
   if (route === "archive") {
@@ -384,7 +384,7 @@ test("null collision is never acknowledged for fails 0/1/2", async t => {
           assert.deepEqual(f.persisted.watermark, watermark);
           assert.equal(f.persisted.fails[a.link], fails + 1);
         }
-        assert.deepEqual(f.calls.confirmations, [{ source_url: `eq.${a.link}#pv2`, symbol: `eq.${a.l18}`, data: "not.is.null" }]);
+        assert.deepEqual(f.calls.confirmations, [{ source_url: `eq.${a.link}#pv3`, symbol: `eq.${a.l18}`, data: "not.is.null" }]);
         assert.equal(f.calls.reportWrites.length, 1);
       });
     }
@@ -409,7 +409,7 @@ test("valid collision acknowledges persistence with inserted zero for fails 0/1/
           assert.equal(f.persisted.watermark.key, 14050701000001);
           assert.equal(f.persisted.fails[a.link], undefined);
         }
-        assert.deepEqual(f.calls.confirmations, [{ source_url: `eq.${a.link}#pv2`, symbol: `eq.${a.l18}`, data: "not.is.null" }]);
+        assert.deepEqual(f.calls.confirmations, [{ source_url: `eq.${a.link}#pv3`, symbol: `eq.${a.l18}`, data: "not.is.null" }]);
         assert.equal(f.calls.reportWrites.length, 1);
       });
     }
@@ -663,7 +663,7 @@ test("observed equity title with در retains engine write identity and request 
       assert.equal(f.persisted.fails[a.link], undefined);
       assert.equal(f.persisted.watermark.key, 14050701000001);
       const written = f.calls.reportWrites[0][0];
-      assert.equal(written.source_url, `${a.link}#pv2`);
+      assert.equal(written.source_url, `${a.link}#pv3`);
       assert.equal(written.symbol, a.l18);
       assert.deepEqual(written.data, codal.admitN10Html(canonical, {
         symbol: a.l18, company_name: a.name || a.l18, period_end: "1404-12-29", period_months: 12, audited: false,

@@ -13,7 +13,7 @@
   "integrationReference": "PR322 head c367943; merged as 58f5c42; core calculations unchanged",
   "statement": "Stored public-page snapshot, not direct primary-document verification. No authenticated user/customer data included.",
   "persistedToDesk": false,
-  "primaryVerification": "pending",
+  "primaryVerification": "Selected N10 amounts/periods/cost note and N30 quantities/units/category totals verified against pinned primary HTML; mapping and metadata mismatches documented.",
   "humanAcceptance": "pending",
   "calculationRevision": "Regenerated with exact previous-fiscal-year correction; immutable SSR input unchanged.",
   "monthlyCoreSha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0",
@@ -25,5 +25,13 @@
     "n10ReportId": 4047,
     "n30ReportId": 11653,
     "primaryDocumentsFetched": false
+  },
+  "primaryEvidence": {
+    "workflowRunId": 40488645165,
+    "artifactId": 12726950183,
+    "receipt": "primary/receipt.json",
+    "analysis": "primary-validation.json",
+    "parser": "verify-primary.py",
+    "identityLimit": "Exact official URLs tied to stored issuer/amendment metadata; N30 HTML does not independently present issuer identity in its table header."
   }
 }

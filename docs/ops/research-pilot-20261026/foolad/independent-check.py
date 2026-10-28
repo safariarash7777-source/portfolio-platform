@@ -26,7 +26,7 @@ result = {
     'cogsGrowthPct': str((D(n['cogs']) / D(n['prior']['cogs']) - 1) * 100),
     'hashes': {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in [
         'foolad-fundamentals-resolved.json', 'foolad-calculations.json',
-        'reproduce.mts', 'foolad-workbook.json', 'source-receipt.json', 'stored-source-packet.json', 'stored-vs-ssr.json']},
+        'reproduce.mts', 'foolad-workbook.json', 'source-receipt.json', 'stored-source-packet.json', 'stored-vs-ssr.json', 'primary-validation.json', 'verify-primary.py']},
 }
 (root / 'independent-check.json').write_text(json.dumps(result, ensure_ascii=False, indent=2) + '\n')
 print(json.dumps(result, ensure_ascii=False, indent=2))
