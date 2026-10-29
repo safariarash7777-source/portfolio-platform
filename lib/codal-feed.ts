@@ -1,7 +1,7 @@
 export const CODAL_FEED_READ_LIMIT = 60;
 export const CODAL_FEED_DISPLAY_LIMIT = 30;
 /** Read announcement metadata only; parsed financial reports are a separate dataset. */
-export const CODAL_FEED_SELECT = "id,title,report_code,sent_date,sent_time,link";
+export const CODAL_FEED_SELECT = "id,title,report_code,sent_date,sent_time,publish_date,link";
 export const CODAL_FEED_ORDER = "sent_date.desc.nullslast,sent_time.desc.nullslast,id.desc";
 
 export function codalFeedQuery(symbol: string): URLSearchParams {
@@ -19,6 +19,8 @@ export interface CodalFeedItem {
   date: string | null;
   time: string | null;
   dateKind: "sent";
+  /** Publication date only; no publication time is stored in this feed. */
+  publishedDate: string | null;
   url: string | null;
 }
 
@@ -40,7 +42,7 @@ export function codalFeedItems(input: unknown): CodalFeedItem[] {
     const key = url ?? `${title}|${date ?? ""}|${time ?? ""}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    items.push({ title, kind: text(row.report_code), date, time, dateKind: "sent", url });
+    items.push({ title, kind: text(row.report_code), date, time, dateKind: "sent", publishedDate: text(row.publish_date), url });
     if (items.length >= CODAL_FEED_DISPLAY_LIMIT) break;
   }
   return items;

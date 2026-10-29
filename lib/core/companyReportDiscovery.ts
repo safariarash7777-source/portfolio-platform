@@ -6,6 +6,7 @@ export interface CompanyAnnouncement {
   kind: string | null;
   date: string | null;
   time: string | null;
+  publishedDate?: string | null;
   url: string | null;
 }
 export interface CompanyReportFilter {

@@ -33,7 +33,7 @@ function normalizeLive(j: unknown): LiveItem[] {
       const s = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
       const title = s(o.title);
       if (!title) return null;
-      return { title, kind: s(o.kind), date: s(o.date), time: s(o.time), url: s(o.url) };
+      return { title, kind: s(o.kind), date: s(o.date), time: s(o.time), publishedDate: s(o.publishedDate), url: s(o.url) };
     })
     .filter((x): x is LiveItem => x !== null);
 }
@@ -195,7 +195,7 @@ export default function CodalReportsTab({
                         {a.title}
                       </CodalSourceLink>
                     </div>
-                    <span className="shrink-0 text-muted-foreground">{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}</span>
+                    <span className="shrink-0 text-muted-foreground">{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}<br />{a.publishedDate ? `انتشار: ${toPersianDigits(a.publishedDate)} (ساعت نامعلوم)` : "تاریخ انتشار نامعلوم"}</span>
                   </div>
                 </li>
               ))}

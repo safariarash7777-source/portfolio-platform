@@ -24,3 +24,11 @@ test("bounded feed declares 30 from 60 without claiming history completeness or 
   assert.equal(codalFeedWindow([]).window.completeHistory,false);
   assert.throws(()=>codalFeedWindow({error:"offline"}));
 });
+
+test("old publication survives reread and never falls back to sent or retrieval time", () => {
+  const old = {title:"اصلاحیه گزارش", sent_date:"1405/07/30", sent_time:"09:00", publish_date:"1404/01/01"};
+  assert.equal(codalFeedItems([old])[0].publishedDate,"1404/01/01");
+  assert.deepEqual(codalFeedItems([old]),codalFeedItems([{...old, retrievedAt:"2026-10-29T14:00:00Z"}]));
+  assert.equal(codalFeedItems([{...old,publish_date:null}])[0].publishedDate,null);
+  assert.equal(codalFeedItems([{...old,publish_date:null}])[0].date,"1405/07/30");
+});
