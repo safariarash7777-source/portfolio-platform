@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 import sys
 
+if not __debug__:
+    raise RuntimeError('optimized_python_disables_verification_checks')
+
 PINS = {
     'sql/consultation_workflow.sql': '4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91',
     'sql/consultation_roster.sql': '03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523',

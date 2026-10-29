@@ -1,11 +1,11 @@
 {
   "contract": "start-a-release-readiness.v1",
-  "observedAt": "2026-10-29T15:39:48.650577+00:00",
+  "observedAt": "2026-10-29T15:42:48.624177+00:00",
   "sourceSha": "b08687b233d5fe1317748b6adff61653d58dadd8",
-  "archive": "start-a-transfer-b08687b.zip",
-  "archiveSha256": "344bf16fb53fa8e3bb87a53ef053a40fc35fc050de010e4d310cd036b86da941",
+  "archive": "start-a-transfer-b08687b-r2.zip",
+  "archiveSha256": "a80c17f474a7a1aaa4109967f0f1347f763b867c1a6356f880abfd142ba5e827",
   "manifestSha256": "04472080632276bc85fdacd826d9a631f852b4013b19df022f01289336e5d273",
-  "verifierSha256": "baaff4e6819b9f8903d51ef0220cb2d0579e5cf1a5c1fece54710aac9a68c816",
+  "verifierSha256": "c3afd3f5e4e928767586e5d8cc0a8b0586dca1480a6ea73558444b4931c3de7d",
   "catalogQueryCheck": {
     "status": "PASS_EMPTY_CATALOG",
     "readOnly": true,
@@ -22,10 +22,17 @@
   "primaryPreflight": "UNVERIFIED_SSH_TIMEOUT",
   "remotePrRefresh": "UNVERIFIED_CONNECTOR_TRANSPORT_FAILURE",
   "capacityFreshGiB": null,
-  "backupFresh": false,
+  "backupFresh": "NOT_VERIFIED",
   "nativeOnlineAcceptance": false,
   "primaryDdl": false,
   "productionDeployment": false,
   "commercialEntitlement": "NOT_CONNECTED_AT_CONSULTATION_BOUNDARY",
-  "nextOwner": "01a187f6-30e9-7fb1-8cde-d60fd036f76b/local"
+  "nextOwner": "01a187f6-30e9-7fb1-8cde-d60fd036f76b/local",
+  "archiveVerificationCases": {
+    "validExtractedArchive": "PASS",
+    "tamperedSqlRejected": "PASS",
+    "optimizedPythonRejected": "PASS"
+  },
+  "supersedesArchive": "start-a-transfer-b08687b.zip",
+  "remotePush": "FAILED_CONNECTION_GITHUB_443"
 }

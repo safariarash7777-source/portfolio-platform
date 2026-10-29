@@ -37,7 +37,8 @@ export function exportRelease(destination,read=path=>execFileSync('git',['show',
   prerequisiteInstaller:'Installs PR314 only; does NOT install START-A feedback migration',
   files:files.map(({bytes,...file})=>({...file,size:bytes.length}))};
  writeFileSync(resolve(target,'MANIFEST.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
- writeFileSync(resolve(target,'verify-transfer.py'),readFileSync(new URL('./verify-transfer.py',import.meta.url)),{flag:'wx'});
+ const verifier=readFileSync(new URL('./verify-transfer.py',import.meta.url),'utf8').replaceAll('\r\n','\n');
+ writeFileSync(resolve(target,'verify-transfer.py'),verifier,{flag:'wx'});
  return manifest;
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
