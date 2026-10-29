@@ -1,5 +1,11 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## نامزد وضعیت پیگیری START-A — NOT_APPLIED، ۲۰۲۶-۱۰-۲۹
+
+`supabase/migrations/20261029142010_consultation_feedback_states.sql` در [PR334](https://github.com/safariarash7777-source/portfolio-platform/pull/334)، محصول `b08687b233d5fe1317748b6adff61653d58dadd8` روی PR314، فقط نامزد افزایشی و روی پایگاه عملیاتی **NOT_APPLIED** است. بایت‌های Git مستقلاً خوانده و SHA256 برابر `32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda`، اندازه۱۲۹۸۲بایت تأیید شد. دو وضعیت `partial/not_done` به قید و دو body خصوصی افزوده می‌شوند؛ wrapper عمومی، ACL/RLS و دفتر مالی از این candidate تغییر نمی‌کنند. شاهد مجری۵۰سناریوی PostgreSQL17.11 روی داده/مقصد ساختگی است؛ native Auth یا نصب تولید از آن نتیجه نمی‌شود.
+
+[قرارداد نصب و بازگشت نسخه مشخص](https://github.com/safariarash7777-source/portfolio-platform/blob/b08687b233d5fe1317748b6adff61653d58dadd8/docs/ops/start-a-finance-v04-20261029/DELIVERY.md): fingerprint مبنا، پشتیبان/بازیابی تازه، rollout خواننده سازگار و پذیرش مقصد پیش از نصب لازم‌اند. rollback candidate با SHA256 برابر `aa1a278bb0b1cecfca8ae119919a11bdd762772950bd57d1f147d2ef20989ffa` و اندازه۱۳۰۶۰بایت مستقل تطبیق شد. پس از وجود هر رویداد با وضعیت تازه، rollback ناسازگار امتناع می‌کند؛ حذف تاریخچه یا بازگشت به reader قدیمی مجاز شمرده نشده است. پیگیری وضعیت موجودی را تغییر نمی‌دهد. این ثبت فقط سند است؛ schema/ACL/پرچم/سرویس عملیاتی تغییر نکرده‌اند.
+
 ## گردش مشاوره با تأیید مالک — نصب‌شده، ۲۰۲۶-۱۰-۲۳ UTC
 
 `sql/consultation_workflow.sql` با SHA256 `4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91` در `2026-10-23T21:15:33Z` روی پایگاه عملیاتی لیارا، `portfolio-stage-db-1`، **APPLIED** شد. هر ۱۰ کنترل نصب موفق بود: ۹ جدول با FORCE RLS، منع دسترسی مستقیم به جدول‌ها و توابع/اسکیمای خصوصی، wrapperهای محدود و تاریخچه تغییرناپذیر؛ رجیستری مالک، روابط، جلسات و رسیدهای جدید در لحظه نصب خالی بودند. کاتالوگ اشیای قبلی پیش و پس از نصب بدون تغییر ماند. [رسید نصب اصلی](ops/advisor-approval-20261023/source-install-receipt.json). همین فایل پیش‌تر روی کپی بازیابی‌شده نصب و کنترل شد؛ کاتالوگ قبلی کپی نیز ثابت ماند و کپی پس از تمرین متوقف شد. [رسید تمرین نصب](ops/advisor-approval-20261023/copy-install-receipt.json).
