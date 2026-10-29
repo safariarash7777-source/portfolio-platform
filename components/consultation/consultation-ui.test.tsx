@@ -9,6 +9,12 @@ import RecommendationEditor from "./RecommendationEditor";
 import Dossier from "./Dossier";
 import SessionCard from "./SessionCard";
 import ConsultationPanel from "./ConsultationPanel";
+import ActionFeedback from "./ActionFeedback";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { resolve } from "node:path";
+import ts from "typescript";
+import type { ActionFeedbackEdit } from "./ActionFeedback";
 
 const actor = "11111111-1111-4111-8111-111111111111", relationId = "22222222-2222-4222-8222-222222222222", sessionId = "33333333-3333-4333-8333-333333333333", member = "44444444-4444-4444-8444-444444444444";
 const basis = { holdingsVersionId: null, cashFlowVersionId: null, goalsVersionId: null, cashFlowPeriod: { startOn: "2026-10-01", endOn: "2026-10-31" } };
@@ -17,6 +23,65 @@ const session: ConsultationSession = { id: sessionId, relationshipId: relationId
 const data: ConsultationRead = { contractVersion: "consultation-read.v1", actor: { id: actor, isAdvisor: true, isOwner: true }, advisors: [{ id: actor, displayName: "مشاور مصنوعی", isOwner: true }], relationships: [{ id: relationId, advisorId: actor, clientId: member, clientLabel: "عضو مصنوعی", createdAt: "2026-10-23T12:00:00Z", revoked: false }], selected: null, dossier: { basis, holdings: null, cashFlow: null, goals: null }, sessions: [session], notes: [{ sessionId, note: "یادداشت خصوصی" }], events: [], actions: [] };
 data.selected = data.relationships[0];
 const receipt: ConsultationReceipt = { contractVersion: "consultation-write.v1", actorId: actor, clientToken: "test", command: { kind: "save", relationshipId: relationId, sessionKey: sessionId, baseVersion: 0, body, privateNote: "یادداشت خصوصی" }, id: sessionId, version: 1, reused: false, canonicalContentHash: "b".repeat(64) };
+
+test("extended action feedback is offered only for a published active action assigned to the current role", () => {
+ const action={actionKey:relationId,title:"اقدام ساختگی",dueOn:"2099-12-31",responsible:"member" as const};
+ const published={...session,state:"published" as const,body:{...body,actions:[action]}};
+ const render=(advisor=false,revoked=false,current:ConsultationSession=published)=>renderToStaticMarkup(<SessionCard session={current} latest advisor={advisor} owner={advisor} revoked={revoked} basis={basis} feedback={[]} locked={false} onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} />);
+ assert.match(render(),/بخشی انجام دادم/);assert.match(render(),/انجام ندادم/);
+ assert.doesNotMatch(render(true),/بخشی انجام دادم|انجام ندادم/);
+ assert.doesNotMatch(render(false,true),/بخشی انجام دادم|انجام ندادم/);
+ assert.doesNotMatch(render(false,false,{...published,state:"draft"}),/بخشی انجام دادم|انجام ندادم/);
+ const html=renderToStaticMarkup(<ActionFeedback baseVersion={3} locked onSave={async()=>false} onBegin={()=>{}} onCancel={()=>{}} />);
+ assert.equal((html.match(/disabled=""/g)||[]).length,2);
+});
+
+test("extended feedback history preserves both details and the prior completed entry", () => {
+ const history=[{id:relationId,sessionId,actionKey:relationId,version:1,status:"done" as const,text:null,actorId:member,createdAt:session.createdAt},{id:actor,sessionId,actionKey:relationId,version:2,status:"partial" as const,text:"بخشی با تأخیر — نمونه",actorId:member,createdAt:session.createdAt},{id:member,sessionId,actionKey:relationId,version:3,status:"not_done" as const,text:"شرط اقدام محقق نشد — نمونه",actorId:member,createdAt:session.createdAt}];
+ const published={...session,state:"published" as const,body:{...body,actions:[{actionKey:relationId,title:"اقدام ساختگی",dueOn:"2099-12-31",responsible:"member" as const}]}};
+ const html=renderToStaticMarkup(<SessionCard session={published} latest advisor={false} owner={false} revoked={false} basis={basis} feedback={history} locked onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} />);
+ assert.match(html,/انجام‌شده طبق اعلام/);assert.match(html,/بخشی انجام‌شده طبق اعلام/);assert.match(html,/انجام‌نشده طبق اعلام/);assert.match(html,/بخشی با تأخیر/);assert.match(html,/شرط اقدام محقق نشد/);
+});
+
+test('independent readback of partial/not_done must match the exact version, action and details',()=>{
+ for(const status of ['partial','not_done'] as const){
+  const command={kind:'feedback' as const,relationshipId:relationId,sessionId,actionKey:relationId,baseVersion:2,status,text:'شرح ساختگی'};
+  const feedbackReceipt:ConsultationReceipt={...receipt,actorId:member,command,version:3,id:member};
+  const action={id:member,sessionId,actionKey:relationId,version:3,status,text:command.text,actorId:member,createdAt:session.createdAt};
+  const read={...data,actor:{id:member,isAdvisor:false,isOwner:false},notes:[],actions:[action]};
+  assert.equal(receiptVisible(read,feedbackReceipt),true);
+  for(const edit of [{version:2},{text:'شرح متفاوت'},{actionKey:actor},{status:'done' as const}])assert.equal(receiptVisible({...read,actions:[{...action,...edit}]},feedbackReceipt),false);
+ }
+});
+
+
+type FeedbackElement = React.ReactElement<Record<string, unknown>>;
+function feedbackNodes(tree: unknown): FeedbackElement[] { if(Array.isArray(tree))return tree.flatMap(feedbackNodes);if(!React.isValidElement(tree))return[];const e=tree as FeedbackElement;return[e,...feedbackNodes(e.props.children)]; }
+function feedbackText(tree: unknown): string { if(Array.isArray(tree))return tree.map(feedbackText).join('');if(!React.isValidElement(tree))return typeof tree==='string'?tree:'';return feedbackText((tree as FeedbackElement).props.children); }
+/** Actual component handlers and preserved hook state, not browser/native authorization evidence. */
+function mountFeedback(outcome: (edit: ActionFeedbackEdit) => Promise<boolean> = async()=>false) {
+ const slots:unknown[]=[],saves:ActionFeedbackEdit[]=[];let cursor=0,tree:unknown,version=2,locked=false;
+ const hooks={...React,useState(initial:unknown){const i=cursor++;if(!(i in slots))slots[i]=initial;return[slots[i],(v:unknown)=>{slots[i]=v;}];},useRef(initial:unknown){const i=cursor++;if(!(i in slots))slots[i]={current:initial};return slots[i];}};
+ const filename=resolve('components/consultation/ActionFeedback.tsx'),local=createRequire(filename),mod={exports:{} as {default:(props:unknown)=>unknown}};
+ const code=ts.transpileModule(readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2017,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.React,esModuleInterop:true},fileName:filename}).outputText;
+ new Function('require','module','exports',code)((name:string)=>name==='react'?hooks:local(name),mod,mod.exports);
+ const render=()=>{cursor=0;tree=mod.exports.default({baseVersion:version,locked,onBegin(){},onCancel(){},onSave:async(edit:ActionFeedbackEdit)=>{saves.push(edit);return outcome(edit);}});};
+ const find=(type:string,label='')=>{const e=feedbackNodes(tree).find(e=>e.type===type&&feedbackText(e).includes(label));assert.ok(e,`${type} ${label}`);return e;};
+ const details=()=>{const e=feedbackNodes(tree).find(e=>e.props.label==='چه بخشی انجام شد یا چرا انجام نشد؟');assert.ok(e);return e;};
+ render();return{saves,render,find,details,text:()=>feedbackText(tree),update(v:number,lock=false){version=v;locked=lock;render();},click(label:string){(find('button',label).props.onClick as()=>void)();render();},change(value:string){(details().props.onChange as(v:string)=>void)(value);render();},submit(){(find('form').props.onSubmit as(e:unknown)=>void)({preventDefault(){}});},async flush(){await new Promise(resolve=>setImmediate(resolve));render();}};
+}
+test('failed feedback save retains exact status/details/base; incoming newer feedback cannot silently rebase it',async()=>{
+ const v=mountFeedback();v.click('بخشی انجام دادم');v.change('متن ساختگی من');v.submit();await v.flush();
+ assert.deepEqual(v.saves,[{status:'partial',text:'متن ساختگی من',baseVersion:2}]);assert.equal(v.details().props.value,'متن ساختگی من');
+ v.update(3);assert.match(v.text(),/پیگیری تازه‌تری/);assert.equal(v.find('fieldset').props.disabled,true);v.submit();await v.flush();assert.equal(v.saves.length,1);
+ v.click('لغو این پیش‌نویس');v.click('انجام ندادم');v.change('دلیل ساختگی');v.submit();await v.flush();assert.deepEqual(v.saves[1],{status:'not_done',text:'دلیل ساختگی',baseVersion:3});
+});
+test('feedback requires details and blocks synchronous duplicate submit while preserving text after transport rejection',async()=>{
+ let reject!:(e:Error)=>void;const pending=new Promise<boolean>((_,r)=>{reject=r;});const v=mountFeedback(()=>pending);
+ v.click('انجام ندادم');v.submit();await v.flush();assert.equal(v.saves.length,0);assert.match(v.text(),/جزئیات این وضعیت/);
+ v.change('علت ساختگی');v.submit();v.submit();assert.equal(v.saves.length,1);reject(new Error('synthetic transport failure'));await v.flush();
+ assert.equal(v.details().props.value,'علت ساختگی');assert.match(v.text(),/متن شما حفظ/);v.update(2,true);v.submit();await v.flush();assert.equal(v.saves.length,1);
+});
 
 test("draft preserves exact selected financial basis, normalizes Persian dates, keeps private note outside body", () => {
   const draft = recommendationDraft(sessionId, session, "خصوصی"); draft.reviewOn = "۲۰۲۷-۰۱-۰۱"; draft.evidence[0].asOf = "۲۰۲۶-۱۰-۲۳";

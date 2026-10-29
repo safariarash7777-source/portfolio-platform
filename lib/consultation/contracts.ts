@@ -8,7 +8,11 @@ export interface RecommendationBody {
  evidence: { label: string; url: string | null; asOf: string }[];
  actions: { actionKey: string; title: string; dueOn: string; responsible: "member" | "advisor" }[];
 }
-export type FeedbackStatus = "viewed" | "acknowledged" | "doing" | "done" | "question";
+export const FEEDBACK_STATUSES = ["viewed", "acknowledged", "doing", "done", "question", "partial", "not_done"] as const;
+export type FeedbackStatus = typeof FEEDBACK_STATUSES[number];
+export const isFeedbackStatus = (value: unknown): value is FeedbackStatus => typeof value === "string" && FEEDBACK_STATUSES.some(status => status === value);
+export const actionFeedback = (status: FeedbackStatus) => status === "doing" || status === "done" || status === "partial" || status === "not_done";
+export const feedbackNeedsDetails = (status: FeedbackStatus) => status === "partial" || status === "not_done";
 export type ConsultationCommand =
  | { kind: "grant"; advisorId: string; clientLabel: string }
  | { kind: "revoke"; relationshipId: string }
@@ -69,7 +73,7 @@ export function validateConsultationRequest(value: unknown): ConsultationRequest
  else if (c.kind === "revoke") { object(c,["kind","relationshipId"]); command={kind:c.kind,relationshipId:id(c.relationshipId)}; }
  else if (c.kind === "save") { object(c,["kind","relationshipId","sessionKey","baseVersion","body","privateNote"]); command={kind:c.kind,relationshipId:id(c.relationshipId),sessionKey:id(c.sessionKey),baseVersion:version(c.baseVersion,true),body:validateRecommendationBody(c.body),privateNote:nullableText(c.privateNote,10000)}; }
  else if (["submit","approve","publish","withdraw"].includes(String(c.kind))) { object(c,["kind","relationshipId","sessionId","contentHash","note"]); command={kind:c.kind as "submit"|"approve"|"publish"|"withdraw",relationshipId:id(c.relationshipId),sessionId:id(c.sessionId),contentHash:hash(c.contentHash),note:nullableText(c.note,2000)}; }
- else if (c.kind === "feedback") { object(c,["kind","relationshipId","sessionId","actionKey","baseVersion","status","text"]); if (!["viewed","acknowledged","doing","done","question"].includes(String(c.status))) throw Error("وضعیت معتبر نیست."); const message=nullableText(c.text,2000); if(["doing","done"].includes(String(c.status))&&c.actionKey===null)throw Error("اقدام مشخص لازم است."); if(c.status==="question"&&!message)throw Error("متن پرسش لازم است."); command={kind:c.kind,relationshipId:id(c.relationshipId),sessionId:id(c.sessionId),actionKey:nullableId(c.actionKey),baseVersion:version(c.baseVersion,true),status:c.status as FeedbackStatus,text:message}; }
+ else if (c.kind === "feedback") { object(c,["kind","relationshipId","sessionId","actionKey","baseVersion","status","text"]); if (!isFeedbackStatus(c.status)) throw Error("وضعیت معتبر نیست."); const message=nullableText(c.text,2000); if(actionFeedback(c.status)&&c.actionKey===null)throw Error("اقدام مشخص لازم است."); if(c.status==="question"&&!message)throw Error("متن پرسش لازم است."); if(feedbackNeedsDetails(c.status)&&!message)throw Error("جزئیات انجام اقدام لازم است."); command={kind:c.kind,relationshipId:id(c.relationshipId),sessionId:id(c.sessionId),actionKey:nullableId(c.actionKey),baseVersion:version(c.baseVersion,true),status:c.status,text:message}; }
  else throw Error("کنش معتبر نیست.");
  return {contractVersion:r.contractVersion,expectedActorId:id(r.expectedActorId),clientToken:text(r.clientToken,200),command};
 }
@@ -98,7 +102,7 @@ export function validateConsultationRead(value: unknown, expected: {relationship
  const sessionIds=new Set(sessions.map(x=>x.id));
  const notes=list(r.notes,100).map(v=>{const x=object(v,["sessionId","note"]);if(!advisor||!sessionIds.has(id(x.sessionId)))throw Error("یادداشت خصوصی قابل مشاهده نیست.");return{sessionId:id(x.sessionId),note:nullableText(x.note,10000)};});
  const events=list(r.events,400).map(v=>{const x=object(v,["id","sessionId","kind","actorId","createdAt","note"]);if(!sessionIds.has(id(x.sessionId))||!["submit","approve","publish","withdraw"].includes(String(x.kind))||!advisor&&x.kind!=="publish"&&x.kind!=="withdraw")throw Error("رویداد معتبر نیست.");return{id:id(x.id),sessionId:id(x.sessionId),kind:x.kind as ConsultationEvent['kind'],actorId:id(x.actorId),createdAt:timestamp(x.createdAt),note:nullableText(x.note,2000)};});
- const actions=list(r.actions,500).map(v=>{const x=object(v,["id","sessionId","actionKey","version","status","text","actorId","createdAt"]);if(!sessionIds.has(id(x.sessionId))||!["viewed","acknowledged","doing","done","question"].includes(String(x.status)))throw Error("پیگیری معتبر نیست.");return{id:id(x.id),sessionId:id(x.sessionId),actionKey:nullableId(x.actionKey),version:version(x.version),status:x.status as FeedbackStatus,text:nullableText(x.text,2000),actorId:id(x.actorId),createdAt:timestamp(x.createdAt)};});
+ const actions=list(r.actions,500).map(v=>{const x=object(v,["id","sessionId","actionKey","version","status","text","actorId","createdAt"]);if(!sessionIds.has(id(x.sessionId))||!isFeedbackStatus(x.status))throw Error("پیگیری معتبر نیست.");return{id:id(x.id),sessionId:id(x.sessionId),actionKey:nullableId(x.actionKey),version:version(x.version),status:x.status,text:nullableText(x.text,2000),actorId:id(x.actorId),createdAt:timestamp(x.createdAt)};});
  let dossier:ConsultationDossier|null=null;
  if(r.dossier!==null){if(!selected)throw Error("پرونده بدون رابطه");const d=object(r.dossier,["basis","holdings","cashFlow","goals"]);const basis=validateFinancialBasis(d.basis);if(expected.period&&stable(basis.cashFlowPeriod)!==stable(expected.period))throw Error("دوره تغییر کرده است.");
   const money=(v:unknown,nullable=false):number|null=>{if(nullable&&v===null)return null;if(typeof v!=="number"||!Number.isSafeInteger(v)||v<0)throw Error("مبلغ معتبر نیست.");return v;};
@@ -125,7 +129,8 @@ export function validateConsultationRead(value: unknown, expected: {relationship
  for(const action of actions){
   const session=sessions.find(x=>x.id===action.sessionId)!;const definition=session.body.actions.find(x=>x.actionKey===action.actionKey);const key=action.sessionId+":"+action.actionKey+":"+action.version;
   if(feedbackKeys.has(key)||action.actionKey!==null&&!definition||![selected?.advisorId,selected?.clientId].includes(action.actorId)||Date.parse(action.createdAt)<Date.parse(session.createdAt))throw Error("پیگیری معتبر نیست.");feedbackKeys.add(key);
-  if(["doing","done"].includes(action.status)){if(!definition||action.actorId!==(definition.responsible==="member"?selected?.clientId:selected?.advisorId))throw Error("مسئول پیگیری معتبر نیست.");}else if(action.actorId!==selected?.clientId)throw Error("بازخورد عضو معتبر نیست.");
+  if(actionFeedback(action.status)){if(!definition||action.actorId!==(definition.responsible==="member"?selected?.clientId:selected?.advisorId))throw Error("مسئول پیگیری معتبر نیست.");}else if(action.actorId!==selected?.clientId)throw Error("بازخورد عضو معتبر نیست.");
+  if(feedbackNeedsDetails(action.status)&&!action.text)throw Error("جزئیات پیگیری موجود نیست.");
   if(action.status==="question"&&!action.text)throw Error("پرسش بدون متن معتبر نیست.");
  }
  return {contractVersion:'consultation-read.v1',actor,advisors,relationships,selected,dossier,sessions,notes,events,actions};
