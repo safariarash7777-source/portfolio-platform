@@ -22,6 +22,7 @@ import {
   YAxis,
 } from "recharts";
 import { toPersianDigits } from "@/lib/format";
+import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 import type { CodalN30Data } from "@/lib/fundamental/types";
 import {
   buildMonthlySales,
@@ -388,14 +389,14 @@ export default function MonthlySalesCharts({
           </h2>
           <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>
             {toPersianDigits(String(m.reportCount))} گزارش فعالیت ماهانه (ن-۳۰) کدال · واحد مبالغ: میلیون ریال (نمایش: میلیارد تومان/همت)
-            {sourceUrl ? (
-              <>
-                {" · "}
-                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--navy-ink)" }}>
-                  {sourceTitle}
-                </a>
-              </>
-            ) : null}
+            {" · "}
+            <CodalSourceLink
+              url={sourceUrl}
+              className="underline text-[var(--navy-ink)]"
+              fallback={<span>{sourceTitle || "منبع کدال"} — پیوند معتبر کدال در دسترس نیست</span>}
+            >
+              {sourceTitle || "منبع کدال"}
+            </CodalSourceLink>
           </p>
         </div>
       </header>

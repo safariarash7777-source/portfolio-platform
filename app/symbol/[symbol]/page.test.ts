@@ -11,7 +11,7 @@ import type { IrMarket, IrStockRow } from "../../../lib/market-ir";
 import { withValidNav, marketQualityLabel } from "../../../lib/market-quality";
 import { formatRialAsToman, formatJalali, formatTehranClock, toPersianDigits } from "../../../lib/format";
 import { deriveQuarters, ttmSeries, peOf, type QuarterInput, type DerivedQuarter, type TtmPoint } from "../../../lib/core/quarterly";
-import type { SymbolFundamentals, ReportScope } from "../../../lib/fundamental/types";
+import type { SymbolFundamentals, ReportScope, CodalN30Data } from "../../../lib/fundamental/types";
 import type { FundamentalCardData } from "../../../lib/core/fundamentalCard";
 
 Object.assign(globalThis, { React });
@@ -410,4 +410,52 @@ test("fundamental disclosure preserves unknown units/nulls and source while open
   assert.equal(JSON.stringify(cardFixture), original);
   assert.equal(render({ ...cardFixture, narrative: null }).html, "");
   assert.equal(render({ ...cardFixture, latestMonth: null }).html, "");
+});
+
+const monthlySourceCases = [
+  { symbol: "نمونهٔ فولاد", url: "https://codal.ir.evil.test/report", href: null },
+  { symbol: "نمونهٔ مس", url: "https://www.codal.ir/Reports/Decision.aspx?id=17", href: "https://www.codal.ir/Reports/Decision.aspx?id=17" },
+  { symbol: "نمونهٔ پالایش", url: "/Reports/Decision.aspx?id=18", href: "https://codal.ir/Reports/Decision.aspx?id=18" },
+  { symbol: "نمونهٔ سیمان", url: null, href: null },
+  { symbol: "نمونهٔ دارو", url: "https://codal.ir/report?api_key=private", href: null },
+  ...["http://codal.ir/report", "javascript:alert(1)", "https://user:pass@codal.ir/report", "https://codal.ir:444/report", "", "  "].map(url => ({ symbol: "نمونهٔ منبع نامعتبر", url, href: null })),
+];
+
+function assertMonthlySource(html: string, item: typeof monthlySourceCases[number]) {
+  if (item.href) {
+    assert.ok(html.includes(`href="${item.href}" target="_blank" rel="noopener noreferrer"`), "official Codal navigation uses the existing normalized contract");
+  } else {
+    assert.doesNotMatch(html, /<a\b[^>]*target="_blank"/, "an unapproved/missing source must not become an external source link");
+    assert.match(html, /پیوند معتبر کدال در دسترس نیست/);
+  }
+  assert.doesNotMatch(html, /codal\.ir\.evil|api_key=private|javascript:|user:pass|:444|href="#"/);
+}
+
+test("monthly fundamental cards keep company/period/nulls while source navigation is restricted to approved Codal URLs", () => {
+  const Card = clientComponent("SymbolFundamentalCard", React);
+  for (const item of monthlySourceCases) {
+    const card = { ...cardFixture, symbol: item.symbol, sourceTitle: `گزارش ساختگی ${item.symbol}`, sourceUrl: item.url };
+    const before = JSON.stringify(card);
+    const html = renderToStaticMarkup(React.createElement(Card, { card }));
+    assertMonthlySource(html, item);
+    assert.ok(html.includes(card.sourceTitle));
+    assert.match(html, /دورهٔ فعالیت:.*۱۴۰۵-۰۶/);
+    assert.equal(JSON.stringify(card), before, "presentation cannot rewrite financial input or missing values");
+  }
+});
+
+test("monthly sales charts preserve source titles, reporting units and input even when the source link is unavailable", () => {
+  const Charts = clientComponent("MonthlySalesCharts", React);
+  for (const item of monthlySourceCases) {
+    const reports: CodalN30Data[] = [{ symbol: item.symbol, report_kind: "ن-۳۰", period_end: "1405-06-31", fiscal_year: 1405,
+      products: [{ product_name: "محصول ساختگی", market: "داخلی", production_qty: null, sales_qty: null, sales_rate: null, sales_amount: null }],
+      period_total_amount: 10000, fy_cumulative_amount: null, unit: "میلیون ریال", qty_unit: null }];
+    const before = JSON.stringify(reports), sourceTitle = `گزارش ساختگی ${item.symbol}`;
+    const html = renderToStaticMarkup(React.createElement(Charts, { reports, sourceTitle, sourceUrl: item.url }));
+    assertMonthlySource(html, item);
+    assert.ok(html.includes(sourceTitle), "the report title survives a missing or rejected source link");
+    assert.match(html, /واحد مبالغ: میلیون ریال/);
+    assert.match(html, /۱۴۰۵/);
+    assert.equal(JSON.stringify(reports), before);
+  }
 });

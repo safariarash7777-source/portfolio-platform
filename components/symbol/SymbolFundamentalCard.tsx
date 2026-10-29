@@ -10,6 +10,7 @@ import { ChevronDown, ExternalLink } from "lucide-react";
 import type { FundamentalCardData } from "@/lib/core/fundamentalCard";
 import { toPersianDigits } from "@/lib/format";
 import Term from "@/components/learn/Term";
+import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 import styles from "./SymbolDossier.module.css";
 
 function fa(x: string | number): string {
@@ -58,17 +59,13 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
         </h2>
         {card.sourceTitle ? <p className={styles.sourceTitle}>{card.sourceTitle}</p> : null}
         </div>
-        {card.sourceUrl ? (
-          <a
-            href={card.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.sourceLink}
-            style={{ color: "var(--navy-ink)" }}
-          >
-            منبع رسمی: کدال <ExternalLink size={14} aria-hidden="true" />
-          </a>
-        ) : null}
+        <CodalSourceLink
+          url={card.sourceUrl}
+          className={`${styles.sourceLink} text-[var(--navy-ink)]`}
+          fallback={<span className="text-xs text-muted-foreground">پیوند معتبر کدال در دسترس نیست</span>}
+        >
+          منبع رسمی: کدال <ExternalLink size={14} aria-hidden="true" />
+        </CodalSourceLink>
       </header>
 
       {/* لایهٔ ۱ — روایت یک‌خطی (همیشه باز) */}
