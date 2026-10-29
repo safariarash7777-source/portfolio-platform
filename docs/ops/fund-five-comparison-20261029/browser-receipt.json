@@ -1,0 +1,51 @@
+{
+  "scope": "Final existing component in labeled synthetic fixture; no real data/session",
+  "measurements": [
+    {
+      "cards": 5,
+      "client": 305,
+      "outside": [],
+      "scroll": 305,
+      "slots": 5,
+      "viewport": 320
+    },
+    {
+      "cards": 5,
+      "client": 375,
+      "outside": [],
+      "scroll": 375,
+      "slots": 5,
+      "viewport": 390
+    },
+    {
+      "cards": 5,
+      "client": 1265,
+      "outside": [],
+      "scroll": 1265,
+      "slots": 5,
+      "viewport": 1280
+    }
+  ],
+  "selected": [
+    "نمونه‌الف",
+    "نمونه‌ب",
+    "نمونه‌ج",
+    "نمونه‌د",
+    "نمونه‌پنجم‌با‌نماد‌بلند"
+  ],
+  "duplicateAndTypeAndCurrencyOptionsDisabled": true,
+  "unknownClass": true,
+  "staleNav": true,
+  "reinvestmentUnknown": true,
+  "resetPreviouslyVerified": {
+    "slots": 5,
+    "cards": 0,
+    "values": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  }
+}

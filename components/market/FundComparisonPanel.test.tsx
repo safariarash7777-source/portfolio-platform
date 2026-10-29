@@ -14,12 +14,26 @@ const row: FundComparisonRow = {
   returnObservations: { w1: { value: 0, periodStart: "2026-09-21", periodEnd: "2026-09-30", startField: "close", endField: "close", method: "unadjusted-price", source: "symbol_history" } },
 };
 
-test("comparison shell has three labeled native selectors, honest empty state and no automatic selection", () => {
+test("comparison shell has five labeled native selectors, honest empty state and no automatic selection", () => {
   const html = renderToStaticMarkup(React.createElement(FundComparisonPanel, { funds: [row], from: "/market/funds?type=اهرم" }));
-  assert.equal((html.match(/<select/g) ?? []).length, 3);
-  assert.equal((html.match(/<label/g) ?? []).length, 3);
+  assert.equal((html.match(/<select/g) ?? []).length, 5);
+  assert.equal((html.match(/<label/g) ?? []).length, 5);
   assert.ok(html.includes("هنوز صندوقی انتخاب نشده"));
   assert.ok(!html.includes("<article"));
+});
+
+test("five selected observations keep the fifth source/unknown evidence and avoid fabricated total return", () => {
+  const rows = Array.from({ length: 5 }, (_, index) => ({ ...row, id: `نمونه-${index + 1}` }));
+  rows[4] = { ...rows[4], nav: null, navReason: "شاهد NAV صندوق پنجم موجود نیست", returnObservations: undefined };
+  const html = renderToStaticMarkup(React.createElement(FundComparisonDetails, { rows, from: "/market/funds" }));
+  assert.equal((html.match(/<article/g) ?? []).length, 5);
+  assert.ok(html.includes("نمونه-5"));
+  assert.ok(html.includes("شاهد NAV صندوق پنجم موجود نیست"));
+  assert.ok(html.includes("شاهد دوره موجود نیست"));
+  assert.ok(html.includes("بدون سود تقسیمی و هزینه‌ها"));
+  assert.ok(html.includes("بازده کل نیست"));
+  assert.ok(html.includes("فرض سرمایه‌گذاری مجدد در داده مشخص نیست"));
+  assert.ok(html.includes("طبقه واحد با منبع مستند مشخص نشده است"));
 });
 
 test("unknown classes leave observed closing price/NAV/zero return and source dates visible", () => {
