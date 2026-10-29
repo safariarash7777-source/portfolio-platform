@@ -13,6 +13,16 @@ export default function SyntheticWorkbookPreview() {
   const [mode, setMode] = useState('normal');
   const [snapshot, setSnapshot] = useState(() => fixture.snapshot());
   const [requests, setRequests] = useState<Array<{ method: string; version: number | null }>>([]);
+  const [decision, setDecision] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+  const decisionResolver = useRef<((approved: boolean) => void) | null>(null);
+  const noteResolver = useRef<((note: string | null) => void) | null>(null);
+  const confirmDecision = (message: string) => new Promise<boolean>(resolve => { decisionResolver.current = resolve; setDecision(message); });
+  const reviewNote = () => new Promise<string | null>(resolve => { noteResolver.current = resolve; setNote(''); setDecision('علت بازگرداندن نسخهٔ ساختگی'); });
+  function finishDecision(accepted: boolean) {
+    decisionResolver.current?.(accepted); noteResolver.current?.(accepted ? note : null);
+    decisionResolver.current = null; noteResolver.current = null; setDecision(null);
+  }
   const transport = useMemo<WorkbookTransport>(() => async (path, init) => {
     const url = new URL(path, 'https://synthetic.invalid');
     if (url.pathname !== API) throw new Error('Outside synthetic fixture');
@@ -49,7 +59,13 @@ export default function SyntheticWorkbookPreview() {
       <details><summary className="min-h-11 cursor-pointer py-2">رسید مستقل مخزن ساختگی و درخواست‌ها</summary>
         <pre dir="ltr" className="max-h-72 overflow-auto whitespace-pre-wrap break-all text-xs">{JSON.stringify({ environment: 'PREVIEW_SYNTHETIC_BROWSER_MEMORY', modelCalls: 0, requests, versions: snapshot.versions.map(row => ({ workbookId: row.workbookId, version: row.version, title: row.title })), reviews: snapshot.reviews.map(row => ({ versionId: row.versionId, decision: row.decision })), publications: snapshot.publications.length }, null, 2)}</pre>
       </details>
+      {decision && <section role="alertdialog" aria-label="بازبینی فقط ساختگی" className="card space-y-3 p-4">
+        <p>فقط دادهٔ ساختگی — هیچ تصمیم آرش ثبت نمی‌شود.</p><p>{decision}</p>
+        {noteResolver.current && <label>علت نمونه <input className="min-h-11 border p-2" value={note} onChange={event => setNote(event.target.value)} /></label>}
+        <button className="btn btn-secondary" type="button" onClick={() => finishDecision(true)}>تأیید آزمایشی</button>
+        <button className="btn btn-ghost" type="button" onClick={() => finishDecision(false)}>انصراف آزمایشی</button>
+      </section>}
     </section>
-    {id ? <ResearchWorkbook transport={transport} initialWorkbookId={id} /> : <p role="status">آماده‌سازی دادهٔ ساختگی…</p>}
+    {id ? <ResearchWorkbook transport={transport} initialWorkbookId={id} confirmDecision={confirmDecision} reviewNote={reviewNote} /> : <p role="status">آماده‌سازی دادهٔ ساختگی…</p>}
   </main>;
 }
