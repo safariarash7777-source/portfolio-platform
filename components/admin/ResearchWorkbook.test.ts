@@ -11,6 +11,12 @@ import { mountComponent } from './p07-component-test-host';
 import ResearchPreparationFields from './ResearchPreparationFields';
 import type { ManualIntake } from '../../lib/intelligence/manual-intake';
 const mount = (transport: WorkbookTransport, workbookId: string) => mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbookId: workbookId });
+type WorkbookUi = ReturnType<typeof mountComponent>;
+// WebCrypto runs outside the JS microtask queue. Wait for observable completion,
+// rather than assuming five setImmediate turns finish it on every CI runner.
+const unknownReady = (ui: WorkbookUi) => ui.waitFor(() => !ui.button('بررسی دوبارهٔ همین ثبت').props.disabled);
+const retryReady = (ui: WorkbookUi) => ui.waitFor(() => !ui.button('ارسال دوبارهٔ همین ثبت').props.disabled);
+const resolvedReady = (ui: WorkbookUi) => ui.waitFor(() => !ui.button('تازه').props.disabled);
 
 test('closing while prepare response is pending cannot let the old client continue with a workbook POST',async()=>{
   const restore=workbookBrowserFixture(),fixture=createP07WorkflowFixture({durable:true});let release:(()=>void)|undefined,saves=0;
@@ -22,10 +28,12 @@ test('closing while prepare response is pending cannot let the old client contin
   };
   try{
     const ui=mountComponent('components/admin/ResearchWorkbook.tsx',{transport,initialWorkbook:p07FixtureWorkbook()});await ui.settle();await ui.click('ذخیرهٔ نسخهٔ');
+    await ui.waitFor(()=>!!release);
     assert.ok(release);assert.equal(fixture.intentSnapshot().length,1);ui.unmount();release();await ui.settle();assert.equal(saves,0);
     const reopened=mountComponent('components/admin/ResearchWorkbook.tsx',{transport:fixture.transport});await reopened.settle();await reopened.settle();
+    await retryReady(reopened);
     assert.equal(reopened.button('تازه').props.disabled,true);assert.equal(fixture.snapshot().versions.length,0);
-    await reopened.click('ارسال دوبارهٔ همین ثبت');await reopened.settle();assert.equal(fixture.snapshot().versions.length,1);
+    await reopened.click('ارسال دوبارهٔ همین ثبت');await resolvedReady(reopened);assert.equal(fixture.snapshot().versions.length,1);
   }finally{release?.();restore();}
 });
 
@@ -40,10 +48,11 @@ test('session expiry after confirmed prepare retains the same intent/body until 
   };
   try{
     const ui=mountComponent('components/admin/ResearchWorkbook.tsx',{transport,initialWorkbook:p07FixtureWorkbook()});await ui.settle();await ui.click('ذخیرهٔ نسخهٔ');await ui.settle();
+    await unknownReady(ui);
     assert.equal(ui.button('تازه').props.disabled,true);assert.equal(fixture.snapshot().versions.length,0);
-    await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(attempts.length,1);
+    await ui.click('بررسی دوبارهٔ همین ثبت');await unknownReady(ui);assert.equal(attempts.length,1);
     fixture.setIdentity('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
-    await ui.click('بررسی دوبارهٔ همین ثبت');await ui.click('ارسال دوبارهٔ همین ثبت');await ui.settle();
+    await ui.click('بررسی دوبارهٔ همین ثبت');await retryReady(ui);await ui.click('ارسال دوبارهٔ همین ثبت');await resolvedReady(ui);
     assert.equal(attempts.length,2);assert.deepEqual(attempts[1],attempts[0]);assert.equal(fixture.intentSnapshot().length,1);assert.equal(fixture.snapshot().versions.length,1);
   }finally{restore();}
 });
@@ -65,6 +74,7 @@ for (const lost of ['prepare', 'commit'] as const) test(`durable ${lost} respons
   try {
     const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: privateWorkbook }); await ui.settle();
     await ui.click('ذخیرهٔ نسخهٔ'); await ui.settle();
+    await unknownReady(ui);
     assert.equal(fixture.intentSnapshot().length, 1);
     assert.equal(fixture.snapshot().versions.length, lost === 'prepare' ? 0 : 1);
     assert.equal(ui.button('تازه').props.disabled, true);
@@ -73,12 +83,13 @@ for (const lost of ['prepare', 'commit'] as const) test(`durable ${lost} respons
     const posts = requests.filter(r => r.action).length;
     const reopened = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await reopened.settle(); await reopened.settle();
     await reopened.waitFor(() => reopened.find('input', e => e.props.id === 'title').props.value === privateWorkbook.title);
+    if (lost === 'prepare') await retryReady(reopened); else await resolvedReady(reopened);
     assert.equal(requests.filter(r => r.action).length, posts, 'reopening performs only GET, even after a committed prepare');
     assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, privateWorkbook.title);
     assert.equal((reopened.find(ResearchPreparationFields, () => true).props.value as ManualIntake).text, privateWorkbook.privatePreparation.intake.text);
     if (lost === 'prepare') {
       assert.equal(reopened.button('تازه').props.disabled, true);
-      await reopened.click('ارسال دوبارهٔ همین ثبت'); await reopened.settle();
+      await reopened.click('ارسال دوبارهٔ همین ثبت'); await resolvedReady(reopened);
     }
     assert.equal(fixture.snapshot().versions.length, 1);
     const actual = requests.find(r => r.action === 'save')!;
@@ -89,6 +100,7 @@ for (const lost of ['prepare', 'commit'] as const) test(`durable ${lost} respons
     assert.equal(requests.filter(r => r.action === 'prepare_save').length, 1);
     assert.equal(requests.filter(r => r.action === 'save').length, 1);
     const again = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await again.settle(); await again.settle();
+    await again.waitFor(() => again.find('input', e => e.props.id === 'title').props.value === privateWorkbook.title); await resolvedReady(again);
     assert.equal(again.button('تازه').props.disabled, false);
     assert.equal(requests.filter(r => r.action === 'save').length, 1);
   } finally { restore(); }
@@ -109,7 +121,7 @@ test('durable v2 after page closure preserves v1 and its review, and a different
   try {
     const ui = mount(transport, id); await ui.settle();
     (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'PRIVATE_DURABLE_V2' } }); await ui.settle();
-    await ui.click('ذخیره به‌عنوان'); await ui.settle(); ui.unmount();
+    await ui.click('ذخیره به‌عنوان'); await unknownReady(ui); ui.unmount();
     const intent = fixture.intentSnapshot()[0];
     for (const actor of ['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', null]) {
       fixture.setIdentity(actor);
@@ -122,6 +134,7 @@ test('durable v2 after page closure preserves v1 and its review, and a different
     }
     fixture.setIdentity('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
     const resumed = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await resumed.settle(); await resumed.settle();
+    await resumed.waitFor(() => resumed.find('input', e => e.props.id === 'title').props.value === 'PRIVATE_DURABLE_V2'); await resolvedReady(resumed);
     assert.equal(resumed.find('input', e => e.props.id === 'title').props.value, 'PRIVATE_DURABLE_V2');
     assert.equal(resumed.badge(), false); assert.equal(saves, 1);
     assert.deepEqual(fixture.snapshot().versions[0], v1); assert.equal(fixture.snapshot().versions.length, 2);
@@ -141,14 +154,15 @@ test('durable same-intent retry after absence cannot overwrite a concurrent diff
   try {
     const ui = mount(transport, id); await ui.settle();
     (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'My pending version' } }); await ui.settle();
-    await ui.click('ذخیره به‌عنوان'); await ui.settle(); await ui.click('بررسی دوبارهٔ همین ثبت');
+    await ui.click('ذخیره به‌عنوان'); await unknownReady(ui); await ui.click('بررسی دوبارهٔ همین ثبت'); await retryReady(ui);
     fixture.setIdentity('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
     await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: id, baseVersion: 1, workbook: { ...p07FixtureWorkbook(), title: 'Concurrent other actor' } }) });
     fixture.setIdentity('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
-    await ui.click('ارسال دوبارهٔ همین ثبت'); await ui.settle();
+    await ui.click('ارسال دوبارهٔ همین ثبت'); await unknownReady(ui);
     assert.equal(ui.button('تازه').props.disabled, true); assert.equal(fixture.snapshot().versions.length, 2);
     ui.unmount();
     const reopened = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await reopened.settle(); await reopened.settle();
+    await reopened.waitFor(() => reopened.find('input', e => e.props.id === 'title').props.value === 'My pending version'); await unknownReady(reopened);
     assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, 'My pending version');
     assert.equal(reopened.button('تازه').props.disabled, true); assert.throws(() => reopened.button('تأیید داخلی نسخه'));
     assert.equal(fixture.snapshot().versions[1].title, 'Concurrent other actor');
