@@ -66,7 +66,7 @@ export default async function FundsPage({
           searchIndex={buildSearchIndex(ir?.stocks ?? [], funds)}
           path="/market/funds"
         >
-          <FundsFullBoard funds={funds} fetchedAt={fetchedAt} />
+          <FundsFullBoard funds={funds} fetchedAt={fetchedAt} availability={availability} />
           <div className="mt-8">
             <AccountBridge
               access={access}
