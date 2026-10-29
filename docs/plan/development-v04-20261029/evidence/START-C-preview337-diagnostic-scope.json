@@ -18,7 +18,6 @@
     "wasFundSnapshotQuery": false
   },
   "notEstablished": [
-    "ir_market_snapshots key=latest query outcome",
     "relay fallback outcome",
     "actual absence of stored fund rows",
     "admission rejection of fund rows",
@@ -31,5 +30,21 @@
   "newProductEndpoint": false,
   "primaryEnvCredentialServiceChanged": false,
   "ownerLocalJsonCommitted": false,
-  "scopeLimitation": "Owner local JSON is not committed; description is published and linked, and this coordinator receipt preserves the qualified report."
+  "scopeLimitation": "Owner local JSON is not committed; description is published and linked, and this coordinator receipt preserves the qualified report.",
+  "ownerFollowupExactSnapshotRead": {
+    "reportedBy": "existing START-C owner, completed turn 01a188ee-2cc3-7169-a26f-c6148c8bdfb4",
+    "at": "2026-10-29T18:32:32.251117Z",
+    "method": "one bounded GET, no retry",
+    "target": "same published legacy Supabase of exact Preview337",
+    "path": "/rest/v1/ir_market_snapshots?key=eq.latest&select=payload",
+    "httpStatus": 402,
+    "publicCode": null,
+    "credentialHandling": "existing published public anon credential in memory only; no value in receipt/log/argv",
+    "fundRows": null,
+    "payloadTimes": null,
+    "providerAlertRelayWritesInvoked": false,
+    "rootRepeatedQuery": false
+  },
+  "queryOutcomeNowEstablished": "exact configured snapshot SELECT failed with HTTP402; row absence not established",
+  "followupRecordedAt": "2026-10-29T18:34:20.659463+00:00"
 }
