@@ -57,6 +57,14 @@
 
 محدودیت مهم: installer314 فقطroster/replies است؛ adapter عملیاتی migration334 با lock/intent/backup/readback هنوز تأیید نشده. primary/DDL/حساب/حق‌خدمت/پیام/انتشار در این تحویل تغییر نکرده؛ مقصد/ظرفیت/backup باroot، ادامه adapter و بسته نصب باSTART-A. [شکاف entitlement](https://github.com/safariarash7777-source/portfolio-platform/blob/be92c661d0f56a665e9fe1d0b25d4f5151e13ec8/docs/ops/start-a-finance-v04-20261029/ENTITLEMENT-GAP.fa.md) پیشنهاد تصمیمD024 است و هنوز قرارداد تجاری یا حق معتبر ایجاد نکرده است.
 
+### اجرای Linux مستقل و مانع دقیق مقصد — دستور تکمیلی مالک
+
+آرش صریحاً اجرایLinux و تمرین نصب/برگشت روی کپی جدا را مستقل ازSSH خواست. START-A مالک تکمیل adapter باقفل/backup/intent/readback و تمرین apply/rollback است؛ Python رسمی فقط درcontainer آزمون تحت مالکیت، بدون نصب میزبان/VM/Hermes و بدون سرویستازه مجاز شد. نتیجهLinux هنوز تحویل نشده؛ بررسی هش قبلی جای آن نیست. root دربازبینی draft، مسیر read-only نتیجه نامعلوم همانintent را خواست و نقص فعال‌شدن بی‌گیت writerجدید درActionFeedback را برای اعمال گیت سروری default-off برگرداند؛ readerسازگار بایدپیشازenableنوشتن آماده باشد و پسازhistoryجدید حفظ شود. flag/env اصلی تغییر نکرده است.
+
+**مانع تازه و اقدام مسئول:** [رسید دسترسی](plan/development-v04-20261029/evidence/ACCESS-RECHECK-20261029T1552Z.json) در۲۹اکتبر،۱۹:۲۲تهران ثبت شد: SSHمستقیم پیشازbanner timeout؛ CONNECTازproxyموجود۲۰۰ ولیbanner بازtimeout؛ APIمدیریت در`15:52:05Z` پاسخ۴۰۱؛ کنترل پنجره نشست دورنما activate-timeout داد و فرمانguest اجرا نشد. currentIP/هویتمقصد، مصرفCPU/RAM/disk وپشتیبان تازه قابل‌بازیابی تأیید نشده‌اند. workflowخواندنی موجودC،VMID/IPراخروجی نمی‌دهد و گواه تطبیق تازه نیست. علتsshd/firewall/ردکلید/کمبودمنابع حدس زده نمی‌شود. root مسئول ادامه بازیابی دسترسی فقط‌خواندنی و سپس سنجش ظرفیت/پشتیبان/restore است؛ نصب/پذیرش مقصد فقط به همین شاهد وابسته می‌ماند. رسیدهای پشتیبان۲۳اکتبر تازه نیستند و guard۱۰GiB/restore حذف نمی‌شود.
+
+**کارهای مستقل:** B طبق گزارش مجری۶۵آزمون متمرکز و RLS/hash/actor درPG17ایزوله را گذرانده؛ آزمون remount کامل هنوز در جریان است و نصب اصلی انجام نشده. C [رسید بازسازی منبع](https://github.com/safariarash7777-source/portfolio-platform/blob/4013c7c3e972e6b026e093d8dbf39d9df7776fc1/docs/plan/START-C-source-replay.json) را درPR331 ثبت کرد؛ root head4013راازGit خواند. سندN30 باhashثابت→parserPR329/PV3→reader→موتور روی candidateمجازی؛ شبکه/درجواقعی صفر و سالقبلغایبnull است. مجری۴۱آزمون ترکیبی/typecheck موفق گزارش داد؛ این ingest یا تازگی واقعی نیست. deltaاز3e0 شامل اصلاح یک‌خطی provenance به`parserVersion(row)` وtestآن نیز هست؛ گزارش «بدون تغییر محصول» برای کلdelta دقیق نیست و برای اصلاح به مالک برگردانده شد.
+
 ### گیت‌های محلی، مستقل از شروع کل کار
 
 - START-A: خطای ذخیره draft را حذف نکند؛ خواندن خراب پرونده خالی معرفی نشود. نشست و مقصد آزمون/ساختگی با مجری؛ نصب افزونه مشاوره و گیت پشتیبان/ظرفیت جدا از آزمون مستقل است. آمار ظرفیت ۲۷ اکتبر تأیید تازه محسوب نمی‌شود.
