@@ -67,7 +67,7 @@ export default function CodalReportsTab({
   const loadAll = () => {
     const request = ++activeRequest.current.version;
     setLiveState("loading");
-    fetch(`/api/codal-list?symbol=${encodeURIComponent(symbol)}`)
+    fetch(`/api/codal-list?symbol=${encodeURIComponent(symbol)}`, { signal: AbortSignal.timeout(20_000) })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((j) => {
         if (request !== activeRequest.current.version) return;

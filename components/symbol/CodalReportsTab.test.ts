@@ -152,3 +152,33 @@ test('reusing the dossier for another symbol clears filters and ignores a late o
     assert.equal(host.find('input', node => node.props.type === 'search').props.value, '');
   } finally { globalThis.fetch = oldFetch; }
 });
+
+
+test('HTTP502 stored read shows error and preserves manual retry, not an empty list', async () => {
+  const oldFetch=globalThis.fetch;
+  globalThis.fetch=async()=>Response.json({error:'supabase 402'},{status:502});
+  try {
+    const host=mountComponent('components/symbol/CodalReportsTab.tsx',{symbol:'فولاد',stored:[]});
+    await host.settle(); await host.click('دریافت فهرست');
+    host.find('p',node=>JSON.stringify(node.props.children).includes('دریافت فهرست ذخیره‌شده ممکن نشد'));
+    assert.equal(host.button('دریافت فهرست').props.disabled,false);
+  } finally {globalThis.fetch=oldFetch;}
+});
+
+test('pending stored read is bounded by deadline and becomes retryable error', async () => {
+  const oldFetch=globalThis.fetch, oldTimeout=AbortSignal.timeout;
+  let supplied=false, deadline=0;
+  AbortSignal.timeout=(ms:number)=>{deadline=ms; return AbortSignal.abort(new DOMException('deadline','TimeoutError'));};
+  globalThis.fetch=async(_input,options)=>{
+    supplied=!!options?.signal;
+    if(options?.signal?.aborted) throw options.signal.reason;
+    return new Promise<Response>(()=>{});
+  };
+  try {
+    const host=mountComponent('components/symbol/CodalReportsTab.tsx',{symbol:'فولاد',stored:[]});
+    await host.settle(); await host.click('دریافت فهرست');
+    assert.equal(supplied,true); assert.equal(deadline,20000);
+    host.find('p',node=>JSON.stringify(node.props.children).includes('دریافت فهرست ذخیره‌شده ممکن نشد'));
+    assert.equal(host.button('دریافت فهرست').props.disabled,false);
+  } finally {globalThis.fetch=oldFetch; AbortSignal.timeout=oldTimeout;}
+});
