@@ -77,6 +77,10 @@
 
 رسید مستقل cloud در`2026-10-29T16:10:35Z`: مالکC، [nativePG17 run40908788954](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40908788954) را برایB@`f98d8c559b3c8e6b615f7ea446406b64166c294c` SUCCESS وjob`postgres17-reopen` کامل موفق خواند. artifact`workbook-native-receipt` شناسه12911469265 آماده و۶۴۸بایت بود؛ محتوایartifact هنوز بازخوانی نشده است. [CIعمومیB40908788709](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40908788709) و [CIA40908593287](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40908593287) درهمان نمونه هنوزدرجریان بودند. اینSUCCESS به SQL/commitبعدازرفعservice_role تعمیم داده نمی‌شود؛ اصلاح وnative/BYPASSRLStest بعدی باB درحالاجراست.
 
+### رفع یافته دسترسی B و اجرای cloud همان نسخه
+
+[PR330@7b2b4eaa73be56fb158571ccce9b74791701869a](https://github.com/safariarash7777-source/portfolio-platform/pull/330) به همان شاخه ارسال و توسطrootباremoteتطبیق شد. grantSELECTبهservice_role حذف؛ ششnativePASS/صفرfail-skip درPG17.11 شامل منعSELECTمستقیم service_roleباBYPASSRLS و حفظمنعپسازrerun دردوprofile ثبت شد. rootدلتایSQL وSHAجدید`bd0d6700…` را باblobGit/رسید تطبیق داد و [nativePG17 run40909475478](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40909475478) برایهمان7b2را مستقلاًازAPIعمومیGitHubSUCCESSخواند؛ [رسید](plan/development-v04-20261029/evidence/START-B-7b2b4ea-cloud-readonly.json). یافته دسترسی اضافی بسته شد؛ اینقبولیبهCIعمومی یاPrimaryتعمیم داده نشد. [CIعمومی40909475600](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40909475600) درلحظهخواندن درحالاجرا بود؛ artifactbodyمستقل دانلود نشده است. [MIGRATION-LEDGER](MIGRATION-LEDGER.md) نامزدجاری را باhashجدید وNOT_APPLIED ثبت می‌کند؛ freezeاصلی/DDL/Auth/Hermes تغییرنکرده‌اند. مجریB مسئول بازنویسیشرحهمانPRبرمبنایdurability و نتیجهCIنهایی است.
+
 ### گیت‌های محلی، مستقل از شروع کل کار
 
 - START-A: خطای ذخیره draft را حذف نکند؛ خواندن خراب پرونده خالی معرفی نشود. نشست و مقصد آزمون/ساختگی با مجری؛ نصب افزونه مشاوره و گیت پشتیبان/ظرفیت جدا از آزمون مستقل است. آمار ظرفیت ۲۷ اکتبر تأیید تازه محسوب نمی‌شود.

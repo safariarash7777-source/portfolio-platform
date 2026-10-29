@@ -1,0 +1,35 @@
+{
+  "mode": "read_only_public_github_api",
+  "reviewer": "existing-root-coordinator",
+  "dateInTehran": "2026-10-29",
+  "productHead": "7b2b4eaa73be56fb158571ccce9b74791701869a",
+  "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+  "candidateHashIndependentlyMatchedToGitAndOwnerReceipt": true,
+  "remoteBranchIndependentlyMatched": true,
+  "nativeWorkflow": {
+    "id": 40909475478,
+    "name": "Research workbook native recovery",
+    "status": "completed",
+    "conclusion": "success",
+    "headSha": "7b2b4eaa73be56fb158571ccce9b74791701869a",
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40909475478"
+  },
+  "generalCiAtSameRead": {
+    "id": 40909475600,
+    "status": "in_progress",
+    "conclusion": null,
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40909475600"
+  },
+  "artifactBodyIndependentlyDownloaded": false,
+  "ownerNativeReceipt": {
+    "postgresVersionNumber": 170011,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "authBoundary": "synthetic authenticated SQL claims; no real user login",
+    "serviceRoleBypassRlsReadDeniedIncludingCandidateRerun": true
+  },
+  "primaryDdlExecuted": false,
+  "primaryAcceptance": false,
+  "writerFreezeChanged": false
+}
