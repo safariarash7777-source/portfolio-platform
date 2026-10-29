@@ -49,5 +49,22 @@
   ],
   "previewAuthenticatedFlowAccepted": false,
   "primaryInstallation": false,
-  "primaryReaderDeploymentVerified": false
+  "primaryReaderDeploymentVerified": false,
+  "releaseBinding": {
+    "sealedSqlSourceSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "sealedPackage": "start-a-guarded-transfer-r3b.zip",
+    "packageSha256": "4cc1cfc6ea172d9fa33d3ac651e179d72533797455ea3c3c7b75c1d8d61c29c7",
+    "atomicApplyPayloadSha256": "c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8",
+    "readerProductSourceSha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+    "deliveryHead": "497ae4681783db7aa9bd9339993c36a29e93ed56",
+    "applicationDeltaFromSqlSource": [
+      "components/consultation/ConsultationPanel.tsx",
+      "components/consultation/ConsultationWorkspace.tsx"
+    ],
+    "sqlDelta": false,
+    "primaryDeploymentSha": null,
+    "primaryReaderAuthenticatedReadback": null,
+    "bindingStatus": "CANDIDATE_ONLY_REQUIRES_FRESH_TARGET_ATTESTATION_BEFORE_DDL",
+    "sourceDeltaVerification": "git diff fixed commits; application scope app/components/lib/supabase; two filter components and their tests only"
+  }
 }
