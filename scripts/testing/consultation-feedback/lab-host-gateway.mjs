@@ -5,8 +5,10 @@ const origin='http://localhost:32189';
 const app=next({dev:true,hostname:'localhost',port:32189});
 await app.prepare();
 const handle=app.getRequestHandler();
+let commandRpcCalls=0; // Test transport telemetry only; never inspect or change a request body.
 const server=http.createServer((req,res)=>{
- if(req.url==='/__consultation_lab_identity'){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({runId:process.env.LAB_RUN_ID,sha:process.env.LAB_SHA}));return;}
+ if(req.url==='/__consultation_lab_identity'){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({runId:process.env.LAB_RUN_ID,sha:process.env.LAB_SHA,commandRpcCalls}));return;}
+ if(req.url.split('?')[0]==='/rest/v1/rpc/command_consultation')commandRpcCalls++;
  if(!req.url.startsWith('/auth/v1/')&&!req.url.startsWith('/rest/v1/')){if(req.url.startsWith('/api/consultation'))res.on('finish',()=>{const raw=getRequestMeta(req,'initURL');console.log(JSON.stringify({labDiagnostic:'origin',initOrigin:typeof raw==='string'?new URL(raw).origin:null,originHeader:req.headers.origin??null,status:res.statusCode}));});void handle(req,res);return;}
  res.setHeader('Access-Control-Allow-Origin',origin);
  res.setHeader('Access-Control-Allow-Headers','authorization,apikey,content-type,x-client-info,x-supabase-api-version');

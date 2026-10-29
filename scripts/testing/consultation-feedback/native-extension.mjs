@@ -20,7 +20,7 @@ function store(name,value){check(/^[a-z0-9.-]+$/.test(name),'private_name');cons
 async function identity(){attest(state);const r=await fetch(origin+'/__consultation_lab_identity',{redirect:'error',signal:AbortSignal.timeout(3000)});const v=await r.json();check(v.runId===state.id&&v.sha===state.sha,'native_app_identity_changed');}
 function sql(query){attest(state);return execFileSync('docker',['exec','-i',state.db,'psql','-XqAt','-U','postgres','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose'],{input:query,encoding:'utf8',stdio:'pipe',windowsHide:true}).trim();}
 async function exchange(actor,path,method='GET',body,expected=200,discard=false){
- check(['/api/consultation','/api/personal-finance/goals','/api/portfolio/holdings','/api/personal-finance/cash-flow','/rest/v1/rpc/command_consultation'].includes(path.split('?')[0]),'native_path_forbidden');
+ check(['/api/consultation','/api/personal-finance/goals','/api/portfolio/holdings','/api/personal-finance/cash-flow','/rest/v1/rpc/command_consultation','/rest/v1/rpc/load_consultation'].includes(path.split('?')[0]),'native_path_forbidden');
  await identity();
  const headers={};if(actor)headers.Cookie=jars[actor]();
  if(method==='POST'){headers['Content-Type']='application/json';headers.Origin=origin;store('intent-'+String(++posts).padStart(3,'0')+'.json',{actorId:state.users[actor].id,path,body});}
