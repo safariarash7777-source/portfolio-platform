@@ -15,6 +15,7 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import ts from "typescript";
 import type { ActionFeedbackEdit } from "./ActionFeedback";
+import StartAPreviewPage from "../../app/preview/start-a/page";
 
 const actor = "11111111-1111-4111-8111-111111111111", relationId = "22222222-2222-4222-8222-222222222222", sessionId = "33333333-3333-4333-8333-333333333333", member = "44444444-4444-4444-8444-444444444444";
 const basis = { holdingsVersionId: null, cashFlowVersionId: null, goalsVersionId: null, cashFlowPeriod: { startOn: "2026-10-01", endOn: "2026-10-31" } };
@@ -52,6 +53,15 @@ test('independent readback of partial/not_done must match the exact version, act
   assert.equal(receiptVisible(read,feedbackReceipt),true);
   for(const edit of [{version:2},{text:'شرح متفاوت'},{actionKey:actor},{status:'done' as const}])assert.equal(receiptVisible({...read,actions:[{...action,...edit}]},feedbackReceipt),false);
  }
+});
+
+test('preview-only sample is 404 outside Preview and needs no native account',()=>{
+ const prior=process.env.VERCEL_ENV;
+ try{
+  for(const env of ['production','development','']){process.env.VERCEL_ENV=env;assert.throws(()=>StartAPreviewPage(),/NEXT_HTTP_ERROR_FALLBACK;404/);}
+  process.env.VERCEL_ENV='preview';const html=renderToStaticMarkup(<StartAPreviewPage/>);
+  assert.match(html,/همه داده‌ها و نقش‌ها ساختگی‌اند/);assert.match(html,/بخشی انجام دادم/);assert.match(html,/انجام ندادم/);assert.match(html,/شبیه‌سازی شکست ذخیره/);
+ }finally{if(prior===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=prior;}
 });
 
 
