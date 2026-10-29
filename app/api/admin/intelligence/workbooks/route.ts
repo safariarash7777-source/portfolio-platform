@@ -15,6 +15,8 @@ import {
   type WorkbookGateway,
   type WorkbookStore,
 } from "@/lib/intelligence/workbook-store";
+import { listWorkbookSaveIntents, prepareWorkbookSave, readWorkbookSaveIntent, savePreparedWorkbook,
+  type StoredWorkbookIntent, type WorkbookIntentGateway, type WorkbookIntentStore } from '@/lib/intelligence/workbook-intent-store';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -113,7 +115,32 @@ function supabaseStore(db: SessionClient): WorkbookStore {
   };
 }
 
-async function gateway(): Promise<WorkbookGateway> {
+const INTENT_COLUMNS = 'intent_id,workbook_id,base_version,target_version,request_hash,title,created_by,created_at';
+function toIntent(row: Record<string, unknown>): StoredWorkbookIntent {
+  return { intentId: String(row.intent_id), workbookId: String(row.workbook_id), baseVersion: Number(row.base_version), targetVersion: Number(row.target_version),
+    requestBody: String(row.request_body), requestHash: String(row.request_hash), title: String(row.title), createdBy: String(row.created_by), createdAt: String(row.created_at) };
+}
+function intentStore(db: SessionClient): WorkbookIntentStore {
+  return {
+    async get(id) {
+      const { data, error } = await db.from('research_workbook_save_intents').select(`${INTENT_COLUMNS},request_body`).eq('intent_id', id).maybeSingle();
+      if (error) throw classifyStoreError(error);
+      return data ? toIntent(data as Record<string, unknown>) : null;
+    },
+    async recent(limit, offset) {
+      const { data, error } = await db.from('research_workbook_save_intents').select(INTENT_COLUMNS).order('created_at', { ascending: false }).order('intent_id', { ascending: false }).range(offset, offset + limit - 1);
+      if (error) throw classifyStoreError(error);
+      return (data ?? []).map(raw => { const { requestBody: _body, ...row } = toIntent(raw as Record<string, unknown>); void _body; return row; });
+    },
+    async insert(row) {
+      const { data, error } = await db.from('research_workbook_save_intents').insert({ intent_id: row.intentId, request_body: row.requestBody }).select(`${INTENT_COLUMNS},request_body`).single();
+      if (error) throw classifyStoreError(error, 'write');
+      return toIntent(data as Record<string, unknown>);
+    },
+  };
+}
+
+async function gateway(): Promise<WorkbookIntentGateway> {
   const supabase = await createClient();
   return {
     privatePreparationWritable: process.env.P07_PRIVATE_PREPARATION_ENABLED === 'true',
@@ -130,6 +157,7 @@ async function gateway(): Promise<WorkbookGateway> {
       return (data?.role as string | undefined) ?? null;
     },
     createStore: () => supabaseStore(supabase),
+    createIntentStore: () => intentStore(supabase),
     newId: () => randomUUID(),
   };
 }
@@ -141,9 +169,15 @@ async function read(request: Request) {
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   const v = url.searchParams.get("version");
-  const result = id
-    ? await openWorkbook(await gateway(), id, v === null ? null : Number(v))
-    : await listWorkbooks(await gateway());
+  const gw = await gateway();
+  if (url.searchParams.has('intent')) { const result = await readWorkbookSaveIntent(gw, url.searchParams.get('intent')); return privateJson(result.body, result.status); }
+  if (url.searchParams.has('intents')) { const result = await listWorkbookSaveIntents(gw, Number(url.searchParams.get('offset') ?? 0)); return privateJson(result.body, result.status); }
+  const result = id ? await openWorkbook(gw, id, v === null ? null : Number(v)) : await listWorkbooks(gw);
+  if (!id && result.status === 200) {
+    const intents = await listWorkbookSaveIntents(gw);
+    result.body.durableRecoveryAvailable = intents.status === 200;
+    if (intents.status === 200) { result.body.saveIntents = intents.body.items; result.body.intentNextOffset = intents.body.nextOffset; }
+  }
   return privateJson(result.body, result.status);
 }
 
@@ -153,22 +187,29 @@ export async function POST(request: Request) {
 async function write(request: Request) {
   // سقفِ بدنه پیش از پارس: JSONِ چندمگابایتی نباید اول کامل در حافظه ساخته شود.
   const declared = Number(request.headers.get("content-length") ?? "0");
-  if (declared > MAX_STORED_BYTES * 2) {
+  if (declared > MAX_STORED_BYTES * 4 + 1024) {
     return privateJson({ error: "درخواست بیش از حد بزرگ است" }, 413);
   }
   let body: Record<string, unknown>;
+  let exactBody: string;
   try {
-    const parsed: unknown = await request.json();
+    exactBody = await request.text();
+    if (new TextEncoder().encode(exactBody).length > MAX_STORED_BYTES * 4 + 1024) return privateJson({ error: 'درخواست بیش از حد بزرگ است' }, 413);
+    const parsed: unknown = JSON.parse(exactBody);
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("shape");
     body = parsed as Record<string, unknown>;
   } catch {
     return privateJson({ error: "بدنهٔ درخواست نامعتبر است" }, 400);
   }
+  if (body.action !== 'prepare_save' && (declared > MAX_STORED_BYTES * 2 || new TextEncoder().encode(exactBody).length > MAX_STORED_BYTES * 2)) return privateJson({ error: 'درخواست بیش از حد بزرگ است' }, 413);
+  const gw = await gateway();
+  if (body.action === 'prepare_save') { const prepared = await prepareWorkbookSave(gw, body.intentId, body.requestBody); return privateJson(prepared.body, prepared.status); }
+  const intentId = request.headers.get('x-workbook-save-intent');
   const result =
     body.action === "save"
-      ? await saveWorkbook(await gateway(), body)
+      ? intentId ? await savePreparedWorkbook(gw, intentId, exactBody) : await saveWorkbook(gw, body)
       : body.action === "decide"
-        ? await decideWorkbook(await gateway(), body)
+        ? await decideWorkbook(gw, body)
         : { status: 400 as const, body: { error: "کنشِ نامعتبر" } };
   return privateJson(result.body, result.status);
 }

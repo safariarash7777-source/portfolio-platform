@@ -10,6 +10,7 @@ import { p07ReviewCurrent } from '@/lib/intelligence/workbook-review';
 import { PRIVATE_PREPARATION_CONTRACT } from '@/lib/intelligence/research-workbook';
 import ResearchPreparationFields from './ResearchPreparationFields';
 import { withDeadline } from '@/lib/deadline';
+import { hashIntentRequest, parseWorkbookSaveIntent } from '@/lib/intelligence/workbook-save-intent';
 
 const inputClass = 'w-full min-w-0 max-w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
@@ -19,6 +20,8 @@ const canonical = (value: unknown): string => JSON.stringify(value, (_key, item)
 interface SavedRef { workbookId: string; version: number; latestVersion: number; savedAt: string }
 interface ListItem { workbookId: string; version: number; title: string; savedAt: string }
 interface ReviewItem { version: number | null; decision: 'approved_internal' | 'returned'; note: string | null; reviewedAt: string }
+interface IntentItem { intentId: string; title: string; targetVersion: number; preparedAt: string }
+interface PendingSave { body: string; revision: number; id: string; version: number; intentId?: string; prepared?: boolean }
 type ServerState = 'checking' | 'ready' | 'unavailable' | 'error';
 
 export type WorkbookTransport = (input: string, init?: RequestInit) => Promise<{ status: number; body: Record<string, unknown> }>;
@@ -26,7 +29,8 @@ async function call(input: string, init?: RequestInit): Promise<{ status: number
   // Bound fetch and body together, even if the transport ignores abort. A
   // timeout does not prove rollback: saveToServer retains its creation attempt.
   return withDeadline(async signal => {
-    const res = await fetch(input, { ...init, signal, headers: { 'content-type': 'application/json' }, cache: 'no-store' });
+    const headers = new Headers(init?.headers); headers.set('content-type', 'application/json');
+    const res = await fetch(input, { ...init, signal, headers, cache: 'no-store' });
     let body: Record<string, unknown> = {};
     try { body = await res.json() as Record<string, unknown>; } catch { /* بدنهٔ خالی */ }
     return { status: res.status, body };
@@ -62,7 +66,13 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const busyRef = useRef(false);
   // The workbook ID + target version identifies one append, including v2+.
   // Preserve its exact body until its result has been independently resolved.
-  const pendingSave = useRef<{ body: string; revision: number; id: string; version: number } | null>(null);
+  const pendingSave = useRef<PendingSave | null>(null);
+  const [durableRecovery, setDurableRecovery] = useState<boolean | undefined>(undefined);
+  const [intentItems, setIntentItems] = useState<IntentItem[]>([]);
+  const [intentNextOffset, setIntentNextOffset] = useState<number | null>(null);
+  const recoveryBootstrapped = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const unknownSave = useRef(false);
   const [uncertainSave, setUncertainSave] = useState(false);
   const retrySaveAllowed = useRef(false);
@@ -74,7 +84,16 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     listBusy.current = true; setServer('checking');
     try {
       const r = await transport(API);
-      if (r.status === 200) { setList(r.body.items as ListItem[]); setServer('ready'); setPrivateWriterReady(r.body.privatePreparationWritable === true); }
+      if (r.status === 200) {
+        setList(r.body.items as ListItem[]); setServer('ready'); setPrivateWriterReady(r.body.privatePreparationWritable === true);
+        setDurableRecovery(typeof r.body.durableRecoveryAvailable === 'boolean' ? r.body.durableRecoveryAvailable : undefined);
+        const intents = Array.isArray(r.body.saveIntents) ? r.body.saveIntents as IntentItem[] : [];
+        setIntentItems(intents); setIntentNextOffset(typeof r.body.intentNextOffset === 'number' ? r.body.intentNextOffset : null);
+        if (!recoveryBootstrapped.current && r.body.durableRecoveryAvailable === true) {
+          recoveryBootstrapped.current = true;
+          if (!initialWorkbook && !initialWorkbookId && editRevision.current === 0 && !pendingSave.current && intents[0]) void restoreIntent(intents[0].intentId);
+        }
+      }
       else setServer(r.body.unavailable ? 'unavailable' : 'error');
     } catch { setServer('error'); }
     finally { listBusy.current = false; }
@@ -103,8 +122,44 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     editRevision.current++;
     setWorkbook(update); setDirty(true); setMessage('');
   }
+  async function preparedMatches(attempt: PendingSave, body: Record<string, unknown>) {
+    return body.intentId === attempt.intentId && body.workbookId === attempt.id && body.targetVersion === attempt.version &&
+      body.baseVersion === attempt.version - 1 && body.authorMatchesSession === true && body.requestBody === attempt.body &&
+      body.requestHash === await hashIntentRequest(attempt.body) && typeof body.preparedAt === 'string' && Number.isFinite(Date.parse(body.preparedAt));
+  }
+  async function restoreIntent(intentId: string) {
+    if (busyRef.current || unknownSave.current || !mounted.current) return;
+    if ((dirty || pendingPreparation) && !window.confirm('پیش‌نویس فعلی با درخواست محفوظ سروری جایگزین می‌شود. ادامه می‌دهید؟')) return;
+    setBusy(true); const revision = editRevision.current;
+    try {
+      const r = await transport(`${API}?intent=${encodeURIComponent(intentId)}`);
+      if (!mounted.current) return;
+      if (r.status !== 200) { setMessage(String(r.body.error ?? 'بازیابی درخواست انجام نشد؛ هیچ ذخیره‌ای ارسال نشد.')); return; }
+      const request = parseWorkbookSaveIntent(r.body.requestBody);
+      const attempt: PendingSave = { id: request.workbookId, version: request.targetVersion, body: request.requestBody, intentId, prepared: true, revision: revision + 1 };
+      if (!await preparedMatches(attempt, r.body) || editRevision.current !== revision) { setMessage('درخواست یا هویت بازخوانی‌شده تطبیق نداشت؛ متن فعلی محفوظ است.'); return; }
+      editRevision.current++; pendingSave.current = attempt; unknownSave.current = true; setUncertainSave(true); allowSaveRetry(false);
+      setWorkbook(request.workbook); setDirty(true); setPendingPreparation(false); setSaved(null); setVersions([]); setReviews([]); setChecked(false); setPreparationEpoch(value => value + 1);
+      setBusy(false);
+      await recoverSave(); // Independent GET only; never resumes a POST after reopen.
+    } catch { setMessage('درخواست محفوظ باز نشد؛ ذخیرهٔ تازه‌ای ارسال نشد.'); }
+    finally { setBusy(false); }
+  }
+  async function olderIntents() {
+    if (busyRef.current || intentNextOffset === null) return;
+    setBusy(true);
+    try {
+      const r = await transport(`${API}?intents=1&offset=${intentNextOffset}`);
+      if (r.status !== 200) { setMessage(String(r.body.error ?? 'درخواست‌های قدیمی‌تر خوانده نشدند.')); return; }
+      const items = r.body.items as IntentItem[];
+      setIntentItems(previous => [...previous, ...items.filter(item => !previous.some(row => row.intentId === item.intentId))]);
+      setIntentNextOffset(typeof r.body.nextOffset === 'number' ? r.body.nextOffset : null);
+    } catch { setMessage('خواندن درخواست‌های قدیمی‌تر انجام نشد.'); }
+    finally { setBusy(false); }
+  }
   async function saveToServer(retryAbsent = false) {
     if (busyRef.current) return;
+    if (durableRecovery === false) { setMessage('مخزن بازیابی امن هنوز آماده نیست؛ متن و فایل را نگه دارید. ذخیره ارسال نشد.'); return; }
     if (unknownSave.current && (!retryAbsent || !retrySaveAllowed.current || !pendingSave.current)) return;
     if (pendingPreparation && !pendingSave.current) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
     allowSaveRetry(false);
@@ -112,13 +167,22 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     if (!pendingSave.current) {
       const id = saved?.workbookId ?? crypto.randomUUID();
       const baseVersion = saved?.latestVersion ?? 0;
-      pendingSave.current = { id, version: baseVersion + 1, revision: editRevision.current,
+      pendingSave.current = { id, version: baseVersion + 1, revision: editRevision.current, ...(durableRecovery === true ? { intentId: crypto.randomUUID(), prepared: false } : {}),
         body: JSON.stringify({ action: 'save', workbookId: id, ...(!saved ? { creationId: id } : {}), baseVersion, workbook }) };
     }
     const attempt = pendingSave.current;
     const savingRevision = attempt?.revision ?? editRevision.current;
     try {
-      const r = await transport(API, { method: 'POST', body: attempt?.body ?? JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
+      if (attempt?.intentId && !attempt.prepared) {
+        const prepared = await transport(API, { method: 'POST', body: JSON.stringify({ action: 'prepare_save', intentId: attempt.intentId, requestBody: attempt.body }) });
+        if (!unknownSave.current && [400, 413, 422].includes(prepared.status)) { pendingSave.current = null; setMessage(String(prepared.body.error ?? 'آماده‌سازی رد شد؛ متن محفوظ است و ذخیرهٔ کاربرگ ارسال نشد.')); return; }
+        if (prepared.status !== 200 && prepared.status !== 201) throw new Error('prepare_not_confirmed');
+        const read = await transport(`${API}?intent=${encodeURIComponent(attempt.intentId)}`);
+        if (read.status !== 200 || !await preparedMatches(attempt, read.body)) throw new Error('prepare_readback_not_confirmed');
+        attempt.prepared = true;
+      }
+      if (!mounted.current) return;
+      const r = await transport(API, { method: 'POST', ...(attempt?.intentId ? { headers: { 'x-workbook-save-intent': attempt.intentId } } : {}), body: attempt?.body ?? JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
       if (r.status === 201 || r.status === 200 && r.body.reused === true) {
         if (attempt && (r.body.workbookId !== attempt.id || r.body.version !== attempt.version || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt)))) throw new Error('save receipt mismatch');
         pendingSave.current = null; unknownSave.current = false; setUncertainSave(false);
@@ -130,7 +194,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         void refreshList();
       } else {
         if (attempt) {
-          if (!unknownSave.current && [400, 401, 403, 413, 422].includes(r.status)) pendingSave.current = null;
+          if (!attempt.intentId && !unknownSave.current && [400, 401, 403, 413, 422].includes(r.status)) pendingSave.current = null;
           else { unknownSave.current = true; setUncertainSave(true); }
         }
         if (r.body.unavailable) setServer('unavailable');
@@ -138,7 +202,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       }
     } catch {
       if (attempt) { unknownSave.current = true; setUncertainSave(true); }
-      setMessage('نتیجهٔ ثبت دریافت نشد؛ متن، شناسه و شمارهٔ نسخهٔ همین ثبت حفظ شدند. نتیجه را دوباره بررسی کنید.');
+      setMessage(attempt?.intentId && !attempt.prepared ? 'نتیجهٔ آماده‌سازی دریافت نشد؛ ذخیرهٔ کاربرگ ارسال نشد. همان درخواست را با خواندن مستقل بررسی کنید.' : 'نتیجهٔ ثبت دریافت نشد؛ متن، شناسه و شمارهٔ نسخهٔ همین ثبت حفظ شدند. نتیجه را دوباره بررسی کنید.');
     }
     finally { setBusy(false); }
   }
@@ -147,6 +211,14 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     if (busyRef.current || !unknownSave.current || !attempt) return;
     allowSaveRetry(false); setBusy(true);
     try {
+      if (attempt.intentId) {
+        const prepared = await transport(`${API}?intent=${encodeURIComponent(attempt.intentId)}`);
+        if (prepared.status === 404 && prepared.body.absent === true && prepared.body.intentId === attempt.intentId && !attempt.prepared) {
+          allowSaveRetry(true); setMessage('آماده‌سازی همین درخواست وجود نداشت و ذخیرهٔ کاربرگ ارسال نشده است؛ ارسال دوباره فقط با همان شناسه و متن ممکن است.'); return;
+        }
+        if (prepared.status !== 200 || !await preparedMatches(attempt, prepared.body)) { setMessage('هویت یا متن درخواست محفوظ تأیید نشد؛ هیچ ذخیره‌ای ارسال نشد.'); return; }
+        attempt.prepared = true;
+      }
       const r = await transport(`${API}?id=${encodeURIComponent(attempt.id)}&version=${attempt.version}`);
       const absent = attempt.version === 1 ? r.body.absent === true
         : r.body.versionAbsent === true && r.body.latestVersion === attempt.version - 1;
@@ -168,7 +240,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       }
       pendingSave.current = null; unknownSave.current = false; setUncertainSave(false);
       setSaved({ workbookId: attempt.id, version: attempt.version, latestVersion: attempt.version, savedAt: r.body.savedAt });
-      setVersions(previous => [...previous.filter(v => v.version !== attempt.version), { version: attempt.version, savedAt: r.body.savedAt as string }]);
+      setVersions(previous => Array.isArray(r.body.versions) ? r.body.versions as Array<{ version: number; savedAt: string }> : [...previous.filter(v => v.version !== attempt.version), { version: attempt.version, savedAt: r.body.savedAt as string }]);
       setReviews(Array.isArray(r.body.reviews) ? r.body.reviews as ReviewItem[] : []);
       setDirty(editRevision.current !== attempt.revision);
       setMessage(editRevision.current === attempt.revision ? `نسخهٔ ${toPersianDigits(attempt.version)} با خواندن مستقل همان ثبت تأیید شد؛ این کار تأیید تحلیل یا انتشار نیست.` : 'همان نسخه بازخوانی شد؛ تغییرات تازهٔ شما هنوز ذخیره نشده و روی صفحه حفظ شده‌اند.');
@@ -326,7 +398,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         {saved && <p className="text-sm leading-7" aria-live="polite">
           نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty || pendingPreparation ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere && !dirty && !pendingPreparation ? ' · تأیید داخلی شده' : ''}
         </p>}
-        {(server === 'ready' || uncertainSave) && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!uncertainSave && !dirty && !!saved)} onClick={() => void (uncertainSave ? recoverSave() : saveToServer())}><Save size={16} aria-hidden="true" /> {uncertainSave ? 'بررسی دوبارهٔ همین ثبت' : saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
+        {(server === 'ready' || uncertainSave) && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!uncertainSave && (durableRecovery === false || !dirty && !!saved))} onClick={() => void (uncertainSave ? recoverSave() : saveToServer())}><Save size={16} aria-hidden="true" /> {uncertainSave ? 'بررسی دوبارهٔ همین ثبت' : saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
+        {durableRecovery === false && <p role="status" className="text-sm leading-7">مخزن بازیابی امن هنوز آماده نیست؛ ذخیرهٔ جدید ارسال نمی‌شود و متن روی صفحه محفوظ است.</p>}
         {uncertainSave && saveAbsent && <button type="button" className="btn btn-secondary w-full min-h-11" disabled={busy} onClick={() => void saveToServer(true)}>ارسال دوبارهٔ همین ثبت</button>}
         <button type="button" className="btn btn-primary w-full min-h-11" onClick={() => { setChecked(true); setMessage(issues.length ? `${toPersianDigits(issues.length)} مورد نیازمند تکمیل است.` : 'ساختار کامل است؛ صحت شواهد و نتیجه هنوز بازبینی انسانی می‌خواهد.'); }}><ClipboardCheck size={16} aria-hidden="true" /> بررسی ساختار</button>
         {checked && issues.length > 0 && <ul className="max-h-64 space-y-2 overflow-y-auto text-sm">{issues.map((issue, i) => <li key={`${issue.field}-${i}`}><a className="underline" href={`#${issue.field}`}>{issue.message}</a></li>)}</ul>}
@@ -349,6 +422,12 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           </details>}
         </div>}
         <p role="status" className="text-sm leading-7">{message}</p>
+        {durableRecovery === true && intentItems.length > 0 && <section className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }} aria-label="درخواست‌های محفوظ برای بازیابی">
+          <h3 className="text-sm font-bold">درخواست‌های محفوظ همین نویسنده</h3>
+          <p className="text-sm leading-7">بازکردن درخواست فقط نتیجهٔ همان ثبت را می‌خواند؛ تأیید یا انتشار انجام نمی‌شود.</p>
+          {intentItems.map(item => <button type="button" key={item.intentId} className="min-h-11 w-full break-words text-start underline" disabled={busy || uncertainSave} onClick={() => void restoreIntent(item.intentId)}>{item.title} · نسخهٔ {toPersianDigits(item.targetVersion)}</button>)}
+          {intentNextOffset !== null && <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => void olderIntents()}>درخواست‌های قدیمی‌تر</button>}
+        </section>}
         {server === 'ready' && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold">کاربرگ‌های ذخیره‌شده</h3>
             <button type="button" className="btn btn-ghost min-h-11" disabled={busy || uncertainSave} onClick={startNew}><Plus size={16} aria-hidden="true" /> تازه</button></div>

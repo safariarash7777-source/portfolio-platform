@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { emptyWorkbook, type ResearchWorkbook } from "./research-workbook";
+import { canonicalWorkbook, parseWorkbookSaveIntent } from './workbook-save-intent';
 import {
   classifyStoreError,
   decideWorkbook,
@@ -13,6 +14,31 @@ import {
   type StoredVersion,
   type WorkbookGateway,
 } from "./workbook-store";
+
+test('durable intent parser retains exact request text and fixed creation/base identity without approval authority', () => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  const raw = JSON.stringify({ action: 'save', workbookId: id, creationId: id, baseVersion: 0, workbook: { ...complete(), approved: true, privatePreparation: undefined } }, null, 2);
+  const first = parseWorkbookSaveIntent(raw);
+  assert.equal(first.requestBody, raw); assert.equal(first.workbookId, id); assert.equal(first.baseVersion, 0); assert.equal(first.targetVersion, 1);
+  assert.equal((first.workbook as unknown as Record<string, unknown>).approved, undefined);
+  const second = parseWorkbookSaveIntent(JSON.stringify({ action: 'save', workbookId: id, baseVersion: 1, workbook: complete('v2') }));
+  assert.equal(second.targetVersion, 2); assert.equal(second.baseVersion, 1);
+  assert.equal(canonicalWorkbook(first.workbook), canonicalWorkbook(complete()));
+  assert.notEqual(canonicalWorkbook(first.workbook), canonicalWorkbook(second.workbook));
+});
+
+test('durable intent rejects unresolved IDs, changed creation token, non-save actions, invalid body and unsafe versions without echoing private input', () => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  const valid = { action: 'save', workbookId: id, creationId: id, baseVersion: 0, workbook: complete('PRIVATE_DRAFT') };
+  for (const value of [null, 'PRIVATE_DRAFT', ...[
+    { workbookId: null }, { creationId: '22222222-2222-4222-8222-222222222222' }, { creationId: undefined },
+    { action: 'decide' }, { action: 'publish' }, { baseVersion: -1 }, { baseVersion: 2_147_483_647 }, { baseVersion: 1 },
+    { workbook: { ...complete(), title: '' } },
+    { workbook: { ...complete(), evidence: [{ ...complete().evidence[0], sourceUrl: 'https://user:PRIVATE_DRAFT@example.invalid' }] } },
+  ].map(patch => JSON.stringify({ ...valid, ...patch }))]) assert.throws(() => parseWorkbookSaveIntent(value), error => {
+    assert.equal((error as Error).message, 'invalid_intent_request'); assert.doesNotMatch((error as Error).message, /PRIVATE_DRAFT/); return true;
+  });
+});
 
 /** مخزنِ حافظه‌ای که همان قیدهای phase34 را اعمال می‌کند: UNIQUE و «بدونِ پرش». */
 function harness(opts: { user?: string | null; role?: string | null; roleThrows?: boolean; unavailable?: boolean } = {}) {

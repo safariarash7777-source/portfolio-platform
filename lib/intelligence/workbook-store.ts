@@ -210,9 +210,12 @@ export async function openWorkbook(
 export async function saveWorkbook(
   gateway: WorkbookGateway,
   payload: { workbookId?: unknown; creationId?: unknown; baseVersion?: unknown; workbook?: unknown },
+  expectedActorId?: string,
 ): Promise<StoreResult> {
-  const denied = await authorize(gateway);
+  let authorizedActorId: string | null = null;
+  const denied = await authorize(gateway, id => { authorizedActorId = id; });
   if (denied) return denied;
+  if (expectedActorId !== undefined && expectedActorId !== authorizedActorId) return { status: 403, body: { error: 'هویت مجاز با نویسندهٔ درخواست یکسان نیست؛ ثبت انجام نشد.' } };
 
   const creationId = payload.creationId;
   const isNew = payload.workbookId === null || payload.workbookId === undefined || (payload.baseVersion === 0 && typeof creationId === "string" && payload.workbookId === creationId);
@@ -244,10 +247,9 @@ export async function saveWorkbook(
       if (creationId === undefined) return null;
       const prior = (await store.versions(workbookId)).find(row => row.version === 1);
       if (!prior) return null;
-      const actor = await gateway.getUser();
       const stored = sanitize(prior.body);
       const canonical = (value: unknown) => JSON.stringify(value, (_key, item) => item && typeof item === "object" && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
-      if (!actor || prior.createdBy !== actor.id || typeof stored === "string" || canonical(stored) !== canonical(clean)) {
+      if (prior.createdBy !== authorizedActorId || typeof stored === "string" || canonical(stored) !== canonical(clean)) {
         return failure(new StoreError("conflict"));
       }
       return { status: 200, body: { workbookId: prior.workbookId, version: prior.version, savedAt: prior.createdAt, reused: true } };
