@@ -1,5 +1,11 @@
 # دفترِ مهاجرت‌ها (Migration Ledger)
 
+## نامزد journal بازیابی START-B — NOT_APPLIED، ۲۰۲۶-۱۰-۲۹
+
+`docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql` در [PR330@f98d8c5](https://github.com/safariarash7777-source/portfolio-platform/blob/f98d8c559b3c8e6b615f7ea446406b64166c294c/docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql) فقط candidate/isolated-rehearsal است؛ روی مقصد عملیاتی **NOT_APPLIED**. rootblobGitرا خواند وSHA256=`dec6394dd2c28b75eab4cccfdabaeed468e86259a37a3bf8a2800651302475ae` را تأیید کرد. جدولintentimmutable، نویسنده/hashدرDB وRLSactorازنسخهworkbookجداست؛ candidateهیچINSERTقدیمیworkbook/reviewراunfreezeنمی‌کند. ششآزمونPG17.11ایزوله وremountواقعیcomponent موفق گزارش شد؛ syntheticclaims برابرپذیرشAuthواقعی یا نصب اصلی نیست.
+
+**بازبینی باز همین نسخه:** GRANT SELECTبهservice_role برایjournalخصوصی مصرف‌کنندهضروری مشخصی ندارد؛ rootحذف آن و آزمون منعخواندن حتیباBYPASSRLS را به مالکSTART-B برگرداند. بنابراین hashبالا snapshotبررسی‌شده است، نهSQLنهایی پذیرفته برای نصب. نسخهبعدی بایدhash/receiptجدید داشته باشد. نصب/GRANT/DDL/flag/Hermesعملیاتی دراینثبت انجام نشد؛ مقصد/backup/restore/freeze وپذیرش مستقل همچنان گیت‌اند.
+
 ## نامزد وضعیت پیگیری START-A — NOT_APPLIED، ۲۰۲۶-۱۰-۲۹
 
 `supabase/migrations/20261029142010_consultation_feedback_states.sql` در [PR334](https://github.com/safariarash7777-source/portfolio-platform/pull/334)، محصول `b08687b233d5fe1317748b6adff61653d58dadd8` روی PR314، فقط نامزد افزایشی و روی پایگاه عملیاتی **NOT_APPLIED** است. بایت‌های Git مستقلاً خوانده و SHA256 برابر `32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda`، اندازه۱۲۹۸۲بایت تأیید شد. دو وضعیت `partial/not_done` به قید و دو body خصوصی افزوده می‌شوند؛ wrapper عمومی، ACL/RLS و دفتر مالی از این candidate تغییر نمی‌کنند. شاهد مجری۵۰سناریوی PostgreSQL17.11 روی داده/مقصد ساختگی است؛ native Auth یا نصب تولید از آن نتیجه نمی‌شود.
