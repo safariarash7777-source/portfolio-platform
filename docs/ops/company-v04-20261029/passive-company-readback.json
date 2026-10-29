@@ -1,0 +1,140 @@
+{
+  "baseSourceSha": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "destinationCodeShaVerified": false,
+  "scope": "three passive stored-announcement endpoint observations; not a financial company audit",
+  "requests": [
+    {
+      "symbol": "فولاد",
+      "url": "https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "requestedAt": "2026-10-29T18:11:24.342219+00:00",
+      "method": "GET",
+      "providerRefresh": false,
+      "retry": false,
+      "financialObservationsAccepted": false,
+      "status": 200,
+      "source": "codal_feed",
+      "coverage": "stored-announcements",
+      "count": 21,
+      "sha256": "3478477ad5b63765ac3643640c34cbfe3356f750e8a68637dc767e54451e04c5",
+      "cacheControl": "public, max-age=300",
+      "sample": [
+        {
+          "title": "توضیحات در خصوص اطلاعات و صورت های مالی منتشر شده",
+          "kind": "ن-۲۶",
+          "date": "۱۴۰۵/۰۷/۳۰",
+          "time": "۱۴:۴۰:۵۳",
+          "dateKind": "sent",
+          "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=q1TwzvITsscrZmqLPHatbw%3d%3d&rt=0&let=174&ct=0&ft=-1"
+        },
+        {
+          "title": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۶ ماهه منتهی به  ۱۴۰۵/۰۶/۳۱ (حسابرسی نشده)",
+          "kind": "ن-۱۰",
+          "date": "۱۴۰۵/۰۷/۳۰",
+          "time": "۱۴:۳۷:۱۳",
+          "dateKind": "sent",
+          "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=qV4MKXMUUbQQQaQQQ9cOOObOOO8qmo3wRg%3d%3d&rt=0&let=6&ct=0&ft=-1"
+        }
+      ],
+      "fieldPresence": {
+        "date": 21,
+        "time": 21,
+        "publishedAt": 0,
+        "unit": 0,
+        "periodEnd": 0,
+        "revision": 0
+      },
+      "receivedAt": "2026-10-29T18:11:28.175706+00:00"
+    },
+    {
+      "symbol": "فملی",
+      "url": "https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=%D9%81%D9%85%D9%84%DB%8C",
+      "requestedAt": "2026-10-29T18:11:24.342219+00:00",
+      "method": "GET",
+      "providerRefresh": false,
+      "retry": false,
+      "financialObservationsAccepted": false,
+      "status": 200,
+      "source": "codal_feed",
+      "coverage": "stored-announcements",
+      "count": 15,
+      "sha256": "cc5298ac6e80ca908d87bf08a70277dd2b6486f581ecf17de4313e86009aefff",
+      "cacheControl": "public, max-age=300",
+      "sample": [
+        {
+          "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۷/۳۰",
+          "kind": "ن-۳۰",
+          "date": "۱۴۰۵/۰۸/۰۶",
+          "time": "۱۴:۵۷:۲۲",
+          "dateKind": "sent",
+          "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=JBfVmcnpL78zPxQXZY2VzQ%3d%3d&rt=0&let=58&ct=0&ft=-1"
+        },
+        {
+          "title": "اطلاعات و صورت‌های مالی میاندوره‌ای تلفیقی دوره ۶ ماهه منتهی به  ۱۴۰۵/۰۶/۳۱ (حسابرسی نشده)",
+          "kind": "ن-۱۰",
+          "date": "۱۴۰۵/۰۷/۳۰",
+          "time": "۱۲:۴۶:۱۹",
+          "dateKind": "sent",
+          "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=F3dwKubQQQQaQQQTTyJTr0BmubNw%3d%3d&rt=0&let=6&ct=0&ft=-1"
+        }
+      ],
+      "fieldPresence": {
+        "date": 15,
+        "time": 15,
+        "publishedAt": 0,
+        "unit": 0,
+        "periodEnd": 0,
+        "revision": 0
+      },
+      "receivedAt": "2026-10-29T18:11:27.160190+00:00"
+    },
+    {
+      "symbol": "شپنا",
+      "url": "https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=%D8%B4%D9%BE%D9%86%D8%A7",
+      "requestedAt": "2026-10-29T18:11:24.343219+00:00",
+      "method": "GET",
+      "providerRefresh": false,
+      "retry": false,
+      "financialObservationsAccepted": false,
+      "status": 200,
+      "source": "codal_feed",
+      "coverage": "stored-announcements",
+      "count": 21,
+      "sha256": "67b64ee6283dc3827c3d341c0b25b19ba8a9abd90324b1fb83f41ba5abab1a3d",
+      "cacheControl": "public, max-age=300",
+      "sample": [
+        {
+          "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۷/۳۰",
+          "kind": "ن-۳۰",
+          "date": "۱۴۰۵/۰۸/۰۶",
+          "time": "۱۵:۰۰:۵۹",
+          "dateKind": "sent",
+          "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=cdKc4iIHtYqhepLXbOEahg%3d%3d&rt=0&let=58&ct=0&ft=-1"
+        },
+        {
+          "title": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۶ ماهه منتهی به  ۱۴۰۵/۰۶/۳۱ (حسابرسی نشده)(اصلاحیه)",
+          "kind": "ن-۱۰",
+          "date": "۱۴۰۵/۰۸/۰۳",
+          "time": "۱۱:۱۰:۴۸",
+          "dateKind": "sent",
+          "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=oph9PxUVucTOzc4DCNyJ6A%3d%3d&rt=0&let=6&ct=0&ft=-1"
+        }
+      ],
+      "fieldPresence": {
+        "date": 21,
+        "time": 21,
+        "publishedAt": 0,
+        "unit": 0,
+        "periodEnd": 0,
+        "revision": 0
+      },
+      "receivedAt": "2026-10-29T18:11:28.184037+00:00"
+    }
+  ],
+  "sourcePublishedAt": null,
+  "financialPeriod": null,
+  "financialUnit": null,
+  "revision": null,
+  "unknownsNotInferredFromTitlesOrReceiptTime": true,
+  "databaseWrites": 0,
+  "primaryChange": false
+}
