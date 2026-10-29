@@ -11,7 +11,7 @@ import { PRIVATE_PREPARATION_CONTRACT } from '@/lib/intelligence/research-workbo
 import ResearchPreparationFields from './ResearchPreparationFields';
 import { withDeadline } from '@/lib/deadline';
 
-const inputClass = 'w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+const inputClass = 'w-full min-w-0 max-w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
 const API = '/api/admin/intelligence/workbooks';
 const canonical = (value: unknown): string => JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item) ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
@@ -253,7 +253,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   }
   function field(id: string, label: string, value: string, update: (value: string) => void, type = 'textarea') {
     const error = checked ? issues.find(i => i.field === id)?.message : undefined;
-    return <div className="space-y-2" key={id}>
+    return <div className="min-w-0 space-y-2" key={id}>
       <label htmlFor={id} className="block text-sm font-bold">{label}</label>
       {type === 'textarea'
         ? <textarea disabled={uncertainSave} id={id} rows={3} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />
@@ -265,7 +265,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const textField = (key: 'title' | 'question' | 'horizon' | 'interpretation' | 'counterEvidence' | 'portfolioImpact' | 'reviewOn', label: string, type?: string) =>
     field(key, label, workbook[key], value => change(w => ({ ...w, [key]: value })), type);
 
-  return <div className="mx-auto max-w-6xl space-y-6" style={{ color: 'var(--text)' }}>
+  return <div className="mx-auto min-w-0 max-w-6xl space-y-6 [&_button]:max-w-full [&_button]:whitespace-normal" style={{ color: 'var(--text)' }}>
     <header className="space-y-3">
       <p className="text-sm" style={{ color: 'var(--text-2)' }}>پژوهش ← شواهد ← سناریو ← بازبینی انسانی</p>
       <h1 className="font-display text-2xl font-extrabold">کاربرگ تحلیل</h1>
@@ -279,7 +279,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       </div>
       {(server === 'error' || server === 'unavailable') && <button type="button" className="btn btn-secondary min-h-11" disabled={busy} onClick={() => void refreshList()}>بررسی دوبارهٔ ذخیرهٔ سروری</button>}
     </header>
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
       <div className="min-w-0 space-y-6">
         <section className="card space-y-4 p-5" aria-labelledby="research-question">
           <h2 id="research-question" className="text-lg font-bold">۱. پرسش و دامنه</h2>
@@ -299,7 +299,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
             <legend className="px-2 text-sm font-bold">شاهد {toPersianDigits(index + 1)} · {e.id}</legend>
             {field(`evidence-${e.id}`, 'گزارهٔ قابل استناد', e.statement, value => change(w => ({ ...w, evidence: w.evidence.map(x => x.id === e.id ? { ...x, statement: value } : x) })))}
             {field(`url-${e.id}`, 'نشانی منبع', e.sourceUrl, value => change(w => ({ ...w, evidence: w.evidence.map(x => x.id === e.id ? { ...x, sourceUrl: value } : x) })), 'url')}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {field(`observed-${e.id}`, 'تاریخ مشاهده (میلادی)', e.observedOn, value => change(w => ({ ...w, evidence: w.evidence.map(x => x.id === e.id ? { ...x, observedOn: value } : x) })), 'date')}
               {field(`published-${e.id}`, 'تاریخ انتشار منبع (میلادی)', e.publishedOn, value => change(w => ({ ...w, evidence: w.evidence.map(x => x.id === e.id ? { ...x, publishedOn: value } : x) })), 'date')}
             </div>
@@ -307,7 +307,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           </fieldset>)}
           <button type="button" className="btn btn-secondary min-h-11" disabled={workbook.evidence.length >= 30} onClick={() => change(w => ({ ...w, evidence: [...w.evidence, { id: crypto.randomUUID(), statement: '', sourceUrl: '', observedOn: '', publishedOn: '' }] }))}><Plus size={16} aria-hidden="true" /> افزودن شاهد</button>
         </section>
-        <fieldset disabled={uncertainSave}><ResearchPreparationFields key={preparationEpoch} value={workbook.privatePreparation?.intake} evidence={workbook.evidence} onPendingChange={pending => { if (unknownSave.current) return; editRevision.current++; setPendingPreparation(pending); }} onChange={intake => change(previous => ({ ...previous, privatePreparation: { contract: PRIVATE_PREPARATION_CONTRACT, intake } }))}/></fieldset>
+        <fieldset className="min-w-0" disabled={uncertainSave}><ResearchPreparationFields key={preparationEpoch} value={workbook.privatePreparation?.intake} evidence={workbook.evidence} onPendingChange={pending => { if (unknownSave.current) return; editRevision.current++; setPendingPreparation(pending); }} onChange={intake => change(previous => ({ ...previous, privatePreparation: { contract: PRIVATE_PREPARATION_CONTRACT, intake } }))}/></fieldset>
         {!privateWriterReady && <p role="status" className="text-sm leading-7">ذخیرهٔ سروری آماده‌سازی خصوصی هنوز فعال نیست؛ متن را در فایل قابل ادامه نگه دارید. این بخش هنوز ابزار آمادهٔ روزانه نیست.</p>}
         <section className="card space-y-4 p-5" aria-labelledby="causal"><h2 id="causal" className="text-lg font-bold">۳. استدلال و نقد</h2>
           {textField('interpretation', 'تفسیر: رخداد چگونه و از چه مسیری اثر می‌گذارد؟ به شناسهٔ شاهد ارجاع دهید.')}
@@ -323,7 +323,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           {textField('reviewOn', 'تاریخ بازنگری (میلادی)', 'date')}
         </section>
       </div>
-      <aside className="card space-y-4 p-5 lg:sticky lg:top-6" aria-label="بررسی و دریافت پیش‌نویس">
+      <aside className="card min-w-0 space-y-4 p-5 lg:sticky lg:top-6" aria-label="بررسی و دریافت پیش‌نویس">
         <h2 className="text-lg font-bold">پروندهٔ پژوهش</h2>
         <p className="text-sm leading-7">بررسی ساختار، جایگزین بررسی صحت منبع یا قضاوت تحلیلی نیست.</p>
         {saved && <p className="text-sm leading-7" aria-live="polite">
