@@ -33,9 +33,12 @@ async function call(input: string, init?: RequestInit): Promise<{ status: number
   }, 15000, init?.signal ?? undefined);
 }
 
-export default function ResearchWorkbook({ initialSource, initialWorkbookId, transport = call, initialWorkbook, onWorkbookChange }: {
+export default function ResearchWorkbook({ initialSource, initialWorkbookId, transport = call, initialWorkbook, onWorkbookChange, confirmDecision = message => window.confirm(message), reviewNote = () => window.prompt('علت بازگرداندن این نسخه را بنویسید:') }: {
   initialSource?: string; initialWorkbookId?: string; transport?: WorkbookTransport;
   initialWorkbook?: Workbook; onWorkbookChange?: (workbook: Workbook) => void;
+  /** Adapter used only by the disposable synthetic preview branch. */
+  confirmDecision?: (message: string) => boolean | Promise<boolean>;
+  reviewNote?: () => string | null | Promise<string | null>;
 } = {}) {
   const [workbook, setWorkbook] = useState(() => {
     if (initialWorkbook) return parseWorkbook(JSON.stringify(initialWorkbook));
@@ -201,9 +204,9 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   async function decide(decision: 'approved_internal' | 'returned') {
     if (busyRef.current || unknownSave.current) return;
     if (!saved) return;
-    const note = decision === 'returned' ? window.prompt('علت بازگرداندن این نسخه را بنویسید:')?.trim() : null;
+    const note = decision === 'returned' ? (await reviewNote())?.trim() : null;
     if (decision === 'returned' && !note) return;
-    if (decision === 'approved_internal' && !window.confirm(`نسخهٔ ${toPersianDigits(saved.version)} تأیید داخلی شود؟ این کار انتشار نیست و نسخه‌های بعدی تأیید را به ارث نمی‌برند.`)) return;
+    if (decision === 'approved_internal' && !await confirmDecision(`نسخهٔ ${toPersianDigits(saved.version)} تأیید داخلی شود؟ این کار انتشار نیست و نسخه‌های بعدی تأیید را به ارث نمی‌برند.`)) return;
     setBusy(true);
     try {
       const r = await transport(API, { method: 'POST', body: JSON.stringify({ action: 'decide', workbookId: saved.workbookId, version: saved.version, decision, note }) });
