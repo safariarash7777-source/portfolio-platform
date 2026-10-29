@@ -8,6 +8,7 @@
 // لینک‌ها به codal.ir؛ هیچ واژهٔ تجویزی.
 
 import { useEffect, useRef, useState } from "react";
+import { CODAL_FEED_READ_LIMIT, CODAL_FEED_DISPLAY_LIMIT } from "@/lib/codal-feed";
 import { toPersianDigits } from "@/lib/format";
 import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 import { companyReportKinds, discoverCompanyReports, EMPTY_REPORT_FILTER, type CompanyAnnouncement, type CompanyReportFilter } from "@/lib/core/companyReportDiscovery";
@@ -78,6 +79,9 @@ export default function CodalReportsTab({
 
   return (
     <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        فهرست اطلاعیه‌ها حداکثر {toPersianDigits(CODAL_FEED_DISPLAY_LIMIT)} مورد از {toPersianDigits(CODAL_FEED_READ_LIMIT)} رکورد اخیر ذخیره‌شده را نشان می‌دهد؛ تاریخچه کامل نیست. فیلترها فقط همین فهرست را بررسی می‌کنند. دریافت دوباره، تازگی انتشار یا کامل‌بودن ارقام مالی را ثابت نمی‌کند.
+      </p>
       <div className="card p-4">
         <h3 className="text-sm font-bold">گزارش‌های پردازش‌شده</h3>
         <p className="mt-1 text-[11px] text-muted-foreground">

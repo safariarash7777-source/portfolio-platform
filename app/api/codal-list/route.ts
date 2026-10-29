@@ -1,6 +1,6 @@
 import { logStoredReadFailure, type StoredReadPhase } from "@/lib/stored-read-diagnostics";
 import { NextResponse } from "next/server";
-import { codalFeedItems, codalFeedQuery } from "@/lib/codal-feed";
+import { codalFeedWindow, codalFeedQuery } from "@/lib/codal-feed";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,9 +37,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: `supabase ${res.status}`, codalSearchUrl }, { status: 502 });
     }
     phase = "body";
-    const data = codalFeedItems(await res.json());
+    const result = codalFeedWindow(await res.json());
     return NextResponse.json(
-      { data, codalSearchUrl, source: "codal_feed", coverage: "stored-announcements" },
+      { ...result, codalSearchUrl, source: "codal_feed", coverage: "stored-announcements" },
       { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=300" } },
     );
   } catch (e) {
