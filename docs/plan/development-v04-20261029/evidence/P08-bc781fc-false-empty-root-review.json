@@ -11,18 +11,18 @@
     {
       "id": 40933445968,
       "sha": "bc781fc62b956f422e09b1494b59d18da4f93905",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "jobs": [
         {
           "name": "Database RLS \u00b7 Integrity (Postgres)",
-          "status": "in_progress",
-          "conclusion": null
+          "status": "completed",
+          "conclusion": "success"
         },
         {
           "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
-          "status": "in_progress",
-          "conclusion": null
+          "status": "completed",
+          "conclusion": "success"
         },
         {
           "name": "Secret scan \u00b7 SQL validation",
@@ -31,6 +31,11 @@
         },
         {
           "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CI Gate",
           "status": "completed",
           "conclusion": "success"
         }
@@ -84,5 +89,13 @@
     "oldFalseEmptyVisible": false,
     "confirmedEmptyMessageVisible": false,
     "visibleState": "read failure or unavailable, source emptiness unconfirmed"
+  },
+  "ciFinalReadbackAt": "2026-10-29T18:50:09.635128+00:00",
+  "prFinalReadback": {
+    "title": "Compare five funds and distinguish read failures from empty sources",
+    "head": "bc781fc62b956f422e09b1494b59d18da4f93905",
+    "state": "open",
+    "merged": false,
+    "bodySha256": "67860848c02e8ad1c238c35ff0f4da919711b4b5a629a0fd14e82999f48c687f"
   }
 }
