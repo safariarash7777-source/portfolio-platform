@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-10-29T18:44:51.073826+00:00",
+  "reviewer": "existing-root-coordinator",
+  "method": "read-only public GitHub API via existing proxy",
+  "pr": 337,
+  "prHead": "bc781fc62b956f422e09b1494b59d18da4f93905",
+  "draft": false,
+  "merged": false,
+  "sourceSha": "bc781fc62b956f422e09b1494b59d18da4f93905",
+  "ci": [
+    {
+      "id": 40933445968,
+      "sha": "bc781fc62b956f422e09b1494b59d18da4f93905",
+      "status": "in_progress",
+      "conclusion": null,
+      "jobs": [
+        {
+          "name": "Database RLS \u00b7 Integrity (Postgres)",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "name": "Secret scan \u00b7 SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "deployments": [],
+  "rootCodeReview": {
+    "scope": "fixed diff from1d7: page passes existing availability; board distinguishes failed/unknown from confirmed familyempty; real board/page tests and docs",
+    "dataQualityCoreChanged": false,
+    "newRuntimeFetch": false,
+    "newEndpointOrStorage": false,
+    "newProviderModelCredential": false,
+    "newHooks": false,
+    "existingComparisonGuardsPreserved": true,
+    "reactReview": "type-only server availability import; plain serialized existing data; existing hook order and no new effect/state/fetch"
+  },
+  "localTests": "owner report: baseline4fail to targeted28pass; fullcore2062+17+6+5/type/lint/build; root reviewed assertions, did not repeat suites",
+  "previewInteractiveAccepted": false,
+  "actualFiveFundsAccepted": false,
+  "primaryDeployed": false,
+  "causeOf402Resolved": false,
+  "arashVisualAcceptance": false
+}
