@@ -47,6 +47,16 @@
 
 نتیجه بررسی: معیارهای بازخورد با گیت‌های باز موجود منطبق‌اند؛ هیچ گیت پذیرشی بسته نشد. به مجریان موجود برای اعمال در همان PRها ارسال شد؛ کار مستقل منتظر پاسخ دوباره مشاور نمی‌ماند. گزارش بعدی باید URL/SHA/رسید تحویل واقعی یا مانع مشخص داشته باشد؛ صرف بازنویسی وضعیت تحویل نیست.
 
+### تحویل مستقل A: بسته انتقال دقیق؛ نصب هنوز باز
+
+مجری START-A دو commit محدود به۸فایل سند/ابزار را روی همان [PR334](https://github.com/safariarash7777-source/portfolio-platform/pull/334) ساخت؛ محصول/SQL قبلی `b08687b` تغییر نکرد. root working tree تمیز، bundle با prerequisite موجود و محدوده diff را بررسی کرد و پس از مشاهده remote قدیمیb086، شاخه را تا `be92c661d0f56a665e9fe1d0b25d4f5151e13ec8` push کرد. خطای push گزارش‌شده در receipt مجری مربوط به تلاش قبلی اوست و با این ارسال رفع شد؛ CI جدید هنوز بازخوانی نشده است.
+
+**قابل دریافت و بررسی:** [آرشیو دقیق r2](plan/development-v04-20261029/evidence/start-a-transfer-b08687b-r2.zip)، [رسید مستقل root](plan/development-v04-20261029/evidence/START-A-transfer-root-receipt.json) و [راهنمای استفاده/محدودیت](https://github.com/safariarash7777-source/portfolio-platform/blob/be92c661d0f56a665e9fe1d0b25d4f5151e13ec8/docs/ops/start-a-finance-v04-20261029/RELEASE-READINESS.fa.md). SHA256آرشیو=`a80c17f474a7a1aaa4109967f0f1347f763b867c1a6356f880abfd142ba5e827`. root هش آرشیو/manifest/verifier و hash/size هر۶فایل را با blob منبعGit و تبدیل صریح baseline مطابقت داد. خط مبنا فقط guard است؛ roster/replies و migration/rollback جدا باقی می‌مانند. آرشیو فقط candidate/ابزار بررسی است و در مسیر محصول نصب نمی‌شود.
+
+مسیر بررسی پس از استخراج در پوشه جدید: `python3 verify-transfer.py .`؛ verifier نصب یاSQL اجرا نمی‌کند. مجری۲آزمون exporter، قبول آرشیو سالم، رد SQL دستکاری‌شده/Python-O و catalog فقط‌خواندنی PG17ایزوله را موفق گزارش داد. root تطبیق بایت‌ها را مستقلاً انجام داد؛ اجرایLinux و nativeآنلاین NOT_RUN/NOT_ACCEPTED باقی‌اند.
+
+محدودیت مهم: installer314 فقطroster/replies است؛ adapter عملیاتی migration334 با lock/intent/backup/readback هنوز تأیید نشده. primary/DDL/حساب/حق‌خدمت/پیام/انتشار در این تحویل تغییر نکرده؛ مقصد/ظرفیت/backup باroot، ادامه adapter و بسته نصب باSTART-A. [شکاف entitlement](https://github.com/safariarash7777-source/portfolio-platform/blob/be92c661d0f56a665e9fe1d0b25d4f5151e13ec8/docs/ops/start-a-finance-v04-20261029/ENTITLEMENT-GAP.fa.md) پیشنهاد تصمیمD024 است و هنوز قرارداد تجاری یا حق معتبر ایجاد نکرده است.
+
 ### گیت‌های محلی، مستقل از شروع کل کار
 
 - START-A: خطای ذخیره draft را حذف نکند؛ خواندن خراب پرونده خالی معرفی نشود. نشست و مقصد آزمون/ساختگی با مجری؛ نصب افزونه مشاوره و گیت پشتیبان/ظرفیت جدا از آزمون مستقل است. آمار ظرفیت ۲۷ اکتبر تأیید تازه محسوب نمی‌شود.
