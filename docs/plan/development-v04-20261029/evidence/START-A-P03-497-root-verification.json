@@ -1,0 +1,53 @@
+{
+  "observedAt": "2026-10-29T18:06:14.887125+00:00",
+  "reviewer": "existing-root-coordinator",
+  "productSourceSha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+  "deliveryHead": "497ae4681783db7aa9bd9339993c36a29e93ed56",
+  "ci": {
+    "id": 40924796814,
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 123627307637,
+        "name": "Secret scan \u00b7 SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 123627307956,
+        "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 123627308232,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 123627308345,
+        "name": "Database RLS \u00b7 Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 123630260168,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "preview": {
+    "githubDeploymentId": 7419968504,
+    "sha": "497ae4681783db7aa9bd9339993c36a29e93ed56",
+    "state": "success",
+    "url": "https://portfolio-platform-9pddzf7ey-safariarash7777-4463s-projects.vercel.app"
+  },
+  "legacyNativeReceiptFromGitValidated": true,
+  "fiveLegacyStatesAndNoGateVerified": true,
+  "newWriteCommandRpcDelta": 0,
+  "viewports": [
+    390,
+    320
+  ],
+  "previewAuthenticatedFlowAccepted": false,
+  "primaryInstallation": false,
+  "primaryReaderDeploymentVerified": false
+}
