@@ -45,6 +45,20 @@
     "remoteResourceProbeExecuted": false,
     "tehranTime": "2026-10-29 19:59:11"
   },
+  "followupProxyDiagnostics": {
+    "httpRootRead": {"observedAt": "2026-10-29T16:59:49.890092Z", "status": 200, "bodyStored": false},
+    "socks5Connect": {"observedAt": "2026-10-29T17:00:56.827828Z", "replyCode": 0, "bannerResult": "timeout_before_authentication"},
+    "fullSshObservedAt": "2026-10-29T17:03:42.140406Z",
+    "clientErrorType": "SSHException",
+    "serverBannerReceived": false,
+    "keyExchangeCompleted": false,
+    "sshAuthenticated": false,
+    "remoteResourceProbeExecuted": false,
+    "existingLocalTrustStoreLoad": "PASS_OFFLINE",
+    "hostKeyPolicyWeakened": false,
+    "networkOrServerSettingsChanged": false,
+    "limits": "HTTP200 and proxy CONNECT success do not establish VM identity, guest health, SSH cause or resource capacity. No authentication rejection was observed."
+  },
   "cpuUsage": null,
   "availableMemoryBytes": null,
   "freeDiskBytes": null,
