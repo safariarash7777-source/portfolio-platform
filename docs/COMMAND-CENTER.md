@@ -75,6 +75,8 @@
 
 **C:** مالک CI40906300708 وPreviewREADY برای4013را گزارش و دامنه تغییرrowProvenanceرا درPR331 اصلاح کرد؛ rootانتشارheadراازGitتأیید کرد، ولیconnectorCIهمچنانtransporterror داشت. اینشاهدآفلاین باlastfinancialingestنامعلوم تفکیک‌شده باقی است. گزارشبعدی A باید تمرینSQL/برگشت وگیتنهایی یا مانع دقیق آن باشد؛ B/C مستقل‌اند. مقصداصلی/ظرفیت/backup/restore باroot همچنان به دسترسیفقط‌خواندنی وابسته است.
 
+رسید مستقل cloud در`2026-10-29T16:10:35Z`: مالکC، [nativePG17 run40908788954](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40908788954) را برایB@`f98d8c559b3c8e6b615f7ea446406b64166c294c` SUCCESS وjob`postgres17-reopen` کامل موفق خواند. artifact`workbook-native-receipt` شناسه12911469265 آماده و۶۴۸بایت بود؛ محتوایartifact هنوز بازخوانی نشده است. [CIعمومیB40908788709](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40908788709) و [CIA40908593287](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40908593287) درهمان نمونه هنوزدرجریان بودند. اینSUCCESS به SQL/commitبعدازرفعservice_role تعمیم داده نمی‌شود؛ اصلاح وnative/BYPASSRLStest بعدی باB درحالاجراست.
+
 ### گیت‌های محلی، مستقل از شروع کل کار
 
 - START-A: خطای ذخیره draft را حذف نکند؛ خواندن خراب پرونده خالی معرفی نشود. نشست و مقصد آزمون/ساختگی با مجری؛ نصب افزونه مشاوره و گیت پشتیبان/ظرفیت جدا از آزمون مستقل است. آمار ظرفیت ۲۷ اکتبر تأیید تازه محسوب نمی‌شود.
