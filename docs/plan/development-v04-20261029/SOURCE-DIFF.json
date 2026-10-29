@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "dateTehran": "2026-10-29",
+  "task": "P00.1/P00.2",
+  "baseSha": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "archiveSha256": "5eb700e1b3753ffb4d3d1bf9ab026f1da8ce77296de7f9564d1e323c29ac67f9",
+  "policy": "Exact input bytes preserved; existing project reference documents linked, not replaced. Execution status only in COMMAND-CENTER.",
+  "files": [
+    {
+      "name": "ARASH-PLATFORM-WORKING-PLAN.fa.md",
+      "sha256": "6b37574fcf99c0ed3f8dd3cd14d9ad8a8a87c57ba9f8fc50f19d75a8cf19b67b",
+      "bytes": 89278,
+      "previousV03Sha256": "e6e37f182be5562a3b76e870aa71c51b03be196cf422e27aa477c56962ec7102",
+      "comparison": "changed-preserved-as-new-version"
+    },
+    {
+      "name": "DEVELOPER-HANDOFF-DRAFT.fa.md",
+      "sha256": "8088be28f593ad005979d109c58378697dadd4f911c689b4f86dddedcd3a3335",
+      "bytes": 5268,
+      "previousV03Sha256": "a64fa219557c0affcf7758f0b1d189445bf2ef6e8352be2614fb7c5d0b9c42d3",
+      "comparison": "changed-preserved-as-new-version"
+    },
+    {
+      "name": "EXECUTION-BACKLOG.fa.md",
+      "sha256": "f3f9325ece475f3005625f70195f72efa497f82b254fd3bee9281dcf5ff02a9a",
+      "bytes": 31264,
+      "previousV03Sha256": null,
+      "comparison": "added"
+    },
+    {
+      "name": "HANDOFF-REVIEW.fa.md",
+      "sha256": "b738ee7cdcb394236743afc6ab3eda1d30ead26a4ca556ed13c15d63d5988ee2",
+      "bytes": 9128,
+      "previousV03Sha256": null,
+      "comparison": "added"
+    },
+    {
+      "name": "MANIFEST.json",
+      "sha256": "79848d9984038123682453f26d95bbd8edeba4784260e6723fe78693f4756917",
+      "bytes": 960,
+      "previousV03Sha256": "8b11945f6cabc56cf873aae5ee151dd32b8694e147e1f14aeed1351c831d4ac5",
+      "comparison": "changed-preserved-as-new-version"
+    },
+    {
+      "name": "PHASE-ONE-DELIVERY.fa.md",
+      "sha256": "cb52c26e5af8af266b3688e7baeb3aa92f213849697f20796d9dfe6779a03067",
+      "bytes": 19306,
+      "previousV03Sha256": "3ca4e076ca14ae7012dee0de73d2c4fd7b6a3105340492b8ca06ca2808c66252",
+      "comparison": "changed-preserved-as-new-version"
+    },
+    {
+      "name": "README.fa.md",
+      "sha256": "272f7090c101656d274fae1d335b9d036bf1e7f9fcd423fd15368ba53a496ca4",
+      "bytes": 2373,
+      "previousV03Sha256": "bff791227036133630fc00eb054724ff93544442f5ce9d4c48da316b0bfeb57e",
+      "comparison": "changed-preserved-as-new-version"
+    },
+    {
+      "name": "RESEARCH-DESIGN.fa.md",
+      "sha256": "a5ec4f2ce13eb16bf8bbae0dbcdd39d7dce8f258fffbb44c0df372e8f1cf1aa2",
+      "bytes": 23784,
+      "previousV03Sha256": "a5ec4f2ce13eb16bf8bbae0dbcdd39d7dce8f258fffbb44c0df372e8f1cf1aa2",
+      "comparison": "unchanged"
+    }
+  ],
+  "references": [
+    {
+      "path": "docs/README.md",
+      "sha256Before": "f77aa16250a200c88bb96dd7ee651b3eb54b81f3102bf9d51d9a02fa748de71d"
+    },
+    {
+      "path": "docs/PRODUCT-BLUEPRINT.md",
+      "sha256Before": "3da849c55a8fdb946e29b51802363315770dfad63f0c9656db9bb9c9011f4b7c"
+    },
+    {
+      "path": "docs/DECISION-LOG.md",
+      "sha256Before": "5082780e23fbb5aa9030852fc74390b9800222a000d8cfd8dba4bfb995685451"
+    },
+    {
+      "path": "docs/COMMAND-CENTER.md",
+      "sha256Before": "b9a7a0c0017a792057c039abb91505740d7965aefc83d255253e57daa3756efd"
+    },
+    {
+      "path": "docs/MIGRATION-LEDGER.md",
+      "sha256Before": "1ef32a344ceb8661d5cf5b0dc546c539bd1b50fb3ced3c2995d752b55fdf2dd9"
+    }
+  ]
+}
