@@ -11,6 +11,238 @@ import { mountComponent } from './p07-component-test-host';
 import ResearchPreparationFields from './ResearchPreparationFields';
 import type { ManualIntake } from '../../lib/intelligence/manual-intake';
 const mount = (transport: WorkbookTransport, workbookId: string) => mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbookId: workbookId });
+type WorkbookUi = ReturnType<typeof mountComponent>;
+// WebCrypto runs outside the JS microtask queue. Wait for observable completion,
+// rather than assuming five setImmediate turns finish it on every CI runner.
+const unknownReady = (ui: WorkbookUi) => ui.waitFor(() => !ui.button('بررسی دوبارهٔ همین ثبت').props.disabled);
+const retryReady = (ui: WorkbookUi) => ui.waitFor(() => !ui.button('ارسال دوبارهٔ همین ثبت').props.disabled);
+const resolvedReady = (ui: WorkbookUi) => ui.waitFor(() => !ui.button('تازه').props.disabled);
+
+test('closing while prepare response is pending cannot let the old client continue with a workbook POST',async()=>{
+  const restore=workbookBrowserFixture(),fixture=createP07WorkflowFixture({durable:true});let release:(()=>void)|undefined,saves=0;
+  const transport:WorkbookTransport=async(url,init)=>{
+    const action=init?.method==='POST'?JSON.parse(String(init.body)).action:null;
+    const result=await fixture.transport(url,init);
+    if(action==='prepare_save')await new Promise<void>(done=>{release=done;});
+    if(action==='save')saves++;return result;
+  };
+  try{
+    const ui=mountComponent('components/admin/ResearchWorkbook.tsx',{transport,initialWorkbook:p07FixtureWorkbook()});await ui.settle();await ui.click('ذخیرهٔ نسخهٔ');
+    await ui.waitFor(()=>!!release);
+    assert.ok(release);assert.equal(fixture.intentSnapshot().length,1);ui.unmount();release();await ui.settle();assert.equal(saves,0);
+    const reopened=mountComponent('components/admin/ResearchWorkbook.tsx',{transport:fixture.transport});await reopened.settle();await reopened.settle();
+    await retryReady(reopened);
+    assert.equal(reopened.button('تازه').props.disabled,true);assert.equal(fixture.snapshot().versions.length,0);
+    await reopened.click('ارسال دوبارهٔ همین ثبت');await resolvedReady(reopened);assert.equal(fixture.snapshot().versions.length,1);
+  }finally{release?.();restore();}
+});
+
+test('session expiry after confirmed prepare retains the same intent/body until authorized readback and explicit retry',async()=>{
+  const restore=workbookBrowserFixture(),fixture=createP07WorkflowFixture({durable:true});const attempts:Array<{body:string;intent:string|null}>=[];let expire=true;
+  const transport:WorkbookTransport=async(url,init)=>{
+    if(init?.method==='POST'&&JSON.parse(String(init.body)).action==='save'){
+      attempts.push({body:String(init.body),intent:new Headers(init.headers).get('x-workbook-save-intent')});
+      if(expire){expire=false;fixture.setIdentity(null);}
+    }
+    return fixture.transport(url,init);
+  };
+  try{
+    const ui=mountComponent('components/admin/ResearchWorkbook.tsx',{transport,initialWorkbook:p07FixtureWorkbook()});await ui.settle();await ui.click('ذخیرهٔ نسخهٔ');await ui.settle();
+    await unknownReady(ui);
+    assert.equal(ui.button('تازه').props.disabled,true);assert.equal(fixture.snapshot().versions.length,0);
+    await ui.click('بررسی دوبارهٔ همین ثبت');await unknownReady(ui);assert.equal(attempts.length,1);
+    fixture.setIdentity('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+    await ui.click('بررسی دوبارهٔ همین ثبت');await retryReady(ui);await ui.click('ارسال دوبارهٔ همین ثبت');await resolvedReady(ui);
+    assert.equal(attempts.length,2);assert.deepEqual(attempts[1],attempts[0]);assert.equal(fixture.intentSnapshot().length,1);assert.equal(fixture.snapshot().versions.length,1);
+  }finally{restore();}
+});
+
+for (const lost of ['prepare', 'commit'] as const) test(`durable ${lost} response loss survives unmount/reopen with exact intent and no automatic POST`, async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture({ durable: true });
+  const privateWorkbook = { ...p07FixtureWorkbook(), privatePreparation: { contract: 'p07.private-preparation.v1' as const,
+    intake: { kind: 'text' as const, text: '  PRIVATE_ORIGINAL\n exact whitespace  ', transcriptConfirmed: false, claims: [], ambiguities: [] } } };
+  const requests: Array<{ action?: string; body?: string; intent: string | null; url: string }> = [];
+  let cut = true, persistentStorageAccess = 0;
+  for (const name of ['localStorage', 'sessionStorage', 'indexedDB']) Object.defineProperty(window, name, { configurable: true, get() { persistentStorageAccess++; throw new Error('Private browser storage forbidden'); } });
+  const transport: WorkbookTransport = async (url, init) => {
+    const action = init?.method === 'POST' ? JSON.parse(String(init.body)).action : undefined;
+    requests.push({ action, body: init?.body ? String(init.body) : undefined, intent: new Headers(init?.headers).get('x-workbook-save-intent'), url });
+    const result = await fixture.transport(url, init);
+    if (cut && action === (lost === 'prepare' ? 'prepare_save' : 'save')) { cut = false; throw new Error('Synthetic response lost after durable commit'); }
+    return result;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: privateWorkbook }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.settle();
+    await unknownReady(ui);
+    assert.equal(fixture.intentSnapshot().length, 1);
+    assert.equal(fixture.snapshot().versions.length, lost === 'prepare' ? 0 : 1);
+    assert.equal(ui.button('تازه').props.disabled, true);
+    const intent = fixture.intentSnapshot()[0], expected = JSON.parse(intent.requestBody);
+    ui.unmount();
+    const posts = requests.filter(r => r.action).length;
+    const reopened = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await reopened.settle(); await reopened.settle();
+    await reopened.waitFor(() => reopened.find('input', e => e.props.id === 'title').props.value === privateWorkbook.title);
+    if (lost === 'prepare') await retryReady(reopened); else await resolvedReady(reopened);
+    assert.equal(requests.filter(r => r.action).length, posts, 'reopening performs only GET, even after a committed prepare');
+    assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, privateWorkbook.title);
+    assert.equal((reopened.find(ResearchPreparationFields, () => true).props.value as ManualIntake).text, privateWorkbook.privatePreparation.intake.text);
+    if (lost === 'prepare') {
+      assert.equal(reopened.button('تازه').props.disabled, true);
+      await reopened.click('ارسال دوبارهٔ همین ثبت'); await resolvedReady(reopened);
+    }
+    assert.equal(fixture.snapshot().versions.length, 1);
+    const actual = requests.find(r => r.action === 'save')!;
+    assert.equal(actual.body, intent.requestBody); assert.equal(actual.intent, intent.intentId);
+    assert.equal(fixture.snapshot().versions[0].workbookId, expected.workbookId);
+    assert.equal(fixture.snapshot().reviews.length, 0); assert.equal(reopened.badge(), false);
+    assert.equal(persistentStorageAccess, 0);
+    assert.equal(requests.filter(r => r.action === 'prepare_save').length, 1);
+    assert.equal(requests.filter(r => r.action === 'save').length, 1);
+    const again = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await again.settle(); await again.settle();
+    await again.waitFor(() => again.find('input', e => e.props.id === 'title').props.value === privateWorkbook.title); await resolvedReady(again);
+    assert.equal(again.button('تازه').props.disabled, false);
+    assert.equal(requests.filter(r => r.action === 'save').length, 1);
+  } finally { restore(); }
+});
+
+test('durable v2 after page closure preserves v1 and its review, and a different/expired actor cannot restore or replay the private intent', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture({ durable: true });
+  const api = '/api/admin/intelligence/workbooks';
+  const saved = await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const id = String(saved.body.workbookId);
+  await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'decide', workbookId: id, version: 1, decision: 'approved_internal' }) });
+  const v1 = fixture.snapshot().versions[0]; let saves = 0;
+  const transport: WorkbookTransport = async (url, init) => {
+    const result = await fixture.transport(url, init);
+    if (init?.method === 'POST' && JSON.parse(String(init.body)).action === 'save' && ++saves === 1) throw new Error('Synthetic v2 receipt lost');
+    return result;
+  };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'PRIVATE_DURABLE_V2' } }); await ui.settle();
+    await ui.click('ذخیره به‌عنوان'); await unknownReady(ui); ui.unmount();
+    const intent = fixture.intentSnapshot()[0];
+    for (const actor of ['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', null]) {
+      fixture.setIdentity(actor);
+      const denied = await fixture.transport(`${api}?intent=${intent.intentId}`);
+      assert.equal(denied.status, actor ? 404 : 401); assert.doesNotMatch(JSON.stringify(denied.body), /PRIVATE_DURABLE_V2/);
+      const blocked = await fixture.transport(api, { method: 'POST', body: intent.requestBody, headers: { 'x-workbook-save-intent': intent.intentId } });
+      assert.equal(blocked.status, actor ? 409 : 401);
+      const other = mountComponent('components/admin/ResearchWorkbook.tsx', { transport: fixture.transport }); await other.settle();
+      assert.notEqual(other.find('input', e => e.props.id === 'title').props.value, 'PRIVATE_DURABLE_V2'); other.unmount();
+    }
+    fixture.setIdentity('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+    const resumed = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await resumed.settle(); await resumed.settle();
+    await resumed.waitFor(() => resumed.find('input', e => e.props.id === 'title').props.value === 'PRIVATE_DURABLE_V2'); await resolvedReady(resumed);
+    assert.equal(resumed.find('input', e => e.props.id === 'title').props.value, 'PRIVATE_DURABLE_V2');
+    assert.equal(resumed.badge(), false); assert.equal(saves, 1);
+    assert.deepEqual(fixture.snapshot().versions[0], v1); assert.equal(fixture.snapshot().versions.length, 2);
+    assert.equal(fixture.snapshot().reviews.length, 1);
+  } finally { restore(); }
+});
+
+test('durable same-intent retry after absence cannot overwrite a concurrent different v2, including after reopen', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture({ durable: true });
+  const api = '/api/admin/intelligence/workbooks';
+  const first = await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const id = String(first.body.workbookId); let cut = true;
+  const transport: WorkbookTransport = async (url, init) => {
+    if (cut && init?.method === 'POST' && JSON.parse(String(init.body)).action === 'save') { cut = false; throw new Error('Synthetic pre-commit disconnect'); }
+    return fixture.transport(url, init);
+  };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'My pending version' } }); await ui.settle();
+    await ui.click('ذخیره به‌عنوان'); await unknownReady(ui); await ui.click('بررسی دوبارهٔ همین ثبت'); await retryReady(ui);
+    fixture.setIdentity('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+    await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: id, baseVersion: 1, workbook: { ...p07FixtureWorkbook(), title: 'Concurrent other actor' } }) });
+    fixture.setIdentity('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+    await ui.click('ارسال دوبارهٔ همین ثبت'); await unknownReady(ui);
+    assert.equal(ui.button('تازه').props.disabled, true); assert.equal(fixture.snapshot().versions.length, 2);
+    ui.unmount();
+    const reopened = mountComponent('components/admin/ResearchWorkbook.tsx', { transport }); await reopened.settle(); await reopened.settle();
+    await reopened.waitFor(() => reopened.find('input', e => e.props.id === 'title').props.value === 'My pending version'); await unknownReady(reopened);
+    assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, 'My pending version');
+    assert.equal(reopened.button('تازه').props.disabled, true); assert.throws(() => reopened.button('تأیید داخلی نسخه'));
+    assert.equal(fixture.snapshot().versions[1].title, 'Concurrent other actor');
+    assert.equal(fixture.intentSnapshot().length, 1);
+  } finally { restore(); }
+});
+
+for (const outcome of ['committed', 'absent', 'late-commit'] as const) test(`START-B v2 unknown save: ${outcome}, GET recovery retains v1 and cannot carry its approval`, async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const path = '/api/admin/intelligence/workbooks', posts: string[] = [], reads: string[] = [];
+  const first = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const id = String(first.body.workbookId), original = structuredClone(fixture.snapshot().versions[0]);
+  let unknown = false;
+  const transport: WorkbookTransport = async (url, init) => {
+    if (init?.method === 'POST' && JSON.parse(String(init.body)).action === 'save') {
+      posts.push(String(init.body));
+      if (posts.length === 1) {
+        unknown = true;
+        if (outcome === 'committed') await fixture.transport(url, init);
+        throw new Error('Synthetic lost response');
+      }
+    } else if (unknown && url.includes('?id=')) reads.push(url);
+    return fixture.transport(url, init);
+  };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    await ui.click('تأیید داخلی نسخه'); assert.equal(ui.badge(), true);
+    (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'نمونه ساختگی: نسخه دوم' } }); await ui.settle();
+    await ui.click('ذخیره به‌عنوان');
+    assert.equal(ui.button('تازه').props.disabled, true, 'an unknown v2 must not be replaced by another workbook');
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.equal(ui.button('تأیید داخلی نسخه').props.disabled, true);
+    assert.equal(ui.badge(), false);
+    await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts.length, 1, 'recovery never POSTs');
+    assert.deepEqual(reads, [`${path}?id=${id}&version=2`]);
+    if (outcome !== 'committed') {
+      if (outcome === 'late-commit') await fixture.transport(path, { method: 'POST', body: posts[0] });
+      await ui.click('ارسال دوبارهٔ همین ثبت');
+      assert.equal(posts[1], posts[0], 'same workbook, base, target and exact body');
+      if (outcome === 'late-commit') {
+        assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true, 'a conflict is not confirmation');
+        await ui.click('بررسی دوبارهٔ همین ثبت');
+      }
+    }
+    assert.equal(fixture.snapshot().versions.length, 2);
+    assert.deepEqual(fixture.snapshot().versions[0], original);
+    assert.equal(fixture.snapshot().reviews.length, 1); assert.equal(ui.badge(), false);
+    assert.equal(fixture.snapshot().publications.length, 0);
+    assert.equal(ui.button('تازه').props.disabled, false);
+    const reread = await fixture.transport(`${path}?id=${id}&version=1`);
+    assert.deepEqual(reread.body.workbook, original.body);
+    const reopened = mount(fixture.transport, id); await reopened.settle();
+    assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, 'نمونه ساختگی: نسخه دوم');
+    assert.equal(reopened.badge(), false, 'reload cannot inherit v1 approval');
+    await reopened.click('نسخهٔ ۱ ·');
+    assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, original.title);
+    assert.equal(reopened.badge(), false, 'historical approval is not current approval');
+    assert.throws(() => reopened.button('ایجاد نسخهٔ تازه برای بازبینی'), 'historical does not mean returned');
+  } finally { restore(); }
+});
+
+test('START-B a missing v2 with an incompatible latest-version response cannot authorize a retry', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const path = '/api/admin/intelligence/workbooks';
+  const first = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  let posts = 0, unknown = false;
+  const transport: WorkbookTransport = async (url, init) => {
+    if (init?.method === 'POST') { posts++; unknown = true; throw new Error('Synthetic no receipt'); }
+    const result = await fixture.transport(url, init);
+    return unknown && url.includes('?id=') ? { ...result, body: { ...result.body, latestVersion: 3 } } : result;
+  };
+  try {
+    const ui = mount(transport, String(first.body.workbookId)); await ui.settle();
+    (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'Synthetic v2' } }); await ui.settle();
+    await ui.click('ذخیره به‌عنوان'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.throws(() => ui.button('ارسال دوبارهٔ همین ثبت'));
+  } finally { restore(); }
+});
 
 function workbookBrowserFixture() {
   const oldWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
@@ -58,7 +290,7 @@ for (const phase of ['fetch', 'body'] as const) test(`default workbook creation:
     assert.ok(finishLate); finishLate(); await ui.settle();
     assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, false, 'late response cannot confirm the timed-out handler');
     await ui.click('بررسی دوبارهٔ همین ثبت');
-    assert.equal(bodies.length, 2); assert.equal(bodies[1], bodies[0]);
+    assert.equal(bodies.length, 1, 'recovery reads the saved version without another POST');
     const attempt = JSON.parse(bodies[0]); assert.equal(attempt.workbookId, attempt.creationId);
     assert.equal(fixture.snapshot().versions.length, 1, 'manual recovery reuses the first committed creation');
     assert.equal(ui.button('تازه').props.disabled, false);
@@ -430,7 +662,7 @@ test('actual UI respects returned ties, old versions, dirty state and in-flight 
   }
 });
 
-test('real workbook handler retries unknown creation with frozen request and same server receipt, never abandons it via New/edit',async()=>{
+test('real workbook handler reads unknown creation without POST and never abandons it via New/edit',async()=>{
  const fixture=createP07WorkflowFixture(),bodies:string[]=[];let calls=0;
  const transport:WorkbookTransport=async(path,init)=>{
   if(init?.method==='POST'){bodies.push(String(init.body));if(++calls===1){await fixture.transport(path,init);throw new Error('Synthetic response lost after commit');}}
@@ -445,7 +677,7 @@ test('real workbook handler retries unknown creation with frozen request and sam
   await ui.click('ذخیرهٔ نسخهٔ');assert.equal(fixture.snapshot().versions.length,1);assert.equal(ui.button('تازه').props.disabled,true);
   const title=ui.find('input',e=>e.props.id==='title');assert.equal(title.props.disabled,true);
   (title.props.onChange as (e:{target:{value:string}})=>void)({target:{value:'Must not replace unknown draft'}});newButton();await ui.settle();
-  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies[0],bodies[1]);assert.equal(JSON.parse(bodies[0]).workbookId,JSON.parse(bodies[0]).creationId);assert.equal(fixture.snapshot().versions.length,1);
+  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies.length,1);assert.equal(JSON.parse(bodies[0]).workbookId,JSON.parse(bodies[0]).creationId);assert.equal(fixture.snapshot().versions.length,1);
   assert.equal(ui.find('input',e=>e.props.id==='title').props.value,p07FixtureWorkbook().title);assert.equal(ui.button('تازه').props.disabled,false);
  }finally{if(oldWindow)Object.defineProperty(globalThis,'window',oldWindow);else Reflect.deleteProperty(globalThis,'window');if(oldDocument)Object.defineProperty(globalThis,'document',oldDocument);else Reflect.deleteProperty(globalThis,'document');}
 });
@@ -463,24 +695,28 @@ test('late creation response lost preserves newer edits; exact receipt recovery 
   const ui=mountComponent('components/admin/ResearchWorkbook.tsx',{transport,initialWorkbook:p07FixtureWorkbook()});await ui.settle();await ui.click('ذخیرهٔ نسخهٔ');
   (ui.find('input',e=>e.props.id==='title').props.onChange as (e:{target:{value:string}})=>void)({target:{value:'Synthetic late edit'}});
   (ui.find(ResearchPreparationFields,()=>true).props.onPendingChange as (pending:boolean)=>void)(true);await ui.settle();release();await ui.settle();
-  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies[0],bodies[1]);assert.equal(fixture.snapshot().versions.length,1);assert.equal(ui.find('input',e=>e.props.id==='title').props.value,'Synthetic late edit');assert.equal(ui.button('تأیید داخلی نسخه').props.disabled,true);
+  await ui.click('بررسی دوبارهٔ همین ثبت');assert.equal(bodies.length,1);assert.equal(fixture.snapshot().versions.length,1);assert.equal(ui.find('input',e=>e.props.id==='title').props.value,'Synthetic late edit');assert.equal(ui.button('تأیید داخلی نسخه').props.disabled,true);
   (ui.find(ResearchPreparationFields,()=>true).props.onPendingChange as (pending:boolean)=>void)(false);await ui.settle();
   await ui.click('ذخیره به‌عنوان');assert.equal(fixture.snapshot().versions.length,2);assert.equal(fixture.snapshot().versions[1].workbookId,fixture.snapshot().versions[0].workbookId);assert.equal(fixture.snapshot().versions[1].title,'Synthetic late edit');
  }finally{release();if(oldWindow)Object.defineProperty(globalThis,'window',oldWindow);else Reflect.deleteProperty(globalThis,'window');if(oldDocument)Object.defineProperty(globalThis,'document',oldDocument);else Reflect.deleteProperty(globalThis,'document');}
 });
 
-for (const initial of ['lost-response', 'initial-503'] as const) test(`creation ${initial} keeps exact retry reachable through unavailable, respects rejection and blocks concurrent replay`, async () => {
+for (const initial of ['lost-response', 'initial-503'] as const) test(`creation ${initial} uses read-only recovery and requires a separate same-intent retry after proven absence`, async () => {
   const fixture = createP07WorkflowFixture(), bodies: string[] = [], responses: Record<string, unknown>[] = [];
+  const readPaths: string[] = [];
   let recovering = false, release: (() => void) | undefined, fileReads = 0;
   const transport: WorkbookTransport = async (path, init) => {
-    if (init?.method !== 'POST') return fixture.transport(path, init);
-    bodies.push(String(init.body));
-    if (bodies.length === 1 && initial === 'lost-response') {
-      const committed = await fixture.transport(path, init); responses.push(committed.body);
-      throw new Error('Synthetic committed response lost');
+    if (init?.method === 'POST') {
+      bodies.push(String(init.body));
+      if (bodies.length === 1) {
+        if (initial === 'lost-response') { await fixture.transport(path, init); throw new Error('Synthetic committed response lost'); }
+        fixture.failNext(503);
+      }
+    } else if (path.includes('?id=')) {
+      readPaths.push(path);
+      if (!recovering) return { status: 503, body: { unavailable: true } };
+      await new Promise<void>(done => { release = done; });
     }
-    if (!recovering) fixture.failNext(503);
-    else await new Promise<void>(done => { release = done; });
     const response = await fixture.transport(path, init); responses.push(response.body); return response;
   };
   const oldWindow = Object.getOwnPropertyDescriptor(globalThis, 'window'), oldDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
@@ -491,7 +727,6 @@ for (const initial of ['lost-response', 'initial-503'] as const) test(`creation 
     const newHandler = ui.button('تازه').props.onClick as () => void;
     const importHandler = ui.find('input', e => e.props.type === 'file').props.onChange as (e: unknown) => void;
     await ui.click('ذخیرهٔ نسخهٔ');
-    if (initial === 'lost-response') await ui.click('بررسی دوبارهٔ همین ثبت');
     assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, false);
     assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
     assert.equal(ui.button('ادامه از فایل').props.disabled, true);
@@ -499,22 +734,125 @@ for (const initial of ['lost-response', 'initial-503'] as const) test(`creation 
     (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'Forbidden replacement' } }); await ui.settle();
     assert.equal(fileReads, 0); assert.equal(ui.find('input', e => e.props.id === 'title').props.value, p07FixtureWorkbook().title);
     await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(bodies.length, 1, 'unavailable read cannot become a write');
     assert.equal(fixture.snapshot().versions.length, initial === 'lost-response' ? 1 : 0, 'unavailable rejection cannot bypass the writer gate');
     recovering = true;
     const retry = ui.button('بررسی دوبارهٔ همین ثبت').props.onClick as () => void;
-    retry(); const inflight = bodies.length; retry(); await ui.settle();
-    assert.equal(bodies.length, inflight); assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, true);
+    retry(); const inflight = readPaths.length; retry(); await ui.settle();
+    assert.equal(readPaths.length, inflight); assert.equal(bodies.length, 1); assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, true);
     assert.ok(release); release(); await ui.settle();
+    if (initial === 'initial-503') {
+      assert.equal(fixture.snapshot().versions.length, 0);
+      assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true, '404 is not a successful save');
+      await ui.click('ارسال دوبارهٔ همین ثبت');
+      assert.equal(bodies.length, 2);
+    } else assert.equal(bodies.length, 1);
     assert.ok(bodies.every(body => body === bodies[0]));
     const envelope = JSON.parse(bodies[0]); assert.equal(envelope.workbookId, envelope.creationId);
     const stored = fixture.snapshot().versions; assert.equal(stored.length, 1); assert.equal(stored[0].workbookId, envelope.creationId);
-    const recovered = responses.at(-1)!;
+    const recovered = responses.findLast(body => body.workbookId === envelope.creationId && typeof body.savedAt === 'string')!;
     assert.equal(recovered.savedAt, stored[0].createdAt); assert.equal(recovered.workbookId, stored[0].workbookId); assert.equal(recovered.version, 1);
-    if (initial === 'lost-response') { assert.equal(recovered.savedAt, responses[0].savedAt); assert.equal(recovered.reused, true); }
+    assert.ok(readPaths.every(path => path.endsWith(`?id=${envelope.creationId}&version=1`)));
+    if (initial === 'lost-response') assert.equal(recovered.authorMatchesSession, true);
     assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, false); assert.equal(ui.button('تازه').props.disabled, false);
   } finally {
     release?.();
     if (oldWindow) Object.defineProperty(globalThis, 'window', oldWindow); else Reflect.deleteProperty(globalThis, 'window');
     if (oldDocument) Object.defineProperty(globalThis, 'document', oldDocument); else Reflect.deleteProperty(globalThis, 'document');
   }
+});
+
+for (const [label, change] of [
+  ['body', (body: Record<string, unknown>) => ({ ...body, workbook: { ...(body.workbook as object), title: 'Different stored content' } })],
+  ['author', (body: Record<string, unknown>) => ({ ...body, authorMatchesSession: false })],
+  ['version', (body: Record<string, unknown>) => ({ ...body, version: 2 })],
+  ['stale', (body: Record<string, unknown>) => ({ ...body, latestVersion: 2 })],
+  ['time', (body: Record<string, unknown>) => ({ ...body, savedAt: 'invalid' })],
+  ['id', (body: Record<string, unknown>) => ({ ...body, workbookId: '11111111-1111-4111-8111-111111111111' })],
+] as const) test(`unknown creation rejects ${label} mismatch without POST or replacing the pending draft`, async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  let posts = 0, altered = true;
+  const reads: string[] = [];
+  const transport: WorkbookTransport = async (path, init) => {
+    if (init?.method === 'POST') { posts++; await fixture.transport(path, init); throw new Error('Synthetic lost response'); }
+    const result = await fixture.transport(path, init);
+    if (path.includes('?id=')) { reads.push(path); return altered ? { status: result.status, body: change(result.body) } : result; }
+    return result;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(fixture.snapshot().versions.length, 1);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.value, p07FixtureWorkbook().title);
+    altered = false; await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(new Set(reads).size, 1);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, false);
+  } finally { restore(); }
+});
+
+test('a generic or wrong-ID 404 never confirms absence or enables a write retry', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  let posts = 0;
+  const transport: WorkbookTransport = async (path, init) => {
+    if (init?.method === 'POST') { posts++; return { status: 503, body: { unavailable: true } }; }
+    if (path.includes('?id=')) return { status: 404, body: { absent: true, workbookId: 'wrong-id', requestedVersion: 1 } };
+    return fixture.transport(path, init);
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.throws(() => ui.button('ارسال دوبارهٔ همین ثبت'));
+  } finally { restore(); }
+});
+
+test('a stale retry handler cannot write after a newer recovery invalidates its absence proof', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const bodies: string[] = [];
+  let unavailable = false;
+  const transport: WorkbookTransport = async (path, init) => {
+    if (init?.method === 'POST') {
+      bodies.push(String(init.body));
+      if (bodies.length === 1) return { status: 503, body: { unavailable: true } };
+    } else if (path.includes('?id=') && unavailable) return { status: 503, body: { unavailable: true } };
+    return fixture.transport(path, init);
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    const oldRetry = ui.button('ارسال دوبارهٔ همین ثبت').props.onClick as () => void;
+    unavailable = true; await ui.click('بررسی دوبارهٔ همین ثبت'); oldRetry(); await ui.settle();
+    assert.equal(bodies.length, 1); assert.equal(fixture.snapshot().versions.length, 0);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    unavailable = false; await ui.click('بررسی دوبارهٔ همین ثبت'); await ui.click('ارسال دوبارهٔ همین ثبت');
+    assert.equal(bodies.length, 2); assert.equal(bodies[1], bodies[0]); assert.equal(fixture.snapshot().versions.length, 1);
+  } finally { restore(); }
+});
+
+for (const phase of ['fetch', 'body'] as const) test(`read-only recovery ${phase} timeout keeps the attempt locked and ignores late success`, async t => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  let posts = 0, reads = 0, finishLate: (() => void) | undefined;
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  globalThis.fetch = async (path, init) => {
+    const result = await fixture.transport(String(path), init);
+    if (init?.method === 'POST') { posts++; return Response.json({ error: 'Synthetic lost response' }, { status: 500 }); }
+    const response = Response.json(result.body, { status: result.status });
+    if (!String(path).includes('?id=') || ++reads > 1) return response;
+    if (phase === 'fetch') return new Promise<Response>(resolve => { finishLate = () => resolve(response); });
+    response.json = () => new Promise(resolve => { finishLate = () => resolve(result.body); });
+    return response;
+  };
+  try {
+    const ui = mountComponent('components/admin/ResearchWorkbook.tsx', { initialWorkbook: p07FixtureWorkbook() }); await ui.settle();
+    await ui.click('ذخیرهٔ نسخهٔ'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(ui.button('بررسی دوبارهٔ همین ثبت').props.disabled, true);
+    t.mock.timers.tick(15000); await ui.settle();
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.equal(posts, 1); assert.ok(finishLate); finishLate(); await ui.settle();
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(reads, 2); assert.equal(fixture.snapshot().versions.length, 1);
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, false);
+  } finally { finishLate?.(); t.mock.timers.reset(); restore(); }
 });

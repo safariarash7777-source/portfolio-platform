@@ -18,6 +18,7 @@ function text(node: unknown): string {
 export function mountComponent(path: string, props: Record<string, unknown>) {
   const slots: unknown[] = [], pending: (() => unknown)[] = [];
   const dependencies = new Map<number, readonly unknown[]>();
+  const cleanups = new Map<number, () => unknown>();
   let index = 0, tree: unknown;
   const hooks = {
     ...React,
@@ -38,7 +39,10 @@ export function mountComponent(path: string, props: Record<string, unknown>) {
     },
     useEffect(effect: () => unknown, deps: readonly unknown[]) {
       const key = index++, previous = dependencies.get(key);
-      if (!previous || deps.some((value, i) => !Object.is(value, previous[i]))) pending.push(effect);
+      if (!previous || deps.some((value, i) => !Object.is(value, previous[i]))) pending.push(() => {
+        cleanups.get(key)?.(); const cleanup = effect();
+        if (typeof cleanup === 'function') cleanups.set(key, cleanup as () => unknown); else cleanups.delete(key);
+      });
       dependencies.set(key, deps);
     },
   };
@@ -65,9 +69,22 @@ export function mountComponent(path: string, props: Record<string, unknown>) {
   }
   const button = (label: string) => find('button', element => text(element).includes(label));
   const badge = () => text(find('p', element => element.props['aria-live'] === 'polite')).includes('تأیید داخلی شده');
+  async function waitFor(check: () => unknown) {
+    const deadline = Date.now() + 5000;
+    let lastError: unknown;
+    while (Date.now() < deadline) {
+      await settle();
+      try { if (check()) return; } catch (error) { lastError = error; }
+      await new Promise<void>(done => setTimeout(done, 10));
+    }
+    if (lastError) throw lastError;
+    assert.fail('UI condition did not become true within 5 seconds');
+  }
   async function click(label: string) {
+    await waitFor(() => !button(label).props.disabled);
     const element = button(label); assert.equal(Boolean(element.props.disabled), false, `${label} must be enabled`);
     (element.props.onClick as () => void)(); await settle();
   }
-  return { settle, button, badge, click, find, render };
+  const unmount = () => { for (const cleanup of cleanups.values()) cleanup(); cleanups.clear(); pending.length = 0; };
+  return { settle, waitFor, button, badge, click, find, render, unmount };
 }

@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-29T16:13:24.2549059Z",
+  "scope": "Working-tree native rehearsal before commit; final SHA independently tested by CI",
+  "postgresVersionNumber": 170011,
+  "environment": "Owned disposable local PostgreSQL, synthetic data only",
+  "network": "none",
+  "hostPorts": 0,
+  "mounts": "Selected SQL only readonly; temporary DB data; no env/Auth/app/cron or primary data",
+  "passed": 6,
+  "failed": 0,
+  "skipped": 0,
+  "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+  "scenarios": [
+    "native author/hash derived; body/token/base immutable",
+    "other admin/member/anon denied; service-role BYPASSRLS has no table SELECT, including rerun",
+    "actual component unmounted after native v2 commit; fresh instance GET-only recovery",
+    "exact private text and v1/review retained; v2 unapproved",
+    "same-intent replay cannot duplicate v2; actor change denied",
+    "candidate rerun leaves existing workbook/review INSERT freeze intact"
+  ],
+  "authBoundary": "Synthetic claims under native authenticated SQL role; no real user session",
+  "productionTouched": false,
+  "modelCalls": 0,
+  "privateBodyInArtifact": false,
+  "owner": "01a17cdc-cf6b-7b82-882f-e5d04e837353/local",
+  "localChecks": {
+    "targetedLint": "PASS",
+    "productBuild": "PASS",
+    "diffCheck": "PASS",
+    "typecheck": "PASS",
+    "coreTests": 2082,
+    "additionalCoreGuards": 28
+  }
+}

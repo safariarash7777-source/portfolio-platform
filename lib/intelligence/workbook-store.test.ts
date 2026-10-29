@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { emptyWorkbook, type ResearchWorkbook } from "./research-workbook";
+import { canonicalWorkbook, parseWorkbookSaveIntent } from './workbook-save-intent';
 import {
   classifyStoreError,
   decideWorkbook,
@@ -13,6 +14,31 @@ import {
   type StoredVersion,
   type WorkbookGateway,
 } from "./workbook-store";
+
+test('durable intent parser retains exact request text and fixed creation/base identity without approval authority', () => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  const raw = JSON.stringify({ action: 'save', workbookId: id, creationId: id, baseVersion: 0, workbook: { ...complete(), approved: true, privatePreparation: undefined } }, null, 2);
+  const first = parseWorkbookSaveIntent(raw);
+  assert.equal(first.requestBody, raw); assert.equal(first.workbookId, id); assert.equal(first.baseVersion, 0); assert.equal(first.targetVersion, 1);
+  assert.equal((first.workbook as unknown as Record<string, unknown>).approved, undefined);
+  const second = parseWorkbookSaveIntent(JSON.stringify({ action: 'save', workbookId: id, baseVersion: 1, workbook: complete('v2') }));
+  assert.equal(second.targetVersion, 2); assert.equal(second.baseVersion, 1);
+  assert.equal(canonicalWorkbook(first.workbook), canonicalWorkbook(complete()));
+  assert.notEqual(canonicalWorkbook(first.workbook), canonicalWorkbook(second.workbook));
+});
+
+test('durable intent rejects unresolved IDs, changed creation token, non-save actions, invalid body and unsafe versions without echoing private input', () => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  const valid = { action: 'save', workbookId: id, creationId: id, baseVersion: 0, workbook: complete('PRIVATE_DRAFT') };
+  for (const value of [null, 'PRIVATE_DRAFT', ...[
+    { workbookId: null }, { creationId: '22222222-2222-4222-8222-222222222222' }, { creationId: undefined },
+    { action: 'decide' }, { action: 'publish' }, { baseVersion: -1 }, { baseVersion: 2_147_483_647 }, { baseVersion: 1 },
+    { workbook: { ...complete(), title: '' } },
+    { workbook: { ...complete(), evidence: [{ ...complete().evidence[0], sourceUrl: 'https://user:PRIVATE_DRAFT@example.invalid' }] } },
+  ].map(patch => JSON.stringify({ ...valid, ...patch }))]) assert.throws(() => parseWorkbookSaveIntent(value), error => {
+    assert.equal((error as Error).message, 'invalid_intent_request'); assert.doesNotMatch((error as Error).message, /PRIVATE_DRAFT/); return true;
+  });
+});
 
 /** مخزنِ حافظه‌ای که همان قیدهای phase34 را اعمال می‌کند: UNIQUE و «بدونِ پرش». */
 function harness(opts: { user?: string | null; role?: string | null; roleThrows?: boolean; unavailable?: boolean } = {}) {
@@ -243,10 +269,41 @@ test("نگاشتِ خطای مخزن: کُدها و الگوهای شناخته�
   assert.equal(code(classifyStoreError({ code: "P0001", message: "research workbook: stale version" })), "conflict");
   assert.equal(code(classifyStoreError({ code: "PGRST205", message: "Could not find the table" })), "unavailable");
   assert.equal(code(classifyStoreError({ code: "42P01", message: "relation does not exist" })), "unavailable");
+  assert.equal(code(classifyStoreError({ code: "42501", message: "RAW_PRIVATE_PERMISSION" }, 'write')), "writer_unavailable");
+  assert.equal(code(classifyStoreError({ code: "42501", message: "RAW_PRIVATE_PERMISSION" })), "unavailable");
+  assert.equal(code(classifyStoreError({ code: "XX000", message: "42501 writer unavailable" }, 'write')), "generic");
   assert.equal(code(classifyStoreError({ code: "P0001", message: "research workbook: approval requires evidence" })), "no_evidence");
   const generic = classifyStoreError({ code: "XX000", message: "password=hunter2 host=db" });
   assert.equal(code(generic), "generic");
   assert.ok(!generic.message.includes("hunter2"));
+});
+
+test('independent version read reports only a session-author match and distinguishes proven absence from a missing version', async () => {
+  const opts = { user: 'synthetic-admin-A' }, h = harness(opts), creationId = '11111111-1111-4111-8111-111111111111';
+  const absent = await openWorkbook(h.gw, creationId, 1);
+  assert.equal(absent.status, 404); assert.equal(absent.body.absent, true);
+  assert.equal(absent.body.workbookId, creationId); assert.equal(absent.body.requestedVersion, 1);
+  await saveWorkbook(h.gw, { workbookId: creationId, creationId, baseVersion: 0, workbook: complete() });
+  const own = await openWorkbook(h.gw, creationId, 1);
+  assert.equal(own.status, 200); assert.equal(own.body.authorMatchesSession, true);
+  assert.equal(own.body.createdBy, undefined); assert.ok(!JSON.stringify(own.body).includes(opts.user));
+  opts.user = 'synthetic-admin-B';
+  assert.equal((await openWorkbook(h.gw, creationId, 1)).body.authorMatchesSession, false);
+  const missingVersion = await openWorkbook(h.gw, creationId, 2);
+  assert.equal(missingVersion.status, 404); assert.equal(missingVersion.body.absent, undefined);
+  assert.equal(missingVersion.body.versionAbsent, true);
+  assert.equal(missingVersion.body.workbookId, creationId);
+  assert.equal(missingVersion.body.requestedVersion, 2); assert.equal(missingVersion.body.latestVersion, 1);
+  assert.equal(h.versions.length, 1);
+});
+
+test('readback author match is bound to the same actor whose admin role was authorized', async () => {
+  const h = harness({ user: 'synthetic-admin-A' }), creationId = '11111111-1111-4111-8111-111111111111';
+  await saveWorkbook(h.gw, { workbookId: creationId, creationId, baseVersion: 0, workbook: complete() });
+  let lookups = 0;
+  h.gw.getUser = async () => ({ id: ++lookups === 1 ? 'synthetic-admin-A' : 'different-later-user' });
+  const result = await openWorkbook(h.gw, creationId, 1);
+  assert.equal(result.status, 200); assert.equal(result.body.authorMatchesSession, true); assert.equal(lookups, 1);
 });
 
 test("latestPerWorkbook: یک ردیف برای هر کاربرگ، بالاترین نسخه، جدیدترین اول", () => {
