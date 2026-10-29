@@ -123,6 +123,23 @@ test("roster stays mounted independently of dossier revision and disappears on a
   late.done(result(advisorData)); await view.flush(); assert.ok(view.roster());
   await view.auth("SIGNED_IN", advisor); assert.equal(view.roster(), undefined); view.unmount();
 });
+
+test("member filters survive selecting a revoked dossier and resetting its editor while selection follows the authorized response",async()=>{
+  const selected={...readback(),selected:readback().relationships[0],dossier:{basis:{holdingsVersionId:null,cashFlowVersionId:null,goalsVersionId:null,cashFlowPeriod:{startOn:"2026-10-01",endOn:"2026-10-31"}},holdings:null,cashFlow:null,goals:null}};
+  selected.relationships[0].revoked=true;selected.selected.revoked=true;
+  const late=deferred<unknown>(),view=mount([result(),late.promise],[]);
+  await view.auth();
+  const filters={search:"نام خصوصی",relationStatus:"revoked"};
+  (view.panel().props.onMemberFiltersChange as (value:typeof filters)=>void)(filters);view.render();
+  (view.panel().props.onSelect as (id:string)=>void)(relation);view.render();assert.throws(()=>view.panel());
+  late.done(result(selected));await view.flush();
+  assert.deepEqual(view.panel().props.memberFilters,filters);
+  assert.equal((view.panel().props.data as ConsultationRead).selected?.id,relation);
+  assert.equal((view.readCalls.at(-1) as {relationshipId:string}).relationshipId,relation);
+  (view.panel().props.onDiscard as ()=>void)();view.render();
+  assert.deepEqual(view.panel().props.memberFilters,filters);assert.equal(view.writeCalls.length,0);
+  await view.auth("SIGNED_OUT",null);assert.throws(()=>view.panel());view.unmount();
+});
 test("manual GET recovery after saved reply replaces pending readback banner without another POST", async () => {
   const failure = { status: "error", error: { code: "READ_UNAVAILABLE" } };
   const view = mount([result(dossierWithQuestion()), failure, result(dossierWithQuestion())], [], [{ status: "ready", data: replyRead }, { status: "ready", data: savedReplyRead }], [{ status: "saved", receipt: replyReceipt }]);

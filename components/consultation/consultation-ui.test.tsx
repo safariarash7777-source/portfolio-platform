@@ -136,13 +136,25 @@ test("owner role gates approval; stale basis disables it; withdrawn version has 
 });
 test("only registry owner is offered for consent; unavailable owner never becomes a fake advisor", () => {
   const memberData = { ...data, actor: { id: member, isOwner: false, isAdvisor: false }, selected: null, dossier: null, sessions: [], notes: [], relationships: [], advisors: [{ id: actor, displayName: "مشاور غیرمالک", isOwner: false }] };
-  const html = renderToStaticMarkup(<ConsultationPanel data={memberData} locked={false} selectionLocked={false} onCommand={async () => true} onSelect={() => {}} onDirty={() => {}} onPeriod={() => {}} onDiscard={() => {}} />);
+  const html = renderToStaticMarkup(<ConsultationPanel memberFilters={{search:"",relationStatus:"active"}} onMemberFiltersChange={()=>{}} data={memberData} locked={false} selectionLocked={false} onCommand={async () => true} onSelect={() => {}} onDirty={() => {}} onPeriod={() => {}} onDiscard={() => {}} />);
   assert.match(html, /دسترسی آرش برای این محیط هنوز/); assert.doesNotMatch(html, /<option value="11111111/); assert.match(html, /فیلتر ریسک، دارایی و نقص اطلاعات هنوز/);
+});
+
+test("member list renders the same controlled name/status filter before and after a selected dossier remount",()=>{
+ const revoked={...data.relationships[0],clientLabel:"پرونده هدف لغوشده",revoked:true};
+ const active={...revoked,id:member,clientLabel:"پرونده هدف فعال پنهان",revoked:false};
+ const memberData:ConsultationRead={...data,actor:{id:member,isOwner:false,isAdvisor:false},relationships:[revoked,active],selected:null,dossier:null,sessions:[],notes:[],events:[],actions:[]};
+ for(const selected of [false,true]){
+  const html=renderToStaticMarkup(<ConsultationPanel data={{...memberData,selected:selected?revoked:null,dossier:selected?data.dossier:null}} memberFilters={{search:"هدف",relationStatus:"revoked"}} onMemberFiltersChange={()=>{}} locked={false} selectionLocked={false} onCommand={async()=>false} onSelect={()=>{}} onDirty={()=>{}} onPeriod={()=>{}} onDiscard={()=>{}} />);
+  assert.match(html,/value="هدف"/);assert.match(html,/value="revoked" selected=""/);
+  assert.match(html,/پرونده هدف لغوشده/);assert.doesNotMatch(html,/پرونده هدف فعال پنهان/);
+  if(selected)assert.match(html,/<button[^>]*disabled=""[^>]*>پرونده هدف لغوشده/);
+ }
 });
 
 test("consent form hides for existing active current-owner relation and returns after revocation", () => {
   const memberData: ConsultationRead = { ...data, actor: { id: member, isOwner: false, isAdvisor: false }, selected: null, dossier: null, sessions: [], notes: [] };
-  const render = (value: ConsultationRead) => renderToStaticMarkup(<ConsultationPanel data={value} locked={false} selectionLocked={false} onCommand={async () => true} onSelect={() => {}} onDirty={() => {}} onPeriod={() => {}} onDiscard={() => {}} />);
+  const render = (value: ConsultationRead) => renderToStaticMarkup(<ConsultationPanel memberFilters={{search:"",relationStatus:"active"}} onMemberFiltersChange={()=>{}} data={value} locked={false} selectionLocked={false} onCommand={async () => true} onSelect={() => {}} onDirty={() => {}} onPeriod={() => {}} onDiscard={() => {}} />);
   assert.doesNotMatch(render(memberData), /aria-label="رضایت و دسترسی مشاور"/);
   assert.match(render({ ...memberData, relationships: [] }), /aria-label="رضایت و دسترسی مشاور"/);
   assert.match(render({ ...memberData, relationships: memberData.relationships.map(item => ({ ...item, revoked: true })) }), /aria-label="رضایت و دسترسی مشاور"/);

@@ -26,3 +26,6 @@
 - [x] A15: رسید و SHA در همان شاخه PR334؛ CI0d63 به‌گزارش مستقل هماهنگ‌کننده هر۵job موفق. انتقال آخرین اسناد/test-harness به GitHub با همان هماهنگ‌کننده است.
 - [x] A16: گیت DB default-off و capability مشترک GET/UI/POST، خواندن تاریخچه در حالت خاموش، حفظ فرم باز؛ ۳۹ آزمون قرارداد/API/UI و lint محدوده موفق.
 - [x] A17: چهار حساب تازه،۲۴سناریوی پایه، ادامه native با حدود SQLSTATE نخست، exact403/۹postcondition و موجودی غیرصفر؛ مرورگر۳۲۰/۳۹۰ و cleanup شاهد دارند. source/primary، online، reader مستقر و حق تجاری پذیرفته نشده‌اند.
+- [ ] A18: بازتولید و رفع کوچک reset فیلتر عضو در انتخاب/remount؛ حفظ selection مجاز و scope همان حساب.
+- [ ] A19: reader/API جدید با SQL قدیمی و حساب‌های تازه native؛ missingcap=false، history قدیم و منع newstatus پیش از write.
+- [ ] A20: CI/Preview/رسید نسخه تازه، cleanup تنها منابع جدید؛ هیچ شاهد0d63 به head تازه تعمیم داده نشود.

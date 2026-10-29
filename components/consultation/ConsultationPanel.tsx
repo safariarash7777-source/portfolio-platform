@@ -10,13 +10,17 @@ import RecommendationEditor from "./RecommendationEditor";
 import { draftBody, recommendationDraft, type RecommendationDraft } from "./draft";
 import type { ReplyCommand, ReplyRead } from "@/lib/consultation/replies";
 
-export default function ConsultationPanel({ data, locked, selectionLocked, onCommand, onSelect, onDirty, onPeriod, onDiscard, replies = {}, onReply, replyErrors = {}, onReloadReplies }: {
+export interface MemberFilters { search: string; relationStatus: "active" | "revoked" | "all" }
+export default function ConsultationPanel({ data, memberFilters, onMemberFiltersChange, locked, selectionLocked, onCommand, onSelect, onDirty, onPeriod, onDiscard, replies = {}, onReply, replyErrors = {}, onReloadReplies }: {
   data: ConsultationRead; locked: boolean; selectionLocked: boolean; onCommand: (command: ConsultationCommand) => Promise<boolean>;
+  memberFilters: MemberFilters; onMemberFiltersChange: (filters: MemberFilters) => void;
   onSelect: (relationshipId: string) => void; onDirty: () => void; onPeriod: (period: { startOn: string; endOn: string }) => void; onDiscard: () => void;
   replies?: Record<string, ReplyRead>; onReply?: (command: ReplyCommand) => Promise<boolean>;
   replyErrors?: Record<string, string>; onReloadReplies?: () => void;
 }) {
-  const [search, setSearch] = useState(""), [relationStatus, setRelationStatus] = useState("active");
+  const {search,relationStatus}=memberFilters;
+  const setSearch=(search:string)=>onMemberFiltersChange({...memberFilters,search});
+  const setRelationStatus=(relationStatus:string)=>{if(relationStatus==="active"||relationStatus==="revoked"||relationStatus==="all")onMemberFiltersChange({...memberFilters,relationStatus});};
   const [advisorId, setAdvisorId] = useState(""), [clientLabel, setClientLabel] = useState(""), [consent, setConsent] = useState(false);
   const [draft, setDraft] = useState<RecommendationDraft | null>(null), [formError, setFormError] = useState("");
   const [period, setPeriod] = useState(data.dossier?.basis.cashFlowPeriod ?? { startOn: "", endOn: "" });
