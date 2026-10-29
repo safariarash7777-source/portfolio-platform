@@ -1,0 +1,31 @@
+{
+  "contract": "start-a-release-readiness.v1",
+  "observedAt": "2026-10-29T15:39:48.650577+00:00",
+  "sourceSha": "b08687b233d5fe1317748b6adff61653d58dadd8",
+  "archive": "start-a-transfer-b08687b.zip",
+  "archiveSha256": "344bf16fb53fa8e3bb87a53ef053a40fc35fc050de010e4d310cd036b86da941",
+  "manifestSha256": "04472080632276bc85fdacd826d9a631f852b4013b19df022f01289336e5d273",
+  "verifierSha256": "baaff4e6819b9f8903d51ef0220cb2d0579e5cf1a5c1fece54710aac9a68c816",
+  "catalogQueryCheck": {
+    "status": "PASS_EMPTY_CATALOG",
+    "readOnly": true,
+    "rowsRead": "system_catalog_only",
+    "nativeOnlineAcceptance": false
+  },
+  "catalogTestCleanup": "OWNED_CONTAINER_REMOVED",
+  "transferTests": {
+    "passed": 2,
+    "failed": 0
+  },
+  "offlineVerification": "PASS_ON_WINDOWS_PYTHON_3",
+  "linuxExecution": "NOT_RUN",
+  "primaryPreflight": "UNVERIFIED_SSH_TIMEOUT",
+  "remotePrRefresh": "UNVERIFIED_CONNECTOR_TRANSPORT_FAILURE",
+  "capacityFreshGiB": null,
+  "backupFresh": false,
+  "nativeOnlineAcceptance": false,
+  "primaryDdl": false,
+  "productionDeployment": false,
+  "commercialEntitlement": "NOT_CONNECTED_AT_CONSULTATION_BOUNDARY",
+  "nextOwner": "01a187f6-30e9-7fb1-8cde-d60fd036f76b/local"
+}
