@@ -10,22 +10,27 @@ import RecommendationEditor from "./RecommendationEditor";
 import { draftBody, recommendationDraft, type RecommendationDraft } from "./draft";
 import type { ReplyCommand, ReplyRead } from "@/lib/consultation/replies";
 
-export default function ConsultationPanel({ data, locked, selectionLocked, onCommand, onSelect, onDirty, onPeriod, onDiscard, replies = {}, onReply, replyErrors = {}, onReloadReplies }: {
+export interface MemberFilters { search: string; relationStatus: "active" | "revoked" | "all" }
+export default function ConsultationPanel({ data, memberFilters, onMemberFiltersChange, locked, selectionLocked, onCommand, onSelect, onDirty, onPeriod, onDiscard, replies = {}, onReply, replyErrors = {}, onReloadReplies }: {
   data: ConsultationRead; locked: boolean; selectionLocked: boolean; onCommand: (command: ConsultationCommand) => Promise<boolean>;
+  memberFilters: MemberFilters; onMemberFiltersChange: (filters: MemberFilters) => void;
   onSelect: (relationshipId: string) => void; onDirty: () => void; onPeriod: (period: { startOn: string; endOn: string }) => void; onDiscard: () => void;
   replies?: Record<string, ReplyRead>; onReply?: (command: ReplyCommand) => Promise<boolean>;
   replyErrors?: Record<string, string>; onReloadReplies?: () => void;
 }) {
-  const [search, setSearch] = useState(""), [relationStatus, setRelationStatus] = useState("active");
+  const {search,relationStatus}=memberFilters;
+  const setSearch=(search:string)=>onMemberFiltersChange({...memberFilters,search});
+  const setRelationStatus=(relationStatus:string)=>{if(relationStatus==="active"||relationStatus==="revoked"||relationStatus==="all")onMemberFiltersChange({...memberFilters,relationStatus});};
   const [advisorId, setAdvisorId] = useState(""), [clientLabel, setClientLabel] = useState(""), [consent, setConsent] = useState(false);
   const [draft, setDraft] = useState<RecommendationDraft | null>(null), [formError, setFormError] = useState("");
   const [period, setPeriod] = useState(data.dossier?.basis.cashFlowPeriod ?? { startOn: "", endOn: "" });
   const [reviewFilter, setReviewFilter] = useState("all");
   const [replyEditing, setReplyEditing] = useState<string | null>(null);
+  const [feedbackEditing, setFeedbackEditing] = useState<string | null>(null);
   const relation = data.selected, advisor = Boolean(relation && relation.advisorId === data.actor.id), member = Boolean(relation && relation.clientId === data.actor.id);
   const hasActiveOwnerRelationship = data.relationships.some(item => !item.revoked && item.clientId === data.actor.id && data.advisors.some(person => person.isOwner && person.id === item.advisorId));
   const matches = data.relationships.filter(item => item.clientLabel.includes(search.trim()) && (relationStatus === "all" || (relationStatus === "revoked" ? item.revoked : !item.revoked)));
-  const edit = (session?: ConsultationSession) => { if (locked || !advisor || !data.dossier || relation?.revoked) return; setDraft(recommendationDraft(session?.sessionKey ?? crypto.randomUUID(), session, data.notes.find(note => note.sessionId === session?.id)?.note)); onDirty(); setFormError(""); };
+  const edit = (session?: ConsultationSession) => { if (locked || replyEditing || feedbackEditing || !advisor || !data.dossier || relation?.revoked) return; setDraft(recommendationDraft(session?.sessionKey ?? crypto.randomUUID(), session, data.notes.find(note => note.sessionId === session?.id)?.note)); onDirty(); setFormError(""); };
   const save = async () => {
     if (!draft || !relation || !data.dossier || locked) return;
     try { const body = draftBody(draft, data.dossier.basis); setFormError(""); await onCommand({ kind: "save", relationshipId: relation.id, sessionKey: draft.sessionKey, baseVersion: draft.baseVersion, body, privateNote: draft.privateNote.trim() || null }); }
@@ -46,10 +51,10 @@ export default function ConsultationPanel({ data, locked, selectionLocked, onCom
       <form className="card space-y-3 p-4 sm:p-5" aria-label="دورهٔ پروندهٔ مالی" onSubmit={event => { event.preventDefault(); if (selectionLocked) return; try { const startOn = dateInput(period.startOn), endOn = dateInput(period.endOn); if (startOn > endOn) throw Error("پایان دوره باید پس از شروع باشد."); setFormError(""); onPeriod({ startOn, endOn }); } catch { setFormError("شروع و پایان معتبر دوره را با تقویم میلادی انتخاب کنید."); } }}><h3 className="font-bold">دورهٔ جریان نقد مبنای بررسی</h3><fieldset disabled={selectionLocked} className="grid min-w-0 gap-3 sm:grid-cols-3"><legend className="sr-only">انتخاب دوره</legend><Field label="شروع دوره (میلادی)" type="date" value={period.startOn} onChange={startOn => setPeriod({ ...period, startOn })} /><Field label="پایان دوره (میلادی)" type="date" value={period.endOn} onChange={endOn => setPeriod({ ...period, endOn })} /><button type="submit" className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline self-end">خواندن این دوره</button></fieldset></form>
       <Dossier data={data.dossier} ownerId={relation.clientId} />
       {formError && <p role="alert" className="card p-4 text-sm">{formError}</p>}
-      {advisor && !relation.revoked && !draft && <button type="button" className="btn !whitespace-normal max-w-full min-w-0 break-words btn-gold" disabled={locked || replyEditing !== null} onClick={() => edit()}>پیش‌نویس جمع‌بندی تازه</button>}
+      {advisor && !relation.revoked && !draft && <button type="button" className="btn !whitespace-normal max-w-full min-w-0 break-words btn-gold" disabled={locked || replyEditing !== null || feedbackEditing !== null} onClick={() => edit()}>پیش‌نویس جمع‌بندی تازه</button>}
       {draft && <RecommendationEditor draft={draft} basis={data.dossier.basis} locked={locked} onChange={next => { if (!locked) { setDraft(next); onDirty(); } }} onSave={() => void save()} onCancel={onDiscard} />}
       <section className="min-w-0 space-y-4" aria-label="نسخه‌ها و پیگیری"><div className="flex flex-wrap items-end justify-between gap-3"><h2 className="font-display text-xl font-bold">نسخه‌ها و پیگیری ({toPersianDigits(sessions.length)})</h2><label className="text-sm">موعد بازبینی<select className="input min-h-11 w-full" value={reviewFilter} disabled={selectionLocked} onChange={event => setReviewFilter(event.target.value)}><option value="all">همهٔ نسخه‌های مجاز</option><option value="due">موعد رسیده یا گذشته</option></select></label></div>{sessions.length === 0 && <p className="card p-4 text-sm">نسخه‌ای مطابق این فیلتر در پروندهٔ خوانده‌شده نیست.</p>}
-        {sessions.map(session => <SessionCard key={session.id} session={session} latest={!data.sessions.some(item => item.sessionKey === session.sessionKey && item.version > session.version)} advisor={advisor} owner={data.actor.isOwner} revoked={relation.revoked} basis={data.dossier!.basis} feedback={data.actions.filter(action => action.sessionId === session.id)} privateNote={data.notes.find(note => note.sessionId === session.id)?.note} replies={replies[session.id]} replyError={replyErrors[session.id]} onReloadReplies={onReloadReplies} repliesReloadLocked={selectionLocked} onReply={onReply} onReplyDirty={() => { setReplyEditing(session.id); onDirty(); }} onCancelReply={onDiscard} replyLocked={locked || draft !== null || (replyEditing !== null && replyEditing !== session.id)} locked={locked || draft !== null || replyEditing !== null} onCommand={onCommand} onEdit={() => edit(session)} onDirty={onDirty} />)}
+        {sessions.map(session => <SessionCard key={session.id} session={session} extendedFeedbackWrite={data.capabilities?.extendedFeedbackWrite === true} latest={!data.sessions.some(item => item.sessionKey === session.sessionKey && item.version > session.version)} advisor={advisor} owner={data.actor.isOwner} revoked={relation.revoked} basis={data.dossier!.basis} feedback={data.actions.filter(action => action.sessionId === session.id)} privateNote={data.notes.find(note => note.sessionId === session.id)?.note} replies={replies[session.id]} replyError={replyErrors[session.id]} onReloadReplies={onReloadReplies} repliesReloadLocked={selectionLocked} onReply={onReply} onReplyDirty={() => { setReplyEditing(session.id); onDirty(); }} onCancelReply={onDiscard} replyLocked={locked || draft !== null || feedbackEditing !== null || (replyEditing !== null && replyEditing !== session.id)} locked={locked || draft !== null || replyEditing !== null || feedbackEditing !== null} feedbackLocked={locked || draft !== null || replyEditing !== null} activeFeedbackKey={feedbackEditing} onFeedbackBegin={key => { setFeedbackEditing(key); onDirty(); }} onFeedbackCancel={onDiscard} onCommand={onCommand} onEdit={() => edit(session)} onDirty={onDirty} />)}
       </section>
     </>}
   </div>;

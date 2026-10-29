@@ -1,0 +1,22 @@
+{
+  "sha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+  "logs": {
+    "member-filter-red.log": {
+      "bytes": 889,
+      "sha256": "87c0620d831ad3b1e56315176afa1435f447b22249babaf9184fceb4a03789b3"
+    },
+    "member-filter-green.log": {
+      "bytes": 3664,
+      "sha256": "b791af7c8c8c1f20858a7d4671f251c86891249c0bd45df7c401155ce7909907"
+    },
+    "member-filter-typecheck.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "legacy-native.log": {
+      "bytes": 3679,
+      "sha256": "bc5fe80686ba0b2c725fec2a2abc925b6edc4acca244897cef7c2df1ec39fe9a"
+    }
+  },
+  "privateRawLogsNotPublished": true
+}

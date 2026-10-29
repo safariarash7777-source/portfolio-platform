@@ -1,0 +1,40 @@
+{
+  "status": "VERIFIED_GUARDED_TRANSFER_ONLY",
+  "sourceSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "baselineInExecutablePayload": false,
+  "applyPayloadSha256": "c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8",
+  "rollbackPayloadSha256": "5584bc277c9be9d9970adc2a69f6c05be580240fe5271d24a16db5ec8a44453a",
+  "readerAttestationIncluded": false,
+  "installationExecuted": false,
+  "gateActivated": false,
+  "archive": "start-a-guarded-transfer-r3b.zip",
+  "archiveSha256": "4cc1cfc6ea172d9fa33d3ac651e179d72533797455ea3c3c7b75c1d8d61c29c7",
+  "manifestSha256": "2fb896dc429722a19f55fd679bf9453ef516af5fcae924640789d1392dfdef73",
+  "archiveBytes": 52524,
+  "linux": {
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with",
+    "python": "3.12.16",
+    "verifierExit": 0,
+    "result": {
+      "status": "VERIFIED_GUARDED_TRANSFER_ONLY",
+      "sourceSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "baselineInExecutablePayload": false,
+      "applyPayloadSha256": "c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8",
+      "rollbackPayloadSha256": "5584bc277c9be9d9970adc2a69f6c05be580240fe5271d24a16db5ec8a44453a",
+      "readerAttestationIncluded": false,
+      "installationExecuted": false,
+      "gateActivated": false
+    },
+    "error": null,
+    "tamperedSqlRejected": true
+  },
+  "image": "sha256:5789aa194f757888f41fa3d48e14b6feaa1b57c0af0b56fcb1372d6474d3bff0",
+  "linuxContainerExit": 0,
+  "network": "none",
+  "hostMounts": false,
+  "ports": false,
+  "sharedSocket": false,
+  "observedAt": "2026-10-29T17:09:44.913936+00:00",
+  "supersedesUnpublishedPrototype": "start-a-guarded-transfer-r3.zip",
+  "ownedContainerRemoved": true
+}

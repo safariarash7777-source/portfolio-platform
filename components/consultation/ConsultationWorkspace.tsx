@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createConsultationAttempt, readConsultation, sendConsultationAttempt } from "@/lib/consultation/request";
-import ConsultationPanel from "./ConsultationPanel";
+import ConsultationPanel, {type MemberFilters} from "./ConsultationPanel";
 import { receiptVisible } from "./readback";
 import type { ConsultationReceipt } from "@/lib/consultation/contracts";
 import { createReplyAttempt, readReplies, sendReplyAttempt } from "@/lib/consultation/repliesRequest";
@@ -19,6 +19,7 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
   const [replies, setReplies] = useState<Record<string, ReplyRead>>({});
   const [replyErrors, setReplyErrors] = useState<Record<string, string>>({});
   const [isAdvisor, setIsAdvisor] = useState(false);
+  const [memberFilters,setMemberFilters]=useState<MemberFilters>({search:"",relationStatus:"active"});
   const [saving, setSaving] = useState(false), [uncertain, setUncertain] = useState(false), [confirmed, setConfirmed] = useState(false);
   const [readbackVerified, setReadbackVerified] = useState(false);
   const [message, setMessage] = useState(""), [dirty, setDirty] = useState(false), [revision, setRevision] = useState(0);
@@ -31,6 +32,7 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
   const clearIdentity = useCallback(() => {
     live.current = false; revoked.current = true; abortReads(); pending.current = null; receiptRef.current = null; setIsAdvisor(false);
     setData(null); setReplies({}); setReplyErrors({}); setMessage(""); setError(""); setDirty(false); setSaving(false); setReading(false); setUncertain(false); setConfirmed(false); setReadbackVerified(false); setIdentity("changed");
+    setMemberFilters({search:"",relationStatus:"active"});
   }, [abortReads]);
   const load = useCallback(async (relationshipId?: string) => {
     if (!live.current || revoked.current) return false;
@@ -131,6 +133,6 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
     {uncertain && <section className="card space-y-3 p-5"><p>تا تعیین تکلیف، ویرایش و تغییر پرونده بسته است؛ متن و شناسهٔ همان درخواست حفظ شده‌اند.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving || reading} onClick={() => void send()}>بررسی دوبارهٔ همین ثبت</button></section>}
     {confirmed && !readbackVerified && !error && !reading && <section className="card space-y-3 p-4"><p role="status">رسید ثبت محفوظ است؛ بازخوانی مستقل همان اثر هنوز تأیید نشده است. ثبت دوباره انجام نمی‌شود.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button></section>}
     {confirmed && readbackVerified && !error && !reading && <button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => { if (!live.current || revoked.current || !readbackVerified) return; receiptRef.current = null; setConfirmed(false); setReadbackVerified(false); setMessage(""); }}>ادامه با پروندهٔ بازخوانی‌شده</button>}
-    {data && <ConsultationPanel key={revision} data={data} replies={replies} replyErrors={replyErrors} onReloadReplies={() => { if (!locked && !dirty) void load(selected.current); }} onReply={command => send(command)} locked={locked} onDirty={() => { if (!locked) setDirty(true); }} onCommand={command => send(command)} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} selectionLocked={locked || dirty} onPeriod={next => { if (!locked && !dirty) { period.current = next; setData(null); void load(selected.current); } }} onDiscard={() => { if (!locked) { setDirty(false); setRevision(value => value + 1); } }} />}
+    {data && <ConsultationPanel key={revision} data={data} memberFilters={memberFilters} onMemberFiltersChange={next => { if (live.current && !revoked.current) setMemberFilters(next); }} replies={replies} replyErrors={replyErrors} onReloadReplies={() => { if (!locked && !dirty) void load(selected.current); }} onReply={command => send(command)} locked={locked} onDirty={() => { if (!locked) setDirty(true); }} onCommand={command => send(command)} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} selectionLocked={locked || dirty} onPeriod={next => { if (!locked && !dirty) { period.current = next; setData(null); void load(selected.current); } }} onDiscard={() => { if (!locked) { setDirty(false); setRevision(value => value + 1); } }} />}
   </div>;
 }
