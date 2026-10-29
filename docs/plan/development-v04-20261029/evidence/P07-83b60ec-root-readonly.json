@@ -16,13 +16,13 @@
     {
       "id": 40929370887,
       "sha": "83b60ec3e5ca6c0f9581ec1afcd3c47d97fe9789",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "jobs": [
         {
           "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
-          "status": "in_progress",
-          "conclusion": null
+          "status": "completed",
+          "conclusion": "success"
         },
         {
           "name": "Dependencies",
@@ -31,11 +31,16 @@
         },
         {
           "name": "Database RLS \u00b7 Integrity (Postgres)",
-          "status": "in_progress",
-          "conclusion": null
+          "status": "completed",
+          "conclusion": "success"
         },
         {
           "name": "Secret scan \u00b7 SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CI Gate",
           "status": "completed",
           "conclusion": "success"
         }
@@ -63,5 +68,6 @@
     "productScope": "two monthly consumers reuse existing helper; no core/C/API/SQL/package delta",
     "localTests": "owner receipt: RED17/2 then GREEN19/0 and regression16/0; root did not rerun",
     "visualPreviewAccepted": false
-  }
+  },
+  "ciRefreshedAt": "2026-10-29T18:24:07.342656+00:00"
 }

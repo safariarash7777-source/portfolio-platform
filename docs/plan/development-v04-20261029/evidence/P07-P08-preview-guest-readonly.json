@@ -18,7 +18,16 @@
     "correctProductPageTitleVerified": true,
     "vercelAuthenticationProtectionDetected": false,
     "interactiveFeatureAcceptance": false,
-    "rootBrowserAttempt": "P07 in-app browser create timed out after10s; kernel reset; no UI acceptance claimed"
+    "rootBrowserAttempt": "P07 in-app browser create timed out after10s; kernel reset; no UI acceptance claimed",
+    "ownerAdditionalReadback": {
+      "symbol": "FMLI",
+      "sameDeployment": true,
+      "monthlyCardPresent": false,
+      "monthlyChartPresent": false,
+      "sourceFallbackPresent": false,
+      "bodyStored": false,
+      "financialAcceptance": false
+    }
   },
   {
     "slice": "P08",
@@ -39,6 +48,27 @@
     "correctProductPageTitleVerified": true,
     "vercelAuthenticationProtectionDetected": false,
     "interactiveFeatureAcceptance": false,
-    "rootBrowserAttempt": "not performed by root"
+    "rootBrowserAttempt": "not performed by root",
+    "ownerAdditionalReadback": {
+      "titleVerified": true,
+      "visibleState": "stored fund snapshot empty; unavailable section; no synthetic replacements",
+      "selectors": 0,
+      "hasComparison": false,
+      "hasSecurityCheckpoint": false,
+      "guestCookiesSent": false
+    },
+    "rootCodeTrace": {
+      "files": [
+        "app/market/funds/page.tsx",
+        "lib/market-bounded.ts",
+        "lib/market-ir.ts",
+        "components/market/FundsFullBoard.tsx"
+      ],
+      "path": "FundsPage -> readIranMarket -> getIrMarket (Supabase then relay then cache/null); empty board returns before comparison",
+      "causeOfLowerSourceFailure": null,
+      "newDiagnosticEndpointCreated": false,
+      "primaryCredentialCopied": false,
+      "followupOwner": "existing START-C durable thread; send succeeded, acknowledgment/outcome pending"
+    }
   }
 ]

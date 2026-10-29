@@ -16,18 +16,18 @@
     {
       "id": 40929541555,
       "sha": "1d7b3586931548fe35f1d5cacbf4ad93771c3d30",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "jobs": [
         {
           "name": "Database RLS \u00b7 Integrity (Postgres)",
-          "status": "in_progress",
-          "conclusion": null
+          "status": "completed",
+          "conclusion": "success"
         },
         {
           "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
-          "status": "in_progress",
-          "conclusion": null
+          "status": "completed",
+          "conclusion": "success"
         },
         {
           "name": "Secret scan \u00b7 SQL validation",
@@ -36,6 +36,11 @@
         },
         {
           "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CI Gate",
           "status": "completed",
           "conclusion": "success"
         }
@@ -67,5 +72,6 @@
       1280
     ],
     "visualPreviewAccepted": false
-  }
+  },
+  "ciRefreshedAt": "2026-10-29T18:24:07.155790+00:00"
 }
