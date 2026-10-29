@@ -93,6 +93,16 @@ root [CI40910174737](https://github.com/safariarash7777-source/portfolio-platfor
 
 **قابل بررسی اکنون:** durable prepare→قطع پاسخ/بستن→نمونهٔ تازه→GET-only بازیابی، متن/هویت/شناسه/base ثابت، v1 وreviewمحفوظ وv2بی‌تأیید؛ منع اعضا/ادمین دیگر/service-role باBYPASSRLS و حفظfreeze در آزمون native. **باقی‌مانده:** نصب SQL روی مقصد مجاز، پشتیبان/restore وwritercompat، نشست Authواقعی، پذیرش آنلاین و پذیرش آرش؛ هیچ‌کدام باCI بسته نشدند. هزینهٔ افزودهٔ CI محاسبه نشده؛ خرید یا سرویس پولی تازه و modelcall انجام نشده است. ادامهٔ نصب باroot/مجری مقصد، و A/تمرینSQL وC/داده مستقل باقی‌اند.
 
+### A: تمرین نصب و برگشت روی کپی PostgreSQL تحویل شد
+
+root نسخهٔ `0d63a8b64e4975a3c9dab3f1f579f91302602b01` را پس از بررسی diff۲۲فایل، تطبیق هفت فایل تست‌شده و hash payload، به همان [PR334](https://github.com/safariarash7777-source/portfolio-platform/pull/334) ارسال کرد. [راهنمای adapter و ترتیب انتشار](https://github.com/safariarash7777-source/portfolio-platform/blob/0d63a8b64e4975a3c9dab3f1f579f91302602b01/docs/ops/start-a-finance-v04-20261029/ADAPTER.fa.md)، [رسید ۱۷آزمون Linux](https://github.com/safariarash7777-source/portfolio-platform/blob/0d63a8b64e4975a3c9dab3f1f579f91302602b01/docs/ops/start-a-finance-v04-20261029/linux-guarded-receipt.json) و [رسید ۱۴سناریوی PG17](https://github.com/safariarash7777-source/portfolio-platform/blob/0d63a8b64e4975a3c9dab3f1f579f91302602b01/docs/ops/start-a-finance-v04-20261029/adapter-sql-receipt.json) قابل بازکردن‌اند. مجری۳۹آزمون contract/API/UI وtypecheck/scopedlint را هم موفق گزارش کرد؛ CIاینhead هنوز بررسی نشده است.
+
+در کپی ایزوله با دو profile، applyاتمیک و default-off، منع directRPC و تغییر گیت توسط admin برنامه، rollback پیش از تاریخچه جدید، قطع پاسخ پس از commit با یک DDL و سپس readback، حفظ تاریخچه/مالی و PT409 در rollback ناسازگار موفق بودند. memberB و مشاور نامرتبط ممنوع، revoke مؤثر و مبنای مالی دوم مانع تأیید مبنای قبلی بود. root hash payload=`c53de46a…` را با همین رسید تطبیق داد. **حد شاهد:** transport=`SQL_CLAIMS_NOT_NATIVE_AUTH_API` و realAccounts=0؛ این تمرین nativeAuth/API یا پذیرش آنلاین نیست. مجریA مرحلهٔ ورود/API واقعی در محیط جدا را مستقل ادامه می‌دهد؛ هیچ آزمایشگاهی وارد محصول نمی‌شود.
+
+گیت rollout خصوصی و default-off است؛ reader/API سازگار ابتدا روی SQLقدیمی با missing-capability=false، سپس DDLاتمیک و در پایان activation مجاز پس از پذیرش قرار دارند. source-mode بدون reader-attestation واقعی/تازه و همان binding کپی متوقف می‌شود؛ GET/POST/UI و kernel یک مرجع دارند. خاموشی گیت متن فرم باز یا تاریخچه را پاک نمی‌کند. [MIGRATION-LEDGER](MIGRATION-LEDGER.md) companion و rollback را باhash و NOT_APPLIED ثبت کرد؛ حق خدمت تجاری همچنان جداست.
+
+**دسترسی مقصد:** تلاش تازهٔ root در۲۹اکتبر،۱۹:۵۹تهران باز هم SSH پیش ازbanner را timeout یافت؛ پروب CPU/RAM/disk درguest اجرا نشد. [رسید دسترسی به‌روز](plan/development-v04-20261029/evidence/ACCESS-RECHECK-20261029T1552Z.json). ظرفیت/backup/restore تازه و پذیرش مقصد اصلی همچنان نامعلوم و مسئول آن root است؛ هیچ restart/upgrade/install/activation اصلی انجام نشد. این مانع، تمرین‌های مستقل A/B/C را متوقف نکرد.
+
 ### گیت‌های محلی، مستقل از شروع کل کار
 
 - START-A: خطای ذخیره draft را حذف نکند؛ خواندن خراب پرونده خالی معرفی نشود. نشست و مقصد آزمون/ساختگی با مجری؛ نصب افزونه مشاوره و گیت پشتیبان/ظرفیت جدا از آزمون مستقل است. آمار ظرفیت ۲۷ اکتبر تأیید تازه محسوب نمی‌شود.

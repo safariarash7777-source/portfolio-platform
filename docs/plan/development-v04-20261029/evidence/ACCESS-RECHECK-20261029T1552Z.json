@@ -38,6 +38,13 @@
       "remoteCommandExecuted": false
     }
   ],
+  "followupDirectSsh": {
+    "observedAt": "2026-10-29T16:29:11Z",
+    "connectTimeoutSeconds": 8,
+    "result": "TCP_CONNECTION_TIMEOUT_BEFORE_BANNER",
+    "remoteResourceProbeExecuted": false,
+    "tehranTime": "2026-10-29 19:59:11"
+  },
   "cpuUsage": null,
   "availableMemoryBytes": null,
   "freeDiskBytes": null,
