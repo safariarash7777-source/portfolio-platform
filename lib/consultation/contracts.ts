@@ -33,6 +33,7 @@ export interface ConsultationDossier {
 }
 export interface ConsultationRead {
  contractVersion: "consultation-read.v1";
+ capabilities?: { extendedFeedbackWrite: boolean };
  actor: { id: string; isAdvisor: boolean; isOwner: boolean };
  advisors: { id: string; displayName: string; isOwner: boolean }[];
  relationships: Relationship[]; selected: Relationship | null; dossier: ConsultationDossier | null;
@@ -88,7 +89,10 @@ const timestamp=(v:unknown):string=>{if(typeof v!=="string"||!/^\d{4}-\d\d-\d\dT
 const bool=(v:unknown):boolean=>{if(typeof v!=="boolean")throw Error("وضعیت معتبر نیست.");return v;};
 function relation(v:unknown):Relationship { const r=object(v,["id","clientId","advisorId","clientLabel","createdAt","revoked"]);return {id:id(r.id),clientId:id(r.clientId),advisorId:id(r.advisorId),clientLabel:text(r.clientLabel,120),createdAt:timestamp(r.createdAt),revoked:bool(r.revoked)}; }
 export function validateConsultationRead(value: unknown, expected: {relationshipId?:string;actorId?:string;period?:{startOn:string;endOn:string}}={}): ConsultationRead {
- const r=object(value,["contractVersion","actor","advisors","relationships","selected","dossier","sessions","notes","events","actions"]);
+ const hasCapabilities=Boolean(value&&typeof value==="object"&&Object.hasOwn(value,"capabilities"));
+ const r=object(value,["contractVersion","actor","advisors","relationships","selected","dossier","sessions","notes","events","actions",...(hasCapabilities?["capabilities"]:[])]);
+ let extendedFeedbackWrite=false;
+ if(hasCapabilities){const capabilities=object(r.capabilities,["extendedFeedbackWrite"]);if(typeof capabilities.extendedFeedbackWrite!=="boolean")throw Error("قابلیت پیگیری معتبر نیست.");extendedFeedbackWrite=capabilities.extendedFeedbackWrite;}
  if(r.contractVersion!=="consultation-read.v1")throw Error("قرارداد خواندن معتبر نیست.");
  const a=object(r.actor,["id","isAdvisor","isOwner"]);const actor={id:id(a.id),isAdvisor:bool(a.isAdvisor),isOwner:bool(a.isOwner)};
  if(expected.actorId&&actor.id!==expected.actorId||actor.isOwner&&!actor.isAdvisor)throw Error("هویت تغییر کرده است.");
@@ -133,5 +137,5 @@ export function validateConsultationRead(value: unknown, expected: {relationship
   if(feedbackNeedsDetails(action.status)&&!action.text)throw Error("جزئیات پیگیری موجود نیست.");
   if(action.status==="question"&&!action.text)throw Error("پرسش بدون متن معتبر نیست.");
  }
- return {contractVersion:'consultation-read.v1',actor,advisors,relationships,selected,dossier,sessions,notes,events,actions};
+ return {contractVersion:'consultation-read.v1',...(hasCapabilities?{capabilities:{extendedFeedbackWrite}}:{}),actor,advisors,relationships,selected,dossier,sessions,notes,events,actions};
 }

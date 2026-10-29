@@ -1,5 +1,11 @@
 # START-A — دو وضعیت پیگیری، نسخه ۰٫۴
 
+## candidate گیت‌دار و rehearsal لینوکس/PG
+
+[قرارداد adapter و ترتیب rollout](ADAPTER.fa.md) نسخه جدید تحویل فنی است. r2 immutable حفظ شده، ولی بسته apply نهایی اکنون r2+companion را در یک transaction با گیت خصوصی خاموش نصب می‌کند؛ پنجره schema بدون guard ندارد. سه تابع خصوصی command/execute/load، قید وضعیت و اشیای دقیق گیت دامنه تغییرند. UI/GET/POST و RPC مستقیم از همان گیت پیروی می‌کنند؛ خواندن تاریخچه مستقل می‌ماند و متن فرم هنگام خاموش‌شدن از بین نمی‌رود.
+
+[Linux جدید: ۱۷ unit موفق، fcntl واقعی](linux-guarded-receipt.json)، [PG17: ۱۴ سناریو در دو profile](adapter-sql-receipt.json)، و ۳۹ آزمون قرارداد/API/UI موفق‌اند. در PG، قطع پاسخ **پس از commit واقعی** با یک DDL و readback فقط‌خواندنی بررسی شد؛ rollback قبل از وضعیت تازه موفق و پس از partial/not_done رد شد، تاریخچه و موجودی محفوظ‌اند. unitِ adapter transport را mock می‌کند و PG از claims ساختگی استفاده می‌کند؛ این‌ها پذیرش native Auth/API یا آنلاین نیستند. source-mode بدون attestation واقعی reader سازگار، تازه و متصل به payload/rehearsal بسته است. هیچ source/primary نصب یا گیت عملیاتی فعال نشده است. پذیرش native مستقل در ادامه است.
+
 ## ادامه آماده‌سازی انتشار — ۲۹ اکتبر
 
 هماهنگ‌کننده سپس تأیید کرد head `be92c66` به PR334 ارسال و archive/manifest/verifier مستقل تطبیق داده شده‌اند؛ شکست push در رسید قبلی تاریخی است. اجرای واقعی Linux در [رسید runtime](linux-runtime-receipt.json) ثبت شد: Python3.12.16، image رسمی pinشده، network=none، verifier آرشیو r2 exit0 و ۱۵ آزمون adapter از جمله `fcntl` واقعی موفق شدند. نخستین اجرای unit در Linux به‌دلیل مسیر کم‌عمق fixture شکست خورد؛ گزارش اصلی در outputs حفظ و خلاصه آن کنار رسید نهایی ثبت شده است. این شاهد، native آنلاین یا نصب اصلی نیست.

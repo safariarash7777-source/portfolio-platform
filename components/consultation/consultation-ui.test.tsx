@@ -27,12 +27,13 @@ const receipt: ConsultationReceipt = { contractVersion: "consultation-write.v1",
 test("extended action feedback is offered only for a published active action assigned to the current role", () => {
  const action={actionKey:relationId,title:"اقدام ساختگی",dueOn:"2099-12-31",responsible:"member" as const};
  const published={...session,state:"published" as const,body:{...body,actions:[action]}};
- const render=(advisor=false,revoked=false,current:ConsultationSession=published)=>renderToStaticMarkup(<SessionCard session={current} latest advisor={advisor} owner={advisor} revoked={revoked} basis={basis} feedback={[]} locked={false} onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} />);
+ const render=(advisor=false,revoked=false,current:ConsultationSession=published,enabled=true)=>renderToStaticMarkup(<SessionCard session={current} latest extendedFeedbackWrite={enabled} advisor={advisor} owner={advisor} revoked={revoked} basis={basis} feedback={[]} locked={false} onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} />);
  assert.match(render(),/بخشی انجام دادم/);assert.match(render(),/انجام ندادم/);
  assert.doesNotMatch(render(true),/بخشی انجام دادم|انجام ندادم/);
  assert.doesNotMatch(render(false,true),/بخشی انجام دادم|انجام ندادم/);
  assert.doesNotMatch(render(false,false,{...published,state:"draft"}),/بخشی انجام دادم|انجام ندادم/);
- const html=renderToStaticMarkup(<ActionFeedback baseVersion={3} locked onSave={async()=>false} onBegin={()=>{}} onCancel={()=>{}} />);
+ assert.doesNotMatch(render(false,false,published,false),/بخشی انجام دادم|انجام ندادم/);
+ const html=renderToStaticMarkup(<ActionFeedback writeEnabled baseVersion={3} locked onSave={async()=>false} onBegin={()=>{}} onCancel={()=>{}} />);
  assert.equal((html.match(/disabled=""/g)||[]).length,2);
 });
 
@@ -60,15 +61,15 @@ function feedbackNodes(tree: unknown): FeedbackElement[] { if(Array.isArray(tree
 function feedbackText(tree: unknown): string { if(Array.isArray(tree))return tree.map(feedbackText).join('');if(!React.isValidElement(tree))return typeof tree==='string'?tree:'';return feedbackText((tree as FeedbackElement).props.children); }
 /** Actual component handlers and preserved hook state, not browser/native authorization evidence. */
 function mountFeedback(outcome: (edit: ActionFeedbackEdit) => Promise<boolean> = async()=>false) {
- const slots:unknown[]=[],saves:ActionFeedbackEdit[]=[];let cursor=0,tree:unknown,version=2,locked=false;
+ const slots:unknown[]=[],saves:ActionFeedbackEdit[]=[];let cursor=0,tree:unknown,version=2,locked=false,enabled=true;
  const hooks={...React,useState(initial:unknown){const i=cursor++;if(!(i in slots))slots[i]=initial;return[slots[i],(v:unknown)=>{slots[i]=v;}];},useRef(initial:unknown){const i=cursor++;if(!(i in slots))slots[i]={current:initial};return slots[i];}};
  const filename=resolve('components/consultation/ActionFeedback.tsx'),local=createRequire(filename),mod={exports:{} as {default:(props:unknown)=>unknown}};
  const code=ts.transpileModule(readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2017,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.React,esModuleInterop:true},fileName:filename}).outputText;
  new Function('require','module','exports',code)((name:string)=>name==='react'?hooks:local(name),mod,mod.exports);
- const render=()=>{cursor=0;tree=mod.exports.default({baseVersion:version,locked,onBegin(){},onCancel(){},onSave:async(edit:ActionFeedbackEdit)=>{saves.push(edit);return outcome(edit);}});};
+ const render=()=>{cursor=0;tree=mod.exports.default({baseVersion:version,locked,writeEnabled:enabled,onBegin(){},onCancel(){},onSave:async(edit:ActionFeedbackEdit)=>{saves.push(edit);return outcome(edit);}});};
  const find=(type:string,label='')=>{const e=feedbackNodes(tree).find(e=>e.type===type&&feedbackText(e).includes(label));assert.ok(e,`${type} ${label}`);return e;};
  const details=()=>{const e=feedbackNodes(tree).find(e=>e.props.label==='چه بخشی انجام شد یا چرا انجام نشد؟');assert.ok(e);return e;};
- render();return{saves,render,find,details,text:()=>feedbackText(tree),update(v:number,lock=false){version=v;locked=lock;render();},click(label:string){(find('button',label).props.onClick as()=>void)();render();},change(value:string){(details().props.onChange as(v:string)=>void)(value);render();},submit(){(find('form').props.onSubmit as(e:unknown)=>void)({preventDefault(){}});},async flush(){await new Promise(resolve=>setImmediate(resolve));render();}};
+ render();return{saves,render,find,details,gate(value:boolean){enabled=value;render();},text:()=>feedbackText(tree),update(v:number,lock=false){version=v;locked=lock;render();},click(label:string){(find('button',label).props.onClick as()=>void)();render();},change(value:string){(details().props.onChange as(v:string)=>void)(value);render();},submit(){(find('form').props.onSubmit as(e:unknown)=>void)({preventDefault(){}});},async flush(){await new Promise(resolve=>setImmediate(resolve));render();}};
 }
 test('failed feedback save retains exact status/details/base; incoming newer feedback cannot silently rebase it',async()=>{
  const v=mountFeedback();v.click('بخشی انجام دادم');v.change('متن ساختگی من');v.submit();await v.flush();
@@ -81,6 +82,14 @@ test('feedback requires details and blocks synchronous duplicate submit while pr
  v.click('انجام ندادم');v.submit();await v.flush();assert.equal(v.saves.length,0);assert.match(v.text(),/جزئیات این وضعیت/);
  v.change('علت ساختگی');v.submit();v.submit();assert.equal(v.saves.length,1);reject(new Error('synthetic transport failure'));await v.flush();
  assert.equal(v.details().props.value,'علت ساختگی');assert.match(v.text(),/متن شما حفظ/);v.update(2,true);v.submit();await v.flush();assert.equal(v.saves.length,1);
+});
+
+test('closing the write capability retains the open draft, blocks submission and allows conscious cancellation',async()=>{
+ const v=mountFeedback();v.click('بخشی انجام دادم');v.change('متن حفظ‌شده هنگام توقف');v.gate(false);
+ assert.equal(v.details().props.value,'متن حفظ‌شده هنگام توقف');assert.match(v.text(),/اکنون فعال نیست/);
+ v.submit();await v.flush();assert.equal(v.saves.length,0);
+ assert.equal(v.find('button','لغو این پیش‌نویس').props.disabled,false);
+ v.gate(true);assert.equal(v.details().props.value,'متن حفظ‌شده هنگام توقف');v.submit();await v.flush();assert.equal(v.saves.length,1);
 });
 
 test("draft preserves exact selected financial basis, normalizes Persian dates, keeps private note outside body", () => {

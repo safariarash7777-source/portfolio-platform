@@ -12,6 +12,28 @@ function fixture(overrides: Partial<ConsultationDb> = {}) {
   return { db, writes: () => writes };
 }
 const req = (value: unknown = input, origin: string | null = "https://example.test") => new Request("https://example.test/api/consultation", { method: "POST", headers: origin ? { Origin: origin } : {}, body: typeof value === "string" ? value : JSON.stringify(value) });
+
+test("extended feedback defaults off in GET and POST and never reaches write before capability",async()=>{
+ const command={kind:"feedback" as const,relationshipId:relation,sessionId:relation,actionKey:advisor,baseVersion:0,status:"partial" as const,text:"Synthetic partial detail"};
+ const pending={...input,command};
+ const relationship={id:relation,clientId:actor,advisorId:advisor,clientLabel:"Synthetic",createdAt:"2026-10-29T00:00:00Z",revoked:false};
+ const read={...empty,relationships:[relationship],selected:relationship,dossier:{basis:{holdingsVersionId:null,cashFlowVersionId:null,goalsVersionId:null,cashFlowPeriod:{startOn:"2026-10-01",endOn:"2026-10-31"}},holdings:null,cashFlow:null,goals:null}};
+ for(const status of ["partial","not_done"] as const){
+  for(const capabilities of [undefined,{extendedFeedbackWrite:false}]){
+   const f=fixture({read:async()=>({data:{...read,...(capabilities?{capabilities}:{})},error:null})});
+   const response=await postConsultation(req({...pending,command:{...command,status}}),async()=>f.db);
+   assert.equal(response.status,409);assert.equal((await response.json()).code,"FEEDBACK_DISABLED");assert.equal(f.writes(),0);
+  }
+ }
+ const unavailable=fixture({read:async()=>({data:null,error:{code:"08006"}})});
+ assert.equal((await postConsultation(req(pending),async()=>unavailable.db)).status,503);assert.equal(unavailable.writes(),0);
+ const enabled=fixture({read:async()=>({data:{...read,capabilities:{extendedFeedbackWrite:true}},error:null}),write:async()=>({data:{...receipt,command},error:null})});
+ assert.equal((await postConsultation(req(pending),async()=>enabled.db)).status,201);
+ const closedAfterRead=fixture({read:async()=>({data:{...read,capabilities:{extendedFeedbackWrite:true}},error:null}),write:async()=>({data:null,error:{code:"42501"}})});
+ assert.equal((await postConsultation(req(pending),async()=>closedAfterRead.db)).status,403);
+ const get=await getConsultation(new Request("https://example.test/api/consultation"),async()=>fixture().db);
+ assert.deepEqual((await get.json()).capabilities,{extendedFeedbackWrite:false});
+});
 test("missing and foreign Origin never connect or write", async () => {
   for (const origin of [null, "https://other.test"]) {
     const response = await postConsultation(req(input, origin), async () => { throw new Error("must not connect"); });

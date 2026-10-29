@@ -48,6 +48,7 @@ class AdapterTests(unittest.TestCase):
                  'sourceContainerId': self.a['source']['id'], 'sourceImage': self.a['source']['image'],
                  'target': self.a['copy']['name'], 'network': 'none', 'portsPublished': False,
                  'cronEnabledOnTarget': False, 'mismatchCounts': {'sourceOnly': 0, 'targetOnly': 0}}
+        self.reader={'contractVersion':'consultation-feedback-reader.v1','sourceContainerId':self.a['source']['id'],'readerSha':'f'*40,'deploymentId':'dpl_SyntheticOnly','url':'https://synthetic.example.invalid/','checkedAt':dt.datetime.now(dt.timezone.utc).isoformat(),'verificationReceiptSha256':'9'*64,'payloadSha256':self.s.digest(m.payload(self.s,'apply').encode()),'authority':'VERIFIED_BY_COORDINATOR','checks':{k:True for k in ['oldSqlRead','missingCapabilityOff','newSqlRead','newHistoryReadable','uiWriterOff','postWriterOff']}}
         self.checkpoint = root / stamp
         self.checkpoint.mkdir()
         raw = json.dumps(proof).encode()
@@ -95,6 +96,8 @@ class AdapterTests(unittest.TestCase):
             return '1'
         if sql.startswith('SHOW '):
             return 'off'
+        if m.ROLLOUT_DEFAULT_OFF in sql:
+            return 't'
         if 'START_A_RECONCILE_READONLY' in sql:
             values = [{'catalog': 'drift' if self.drift else 'same'},
                       {'financial': 'drift' if self.financial_drift else 'same'},
@@ -119,8 +122,8 @@ class AdapterTests(unittest.TestCase):
         return json.loads((self.checkpoint/'consultation-feedback-install'/operation/(mode+'-result.json')).read_text())
 
     def test_copy_source_are_exact_payload_and_bound_to_rehearsal(self):
-        m.run('copy', self.a, 'apply', safety=self.s)
-        m.run('source', self.a, 'apply', safety=self.s)
+        m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
+        m.run('source', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(len(self.ddl), 2)
         self.assertEqual(self.ddl[0], self.ddl[1])
         self.assertEqual(self.result('source')['status'], 'APPLIED')
@@ -129,38 +132,38 @@ class AdapterTests(unittest.TestCase):
 
     def test_source_without_rehearsal_is_never_sent(self):
         with self.assertRaises(FileNotFoundError):
-            m.run('source', self.a, 'apply', safety=self.s)
+            m.run('source', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(self.ddl, [])
 
     def test_changed_operation_or_binding_is_not_a_rehearsal(self):
-        m.run('copy', self.a, 'apply', safety=self.s)
+        m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         proof = self.result()
         for edit in [{'binding': {}}, {'targetStopped': False}, {'sourceHealthyAfter': False},
                      {'historyAndFinancialUnchanged': False}, {'status': 'APPLIED_REVIEW_REQUIRED'}]:
             with self.assertRaises(RuntimeError):
                 m.validate_rehearsal(self.s, {**proof, **edit}, proof['binding'])
-        with self.assertRaises(FileNotFoundError):
-            m.run('source', self.a, 'rollback', safety=self.s)
+        with self.assertRaisesRegex(RuntimeError,'reader_environment_or_payload_changed'):
+            m.run('source', self.a, 'rollback', safety=self.s, reader=self.reader)
         self.assertEqual(len(self.ddl), 1)
 
     def test_lost_commit_response_preserves_intent_and_cannot_replay(self):
         self.lose_response = True
         with self.assertRaises(TimeoutError):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(self.result()['status'], 'OUTCOME_UNKNOWN_READBACK_REQUIRED')
         self.assertTrue(self.result()['targetStopped'])
         with self.assertRaisesRegex(RuntimeError, 'prior_feedback_attempt'):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(len(self.ddl), 1)
 
     def test_unknown_commit_reconciles_exact_intent_without_ddl_or_replacing_evidence(self):
         self.lose_response = True
         with self.assertRaises(TimeoutError):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         directory = self.checkpoint/'consultation-feedback-install/apply'
         original = {name: (directory/name).read_bytes() for name in ['copy-intent.json','copy-result.json']}
         self.target['State']['Running'] = True  # Owner starts its copy separately, never reconciler.
-        observed = m.reconcile('copy', self.a, 'apply', safety=self.s)
+        observed = m.reconcile('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(observed['status'], 'MATCHED_TARGET_STATE_READBACK')
         self.assertFalse(observed['replayAllowed'])
         self.assertFalse(observed['installationExecuted'])
@@ -171,61 +174,70 @@ class AdapterTests(unittest.TestCase):
     def test_old_state_or_changed_history_stays_unresolved_without_replay(self):
         self.lose_response = True
         with self.assertRaises(TimeoutError):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.target['State']['Running'] = True
         self.observe_old = True
-        self.assertEqual(m.reconcile('copy', self.a, 'apply', safety=self.s)['status'], 'UNRESOLVED')
+        self.assertEqual(m.reconcile('copy', self.a, 'apply', safety=self.s, reader=self.reader)['status'], 'UNRESOLVED')
         self.observe_old = False
         self.financial_drift = True
-        self.assertEqual(m.reconcile('copy', self.a, 'apply', safety=self.s)['status'], 'UNRESOLVED')
+        self.assertEqual(m.reconcile('copy', self.a, 'apply', safety=self.s, reader=self.reader)['status'], 'UNRESOLVED')
         self.assertEqual(len(self.ddl), 1)
 
     def test_tampered_before_snapshot_cannot_be_reconciled(self):
         self.lose_response = True
         with self.assertRaises(TimeoutError):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         (self.checkpoint/'consultation-feedback-install/apply/copy-before.json').write_text('{}')
         with self.assertRaisesRegex(RuntimeError, 'intent_before_fingerprint_changed'):
-            m.reconcile('copy', self.a, 'apply', safety=self.s)
+            m.reconcile('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(len(self.ddl), 1)
 
     def test_start_outcome_unknown_still_inspects_and_stops_only_owned_copy(self):
         self.start_response_lost = True
         with self.assertRaises(TimeoutError):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertFalse(self.target['State']['Running'])
         self.assertEqual(self.ddl, [])
 
     def test_catalog_drift_keeps_result_review_required_and_cannot_enable_source(self):
         self.drift = True
         with self.assertRaisesRegex(RuntimeError, 'unexpected_existing_catalog'):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(self.result()['status'], 'APPLIED_REVIEW_REQUIRED')
         with self.assertRaisesRegex(RuntimeError, 'feedback_copy_rehearsal_missing'):
-            m.run('source', self.a, 'apply', safety=self.s)
+            m.run('source', self.a, 'apply', safety=self.s, reader=self.reader)
 
     def test_financial_change_is_not_silently_accepted(self):
         self.financial_drift = True
         with self.assertRaisesRegex(RuntimeError, 'history_or_financial'):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertFalse(self.result()['historyAndFinancialUnchanged'])
 
     def test_wrong_postconditions_are_not_applied(self):
         self.wrong_after = True
         with self.assertRaisesRegex(RuntimeError, 'verification_failed'):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(self.result()['status'], 'APPLIED_REVIEW_REQUIRED')
 
     def test_capacity_below_guard_cannot_send_ddl(self):
         with patch.object(m.shutil, 'disk_usage', return_value=types.SimpleNamespace(free=m.MIN_FREE_BYTES-1)):
             with self.assertRaisesRegex(RuntimeError, 'capacity_below_10GiB'):
-                m.run('copy', self.a, 'apply', safety=self.s)
+                m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(self.ddl, [])
+
+    def test_source_requires_a_reader_proof_and_binds_environment_payload_and_compatibility(self):
+        with self.assertRaisesRegex(RuntimeError,'source_reader_proof_required'):
+            m.run('source',self.a,'apply',safety=self.s)
+        for change in [{'readerSha':'bad'},{'sourceContainerId':'0'*64},{'payloadSha256':'0'*64},
+                       {'checks':{}},{'checkedAt':'2000-01-01T00:00:00+00:00'}]:
+            with self.assertRaises(RuntimeError):
+                m.validate_reader({**self.reader,**change},self.a,self.reader['payloadSha256'])
+        self.assertEqual(self.ddl,[])
 
     def test_changed_backup_receipt_stops_before_copy_start(self):
         (self.checkpoint/'receipt.json').write_text('{}')
         with self.assertRaisesRegex(RuntimeError, 'checkpoint_receipt_changed'):
-            m.run('copy', self.a, 'apply', safety=self.s)
+            m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(self.ddl, [])
         self.assertFalse(self.target['State']['Running'])
 
@@ -235,11 +247,19 @@ class AdapterTests(unittest.TestCase):
             path.write_bytes(b'altered')
             with self.assertRaisesRegex(RuntimeError, 'safety_helper_bytes_changed'):
                 m.load_safety(path)
-            file = Path(directory)/m.ARTIFACTS['apply'][0]
+            file = Path(directory)/m.ARTIFACTS['apply'][0][0]
             file.parent.mkdir(parents=True)
             file.write_bytes(b'altered')
             with self.assertRaisesRegex(RuntimeError, 'feedback_sql_bytes_changed'):
                 m.payload(self.s, 'apply', Path(directory))
+
+    def test_schema_and_default_off_guard_share_one_atomic_payload(self):
+        value=m.payload(self.s,'apply')
+        self.assertEqual(len(m.re.findall(r'^BEGIN;\s*$',value,m.re.M)),1)
+        self.assertEqual(len(m.re.findall(r'^COMMIT;\s*$',value,m.re.M)),1)
+        self.assertIn('CREATE TABLE consultation_private.feedback_rollout',value)
+        self.assertIn('extended feedback is not enabled',value)
+        self.assertNotIn('CREATE SCHEMA consultation_private',value)
 
     @unittest.skipIf(os.name == 'nt', 'requires real Linux fcntl')
     def test_real_fcntl_contention_blocks_before_any_target_operation(self):
@@ -247,7 +267,7 @@ class AdapterTests(unittest.TestCase):
         with (self.s.BACKUPS/'.cashflow-release.lock').open('a+b') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             with self.assertRaises(BlockingIOError):
-                m.run('copy', self.a, 'apply', safety=self.s)
+                m.run('copy', self.a, 'apply', safety=self.s, reader=self.reader)
         self.assertEqual(self.ddl, [])
 
 
