@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "testedSha": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+  "postgresVersionNumber": 170011,
+  "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+  "environment": "disposable GitHub Actions PostgreSQL; synthetic data only",
+  "passed": 6,
+  "failed": 0,
+  "skipped": 0,
+  "scenarios": [
+    "immutable native actor/hash/body",
+    "other-admin/member/anon and service-role BYPASSRLS denial",
+    "actual component destroyed after v2 commit and remounted; GET-only recovery",
+    "v1 and its review retained; v2 unapproved",
+    "private text read back exactly",
+    "candidate rerun preserves existing workbook/review INSERT freeze"
+  ],
+  "authBoundary": "synthetic claims exercised under native authenticated SQL role; no real user session",
+  "productionTouched": false,
+  "modelCalls": 0,
+  "browserPersistentPrivateBody": false
+}

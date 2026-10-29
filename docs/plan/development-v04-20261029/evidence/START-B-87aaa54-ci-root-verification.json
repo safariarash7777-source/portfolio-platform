@@ -1,0 +1,66 @@
+{
+  "observedAt": "2026-10-29T16:25:12.191450+00:00",
+  "reviewer": "existing-root-coordinator",
+  "mode": "read_only_public_github_api",
+  "testedSha": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+  "runs": [
+    {
+      "id": 40910174737,
+      "name": "CI",
+      "head_sha": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40910174737",
+      "jobs": [
+        {
+          "id": 123576022569,
+          "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 123576023175,
+          "name": "Database RLS \u00b7 Integrity (Postgres)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 123576023283,
+          "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 123576023659,
+          "name": "Secret scan \u00b7 SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 123578748139,
+          "name": "CI Gate",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 40910174804,
+      "name": "Research workbook native recovery",
+      "head_sha": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40910174804",
+      "jobs": [
+        {
+          "id": 123575693390,
+          "name": "postgres17-reopen",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "ownerDownloadedArtifactContentReadByRoot": true,
+  "sourceMutations": 0
+}
