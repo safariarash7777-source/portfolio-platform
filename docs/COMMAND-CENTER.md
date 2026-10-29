@@ -81,6 +81,10 @@
 
 [PR330@7b2b4eaa73be56fb158571ccce9b74791701869a](https://github.com/safariarash7777-source/portfolio-platform/pull/330) به همان شاخه ارسال و توسطrootباremoteتطبیق شد. grantSELECTبهservice_role حذف؛ ششnativePASS/صفرfail-skip درPG17.11 شامل منعSELECTمستقیم service_roleباBYPASSRLS و حفظمنعپسازrerun دردوprofile ثبت شد. rootدلتایSQL وSHAجدید`bd0d6700…` را باblobGit/رسید تطبیق داد و [nativePG17 run40909475478](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40909475478) برایهمان7b2را مستقلاًازAPIعمومیGitHubSUCCESSخواند؛ [رسید](plan/development-v04-20261029/evidence/START-B-7b2b4ea-cloud-readonly.json). یافته دسترسی اضافی بسته شد؛ اینقبولیبهCIعمومی یاPrimaryتعمیم داده نشد. [CIعمومی40909475600](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40909475600) درلحظهخواندن درحالاجرا بود؛ artifactbodyمستقل دانلود نشده است. [MIGRATION-LEDGER](MIGRATION-LEDGER.md) نامزدجاری را باhashجدید وNOT_APPLIED ثبت می‌کند؛ freezeاصلی/DDL/Auth/Hermes تغییرنکرده‌اند. مجریB مسئول بازنویسیشرحهمانPRبرمبنایdurability و نتیجهCIنهایی است.
 
+### نقص CI عمومی B؛ بسته هنوز PASS کامل نیست
+
+پسازnativePG17موفق7b2، jobکیفیت `123573364371` در [CI40909475600](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40909475600) شکست خورد؛ rootازAPIعمومیGitHubjobراFAILخواند، هرچندrunکلی درآنلحظه هنوزدرجریانبود. موفقیتPG17پیشینپسگرفته یا بهکلCIتعمیم داده نمی‌شود. مجری سهشکست componentرا به انتظار ثابت چندsetImmediateپیشازپایانWebCrypto نسبت داد؛ rootلاگسهآزمونرامستقلبازخوانی نکرد، اما diffاصلاحی را دید: فقطآزمونResearchWorkbook، انتظارمرحلهقابل‌مشاهده prepare/unknown/retry/resolved باdeadline۵ثانیه، بدونحذفassertهایactor/body/token/noPOST/review وبدونتغییرمحصول/SQL. مجریB مسئول coreکامل وcommit/CIهمانheadبعدی است؛ نتیجهاصلاحهنوز تحویلنشده و بستهبرایانتشار PASSکامل اعلام نمی‌شود. A/تمرینLinuxوSQL مستقلادامه دارد؛ primary/gateعملیاتی تغییری نکرد.
+
 ### گیت‌های محلی، مستقل از شروع کل کار
 
 - START-A: خطای ذخیره draft را حذف نکند؛ خواندن خراب پرونده خالی معرفی نشود. نشست و مقصد آزمون/ساختگی با مجری؛ نصب افزونه مشاوره و گیت پشتیبان/ظرفیت جدا از آزمون مستقل است. آمار ظرفیت ۲۷ اکتبر تأیید تازه محسوب نمی‌شود.
