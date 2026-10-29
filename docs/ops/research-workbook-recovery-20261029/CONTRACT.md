@@ -16,7 +16,7 @@ The new candidate table is `research_workbook_save_intents`: globally unique fix
 
 The coordinator reconciled this contract for code, candidate SQL and isolated native/CI tests in the existing chat. Candidate SQL is not permission to apply it on the primary destination. Native isolated rehearsal/CI is separate from Production installation, backup/restore acceptance and the existing writer freeze. The candidate SQL never re-grants INSERT on workbook versions or reviews, including on rerun.
 
-The database trust boundary follows [PostgreSQL RLS through Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security): table grants and row policies are separate controls. Native tests exercise both existing privilege profiles, including another admin. They do not claim a real Auth-provider session or Production acceptance.
+The database trust boundary follows [PostgreSQL RLS through Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security): table grants and row policies are separate controls. No service-role consumer needs this private intent journal, so it receives no SELECT or write grant. Native tests exercise both existing privilege profiles, including another admin and direct service-role reads while its native BYPASSRLS capability is verified. A rerun must retain that table-permission denial. Database owners/superusers remain within the explicitly documented operator trust boundary. These tests do not claim a real Auth-provider session or Production acceptance.
 
 ## HTTP and compatibility
 

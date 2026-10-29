@@ -89,6 +89,9 @@ for (const profile of ['legacy','explicit']) describe(`durable workbook intents 
     assert.equal(sql(db,`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id=${literal(wb)}`),'0');
     for(const other of [B,U])assert.equal(as(db,other,`SELECT count(*) FROM public.research_workbook_save_intents WHERE intent_id=${literal(requestId)}`),'0');
     assert.throws(()=>sql(db,`SET ROLE anon; SELECT * FROM public.research_workbook_save_intents`));
+    assert.equal(sql(db,"SELECT rolbypassrls FROM pg_roles WHERE rolname='service_role'"),'t','native service role really bypasses row policies');
+    assert.equal(sql(db,"SELECT has_table_privilege('service_role','public.research_workbook_save_intents','SELECT')"),'f');
+    assert.throws(()=>sql(db,`SET ROLE service_role; SELECT request_body FROM public.research_workbook_save_intents WHERE intent_id=${literal(requestId)}`),'BYPASSRLS cannot bypass revoked table SELECT');
     assert.throws(()=>as(db,U,`INSERT INTO public.research_workbook_save_intents(intent_id,request_body) VALUES (${literal(crypto.randomUUID())},${literal(body)})`));
     for(const query of [`UPDATE public.research_workbook_save_intents SET request_body='{}'`,`DELETE FROM public.research_workbook_save_intents`,`TRUNCATE public.research_workbook_save_intents`])assert.throws(()=>sql(db,query));
     native.identity.id=B;
@@ -151,6 +154,7 @@ for (const profile of ['legacy','explicit']) describe(`durable workbook intents 
   test('candidate rerun preserves existing workbook/review writer freeze and stored intents remain readable',async()=>{
     file(db,'sql/P07-ROLLBACK-FREEZE.sql');file(db,'docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql');
     assert.equal(sql(db,"SELECT has_table_privilege('authenticated','public.research_workbook_versions','INSERT') OR has_table_privilege('authenticated','public.research_workbook_reviews','INSERT')"),'f');
+    assert.equal(sql(db,"SELECT has_table_privilege('service_role','public.research_workbook_save_intents','SELECT')"),'f','candidate rerun never reopens service-role access');
     const native=nativeGateway(db);const listed=await listWorkbookSaveIntents(native.gateway);assert.equal(listed.status,200);
     const item=(listed.body.items as Array<{intentId:string}>)[0];const stored=await readWorkbookSaveIntent(native.gateway,item.intentId);
     assert.equal(stored.status,200);

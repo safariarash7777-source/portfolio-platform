@@ -61,5 +61,4 @@ CREATE POLICY workbook_intent_actor_insert ON public.research_workbook_save_inte
   WITH CHECK (created_by=(SELECT auth.uid()) AND EXISTS (SELECT 1 FROM public.profiles p WHERE p.id=(SELECT auth.uid()) AND p.role='admin'));
 REVOKE ALL ON TABLE public.research_workbook_save_intents FROM PUBLIC,anon,authenticated,service_role;
 GRANT SELECT,INSERT ON TABLE public.research_workbook_save_intents TO authenticated;
-GRANT SELECT ON TABLE public.research_workbook_save_intents TO service_role;
 COMMIT;

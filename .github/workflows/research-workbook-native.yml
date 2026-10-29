@@ -57,7 +57,7 @@ jobs:
       - name: Verify actual counts and write sanitized receipt
         run: |
           python3 - <<'PY'
-          import json, os, re, subprocess
+          import hashlib, json, os, re, subprocess
           from pathlib import Path
           log = Path('/tmp/workbook-native.log').read_text()
           metric = lambda name: int(re.search(r'^# '+name+r' (\d+)$', log, re.M).group(1))
@@ -65,9 +65,10 @@ jobs:
           version = int(subprocess.check_output(['psql','-X','-qAt','-c','SHOW server_version_num'], text=True).strip())
           assert 170000 <= version < 180000
           receipt = dict(status='PASS', testedSha=os.environ['TESTED_SHA'], postgresVersionNumber=version,
+              candidateSqlSha256=hashlib.sha256(Path('docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql').read_bytes()).hexdigest(),
               environment='disposable GitHub Actions PostgreSQL; synthetic data only',
               passed=metric('pass'), failed=metric('fail'), skipped=metric('skipped'),
-              scenarios=['immutable native actor/hash/body', 'other-admin/member denial',
+              scenarios=['immutable native actor/hash/body', 'other-admin/member/anon and service-role BYPASSRLS denial',
                   'actual component destroyed after v2 commit and remounted; GET-only recovery',
                   'v1 and its review retained; v2 unapproved', 'private text read back exactly',
                   'candidate rerun preserves existing workbook/review INSERT freeze'],
