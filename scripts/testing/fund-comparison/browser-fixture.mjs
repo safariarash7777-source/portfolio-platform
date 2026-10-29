@@ -12,13 +12,14 @@ const root = process.cwd();
 const output = resolve(root, "../outputs/research-tools-20261024/funds-fixture");
 mkdirSync(output, { recursive: true });
 const observation = { value: 0, periodStart: "2026-09-21", periodEnd: "2026-09-30", startField: "close", endField: "close", method: "unadjusted-price", source: "symbol_history" };
-const funds = ["نمونه‌الف", "نمونه‌ب", "نمونه‌ج"].map((id, index) => ({
+const funds = ["نمونه‌الف", "نمونه‌ب", "نمونه‌ج", "نمونه‌د", "نمونه‌پنجم‌با‌نماد‌بلند"].map((id, index) => ({
   id, type: "صندوق اهرمی نمونه", unit: "toman", price: 100 + index * 10, closingPrice: 100 + index * 10,
   nav: 100, navDate: "1405-07-08", navTime: index === 1 ? null : "13:20:00",
   sourceDate: "1405-07-08", sourceTime: "13:25:00", navState: index === 1 ? "stale" : "ready",
   navReason: index === 1 ? "NAV منبع کهنه است" : null, returnObservations: { w1: observation },
 }));
 funds.push({ ...funds[0], id: "نمونه‌طلا", type: "صندوق طلا نمونه" });
+funds.push({ ...funds[0], id: "نمونه‌ارز‌دیگر", unit: "usd" });
 await build({
   absWorkingDir: root, stdin: { contents: `import React from 'react'; import { createRoot } from 'react-dom/client'; import Panel from './components/market/FundComparisonPanel'; createRoot(document.getElementById('root')).render(<Panel funds={${JSON.stringify(funds)}} from="/market/funds?type=test"/>);`, resolveDir: root, loader: "tsx" },
   bundle: true, platform: "browser", outfile: join(output, "fixture.js"), jsx: "automatic",
