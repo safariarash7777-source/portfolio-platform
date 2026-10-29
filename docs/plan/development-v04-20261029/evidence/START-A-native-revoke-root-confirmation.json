@@ -1,0 +1,19 @@
+{
+  "status": "PASS_READONLY_REVOKE_CONFIRMATION",
+  "observedAt": "2026-10-29T16:57:31.783Z",
+  "reviewer": "existing-root-coordinator",
+  "sourceSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "environment": "owned loopback native lab; synthetic accounts only",
+  "freshIdentityVerified": true,
+  "memberHttpStatus": 200,
+  "memberRevoked": true,
+  "memberHistoryEvents": 2,
+  "allFeedbackActorsMatchMember": true,
+  "historySha256": "d1f3563e4cc3982668477215f640d8081b0c031d99541db41c1c656fd8773af0",
+  "advisorHttpStatus": 403,
+  "advisorErrorCode": "FORBIDDEN",
+  "applicationPostRequests": 0,
+  "ddlRequests": 0,
+  "primaryTouched": false,
+  "firstRollbackSqlState": "UNOBSERVED"
+}
