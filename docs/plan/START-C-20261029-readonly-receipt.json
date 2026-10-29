@@ -114,5 +114,16 @@
     },
     "scope": "Aggregate feed plus backfill; no exact assignment to ten feed failures",
     "pr329Overlap": "No observed rejection proven resolved by PR329; N10 guards and N30 layout/product width guards remain"
+  },
+  "sameHeadAcceptance": {
+    "sha": "3e0ea01747f2969086bca78e47686e87610d54ce",
+    "ciRun": 40900753488,
+    "ci": "all_pass",
+    "deployment": "dpl_FsvKBNL9MsHZBaWaU7w1P198nNYh",
+    "state": "READY",
+    "preview": "https://portfolio-platform-12u2g8alv-safariarash7777-4463s-projects.vercel.app/symbol/فولاد#reports",
+    "guestMetrics": "unavailable_in_existing_workflows",
+    "latestFinancialSuccess": "unknown",
+    "newWorkflowRuns": 0
   }
 }

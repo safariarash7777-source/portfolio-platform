@@ -208,7 +208,7 @@ function rowProvenance(row: CodalRow) {
   const stamp = row.captured_at;
   const day = typeof stamp === 'string' ? new Date(stamp.slice(0, 10) + 'T00:00:00Z') : null;
   const valid = !!day && Number.isFinite(day.getTime()) && day.toISOString().slice(0, 10) === stamp?.slice(0, 10) && typeof stamp === 'string' && /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(stamp) && Number.isFinite(Date.parse(stamp));
-  const version = row.raw?.parser_version;
+  const version = parserVersion(row);
   return {
     id: row.id,
     storedPeriodEnd: row.period_end,

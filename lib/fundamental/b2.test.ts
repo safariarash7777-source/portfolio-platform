@@ -267,3 +267,17 @@ test('monthly source preserves each selected row clock instead of assigning one 
     [601,'2026-02-20','1405-01-31','2026-10-21T12:00:00.000Z']
   ]);
 });
+
+
+test('provenance version agrees with reader selection when parser version exists only in immutable URL', async () => {
+  const symbol='provenance-parser-url';
+  const old=row(700,symbol,'1405-03-31',3,700);
+  old.source_url='https://codal.ir/synthetic/parser-source#pv2';
+  const corrected=row(1,symbol,'1405-03-31',3,700);
+  corrected.source_url='https://codal.ir/synthetic/parser-source#pv3';
+  corrected.raw={};
+  const record=(await read(symbol,[old,corrected])).data?.n10?.source.records?.[0];
+  assert.equal(record?.id,1);
+  assert.equal(record?.parserVersion,3);
+  assert.equal(record?.amendment,false);
+});
