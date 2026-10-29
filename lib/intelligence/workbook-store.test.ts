@@ -265,6 +265,9 @@ test('independent version read reports only a session-author match and distingui
   assert.equal((await openWorkbook(h.gw, creationId, 1)).body.authorMatchesSession, false);
   const missingVersion = await openWorkbook(h.gw, creationId, 2);
   assert.equal(missingVersion.status, 404); assert.equal(missingVersion.body.absent, undefined);
+  assert.equal(missingVersion.body.versionAbsent, true);
+  assert.equal(missingVersion.body.workbookId, creationId);
+  assert.equal(missingVersion.body.requestedVersion, 2); assert.equal(missingVersion.body.latestVersion, 1);
   assert.equal(h.versions.length, 1);
 });
 

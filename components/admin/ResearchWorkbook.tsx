@@ -60,12 +60,14 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const [list, setList] = useState<ListItem[]>([]);
   const [busy, setBusyState] = useState(false);
   const busyRef = useRef(false);
-  const pendingCreation = useRef<{ body: string; revision: number; id: string } | null>(null);
-  const unknownCreation = useRef(false);
-  const [uncertainCreation, setUncertainCreation] = useState(false);
-  const retryCreationAllowed = useRef(false);
-  const [creationAbsent, setCreationAbsent] = useState(false);
-  function allowCreationRetry(value: boolean) { retryCreationAllowed.current = value; setCreationAbsent(value); }
+  // The workbook ID + target version identifies one append, including v2+.
+  // Preserve its exact body until its result has been independently resolved.
+  const pendingSave = useRef<{ body: string; revision: number; id: string; version: number } | null>(null);
+  const unknownSave = useRef(false);
+  const [uncertainSave, setUncertainSave] = useState(false);
+  const retrySaveAllowed = useRef(false);
+  const [saveAbsent, setSaveAbsent] = useState(false);
+  function allowSaveRetry(value: boolean) { retrySaveAllowed.current = value; setSaveAbsent(value); }
   function setBusy(value: boolean) { busyRef.current = value; setBusyState(value); }
   async function refreshList() {
     if (listBusy.current) return;
@@ -81,7 +83,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   useEffect(() => { onWorkbookChange?.(workbook); }, [workbook, onWorkbookChange]);
   useEffect(() => { if(initialWorkbookId)void openFromServer(initialWorkbookId,null); }, [initialWorkbookId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!dirty && !pendingPreparation) return;
+    if (!dirty && !pendingPreparation && !uncertainSave) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
     const guardLink = (event: MouseEvent) => {
       const anchor = event.target instanceof Element ? event.target.closest('a') : null;
@@ -95,29 +97,31 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     window.addEventListener('beforeunload', warn);
     document.addEventListener('click', guardLink, true);
     return () => { window.removeEventListener('beforeunload', warn); document.removeEventListener('click', guardLink, true); };
-  }, [dirty, pendingPreparation]);
+  }, [dirty, pendingPreparation, uncertainSave]);
   function change(update: (previous: Workbook) => Workbook) {
-    if (unknownCreation.current) return;
+    if (unknownSave.current) return;
     editRevision.current++;
     setWorkbook(update); setDirty(true); setMessage('');
   }
   async function saveToServer(retryAbsent = false) {
     if (busyRef.current) return;
-    if (unknownCreation.current && (!retryAbsent || !retryCreationAllowed.current || !pendingCreation.current)) return;
-    if (pendingPreparation && !pendingCreation.current) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
-    allowCreationRetry(false);
+    if (unknownSave.current && (!retryAbsent || !retrySaveAllowed.current || !pendingSave.current)) return;
+    if (pendingPreparation && !pendingSave.current) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
+    allowSaveRetry(false);
     setBusy(true);
-    if (!saved && !pendingCreation.current) {
-      const id = crypto.randomUUID();
-      pendingCreation.current = { id, revision: editRevision.current, body: JSON.stringify({ action: 'save', workbookId: id, creationId: id, baseVersion: 0, workbook }) };
+    if (!pendingSave.current) {
+      const id = saved?.workbookId ?? crypto.randomUUID();
+      const baseVersion = saved?.latestVersion ?? 0;
+      pendingSave.current = { id, version: baseVersion + 1, revision: editRevision.current,
+        body: JSON.stringify({ action: 'save', workbookId: id, ...(!saved ? { creationId: id } : {}), baseVersion, workbook }) };
     }
-    const attempt = pendingCreation.current;
+    const attempt = pendingSave.current;
     const savingRevision = attempt?.revision ?? editRevision.current;
     try {
       const r = await transport(API, { method: 'POST', body: attempt?.body ?? JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
       if (r.status === 201 || r.status === 200 && r.body.reused === true) {
-        if (attempt && (r.body.workbookId !== attempt.id || r.body.version !== 1 || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt)))) throw new Error('creation receipt mismatch');
-        pendingCreation.current = null; unknownCreation.current = false; setUncertainCreation(false);
+        if (attempt && (r.body.workbookId !== attempt.id || r.body.version !== attempt.version || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt)))) throw new Error('save receipt mismatch');
+        pendingSave.current = null; unknownSave.current = false; setUncertainSave(false);
         const version = r.body.version as number;
         setSaved({ workbookId: r.body.workbookId as string, version, latestVersion: version, savedAt: r.body.savedAt as string });
         setVersions(v => [...v, { version, savedAt: r.body.savedAt as string }]);
@@ -126,30 +130,32 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         void refreshList();
       } else {
         if (attempt) {
-          if (!unknownCreation.current && [400, 401, 403, 413, 422].includes(r.status)) pendingCreation.current = null;
-          else { unknownCreation.current = true; setUncertainCreation(true); }
+          if (!unknownSave.current && [400, 401, 403, 413, 422].includes(r.status)) pendingSave.current = null;
+          else { unknownSave.current = true; setUncertainSave(true); }
         }
         if (r.body.unavailable) setServer('unavailable');
         setMessage(`${String(r.body.error ?? 'ذخیره انجام نشد.')} متن روی صفحه حفظ شد.`);
       }
     } catch {
-      if (attempt) { unknownCreation.current = true; setUncertainCreation(true); }
-      setMessage(attempt ? 'نتیجهٔ ثبت دریافت نشد؛ متن و شناسهٔ ثبت اولیه حفظ شدند. همین ثبت را دوباره بررسی کنید؛ دفتر تازه‌ای ساخته نمی‌شود.' : 'ارتباط با سرور برقرار نشد؛ متن روی صفحه حفظ شد.');
+      if (attempt) { unknownSave.current = true; setUncertainSave(true); }
+      setMessage('نتیجهٔ ثبت دریافت نشد؛ متن، شناسه و شمارهٔ نسخهٔ همین ثبت حفظ شدند. نتیجه را دوباره بررسی کنید.');
     }
     finally { setBusy(false); }
   }
-  async function recoverCreation() {
-    const attempt = pendingCreation.current;
-    if (busyRef.current || !unknownCreation.current || !attempt) return;
-    allowCreationRetry(false); setBusy(true);
+  async function recoverSave() {
+    const attempt = pendingSave.current;
+    if (busyRef.current || !unknownSave.current || !attempt) return;
+    allowSaveRetry(false); setBusy(true);
     try {
-      const r = await transport(`${API}?id=${encodeURIComponent(attempt.id)}&version=1`);
-      if (r.status === 404 && r.body.absent === true && r.body.workbookId === attempt.id && r.body.requestedVersion === 1) {
-        allowCreationRetry(true);
-        setMessage('در این بررسی، همان کاربرگ در مخزن وجود نداشت. هنوز ذخیره تأیید نشده است؛ در صورت نیاز، ارسال دوبارهٔ همین ثبت را جداگانه انتخاب کنید.');
+      const r = await transport(`${API}?id=${encodeURIComponent(attempt.id)}&version=${attempt.version}`);
+      const absent = attempt.version === 1 ? r.body.absent === true
+        : r.body.versionAbsent === true && r.body.latestVersion === attempt.version - 1;
+      if (r.status === 404 && absent && r.body.workbookId === attempt.id && r.body.requestedVersion === attempt.version) {
+        allowSaveRetry(true);
+        setMessage('در این بررسی، همان نسخه در مخزن وجود نداشت. هنوز ذخیره تأیید نشده است؛ در صورت نیاز، ارسال دوبارهٔ همین ثبت را جداگانه انتخاب کنید.');
         return;
       }
-      if (r.status !== 200 || r.body.workbookId !== attempt.id || r.body.version !== 1 || r.body.latestVersion !== 1 ||
+      if (r.status !== 200 || r.body.workbookId !== attempt.id || r.body.version !== attempt.version || r.body.latestVersion !== attempt.version ||
           r.body.authorMatchesSession !== true || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt))) {
         setMessage('نتیجهٔ همان ثبت هنوز تأیید نشد؛ متن و شناسه محفوظ‌اند. نسخه، نویسنده یا پاسخ مخزن نیاز به بررسی دارد.');
         return;
@@ -160,18 +166,18 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         setMessage('متن نسخهٔ خوانده‌شده با همین ثبت یکسان نیست؛ متن و شناسه محفوظ‌اند و ثبت تازه‌ای انجام نشد.');
         return;
       }
-      pendingCreation.current = null; unknownCreation.current = false; setUncertainCreation(false);
-      setSaved({ workbookId: attempt.id, version: 1, latestVersion: 1, savedAt: r.body.savedAt });
-      setVersions([{ version: 1, savedAt: r.body.savedAt }]);
+      pendingSave.current = null; unknownSave.current = false; setUncertainSave(false);
+      setSaved({ workbookId: attempt.id, version: attempt.version, latestVersion: attempt.version, savedAt: r.body.savedAt });
+      setVersions(previous => [...previous.filter(v => v.version !== attempt.version), { version: attempt.version, savedAt: r.body.savedAt as string }]);
       setReviews(Array.isArray(r.body.reviews) ? r.body.reviews as ReviewItem[] : []);
       setDirty(editRevision.current !== attempt.revision);
-      setMessage(editRevision.current === attempt.revision ? 'نسخهٔ ۱ با خواندن مستقل همان ثبت تأیید شد؛ این کار تأیید تحلیل یا انتشار نیست.' : 'نسخهٔ ۱ همان ثبت بازخوانی شد؛ تغییرات تازهٔ شما هنوز ذخیره نشده و روی صفحه حفظ شده‌اند.');
+      setMessage(editRevision.current === attempt.revision ? `نسخهٔ ${toPersianDigits(attempt.version)} با خواندن مستقل همان ثبت تأیید شد؛ این کار تأیید تحلیل یا انتشار نیست.` : 'همان نسخه بازخوانی شد؛ تغییرات تازهٔ شما هنوز ذخیره نشده و روی صفحه حفظ شده‌اند.');
       void refreshList();
     } catch { setMessage('خواندن نتیجهٔ همان ثبت انجام نشد؛ متن و شناسه محفوظ‌اند و هیچ ثبت تازه‌ای ارسال نشد.'); }
     finally { setBusy(false); }
   }
   async function openFromServer(workbookId: string, version: number | null) {
-    if (busyRef.current || unknownCreation.current) return;
+    if (busyRef.current || unknownSave.current) return;
     if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی جایگزین می‌شود. ادامه می‌دهید؟')) return;
     setBusy(true);
     const openingRevision = editRevision.current;
@@ -193,7 +199,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     finally { setBusy(false); }
   }
   async function decide(decision: 'approved_internal' | 'returned') {
-    if (busyRef.current) return;
+    if (busyRef.current || unknownSave.current) return;
     if (!saved) return;
     const note = decision === 'returned' ? window.prompt('علت بازگرداندن این نسخه را بنویسید:')?.trim() : null;
     if (decision === 'returned' && !note) return;
@@ -209,16 +215,16 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     finally { setBusy(false); }
   }
   function startNew() {
-    if (busyRef.current || unknownCreation.current) return;
+    if (busyRef.current || unknownSave.current) return;
     if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی کنار گذاشته می‌شود. ادامه می‌دهید؟')) return;
     setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setDirty(false); setPendingPreparation(false); setChecked(false); setMessage('');
     editRevision.current++; setPreparationEpoch(value => value + 1);
   }
-  const canDecide = server === 'ready' && !!saved && !dirty && !pendingPreparation && saved.version === saved.latestVersion && !busy;
+  const canDecide = server === 'ready' && !!saved && !dirty && !pendingPreparation && !uncertainSave && saved.version === saved.latestVersion && !busy;
   const approvedHere = saved ? p07ReviewCurrent(saved.version, saved.latestVersion, reviews) : false;
   // phase34 allows one approval per version. A returned approved version needs a
   // new append-only version before another explicit human approval.
-  const needsReviewVersion = !!saved && !approvedHere && reviews.some(r => r.version === saved.version && r.decision === 'approved_internal');
+  const needsReviewVersion = !!saved && !p07ReviewCurrent(saved.version, saved.version, reviews) && reviews.some(r => r.version === saved.version && r.decision === 'approved_internal');
   function download(kind: 'json' | 'md') {
     if (pendingPreparation) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید تا در فایل از دست نرود.'); return; }
     const text = kind === 'json' ? JSON.stringify(workbook, null, 2) : workbookMarkdown(workbook);
@@ -229,7 +235,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     setMessage('فایل برای دریافت آماده شد؛ ذخیره‌شدن آن را در دستگاه بررسی کنید. دریافت فایل نسخهٔ سروری نمی‌سازد.');
   }
   async function importFile(selected: File | undefined) {
-    if (!selected || busyRef.current || unknownCreation.current) return;
+    if (!selected || busyRef.current || unknownSave.current) return;
     setBusy(true);
     const importingRevision = editRevision.current;
     try {
@@ -247,8 +253,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     return <div className="space-y-2" key={id}>
       <label htmlFor={id} className="block text-sm font-bold">{label}</label>
       {type === 'textarea'
-        ? <textarea disabled={uncertainCreation} id={id} rows={3} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />
-        : <input disabled={uncertainCreation} id={id} type={type} dir={type === 'url' || type === 'date' ? 'ltr' : undefined} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />}
+        ? <textarea disabled={uncertainSave} id={id} rows={3} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />
+        : <input disabled={uncertainSave} id={id} type={type} dir={type === 'url' || type === 'date' ? 'ltr' : undefined} maxLength={10000} className={inputClass} style={inputStyle} value={value} onChange={e => update(e.target.value)} aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined} />}
       {type === 'date' && isCalendarDate(value) && <p className="text-sm">{formatJalali(value + 'T12:00:00Z')}</p>}
       {error && <p id={`${id}-error`} className="text-sm" style={{ color: 'var(--text)' }}>{error}</p>}
     </div>;
@@ -276,7 +282,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           <h2 id="research-question" className="text-lg font-bold">۱. پرسش و دامنه</h2>
           {textField('title', 'عنوان تحلیل', 'text')}
           <label className="block space-y-2"><span className="text-sm font-bold">حوزه</span>
-            <select disabled={uncertainCreation} className={inputClass} style={inputStyle} value={workbook.domain} onChange={e => change(w => ({ ...w, domain: e.target.value as Workbook['domain'] }))}>
+            <select disabled={uncertainSave} className={inputClass} style={inputStyle} value={workbook.domain} onChange={e => change(w => ({ ...w, domain: e.target.value as Workbook['domain'] }))}>
               {INTEL_DOMAINS.map(domain => <option key={domain} value={domain}>{DOMAIN_LABEL[domain]}</option>)}
             </select>
           </label>
@@ -298,7 +304,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
           </fieldset>)}
           <button type="button" className="btn btn-secondary min-h-11" disabled={workbook.evidence.length >= 30} onClick={() => change(w => ({ ...w, evidence: [...w.evidence, { id: crypto.randomUUID(), statement: '', sourceUrl: '', observedOn: '', publishedOn: '' }] }))}><Plus size={16} aria-hidden="true" /> افزودن شاهد</button>
         </section>
-        <fieldset disabled={uncertainCreation}><ResearchPreparationFields key={preparationEpoch} value={workbook.privatePreparation?.intake} evidence={workbook.evidence} onPendingChange={pending => { if (unknownCreation.current) return; editRevision.current++; setPendingPreparation(pending); }} onChange={intake => change(previous => ({ ...previous, privatePreparation: { contract: PRIVATE_PREPARATION_CONTRACT, intake } }))}/></fieldset>
+        <fieldset disabled={uncertainSave}><ResearchPreparationFields key={preparationEpoch} value={workbook.privatePreparation?.intake} evidence={workbook.evidence} onPendingChange={pending => { if (unknownSave.current) return; editRevision.current++; setPendingPreparation(pending); }} onChange={intake => change(previous => ({ ...previous, privatePreparation: { contract: PRIVATE_PREPARATION_CONTRACT, intake } }))}/></fieldset>
         {!privateWriterReady && <p role="status" className="text-sm leading-7">ذخیرهٔ سروری آماده‌سازی خصوصی هنوز فعال نیست؛ متن را در فایل قابل ادامه نگه دارید. این بخش هنوز ابزار آمادهٔ روزانه نیست.</p>}
         <section className="card space-y-4 p-5" aria-labelledby="causal"><h2 id="causal" className="text-lg font-bold">۳. استدلال و نقد</h2>
           {textField('interpretation', 'تفسیر: رخداد چگونه و از چه مسیری اثر می‌گذارد؟ به شناسهٔ شاهد ارجاع دهید.')}
@@ -320,14 +326,14 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         {saved && <p className="text-sm leading-7" aria-live="polite">
           نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty || pendingPreparation ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere && !dirty && !pendingPreparation ? ' · تأیید داخلی شده' : ''}
         </p>}
-        {(server === 'ready' || uncertainCreation) && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!dirty && !!saved)} onClick={() => void (uncertainCreation ? recoverCreation() : saveToServer())}><Save size={16} aria-hidden="true" /> {uncertainCreation ? 'بررسی دوبارهٔ همین ثبت' : saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
-        {uncertainCreation && creationAbsent && <button type="button" className="btn btn-secondary w-full min-h-11" disabled={busy} onClick={() => void saveToServer(true)}>ارسال دوبارهٔ همین ثبت</button>}
+        {(server === 'ready' || uncertainSave) && <button type="button" className="btn btn-primary w-full min-h-11" disabled={busy || (!uncertainSave && !dirty && !!saved)} onClick={() => void (uncertainSave ? recoverSave() : saveToServer())}><Save size={16} aria-hidden="true" /> {uncertainSave ? 'بررسی دوبارهٔ همین ثبت' : saved ? `ذخیره به‌عنوان نسخهٔ ${toPersianDigits(saved.latestVersion + 1)}` : 'ذخیرهٔ نسخهٔ ۱'}</button>}
+        {uncertainSave && saveAbsent && <button type="button" className="btn btn-secondary w-full min-h-11" disabled={busy} onClick={() => void saveToServer(true)}>ارسال دوبارهٔ همین ثبت</button>}
         <button type="button" className="btn btn-primary w-full min-h-11" onClick={() => { setChecked(true); setMessage(issues.length ? `${toPersianDigits(issues.length)} مورد نیازمند تکمیل است.` : 'ساختار کامل است؛ صحت شواهد و نتیجه هنوز بازبینی انسانی می‌خواهد.'); }}><ClipboardCheck size={16} aria-hidden="true" /> بررسی ساختار</button>
         {checked && issues.length > 0 && <ul className="max-h-64 space-y-2 overflow-y-auto text-sm">{issues.map((issue, i) => <li key={`${issue.field}-${i}`}><a className="underline" href={`#${issue.field}`}>{issue.message}</a></li>)}</ul>}
         <button type="button" className="btn btn-secondary min-h-11 w-full" onClick={() => download('json')}><Download size={16} aria-hidden="true" /> دریافت فایل قابل ادامه</button>
         <button type="button" className="btn btn-secondary min-h-11 w-full" onClick={() => download('md')}>دریافت متن تحلیل</button>
-        <button type="button" className="btn btn-ghost min-h-11 w-full" disabled={busy || uncertainCreation} onClick={() => { if (!busyRef.current) file.current?.click(); }}><FileUp size={16} aria-hidden="true" /> ادامه از فایل</button>
-        <input ref={file} type="file" accept=".json,application/json" className="sr-only" aria-label="فایل کاربرگ" disabled={busy || uncertainCreation} onChange={e => void importFile(e.target.files?.[0])} />
+        <button type="button" className="btn btn-ghost min-h-11 w-full" disabled={busy || uncertainSave} onClick={() => { if (!busyRef.current) file.current?.click(); }}><FileUp size={16} aria-hidden="true" /> ادامه از فایل</button>
+        <input ref={file} type="file" accept=".json,application/json" className="sr-only" aria-label="فایل کاربرگ" disabled={busy || uncertainSave} onChange={e => void importFile(e.target.files?.[0])} />
         {server === 'ready' && saved && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <h3 className="text-sm font-bold">بازبینی انسانی</h3>
           <button type="button" className="btn btn-secondary min-h-11 w-full" disabled={!canDecide || issues.length > 0 || approvedHere || needsReviewVersion} onClick={() => void decide('approved_internal')}><CheckCircle2 size={16} aria-hidden="true" /> تأیید داخلی نسخهٔ {toPersianDigits(saved.version)}</button>
@@ -345,11 +351,11 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         <p role="status" className="text-sm leading-7">{message}</p>
         {server === 'ready' && <div className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--line)' }}>
           <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-bold">کاربرگ‌های ذخیره‌شده</h3>
-            <button type="button" className="btn btn-ghost min-h-11" disabled={busy || uncertainCreation} onClick={startNew}><Plus size={16} aria-hidden="true" /> تازه</button></div>
+            <button type="button" className="btn btn-ghost min-h-11" disabled={busy || uncertainSave} onClick={startNew}><Plus size={16} aria-hidden="true" /> تازه</button></div>
           {list.length === 0
             ? <p className="text-sm leading-7" style={{ color: 'var(--text-2)' }}>هنوز کاربرگی ذخیره نشده است.</p>
             : <ul className="max-h-72 space-y-1 overflow-y-auto text-sm">{list.map(item => <li key={item.workbookId}>
-                <button type="button" className="flex min-h-11 w-full items-center gap-2 text-start underline" disabled={busy || uncertainCreation} onClick={() => void openFromServer(item.workbookId, null)}>
+                <button type="button" className="flex min-h-11 w-full items-center gap-2 text-start underline" disabled={busy || uncertainSave} onClick={() => void openFromServer(item.workbookId, null)}>
                   <FolderOpen size={16} aria-hidden="true" className="shrink-0" /><span className="min-w-0 truncate">{item.title}</span>
                   <span className="shrink-0" style={{ color: 'var(--text-2)' }}>نسخهٔ {toPersianDigits(item.version)}</span>
                 </button></li>)}</ul>}

@@ -12,6 +12,80 @@ import ResearchPreparationFields from './ResearchPreparationFields';
 import type { ManualIntake } from '../../lib/intelligence/manual-intake';
 const mount = (transport: WorkbookTransport, workbookId: string) => mountComponent('components/admin/ResearchWorkbook.tsx', { transport, initialWorkbookId: workbookId });
 
+for (const outcome of ['committed', 'absent', 'late-commit'] as const) test(`START-B v2 unknown save: ${outcome}, GET recovery retains v1 and cannot carry its approval`, async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const path = '/api/admin/intelligence/workbooks', posts: string[] = [], reads: string[] = [];
+  const first = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const id = String(first.body.workbookId), original = structuredClone(fixture.snapshot().versions[0]);
+  let unknown = false;
+  const transport: WorkbookTransport = async (url, init) => {
+    if (init?.method === 'POST' && JSON.parse(String(init.body)).action === 'save') {
+      posts.push(String(init.body));
+      if (posts.length === 1) {
+        unknown = true;
+        if (outcome === 'committed') await fixture.transport(url, init);
+        throw new Error('Synthetic lost response');
+      }
+    } else if (unknown && url.includes('?id=')) reads.push(url);
+    return fixture.transport(url, init);
+  };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    await ui.click('تأیید داخلی نسخه'); assert.equal(ui.badge(), true);
+    (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'نمونه ساختگی: نسخه دوم' } }); await ui.settle();
+    await ui.click('ذخیره به‌عنوان');
+    assert.equal(ui.button('تازه').props.disabled, true, 'an unknown v2 must not be replaced by another workbook');
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.equal(ui.button('تأیید داخلی نسخه').props.disabled, true);
+    assert.equal(ui.badge(), false);
+    await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts.length, 1, 'recovery never POSTs');
+    assert.deepEqual(reads, [`${path}?id=${id}&version=2`]);
+    if (outcome !== 'committed') {
+      if (outcome === 'late-commit') await fixture.transport(path, { method: 'POST', body: posts[0] });
+      await ui.click('ارسال دوبارهٔ همین ثبت');
+      assert.equal(posts[1], posts[0], 'same workbook, base, target and exact body');
+      if (outcome === 'late-commit') {
+        assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true, 'a conflict is not confirmation');
+        await ui.click('بررسی دوبارهٔ همین ثبت');
+      }
+    }
+    assert.equal(fixture.snapshot().versions.length, 2);
+    assert.deepEqual(fixture.snapshot().versions[0], original);
+    assert.equal(fixture.snapshot().reviews.length, 1); assert.equal(ui.badge(), false);
+    assert.equal(fixture.snapshot().publications.length, 0);
+    assert.equal(ui.button('تازه').props.disabled, false);
+    const reread = await fixture.transport(`${path}?id=${id}&version=1`);
+    assert.deepEqual(reread.body.workbook, original.body);
+    const reopened = mount(fixture.transport, id); await reopened.settle();
+    assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, 'نمونه ساختگی: نسخه دوم');
+    assert.equal(reopened.badge(), false, 'reload cannot inherit v1 approval');
+    await reopened.click('نسخهٔ ۱ ·');
+    assert.equal(reopened.find('input', e => e.props.id === 'title').props.value, original.title);
+    assert.equal(reopened.badge(), false, 'historical approval is not current approval');
+    assert.throws(() => reopened.button('ایجاد نسخهٔ تازه برای بازبینی'), 'historical does not mean returned');
+  } finally { restore(); }
+});
+
+test('START-B a missing v2 with an incompatible latest-version response cannot authorize a retry', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const path = '/api/admin/intelligence/workbooks';
+  const first = await fixture.transport(path, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  let posts = 0, unknown = false;
+  const transport: WorkbookTransport = async (url, init) => {
+    if (init?.method === 'POST') { posts++; unknown = true; throw new Error('Synthetic no receipt'); }
+    const result = await fixture.transport(url, init);
+    return unknown && url.includes('?id=') ? { ...result, body: { ...result.body, latestVersion: 3 } } : result;
+  };
+  try {
+    const ui = mount(transport, String(first.body.workbookId)); await ui.settle();
+    (ui.find('input', e => e.props.id === 'title').props.onChange as (e: unknown) => void)({ target: { value: 'Synthetic v2' } }); await ui.settle();
+    await ui.click('ذخیره به‌عنوان'); await ui.click('بررسی دوبارهٔ همین ثبت');
+    assert.equal(posts, 1); assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, true);
+    assert.throws(() => ui.button('ارسال دوبارهٔ همین ثبت'));
+  } finally { restore(); }
+});
+
 function workbookBrowserFixture() {
   const oldWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
   const oldDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');

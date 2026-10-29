@@ -176,7 +176,7 @@ export async function openWorkbook(
     const all = (await store.versions(workbookId)).sort((a, b) => a.version - b.version);
     if (all.length === 0) return { status: 404, body: { error: "کاربرگ پیدا نشد", workbookId, requestedVersion: version, absent: true } };
     const target = version === null ? all[all.length - 1] : all.find((v) => v.version === version);
-    if (!target) return { status: 404, body: { error: "این نسخه پیدا نشد" } };
+    if (!target) return { status: 404, body: { error: "این نسخه پیدا نشد", workbookId, requestedVersion: version, versionAbsent: true, latestVersion: all[all.length - 1].version } };
     let workbook: ResearchWorkbook;
     try {
       workbook = parseWorkbook(JSON.stringify(target.body));
