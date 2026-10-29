@@ -23,6 +23,6 @@
 - [x] A12: reuse helper دقیق، قفل/attestation/ظرفیت، intent و copy→source binding برای apply/rollback؛ source reader-proof لازم دارد.
 - [x] A13: ۱۷ آزمون Linux موفق؛ failure/unknown/no-replay/reconcile و امتناع از source بدون rehearsal/reader منطبق.
 - [x] A14: ۱۴ سناریوی PG17 با دو profile؛ payload اتمیک، catalog/ACL/تاریخچه/مالی، fault/readback و rollback قبل/بعد وضعیت تازه.
-- [ ] A15: رسید و SHA در همان PR334؛ بدون ادعای نصب primary یا native آنلاین.
+- [x] A15: رسید و SHA در همان شاخه PR334؛ CI0d63 به‌گزارش مستقل هماهنگ‌کننده هر۵job موفق. انتقال آخرین اسناد/test-harness به GitHub با همان هماهنگ‌کننده است.
 - [x] A16: گیت DB default-off و capability مشترک GET/UI/POST، خواندن تاریخچه در حالت خاموش، حفظ فرم باز؛ ۳۹ آزمون قرارداد/API/UI و lint محدوده موفق.
-- [ ] A17: حساب‌های تازه و Auth/API واقعی در محیط native جدا؛ source/primary و حق تجاری پذیرفته نشده‌اند.
+- [x] A17: چهار حساب تازه،۲۴سناریوی پایه، ادامه native با حدود SQLSTATE نخست، exact403/۹postcondition و موجودی غیرصفر؛ مرورگر۳۲۰/۳۹۰ و cleanup شاهد دارند. source/primary، online، reader مستقر و حق تجاری پذیرفته نشده‌اند.

@@ -1,5 +1,11 @@
 # START-A — دو وضعیت پیگیری، نسخه ۰٫۴
 
+## پذیرش native محلی و موجودی غیرصفر — source 0d63a8b
+
+[گزارش بازشدنی native، تصویر موبایل و بسته r3b](NATIVE-ACCEPTANCE.fa.md) مرحله تازه تحویل است: ۲۴ سناریوی پایه با GoTrue/PostgREST/Next واقعی، ادامه جریان جدید، exact403/FORBIDDEN پس از revoke، همه۹ postcondition و سناریوی جدا با holdings و cash-flow غیرصفر. id/version/amount و fingerprint ردیف‌های نسخه **و اقلام مالی** پس از partial و not_done ثابت ماندند؛ planned مجهول null ماند. UI عضو در۳۲۰/۳۹۰ تاریخچه را بدون یادداشت خصوصی یا دکمه نوشتن نشان داد. آرشیو گیت‌دار r3b نیز در Linux واقعی verify شد؛ نصب اجرا نشد.
+
+SQLSTATE نخست native rollback همچنان **UNOBSERVED** است؛ خطای assertion نخست و خطای filename بعدی حفظ و تنها با readback/resume صریح، بدون تکرار DDL یا POSTهای قبلی، ادامه داده شدند. PT409 دو پروفایل SQL به native منتقل نشده است. منابع همین مالک پس از حفظ dump خصوصی جمع، تب آزمون بسته و viewport reset شد. CI0d63 و build آن موفق‌اند؛ native آنلاین، reader واقعی مستقر روی SQL قدیمی، primary، entitlement و پذیرش آرش از این نتایج نتیجه نمی‌شوند.
+
 ## candidate گیت‌دار و rehearsal لینوکس/PG
 
 [قرارداد adapter و ترتیب rollout](ADAPTER.fa.md) نسخه جدید تحویل فنی است. r2 immutable حفظ شده، ولی بسته apply نهایی اکنون r2+companion را در یک transaction با گیت خصوصی خاموش نصب می‌کند؛ پنجره schema بدون guard ندارد. سه تابع خصوصی command/execute/load، قید وضعیت و اشیای دقیق گیت دامنه تغییرند. UI/GET/POST و RPC مستقیم از همان گیت پیروی می‌کنند؛ خواندن تاریخچه مستقل می‌ماند و متن فرم هنگام خاموش‌شدن از بین نمی‌رود.
