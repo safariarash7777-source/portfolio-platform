@@ -16,3 +16,11 @@
 - [ ] A10: نسخه commit و Draft PR stacked، CI و Preview آنلاین مصنوعی؛ خواندنی و بدون حساب واقعی/نوشتن تولید.
 
 این چک‌لیست دفتر وضعیت مشترک نیست؛ هماهنگ‌کننده نویسنده COMMAND-CENTER است. تغییر مشترک package یا قرارداد/migration قبل از اجرا به مالک مربوط تطبیق داده می‌شود.
+
+## adapter نصب، ادامه مستقل پس از بسته انتقال
+
+- [x] A11: spec/plan کوتاه و حدود مجاز adapter ثبت شد؛ root انتشار be92c66 به همان PR334 را تأیید و بسته r2 را مستقل تطبیق داد. خطای push رسید قبلی تاریخی است.
+- [ ] A12: reuse helper دقیق، قفل/attestation/ظرفیت، intent و copy→source binding برای apply/rollback.
+- [ ] A13: آزمون failure/unknown/no-replay و امتناع از source بدون rehearsal منطبق.
+- [ ] A14: rehearsal payload و queryهای واقعی روی PG مستقل؛ catalog/ACL/تاریخچه/مالی و drift/rollback.
+- [ ] A15: رسید و SHA در همان PR334؛ بدون ادعای نصب primary یا native آنلاین.
