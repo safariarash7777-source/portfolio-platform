@@ -1,0 +1,71 @@
+{
+  "observedAt": "2026-10-29T18:19:44.297623+00:00",
+  "method": "read-only public GitHub API via existing proxy",
+  "reviewer": "existing-root-coordinator",
+  "sourceSha": "1d7b3586931548fe35f1d5cacbf4ad93771c3d30",
+  "branch": "codex/fund-five-comparison-20261029",
+  "pullRequests": [
+    {
+      "number": 337,
+      "head": "1d7b3586931548fe35f1d5cacbf4ad93771c3d30",
+      "draft": false,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/337"
+    }
+  ],
+  "ci": [
+    {
+      "id": 40929541555,
+      "sha": "1d7b3586931548fe35f1d5cacbf4ad93771c3d30",
+      "status": "in_progress",
+      "conclusion": null,
+      "jobs": [
+        {
+          "name": "Database RLS \u00b7 Integrity (Postgres)",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+          "status": "in_progress",
+          "conclusion": null
+        },
+        {
+          "name": "Secret scan \u00b7 SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "deployments": [
+    {
+      "id": 7420604297,
+      "sha": "1d7b3586931548fe35f1d5cacbf4ad93771c3d30",
+      "environment": "Preview",
+      "latest": {
+        "state": "success",
+        "environment_url": "https://portfolio-platform-2349k12oe-safariarash7777-4463s-projects.vercel.app",
+        "created_at": "2026-10-29T18:18:09Z"
+      }
+    }
+  ],
+  "mainMerged": false,
+  "primaryInstallation": false,
+  "realFinancialAcceptance": false,
+  "arashVisualAcceptance": false,
+  "rootReview": {
+    "reviewed": "fixed-commit comparison core and component diff; delivery and viewport images",
+    "productScope": "existing manual comparison limit3 to5, existing missing-data gates, notice clarification; testing fixture remains outside app runtime",
+    "localTests": "owner report: relevant104 and changed15; root did not rerun",
+    "rootViewedSyntheticImages": [
+      320,
+      1280
+    ],
+    "visualPreviewAccepted": false
+  }
+}
