@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {createRequire} from 'node:module';
-import {qaRequestAllowed,targets} from './product-leaf-browser-qa.mjs';
+import {qaRequestAllowed,targets,compilerDiagnostics} from './product-leaf-browser-qa.mjs';
 const require=createRequire(import.meta.url),ts=require('typescript');
 const sha256=text=>createHash('sha256').update(text).digest('hex');
 const lineage=JSON.parse(readFileSync(new URL('../../docs/ops/product-leaf-browser-qa-20261030/owned-chrome-lineage.json',import.meta.url),'utf8'));
@@ -32,4 +32,8 @@ test('Educational runtime exposes only its exact static files and explicit modes
   for(const path of ['/?mode=advisor','/?mode=revoked','/?mode=read-error','/style.css','/bundle.js','/fonts/Pelak-Bold.woff2'])assert.ok(qaRequestAllowed(origin+path,'GET',null,origin));
   for(const path of ['/api/consultation','/?mode=admin','/?mode=advisor&token=secret','/private.json','/style.css?x=secret'])assert.equal(qaRequestAllowed(origin+path,'GET',null,origin),false);
   assert.equal(qaRequestAllowed(origin+'/','POST',null,origin),false);
+});
+
+test('Compiler diagnostics retain only code and source coordinates, excluding bodies, URLs and credentials',()=>{
+  assert.deepEqual(compilerDiagnostics({status:2,stdout:'qa-leaf.tsx(12,3): error TS2322: private body token=secret https://private.invalid\n'}),{exitCode:2,codes:['TS2322'],locations:[{file:'qa-leaf.tsx',line:12,column:3,code:'TS2322'}]});
 });

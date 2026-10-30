@@ -16,6 +16,9 @@ export const targets=Object.freeze({
 });
 const digest=value=>createHash('sha256').update(value).digest('hex');
 const git=(...args)=>execFileSync('git',args,{cwd:root,stdio:['ignore','pipe','pipe'],maxBuffer:4*1024**2});
+export function compilerDiagnostics(error){
+  const text=String(error.stdout??'');return {exitCode:Number.isInteger(error.status)?error.status:null,codes:[...new Set(text.match(/\bTS\d{3,5}\b/g)??[])].slice(0,10),locations:[...text.matchAll(/([a-zA-Z0-9_.-]+\.tsx?)\((\d+),(\d+)\): error (TS\d+):/g)].slice(0,10).map(m=>({file:m[1],line:Number(m[2]),column:Number(m[3]),code:m[4]}))};
+}
 export function qaRequestAllowed(value,method,target,localOrigin){
   if(!['GET','HEAD'].includes(method)||typeof value!=='string')return false;
   try{
@@ -54,7 +57,7 @@ async function attach(state,context,target,localOrigin){
   return {page,audit};
 }
 async function snapshot(page,output,name){
-  await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(250);
+  await page.evaluate(async()=>{await document.fonts.ready;scrollTo(0,0);});await page.waitForTimeout(250);
   const metrics=await page.evaluate(()=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight,rtl:document.documentElement.dir==='rtl',bodyCharacters:document.body.innerText.length}));
   assert.ok(metrics.bodyCharacters>100&&metrics.height<16000,'qa_invalid_or_unbounded_document');
   const path=resolve(output,name+'.png');await page.screenshot({path,fullPage:true});assert.ok(statSync(path).size<16*1024**2);
@@ -103,16 +106,23 @@ createRoot(document.getElementById('root')!).render(<main className="container-p
 `;
 async function componentServer(state){
   const source=resolve(state.local,'component-source');mkdirSync(source);
+  state.qaStage='component_source_fetch';
   git('fetch','--no-tags','--depth=1','origin',targets.member357.sha);assert.equal(git('rev-parse',targets.member357.sha+'^{commit}').toString().trim(),targets.member357.sha);
+  state.qaStage='component_archive';
   const archive=resolve(state.local,'component-source.tar');execFileSync('git',['-c','core.autocrlf=false','archive','--format=tar','--output',archive,targets.member357.sha,'app/globals.css','components/consultation','lib','public/fonts','tailwind.config.js','postcss.config.js','tsconfig.json','package.json','package-lock.json'],{cwd:root,stdio:'pipe'});
   execFileSync('tar',['-xf',archive,'-C',source],{stdio:'pipe'});symlinkSync(resolve(root,'node_modules'),resolve(source,'node_modules'),'dir');
   const entry=resolve(source,'qa-leaf.tsx');writeFileSync(entry,example,{mode:0o600});
   const require=createRequire(import.meta.url),{build}=require('esbuild');
+  state.qaStage='component_dependency_identity';
   const sourceLock=JSON.parse(readFileSync(resolve(source,'package-lock.json'),'utf8')),qaLock=JSON.parse(readFileSync(resolve(root,'package-lock.json'),'utf8'));
   const dependencyIdentity=Object.fromEntries(['react','react-dom','typescript','esbuild','tailwindcss'].map(name=>{const key='node_modules/'+name;assert.deepEqual(qaLock.packages[key],sourceLock.packages[key],'qa_source_dependency_identity');return [name,qaLock.packages[key].version];}));
   writeFileSync(resolve(source,'qa-tsconfig.json'),JSON.stringify({extends:'./tsconfig.json',compilerOptions:{noEmit:true,incremental:false},include:['qa-leaf.tsx'],exclude:['node_modules']}),{mode:0o600});
-  execFileSync(process.execPath,[require.resolve('typescript/bin/tsc'),'-p',resolve(source,'qa-tsconfig.json')],{cwd:source,stdio:'pipe',timeout:60000});
+  state.qaStage='component_props_typecheck';
+  try{execFileSync(process.execPath,[require.resolve('typescript/bin/tsc'),'-p',resolve(source,'qa-tsconfig.json')],{cwd:source,stdio:'pipe',timeout:60000});}
+  catch(error){console.log('PRODUCT_LEAF_BUILD_FAILURE '+JSON.stringify({phase:state.qaStage,...compilerDiagnostics(error)}));throw Error('qa_props_typecheck_failed');}
+  state.qaStage='component_bundle';
   await build({entryPoints:[entry],bundle:true,platform:'browser',format:'iife',outfile:resolve(source,'bundle.js'),tsconfig:resolve(source,'tsconfig.json'),logLevel:'silent',define:{'process.env.NODE_ENV':'"production"'}});
+  state.qaStage='component_css';
   execFileSync(process.execPath,[require.resolve('tailwindcss/lib/cli.js'),'-i',resolve(source,'app/globals.css'),'-o',resolve(source,'style.css'),'--config',resolve(source,'tailwind.config.js'),'--content',resolve(source,'components/consultation/**/*.tsx')+','+entry],{cwd:source,stdio:'pipe',timeout:60000});
   const fontCSS=`@font-face{font-family:Vazirmatn;src:url('/fonts/Vazirmatn-Variable.woff2');font-weight:100 900;font-display:swap}@font-face{font-family:Pelak;src:url('/fonts/Pelak-Bold.woff2');font-weight:700;font-display:swap}@font-face{font-family:Pelak;src:url('/fonts/Pelak-ExtraBold.woff2');font-weight:800;font-display:swap}@font-face{font-family:Pelak;src:url('/fonts/Pelak-Black.woff2');font-weight:900;font-display:swap}:root{--font-vazirmatn:Vazirmatn;--font-pelak:Pelak;--font-display:Pelak}`;
   const css=Buffer.concat([readFileSync(resolve(source,'style.css')),Buffer.from(fontCSS)]);
@@ -120,6 +130,7 @@ async function componentServer(state){
   const files=new Map([['/',{body:html,type:'text/html; charset=utf-8'}],['/bundle.js',{body:readFileSync(resolve(source,'bundle.js')),type:'application/javascript'}],['/style.css',{body:css,type:'text/css'}]]);
   for(const name of ['Vazirmatn-Variable','Pelak-Bold','Pelak-ExtraBold','Pelak-Black'])files.set('/fonts/'+name+'.woff2',{body:readFileSync(resolve(source,'public/fonts',name+'.woff2')),type:'font/woff2'});
   const server=createServer((req,res)=>{const file=files.get(new URL(req.url,'http://localhost').pathname);if(!['GET','HEAD'].includes(req.method)||!file){res.writeHead(404);res.end();return;}res.writeHead(200,{'Content-Type':file.type,'Cache-Control':'no-store','Content-Security-Policy':"default-src 'none';script-src 'self';style-src 'self' 'unsafe-inline';font-src 'self';connect-src 'none';frame-ancestors 'none'"});res.end(req.method==='HEAD'?undefined:file.body);});
+  state.qaStage='component_static_server';
   await new Promise((ok,bad)=>{server.once('error',bad);server.listen(0,'127.0.0.1',ok);});
   return {server,origin:'http://127.0.0.1:'+server.address().port,dependencyIdentity,propsTypecheck:'PASS',sourceManifest:Object.fromEntries(['components/consultation/SessionCard.tsx','components/consultation/RepliesPanel.tsx','components/consultation/questionFollowUp.ts','app/globals.css','tailwind.config.js',...['Vazirmatn-Variable','Pelak-Bold','Pelak-ExtraBold','Pelak-Black'].map(name=>'public/fonts/'+name+'.woff2')].map(path=>[path,{gitBlob:git('rev-parse',targets.member357.sha+':'+path).toString().trim(),sha256:digest(readFileSync(resolve(source,path)))}])),exampleSha256:digest(example),compiledCssSha256:digest(css)};
 }
@@ -154,8 +165,8 @@ async function run(){
     state=await preflight();report.chrome={sourceSha256:state.sourceSha256,chromeSha256:state.chromeSha256,chromeVersion:state.chromeVersion,closure:state.closure};
     report.public331=await publicPreview(state,targets.public331,output);
     const probe=await fetch(targets.member357.origin+targets.member357.path,{method:'HEAD',redirect:'manual',signal:AbortSignal.timeout(15000)});report.real357={sourceSha:targets.member357.sha,httpStatus:probe.status,status:probe.status===200?'NEEDS_VALID_SESSION_REVIEW':'BLOCKED',credentialsSent:false,redirectsFollowed:false,accountScreenshot:false};
-    server=await componentServer(state);report.component357=await educationalComponent(state,server,output);
-  }catch(error){report.status='BLOCKED';report.failureCode=/^qa_[a-z0-9_]+$/.test(error.message)?error.message:error?.name==='TimeoutError'?'qa_browser_timeout':'qa_boundary_failed';}
+    server=await componentServer(state);state.qaStage='component_dom';report.component357=await educationalComponent(state,server,output);
+  }catch(error){report.status='BLOCKED';report.failureStage=state?.qaStage??'deployment_or_browser';report.failureCode=/^qa_[a-z0-9_]+$/.test(error.message)?error.message:error?.name==='TimeoutError'?'qa_browser_timeout':'qa_boundary_failed';}
   finally{
     if(server)await new Promise(ok=>server.server.close(ok));
     if(state)report.cleanup=await cleanup(state);
