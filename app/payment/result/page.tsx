@@ -2,7 +2,9 @@ import Link from "next/link";
 import { CheckCircle2, XCircle, Info } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { toPersianDigits } from "@/lib/format";
+import { formatJalali, formatToman, toPersianDigits } from "@/lib/format";
+import { createClient } from "@/lib/supabase/server";
+import { readFinancialReceipt, type FinancialReceipt } from "@/lib/payments/webinar-binding";
 
 export const metadata = {
   title: "نتیجهٔ پرداخت",
@@ -14,9 +16,16 @@ export default async function PaymentResultPage({
 }: {
   searchParams: Promise<{ status?: string; ref?: string; authority?: string }>;
 }) {
-  const { status, ref, authority } = await searchParams;
-  const success = status === "success";
-  const unknown = status !== "success" && status !== "failed";
+  const { authority } = await searchParams;
+  let financial: FinancialReceipt | null = null;
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (!error && user && typeof authority === "string") financial = await readFinancialReceipt(supabase, authority, user.id);
+  } catch { /* Query flags, a role or an unavailable session never establish a receipt. */ }
+  const success = financial?.status === "paid";
+  const unknown = !success && financial?.status !== "failed";
+  const ref = success ? financial?.refId : null;
   const color = success ? "var(--success)" : unknown ? "var(--info)" : "var(--danger)";
   const recheck = authority ? `/api/payment/callback?${new URLSearchParams({ Authority: authority, Status: "OK" })}` : null;
 
@@ -52,10 +61,10 @@ export default async function PaymentResultPage({
 
           <p role="status" className="text-sm leading-8 mb-6" style={{ color: "var(--text-2)" }}>
             {success
-              ? "دسترسی شما به دورهٔ وبینار و کانال اختصاصی فعال شد. اگر حساب تلگرام‌تان متصل باشد، لینک دعوت در پیام خصوصی برایتان ارسال شده است؛ در غیر این صورت از داشبورد می‌توانید حساب تلگرام را متصل کنید و لینک دعوت را ببینید."
+              ? "پرداخت این درخواست در سوابق مالی شما ثبت شده است. این رسید، فعال‌شدن خدمت یا دسترسی به کانال را تأیید نمی‌کند؛ وضعیت خدمت را از حساب خود پیگیری کنید."
               : unknown
               ? "نتیجهٔ این پرداخت قابل تأیید نبود. این وضعیت به معنی لغو پرداخت یا بازگشت وجه نیست. پیش از پرداخت جدید، همین درخواست را دوباره بررسی کنید یا با پشتیبانی پیگیری کنید."
-              : "درگاه، این پرداخت را ناموفق اعلام کرده است. در صورت کسر وجه، برای بررسی همان پرداخت با پشتیبانی پیگیری کنید."}
+              : "این درخواست در سوابق مالی شما ناموفق ثبت شده است. در صورت کسر وجه، برای بررسی همان پرداخت با پشتیبانی پیگیری کنید."}
           </p>
 
           {success && ref && (
@@ -68,6 +77,13 @@ export default async function PaymentResultPage({
                 {toPersianDigits(ref)}
               </span>
             </div>
+          )}
+          {financial && (
+            <p className="text-xs leading-7 mb-4" style={{ color: "var(--text-3)" }}>
+              مبلغ ثبت‌شده: {formatToman(financial.amountToman)}
+              <br />
+              زمان ثبت: <time dateTime={financial.verifiedAt ?? financial.createdAt}>{formatJalali(financial.verifiedAt ?? financial.createdAt)}</time>
+            </p>
           )}
 
           {unknown && authority && (

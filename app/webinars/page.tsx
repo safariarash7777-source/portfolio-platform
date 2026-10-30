@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Calendar,
@@ -14,8 +14,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
-import { toPersianDigits } from "@/lib/format";
+import { formatJalali, formatToman, toPersianDigits } from "@/lib/format";
 import { accountEntryHref } from "@/components/account/returnPath";
+import type { WebinarRegistrationState } from "@/lib/payments/webinar-binding";
 
 interface Webinar {
   id: string;
@@ -39,6 +40,37 @@ const PLATFORM_LABELS: Record<string, string> = {
   zoom: "زوم",
   google_meet: "گوگل میت",
 };
+
+const uuid = (v: unknown): v is string => typeof v === "string" && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(v);
+function stateResponse(value: unknown, webinarId: string): { state: WebinarRegistrationState; url: string | null } | null {
+  if (!value || typeof value !== "object" || !("state" in value)) return null;
+  const s = value.state as WebinarRegistrationState | null;
+  if (!s || s.contractVersion !== "webinar-registration.v1" || s.webinarId !== webinarId || !["absent", "registered", "unresolved"].includes(s.state)
+    || !["legacy", "bound"].includes(s.mode) || !["none", "unproven", "register-webinar.v1"].includes(s.provenance) || typeof s.paymentEnabled !== "boolean"
+    || (s.state === "absent" ? s.registrationId !== null || s.payment !== null : !uuid(s.registrationId))) return null;
+  if (s.state === "registered" && !["pending", "paid", "free", "refunded"].includes(s.paymentStatus ?? "")) return null;
+  if (s.payment !== null) {
+    const p = s.payment;
+    if (!uuid(p.intentKey) || !["prepared", "claimed", "attached"].includes(p.stage) || !["pending", "paid", "failed"].includes(p.status)
+      || p.unit !== "toman" || !Number.isSafeInteger(p.amountToman) || p.amountToman <= 0 || !Number.isFinite(Date.parse(p.createdAt))) return null;
+  }
+  let url: string | null = null;
+  if ("payment_url" in value && typeof value.payment_url === "string" && s.paymentEnabled && s.payment?.status === "pending" && s.payment.stage === "attached") {
+    try {
+      const u = new URL(value.payment_url);
+      if (u.protocol === "https:" && ["payment.zarinpal.com", "sandbox.zarinpal.com"].includes(u.host)
+        && u.pathname === `/pg/StartPay/${s.payment.authority}` && !u.search && !u.hash && !u.username && !u.password) url = u.href;
+    } catch { /* An invalid destination is never followed. */ }
+  }
+  return { state: s, url };
+}
+
+async function readState(webinarId: string) {
+  const response = await fetch(`/api/webinars/register?${new URLSearchParams({ webinar_id: webinarId })}`, { cache: "no-store", credentials: "same-origin" });
+  if (response.status === 401) { window.location.href = accountEntryHref("/login", "/webinars"); return null; }
+  const value: unknown = await response.json();
+  return response.ok ? stateResponse(value, webinarId) : null;
+}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("fa-IR", {
@@ -75,18 +107,35 @@ function WebinarsContent() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
+  const [snapshot, setSnapshot] = useState<WebinarRegistrationState | null>(null);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+  const [recoveryWebinar, setRecoveryWebinar] = useState<string | null>(null);
+  const inFlight = useRef(false);
+
+  const present = useCallback((value: NonNullable<ReturnType<typeof stateResponse>>) => {
+    setSnapshot(value.state); setResumeUrl(value.url); setRecoveryWebinar(value.state.webinarId);
+    const s = value.state;
+    if (s.state === "registered" && s.paymentStatus === "free") setMessage({ type: "success", text: "ثبت‌نام رایگان شما در حساب ثبت شده است." });
+    else if (s.paymentStatus === "paid" && s.payment?.status === "paid" && s.provenance === "register-webinar.v1") setMessage({ type: "success", text: "پرداخت و ثبت‌نام همین وبینار در حساب شما تأیید شده است." });
+    else setMessage({ type: "info", text: "وضعیت همین درخواست از حساب شما خوانده شد. نتیجهٔ نامشخص به معنی لغو یا بازگشت وجه نیست؛ پرداخت تازه‌ای آغاز نکنید." });
+  }, []);
+  const recover = useCallback(async (webinarId: string) => {
+    setResumeUrl(null);
+    try { const state = await readState(webinarId); if (state) present(state); else setMessage({ type: "info", text: "وضعیت همین درخواست هنوز قابل خواندن نیست؛ پرداخت تازه‌ای آغاز نکنید." }); }
+    catch { setMessage({ type: "info", text: "وضعیت همین درخواست هنوز قابل خواندن نیست؛ پرداخت تازه‌ای آغاز نکنید." }); }
+  }, [present]);
 
   // بررسی پارامترهای callback پرداخت
   useEffect(() => {
     const status = searchParams.get("status");
-    if (status === "success") {
-      setMessage({ type: "success", text: "پرداخت موفق! ثبت‌نام شما تأیید شد." });
-    } else if (status === "failed") {
-      setMessage({ type: "error", text: "پرداخت ناموفق بود. لطفاً دوباره تلاش کنید." });
-    } else if (status === "unknown") {
+    if (["success", "failed", "unknown"].includes(status ?? "")) {
+      setSnapshot(null); setResumeUrl(null); setRecoveryWebinar(null);
       setMessage({ type: "info", text: "نتیجهٔ پرداخت هنوز مشخص نیست. این وضعیت به معنی لغو پرداخت یا بازگشت وجه نیست. پیش از پرداخت جدید، همان درخواست را با پشتیبانی پیگیری کنید." });
+      const webinarId = searchParams.get("webinar_id");
+      if (uuid(webinarId)) void recover(webinarId);
     }
-  }, [searchParams]);
+    // URL flags only initiate an owner-scoped GET; they never establish payment or service success.
+  }, [searchParams, recover]);
 
   useEffect(() => {
     fetch("/api/webinars/list")
@@ -96,49 +145,49 @@ function WebinarsContent() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleRegister = async (webinarId: string, priceToman: number) => {
+  const handleRegister = async (webinarId: string) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setRegistering(webinarId);
     setMessage(null);
+    setSnapshot(null); setResumeUrl(null);
 
     try {
-      const res = await fetch("/api/webinars/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ webinar_id: webinarId }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          // کاربر لاگین نیست → هدایت به صفحه ورود
-          window.location.href = accountEntryHref("/login", "/webinars");
-          return;
-        }
-        throw new Error(data.error || "خطا در ثبت‌نام");
+      setRecoveryWebinar(webinarId);
+      let current = await readState(webinarId);
+      if (!current) throw Error("unknown");
+      const registrationAttempt = `webinar-registration.pending.v1:${webinarId}`;
+      if (current.state.state === "absent") {
+        if (window.sessionStorage.getItem(registrationAttempt)) { present(current); return; }
+        window.sessionStorage.setItem(registrationAttempt, "started");
+        const registered = await fetch("/api/webinars/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ webinar_id: webinarId }) });
+        const ack = stateResponse(await registered.json(), webinarId);
+        if (!registered.ok || !ack || ack.state.state !== "registered") throw Error("unknown");
+        current = await readState(webinarId);
+        if (!current || current.state.registrationId !== ack.state.registrationId) throw Error("unknown");
       }
-
-      // اگر وبینار پولی باشد → هدایت به درگاه پرداخت
-      if (priceToman > 0 && data.registration?.id) {
-        const payRes = await fetch("/api/webinars/payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ registration_id: data.registration.id }),
-        });
-        const payData = await payRes.json();
-        if (payData.payment_url) {
-          window.location.href = payData.payment_url;
-          return;
-        }
-        throw new Error(payData.error || "خطا در اتصال به درگاه");
-      }
-
-      // وبینار رایگان → ثبت‌نام موفق
-      setMessage({ type: "success", text: "ثبت‌نام شما با موفقیت انجام شد!" });
-    } catch (e: any) {
-      setMessage({ type: "error", text: e.message });
+      if (current.state.state === "registered") window.sessionStorage.removeItem(registrationAttempt);
+      present(current);
+      const state = current.state;
+      if (state.state !== "registered" || state.paymentStatus !== "pending" || !state.paymentEnabled || !state.registrationId) return;
+      if (current.url) { window.location.href = current.url; return; }
+      if (state.payment && (state.payment.status !== "pending" || state.payment.stage !== "prepared")) return;
+      const key = `webinar-payment.intent.v1:${state.registrationId}`;
+      const intentKey = state.payment?.intentKey ?? window.sessionStorage.getItem(key) ?? crypto.randomUUID();
+      if (!uuid(intentKey)) throw Error("unknown");
+      // Only opaque intent metadata is persisted, never a member/financial payload.
+      window.sessionStorage.setItem(key, intentKey);
+      const payRes = await fetch("/api/webinars/payment", { method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": intentKey }, body: JSON.stringify({ registration_id: state.registrationId }) });
+      const payData: unknown = await payRes.json();
+      const confirmed = await readState(webinarId);
+      if (confirmed) present(confirmed);
+      if (payRes.ok && payData && typeof payData === "object" && "payment_url" in payData
+        && confirmed?.state.payment?.intentKey === intentKey && confirmed.url && confirmed.url === payData.payment_url) window.location.href = confirmed.url;
+    } catch {
+      setMessage({ type: "info", text: "نتیجهٔ همین درخواست هنوز قابل تأیید نیست. وضعیت آن را بررسی کنید؛ ثبت‌نام یا پرداخت تازه‌ای آغاز نکنید." });
     } finally {
       setRegistering(null);
+      inFlight.current = false;
     }
   };
 
@@ -175,7 +224,7 @@ function WebinarsContent() {
         {message && (
           <div
             role="status"
-            className="mb-6 rounded-xl px-4 py-3 text-sm font-medium flex items-center gap-2"
+            className="mb-6 rounded-xl px-4 py-3 text-sm font-medium flex flex-wrap items-center gap-2"
             style={{
               background: `color-mix(in srgb, var(--${message.type === "success" ? "success" : message.type === "info" ? "info" : "danger"}) 12%, transparent)`,
               color: `var(--${message.type === "success" ? "success" : message.type === "info" ? "info" : "danger"})`,
@@ -183,8 +232,14 @@ function WebinarsContent() {
           >
             {message.type === "success" ? <CheckCircle size={16} /> : message.type === "info" ? <Info size={16} /> : <XCircle size={16} />}
             {message.text}
-            {message.type === "info" && searchParams.get("authority") && (
-              <span className="text-xs break-all" dir="ltr">{searchParams.get("authority")}</span>
+            {snapshot?.payment && (
+              <span className="text-xs">مبلغ ثبت‌شده: {formatToman(snapshot.payment.amountToman)} · <time dateTime={snapshot.payment.createdAt}>{formatJalali(snapshot.payment.createdAt)}</time></span>
+            )}
+            {message.type === "info" && recoveryWebinar && (
+              <button type="button" onClick={() => void recover(recoveryWebinar)} className="underline">بررسی وضعیت همین درخواست</button>
+            )}
+            {message.type === "info" && resumeUrl && (
+              <a href={resumeUrl} className="underline">ادامهٔ همان پرداخت</a>
             )}
           </div>
         )}
@@ -292,7 +347,7 @@ function WebinarsContent() {
                     <div className="flex items-center gap-3">
                       {canRegister && (
                         <button
-                          onClick={() => handleRegister(w.id, w.price_toman)}
+                          onClick={() => handleRegister(w.id)}
                           disabled={registering === w.id}
                           className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-colors"
                           style={{
@@ -304,7 +359,7 @@ function WebinarsContent() {
                           {registering === w.id && (
                             <Loader2 size={14} className="animate-spin" />
                           )}
-                          {w.price_toman > 0 ? "ثبت‌نام و پرداخت" : "ثبت‌نام رایگان"}
+                          {snapshot?.webinarId === w.id && snapshot.state === "registered" ? "ادامهٔ همان ثبت‌نام" : w.price_toman > 0 ? "ثبت‌نام و پرداخت" : "ثبت‌نام رایگان"}
                         </button>
                       )}
 
