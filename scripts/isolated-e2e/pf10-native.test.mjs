@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {verifyEnvironment,verifyContainer,verifyIngress,allowedURL,images,origin} from './pf10-native.mjs';
+import {verifyEnvironment,verifyContainer,verifyIngress,verifyRestArtifact,restArtifact,allowedURL,images,origin} from './pf10-native.mjs';
 const state={id:'synthetic-run',network:'synthetic-internal',edge:'synthetic-edge',imageIds:{db:'sha256:synthetic',node:'sha256:synthetic-node'}};
 const container=()=>({Config:{Labels:{'pf10.native-lab':state.id}},State:{Running:true},Image:state.imageIds.db,Mounts:[{Type:'tmpfs',Destination:'/var/lib/postgresql/data'}],NetworkSettings:{Networks:{[state.network]:{}}},HostConfig:{PortBindings:{}}});
 test('PF10 real Auth harness cannot launch on Windows or outside existing Linux CI',()=>{
@@ -22,6 +22,11 @@ test('PF10 harness HTTP accepts only fixed synthetic localhost and bounded route
  for(const path of ['/auth/v1/user','/rest/v1/rpc/load_member_debt_payments','/api/personal-finance/debt-payments?clientToken=synthetic'])assert.equal(allowedURL(origin+path),origin+path);
  for(const url of ['https://portfolio-platform-fawn.vercel.app/api/personal-finance/debt-payments','http://127.0.0.1:32189/auth/v1/user',origin+'/api/payment',origin+'/api/cron/research',origin+'/api/admin/intelligence/workbooks','http://user@localhost:32189/auth/v1/user'])assert.throws(()=>allowedURL(url));
 });
-test('PF10 reuses four immutable START-A image digests, with no tag fallback',()=>{
+test('PF10 pins immutable source identities including approved official REST, with no tag fallback',()=>{
  assert.equal(Object.keys(images).length,4);assert.ok(Object.values(images).every(image=>/^[a-z0-9./-]+@sha256:[a-f0-9]{64}$/.test(image)));
+});
+test('PF10 official REST mapping requires exact amd64 manifest, config and version readback',()=>{
+ const details={Os:'linux',Architecture:'amd64',Id:restArtifact.config},index={manifests:[{digest:restArtifact.manifest,platform:{os:'linux',architecture:'amd64'}}]};
+ assert.doesNotThrow(()=>verifyRestArtifact(details,index,'PostgREST 14.17 (synthetic readback)'));
+ for(const [d,i,v] of [[{...details,Id:restArtifact.legacy},index,'PostgREST 14.17'],[{...details,Architecture:'arm64'},index,'PostgREST 14.17'],[details,{manifests:[]},'PostgREST 14.17'],[details,index,'PostgREST 14.18']])assert.throws(()=>verifyRestArtifact(d,i,v));
 });
