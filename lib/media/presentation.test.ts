@@ -116,7 +116,7 @@ test("archive hash preserves search/type/date/layout and restores the same effec
 
 test("archive day/filter is independent of device timezone", () => {
   const moduleUrl = pathToFileURL(resolve("lib/media/presentation.ts")).href;
-  const script = `import {recordedMediaDay,filterMediaArchive} from ${JSON.stringify(moduleUrl)}; const rows=[{id:'a',platform:'telegram',kind:'post',content_url:'https://t.me/public/a',title:null,description:null,published_at:'2025-09-22T20:30:00Z'}];console.log(JSON.stringify([recordedMediaDay(rows[0]),filterMediaArchive(rows,{network:'all',kind:'all',query:'',from:'1404/07/01',to:'1404/07/01'}).shown.map(r=>r.id)]));`;
+  const script = `import * as loaded from ${JSON.stringify(moduleUrl)}; const {recordedMediaDay,filterMediaArchive}=loaded.default ?? loaded; const rows=[{id:'a',platform:'telegram',kind:'post',content_url:'https://t.me/public/a',title:null,description:null,published_at:'2025-09-22T20:30:00Z'}];console.log(JSON.stringify([recordedMediaDay(rows[0]),filterMediaArchive(rows,{network:'all',kind:'all',query:'',from:'1404/07/01',to:'1404/07/01'}).shown.map(r=>r.id)]));`;
   for (const timezone of ["UTC", "America/Los_Angeles", "Asia/Tokyo"]) {
     const run = spawnSync(process.execPath, ["--import", "tsx", "--input-type=module", "-e", script], { cwd: process.cwd(), env: { ...process.env, TZ: timezone }, encoding: "utf8" });
     assert.equal(run.status, 0, run.stderr);
