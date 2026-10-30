@@ -4,6 +4,8 @@
 
 Source implementation: `3291413ef8245c384271c37d0affbeac4268650b`. Scope: five static prototype files, existing brand assets, one immutable educational dataset. No product API, auth, database or financial engine is involved.
 
+Artifact-seal correction: the initial manifest hashed local CSS line endings. `prototype-manifest.json` now records canonical Git-blob SHA256 and retains `workingTreeSha256` separately. All five prototype files match the source commit after LF normalization; binary brand assets match byte for byte. This corrected the receipt, not the UI or dataset. The previous manifest remains in Git history.
+
 ## Comparison target and intentional differences
 
 Opened the existing Arash design-lab reference `design-2-final.jpg` and the new viewport captures; then inspected each reference/prototype side by side in `compare-reference-decision.png` and `compare-reference-dossier.png`. The reference is a general analysis desk; it is the target for brand, typography and layered surfaces, not a company-page pixel clone. Company content and the two different information architectures are intentional changes requested for P14. The source is 1425×891; new desktop captures are 1425×1000. Comparison canvases preserve the pixels and pad the missing height; no stretch or claimed pixel equivalence.
