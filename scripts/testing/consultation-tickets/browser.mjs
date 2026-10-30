@@ -266,7 +266,7 @@ export async function runBrowser(){
     recordPass(state,'owned-browser-cleanup',removed);
     check(state.checks.length===browserChecks.length,'p09_browser_check_count');
     return {browser:{status:'PASS',driverVersion:'1.64.1',sourceExecutable:executable,sourceSha256:state.sourceSha256,executable:state.executable,ownedTemp:state.local,ownerId:state.owner,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,closure:state.closure,checks:state.checks,...flow,cleanup:removed}};
-   }catch(error){if(state.pageDiagnostic){try{console.log('P03_TICKET_BROWSER_FAILURE_DETAIL '+JSON.stringify(await state.pageDiagnostic()));}catch{console.log('P03_TICKET_BROWSER_FAILURE_DETAIL '+JSON.stringify({stage:state.stage,operation:state.operation,dom:'UNAVAILABLE'}));}}throw error;
+   }catch(error){if(state.pageDiagnostic){try{console.log('P03_TICKET_BROWSER_FAILURE_DETAIL '+JSON.stringify(await Promise.race([state.pageDiagnostic(),new Promise(resolve=>setTimeout(()=>resolve({stage:state.stage,operation:state.operation,dom:'DIAGNOSTIC_DEADLINE'}),3000))])));}catch{console.log('P03_TICKET_BROWSER_FAILURE_DETAIL '+JSON.stringify({stage:state.stage,operation:state.operation,dom:'UNAVAILABLE'}));}}throw error;
    }finally{if(!state.cleaned){await cleanup(state);state.cleaned=true;}}
   },{browserMode:true});
  }catch(error){error.p03Stage=state?.stage??'preflight';throw error;}finally{if(state&&!state.cleaned)await cleanup(state);}

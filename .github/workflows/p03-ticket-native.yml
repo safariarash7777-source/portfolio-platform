@@ -83,6 +83,7 @@ jobs:
           Path('p03-ticket-browser-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
           PY
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: p03-ticket-native-receipt
           path: |
