@@ -15,6 +15,8 @@
 
 بازبینی مستقل روی 57ef سه شکاف یافت؛ در candidate بعدی اصلاح شدند و پذیرش SQL همچنان جداست: منع revival در خود guard، اتصال register/UI به قرارداد نسخه‌دار و intent ثابت، و جداسازی حقیقت وجه legacy از اعتبار خدمت. نامعلوم‌بودن ACK در مسیر واقعی client→register→payment، reload بدون درخواست دوم، حفظ free/old-schema، query جعلی موفقیت، رسید RLS مالک و پاک‌شدن لینک ادامه پس از شکست خواندن آزموده شدند. آزمون‌های عمومی قدیمی حذف نشدند؛ mock canonical با ref/time و committed failure برای بازخوانی کامل شد.
 
+اولین اجرای Linux روی 37206fa، CI41076714142، پیش از candidate در setup به نبود public.portfolios رسید؛ هر ده case با hookFailed متوقف شدند، نه اینکه منطق ده case اجرا شده باشد. وابستگی با فایل واقعی `sql/test/portfolio_precondition.sql` پیش از archive versioning تکمیل شد؛ هیچ جدول/guard تقلیدی ساخته یا فایل واقعی حذف نشد. شاهد اجرای اول محفوظ است؛ نتیجهٔ آن به منبع اصلاحی منتقل نمی‌شود و CI تازه لازم است.
+
 ## گیت PG و Auth/API — هنوز اجرا نشده
 
 thin SQL test در `lib/payments/webinar-binding.integration.test.ts` و همان `test:db`/PG service Linux موجود ثبت شده؛ helper `lib/ops/test-postgres.ts` بدون تغییر بازاستفاده می‌شود. قبل هر اتصال CI/GITHUB_ACTIONS، Linux، loopback5433 و نبود env غیرمستقیم الزام می‌شود؛ نام UUID و marker مالکیت پیش از DDL/cleanup کنترل می‌شوند. bootstrap و phase5/8/30 و guard واقعی مصرف می‌شوند، نه نسخهٔ تقلیدی. اجرای محلی انجام نشده است؛ غیبت psql یا شکست در CI skip نمی‌شود. این گیت، **PG16 role-seam** است؛ PG17 target و GoTrue/JWT جدا می‌مانند. runtime353 فقط با برش مستقل و هماهنگی مالک گسترش می‌یابد. این جدول هنوز **مأموریت پذیرش** است، نه فهرست آزمون SQL موفق:

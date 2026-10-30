@@ -67,6 +67,7 @@ before(() => {
   admin(`COMMENT ON DATABASE "${database}" IS ${quote(marker)}`); owned = true; attest();
   file("sql/test/supabase_bootstrap.sql");
   file("sql/test/profile_legacy_default_privileges.sql");
+  file("sql/test/portfolio_precondition.sql");
   file("sql/archive/supabase_portfolio_versioning.sql");
   file("sql/phase5_payments_telegram.sql");
   file("sql/phase8_webinars.sql");
