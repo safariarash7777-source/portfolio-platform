@@ -1,0 +1,47 @@
+{
+  "priorCommit": "df41f73e310fa8c8abc2a678299ae25b5b3efb24",
+  "priorHtmlSha256": "ed4f9a3621af25c0cd19b2bc0e073964addfab6e05de0fd9d4c67f2a29793210",
+  "newHtmlSha256": "6b77dbf9d1c2cbb783d97618e38ab96c85e6aed1c7c4c840ea6984b69d77f898",
+  "before": {
+    "state": "selected + pointer hover",
+    "foreground": [
+      255,
+      255,
+      255
+    ],
+    "background": [
+      242,
+      240,
+      232
+    ],
+    "contrast": 1.141
+  },
+  "after": {
+    "states": [
+      "selected normal",
+      "selected pointer hover",
+      "selected pointer hover + keyboard focus-visible"
+    ],
+    "foreground": [
+      248,
+      250,
+      252
+    ],
+    "background": [
+      30,
+      58,
+      138
+    ],
+    "contrast": 9.9,
+    "keyboardSequence": "Shift+Tab then Tab",
+    "focusVisible": true,
+    "computedOutline": "rgb(30, 58, 138) solid 2.4px",
+    "computedOutlineOffset": "2.4px",
+    "declaredOutline": "3px solid var(--focus); offset 3px"
+  },
+  "scope": "review-frame CSS and builder only; compiled script byte-identical",
+  "productCommit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+  "beforeImage": "contrast-before-root.png",
+  "afterImage": "contrast-after-keyboard.png",
+  "remoteAfter": "PENDING"
+}

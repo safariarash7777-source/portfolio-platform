@@ -1,11 +1,11 @@
 {
   "classification": "SYNTHETIC_REVIEW_ONLY_NOT_FOR_MERGE",
   "htmlPath": "public/design/member-journey-v04/index.html",
-  "htmlSha256": "ed4f9a3621af25c0cd19b2bc0e073964addfab6e05de0fd9d4c67f2a29793210",
+  "htmlSha256": "6b77dbf9d1c2cbb783d97618e38ab96c85e6aed1c7c4c840ea6984b69d77f898",
   "productPr": 341,
   "productCommit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
   "baseMainCommit": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
-  "sourceNote": "Workspace hashes record exact esbuild input bytes; Git blob hashes separately handle Windows line endings. Static HTML is unchanged from the reviewed local artifact.",
+  "sourceNote": "Product source dependencies remain frozen at c0eadab. Only review-frame active/hover/focus CSS changed from df41; script, fixture data, CSP and network semantics are byte-identical.",
   "sources": [
     {
       "path": "components/ui/Logo.tsx",
@@ -282,5 +282,17 @@
   "fixtureStorage": "page memory only; reload/close resets",
   "purchaseRight": "NOT_CONNECTED",
   "actualAuthentication": "UNOBSERVED",
-  "arashAcceptance": "NOT_ACCEPTED"
+  "arashAcceptance": "NOT_ACCEPTED",
+  "previousArtifact": {
+    "commit": "df41f73e310fa8c8abc2a678299ae25b5b3efb24",
+    "htmlSha256": "ed4f9a3621af25c0cd19b2bc0e073964addfab6e05de0fd9d4c67f2a29793210",
+    "previewUrl": "https://portfolio-platform-ll0hp2scb-safariarash7777-4463s-projects.vercel.app/design/member-journey-v04/index.html",
+    "defectEvidence": "contrast-before-root.png"
+  },
+  "frameFix": {
+    "kind": "P2 active step hover contrast and keyboard focus",
+    "builderPath": "docs/ops/member-journey-v04-20261030/preview-lab/build-walkthrough.cjs.txt",
+    "builderSha256": "31cdaf3bd8d2c049c3c3e5ce8f1663b1118c4114c477119b26199cf5f0f00460",
+    "scriptUnchangedFromPreviousArtifact": true
+  }
 }
