@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-30T07:58:57.182886+00:00",
+  "method": "single read of existing worker state; metadata only, no run/reconcile/lock change",
+  "exists": true,
+  "privateBodyPublished": false,
+  "workerChanged": false,
+  "sha256": "75d7b1c180de673057cac15df19e7f69b90809e3e6e946ec96d8c0261c767f9a",
+  "ledgerVersion": 2,
+  "entryCount": 42,
+  "statusCounts": {
+    "stored": 29,
+    "failed": 12,
+    "started": 1
+  },
+  "attemptCount": 41,
+  "earliestRecordedAt": "2026-10-17T13:09:21.513Z",
+  "latestRecordedAt": "2026-10-20T14:09:23.966Z",
+  "entriesWithDestinationId": 29,
+  "perAnalystCoverageProved": false,
+  "intermediateTransitionTimesProved": false
+}

@@ -1,0 +1,76 @@
+{
+  "observedAt": "2026-10-30T07:50:54.439335+00:00",
+  "pr": 340,
+  "head": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+  "draft": true,
+  "merged": false,
+  "ci": [
+    {
+      "id": 41022604086,
+      "sha": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Secret scan \u00b7 SQL validation",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependencies",
+          "conclusion": "success"
+        },
+        {
+          "name": "Database RLS \u00b7 Integrity (Postgres)",
+          "conclusion": "success"
+        },
+        {
+          "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+          "conclusion": "success"
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "deployments": [
+    {
+      "id": 7433469978,
+      "sha": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+      "state": "success",
+      "url": "https://portfolio-platform-j4gfjv8z9-safariarash7777-4463s-projects.vercel.app"
+    }
+  ],
+  "rootVisualReview": [
+    "desktop A",
+    "desktop B",
+    "mobile A390"
+  ],
+  "rootReview": "clear educational labeling and distinct summary-first/document-first layouts; no full program/financial/runtime acceptance",
+  "humanVisualSelection": null,
+  "mainDeployed": false,
+  "initialObservation": {
+    "observedAt": "2026-10-30T07:50:54.439335+00:00",
+    "head": "905141e0368d4789de2782190b5110feb9f9439c",
+    "ci": [
+      {
+        "id": 41022361985,
+        "sha": "905141e0368d4789de2782190b5110feb9f9439c",
+        "status": "in_progress",
+        "conclusion": null
+      }
+    ],
+    "deployments": []
+  },
+  "interfaceSource": "3291413ef8245c384271c37d0affbeac4268650b",
+  "canonicalGitManifestFilesVerified": 8,
+  "rootOnlineBrowserReview": {
+    "aOpened": true,
+    "aToBClicked": true,
+    "educationalLabelsVisible": true,
+    "fullCurrentCompanyFeatureCoverage": false,
+    "baselineAnd10CapabilityGapMapPreserved": true,
+    "humanVisualSelection": null
+  }
+}
