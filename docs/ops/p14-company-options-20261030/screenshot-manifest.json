@@ -1,0 +1,73 @@
+{
+  "sourceCommit": "3291413ef8245c384271c37d0affbeac4268650b",
+  "datasetSha256": "ce410f885eb622fbabfdc0594c8850fad9a27c87ab34a69a35849a16d7915357",
+  "screenshots": [
+    {
+      "file": "decision-1440-final.png",
+      "sha256": "32fac68697a01866932ea4e1b477aa88bc215e6e07c00dccf7ae3d990bce3548",
+      "bytes": 88652
+    },
+    {
+      "file": "decision-390-final.png",
+      "sha256": "dd84baccf446998013d9c56238ec0325b524c528e1f90635d11b73fa52508b18",
+      "bytes": 35092
+    },
+    {
+      "file": "decision-320-final.png",
+      "sha256": "03d6f81bc9b6c5e9ef2b34a469b01020b77440e8df3d977e93cc24a103d55431",
+      "bytes": 30771
+    },
+    {
+      "file": "dossier-1440-final.png",
+      "sha256": "cf75139576654074fdad259af0bcb3d9eb5d30f239ec34fe028affbb046952ee",
+      "bytes": 80935
+    },
+    {
+      "file": "dossier-390-final.png",
+      "sha256": "990d4e4dbe2fb0fc0df499b91200fee79b1088ae69ca9ccdd7fa0ac0da716db2",
+      "bytes": 32469
+    },
+    {
+      "file": "dossier-320-final.png",
+      "sha256": "68699b6fe457cf236b08ea21490751258cbc972fd045924a14d78c6bbdf8e192",
+      "bytes": 28157
+    },
+    {
+      "file": "decision-empty-390.png",
+      "sha256": "db25bc749f34a88dc54fc32381b4e32e90113c5e170b1ba395325b51480449ef",
+      "bytes": 34191
+    },
+    {
+      "file": "decision-error-390.png",
+      "sha256": "65adf8b2905d6b6af255434d2fbcfebc2508f0008b56184cd2d9c9a9ce9a682c",
+      "bytes": 35590
+    },
+    {
+      "file": "dossier-empty-390.png",
+      "sha256": "43008e0bab0d3408d0bcb30a49cab862ae322fb6531c8d15e004f4b5001aacae",
+      "bytes": 34196
+    },
+    {
+      "file": "dossier-error-390.png",
+      "sha256": "ad1b81265c9335af72544c8d9dbce539db547acdebb6996ee47e78d6b0dc77fe",
+      "bytes": 35632
+    },
+    {
+      "file": "decision-source-390.png",
+      "sha256": "51c84f9ec7acb9586f623de190e5a517e9b6fb4cfcde0f258560e459d1923d55",
+      "bytes": 25501
+    },
+    {
+      "file": "dossier-table-keyboard-390.png",
+      "sha256": "857930e366482501fcf8452ac6a51666d1c0ead47fed6c6c9733e15e78d48157",
+      "bytes": 29798
+    }
+  ],
+  "comparisonImages": [
+    "compare-reference-decision.png",
+    "compare-reference-dossier.png"
+  ],
+  "reference": "arash-design-lab/evidence/design-2-final.jpg",
+  "referenceScope": "brand, typography and card language; intentional information-architecture and educational-content differences",
+  "pixelIdenticalClaim": false
+}
