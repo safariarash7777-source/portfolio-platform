@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "intentAt": "2026-10-30T14:24:29.349747+00:00",
+  "authorization": "coordinator 01a187f6 fresh delegation: one existing workflow dispatch after bounds audit",
+  "workflow": "research-source-read.yml",
+  "ref": "main",
+  "expectedHead": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "beforeRunIds": [
+    40486868612,
+    40484350138
+  ],
+  "dispatchCountAuthorized": 1,
+  "audit": {
+    "mode": "two fixed SELECT-only stored_codаl_reports sources; no provider calls, model, writes or server installation",
+    "app": "arsadata",
+    "endpoint": "https://62.60.191.24/liara-preview",
+    "remoteTimeoutPerSourceMs": 20000,
+    "cliTimeoutSec": 150,
+    "responseBytesPerSource": 524288,
+    "maxVersionsPerSource": 10,
+    "redirect": "error",
+    "cliVersion": "@liara/cli@9.5.1 on Actions runner",
+    "rawCapture": "runner temporary only, not uploaded",
+    "publicPacketArtifact": "research-source-folad",
+    "tests": {
+      "command": "node --test scripts/ops/research-source-read.test.mjs",
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "sourceHashes": {
+    ".github/workflows/research-source-read.yml": "1baf0bd33aa9c7a4cc7775ebd02575503ec35ba6056a06662c9ecdd62065daaf",
+    "scripts/ops/research-source-read.mjs": "6e9666940d18ed1c21e7f5ba862b505a105be0e91151168a4cb2ebeab7f8f9b0",
+    "scripts/deploy/liara-shell-probe.sh": "84fa0a66de25827dab4159fb66da49f5b7b25dffaa25adf0b03d5a8e032304af"
+  },
+  "dispatch": {
+    "attempts": 1,
+    "responseStatus": 204,
+    "runId": 41071383088,
+    "createdAt": "2026-10-30T14:24:36Z",
+    "readbackHead": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+    "initialStatus": "queued",
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41071383088"
+  },
+  "result": {
+    "status": "completed",
+    "conclusion": "failure",
+    "runId": 41071383088,
+    "jobId": 124116606887,
+    "head": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+    "updatedAt": "2026-10-30T14:26:34Z",
+    "failureAt": "2026-10-30T14:26:31.1694342Z",
+    "sanitizedFailure": {
+      "schemaVersion": 1,
+      "status": "failed",
+      "reason": "completion_marker_missing",
+      "exitCode": null,
+      "markerPresent": null,
+      "remoteFailure": null
+    },
+    "artifact": {
+      "id": 12985800486,
+      "name": "research-source-folad",
+      "bytes": 280,
+      "digest": "sha256:2b2ab96233a59a3cdeea5c30bab09cb22ecc62ec21b0530fc00dbe804b416d20"
+    },
+    "freshPacketReceived": false,
+    "actualRemoteReadConfirmed": false,
+    "lastSuccessfulFinancialIngestJob": "UNKNOWN",
+    "retryPerformed": false,
+    "limitation": "CLI exit zero without validated completion marker is not proof the command ran/read completed. Raw private capture not fetched or published. No cause inferred from marker failure."
+  }
+}
