@@ -19,6 +19,6 @@
 
 ۱۱ آزمون اختصاصی موفق: dedupe در schema۱/۲ و خواندن تکراری، نساختن انتقال‌های میانی، زمان/actor ناموجود و زمان نامعتبر، نگه‌داشتن بازبینی v1 پس از v2، مرجع یتیم و مقصد متفاوت، تعارض مستقل از ترتیب ورودی، unknown write، عدم دسترسی/نشت فیلد خصوصی، unavailable/empty/not_supplied/invalid و مرجع ناسالم. typecheck و eslint scoped نیز موفق‌اند.
 
-فرمان بازتولید: `npx --no-install tsx --test lib/intelligence/research-history.test.ts`؛ این فایل هنوز در رجیستری test:core نیست، مالک رجیستری root است. آزمون‌ها مصنوعی‌اند؛ ۴۲entry محلی root خوانده یا به این fixtureها کپی نشده‌اند. هیچ ادعای live/allAnalysts/appendOnly/اتمامP10 یا پذیرش runtime نداریم. همه پوشش‌ها در خروجی false/محدودند.
+فرمان بازتولید: `npx --no-install tsx --test lib/intelligence/research-history.test.ts`؛ با واگذاری محدود root، فقط مسیر همین آزمون در سطر موجود test:core در package.json ثبت شد؛ نگهبان lib/desk/registry.test.ts و workflow تغییر نکردند. مالکیت بقیه رجیستری همچنان با root است. آزمون‌ها مصنوعی‌اند؛ ۴۲entry محلی root خوانده یا به این fixtureها کپی نشده‌اند. هیچ ادعای live/allAnalysts/appendOnly/اتمامP10 یا پذیرش runtime نداریم. همه پوشش‌ها در خروجی false/محدودند.
 
 این برش consumer، readerIO، UI، writer یا adapter مقصد نصب نمی‌کند. قدم بعد با هماهنگ‌کننده: reader مجاز metadata و سیاست scope/پوشش و سپس قرارداد ثبت آینده، با گیت جدا و حفظ lock/intent/budget. workbook-store/helpers/sharedrefs/worker/ledger/Hermes/primary دست‌نخورده‌اند؛ source محصول از lab339 مستقل است.
