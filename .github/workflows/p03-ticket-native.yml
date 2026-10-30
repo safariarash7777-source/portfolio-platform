@@ -32,7 +32,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: New source boundaries and actual component handlers
-        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/tickets.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs
+        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/tickets.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs scripts/testing/consultation-tickets/browser.test.mjs
       - name: Real Next, GoTrue, PostgREST and owned tmpfs PostgreSQL
         run: |
           set -o pipefail
@@ -59,8 +59,33 @@ jobs:
               modelCalls=0, destination='fresh disposable owned CI tmpfs DB; no copied proof, production or staging target')
           Path('p03-ticket-native-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
           PY
+      - name: Existing Chrome, real ticket pages and isolated browser lifecycle
+        run: |
+          set -o pipefail
+          node --import tsx scripts/testing/consultation-tickets/browser.mjs | tee /tmp/p03-ticket-browser.log
+      - name: Bind sanitized browser receipt to exact source and owned cleanup
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          prefix = 'P03_TICKET_NATIVE_AUTH '
+          receipts = [json.loads(line[len(prefix):]) for line in Path('/tmp/p03-ticket-browser.log').read_text().splitlines() if line.startswith(prefix)]
+          assert len(receipts) == 1
+          receipt = receipts[0]
+          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 4 and receipt['browser'] == 'PASS'
+          assert receipt['sha'] == subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip() == os.environ['P03_TICKET_NATIVE_SOURCE_SHA']
+          assert receipt['cleanup'] == 'REMOVED_OWNED_RESOURCES'
+          assert receipt['targetInstall'] == 'NOT_APPLIED' and receipt['privateArtifactsUploaded'] is False
+          browser = receipt['browserReceipt']
+          assert len(browser['checks']) == 9 and all(item['status'] == 'PASS' for item in browser['checks'])
+          assert browser['automaticTicketPosts'] == 0 and browser['privateStorageHits'] == 0 and browser['privateUrlHits'] == 0
+          receipt.update(productServiceRight='NOT_CONNECTED', unknownIntentAfterDestroy='NOT_IMPLEMENTED', modelCalls=0, arashAcceptance='UNOBSERVED')
+          Path('p03-ticket-browser-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: p03-ticket-native-receipt
-          path: p03-ticket-native-receipt.json
+          path: |
+            p03-ticket-native-receipt.json
+            p03-ticket-browser-receipt.json
           retention-days: 7

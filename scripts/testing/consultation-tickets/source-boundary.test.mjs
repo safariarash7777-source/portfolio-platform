@@ -32,10 +32,14 @@ test('lookup endpoint and stream transport keep text out of correlation URLs', (
   assert.match(source, /if \(options\.unresolvedPrior\) return uncertain\(\)/);
   assert.doesNotMatch(source, /query\.set\(["'](?:text|subject|intent|body|command)["']/);
 });
-test('shared financial core, consent/workspace, chart and lock trees stay on frozen 360', () => {
+test('shared source stays on frozen 360; package hashes include only the approved browser driver delta', () => {
   const expected = JSON.parse(read('scripts/testing/consultation-tickets/protected-source.json'));
   for (const [path, object] of Object.entries(expected.objects)) {
     const current = execFileSync('git', ['rev-parse', `HEAD:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
     assert.equal(current, object, `shared object changed: ${path}`);
+  }
+  for (const [path, binding] of Object.entries(expected.consumerReauthException.files)) {
+    const current = execFileSync('git', ['rev-parse', `HEAD:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
+    assert.equal(current, binding.newBlob, `consumer identity fix changed beyond its reviewed binding: ${path}`);
   }
 });

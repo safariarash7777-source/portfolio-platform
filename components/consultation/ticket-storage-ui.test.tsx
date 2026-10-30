@@ -23,6 +23,10 @@ function looked(input: TicketRequest, found = false) {
   return ready(result);
 }
 function deferred<T>() { let done!: (value: T) => void; const promise = new Promise<T>(resolve => { done = resolve; }); return { promise, done }; }
+function parentGate() {
+  const entered = deferred<void>(), outcome = deferred<unknown>();
+  return { entered: entered.promise, read: () => { entered.done(undefined); return outcome.promise; }, done: outcome.done };
+}
 function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], actor = M, requestId?: string) {
   const slots: unknown[] = [], effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: unknown[] = [], writeCalls: unknown[][] = [], urls: string[] = [];
   let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
@@ -104,4 +108,48 @@ test("transient unknown identity hides draft; same identity recovery retains it;
   await view.auth(); view.edit(); await view.auth("TOKEN_REFRESHED", null); assert.throws(() => view.panel());
   await view.auth(); assert.equal((view.panel().props.draft as { text: string }).text, "SYNTHETIC_PRIVATE_DRAFT");
   await view.auth("SIGNED_OUT", null); await view.auth(); assert.equal((view.panel().props.draft as { text: string }).text, ""); view.unmount();
+});
+
+test("same actor cannot reveal the old panel while fresh relationship authorization is deferred", async () => {
+  const stale = parentGate(), fresh = parentGate();
+  const view = mount([ready(parent()), stale.read, fresh.read], [ready(inbox()), ready(inbox())], []);
+  await view.auth(); view.edit("PRIVATE_REAUTH_DRAFT");
+  await view.reload(); await stale.entered;
+  await view.auth("TOKEN_REFRESHED", null);
+  await view.auth(); await fresh.entered;
+  assert.throws(() => view.panel()); assert.doesNotMatch(view.text(), /PRIVATE_REAUTH_DRAFT/);
+  stale.done(ready(parent())); await view.flush();
+  assert.throws(() => view.panel()); assert.equal(view.readCalls.length, 1);
+  fresh.done(ready(parent())); await view.flush();
+  assert.equal((view.panel().props.draft as { text: string }).text, "PRIVATE_REAUTH_DRAFT");
+  assert.equal(view.readCalls.length, 2); assert.equal(view.writeCalls.length, 0); view.unmount();
+});
+
+test("deferred fresh authorization denied or unavailable never restores old advisor content", async () => {
+  for (const outcome of [
+    { status: "error", error: { code: "FORBIDDEN", error: "denied" } },
+    { status: "error", error: { code: "AUTH_UNAVAILABLE", error: "unavailable" } },
+    (() => { const denied = parent(true); denied.selected!.revoked = true; return ready(denied); })(),
+  ]) {
+    const fresh = parentGate();
+    const view = mount([ready(parent(true)), fresh.read], [ready(inbox(true))], [], O);
+    await view.auth(); view.edit("PRIVATE_ADVISOR_REAUTH_DRAFT"); await view.auth("TOKEN_REFRESHED", null);
+    await view.auth(); await fresh.entered;
+    assert.throws(() => view.panel()); assert.doesNotMatch(view.text(), /PRIVATE_ADVISOR_REAUTH_DRAFT/);
+    fresh.done(outcome); await view.flush();
+    assert.throws(() => view.panel()); assert.doesNotMatch(view.text(), /PRIVATE_ADVISOR_REAUTH_DRAFT/);
+    assert.equal(view.readCalls.length, 1); assert.equal(view.writeCalls.length, 0); view.unmount();
+  }
+});
+
+test("late write during unknown identity stays hidden and same-actor recovery is GET only", async () => {
+  const fresh = parentGate(), late = deferred<unknown>();
+  const view = mount([ready(parent()), fresh.read], [ready(inbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input), ready(inbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input, true)], [late.promise]);
+  await view.auth(); view.edit(); await view.submit();
+  const attempt = view.writeCalls[0][0] as { intent: { body: string } };
+  await view.auth("TOKEN_REFRESHED", null); await view.auth(); await fresh.entered;
+  late.done({ status: "saved", receipt: receipt(JSON.parse(attempt.intent.body)) }); await view.flush();
+  assert.throws(() => view.panel()); assert.doesNotMatch(view.text(), /SYNTHETIC_PRIVATE_DRAFT|بازخوانی مستقل تطبیق/);
+  fresh.done(ready(parent())); await view.flush();
+  assert.equal(view.writeCalls.length, 1); assert.match(view.text(), /در بازخوانی مستقل تطبیق/); view.unmount();
 });

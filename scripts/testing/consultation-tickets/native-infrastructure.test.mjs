@@ -14,10 +14,10 @@ test('single compiled profile, four owned actors and exact source routes; no ext
   assert.throws(() => allowedProfileURL('consultation-ticket', 'https://production.invalid/api/consultation/tickets'));
   assert.throws(() => allowedProfileURL('consultation-ticket', origin + '/api/unknown'));
 });
-test('laptop/local calls and unapproved browser mode fail before provisioning', () => {
+test('laptop/local calls fail before provisioning; explicit closed browser mode is separate', () => {
   assert.throws(() => verifyEnvironment({}, 'linux'));
   assert.throws(() => verifyEnvironment({ CI: 'true', GITHUB_ACTIONS: 'true', RUNNER_TEMP: '/tmp/owned' }, 'win32'));
-  assert.throws(() => nativeBrowserMode('consultation-ticket', { browserMode: true }));
+  assert.equal(nativeBrowserMode('consultation-ticket', { browserMode: true }), true);
   assert.equal(nativeBrowserMode('consultation-ticket'), false);
 });
 test('native scenario inventory includes setup and all checked phases', () => {
