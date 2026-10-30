@@ -1,0 +1,39 @@
+{
+  "base": "4013c7c3e972e6b026e093d8dbf39d9df7776fc1",
+  "productFiles": [
+    "components/symbol/SymbolLiveDetail.tsx"
+  ],
+  "testFiles": [
+    "components/market/b2-ui-render.test.ts",
+    "app/symbol/[symbol]/page.test.ts"
+  ],
+  "targeted": {
+    "componentPass": 13,
+    "componentNew": 7,
+    "symbolPagePass": 17,
+    "fail": 0,
+    "skip": 0
+  },
+  "negativeControl": {
+    "source": "4013c7c:components/symbol/SymbolLiveDetail.tsx",
+    "newClockTest": "failed as expected without the fix",
+    "productFilesystemMutation": false
+  },
+  "fullCore": {
+    "primary": 2065,
+    "symbol": 17,
+    "coverage": 6,
+    "p02": 5,
+    "fail": 0,
+    "skip": 0
+  },
+  "typecheck": "pass",
+  "scopedLint": "pass",
+  "secretScan": "pass",
+  "ciExactHead": "pending after meaningful code+evidence commit",
+  "previewExactHead": "pending",
+  "newProviderReads": 0,
+  "newWorkflowDispatches": 0,
+  "lastSuccessfulFinancialIngestJob": "UNKNOWN",
+  "historicalReceiptsPreserved": true
+}

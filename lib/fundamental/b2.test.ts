@@ -237,3 +237,47 @@ test("B2: charts and narratives describe the actual 3/6/9/12-month period and re
     assert.match(html(f), /تجدید ارائه/);
   }
 });
+
+
+test('selected immutable financial row preserves storage clock without refreshing old publication', async () => {
+  const r=row(501,'capture-provenance','1405-03-31',3,700,'صورت‌های مالی شرکت (اصلاحیه)');
+  r.captured_at='2026-10-29T12:12:00+00:00';
+  r.raw={...r.raw,date_publish:'1405/05/03',time_publish:'16:54:53'};
+  const result=(await read(r.symbol,[r])).data;
+  assert.deepEqual(result?.n10?.source.records,[{id:501,storedPeriodEnd:'1405-03-31',financialPeriodEnd:'1405-03-31',publishedAt:'1405/05/03 16:54:53',capturedAt:'2026-10-29T12:12:00.000Z',parserVersion:2,amendment:true}]);
+  assert.equal(result?.n10?.source.publishedAt,'1405/05/03 16:54:53');
+  for (const [index, stamp] of ['not-a-clock', undefined, '2026-02-30T12:00:00Z', '2026-10-29T24:00:00Z'].entries()) {
+    const missing=row(502+index,`capture-invalid-${index}`,'1405-03-31',3,700);
+    missing.captured_at=stamp;
+    assert.equal((await read(missing.symbol,[missing])).data?.n10?.source.records?.[0].capturedAt,null);
+  }
+});
+
+test('monthly source preserves each selected row clock instead of assigning one capture to all periods', async () => {
+  const symbol='monthly-capture-provenance';
+  const rows: CodalRow[]=[1,2].map((i): CodalRow=>({
+    id:600+i,symbol,report_kind:'ن-۳۰',period_end:`2026-0${i+1}-20`,title:'گزارش فعالیت ماهانه',
+    source_url:`https://codal.ir/synthetic/month-${i}`,captured_at:`2026-10-2${i}T12:00:00Z`,raw:{parser_version:2},
+    data:{symbol,report_kind:'ن-۳۰',period_end:`1405-0${i}-31`,fiscal_year:1405,unit:'میلیون ریال',unit_basis:'header+arithmetic',
+      products:[{product_name:'نمونه آزمون',market:'داخلی',production_qty:1,sales_qty:1,sales_rate:1000000,sales_amount:1}],period_total_amount:1,fy_cumulative_amount:i}
+  }));
+  const records=(await read(symbol,rows)).data?.n30?.source.records;
+  assert.deepEqual(records?.map(r=>[r.id,r.storedPeriodEnd,r.financialPeriodEnd,r.capturedAt]),[
+    [602,'2026-03-20','1405-02-31','2026-10-22T12:00:00.000Z'],
+    [601,'2026-02-20','1405-01-31','2026-10-21T12:00:00.000Z']
+  ]);
+});
+
+
+test('provenance version agrees with reader selection when parser version exists only in immutable URL', async () => {
+  const symbol='provenance-parser-url';
+  const old=row(700,symbol,'1405-03-31',3,700);
+  old.source_url='https://codal.ir/synthetic/parser-source#pv2';
+  const corrected=row(1,symbol,'1405-03-31',3,700);
+  corrected.source_url='https://codal.ir/synthetic/parser-source#pv3';
+  corrected.raw={};
+  const record=(await read(symbol,[old,corrected])).data?.n10?.source.records?.[0];
+  assert.equal(record?.id,1);
+  assert.equal(record?.parserVersion,3);
+  assert.equal(record?.amendment,false);
+});

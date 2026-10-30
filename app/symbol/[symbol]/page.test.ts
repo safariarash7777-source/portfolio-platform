@@ -274,7 +274,8 @@ test("actual live detail preserves null/blank as unknown, observed numeric zero 
     const data: Record<string, unknown> = { eps: value, pe: value, g_pe: value, ps: value, pmin_1y: value, pmax_1y: value, pl: value };
     for (let i = 1; i <= 5; i++) for (const field of ["zd", "qd", "pd", "po", "qo", "zo"]) data[`${field}${i}`] = value;
     let index = 0;
-    const values = [data, true, "ok", null];
+    // Fifth state is the actual receipt clock; unknown in this render-only case.
+    const values = [data, true, "ok", null, null];
     const Detail = clientComponent("SymbolLiveDetail", { ...React, useEffect() {}, useState: () => [values[index++], () => {}] });
     const html = renderToStaticMarkup(React.createElement(Detail, { symbol: stock.id, sections: "market" }));
     const observed = value === 0 || value === "0";

@@ -1,0 +1,129 @@
+{
+  "mode": "read_only_existing_workflows",
+  "vmRun": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40891802408",
+  "healthRun": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40891807573",
+  "vm": {
+    "schemaVersion": 1,
+    "observedAt": "2026-10-29T14:28:31.813Z",
+    "target": "arsadata-backend",
+    "mode": "read_only_list",
+    "httpStatus": 200,
+    "matchCount": 1,
+    "status": "found",
+    "error": null,
+    "state": "CREATED",
+    "power": "POWERED_ON",
+    "createdAt": "2026-09-28T14:04:13.834Z",
+    "guestState": null
+  },
+  "sample": {
+    "startedAt": "2026-10-29T14:28:59.615Z",
+    "completedAt": "2026-10-29T14:29:01.564Z",
+    "health": {
+      "status": "ok",
+      "httpStatus": 200,
+      "error": null
+    },
+    "storage": {
+      "enabled": true,
+      "ok": true,
+      "httpStatus": 200,
+      "at": "2026-10-29T14:26:44.832Z",
+      "error": null
+    },
+    "backend": {
+      "status": "reachable",
+      "httpStatus": 401,
+      "httpOk": false,
+      "error": null
+    },
+    "storedRead": {
+      "status": "read",
+      "httpStatus": 200,
+      "error": null,
+      "rowCount": 21
+    },
+    "codal": {
+      "ok": false,
+      "lastRun": "2026-10-29T12:11:40.333Z",
+      "lastDate": null,
+      "rows": null,
+      "error": "other",
+      "skipped": null,
+      "feed": {
+        "pages": 6,
+        "seen": 120,
+        "matched": 84,
+        "downloaded": 10,
+        "inserted": 0,
+        "parseFailed": 10,
+        "complete": false,
+        "incompleteReason": "other"
+      },
+      "feedTable": {
+        "attempted": 120,
+        "inserted": 15,
+        "duplicates": 105,
+        "error": null
+      },
+      "backfill": {
+        "queueSize": 200,
+        "inserted": 0,
+        "parseFailed": 12,
+        "skippedCovered": 4
+      }
+    }
+  },
+  "limitations": [
+    "VM list establishes name/power, not guest health or immutable identity fingerprint.",
+    "Storage200 is a relay-reported natural store; no independent DB row readback here.",
+    "Consumer200 proves 21 bounded announcements from that runner, may be cached; earlier502 remains unexplained.",
+    "Codal lastRun is an attempt, not lastSuccess; incomplete cycle is not fresh financial coverage.",
+    "No service mutation, provider refresh, model call or environment change."
+  ],
+  "failureInvestigation": {
+    "exactFailureCodes": "not_preserved_in_existing_workflow_receipt",
+    "parseFailedMeaning": [
+      "download",
+      "admission",
+      "persistence"
+    ],
+    "pr329Coverage": "unconfirmed_without_cycle_reason_codes",
+    "paaSLogAccess": "not_available_in_current_tool_surface",
+    "duplicateFixCreated": false
+  },
+  "coordinatorReportedAdmission": {
+    "attribution": "Local coordinator read-only SSH/SQL report, not independently reread by cloud",
+    "updatedAt": "2026-10-29T12:12:11.535Z",
+    "failureStages": {
+      "downloadException": 0,
+      "admissionRejected": 22,
+      "admissionException": 0,
+      "persistenceException": 0
+    },
+    "reasons": {
+      "N10": {
+        "scope_unknown": 7,
+        "context_invalid": 3,
+        "scope_unsupported": 6
+      },
+      "N30": {
+        "short_rows": 1,
+        "unsupported_layout": 5
+      }
+    },
+    "scope": "Aggregate feed plus backfill; no exact assignment to ten feed failures",
+    "pr329Overlap": "No observed rejection proven resolved by PR329; N10 guards and N30 layout/product width guards remain"
+  },
+  "sameHeadAcceptance": {
+    "sha": "3e0ea01747f2969086bca78e47686e87610d54ce",
+    "ciRun": 40900753488,
+    "ci": "all_pass",
+    "deployment": "dpl_FsvKBNL9MsHZBaWaU7w1P198nNYh",
+    "state": "READY",
+    "preview": "https://portfolio-platform-12u2g8alv-safariarash7777-4463s-projects.vercel.app/symbol/فولاد#reports",
+    "guestMetrics": "unavailable_in_existing_workflows",
+    "latestFinancialSuccess": "unknown",
+    "newWorkflowRuns": 0
+  }
+}

@@ -100,6 +100,16 @@ export interface ReportSource {
   source_url: string | null; // URL اطلاعیهٔ codal.ir؛ تا نیامده null می‌ماند
   /** Publication clock from the selected stored Codal disclosure, in Tehran local time. */
   publishedAt?: string | null;
+  /** Selected immutable rows; capture is storage time, never source freshness or cycle success. */
+  records?: Array<{
+    id: number;
+    storedPeriodEnd: string | null;
+    financialPeriodEnd: string | null;
+    publishedAt: string | null;
+    capturedAt: string | null;
+    parserVersion: number | null;
+    amendment: boolean;
+  }>;
   verified: boolean; // اعتبارسنجی حسابی انجام شده؟ جزئیات در verification_note.
   verification_note?: string;
   /**

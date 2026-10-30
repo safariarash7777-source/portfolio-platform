@@ -7,7 +7,8 @@
 
 import { useEffect, useState } from "react";
 import { browserPollEnvironment, startVisiblePoll } from "@/lib/visible-poll";
-import { formatTomanShort, toPersianDigits } from "@/lib/format";
+import { formatJalali, formatTehranClock, formatTomanShort, toPersianDigits } from "@/lib/format";
+import { sourceTime, validTimestamp } from "@/lib/market-quality";
 
 /** عدد فارسی با جداکنندهٔ هزارگان (نمایشی). */
 const fmtNum = (v: number): string =>
@@ -58,10 +59,12 @@ export default function SymbolLiveDetail({
   const [stale, setStale] = useState(false);
   const [state, setState] = useState<"loading" | "ok" | "unavailable" | "notInRotation">("loading");
   const [openAssembly, setOpenAssembly] = useState<number | null>(null);
+  const [receivedAt, setReceivedAt] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
     setData(null);
+    setReceivedAt(null);
     setState("loading");
     const stop = startVisiblePoll((signal) => fetch(`/api/symbol-detail?l18=${encodeURIComponent(symbol)}`, {
       cache: "no-store", signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
@@ -75,9 +78,10 @@ export default function SymbolLiveDetail({
         if (j && j.data && typeof j.data === "object") {
           setData(j.data);
           // دادهٔ چرخشی قدیمی‌تر از ۱۵ دقیقه ← برچسب «آخرین اسنپ‌شات» (صادقانه)
-          const at = typeof j.at === "number" ? j.at : null;
-          setStale(Boolean(j.stale) || at === null || !Number.isFinite(at) || at <= 0
-            || at > Date.now() + 120_000 || Date.now() - at > 15 * 60 * 1000);
+          const at = validTimestamp(j.at);
+          const receipt = at !== null && at <= Date.now() + 120_000 ? at : null;
+          setReceivedAt(receipt);
+          setStale(Boolean(j.stale) || receipt === null || Date.now() - receipt > 15 * 60 * 1000);
           setState("ok");
         } else setState("unavailable");
       })
@@ -159,15 +163,31 @@ export default function SymbolLiveDetail({
 
   const assembly = parseAssembly(data);
   const updated = str(data.date_update) ?? str(data.date);
+  const parsedSourceAt = sourceTime(updated, str(data.time));
+  const sourceAt = parsedSourceAt !== null && parsedSourceAt <= Date.now() ? parsedSourceAt : null;
 
   return (
     <div className="space-y-4">
-      {(stale || updated) && (
-        <p className="text-xs text-muted-foreground">
+      <div className="space-y-1 text-xs text-muted-foreground" role="status">
+        <p>
           {stale ? "آخرین اسنپ‌شات موجود؛ تازگی دریافت تأیید نشده است" : "اسنپ‌شات با دریافت تازه"}
-          {updated ? ` — به‌روزرسانی: ${updated}` : ""}
+          {" — زمان دریافت: "}
+          {receivedAt !== null ? (
+            <time dateTime={new Date(receivedAt).toISOString()}>
+              {formatJalali(receivedAt, false)} ساعت {formatTehranClock(receivedAt)} (تهران)
+            </time>
+          ) : "نامعلوم"}
         </p>
-      )}
+        <p>
+          زمان منبع: {sourceAt !== null ? (
+            <time dateTime={new Date(sourceAt).toISOString()}>
+              {formatJalali(sourceAt, false)} ساعت {formatTehranClock(sourceAt)} (تهران)
+            </time>
+          ) : "نامعلوم؛ تاریخ یا ساعت منبع ناقص، نامعتبر یا آینده است."}
+        </p>
+        <p>تازگی دریافت، تازگی قیمت یا اطلاعات منبع را اثبات نمی‌کند.</p>
+        {showMarket && <p>قرارداد نمایش این بخش: قیمت خام ریال و نمایش قیمت به تومان (تقسیم بر ۱۰)؛ EPS به ریال. پاسخ، واحد صریح مستقلی اعلام نمی‌کند.</p>}
+      </div>
 
       {/* کارت‌های ارزش‌گذاری روز */}
       {showMarket && (<>

@@ -23,10 +23,13 @@ test("announcement list reads feed metadata, including unparsed notices, without
     assert.equal(requests[0].pathname, "/rest/v1/codal_feed");
     assert.equal(requests[0].searchParams.get("symbol"), "eq.نماد");
     assert.equal(requests[0].searchParams.get("order"), "sent_date.desc.nullslast,sent_time.desc.nullslast,id.desc");
-    assert.doesNotMatch(requests[0].searchParams.get("select")!, /(?:^|,)(raw|data|publish_date)(?:,|$)/);
+    assert.doesNotMatch(requests[0].searchParams.get("select")!, /(?:^|,)(raw|data)(?:,|$)/);
     assert.equal(body.source, "codal_feed");
     assert.equal(body.coverage, "stored-announcements");
     assert.equal(body.data.length, 2);
+    assert.ok(requests[0].searchParams.get("select")!.split(",").includes("publish_date"));
+    assert.equal(body.data[0].publishedDate, null);
+    assert.equal(body.data[1].publishedDate, "۱۴۰۵/۰۴/۳۱");
     assert.equal(body.data[0].kind, "ن-۲۰");
     assert.equal(body.data[0].dateKind, "sent");
     assert.equal(body.data[1].date, null, "reporting period must not masquerade as source time");

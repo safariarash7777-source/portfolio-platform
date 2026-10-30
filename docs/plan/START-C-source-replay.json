@@ -1,0 +1,28 @@
+{
+  "mode": "offline_immutable_source_replay",
+  "sourceHtmlSha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+  "originalStoredRow": 11653,
+  "originalCapturedAt": "2026-10-25T10:15:56.894105+00:00",
+  "virtualPV3Persisted": false,
+  "sourcePublishedAt": "1405/07/29 20:50:26",
+  "sums": {
+    "داخلی": 432531365,
+    "صادراتی": 79130673,
+    "خدمات": 127756122
+  },
+  "total": 639418160,
+  "exportSharePct": 12.4,
+  "priorFY": null,
+  "stubbedReaderCalls": 2,
+  "networkCalls": 0,
+  "codeHashes": {
+    "relay/codal.mjs": "1dbdc1b52b9e6c7dc053955cf08f46af5c613c224d00bf2a3042062bde5e71c7",
+    "lib/fundamental/supabase.ts": "fe17ba49e7b3795041f09c52f467ea62fefa315c1a52df6256a08b1db51d33d3",
+    "lib/core/monthlyReport.ts": "1463dae7ef82203f1e3115439b12ae051aadfadc3879151aac4121644ea91b79"
+  },
+  "limitations": [
+    "virtual candidate only; no actual insert or collector cycle",
+    "fixture source selection does not establish live admission coverage",
+    "no guest capacity or latest financial success proof"
+  ]
+}

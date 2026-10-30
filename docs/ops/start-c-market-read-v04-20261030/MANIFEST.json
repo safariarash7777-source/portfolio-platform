@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scope": "P06.2/P07/P08.2/P08.3 START-C v0.4 authorized source-clock correction with preserved historical evidence",
+  "base": "4013c7c3e972e6b026e093d8dbf39d9df7776fc1",
+  "productChange": true,
+  "newLiveReads": 0,
+  "newDispatches": 0,
+  "publication": "meaningful code + scoped evidence commit on existing PR331; no main merge",
+  "files": {
+    "DELIVERY.fa.md": {
+      "bytes": 5875,
+      "sha256": "5396ba261bed17f76286dc4511c8e76bd590659e22d209ec99118b7b1df403ae"
+    },
+    "SPEC.fa.md": {
+      "bytes": 5314,
+      "sha256": "37f521cdca7d4fd72e47252a998ca9117868a36442f7bf44039b7cf92af74184"
+    },
+    "VERIFICATION.json": {
+      "bytes": 982,
+      "sha256": "0ece3d8d455bcb7c2922e079176872d6b5b57e28c17cacaf973954b453bc5213"
+    },
+    "WITNESS.fa.md": {
+      "bytes": 7013,
+      "sha256": "cd89f23865926896426a1c9ae21aede54b3b19361ae1af0d792be5a2216c8ce3"
+    },
+    "company-read.json": {
+      "bytes": 6783,
+      "sha256": "c4d8ace88e2295718700fb38932e57493eb61d85f0edf26047388bf41030d130"
+    },
+    "source-dispatch.json": {
+      "bytes": 2821,
+      "sha256": "5998d5c8494778b83c588aeae97b04d75f29dcf9e4fd6674e5dd18029c07c5d7"
+    }
+  }
+}
