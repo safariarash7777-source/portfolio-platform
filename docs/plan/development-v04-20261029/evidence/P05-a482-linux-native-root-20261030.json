@@ -1,0 +1,91 @@
+{
+  "status": "LIMITED_NATIVE_SQL_GATE_ACCEPTED",
+  "pr": 355,
+  "sourceBinding": {
+    "prHead": "a482de1d94bbb3b90ea97303912c4d124ea9a891",
+    "testedCheckout": "864d1597a4c9cb3ccf0d7c05431f11c421096e56",
+    "testedCheckoutKind": "GitHub pull_request merge checkout",
+    "parents": [
+      "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+      "a482de1d94bbb3b90ea97303912c4d124ea9a891"
+    ],
+    "sourceTree": "97c279ad388fc6bf1c5af3193cabf25ca6d9a0d7",
+    "testedTree": "97c279ad388fc6bf1c5af3193cabf25ca6d9a0d7",
+    "treesByteEquivalent": true,
+    "primaryMainUnchanged": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+    "goTrueOrPrimaryAcceptance": false
+  },
+  "ciRunId": 41080029413,
+  "jobs": [
+    {
+      "id": 124146357667,
+      "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124146358172,
+      "name": "Database RLS \u00b7 Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124146358260,
+      "name": "Secret scan \u00b7 SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124146358271,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124148892408,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "nativeDbJobId": 124146358172,
+  "downloadedRawLogSha256": "e196d1d02afbdfd839e3bf75980e9371e8b93dcf4c9b9cb6ef9717b828333653",
+  "candidateSqlPath": "sql/20261030133000_webinar_payment_binding.sql",
+  "candidateSqlSha256": "1f867dc9c255dbb3033434a2140376f6dc2e4d6652e93b3d664ee4190ded9152",
+  "postgresVersion": "16.15",
+  "nativeScenariosPassed": 12,
+  "nativeScenarioNames": [
+    "new gates are off; old free registration works without any payment/marker issuance",
+    "legacy rows remain unbound; duplicate valid issuance reads its original marker without renewing it",
+    "ACL/RLS deny client inserts, private reads and cross-member issuance even with an admin metadata claim",
+    "prepare is idempotent and snapshots DB price; another intent cannot create a second payment",
+    "concurrent claim has one acknowledged winner; attachment is one-time and rejects another authority",
+    "all binding fields and issuance markers are immutable; old generic money cannot be attached to a registration",
+    "authority lengths 1, 255 and 256 attach on a genuinely claimed intent with gates on",
+    "empty, 257, whitespace, newline and nonASCII authorities fail in the RPC and direct table constraint without consuming attachment",
+    "settlement gate also blocks the old financial writer; reopening uses the issued amount rather than current price",
+    "old consumers cannot revive refunded/free rows or insert paid even with a genuine paid binding and both gates on",
+    "paid money survives missing service; deleted registration does not cascade history or permit a fresh issuance",
+    "legacy paid metadata is still editable without changing state; original legacy financial/history snapshot is preserved"
+  ],
+  "cleanupReadback": {
+    "absent": true,
+    "owned": true,
+    "sourceSHA": "864d1597a4c9cb3ccf0d7c05431f11c421096e56",
+    "sourceKind": "ci-checkout",
+    "primary": false
+  },
+  "entireDbSuite": {
+    "tests": 412,
+    "pass": 412,
+    "fail": 0,
+    "skipped": 0
+  },
+  "realJWT": false,
+  "realPaymentProvider": "NOT_RUN",
+  "primaryInstall": "NOT_APPLIED",
+  "appearance": "UNOBSERVED_TOOL_TIMEOUT",
+  "serviceEntitlement": "NOT_CONNECTED",
+  "arashAcceptance": "UNOBSERVED",
+  "privateRawLogsPublished": false
+}

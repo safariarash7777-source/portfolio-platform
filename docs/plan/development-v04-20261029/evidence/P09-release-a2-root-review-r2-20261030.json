@@ -1,0 +1,112 @@
+{
+  "sourceSha": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+  "sourceTree": "a3c877aa4a0bca63404a0c73cbf25be17df11d6d",
+  "archiveSha256": "a7ec6b63e23f6ad89fc465695cdf8c256b812f0544bd109c85c7ccadf7f7c65e",
+  "archiveBytes": 28057499,
+  "canonicalBlobsVerified": 1372,
+  "sourceOnly": true,
+  "prebuiltBinary": false,
+  "knownStartLabRoutesAbsent": true,
+  "untrackedEnvironmentAdded": false,
+  "installReadiness": "NOT_ESTABLISHED",
+  "targetIdentityObserved": false,
+  "revisionOfAuthorizationMetadata": "R2_REVIEWED_EXISTING_AUTHORIZATION_PRESERVED",
+  "primaryOrRemoteFilesChanged": false,
+  "manifestR2Sha256": "808ca3cc777135c4c588d054b034d428eebb036f4bb699a815a7806a28147eff",
+  "manifestR2Metadata": {
+    "status": "PREPARED_FOR_REVIEW_NOT_AUTHORIZED_FOR_INSTALL",
+    "sourceSha": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+    "sourceTree": "a3c877aa4a0bca63404a0c73cbf25be17df11d6d",
+    "pr": 354,
+    "activeArchive": {
+      "file": "source-a2d7108-lf.zip",
+      "sha256": "a7ec6b63e23f6ad89fc465695cdf8c256b812f0544bd109c85c7ccadf7f7c65e",
+      "bytes": 28057499,
+      "files": 1372,
+      "allGitBlobsVerified": true,
+      "prebuiltBinary": false
+    },
+    "rejectedArchive": {
+      "file": "source-a2d7108.zip",
+      "reason": "Windows EOL conversion; 1187 file blobs mismatch; NOT FOR USE"
+    },
+    "sqlSha256": {
+      "docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+      "sql/P07-ROLLBACK-FREEZE.sql": "76b4db1afae60e75bc36a82df342366659834732c1e47a1403e8789ec7a0cc1a",
+      "sql/phase34_research_workbook_versions.sql": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148"
+    },
+    "lockSha256": "22dac96b6605e4aa207abae7e307528fe06e68cf2c5c0b54da3fec44252be8b3",
+    "target": {
+      "identity": null,
+      "runningSha": null,
+      "schemaObserved": null,
+      "canonicalFreezeObserved": null,
+      "backupReceipt": null,
+      "restoreReceipt": null,
+      "capacity": null,
+      "previousDeployment": null,
+      "installApproval": null,
+      "ddlApproval": null
+    },
+    "order": [
+      "fresh_preflight_backup_restore",
+      "reader_with_canonical_writer_closed",
+      "separately_approved_intent_candidate",
+      "independent_schema_acl_data_readback",
+      "separately_approved_writer_and_pilot"
+    ],
+    "guardrails": {
+      "noPhase34RerunWhileFrozen": true,
+      "noUnfreeze": true,
+      "noPrivateFlagActivation": true,
+      "noDataDeletion": true,
+      "noUnknownResultReplay": true,
+      "noModelProviderActions": true
+    },
+    "billing": {
+      "infrastructure": null,
+      "data": null,
+      "model": null
+    },
+    "supplementHashes": {
+      "RELEASE.txt": "5591412e4e0341802d004fdff71bf7d733b5b174ef839af493c3d87ffb91ea45",
+      "ISOLATED-EVIDENCE.json": "460596050cc79c35f77ee5bfe16940a056fb3c3352148781c567bb57546b155f",
+      "RELEASE-r2.txt": "4c0d17b838a57ed7b497f44f0d24d683364ad3fdc85ae6a63c4627e7a1d2c87d"
+    },
+    "revision": 2,
+    "lineage": {
+      "previousManifest": "MANIFEST.json",
+      "previousManifestSha256": "d92d38f570bdbeffd848d6dd9c2b0681244d1ea661c40167260c7de1b9a2c2c8",
+      "previousSupplement": "RELEASE.txt",
+      "previousSupplementSha256": "5591412e4e0341802d004fdff71bf7d733b5b174ef839af493c3d87ffb91ea45",
+      "sourceArchiveUnchanged": true
+    },
+    "authorization": {
+      "operationOwner": "root",
+      "existingDocumentedAuthorizationPersists": true,
+      "reviewPackageGrantsNewAuthority": false,
+      "oldApprovalNullMeans": "not captured in this artifact; not revoked and not a per-step human prompt",
+      "technicalReadinessRequired": true,
+      "escalation": [
+        "scope expansion",
+        "business decision",
+        "new cost",
+        "Hermes activation"
+      ]
+    },
+    "preconditionInterpretation": {
+      "schemaObserved": null,
+      "phase34MissingBlocks": [
+        "dependent canonical read",
+        "writer"
+      ],
+      "independentWorkContinues": true,
+      "existingPreconditionMigrationReferencesOnly": true,
+      "primaryBootstrapOrRegrantAuthorizedByPackage": false,
+      "phase34RerunWhileFrozen": false
+    }
+  },
+  "originalManifestFileListOmittedFromPublicSummary": true,
+  "sourceGitReviewUrl": "https://github.com/safariarash7777-source/portfolio-platform/tree/a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+  "releaseSupplementSha256": "4c0d17b838a57ed7b497f44f0d24d683364ad3fdc85ae6a63c4627e7a1d2c87d"
+}
