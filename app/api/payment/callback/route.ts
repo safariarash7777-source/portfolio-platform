@@ -1,114 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { handleWebinarCallback } from "@/lib/payments/webinar-binding";
 import { verifyPayment } from "@/lib/zarinpal";
-import { createSingleUseInvite, sendMessage } from "@/lib/telegram";
-import { sendAnnouncementEmail } from "@/lib/resend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function resultUrl(req: NextRequest, params: Record<string, string>): URL {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
-  const url = new URL("/payment/result", base);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-  return url;
-}
-
-// GET /api/payment/callback — بازگشت از زرین‌پال. verify سمت سرور، سپس
-// (در صورت لینک‌بودنِ تلگرام) دعوت تک‌نفرهٔ کانال. به پارامترهای query
-// اعتماد نمی‌کنیم؛ مبلغ را با ردیفِ pending خودمان تطبیق می‌دهیم.
+// Dispatch requires stored, versioned purpose. Legacy/unknown intent is not a service purchase.
 export async function GET(req: NextRequest) {
-  const authority = req.nextUrl.searchParams.get("Authority") ?? "";
-  const status = req.nextUrl.searchParams.get("Status") ?? "";
-  const unknown = () => NextResponse.redirect(resultUrl(req, { status: "unknown", authority }));
-
-  if (!authority) {
-    return unknown();
-  }
-
-  const admin = createAdminClient();
-
-  // ردیفِ pending خودمان — مرجعِ معتبرِ مبلغ و کاربر.
-  const { data: payment } = await admin
-    .from("payments")
-    .select("user_id, amount, status")
-    .eq("authority", authority)
-    .maybeSingle();
-
-  if (!payment) {
-    return unknown();
-  }
-
-  // قبلاً تأیید شده → idempotent، دعوتِ دوباره نمی‌فرستیم.
-  if (payment.status === "paid") {
-    return NextResponse.redirect(resultUrl(req, { status: "success" }));
-  }
-
-  // Query parameters are not authenticated evidence of non-payment.
-  if (status !== "OK") {
-    return unknown();
-  }
-
-  const verify = await verifyPayment(authority, payment.amount);
-  if (verify.outcome === "unknown") return unknown();
-  if (verify.outcome === "rejected") {
-    await admin.rpc("fail_payment", { p_authority: authority });
-    return NextResponse.redirect(resultUrl(req, { status: "failed" }));
-  }
-
-  // اگر تلگرام لینک شده، پیش از نهایی‌سازی لینک دعوت بساز تا در همان
-  // به‌روزرسانیِ نهایی ذخیره شود (payments پس از paid دیگر قابل ویرایش نیست).
-  const { data: link } = await admin
-    .from("telegram_links")
-    .select("telegram_user_id")
-    .eq("user_id", payment.user_id)
-    .maybeSingle();
-
-  const inviteLink = await createSingleUseInvite();
-
-  const { error: verifyErr } = await admin.rpc("verify_payment", {
-    p_authority: authority,
-    p_ref_id: verify.refId,
-    p_amount: payment.amount,
-    p_invite_link: inviteLink,
-  });
-  if (verifyErr) {
-    console.error("verify_payment error:", verifyErr.message);
-    return unknown();
-  }
-
-  // تلگرام لینک شده → DM دعوت. در غیر این صورت لینک در داشبورد نشان داده می‌شود.
-  if (link?.telegram_user_id && inviteLink) {
-    const sent = await sendMessage(
-      link.telegram_user_id,
-      `✅ پرداخت شما با موفقیت تأیید شد.\n\nاین لینکِ دعوتِ اختصاصی و یک‌بارمصرفِ شما به کانال خصوصی است:\n${inviteLink}\n\nبرای دیدن آخرین نسخهٔ پرتفوی خود دستور /portfolio را بفرستید.`
-    );
-    if (sent) {
-      await admin.from("audit_log").insert({
-        actor_id: payment.user_id,
-        action: "telegram.invite",
-        entity: "telegram",
-        target_user_id: payment.user_id,
-        after: { delivered: true },
-      });
+  const params = req.nextUrl.searchParams;
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
+  const fallback = new URL("/payment/result", base);
+  fallback.searchParams.set("status", "unknown");
+  if (params.getAll("Authority").length === 1) fallback.searchParams.set("authority", params.get("Authority") ?? "");
+  try {
+    const result = await handleWebinarCallback(createAdminClient(), params, verifyPayment,
+      process.env.WEBINAR_PAYMENT_BINDING_WRITES === "1");
+    if (!result.binding) return NextResponse.redirect(fallback);
+    const url = new URL("/webinars", base);
+    url.searchParams.set("status", result.status);
+    url.searchParams.set("webinar_id", result.binding.webinarId);
+    if (result.status === "unknown") {
+      url.searchParams.set("authority", result.binding.authority ?? "");
+      url.searchParams.set("registration_id", result.binding.registrationId);
+      url.searchParams.set("payment_id", result.binding.paymentId);
     }
-  }
-
-  // ایمیل تأیید پرداخت — best-effort (شکست ایمیل مانع redirect نمی‌شود).
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("email")
-    .eq("id", payment.user_id)
-    .maybeSingle();
-  if (profile?.email) {
-    await sendAnnouncementEmail(
-      profile.email,
-      "پرداخت شما با موفقیت تأیید شد",
-      `با سلام،\n\nپرداخت شما به مبلغ **${payment.amount.toLocaleString("fa-IR")} تومان** با موفقیت تأیید شد.\n\nکد پیگیری: \`${verify.refId ?? "—"}\`\n\n${inviteLink ? "لینک دعوت کانال خصوصی نیز از طریق تلگرام برای شما ارسال شده است." : "برای دریافت لینک دعوت کانال، ابتدا حساب تلگرام خود را از داشبورد متصل کنید."}\n\nبا تشکر،\nتیم آرش صفری`
-    );
-  }
-
-  return NextResponse.redirect(
-    resultUrl(req, { status: "success", ref: verify.refId })
-  );
+    return NextResponse.redirect(url);
+  } catch { return NextResponse.redirect(fallback); }
 }

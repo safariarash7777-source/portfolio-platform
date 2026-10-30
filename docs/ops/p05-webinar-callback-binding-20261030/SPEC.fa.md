@@ -1,5 +1,7 @@
 # P05 — اتصال قطعی callback وبینار به تراکنش ثبت‌شده
 
+> سابقهٔ برش PR351@92؛ **NOT_READY** و مبنای نصب نیست. قرارداد نامزد جایگزین در [P05 binding v1](../p05-webinar-binding-v1-20261030/CONTRACT.fa.md) است. محتوای زیر گزارش تاریخی همان برش محدود است؛ عبور آزمون‌های آن، اثبات هدف معتبر خرید نیست.
+
 پایه دقیق `f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc` از main، شاخه مستقل `codex/p05-webinar-callback-binding-20261030`. root پس از تطبیق مسیر واقعی، **app/api/webinars/payment/callback/route.ts** و harness موجود **lib/zarinpal.test.mjs** را برای این برش رزرو کرد. callback عمومی، helper/provider، start-route، package، SQL/Auth/env و فایل‌های مشترک تغییر نمی‌کنند. شاخه از PR91، آزمایشگاه یا P11 منشعب نیست.
 
 ## شاهد موجود

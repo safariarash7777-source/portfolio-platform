@@ -1,5 +1,7 @@
 # اعتبارسنجی callback وبینار — 2026-10-30
 
+> سابقهٔ PR351@92، **NOT_READY**؛ این نتیجه‌ها پذیرش امنیتی/نصب نیستند. [قرارداد جایگزین](../p05-webinar-binding-v1-20261030/CONTRACT.fa.md) و [اعتبارسنجی نامزد جدید](../p05-webinar-binding-v1-20261030/VALIDATION.fa.md) مرجع این شاخه‌اند. جزئیات شاهد فعال خارج Git محفوظ است.
+
 ## رفتار نهایی
 
 پرداخت با authority از جدول canonical خوانده و با payment_id ورودی و payment_id/user ثبت‌نام تطبیق می‌یابد. مبلغ همان amount ثبت‌شده است؛ قیمت جاری وبینار در verification مصرف نمی‌شود. پاسخ provider به‌تنهایی success/paid نمی‌سازد: RPC موجود و readback مستقلِ همان شناسه/مبلغ/user/authority/ref و وضعیت ثبت‌شده لازم‌اند. ثبت‌نام فقط با مقایسهٔ id/payment_id/user/webinar/status=pending تغییر و دوباره خوانده می‌شود؛ refunded/free یا اتصال تغییرکرده احیا نمی‌شوند.
