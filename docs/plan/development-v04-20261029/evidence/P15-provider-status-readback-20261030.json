@@ -1,0 +1,13 @@
+{
+  "readAt": "2026-10-30T14:27:38.613540+00:00",
+  "dispatch": {
+    "status": "http_error_no_redispatch",
+    "httpStatus": 500
+  },
+  "newRunCount": 0,
+  "runs": [],
+  "serverMutations": false,
+  "metadataIsNotGuestCpuRamDisk": true,
+  "credentialsExported": false,
+  "dispatchOutcomeInterpretation": "unknown; no automatic redispatch; authoritative run-list readback only"
+}

@@ -1,0 +1,119 @@
+{
+  "head": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+  "runs": [
+    {
+      "id": 41071546988,
+      "headSha": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 41071546859,
+      "headSha": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "jobs": {
+    "41071546988": [
+      {
+        "id": 124116676936,
+        "name": "Database RLS \u00b7 Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124116677226,
+        "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124116727493,
+        "name": "Secret scan \u00b7 SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124116793774,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124118944825,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "41071546859": [
+      {
+        "id": 124116815423,
+        "name": "postgres17-reopen",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "nativeMarkers": [
+    "2026-10-30T14:27:35.4853259Z # P10_NATIVE_INTENT_READ_CHECK {\"profile\":\"legacy\",\"intentIdentityMatched\":true,\"preparedAtMatched\":true,\"targetVersion\":2,\"versionId\":null,\"extraRequests\":0,\"source\":\"existing_native_intent_list\"}",
+    "2026-10-30T14:27:35.4854606Z # P10_NATIVE_METADATA_READ_CHECK {\"profile\":\"legacy\",\"versions\":2,\"reviews\":1,\"reviewVersion\":1,\"actorsDisclosed\":false,\"extraRequests\":0,\"source\":\"existing_native_open_read\"}",
+    "2026-10-30T14:27:39.5531756Z # P10_NATIVE_INTENT_READ_CHECK {\"profile\":\"explicit\",\"intentIdentityMatched\":true,\"preparedAtMatched\":true,\"targetVersion\":2,\"versionId\":null,\"extraRequests\":0,\"source\":\"existing_native_intent_list\"}",
+    "2026-10-30T14:27:39.5533035Z # P10_NATIVE_METADATA_READ_CHECK {\"profile\":\"explicit\",\"versions\":2,\"reviews\":1,\"reviewVersion\":1,\"actorsDisclosed\":false,\"extraRequests\":0,\"source\":\"existing_native_open_read\"}",
+    "2026-10-30T14:27:40.3444669Z # tests 6",
+    "2026-10-30T14:27:40.3448359Z # pass 6",
+    "2026-10-30T14:27:40.3452235Z # fail 0",
+    "2026-10-30T14:27:40.3452576Z # skipped 0",
+    "2026-10-30T14:28:00.6615599Z P09_NATIVE_CHECK {\"name\":\"isolation-attested\",\"status\":\"PASS\",\"sha\":\"a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c\",\"runId\":\"p09-9104df0f-5f51-4042-a8c1-96c6850b8d5f\",\"images\":{\"db\":\"postgres@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24\",\"auth\":\"supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b\",\"rest\":\"postgrest/postgrest@sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c\",\"node\":\"node@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34\"},\"restArtifact\":{\"legacy\":\"sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272\",\"index\":\"sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c\",\"manifest\":\"sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0\",\"config\":\"sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9\",\"version\":\"PostgREST 14.17\",\"primaryArtifactMatch\":\"NOT_CLAIMED\"},\"database\":\"owned tmpfs\",\"serviceNetwork\":\"internal/no host binds/no published service ports\",\"ingress\":\"127.0.0.1:32190 only\",\"app\":\"Linux runner loopback / sanitized env / exact Git archive\",\"appDefaultRoutes\":null,\"appNoEgressClaim\":false}",
+    "2026-10-30T14:28:03.5070228Z P09_NATIVE_CHECK {\"name\":\"three-fresh-auth-users-and-sdk-getuser\",\"status\":\"PASS\",\"members\":1,\"admin\":2,\"memberTokenSource\":\"GoTrue password grant; no hand-signed member sub\"}",
+    "2026-10-30T14:28:04.2547697Z P09_NATIVE_CHECK {\"name\":\"two-real-admins-canonical-v1-review-and-member-denial\",\"status\":\"PASS\",\"workbookId\":\"68c3678e-6d29-4a5b-95f0-ad01a2e3bfc2\",\"versionId\":\"7bdd7c54-091f-40ef-8ca0-d2caa6626ca7\",\"reviewId\":\"77107b99-2257-4853-9940-5e392cb000fc\",\"reviewVersion\":1}",
+    "2026-10-30T14:28:05.5844497Z P09_NATIVE_CHECK {\"name\":\"real-201-discard-fresh-session-component-remount-get-only\",\"status\":\"PASS\",\"newPasswordSession\":true,\"postOnRemount\":false,\"transportDiscard\":true,\"browserOrTcpDisconnect\":false}",
+    "2026-10-30T14:28:05.8087588Z P09_NATIVE_CHECK {\"name\":\"explicit-same-body-intent-replay-no-duplicate\",\"status\":\"PASS\",\"sameIntent\":true,\"sameRequestBytes\":true,\"versions\":2}",
+    "2026-10-30T14:28:06.0408482Z P09_NATIVE_CHECK {\"name\":\"actor-owned-journal-native-rls-and-member-service-denial\",\"status\":\"PASS\",\"otherAdminIntent\":404,\"member\":403,\"serviceJournal\":403,\"canonicalBackupRead\":200,\"invalidJwt\":401}",
+    "2026-10-30T14:28:07.1263574Z P09_NATIVE_CHECK {\"name\":\"prepared-absence-remount-explicit-ui-retry-exact-bytes\",\"status\":\"PASS\",\"automaticPost\":false,\"explicitPosts\":1,\"sameIntent\":true,\"sameRequestBytes\":true}",
+    "2026-10-30T14:28:07.2794712Z P09_NATIVE_CHECK {\"name\":\"same-get-metadata-real-native-references-no-panel-request\",\"status\":\"PASS\",\"versionIds\":[\"7bdd7c54-091f-40ef-8ca0-d2caa6626ca7\",\"ff3a9561-2921-40f2-b00c-3ec59ca41351\"],\"reviewId\":\"77107b99-2257-4853-9940-5e392cb000fc\",\"reviewVersionId\":\"7bdd7c54-091f-40ef-8ca0-d2caa6626ca7\",\"intentId\":\"6ee552e6-ed7e-43a5-ba45-e8a8a88aab9f\",\"preparedAt\":\"2026-10-30T14:28:04.689011+00:00\",\"intentVersionId\":null,\"intentWriteOutcome\":\"unknown\",\"intentSource\":\"same_existing_native_get\",\"extraGetStarts\":0,\"extraHttpRequests\":0,\"actorsDisclosed\":false}",
+    "2026-10-30T14:28:07.4522240Z P09_NATIVE_CHECK {\"name\":\"native-append-only-original-history-and-version-bound-review\",\"status\":\"PASS\",\"originalVersionPreserved\":true,\"reviewStillOnV1\":true,\"v2Approved\":false,\"modelCalls\":0,\"primaryTouched\":false}",
+    "2026-10-30T14:28:16.4948906Z P09_NATIVE_CLEANUP {\"sha\":\"a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c\",\"runId\":\"p09-9104df0f-5f51-4042-a8c1-96c6850b8d5f\",\"status\":\"REMOVED_OWNED_RESOURCES\",\"resources\":6}",
+    "2026-10-30T14:28:16.4950817Z P09_NATIVE_AUTH {\"sha\":\"a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c\",\"status\":\"PASS\",\"scenarios\":9,\"cleanup\":\"REMOVED_OWNED_RESOURCES\",\"memberAuth\":\"real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes\",\"schema\":\"candidate in owned tmpfs only\",\"targetInstall\":\"NOT_APPLIED\",\"browser\":\"NOT_RUN\",\"arashAcceptance\":\"UNOBSERVED\",\"privateArtifactsUploaded\":false}"
+  ],
+  "artifactId": 12984309488,
+  "artifactMetadata": {
+    "workflowRun": 41071546859,
+    "head": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+    "digest": "sha256:311b58d5fa9cd94db0e3e943860a52d2338004c3fee60b8a063244868a8bf81b",
+    "expired": false
+  },
+  "artifact": {
+    "workbook-native-receipt.json": {
+      "sha256": "1c4c85a17cdb89adc1af848298c7d42816d96f46822dcca68c3220fc97924d5b",
+      "receipt": {
+        "status": "PASS",
+        "testedSha": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+        "postgresVersionNumber": 170011,
+        "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+        "environment": "disposable GitHub Actions PostgreSQL; synthetic data only",
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "scenarios": [
+          "immutable native actor/hash/body",
+          "other-admin/member/anon and service-role BYPASSRLS denial",
+          "actual component destroyed after v2 commit and remounted; GET-only recovery",
+          "v1 and its review retained; v2 unapproved",
+          "private text read back exactly",
+          "candidate rerun preserves existing workbook/review INSERT freeze"
+        ],
+        "authBoundary": "synthetic claims exercised under native authenticated SQL role; no real user session",
+        "productionTouched": false,
+        "modelCalls": 0,
+        "browserPersistentPrivateBody": false
+      }
+    }
+  },
+  "logSha256": "073892e3d55a85855ef4f61df601dad86e7095f114dc217a6669462a6b03733e",
+  "authentication": "existing Git credential in memory if required",
+  "signedUrlsOrCredentialsExported": false,
+  "primaryInstall": "NOT_APPLIED",
+  "browser": "NOT_RUN"
+}
