@@ -3,7 +3,10 @@ import type { StoredReview, StoredVersion } from './workbook-store';
 
 export type VersionHistoryMetadata = Pick<StoredVersion, 'id' | 'workbookId' | 'version' | 'createdAt' | 'createdBy'>;
 export type ReviewHistoryMetadata = Pick<StoredReview, 'id' | 'versionId' | 'decision' | 'reviewedAt'>;
-export type HistorySource = 'worker_state' | 'worker_last_run' | 'workbook_versions' | 'workbook_reviews';
+export interface IntentHistoryMetadata {
+  intentId: string; workbookId: string; baseVersion: number; targetVersion: number; preparedAt: string | null;
+}
+export type HistorySource = 'worker_state' | 'worker_last_run' | 'workbook_versions' | 'workbook_reviews' | 'workbook_intents';
 export interface HistorySnapshot {
   source: HistorySource;
   /** Stable, nonsecret scope alias supplied by an authorized caller, never a path/URL/token. */
@@ -13,7 +16,7 @@ export interface HistorySnapshot {
   /** Existing worker JSON, VersionHistoryMetadata[], or ReviewHistoryMetadata[]. */
   data?: unknown;
 }
-type EventKind = 'worker_state_observed' | 'worker_result_reported' | 'workbook_version_recorded' | 'workbook_review_recorded';
+type EventKind = 'worker_state_observed' | 'worker_result_reported' | 'workbook_version_recorded' | 'workbook_review_recorded' | 'workbook_intent_recorded';
 export interface ResearchHistoryEvent {
   id: string;
   kind: EventKind;
@@ -24,12 +27,15 @@ export interface ResearchHistoryEvent {
   workbookId: string | null;
   versionId: string | null;
   version: number | null;
+  intentId: string | null;
+  baseVersion: number | null;
+  targetVersion: number | null;
   workerStatus: 'started' | 'ready' | 'stored' | 'failed' | 'unchanged' | 'budget_hold' | null;
   decision: StoredReview['decision'] | null;
   actorId: string | null;
   actorUnknownReason: 'not_recorded' | 'invalid' | 'not_in_contract' | null;
   /** A worker terminal state/last-run is not independent destination readback. */
-  evidence: 'snapshot_only' | 'supplied_version_row' | 'supplied_review_row';
+  evidence: 'snapshot_only' | 'supplied_version_row' | 'supplied_review_row' | 'supplied_intent_row';
   writeOutcome: 'unknown' | 'version_row_present' | 'review_row_present';
   times: {
     readAt: string | null;
@@ -37,6 +43,7 @@ export interface ResearchHistoryEvent {
     reportedAt: string | null;
     createdAt: string | null;
     reviewedAt: string | null;
+    preparedAt: string | null;
     startedAt: null;
     completedAt: null;
   };
@@ -50,7 +57,7 @@ interface SourceCoverage {
   schemaVersion: 1 | 2 | null;
   invalidRows: number;
 }
-const SOURCES: HistorySource[] = ['worker_state', 'worker_last_run', 'workbook_versions', 'workbook_reviews'];
+const SOURCES: HistorySource[] = ['worker_state', 'worker_last_run', 'workbook_versions', 'workbook_reviews', 'workbook_intents'];
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const DIGEST = /^[a-f0-9]{64}$/;
 const object = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -67,7 +74,8 @@ function instant(v: unknown): string | null {
     Number(m[4]) > 23 || Number(m[5]) > 59 || Number(m[6]) > 59 || !Number.isFinite(Date.parse(v))) return null;
   return v; // Preserve source precision, including PostgreSQL microseconds.
 }
-function setTime(event: ResearchHistoryEvent, field: 'entryAt' | 'reportedAt' | 'createdAt' | 'reviewedAt', value: unknown) {
+export { instant as researchHistoryInstant };
+function setTime(event: ResearchHistoryEvent, field: 'entryAt' | 'reportedAt' | 'createdAt' | 'reviewedAt' | 'preparedAt', value: unknown) {
   event.times[field] = instant(value);
   if (!event.times[field]) event.gaps.push(`${field}_${value === undefined || value === null ? 'missing' : 'invalid'}`);
 }
@@ -77,9 +85,10 @@ function base(snapshot: HistorySnapshot, recordId: string, kind: EventKind): Res
     id: key(snapshot.source, snapshot.sourceId, recordId, kind), kind,
     sourceRef: { source: snapshot.source, sourceId: snapshot.sourceId, recordId },
     requestDigest: null, destinationDigest: null, draftId: null, workbookId: null, versionId: null, version: null,
+    intentId: null, baseVersion: null, targetVersion: null,
     workerStatus: null, decision: null, actorId: null, actorUnknownReason: 'not_in_contract',
     evidence: 'snapshot_only', writeOutcome: 'unknown',
-    times: { readAt, entryAt: null, reportedAt: null, createdAt: null, reviewedAt: null, startedAt: null, completedAt: null },
+    times: { readAt, entryAt: null, reportedAt: null, createdAt: null, reviewedAt: null, preparedAt: null, startedAt: null, completedAt: null },
     gaps: ['intermediate_transitions_not_recorded', ...(!readAt ? ['readAt_missing_or_invalid'] : [])],
   };
 }
@@ -134,6 +143,22 @@ export function projectResearchHistory(snapshots: readonly HistorySnapshot[]) {
       if (!instant(data.at)) event.gaps.push('undated_report_not_unique_run');
       setTime(event, 'reportedAt', data.at);
       candidates.push(event);
+    } else if (snapshot.source === 'workbook_intents') {
+      if (!Array.isArray(data)) { coverage.state = 'invalid'; continue; }
+      for (const row of data) {
+        if (!object(row) || !uuid(row.intentId) || !uuid(row.workbookId) ||
+          !Number.isSafeInteger(row.baseVersion) || Number(row.baseVersion) < 0 || Number(row.baseVersion) >= 2_147_483_647 ||
+          row.targetVersion !== Number(row.baseVersion) + 1) { coverage.invalidRows++; continue; }
+        const event = base(snapshot, uuid(row.intentId)!, 'workbook_intent_recorded');
+        event.intentId = uuid(row.intentId);
+        event.workbookId = uuid(row.workbookId);
+        event.baseVersion = Number(row.baseVersion); event.targetVersion = Number(row.targetVersion);
+        event.evidence = 'supplied_intent_row';
+        event.gaps.push('intent_not_proof_of_version_save', 'target_number_is_not_version_reference');
+        setTime(event, 'preparedAt', row.preparedAt);
+        // No version UUID, execution outcome, actor, digest or intermediate transition is inferred.
+        candidates.push(event);
+      }
     } else {
       if (!Array.isArray(data)) { coverage.state = 'invalid'; continue; }
       for (const row of data) {
