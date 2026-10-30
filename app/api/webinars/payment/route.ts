@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
+    if (error) return unavailable();
+    if (!user) return NextResponse.json({ error: "ابتدا وارد شوید." }, { status: 401 });
     let body: unknown;
     try { body = await req.json(); } catch { return NextResponse.json({ error: "درخواست معتبر نیست." }, { status: 400 }); }
     const registrationId = body && typeof body === "object" && !Array.isArray(body) && "registration_id" in body ? body.registration_id : null;
