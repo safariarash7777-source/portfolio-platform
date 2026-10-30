@@ -1,0 +1,48 @@
+{
+  "baseSha": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "referencePR": 244,
+  "referenceSha": "29423db953f4d12fe1750ad066a34fe6bfea0b6c",
+  "datasetId": "P14-EDU-01",
+  "datasetSha256": "ce410f885eb622fbabfdc0594c8850fad9a27c87ab34a69a35849a16d7915357",
+  "sampleOnly": true,
+  "notForMerge": true,
+  "files": [
+    {
+      "path": "public/design/company-options/decision.html",
+      "sha256": "22379a754abe06fce0e9ed4e5a8f049c08d7435d24c52caf225ed3bde519fce8"
+    },
+    {
+      "path": "public/design/company-options/dossier.html",
+      "sha256": "30343047bfa769fd460d6b93cefe42296e8fa1c806eb34b79c77551282bc5fe3"
+    },
+    {
+      "path": "public/design/company-options/data.mjs",
+      "sha256": "3e93d5c233ca8486ce438856debad0b49a1a30b8280cefd7494047059f9a246a"
+    },
+    {
+      "path": "public/design/company-options/prototype.css",
+      "sha256": "be23a615874b3c66d43a344cf6973e9008e5e64edb6608dbadee1c75ac84261e"
+    },
+    {
+      "path": "public/design/company-options/prototype.js",
+      "sha256": "6428ff05edbf4596906d5baeeb53ff8a0db4218e5d571edd2cf7d6732dc3dd62"
+    }
+  ],
+  "unchangedBrandAssets": [
+    {
+      "path": "public/brand-tokens.css",
+      "sha256": "a5dc4a595193b646525b99c56314fe062567f41bb16ae9f5a5d4d7054901349a"
+    },
+    {
+      "path": "public/fonts/Vazirmatn-Variable.woff2",
+      "sha256": "4e3fa217d38fdafc1fea4414ceb58ca5e662cf0ab5fa735a8c8c20e8b42cad92"
+    },
+    {
+      "path": "public/brand/mark.png",
+      "sha256": "cf07aa36ea37ddfa95f247e2d3cd6288a7870e00a1e3ff1041f908d1b6ad4c6d"
+    }
+  ],
+  "realReportId": null,
+  "realSourceTime": null,
+  "revision": null
+}
