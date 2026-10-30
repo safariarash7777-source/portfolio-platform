@@ -1,0 +1,9 @@
+# نتیجهٔ بررسی این برش — ۳۱ اکتبر ۲۰۲۶
+
+آزمون actual GET + feed + CodalReportsTab + validator موجود:۳۷pass،صفرfail/skip. Core روی source نهایی:۲۰۷۹+۱۷+۶+۵pass،صفرfail/skip؛ typecheck و lint:ci موفق. ثبت آزمون از همان route.test.ts موجود است و package/CI عوض نشد. negative-control نهایی فقط مقصد URL helper را موقتاً به shared destination برگرداند؛ تست independent pair شکست خورد و بایت دقیق source اصلی بازگردانده شد. source/log SHA256ها در RECEIPT.json موجودند.
+
+پوشش: یک GET با pair مستقل، GET بدون تنظیم override، توقف pair ناقص/blank، URL خارج allowlist، role غیرanon/expired/malformed، عدم نشت credential/cookie/header، عدم redirect/retry/fallback، حفظ upstreamstatus به‌ویژه402، شکست transport، JSON/schema/UTF8/ردیف‌نامعتبر، oversize با/بدون content-length، abort در request و body، عدم پوشاندن خطا توسط شکست cancel، []واقعی، و حفظ دقیق payload/window/null/publication. sent/publication تاریخی در read تازه عوض نمی‌شوند. زمان آخرین ingest از نتیجهٔ GET ساخته نمی‌شود.
+
+actual constructors مرورگر و سرور با source خودشان و استاب SDK اجرا شدند و با حضور تنظیم جدید، جفت shared قبلی را گرفتند. این wiring-test است؛ realAuth/login/member-write یا دسترسی تولید را اثبات نمی‌کند. IMMUTABLE-BOUNDARY.json برابری بایت۱۳فایل رزروشده/مشترک با basef12 را ثبت می‌کند؛ شامل Auth/client/server/admin، next.config، validator، vercel.json، package/CI، feed parser، monthlyReport و SymbolLiveDetail. داده/SQLroot@e71 یا شاهد جدید root@cee1 برای این بررسی تکرار نشد.
+
+هیچ env، grant/RLS، سرویس، model، provider، worker/Hermes، primarySQL یا Preview اجرا نشد. تست‌ها شبکهٔ واقعی ندارند. این نتیجه آمادهٔ code review محدود است، نه پذیرش واقعی مقصد/candidate UI یا موفقیت مالی. Draft PR رسمی و CI آنلاین بدون branch guard به‌علت Vercel auto-deploy هنوز ساخته نمی‌شوند؛ commit/tree reviewable به‌تنهایی remote branch نیست. طرح guard دقیق و rollback در DELIVERY است، ولی خارج رزرو فعلی فایل C و هنوز غیراعمال‌شده است.

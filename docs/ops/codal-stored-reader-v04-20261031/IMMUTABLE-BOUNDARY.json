@@ -1,0 +1,54 @@
+{
+  "next.config.js": {
+    "unchangedFromBase": true,
+    "sha256": "86b8e00ffa1a433775a13f7b7bffc74c493952bb75703ff92832161f9b38b4e7"
+  },
+  "lib/liara-public-env.js": {
+    "unchangedFromBase": true,
+    "sha256": "fed178d9fb88f8f2a4675499dcd37354fa68b8cb936c17498379aca0fd0bae5e"
+  },
+  "lib/supabase/client.ts": {
+    "unchangedFromBase": true,
+    "sha256": "4e5bff77c9ef681cc5c0bdbd35ef58c545e703037b5ea605c9c2992e5b38bde8"
+  },
+  "lib/supabase/server.ts": {
+    "unchangedFromBase": true,
+    "sha256": "f002294c8adc8e724531de7cddc369e3b127c661021fa9f48e5980323d9535ae"
+  },
+  "lib/supabase/admin.ts": {
+    "unchangedFromBase": true,
+    "sha256": "5abb4ffeeaac5ea72c39d6741c451ddd0c264040389c9c09888cdac5b9a9ad07"
+  },
+  "package.json": {
+    "unchangedFromBase": true,
+    "sha256": "d52f07bc4ed90b8c7cda673f50e080d4963a27ca246742d07a6f7e34491054ce"
+  },
+  ".github/workflows/ci.yml": {
+    "unchangedFromBase": true,
+    "sha256": "8717a68877cd94aa73c4f131848789947866eb395f5f1ba364103cafe0467180"
+  },
+  "vercel.json": {
+    "unchangedFromBase": true,
+    "sha256": "cea68196eb6b37b7fef4fac78bf2a5c2a8a37353c500c7b58ad665357e219fef"
+  },
+  "lib/codal-feed.ts": {
+    "unchangedFromBase": true,
+    "sha256": "cc71d982dd70b8d8aeee016368b52435366c549e891affb6fa31e295980ad3e3"
+  },
+  "lib/codal-feed.test.ts": {
+    "unchangedFromBase": true,
+    "sha256": "80dad7f1b2354ecb30dd106aad47dedbc4c146c47394a9357dd5e2b5e40c9964"
+  },
+  "lib/core/monthlyReport.ts": {
+    "unchangedFromBase": true,
+    "sha256": "af8ede669ad602af5129de018bcba1ad733d45daba695b3e329507dfb1fd49a0"
+  },
+  "lib/core/monthlyReport.test.ts": {
+    "unchangedFromBase": true,
+    "sha256": "60b79c066d4c0d01dbb7c052c66a4625694b6751a78dfd285dc5683b8fa28e8a"
+  },
+  "components/symbol/SymbolLiveDetail.tsx": {
+    "unchangedFromBase": true,
+    "sha256": "b35f4e584822a583707353810f72969a7b2e68da7f862a9fefe5f9ee20c83e58"
+  }
+}
