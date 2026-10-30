@@ -139,5 +139,38 @@
       "conclusion": "success"
     }
   ],
-  "next": "B: browser delta review of actual consumer, distinct from API acceptance. root: target/build/receipt consumption. Full product remains open."
+  "generalCiFinalJobs": [
+  {
+    "id": 124364408247,
+    "name": "Dependencies",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  {
+    "id": 124364408415,
+    "name": "Database RLS · Integrity (Postgres)",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  {
+    "id": 124364408453,
+    "name": "Secret scan · SQL validation",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  {
+    "id": 124364408638,
+    "name": "Typecheck · Lint · Tests · Build",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  {
+    "id": 124366519280,
+    "name": "CI Gate",
+    "status": "completed",
+    "conclusion": "success"
+  }
+],
+  "generalCiFinalRead": "root GitHub jobs GET; all five success; native head binding separately verified from actual native checkout log",
+  "next": "B: approved exact dev/lock browser delta for the same actual consumer; in-page unknown recovery and settled resource read after fresh context are distinct. Unresolved intent after context destruction remains open. root: target/build/receipt consumption. Full product remains open."
 }
