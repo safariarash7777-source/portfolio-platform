@@ -1,0 +1,96 @@
+-- Existing tables only. Metadata SELECTs; no command bodies, provider or writes.
+-- Run on root's known source DB, not on the isolated restore/lab destination.
+\set ON_ERROR_STOP on
+\pset pager off
+begin transaction isolation level repeatable read read only;
+set local statement_timeout = '3s';
+set local lock_timeout = '500ms';
+set local timezone = 'UTC';
+select jsonb_build_object('kind','header','observedAt',now(),
+ 'database',current_database(),'readOnly',current_setting('transaction_read_only'),
+ 'note','updated_at/read time/cron success are not complete financial pipeline success');
+
+-- Exactly one stored market row. New gate: source attempt metadata + one share,
+-- not another all-funds payload/count read. Dates are never filled or updated.
+with s as (select payload,updated_at from public.ir_market_snapshots where key='latest' limit 1),
+p as (select *,jsonb_path_query_first(payload,'$.stocks[*] ? (@.id == "فولاد")') as share from s)
+select jsonb_build_object('kind','marketMetadata','observedAt',now(),'rows',coalesce(jsonb_agg(
+ jsonb_build_object('databaseUpdatedAt',updated_at,'snapshotReceivedAt',payload->'fetchedAt',
+ 'producerVersion',payload#>'{snapshotQuality,version}','producerState',payload#>'{snapshotQuality,state}',
+ 'producerAttemptedAt',payload#>'{snapshotQuality,attemptedAt}',
+ 'stocks',jsonb_build_object('state',payload#>'{snapshotQuality,families,stocks,state}',
+  'receivedAt',payload#>'{snapshotQuality,families,stocks,receivedAt}','retained',payload#>'{snapshotQuality,families,stocks,retained}'),
+ 'funds',jsonb_build_object('state',payload#>'{snapshotQuality,families,funds,state}',
+  'receivedAt',payload#>'{snapshotQuality,families,funds,receivedAt}','retained',payload#>'{snapshotQuality,families,funds,retained}'),
+ 'fooladShare',case when share is null then null else jsonb_build_object('id',share->>'id','unit',share->>'unit',
+  'sourceDate',share->>'sourceDate','sourceTime',share->>'sourceTime',
+  'rawDatePresent',share?'date','rawDateUpdatePresent',share?'date_update') end,
+ 'lastCompletePipelineSuccess',null)),'[]'::jsonb)) from p;
+
+-- Persisted Codal state contains fixed public counters, not runtime engineStatus.
+-- Never return fails ledger/URL bodies/raw errors or treat this row's time as a job.
+with s as (select payload,updated_at from public.ir_market_snapshots where key='codal_engine_state' limit 1),
+paths(label,path) as (values
+ ('downloadException',array['failureDiagnostics','lastCycle','download','exception']),
+ ('admissionRejected',array['failureDiagnostics','lastCycle','admission','rejected']),
+ ('admissionException',array['failureDiagnostics','lastCycle','admission','exception']),
+ ('persistenceException',array['failureDiagnostics','lastCycle','persistence','exception']),
+ ('n10ScopeUnknown',array['admissionDiagnostics','lastCycle','ن-۱۰','scope_unknown']),
+ ('n10ContextInvalid',array['admissionDiagnostics','lastCycle','ن-۱۰','context_invalid']),
+ ('n10ScopeUnsupported',array['admissionDiagnostics','lastCycle','ن-۱۰','scope_unsupported']),
+ ('n10UnitUnverified',array['admissionDiagnostics','lastCycle','ن-۱۰','unit_unverified']),
+ ('n10PeriodUnverified',array['admissionDiagnostics','lastCycle','ن-۱۰','period_unverified']),
+ ('n30UnsupportedLayout',array['admissionDiagnostics','lastCycle','ن-۳۰','unsupported_layout']),
+ ('n30ShortRows',array['admissionDiagnostics','lastCycle','ن-۳۰','short_rows']),
+ ('n30ArithmeticMismatch',array['admissionDiagnostics','lastCycle','ن-۳۰','arithmetic_mismatch']))
+select jsonb_build_object('kind','codalStateMetadata','rows',coalesce(jsonb_agg(jsonb_build_object(
+ 'databaseUpdatedAt',s.updated_at,'runtimeLastRunPersisted',s.payload?'lastRun',
+ 'lastSuccessFieldPresent',s.payload?'lastSuccess','lastSourceAttemptAt',null,'lastCompletePipelineSuccess',null,
+ 'lastCycleCounters',(select jsonb_object_agg(label,case when jsonb_typeof(s.payload#>path)='number'
+  then s.payload#>path else 'null'::jsonb end) from paths))), '[]'::jsonb)) from s;
+
+-- Only Foolad and two kinds; latest stored row and the two pinned source rows.
+-- No full dataset counts, financial amounts, complete data/raw JSON or credentials.
+with kinds(kind,pinned) as (values ('ن-۱۰',4047::bigint),('ن-۳۰',11653::bigint)),
+selected as (
+ select 'latestStoredForKind' as selection,r.* from kinds k cross join lateral (
+  select id,symbol,report_kind,period_end,title,source_url,published_at,captured_at,data,raw
+  from public.codal_reports where symbol='فولاد' and report_kind=k.kind
+  order by captured_at desc,id desc limit 1) r
+ union all
+ select 'pinnedSourcePreviouslyRead',r.id,r.symbol,r.report_kind,r.period_end,r.title,r.source_url,r.published_at,r.captured_at,r.data,r.raw
+ from kinds k join public.codal_reports r on r.id=k.pinned and r.symbol='فولاد' and r.report_kind=k.kind)
+select jsonb_build_object('kind','fooladReportMetadata','rows',coalesce(jsonb_agg(jsonb_build_object(
+ 'selection',selection,'id',id,'symbol',symbol,'reportKind',report_kind,'storedPeriodEnd',period_end,'title',left(title,500),
+ 'financialPeriodEnd',left(data->>'period_end',30),'periodMonths',data->'period_months',
+ 'unit',left(data->>'unit',80),'unitBasis',left(data->>'unit_basis',120),'quantityUnit',left(data->>'qty_unit',80),
+ 'capturedAt',captured_at,'publishedAt',published_at,'rawPublicationDate',left(raw->>'date_publish',30),
+ 'rawPublicationTime',left(raw->>'time_publish',20),'parserVersion',raw->'parser_version',
+ 'sourceUrl',case when source_url ~ '^https://(www\.)?codal\.ir/'
+  and source_url !~* '(api[_-]?key|token|password|secret|credential)' then left(source_url,2000) else null end,
+ 'lastCompletePipelineSuccess',null) order by report_kind,selection),'[]'::jsonb)) from selected;
+
+-- Existing RECOVERY-01 optional cron metadata pattern, bounded and guarded.
+-- No job command, return_message, user or connection string is emitted.
+select case when to_regclass('cron.job') is null then
+ $$select jsonb_build_object('kind','sourceCron','status','absent','meaning','no pg_cron evidence; Node/PaaS timers not assessed')$$
+ when not has_table_privilege('cron.job','SELECT') then
+ $$select jsonb_build_object('kind','sourceCron','status','read_privilege_unavailable')$$
+ else $$select jsonb_build_object('kind','sourceCron','rows',coalesce(jsonb_agg(t),'[]'::jsonb)) from
+ (select jobid,schedule,active,case when command ilike '%codal%' then 'codal'
+ when command ilike '%symbol_history%' then 'symbol_history' else 'market_snapshot' end as task_class
+ from cron.job where command ilike '%codal%' or command ilike '%symbol_history%' or command ilike '%ir_market%'
+ order by jobid limit 5) t$$ end
+\gexec
+select case when to_regclass('cron.job') is null or to_regclass('cron.job_run_details') is null then
+ $$select jsonb_build_object('kind','sourceCronLastRuns','status','absent')$$
+ when not has_table_privilege('cron.job','SELECT') or not has_table_privilege('cron.job_run_details','SELECT') then
+ $$select jsonb_build_object('kind','sourceCronLastRuns','status','read_privilege_unavailable')$$
+ else $$select jsonb_build_object('kind','sourceCronLastRuns','rows',coalesce(jsonb_agg(t),'[]'::jsonb)) from
+ (select d.jobid,d.runid,d.status,d.start_time,d.end_time,
+ case when d.status='succeeded' then null else 'cron_command_failed_or_pending; raw message withheld' end as error_class
+ from (select jobid from cron.job where command ilike '%codal%' or command ilike '%symbol_history%' or command ilike '%ir_market%'
+ order by jobid limit 5) j cross join lateral
+ (select jobid,runid,status,start_time,end_time from cron.job_run_details where jobid=j.jobid order by runid desc limit 1) d) t$$ end
+\gexec
+commit;
