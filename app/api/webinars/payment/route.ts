@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
-import { attachWebinarAuthority, bindingId, claimWebinarRequest, prepareWebinarBinding } from "@/lib/payments/webinar-binding";
+import { attachWebinarAuthority, bindingId, claimWebinarRequest, prepareWebinarBinding, webinarPaymentUrl } from "@/lib/payments/webinar-binding";
 import { requestPayment } from "@/lib/zarinpal";
 
 export const runtime = "nodejs";
@@ -26,6 +26,10 @@ export async function POST(req: NextRequest) {
     if (!admin) return unavailable();
     const binding = await prepareWebinarBinding(supabase, user.id, registrationId, intentKey);
     if (!binding || !binding.issuanceEnabled) return unknown();
+    if (binding.status === "pending" && binding.registrationState === "pending" && binding.providerState === "attached" && binding.authority) {
+      const url = webinarPaymentUrl(binding.authority);
+      return url ? NextResponse.json({ payment_url: url }) : unknown();
+    }
     if (binding.status !== "pending" || binding.providerState !== "prepared" || binding.registrationState !== "pending") return unknown();
     if (!await claimWebinarRequest(admin, binding)) return unknown();
     // Once claimed, every ambiguous outcome stays on this intent. Never call requestPayment twice.

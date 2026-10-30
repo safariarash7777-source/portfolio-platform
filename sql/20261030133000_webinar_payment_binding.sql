@@ -61,6 +61,8 @@ CREATE UNIQUE INDEX webinar_payment_registration_unique ON public.payments(bound
   WHERE purpose_code = 'webinar.v1';
 
 DROP POLICY IF EXISTS wr_user_insert ON public.webinar_registrations;
+-- RLS/row triggers do not protect TRUNCATE under a permissive legacy grant profile.
+REVOKE TRUNCATE ON public.payments, public.webinar_registrations FROM PUBLIC, anon, authenticated, service_role;
 -- Existing admin policy and session-bound register_for_webinar remain unchanged.
 -- Direct INSERT closure does not establish provenance of any pre-existing row.
 
@@ -101,15 +103,60 @@ BEGIN
     RAISE EXCEPTION USING ERRCODE='55000', MESSAGE='webinar payment issuance disabled';
   END IF;
   PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('webinar-registration:' || p_webinar_id::text || ':' || v_user::text,0));
+  IF NOT EXISTS(SELECT 1 FROM public.webinar_registrations WHERE user_id=v_user AND webinar_id=p_webinar_id)
+    AND EXISTS(SELECT 1 FROM public.payments WHERE user_id=v_user AND bound_webinar_id=p_webinar_id AND purpose_code='webinar.v1') THEN
+    RAISE EXCEPTION USING ERRCODE='55000', MESSAGE='prior webinar payment requires reconciliation';
+  END IF;
   v_result := public.register_for_webinar(p_webinar_id);
   IF (v_result->>'already_registered')::boolean IS DISTINCT FROM false THEN
-    -- Never bless an idempotently returned old/self-inserted registration.
-    RETURN v_result || jsonb_build_object('binding_provenance','unproven');
+    -- Read a genuine prior issuance; never create/renew a marker on replay.
+    RETURN v_result || jsonb_build_object('binding_provenance',CASE WHEN EXISTS(
+      SELECT 1 FROM webinar_payment_private.registration_issuances i
+      WHERE i.registration_id=(v_result->>'registration_id')::uuid AND i.user_id=v_user AND i.webinar_id=p_webinar_id
+    ) THEN 'register-webinar.v1' ELSE 'unproven' END);
   END IF;
   v_registration := (v_result->>'registration_id')::uuid;
   INSERT INTO webinar_payment_private.registration_issuances(registration_id,user_id,webinar_id)
     VALUES(v_registration,v_user,p_webinar_id);
   RETURN v_result || jsonb_build_object('binding_provenance','register-webinar.v1');
+END $$;
+
+CREATE FUNCTION webinar_payment_private.registration_state(p_webinar_id uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE v_user uuid := auth.uid(); w public.webinars%ROWTYPE; r public.webinar_registrations%ROWTYPE;
+  p public.payments%ROWTYPE; g webinar_payment_private.gates%ROWTYPE; b jsonb;
+  v_state text := 'absent'; v_provenance text := 'none'; v_mode text := 'legacy'; v_payment jsonb := NULL;
+BEGIN
+  IF v_user IS NULL THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='authentication required'; END IF;
+  SELECT * INTO w FROM public.webinars WHERE id=p_webinar_id AND status IN ('published','live','ended');
+  IF NOT FOUND THEN RETURN NULL; END IF;
+  SELECT * INTO g FROM webinar_payment_private.gates WHERE singleton;
+  IF NOT FOUND THEN RETURN NULL; END IF;
+  SELECT * INTO r FROM public.webinar_registrations WHERE user_id=v_user AND webinar_id=p_webinar_id;
+  IF FOUND THEN
+    v_state := 'registered'; v_provenance := 'unproven';
+    IF EXISTS(SELECT 1 FROM webinar_payment_private.registration_issuances i
+      WHERE i.registration_id=r.id AND i.user_id=v_user AND i.webinar_id=p_webinar_id) THEN v_provenance := 'register-webinar.v1'; END IF;
+    SELECT * INTO p FROM public.payments WHERE bound_registration_id=r.id AND user_id=v_user AND purpose_code='webinar.v1';
+  ELSE
+    -- An unresolved prior intent is not permission to create a fresh registration/charge.
+    SELECT * INTO p FROM public.payments WHERE bound_webinar_id=p_webinar_id AND user_id=v_user AND purpose_code='webinar.v1' ORDER BY created_at,id LIMIT 1;
+    IF FOUND THEN v_state := 'unresolved'; END IF;
+  END IF;
+  IF p.id IS NOT NULL THEN
+    b := webinar_payment_private.read_binding(NULL,p.id);
+    IF b IS NULL THEN RETURN NULL; END IF;
+    v_payment := jsonb_build_object('intentKey',p.intent_key,'stage',p.provider_request_state,'status',p.status,
+      'authority',p.authority,'amountToman',p.amount,'unit','toman','createdAt',p.created_at,'refId',p.ref_id,'verifiedAt',p.verified_at);
+    IF b->>'registrationState'='unresolved' THEN v_state := 'unresolved'; END IF;
+    v_provenance := 'register-webinar.v1';
+  END IF;
+  IF p.id IS NOT NULL OR (g.issuance_enabled AND w.price_toman>0) THEN v_mode := 'bound'; END IF;
+  RETURN jsonb_build_object('contractVersion','webinar-registration.v1','webinarId',w.id,'state',v_state,
+    'registrationId',coalesce(r.id,p.bound_registration_id),'paymentStatus',CASE WHEN v_state='registered' THEN r.payment_status ELSE NULL END,
+    'mode',v_mode,'provenance',v_provenance,'paymentEnabled',g.issuance_enabled AND v_state='registered'
+      AND v_provenance='register-webinar.v1' AND r.payment_status='pending' AND (p.id IS NOT NULL OR w.price_toman>0),
+    'payment',v_payment);
 END $$;
 
 CREATE FUNCTION webinar_payment_private.prepare(p_registration_id uuid, p_intent_key uuid)
@@ -209,8 +256,14 @@ CREATE FUNCTION webinar_payment_private.guard_registration() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE p public.payments%ROWTYPE; v_bound boolean;
 BEGIN
+  IF TG_OP='INSERT' AND EXISTS(SELECT 1 FROM webinar_payment_private.registration_issuances WHERE registration_id=NEW.id) THEN
+    RAISE EXCEPTION USING ERRCODE='55000', MESSAGE='issued registration identity cannot be recreated';
+  END IF;
   IF TG_OP='UPDATE' THEN
     SELECT EXISTS(SELECT 1 FROM public.payments WHERE bound_registration_id=OLD.id AND purpose_code='webinar.v1') INTO v_bound;
+    IF v_bound AND OLD.payment_status IN ('free','refunded') AND NEW.payment_status IS DISTINCT FROM OLD.payment_status THEN
+      RAISE EXCEPTION USING ERRCODE='55000', MESSAGE='terminal bound registration cannot be reset';
+    END IF;
     IF v_bound AND (NEW.id IS DISTINCT FROM OLD.id OR NEW.user_id IS DISTINCT FROM OLD.user_id OR NEW.webinar_id IS DISTINCT FROM OLD.webinar_id
       OR (OLD.payment_id IS NOT NULL AND NEW.payment_id IS DISTINCT FROM OLD.payment_id)) THEN
       RAISE EXCEPTION USING ERRCODE='55000', MESSAGE='bound registration identity is immutable';
@@ -224,6 +277,12 @@ BEGIN
     END IF;
   END IF;
   IF NEW.payment_status='paid' AND (TG_OP='INSERT' OR OLD.payment_status IS DISTINCT FROM 'paid') THEN
+    IF TG_OP <> 'UPDATE' THEN
+      RAISE EXCEPTION USING ERRCODE='55000', MESSAGE='paid registration must follow pending settlement';
+    END IF;
+    IF OLD.payment_status IS DISTINCT FROM 'pending' THEN
+      RAISE EXCEPTION USING ERRCODE='55000', MESSAGE='terminal registration cannot be revived';
+    END IF;
     SELECT * INTO p FROM public.payments WHERE id=NEW.payment_id;
     IF p.purpose_code IS DISTINCT FROM 'webinar.v1' OR p.status IS DISTINCT FROM 'paid' OR p.bound_registration_id IS DISTINCT FROM NEW.id
       OR p.bound_webinar_id IS DISTINCT FROM NEW.webinar_id OR p.user_id IS DISTINCT FROM NEW.user_id
@@ -305,6 +364,8 @@ CREATE FUNCTION public.register_for_webinar_bound_v1(p_webinar_id uuid) RETURNS 
 LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$ SELECT webinar_payment_private.register_bound(p_webinar_id) $$;
 CREATE FUNCTION public.prepare_webinar_payment(p_registration_id uuid,p_intent_key uuid) RETURNS jsonb
 LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$ SELECT webinar_payment_private.prepare(p_registration_id,p_intent_key) $$;
+CREATE FUNCTION public.read_webinar_registration_state(p_webinar_id uuid) RETURNS jsonb
+LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$ SELECT webinar_payment_private.registration_state(p_webinar_id) $$;
 CREATE FUNCTION public.read_webinar_payment_binding(p_authority text DEFAULT NULL,p_payment_id uuid DEFAULT NULL) RETURNS jsonb
 LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$ SELECT webinar_payment_private.read_binding(p_authority,p_payment_id) $$;
 CREATE FUNCTION public.claim_webinar_payment_request(p_payment_id uuid,p_registration_id uuid,p_user_id uuid) RETURNS jsonb
@@ -316,10 +377,12 @@ LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$ SELECT webinar_payment_pr
 
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA webinar_payment_private FROM PUBLIC, anon, authenticated, service_role;
 REVOKE ALL ON FUNCTION public.register_for_webinar_bound_v1(uuid), public.prepare_webinar_payment(uuid,uuid),
+  public.read_webinar_registration_state(uuid),
   public.read_webinar_payment_binding(text,uuid), public.claim_webinar_payment_request(uuid,uuid,uuid),
   public.attach_webinar_authority(uuid,uuid,uuid,text), public.settle_webinar_payment(uuid,text,text,text,integer)
   FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.register_for_webinar_bound_v1(uuid), public.prepare_webinar_payment(uuid,uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.read_webinar_registration_state(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.read_webinar_payment_binding(text,uuid), public.claim_webinar_payment_request(uuid,uuid,uuid),
   public.attach_webinar_authority(uuid,uuid,uuid,text), public.settle_webinar_payment(uuid,text,text,text,integer) TO service_role;
 -- No public setter/activation, legacy create_payment grant or backfill.
