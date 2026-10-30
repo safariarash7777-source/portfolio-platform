@@ -14,6 +14,36 @@ const mount = () => {
 const save = "محدودهٔ این نسخه";
 const retryLabel = "بررسی دوبارهٔ همین ثبت";
 
+test('confirmed selected assets drive displayed weights and target-minus-current points; excluded wealth never enters the denominator', () => {
+  const position = (positionKey: string, assetClass: string, declaredValue: number) => ({ positionKey, symbol: null, manualLabel: positionKey, assetClass, qty: null, unit: "قلم", costBasis: null, asOf: "2026-10-09", ownershipPct: 100, valuationMode: "declared", declaredValue, valuationSource: "اظهار آزمایشی عضو", valuationAsOf: "2026-10-09", valuationStatus: "valid" });
+  const positions = [position('gold', 'gold', 2000), position('cash', 'cash', 3000), position('home', 'real_estate', 100000)];
+  const props = {
+    holdings: { id: holdingId, version: 3, positions },
+    storedTarget: { id: 'target-test', version: 2, referenceVersionId: 'reference-test', allocations: [{ asset: 'طلا', pct: 60 }, { asset: 'نقد', pct: 40 }] },
+    priceRows: [], pricesFailed: false, editable: false,
+    scopeState: { status: 'ready', review: { ...receipt, holdingVersion: 3, assignments: [{ positionKey: 'gold', use: 'allocatable' }, { positionKey: 'cash', use: 'allocatable' }, { positionKey: 'home', use: 'excluded' }] } },
+  };
+  const ui = mountFinancialForm('components/portfolio/InvestmentScopeWorkbench.tsx', props);
+  assert.match(ui.text(), /نسخهٔ هدف: ۲/);
+  assert.match(ui.text(), /۲ قلم منتخب از ۳ قلم/);
+  assert.match(ui.text(), /۱ قلم خارج از محاسبه/);
+  assert.match(ui.text(), /اختلاف وزن \(هدف منهای فعلی، واحد درصد\)/);
+  const rows = ui.elements().filter(node => node.type === 'tr');
+  const rowText = (node: unknown): string => Array.isArray(node) ? node.map(rowText).join('') : node !== null && typeof node === 'object' && 'props' in node ? rowText((node as { props: { children?: unknown } }).props.children) : typeof node === 'string' || typeof node === 'number' ? String(node) : '';
+  const cells = rows.map(row => (row.props.children as unknown[]).map(rowText));
+  assert.ok(cells.some(row => row.slice(0, 4).join('|') === 'طلا|۴۰.۰٪|۶۰٪|۲۰.۰'));
+  assert.ok(cells.some(row => row.slice(0, 4).join('|') === 'نقد|۶۰.۰٪|۴۰٪|-۲۰.۰'));
+  assert.match(ui.text(), /هزینهٔ معامله نامعلوم است/);
+  assert.match(ui.text(), /reference-test/);
+  assert.equal(ui.beforeUnload(), false);
+
+  const unpriced = mountFinancialForm('components/portfolio/InvestmentScopeWorkbench.tsx', { ...props, holdings: { ...props.holdings, positions: [{ ...positions[0], valuationMode: 'unpriced', declaredValue: null }, ...positions.slice(1)] } });
+  const values = unpriced.elements().filter(node => node.type === 'td').map(rowText);
+  assert.equal(values.filter(value => value === 'نامعلوم').length, 4, 'both current weights and both differences stay unknown when one selected asset has no price');
+  assert.equal(values.includes('۰.۰'), false, 'missing differences must not become zero');
+  assert.match(unpriced.text(), /هزینهٔ معامله نامعلوم است/);
+});
+
 for (const phase of ["fetch", "body"] as const) test(`scope actual handler: ${phase} hang reaches unknown and exact retry recovers one late commit`, async t => {
   const prior = globalThis.fetch, bodies: string[] = [], signals: AbortSignal[] = [];
   let finishLate!: () => void, writes = 0, settled = false;
