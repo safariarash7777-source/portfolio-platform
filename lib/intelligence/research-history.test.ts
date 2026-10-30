@@ -179,3 +179,37 @@ test('malformed references/decisions are counted without echoing them or private
   assert.equal(JSON.stringify(result).includes('SECRET'), false);
   assert.equal(JSON.stringify(result).includes('credential.example'), false);
 });
+
+test('intent recorded uses only the native intent ID and preparation time, never a saved-version or success reference', () => {
+  const row = { intentId: id(700), workbookId: id(100), baseVersion: 1, targetVersion: 2, preparedAt: at, requestHash: 'b'.repeat(64), actorId: id(900), status: 'succeeded' };
+  const result = projectResearchHistory([read('workbook_intents', [row]), read('workbook_versions', [version(2)])]);
+  const e = result.events.find(e => e.kind === 'workbook_intent_recorded')!;
+  assert.equal(e.sourceRef.recordId, id(700)); assert.equal(e.intentId, id(700)); assert.equal(e.workbookId, id(100));
+  assert.equal(e.baseVersion, 1); assert.equal(e.targetVersion, 2);
+  assert.equal(e.versionId, null); assert.equal(e.version, null); assert.equal(e.actorId, null);
+  assert.equal(e.requestDigest, null); assert.equal(e.writeOutcome, 'unknown');
+  assert.equal(e.times.preparedAt, at); assert.equal(e.times.createdAt, null); assert.equal(e.times.startedAt, null); assert.equal(e.times.completedAt, null);
+  assert.equal(e.evidence, 'supplied_intent_row'); assert.ok(e.gaps.includes('intent_not_proof_of_version_save'));
+  assert.ok(!JSON.stringify(e).includes(row.requestHash));
+});
+
+test('intent identity dedupes rereads, ignores hash as identity, and excludes conflicting native references', () => {
+  const a = { intentId: id(700), workbookId: id(100), baseVersion: 0, targetVersion: 1, preparedAt: at, requestHash: digest };
+  const b = { ...a, intentId: id(701) };
+  const view = projectResearchHistory([read('workbook_intents', [a, { ...a, requestHash: 'c'.repeat(64) }, b])]);
+  assert.equal(view.events.length, 2); assert.equal(view.duplicatesDropped, 1);
+  const bad = { ...a, workbookId: id(999) };
+  for (const rows of [[a, bad], [bad, a]]) {
+    const conflict = projectResearchHistory([read('workbook_intents', rows)]);
+    assert.equal(conflict.events.length, 0); assert.equal(conflict.conflictingReferences.length, 1);
+  }
+  const invalid = projectResearchHistory([read('workbook_intents', [{ ...a, intentId: digest }])]);
+  assert.equal(invalid.events.length, 0); assert.equal(invalid.sources[0].invalidRows, 1);
+});
+
+test('intent missing/invalid preparation time stays unknown; target corruption does not become a saved row', () => {
+  const a = { intentId: id(700), workbookId: id(100), baseVersion: 0, targetVersion: 1 };
+  const result = projectResearchHistory([read('workbook_intents', [a, { ...a, intentId: id(701), preparedAt: '2026-02-30T10:00:00Z' }, { ...a, intentId: id(702), targetVersion: 5 }])]);
+  assert.equal(result.events.length, 2); assert.equal(result.sources[0].invalidRows, 1);
+  for (const e of result.events) { assert.equal(e.times.preparedAt, null); assert.equal(e.times.completedAt, null); assert.equal(e.actorUnknownReason, 'not_in_contract'); }
+});

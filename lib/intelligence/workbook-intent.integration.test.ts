@@ -12,7 +12,7 @@ import ResearchPreparationFields from '../../components/admin/ResearchPreparatio
 import type { WorkbookTransport } from '../../components/admin/ResearchWorkbook';
 import { hashIntentRequest, parseWorkbookSaveIntent } from './workbook-save-intent';
 import ResearchHistoryPanel from '../../components/admin/ResearchHistoryPanel';
-import { projectWorkbookHistory, type WorkbookHistoryRead, type WorkbookHistoryMetadata } from './research-history-metadata';
+import { projectIntentHistory, projectWorkbookHistory, type WorkbookHistoryRead, type WorkbookHistoryMetadata, type WorkbookIntentHistoryRead } from './research-history-metadata';
 
 const ROOT = process.cwd(), A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', U = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const ownContainer = process.env.TEST_RESEARCH_INTENT_CONTAINER;
@@ -146,6 +146,7 @@ for (const profile of ['legacy','explicit']) describe(`durable workbook intents 
       assert.equal((reopened.find(ResearchPreparationFields,()=>true).props.value as {text:string}).text,'  PRIVATE_SYNTHETIC_NATIVE\n exact  ');
       // Reuse metadata from the native GET that has already resolved the existing intent.
       await reopened.waitFor(() => (reopened.find(ResearchHistoryPanel,()=>true).props.read as WorkbookHistoryRead).state === 'read');
+      await reopened.waitFor(() => (reopened.find(ResearchHistoryPanel,()=>true).props.intents as WorkbookIntentHistoryRead).state === 'read');
       const beforeHistoryInspection = calls.length;
       const historyRead = reopened.find(ResearchHistoryPanel,()=>true).props.read as WorkbookHistoryRead;
       const historyView = projectWorkbookHistory(historyRead);
@@ -158,6 +159,13 @@ for (const profile of ['legacy','explicit']) describe(`durable workbook intents 
       assert.ok(historyView.history.sources.filter(source=>source.source.startsWith('worker_')).every(source=>source.state==='not_supplied'));
       assert.doesNotMatch(JSON.stringify(historyRead),/PRIVATE_SYNTHETIC_NATIVE|interpretation|scenarios/);
       assert.equal(calls.length,beforeHistoryInspection,'history inspection adds no request or write');
+      const intentView = projectIntentHistory(reopened.find(ResearchHistoryPanel,()=>true).props.intents as WorkbookIntentHistoryRead, wb);
+      const recordedIntent = intentView.history.events.find(event=>event.intentId===raw.intentId)!;
+      assert.ok(recordedIntent); assert.equal(recordedIntent.times.preparedAt,raw.createdAt);
+      assert.equal(recordedIntent.targetVersion,2); assert.equal(recordedIntent.versionId,null); assert.equal(recordedIntent.writeOutcome,'unknown');
+      assert.equal(recordedIntent.actorId,null); assert.equal(recordedIntent.requestDigest,null);
+      assert.equal(calls.length,beforeHistoryInspection,'intent projection uses the already-completed native list');
+      console.log('P10_NATIVE_INTENT_READ_CHECK '+JSON.stringify({profile,intentIdentityMatched:true,preparedAtMatched:true,targetVersion:2,versionId:null,extraRequests:0,source:'existing_native_intent_list'}));
       console.log('P10_NATIVE_METADATA_READ_CHECK '+JSON.stringify({profile,versions:2,reviews:1,reviewVersion:1,actorsDisclosed:false,extraRequests:0,source:'existing_native_open_read'}));
       assert.deepEqual((await openWorkbook(gw,wb,1)).body.workbook,original.body.workbook);
       assert.equal(sql(db,`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id=${literal(wb)}`),'2');
