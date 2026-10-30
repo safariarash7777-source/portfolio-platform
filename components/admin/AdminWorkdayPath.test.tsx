@@ -36,7 +36,7 @@ test('priority and stop are temporary UI controls and cannot dispatch requests',
     await host.settle();
     const select=host.find('select',()=>true);
     (select.props.onChange as (event:unknown)=>void)({target:{value:'service'}});await host.settle();
-    assert.ok(JSON.stringify(host.find('li',()=>true).props.children).includes('بررسی خدمت عضو'));
+    assert.equal(host.find('h3',()=>true).props.children,'بررسی خدمت عضو');
     await host.click('توقف در این نما');
     host.find('p',element=>JSON.stringify(element.props.children).includes('توقف نمایشی؛ علت و مسئول واقعی'));
     await host.click('برداشتن توقف نمایشی');
