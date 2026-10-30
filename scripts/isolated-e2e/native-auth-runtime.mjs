@@ -22,18 +22,21 @@ export function verifyDatabaseMountInfo(text){check(text.split('\n').some(line=>
 export function allowedProfileURL(profile,value,browserMode=false,method='GET'){const config=nativeAuthProfile(profile);check(typeof browserMode==='boolean'&&(!browserMode||profile==='p09'),'p09_browser_profile_mode');const u=new URL(value);check(u.origin===origin&&u.username===''&&u.password===''&&(u.pathname.startsWith('/auth/v1/')||u.pathname.startsWith('/rest/v1/')||[config.identityPath,...config.routes].includes(u.pathname)||(browserMode&&browserRequestAllowed(value,method))),'pf10_native_http_destination');return u.href;}
 
 export const browserChecks=Object.freeze(['browser-preflight-before-provision','real-next-workbook-page','save-response-real-tab-context-close','fresh-sdk-session-get-only-reopen','real-reload-get-only','private-storage-cache-url-absent','owned-browser-cleanup']);
+export const browserSourceSha='95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72';
 export function nativeBrowserMode(profile,options){
  if(options===undefined)return false;
- check(options&&typeof options==='object'&&!Array.isArray(options)&&Object.keys(options).every(x=>x==='browserMode')&&typeof options.browserMode==='boolean','p09_browser_options');
+ check(options&&typeof options==='object'&&!Array.isArray(options)&&Object.hasOwn(options,'browserMode')&&Object.keys(options).every(x=>x==='browserMode')&&typeof options.browserMode==='boolean','p09_browser_options');
  check(!options.browserMode||profile==='p09','p09_browser_profile_mode');return options.browserMode;
 }
-export function validateBrowserReceipt(value){
+export function validateBrowserReceipt(value,expectedTempRoot=process.env.RUNNER_TEMP){
  check(value&&value.status==='PASS'&&value.driverVersion==='1.64.1'&&Array.isArray(value.checks)&&value.checks.length===browserChecks.length,'p09_browser_receipt_missing');
  check(browserChecks.every(name=>value.checks.filter(x=>x.name===name&&x.status==='PASS').length===1),'p09_browser_checks_incomplete');
- check(value.executable==='/opt/google/chrome/chrome'&&/^Google Chrome [0-9.]+(?: .*)?$/.test(value.chromeVersion)&&/^[a-f0-9]{64}$/.test(value.chromeSha256),'p09_browser_receipt_identity');
+ check(typeof expectedTempRoot==='string'&&posix.isAbsolute(expectedTempRoot)&&typeof value.ownerId==='string'&&/^[a-f0-9-]{36}$/.test(value.ownerId)&&typeof value.ownedTemp==='string'&&posix.dirname(value.ownedTemp)===posix.normalize(expectedTempRoot)&&posix.basename(value.ownedTemp).startsWith('p09-browser-'+value.ownerId+'-')&&value.executable===value.ownedTemp+'/chrome/chrome','p09_browser_receipt_owned_path');
+ check(value.sourceExecutable==='/opt/google/chrome/chrome'&&value.sourceSha256===browserSourceSha&&value.chromeSha256===browserSourceSha&&/^Google Chrome [0-9.]+(?: .*)?$/.test(value.chromeVersion),'p09_browser_receipt_identity');
+ check(value.closure?.sourceStable===true&&value.closure?.copyMatched===true&&value.closure?.runtimeReadonly===true&&/^[a-f0-9]{64}$/.test(value.closure?.sha256)&&Number.isSafeInteger(value.closure.entries)&&value.closure.entries>0&&value.closure.entries<=4096&&Number.isSafeInteger(value.closure.bytes)&&value.closure.bytes>0&&value.closure.bytes<=1024**3&&Number.isSafeInteger(value.closure.freeBeforeBytes)&&value.closure.freeBeforeBytes>=value.closure.bytes+4*1024**3,'p09_browser_receipt_closure');
  check(value.pageClosed===true&&value.contextClosed===true&&value.freshLoginVerified===true&&value.reloadGetOnly===true&&value.automaticWorkbookPosts===0&&value.privateStorageHits===0&&value.privateUrlHits===0&&value.cacheAuditComplete===true,'p09_browser_receipt_flow');
- check(value.cleanup?.processStopped===true&&value.cleanup?.contextsClosed===true&&value.cleanup?.ownedTempRemoved===true,'p09_browser_cleanup_incomplete');
- return {status:'PASS',driverVersion:value.driverVersion,executable:value.executable,chromeVersion:value.chromeVersion,chromeSha256:value.chromeSha256,checks:browserChecks.map(name=>({name,status:'PASS'})),pageClosed:true,contextClosed:true,freshLoginVerified:true,reloadGetOnly:true,automaticWorkbookPosts:0,privateStorageHits:0,privateUrlHits:0,cacheAuditComplete:true,cleanup:{processStopped:true,contextsClosed:true,ownedTempRemoved:true}};
+ check(value.cleanup?.processStopped===true&&value.cleanup?.contextsClosed===true&&value.cleanup?.ownedTempRemoved===true&&value.cleanup?.ownerId===value.ownerId,'p09_browser_cleanup_incomplete');
+ return {status:'PASS',driverVersion:value.driverVersion,sourceExecutable:value.sourceExecutable,sourceSha256:value.sourceSha256,executable:value.executable,ownedTemp:value.ownedTemp,ownerId:value.ownerId,chromeVersion:value.chromeVersion,chromeSha256:value.chromeSha256,closure:{sha256:value.closure.sha256,entries:value.closure.entries,bytes:value.closure.bytes,freeBeforeBytes:value.closure.freeBeforeBytes,sourceStable:true,copyMatched:true,runtimeReadonly:true},checks:browserChecks.map(name=>({name,status:'PASS'})),pageClosed:true,contextClosed:true,freshLoginVerified:true,reloadGetOnly:true,automaticWorkbookPosts:0,privateStorageHits:0,privateUrlHits:0,cacheAuditComplete:true,cleanup:{processStopped:true,contextsClosed:true,ownedTempRemoved:true,ownerId:value.ownerId}};
 }
 
 const commonBootstrap=['sql/test/supabase_bootstrap.sql','sql/test/profile_explicit_grants.sql'];

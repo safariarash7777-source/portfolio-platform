@@ -2,16 +2,48 @@
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {randomUUID,createHash} from 'node:crypto';
-import {mkdtempSync,readFileSync,writeFileSync,realpathSync,statSync,existsSync,rmSync} from 'node:fs';
-import {resolve,dirname} from 'node:path';
+import {mkdtempSync,readFileSync,writeFileSync,realpathSync,statSync,lstatSync,existsSync,rmSync,readdirSync,readlinkSync,symlinkSync,mkdirSync,chmodSync,statfsSync,openSync,closeSync,fstatSync,constants} from 'node:fs';
+import {resolve,dirname,relative,isAbsolute} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
-import {runNativeAuthProfile,verifyEnvironment,allowedProfileURL,origin,browserChecks} from './native-auth-runtime.mjs';
+import {runNativeAuthProfile,verifyEnvironment,allowedProfileURL,origin,browserChecks,browserSourceSha} from './native-auth-runtime.mjs';
 import {workbookNativeScenarios} from './workbook-native-auth.mjs';
 const endpoint='/api/admin/intelligence/workbooks',executable='/opt/google/chrome/chrome';
 const check=(v,code)=>{if(!v)throw Error(code);};
 const digest=v=>createHash('sha256').update(v).digest('hex');
-export function chromeFileCompatible(meta){return meta.isFile&&meta.elf&&(meta.uid===0||meta.uid===meta.runnerUid)&&(meta.mode&0o022)===0;}
+export function chromeFileCompatible(meta){return meta.isFile&&meta.elf&&meta.uid===meta.runnerUid&&(meta.mode&0o222)===0&&(meta.mode&0o100)!==0;}
+export function closureBudget(entries,bytes,freeBytes){return Number.isSafeInteger(entries)&&entries>0&&entries<=4096&&Number.isSafeInteger(bytes)&&bytes>0&&bytes<=1024**3&&Number.isFinite(freeBytes)&&freeBytes>=bytes+4*1024**3;}
+const inside=(root,path)=>path===root||path.startsWith(root+'/');
+function inventory(root){
+ check(realpathSync(root)===root,'p09_browser_closure_realpath');const rows=[];let bytes=0;
+ const walk=(path,depth=0)=>{check(depth<=12,'p09_browser_closure_depth');for(const name of readdirSync(path).sort()){
+  check(!/[\u0000-\u001f\\]/.test(name),'p09_browser_closure_name');const file=resolve(path,name),rel=relative(root,file),meta=lstatSync(file);check(inside(root,file)&&!isAbsolute(rel)&&!rel.split('/').includes('..'),'p09_browser_closure_path');
+  let row;if(meta.isSymbolicLink()){const link=readlinkSync(file);check(!isAbsolute(link)&&inside(root,realpathSync(file)),'p09_browser_closure_symlink_escape');bytes+=Buffer.byteLength(link);row={path:rel,type:'link',size:Buffer.byteLength(link),sha256:digest(link),link};}
+  else if(meta.isDirectory()){check(inside(root,realpathSync(file)),'p09_browser_closure_directory');row={path:rel,type:'directory',size:0};}
+  else{check(meta.isFile()&&inside(root,realpathSync(file)),'p09_browser_closure_type');bytes+=meta.size;check(bytes<=1024**3&&meta.size<=512*1024**2,'p09_browser_closure_bytes');const fd=openSync(file,constants.O_RDONLY|constants.O_NOFOLLOW);try{check(fstatSync(fd).isFile(),'p09_browser_closure_file');row={path:rel,type:'file',size:meta.size,sha256:digest(readFileSync(fd)),executable:!!(meta.mode&0o111)};}finally{closeSync(fd);}}
+  rows.push(row);check(rows.length<=4096&&bytes<=1024**3,'p09_browser_closure_count_or_bytes');if(row.type==='directory')walk(file,depth+1);
+ }};walk(root);return {rows,bytes,entries:rows.length,sha256:digest(JSON.stringify(rows))};
+}
+function copyClosure(source,local){
+ const before=inventory(source),fs=statfsSync(local),freeBeforeBytes=Number(fs.bavail)*Number(fs.bsize);check(closureBudget(before.entries,before.bytes,freeBeforeBytes),'p09_browser_closure_budget');
+ console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'closure-budget',entries:before.entries,bytes:before.bytes,sha256:before.sha256,freeBeforeBytes,maxEntries:4096,maxBytes:1024**3,reserveBytes:4*1024**3}));
+ const target=resolve(local,'chrome');mkdirSync(target,{mode:0o700});
+ for(const row of before.rows){const src=resolve(source,row.path),dst=resolve(target,row.path);check(inside(source,src)&&inside(target,dst),'p09_browser_closure_copy_path');
+  if(row.type==='directory')mkdirSync(dst,{mode:0o700});else if(row.type==='link')symlinkSync(row.link,dst);else{
+   check(inside(source,realpathSync(src)),'p09_browser_closure_changed_path');const fd=openSync(src,constants.O_RDONLY|constants.O_NOFOLLOW);let value;try{const m=fstatSync(fd);check(m.isFile()&&m.size===row.size,'p09_browser_closure_changed_type');value=readFileSync(fd);}finally{closeSync(fd);}check(value.length===row.size&&digest(value)===row.sha256,'p09_browser_closure_changed_bytes');writeFileSync(dst,value,{flag:'wx',mode:row.executable?0o500:0o400});
+  }
+ }
+ const after=inventory(source),copied=inventory(target);check(before.sha256===after.sha256&&before.sha256===copied.sha256,'p09_browser_closure_manifest_mismatch');
+ for(const row of [...before.rows].reverse())if(row.type==='directory')chmodSync(resolve(target,row.path),0o500);chmodSync(target,0o500);
+ for(const row of before.rows)if(row.type!=='link'){const m=lstatSync(resolve(target,row.path));check(m.uid===process.getuid()&&(m.mode&0o222)===0,'p09_browser_copy_permissions');}
+ check(lstatSync(target).uid===process.getuid()&&(lstatSync(target).mode&0o222)===0,'p09_browser_copy_root_permissions');
+ writeFileSync(resolve(local,'closure-manifest.json'),JSON.stringify({source:before,runtime:copied}),{mode:0o600});
+ return {executable:resolve(target,'chrome'),closure:{sha256:before.sha256,entries:before.entries,bytes:before.bytes,freeBeforeBytes,sourceStable:true,copyMatched:true,runtimeReadonly:true}};
+}
+function removalPermissions(root,path=root){
+ check(inside(root,resolve(path)),'p09_browser_cleanup_path');const m=lstatSync(path);if(m.isSymbolicLink())return;
+ check(inside(root,realpathSync(path)),'p09_browser_cleanup_realpath');if(m.isDirectory()){chmodSync(path,m.mode|0o700);for(const name of readdirSync(path))removalPermissions(root,resolve(path,name));}
+}
 export function browserDestination(url,method='GET'){
  try{const u=new URL(url);if(u.hash||!url.startsWith(origin+'/'))return false;const raw=url.slice(origin.length).split('?')[0];if(/%(?:2e|2f|5c|25|00)/i.test(raw)||/[\\\u0000-\u0020]/.test(raw)||raw.split('/').some(x=>x==='.'||x==='..'))return false;allowedProfileURL('p09',url,true,method);return true;}catch{return false;}
 }
@@ -28,19 +60,22 @@ function descendants(pid,seen=new Map()){
 function sameProcess(pid,birth){try{const t=readFileSync('/proc/'+pid+'/stat','utf8');return t.slice(t.lastIndexOf(')')+2).split(' ')[19]===birth;}catch{return false;}}
 async function preflight(){
  verifyEnvironment();check(existsSync(executable)&&realpathSync(executable)===executable,'p09_browser_existing_chrome_missing');
- const meta=statSync(executable),binary=readFileSync(executable),chromeSha256=digest(binary),fileIdentity={isFile:meta.isFile(),elf:binary.subarray(0,4).equals(Buffer.from([127,69,76,70])),uid:meta.uid,runnerUid:process.getuid(),mode:meta.mode&0o777};
- console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'existing-chrome-file',executable,...fileIdentity,sha256:chromeSha256}));
- check(chromeFileCompatible(fileIdentity),'p09_browser_chrome_identity');
- const versionEnv=Object.fromEntries(Object.entries(process.env).filter(([key])=>['PATH','LANG','TMPDIR'].includes(key))),chromeVersion=execFileSync(executable,['--version'],{env:versionEnv,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:15000}).trim();
- check(/^Google Chrome [0-9.]+(?: .*)?$/.test(chromeVersion),'p09_browser_chrome_version');
+ const meta=statSync(executable);check(meta.isFile()&&meta.size>0&&meta.size<=512*1024**2,'p09_browser_source_binary_size');
+ const binary=readFileSync(executable),sourceSha256=digest(binary),fileIdentity={isFile:meta.isFile(),elf:binary.subarray(0,4).equals(Buffer.from([127,69,76,70])),uid:meta.uid,runnerUid:process.getuid(),mode:meta.mode&0o777};
+ console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'existing-chrome-file',executable,...fileIdentity,sha256:sourceSha256}));
+ check(fileIdentity.isFile&&fileIdentity.elf&&sourceSha256===browserSourceSha,'p09_browser_source_chrome_identity');
  const require=createRequire(import.meta.url);check(require('playwright-core/package.json').version==='1.64.1','p09_browser_driver_version');
- const {chromium}=await import('playwright-core'),tempRoot=realpathSync(process.env.RUNNER_TEMP),local=mkdtempSync(resolve(tempRoot,'p09-browser-')),owner=randomUUID();
- check(realpathSync(local)===local&&dirname(local)===tempRoot,'p09_browser_owned_temp');writeFileSync(resolve(local,'owner.json'),JSON.stringify({owner,executable,chromeSha256}),{mode:0o600});
- const state={local,tempRoot,owner,chromeSha256,chromeVersion,contexts:[],checks:[],stage:'preflight',server:null,browser:null};
+ const {chromium}=await import('playwright-core'),tempRoot=realpathSync(process.env.RUNNER_TEMP),owner=randomUUID(),local=mkdtempSync(resolve(tempRoot,'p09-browser-'+owner+'-'));
+ check(realpathSync(local)===local&&dirname(local)===tempRoot,'p09_browser_owned_temp');writeFileSync(resolve(local,'owner.json'),JSON.stringify({owner,sourceExecutable:executable,sourceSha256}),{mode:0o600});
+ const state={local,tempRoot,owner,sourceSha256,contexts:[],checks:[],stage:'preflight',server:null,browser:null};
  const priorTmp=process.env.TMPDIR;process.env.TMPDIR=local;
  try{
+  const copy=copyClosure(dirname(executable),local);state.executable=copy.executable;state.closure=copy.closure;
+  const runtimeMeta=statSync(copy.executable),runtimeBytes=readFileSync(copy.executable);state.chromeSha256=digest(runtimeBytes);
+  check(chromeFileCompatible({isFile:runtimeMeta.isFile(),elf:runtimeBytes.subarray(0,4).equals(Buffer.from([127,69,76,70])),uid:runtimeMeta.uid,runnerUid:process.getuid(),mode:runtimeMeta.mode&0o777})&&state.chromeSha256===sourceSha256,'p09_browser_owned_chrome_identity');
   const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>['PATH','LANG','TMPDIR'].includes(key)));env.XDG_CONFIG_HOME=resolve(local,'config');env.XDG_CACHE_HOME=resolve(local,'cache');
-  state.server=await chromium.launchServer({executablePath:executable,headless:true,host:'127.0.0.1',env,timeout:30000,args:['--disable-background-networking','--disable-crash-reporter']});
+  state.chromeVersion=execFileSync(copy.executable,['--version'],{env,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:15000}).trim();check(/^Google Chrome [0-9.]+(?: .*)?$/.test(state.chromeVersion),'p09_browser_chrome_version');
+  state.server=await chromium.launchServer({executablePath:copy.executable,headless:true,host:'127.0.0.1',env,timeout:30000,args:['--disable-background-networking','--disable-crash-reporter']});
   const ws=new URL(state.server.wsEndpoint());check(ws.protocol==='ws:'&&ws.hostname==='127.0.0.1','p09_browser_loopback_control');
   state.process=state.server.process();check(state.process?.pid>0,'p09_browser_owned_process');
   const profile=state.process.spawnargs.find(x=>x.startsWith('--user-data-dir='))?.slice('--user-data-dir='.length);
@@ -62,8 +97,8 @@ async function cleanup(s){
  const deadline=Date.now()+8000;while([...owned].some(([pid,birth])=>sameProcess(pid,birth))&&Date.now()<deadline)await new Promise(r=>setTimeout(r,50));
  const stopped=[...owned].every(([pid,birth])=>!sameProcess(pid,birth));check(stopped,'p09_browser_owned_process_cleanup');
  check(dirname(s.local)===s.tempRoot&&realpathSync(s.local)===s.local&&JSON.parse(readFileSync(resolve(s.local,'owner.json'),'utf8')).owner===s.owner,'p09_browser_cleanup_ownership');
- rmSync(s.local,{recursive:true});check(!existsSync(s.local),'p09_browser_owned_temp_cleanup');
- return {processStopped:stopped,contextsClosed:s.contexts.every(x=>x.isClosed()),ownedTempRemoved:!existsSync(s.local)};
+ removalPermissions(s.local);rmSync(s.local,{recursive:true});check(!existsSync(s.local),'p09_browser_owned_temp_cleanup');
+ const result={processStopped:stopped,contextsClosed:s.contexts.every(x=>x.isClosed()),ownedTempRemoved:!existsSync(s.local),ownerId:s.owner};console.log('P09_BROWSER_CLEANUP '+JSON.stringify({status:'REMOVED_OWNED_RESOURCES',...result,processesObserved:owned.size}));return result;
 }
 async function storageAudit(page,privateText){
  const result=await page.evaluate(async needle=>{
@@ -147,11 +182,11 @@ async function exercise(s,runtime,known){
 }
 async function run(){
  let state;try{
-  state=await preflight();recordPass(state,'browser-preflight-before-provision',{driverVersion:'1.64.1',executable,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,beforeProvision:true});
+  state=await preflight();recordPass(state,'browser-preflight-before-provision',{driverVersion:'1.64.1',sourceExecutable:executable,sourceSha256:state.sourceSha256,executable:state.executable,ownedTemp:state.local,ownerId:state.owner,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,closure:state.closure,beforeProvision:true});
   await runNativeAuthProfile('p09',async runtime=>{
    let flow,clean;try{const known=await workbookNativeScenarios(runtime);flow=await exercise(state,runtime,known);}finally{clean=await cleanup(state);state.cleaned=true;}
    recordPass(state,'owned-browser-cleanup',clean);
-   const browser={status:'PASS',driverVersion:'1.64.1',executable,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,checks:state.checks,...flow,cleanup:clean};
+   const browser={status:'PASS',driverVersion:'1.64.1',sourceExecutable:executable,sourceSha256:state.sourceSha256,executable:state.executable,ownedTemp:state.local,ownerId:state.owner,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,closure:state.closure,checks:state.checks,...flow,cleanup:clean};
    runtime.write('browser-flow.json',{sha:runtime.sha,...browser});return {browser};
   },{browserMode:true});
  }catch(error){if(/^[a-z0-9_]+$/.test(error.message))throw error;throw Error('p09_browser_'+(state?.stage??'preflight')+'_failed');}
