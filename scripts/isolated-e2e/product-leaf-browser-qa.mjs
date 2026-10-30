@@ -102,7 +102,7 @@ const body:RecommendationBody={topic:'آموزشی: پیگیری پرسش‌ها
 const session:ConsultationSession={id:sid,relationshipId:relation,sessionKey:sid,version:3,createdAt:'2026-10-24T10:00:00Z',actorId:actor,contentHash:'a'.repeat(64),body,state:'published',approval:null};
 const feedback:ConsultationAction[]=[{id:'q1',sessionId:sid,actionKey:actor,version:1,status:'question',text:'پرسش آموزشی نخست دربارهٔ همین اقدام',actorId:member,createdAt:session.createdAt},{id:'q2',sessionId:sid,actionKey:actor,version:2,status:'question',text:'پرسش آموزشی مستقل بدون پاسخ ثبت‌شده',actorId:member,createdAt:session.createdAt},{id:'done',sessionId:sid,actionKey:actor,version:3,status:'done',text:null,actorId:member,createdAt:session.createdAt}];
 const replies:ReplyRead={contractVersion:'consultation-reply-read.v1',actorId:mode==='advisor'?actor:member,relationshipId:relation,sessionId:sid,canReply:mode==='advisor',readOnlyReason:mode==='revoked'?'revoked':mode==='advisor'?null:'not_owner',replies:[1,2].map(version=>({id:'r'+version,questionId:'q1',sessionId:sid,version,text:version===1?'پاسخ آموزشی پیشین':'پاسخ آموزشی تازه',actorId:actor,createdAt:session.createdAt,contentHash:'b'.repeat(64)}))};
-createRoot(document.getElementById('root')!).render(<main className="container-page py-6 space-y-5"><header className="card p-4 space-y-2"><h1 className="text-xl font-bold">آموزشی — مؤلفهٔ واقعی، دادهٔ مصنوعی</h1><p>PR357 / 7752638 · فقط اثبات مؤلفه؛ حساب، DB، خدمت و پذیرش آرش اثبات نشده‌اند.</p></header><SessionCard session={session} latest={mode!=='revoked'} advisor={mode==='advisor'} owner={false} revoked={mode==='revoked'} basis={basis} feedback={feedback} locked={mode==='read-error'} onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} replies={mode==='read-error'?undefined:replies} replyError={mode==='read-error'?'خواندن پاسخ‌ها انجام نشد — حالت آموزشی':undefined} onReply={async()=>false}/></main>);
+createRoot(document.getElementById('root')!).render(<main className="container-page py-6 space-y-5"><header className="card p-4 space-y-2"><h1 className="text-xl font-bold">آموزشی — مؤلفهٔ واقعی، دادهٔ مصنوعی</h1><p>PR357 / 7752638 · فقط اثبات مؤلفه؛ حساب، DB، خدمت و پذیرش آرش اثبات نشده‌اند.</p></header><SessionCard session={session} latest={mode!=='revoked'} advisor={mode==='advisor'} owner={mode==='advisor'} revoked={mode==='revoked'} basis={basis} feedback={feedback} locked={mode==='read-error'} onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} replies={mode==='read-error'?undefined:replies} replyError={mode==='read-error'?'خواندن پاسخ‌ها انجام نشد — حالت آموزشی':undefined} onReply={async()=>false}/></main>);
 `;
 async function componentServer(state){
   const source=resolve(state.local,'component-source');mkdirSync(source);
@@ -112,7 +112,7 @@ async function componentServer(state){
   const archive=resolve(state.local,'component-source.tar');execFileSync('git',['-c','core.autocrlf=false','archive','--format=tar','--output',archive,targets.member357.sha,'app/globals.css','components/consultation','lib','public/fonts','tailwind.config.js','postcss.config.js','tsconfig.json','package.json','package-lock.json'],{cwd:root,stdio:'pipe'});
   execFileSync('tar',['-xf',archive,'-C',source],{stdio:'pipe'});symlinkSync(resolve(root,'node_modules'),resolve(source,'node_modules'),'dir');
   const entry=resolve(source,'qa-leaf.tsx');writeFileSync(entry,example,{mode:0o600});
-  const require=createRequire(import.meta.url),{build}=require('esbuild');
+  const require=createRequire(import.meta.url);
   state.qaStage='component_dependency_identity';
   const sourceLock=JSON.parse(readFileSync(resolve(source,'package-lock.json'),'utf8')),qaLock=JSON.parse(readFileSync(resolve(root,'package-lock.json'),'utf8'));
   const dependencyIdentity=Object.fromEntries(['react','react-dom','typescript','esbuild','tailwindcss'].map(name=>{const key='node_modules/'+name;assert.deepEqual(qaLock.packages[key],sourceLock.packages[key],'qa_source_dependency_identity');return [name,qaLock.packages[key].version];}));
@@ -121,7 +121,8 @@ async function componentServer(state){
   try{execFileSync(process.execPath,[require.resolve('typescript/bin/tsc'),'-p',resolve(source,'qa-tsconfig.json')],{cwd:source,stdio:'pipe',timeout:60000});}
   catch(error){console.log('PRODUCT_LEAF_BUILD_FAILURE '+JSON.stringify({phase:state.qaStage,...compilerDiagnostics(error)}));throw Error('qa_props_typecheck_failed');}
   state.qaStage='component_bundle';
-  await build({entryPoints:[entry],bundle:true,platform:'browser',format:'iife',outfile:resolve(source,'bundle.js'),tsconfig:resolve(source,'tsconfig.json'),logLevel:'silent',define:{'process.env.NODE_ENV':'"production"'}});
+  // A one-shot owned CLI process must exit before capture; no persistent build service.
+  execFileSync(require.resolve('esbuild/bin/esbuild'),[entry,'--bundle','--platform=browser','--format=iife','--outfile='+resolve(source,'bundle.js'),'--tsconfig='+resolve(source,'tsconfig.json'),'--log-level=silent','--define:process.env.NODE_ENV="production"'],{cwd:source,stdio:'pipe',timeout:60000});
   state.qaStage='component_css';
   execFileSync(process.execPath,[require.resolve('tailwindcss/lib/cli.js'),'-i',resolve(source,'app/globals.css'),'-o',resolve(source,'style.css'),'--config',resolve(source,'tailwind.config.js'),'--content',resolve(source,'components/consultation/**/*.tsx')+','+entry],{cwd:source,stdio:'pipe',timeout:60000});
   const fontCSS=`@font-face{font-family:Vazirmatn;src:url('/fonts/Vazirmatn-Variable.woff2');font-weight:100 900;font-display:swap}@font-face{font-family:Pelak;src:url('/fonts/Pelak-Bold.woff2');font-weight:700;font-display:swap}@font-face{font-family:Pelak;src:url('/fonts/Pelak-ExtraBold.woff2');font-weight:800;font-display:swap}@font-face{font-family:Pelak;src:url('/fonts/Pelak-Black.woff2');font-weight:900;font-display:swap}:root{--font-vazirmatn:Vazirmatn;--font-pelak:Pelak;--font-display:Pelak}`;
@@ -165,7 +166,7 @@ async function educationalComponent(state,server,output){
 }
 async function run(){
   assert.equal(process.platform,'linux');const qaSha=git('rev-parse','HEAD').toString().trim(),output=resolve(root,'product-leaf-qa-artifacts');assert.ok(!existsSync(output));mkdirSync(output,{mode:0o700});
-  const report={qaSha,source356Frozen:'67aeda9ff84fb1d3e936fc39564c0e551b3ff17e',recordedAt:new Date().toISOString(),primaryTouched:false,modelCalls:0,infrastructureCost:null,dataCost:null,modelCost:null,newPurchase:false,arashAcceptance:'UNOBSERVED'};
+  const report={qaSha,source356Frozen:'67aeda9ff84fb1d3e936fc39564c0e551b3ff17e',recordedAt:new Date().toISOString(),primaryTouched:false,modelCalls:0,infrastructureCost:null,dataCost:null,modelCost:null,newPurchase:false,arashAcceptance:'UNOBSERVED',localStaticServerClosed:null,bundler:'existing one-shot CLI; child exit awaited; no service mode'};
   let state,server;
   try{
     report.deployments=await Promise.all(Object.values(targets).map(deploymentIdentity));
@@ -175,7 +176,7 @@ async function run(){
     server=await componentServer(state);state.qaStage='component_dom';report.component357=await educationalComponent(state,server,output);
   }catch(error){report.status='BLOCKED';report.failureStage=state?.qaStage??'deployment_or_browser';report.failureOperation=state?.qaOperation??null;report.failureCode=/^qa_[a-z0-9_]+$/.test(error.message)?error.message:error?.name==='TimeoutError'?'qa_browser_timeout':'qa_boundary_failed';}
   finally{
-    if(server)await new Promise(ok=>server.server.close(ok));
+    if(server){await new Promise(ok=>server.server.close(ok));assert.equal(server.server.listening,false);report.localStaticServerClosed=true;}
     if(state)report.cleanup=await cleanup(state);
     report.status??='REVIEWABLE_WITH_EXPLICIT_SCOPE_LIMITS';writeFileSync(resolve(output,'qa-receipt.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600});console.log('PRODUCT_LEAF_QA '+JSON.stringify({qaSha,status:report.status,public331:report.public331?.status,component357:report.component357?.status,real357:report.real357?.status,cleanup:report.cleanup}));
   }
