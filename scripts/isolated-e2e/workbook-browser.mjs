@@ -57,9 +57,13 @@ function descendants(pid,seen=new Map()){
   for(const child of readFileSync('/proc/'+pid+'/task/'+pid+'/children','utf8').trim().split(/\s+/).filter(Boolean))descendants(Number(child),seen);
  }catch{/* A process may exit during this owned-tree read. */}return seen;
 }
-function sameProcess(pid,birth){try{const t=readFileSync('/proc/'+pid+'/stat','utf8');return t.slice(t.lastIndexOf(')')+2).split(' ')[19]===birth;}catch{return false;}}
+function sameProcess(pid,birth){try{const t=readFileSync('/proc/'+pid+'/stat','utf8'),fields=t.slice(t.lastIndexOf(')')+2).split(' ');return fields[19]===birth&&fields[0]!=='Z';}catch{return false;}}
+function ownedBrowserProcesses(s){
+ const result=new Map();for(const name of readdirSync('/proc'))if(/^\d+$/.test(name)&&Number(name)!==process.pid){try{if(statSync('/proc/'+name).uid!==process.getuid())continue;const first=readFileSync('/proc/'+name+'/cmdline','utf8').split('\0')[0];if(inside(resolve(s.local,'chrome'),first))descendants(Number(name),result);}catch{/* Process exited or belongs to another principal. */}}
+ return result;
+}
 async function preflight(){
- verifyEnvironment();check(existsSync(executable)&&realpathSync(executable)===executable,'p09_browser_existing_chrome_missing');
+ verifyEnvironment();check(!process.env.DEBUG&&!process.env.PWDEBUG,'p09_browser_debug_logging_forbidden');check(existsSync(executable)&&realpathSync(executable)===executable,'p09_browser_existing_chrome_missing');
  const meta=statSync(executable);check(meta.isFile()&&meta.size>0&&meta.size<=512*1024**2,'p09_browser_source_binary_size');
  const binary=readFileSync(executable),sourceSha256=digest(binary),fileIdentity={isFile:meta.isFile(),elf:binary.subarray(0,4).equals(Buffer.from([127,69,76,70])),uid:meta.uid,runnerUid:process.getuid(),mode:meta.mode&0o777};
  console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'existing-chrome-file',executable,...fileIdentity,sha256:sourceSha256}));
@@ -95,40 +99,46 @@ async function preflight(){
  }catch(error){
   // Pre-auth only: no users or credentials have been provisioned. Never emit a
   // launch command/WS capability, stack, host file listing or raw trace.
-  const redact=value=>String(value??'').replace(/(?:wss?|https?):\/\/\S+/g,'<url>').replaceAll(local,'<owned-temp>').replace(/\/(?:[^\s'"<>]+)/g,'<path>').split('\n').filter(Boolean).slice(0,2).join(' | ').slice(0,360);
-  console.log('P09_BROWSER_PREFLIGHT_FAILURE '+JSON.stringify({stage:state.stage,name:error.name,code:error.code??null,status:error.status??null,signal:error.signal??null,reason:redact(error.message),stderr:redact(error.stderr)}));
+  const redact=value=>String(value??'').replace(/(?:wss?|https?):\/\/\S+/g,'<url>').replaceAll(local,'<owned-temp>').replace(/\/(?:[^\s'"<>]+)/g,'<path>').split('\n').filter(Boolean)[0]?.slice(0,260)??'';
+  const launchErrors=String(error.message??'').split('\n').filter(line=>line.includes('[err]')&&!line.includes('<launching>')).slice(0,5).map(redact);
+  console.log('P09_BROWSER_PREFLIGHT_FAILURE '+JSON.stringify({stage:state.stage,name:error.name,code:error.code??null,status:error.status??null,signal:error.signal??null,reason:redact(error.message),stderr:redact(error.stderr),launchErrors}));
   await cleanup(state);throw error;
  }finally{if(priorTmp===undefined)delete process.env.TMPDIR;else process.env.TMPDIR=priorTmp;}
 }
 async function cleanup(s){
- const owned=s.process?descendants(s.process.pid):new Map();
+ check(dirname(s.local)===s.tempRoot&&realpathSync(s.local)===s.local&&JSON.parse(readFileSync(resolve(s.local,'owner.json'),'utf8')).owner===s.owner,'p09_browser_cleanup_ownership');
+ const owned=s.process?descendants(s.process.pid):ownedBrowserProcesses(s);
  for(const context of s.contexts)if(!context.isClosed())await context.close();
  if(s.browser?.isConnected())await s.browser.close();
  if(s.server){try{await s.server.close();}catch{await s.server.kill();}}
+ for(const [pid,birth] of ownedBrowserProcesses(s)){owned.set(pid,birth);if(sameProcess(pid,birth))process.kill(pid,'SIGTERM');}
  const deadline=Date.now()+8000;while([...owned].some(([pid,birth])=>sameProcess(pid,birth))&&Date.now()<deadline)await new Promise(r=>setTimeout(r,50));
+ for(const [pid,birth] of owned)if(sameProcess(pid,birth))process.kill(pid,'SIGKILL');
+ const killDeadline=Date.now()+2000;while([...owned].some(([pid,birth])=>sameProcess(pid,birth))&&Date.now()<killDeadline)await new Promise(r=>setTimeout(r,50));
  const stopped=[...owned].every(([pid,birth])=>!sameProcess(pid,birth));check(stopped,'p09_browser_owned_process_cleanup');
  check(dirname(s.local)===s.tempRoot&&realpathSync(s.local)===s.local&&JSON.parse(readFileSync(resolve(s.local,'owner.json'),'utf8')).owner===s.owner,'p09_browser_cleanup_ownership');
  removalPermissions(s.local);rmSync(s.local,{recursive:true});check(!existsSync(s.local),'p09_browser_owned_temp_cleanup');
  const result={processStopped:stopped,contextsClosed:s.contexts.every(x=>x.isClosed()),ownedTempRemoved:!existsSync(s.local),ownerId:s.owner};console.log('P09_BROWSER_CLEANUP '+JSON.stringify({status:'REMOVED_OWNED_RESOURCES',...result,processesObserved:owned.size}));return result;
 }
-async function storageAudit(page,privateText){
- const result=await page.evaluate(async needle=>{
-  const contains=async(value,depth=0)=>{if(depth>20)throw Error('storage_limit');if(typeof value==='string')return value.includes(needle);if(value===null||value===undefined||['number','boolean'].includes(typeof value))return false;if(value instanceof Blob)return (await value.text()).includes(needle);if(value instanceof ArrayBuffer||ArrayBuffer.isView(value))return new TextDecoder().decode(value instanceof ArrayBuffer?value:new Uint8Array(value.buffer,value.byteOffset,value.byteLength)).includes(needle);if(value instanceof Date)return false;if(Array.isArray(value)||Object.getPrototypeOf(value)===Object.prototype){for(const [key,v] of Object.entries(value))if(key.includes(needle)||await contains(v,depth+1))return true;return false;}throw Error('unreadable_storage');};
+async function storageAudit(page,needles){
+ const result=await page.evaluate(async needles=>{
+  const textHas=value=>needles.some(needle=>value.includes(needle));
+  const contains=async(value,depth=0)=>{if(depth>20)throw Error('storage_limit');if(typeof value==='string')return textHas(value);if(value===null||value===undefined||['number','boolean'].includes(typeof value))return false;if(value instanceof Blob)return textHas(await value.text());if(value instanceof ArrayBuffer||ArrayBuffer.isView(value))return textHas(new TextDecoder().decode(value instanceof ArrayBuffer?value:new Uint8Array(value.buffer,value.byteOffset,value.byteLength)));if(value instanceof Date)return false;if(Array.isArray(value)||Object.getPrototypeOf(value)===Object.prototype){for(const [key,v] of Object.entries(value))if(textHas(key)||await contains(v,depth+1))return true;return false;}throw Error('unreadable_storage');};
   let hits=0;for(const storage of [localStorage,sessionStorage])for(let i=0;i<storage.length;i++)if((await contains(storage.key(i)))||(await contains(storage.getItem(storage.key(i)))))hits++;
   const databases=await indexedDB.databases();if(databases.length>20)throw Error('storage_limit');
   for(const info of databases){if(!info.name)throw Error('database_name_unknown');const db=await new Promise((ok,bad)=>{const r=indexedDB.open(info.name);r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error);r.onupgradeneeded=()=>{r.transaction.abort();bad(Error('database_changed'));};});
    try{for(const name of Array.from(db.objectStoreNames)){const rows=await new Promise((ok,bad)=>{const tx=db.transaction(name,'readonly'),r=tx.objectStore(name).getAll();r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error);});if(rows.length>1000)throw Error('storage_limit');for(const row of rows)if(await contains(row))hits++;}}finally{db.close();}
   }
-  const keys=await caches.keys();if(keys.length>20)throw Error('cache_limit');for(const key of keys){if(key.includes(needle))hits++;const cache=await caches.open(key),requests=await cache.keys();if(requests.length>1000)throw Error('cache_limit');for(const request of requests){if(decodeURIComponent(request.url).includes(needle))hits++;const response=await cache.match(request);if(response&&(await response.text()).includes(needle))hits++;}}
-  return {hits,urlHit:decodeURIComponent(location.href).includes(needle)||/[?&#](?:access_token|refresh_token|password)=/i.test(location.href)};
- },privateText);
+  const keys=await caches.keys();if(keys.length>20)throw Error('cache_limit');for(const key of keys){if(textHas(key))hits++;const cache=await caches.open(key),requests=await cache.keys();if(requests.length>1000)throw Error('cache_limit');for(const request of requests){if(textHas(decodeURIComponent(request.url)))hits++;const response=await cache.match(request);if(response&&textHas(await response.text()))hits++;}}
+  return {hits,urlHit:textHas(decodeURIComponent(location.href))||/[?&#](?:access_token|refresh_token|password)=/i.test(location.href)};
+ },needles);
  check(result.hits===0&&!result.urlHit,'p09_browser_private_storage_or_url');return result;
 }
 function recordPass(s,name,evidence={}){check(browserChecks.includes(name)&&!s.checks.some(x=>x.name===name),'p09_browser_check_identity');const item={name,status:'PASS',...evidence};s.checks.push(item);console.log('P09_BROWSER_CHECK '+JSON.stringify(item));}
 async function exercise(s,runtime,known){
  const {users,newSession,api,sql,wait}=runtime,book=known.workbookId,nextVersion=known.latestVersion+1,title='TEST browser durable close recovery';
  const baseline=await api('a',endpoint+'?'+new URLSearchParams({id:book,version:'1'}));check(baseline.status===200,'p09_browser_v1_baseline');
- const marker='TEST_PRIVATE_WORKBOOK_TEXT',initialToken=users.a.session.token;users.a.session=await newSession('a');check(users.a.session.token!==initialToken,'p09_browser_initial_password_login');
+ const marker='TEST_PRIVATE_WORKBOOK_TEXT',initialToken=users.a.session.token,privateNeedles=[marker];users.a.session=await newSession('a');check(users.a.session.token!==initialToken,'p09_browser_initial_password_login');privateNeedles.push(users.a.session.token,...sdkCookies(users.a.session.cookie).map(x=>x.value));
  let allPosts=0,privateHits=0,urlHits=0,closedPage=false,closedContext=false,cacheComplete=true,savedIntent=null,preparedAt=null;
  const responses=[],cacheResponses=[],blocked=[],pageErrors=[];let heldRead=null,armed=false,closing=false,releaseRead=false;
  const attach=async(context,page,holdRecovery=false)=>{
@@ -141,7 +151,7 @@ async function exercise(s,runtime,known){
    const request=event.request,u=new URL(request.url),responseStage=event.responseStatusCode!==undefined;
    check(!event.responseErrorReason,'p09_browser_network_response_failed');
    if(!responseStage){
-    if(decodeURIComponent(request.url).includes(marker)||/[?&#](?:access_token|refresh_token|password)=/i.test(request.url)){urlHits++;throw Error('p09_browser_private_request_url');}
+    if(privateNeedles.some(value=>decodeURIComponent(request.url).includes(value))||/[?&#](?:access_token|refresh_token|password)=/i.test(request.url)){urlHits++;throw Error('p09_browser_private_request_url');}
     if(!browserDestination(request.url,request.method)){blocked.push(['/_next/image','/_next/webpack-hmr'].includes(u.pathname)?u.pathname:'unapproved_path');await cdp.send('Fetch.failRequest',{requestId:event.requestId,errorReason:'BlockedByClient'});return;}
     if(u.pathname===endpoint&&request.method==='POST')allPosts++;
     if(holdRecovery&&!releaseRead&&u.pathname===endpoint&&request.method==='GET'&&u.searchParams.get('id')===book&&u.searchParams.get('version')===String(nextVersion)){check(!heldRead,'p09_browser_duplicate_recovery_get');heldRead={cdp,id:event.requestId};return;}
@@ -160,7 +170,7 @@ async function exercise(s,runtime,known){
  await page.locator('#title').waitFor({state:'visible',timeout:30000});
  await page.getByRole('button',{name:new RegExp(known.titleV2)}).click();await wait(async()=>await page.locator('#title').inputValue()===known.titleV2,'p09_browser_original_workbook_open',30);
  check(page.url()===origin+'/admin/research'&&await page.locator('#interpretation').inputValue()===baseline.value.workbook.interpretation,'p09_browser_real_workbook_content');
- const beforeAudit=await storageAudit(page,marker);privateHits+=beforeAudit.hits;urlHits+=Number(beforeAudit.urlHit);
+ const beforeAudit=await storageAudit(page,privateNeedles);privateHits+=beforeAudit.hits;urlHits+=Number(beforeAudit.urlHit);
  recordPass(s,'real-next-workbook-page',{genuineSession:true,realPage:true,existingCasesNotMocked:true});
  s.stage='save_and_close';await page.locator('#title').fill(title);armed=true;
  try{await page.getByRole('button',{name:/ذخیره به‌عنوان/}).click();}catch(error){check(closing&&/closed/i.test(error.message),'p09_browser_save_click_failed');}
@@ -170,6 +180,7 @@ async function exercise(s,runtime,known){
  recordPass(s,'save-response-real-tab-context-close',{pageClosed:true,contextClosed:true,actualResponseStatus:201,transportFulfill:false,tcpDisconnectClaim:false});
  armed=false;closing=false;
  s.stage='fresh_reopen';const prior=users.a.session.token;users.a.session=await newSession('a');check(users.a.session.token!==prior,'p09_browser_fresh_password_session');
+ privateNeedles.push(users.a.session.token,...sdkCookies(users.a.session.cookie).map(x=>x.value));
  const second=await s.browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1000}});s.contexts.push(second);await second.addCookies(sdkCookies(users.a.session.cookie));const reopened=await second.newPage();await attach(second,reopened,true);const postsBefore=allPosts;
  await reopened.goto(origin+'/admin/research',{waitUntil:'domcontentloaded',timeout:120000});await wait(()=>{if(s.asyncFailure)throw Error(s.asyncFailure);return !!heldRead;},'p09_browser_recovery_get_held',30);
  await reopened.locator('aside dd').filter({hasText:savedIntent}).first().waitFor({state:'visible',timeout:30000});check(allPosts===postsBefore,'p09_browser_reopen_automatic_post');
@@ -184,7 +195,7 @@ async function exercise(s,runtime,known){
  check(await reopened.locator('#title').inputValue()===title&&allPosts===postsBefore,'p09_browser_reopen_exact_body_without_post');
  recordPass(s,'fresh-sdk-session-get-only-reopen',{sameIntent:true,freshPasswordAndSdkGetUser:true,automaticWorkbookPosts:allPosts-postsBefore,intentVersionId:null,intentWriteOutcome:'unknown'});
  s.stage='reload';await reopened.reload({waitUntil:'domcontentloaded',timeout:120000});await wait(async()=>await reopened.locator('#title').inputValue()===title,'p09_browser_real_reload_content',30);check(allPosts===postsBefore,'p09_browser_reload_automatic_post');recordPass(s,'real-reload-get-only',{actualReload:true,automaticWorkbookPosts:0});
- const after=await storageAudit(reopened,marker);privateHits+=after.hits;urlHits+=Number(after.urlHit);
+ const after=await storageAudit(reopened,privateNeedles);privateHits+=after.hits;urlHits+=Number(after.urlHit);
  check(cacheResponses.length>0&&cacheResponses.every(r=>!r.disk&&!r.worker&&!r.prefetch&&Object.entries(r.headers).some(([key,v])=>key.toLowerCase()==='cache-control'&&String(v).includes('no-store'))),'p09_browser_private_http_cache');
  const retained=await api('a',endpoint+'?'+new URLSearchParams({id:book,version:'1'}));assert.deepEqual(retained.value.workbook,baseline.value.workbook);check(retained.value.historyMetadata.reviews.some(x=>x.id===known.review1Id&&x.versionId===known.version1Id),'p09_browser_v1_review_preserved');
  check(sql(`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id='${book}'`)===String(nextVersion),'p09_browser_no_duplicate_version');check(!s.asyncFailure&&pageErrors.length===0,'p09_browser_real_page_error');
