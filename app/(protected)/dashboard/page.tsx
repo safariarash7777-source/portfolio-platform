@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import type { User } from "@supabase/supabase-js";
+import { authSessionFailure } from "@/lib/auth/session-error";
+import { withDeadline } from "@/lib/deadline";
+import ReadError from "@/components/dashboard/ReadError";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import DashboardClient, { type MemberFinanceSummary } from "./DashboardClient";
@@ -16,12 +20,23 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
+  let verified: { supabase: Awaited<ReturnType<typeof createClient>>; user: User } | null = null;
+  let unavailable = false;
+  try {
+    const result = await withDeadline(async () => {
+      const supabase = await createClient();
+      return { supabase, auth: await supabase.auth.getUser() };
+    }, 10000);
+    unavailable = authSessionFailure(result.auth.error) === 503;
+    if (!result.auth.error && result.auth.data.user) verified = { supabase: result.supabase, user: result.auth.data.user };
+  } catch { unavailable = true; }
+  if (unavailable) return <><Navbar /><main id="main-content" dir="rtl" className="mx-auto w-full max-w-3xl px-5 py-10">
+    <h1 className="font-display text-xl font-bold">وضعیت نشست نامشخص است</h1>
+    <p className="mt-3 text-sm leading-7">بررسی ورود پاسخ معتبر نداد. اطلاعات مالی تا تأیید نشست نمایش داده نمی‌شود؛ پس از بازیابی سرویس همین مسیر را بازخوانی کنید.</p>
+    <ReadError label="نشست فضای مالی شخصی" code="DASHBOARD_AUTH" />
+  </main><Footer /></>;
+  if (!verified) redirect("/login?next=/dashboard");
+  const { supabase, user } = verified;
 
   const [
     profileRes, assessmentRes, portfolioRes, holdingsRes, snapshotsRes, txRes,
