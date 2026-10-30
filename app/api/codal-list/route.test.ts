@@ -55,6 +55,18 @@ test('wrong/missing/ambiguous symbol and user-controlled origin/path fail before
   });
 });
 
+test('automatic HEAD or other methods cannot consume the manual GET source-read budget', async () => {
+  let calls = 0;
+  await withFetch(mock(async () => { calls++; return json(payload()); }), async () => {
+    for (const method of ['HEAD', 'POST']) {
+      const response = await GET(new Request(request().url, { method }));
+      assert.equal(response.status, 405);
+      assert.equal((await response.json()).error, 'manual_GET_only');
+    }
+    assert.equal(calls, 0);
+  });
+});
+
 test('successful UTF8 payload is byte-identical: order, null, absent publication, source/provenance retained', async () => {
   const value = payload();
   const withoutPublication = { ...row }; delete (withoutPublication as Partial<typeof row>).publishedDate;

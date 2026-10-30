@@ -16,7 +16,7 @@ headerهای پاسخ `X-Integration-Only: P07-DO-NOT-MERGE` و `X-Public-Source
 
 `npx --no-install tsx --test app/api/codal-list/route.test.ts components/symbol/CodalReportsTab.test.ts lib/core/companyReportDiscovery.test.ts`
 
-۳۲آزمون موفق (۱۳relay و۱۹UI/discovery)، lint scoped و typecheck موفق. helper فقط از route.test.ts موجود و ازقبل ثبت‌شده Core آزموده می‌شود؛ رجیستری موازی ساخته نشده. mockهای کوچک فقط داخل test هستند، نه درruntime/deployment. CI/Preview exactSHA از metadata جدا پیگیری می‌شوند؛ موفقیت واحد محلی موفقیت مرورگر یا مقصد اصلی مالی نیست.
+۳۳آزمون موفق (۱۴relay و۱۹UI/discovery)، lint scoped و typecheck موفق. helper فقط از route.test.ts موجود و ازقبل ثبت‌شده Core آزموده می‌شود؛ رجیستری موازی ساخته نشده. mockهای کوچک فقط داخل test هستند، نه درruntime/deployment. HEADخودکار و methodدیگر پیش ازIO رد می‌شوند تا probe سهمGETدستی منبع را مصرف نکند. CI/Preview exactSHA از metadata جدا پیگیری می‌شوند؛ موفقیت واحد محلی موفقیت مرورگر یا مقصد اصلی مالی نیست.
 
 ## یک read مرورگریِ رزروشده برای root/A
 

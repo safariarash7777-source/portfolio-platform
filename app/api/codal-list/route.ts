@@ -5,6 +5,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
+  // Next can otherwise implement HEAD through GET; a probe must not consume a source read.
+  if (req.method !== 'GET') return integrationError('manual_GET_only', 405, 'admission');
   const query = new URL(req.url).searchParams;
   if (query.getAll('symbol').length > 1 || [...query.keys()].some(key => key !== 'symbol')) {
     return integrationError('only_one_foolad_symbol_parameter_is_allowed', 400, 'admission');
