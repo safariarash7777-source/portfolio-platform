@@ -6,8 +6,11 @@ import { resolve } from "node:path";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
-import RepliesPanel, { type QuestionView, type ReplyEdit } from "./RepliesPanel";
+import RepliesPanel, { SessionReplies, type QuestionView, type ReplyEdit } from "./RepliesPanel";
 import RosterPanel, { type RosterRowView } from "./RosterPanel";
+import { questionFollowUp } from "./questionFollowUp";
+import type { ConsultationAction } from "@/lib/consultation/contracts";
+import type { ReplyRead } from "@/lib/consultation/replies";
 
 const question: QuestionView = { id: "q1", text: "پرسش مصنوعی", createdAt: "2026-10-24T10:00:00Z", replies: [{ id: "r1", version: 1, text: "پاسخ پیشین", createdAt: "2026-10-24T11:00:00Z" }] };
 const row: RosterRowView = { relationshipId: "rel", label: "عضو مصنوعی", risk: { label: null, status: "نامعلوم", assessedAt: null, expiresAt: null }, assets: { valueToman: null, asOf: null, definition: "ارزش اظهارشده", partial: true }, missingInformation: null };
@@ -59,6 +62,54 @@ test("cancel abandons unpublished local text and next edit uses current version"
   const view = mountQuestion(); view.click("اصلاح پاسخ"); view.click("انصراف"); assert.equal(view.saves.length, 0);
   view.update({ ...question, replies: [...question.replies, { id: "r2", version: 2, text: "نسخه دوم", createdAt: "2026-10-24T12:00:00Z" }] });
   view.click("اصلاح پاسخ"); assert.equal(view.find("textarea").props.value, "نسخه دوم"); await view.submit(); assert.equal(view.saves[0].baseVersion, 2);
+});
+
+const followUpFeedback: ConsultationAction[] = [
+  { id: "q1", sessionId: "s1", actionKey: "a1", version: 1, status: "question", text: "پرسش نخست", actorId: "member", createdAt: question.createdAt },
+  { id: "q2", sessionId: "s1", actionKey: "a1", version: 2, status: "question", text: "پرسش مستقل بعدی", actorId: "member", createdAt: question.createdAt },
+  { id: "done", sessionId: "s1", actionKey: "a1", version: 3, status: "done", text: null, actorId: "member", createdAt: question.createdAt },
+];
+const followUpRead: ReplyRead = { contractVersion: "consultation-reply-read.v1", actorId: "advisor", relationshipId: "rel", sessionId: "s1", canReply: true, readOnlyReason: null, replies: [1, 2].map(version => ({ id: `r${version}`, questionId: "q1", sessionId: "s1", version, text: `پاسخ ${version}`, actorId: "advisor", createdAt: question.createdAt, contentHash: "a".repeat(64) })) };
+
+test("follow-up keeps distinct questions on one action and counts questions, not reply versions or done events", () => {
+  const items = questionFollowUp(followUpRead, followUpFeedback, [{ actionKey: "a1", title: "بازبینی بودجه", responsible: "member", dueOn: "2099-01-01" }]);
+  assert.ok(items); assert.equal(items.length, 2); assert.equal(items[0].replies.length, 2); assert.equal(items[1].replies.length, 0);
+  assert.equal(items[0].context, "اقدام مرتبط: بازبینی بودجه");
+  const html = renderToStaticMarkup(<SessionReplies data={followUpRead} feedback={followUpFeedback} sessionVersion={3} advisor locked={false} onDirty={() => {}} />);
+  assert.match(html, /۱ پرسش بدون پاسخ ثبت‌شده · ۱ پرسش دارای پاسخ ثبت‌شده/);
+  assert.doesNotMatch(html, /بستن درخواست|درخواست پایان یافت|پاسخ مشاهده شد/);
+});
+
+test("orphan or wrong-session replies fail closed without false zero or unanswered counts", () => {
+  for (const bad of [{ ...followUpRead.replies[0], questionId: "missing" }, { ...followUpRead.replies[0], sessionId: "s2" }]) {
+    const data = { ...followUpRead, replies: [bad] };
+    assert.equal(questionFollowUp(data, followUpFeedback, []), null);
+    const html = renderToStaticMarkup(<SessionReplies data={data} feedback={followUpFeedback} sessionVersion={3} advisor locked={false} onDirty={() => {}} />);
+    assert.match(html, /role="alert"/); assert.doesNotMatch(html, /پرسش بدون پاسخ ثبت‌شده|هنوز پاسخی ثبت نشده/);
+  }
+});
+
+test("question context retains unknown action titles and separates general questions", () => {
+  const general = { ...followUpFeedback[0], id: "general", actionKey: null };
+  const items = questionFollowUp({ ...followUpRead, replies: [] }, [...followUpFeedback, general], []);
+  assert.ok(items); assert.match(items[0].context, /عنوان اقدام در این نسخه در دسترس نیست/);
+  assert.equal(items[2].context, "دربارهٔ همین جمع‌بندی");
+});
+
+test("follow-up filter uses actual component handlers and cannot hide a question being edited", () => {
+  const slots: unknown[] = []; let cursor = 0, tree: unknown;
+  const hooks = { ...React, useState(initial: unknown) { const i = cursor++; if (!(i in slots)) slots[i] = initial; return [slots[i], (next: unknown) => { slots[i] = next; }]; } };
+  const filename = resolve("components/consultation/RepliesPanel.tsx"), local = createRequire(filename), taskModule = { exports: {} as { default: (props: unknown) => unknown } };
+  const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
+  new Function("require", "module", "exports", code)((name: string) => name === "react" ? hooks : local(name.startsWith("@/") ? resolve(name.slice(2)) : name), taskModule, taskModule.exports);
+  const render = () => { cursor = 0; tree = taskModule.exports.default({ sessionId: "s1", sessionVersion: 3, questions: questionFollowUp(followUpRead, followUpFeedback, []), canReply: true, locked: false }); };
+  const select = () => { const item = nodes(tree).find(item => item.type === "select"); assert.ok(item); return item; };
+  render(); (select().props.onChange as (event: unknown) => void)({ target: { value: "waiting" } }); render();
+  const cards = nodes(tree).filter(item => typeof item.props.question === "object"); assert.equal(cards.length, 1);
+  assert.equal((cards[0].props.question as QuestionView).id, "q2");
+  (cards[0].props.onDirty as () => void)(); render(); assert.equal(select().props.disabled, true);
+  (nodes(tree).find(item => typeof item.props.question === "object")!.props.onCancel as () => void)(); render();
+  assert.equal(select().props.disabled, false);
 });
 
 test("roster filter state survives dossier selection and period refresh; explicit reset clears it", () => {

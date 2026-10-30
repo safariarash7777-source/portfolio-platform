@@ -15,6 +15,7 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import ts from "typescript";
 import type { ActionFeedbackEdit } from "./ActionFeedback";
+import type { ReplyRead } from "@/lib/consultation/replies";
 
 const actor = "11111111-1111-4111-8111-111111111111", relationId = "22222222-2222-4222-8222-222222222222", sessionId = "33333333-3333-4333-8333-333333333333", member = "44444444-4444-4444-8444-444444444444";
 const basis = { holdingsVersionId: null, cashFlowVersionId: null, goalsVersionId: null, cashFlowPeriod: { startOn: "2026-10-01", endOn: "2026-10-31" } };
@@ -23,6 +24,23 @@ const session: ConsultationSession = { id: sessionId, relationshipId: relationId
 const data: ConsultationRead = { contractVersion: "consultation-read.v1", actor: { id: actor, isAdvisor: true, isOwner: true }, advisors: [{ id: actor, displayName: "مشاور مصنوعی", isOwner: true }], relationships: [{ id: relationId, advisorId: actor, clientId: member, clientLabel: "عضو مصنوعی", createdAt: "2026-10-23T12:00:00Z", revoked: false }], selected: null, dossier: { basis, holdings: null, cashFlow: null, goals: null }, sessions: [session], notes: [{ sessionId, note: "یادداشت خصوصی" }], events: [], actions: [] };
 data.selected = data.relationships[0];
 const receipt: ConsultationReceipt = { contractVersion: "consultation-write.v1", actorId: actor, clientToken: "test", command: { kind: "save", relationshipId: relationId, sessionKey: sessionId, baseVersion: 0, body, privateNote: "یادداشت خصوصی" }, id: sessionId, version: 1, reused: false, canonicalContentHash: "b".repeat(64) };
+
+test("reply failure never becomes an unanswered count; a confirmed empty read does", () => {
+ const feedback=[{id:member,sessionId,actionKey:null,version:1,status:"question" as const,text:"پرسش ساختگی",actorId:member,createdAt:session.createdAt}];
+ const read:ReplyRead={contractVersion:"consultation-reply-read.v1",actorId:member,relationshipId:relationId,sessionId,canReply:false,readOnlyReason:"not_owner",replies:[]};
+ const render=(replies?:ReplyRead,replyError?:string)=>renderToStaticMarkup(<SessionCard session={{...session,state:"published"}} latest advisor={false} owner={false} revoked={false} basis={basis} feedback={feedback} locked onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} replies={replies} replyError={replyError}/>);
+ const failed=render(undefined,"خواندن پاسخ‌ها انجام نشد");assert.match(failed,/خواندن پاسخ‌ها انجام نشد/);assert.doesNotMatch(failed,/پرسش بدون پاسخ ثبت‌شده|هنوز پاسخی ثبت نشده/);
+ assert.match(render(read),/۱ پرسش بدون پاسخ ثبت‌شده/);
+});
+
+test("revoked history retains original recommendation action context and replies without write controls", () => {
+ const oldSession={...session,state:"published" as const,body:{...body,actions:[{actionKey:actor,title:"اقدام نسخه قدیمی",dueOn:"2099-12-31",responsible:"member" as const}]}};
+ const feedback=[{id:member,sessionId,actionKey:actor,version:1,status:"question" as const,text:"پرسش قدیمی",actorId:member,createdAt:session.createdAt}];
+ const read:ReplyRead={contractVersion:"consultation-reply-read.v1",actorId:member,relationshipId:relationId,sessionId,canReply:false,readOnlyReason:"revoked",replies:[{id:relationId,questionId:member,sessionId,version:1,text:"پاسخ تاریخی",actorId:actor,createdAt:session.createdAt,contentHash:"b".repeat(64)}]};
+ const html=renderToStaticMarkup(<SessionCard session={oldSession} latest={false} advisor={false} owner={false} revoked basis={basis} feedback={feedback} locked onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} replies={read}/>);
+ assert.match(html,/اقدام مرتبط: اقدام نسخه قدیمی/);assert.match(html,/پاسخ تاریخی/);assert.match(html,/۱ پرسش دارای پاسخ ثبت‌شده/);
+ assert.doesNotMatch(html,/نوشتن پاسخ|اصلاح پاسخ در نسخه|ثبت پرسش خصوصی|بستن درخواست/);
+});
 
 test("extended action feedback is offered only for a published active action assigned to the current role", () => {
  const action={actionKey:relationId,title:"اقدام ساختگی",dueOn:"2099-12-31",responsible:"member" as const};
