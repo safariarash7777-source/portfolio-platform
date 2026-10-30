@@ -13,8 +13,8 @@
     "sql/consultation_workflow.sql": "c43f9ed61465bf6fb7781276d2c854307f38485a",
     "sql/consultation_roster.sql": "fd33825603432759725e0820de754660d880ea6b",
     "sql/consultation_replies.sql": "f3881a5510bfd7c00ccac75f5ae22fb398f6007a",
-    "package-lock.json": "b25a5beb9163002b066c4be913c0b27c3b5ac0c7",
-    "package.json": "04479bf896bb2e86da6b8767e082303092b533f9"
+    "package-lock.json": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305",
+    "package.json": "c74bba0f9b18689a5da0116c78e02e3105e4310a"
   },
   "dependencyException": {
     "base": "b5d4c475728cb11db9ab2520145143053013081f",
