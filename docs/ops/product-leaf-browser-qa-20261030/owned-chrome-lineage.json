@@ -1,0 +1,19 @@
+{
+  "sourceSha": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+  "sourcePath": "scripts/isolated-e2e/workbook-browser.mjs",
+  "sourceGitBlob": "b81070e058171a32ff5ddf100011baf0ca96bcaf",
+  "functionSha256": {
+    "chromeFileCompatible": "b8fb44efec8593580fddd30b07a9dc742318fed616a3d83eb39711b86df94d5d",
+    "closureBudget": "8089e6163ef30a2d1b11af00c16077b2d41c974fd9e43be435e760b93b8d4f44",
+    "inventory": "0d3ec034ebad54aff85413f90351fc3a8bf87bfa0922a3813d5cb38169eba984",
+    "copyClosure": "e78c6ccf02cf8f75b42a7e1b10749de174c6301309832f0cdb573628be32c4ac",
+    "removalPermissions": "035f9d7225ef93683899ad48eed6a9cc567d44e1dfefd7e3cae9be92c3051d2c",
+    "descendants": "6fd9bda7337356e9e48a91df3a1048487262cafc754cb9408e2b9b7dadb49761",
+    "sameProcess": "a5d105d409e0a5838a9f76a506acb73b7db9b9073223661e9649428f96815746",
+    "ownedBrowserProcesses": "0cd711ee20cc3d980bdfb69e68b0a82b42248845e5a3831a758cb5c1a44c4a3d",
+    "preflight": "7bc7bb9a7d770e616840196b036866058fbb8f33d2f70a69743aabf346179b03",
+    "cleanup": "58cad57d21c55bc8640a31481d352617c80900704493e6439dae1cc90133cb73"
+  },
+  "bodyChanges": false,
+  "p09PathChanges": false
+}

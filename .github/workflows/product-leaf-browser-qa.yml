@@ -1,0 +1,45 @@
+name: Product leaf browser QA
+on:
+  pull_request:
+    paths:
+      - 'scripts/isolated-e2e/owned-chrome-qa.mjs'
+      - 'scripts/isolated-e2e/product-leaf-browser-qa*'
+      - 'docs/ops/product-leaf-browser-qa-20261030/**'
+      - '.github/workflows/product-leaf-browser-qa.yml'
+permissions:
+  contents: read
+concurrency:
+  group: product-leaf-browser-qa-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  public-and-educational:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Frozen lineage and request policy guards
+        run: |
+          git fetch --no-tags --depth=1 origin 67aeda9ff84fb1d3e936fc39564c0e551b3ff17e
+          node --test scripts/isolated-e2e/product-leaf-browser-qa.test.mjs
+      - name: Actual public Preview and educational component
+        run: node scripts/isolated-e2e/product-leaf-browser-qa.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Public and educational images plus sanitized source receipt only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-leaf-browser-qa
+          path: |
+            product-leaf-qa-artifacts/*.png
+            product-leaf-qa-artifacts/qa-receipt.json
+          if-no-files-found: ignore
+          retention-days: 5
