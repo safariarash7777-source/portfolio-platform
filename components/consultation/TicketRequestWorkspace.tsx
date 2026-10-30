@@ -25,6 +25,13 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
   const confirmedHistory = useRef<TicketRead | null>(null), dirtyRef = useRef(false);
   const invalidateWrites = useCallback(() => { writeSequence.current++; }, []);
   const cancelReads = useCallback(() => { sequence.current++; abort.current?.abort(); }, []);
+  const suspendIdentity = useCallback(() => {
+    // Keep the same actor's intent/draft privately in memory, but remove every
+    // rendered authorization result until a fresh parent read authorizes it.
+    live.current = false; cancelReads(); invalidateWrites(); inFlight.current = false;
+    setSource(null); setItems(null); setData(null); setCapability({ state: "unavailable", runId: null });
+    setReading(false); setPosting(false); setNeedsRefresh(true); setIdentity("error");
+  }, [cancelReads, invalidateWrites]);
   const clearPrivate = useCallback((text: string) => {
     live.current = false; cancelReads(); invalidateWrites(); attempt.current = null; saved.current = null; lastLookup.current = null; confirmedHistory.current = null; inFlight.current = false; dirtyRef.current = false;
     setSource(null); setItems(null); setData(null); setCapability({ state: "not_connected", runId: null }); setDraft(blankTicketDraft()); setDirty(false); setPendingState("none"); setReading(false); setPosting(false); setNeedsRefresh(false); setMessage(text); setIdentity("changed");
@@ -50,7 +57,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
       if (!live.current || generation !== sequence.current) return;
       if (parentRead.status !== "ready") {
         if (["AUTH_REQUIRED", "ACTOR_CHANGED", "FORBIDDEN"].includes(parentRead.error.code)) { clearPrivate("نشست یا دسترسی رابطه تأیید نشد؛ داده و تلاش خصوصی نمایش داده نمی‌شود."); return; }
-        if (parentRead.error.code === "AUTH_UNAVAILABLE") { live.current = false; setSource(null); setItems(null); setData(null); setIdentity("error"); }
+        suspendIdentity();
         setMessage(parentRead.error.error); return;
       }
       const parent = parentRead.data;
@@ -59,10 +66,10 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
         try { ticketStorageParent(parent, expectedActorId, parent.selected.id); }
         catch { clearPrivate("دسترسی جاری به رابطه تأیید نشد؛ محتوای خصوصی کنار گذاشته شد."); return; }
       }
-      setSource(parent);
-      if (!parent.selected) { relation.current = undefined; selectedRequest.current = undefined; setItems(null); setData(null); setNeedsRefresh(false); return; }
+      if (!parent.selected) { setSource(parent); setIdentity("ready"); relation.current = undefined; selectedRequest.current = undefined; setItems(null); setData(null); setNeedsRefresh(false); return; }
       const relationship = parent.selected.id;
       if (attempt.current && JSON.parse(attempt.current.intent.body).command.relationshipId !== relationship) { clearPrivate("رابطهٔ تلاش خصوصی تغییر کرده است؛ تلاش قبلی نمایش داده نمی‌شود."); return; }
+      setSource(parent); setIdentity("ready");
       relation.current = relationship;
       const inbox = await readTicketStorage({ mode: "inbox", relationshipId: relationship }, parent, { signal: controller.signal });
       if (!live.current || generation !== sequence.current) return;
@@ -105,9 +112,9 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
       if (!dirtyRef.current) setDraft(blankTicketDraft(parent.actor.id === parent.selected.clientId ? requestId ? "member_followup" : "open" : "advisor_clarification"));
       setNeedsRefresh(false); setMessage("");
     } catch {
-      if (live.current && generation === sequence.current) setMessage("بازخوانی معتبر انجام نشد؛ تاریخچهٔ قبلی جای نتیجهٔ تازه نیست. ثبت تکرار نشود.");
+      if (live.current && generation === sequence.current) { suspendIdentity(); setMessage("بازخوانی معتبر انجام نشد؛ تاریخچهٔ قبلی جای نتیجهٔ تازه نیست. نشست را بررسی و دوباره بازخوانی کنید؛ ثبت تکرار نشود."); }
     } finally { if (generation === sequence.current) setReading(false); }
-  }, [clearPrivate, expectedActorId, keepHistory, setLocation]);
+  }, [clearPrivate, expectedActorId, keepHistory, setLocation, suspendIdentity]);
   useEffect(() => {
     let disposed = false;
     let unsubscribe = () => {};
@@ -115,14 +122,14 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
       const { data: auth } = createClient().auth.onAuthStateChange((event, session) => {
         if (disposed) return;
         if (event === "SIGNED_OUT" || session?.user && session.user.id !== expectedActorId) { clearPrivate("حساب تغییر کرده یا خارج شده است؛ متن و تلاش خصوصی پاک شد."); return; }
-        if (!session?.user) { live.current = false; cancelReads(); setIdentity("error"); return; }
-        const first = !live.current; live.current = true; setIdentity("ready");
-        if (first) void load(relation.current, selectedRequest.current);
+        if (!session?.user) { suspendIdentity(); return; }
+        const first = !live.current; live.current = true;
+        if (first) { setIdentity("checking"); void load(relation.current, selectedRequest.current); }
       });
       unsubscribe = () => auth.subscription.unsubscribe();
     } catch { live.current = false; setIdentity("error"); }
     return () => { disposed = true; live.current = false; cancelReads(); invalidateWrites(); attempt.current = null; saved.current = null; confirmedHistory.current = null; unsubscribe(); };
-  }, [cancelReads, clearPrivate, expectedActorId, invalidateWrites, load]);
+  }, [cancelReads, clearPrivate, expectedActorId, invalidateWrites, load, suspendIdentity]);
   useEffect(() => {
     if (!dirty && pendingState === "none") return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -134,7 +141,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
       if (authSessionFailure(auth.error) === 401 || !auth.error && !auth.data.user) { clearPrivate("نشست معتبر وجود ندارد؛ تلاش خصوصی کنار گذاشته شد."); return; }
       if (auth.error || !auth.data.user) { setMessage("نشست معتبر تأیید نشد؛ هیچ ثبت تازه‌ای انجام نشد."); return; }
       if (auth.data.user.id !== expectedActorId) { clearPrivate("حساب تغییر کرده است؛ صفحه را با هویت جدید باز کنید."); return; }
-      live.current = true; setIdentity("ready"); await load(relation.current, selectedRequest.current);
+      live.current = true; setIdentity("checking"); await load(relation.current, selectedRequest.current);
     } catch { setMessage("بررسی نشست در دسترس نیست؛ متن یا ثبت تازه‌ای ارسال نشد."); }
   };
   const transmit = async (prepared: TicketStorageAttempt) => {

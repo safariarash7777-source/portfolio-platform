@@ -1,4 +1,4 @@
-// P03 test-only derivative; no browser profile enabled.
+// P03 test-only derivative; exact request-page browser mode only.
 // Shared native Next gateway. Fixed pf10/p09 profiles only; no mock responses.
 import http from 'node:http';
 const origin='http://localhost:32189';
@@ -16,8 +16,12 @@ export function browserRequestAllowed(value,method='GET'){
   if(/%(?:2e|2f|5c|25|00)/i.test(raw.split('?')[0]))return false;
   const path=decodeURIComponent(raw.split('?')[0]);
   if(/[\\%\u0000-\u0020]/.test(path)||path.split('/').some(x=>x==='.'||x==='..'))return false;
+  if(['/dashboard/consultation/requests','/admin/consultation/requests'].includes(path)){
+   const seen=new Set();for(const [key,v] of url.searchParams){if(seen.has(key))return false;seen.add(key);if(['relation','request'].includes(key)){if(!/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(v))return false;}else if(key==='_rsc'){if(!/^[a-zA-Z0-9_-]{1,100}$/.test(v))return false;}else return false;}
+   return !url.searchParams.has('request')||url.searchParams.has('relation');
+  }
+  if(path==='/_next/image')return [...url.searchParams.keys()].length===3&&url.searchParams.get('url')==='/brand/mark.png'&&/^(32|48|64|96|128|256|384|640|750|828|1080|1200|1920|2048|3840)$/.test(url.searchParams.get('w')??'')&&url.searchParams.get('q')==='75';
   for(const [key,v] of url.searchParams)if(key!=='v'||!/^\d{1,20}$/.test(v))return false;
-  if(path==='/admin/research')return !url.search;
   if(['/fonts/Vazirmatn-Variable.woff2','/fonts/Pelak-Bold.woff2','/fonts/Pelak-ExtraBold.woff2','/fonts/Pelak-Black.woff2','/brand/mark.png'].includes(path))return !url.search;
   return path.startsWith('/_next/static/')&&/^\/[a-zA-Z0-9_./()[\]@-]+$/.test(path);
  }catch{return false;}
@@ -25,7 +29,7 @@ export function browserRequestAllowed(value,method='GET'){
 export async function startNativeAuthGateway(profile){
  const config=gatewayProfile(profile);
  const browserMode=process.env.NATIVE_AUTH_BROWSER_MODE==='true';
- if((process.env.NATIVE_AUTH_BROWSER_MODE!==undefined&&!['true','false'].includes(process.env.NATIVE_AUTH_BROWSER_MODE))||(browserMode&&profile!=='p09'))throw Error('p09_browser_gateway_mode');
+ if((process.env.NATIVE_AUTH_BROWSER_MODE!==undefined&&!['true','false'].includes(process.env.NATIVE_AUTH_BROWSER_MODE))||(browserMode&&profile!=='consultation-ticket'))throw Error('p09_browser_gateway_mode');
  if(process.platform!=='linux'||process.env.NATIVE_AUTH_PROFILE!==profile||process.env.NATIVE_AUTH_ORIGIN!==origin||!/^[a-f0-9]{40}$/.test(process.env.NATIVE_AUTH_SHA??''))throw Error('pf10_native_gateway_environment');
  const {default:next}=await import('next');
  const app=next({dev:true,hostname:'127.0.0.1',port:32189});

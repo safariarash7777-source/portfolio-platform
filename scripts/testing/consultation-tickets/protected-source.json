@@ -13,6 +13,33 @@
     "sql/consultation_workflow.sql": "c43f9ed61465bf6fb7781276d2c854307f38485a",
     "sql/consultation_roster.sql": "fd33825603432759725e0820de754660d880ea6b",
     "sql/consultation_replies.sql": "f3881a5510bfd7c00ccac75f5ae22fb398f6007a",
-    "package-lock.json": "eeaf77d790d7af8692110a06e22731dd9edeee61"
+    "package-lock.json": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305",
+    "package.json": "c74bba0f9b18689a5da0116c78e02e3105e4310a"
+  },
+  "dependencyException": {
+    "base": "b5d4c475728cb11db9ab2520145143053013081f",
+    "source": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+    "package": "playwright-core",
+    "type": "devDependencies",
+    "version": "1.64.1",
+    "transitiveAdditions": 0,
+    "approvedDiffSha256": {
+      "package.json": "411c1440a7f9546fdb8226a0155774aa5b8d8d8e1601a147fa4560177cb49cd1",
+      "package-lock.json": "77c69bdc881aa59397c1b14611b6a7cfa79de480bece177a60d7dabd66d8919d"
+    }
+  },
+  "consumerReauthException": {
+    "base": "b5d4c475728cb11db9ab2520145143053013081f",
+    "scope": "explicit root-authorized same-owner identity suspension race fix",
+    "files": {
+      "components/consultation/TicketRequestWorkspace.tsx": {
+        "oldBlob": "b8156c48f1fb9fac14fca6b7d85efeb62f6d6771",
+        "newBlob": "a8f7a4126b005001605f06ee7768cda330f7cc68"
+      },
+      "components/consultation/ticket-storage-ui.test.tsx": {
+        "oldBlob": "27ac4d0fd8e1f25bc314d271feed572c933e5a02",
+        "newBlob": "ec6d713620b0546667686aa0f710a093b14cb660"
+      }
+    }
   }
 }
