@@ -148,6 +148,19 @@ for (const profile of ["legacy", "explicit"]) describe(`PF10 actual expense link
       const response = await post(r); assert.equal(response.status, 201);
     }
     const one = await read(); assert.equal(one.history.items.length, 50); assert.ok(one.history.nextBeforeSequence);
-    const two = await read(hv, one.history.nextBeforeSequence!); assert.ok(two.history.items.length > 0); assert.equal(new Set([...one.history.items, ...two.history.items].map(i => i.id)).size, one.history.items.length + two.history.items.length); unchanged();
+    const two = await read(hv, one.history.nextBeforeSequence!); assert.equal(two.consistencyKey, one.consistencyKey); assert.ok(two.history.items.length > 0); assert.equal(new Set([...one.history.items, ...two.history.items].map(i => i.id)).size, one.history.items.length + two.history.items.length); unchanged();
+  });
+  test("consistency witness changes on correction and another referenced CF period, even with unchanged selected financial/CF IDs", async () => {
+    assert.equal(sql(db, "SELECT bool_and(provolatile='s') FROM pg_proc WHERE oid IN ('debt_payment_private.load_links(uuid,date,date,bigint)'::regprocedure,'public.load_member_debt_payments(uuid,date,date,bigint)'::regprocedure)"), "t");
+    const firstPage = await read(), head = firstPage.history.items.find(i => i.payload.paymentKey === second.payload.paymentKey && i.latestForPayment)!;
+    assert.ok(firstPage.history.nextBeforeSequence); const correction = await post(request({ ...head.payload, reference: "native coverage correction" }, head.version)); assert.equal(correction.status, 201);
+    const changedPage = await read(hv, firstPage.history.nextBeforeSequence!); assert.notEqual(changedPage.consistencyKey, firstPage.consistencyKey); assert.equal(changedPage.basis.latestId, firstPage.basis.latestId); assert.equal(changedPage.sourceVersion?.id, firstPage.sourceVersion?.id); unchanged();
+    const september = validateCashFlowPayload({ ...cashPayload(), period: { startOn: "2026-09-01", endOn: "2026-09-30" }, entries: [{ ...expense("september", 2000), occurredOn: "2026-09-25" }] });
+    const sepId = cfWrite(0, september); fingerprint = moneyHash();
+    const declaration = await post({ ...request({ ...basePayload("september"), cashFlowVersionId: sepId }), period: september.period }); assert.equal(declaration.status, 201); const sepReceipt: DebtPaymentReceipt = await declaration.json(); unchanged();
+    const beforeOther = await read();
+    cfWrite(1, { ...september, entries: [{ ...september.entries[0], amountToman: 4000 }] }); fingerprint = moneyHash();
+    const afterOtherPage = await read(hv, beforeOther.history.nextBeforeSequence!); assert.notEqual(afterOtherPage.consistencyKey, beforeOther.consistencyKey); assert.equal(afterOtherPage.basis.latestId, beforeOther.basis.latestId); assert.equal(afterOtherPage.sourceVersion?.id, beforeOther.sourceVersion?.id);
+    const refreshed = await read(), pinned = refreshed.history.items.find(i => i.id === sepReceipt.id)!; assert.equal(pinned.amountToman, 2000); assert.equal(pinned.sourceState, "stale"); unchanged();
   });
 });

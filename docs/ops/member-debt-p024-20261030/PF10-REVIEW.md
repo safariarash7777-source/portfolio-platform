@@ -12,6 +12,8 @@ Owner: existing START-B. Audience: member and Arash reviewing the member journey
 4. Review source version/date/unit, unknown allocation, member reference, server timestamp and previous correction versions. A new CF version marks the pinned source stale/removed until explicit reconfirmation; it never replaces amounts automatically. A previous financial basis is read-only. Use current basis for a new correction, retaining its payment key and CAS version.
 5. Due-date reminders remain the existing DebtSchedule, independent of declarations. No external message/channel is added.
 
+Read-review corrections: a retained snapshot during loading/error is explicitly unconfirmed for current state, and no numeric current aggregate or current row flags are presented. Draft/selection/pinned source amount remain preserved and the writer closes. Pagination requires the candidate DTO's fixed-size owner metadata `consistencyKey` across all referenced history periods; corrections or another period's CF revision reject page merging and require a restart. Private/public readers are STABLE for a single calling-query snapshot. See the same SPEC for exact coverage and limits. Async actual-workspace regressions cover failure/deadline and mixed-page rejection; native tests prove the two real metadata transitions change the witness.
+
 ## Validation and acceptance boundary
 
 - `lib/portfolio/debtPayments.test.ts`: strict metadata/actor/period/receipt contracts, partial totals, missing-schema reader, origin/auth/basis denial, exact recovery; actual workspace handler tests for draft locks, GET readback, historical/unavailable state and actor change. Synthetic seams are labeled.

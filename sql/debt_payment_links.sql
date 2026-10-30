@@ -128,9 +128,9 @@ BEGIN
   'period',jsonb_build_object('startOn',source.period_start,'endOn',source.period_end),'amountToman',event.amount_toman,'occurredOn',event.occurred_on,'unit','IRT','sourceState',state,'latestForPayment',latest_link,'basisCurrent',p.holding_version_id=latest_h,'allocation',NULL);
 END $$;
 
-CREATE FUNCTION debt_payment_private.load_links(hv uuid,start_day date,end_day date,before_sequence bigint DEFAULT NULL) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+CREATE FUNCTION debt_payment_private.load_links(hv uuid,start_day date,end_day date,before_sequence bigint DEFAULT NULL) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $$
 DECLARE actor uuid:=auth.uid(); selected public.member_holding_versions; latest public.member_holding_versions; cf public.member_cash_flow_versions;
- items jsonb; installments jsonb; sources jsonb; next_cursor bigint; historical boolean;
+ items jsonb; installments jsonb; sources jsonb; next_cursor bigint; historical boolean; context_sources jsonb; consistency_key text;
 BEGIN
  IF actor IS NULL THEN RAISE EXCEPTION 'PF10 actor required' USING ERRCODE='42501'; END IF;
  IF start_day IS NULL OR end_day IS NULL OR end_day-start_day NOT BETWEEN 0 AND 365 OR before_sequence IS NOT NULL AND before_sequence<1 THEN RAISE EXCEPTION 'PF10 invalid selection' USING ERRCODE='22023'; END IF;
@@ -141,6 +141,19 @@ BEGIN
  SELECT coalesce(jsonb_agg(jsonb_build_object('debtKey',d.debt_key,'title',d.title,'dueOn',d.next_due_on,'installmentToman',d.next_installment_toman) ORDER BY d.next_due_on,d.debt_key),'[]') INTO installments
   FROM public.member_debt_positions d WHERE d.version_id=hv AND d.next_due_on IS NOT NULL AND d.next_installment_toman IS NOT NULL;
  SELECT * INTO cf FROM public.member_cash_flow_versions WHERE user_id=actor AND period_start=start_day AND period_end=end_day ORDER BY version DESC LIMIT 1;
+ -- Fixed-size consistency witness over existing immutable metadata, not a ledger
+ -- or a clock. Covers corrections and CF changes in every history period, even
+ -- periods absent from this page. STABLE keeps witness and DTOs in one snapshot.
+ SELECT coalesce(jsonb_agg(jsonb_build_array(p.period_start,p.period_end,v.id) ORDER BY p.period_start,p.period_end),'[]') INTO context_sources
+ FROM (
+  SELECT s.period_start,s.period_end FROM public.member_debt_payment_links l
+   JOIN public.member_cash_flow_versions s ON s.id=l.cash_flow_version_id AND s.user_id=actor WHERE l.user_id=actor
+  UNION SELECT start_day,end_day
+ ) p LEFT JOIN LATERAL (
+  SELECT s.id FROM public.member_cash_flow_versions s WHERE s.user_id=actor AND s.period_start=p.period_start AND s.period_end=p.period_end ORDER BY s.version DESC LIMIT 1
+ ) v ON true;
+ consistency_key:=encode(sha256(convert_to(jsonb_build_array('pf10-read-consistency.v1',actor,hv,latest.id,
+  (SELECT coalesce(max(sequence),0) FROM public.member_debt_payment_links WHERE user_id=actor),context_sources)::text,'UTF8')),'hex');
  SELECT coalesce(jsonb_agg(jsonb_build_object('entryKey',e.entry_key,'amountToman',e.amount_toman,'occurredOn',e.occurred_on,'unit','IRT','note',e.note) ORDER BY e.occurred_on,e.entry_key),'[]') INTO sources
   FROM public.member_cash_flow_entries e WHERE e.version_id=cf.id AND e.kind='expense' AND e.basis='actual' AND e.amount_toman IS NOT NULL AND e.occurred_on IS NOT NULL;
  SELECT CASE WHEN count(*)>50 THEN min(sequence) FILTER(WHERE n<=50) ELSE NULL END INTO next_cursor FROM (
@@ -150,7 +163,7 @@ BEGIN
  SELECT coalesce(jsonb_agg(debt_payment_private.row_dto(l::public.member_debt_payment_links,actor) ORDER BY l.sequence DESC),'[]') INTO items FROM (
   SELECT * FROM public.member_debt_payment_links WHERE user_id=actor AND (NOT historical OR holding_version_id=hv) AND (before_sequence IS NULL OR sequence<before_sequence) ORDER BY sequence DESC LIMIT 50
  ) l;
- RETURN jsonb_build_object('contractVersion','debt-payment-read.v1','state','ready','actorId',actor,
+ RETURN jsonb_build_object('contractVersion','debt-payment-read.v1','state','ready','actorId',actor,'consistencyKey',consistency_key,
   'basis',jsonb_build_object('id',selected.id,'version',selected.version,'latestId',latest.id,'latestVersion',latest.version,'historical',historical),
   'period',jsonb_build_object('startOn',start_day,'endOn',end_day),'sourceVersion',CASE WHEN cf.id IS NULL THEN NULL ELSE jsonb_build_object('id',cf.id,'version',cf.version) END,
   'installments',installments,'sources',sources,'history',jsonb_build_object('items',items,'nextBeforeSequence',next_cursor),'writeAllowed',NOT historical);
@@ -159,7 +172,7 @@ END $$;
 -- Exposed wrappers are invokers; privileged, actor-checked code is private.
 CREATE FUNCTION public.record_member_debt_payment(p_payload jsonb,p_client_token text,p_base_version integer) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $$ SELECT debt_payment_private.record_link(p_payload,p_client_token,p_base_version); $$;
 CREATE FUNCTION public.lookup_member_debt_payment(p_client_token text) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $$ SELECT debt_payment_private.lookup_receipt(p_client_token); $$;
-CREATE FUNCTION public.load_member_debt_payments(p_holding_version_id uuid,p_start_on date,p_end_on date,p_before_sequence bigint DEFAULT NULL) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path='' AS $$ SELECT debt_payment_private.load_links(p_holding_version_id,p_start_on,p_end_on,p_before_sequence); $$;
+CREATE FUNCTION public.load_member_debt_payments(p_holding_version_id uuid,p_start_on date,p_end_on date,p_before_sequence bigint DEFAULT NULL) RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $$ SELECT debt_payment_private.load_links(p_holding_version_id,p_start_on,p_end_on,p_before_sequence); $$;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA debt_payment_private FROM PUBLIC,anon,authenticated,service_role;
 GRANT USAGE ON SCHEMA debt_payment_private TO authenticated;
 GRANT EXECUTE ON FUNCTION debt_payment_private.record_link(jsonb,text,integer),debt_payment_private.lookup_receipt(text),debt_payment_private.load_links(uuid,date,date,bigint) TO authenticated;

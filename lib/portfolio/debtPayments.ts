@@ -20,6 +20,7 @@ export interface DebtPaymentRecord {
 export interface DebtPaymentSelection { holdingVersionId: string; period: CashFlowPeriod; beforeSequence?: number }
 export interface DebtPaymentsReady {
   contractVersion: "debt-payment-read.v1"; state: "ready"; actorId: string;
+  consistencyKey: string;
   basis: { id: string; version: number; latestId: string; latestVersion: number; historical: boolean };
   period: CashFlowPeriod; sourceVersion: { id: string; version: number } | null;
   installments: { debtKey: string; title: string; dueOn: string; installmentToman: number }[];
@@ -71,7 +72,7 @@ export function validateDebtPaymentRecord(value: unknown): DebtPaymentRecord {
 }
 export function validateDebtPaymentsRead(value: unknown, selection: DebtPaymentSelection, actorId?: string): DebtPaymentsRead {
   const state = value && typeof value === "object" ? (value as { state?: unknown }).state : null;
-  const r = cashFlowObject(value, state === "unavailable" ? ["contractVersion", "state", "actorId", "holdingVersionId", "period", "reason", "writeAllowed"] : ["contractVersion", "state", "actorId", "basis", "period", "sourceVersion", "installments", "sources", "history", "writeAllowed"]);
+  const r = cashFlowObject(value, state === "unavailable" ? ["contractVersion", "state", "actorId", "holdingVersionId", "period", "reason", "writeAllowed"] : ["contractVersion", "state", "actorId", "consistencyKey", "basis", "period", "sourceVersion", "installments", "sources", "history", "writeAllowed"]);
   const actor = uuid(r.actorId), period = validateCashFlowPeriod(r.period);
   if (r.contractVersion !== "debt-payment-read.v1" || actorId !== undefined && actor !== actorId || period.startOn !== selection.period.startOn || period.endOn !== selection.period.endOn) throw Error("PF10 read context mismatch");
   if (state === "unavailable") {
@@ -80,7 +81,7 @@ export function validateDebtPaymentsRead(value: unknown, selection: DebtPaymentS
   }
   const b = cashFlowObject(r.basis, ["id", "version", "latestId", "latestVersion", "historical"]);
   const basis = { id: uuid(b.id), version: integer(b.version), latestId: uuid(b.latestId), latestVersion: integer(b.latestVersion), historical: b.historical as boolean };
-  if (state !== "ready" || basis.id !== selection.holdingVersionId || basis.latestVersion < basis.version || typeof basis.historical !== "boolean" || basis.historical !== (basis.id !== basis.latestId) || basis.historical !== (basis.version !== basis.latestVersion) || r.writeAllowed !== !basis.historical) throw Error("Invalid PF10 basis");
+  if (state !== "ready" || typeof r.consistencyKey !== "string" || !/^[a-f0-9]{64}$/.test(r.consistencyKey) || basis.id !== selection.holdingVersionId || basis.latestVersion < basis.version || typeof basis.historical !== "boolean" || basis.historical !== (basis.id !== basis.latestId) || basis.historical !== (basis.version !== basis.latestVersion) || r.writeAllowed !== !basis.historical) throw Error("Invalid PF10 basis");
   let sourceVersion: DebtPaymentsReady["sourceVersion"] = null;
   if (r.sourceVersion !== null) { const s = cashFlowObject(r.sourceVersion, ["id", "version"]); sourceVersion = { id: uuid(s.id), version: integer(s.version) }; }
   if (!Array.isArray(r.installments) || r.installments.length > 500 || !Array.isArray(r.sources) || r.sources.length > 500) throw Error("PF10 read bound exceeded");
@@ -98,7 +99,7 @@ export function validateDebtPaymentsRead(value: unknown, selection: DebtPaymentS
   if (!Array.isArray(h.items) || h.items.length > 50) throw Error("PF10 history bound exceeded");
   const items = h.items.map(validateDebtPaymentRecord), nextBeforeSequence = h.nextBeforeSequence === null ? null : integer(h.nextBeforeSequence);
   if (new Set(items.map(x => x.id)).size !== items.length || items.some((item, index) => index > 0 && item.sequence >= items[index - 1].sequence || selection.beforeSequence !== undefined && item.sequence >= selection.beforeSequence || item.basisCurrent !== (item.payload.holdingVersionId === basis.latestId) || basis.historical && item.payload.holdingVersionId !== basis.id) || nextBeforeSequence !== null && (items.length !== 50 || nextBeforeSequence !== items.at(-1)?.sequence)) throw Error("Invalid PF10 history cursor/context");
-  return { contractVersion: "debt-payment-read.v1", state: "ready", actorId: actor, basis, period, sourceVersion, installments, sources, history: { items, nextBeforeSequence }, writeAllowed: !basis.historical };
+  return { contractVersion: "debt-payment-read.v1", state: "ready", actorId: actor, consistencyKey: r.consistencyKey, basis, period, sourceVersion, installments, sources, history: { items, nextBeforeSequence }, writeAllowed: !basis.historical };
 }
 export function declaredInstallmentTotal(items: readonly DebtPaymentRecord[], target: { holdingVersionId: string; debtKey: string; dueOn: string }): number | null {
   const selected = items.filter(item => item.latestForPayment && item.basisCurrent && item.sourceState === "current" && item.payload.holdingVersionId === target.holdingVersionId && item.payload.debtKey === target.debtKey && item.payload.dueOn === target.dueOn);

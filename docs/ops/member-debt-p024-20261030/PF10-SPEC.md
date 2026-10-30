@@ -18,6 +18,14 @@ The new API uses the existing native session, explicit expected actor, bounded r
 
 ## Observable completion
 
+### Read review: freshness and page consistency
+
+Each successful ready DTO now requires a 64-hex `consistencyKey`. It hashes only existing owner metadata: actor/selected financial basis/latest financial UUID, the owner's maximum append-only link sequence, and latest CF UUIDs for every period referenced anywhere in that owner's link history plus the selected expense period. It is independent of the pagination cursor. Corrections change the link high-water mark; CF revisions in other referenced periods change the source vector even if the selected period and financial UUIDs stay unchanged. No new ledger, clock assumption, stored digest or CF v1 field is introduced. Missing/malformed keys fail closed.
+
+The private reader and public invoker reader wrapper are `STABLE`, so DTO flags and witness use one calling-query snapshot. This follows [PostgreSQL function volatility/snapshot semantics](https://www.postgresql.org/docs/current/xfunc-volatility.html). The witness describes that read; it does not promise the database cannot change afterward. The writer retains its existing authoritative locks/CAS validation.
+
+Page merging requires identical witness and financial/selected-source context. A mismatch preserves the prior snapshot, rejects the new page, closes the writer/current aggregate, disables further pagination and requests a restart from page 1. Any read in progress or failed/timed out also preserves draft/history but marks current status unconfirmed; pinned amount/date remain visible as historical facts, current row flags and numeric current total are suppressed until a successful reload. The actual async workspace tests cover successful read→network failure/real deadline, both kinds of inter-page context change, and successful unchanged-context merge. Native tests separately prove the witness reacts to actual corrections and another history period's CF revision while selected IDs remain unchanged.
+
 - Existing cash-flow expense remains the only money source; old/new readers and absent schema are tested separately. Reminder stays in DebtSchedule from a known due date, independent of declaration/paid status, without a new channel or scheduler.
 - Core and isolated native tests cover two partial expense links, duplicate active source prevention, over-amount provenance without settlement, null split/reference, exact retry/response loss/readback, correction history, historical basis lock, foreign/admin denial, stale/removed CF source, and unchanged financial/CF fingerprints.
 - The existing holdings page provides a labeled declaration/history section and a link to the existing cash-flow editor. Preview/source/CI, isolated SQL actor seams, real Auth/destination behavior and Arash acceptance are separate evidence. No main merge or target installation is implied by passing tests.

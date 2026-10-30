@@ -14,7 +14,7 @@ const period = { startOn: "2026-10-01", endOn: "2026-10-31" };
 const payload: DebtPaymentPayload = { contractVersion: 1, paymentKey: P, holdingVersionId: H, debtKey: "debt", dueOn: "2026-10-25", cashFlowVersionId: C, entryKey: "partial-one", reference: null };
 const request: DebtPaymentRequest = { contractVersion: "debt-payment-request.v1", expectedActorId: A, clientToken: "synthetic-pf10", baseVersion: 0, period, payload };
 const receipt: DebtPaymentReceipt = { contractVersion: "debt-payment-write.v1", actorId: A, clientToken: request.clientToken, id: R, sequence: 1, version: 1, canonicalContentHash: "a".repeat(64), payload, period, reused: false };
-const ready: DebtPaymentsReady = { contractVersion: "debt-payment-read.v1", state: "ready", actorId: A, basis: { id: H, version: 2, latestId: H, latestVersion: 2, historical: false }, period, sourceVersion: { id: C, version: 1 }, installments: [{ debtKey: "debt", title: "قسط مصنوعی", dueOn: "2026-10-25", installmentToman: 10000 }], sources: [{ entryKey: "partial-one", amountToman: 3000, occurredOn: "2026-10-25", unit: "IRT", note: null }], history: { items: [], nextBeforeSequence: null }, writeAllowed: true };
+const ready: DebtPaymentsReady = { contractVersion: "debt-payment-read.v1", state: "ready", actorId: A, consistencyKey: "a".repeat(64), basis: { id: H, version: 2, latestId: H, latestVersion: 2, historical: false }, period, sourceVersion: { id: C, version: 1 }, installments: [{ debtKey: "debt", title: "قسط مصنوعی", dueOn: "2026-10-25", installmentToman: 10000 }], sources: [{ entryKey: "partial-one", amountToman: 3000, occurredOn: "2026-10-25", unit: "IRT", note: null }], history: { items: [], nextBeforeSequence: null }, writeAllowed: true };
 const selection = { holdingVersionId: H, period };
 const post = (body: unknown = request, origin: string | null = "http://localhost") => new Request("http://localhost/api/personal-finance/debt-payments", { method: "POST", headers: { ...(origin === null ? {} : { origin }), "content-type": "application/json" }, body: JSON.stringify(body) });
 function fixture(options: { actor?: string | null; authError?: unknown; missing?: string; read?: unknown; prior?: unknown } = {}) {
@@ -106,7 +106,7 @@ function mountPayments(transport: typeof fetch, owner: string = A) {
     useEffect(effect: () => void | (() => void), deps: unknown[]) { const key = index++, old = slots[key] as { deps: unknown[]; cleanup?: () => void } | undefined; if (!old || deps.some((v, i) => !Object.is(v, old.deps[i]))) effects.push(() => { old?.cleanup?.(); const cleanup = effect(); slots[key] = { deps, cleanup }; }); },
   };
   const filename = resolve("components/portfolio/debt-payments/DebtPaymentsWorkspace.tsx"), local = createRequire(filename), mod = { exports: {} as { default: (props: unknown) => unknown } };
-  const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
+  const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
   new Function("require", "module", "exports", "window", code)((name: string) => {
     if (name === "react") return hooks;
     if (name === "@/lib/supabase/client") return { createClient: () => ({ auth: { onAuthStateChange(callback: typeof authChanged) { authChanged = callback; return { data: { subscription: { unsubscribe() {} } } }; }, async getUser() { return { data: { user: { id: owner } }, error: null }; } } }) };
@@ -152,4 +152,56 @@ test("PF10 actual workspace absence and historical basis close controls; an abse
     return Response.json(String(url).includes("clientToken=") ? { contractVersion: "debt-payment-lookup.v1", actorId: A, status: "unknown", receipt: null } : ready);
   }); await ui.flush(); ui.change("select", item => nodeText(item).includes("انتخاب قسط"), "debt"); ui.change("select", item => nodeText(item).includes("انتخاب هزینه"), "partial-one"); await ui.submit(); await ui.click("بازخوانی رسید همین ثبت"); assert.equal(posts, 1); assert.equal(ui.beforeUnload(), true);
   ui.authChanged(null); assert.equal(ui.elements().some(item => item.type === "form"), false);
+});
+
+const historyRecord = (sequence: number, reference: string | null = null): DebtPaymentRecord => ({ id: `00000000-0000-4000-8000-${sequence.toString(16).padStart(12, "0")}`, sequence, version: sequence, createdAt: "2026-10-30T08:00:00Z", payload: { ...payload, reference }, period, amountToman: 3000, occurredOn: "2026-10-25", unit: "IRT", sourceState: "current", latestForPayment: true, basisCurrent: true, allocation: null });
+const allParagraphs = (ui: ReturnType<typeof mountPayments>) => ui.elements().filter(item => item.type === "p").map(nodeText).join("\n");
+for (const failure of ["network", "timeout"]) test(`PF10 actual async workspace success→${failure} preserves snapshot/draft but never confirms stale current labels or total`, async t => {
+  const loaded = { ...ready, history: { items: [historyRecord(1)], nextBeforeSequence: null } };
+  let reads = 0, posts = 0;
+  const ui = mountPayments(async (_url, options) => {
+    if (options?.method === "POST") { posts++; throw Error("writer should be closed"); }
+    reads++;
+    if (reads === 2) { if (failure === "network") throw Error("Synthetic read failure"); return new Promise<Response>(() => {}); }
+    return Response.json(loaded);
+  });
+  await ui.flush(); ui.change("select", item => nodeText(item).includes("انتخاب قسط"), "debt"); ui.change("select", item => nodeText(item).includes("انتخاب هزینه"), "partial-one"); ui.change("input", item => item.props.maxLength === 160, "پیش‌نویس محفوظ");
+  assert.match(allParagraphs(ui), /نسخهٔ هزینه جاری است/); assert.match(allParagraphs(ui), /جمع اعلام‌های جاریِ خوانده‌شده/);
+  if (failure === "timeout") t.mock.timers.enable({ apis: ["setTimeout"] });
+  await ui.click("بازخوانی مبنا و سابقه");
+  // An unfinished read already invalidates a current-state presentation.
+  assert.doesNotMatch(allParagraphs(ui), /نسخهٔ هزینه جاری است|جمع اعلام‌های جاریِ خوانده‌شده/);
+  if (failure === "timeout") { assert.match(ui.text(), /در حال خواندن/); t.mock.timers.tick(10_000); await ui.flush(); t.mock.timers.reset(); }
+  assert.match(allParagraphs(ui), /خواندن تازه تأیید نشده/); assert.match(allParagraphs(ui), /جمع جاری این قسط تأیید نشده/);
+  assert.ok(ui.elements().filter(item => ["input", "select"].includes(String(item.type)) && item.props.type !== "date").every(item => item.props.disabled));
+  assert.equal(ui.find("input", item => item.props.maxLength === 160).props.value, "پیش‌نویس محفوظ"); assert.equal(ui.find("select", item => nodeText(item).includes("انتخاب هزینه")).props.value, "partial-one");
+  assert.match(allParagraphs(ui), /هزینهٔ مبنا:/); assert.equal(ui.beforeUnload(), true); await ui.submit(); assert.equal(posts, 0);
+  await ui.click("بازخوانی مبنا و سابقه"); assert.match(allParagraphs(ui), /نسخهٔ هزینه جاری است/); assert.match(allParagraphs(ui), /جمع اعلام‌های جاریِ خوانده‌شده/); assert.equal(ui.find("input", item => item.props.maxLength === 160).props.value, "پیش‌نویس محفوظ");
+});
+
+for (const change of ["payment correction", "cash-flow revision in another history period"]) test(`PF10 actual workspace page1→${change}→page2 refuses mixed coverage and requires restart`, async () => {
+  const firstPage = { ...ready, history: { items: Array.from({ length: 50 }, (_, i) => ({ ...historyRecord(100 - i), latestForPayment: i === 0 })), nextBeforeSequence: 51 } };
+  if (change === "cash-flow revision in another history period") firstPage.history.items[0] = { ...firstPage.history.items[0], period: { startOn: "2026-09-01", endOn: "2026-09-30" }, occurredOn: "2026-09-25", payload: { ...firstPage.history.items[0].payload, cashFlowVersionId: "77777777-7777-4777-8777-777777777777" } };
+  const nextPage = { ...ready, consistencyKey: "b".repeat(64), history: { items: [{ ...historyRecord(50, "صفحهٔ دوم تازه"), latestForPayment: false }], nextBeforeSequence: null } };
+  // Financial and selected CF IDs intentionally stay unchanged. Native tests
+  // separately prove that real corrections/other-period CF writes change key.
+  assert.equal(firstPage.basis.latestId, nextPage.basis.latestId); assert.equal(firstPage.sourceVersion?.id, nextPage.sourceVersion?.id);
+  let contextChanged = false, restarted = false;
+  const ui = mountPayments(async url => Response.json(String(url).includes("beforeSequence=") ? nextPage : contextChanged ? (restarted = true, { ...firstPage, consistencyKey: nextPage.consistencyKey }) : firstPage));
+  await ui.flush(); contextChanged = true; await ui.click("خواندن سابقهٔ قدیمی‌تر");
+  assert.match(ui.text(), /فهرست را از ابتدا بازخوانی کنید/); assert.doesNotMatch(allParagraphs(ui), /صفحهٔ دوم تازه|نسخهٔ هزینه جاری است/);
+  assert.equal(ui.elements().filter(item => item.type === "li").length, 50);
+  assert.ok(ui.elements().filter(item => item.type === "select").every(item => item.props.disabled));
+  assert.equal(ui.find("button", item => nodeText(item).includes("خواندن سابقهٔ قدیمی‌تر")).props.disabled, true);
+  await ui.click("بازخوانی مبنا و سابقه"); assert.equal(restarted, true); assert.match(allParagraphs(ui), /نسخهٔ هزینه جاری است/); assert.equal(ui.find("button", item => nodeText(item).includes("خواندن سابقهٔ قدیمی‌تر")).props.disabled, false);
+});
+test("PF10 actual workspace merges a later page only with matching consistency witness", async () => {
+  const firstPage = { ...ready, history: { items: Array.from({ length: 50 }, (_, i) => ({ ...historyRecord(100 - i), latestForPayment: i === 0 })), nextBeforeSequence: 51 } };
+  const ui = mountPayments(async url => Response.json(String(url).includes("beforeSequence=") ? { ...ready, history: { items: [{ ...historyRecord(50, "صفحهٔ دوم سازگار"), latestForPayment: false }], nextBeforeSequence: null } } : firstPage));
+  await ui.flush(); await ui.click("خواندن سابقهٔ قدیمی‌تر"); assert.equal(ui.elements().filter(item => item.type === "li").length, 51, ui.text()); assert.match(allParagraphs(ui), /صفحهٔ دوم سازگار/); assert.doesNotMatch(ui.text(), /از ابتدا بازخوانی/);
+});
+test("PF10 missing or malformed consistency witness fails closed before workspace or writer", async () => {
+  for (const consistencyKey of [undefined, null, "", "a".repeat(63), "G".repeat(64)]) {
+    const result = await readDebtPayments(selection, { actorId: A, transport: async () => Response.json({ ...ready, consistencyKey }) }); assert.equal(result.status, "error");
+  }
 });
