@@ -3,16 +3,19 @@ import assert from 'node:assert/strict';
 import {randomUUID,createHash} from 'node:crypto';
 import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
 import {runNativeAuthProfile,origin} from './native-auth-runtime.mjs';
 const endpoint='/api/admin/intelligence/workbooks';
 const check=(value,code)=>{if(!value)throw Error(code);};
 export function workbookRequestURL(path){const url=new URL(path,origin);check(url.origin===origin&&url.pathname===endpoint&&!url.username&&!url.password,'p09_native_workbook_destination');return url.href;}
 export function exactWorkbookWrite(body,intentId){check(typeof body==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(intentId),'p09_native_exact_intent');return {method:'POST',headers:{'Content-Type':'application/json','x-workbook-save-intent':intentId},body};}
+export function workbookHistoryPanel(){return createRequire(import.meta.url)('../../components/admin/ResearchHistoryPanel.tsx').default;}
 async function run(){await runNativeAuthProfile('p09',async runtime=>{
  const {sql,transport,write,pass,users,newSession,anon,service}=runtime;
  const {p07FixtureWorkbook}=await import('../../lib/intelligence/p07-workflow-fixture.ts');
  const {mountComponent}=await import('../../components/admin/p07-component-test-host.ts');
- const {default:ResearchHistoryPanel}=await import('../../components/admin/ResearchHistoryPanel.tsx');
+ // Match the existing hook host's CJS module identity; tsx's ESM bridge wraps default.
+ const ResearchHistoryPanel=workbookHistoryPanel();
  const {projectWorkbookHistory}=await import('../../lib/intelligence/research-history-metadata.ts');
  const calls=[];let sequence=0,loseNextSave=false,lostAttempt;
  const http=async(actor,path,init={})=>{

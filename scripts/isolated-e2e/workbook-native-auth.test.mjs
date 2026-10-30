@@ -2,9 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
 import {nativeAuthProfile,allowedProfileURL,verifyEnvironment,origin} from './native-auth-runtime.mjs';
 import {gatewayProfile} from './native-auth-gateway.mjs';
-import {workbookRequestURL,exactWorkbookWrite} from './workbook-native-auth.mjs';
+import {workbookRequestURL,exactWorkbookWrite,workbookHistoryPanel} from './workbook-native-auth.mjs';
+
+test('P09 uses the real panel function from the existing hook host module cache',()=>{
+ const hostRequire=createRequire(new URL('../../components/admin/p07-component-test-host.ts',import.meta.url));
+ assert.equal(typeof workbookHistoryPanel(),'function');assert.equal(workbookHistoryPanel(),hostRequire('./ResearchHistoryPanel').default);
+});
 
 test('P09 reuses the exact runtime and gateway blobs accepted by PR353, without PF10 product ancestry',()=>{
  for(const [name,expected] of [['native-auth-runtime.mjs','da913282f2bb8119a553e6f77807ee30f7d1b301'],['native-auth-gateway.mjs','1f60ca9468a12317301af57ecafa51d2b8c41853']]){
