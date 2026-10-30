@@ -8,5 +8,10 @@
       "path": "/api/cron/telegram-sync",
       "schedule": "0 3 * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "codex/codal-stored-reader-v04-20261031": false
+    }
+  }
 }
