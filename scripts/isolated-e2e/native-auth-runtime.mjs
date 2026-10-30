@@ -6,6 +6,7 @@ import {mkdirSync,mkdtempSync,readFileSync,writeFileSync,openSync,writeSync,fsyn
 import {resolve,dirname,posix} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
+import {browserRequestAllowed} from './native-auth-gateway.mjs';
 const here=dirname(fileURLToPath(import.meta.url)),root=resolve(here,'../..'),label='pf10.native-lab';
 export const origin='http://localhost:32189';
 // Three START-A identities; root approved the explicit official v14.17 artifact
@@ -18,7 +19,22 @@ export function verifyContainer(s,c,role){check(c.Config.Labels?.[label]===s.id&
 export function verifyIngress(s,c){check(c.Config.Labels?.[label]===s.id&&c.State.Running&&c.Image===s.imageIds.node&&!c.Mounts.some(m=>m.Type==='bind'),'pf10_native_ingress_identity');check(Object.keys(c.NetworkSettings.Networks).sort().join()===[s.network,s.edge].sort().join(),'pf10_native_ingress_network');const ports=c.HostConfig.PortBindings;check(Object.keys(ports).length===1&&ports['32190/tcp']?.length===1&&ports['32190/tcp'][0].HostIp==='127.0.0.1'&&ports['32190/tcp'][0].HostPort==='32190','pf10_native_ingress_exposure');}
 export function verifyRestArtifact(details,index,version){check(details.Os==='linux'&&details.Architecture==='amd64'&&details.Id===restArtifact.config,'pf10_native_rest_platform_config');check(index.manifests?.some(m=>m.digest===restArtifact.manifest&&m.platform?.os==='linux'&&m.platform?.architecture==='amd64'),'pf10_native_rest_platform_manifest');check(/^PostgREST v?14\.17(?:[ .(-]|$)/.test(version),'pf10_native_rest_version');}
 export function verifyDatabaseMountInfo(text){check(text.split('\n').some(line=>{const [mount,filesystem]=line.split(' - ');return mount?.split(' ')[4]==='/var/lib/postgresql/data'&&filesystem?.split(' ')[0]==='tmpfs';}),'pf10_native_database_kernel_not_tmpfs');}
-export function allowedProfileURL(profile,value){const config=nativeAuthProfile(profile);const u=new URL(value);check(u.origin===origin&&u.username===''&&u.password===''&&(u.pathname.startsWith('/auth/v1/')||u.pathname.startsWith('/rest/v1/')||[config.identityPath,...config.routes].includes(u.pathname)),'pf10_native_http_destination');return u.href;}
+export function allowedProfileURL(profile,value,browserMode=false,method='GET'){const config=nativeAuthProfile(profile);check(typeof browserMode==='boolean'&&(!browserMode||profile==='p09'),'p09_browser_profile_mode');const u=new URL(value);check(u.origin===origin&&u.username===''&&u.password===''&&(u.pathname.startsWith('/auth/v1/')||u.pathname.startsWith('/rest/v1/')||[config.identityPath,...config.routes].includes(u.pathname)||(browserMode&&browserRequestAllowed(value,method))),'pf10_native_http_destination');return u.href;}
+
+export const browserChecks=Object.freeze(['browser-preflight-before-provision','real-next-workbook-page','save-response-real-tab-context-close','fresh-sdk-session-get-only-reopen','real-reload-get-only','private-storage-cache-url-absent','owned-browser-cleanup']);
+export function nativeBrowserMode(profile,options){
+ if(options===undefined)return false;
+ check(options&&typeof options==='object'&&!Array.isArray(options)&&Object.keys(options).every(x=>x==='browserMode')&&typeof options.browserMode==='boolean','p09_browser_options');
+ check(!options.browserMode||profile==='p09','p09_browser_profile_mode');return options.browserMode;
+}
+export function validateBrowserReceipt(value){
+ check(value&&value.status==='PASS'&&value.driverVersion==='1.64.1'&&Array.isArray(value.checks)&&value.checks.length===browserChecks.length,'p09_browser_receipt_missing');
+ check(browserChecks.every(name=>value.checks.filter(x=>x.name===name&&x.status==='PASS').length===1),'p09_browser_checks_incomplete');
+ check(value.executable==='/opt/google/chrome/chrome'&&/^Google Chrome [0-9.]+(?: .*)?$/.test(value.chromeVersion)&&/^[a-f0-9]{64}$/.test(value.chromeSha256),'p09_browser_receipt_identity');
+ check(value.pageClosed===true&&value.contextClosed===true&&value.freshLoginVerified===true&&value.reloadGetOnly===true&&value.automaticWorkbookPosts===0&&value.privateStorageHits===0&&value.privateUrlHits===0&&value.cacheAuditComplete===true,'p09_browser_receipt_flow');
+ check(value.cleanup?.processStopped===true&&value.cleanup?.contextsClosed===true&&value.cleanup?.ownedTempRemoved===true,'p09_browser_cleanup_incomplete');
+ return {status:'PASS',driverVersion:value.driverVersion,executable:value.executable,chromeVersion:value.chromeVersion,chromeSha256:value.chromeSha256,checks:browserChecks.map(name=>({name,status:'PASS'})),pageClosed:true,contextClosed:true,freshLoginVerified:true,reloadGetOnly:true,automaticWorkbookPosts:0,privateStorageHits:0,privateUrlHits:0,cacheAuditComplete:true,cleanup:{processStopped:true,contextsClosed:true,ownedTempRemoved:true}};
+}
 
 const commonBootstrap=['sql/test/supabase_bootstrap.sql','sql/test/profile_explicit_grants.sql'];
 const pf10Bootstrap=[...commonBootstrap,'sql/test/portfolio_precondition.sql','sql/phase32_member_holdings.sql','supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql','supabase/migrations/20261019215549_personal_cash_flow_versions.sql'];
@@ -32,8 +48,8 @@ export function nativeAuthProfile(profile){check(typeof profile==='string'&&Obje
 
 const quote=x=>x===null?'NULL':typeof x==='number'?String(x):"'"+String(x).replaceAll("'","''")+"'";
 function bootstrapToken(secret,role){check(['anon','service_role'].includes(role),'pf10_native_member_token_must_come_from_auth');const body=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url')+'.'+Buffer.from(JSON.stringify({role,iss:'supabase',iat:Math.floor(Date.now()/1000),exp:Math.floor(Date.now()/1000)+3600})).toString('base64url');return body+'.'+createHmac('sha256',secret).update(body).digest('base64url');}
-export async function runNativeAuthProfile(profile,exercise){
- const config=nativeAuthProfile(profile);check(typeof exercise==='function','pf10_native_scenario_required');
+export async function runNativeAuthProfile(profile,exercise,options){
+ const config=nativeAuthProfile(profile),browserMode=nativeBrowserMode(profile,options);check(typeof exercise==='function','pf10_native_scenario_required');
  verifyEnvironment();const git=args=>execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:120000}).trim();
  const checkoutSha=git(['rev-parse','HEAD']),sha=process.env[config.sourceShaEnv]??checkoutSha;check(/^[a-f0-9]{40}$/.test(sha),'pf10_native_source_sha');check(git(['status','--porcelain','--untracked-files=no'])==='','pf10_native_dirty_source');
  try{git(['cat-file','-e',sha+'^{commit}']);}catch{check(git(['remote','get-url','origin']).replace(/\.git$/,'')==='https://github.com/safariarash7777-source/portfolio-platform','pf10_native_source_remote');git(['fetch','--no-tags','--depth=1','origin',sha]);}
@@ -50,10 +66,10 @@ export async function runNativeAuthProfile(profile,exercise){
  const envFile=(role,values)=>{const path=resolve(privateDir,role+'.env');writeFileSync(path,Object.entries(values).map(([k,v])=>`${k}=${v}`).join('\n'),{mode:0o600});return path;};
  const start=(role,values,extra=[])=>{docker(['run','-d','--pull','never','--name',s[role],'--label',`${label}=${id}`,'--network',s.network,'--network-alias',role,'--log-driver','none','--env-file',envFile(role,values),...extra,s.imageIds[role]]);s.resources.push({type:'container',name:s[role]});save();};
  const wait=async(fn,code,attempts=90)=>{let lastCode='not_ready';for(let i=0;i<attempts;i++){try{if(await fn())return;}catch(error){lastCode=/^pf10_native_[a-z0-9_]+$/.test(error.message)?error.message:'read_failed';}await new Promise(r=>setTimeout(r,1000));}throw Error(code+'_'+lastCode);};
- const transport=(url,options={})=>fetch(allowedProfileURL(profile,typeof url==='string'?url:url.url??String(url)),{...options,redirect:'error',signal:options.signal??AbortSignal.timeout(15000)});
+ const transport=(url,options={})=>fetch(allowedProfileURL(profile,typeof url==='string'?url:url.url??String(url),browserMode,options.method??'GET'),{...options,redirect:'error',signal:options.signal??AbortSignal.timeout(15000)});
  const post=async(path,body,headers={})=>{write('intent-'+String(++postCount).padStart(3,'0')+'.json',{path,body,sha},true);try{return await transport(origin+path,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(body)});}catch{throw Error('pf10_native_write_outcome_unknown_stop_no_replay');}};
  const pass=(name,evidence={})=>{const item={name,status:'PASS',...evidence};results.push(item);write('results.json',{sha,results});console.log(config.logPrefix+'_NATIVE_CHECK '+JSON.stringify(item));};
- let cleanup='NOT_STARTED';
+ let cleanup='NOT_STARTED',browserReceipt;
  try{
   // Immutable identities only: root-approved official REST mapping is explicit.
   // No paid service, tool installation, tag fallback or real credentials.
@@ -83,6 +99,7 @@ export async function runNativeAuthProfile(profile,exercise){
   const anon=bootstrapToken(s.secret,'anon'),service=bootstrapToken(s.secret,'service_role');s.anon=anon;s.service=service;save();
   const log=openSync(resolve(privateDir,'app.log'),'a',0o600),env=Object.fromEntries(Object.entries(process.env).filter(([key])=>['PATH','TMPDIR','LANG'].includes(key)));
   Object.assign(env,{NEXT_PUBLIC_SUPABASE_URL:origin,NEXT_PUBLIC_SUPABASE_ANON_KEY:anon,NEXT_PUBLIC_APP_URL:origin,NEXT_TELEMETRY_DISABLED:'1',NATIVE_AUTH_PROFILE:profile,NATIVE_AUTH_ORIGIN:origin,NATIVE_AUTH_SHA:sha,NATIVE_AUTH_RUN:id});
+  if(browserMode)env.NATIVE_AUTH_BROWSER_MODE='true';
   host=spawn(process.execPath,['gateway.mjs'],{cwd:context,env,stdio:['ignore',log,log]});closeSync(log);host.on('error',()=>{});
   const identity=async()=>{const r=await transport(origin+config.identityPath);const body=await r.json();check(body.runId===id&&body.sha===sha&&body.profile===profile,'pf10_native_host_identity');return true;};
   await wait(identity,'pf10_native_app_readiness',120);
@@ -99,7 +116,8 @@ export async function runNativeAuthProfile(profile,exercise){
   for(const actor of Object.keys(config.actors)){const u={email:`${actor}-${id}@example.invalid`,password:randomBytes(24).toString('hex')};const r=await post('/auth/v1/admin/users',{...u,email_confirm:true,app_metadata:{acceptance_run:id}},{Authorization:'Bearer '+service,apikey:anon});check(r.status===200||r.status===201,'pf10_native_auth_create');const value=await r.json();check(/^[a-f0-9-]{36}$/.test(value.id),'pf10_native_auth_new_uuid');u.id=value.id;users[actor]=u;sql(`INSERT INTO public.profiles(id,role) VALUES(${quote(u.id)},${quote(config.actors[actor])});`);u.session=await newSession(actor);}
   write('users.json',users,true);pass('three-fresh-auth-users-and-sdk-getuser',{members:Object.values(config.actors).filter(x=>x==='user').length,admin:Object.values(config.actors).filter(x=>x==='admin').length,memberTokenSource:'GoTrue password grant; no hand-signed member sub'});
   const api=async(actor,path,body)=>{const headers={Cookie:users[actor].session.cookie,Origin:origin};const r=body===undefined?await transport(origin+path,{headers}):await post(path,body,headers);return {status:r.status,value:await r.json(),cache:r.headers.get('cache-control')};};
-  await exercise({sha,id,sql,apply,wait,transport,post,write,pass,users,newSession,api,anon,service,origin});
+  const outcome=await exercise({sha,id,sql,apply,wait,transport,post,write,pass,users,newSession,api,anon,service,origin});
+  if(browserMode){browserReceipt=validateBrowserReceipt(outcome?.browser);write('browser-receipt.json',{sha,...browserReceipt});}
   await attest();cleanup='PENDING';
  }finally{
   if(host&&host.exitCode===null){host.kill('SIGTERM');await new Promise(r=>{const timer=setTimeout(()=>{host.kill('SIGKILL');r();},8000);host.once('exit',()=>{clearTimeout(timer);r();});});}
@@ -107,5 +125,5 @@ export async function runNativeAuthProfile(profile,exercise){
   cleanup='REMOVED_OWNED_RESOURCES';write('cleanup.json',{runId:id,sha,cleanup});console.log(config.logPrefix+'_NATIVE_CLEANUP '+JSON.stringify({sha,runId:id,status:cleanup,resources:s.resources.length}));
  }
  check(results.length===config.phases&&cleanup==='REMOVED_OWNED_RESOURCES','pf10_native_incomplete_acceptance');
- console.log(config.logPrefix+'_NATIVE_AUTH '+JSON.stringify({sha,status:'PASS',scenarios:results.length,cleanup,memberAuth:'real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes',schema:'candidate in owned tmpfs only',targetInstall:'NOT_APPLIED',browser:'NOT_RUN',arashAcceptance:'UNOBSERVED',privateArtifactsUploaded:false}));
+ console.log(config.logPrefix+'_NATIVE_AUTH '+JSON.stringify({sha,status:'PASS',scenarios:results.length,cleanup,memberAuth:'real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes',schema:'candidate in owned tmpfs only',targetInstall:'NOT_APPLIED',browser:browserReceipt?.status??'NOT_RUN',...(browserReceipt?{browserReceipt}:{}),arashAcceptance:'UNOBSERVED',privateArtifactsUploaded:false}));
 }
