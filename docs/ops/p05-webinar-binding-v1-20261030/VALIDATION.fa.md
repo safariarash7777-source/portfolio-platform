@@ -4,7 +4,7 @@
 
 ## مشاهده‌شده در محیط محلی
 
-- `node --test lib/zarinpal.test.mjs`: ۲۳۶ آزمون، صفر خطا؛ آزمون DTO و رگرسیون‌های قبلی generic از همین entry موجود import می‌شوند. provider/DB/پیام‌ها ساختگی‌اند؛ helper، routeها و مسیر مثبت صفحهٔ واقعی بارگذاری می‌شوند. خطای احراز هویت به مهمان یا مجوز پرداخت تبدیل نمی‌شود. guard واقعی thin SQL test نیز در VM با Windows، مقصد remote و env غیرمستقیم آزموده شد؛ پیش از transport متوقف شدند. این آزمون SQL را اجرا نمی‌کند.
+- `node --test lib/zarinpal.test.mjs`: ۲۳۷ آزمون آفلاین؛ آزمون DTO و رگرسیون‌های قبلی generic از همین entry موجود import می‌شوند. provider/DB/پیام‌ها ساختگی‌اند؛ helper، routeها و مسیر مثبت صفحهٔ واقعی بارگذاری می‌شوند. خطای احراز هویت به مهمان یا مجوز پرداخت تبدیل نمی‌شود. guard واقعی thin SQL test نیز در VM با Windows، مقصد remote و env غیرمستقیم آزموده شد؛ پیش از transport متوقف شدند. این آزمون SQL را اجرا نمی‌کند.
 - typecheck و lint هشت فایل TypeScript/TSX موفق‌اند؛ رجیستری آزمون موجود نیز دو آزمون موفق دارد.
 - اجرای کامل lint در checkout محلی به ۱۴ خطا در artifactهای نگهداری‌شدهٔ `.next` آزمایشگاه قدیمی رسید؛ هیچ‌کدام tracked نیستند. همان lint با استثنای صرفاً آن پوشهٔ محلی موفق شد؛ artifactها و تنظیم CI/ESLint تغییر نکردند. CI تازه، اسکریپت اصلی بدون این استثنا را اجرا می‌کند.
 - build واقعی Next15 با env ساختگی و جلوگیری از HTTP/fetch بیرونی موفق شد؛ ۳۹ صفحه تولید شدند. هیچ کلید واقعی یا .env برای build مصرف نشد؛ این build شاهد رفتار مقصد نیست.
@@ -16,6 +16,8 @@
 بازبینی مستقل روی 57ef سه شکاف یافت؛ در candidate بعدی اصلاح شدند و پذیرش SQL همچنان جداست: منع revival در خود guard، اتصال register/UI به قرارداد نسخه‌دار و intent ثابت، و جداسازی حقیقت وجه legacy از اعتبار خدمت. نامعلوم‌بودن ACK در مسیر واقعی client→register→payment، reload بدون درخواست دوم، حفظ free/old-schema، query جعلی موفقیت، رسید RLS مالک و پاک‌شدن لینک ادامه پس از شکست خواندن آزموده شدند. آزمون‌های عمومی قدیمی حذف نشدند؛ mock canonical با ref/time و committed failure برای بازخوانی کامل شد.
 
 اولین اجرای Linux روی 37206fa، CI41076714142، پیش از candidate در setup به نبود public.portfolios رسید؛ هر ده case با hookFailed متوقف شدند، نه اینکه منطق ده case اجرا شده باشد. وابستگی با فایل واقعی `sql/test/portfolio_precondition.sql` پیش از archive versioning تکمیل شد؛ هیچ جدول/guard تقلیدی ساخته یا فایل واقعی حذف نشد. شاهد اجرای اول محفوظ است؛ نتیجهٔ آن به منبع اصلاحی منتقل نمی‌شود و CI تازه لازم است.
+
+اجرای c432127 در CI41077652980 واقعاً candidate را روی PG16.15 اجرا کرد: پنج case موفق، پنج case در attach با محدودیت repetition در regex PostgreSQL ناموفق شدند. طول قرارداد کم نشد: بررسی SQL به char_length بین ۱ و ۲۵۶ و charset مستقل با collation C تغییر کرد؛ TS نیز newline/space را بدون trim رد می‌کند. دو case واقعی PG برای ۱/۲۵۵/۲۵۶ موفق و empty/۲۵۷/space/newline/nonASCII ناموفق با gate/session/claim معتبر افزوده شد. marker پاک‌سازی فقط پس از DROP متعلق به اجرا و count=0، با SHA checkout بدون راز ثبت می‌شود. نتیجهٔ اجرای جدید باید مستقل خوانده شود؛ parser/VM جای این گیت نیستند.
 
 ## گیت PG و Auth/API — هنوز اجرا نشده
 

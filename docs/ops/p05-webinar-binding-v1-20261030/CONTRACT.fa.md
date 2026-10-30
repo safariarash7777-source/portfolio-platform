@@ -15,6 +15,7 @@
 - `prepare_webinar_payment`: فقط نشست عضو؛ ورودی registration و intent؛ مبلغ/عضو/هدف از مشتری گرفته نمی‌شود. یک intent برای هر ثبت‌نام؛ اختلاف کلید، intent تازه یا تکرار charge نمی‌سازد.
 - `claim_webinar_payment_request`: فقط سرور؛ انتقال یک‌باره prepared→claimed پیش از تماس provider. فقط ACK قطعیِ برنده مجوز یک درخواست می‌دهد. ACK مبهم/خطای provider در claimed می‌ماند؛ retry خودکار یا intent تازه ممنوع است.
 - `attach_webinar_authority`: فقط سرور، یک‌باره claimed→attached؛ همان authority بی‌اثر، authority متفاوت conflict؛ بازخوانی مستقل پیش از تحویل URL.
+- authority در SQL/TS دقیقاً ۱ تا ۲۵۶ نویسه از ASCII حروف/رقم/underscore/hyphen است؛ whitespace/newline/nonASCII بدون نرمال‌سازی رد می‌شوند. طول در SQL مستقل از regex و collation charset صریح C است؛ سقف قرارداد به خاطر محدودیت موتور regex کاهش داده نمی‌شود.
 - `settle_webinar_payment`: فقط سرور پس از verify قطعی؛ بازاستفاده از verify_payment/fail_payment موجود؛ بازخوانی مستقل پس از یک تلاش ثبت، بدون replay نوشتن پس از ACK مبهم.
 
 قفل عملیات جدید: advisory ثبت‌نام، ردیف ثبت‌نام اگر موجود، سپس پرداخت؛ قفل قیمت فقط هنگام prepare. guardهای جدول از مسیر REST/مصرف‌کنندهٔ قدیمی هم اعمال می‌شوند. marker و binding قابل بازنویسی/حذف نیستند. حذف ثبت‌نام/وبینار، سند مالی/marker را cascade نمی‌کند؛ شناسه‌های binding عمداً FK cascade ندارند و reader فقدان خدمت را unresolved گزارش می‌کند.

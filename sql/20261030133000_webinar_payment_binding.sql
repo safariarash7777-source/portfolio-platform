@@ -52,7 +52,7 @@ ALTER TABLE public.payments ADD CONSTRAINT webinar_payment_binding_shape CHECK (
     AND provider_request_state IS NOT NULL AND provider_request_state IN ('prepared','claimed','attached')
     AND ((provider_request_state IN ('prepared','claimed') AND authority IS NULL AND status = 'pending')
       OR (provider_request_state = 'attached' AND authority IS NOT NULL
-        AND authority ~ '^[A-Za-z0-9_-]{1,256}$')))
+        AND char_length(authority) BETWEEN 1 AND 256 AND authority COLLATE "C" !~ '[^A-Za-z0-9_-]')))
 );
 CREATE UNIQUE INDEX webinar_payment_intent_unique ON public.payments(user_id, purpose_code, intent_key)
   WHERE purpose_code = 'webinar.v1';
@@ -317,7 +317,7 @@ CREATE FUNCTION webinar_payment_private.attach(p_payment_id uuid,p_registration_
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE p public.payments%ROWTYPE;
 BEGIN
-  IF p_authority IS NULL OR p_authority !~ '^[A-Za-z0-9_-]{1,256}$'
+  IF p_authority IS NULL OR char_length(p_authority) NOT BETWEEN 1 AND 256 OR p_authority COLLATE "C" ~ '[^A-Za-z0-9_-]'
     OR NOT coalesce((SELECT issuance_enabled FROM webinar_payment_private.gates WHERE singleton),false) THEN RETURN NULL; END IF;
   PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('webinar-payment:' || p_registration_id::text,0));
   PERFORM 1 FROM public.webinar_registrations WHERE id=p_registration_id FOR UPDATE;

@@ -23,7 +23,7 @@ export interface WebinarBinding {
 export type CallbackResult = { status: "unknown" | "failed" | "success"; binding: WebinarBinding | null };
 const record = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 export const bindingId = (v: unknown): v is string => typeof v === "string" && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(v);
-const token = (v: unknown): v is string => typeof v === "string" && /^[A-Za-z0-9_-]{1,256}$/.test(v);
+const token = (v: unknown): v is string => typeof v === "string" && v.length >= 1 && v.length <= 256 && !/[^A-Za-z0-9_-]/.test(v);
 const timestamp = (v: unknown): v is string => typeof v === "string" && /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(v) && Number.isFinite(Date.parse(v));
 const receipt = (v: unknown): v is string => typeof v === "string" && /^[1-9]\d*$/.test(v) && Number.isSafeInteger(Number(v));
 

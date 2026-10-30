@@ -9,6 +9,7 @@ const lease = randomUUID();
 const database = `p05_binding_${lease.replaceAll("-", "")}`;
 const marker = `p05-binding:${lease}`;
 let owned = false;
+let sourceSHA = "UNOBSERVED";
 function preflight() {
   assert.equal(process.platform, "linux", "P05_SQL_NOT_RUN: existing Linux CI service only");
   assert.equal(process.env.CI, "true", "P05_SQL_NOT_RUN: requires owned GitHub CI service");
@@ -63,7 +64,10 @@ function settle(f: ReturnType<typeof created>, outcome = "verified", ref = "201"
 }
 let legacySnapshot = "";
 before(() => {
-  preflight(); admin(`CREATE DATABASE "${database}"`);
+  preflight();
+  sourceSHA = execFileSync("git", ["rev-parse", "HEAD"], { env, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 10000 }).trim();
+  assert.match(sourceSHA, /^[0-9a-f]{40}$/);
+  admin(`CREATE DATABASE "${database}"`);
   admin(`COMMENT ON DATABASE "${database}" IS ${quote(marker)}`); owned = true; attest();
   file("sql/test/supabase_bootstrap.sql");
   file("sql/test/profile_legacy_default_privileges.sql");
@@ -81,7 +85,11 @@ before(() => {
   file("sql/20261030133000_webinar_payment_binding.sql");
   console.log(JSON.stringify({ contract: "p05-sql-role-seam.v1", server: sql("SELECT version()"), database: "UUID-owned CI database", realJWT: false, primary: false }));
 });
-after(() => { if (owned) { attest(); admin(`DROP DATABASE "${database}"`); owned = false; assert.equal(admin(`SELECT count(*) FROM pg_database WHERE datname=${quote(database)}`), "0"); } });
+after(() => { if (owned) {
+  attest(); admin(`DROP DATABASE "${database}"`); owned = false;
+  assert.equal(admin(`SELECT count(*) FROM pg_database WHERE datname=${quote(database)}`), "0");
+  console.log("P05_SQL_CLEANUP " + JSON.stringify({ absent: true, owned: true, sourceSHA, sourceKind: "ci-checkout", primary: false }));
+} });
 
 test("new gates are off; old free registration works without any payment/marker issuance", () => {
   assert.deepEqual(json("SELECT json_build_array(issuance_enabled,settlement_enabled) FROM webinar_payment_private.gates"), [false, false]);
@@ -140,6 +148,29 @@ test("all binding fields and issuance markers are immutable; old generic money c
   }
   denied(`UPDATE webinar_payment_private.registration_issuances SET issued_at=now() WHERE registration_id='${f.r}'`, "55000");
   denied(`UPDATE public.webinar_registrations SET payment_id='${LP}' WHERE id='${f.r}'`, "55000");
+});
+test("authority lengths 1, 255 and 256 attach on a genuinely claimed intent with gates on", () => {
+  for (const size of [1, 255, 256]) {
+    const f = created(false), candidate = "L" + "A".repeat(size - 1);
+    const claim = json(as("service_role", null, `SELECT public.claim_webinar_payment_request('${f.p.paymentId}','${f.r}','${A}')`));
+    assert.equal(claim.claimedNow, true);
+    assert.deepEqual(json("SELECT json_build_array(issuance_enabled,settlement_enabled) FROM webinar_payment_private.gates"), [true, true]);
+    const attached = json(as("service_role", null, `SELECT public.attach_webinar_authority('${f.p.paymentId}','${f.r}','${A}',${quote(candidate)})`));
+    assert.equal(attached.authority, candidate); assert.equal(read(f.p.paymentId).authority.length, size);
+  }
+});
+test("empty, 257, whitespace, newline and nonASCII authorities fail in the RPC and direct table constraint without consuming attachment", () => {
+  const f = created(false);
+  const claim = json(as("service_role", null, `SELECT public.claim_webinar_payment_request('${f.p.paymentId}','${f.r}','${A}')`));
+  assert.equal(claim.claimedNow, true);
+  assert.deepEqual(json("SELECT json_build_array(issuance_enabled,settlement_enabled) FROM webinar_payment_private.gates"), [true, true]);
+  for (const authority of ["", "A".repeat(257), "A B", "A\n", "Aé", "Aا"]) {
+    assert.equal(json(as("service_role", null, `SELECT public.attach_webinar_authority('${f.p.paymentId}','${f.r}','${A}',${quote(authority)})`)), null);
+    denied(as("service_role", null, `UPDATE public.payments SET authority=${quote(authority)},provider_request_state='attached' WHERE id='${f.p.paymentId}'`), "23514");
+    const current = read(f.p.paymentId); assert.equal(current.authority, null); assert.equal(current.providerState, "claimed");
+  }
+  const valid = "Z".repeat(256);
+  assert.equal(json(as("service_role", null, `SELECT public.attach_webinar_authority('${f.p.paymentId}','${f.r}','${A}',${quote(valid)})`)).authority, valid);
 });
 test("settlement gate also blocks the old financial writer; reopening uses the issued amount rather than current price", () => {
   const f = created(); enable(true, false);
