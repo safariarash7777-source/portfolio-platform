@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import { createPortal } from "react-dom";
 import MonthlySalesCharts from "../../../components/symbol/MonthlySalesCharts";
 import QuarterlyCharts from "../../../components/symbol/QuarterlyCharts";
 import FundamentalCharts from "../../../components/symbol/FundamentalCharts";
@@ -17,12 +18,21 @@ const isTab = (s: string): s is Tab => tabs.some(t => t.id === s);
 const sourceTitle = "ورودی آموزشی؛ فاقد گزارش رسمی";
 type Row = { key:string; period:string; kind:string; cells:unknown[]; raw:unknown };
 
-function Source({record}: {record:unknown}) {
-  return <details className="source-record"><summary>جزئیات همین رکورد آموزشی</summary>
-    <p>{SOURCE.label}. شناسهٔ گزارش رسمی، نشانی منبع، زمان انتشار، زمان دریافت و اصلاحیه: ناموجود.</p>
-    <p>دامنه: شرکت اصلی؛ مجموعه: <bdi>{DATASET_ID}</bdi>؛ این شناسه مربوط به دادهٔ آموزشی است.</p>
-    <pre dir="ltr">{JSON.stringify(record,null,2)}</pre>
-  </details>;
+function Source({record,context}: {record:unknown;context:string}) {
+  const [open,setOpen]=useState(false);
+  const dialog=useRef<HTMLDialogElement>(null),trigger=useRef<HTMLButtonElement>(null);
+  const id=useId(),heading=`source-heading-${id}`,description=`source-description-${id}`;
+  useEffect(()=>{if(open && dialog.current && !dialog.current.open)dialog.current.showModal();},[open]);
+  const close=()=>{if(dialog.current?.open)dialog.current.close();setOpen(false);trigger.current?.focus();};
+  return <><button ref={trigger} type="button" className="source-trigger" aria-haspopup="dialog" onClick={()=>setOpen(true)}>جزئیات همین رکورد آموزشی</button>
+    {open ? createPortal(<dialog ref={dialog} className="source-panel" aria-labelledby={heading} aria-describedby={description} onCancel={event=>{event.preventDefault();close();}} onClose={close}>
+      <header className="source-panel-heading"><div><h2 id={heading}>اطلاعات مبنای رکورد</h2><p className="record-context">{context}</p></div><button type="button" onClick={close}>بستن اطلاعات مبنا</button></header>
+      <div className="source-panel-body"><p id={description}>{SOURCE.label}. شناسهٔ گزارش رسمی، نشانی منبع، زمان انتشار، زمان دریافت و اصلاحیه: ناموجود.</p>
+        <p>دامنه: شرکت اصلی؛ مجموعه: <bdi>{DATASET_ID}</bdi>؛ این شناسه مربوط به دادهٔ آموزشی است.</p>
+        <h3>رکورد کامل و ورودی محاسبه</h3><pre dir="ltr">{JSON.stringify(record,null,2)}</pre>
+      </div>
+    </dialog>,document.body) : null}
+  </>;
 }
 
 function DataTable({title,columns,rows}: {title:string;columns:string[];rows:Row[]}) {
@@ -30,7 +40,7 @@ function DataTable({title,columns,rows}: {title:string;columns:string[];rows:Row
     <p>اعداد این جدول در واحد خام نوشته‌شده در سرستون هستند. مقیاس نمودار در خود نمودار مشخص است. منبع همهٔ سطرها آموزشی و تأییدنشده است.</p>
     {rows.length ? <div className="table-scroll" role="region" aria-label={`جدول ${title}`} tabIndex={0}><table><caption>{title} · شرکت اصلی · {DATASET_ID}</caption>
       <thead><tr>{columns.map(c=><th key={c} scope="col">{c}</th>)}<th scope="col">اطلاعات مبنا</th></tr></thead>
-      <tbody>{rows.map(r=><tr key={r.key}>{r.cells.map((c,i)=><td key={i}>{value(c)}</td>)}<td><Source record={r.raw}/></td></tr>)}</tbody>
+      <tbody>{rows.map(r=><tr key={r.key}>{r.cells.map((c,i)=><td key={i}>{value(c)}</td>)}<td><Source record={r.raw} context={`${title} · ${toPersianDigits(r.period)}`}/></td></tr>)}</tbody>
     </table></div> : <p>رکورد قابل نمایش وجود ندارد؛ مقدار غایب صفر نشده است.</p>}
   </details>;
 }
@@ -72,7 +82,7 @@ function App() {
   const reports=useMemo(()=>monthlyFor(state,fy),[state,fy]);
   const focused=product!=="all" || market!=="all";
   const monthly=useMemo(()=>focused ? productReports(reports.filter(r=>r.fiscal_year===fy),product,market):reports,[reports,product,market,focused,fy]);
-  const rateBlocked=focused && hasMonthlyGap(monthly);
+  const monthlyGap=focused && hasMonthlyGap(monthly);
   const quarter=useMemo(()=>quarterlyFor(state),[state]);
   const fundamentals=useMemo(()=>fundamentalsFor(state,reports),[state,reports]);
   const ready=state!=="empty" && state!=="error";
@@ -88,9 +98,10 @@ function App() {
     <label>محصول<select value={product} onChange={e=>setProduct(e.target.value)}><option value="all">کل شرکت</option><option>ورق گرم</option><option>ورق سرد</option></select></label>
     <label>بازار<select value={market} onChange={e=>setMarket(e.target.value)}><option value="all">داخلی و صادراتی</option><option>داخلی</option><option>صادراتی</option></select></label></>;
   const monthlyTable=<DataTable title="فعالیت ماهانه" columns={["دورهٔ جلالی","محصول","بازار","تولید (تن)","مقدار (تن)","نرخ (ریال/تن)","مبلغ محصول (میلیون ریال)","کل ماه شرکت (میلیون ریال)","تجمیعی شرکت (میلیون ریال)"]} rows={monthlyRows}/>;
-  const monthlySection=<ChartGroup title="فروش، نرخ و مقدار ماهانه" note={focused ? "نمای محصول/بازار انتخاب‌شده فقط سال مالی انتخاب‌شده را پوشش می‌دهد: نرخ و تولید/مقدار. کل ماه و تجمیعیِ جدول همچنان مربوط به کل شرکت‌اند. برای ترکیب و مقایسهٔ کل شرکت فیلترها را بازنشانی کنید." : "مقایسه با ماه مشابه سال قبل و تجمیعی گزارش‌شده جدا هستند. برای نمودار نرخ و مقدار، یک محصول یا بازار انتخاب کنید. ماه غایب گپ است. مبالغ خام میلیون ریال، نرخ ریال بر تن و مقدار تن؛ دامنه شرکت اصلی."} table={monthlyTable} className={focused?"product-focus":"company-focus"}>
+  const monthlySection=<ChartGroup title="فروش، نرخ و مقدار ماهانه" note={focused ? "نمای محصول/بازار انتخاب‌شده فقط سال مالی انتخاب‌شده را پوشش می‌دهد: نرخ و تولید/مقدار. کل ماه و تجمیعیِ جدول همچنان مربوط به کل شرکت‌اند. برای ترکیب و مقایسهٔ کل شرکت فیلترها را بازنشانی کنید." : "مقایسه با ماه مشابه سال قبل و تجمیعی گزارش‌شده جدا هستند. برای نمودار نرخ و مقدار، یک محصول یا بازار انتخاب کنید. ماه غایب گپ است. مبالغ خام میلیون ریال، نرخ ریال بر تن و مقدار تن؛ دامنه شرکت اصلی."} table={monthlyTable} className={`${focused?"product-focus":"company-focus"}${monthlyGap?" quantity-gap":""}`}>
     <div className="controls">{controls}{focused?<button onClick={()=>{setProduct("all");setMarket("all");}}>بازگشت به کل شرکت</button>:null}</div>
-    {rateBlocked ? <p role="status">نمودار نرخ و مقدار در این سناریو نمایش داده نمی‌شود: مؤلفهٔ موجود ماه غایب را در محور نرخ درج نمی‌کند و ممکن است دو سوی گپ را وصل کند. تا اصلاح آن، داده‌های موجود فقط در جدول قابل بررسی‌اند؛ ماه غایب صفر نشده است.</p> : monthly.some(r=>r.products.length) ? <MonthlySalesCharts reports={monthly} sourceTitle={sourceTitle} sourceUrl={null}/> : <p role="status">برای این ترکیب محصول و بازار رکوردی وجود ندارد؛ سری ساختگی نمایش داده نمی‌شود.</p>}
+    {monthlyGap ? <p role="status">برای ماه بدون گزارش، خط نرخ قطع می‌شود؛ مقدار نامعلوم صفر در نظر گرفته نشده است. نمودار مقدار در این حالت نمایش داده نمی‌شود؛ داده‌های موجود را در جدول ببینید.</p> : null}
+    {monthly.some(r=>r.products.length) ? <MonthlySalesCharts reports={monthly} sourceTitle={sourceTitle} sourceUrl={null}/> : <p role="status">برای این ترکیب محصول و بازار رکوردی وجود ندارد؛ سری ساختگی نمایش داده نمی‌شود.</p>}
   </ChartGroup>;
   const quarterlySection=<ChartGroup title="درآمد، سود و حاشیه‌های فصلی" note="فصل مستقل از تفاضل زنجیرهٔ تجمیعیِ هم‌سال و هم‌دامنه ساخته می‌شود. حلقهٔ مفقود، فصل نامعلوم می‌سازد. حاشیهٔ سود ماهانه محاسبه نشده است. مبالغ میلیون ریال و حاشیه‌ها درصدند. P/E نمایشی با قیمت همان پایان فصل محاسبه می‌شود؛ برچسب جاریِ مؤلفه هم آخرین نقطهٔ همین مجموعهٔ آموزشی است." table={<><DataTable title="فصل مستقل" columns={["فصل","پایان دوره","درآمد (میلیون ریال)","سود ناخالص (میلیون ریال)","سود عملیاتی (میلیون ریال)","سود خالص (میلیون ریال)","حاشیه ناخالص (%)","حاشیه عملیاتی (%)","حاشیه خالص (%)"]} rows={quarterRows}/><DataTable title="P/E و مبنای TTM" columns={["فصل","قیمت پایان فصل (ریال)","سود TTM (میلیون ریال)","EPS TTM (ریال)","P/E (مرتبه)"]} rows={peRows}/></>}>
     <label className="range-control">افق فصلی<select value={range} onChange={e=>setRange(Number(e.target.value))}><option value={4}>چهار فصل آخر</option><option value={8}>هشت فصل آخر</option><option value={12}>کل فصل‌های موجود</option></select></label>

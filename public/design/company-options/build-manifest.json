@@ -7,21 +7,21 @@
   "financialEngineChanged": true,
   "financialChangeScope": "PR361 null calendar slots in rateSeries only",
   "rateCoreCandidate": "66765f75abf206a719b089cca6079d857f10b7c9",
-  "monthlyGapGuard": "RETAINED_PENDING_INSTALLED_SOURCE_VERIFICATION",
+  "monthlyGapGuard": "RATE_ENABLED_AFTER_PREVIEW_052e790_VERIFIED; QUANTITY_AND_FUNDAMENTAL_N30_GUARDS_RETAINED",
   "browserAudit": "PENDING_CURRENT_VERSION",
   "interactionAcceptance": "NOT_RUN",
   "visualAcceptance": "NOT_RUN",
   "historicalEvidence": "P14-EDU-01 screenshots and root audit of snapshot5649582 are historical; neither is evidence for this build.",
   "hashBasis": "SHA256 of UTF8 text with LF newlines (canonical Git text); not raw Windows CRLF bytes",
   "hashes": {
-    "entry.tsx": "2d64e12c84e15735e768a28ae156e4244a59cc6a425c4bcc95942a52bf49dd79",
+    "entry.tsx": "351e0b38ffd5d24ddef9790f8085b8ef3ce50463d8ded247f9e110df3580394e",
     "chart-data.ts": "9923ef489af3e3486131b7d2a08d78ce9b0094237c57d465591f4281aed4d850",
     "query-state.ts": "16016033b42b9318d30dc5f1dc37ea75ac95a9bfa3a511819be4f7dd7e07bf3a",
-    "validate.ts": "128a1a51a328e75fd334868fa1a314d9168b050d958515bec1cda08a5403fc00",
-    "build.mjs": "0de5f4430d5ce3d3af3c887b160ec670010e05d03e38fe81fea66ac1136819fd",
-    "charts.input.css": "bb9089626cc9617c0e64c1a9d0d7499d0db9334c103d650d54d76322db001d50",
-    "prototype.js": "f7f1c9ea87c9a228975df6b27b7fb85ceb277705d5f3c0fa314463519df8602f",
-    "charts.css": "c7c58b9004cc8ac46537047aff744ec64a932aa06d5509af6b22fcf861672d8a",
+    "validate.ts": "0b3c31b1424b1606813c2193e7303ab515fd50d592deb51121875dc657889c29",
+    "build.mjs": "2984180df000237197551c9dbc5f7b833c0479052947e35b86b7dbe4037750bd",
+    "charts.input.css": "a7756e005d83e22ebc3727ef6bd4d569a65d4336e90a639bd097f2b2805ee19d",
+    "prototype.js": "9ce89c097949cd5d5c2ff697fd5a208d395023b7f0e176aff50cd215810ea48f",
+    "charts.css": "5817a63d9f96d1987169fa187274b5c2136cda8d34ac98807b645e597d2042a5",
     "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
     "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
   },
@@ -46,5 +46,5 @@
     "postcss": "8.5.28"
   },
   "browserInputCount": 2090,
-  "bundleBytes": 837794
+  "bundleBytes": 838859
 }
