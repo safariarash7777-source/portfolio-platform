@@ -10,11 +10,13 @@
   "historicalEvidence": "Screenshots and manifests from P14-EDU-01 are historical; not evidence for this build.",
   "hashBasis": "SHA256 of UTF8 text with LF newlines (canonical Git text); not raw Windows CRLF bytes",
   "hashes": {
-    "entry.tsx": "5686adc162eb2d8e63c7b2e5448e6313a21e3bb52a4a2cbf34759a7ffa965498",
+    "entry.tsx": "2d64e12c84e15735e768a28ae156e4244a59cc6a425c4bcc95942a52bf49dd79",
     "chart-data.ts": "9923ef489af3e3486131b7d2a08d78ce9b0094237c57d465591f4281aed4d850",
-    "build.mjs": "03c48749a98bea0a87254e4b203b8eac097c0bbb46d3c1b2119878445979c7dc",
+    "query-state.ts": "16016033b42b9318d30dc5f1dc37ea75ac95a9bfa3a511819be4f7dd7e07bf3a",
+    "validate.ts": "128a1a51a328e75fd334868fa1a314d9168b050d958515bec1cda08a5403fc00",
+    "build.mjs": "db5652a79fb446260bec8008c4074b68499a5f1977e023f9752a61d3022abc4e",
     "charts.input.css": "bb9089626cc9617c0e64c1a9d0d7499d0db9334c103d650d54d76322db001d50",
-    "prototype.js": "962d7f9b1ee8f23c14c20b30d74513d02c347f1d2427d6d4634d890a386239cf",
+    "prototype.js": "64446ecbb2b8ac259253ff3c5f2105637b0aee9c5b710b6509cd3bf476af9d3b",
     "charts.css": "c7c58b9004cc8ac46537047aff744ec64a932aa06d5509af6b22fcf861672d8a",
     "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
     "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
@@ -34,6 +36,6 @@
     "tailwindcss": "3.4.19",
     "postcss": "8.5.28"
   },
-  "browserInputCount": 2089,
-  "bundleBytes": 836561
+  "browserInputCount": 2090,
+  "bundleBytes": 837586
 }

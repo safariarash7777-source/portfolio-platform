@@ -18,7 +18,7 @@ const css=await postcss([tailwind(config)]).process(await readFile(path.join(her
 await writeFile(path.join(here,"charts.css"),css.css);
 const hashes={};
 const seal=async p=>createHash("sha256").update((await readFile(p,"utf8")).replaceAll("\r\n","\n")).digest("hex");
-for(const p of ["entry.tsx","chart-data.ts","build.mjs","charts.input.css","prototype.js","charts.css","decision.html","dossier.html"])hashes[p]=await seal(path.join(here,p));
+for(const p of ["entry.tsx","chart-data.ts","query-state.ts","validate.ts","build.mjs","charts.input.css","prototype.js","charts.css","decision.html","dossier.html"])hashes[p]=await seal(path.join(here,p));
 const reused={};for(const p of components)reused[p]=await seal(path.join(root,p));
 const locked={};const lock=JSON.parse(await readFile(path.join(root,"package-lock.json"),"utf8"));
 for(const p of ["react","react-dom","recharts","lightweight-charts","esbuild","tailwindcss","postcss"]){locked[p]=require(`${p}/package.json`).version;if(lock.packages[`node_modules/${p}`].version!==locked[p])throw new Error(`Installed version differs from lock: ${p}`);}

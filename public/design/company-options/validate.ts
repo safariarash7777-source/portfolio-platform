@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildMonthlySales } from "../../../lib/core/monthlyReport";
 import { DATASET_ID, HISTORY, MONTHLY, PERIODS, QUARTER_PRICES, SOURCE, STATES, fundamentalsFor, hasMonthlyGap, monthlyFor, productReports, quarterlyFor } from "./chart-data";
+import { parsePrototypeSelection, prototypeComparisonHref, type PrototypeSelection } from "./query-state";
 const snapshot=JSON.stringify({MONTHLY,PERIODS,HISTORY});
 let checks=0;
 function check(name:string,run:()=>void){run();checks++;console.log(`PASS ${name}`);}
@@ -16,4 +17,31 @@ check("zero and missing flow stay distinct; history has no price gap",()=>{asser
 check("empty/error never enter chart props as invented values",()=>{for(const state of ["empty","error"] as const){assert.deepEqual(monthlyFor(state,1405),[]);assert.deepEqual(quarterlyFor(state).quarters,[]);assert.equal(quarterlyFor(state).currentPe,null);assert.equal(fundamentalsFor(state,[]).n10,null);}});
 check("educational provenance stays unavailable; inputs immutable",()=>{for(const key of ["officialReportId","officialUrl","publishedAt","collectedAt","revision"] as const)assert.equal(SOURCE[key],null);for(const state of STATES){monthlyFor(state,1405);quarterlyFor(state);}assert.equal(JSON.stringify({MONTHLY,PERIODS,HISTORY}),snapshot);assert(Object.isFrozen(MONTHLY[0].products[0]));});
 check("both routes load one generated entry and stylesheet",()=>{for(const page of ["decision.html","dossier.html"]){const html=readFileSync(new URL(page,import.meta.url),"utf8");assert(html.includes('./prototype.js'));assert(html.includes('./charts.css'));assert(html.includes('lang="fa" dir="rtl"'));}});
+check("both comparison directions preserve non-default selection and effective chart inputs",()=>{
+  const selections:PrototypeSelection[]=[
+    {state:"quarter-gap",tab:"fundamental",fy:1404,product:"ورق سرد",market:"داخلی",range:4,priceRange:6,query:"گزارش ۱۴۰۴ & صورت مالی",kind:"monthly"},
+    {state:"no-prior",tab:"reports",fy:1405,product:"ورق گرم",market:"صادراتی",range:12,priceRange:12,query:"ن-۳۰",kind:"quarterly"},
+  ];
+  const effective=(s:PrototypeSelection)=>({monthly:productReports(monthlyFor(s.state,s.fy).filter(r=>r.fiscal_year===s.fy),s.product,s.market),quarters:quarterlyFor(s.state).quarters.slice(-s.range),prices:HISTORY.slice(-s.priceRange)});
+  for(const initial of selections)for(const view of ["decision","dossier"] as const){
+    const target=new URL(prototypeComparisonHref(view,initial),"https://design.invalid/design/company-options/decision.html");
+    assert.equal(target.pathname,`/design/company-options/${view}.html`);
+    const restored=parsePrototypeSelection(target.search,target.hash);
+    assert.deepEqual(restored,initial);
+    assert.deepEqual(effective(restored),effective(initial));
+    const back=new URL(prototypeComparisonHref(view==="decision"?"dossier":"decision",restored),target);
+    assert.deepEqual(parsePrototypeSelection(back.search,back.hash),initial);
+  }
+});
+check("invalid query choices fall back without numeric coercion or arbitrary scopes",()=>{
+  const invalid=new URLSearchParams({state:"invalid",fy:"1404.0",product:"unknown",market:"unknown",range:"Infinity",priceRange:"0",kind:"unknown"});
+  assert.deepEqual(parsePrototypeSelection(invalid.toString(),"#invalid"),parsePrototypeSelection("",""));
+  for(const fy of ["NaN","1406","-1404","1404x"])assert.equal(parsePrototypeSelection(`fy=${fy}`,"#overview").fy,1405);
+});
+check("encoded Persian search stays bounded and identical across comparison links",()=>{
+  const p=new URLSearchParams({query:"الف 🟡 & # ? ".repeat(30)}),s=parsePrototypeSelection(p.toString(),"#reports");
+  assert.equal(Array.from(s.query).length,80);
+  const href=new URL(prototypeComparisonHref("dossier",s),"https://design.invalid/design/company-options/decision.html");
+  assert.deepEqual(parsePrototypeSelection(href.search,href.hash),s);
+});
 console.log(JSON.stringify({dataset:DATASET_ID,checks,uiAcceptance:"NOT_RUN",browserAudit:"BLOCKED"}));
