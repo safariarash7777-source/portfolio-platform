@@ -48,7 +48,7 @@ export function browserDestination(url,method='GET'){
  try{const u=new URL(url);if(u.hash||!url.startsWith(origin+'/'))return false;const raw=url.slice(origin.length).split('?')[0];if(/%(?:2e|2f|5c|25|00)/i.test(raw)||/[\\\u0000-\u0020]/.test(raw)||raw.split('/').some(x=>x==='.'||x==='..'))return false;allowedProfileURL('p09',url,true,method);return true;}catch{return false;}
 }
 export function browserFailureCode(error){
- const text=String(error?.message??'');return /^p09_browser_[a-z0-9_]+$/.test(text)?text:text.match(/\bnet::ERR_[A-Z0-9_]+\b/)?.[0]??(error?.name==='TimeoutError'?'playwright_timeout':'browser_operation_failed');
+ const text=String(error?.message??'');return /^p09_browser_[a-z0-9_]+$/.test(text)?text:text.match(/\bnet::ERR_[A-Z0-9_]+\b/)?.[0]??(/strict mode violation/.test(text)?'selector_ambiguous':error?.name==='TimeoutError'?'playwright_timeout':'browser_operation_failed');
 }
 export function sdkCookies(header){
  check(typeof header==='string'&&header.length>0,'p09_browser_sdk_cookie_missing');
@@ -174,7 +174,7 @@ async function exercise(s,runtime,known){
  const first=await s.browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1000}});s.contexts.push(first);await first.addCookies(sdkCookies(users.a.session.cookie));const page=await first.newPage();await attach(first,page);page.on('dialog',dialog=>void dialog.accept());
  s.stage='real_page';s.operation='initial_navigation';const document=await page.goto(origin+'/admin/research',{waitUntil:'domcontentloaded',timeout:120000});s.pageDiagnostics.documentStatus=document?.status()??null;
  s.operation='initial_title_visible';await page.locator('#title').waitFor({state:'visible',timeout:30000});
- s.operation='open_existing_workbook';await page.getByRole('button',{name:new RegExp(known.titleV2)}).click();s.operation='existing_workbook_title';await wait(async()=>await page.locator('#title').inputValue()===known.titleV2,'p09_browser_original_workbook_open',30);
+ s.operation='open_existing_workbook';const storedBook=page.locator('aside ul').getByRole('button',{name:new RegExp(known.titleV2)});await storedBook.waitFor({state:'visible',timeout:30000});s.pageDiagnostics.storedBookMatches=await storedBook.count();check(s.pageDiagnostics.storedBookMatches===1,'p09_browser_stored_book_selector_ambiguous');await storedBook.click();s.operation='existing_workbook_title';await wait(async()=>await page.locator('#title').inputValue()===known.titleV2,'p09_browser_original_workbook_open',30);
  check(page.url()===origin+'/admin/research'&&await page.locator('#interpretation').inputValue()===baseline.value.workbook.interpretation,'p09_browser_real_workbook_content');
  const beforeAudit=await storageAudit(page,privateNeedles);privateHits+=beforeAudit.hits;urlHits+=Number(beforeAudit.urlHit);
  recordPass(s,'real-next-workbook-page',{genuineSession:true,realPage:true,existingCasesNotMocked:true});

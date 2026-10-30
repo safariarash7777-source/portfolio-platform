@@ -87,6 +87,7 @@ test('Chrome closure has fixed count/byte/free-space bounds, with room reserved 
 test('Browser failure diagnostics emit only an error class/code, never private page or request text',()=>{
  assert.equal(browserFailureCode({message:'page.goto: net::ERR_BLOCKED_BY_CLIENT at https://private.invalid/?access_token=secret'}),'net::ERR_BLOCKED_BY_CLIENT');
  assert.equal(browserFailureCode({name:'TimeoutError',message:'private body secret'}),'playwright_timeout');
+ assert.equal(browserFailureCode({message:'strict mode violation: private body secret'}),'selector_ambiguous');
  assert.equal(browserFailureCode({message:'p09_browser_real_commit_after_close'}),'p09_browser_real_commit_after_close');
  assert.equal(browserFailureCode({message:'private body secret'}),'browser_operation_failed');
 });
