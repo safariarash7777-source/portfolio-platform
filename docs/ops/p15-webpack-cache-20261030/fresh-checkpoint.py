@@ -102,14 +102,28 @@ def proof_safe(state, receipt):
 
 
 def readback():
-    return {'at': now(), 'mode': 'readback_only',
-            'receipts': {p.name: json.loads(p.read_text()) for p in sorted(OP.glob('*.json'))},
+    receipts = {p.name: json.loads(p.read_text()) for p in sorted(OP.glob('*.json'))}
+    candidates = []
+    if 'intent.json' in receipts and 'native-receipt.json' not in receipts:
+        previous = set(receipts['intent.json']['existingCheckpointDirectoriesBefore'])
+        for directory in BASE.iterdir():
+            if directory.name not in previous and re.fullmatch(r'\d{8}T\d{6}Z', directory.name) and (directory / 'receipt.json').is_file():
+                try:
+                    value = json.loads((directory / 'receipt.json').read_text())
+                    if value.get('sourceContainerId') == receipts['intent.json']['sourceContainerId']:
+                        candidates.append({k: value.get(k) for k in ('startedAt', 'status', 'stage', 'dumpBytes', 'target', 'finishedAt')})
+                except (ValueError, FileNotFoundError):
+                    pass
+    return {'at': now(), 'mode': 'readback_only', 'receipts': receipts,
+            'nativeProgressCandidates': candidates,
             'availableBytes': os.statvfs('/').f_bavail * os.statvfs('/').f_frsize}
 
 
 def run():
     os.umask(0o077)
     os.nice(15)
+    if globals().get('_readback_only'):
+        return readback()
     if (OP / 'intent.json').exists():
         return readback()
     OP.mkdir(mode=0o700, exist_ok=True)
@@ -127,10 +141,18 @@ def run():
         check(available >= 4 * 1024 ** 3, 'backup_restore_memory_budget')
         source = inspect(SOURCE)
         check(source['Image'] == IMAGE and source['State']['Health']['Status'] == 'healthy', 'source_identity_health')
+        names = json.loads(docker(['exec', SOURCE, 'psql', '-XqAt', '-U', 'postgres', '-d', 'postgres', '-c',
+            "SELECT json_agg(nspname ORDER BY nspname) FROM pg_namespace WHERE nspname NOT LIKE 'pg_%' AND nspname<>'information_schema';"]))
+        known = {'auth', 'cash_flow_private', 'consultation_private', 'cron', 'extensions', 'goals_private',
+                 'graphql', 'graphql_public', 'identity_private', 'net', 'portfolio_private',
+                 'portfolio_scope_private', 'public', 'realtime', 'storage', 'vault'}
+        check(set(names) <= known, 'unreviewed_schema_outside_backup_comparison_scope')
         before = private_inventory(SOURCE)
         save('private-before.json', before, True)
         save('intent.json', {'at': now(), 'helperSha256': HELPER_SHA, 'sourceContainerId': source['Id'],
                             'sourceImage': IMAGE, 'availableBytesBefore': free, 'sourcePrivateFunctions': len(before['functions']),
+                            'observedSchemas': names,
+                            'wrapperSha256': globals().get('_reviewed_wrapper_sha256'),
                             'existingCheckpointDirectoriesBefore': sorted(p.name for p in BASE.iterdir() if p.is_dir())}, True)
         proof = None
         started = False
