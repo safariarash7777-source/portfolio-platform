@@ -214,7 +214,10 @@ export default function CodalReportsTab({
                         {a.title}
                       </CodalSourceLink>
                     </div>
-                    <span className="shrink-0 text-muted-foreground">{visibleFields.sentAt && <>{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}<br /></>}{a.publishedDate ? `انتشار: ${toPersianDigits(a.publishedDate)} (ساعت نامعلوم)` : "تاریخ انتشار نامعلوم"}</span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {(!a.date || visibleFields.sentAt) && <>{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}<br /></>}
+                      {a.publishedDate ? `انتشار: ${toPersianDigits(a.publishedDate)} (ساعت نامعلوم)` : "تاریخ انتشار نامعلوم"}
+                    </span>
                   </div>
                 </li>
               ))}

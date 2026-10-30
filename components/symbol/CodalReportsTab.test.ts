@@ -161,6 +161,11 @@ test('display choices preserve combined filters, sources, publication metadata a
     assert.match(hidden, /href="https:\/\/codal.ir\/Reports\/Decision.aspx\?id=71"/);
     assert.match(hidden, /انتشار: ۱۴۰۵\/۰۵\/۰۴/);
     assert.doesNotMatch(hidden, /ن-۱۰|ارسال:|۱۶:۵۴:۵۳/);
+    assert.doesNotMatch(hidden, /زمان ارسال نامعلوم/);
+    const missingSentAt = result('اصلاحیه مالی نمونه');
+    assert.match(missingSentAt, /زمان ارسال نامعلوم/);
+    assert.match(missingSentAt, /href="https:\/\/codal.ir\/Reports\/Decision.aspx\?id=72"/);
+    assert.doesNotMatch(missingSentAt, /ن-۱۰/);
     assert.match(result('اصلاحیه مالی نمونه'), /تاریخ انتشار نامعلوم/);
     await host.click('پاک‌کردن فیلترها');
     assert.equal(checkbox('نمایش نوع اطلاعیه').props.checked, false);
