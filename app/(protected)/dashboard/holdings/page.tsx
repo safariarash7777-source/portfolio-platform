@@ -14,6 +14,7 @@ import HoldingsWorkbench from "@/components/portfolio/HoldingsWorkbench";
 import { loadInvestmentScope } from "@/lib/portfolio/scopeService";
 import DebtSchedule from "@/components/portfolio/DebtSchedule";
 import { paymentReferenceDay } from "@/lib/portfolio/paymentSchedule";
+import DebtPaymentsWorkspace from "@/components/portfolio/debt-payments/DebtPaymentsWorkspace";
 
 export const metadata = { title: "دارایی، بدهی و خالص ثروت" };
 export const dynamic = "force-dynamic";
@@ -71,6 +72,7 @@ export default async function HoldingsPage({
       />
       <section id="debt-editor" aria-label="ثبت و مشاهدهٔ بدهی"><DebtsWorkbench key={`debts-${snapshot.holdings?.id ?? "new"}`} debts={debts.debts} ready={snapshot.ready && debts.ready} activeVersion={snapshot.holdings?.version ?? null} latestVersion={snapshot.history[0]?.version ?? 0} /></section>
       </FinancialEditors>
+      {snapshot.ready && snapshot.holdings && <DebtPaymentsWorkspace key={`debt-payments-${snapshot.holdings.id}`} holdingVersionId={snapshot.holdings.id} initialPeriod={{ startOn: `${new Date().toISOString().slice(0, 7)}-01`, endOn: new Date().toISOString().slice(0, 10) }} />}
     </main><Footer /></>
   );
 }
