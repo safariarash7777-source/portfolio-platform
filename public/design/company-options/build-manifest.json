@@ -1,0 +1,39 @@
+{
+  "dataset": "P14-EDU-02",
+  "baseSnapshot": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+  "status": "NOT_FOR_MERGE",
+  "dataKind": "authored_educational",
+  "financialEngineChanged": false,
+  "browserAudit": "BLOCKED",
+  "interactionAcceptance": "NOT_RUN",
+  "visualAcceptance": "NOT_RUN",
+  "historicalEvidence": "Screenshots and manifests from P14-EDU-01 are historical; not evidence for this build.",
+  "hashBasis": "SHA256 of UTF8 text with LF newlines (canonical Git text); not raw Windows CRLF bytes",
+  "hashes": {
+    "entry.tsx": "439d65036f280460ba8795df50bdafec7f247f3cafc8c3f69c6f4d8b28f10b21",
+    "chart-data.ts": "9923ef489af3e3486131b7d2a08d78ce9b0094237c57d465591f4281aed4d850",
+    "build.mjs": "03c48749a98bea0a87254e4b203b8eac097c0bbb46d3c1b2119878445979c7dc",
+    "charts.input.css": "bb9089626cc9617c0e64c1a9d0d7499d0db9334c103d650d54d76322db001d50",
+    "prototype.js": "3fe084b7fa8eae6ccf99384b3653fe54aa8feb20532dcce9643c6e5f943b7ea5",
+    "charts.css": "c7c58b9004cc8ac46537047aff744ec64a932aa06d5509af6b22fcf861672d8a",
+    "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
+    "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
+  },
+  "reused": {
+    "components/symbol/MonthlySalesCharts.tsx": "f118cf60372c20de929d74f1eccedbac2a6314a9b0fc851b6539948c9256ce3a",
+    "components/symbol/QuarterlyCharts.tsx": "527c0b485c7569b90f5fe78c12bae99305d7759a1b4687699c36d23f7424c8ae",
+    "components/symbol/FundamentalCharts.tsx": "919fd8d6fa9f41a2ed380a337d0ec4613b71443fb7e89b5ebf617f516f6defae",
+    "components/terminal/HistoryChart.tsx": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3"
+  },
+  "locked": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "recharts": "3.9.1",
+    "lightweight-charts": "5.2.0",
+    "esbuild": "0.28.1",
+    "tailwindcss": "3.4.19",
+    "postcss": "8.5.28"
+  },
+  "browserInputCount": 2089,
+  "bundleBytes": 834245
+}
