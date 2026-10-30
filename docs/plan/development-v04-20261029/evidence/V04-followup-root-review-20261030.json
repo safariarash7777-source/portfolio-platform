@@ -1,0 +1,109 @@
+{
+  "at": "2026-10-30T10:31:15.739Z",
+  "productP04": {
+    "head": "f0f46ecefca564d555c92364a5d015c3a15403c4",
+    "run": 41039629100,
+    "jobs": [
+      {
+        "id": 124008943356,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124008943688,
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124008943807,
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124008943842,
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124010701071,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "deployment": {
+      "id": "dpl_DYX9k1qbRZn1A6cie9u6haW7XyLU",
+      "url": "portfolio-platform-4b9mfyk0e-safariarash7777-4463s-projects.vercel.app",
+      "readyState": "READY",
+      "sha": "f0f46ecefca564d555c92364a5d015c3a15403c4"
+    },
+    "visualAccepted": false,
+    "primaryChanged": false
+  },
+  "companyControls": {
+    "head": "0a0ee36995fef3c11cdfa68f81cb61a0702a45a6",
+    "pr": 345,
+    "run": 41039551111,
+    "jobs": [
+      {
+        "id": 124008679802,
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124008680038,
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124008680155,
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124008680439,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124010176118,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "fix": "missing sent-date warning stays visible on its own row when known timestamps are hidden",
+    "loadedControls": "UNOBSERVED_DATA_READ_BLOCKED",
+    "primaryChanged": false
+  },
+  "sourceRead": {
+    "evidenceOwner": "START-C",
+    "reviewedAtRoot": "PR331 body independently read with Github connector",
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/331",
+    "previewHead": "1a69d119756dd466e9744d765c51770d9e4564d7",
+    "previewFeedStatus": "502 from upstream 402 at headers",
+    "oldDestination": "uooeygybrniptzdxuzhj.supabase.co",
+    "productionOneRead": {
+      "url": "https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "at": "2026-10-30T10:23:03.389856Z",
+      "status": 200,
+      "rows": 21,
+      "source": "codal_feed",
+      "coverage": "stored-announcements",
+      "publishedNull": 21,
+      "sentDatesPresent": 21
+    },
+    "causeOf402": "UNKNOWN",
+    "financialJobLastSuccess": null,
+    "candidateLoadedAcceptance": false
+  },
+  "actualDeployedProductionSha": null
+}
