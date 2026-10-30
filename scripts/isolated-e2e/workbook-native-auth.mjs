@@ -10,6 +10,13 @@ const check=(value,code)=>{if(!value)throw Error(code);};
 export function workbookRequestURL(path){const url=new URL(path,origin);check(url.origin===origin&&url.pathname===endpoint&&!url.username&&!url.password,'p09_native_workbook_destination');return url.href;}
 export function exactWorkbookWrite(body,intentId){check(typeof body==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(intentId),'p09_native_exact_intent');return {method:'POST',headers:{'Content-Type':'application/json','x-workbook-save-intent':intentId},body};}
 export function workbookHistoryPanel(){return createRequire(import.meta.url)('../../components/admin/ResearchHistoryPanel.tsx').default;}
+// The hook host's DOM globals must not make the genuine Node SDK detect a browser.
+// Caller unmounts the UI first. SDK code/options/getUser remain exactly shared.
+export async function withNativeNodeGlobals(work){
+ const globals=['window','document'].map(name=>[name,Object.getOwnPropertyDescriptor(globalThis,name)]);
+ for(const [name] of globals)Reflect.deleteProperty(globalThis,name);
+ try{return await work();}finally{for(const [name,descriptor] of globals){if(descriptor)Object.defineProperty(globalThis,name,descriptor);else Reflect.deleteProperty(globalThis,name);}}
+}
 async function run(){await runNativeAuthProfile('p09',async runtime=>{
  const {sql,transport,write,pass,users,newSession,anon,service}=runtime;
  const {p07FixtureWorkbook}=await import('../../lib/intelligence/p07-workflow-fixture.ts');
@@ -52,7 +59,7 @@ async function run(){await runNativeAuthProfile('p09',async runtime=>{
   const ui=mount({initialWorkbookId:wb});await ui.waitFor(()=>ui.find('input',e=>e.props.id==='title').props.value===fixture().title);
   const title2='TEST synthetic native durable v2';ui.find('input',e=>e.props.id==='title').props.onChange({target:{value:title2}});await ui.settle();
   loseNextSave=true;await ui.click('ذخیره به‌عنوان');await ui.waitFor(()=>!!lostAttempt);check(ui.button('تازه').props.disabled,'p09_native_unknown_blocks_new_save');ui.unmount();
-  const priorToken=users.a.session.token;users.a.session=await newSession('a');check(users.a.session.token!==priorToken,'p09_native_fresh_password_session');
+  const priorToken=users.a.session.token;users.a.session=await withNativeNodeGlobals(()=>newSession('a'));check(users.a.session.token!==priorToken,'p09_native_fresh_password_session');
   const beforeReopen=calls.length,reopened=mount({});
   await reopened.waitFor(()=>reopened.find(ResearchHistoryPanel,()=>true).props.read.state==='read');
   check(reopened.find('input',e=>e.props.id==='title').props.value===title2&&!reopened.badge(),'p09_native_remount_recovered_v2_unapproved');
@@ -78,7 +85,7 @@ async function run(){await runNativeAuthProfile('p09',async runtime=>{
   check((await transport(origin+'/rest/v1/research_workbook_versions?select=id',{headers:{apikey:anon,Authorization:'Bearer '+forged.join('.')}})).status===401,'p09_native_real_jwt_signature_denial');
   pass('actor-owned-journal-native-rls-and-member-service-denial',{otherAdminIntent:404,member:403,serviceJournal:403,canonicalBackupRead:200,invalidJwt:401});
   reopened.unmount();const pendingWb=randomUUID(),pendingId=randomUUID(),pendingBody=JSON.stringify({action:'save',workbookId:pendingWb,creationId:pendingWb,baseVersion:0,workbook:{...fixture(),title:'TEST prepared but no workbook POST'}},null,2);
-  await prepare(pendingId,pendingBody);users.a.session=await newSession('a');
+  await prepare(pendingId,pendingBody);users.a.session=await withNativeNodeGlobals(()=>newSession('a'));
   const beforePending=calls.length,pending=mount({});await pending.waitFor(()=>!pending.button('ارسال دوبارهٔ همین ثبت').props.disabled);
   check(calls.slice(beforePending).every(c=>c.method==='GET'),'p09_native_prepared_reopen_is_read_only');
   check(calls.slice(beforePending).some(c=>c.status===404&&c.body.absent===true&&c.body.workbookId===pendingWb),'p09_native_target_absence_before_retry');

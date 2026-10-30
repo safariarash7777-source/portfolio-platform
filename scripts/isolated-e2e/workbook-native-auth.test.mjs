@@ -5,7 +5,19 @@ import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {nativeAuthProfile,allowedProfileURL,verifyEnvironment,origin} from './native-auth-runtime.mjs';
 import {gatewayProfile} from './native-auth-gateway.mjs';
-import {workbookRequestURL,exactWorkbookWrite,workbookHistoryPanel} from './workbook-native-auth.mjs';
+import {workbookRequestURL,exactWorkbookWrite,workbookHistoryPanel,withNativeNodeGlobals} from './workbook-native-auth.mjs';
+
+test('Hook host DOM globals are absent during native Node work and restored after success or error',async()=>{
+ const original=['window','document'].map(name=>[name,Object.getOwnPropertyDescriptor(globalThis,name)]),stub={hookHostOnly:true};
+ try{
+  for(const [name] of original)Object.defineProperty(globalThis,name,{configurable:true,value:stub});
+  const verify=()=>{assert.equal(typeof globalThis.window,'undefined');assert.equal(typeof globalThis.document,'undefined');};
+  assert.equal(await withNativeNodeGlobals(async()=>{verify();return 'native';}),'native');
+  for(const [name] of original)assert.equal(globalThis[name],stub);
+  await assert.rejects(withNativeNodeGlobals(async()=>{verify();throw Error('expected');}),/expected/);
+  for(const [name] of original)assert.equal(globalThis[name],stub);
+ }finally{for(const [name,descriptor] of original){if(descriptor)Object.defineProperty(globalThis,name,descriptor);else Reflect.deleteProperty(globalThis,name);}}
+});
 
 test('P09 uses the real panel function from the existing hook host module cache',()=>{
  const hostRequire=createRequire(new URL('../../components/admin/p07-component-test-host.ts',import.meta.url));
