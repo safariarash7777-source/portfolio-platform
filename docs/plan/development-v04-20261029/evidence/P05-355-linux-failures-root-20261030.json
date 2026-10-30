@@ -1,0 +1,46 @@
+{
+  "scope": "P05 candidate native SQL execution; isolated Linux CI only",
+  "primaryInstall": "NOT_APPLIED",
+  "realJWT": "NOT_RUN",
+  "realPaymentProvider": "NOT_RUN",
+  "fullNativeAcceptance": "NOT_ACCEPTED",
+  "attempts": [
+    {
+      "head": "37206faa1d5a567d61a8eea46863b2cbcaeb7aec",
+      "runId": 41076714142,
+      "jobId": 124134747671,
+      "jobConclusion": "failure",
+      "p05Scenarios": "NOT_RUN_SETUP_FAILED",
+      "failureCode": "42P01",
+      "failureStage": "existing archive schema prerequisite missing before candidate",
+      "entireDbSuite": {
+        "tests": 410,
+        "pass": 400,
+        "fail": 10,
+        "skipped": 0
+      },
+      "rawLogSha256": "dc9e48bc9916108c879fc0f32389a5305cf7f4184e7610be4e32d202ff367f27"
+    },
+    {
+      "head": "c4321277bb13a216140bc6d798aef29e8df50a4e",
+      "runId": 41077652980,
+      "jobId": 124138021436,
+      "jobConclusion": "failure",
+      "p05Scenarios": "EXECUTED_PARTIAL_FAILURE",
+      "failureCode": "2201B",
+      "failureStage": "candidate authority attachment regular-expression evaluation",
+      "postgresVersion": "16.15",
+      "realJWT": false,
+      "entireDbSuite": {
+        "tests": 410,
+        "pass": 405,
+        "fail": 5,
+        "skipped": 0
+      },
+      "rawLogSha256": "298000f5b69f74cbffdeb2fc677fc17cc05e4ff2a297faf2cabc049fc690450b"
+    }
+  ],
+  "ownerNextAction": "A fixes candidate guard preserving length/charset contract and adds native boundary/cleanup evidence; rerun on new source",
+  "privateRawLogsPublished": false,
+  "serverAccessRequired": false
+}
