@@ -1,0 +1,89 @@
+{
+  "recordedOn": "2026-10-31",
+  "status": "LIMITED_INTERNAL_CONTRACT_CODE_AND_CI_ACCEPTED",
+  "pr": "https://github.com/safariarash7777-source/portfolio-platform/pull/358",
+  "source": "3bd1a87932ef8e066a94db1dcc0a525ea1d1db92",
+  "base": "497ae4681783db7aa9bd9339993c36a29e93ed56",
+  "ciRun": 41101501912,
+  "ciJobs": [
+    {
+      "id": 124219433562,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124219433716,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124219433719,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124219433824,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124221481631,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "actualCheckout": "1ae89e99bacfc7f3e3a4519a32b3a90486e1e9be",
+  "parents": [
+    "497ae4681783db7aa9bd9339993c36a29e93ed56",
+    "3bd1a87932ef8e066a94db1dcc0a525ea1d1db92"
+  ],
+  "tree": "10c8d07c14478af15676b7111b02339e483c712c",
+  "actualCheckoutTreeEqualsHead": true,
+  "decodedLogMethod": "GitHub connector decoded workflow log; selected lines below are witnesses, not a claim about original raw-log byte hash",
+  "buildJob": 124219433716,
+  "selectedDecodedLogLines": [
+    "2026-10-30T17:47:30.6487370Z HEAD is now at 1ae89e9 Merge 3bd1a87932ef8e066a94db1dcc0a525ea1d1db92 into 497ae4681783db7aa9bd9339993c36a29e93ed56",
+    "2026-10-30T17:48:20.9751183Z ok 482 - recovery access rejects a revoked advisor without returning intent or known receipt",
+    "2026-10-30T17:48:20.9754206Z ok 483 - recovery access rejects a disabled advisor even if actor id and selected relationship stay the same",
+    "2026-10-30T17:48:20.9757040Z ok 484 - recovery access rejects a different selected relationship for both member and advisor",
+    "2026-10-30T17:48:20.9780823Z ok 485 - recovery access rejects a changed actor before any pending or confirmed return",
+    "2026-10-30T17:48:20.9784367Z ok 486 - recovery access preserves the owning member history after revocation without enabling fresh writes",
+    "2026-10-30T17:48:20.9787658Z ok 487 - recovery access preserves exact bytes and saved receipt on unavailable reads for an authorized advisor",
+    "2026-10-30T17:48:26.7864976Z ok 1007 - every test file under lib/ is registered in an npm script and actually runs",
+    "2026-10-30T17:48:41.7308270Z # tests 2098",
+    "2026-10-30T17:48:41.7308646Z # pass 2098"
+  ],
+  "rootSourceBoundary": {
+    "changedFiles": [
+      "docs/ops/p03-ticket-contract-20261030/CONTRACT.fa.md",
+      "lib/consultation/ticketIntent.ts",
+      "lib/consultation/tickets.test.ts",
+      "lib/consultation/tickets.ts",
+      "package.json"
+    ],
+    "otherTrackedFilesEqualBase": true,
+    "packageException": "one literal lib/consultation/tickets.test.ts entry in test:core; all remaining package bytes equal base",
+    "packageBaseSha256": "ab3742962b031b05ebe07972937998aca45cdca39f5f6663ec2ceff99d517bc3",
+    "packageSourceSha256": "df660b9d9d3cbd471f8dd97cf083e89ef40efb2d55db281ad906a50f179206ac",
+    "contractsTestRestoredToBase": true,
+    "registryGuardEqualBase": true,
+    "recoveryImplementationAndTestsEqualRootReviewed4b": true
+  },
+  "independentLocalRegistry": {
+    "tests": 2,
+    "pass": 2,
+    "fail": 0,
+    "sourceBeforeAfter": "3bd1a87932ef8e066a94db1dcc0a525ea1d1db92",
+    "workingDiffEmptyBeforeAfter": true,
+    "rawLogSha256": "a64033c1d7ffca2202c6d3bc51b020b6e790cba2ff5acd73d71daa962802843f"
+  },
+  "priorFailure": "P03-358-4b-root-review-20261030.json retained; new source fixes literal registration",
+  "serviceRightState": "not_connected",
+  "writeEnabled": false,
+  "limits": [
+    "internal contract, no runtime consumer/endpoint/schema/DB writer",
+    "legacy consulting analytical access does not establish service entitlement",
+    "no real account/product/destination/Arash acceptance",
+    "primary deployment unchanged"
+  ]
+}

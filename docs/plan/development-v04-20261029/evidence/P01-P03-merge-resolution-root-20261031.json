@@ -1,0 +1,25 @@
+{
+  "left": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+  "right": "7752638842c3f4c8a6984e3ec753a6c92aad80fc",
+  "base": "3acbab90d101620591f44ee9967adbac123d4a28",
+  "mode": "root prepared exact shared-file resolutions only; not applied to any product branch",
+  "conflicts": [
+    {
+      "field": ".scripts.test:core",
+      "resolution": "keep left script exactly and append missing right literal test files to first tsx command",
+      "added": [
+        "lib/consultation/roster.test.ts",
+        "scripts/testing/consultation-roster/fixture.test.ts",
+        "scripts/testing/consultation-replies/replies.test.ts",
+        "components/consultation/advisor-next-ui.test.tsx"
+      ]
+    }
+  ],
+  "dependenciesUnchanged": true,
+  "allLiteralTestsFromBothScriptsRetained": true,
+  "readme": "keep complete left README and add exact right advisor section; no deletion",
+  "files": {
+    "package.json": "67aa6d16afc7b04b161c28be8d4020fc7967ee240bfb0c60510602698b146faa",
+    "README.md": "1c0e87d3a1246b23235e763cf4d7a9aa15d5e0e86638193845fa1ce2e5712538"
+  }
+}

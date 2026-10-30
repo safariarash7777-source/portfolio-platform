@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-30T21:59:12.314407+00:00",
+  "mode": "readback_only",
+  "receiptFiles": [
+    "intent.json",
+    "private-before.json"
+  ],
+  "operationResult": null,
+  "nativeProgressCandidates": [
+    {
+      "startedAt": "20261030T215307Z",
+      "status": "started",
+      "stage": "isolated_restore",
+      "dumpBytes": 2406546295,
+      "target": "portfolio-recovery-proof-20261030t215307z",
+      "finishedAt": null
+    }
+  ],
+  "availableBytes": 15386927104
+}
