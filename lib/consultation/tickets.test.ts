@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ConsultationRead, RecommendationBody } from "./contracts";
-import { classifyTicketEntitlement, resolveTicketRecommendation, ticketReceiptVisible, ticketStatus, validateTicketContinuation, validateTicketRead, validateTicketReceipt, validateTicketRequest, validateTicketTransition, type TicketCommand, type TicketEvent, type TicketRead, type TicketRecommendation, type TicketRequest, type TicketEntitlementRow } from "./tickets";
-import { createTicketIntent, validateTicketIntent } from "./ticketIntent";
+import { classifyLegacyConsultingAccess, resolveTicketRecommendation, ticketReceiptVisible, ticketStatus, validateTicketContinuation, validateTicketLookup, validateTicketRead, validateTicketReceipt, validateTicketRequest, validateTicketTransition, type TicketCommand, type TicketEvent, type TicketRead, type TicketRecommendation, type TicketRequest, type TicketReceipt, type LegacyConsultingAccessRow } from "./tickets";
+import { createTicketIntent, recoverTicketIntent, validateTicketIntent } from "./ticketIntent";
 
 // Synthetic values in memory only; no users, entitlements, or tickets are created.
 const uid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -32,6 +32,12 @@ function read(events = [event(opening())], actorId = M): TicketRead {
 }
 function unavailable(actorId = M): TicketRead { return { ...read([], actorId), history: { state: "unavailable", events: null } }; }
 function receipt(input: TicketRequest) { return { contractVersion: "consultation-ticket-write.v1", actorId: input.expectedActorId, clientToken: input.clientToken, command: input.command, id: event(input).id, version: input.command.baseVersion + 1, reused: false, canonicalContentHash: fingerprint }; }
+// Explicit synthetic lookup fixtures, never a real lookup or a null-as-absence adapter.
+function lookup(input: TicketRequest, resource: TicketRead | "confirmed_absent" | "unavailable", attempt: TicketReceipt | "confirmed_absent" | "unavailable" = "confirmed_absent") {
+  return { contractVersion: "consultation-ticket-lookup.v1", actorId: input.expectedActorId, relationshipId: input.command.relationshipId, requestId: input.command.requestId, clientToken: input.clientToken, authority: "not_connected", request: typeof resource === "string" ? { state: resource, data: null } : { state: "found", data: resource }, attempt: typeof attempt === "string" ? { state: attempt, receipt: null } : { state: "found", receipt: attempt } };
+}
+function transition(input: unknown, parent: ConsultationRead, resource: TicketRead | "confirmed_absent" | "unavailable") { return validateTicketTransition(input, parent, lookup(input as TicketRequest, resource)); }
+function prepareIntent(input: TicketRequest, parent: ConsultationRead, resource: TicketRead | "confirmed_absent" | "unavailable") { return createTicketIntent(input, parent, lookup(input, resource)); }
 
 test("ticket request is independent of recommendation and clientToken; strict shape preserves explicit null", () => {
   const request = validateTicketRequest(opening());
@@ -50,10 +56,10 @@ test("ticket text validates Unicode, nulls and bounds; role/status/authority fie
 
 test("exact recommendation references cannot be partially specified, rebound to latest, or cross relationships", () => {
   assert.equal(resolveTicketRecommendation(reference, source()).state, "resolved");
-  for (const ref of [{ sessionId: S }, { ...reference, version: 2 }, { ...reference, contentHash: "b".repeat(64) }]) assert.throws(() => validateTicketTransition({ ...opening(), command: { ...opening().command, recommendation: ref } }, source(), null));
+  for (const ref of [{ sessionId: S }, { ...reference, version: 2 }, { ...reference, contentHash: "b".repeat(64) }]) assert.throws(() => transition({ ...opening(), command: { ...opening().command, recommendation: ref } }, source(), "confirmed_absent"));
   const unknown = { ...reference, sessionId: uid(30) };
   assert.equal(resolveTicketRecommendation(unknown, source()).state, "unknown");
-  assert.throws(() => validateTicketTransition(opening(unknown), source(), null));
+  assert.throws(() => transition(opening(unknown), source(), "confirmed_absent"));
   const wrong = source(); wrong.sessions[0].relationshipId = uid(31);
   assert.throws(() => resolveTicketRecommendation(reference, wrong));
 });
@@ -87,7 +93,7 @@ test("full append-only history requires ordered contiguous versions, parents, au
 test("member retains history after revocation while advisor loses it and neither gains fresh write preparation", () => {
   const member = source(); member.selected!.revoked = true;
   assert.equal(validateTicketRead(read(), member, Q).history.state, "ready");
-  assert.throws(() => createTicketIntent(opening(), member, null));
+  assert.throws(() => prepareIntent(opening(), member, "confirmed_absent"));
   const advisor = source(false); advisor.selected!.revoked = true;
   assert.throws(() => validateTicketRead(read(undefined, O), advisor, Q));
   const disabled = source(false); disabled.actor.isAdvisor = false; disabled.actor.isOwner = false;
@@ -95,22 +101,22 @@ test("member retains history after revocation while advisor loses it and neither
 });
 
 test("transition validation enforces CAS, active consent and member/owner roles but grants no entitlement", () => {
-  assert.equal(validateTicketTransition(append("member_followup"), source(), read()).command.baseVersion, 1);
-  assert.equal(validateTicketTransition(append("close"), source(false), read(undefined, O)).command.kind, "close");
-  assert.throws(() => validateTicketTransition(append("member_followup", 2), source(), read()));
-  assert.throws(() => validateTicketTransition(append("member_followup"), source(), unavailable()));
-  assert.throws(() => validateTicketTransition(opening(), source(), read()));
-  assert.throws(() => validateTicketTransition(append("member_followup"), source(), null));
-  assert.throws(() => validateTicketTransition({ ...append("close"), expectedActorId: M }, source(), read()));
+  assert.equal(transition(append("member_followup"), source(), read()).command.baseVersion, 1);
+  assert.equal(transition(append("close"), source(false), read(undefined, O)).command.kind, "close");
+  assert.throws(() => transition(append("member_followup", 2), source(), read()));
+  assert.throws(() => transition(append("member_followup"), source(), unavailable()));
+  assert.throws(() => transition(opening(), source(), read()));
+  assert.throws(() => transition(append("member_followup"), source(), "confirmed_absent"));
+  assert.throws(() => transition({ ...append("close"), expectedActorId: M }, source(), read()));
   const notOwner = source(false); notOwner.actor.isOwner = false;
-  assert.throws(() => validateTicketTransition(append("close"), notOwner, read(undefined, O)));
-  assert.throws(() => validateTicketTransition(append("member_followup", 2), source(), read([event(opening()), event(append("close"))])));
+  assert.throws(() => transition(append("close"), notOwner, read(undefined, O)));
+  assert.throws(() => transition(append("member_followup", 2), source(), read([event(opening()), event(append("close"))])));
 });
 
 test("linking a recommendation is its own versioned event; unapproved drafts cannot be sent as links", () => {
-  assert.equal(validateTicketTransition(append("link_recommendation"), source(false), read(undefined, O)).command.kind, "link_recommendation");
+  assert.equal(transition(append("link_recommendation"), source(false), read(undefined, O)).command.kind, "link_recommendation");
   const draft = source(false); draft.sessions[0].state = "draft"; draft.sessions[0].approval = null;
-  assert.throws(() => validateTicketTransition(append("link_recommendation"), draft, read(undefined, O)));
+  assert.throws(() => transition(append("link_recommendation"), draft, read(undefined, O)));
 });
 
 test("withdrawn-before-publication, approval alone or missing publication evidence never resolves a fresh link", () => {
@@ -119,11 +125,11 @@ test("withdrawn-before-publication, approval alone or missing publication eviden
     if (!approved) neverPublished.sessions[0].approval = null;
     neverPublished.events = [{ id: uid(8), sessionId: S, kind: "withdraw", actorId: O, createdAt: neverPublished.sessions[0].createdAt, note: null }];
     assert.equal(resolveTicketRecommendation(reference, neverPublished).state, "unknown");
-    assert.throws(() => validateTicketTransition(append("link_recommendation"), neverPublished, read(undefined, O)));
+    assert.throws(() => transition(append("link_recommendation"), neverPublished, read(undefined, O)));
   }
   const missingEvidence = source(); missingEvidence.events = [];
   assert.equal(resolveTicketRecommendation(reference, missingEvidence).state, "unknown");
-  assert.throws(() => validateTicketTransition(opening(reference), missingEvidence, null));
+  assert.throws(() => transition(opening(reference), missingEvidence, "confirmed_absent"));
   assert.equal(validateTicketRead(read([event(opening(reference))]), missingEvidence, Q).history.state, "ready");
 });
 
@@ -135,7 +141,7 @@ test("later action done or legacy question events never close or implicitly crea
 });
 
 test("immutable intent preserves exact bytes and token, stays blocked even for owner, and cannot be enabled on recovery", () => {
-  const intent = createTicketIntent(opening(reference), source(), null);
+  const intent = prepareIntent(opening(reference), source(), "confirmed_absent");
   assert.ok(Object.isFrozen(intent)); assert.equal(intent.writeEnabled, false); assert.equal(intent.blockedReason, "service_entitlement_not_connected");
   assert.equal(validateTicketIntent(intent).body, intent.body);
   assert.equal(validateTicketIntent(intent).clientToken, "attempt-open");
@@ -143,8 +149,9 @@ test("immutable intent preserves exact bytes and token, stays blocked even for o
   assert.throws(() => validateTicketIntent({ ...intent, body: ` ${intent.body}` }));
   assert.throws(() => validateTicketIntent({ ...intent, body: " ".repeat(20_001) }));
   assert.throws(() => validateTicketIntent({ ...intent, writeEnabled: true } as unknown as typeof intent));
-  assert.equal(createTicketIntent(append("close"), source(false), read(undefined, O)).writeEnabled, false);
-  assert.throws(() => createTicketIntent(opening(), source(false), null));
+  assert.throws(() => validateTicketIntent({ ...intent, serviceRightState: "active" } as unknown as typeof intent));
+  assert.equal(prepareIntent(append("close"), source(false), read(undefined, O)).writeEnabled, false);
+  assert.throws(() => prepareIntent(opening(), source(false), "confirmed_absent"));
 });
 
 test("receipt binds the exact actor/attempt/request/command/version; independent readback must show that event", () => {
@@ -168,33 +175,85 @@ test("append verification rejects rewritten or shortened confirmed history and l
   assert.equal(validateTicketContinuation(unavailable(), after, source(), Q).continuity, "unknown");
 });
 
-const entitlement: TicketEntitlementRow = { id: uid(200), user_id: M, kind: "consulting", source: "admin_grant", starts_at: "2026-10-01T00:00:00Z", expires_at: "2026-11-01T00:00:00Z", revoked_at: null };
-test("existing consulting kind, including admin_grant provenance, is classified by row dates without granting runtime access", () => {
-  const classify = (rows: unknown[], at = date) => classifyTicketEntitlement({ state: "ready", rows, complete: true }, M, at);
-  const active = classify([entitlement]); assert.equal(active.state, "active"); assert.equal(active.writeEnabled, false); assert.equal(active.authority, "not_connected");
-  assert.deepEqual(active.matchingIds, [entitlement.id]);
-  assert.equal(classify([entitlement], entitlement.starts_at).state, "active");
-  assert.equal(classify([entitlement], entitlement.expires_at).state, "inactive");
-  assert.equal(classify([{ ...entitlement, starts_at: "2026-10-25T00:00:00Z" }]).state, "inactive");
-  for (const row of [{ ...entitlement, kind: "manual" }, { ...entitlement, kind: "webinar" }, { ...entitlement, revoked_at: date }]) assert.equal(classify([row]).state, "inactive");
-  assert.equal(classify([]).state, "inactive");
+test("lookup explicitly binds actor, relationship, stable request and exact attempt; null is never absence", () => {
+  const input = opening(), confirmed = lookup(input, "confirmed_absent");
+  assert.equal(validateTicketLookup(confirmed, input, source()).request.state, "confirmed_absent");
+  for (const bad of [null, undefined, read(), { ...confirmed, actorId: O }, { ...confirmed, relationshipId: uid(88) }, { ...confirmed, requestId: uid(88) }, { ...confirmed, clientToken: "new-attempt" }, { ...confirmed, request: { state: "absent", data: null } }, { ...confirmed, attempt: { state: "found", receipt: null } }, { ...confirmed, request: { state: "confirmed_absent", data: [] } }]) assert.throws(() => validateTicketLookup(bad, input, source()));
+});
+
+test("fresh preparation requires confirmed attempt absence and the appropriate explicit resource lookup", () => {
+  const input = opening(), done = validateTicketReceipt(receipt(input), input);
+  for (const bad of [null, read(), lookup(input, "unavailable"), lookup(input, "confirmed_absent", "unavailable"), lookup(input, read(), done)]) assert.throws(() => createTicketIntent(input, source(), bad));
+  const intent = createTicketIntent(input, source(), lookup(input, "confirmed_absent"));
+  assert.equal(intent.serviceRightState, "not_connected"); assert.equal(intent.writeEnabled, false);
+  const followup = append("member_followup");
+  assert.equal(createTicketIntent(followup, source(), lookup(followup, read())).requestId, Q);
+  assert.throws(() => createTicketIntent(followup, source(), lookup(followup, "confirmed_absent")));
+});
+
+test("unknown-outcome recovery preserves original body/token across found, absent, stale and failed lookups", () => {
+  const input = opening(), intent = prepareIntent(input, source(), "confirmed_absent"), saved = validateTicketReceipt(receipt(input), input);
+  const cases = [
+    [lookup(input, read(), saved), "confirmed"],
+    [lookup(input, "unavailable", saved), "readback_pending"],
+    [lookup(input, "confirmed_absent", saved), "readback_pending"],
+    [lookup(input, "confirmed_absent"), "confirmed_absent"],
+    [lookup(input, read()), "request_found"],
+    [lookup(input, "confirmed_absent", "unavailable"), "unavailable"],
+    [{ ...lookup(input, "confirmed_absent"), clientToken: "replacement-token" }, "unavailable"],
+    [null, "unavailable"],
+  ] as const;
+  for (const [result, expected] of cases) {
+    const recovered = recoverTicketIntent(intent, result, source(), null);
+    assert.equal(recovered.status, expected); assert.equal(recovered.intent.body, intent.body); assert.equal(recovered.intent.clientToken, intent.clientToken); assert.equal(recovered.intent.writeEnabled, false);
+  }
+  const closing = append("close"), pending = prepareIntent(closing, source(false), read(undefined, O)), closeReceipt = validateTicketReceipt(receipt(closing), closing);
+  assert.equal(recoverTicketIntent(pending, lookup(closing, read(undefined, O), closeReceipt), source(false), null).status, "readback_pending");
+  assert.equal(recoverTicketIntent(pending, lookup(closing, read([event(opening()), event(closing)], O), closeReceipt), source(false), null).status, "confirmed");
+  assert.equal(recoverTicketIntent(pending, lookup(closing, "confirmed_absent"), source(false), null).status, "unavailable");
+});
+
+test("known receipt survives later read failure or contradictory absence and account change cannot expose the old intent", () => {
+  const input = opening(), intent = prepareIntent(input, source(), "confirmed_absent"), saved = validateTicketReceipt(receipt(input), input);
+  for (const unavailableLookup of [null, lookup(input, "unavailable"), lookup(input, "confirmed_absent"), lookup(input, read(), { ...saved, id: uid(900) })]) {
+    const result = recoverTicketIntent(intent, unavailableLookup, source(), saved);
+    assert.equal(result.status, "readback_pending"); assert.equal(result.receipt?.id, saved.id); assert.equal(result.intent.body, intent.body);
+  }
+  assert.equal(recoverTicketIntent(intent, lookup(input, read()), source(), saved).status, "confirmed");
+  assert.throws(() => recoverTicketIntent(intent, lookup(input, read(), saved), source(false), saved));
+  assert.throws(() => recoverTicketIntent(intent, lookup(input, read(), saved), source(), { ...saved, clientToken: "other-attempt" }));
+});
+
+const entitlement: LegacyConsultingAccessRow = { id: uid(200), user_id: M, kind: "consulting", source: "admin_grant", starts_at: "2026-10-01T00:00:00Z", expires_at: "2026-11-01T00:00:00Z", revoked_at: null };
+test("legacy analytical access is separate from unknown service rights, including admin_grant provenance", () => {
+  const classify = (rows: unknown[], at = date) => classifyLegacyConsultingAccess({ state: "ready", rows, complete: true }, M, at);
+  const active = classify([entitlement]); assert.equal(active.legacyAccessState, "active"); assert.equal(active.serviceRightState, "not_connected"); assert.equal(active.writeEnabled, false); assert.equal(active.authority, "not_connected");
+  assert.deepEqual(active.matchingLegacyEntitlementIds, [entitlement.id]);
+  assert.equal(classify([entitlement], entitlement.starts_at).legacyAccessState, "active");
+  const expired = classify([entitlement], entitlement.expires_at);
+  assert.equal(expired.legacyAccessState, "inactive"); assert.equal(expired.serviceRightState, "not_connected");
+  assert.equal(classify([{ ...entitlement, starts_at: "2026-10-25T00:00:00Z" }]).legacyAccessState, "inactive");
+  for (const row of [{ ...entitlement, kind: "manual" }, { ...entitlement, kind: "webinar" }, { ...entitlement, revoked_at: date }]) {
+    const inactive = classify([row]); assert.equal(inactive.legacyAccessState, "inactive"); assert.equal(inactive.serviceRightState, "not_connected"); assert.equal(inactive.writeEnabled, false);
+  }
+  assert.equal(classify([]).legacyAccessState, "inactive");
 });
 
 test("missing, malformed, foreign, incomplete, duplicate or failed entitlement data remain unknown, never zero rights", () => {
-  assert.equal(classifyTicketEntitlement({ state: "not_connected", rows: null }, M, date).state, "not_connected");
-  assert.equal(classifyTicketEntitlement({ state: "unavailable", rows: null }, M, date).state, "unknown");
-  assert.equal(classifyTicketEntitlement({ state: "ready", rows: [], complete: false }, M, date).state, "unknown");
-  for (const bad of [null, {}, { state: "ready", rows: [], complete: "yes" }, { state: "ready", rows: [] }]) assert.equal(classifyTicketEntitlement(bad, M, date).state, "unknown");
+  assert.equal(classifyLegacyConsultingAccess({ state: "not_connected", rows: null }, M, date).legacyAccessState, "not_connected");
+  assert.equal(classifyLegacyConsultingAccess({ state: "unavailable", rows: null }, M, date).legacyAccessState, "unknown");
+  assert.equal(classifyLegacyConsultingAccess({ state: "ready", rows: [], complete: false }, M, date).legacyAccessState, "unknown");
+  for (const bad of [null, {}, { state: "ready", rows: [], complete: "yes" }, { state: "ready", rows: [] }]) assert.equal(classifyLegacyConsultingAccess(bad, M, date).legacyAccessState, "unknown");
   for (const rows of [[{ ...entitlement, user_id: O }], [{ ...entitlement, expires_at: null }], [{ ...entitlement, starts_at: "2026-02-30T00:00:00Z" }], [{ ...entitlement, kind: "admin" }], [entitlement, entitlement]]) {
-    const result = classifyTicketEntitlement({ state: "ready", rows, complete: true }, M, date); assert.equal(result.state, "unknown"); assert.equal(result.matchingIds, null); assert.equal(result.writeEnabled, false);
+    const result = classifyLegacyConsultingAccess({ state: "ready", rows, complete: true }, M, date); assert.equal(result.legacyAccessState, "unknown"); assert.equal(result.serviceRightState, "not_connected"); assert.equal(result.matchingLegacyEntitlementIds, null); assert.equal(result.writeEnabled, false);
   }
 });
 
 test("microsecond entitlement boundaries and event chronology preserve database timestamp precision", () => {
   const row = { ...entitlement, starts_at: "2026-10-24T12:00:00.123456Z", expires_at: "2026-10-24T12:00:00.123459Z" };
   for (const [fraction, expected] of [["123455", "inactive"], ["123456", "active"], ["123458", "active"], ["123459", "inactive"]]) {
-    const result = classifyTicketEntitlement({ state: "ready", rows: [row], complete: true }, M, `2026-10-24T12:00:00.${fraction}Z`);
-    assert.equal(result.state, expected); assert.equal(result.writeEnabled, false);
+    const result = classifyLegacyConsultingAccess({ state: "ready", rows: [row], complete: true }, M, `2026-10-24T12:00:00.${fraction}Z`);
+    assert.equal(result.legacyAccessState, expected); assert.equal(result.serviceRightState, "not_connected"); assert.equal(result.writeEnabled, false);
   }
   const events = [event(opening()), event(append("advisor_clarification"))];
   events[0].createdAt = "2026-10-24T12:00:01.123457Z"; events[1].createdAt = "2026-10-24T12:00:01.123456Z";

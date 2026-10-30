@@ -20,6 +20,13 @@ export interface TicketRead {
   writeAvailability: "service_entitlement_not_connected";
   history: { state: "ready"; events: TicketEvent[] } | { state: "unavailable"; events: null };
 }
+export interface TicketLookup {
+  contractVersion: "consultation-ticket-lookup.v1";
+  actorId: string; relationshipId: string; requestId: string; clientToken: string;
+  authority: "not_connected";
+  request: { state: "found"; data: TicketRead } | { state: "confirmed_absent" | "unavailable"; data: null };
+  attempt: { state: "found"; receipt: TicketReceipt } | { state: "confirmed_absent" | "unavailable"; receipt: null };
+}
 const id = (value: unknown): string => { if (!uuid(value)) throw Error("شناسه معتبر نیست."); return value.toLowerCase(); };
 const version = (value: unknown, base = false): number => {
   if (typeof value !== "number" || !Number.isInteger(value) || value < (base ? 0 : 1) || value > (base ? 2147483646 : 2147483647)) throw Error("نسخه معتبر نیست.");
@@ -116,17 +123,38 @@ export function validateTicketRead(value: unknown, source: ConsultationRead, req
   }
   return { ...result, history: { state: "ready", events } };
 }
+/** Explicit lookup shape only, not a lookup implementation or proof from a database. */
+export function validateTicketLookup(value: unknown, input: TicketRequest, source: ConsultationRead): TicketLookup {
+  const request = validateTicketRequest(input), context = parent(source, request.expectedActorId);
+  const row = object(value, ["contractVersion", "actorId", "relationshipId", "requestId", "clientToken", "authority", "request", "attempt"]);
+  if (row.contractVersion !== "consultation-ticket-lookup.v1" || id(row.actorId) !== request.expectedActorId || id(row.relationshipId) !== request.command.relationshipId || id(row.relationshipId) !== context.relation.id || id(row.requestId) !== request.command.requestId || row.clientToken !== request.clientToken || row.authority !== "not_connected") throw Error("جست‌وجو با همان درخواست و تلاش مطابق نیست.");
+  const resource = object(row.request, ["state", "data"]), attempt = object(row.attempt, ["state", "receipt"]);
+  let requestLookup: TicketLookup["request"], attemptLookup: TicketLookup["attempt"];
+  if (resource.state === "found") requestLookup = { state: "found", data: validateTicketRead(resource.data, context.read, request.command.requestId) };
+  else {
+    if (!["confirmed_absent", "unavailable"].includes(String(resource.state)) || resource.data !== null) throw Error("وضعیت جست‌وجوی درخواست معتبر نیست.");
+    requestLookup = { state: resource.state as "confirmed_absent" | "unavailable", data: null };
+  }
+  if (attempt.state === "found") attemptLookup = { state: "found", receipt: validateTicketReceipt(attempt.receipt, request) };
+  else {
+    if (!["confirmed_absent", "unavailable"].includes(String(attempt.state)) || attempt.receipt !== null) throw Error("وضعیت جست‌وجوی تلاش معتبر نیست.");
+    attemptLookup = { state: attempt.state as "confirmed_absent" | "unavailable", receipt: null };
+  }
+  return { contractVersion: row.contractVersion, actorId: request.expectedActorId, relationshipId: context.relation.id, requestId: request.command.requestId, clientToken: request.clientToken, authority: "not_connected", request: requestLookup, attempt: attemptLookup };
+}
 /** Structural/CAS preparation only. Even success grants no write capability. */
-export function validateTicketTransition(input: unknown, source: ConsultationRead, prior: TicketRead | null): TicketRequest {
+export function validateTicketTransition(input: unknown, source: ConsultationRead, lookupValue: unknown): TicketRequest {
   const request = validateTicketRequest(input), context = parent(source, request.expectedActorId), c = request.command;
   if (context.relation.revoked || c.relationshipId !== context.relation.id) throw Error("رضایت فعال برای نوشتن تأیید نشده است.");
   const memberEvent = c.kind === "open" || c.kind === "member_followup";
   if (memberEvent ? request.expectedActorId !== context.relation.clientId : request.expectedActorId !== context.relation.advisorId || !context.read.actor.isOwner) throw Error("نقش ثبت‌کننده با کنش مطابق نیست.");
+  const lookup = validateTicketLookup(lookupValue, request, context.read);
+  if (lookup.attempt.state !== "confirmed_absent") throw Error("نتیجهٔ همان تلاش ابتدا باید بازیابی شود؛ تلاش تازه آماده نمی‌شود.");
   if (c.kind === "open") {
-    if (prior !== null) throw Error("درخواست موجود دوباره آغاز نمی‌شود.");
+    if (lookup.request.state !== "confirmed_absent") throw Error("نبود درخواست تأیید نشده است؛ درخواست موجود دوباره آغاز نمی‌شود.");
   } else {
-    if (!prior) throw Error("تاریخچهٔ درخواست لازم است.");
-    const data = validateTicketRead(prior, context.read, c.requestId);
+    if (lookup.request.state !== "found") throw Error("تاریخچهٔ درخواست لازم است.");
+    const data = lookup.request.data;
     if (data.history.state !== "ready") throw Error("پیش از تلاش تازه، تاریخچه خوانده شود.");
     const latest = data.history.events[data.history.events.length - 1];
     if (latest.command.kind === "close" || latest.version !== c.baseVersion || latest.version >= TICKET_HISTORY_LIMIT) throw Error("نسخهٔ مبنا یا وضعیت درخواست تغییر کرده است.");
@@ -158,14 +186,14 @@ export function validateTicketContinuation(previous: unknown, next: unknown, sou
   return { data: after, continuity: "verified" as const };
 }
 
-export interface TicketEntitlementRow {
+export interface LegacyConsultingAccessRow {
   id: string; user_id: string; kind: "consulting" | "webinar" | "manual"; source: string | null;
   starts_at: string; expires_at: string; revoked_at: string | null;
 }
-export type TicketEntitlementSnapshot = { state: "not_connected"; rows: null } | { state: "unavailable"; rows: null } | { state: "ready"; rows: unknown[]; complete: boolean };
-/** In-memory classification, not an authority or an operational entitlement reader. */
-export function classifyTicketEntitlement(snapshot: unknown, clientId: string, evaluatedAt: string): { state: "active" | "inactive" | "unknown" | "not_connected"; writeEnabled: false; authority: "not_connected"; matchingIds: string[] | null } {
-  const result = (state: "active" | "inactive" | "unknown" | "not_connected", matchingIds: string[] | null = null) => ({ state, writeEnabled: false as const, authority: "not_connected" as const, matchingIds });
+export type LegacyConsultingAccessSnapshot = { state: "not_connected"; rows: null } | { state: "unavailable"; rows: null } | { state: "ready"; rows: unknown[]; complete: boolean };
+/** Legacy analytical access only. No service, credit or purchase-terms right is inferred. */
+export function classifyLegacyConsultingAccess(snapshot: unknown, clientId: string, evaluatedAt: string): { legacyAccessState: "active" | "inactive" | "unknown" | "not_connected"; serviceRightState: "not_connected"; writeEnabled: false; authority: "not_connected"; matchingLegacyEntitlementIds: string[] | null } {
+  const result = (legacyAccessState: "active" | "inactive" | "unknown" | "not_connected", matchingLegacyEntitlementIds: string[] | null = null) => ({ legacyAccessState, serviceRightState: "not_connected" as const, writeEnabled: false as const, authority: "not_connected" as const, matchingLegacyEntitlementIds });
   try {
     if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) return result("unknown");
     const state = (snapshot as Record<string, unknown>).state;
@@ -174,12 +202,12 @@ export function classifyTicketEntitlement(snapshot: unknown, clientId: string, e
     if (state !== "ready" || input.complete !== true) return result("unknown");
     const client = id(clientId), now = timestamp(evaluatedAt);
     if (!Array.isArray(input.rows) || input.rows.length > 1000) return result("unknown");
-    const rows: TicketEntitlementRow[] = input.rows.map(value => {
+    const rows: LegacyConsultingAccessRow[] = input.rows.map(value => {
       const row = object(value, ["id", "user_id", "kind", "source", "starts_at", "expires_at", "revoked_at"]);
       if (!["consulting", "webinar", "manual"].includes(String(row.kind)) || id(row.user_id) !== client || row.source !== null && typeof row.source !== "string") throw Error("منبع حق معتبر نیست.");
       const startsAt = timestamp(row.starts_at), expiresAt = timestamp(row.expires_at);
       if (compareInstants(expiresAt, startsAt) <= 0) throw Error("دورهٔ حق معتبر نیست.");
-      return { id: id(row.id), user_id: client, kind: row.kind as TicketEntitlementRow["kind"], source: row.source as string | null, starts_at: startsAt, expires_at: expiresAt, revoked_at: row.revoked_at === null ? null : timestamp(row.revoked_at) };
+      return { id: id(row.id), user_id: client, kind: row.kind as LegacyConsultingAccessRow["kind"], source: row.source as string | null, starts_at: startsAt, expires_at: expiresAt, revoked_at: row.revoked_at === null ? null : timestamp(row.revoked_at) };
     });
     if (new Set(rows.map(row => row.id)).size !== rows.length) return result("unknown");
     const matchingIds = rows.filter(row => row.kind === "consulting" && row.revoked_at === null && compareInstants(row.starts_at, now) <= 0 && compareInstants(now, row.expires_at) < 0).map(row => row.id);
