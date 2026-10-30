@@ -1,0 +1,140 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "read-only block/LVM free-extents inventory; no resize or allocation",
+  "result": {
+    "at": "2026-10-30T11:26:31.808477+00:00",
+    "blockDevices": {
+      "exitCode": 0,
+      "data": {
+        "blockdevices": [
+          {
+            "name": "sda",
+            "size": 16106127360,
+            "type": "disk",
+            "mountpoints": [
+              null
+            ],
+            "fstype": null,
+            "children": [
+              {
+                "name": "sda1",
+                "size": 749731840,
+                "type": "part",
+                "mountpoints": [
+                  "/boot/efi"
+                ],
+                "fstype": "vfat"
+              },
+              {
+                "name": "sda2",
+                "size": 1879048192,
+                "type": "part",
+                "mountpoints": [
+                  "/boot"
+                ],
+                "fstype": "ext4"
+              },
+              {
+                "name": "sda3",
+                "size": 13475250176,
+                "type": "part",
+                "mountpoints": [
+                  null
+                ],
+                "fstype": "LVM2_member",
+                "children": [
+                  {
+                    "name": "ubuntu--vg-ubuntu--lv",
+                    "size": 83261128704,
+                    "type": "lvm",
+                    "mountpoints": [
+                      "/"
+                    ],
+                    "fstype": "ext4"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "sdb",
+            "size": 69793218560,
+            "type": "disk",
+            "mountpoints": [
+              null
+            ],
+            "fstype": "LVM2_member",
+            "children": [
+              {
+                "name": "ubuntu--vg-ubuntu--lv",
+                "size": 83261128704,
+                "type": "lvm",
+                "mountpoints": [
+                  "/"
+                ],
+                "fstype": "ext4"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "volumeGroups": {
+      "exitCode": 0,
+      "data": {
+        "report": [
+          {
+            "vg": [
+              {
+                "vg_name": "ubuntu-vg",
+                "vg_size": "83261128704",
+                "vg_free": "0"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "logicalVolumes": {
+      "exitCode": 0,
+      "data": {
+        "report": [
+          {
+            "lv": [
+              {
+                "vg_name": "ubuntu-vg",
+                "lv_name": "ubuntu-lv",
+                "lv_size": "83261128704",
+                "lv_attr": "-wi-ao----"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "physicalVolumes": {
+      "exitCode": 0,
+      "data": {
+        "report": [
+          {
+            "pv": [
+              {
+                "pv_name": "/dev/sda3",
+                "pv_size": "13472104448",
+                "pv_free": "0",
+                "vg_name": "ubuntu-vg"
+              },
+              {
+                "pv_name": "/dev/sdb",
+                "pv_size": "69789024256",
+                "pv_free": "0",
+                "vg_name": "ubuntu-vg"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-30T11:09:56.485047+00:00",
+  "method": "three sequential bounded low-priority archive byte checks; no restore or deletion",
+  "serviceChanged": false,
+  "privateContentExported": false,
+  "results": [
+    {
+      "at": "2026-10-30T11:10:21.989569+00:00",
+      "path": "/root/portfolio-recovery-backups/20261006T092801Z/postgres.dump",
+      "expectedSha256": "66c1fa90e750df28818d65fbaffcd00436bf04cc53bf04c3365f2728414ee04b",
+      "actualSha256": "66c1fa90e750df28818d65fbaffcd00436bf04cc53bf04c3365f2728414ee04b",
+      "match": true,
+      "exitCode": 0,
+      "elapsedSeconds": 22.266,
+      "priority": "ionice idle / nice19 / timeout30s",
+      "restoreExecuted": false
+    },
+    {
+      "at": "2026-10-30T11:10:39.720252+00:00",
+      "path": "/root/portfolio-recovery-backups/20261009T163452Z/postgres.dump",
+      "expectedSha256": "c7f28334b1818cf92f3d136628abc93f92849a71b6810481f35f34325589cfd2",
+      "actualSha256": "c7f28334b1818cf92f3d136628abc93f92849a71b6810481f35f34325589cfd2",
+      "match": true,
+      "exitCode": 0,
+      "elapsedSeconds": 17.731,
+      "priority": "ionice idle / nice19 / timeout30s",
+      "restoreExecuted": false
+    },
+    {
+      "at": "2026-10-30T11:10:57.210176+00:00",
+      "path": "/root/portfolio-recovery-backups/20261017T114409Z/postgres.dump",
+      "expectedSha256": "1ed1428213f5e70d60c211984b4b1b1f661962dfe30912992ba3e0fc3059250f",
+      "actualSha256": "1ed1428213f5e70d60c211984b4b1b1f661962dfe30912992ba3e0fc3059250f",
+      "match": true,
+      "exitCode": 0,
+      "elapsedSeconds": 17.49,
+      "priority": "ionice idle / nice19 / timeout30s",
+      "restoreExecuted": false
+    }
+  ],
+  "exitCode": 0
+}

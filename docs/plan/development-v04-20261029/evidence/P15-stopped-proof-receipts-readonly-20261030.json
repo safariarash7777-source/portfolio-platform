@@ -1,0 +1,331 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "immutable container IDs and allowlisted restore receipt metadata only; no dump/env/log body read",
+  "result": {
+    "at": "2026-10-30T10:42:14.534334+00:00",
+    "containers": [
+      {
+        "id": "14d7ceb614c601463e2662b11f861c88d94226bec446ef96bbf86fa92af6d2ca",
+        "name": "portfolio-recovery-proof-20261003t101406z",
+        "created": "2026-10-03T10:15:23.847394257Z",
+        "status": "exited",
+        "finishedAt": "2026-10-03T10:57:11.521729047Z",
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "mounts": [
+          {
+            "Destination": "/recovery",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/root/portfolio-recovery-backups/20261003T101406Z",
+            "Type": "bind"
+          }
+        ],
+        "receipts": [
+          {
+            "path": "/root/portfolio-recovery-backups/20261003T101406Z/receipt.json",
+            "metadata": {
+              "status": "passed",
+              "stage": "isolated_restore_retry_maintenance_role",
+              "source": "portfolio-stage-db-1",
+              "target": "portfolio-recovery-proof-20261003t101406z",
+              "startedAt": "20261003T101406Z",
+              "finishedAt": "2026-10-03T10:34:45.076264+00:00",
+              "dumpBytes": 2368435622,
+              "dumpSha256": "f725d1b02a820b78c859584ec648100ce208f6d622086d0f29d318c319af9635",
+              "archiveHashVerifiedAfterRestore": true,
+              "targetStopped": true,
+              "sourceContainerUnchanged": true,
+              "sourceHealthyAfter": true,
+              "comparisonEqual": true,
+              "rawComparisonEqual": false,
+              "rowcountEqual": true,
+              "identity-idsEqual": true,
+              "policyEqual": true,
+              "tableEqual": true,
+              "functionEqual": true,
+              "defaultaclEqual": true,
+              "extensionEqual": true,
+              "columnEqual": true,
+              "schemaEqual": true,
+              "constraintEqual": true,
+              "triggerEqual": true,
+              "viewEqual": true,
+              "indexEqual": true,
+              "contentDigestAllRowsVerified": false
+            }
+          }
+        ]
+      },
+      {
+        "id": "c90491aabb252cd4069c5ff7fd1f453d314d256df7d361be0cf546a1ea0c9ede",
+        "name": "portfolio-recovery-proof-20261023t123955z",
+        "created": "2026-10-23T12:41:11.651148718Z",
+        "status": "exited",
+        "finishedAt": "2026-10-23T12:53:02.532160335Z",
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "mounts": [
+          {
+            "Destination": "/recovery",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/root/portfolio-recovery-backups/20261023T123955Z",
+            "Type": "bind"
+          }
+        ],
+        "receipts": [
+          {
+            "path": "/root/portfolio-recovery-backups/20261023T123955Z/receipt.json",
+            "metadata": {
+              "status": "comparison_failed",
+              "stage": "isolated_restore",
+              "source": "portfolio-stage-db-1",
+              "target": "portfolio-recovery-proof-20261023t123955z",
+              "startedAt": "20261023T123955Z",
+              "finishedAt": "2026-10-23T12:50:45.402951+00:00",
+              "dumpBytes": 2393040715,
+              "dumpSha256": "4070fad9bd3dc365ecb6309874a9363cd158c3928ae03e83c1150393fd81e961",
+              "targetStopped": true,
+              "sourceContainerUnchanged": true,
+              "sourceHealthyAfter": true,
+              "comparisonEqual": false,
+              "rowcountEqual": true,
+              "identity-idsEqual": true,
+              "policyEqual": true,
+              "tableEqual": false,
+              "functionEqual": true,
+              "defaultaclEqual": true,
+              "extensionEqual": true
+            }
+          },
+          {
+            "path": "/root/portfolio-recovery-backups/20261023T123955Z/reconciliation-receipt-v2.json",
+            "metadata": {
+              "status": "PASS_MANUAL_ACL_RECONCILIATION",
+              "stage": "post_inventory",
+              "target": "portfolio-recovery-proof-20261023t123955z",
+              "targetStopped": true,
+              "sourceContainerUnchanged": true,
+              "sourceHealthyAfter": true,
+              "comparisonEqual": true
+            }
+          },
+          {
+            "path": "/root/portfolio-recovery-backups/20261023T123955Z/reconciliation-receipt.json",
+            "metadata": {
+              "status": "failed",
+              "target": "portfolio-recovery-proof-20261023t123955z",
+              "targetStopped": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "95991e36f6bd88acca93a2f99a3735d9f5057b9b19729ae41a1711932a8bb010",
+        "name": "portfolio-media-proof-20261017t175048z",
+        "created": "2026-10-17T17:50:56.052007554Z",
+        "status": "exited",
+        "finishedAt": "2026-10-27T09:30:12.264936714Z",
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "mounts": [
+          {
+            "Destination": "/recovery",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/root/portfolio-recovery-backups/20261017T174657Z",
+            "Type": "bind"
+          }
+        ],
+        "receipts": [
+          {
+            "path": "/root/portfolio-recovery-backups/20261017T174657Z/receipt.json",
+            "metadata": {
+              "status": "failed",
+              "stage": "isolated_restore",
+              "source": "portfolio-stage-db-1",
+              "target": "portfolio-recovery-proof-20261017t174657z",
+              "startedAt": "20261017T174657Z",
+              "finishedAt": "2026-10-17T17:48:26.778700+00:00",
+              "dumpBytes": 2379114746,
+              "dumpSha256": "3d000898706687c47b08aaeb37d37c18d4cdc9369842091df5b038709040623c",
+              "targetStopped": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "251c7c7a4915c17ee3dc9d36e9969bfedf32dda4783703da8a82f99c7fc4c3c9",
+        "name": "portfolio-research-restore-20261017t114842z",
+        "created": "2026-10-17T11:48:57.37542886Z",
+        "status": "exited",
+        "finishedAt": "2026-10-17T12:04:17.93791898Z",
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "mounts": [
+          {
+            "Destination": "/recovery",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/root/portfolio-recovery-backups/20261017T114409Z",
+            "Type": "bind"
+          }
+        ],
+        "receipts": [
+          {
+            "path": "/root/portfolio-recovery-backups/20261017T114409Z/receipt.json",
+            "metadata": {
+              "status": "passed",
+              "stage": "isolated_restore_blank_database",
+              "source": "portfolio-stage-db-1",
+              "target": "portfolio-research-restore-20261017t114842z",
+              "startedAt": "20261017T115029Z",
+              "finishedAt": "2026-10-17T11:59:31.880079+00:00",
+              "dumpBytes": 2378622379,
+              "dumpSha256": "1ed1428213f5e70d60c211984b4b1b1f661962dfe30912992ba3e0fc3059250f",
+              "targetStopped": true,
+              "sourceContainerUnchanged": true,
+              "sourceHealthyAfter": true,
+              "comparisonEqual": true,
+              "rowcountEqual": true,
+              "identity-idsEqual": true,
+              "policyEqual": true,
+              "tableEqual": true,
+              "functionEqual": true,
+              "defaultaclEqual": true,
+              "extensionEqual": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "fef7e2f5be85861ad4c766008a3076b93de67e69d84838acc39913631fe19de0",
+        "name": "portfolio-frozen-proof-20261009t163452z",
+        "created": "2026-10-09T16:35:57.045426512Z",
+        "status": "exited",
+        "finishedAt": "2026-10-09T16:50:48.493574692Z",
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "mounts": [
+          {
+            "Destination": "/recovery",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/root/portfolio-recovery-backups/20261009T163452Z",
+            "Type": "bind"
+          }
+        ],
+        "receipts": [
+          {
+            "path": "/root/portfolio-recovery-backups/20261009T163452Z/receipt.json",
+            "metadata": {
+              "status": "passed",
+              "stage": "isolated_restore",
+              "source": "portfolio-stage-db-1",
+              "target": "portfolio-frozen-proof-20261009t163452z",
+              "startedAt": "20261009T163452Z",
+              "finishedAt": "2026-10-09T16:44:37.535962+00:00",
+              "dumpBytes": 2372409614,
+              "dumpSha256": "c7f28334b1818cf92f3d136628abc93f92849a71b6810481f35f34325589cfd2",
+              "targetStopped": true,
+              "sourceContainerUnchanged": true,
+              "sourceHealthyAfter": true,
+              "comparisonEqual": true,
+              "rowcountEqual": true,
+              "identity-idsEqual": true,
+              "policyEqual": true,
+              "tableEqual": true,
+              "functionEqual": true,
+              "defaultaclEqual": true,
+              "extensionEqual": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "87d6f1d9021a97b331a5be8f5aaf7b2bb05a4775d495e1ef84baff5cddec6313",
+        "name": "portfolio-security-proof-20261006t092801z-retry02",
+        "created": "2026-10-06T09:33:32.387115093Z",
+        "status": "exited",
+        "finishedAt": "2026-10-06T09:57:03.685514146Z",
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "mounts": [
+          {
+            "Destination": "/recovery",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/root/portfolio-recovery-backups/20261006T092801Z",
+            "Type": "bind"
+          }
+        ],
+        "receipts": [
+          {
+            "path": "/root/portfolio-recovery-backups/20261006T092801Z/receipt.json",
+            "metadata": {
+              "status": "passed",
+              "stage": "isolated_restore_empty_database_retry03",
+              "source": "portfolio-stage-db-1",
+              "target": "portfolio-security-proof-20261006t092801z-retry02",
+              "startedAt": "20261006T092801Z",
+              "finishedAt": "2026-10-06T09:45:04.718529+00:00",
+              "dumpBytes": 2369907015,
+              "dumpSha256": "66c1fa90e750df28818d65fbaffcd00436bf04cc53bf04c3365f2728414ee04b",
+              "targetStopped": true,
+              "sourceContainerUnchanged": true,
+              "sourceHealthyAfter": true,
+              "comparisonEqual": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "bc513716f316d1b97b16f35c1e9b61695a92ac9e4ec18188b01605fd5b659195",
+        "name": "portfolio-recovery-proof-20261024t090243z",
+        "created": "2026-10-24T09:05:45.640405484Z",
+        "status": "exited",
+        "finishedAt": "2026-10-24T09:20:53.32724121Z",
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "mounts": [
+          {
+            "Destination": "/recovery",
+            "Mode": "",
+            "Propagation": "rprivate",
+            "RW": false,
+            "Source": "/root/portfolio-recovery-backups/20261024T090243Z",
+            "Type": "bind"
+          }
+        ],
+        "receipts": [
+          {
+            "path": "/root/portfolio-recovery-backups/20261024T090243Z/receipt.json",
+            "metadata": {
+              "status": "passed",
+              "stage": "isolated_restore",
+              "source": "portfolio-stage-db-1",
+              "target": "portfolio-recovery-proof-20261024t090243z",
+              "startedAt": "20261024T090243Z",
+              "finishedAt": "2026-10-24T09:16:24.899688+00:00",
+              "dumpBytes": 2394735017,
+              "dumpSha256": "9c076d9afccf2a12f60305e3361ff80de0396041ff67a737dda9d24d264ac980",
+              "targetStopped": true,
+              "sourceContainerUnchanged": true,
+              "sourceHealthyAfter": true,
+              "comparisonEqual": true,
+              "rowcountEqual": true,
+              "identity-idsEqual": true,
+              "policyEqual": true,
+              "tableEqual": true,
+              "functionEqual": true,
+              "defaultaclEqual": true,
+              "extensionEqual": true
+            }
+          }
+        ]
+      }
+    ],
+    "privateBodiesOrCredentialsRead": false
+  }
+}

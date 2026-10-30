@@ -1,0 +1,18 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "one bounded low-priority archive hash; receipt reconciliation preparation, not fresh restore",
+  "result": {
+    "at": "2026-10-30T10:43:49.933764+00:00",
+    "path": "/root/portfolio-recovery-backups/20261003T101406Z/postgres.dump",
+    "expectedSha256": "f725d1b02a820b78c859584ec648100ce208f6d622086d0f29d318c319af9635",
+    "actualSha256": "f725d1b02a820b78c859584ec648100ce208f6d622086d0f29d318c319af9635",
+    "match": true,
+    "status": "VERIFIED_ARCHIVE_BYTES_ONLY",
+    "exitCode": 0,
+    "elapsedSeconds": 20.346,
+    "priority": "ionice idle / nice 19 / timeout30s",
+    "privateContentExported": false,
+    "restoreExecuted": false
+  }
+}
