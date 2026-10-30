@@ -36,3 +36,21 @@ test('PF10 SQL transport also requires actual kernel tmpfs mount, never a volume
  assert.doesNotThrow(()=>verifyDatabaseMountInfo('101 99 0:20 / /var/lib/postgresql/data rw,nosuid - tmpfs tmpfs rw'));
  for(const text of ['', '101 99 8:1 / /var/lib/postgresql/data rw - ext4 /dev/sda1 rw', '101 99 0:20 / /tmp rw - tmpfs tmpfs rw'])assert.throws(()=>verifyDatabaseMountInfo(text));
 });
+
+import {nativeAuthProfile,allowedProfileURL,runNativeAuthProfile} from './native-auth-runtime.mjs';
+import {gatewayProfile} from './native-auth-gateway.mjs';
+test('Shared runtime has only two immutable profiles; application gateway and HTTP policy agree',()=>{
+ for(const profile of ['pf10','p09']){
+  const config=nativeAuthProfile(profile),gateway=gatewayProfile(profile);
+  assert.ok(Object.isFrozen(config));
+  assert.deepEqual(gateway.routes,config.routes);assert.equal(gateway.identityPath,config.identityPath);
+  for(const path of [...config.routes,config.identityPath,'/auth/v1/user','/rest/v1/'])assert.equal(allowedProfileURL(profile,origin+path),origin+path);
+  for(const path of ['/api/cron/research','/api/payments','/api/admin/provider',...(profile==='pf10'?nativeAuthProfile('p09'):nativeAuthProfile('pf10')).routes])assert.throws(()=>allowedProfileURL(profile,origin+path));
+  assert.throws(()=>config.sql.push('sql/arbitrary.sql'));assert.throws(()=>{config.actors.a='service_role';});
+ }
+ for(const value of ['other','__proto__','constructor',{target:origin},undefined]){assert.throws(()=>nativeAuthProfile(value));assert.throws(()=>gatewayProfile(value));}
+});
+test('Shared runner fails before provisioning for unknown profiles and arbitrary runtime options',async()=>{
+ await assert.rejects(runNativeAuthProfile({profile:'pf10',sql:['arbitrary.sql']},()=>{}),/unknown_profile/);
+ await assert.rejects(runNativeAuthProfile('pf10',{target:origin}),/scenario_required/);
+});
