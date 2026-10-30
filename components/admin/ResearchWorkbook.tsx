@@ -12,7 +12,7 @@ import ResearchPreparationFields from './ResearchPreparationFields';
 import { withDeadline } from '@/lib/deadline';
 import { hashIntentRequest, parseWorkbookSaveIntent } from '@/lib/intelligence/workbook-save-intent';
 import ResearchHistoryPanel from './ResearchHistoryPanel';
-import type { WorkbookHistoryRead } from '@/lib/intelligence/research-history-metadata';
+import { intentHistoryFromPage, type WorkbookHistoryRead, type WorkbookIntentHistoryRead } from '@/lib/intelligence/research-history-metadata';
 
 const inputClass = 'w-full min-w-0 max-w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
@@ -64,6 +64,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const [versions, setVersions] = useState<Array<{ version: number; savedAt: string }>>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [historyRead, setHistoryRead] = useState<WorkbookHistoryRead>({ state: 'not_supplied' });
+  const [intentHistoryRead, setIntentHistoryRead] = useState<WorkbookIntentHistoryRead>({ state: 'not_supplied' });
   const [list, setList] = useState<ListItem[]>([]);
   const [busy, setBusyState] = useState(false);
   const busyRef = useRef(false);
@@ -85,8 +86,10 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   async function refreshList() {
     if (listBusy.current) return;
     listBusy.current = true; setServer('checking');
+    setIntentHistoryRead({ state: 'loading' });
     try {
       const r = await transport(API);
+      setIntentHistoryRead(intentHistoryFromPage({ initial: true, status: r.status, availability: r.body.durableRecoveryAvailable, items: r.body.saveIntents, nextOffset: r.body.intentNextOffset, offset: 0 }));
       if (r.status === 200) {
         setList(r.body.items as ListItem[]); setServer('ready'); setPrivateWriterReady(r.body.privatePreparationWritable === true);
         setDurableRecovery(typeof r.body.durableRecoveryAvailable === 'boolean' ? r.body.durableRecoveryAvailable : undefined);
@@ -98,7 +101,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         }
       }
       else setServer(r.body.unavailable ? 'unavailable' : 'error');
-    } catch { setServer('error'); }
+    } catch { setIntentHistoryRead({ state: 'error' }); setServer('error'); }
     finally { listBusy.current = false; }
   }
   useEffect(() => { void refreshList(); }, [transport]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -151,13 +154,15 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   async function olderIntents() {
     if (busyRef.current || intentNextOffset === null) return;
     setBusy(true);
+    setIntentHistoryRead({ state: 'loading' });
     try {
       const r = await transport(`${API}?intents=1&offset=${intentNextOffset}`);
+      setIntentHistoryRead(intentHistoryFromPage({ status: r.status, items: r.body.items, nextOffset: r.body.nextOffset, offset: intentNextOffset }));
       if (r.status !== 200) { setMessage(String(r.body.error ?? 'درخواست‌های قدیمی‌تر خوانده نشدند.')); return; }
       const items = r.body.items as IntentItem[];
       setIntentItems(previous => [...previous, ...items.filter(item => !previous.some(row => row.intentId === item.intentId))]);
       setIntentNextOffset(typeof r.body.nextOffset === 'number' ? r.body.nextOffset : null);
-    } catch { setMessage('خواندن درخواست‌های قدیمی‌تر انجام نشد.'); }
+    } catch { setIntentHistoryRead({ state: 'error' }); setMessage('خواندن درخواست‌های قدیمی‌تر انجام نشد.'); }
     finally { setBusy(false); }
   }
   async function saveToServer(retryAbsent = false) {
@@ -413,7 +418,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       </div>
       <aside className="card min-w-0 space-y-4 p-5 lg:sticky lg:top-6" aria-label="بررسی و دریافت پیش‌نویس">
         <h2 className="text-lg font-bold">پروندهٔ پژوهش</h2>
-        <ResearchHistoryPanel read={historyForPanel} />
+        <ResearchHistoryPanel read={historyForPanel} intents={intentHistoryRead} />
         <p className="text-sm leading-7">بررسی ساختار، جایگزین بررسی صحت منبع یا قضاوت تحلیلی نیست.</p>
         {saved && <p className="text-sm leading-7" aria-live="polite">
           نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty || pendingPreparation ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere && !dirty && !pendingPreparation ? ' · تأیید داخلی شده' : ''}

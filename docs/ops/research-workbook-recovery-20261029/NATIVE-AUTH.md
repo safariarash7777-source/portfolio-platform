@@ -1,6 +1,8 @@
 # P09 native Auth acceptance adapter
 
-Base: frozen PR349 `37b0c1b9acdd7e38bcd6d39b31d4d847892fd321`, itself on PR330 `87aaa541618a26e4d7ba9756e62114c1279e6939`. START-B owns this bounded adapter; C's projection/panel/read tests, Workbook handlers, writer/store/DTO and the SQL candidate remain unchanged. There is no dependency on C's later unfinished intent-metadata follow-up.
+Base: frozen PR349 `37b0c1b9acdd7e38bcd6d39b31d4d847892fd321`, itself on PR330 `87aaa541618a26e4d7ba9756e62114c1279e6939`. PR354 combines its native adapter with exactly the 11-file delta from frozen PR352 `6e97d95decdae6e3f8411b2404aa540549a931d0`. C's transferred projection/panel/read files and Workbook display additions are byte-identical to that source. Writer/store/DTO, SQL, Auth and fixture are unchanged. START-B owns only the adapter's added genuine-session assertions and integration evidence.
+
+Root technically accepted standalone P09 `c5e971dc2c9ce159773aab7cab30b4102bfc6495` only for its isolated scope. That witness does not accept PR352 or the combined source. The combined source requires fresh five-job CI, SQL6 with both P10 native metadata/intent markers, nine genuine Auth phases and ownership cleanup on its own exact SHA. PR349/352/350/353 stay frozen; no financial-product parent is imported. Existing package/CI registrations are preserved without another step or guard path.
 
 ## Actual shared-runtime reuse
 
@@ -17,7 +19,7 @@ Root gated extraction first: PR353 `0c6d6bce0ba3a8e3b2306c2060edf3c45c8ee499`, C
 5. A separately explicit same-intent/body replay returns the existing result without a duplicate v2.
 6. Another admin cannot read/replay A's journal, member is denied, service SELECT on journal is denied, native invalid JWT fails. Existing service canonical backup SELECT is preserved.
 7. A distinct prepared request has no workbook POST. Remount independently GETs target absence, then an explicit UI retry sends the original JSON bytes/intent/base. No auto retry/rebase.
-8. The panel projection consumes the existing recovery GET; compare native persisted UUID/time/review references, preserve unknown actor/worker/read clocks, and add no panel HTTP request or private body.
+8. The panel projection consumes the existing recovery GET; compare native persisted UUID/time/review references. Match panel intentId/preparedAt to the same existing native list GET and render those real values; intent versionId remains null and writeOutcome unknown. Preserve unknown actor/worker/read clocks. Count GET starts as well as completed HTTP calls to forbid an extra panel request, and exclude private body/hash.
 9. Native mutation denial and independent v1/v2 readback retain original content and review-on-v1 only.
 
 Body content is explicitly synthetic/test data from the existing fixture; it is not real Folad research. Persisted source references mean native row IDs and timestamps, not independently verified financial documents. No privatePreparation field is used. The existing React hook host is reused with real HTTP/Auth/DB behind its WorkbookTransport; this is not DOM/browser acceptance. Deliberately discarding a received 201 is not a TCP disconnect. Logs expose only sanitized synthetic row references; credentials and full request/body stay in memory/private runner temp and are not uploaded.

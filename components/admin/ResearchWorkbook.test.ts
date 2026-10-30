@@ -903,3 +903,77 @@ test('P10 a failed open hides the previous metadata without fabricating empty hi
     assert.equal(fixture.snapshot().versions.length, 1);
   } finally { restore(); }
 });
+
+async function p10IntentFixture(count: number) {
+  const fixture = createP07WorkflowFixture({ durable: true });
+  const api = '/api/admin/intelligence/workbooks';
+  const saved = await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const id = String(saved.body.workbookId);
+  const requestBody = JSON.stringify({ action: 'save', workbookId: id, baseVersion: 1, workbook: { ...p07FixtureWorkbook(), interpretation: 'PRIVATE_INTENT_PAYLOAD' } });
+  for (let n = 1; n <= count; n++) {
+    const intentId = `eeeeeeee-eeee-4eee-8eee-${String(n).padStart(12, '0')}`;
+    const result = await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'prepare_save', intentId, requestBody }) });
+    assert.equal(result.status, 201);
+  }
+  return { fixture, id, api };
+}
+
+test('P10 intent display reuses list/open GETs and shows prepared native reference without inventing version2 or copying payload/hash', async () => {
+  const restore = workbookBrowserFixture(), { fixture, id } = await p10IntentFixture(1);
+  const calls: Array<{ url: string; method: string }> = [];
+  const transport: WorkbookTransport = async (url, init) => { calls.push({ url, method: init?.method ?? 'GET' }); return fixture.transport(url, init); };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    const { default: Panel } = await import('./ResearchHistoryPanel');
+    const { projectIntentHistory, projectWorkbookHistory } = await import('../../lib/intelligence/research-history-metadata');
+    const props = ui.find(Panel, () => true).props;
+    const intents = projectIntentHistory(props.intents as import('../../lib/intelligence/research-history-metadata').WorkbookIntentHistoryRead, id);
+    assert.equal(intents.state, 'read'); assert.equal(intents.history.events.length, 1);
+    const event = intents.history.events[0], native = fixture.intentSnapshot()[0];
+    assert.equal(event.intentId, native.intentId); assert.equal(event.times.preparedAt, native.createdAt);
+    assert.equal(event.targetVersion, 2); assert.equal(event.versionId, null); assert.equal(event.version, null); assert.equal(event.writeOutcome, 'unknown');
+    assert.equal(projectWorkbookHistory(props.read as import('../../lib/intelligence/research-history-metadata').WorkbookHistoryRead).history.events.length, 1);
+    assert.equal(fixture.snapshot().versions.length, 1);
+    assert.doesNotMatch(JSON.stringify(props.intents), /PRIVATE|requestBody|requestHash|title|createdBy/);
+    assert.deepEqual(calls.map(c => c.method), ['GET', 'GET']);
+    assert.equal(calls.filter(c => c.url.includes('?id=')).length, 1);
+    ui.render(); await ui.settle(); assert.equal(calls.length, 2, 'panel rerender cannot add a reader query');
+  } finally { restore(); }
+});
+
+test('P10 existing older-intents control consumes only its own GET; history labels the last page instead of accumulating a journal', async () => {
+  const restore = workbookBrowserFixture(), { fixture, id } = await p10IntentFixture(55);
+  const calls: Array<{ url: string; method: string }> = [];
+  const transport: WorkbookTransport = async (url, init) => { calls.push({ url, method: init?.method ?? 'GET' }); return fixture.transport(url, init); };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    const { default: Panel } = await import('./ResearchHistoryPanel');
+    const { projectIntentHistory } = await import('../../lib/intelligence/research-history-metadata');
+    const panelRead = () => ui.find(Panel, () => true).props.intents as import('../../lib/intelligence/research-history-metadata').WorkbookIntentHistoryRead;
+    assert.equal(projectIntentHistory(panelRead(), id).history.events.length, 50);
+    assert.equal(projectIntentHistory(panelRead(), id).window?.nextOffset, 50);
+    await ui.click('درخواست‌های قدیمی‌تر');
+    const view = projectIntentHistory(panelRead(), id);
+    assert.equal(view.state, 'read'); assert.equal(view.history.events.length, 5);
+    assert.equal(view.window?.offset, 50); assert.equal(view.window?.nextOffset, null); assert.equal(view.window?.completeHistory, false);
+    assert.equal(calls.length, 3); assert.ok(calls[2].url.includes('?intents=1&offset=50'));
+    assert.ok(calls.every(call => call.method === 'GET'));
+    assert.equal(fixture.intentSnapshot().length, 55); assert.equal(fixture.snapshot().versions.length, 1);
+  } finally { restore(); }
+});
+
+test('P10 failed metadata page hides previous intent rows and remains an error without an extra request or write', async () => {
+  const restore = workbookBrowserFixture(), { fixture, id } = await p10IntentFixture(55);
+  let calls = 0;
+  const transport: WorkbookTransport = async (url, init) => { calls++; return url.includes('?intents=') ? { status: 503, body: { error: 'synthetic read outage' } } : fixture.transport(url, init); };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    const { default: Panel } = await import('./ResearchHistoryPanel');
+    assert.equal((ui.find(Panel, () => true).props.intents as { state: string }).state, 'read');
+    const title = ui.find('input', e => e.props.id === 'title').props.value;
+    await ui.click('درخواست‌های قدیمی‌تر');
+    assert.deepEqual(ui.find(Panel, () => true).props.intents, { state: 'error' });
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.value, title);
+    assert.equal(calls, 3); assert.equal(fixture.snapshot().versions.length, 1); assert.equal(fixture.intentSnapshot().length, 55);
+  } finally { restore(); }
+});

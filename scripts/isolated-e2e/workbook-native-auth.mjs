@@ -23,10 +23,12 @@ async function run(){await runNativeAuthProfile('p09',async runtime=>{
  const {mountComponent}=await import('../../components/admin/p07-component-test-host.ts');
  // Match the existing hook host's CJS module identity; tsx's ESM bridge wraps default.
  const ResearchHistoryPanel=workbookHistoryPanel();
- const {projectWorkbookHistory}=await import('../../lib/intelligence/research-history-metadata.ts');
- const calls=[];let sequence=0,loseNextSave=false,lostAttempt;
+ const {projectWorkbookHistory,projectIntentHistory}=await import('../../lib/intelligence/research-history-metadata.ts');
+ const require=createRequire(import.meta.url),{renderToStaticMarkup}=require('react-dom/server'),{createElement}=require('react');
+ const calls=[];let sequence=0,getStarts=0,loseNextSave=false,lostAttempt;
  const http=async(actor,path,init={})=>{
   workbookRequestURL(path);const method=init.method??'GET',headers=new Headers(init.headers);
+  if(method==='GET')getStarts++;
   headers.set('Cookie',users[actor].session.cookie);if(method!=='GET')headers.set('Origin',origin);
   const action=method==='POST'?JSON.parse(init.body).action:null;
   if(method!=='GET')write('p09-intent-'+String(++sequence).padStart(3,'0')+'.json',{path,method,body:init.body,headers:{intent:headers.get('x-workbook-save-intent')}},true);
@@ -62,9 +64,14 @@ async function run(){await runNativeAuthProfile('p09',async runtime=>{
   const priorToken=users.a.session.token;users.a.session=await withNativeNodeGlobals(()=>newSession('a'));check(users.a.session.token!==priorToken,'p09_native_fresh_password_session');
   const beforeReopen=calls.length,reopened=mount({});
   await reopened.waitFor(()=>reopened.find(ResearchHistoryPanel,()=>true).props.read.state==='read');
+  await reopened.waitFor(()=>reopened.find(ResearchHistoryPanel,()=>true).props.intents.state==='read');
   check(reopened.find('input',e=>e.props.id==='title').props.value===title2&&!reopened.badge(),'p09_native_remount_recovered_v2_unapproved');
   check(calls.slice(beforeReopen).every(c=>c.method==='GET'),'p09_native_reopen_must_be_get_only');
   const historyRead=reopened.find(ResearchHistoryPanel,()=>true).props.read;
+  const intentRead=reopened.find(ResearchHistoryPanel,()=>true).props.intents;
+  const intentPage=calls.slice(beforeReopen).filter(c=>c.method==='GET'&&c.path===endpoint&&c.status===200).at(-1);
+  const actualIntent=intentPage?.body.saveIntents.find(row=>row.intentId===lostAttempt.intentId);
+  check(actualIntent&&Number.isFinite(Date.parse(actualIntent.preparedAt)),'p09_native_existing_get_has_real_intent_metadata');
   const prepared2=await http('a',endpoint+'?intent='+lostAttempt.intentId);
   check(prepared2.status===200&&prepared2.body.requestBody===lostAttempt.requestBody,'p09_native_exact_durable_body_after_remount');
   pass('real-201-discard-fresh-session-component-remount-get-only',{newPasswordSession:true,postOnRemount:false,transportDiscard:true,browserOrTcpDisconnect:false});
@@ -93,15 +100,23 @@ async function run(){await runNativeAuthProfile('p09',async runtime=>{
   const sent=calls.slice(retryStart).filter(c=>c.method==='POST');check(sent.length===1&&sent[0].action==='save'&&sent[0].requestBody===pendingBody&&sent[0].intentId===pendingId,'p09_native_explicit_retry_exact_body_and_intent');
   check((await open('a',pendingWb,1)).status===200&&sql(`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id='${pendingWb}'`)==='1','p09_native_one_retry_row');
   pass('prepared-absence-remount-explicit-ui-retry-exact-bytes',{automaticPost:false,explicitPosts:1,sameIntent:true,sameRequestBytes:true});
-  const beforeProjection=calls.length,view=projectWorkbookHistory(historyRead),events=view.history.events;
+  const beforeProjection=calls.length,beforeProjectionGets=getStarts,view=projectWorkbookHistory(historyRead),events=view.history.events;
   check(view.state==='read'&&events.length===3,'p09_native_metadata_event_count');
   const native=JSON.parse(sql(`SELECT json_build_object('versions',(SELECT json_agg(json_build_object('id',id,'version',version,'at',created_at) ORDER BY version) FROM public.research_workbook_versions WHERE workbook_id='${wb}'),'reviews',(SELECT json_agg(json_build_object('id',r.id,'versionId',r.version_id)) FROM public.research_workbook_reviews r JOIN public.research_workbook_versions v ON v.id=r.version_id WHERE v.workbook_id='${wb}'))`));
   assert.deepEqual(historyRead.metadata.versions.map(v=>v.id),native.versions.map(v=>v.id));
   check(historyRead.metadata.versions.every((v,i)=>Date.parse(v.createdAt)===Date.parse(native.versions[i].at)),'p09_native_persisted_version_times');
   check(events.find(e=>e.kind==='workbook_review_recorded').versionId===version1.id&&events.find(e=>e.kind==='workbook_review_recorded').version===1&&native.reviews[0].id===review1.id,'p09_native_review_exact_v1_reference');
   check(events.every(e=>e.actorId===null&&e.times.readAt===null)&&view.history.sources.filter(s=>s.source.startsWith('worker_')).every(s=>s.state==='not_supplied'),'p09_native_unknown_actors_and_worker_preserved');
+  const intentView=projectIntentHistory(intentRead,wb),recordedIntent=intentView.history.events.find(event=>event.intentId===actualIntent.intentId);
+  check(intentView.state==='read'&&recordedIntent&&recordedIntent.intentId===lostAttempt.intentId&&recordedIntent.times.preparedAt===actualIntent.preparedAt,'p09_native_panel_intent_identity_time_from_same_get');
+  check(recordedIntent.workbookId===wb&&recordedIntent.baseVersion===actualIntent.baseVersion&&recordedIntent.targetVersion===actualIntent.targetVersion&&recordedIntent.targetVersion===2,'p09_native_intent_real_r2_reference');
+  check(recordedIntent.versionId===null&&recordedIntent.version===null&&recordedIntent.writeOutcome==='unknown'&&recordedIntent.actorId===null&&recordedIntent.requestDigest===null&&recordedIntent.times.startedAt===null&&recordedIntent.times.completedAt===null,'p09_native_intent_does_not_claim_version_or_write_outcome');
+  const panelMarkup=renderToStaticMarkup(createElement(ResearchHistoryPanel,{read:historyRead,intents:intentRead}));
+  check(panelMarkup.includes(actualIntent.intentId)&&[...panelMarkup.matchAll(/<time\b[^>]*\bdatetime="([^"]+)"/gi)].some(match=>match[1]===actualIntent.preparedAt),'p09_native_rendered_panel_real_intent_id_and_time');
+  assert.doesNotMatch(JSON.stringify(intentRead)+panelMarkup,/TEST_PRIVATE_WORKBOOK_TEXT|requestBody|requestHash/);
+  check(getStarts===beforeProjectionGets,'p09_native_intent_panel_no_extra_get_started');
   assert.doesNotMatch(JSON.stringify(historyRead),/TEST_PRIVATE_WORKBOOK_TEXT|interpretation|scenarios/);check(calls.length===beforeProjection,'p09_native_panel_no_extra_http');
-  pass('same-get-metadata-real-native-references-no-panel-request',{versionIds:native.versions.map(v=>v.id),reviewId:review1.id,reviewVersionId:version1.id,extraHttpRequests:0,actorsDisclosed:false});
+  pass('same-get-metadata-real-native-references-no-panel-request',{versionIds:native.versions.map(v=>v.id),reviewId:review1.id,reviewVersionId:version1.id,intentId:actualIntent.intentId,preparedAt:actualIntent.preparedAt,intentVersionId:recordedIntent.versionId,intentWriteOutcome:recordedIntent.writeOutcome,intentSource:'same_existing_native_get',extraGetStarts:0,extraHttpRequests:0,actorsDisclosed:false});
   check((await direct('a','research_workbook_versions?workbook_id=eq.'+wb,{method:'PATCH',body:JSON.stringify({title:'must remain denied'})})).status===403,'p09_native_version_update_denied');
   check((await direct('a','research_workbook_save_intents?intent_id=eq.'+lostAttempt.intentId,{method:'PATCH',body:JSON.stringify({request_body:'must remain denied'})})).status===403,'p09_native_intent_update_denied');
   const retained=await open('a',wb,1),v2=await open('b',wb,2);assert.deepEqual(retained.body.workbook,v1.body.workbook);
