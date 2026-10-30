@@ -11,6 +11,8 @@ import { mountComponent } from '../../components/admin/p07-component-test-host';
 import ResearchPreparationFields from '../../components/admin/ResearchPreparationFields';
 import type { WorkbookTransport } from '../../components/admin/ResearchWorkbook';
 import { hashIntentRequest, parseWorkbookSaveIntent } from './workbook-save-intent';
+import ResearchHistoryPanel from '../../components/admin/ResearchHistoryPanel';
+import { projectWorkbookHistory, type WorkbookHistoryRead, type WorkbookHistoryMetadata } from './research-history-metadata';
 
 const ROOT = process.cwd(), A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', B = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', U = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const ownContainer = process.env.TEST_RESEARCH_INTENT_CONTAINER;
@@ -142,6 +144,21 @@ for (const profile of ['legacy','explicit']) describe(`durable workbook intents 
       assert.equal(calls.filter(c=>c.action).length,posts,'reopen performs no prepare/save POST');
       assert.equal(reopened.find('input',e=>e.props.id==='title').props.value,'Synthetic native durable v2',JSON.stringify(calls));assert.equal(reopened.badge(),false);
       assert.equal((reopened.find(ResearchPreparationFields,()=>true).props.value as {text:string}).text,'  PRIVATE_SYNTHETIC_NATIVE\n exact  ');
+      // Reuse metadata from the native GET that has already resolved the existing intent.
+      await reopened.waitFor(() => (reopened.find(ResearchHistoryPanel,()=>true).props.read as WorkbookHistoryRead).state === 'read');
+      const beforeHistoryInspection = calls.length;
+      const historyRead = reopened.find(ResearchHistoryPanel,()=>true).props.read as WorkbookHistoryRead;
+      const historyView = projectWorkbookHistory(historyRead);
+      assert.equal(historyView.state,'read'); assert.equal(historyView.history.events.length,3);
+      const firstVersionId = (original.body.historyMetadata as WorkbookHistoryMetadata).versions[0].id;
+      const historyReview = historyView.history.events.find(event=>event.kind==='workbook_review_recorded')!;
+      assert.equal(historyReview.versionId,firstVersionId); assert.equal(historyReview.version,1);
+      assert.equal(historyView.history.events.filter(event=>event.kind==='workbook_version_recorded').length,2);
+      assert.ok(historyView.history.events.every(event=>event.actorId===null && event.times.readAt===null));
+      assert.ok(historyView.history.sources.filter(source=>source.source.startsWith('worker_')).every(source=>source.state==='not_supplied'));
+      assert.doesNotMatch(JSON.stringify(historyRead),/PRIVATE_SYNTHETIC_NATIVE|interpretation|scenarios/);
+      assert.equal(calls.length,beforeHistoryInspection,'history inspection adds no request or write');
+      console.log('P10_NATIVE_METADATA_READ_CHECK '+JSON.stringify({profile,versions:2,reviews:1,reviewVersion:1,actorsDisclosed:false,extraRequests:0,source:'existing_native_open_read'}));
       assert.deepEqual((await openWorkbook(gw,wb,1)).body.workbook,original.body.workbook);
       assert.equal(sql(db,`SELECT count(*) FROM public.research_workbook_versions WHERE workbook_id=${literal(wb)}`),'2');
       assert.equal(sql(db,`SELECT count(*) FROM public.research_workbook_reviews r JOIN public.research_workbook_versions v ON v.id=r.version_id WHERE v.workbook_id=${literal(wb)}`),'1');

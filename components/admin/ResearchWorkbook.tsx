@@ -11,6 +11,8 @@ import { PRIVATE_PREPARATION_CONTRACT } from '@/lib/intelligence/research-workbo
 import ResearchPreparationFields from './ResearchPreparationFields';
 import { withDeadline } from '@/lib/deadline';
 import { hashIntentRequest, parseWorkbookSaveIntent } from '@/lib/intelligence/workbook-save-intent';
+import ResearchHistoryPanel from './ResearchHistoryPanel';
+import type { WorkbookHistoryRead } from '@/lib/intelligence/research-history-metadata';
 
 const inputClass = 'w-full min-w-0 max-w-full min-h-11 rounded-lg border px-3 py-2 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const inputStyle = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
@@ -61,6 +63,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const [saved, setSaved] = useState<SavedRef | null>(null);
   const [versions, setVersions] = useState<Array<{ version: number; savedAt: string }>>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [historyRead, setHistoryRead] = useState<WorkbookHistoryRead>({ state: 'not_supplied' });
   const [list, setList] = useState<ListItem[]>([]);
   const [busy, setBusyState] = useState(false);
   const busyRef = useRef(false);
@@ -139,7 +142,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       const attempt: PendingSave = { id: request.workbookId, version: request.targetVersion, body: request.requestBody, intentId, prepared: true, revision: revision + 1 };
       if (!await preparedMatches(attempt, r.body) || editRevision.current !== revision) { setMessage('درخواست یا هویت بازخوانی‌شده تطبیق نداشت؛ متن فعلی محفوظ است.'); return; }
       editRevision.current++; pendingSave.current = attempt; unknownSave.current = true; setUncertainSave(true); allowSaveRetry(false);
-      setWorkbook(request.workbook); setDirty(true); setPendingPreparation(false); setSaved(null); setVersions([]); setReviews([]); setChecked(false); setPreparationEpoch(value => value + 1);
+      setWorkbook(request.workbook); setDirty(true); setPendingPreparation(false); setSaved(null); setVersions([]); setReviews([]); setHistoryRead({ state: 'not_supplied' }); setChecked(false); setPreparationEpoch(value => value + 1);
       setBusy(false);
       await recoverSave(); // Independent GET only; never resumes a POST after reopen.
     } catch { setMessage('درخواست محفوظ باز نشد؛ ذخیرهٔ تازه‌ای ارسال نشد.'); }
@@ -210,6 +213,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     const attempt = pendingSave.current;
     if (busyRef.current || !unknownSave.current || !attempt) return;
     allowSaveRetry(false); setBusy(true);
+    setHistoryRead({ state: 'loading' });
     try {
       if (attempt.intentId) {
         const prepared = await transport(`${API}?intent=${encodeURIComponent(attempt.intentId)}`);
@@ -242,16 +246,19 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       setSaved({ workbookId: attempt.id, version: attempt.version, latestVersion: attempt.version, savedAt: r.body.savedAt });
       setVersions(previous => Array.isArray(r.body.versions) ? r.body.versions as Array<{ version: number; savedAt: string }> : [...previous.filter(v => v.version !== attempt.version), { version: attempt.version, savedAt: r.body.savedAt as string }]);
       setReviews(Array.isArray(r.body.reviews) ? r.body.reviews as ReviewItem[] : []);
+      setHistoryRead({ state: 'read', workbookId: attempt.id, metadata: r.body.historyMetadata,
+        latestVersion: r.body.latestVersion as number, reviewCount: Array.isArray(r.body.reviews) ? r.body.reviews.length : 0 });
       setDirty(editRevision.current !== attempt.revision);
       setMessage(editRevision.current === attempt.revision ? `نسخهٔ ${toPersianDigits(attempt.version)} با خواندن مستقل همان ثبت تأیید شد؛ این کار تأیید تحلیل یا انتشار نیست.` : 'همان نسخه بازخوانی شد؛ تغییرات تازهٔ شما هنوز ذخیره نشده و روی صفحه حفظ شده‌اند.');
       void refreshList();
     } catch { setMessage('خواندن نتیجهٔ همان ثبت انجام نشد؛ متن و شناسه محفوظ‌اند و هیچ ثبت تازه‌ای ارسال نشد.'); }
-    finally { setBusy(false); }
+    finally { setHistoryRead(previous => previous.state === 'loading' ? { state: 'error' } : previous); setBusy(false); }
   }
   async function openFromServer(workbookId: string, version: number | null) {
     if (busyRef.current || unknownSave.current) return;
     if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی جایگزین می‌شود. ادامه می‌دهید؟')) return;
     setBusy(true);
+    setHistoryRead({ state: 'loading' });
     const openingRevision = editRevision.current;
     try {
       const r = await transport(`${API}?id=${encodeURIComponent(workbookId)}${version ? `&version=${version}` : ''}`);
@@ -261,6 +268,8 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       setSaved({ workbookId, version: r.body.version as number, latestVersion: r.body.latestVersion as number, savedAt: r.body.savedAt as string });
       setVersions(r.body.versions as Array<{ version: number; savedAt: string }>);
       setReviews(r.body.reviews as ReviewItem[]);
+      setHistoryRead({ state: 'read', workbookId, metadata: r.body.historyMetadata,
+        latestVersion: r.body.latestVersion as number, reviewCount: Array.isArray(r.body.reviews) ? r.body.reviews.length : 0 });
       setDirty(false); setPendingPreparation(false); setChecked(false);
       setPreparationEpoch(value => value + 1);
       const v = r.body.version as number; const latest = r.body.latestVersion as number;
@@ -268,7 +277,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         ? `نسخهٔ ${toPersianDigits(v)} باز شد.`
         : `نسخهٔ قدیمیِ ${toPersianDigits(v)} باز شد؛ ذخیرهٔ آن، نسخهٔ ${toPersianDigits(latest + 1)} می‌سازد و نسخه‌های قبلی دست‌نخورده می‌مانند.`);
     } catch { setMessage('ارتباط با سرور برقرار نشد.'); }
-    finally { setBusy(false); }
+    finally { setHistoryRead(previous => previous.state === 'loading' ? { state: 'error' } : previous); setBusy(false); }
   }
   async function decide(decision: 'approved_internal' | 'returned') {
     if (busyRef.current || unknownSave.current) return;
@@ -289,9 +298,19 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   function startNew() {
     if (busyRef.current || unknownSave.current) return;
     if ((dirty || pendingPreparation) && !window.confirm('تغییرات ذخیره‌نشدهٔ فعلی کنار گذاشته می‌شود. ادامه می‌دهید؟')) return;
-    setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setDirty(false); setPendingPreparation(false); setChecked(false); setMessage('');
+    setWorkbook(emptyWorkbook()); setSaved(null); setVersions([]); setReviews([]); setHistoryRead({ state: 'not_supplied' }); setDirty(false); setPendingPreparation(false); setChecked(false); setMessage('');
     editRevision.current++; setPreparationEpoch(value => value + 1);
   }
+  // This panel reuses only the already-completed open/recovery read. No writer receipt
+  // is promoted to a new history row, and new saves/reviews do not trigger another GET.
+  const historyForPanel: WorkbookHistoryRead = server === 'error' || server === 'unavailable'
+    ? { state: 'error' }
+    : historyRead.state === 'loading' || historyRead.state === 'error' ? historyRead
+    : uncertainSave ? { state: 'uncertain' }
+    : historyRead.state !== 'read' ? historyRead
+    : !saved || saved.workbookId !== historyRead.workbookId ? { state: 'not_supplied' }
+    : saved.latestVersion !== historyRead.latestVersion || reviews.length !== historyRead.reviewCount ? { state: 'stale' }
+    : historyRead;
   const canDecide = server === 'ready' && !!saved && !dirty && !pendingPreparation && !uncertainSave && saved.version === saved.latestVersion && !busy;
   const approvedHere = saved ? p07ReviewCurrent(saved.version, saved.latestVersion, reviews) : false;
   // phase34 allows one approval per version. A returned approved version needs a
@@ -315,7 +334,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       const imported = parseWorkbook(await selected.text());
       if (editRevision.current !== importingRevision) { setMessage('هنگام دریافت، متن تغییر کرد؛ تغییر تازه حفظ شد. دوباره باز کنید.'); return; }
       if ((dirty || pendingPreparation) && !window.confirm('متن فعلی جایگزین می‌شود. فایل فعلی را دریافت کرده‌اید؟')) return;
-      setWorkbook(imported); setSaved(null); setVersions([]); setReviews([]); setDirty(true); setChecked(false); setMessage('پیش‌نویس بارگذاری شد؛ تأیید انسانی از فایل وارد نمی‌شود. ذخیره، کاربرگ تازه‌ای می‌سازد.');
+      setWorkbook(imported); setSaved(null); setVersions([]); setReviews([]); setHistoryRead({ state: 'not_supplied' }); setDirty(true); setChecked(false); setMessage('پیش‌نویس بارگذاری شد؛ تأیید انسانی از فایل وارد نمی‌شود. ذخیره، کاربرگ تازه‌ای می‌سازد.');
       editRevision.current++; setPendingPreparation(false); setPreparationEpoch(value => value + 1);
     } catch { setMessage('فایل خوانده نشد؛ یک فایل JSON کاربرگ معتبر با حجم کمتر از ۸ مگابایت انتخاب کنید. متن فعلی حفظ شد.'); }
     finally { if (file.current) file.current.value = ''; setBusy(false); }
@@ -394,6 +413,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       </div>
       <aside className="card min-w-0 space-y-4 p-5 lg:sticky lg:top-6" aria-label="بررسی و دریافت پیش‌نویس">
         <h2 className="text-lg font-bold">پروندهٔ پژوهش</h2>
+        <ResearchHistoryPanel read={historyForPanel} />
         <p className="text-sm leading-7">بررسی ساختار، جایگزین بررسی صحت منبع یا قضاوت تحلیلی نیست.</p>
         {saved && <p className="text-sm leading-7" aria-live="polite">
           نسخهٔ {toPersianDigits(saved.version)} از {toPersianDigits(saved.latestVersion)}{dirty || pendingPreparation ? ' · تغییرات ذخیره‌نشده' : ''}{approvedHere && !dirty && !pendingPreparation ? ' · تأیید داخلی شده' : ''}

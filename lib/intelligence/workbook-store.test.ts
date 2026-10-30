@@ -329,3 +329,58 @@ test('stable creation replay returns original timestamp/UUID, concurrent retry c
  assert.equal((await saveWorkbook(h.gw,{...payload,creationId:'invalid'})).status,400);
  assert.equal((await saveWorkbook(h.gw,{...payload,workbookId:creationId,baseVersion:1})).status,400);
 });
+
+test('P10 open adds reference metadata from the same version/review reads without another store/query or writer', async () => {
+  const actor = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  const h = harness({ user: actor });
+  const workbookId = '11111111-1111-4111-8111-111111111111';
+  const v1 = '22222222-2222-4222-8222-222222222221', v2 = '22222222-2222-4222-8222-222222222222';
+  const reviewId = '33333333-3333-4333-8333-333333333333';
+  h.versions.push(
+    { id: v1, workbookId, version: 1, title: 'PRIVATE_TITLE', body: complete('PRIVATE_BODY_V1'), createdAt: '2026-10-01T10:00:00Z', createdBy: actor },
+    { id: v2, workbookId, version: 2, title: 'PRIVATE_TITLE_V2', body: complete('PRIVATE_BODY_V2'), createdAt: '2026-10-02T10:00:00Z' },
+  );
+  h.reviews.push({ id: reviewId, versionId: v1, decision: 'approved_internal', note: 'PRIVATE_REVIEW_NOTE', reviewedAt: '2026-10-03T10:00:00Z' });
+  const calls = { create: 0, versions: 0, reviews: 0 }; let requestedIds: string[] = [];
+  const create = h.gw.createStore;
+  h.gw.createStore = () => {
+    calls.create++; const store = create();
+    return { ...store,
+      versions: async id => { calls.versions++; return store.versions(id); },
+      reviews: async ids => { calls.reviews++; requestedIds = ids; return store.reviews(ids); },
+      insertVersion: async () => { throw new Error('writer forbidden in read test'); },
+      insertReview: async () => { throw new Error('writer forbidden in read test'); },
+    };
+  };
+  const opened = await openWorkbook(h.gw, workbookId, 2);
+  assert.equal(opened.status, 200);
+  assert.deepEqual(calls, { create: 1, versions: 1, reviews: 1 }); assert.deepEqual(requestedIds, [v1, v2]);
+  const metadata = opened.body.historyMetadata as import('./research-history-metadata').WorkbookHistoryMetadata;
+  assert.deepEqual(metadata, { contract: 'p10.workbook-history.metadata.v1', actorPolicy: 'not_exposed_by_read_contract', workbookId,
+    versions: [
+      { id: v1, workbookId, version: 1, createdAt: '2026-10-01T10:00:00Z' },
+      { id: v2, workbookId, version: 2, createdAt: '2026-10-02T10:00:00Z' },
+    ], reviews: [{ id: reviewId, versionId: v1, decision: 'approved_internal', reviewedAt: '2026-10-03T10:00:00Z' }] });
+  assert.doesNotMatch(JSON.stringify(metadata), /PRIVATE|note|body|title/);
+  assert.ok(metadata.versions.every(row => !('createdBy' in row)), 'existing read contract must not disclose actors');
+  assert.ok(!JSON.stringify(metadata).includes(actor));
+  assert.equal((opened.body.workbook as ResearchWorkbook).title, 'PRIVATE_BODY_V2', 'existing authorized workbook payload is unchanged');
+  assert.deepEqual(opened.body.versions, [{ version: 1, savedAt: '2026-10-01T10:00:00Z' }, { version: 2, savedAt: '2026-10-02T10:00:00Z' }]);
+  assert.equal((opened.body.reviews as Array<{ version: number }>)[0].version, 1);
+});
+
+test('P10 denied or failed history read does not return an empty metadata success', async () => {
+  const workbookId = '11111111-1111-4111-8111-111111111111';
+  for (const opts of [{ user: null }, { role: 'user' }, { roleThrows: true }]) {
+    const h = harness(opts); const result = await openWorkbook(h.gw, workbookId, null);
+    assert.ok([401, 403, 503].includes(result.status)); assert.equal(h.stores(), 0);
+    assert.equal(result.body.historyMetadata, undefined);
+  }
+  const h = harness();
+  h.versions.push({ id: '22222222-2222-4222-8222-222222222222', workbookId, version: 1, title: 'sample', body: complete(), createdAt: '2026-10-01T10:00:00Z' });
+  const create = h.gw.createStore;
+  h.gw.createStore = () => ({ ...create(), reviews: async () => { throw new Error('PRIVATE_READ_ERROR'); } });
+  const result = await openWorkbook(h.gw, workbookId, null);
+  assert.equal(result.status, 500); assert.equal(result.body.historyMetadata, undefined);
+  assert.doesNotMatch(JSON.stringify(result.body), /PRIVATE/);
+});

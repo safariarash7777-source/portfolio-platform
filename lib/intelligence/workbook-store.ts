@@ -23,6 +23,7 @@ import {
   reviewWorkbook,
   type ResearchWorkbook,
 } from "@/lib/intelligence/research-workbook";
+import type { WorkbookHistoryMetadata } from './research-history-metadata';
 
 export const MAX_STORED_BYTES = 1_000_000;
 
@@ -186,6 +187,11 @@ export async function openWorkbook(
     }
     const reviews = await store.reviews(all.map((v) => v.id));
     const byVersion = new Map(all.map((v) => [v.id, v.version]));
+    const historyMetadata: WorkbookHistoryMetadata = {
+      contract: 'p10.workbook-history.metadata.v1', actorPolicy: 'not_exposed_by_read_contract', workbookId,
+      versions: all.map(v => ({ id: v.id, workbookId: v.workbookId, version: v.version, createdAt: v.createdAt })),
+      reviews: reviews.map(r => ({ id: r.id, versionId: r.versionId, decision: r.decision, reviewedAt: r.reviewedAt })),
+    };
     return {
       status: 200,
       body: {
@@ -194,6 +200,7 @@ export async function openWorkbook(
         latestVersion: all[all.length - 1].version,
         savedAt: target.createdAt,
         authorMatchesSession: target.createdBy === authorizedActorId,
+        historyMetadata,
         workbook,
         openIssues: reviewWorkbook(workbook).length,
         versions: all.map((v) => ({ version: v.version, savedAt: v.createdAt })),
