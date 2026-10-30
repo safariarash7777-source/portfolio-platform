@@ -9,6 +9,11 @@ import { toPersianDigits } from "@/lib/format";
 export default function AdminWorkdayPath({ data }: { data: ArashDeskData }) {
   const [first, setFirst] = useState('research');
   const [paused, setPaused] = useState<string[]>([]);
+  const [notes,setNotes]=useState<Record<string,{reason:string;owner:string;next:string}>>({});
+  function noteChange(id:string,field:'reason'|'owner'|'next',value:string){
+    if(paused.includes(id))return;
+    setNotes(previous=>({...previous,[id]:{...(previous[id]??{reason:'',owner:'',next:''}),[field]:value}}));
+  }
   const marketReady = data.market.availability.state === 'ready';
   const researchFailed = data.research.unavailableReason !== null;
   const rows = [
@@ -33,14 +38,24 @@ export default function AdminWorkdayPath({ data }: { data: ArashDeskData }) {
       </select>
     </label>
     <ul className="mt-4 grid gap-3 lg:grid-cols-2">
-      {ordered.map(row=>{const stopped=paused.includes(row.id);return <li key={row.id} className="min-w-0 rounded-xl border border-border p-4">
+      {ordered.map(row=>{const stopped=paused.includes(row.id);const note=notes[row.id]??{reason:'',owner:'',next:''};const complete=Object.values(note).every(value=>value.trim().length>0);return <li key={row.id} className="min-w-0 rounded-xl border border-border p-4">
         <h3 className="font-bold">{row.title}</h3>
         <p className="mt-2 text-sm leading-7">علت: {row.reason}</p>
         <dl className="mt-2 text-sm leading-7"><div><dt className="inline">موعد: </dt><dd className="inline">نامعلوم</dd></div><div><dt className="inline">مسئول ثبت‌شده: </dt><dd className="inline">نامعلوم؛ در میز تخصصی بررسی شود</dd></div><div><dt className="inline">قدم بعد: </dt><dd className="inline">{row.action}</dd></div></dl>
         <p role="status" className="mt-2 text-sm">{stopped?'توقف نمایشی؛ علت و مسئول واقعی در پرونده ثبت نشده است.':'پیگیری از میز تخصصی؛ وضعیت انجام از این نما معلوم نیست.'}</p>
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer py-3">یادداشت موقت توقف؛ ثبت در پرونده نیست</summary>
+          <fieldset disabled={stopped} className="grid gap-2">
+            <legend className="text-xs leading-6">برای توقف نمایشی، علت، مسئول پیشنهادی و قدم بعد را بنویسید؛ هیچ مسئولیتی از اینجا تخصیص داده نمی‌شود.</legend>
+            {([{key:'reason',label:'علت یادداشت'},{key:'owner',label:'مسئول پیشنهادی و تأییدنشده'},{key:'next',label:'قدم بعد پیشنهادی'}] as const).map(field=><label key={field.key} className="grid gap-1">{field.label}
+              <input aria-label={`${field.label} — ${row.title}`} value={note[field.key]} maxLength={180} onChange={event=>noteChange(row.id,field.key,event.target.value)} className="min-h-11 min-w-0 rounded-lg border border-border bg-background px-3" />
+            </label>)}
+          </fieldset>
+        </details>
+        {!stopped&&!complete&&<p className="mt-2 text-xs">توقف نمایشی تا تکمیل سه بخش یادداشت فعال نمی‌شود.</p>}
         <div className="mt-3 flex flex-wrap gap-2">
           <Link href={row.href} className="inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm">{row.action}</Link>
-          <button type="button" aria-pressed={stopped} onClick={()=>setPaused(values=>stopped?values.filter(id=>id!==row.id):[...values,row.id])} className="min-h-11 rounded-lg border border-border px-3 text-sm">{stopped?'برداشتن توقف نمایشی':'توقف در این نما'}</button>
+          <button type="button" aria-pressed={stopped} disabled={!stopped&&!complete} onClick={()=>{if(!stopped&&!complete)return;setPaused(values=>stopped?values.filter(id=>id!==row.id):[...values,row.id]);}} className="min-h-11 rounded-lg border border-border px-3 text-sm">{stopped?'برداشتن توقف نمایشی':'توقف در این نما'}</button>
         </div>
       </li>;})}
     </ul>
