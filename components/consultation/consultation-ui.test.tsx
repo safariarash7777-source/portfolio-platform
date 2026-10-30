@@ -30,6 +30,7 @@ test("reply failure never becomes an unanswered count; a confirmed empty read do
  const read:ReplyRead={contractVersion:"consultation-reply-read.v1",actorId:member,relationshipId:relationId,sessionId,canReply:false,readOnlyReason:"not_owner",replies:[]};
  const render=(replies?:ReplyRead,replyError?:string)=>renderToStaticMarkup(<SessionCard session={{...session,state:"published"}} latest advisor={false} owner={false} revoked={false} basis={basis} feedback={feedback} locked onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} replies={replies} replyError={replyError}/>);
  const failed=render(undefined,"خواندن پاسخ‌ها انجام نشد");assert.match(failed,/خواندن پاسخ‌ها انجام نشد/);assert.doesNotMatch(failed,/پرسش بدون پاسخ ثبت‌شده|هنوز پاسخی ثبت نشده/);
+ assert.doesNotMatch(render(read,"خواندن تازه انجام نشد"),/پرسش بدون پاسخ ثبت‌شده|هنوز پاسخی ثبت نشده/);
  assert.match(render(read),/۱ پرسش بدون پاسخ ثبت‌شده/);
 });
 
