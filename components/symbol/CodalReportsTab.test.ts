@@ -70,7 +70,7 @@ test("actual live report renderer preserves source classes, title and stored dat
   runInNewContext(ts.transpileModule(readFileSync(new URL("./CodalReportsTab.tsx", import.meta.url), "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
   }).outputText, { exports: taskModule.exports, require(name: string) {
-    if (name === "react") return { ...React, useState: () => [states[index++], () => {}] };
+    if (name === "react") return { ...React, useState: (initial: unknown) => [index < states.length ? states[index++] : initial, () => {}] };
     return localRequire(name.startsWith("@/") ? resolve(name.slice(2)) : name);
   } });
   const html = renderToStaticMarkup(React.createElement(taskModule.exports.default, { symbol: "نماد", stored: [] }));
@@ -124,6 +124,57 @@ test('malformed stored-announcement response remains an error with retry rather 
   } finally { globalThis.fetch = oldFetch; }
 });
 
+test('display choices preserve combined filters, sources, publication metadata and missing-date warnings without fetching', async () => {
+  const oldFetch = globalThis.fetch;
+  let requests = 0;
+  // Synthetic metadata: these fixtures do not establish online data acceptance.
+  globalThis.fetch = async () => {
+    requests++;
+    return Response.json({ data: [
+      { title: 'گزارش مالی نمونه', kind: 'ن-۱۰', date: '1405/05/03', time: '16:54:53', publishedDate: '1405/05/04', url: '/Reports/Decision.aspx?id=71' },
+      { title: 'اصلاحیه مالی نمونه', kind: 'ن-۱۰', date: null, time: null, publishedDate: null, url: '/Reports/Decision.aspx?id=72' },
+      { title: 'فعالیت ماهانه', kind: 'ن-۳۰', date: null, time: null, publishedDate: null, url: null },
+    ] });
+  };
+  try {
+    const host = mountComponent('components/symbol/CodalReportsTab.tsx', { symbol: 'نمونه', stored: [] });
+    await host.settle(); await host.click('دریافت فهرست');
+    const checkbox = (label: string) => host.find('input', node => node.props.type === 'checkbox' && node.props['aria-label'] === label);
+    const choose = async (label: string, checked: boolean) => {
+      (checkbox(label).props.onChange as (event: unknown) => void)({ target: { checked } });
+      await host.settle();
+    };
+    assert.equal(checkbox('نمایش نوع اطلاعیه').props.checked, true);
+    assert.equal(checkbox('نمایش زمان ارسال').props.checked, true);
+    (host.find('input', node => node.props.type === 'search').props.onChange as (event: unknown) => void)({ target: { value: 'مالی نمونه' } });
+    await host.settle();
+    (host.find('select', node => JSON.stringify(node.props.children).includes('نوع ثبت‌نشده')).props.onChange as (event: unknown) => void)({ target: { value: 'kind:ن-۱۰' } });
+    await host.settle();
+    const status = () => renderToStaticMarkup(host.find('p', node => node.props.role === 'status'));
+    const reasons = () => renderToStaticMarkup(host.find('details', () => true));
+    const result = (title: string) => renderToStaticMarkup(host.find('li', node => node.props.className === 'py-2 text-xs' && JSON.stringify(node.props.children).includes(title)));
+    const beforeStatus = status(), beforeReasons = reasons();
+    await choose('نمایش نوع اطلاعیه', false); await choose('نمایش زمان ارسال', false);
+    assert.equal(status(), beforeStatus); assert.equal(reasons(), beforeReasons);
+    assert.match(status(), /تاریخ ارسال ۲ مورد ثبت نشده است/);
+    const hidden = result('گزارش مالی نمونه');
+    assert.match(hidden, /href="https:\/\/codal.ir\/Reports\/Decision.aspx\?id=71"/);
+    assert.match(hidden, /انتشار: ۱۴۰۵\/۰۵\/۰۴/);
+    assert.doesNotMatch(hidden, /ن-۱۰|ارسال:|۱۶:۵۴:۵۳/);
+    assert.match(result('اصلاحیه مالی نمونه'), /تاریخ انتشار نامعلوم/);
+    await host.click('پاک‌کردن فیلترها');
+    assert.equal(checkbox('نمایش نوع اطلاعیه').props.checked, false);
+    assert.equal(checkbox('نمایش زمان ارسال').props.checked, false);
+    assert.match(status(), /۳ نتیجه از ۳/);
+    result('فعالیت ماهانه');
+    await choose('نمایش نوع اطلاعیه', true); await choose('نمایش زمان ارسال', true);
+    assert.match(result('گزارش مالی نمونه'), /ن-۱۰/);
+    assert.match(result('گزارش مالی نمونه'), /ارسال: ۱۴۰۵\/۰۵\/۰۳ ۱۶:۵۴:۵۳/);
+    assert.match(result('اصلاحیه مالی نمونه'), /زمان ارسال نامعلوم/);
+    assert.equal(requests, 1);
+  } finally { globalThis.fetch = oldFetch; }
+});
+
 test('reusing the dossier for another symbol clears filters and ignores a late old-company response', async () => {
   const oldFetch = globalThis.fetch;
   let finishOld: ((response: Response) => void) | undefined;
@@ -143,6 +194,11 @@ test('reusing the dossier for another symbol clears filters and ignores a late o
     await host.settle();
     host.find('li', node => JSON.stringify(node.props.children).includes('اطلاعیه شرکت دوم'));
     assert.throws(() => host.find('li', node => JSON.stringify(node.props.children).includes('اطلاعیه شرکت اول')), /not found/);
+    for (const label of ['نمایش نوع اطلاعیه', 'نمایش زمان ارسال']) {
+      const control = host.find('input', node => node.props['aria-label'] === label);
+      (control.props.onChange as (event: unknown) => void)({ target: { checked: false } });
+      await host.settle();
+    }
     const search = host.find('input', node => node.props.type === 'search');
     (search.props.onChange as (event: unknown) => void)({ target: { value: 'نامنطبق' } });
     await host.settle();
@@ -150,6 +206,9 @@ test('reusing the dossier for another symbol clears filters and ignores a late o
     await host.settle();
     await host.click('دریافت فهرست');
     assert.equal(host.find('input', node => node.props.type === 'search').props.value, '');
+    for (const label of ['نمایش نوع اطلاعیه', 'نمایش زمان ارسال']) {
+      assert.equal(host.find('input', node => node.props['aria-label'] === label).props.checked, true);
+    }
   } finally { globalThis.fetch = oldFetch; }
 });
 
