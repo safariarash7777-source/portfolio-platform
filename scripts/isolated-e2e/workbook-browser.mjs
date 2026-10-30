@@ -11,6 +11,7 @@ import {workbookNativeScenarios} from './workbook-native-auth.mjs';
 const endpoint='/api/admin/intelligence/workbooks',executable='/opt/google/chrome/chrome';
 const check=(v,code)=>{if(!v)throw Error(code);};
 const digest=v=>createHash('sha256').update(v).digest('hex');
+export function chromeFileCompatible(meta){return meta.isFile&&meta.elf&&(meta.uid===0||meta.uid===meta.runnerUid)&&(meta.mode&0o022)===0;}
 export function browserDestination(url,method='GET'){
  try{const u=new URL(url);if(u.hash||!url.startsWith(origin+'/'))return false;const raw=url.slice(origin.length).split('?')[0];if(/%(?:2e|2f|5c|25|00)/i.test(raw)||/[\\\u0000-\u0020]/.test(raw)||raw.split('/').some(x=>x==='.'||x==='..'))return false;allowedProfileURL('p09',url,true,method);return true;}catch{return false;}
 }
@@ -27,8 +28,10 @@ function descendants(pid,seen=new Map()){
 function sameProcess(pid,birth){try{const t=readFileSync('/proc/'+pid+'/stat','utf8');return t.slice(t.lastIndexOf(')')+2).split(' ')[19]===birth;}catch{return false;}}
 async function preflight(){
  verifyEnvironment();check(existsSync(executable)&&realpathSync(executable)===executable,'p09_browser_existing_chrome_missing');
- const meta=statSync(executable);check(meta.isFile()&&meta.uid===0&&(meta.mode&0o022)===0,'p09_browser_chrome_identity');
- const chromeSha256=digest(readFileSync(executable)),versionEnv=Object.fromEntries(Object.entries(process.env).filter(([key])=>['PATH','LANG','TMPDIR'].includes(key))),chromeVersion=execFileSync(executable,['--version'],{env:versionEnv,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:15000}).trim();
+ const meta=statSync(executable),binary=readFileSync(executable),chromeSha256=digest(binary),fileIdentity={isFile:meta.isFile(),elf:binary.subarray(0,4).equals(Buffer.from([127,69,76,70])),uid:meta.uid,runnerUid:process.getuid(),mode:meta.mode&0o777};
+ console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'existing-chrome-file',executable,...fileIdentity,sha256:chromeSha256}));
+ check(chromeFileCompatible(fileIdentity),'p09_browser_chrome_identity');
+ const versionEnv=Object.fromEntries(Object.entries(process.env).filter(([key])=>['PATH','LANG','TMPDIR'].includes(key))),chromeVersion=execFileSync(executable,['--version'],{env:versionEnv,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:15000}).trim();
  check(/^Google Chrome [0-9.]+(?: .*)?$/.test(chromeVersion),'p09_browser_chrome_version');
  const require=createRequire(import.meta.url);check(require('playwright-core/package.json').version==='1.64.1','p09_browser_driver_version');
  const {chromium}=await import('playwright-core'),tempRoot=realpathSync(process.env.RUNNER_TEMP),local=mkdtempSync(resolve(tempRoot,'p09-browser-')),owner=randomUUID();

@@ -7,7 +7,7 @@ import {nativeAuthProfile,allowedProfileURL,verifyEnvironment,origin} from './na
 import {gatewayProfile} from './native-auth-gateway.mjs';
 import {browserRequestAllowed} from './native-auth-gateway.mjs';
 import {nativeBrowserMode,validateBrowserReceipt,browserChecks} from './native-auth-runtime.mjs';
-import {browserDestination,sdkCookies} from './workbook-browser.mjs';
+import {browserDestination,sdkCookies,chromeFileCompatible} from './workbook-browser.mjs';
 import {workbookRequestURL,exactWorkbookWrite,workbookHistoryPanel,withNativeNodeGlobals} from './workbook-native-auth.mjs';
 
 test('Hook host DOM globals are absent during native Node work and restored after success or error',async()=>{
@@ -73,4 +73,8 @@ test('Browser verdict requires all seven observed checks and cleanup; a blind pa
 test('Browser cookie transfer consumes only the genuine SDK header in memory, without storage state',()=>{
  assert.deepEqual(sdkCookies('synthetic-a=one; synthetic-b=two'),[{name:'synthetic-a',value:'one',url:origin,sameSite:'Lax'},{name:'synthetic-b',value:'two',url:origin,sameSite:'Lax'}]);
  assert.throws(()=>sdkCookies(''));assert.throws(()=>sdkCookies('invalid'));
+});
+test('Existing Chrome file may be provisioned by root or this runner; foreign ownership and writable/bad binaries stay closed',()=>{
+ const file={isFile:true,elf:true,uid:0,runnerUid:1001,mode:0o755};assert.ok(chromeFileCompatible(file));assert.ok(chromeFileCompatible({...file,uid:1001}));
+ for(const change of [{uid:1002},{mode:0o777},{mode:0o775},{isFile:false},{elf:false}])assert.equal(chromeFileCompatible({...file,...change}),false);
 });
