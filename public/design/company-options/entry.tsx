@@ -25,7 +25,7 @@ function Source({record,context}: {record:unknown;context:string}) {
   useEffect(()=>{if(open && dialog.current && !dialog.current.open)dialog.current.showModal();},[open]);
   const close=()=>{if(dialog.current?.open)dialog.current.close();setOpen(false);trigger.current?.focus();};
   return <><button ref={trigger} type="button" className="source-trigger" aria-haspopup="dialog" onClick={()=>setOpen(true)}>جزئیات همین رکورد آموزشی</button>
-    {open ? createPortal(<dialog ref={dialog} className="source-panel" aria-labelledby={heading} aria-describedby={description} onCancel={event=>{event.preventDefault();close();}} onClose={close}>
+    {open ? createPortal(<dialog ref={dialog} className="source-panel" aria-labelledby={heading} aria-describedby={description} onCancel={event=>{event.preventDefault();event.stopPropagation();close();}} onClose={event=>{event.stopPropagation();close();}}>
       <header className="source-panel-heading"><div><h2 id={heading}>اطلاعات مبنای رکورد</h2><p className="record-context">{context}</p></div><button type="button" onClick={close}>بستن اطلاعات مبنا</button></header>
       <div className="source-panel-body"><p id={description}>{SOURCE.label}. شناسهٔ گزارش رسمی، نشانی منبع، زمان انتشار، زمان دریافت و اصلاحیه: ناموجود.</p>
         <p>دامنه: شرکت اصلی؛ مجموعه: <bdi>{DATASET_ID}</bdi>؛ این شناسه مربوط به دادهٔ آموزشی است.</p>

@@ -14,13 +14,13 @@
   "historicalEvidence": "P14-EDU-01 screenshots and root audit of snapshot5649582 are historical; neither is evidence for this build.",
   "hashBasis": "SHA256 of UTF8 text with LF newlines (canonical Git text); not raw Windows CRLF bytes",
   "hashes": {
-    "entry.tsx": "351e0b38ffd5d24ddef9790f8085b8ef3ce50463d8ded247f9e110df3580394e",
+    "entry.tsx": "ddc7321e84bd49de95a16ea6e022744e244396a48503ffa262601865bbc111ac",
     "chart-data.ts": "9923ef489af3e3486131b7d2a08d78ce9b0094237c57d465591f4281aed4d850",
     "query-state.ts": "16016033b42b9318d30dc5f1dc37ea75ac95a9bfa3a511819be4f7dd7e07bf3a",
     "validate.ts": "0b3c31b1424b1606813c2193e7303ab515fd50d592deb51121875dc657889c29",
     "build.mjs": "2984180df000237197551c9dbc5f7b833c0479052947e35b86b7dbe4037750bd",
     "charts.input.css": "a7756e005d83e22ebc3727ef6bd4d569a65d4336e90a639bd097f2b2805ee19d",
-    "prototype.js": "9ce89c097949cd5d5c2ff697fd5a208d395023b7f0e176aff50cd215810ea48f",
+    "prototype.js": "1c1e2f19dc182c0a66cb17ab0a6bbb1e7d67b7100f7059245a362c3d7b23877d",
     "charts.css": "5817a63d9f96d1987169fa187274b5c2136cda8d34ac98807b645e597d2042a5",
     "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
     "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
@@ -46,5 +46,5 @@
     "postcss": "8.5.28"
   },
   "browserInputCount": 2090,
-  "bundleBytes": 838859
+  "bundleBytes": 838906
 }
