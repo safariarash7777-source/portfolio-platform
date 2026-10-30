@@ -70,16 +70,21 @@ async function preflight(){
  const state={local,tempRoot,owner,sourceSha256,contexts:[],checks:[],stage:'preflight',server:null,browser:null};
  const priorTmp=process.env.TMPDIR;process.env.TMPDIR=local;
  try{
+  state.stage='closure_copy';
   const copy=copyClosure(dirname(executable),local);state.executable=copy.executable;state.closure=copy.closure;
   const runtimeMeta=statSync(copy.executable),runtimeBytes=readFileSync(copy.executable);state.chromeSha256=digest(runtimeBytes);
   check(chromeFileCompatible({isFile:runtimeMeta.isFile(),elf:runtimeBytes.subarray(0,4).equals(Buffer.from([127,69,76,70])),uid:runtimeMeta.uid,runnerUid:process.getuid(),mode:runtimeMeta.mode&0o777})&&state.chromeSha256===sourceSha256,'p09_browser_owned_chrome_identity');
+  console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'owned-copy-attested',executable:copy.executable,uid:runtimeMeta.uid,mode:runtimeMeta.mode&0o777,sha256:state.chromeSha256,closure:state.closure}));
   const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>['PATH','LANG','TMPDIR'].includes(key)));env.XDG_CONFIG_HOME=resolve(local,'config');env.XDG_CACHE_HOME=resolve(local,'cache');
+  state.stage='owned_version';
   state.chromeVersion=execFileSync(copy.executable,['--version'],{env,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:15000}).trim();check(/^Google Chrome [0-9.]+(?: .*)?$/.test(state.chromeVersion),'p09_browser_chrome_version');
+  console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'owned-version',chromeVersion:state.chromeVersion}));state.stage='owned_launch';
   state.server=await chromium.launchServer({executablePath:copy.executable,headless:true,host:'127.0.0.1',env,timeout:30000,args:['--disable-background-networking','--disable-crash-reporter']});
   const ws=new URL(state.server.wsEndpoint());check(ws.protocol==='ws:'&&ws.hostname==='127.0.0.1','p09_browser_loopback_control');
   state.process=state.server.process();check(state.process?.pid>0,'p09_browser_owned_process');
   const profile=state.process.spawnargs.find(x=>x.startsWith('--user-data-dir='))?.slice('--user-data-dir='.length);
   check(profile&&realpathSync(profile).startsWith(local+'/'),'p09_browser_profile_outside_owned_temp');
+  state.stage='cdp_connect';
   state.browser=await chromium.connect(state.server.wsEndpoint());const context=await state.browser.newContext({serviceWorkers:'block'});state.contexts.push(context);
   const page=await context.newPage(),cdp=await context.newCDPSession(page),version=await cdp.send('Browser.getVersion');
   check(/^Chrome\/[0-9.]+$/.test(version.product),'p09_browser_cdp_version');
@@ -87,7 +92,13 @@ async function preflight(){
   try{await cdp.send('Fetch.continueResponse',{requestId:'p09-preflight-no-request'});throw Error('p09_browser_cdp_probe_unexpected');}catch(error){check(/Invalid InterceptionId|Invalid requestId/i.test(error.message),'p09_browser_response_interception_unsupported');}
   await cdp.send('Fetch.disable');await context.close();check(page.isClosed()&&context.isClosed(),'p09_browser_preflight_context_cleanup');
   return state;
- }catch(error){await cleanup(state);throw error;}finally{if(priorTmp===undefined)delete process.env.TMPDIR;else process.env.TMPDIR=priorTmp;}
+ }catch(error){
+  // Pre-auth only: no users or credentials have been provisioned. Never emit a
+  // launch command/WS capability, stack, host file listing or raw trace.
+  const redact=value=>String(value??'').replace(/(?:wss?|https?):\/\/\S+/g,'<url>').replaceAll(local,'<owned-temp>').replace(/\/(?:[^\s'"<>]+)/g,'<path>').split('\n').filter(Boolean).slice(0,2).join(' | ').slice(0,360);
+  console.log('P09_BROWSER_PREFLIGHT_FAILURE '+JSON.stringify({stage:state.stage,name:error.name,code:error.code??null,status:error.status??null,signal:error.signal??null,reason:redact(error.message),stderr:redact(error.stderr)}));
+  await cleanup(state);throw error;
+ }finally{if(priorTmp===undefined)delete process.env.TMPDIR;else process.env.TMPDIR=priorTmp;}
 }
 async function cleanup(s){
  const owned=s.process?descendants(s.process.pid):new Map();
