@@ -37,7 +37,18 @@ test('priority and stop are temporary UI controls and cannot dispatch requests',
     const select=host.find('select',()=>true);
     (select.props.onChange as (event:unknown)=>void)({target:{value:'service'}});await host.settle();
     assert.equal(host.find('h3',()=>true).props.children,'بررسی خدمت عضو');
-    await host.click('توقف در این نما');
+    assert.equal(host.button('توقف در این نما').props.disabled,true);
+    for(const label of ['علت یادداشت','مسئول پیشنهادی و تأییدنشده','قدم بعد پیشنهادی']){
+      const input=host.find('input',element=>element.props['aria-label']===`${label} — بررسی خدمت عضو`);
+      (input.props.onChange as (event:unknown)=>void)({target:{value:'   '}});
+    }
+    await host.settle();assert.equal(host.button('توقف در این نما').props.disabled,true);
+    for(const label of ['علت یادداشت','مسئول پیشنهادی و تأییدنشده','قدم بعد پیشنهادی']){
+      const input=host.find('input',element=>element.props['aria-label']===`${label} — بررسی خدمت عضو`);
+      (input.props.onChange as (event:unknown)=>void)({target:{value:'نمونهٔ موقت'}});
+    }
+    await host.settle();await host.click('توقف در این نما');
+    assert.equal(host.find('fieldset',element=>element.props.disabled===true).props.disabled,true);
     host.find('p',element=>JSON.stringify(element.props.children).includes('توقف نمایشی؛ علت و مسئول واقعی'));
     await host.click('برداشتن توقف نمایشی');
     assert.equal(calls,0);
