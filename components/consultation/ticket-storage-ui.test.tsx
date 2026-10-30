@@ -22,10 +22,10 @@ function looked(input: TicketRequest, found = false) {
   if (result.data.request.state === "found") { result.data.request.data.requestId = input.command.requestId; result.data.request.data.relationshipId = input.command.relationshipId; }
   return ready(result);
 }
-function deferred<T>() { let done!: (value: T) => void; const promise = new Promise<T>(resolve => { done = resolve; }); return { promise, done }; }
+function deferred<T>() { let done!: (value: T) => void, fail!: (error: Error) => void; const promise = new Promise<T>((resolve, reject) => { done = resolve; fail = reject; }); return { promise, done, fail }; }
 function parentGate() {
   const entered = deferred<void>(), outcome = deferred<unknown>();
-  return { entered: entered.promise, read: () => { entered.done(undefined); return outcome.promise; }, done: outcome.done };
+  return { entered: entered.promise, read: () => { entered.done(undefined); return outcome.promise; }, done: outcome.done, fail: outcome.fail };
 }
 function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], actor = M, requestId?: string) {
   const slots: unknown[] = [], effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: unknown[] = [], writeCalls: unknown[][] = [], urls: string[] = [];
@@ -59,6 +59,7 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
     edit(value = "SYNTHETIC_PRIVATE_DRAFT") { (panel().props.onDraft as (draft: unknown) => void)({ ...blankTicketDraft(), subject: "Synthetic subject", text: value }); render(); },
     async submit() { (panel().props.onSubmit as () => void)(); render(); await flush(); },
     async reload() { const button = nodes(tree).find(node => node.type === "button" && text(node).includes("بازخوانی بدون ارسال")); assert.ok(button); assert.ok(!button.props.disabled); (button.props.onClick as () => void)(); render(); await flush(); },
+    async verify() { const button = nodes(tree).find(node => node.type === "button" && text(node).includes("بررسی نشست و بازخوانی")); assert.ok(button); (button.props.onClick as () => void)(); render(); await flush(); },
     unmount() { cleanups.forEach(fn => fn()); },
   };
 }
@@ -152,4 +153,21 @@ test("late write during unknown identity stays hidden and same-actor recovery is
   assert.throws(() => view.panel()); assert.doesNotMatch(view.text(), /SYNTHETIC_PRIVATE_DRAFT|بازخوانی مستقل تطبیق/);
   fresh.done(ready(parent())); await view.flush();
   assert.equal(view.writeCalls.length, 1); assert.match(view.text(), /در بازخوانی مستقل تطبیق/); view.unmount();
+});
+
+test("fresh parent disconnect or auth unavailability offers explicit retry without exposing the retained draft", async () => {
+  for (const disconnect of [true, false]) {
+    const failed = parentGate(), retried = parentGate();
+    const view = mount([ready(parent()), failed.read, retried.read], [ready(inbox()), ready(inbox())], []);
+    await view.auth(); view.edit("PRIVATE_RETRY_DRAFT"); await view.auth("TOKEN_REFRESHED", null);
+    await view.auth(); await failed.entered;
+    if (disconnect) failed.fail(Error("synthetic unit parent disconnect"));
+    else failed.done({ status: "error", error: { code: "AUTH_UNAVAILABLE", error: "unavailable" } });
+    await view.flush(); assert.throws(() => view.panel()); assert.match(view.text(), /بررسی نشست و بازخوانی/);
+    assert.doesNotMatch(view.text(), /PRIVATE_RETRY_DRAFT|در حال تأیید نشست/);
+    await view.verify(); await retried.entered; assert.throws(() => view.panel());
+    retried.done(ready(parent())); await view.flush();
+    assert.equal((view.panel().props.draft as { text: string }).text, "PRIVATE_RETRY_DRAFT");
+    assert.equal(view.writeCalls.length, 0); view.unmount();
+  }
 });

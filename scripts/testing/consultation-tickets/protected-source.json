@@ -34,11 +34,11 @@
     "files": {
       "components/consultation/TicketRequestWorkspace.tsx": {
         "oldBlob": "b8156c48f1fb9fac14fca6b7d85efeb62f6d6771",
-        "newBlob": "bb3ccecf8cec3434305928775f21a620115a8357"
+        "newBlob": "a8f7a4126b005001605f06ee7768cda330f7cc68"
       },
       "components/consultation/ticket-storage-ui.test.tsx": {
         "oldBlob": "27ac4d0fd8e1f25bc314d271feed572c933e5a02",
-        "newBlob": "9e6ec636055f8cc81ee91b96750ad16b9a286d07"
+        "newBlob": "ec6d713620b0546667686aa0f710a093b14cb660"
       }
     }
   }

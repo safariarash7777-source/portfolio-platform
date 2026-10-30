@@ -112,7 +112,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
       if (!dirtyRef.current) setDraft(blankTicketDraft(parent.actor.id === parent.selected.clientId ? requestId ? "member_followup" : "open" : "advisor_clarification"));
       setNeedsRefresh(false); setMessage("");
     } catch {
-      if (live.current && generation === sequence.current) setMessage("بازخوانی معتبر انجام نشد؛ تاریخچهٔ قبلی جای نتیجهٔ تازه نیست. ثبت تکرار نشود.");
+      if (live.current && generation === sequence.current) { suspendIdentity(); setMessage("بازخوانی معتبر انجام نشد؛ تاریخچهٔ قبلی جای نتیجهٔ تازه نیست. نشست را بررسی و دوباره بازخوانی کنید؛ ثبت تکرار نشود."); }
     } finally { if (generation === sequence.current) setReading(false); }
   }, [clearPrivate, expectedActorId, keepHistory, setLocation, suspendIdentity]);
   useEffect(() => {

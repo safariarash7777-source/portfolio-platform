@@ -148,6 +148,8 @@ async function browserCase(s,ctx){
  await expect('a','/api/portfolio/holdings',{base_version:0,client_token:randomUUID(),positions:[position],note:'P03 browser owned fixture only'});
  const source={label:'Synthetic financial statement',observedOn:date};
  await expect('a','/api/personal-finance/cash-flow',{contractVersion:'cash-flow-request.v1',expectedOwnerId:users.a.id,clientToken:randomUUID(),baseVersion:0,payload:{contractVersion:1,period,accountDefinitions:[{accountKey:'bank',label:'Synthetic bank'}],scopeAccountKeys:['bank'],opening:{amountToman:500000,atStartOn:period.startOn,source},coverage:{planned:{status:'unknown',memberAffirmed:false,source:null},actual:{status:'complete',memberAffirmed:true,source}},entries:[{entryKey:'income',basis:'actual',kind:'income',accountKey:'bank',amountToman:100000,occurredOn:'2026-10-02',source,category:null,note:null},{entryKey:'expense',basis:'actual',kind:'expense',accountKey:'bank',amountToman:20000,occurredOn:'2026-10-03',source,category:null,note:null}]}});
+ const holdings=await expect('a','/api/portfolio/holdings'),cashflow=await expect('a','/api/personal-finance/cash-flow?'+new URLSearchParams(period));
+ check(holdings.positions[0]?.declared_value===1000000&&cashflow.report.actual.closingToman===580000&&cashflow.report.planned.netToman===null,'p09_browser_financial_independent_readback');
  sql(`INSERT INTO public.consultation_advisors(user_id,display_name,enabled,is_owner) VALUES(${quote(users.owner.id)},'Synthetic browser owner',true,true);`);
  const command=async(actor,command)=>expect(actor,'/api/consultation',{contractVersion:'consultation-request.v1',expectedActorId:users[actor].id,clientToken:randomUUID(),command});
  const relation=(await command('a',{kind:'grant',advisorId:users.owner.id,clientLabel:'Synthetic browser member'})).id;
@@ -159,7 +161,7 @@ async function browserCase(s,ctx){
  pass('browser-owned-nonzero-dossier-real-consent',{holdingsToman:1000000,actualClosingToman:580000,plannedUnknown:true});
  const marker='SYNTHETIC_PRIVATE_BROWSER_MEMBER_BODY',subject='Synthetic browser request',reply='SYNTHETIC_SHARED_BROWSER_ADVISOR_REPLY',followup='SYNTHETIC_PRIVATE_BROWSER_MEMBER_FOLLOWUP';
  const needles=[marker,reply,followup];let posts=0,lost=false,armed=false,original=null,automatic=0;
- const pages=[],cache=[],observedLookups=[];
+ const pages=[],cache=[],observedLookups=[],http=[],pageErrors=[];
  const history=page=>page.locator('section[aria-label="تاریخچهٔ نسخه‌دار درخواست"]');
  const submit=page=>page.getByRole('button',{name:'ثبت آزمایشی با بررسی سرور',exact:true});
  const reload=page=>page.getByRole('button',{name:'بازخوانی بدون ارسال دوباره',exact:true});
@@ -168,6 +170,9 @@ async function browserCase(s,ctx){
   const context=await s.browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1000}});s.contexts.push(context);
   needles.push(users[actor].session.token,...sdkCookies(users[actor].session.cookie).map(x=>x.value).filter(Boolean));
   await context.addCookies(sdkCookies(users[actor].session.cookie));const page=await context.newPage();pages.push(page);page.on('dialog',dialog=>void dialog.accept());
+  page.on('pageerror',error=>pageErrors.push({name:error.name,category:/React is not defined/.test(error.message)?'react_missing':/Maximum update depth/.test(error.message)?'render_loop':/hydration/i.test(error.message)?'hydration':'other_runtime_error'}));
+  page.on('response',response=>{const u=new URL(response.url());if(u.pathname.startsWith('/api/')||u.pathname.startsWith('/auth/'))http.push({path:u.pathname,status:response.status()});});
+  s.pageDiagnostic=async()=>({stage:s.stage,operation:s.operation,urlClass:[memberPath,advisorPath].includes(new URL(page.url()).pathname)?new URL(page.url()).pathname:'other',http:http.slice(-20),pageErrors:pageErrors.slice(-5),dom:await page.evaluate(()=>({subjectLabels:[...document.querySelectorAll('label')].filter(x=>x.textContent.trim()==='موضوع').length,textLabels:[...document.querySelectorAll('label')].filter(x=>x.textContent.trim()==='متن').length,inputs:[...document.querySelectorAll('input')].map(x=>({disabled:x.disabled,width:x.getBoundingClientRect().width})),fieldsets:[...document.querySelectorAll('fieldset')].map(x=>({disabled:x.disabled})),checking:document.body.textContent.includes('در حال تأیید نشست'),retry:document.body.textContent.includes('بررسی نشست و بازخوانی'),overlay:document.querySelectorAll('nextjs-portal').length}))});
   const cdp=await context.newCDPSession(page);await cdp.send('Network.enable');
   cdp.on('Network.responseReceived',event=>{if(new URL(event.response.url).pathname===endpoint)cache.push({disk:!!event.response.fromDiskCache,worker:!!event.response.fromServiceWorker,prefetch:!!event.response.fromPrefetchCache,headers:event.response.headers});});
   await cdp.send('Fetch.enable',{patterns:[{urlPattern:'*',requestStage:'Request'},{urlPattern:origin+endpoint+'*',requestStage:'Response'}]});
@@ -183,12 +188,12 @@ async function browserCase(s,ctx){
    await cdp.send('Fetch.continueResponse',{requestId:event.requestId});
   })().catch(error=>{if(!context.isClosed())s.asyncFailure=browserFailureCode(error);});});
   const url=origin+path+'?'+new URLSearchParams({relation,...(requestId?{request:requestId}:{})});
-  const document=await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});check(document?.status()===200,'p09_browser_real_document_not_200');
+  s.operation='navigate_'+actor;const document=await page.goto(url,{waitUntil:'domcontentloaded',timeout:120000});check(document?.status()===200,'p09_browser_real_document_not_200');s.operation='document_loaded_'+actor;
   return {page,context};
  };
  s.stage='default_right_page';const first=await open('a',memberPath),page=first.page;
- await submit(page).waitFor({state:'visible',timeout:60000});check(await submit(page).isDisabled(),'p09_browser_product_right_not_closed');
- await page.getByLabel('موضوع',{exact:true}).fill(subject);await page.getByLabel('متن',{exact:true}).fill(marker);
+ s.operation='default_submit_visible';await submit(page).waitFor({state:'visible',timeout:60000});check(await submit(page).isDisabled(),'p09_browser_product_right_not_closed');
+ s.operation='default_subject_fill';await page.getByLabel('موضوع',{exact:true}).fill(subject);s.operation='default_text_fill';await page.getByLabel('متن',{exact:true}).fill(marker);
  check(await page.getByLabel('متن',{exact:true}).inputValue()===marker&&posts===0,'p09_browser_closed_draft_or_post');
  recordPass(s,'real-member-page-default-right-closed',{actualDocument:200,draftRetained:true,posts:0,productRight:'NOT_CONNECTED'});
  ctx.apply('scripts/testing/consultation-tickets/owned-fixture.sql');
@@ -261,6 +266,7 @@ export async function runBrowser(){
     recordPass(state,'owned-browser-cleanup',removed);
     check(state.checks.length===browserChecks.length,'p09_browser_check_count');
     return {browser:{status:'PASS',driverVersion:'1.64.1',sourceExecutable:executable,sourceSha256:state.sourceSha256,executable:state.executable,ownedTemp:state.local,ownerId:state.owner,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,closure:state.closure,checks:state.checks,...flow,cleanup:removed}};
+   }catch(error){if(state.pageDiagnostic){try{console.log('P03_TICKET_BROWSER_FAILURE_DETAIL '+JSON.stringify(await state.pageDiagnostic()));}catch{console.log('P03_TICKET_BROWSER_FAILURE_DETAIL '+JSON.stringify({stage:state.stage,operation:state.operation,dom:'UNAVAILABLE'}));}}throw error;
    }finally{if(!state.cleaned){await cleanup(state);state.cleaned=true;}}
   },{browserMode:true});
  }catch(error){error.p03Stage=state?.stage??'preflight';throw error;}finally{if(state&&!state.cleaned)await cleanup(state);}
