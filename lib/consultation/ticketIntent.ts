@@ -1,6 +1,6 @@
 import type { ConsultationRead } from "./contracts";
 import { cashFlowObject as object } from "../portfolio/cashFlowApiContract";
-import { TICKET_BODY_LIMIT, ticketReceiptVisible, validateTicketLookup, validateTicketReceipt, validateTicketRequest, validateTicketTransition, type TicketReceipt } from "./tickets";
+import { TICKET_BODY_LIMIT, ticketReceiptVisible, validateTicketHistoryAccess, validateTicketLookup, validateTicketReceipt, validateTicketRequest, validateTicketTransition, type TicketReceipt } from "./tickets";
 
 export interface TicketIntent {
   readonly body: string;
@@ -34,11 +34,13 @@ export interface TicketRecovery {
 /** Recovery never manufactures an intent or token; even confirmed absence keeps the old bytes. */
 export function recoverTicketIntent(value: TicketIntent, lookupValue: unknown, source: ConsultationRead, knownReceipt: TicketReceipt | null): TicketRecovery {
   const intent = validateTicketIntent(value), request = validateTicketRequest(JSON.parse(intent.body));
-  if (source.actor.id.toLowerCase() !== intent.expectedActorId) throw Error("هویت تغییر کرده است؛ تلاش خصوصی قبلی نمایش داده نشود.");
+  // Identity, exact relationship and history role are not transient lookup failures.
+  // Validate outside catch so unauthorized callers cannot receive intent/receipt via pending().
+  const authorizedSource = validateTicketHistoryAccess(request, source);
   const saved = knownReceipt === null ? null : validateTicketReceipt(knownReceipt, request);
   const pending = (): TicketRecovery => ({ status: saved ? "readback_pending" : "unavailable", intent, receipt: saved });
   try {
-    const lookup = validateTicketLookup(lookupValue, request, source);
+    const lookup = validateTicketLookup(lookupValue, request, authorizedSource);
     if (saved && lookup.attempt.state === "found" && (saved.id !== lookup.attempt.receipt.id || saved.canonicalContentHash !== lookup.attempt.receipt.canonicalContentHash)) return pending();
     const receipt = saved ?? (lookup.attempt.state === "found" ? lookup.attempt.receipt : null);
     if (receipt) {

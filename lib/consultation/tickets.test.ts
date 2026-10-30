@@ -224,6 +224,69 @@ test("known receipt survives later read failure or contradictory absence and acc
   assert.throws(() => recoverTicketIntent(intent, lookup(input, read(), saved), source(), { ...saved, clientToken: "other-attempt" }));
 });
 
+test("recovery access rejects a revoked advisor without returning intent or known receipt", () => {
+  const input = append("close"), intent = prepareIntent(input, source(false), read(undefined, O)), saved = validateTicketReceipt(receipt(input), input);
+  const revoked = source(false); revoked.selected!.revoked = true;
+  for (const result of [null, lookup(input, "unavailable"), lookup(input, read([event(opening()), event(input)], O), saved)]) {
+    for (const known of [null, saved]) {
+      let returned: unknown;
+      assert.throws(() => { returned = recoverTicketIntent(intent, result, revoked, known); });
+      assert.equal(returned, undefined);
+    }
+  }
+});
+
+test("recovery access rejects a disabled advisor even if actor id and selected relationship stay the same", () => {
+  const input = append("close"), intent = prepareIntent(input, source(false), read(undefined, O)), saved = validateTicketReceipt(receipt(input), input);
+  const disabled = source(false); disabled.actor.isAdvisor = false; disabled.actor.isOwner = false; disabled.advisors = [];
+  for (const result of [null, lookup(input, "unavailable"), lookup(input, read([event(opening()), event(input)], O), saved)]) {
+    let returned: unknown;
+    assert.throws(() => { returned = recoverTicketIntent(intent, result, disabled, saved); });
+    assert.equal(returned, undefined);
+  }
+});
+
+test("recovery access rejects a different selected relationship for both member and advisor", () => {
+  for (const member of [true, false]) {
+    const input = member ? opening() : append("close"), original = source(member);
+    const intent = prepareIntent(input, original, member ? "confirmed_absent" : read(undefined, O)), saved = validateTicketReceipt(receipt(input), input);
+    const changed = source(member); changed.selected!.id = uid(800); changed.sessions[0].relationshipId = uid(800);
+    if (!member) changed.selected!.clientId = uid(801);
+    for (const result of [null, lookup(input, "unavailable")]) {
+      let returned: unknown;
+      assert.throws(() => { returned = recoverTicketIntent(intent, result, changed, saved); });
+      assert.equal(returned, undefined);
+    }
+  }
+});
+
+test("recovery access rejects a changed actor before any pending or confirmed return", () => {
+  const input = opening(), intent = prepareIntent(input, source(), "confirmed_absent"), saved = validateTicketReceipt(receipt(input), input);
+  for (const result of [null, lookup(input, read(), saved)]) {
+    let returned: unknown;
+    assert.throws(() => { returned = recoverTicketIntent(intent, result, source(false), saved); });
+    assert.equal(returned, undefined);
+  }
+});
+
+test("recovery access preserves the owning member history after revocation without enabling fresh writes", () => {
+  const input = opening(), intent = prepareIntent(input, source(), "confirmed_absent"), saved = validateTicketReceipt(receipt(input), input);
+  const member = source(); member.selected!.revoked = true; member.advisors = [];
+  const result = recoverTicketIntent(intent, lookup(input, read(), saved), member, saved);
+  assert.equal(result.status, "confirmed"); assert.equal(result.intent.body, intent.body); assert.equal(result.receipt?.id, saved.id); assert.equal(result.intent.writeEnabled, false);
+  assert.throws(() => createTicketIntent(input, member, lookup(input, "confirmed_absent")));
+});
+
+test("recovery access preserves exact bytes and saved receipt on unavailable reads for an authorized advisor", () => {
+  const input = append("close"), intent = prepareIntent(input, source(false), read(undefined, O)), saved = validateTicketReceipt(receipt(input), input);
+  for (const known of [null, saved]) {
+    const result = recoverTicketIntent(intent, lookup(input, "unavailable", "unavailable"), source(false), known);
+    assert.equal(result.status, known ? "readback_pending" : "unavailable");
+    assert.deepEqual(Buffer.from(result.intent.body, "utf8"), Buffer.from(intent.body, "utf8"));
+    assert.equal(result.intent.clientToken, intent.clientToken); assert.equal(result.receipt?.id ?? null, known?.id ?? null); assert.equal(result.intent.writeEnabled, false);
+  }
+});
+
 const entitlement: LegacyConsultingAccessRow = { id: uid(200), user_id: M, kind: "consulting", source: "admin_grant", starts_at: "2026-10-01T00:00:00Z", expires_at: "2026-11-01T00:00:00Z", revoked_at: null };
 test("legacy analytical access is separate from unknown service rights, including admin_grant provenance", () => {
   const classify = (rows: unknown[], at = date) => classifyLegacyConsultingAccess({ state: "ready", rows, complete: true }, M, at);

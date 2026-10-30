@@ -83,6 +83,12 @@ function parent(read: ConsultationRead, actorId: string) {
   if (validated.actor.id === relation.advisorId && (!validated.actor.isAdvisor || relation.revoked)) throw Error("دسترسی مشاور تأیید نشده است.");
   return { read: validated, relation };
 }
+/** Access failure must escape recovery's read-error fallback before private data can return. */
+export function validateTicketHistoryAccess(input: TicketRequest, source: ConsultationRead): ConsultationRead {
+  const request = validateTicketRequest(input), context = parent(source, request.expectedActorId);
+  if (context.relation.id !== request.command.relationshipId) throw Error("رابطهٔ انتخاب‌شده تغییر کرده است؛ تلاش خصوصی قبلی نمایش داده نشود.");
+  return context.read;
+}
 function resolveInParent(reference: TicketRecommendation, context: ReturnType<typeof parent>) {
   const ref = recommendation(reference);
   const session = context.read.sessions.find(item => item.id === ref.sessionId);
