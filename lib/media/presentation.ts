@@ -1,5 +1,6 @@
 import type { ContentItem } from "@/lib/content-hub";
 import type { SiteLayout } from "@/lib/appearance/site-layout";
+import { toLatinDigits } from "@/lib/format";
 
 export type MediaLayout = SiteLayout;
 export interface MediaAppearance { layout: MediaLayout; covers: "editorial" | "source"; featured: string[] }
@@ -48,4 +49,54 @@ export function uniqueMedia(items: MediaItem[]): MediaItem[] {
 export function editorialCover(item: MediaItem): string {
   const text = (item.title || "") + (item.description || "");
   return text.includes("بدهی") || text.includes("آمریکا") ? "/media-preview/debt.webp" : text.includes("پادکست") || text.includes("گوش") ? "/media-preview/podcast.webp" : "/media-preview/world.webp";
+}
+
+export type MediaDateRange =
+  | { state: "valid"; from: string | null; to: string | null; active: boolean }
+  | { state: "invalid"; reason: "from_invalid" | "to_invalid" | "reversed" };
+
+function isGregorianDay(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return year > 0 && month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1];
+}
+
+const recordedDayFormatter = new Intl.DateTimeFormat("en", {
+  calendar: "gregory", numberingSystem: "latn", timeZone: "Asia/Tehran",
+  year: "numeric", month: "2-digit", day: "2-digit", era: "short",
+});
+
+/** Legacy registration day, never a verified source publication timestamp. */
+export function recordedMediaDay(value: string | null): string | null {
+  if (!value) return null;
+  if (isGregorianDay(value)) return value; // A day-only record has no time to shift.
+  const parts = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-](\d{2}):(\d{2}))$/.exec(value);
+  if (!parts || !isGregorianDay(parts[1]) || Number(parts[2]) > 23 || Number(parts[3]) > 59 || Number(parts[4]) > 59 || Number(parts[6] ?? 0) > 23 || Number(parts[7] ?? 0) > 59) return null;
+  const timestamp = new Date(value);
+  if (!Number.isFinite(timestamp.getTime())) return null;
+  const formatted = recordedDayFormatter.formatToParts(timestamp);
+  const get = (type: string) => formatted.find(part => part.type === type)?.value ?? "";
+  const day = `${get("year").padStart(4, "0")}-${get("month")}-${get("day")}`;
+  return get("era") === "AD" && isGregorianDay(day) ? day : null;
+}
+
+export function mediaDateRange(fromInput: string, toInput: string): MediaDateRange {
+  const from = toLatinDigits(fromInput.trim()) || null, to = toLatinDigits(toInput.trim()) || null;
+  if (from && !isGregorianDay(from)) return { state: "invalid", reason: "from_invalid" };
+  if (to && !isGregorianDay(to)) return { state: "invalid", reason: "to_invalid" };
+  if (from && to && from > to) return { state: "invalid", reason: "reversed" };
+  return { state: "valid", from, to, active: !!(from || to) };
+}
+
+export function filterMediaDates<T extends Pick<MediaItem, "published_at">>(items: T[], from: string, to: string) {
+  const range = mediaDateRange(from, to);
+  let excludedUnknown = 0;
+  const filtered = range.state === "invalid" ? [] : !range.active ? items : items.filter(item => {
+    const day = recordedMediaDay(item.published_at);
+    if (day === null) { excludedUnknown++; return false; }
+    return (!range.from || day >= range.from) && (!range.to || day <= range.to);
+  });
+  return { range, items: filtered, excludedUnknown };
 }
