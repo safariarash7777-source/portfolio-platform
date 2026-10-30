@@ -10,11 +10,11 @@
   "historicalEvidence": "Screenshots and manifests from P14-EDU-01 are historical; not evidence for this build.",
   "hashBasis": "SHA256 of UTF8 text with LF newlines (canonical Git text); not raw Windows CRLF bytes",
   "hashes": {
-    "entry.tsx": "439d65036f280460ba8795df50bdafec7f247f3cafc8c3f69c6f4d8b28f10b21",
+    "entry.tsx": "5686adc162eb2d8e63c7b2e5448e6313a21e3bb52a4a2cbf34759a7ffa965498",
     "chart-data.ts": "9923ef489af3e3486131b7d2a08d78ce9b0094237c57d465591f4281aed4d850",
     "build.mjs": "03c48749a98bea0a87254e4b203b8eac097c0bbb46d3c1b2119878445979c7dc",
     "charts.input.css": "bb9089626cc9617c0e64c1a9d0d7499d0db9334c103d650d54d76322db001d50",
-    "prototype.js": "3fe084b7fa8eae6ccf99384b3653fe54aa8feb20532dcce9643c6e5f943b7ea5",
+    "prototype.js": "962d7f9b1ee8f23c14c20b30d74513d02c347f1d2427d6d4634d890a386239cf",
     "charts.css": "c7c58b9004cc8ac46537047aff744ec64a932aa06d5509af6b22fcf861672d8a",
     "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
     "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
@@ -35,5 +35,5 @@
     "postcss": "8.5.28"
   },
   "browserInputCount": 2089,
-  "bundleBytes": 834245
+  "bundleBytes": 836561
 }
