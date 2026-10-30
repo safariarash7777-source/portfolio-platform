@@ -28,7 +28,7 @@ test('P09 uses the real panel function from the existing hook host module cache'
 });
 
 test('P09.1 pins versioned browser helpers descended from PR353; no PF10 product ancestry',()=>{
- for(const [name,expected] of [['native-auth-runtime.mjs','ee6ca3fcee648d33020a1d97b7ba3ea91a238265'],['native-auth-gateway.mjs','63382febd6915d93a27d9b1434f07aed63a2976a']]){
+ for(const [name,expected] of [['native-auth-runtime.mjs','cee0370fe8be0d21c263de5ddfd40aecb5d19ab0'],['native-auth-gateway.mjs','63382febd6915d93a27d9b1434f07aed63a2976a']]){
   // Git canonical blobs use LF; a Windows checkout may materialize CRLF.
   const bytes=Buffer.from(readFileSync(new URL(name,import.meta.url),'utf8').replaceAll('\r\n','\n'));
   assert.equal(createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex'),expected);
@@ -66,7 +66,7 @@ test('Browser allowlist accepts only GET/HEAD real page/static/font and denies t
  assert.equal(browserRequestAllowed('/admin/research','POST'),false);assert.equal(browserDestination(origin+'/_next/image'),false);
 });
 test('Browser verdict requires all seven observed checks and cleanup; a blind passed flag is rejected',()=>{
- const ownerId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',ownedTemp='/tmp/ci/p09-browser-'+ownerId+'-ABC123';
+ const ownerId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',ownedTemp='/tmp/ci/p09b-ABC123';
  const valid={status:'PASS',driverVersion:'1.64.1',sourceExecutable:'/opt/google/chrome/chrome',sourceSha256:browserSourceSha,executable:ownedTemp+'/chrome/chrome',ownedTemp,ownerId,chromeVersion:'Google Chrome 150.0.0.1',chromeSha256:browserSourceSha,closure:{sha256:'a'.repeat(64),entries:100,bytes:500000000,freeBeforeBytes:10*1024**3,sourceStable:true,copyMatched:true,runtimeReadonly:true},checks:browserChecks.map(name=>({name,status:'PASS'})),pageClosed:true,contextClosed:true,freshLoginVerified:true,reloadGetOnly:true,automaticWorkbookPosts:0,privateStorageHits:0,privateUrlHits:0,cacheAuditComplete:true,cleanup:{processStopped:true,contextsClosed:true,ownedTempRemoved:true,ownerId}};
  assert.equal(validateBrowserReceipt(valid,'/tmp/ci').status,'PASS');assert.throws(()=>validateBrowserReceipt({status:'PASS'}));
  for(const change of [r=>{r.checks.pop();},r=>{r.checks[1]=r.checks[0];},r=>{r.contextClosed=false;},r=>{r.automaticWorkbookPosts=1;},r=>{r.privateStorageHits=1;},r=>{r.cacheAuditComplete=false;},r=>{r.cleanup.processStopped=false;},r=>{r.executable='/opt/google/chrome/chrome';},r=>{r.sourceSha256='b'.repeat(64);},r=>{r.closure.entries=4097;},r=>{r.closure.runtimeReadonly=false;},r=>{r.cleanup.ownerId='other';}]){const r=structuredClone(valid);change(r);assert.throws(()=>validateBrowserReceipt(r,'/tmp/ci'));}

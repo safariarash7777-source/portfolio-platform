@@ -69,11 +69,12 @@ async function preflight(){
  console.log('P09_BROWSER_PREFLIGHT_READ '+JSON.stringify({phase:'existing-chrome-file',executable,...fileIdentity,sha256:sourceSha256}));
  check(fileIdentity.isFile&&fileIdentity.elf&&sourceSha256===browserSourceSha,'p09_browser_source_chrome_identity');
  const require=createRequire(import.meta.url);check(require('playwright-core/package.json').version==='1.64.1','p09_browser_driver_version');
- const {chromium}=await import('playwright-core'),tempRoot=realpathSync(process.env.RUNNER_TEMP),owner=randomUUID(),local=mkdtempSync(resolve(tempRoot,'p09-browser-'+owner+'-'));
+ const {chromium}=await import('playwright-core'),tempRoot=realpathSync(process.env.RUNNER_TEMP),owner=randomUUID(),local=mkdtempSync(resolve(tempRoot,'p09b-'));
  check(realpathSync(local)===local&&dirname(local)===tempRoot,'p09_browser_owned_temp');writeFileSync(resolve(local,'owner.json'),JSON.stringify({owner,sourceExecutable:executable,sourceSha256}),{mode:0o600});
  const state={local,tempRoot,owner,sourceSha256,contexts:[],checks:[],stage:'preflight',server:null,browser:null};
  const priorTmp=process.env.TMPDIR;process.env.TMPDIR=local;
  try{
+  check(Buffer.byteLength(local)<=40,'p09_browser_socket_path_budget');
   state.stage='closure_copy';
   const copy=copyClosure(dirname(executable),local);state.executable=copy.executable;state.closure=copy.closure;
   const runtimeMeta=statSync(copy.executable),runtimeBytes=readFileSync(copy.executable);state.chromeSha256=digest(runtimeBytes);
