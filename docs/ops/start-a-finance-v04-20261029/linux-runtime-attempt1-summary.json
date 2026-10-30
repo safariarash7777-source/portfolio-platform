@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-10-29T16:00:37.038369+00:00",
+  "image": "sha256:5789aa194f757888f41fa3d48e14b6feaa1b57c0af0b56fcb1372d6474d3bff0",
+  "python": "3.12.16 (main, Oct 26 2026, 22:48:28) [GCC 15.2.0]",
+  "verifierExit": 0,
+  "unitExit": 1,
+  "containerExit": 1,
+  "network": "none",
+  "ownedContainerRemoved": true,
+  "unitErrorCount": 15,
+  "cause": "Test helper copied to shallow /tmp path; reviewed helper parents[3] raised IndexError. Production helper unchanged. Test fixture now preserves repo/scripts/testing nesting.",
+  "rawReceiptPath": "outputs/start-a-v04-20261029/linux-runtime-receipt-attempt1.json",
+  "rawReceiptSha256": "f2ed76e92101595c873dd8ecf8307faf97be2d3575aac71c31d875fec82b5405",
+  "supersededBy": "linux-runtime-receipt.json",
+  "rawReceiptPreserved": true
+}
