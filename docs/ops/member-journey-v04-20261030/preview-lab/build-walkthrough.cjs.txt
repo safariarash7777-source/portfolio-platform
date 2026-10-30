@@ -1,0 +1,25 @@
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
+const checkout = process.cwd(), out = __dirname;
+const fromRepo = name => require(require.resolve(name, { paths: [checkout] }));
+const brand = 'data:image/png;base64,' + fs.readFileSync(path.join(checkout, 'public/brand/mark.png')).toString('base64');
+const plugin = { name: 'review-only-next-boundary', setup(build) {
+  build.onResolve({ filter: /^next\/(link|image|navigation)$/ }, args => ({ path: args.path, namespace: 'review-boundary' }));
+  build.onResolve({ filter: /^(?:@\/lib\/supabase\/client|@\/components\/dashboard\/saveRiskAssessment)$/ }, args => ({ path: args.path, namespace: 'review-boundary' }));
+  build.onLoad({ filter: /.*/, namespace: 'review-boundary' }, args => ({ loader: 'jsx', resolveDir: checkout, contents:
+    args.path === 'next/link' ? `import React from 'react'; export default function Link({children,prefetch,...props}) { return <a {...props}>{children}</a>; }` :
+    args.path === 'next/image' ? `import React from 'react'; export default function Image({priority,src,...props}) { return <img {...props} src=${JSON.stringify(brand)} />; }` :
+    args.path === 'next/navigation' ? `const blocked=()=>window.dispatchEvent(new Event('review-refresh')); export const useRouter=()=>({refresh:blocked,push:blocked,replace:blocked}); export const useSearchParams=()=>new URLSearchParams('next=/dashboard');` :
+    `const blocked=()=>{throw Error('Real Auth/storage blocked in review artifact')}; export const createClient=blocked; export const saveRiskAssessment=blocked;`
+  }));
+} };
+(async () => {
+  const result = await fromRepo('esbuild').build({ entryPoints: [path.join(out, 'walkthrough.tsx')], absWorkingDir: checkout, tsconfig: path.join(checkout,'tsconfig.json'), bundle: true, write: false, platform:'browser', format:'iife', minify:true, jsx:'automatic', nodePaths:[path.join(checkout,'node_modules')], define:{'process.env.NODE_ENV':'"production"','process.env':'{}'}, plugins:[plugin], metafile:true });
+  const config = { ...fromRepo('./tailwind.config.js'), content:[path.join(checkout,'app/**/*.{js,ts,jsx,tsx}'),path.join(checkout,'components/**/*.{js,ts,jsx,tsx}'),path.join(out,'walkthrough.tsx')] };
+  const css = await fromRepo('postcss')([fromRepo('tailwindcss')(config),fromRepo('autoprefixer')]).process(fs.readFileSync(path.join(checkout,'app/globals.css'),'utf8'),{from:undefined});
+  const custom = `body{font-family:Tahoma,sans-serif;line-height:1.9;color:var(--text)}.review-head,.review-main{max-width:1100px;margin:auto;padding:24px 16px}.review-head{border-bottom:2px solid var(--gold)}.review-head h1{font-size:clamp(24px,4vw,36px);font-weight:800}.review-head nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.review-head nav .btn[aria-current="step"],.review-head nav .btn[aria-current="step"]:hover:not(:disabled){background:var(--navy);color:var(--text-on-navy);border-color:var(--navy)}.review-head nav .btn:focus-visible{outline:3px solid var(--focus);outline-offset:3px}select{max-width:100%}code{overflow-wrap:anywhere}.review-main>*{min-width:0}[hidden]{display:none!important}button,a,input,select,textarea{max-width:100%}`;
+  const html = `<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'"><title>راهنمای مسیر عضو — v0.4 — 2026-10-30</title><style>${css.css}${custom}</style><div id="root"></div><script>${result.outputFiles[0].text.replace(/<\/script/gi,'<\\/script')}</script></html>`;
+  fs.writeFileSync(path.join(out,'WALKTHROUGH-v04-20261030.html'),html);
+  const inputs = Object.keys(result.metafile.inputs).filter(name=>!name.includes('node_modules'));
+  fs.writeFileSync(path.join(out,'walkthrough-build.json'),JSON.stringify({version:'v0.4-20261030',baseMainSha:'f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc',sources:Object.fromEntries(inputs.filter(name=>fs.existsSync(path.resolve(checkout,name))).map(name=>[name,crypto.createHash('sha256').update(fs.readFileSync(path.resolve(checkout,name))).digest('hex')])),artifactSha256:crypto.createHash('sha256').update(html).digest('hex'),network:'CSP connect-src none; no Auth/HTTP transport; inputs only memory',inputs,bytes:Buffer.byteLength(html)},null,2));
+  console.log(JSON.stringify({bytes:Buffer.byteLength(html),actualSourceInputs:inputs.length}));
+})();

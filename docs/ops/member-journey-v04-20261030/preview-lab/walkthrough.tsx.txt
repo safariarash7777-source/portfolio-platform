@@ -1,0 +1,75 @@
+import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import Login from '@/app/(auth)/login/page';
+import Home from '@/app/(protected)/dashboard/DashboardClient';
+import AccessCard from '@/components/dashboard/AccessStatusCard';
+import ReadError from '@/components/dashboard/ReadError';
+import CashFlowEditor from '@/components/portfolio/cashflow/CashFlowEditor';
+import { cashFlowDraft, draftPayload } from '@/components/portfolio/cashflow/draft';
+import ConsultationPanel from '@/components/consultation/ConsultationPanel';
+import SessionCard from '@/components/consultation/SessionCard';
+import type { ConsultationAction, ConsultationCommand, ConsultationRead, ConsultationSession } from '@/lib/consultation/contracts';
+import type { AccessInfo } from '@/lib/access';
+import type { CashFlowPayload } from '@/lib/portfolio/cashFlowApiContract';
+
+// Review artifact only. All application components below are bundled from the
+// reviewed checkout. No fake product route, Auth client or HTTP transport exists.
+window.fetch = async () => { throw Error('Network disabled in review artifact'); };
+const A = '11111111-1111-4111-8111-111111111111', B = '22222222-2222-4222-8222-222222222222', advisor = '33333333-3333-4333-8333-333333333333';
+const relationId = '44444444-4444-4444-8444-444444444444', cashId = '55555555-5555-4555-8555-555555555555';
+const sessionId = '66666666-6666-4666-8666-666666666666', actionKey = '77777777-7777-4777-8777-777777777777';
+const period = { startOn: '2026-10-01', endOn: '2026-10-31' };
+const initial: CashFlowPayload = { contractVersion: 1, period, accountDefinitions: [{ accountKey: A, label: 'حساب مصنوعی عضو الف' }], scopeAccountKeys: [A], opening: null, coverage: { planned: { status: 'unknown', memberAffirmed: false, source: null }, actual: { status: 'unknown', memberAffirmed: false, source: null } }, entries: [] };
+const basis = { holdingsVersionId: null, cashFlowVersionId: cashId, goalsVersionId: null, cashFlowPeriod: period };
+const published: ConsultationSession = { id: sessionId, relationshipId: relationId, sessionKey: sessionId, version: 1, createdAt: '2026-10-30T08:00:00Z', actorId: advisor, contentHash: 'a'.repeat(64), state: 'published', approval: { actorId: advisor, createdAt: '2026-10-30T08:00:00Z' }, body: { topic: 'نمونهٔ مصنوعی؛ تکمیل مدارک مالی', goal: 'بررسی استفاده‌پذیری مسیر عضو', clientSummary: 'اطلاعات نامعلوم را با منبع و زمان تکمیل کنید. این نمونه توصیهٔ سرمایه‌گذاری نیست.', rationale: 'نبود دادهٔ کافی مانع نتیجه‌گیری مالی است.', limitations: 'همهٔ اشخاص و نسخه‌ها مصنوعی‌اند؛ دارایی و هدف ثبت نشده است.', reviewOn: '2026-11-30', basis, evidence: [{ label: 'اظهار مصنوعی پایلوت رابط', url: null, asOf: '2026-10-30' }], researchVersionIds: [], actions: [{ actionKey, title: 'منبع و تاریخ یک قلم مالی را تکمیل کنید', responsible: 'member', dueOn: '2026-11-10' }] } };
+const titles = ['ورود', 'خانهٔ موجود عضو', 'نسخهٔ مالی', 'حق خدمت و رضایت', 'جمع‌بندی مشخص', 'پیگیری همان نسخه'];
+const routes = ['/login?next=/dashboard', '/dashboard', '/dashboard/cashflow', '/dashboard/consultation', '/dashboard/consultation', '/dashboard/consultation'];
+function App() {
+  const [step, setStep] = useState(0), [who, setWho] = useState(A), [auth, setAuth] = useState('verified');
+  const [standing, setStanding] = useState<AccessInfo['standing']>(null), [granted, setGranted] = useState(false), [revoked, setRevoked] = useState(false);
+  const [draft, setDraft] = useState(() => cashFlowDraft(period, initial)), [history, setHistory] = useState([initial]);
+  const [fail, setFail] = useState(true), [feedback, setFeedback] = useState<ConsultationAction[]>([]), [message, setMessage] = useState(''), [dirty, setDirty] = useState(false), [consentEpoch, setConsentEpoch] = useState(0);
+  const currentBasis = history.length === 1 ? basis : { ...basis, cashFlowVersionId: '88888888-8888-4888-8888-888888888888' };
+  const own = who === A, known = auth === 'verified', canRead = own && granted && known;
+  const notify = (text: string) => setMessage(text);
+  const command = async (value: ConsultationCommand) => {
+    if (!own || !known) { notify('هویت این نمایش اجازهٔ دسترسی به پروندهٔ الف را ندارد.'); return false; }
+    if (fail) { notify('خطای آزمایشی؛ ثبت انجام نشد و فرم شما در همین صفحه باقی است. تکرار خودکار انجام نشد.'); return false; }
+    if (value.kind === 'grant') { setGranted(true); setRevoked(false); setDirty(false); notify('رضایت فقط در حافظهٔ این نمونه ثبت شد؛ حق خرید همچنان متصل نیست.'); return true; }
+    if (value.kind === 'revoke' && granted) { setRevoked(true); notify('دسترسی مشاور در نمونه لغو شد؛ تاریخچهٔ خود عضو حفظ است.'); return true; }
+    if (value.kind !== 'feedback' || !canRead || revoked || value.sessionId !== sessionId) { notify('این فرمان در این نمایش مجاز نیست.'); return false; }
+    const version = Math.max(0, ...feedback.filter(item => item.actionKey === value.actionKey).map(item => item.version));
+    if (version !== value.baseVersion) { notify('نسخهٔ بازخورد تغییر کرده است؛ ابتدا سابقه را بررسی کنید.'); return false; }
+    setFeedback(items => [...items, { id: crypto.randomUUID(), sessionId, actionKey: value.actionKey, version: version + 1, status: value.status, text: value.text, actorId: A, createdAt: new Date().toISOString() }]);
+    setDirty(false); notify('اعلام عضو در حافظهٔ نمونه به همین نسخه پیوند خورد؛ معامله یا تغییر دارایی انجام نشد.'); return true;
+  };
+  const data: ConsultationRead = { contractVersion: 'consultation-read.v1', actor: { id: who, isAdvisor: false, isOwner: false }, advisors: [{ id: advisor, displayName: 'آرش؛ نقش مصنوعی آزمایش', isOwner: true }], relationships: [], selected: null, dossier: null, sessions: [], notes: [], events: [], actions: [] };
+  if (canRead) { data.relationships = [{ id: relationId, advisorId: advisor, clientId: A, clientLabel: 'عضو الف — مصنوعی', createdAt: '2026-10-30T08:00:00Z', revoked }]; data.selected = data.relationships[0]; data.dossier = { basis: currentBasis, holdings: null, goals: null, cashFlow: { id: currentBasis.cashFlowVersionId!, version: history.length, payload: history[history.length - 1] } }; data.sessions = [published]; data.actions = feedback; }
+  const go = (index: number) => { setStep(index); window.scrollTo(0, 0); };
+  const intercept = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement, link = target.closest('a');
+    if (link) { event.preventDefault(); const path = link.getAttribute('href') ?? ''; if (path.startsWith('/dashboard/cashflow') || path.startsWith('/dashboard/holdings')) go(2); else if (path.startsWith('/dashboard/consultation')) go(3); else notify(`مقصد واقعی: ${path}؛ این فایل مستقل به مقصد واقعی متصل نیست.`); }
+    if (step < 2 && target.closest('[data-product-surface]') && target.closest('button')) { event.preventDefault(); event.stopPropagation(); notify('ورود، خروج، پرداخت و ذخیره در اجزای نمایشی مسدودند. از مراحل راهنما ادامه دهید.'); }
+  };
+  return <div dir="rtl" onClickCapture={intercept}>
+    <header className="review-head"><p className="eyebrow">آرش صفری · راهنمای بازبینی v0.4 / 2026-10-30</p><h1>از ورود عضو تا پیگیری نتیجه</h1><p>نمونهٔ مصنوعی مستقل با اجزای واقعی همین شاخه. ورود واقعی، ذخیرهٔ سرور، تأیید آرش و پذیرش محصول انجام نشده‌اند. اطلاعات واقعی یا رمز وارد نکنید. با بستن/بازخوانی فایل، داده‌های نمونه پاک می‌شوند.</p>
+      <nav aria-label="مراحل راهنمای بازبینی">{titles.map((title, i) => <button key={title} className="btn btn-outline" aria-current={step === i ? 'step' : undefined} onClick={() => go(i)}>{i + 1}. {title}</button>)}</nav>
+    </header>
+    <main className="review-main"><aside className="card p-4 space-y-3"><h2 className="font-bold">کنترل‌های آزمایش؛ بخشی از محصول نیست</h2><div className="flex flex-wrap gap-4">
+      <label>هویت نمایشی <select className="input" value={who} onChange={e => { setWho(e.target.value); setMessage('هویت عوض شد؛ دادهٔ الف فقط برای الف نمایش دارد.'); }}><option value={A}>عضو الف</option><option value={B}>عضو ب؛ بدون رابطه</option><option value="admin">مدیر عادی؛ بدون مجوز مشاوره</option></select></label>
+      <label>نشست <select className="input" value={auth} onChange={e => setAuth(e.target.value)}><option value="verified">تأییدشدهٔ مصنوعی</option><option value="unknown">خواندن نامعلوم</option><option value="expired">انقضای قطعی</option></select></label>
+      <label className="flex items-center gap-2"><input type="checkbox" checked={fail} onChange={e => setFail(e.target.checked)} />خطای ثبت محلی</label>
+    </div><p role="status" aria-live="polite">{message || 'ابتدا خطای ثبت را روشن نگه دارید و حفظ ورودی را بررسی کنید.'}</p><p className="text-xs">فرم تغییرکرده: {dirty ? 'بله؛ در حافظهٔ همین صفحه' : 'خیر'} · اتصال خرید خدمت: NOT_CONNECTED · درخواست شبکه: مسدود</p></aside>
+    <section className="space-y-4 mt-6"><h2 className="text-2xl font-bold">{step + 1}. {titles[step]}</h2><p className="text-sm">مسیر محصول: <code dir="ltr">{routes[step]}</code></p>
+      {!known && step > 0 ? <div className="card p-4">{auth === 'unknown' ? <><h3>وضعیت نشست نامشخص است</h3><ReadError label="نشست حساب — نمایشی" /><p>خروج اثبات نشده است. بازخوانی این فایل فقط دادهٔ نمونه را پاک می‌کند؛ کنترل نشست را به تأییدشده برگردانید تا حفظ پیش‌نویس در همین صفحه را ببینید.</p></> : <><h3>نشست منقضی شده است</h3><p>اقدام بعدی محصول ورود دوباره با مسیر بازگشت امن است.</p><button className="btn btn-outline" onClick={() => go(0)}>دیدن مسیر ورود</button></>}</div> : null}
+      <div hidden={step !== 0}><p className="card p-4">فرم واقعی ورود؛ ارسال و شبکه در این فایل مسدود است. مقصد امن موجود /dashboard حفظ می‌شود. «ورود نامعلوم» با رمز اشتباه یا خروج قطعی یکی نیست.</p><div data-product-surface onSubmitCapture={e => { e.preventDefault(); e.stopPropagation(); notify('ارسال ورود مسدود است؛ هویت از کنترل مصنوعی تعیین می‌شود.'); }}><Login /></div></div>
+      <div data-product-surface hidden={step !== 1 || !known}><p className="card p-4">خانهٔ فعلی عضو، بدون منوی موازی. پیوندهای مالی به مرحلهٔ مالی همین راهنما می‌روند؛ دکمه‌های نوشتن/خروج مسدودند.</p>{own && known ? <Home userId={A} userName="عضو الف — مصنوعی" userEmail="" userRole="user" assessment={null} portfolio={null} holdings={[]} snapshots={[]} transactions={[]} telegramLinked={false} payment={null} scoreHistory={[]} revalidationExpiredAt={null} announcements={[]} portfolioVersions={[]} memberFinance={{ assetsState: 'error', version: null, recordedAt: null, assetCount: null, debtsState: 'error', debtCount: null, scopeState: 'error', targetState: 'error' }} financialReadErrors={{ portfolio: true, holdings: true, snapshots: true, transactions: true, payment: true, portfolioVersions: true }} /> : <p>این هویت، پروندهٔ الف را نمی‌بیند؛ مدیر عادی مجوز مشاورهٔ الف ندارد.</p>}</div>
+      {known && own && <div hidden={step !== 2} className="space-y-4"><p className="card p-4">نسخه‌های حافظهٔ نمونه: {history.length} · نسخهٔ قبلی پاک نمی‌شود. نام حساب را عوض کنید؛ با خطای ثبت روشن «ثبت نسخهٔ تازه» را بزنید، بین مراحل بروید و حفظ متن را بررسی کنید. سپس خطا را خاموش و ثبت کنید؛ جمع‌بندی قدیمی مبنای متفاوت را نشان خواهد داد.</p><CashFlowEditor draft={draft} locked={!known || !own} onChange={value => { setDraft(value); setDirty(true); }} onSave={() => { try { const payload = draftPayload(draft); if (fail) { notify('ذخیرهٔ نمونه شکست خورد؛ پیش‌نویس و تاریخچه تغییر نکردند.'); return; } setHistory(items => [...items, payload]); setDirty(false); notify('نسخهٔ جدید فقط در حافظهٔ نمونه ساخته شد؛ نسخه‌های قبل محفوظ‌اند.'); } catch (error) { notify(error instanceof Error ? error.message : 'ورودی نامعتبر'); } }} onCancel={() => { setDraft(cashFlowDraft(period, history[history.length - 1])); setDirty(false); notify('فرم از آخرین نسخهٔ حافظه بازسازی شد.'); }} /><details className="card p-4"><summary>نسخه‌های محفوظ همین نمونه</summary>{history.map((item, i) => <p key={i}>نسخه {i + 1}: {item.accountDefinitions[0]?.label} · {item.period.startOn} تا {item.period.endOn} · پوشش {item.coverage.actual.status}</p>)}</details></div>}
+      {known && <div hidden={step !== 3} className="space-y-4"><label>وضعیت ابزار تحلیلی <select className="input" value={standing ?? 'unknown'} onChange={e => setStanding(e.target.value === 'unknown' ? null : e.target.value as AccessInfo['standing'])}><option value="unknown">نامعلوم</option><option value="expired">پایان‌یافته</option><option value="revoked">لغوشده</option><option value="scheduled">شروع‌نشده</option><option value="active">فعال</option></select></label><AccessCard access={{ level: standing === 'active' ? 'full' : 'registered', via: standing === 'active' ? 'manual' : null, expiresAt: null, standing, standingSince: null, userId: who, email: null }} /><ConsultationPanel key={`${who}:${consentEpoch}`} data={{ ...data, selected: null, dossier: null, sessions: [] }} locked={!own || !known} selectionLocked={false} onCommand={command} onSelect={() => go(4)} onDirty={() => setDirty(true)} onPeriod={() => {}} onDiscard={() => { setConsentEpoch(epoch => epoch + 1); setDirty(false); notify('تغییرات فرم رضایت در حافظه لغو شد؛ هیچ فرمانی به سرور نرفت.'); }} /></div>}
+      <div hidden={(step !== 4 && step !== 5) || !known} className="space-y-4">{canRead ? <><p className="card p-4">فقط نسخهٔ منتشرشدهٔ مصنوعی ۱ قابل مشاهده است. هیچ پیش‌نویس مشاور یا یادداشت خصوصی در دادهٔ عضو قرار ندارد. {revoked ? 'رابطه لغو شده؛ سابقهٔ عضو باقی است و ثبت تازه بسته است.' : 'برای لغو رضایت از دکمهٔ زیر استفاده کنید.'}</p>{!revoked && <button className="btn btn-outline" onClick={() => void command({ kind: 'revoke', relationshipId: relationId })}>لغو رضایت نمونه</button>}<SessionCard session={published} latest advisor={false} owner={false} revoked={revoked} basis={currentBasis} feedback={feedback} locked={!known} onCommand={command} onEdit={() => {}} onDirty={() => setDirty(true)} /></> : <p className="card p-4">برای این هویت، رابطه و رضایت مجاز الف وجود ندارد؛ محتوای الف نمایش داده نمی‌شود. عضو الف در مرحلهٔ قبل رضایت صریح می‌دهد. مدیر عادی مشاور نیست.</p>}</div>
+      {!own && step === 2 ? <p className="card p-4">این هویت به پیش‌نویس یا نسخه‌های مالی عضو الف دسترسی ندارد.</p> : null}
+      <div className="flex flex-wrap gap-3"><button className="btn btn-outline" disabled={step === 0} onClick={() => go(step - 1)}>مرحلهٔ قبل</button><button className="btn btn-gold" disabled={step === 5} onClick={() => go(step + 1)}>مرحلهٔ بعد</button></div>
+    </section></main><footer className="review-main text-sm">حفظ فرم در همین نشست راهنما بررسی می‌شود؛ دوام سرور، Auth واقعی و پذیرش آرش شاهدهای جدا می‌خواهند. مالک اجرای محصول: START-B؛ مجوز و قرارداد مشاوره با مالک موجود خود می‌ماند.</footer>
+  </div>;
+}
+createRoot(document.getElementById('root')!).render(<App />);

@@ -1,0 +1,298 @@
+{
+  "classification": "SYNTHETIC_REVIEW_ONLY_NOT_FOR_MERGE",
+  "htmlPath": "public/design/member-journey-v04/index.html",
+  "htmlSha256": "6b77dbf9d1c2cbb783d97618e38ab96c85e6aed1c7c4c840ea6984b69d77f898",
+  "productPr": 341,
+  "productCommit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+  "baseMainCommit": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "sourceNote": "Product source dependencies remain frozen at c0eadab. Only review-frame active/hover/focus CSS changed from df41; script, fixture data, CSP and network semantics are byte-identical.",
+  "sources": [
+    {
+      "path": "components/ui/Logo.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "03876f1d54b3b82e4f37b6aaf9ae9fdd2674e9f3d967d8e7133f03c8ca95cdbb",
+      "gitBlobSha256": "b37adc9a86ed4e1d51256bd7efa20c99e9280fd1a1943f1de0f7d4d9aeafb586",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/ui/Logo.tsx"
+    },
+    {
+      "path": "components/account/returnPath.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "d270a0239e15cfcae6171fab1dfbd94a4c27c4e11ba6863c56a107c64fab8dd4",
+      "gitBlobSha256": "d2568e148d5b705ee42f220ffcf1fe65cdd8d863db2d367586bdd931f81ce681",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/account/returnPath.ts"
+    },
+    {
+      "path": "app/(auth)/login/page.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "e1b23b519f2fde52ffe7d1ea39b27c4908704729c9ef6bd56ad100d67462655d",
+      "gitBlobSha256": "9e9f6de3e5ad8c0e3ac34912534d27b2ed521ea257691ea9284129adcb84b08d",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/app/(auth)/login/page.tsx"
+    },
+    {
+      "path": "components/quiz/quizData.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "b62ff61965e439f8748fa22486ba16150c026a0e0c4994947956946b7ca0a63f",
+      "gitBlobSha256": "08a283e6c71d0ae8d7681dd72e4e9e896b41562ef10056c8276233f551cc58ab",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/quiz/quizData.ts"
+    },
+    {
+      "path": "components/quiz/RiskProfileResult.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "b5ebf1002465a493c39da6e33046721b0b33fca2d867dae9c2e8d37883056ce6",
+      "gitBlobSha256": "ee1a359af940a94dd41b31fed73d8762b72d845b3c575fbbb63c76e2dca4290d",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/quiz/RiskProfileResult.tsx"
+    },
+    {
+      "path": "components/quiz/RiskProfileQuiz.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "fa7e232ba7ef5d5923f6f853cb0e78c0d3782150523dc512bf3d9044748e6118",
+      "gitBlobSha256": "fa7e232ba7ef5d5923f6f853cb0e78c0d3782150523dc512bf3d9044748e6118",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/quiz/RiskProfileQuiz.tsx"
+    },
+    {
+      "path": "lib/format.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "4edbc44de9887c6680c7c2ad670970156a313cc48a38cd2c3a2ed9645ff57da4",
+      "gitBlobSha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/format.ts"
+    },
+    {
+      "path": "components/dashboard/KpiCard.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "eae450357553dbff3b5537ae00522af89a545d9f6099e5ddea7ad0466154a256",
+      "gitBlobSha256": "3984244bf8d3b9312740121f143c01dfd0d53cd260d0b53ec5ad2037cb566963",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/KpiCard.tsx"
+    },
+    {
+      "path": "components/dashboard/AllocationDonut.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "017a1e67749177d7060f9aa4a75bd197b22ee7acc1a6152a7a4a2fafca5a77ed",
+      "gitBlobSha256": "04519e51a4f7e29e0af506cc4e85f5be541832d9b109d448e64a69b4e7fa60a4",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/AllocationDonut.tsx"
+    },
+    {
+      "path": "components/dashboard/PerformanceChart.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "9e2bb8ae829985905f7d5d5edadd56d938b998ba0cfc86f20961d7486d331865",
+      "gitBlobSha256": "8b96a8e5881a147d682e40b391ba8144dab67314053d8e9d17c9784d7093231d",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/PerformanceChart.tsx"
+    },
+    {
+      "path": "components/dashboard/HoldingsTable.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "355bd33a7fda2b945f18a564c4358c3e8cd0d60e32e611126a797614422701e5",
+      "gitBlobSha256": "7157d94765cc301e703890f85f3b207fb336047ae4ff0dc64e5bf5619ae1e4c0",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/HoldingsTable.tsx"
+    },
+    {
+      "path": "components/dashboard/ReadError.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "aae368ce1c220eb30b8a0dc8785e1d0485237540004fbdf9d2bbe5d5c38c8d7f",
+      "gitBlobSha256": "b3906ba0afdee141c3a155026b7312ba60183fec990d125c821d6e5d8850cd71",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/ReadError.tsx"
+    },
+    {
+      "path": "components/dashboard/LivePortfolio.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "cff53d081556253bc41e1ef9fb00b3d671df1b75fc6478ffa114a157346a4bb1",
+      "gitBlobSha256": "e56047edaa15c68f1b5b056f3d302b88cc11bf3aa905eab7151032ffc603e634",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/LivePortfolio.tsx"
+    },
+    {
+      "path": "components/dashboard/AccessCards.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "d2a20ee1c6e73454e827d7255ef46a8750c912e8af04f580ed60a391626b72fb",
+      "gitBlobSha256": "02bf36d2b944a542d00d4299ddd21902f589c6cc8988a3c1a63269131df260ca",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/AccessCards.tsx"
+    },
+    {
+      "path": "lib/markdown.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "48d03566aadf0a54f67653c48e1bf4314b4edb380f7035284c8716d4e8565d5f",
+      "gitBlobSha256": "2ea1fd7e1669b68e692fe9ff6ec6fc42b6f20edcd2ddbdc466dd254f7dc4b0f0",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/markdown.ts"
+    },
+    {
+      "path": "components/dashboard/Announcements.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "b2be573357dff3a1a05040fc43ae364b2146e501ee320ceb73a1ef98a10d8917",
+      "gitBlobSha256": "f05a4e2465abe4f6311d124b726a8f8b2d31dae312590d2b7a91a069ecd62fd4",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/Announcements.tsx"
+    },
+    {
+      "path": "components/dashboard/ScoreEvolution.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "86a7573d7ccec30702a3f323dfc75ea19b4d348959e20dbc9b0c5cf72cb55671",
+      "gitBlobSha256": "3fb8ee9b666483ac0683b3f513da50faf3c7494db526a720741653775dddd452",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/ScoreEvolution.tsx"
+    },
+    {
+      "path": "components/dashboard/RiskRevalidationBanner.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "7754c324b5e2d275e40d25eb3a50e2b7546aacb1d6383d18ac2d3eb451d2ca00",
+      "gitBlobSha256": "3db83baede1476c30d46910ae929c81d6b390fd65501aee62f9cbd90eb5fcdd0",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/RiskRevalidationBanner.tsx"
+    },
+    {
+      "path": "components/dashboard/RiskPlanCard.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "214e7d3cb9c2bdcf35453b1f40601bacff7c81c0d2aa31fca115850c0e473bca",
+      "gitBlobSha256": "3a4dfc1866ca3420cf50a1e784de1ee37f61753f59400010c4b8cd52206c80ea",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/RiskPlanCard.tsx"
+    },
+    {
+      "path": "components/dashboard/PortfolioVersionHistory.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "62b3fab017cf389b57cfa2a9f4d05aeafa1af423eb2fded2f21841ab5e0495f2",
+      "gitBlobSha256": "8e3cd7324b705b1ec97fc5bdabb9601bb756b9570a967f6b426fde909ba131a7",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/PortfolioVersionHistory.tsx"
+    },
+    {
+      "path": "app/(protected)/dashboard/DashboardClient.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "8ca13338cb20a1a620e744a594708c51db79c67e1a2f7e5e52a73f33f1efa27a",
+      "gitBlobSha256": "3521a67ff543462ca5304142190fc64f4ee052436ce7a3c58deb55ee7a314175",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/app/(protected)/dashboard/DashboardClient.tsx"
+    },
+    {
+      "path": "components/dashboard/AccessStatusCard.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "e0355db608d4a25f3e9d0822e61bd2749fad1d7dc9b1db7cd287825897310092",
+      "gitBlobSha256": "e0355db608d4a25f3e9d0822e61bd2749fad1d7dc9b1db7cd287825897310092",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/dashboard/AccessStatusCard.tsx"
+    },
+    {
+      "path": "lib/portfolio/financialInput.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "5251ecb289a4354f84db71264a0226115fdd4b2f7e4430244969fac24a9ffd30",
+      "gitBlobSha256": "55625ce83f9ea9335030de45af33be82c58ac0194850b1127ff6289cb92216fe",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/portfolio/financialInput.ts"
+    },
+    {
+      "path": "lib/portfolio/cashFlow.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "dc186493d1dc900a9cd546704b6380099516cea9f6e824f91e7471d6a4ab7155",
+      "gitBlobSha256": "765cb562b7216c6931800a7b8e48252ade09bfb6ee139e39bbf31fe383ce035b",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/portfolio/cashFlow.ts"
+    },
+    {
+      "path": "components/portfolio/cashflow/draft.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "99801aeb05ac2489b1b39063e8956aafce6751e3d1ab33aec563edc67866de8c",
+      "gitBlobSha256": "2a23a29c737f799c9909457f86563c93a122ed03f964159a067be10cf67ef248",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/portfolio/cashflow/draft.ts"
+    },
+    {
+      "path": "components/portfolio/cashflow/CashFlowEditor.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "8bfc52ea5dc8c858c14cf10b1f158b7d63ed3567b6ea30517d45c146cf1d3a05",
+      "gitBlobSha256": "a60f251c1cad9d8fc5e1567014e7e9ee1029422baec7fc114461d80a4d18ed97",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/portfolio/cashflow/CashFlowEditor.tsx"
+    },
+    {
+      "path": "components/consultation/Field.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "b4d3323e2e4dffb8d4c58a5128e4dedd20ea72b3ad4353ff0a83f024f55f5ed8",
+      "gitBlobSha256": "bc30e7462670ac328ea07e821699f9d6866f0045fd73b5221e0a377b212336cc",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/consultation/Field.tsx"
+    },
+    {
+      "path": "lib/portfolio/cashFlowApiContract.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "61e3d2348671ca11d5bd892e1bbd179619e0e45b8c01d15d319c2eb348a7ce8e",
+      "gitBlobSha256": "6b6fc6450d326f59c2519d9036dfa2b94a39156feabc466ee77687c905696ff7",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/portfolio/cashFlowApiContract.ts"
+    },
+    {
+      "path": "components/portfolio/cashflow/CashFlowSummary.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "ca4bdd2c72d14120a900069256fab54d689684d348cb344bc8ad92e38243d156",
+      "gitBlobSha256": "849d6a3b0fa87602c8c1dab2160eb454fb32d8410b82154588c345512466ac1e",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/portfolio/cashflow/CashFlowSummary.tsx"
+    },
+    {
+      "path": "lib/portfolio/goals.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "251f0801146c81389376239e559712c2f2adb5b9d1596261188250a2b86e5d78",
+      "gitBlobSha256": "908207d8d04c0edc4ae0e463a9613744c44feca8e541fe9b3f52a3e703a6abcf",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/portfolio/goals.ts"
+    },
+    {
+      "path": "lib/portfolio/goalsApiContract.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "1d458df313b2899dc982eba8bc789c53c5c29acdeb0600d47cebe68f01686134",
+      "gitBlobSha256": "e255f320e514700bb2e239f0774f0d89d8edbbfbf7152aed1351e6a19816048c",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/portfolio/goalsApiContract.ts"
+    },
+    {
+      "path": "components/portfolio/goals/GoalsSummary.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "11660f5e87670c3e49016bf7046ad0129c597287b864397943a2f9216565bc37",
+      "gitBlobSha256": "730a0fad38eedb0997b77f45c649ed4fd9c2c5ed9d76bf1ed3c3a253da85cc6a",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/portfolio/goals/GoalsSummary.tsx"
+    },
+    {
+      "path": "components/consultation/Dossier.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "889647a66f96c2b3fd9c7e6bc8ee97c2113b601b02bc3eb4a0762ef966f3f906",
+      "gitBlobSha256": "8d23ca693dafb36b95bf2a47e19c616bc245d1bf1e06b5ed30bd10af34831d0c",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/consultation/Dossier.tsx"
+    },
+    {
+      "path": "components/consultation/SessionCard.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "980e35c0044e9d35ea26d6452bc98cfe42ab47e269caeb49d9df88fec55e5159",
+      "gitBlobSha256": "7cb1f168c6192911b0de05e5b83758db3ff41899e021ce0d4e98fff20523a1d4",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/consultation/SessionCard.tsx"
+    },
+    {
+      "path": "components/consultation/RecommendationEditor.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "d7121f0424a2431db301213a603b549349b946c7521fd048b5a0f682a97e19a7",
+      "gitBlobSha256": "a18caae718f42dda247f59564528952d3867146503a5f321f8144ad8aca8a131",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/consultation/RecommendationEditor.tsx"
+    },
+    {
+      "path": "lib/consultation/contracts.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "b75fdacd6d0791528b2568806c9fc708e5693c7fa699f451f9e3b957695bea48",
+      "gitBlobSha256": "7ddad2bdcdf1cb288f20b6ef930104e3b245072526b64179cc777cf46d826407",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/lib/consultation/contracts.ts"
+    },
+    {
+      "path": "components/consultation/draft.ts",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "3115137a39019e18b6faf6527b4e81525bfa6836ad9633a21b1e26d0658aec27",
+      "gitBlobSha256": "e430cecb70753837fd9d31362f770fa88cd1e2be7100855fd832e95f652bcded",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/consultation/draft.ts"
+    },
+    {
+      "path": "components/consultation/ConsultationPanel.tsx",
+      "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "workspaceSha256": "1d0b893f33d14df8474fdb4775be46707a5c7d4e6ffab28d47b6ccbdb7f02c52",
+      "gitBlobSha256": "f7502dfc66620cd1a77d0963fc4f4af0d148c7f23016f97d8e06a90c217a8b87",
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/blob/c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3/components/consultation/ConsultationPanel.tsx"
+    }
+  ],
+  "harnessSource": {
+    "path": "docs/ops/member-journey-v04-20261030/preview-lab/walkthrough.tsx.txt",
+    "sha256": "57ad39de9f1ee0069b82904c07090278a527eadc4d6851f27de1af12693efdc6"
+  },
+  "network": "CSP connect-src none, form-action none; Auth/storage implementations blocked; no runtime route/API",
+  "fixtureStorage": "page memory only; reload/close resets",
+  "purchaseRight": "NOT_CONNECTED",
+  "actualAuthentication": "UNOBSERVED",
+  "arashAcceptance": "NOT_ACCEPTED",
+  "previousArtifact": {
+    "commit": "df41f73e310fa8c8abc2a678299ae25b5b3efb24",
+    "htmlSha256": "ed4f9a3621af25c0cd19b2bc0e073964addfab6e05de0fd9d4c67f2a29793210",
+    "previewUrl": "https://portfolio-platform-ll0hp2scb-safariarash7777-4463s-projects.vercel.app/design/member-journey-v04/index.html",
+    "defectEvidence": "contrast-before-root.png"
+  },
+  "frameFix": {
+    "kind": "P2 active step hover contrast and keyboard focus",
+    "builderPath": "docs/ops/member-journey-v04-20261030/preview-lab/build-walkthrough.cjs.txt",
+    "builderSha256": "31cdaf3bd8d2c049c3c3e5ce8f1663b1118c4114c477119b26199cf5f0f00460",
+    "scriptUnchangedFromPreviousArtifact": true
+  }
+}
