@@ -163,6 +163,10 @@ async function browserCase(s,ctx){
  const needles=[marker,reply,followup];let posts=0,lost=false,armed=false,original=null,automatic=0;
  const pages=[],cache=[],observedLookups=[],http=[],pageErrors=[];
  const history=page=>page.locator('section[aria-label="تاریخچهٔ نسخه‌دار درخواست"]');
+ // React mirrors a controlled textarea value into its child text. Playwright
+ // 1.64.1's exact label selector includes that nested text; use the actual
+ // composer textarea, with normal actionability checks and no forced events.
+ const textField=page=>page.locator('form[aria-label="ثبت درخواست یا پیگیری"] textarea');
  const submit=page=>page.getByRole('button',{name:'ثبت آزمایشی با بررسی سرور',exact:true});
  const reload=page=>page.getByRole('button',{name:'بازخوانی بدون ارسال دوباره',exact:true});
  const settle=async(page,condition,code)=>ctx.wait(async()=>{if(s.asyncFailure)throw Error(s.asyncFailure);return condition(page);},code,60);
@@ -193,19 +197,19 @@ async function browserCase(s,ctx){
  };
  s.stage='default_right_page';const first=await open('a',memberPath),page=first.page;
  s.operation='default_submit_visible';await submit(page).waitFor({state:'visible',timeout:60000});check(await submit(page).isDisabled(),'p09_browser_product_right_not_closed');
- s.operation='default_subject_fill';await page.getByLabel('موضوع',{exact:true}).fill(subject);s.operation='default_text_fill';await page.getByLabel('متن',{exact:true}).fill(marker);
- check(await page.getByLabel('متن',{exact:true}).inputValue()===marker&&posts===0,'p09_browser_closed_draft_or_post');
+ s.operation='default_subject_fill';await page.getByLabel('موضوع',{exact:true}).fill(subject);s.operation='default_text_fill';await textField(page).fill(marker);
+ s.operation='default_text_readback';check(await textField(page).inputValue()===marker&&posts===0,'p09_browser_closed_draft_or_post');
  recordPass(s,'real-member-page-default-right-closed',{actualDocument:200,draftRetained:true,posts:0,productRight:'NOT_CONNECTED'});
  ctx.apply('scripts/testing/consultation-tickets/owned-fixture.sql');
  sql(`INSERT INTO consultation_ticket_fixture.allowed(relationship_id,actor_id) VALUES(${quote(relation)},${quote(users.a.id)}),(${quote(relation)},${quote(users.owner.id)});`);
  await reload(page).click();await settle(page,async()=>!(await submit(page).isDisabled()),'p09_browser_fixture_capability_not_read');
  s.stage='live_lost_response';armed=true;await submit(page).click();
  await settle(page,async()=>lost&&(await page.getByText('نتیجهٔ ثبت نامعلوم است؛ ارسال دوباره بسته است. فقط همان تلاش را بازخوانی کنید.',{exact:true}).count())===1,'p09_browser_uncertain_ui_not_seen');
- check(posts===1&&await page.getByLabel('متن',{exact:true}).inputValue()===marker,'p09_browser_unknown_draft_or_duplicate');
+ check(posts===1&&await textField(page).inputValue()===marker,'p09_browser_unknown_draft_or_duplicate');
  check(sql(`SELECT count(*) FROM consultation_ticket_private.events WHERE request_id=${quote(original.command.requestId)}`)==='1','p09_browser_lost_actual_effect_count');
  recordPass(s,'real-201-discard-live-page-one-post',{actualStatus:201,bodyDeliveryAborted:true,pageStayedOpen:!page.isClosed(),ticketPosts:posts,storedEvents:1,httpFulfill:false});
  s.stage='same_attempt_recovery';await reload(page).click();
- await settle(page,async()=>!(await page.getByLabel('متن',{exact:true}).inputValue())&&(await history(page).innerText()).includes(marker),'p09_browser_exact_recovery_not_rendered');
+ await settle(page,async()=>!(await textField(page).inputValue())&&(await history(page).innerText()).includes(marker),'p09_browser_exact_recovery_not_rendered');
  check(posts===1&&observedLookups.some(x=>x.requestId===original.command.requestId&&x.clientToken===original.clientToken),'p09_browser_recovery_not_same_get_only');
  const lookup=await expect('a',endpoint+'?'+new URLSearchParams({mode:'lookup',relationshipId:relation,requestId:original.command.requestId,clientToken:original.clientToken}));
  check(lookup.data.attempt.state==='found'&&lookup.data.attempt.receipt.command.text===marker&&lookup.data.request.data.history.events[0].id===lookup.data.attempt.receipt.id,'p09_browser_independent_receipt_not_exact');
@@ -224,11 +228,11 @@ async function browserCase(s,ctx){
  recordPass(s,'fresh-sdk-context-and-reload-get-only',{realSignout:true,newPasswordSession:true,sdkGetUser:true,oldContextClosed:true,actualReload:true,postsBefore:1,postsAfter:posts,resourceHistoryOnly:true,unknownIntentAfterDestroy:'NOT_IMPLEMENTED'});
  s.stage='advisor_reply';const advisor=await open('owner',advisorPath,resourceId);
  await submit(advisor.page).waitFor({state:'visible',timeout:60000});await settle(advisor.page,async()=>!(await submit(advisor.page).isDisabled()),'p09_browser_advisor_not_ready');
- await advisor.page.getByLabel('متن',{exact:true}).fill(reply);await submit(advisor.page).click();
- await settle(advisor.page,async()=>(await history(advisor.page).innerText()).includes(reply)&&!(await advisor.page.getByLabel('متن',{exact:true}).inputValue()),'p09_browser_advisor_reply_not_read');
+ await textField(advisor.page).fill(reply);await submit(advisor.page).click();
+ await settle(advisor.page,async()=>(await history(advisor.page).innerText()).includes(reply)&&!(await textField(advisor.page).inputValue()),'p09_browser_advisor_reply_not_read');
  await reload(member).click();await settle(member,async()=>(await history(member).innerText()).includes(reply),'p09_browser_member_reply_not_read');
- await member.getByLabel('متن',{exact:true}).fill(followup);await submit(member).click();
- await settle(member,async()=>(await history(member).innerText()).includes(followup)&&!(await member.getByLabel('متن',{exact:true}).inputValue()),'p09_browser_followup_not_read');
+ await textField(member).fill(followup);await submit(member).click();
+ await settle(member,async()=>(await history(member).innerText()).includes(followup)&&!(await textField(member).inputValue()),'p09_browser_followup_not_read');
  await reload(advisor.page).click();await settle(advisor.page,async()=>(await history(advisor.page).innerText()).includes(followup),'p09_browser_advisor_followup_not_read');
  check(posts===3&&sql(`SELECT count(*) FROM consultation_ticket_private.events WHERE request_id=${quote(resourceId)}`)==='3','p09_browser_versions_not_three');
  recordPass(s,'real-advisor-response-and-member-followup',{memberOpen:1,ownerReply:2,memberFollowup:3,actualDomSubmits:3,independentSameText:true});

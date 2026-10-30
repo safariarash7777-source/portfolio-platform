@@ -25,7 +25,7 @@
       "path": "scripts/testing/consultation-tickets/browser.mjs",
       "sourcePath": "scripts/isolated-e2e/workbook-browser.mjs",
       "sourceSha256": "9f05208a449daff9f036819b27c06862a0295f8da94738e35cca541c3dc88150",
-      "derivedSha256": "ec18fd89eeaa2ba82427e269d0bcd7e1e52a03338d9710a0ab708046493e6edb"
+      "derivedSha256": "8f20c8d864e384cb6f7ce8c4296518f5a57630a8196c09f885bc0dd17dfbb4f4"
     }
   ]
 }
