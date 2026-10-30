@@ -1,0 +1,19 @@
+{
+  "base": "37b0c1b9acdd7e38bcd6d39b31d4d847892fd321",
+  "check": "TypeScript AST equality after stripping only setIntentHistoryRead display statements",
+  "functions": {
+    "refreshList": true,
+    "preparedMatches": true,
+    "restoreIntent": true,
+    "olderIntents": true,
+    "saveToServer": true,
+    "recoverSave": true,
+    "openFromServer": true,
+    "decide": true,
+    "startNew": true,
+    "importFile": true
+  },
+  "frozenFilesUnchanged": true,
+  "newQueries": 0,
+  "runtimeWrites": 0
+}
