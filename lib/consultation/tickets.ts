@@ -81,6 +81,8 @@ function resolveInParent(reference: TicketRecommendation, context: ReturnType<ty
   const session = context.read.sessions.find(item => item.id === ref.sessionId);
   if (!session) return { state: "unknown" as const, reference: ref };
   if (session.relationshipId !== context.relation.id || session.version !== ref.version || session.contentHash !== ref.contentHash || !["published", "withdrawn"].includes(session.state)) throw Error("پیوند نسخه با مرجع مجاز مطابق نیست.");
+  // Withdrawn does not prove that a draft/approval was ever published to the member.
+  if (!session.approval || !context.read.events.some(event => event.sessionId === session.id && event.kind === "publish")) return { state: "unknown" as const, reference: ref };
   return { state: "resolved" as const, reference: ref };
 }
 export function resolveTicketRecommendation(reference: TicketRecommendation, source: ConsultationRead) {

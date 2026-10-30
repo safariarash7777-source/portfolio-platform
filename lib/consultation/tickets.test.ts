@@ -13,7 +13,7 @@ const basis = { holdingsVersionId: null, cashFlowVersionId: null, goalsVersionId
 function source(member = true): ConsultationRead {
   const relation = { id: R, clientId: M, advisorId: O, clientLabel: "عضو ساختگی", createdAt: "2026-10-01T00:00:00Z", revoked: false };
   const body: RecommendationBody = { topic: "موضوع ساختگی", goal: "هدف", clientSummary: "جمع‌بندی", rationale: "دلیل", limitations: "نمونه", reviewOn: "2099-12-31", basis, researchVersionIds: [], evidence: [{ label: "منبع ساختگی", url: null, asOf: "2026-10-01" }], actions: [] };
-  return { contractVersion: "consultation-read.v1", actor: { id: member ? M : O, isAdvisor: !member, isOwner: !member }, advisors: [{ id: O, displayName: "مالک ساختگی", isOwner: true }], relationships: [relation], selected: relation, dossier: { basis, holdings: null, cashFlow: null, goals: null }, sessions: [{ id: S, relationshipId: R, sessionKey: uid(6), version: 1, contentHash: fingerprint, actorId: O, createdAt: relation.createdAt, body, approval: { actorId: O, createdAt: relation.createdAt }, state: "published" }], notes: [], events: [], actions: [] };
+  return { contractVersion: "consultation-read.v1", actor: { id: member ? M : O, isAdvisor: !member, isOwner: !member }, advisors: [{ id: O, displayName: "مالک ساختگی", isOwner: true }], relationships: [relation], selected: relation, dossier: { basis, holdings: null, cashFlow: null, goals: null }, sessions: [{ id: S, relationshipId: R, sessionKey: uid(6), version: 1, contentHash: fingerprint, actorId: O, createdAt: relation.createdAt, body, approval: { actorId: O, createdAt: relation.createdAt }, state: "published" }], notes: [], events: [{ id: uid(7), sessionId: S, kind: "publish", actorId: O, createdAt: relation.createdAt, note: null }], actions: [] };
 }
 function opening(recommendation: TicketRecommendation | null = null): TicketRequest {
   return { contractVersion: "consultation-ticket-request.v1", expectedActorId: M, clientToken: "attempt-open", command: { kind: "open", relationshipId: R, requestId: Q, baseVersion: 0, subject: "پرسش ساختگی", text: "متن درخواست ساختگی", recommendation } };
@@ -64,7 +64,7 @@ test("withdrawn and older references retain exact historical identity without re
   assert.deepEqual(resolveTicketRecommendation(reference, old), { state: "resolved", reference });
   const data = validateTicketRead(read([event(opening(reference))]), old, Q);
   assert.equal(ticketStatus(data), "open");
-  const missing = source(); missing.sessions = [];
+  const missing = source(); missing.sessions = []; missing.events = [];
   assert.equal(resolveTicketRecommendation(reference, missing).state, "unknown");
   assert.equal(validateTicketRead(read([event(opening(reference))]), missing, Q).history.state, "ready");
 });
@@ -111,6 +111,20 @@ test("linking a recommendation is its own versioned event; unapproved drafts can
   assert.equal(validateTicketTransition(append("link_recommendation"), source(false), read(undefined, O)).command.kind, "link_recommendation");
   const draft = source(false); draft.sessions[0].state = "draft"; draft.sessions[0].approval = null;
   assert.throws(() => validateTicketTransition(append("link_recommendation"), draft, read(undefined, O)));
+});
+
+test("withdrawn-before-publication, approval alone or missing publication evidence never resolves a fresh link", () => {
+  for (const approved of [false, true]) {
+    const neverPublished = source(false); neverPublished.sessions[0].state = "withdrawn";
+    if (!approved) neverPublished.sessions[0].approval = null;
+    neverPublished.events = [{ id: uid(8), sessionId: S, kind: "withdraw", actorId: O, createdAt: neverPublished.sessions[0].createdAt, note: null }];
+    assert.equal(resolveTicketRecommendation(reference, neverPublished).state, "unknown");
+    assert.throws(() => validateTicketTransition(append("link_recommendation"), neverPublished, read(undefined, O)));
+  }
+  const missingEvidence = source(); missingEvidence.events = [];
+  assert.equal(resolveTicketRecommendation(reference, missingEvidence).state, "unknown");
+  assert.throws(() => validateTicketTransition(opening(reference), missingEvidence, null));
+  assert.equal(validateTicketRead(read([event(opening(reference))]), missingEvidence, Q).history.state, "ready");
 });
 
 test("later action done or legacy question events never close or implicitly create independent tickets", () => {
