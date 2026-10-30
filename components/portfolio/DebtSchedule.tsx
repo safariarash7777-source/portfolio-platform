@@ -28,5 +28,6 @@ export default function DebtSchedule({ debts, ready, version, referenceDay, hist
         </li>)}</ul>
       </>}
     <a className="btn btn-outline" href="#debt-editor">{historical || !ready ? "مشاهدهٔ بخش بدهی این نسخه" : "ثبت یا اصلاح مبلغ و موعد قسط"}</a>
+    {version !== null && <p className="text-sm leading-7"><a className="underline" href="#debt-payments">مشاهدهٔ اعلام پرداخت از هزینهٔ واقعی</a>؛ یادآوری این فهرست فقط بر اساس موعد ثبت‌شده است. پیام بیرونی ارسال نمی‌شود و اعلام پرداخت موعد را خودکار تغییر نمی‌دهد.</p>}
   </section>;
 }
