@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { appearanceFrom, sourceUrl, uniqueMedia } from "./presentation";
+import { appearanceFrom, filterMediaDates, mediaDateRange, recordedMediaDay, sourceUrl, uniqueMedia } from "./presentation";
 test("appearance accepts only three layouts and bounded identifiers, without access fields", () => {
   assert.deepEqual(appearanceFrom({ layout: 900, covers: "https://evil.test", role: "admin", featured: ["a", "a", 12, "b".repeat(200)] }), { layout: 1, covers: "editorial", featured: ["a"] });
   assert.equal(appearanceFrom(null).layout, 1);
@@ -33,4 +33,46 @@ test("public Twitter aliases retain path case and deduplicate to X while rejecti
   const item = { id: "one", platform: "twitter" as const, kind: "post" as const, title: null, description: null, published_at: null, content_url: "https://twitter.com/Person/status/AbC" };
   assert.equal(uniqueMedia([item, { ...item, id: "two", content_url: "https://x.com/Person/status/AbC/" }]).length, 1);
   for (const url of ["https://twitter.com.evil.test/u/1", "https://twitter.com@evil.test/u/1", "https://t.me/C/123/456", "https://t.me/JoinChat/private", "https://t.me/+invite"]) assert.equal(sourceUrl(url), null);
+});
+
+test('recorded media days use explicit Tehran calendar boundaries, never local parsing or rollover', () => {
+  assert.equal(recordedMediaDay('2026-10-29T20:29:59.999Z'), '2026-10-29');
+  assert.equal(recordedMediaDay('2026-10-29T20:30:00Z'), '2026-10-30');
+  assert.equal(recordedMediaDay('2026-10-30T00:00:00+03:30'), '2026-10-30');
+  assert.equal(recordedMediaDay('2026-10-30'), '2026-10-30');
+  assert.equal(recordedMediaDay('2024-02-29T23:30:00-03:00'), '2024-03-01');
+  for (const date of [null, '', 'yesterday', '2026-02-29', '2026-02-30T00:00:00Z', '2026-10-30T12:00:00', '2026-10-30T24:00:00Z', '2026-10-30T10:60:00Z', '2026-10-30T10:00:00+25:00']) assert.equal(recordedMediaDay(date), null, String(date));
+});
+
+test('date range normalizes user digits and validates each bound before comparing Gregorian days', () => {
+  assert.deepEqual(mediaDateRange(' ۲۰۲۶-۱۰-۳۰ ', '٢٠٢٦-١٠-٣١'), { state: 'valid', from: '2026-10-30', to: '2026-10-31', active: true });
+  assert.deepEqual(mediaDateRange('', ''), { state: 'valid', from: null, to: null, active: false });
+  assert.deepEqual(mediaDateRange('2026-02-29', ''), { state: 'invalid', reason: 'from_invalid' });
+  assert.deepEqual(mediaDateRange('', '2026-04-31'), { state: 'invalid', reason: 'to_invalid' });
+  assert.deepEqual(mediaDateRange('2026-10-31', '2026-10-30'), { state: 'invalid', reason: 'reversed' });
+  assert.equal(mediaDateRange('2024-02-29', '').state, 'valid');
+});
+
+test('inclusive and one-sided ranges preserve original rows and disclose unknown dates without rescuing dateLabel', () => {
+  const rows = [
+    { id: 'before', published_at: '2026-10-29T20:29:59Z' },
+    { id: 'first', published_at: '2026-10-29T20:30:00Z' },
+    { id: 'last', published_at: '2026-10-30T20:29:59.999Z' },
+    { id: 'after', published_at: '2026-10-30T20:30:00Z' },
+    { id: 'missing', published_at: null, dateLabel: '۸ آبان ۱۴۰۵' },
+    { id: 'invalid', published_at: '2026-02-30T12:00:00Z' },
+  ];
+  const original = structuredClone(rows);
+  const filtered = filterMediaDates(rows, '2026-10-30', '2026-10-30');
+  assert.deepEqual(filtered.items.map(row => row.id), ['first', 'last']);
+  assert.equal(filtered.items[0], rows[1]);
+  assert.equal(filtered.excludedUnknown, 2);
+  assert.deepEqual(filterMediaDates(rows, '', '2026-10-29').items.map(row => row.id), ['before']);
+  assert.deepEqual(filterMediaDates(rows, '2026-10-31', '').items.map(row => row.id), ['after']);
+  assert.deepEqual(filterMediaDates(rows, '', '').items, rows);
+  assert.equal(filterMediaDates(rows, '', '').excludedUnknown, 0);
+  const reversed = filterMediaDates(rows, '2026-10-31', '2026-10-30');
+  assert.deepEqual(reversed.range, { state: 'invalid', reason: 'reversed' });
+  assert.deepEqual(reversed.items, []);
+  assert.deepEqual(rows, original);
 });
