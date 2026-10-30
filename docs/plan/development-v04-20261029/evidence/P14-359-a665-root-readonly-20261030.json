@@ -1,0 +1,152 @@
+{
+  "recordedAt": "2026-10-30T17:29:10.513661+00:00",
+  "status": "ROOT_INDEPENDENT_CI_ARTIFACT_BINDING_CONFIRMED",
+  "pr": "https://github.com/safariarash7777-source/portfolio-platform/pull/359",
+  "source": "a665f1b2f260a93e4dbd93cfb5ee88c60f7b9309",
+  "base": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+  "draft": true,
+  "merged": false,
+  "ciRun": 41095062073,
+  "ciJobs": [
+    {
+      "id": 124198551304,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124198551729,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124198551947,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124198552085,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124201022802,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "qaRun": 41095063265,
+  "qaJob": 124198556796,
+  "qaConclusion": "success",
+  "actualCiCheckout": "2da537de91003f59f7575044eb3db73f6264130e",
+  "ciParents": [
+    "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+    "a665f1b2f260a93e4dbd93cfb5ee88c60f7b9309"
+  ],
+  "ciTreeEqualsHead": true,
+  "tree": "c5a6325ac28f0bb9a3a5850781d882d61b548f82",
+  "changes": [
+    {
+      "path": ".github/workflows/product-leaf-browser-qa.yml",
+      "status": "added"
+    },
+    {
+      "path": "docs/ops/product-leaf-browser-qa-20261030/DELIVERY.fa.md",
+      "status": "added"
+    },
+    {
+      "path": "docs/ops/product-leaf-browser-qa-20261030/owned-chrome-lineage.json",
+      "status": "added"
+    },
+    {
+      "path": "scripts/isolated-e2e/owned-chrome-qa.mjs",
+      "status": "added"
+    },
+    {
+      "path": "scripts/isolated-e2e/product-leaf-browser-qa.mjs",
+      "status": "added"
+    },
+    {
+      "path": "scripts/isolated-e2e/product-leaf-browser-qa.test.mjs",
+      "status": "added"
+    }
+  ],
+  "artifactId": 12996755285,
+  "artifactZipSha256": "4dd7c1bf6863cb278deadf0b323137b48c76f902047c21e206660d53ed014d8b",
+  "artifactFilesIndependentlyMatchedLocal": [
+    {
+      "file": "331-codal-read-1440.png",
+      "sha256": "053864598d3f0c61c3c40625c5dd9e6e9ca881e76e8e6c72a6b4196bff63157d"
+    },
+    {
+      "file": "331-codal-1440.png",
+      "sha256": "94965ce7d0db839c30cfec2667c313582c300cc78a5ad326cdfe359fab968d2e"
+    },
+    {
+      "file": "331-codal-read-390.png",
+      "sha256": "206037b5cf5fde0da627a97d27c08b31b4d2829480922e2d00deb465ff69f9cf"
+    },
+    {
+      "file": "331-codal-390.png",
+      "sha256": "b8b2e4096bd540cd1397b7723c2dc1b196c591610293eade61cfb2022b737484"
+    },
+    {
+      "file": "331-public-1440.png",
+      "sha256": "1d4185f9c95a0643f3cb54bddc000475818ca5bf0e69715a0d3d80878e7ac36c"
+    },
+    {
+      "file": "331-public-390.png",
+      "sha256": "c693f42aaaa06b7850b43bd58c0a003cdeefcf7f03bc2a867104a54ca89ce3fb"
+    },
+    {
+      "file": "357-educational-advisor-1440.png",
+      "sha256": "ca0555160e3eb2d25520ab5b99b19e0aa5bd297232996a715aaf147def784609"
+    },
+    {
+      "file": "357-educational-advisor-390.png",
+      "sha256": "b296233451418a8975544cdf943959487f74dbd4a7c5590b56ab883c04433125"
+    },
+    {
+      "file": "357-educational-edit-1440.png",
+      "sha256": "e95335dc50bcd772ab63d4669e544d8aeb51ce4e9da0be8129429f74ae673066"
+    },
+    {
+      "file": "357-educational-edit-390.png",
+      "sha256": "048d69e3dc7fc049d4f0bf9e15b090d9bd91df54677776e411b3c8f5b948a46c"
+    },
+    {
+      "file": "357-educational-initial-1440.png",
+      "sha256": "45259101676bcaa0ba756a01a4c621f97e6b4158ef17d79ae46ef34c48585721"
+    },
+    {
+      "file": "357-educational-initial-390.png",
+      "sha256": "14e406c6a05b152dbb342df7d4a6cdc6b0c03c7a19dfeeaf1af194037500513f"
+    },
+    {
+      "file": "357-educational-read-error-1440.png",
+      "sha256": "d8cfc141469aa5e783675aa1a9bb85b98f0e195b0f579f73791f13ac163b4b5c"
+    },
+    {
+      "file": "357-educational-read-error-390.png",
+      "sha256": "12e2d84cd0144b83546f511de93ab0527b5eef4938cf855cd65e0e26396fafd9"
+    },
+    {
+      "file": "357-educational-revoked-1440.png",
+      "sha256": "7e596e01de54e1805bc044edc55fea41436a99d761ab4621f4b1219171308fcf"
+    },
+    {
+      "file": "357-educational-revoked-390.png",
+      "sha256": "a67e3fe47ccef24e806fcd0e0120e4de21dad90221d53bb206871fcdb2ad2bd1"
+    },
+    {
+      "file": "qa-receipt.json",
+      "sha256": "d16e24d7a6cbb8dcd5a6d604ed38965c8ca7a8b50c66561b8a4774c747469839"
+    }
+  ],
+  "limits": [
+    "real357 account redirects307; not accepted",
+    "331 codalList502; loaded financial data not accepted",
+    "one loading overview1440 image rejected by owner; preserved",
+    "357 screenshots educational actual-component evidence only; not Auth/DB/service acceptance",
+    "no primary merge/deployment; no Arash visual selection"
+  ]
+}

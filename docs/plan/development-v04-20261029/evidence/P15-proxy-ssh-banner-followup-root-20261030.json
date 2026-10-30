@@ -1,0 +1,16 @@
+{
+  "startedAt": "2026-10-30T16:04:37.352323+00:00",
+  "method": "existing loopback HTTP CONNECT and SSH identification only",
+  "target": "62.60.191.24:22",
+  "attempts": 1,
+  "authOrKeyUsed": false,
+  "remoteCommandExecuted": false,
+  "serverMutations": false,
+  "proxyConnectStatus": 200,
+  "sshIdentificationSent": true,
+  "failureStage": "ssh_banner",
+  "errorClass": "TimeoutError",
+  "elapsedSeconds": 8.0,
+  "hostKeyVerified": false,
+  "guestCpuRamDisk": "UNKNOWN"
+}

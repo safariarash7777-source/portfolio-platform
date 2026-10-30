@@ -1,0 +1,103 @@
+{
+  "status": "DB_ONLY_STORED_READ_CONFIRMED",
+  "method": "one anonymous GET of existing ir_market_snapshots key=latest, projected fields, limit=1",
+  "startedAt": "2026-10-30T16:48:42.539Z",
+  "finishedAt": "2026-10-30T16:48:44.529Z",
+  "endpoint": "https://62.60.191.24/liara-preview/rest/v1/ir_market_snapshots",
+  "filter": "key=eq.latest",
+  "httpStatus": 200,
+  "responseBytes": 273884,
+  "rawResponseSha256": "6816a7dc9d82573e0b0b002a84a20adfe11a28f953f9dcb87fb0fcf0eb9304f1",
+  "authentication": "public frontend anon key used only in memory; no private environment, service-role or new credential",
+  "publicConfiguration": {
+    "origin": "https://portfolio-platform-fawn.vercel.app",
+    "htmlPath": "/login",
+    "htmlSha256": "72ebd59cbe36680fd92f49971ed550df99967033d077b542cd36a06e6682a2a6",
+    "assetPath": "/_next/static/chunks/app/(auth)/login/page-9b9b26cf6af7280e.js",
+    "assetSha256": "1a961f585bad3842d17829fc3f0c53d2678b866ba7e733e2135372a6c96e3754",
+    "assetBytes": 9672,
+    "assetsRead": 1,
+    "role": "anon",
+    "endpointMatchedApprovedSelfHost": true,
+    "keyPrintedOrStoredOrInArgv": false
+  },
+  "scriptProvenance": {
+    "owner": "existing C",
+    "source": "PR331 Public-config DB-only handoff fenced JavaScript",
+    "fencedCodeSha256": "2fed3dec43c3a61bdf8bb9bfd0500f2a2c40397439c33d039bdad8cec71a19cd",
+    "receivedScriptWithFinalLfSha256": "feacc8ffaede5fef2a7cedc10cf18aff2ffed2564c086108b553c96e49ac2486",
+    "executedImportAdaptedSha256": "51d672eccbee9919e37e4c921db001d8a7ebac650da59510e333acf4c2f81fe3",
+    "change": "three import specifiers only; all projection helpers independently equal f12 Git blobs",
+    "helperRef": "f12ba71c353e135f83d136105380f20dd59a95e0",
+    "helpers": {
+      "lib/market-ir.ts": "db30203a90c8f51a0a5243d8d5ca64d89cf20ad3",
+      "lib/market-quality.ts": "764b29de107e7f4ee20f3b6e35386b6b996741fd",
+      "lib/liara-public-env.js": "b1dc898dfb3e90068c8fc7ac0e8f45ed0e1e4a85"
+    }
+  },
+  "stored": {
+    "databaseUpdatedAt": "2026-10-30T16:46:45.537Z",
+    "snapshotReceivedAt": "2026-10-30T16:46:45.256Z",
+    "rawFundRows": 342,
+    "normalizedFundRows": 342,
+    "rejectedFundRows": 0,
+    "normalizedPriceUnits": {
+      "toman": 342,
+      "usd": 0
+    },
+    "rawSourceFieldPresentCounts": {
+      "sourceDate": 0,
+      "sourceTime": 342,
+      "date": 0,
+      "date_update": 0,
+      "time": 0
+    },
+    "family": {
+      "rows": 342,
+      "rejectedRows": 0,
+      "unknownTimeRows": 342,
+      "staleRows": 0,
+      "validAt": null,
+      "receivedAt": 1793378805256,
+      "retained": false,
+      "sourceState": "received",
+      "state": "unknown-time"
+    },
+    "producerSnapshotState": "complete",
+    "producerFundFamily": {
+      "state": "received",
+      "receivedAt": 1793378805256,
+      "retained": false
+    },
+    "issues": [
+      "price_source_clock_unknown"
+    ],
+    "sampleIds": [
+      "\u0639\u06cc\u0627\u0631",
+      "\u067e\u0627\u0633\u0627\u0631\u06af\u0627\u062f",
+      "\u06cc\u0627\u0642\u0648\u062a",
+      "\u0641\u06cc\u0631\u0648\u0632\u0627",
+      "\u0622\u0648\u0646\u062f"
+    ],
+    "sampleNavDate": "1405-08-06",
+    "sampleNavState": "stale",
+    "sampleNavAgeDisplay": "NAV 50 \u0633\u0627\u0639\u062a \u067e\u06cc\u0634"
+  },
+  "noFallback": true,
+  "noRetryOrRedirect": true,
+  "providerRequests": 0,
+  "storedSelectAttempts": 1,
+  "serverMutation": false,
+  "rawResponsePersisted": false,
+  "receiptCapturedFrom": "sanitized projected tool stdout; not reconstruction of raw fund payload",
+  "lastSuccessfulFinancialIngestJob": "UNKNOWN",
+  "fundComparisonAcceptance": "NOT_ACCEPTED",
+  "primaryDeploymentChanged": false,
+  "guestCpuRamDisk": "UNKNOWN",
+  "limitations": [
+    "Receipt/database updated_at is not financial source time.",
+    "Missing price date is present in the stored payload; NAV date/time must not substitute for quote date.",
+    "Producer complete/received is not independently valid price freshness.",
+    "This verifies the current stored market key only, not a past page source or a Codal ingestion job."
+  ]
+}
