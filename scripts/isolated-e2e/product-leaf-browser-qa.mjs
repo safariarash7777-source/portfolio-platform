@@ -102,7 +102,7 @@ const body:RecommendationBody={topic:'آموزشی: پیگیری پرسش‌ها
 const session:ConsultationSession={id:sid,relationshipId:relation,sessionKey:sid,version:3,createdAt:'2026-10-24T10:00:00Z',actorId:actor,contentHash:'a'.repeat(64),body,state:'published',approval:null};
 const feedback:ConsultationAction[]=[{id:'q1',sessionId:sid,actionKey:actor,version:1,status:'question',text:'پرسش آموزشی نخست دربارهٔ همین اقدام',actorId:member,createdAt:session.createdAt},{id:'q2',sessionId:sid,actionKey:actor,version:2,status:'question',text:'پرسش آموزشی مستقل بدون پاسخ ثبت‌شده',actorId:member,createdAt:session.createdAt},{id:'done',sessionId:sid,actionKey:actor,version:3,status:'done',text:null,actorId:member,createdAt:session.createdAt}];
 const replies:ReplyRead={contractVersion:'consultation-reply-read.v1',actorId:mode==='advisor'?actor:member,relationshipId:relation,sessionId:sid,canReply:mode==='advisor',readOnlyReason:mode==='revoked'?'revoked':mode==='advisor'?null:'not_owner',replies:[1,2].map(version=>({id:'r'+version,questionId:'q1',sessionId:sid,version,text:version===1?'پاسخ آموزشی پیشین':'پاسخ آموزشی تازه',actorId:actor,createdAt:session.createdAt,contentHash:'b'.repeat(64)}))};
-createRoot(document.getElementById('root')!).render(<main className="container-page py-6 space-y-5"><header className="card p-4 space-y-2"><h1 className="text-xl font-bold">آموزشی — مؤلفهٔ واقعی، دادهٔ مصنوعی</h1><p>PR357 / 7752638 · فقط اثبات مؤلفه؛ حساب، DB، خدمت و پذیرش آرش اثبات نشده‌اند.</p></header><SessionCard session={session} latest={mode!=='revoked'} advisor={mode==='advisor'} owner={false} revoked={mode==='revoked'} basis={basis} feedback={feedback} locked={mode!=='advisor'} onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} replies={mode==='read-error'?undefined:replies} replyError={mode==='read-error'?'خواندن پاسخ‌ها انجام نشد — حالت آموزشی':undefined} onReply={async()=>false}/></main>);
+createRoot(document.getElementById('root')!).render(<main className="container-page py-6 space-y-5"><header className="card p-4 space-y-2"><h1 className="text-xl font-bold">آموزشی — مؤلفهٔ واقعی، دادهٔ مصنوعی</h1><p>PR357 / 7752638 · فقط اثبات مؤلفه؛ حساب، DB، خدمت و پذیرش آرش اثبات نشده‌اند.</p></header><SessionCard session={session} latest={mode!=='revoked'} advisor={mode==='advisor'} owner={false} revoked={mode==='revoked'} basis={basis} feedback={feedback} locked={mode==='read-error'} onCommand={async()=>false} onEdit={()=>{}} onDirty={()=>{}} replies={mode==='read-error'?undefined:replies} replyError={mode==='read-error'?'خواندن پاسخ‌ها انجام نشد — حالت آموزشی':undefined} onReply={async()=>false}/></main>);
 `;
 async function componentServer(state){
   const source=resolve(state.local,'component-source');mkdirSync(source);
@@ -139,19 +139,26 @@ async function educationalComponent(state,server,output){
   for(const width of [1440,390])for(const mode of ['advisor','revoked','read-error']){
     const context=await state.browser.newContext({serviceWorkers:'block',viewport:{width,height:1000}}),{page,audit}=await attach(state,context,null,server.origin);
     try{
+      state.qaOperation='educational_navigation';
       await page.goto(server.origin+'/?mode='+mode,{waitUntil:'load'});await page.getByRole('heading',{name:'آموزشی — مؤلفهٔ واقعی، دادهٔ مصنوعی'}).waitFor();
+      if(mode==='advisor')result.screenshots.push(await snapshot(page,output,'357-educational-initial-'+width));
       if(mode==='read-error'){assert.equal(await page.getByText('خواندن پاسخ‌ها انجام نشد — حالت آموزشی',{exact:true}).count(),1);assert.equal(await page.getByText(/پرسش بدون پاسخ ثبت‌شده ·/).count(),0);}
       else{
+        state.qaOperation='question_panel_filter';
         assert.equal(await page.getByText('۱ پرسش بدون پاسخ ثبت‌شده · ۱ پرسش دارای پاسخ ثبت‌شده',{exact:true}).count(),1);
-        const filter=page.getByLabel('نمایش پرسش‌ها');await filter.selectOption('waiting');assert.equal(await page.getByText('پرسش آموزشی نخست دربارهٔ همین اقدام',{exact:true}).count(),0);assert.equal(await page.getByText('پرسش آموزشی مستقل بدون پاسخ ثبت‌شده',{exact:true}).count(),1);await filter.selectOption('all');
-        await page.getByText('نسخه‌های قبلی پاسخ',{exact:true}).click();assert.ok(await page.getByText('پاسخ آموزشی پیشین',{exact:true}).isVisible());
+        const panel=page.getByRole('region',{name:'پرسش و پاسخ نسخهٔ ۳',exact:true}),filter=panel.getByLabel('نمایش پرسش‌ها');await filter.selectOption('waiting');assert.equal(await panel.getByText('پرسش آموزشی نخست دربارهٔ همین اقدام',{exact:true}).count(),0);assert.equal(await panel.getByText('پرسش آموزشی مستقل بدون پاسخ ثبت‌شده',{exact:true}).count(),1);await filter.selectOption('all');
+        state.qaOperation='question_reply_history';
+        await panel.getByText('نسخه‌های قبلی پاسخ',{exact:true}).click();assert.ok(await panel.getByText('پاسخ آموزشی پیشین',{exact:true}).isVisible());
         if(mode==='advisor'){
+          state.qaOperation='question_reply_edit';
           await page.getByRole('button',{name:'اصلاح پاسخ در نسخهٔ تازه',exact:true}).click();await page.getByLabel('متن پاسخ مشاور').fill('ویرایش آموزشی؛ ارسال نشده است.');assert.ok(await filter.isDisabled());
           result.screenshots.push(await snapshot(page,output,'357-educational-edit-'+width));
           await page.getByRole('button',{name:'انصراف از ویرایش پاسخ',exact:true}).click();assert.ok(await filter.isEnabled());await filter.focus();assert.ok(await filter.evaluate(el=>el===document.activeElement));
         }else{assert.equal(await page.getByRole('button',{name:/نوشتن پاسخ|اصلاح پاسخ|ثبت پرسش خصوصی/}).count(),0);}
       }
-      result.screenshots.push(await snapshot(page,output,'357-educational-'+mode+'-'+width));assert.equal(audit.nonReadRequests,0);assert.equal(audit.pageErrors,0);assert.equal(audit.blockedRequests,0);assert.ok(!audit.interceptionFailed);result.checks.push({width,mode,status:'PASS',...audit});
+      state.qaOperation='educational_snapshot_and_network';result.screenshots.push(await snapshot(page,output,'357-educational-'+mode+'-'+width));assert.equal(audit.nonReadRequests,0);assert.equal(audit.pageErrors,0);assert.equal(audit.blockedRequests,0);assert.ok(!audit.interceptionFailed);result.checks.push({width,mode,status:'PASS',...audit});
+    }catch(error){
+      console.log('PRODUCT_LEAF_COMPONENT_FAILURE '+JSON.stringify({width,mode,operation:state.qaOperation,code:error?.name==='TimeoutError'?'playwright_timeout':error?.code==='ERR_ASSERTION'?'assertion_failed':/strict mode violation/.test(String(error.message))?'selector_ambiguous':'browser_operation_failed',...audit}));throw error;
     }finally{await context.close();}
   }
   result.status='PASS_COMPONENT_ONLY';return result;
@@ -166,7 +173,7 @@ async function run(){
     report.public331=await publicPreview(state,targets.public331,output);
     const probe=await fetch(targets.member357.origin+targets.member357.path,{method:'HEAD',redirect:'manual',signal:AbortSignal.timeout(15000)});report.real357={sourceSha:targets.member357.sha,httpStatus:probe.status,status:probe.status===200?'NEEDS_VALID_SESSION_REVIEW':'BLOCKED',credentialsSent:false,redirectsFollowed:false,accountScreenshot:false};
     server=await componentServer(state);state.qaStage='component_dom';report.component357=await educationalComponent(state,server,output);
-  }catch(error){report.status='BLOCKED';report.failureStage=state?.qaStage??'deployment_or_browser';report.failureCode=/^qa_[a-z0-9_]+$/.test(error.message)?error.message:error?.name==='TimeoutError'?'qa_browser_timeout':'qa_boundary_failed';}
+  }catch(error){report.status='BLOCKED';report.failureStage=state?.qaStage??'deployment_or_browser';report.failureOperation=state?.qaOperation??null;report.failureCode=/^qa_[a-z0-9_]+$/.test(error.message)?error.message:error?.name==='TimeoutError'?'qa_browser_timeout':'qa_boundary_failed';}
   finally{
     if(server)await new Promise(ok=>server.server.close(ok));
     if(state)report.cleanup=await cleanup(state);
