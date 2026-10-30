@@ -1,52 +1,16 @@
-import { logStoredReadFailure, type StoredReadPhase } from "@/lib/stored-read-diagnostics";
-import { NextResponse } from "next/server";
-import { codalFeedWindow, codalFeedQuery } from "@/lib/codal-feed";
+/** DO NOT MERGE: isolated real-public-data integration, product UI remains 345@0a0ee36. */
+import { integrationError, readPublicFoolad } from './public-integration';
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-// GET /api/codal-list?symbol=نماد — فهرست اطلاعیه‌های کدال یک نماد (T5-2).
-// فهرست فقط از جدول اطلاعیه‌های ذخیره‌شدهٔ codal_feed خوانده می‌شود و
-// لینک جست‌وجوی رسمی codal.ir همیشه همراه پاسخ برمی‌گردد — بدون دادهٔ ساختگی.
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
-  const symbol = new URL(req.url).searchParams.get("symbol")?.trim();
-  if (!symbol) {
-    return NextResponse.json({ error: "symbol required" }, { status: 400 });
+  // Next can otherwise implement HEAD through GET; a probe must not consume a source read.
+  if (req.method !== 'GET') return integrationError('manual_GET_only', 405, 'admission');
+  const query = new URL(req.url).searchParams;
+  if (query.getAll('symbol').length > 1 || [...query.keys()].some(key => key !== 'symbol')) {
+    return integrationError('only_one_foolad_symbol_parameter_is_allowed', 400, 'admission');
   }
-  const codalSearchUrl = `https://codal.ir/ReportList.aspx?search&Symbol=${encodeURIComponent(symbol)}`;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) {
-    return NextResponse.json({ error: "supabase not configured", codalSearchUrl }, { status: 503 });
-  }
-  const startedAt = Date.now();
-  let phase: StoredReadPhase = "request";
-  let upstreamStatus: number | undefined;
-  try {
-    const qs = codalFeedQuery(symbol);
-    const res = await fetch(`${url.replace(/\/+$/, "")}/rest/v1/codal_feed?${qs}`, {
-      headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
-      cache: "no-store",
-      signal: AbortSignal.timeout(15000),
-    });
-    phase = "headers";
-    upstreamStatus = res.status;
-    if (!res.ok) {
-      logStoredReadFailure({ route: "codal-list", phase, elapsedMs: Date.now() - startedAt, upstreamStatus });
-      return NextResponse.json({ error: `supabase ${res.status}`, codalSearchUrl }, { status: 502 });
-    }
-    phase = "body";
-    const result = codalFeedWindow(await res.json());
-    return NextResponse.json(
-      { ...result, codalSearchUrl, source: "codal_feed", coverage: "stored-announcements" },
-      { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=300" } },
-    );
-  } catch (e) {
-    logStoredReadFailure({ route: "codal-list", phase, elapsedMs: Date.now() - startedAt, upstreamStatus, error: e });
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "fetch failed", codalSearchUrl },
-      { status: 502 },
-    );
-  }
+  // Only the string symbol is passed; incoming headers/auth/cookies are never forwarded.
+  return readPublicFoolad(query.get('symbol'));
 }
