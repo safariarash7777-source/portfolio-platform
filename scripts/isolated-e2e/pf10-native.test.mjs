@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {verifyEnvironment,verifyContainer,verifyIngress,verifyRestArtifact,restArtifact,allowedURL,images,origin} from './pf10-native.mjs';
+import {verifyEnvironment,verifyContainer,verifyIngress,verifyRestArtifact,verifyDatabaseMountInfo,restArtifact,allowedURL,images,origin} from './pf10-native.mjs';
 const state={id:'synthetic-run',network:'synthetic-internal',edge:'synthetic-edge',imageIds:{db:'sha256:synthetic',node:'sha256:synthetic-node'}};
 const container=()=>({Config:{Labels:{'pf10.native-lab':state.id}},State:{Running:true},Image:state.imageIds.db,Mounts:[{Type:'tmpfs',Destination:'/var/lib/postgresql/data'}],NetworkSettings:{Networks:{[state.network]:{}}},HostConfig:{PortBindings:{}}});
 test('PF10 real Auth harness cannot launch on Windows or outside existing Linux CI',()=>{
@@ -10,6 +10,8 @@ test('PF10 real Auth harness cannot launch on Windows or outside existing Linux 
 });
 test('PF10 real Auth SQL and cleanup require owned image/internal network/no service port/no bind/tmpfs',()=>{
  assert.doesNotThrow(()=>verifyContainer(state,container(),'db'));
+ const legacyTmpfs=container();legacyTmpfs.Mounts=[];legacyTmpfs.HostConfig.Tmpfs={'/var/lib/postgresql/data':''};assert.doesNotThrow(()=>verifyContainer(state,legacyTmpfs,'db'));
+ const wrongTmpfs=container();wrongTmpfs.Mounts=[];wrongTmpfs.HostConfig.Tmpfs={'/tmp':''};assert.throws(()=>verifyContainer(state,wrongTmpfs,'db'));
  for(const change of [c=>{c.Config.Labels={};},c=>{c.Image='another';},c=>{c.State.Running=false;},c=>{c.Mounts.push({Type:'bind'});},c=>{c.Mounts=[];},c=>{c.NetworkSettings.Networks.bridge={};},c=>{c.HostConfig.PortBindings={'5432/tcp':[{HostIp:'127.0.0.1'}]};}]){const c=container();change(c);assert.throws(()=>verifyContainer(state,c,'db'));}
 });
 test('PF10 gateway requires exact loopback ingress and two owned networks',()=>{
@@ -29,4 +31,8 @@ test('PF10 official REST mapping requires exact amd64 manifest, config and versi
  const details={Os:'linux',Architecture:'amd64',Id:restArtifact.config},index={manifests:[{digest:restArtifact.manifest,platform:{os:'linux',architecture:'amd64'}}]};
  assert.doesNotThrow(()=>verifyRestArtifact(details,index,'PostgREST 14.17 (synthetic readback)'));
  for(const [d,i,v] of [[{...details,Id:restArtifact.legacy},index,'PostgREST 14.17'],[{...details,Architecture:'arm64'},index,'PostgREST 14.17'],[details,{manifests:[]},'PostgREST 14.17'],[details,index,'PostgREST 14.18']])assert.throws(()=>verifyRestArtifact(d,i,v));
+});
+test('PF10 SQL transport also requires actual kernel tmpfs mount, never a volume or metadata-only claim',()=>{
+ assert.doesNotThrow(()=>verifyDatabaseMountInfo('101 99 0:20 / /var/lib/postgresql/data rw,nosuid - tmpfs tmpfs rw'));
+ for(const text of ['', '101 99 8:1 / /var/lib/postgresql/data rw - ext4 /dev/sda1 rw', '101 99 0:20 / /tmp rw - tmpfs tmpfs rw'])assert.throws(()=>verifyDatabaseMountInfo(text));
 });
