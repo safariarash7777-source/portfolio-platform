@@ -8,6 +8,10 @@ import { buildBalanceSheet, positionFromStored, debtFromStored } from "./balance
 import { postInvestmentScope } from "./scopeHttp";
 import { scopeReviewFromStored } from "./scopeContract";
 import { selectInvestmentScope } from "./investmentScope";
+import { postFinancialSnapshot, type FinancialDb } from "./financialHttp";
+import { getFinancialSnapshot, type FinancialReadDb } from "./financialReadHttp";
+import { buildRecordedPayments } from "./paymentSchedule";
+import { mountFinancialForm } from "../../components/portfolio/financial-form-test-host";
 const ENV={...process.env,PGHOST:process.env.PGHOST??"127.0.0.1",PGPORT:process.env.PGPORT??"5433",PGUSER:process.env.PGUSER??"postgres",PGPASSWORD:process.env.PGPASSWORD??"postgres"};
 if(!["127.0.0.1","localhost","::1"].includes(ENV.PGHOST))throw new Error("Recovery tests require CI-local synthetic Postgres");
 const A="11111111-1111-4111-8111-111111111111", B="22222222-2222-4222-8222-222222222222", ADMIN="33333333-3333-4333-8333-333333333333";
@@ -20,6 +24,107 @@ function denied(db:string,id:string|null,q:string){try{sql(db,wrap(id,q));return
 const choices=[{positionKey:"gold",use:"allocatable"},{positionKey:"unpriced",use:"excluded"}];
 const assets=[{position_key:"gold",manual_label:"طلای ساختگی",asset_class:"gold",unit:"کل قلم",qty:null,as_of:"2026-10-03",ownership_pct:50,valuation_mode:"declared",declared_value:2000,valuation_source:"اظهار ساختگی",valuation_as_of:"2026-10-03",valuation_status:"valid"},{position_key:"unpriced",manual_label:"قلم بی‌قیمت ساختگی",asset_class:"gold",unit:"گرم",qty:12.5,as_of:"2026-10-03",ownership_pct:100,valuation_mode:"unpriced",valuation_status:"missing"}];
 const debt=[{debt_key:"debt",title:"بدهی ساختگی",kind:"loan",balance_toman:1500,currency:"IRR",balance_as_of:"2026-10-03",next_installment_toman:null,next_due_on:null,note:null}];
+
+// Existing API and actual form handlers over a disposable DB, with an explicit
+// actor seam. This is native SQL/RLS evidence, not a real Auth/browser payment.
+for (const profile of ["legacy", "explicit"]) describe(`P02.4 synthetic debt partial correction / Postgres / ${profile}`, () => {
+ const db = `p024_debt_${profile}`;
+ const writer = (actor = A): FinancialDb => ({
+  async authenticate() { return { user: { id: actor }, error: false }; },
+  async rpc(name, args) {
+   assert.equal(name, "record_member_debts");
+   try {
+    return { data: JSON.parse(as(db, actor, `SELECT coalesce(jsonb_agg(to_jsonb(r)),'[]') FROM public.record_member_debts(${quote(args.p_debts)}::jsonb,${quote(args.p_base_version)},${quote(args.p_client_token)}) r`)), error: null };
+   } catch (error) {
+    const detail = String((error as { stderr?: unknown }).stderr ?? error);
+    return { data: null, error: { code: detail.match(/ERROR:\s+([A-Z0-9]{5}):/)?.[1] ?? "XX000" } };
+   }
+  },
+ });
+ const reader = (actor = A): FinancialReadDb => ({
+  async authenticate() { return { user: { id: actor }, error: false }; },
+  async version(owner, lookup) {
+   return JSON.parse(as(db, actor, `SELECT coalesce((SELECT to_jsonb(v) FROM public.member_holding_versions v WHERE user_id=${quote(owner)}::uuid ${lookup.id ? `AND id=${quote(lookup.id)}::uuid` : ""} ${lookup.token ? `AND client_token=${quote(lookup.token)}` : ""} ORDER BY version DESC LIMIT 1),'null')`));
+  },
+  async positions(id) { return JSON.parse(as(db, actor, `SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY position_key),'[]') FROM public.member_holding_positions p WHERE version_id=${quote(id)}::uuid`)); },
+  async debts(id) { return JSON.parse(as(db, actor, `SELECT coalesce(jsonb_agg(to_jsonb(d)-'version_id' ORDER BY debt_key),'[]') FROM public.member_debt_positions d WHERE version_id=${quote(id)}::uuid`)); },
+ });
+ const snapshot = async (id?: string, actor = A) => {
+  const response = await getFinancialSnapshot(id, async () => reader(actor));
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("Cache-Control") ?? "", /private, no-store/);
+  return await response.json();
+ };
+ before(() => {
+  sql("postgres", `DROP DATABASE IF EXISTS ${db}`); sql("postgres", `CREATE DATABASE ${db}`);
+  for (const file of ["sql/test/supabase_bootstrap.sql", `sql/test/profile_${profile === "legacy" ? "legacy_default_privileges" : "explicit_grants"}.sql`, "sql/test/portfolio_precondition.sql", "sql/phase32_member_holdings.sql", "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql"]) {
+   execFileSync("psql", ["-d", db, "-X", "-q", "-v", "ON_ERROR_STOP=1", "-f", join(process.cwd(), file)], { env: ENV, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+   if (file === "sql/test/portfolio_precondition.sql") sql(db, `INSERT INTO auth.users(id) VALUES('${A}'),('${B}'),('${ADMIN}'); INSERT INTO public.profiles(id,role) VALUES('${A}','user'),('${B}','user'),('${ADMIN}','admin')`);
+  }
+  as(db, A, `SELECT to_jsonb(r) FROM public.record_member_holdings(${quote(assets)}::jsonb,NULL,'p024-assets',0) r`);
+ });
+ after(() => { sql("postgres", `DROP DATABASE IF EXISTS ${db}`); });
+ test("actual debt form/API preserves partial-correction intent after lost commit, canonical reload and old basis", async () => {
+  const seed = await postFinancialSnapshot(new Request("http://localhost/api/portfolio/debts", { method: "POST", body: JSON.stringify({ base_version: 1, client_token: "p024-before-partial", debts: [
+   { debt_key: "debt-a", title: "قسط مصنوعی", kind: "installment", balance: "۲۰۰۰۰۰۰", currency: "IRR", balance_as_of: "2026-10-20", next_installment: "۱۰۰۰۰۰", next_due_on: "2026-10-25", note: "اعلام مصنوعی پیش از اصلاح مانده" },
+   { debt_key: "debt-b", title: "بدهی بدون قسط معلوم", kind: "personal", balance: "5000", currency: "IRT", balance_as_of: "2026-10-20", next_installment: null, next_due_on: null, note: null },
+  ] }) }), "debts", async () => writer());
+  assert.equal(seed.status, 201);
+  const seedReceipt = await seed.json(), before = await snapshot(seedReceipt.version_id);
+  assert.equal(before.version.version, 2); assert.equal(before.debts[0].balance_toman, 200000); assert.equal(before.debts[0].next_installment_toman, 10000);
+  const preservedHistory = JSON.stringify(before);
+  const ui = mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 2, latestVersion: 2, debts: before.debts });
+  const change = (old: string, value: string) => {
+   const field = ui.find("input", item => item.props.value === old);
+   (field.props.onChange as (event: { target: { value: string } }) => void)({ target: { value } }); ui.render();
+  };
+  change("200000", "۱۹۷۰۰۰"); change("10000", "۷۰۰۰"); change("2026-10-20", "2026-10-30");
+  const note = ui.find("textarea", item => item.props.value === "اعلام مصنوعی پیش از اصلاح مانده");
+  (note.props.onChange as (event: { target: { value: string } }) => void)({ target: { value: "اعلام مصنوعی پرداخت جزئی؛ مانده‌ها دستی تأیید شدند، نه تراکنش بانکی" } }); ui.render();
+  const prior = globalThis.fetch, bodies: string[] = [], responses: { version_id: string; version: number; reused: boolean }[] = [];
+  globalThis.fetch = async (url, options) => {
+   bodies.push(String(options?.body));
+   const response = await postFinancialSnapshot(new Request(`http://localhost${url}`, options), "debts", async () => writer());
+   assert.ok(response.ok); responses.push(await response.clone().json());
+   if (bodies.length === 1) throw new Error("Synthetic response loss after real DB commit");
+   return response;
+  };
+  try {
+   await ui.submit("ذخیرهٔ بدهی‌ها");
+   assert.equal(ui.navigation.length, 0); assert.equal(ui.beforeUnload(), true);
+   assert.ok(ui.elements().filter(item => ["input", "select", "textarea"].includes(String(item.type))).every(item => item.props.disabled === true));
+   const request = JSON.parse(bodies[0]);
+   assert.equal(request.base_version, 2); assert.equal(request.debts[0].currency, "IRT"); assert.equal(request.debts[0].balance, "۱۹۷۰۰۰");
+   const independentlyRead = await snapshot();
+   assert.equal(independentlyRead.version.version, 3); assert.equal(independentlyRead.debts[0].balance_toman, 197000); assert.equal(independentlyRead.debts[0].next_installment_toman, 7000);
+   assert.equal(independentlyRead.debts[0].balance_as_of, "2026-10-30"); assert.equal(independentlyRead.debts[0].next_due_on, "2026-10-25");
+   assert.equal(independentlyRead.debts[1].next_installment_toman, null); assert.equal(independentlyRead.debts[1].next_due_on, null);
+   assert.deepEqual(independentlyRead.positions, before.positions);
+   assert.equal(JSON.stringify(await snapshot(seedReceipt.version_id)), preservedHistory);
+   const balance = buildBalanceSheet({ positions: independentlyRead.positions.map(positionFromStored), debts: independentlyRead.debts, priceRows: [], now: new Date("2026-10-30T08:00:00Z"), recorded: true, assetsReady: true, debtsReady: true });
+   assert.equal(balance.debtValue, 202000); // The next installment is already in the declared balance.
+   assert.equal(balance.partial, true); // The separate unpriced asset stays unknown.
+   await ui.submit("بررسی دوبارهٔ همین ثبت");
+   assert.equal(bodies[1], bodies[0]); assert.equal(responses[1].reused, true); assert.equal(responses[1].version_id, responses[0].version_id);
+   assert.equal(as(db, A, "SELECT count(*) FROM public.member_holding_versions"), "3");
+   assert.equal(ui.navigation[0], `/dashboard/holdings?v=${independentlyRead.version.id}`);
+   const reloaded = mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 3, latestVersion: 3, debts: (await snapshot(independentlyRead.version.id)).debts });
+   assert.equal(reloaded.find("input", item => item.props.value === "197000").props.disabled, false);
+   assert.equal(reloaded.find("input", item => item.props.value === "7000").props.value, "7000");
+   const old = mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 2, latestVersion: 3, debts: before.debts });
+   assert.equal(old.find("input", item => item.props.value === "200000").props.disabled, true); assert.equal(old.beforeUnload(), false);
+   const schedule = buildRecordedPayments({ debts: independentlyRead.debts, ready: true, recorded: true, referenceDay: "2026-10-30" });
+   assert.equal(schedule.knownAmountTotal, 7000); assert.equal(schedule.status, "partial"); assert.equal(schedule.items[0].relation, "past");
+   // Due-date relation does not establish a paid status or an interest split.
+   assert.equal("paid" in schedule.items[0], false);
+   for (const actor of [B, ADMIN]) {
+    const hidden = await getFinancialSnapshot(independentlyRead.version.id, async () => reader(actor));
+    assert.equal(hidden.status, 404); assert.equal(as(db, actor, "SELECT count(*) FROM public.member_debt_positions"), "0");
+   }
+  } finally { globalThis.fetch = prior; }
+ });
+});
+
 for(const profile of ["legacy","explicit"])describe(`RECOVERY scope/minimum core / Postgres / ${profile}`,()=>{
  const db=`recovery_scope_${profile}`;let first:string,second:string,review:Record<string,unknown>,legacyTarget:string,legacyHolding:string;
  const scopeSql=(version:string,base:number,token:string,assignments:unknown=choices,rules="member-selected.v0.1")=>`SELECT public.record_member_investment_scope(${quote(version)}::uuid,${quote(rules)},${quote(assignments)}::jsonb,${base},${quote(token)})`;

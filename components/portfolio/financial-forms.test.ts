@@ -5,6 +5,26 @@ import { postFinancialSnapshot } from "../../lib/portfolio/financialHttp";
 const receipt = { version_id: "11111111-1111-4111-8111-111111111111", version: 2, position_count: 1, reused: false };
 const asset = { positionKey: "gold", manualLabel: "طلای ساختگی", symbol: null, assetClass: "gold", qty: null, unit: "قلم", costBasis: null, asOf: "2026-10-03", ownershipPct: 50, valuationMode: "declared", declaredValue: 2000, valuationSource: "ساختگی", valuationAsOf: "2026-10-03", valuationStatus: "valid" };
 const debt = { debt_key: "d", title: "وام ساختگی", kind: "loan", balance_toman: 1500, currency: "IRT", balance_as_of: "2026-10-03", next_installment_toman: null, next_due_on: null, note: null };
+
+test("historical debt version is a readable snapshot, not an editable unsavable draft", () => {
+ const editor = createFinancialEditor();
+ const ui = mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 1, latestVersion: 2, debts: [debt] }, editor);
+ assert.match(ui.text(), /این نسخه سابقه است/);
+ assert.ok(ui.elements().filter(e => ["input", "select", "textarea"].includes(String(e.type))).every(e => e.props.disabled === true));
+ assert.equal(ui.button("افزودن بدهی").props.disabled, true);
+ assert.equal(ui.button("حذف از نسخهٔ تازه").props.disabled, true);
+ assert.equal(ui.button("ذخیرهٔ بدهی‌ها").props.disabled, true);
+ // A queued old handler must not acquire a draft lease for a historical base.
+ const input = ui.find("input", e => e.props.value === "1500");
+ (input.props.onChange as (event: { target: { value: string } }) => void)({ target: { value: "1200" } });
+ (ui.button("افزودن بدهی").props.onClick as () => void)();
+ ui.render();
+ assert.equal(editor.active, null);
+ assert.equal(ui.beforeUnload(), false);
+ assert.equal(ui.find("input", e => e.props.value === "1500").props.value, "1500");
+ assert.equal(ui.elements().filter(e => e.type === "fieldset").length, 1);
+});
+
 for(const kind of ["holdings", "debts"] as const) {
  const mount = () => kind === "holdings" ? mountFinancialForm("components/portfolio/HoldingsWorkbench.tsx", { ready: true, targetFailed: false, activeVersion: 1, latestVersion: 1, history: [], activePositions: [asset], rows: [], gaps: [], definitive: false, notes: [], totalValue: null, showComparison: false, showImport: false }) : mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 1, latestVersion: 1, debts: [debt] });
  const saveLabel = kind === "holdings" ? "ذخیرهٔ نسخهٔ تازه" : "ذخیرهٔ بدهی‌ها";
