@@ -6,7 +6,7 @@
 
 AD-18 درخواست مستقل قابل اتصال به توصیه، AD-20 درخواست ← پاسخ تأییدشده ← پیگیری و backlog P03.5 پایان درخواست را می‌خواهند. این‌ها نیاز مصوب‌اند؛ نبود مدل اجرایی شکاف فنی است. CM-19 تعهد زمان رسیدگی را جدا باز نگه می‌دارد. این برش قیمت، SLA، سهمیه، مدت تازه، grant یا تبدیل حقوق گذشته تعریف نمی‌کند.
 
-فایل‌ها: `lib/consultation/tickets.ts`، `ticketIntent.ts` و `tickets.test.ts`؛ فقط یک import در `contracts.test.ts` موجود، آزمون جدید را وارد `test:core` می‌کند. package، workflow، API، SQL، Auth، Workspace، layout و پنج سند مادر تغییر ندارند. import یا transport محصولی برای قرارداد تازه وجود ندارد؛ فقط تست آن را مصرف می‌کند.
+فایل‌ها: `lib/consultation/tickets.ts`، `ticketIntent.ts`، `tickets.test.ts`، همین سند و `package.json`. تنها استثنای package، افزودن مسیر literal `lib/consultation/tickets.test.ts` به `test:core` موجود است؛ dependency، lock، بقیهٔ scriptها و سایر فیلدهای package ثابت‌اند. import جانبی اولیه از `contracts.test.ts` حذف شد تا آن فایل عین مبنا بماند و آزمون‌ها دوباره اجرا نشوند. registry guard، workflow، API، SQL، Auth، Workspace، layout و پنج سند مادر تغییر ندارند. import یا transport محصولی برای قرارداد تازه وجود ندارد؛ فقط تست آن را مصرف می‌کند.
 
 ## دسترسی قدیمی در برابر حق خدمت جدید
 
@@ -89,12 +89,14 @@ backend باید: اتصال معتبر حق خدمت به خرید/شرایط �
 
 ## شواهد محلی
 
-۶۸ آزمون قرارداد/درخواست/سرور/پاسخ موجود پاس شدند؛ ۲۷ مورد جدید، validator و resolver و intent/lookup/recovery واقعی این برش را اجرا می‌کنند. با import یک‌خطی در `contracts.test.ts`، همین آزمون‌ها از فرمان موجود `test:core` نیز اجرا می‌شوند. نمونه‌ها در حافظه‌اند و دادهٔ واقعی عضو، حق، پاسخ، رضایت یا ثبت‌نام تغییر نکرده است.
+۶۸ آزمون قرارداد/درخواست/سرور/پاسخ موجود پاس شدند؛ ۲۷ مورد جدید، validator و resolver و intent/lookup/recovery واقعی این برش را اجرا می‌کنند. با مسیر literal در `test:core`، آزمون‌های تیکت جدا از ۱۲ آزمون contracts موجود ثبت‌اند؛ import جانبی حذف شده است. نمونه‌ها در حافظه‌اند و دادهٔ واقعی عضو، حق، پاسخ، رضایت یا ثبت‌نام تغییر نکرده است.
+
+CI منبع 4b4a9aa پذیرفته نشد: registry guard فایل tickets.test.ts را orphan تشخیص داد، هرچند import قبلی آن را اجرا می‌کرد. رفع صرفاً ثبت literal و حذف import است؛ guard دست‌نخورده مانده است. آزمون focused registry پیش از رفع ۱ شکست و پس از آن ۲/۲ پاس داشت؛ شش recovery regression و همان suite گستردهٔ ۶۸ مورد با پنج entry صریح دوباره پاس شدند. این‌ها جای CI منبع تازه را نمی‌گیرند؛ اجرای کامل Core و CI قبلی با suite محدود محلی یکی معرفی نمی‌شود.
 
 شش regression مستقل مرز recovery را پوشش می‌دهند: مشاور revoked، مشاور disabled، تغییر selected relationship، تغییر actor، حفظ تاریخچهٔ عضو پس از لغو، و حفظ exact bytes/رسید روی unavailable مجاز. سه مورد اول پیش از guard در منبع c2eeb8b شکست می‌خوردند و پس از رفع هر شش پاس شدند؛ هیچ کاهش گیت یا تغییر سیاست consultation لازم نشد. این شاهد محلی است و آزمون writer/DB عملیاتی محسوب نمی‌شود.
 
 ```text
-node node_modules/tsx/dist/cli.mjs --test lib/consultation/contracts.test.ts lib/consultation/request.test.ts lib/consultation/server.test.ts scripts/testing/consultation-replies/replies.test.ts
+node node_modules/tsx/dist/cli.mjs --test lib/consultation/tickets.test.ts lib/consultation/contracts.test.ts lib/consultation/request.test.ts lib/consultation/server.test.ts scripts/testing/consultation-replies/replies.test.ts
 ```
 
 آزمون‌ها شامل cross-actor/رابطه، نسخه/hash ناقص یا غلط، مرجع تاریخی و خارج پنجره، لغو رضایت و غیرفعال‌شدن مشاور، CAS، شکست خواندن، بازنویسی prefix، پایان نهایی، receipt/readback دقیق، منبع admin_grant در برابر kind manual، حق ناقص/خراب/نامرتبط و مرز شروع/انقضا هستند. دقت میکروثانیهٔ timestampهای PostgreSQL در classifier و ترتیب رویداد حفظ می‌شود؛ `Date.parse` به‌تنهایی مبنای این مرز نیست. این آزمون، اثر تراکنش DB یا منبع زمان/حق واقعی را اثبات نمی‌کند.
