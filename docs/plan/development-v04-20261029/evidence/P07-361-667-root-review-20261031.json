@@ -1,0 +1,71 @@
+{
+  "recordedAt": "2026-10-31T03:00:00+03:30",
+  "scope": "code and CI only; not browser, merge, deployment, financial data, or Arash acceptance",
+  "pr": 361,
+  "head": "66765f75abf206a719b089cca6079d857f10b7c9",
+  "base": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "sourceRead": "GitHub pull files and git commits GET; patch inspected",
+  "changedFiles": [
+    "docs/ops/p07-monthly-rate-gap-20261031/DELIVERY.fa.md",
+    "lib/core/monthlyReport.test.ts",
+    "lib/core/monthlyReport.ts"
+  ],
+  "implementation": "Only rate-series presentation slots from first through last observed calendar month; missing report yields null. Existing ranking/dedup/reports/cumulative/mix/production series retained.",
+  "regressions": [
+    "wholly missing interior month remains null without report count/input mutation/cumulative change",
+    "year boundary missing slots remain null without leading or trailing padding"
+  ],
+  "ci": {
+    "run": 41140565051,
+    "jobs": [
+      {
+        "id": 124353532540,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124353532541,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124353532591,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124353532631,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124355037327,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "checkoutFromDecodedCoreLog": "ed18b22eff20f761f14dcc8e52612f8ea413ebfb",
+    "parents": [
+      "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+      "66765f75abf206a719b089cca6079d857f10b7c9"
+    ],
+    "mergeTree": "6ad3d6117f2b9a2ab607bd49f436c110d5bfcc90",
+    "headTree": "6ad3d6117f2b9a2ab607bd49f436c110d5bfcc90",
+    "firstCoreSuite": {
+      "tests": 2056,
+      "pass": 2056,
+      "fail": 0
+    },
+    "fundamentalSuite": {
+      "tests": 131,
+      "pass": 131,
+      "fail": 0
+    }
+  },
+  "limits": [
+    "PR340@564 remains unchanged and continues withholding missing-month rate chart",
+    "Actual chart-gap interaction after integration pending",
+    "No main merge or release authorized"
+  ],
+  "nextOwner": "A: separate educational prototype integration and readable source panel, preserving 564 receipt"
+}
