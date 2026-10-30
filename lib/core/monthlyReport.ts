@@ -262,13 +262,23 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     }
   }
   const topCombos = [...comboTotals.values()].sort((a, b) => b.amount - a.amount).slice(0, 3);
+  // Presentation slots only: never invent a report or change a reported rate.
+  const rateMonthKeys: string[] = [];
+  const monthIndex = (key: string) => Number(key.slice(0, 4)) * 12 + Number(key.slice(5, 7)) - 1;
+  const firstRateMonth = monthIndex(sortedKeys[0]);
+  const lastRateMonth = monthIndex(sortedKeys[sortedKeys.length - 1]);
+  for (let index = firstRateMonth; index <= lastRateMonth; index++) {
+    const year = Math.floor(index / 12);
+    const month = index % 12 + 1;
+    rateMonthKeys.push(`${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`);
+  }
   const rateSeries: RateSeries[] = topCombos.map((c) => ({
     productName: c.name,
     market: c.market,
     label: `${c.name} — ${c.market}`,
-    points: sortedKeys.map((key) => {
-      const r = byMonth.get(key)!;
-      const p = r.products.find(
+    points: rateMonthKeys.map((key) => {
+      const r = byMonth.get(key);
+      const p = r?.products.find(
         (x) => x.product_name === c.name && (x.market === "صادراتی" ? "صادراتی" : "داخلی") === c.market,
       );
       const mo = Number(key.slice(5, 7));

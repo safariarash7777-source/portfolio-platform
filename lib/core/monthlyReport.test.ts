@@ -273,3 +273,28 @@ test("نرخ: تناقضِ علامت حتی با نرخِ مثبت هم رد م
   assert.equal(meaningfulRate({ sales_qty: 5, sales_rate: 250, sales_amount: -1250 }), null);
   assert.equal(meaningfulRate({ sales_qty: -5, sales_rate: 250, sales_amount: 1250 }), null);
 });
+
+test("rate axis retains a wholly missing month as null without creating reports", () => {
+  const input = [
+    report("1405-03-31", 700, [prod({product_name:"شمش",sales_amount:700,sales_rate:260})], 1900),
+    report("1405-01-31", 500, [prod({product_name:"شمش",sales_amount:500,sales_rate:240})], 500),
+  ];
+  const before=JSON.stringify(input), model=buildMonthlySales(input);
+  assert.ok(model);
+  assert.deepEqual(model.rateSeries[0].points.map(p=>[p.monthKey,p.rate]), [["1405-01",240],["1405-02",null],["1405-03",260]]);
+  assert.equal(model.reportCount,2);
+  assert.equal(model.currentMonths[1].amount,null);
+  assert.equal(model.cumulativeCurrent,1900);
+  assert.equal(JSON.stringify(input),before);
+});
+test("rate calendar slots cross a year boundary without zero fill or leading/trailing padding", () => {
+  const model=buildMonthlySales([
+    report("1405-02-31", 900, [prod({product_name:"شمش",sales_amount:900,sales_rate:300})]),
+    report("1404-11-30", 700, [prod({product_name:"شمش",sales_amount:700,sales_rate:250})]),
+  ]);
+  assert.ok(model);
+  assert.deepEqual(model.rateSeries[0].points.map(p=>[p.monthKey,p.rate]), [["1404-11",250],["1404-12",null],["1405-01",null],["1405-02",300]]);
+  assert.equal(model.reportCount,2);
+  assert.equal(model.latestMix[0].amount,900);
+  assert.equal(model.prodVsSales.length,0);
+});
