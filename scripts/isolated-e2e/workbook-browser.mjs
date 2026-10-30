@@ -47,6 +47,9 @@ function removalPermissions(root,path=root){
 export function browserDestination(url,method='GET'){
  try{const u=new URL(url);if(u.hash||!url.startsWith(origin+'/'))return false;const raw=url.slice(origin.length).split('?')[0];if(/%(?:2e|2f|5c|25|00)/i.test(raw)||/[\\\u0000-\u0020]/.test(raw)||raw.split('/').some(x=>x==='.'||x==='..'))return false;allowedProfileURL('p09',url,true,method);return true;}catch{return false;}
 }
+export function browserFailureCode(error){
+ const text=String(error?.message??'');return /^p09_browser_[a-z0-9_]+$/.test(text)?text:text.match(/\bnet::ERR_[A-Z0-9_]+\b/)?.[0]??(error?.name==='TimeoutError'?'playwright_timeout':'browser_operation_failed');
+}
 export function sdkCookies(header){
  check(typeof header==='string'&&header.length>0,'p09_browser_sdk_cookie_missing');
  return header.split('; ').map(part=>{const i=part.indexOf('=');check(i>0,'p09_browser_sdk_cookie_invalid');return {name:part.slice(0,i),value:part.slice(i+1),url:origin,sameSite:'Lax'};});
@@ -139,11 +142,13 @@ function recordPass(s,name,evidence={}){check(browserChecks.includes(name)&&!s.c
 async function exercise(s,runtime,known){
  const {users,newSession,api,sql,wait}=runtime,book=known.workbookId,nextVersion=known.latestVersion+1,title='TEST browser durable close recovery';
  const baseline=await api('a',endpoint+'?'+new URLSearchParams({id:book,version:'1'}));check(baseline.status===200,'p09_browser_v1_baseline');
- const marker='TEST_PRIVATE_WORKBOOK_TEXT',initialToken=users.a.session.token,privateNeedles=[marker];users.a.session=await newSession('a');check(users.a.session.token!==initialToken,'p09_browser_initial_password_login');privateNeedles.push(users.a.session.token,...sdkCookies(users.a.session.cookie).map(x=>x.value));
+ const marker='TEST_PRIVATE_WORKBOOK_TEXT',initialToken=users.a.session.token,privateNeedles=[marker];users.a.session=await newSession('a');check(users.a.session.token!==initialToken,'p09_browser_initial_password_login');privateNeedles.push(users.a.session.token,...sdkCookies(users.a.session.cookie).map(x=>x.value).filter(Boolean));
  let allPosts=0,privateHits=0,urlHits=0,closedPage=false,closedContext=false,cacheComplete=true,savedIntent=null,preparedAt=null;
- const responses=[],cacheResponses=[],blocked=[],pageErrors=[];let heldRead=null,armed=false,closing=false,releaseRead=false;
+ const responses=[],cacheResponses=[],blocked=[],pageErrors=[];s.pageDiagnostics={documentStatus:null,documentClass:'not_observed',blockedCategories:[],failedRequests:[]};let heldRead=null,armed=false,closing=false,releaseRead=false;
  const attach=async(context,page,holdRecovery=false)=>{
   page.on('pageerror',error=>pageErrors.push(error.name));
+  page.on('requestfailed',request=>{if(s.pageDiagnostics.failedRequests.length<10)s.pageDiagnostics.failedRequests.push(browserFailureCode({message:request.failure()?.errorText}));});
+  page.on('framenavigated',frame=>{if(frame===page.mainFrame()){const u=new URL(frame.url());s.pageDiagnostics.documentClass=u.origin===origin?(u.pathname==='/admin/research'?'research':u.pathname==='/login'?'login':u.pathname==='/dashboard'?'dashboard':'other_local'):'other_origin';}});
   page.on('response',response=>{if(new URL(response.url()).pathname===endpoint)responses.push(response);});
   const cdp=await context.newCDPSession(page);await cdp.send('Network.enable');
   cdp.on('Network.responseReceived',event=>{if(new URL(event.response.url).pathname===endpoint)cacheResponses.push({disk:!!event.response.fromDiskCache,worker:!!event.response.fromServiceWorker,prefetch:!!event.response.fromPrefetchCache,headers:event.response.headers});});
@@ -153,7 +158,7 @@ async function exercise(s,runtime,known){
    check(!event.responseErrorReason,'p09_browser_network_response_failed');
    if(!responseStage){
     if(privateNeedles.some(value=>decodeURIComponent(request.url).includes(value))||/[?&#](?:access_token|refresh_token|password)=/i.test(request.url)){urlHits++;throw Error('p09_browser_private_request_url');}
-    if(!browserDestination(request.url,request.method)){blocked.push(['/_next/image','/_next/webpack-hmr'].includes(u.pathname)?u.pathname:'unapproved_path');await cdp.send('Fetch.failRequest',{requestId:event.requestId,errorReason:'BlockedByClient'});return;}
+    if(!browserDestination(request.url,request.method)){blocked.push(['/_next/image','/_next/webpack-hmr'].includes(u.pathname)?u.pathname:'unapproved_path');s.pageDiagnostics.blockedCategories=[...new Set(blocked)];await cdp.send('Fetch.failRequest',{requestId:event.requestId,errorReason:'BlockedByClient'});return;}
     if(u.pathname===endpoint&&request.method==='POST')allPosts++;
     if(holdRecovery&&!releaseRead&&u.pathname===endpoint&&request.method==='GET'&&u.searchParams.get('id')===book&&u.searchParams.get('version')===String(nextVersion)){check(!heldRead,'p09_browser_duplicate_recovery_get');heldRead={cdp,id:event.requestId};return;}
     await cdp.send('Fetch.continueRequest',{requestId:event.requestId});return;
@@ -167,9 +172,9 @@ async function exercise(s,runtime,known){
   })().catch(error=>{if(!closing&&!context.isClosed())s.asyncFailure=/^p09_browser_[a-z0-9_]+$/.test(error.message)?error.message:'p09_browser_cdp_event_failed';});});
  };
  const first=await s.browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1000}});s.contexts.push(first);await first.addCookies(sdkCookies(users.a.session.cookie));const page=await first.newPage();await attach(first,page);page.on('dialog',dialog=>void dialog.accept());
- s.stage='real_page';await page.goto(origin+'/admin/research',{waitUntil:'domcontentloaded',timeout:120000});
- await page.locator('#title').waitFor({state:'visible',timeout:30000});
- await page.getByRole('button',{name:new RegExp(known.titleV2)}).click();await wait(async()=>await page.locator('#title').inputValue()===known.titleV2,'p09_browser_original_workbook_open',30);
+ s.stage='real_page';s.operation='initial_navigation';const document=await page.goto(origin+'/admin/research',{waitUntil:'domcontentloaded',timeout:120000});s.pageDiagnostics.documentStatus=document?.status()??null;
+ s.operation='initial_title_visible';await page.locator('#title').waitFor({state:'visible',timeout:30000});
+ s.operation='open_existing_workbook';await page.getByRole('button',{name:new RegExp(known.titleV2)}).click();s.operation='existing_workbook_title';await wait(async()=>await page.locator('#title').inputValue()===known.titleV2,'p09_browser_original_workbook_open',30);
  check(page.url()===origin+'/admin/research'&&await page.locator('#interpretation').inputValue()===baseline.value.workbook.interpretation,'p09_browser_real_workbook_content');
  const beforeAudit=await storageAudit(page,privateNeedles);privateHits+=beforeAudit.hits;urlHits+=Number(beforeAudit.urlHit);
  recordPass(s,'real-next-workbook-page',{genuineSession:true,realPage:true,existingCasesNotMocked:true});
@@ -181,7 +186,7 @@ async function exercise(s,runtime,known){
  recordPass(s,'save-response-real-tab-context-close',{pageClosed:true,contextClosed:true,actualResponseStatus:201,transportFulfill:false,tcpDisconnectClaim:false});
  armed=false;closing=false;
  s.stage='fresh_reopen';const prior=users.a.session.token;users.a.session=await newSession('a');check(users.a.session.token!==prior,'p09_browser_fresh_password_session');
- privateNeedles.push(users.a.session.token,...sdkCookies(users.a.session.cookie).map(x=>x.value));
+ privateNeedles.push(users.a.session.token,...sdkCookies(users.a.session.cookie).map(x=>x.value).filter(Boolean));
  const second=await s.browser.newContext({serviceWorkers:'block',viewport:{width:1440,height:1000}});s.contexts.push(second);await second.addCookies(sdkCookies(users.a.session.cookie));const reopened=await second.newPage();await attach(second,reopened,true);const postsBefore=allPosts;
  await reopened.goto(origin+'/admin/research',{waitUntil:'domcontentloaded',timeout:120000});await wait(()=>{if(s.asyncFailure)throw Error(s.asyncFailure);return !!heldRead;},'p09_browser_recovery_get_held',30);
  await reopened.locator('aside dd').filter({hasText:savedIntent}).first().waitFor({state:'visible',timeout:30000});check(allPosts===postsBefore,'p09_browser_reopen_automatic_post');
@@ -207,7 +212,7 @@ async function run(){
  let state;try{
   state=await preflight();recordPass(state,'browser-preflight-before-provision',{driverVersion:'1.64.1',sourceExecutable:executable,sourceSha256:state.sourceSha256,executable:state.executable,ownedTemp:state.local,ownerId:state.owner,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,closure:state.closure,beforeProvision:true});
   await runNativeAuthProfile('p09',async runtime=>{
-   let flow,clean;try{const known=await workbookNativeScenarios(runtime);flow=await exercise(state,runtime,known);}finally{clean=await cleanup(state);state.cleaned=true;}
+   let flow,clean;try{const known=await workbookNativeScenarios(runtime);flow=await exercise(state,runtime,known);}catch(error){console.log('P09_BROWSER_PAGE_FAILURE '+JSON.stringify({stage:state.stage,operation:state.operation??null,code:browserFailureCode(error),asyncFailure:state.asyncFailure??null,...state.pageDiagnostics}));throw error;}finally{clean=await cleanup(state);state.cleaned=true;}
    recordPass(state,'owned-browser-cleanup',clean);
    const browser={status:'PASS',driverVersion:'1.64.1',sourceExecutable:executable,sourceSha256:state.sourceSha256,executable:state.executable,ownedTemp:state.local,ownerId:state.owner,chromeVersion:state.chromeVersion,chromeSha256:state.chromeSha256,closure:state.closure,checks:state.checks,...flow,cleanup:clean};
    runtime.write('browser-flow.json',{sha:runtime.sha,...browser});return {browser};

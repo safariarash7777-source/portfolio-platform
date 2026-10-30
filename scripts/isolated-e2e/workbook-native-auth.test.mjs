@@ -7,7 +7,7 @@ import {nativeAuthProfile,allowedProfileURL,verifyEnvironment,origin} from './na
 import {gatewayProfile} from './native-auth-gateway.mjs';
 import {browserRequestAllowed} from './native-auth-gateway.mjs';
 import {nativeBrowserMode,validateBrowserReceipt,browserChecks,browserSourceSha} from './native-auth-runtime.mjs';
-import {browserDestination,sdkCookies,chromeFileCompatible,closureBudget} from './workbook-browser.mjs';
+import {browserDestination,sdkCookies,chromeFileCompatible,closureBudget,browserFailureCode} from './workbook-browser.mjs';
 import {workbookRequestURL,exactWorkbookWrite,workbookHistoryPanel,withNativeNodeGlobals} from './workbook-native-auth.mjs';
 
 test('Hook host DOM globals are absent during native Node work and restored after success or error',async()=>{
@@ -82,4 +82,11 @@ test('Owned Chrome copy requires this runner ownership and read-only executable;
 test('Chrome closure has fixed count/byte/free-space bounds, with room reserved for native work and cleanup',()=>{
  assert.ok(closureBudget(100,500000000,10*1024**3));
  for(const args of [[0,1,10*1024**3],[4097,1,10*1024**3],[1,1024**3+1,10*1024**3],[1,100,4*1024**3],[1,100,NaN]])assert.equal(closureBudget(...args),false);
+});
+
+test('Browser failure diagnostics emit only an error class/code, never private page or request text',()=>{
+ assert.equal(browserFailureCode({message:'page.goto: net::ERR_BLOCKED_BY_CLIENT at https://private.invalid/?access_token=secret'}),'net::ERR_BLOCKED_BY_CLIENT');
+ assert.equal(browserFailureCode({name:'TimeoutError',message:'private body secret'}),'playwright_timeout');
+ assert.equal(browserFailureCode({message:'p09_browser_real_commit_after_close'}),'p09_browser_real_commit_after_close');
+ assert.equal(browserFailureCode({message:'private body secret'}),'browser_operation_failed');
 });
