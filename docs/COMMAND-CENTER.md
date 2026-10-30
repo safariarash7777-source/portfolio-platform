@@ -105,6 +105,14 @@ main روز باAPI مستقیمGitHub=`f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc
 
 **P15 / مرحلهٔ قابل اجرای بعد:** پس از رفع cache، چهار dumpسرد باتمامبایت‌ها،SHAبازشده، فایلrawواقعی درRAMخصوصی وpg_restore--list حفظ شدند؛ این لیست‌خوانی DBrestore نیست. [SOP/رسیدها/مسیرmaterialize](ops/p15-webpack-cache-20261030/ARCHIVE-COMPACTION.fa.md) و [wrapperموجود+مکمل](ops/p15-webpack-cache-20261030/fresh-checkpoint.py) قابل بررسی‌اند. حدبودجه۱۷٫۲۵GiB، شاملdumpتازه/proof/بازکردنrawقدیمی علاوه‌برguard۱۰GiB است. اصلhelper1f1454… عوض نمی‌شود؛۱۳guardتست موجود پاس، queryمکمل رویsource فقط‌خواندنی معتبر. موفقیت۶schemaقدیمی بدونمقایسه۱۹تابعِ۳schemaخصوصی، پذیرشcheckpointنیست. نتیجهٔ restoreتازه هنوز دراینcommit ادعا نمی‌شود. UI/فیلتر شرکت و صندوق موجود بازسازی نمی‌شوند؛ انتشار مجازشان باگیت مقصد/نسخه/داده پیگیری می‌شود.
 
+### مانع تازهٔ دسترسی و وضعیت اجرای مقصد
+
+[رسید دقیق دسترسی](plan/development-v04-20261029/evidence/P15-access-regression-20261030.json): تلاش اجرای checkpoint و تلاش readback، هر دو SSHexit255/timeoutپیشازاحرازهویت داشتند؛ invocationجدید روی سرور اجرا نشد. مسیرHTTPproxyموجود هم بهtimeoutمبادلهbanner رسید؛ این شاهدِ کلید نامعتبر، مصرفبالایسرور یاعلت قطعی نیست. آخرین diskfree۱۷٫۳۶GiB مربوط13:12:33Z است؛ CPU/RAM/diskفعلی پسازاینقطعی **نامعلوم**اند. هیچ checkpointتازه/primaryDDL/نصب فیلتر/merge/انتقالHermes ازاینattempt نتیجه نمی‌شود.
+
+GitHubازproxyموجود باتنظیمper-command بازیابی و pushb96901bمستقل بازخوانی شد؛ mainهمچنانf93است. تنظیمglobalشبکه/SSH/سرویس تغییرنکرد. کنسولLiaraتاURLapps درinventoryمرورگر دیده شد ولی body/حساب/منابع قابل راستی‌آزمایی نبود؛ کنترل مرورگر به‌دلیل تشخیص‌ندادن مطمئنURLدرWindows متوقف شد و دور زده نشد. root مسئول بازیابی دسترسی موجودِ قابل‌راستی‌آزمایی و سپس اجرای یک‌بارهٔ helperپین‌شده+مکمل است؛ درخواست credential، restart، ارتقا یا هزینه تازه مطرح نشد.
+
+مستقل‌ها فعال می‌مانند: A رویcandidatebindingP05 باreaderگیت‌دار/SQLفقطcandidate و nativeباز؛ B پسگیت۹مرحلهPF10، runtimeمشترک را برایAuthواقعیSTART-B بازاستفاده می‌کند؛ C فقطintentmetadataازGETهایقبلی را بهتاریخچه وصل می‌کند. شاهدPG/Authایزوله، نصباصلی یا حقخدمت نیست. شرکت/صندوق P07/P08 درهمین۸۵تسک می‌مانند؛ نهبازسازی محصول و نهrelayآزمایشی درmain. خروجی‌های بعد: checkpoint/readerمقصد باroot، bindingقابلپذیرش باA، و دوام/تاریخچهپژوهش باB/C. فقطبخش وابسته بهدسترسیسرور متوقف است.
+
 <a id="development-v04-20261029"></a>
 ## اجرای بسته توسعه ۰٫۴ — ۲۹ اکتبر ۲۰۲۶
 
