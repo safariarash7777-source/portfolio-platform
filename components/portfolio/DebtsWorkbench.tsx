@@ -24,7 +24,8 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
   const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
   const pending = useRef<FinancialSaveAttempt | null>(null);
   const unresolved = useRef(false);
-  const editingLocked = busy || uncertain || receiptUrl !== null || editor.locked;
+  const historical = activeVersion !== null && activeVersion !== latestVersion;
+  const editingLocked = historical || busy || uncertain || receiptUrl !== null || editor.locked;
   const needsWarning = receiptUrl === null && (JSON.stringify(rows) !== initialRows.current || busy || uncertain);
   useEffect(() => {
     if (!needsWarning) return;
@@ -32,9 +33,8 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [needsWarning]);
-  const historical = activeVersion !== null && activeVersion !== latestVersion;
   const editRows = (update: React.SetStateAction<Row[]>) => {
-    if (lock.current || unresolved.current || completed.current || !editor.acquire()) return;
+    if (historical || lock.current || unresolved.current || completed.current || !editor.acquire()) return;
     setRows(update);
   };
   const patch = (index: number, values: Partial<Row>) => editRows(old => old.map((r, i) => i === index ? { ...r, ...values } : r));
