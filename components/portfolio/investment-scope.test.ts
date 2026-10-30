@@ -31,8 +31,9 @@ test('confirmed selected assets drive displayed weights and target-minus-current
   const rows = ui.elements().filter(node => node.type === 'tr');
   const rowText = (node: unknown): string => Array.isArray(node) ? node.map(rowText).join('') : node !== null && typeof node === 'object' && 'props' in node ? rowText((node as { props: { children?: unknown } }).props.children) : typeof node === 'string' || typeof node === 'number' ? String(node) : '';
   const cells = rows.map(row => (row.props.children as unknown[]).map(rowText));
-  assert.ok(cells.some(row => row.slice(0, 4).join('|') === 'طلا|۴۰.۰٪|۶۰٪|۲۰.۰'));
+  assert.ok(cells.some(row => row.slice(0, 4).join('|') === 'طلا|۴۰.۰٪|۶۰٪|+۲۰.۰'));
   assert.ok(cells.some(row => row.slice(0, 4).join('|') === 'نقد|۶۰.۰٪|۴۰٪|-۲۰.۰'));
+  assert.ok(ui.elements().filter(node => node.type === 'bdi').every(node => node.props.dir === 'ltr'), 'signed point differences keep their direction inside RTL');
   assert.match(ui.text(), /هزینهٔ معامله نامعلوم است/);
   assert.match(ui.text(), /reference-test/);
   assert.equal(ui.beforeUnload(), false);

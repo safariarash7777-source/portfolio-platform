@@ -1,0 +1,442 @@
+{
+  "at": "2026-10-30T10:05:23.150657+00:00",
+  "method": "pinned existing SSH; docker inspect --size selected nonsecret fields and log file sizes only",
+  "exitCode": 0,
+  "serviceChanged": false,
+  "backupOrRestoreRun": false,
+  "result": {
+    "at": "2026-10-30T10:05:23.791207+00:00",
+    "containers": [
+      {
+        "name": "portfolio-recovery-proof-20261003t101406z",
+        "state": "exited",
+        "writableBytes": 2189410304,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 45591
+      },
+      {
+        "name": "portfolio-recovery-proof-20261024t090243z",
+        "state": "exited",
+        "writableBytes": 2131804160,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 169683
+      },
+      {
+        "name": "portfolio-recovery-proof-20261023t123955z",
+        "state": "exited",
+        "writableBytes": 2113105920,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 169294
+      },
+      {
+        "name": "portfolio-media-proof-20261017t175048z",
+        "state": "exited",
+        "writableBytes": 2100654080,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 206808
+      },
+      {
+        "name": "portfolio-research-restore-20261017t114842z",
+        "state": "exited",
+        "writableBytes": 2084384768,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 183507
+      },
+      {
+        "name": "portfolio-frozen-proof-20261009t163452z",
+        "state": "exited",
+        "writableBytes": 2042953728,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 260751
+      },
+      {
+        "name": "portfolio-security-proof-20261006t092801z-retry02",
+        "state": "exited",
+        "writableBytes": 2040791040,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 176023
+      },
+      {
+        "name": "portfolio-recovery-proof-20261017t114409z",
+        "state": "exited",
+        "writableBytes": 40755200,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 34130
+      },
+      {
+        "name": "portfolio-recovery-proof-20261006t092801z",
+        "state": "exited",
+        "writableBytes": 40656896,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 27420
+      },
+      {
+        "name": "portfolio-recovery-proof-20261017t174657z",
+        "state": "exited",
+        "writableBytes": 40497152,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "",
+        "logBytes": 27324
+      },
+      {
+        "name": "portfolio-auth219-20261002-sink",
+        "state": "running",
+        "writableBytes": 3489792,
+        "image": "sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f",
+        "composeProject": "",
+        "logBytes": 0
+      },
+      {
+        "name": "fx-dashboard",
+        "state": "running",
+        "writableBytes": 2203648,
+        "image": "sha256:f30408d1ed8c3197edff66ca4192106f1e8a924ba15aebedd05ca6e2f6c8e71d",
+        "composeProject": "",
+        "logBytes": 39878
+      },
+      {
+        "name": "fx-dashboard-tindex-20261013-backup",
+        "state": "exited",
+        "writableBytes": 2179072,
+        "image": "sha256:486452d0eb49480e9821ca3a3c3898858954cd1325fd2f682ee0d7f99c00e6e6",
+        "composeProject": "",
+        "logBytes": 53942
+      },
+      {
+        "name": "fx-dashboard-before-agent-health",
+        "state": "exited",
+        "writableBytes": 2154496,
+        "image": "sha256:c0fd00c903144f31c31a029d2ebcce76957a8b95c1117564ee3099287eddce57",
+        "composeProject": "",
+        "logBytes": 879
+      },
+      {
+        "name": "fx-dashboard-before-agent-visibility",
+        "state": "exited",
+        "writableBytes": 2150400,
+        "image": "sha256:4dd1cf930263aab0318485c3979707979a52c4a0c8e581b62ff46e6357633dda",
+        "composeProject": "",
+        "logBytes": 28532
+      },
+      {
+        "name": "fx-dashboard-before-agent-bonds",
+        "state": "exited",
+        "writableBytes": 2142208,
+        "image": "sha256:2a411df19f54fe01d0a6f57a0558c9b665be7a5e5f28a77452f81005881b1930",
+        "composeProject": "",
+        "logBytes": 876
+      },
+      {
+        "name": "fx-dashboard-before-us-agent",
+        "state": "exited",
+        "writableBytes": 2134016,
+        "image": "sha256:0ec05246beff220901532b1d22becc75a20d2308ad608c0058dd67fb63a6891a",
+        "composeProject": "",
+        "logBytes": 879
+      },
+      {
+        "name": "fx-dashboard-before-publications",
+        "state": "exited",
+        "writableBytes": 2129920,
+        "image": "sha256:55ee8d1036c64e3e227fe02685ff05a5164023bb3281422cc15f4de5af561515",
+        "composeProject": "",
+        "logBytes": 168909
+      },
+      {
+        "name": "fx-dashboard-before-precise-data",
+        "state": "exited",
+        "writableBytes": 2125824,
+        "image": "sha256:fbd1447b162fa82147a7d2a1b19ebc7973785eb36a25574353fbbbbc42134802",
+        "composeProject": "",
+        "logBytes": 878
+      },
+      {
+        "name": "fx-dashboard-before-cbi-agent-ui",
+        "state": "exited",
+        "writableBytes": 2117632,
+        "image": "sha256:ed894e2341a3470a2c228cab6810dd53627ddc1b6aa704a652d28b9daf444924",
+        "composeProject": "",
+        "logBytes": 876
+      },
+      {
+        "name": "fx-dashboard-before-us-vintages",
+        "state": "exited",
+        "writableBytes": 2117632,
+        "image": "sha256:bbfbc8934188de69252b3d0c397e1748e3b4ba251f45df1902b94092997c500a",
+        "composeProject": "",
+        "logBytes": 30652
+      },
+      {
+        "name": "fx-dashboard-before-display",
+        "state": "exited",
+        "writableBytes": 2076672,
+        "image": "sha256:182da306f74eb9def812c5f40ecdc7bf58d3d612d524f7f750b9683c337e50a6",
+        "composeProject": "",
+        "logBytes": 878
+      },
+      {
+        "name": "fx-dashboard-recovery01-status-backup",
+        "state": "exited",
+        "writableBytes": 2052096,
+        "image": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+        "composeProject": "",
+        "logBytes": 424933
+      },
+      {
+        "name": "fx-dashboard-before-annual-history",
+        "state": "exited",
+        "writableBytes": 2007040,
+        "image": "sha256:cfb34a68d96c6f82c9384f057fba1d624aaec872cea85f868e958dd38e5f6a5c",
+        "composeProject": "",
+        "logBytes": 116375
+      },
+      {
+        "name": "fx-dashboard-before-maintenance",
+        "state": "exited",
+        "writableBytes": 1949696,
+        "image": "sha256:30142768734f17d7e048325cc9e5ad4cdebe1a8728cc5093d6286ca0032b5b28",
+        "composeProject": "",
+        "logBytes": 55187
+      },
+      {
+        "name": "portfolio-auth219-20261002-gateway",
+        "state": "exited",
+        "writableBytes": 57344,
+        "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "composeProject": "",
+        "logBytes": 17694
+      },
+      {
+        "name": "portfolio-demo844-gateway",
+        "state": "running",
+        "writableBytes": 57344,
+        "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "composeProject": "",
+        "logBytes": 59455
+      },
+      {
+        "name": "portfolio-accept195-gateway",
+        "state": "running",
+        "writableBytes": 49152,
+        "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "composeProject": "",
+        "logBytes": 315359
+      },
+      {
+        "name": "portfolio-stage-db-1",
+        "state": "running",
+        "writableBytes": 45056,
+        "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "composeProject": "portfolio-stage",
+        "logBytes": 4506194
+      },
+      {
+        "name": "fx-dashboard-proxy",
+        "state": "running",
+        "writableBytes": 40960,
+        "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "composeProject": "",
+        "logBytes": 716535
+      },
+      {
+        "name": "portfolio-stage-storage-1",
+        "state": "running",
+        "writableBytes": 24576,
+        "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "composeProject": "portfolio-stage",
+        "logBytes": 2889
+      },
+      {
+        "name": "portfolio-auth219-20261002-storage",
+        "state": "running",
+        "writableBytes": 20480,
+        "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "composeProject": "",
+        "logBytes": 713
+      },
+      {
+        "name": "portfolio-auth219-20261002-db",
+        "state": "running",
+        "writableBytes": 20480,
+        "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "composeProject": "",
+        "logBytes": 100374
+      },
+      {
+        "name": "portfolio-demo844-storage",
+        "state": "running",
+        "writableBytes": 20480,
+        "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "composeProject": "",
+        "logBytes": 0
+      },
+      {
+        "name": "portfolio-demo844-db",
+        "state": "running",
+        "writableBytes": 20480,
+        "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "composeProject": "",
+        "logBytes": 140220
+      },
+      {
+        "name": "portfolio-accept195-storage",
+        "state": "running",
+        "writableBytes": 20480,
+        "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "composeProject": "",
+        "logBytes": 0
+      },
+      {
+        "name": "portfolio-accept195-db",
+        "state": "running",
+        "writableBytes": 20480,
+        "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "composeProject": "",
+        "logBytes": 263247
+      },
+      {
+        "name": "fx-portable-linux-20261001-bce2e9e",
+        "state": "exited",
+        "writableBytes": 20480,
+        "image": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+        "composeProject": "",
+        "logBytes": 68582
+      },
+      {
+        "name": "portfolio-demo844-app",
+        "state": "restarting",
+        "writableBytes": 12288,
+        "image": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "composeProject": "",
+        "logBytes": 4392505
+      },
+      {
+        "name": "portfolio-demo844-app-65c215b",
+        "state": "exited",
+        "writableBytes": 12288,
+        "image": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "composeProject": "",
+        "logBytes": 561
+      },
+      {
+        "name": "portfolio-accept195-app",
+        "state": "restarting",
+        "writableBytes": 12288,
+        "image": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "composeProject": "",
+        "logBytes": 4409233
+      },
+      {
+        "name": "portfolio-auth219-20261002-app",
+        "state": "exited",
+        "writableBytes": 8192,
+        "image": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "composeProject": "",
+        "logBytes": 8047
+      },
+      {
+        "name": "finance-dashboard-20261028-v12-130524",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:a258f0761090b3621f17e32d6fe953496f10b2786b75a08c53418b7747075c31",
+        "composeProject": "",
+        "logBytes": 0
+      },
+      {
+        "name": "finance-dashboard",
+        "state": "exited",
+        "writableBytes": 4096,
+        "image": "sha256:ca2c25e6b19d859af05f583287a6551a535d5c482b2a992e71f86978751f71ca",
+        "composeProject": "",
+        "logBytes": 0
+      },
+      {
+        "name": "portfolio-auth219-20261002-auth",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "composeProject": "",
+        "logBytes": null
+      },
+      {
+        "name": "portfolio-auth219-20261002-rest",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "composeProject": "",
+        "logBytes": 11255
+      },
+      {
+        "name": "portfolio-demo844-rest",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "composeProject": "",
+        "logBytes": 6980
+      },
+      {
+        "name": "portfolio-demo844-auth",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "composeProject": "",
+        "logBytes": 0
+      },
+      {
+        "name": "portfolio-accept195-rest",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "composeProject": "",
+        "logBytes": 17979
+      },
+      {
+        "name": "portfolio-accept195-auth",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "composeProject": "",
+        "logBytes": 0
+      },
+      {
+        "name": "portfolio-stage-gateway-1",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "composeProject": "portfolio-stage",
+        "logBytes": 21257
+      },
+      {
+        "name": "portfolio-stage-auth-1",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "composeProject": "portfolio-stage",
+        "logBytes": 2305001
+      },
+      {
+        "name": "portfolio-stage-rest-1",
+        "state": "running",
+        "writableBytes": 4096,
+        "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "composeProject": "portfolio-stage",
+        "logBytes": 44858
+      }
+    ],
+    "rootDisk": {
+      "total": "81839546368",
+      "used": "71566282752",
+      "available": "6794747904",
+      "percent": "92%"
+    }
+  }
+}
