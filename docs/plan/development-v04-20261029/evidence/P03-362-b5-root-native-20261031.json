@@ -1,0 +1,143 @@
+{
+  "scope": "limited actual Linux/API gate; not browser/target/human acceptance",
+  "pr": 362,
+  "head": "b5d4c475728cb11db9ab2520145143053013081f",
+  "nativeWorkflow": 41143914361,
+  "job": 124364408442,
+  "jobConclusion": "success",
+  "sourceCheckoutVerifiedFromDecodedLog": true,
+  "receipt": {
+    "sha": "b5d4c475728cb11db9ab2520145143053013081f",
+    "status": "PASS",
+    "scenarios": 17,
+    "cleanup": "REMOVED_OWNED_RESOURCES",
+    "memberAuth": "real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes",
+    "schema": "candidate in owned tmpfs only",
+    "targetInstall": "NOT_APPLIED",
+    "browser": "NOT_RUN",
+    "arashAcceptance": "UNOBSERVED",
+    "privateArtifactsUploaded": false
+  },
+  "checks": [
+    {
+      "name": "isolation-attested",
+      "status": "PASS"
+    },
+    {
+      "name": "four-fresh-auth-users-and-sdk-getuser",
+      "status": "PASS"
+    },
+    {
+      "name": "nonzero-dossier-and-real-consent",
+      "status": "PASS"
+    },
+    {
+      "name": "product-default-closed-in-db-and-api",
+      "status": "PASS"
+    },
+    {
+      "name": "explicit-isolated-db-grant-bound-to-run-and-actors",
+      "status": "PASS"
+    },
+    {
+      "name": "real-lost-response-get-only-exact-recovery",
+      "status": "PASS"
+    },
+    {
+      "name": "real-provider-failure-preserves-authorized-history",
+      "status": "PASS"
+    },
+    {
+      "name": "real-signout-new-password-session-sdk-getuser-and-readback",
+      "status": "PASS"
+    },
+    {
+      "name": "known-effect-idempotency-and-actor-cas-guards",
+      "status": "PASS"
+    },
+    {
+      "name": "actual-two-auth-actors-concurrent-cas",
+      "status": "PASS"
+    },
+    {
+      "name": "real-versioned-submit-approve-publish-and-exact-ticket-link",
+      "status": "PASS"
+    },
+    {
+      "name": "actual-shared-advisor-response-and-member-followup",
+      "status": "PASS"
+    },
+    {
+      "name": "other-member-unrelated-admin-and-direct-rpc-denial",
+      "status": "PASS"
+    },
+    {
+      "name": "close-appends-terminal-event-without-overwrite",
+      "status": "PASS"
+    },
+    {
+      "name": "disabled-advisor-and-changed-relation-no-private-receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "real-revoke-member-history-and-advisor-denial",
+      "status": "PASS"
+    },
+    {
+      "name": "financial-rows-fingerprints-and-original-history-preserved",
+      "status": "PASS"
+    }
+  ],
+  "cleanup": {
+    "sha": "b5d4c475728cb11db9ab2520145143053013081f",
+    "runId": "consultation-ticket-fa5de068-a691-4842-b27b-cb89723d853f",
+    "status": "REMOVED_OWNED_RESOURCES",
+    "resources": 6
+  },
+  "independentRead": "GitHub decoded job log plus initial SQL/API/consumer code review; archive artifact not downloaded by root",
+  "productServiceEntitlement": "not_connected; fixture function override only in new disposable run-bound DB",
+  "lostResponse": {
+    "name": "real-lost-response-get-only-exact-recovery",
+    "status": "PASS",
+    "actualHeader": 201,
+    "discardedRealBody": true,
+    "ticketPostAttempts": 1,
+    "storedEvents": 1,
+    "recoveredEventId": "aecbe5f1-0232-46bf-b5af-3ee498bbd928"
+  },
+  "lineageLimit": {
+    "legacy": "sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272",
+    "index": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+    "manifest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+    "config": "sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9",
+    "version": "PostgREST 14.17",
+    "primaryArtifactMatch": "NOT_CLAIMED"
+  },
+  "generalCiAtReview": [
+    {
+      "id": 124364408247,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124364408415,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124364408453,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124364408638,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "next": "B: browser delta review of actual consumer, distinct from API acceptance. root: target/build/receipt consumption. Full product remains open."
+}

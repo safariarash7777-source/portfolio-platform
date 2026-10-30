@@ -1,0 +1,35 @@
+{
+  "head": "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29",
+  "deployment": "dpl_9xD89TtRmSjXLQNx3vULPLjd2rwW",
+  "deploymentBinding": "root connector READY, Preview target null, exact head",
+  "tool": "IAB/cua_repl actual interaction",
+  "acceptedScreenshotArtifacts": [
+    {
+      "name": "01-escape-preserves-large-view.png",
+      "bytes": 61251,
+      "sha256": "001b88f1551e7a9f07a1e40e87947801f6d14b661c69551f2285515610eaaef3"
+    },
+    {
+      "name": "03-rate-gap-separated.png",
+      "bytes": 44358,
+      "sha256": "6c1db2f0d057c132050637e4213bbec02f26c45c735959bee92096ce19f5c33c"
+    },
+    {
+      "name": "04-dossier-source-panel-nested.png",
+      "bytes": 54873,
+      "sha256": "abf90ae6bff05b0682b2717e951a23539aa0c652c2ed09b033494ab929ef0f30"
+    },
+    {
+      "name": "06-dossier-source-mobile-390-stable.png",
+      "bytes": 41724,
+      "sha256": "83c873a26f9f77d6ef2220a21a1843fc5c1aaef5b4fccb18144833e6c1df3dd9"
+    }
+  ],
+  "rejectedPreservedOutsideGit": [
+    "rejected-02-rate-during-animation.png",
+    "rejected-05-viewport-transition.png"
+  ],
+  "uiScope": "nested Escape and button closure in both layouts; rate gap rechecked in A; B source mobile390",
+  "visualAcceptance": "OPEN",
+  "productionPublication": "NOT_APPLIED"
+}
