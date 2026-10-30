@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "status": "NOT_READY_FOR_RELEASE_CONSUMPTION",
+  "checkpoint": "20261030T215307Z",
+  "owner": "root",
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "targetId": "833a8447c01570811d6a0ad50cafee00745614b811ef9668acb0d944e04b21f1",
+  "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+  "helperSha256": "1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2",
+  "dump": {
+    "bytes": 2406546295,
+    "sha256": "87434f8c53cca9910cdbd953415ffed5e01d3aacb0db8c0702a4e164253c8c17",
+    "hashProvenance": "original receipt; not rehashed during the 23:14Z metadata review",
+    "mustRehashAtConsumption": true
+  },
+  "artifactsRelativeToCheckpoint": {
+    "receipt.json": "b3cc167b604740207f884db3b037fea59e976fe296a72ed51527d79133d40aef",
+    "source-inventory.private": "e88607ad044151ec11678aa1f8427567d10cee2b23c2fa57ff982c65b41a76a7",
+    "acl19-reconciliation-20261031/intent.json": "5b1f294617e3242765e6676af3ffcc359e2a907184bcc279a78eded7a0cd8574",
+    "acl19-reconciliation-20261031/plan.json": "ac02b84f75517031420296097d3a756bd190a6ca6e505ab0e437b6d555da76e9",
+    "acl19-reconciliation-20261031/result.json": "e4a794edff3bd2b626d41feb8f8ec5a520683b4b76b66bd6bad63cee18cccde9",
+    "acl19-reconciliation-20261031/strict-core-comparison.json": "74baf16c5cc1841e9de4471b0faf5405caab88848c4ad725e8b1f6c93c95516c",
+    "acl19-reconciliation-20261031/strict-private-comparison.json": "8ee8848b26b9024a3467006ace126ff84c2a5cc78ca5f136f020a76014d5bbce"
+  },
+  "originalStatusMustRemain": "failed",
+  "correctionStatusMustEqual": "PASS_OWNED_COPY_ACL19_RECONCILIATION",
+  "coreSnapshotMechanism": "one exported snapshot imported by full core inventory and passed to pg_dump while exporter remains open",
+  "snapshotIdPersisted": false,
+  "supplementaryPrivateInventoryUsesSameExportedSnapshot": false,
+  "globalsUsesSameExportedSnapshot": false,
+  "actualConsumerIntegration": "NOT_IMPLEMENTED",
+  "storageBinaryBackup": "OPEN_IF_REQUIRED_BY_CUTOVER",
+  "autoRetryBackup": false,
+  "proofPublicUseAllowed": false,
+  "lastReadOnlyCheckAt": "2026-10-30T23:14:23.330727+00:00",
+  "lastProofState": {
+    "running": false,
+    "network": "none",
+    "portsPublished": false,
+    "cronOffInCommand": true
+  },
+  "releaseAuthorizedByThisBinding": false
+}
