@@ -76,9 +76,9 @@ jobs:
               productionTouched=False, modelCalls=0, browserPersistentPrivateBody=False)
           Path('workbook-native-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
           PY
-      - name: Genuine GoTrue JWT workbook remount and exact retry
+      - name: Genuine Auth and real browser close, reopen and reload
         timeout-minutes: 12
-        run: node --import tsx scripts/isolated-e2e/workbook-native-auth.mjs
+        run: node --import tsx scripts/isolated-e2e/workbook-browser.mjs
         env:
           P09_NATIVE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/upload-artifact@v4

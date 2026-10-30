@@ -17,7 +17,7 @@ export async function withNativeNodeGlobals(work){
  for(const [name] of globals)Reflect.deleteProperty(globalThis,name);
  try{return await work();}finally{for(const [name,descriptor] of globals){if(descriptor)Object.defineProperty(globalThis,name,descriptor);else Reflect.deleteProperty(globalThis,name);}}
 }
-async function run(){await runNativeAuthProfile('p09',async runtime=>{
+export async function workbookNativeScenarios(runtime){
  const {sql,transport,write,pass,users,newSession,anon,service}=runtime;
  const {p07FixtureWorkbook}=await import('../../lib/intelligence/p07-workflow-fixture.ts');
  const {mountComponent}=await import('../../components/admin/p07-component-test-host.ts');
@@ -122,6 +122,8 @@ async function run(){await runNativeAuthProfile('p09',async runtime=>{
   const retained=await open('a',wb,1),v2=await open('b',wb,2);assert.deepEqual(retained.body.workbook,v1.body.workbook);
   check(retained.body.historyMetadata.reviews[0].id===review1.id&&v2.body.version===2&&v2.body.reviews.every(r=>r.version===1)&&v2.body.historyMetadata.versions.length===2,'p09_native_v1_review_preserved_v2_unapproved');
   pass('native-append-only-original-history-and-version-bound-review',{originalVersionPreserved:true,reviewStillOnV1:true,v2Approved:false,modelCalls:0,primaryTouched:false});
+  return {workbookId:wb,version1Id:version1.id,review1Id:review1.id,titleV2:title2,latestVersion:2};
  }finally{for(const ui of mounted)ui.unmount();if(oldWindow)Object.defineProperty(globalThis,'window',oldWindow);else Reflect.deleteProperty(globalThis,'window');if(oldDocument)Object.defineProperty(globalThis,'document',oldDocument);else Reflect.deleteProperty(globalThis,'document');}
-});}
+}
+async function run(){await runNativeAuthProfile('p09',workbookNativeScenarios);}
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){try{await run();}catch(error){console.error('P09_NATIVE_AUTH '+JSON.stringify({status:'BLOCKED',reason:/^[a-z0-9_]+$/.test(error.message)?error.message:'p09_native_assertion_failed_review_private_receipt',automaticReplay:false,realAuthAcceptance:false}));process.exitCode=1;}}
