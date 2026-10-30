@@ -327,6 +327,12 @@ jobs:
           fi
           echo "✅ $pass تستِ واقعی روی Postgres اجرا شد (leads · cron_runs · intelligence — هر کدام ۲ پروفایلِ امتیاز + گاردِ failability)."
 
+      - name: PF10 isolated GoTrue JWT · PostgREST · native API
+        timeout-minutes: 12
+        run: node --import tsx scripts/isolated-e2e/pf10-native.mjs
+        env:
+          PF10_NATIVE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
   # ── ۵) دروازهٔ نهایی ──────────────────────────────────────────────────────
   # یک چکِ واحد برای required status check، تا لازم نباشد هر بار که jobی اضافه
   # می‌شود تنظیماتِ branch protection دست بخورد.
