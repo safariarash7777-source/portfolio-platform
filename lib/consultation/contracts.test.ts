@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
+import './tickets.test';
 import {validateConsultationRequest,validateRecommendationBody,validateConsultationRead,validateConsultationReceipt,type RecommendationBody,type ConsultationRead} from './contracts';
 const A='00000000-0000-4000-8000-000000000001',O='00000000-0000-4000-8000-000000000002',R='00000000-0000-4000-8000-000000000003',S='00000000-0000-4000-8000-000000000004',K='00000000-0000-4000-8000-000000000005',E='00000000-0000-4000-8000-000000000006';
 const now='2026-10-24T00:00:00Z',hash='a'.repeat(64),basis={holdingsVersionId:null,cashFlowPeriod:{startOn:'2026-10-01',endOn:'2026-10-31'},cashFlowVersionId:null,goalsVersionId:null};
