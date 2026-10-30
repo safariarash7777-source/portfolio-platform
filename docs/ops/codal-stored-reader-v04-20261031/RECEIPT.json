@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "base": "f12ba71c353e135f83d136105380f20dd59a95e0",
+  "branch": "codex/codal-stored-reader-v04-20261031",
+  "status": "DRAFT_CODE_REVIEW_ONLY",
+  "readSettings": [
+    "CODAL_FEED_READ_URL",
+    "CODAL_FEED_READ_ANON_KEY"
+  ],
+  "sharedAuthSettingsChanged": false,
+  "reuse": [
+    "codalFeedQuery",
+    "codalFeedWindow",
+    "liaraPublicEnv (isolated argument; return not installed)"
+  ],
+  "verification": {
+    "targeted": {
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0
+    },
+    "core": {
+      "passedByCommand": [
+        2079,
+        17,
+        6,
+        5
+      ],
+      "failed": 0,
+      "skipped": 0
+    },
+    "typecheck": "passed",
+    "lintCi": "passed",
+    "negativeControl": "shared-destination mutation failed the independent-reader test, then exact source restored",
+    "remoteCI": "not run; no remote head created"
+  },
+  "logSha256": {
+    "targeted": "d6d6ed3777b4cc612d47c5a57ae85dcbb5c7ae0a9f8fc60a75e7fd4dc03d3e42",
+    "core": "28e6efcc228ebb8fff10c29c390f7f997ff3d493f56e23b6c3b635a5f67476ac",
+    "typecheck": "9fd58279e2b40bc6ae26ca681349737a5ef566b3f08971aa5af608b57b6010b8",
+    "lint": "c695dbee14b1dc7340b6917cf66a5657f612d7e70314a285f156331c07437232",
+    "negativeControl": "442f2b5241dbe9f568aef3df836d87fe72252c72aca86bc7b7ef7b2e6fc531bb"
+  },
+  "sourceSha256": {
+    "app/api/codal-list/route.ts": "beec6a10b7459c1778d49124bde6e996a4ea55f7ab0e7356eabff5b238d5ed4e",
+    "app/api/codal-list/route.test.ts": "283ba103291f3c18391035a59c70c62403c927eacaa44e32e889abf96240c810",
+    "lib/codal-feed-reader.ts": "afc65db4ff63537bd62416ef63d251ae76b1a756a6e969b10cdd66828da3fb5f"
+  },
+  "sideEffects": {
+    "envMutations": 0,
+    "deployments": 0,
+    "providerCalls": 0,
+    "primaryWrites": 0,
+    "liveDataReadsForThisSlice": 0,
+    "workflowDispatches": 0,
+    "remoteHeadWrites": 0
+  },
+  "limits": [
+    "No live pair/signature compatibility claim; destination validates JWT signature.",
+    "Actual constructor test uses SDK stubs; no real Auth or writes.",
+    "No candidate browser/Preview or completed financial ingest acceptance.",
+    "Formal Draft PR must not be published by triggering an unapproved automatic deployment."
+  ]
+}

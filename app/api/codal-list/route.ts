@@ -1,6 +1,5 @@
-import { logStoredReadFailure, type StoredReadPhase } from "@/lib/stored-read-diagnostics";
 import { NextResponse } from "next/server";
-import { codalFeedWindow, codalFeedQuery } from "@/lib/codal-feed";
+import { readStoredCodalFeed } from "@/lib/codal-feed-reader";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,38 +14,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "symbol required" }, { status: 400 });
   }
   const codalSearchUrl = `https://codal.ir/ReportList.aspx?search&Symbol=${encodeURIComponent(symbol)}`;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) {
-    return NextResponse.json({ error: "supabase not configured", codalSearchUrl }, { status: 503 });
+  const read = await readStoredCodalFeed(symbol);
+  if (!read.ok) {
+    return NextResponse.json({ error: read.error, codalSearchUrl }, { status: read.status });
   }
-  const startedAt = Date.now();
-  let phase: StoredReadPhase = "request";
-  let upstreamStatus: number | undefined;
-  try {
-    const qs = codalFeedQuery(symbol);
-    const res = await fetch(`${url.replace(/\/+$/, "")}/rest/v1/codal_feed?${qs}`, {
-      headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
-      cache: "no-store",
-      signal: AbortSignal.timeout(15000),
-    });
-    phase = "headers";
-    upstreamStatus = res.status;
-    if (!res.ok) {
-      logStoredReadFailure({ route: "codal-list", phase, elapsedMs: Date.now() - startedAt, upstreamStatus });
-      return NextResponse.json({ error: `supabase ${res.status}`, codalSearchUrl }, { status: 502 });
-    }
-    phase = "body";
-    const result = codalFeedWindow(await res.json());
-    return NextResponse.json(
-      { ...result, codalSearchUrl, source: "codal_feed", coverage: "stored-announcements" },
-      { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=300" } },
-    );
-  } catch (e) {
-    logStoredReadFailure({ route: "codal-list", phase, elapsedMs: Date.now() - startedAt, upstreamStatus, error: e });
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "fetch failed", codalSearchUrl },
-      { status: 502 },
-    );
-  }
+  return NextResponse.json(
+    { ...read.result, codalSearchUrl, source: "codal_feed", coverage: "stored-announcements" },
+    { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=300" } },
+  );
 }
