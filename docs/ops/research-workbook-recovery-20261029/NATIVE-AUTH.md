@@ -47,3 +47,5 @@ The only integration changes are one additive native step in the existing `resea
 P09.1 browser failures report a fixed operation, HTTP status, document category, bounded blocked-path categories and network error codes only. Raw browser messages, page text, URLs, headers, cookies and credentials are never logged. These diagnostics do not replace the seven required browser checks.
 
 The browser opens a stored workbook through its existing list in the real aside DOM, keeping its selector distinct from the separate saved-intent buttons that can share the same title. It never selects a candidate by arbitrary first-match order.
+
+The private-storage audit reads local/session storage keys and values, IndexedDB database/store names plus keys and values in read-only transactions, and CacheStorage request/response headers and bodies. Only counts and hit flags are reported; no contents or names are exported. No cache/storage clearing is used to obtain a passing result.
