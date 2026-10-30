@@ -67,6 +67,8 @@ BEGIN
  IF result->>'state'='owned_fixture' AND jsonb_typeof(result->'runId')='string'
  AND length(result->>'runId') BETWEEN 1 AND 200 THEN RETURN result;END IF;
  RAISE EXCEPTION 'service-right provider unavailable' USING ERRCODE='PT503';
+EXCEPTION WHEN OTHERS THEN
+ RAISE EXCEPTION 'service-right provider unavailable' USING ERRCODE='PT503';
 END $$;
 CREATE FUNCTION consultation_ticket_private.recommendation(p jsonb) RETURNS jsonb
 LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
@@ -127,7 +129,10 @@ LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
 DECLARE r public.consultation_relationships;cap jsonb;data jsonb;resource jsonb;attempt jsonb;counted integer;saved consultation_ticket_private.receipts;
 BEGIN
  r:=consultation_ticket_private.authorized(p_relationship);
- cap:=consultation_ticket_private.capability(r.id,auth.uid());
+ -- A disconnected/broken write-right provider does not hide authorized history.
+ -- Authorization above is deliberately OUTSIDE this narrow capability fallback.
+ BEGIN cap:=consultation_ticket_private.capability(r.id,auth.uid());
+ EXCEPTION WHEN OTHERS THEN cap:=jsonb_build_object('state','unavailable','runId',NULL);END;
  IF p_mode='inbox' THEN
   SELECT count(*) INTO counted FROM consultation_ticket_private.requests WHERE relationship_id=r.id;
   IF counted>500 THEN RAISE EXCEPTION 'complete inbox unavailable; no truncation' USING ERRCODE='PT409';END IF;

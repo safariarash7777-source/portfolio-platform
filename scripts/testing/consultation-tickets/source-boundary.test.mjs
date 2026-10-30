@@ -22,7 +22,7 @@ test('default product DB provider is unconditionally disconnected; fixture grant
   assert.match(read('scripts/testing/consultation-tickets/owned-fixture.sql'), /REVOKE ALL ON ALL TABLES IN SCHEMA consultation_ticket_fixture/);
 });
 test('application modules never import the right fixture, unit values, or test bootstrap', () => {
-  for (const file of ['lib/consultation/ticketStorageContracts.ts', 'lib/consultation/ticketStorageRequest.ts', 'lib/consultation/ticketStorageServer.ts', 'app/api/consultation/tickets/route.ts']) {
+  for (const file of ['lib/consultation/ticketStorageContracts.ts', 'lib/consultation/ticketStorageRequest.ts', 'lib/consultation/ticketStorageServer.ts', 'app/api/consultation/tickets/route.ts', 'components/consultation/TicketRequestPanel.tsx', 'components/consultation/TicketRequestWorkspace.tsx']) {
     assert.doesNotMatch(read(file), /(?:from\s*|import\s*\(|require\s*\()["'][^"']*(?:scripts\/testing|owned-fixture|unit-fixture)/);
     assert.doesNotMatch(read(file), /process\.env\.[A-Z_]*(?:TICKET|ENTITLEMENT|TEST_RIGHT)/);
   }

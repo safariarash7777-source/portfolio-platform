@@ -4,7 +4,7 @@ import { CONSULTATION_ERRORS, parseConsultationError, type ConsultationError } f
 import { TICKET_HISTORY_LIMIT, validateTicketLookup, validateTicketRead, validateTicketReceipt, validateTicketRequest, type TicketLookup, type TicketRead, type TicketRequest } from "./tickets";
 
 /** Informational only. The transactional DB provider independently authorizes every write. */
-export type TicketStorageCapability = { state: "not_connected"; runId: null } | { state: "owned_fixture"; runId: string };
+export type TicketStorageCapability = { state: "not_connected" | "unavailable"; runId: null } | { state: "owned_fixture"; runId: string };
 export type TicketStorageSelection = { relationshipId: string } & (
   | { mode: "inbox" }
   | { mode: "read"; requestId: string }
@@ -55,7 +55,7 @@ export function ticketStorageParent(source: unknown, actorId: string, relationsh
 }
 function capability(value: unknown): TicketStorageCapability {
   const row = object(value, ["state", "runId"]);
-  if (row.state === "not_connected" && row.runId === null) return { state: row.state, runId: null };
+  if ((row.state === "not_connected" || row.state === "unavailable") && row.runId === null) return { state: row.state, runId: null };
   if (row.state === "owned_fixture") return { state: row.state, runId: text(row.runId, 200) };
   throw Error("وضعیت حق خدمت معتبر نیست.");
 }

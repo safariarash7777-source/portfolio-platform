@@ -1,0 +1,203 @@
+"use client";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { withDeadline } from "@/lib/deadline";
+import { authSessionFailure } from "@/lib/auth/session-error";
+import { toPersianDigits } from "@/lib/format";
+import { readConsultation } from "@/lib/consultation/request";
+import type { ConsultationRead } from "@/lib/consultation/contracts";
+import { validateTicketContinuation, type TicketCommand, type TicketRead, type TicketReceipt, type TicketRequest } from "@/lib/consultation/tickets";
+import { afterConfirmedTicketAbsence, prepareTicketStorageAttempt, readTicketStorage, recoverTicketStorageAttempt, sendTicketStorageAttempt, ticketLookupSelection, type TicketStorageAttempt } from "@/lib/consultation/ticketStorageRequest";
+import { ticketStorageParent, type TicketInboxItem, type TicketStorageCapability, type TicketStorageEnvelope } from "@/lib/consultation/ticketStorageContracts";
+import TicketRequestPanel, { blankTicketDraft, type TicketDraft } from "./TicketRequestPanel";
+
+type Pending = "none" | "uncertain" | "confirmed_absent" | "request_found" | "readback_pending" | "unavailable";
+export default function TicketRequestWorkspace({ expectedActorId, initialRelationshipId, initialRequestId }: { expectedActorId: string; initialRelationshipId?: string; initialRequestId?: string }) {
+  const [identity, setIdentity] = useState<"checking" | "ready" | "error" | "changed">("checking");
+  const [source, setSource] = useState<ConsultationRead | null>(null), [items, setItems] = useState<TicketInboxItem[] | null>(null), [data, setData] = useState<TicketRead | null>(null);
+  const [capability, setCapability] = useState<TicketStorageCapability>({ state: "not_connected", runId: null });
+  const [draft, setDraft] = useState<TicketDraft>(() => blankTicketDraft()), [dirty, setDirty] = useState(false);
+  const [reading, setReading] = useState(false), [posting, setPosting] = useState(false), [needsRefresh, setNeedsRefresh] = useState(false);
+  const [pendingState, setPendingState] = useState<Pending>("none"), [message, setMessage] = useState("");
+  const live = useRef(false), sequence = useRef(0), writeSequence = useRef(0), inFlight = useRef(false), abort = useRef<AbortController | null>(null);
+  const relation = useRef(initialRelationshipId), selectedRequest = useRef(initialRequestId);
+  const attempt = useRef<TicketStorageAttempt | null>(null), saved = useRef<TicketReceipt | null>(null), lastLookup = useRef<TicketStorageEnvelope | null>(null);
+  const confirmedHistory = useRef<TicketRead | null>(null), dirtyRef = useRef(false);
+  const invalidateWrites = useCallback(() => { writeSequence.current++; }, []);
+  const cancelReads = useCallback(() => { sequence.current++; abort.current?.abort(); }, []);
+  const clearPrivate = useCallback((text: string) => {
+    live.current = false; cancelReads(); invalidateWrites(); attempt.current = null; saved.current = null; lastLookup.current = null; confirmedHistory.current = null; inFlight.current = false; dirtyRef.current = false;
+    setSource(null); setItems(null); setData(null); setCapability({ state: "not_connected", runId: null }); setDraft(blankTicketDraft()); setDirty(false); setPendingState("none"); setReading(false); setPosting(false); setNeedsRefresh(false); setMessage(text); setIdentity("changed");
+  }, [cancelReads, invalidateWrites]);
+  const setLocation = useCallback((relationshipId?: string, requestId?: string) => {
+    const url = new URL(window.location.href);
+    if (relationshipId) url.searchParams.set("relation", relationshipId); else url.searchParams.delete("relation");
+    if (requestId) url.searchParams.set("request", requestId); else url.searchParams.delete("request");
+    // Only resource IDs enter the URL, never subject, text, command or intent.
+    window.history.replaceState(null, "", url);
+  }, []);
+  const keepHistory = useCallback((next: TicketRead, parent: ConsultationRead) => {
+    if (confirmedHistory.current?.requestId === next.requestId && confirmedHistory.current.relationshipId === next.relationshipId) validateTicketContinuation(confirmedHistory.current, next, parent, next.requestId);
+    if (next.history.state === "ready") confirmedHistory.current = next;
+    setData(next);
+  }, []);
+  const load = useCallback(async (relationshipId?: string, requestId?: string) => {
+    if (!live.current) return;
+    const generation = ++sequence.current; abort.current?.abort(); const controller = new AbortController(); abort.current = controller;
+    setReading(true); setNeedsRefresh(true);
+    try {
+      const parentRead = await readConsultation({ actorId: expectedActorId, relationshipId, signal: controller.signal });
+      if (!live.current || generation !== sequence.current) return;
+      if (parentRead.status !== "ready") {
+        if (["AUTH_REQUIRED", "ACTOR_CHANGED", "FORBIDDEN"].includes(parentRead.error.code)) { clearPrivate("نشست یا دسترسی رابطه تأیید نشد؛ داده و تلاش خصوصی نمایش داده نمی‌شود."); return; }
+        if (parentRead.error.code === "AUTH_UNAVAILABLE") { live.current = false; setSource(null); setItems(null); setData(null); setIdentity("error"); }
+        setMessage(parentRead.error.error); return;
+      }
+      const parent = parentRead.data;
+      if (attempt.current && !parent.selected) { clearPrivate("رابطهٔ تلاش خصوصی در خواندن جاری تأیید نشد؛ تلاش بازگردانده نمی‌شود."); return; }
+      if (parent.selected) {
+        try { ticketStorageParent(parent, expectedActorId, parent.selected.id); }
+        catch { clearPrivate("دسترسی جاری به رابطه تأیید نشد؛ محتوای خصوصی کنار گذاشته شد."); return; }
+      }
+      setSource(parent);
+      if (!parent.selected) { relation.current = undefined; selectedRequest.current = undefined; setItems(null); setData(null); setNeedsRefresh(false); return; }
+      const relationship = parent.selected.id;
+      if (attempt.current && JSON.parse(attempt.current.intent.body).command.relationshipId !== relationship) { clearPrivate("رابطهٔ تلاش خصوصی تغییر کرده است؛ تلاش قبلی نمایش داده نمی‌شود."); return; }
+      relation.current = relationship;
+      const inbox = await readTicketStorage({ mode: "inbox", relationshipId: relationship }, parent, { signal: controller.signal });
+      if (!live.current || generation !== sequence.current) return;
+      if (inbox.status !== "ready" || inbox.data.mode !== "inbox") {
+        if (inbox.status === "error" && [401, 403].includes(inbox.httpStatus ?? 0)) { clearPrivate("دسترسی فهرست درخواست‌ها تأیید نشد؛ دادهٔ خصوصی کنار گذاشته شد."); return; }
+        setItems(null); setMessage("فهرست درخواست‌ها خوانده نشد؛ فهرست خالی تأیید نشده است."); return;
+      }
+      setItems(inbox.data.data.requests); setCapability(inbox.data.capability);
+      if (attempt.current) {
+        const input = JSON.parse(attempt.current.intent.body) as TicketRequest;
+        const looked = await readTicketStorage(ticketLookupSelection(input), parent, { input, signal: controller.signal });
+        if (!live.current || generation !== sequence.current) return;
+        if (looked.status !== "ready" || looked.data.mode !== "lookup") {
+          if (looked.status === "error" && [401, 403].includes(looked.httpStatus ?? 0)) { clearPrivate("دسترسی تلاش محفوظ تأیید نشد؛ تلاش یا رسید خصوصی بازگردانده نمی‌شود."); return; }
+          setPendingState(saved.current ? "readback_pending" : "unavailable"); setMessage("نتیجهٔ همان تلاش هنوز تعیین تکلیف نشده است؛ فقط بازخوانی انجام دهید."); return;
+        }
+        lastLookup.current = looked.data;
+        const result = recoverTicketStorageAttempt(attempt.current, looked.data, parent, saved.current);
+        if (looked.data.data.request.state === "found") keepHistory(looked.data.data.request.data, parent);
+        if (result.status === "confirmed") {
+          selectedRequest.current = input.command.requestId; setLocation(relationship, input.command.requestId);
+          setMessage(`ثبت نسخهٔ ${toPersianDigits(result.receipt!.version)} در بازخوانی مستقل تطبیق داده شد.`);
+          attempt.current = null; saved.current = null; lastLookup.current = null; setPendingState("none"); dirtyRef.current = false; setDirty(false);
+          setDraft(blankTicketDraft(parent.actor.id === parent.selected.clientId ? "member_followup" : "advisor_clarification")); setNeedsRefresh(false);
+        } else {
+          setPendingState(result.status);
+          setMessage(result.status === "confirmed_absent" ? "نبود اثر همین تلاش در بازخوانی تأیید شد؛ تکرار خودکار انجام نمی‌شود. تلاش صریح فقط با همان متن، شناسه و نسخه ممکن است." : "رسید یا نتیجهٔ درخواست هنوز کامل تطبیق داده نشده است؛ متن و تلاش ثابت مانده‌اند و دوباره ارسال نمی‌شوند.");
+        }
+        return;
+      }
+      if (requestId) {
+        const history = await readTicketStorage({ mode: "read", relationshipId: relationship, requestId }, parent, { signal: controller.signal });
+        if (!live.current || generation !== sequence.current) return;
+        if (history.status !== "ready" || history.data.mode !== "read") {
+          if (history.status === "error" && [401, 403].includes(history.httpStatus ?? 0)) { clearPrivate("دسترسی تاریخچه تأیید نشد؛ محتوای خصوصی نمایش داده نمی‌شود."); return; }
+          setMessage("تاریخچهٔ همین شناسه خوانده نشد؛ درخواست تازه یا ثبت تکراری به‌طور خودکار ساخته نمی‌شود."); return;
+        }
+        keepHistory(history.data.data, parent); setCapability(history.data.capability); selectedRequest.current = requestId;
+      } else { setData(null); selectedRequest.current = undefined; confirmedHistory.current = null; }
+      if (!dirtyRef.current) setDraft(blankTicketDraft(parent.actor.id === parent.selected.clientId ? requestId ? "member_followup" : "open" : "advisor_clarification"));
+      setNeedsRefresh(false); setMessage("");
+    } catch {
+      if (live.current && generation === sequence.current) setMessage("بازخوانی معتبر انجام نشد؛ تاریخچهٔ قبلی جای نتیجهٔ تازه نیست. ثبت تکرار نشود.");
+    } finally { if (generation === sequence.current) setReading(false); }
+  }, [clearPrivate, expectedActorId, keepHistory, setLocation]);
+  useEffect(() => {
+    let disposed = false;
+    let unsubscribe = () => {};
+    try {
+      const { data: auth } = createClient().auth.onAuthStateChange((event, session) => {
+        if (disposed) return;
+        if (event === "SIGNED_OUT" || session?.user && session.user.id !== expectedActorId) { clearPrivate("حساب تغییر کرده یا خارج شده است؛ متن و تلاش خصوصی پاک شد."); return; }
+        if (!session?.user) { live.current = false; cancelReads(); setIdentity("error"); return; }
+        const first = !live.current; live.current = true; setIdentity("ready");
+        if (first) void load(relation.current, selectedRequest.current);
+      });
+      unsubscribe = () => auth.subscription.unsubscribe();
+    } catch { live.current = false; setIdentity("error"); }
+    return () => { disposed = true; live.current = false; cancelReads(); invalidateWrites(); attempt.current = null; saved.current = null; confirmedHistory.current = null; unsubscribe(); };
+  }, [cancelReads, clearPrivate, expectedActorId, invalidateWrites, load]);
+  useEffect(() => {
+    if (!dirty && pendingState === "none") return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, pendingState]);
+  const verify = async () => {
+    try {
+      const auth = await withDeadline(() => createClient().auth.getUser(), 10_000);
+      if (authSessionFailure(auth.error) === 401 || !auth.error && !auth.data.user) { clearPrivate("نشست معتبر وجود ندارد؛ تلاش خصوصی کنار گذاشته شد."); return; }
+      if (auth.error || !auth.data.user) { setMessage("نشست معتبر تأیید نشد؛ هیچ ثبت تازه‌ای انجام نشد."); return; }
+      if (auth.data.user.id !== expectedActorId) { clearPrivate("حساب تغییر کرده است؛ صفحه را با هویت جدید باز کنید."); return; }
+      live.current = true; setIdentity("ready"); await load(relation.current, selectedRequest.current);
+    } catch { setMessage("بررسی نشست در دسترس نیست؛ متن یا ثبت تازه‌ای ارسال نشد."); }
+  };
+  const transmit = async (prepared: TicketStorageAttempt) => {
+    if (!source || !live.current) return;
+    const generation = sequence.current;
+    const result = await sendTicketStorageAttempt(prepared, source, { currentActorId: expectedActorId });
+    if (!live.current || generation !== sequence.current) return;
+    if (result.status === "saved") { saved.current = result.receipt; setPendingState("readback_pending"); await load(relation.current, selectedRequest.current); }
+    else if (result.status === "uncertain") { setPendingState("uncertain"); setMessage("نتیجهٔ ثبت نامعلوم است؛ ارسال دوباره بسته است. فقط همان تلاش را بازخوانی کنید."); }
+    else {
+      if (result.httpStatus === 401 || result.httpStatus === 403) { clearPrivate("نشست یا دسترسی هنگام ثبت رد شد؛ محتوای خصوصی بازگردانده نمی‌شود."); return; }
+      attempt.current = null; saved.current = null; lastLookup.current = null; setPendingState("none"); setNeedsRefresh(true); setMessage(result.error.error);
+    }
+  };
+  const submit = async () => {
+    if (!live.current || !source?.selected || inFlight.current || reading || posting || attempt.current || needsRefresh) return;
+    inFlight.current = true; setPosting(true); const generation = sequence.current, writeGeneration = ++writeSequence.current;
+    try {
+      const requestId = data?.requestId ?? crypto.randomUUID();
+      const baseVersion = data?.history.state === "ready" ? data.history.events[data.history.events.length - 1].version : 0;
+      const common = { relationshipId: source.selected.id, requestId, baseVersion };
+      const command: TicketCommand = draft.kind === "open" ? { ...common, kind: "open", subject: draft.subject, text: draft.text, recommendation: draft.recommendation }
+        : draft.kind === "close" ? { ...common, kind: "close", reason: draft.text }
+          : draft.kind === "link_recommendation" ? { ...common, kind: "link_recommendation", recommendation: draft.recommendation! }
+            : { ...common, kind: draft.kind, text: draft.text };
+      const input: TicketRequest = { contractVersion: "consultation-ticket-request.v1", expectedActorId, clientToken: crypto.randomUUID(), command };
+      const lookup = await readTicketStorage(ticketLookupSelection(input), source, { input });
+      if (!live.current || generation !== sequence.current) return;
+      if (lookup.status !== "ready") {
+        if ([401, 403].includes(lookup.httpStatus ?? 0)) { clearPrivate("دسترسی پیش از ثبت تأیید نشد؛ تلاش خصوصی کنار گذاشته شد."); return; }
+        setMessage("نبود همان تلاش هنوز تأیید نشده است؛ متن حفظ شد و هیچ POST ارسال نشد."); setNeedsRefresh(true); return;
+      }
+      const result = prepareTicketStorageAttempt(input, source, lookup.data);
+      if (result.status === "blocked") { setMessage("حق همان خدمت متصل نیست؛ متن حفظ شد و ثبت ارسال نشد."); return; }
+      attempt.current = result.attempt; saved.current = null; lastLookup.current = null; selectedRequest.current = requestId;
+      setLocation(source.selected.id, requestId); setPendingState("uncertain");
+      await transmit(result.attempt);
+    } catch { if (live.current && generation === sequence.current) setMessage("ورودی یا نسخهٔ مبنا برای ثبت معتبر نیست؛ متن حفظ شده است. پیش از تلاش تازه بازخوانی کنید."); }
+    finally { if (writeGeneration === writeSequence.current) { inFlight.current = false; setPosting(false); } }
+  };
+  const retryAbsent = async () => {
+    if (!source || !attempt.current || !lastLookup.current || pendingState !== "confirmed_absent" || inFlight.current || reading) return;
+    inFlight.current = true; setPosting(true); const writeGeneration = ++writeSequence.current;
+    try { const same = afterConfirmedTicketAbsence(attempt.current, lastLookup.current, source); setPendingState("uncertain"); await transmit(same); }
+    catch { setMessage("نبود ثبت، نسخه یا مجوز آزمایشی جاری تطبیق داده نشد؛ فقط بازخوانی انجام دهید."); }
+    finally { if (writeGeneration === writeSequence.current) { inFlight.current = false; setPosting(false); } }
+  };
+  if (identity !== "ready") return <section className="card space-y-3 p-5" aria-label="تأیید هویت درخواست"><p role="status">{identity === "checking" ? "در حال تأیید نشست…" : message || "نشست تأیید نشده است؛ محتوای خصوصی نمایش داده نمی‌شود."}</p>{identity === "error" && <button type="button" className="btn btn-outline" onClick={() => void verify()}>بررسی نشست و بازخوانی</button>}</section>;
+  const locked = reading || posting || pendingState !== "none";
+  const selectionLocked = locked || dirty;
+  return <div className="min-w-0 space-y-4">
+    {source && <label className="block space-y-1 text-sm">رابطهٔ مجاز<select className="input min-h-11 w-full" disabled={selectionLocked} value={source.selected?.id ?? ""} onChange={event => {
+      if (selectionLocked) return; relation.current = event.target.value || undefined; selectedRequest.current = undefined; confirmedHistory.current = null; setData(null); setItems(null); setLocation(relation.current); void load(relation.current);
+    }}><option value="">انتخاب رابطه</option>{source.relationships.map(item => <option key={item.id} value={item.id}>{item.clientLabel} · {item.revoked ? "لغوشده" : "فعال"}</option>)}</select></label>}
+    {message && <p role="status" className="card break-words p-4 text-sm leading-7">{message}</p>}
+    {reading && <p role="status">در حال بازخوانی مستقل پرونده و درخواست…</p>}
+    {posting && <p role="status">همان تلاش در حال ثبت است؛ موفقیت هنوز تأیید نشده است.</p>}
+    <button type="button" className="btn btn-outline" disabled={reading || posting} onClick={() => void load(relation.current, selectedRequest.current)}>بازخوانی بدون ارسال دوباره</button>
+    {pendingState === "confirmed_absent" && <button type="button" className="btn btn-outline" disabled={reading || posting} onClick={() => void retryAbsent()}>تلاش صریح پس از تأیید نبود ثبت، با همان شناسه</button>}
+    {source && <TicketRequestPanel source={source} items={items} data={data} capability={capability} draft={draft} locked={locked} selectionLocked={selectionLocked} needsRefresh={needsRefresh}
+      onDraft={value => { if (!locked) { setDraft(value); dirtyRef.current = true; setDirty(true); } }} onSubmit={() => void submit()}
+      onSelect={requestId => { if (!selectionLocked) { selectedRequest.current = requestId; confirmedHistory.current = null; setData(null); setLocation(relation.current, requestId); void load(relation.current, requestId); } }}
+      onNew={() => { if (!selectionLocked) { selectedRequest.current = undefined; confirmedHistory.current = null; setData(null); setDraft(blankTicketDraft()); setLocation(relation.current); setNeedsRefresh(false); } }}
+      onDiscard={() => { if (!locked) { setDraft(blankTicketDraft(source.actor.id === source.selected?.clientId ? data ? "member_followup" : "open" : "advisor_clarification")); dirtyRef.current = false; setDirty(false); } }} />}
+  </div>;
+}
