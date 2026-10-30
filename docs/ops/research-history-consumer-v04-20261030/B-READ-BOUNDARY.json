@@ -1,0 +1,18 @@
+{
+  "base": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+  "check": "TypeScript AST printer equality after removing only standalone setHistoryRead calls",
+  "componentFunctions": {
+    "preparedMatches": true,
+    "restoreIntent": true,
+    "olderIntents": true,
+    "saveToServer": true,
+    "recoverSave": true,
+    "openFromServer": true,
+    "decide": true,
+    "startNew": true,
+    "importFile": true
+  },
+  "projectionBlobUnchanged": true,
+  "modelCalls": 0,
+  "primaryWrites": 0
+}

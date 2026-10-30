@@ -856,3 +856,50 @@ for (const phase of ['fetch', 'body'] as const) test(`read-only recovery ${phase
     assert.equal(ui.find('input', e => e.props.id === 'title').props.disabled, false);
   } finally { finishLate?.(); t.mock.timers.reset(); restore(); }
 });
+
+test('P10 actual authorized workbook consumer reuses its existing GETs and passes only metadata to the panel', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const api = '/api/admin/intelligence/workbooks';
+  const first = await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const id = String(first.body.workbookId);
+  await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'decide', workbookId: id, version: 1, decision: 'approved_internal', note: 'PRIVATE_REVIEW_NOTE' }) });
+  await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', workbookId: id, baseVersion: 1, workbook: { ...p07FixtureWorkbook(), title: 'نمونه نسخه دوم' } }) });
+  const calls: Array<{ url: string; method: string }> = [];
+  const transport: WorkbookTransport = async (url, init) => { calls.push({ url, method: init?.method ?? 'GET' }); return fixture.transport(url, init); };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    const { default: ResearchHistoryPanel } = await import('./ResearchHistoryPanel');
+    const { projectWorkbookHistory } = await import('../../lib/intelligence/research-history-metadata');
+    const read = ui.find(ResearchHistoryPanel, () => true).props.read as import('../../lib/intelligence/research-history-metadata').WorkbookHistoryRead;
+    const view = projectWorkbookHistory(read);
+    assert.equal(view.state, 'read'); assert.equal(view.history.events.length, 3);
+    assert.equal(view.history.events.find(e => e.kind === 'workbook_review_recorded')!.version, 1);
+    assert.doesNotMatch(JSON.stringify(read), /PRIVATE_REVIEW_NOTE|interpretation|scenarios|privatePreparation/);
+    assert.deepEqual(calls.map(c => c.method), ['GET', 'GET']);
+    assert.equal(calls.filter(c => c.url.includes('?id=')).length, 1);
+    assert.equal(calls.length, 2, 'panel must not add a third read');
+    await ui.click('تازه');
+    assert.equal((ui.find(ResearchHistoryPanel, () => true).props.read as { state: string }).state, 'not_supplied');
+    assert.equal(calls.length, 2);
+  } finally { restore(); }
+});
+
+test('P10 a failed open hides the previous metadata without fabricating empty history or changing the current draft', async () => {
+  const restore = workbookBrowserFixture(), fixture = createP07WorkflowFixture();
+  const api = '/api/admin/intelligence/workbooks';
+  const first = await fixture.transport(api, { method: 'POST', body: JSON.stringify({ action: 'save', baseVersion: 0, workbook: p07FixtureWorkbook() }) });
+  const id = String(first.body.workbookId); let failRead = false, calls = 0;
+  const transport: WorkbookTransport = async (url, init) => { calls++; return failRead && url.includes('?id=') ? { status: 503, body: { error: 'unavailable' } } : fixture.transport(url, init); };
+  try {
+    const ui = mount(transport, id); await ui.settle();
+    const { default: ResearchHistoryPanel } = await import('./ResearchHistoryPanel');
+    assert.equal((ui.find(ResearchHistoryPanel, () => true).props.read as { state: string }).state, 'read');
+    const title = ui.find('input', e => e.props.id === 'title').props.value;
+    failRead = true;
+    await ui.click(p07FixtureWorkbook().title);
+    assert.equal((ui.find(ResearchHistoryPanel, () => true).props.read as { state: string }).state, 'error');
+    assert.equal(ui.find('input', e => e.props.id === 'title').props.value, title);
+    assert.equal(calls, 3);
+    assert.equal(fixture.snapshot().versions.length, 1);
+  } finally { restore(); }
+});

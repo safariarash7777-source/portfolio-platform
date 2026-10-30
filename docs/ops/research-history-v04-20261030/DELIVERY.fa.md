@@ -1,5 +1,7 @@
 # P10.1 — نخستین برش projection تاریخچه
 
+این رسیدِ تاریخیِ برش projection343 است؛ اتصال consumer روی مبنای B330 در `docs/ops/research-history-consumer-v04-20261030/DELIVERY.fa.md` مستند شده است. رجیستری این شاخه اکنون افزایشی و با حفظ B، هر دو آزمون projection/panel را اجرا می‌کند.
+
 ## مسیر استفاده
 
 `projectResearchHistory(snapshots)` در `lib/intelligence/research-history.ts` فقط metadata ازقبل خوانده‌شده را دریافت می‌کند. sourceهای شناخته‌شده: worker_state، worker_last_run، workbook_versions و workbook_reviews. sourceId یک alias ثابت و غیرحساس برای همان scope/مقصد است؛ برای اتصال نسخه و بازبینیِ یک مقصد باید یکسان باشد. readAt زمان خواندنِ تحویل‌شده است؛ تابع ساعت جاری نمی‌خواند. شکست reader با status=unavailable تحویل می‌شود؛ دادهٔ خوانده‌نشده با [] جعل نمی‌شود. نبود source به not_supplied و ساختار ناسازگار به invalid می‌رود. invalidRows تعداد metadata کنارگذاشته‌شده را نگه می‌دارد.
