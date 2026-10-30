@@ -1,0 +1,21 @@
+{
+  "sourceSha": "3bd1a87932ef8e066a94db1dcc0a525ea1d1db92",
+  "baseCandidate": "a6ce468301eb2761bb730b38f68b487c52fdb234",
+  "files": [
+    {
+      "path": "lib/consultation/tickets.ts",
+      "gitBlob": "b5d5d5f11e74b07fac5944d391a5ba61ba0ae5b0",
+      "sha256": "ec38c3a36918ca504c2b7cf8adc79521a47c9b21d8ff5bb7cf9dcb09d8ac16f1"
+    },
+    {
+      "path": "lib/consultation/ticketIntent.ts",
+      "gitBlob": "ac396b37d08ee323d833485c1ef143b528951296",
+      "sha256": "935892d47546d6a73344e33b5973e57b32a4aa37ec0182e1a9c8430ea4b5b55e"
+    },
+    {
+      "path": "lib/consultation/tickets.test.ts",
+      "gitBlob": "660119dc3e5131a5c15d52c125613052cb07cc1c",
+      "sha256": "3581e23dfba079d4f13a618567db6450c7ac5b7db254c2d8779315f772ed2049"
+    }
+  ]
+}

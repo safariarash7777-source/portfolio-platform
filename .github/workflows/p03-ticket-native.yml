@@ -1,0 +1,66 @@
+name: Consultation ticket native acceptance
+on:
+  pull_request:
+    paths:
+      - 'lib/consultation/ticket*'
+      - 'components/consultation/TicketRequest*'
+      - 'components/consultation/ticket-storage-ui.test.tsx'
+      - 'app/api/consultation/tickets/**'
+      - 'app/**/consultation/requests/**'
+      - 'sql/consultation_ticket_requests.sql'
+      - 'scripts/testing/consultation-tickets/**'
+      - '.github/workflows/p03-ticket-native.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: p03-ticket-native-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  real-auth-ticket-storage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      P03_TICKET_NATIVE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: New source boundaries and actual component handlers
+        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/tickets.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs
+      - name: Real Next, GoTrue, PostgREST and owned tmpfs PostgreSQL
+        run: |
+          set -o pipefail
+          node --import tsx scripts/testing/consultation-tickets/native.mjs | tee /tmp/p03-ticket-native.log
+      - name: Bind sanitized native receipt to exact source and successful cleanup
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          lines = Path('/tmp/p03-ticket-native.log').read_text().splitlines()
+          prefix = 'P03_TICKET_NATIVE_AUTH '
+          receipts = [json.loads(line[len(prefix):]) for line in lines if line.startswith(prefix)]
+          assert len(receipts) == 1
+          receipt = receipts[0]
+          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 17
+          assert receipt['cleanup'] == 'REMOVED_OWNED_RESOURCES'
+          head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
+          assert receipt['sha'] == head == os.environ['P03_TICKET_NATIVE_SOURCE_SHA']
+          assert receipt['targetInstall'] == 'NOT_APPLIED'
+          assert receipt['browser'] == 'NOT_RUN' and receipt['privateArtifactsUploaded'] is False
+          receipt.update(productServiceRight='NOT_CONNECTED', fixture='explicit private DB grants to 2 authorized actors out of 4 fresh Auth-issued run-owned actors; not a product import',
+              candidateSqlSha256=hashlib.sha256(Path('sql/consultation_ticket_requests.sql').read_bytes()).hexdigest(),
+              fixtureSqlSha256=hashlib.sha256(Path('scripts/testing/consultation-tickets/owned-fixture.sql').read_bytes()).hexdigest(),
+              modelCalls=0, destination='fresh disposable owned CI tmpfs DB; no copied proof, production or staging target')
+          Path('p03-ticket-native-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: p03-ticket-native-receipt
+          path: p03-ticket-native-receipt.json
+          retention-days: 7

@@ -1,0 +1,24 @@
+{
+  "sourceSha": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+  "productBase": "a6ce468301eb2761bb730b38f68b487c52fdb234",
+  "changes": [
+    "root path depth/owned resource label",
+    "single closed consultation-ticket profile with exact routes/bootstrap and 4 actors/17 phases",
+    "four-actor setup label",
+    "matching gateway profile only; browser mode stays disabled"
+  ],
+  "files": [
+    {
+      "path": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
+      "sourcePath": "scripts/isolated-e2e/native-auth-runtime.mjs",
+      "sourceSha256": "f9fff9fdec11ef3a9a52f949ccbccd2e24f17cab2285c396c7c73a907586c101",
+      "derivedSha256": "4070310e6ecaae4430c2dc3cc516fed76a14108beebfcb11d2e7f76e514cb31f"
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
+      "sourcePath": "scripts/isolated-e2e/native-auth-gateway.mjs",
+      "sourceSha256": "d4b971d7f1770bd7e4d415d44a45f51a6e01f60a4b4737383040f1590b530867",
+      "derivedSha256": "9ca5caeacaedb23787e58f3275a20d5e54dec2cd3c7ec668bdc21ec5a86c1ca2"
+    }
+  ]
+}
