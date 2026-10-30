@@ -37,7 +37,7 @@ function IntentHistorySection({ read, workbookId }: { read: WorkbookIntentHistor
       {view.history.events.length === 0 && invalid === 0 && conflict === 0 && <p role="status" className="text-sm">در همین برش و محدودهٔ نمایش، intent ثبت‌شده‌ای تحویل نشده است؛ این نتیجه دربارهٔ همهٔ تاریخچه یا نتیجهٔ ذخیره نیست.</p>}
       <ol className="space-y-2">{view.history.events.map(event => <li key={event.id} className="min-w-0 rounded-lg border p-3 text-sm leading-7" style={{ borderColor: 'var(--line)' }}>
         <p className="font-medium">intent ثبت‌شده</p>
-        <p>نسخهٔ هدفِ اعلام‌شده در R2: {toPersianDigits(event.targetVersion!)}؛ نسخهٔ پایه: {toPersianDigits(event.baseVersion!)}. این عدد، مرجع نسخهٔ ذخیره‌شده نیست.</p>
+        <p>نسخهٔ هدفِ اعلام‌شده در R2: {toPersianDigits(event.targetVersion!)}؛ پایهٔ اعلام‌شده در درخواست: {toPersianDigits(event.baseVersion!)}. این عدد، مرجع نسخهٔ ذخیره‌شده نیست.</p>
         <p>زمان ثبت intent: {event.times.preparedAt ? <time dateTime={event.times.preparedAt}>{formatJalali(event.times.preparedAt)}</time> : 'نامعلوم؛ زمان جایگزین ساخته نشده است'}</p>
         <p>actor: نامعلوم؛ هویت از نشست یا نتیجهٔ درخواست حدس زده نشده است.</p>
         <dl className="min-w-0"><dt>intentId واقعی</dt><dd dir="ltr" className="break-all">{event.intentId}</dd><dt>مرجع پرونده در R2</dt><dd dir="ltr" className="break-all">{event.workbookId}</dd></dl>
@@ -52,7 +52,7 @@ export default function ResearchHistoryPanel({ read, intents = NO_INTENTS }: { r
   const invalidRows = view.history.sources.reduce((sum, source) => sum + source.invalidRows, 0);
   return <section className="card min-w-0 space-y-3 p-4" aria-labelledby="research-history-title">
     <h3 id="research-history-title" className="text-base font-bold">تاریخچهٔ مرجع‌دار پژوهش</h3>
-    <p className="text-sm leading-7">فقط متادیتای آخرین بازکردن پرونده؛ متن خصوصی، یادداشت بازبین و بدنهٔ تحلیل اینجا کپی نمی‌شوند. ترتیب نمایش براساس مرجع است، نه بازسازی ترتیب همهٔ اقدام‌ها. این فهرست، دفتر زندهٔ همهٔ اقدام‌ها یا ارزیابی تحلیلگران نیست.</p>
+    <p className="text-sm leading-7">نسخه‌ها و بازبینی‌ها از آخرین بازکردن پرونده می‌آیند؛ intentها از صفحهٔ metadata موجود R2. متن خصوصی، یادداشت بازبین و بدنهٔ تحلیل اینجا کپی نمی‌شوند. ترتیب نمایش براساس مرجع است، نه بازسازی ترتیب همهٔ اقدام‌ها. این فهرست، دفتر زندهٔ همهٔ اقدام‌ها یا ارزیابی تحلیلگران نیست.</p>
     {view.state !== 'read' ? <p role="status" className="text-sm leading-7">{MESSAGES[view.state]}</p> : <>
       {events.length === 0 && <p role="status" className="text-sm leading-7">در متادیتای خوانده‌شده رویداد قابل نمایش وجود ندارد؛ این نتیجه دربارهٔ همهٔ تاریخچه نیست.</p>}
       {(invalidRows > 0 || view.history.conflictingReferences.length > 0) && <p role="status" className="text-sm leading-7">
