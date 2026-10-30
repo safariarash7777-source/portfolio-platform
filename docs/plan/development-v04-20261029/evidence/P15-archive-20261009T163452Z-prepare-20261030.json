@@ -1,0 +1,82 @@
+{
+  "exitCode": 0,
+  "stamp": "20261009T163452Z",
+  "mode": "prepare",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T12:59:08.135754+00:00",
+    "stamp": "20261009T163452Z",
+    "rawPresent": true,
+    "gzipPresent": true,
+    "availableBytes": 14457507840,
+    "receipts": {
+      "prepare-intent.json": {
+        "at": "2026-10-30T12:55:25.222640+00:00",
+        "rawIdentity": [
+          64512,
+          2477759,
+          2372409614,
+          1791563743260012622
+        ],
+        "rawBytes": 2372409614,
+        "rawSha256": "c7f28334b1818cf92f3d136628abc93f92849a71b6810481f35f34325589cfd2",
+        "otherFiles": {
+          "comparison.private.json": "a29daa6c57a0e4d14022ba44dbafddf8891ba11733ec41e46a7f2bf921e87c60",
+          "cron.private.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "financial-fingerprints-before.private.json": "53df5ebfc7b717a2e63eee97b5e7602cf5e7ec4483df029f556fc3aab4add28e",
+          "frozen-schema-proof-attempt01.json": "385f2b67641d88dceaff734fd16566d647d6e636e7756489b3e684e1ea8604aa",
+          "frozen-schema-proof.json": "af09c75e6bba0734b5d6da113f7d8c594781f38fb9131d91b01e280717463534",
+          "globals.private.sql": "f5e763cb7e27436f151df7162dd9549f6d802f9e682603e0801270f454fb532c",
+          "main-fingerprints-before.private.json": "53df5ebfc7b717a2e63eee97b5e7602cf5e7ec4483df029f556fc3aab4add28e",
+          "main-frozen-schema-install.json": "e31370780a9abceab63956e166b7ad75acc24dafa9f6578fd377a1a6bb2cdb55",
+          "private-errors.log": "86edfaa9389024f9ae487201446c3711b0b9f4e4d40ab9cd3f31204fbd68e76f",
+          "receipt.json": "3d32b61f75c9765e4feb1af79be271a22d6d19605d8c06f1c4ddafbbce3f5ed7",
+          "security-catalog-before.private.json": "b6b2d12a23a4bbc7a0ec3d5f8d14b8a9f1376677975dcddc516d0c7ffd85c2f7",
+          "snapshot-private-errors.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "source-inventory.private": "33cc6c6b36d279d618387ab2b573861b6d1b5303555f12a4870dabdbaa872245",
+          "source-security-catalog.private.json": "10a5af94d74b652df9d0561a2ca340640e4dd6f949c91c95ea5ee86793656a94",
+          "target-inventory.private": "9381e2647dc0f07d3957159834dd22fa4bb75d7d5ee6743f6d63ee461a4a7063",
+          "target.private.env": "04cd332e782339e172d4e4acbdd8ffe3b31bf30f852ddae8729fcd41303f0230"
+        }
+      },
+      "prepared.json": {
+        "at": "2026-10-30T12:59:05.511301+00:00",
+        "rawIdentity": [
+          64512,
+          2477759,
+          2372409614,
+          1791563743260012622
+        ],
+        "rawBytes": 2372409614,
+        "rawSha256": "c7f28334b1818cf92f3d136628abc93f92849a71b6810481f35f34325589cfd2",
+        "gzipBytes": 561694354,
+        "gzipSha256": "abdf2ff0cb034b7d53075b7b59d00a644b1109b233550817adb95b8c968a5574",
+        "otherFiles": {
+          "comparison.private.json": "a29daa6c57a0e4d14022ba44dbafddf8891ba11733ec41e46a7f2bf921e87c60",
+          "cron.private.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "financial-fingerprints-before.private.json": "53df5ebfc7b717a2e63eee97b5e7602cf5e7ec4483df029f556fc3aab4add28e",
+          "frozen-schema-proof-attempt01.json": "385f2b67641d88dceaff734fd16566d647d6e636e7756489b3e684e1ea8604aa",
+          "frozen-schema-proof.json": "af09c75e6bba0734b5d6da113f7d8c594781f38fb9131d91b01e280717463534",
+          "globals.private.sql": "f5e763cb7e27436f151df7162dd9549f6d802f9e682603e0801270f454fb532c",
+          "main-fingerprints-before.private.json": "53df5ebfc7b717a2e63eee97b5e7602cf5e7ec4483df029f556fc3aab4add28e",
+          "main-frozen-schema-install.json": "e31370780a9abceab63956e166b7ad75acc24dafa9f6578fd377a1a6bb2cdb55",
+          "private-errors.log": "86edfaa9389024f9ae487201446c3711b0b9f4e4d40ab9cd3f31204fbd68e76f",
+          "receipt.json": "3d32b61f75c9765e4feb1af79be271a22d6d19605d8c06f1c4ddafbbce3f5ed7",
+          "security-catalog-before.private.json": "b6b2d12a23a4bbc7a0ec3d5f8d14b8a9f1376677975dcddc516d0c7ffd85c2f7",
+          "snapshot-private-errors.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "source-inventory.private": "33cc6c6b36d279d618387ab2b573861b6d1b5303555f12a4870dabdbaa872245",
+          "source-security-catalog.private.json": "10a5af94d74b652df9d0561a2ca340640e4dd6f949c91c95ea5ee86793656a94",
+          "target-inventory.private": "9381e2647dc0f07d3957159834dd22fa4bb75d7d5ee6743f6d63ee461a4a7063",
+          "target.private.env": "04cd332e782339e172d4e4acbdd8ffe3b31bf30f852ddae8729fcd41303f0230"
+        },
+        "decodedFullBytesAndHashEqual": true,
+        "actualTmpfsRawMaterialization": true,
+        "legacyPgRestoreListExit": 0,
+        "databaseRestore": false,
+        "toolSha256": "803c10d458bfcc41ac468c61454d3bf8093291609546030c2d73f8f47b2e7265",
+        "rawRetained": true,
+        "availableBytes": 14457511936
+      }
+    }
+  }
+}
