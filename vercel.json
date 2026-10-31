@@ -12,7 +12,8 @@
   "git": {
     "deploymentEnabled": {
       "codex/p07-fundamental-read-binding-20261031": false,
-      "codex/p07-market-basis-20261031": false
+      "codex/p07-market-basis-20261031": false,
+      "codex/p07-monthly-unit-ui-20261031": false
     }
   }
 }
