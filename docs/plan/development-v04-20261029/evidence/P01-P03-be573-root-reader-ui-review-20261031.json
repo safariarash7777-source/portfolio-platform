@@ -1,0 +1,55 @@
+{
+  "source": "be573950d0d8d7d4b91043b180e6f86e73b94fee",
+  "base": "303f4c016505e9fdb8f12236168961f48a10ca0f",
+  "tree": "8effba5092beaacba74c73b789ee2cbec184d31b",
+  "status": "ROOT_ARTIFACT_AND_SCOPED_CALLER_STATIC_REVIEW_PASS_LOCAL_ONLY",
+  "packet": {
+    "bytes": 62587,
+    "sha256": "ca222e1e7873745bf36efa34911f0cc299b2095479698fb7f2955bfd401a5ca8",
+    "entries": 18,
+    "all17HashesCrcAndSixGitSources": true,
+    "privatePatchTree": "8effba5092beaacba74c73b789ee2cbec184d31b"
+  },
+  "paths": [
+    "components/consultation/TicketRequestPanel.tsx",
+    "components/consultation/TicketRequestWorkspace.tsx",
+    "components/consultation/ticket-storage-ui.test.tsx",
+    "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md",
+    "scripts/testing/consultation-tickets/protected-source.json",
+    "scripts/testing/consultation-tickets/source-boundary.test.mjs"
+  ],
+  "rootStaticReview": [
+    "Read both complete Workspace/Panel diffs; self relation and independently verified same JWT bind the one data GET.",
+    "Count must be exact finite integer, bounded and equal rows length; incomplete/failed source stays unknown.",
+    "Deadline/generation/live checks follow both Auth awaits and the GET; side read does not authorize/delay ticket history or rewrite draft/receipts.",
+    "Token remains a short closure value, no state/ref/props/URL/log/storage. Existing helper preserves NOT_CONNECTED and null economics."
+  ],
+  "existingAdvisorReview": {
+    "thread": "01a17cbc-0c65-75e2-a337-fed8b9c45148",
+    "scope": "six-file static review only",
+    "blockingFinding": null,
+    "rerun": false,
+    "limits": [
+      "Mock SDK Headers-copy is not real SDK/Auth/RLS proof.",
+      "Static markup390/1440 is not measured browser CSS."
+    ]
+  },
+  "ownerLocalEvidence": {
+    "consumer": 25,
+    "helper": 15,
+    "guard": 9,
+    "sourceOnlyTypecheck": true,
+    "fullGeneratedTypecheck": "FAILED_STALE_NEXT_TYPES_NOT_FIXED_OR_SKIPPED_IN_CI",
+    "rootRerun": false
+  },
+  "nextGate": "Exact branch deployment guard false must precede any remote push; full CI/actual target/UI/browser remain separate.",
+  "notPerformed": [
+    "remote push",
+    "CI for this candidate",
+    "actual CSS/browser acceptance",
+    "live entitlement query",
+    "service connection/grant",
+    "primary SQL",
+    "main/Production merge"
+  ]
+}

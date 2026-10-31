@@ -1,0 +1,215 @@
+Browser tab: 12, Title: "نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری", URL: "https://portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF#reports".
+0 AXWebArea نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری, URL: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF#reports
+	1 container
+		2 link Description: نشان آرش صفری آرش صفری تحلیلگر و مشاور سرمایه‌گذاری, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/
+		3 container ناوبری اصلی
+			4 link Description: بازار, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market
+			5 pop up button (collapsed) تحلیل‌ها, Secondary Actions: Expand
+			6 pop up button (collapsed) محصولات, Secondary Actions: Expand
+			7 link Description: دربارهٔ آرش, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/about
+		8 button فعال‌سازی حالت تیره
+			9 image
+		10 link Description: مشاوره, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/#waitlist
+		11 link Description: ورود, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/dashboard
+	12 container
+		13 text دادهٔ تابلوی بازار از بانک داده در این بارگذاری دریافت نشد. گزارش‌های بنیادی از مسیر جداگانه خوانده می‌شوند؛ این وضعیت به معنی نبود گزارش شرکت نیست.
+		14 container مسیر صفحه
+			15 link Description: میز بازار, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market
+			16 link Description: بانک داده, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/data
+			17 text فولاد
+		18 text پروندهٔ نماد
+		19 heading فولاد, Value: 1
+			20 text فولاد
+		21 text فولاد مبارکه اصفهان
+		22 link Description: دانلود تاریخچه (CSV), Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/api/data/%D9%81%D9%88%D9%84%D8%A7%D8%AF/history.csv
+		23 text دادهٔ این بخش در دسترس نیست
+		24 text زمان معتبر قیمت نامشخص است
+		25 text زمان دریافت نامعلوم
+		26 text دادهٔ جاری این نماد در اسنپ‌شات بازار نیست
+		27 text تاریخچه و گزارش‌های ثبت‌شده، اگر موجود باشند، مستقل نمایش داده می‌شوند؛ مقدار جاری با صفر جایگزین نشده است.
+		28 text قیمت پایانی — تغییر روز — ارزش معاملات — ورود پول حقیقی (امروز) — P/E — EPS (ریال) ۶۳ ارزش بازار — حجم معاملات —
+		29 tab group بخش‌های صفحهٔ نماد
+			30 tab (selectable, settable, boolean) نمای کلی, Value: 0
+			31 tab (selectable, settable, boolean) بنیادی, Value: 0
+			32 tab (selected, settable, boolean) گزارش‌ها, Value: 1
+			33 tab (selectable, settable, boolean) مجامع, Value: 0
+		241 container گزارش‌ها
+			242 heading گزارش‌های پردازش‌شده, Value: 3
+				243 text گزارش‌های پردازش‌شده
+			244 text گزارش‌هایی که موتور دادهٔ ما از کدال دریافت و پردازش کرده است (منبع نمودارهای بنیادی).
+			245 content list
+				246 container
+					247 text ن-۳۰
+					248 link Description: گزارش‌های فعالیت ماهانه (ن-۳۰) کدال, Value: codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1
+					249 text دورهٔ مالی:  ۱۴۰۵-۰۶-۳۱
+				250 container
+					251 text ن-۱۰
+					252 link Description: صورت‌های مالی ۳ماههٔ حسابرسی‌نشدهٔ سال مالی ۱۴۰۵ (کدال), Value: codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1
+					253 text دورهٔ مالی:  ۱۴۰۵-۰۳-۳۱
+			254 heading اطلاعیه‌های ذخیره‌شدهٔ کدال, Value: 3
+				255 text اطلاعیه‌های ذخیره‌شدهٔ کدال
+			260 text جست‌وجو فقط در همین فهرست دریافت‌شده است: حداکثر ۳۰ اطلاعیهٔ ذخیره‌شده، نه تاریخچهٔ کامل شرکت. تاریخ ارسال با پایان دورهٔ مالی متفاوت است.
+			261 container فیلتر اطلاعیه‌های دریافت‌شده
+				262 text فیلتر اطلاعیه‌های دریافت‌شده
+				263 container
+					264 text جست‌وجو در عنوان
+					265 search text field (settable) جست‌وجو در عنوان
+				266 container
+					267 text نوع اطلاعیه
+					268 pop up button (collapsed, settable) نوع اطلاعیه, Value: همهٔ انواع, Secondary Actions: Expand
+						269 menu
+							270 (selected) همهٔ انواع
+							271 ن-۲۶
+							272 ن-۱۰
+							273 ن-۳۰
+							274 ن-۲۰
+							275 ن-۱۳
+							276 ن-۵۷
+							277 ن-۵۲
+							278 ن-۱۱
+							279 نوع ثبت‌نشده
+				280 container
+					281 text ثبت تاریخ ارسال
+					282 pop up button (collapsed, settable) ثبت تاریخ ارسال, Value: همهٔ تاریخ‌ها, Secondary Actions: Expand
+						283 menu
+							284 (selected) همهٔ تاریخ‌ها
+							285 تاریخ ثبت‌شده
+							286 تاریخ ثبت‌نشده
+			287 container
+				288 text ۲۱  نتیجه از  ۲۱  اطلاعیهٔ دریافت‌شده؛  ۰  مورد با فیلتر کنار گذاشته شد. تاریخ ارسال  ۰  مورد ثبت نشده است.
+			289 button (disabled) پاک‌کردن فیلترها
+			290 content list
+				291 container
+					292 text ن-۲۶
+					293 link Description: توضیحات در خصوص اطلاعات و صورت های مالی منتشر شده, Value: codal.ir/Reports/Decision.aspx?LetterSerial=q1TwzvITsscrZmqLPHatbw%3d%3d&rt=0&let=174&ct=0&ft=-1
+					294 text ارسال: ۱۴۰۵/۰۷/۳۰ ۱۴:۴۰:۵۳
+				295 container
+					296 text ن-۱۰
+					297 link Description: اطلاعات و صورت‌های مالی میاندوره‌ای دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱ (حسابرسی نشده), Value: codal.ir/Reports/Decision.aspx?LetterSerial=qV4MKXMUUbQQQaQQQ9cOOObOOO8qmo3wRg%3d%3d&rt=0&let=6&ct=0&ft=-1
+					298 text ارسال: ۱۴۰۵/۰۷/۳۰ ۱۴:۳۷:۱۳
+				299 container
+					300 text ن-۳۰
+					301 link Description: گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به ۱۴۰۵/۰۶/۳۱(اصلاحیه), Value: codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1
+					302 text ارسال: ۱۴۰۵/۰۷/۲۹ ۲۰:۵۰:۲۶
+				303 container
+					304 text ن-۲۶
+					305 link Description: توضیحات در خصوص اطلاعات و صورت های مالی منتشر شده, Value: codal.ir/Reports/Decision.aspx?LetterSerial=LDkLyvSmA1R9OOObOOOQHpYVTxAw%3d%3d&rt=0&let=174&ct=0&ft=-1
+					306 text ارسال: ۱۴۰۵/۰۵/۲۷ ۰۹:۲۹:۵۴
+				307 container
+					308 text ن-۲۰
+					309 link Value: codal.ir/Reports/Decision.aspx?LetterSerial=6o3QWyUtLWiDoxDdkP4ooQ%3d%3d&rt=0&let=11&ct=0&ft=-1, Description: افشای اطلاعات بااهمیت - (سایر اطلاعات بااهمیت - افشای معاملات با اشخاص وابسته(شرکت فولاد هرمزگان)- گروه ب) منتهی به سال مالی ۱۴۰۵/۱۲/۲۹
+					310 text ارسال: ۱۴۰۵/۰۵/۲۵ ۱۱:۵۵:۴۱
+				311 container
+					312 text ن-۱۳
+					313 link Description: زمانبندی پرداخت سود دوره ۱۲ ماهه منتهی به ۱۴۰۴/۱۲/۲۹(اصلاحیه), Value: codal.ir/Reports/Attachment.aspx?LetterSerial=iQQQaQQQS2x11dsElq8YI5OecUGQ%3d%3d
+					314 text ارسال: ۱۴۰۵/۰۵/۲۰ ۱۹:۲۴:۴۷
+				315 container
+					316 text ن-۵۷
+					317 link Description: تصمیمات مجمع عمومی فوق العاده دوره ۱۲ ماهه منتهی به ۱۴۰۴/۱۲/۲۹(اصلاحیه), Value: codal.ir/Reports/Decision.aspx?LetterSerial=zdphjRApUv54ed6rx64lQw%3d%3d&rt=0&let=22&ct=0&ft=-1
+					318 text ارسال: ۱۴۰۵/۰۵/۱۸ ۱۰:۴۴:۵۷
+				319 container
+					320 text ن-۵۷
+					321 link Description: تصمیمات مجمع عمومی فوق العاده دوره ۱۲ ماهه منتهی به ۱۴۰۴/۱۲/۲۹, Value: codal.ir/Reports/Decision.aspx?LetterSerial=T8kdb6fumWBNqN7YkFLA4w%3d%3d&rt=0&let=22&ct=0&ft=-1
+					322 text ارسال: ۱۴۰۵/۰۵/۱۴ ۱۰:۵۹:۲۴
+				323 container
+					324 text ن-۵۲
+					325 link Description: تصمیمات مجمع عمومی عادی سالیانه دوره ۱۲ ماهه منتهی به ۱۴۰۴/۱۲/۲۹, Value: codal.ir/Reports/Decision.aspx?LetterSerial=76Z9odVTtgM0avBFnaTAEw%3d%3d&rt=0&let=20&ct=0&ft=-1
+					326 text ارسال: ۱۴۰۵/۰۵/۱۲ ۱۳:۳۴:۱۴
+				327 container
+					328 text ن-۱۱
+					329 link Description: گزارش فعالیت هیئت مدیره دوره ۱۲ ماهه منتهی به ۱۴۰۴/۱۲/۲۹, Value: codal.ir/Reports/Attachment.aspx?LetterSerial=DjTPnm9Pa79X4Gv1Zp8FQQQaQQQQ%3d%3d
+					330 text ارسال: ۱۴۰۵/۰۵/۰۹ ۰۹:۴۶:۰۶
+				331 container
+					332 text ن-۱۰
+					333 link Description: صورت‌های مالی تلفیقی سال مالی منتهی به ۱۴۰۴/۱۲/۲۹ (حسابرسی شده), Value: codal.ir/Reports/Decision.aspx?LetterSerial=TTKOOObOOOXJNiU1kizwMnWsrUeg%3d%3d&rt=0&let=6&ct=0&ft=-1
+					334 text ارسال: ۱۴۰۵/۰۵/۰۷ ۲۰:۱۷:۰۱
+				335 container
+					336 text ن-۱۰
+					337 link Description: اطلاعات و صورت‌های مالی میاندوره‌ای دوره ۳ ماهه منتهی به ۱۴۰۵/۰۳/۳۱ (حسابرسی نشده)(اصلاحیه), Value: codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1
+					338 text ارسال: ۱۴۰۵/۰۵/۰۳ ۱۶:۵۴:۵۳
+				339 container
+					340 text ن-۱۰
+					341 link Description: اطلاعات و صورت‌های مالی میاندوره‌ای دوره ۳ ماهه منتهی به ۱۴۰۵/۰۳/۳۱ (حسابرسی نشده), Value: codal.ir/Reports/Decision.aspx?LetterSerial=cjko5UYRSPEwNFVwy3E7yA%3d%3d&rt=0&let=6&ct=0&ft=-1
+					342 text ارسال: ۱۴۰۵/۰۴/۳۰ ۲۲:۰۷:۳۵
+				343 container
+					344 text ن-۳۰
+					345 link Description: گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به ۱۴۰۵/۰۳/۳۱(اصلاحیه), Value: codal.ir/Reports/Decision.aspx?LetterSerial=YXzKkmAHiVzyaIs8gIlWMQ%3d%3d&rt=0&let=58&ct=0&ft=-1
+					346 text ارسال: ۱۴۰۵/۰۴/۳۰ ۲۲:۰۳:۲۰
+				347 container
+					348 text ن-۲۰
+					349 link Description: افشای اطلاعات بااهمیت - (سایر اطلاعات بااهمیت - ثبت افزایش سرمایه شرکت سرمایه گذاری توسعه توکا- گروه ب) منتهی به سال مالی ۱۴۰۵/۱۲/۲۹, Value: codal.ir/Reports/Decision.aspx?LetterSerial=qJypzO2FCOOObOOOu2HjOtTkZH6w%3d%3d&rt=0&let=11&ct=0&ft=-1
+					350 text ارسال: ۱۴۰۵/۰۴/۲۹ ۱۴:۱۰:۰۷
+				351 container
+					352 text ن-۵۷
+					353 link Description: تصمیمات مجمع عمومی فوق العاده دوره ۱۲ ماهه منتهی به ۱۴۰۴/۱۲/۲۹, Value: codal.ir/Reports/Decision.aspx?LetterSerial=WUSDaXwinpKaWVORmxfkNA%3d%3d&rt=0&let=22&ct=0&ft=-1
+					354 text ارسال: ۱۴۰۵/۰۴/۲۹ ۱۳:۳۴:۰۷
+				355 container
+					356 text ن-۵۲
+					357 link Description: تصمیمات مجمع عمومی عادی سالیانه دوره ۱۲ ماهه منتهی به ۱۴۰۴/۱۲/۲۹, Value: codal.ir/Reports/Decision.aspx?LetterSerial=3RzQrEUuZWQQQaQQQcIrN0bYWcJg%3d%3d&rt=0&let=20&ct=0&ft=-1
+					358 text ارسال: ۱۴۰۵/۰۴/۲۹ ۱۲:۳۵:۴۲
+				359 container
+					360 text ن-۱۰
+					361 link Description: صورت‌های مالی تلفیقی سال مالی منتهی به ۱۴۰۴/۱۲/۲۹ (حسابرسی نشده), Value: codal.ir/Reports/Decision.aspx?LetterSerial=vevyWS0LuS8sO46NMpuk4g%3d%3d&rt=0&let=6&ct=0&ft=-1
+					362 text ارسال: ۱۴۰۵/۰۴/۲۸ ۲۲:۰۸:۴۸
+				363 container
+					364 text ن-۳۰
+					365 link Description: گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به ۱۴۰۴/۱۲/۲۹(اصلاحیه), Value: codal.ir/Reports/Decision.aspx?LetterSerial=N3rfRo79OGlkbPJMG4m3VQ%3d%3d&rt=0&let=58&ct=0&ft=-1
+					366 text ارسال: ۱۴۰۵/۰۴/۲۸ ۲۰:۲۹:۱۷
+				367 container
+					368 text ن-۳۰
+					369 link Description: گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به ۱۴۰۴/۱۲/۲۹(اصلاحیه), Value: codal.ir/Reports/Decision.aspx?LetterSerial=hRMamVZgOFFWdBUOOObOOORrVoQQQaQQQw%3d%3d&rt=0&let=58&ct=0&ft=-1
+					370 text ارسال: ۱۴۰۵/۰۴/۲۸ ۱۹:۰۲:۲۶
+				371 container
+					372 text ن-۳۰
+					373 link Description: گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به ۱۴۰۳/۱۲/۳۰(اصلاحیه), Value: codal.ir/Reports/Decision.aspx?LetterSerial=GKSpslL1qrrb4ff5d5OOObOOOFhQ%3d%3d&rt=0&let=58&ct=0&ft=-1
+					374 text ارسال: ۱۴۰۵/۰۴/۲۸ ۱۶:۱۲:۳۰
+			257 container
+				258 text منبع: codal.ir —
+				259 link Description: مشاهدهٔ همهٔ اطلاعیه‌های «فولاد» در سایت کدال, Value: codal.ir/ReportList.aspx?search&Symbol=%D9%81%D9%88%D9%84%D8%A7%D8%AF
+		196 container مسیرِ حسابِ کاربری
+			197 text با حساب، این صفحه‌ها به هم وصل می‌شوند
+			198 text واچ‌لیست، یادداشت و پیگیریِ نمادها به حسابِ شما گره می‌خورد.
+			199 link Description: برگشت به میزِ بازار, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market
+			200 link Description: ورود, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/login?next=%2Fsymbol%2F%25D9%2581%25D9%2588%25D9%2584%25D8%25A7%25D8%25AF%3Ffrom%3D%252Fdata
+			201 link Description: ساختِ حساب, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/register?next=%2Fsymbol%2F%25D9%2581%25D9%2588%25D9%2584%25D8%25A7%25D8%25AF%3Ffrom%3D%252Fdata
+		202 text همهٔ اعداد از گزارش‌های رسمی کدال، فید بازار و تاریخچهٔ ثبت‌شدهٔ سامانه استخراج و با کد محاسبه شده‌اند؛ دادهٔ ناموجود «—» نمایش داده می‌شود. این صفحه صرفاً اطلاع‌رسانی و آموزشی است و توصیهٔ خرید یا فروش نیست. مسئولیت تصمیم‌گیری با خود سرمایه‌گذار است.
+	203 container
+		204 image نشان آرش صفری
+		205 text آرش صفری تحلیلگر و مشاور سرمایه‌گذاری
+		206 link Description: تلگرام, Value: t.me/arashsafariiiiiiii
+		207 link Description: اینستاگرام, Value: instagram.com/arash_safariiiiiii/
+		208 heading بازارها, Value: 4
+			209 text بازارها
+		210 content list
+			211 link Description: رصد بازار, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market
+			212 link Description: نقشهٔ بازار, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market/map
+			213 link Description: صندوق‌ها, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market/funds
+			214 link Description: تابلوی سهام, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market/stocks
+			215 link Description: اختیار معامله, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/market/options
+			216 link Description: کدال, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/codal
+			217 link Description: بانک داده, Value: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/data
+		218 heading تحلیل‌ها, Value: 4
+			219 text تحلیل‌ها
+		220 content list
+			221 link Description: کارنامه, Value: …
+			222 link Description: یادداشت روزانه, Value: …
+			223 link Description: تحلیل‌های اجتماعی, Value: …
+			224 link Description: واژه‌نامهٔ مالی, Value: …
+			225 link Description: سناریوی سبد, Value: …
+		226 heading محصولات, Value: 4
+			227 text محصولات
+		228 content list
+			229 link Description: وبینار, Value: …
+			230 link Description: مشاورهٔ اختصاصی, Value: …
+		231 heading درباره و قوانین, Value: 4
+			232 text درباره و قوانین
+		233 content list
+			234 link Description: دربارهٔ آرش صفری, Value: …
+			235 link Description: راهنمای استفاده از سایت, Value: …
+			236 link Description: حریم خصوصی, Value: …
+			237 link Description: شرایط استفاده, Value: …
+			238 link Description: سلب مسئولیت, Value: …
+		239 text سرمایه‌گذاری در بازارهای مالی با ریسکِ از دست رفتنِ اصلِ سرمایه همراه است. هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ سرمایه‌گذار است. © ۱۴۰۵ آرش صفری
+		240 link Description: preview · c314c6f, Help: Preview build — نسخهٔ آزمایشی، نه Production, Value: …
+
+The focused UI element is 0 AXWebArea نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری, URL: portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF#reports

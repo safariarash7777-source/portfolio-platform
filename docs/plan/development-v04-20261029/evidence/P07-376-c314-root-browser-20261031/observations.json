@@ -1,0 +1,79 @@
+{
+  "source": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+  "deployment": "dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA",
+  "reviewRecordedAtUtc": "2026-10-31T05:52:36.351Z",
+  "scope": "actual company Preview with stored financial/feed data; not primary/human/whole-P07 acceptance",
+  "actualReadRender": {
+    "monthlyReports": 10,
+    "monthlyPeriod": "1405-06-31",
+    "monthlyAmountVisible": "63941.8 billion Toman",
+    "financialMainPeriod": "1405-03-31",
+    "amountUnitSource": "million IRR",
+    "profitAndMarginChartsVisible": true,
+    "quantityRate": "null/gaps; comparable unit unknown"
+  },
+  "marketFix": {
+    "threeConsumersShowUnknown": true,
+    "rawProductRowsShowUnknown": true,
+    "oldFalseZeroOrAllDomesticClaimsAbsent": true,
+    "smallPositiveRounding": "covered by source-bound CI; no synthetic tiny-positive fixture introduced into this real page"
+  },
+  "storedFeed": {
+    "explicitFetchButtonClicks": 1,
+    "visibleItems": 21,
+    "renderedUIWindowCap": 30,
+    "upstreamQueryLimitUnchanged": 60,
+    "filter": "title اصلاحیه:21→8; clear:8→21",
+    "latestSentWithinVisibleWindow": "1405/07/30 14:40:53",
+    "sourceTimeKind": "sent; not UTC publication or financial period",
+    "httpSuccessStatusInstrumented": false,
+    "providerJobInvoked": false
+  },
+  "newObservedGap": {
+    "noticeFinancialPeriod": "1405-06-31",
+    "noticeSentRaw": "1405/07/30 14:37:13",
+    "noticeURL": "https://codal.ir/Reports/Decision.aspx?LetterSerial=qV4MKXMUUbQQQaQQQ9cOOObOOO8qmo3wRg%3d%3d&rt=0&let=6&ct=0&ft=-1",
+    "selectedN10Period": "1405-03-31",
+    "cause": "UNATTRIBUTED; notice availability does not establish parsed company scope or successful ingestion"
+  },
+  "navigation": {
+    "fourTabs": true,
+    "keyboard": [
+      "End",
+      "Home",
+      "RTL ArrowLeft"
+    ],
+    "expandedCardAndTable": true,
+    "feedSurvivesTabNavigation": true
+  },
+  "mobile": {
+    "requestedViewport": [
+      390,
+      844
+    ],
+    "reports": {
+      "bodyScrollWidth": 375,
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "viewport": 390
+    },
+    "fundamental": {
+      "bodyScrollWidth": 375,
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "viewport": 390
+    },
+    "viewportReset": true,
+    "browserAcceptanceScope": "no page-wide horizontal overflow in these views, not all accessibility/visual acceptance"
+  },
+  "remaining": {
+    "marketHistory": "read error; independent source",
+    "assembly": "unavailable",
+    "lastCompleteFinancialIngestSuccess": "UNKNOWN",
+    "provenanceAc416UI": "not in this deployment",
+    "wholeProgramAccepted": false,
+    "primaryInstall": "NOT_APPLIED",
+    "productServiceRight": "NOT_CONNECTED"
+  },
+  "textExportFormatting": "AX export uses LF and trims trailing line whitespace; native screenshot bytes remain exact, without reencoding."
+}

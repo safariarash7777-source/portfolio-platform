@@ -1,0 +1,84 @@
+{
+  "source": "ac4162c623c11216eb2adbfb0cb5e82eb45196c6",
+  "base": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+  "tree": "da88d80bc4a4dd0d59ead5c7657ee2b00fe8fc65",
+  "status": "ROOT_PATCH_THREE_BLOBS_AND_SCOPED_STATIC_REVIEW_PASS_NOT_CI_OR_UI_ACCEPTANCE",
+  "rootStaticReview": [
+    "Read the complete reader/type diffs and all eight added test bodies; the sixteen prior binding/cache tests change only the additive SELECT assertion.",
+    "Selected records use their own ID/approved URL, separate stored/financial periods and raw publication clocks; publication UTC stays null/unknown.",
+    "Capture requires a real ISO day/time with offset; original offset/fraction is preserved separately from UTC millisecond normalization.",
+    "Only explicit raw/version suffix evidence is disclosed; the legacy selection fallback1 remains unchanged and is not presented as proven version.",
+    "No new query, formula, quantity, classification, cache/TTL/binding/concurrency or row selection change was found. N10 provenance covers only the selected main record."
+  ],
+  "nextAllocation": "C local additive projection/StoredReport/UI test in the three existing page/CodalReportsTab paths; no fetch/CI/runtime/Preview yet",
+  "comment": "https://github.com/safariarash7777-source/portfolio-platform/pull/372#issuecomment-6539486229",
+  "patch": {
+    "bytes": 21165,
+    "sha256": "d06cd4c23114e809bd73155d0d2d727ed53f5d722e9bd678d9ef452a9508aa95"
+  },
+  "changedFiles": [
+    {
+      "path": "lib/fundamental/read-binding.test.ts",
+      "baseBlob": "cee25e422e3a85768e957423bf0202caddfe015e",
+      "blob": "0b9e0311ab69cb8955d3d26d3f6ed7bb27bc0440",
+      "bytes": 31009,
+      "sha256": "5f72a347fd0e7989ac2d2a542642b5b6f75e3221e4bf56f03862a445de46cf69"
+    },
+    {
+      "path": "lib/fundamental/supabase.ts",
+      "baseBlob": "be5f09975416c674cfb9dc5ee43c6ee19560c397",
+      "blob": "0f9b329df540dba0d459e58af93662fb47702e86",
+      "bytes": 30889,
+      "sha256": "a7b6d7ca36549a4854f241692c6ba0c700e775bcd9d8edb9dd39c6e836db0dbb"
+    },
+    {
+      "path": "lib/fundamental/types.ts",
+      "baseBlob": "bb9a6b5cb4cef2f90dc2fff75e12e999888c9c9a",
+      "blob": "f277ac5ea107a6e776aa31b82d1c0d657a672c3b",
+      "bytes": 7011,
+      "sha256": "bea403ac912a56e966c78a7bff296e7de7a211e3edcd4f833b9362ed8b60ccee"
+    }
+  ],
+  "captureContract": {
+    "validity": "full ISO date/time with timezone, real Gregorian day round-trip, finite parse; arbitrary Date.parse values such as 0 are rejected",
+    "raw": "exact validated source text, retaining original offset and fractional precision",
+    "normalized": "ISO UTC with JavaScript millisecond precision, explicitly lossy relative to raw",
+    "invalid": "capturedAtRaw=null and capturedAt=null",
+    "publication": "raw Jalali date/time remains separate; publishedAtUtc=null/publicationUtcConfidence=unknown"
+  },
+  "ownerOfflineEvidence": {
+    "passed": 24,
+    "originalBindingCacheTests": 16,
+    "newProvenanceTests": 8,
+    "failed": 0,
+    "skipped": 0,
+    "guard": {
+      "network": 0,
+      "childProcess": 0,
+      "sensitiveEnvironment": 0,
+      "privateFile": 0
+    },
+    "environmentReads": 0,
+    "unmockedFetch": 0,
+    "realRuntimeRequests": 0,
+    "testProcessEnvSnapshotDelete": false,
+    "scope": "actual existing ES module test/reader/config in isolated VM, zero real env; exact existing approvedCodalUrl AST function; native Response JSON decoded in VM realm; server-only marker alias; no full workspace module execution/SSR",
+    "typecheckDiagnostics": 0,
+    "typecheckClosureSources": 26,
+    "completedAtUTC": "2026-10-31T05:18:08.758888+00:00"
+  },
+  "rootRerun": false,
+  "limits": [
+    "source-only metadata candidate, not actual UI/Preview acceptance",
+    "records N10 only selected main, not new quarterly provenance coverage",
+    "capturedAt is storage capture with JS millisecond precision, not source freshness or last job success",
+    "publication UTC/confidence remains unknown even when source-local text exists",
+    "legacy parser fallback remains in selection only; metadata can be null",
+    "units remain in existing data, verified never stands for quantity or publication confidence",
+    "UI/consumer, A market fix, C42, Cfffb and PR372 untouched; last complete ingest success UNKNOWN"
+  ],
+  "worktreeApplied": false,
+  "CI": false,
+  "realSourceRead": false,
+  "deployment": false
+}
