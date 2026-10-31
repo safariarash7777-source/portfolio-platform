@@ -3,7 +3,7 @@
   "priorHead": "ee70501f80edf16122e83dede628e402ac9ac931",
   "pr": 369,
   "status": "BLOCKED_NATIVE_PROFILE_COMPARISON_ARTIFACT_ABSENT",
-  "rootCodeRead": "ee705→c35 four-file delta read: corrected2351 guard, exact Git binary binding test and documentation; no changes to frozen binding/gate/crypto/consumer/installer",
+  "rootCodeRead": "ee705\u00e2\u2020\u2019c35 four-file delta read: corrected2351 guard, exact Git binary binding test and documentation; no changes to frozen binding/gate/crypto/consumer/installer",
   "binding": {
     "bytes": 2351,
     "sha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
@@ -21,7 +21,7 @@
     "jobs": [
       {
         "id": 124411804611,
-        "name": "Database RLS · Integrity (Postgres)",
+        "name": "Database RLS \u0622\u00b7 Integrity (Postgres)",
         "conclusion": "success"
       },
       {
@@ -31,12 +31,12 @@
       },
       {
         "id": 124411804905,
-        "name": "Typecheck · Lint · Tests · Build",
+        "name": "Typecheck \u0622\u00b7 Lint \u0622\u00b7 Tests \u0622\u00b7 Build",
         "conclusion": "success"
       },
       {
         "id": 124411804936,
-        "name": "Secret scan · SQL validation",
+        "name": "Secret scan \u0622\u00b7 SQL validation",
         "conclusion": "success"
       },
       {
@@ -162,9 +162,17 @@
     "meaning": "current metadata and original control flow support final artifact not produced before old failed planner; before and final names are distinct stages, not aliases"
   },
   "next": {
-    "owner": "B prepares concrete contract, root selects/reviews",
-    "scope": "explicitly preserve absent original final comparison and failed receipt, independently named corrected strict comparisons, and original before-comparison; no invented replacement or weakened LegacyV1 seven-file contract",
-    "implementation": "NOT_APPLIED"
+    "owner": "B implementation, root review",
+    "decision": "APPROVED_FOR_CANDIDATE_CODE_TEST_AND_ONE_BOUNDED_SMALL_HASH_ONLY",
+    "profile": "corrected-acl19-failed-v2r2",
+    "scope": "17 roles/16 real streams; six original present and exact final-comparison slot observed_absent; original before-comparison and independent corrected strict comparisons preserved separately; absence length/hash/cipher null; explicit revision dispatch; same HMAC authenticates all descriptors and pinned policy supplement",
+    "smallRead": "one fixed3707-byte before-comparison raw SHA plus owned no-symlink path/stable fstat/shared lock/observed final absence/UTC; no raw contents, dump hash, SQL or mutation",
+    "policyBeforeHash": null,
+    "policyApprovedForNative": false,
+    "preserved": "LegacyV1 seven mandatory files and existing strict c35 profile; helper/gate/binding/consumer/crypto/DPAPI; old failed receipts and attempts",
+    "nativeCaptureVerifyTransferOrKeyCreation": "NOT_AUTHORIZED_BY_THIS_ALLOCATION",
+    "implementation": "ASSIGNMENT_SENT_SOURCE_NOT_YET_REVIEWED",
+    "noHistoricalNeverCreatedClaim": true
   },
   "boundaries": {
     "capture": false,
