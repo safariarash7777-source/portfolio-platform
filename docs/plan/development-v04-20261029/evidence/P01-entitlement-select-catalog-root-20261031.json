@@ -1,0 +1,69 @@
+{
+  "atUtc": "2026-10-31T09:33:47.080268+00:00",
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "sourceHealthyBeforeAfter": true,
+  "method": "Existing pinned SSH and explicit READ ONLY transaction, ACL/schema/policy hashes only; no entitlement rows or grants",
+  "catalog": {
+    "rls": true,
+    "columns": [
+      "id",
+      "user_id",
+      "kind",
+      "source",
+      "starts_at",
+      "expires_at",
+      "revoked_at",
+      "granted_by",
+      "note",
+      "created_at"
+    ],
+    "policies": [
+      {
+        "name": "entitlements_insert_admin",
+        "roles": [
+          "public"
+        ],
+        "command": "INSERT",
+        "checkMd5": "787d8c38f72e6a03d54005aa3f18d39a",
+        "usingMd5": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      {
+        "name": "entitlements_select_admin",
+        "roles": [
+          "public"
+        ],
+        "command": "SELECT",
+        "checkMd5": "d41d8cd98f00b204e9800998ecf8427e",
+        "usingMd5": "787d8c38f72e6a03d54005aa3f18d39a"
+      },
+      {
+        "name": "entitlements_select_own",
+        "roles": [
+          "public"
+        ],
+        "command": "SELECT",
+        "checkMd5": "d41d8cd98f00b204e9800998ecf8427e",
+        "usingMd5": "19300d155780585259ede73ac370586c"
+      },
+      {
+        "name": "entitlements_update_admin",
+        "roles": [
+          "public"
+        ],
+        "command": "UPDATE",
+        "checkMd5": "d41d8cd98f00b204e9800998ecf8427e",
+        "usingMd5": "787d8c38f72e6a03d54005aa3f18d39a"
+      }
+    ],
+    "forcedRls": false,
+    "anonSelect": true,
+    "tableOwner": "postgres",
+    "authenticatedSelect": true
+  },
+  "rowDataRead": false,
+  "sqlWrites": false,
+  "grantPerformed": false,
+  "limits": [
+    "Existing SELECT ACL is not actual SDK, RLS behavior, service entitlement or browser acceptance."
+  ]
+}
