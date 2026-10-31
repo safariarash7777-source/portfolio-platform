@@ -45,6 +45,7 @@ const REVALIDATE_MS = 60 * 1000;
 const cache = new Map<string, { at: number; value: SymbolFundamentals | null }>();
 let activeBinding: string | null = null;
 let readRevision = 0;
+let appliedReadRevision = 0;
 let cacheEpoch = 0;
 
 /** Trusted server callers/tests may supply an isolated object; no global configuration is installed. */
@@ -476,11 +477,19 @@ export async function readFundamentalsFromSupabase(symbol: string, options?: Fun
     } finally { material.fill(0); }
     if (selected.expiresAt !== undefined && selected.expiresAt <= Date.now() / 1000) throw new Error("configuration");
   } catch {
-    if (revision === readRevision) { cache.clear(); activeBinding = null; cacheEpoch++; }
+    if (revision > appliedReadRevision) { appliedReadRevision = revision; cache.clear(); activeBinding = null; cacheEpoch++; }
     console.warn("fundamental_read_failed", { phase: "configuration" });
     return { data: null, state: "error" };
   }
-  if (revision === readRevision && activeBinding !== binding) { cache.clear(); activeBinding = binding; cacheEpoch++; }
+  // Only completed decisions supersede a binding; a merely-started read cannot disable a valid cache.
+  if (revision > appliedReadRevision) {
+    appliedReadRevision = revision;
+    if (activeBinding !== binding) { cache.clear(); activeBinding = binding; cacheEpoch++; }
+  }
+  if (activeBinding !== binding) {
+    console.warn("fundamental_read_failed", { phase: "configuration" });
+    return { data: null, state: "error" };
+  }
   const requestEpoch = activeBinding === binding ? cacheEpoch : null;
   const hit = activeBinding === binding ? cache.get(symbol) : undefined;
   const age = hit ? Date.now() - hit.at : -1;

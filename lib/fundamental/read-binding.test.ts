@@ -220,6 +220,63 @@ test("concurrent different symbols retain independent caches on the same binding
   assert.equal(calls, 4);
 });
 
+test("cold binding preserves both symbol caches when two digests overlap", { timeout: 5000 }, async () => {
+  const environment = pair(jwt({ fixture: "cold-overlap" }));
+  assert.equal((await read("cold-reset", { FUNDAMENTAL_READ_URL: origin })).state, "error");
+  const calls = fixture([row("cold-a", 11), row("cold-b", 22)]);
+  const subtle = globalThis.crypto.subtle, originalDigest = subtle.digest;
+  let releaseFirst!: () => void, releaseSecond!: () => void, enteredFirst!: () => void, enteredBoth!: () => void, digests = 0;
+  const firstGate = new Promise<void>(resolve => { releaseFirst = resolve; });
+  const secondGate = new Promise<void>(resolve => { releaseSecond = resolve; });
+  const firstStarted = new Promise<void>(resolve => { enteredFirst = resolve; });
+  const both = new Promise<void>(resolve => { enteredBoth = resolve; });
+  subtle.digest = async (algorithm, data) => {
+    const index = digests++;
+    const result = originalDigest.call(subtle, algorithm, data);
+    if (index === 0) enteredFirst();
+    if (index === 1) enteredBoth();
+    if (index < 2) await (index === 0 ? firstGate : secondGate);
+    return result;
+  };
+  const first = read("cold-a", environment);
+  let second: ReturnType<typeof read> | undefined;
+  try {
+    await firstStarted; second = read("cold-b", environment);
+    await both; assert.equal(digests, 2); assert.equal(calls.length, 0);
+    releaseFirst(); assert.equal(amount(await first), 11); assert.equal(calls.length, 2);
+    releaseSecond(); assert.equal(amount(await second), 22); assert.equal(calls.length, 4);
+    assert.equal(amount(await read("cold-a", environment)), 11);
+    assert.equal(amount(await read("cold-b", environment)), 22);
+    assert.equal(calls.length, 4, "both completed reads must remain cached after the two digest barriers");
+  } finally {
+    releaseFirst(); releaseSecond(); await Promise.allSettled(second ? [first, second] : [first]); subtle.digest = originalDigest;
+  }
+});
+
+test("a newer invalid decision blocks an older digest from reviving the binding", { timeout: 5000 }, async () => {
+  const environment = pair(jwt({ fixture: "invalid-supersedes-digest" }));
+  const calls = fixture([row("superseded", 33)]);
+  const subtle = globalThis.crypto.subtle, originalDigest = subtle.digest;
+  let release!: () => void, entered!: () => void, held = false;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  subtle.digest = async (algorithm, data) => {
+    const result = originalDigest.call(subtle, algorithm, data);
+    if (!held) { held = true; entered(); await gate; }
+    return result;
+  };
+  const pending = read("superseded", environment);
+  try {
+    await started;
+    assert.equal((await read("newer-invalid", { ...pair(), FUNDAMENTAL_READ_URL: "" })).state, "error");
+    assert.equal(calls.length, 0);
+    release(); assert.equal((await pending).state, "error", "a superseded configuration must not start GETs");
+    assert.equal(calls.length, 0);
+    assert.equal(amount(await read("superseded", environment)), 33);
+    assert.equal(amount(await read("superseded", environment)), 33); assert.equal(calls.length, 2);
+  } finally { release(); await Promise.allSettled([pending]); subtle.digest = originalDigest; }
+});
+
 test("cycling a binding A-to-B-to-A cannot resurrect an old in-flight A cache", async () => {
   const a = pair(jwt({ fixture: "cycle-a" })), b = pair(jwt({ fixture: "cycle-b" }));
   let release!: () => void, started!: () => void, calls = 0, aCalls = 0;
