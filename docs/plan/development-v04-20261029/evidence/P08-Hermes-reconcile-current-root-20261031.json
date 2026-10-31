@@ -1,0 +1,38 @@
+{
+  "startedAtUtc": "2026-10-31T03:14:10.114756+00:00",
+  "sourceGit": "7cfe26122f5c1619ee1605d47d1df44ab1ca2118",
+  "mode": "existing installed worker --reconcile only; no --run",
+  "sourceReview": "existing early read-only branch and find-only module read; no source mutation",
+  "before": {
+    "state.json": "75d7b1c180de673057cac15df19e7f69b90809e3e6e946ec96d8c0261c767f9a",
+    "worker.lock": "e2bd2947428f55e9c57d55a64d35e2fe9627defd1c5718f821d395df98e61d14",
+    "last-run.json": "af817ae725fdd87f104bc1a4a2d270f979bea957c97b88123fe81abe8ea35420"
+  },
+  "rawEntryIdsOrDigestsPersisted": false,
+  "modelCalledByAudit": false,
+  "schedulerChanged": false,
+  "locksOrLedgerWrittenByAudit": false,
+  "retry": false,
+  "exitCode": 0,
+  "stderrBytes": 0,
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "status": "RECONCILIATION_RESPONSE_READ",
+  "checkedAt": "2026-10-31T03:14:32.808Z",
+  "pending": 13,
+  "destinationCounts": {
+    "absent": 13
+  },
+  "recoveryRequired": true,
+  "after": {
+    "state.json": "75d7b1c180de673057cac15df19e7f69b90809e3e6e946ec96d8c0261c767f9a",
+    "worker.lock": "e2bd2947428f55e9c57d55a64d35e2fe9627defd1c5718f821d395df98e61d14",
+    "last-run.json": "af817ae725fdd87f104bc1a4a2d270f979bea957c97b88123fe81abe8ea35420"
+  },
+  "unchanged": {
+    "state.json": true,
+    "worker.lock": true,
+    "last-run.json": true
+  },
+  "endedAtUtc": "2026-10-31T03:14:32.840002+00:00",
+  "limits": "Absent is current missing stored receipt only, not no inference/cost, and never retry authorization; unknown remains unknown; no full research content stored"
+}
