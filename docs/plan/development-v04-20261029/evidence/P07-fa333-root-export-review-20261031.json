@@ -1,0 +1,83 @@
+{
+  "head": "fa333ea75ce8ddb9f7d798179739677527a9891a",
+  "parent": "8e0e1e53dee8622dea8f7f9e84e135cb8446dcef",
+  "base": "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+  "tree": "df26fffdf622362aa13074d7f2a69487c90367b0",
+  "status": "ROOT_SCOPED_REVIEW_READY_FOR_DRAFT_CI_NOT_RUNTIME",
+  "rootStatic": "read full cumulative helper/transport/cache delta previously and new completed-decision revision fix; no blocker found",
+  "incrementalFiles": [
+    "docs/ops/p07-fundamental-read-binding-20261031/DELIVERY.fa.md",
+    "lib/fundamental/read-binding.test.ts",
+    "lib/fundamental/supabase.ts"
+  ],
+  "sourceExactGit": [
+    {
+      "path": "docs/ops/p07-fundamental-read-binding-20261031/DELIVERY.fa.md",
+      "sha256": "09259ae891744a211912a88c5df07f3d8ab164c5021368e2a6a7990dd9c626f0",
+      "gitBlob": "8b482e975a835b53328a6886ae8808dc575eba6f"
+    },
+    {
+      "path": "lib/fundamental/read-binding.test.ts",
+      "sha256": "4c436977dc059bf9ccf3046407e34100e7747463602c21a34c5899b63106fa5d",
+      "gitBlob": "cee25e422e3a85768e957423bf0202caddfe015e"
+    },
+    {
+      "path": "lib/fundamental/read-config.server.ts",
+      "sha256": "7a5c285f328460c16eeee5f041360cc0a3a15cd31c0179c108859105497bdfbb",
+      "gitBlob": "c92c70a00719c699936e9c01025bc8c99d9fca0b"
+    },
+    {
+      "path": "lib/fundamental/supabase.ts",
+      "sha256": "fad0d5ee129f75be682f42c22751bcbb055bcbd53fd8f870c7a2e3765ee77c93",
+      "gitBlob": "be5f09975416c674cfb9dc5ee43c6ee19560c397"
+    },
+    {
+      "path": "lib/fundamental/wiring.test.ts",
+      "sha256": "a7d213eb678ea41a1615e23b1b79e8624e1255c427da5e6bb3a24504e301ad89",
+      "gitBlob": "1607809d79e6520162cde37f6841fa3325e5adf4"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "d3fc874e6e243be9dee569872d290e8e3d74ef494f79cce831c50599667e21c1",
+      "gitBlob": "b09f0a0c50070516a75c5f4ebaa94f6a8a6ad53a"
+    }
+  ],
+  "patches": [
+    {
+      "path": "incremental.patch",
+      "base": "8e0e1e53dee8622dea8f7f9e84e135cb8446dcef",
+      "sha256": "763d6d366d799f3e00c28f2ffe8fd7ca08af032c06e550df2817507d24a595c3",
+      "rootPrivateIndexTree": "df26fffdf622362aa13074d7f2a69487c90367b0"
+    },
+    {
+      "path": "cumulative.patch",
+      "base": "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+      "sha256": "272d61d53a8134b567e40b38f26a564ee4b6d313bc787fc8b07be2541173a5ec",
+      "rootPrivateIndexTree": "df26fffdf622362aa13074d7f2a69487c90367b0"
+    }
+  ],
+  "zip": {
+    "bytes": 51908,
+    "members": 17,
+    "sha256": "2eafaad0958cdb2fde7727b6d0a472ebb693fa1b8906a5f96e885c6af970629f",
+    "crc": "PASS"
+  },
+  "rootFinding": "old cold concurrent digests caused 6 GET rather than4; newer invalid decision allowed old request revive; corrected appliedReadRevision distinguishes completed decision from started read",
+  "ownerRegression": {
+    "deterministicBarrierNoSleep": true,
+    "oldExact8e": "RED",
+    "new": "26 PASS,0fail",
+    "guardsAllZero": true,
+    "notRootRerun": true
+  },
+  "otherReaderFunctionsOwnerAstStable": 15,
+  "runtime": {
+    "real402": "OPEN",
+    "tlsSignatureActualAccess": "UNOBSERVED",
+    "ci": "NOT_RUN",
+    "envMutation": false,
+    "mainMerge": false,
+    "deploy": false
+  },
+  "releaseAuthorized": false
+}
