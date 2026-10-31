@@ -60,5 +60,13 @@
   "worktreeApplied": false,
   "CI": false,
   "deployment": false,
-  "lastFinancialSuccess": "UNKNOWN"
+  "lastFinancialSuccess": "UNKNOWN",
+  "normalDriverFollowup": {
+    "exactCIntegratedLocally": "17e6de8f95a7504dbc065179e851cc7d68e0636c",
+    "roundedParent": "d93adaa9f7881401bbb33957271d7da3a9a85d68",
+    "ownerReportedTSXGuard": "RED_10_TEST_HOOKS_DENIED_BEFORE_PRIVATE_ENV_VALUE",
+    "actualPrivateReads": 0,
+    "envWrites": 0,
+    "newAllocation": "A test-only child using existing805 VM pattern, all10 assertions preserved, route.ts exactC; source not yet live accepted"
+  }
 }
