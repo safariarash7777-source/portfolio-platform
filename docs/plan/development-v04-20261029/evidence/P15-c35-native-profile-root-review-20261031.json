@@ -167,12 +167,13 @@
     "profile": "corrected-acl19-failed-v2r2",
     "scope": "17 roles/16 real streams; six original present and exact final-comparison slot observed_absent; original before-comparison and independent corrected strict comparisons preserved separately; absence length/hash/cipher null; explicit revision dispatch; same HMAC authenticates all descriptors and pinned policy supplement",
     "smallRead": "one fixed3707-byte before-comparison raw SHA plus owned no-symlink path/stable fstat/shared lock/observed final absence/UTC; no raw contents, dump hash, SQL or mutation",
-    "policyBeforeHash": null,
+    "policyBeforeHash": "2ca79419e1b2cb1baee866a3cf63f0ab8cdb0205079e900738de492e86a77d9a",
     "policyApprovedForNative": false,
     "preserved": "LegacyV1 seven mandatory files and existing strict c35 profile; helper/gate/binding/consumer/crypto/DPAPI; old failed receipts and attempts",
     "nativeCaptureVerifyTransferOrKeyCreation": "NOT_AUTHORIZED_BY_THIS_ALLOCATION",
-    "implementation": "ASSIGNMENT_SENT_SOURCE_NOT_YET_REVIEWED",
-    "noHistoricalNeverCreatedClaim": true
+    "implementation": "IN_PROGRESS_OWNER_REPORTED_SOURCE_NOT_YET_REVIEWED",
+    "noHistoricalNeverCreatedClaim": true,
+    "beforeHashEvidence": "P15-v2r2-smallhash-B-root-read-20261031.json"
   },
   "boundaries": {
     "capture": false,
