@@ -1,5 +1,17 @@
 # تغییر محدود پنل اطلاعات مبنا و گپ نرخ — ۲۰۲۶-۱۰-۳۱
 
+## برش ارقام محور فصلی؛ رزرو پیش از تغییر
+
+نامزد stacked از `0db38ff63d38b2ca98af5e29f5fe1345f58a4c45` است؛۰db/۲۳/dfc/9e منجمدند. تنها تغییر کارکردی در `components/symbol/QuarterlyCharts.tsx` است: سه YAxis درآمد/سود، حاشیه و P/E اکنون formatter رقم ندارند؛ با `toPersianDigits` موجود فقط رقم tick به فارسی تبدیل می‌شود. XAxis از قبل با faQ فارسی است و دست‌نخورده می‌ماند. هیچ گردکردن تازه، مقیاس، داده، domain، فرمول، واحد، label/شناسه/URL/زمان/token یا tooltip عوض نمی‌شود.
+
+فایل‌های رزروشده پیش از source edit: همان QuarterlyCharts، این برگ، `public/design/company-options/build.mjs` فقط برای ثبت مرز در manifest، و `prototype.js`/`build-manifest.json` تولیدشده. CSS، History، FundamentalCharts، MonthlySalesCharts، تمام helperهای مالی، types/units/sanitizer، دادهٔ آموزشی، query، API/Auth/SQL/provider/هزینه ثابت‌اند. از type/lint/validator موجود استفاده می‌شود؛ آزمون تازه‌ای که formatter را آینه کند ساخته نمی‌شود. root مالک QA مرورگر و SSOT است؛ A فقط کد و Preview دقیق همان پروژه را تحویل می‌دهد، نه main. گپ قیمت، پایهٔ بازار نرخ، دادهٔ واقعی/واحد و دسترسی کامل نمودار با صفحه‌کلید همچنان بازند.
+
+### بررسی برش محور
+
+۱۵ کنترل validator موجود، typecheck، lint محدود و diff-check موفق شدند؛ bundle تازه با وابستگی‌های قفل‌شده ساخته شد. هیچ تست تازه‌ای اضافه نشده است. برهان تطبیق source نشان می‌دهد حذف همان import و سه prop افزوده‌شده، متن QuarterlyCharts را دقیقاً به۰db برمی‌گرداند؛۱۷ فایل محافظت‌شده، از جمله همه helperهای مالی و سه component دیگر/داده/query/CSS/format، byte-identical هستند. شاهد خصوصی `outputs/p14-quarterly-axis-digits-20261031/compatibility-proof.json` فقط مرز تغییر را اثبات می‌کند، نه خوانایی یا رفتار مرورگر.
+
+QA root باید روی source تازه در دو چیدمان و موبایل۳۹۰، ارقام tickهای سه محور درآمد/حاشیه/P/E را فارسی ببیند؛ مقدار tooltip، واحد، مقیاس، null/gap و فیلترها باید همان باشند. محور افقی فصل، شناسه/زمان/پیوند و جدول خام تبدیل عمومی نشده‌اند. Preview و CI با SHA تازه جدا ثبت می‌شوند؛ QA نسخه۰db شاهد این برش نیست. main و انتشار اصلی NOT_APPLIED هستند.
+
 ## برش گپ ن-۳۰ بنیادی؛ رزرو پیش از تغییر
 
 این نامزد stacked از نسخهٔ فریز `23fffa5bb0ee9c7b16bffc7c341afc5d567d97df` است؛۲۳/dfc/9e تغییر نمی‌کنند. root مالک SSOT و QA مرورگر است. فایل‌های رزروشده: `lib/core/monthlyReport.ts` و آزمون موجود (استخراج همان الگوریتم تقویم بدون تغییر خروجی مقدار/نرخ)، `lib/fundamental/calc.ts` و `n30.test.ts` (هم‌ترازی ماهانه با اسلات null؛ شمار گزارش، mix و سهم صادرات از گزارش‌های واقعی)، `components/symbol/FundamentalCharts.tsx` (فقط نمایش ماهانه، connectNulls و توضیح گپ)، `public/design/company-options/chart-data.ts` (فقط adapterِ fundamentalsFor و حذف محافظ گپ؛ داده‌های MONTHLY/PERIODS/ANNUAL/HISTORY و metadata ثابت)، `entry.tsx` (فقط متن محافظ قدیمی)، `validate.ts`، `build.mjs` و bundle/manifest/CSS تولیدشده. همین برگ شاهد دامنه و آزمون خواهد بود؛ سند مرجع موازی ساخته نمی‌شود.
