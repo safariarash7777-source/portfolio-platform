@@ -4,15 +4,17 @@ import type { ConsultationRead } from "@/lib/consultation/contracts";
 import { formatJalali, toPersianDigits } from "@/lib/format";
 import { resolveTicketRecommendation, ticketStatus, type TicketCommand, type TicketRead, type TicketRecommendation } from "@/lib/consultation/tickets";
 import type { TicketInboxItem, TicketStorageCapability } from "@/lib/consultation/ticketStorageContracts";
+import type { TicketAttemptMetadata } from "@/lib/consultation/ticketAttemptStorageContracts";
 
 export interface TicketDraft { kind: TicketCommand["kind"]; subject: string; text: string; recommendation: TicketRecommendation | null }
 export const blankTicketDraft = (kind: TicketCommand["kind"] = "open"): TicketDraft => ({ kind, subject: "", text: "", recommendation: null });
 const labels: Record<TicketCommand["kind"], string> = { open: "درخواست عضو", member_followup: "پیگیری عضو", advisor_clarification: "پاسخ مشاور", link_recommendation: "پیوند نسخهٔ مشخص", close: "بستن درخواست" };
-export default function TicketRequestPanel({ source, items, data, capability, draft, locked, selectionLocked, needsRefresh, onDraft, onSelect, onNew, onSubmit, onDiscard }: {
+export default function TicketRequestPanel({ source, items, data, capability, draft, locked, selectionLocked, needsRefresh, onDraft, onSelect, onNew, onSubmit, onDiscard, preparedAttempts, onRestorePreparation }: {
   source: ConsultationRead; items: TicketInboxItem[] | null; data: TicketRead | null; capability: TicketStorageCapability;
   draft: TicketDraft; locked: boolean; selectionLocked: boolean; needsRefresh: boolean;
   onDraft: (value: TicketDraft) => void; onSelect: (id: string) => void; onNew: () => void;
   onSubmit: () => void; onDiscard: () => void;
+  preparedAttempts?: TicketAttemptMetadata[] | null; onRestorePreparation?: (id: string) => void;
 }) {
   const relation = source.selected;
   if (!relation) return <p>رابطهٔ مجاز را انتخاب کنید. درخواست جدید رضایت ایجاد نمی‌کند.</p>;
@@ -32,6 +34,11 @@ export default function TicketRequestPanel({ source, items, data, capability, dr
       {capability.state === "owned_fixture" ? <p role="status" className="break-words text-sm leading-7">فقط مجوز صریح محیط تستِ مجزا برای همین هویت فعال است؛ ثبت‌ها آموزشی‌اند و حق تجاری ایجاد نمی‌کنند. شناسهٔ اجرا: <bdi>{capability.runId}</bdi></p> : <p role="status" className="text-sm leading-7">{capability.state === "unavailable" ? "بررسی مجوز ثبت در دسترس نیست؛ این وضعیت نبود یا وجود حق را تأیید نمی‌کند." : "تأمین‌کنندهٔ معتبر حق خدمت متصل نیست."} ثبت غیرفعال است. متن واردشده در همین نشست حفظ می‌شود.</p>}
       {relation.revoked && <p role="status" className="text-sm">رضایت این رابطه لغو شده است؛ عضو سابقهٔ خودش را می‌خواند و ثبت تازه انجام نمی‌شود.</p>}
       <a className="btn btn-outline max-w-full !whitespace-normal" href={`${source.actor.id === relation.advisorId ? "/admin" : "/dashboard"}/consultation?relation=${relation.id}`}>پرونده و نسخه‌های جمع‌بندی همین رابطه</a>
+    </section>
+    <section className="card space-y-3 p-4" aria-label="تلاش‌های محفوظ همین هویت و رابطه">
+      <h2 className="font-bold">بازخوانی تلاش محفوظ</h2>
+      <p className="text-sm leading-7">پس از بسته‌شدن صفحه، یک تلاش را صریح انتخاب کنید تا متن اصلی و نتیجهٔ همان تلاش از سرور بازخوانی شود. انتخاب، فرمانی دوباره ارسال نمی‌کند.</p>
+      {preparedAttempts == null ? <p>فهرست تلاش‌های محفوظ تأیید نشده است؛ نامعلوم به معنی خالی نیست.</p> : preparedAttempts.length === 0 ? <p>در فهرست بازخوانی‌شدهٔ همین هویت و رابطه، تلاش محفوظی وجود ندارد.</p> : <ul className="space-y-2">{preparedAttempts.map(item => <li key={item.preparationId}><button type="button" disabled={selectionLocked || !onRestorePreparation} className="btn btn-outline !flex-col !items-start max-w-full !whitespace-normal break-words text-start" onClick={() => onRestorePreparation?.(item.preparationId)}>{labels[item.kind]} · مبنای {toPersianDigits(item.baseVersion)} · {formatJalali(item.createdAt)}<br/><bdi className="break-all text-xs">{item.preparationId}</bdi></button></li>)}</ul>}
     </section>
     <section className="card space-y-3 p-4" aria-label="فهرست درخواست‌های همین رابطه">
       <h2 className="font-bold">درخواست‌های همین رابطه</h2>

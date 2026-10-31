@@ -6,8 +6,10 @@ on:
       - 'components/consultation/TicketRequest*'
       - 'components/consultation/ticket-storage-ui.test.tsx'
       - 'app/api/consultation/tickets/**'
+      - 'app/api/consultation/ticket-attempts/**'
       - 'app/**/consultation/requests/**'
       - 'sql/consultation_ticket_requests.sql'
+      - 'sql/consultation_ticket_prepared_intents.sql'
       - 'scripts/testing/consultation-tickets/**'
       - '.github/workflows/p03-ticket-native.yml'
   workflow_dispatch:
@@ -32,7 +34,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: New source boundaries and actual component handlers
-        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/tickets.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs scripts/testing/consultation-tickets/browser.test.mjs
+        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/tickets.test.ts lib/consultation/ticketAttemptStorageContracts.test.ts lib/consultation/ticketAttemptStorageServer.test.ts lib/consultation/ticketAttemptStorageRequest.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs scripts/testing/consultation-tickets/browser.test.mjs
       - name: Real Next, GoTrue, PostgREST and owned tmpfs PostgreSQL
         run: |
           set -o pipefail
@@ -47,7 +49,7 @@ jobs:
           receipts = [json.loads(line[len(prefix):]) for line in lines if line.startswith(prefix)]
           assert len(receipts) == 1
           receipt = receipts[0]
-          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 17
+          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 25
           assert receipt['cleanup'] == 'REMOVED_OWNED_RESOURCES'
           head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
           assert receipt['sha'] == head == os.environ['P03_TICKET_NATIVE_SOURCE_SHA']
@@ -56,7 +58,7 @@ jobs:
           receipt.update(productServiceRight='NOT_CONNECTED', fixture='explicit private DB grants to 2 authorized actors out of 4 fresh Auth-issued run-owned actors; not a product import',
               candidateSqlSha256=hashlib.sha256(Path('sql/consultation_ticket_requests.sql').read_bytes()).hexdigest(),
               fixtureSqlSha256=hashlib.sha256(Path('scripts/testing/consultation-tickets/owned-fixture.sql').read_bytes()).hexdigest(),
-              modelCalls=0, destination='fresh disposable owned CI tmpfs DB; no copied proof, production or staging target')
+              preparedSqlSha256=hashlib.sha256(Path('sql/consultation_ticket_prepared_intents.sql').read_bytes()).hexdigest(), modelCalls=0, destination='fresh disposable owned CI tmpfs DB; no copied proof, production or staging target')
           Path('p03-ticket-native-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
           PY
       - name: Existing Chrome, real ticket pages and isolated browser lifecycle
@@ -77,9 +79,9 @@ jobs:
           assert receipt['cleanup'] == 'REMOVED_OWNED_RESOURCES'
           assert receipt['targetInstall'] == 'NOT_APPLIED' and receipt['privateArtifactsUploaded'] is False
           browser = receipt['browserReceipt']
-          assert len(browser['checks']) == 9 and all(item['status'] == 'PASS' for item in browser['checks'])
+          assert len(browser['checks']) == 11 and all(item['status'] == 'PASS' for item in browser['checks'])
           assert browser['automaticTicketPosts'] == 0 and browser['privateStorageHits'] == 0 and browser['privateUrlHits'] == 0
-          receipt.update(productServiceRight='NOT_CONNECTED', unknownIntentAfterDestroy='NOT_IMPLEMENTED', modelCalls=0, arashAcceptance='UNOBSERVED')
+          receipt.update(productServiceRight='NOT_CONNECTED', unknownIntentAfterDestroy='PASS_ISOLATED_BROWSER', modelCalls=0, arashAcceptance='UNOBSERVED')
           Path('p03-ticket-browser-receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
           PY
       - uses: actions/upload-artifact@v4

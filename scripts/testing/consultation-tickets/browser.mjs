@@ -160,7 +160,7 @@ async function browserCase(s,ctx){
  ctx.write('browser-financial-before.json',{fingerprint:before,basis:parent.dossier.basis},true);
  pass('browser-owned-nonzero-dossier-real-consent',{holdingsToman:1000000,actualClosingToman:580000,plannedUnknown:true});
  const marker='SYNTHETIC_PRIVATE_BROWSER_MEMBER_BODY',subject='Synthetic browser request',reply='SYNTHETIC_SHARED_BROWSER_ADVISOR_REPLY',followup='SYNTHETIC_PRIVATE_BROWSER_MEMBER_FOLLOWUP';
- const needles=[marker,reply,followup];let posts=0,lost=false,armed=false,original=null,automatic=0;
+ const needles=[marker,reply,followup];let posts=0,lost=false,armed=false,original=null,automatic=0,preparationPosts=0,closeCommand=false,closePreparation=false,destroyedCommand=false,destroyedPreparation=false,capturedCommand=null,capturedPreparation=null;
  const pages=[],cache=[],observedLookups=[],http=[],pageErrors=[];
  const history=page=>page.locator('section[aria-label="تاریخچهٔ نسخه‌دار درخواست"]');
  // React mirrors a controlled textarea value into its child text. Playwright
@@ -178,17 +178,21 @@ async function browserCase(s,ctx){
   page.on('response',response=>{const u=new URL(response.url());if(u.pathname.startsWith('/api/')||u.pathname.startsWith('/auth/'))http.push({path:u.pathname,status:response.status()});});
   s.pageDiagnostic=async()=>({stage:s.stage,operation:s.operation,urlClass:[memberPath,advisorPath].includes(new URL(page.url()).pathname)?new URL(page.url()).pathname:'other',http:http.slice(-20),pageErrors:pageErrors.slice(-5),dom:await page.evaluate(()=>({subjectLabels:[...document.querySelectorAll('label')].filter(x=>x.textContent.trim()==='موضوع').length,textLabels:[...document.querySelectorAll('label')].filter(x=>x.textContent.trim()==='متن').length,inputs:[...document.querySelectorAll('input')].map(x=>({disabled:x.disabled,width:x.getBoundingClientRect().width})),fieldsets:[...document.querySelectorAll('fieldset')].map(x=>({disabled:x.disabled})),checking:document.body.textContent.includes('در حال تأیید نشست'),retry:document.body.textContent.includes('بررسی نشست و بازخوانی'),overlay:document.querySelectorAll('nextjs-portal').length}))});
   const cdp=await context.newCDPSession(page);await cdp.send('Network.enable');
-  cdp.on('Network.responseReceived',event=>{if(new URL(event.response.url).pathname===endpoint)cache.push({disk:!!event.response.fromDiskCache,worker:!!event.response.fromServiceWorker,prefetch:!!event.response.fromPrefetchCache,headers:event.response.headers});});
-  await cdp.send('Fetch.enable',{patterns:[{urlPattern:'*',requestStage:'Request'},{urlPattern:origin+endpoint+'*',requestStage:'Response'}]});
+  cdp.on('Network.responseReceived',event=>{if([endpoint,'/api/consultation/ticket-attempts'].includes(new URL(event.response.url).pathname))cache.push({disk:!!event.response.fromDiskCache,worker:!!event.response.fromServiceWorker,prefetch:!!event.response.fromPrefetchCache,headers:event.response.headers});});
+  await cdp.send('Fetch.enable',{patterns:[{urlPattern:'*',requestStage:'Request'},{urlPattern:origin+endpoint+'*',requestStage:'Response'},{urlPattern:origin+'/api/consultation/ticket-attempts*',requestStage:'Response'}]});
   cdp.on('Fetch.requestPaused',event=>{void(async()=>{
    const request=event.request,u=new URL(request.url),responseStage=event.responseStatusCode!==undefined;
    if(!responseStage){
     if(!browserDestination(request.url,request.method)){await cdp.send('Fetch.failRequest',{requestId:event.requestId,errorReason:'BlockedByClient'});return;}
     if(u.pathname===endpoint&&request.method==='POST'){posts++;if(armed){check(!original,'p09_browser_second_armed_post');original=JSON.parse(request.postData);ctx.write('browser-original-intent.json',{input:original},true);}}
+    if(u.pathname===endpoint&&request.method==='POST'&&closeCommand){capturedCommand=JSON.parse(request.postData);ctx.write('browser-destroy-command-intent.json',{body:request.postData},true);}
+    if(u.pathname==='/api/consultation/ticket-attempts'&&request.method==='POST'){preparationPosts++;if(closePreparation){capturedPreparation=JSON.parse(request.postData);ctx.write('browser-destroy-preparation-intent.json',{body:request.postData},true);}}
     if(u.pathname===endpoint&&request.method==='GET'&&u.searchParams.get('mode')==='lookup')observedLookups.push({requestId:u.searchParams.get('requestId'),clientToken:u.searchParams.get('clientToken')});
     await cdp.send('Fetch.continueRequest',{requestId:event.requestId});return;
    }
-   if(armed&&request.method==='POST'&&event.responseStatusCode===201){check(original&&!lost,'p09_browser_lost_response_identity');lost=true;armed=false;await cdp.send('Fetch.failRequest',{requestId:event.requestId,errorReason:'Aborted'});return;}
+   if(closeCommand&&u.pathname===endpoint&&request.method==='POST'&&event.responseStatusCode===201){check(capturedCommand,'p09_browser_destroy_command_missing');closeCommand=false;destroyedCommand=true;await context.close();return;}
+   if(closePreparation&&u.pathname==='/api/consultation/ticket-attempts'&&request.method==='POST'&&event.responseStatusCode===201){check(capturedPreparation,'p09_browser_destroy_preparation_missing');closePreparation=false;destroyedPreparation=true;await context.close();return;}
+   if(armed&&u.pathname===endpoint&&request.method==='POST'&&event.responseStatusCode===201){check(original&&!lost,'p09_browser_lost_response_identity');lost=true;armed=false;await cdp.send('Fetch.failRequest',{requestId:event.requestId,errorReason:'Aborted'});return;}
    await cdp.send('Fetch.continueResponse',{requestId:event.requestId});
   })().catch(error=>{if(!context.isClosed())s.asyncFailure=browserFailureCode(error);});});
   const url=origin+path+'?'+new URLSearchParams({relation,...(requestId?{request:requestId}:{})});
@@ -220,12 +224,12 @@ async function browserCase(s,ctx){
  const signedOut=await ctx.post('/auth/v1/logout',{}, {Authorization:'Bearer '+users.a.session.token,apikey:ctx.anon});check([200,204].includes(signedOut.status),'p09_browser_real_signout_failed');
  await first.context.close();check(page.isClosed()&&first.context.isClosed(),'p09_browser_first_context_not_closed');
  const priorToken=users.a.session.token;users.a.session=await newSession('a');check(users.a.session.token!==priorToken,'p09_browser_fresh_sdk_login_missing');
- s.stage='fresh_context';const reopened=await open('a',memberPath,resourceId),member=reopened.page;
+ s.stage='fresh_context';const reopened=await open('a',memberPath,resourceId);let member=reopened.page;
  await history(member).waitFor({state:'visible',timeout:60000});await settle(member,async()=>!(await reload(member).isDisabled()),'p09_browser_fresh_read_not_settled');
  check((await history(member).innerText()).includes(marker)&&posts===1,'p09_browser_fresh_context_not_get_only');
  await member.reload({waitUntil:'domcontentloaded',timeout:120000});await history(member).waitFor({state:'visible',timeout:60000});await settle(member,async()=>!(await reload(member).isDisabled()),'p09_browser_reload_not_settled');
  check((await history(member).innerText()).includes(marker)&&posts===1,'p09_browser_reload_automatic_post');
- recordPass(s,'fresh-sdk-context-and-reload-get-only',{realSignout:true,newPasswordSession:true,sdkGetUser:true,oldContextClosed:true,actualReload:true,postsBefore:1,postsAfter:posts,resourceHistoryOnly:true,unknownIntentAfterDestroy:'NOT_IMPLEMENTED'});
+ recordPass(s,'fresh-sdk-context-and-reload-get-only',{realSignout:true,newPasswordSession:true,sdkGetUser:true,oldContextClosed:true,actualReload:true,postsBefore:1,postsAfter:posts,resourceHistoryOnly:true,unknownIntentAfterDestroy:'SEPARATE_DURABILITY_CRITERIA'});
  s.stage='advisor_reply';const advisor=await open('owner',advisorPath,resourceId);
  await submit(advisor.page).waitFor({state:'visible',timeout:60000});await settle(advisor.page,async()=>!(await submit(advisor.page).isDisabled()),'p09_browser_advisor_not_ready');
  await textField(advisor.page).fill(reply);await submit(advisor.page).click();
@@ -236,6 +240,42 @@ async function browserCase(s,ctx){
  await reload(advisor.page).click();await settle(advisor.page,async()=>(await history(advisor.page).innerText()).includes(followup),'p09_browser_advisor_followup_not_read');
  check(posts===3&&sql(`SELECT count(*) FROM consultation_ticket_private.events WHERE request_id=${quote(resourceId)}`)==='3','p09_browser_versions_not_three');
  recordPass(s,'real-advisor-response-and-member-followup',{memberOpen:1,ownerReply:2,memberFollowup:3,actualDomSubmits:3,independentSameText:true});
+ s.stage='unconfirmed_command_destroy';
+ const commandMarker='SYNTHETIC_PRIVATE_DESTROY_BEFORE_COMMAND_CONFIRM';needles.push(commandMarker);
+ await member.getByRole('button',{name:'آماده‌کردن درخواست تازه',exact:true}).click();await member.getByLabel('موضوع',{exact:true}).fill('Synthetic destroyed command');await textField(member).fill(commandMarker);
+ const beforeDestroyPosts=posts;closeCommand=true;
+ try{await submit(member).click();}catch(error){check(destroyedCommand&&/closed/i.test(error.message),'p09_browser_command_destroy_click');}
+ await ctx.wait(()=>destroyedCommand&&member.isClosed()&&capturedCommand,'p09_browser_command_context_not_destroyed',60);
+ check(posts===beforeDestroyPosts+1,'p09_browser_destroy_command_duplicate');
+ const destroyedInput=capturedCommand,preparationId=sql(`SELECT id FROM consultation_ticket_private.prepared_intents WHERE actor_id=${quote(users.a.id)} AND client_token=${quote(destroyedInput.clientToken)}`);
+ check(sql(`SELECT count(*) FROM consultation_ticket_private.events WHERE request_id=${quote(destroyedInput.command.requestId)}`)==='1','p09_browser_destroy_command_effect_count');
+ const logout2=await ctx.post('/auth/v1/logout',{}, {Authorization:'Bearer '+users.a.session.token,apikey:ctx.anon});check([200,204].includes(logout2.status),'p09_browser_destroy_real_logout');users.a.session=await newSession('a');
+ const restoredContext=await open('a',memberPath,destroyedInput.command.requestId);member=restoredContext.page;
+ await settle(member,async()=>!(await reload(member).isDisabled()),'p09_browser_destroy_fresh_parent_not_ready');
+ const beforeRestorePosts=posts,beforeRestorePreparations=preparationPosts;
+ await member.getByRole('button',{name:new RegExp(preparationId)}).click();
+ await settle(member,async()=>(await history(member).innerText()).includes(commandMarker)&&(await member.getByText(/در بازخوانی مستقل تطبیق/).count())===1,'p09_browser_destroy_server_original_not_confirmed');
+ check(posts===beforeRestorePosts&&preparationPosts===beforeRestorePreparations&&observedLookups.some(x=>x.clientToken===destroyedInput.clientToken&&x.requestId===destroyedInput.command.requestId),'p09_browser_destroy_replayed_post');
+ check(sql(`SELECT request_body FROM consultation_ticket_private.prepared_intents WHERE id=${quote(preparationId)}`)===JSON.stringify(destroyedInput),'p09_browser_destroy_server_body_changed');
+ recordPass(s,'unconfirmed-command-destroy-and-server-intent-get-only',{real201BeforeBody:true,fullContextDestroyedBeforeConfirmation:true,newPasswordSdkSession:true,serverOriginalBodyTokenRestored:true,explicitSelection:true,commandEvents:1,extraCommandPosts:0,extraPreparationPosts:0});
+ s.stage='unknown_preparation_destroy';
+ const preparationMarker='SYNTHETIC_PRIVATE_DESTROY_UNKNOWN_PREPARATION';needles.push(preparationMarker);
+ await member.getByRole('button',{name:'آماده‌کردن درخواست تازه',exact:true}).click();await member.getByLabel('موضوع',{exact:true}).fill('Synthetic destroyed preparation');await textField(member).fill(preparationMarker);
+ const commandsBeforeUnknownPrepare=posts;closePreparation=true;
+ try{await submit(member).click();}catch(error){check(destroyedPreparation&&/closed/i.test(error.message),'p09_browser_preparation_destroy_click');}
+ await ctx.wait(()=>destroyedPreparation&&member.isClosed()&&capturedPreparation,'p09_browser_preparation_context_not_destroyed',60);
+ check(posts===commandsBeforeUnknownPrepare,'p09_browser_unknown_preparation_sent_command');
+ const pendingInput=capturedPreparation,pendingPreparationId=sql(`SELECT id FROM consultation_ticket_private.prepared_intents WHERE actor_id=${quote(users.a.id)} AND client_token=${quote(pendingInput.clientToken)}`);
+ users.a.session=await newSession('a');const pendingContext=await open('a',memberPath,pendingInput.command.requestId),pendingPage=pendingContext.page;
+ await settle(pendingPage,async()=>!(await reload(pendingPage).isDisabled()),'p09_browser_unknown_preparation_fresh_parent');
+ const prepareCountBeforeRecovery=preparationPosts;
+ await pendingPage.getByRole('button',{name:new RegExp(pendingPreparationId)}).click();
+ await settle(pendingPage,async()=>await textField(pendingPage).inputValue()===preparationMarker&&(await pendingPage.getByText(/نبود اثر همین تلاش/).count())===1,'p09_browser_unknown_preparation_original_body_not_loaded');
+ check(posts===commandsBeforeUnknownPrepare&&preparationPosts===prepareCountBeforeRecovery,'p09_browser_unknown_preparation_auto_post');
+ check(sql(`SELECT count(*) FROM consultation_ticket_private.events WHERE request_id=${quote(pendingInput.command.requestId)}`)==='0','p09_browser_unknown_preparation_created_command');
+ await storageAudit(pendingPage,needles);
+ recordPass(s,'unknown-preparation-destroy-no-command',{realPreparation201BeforeBody:true,fullContextDestroyed:true,originalBodyFromServer:true,commandEvents:0,automaticPosts:0,explicitRetryOfferedOnly:true});
+ const mainContext=await open('a',memberPath,resourceId);member=mainContext.page;await history(member).waitFor({state:'visible',timeout:60000});await settle(member,async()=>!(await reload(member).isDisabled()),'p09_browser_original_case_reopened');
  s.stage='privacy_layout';let audits=0;
  for(const current of [member,advisor.page]){
   for(const width of [1440,390]){await current.setViewportSize({width,height:900});const geometry=await current.evaluate(()=>({viewport:document.documentElement.clientWidth,document:document.documentElement.scrollWidth}));check(geometry.document<=geometry.viewport,'p09_browser_horizontal_overflow');}
@@ -253,11 +293,11 @@ async function browserCase(s,ctx){
  check(!(await ownerAgain.page.locator('body').innerText()).includes(reply),'p09_browser_revoked_private_text');
  await reload(member).click();await settle(member,async()=>(await history(member).innerText()).includes(followup)&&await submit(member).count()===0,'p09_browser_member_revoke_history');
  const other=await open('b',memberPath,resourceId);await settle(other.page,async()=>!(await other.page.locator('body').innerText()).includes(marker)&&await other.page.locator('section[aria-label="تأیید هویت درخواست"]').count()===1,'p09_browser_other_actor_private_fallback');
- check(await history(other.page).count()===0&&posts===3,'p09_browser_other_actor_or_revoke_post');
+ check(await history(other.page).count()===0&&posts===4,'p09_browser_other_actor_or_revoke_post');
  recordPass(s,'real-revoke-and-private-fallback-denial',{disabledAdvisorCleared:true,revokedAdvisorCleared:true,otherMemberDenied:true,memberHistoryVersions:3,memberWriteAbsent:true});
  const after=fingerprint();check(before===after,'p09_browser_financial_fingerprint_changed');ctx.write('browser-financial-after.json',{fingerprint:after},true);
- automatic=posts-3;check(automatic===0,'p09_browser_automatic_ticket_post');
- pass('browser-real-consumer-checked',{domPages:2,ticketVersions:3,automaticPosts:automatic,financialFingerprintSha256:digest(after),productServiceRight:'NOT_CONNECTED',unknownIntentAfterDestroy:'NOT_IMPLEMENTED'});
+ automatic=posts-4;check(automatic===0,'p09_browser_automatic_ticket_post');
+ pass('browser-real-consumer-checked',{domPages:2,ticketVersions:3,automaticPosts:automatic,financialFingerprintSha256:digest(after),productServiceRight:'NOT_CONNECTED',unknownIntentAfterDestroy:'SEPARATE_DURABILITY_CRITERIA'});
  return {pageClosed:true,contextClosed:true,freshLoginVerified:true,reloadGetOnly:true,automaticTicketPosts:automatic,privateStorageHits:0,privateUrlHits:0,cacheAuditComplete:true};
 }
 export async function runBrowser(){

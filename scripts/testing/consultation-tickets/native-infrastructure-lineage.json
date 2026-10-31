@@ -6,26 +6,28 @@
     "single closed consultation-ticket profile with exact routes/bootstrap and 4 actors/17 phases",
     "four-actor setup label",
     "matching gateway profile; default API mode remains closed to browser pages",
-    "root-approved browser mode for the two real ticket pages; fixed existing Chrome/driver preflight and owned cleanup; original helpers unchanged"
+    "root-approved browser mode for the two real ticket pages; fixed existing Chrome/driver preflight and owned cleanup; original helpers unchanged",
+    "root-allocated durable preparations: raw postExact transport, new isolated candidate/route, 25 API phases and 11 browser criteria; primary/frozen helpers unchanged",
+    "owned gateway loads unchanged source config with logging=false only; no request/fetch token URLs in private dev logs"
   ],
   "files": [
     {
       "path": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
       "sourcePath": "scripts/isolated-e2e/native-auth-runtime.mjs",
       "sourceSha256": "f9fff9fdec11ef3a9a52f949ccbccd2e24f17cab2285c396c7c73a907586c101",
-      "derivedSha256": "0183c748ca668bb362afaf255fe7799ab8429ffe2462e04dca06b752e0e12082"
+      "derivedSha256": "e31bf24acc18c4f02ac97385404d847e1e6a4d87351ab9568c629dd6becd6a99"
     },
     {
       "path": "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
       "sourcePath": "scripts/isolated-e2e/native-auth-gateway.mjs",
       "sourceSha256": "d4b971d7f1770bd7e4d415d44a45f51a6e01f60a4b4737383040f1590b530867",
-      "derivedSha256": "48595f60246e9df3c85b79ec880dfa4482d05e1a4cbdca8d68b7078eff6377f1"
+      "derivedSha256": "0ae807a2985d0648f588ef17ad48eaa78f0ab20a595c3609d2648d640c0c4ae2"
     },
     {
       "path": "scripts/testing/consultation-tickets/browser.mjs",
       "sourcePath": "scripts/isolated-e2e/workbook-browser.mjs",
       "sourceSha256": "9f05208a449daff9f036819b27c06862a0295f8da94738e35cca541c3dc88150",
-      "derivedSha256": "8f20c8d864e384cb6f7ce8c4296518f5a57630a8196c09f885bc0dd17dfbb4f4"
+      "derivedSha256": "3c2d2a77b31ec33db8156ab5e51db1fecd61b1c9d2bd4dd1f3e33a914f6f759e"
     }
   ]
 }

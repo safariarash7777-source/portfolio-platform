@@ -3,6 +3,7 @@
 import { randomUUID, createHash } from 'node:crypto';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { durabilityNative } from './durability-native.mjs';
 import { runNativeAuthProfile } from './native-auth-runtime.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const check = (value, code) => { if (!value) throw Error(code); };
@@ -70,6 +71,8 @@ async function exercise(ctx) {
   check(blocked.code === 'SERVICE_RIGHT_NOT_CONNECTED', 'p03_db_default_not_connected');
   const ownerBlocked = { ...opening, expectedActorId: users.owner.id, clientToken: randomUUID(), command: { kind: 'advisor_clarification', relationshipId: relation, requestId, baseVersion: 1, text: 'Synthetic owner does not grant a right' } };
   check((await ticketPost('owner', ownerBlocked, 503)).code === 'SERVICE_RIGHT_NOT_CONNECTED', 'p03_admin_profile_not_service_right');
+  const closedPreparation = await ctx.postExact('/api/consultation/ticket-attempts', JSON.stringify(opening), { Cookie: users.a.session.cookie, Origin: ctx.origin });
+  check(closedPreparation.status === 503 && (await closedPreparation.json()).code === 'SERVICE_RIGHT_NOT_CONNECTED', 'p03_product_preparation_right_not_closed');
   check(sql('SELECT count(*) FROM consultation_ticket_private.requests') === '0', 'p03_blocked_writes_created_rows');
   pass('product-default-closed-in-db-and-api', { memberDenied: true, ownerAdminDenied: true, requestsCreated: 0, realServiceRight: 'NOT_CONNECTED' });
 
@@ -201,6 +204,7 @@ async function exercise(ctx) {
   check(finalParent.dossier?.basis.holdingsVersionId === holdingReceipt.version_id || finalParent.dossier === null, 'p03_financial_basis_changed');
   ctx.write('financial-after.json', { fingerprint: afterFinancial }, true);
   pass('financial-rows-fingerprints-and-original-history-preserved', { fingerprintSha256: digest(afterFinancial), holdingVersions: 1, cashVersions: 1, ticketVersions: 6, modelCalls: 0, targetInstall: 'NOT_APPLIED', uiBrowser: 'NOT_RUN' });
+  await durabilityNative(ctx, relation);
 }
 
 runNativeAuthProfile('consultation-ticket', exercise).catch(error => {
