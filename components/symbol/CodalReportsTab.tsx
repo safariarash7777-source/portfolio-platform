@@ -21,6 +21,7 @@ export type StoredReport = {
 };
 
 type LiveItem = CompanyAnnouncement;
+const DEFAULT_VISIBLE_FIELDS = { kind: true, sentAt: true };
 
 function normalizeLive(j: unknown): LiveItem[] {
   const root = (j && typeof j === "object" ? (j as Record<string, unknown>) : {});
@@ -51,11 +52,13 @@ export default function CodalReportsTab({
   const live = received?.symbol === symbol ? received.items : null;
   const [liveState, setLiveState] = useState<"idle" | "loading" | "error">("idle");
   const [filter, setFilter] = useState<CompanyReportFilter>(EMPTY_REPORT_FILTER);
+  const [visibleFields, setVisibleFields] = useState(DEFAULT_VISIBLE_FIELDS);
   const activeRequest = useRef({ version: 0 });
   useEffect(() => {
     const requests = activeRequest.current;
     requests.version++;
     setReceived(null); setLiveState('idle'); setFilter(EMPTY_REPORT_FILTER);
+    setVisibleFields(DEFAULT_VISIBLE_FIELDS);
     // A reused dossier must ignore a late response belonging to the old company.
     return () => { requests.version++; };
   }, [symbol]);
@@ -165,6 +168,22 @@ export default function CodalReportsTab({
                 </select>
               </label>
             </fieldset>
+            <fieldset className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs">
+              <legend className="font-medium">اطلاعات نمایشی</legend>
+              <label className="flex min-h-11 cursor-pointer items-center gap-2">
+                <input type="checkbox" aria-label="نمایش نوع اطلاعیه" checked={visibleFields.kind}
+                  onChange={event => setVisibleFields(previous => ({ ...previous, kind: event.target.checked }))}
+                  className="h-4 w-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" />
+                نمایش نوع اطلاعیه
+              </label>
+              <label className="flex min-h-11 cursor-pointer items-center gap-2">
+                <input type="checkbox" aria-label="نمایش زمان ارسال" checked={visibleFields.sentAt}
+                  onChange={event => setVisibleFields(previous => ({ ...previous, sentAt: event.target.checked }))}
+                  className="h-4 w-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" />
+                نمایش زمان ارسال
+              </label>
+              <p className="w-full text-muted-foreground">انتخاب نمایش، فیلترها را تغییر نمی‌دهد؛ عنوان، منبع، تاریخ انتشار و هشدارهای نقص اطلاعات همیشه باقی می‌مانند.</p>
+            </fieldset>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
               <p role="status" aria-live="polite" className="text-xs text-muted-foreground">
                 {toPersianDigits(discovered.items.length)} نتیجه از {toPersianDigits(discovered.total)} اطلاعیهٔ دریافت‌شده؛ {toPersianDigits(discovered.excluded.length)} مورد با فیلتر کنار گذاشته شد. تاریخ ارسال {toPersianDigits(discovered.missingSentDate)} مورد ثبت نشده است.
@@ -188,14 +207,17 @@ export default function CodalReportsTab({
                 <li key={i} className="py-2 text-xs">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0 break-words">
-                      {a.kind && (
+                      {visibleFields.kind && a.kind && (
                         <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{a.kind}</span>
                       )}
                       <CodalSourceLink url={a.url} className="font-medium hover:underline" fallback={<span className="font-medium">{a.title}</span>}>
                         {a.title}
                       </CodalSourceLink>
                     </div>
-                    <span className="shrink-0 text-muted-foreground">{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}<br />{a.publishedDate ? `انتشار: ${toPersianDigits(a.publishedDate)} (ساعت نامعلوم)` : "تاریخ انتشار نامعلوم"}</span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {(!a.date || visibleFields.sentAt) && <>{a.date ? `ارسال: ${toPersianDigits(a.date)}${a.time ? ` ${toPersianDigits(a.time)}` : ""}` : "زمان ارسال نامعلوم"}<br /></>}
+                      {a.publishedDate ? `انتشار: ${toPersianDigits(a.publishedDate)} (ساعت نامعلوم)` : "تاریخ انتشار نامعلوم"}
+                    </span>
                   </div>
                 </li>
               ))}
