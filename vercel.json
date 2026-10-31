@@ -8,5 +8,12 @@
       "path": "/api/cron/telegram-sync",
       "schedule": "0 3 * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "codex/p07-fundamental-read-binding-20261031": false,
+      "codex/p07-market-basis-20261031": false,
+      "codex/handoff-v04-20261029": false
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import { logStoredReadFailure, type StoredReadPhase } from "@/lib/stored-read-diagnostics";
 import { NextResponse } from "next/server";
 import { codalFeedItems, codalFeedQuery } from "@/lib/codal-feed";
+import { fundamentalReadPair } from "@/lib/fundamental/read-config.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,8 +16,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "symbol required" }, { status: 400 });
   }
   const codalSearchUrl = `https://codal.ir/ReportList.aspx?search&Symbol=${encodeURIComponent(symbol)}`;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const pair = Object.freeze({
+    FUNDAMENTAL_READ_URL: process.env.FUNDAMENTAL_READ_URL,
+    FUNDAMENTAL_READ_ANON_KEY: process.env.FUNDAMENTAL_READ_ANON_KEY,
+  });
+  const override = pair.FUNDAMENTAL_READ_URL !== undefined || pair.FUNDAMENTAL_READ_ANON_KEY !== undefined;
+  const selected = override ? fundamentalReadPair(pair) : {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    anon: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  };
+  const url = selected?.url;
+  const anon = selected?.anon;
   if (!url || !anon) {
     return NextResponse.json({ error: "supabase not configured", codalSearchUrl }, { status: 503 });
   }

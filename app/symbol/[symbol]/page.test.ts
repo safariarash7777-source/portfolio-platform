@@ -11,8 +11,9 @@ import type { IrMarket, IrStockRow } from "../../../lib/market-ir";
 import { withValidNav, marketQualityLabel } from "../../../lib/market-quality";
 import { formatRialAsToman, formatJalali, formatTehranClock, toPersianDigits } from "../../../lib/format";
 import { deriveQuarters, ttmSeries, peOf, type QuarterInput, type DerivedQuarter, type TtmPoint } from "../../../lib/core/quarterly";
-import type { SymbolFundamentals, ReportScope } from "../../../lib/fundamental/types";
+import type { SymbolFundamentals, ReportScope, CodalN30Data } from "../../../lib/fundamental/types";
 import type { FundamentalCardData } from "../../../lib/core/fundamentalCard";
+import { buildFundamentalCard } from "../../../lib/core/fundamentalCard";
 
 Object.assign(globalThis, { React });
 
@@ -312,6 +313,95 @@ test("actual symbol tabs open chart/monthly anchors and follow hash/back navigat
   assert.match(settle(), /data-symbol-tab="fundamental">fundamental-fixture/);
 });
 
+test("market basis: all three actual consumers distinguish unknown, verified zero and incomplete coverage", () => {
+  const report: CodalN30Data = { symbol: "fixture", report_kind: "ن-۳۰", period_end: "1405-01-31", fiscal_year: 1405,
+    unit: "میلیون ریال", qty_unit: "تن", period_total_amount: 100, fy_cumulative_amount: 100,
+    products: [{ product_name: "محصول آزمایشی", market: "داخلی", production_qty: 12, sales_qty: 10, sales_rate: 6_000_000, sales_amount: 60 },
+      { product_name: "خدمت آزمایشی", market: "خدمات", production_qty: 8, sales_qty: 5, sales_rate: 8_000_000, sales_amount: 40 }] };
+  let ids = 0;
+  const hooks = { ...React, useMemo: (fn: () => unknown) => fn(), useState: () => [true, () => {}], useId: () => `market-basis-${ids++}` };
+  const Views = ["MonthlySalesCharts", "FundamentalCharts", "SymbolFundamentalCard"].map(name => clientComponent(name, hooks));
+  const render = (r: CodalN30Data) => {
+    const fundamentals = reportSet(companyPeriods());
+    fundamentals.n30 = { data: [r], source: { title: "گزارش مصنوعی آزمون", source_url: null, verified: false } };
+    return Views.map((View, index) => renderToStaticMarkup(React.createElement(View, index === 0
+      ? { reports: [r], sourceTitle: "گزارش مصنوعی آزمون", sourceUrl: null }
+      : index === 1 ? { fundamentals } : { card: buildFundamentalCard("fixture", [r]) })));
+  };
+  const before = JSON.stringify(report), unknown = render(report);
+  for (const html of unknown) {
+    assert.match(html, /تفکیک بازار تأیید نشده/);
+    assert.match(html, /سهم صادرات نامعلوم است/);
+    assert.doesNotMatch(html, /کل فروش داخلی|صادراتی گزارش نشده|NaN|Infinity/);
+  }
+  assert.match(unknown[0], /تفکیک نامعلوم/); assert.match(unknown[2], /تفکیک نامعلوم/);
+  assert.doesNotMatch(unknown[2], /<td[^>]*>داخلی<\/td>/);
+  const repeated = render({ ...report, products: report.products.map((p, i) => ({ ...p, product_name: "محصول تکراری", market: i ? "صادراتی" : "داخلی" })) });
+  assert.equal((repeated[2].match(/<td[^>]*>تفکیک نامعلوم<\/td>/g) ?? []).length, 2);
+  assert.equal((repeated[0].match(/\(تفکیک نامعلوم\)/g) ?? []).length, 2);
+  const repeatedReport: CodalN30Data = { ...report, products: report.products.map((p, i) => ({ ...p, product_name: "محصول تکراری", market: i ? "صادراتی" : "داخلی" })) };
+  const monthlyTree = Views[0]({ reports: [repeatedReport], sourceTitle: "نمونهٔ آزمون", sourceUrl: null });
+  const rateNode = presentationNodes(monthlyTree).find(n => typeof n.type === "function" && n.type.name === "RateChart");
+  assert.ok(rateNode);
+  const rateTree = (rateNode.type as (props: Record<string, unknown>) => React.ReactElement)(rateNode.props);
+  const lines = presentationNodes(rateTree).filter(n => typeof n.props.dataKey === "string" && /^s\d+$/.test(n.props.dataKey));
+  assert.equal(lines.length, 2); assert.equal(new Set(lines.map(n => n.key)).size, 2, "two unknown-market rate buckets need independent React identities");
+  const verified = { ...report, products: report.products.map(p => ({ ...p, market_basis: "section_header" as const })) };
+  const known = render(verified);
+  for (const html of known) {
+    assert.doesNotMatch(html, /سهم صادرات نامعلوم|کل فروش داخلی|صادراتی گزارش نشده/);
+    assert.match(html, /۰/);
+  }
+  assert.match(known[2], /<td[^>]*>خدمات<\/td>/);
+  for (const html of render({ ...verified, period_total_amount: 101 })) {
+    assert.match(html, /پوشش مبلغ ردیف‌های بازار کامل نیست/); assert.match(html, /سهم صادرات نامعلوم است/);
+  }
+  const signed = render({ ...verified, period_total_amount: 50,
+    products: [verified.products[0], { ...verified.products[1], market: "صادراتی", sales_amount: -10 }] });
+  for (const html of signed) {
+    assert.match(html, /اصلاحی\/منفی/); assert.match(html, /روش فعلی/);
+    assert.doesNotMatch(html, /تفکیک بازار تأیید نشده|پوشش مبلغ ردیف‌های بازار کامل نیست/);
+  }
+  assert.match(signed[2], /<td[^>]*>صادراتی<\/td>/);
+  assert.equal(JSON.stringify(report), before);
+});
+
+test("rounded positive: all three consumers keep positive rounded shares distinct from real zero", async (t) => {
+  let ids = 0;
+  const hooks = { ...React, useMemo: (fn: () => unknown) => fn(), useState: () => [true, () => {}], useId: () => `small-share-${ids++}` };
+  const names = ["MonthlySalesCharts", "FundamentalCharts", "SymbolFundamentalCard"];
+  const render = (index: number, domestic: number, exports: number, includeEarlierPositive = false) => {
+    const report: CodalN30Data = { symbol: "fixture", report_kind: "ن-۳۰", period_end: "1405-01-31", fiscal_year: 1405,
+      unit: "میلیون ریال", period_total_amount: domestic + exports, fy_cumulative_amount: domestic + exports,
+      products: [{ product_name: "داخلی آزمون", market: "داخلی", market_basis: "section_header", sales_amount: domestic, production_qty: null, sales_qty: null, sales_rate: null },
+        { product_name: "صادرات آزمون", market: "صادراتی", market_basis: "section_header", sales_amount: exports, production_qty: null, sales_qty: null, sales_rate: null }] };
+    const earlier = { ...report, period_end: "1404-12-29", fiscal_year: 1404, period_total_amount: 1000000, fy_cumulative_amount: 1000000,
+      products: report.products.map((p, i) => ({ ...p, sales_amount: i ? 1 : 999999 })) };
+    const reports = includeEarlierPositive ? [earlier, report] : [report];
+    const before = JSON.stringify(reports), View = clientComponent(names[index], hooks), fundamentals = reportSet(companyPeriods());
+    fundamentals.n30 = { data: reports, source: { title: "گزارش مصنوعی آزمون", source_url: null, verified: false } };
+    const html = renderToStaticMarkup(React.createElement(View, index === 0
+      ? { reports, sourceTitle: "گزارش مصنوعی آزمون", sourceUrl: null }
+      : index === 1 ? { fundamentals } : { card: buildFundamentalCard("fixture", reports) }));
+    assert.equal(JSON.stringify(reports), before);
+    return html;
+  };
+  for (let index = 0; index < names.length; index++) await t.test(names[index], () => {
+    for (const [domestic, exports] of [[999999, 1], [999999999999, 1]]) {
+      const html = render(index, domestic, exports);
+      assert.match(html, /کمتر از\s*۰٫۱٪/);
+      assert.doesNotMatch(html, /سهم صادرات از فروش با تفکیک تأییدشده صفر/);
+    }
+    const zero = render(index, 1000000, 0);
+    assert.doesNotMatch(zero, /کمتر از\s*۰٫۱٪/); assert.match(zero, /٪۰|۰٪/);
+    const boundary = render(index, 999000, 1000);
+    assert.doesNotMatch(boundary, /کمتر از\s*۰٫۱٪/); assert.match(boundary, /٪۰[.٫]۱|۰[.٫]۱٪/);
+    const priorPositiveLatestZero = render(index, 1000000, 0, true);
+    if (index === 1) assert.match(priorPositiveLatestZero, /کمتر از\s*۰٫۱٪/, "aggregate uses the whole existing interval");
+    else assert.doesNotMatch(priorPositiveLatestZero, /کمتر از\s*۰٫۱٪/, "latest-month consumers cannot borrow prior exports");
+  });
+});
+
 function presentationNodes(node: React.ReactNode): React.ReactElement<Record<string, unknown>>[] {
   if (Array.isArray(node)) return node.flatMap(presentationNodes);
   if (!React.isValidElement(node)) return [];
@@ -360,7 +450,7 @@ test("symbol tabs preserve click/hash navigation and expose RTL keyboard selecti
 // Synthetic offline fixture only; never served as company data.
 const cardFixture: FundamentalCardData = {
   symbol: "fixture", latestMonth: "1405-06", latestSalesBToman: 1, yoyPct: null,
-  topProductName: null, exportSharePct: null, narrative: "روایت نمونهٔ آزمون",
+  topProductName: null, exportSharePct: null, marketUnavailableReason: null, narrative: "روایت نمونهٔ آزمون",
   months12: [{ month: "1405-06", totalAmount: 10_000, domesticAmount: 10_000, exportAmount: 0 }],
   monthlyYoY: [{ month: "1405-06", yoyPct: null }], prodSalesGap: null, quantityUnit: null,
   topProductRate: null, latestProducts: [{ name: "محصول آزمون", market: "داخلی", productionQty: null, salesQty: null, salesRate: null, salesAmount: null }],
