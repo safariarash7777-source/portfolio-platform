@@ -1,0 +1,68 @@
+{
+  "status": "PASS_LIMITED_REAL_LINUX_SDK_RLS_DOM",
+  "head": "6ccb106ace4711be7359c7fc8c8d6ab33670f719",
+  "tree": "ffbc97fc8a7aa639dd9025b4eecf4aeb92efd509",
+  "reader": "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc",
+  "pr": 381,
+  "nativeRun": 41191680124,
+  "nativeJob": 124509572575,
+  "normalRun": 41191680083,
+  "normalJobs": [
+    {
+      "id": 124509670392,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124509670523,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124509670524,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124509670581,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124510956831,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "fullOfficialNativeCoreAndDbLogsReadByRoot": true,
+  "actualNativeCheckout": "6ccb106ace4711be7359c7fc8c8d6ab33670f719",
+  "actualNormalCheckout": "6f53219036c4275b23b5162f933ebc96cfda55e1",
+  "actualNormalTree": "ffbc97fc8a7aa639dd9025b4eecf4aeb92efd509",
+  "actualNormalParents": [
+    "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc",
+    "6ccb106ace4711be7359c7fc8c8d6ab33670f719"
+  ],
+  "coreFirstGroup": 2225,
+  "actualChecks": 11,
+  "actualBrowserChecks": 9,
+  "officialArtifact": {
+    "id": 13039076280,
+    "bytes": 1601,
+    "sha256": "531f8ba942e7b49e1dd4fbd0366dddb1cf5135e9351432eef11d2c5bf2afb60b",
+    "rawJsonBytes": 3683,
+    "rawJsonSha256": "5e5eceeb341ff20f1712e872f7ee63e22af2867caf27205fe9176abaff2a16fe",
+    "rootCrcAndDigestAndThreeGitSourceHashesVerified": true
+  },
+  "previousFailurePreserved": true,
+  "legacyProfile699Preserved": true,
+  "productSubtreesExact7b": true,
+  "schemaPhase11Unchanged": true,
+  "fixturePrivilege": "owned tmpfs only: observe inherited legacy grants; explicit table-only revoke; prove negative403; SELECT authenticated only; policies/default global privileges unchanged",
+  "primaryAnonPrivilegeNotMirrored": true,
+  "syntheticDataInProduct": false,
+  "primaryInstall": "NOT_APPLIED",
+  "productServiceRight": "NOT_CONNECTED",
+  "rootMemberAssembly": "IN_PROGRESS_NOT_MERGED",
+  "modelCalls": 0,
+  "arashAcceptance": "UNOBSERVED"
+}
