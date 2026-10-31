@@ -7,6 +7,7 @@ import {
   dedupeByMonth,
   fyMonthOrder,
   monthKeyOf,
+  monthlyCalendarKeys,
   narrativeCumulative,
   narrativeMix,
   narrativeMonthlyVsAvg,
@@ -15,6 +16,7 @@ import {
   meaningfulRate,
 } from "./monthlyReport";
 import type { CodalN30Data, N30ProductRow } from "@/lib/fundamental/types";
+import { withKnownMonthlyQuantities } from "./monthly-quantity";
 
 function prod(p: Partial<N30ProductRow> & { product_name: string }): N30ProductRow {
   // `sales_qty` پیش‌فرضِ ۱ دارد، نه null.
@@ -49,6 +51,16 @@ test("monthKeyOf: جلالی معتبر و نامعتبر", () => {
   assert.equal(monthKeyOf("1405-02-31"), "1405-02"); // اردیبهشت ۳۱روزه معتبر
   assert.equal(monthKeyOf("bad"), null);
   assert.equal(monthKeyOf("1404-13-01"), null);
+});
+
+test("shared monthly calendar: sorted unique slots, year rollover, empty and invalid axes", () => {
+  const keys = Object.freeze(["1405-02", "1404-11", "1405-02"]);
+  assert.deepEqual(monthlyCalendarKeys(keys), ["1404-11", "1404-12", "1405-01", "1405-02"]);
+  assert.deepEqual(monthlyCalendarKeys(["1405-02"]), ["1405-02"]);
+  assert.deepEqual(monthlyCalendarKeys([]), []);
+  for (const bad of ["1405-00", "1405-13", "bad", "1405-1", "1405-01-31"])
+    assert.deepEqual(monthlyCalendarKeys(["1405-01", bad]), []);
+  assert.deepEqual(keys, ["1405-02", "1404-11", "1405-02"]);
 });
 
 test("fyMonthOrder: سال مالی منتهی به شهریور از مهر شروع می‌شود", () => {
@@ -166,14 +178,106 @@ test("محصول تک‌قلمی: ترکیب فروش و تولید/فروش س�
   assert.ok(n && n.includes("داخلی"));
 });
 
-test("prodVsSales فقط وقتی هر دو مقدار موجودند", () => {
+test("prodVsSales ماه با مقدار ناقص را با اسلات null نگه می‌دارد", () => {
   const r = buildMonthlySales([
     report("1405-01-31", 100, [
       prod({ product_name: "الف", sales_amount: 100, sales_qty: 10, production_qty: null }),
     ]),
   ]);
   assert.ok(r);
-  assert.equal(r.prodVsSales.length, 0);
+  assert.equal(r.prodVsSales.length, 1);
+  assert.deepEqual(r.prodVsSales[0], {
+    monthKey: "1405-01", monthLabel: "فروردین",
+    production: null, sales: null, unavailableReason: "incomplete-quantity",
+  });
+  assert.equal(narrativeProdVsSales(r), null);
+});
+
+test("مقدار: ماه کاملاً غایب همان محور نرخ را دارد؛ گزارش/صفر اختراع نمی‌شود", () => {
+  const reports = [
+    report("1405-01-31", 100, [prod({ product_name: "الف", sales_amount: 100, production_qty: 12, sales_qty: 10 })]),
+    report("1405-03-31", 300, [prod({ product_name: "الف", sales_amount: 300, production_qty: 32, sales_qty: 30 })]),
+  ];
+  const before = JSON.stringify(reports);
+  const m = buildMonthlySales(reports)!;
+  assert.deepEqual(m.prodVsSales.map(p => p.monthKey), ["1405-01", "1405-02", "1405-03"]);
+  assert.deepEqual(m.prodVsSales[1], { monthKey: "1405-02", monthLabel: "اردیبهشت", production: null, sales: null, unavailableReason: "missing-report" });
+  assert.deepEqual(m.rateSeries[0].points.map(p => p.monthKey), m.prodVsSales.map(p => p.monthKey));
+  assert.equal(m.reportCount, 2);
+  assert.equal(m.avgCurrent, 200);
+  assert.equal(m.currentMonths[1].amount, null);
+  assert.equal(JSON.stringify(reports), before);
+});
+
+test("مقدار: صفر گزارش‌شده با نبود محصول و ماه غایب متفاوت است", () => {
+  const m = buildMonthlySales([
+    report("1405-01-31", 100, [prod({ product_name: "الف", sales_amount: 100, production_qty: 0, sales_qty: 0 })]),
+    report("1405-02-31", 1, [prod({ product_name: "ب", sales_amount: 1, production_qty: 9, sales_qty: 8 })]),
+    report("1405-04-31", 400, [prod({ product_name: "الف", sales_amount: 400, production_qty: 42, sales_qty: 40 })]),
+  ])!;
+  assert.equal(m.prodVsSales[0].production, 0);
+  assert.equal(m.prodVsSales[0].sales, 0);
+  assert.equal(m.prodVsSales[0].unavailableReason, null);
+  assert.equal(m.prodVsSales[1].unavailableReason, "missing-product");
+  assert.equal(m.prodVsSales[1].sales, null);
+  assert.equal(m.prodVsSales[2].unavailableReason, "missing-report");
+});
+
+test("مقدار: ردیف ناقص یک بازار به جمع ظاهراً کامل بازارهای دیگر تبدیل نمی‌شود", () => {
+  const m = buildMonthlySales([report("1405-01-31", 300, [
+    prod({ product_name: "الف", market: "داخلی", sales_amount: 200, production_qty: 20, sales_qty: 18 }),
+    prod({ product_name: "الف", market: "صادراتی", sales_amount: 100, production_qty: null, sales_qty: 10 }),
+  ])])!;
+  assert.equal(m.prodVsSales[0].production, null);
+  assert.equal(m.prodVsSales[0].sales, null);
+  assert.equal(m.prodVsSales[0].unavailableReason, "incomplete-quantity");
+  assert.equal(narrativeProdVsSales(m), null);
+});
+
+test("مقدار: جمع ردیف‌های کامل تغییر نمی‌کند؛ ماه ناقص آخر روایت ماه قبلی را حمل نمی‌کند", () => {
+  const m = buildMonthlySales([
+    report("1405-01-31", 300, [
+      prod({ product_name: "الف", sales_amount: 200, production_qty: 20, sales_qty: 18 }),
+      prod({ product_name: "الف", market: "صادراتی", sales_amount: 100, production_qty: 10, sales_qty: 8 }),
+    ]),
+    report("1405-02-31", 400, [prod({ product_name: "الف", sales_amount: 400, production_qty: 40, sales_qty: null })]),
+  ])!;
+  assert.equal(m.prodVsSales[0].production, 30);
+  assert.equal(m.prodVsSales[0].sales, 26);
+  assert.equal(m.prodVsSales[1].sales, null);
+  assert.equal(narrativeProdVsSales(m), null);
+});
+
+test("مقدار: گپ اسفند/فروردین تقویمی است و سال مالی جدید ساخته نمی‌شود", () => {
+  const m = buildMonthlySales([
+    report("1404-11-30", 100, [prod({ product_name: "الف", sales_amount: 100, production_qty: 12, sales_qty: 10 })]),
+    report("1405-02-31", 200, [prod({ product_name: "الف", sales_amount: 200, production_qty: 22, sales_qty: 20 })]),
+  ])!;
+  assert.deepEqual(m.prodVsSales.map(p => p.monthKey), ["1404-11", "1404-12", "1405-01", "1405-02"]);
+  assert.deepEqual(m.prodVsSales.map(p => p.sales), [10, null, null, 20]);
+  assert.equal(m.currentFY, 1405);
+  assert.equal(m.reportCount, 2);
+});
+
+test("مقدار: واحد نامعلوم در sanitizer موجود null می‌ماند؛ نبود محصول سری اختراعی نمی‌سازد", () => {
+  const raw = report("1405-01-31", 100, [prod({ product_name: "الف", sales_amount: 100, production_qty: 12, sales_qty: 10 })]);
+  const sanitized = withKnownMonthlyQuantities(raw);
+  const m = buildMonthlySales([sanitized])!;
+  assert.equal(sanitized.qty_unit, null);
+  assert.equal(m.prodVsSales[0].production, null);
+  assert.equal(m.prodVsSales[0].sales, null);
+  assert.equal(m.prodVsSales[0].unavailableReason, "incomplete-quantity");
+  assert.equal(raw.products[0].production_qty, 12);
+  assert.deepEqual(buildMonthlySales([report("1405-01-31", 100, [])])?.prodVsSales, []);
+});
+
+test("مقدار: عدد نامعتبر هم null است و به ستون صفر تبدیل نمی‌شود", () => {
+  for (const bad of [NaN, Infinity, -Infinity]) {
+    const m = buildMonthlySales([report("1405-01-31", 100, [prod({ product_name: "الف", sales_amount: 100, production_qty: bad, sales_qty: 10 })])])!;
+    assert.equal(m.prodVsSales[0].production, null);
+    assert.equal(m.prodVsSales[0].sales, null);
+    assert.equal(m.prodVsSales[0].unavailableReason, "incomplete-quantity");
+  }
 });
 
 test("ورودی خالی یا بی‌اعتبار → null (بخش رندر نشود)", () => {
@@ -272,4 +376,30 @@ test("نرخ: تناقضِ علامت حتی با نرخِ مثبت هم رد م
   // اگر روزی پارسر قدرمطلق بگیرد، این تست تنها چیزی است که جلوش را می‌گیرد.
   assert.equal(meaningfulRate({ sales_qty: 5, sales_rate: 250, sales_amount: -1250 }), null);
   assert.equal(meaningfulRate({ sales_qty: -5, sales_rate: 250, sales_amount: 1250 }), null);
+});
+
+test("rate axis retains a wholly missing month as null without creating reports", () => {
+  const input = [
+    report("1405-03-31", 700, [prod({product_name:"شمش",sales_amount:700,sales_rate:260})], 1900),
+    report("1405-01-31", 500, [prod({product_name:"شمش",sales_amount:500,sales_rate:240})], 500),
+  ];
+  const before=JSON.stringify(input), model=buildMonthlySales(input);
+  assert.ok(model);
+  assert.deepEqual(model.rateSeries[0].points.map(p=>[p.monthKey,p.rate]), [["1405-01",240],["1405-02",null],["1405-03",260]]);
+  assert.equal(model.reportCount,2);
+  assert.equal(model.currentMonths[1].amount,null);
+  assert.equal(model.cumulativeCurrent,1900);
+  assert.equal(JSON.stringify(input),before);
+});
+test("rate calendar slots cross a year boundary without zero fill or leading/trailing padding", () => {
+  const model=buildMonthlySales([
+    report("1405-02-31", 900, [prod({product_name:"شمش",sales_amount:900,sales_rate:300})]),
+    report("1404-11-30", 700, [prod({product_name:"شمش",sales_amount:700,sales_rate:250})]),
+  ]);
+  assert.ok(model);
+  assert.deepEqual(model.rateSeries[0].points.map(p=>[p.monthKey,p.rate]), [["1404-11",250],["1404-12",null],["1405-01",null],["1405-02",300]]);
+  assert.equal(model.reportCount,2);
+  assert.equal(model.latestMix[0].amount,900);
+  assert.equal(model.prodVsSales.length,4);
+  assert(model.prodVsSales.every(p=>p.production===null&&p.sales===null));
 });

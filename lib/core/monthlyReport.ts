@@ -49,8 +49,9 @@ export interface MixSlice {
 export interface ProdSalesPoint {
   monthKey: string;
   monthLabel: string;
-  production: number;
-  sales: number;
+  production: number | null;
+  sales: number | null;
+  unavailableReason: "missing-report" | "missing-product" | "incomplete-quantity" | null;
 }
 
 export interface MonthlySales {
@@ -75,7 +76,7 @@ export interface MonthlySales {
   latestDomesticAmount: number | null;
   latestExportAmount: number | null;
   latestExportSharePct: number | null;
-  /** تولید در برابر فروش محصول اصلی (فقط ماه‌های دارای هر دو مقدار). */
+  /** تولید/فروش محصول اصلی روی محور تقویمی؛ دادهٔ ناقص null است. */
   mainProductName: string | null;
   prodVsSales: ProdSalesPoint[];
   /** تعداد گزارش‌های یکتای استفاده‌شده. */
@@ -146,6 +147,22 @@ export function monthKeyOf(periodEnd: string): string | null {
   const mo = Number(m[2]);
   if (mo < 1 || mo > 12) return null;
   return `${m[1]}-${m[2]}`;
+}
+
+/** Presentation axis between observed month keys; no report, value or fiscal period is created. */
+export function monthlyCalendarKeys(keys: readonly string[]): string[] {
+  const sortedKeys = [...new Set(keys)].sort();
+  if (!sortedKeys.length || sortedKeys.some(key => monthKeyOf(key) !== key)) return [];
+  const monthIndex = (key: string) => Number(key.slice(0, 4)) * 12 + Number(key.slice(5, 7)) - 1;
+  const first = monthIndex(sortedKeys[0]);
+  const last = monthIndex(sortedKeys[sortedKeys.length - 1]);
+  const calendar: string[] = [];
+  for (let index = first; index <= last; index++) {
+    const year = Math.floor(index / 12);
+    const month = index % 12 + 1;
+    calendar.push(`${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`);
+  }
+  return calendar;
 }
 
 /** یکتاسازی گزارش‌ها بر اساس ماه — ورودی باید از جدید به قدیم مرتب باشد
@@ -262,13 +279,15 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     }
   }
   const topCombos = [...comboTotals.values()].sort((a, b) => b.amount - a.amount).slice(0, 3);
+  // Shared presentation slots only: never invent a report or change a reported rate.
+  const rateMonthKeys = monthlyCalendarKeys(sortedKeys);
   const rateSeries: RateSeries[] = topCombos.map((c) => ({
     productName: c.name,
     market: c.market,
     label: `${c.name} — ${c.market}`,
-    points: sortedKeys.map((key) => {
-      const r = byMonth.get(key)!;
-      const p = r.products.find(
+    points: rateMonthKeys.map((key) => {
+      const r = byMonth.get(key);
+      const p = r?.products.find(
         (x) => x.product_name === c.name && (x.market === "صادراتی" ? "صادراتی" : "داخلی") === c.market,
       );
       const mo = Number(key.slice(5, 7));
@@ -318,24 +337,24 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
   const mainProductName = [...prodTotals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   const prodVsSales: ProdSalesPoint[] = [];
   if (mainProductName) {
-    for (const key of sortedKeys) {
-      const r = byMonth.get(key)!;
-      let production = 0, sales = 0, seen = false;
-      for (const p of r.products) {
-        if (p.product_name !== mainProductName) continue;
-        if (p.production_qty == null || p.sales_qty == null) continue;
-        production += p.production_qty;
-        sales += p.sales_qty;
-        seen = true;
-      }
-      if (seen) {
-        prodVsSales.push({
-          monthKey: key,
-          monthLabel: JALALI_MONTHS[Number(key.slice(5, 7)) - 1],
-          production,
-          sales,
-        });
-      }
+    for (const key of rateMonthKeys) {
+      const r = byMonth.get(key);
+      const rows = r?.products.filter(p => p.product_name === mainProductName) ?? [];
+      const unavailableReason: ProdSalesPoint["unavailableReason"] = !r
+        ? "missing-report"
+        : rows.length === 0
+          ? "missing-product"
+          : rows.some(p => p.production_qty == null || p.sales_qty == null
+            || !Number.isFinite(p.production_qty) || !Number.isFinite(p.sales_qty))
+            ? "incomplete-quantity"
+            : null;
+      prodVsSales.push({
+        monthKey: key,
+        monthLabel: JALALI_MONTHS[Number(key.slice(5, 7)) - 1],
+        production: unavailableReason ? null : rows.reduce((sum, p) => sum + p.production_qty!, 0),
+        sales: unavailableReason ? null : rows.reduce((sum, p) => sum + p.sales_qty!, 0),
+        unavailableReason,
+      });
     }
   }
 
@@ -423,7 +442,7 @@ export function narrativeMix(m: MonthlySales): string | null {
 /** روایت چارت ۵: انبارش/تخلیهٔ موجودی محصول اصلی در آخرین ماه. */
 export function narrativeProdVsSales(m: MonthlySales): string | null {
   const last = m.prodVsSales.length > 0 ? m.prodVsSales[m.prodVsSales.length - 1] : null;
-  if (!last || !m.mainProductName || last.sales === 0) return null;
+  if (!last || !m.mainProductName || last.production === null || last.sales === null || last.sales === 0) return null;
   const ratio = pct(last.production - last.sales, last.sales);
   if (ratio === null || ratio === 0) return null;
   return ratio > 0

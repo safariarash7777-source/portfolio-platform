@@ -4,6 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { deriveN30 } from "./calc";
 import type { CodalN30Data } from "./types";
+import { withKnownMonthlyQuantities } from "../core/monthly-quantity";
 
 const mk = (
   period_end: string,
@@ -84,4 +85,72 @@ test("deriveN30: empty input → empty derived, no fabricated numbers", () => {
   assert.equal(d.exportSharePct, null);
   assert.equal(d.topProductName, null);
   assert.equal(d.prodVsSales.length, 0);
+});
+
+test("deriveN30: absent month is a null axis slot, not another report or zero", () => {
+  const later = { ...m2, period_end: "1404-11-30" };
+  const input = [later, m1]; const before = JSON.stringify(input);
+  const d = deriveN30(input);
+  assert.equal(d.months.length, 2);
+  assert.deepEqual(d.topProductMonths.map(p=>p.month), ["1404-09", "1404-10", "1404-11"]);
+  assert.deepEqual(d.topProductMonths[1], {month:"1404-10",rate:null,salesQty:null,productionQty:null});
+  assert.deepEqual(d.prodVsSales[1], {month:"1404-10",production:null,sales:null});
+  assert.deepEqual(d.prodVsSales[0], {month:"1404-09",production:450,sales:360});
+  assert.deepEqual(d.prodVsSales[2], {month:"1404-11",production:440,sales:390});
+  assert.equal(d.productMix[0].amount, 214400);
+  assert.equal(d.exportSharePct, 16.6);
+  assert.equal(JSON.stringify(input), before);
+});
+
+test("deriveN30: calendar crosses year without padding before/after observed months", () => {
+  const d = deriveN30([{...m1,period_end:"1404-11-30"},{...m2,period_end:"1405-02-31",fiscal_year:1405}]);
+  assert.deepEqual(d.prodVsSales.map(p=>p.month), ["1404-11","1404-12","1405-01","1405-02"]);
+  assert.deepEqual(d.prodVsSales.map(p=>p.sales), [360,null,null,390]);
+  assert.equal(d.months.length, 2);
+});
+
+test("deriveN30: missing selected product keeps null rate, and a real zero stays zero", () => {
+  const zero = {...m2, products:m2.products.map(p=>({...p,production_qty:0,sales_qty:0,sales_rate:0}))};
+  const d = deriveN30([m1,zero,{...m2,period_end:"1404-11-30",products:[]}]);
+  assert.equal(d.prodVsSales[1].sales, 0);
+  assert.equal(d.prodVsSales[1].production, 0);
+  assert.equal(d.topProductMonths[1].rate, 0);
+  assert.equal(d.topProductMonths[2].rate, null);
+  assert.equal(d.prodVsSales[2].sales, null);
+});
+
+test("deriveN30: incomplete product quantities never become a partial total", () => {
+  const incomplete = {...m2, products:m2.products.map((p,i)=>i===1?{...p,production_qty:null}:p)};
+  const d = deriveN30([m1,incomplete]);
+  assert.equal(d.prodVsSales[1].production, null);
+  assert.equal(d.prodVsSales[1].sales, null);
+  assert.equal(d.months[1].totalAmount, 201600);
+  assert.equal(d.topProductMonths[1].rate, 520000000);
+});
+
+test("deriveN30: existing unit sanitizer stays authoritative and source remains unchanged", () => {
+  const input = {...m1, unit:"میلیون ریال",qty_unit:null};
+  const sanitized = withKnownMonthlyQuantities(input);
+  const d = deriveN30([sanitized]);
+  assert.equal(d.topProductMonths[0].rate, null);
+  assert.equal(d.topProductMonths[0].salesQty, null);
+  assert.equal(d.prodVsSales[0].production, null);
+  assert.equal(d.prodVsSales[0].sales, null);
+  assert.equal(d.productMix[0].amount,100000);
+  assert.equal(input.products[0].sales_qty,200);
+});
+
+test("deriveN30: duplicate precedence and incomplete end-month remain explicit", () => {
+  const broken = {...m2,products:m2.products.map(p=>({...p,production_qty:null,sales_qty:null,sales_rate:null}))};
+  const d = deriveN30([broken,m2,m1]);
+  assert.equal(d.months.length,2);
+  assert.equal(d.topProductMonths[1].rate,null);
+  assert.equal(d.prodVsSales[1].sales,null);
+  assert.equal(d.prodVsSales[0].sales,360);
+});
+
+test("deriveN30: nonfinite quantities are null and invalid month cannot create a calendar", () => {
+  const d = deriveN30([{...m1,products:m1.products.map((p,i)=>i===0?{...p,sales_qty:Infinity}:p)}]);
+  assert.equal(d.prodVsSales[0].sales,null);
+  assert.deepEqual(deriveN30([{...m1,period_end:"1404-13-30"}]).prodVsSales,[]);
 });
