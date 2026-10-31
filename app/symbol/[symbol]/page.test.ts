@@ -14,6 +14,7 @@ import { deriveQuarters, ttmSeries, peOf, type QuarterInput, type DerivedQuarter
 import type { SymbolFundamentals, ReportScope, CodalN30Data } from "../../../lib/fundamental/types";
 import type { FundamentalCardData } from "../../../lib/core/fundamentalCard";
 import { buildFundamentalCard } from "../../../lib/core/fundamentalCard";
+import { buildMonthlySales } from "../../../lib/core/monthlyReport";
 
 Object.assign(globalThis, { React });
 
@@ -340,12 +341,31 @@ test("market basis: all three actual consumers distinguish unknown, verified zer
   assert.equal((repeated[2].match(/<td[^>]*>تفکیک نامعلوم<\/td>/g) ?? []).length, 2);
   assert.equal((repeated[0].match(/\(تفکیک نامعلوم\)/g) ?? []).length, 2);
   const repeatedReport: CodalN30Data = { ...report, products: report.products.map((p, i) => ({ ...p, product_name: "محصول تکراری", market: i ? "صادراتی" : "داخلی" })) };
+  const unknownModel = buildMonthlySales([repeatedReport])!;
+  assert.equal(unknownModel.rateSeries.length, 2, "Raw domestic/export buckets remain separate in the model even while their classification is unverified");
+  assert.deepEqual(unknownModel.rateSeries.map(series => series.points[0].rate), [6_000_000, 8_000_000]);
+  assert.ok(unknownModel.rateSeries.every(series => series.market === "نامشخص"
+    && series.label === "محصول تکراری — تفکیک نامعلوم" && series.rateUnit === null));
   const monthlyTree = Views[0]({ reports: [repeatedReport], sourceTitle: "نمونهٔ آزمون", sourceUrl: null });
   const rateNode = presentationNodes(monthlyTree).find(n => typeof n.type === "function" && n.type.name === "RateChart");
   assert.ok(rateNode);
   const rateTree = (rateNode.type as (props: Record<string, unknown>) => React.ReactElement)(rateNode.props);
   const lines = presentationNodes(rateTree).filter(n => typeof n.props.dataKey === "string" && /^s\d+$/.test(n.props.dataKey));
-  assert.equal(lines.length, 2); assert.equal(new Set(lines.map(n => n.key)).size, 2, "two unknown-market rate buckets need independent React identities");
+  assert.equal(lines.length, 0, "Unverified market metadata cannot certify a unit-bearing chart axis");
+  assert.match(repeated[0], /نرخ فروش با واحد معتبر موجود نیست/);
+  const verifiedRepeated: CodalN30Data = { ...repeatedReport, products: repeatedReport.products.map(p => ({ ...p, market_basis: "section_header" as const })) };
+  const knownModel = buildMonthlySales([verifiedRepeated])!;
+  assert.deepEqual(knownModel.rateSeries.map(series => series.label), ["محصول تکراری — داخلی", "محصول تکراری — صادراتی"]);
+  assert.deepEqual(knownModel.rateSeries.map(series => series.points[0].rate), [6_000_000, 8_000_000]);
+  const verifiedTree = Views[0]({ reports: [verifiedRepeated], sourceTitle: "نمونهٔ آزمون", sourceUrl: null });
+  const verifiedRate = presentationNodes(verifiedTree).find(n => typeof n.type === "function" && n.type.name === "RateChart");
+  assert.ok(verifiedRate);
+  const verifiedRateTree = (verifiedRate.type as (props: Record<string, unknown>) => React.ReactElement)(verifiedRate.props);
+  const verifiedLines = presentationNodes(verifiedRateTree).filter(n => typeof n.props.dataKey === "string" && /^s\d+$/.test(n.props.dataKey));
+  assert.equal(verifiedLines.length, 2);
+  assert.equal(new Set(verifiedLines.map(n => n.key)).size, 2, "Verified same-name market buckets need independent React identities");
+  assert.deepEqual(verifiedLines.map(n => n.props.name), ["محصول تکراری — داخلی", "محصول تکراری — صادراتی"]);
+  assert.match(render(verifiedRepeated)[0], /واحد نرخ: ریال به ازای تن/);
   const verified = { ...report, products: report.products.map(p => ({ ...p, market_basis: "section_header" as const })) };
   const known = render(verified);
   for (const html of known) {
