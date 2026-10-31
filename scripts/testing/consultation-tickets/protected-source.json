@@ -267,5 +267,71 @@
         "baselineBlob": null
       }
     }
+  },
+  "feedbackAcceptanceException": {
+    "baseCandidate": "699ea1677c21c216be52869318cf0ac1c4525744",
+    "purpose": "Only bounded feedback compatibility acceptance on immutable reader699 and SQL; remote/native not yet allocated",
+    "files": {
+      ".github/workflows/ci.yml": {
+        "oldBlob": "b65decdc3f5c4e011702ec43263e7b34603e2411",
+        "newBlob": "3ee387386607de21bd3a1b70f9b81f5bd4b56b18",
+        "baselineBlob": "b65decdc3f5c4e011702ec43263e7b34603e2411"
+      },
+      ".github/workflows/p03-ticket-native.yml": {
+        "oldBlob": "23f1997450d2aad436d1d3e24664b135b505be3d",
+        "newBlob": "d2e755f422676c153ca65720eab46a3be75687b2",
+        "baselineBlob": "23f1997450d2aad436d1d3e24664b135b505be3d"
+      },
+      "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md": {
+        "oldBlob": "79f60d573dfee03f3e7a18b0f12474c57cb4fc07",
+        "newBlob": "f5996751e44ce5b7f11f2a531ad9f6637217bcba",
+        "baselineBlob": "79f60d573dfee03f3e7a18b0f12474c57cb4fc07"
+      },
+      "scripts/testing/consultation-tickets/browser.mjs": {
+        "oldBlob": "fe9f5994c7c89083555109dc534238b39fef833e",
+        "newBlob": "5c8d68355115fb0095842ff5a28cc823cf367060",
+        "baselineBlob": "fe9f5994c7c89083555109dc534238b39fef833e"
+      },
+      "scripts/testing/consultation-tickets/feedback-reader-native.mjs": {
+        "oldBlob": null,
+        "newBlob": "abd222db5c647290376c1958c73d1e0fd3a82ad0",
+        "baselineBlob": null
+      },
+      "scripts/testing/consultation-tickets/feedback-reader-native.test.mjs": {
+        "oldBlob": null,
+        "newBlob": "52f609f391b5be2e69becfa13b85d2f838f46a9f",
+        "baselineBlob": null
+      },
+      "scripts/testing/consultation-tickets/native-auth-gateway.mjs": {
+        "oldBlob": "3a95b8040e1d60d94cbbb487a09d7c441922264e",
+        "newBlob": "3332b683df38b8821bf466ef02c5aaab5aa1b50f",
+        "baselineBlob": "3a95b8040e1d60d94cbbb487a09d7c441922264e"
+      },
+      "scripts/testing/consultation-tickets/native-auth-runtime.mjs": {
+        "oldBlob": "bc395ced8998fa6ac251279b649749f3a1654446",
+        "newBlob": "d0de805ddbee09f68090cdb8580b3813e2a6c13a",
+        "baselineBlob": "bc395ced8998fa6ac251279b649749f3a1654446"
+      },
+      "scripts/testing/consultation-tickets/native-infrastructure-lineage.json": {
+        "oldBlob": "dab454f1c06b3cf7570c33004b6e193ee6ad1e65",
+        "newBlob": "912842af95f7231dd1983c43dd4c99c22e60f0a7",
+        "baselineBlob": "dab454f1c06b3cf7570c33004b6e193ee6ad1e65"
+      },
+      "scripts/testing/consultation-tickets/native-infrastructure.test.mjs": {
+        "oldBlob": "900a02ee674fd608305347f61b1ed8e71c69eeab",
+        "newBlob": "2df9ef842d961206a4a5f11c092146888b97ec2a",
+        "baselineBlob": "900a02ee674fd608305347f61b1ed8e71c69eeab"
+      },
+      "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
+        "oldBlob": "182c46cc2b99ae63cd56c0f124bbfb6e2c437ea6",
+        "newBlob": "43e96ed730ba7f863dd08b80ec9389151d541697",
+        "baselineBlob": "182c46cc2b99ae63cd56c0f124bbfb6e2c437ea6"
+      },
+      "vercel.json": {
+        "oldBlob": "5716086481f5d3e747d26a05ad9994a2065855ed",
+        "newBlob": "1fbca006e8c328a8429cfef51c81fd24fbeb0af9",
+        "baselineBlob": "5716086481f5d3e747d26a05ad9994a2065855ed"
+      }
+    }
   }
 }

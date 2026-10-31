@@ -30,5 +30,23 @@
       "sourceSha256": "9f05208a449daff9f036819b27c06862a0295f8da94738e35cca541c3dc88150",
       "derivedSha256": "daa58cb77b2d275f2e5d66387608874a937cfac4fac4040272aa79072fdd7989"
     }
-  ]
+  ],
+  "feedbackAcceptanceDelta": {
+    "baseCandidate": "699ea1677c21c216be52869318cf0ac1c4525744",
+    "purpose": "Reuse helpers and add only explicit owned feedback acceptance mode; legacy 27/11 suite not rerun for the gap",
+    "files": {
+      "scripts/testing/consultation-tickets/native-auth-runtime.mjs": {
+        "oldDerivedSha256": "907cf8b21adecf9bbbed1125bf384247baa284a32bcc47182caea5a3eb07e9e3",
+        "newDerivedSha256": "f5cb82ebd60e37a4e35ec6fd30b29d4e84c5985c5811b22cc78e1bf51c7b494b"
+      },
+      "scripts/testing/consultation-tickets/native-auth-gateway.mjs": {
+        "oldDerivedSha256": "0ae807a2985d0648f588ef17ad48eaa78f0ab20a595c3609d2648d640c0c4ae2",
+        "newDerivedSha256": "744e276b105fda182d6b8ba862daae76b888504d61f506fd7a43e3360fffee36"
+      },
+      "scripts/testing/consultation-tickets/browser.mjs": {
+        "oldDerivedSha256": "daa58cb77b2d275f2e5d66387608874a937cfac4fac4040272aa79072fdd7989",
+        "newDerivedSha256": "102cb492f0dc33a09f386b8b59643acb1732f6eff7c515cdd2f8a0f9a2e588ea"
+      }
+    }
+  }
 }

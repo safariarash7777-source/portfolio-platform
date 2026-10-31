@@ -42,8 +42,8 @@ function removalPermissions(root,path=root){
  check(inside(root,resolve(path)),'p09_browser_cleanup_path');const m=lstatSync(path);if(m.isSymbolicLink())return;
  check(inside(root,realpathSync(path)),'p09_browser_cleanup_realpath');if(m.isDirectory()){chmodSync(path,m.mode|0o700);for(const name of readdirSync(path))removalPermissions(root,resolve(path,name));}
 }
-export function browserDestination(url,method='GET'){
- try{const u=new URL(url);if(u.hash||!url.startsWith(origin+'/'))return false;const raw=url.slice(origin.length).split('?')[0];if(/%(?:2e|2f|5c|25|00)/i.test(raw)||/[\\\u0000-\u0020]/.test(raw)||raw.split('/').some(x=>x==='.'||x==='..'))return false;allowedProfileURL('consultation-ticket',url,true,method);return true;}catch{return false;}
+export function browserDestination(url,method='GET',acceptance='ticket'){
+ try{const u=new URL(url);if(u.hash||!url.startsWith(origin+'/'))return false;const raw=url.slice(origin.length).split('?')[0];if(/%(?:2e|2f|5c|25|00)/i.test(raw)||/[\\\u0000-\u0020]/.test(raw)||raw.split('/').some(x=>x==='.'||x==='..'))return false;allowedProfileURL('consultation-ticket',url,true,method,acceptance);return true;}catch{return false;}
 }
 export function browserFailureCode(error){
  const text=String(error?.message??'');return /^p09_browser_[a-z0-9_]+$/.test(text)?text:text.match(/\bnet::ERR_[A-Z0-9_]+\b/)?.[0]??(/strict mode violation/.test(text)?'selector_ambiguous':error?.name==='TimeoutError'?'playwright_timeout':'browser_operation_failed');
@@ -63,7 +63,7 @@ function ownedBrowserProcesses(s){
  const result=new Map();for(const name of readdirSync('/proc'))if(/^\d+$/.test(name)&&Number(name)!==process.pid){try{if(statSync('/proc/'+name).uid!==process.getuid())continue;const first=readFileSync('/proc/'+name+'/cmdline','utf8').split('\0')[0];if(inside(resolve(s.local,'chrome'),first))descendants(Number(name),result);}catch{/* Process exited or belongs to another principal. */}}
  return result;
 }
-async function preflight(){
+export async function preflight(){
  verifyEnvironment();check(!process.env.DEBUG&&!process.env.PWDEBUG,'p09_browser_debug_logging_forbidden');check(existsSync(executable)&&realpathSync(executable)===executable,'p09_browser_existing_chrome_missing');
  const meta=statSync(executable);check(meta.isFile()&&meta.size>0&&meta.size<=512*1024**2,'p09_browser_source_binary_size');
  const binary=readFileSync(executable),sourceSha256=digest(binary),fileIdentity={isFile:meta.isFile(),elf:binary.subarray(0,4).equals(Buffer.from([127,69,76,70])),uid:meta.uid,runnerUid:process.getuid(),mode:meta.mode&0o777};
@@ -107,7 +107,7 @@ async function preflight(){
   await cleanup(state);throw error;
  }finally{if(priorTmp===undefined)delete process.env.TMPDIR;else process.env.TMPDIR=priorTmp;}
 }
-async function cleanup(s){
+export async function cleanup(s){
  check(dirname(s.local)===s.tempRoot&&realpathSync(s.local)===s.local&&JSON.parse(readFileSync(resolve(s.local,'owner.json'),'utf8')).owner===s.owner,'p09_browser_cleanup_ownership');
  const owned=s.process?descendants(s.process.pid):ownedBrowserProcesses(s);
  for(const context of s.contexts)if(!context.isClosed())await context.close();
@@ -122,7 +122,7 @@ async function cleanup(s){
  removalPermissions(s.local);rmSync(s.local,{recursive:true});check(!existsSync(s.local),'p09_browser_owned_temp_cleanup');
  const result={processStopped:stopped,contextsClosed:s.contexts.every(x=>x.isClosed()),ownedTempRemoved:!existsSync(s.local),ownerId:s.owner};console.log('P03_TICKET_BROWSER_CLEANUP '+JSON.stringify({status:'REMOVED_OWNED_RESOURCES',...result,processesObserved:owned.size}));return result;
 }
-async function storageAudit(page,needles){
+export async function storageAudit(page,needles){
  const result=await page.evaluate(async needles=>{
   const textHas=value=>needles.some(needle=>value.includes(needle));
   const contains=async(value,depth=0)=>{if(depth>20)throw Error('storage_limit');if(typeof value==='string')return textHas(value);if(value===null||value===undefined||['number','boolean'].includes(typeof value))return false;if(value instanceof Blob)return textHas(await value.text());if(value instanceof ArrayBuffer||ArrayBuffer.isView(value))return textHas(new TextDecoder().decode(value instanceof ArrayBuffer?value:new Uint8Array(value.buffer,value.byteOffset,value.byteLength)));if(value instanceof Date)return false;if(Array.isArray(value)||Object.getPrototypeOf(value)===Object.prototype){for(const [key,v] of Object.entries(value))if(textHas(key)||await contains(v,depth+1))return true;return false;}throw Error('unreadable_storage');};

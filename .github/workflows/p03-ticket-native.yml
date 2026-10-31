@@ -24,6 +24,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   real-auth-ticket-storage:
+    # Reader699's successful 27 API/11 DOM gate stays frozen; the child branch
+    # runs the separately allocated feedback gap, not that completed suite.
+    if: ${{ github.head_ref != 'codex/p03-feedback-reader-acceptance-20261031' && github.ref_name != 'codex/p03-feedback-reader-acceptance-20261031' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -34,6 +37,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Fetch only the pinned reader-release baseline object
         run: git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03
+      - name: Fetch only the frozen reader699 object
+        run: git fetch --no-tags --depth=1 origin 699ea1677c21c216be52869318cf0ac1c4525744
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -97,4 +102,67 @@ jobs:
           path: |
             p03-ticket-native-receipt.json
             p03-ticket-browser-receipt.json
+          retention-days: 7
+  feedback-reader-compatibility:
+    if: ${{ github.head_ref == 'codex/p03-feedback-reader-acceptance-20261031' || github.ref_name == 'codex/p03-feedback-reader-acceptance-20261031' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      P03_TICKET_NATIVE_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Fetch only the pinned baseline23f9 object
+        run: git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03
+      - name: Fetch only the frozen reader699 object
+        run: git fetch --no-tags --depth=1 origin 699ea1677c21c216be52869318cf0ac1c4525744
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Existing offline boundaries and feedback candidate guards
+        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/consultationWriteRelease.test.ts lib/consultation/server.test.ts lib/consultation/tickets.test.ts lib/consultation/ticketAttemptStorageContracts.test.ts lib/consultation/ticketAttemptStorageServer.test.ts lib/consultation/ticketAttemptStorageRequest.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs scripts/testing/consultation-tickets/browser.test.mjs scripts/testing/consultation-tickets/feedback-reader-native.test.mjs
+      - name: Existing owned Linux runtime and Chrome - feedback compatibility only
+        run: |
+          set -o pipefail
+          node --import tsx scripts/testing/consultation-tickets/feedback-reader-native.mjs | tee /tmp/p03-feedback-reader.log
+      - name: Bind feedback receipt to exact driver, reader699 and immutable SQL
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          prefix = 'P03_FEEDBACK_NATIVE_AUTH '
+          receipts = [json.loads(line[len(prefix):]) for line in Path('/tmp/p03-feedback-reader.log').read_text().splitlines() if line.startswith(prefix)]
+          assert len(receipts) == 1
+          receipt = receipts[0]
+          head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
+          reader = '699ea1677c21c216be52869318cf0ac1c4525744'
+          assert receipt['sha'] == head == os.environ['P03_TICKET_NATIVE_SOURCE_SHA']
+          assert receipt['readerSha'] == reader and receipt['acceptance'] == 'feedback-reader-v1'
+          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 10 and receipt['browser'] == 'PASS'
+          assert receipt['cleanup'] == 'REMOVED_OWNED_RESOURCES'
+          assert receipt['targetInstall'] == 'NOT_APPLIED' and receipt['privateArtifactsUploaded'] is False
+          browser = receipt['browserReceipt']
+          assert browser['readerSha'] == reader and len(browser['checks']) == 8 and all(x['status'] == 'PASS' for x in browser['checks'])
+          for key in ['originalRowsStable','domHistoryVerified','appStopVerified','dbStopVerified','legacyStatesVerified','financialFingerprintUnchanged','revocationVerified']:
+              assert browser[key] is True
+          for key in ['repeatedPosts','domAutomaticPosts','privateStorageHits','privateUrlHits']:
+              assert browser[key] == 0
+          assert browser['freshAuthActors'] == 2
+          pins = [('supabase/migrations/20261029142010_consultation_feedback_states.sql',12982,'32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda'),('supabase/migrations/20261029160723_consultation_feedback_rollout_guard.sql',18228,'5b3538d2a4526c91ac0af092b86a81b3e7bb140dab88ad20aef30abff2ff03e2')]
+          for file, length, sha in pins:
+              raw = Path(file).read_bytes()
+              assert len(raw) == length and hashlib.sha256(raw).hexdigest() == sha
+          for path in ['app','lib','components','public','middleware.ts','next.config.js','package.json','package-lock.json','sql','supabase']:
+              assert subprocess.check_output(['git','rev-parse',head+':'+path]) == subprocess.check_output(['git','rev-parse',reader+':'+path])
+          receipt.update(productServiceRight='NOT_CONNECTED',modelCalls=0,arashAcceptance='UNOBSERVED',destination='same existing runtime; owned disposable CI tmpfs only; no operational data',candidateSql=[{'file':f,'length':n,'sha256':s} for f,n,s in pins])
+          Path('p03-feedback-reader-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p03-feedback-reader-receipt
+          path: p03-feedback-reader-receipt.json
           retention-days: 7
