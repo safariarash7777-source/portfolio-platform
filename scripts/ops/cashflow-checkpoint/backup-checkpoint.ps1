@@ -2,7 +2,7 @@ param(
   [Parameter(Mandatory)][string]$Action,
   [Parameter(Mandatory)][string]$CheckpointId,
   [Parameter(Mandatory)][string]$ReviewedHelperSha256,
-  [Parameter(Mandatory)][string]$Destination,
+  [string]$Destination,
   [switch]$OfflineFixture,
   [string]$FixtureDirectory
 )
@@ -81,9 +81,40 @@ except BaseException:
 '@
 }
 try{
-  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper){throw 'parameters'}
+  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify','ReviewCorrectedCheckpoint') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper){throw 'parameters'}
   $parsed=[datetime]::MinValue
   if(-not [datetime]::TryParseExact($CheckpointId,'yyyyMMddTHHmmssZ',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::None,[ref]$parsed)){throw 'date'}
+  if($Action -ceq 'ReviewCorrectedCheckpoint'){
+    # Review-only adoption, never a projection of failed receipt to legacy passed.
+    if($CheckpointId -cne '20261030T215307Z' -or $OfflineFixture -or $FixtureDirectory -or $Destination){throw 'review parameters'}
+    $stage='reviewed-consumer-source'
+    if(('CheckpointCrypto' -as [type]) -or ('CheckpointSsh' -as [type])){throw 'preloaded type'}
+    Add-Type -Path (Join-Path $PSScriptRoot 'CheckpointCrypto.cs')
+    $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
+    $gateRoot=Join-Path $repoRoot 'docs/ops/p15-webpack-cache-20261030'
+    $consumerBytes=$utf8.GetBytes(([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'corrected-checkpoint-consumer.py'),$utf8)).Replace("`r`n","`n"))
+    $gateBytes=$utf8.GetBytes(([IO.File]::ReadAllText((Join-Path $gateRoot 'checkpoint-read-gate.py'),$utf8)).Replace("`r`n","`n"))
+    $bindingBytes=[IO.File]::ReadAllBytes((Join-Path $gateRoot 'RELEASE-BINDING-20261031.json'))
+    if([CheckpointCrypto]::Hash($consumerBytes) -cne '18dcdff88cb8d41f8c5ee9e8236e0fdba9e7a212ef8c1044769165cc8010ac2c' -or [CheckpointCrypto]::Hash($gateBytes) -cne '9289f162919bd1b2e462d2c823758b7b693f27988562d3554be197c9b65666a3' -or [CheckpointCrypto]::Hash($bindingBytes) -cne '7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325'){throw 'review source changed'}
+    $packet=JsonBytes ([ordered]@{gate=[Convert]::ToBase64String($gateBytes);binding=[Convert]::ToBase64String($bindingBytes)})
+    # Hex contains reviewed source/receipts only, never a credential or database row.
+    $script="CODE=bytes.fromhex('"+[Convert]::ToHexString($consumerBytes)+"')`nPACKET=bytes.fromhex('"+[Convert]::ToHexString($packet)+"')`n"+@'
+import hashlib,json,signal,types
+signal.signal(signal.SIGALRM,lambda *_: (_ for _ in ()).throw(TimeoutError()))
+signal.alarm(160)
+if hashlib.sha256(CODE).hexdigest()!='18dcdff88cb8d41f8c5ee9e8236e0fdba9e7a212ef8c1044769165cc8010ac2c':raise ValueError()
+module=types.ModuleType('reviewed_checkpoint_consumer')
+exec(compile(CODE,'/in-memory/corrected-checkpoint-consumer.py','exec'),module.__dict__)
+print(json.dumps(module.review('backup-checkpoint.review-corrected.v1',json.loads(PACKET))))
+'@
+    $stage='read-only-consumer'
+    $ssh=[CheckpointSsh]::new('python3 -',$script,180)
+    try{$verdict=$utf8.GetString($ssh.ReadMetadata())|ConvertFrom-Json}finally{$ssh.Dispose()}
+    if($verdict.status -cne 'PASS_CORRECTED_CHECKPOINT_CONSUMER_REVIEW' -or $verdict.consumer -cne 'backup-checkpoint.review-corrected.v1' -or $verdict.readOnlyConsumerIntegrated -ne $true -or $verdict.releaseAuthorized -ne $false -or $verdict.captureVerifyProfileIntegrated -ne $false -or $verdict.legacyApplyPathIntegrated -ne $false){throw 'review result'}
+    [Console]::WriteLine(($verdict|ConvertTo-Json -Depth 12 -Compress))
+    return
+  }
+  if(-not $Destination){throw 'destination required'}
   $Destination=CheckPath $Destination
   if($OfflineFixture){$testRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'test-output'))+[IO.Path]::DirectorySeparatorChar;if(-not $Destination.StartsWith($testRoot,[StringComparison]::OrdinalIgnoreCase)){throw 'fixture destination'}}
   elseif($Destination -cne [IO.Path]::GetFullPath("C:/Users/Asus/.codex/private/cashflow-release/$CheckpointId") -or $FixtureDirectory){throw 'destination'}
