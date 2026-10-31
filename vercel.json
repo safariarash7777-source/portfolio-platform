@@ -1,4 +1,9 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "codex/p03-reader-release-20261031": false
+    }
+  },
   "crons": [
     {
       "path": "/api/cron/alerts",

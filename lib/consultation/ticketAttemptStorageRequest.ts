@@ -48,7 +48,7 @@ export async function sendTicketPreparation(value: TicketStorageAttempt, parent:
       }
       const error = parseTicketStorageError(body, response.status);
       if (!error) return uncertain();
-      if (error.code === TICKET_RIGHT_ERROR.code) return { status: "blocked" as const, error, httpStatus: response.status };
+      if (error.code === TICKET_RIGHT_ERROR.code || error.code === "WRITES_NOT_RELEASED") return { status: "blocked" as const, error, httpStatus: response.status };
       if ([400, 401, 403, 404, 409, 413].includes(response.status)) return { status: "rejected" as const, error, httpStatus: response.status };
       return uncertain();
     }, 15_000);

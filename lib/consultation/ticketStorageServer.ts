@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { consultationWritesReleased } from "./consultationWriteRelease";
+import { TICKET_RELEASE_ERROR } from "./ticketStorageContracts";
 import { withDeadline } from "../deadline";
 import { authSessionFailure } from "../auth/session-error";
 import { validateConsultationRead } from "./contracts";
@@ -94,6 +96,7 @@ export async function getTicketStorage(request: Request, connect: () => Promise<
 }
 export async function postTicketStorage(request: Request, connect: () => Promise<TicketStorageDb>): Promise<Response> {
   if (request.headers.get("origin") !== new URL(request.url).origin) return fail(new Failure("ORIGIN_FORBIDDEN"), "WRITE_UNAVAILABLE");
+  if (!consultationWritesReleased()) return response(TICKET_RELEASE_ERROR, 503);
   let prepared: { db: TicketStorageDb; input: TicketRequest };
   try {
     prepared = await withDeadline(async signal => {
@@ -108,6 +111,7 @@ export async function postTicketStorage(request: Request, connect: () => Promise
       return { db, input }; // A preparation timeout can never launch a late write.
     }, 10_000);
   } catch (error) { return fail(error, "WRITE_UNAVAILABLE"); }
+  if (!consultationWritesReleased()) return response(TICKET_RELEASE_ERROR, 503);
   try {
     const result = await withDeadline(signal => Promise.resolve(prepared.db.write(prepared.input, signal)), 10_000);
     if (result.error) databaseFailure(result.error.code);

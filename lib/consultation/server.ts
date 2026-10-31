@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { consultationWritesReleased } from "./consultationWriteRelease";
 import { withDeadline } from "@/lib/deadline";
 import { authSessionFailure } from "@/lib/auth/session-error";
 import { CONSULTATION_BODY_LIMIT, feedbackNeedsDetails, validateConsultationRequest, validateConsultationRead, validateConsultationReceipt, type ConsultationRequest } from "./contracts";
@@ -67,6 +68,7 @@ export async function postConsultation(request: Request, connect: () => Promise<
       try { input = validateConsultationRequest(value); } catch { throw new Failure("INVALID_INPUT"); }
       if (input.expectedActorId !== actorId) throw new Failure("ACTOR_CHANGED");
       if(input.command.kind==="feedback"&&feedbackNeedsDetails(input.command.status)){
+        if(!consultationWritesReleased())throw new Failure("FEEDBACK_DISABLED");
         let read: DbResult;
         try{read=await db.read({relationshipId:input.command.relationshipId},signal);}catch{throw new Failure("READ_UNAVAILABLE");}
         if(read.error)throw new Failure(read.error.code==="42501"?"FORBIDDEN":"READ_UNAVAILABLE");
@@ -78,6 +80,7 @@ export async function postConsultation(request: Request, connect: () => Promise<
       return { db, input }; // No write can start inside the preparation deadline.
     }, 10_000);
   } catch (error) { return fail(error, "WRITE_UNAVAILABLE"); }
+  if (prepared.input.command.kind === "feedback" && feedbackNeedsDetails(prepared.input.command.status) && !consultationWritesReleased()) return fail(new Failure("FEEDBACK_DISABLED"), "WRITE_UNAVAILABLE");
   try {
     const result = await withDeadline(signal => Promise.resolve(prepared.db.write(prepared.input, signal)), 10_000);
     if (result.error) dbFailure(result.error.code);
@@ -105,7 +108,7 @@ export async function getConsultation(request: Request, connect: () => Promise<C
         throw new Failure("READ_UNAVAILABLE");
       }
       const validated=validateConsultationRead(result.data, { relationshipId, actorId, ...(startOn && endOn ? { period: { startOn, endOn } } : {}) });
-      return json({...validated,capabilities:validated.capabilities??{extendedFeedbackWrite:false}});
+      return json({...validated,capabilities:{extendedFeedbackWrite:consultationWritesReleased() && validated.capabilities?.extendedFeedbackWrite === true}});
     }, 10_000);
   } catch (error) { return fail(error, "READ_UNAVAILABLE"); }
 }

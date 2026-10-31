@@ -64,6 +64,12 @@ async function exercise(ctx) {
 
   const requestId = randomUUID();
   const opening = tickets.validateTicketRequest({ contractVersion: 'consultation-ticket-request.v1', expectedActorId: users.a.id, clientToken: randomUUID(), command: { kind: 'open', relationshipId: relation, requestId, baseVersion: 0, subject: 'Synthetic native request', text: 'SYNTHETIC_PRIVATE_P03_OPEN_BODY', recommendation: null } });
+  check((await ticketPost('a',opening,503)).code==='WRITES_NOT_RELEASED','p03_release_default_ticket_not_closed');
+  const releasePreparation=await ctx.postExact('/api/consultation/ticket-attempts',JSON.stringify(opening),{Cookie:users.a.session.cookie,Origin:ctx.origin});
+  check(releasePreparation.status===503&&(await releasePreparation.json()).code==='WRITES_NOT_RELEASED','p03_release_default_prepare_not_closed');
+  check(sql('SELECT count(*) FROM consultation_ticket_private.requests')==='0'&&sql('SELECT count(*) FROM consultation_ticket_private.prepared_intents')==='0','p03_release_created_rows');
+  pass('server-release-default-closed-legacy-financial-and-consent-preserved',{newRequests:0,newPreparations:0,legacyFinancialWritesRetained:true,legacyConsentRetained:true});
+  await ctx.setWriteRelease(true); // Explicit owned server environment; no fixture/right grant.
   const initialLookup = await read('a', client.ticketLookupSelection(opening), opening);
   check(initialLookup.capability.state === 'not_connected', 'p03_product_provider_default_closed');
   check(client.prepareTicketStorageAttempt(opening, parent, initialLookup).status === 'blocked', 'p03_product_client_not_promoted');
@@ -204,7 +210,31 @@ async function exercise(ctx) {
   check(finalParent.dossier?.basis.holdingsVersionId === holdingReceipt.version_id || finalParent.dossier === null, 'p03_financial_basis_changed');
   ctx.write('financial-after.json', { fingerprint: afterFinancial }, true);
   pass('financial-rows-fingerprints-and-original-history-preserved', { fingerprintSha256: digest(afterFinancial), holdingVersions: 1, cashVersions: 1, ticketVersions: 6, modelCalls: 0, targetInstall: 'NOT_APPLIED', uiBrowser: 'NOT_RUN' });
-  await durabilityNative(ctx, relation);
+  await durabilityNative(ctx, relation); // The c4 durability scenarios remain unchanged.
+  // A distinct unknown outcome crosses the release rollback BEFORE its first
+  // receipt read. Keep exact correlation in this private runner, never latest.
+  const rollbackRelation=(await command('a',{kind:'grant',advisorId:users.owner.id,clientLabel:'Synthetic release rollback case'})).id;
+  sql(`INSERT INTO consultation_ticket_fixture.allowed(relationship_id,actor_id) VALUES(${quote(rollbackRelation)},${quote(users.a.id)});`);
+  const rollbackParent=await consultation('a',rollbackRelation);
+  const rollbackRequest=tickets.validateTicketRequest({contractVersion:'consultation-ticket-request.v1',expectedActorId:users.a.id,clientToken:randomUUID(),command:{kind:'open',relationshipId:rollbackRelation,requestId:randomUUID(),baseVersion:0,subject:'Synthetic pending rollback',text:'SYNTHETIC_PRIVATE_PENDING_BEFORE_RELEASE_STOP',recommendation:null}});
+  const rollbackAttempt=client.prepareTicketStorageAttempt(rollbackRequest,rollbackParent,await read('a',client.ticketLookupSelection(rollbackRequest),rollbackRequest));
+  check(rollbackAttempt.status==='prepared','p03_release_rollback_attempt_not_prepared');
+  const rollbackBody=rollbackAttempt.attempt.intent.body;
+  const preserved=await ctx.postExact('/api/consultation/ticket-attempts',rollbackBody,{Cookie:users.a.session.cookie,Origin:ctx.origin});
+  check(preserved.status===201,'p03_release_rollback_original_not_preserved');const savedPreparation=await preserved.json();
+  let committedReceipt=null,committedPosts=0;
+  const discardDelivery=async(_url,init)=>{committedPosts++;const response=await ctx.postExact(TICKETS,String(init.body),{Cookie:users.a.session.cookie,Origin:ctx.origin});check(response.status===201,'p03_release_rollback_command_not_201');committedReceipt=await response.json();throw Error('deliberately discarded command delivery before release stop');};
+  check((await client.sendTicketStorageAttempt(rollbackAttempt.attempt,rollbackParent,{currentActorId:users.a.id,transport:discardDelivery})).status==='uncertain'&&committedPosts===1&&committedReceipt,'p03_release_rollback_original_not_unknown');
+  const probe={relationshipId:rollbackRelation,preparationId:savedPreparation.preparationId,clientToken:rollbackRequest.clientToken,bodyHash:savedPreparation.bodyHash,body:rollbackBody,receiptId:committedReceipt.id};
+  await ctx.setWriteRelease(false); // Roll back writing, keep this same compatible reader.
+  const beforeRecovery=ctx.writeCounts();users.a.session=await ctx.newSession('a');
+  const preparedRead=await expect('a','/api/consultation/ticket-attempts?'+new URLSearchParams({mode:'lookup',relationshipId:probe.relationshipId,preparationId:probe.preparationId}));
+  check(preparedRead.state==='found'&&preparedRead.prepared.bodyHash===probe.bodyHash&&preparedRead.prepared.body===probe.body&&preparedRead.prepared.clientToken===probe.clientToken,'p03_release_rollback_lost_prepared_original');
+  const original=JSON.parse(preparedRead.prepared.body),found=await read('a',client.ticketLookupSelection(original),original);
+  check(found.mode==='lookup'&&found.data.attempt.state==='found'&&found.data.attempt.receipt.id===probe.receiptId,'p03_release_rollback_lost_same_receipt');
+  check(sql(`SELECT count(*) FROM consultation_ticket_private.events WHERE id=${quote(probe.receiptId)}`)==='1','p03_release_rollback_effect_not_one');
+  check(stable(ctx.writeCounts())===stable(beforeRecovery),'p03_release_rollback_replayed_post');
+  pass('closed-rollback-fresh-auth-original-prepared-and-receipt-get-only',{originalBodyHash:probe.bodyHash,unknownBeforeReleaseStop:true,firstReceiptReadAfterStop:true,sameReceipt:true,originalEffect:1,additionalTicketPosts:0,additionalPreparationPosts:0,compatibleReaderRetained:true,productServiceRight:'NOT_CONNECTED'});
 }
 
 runNativeAuthProfile('consultation-ticket', exercise).catch(error => {

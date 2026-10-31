@@ -306,6 +306,7 @@ export async function runBrowser(){
   state=await preflight();recordPass(state,'browser-preflight-before-provision',{existingChromeHash:state.sourceSha256,noBrowserDownload:true});
   await runNativeAuthProfile('consultation-ticket',async ctx=>{
    try{
+    await ctx.setWriteRelease(true); // Explicit owned server release, independent of fixture SQL rights.
     const flow=await browserCase(state,ctx),removed=await cleanup(state);state.cleaned=true;
     recordPass(state,'owned-browser-cleanup',removed);
     check(state.checks.length===browserChecks.length,'p09_browser_check_count');
