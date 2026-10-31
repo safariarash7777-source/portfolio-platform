@@ -1,0 +1,98 @@
+{
+  "source": "a3c9fdefce66a7413d108613df17162cff63337e",
+  "base": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+  "tree": "c74ff6e4f9e7b01f0ab29b6a0b0e4dfb74bee681",
+  "pr": 379,
+  "run": 41185410281,
+  "actualCheckout": "f3d76efa006fae0b6976380137b9365a8cc8b1cc",
+  "actualParents": [
+    "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+    "a3c9fdefce66a7413d108613df17162cff63337e"
+  ],
+  "actualTree": "c74ff6e4f9e7b01f0ab29b6a0b0e4dfb74bee681",
+  "jobs": [
+    {
+      "id": 124491227100,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124491227273,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124491227286,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124491227301,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124492173268,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "eightActualUiNames": [
+    {
+      "name": "monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "different valid rate denominators get separate axes and an unknown series cannot erase valid peers",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "mixed units within the main product keep valid market rates but cannot certify a quantity sum",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "unit changes split the existing calendar into separate plots and suppress cross-unit rate narrative",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "unknown numerator leaves valid quantity visible but cannot label a rate as rial",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "reported quantity zero stays zero, while missing quantities stay gaps",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "legacy, services, explicit null and out-of-catalog units remain honest unavailable states",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "real Recharts SSR retains unit labels, source and explicit unavailable state without chart mocks",
+      "subtests": 1,
+      "pass": 1
+    }
+  ],
+  "rootFullCoreLogRead": true,
+  "rootFullDbLogRead": true,
+  "coreMain": 2104,
+  "pageRegression": 22,
+  "calc": 179,
+  "staticPages": 39,
+  "firstFailedRunPreserved": 41185019118,
+  "firstFailure": "Old unknown-market fixture expected 2 invalid rate lines; corrected test keeps 2 raw model buckets and valid same-name 2-line identities. No component/core/economic assertion loosened.",
+  "rootFinalPacketReview": {
+    "sources": 8,
+    "manifestFiles": 26,
+    "archiveBytes": 110398,
+    "archiveSha256": "fe8789d8ba6acb7593f64ee566d8ca25ee5742969cbd6c36e0bb360641e30d99",
+    "privateIndexExact": true
+  },
+  "scope": "Technical CI/source acceptance, not whole P07, live quantity/rate data, primary or Arash acceptance."
+}
