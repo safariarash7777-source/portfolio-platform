@@ -368,5 +368,52 @@
       "oldBlob": "13348d2bdad83a92467382d3345073fa1f88c30e",
       "newBlob": "db617582e6d7b477d24a8569c7dd382f4ee33e33"
     }
+  },
+  "consumerDiagnosticException": {
+    "baseCandidate": "303f4c016505e9fdb8f12236168961f48a10ca0f",
+    "purpose": "Local self-reader diagnostic only; no service authority, remote or live acceptance",
+    "files": {
+      "components/consultation/TicketRequestWorkspace.tsx": {
+        "oldBlob": "2785c3f86160786523ca1964d6851f731a52ce54",
+        "newBlob": "7c123c2e3dde795bd0964d030743f509f8e4cfeb"
+      },
+      "components/consultation/TicketRequestPanel.tsx": {
+        "oldBlob": "47d7b4715f3c16156a705426755a3a33fe160f05",
+        "newBlob": "0773e35aa429c0d06ba2cb2ac67b958b844b823d"
+      },
+      "components/consultation/ticket-storage-ui.test.tsx": {
+        "oldBlob": "720440c7346f014734c15b59b05080320c2a48da",
+        "newBlob": "745f03c94a9e7e98be4614551d3950f7236b8159"
+      },
+      "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
+        "oldBlob": "788a821abd4b888ae5c2c3a874aa991d4a211ae2",
+        "newBlob": "f2724643dc72861a3021b23279b817fe0d5698be"
+      },
+      "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md": {
+        "oldBlob": "6622b959630c87f958bf367f5691961f7dfbbfc3",
+        "newBlob": "dc7e2fcc818fd3d1c88f3df1de7b8817c4c07ddb"
+      }
+    },
+    "componentsTree": {
+      "oldBlob": "b0855f82807faa1d3ec475e0558451778644dada",
+      "newBlob": "0a36e45d8fb17b6fb640a04d9e44d7476ebb92e3"
+    },
+    "remoteRegistration": {
+      "baseCandidate": "be573950d0d8d7d4b91043b180e6f86e73b94fee",
+      "files": {
+        "vercel.json": {
+          "oldBlob": "4b7da304e8fe226c00d51901123c643e25e2ba59",
+          "newBlob": "de2b621b9fc6e38485b806feb38272400caac5ce"
+        },
+        "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
+          "oldBlob": "f2724643dc72861a3021b23279b817fe0d5698be",
+          "newBlob": "7a67f7013193c520fe1483187988b3a739596805"
+        },
+        "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md": {
+          "oldBlob": "dc7e2fcc818fd3d1c88f3df1de7b8817c4c07ddb",
+          "newBlob": "17bbcb1a0f164774c38bb74222439fe20339b1df"
+        }
+      }
+    }
   }
 }

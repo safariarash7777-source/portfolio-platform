@@ -1,25 +1,29 @@
 "use client";
 import React from "react";
 import type { ConsultationRead } from "@/lib/consultation/contracts";
-import { formatJalali, toPersianDigits } from "@/lib/format";
+import { formatJalali, formatTehranClock, toPersianDigits } from "@/lib/format";
 import { resolveTicketRecommendation, ticketStatus, type TicketCommand, type TicketRead, type TicketRecommendation } from "@/lib/consultation/tickets";
 import type { TicketInboxItem, TicketStorageCapability } from "@/lib/consultation/ticketStorageContracts";
 import type { TicketAttemptMetadata } from "@/lib/consultation/ticketAttemptStorageContracts";
+import type { TicketServiceRightDiagnostic } from "@/lib/consultation/ticketServiceRightDiagnostic";
 
 export interface TicketDraft { kind: TicketCommand["kind"]; subject: string; text: string; recommendation: TicketRecommendation | null }
+export interface TicketLegacyDiagnosticView { readonly ownerId: string; readonly value: TicketServiceRightDiagnostic }
 export const blankTicketDraft = (kind: TicketCommand["kind"] = "open"): TicketDraft => ({ kind, subject: "", text: "", recommendation: null });
 const labels: Record<TicketCommand["kind"], string> = { open: "درخواست عضو", member_followup: "پیگیری عضو", advisor_clarification: "پاسخ مشاور", link_recommendation: "پیوند نسخهٔ مشخص", close: "بستن درخواست" };
-export default function TicketRequestPanel({ source, items, data, capability, draft, locked, selectionLocked, needsRefresh, onDraft, onSelect, onNew, onSubmit, onDiscard, preparedAttempts, onRestorePreparation }: {
+export default function TicketRequestPanel({ source, items, data, capability, draft, locked, selectionLocked, needsRefresh, onDraft, onSelect, onNew, onSubmit, onDiscard, preparedAttempts, onRestorePreparation, legacyDiagnostic, legacyLoading = false }: {
   source: ConsultationRead; items: TicketInboxItem[] | null; data: TicketRead | null; capability: TicketStorageCapability;
   draft: TicketDraft; locked: boolean; selectionLocked: boolean; needsRefresh: boolean;
   onDraft: (value: TicketDraft) => void; onSelect: (id: string) => void; onNew: () => void;
   onSubmit: () => void; onDiscard: () => void;
   preparedAttempts?: TicketAttemptMetadata[] | null; onRestorePreparation?: (id: string) => void;
+  legacyDiagnostic?: TicketLegacyDiagnosticView | null; legacyLoading?: boolean;
 }) {
   const relation = source.selected;
   if (!relation) return <p>رابطهٔ مجاز را انتخاب کنید. درخواست جدید رضایت ایجاد نمی‌کند.</p>;
   const member = source.actor.id === relation.clientId;
   const owner = source.actor.id === relation.advisorId && source.actor.isAdvisor && source.actor.isOwner;
+  const legacy = !legacyLoading && member && legacyDiagnostic?.ownerId === source.actor.id ? legacyDiagnostic.value : null;
   const closed = data ? ticketStatus(data) === "closed" : false;
   const kinds: TicketCommand["kind"][] = data ? member ? ["member_followup"] : owner ? ["advisor_clarification", "link_recommendation", "close"] : [] : member ? ["open"] : [];
   const activeKind = kinds.includes(draft.kind);
@@ -32,6 +36,19 @@ export default function TicketRequestPanel({ source, items, data, capability, dr
       <h2 className="font-bold">درخواست مستقل و حق خدمت</h2>
       <p className="text-sm leading-7">درخواست، رضایتِ دسترسی به پرونده نیست. دسترسی تحلیلی یا نقش مدیریت هم حق مصرف همین خدمت را ایجاد نمی‌کند؛ حق واقعی این خدمت هنوز متصل نیست.</p>
       {capability.state === "owned_fixture" ? <p role="status" className="break-words text-sm leading-7">فقط مجوز صریح محیط تستِ مجزا برای همین هویت فعال است؛ ثبت‌ها آموزشی‌اند و حق تجاری ایجاد نمی‌کنند. شناسهٔ اجرا: <bdi>{capability.runId}</bdi></p> : <p role="status" className="text-sm leading-7">{capability.state === "unavailable" ? "بررسی مجوز ثبت در دسترس نیست؛ این وضعیت نبود یا وجود حق را تأیید نمی‌کند." : "تأمین‌کنندهٔ معتبر حق خدمت متصل نیست."} ثبت غیرفعال است. متن واردشده در همین نشست حفظ می‌شود.</p>}
+      {member && <div className="min-w-0 space-y-3 border-t border-line pt-3" aria-label="اطلاعات دسترسی قدیمی خود عضو">
+        <dl className="grid min-w-0 gap-3 text-sm leading-7 sm:grid-cols-2">
+          <div className="min-w-0"><dt className="font-semibold">دسترسی تحلیلی قدیمیِ نوع مشاوره</dt><dd role="status" className="break-words">{legacyLoading ? "در حال خواندن اطلاعات خودتان…" : legacy?.legacyAccessState === "active" ? "در اطلاعات خوانده‌شده، در زمان ارزیابی فعال است." : legacy?.legacyAccessState === "inactive" ? "در اطلاعات خوانده‌شده، دسترسی فعال از این نوع گزارش نشده است." : "— · وضعیت نامعلوم است؛ خواندن کامل تأیید نشده است."}</dd></div>
+          <div className="min-w-0"><dt className="font-semibold">زمان ارزیابی این دستگاه</dt><dd>{legacy?.evaluatedAt ? <time dateTime={legacy.evaluatedAt}>{formatJalali(legacy.evaluatedAt)} · {formatTehranClock(legacy.evaluatedAt)}</time> : "—"}</dd></div>
+          <div className="min-w-0"><dt className="font-semibold">حق مشاورهٔ این صفحه</dt><dd>هنوز متصل نیست.</dd></div>
+          <div className="min-w-0"><dt className="font-semibold">منشأ ثبت‌شده</dt><dd>{legacy?.provenance.state === "reported" ? "در جزئیات زیر؛ تطبیق با این خدمت تأیید نشده است." : "—"}</dd></div>
+        </dl>
+        {legacy?.provenance.state === "reported" && legacy.provenance.rows && <details className="min-w-0 text-sm">
+          <summary className="cursor-pointer">جزئیات منشأ ثبت‌شده</summary>
+          <p className="mt-2 leading-7">نمایش {toPersianDigits(Math.min(3, legacy.provenance.rows.length))} از {toPersianDigits(legacy.provenance.rows.length)} ردیف در اطلاعات کاملِ خوانده‌شده؛ این تعداد، سهمیهٔ خدمت نیست.</p>
+          <ul className="mt-2 min-w-0 space-y-2">{legacy.provenance.rows.slice(0, 3).map(row => <li key={row.entitlementId} className="min-w-0 rounded-lg border border-line p-3"><span>منشأ گزارش‌شده، تأییدنشده برای این خدمت:</span><bdi dir="auto" className="block max-w-full whitespace-pre-wrap break-all text-xs">{row.recordedSource?.trim() ? row.recordedSource : "—"}</bdi></li>)}</ul>
+        </details>}
+      </div>}
       {relation.revoked && <p role="status" className="text-sm">رضایت این رابطه لغو شده است؛ عضو سابقهٔ خودش را می‌خواند و ثبت تازه انجام نمی‌شود.</p>}
       <a className="btn btn-outline max-w-full !whitespace-normal" href={`${source.actor.id === relation.advisorId ? "/admin" : "/dashboard"}/consultation?relation=${relation.id}`}>پرونده و نسخه‌های جمع‌بندی همین رابطه</a>
     </section>

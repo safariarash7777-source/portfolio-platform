@@ -8,13 +8,15 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import ts from "typescript";
 import TicketRequestPanel, { blankTicketDraft } from "./TicketRequestPanel";
+import { withDeadline } from "../../lib/deadline";
+import { diagnoseTicketServiceRight } from "../../lib/consultation/ticketServiceRightDiagnostic";
 import * as attemptClient from "../../lib/consultation/ticketAttemptStorageRequest";
 import { prepared, preparationReceipt, attemptList, attemptLookup } from "../../scripts/testing/consultation-tickets/prepared-unit-fixture";
 import type { TicketPrepared, TicketAttemptSelection } from "../../lib/consultation/ticketAttemptStorageContracts";
 import * as storageClient from "../../lib/consultation/ticketStorageRequest";
 import { TICKET_RIGHT_ERROR, type TicketStorageEnvelope, type TicketStorageSelection } from "../../lib/consultation/ticketStorageContracts";
 import type { TicketRequest } from "../../lib/consultation/tickets";
-import { parent, opening, history, receipt, lookup, M, O } from "../../scripts/testing/consultation-tickets/unit-fixture";
+import { parent, opening, history, receipt, lookup, M, O, uid } from "../../scripts/testing/consultation-tickets/unit-fixture";
 type Element = React.ReactElement<Record<string, unknown>>;
 function nodes(tree: unknown): Element[] { if (Array.isArray(tree)) return tree.flatMap(nodes); if (!React.isValidElement(tree)) return []; const node = tree as Element; return [node, ...nodes(typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children)]; }
 function text(tree: unknown): string { if (Array.isArray(tree)) return tree.map(text).join(""); if (!React.isValidElement(tree)) return typeof tree === "string" || typeof tree === "number" ? String(tree) : ""; const node = tree as Element; return text(typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children); }
@@ -30,7 +32,8 @@ function parentGate() {
   const entered = deferred<void>(), outcome = deferred<unknown>();
   return { entered: entered.promise, read: () => { entered.done(undefined); return outcome.promise; }, done: outcome.done, fail: outcome.fail };
 }
-function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], actor = M, requestId?: string, preparationOptions: { reads?: unknown[]; writes?: unknown[]; store?: Map<string, TicketPrepared> } = {}) {
+type LegacyOptions = { sessions?: unknown[]; identities?: unknown[]; results?: unknown[]; deadlineMs?: number };
+function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], actor = M, requestId?: string, preparationOptions: { reads?: unknown[]; writes?: unknown[]; store?: Map<string, TicketPrepared> } = {}, legacy: LegacyOptions = {}) {
   const slots: unknown[] = [], effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: unknown[] = [], writeCalls: unknown[][] = [], urls: string[] = [];
   const prepReadCalls: unknown[][] = [], prepWriteCalls: unknown[][] = [], preparedStore = preparationOptions.store ?? new Map<string, TicketPrepared>();
   let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
@@ -42,6 +45,25 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
   };
   const filename = resolve("components/consultation/TicketRequestWorkspace.tsx"), local = createRequire(filename), taskModule = { exports: {} as { default: (props: unknown) => unknown } };
   const consume = async (values: unknown[], args: unknown[]) => { assert.ok(values.length, "unexpected unit transport call"); const value = values.shift(); return typeof value === "function" ? value(...args) : await value; };
+  const legacyCalls: { table: string; operations: [string, ...unknown[]][]; headers: Headers; signal?: AbortSignal }[] = [], jwtCalls: string[] = [], deadlineCalls: number[] = [];
+  const globalHeaders = new Headers({ Authorization: "unchanged-global-carrier" });
+  const sdk = { auth: {
+    onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; },
+    async getSession() { return legacy.sessions ? consume(legacy.sessions, []) : { data: { session: null }, error: null }; },
+    async getUser(jwt?: string) { if (jwt) { jwtCalls.push(jwt); return legacy.identities ? consume(legacy.identities, [jwt]) : { data: { user: { id: actor } }, error: null }; } return { data: { user: { id: actor } }, error: null }; },
+  }, from(table: string) {
+    const call: typeof legacyCalls[number] = { table, operations: [], headers: new Headers(globalHeaders) };
+    const builder = {
+      select(...args: unknown[]) { call.operations.push(["select", ...args]); return builder; },
+      eq(...args: unknown[]) { call.operations.push(["eq", ...args]); return builder; },
+      order(...args: unknown[]) { call.operations.push(["order", ...args]); return builder; },
+      range(...args: unknown[]) { call.operations.push(["range", ...args]); return builder; },
+      retry(...args: unknown[]) { call.operations.push(["retry", ...args]); return builder; },
+      setHeader(name: string, value: string) { call.operations.push(["setHeader", name, value]); call.headers = new Headers(call.headers); call.headers.set(name, value); return builder; },
+      abortSignal(signal: AbortSignal) { call.signal = signal; return builder; },
+      then(ok: (value: unknown) => unknown, fail: (reason: unknown) => unknown) { legacyCalls.push(call); return consume(legacy.results ?? [], [call]).then(ok, fail); },
+    }; return builder;
+  } };
   const calls = { ...storageClient,
     async readTicketStorage(...args: unknown[]) { readCalls.push(args); return consume(reads, args); },
     async sendTicketStorageAttempt(...args: unknown[]) { writeCalls.push(args); return consume(writes, args); },
@@ -66,7 +88,8 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
   const browser = Object.assign(new EventTarget(), { location: { href: "http://localhost:32189/dashboard/consultation/requests" }, history: { replaceState(_state: unknown, _title: string, url: URL) { urls.push(String(url)); browser.location.href = String(url); } } });
   const dependencies = (name: string) => name === "react" ? hooks : name === "@/lib/consultation/request" ? { async readConsultation() { return consume(parentReads, []); } }
     : name === "@/lib/consultation/ticketAttemptStorageRequest" ? preservationCalls : name === "@/lib/consultation/ticketStorageRequest" ? calls : name === "./TicketRequestPanel" ? { __esModule: true, default: (props: object) => React.createElement("test-ticket-panel", props), blankTicketDraft }
-      : name === "@/lib/supabase/client" ? { createClient: () => ({ auth: { onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; }, async getUser() { return { data: { user: { id: actor } }, error: null }; } } }) }
+      : name === "@/lib/supabase/client" ? { createClient: () => sdk }
+        : name === "@/lib/deadline" ? { withDeadline: (load: (signal: AbortSignal) => Promise<unknown>, ms: number, signal?: AbortSignal) => { if (signal) deadlineCalls.push(ms); return withDeadline(load, signal ? legacy.deadlineMs ?? ms : ms, signal); } }
         : local(name.startsWith("@/") ? resolve(name.slice(2)) : name);
   const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
   new Function("require", "module", "exports", "React", "window", code)(dependencies, taskModule, taskModule.exports, React, browser);
@@ -75,7 +98,7 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
   const panel = () => { const item = nodes(tree).find(node => node.type === "test-ticket-panel"); assert.ok(item); return item; };
   render();
   return {
-    panel, render, flush, text: () => text(tree), writeCalls, readCalls, urls, prepReadCalls, prepWriteCalls, preparedStore,
+    panel, render, flush, text: () => text(tree), writeCalls, readCalls, urls, prepReadCalls, prepWriteCalls, preparedStore, legacyCalls, jwtCalls, globalHeaders, deadlineCalls,
     async auth(event = "INITIAL_SESSION", id: string | null = actor) { callback(event, id ? { user: { id } } : null); render(); await flush(); },
     edit(value = "SYNTHETIC_PRIVATE_DRAFT") { (panel().props.onDraft as (draft: unknown) => void)({ ...blankTicketDraft(), subject: "Synthetic subject", text: value }); render(); },
     async restorePreparation(id: string) { (panel().props.onRestorePreparation as (id: string) => void)(id); render(); await flush(); },
@@ -231,4 +254,100 @@ test("unavailable preparation metadata does not hide authorized ticket history o
   const view = mount([ready(parent())], [ready(inbox()), ready({ contractVersion: "consultation-ticket-storage.v1", mode: "read", capability: { state: "owned_fixture", runId: "unit-boundary-only" }, data: history() })], [], M, opening().command.requestId, { reads: [{ status: "error", error: { code: "READ_UNAVAILABLE", error: "unit unavailable metadata" } }] });
   await view.auth(); assert.equal(view.panel().props.preparedAttempts, null); assert.equal((view.panel().props.data as { history: { state: string } }).history.state, "ready"); assert.equal(view.panel().props.needsRefresh, true);
   assert.equal(view.prepWriteCalls.length, 0); assert.equal(view.writeCalls.length, 0); view.unmount();
+});
+
+// Controlled SDK seam only: no Auth server, REST request or database is used.
+const carrier = (token = "unit-token") => ({ data: { session: { access_token: token, user: { id: O } } }, error: null });
+const legacyRow = (n = 10) => ({ id: uid(n), user_id: M, kind: "consulting", source: "unit-unverified-source", starts_at: "2000-01-01T00:00:00Z", expires_at: "2099-01-01T00:00:00Z", revoked_at: null });
+const legacyValue = (view: ReturnType<typeof mount>) => (view.panel().props.legacyDiagnostic as { ownerId: string; value: ReturnType<typeof diagnoseTicketServiceRight> } | null)?.value;
+test("legacy self read validates the carrier JWT and binds one scoped GET without global header mutation", async () => {
+  const view = mount([ready(parent())], [ready(inbox())], [], M, undefined, {}, { sessions: [carrier()], results: [{ data: [legacyRow()], count: 1, error: null }] });
+  await view.auth(); assert.deepEqual(view.jwtCalls, ["unit-token"]); assert.equal(view.legacyCalls.length, 1);
+  const call = view.legacyCalls[0]; assert.equal(call.table, "entitlements");
+  assert.deepEqual(call.operations, [["select", "id,user_id,kind,source,starts_at,expires_at,revoked_at", { count: "exact" }], ["eq", "user_id", M], ["order", "id", { ascending: true }], ["range", 0, 999], ["retry", false], ["setHeader", "Authorization", "Bearer unit-token"]]);
+  assert.equal(call.headers.get("Authorization"), "Bearer unit-token"); assert.equal(view.globalHeaders.get("Authorization"), "unchanged-global-carrier");
+  assert.equal(call.signal?.aborted, false); assert.deepEqual(view.deadlineCalls, [10000]);
+  assert.equal(legacyValue(view)?.legacyAccessState, "active"); assert.equal(legacyValue(view)?.authority, "not_connected"); assert.equal(legacyValue(view)?.writeEnabled, false);
+  assert.doesNotMatch(JSON.stringify(view.panel().props), /unit-token/); assert.equal(view.writeCalls.length + view.prepWriteCalls.length, 0); view.unmount();
+});
+test("foreign advisor or unknown parent performs zero legacy GETs and does not inspect a carrier", async () => {
+  for (const [read, actor] of [[ready(parent(true)), O], [{ status: "error", error: { code: "READ_UNAVAILABLE", error: "unit unknown" } }, M]] as const) {
+    const sessions = [carrier()]; const view = mount([read], actor === O ? [ready(inbox(true))] : [], [], actor, undefined, {}, { sessions });
+    await view.auth(); assert.equal(view.legacyCalls.length, 0); assert.equal(view.jwtCalls.length, 0); assert.equal(sessions.length, 1); view.unmount();
+  }
+});
+test("validated JWT actor mismatch clears private content and never queries entitlements", async () => {
+  const identity = deferred<unknown>();
+  const view = mount([ready(parent())], [ready(inbox())], [], M, undefined, {}, { sessions: [carrier()], identities: [identity.promise] });
+  await view.auth(); view.edit("PRIVATE_LEGACY_MISMATCH"); identity.done({ data: { user: { id: O } }, error: null }); await view.flush();
+  assert.equal(view.legacyCalls.length, 0); assert.throws(() => view.panel()); assert.doesNotMatch(view.text(), /PRIVATE_LEGACY_MISMATCH/); view.unmount();
+});
+test("legacy completeness requires exact bounded count; partial unknown and empty complete stay distinct", async () => {
+  for (const [result, expected] of [
+    [{ data: Array.from({ length: 50 }, (_, n) => legacyRow(n + 10)), count: 500, error: null }, "unknown"],
+    [{ data: [legacyRow()], count: null, error: null }, "unknown"],
+    [{ data: [], count: -1, error: null }, "unknown"],
+    [{ data: [], count: 1001, error: null }, "unknown"],
+    [{ data: [], count: 0.5, error: null }, "unknown"],
+    [{ data: [], count: 0, error: null }, "inactive"],
+    [{ data: null, count: 0, error: { message: "unit unavailable" } }, "unknown"],
+  ] as const) {
+    const view = mount([ready(parent())], [ready(inbox())], [], M, undefined, {}, { sessions: [carrier()], results: [result] });
+    await view.auth(); assert.equal(legacyValue(view)?.legacyAccessState, expected); assert.equal(legacyValue(view)?.writeEnabled, false);
+    assert.equal(legacyValue(view)?.quota, null); assert.equal(legacyValue(view)?.authority, "not_connected");
+    if (expected === "unknown") assert.equal(legacyValue(view)?.provenance.rows, null);
+    assert.equal(view.writeCalls.length, 0); view.unmount();
+  }
+});
+test("foreign duplicate and corrupt legacy rows fail closed even when count matches", async () => {
+  for (const data of [[{ ...legacyRow(), user_id: O }], [legacyRow(), legacyRow()], [{ ...legacyRow(), expires_at: "bad" }]]) {
+    const view = mount([ready(parent())], [ready(inbox())], [], M, undefined, {}, { sessions: [carrier()], results: [{ data, count: data.length, error: null }] });
+    await view.auth(); assert.equal(legacyValue(view)?.legacyAccessState, "unknown"); assert.equal(legacyValue(view)?.provenance.rows, null); view.unmount();
+  }
+});
+test("deferred legacy failure never blocks history draft or the independent refresh lock", async () => {
+  const late = deferred<unknown>(), originalHistory = history();
+  const view = mount([ready(parent())], [ready(inbox()), ready({ contractVersion: "consultation-ticket-storage.v1", mode: "read", capability: { state: "owned_fixture", runId: "unit-boundary-only" }, data: originalHistory })], [], M, opening().command.requestId, { reads: [{ status: "error", error: { code: "READ_UNAVAILABLE", error: "unit metadata unavailable" } }] }, { sessions: [carrier()], results: [late.promise] });
+  await view.auth(); assert.equal(view.panel().props.legacyLoading, true); assert.deepEqual(view.panel().props.data, originalHistory);
+  assert.equal(view.panel().props.needsRefresh, true); view.edit("INDEPENDENT_DRAFT"); const before = { draft: view.panel().props.draft, locked: view.panel().props.locked, refresh: view.panel().props.needsRefresh };
+  late.fail(Error("unit transport failure")); await view.flush(); assert.equal(legacyValue(view)?.legacyAccessState, "unknown"); assert.deepEqual(view.panel().props.data, originalHistory);
+  assert.deepEqual({ draft: view.panel().props.draft, locked: view.panel().props.locked, refresh: view.panel().props.needsRefresh }, before);
+  assert.equal(view.prepWriteCalls.length + view.writeCalls.length, 0); view.unmount();
+});
+test("suspended identity aborts an old legacy GET and its late result cannot reappear", async () => {
+  const late = deferred<unknown>();
+  const view = mount([ready(parent()), ready(parent())], [ready(inbox()), ready(inbox())], [], M, undefined, {}, { sessions: [carrier(), carrier("new-unit-token")], results: [late.promise, { data: [], count: 0, error: null }] });
+  await view.auth(); await view.auth("TOKEN_REFRESHED", null); assert.equal(view.legacyCalls[0].signal?.aborted, true); assert.throws(() => view.panel());
+  await view.auth(); assert.equal(legacyValue(view)?.legacyAccessState, "inactive");
+  late.done({ data: [legacyRow()], count: 1, error: null }); await view.flush(); assert.equal(legacyValue(view)?.legacyAccessState, "inactive"); assert.equal(view.legacyCalls.length, 2); view.unmount();
+});
+test("nonabortable Auth after the deadline cannot start a late legacy GET", async () => {
+  for (const stage of ["session", "identity"]) {
+    const late = deferred<unknown>();
+    const view = mount([ready(parent())], [ready(inbox())], [], M, undefined, {}, { sessions: [stage === "session" ? late.promise : carrier()], identities: [late.promise], deadlineMs: 5 });
+    await view.auth(); await new Promise(resolve => setTimeout(resolve, 15)); await view.flush(); assert.equal(legacyValue(view)?.legacyAccessState, "unknown");
+    late.done(stage === "session" ? carrier() : { data: { user: { id: M } }, error: null }); await view.flush();
+    assert.equal(view.legacyCalls.length, 0); assert.deepEqual(view.deadlineCalls, [10000]); view.unmount();
+  }
+});
+test("actor change and unmount prevent a nonabortable Auth continuation from querying", async () => {
+  for (const stop of ["actor", "unmount"]) {
+    const late = deferred<unknown>(); const view = mount([ready(parent())], [ready(inbox())], [], M, undefined, {}, { sessions: [carrier()], identities: [late.promise] });
+    await view.auth(); if (stop === "actor") await view.auth("SIGNED_IN", O); else view.unmount();
+    late.done({ data: { user: { id: M } }, error: null }); await view.flush(); assert.equal(view.legacyCalls.length, 0); if (stop === "actor") assert.throws(() => view.panel()); view.unmount();
+  }
+});
+test("actual panel escapes long unverified sources and preserves responsive RTL unknown and device time markup", () => {
+  const evaluatedAt = "2026-10-31T00:00:00Z", unsafeSource = '<script data-unit="x">'.repeat(200);
+  const value = diagnoseTicketServiceRight({ state: "ready", rows: [{ ...legacyRow(), source: unsafeSource }], complete: true }, M, evaluatedAt);
+  const props = { source: parent(), items: null, data: null, capability: { state: "not_connected" as const, runId: null }, draft: blankTicketDraft(), locked: false, selectionLocked: false, needsRefresh: false, onDraft() {}, onSelect() {}, onNew() {}, onSubmit() {}, onDiscard() {} };
+  for (const width of [390, 1440]) {
+    const html = renderToStaticMarkup(<div dir="rtl" style={{ width }}><TicketRequestPanel {...props} legacyDiagnostic={{ ownerId: M, value }}/></div>);
+    assert.match(html, new RegExp(`width:${width}px`)); assert.match(html, /dir="rtl"/); assert.match(html, /sm:grid-cols-2/); assert.match(html, /whitespace-pre-wrap break-all/);
+    assert.match(html, /&lt;script/); assert.doesNotMatch(html, /<script|data-unit="x"/); assert.match(html, /تأییدنشده برای این خدمت/);
+    assert.match(html, /زمان ارزیابی این دستگاه/); assert.match(html, /dateTime="2026-10-31T00:00:00Z"/); assert.match(html, /هنوز متصل نیست/); assert.match(html, /type="submit"[^>]*disabled/);
+  }
+  const foreign = renderToStaticMarkup(<TicketRequestPanel {...props} legacyDiagnostic={{ ownerId: O, value }}/>); assert.doesNotMatch(foreign, /&lt;script/); assert.match(foreign, /—/);
+  const advisor = renderToStaticMarkup(<TicketRequestPanel {...props} source={parent(true)} legacyDiagnostic={{ ownerId: M, value }}/>); assert.doesNotMatch(advisor, /اطلاعات دسترسی قدیمی خود عضو|&lt;script/);
+  const oldProps = renderToStaticMarkup(<TicketRequestPanel {...props}/>); assert.match(oldProps, /—/); assert.match(oldProps, /type="submit"[^>]*disabled/);
 });
