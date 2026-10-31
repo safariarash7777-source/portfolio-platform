@@ -6,17 +6,17 @@
   "jobs": [
     {
       "id": 124431821688,
-      "name": "Typecheck · Lint · Tests · Build",
+      "name": "Typecheck \u0622\u00b7 Lint \u0622\u00b7 Tests \u0622\u00b7 Build",
       "conclusion": "failure"
     },
     {
       "id": 124431821879,
-      "name": "Database RLS · Integrity (Postgres)",
+      "name": "Database RLS \u0622\u00b7 Integrity (Postgres)",
       "conclusion": "success"
     },
     {
       "id": 124431821887,
-      "name": "Secret scan · SQL validation",
+      "name": "Secret scan \u0622\u00b7 SQL validation",
       "conclusion": "success"
     },
     {
@@ -48,9 +48,22 @@
   "subsequentQualitySteps": "SKIPPED including build; not accepted",
   "local26Tests": "owner offline only, not yet all executed by this CI",
   "rootAction": "narrow child allocated and sent to A: add only literal new test path to existing test:calc and update same DELIVERY; preserve fa/code/tests/guard/lock/workflows; new CI after commit allowed",
-  "nextCommit": "NOT_OBSERVED_YET",
+  "nextCommit": "805a8d905c9d82697745988b21ff4f1222f8969d",
   "data402": "OPEN",
   "envMutation": false,
   "manualDeploy": false,
-  "releaseAuthorized": false
+  "releaseAuthorized": false,
+  "followUp": {
+    "tree": "c5f20ab832ab985dd32190ee53d306a849ddbec0",
+    "parent": "fa333ea75ce8ddb9f7d798179739677527a9891a",
+    "rootGitHubDiffRead": true,
+    "changedFiles": [
+      "package.json",
+      "docs/ops/p07-fundamental-read-binding-20261031/DELIVERY.fa.md"
+    ],
+    "packageDelta": "only literal lib/fundamental/read-binding.test.ts added to existing test:calc",
+    "newCi": 41165825261,
+    "newCiStatus": "IN_PROGRESS_NOT_ACCEPTED",
+    "appHelperTestsGuardLockWorkflowUnchanged": true
+  }
 }
