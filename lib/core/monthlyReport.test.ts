@@ -7,6 +7,7 @@ import {
   dedupeByMonth,
   fyMonthOrder,
   monthKeyOf,
+  monthlyCalendarKeys,
   narrativeCumulative,
   narrativeMix,
   narrativeMonthlyVsAvg,
@@ -50,6 +51,16 @@ test("monthKeyOf: جلالی معتبر و نامعتبر", () => {
   assert.equal(monthKeyOf("1405-02-31"), "1405-02"); // اردیبهشت ۳۱روزه معتبر
   assert.equal(monthKeyOf("bad"), null);
   assert.equal(monthKeyOf("1404-13-01"), null);
+});
+
+test("shared monthly calendar: sorted unique slots, year rollover, empty and invalid axes", () => {
+  const keys = Object.freeze(["1405-02", "1404-11", "1405-02"]);
+  assert.deepEqual(monthlyCalendarKeys(keys), ["1404-11", "1404-12", "1405-01", "1405-02"]);
+  assert.deepEqual(monthlyCalendarKeys(["1405-02"]), ["1405-02"]);
+  assert.deepEqual(monthlyCalendarKeys([]), []);
+  for (const bad of ["1405-00", "1405-13", "bad", "1405-1", "1405-01-31"])
+    assert.deepEqual(monthlyCalendarKeys(["1405-01", bad]), []);
+  assert.deepEqual(keys, ["1405-02", "1404-11", "1405-02"]);
 });
 
 test("fyMonthOrder: سال مالی منتهی به شهریور از مهر شروع می‌شود", () => {

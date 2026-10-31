@@ -2,13 +2,15 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { buildMonthlySales } from "../../../lib/core/monthlyReport";
+import { deriveN30 } from "../../../lib/fundamental/calc";
+import { withKnownMonthlyQuantities } from "../../../lib/core/monthly-quantity";
 import { DATASET_ID, HISTORY, MONTHLY, PERIODS, QUARTER_PRICES, SOURCE, STATES, fundamentalsFor, hasMonthlyGap, monthlyFor, productReports, quarterlyFor } from "./chart-data";
 import { parsePrototypeSelection, prototypeComparisonHref, type PrototypeSelection } from "./query-state";
 const snapshot=JSON.stringify({MONTHLY,PERIODS,HISTORY});
 let checks=0;
 function check(name:string,run:()=>void){run();checks++;console.log(`PASS ${name}`);}
 check("monthly coverage and shared series",()=>{const m=buildMonthlySales(monthlyFor("ready",1405));assert.equal(m?.reportCount,12);assert.equal(m?.priorFY,1404);assert.equal(m?.rateSeries.length,3);assert.equal(m?.currentMonths[5].amount,116350);assert.equal(m?.currentMonths[5].cumulative,564400);});
-check("integrated rate core retains missing month null slots; separate fundamental guard stays",()=>{const reports=monthlyFor("month-gap",1405);const m=buildMonthlySales(reports);assert.equal(m?.currentMonths[3].amount,null);assert.equal(m?.currentMonths[3].cumulative,null);assert.equal(m?.currentMonths[4].cumulative,448050);assert(m?.rateSeries.every(series=>series.points.find(point=>point.monthKey==="1405-04")?.rate===null));assert(hasMonthlyGap(reports.filter(r=>r.fiscal_year===1405)));assert.equal(fundamentalsFor("month-gap",reports).n30,null);assert(!hasMonthlyGap(monthlyFor("ready",1405).filter(r=>r.fiscal_year===1405)));});
+check("integrated rate and quantity gaps preserve reported months; fundamental adapter retains real N30",()=>{const reports=monthlyFor("month-gap",1405);const m=buildMonthlySales(reports);assert.equal(m?.currentMonths[3].amount,null);assert.equal(m?.currentMonths[3].cumulative,null);assert.equal(m?.currentMonths[4].cumulative,448050);assert(m?.rateSeries.every(series=>series.points.find(point=>point.monthKey==="1405-04")?.rate===null));assert(hasMonthlyGap(reports.filter(r=>r.fiscal_year===1405)));assert.equal(fundamentalsFor("month-gap",reports).n30?.data.length,5);assert(!hasMonthlyGap(monthlyFor("ready",1405).filter(r=>r.fiscal_year===1405)));});
 check("quantity keeps missing calendar slots and declared units for every existing product/market scope",()=>{
   for(const product of ["all","ورق گرم","ورق سرد"])for(const market of ["all","داخلی","صادراتی"]){
     const reports=productReports(monthlyFor("month-gap",1405).filter(r=>r.fiscal_year===1405),product,market);
@@ -19,6 +21,15 @@ check("quantity keeps missing calendar slots and declared units for every existi
     assert.deepEqual(m.prodVsSales[3],{monthKey:"1405-04",monthLabel:"تیر",production:null,sales:null,unavailableReason:"missing-report"});
     assert.equal(m.prodVsSales[2].unavailableReason,null);assert.equal(m.prodVsSales[4].unavailableReason,null);
     assert.equal(m.reportCount,5);
+  }
+});
+check("fundamental N30 keeps calendar gaps, reported counts and original annual source",()=>{
+  for(const fy of [1404,1405]){
+    const f=fundamentalsFor("month-gap",monthlyFor("month-gap",fy));assert(f.n30);assert(f.n10);
+    const m=deriveN30(f.n30.data.map(withKnownMonthlyQuantities));
+    assert.equal(m.months.length,fy===1405?5:6);assert.equal(m.topProductMonths.length,6);assert.equal(m.prodVsSales.length,6);
+    if(fy===1405){assert.deepEqual(m.topProductMonths[3],{month:"1405-04",rate:null,salesQty:null,productionQty:null});assert.deepEqual(m.prodVsSales[3],{month:"1405-04",production:null,sales:null});}
+    assert.equal(f.n30.source.publishedAt,null);assert.equal(f.n30.source.source_url,null);assert.equal(f.n10.data.period_months,12);
   }
 });
 check("prior year absent is not a zero comparator",()=>{const m=buildMonthlySales(monthlyFor("no-prior",1405));assert.equal(m?.priorFY,null);assert.equal(m?.priorMonths,null);assert.equal(m?.cumulativePriorSamePoint,null);});

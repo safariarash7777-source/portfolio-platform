@@ -149,6 +149,22 @@ export function monthKeyOf(periodEnd: string): string | null {
   return `${m[1]}-${m[2]}`;
 }
 
+/** Presentation axis between observed month keys; no report, value or fiscal period is created. */
+export function monthlyCalendarKeys(keys: readonly string[]): string[] {
+  const sortedKeys = [...new Set(keys)].sort();
+  if (!sortedKeys.length || sortedKeys.some(key => monthKeyOf(key) !== key)) return [];
+  const monthIndex = (key: string) => Number(key.slice(0, 4)) * 12 + Number(key.slice(5, 7)) - 1;
+  const first = monthIndex(sortedKeys[0]);
+  const last = monthIndex(sortedKeys[sortedKeys.length - 1]);
+  const calendar: string[] = [];
+  for (let index = first; index <= last; index++) {
+    const year = Math.floor(index / 12);
+    const month = index % 12 + 1;
+    calendar.push(`${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`);
+  }
+  return calendar;
+}
+
 /** یکتاسازی گزارش‌ها بر اساس ماه — ورودی باید از جدید به قدیم مرتب باشد
  * (اولین دیده‌شده برنده است = جدیدترین اصلاحیه). گزارش با جمع صفر وقتی
  * نسخهٔ دیگری از همان ماه موجود است کنار گذاشته می‌شود. */
@@ -264,15 +280,7 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
   }
   const topCombos = [...comboTotals.values()].sort((a, b) => b.amount - a.amount).slice(0, 3);
   // Shared presentation slots only: never invent a report or change a reported rate.
-  const rateMonthKeys: string[] = [];
-  const monthIndex = (key: string) => Number(key.slice(0, 4)) * 12 + Number(key.slice(5, 7)) - 1;
-  const firstRateMonth = monthIndex(sortedKeys[0]);
-  const lastRateMonth = monthIndex(sortedKeys[sortedKeys.length - 1]);
-  for (let index = firstRateMonth; index <= lastRateMonth; index++) {
-    const year = Math.floor(index / 12);
-    const month = index % 12 + 1;
-    rateMonthKeys.push(`${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`);
-  }
+  const rateMonthKeys = monthlyCalendarKeys(sortedKeys);
   const rateSeries: RateSeries[] = topCombos.map((c) => ({
     productName: c.name,
     market: c.market,
