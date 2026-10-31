@@ -66,11 +66,15 @@ export interface CodalN10Data {
  *  (اندازه‌گیریِ Production ۲۰۲۶-۰۹-۰۶: ۴٬۷۷۹ گزارش روی ۳۱۵ نماد، همه با آرایهٔ
  *  ناتهی؛ `sales_qty` در ۴٬۷۶۴ و `sales_rate` در ۴٬۷۵۹ گزارش موجود).
  *  مصرف‌کننده: `lib/core/monthlyReport.ts` (سریِ نرخ، ترکیبِ محصول، تولید/فروش). */
+export type N30Market = "داخلی" | "صادراتی" | "خدمات" | "نامشخص";
+
 export interface N30ProductRow {
   /** Explicit row denominator, when present; null never inherits a report unit. */
   qty_unit?: string | null;
   product_name: string;
-  market: "داخلی" | "صادراتی";
+  market: N30Market;
+  /** Absent on historical rows; their market labels are not header-verified. */
+  market_basis?: "section_header" | "unknown";
   production_qty: number | null;
   sales_qty: number | null;
   sales_rate: number | null; // ریال بر واحد

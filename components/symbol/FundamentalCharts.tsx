@@ -517,6 +517,8 @@ export default function FundamentalCharts({
   const derived = useMemo(() => (n10Comparable && n10 ? deriveN10(n10.data) : null), [n10, n10Comparable]);
   const n30 = fundamentals.n30;
   const n30d = useMemo(() => (n30 ? deriveN30(n30.data.map(withKnownMonthlyQuantities)) : null), [n30]);
+  const smallPositiveExportShare = n30d !== null && n30d.exportSharePct === 0
+    && n30d.months.some(month => month.exportAmount !== null && month.exportAmount > 0);
   const [usd, setUsd] = useState(false);
   const fxEnabled = typeof fxRate === "number" && Number.isFinite(fxRate) && fxRate > 0;
   const usdRate = usd && fxEnabled ? fxRate : null;
@@ -643,7 +645,7 @@ export default function FundamentalCharts({
           <ChartCard
             id="chart-sales-mix"
             title="۴) سهم محصولات از فروش"
-            subtitle={`جمع ${toPersianDigits(String(n30d.months.length))} ماه گزارش فعالیت ماهانه (ن-۳۰) کدال${n30d.exportSharePct !== null && n30d.exportSharePct > 0 ? ` · سهم صادرات ٪${toPersianDigits(String(n30d.exportSharePct))}` : " · در این بازه فروش صادراتی گزارش نشده"}`}
+            subtitle={`جمع ${toPersianDigits(String(n30d.months.length))} ماه گزارش فعالیت ماهانه (ن-۳۰) کدال${n30d.marketUnavailableReason ? ` · ${n30d.marketUnavailableReason === "unverified-market" ? "تفکیک بازار تأیید نشده" : n30d.marketUnavailableReason === "signed-market-adjustment" ? "محاسبهٔ سهم با مبلغ اصلاحی/منفی در روش فعلی پشتیبانی نمی‌شود" : "پوشش مبلغ ردیف‌های بازار کامل نیست"}؛ سهم صادرات نامعلوم است` : smallPositiveExportShare ? ` · سهم صادرات کمتر از ${toPersianDigits("0.1").replace(".", "٫")}٪` : n30d.exportSharePct !== null ? ` · سهم صادرات ٪${toPersianDigits(String(n30d.exportSharePct))}` : " · سهم صادرات قابل محاسبه نیست"}`}
           >
             <SalesMixChart d30={n30d} />
           </ChartCard>

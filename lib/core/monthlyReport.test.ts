@@ -46,6 +46,76 @@ function report(periodEnd: string, total: number, products: N30ProductRow[], cum
   };
 }
 
+test("market basis: historical labels cannot establish a market split or erase valid rates", () => {
+  const input = [report("1405-01-31", 500, [prod({ product_name: "الف", sales_amount: 500, sales_rate: 250, market_basis: undefined })])];
+  const before = JSON.stringify(input), m = buildMonthlySales(input)!;
+  assert.equal(m.latestExportSharePct, null);
+  assert.equal(m.latestDomesticAmount, null); assert.equal(m.latestExportAmount, null);
+  assert.equal(m.latestMix[0].market, "نامشخص"); assert.equal(m.latestMix[0].amount, 500);
+  assert.deepEqual(m.rateSeries[0].points.map(p => p.rate), [250]);
+  assert.equal(m.rateSeries[0].market, "نامشخص");
+  assert.doesNotMatch(narrativeMix(m) ?? "", /کل فروش داخلی|صادراتی گزارش نشده/);
+  assert.equal(JSON.stringify(input), before);
+});
+
+test("market basis: verified services, exact zero and incomplete coverage are distinct", () => {
+  const rows = [prod({ product_name: "کالا", market_basis: "section_header", sales_amount: 300 }), prod({ product_name: "خدمت", market: "خدمات", market_basis: "section_header", sales_amount: 200 })];
+  const known = buildMonthlySales([report("1405-01-31", 500, rows)])!;
+  assert.equal(known.latestDomesticAmount, 300); assert.equal(known.latestExportAmount, 0);
+  assert.equal(known.latestExportSharePct, 0); assert.equal(known.marketUnavailableReason, null);
+  assert.equal(known.latestMix.find(x => x.name === "خدمت")!.market, "خدمات");
+  assert.equal(known.latestMix.find(x => x.name === "خدمت")!.sharePct, 40);
+  assert.doesNotMatch(narrativeMix(known)!, /کل فروش داخلی/);
+  for (const basis of [undefined, "unknown", "section_header " as "unknown"] as const) {
+    const uncertain = buildMonthlySales([report("1405-01-31", 500, rows.map(p => ({ ...p, market_basis: basis })))])!;
+    assert.equal(uncertain.latestExportSharePct, null); assert.equal(uncertain.marketUnavailableReason, "unverified-market");
+  }
+  const explicitUnknown = buildMonthlySales([report("1405-01-31", 500, rows.map(p => ({ ...p, market: "نامشخص" })))])!;
+  assert.equal(explicitUnknown.latestExportSharePct, null); assert.equal(explicitUnknown.marketUnavailableReason, "unverified-market");
+  for (const r of [report("1405-01-31", 501, rows), report("1405-01-31", 500, [rows[0], { ...rows[1], sales_amount: null }])]) {
+    const incomplete = buildMonthlySales([r])!;
+    assert.equal(incomplete.latestExportSharePct, null); assert.equal(incomplete.marketUnavailableReason, "incomplete-market-coverage");
+  }
+  const signed = buildMonthlySales([report("1405-01-31", 290, [rows[0], { ...rows[1], market: "صادراتی", sales_amount: -10 }])])!;
+  assert.equal(signed.latestExportSharePct, null); assert.equal(signed.marketUnavailableReason, "signed-market-adjustment");
+  assert.match(narrativeMix(signed)!, /اصلاحی\/منفی/);
+  assert.doesNotMatch(narrativeMix(signed)!, /تفکیک.*در دسترس نیست|تأیید نشده|پوشش.*کامل نیست/);
+});
+
+test("market basis: two historical rate buckets keep their points and unknown rows stay outside other", () => {
+  const products = [prod({ product_name: "الف", market: "داخلی", sales_amount: 300, sales_rate: 250, market_basis: undefined }),
+    prod({ product_name: "الف", market: "صادراتی", sales_amount: 200, sales_rate: 310, market_basis: undefined })];
+  const m = buildMonthlySales([report("1405-01-31", 500, products), report("1405-03-31", 500, products)])!;
+  assert.equal(m.rateSeries.length, 2);
+  assert.deepEqual(m.rateSeries.map(s => s.points.map(p => p.rate)), [[250, null, 250], [310, null, 310]]);
+  assert.ok(m.rateSeries.every(s => s.market === "نامشخص" && s.label.includes("تفکیک نامعلوم")));
+  const many = Array.from({ length: 8 }, (_, i) => prod({ product_name: `محصول${i}`, sales_amount: 10 - i,
+    market_basis: i === 7 ? undefined : "section_header" }));
+  const mix = buildMonthlySales([report("1405-01-31", 52, many)])!.latestMix;
+  assert.equal(mix.find(p => p.name === "محصول7")!.market, "نامشخص");
+  assert.equal(mix.find(p => p.name === "سایر")!.market, null);
+  assert.equal(mix.reduce((sum, p) => sum + p.amount, 0), 52);
+});
+
+test("rounded positive: narrative distinguishes small exports from observed zero without changing the model", () => {
+  const model = (domestic: number, exports: number) => buildMonthlySales(["1405-01-31", "1405-03-31"].map(end => report(end, domestic + exports, [
+    prod({ product_name: "داخلی آزمون", market: "داخلی", market_basis: "section_header", sales_amount: domestic }),
+    prod({ product_name: "صادرات آزمون", market: "صادراتی", market_basis: "section_header", sales_amount: exports }),
+  ])))!;
+  for (const [domestic, exports] of [[999999, 1], [999999999999, 1]]) {
+    const m = model(domestic, exports), before = JSON.stringify(m), narrative = narrativeMix(m)!;
+    assert.equal(m.latestExportSharePct, 0); assert.equal(m.latestExportAmount, exports);
+    assert.match(narrative, /کمتر از یک‌دهم درصد/); assert.doesNotMatch(narrative, /صفر/);
+    assert.equal(m.currentMonths.find(p => p.monthNo === 2)!.amount, null);
+    assert.equal(JSON.stringify(m), before);
+  }
+  const zero = model(1000000, 0);
+  assert.match(narrativeMix(zero)!, /صفر/); assert.doesNotMatch(narrativeMix(zero)!, /کمتر از/);
+  const boundary = model(999000, 1000);
+  assert.equal(boundary.latestExportSharePct, 0.1); assert.match(narrativeMix(boundary)!, /0\.1 درصد/);
+  assert.doesNotMatch(narrativeMix(boundary)!, /کمتر از|صفر/);
+});
+
 test("monthKeyOf: جلالی معتبر و نامعتبر", () => {
   assert.equal(monthKeyOf("1404-10-30"), "1404-10");
   assert.equal(monthKeyOf("1405-02-31"), "1405-02"); // اردیبهشت ۳۱روزه معتبر
@@ -144,11 +214,11 @@ test("واحد حفظ می‌شود: مقادیر میلیون ریال بدون
 test("سری نرخ: داخلی/صادراتی جدا و گپ برای ماه بدون رکورد آن محصول", () => {
   const r = buildMonthlySales([
     report("1405-02-31", 900, [
-      prod({ product_name: "شمش", market: "داخلی", sales_amount: 500, sales_rate: 250 }),
-      prod({ product_name: "شمش صادراتی", market: "صادراتی", sales_amount: 400, sales_rate: 310 }),
+      prod({ product_name: "شمش", market: "داخلی", market_basis: "section_header", sales_amount: 500, sales_rate: 250 }),
+      prod({ product_name: "شمش صادراتی", market: "صادراتی", market_basis: "section_header", sales_amount: 400, sales_rate: 310 }),
     ]),
     report("1405-01-31", 500, [
-      prod({ product_name: "شمش", market: "داخلی", sales_amount: 500, sales_rate: 240 }),
+      prod({ product_name: "شمش", market: "داخلی", market_basis: "section_header", sales_amount: 500, sales_rate: 240 }),
     ]),
   ]);
   assert.ok(r);
@@ -165,7 +235,7 @@ test("سری نرخ: داخلی/صادراتی جدا و گپ برای ماه ب
 test("محصول تک‌قلمی: ترکیب فروش و تولید/فروش سالم", () => {
   const r = buildMonthlySales([
     report("1405-03-31", 3_162_098, [
-      prod({ product_name: "آمادگي", sales_amount: 3_162_098, sales_qty: 617_199_000, production_qty: 617_199_000 }),
+      prod({ product_name: "آمادگي", market_basis: "section_header", sales_amount: 3_162_098, sales_qty: 617_199_000, production_qty: 617_199_000 }),
     ]),
   ]);
   assert.ok(r);
@@ -175,7 +245,8 @@ test("محصول تک‌قلمی: ترکیب فروش و تولید/فروش س�
   assert.equal(r.prodVsSales.length, 1);
   assert.equal(r.latestExportSharePct, 0);
   const n = narrativeMix(r);
-  assert.ok(n && n.includes("داخلی"));
+  assert.ok(n && n.includes("تفکیک تأییدشده") && n.includes("صفر"));
+  assert.doesNotMatch(n, /کل فروش داخلی/);
 });
 
 test("prodVsSales ماه با مقدار ناقص را با اسلات null نگه می‌دارد", () => {

@@ -240,7 +240,7 @@ function RateChart({ m }: { m: MonthlySales }) {
           <Legend wrapperStyle={{ fontSize: 12 }} />
           {m.rateSeries.map((s, si) => (
             <Line
-              key={s.label}
+              key={`s${si}`}
               dataKey={`s${si}`}
               name={s.label}
               stroke={RATE_COLORS[si % RATE_COLORS.length]}
@@ -269,6 +269,7 @@ const MIX_COLORS = [
 ] as const;
 
 function MixChart({ m }: { m: MonthlySales }) {
+  const smallPositiveExportShare = m.latestExportSharePct === 0 && m.latestExportAmount !== null && m.latestExportAmount > 0;
   const total = m.latestMix.reduce((a, x) => a + x.amount, 0);
   return (
     <div>
@@ -281,7 +282,7 @@ function MixChart({ m }: { m: MonthlySales }) {
       >
         {m.latestMix.map((x, i) => (
           <div
-            key={x.name + (x.market ?? "")}
+            key={x.name + (x.market ?? "") + i}
             style={{
               width: `${total > 0 ? (x.amount / total) * 100 : 0}%`,
               background: MIX_COLORS[i % MIX_COLORS.length],
@@ -292,7 +293,7 @@ function MixChart({ m }: { m: MonthlySales }) {
       </div>
       <ul className="mt-3 space-y-1.5">
         {m.latestMix.map((x, i) => (
-          <li key={x.name + (x.market ?? "") + "l"} className="flex items-center justify-between gap-2 text-[13px]">
+          <li key={x.name + (x.market ?? "") + i + "l"} className="flex items-center justify-between gap-2 text-[13px]">
             <span className="flex items-center gap-2" style={{ color: "var(--text-2)" }}>
               <span
                 className="inline-block h-2.5 w-2.5 rounded-sm"
@@ -302,7 +303,7 @@ function MixChart({ m }: { m: MonthlySales }) {
               {x.name}
               {x.market ? (
                 <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                  ({x.market})
+                  ({x.market === "نامشخص" ? "تفکیک نامعلوم" : x.market})
                 </span>
               ) : null}
             </span>
@@ -328,10 +329,14 @@ function MixChart({ m }: { m: MonthlySales }) {
           </span>
           {m.latestExportSharePct !== null ? (
             <span>
-              سهم صادرات: <b style={{ color: "var(--navy-ink)" }}>٪{faDigits(String(m.latestExportSharePct)).replace(".", "٫")}</b>
+              سهم صادرات: <b style={{ color: "var(--navy-ink)" }}>{smallPositiveExportShare ? `کمتر از ${faDigits("0.1").replace(".", "٫")}٪` : `٪${faDigits(String(m.latestExportSharePct)).replace(".", "٫")}`}</b>
             </span>
           ) : null}
         </div>
+      ) : m.marketUnavailableReason ? (
+        <p className="mt-3 text-[12px]" style={{ color: "var(--text-3)" }}>
+          {m.marketUnavailableReason === "unverified-market" ? "تفکیک بازار تأیید نشده" : m.marketUnavailableReason === "signed-market-adjustment" ? "محاسبهٔ سهم با مبلغ اصلاحی/منفی در روش فعلی پشتیبانی نمی‌شود" : "پوشش مبلغ ردیف‌های بازار کامل نیست"}؛ سهم صادرات نامعلوم است.
+        </p>
       ) : null}
     </div>
   );

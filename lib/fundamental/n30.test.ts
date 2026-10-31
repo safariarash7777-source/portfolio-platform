@@ -15,7 +15,8 @@ const mk = (
   report_kind: "ن-۳۰",
   period_end,
   fiscal_year: Number(period_end.slice(0, 4)),
-  products,
+  // These synthetic fixtures explicitly represent known, header-verified splits.
+  products: products.map(p => ({ ...p, market_basis: "section_header" })),
   period_total_amount: total,
   fy_cumulative_amount: 0,
 });
@@ -34,6 +35,37 @@ const m2 = mk("1404-10-30", [
 
 // تکرار همان ماه (ردیف duplicate واقعی در codal_reports) — باید حذف شود.
 const dup = mk("1404-10-30", m2.products, 201_600);
+
+test("market basis: old labels do not manufacture zero exports in the aggregate", () => {
+  const legacy = { ...m1, products: m1.products.map(p => ({ ...p, market_basis: undefined })) };
+  const before = JSON.stringify(legacy), d = deriveN30([legacy]);
+  assert.equal(d.exportSharePct, null);
+  assert.equal(d.months[0].domesticAmount, null); assert.equal(d.months[0].exportAmount, null);
+  assert.equal(d.months[0].totalAmount, 182_000);
+  assert.equal(d.productMix[0].amount, 100_000); assert.equal(d.topProductMonths[0].rate, 500_000_000);
+  assert.equal(JSON.stringify(legacy), before);
+});
+
+test("market basis: a mixed interval is unknown while verified monthly amounts and product mix survive", () => {
+  const old = { ...m1, products: m1.products.map(p => ({ ...p, market_basis: "unknown" as const })) };
+  const d = deriveN30([old, m2]);
+  assert.equal(d.marketUnavailableReason, "unverified-market"); assert.equal(d.exportSharePct, null);
+  assert.equal(d.months[0].exportAmount, null); assert.equal(d.months[1].exportAmount, 36_800);
+  assert.equal(d.productMix[0].amount, 214_400); assert.equal(d.productMix[0].sharePct, deriveN30([m1, m2]).productMix[0].sharePct);
+  const rows = [{ ...m1.products[0], market: "داخلی" as const, sales_amount: 60 },
+    { ...m1.products[1], market: "خدمات" as const, sales_amount: 40 }];
+  const service = deriveN30([mk("1405-01-31", rows, 100)]);
+  assert.equal(service.months[0].domesticAmount, 60); assert.equal(service.months[0].totalAmount, 100);
+  assert.equal(service.exportSharePct, 0); assert.equal(service.marketUnavailableReason, null);
+  const incomplete = deriveN30([mk("1405-01-31", rows, 101)]);
+  assert.equal(incomplete.exportSharePct, null); assert.equal(incomplete.marketUnavailableReason, "incomplete-market-coverage");
+  const signed = deriveN30([mk("1405-01-31", [rows[0], { ...rows[1], market: "صادراتی", sales_amount: -10 }], 50)]);
+  assert.equal(signed.exportSharePct, null); assert.equal(signed.months[0].totalAmount, 50);
+  assert.equal(signed.marketUnavailableReason, "signed-market-adjustment"); assert.equal(signed.months[0].exportAmount, -10);
+  assert.equal(signed.productMix.find(p => p.name === rows[1].product_name)!.amount, -10);
+  const oldLater = { ...old, period_end: "1405-02-31", fiscal_year: 1405 };
+  assert.equal(deriveN30([mk("1405-01-31", [rows[0], { ...rows[1], sales_amount: -10 }], 50), oldLater]).marketUnavailableReason, "unverified-market");
+});
 
 test("deriveN30: dedups months and sorts ascending", () => {
   const d = deriveN30([m2, dup, m1]);
