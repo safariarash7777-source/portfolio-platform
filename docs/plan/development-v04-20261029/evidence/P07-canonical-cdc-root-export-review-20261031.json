@@ -1,0 +1,95 @@
+{
+  "status": "PASS_ROOT_REVIEW_EXPORT_ONLY",
+  "base": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "head": "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+  "tree": "f529202b137e8ba71f856759647b42c42f899d03",
+  "rawZipSha256": "9371c5f687fbcd17def674ba48983ee1ddfeb34fa11618bbcbb567ad7dc1e31b",
+  "zipBytes": 55556,
+  "zipMembers": 12,
+  "exactCanonicalFiles": 7,
+  "leafFiles": 1,
+  "files": [
+    {
+      "path": "components/symbol/FundamentalCharts.tsx",
+      "blob": "3269cffc63df16a3a219daf925e9ffd56d83a59e",
+      "sha256": "1f6baddd832baf17e37a0a8dac03e66efe632ff33f948f7ec2ad02244122c961",
+      "bytes": 34643,
+      "equalsPreview557": true
+    },
+    {
+      "path": "components/symbol/MonthlySalesCharts.tsx",
+      "blob": "b5e97f42c232a669778a2ebebf8608ee6ce3be17",
+      "sha256": "7cb8382298c475dab9c876355643a23e9ee9bacaa9cc3a8c48fedca5b4addc81",
+      "bytes": 17818,
+      "equalsPreview557": true
+    },
+    {
+      "path": "components/symbol/QuarterlyCharts.tsx",
+      "blob": "4f7cfa1ee47d6163d859c46cf0afdbcd6f62c61c",
+      "sha256": "dfe7a555b44bbfc353bf735a4d50436390aac9234f512e8500fa7084bebb9cdb",
+      "bytes": 10211,
+      "equalsPreview557": true
+    },
+    {
+      "path": "docs/ops/p07-canonical-chart-integration-20261031/DELIVERY.fa.md",
+      "blob": "92bf7090bc558d52888296faa9eaca4e39bd262f",
+      "sha256": "9250be95e44136172cca9a83dd9fd4134d446d2ae7cfde243e747c6b95b10997",
+      "bytes": 6617,
+      "equalsPreview557": false
+    },
+    {
+      "path": "lib/core/monthlyReport.test.ts",
+      "blob": "6a0c203ae2f0da1a5a37df70d462a29260a1a4ad",
+      "sha256": "0b00a0952df341f4dda1ca9716783c54a9f979d5ad3db94225a46d7c375b7715",
+      "bytes": 21274,
+      "equalsPreview557": true
+    },
+    {
+      "path": "lib/core/monthlyReport.ts",
+      "blob": "c1a819f60a78c7665b5a264587acff2cb80eaac4",
+      "sha256": "b7871a9a8fc4aa2587ecc2e823a505d8a8d34ab76c83f4c10690f91bf4363cfe",
+      "bytes": 24828,
+      "equalsPreview557": true
+    },
+    {
+      "path": "lib/fundamental/calc.ts",
+      "blob": "b57f3bb1f47eded7c140b303deac7787f346b3b8",
+      "sha256": "c9dae23ecfa51e57158b72a6d7dcbff297cdb6fbf42adb3d52b6567e036fd5d1",
+      "bytes": 13593,
+      "equalsPreview557": true
+    },
+    {
+      "path": "lib/fundamental/n30.test.ts",
+      "blob": "3a5445c593517cb0e07d036d5c23022b1335503f",
+      "sha256": "00d08c27e3cea778285a361ebdd2d1f4003bcae27ce97e2aac57ae90e9408d4b",
+      "bytes": 7443,
+      "equalsPreview557": true
+    }
+  ],
+  "rootIndependent": "zip CRC/members, each Git blob/hash, seven exact557 source files and private-index patch reconstruction; functional deltas reviewed in previous source receipts",
+  "rootHarnessCorrection": "first review looked for flat zip paths and stopped before private-index apply; actual source/ and patches/ prefixes then inspected; no product defect or archive mutation",
+  "ownerChecks": {
+    "mathTests": 55,
+    "actualSymbolOfflineTests": 17,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "diffCheck": "PASS",
+    "externalCounters": "all zero on successful runs",
+    "runnerPreload": "verification/offline-runner-preload.mjs",
+    "runnerIPC": "only tsx expected parent pipe mocked unavailable; no real socket permitted",
+    "optionalWiring": "NOT_RUN under strict environment guard; initial setup blocked, not rerun unprotected",
+    "warnings": "existing Term SSR useLayoutEffect warning",
+    "fullBuildAndCI": "NOT_RUN for local export; previous source CI not reused"
+  },
+  "ownerChecksRerunByRoot": false,
+  "previousPreviewAcceptanceTransferredToCanonical": false,
+  "normalIndexWorktreeMainChanged": false,
+  "remotePushDeployMerge": "NOT_APPLIED",
+  "remaining": [
+    "fresh candidate CI/build",
+    "canonical page Preview/runtime data and units",
+    "rate market basis and price gap",
+    "Arash visual selection",
+    "main publication"
+  ]
+}

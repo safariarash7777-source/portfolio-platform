@@ -1,0 +1,12 @@
+{
+  "head": "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+  "acceptedImages": [
+    {
+      "name": "01-canonical-fundamental-read-failure.jpg",
+      "bytes": 55126,
+      "sha256": "bef9df69d22d920ab61aef58551280941ce7adce3a1bb3f674c9926de9b49342",
+      "mimeType": "image/jpeg",
+      "meaning": "Actual canonical Fundamental read failure, not financial chart acceptance"
+    }
+  ]
+}
