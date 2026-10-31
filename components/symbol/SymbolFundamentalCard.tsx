@@ -137,6 +137,11 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
               <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--heading)" }}>
                 {card.exportSharePct != null ? `${fa(card.exportSharePct)}٪` : "—"}
               </div>
+              {card.marketUnavailableReason ? (
+                <p className="mt-1 text-[10px]" style={{ color: "var(--text-3)" }}>
+                  {card.marketUnavailableReason === "unverified-market" ? "تفکیک بازار تأیید نشده" : card.marketUnavailableReason === "signed-market-adjustment" ? "محاسبهٔ سهم با مبلغ اصلاحی/منفی در روش فعلی پشتیبانی نمی‌شود" : "پوشش مبلغ ردیف‌های بازار کامل نیست"}؛ سهم صادرات نامعلوم است.
+                </p>
+              ) : null}
             </div>
             <div className="rounded-lg px-3 py-2" style={{ background: "var(--surface-2)" }}>
               <div className="text-[11px]" style={{ color: "var(--text-3)" }}>
@@ -194,7 +199,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
                   {card.latestProducts.map((p, i) => (
                     <tr key={`${p.name}-${p.market}-${i}`} style={{ borderTop: "1px solid var(--line)" }}>
                       <td className="py-1.5 pr-1 font-medium" style={{ color: "var(--text)" }}>{p.name}</td>
-                      <td className="py-1.5" style={{ color: "var(--text-2)" }}>{p.market}</td>
+                      <td className="py-1.5" style={{ color: "var(--text-2)" }}>{p.market === "نامشخص" ? "تفکیک نامعلوم" : p.market}</td>
                       <td className="py-1.5 text-left" dir="ltr" style={{ color: "var(--text-2)" }}>
                         {p.productionQty != null ? fa(p.productionQty.toLocaleString("en-US")) : "—"}
                       </td>

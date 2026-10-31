@@ -38,6 +38,33 @@ function report(month: string, total: number, products: N30ProductRow[]): CodalN
   };
 }
 
+test("market basis: a historical domestic label is unknown without losing money or quantities", () => {
+  const input = report("1405-01", 450_000, [prod({ market_basis: undefined })]);
+  const before = JSON.stringify(input), card = buildFundamentalCard("تست", [input]);
+  assert.equal(card.exportSharePct, null);
+  assert.equal(card.latestProducts[0].market, "نامشخص");
+  assert.equal(card.latestSalesBToman, 45); assert.equal(card.months12[0].totalAmount, 450_000);
+  assert.equal(card.months12[0].domesticAmount, null); assert.equal(card.months12[0].exportAmount, null);
+  assert.equal(card.prodSalesGap, 10); assert.equal(card.topProductRate, 5_000_000);
+  assert.equal(JSON.stringify(input), before);
+});
+
+test("market basis: verified services are not domestic and only complete coverage permits zero", () => {
+  const rows = [prod({ market_basis: "section_header", sales_amount: 60 }), prod({ product_name: "خدمت", market: "خدمات", market_basis: "section_header", sales_amount: 40 })];
+  const r = report("1405-01", 100, rows), card = buildFundamentalCard("تست", [r]);
+  assert.equal(card.months12[0].domesticAmount, 60); assert.equal(card.exportSharePct, 0);
+  assert.equal(card.latestProducts[1].market, "خدمات"); assert.equal(card.marketUnavailableReason, null);
+  assert.equal(buildFundamentalCard("تست", [{ ...r, period_total_amount: 101 }]).marketUnavailableReason, "incomplete-market-coverage");
+  const signed = buildFundamentalCard("تست", [{ ...r, period_total_amount: 50, products: [rows[0], { ...rows[1], market: "صادراتی", sales_amount: -10 }] }]);
+  assert.equal(signed.exportSharePct, null); assert.equal(signed.latestProducts[1].salesAmount, -10);
+  assert.equal(signed.marketUnavailableReason, "signed-market-adjustment"); assert.equal(signed.months12[0].exportAmount, -10);
+  for (const basis of [undefined, "unknown"] as const) {
+    const unknown = buildFundamentalCard("تست", [{ ...r, products: [rows[0], { ...rows[1], market_basis: basis }] }]);
+    assert.equal(unknown.exportSharePct, null); assert.equal(unknown.latestProducts[1].market, "نامشخص");
+    assert.equal(unknown.latestSalesBToman, card.latestSalesBToman);
+  }
+});
+
 test("mrialToBToman: میلیون ریال → میلیارد تومان (÷۱۰هزار)؛ نامعتبر → null", () => {
   assert.equal(mrialToBToman(450_000), 45);
   assert.equal(mrialToBToman(0), 0);
@@ -72,8 +99,8 @@ test("YoY: حلقهٔ سال قبل موجود → درصد؛ غایب → null 
 test("سهم صادرات و محصول اصلی از آخرین ماه", () => {
   const card = buildFundamentalCard("فملی", [
     report("1404-04", 1_000_000, [
-      prod({ product_name: "کاتد", market: "داخلی", sales_amount: 600_000 }),
-      prod({ product_name: "مفتول", market: "صادراتی", sales_amount: 400_000 }),
+      prod({ product_name: "کاتد", market: "داخلی", market_basis: "section_header", sales_amount: 600_000 }),
+      prod({ product_name: "مفتول", market: "صادراتی", market_basis: "section_header", sales_amount: 400_000 }),
     ]),
   ]);
   assert.equal(card.topProductName, "کاتد");

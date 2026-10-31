@@ -643,7 +643,7 @@ export default function FundamentalCharts({
           <ChartCard
             id="chart-sales-mix"
             title="۴) سهم محصولات از فروش"
-            subtitle={`جمع ${toPersianDigits(String(n30d.months.length))} ماه گزارش فعالیت ماهانه (ن-۳۰) کدال${n30d.exportSharePct !== null && n30d.exportSharePct > 0 ? ` · سهم صادرات ٪${toPersianDigits(String(n30d.exportSharePct))}` : " · در این بازه فروش صادراتی گزارش نشده"}`}
+            subtitle={`جمع ${toPersianDigits(String(n30d.months.length))} ماه گزارش فعالیت ماهانه (ن-۳۰) کدال${n30d.marketUnavailableReason ? ` · ${n30d.marketUnavailableReason === "unverified-market" ? "تفکیک بازار تأیید نشده" : n30d.marketUnavailableReason === "signed-market-adjustment" ? "محاسبهٔ سهم با مبلغ اصلاحی/منفی در روش فعلی پشتیبانی نمی‌شود" : "پوشش مبلغ ردیف‌های بازار کامل نیست"}؛ سهم صادرات نامعلوم است` : n30d.exportSharePct !== null ? ` · سهم صادرات ٪${toPersianDigits(String(n30d.exportSharePct))}` : " · سهم صادرات قابل محاسبه نیست"}`}
           >
             <SalesMixChart d30={n30d} />
           </ChartCard>

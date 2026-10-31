@@ -281,7 +281,7 @@ function MixChart({ m }: { m: MonthlySales }) {
       >
         {m.latestMix.map((x, i) => (
           <div
-            key={x.name + (x.market ?? "")}
+            key={x.name + (x.market ?? "") + i}
             style={{
               width: `${total > 0 ? (x.amount / total) * 100 : 0}%`,
               background: MIX_COLORS[i % MIX_COLORS.length],
@@ -292,7 +292,7 @@ function MixChart({ m }: { m: MonthlySales }) {
       </div>
       <ul className="mt-3 space-y-1.5">
         {m.latestMix.map((x, i) => (
-          <li key={x.name + (x.market ?? "") + "l"} className="flex items-center justify-between gap-2 text-[13px]">
+          <li key={x.name + (x.market ?? "") + i + "l"} className="flex items-center justify-between gap-2 text-[13px]">
             <span className="flex items-center gap-2" style={{ color: "var(--text-2)" }}>
               <span
                 className="inline-block h-2.5 w-2.5 rounded-sm"
@@ -302,7 +302,7 @@ function MixChart({ m }: { m: MonthlySales }) {
               {x.name}
               {x.market ? (
                 <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                  ({x.market})
+                  ({x.market === "نامشخص" ? "تفکیک نامعلوم" : x.market})
                 </span>
               ) : null}
             </span>
@@ -332,6 +332,10 @@ function MixChart({ m }: { m: MonthlySales }) {
             </span>
           ) : null}
         </div>
+      ) : m.marketUnavailableReason ? (
+        <p className="mt-3 text-[12px]" style={{ color: "var(--text-3)" }}>
+          {m.marketUnavailableReason === "unverified-market" ? "تفکیک بازار تأیید نشده" : m.marketUnavailableReason === "signed-market-adjustment" ? "محاسبهٔ سهم با مبلغ اصلاحی/منفی در روش فعلی پشتیبانی نمی‌شود" : "پوشش مبلغ ردیف‌های بازار کامل نیست"}؛ سهم صادرات نامعلوم است.
+        </p>
       ) : null}
     </div>
   );
