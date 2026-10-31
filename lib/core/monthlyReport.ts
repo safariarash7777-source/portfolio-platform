@@ -448,6 +448,8 @@ export function narrativeMix(m: MonthlySales): string | null {
   if (m.marketUnavailableReason && m.latestMonthLabel)
     return `در ${m.latestMonthLabel} تفکیک کامل و تأییدشدهٔ بازار در دسترس نیست؛ سهم صادرات نامعلوم است.`;
   if (m.latestExportSharePct === null || !m.latestMonthLabel) return null;
+  if (m.latestExportSharePct === 0 && m.latestExportAmount !== null && m.latestExportAmount > 0)
+    return `در ${m.latestMonthLabel} سهم صادرات مثبت و کمتر از یک‌دهم درصد است.`;
   if (m.latestExportSharePct === 0)
     return `در ${m.latestMonthLabel} سهم صادرات از فروش با تفکیک تأییدشده صفر است.`;
   return `در ${m.latestMonthLabel} حدود ${pctText(m.latestExportSharePct)} از فروش صادراتی بوده است.`;

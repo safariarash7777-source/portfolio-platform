@@ -97,6 +97,25 @@ test("market basis: two historical rate buckets keep their points and unknown ro
   assert.equal(mix.reduce((sum, p) => sum + p.amount, 0), 52);
 });
 
+test("rounded positive: narrative distinguishes small exports from observed zero without changing the model", () => {
+  const model = (domestic: number, exports: number) => buildMonthlySales(["1405-01-31", "1405-03-31"].map(end => report(end, domestic + exports, [
+    prod({ product_name: "داخلی آزمون", market: "داخلی", market_basis: "section_header", sales_amount: domestic }),
+    prod({ product_name: "صادرات آزمون", market: "صادراتی", market_basis: "section_header", sales_amount: exports }),
+  ])))!;
+  for (const [domestic, exports] of [[999999, 1], [999999999999, 1]]) {
+    const m = model(domestic, exports), before = JSON.stringify(m), narrative = narrativeMix(m)!;
+    assert.equal(m.latestExportSharePct, 0); assert.equal(m.latestExportAmount, exports);
+    assert.match(narrative, /کمتر از یک‌دهم درصد/); assert.doesNotMatch(narrative, /صفر/);
+    assert.equal(m.currentMonths.find(p => p.monthNo === 2)!.amount, null);
+    assert.equal(JSON.stringify(m), before);
+  }
+  const zero = model(1000000, 0);
+  assert.match(narrativeMix(zero)!, /صفر/); assert.doesNotMatch(narrativeMix(zero)!, /کمتر از/);
+  const boundary = model(999000, 1000);
+  assert.equal(boundary.latestExportSharePct, 0.1); assert.match(narrativeMix(boundary)!, /0\.1 درصد/);
+  assert.doesNotMatch(narrativeMix(boundary)!, /کمتر از|صفر/);
+});
+
 test("monthKeyOf: جلالی معتبر و نامعتبر", () => {
   assert.equal(monthKeyOf("1404-10-30"), "1404-10");
   assert.equal(monthKeyOf("1405-02-31"), "1405-02"); // اردیبهشت ۳۱روزه معتبر

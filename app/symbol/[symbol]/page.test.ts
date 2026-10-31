@@ -366,6 +366,42 @@ test("market basis: all three actual consumers distinguish unknown, verified zer
   assert.equal(JSON.stringify(report), before);
 });
 
+test("rounded positive: all three consumers keep positive rounded shares distinct from real zero", async (t) => {
+  let ids = 0;
+  const hooks = { ...React, useMemo: (fn: () => unknown) => fn(), useState: () => [true, () => {}], useId: () => `small-share-${ids++}` };
+  const names = ["MonthlySalesCharts", "FundamentalCharts", "SymbolFundamentalCard"];
+  const render = (index: number, domestic: number, exports: number, includeEarlierPositive = false) => {
+    const report: CodalN30Data = { symbol: "fixture", report_kind: "ن-۳۰", period_end: "1405-01-31", fiscal_year: 1405,
+      unit: "میلیون ریال", period_total_amount: domestic + exports, fy_cumulative_amount: domestic + exports,
+      products: [{ product_name: "داخلی آزمون", market: "داخلی", market_basis: "section_header", sales_amount: domestic, production_qty: null, sales_qty: null, sales_rate: null },
+        { product_name: "صادرات آزمون", market: "صادراتی", market_basis: "section_header", sales_amount: exports, production_qty: null, sales_qty: null, sales_rate: null }] };
+    const earlier = { ...report, period_end: "1404-12-29", fiscal_year: 1404, period_total_amount: 1000000, fy_cumulative_amount: 1000000,
+      products: report.products.map((p, i) => ({ ...p, sales_amount: i ? 1 : 999999 })) };
+    const reports = includeEarlierPositive ? [earlier, report] : [report];
+    const before = JSON.stringify(reports), View = clientComponent(names[index], hooks), fundamentals = reportSet(companyPeriods());
+    fundamentals.n30 = { data: reports, source: { title: "گزارش مصنوعی آزمون", source_url: null, verified: false } };
+    const html = renderToStaticMarkup(React.createElement(View, index === 0
+      ? { reports, sourceTitle: "گزارش مصنوعی آزمون", sourceUrl: null }
+      : index === 1 ? { fundamentals } : { card: buildFundamentalCard("fixture", reports) }));
+    assert.equal(JSON.stringify(reports), before);
+    return html;
+  };
+  for (let index = 0; index < names.length; index++) await t.test(names[index], () => {
+    for (const [domestic, exports] of [[999999, 1], [999999999999, 1]]) {
+      const html = render(index, domestic, exports);
+      assert.match(html, /کمتر از\s*۰٫۱٪/);
+      assert.doesNotMatch(html, /سهم صادرات از فروش با تفکیک تأییدشده صفر/);
+    }
+    const zero = render(index, 1000000, 0);
+    assert.doesNotMatch(zero, /کمتر از\s*۰٫۱٪/); assert.match(zero, /٪۰|۰٪/);
+    const boundary = render(index, 999000, 1000);
+    assert.doesNotMatch(boundary, /کمتر از\s*۰٫۱٪/); assert.match(boundary, /٪۰[.٫]۱|۰[.٫]۱٪/);
+    const priorPositiveLatestZero = render(index, 1000000, 0, true);
+    if (index === 1) assert.match(priorPositiveLatestZero, /کمتر از\s*۰٫۱٪/, "aggregate uses the whole existing interval");
+    else assert.doesNotMatch(priorPositiveLatestZero, /کمتر از\s*۰٫۱٪/, "latest-month consumers cannot borrow prior exports");
+  });
+});
+
 function presentationNodes(node: React.ReactNode): React.ReactElement<Record<string, unknown>>[] {
   if (Array.isArray(node)) return node.flatMap(presentationNodes);
   if (!React.isValidElement(node)) return [];

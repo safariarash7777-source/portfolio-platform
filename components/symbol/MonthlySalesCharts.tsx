@@ -269,6 +269,7 @@ const MIX_COLORS = [
 ] as const;
 
 function MixChart({ m }: { m: MonthlySales }) {
+  const smallPositiveExportShare = m.latestExportSharePct === 0 && m.latestExportAmount !== null && m.latestExportAmount > 0;
   const total = m.latestMix.reduce((a, x) => a + x.amount, 0);
   return (
     <div>
@@ -328,7 +329,7 @@ function MixChart({ m }: { m: MonthlySales }) {
           </span>
           {m.latestExportSharePct !== null ? (
             <span>
-              سهم صادرات: <b style={{ color: "var(--navy-ink)" }}>٪{faDigits(String(m.latestExportSharePct)).replace(".", "٫")}</b>
+              سهم صادرات: <b style={{ color: "var(--navy-ink)" }}>{smallPositiveExportShare ? `کمتر از ${faDigits("0.1").replace(".", "٫")}٪` : `٪${faDigits(String(m.latestExportSharePct)).replace(".", "٫")}`}</b>
             </span>
           ) : null}
         </div>
