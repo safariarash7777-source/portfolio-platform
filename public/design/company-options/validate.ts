@@ -9,6 +9,18 @@ let checks=0;
 function check(name:string,run:()=>void){run();checks++;console.log(`PASS ${name}`);}
 check("monthly coverage and shared series",()=>{const m=buildMonthlySales(monthlyFor("ready",1405));assert.equal(m?.reportCount,12);assert.equal(m?.priorFY,1404);assert.equal(m?.rateSeries.length,3);assert.equal(m?.currentMonths[5].amount,116350);assert.equal(m?.currentMonths[5].cumulative,564400);});
 check("integrated rate core retains missing month null slots; separate fundamental guard stays",()=>{const reports=monthlyFor("month-gap",1405);const m=buildMonthlySales(reports);assert.equal(m?.currentMonths[3].amount,null);assert.equal(m?.currentMonths[3].cumulative,null);assert.equal(m?.currentMonths[4].cumulative,448050);assert(m?.rateSeries.every(series=>series.points.find(point=>point.monthKey==="1405-04")?.rate===null));assert(hasMonthlyGap(reports.filter(r=>r.fiscal_year===1405)));assert.equal(fundamentalsFor("month-gap",reports).n30,null);assert(!hasMonthlyGap(monthlyFor("ready",1405).filter(r=>r.fiscal_year===1405)));});
+check("quantity keeps missing calendar slots and declared units for every existing product/market scope",()=>{
+  for(const product of ["all","ورق گرم","ورق سرد"])for(const market of ["all","داخلی","صادراتی"]){
+    const reports=productReports(monthlyFor("month-gap",1405).filter(r=>r.fiscal_year===1405),product,market);
+    const m=buildMonthlySales(reports);assert(m);
+    if(!reports.some(r=>r.products.length)){assert.deepEqual(m.prodVsSales,[]);continue;}
+    assert(reports.every(r=>r.products.every(p=>p.qty_unit==="تن")));
+    assert.deepEqual(m.prodVsSales.map(p=>p.monthKey),["1405-01","1405-02","1405-03","1405-04","1405-05","1405-06"]);
+    assert.deepEqual(m.prodVsSales[3],{monthKey:"1405-04",monthLabel:"تیر",production:null,sales:null,unavailableReason:"missing-report"});
+    assert.equal(m.prodVsSales[2].unavailableReason,null);assert.equal(m.prodVsSales[4].unavailableReason,null);
+    assert.equal(m.reportCount,5);
+  }
+});
 check("prior year absent is not a zero comparator",()=>{const m=buildMonthlySales(monthlyFor("no-prior",1405));assert.equal(m?.priorFY,null);assert.equal(m?.priorMonths,null);assert.equal(m?.cumulativePriorSamePoint,null);});
 check("quarter revenue is independent; TTM uses four quarters",()=>{const q=quarterlyFor("ready");assert.equal(q.quarters.find(p=>p.label==="Q2 1405")?.revenue,305000);assert.equal(q.ttm.find(p=>p.label==="Q4 1404")?.netProfitTtm,211000);assert.equal(q.peSeries.find(p=>p.label==="Q4 1404")?.pe,QUARTER_PRICES["1404-12-29"]/2110);});
 check("broken cumulative chain breaks margin and P/E slots",()=>{const q=quarterlyFor("quarter-gap");for(const label of ["Q2 1404","Q3 1404"]){assert.equal(q.quarters.find(p=>p.label===label)?.netMargin,null);assert.equal(q.peSeries.find(p=>p.label===label)?.pe,null);}assert.equal(q.currentPe,null);assert.equal(q.peSeries.length,q.quarters.length);});
