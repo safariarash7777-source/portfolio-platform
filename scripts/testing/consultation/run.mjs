@@ -12,6 +12,8 @@ const root=fileURLToPath(new URL('../../../',import.meta.url));
 const migration=readFileSync(new URL('../../../sql/consultation_workflow.sql',import.meta.url),'utf8');
 const bootstrap=readFileSync(new URL('../../../sql/test/supabase_bootstrap.sql',import.meta.url),'utf8');
 const rollback=readFileSync(new URL('./rollback.sql',import.meta.url),'utf8');
+const feedbackExtension=readFileSync(new URL('../../../supabase/migrations/20261029142010_consultation_feedback_states.sql',import.meta.url),'utf8');
+const feedbackRollback=readFileSync(new URL('../../../docs/ops/start-a-finance-v04-20261029/rollback-candidate.sql',import.meta.url),'utf8');
 const token=randomUUID(), name=`consultation-test-${token}`;
 const ciLocal=process.argv.includes('--ci-local'), ownedDatabases=new Set();
 assert.ok(process.argv.slice(2).every(arg=>arg==='--ci-local'),'unknown test transport option');
@@ -86,6 +88,13 @@ try{
   for(const file of ['sql/phase32_member_holdings.sql','supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql','sql/phase34_research_workbook_versions.sql','supabase/migrations/20261019215549_personal_cash_flow_versions.sql','sql/member_goals_versions_20261023.sql'])sql(readFileSync(new URL('../../../'+file,import.meta.url),'utf8'));
   sql(`INSERT INTO auth.users(id) VALUES('${A}'),('${B}'),('${O}'),('${X}'); INSERT INTO public.profiles(id,role) VALUES('${A}','user'),('${B}','user'),('${O}','admin'),('${X}','admin')`);
   const before=sql(inventory);sql(migration);
+  check('extended feedback installer is bounded; empty-history rollback restores exact functions/ACL and drift fails closed',()=>{
+   const baseline=sql(inventory);
+   sql(feedbackExtension);sql(feedbackRollback);assert.equal(sql(inventory),baseline);
+   sql(feedbackExtension);
+   const extended=sql(inventory);denied(feedbackExtension,'PT409');assert.equal(sql(inventory),extended);
+   assert.equal(sql("SELECT count(*) FROM pg_constraint WHERE conrelid='public.consultation_actions'::regclass AND conname='consultation_actions_status_check' AND convalidated"),'1');
+  });
   sql(`INSERT INTO public.consultation_advisors(user_id,display_name,is_owner) VALUES('${O}','مالک ساختگی',true),('${X}','مدیر نامرتبط ساختگی',false)`);
   let relation,v1,v2,draft,approval;
   const workflow=(kind,session)=>req(O,{kind,relationshipId:relation,sessionId:session.id,contentHash:session.contentHash,note:'INTERNAL_ONLY'});
@@ -144,6 +153,28 @@ try{
    denied(as('authenticated',O,call(req(O,{...feedback.command,baseVersion:1,status:'done'}))),'42501');
    assert.equal(send(A,req(A,{...feedback.command,baseVersion:1,status:'done'})).version,2);
    assert.equal(read(A,relation).sessions[0].body.actions[0].title,'اقدام صرفاً ساختگی');
+  });
+  check('partial and not_done append exact versioned action details; replay, actor and financial isolation remain enforced',()=>{
+   const financial=JSON.stringify(read(O,relation).dossier);
+   const partial=req(A,{kind:'feedback',relationshipId:relation,sessionId:v1.id,actionKey:ACTION,baseVersion:2,status:'partial',text:'جزئیات بخشی انجام‌شده — داده ساختگی'});
+   assert.equal(send(A,partial).version,3);assert.equal(send(A,partial).reused,true);
+   const next=req(A,{...partial.command,baseVersion:3,status:'not_done',text:'علت انجام‌نشدن — داده ساختگی'});
+   assert.equal(send(A,next).version,4);assert.equal(send(A,next).reused,true);
+   for(const status of ['partial','not_done']){
+    denied(as('authenticated',B,call(req(B,{...next.command,status,baseVersion:4}))),'42501');
+    denied(as('authenticated',O,call(req(O,{...next.command,status,baseVersion:4}))),'42501');
+    for(const text of [null,'','   '])denied(as('authenticated',A,call(req(A,{...next.command,status,text,baseVersion:4}))),'22023');
+    denied(as('authenticated',A,call(req(A,{...next.command,status,actionKey:null,baseVersion:4}))),'22023');
+    denied(as('authenticated',A,call(req(A,{...next.command,status,baseVersion:2}))),'PT409');
+   }
+   const history=read(A,relation).actions.filter(a=>a.sessionId===v1.id&&a.actionKey===ACTION);
+   assert.deepEqual(history.map(a=>a.status),['doing','done','partial','not_done']);
+   assert.equal(history[2].text,partial.command.text);assert.equal(history[3].text,next.command.text);
+   assert.equal(JSON.stringify(read(O,relation).dossier),financial);
+  });
+  check('rollback refuses new feedback history and retains all versions without destructive downgrade',()=>{
+   const beforeRollback=sql(inventory), history=JSON.stringify(read(A,relation).actions);
+   denied(feedbackRollback,'PT409');assert.equal(sql(inventory),beforeRollback);assert.equal(JSON.stringify(read(A,relation).actions),history);
   });
   check('new draft preserves published v1; old published version remains withdrawable',()=>{
    v2=send(O,req(O,{...draft.command,baseVersion:1,body:{...draft.command.body,clientSummary:'نسخه دوم'}}));

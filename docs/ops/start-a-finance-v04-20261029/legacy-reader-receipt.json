@@ -1,0 +1,170 @@
+{
+  "status": "PASS_NEW_READER_ON_OLD_SQL_LOCAL_NATIVE",
+  "sha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+  "runId": "consultation-next-d142985d",
+  "checkedAt": "2026-10-29T17:34:04.905Z",
+  "schemaMode": "legacy5",
+  "schemaMetadata": {
+    "load": "ca3cf9c59e64d0bf8a442413635a3ac3",
+    "command": "54dd2351f7ca5ac458e7feb52729c88d",
+    "execute": "da2199a556779a36286deb2f534404a9",
+    "statuses": [
+      "acknowledged",
+      "doing",
+      "done",
+      "question",
+      "viewed"
+    ],
+    "gateAbsent": true
+  },
+  "rawLegacyCapability": "ABSENT",
+  "newGetCapability": {
+    "extendedFeedbackWrite": false
+  },
+  "legacyHistory": {
+    "id": "c9f7dea5-9fd1-4378-9399-e47464d480ce",
+    "status": "doing",
+    "version": 1,
+    "actorId": "d2e2f5db-5187-4a90-8222-59b79f865336",
+    "relationshipId": "4e97213e-e81e-4bd3-b001-a5563a9aaece"
+  },
+  "denials": [
+    {
+      "status": "partial",
+      "httpStatus": 409,
+      "code": "FEEDBACK_DISABLED"
+    },
+    {
+      "status": "not_done",
+      "httpStatus": 409,
+      "code": "FEEDBACK_DISABLED"
+    }
+  ],
+  "commandRpcCalls": {
+    "before": 6,
+    "after": 6,
+    "delta": 0
+  },
+  "databaseCounts": {
+    "before": {
+      "actions": 1,
+      "receipts": 6,
+      "financialVersions": 0
+    },
+    "after": {
+      "actions": 1,
+      "receipts": 6,
+      "financialVersions": 0
+    }
+  },
+  "historyUnchanged": true,
+  "schemaUnchanged": true,
+  "oldHistoryReadableAfterRevoke": true,
+  "ownerAfterRevoke": {
+    "status": 403,
+    "code": "FORBIDDEN"
+  },
+  "financialWrites": 0,
+  "guardedMigrationApplied": false,
+  "gateActivation": false,
+  "reusedRetiredAccounts": false,
+  "realMemberAccountsUsed": 0,
+  "nativeSyntheticUsers": 4,
+  "prior24ScenariosRepeated": false,
+  "destination": "owned isolated loopback lab, new native GoTrue users/real PostgREST/Next",
+  "isolation": {
+    "status": "ISOLATED",
+    "runId": "consultation-next-d142985d",
+    "sha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+    "schemaMode": "legacy5",
+    "origin": "http://localhost:32189",
+    "images": {
+      "db": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "auth": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "rest": "sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272",
+      "node": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+      "cache": "sha256:ceacae303527a0652b6f0adfd85c5bbe38fbc89bd6ffe20ee2ce5f6141addc96"
+    },
+    "migrations": [
+      {
+        "file": "sql/test/supabase_bootstrap.sql",
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9"
+      },
+      {
+        "file": "sql/test/profile_explicit_grants.sql",
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3"
+      },
+      {
+        "file": "sql/test/portfolio_precondition.sql",
+        "sha256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b"
+      },
+      {
+        "file": "sql/phase32_member_holdings.sql",
+        "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+      },
+      {
+        "file": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+        "sha256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+      },
+      {
+        "file": "sql/phase34_research_workbook_versions.sql",
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148"
+      },
+      {
+        "file": "supabase/migrations/20261019215549_personal_cash_flow_versions.sql",
+        "sha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d"
+      },
+      {
+        "file": "sql/member_goals_versions_20261023.sql",
+        "sha256": "d4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6"
+      },
+      {
+        "file": "sql/consultation_workflow.sql",
+        "sha256": "4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236"
+      },
+      {
+        "file": "sql/consultation_roster.sql",
+        "sha256": "03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523"
+      },
+      {
+        "file": "sql/consultation_replies.sql",
+        "sha256": "57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a"
+      }
+    ],
+    "appRuntime": "host-loopback-sanitized-env",
+    "defaultRoutes": null,
+    "realAccounts": 0
+  },
+  "primaryInstallation": false,
+  "realDeployedReaderAcceptance": false,
+  "browser": "PASS_FILTER_AND_AUTHORIZED_SELECTION_PERSIST_320_390",
+  "cleanup": "REMOVED_OWNED_RESOURCES",
+  "finalSyntheticState": {
+    "runId": "consultation-next-d142985d",
+    "sha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+    "schemaMode": "legacy5",
+    "checkedAt": "2026-10-29T17:44:35.836728+00:00",
+    "counts": {
+      "users": 4,
+      "actions": 1,
+      "receipts": 7,
+      "gateAbsent": true,
+      "activeRelations": 0,
+      "financialVersions": 0
+    },
+    "privateDump": {
+      "retainedPrivately": true,
+      "published": false,
+      "bytes": 317865,
+      "sha256": "f4616a6ca08b8af0c4e7321442e6144b257b6208df10683c9820dc8470066408"
+    },
+    "realAccounts": 0
+  },
+  "cleanupReceipt": {
+    "runId": "consultation-next-d142985d",
+    "status": "REMOVED_OWNED_RESOURCES",
+    "sha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b"
+  },
+  "ownedContainersRemaining": 0,
+  "ownedNetworksRemaining": 0
+}

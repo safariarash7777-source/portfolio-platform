@@ -6,7 +6,35 @@ const now='2026-10-24T00:00:00Z',hash='a'.repeat(64),basis={holdingsVersionId:nu
 function body():RecommendationBody{return{topic:'Synthetic topic',goal:'Goal',clientSummary:'Summary',rationale:'Reason',limitations:'Incomplete synthetic data',reviewOn:'2099-12-31',basis:structuredClone(basis),researchVersionIds:[],evidence:[{label:'Synthetic source',url:null,asOf:'2026-10-23'}],actions:[{actionKey:K,title:'Synthetic action',dueOn:'2099-12-31',responsible:'member'}]};}
 function request(){return{contractVersion:'consultation-request.v1',expectedActorId:O,clientToken:'attempt',command:{kind:'save',relationshipId:R,sessionKey:K,baseVersion:0,body:body(),privateNote:'PRIVATE'}};}
 function read(member=false):ConsultationRead{const relation={id:R,clientId:A,advisorId:O,clientLabel:'Member',createdAt:now,revoked:false};return{contractVersion:'consultation-read.v1',actor:{id:member?A:O,isAdvisor:!member,isOwner:!member},advisors:[{id:O,displayName:'Owner',isOwner:true}],relationships:[relation],selected:relation,dossier:{basis:structuredClone(basis),holdings:null,cashFlow:null,goals:null},sessions:[{id:S,relationshipId:R,sessionKey:K,version:1,createdAt:now,actorId:O,contentHash:hash,body:body(),approval:member?{actorId:O,createdAt:now}:null,state:member?'published':'draft'}],notes:member?[]:[{sessionId:S,note:'PRIVATE'}],events:[],actions:[]};}
+
+test('partial and not_done preserve exact action/version and require explanation without reinterpreting older statuses',()=>{
+ for(const status of ['partial','not_done']){
+  const command={kind:'feedback',relationshipId:R,sessionId:S,actionKey:K,baseVersion:2,status,text:'بخشی از اقدام انجام نشد؛ نمونه ساختگی'};
+  const payload={contractVersion:'consultation-request.v1',expectedActorId:A,clientToken:'synthetic-'+status,command};
+  assert.deepEqual(validateConsultationRequest(payload).command,command);
+  for(const text of [null,'','   '])assert.throws(()=>validateConsultationRequest({...payload,command:{...command,text}}));
+  assert.throws(()=>validateConsultationRequest({...payload,command:{...command,actionKey:null}}));
+ }
+ for(const status of ['viewed','acknowledged','doing','done','question']){
+  const command={kind:'feedback',relationshipId:R,sessionId:S,actionKey:status==='viewed'||status==='acknowledged'?null:K,baseVersion:0,status,text:status==='question'?'پرسش ساختگی':null};
+  assert.deepEqual(validateConsultationRequest({contractVersion:'consultation-request.v1',expectedActorId:A,clientToken:'existing-'+status,command}).command,command);
+ }
+});
+
+test('extended feedback read requires the assigned actor, exact known action and preserved details',()=>{
+ for(const status of ['partial','not_done']){
+  const data=read(true), action={id:E,sessionId:S,actionKey:K,version:1,status,text:'جزئیات ساختگی',actorId:A,createdAt:now};
+  assert.equal(validateConsultationRead({...data,actions:[action]}).actions[0].status,status);
+  for(const edit of [{actorId:O},{actionKey:null},{actionKey:R},{text:null},{text:'   '}])assert.throws(()=>validateConsultationRead({...data,actions:[{...action,...edit}]}));
+ }
+});
 test('strict request preserves unknown basis and manual source',()=>{assert.deepEqual(validateConsultationRequest(request()),request());assert.deepEqual(validateRecommendationBody(body()),body());});
+
+test('missing rollout capability is off; only an explicit boolean from the read model enables it',()=>{
+ assert.equal(validateConsultationRead(read(true)).capabilities?.extendedFeedbackWrite??false,false);
+ assert.deepEqual(validateConsultationRead({...read(true),capabilities:{extendedFeedbackWrite:true}}).capabilities,{extendedFeedbackWrite:true});
+ for(const capabilities of [{extendedFeedbackWrite:'true'},{extendedFeedbackWrite:1},{extendedFeedbackWrite:true,admin:true},null])assert.throws(()=>validateConsultationRead({...read(true),capabilities}));
+});
 test('invalid body, source, dates, limits, versions and duplicate actions fail closed',()=>{for(const edit of [(r:ReturnType<typeof request>)=>{Object.assign(r,{ownerId:A});},(r:ReturnType<typeof request>)=>{r.command.baseVersion=2_147_483_647;},(r:ReturnType<typeof request>)=>{r.command.body.reviewOn='2026-02-30';},(r:ReturnType<typeof request>)=>{r.command.body.limitations=' ';},(r:ReturnType<typeof request>)=>{r.command.body.evidence=[];},(r:ReturnType<typeof request>)=>{r.command.body.evidence[0].url='https://user:secret@example.com/';},(r:ReturnType<typeof request>)=>{r.command.body.evidence[0].url='javascript:bad';},(r:ReturnType<typeof request>)=>{r.command.body.actions.push({...r.command.body.actions[0]});}]){const p=request();edit(p);assert.throws(()=>validateConsultationRequest(p));}});
 test('receipt binds actor token command and next version',()=>{const req=validateConsultationRequest(request()),receipt={contractVersion:'consultation-write.v1',actorId:O,clientToken:req.clientToken,command:req.command,id:S,version:1,reused:false,canonicalContentHash:hash};assert.deepEqual(validateConsultationReceipt(receipt,req),receipt);for(const change of [{actorId:A},{clientToken:'other'},{version:2},{command:{...req.command,privateNote:'changed'}},{canonicalContentHash:'bad'}])assert.throws(()=>validateConsultationReceipt({...receipt,...change},req));});
 test('member sees approval but never private notes draft or approval note',()=>{assert.deepEqual(validateConsultationRead(read(true),{actorId:A,relationshipId:R,period:basis.cashFlowPeriod}),read(true));for(const mutate of [(r:ConsultationRead)=>{r.notes=[{sessionId:S,note:'leak'}];},(r:ConsultationRead)=>{r.sessions[0].state='draft';},(r:ConsultationRead)=>{r.sessions[0].approval=null;},(r:ConsultationRead)=>{r.events=[{id:E,sessionId:S,kind:'approve',actorId:O,createdAt:now,note:'leak'}];}]){const r=read(true);mutate(r);assert.throws(()=>validateConsultationRead(r));}});

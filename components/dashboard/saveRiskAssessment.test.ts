@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { withDeadline } from "../../lib/deadline";
+import { authSessionFailure } from "../../lib/auth/session-error";
 import { saveRiskAssessment } from "./saveRiskAssessment";
 import { existsSync, readFileSync } from "node:fs";
 import { posix } from "node:path";
@@ -194,6 +195,7 @@ async function render(results = fixture(), member = "member", queries: { table: 
       if (name === 'lucide-react') return new Proxy({}, { get: () => () => React.createElement('i') });
       if (name === '@/lib/format') return format;
       if (name === '@/lib/deadline') return { withDeadline };
+      if (name === '@/lib/auth/session-error') return { authSessionFailure };
       if (name === '@/components/quiz/quizData') return { RISK_PROFILES: {} };
       if (name === '@/lib/access') return { getAccess: async () => ({ level: 'full', standing: 'active' }) };
       if (name === '@/lib/supabase/server') return { createClient: async () => ({ auth: { getUser: async () => ({ data: { user: { id: member, email: 'synthetic@example.invalid' } }, error: null }) }, from(table: string) {

@@ -16,7 +16,12 @@
       "codex/p07-market-basis-20261031": false,
       "codex/p07-monthly-unit-ui-20261031": false,
       "codex/p08-funds-stored-binding-20261031": false,
-      "codex/handoff-v04-20261029": false
+      "codex/handoff-v04-20261029": false,
+      "codex/p03-reader-release-20261031": false,
+      "codex/p03-feedback-reader-acceptance-20261031": false,
+      "codex/p01-p05-service-right-diagnostic-20261031": false,
+      "codex/p01-p03-legacy-diagnostic-ui-20261031": false,
+      "codex/p01-p03-legacy-native-20261031": false
     }
   }
 }

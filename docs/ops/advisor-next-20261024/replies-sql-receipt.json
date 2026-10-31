@@ -1,0 +1,179 @@
+{
+  "summary": {
+    "passed": 32,
+    "failed": 0
+  },
+  "results": [
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "forced RLS, direct ACL denial, narrow RPC and no baseline function modification",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "owner publishes exact version; normalized retry receipt; member history no private notes",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "CAS correction appends; altered token and stale edit do not overwrite",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "strict direct RPC; question session relationship actor and admin isolation",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "disabled or demoted owner cannot write/replay; exact authorized retry preserved",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "in-flight owner disable serializes and blocks publication without appending",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "concurrent first publish has one winner and one CAS rejection",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "concurrent identical token produces one immutable reply and reused receipt",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "withdraw and reply serialize; new write blocked while exact historical receipt survives",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "new draft makes old published session read only; replay is receipt not a fresh write",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "unpublished session cannot be read by member",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "elapsed review deadline preserves history but refuses new clarification",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "returned research makes existing publication read only",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "financial revision blocks clarification and gives explicit read-only reason",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "revoke/write serialize; even exact receipt retry denied after revoke, member keeps history",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_explicit",
+      "name": "immutable versions and receipts; installer collisions fail without partial change",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "forced RLS, direct ACL denial, narrow RPC and no baseline function modification",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "owner publishes exact version; normalized retry receipt; member history no private notes",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "CAS correction appends; altered token and stale edit do not overwrite",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "strict direct RPC; question session relationship actor and admin isolation",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "disabled or demoted owner cannot write/replay; exact authorized retry preserved",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "in-flight owner disable serializes and blocks publication without appending",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "concurrent first publish has one winner and one CAS rejection",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "concurrent identical token produces one immutable reply and reused receipt",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "withdraw and reply serialize; new write blocked while exact historical receipt survives",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "new draft makes old published session read only; replay is receipt not a fresh write",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "unpublished session cannot be read by member",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "elapsed review deadline preserves history but refuses new clarification",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "returned research makes existing publication read only",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "financial revision blocks clarification and gives explicit read-only reason",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "revoke/write serialize; even exact receipt retry denied after revoke, member keeps history",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_replies_legacy",
+      "name": "immutable versions and receipts; installer collisions fail without partial change",
+      "status": "PASS"
+    }
+  ],
+  "limitations": [
+    "Isolated SQL claims fixtures; native Auth/API/UI acceptance remains separate",
+    "No operational DB, member or deployment changes"
+  ],
+  "cleanup": [
+    {
+      "container": "consultation-replies-test-fdb0ea7c-370a-4e3f-9304-dd1b80228ada",
+      "removed": true
+    }
+  ],
+  "migrationSha256": "57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a"
+}

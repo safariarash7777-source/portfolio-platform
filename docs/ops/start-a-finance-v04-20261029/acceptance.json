@@ -1,0 +1,291 @@
+{
+  "task": "START-A.v04",
+  "sourceBase": "2a8b50b0ce41f5fe15ba629cac4838314d8ce39c",
+  "knownMain": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "artifactHashes": {
+    "supabase/migrations/20261029142010_consultation_feedback_states.sql": "32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda",
+    "docs/ops/start-a-finance-v04-20261029/rollback-candidate.sql": "aa1a278bb0b1cecfca8ae119919a11bdd762772950bd57d1f147d2ef20989ffa",
+    "sql/consultation_workflow.sql": "4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91"
+  },
+  "baselineSql": {
+    "passed": 44,
+    "failed": 0
+  },
+  "extendedSql": {
+    "passed": 50,
+    "failed": 0
+  },
+  "sqlCases": [
+    {
+      "profile": "consultation_explicit",
+      "name": "extended feedback installer is bounded; empty-history rollback restores exact functions/ACL and drift fails closed",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "nine forced-RLS tables and all direct authenticated writes/reads closed; wrappers restricted",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "owner-only explicit consent; unrelated admin has no file; idempotency matches exact label",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "canonical populated holdings debt and cashflow dossier preserve mapping provenance and unknowns",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "strict direct-RPC keys, actor, empty limitations, bad dates/URL and whitespace validation",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "save submit approve publish are distinct; owner approval metadata visible, private notes never",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "member feedback references exact published action; CAS/actor and immutable action definitions",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "partial and not_done append exact versioned action details; replay, actor and financial isolation remain enforced",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "rollback refuses new feedback history and retains all versions without destructive downgrade",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "new draft preserves published v1; old published version remains withdrawable",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "financial latest change blocks approval, exact new basis works; canonical financial ledger is untouched",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "concurrent same-base draft writers create one immutable version",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "concurrent exact attempt reuses same receipt and does not create a version",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "approval waits canonical financial writer lock then rejects changed latest basis",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "unapproved research refused; latest approved evidence can support exact draft",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "approval waits research writer then rejects superseded source; no approval appended",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "same-transaction approved and returned research timestamps fail closed",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "member revocation blocks advisor next read and all new mutations; member history retained",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "all history rejects UPDATE DELETE TRUNCATE, owner registry unique, installer collision fails closed",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_explicit",
+      "name": "lab rollback only; preserves exact prior schema/functions/ACL inventory",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "extended feedback installer is bounded; empty-history rollback restores exact functions/ACL and drift fails closed",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "nine forced-RLS tables and all direct authenticated writes/reads closed; wrappers restricted",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "owner-only explicit consent; unrelated admin has no file; idempotency matches exact label",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "canonical populated holdings debt and cashflow dossier preserve mapping provenance and unknowns",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "strict direct-RPC keys, actor, empty limitations, bad dates/URL and whitespace validation",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "save submit approve publish are distinct; owner approval metadata visible, private notes never",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "member feedback references exact published action; CAS/actor and immutable action definitions",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "partial and not_done append exact versioned action details; replay, actor and financial isolation remain enforced",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "rollback refuses new feedback history and retains all versions without destructive downgrade",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "new draft preserves published v1; old published version remains withdrawable",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "financial latest change blocks approval, exact new basis works; canonical financial ledger is untouched",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "concurrent same-base draft writers create one immutable version",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "concurrent exact attempt reuses same receipt and does not create a version",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "approval waits canonical financial writer lock then rejects changed latest basis",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "unapproved research refused; latest approved evidence can support exact draft",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "approval waits research writer then rejects superseded source; no approval appended",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "same-transaction approved and returned research timestamps fail closed",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "member revocation blocks advisor next read and all new mutations; member history retained",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "all history rejects UPDATE DELETE TRUNCATE, owner registry unique, installer collision fails closed",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_legacy",
+      "name": "lab rollback only; preserves exact prior schema/functions/ACL inventory",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_explicit",
+      "name": "exact helper transaction promotes only two synthetic actors and binds one synthetic owner",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_explicit",
+      "name": "wrong real-owner email and unretired synthetic admins rollback without role registry or financial changes",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_explicit",
+      "name": "banned synthetic admin still holding session or active refresh cannot transfer owner",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_explicit",
+      "name": "confirmed fixture real owner requires admin role and swaps only after both synthetic admins retired",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_explicit",
+      "name": "registry transition cannot be replayed into duplicate owner or role promotion",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_legacy",
+      "name": "exact helper transaction promotes only two synthetic actors and binds one synthetic owner",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_legacy",
+      "name": "wrong real-owner email and unretired synthetic admins rollback without role registry or financial changes",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_legacy",
+      "name": "banned synthetic admin still holding session or active refresh cannot transfer owner",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_legacy",
+      "name": "confirmed fixture real owner requires admin role and swaps only after both synthetic admins retired",
+      "status": "PASS"
+    },
+    {
+      "profile": "consultation_registry_legacy",
+      "name": "registry transition cannot be replayed into duplicate owner or role promotion",
+      "status": "PASS"
+    }
+  ],
+  "cleanup": {
+    "container": "consultation-test-d02cf720-cdea-4704-b53a-5f6bd9e5efe9",
+    "removed": true
+  },
+  "environment": {
+    "postgres": "17.11 isolated Docker",
+    "nativeAuth": false,
+    "network": "none",
+    "ports": [],
+    "persistentMounts": [],
+    "data": "explicitly synthetic"
+  },
+  "financial": {
+    "fixtureSetupWrites": true,
+    "feedbackMutatesDossier": false
+  },
+  "commercialEntitlement": "NOT_CONNECTED_AT_CONSULTATION_BOUNDARY",
+  "operationalInstall": "NOT_APPLIED",
+  "realOwnerApproval": false,
+  "realMemberMessages": false,
+  "preview": "Separate DO NOT MERGE branch, synthetic only; URL/state in PR and coordinator receipt"
+}
