@@ -23,8 +23,11 @@ async function exercise(ctx,s){
  check(ctx.readerSha===legacyDiagnosticSha&&ctx.appliedMigrations().filter(x=>x.file===legacySqlPin.file&&x.sha256===legacySqlPin.sha256).length===1,'source_schema_pin');
  // portfolio_precondition enables legacy default table grants later than the
  // explicit profile. Observe them, then close only this owned fixture table.
- const inheritedAcl={authenticatedSelect:sql("SELECT has_table_privilege('authenticated','public.entitlements','SELECT')::text")==='true',anonSelect:sql("SELECT has_table_privilege('anon','public.entitlements','SELECT')::text")==='true',authenticatedWrite:sql("SELECT has_table_privilege('authenticated','public.entitlements','INSERT,UPDATE,DELETE')::text")==='true'};
+ const readAcl=()=>JSON.parse(sql("SELECT jsonb_build_object("+['anon','authenticated','service_role'].map(role=>quote(role)+",jsonb_build_object('select',has_table_privilege("+quote(role)+",'public.entitlements','SELECT'),'write',has_table_privilege("+quote(role)+",'public.entitlements','INSERT,UPDATE,DELETE'))").concat("'PUBLIC',jsonb_build_object('select',EXISTS(SELECT FROM information_schema.table_privileges WHERE table_schema='public' AND table_name='entitlements' AND grantee='PUBLIC' AND privilege_type='SELECT'),'write',EXISTS(SELECT FROM information_schema.table_privileges WHERE table_schema='public' AND table_name='entitlements' AND grantee='PUBLIC' AND privilege_type IN ('INSERT','UPDATE','DELETE')))").join(',')+");"));
+ const policyState=()=>sql("SELECT jsonb_build_object('rls',c.relrowsecurity,'forced',c.relforcerowsecurity,'policyHash',(SELECT encode(sha256(convert_to(coalesce(jsonb_agg(jsonb_build_object('name',p.polname,'cmd',p.polcmd,'roles',p.polroles,'qual',pg_get_expr(p.polqual,p.polrelid),'check',pg_get_expr(p.polwithcheck,p.polrelid)) ORDER BY p.polname)::text,'[]'),'UTF8')),'hex') FROM pg_policy p WHERE p.polrelid=c.oid)) FROM pg_class c WHERE c.oid='public.entitlements'::regclass;");
+ const inheritedAcl=readAcl(),originalPolicy=policyState();check(JSON.parse(originalPolicy).rls===true,'fixture_rls_required');
  sql('REVOKE ALL ON public.entitlements FROM PUBLIC,anon,authenticated,service_role;');
+ const closedAcl=readAcl();check(Object.values(closedAcl).every(row=>row.select===false&&row.write===false)&&policyState()===originalPolicy,'explicit_closed_acl_readback');
  check(sql("SELECT has_table_privilege('authenticated','public.entitlements','SELECT')::text")==='false','strict_grant_baseline');
  check(sql('SELECT count(*) FROM auth.users')==='4','fresh_users_only');
  sql(`INSERT INTO public.consultation_advisors(user_id,display_name,enabled,is_owner) VALUES(${quote(users.owner.id)},'Synthetic legacy owner',true,true);`);
@@ -36,10 +39,11 @@ async function exercise(ctx,s){
  const denied=await readDirect('a',users.a.id);check(denied.status===403,'strict_grant_denial');
  // Only this attested owned tmpfs DB. No writer grant/policy/product SQL change.
  sql('GRANT SELECT ON public.entitlements TO authenticated;');
+ const readOnlyAcl=readAcl();check(Object.entries(readOnlyAcl).every(([role,row])=>row.select===(role==='authenticated')&&row.write===false)&&policyState()===originalPolicy,'explicit_read_only_acl_readback');
  check(sql("SELECT has_table_privilege('authenticated','public.entitlements','SELECT') AND NOT has_table_privilege('authenticated','public.entitlements','INSERT,UPDATE,DELETE') AND NOT has_table_privilege('anon','public.entitlements','SELECT')")==='t','read_only_fixture_grant');
  const parent=await requireOk('a','/api/consultation?'+new URLSearchParams({relationshipId:relation,startOn:'2026-10-01',endOn:'2026-10-31'}));
  check(parent.selected?.clientId===users.a.id,'valid_parent_member');
- pass('immutable-source-default-closed',{readerSha:legacyDiagnosticSha,existingPhase11:true,inheritedAclObserved:inheritedAcl,ownedTableExplicitlyClosed:true,strictBaselineStatus:403,tmpfsSelectGrantOnly:true,productServiceRight:'NOT_CONNECTED'});
+ pass('immutable-source-default-closed',{readerSha:legacyDiagnosticSha,existingPhase11:true,inheritedAclObserved:inheritedAcl,closedAclReadback:closedAcl,readOnlyAclReadback:readOnlyAcl,rlsAndPolicyUnchanged:JSON.parse(originalPolicy),ownedTableExplicitlyClosed:true,strictBaselineStatus:403,tmpfsSelectGrantOnly:true,productServiceRight:'NOT_CONNECTED'});
  const own=await readDirect('a',users.a.id),other=await readDirect('a',users.b.id),bOwn=await readDirect('b',users.b.id);
  check(own.status===200&&own.rows.length===1&&own.rows[0].id===expired&&own.range?.endsWith('/1')&&other.status===200&&other.rows.length===0&&other.range?.endsWith('/0')&&bOwn.status===200&&bOwn.rows.length===1&&bOwn.rows[0].id===foreign,'own_foreign_rls');
  const auditPage=async state=>{const audit=await storageAudit(state.page,[...markers,...Object.values(users).flatMap(u=>[u.email,u.password,u.session.token,...sdkCookies(u.session.cookie).map(x=>x.value)])]);privateStorageHits+=audit.hits;privateUrlHits+=Number(audit.urlHit);};
