@@ -339,6 +339,13 @@ test("market basis: all three actual consumers distinguish unknown, verified zer
   const repeated = render({ ...report, products: report.products.map((p, i) => ({ ...p, product_name: "محصول تکراری", market: i ? "صادراتی" : "داخلی" })) });
   assert.equal((repeated[2].match(/<td[^>]*>تفکیک نامعلوم<\/td>/g) ?? []).length, 2);
   assert.equal((repeated[0].match(/\(تفکیک نامعلوم\)/g) ?? []).length, 2);
+  const repeatedReport: CodalN30Data = { ...report, products: report.products.map((p, i) => ({ ...p, product_name: "محصول تکراری", market: i ? "صادراتی" : "داخلی" })) };
+  const monthlyTree = Views[0]({ reports: [repeatedReport], sourceTitle: "نمونهٔ آزمون", sourceUrl: null });
+  const rateNode = presentationNodes(monthlyTree).find(n => typeof n.type === "function" && n.type.name === "RateChart");
+  assert.ok(rateNode);
+  const rateTree = (rateNode.type as (props: Record<string, unknown>) => React.ReactElement)(rateNode.props);
+  const lines = presentationNodes(rateTree).filter(n => typeof n.props.dataKey === "string" && /^s\d+$/.test(n.props.dataKey));
+  assert.equal(lines.length, 2); assert.equal(new Set(lines.map(n => n.key)).size, 2, "two unknown-market rate buckets need independent React identities");
   const verified = { ...report, products: report.products.map(p => ({ ...p, market_basis: "section_header" as const })) };
   const known = render(verified);
   for (const html of known) {

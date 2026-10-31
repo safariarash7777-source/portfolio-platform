@@ -240,7 +240,7 @@ function RateChart({ m }: { m: MonthlySales }) {
           <Legend wrapperStyle={{ fontSize: 12 }} />
           {m.rateSeries.map((s, si) => (
             <Line
-              key={s.label}
+              key={`s${si}`}
               dataKey={`s${si}`}
               name={s.label}
               stroke={RATE_COLORS[si % RATE_COLORS.length]}
