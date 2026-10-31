@@ -73,6 +73,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch only the pinned reader-release baseline object
+        run: git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}

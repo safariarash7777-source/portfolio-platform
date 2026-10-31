@@ -22,6 +22,10 @@ POST هر دو route تیکت/آماده‌سازی، هم پیش از connect/b
 
 ماتریس hashقدیمی/جدید در readerReleaseException جدا بهprotected-source افزوده می‌شود؛ baseline وexceptionهایقدیمی بازنویسی نمی‌شوند. source وartifact آزمون CI/placeholder برای review‌اند، نه buildقابل‌نصبِمقصد ناشناس. تحویل بعدی root: reviewcode/reader-build و کنترل target/caller؛ گیت مقصد، حق خدمت واقعی و آرش هنوز پذیرفته نشده‌اند. زیرساخت/داده/مدل تازه خرید یا فراخوانی نشده؛ هزینهٔ اندازه‌گیری‌نشده نامعلوم می‌ماند.
 
+اصلاح پس از نخستین CI این برش: b9d311b و115unitمحلی محفوظ‌اند؛ run41163845673/job124427027448 با114PASS/1FAIL پیشازprovision متوقف شد، چونcheckoutکم‌عمق شیء23f9:package.json را نداشت. root مالکیت فقطwiring jobquality در .github/workflows/ci.yml را بهB تخصیص داد. هر دوworkflow فقط `git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03` انجام می‌دهند؛ HEAD/checkoutتغییر نمی‌کند، تاریخچه/شاخه‌ها کامل واکشی نمی‌شوند، هیچbaselinecheck skip نمی‌شود وpermissions/secrets/سایرjobs ثابت‌اند. نویسندهٔ دیگری رویاین2خطفعال نیست. رسیدخطایاول، nativeNOT_RUN وsource b9d جدا حفظ می‌شوند.
+
+کیس مستقل برگشت اکنون به عمد delivery واقعی201 را **پیش ازاولینGETreceipt** دور می‌ریزد، سپس سرورowned باکنترل بسته restart می‌شود؛ freshAuth وexactprepared/token GET-only باید همانreceipt واثرواحد را بیابند. c4 durability-native.mjs عینbytesقبلی محفوظ است؛ کیس جدید خودnative.mjs است وlatestیاconfirmedقبلی را جایunknownنمی‌گذارد. یکcollisionناممتغیر درsyntaxcheckقبل‌اجرا گرفته واصلاح شد. این اصلاح هنوز موفقیتnative ادعا نمی‌کند؛ CI sourceبعدی مستقل لازم است.
+
 این ادامه همان تعهد باز P03 است؛ اولویت/پذیرش در COMMAND-CENTER با root ثبت می‌شود. مالک START-B در چت 01a17cdc-cf6b-7b82-882f-e5d04e837353/local است. مبنای محفوظ 1636258dec1701c2c6edcc4d60050c94eb0db7d6 و b5 است. root گیت محدود مرورگر163 را مستقلاً پذیرفت؛ processesObserved اجرای موفق **۱۵** است، نه۸ اجرای شکست قبلی. این پذیرش شامل login-form کامل، null-callback race در DOM، دوام تلاش حل‌نشده بعدdestroy، حق واقعی، primary یا آرش نیست.
 
 ## رزرو فایل پیش از پیاده‌سازی

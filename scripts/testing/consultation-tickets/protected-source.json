@@ -156,15 +156,30 @@
     "baseCandidate": "23f9b93a6f40b201b66301bed5464b643d011a03",
     "purpose": "Explicit default-closed new consultation writes; compatible GET/history/recovery; candidate-branch deployment stop; bounded owned tests only",
     "files": {
+      ".github/workflows/ci.yml": {
+        "oldBlob": "c7726e751eb6a87c8aaa7a2bbe571fc38c8aefee",
+        "newBlob": "b65decdc3f5c4e011702ec43263e7b34603e2411",
+        "baselineBlob": null
+      },
       ".github/workflows/p03-ticket-native.yml": {
         "oldBlob": "602187f10a1456365f828a142919803c30e2d3d7",
-        "newBlob": "13484db8420f6bd410c0d15d25412abadf519c48",
+        "newBlob": "23f1997450d2aad436d1d3e24664b135b505be3d",
         "baselineBlob": "602187f10a1456365f828a142919803c30e2d3d7"
       },
       "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md": {
         "oldBlob": "ea9e1dd4799af67c5b013f947b839b1221098813",
-        "newBlob": "22d5ab2be650bf215045a6135fa7e5a8c82b3a4c",
+        "newBlob": "79f60d573dfee03f3e7a18b0f12474c57cb4fc07",
         "baselineBlob": "44e03c5f3e9956587e77e2dc28570862c0af0aa8"
+      },
+      "lib/consultation/consultationWriteRelease.test.ts": {
+        "oldBlob": null,
+        "newBlob": "7d81ca75b67b7ec804d4b9468279aafa1359afec",
+        "baselineBlob": null
+      },
+      "lib/consultation/consultationWriteRelease.ts": {
+        "oldBlob": null,
+        "newBlob": "c94d7134e1335cf9771fd345db999f0b6e54dab5",
+        "baselineBlob": null
       },
       "lib/consultation/server.test.ts": {
         "oldBlob": "92aa8c0cac892b3fae7414ec7557c16b7297a15a",
@@ -221,11 +236,6 @@
         "newBlob": "fe9f5994c7c89083555109dc534238b39fef833e",
         "baselineBlob": "9b3908bfb313bf3faf2a7325eb30971b96574d02"
       },
-      "scripts/testing/consultation-tickets/durability-native.mjs": {
-        "oldBlob": "488c0ac8604eddeba9b9daa0092ed8dce85a191f",
-        "newBlob": "d1fed12890d64be980b7ec1d4fec14d9bfa93b3c",
-        "baselineBlob": "488c0ac8604eddeba9b9daa0092ed8dce85a191f"
-      },
       "scripts/testing/consultation-tickets/native-auth-runtime.mjs": {
         "oldBlob": "389c768b6209ab1261c8df9f1ea64376f72af41e",
         "newBlob": "bc395ced8998fa6ac251279b649749f3a1654446",
@@ -243,7 +253,7 @@
       },
       "scripts/testing/consultation-tickets/native.mjs": {
         "oldBlob": "1eea0a583f6e3e04b856df3b8582264b55c9af4c",
-        "newBlob": "850540f2ab72500f2e8e7c22d7d032c52bd8259f",
+        "newBlob": "da870e33067bde3db89d31c16b8b9bfb09e315ff",
         "baselineBlob": "1eea0a583f6e3e04b856df3b8582264b55c9af4c"
       },
       "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
@@ -254,16 +264,6 @@
       "vercel.json": {
         "oldBlob": "a5b64dc0af441dd30a6836d2a2b147676fe503fc",
         "newBlob": "5716086481f5d3e747d26a05ad9994a2065855ed",
-        "baselineBlob": null
-      },
-      "lib/consultation/consultationWriteRelease.test.ts": {
-        "oldBlob": null,
-        "newBlob": "7d81ca75b67b7ec804d4b9468279aafa1359afec",
-        "baselineBlob": null
-      },
-      "lib/consultation/consultationWriteRelease.ts": {
-        "oldBlob": null,
-        "newBlob": "c94d7134e1335cf9771fd345db999f0b6e54dab5",
         "baselineBlob": null
       }
     }
