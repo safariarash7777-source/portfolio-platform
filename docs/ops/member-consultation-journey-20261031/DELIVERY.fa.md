@@ -52,3 +52,18 @@ PR358 قرارداد بدون writer است و جزو این محصول نیست
 CI جدید باید همین head را بسنجد. برای تحویل جریانِ قابل استفاده، root باید هویت/schema/backup/restore و محیط تست موجود را تثبیت کند؛ سپس عضو مجاز با پروندهٔ غیرصفر، پاسخ نسخه‌دار، خروج/ورود و بازخوانی مستقل بررسی شود. جداسازی عضو دیگر، revoke، حفظ draft پس از خطای ذخیره، و عدم تغییر موجودی با feedback جزو همان پذیرش است. نصب schema، provision یا reuse محیط/حساب قبلی از این commit مجاز فرض نمی‌شود.
 
 کد ادغام‌شده قابل بررسی است؛ استقرار مقصد، پذیرش جریان کامل، حق همان خدمت، درخواست مستقل و پذیرش آرش هنوز با این رسید اثبات نمی‌شوند. تحویل بعدی B شاهد مصرف‌کننده روی محیط تأییدشدهٔ root است؛ شخصی‌سازی یا انتشار توصیه برای عضو به تأیید صریح آرش وابسته می‌ماند.
+
+
+## P01.2/P05.1 — نامزد تشخیصی فقط‌خواندنی، ۳۱ اکتبر
+
+مسئله: دسترسی تحلیلی قدیمی، حق همین خدمت را اثبات نمی‌کند. مالک این برش START-B و مخاطب بررسی، root است؛ وضعیت و پذیرش در COMMAND-CENTER می‌مانند.
+
+منبع helper و آزمون آن `f353300d61a4738b7b6bc2fd2177f9cdc5955a4b`، بر پایهٔ محفوظ `1bf8f86b7bcaaedcb8320e178b1589a33b88e306` است. دو فایل `lib/consultation/ticketServiceRightDiagnostic.ts` و `.test.ts` از classifier موجود استفاده می‌کنند؛ هیچ resolver، provider، دفتر یا نگاشت اقتصادی تازه ندارند.
+
+helper فقط snapshot و زمان ارزیابیِ فراخواننده را بررسی می‌کند. provenance گزارش‌شده با `sourceAuthority=unverified` حفظ می‌شود؛ service state فقط unknown/not_connected و serviceIdentifier/quota/obligations برابر null است. admin/full/source آزاد و consulting فعال، حق همین خدمت نمی‌شوند. **حق خدمت همچنان NOT_CONNECTED است.**
+
+پانزده آزمون محلی روی f353 موفق‌اند؛ TypeScript محدود و lint دو فایل و اسکن staged موفق‌اند. مرز میکروثانیه، خطا/ناقص/foreign/duplicate و حفظ recovery همان receipt/history/body/token با قرارداد موجود در حافظه بررسی شدند؛ این آزمون‌ها DB/Auth/DOM یا پذیرش مقصد نیستند. لاگ شکست نخست Typecheck و اصلاح annotation/config بیرون مخزن جدا محفوظ‌اند.
+
+آزمون هم‌نام با یک literal در گروه نخست test:core، پیش از &&، ثبت شده؛ literalهای قبلی و lock ثابت‌اند. guard دقیق شاخهٔ codex/p01-p05-service-right-diagnostic-20261031=false با حفظ guardهای قبلی و crons اضافه شده است. نتیجهٔ CI همین child فقط با رسید تازه معتبر می‌شود.
+
+helper هنوز caller محصول، DTO یا UI ندارد و writer را فعال نمی‌کند. SQL/prepare/command/capability/endpoint/fixtureRunId و receipt/body/token/hash قبلی محفوظ‌اند. reader قراردادی برای UI و اتصال منبع واقعی حق، تخصیص و پذیرش مستقل می‌خواهند؛ نصب، grant/import، خرید، مدل، محیط عملیاتی و انتشار در این برش انجام نشده‌اند.
