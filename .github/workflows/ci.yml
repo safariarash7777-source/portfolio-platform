@@ -75,6 +75,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Fetch only the pinned reader-release baseline object
         run: git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03
+      - name: Fetch only the frozen reader699 object
+        run: git fetch --no-tags --depth=1 origin 699ea1677c21c216be52869318cf0ac1c4525744
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}

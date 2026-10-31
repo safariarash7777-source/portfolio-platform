@@ -1,7 +1,8 @@
 {
   "git": {
     "deploymentEnabled": {
-      "codex/p03-reader-release-20261031": false
+      "codex/p03-reader-release-20261031": false,
+      "codex/p03-feedback-reader-acceptance-20261031": false
     }
   },
   "crons": [
