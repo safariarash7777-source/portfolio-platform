@@ -26,7 +26,7 @@ jobs:
   real-auth-ticket-storage:
     # Reader699's successful 27 API/11 DOM gate stays frozen; the child branch
     # runs the separately allocated feedback gap, not that completed suite.
-    if: ${{ github.head_ref != 'codex/p03-feedback-reader-acceptance-20261031' && github.ref_name != 'codex/p03-feedback-reader-acceptance-20261031' }}
+    if: ${{ github.head_ref != 'codex/p03-feedback-reader-acceptance-20261031' && github.ref_name != 'codex/p03-feedback-reader-acceptance-20261031' && github.head_ref != 'codex/p01-p03-legacy-native-20261031' && github.ref_name != 'codex/p01-p03-legacy-native-20261031' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -104,7 +104,7 @@ jobs:
             p03-ticket-browser-receipt.json
           retention-days: 7
   feedback-reader-compatibility:
-    if: ${{ github.head_ref == 'codex/p03-feedback-reader-acceptance-20261031' || github.ref_name == 'codex/p03-feedback-reader-acceptance-20261031' }}
+    if: ${{ github.head_ref == 'codex/p03-feedback-reader-acceptance-20261031' || github.ref_name == 'codex/p03-feedback-reader-acceptance-20261031' || github.head_ref == 'codex/p01-p03-legacy-native-20261031' || github.ref_name == 'codex/p01-p03-legacy-native-20261031' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -117,6 +117,9 @@ jobs:
         run: git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03
       - name: Fetch only the frozen reader699 object
         run: git fetch --no-tags --depth=1 origin 699ea1677c21c216be52869318cf0ac1c4525744
+      - name: Fetch only the frozen diagnostic7b object
+        if: ${{ github.head_ref == 'codex/p01-p03-legacy-native-20261031' || github.ref_name == 'codex/p01-p03-legacy-native-20261031' }}
+        run: git fetch --no-tags --depth=1 origin 7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -125,10 +128,12 @@ jobs:
       - name: Existing offline boundaries and feedback candidate guards
         run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/consultationWriteRelease.test.ts lib/consultation/server.test.ts lib/consultation/tickets.test.ts lib/consultation/ticketAttemptStorageContracts.test.ts lib/consultation/ticketAttemptStorageServer.test.ts lib/consultation/ticketAttemptStorageRequest.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs scripts/testing/consultation-tickets/browser.test.mjs scripts/testing/consultation-tickets/feedback-reader-native.test.mjs
       - name: Existing owned Linux runtime and Chrome - feedback compatibility only
+        if: ${{ github.head_ref == 'codex/p03-feedback-reader-acceptance-20261031' || github.ref_name == 'codex/p03-feedback-reader-acceptance-20261031' }}
         run: |
           set -o pipefail
           node --import tsx scripts/testing/consultation-tickets/feedback-reader-native.mjs | tee /tmp/p03-feedback-reader.log
       - name: Bind feedback receipt to exact driver, reader699 and immutable SQL
+        if: ${{ github.head_ref == 'codex/p03-feedback-reader-acceptance-20261031' || github.ref_name == 'codex/p03-feedback-reader-acceptance-20261031' }}
         run: |
           python3 - <<'PY'
           import hashlib, json, os, subprocess
@@ -161,8 +166,60 @@ jobs:
           Path('p03-feedback-reader-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
           PY
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() && (github.head_ref == 'codex/p03-feedback-reader-acceptance-20261031' || github.ref_name == 'codex/p03-feedback-reader-acceptance-20261031') }}
         with:
           name: p03-feedback-reader-receipt
           path: p03-feedback-reader-receipt.json
+          retention-days: 7
+      - name: Diagnostic7b offline request and receipt guards
+        if: ${{ github.head_ref == 'codex/p01-p03-legacy-native-20261031' || github.ref_name == 'codex/p01-p03-legacy-native-20261031' }}
+        run: node --test scripts/testing/consultation-tickets/legacy-diagnostic-native.test.mjs
+      - name: Existing owned Linux runtime and Chrome - legacy diagnostic only
+        if: ${{ github.head_ref == 'codex/p01-p03-legacy-native-20261031' || github.ref_name == 'codex/p01-p03-legacy-native-20261031' }}
+        run: |
+          set -o pipefail
+          node --import tsx scripts/testing/consultation-tickets/legacy-diagnostic-native.mjs | tee /tmp/p03-legacy-diagnostic.log
+      - name: Bind legacy diagnostic receipt to exact candidate and frozen7b
+        if: ${{ github.head_ref == 'codex/p01-p03-legacy-native-20261031' || github.ref_name == 'codex/p01-p03-legacy-native-20261031' }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          lines = Path('/tmp/p03-legacy-diagnostic.log').read_text().splitlines()
+          prefix = 'P03_LEGACY_NATIVE_AUTH '
+          receipts = [json.loads(line[len(prefix):]) for line in lines if line.startswith(prefix)]
+          assert len(receipts) == 1
+          receipt = receipts[0]
+          head = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          reader = '7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc'
+          assert receipt['sha'] == head == os.environ['P03_TICKET_NATIVE_SOURCE_SHA']
+          assert receipt['readerSha'] == reader and receipt['acceptance'] == 'legacy-diagnostic-v1'
+          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 11 and receipt['browser'] == 'PASS'
+          assert receipt['cleanup'] == 'REMOVED_OWNED_RESOURCES'
+          assert receipt['targetInstall'] == 'NOT_APPLIED' and receipt['arashAcceptance'] == 'UNOBSERVED' and receipt['privateArtifactsUploaded'] is False
+          browser = receipt['browserReceipt']
+          assert browser['readerSha'] == reader and len(browser['checks']) == 9 and all(x['status'] == 'PASS' for x in browser['checks'])
+          for key in ['sameJwtVerified','ownForeignRlsVerified','expiredDomVerified','activeDomVerified','revokedDomVerified','advisorZeroSideGetVerified','identityCleared','signoutCleared','readOnlyGrantOnly','productWriteClosed']:
+              assert browser[key] is True
+          for key in ['domAutomaticPosts','privateStorageHits','privateUrlHits']:
+              assert browser[key] == 0
+          assert browser['productServiceRight'] == 'NOT_CONNECTED'
+          for key in ['processStopped','contextsClosed','ownedTempRemoved']:
+              assert browser['cleanup'][key] is True
+          checks = [json.loads(line[len('P03_LEGACY_NATIVE_CHECK '):]) for line in lines if line.startswith('P03_LEGACY_NATIVE_CHECK ')]
+          assert len(checks) == 11 and len(set(x['name'] for x in checks)) == 11 and all(x['status'] == 'PASS' for x in checks)
+          cleanups = [json.loads(line[len('P03_LEGACY_NATIVE_CLEANUP '):]) for line in lines if line.startswith('P03_LEGACY_NATIVE_CLEANUP ')]
+          assert len(cleanups) == 1 and cleanups[0]['sha'] == head and cleanups[0]['resources'] == 6 and cleanups[0]['status'] == 'REMOVED_OWNED_RESOURCES'
+          for path in ['app','lib','components','public','middleware.ts','next.config.js','package.json','package-lock.json','sql','supabase']:
+              assert subprocess.check_output(['git','rev-parse',head+':'+path]) == subprocess.check_output(['git','rev-parse',reader+':'+path])
+          raw = Path('sql/phase11_access_tiers.sql').read_bytes()
+          assert len(raw) == 5286 and hashlib.sha256(raw).hexdigest() == '5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc'
+          receipt.update(productServiceRight='NOT_CONNECTED',modelCalls=0,externalDataRequests=0,newInfrastructurePurchased=False,arashAcceptance='UNOBSERVED',destination='existing CI owned tmpfs only; no primary data',fixturePrivilege='SELECT authenticated only after observed baseline403; anon narrower than primary; not product SQL',sourceFiles={p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in ['scripts/testing/consultation-tickets/legacy-diagnostic-native.mjs','scripts/testing/consultation-tickets/native-auth-runtime.mjs','scripts/testing/consultation-tickets/native-auth-gateway.mjs']})
+          Path('p03-legacy-diagnostic-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() && (github.head_ref == 'codex/p01-p03-legacy-native-20261031' || github.ref_name == 'codex/p01-p03-legacy-native-20261031') }}
+        with:
+          name: p03-legacy-diagnostic-receipt
+          path: p03-legacy-diagnostic-receipt.json
           retention-days: 7

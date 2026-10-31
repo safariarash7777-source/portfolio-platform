@@ -38,7 +38,7 @@ test('release control is server-only and deployment stop names only the candidat
     assert.doesNotMatch(read(file), /consultationWriteRelease|CONSULTATION_P03_WRITES_RELEASE/);
   }
   const config = JSON.parse(read('vercel.json'));
-  assert.deepEqual(config.git.deploymentEnabled, { 'codex/p03-reader-release-20261031': false, 'codex/p03-feedback-reader-acceptance-20261031': false, 'codex/p01-p05-service-right-diagnostic-20261031': false, 'codex/p01-p03-legacy-diagnostic-ui-20261031': false });
+  assert.deepEqual(config.git.deploymentEnabled, { 'codex/p03-reader-release-20261031': false, 'codex/p03-feedback-reader-acceptance-20261031': false, 'codex/p01-p05-service-right-diagnostic-20261031': false, 'codex/p01-p03-legacy-diagnostic-ui-20261031': false, 'codex/p01-p03-legacy-native-20261031': false });
   assert.equal(config.crons.length, 2);
 });
 test('shared source stays on frozen 360; package hashes include only the approved browser driver delta', () => {
@@ -174,6 +174,7 @@ test('shared source stays on frozen 360; package hashes include only the approve
   assert.ok(core.indexOf(literal) >= 0 && core.indexOf(literal) < core.indexOf(' && '));
   assert.equal(packageNow.replace(' '+literal, ''), packageBefore, 'existing package bytes/literals changed');
   const config = JSON.parse(read('vercel.json'));
+  delete config.git.deploymentEnabled['codex/p01-p03-legacy-native-20261031'];
   delete config.git.deploymentEnabled['codex/p01-p03-legacy-diagnostic-ui-20261031'];
   delete config.git.deploymentEnabled['codex/p01-p05-service-right-diagnostic-20261031'];
   delete config.git.deploymentEnabled['codex/p03-feedback-reader-acceptance-20261031'];

@@ -450,7 +450,7 @@
       },
       "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
         "oldBlob": "7a67f7013193c520fe1483187988b3a739596805",
-        "newBlob": "9f45d726b33433ddac03bd028f9211918ccf9779"
+        "newBlob": "24c957122a4eef9aaa0ea2f5ac5b99bf933f7476"
       },
       "scripts/testing/consultation-tickets/legacy-diagnostic-native.mjs": {
         "oldBlob": null,
@@ -462,7 +462,15 @@
       },
       "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md": {
         "oldBlob": "17bbcb1a0f164774c38bb74222439fe20339b1df",
-        "newBlob": "ca4cf64f6f8fe0d8dc327c308ed6cdc8845f83ee"
+        "newBlob": "84d4c919c83c1ca1b74d851fe927367954af9425"
+      },
+      ".github/workflows/p03-ticket-native.yml": {
+        "oldBlob": "d2e755f422676c153ca65720eab46a3be75687b2",
+        "newBlob": "eb02b6bb089e5cad5a0a3588eda3fa6524d3cf2f"
+      },
+      "vercel.json": {
+        "oldBlob": "de2b621b9fc6e38485b806feb38272400caac5ce",
+        "newBlob": "2e00093c16cc886b28360608b4f228bea448ac34"
       }
     }
   }
