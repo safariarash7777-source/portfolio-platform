@@ -1,0 +1,31 @@
+{
+  "head": "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df",
+  "base": "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29",
+  "deployment": "dpl_9b8Ay5Pvd6pHjsQ3f3iH6czeSF1t",
+  "target": null,
+  "acceptedImages": [
+    {
+      "name": "01-decision-quantity-gap.png",
+      "bytes": 69797,
+      "sha256": "cc74914a89504d252f16d8a1cf0a6cd468ba9cf424c30451ad14ba32c04ec74a"
+    },
+    {
+      "name": "02-dossier-quantity-gap.png",
+      "bytes": 59698,
+      "sha256": "bf749551da8ffc89f0c4619a009b43b1e280f5aace0a1d965ea817f694c48939"
+    },
+    {
+      "name": "03-dossier-mobile-quantity-gap-390.png",
+      "bytes": 30170,
+      "sha256": "d39bc824ff9eaeaa16220e48def24589771ce1917beffd7cf89ef60ed70e663e"
+    },
+    {
+      "name": "04-mobile-source-panel.png",
+      "bytes": 41803,
+      "sha256": "9f08e0cd1cca2557e49e5ae5b7f2d73c0bc51d3098ec765b7e7b17bb98def103"
+    }
+  ],
+  "data": "unchanged P14-EDU-02; no official report/price",
+  "viewportReset": true,
+  "reviewTabMarkedDeliverable": true
+}
