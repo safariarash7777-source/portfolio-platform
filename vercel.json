@@ -13,6 +13,8 @@
     "deploymentEnabled": {
       "codex/p07-fundamental-read-binding-20261031": false,
       "codex/p07-market-basis-20261031": false,
+      "codex/p07-monthly-unit-ui-20261031": false,
+      "codex/p08-funds-stored-binding-20261031": false,
       "codex/handoff-v04-20261029": false
     }
   }

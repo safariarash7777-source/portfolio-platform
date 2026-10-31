@@ -44,6 +44,8 @@ export interface FundComparison {
   returns: Record<ReturnWindowKey, (number | null)[]>;
 }
 
+export const MAX_FUND_COMPARISON = 5;
+
 export const UNIT_CLASS_LABELS: Record<FundUnitClass, string> = {
   "etf-tradable": "واحد قابل معامله",
   "ordinary-subscription": "واحد عادی صدور و ابطال",
@@ -73,7 +75,7 @@ export function compareFunds(rows: readonly FundComparisonRow[]): FundComparison
   const add = (metric: ComparisonMetric, code: string, message: string, affected = rows) => {
     issues.push({ metric, code, message, ids: affected.map(row => row.id) });
   };
-  if (rows.length < 2 || rows.length > 3) add("group", "selection-size", "برای مقایسه دو یا سه صندوق انتخاب کنید");
+  if (rows.length < 2 || rows.length > MAX_FUND_COMPARISON) add("group", "selection-size", "برای مقایسه دو تا پنج صندوق انتخاب کنید");
   if (new Set(rows.map(row => row.id)).size !== rows.length) add("group", "duplicate", "یک صندوق چند بار انتخاب شده است");
   const different = rows.filter(row => fundSelectionIssue(rows[0], row));
   if (different.length) add("group", "type-or-unit", "نوع منبع و واحد پول صندوق‌ها باید یکسان باشد", different);
