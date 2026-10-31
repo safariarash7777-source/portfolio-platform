@@ -1,5 +1,13 @@
 # نامزد محلی binding خواندن بنیادی — ۲۰۲۶-۱۰-۳۱
 
+## ثبت آزمون در CI — child روی fa333
+
+بستهٔ اصلی و child مربوط به cache با head=`fa333ea75ce8ddb9f7d798179739677527a9891a` فریز و با push عادی در Draft شماره۳۷۴، روی شاخهٔ PR۳۷۱ در cdc، منتشر شدند؛ هیچ استقرار یا نصب تنظیماتی انجام نشد. بازبینی مستقل root، CRC/hash/member و بازسازی هر دو patch به tree=`df26fffdf622362aa13074d7f2a69487c90367b0` را تأیید کرد؛۲۶ آزمون محلی را root تکرار نکرد.
+
+اجرای استاندارد CI شماره`41165419219` در job کیفیت`124431821688` پس از موفقیت Typecheck و Lint، در Core tests با۲۰۷۰ موفق و۱ ناموفق متوقف شد: `lib/desk/registry.test.ts:37` فایل `lib/fundamental/read-binding.test.ts` را ثبت‌نشده یافت. checkout واقعی`6523038cba7e7cea6f4e9328519036144e8046b6` در remote Git همان tree نسخهfa را دارد. مراحل بعدی، از جمله Calc و Build، اجرا نشدند؛ موفقیت محلی معادل CI نیست. شاهد این شکست و ZIP نسخهfa بدون تغییر محفوظ‌اند.
+
+تخصیص child فقط افزودن literal مسیر `lib/fundamental/read-binding.test.ts` به دستور موجود `test:calc` در `package.json` و همین رسید است. `test:core`، registry/assertion، workflow، lock/dependency، تمام app/reader/helper/tests و guard همانfa بدون تغییرند؛ runner یا محافظ تازه‌ای ساخته نمی‌شود. نتیجهٔ CI جدید و حضور واقعی binding در Calc باید پس از push مستقل بررسی شوند؛ تا آن زمان اجرای۲۶ آزمون روی Linux یا موفقیت Build ادعا نمی‌شود. دادهٔ واقعی۴۰۲، TLS/signature، bundle/runtime و پذیرش انتشار همچنان بازند.
+
 ## اصلاح child برای هم‌زمانیِ مرحلهٔ تصمیم
 
 source و ZIP نسخهٔ `8e0e1e53dee8622dea8f7f9e84e135cb8446dcef` محفوظ‌اند. یافتهٔ root: درخواست تازه‌ای که فقط شروع شده، مانع فعال‌شدن تصمیم معتبرِ زودتر تکمیل‌شده می‌شود و cache اولین نماد در cold start از دست می‌رود. آزمون قبلی پس از شروع GET منتظر می‌ماند و هم‌پوشانی digest را نمی‌سنجید.
