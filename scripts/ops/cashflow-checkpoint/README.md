@@ -1,5 +1,67 @@
 # Cash-flow encrypted backup checkpoint
 
+## Candidate safe failure diagnostics — 2026-10-31
+
+This local candidate improves attribution for a **future** failed operation. It
+does not identify the cause of the previously interrupted native R2 capture:
+that attempt remains `UNATTRIBUTED`, with its partial ciphertext preserved and
+without a manifest or successful Verify. No retry, new native attempt directory,
+native Capture/Verify, SSH, database access, installation or deployment is
+authorized or performed by these diagnostics tests.
+
+The existing single stderr line keeps its public prefix and adds a bounded JSON
+object: `CHECKPOINT_FAILED stage=<allowlisted-stage> code=OPERATION_FAILED
+diagnostic={...}`. The object has exactly eight fields: `version`, `code`,
+`phase`, `expectedLength`, `observedLength`, `hashState`, `sshExitCode` and
+`sshTimedOut`. Codes/phases/hash states come from fixed enums. Unknown lengths,
+exit status and transport observations remain JSON `null`, never a fabricated
+zero or false. The outer operation stage uses a fixed allowlist.
+
+Known encryption observations distinguish early EOF, excessive input length,
+equal-length SHA256 mismatch, read/write IO failure and encryption phase.
+Complete distinguishes its existing exit wait from the original SSH deadline
+and a nonzero observed exit code. A transparent stdout wrapper can attach
+already available process state to an encryption error **before** the SSH
+object is disposed; it performs no extra read, wait, retry or request. An EOF
+and a nonzero exit/expired deadline are separate observations, not a claimed
+root cause. These enums alone cannot attribute a historical interruption.
+
+Neither raw stderr, exception Message/Data/StackTrace, command, header, path,
+plaintext, key nor digest values enter the diagnostic object. SSH stderr is
+still drained and discarded. Unknown exception types and all failures before
+this invocation has loaded the reviewed diagnostic types use `UNATTRIBUTED` /
+`UNKNOWN` and nullable observations. This includes legacy Verify/wrapper errors
+for which the frozen code has no typed observation; no message-text guessing
+is attempted. This contract covers errors caught by the wrapper; external host
+startup/parameter-binding failures outside its catch remain outside this change.
+No error file is added to the archive or destination.
+
+AES-256-CBC, HMAC, authentication before decryption, DPAPI, framing, manifest and
+profile contracts are unchanged. Remote scripts/pins, host/key/known-host
+options, deadlines, exit wait, read order/count, locks, destination checks,
+CreateNew/no-overwrite and retained partial files keep their existing policy.
+Native operational validation remains a separate root-owned gate.
+
+Run the synthetic checks in fresh processes:
+
+```powershell
+pwsh -NoProfile -File ./offline-diagnostics.ps1
+pwsh -NoProfile -File ./offline-tests.ps1
+pwsh -NoProfile -File ./offline-profile-v2.ps1
+pwsh -NoProfile -File ./offline-profile-v2r2.ps1
+```
+
+The diagnostics suite compiles the exact C# source with a synthetic stream in
+one assembly, exercises the real encryption/verification and the actual two
+PowerShell formatting functions, and tests a real wrapper rejection before any
+source access. It never constructs `CheckpointSsh`. SSH timeout/exit cases use
+the same typed factory as Complete and synthetic observations; they do not
+prove native process/timeout behavior. A secret-like random sentinel appears
+only in test inputs; public output is checked against the strict eight-field
+contract and for sentinel absence. Receipts under the existing synthetic
+`test-output` subtree contain check names/code hashes, not the sentinel or
+private path values. Fixtures and partial/tampered evidence are retained.
+
 The explicit `ReviewCorrectedCheckpoint` action adopts the pinned ACL19 receipt
 bundle in read-only mode. The consultation installer has the corresponding
 `--review-corrected-checkpoint` mode. See

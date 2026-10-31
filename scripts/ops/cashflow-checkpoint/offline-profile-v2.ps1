@@ -1,5 +1,6 @@
 # Synthetic Windows/DPAPI tests only. No native source, SSH or production pin override.
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'offline-failure-contract.ps1')
 $results=[Collections.Generic.List[object]]::new();$master=$null;$phase='setup'
 $wrapper=Join-Path $PSScriptRoot 'backup-checkpoint.ps1'
 $helper=Join-Path $PSScriptRoot 'checkpoint-profile-v2.ps1'
@@ -33,7 +34,7 @@ function Run([string]$Action,[string]$Destination,[bool]$Success=$true,[string]$
     if(-not $p.WaitForExit(30000)){$p.Kill($true);throw 'timeout'}
     $stdout=$out.GetAwaiter().GetResult();$stderr=$err.GetAwaiter().GetResult()
     if($Success){if($p.ExitCode -ne 0){throw "wrapper failed $Action $stderr"}}
-    elseif($p.ExitCode -eq 0 -or $stdout.Length -or $stderr -cnotmatch '^CHECKPOINT_FAILED stage=[a-z0-9-]+ code=OPERATION_FAILED\r?\n$'){throw 'unsafe error'}
+    elseif($p.ExitCode -eq 0 -or $stdout.Length -or -not (Test-CheckpointFailureOutput $stderr)){throw 'unsafe error'}
   }finally{$p.Dispose()}
 }
 function CopyGood([string]$Name){$dest=Join-Path $run $Name;[IO.Directory]::CreateDirectory($dest)|Out-Null;Set-Acl -LiteralPath $dest -AclObject (Get-Acl -LiteralPath $good);foreach($f in Get-ChildItem -LiteralPath $good -File){if($f.Name -cne 'verified.json'){[IO.File]::Copy($f.FullName,(Join-Path $dest $f.Name),$false)}};return $dest}

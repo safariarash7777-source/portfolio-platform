@@ -1,4 +1,5 @@
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'offline-failure-contract.ps1')
 $stage='setup';$results=[Collections.Generic.List[object]]::new();$master=$null
 $script=Join-Path $PSScriptRoot 'backup-checkpoint.ps1'
 $pin='1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2'
@@ -16,7 +17,7 @@ function RunWrapper([string]$Action,[string]$Destination,[bool]$ExpectedSuccess=
     if(-not $p.WaitForExit(30000)){$p.Kill($true);throw 'wrapper timeout'}
     $stdout=$outTask.GetAwaiter().GetResult();$stderr=$errTask.GetAwaiter().GetResult()
     if($ExpectedSuccess){if($p.ExitCode -ne 0){throw 'unexpected wrapper failure'}}
-    else{if($p.ExitCode -eq 0 -or $stderr -cnotmatch '^CHECKPOINT_FAILED stage=[a-z-]+ code=OPERATION_FAILED\r?\n$' -or $stdout.Length){throw 'unsafe rejection'}}
+    else{if($p.ExitCode -eq 0 -or -not (Test-CheckpointFailureOutput $stderr) -or $stdout.Length){throw 'unsafe rejection'}}
   }finally{$p.Dispose()}
 }
 function CopyCheckpoint([string]$Name){$dest=Join-Path $run $Name;[IO.Directory]::CreateDirectory($dest)|Out-Null;Set-Acl -LiteralPath $dest -AclObject (Get-Acl -LiteralPath $good);foreach($p in Get-ChildItem -LiteralPath $good -File){[IO.File]::Copy($p.FullName,(Join-Path $dest $p.Name),$false)};return $dest}
@@ -77,7 +78,8 @@ exit $LASTEXITCODE
   try{
     [void]$process.Start();$stdoutTask=$process.StandardOutput.ReadToEndAsync();$stderrTask=$process.StandardError.ReadToEndAsync()
     if(-not $process.WaitForExit(30000)){$process.Kill($true);throw 'probe timeout'}
-    Assert ($process.ExitCode -ne 0 -and $stdoutTask.GetAwaiter().GetResult().Length -eq 0 -and $stderrTask.GetAwaiter().GetResult() -cmatch '^CHECKPOINT_FAILED stage=fresh-process code=OPERATION_FAILED\r?\n$' -and -not (Test-Path -LiteralPath $preloadedDestination)) 'preloaded crypto type rejected before destination/key creation'
+    $errorText=$stderrTask.GetAwaiter().GetResult()
+    Assert ($process.ExitCode -ne 0 -and $stdoutTask.GetAwaiter().GetResult().Length -eq 0 -and $errorText.StartsWith('CHECKPOINT_FAILED stage=fresh-process code=OPERATION_FAILED diagnostic=',[StringComparison]::Ordinal) -and (Test-CheckpointFailureOutput $errorText) -and -not (Test-Path -LiteralPath $preloadedDestination)) 'preloaded crypto type rejected before destination/key creation'
   }finally{$process.Dispose()}
   # Invalid restore proof must not create a checkpoint directory.
   $proof.sourceHealthyAfter=$false;[IO.File]::WriteAllText((Join-Path $source 'receipt.json'),($proof|ConvertTo-Json -Depth 4 -Compress))
