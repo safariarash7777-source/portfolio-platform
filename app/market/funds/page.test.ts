@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { createRequire } from "node:module";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import ts from "typescript";
 import type { ReactElement } from "react";
@@ -9,24 +11,36 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext, PathnameContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
-import FundsFullBoard from "../../../components/market/FundsFullBoard";
 import { failedIranReadQuality, iranReadQuality, withValidNav } from "../../../lib/market-quality";
 import type { SourceAvailability } from "../../../lib/market-bounded";
-import type { IrMarket } from "../../../lib/market-ir";
-Object.assign(globalThis, { React });
+import { toMarket, type IrMarket } from "../../../lib/market-ir";
 
 const require = createRequire(import.meta.url);
+const root = fileURLToPath(new URL("../../../", import.meta.url));
+const componentModules = new Map<string, { default: unknown }>();
+// Compile actual local JSX into a private realm instead of installing React on host globalThis.
+function component(file: string): { default: unknown } {
+  const filename = resolve(root, file), cached = componentModules.get(filename); if (cached) return cached;
+  const taskModule = { exports: {} as { default: unknown } }, local = createRequire(filename); componentModules.set(filename, taskModule.exports);
+  const dependency = (name: string): unknown => {
+    const path = name.startsWith("@/") ? resolve(root, name.slice(2)) : name.startsWith(".") ? resolve(dirname(filename), name) : null;
+    return path && existsSync(path + ".tsx") ? component(path + ".tsx") : local(path ?? name);
+  };
+  const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  vm.runInNewContext(code, { module: taskModule, exports: taskModule.exports, require: dependency, React }, { filename }); return taskModule.exports;
+}
+const FundsFullBoard = component("components/market/FundsFullBoard.tsx").default as typeof import("../../../components/market/FundsFullBoard").default;
 const now = Date.parse("2026-09-30T10:00:00Z");
 const valid = { id: "synthetic-fund", faName: "صندوق ساختگی", unit: "toman" as const, price: 110, closingPrice: 110, nav: 100, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
 
-async function actualPage(rows: Record<string, unknown>[], state = "unknown-time", readAt = now, availabilityOverride?: SourceAvailability, dataPresent = true) {
+async function actualPage(rows: Record<string, unknown>[], state = "unknown-time", readAt = now, availabilityOverride?: SourceAvailability, dataPresent = true, readMarket?: () => Promise<{ data: IrMarket | null; availability: SourceAvailability }>) {
   const source = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
   const js = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const pageModule = { exports: {} as { default: (props: object) => Promise<ReactElement> } };
   let searchRows: Record<string, unknown>[] = [];
   const availability = availabilityOverride ?? { readAt, families: { funds: { state, receivedAt: now }, indices: { state: "stale" } } };
   const stubs: Record<string, unknown> = {
-    "@/lib/market-bounded": { readIranMarket: async () => ({ data: dataPresent ? { funds: rows, stocks: [] } : null, availability }) },
+    "@/lib/market-funds-read.server": { readFundsMarket: readMarket ?? (async () => ({ data: dataPresent ? { funds: rows, stocks: [] } : null, availability })) },
     "@/lib/market-quality": { withValidNav },
     "@/lib/core/bulkReturns": { getBulkReturns: async () => new Map([[valid.id, { w1: 1, m1: 2, m3: 3 }]]) },
     "@/lib/access": { getAccess: async () => ({ tier: "guest" }) },
@@ -148,4 +162,55 @@ test("a failed read does not erase retained observations, invent missing values 
   assert.match(html, /هنوز صندوقی انتخاب نشده/);
   assert.doesNotMatch(html, /اسنپ‌شات صندوق‌ها خالی است|پاسخ معتبر بدون ردیف/);
   assert.equal(row.bubblePercent, null);
+});
+
+function actualAdapter(outcome: import("../../../lib/market-ir").StoredMarketReadResult) {
+  const environment = { FUNDAMENTAL_READ_URL: "https://62.60.191.24/liara-preview", FUNDAMENTAL_READ_ANON_KEY: [
+    Buffer.from(JSON.stringify({ typ: "JWT", alg: "HS256" })).toString("base64url"),
+    Buffer.from(JSON.stringify({ role: "anon", iss: "supabase", exp: 4102444800 })).toString("base64url"),
+    Buffer.from("synthetic-signature").toString("base64url"),
+  ].join(".") };
+  let reads = 0;
+  const execute = (file: string, dependencies: Record<string, unknown>) => {
+    const filename = resolve(root, file), local = createRequire(filename), taskModule = { exports: {} as Record<string, unknown> };
+    const source = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+    vm.runInNewContext(source, { module: taskModule, exports: taskModule.exports, require: (name: string) => name in dependencies ? dependencies[name] : local(name), Buffer, URL, Date, process: { env: {} } }, { filename });
+    return taskModule.exports;
+  };
+  const selector = execute("lib/fundamental/read-config.server.ts", { "server-only": {} });
+  const adapter = execute("lib/market-funds-read.server.ts", {
+    "server-only": {}, "./fundamental/read-config.server": selector,
+    "./market-ir": { async getStoredIrMarket(options: import("../../../lib/market-ir").StoredMarketReadOverride) {
+      reads++; assert.equal(options.pair?.url, environment.FUNDAMENTAL_READ_URL); assert.equal(options.pair?.anon, environment.FUNDAMENTAL_READ_ANON_KEY); return outcome;
+    } },
+    "./market-bounded": { readIranMarket() { throw Error("legacy read forbidden for explicit pair"); } },
+  });
+  return { read: () => (adapter as unknown as typeof import("../../../lib/market-funds-read.server")).readFundsMarket({ environment }), reads: () => reads };
+}
+
+test("actual adapter to actual funds page keeps stored unknown-price-clock rows, null bubble and five selectors without host globals", async () => {
+  const readAt = Date.parse("2026-10-31T08:00:00Z");
+  const data = toMarket({ funds: [{ ...valid, id: "pipeline-only-test", sourceDate: null, sourceTime: "11:30:00", navDate: "1405-08-09", navTime: "11:30:00" }], fetchedAt: readAt });
+  const adapter = actualAdapter({ data, state: "read", reason: null, status: 200, readAt });
+  const board = await actualPage([], "unknown-time", readAt, undefined, true, adapter.read);
+  assert.equal(adapter.reads(), 1); assert.equal(board.funds.length, 1);
+  assert.equal(board.funds[0].sourceDate, null); assert.equal(board.funds[0].bubblePercent, null);
+  assert.equal(board.funds[0].ret1w, undefined); assert.equal(board.availability?.families?.funds.validAt, null);
+  assert.equal(board.availability?.families?.funds.state, "unknown-time"); assert.equal(board.availability?.families?.funds.receivedAt, readAt);
+  const html = renderActualBoard(board.availability, board.funds as unknown as Parameters<typeof FundsFullBoard>[0]["funds"]);
+  const comparison = html.match(/<section aria-labelledby="fund-comparison-title"[\s\S]*?<\/section>/)?.[0] ?? "";
+  assert.equal((comparison.match(/<select/g) ?? []).length, 5); assert.match(html, /pipeline-only-test/);
+  assert.doesNotMatch(html, /پاسخ معتبر بدون ردیف|اسنپ‌شات صندوق‌ها خالی است/);
+});
+
+test("actual adapter and actual page separate absent or HTTP error from genuine validated family emptiness", async () => {
+  for (const state of ["absent", "error"] as const) {
+    const adapter = actualAdapter({ data: null, state, reason: state === "absent" ? "absent" : "http", status: state === "absent" ? 200 : 402, readAt: now });
+    const board = await actualPage([], "unknown-time", now, undefined, false, adapter.read);
+    const html = renderActualBoard(board.availability); assert.equal(adapter.reads(), 1);
+    assert.match(html, /خالی‌بودن منبع تأیید نشده/); assert.doesNotMatch(html, /پاسخ معتبر بدون ردیف/);
+  }
+  const adapter = actualAdapter({ data: confirmedEmptyMarket, state: "read", reason: null, status: 200, readAt: now });
+  const board = await actualPage([], "unknown-time", now, undefined, true, adapter.read);
+  assert.equal(board.availability?.families?.funds.state, "empty"); assert.match(renderActualBoard(board.availability), /پاسخ معتبر بدون ردیف/);
 });

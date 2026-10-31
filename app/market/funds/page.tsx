@@ -3,7 +3,7 @@ import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
 import MarketShell from "@/components/market/MarketShell";
 import AccountBridge from "@/components/account/AccountBridge";
-import { readIranMarket } from "@/lib/market-bounded";
+import { readFundsMarket } from "@/lib/market-funds-read.server";
 import { withValidNav } from "@/lib/market-quality";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
 import { getAccess } from "@/lib/access";
@@ -24,7 +24,7 @@ export default async function FundsPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = searchParams ? await searchParams : {};
-  const [{ data: ir, availability }, returns, access] = await Promise.all([readIranMarket(), getBulkReturns(), getAccess()]);
+  const [{ data: ir, availability }, returns, access] = await Promise.all([readFundsMarket(), getBulkReturns(), getAccess()]);
 
   /**
    * مسیرِ بازگشت از حساب باید وضعیتِ همین صفحه را نگه دارد؛ وگرنه کاربری که
