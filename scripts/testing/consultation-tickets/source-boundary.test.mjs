@@ -9,6 +9,29 @@ import { resolve } from 'node:path';
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const read = file => readFileSync(resolve(root, file), 'utf8').replaceAll('\r\n', '\n');
 const hash = text => createHash('sha256').update(text).digest('hex');
+// Explicit assembly test scope only. No auth/right/runtime profile is changed.
+// Actual semantic readers stay on this working tree. Historical packaging
+// assertions read the complete immutable member export through Git objects.
+// Whole actual-tree identity is a separate detached, reviewed contract gate.
+const sourceScope = process.env.P03_SOURCE_SCOPE ?? '';
+assert.ok(sourceScope === '' || sourceScope === 'root928-member6ccb-v1', 'unknown source test scope');
+const assemblyScope = sourceScope === 'root928-member6ccb-v1';
+const frozenExport = '6ccb106ace4711be7359c7fc8c8d6ab33670f719';
+const frozenRoot = '928609f0b92703b6b1671cb22bea9c227af08eae';
+const objectRead = (ref,path) => execFileSync('git',['show',ref+':'+path],{cwd:root,encoding:'utf8',windowsHide:true}).replaceAll('\r\n','\n');
+if (assemblyScope) {
+  assert.equal(execFileSync('git',['status','--porcelain','--untracked-files=no'],{cwd:root,encoding:'utf8',windowsHide:true}).trim(),'','assembly tracked source is dirty');
+  for (const [ref,tree] of [[frozenExport,'ffbc97fc8a7aa639dd9025b4eecf4aeb92efd509'],[frozenRoot,'9e412e0c9d4973185fe5480ddcaf56220e133169']]) {
+    assert.equal(execFileSync('git',['rev-parse',ref+'^{tree}'],{cwd:root,encoding:'utf8',windowsHide:true}).trim(),tree,'reviewed input changed');
+    execFileSync('git',['merge-base','--is-ancestor',ref,'HEAD'],{cwd:root,stdio:'pipe',windowsHide:true});
+  }
+}
+const historicalRead = file => assemblyScope ? objectRead(frozenExport,file) : read(file);
+const historicalExec = (program,args,options) => {
+  assert.equal(program,'git','historical checker can only read Git');
+  const mapped = assemblyScope ? args.map(arg => arg === 'HEAD' ? frozenExport : arg.startsWith('HEAD:') || arg.startsWith('HEAD^{') ? frozenExport+arg.slice(4) : arg) : args;
+  return execFileSync(program,mapped,options);
+};
 const source = JSON.parse(read('scripts/testing/consultation-tickets/contract-source.json'));
 for (const file of source.files) test(`frozen 358 contract remains exact: ${file.path}`, () => {
   assert.equal(hash(read(file.path)), file.sha256);
@@ -38,10 +61,21 @@ test('release control is server-only and deployment stop names only the candidat
     assert.doesNotMatch(read(file), /consultationWriteRelease|CONSULTATION_P03_WRITES_RELEASE/);
   }
   const config = JSON.parse(read('vercel.json'));
+  if (assemblyScope) {
+    const rootConfig=JSON.parse(objectRead(frozenRoot,'vercel.json')),memberConfig=JSON.parse(objectRead(frozenExport,'vercel.json'));
+    const stops={...rootConfig.git.deploymentEnabled,...memberConfig.git.deploymentEnabled,'codex/p01-p03-member-assembly-20261031':false};
+    assert.equal(Object.keys(stops).length,12);assert.ok(Object.values(stops).every(value=>value===false));
+    assert.deepEqual(config.git.deploymentEnabled,stops,'actual assembly lost or opened a branch stop');
+    delete rootConfig.git;delete memberConfig.git;
+    const actualSettings={...config};delete actualSettings.git;
+    assert.deepEqual(rootConfig,memberConfig);assert.deepEqual(actualSettings,rootConfig,'actual cron/settings changed');
+  } else {
   assert.deepEqual(config.git.deploymentEnabled, { 'codex/p03-reader-release-20261031': false, 'codex/p03-feedback-reader-acceptance-20261031': false, 'codex/p01-p05-service-right-diagnostic-20261031': false, 'codex/p01-p03-legacy-diagnostic-ui-20261031': false, 'codex/p01-p03-legacy-native-20261031': false });
+  }
   assert.equal(config.crons.length, 2);
 });
 test('shared source stays on frozen 360; package hashes include only the approved browser driver delta', () => {
+  const read = historicalRead, execFileSync = historicalExec;
   const expected = JSON.parse(read('scripts/testing/consultation-tickets/protected-source.json'));
   const native = expected.legacyDiagnosticAcceptance; delete expected.legacyDiagnosticAcceptance;
   assert.equal(native.baseCandidate, '7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc');

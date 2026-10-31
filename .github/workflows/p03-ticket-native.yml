@@ -26,7 +26,7 @@ jobs:
   real-auth-ticket-storage:
     # Reader699's successful 27 API/11 DOM gate stays frozen; the child branch
     # runs the separately allocated feedback gap, not that completed suite.
-    if: ${{ github.head_ref != 'codex/p03-feedback-reader-acceptance-20261031' && github.ref_name != 'codex/p03-feedback-reader-acceptance-20261031' && github.head_ref != 'codex/p01-p03-legacy-native-20261031' && github.ref_name != 'codex/p01-p03-legacy-native-20261031' }}
+    if: ${{ github.head_ref != 'codex/p03-feedback-reader-acceptance-20261031' && github.ref_name != 'codex/p03-feedback-reader-acceptance-20261031' && github.head_ref != 'codex/p01-p03-legacy-native-20261031' && github.ref_name != 'codex/p01-p03-legacy-native-20261031' && github.head_ref != 'codex/p01-p03-member-assembly-20261031' && github.ref_name != 'codex/p01-p03-member-assembly-20261031' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:

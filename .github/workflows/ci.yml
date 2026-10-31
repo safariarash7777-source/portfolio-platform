@@ -77,6 +77,9 @@ jobs:
         run: git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03
       - name: Fetch only the frozen reader699 object
         run: git fetch --no-tags --depth=1 origin 699ea1677c21c216be52869318cf0ac1c4525744
+      - name: Fetch exact assembly inputs and bounded current ancestry
+        if: ${{ github.head_ref == 'codex/p01-p03-member-assembly-20261031' }}
+        run: git fetch --no-tags --depth=8 origin ${{ github.sha }} 928609f0b92703b6b1671cb22bea9c227af08eae 6ccb106ace4711be7359c7fc8c8d6ab33670f719
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -97,6 +100,8 @@ jobs:
         run: npm run lint:ci
 
       - name: Core tests
+        env:
+          P03_SOURCE_SCOPE: ${{ github.head_ref == 'codex/p01-p03-member-assembly-20261031' && 'root928-member6ccb-v1' || '' }}
         run: npm run test:core
 
       - name: Research provenance tests (offline)
