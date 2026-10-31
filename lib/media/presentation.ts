@@ -101,6 +101,15 @@ export function recordedMediaDateLabel(item: MediaItem): string | null {
   return recordedMediaDay(item) ? formatJalali(item.published_at!) : (typeof item.dateLabel === "string" ? item.dateLabel.trim() || null : null);
 }
 
+/** Distinguish an old display label from a clock the archive filter can actually compare. */
+export function mediaRecordDatePresentation(item: MediaItem) {
+  if (recordedMediaDay(item)) return { kind: "recorded" as const, label: "تاریخ ثبت‌شده", value: recordedMediaDateLabel(item)!, note: null };
+  const oldText = typeof item.dateLabel === "string" ? item.dateLabel.trim() : "";
+  return oldText
+    ? { kind: "label-only" as const, label: "متن قدیمی تاریخ", value: oldText, note: "زمان قابل‌بررسی ثبت نشده" }
+    : { kind: "unknown" as const, label: "تاریخ ثبت‌شده", value: "نامشخص", note: null };
+}
+
 export function mediaArchiveRange(filters: Pick<MediaArchiveFilters, "from" | "to">): MediaArchiveRange {
   const fromInput = filters.from.trim(), toInput = filters.to.trim();
   const from = fromInput ? mediaArchiveBoundary(fromInput) : null, to = toInput ? mediaArchiveBoundary(toInput) : null;

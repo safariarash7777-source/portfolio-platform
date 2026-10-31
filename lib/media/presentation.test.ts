@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { appearanceFrom, sourceUrl, uniqueMedia, filterMediaArchive, mediaArchiveBoundary, mediaArchiveFiltersFromHash, mediaArchiveHashWithPatch, recordedMediaDateLabel, recordedMediaDay, type MediaArchiveFilters, type MediaItem } from "./presentation";
+import { appearanceFrom, sourceUrl, uniqueMedia, filterMediaArchive, mediaArchiveBoundary, mediaArchiveFiltersFromHash, mediaArchiveHashWithPatch, recordedMediaDateLabel, recordedMediaDay, mediaRecordDatePresentation, type MediaArchiveFilters, type MediaItem } from "./presentation";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -78,6 +78,19 @@ test("unknown clocks stay null; display label/title/link never supply filter dat
     assert.equal(recordedMediaDay(row), null, String(clock));
     assert.equal(recordedMediaDateLabel(row), null);
   }
+});
+
+test("label-only date copy cannot be mistaken for a filterable registered clock", () => {
+  const labelOnly = Object.freeze(archiveItem("old-text", null, { dateLabel: "۳۰ شهریور ۱۴۰۵" }));
+  assert.deepEqual(mediaRecordDatePresentation(labelOnly), { kind: "label-only", label: "متن قدیمی تاریخ", value: "۳۰ شهریور ۱۴۰۵", note: "زمان قابل‌بررسی ثبت نشده" });
+  assert.equal(recordedMediaDay(labelOnly), null);
+  assert.equal(labelOnly.published_at, null);
+  const valid = archiveItem("dated", "2025-09-22T20:30:00Z", { dateLabel: "متن قدیمی متفاوت" });
+  assert.deepEqual(mediaRecordDatePresentation(valid), { kind: "recorded", label: "تاریخ ثبت‌شده", value: recordedMediaDateLabel(valid), note: null });
+  assert.equal(mediaRecordDatePresentation(archiveItem("invalid-text", "invalid", { dateLabel: "متن تاریخ" })).kind, "label-only");
+  assert.deepEqual(mediaRecordDatePresentation(archiveItem("unknown", null)), { kind: "unknown", label: "تاریخ ثبت‌شده", value: "نامشخص", note: null });
+  assert.equal(filterMediaArchive([labelOnly], archiveDefaults).shown.length, 1);
+  assert.equal(filterMediaArchive([labelOnly], { ...archiveDefaults, from: "1405/06/01", to: "1405/06/31" }).shown.length, 0);
 });
 
 test("without bounds unknown dates remain; active bounds exclude them without mutating inputs", () => {
