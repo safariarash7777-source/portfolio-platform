@@ -93,7 +93,7 @@
       },
       "scripts/testing/consultation-tickets/durability-native.mjs": {
         "oldBlob": null,
-        "newBlob": "3dac8c822248a1d696afed40303d070915f97c59"
+        "newBlob": "488c0ac8604eddeba9b9daa0092ed8dce85a191f"
       },
       "scripts/testing/consultation-tickets/browser.mjs": {
         "oldBlob": "7826e0a8514ab15cbc6902af80ae25d24b94a54d",
@@ -113,7 +113,7 @@
       },
       "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md": {
         "oldBlob": null,
-        "newBlob": "2f416d32437243cabf7751e3c477a5b760731c07"
+        "newBlob": "53ffe027561f430e0e91b685dda5e8c65e1fc6ae"
       },
       "lib/consultation/ticketAttemptStorageContracts.ts": {
         "oldBlob": null,
