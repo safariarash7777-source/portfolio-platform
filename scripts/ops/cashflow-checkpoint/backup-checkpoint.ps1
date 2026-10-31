@@ -4,7 +4,8 @@ param(
   [Parameter(Mandatory)][string]$ReviewedHelperSha256,
   [string]$Destination,
   [switch]$OfflineFixture,
-  [string]$FixtureDirectory
+  [string]$FixtureDirectory,
+  [string]$Profile='LegacyV1'
 )
 $ErrorActionPreference='Stop'
 $stage='parameters';$master=$null;$macKey=$null
@@ -80,13 +81,160 @@ except BaseException:
  sys.exit(1)
 '@
 }
+function V2Packet {
+  $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'));$pins=Get-V2Pins
+  $gateRoot=Join-Path $repo 'docs/ops/p15-webpack-cache-20261030'
+  # Only reviewed executable source is LF-normalized. Never normalize artifacts.
+  $consumer=$utf8.GetBytes(([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'corrected-checkpoint-consumer.py'),$utf8)).Replace("`r`n","`n"))
+  $gate=$utf8.GetBytes(([IO.File]::ReadAllText((Join-Path $gateRoot 'checkpoint-read-gate.py'),$utf8)).Replace("`r`n","`n"))
+  $binding=[IO.File]::ReadAllBytes((Join-Path $gateRoot 'RELEASE-BINDING-20261031.json'))
+  if([CheckpointCrypto]::Hash($consumer) -cne $pins.consumer -or [CheckpointCrypto]::Hash($gate) -cne $pins.gate -or [CheckpointCrypto]::Hash($binding) -cne $pins.binding){throw 'v2 source pins'}
+  return @{consumer=$consumer;binding=$binding;packet=(JsonBytes @{gate=[Convert]::ToBase64String($gate);binding=[Convert]::ToBase64String($binding)})}
+}
+function V2RemoteScript($Packet,[string]$Mode,[int]$Index=-1,[long]$Length=0,[string]$Hash='') {
+  if($Mode -cnotin @('metadata','file') -or ($Mode -ceq 'file' -and ($Index -lt 0 -or $Index -gt 13 -or $Length -lt 0 -or $Hash -cnotmatch '^[a-f0-9]{64}$'))){throw 'v2 remote arguments'}
+  $prefix="CODE=bytes.fromhex('"+[Convert]::ToHexString($Packet.consumer)+"')`nPACKET=bytes.fromhex('"+[Convert]::ToHexString($Packet.packet)+"')`nMODE='$Mode'`nINDEX=$Index`nLENGTH=$Length`nHASH='$Hash'`n"
+  return $prefix+@'
+import base64,datetime,fcntl,hashlib,json,os,signal,sys,types
+signal.signal(signal.SIGALRM,lambda *_: (_ for _ in ()).throw(TimeoutError()))
+signal.alarm(170 if MODE=='metadata' else 1790)
+if hashlib.sha256(CODE).hexdigest()!='18dcdff88cb8d41f8c5ee9e8236e0fdba9e7a212ef8c1044769165cc8010ac2c':raise ValueError()
+consumer=types.ModuleType('pinned_consumer')
+exec(compile(CODE,'/in-memory/corrected-checkpoint-consumer.py','exec'),consumer.__dict__)
+bundle=json.loads(PACKET)
+gate,binding=consumer.load_gate(bundle)
+names=['postgres.dump','globals.private.sql','cron.private.json','source-inventory.private','target-inventory.private','comparison.private.json','receipt.json',
+ 'acl19-reconciliation-20261031/intent.json','acl19-reconciliation-20261031/plan.json','acl19-reconciliation-20261031/result.json',
+ 'acl19-reconciliation-20261031/strict-core-comparison.json','acl19-reconciliation-20261031/strict-private-comparison.json',
+ 'external/v04-fresh-checkpoint-20261030/private-before.json','external/v04-fresh-checkpoint-20261030/result.json']
+def pair(index):
+ name=names[index]
+ return (gate.BASE,name[len('external/'):]) if name.startswith('external/') else (gate.ROOT,name)
+def signature(s):return (s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_ctime_ns)
+def states():gate.validate_states(gate.inspect(gate.SOURCE),gate.inspect(gate.TARGET))
+def small_hash(index):
+ base,name=pair(index)
+ with gate.opened(base,name) as f:
+  before=os.fstat(f.fileno())
+  if before.st_size>524288:raise ValueError()
+  raw=f.read(524289)
+  if signature(before)!=signature(os.fstat(f.fileno())) or len(raw)!=before.st_size:raise ValueError()
+  return {'name':names[index],'length':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+with gate.opened(gate.BASE,'.cashflow-release.lock',private=False) as lock:
+ fcntl.flock(lock,fcntl.LOCK_SH|fcntl.LOCK_NB)
+ states()
+ if MODE=='metadata':
+  # Fresh pinned gate, full dump hash and metadata all under this same outer lock.
+  attestation=gate.run(binding,consumer.BINDING_SHA)
+  consumer.validate_attestation(attestation)
+  entries=[{'name':names[0],'length':attestation['dumpBytes'],'sha256':attestation['dumpSha256']}]
+  entries.extend(small_hash(i) for i in range(1,14))
+  attestation_raw=json.dumps(attestation,separators=(',',':')).encode('utf-8')
+  entries.extend({'name':name,'length':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+   for name,raw in [('release-binding.json',binding),('read-attestation.json',attestation_raw)])
+  states()
+  print(json.dumps({'files':entries,'attestationBase64':base64.b64encode(attestation_raw).decode('ascii')},separators=(',',':')))
+ elif MODE=='file':
+  if not 0<=INDEX<14:raise ValueError()
+  base,name=pair(INDEX)
+  with gate.opened(base,name) as f:
+   before=os.fstat(f.fileno())
+   if before.st_size!=LENGTH:raise ValueError()
+   h=hashlib.sha256();count=0
+   for b in iter(lambda:f.read(65536),b''):
+    count+=len(b)
+    if count>LENGTH:raise ValueError()
+    h.update(b);sys.stdout.buffer.write(b)
+   if count!=LENGTH or h.hexdigest()!=HASH or signature(before)!=signature(os.fstat(f.fileno())):raise ValueError()
+  states()
+ else:raise ValueError()
+'@
+}
+function V2Metadata($Packet) {
+  $ssh=[CheckpointSsh]::new('python3 -',(V2RemoteScript $Packet 'metadata'),180)
+  try{$meta=$utf8.GetString($ssh.ReadMetadata())|ConvertFrom-Json}finally{$ssh.Dispose()}
+  Assert-V2Entries $meta.files 'native-ssh-v2'
+  $raw=[Convert]::FromBase64String($meta.attestationBase64)
+  if($raw.Length -gt 32768 -or $raw.Length -ne $meta.files[15].length -or [CheckpointCrypto]::Hash($raw) -cne $meta.files[15].sha256){throw 'v2 attestation bytes'}
+  $proof=$utf8.GetString($raw)|ConvertFrom-Json;Assert-V2Proof $proof 'native-ssh-v2' -Fresh
+  return @{files=@($meta.files);attestation=$proof;attestationRaw=$raw}
+}
+function V2FixtureMetadata([string]$Directory) {
+  $names=Get-V2Names
+  $records=@(for($i=0;$i -lt 16;$i++){$path=CheckPath (Join-Path $Directory ('v2-source-{0:d2}.bin' -f $i));@{name=$names[$i];length=([IO.FileInfo]$path).Length;sha256=[CheckpointCrypto]::FileHash($path)}})
+  Assert-V2Entries $records 'offline-synthetic-v2'
+  $proof=$utf8.GetString((BoundedBytes (Join-Path $Directory 'v2-source-15.bin') 32768))|ConvertFrom-Json
+  Assert-V2Proof $proof 'offline-synthetic-v2'
+  $original=$utf8.GetString((BoundedBytes (Join-Path $Directory 'v2-source-06.bin') 32768))|ConvertFrom-Json
+  if($original.status -cne 'failed' -or $original.synthetic -cne $true){throw 'v2 original failure'}
+  return @{files=$records;attestation=$proof}
+}
+function Invoke-V2([string]$Mode) {
+  $names=Get-V2Names;$profileName='corrected-acl19-v2';$packet=$null
+  if($Mode -ceq 'native-ssh-v2' -and $CheckpointId -cne '20261030T215307Z'){throw 'v2 checkpoint'}
+  if($Action -ceq 'Capture'){
+    $script:stage='v2-metadata'
+    if($OfflineFixture){
+      $FixtureDirectory=CheckPath $FixtureDirectory
+      if(-not $FixtureDirectory.StartsWith($testRoot,[StringComparison]::OrdinalIgnoreCase) -or [IO.File]::ReadAllText((Join-Path $FixtureDirectory 'fixture-only.txt')) -cne 'SYNTHETIC-OFFLINE-ONLY'){throw 'v2 fixture'}
+      $meta=V2FixtureMetadata $FixtureDirectory
+    }else{$packet=V2Packet;$meta=V2Metadata $packet}
+    $entries=@($meta.files);$needed=1GB
+    foreach($entry in $entries){$needed=[long]$needed+[long]$entry.length+32768}
+    if([IO.DriveInfo]::new([IO.Path]::GetPathRoot($Destination)).AvailableFreeSpace -lt $needed){throw 'v2 space'}
+    $script:stage='v2-destination';PrivateDirectory $Destination;CheckPrivateDirectory $Destination
+    $script:master=[Security.Cryptography.RandomNumberGenerator]::GetBytes(64);$script:macKey=$master[32..63]
+    WriteNew (Join-Path $Destination 'master.dpapi') ([Security.Cryptography.ProtectedData]::Protect($master,$entropy,[Security.Cryptography.DataProtectionScope]::CurrentUser))
+    $records=@();$script:stage='v2-capture'
+    for($i=0;$i -lt 16;$i++){
+      $entry=$entries[$i]
+      $header=([ordered]@{version=2;profile=$profileName;checkpoint=$CheckpointId;helperSha256=$approvedHelper;sourceMode=$Mode;name=$entry.name;length=[long]$entry.length;sha256=$entry.sha256}|ConvertTo-Json -Compress)
+      $cipherName='v2-{0:d2}.enc' -f $i;$cipher=Join-Path $Destination $cipherName
+      if($OfflineFixture){$inputStream=[IO.File]::OpenRead((CheckPath (Join-Path $FixtureDirectory ('v2-source-{0:d2}.bin' -f $i))));try{[CheckpointCrypto]::Encrypt($inputStream,$cipher,$header,[long]$entry.length,$entry.sha256,$master)}finally{$inputStream.Dispose()}}
+      elseif($i -ge 14){$bytes=if($i -eq 14){$packet.binding}else{$meta.attestationRaw};$inputStream=[IO.MemoryStream]::new($bytes,$false);try{[CheckpointCrypto]::Encrypt($inputStream,$cipher,$header,[long]$entry.length,$entry.sha256,$master)}finally{$inputStream.Dispose()}}
+      else{$ssh=[CheckpointSsh]::new('python3 -',(V2RemoteScript $packet 'file' $i ([long]$entry.length) $entry.sha256),1800);try{[CheckpointCrypto]::Encrypt($ssh.Output,$cipher,$header,[long]$entry.length,$entry.sha256,$master);$ssh.Complete()}finally{$ssh.Dispose()}}
+      $records+=,[ordered]@{name=$entry.name;length=[long]$entry.length;sha256=$entry.sha256;header=$header;cipherName=$cipherName;cipherLength=([IO.FileInfo]$cipher).Length;cipherSha256=[CheckpointCrypto]::FileHash($cipher)}
+    }
+    $script:stage='v2-post-capture'
+    $after=if($OfflineFixture){V2FixtureMetadata $FixtureDirectory}else{V2Metadata $packet}
+    # The fresh second gate has a new timestamp. All original 14 sources and exact
+    # binding must remain unchanged; both gate verdicts stay in the signed manifest.
+    $last=if($OfflineFixture){15}else{14}
+    for($i=0;$i -le $last;$i++){if($after.files[$i].name -cne $entries[$i].name -or $after.files[$i].length -ne $entries[$i].length -or $after.files[$i].sha256 -cne $entries[$i].sha256){throw 'v2 source changed'}}
+    $independent=@{storageBinary='NOT_VERIFIED';currentSql='NOT_VERIFIED';capacity='NOT_VERIFIED';snapshotCoverage=$(if($OfflineFixture){'SYNTHETIC_ONLY'}else{'CORE_EXPORT_ONLY_GLOBALS_PRIVATE_SEPARATE'})}
+    $manifestObject=[ordered]@{version=2;profile=$profileName;checkpoint=$CheckpointId;helperSha256=$approvedHelper;sourceMode=$Mode;originalStatus='failed';attestation=$meta.attestation;postCaptureAttestation=$after.attestation;readiness=$false;releaseAuthorized=$false;independentGates=$independent;files=$records}
+    Assert-V2Manifest ([pscustomobject]$manifestObject) $CheckpointId $Mode
+    $manifest=JsonBytes $manifestObject
+    $script:stage='v2-manifest';WriteNew (Join-Path $Destination 'manifest.json') $manifest
+    WriteNew (Join-Path $Destination 'manifest.hmac') ([CheckpointCrypto]::Mac($manifest,$macKey))
+    WriteNew (Join-Path $Destination 'capture-complete.json') (JsonBytes @{status='CAPTURED_NOT_VERIFIED';version=2;profile=$profileName;checkpoint=$CheckpointId;sourceMode=$Mode;files=16;manifestSha256=[CheckpointCrypto]::Hash($manifest);readiness=$false;releaseAuthorized=$false})
+    [Console]::WriteLine("CHECKPOINT_CAPTURED files=16 mode=$Mode profile=corrected-acl19-v2")
+  }else{
+    $script:stage='v2-manifest-authentication';CheckPrivateDirectory $Destination
+    $script:master=[Security.Cryptography.ProtectedData]::Unprotect((BoundedBytes (Join-Path $Destination 'master.dpapi') 16384),$entropy,[Security.Cryptography.DataProtectionScope]::CurrentUser)
+    if($master.Length -ne 64){throw 'v2 key'};$script:macKey=$master[32..63]
+    $manifest=BoundedBytes (Join-Path $Destination 'manifest.json') 65536
+    if(-not [CheckpointCrypto]::Equal([CheckpointCrypto]::Mac($manifest,$macKey),(BoundedBytes (Join-Path $Destination 'manifest.hmac') 32))){throw 'v2 manifest MAC'}
+    $m=$utf8.GetString($manifest)|ConvertFrom-Json;Assert-V2Manifest $m $CheckpointId $Mode
+    $completed=$utf8.GetString((BoundedBytes (Join-Path $Destination 'capture-complete.json') 4096))|ConvertFrom-Json
+    if($completed.status -cne 'CAPTURED_NOT_VERIFIED' -or $completed.version -ne 2 -or $completed.profile -cne $profileName -or $completed.checkpoint -cne $CheckpointId -or $completed.sourceMode -cne $Mode -or $completed.files -ne 16 -or $completed.manifestSha256 -cne [CheckpointCrypto]::Hash($manifest) -or $completed.readiness -cne $false -or $completed.releaseAuthorized -cne $false){throw 'v2 incomplete'}
+    $script:stage='v2-verify'
+    foreach($entry in $m.files){
+      $path=CheckPath (Join-Path $Destination $entry.cipherName)
+      if(([IO.FileInfo]$path).Length -ne $entry.cipherLength -or [CheckpointCrypto]::FileHash($path) -cne $entry.cipherSha256){throw 'v2 ciphertext'}
+      [CheckpointCrypto]::Verify($path,$entry.header,[long]$entry.length,$entry.sha256,$master)
+    }
+    WriteNew (Join-Path $Destination 'verified.json') (JsonBytes @{status='PASS';version=2;profile=$profileName;checkpoint=$CheckpointId;sourceMode=$Mode;files=16;manifestSha256=[CheckpointCrypto]::Hash($manifest);verifiedAt=[datetime]::UtcNow.ToString('o');readiness=$false;releaseAuthorized=$false;independentGates=$m.independentGates;verification='HMAC before decrypt; all 16 complete plaintext SHA256/length to memory-only hashing sink'})
+    [Console]::WriteLine("CHECKPOINT_VERIFIED files=16 mode=$Mode profile=corrected-acl19-v2")
+  }
+}
 try{
-  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify','ReviewCorrectedCheckpoint') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper){throw 'parameters'}
+  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify','ReviewCorrectedCheckpoint') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper -or $Profile -cnotin @('LegacyV1','CorrectedAcl19V2')){throw 'parameters'}
   $parsed=[datetime]::MinValue
   if(-not [datetime]::TryParseExact($CheckpointId,'yyyyMMddTHHmmssZ',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::None,[ref]$parsed)){throw 'date'}
   if($Action -ceq 'ReviewCorrectedCheckpoint'){
     # Review-only adoption, never a projection of failed receipt to legacy passed.
-    if($CheckpointId -cne '20261030T215307Z' -or $OfflineFixture -or $FixtureDirectory -or $Destination){throw 'review parameters'}
+    if($CheckpointId -cne '20261030T215307Z' -or $OfflineFixture -or $FixtureDirectory -or $Destination -or $Profile -cne 'LegacyV1'){throw 'review parameters'}
     $stage='reviewed-consumer-source'
     if(('CheckpointCrypto' -as [type]) -or ('CheckpointSsh' -as [type])){throw 'preloaded type'}
     Add-Type -Path (Join-Path $PSScriptRoot 'CheckpointCrypto.cs')
@@ -122,6 +270,12 @@ print(json.dumps(module.review('backup-checkpoint.review-corrected.v1',json.load
   if(('CheckpointCrypto' -as [type]) -or ('CheckpointSsh' -as [type])){throw 'preloaded type'}
   Add-Type -AssemblyName System.Security
   Add-Type -Path (Join-Path $PSScriptRoot 'CheckpointCrypto.cs')
+  if($Profile -ceq 'CorrectedAcl19V2'){
+    . (Join-Path $PSScriptRoot 'checkpoint-profile-v2.ps1')
+    $v2Mode=if($OfflineFixture){'offline-synthetic-v2'}else{'native-ssh-v2'}
+    Invoke-V2 $v2Mode
+    return
+  }
   $sourceMode=if($OfflineFixture){'offline-synthetic'}else{'native-ssh'}
   $stage='metadata'
   if($Action -ceq 'Capture'){

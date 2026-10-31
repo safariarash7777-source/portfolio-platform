@@ -4,7 +4,68 @@ The explicit `ReviewCorrectedCheckpoint` action adopts the pinned ACL19 receipt
 bundle in read-only mode. The consultation installer has the corresponding
 `--review-corrected-checkpoint` mode. See
 [execution, usage and remaining gates](../../../docs/ops/p15-webpack-cache-20261030/EXISTING-CONSUMERS.fa.md).
-These modes neither extend seven-file Capture/Verify nor authorize the old apply path.
+These review modes do not authorize the old apply path. The explicit candidate
+`-Profile CorrectedAcl19V2` below adds a separate archive profile; `LegacyV1`
+remains the default seven-file contract.
+
+## Candidate corrected archive profile 2 (offline validation only)
+
+`Capture` and `Verify` accept explicit `-Profile CorrectedAcl19V2`. This is an
+extension of this wrapper, not a new backup/restore tool. The pinned crypto,
+native helper, gate, read-only consumer, release binding and installer are
+unchanged. AES/HMAC framing and DPAPI entropy remain version 1; only the
+authenticated archive manifest/header profile is version 2. Existing seven-file
+archives keep their default `LegacyV1` verifier. There is no format autodetection,
+failed-to-passed projection, restore/export operation or implicit install.
+
+Profile 2 preserves exactly 16 original byte streams: the old seven files;
+the correction's `intent.json`, `plan.json`, `result.json`,
+`strict-core-comparison.json`, `strict-private-comparison.json`; the external
+`v04-fresh-checkpoint-20261030/private-before.json` and `result.json`; exact raw
+release binding; and the fresh read-gate attestation. Logical names retain their
+fixed source origins. Flat ciphertext names `v2-00.enc` through `v2-15.enc` are
+independent of source paths. Headers and the HMAC-authenticated manifest bind each
+logical name, byte length, plaintext SHA256, checkpoint, helper and sourceMode.
+The original receipt remains `failed`; no synthesized legacy `passed` receipt
+is accepted. The original seven files are not rewritten to describe correction.
+
+Native Capture permits only checkpoint `20261030T215307Z`. It loads the existing
+gate/consumer/binding using the frozen pins, executes a fresh full-dump read gate
+and collects metadata under the same outer shared release lock and exact source
+and stopped-proof identities. Each of the 14 remote file streams reacquires that
+same lock, uses the gate's no-symlink/root-owned path reader, checks identities
+before/after, file stability, complete hash/length and process exit. Binding and
+the generated attestation remain in memory until encryption. A final fresh gate
+and metadata pass must match all 14 original file hashes/lengths and the binding.
+The second gate has a new timestamp; both verdicts are retained in the signed
+manifest. This is not a single continuously held SSH lock across the local
+encryption operation. Hash/stability checks and the final gate detect drift;
+failure retains partial evidence and never automatically retries or cleans it.
+
+Verify authenticates the manifest before parsing, enforces the exact 16-item
+profile, then uses the unchanged crypto to authenticate every ciphertext before
+decryption and hash all plaintext bytes to a memory-only sink. Verify consumes
+historical attestations; it does not refresh their date or call SSH. Successful
+format verification still returns `readiness=false`, `releaseAuthorized=false`;
+Storage binaries, current SQL and capacity remain `NOT_VERIFIED`, and the
+original exported-core versus separate globals/private snapshot limit remains.
+This profile does not connect the legacy installer or activate a service right.
+
+Code normalization is limited to the reviewed executable Python gate/consumer.
+**Binding, receipts, dumps and SQL payloads are never normalized.** The current
+Windows checkout's CRLF binding hashes to `c4ac2888...`, while the frozen Git LF
+binding hashes to `7819e0fb...` (2394 bytes). Native preflight therefore rejects
+that checkout's changed raw binding; the operator must separately stage/review
+the exact frozen bytes before any live invocation. This candidate does not
+rewrite the binding or loosen its pin.
+
+Offline validation: `pwsh -NoProfile -File ./offline-profile-v2.ps1`. Synthetic
+sources and generated DPAPI test masters stay only in ignored `test-output`;
+sourceMode is `offline-synthetic-v2`, gate status is explicitly synthetic and
+nativeGateExecuted is false. Fixtures cannot override production pins or select
+SSH. `offline-tests.ps1` independently checks unchanged version 1 behavior. No
+live Capture/SSH/backup transfer/restore/DDL/env/deploy or new credential is
+authorized or executed by these tests. Root owns live review and fresh preflight.
 
 This directory owns the wrapper, .NET crypto helper, synthetic tests and sanitized receipts. The initial implementation's evidence remains in `offline-receipt-20261020.json`. The 23 October revision pins the bounded recovery correction and allows 1800 seconds per file for the measured slow native transfer; connection and metadata deadlines are unchanged. Its 16-check offline suite passes. Before live Capture, the coordinator verifies exact code hashes and release preflight under existing authorization. `.gitattributes` preserves tested source bytes; synthetic fixtures, keys and ciphertext are excluded from Git.
 
