@@ -90,7 +90,7 @@ export function fundamentalsFor(state: DemoState, reports: CodalN30Data[]): Symb
   const latestFy=reports.length ? Math.max(...reports.map(r=>r.fiscal_year)) : null;
   const currentYear=reports.filter(r=>r.fiscal_year===latestFy);
   return { symbol: "آموزشی", n10: state === "empty" || state === "error" ? null : { data: ANNUAL, source },
-    n30: currentYear.length && !hasMonthlyGap(currentYear) ? { data: currentYear, source: { ...source, title: "فعالیت ماهانهٔ آموزشی؛ گزارش رسمی نیست" } } : null };
+    n30: currentYear.length ? { data: currentYear, source: { ...source, title: "فعالیت ماهانهٔ آموزشی؛ گزارش رسمی نیست" } } : null };
 }
 export function productReports(reports: CodalN30Data[], product: string, market: string) {
   return reports.map(report => ({ ...report, products: report.products.filter(row => (product === "all" || row.product_name === product) && (market === "all" || row.market === market)) }));

@@ -25,6 +25,7 @@ import { Link2, Check, Info } from "lucide-react";
 import { toPersianDigits } from "@/lib/format";
 import type { SymbolFundamentals } from "@/lib/fundamental/types";
 import { isMillionRialUnit } from "@/lib/fundamental/units";
+import { withKnownMonthlyQuantities } from "@/lib/core/monthly-quantity";
 import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 import {
   deriveN10,
@@ -456,14 +457,14 @@ function ProductRateChart({ d30 }: { d30: N30Derived }) {
           <YAxis yAxisId="rate" orientation="left" hide />
           <Tooltip
             formatter={(v: unknown, name) =>
-              name === "نرخ فروش (ریال)"
+              v == null ? ["ناموجود", name] : name === "نرخ فروش (ریال)"
                 ? [toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬") + " ریال", name]
                 : [toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬"), name]
             }
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar yAxisId="qty" dataKey="qty" name="مقدار فروش" fill="color-mix(in srgb, var(--navy) 70%, white)" radius={[4, 4, 0, 0]} barSize={22} />
-          <Line yAxisId="rate" dataKey="rate" name="نرخ فروش (ریال)" stroke="var(--gold)" strokeWidth={2} dot={{ r: 3 }} />
+          <Line yAxisId="rate" dataKey="rate" name="نرخ فروش (ریال)" stroke="var(--gold)" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
@@ -484,7 +485,7 @@ function ProdVsSalesChart({ d30 }: { d30: N30Derived }) {
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="month" tick={TICK} />
           <YAxis tick={TICK} tickFormatter={(v) => toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬")} />
-          <Tooltip formatter={(v: unknown, name) => [toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬"), name]} />
+          <Tooltip formatter={(v: unknown, name) => [v == null ? "ناموجود" : toPersianDigits(Number(v).toLocaleString("en-US")).replace(/,/g, "٬"), name]} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar dataKey="production" name="تولید" fill="var(--navy-deep)" radius={[4, 4, 0, 0]} barSize={16} />
           <Bar dataKey="sales" name="فروش" fill="var(--gold)" radius={[4, 4, 0, 0]} barSize={16} />
@@ -515,7 +516,7 @@ export default function FundamentalCharts({
   const n10Comparable = !!n10 && isMillionRialUnit(n10.data.unit) && n10.source.scope === "company";
   const derived = useMemo(() => (n10Comparable && n10 ? deriveN10(n10.data) : null), [n10, n10Comparable]);
   const n30 = fundamentals.n30;
-  const n30d = useMemo(() => (n30 ? deriveN30(n30.data) : null), [n30]);
+  const n30d = useMemo(() => (n30 ? deriveN30(n30.data.map(withKnownMonthlyQuantities)) : null), [n30]);
   const [usd, setUsd] = useState(false);
   const fxEnabled = typeof fxRate === "number" && Number.isFinite(fxRate) && fxRate > 0;
   const usdRate = usd && fxEnabled ? fxRate : null;
@@ -663,7 +664,7 @@ export default function FundamentalCharts({
           <ChartCard
             id="chart-product-rates"
             title={`۵) نرخ و مقدار فروش ماهانه — ${n30d.topProductName}`}
-            subtitle="پرفروش‌ترین محصول بازه · میله: مقدار فروش · خط: نرخ فروش (ریال) — منبع: ن-۳۰ کدال"
+            subtitle="پرفروش‌ترین محصول بازه · میله: مقدار فروش · خط: نرخ فروش (ریال) · ماه فاقد داده روی محور خالی است — منبع: ن-۳۰ کدال"
           >
             <ProductRateChart d30={n30d} />
           </ChartCard>
@@ -678,11 +679,11 @@ export default function FundamentalCharts({
         )}
 
         {/* چارت ۶ — تولید در برابر فروش — از ن-۳۰ واقعی (T5) */}
-        {n30d && n30d.prodVsSales.length > 0 ? (
+        {n30d && n30d.prodVsSales.some(m => m.production !== null && m.sales !== null) ? (
           <ChartCard
             id="chart-prod-vs-sales"
             title="۶) مقدار تولید در برابر مقدار فروش (ماهانه)"
-            subtitle="جمع مقادیر همهٔ محصولات هر ماه — تولید بیشتر از فروش یعنی انبارش، کمتر یعنی تخلیهٔ موجودی — منبع: ن-۳۰ کدال"
+            subtitle="جمع مقادیر کامل و هم‌واحد محصولات هر ماه · ماه فاقد گزارش یا مقدار کامل روی محور خالی است؛ صفر گزارش‌شده حفظ می‌شود — منبع: ن-۳۰ کدال"
           >
             <ProdVsSalesChart d30={n30d} />
           </ChartCard>

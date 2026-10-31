@@ -5,9 +5,10 @@
   "status": "NOT_FOR_MERGE",
   "dataKind": "authored_educational",
   "financialEngineChanged": true,
-  "financialChangeScope": "PR361 rate slots retained; quantity reuses same calendar with null/reason for missing or incomplete quantities; complete sums unchanged",
+  "financialChangeScope": "PR361/23 monthly outputs retained; shared calendar used for Fundamental N30 rate/quantity null slots; annual/quarterly/TTM unchanged",
   "rateCoreCandidate": "66765f75abf206a719b089cca6079d857f10b7c9",
-  "monthlyGapGuard": "RATE_AND_QUANTITY_CALENDAR_ENABLED; FUNDAMENTAL_N30_GUARD_RETAINED",
+  "monthlyGapGuard": "MONTHLY_AND_FUNDAMENTAL_N30_CALENDAR_ENABLED",
+  "fundamentalN30Baseline": "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df",
   "quantityBaseline": "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29",
   "quantityUnitContract": "UNCHANGED; existing sanitizer owns unknown units; no unit inference",
   "browserAudit": "PENDING_CURRENT_VERSION",
@@ -16,13 +17,13 @@
   "historicalEvidence": "P14-EDU-01 screenshots and root audit of snapshot5649582 are historical; neither is evidence for this build.",
   "hashBasis": "SHA256 of UTF8 text with LF newlines (canonical Git text); not raw Windows CRLF bytes",
   "hashes": {
-    "entry.tsx": "094c95a04441ea9f1a23e092700022a843321ed97ffb14f2cb1787f62030e6ae",
-    "chart-data.ts": "9923ef489af3e3486131b7d2a08d78ce9b0094237c57d465591f4281aed4d850",
+    "entry.tsx": "82623f97e91645c27fbf33c7466ee5e93c13561fdf9f342c576d5bf042529e4e",
+    "chart-data.ts": "02930dc008064d2745c54bd6780b684acaaa798b5fc015778a468aabcdb5d6a9",
     "query-state.ts": "16016033b42b9318d30dc5f1dc37ea75ac95a9bfa3a511819be4f7dd7e07bf3a",
-    "validate.ts": "4c821ed2314793760e7e4465c1a900c10732ae8145119e2985cd97ed78036d4d",
-    "build.mjs": "e97f27946c5be62064e3dedc75c0748809cb9fe14cc2d548ae0f6193f8870be3",
+    "validate.ts": "e7501e871648345455f7952d007b8b68145fc4f91b62a353ec2533e1098eebd8",
+    "build.mjs": "aa526bf15addd1c3c8a7c68002abadecc5a4629bd6c466f281dd41337148f89e",
     "charts.input.css": "990860612b0a566a10358e4bd5e678a4d2623b3061e3817ac917ad38fb94ac1d",
-    "prototype.js": "984871a5441b9fb69bf5c8296839646b00138ab818e36f3b90eb7ddece687958",
+    "prototype.js": "1233b1ccdbe1a67ea0f381ac694b61f34afa876b96ae50d2009dfacd8224de5d",
     "charts.css": "2b889abbebcee6926e167d5061a7d0b4184c32d77bdfcba262909f3c88d1deba",
     "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
     "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
@@ -30,13 +31,13 @@
   "reused": {
     "components/symbol/MonthlySalesCharts.tsx": "7cb8382298c475dab9c876355643a23e9ee9bacaa9cc3a8c48fedca5b4addc81",
     "components/symbol/QuarterlyCharts.tsx": "527c0b485c7569b90f5fe78c12bae99305d7759a1b4687699c36d23f7424c8ae",
-    "components/symbol/FundamentalCharts.tsx": "919fd8d6fa9f41a2ed380a337d0ec4613b71443fb7e89b5ebf617f516f6defae",
+    "components/symbol/FundamentalCharts.tsx": "1f6baddd832baf17e37a0a8dac03e66efe632ff33f948f7ec2ad02244122c961",
     "components/terminal/HistoryChart.tsx": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3"
   },
   "financialModules": {
-    "lib/core/monthlyReport.ts": "a9746c0b5d772714141f083fba509b4712f0a44f5fe51a981f83c10802e607eb",
+    "lib/core/monthlyReport.ts": "b7871a9a8fc4aa2587ecc2e823a505d8a8d34ab76c83f4c10690f91bf4363cfe",
     "lib/core/quarterly.ts": "8388f22c693cc0dd1399ac23cdca591a40f989320beb837183468c634a6e4742",
-    "lib/fundamental/calc.ts": "6a7ef4f19a5e78ce6257baf67340ae935bf199091315a50b6bceff5ad48edd23"
+    "lib/fundamental/calc.ts": "c9dae23ecfa51e57158b72a6d7dcbff297cdb6fbf42adb3d52b6567e036fd5d1"
   },
   "locked": {
     "react": "18.3.1",
@@ -47,6 +48,6 @@
     "tailwindcss": "3.4.19",
     "postcss": "8.5.28"
   },
-  "browserInputCount": 2090,
-  "bundleBytes": 839719
+  "browserInputCount": 2091,
+  "bundleBytes": 841430
 }
