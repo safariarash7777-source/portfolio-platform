@@ -5,34 +5,36 @@
   "status": "NOT_FOR_MERGE",
   "dataKind": "authored_educational",
   "financialEngineChanged": true,
-  "financialChangeScope": "PR361 null calendar slots in rateSeries only",
+  "financialChangeScope": "PR361 rate slots retained; quantity reuses same calendar with null/reason for missing or incomplete quantities; complete sums unchanged",
   "rateCoreCandidate": "66765f75abf206a719b089cca6079d857f10b7c9",
-  "monthlyGapGuard": "RATE_ENABLED_AFTER_PREVIEW_052e790_VERIFIED; QUANTITY_AND_FUNDAMENTAL_N30_GUARDS_RETAINED",
+  "monthlyGapGuard": "RATE_AND_QUANTITY_CALENDAR_ENABLED; FUNDAMENTAL_N30_GUARD_RETAINED",
+  "quantityBaseline": "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29",
+  "quantityUnitContract": "UNCHANGED; existing sanitizer owns unknown units; no unit inference",
   "browserAudit": "PENDING_CURRENT_VERSION",
   "interactionAcceptance": "NOT_RUN",
   "visualAcceptance": "NOT_RUN",
   "historicalEvidence": "P14-EDU-01 screenshots and root audit of snapshot5649582 are historical; neither is evidence for this build.",
   "hashBasis": "SHA256 of UTF8 text with LF newlines (canonical Git text); not raw Windows CRLF bytes",
   "hashes": {
-    "entry.tsx": "ddc7321e84bd49de95a16ea6e022744e244396a48503ffa262601865bbc111ac",
+    "entry.tsx": "094c95a04441ea9f1a23e092700022a843321ed97ffb14f2cb1787f62030e6ae",
     "chart-data.ts": "9923ef489af3e3486131b7d2a08d78ce9b0094237c57d465591f4281aed4d850",
     "query-state.ts": "16016033b42b9318d30dc5f1dc37ea75ac95a9bfa3a511819be4f7dd7e07bf3a",
-    "validate.ts": "0b3c31b1424b1606813c2193e7303ab515fd50d592deb51121875dc657889c29",
-    "build.mjs": "2984180df000237197551c9dbc5f7b833c0479052947e35b86b7dbe4037750bd",
-    "charts.input.css": "a7756e005d83e22ebc3727ef6bd4d569a65d4336e90a639bd097f2b2805ee19d",
-    "prototype.js": "1c1e2f19dc182c0a66cb17ab0a6bbb1e7d67b7100f7059245a362c3d7b23877d",
-    "charts.css": "5817a63d9f96d1987169fa187274b5c2136cda8d34ac98807b645e597d2042a5",
+    "validate.ts": "4c821ed2314793760e7e4465c1a900c10732ae8145119e2985cd97ed78036d4d",
+    "build.mjs": "e97f27946c5be62064e3dedc75c0748809cb9fe14cc2d548ae0f6193f8870be3",
+    "charts.input.css": "990860612b0a566a10358e4bd5e678a4d2623b3061e3817ac917ad38fb94ac1d",
+    "prototype.js": "984871a5441b9fb69bf5c8296839646b00138ab818e36f3b90eb7ddece687958",
+    "charts.css": "2b889abbebcee6926e167d5061a7d0b4184c32d77bdfcba262909f3c88d1deba",
     "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
     "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
   },
   "reused": {
-    "components/symbol/MonthlySalesCharts.tsx": "f118cf60372c20de929d74f1eccedbac2a6314a9b0fc851b6539948c9256ce3a",
+    "components/symbol/MonthlySalesCharts.tsx": "7cb8382298c475dab9c876355643a23e9ee9bacaa9cc3a8c48fedca5b4addc81",
     "components/symbol/QuarterlyCharts.tsx": "527c0b485c7569b90f5fe78c12bae99305d7759a1b4687699c36d23f7424c8ae",
     "components/symbol/FundamentalCharts.tsx": "919fd8d6fa9f41a2ed380a337d0ec4613b71443fb7e89b5ebf617f516f6defae",
     "components/terminal/HistoryChart.tsx": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3"
   },
   "financialModules": {
-    "lib/core/monthlyReport.ts": "3fe329e703810a954976bba0eb7e3cc131e9481a51d49a5af8d7d2835bfbc9ab",
+    "lib/core/monthlyReport.ts": "a9746c0b5d772714141f083fba509b4712f0a44f5fe51a981f83c10802e607eb",
     "lib/core/quarterly.ts": "8388f22c693cc0dd1399ac23cdca591a40f989320beb837183468c634a6e4742",
     "lib/fundamental/calc.ts": "6a7ef4f19a5e78ce6257baf67340ae935bf199091315a50b6bceff5ad48edd23"
   },
@@ -46,5 +48,5 @@
     "postcss": "8.5.28"
   },
   "browserInputCount": 2090,
-  "bundleBytes": 838906
+  "bundleBytes": 839719
 }

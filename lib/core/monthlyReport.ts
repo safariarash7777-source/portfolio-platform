@@ -49,8 +49,9 @@ export interface MixSlice {
 export interface ProdSalesPoint {
   monthKey: string;
   monthLabel: string;
-  production: number;
-  sales: number;
+  production: number | null;
+  sales: number | null;
+  unavailableReason: "missing-report" | "missing-product" | "incomplete-quantity" | null;
 }
 
 export interface MonthlySales {
@@ -75,7 +76,7 @@ export interface MonthlySales {
   latestDomesticAmount: number | null;
   latestExportAmount: number | null;
   latestExportSharePct: number | null;
-  /** تولید در برابر فروش محصول اصلی (فقط ماه‌های دارای هر دو مقدار). */
+  /** تولید/فروش محصول اصلی روی محور تقویمی؛ دادهٔ ناقص null است. */
   mainProductName: string | null;
   prodVsSales: ProdSalesPoint[];
   /** تعداد گزارش‌های یکتای استفاده‌شده. */
@@ -262,7 +263,7 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     }
   }
   const topCombos = [...comboTotals.values()].sort((a, b) => b.amount - a.amount).slice(0, 3);
-  // Presentation slots only: never invent a report or change a reported rate.
+  // Shared presentation slots only: never invent a report or change a reported rate.
   const rateMonthKeys: string[] = [];
   const monthIndex = (key: string) => Number(key.slice(0, 4)) * 12 + Number(key.slice(5, 7)) - 1;
   const firstRateMonth = monthIndex(sortedKeys[0]);
@@ -328,24 +329,24 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
   const mainProductName = [...prodTotals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
   const prodVsSales: ProdSalesPoint[] = [];
   if (mainProductName) {
-    for (const key of sortedKeys) {
-      const r = byMonth.get(key)!;
-      let production = 0, sales = 0, seen = false;
-      for (const p of r.products) {
-        if (p.product_name !== mainProductName) continue;
-        if (p.production_qty == null || p.sales_qty == null) continue;
-        production += p.production_qty;
-        sales += p.sales_qty;
-        seen = true;
-      }
-      if (seen) {
-        prodVsSales.push({
-          monthKey: key,
-          monthLabel: JALALI_MONTHS[Number(key.slice(5, 7)) - 1],
-          production,
-          sales,
-        });
-      }
+    for (const key of rateMonthKeys) {
+      const r = byMonth.get(key);
+      const rows = r?.products.filter(p => p.product_name === mainProductName) ?? [];
+      const unavailableReason: ProdSalesPoint["unavailableReason"] = !r
+        ? "missing-report"
+        : rows.length === 0
+          ? "missing-product"
+          : rows.some(p => p.production_qty == null || p.sales_qty == null
+            || !Number.isFinite(p.production_qty) || !Number.isFinite(p.sales_qty))
+            ? "incomplete-quantity"
+            : null;
+      prodVsSales.push({
+        monthKey: key,
+        monthLabel: JALALI_MONTHS[Number(key.slice(5, 7)) - 1],
+        production: unavailableReason ? null : rows.reduce((sum, p) => sum + p.production_qty!, 0),
+        sales: unavailableReason ? null : rows.reduce((sum, p) => sum + p.sales_qty!, 0),
+        unavailableReason,
+      });
     }
   }
 
@@ -433,7 +434,7 @@ export function narrativeMix(m: MonthlySales): string | null {
 /** روایت چارت ۵: انبارش/تخلیهٔ موجودی محصول اصلی در آخرین ماه. */
 export function narrativeProdVsSales(m: MonthlySales): string | null {
   const last = m.prodVsSales.length > 0 ? m.prodVsSales[m.prodVsSales.length - 1] : null;
-  if (!last || !m.mainProductName || last.sales === 0) return null;
+  if (!last || !m.mainProductName || last.production === null || last.sales === null || last.sales === 0) return null;
   const ratio = pct(last.production - last.sales, last.sales);
   if (ratio === null || ratio === 0) return null;
   return ratio > 0
