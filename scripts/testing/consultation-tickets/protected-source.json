@@ -397,6 +397,23 @@
     "componentsTree": {
       "oldBlob": "b0855f82807faa1d3ec475e0558451778644dada",
       "newBlob": "0a36e45d8fb17b6fb640a04d9e44d7476ebb92e3"
+    },
+    "remoteRegistration": {
+      "baseCandidate": "be573950d0d8d7d4b91043b180e6f86e73b94fee",
+      "files": {
+        "vercel.json": {
+          "oldBlob": "4b7da304e8fe226c00d51901123c643e25e2ba59",
+          "newBlob": "de2b621b9fc6e38485b806feb38272400caac5ce"
+        },
+        "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
+          "oldBlob": "f2724643dc72861a3021b23279b817fe0d5698be",
+          "newBlob": "7a67f7013193c520fe1483187988b3a739596805"
+        },
+        "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md": {
+          "oldBlob": "dc7e2fcc818fd3d1c88f3df1de7b8817c4c07ddb",
+          "newBlob": "17bbcb1a0f164774c38bb74222439fe20339b1df"
+        }
+      }
     }
   }
 }

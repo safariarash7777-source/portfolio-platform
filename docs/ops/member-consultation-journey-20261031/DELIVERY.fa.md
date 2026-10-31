@@ -81,3 +81,12 @@ helper هنوز caller محصول، DTO یا UI ندارد و writer را فعا
 - شاهد آزمون: ۱۵ آزمون قبلی و ۱۰ case تازه در ticket-storage-ui.test.tsx؛ JWT/header، self-only، count ناقص/نامعلوم/خالی کامل، سطر نامعتبر، استقلال تاریخچه/draft، deadline با Auth غیرقابل abort، race هویت/GET و unmount، escape منشأ و سازگاری props قدیمی. wrapperهای RTL با عرض ۳۹۰ و ۱۴۴۰ صرفاً static markup هستند؛ اندازه‌گیری چیدمان و browser acceptance نیستند. گزارش خام نهایی و hashها در بستهٔ شاهد بیرون مخزن ارائه می‌شوند.
 - حدود وضعیت: طراحی و کد و آزمون محلی قابل بررسی؛ هنوز ادغام، CI این candidate، انتشار، Preview، رفتار روی مقصد واقعی و پذیرش انسانی انجام نشده است. هیچ SQL/DTO/API/prepare/package/workflow/fixture، provider، mapping اقتصادی یا runtime جدید تغییر نکرده است.
 - هزینه: هیچ مدل، خرید یا منبع زیرساخت تازه اجرا نشده؛ مبلغ مصرف محلی اندازه‌گیری نشده است. اجرای محلی صفر بودن کل هزینهٔ زیرساخت/داده/مدل پروژه را اثبات نمی‌کند.
+
+
+## الحاقیهٔ ثبت remote و CI عادی برای consumer تشخیصی
+
+- نسخهٔ محلی پذیرفته‌شده: be573950d0d8d7d4b91043b180e6f86e73b94fee؛ این پذیرش فقط شش فایل و شاهد محلی است، نه SDK/ACL/CSS یا حق خدمت واقعی.
+- تخصیص هماهنگ‌کننده: فقط vercel.json یک guard دقیق برای codex/p01-p03-legacy-diagnostic-ui-20261031=false، امتداد دقیق محافظ/manifest و همین الحاقیه. سه guard و cron قبلی حفظ؛ کد سه consumer/test، helper، lib/app/SQL/package/workflow و همهٔ pinهای قبلی ثابت.
+- پس از guard/scans/diff و تطبیق byteها، ordinary push همان شاخه و Draft stacked روی PR377 با base303 مجاز است. CI عادی و hook خودکار موجود مجازند؛ rerun دستی، force/merge، تغییر تنظیم typecheck/cache/workflow یا انتشار مجاز نیست.
+- شاهد پایان ثبت در رسید بیرون مخزن: head/tree، raw source و patch، checksum، CI واقعی و commit/tree واقعی checkout؛ گزارش local-only به CI یا پذیرش runtime تبدیل نمی‌شود. full typecheck/build در runner تازه با همان گیت معمول اجرا می‌شود.
+- runtime UI/SSR/live query/Preview/env/service grant/مدل/SQL/main، مقصد واقعی و پذیرش آرش همچنان در مالکیت هماهنگ‌کننده است. مبلغ CI تا receipt واقعی نامعلوم می‌ماند؛ هزینهٔ زیرساخت، داده و مدل جدا گزارش می‌شود.
