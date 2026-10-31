@@ -1,0 +1,104 @@
+{
+  "head": "0db38ff63d38b2ca98af5e29f5fe1345f58a4c45",
+  "base": "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df",
+  "deployment": {
+    "id": "dpl_4FhukUYKKhQCW5z7HPTMkaB1FXds",
+    "state": "READY",
+    "target": null,
+    "url": "https://portfolio-platform-mwr8pe6xy-safariarash7777-4463s-projects.vercel.app"
+  },
+  "ci": {
+    "run": 41155612849,
+    "jobs": [
+      {
+        "id": 124401646982,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124401647140,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124401647147,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124401647274,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124402831469,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "checkout": {
+      "sha": "b9c24d0316c35137563bde26a6e731249612ea66",
+      "tree": "052c72c6b03957557d0de6ee89e047e43804bd1f",
+      "parents": [
+        "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df",
+        "0db38ff63d38b2ca98af5e29f5fe1345f58a4c45"
+      ]
+    },
+    "headTree": "052c72c6b03957557d0de6ee89e047e43804bd1f"
+  },
+  "rootReview": "functional patches to FundamentalCharts, monthlyReport calendar, deriveN30 and chart-data adapter; source twelve-file list; actual UI below; no repeat of owner108+108/520+520 or all55 tests",
+  "ui": {
+    "layouts": [
+      "decision",
+      "dossier"
+    ],
+    "fy1405": {
+      "scenario": "month-gap",
+      "scope": "whole company, productall/marketall",
+      "actualReports": 5,
+      "mixReportedMonths": 5,
+      "rateBars": 5,
+      "rateSvgSubpaths": 2,
+      "quantityBars": 10,
+      "rawProductRows": 15,
+      "missingMonth": "Tir blank slot; no report created",
+      "source": "same full report/selected product, known educational tons/rial-per-ton/million-rial, official IDs/URL/clocksnull"
+    },
+    "fy1404": {
+      "scenario": "month-gap",
+      "overviewSelection": "cold sheet/export",
+      "fundamentalScope": "whole company explicitly stated; year1404 applied",
+      "actualReports": 6,
+      "rateBars": 6,
+      "rateSvgSubpaths": 1,
+      "quantityBars": 12,
+      "rawProductRows": 18
+    },
+    "switch": "A→B→A retains fundamental/state/month-gap/fy1405/all/all/range8/price12",
+    "preserved": [
+      "annual sales/profit/margins",
+      "quarterly profit/margins/TTM",
+      "dollar view remains disabled span with missing fx_rates title"
+    ],
+    "nestedSourceEscape": "2→1 after settled wait; annual parent stays",
+    "mobile": {
+      "viewport": 390,
+      "client": 375,
+      "scroll": 375,
+      "rateBars": 5,
+      "quantityBars": 10,
+      "sourcePanelWidth": 366.4,
+      "sourcePanelClient": 350,
+      "sourcePanelScroll": 350,
+      "sourceCloseFocus": "same source row"
+    },
+    "viewportReset": true,
+    "reviewTabMarkedDeliverable": true
+  },
+  "limits": [
+    "unchanged EDU02data; no official report, real qty-unit/source-clock/price acceptance or main release",
+    "zero, invalid-month, unitunknown and incomplete points are code/owner-test evidence, not new runtime fixtures",
+    "price gap, rate market-basis clarity, ASCII quarterly axes, full accessibility and Arash choice remain open",
+    "bounded N30-gap Preview acceptance only, not complete P07/P14"
+  ]
+}

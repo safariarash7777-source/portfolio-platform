@@ -1,0 +1,36 @@
+{
+  "source": "ee70501f80edf16122e83dede628e402ac9ac931",
+  "pr": 369,
+  "status": "BLOCKED_NATIVE_ENTRY_LENGTH_MISMATCH",
+  "evidence": "root exact git show bytes equal staged immutable binding, local Get-Item and B independent observation",
+  "binding": {
+    "path": "docs/ops/p15-webpack-cache-20261030/RELEASE-BINDING-20261031.json",
+    "sha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
+    "actualBytes": 2351,
+    "candidateRequiredBytes": 2394,
+    "hashUnchanged": true,
+    "artifactNormalized": false
+  },
+  "effect": "Assert-V2Entries rejects real native metadata entry14; synthetic/CI PASS does not establish native readiness",
+  "scope": "root independently read code and bytes; no native Capture/Verify, key creation, backup transfer, SQL, container or primary deployment",
+  "nativeMetadataAttempt1": "root loader lost parameters; failed before SSH; preserved outside repository",
+  "nativeMetadataAttempt2": "root loader returned oversized tool output, no result file and no remaining runner/SSH process observed; SSH execution/result not proven either way; B reconciling offline",
+  "ownerTests": {
+    "v2Guards": 29,
+    "legacyRegression": 16,
+    "rootReran": false
+  },
+  "ci": {
+    "run": 41156288704,
+    "allFiveSuccessRootRead": true,
+    "actualCoreCheckout": "c55dfab0fd1c641da02fac8e6777cdf21e1914ae",
+    "parents": [
+      "dde93258dd4ea2e350d930cc0029c893a60ac741",
+      "ee70501f80edf16122e83dede628e402ac9ac931"
+    ],
+    "wholeMergeTreeEqualsHead": false,
+    "reason": "base includes newer root documentation; do not claim head/tree equivalence"
+  },
+  "advisorReview": "static scoped delta review only, not native execution, exhaustive pin-byte audit or test rerun; root reported this defect back",
+  "next": "B preserves ee705 and corrects candidate length to exact immutable2351, adds real-binding boundary test, runs existing CI; only metadata-only native probe after correct guard, no Capture/transfer"
+}
