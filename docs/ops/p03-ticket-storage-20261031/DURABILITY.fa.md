@@ -349,3 +349,48 @@ COMMIT;
 اگر private kernel کاملاً غایب است، catalogdiff جدیدها MISSING_EXPECTED_BEFORE_INSTALL و baseline هنوز NEEDS_EXACT_DIFF است؛ نصب آماده اعلام نمی‌شود. اگر schema یا بخشی از wrapper/type/table جدید وجود دارد، partial collision به معنای STOP_RECONCILE است، نه دستور ادامهٔ نیمهٔ دوم. تغییر RLS/owner/grants برای عبور از تفاوت، نصب roster/replies، replay مالی/پژوهش یا fixture، اجرای candidate، و تغییر Capturev2/legacy apply هیچ‌کدام بخشی از این تحویل نیست. root با همین نقشه می‌تواند گپ فنی baseline/caller را بررسی کند؛ تصمیم تازه‌ای از آرش برای صرفِ catalogdiff لازم فرض نشده است.
 
 مرجع semantics privilege/definer و RLS، مستندات رسمی Supabase است: https://supabase.com/docs/guides/database/functions و https://supabase.com/docs/guides/database/postgres/row-level-security . جزئیات acldefault/has_* در https://www.postgresql.org/docs/16/functions-info.html ، FORCE/BYPASS در https://www.postgresql.org/docs/16/ddl-rowsecurity.html و prosrc در https://www.postgresql.org/docs/16/catalog-pg-proc.html مستقلاً بررسی شد؛ نسخهٔ واقعی مقصد باید از catalog خوانده شود. این منابع جای readback خصوصی catalog یا پذیرش روی مقصد واقعی را نمی‌گیرند.
+
+## مقایسهٔ فایل catalog واقعی root؛ بدون اجرای SQL توسط B
+
+root نه SELECT catalog و snapshot/effectivePrivilege را در همان REPEATABLE READ READ ONLY روی source واقعی اجرا و فایل خروجی را تحویل داد. B فقط فایل محلی را خواند و با blob ثابت Git c4 مقایسه کرد؛ اتصال یا اجرای تازهٔ SQL توسط B انجام نشد. پیشنهاد0702، بستهٔ انتشار قبلی، JSON خام root و diagnostic اولیهٔ او تاریخی و دست‌نخورده می‌مانند.
+
+ورودی: outputs/v04-program-20261030/p03-baseline-catalog-result-20261031.json با SHA256=324baa92392f69b5fa8c483fe0864d99b4386276ff93e1671f57de695bfb178e؛ sourceId=9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c و querySHA256=dd4fc43c375dcbeeeaf44804a78f7eb5d503eee68b37e1a99e3d93f6d8d24a7d. نسخه PG17.6 با server_version_num=170006، encoding=UTF8، read_only=on و snapshot25961:25961: است. زمان receipt در ۳۱ اکتبر۲۰۲۶ ساعت۰۴:۳۵:۵۶ تهران است؛ snapshot catalog در01:05:56.145447Z و receipt در01:05:56.357142Z صادر شده‌اند. snapshot فقط همین catalog است، نه backup یا پذیرش رفتار برنامه.
+
+خروجی مقایسهٔ محلی: outputs/member-consultation-journey-20261031/p03-baseline-dependency-field-diff-20261031.json با SHA256=a7da94d3658c5d6d1b383500ed722a4bd9728bc11b4bfef34af5e7bee369eefa. این receipt هش ورودی‌ها، declaration/prosrc و metadata، ستون/قید/index/trigger و مجوز مشاهده‌شده را جدا نگه می‌دارد. اسکریپت صرفاً offline فایل و Git را می‌خواند؛ DB driver، parser/server PostgreSQL، اجرای function، آزمون مجدد یا DDL ندارد. استخراج lexical فقط برای declarationهای محدود همین source است، نه ابزار اثبات هم‌ارزی هر SQL.
+
+### بدنهٔ خام و خطای diagnostic قبلی
+
+از۱۹ تابع baseline، سه prosrc بایت‌به‌بایت برابرند: reject_mutation، public.command_consultation و public.load_consultation. شانزده prosrc دیگر **DIFFERENT_BODY_BYTES** می‌مانند؛ هر شانزده با تبدیل صرف CRLF→LF در کپی حافظهٔ diagnostic برابر source هستند و bareCR همگی صفر است. برای هرکدام SHA256 خام هر دو طرف و تعداد CRLF ثبت شده است؛ هیچ trim/بازنویسی منبع یا بدنهٔ فعال انجام نشده است. این تشخیص مجوز نرمال‌کردن SQL، کاهش guard بایتی یا اعلام overallEXACT نیست.
+
+در diagnostic اولیهٔ root، proconfig برای research_current فقط با expected search_path مقایسه شده بود و lock_timeout=3s اضافی به‌نظر رسید. declaration واقعی git c4 در sql/consultation_workflow.sql:177 و reference محفوظ0702 هر دو صریحاً SET search_path='' SET lock_timeout='3s' دارند. observed نیز دقیقاً ['search_path=""','lock_timeout=3s'] است. در مقایسهٔ جدید تمام SETهای declaration استخراج و با کل proconfig جفت شدند؛ اختلاف واقعی تنظیمات مشاهده نشد. root نیز false-positive ابزار اولیه را تأیید کرد؛ فایل قبلی حفظ می‌شود و هیچ گیت نصب با آن عبور نکرده است.
+
+### ماتریس فیلدهای مقایسه‌شده
+
+| دامنه | شمار و روش مقایسه | نتیجه و حد |
+| --- | --- | --- |
+| ABI/metadata تمام۱۹ تابع baseline |۲۶۶ فیلد: identity args، نام args، تعداد/default expression، result، language، kind، definer، volatility، strict، leakproof، parallel، retset و کل proconfig؛ reference با خود blob Git دوباره تطبیق شد | همهٔ فیلدهای این scope برابر؛ این برابری شامل شانزده body خام نمی‌شود |
+| نه جدول consultation |۴۶ ستون کامل با نام/ordinal/type/nullability/default/identity/generated/columnACL؛ rowtype و relkind و ENABLE/FORCE نیز مقایسه شدند | اختلاف فیلد یا ستون اضافی مشاهده نشد؛ هر نه جدول r، مالک مشاهده‌شده postgres و FORCE RLS دارند |
+| constraintهای baseline |۳۴ قید؛ PK/FK/UNIQUE با کلید و جدول مرجع، شش CHECK با mapping معناییِ صریح source→canonical catalog و flags validated/deferrable/deferred | همه منطبق با scope؛ CHECKها raw SQL byte equality یا نتیجهٔ parser ادعا نشده‌اند. نام‌های خودکار constraint چون در source تصریح نشده‌اند observed نگه داشته شدند، نه جعل expected نام |
+| index/trigger/policy baseline |۱۶ index با definition/ready/valid؛۱۶ trigger با نام/function/enabled/event/row-or-statement؛ نبود policy و نبود index/trigger غیرمنتظره | همه مطابق تعریف source؛ advisors طبق source trigger immutable ندارد؛ بقیه هریک دو trigger دارند |
+| parent مالی در شش جدول موجود |۶۶ ستون کاملِ source حاصل phase32+recovery/cash-flow/goals، ازجمله qty nullable و هفت ستون افزودهٔ recovery؛۱۸ قید کلیدی PK/FK/UNIQUE و SELECT مالک parent | فیلدهای مقایسه‌شده بدون اختلاف؛ جدول‌های مالی و ستون title/valuation موجودند. CHECKها/policyهای نویسندهٔ مالی در خروجی حفظ شدند ولی این تحویل ممیزی مجدد کل نویسندگان مالی نیست |
+| auth.users(id) | uuid، NOTNULL، نبود generated/identity، PK(id) معتبر و raw ACL موجود | FK target از نظر این فیلدها معتبر است؛ صرفِ catalog، caller/JWT یا اختیار عملیاتی installer تازه را اثبات نمی‌کند |
+| builtinها | هر هفت signature پیشنهادی snapshot موجود است | وجود signature ثبت شده؛ اجرای digest/UUID/lock یا رفتار runtime روی مقصد انجام نشده است |
+| objectهای تیکت/prepared | namespace خصوصی، چهار جدول و۲۰ تابع candidate غایب‌اند | MISSING_EXPECTED_BEFORE_INSTALL؛ وجود baseline دلیل نصب خودکار نیست و جزئیات candidate روی مقصد هنوز قابل readback نیست |
+
+در این ماتریس متفاوت‌بودن fieldهای انتخاب‌شده صفر و object غیرمنتظرهٔ baseline صفر است؛ این عدد تعریف‌شده در receipt با وضعیت byte-different بدنه‌ها، scope پوشش‌داده‌نشده و پذیرش عملیاتی جمع زده یا جایگزین نمی‌شود. schema واقعی Auth با mock CI مقایسه نشده است. auth.uid موجود SQL/STABLE/INVOKER با UUID result است و تعریفش sub را از claim setting session می‌خواند؛ هش آن ثبت شده ولی اصالت release Auth و معتبر بودن session/caller واقعی گیت جداست.
+
+### مالک و ACL موجود، و پوششِ محدود receipt
+
+هر دو wrapper اصلی موجود مالک postgres دارند: rolsuper=false و rolbypassrls=true. تمام baseline helperها SECURITY INVOKER و مالک postgres هستند. در capture، authenticated روی دو wrapper عمومی EXECUTE دارد و anon/service_role ندارند؛ هر سه app role روی۱۷ helper خصوصی EXECUTE و USAGE schema خصوصی ندارند. postgres روی همان helperها execute/schemaUsage دارد. اینها فیلدهای واقعی catalog هستند؛ به مالک یا caller آیندهٔ candidate تعمیم نمی‌یابند.
+
+raw ACL هر نه جدول baseline فقط postgres=arwdDxtm/postgres است؛ ACL تک‌ستون‌ها null و policyها null‌اند. در نقش‌های anon/authenticated/service_role، SELECT/INSERT/UPDATE/DELETE و شاخص allColumnsSelect روی هر نه جدول false است؛ postgres true و BYPASSRLS خودش true است. allColumnsSelect=false به‌تنهایی «هیچ ستون قابل خواندن نیست» معنی نمی‌دهد؛ در این بررسی raw columnACL و tableACL و نبود عضویت برای سه app role هم جدا دیده شد. ۱۱۸ ردیف privilege-policy مقایسه شده است:۷۶ تابع،۳۶ جدول baseline و۶ ردیف SELECT مالک شش جدول مالی.۱۸ ردیف privilege دیگر مالی، رفتار موجود endpointهای مالی‌اند و این تحویل آنها را به حق تیکت تبدیل نمی‌کند.
+
+raw schemaACL برای consultation_private فقط postgres=UC است؛ public برای PUBLIC/appRoleها USAGE و برای pg_database_owner مالکیت/CREATE را نشان می‌دهد، نه CREATE همگانی. auth schema برای postgres USAGE دارد و raw ACL تابع auth.uid دارای PUBLIC EXECUTE است؛ raw ACL auth.users نیز REFERENCES برای postgres نشان می‌دهد. بااین‌حال capture، ردیف effective has_* مربوط به auth.uid/auth.users یا sequence و CREATE نصب‌کنندهٔ آینده را ندارد؛ اینها **UNOBSERVED_EFFECTIVE_CAPTURE** می‌مانند و «کلACLمقصد exact» اعلام نمی‌شود. sequence مورد استفادهٔ upstream writer با خواندن event_no توسط state یکی نیست؛ مصرف sequence در writer اصلی گیت جدا را حفظ می‌کند.
+
+defaultACL موجودِ creator postgres در public برای function/table/sequence به سه appRole grant اولیه می‌دهد، اما ACL واقعی objectهای baseline بعد REVOKE محدود است. بنابراین defaultACL را با ACL فعلی یکی نگیرید؛ wrapper جدید باید پس از هر نصب مجاز ACL واقعی خودش را بازخوانی کند. در pg_default_acl.defaclobjtype مقدار **S بزرگ به معنی sequence** است؛ این واژگان با آرگومان تابع acldefault فرق دارد که **s کوچک برای sequence** و S بزرگ برای foreign server می‌خواهد. این تمایز از مستندات رسمی PG17 تأیید شد: https://www.postgresql.org/docs/17/catalog-pg-default-acl.html . هیچ defaultACL یا grant تغییر نکرد.
+
+### گیت باز و تحویل بعدی
+
+این تحویل مقایسهٔ فایل واقعی با source است؛ overallEXACT، INSTALL_READY یا تأیید نصب اعلام نمی‌شود. sourceID و snapshot و شمارش از receipt root می‌آیند؛ B اتصال تازه به DB نساخته است. فیلدهای ABI/نوع/ستون/قید baseline اکنون شاهد مقایسه دارند و proconfig false-positive رفع تشخیصی شده؛ شانزده اختلاف raw body با diagnostic CRLF و محدودیت privilege capture آشکار می‌مانند.
+
+مالک ادامه root است: پذیرش محدودِ این matrix، تصمیم فنی دربارهٔ guard بایتی baseline بدون تغییر خام، پوشش خواندنی لازم Auth/sequence/installer context، اتصال Capturev2/legacy apply و برنامهٔ reader/rollback مقید به مقصد. body/JSON واقعی parent، data quality/null/date، Auth/RPC caller، حق واقعی خدمت و پذیرش آرش از catalog نتیجه نمی‌شوند. هیچ SQL، GRANT، آزمون تکراری، branch code، نصب، تغییر حق، پاک‌سازی یا replay برای این پیوست انجام نشده است.
