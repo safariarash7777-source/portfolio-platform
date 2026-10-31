@@ -60,7 +60,7 @@ function Assert-V2Entries($Entries,[string]$Mode) {
   for($i=0;$i -lt 16;$i++){
     $e=$Entries[$i]
     if($e.name -cne $names[$i] -or ($e.length -isnot [long] -and $e.length -isnot [int]) -or $e.length -lt 0 -or $e.sha256 -cnotmatch '^[a-f0-9]{64}$'){throw 'v2 entry'}
-    if($Mode -ceq 'native-ssh-v2' -and (($p.hashes[$i] -and $e.sha256 -cne $p.hashes[$i]) -or ($i -eq 0 -and $e.length -ne 2406546295) -or ($i -eq 14 -and $e.length -ne 2394))){throw 'v2 native pin'}
+    if($Mode -ceq 'native-ssh-v2' -and (($p.hashes[$i] -and $e.sha256 -cne $p.hashes[$i]) -or ($i -eq 0 -and $e.length -ne 2406546295) -or ($i -eq 14 -and $e.length -ne 2351))){throw 'v2 native pin'}
     if($i -ne 0 -and $e.length -gt 524288){throw 'v2 small size'}
   }
   if($Mode -cnotin @('native-ssh-v2','offline-synthetic-v2')){throw 'v2 mode'}

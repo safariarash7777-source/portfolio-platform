@@ -54,7 +54,7 @@ This profile does not connect the legacy installer or activate a service right.
 Code normalization is limited to the reviewed executable Python gate/consumer.
 **Binding, receipts, dumps and SQL payloads are never normalized.** The current
 Windows checkout's CRLF binding hashes to `c4ac2888...`, while the frozen Git LF
-binding hashes to `7819e0fb...` (2394 bytes). Native preflight therefore rejects
+binding hashes to `7819e0fb...` (2351 bytes). Native preflight therefore rejects
 that checkout's changed raw binding; the operator must separately stage/review
 the exact frozen bytes before any live invocation. This candidate does not
 rewrite the binding or loosen its pin.
@@ -66,10 +66,18 @@ nativeGateExecuted is false. Fixtures cannot override production pins or select
 SSH. `offline-tests.ps1` independently checks unchanged version 1 behavior. No
 live Capture/SSH/backup transfer/restore/DDL/env/deploy or new credential is
 authorized or executed by these tests. Root owns live review and fresh preflight.
-The final v2 suite has 29 checks, including JSON-parsed UTC DateTime, an explicit
+The earlier v2 suite had 29 checks, including JSON-parsed UTC DateTime, an explicit
 +03:30 DateTimeOffset and rejection of an unspecified timezone. Gate freshness
 uses the original instant rather than a culture-dependent local string; it does
 not rewrite the archived attestation or change the frozen gate.
+Root's exact-byte staging exposed a separate native entry length defect in
+ee70501: it expected 2394 bytes for the unchanged binding whose actual Git bytes
+are 2351. That old guard failure is retained; no native metadata was run with
+it. The corrected guard uses 2351 and the same hash7819. Five additional checks
+read the exact binding from binary Git stdout (not the CRLF working-tree file),
+pass it through the native entry validator and reject old2394/length/hash drift.
+These tests require an existing Git checkout; no synthetic pin substitutes for
+the exact binding. Metadata/Capture/Verify runtime acceptance remains separate.
 
 This directory owns the wrapper, .NET crypto helper, synthetic tests and sanitized receipts. The initial implementation's evidence remains in `offline-receipt-20261020.json`. The 23 October revision pins the bounded recovery correction and allows 1800 seconds per file for the measured slow native transfer; connection and metadata deadlines are unchanged. Its 16-check offline suite passes. Before live Capture, the coordinator verifies exact code hashes and release preflight under existing authorization. `.gitattributes` preserves tested source bytes; synthetic fixtures, keys and ciphertext are excluded from Git.
 

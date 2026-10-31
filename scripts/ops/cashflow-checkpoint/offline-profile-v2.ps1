@@ -10,6 +10,20 @@ $fixture=Join-Path $run 'source';$good=Join-Path $run 'good'
 function Assert($Value,[string]$Name){if(-not $Value){throw $Name};$results.Add(@{name=$Name;status='PASS'})}
 function Rejected([scriptblock]$Code,[string]$Name){$rejected=$false;try{& $Code}catch{$rejected=$true};Assert $rejected $Name}
 function Clone($Value){return ($Value|ConvertTo-Json -Depth 30 -Compress|ConvertFrom-Json)}
+function ExactGitBinding {
+  # Binary Git stdout, never the CRLF working-tree file or a text pipeline.
+  $psi=[Diagnostics.ProcessStartInfo]::new('git');$psi.UseShellExecute=$false;$psi.CreateNoWindow=$true;$psi.RedirectStandardOutput=$true;$psi.RedirectStandardError=$true
+  $psi.WorkingDirectory=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
+  $psi.ArgumentList.Add('show');$psi.ArgumentList.Add('HEAD:docs/ops/p15-webpack-cache-20261030/RELEASE-BINDING-20261031.json')
+  $p=[Diagnostics.Process]::new();$p.StartInfo=$psi;$buffer=[IO.MemoryStream]::new()
+  try{
+    [void]$p.Start();$stderr=$p.StandardError.ReadToEndAsync();$copy=$p.StandardOutput.BaseStream.CopyToAsync($buffer)
+    if(-not $p.WaitForExit(5000)){$p.Kill($true);throw 'git binding timeout'}
+    $null=$copy.GetAwaiter().GetResult();$null=$stderr.GetAwaiter().GetResult()
+    if($p.ExitCode -ne 0 -or $buffer.Length -gt 32768){throw 'exact Git binding unavailable'}
+    return ,$buffer.ToArray()
+  }finally{$buffer.Dispose();$p.Dispose()}
+}
 function Run([string]$Action,[string]$Destination,[bool]$Success=$true,[string]$Format='CorrectedAcl19V2',[string]$Pin=$pins.helper){
   $psi=[Diagnostics.ProcessStartInfo]::new((Get-Command pwsh).Source);$psi.UseShellExecute=$false;$psi.CreateNoWindow=$true;$psi.RedirectStandardOutput=$true;$psi.RedirectStandardError=$true
   foreach($a in @('-NoProfile','-File',$wrapper,'-Action',$Action,'-CheckpointId',$stamp,'-ReviewedHelperSha256',$Pin,'-Destination',$Destination,'-OfflineFixture','-FixtureDirectory',$fixture,'-Profile',$Format)){$psi.ArgumentList.Add($a)}
@@ -73,6 +87,17 @@ try{
   $parsedNative.at=[datetime]::SpecifyKind([datetime]::UtcNow,[DateTimeKind]::Unspecified);Rejected {Assert-V2Proof $parsedNative 'native-ssh-v2' -Fresh} 'unspecified timezone never guessed for fresh native gate'
   $native.bindingSha256='0'*64;Rejected {Assert-V2Proof ([pscustomobject]$native) 'native-ssh-v2'} 'native binding pin cannot be repinned'
   $native.bindingSha256=$pins.binding;$native.at='2020-01-01T00:00:00Z';Rejected {Assert-V2Proof ([pscustomobject]$native) 'native-ssh-v2' -Fresh} 'Capture requires fresh gate; archive Verify is historical'
+  $phase='native-exact-binding'
+  $bindingBytes=ExactGitBinding
+  Assert ($bindingBytes.Length -eq 2351 -and [CheckpointCrypto]::Hash($bindingBytes) -ceq $pins.binding) 'exact Git binding raw length2351/hash7819; no normalization or synthetic replacement'
+  $nativeEntries=Clone $m.files
+  for($i=0;$i -lt 16;$i++){if($pins.hashes[$i]){$nativeEntries[$i].sha256=$pins.hashes[$i]}}
+  $nativeEntries[0].length=[long]2406546295
+  $nativeEntries[14].length=$bindingBytes.Length;$nativeEntries[14].sha256=[CheckpointCrypto]::Hash($bindingBytes)
+  Assert-V2Entries $nativeEntries 'native-ssh-v2';Assert $true 'native entry guard accepts actual exact Git binding bytes, not only synthetic archive path'
+  $x=Clone $nativeEntries;$x[14].length=2394;Rejected {Assert-V2Entries $x 'native-ssh-v2'} 'old incorrect2394 length is rejected with correct unchanged binding hash'
+  $x=Clone $nativeEntries;$x[14].length=$bindingBytes.Length+1;Rejected {Assert-V2Entries $x 'native-ssh-v2'} 'native binding length drift rejected even when hash is unchanged'
+  $x=Clone $nativeEntries;$x[14].sha256='0'*64;Rejected {Assert-V2Entries $x 'native-ssh-v2'} 'native binding hash drift rejected even when exact length is unchanged'
   $phase='crypto'
   $dest=CopyGood 'manifest-tampered';[IO.File]::AppendAllText((Join-Path $dest 'manifest.json'),' ');Run 'Verify' $dest $false;Assert $true 'manifest HMAC precedes parsing/verification'
   $dest=CopyGood 'cipher-tampered';$path=Join-Path $dest 'v2-15.enc';$bad=[IO.File]::ReadAllBytes($path);$bad[$bad.Length-1]=$bad[$bad.Length-1] -bxor 1;[IO.File]::WriteAllBytes($path,$bad);Run 'Verify' $dest $false;Assert $true 'attestation ciphertext tamper rejected'
