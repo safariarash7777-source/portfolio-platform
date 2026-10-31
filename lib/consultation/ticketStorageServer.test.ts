@@ -1,4 +1,6 @@
 // HTTP boundary tests only. Fake connectors do not establish SQL/Auth acceptance.
+// Explicit server-side release in this process only, independent of mock DB rights.
+process.env.CONSULTATION_P03_WRITES_RELEASE = "reader-compatible-v1";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { getTicketStorage, postTicketStorage, type TicketStorageDb } from "./ticketStorageServer";

@@ -8,14 +8,15 @@
     "matching gateway profile; default API mode remains closed to browser pages",
     "root-approved browser mode for the two real ticket pages; fixed existing Chrome/driver preflight and owned cleanup; original helpers unchanged",
     "root-allocated durable preparations: raw postExact transport, new isolated candidate/route, 25 API phases and 11 browser criteria; primary/frozen helpers unchanged",
-    "owned gateway loads unchanged source config with logging=false only; no request/fetch token URLs in private dev logs"
+    "owned gateway loads unchanged source config with logging=false only; no request/fetch token URLs in private dev logs",
+    "reader-release candidate: default-closed owned server; explicit process restart closed/open/closed independent of DB fixture rights; exact prepared and receipt GET-only rollback; old fixed source preserved"
   ],
   "files": [
     {
       "path": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
       "sourcePath": "scripts/isolated-e2e/native-auth-runtime.mjs",
       "sourceSha256": "f9fff9fdec11ef3a9a52f949ccbccd2e24f17cab2285c396c7c73a907586c101",
-      "derivedSha256": "e31bf24acc18c4f02ac97385404d847e1e6a4d87351ab9568c629dd6becd6a99"
+      "derivedSha256": "907cf8b21adecf9bbbed1125bf384247baa284a32bcc47182caea5a3eb07e9e3"
     },
     {
       "path": "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
@@ -27,7 +28,7 @@
       "path": "scripts/testing/consultation-tickets/browser.mjs",
       "sourcePath": "scripts/isolated-e2e/workbook-browser.mjs",
       "sourceSha256": "9f05208a449daff9f036819b27c06862a0295f8da94738e35cca541c3dc88150",
-      "derivedSha256": "3c2d2a77b31ec33db8156ab5e51db1fecd61b1c9d2bd4dd1f3e33a914f6f759e"
+      "derivedSha256": "daa58cb77b2d275f2e5d66387608874a937cfac4fac4040272aa79072fdd7989"
     }
   ]
 }

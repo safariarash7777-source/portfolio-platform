@@ -22,8 +22,8 @@ test('laptop/local calls fail before provisioning; explicit closed browser mode 
 });
 test('native scenario inventory includes setup and all checked phases', () => {
   const checkedScenarios = [...[read('native.mjs'),read('durability-native.mjs')].join('\n').matchAll(/\bpass\('/g)].length;
-  assert.equal(checkedScenarios + 2, 25);
-  assert.equal(nativeAuthProfile('consultation-ticket').phases, 25);
+  assert.equal(checkedScenarios + 2, 27);
+  assert.equal(nativeAuthProfile('consultation-ticket').phases, 27);
   assert.doesNotMatch(read('native.mjs'), /Response\.json\(|new Response\(/);
 });
 test('derivative runtime and gateway match their pinned test-only lineage manifest', () => {

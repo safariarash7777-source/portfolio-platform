@@ -18,13 +18,15 @@ export type TicketStorageEnvelope = { contractVersion: "consultation-ticket-stor
 );
 export const TICKET_STORAGE_ENDPOINT = "/api/consultation/tickets";
 export const TICKET_RIGHT_ERROR = { state: "error", code: "SERVICE_RIGHT_NOT_CONNECTED", error: "حق همان خدمت به تأمین‌کنندهٔ معتبر متصل نیست؛ ثبت درخواست انجام نشد." } as const;
-export type TicketStorageError = ConsultationError | typeof TICKET_RIGHT_ERROR;
+export const TICKET_RELEASE_ERROR = { state: "error", code: "WRITES_NOT_RELEASED", error: "ثبت غیرفعال است. متن واردشده در همین نشست حفظ می‌شود." } as const;
+export type TicketStorageError = ConsultationError | typeof TICKET_RIGHT_ERROR | typeof TICKET_RELEASE_ERROR;
 export function ticketStorageErrorStatus(error: TicketStorageError): number {
-  return error.code === "SERVICE_RIGHT_NOT_CONNECTED" ? 503 : CONSULTATION_ERRORS[error.code][0];
+  return error.code === "SERVICE_RIGHT_NOT_CONNECTED" || error.code === "WRITES_NOT_RELEASED" ? 503 : CONSULTATION_ERRORS[error.code][0];
 }
 export function parseTicketStorageError(value: unknown, status: number): TicketStorageError | null {
   if (status === 503 && value && typeof value === "object" && !Array.isArray(value)) {
     const row = value as Record<string, unknown>;
+    if (Object.keys(row).sort().join() === "code,error,state" && row.state === TICKET_RELEASE_ERROR.state && row.code === TICKET_RELEASE_ERROR.code && row.error === TICKET_RELEASE_ERROR.error) return TICKET_RELEASE_ERROR;
     if (Object.keys(row).sort().join() === "code,error,state" && row.state === TICKET_RIGHT_ERROR.state && row.code === TICKET_RIGHT_ERROR.code && row.error === TICKET_RIGHT_ERROR.error) return TICKET_RIGHT_ERROR;
   }
   return parseConsultationError(value, status);

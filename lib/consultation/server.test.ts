@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+// Preserve existing handler regressions with an explicit server-side release;
+// the separate release suite exercises the default-closed reader build.
+process.env.CONSULTATION_P03_WRITES_RELEASE = "reader-compatible-v1";
 import { getConsultation, postConsultation, type ConsultationDb } from "./server";
 import { type ConsultationRequest } from "./contracts";
 const actor = "11111111-1111-4111-8111-111111111111", advisor = "22222222-2222-4222-8222-222222222222", relation = "33333333-3333-4333-8333-333333333333";

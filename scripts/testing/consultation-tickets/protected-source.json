@@ -151,5 +151,121 @@
     "lib/supabase": "b72330b321549b2c455ae114302c29191a2f40a6",
     "middleware.ts": "c81b575cc7d947d2026036a46330db098273a263",
     "package-lock.json": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305"
+  },
+  "readerReleaseException": {
+    "baseCandidate": "23f9b93a6f40b201b66301bed5464b643d011a03",
+    "purpose": "Explicit default-closed new consultation writes; compatible GET/history/recovery; candidate-branch deployment stop; bounded owned tests only",
+    "files": {
+      ".github/workflows/p03-ticket-native.yml": {
+        "oldBlob": "602187f10a1456365f828a142919803c30e2d3d7",
+        "newBlob": "13484db8420f6bd410c0d15d25412abadf519c48",
+        "baselineBlob": "602187f10a1456365f828a142919803c30e2d3d7"
+      },
+      "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md": {
+        "oldBlob": "ea9e1dd4799af67c5b013f947b839b1221098813",
+        "newBlob": "22d5ab2be650bf215045a6135fa7e5a8c82b3a4c",
+        "baselineBlob": "44e03c5f3e9956587e77e2dc28570862c0af0aa8"
+      },
+      "lib/consultation/server.test.ts": {
+        "oldBlob": "92aa8c0cac892b3fae7414ec7557c16b7297a15a",
+        "newBlob": "87d4ca6ab3bc3a689fbfe7fe257f2071c3a3cee0",
+        "baselineBlob": null
+      },
+      "lib/consultation/server.ts": {
+        "oldBlob": "f515e1419c9de622cecc9b905a264d768cf43507",
+        "newBlob": "83f8acbb03849801e76a08d08683dae0d091b382",
+        "baselineBlob": null
+      },
+      "lib/consultation/ticketAttemptStorageRequest.ts": {
+        "oldBlob": "5e26a34ae2e43adea63f354569e58e7275127c10",
+        "newBlob": "63e757f199a4f202a18f6326fac50ffaf33b9b54",
+        "baselineBlob": "5e26a34ae2e43adea63f354569e58e7275127c10"
+      },
+      "lib/consultation/ticketAttemptStorageServer.test.ts": {
+        "oldBlob": "0c25059166c229d20033e7900e0f6c8b0ca71070",
+        "newBlob": "599411a844ef92e43e4568d2e23158bd3e867cb3",
+        "baselineBlob": "0c25059166c229d20033e7900e0f6c8b0ca71070"
+      },
+      "lib/consultation/ticketAttemptStorageServer.ts": {
+        "oldBlob": "e865f1e125d07696a4fac3a3f26e986b23f93ea2",
+        "newBlob": "3d38eed5aa8944e2255cbed97695be32de0022c2",
+        "baselineBlob": "e865f1e125d07696a4fac3a3f26e986b23f93ea2"
+      },
+      "lib/consultation/ticketStorageContracts.ts": {
+        "oldBlob": "a4124687721596bf11e948eeed5f7a99d360c0ae",
+        "newBlob": "f075ab28903e651e1d4b4ae7f69b3a1a068aba07",
+        "baselineBlob": "a4124687721596bf11e948eeed5f7a99d360c0ae"
+      },
+      "lib/consultation/ticketStorageRequest.ts": {
+        "oldBlob": "524b392dfdbbf16eb849967a1375a1ca0bdbaee2",
+        "newBlob": "30bc80bac06fcf2d093fb0fa6a98c8a52497cf4e",
+        "baselineBlob": "524b392dfdbbf16eb849967a1375a1ca0bdbaee2"
+      },
+      "lib/consultation/ticketStorageServer.test.ts": {
+        "oldBlob": "9dde4a059e69d02f652d1f82661dd93a1383f73f",
+        "newBlob": "dc5a66c9935206a8226c31eecdc2d2a902cf63f2",
+        "baselineBlob": null
+      },
+      "lib/consultation/ticketStorageServer.ts": {
+        "oldBlob": "d3078145c90034eb1a50aad5c1d11234fea6255f",
+        "newBlob": "ed44db703f5b187fd5eb6d3a8c20b6e617073803",
+        "baselineBlob": "d3078145c90034eb1a50aad5c1d11234fea6255f"
+      },
+      "package.json": {
+        "oldBlob": "4ffa710b9a1e4a6d3d6db96b000e3394eba88e43",
+        "newBlob": "376888d570892d780d5579144fa7d0881a383347",
+        "baselineBlob": "4ffa710b9a1e4a6d3d6db96b000e3394eba88e43"
+      },
+      "scripts/testing/consultation-tickets/browser.mjs": {
+        "oldBlob": "9b3908bfb313bf3faf2a7325eb30971b96574d02",
+        "newBlob": "fe9f5994c7c89083555109dc534238b39fef833e",
+        "baselineBlob": "9b3908bfb313bf3faf2a7325eb30971b96574d02"
+      },
+      "scripts/testing/consultation-tickets/durability-native.mjs": {
+        "oldBlob": "488c0ac8604eddeba9b9daa0092ed8dce85a191f",
+        "newBlob": "d1fed12890d64be980b7ec1d4fec14d9bfa93b3c",
+        "baselineBlob": "488c0ac8604eddeba9b9daa0092ed8dce85a191f"
+      },
+      "scripts/testing/consultation-tickets/native-auth-runtime.mjs": {
+        "oldBlob": "389c768b6209ab1261c8df9f1ea64376f72af41e",
+        "newBlob": "bc395ced8998fa6ac251279b649749f3a1654446",
+        "baselineBlob": "389c768b6209ab1261c8df9f1ea64376f72af41e"
+      },
+      "scripts/testing/consultation-tickets/native-infrastructure-lineage.json": {
+        "oldBlob": "e875ea2403cb2948e5338c04eff9a817d8ece007",
+        "newBlob": "dab454f1c06b3cf7570c33004b6e193ee6ad1e65",
+        "baselineBlob": null
+      },
+      "scripts/testing/consultation-tickets/native-infrastructure.test.mjs": {
+        "oldBlob": "75eece49af7cfe0e0f2e10d2627691b8ac6eb72e",
+        "newBlob": "900a02ee674fd608305347f61b1ed8e71c69eeab",
+        "baselineBlob": "75eece49af7cfe0e0f2e10d2627691b8ac6eb72e"
+      },
+      "scripts/testing/consultation-tickets/native.mjs": {
+        "oldBlob": "1eea0a583f6e3e04b856df3b8582264b55c9af4c",
+        "newBlob": "850540f2ab72500f2e8e7c22d7d032c52bd8259f",
+        "baselineBlob": "1eea0a583f6e3e04b856df3b8582264b55c9af4c"
+      },
+      "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
+        "oldBlob": "05ac127f00c53114a3f2c6a462fb74585d498814",
+        "newBlob": "182c46cc2b99ae63cd56c0f124bbfb6e2c437ea6",
+        "baselineBlob": null
+      },
+      "vercel.json": {
+        "oldBlob": "a5b64dc0af441dd30a6836d2a2b147676fe503fc",
+        "newBlob": "5716086481f5d3e747d26a05ad9994a2065855ed",
+        "baselineBlob": null
+      },
+      "lib/consultation/consultationWriteRelease.test.ts": {
+        "oldBlob": null,
+        "newBlob": "7d81ca75b67b7ec804d4b9468279aafa1359afec",
+        "baselineBlob": null
+      },
+      "lib/consultation/consultationWriteRelease.ts": {
+        "oldBlob": null,
+        "newBlob": "c94d7134e1335cf9771fd345db999f0b6e54dab5",
+        "baselineBlob": null
+      }
+    }
   }
 }

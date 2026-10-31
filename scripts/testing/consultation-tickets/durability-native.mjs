@@ -85,4 +85,7 @@ export async function durabilityNative(ctx,priorRelation){
  check((await read('a',selected)).prepared.body===body,'p03_durable_revoked_member_history');await preserve('a',bodyFor('Revoked must not preserve'),403);
  check(fingerprint()===before,'p03_durable_financial_rows_changed');
  pass('prepared-revoke-member-history-and-financial-fingerprints',{memberOriginalBodyRetained:true,advisorDenied:true,newPreparationDenied:true,financialFingerprintUnchanged:true,modelCalls:0,primaryInstall:'NOT_APPLIED'});
+ // Private exact correlation for the caller's GET-only closed-release readback;
+ // never selected by latest and never copied into the sanitized public receipt.
+ return {relationshipId:relation,preparationId:saved.preparationId,clientToken:input.clientToken,bodyHash:saved.bodyHash,body,receiptId:confirmed.receipt.id};
 }

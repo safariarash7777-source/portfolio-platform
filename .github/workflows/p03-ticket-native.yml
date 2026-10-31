@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'lib/consultation/ticket*'
+      - 'lib/consultation/consultationWriteRelease*'
+      - 'lib/consultation/server.ts'
+      - 'lib/consultation/server.test.ts'
+      - 'vercel.json'
       - 'components/consultation/TicketRequest*'
       - 'components/consultation/ticket-storage-ui.test.tsx'
       - 'app/api/consultation/tickets/**'
@@ -34,7 +38,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: New source boundaries and actual component handlers
-        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/tickets.test.ts lib/consultation/ticketAttemptStorageContracts.test.ts lib/consultation/ticketAttemptStorageServer.test.ts lib/consultation/ticketAttemptStorageRequest.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs scripts/testing/consultation-tickets/browser.test.mjs
+        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/consultation/consultationWriteRelease.test.ts lib/consultation/server.test.ts lib/consultation/tickets.test.ts lib/consultation/ticketAttemptStorageContracts.test.ts lib/consultation/ticketAttemptStorageServer.test.ts lib/consultation/ticketAttemptStorageRequest.test.ts lib/consultation/ticketStorageRequest.test.ts lib/consultation/ticketStorageServer.test.ts scripts/testing/consultation-tickets/source-boundary.test.mjs components/consultation/ticket-storage-ui.test.tsx scripts/testing/consultation-tickets/native-infrastructure.test.mjs scripts/testing/consultation-tickets/browser.test.mjs
       - name: Real Next, GoTrue, PostgREST and owned tmpfs PostgreSQL
         run: |
           set -o pipefail
@@ -49,7 +53,7 @@ jobs:
           receipts = [json.loads(line[len(prefix):]) for line in lines if line.startswith(prefix)]
           assert len(receipts) == 1
           receipt = receipts[0]
-          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 25
+          assert receipt['status'] == 'PASS' and receipt['scenarios'] == 27
           assert receipt['cleanup'] == 'REMOVED_OWNED_RESOURCES'
           head = subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip()
           assert receipt['sha'] == head == os.environ['P03_TICKET_NATIVE_SOURCE_SHA']
