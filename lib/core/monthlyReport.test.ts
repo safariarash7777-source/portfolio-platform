@@ -259,7 +259,7 @@ test("prodVsSales ماه با مقدار ناقص را با اسلات null نگ
   assert.equal(r.prodVsSales.length, 1);
   assert.deepEqual(r.prodVsSales[0], {
     monthKey: "1405-01", monthLabel: "فروردین",
-    production: null, sales: null, unavailableReason: "incomplete-quantity",
+    production: null, sales: null, unavailableReason: "incomplete-quantity", quantityUnit: null,
   });
   assert.equal(narrativeProdVsSales(r), null);
 });
@@ -272,7 +272,7 @@ test("مقدار: ماه کاملاً غایب همان محور نرخ را د�
   const before = JSON.stringify(reports);
   const m = buildMonthlySales(reports)!;
   assert.deepEqual(m.prodVsSales.map(p => p.monthKey), ["1405-01", "1405-02", "1405-03"]);
-  assert.deepEqual(m.prodVsSales[1], { monthKey: "1405-02", monthLabel: "اردیبهشت", production: null, sales: null, unavailableReason: "missing-report" });
+  assert.deepEqual(m.prodVsSales[1], { monthKey: "1405-02", monthLabel: "اردیبهشت", production: null, sales: null, unavailableReason: "missing-report", quantityUnit: null });
   assert.deepEqual(m.rateSeries[0].points.map(p => p.monthKey), m.prodVsSales.map(p => p.monthKey));
   assert.equal(m.reportCount, 2);
   assert.equal(m.avgCurrent, 200);
@@ -473,4 +473,195 @@ test("rate calendar slots cross a year boundary without zero fill or leading/tra
   assert.equal(model.latestMix[0].amount,900);
   assert.equal(model.prodVsSales.length,4);
   assert(model.prodVsSales.every(p=>p.production===null&&p.sales===null));
+});
+
+// Unit metadata is additive. These synthetic boundary rows never become stored
+// financial fixtures, and their existing numeric outputs must remain unchanged.
+function unitReport(period: string, products: N30ProductRow[]): CodalN30Data {
+  return { ...report(period, 1000, products), unit: 'میلیون ریال' };
+}
+function unitProduct(fields: Partial<N30ProductRow> = {}): N30ProductRow {
+  return prod({ product_name: 'کالا', market_basis: 'section_header', sales_amount: 100, sales_qty: 10,
+    production_qty: 12, sales_rate: 20, qty_unit: 'تن', ...fields });
+}
+
+test('unit metadata carries a typed rial numerator and normalized declared denominator', () => {
+  const r = buildMonthlySales([unitReport('1405-06-31', [unitProduct({ qty_unit: '  تن  ' })])])!;
+  const rateUnit = { numerator: 'ریال', denominator: 'تن' };
+  assert.equal(r.quantityUnit, 'تن');
+  assert.equal(r.rateSeries[0].quantityUnit, 'تن');
+  assert.deepEqual(r.rateSeries[0].rateUnit, rateUnit);
+  assert.deepEqual(r.rateSeries[0].points[0], { monthKey: '1405-06', monthLabel: 'شهریور',
+    rate: 20, quantityUnit: 'تن', rateUnit });
+  assert.equal(r.prodVsSales[0].quantityUnit, 'تن');
+  assert.deepEqual([r.prodVsSales[0].production, r.prodVsSales[0].sales], [12, 10]);
+  assert.equal(r.currentMonths[5].amount, 1000);
+});
+
+test('quantity unit alone never certifies a rate numerator; numeric outputs are not rewritten', () => {
+  for (const unit of [null, undefined, 'تومان', 'نامعلوم']) {
+    const input = { ...unitReport('1405-06-31', [unitProduct()]), unit };
+    const r = buildMonthlySales([input])!;
+    assert.equal(r.quantityUnit, 'تن');
+    assert.equal(r.rateSeries[0].points[0].quantityUnit, 'تن');
+    assert.equal(r.rateSeries[0].points[0].rateUnit, null);
+    assert.equal(r.rateSeries[0].rateUnit, null);
+    assert.equal(r.rateSeries[0].points[0].rate, 20);
+    assert.equal(r.currentMonths[5].amount, 1000);
+  }
+});
+
+test('a known numerator in one month cannot certify another month or the whole rate series', () => {
+  const unknown = { ...unitReport('1405-02-31', [unitProduct()]), unit: null };
+  const known = unitReport('1405-01-31', [unitProduct()]);
+  const r = buildMonthlySales([unknown, known])!;
+  const s = r.rateSeries[0];
+  assert.equal(s.quantityUnit, 'تن');
+  assert.equal(r.quantityUnit, 'تن');
+  assert.deepEqual(s.points[0].rateUnit, { numerator: 'ریال', denominator: 'تن' });
+  assert.equal(s.points[1].rateUnit, null);
+  assert.equal(s.rateUnit, null);
+  assert.deepEqual(s.points.map(p => p.rate), [20, 20]);
+  const missingBasis = buildMonthlySales([known, unitReport('1405-02-31', [unitProduct({ market_basis: undefined })])])!;
+  assert.equal(missingBasis.rateSeries[0].points[0].quantityUnit, 'تن');
+  assert.equal(missingBasis.rateSeries[0].points[1].quantityUnit, null);
+  assert.equal(missingBasis.rateSeries[0].quantityUnit, null); assert.equal(missingBasis.rateSeries[0].rateUnit, null);
+  assert.deepEqual(missingBasis.rateSeries[0].points.map(p => p.rate), [20, 20]);
+});
+
+test('explicit row null/undefined/unknown never borrows a report unit; absence uses existing contract', () => {
+  const absent = unitProduct(); delete absent.qty_unit;
+  const cases: Array<[N30ProductRow, string | null]> = [
+    [absent, 'تن'], [unitProduct({ qty_unit: null }), null],
+    [unitProduct({ qty_unit: undefined }), null], [unitProduct({ qty_unit: 'واحد حدسی' }), null],
+    [unitProduct({ qty_unit: 'هزار تن' }), null], [unitProduct({ qty_unit: 'هزارتن' }), null],
+  ];
+  for (const [product, expected] of cases) {
+    const input = { ...unitReport('1405-06-31', [product]), qty_unit: 'تن' };
+    const r = buildMonthlySales([input])!;
+    assert.equal(r.quantityUnit, expected);
+    assert.equal(r.prodVsSales[0].quantityUnit, expected);
+    assert.equal(r.rateSeries[0].points[0].quantityUnit, expected);
+    assert.deepEqual(r.rateSeries[0].rateUnit, expected ? { numerator: 'ریال', denominator: expected } : null);
+    assert.equal(r.rateSeries[0].points[0].rate, 20);
+  }
+});
+
+test('per-market row units stay separate; mixed production contributors have no common unit', () => {
+  const r = buildMonthlySales([unitReport('1405-06-31', [
+    unitProduct({ market: 'داخلی', qty_unit: 'تن', sales_amount: 200 }),
+    unitProduct({ market: 'صادراتی', qty_unit: 'کیلوگرم', sales_amount: 100 }),
+  ])])!;
+  assert.deepEqual(r.rateSeries.map(s => s.quantityUnit), ['تن', 'کیلوگرم']);
+  assert.deepEqual(r.rateSeries.map(s => s.rateUnit?.denominator), ['تن', 'کیلوگرم']);
+  assert.equal(r.quantityUnit, null);
+  assert.equal(r.prodVsSales[0].quantityUnit, null);
+  assert.deepEqual([r.prodVsSales[0].production, r.prodVsSales[0].sales], [24, 20]);
+});
+
+test('unit changes across months keep point provenance and deny a common series/output label', () => {
+  const r = buildMonthlySales([
+    unitReport('1405-03-31', [unitProduct({ qty_unit: 'کیلوگرم', sales_rate: 30 })]),
+    unitReport('1405-01-31', [unitProduct({ qty_unit: 'تن', sales_rate: 10 })]),
+  ])!;
+  const s = r.rateSeries[0];
+  assert.deepEqual(s.points.map(p => [p.monthKey, p.rate, p.rateUnit?.denominator]),
+    [['1405-01', 10, 'تن'], ['1405-02', null, undefined], ['1405-03', 30, 'کیلوگرم']]);
+  assert.equal(s.quantityUnit, null); assert.equal(s.rateUnit, null);
+  assert.equal(r.quantityUnit, null);
+  assert.deepEqual(r.prodVsSales.map(p => p.quantityUnit), ['تن', null, 'کیلوگرم']);
+  assert.equal(r.currentMonths[1].amount, null, 'missing report stays missing');
+  assert.equal(s.points[1].quantityUnit, null); assert.equal(s.points[1].rateUnit, null);
+  assert.equal(s.points[1].rate, null, 'canonical missing-month slot is preserved');
+  const sameUnit = buildMonthlySales([unitReport('1405-01-31', [unitProduct()]), unitReport('1405-03-31', [unitProduct()])])!;
+  assert.equal(sameUnit.quantityUnit, 'تن', 'common label covers observed contributors, not an invented missing report');
+  assert.equal(sameUnit.rateSeries[0].points[1].quantityUnit, null); assert.equal(sameUnit.rateSeries[0].points[1].rateUnit, null);
+  assert.equal(sameUnit.prodVsSales[1].quantityUnit, null); assert.equal(sameUnit.prodVsSales[1].production, null);
+});
+
+test('missing product has null point units; another month or product cannot fill them', () => {
+  const r = buildMonthlySales([
+    unitReport('1405-02-31', [unitProduct({ product_name: 'دیگر', qty_unit: 'عدد', sales_amount: 1 })]),
+    unitReport('1405-01-31', [unitProduct({ qty_unit: 'تن' })]),
+  ])!;
+  const s = r.rateSeries.find(s => s.productName === 'کالا')!;
+  assert.equal(s.quantityUnit, 'تن', 'common metadata covers only observed contributing rows');
+  assert.equal(s.points[1].rate, null);
+  assert.equal(s.points[1].quantityUnit, null);
+  assert.equal(s.points[1].rateUnit, null);
+  assert.equal(r.quantityUnit, null, 'different output series do not share a denominator');
+});
+
+test('services and unknown markets cannot supply goods unit/rate metadata even with a matching name', () => {
+  const r = buildMonthlySales([unitReport('1405-06-31', [
+    unitProduct({ market: 'خدمات', qty_unit: 'عدد', sales_amount: 600 }),
+    unitProduct({ market: 'نامشخص', qty_unit: 'کیلوگرم', sales_amount: 300 }),
+    unitProduct({ market: 'داخلی', qty_unit: 'تن', sales_amount: 100 }),
+  ])])!;
+  assert.equal(r.rateSeries.length, 3);
+  assert.equal(r.quantityUnit, null);
+  assert.equal(r.prodVsSales[0].quantityUnit, null);
+  assert.deepEqual([r.prodVsSales[0].production, r.prodVsSales[0].sales], [36, 30]);
+  assert.ok(r.rateSeries.filter(s => s.market !== 'داخلی').every(s => s.quantityUnit === null && s.rateUnit === null));
+  assert.equal(r.latestMix.find(p => p.market === 'خدمات')?.amount, 600);
+  assert.equal(r.latestExportSharePct, null);
+  const onlyServices = buildMonthlySales([unitReport('1405-06-31', [unitProduct({ market: 'خدمات' })])])!;
+  assert.equal(onlyServices.quantityUnit, null);
+  assert.equal(onlyServices.rateSeries.length, 1);
+  assert.equal(onlyServices.rateSeries[0].quantityUnit, null); assert.equal(onlyServices.rateSeries[0].rateUnit, null);
+  assert.equal(onlyServices.prodVsSales.length, 1); assert.equal(onlyServices.prodVsSales[0].quantityUnit, null);
+});
+
+test('amendment selection and pv2 absence cannot borrow old or unrelated units', () => {
+  const newer = unitReport('1405-06-31', [unitProduct({ qty_unit: null })]);
+  const older = unitReport('1405-06-31', [unitProduct({ qty_unit: 'تن' })]);
+  const r = buildMonthlySales([newer, older])!;
+  assert.equal(r.reportCount, 1); assert.equal(r.quantityUnit, null);
+  assert.equal(r.rateSeries[0].rateUnit, null);
+  assert.equal(r.rateSeries[0].points[0].rate, 20);
+  const historical = unitReport('1405-06-31', [unitProduct({ qty_unit: null, sales_qty: null, sales_rate: null })]);
+  historical.qty_unit = null;
+  const pv2 = buildMonthlySales([historical])!;
+  assert.equal(pv2.quantityUnit, null);
+  assert.equal(pv2.rateSeries[0].points[0].quantityUnit, null);
+  assert.equal(pv2.rateSeries[0].points[0].rateUnit, null);
+  assert.equal(pv2.rateSeries[0].points[0].rate, null);
+  const zero = { ...newer, period_total_amount: 0 };
+  const selected = buildMonthlySales([zero, older])!;
+  assert.equal(selected.quantityUnit, 'تن', 'metadata follows the baseline selected nonzero row');
+  const historicalLabel = buildMonthlySales([unitReport('1405-06-31', [unitProduct({ market_basis: undefined })])])!;
+  assert.equal(historicalLabel.quantityUnit, null); assert.equal(historicalLabel.rateSeries[0].points[0].quantityUnit, null);
+  assert.equal(historicalLabel.rateSeries[0].points[0].rateUnit, null); assert.equal(historicalLabel.rateSeries[0].points[0].rate, 20);
+});
+
+test('an unrelated unselected row cannot donate or invalidate a participating row unit', () => {
+  const input = unitReport('1405-06-31', [
+    unitProduct({ product_name: 'الف', qty_unit: 'تن', sales_amount: 400 }),
+    unitProduct({ product_name: 'ب', qty_unit: 'تن', sales_amount: 300 }),
+    unitProduct({ product_name: 'پ', qty_unit: 'تن', sales_amount: 200 }),
+    unitProduct({ product_name: 'ت', qty_unit: null, sales_amount: 1 }),
+  ]);
+  const before = JSON.stringify(input);
+  input.products.forEach(Object.freeze); Object.freeze(input.products); Object.freeze(input);
+  const r = buildMonthlySales([input])!;
+  assert.equal(r.rateSeries.length, 3);
+  assert.equal(r.quantityUnit, 'تن');
+  assert.ok(r.rateSeries.every(s => s.quantityUnit === 'تن'));
+  assert.equal(JSON.stringify(input), before);
+});
+
+test('zero/null quantities and invalid rates keep prior numbers while rate metadata stays null', () => {
+  for (const fields of [{ sales_qty: 0, production_qty: 0 }, { sales_rate: 0 },
+    { sales_rate: -1 }, { sales_rate: null }, { sales_qty: null }]) {
+    const input = unitReport('1405-06-31', [unitProduct(fields)]);
+    const r = buildMonthlySales([input])!;
+    assert.equal(r.rateSeries[0].points[0].rate, null);
+    assert.equal(r.rateSeries[0].points[0].rateUnit, null);
+    assert.equal(r.rateSeries[0].points[0].quantityUnit, 'تن');
+    if (fields.sales_qty === 0) assert.deepEqual([r.prodVsSales[0].production, r.prodVsSales[0].sales], [0, 0]);
+    if (fields.sales_qty === null) {
+      assert.equal(r.prodVsSales.length, 1); assert.equal(r.prodVsSales[0].unavailableReason, 'incomplete-quantity');
+      assert.equal(r.prodVsSales[0].quantityUnit, null); assert.equal(r.prodVsSales[0].production, null);
+    }
+  }
 });

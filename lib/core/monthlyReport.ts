@@ -6,7 +6,7 @@
 // روایت‌ها فقط template‌ای و قطعی‌اند — هیچ ارزش‌داوری تجویزی.
 
 import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
-import { monthlyMarket, monthlyMarketUnavailableReason, type MonthlyMarketUnavailableReason } from "./monthly-quantity";
+import { monthlyMarket, monthlyMarketUnavailableReason, withKnownMonthlyQuantities, type MonthlyMarketUnavailableReason } from "./monthly-quantity";
 
 /* ── انواع خروجی ─────────────────────────────────────────────────────────── */
 
@@ -35,7 +35,16 @@ export interface RateSeries {
   productName: string;
   market: N30Market;
   label: string; // «محصول — داخلی»
-  points: { monthKey: string; monthLabel: string; rate: number | null }[];
+  /** Declared common unit of the observed contributing rows; never a conversion. */
+  quantityUnit: string | null;
+  rateUnit: { numerator: "ریال"; denominator: string } | null;
+  points: {
+    monthKey: string;
+    monthLabel: string;
+    rate: number | null;
+    quantityUnit: string | null;
+    rateUnit: RateSeries["rateUnit"];
+  }[];
 }
 
 /** یک قلم از ترکیب فروش آخرین ماه. */
@@ -53,9 +62,12 @@ export interface ProdSalesPoint {
   production: number | null;
   sales: number | null;
   unavailableReason: "missing-report" | "missing-product" | "incomplete-quantity" | null;
+  quantityUnit: string | null;
 }
 
 export interface MonthlySales {
+  /** Common denominator of observed output contributors, not missing calendar slots. */
+  quantityUnit: string | null;
   /** سال مالی جاری (جلالی، مثل ۱۴۰۵) و قبلی. */
   currentFY: number;
   priorFY: number | null;
@@ -90,6 +102,30 @@ export interface MonthlySales {
 function pct(numerator: number, denominator: number): number | null {
   if (!isFinite(numerator) || !isFinite(denominator) || denominator === 0) return null;
   return Math.round((numerator / denominator) * 1000) / 10;
+}
+
+/** C42 metadata contract only; existing numeric outputs are never replaced. */
+function commonQuantityUnit(units: Array<string | null>): string | null {
+  return units.length > 0 && units[0] !== null && units.every(unit => unit === units[0])
+    ? units[0] : null;
+}
+
+function productUnitMetadata(
+  report: CodalN30Data,
+  product: CodalN30Data["products"][number] | undefined,
+  rate: number | null,
+): Pick<RateSeries["points"][number], "quantityUnit" | "rateUnit"> {
+  if (!product) return { quantityUnit: null, rateUnit: null };
+  const market = monthlyMarket(product);
+  if (market !== "داخلی" && market !== "صادراتی") return { quantityUnit: null, rateUnit: null };
+  // Reuse the frozen validator in this exact row's scope. Explicit null cannot inherit.
+  const checked = withKnownMonthlyQuantities({ ...report, products: [product] });
+  const quantityUnit = checked.qty_unit ?? null;
+  return {
+    quantityUnit,
+    rateUnit: quantityUnit && rate !== null && checked.products[0].sales_rate != null
+      ? { numerator: "ریال", denominator: quantityUnit } : null,
+  };
 }
 
 /* ── نرخِ فروشِ معنادار ────────────────────────────────────────────────────
@@ -284,19 +320,31 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
   const topCombos = [...comboTotals.values()].sort((a, b) => b.amount - a.amount).slice(0, 3);
   // Shared presentation slots only: never invent a report or change a reported rate.
   const rateMonthKeys = monthlyCalendarKeys(sortedKeys);
-  const rateSeries: RateSeries[] = topCombos.map((c) => ({
-    productName: c.name,
-    market: c.market,
-    label: `${c.name} — ${c.market === "نامشخص" ? "تفکیک نامعلوم" : c.market}`,
-    points: rateMonthKeys.map((key) => {
+  const rateSeries: RateSeries[] = topCombos.map((c) => {
+    const observedUnits: Array<string | null> = [];
+    const rateDenominators: Array<string | null> = [];
+    const points = rateMonthKeys.map((key) => {
       const r = byMonth.get(key);
       const p = r?.products.find(
         (x) => x.product_name === c.name && x.market === c.rawMarket,
       );
       const mo = Number(key.slice(5, 7));
-      return { monthKey: key, monthLabel: JALALI_MONTHS[mo - 1], rate: meaningfulRate(p ?? null) };
-    }),
-  }));
+      const rate = meaningfulRate(p ?? null);
+      const metadata = r ? productUnitMetadata(r, p, rate) : { quantityUnit: null, rateUnit: null };
+      if (p) observedUnits.push(metadata.quantityUnit);
+      if (rate !== null) rateDenominators.push(metadata.rateUnit?.denominator ?? null);
+      return { monthKey: key, monthLabel: JALALI_MONTHS[mo - 1], rate, ...metadata };
+    });
+    const denominator = commonQuantityUnit(rateDenominators);
+    return {
+      productName: c.name,
+      market: c.market,
+      label: `${c.name} — ${c.market === "نامشخص" ? "تفکیک نامعلوم" : c.market}`,
+      quantityUnit: commonQuantityUnit(observedUnits),
+      rateUnit: denominator ? { numerator: "ریال" as const, denominator } : null,
+      points,
+    };
+  });
 
   // ترکیب فروش آخرین ماه دارای گزارش.
   const latestKey = sortedKeys.length > 0 ? sortedKeys[sortedKeys.length - 1] : null;
@@ -361,11 +409,16 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
         production: unavailableReason ? null : rows.reduce((sum, p) => sum + p.production_qty!, 0),
         sales: unavailableReason ? null : rows.reduce((sum, p) => sum + p.sales_qty!, 0),
         unavailableReason,
+        quantityUnit: unavailableReason ? null : commonQuantityUnit(rows.map(p => productUnitMetadata(r!, p, null).quantityUnit)),
       });
     }
   }
 
   return {
+    quantityUnit: commonQuantityUnit([
+      ...rateSeries.map(series => series.quantityUnit),
+      ...prodVsSales.filter(point => point.unavailableReason === null).map(point => point.quantityUnit),
+    ]),
     currentFY,
     priorFY,
     currentMonths,
