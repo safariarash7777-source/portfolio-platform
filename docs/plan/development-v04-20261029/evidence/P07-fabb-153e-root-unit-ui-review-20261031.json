@@ -1,0 +1,54 @@
+{
+  "status": "ROOT_BYTES_STATIC_SCOPE_REVIEW_ONLY",
+  "metadata": {
+    "head": "fabb77606e964f70bb7182f3f0bcb2fe5d3bfbe7",
+    "tree": "6fe667da0765aa44b410c6f59d26b4aacd42bf61",
+    "zipBytes": 54712,
+    "zipSha256": "26eecf550b8833727f2bef47f8626ae29bcf638050d72235d7784d44358ac6c2",
+    "manifestFiles": 14,
+    "sourceFiles": 2,
+    "supplementFiles": 16,
+    "exactHistoricalInputs": 51,
+    "overlappingCorporaNotSummed": true,
+    "scope": "metadata additive; numeric/chart/live acceptance independent"
+  },
+  "ui": {
+    "head": "153e751fa6c7943cca4d2532b627429c4ec5a80a",
+    "tree": "54e500eefec1b49548968caa0f2671830d535f32",
+    "sourceFiles": 6,
+    "zipSha256": "6ceb3b212a8f63cc31c25ecae1d5ca83cb1388473f32517fe4fa93158bb2a7af",
+    "privateIndexExact": true,
+    "packageOnlyOneLiteralBeforeFirstAnd": true,
+    "rootReadFullComponentAndEightTests": true,
+    "behavior": "per-point same-unit plots; known peers retained; calendar and true zero retained; unknown/mixed units omitted with reason; no cross-unit narrative",
+    "ownerLocal": "54 cases incl 8 UI +46 existing core, not live browser"
+  },
+  "firstCI": {
+    "run": 41185019118,
+    "head": "828a324ef4f1d282bbb9aee2d07b0060205afbe9",
+    "checkout": "8f9f31970f7239a6ca3c395e275cb6f268741424",
+    "tree": "7fbc1af9b75363b24e1232642bdfe67921500504",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "coreMain": "2104 PASS incl each of 8 new UI names exactly once",
+    "pageRegression": "21/22; unknown-market fixture incorrectly expected 2 rate lines at page.test.ts:348",
+    "calc": "SKIPPED",
+    "build": "SKIPPED",
+    "rootReadOfficialJob": 124490085198,
+    "notProductAcceptance": true
+  },
+  "correction": {
+    "owner": "A",
+    "head": "a3c9fdefce66a7413d108613df17162cff63337e",
+    "tree": "c74ff6e4f9e7b01f0ab29b6a0b0e4dfb74bee681",
+    "scope": "only same page test block and DELIVERY; model raw buckets and valid-unit line identity kept",
+    "ciRun": 41185410281,
+    "ci": "PENDING_NOT_ACCEPTED",
+    "preview": "NOT_STARTED"
+  },
+  "limits": [
+    "No valid rate/quantity is manufactured for old pv2 rows.",
+    "No catalog, source reparse, primary deployment or new data provider.",
+    "Current user Preview remains c314 until exact corrected head passes CI and root deploys."
+  ]
+}

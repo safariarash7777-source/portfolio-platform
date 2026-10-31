@@ -1,0 +1,399 @@
+{
+  "status": "PASS_ROOT_LIMITED_REGISTRATION_CI_REVIEW",
+  "head": "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc",
+  "base": "303f4c016505e9fdb8f12236168961f48a10ca0f",
+  "tree": "a969ac0ca3b310cfaa5d6607a604067f3ec50cd9",
+  "pr": 378,
+  "checkout": "3de6193a94107e1f188344e33de89d0b5269704e",
+  "checkoutParents": [
+    "303f4c016505e9fdb8f12236168961f48a10ca0f",
+    "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc"
+  ],
+  "general": {
+    "run": 41174688516,
+    "jobs": [
+      {
+        "id": 124459712259,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124459712350,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124459712359,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124459712409,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124461091577,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "native": {
+    "run": 41174688562,
+    "jobs": [
+      {
+        "id": 124459712446,
+        "name": "real-auth-ticket-storage",
+        "conclusion": "success"
+      },
+      {
+        "id": 124459713110,
+        "name": "feedback-reader-compatibility",
+        "conclusion": "skipped"
+      }
+    ],
+    "receipts": [
+      {
+        "sha": "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc",
+        "status": "PASS",
+        "scenarios": 27,
+        "cleanup": "REMOVED_OWNED_RESOURCES",
+        "memberAuth": "real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes",
+        "schema": "candidate in owned tmpfs only",
+        "targetInstall": "NOT_APPLIED",
+        "browser": "NOT_RUN",
+        "arashAcceptance": "UNOBSERVED",
+        "privateArtifactsUploaded": false
+      },
+      {
+        "sha": "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc",
+        "status": "PASS",
+        "scenarios": 4,
+        "cleanup": "REMOVED_OWNED_RESOURCES",
+        "memberAuth": "real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes",
+        "schema": "candidate in owned tmpfs only",
+        "targetInstall": "NOT_APPLIED",
+        "browser": "PASS",
+        "browserReceipt": {
+          "status": "PASS",
+          "driverVersion": "1.64.1",
+          "sourceExecutable": "/opt/google/chrome/chrome",
+          "sourceSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+          "executable": "/home/runner/work/_temp/p09b-MXrOQA/chrome/chrome",
+          "ownedTemp": "/home/runner/work/_temp/p09b-MXrOQA",
+          "ownerId": "828151f1-3caa-4f99-897c-96d75511656c",
+          "chromeVersion": "Google Chrome 156.0.8078.47",
+          "chromeSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+          "closure": {
+            "sha256": "1a8fdce06cab9301fedda5587f6eabe6ad79f68ddd7ca11351e4163644dbfa78",
+            "entries": 260,
+            "bytes": 465722955,
+            "freeBeforeBytes": 90134355968,
+            "sourceStable": true,
+            "copyMatched": true,
+            "runtimeReadonly": true
+          },
+          "checks": [
+            {
+              "name": "browser-preflight-before-provision",
+              "status": "PASS"
+            },
+            {
+              "name": "real-member-page-default-right-closed",
+              "status": "PASS"
+            },
+            {
+              "name": "real-201-discard-live-page-one-post",
+              "status": "PASS"
+            },
+            {
+              "name": "same-attempt-get-only-recovery",
+              "status": "PASS"
+            },
+            {
+              "name": "fresh-sdk-context-and-reload-get-only",
+              "status": "PASS"
+            },
+            {
+              "name": "real-advisor-response-and-member-followup",
+              "status": "PASS"
+            },
+            {
+              "name": "real-revoke-and-private-fallback-denial",
+              "status": "PASS"
+            },
+            {
+              "name": "desktop-mobile-and-private-storage-cache-url",
+              "status": "PASS"
+            },
+            {
+              "name": "unconfirmed-command-destroy-and-server-intent-get-only",
+              "status": "PASS"
+            },
+            {
+              "name": "unknown-preparation-destroy-no-command",
+              "status": "PASS"
+            },
+            {
+              "name": "owned-browser-cleanup",
+              "status": "PASS"
+            }
+          ],
+          "pageClosed": true,
+          "contextClosed": true,
+          "freshLoginVerified": true,
+          "reloadGetOnly": true,
+          "automaticTicketPosts": 0,
+          "privateStorageHits": 0,
+          "privateUrlHits": 0,
+          "cacheAuditComplete": true,
+          "cleanup": {
+            "processStopped": true,
+            "contextsClosed": true,
+            "ownedTempRemoved": true,
+            "ownerId": "828151f1-3caa-4f99-897c-96d75511656c"
+          }
+        },
+        "arashAcceptance": "UNOBSERVED",
+        "privateArtifactsUploaded": false
+      }
+    ]
+  },
+  "namedTests": {
+    "helper": [
+      {
+        "name": "active legacy consulting reports original provenance but never a service right",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "future legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "expired legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "revoked legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "webinar legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "manual legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "a complete empty legacy snapshot is not zero quota or evidence of absent service rights",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "unavailable, partial, missing or malformed snapshots withhold provenance and remain unknown",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "explicitly disconnected source remains disconnected without inventing an empty ledger",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "foreign, duplicate, mixed-invalid and corrupt rows never become a partial successful snapshot",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "the existing classifier retains inclusive start, exclusive end and microseconds across offsets",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "free source strings and smuggled admin/full or economic fields cannot establish service authority",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "diagnosis detaches immutable metadata and never mutates the caller snapshot",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "diagnostic metadata cannot substitute for the unchanged storage capability",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "expired, revoked and unknown diagnostics leave original history and receipt recovery independent",
+        "subtests": 1,
+        "pass": 1
+      }
+    ],
+    "ui": [
+      {
+        "name": "actual panel keeps an unknown right fail-closed and never labels missing history empty",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "no ticket read or private content before the expected identity is established",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "uncertain save retains exact draft and recovery performs GET only, without a second submit",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "a denied fresh write keeps text and requires refresh rather than overwriting the draft",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "changed identity clears private state and ignores a delayed write receipt",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "revoked advisor is cleared before any private read-error fallback",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "transient unknown identity hides draft; same identity recovery retains it; signout clears it",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "same actor cannot reveal the old panel while fresh relationship authorization is deferred",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "deferred fresh authorization denied or unavailable never restores old advisor content",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "late write during unknown identity stays hidden and same-actor recovery is GET only",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "fresh parent disconnect or auth unavailability offers explicit retry without exposing the retained draft",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "unknown preparation response never starts a command, even after manual GET finds it",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "destroyed component restores server-held original intent explicitly and confirms its one effect with GET only",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "destroyed unknown preparation recovers its server body without a command or automatic latest choice",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "unavailable preparation metadata does not hide authorized ticket history or pretend the list is empty",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "legacy self read validates the carrier JWT and binds one scoped GET without global header mutation",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "foreign advisor or unknown parent performs zero legacy GETs and does not inspect a carrier",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "validated JWT actor mismatch clears private content and never queries entitlements",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "legacy completeness requires exact bounded count; partial unknown and empty complete stay distinct",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "foreign duplicate and corrupt legacy rows fail closed even when count matches",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "deferred legacy failure never blocks history draft or the independent refresh lock",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "suspended identity aborts an old legacy GET and its late result cannot reappear",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "nonabortable Auth after the deadline cannot start a late legacy GET",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "actor change and unmount prevent a nonabortable Auth continuation from querying",
+        "subtests": 1,
+        "pass": 1
+      },
+      {
+        "name": "actual panel escapes long unverified sources and preserves responsive RTL unknown and device time markup",
+        "subtests": 1,
+        "pass": 1
+      }
+    ]
+  },
+  "officialArtifact": {
+    "artifacts": [
+      {
+        "id": 13032680232,
+        "name": "p03-ticket-native-receipt",
+        "size_in_bytes": 2028,
+        "url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/artifacts/13032680232",
+        "archive_download_url": "https://api.github.com/repos/safariarash7777-source/portfolio-platform/actions/artifacts/13032680232/zip",
+        "expired": false,
+        "created_at": "2026-10-31T06:01:51Z",
+        "expires_at": "2026-11-07T06:01:50Z",
+        "updated_at": "2026-10-31T06:01:51Z",
+        "digest": "sha256:6c06bebed0201fc492c1b1163e56c289bc4f1637ac3b91c792b378970e9abb21",
+        "workflow_run": {
+          "id": 41174688562,
+          "repository_id": 1210725423,
+          "head_repository_id": 1210725423,
+          "head_branch": "codex/p01-p03-legacy-diagnostic-ui-20261031",
+          "head_sha": "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc"
+        }
+      }
+    ]
+  },
+  "rootStaticReview": "consumer reviewed at be573; four-path registration delta re-read at 7b; no blocking static finding",
+  "limits": [
+    "25 actual caller/UI tests execute once in the automatic native hook unit phase; the ordinary Core has the 15 pure helper tests, not those 25 UI cases.",
+    "The old 27 API/11 DOM profile does not prove actual new entitlements SDK/header/RLS or responsive CSS behavior.",
+    "Primary target NOT_APPLIED; actual service right NOT_CONNECTED; no merged/main/Production or Arash acceptance.",
+    "Public packet bytes/private index and original artifact raw receipt hashes independently verified in root-fabb-7b-review receipt."
+  ]
+}
