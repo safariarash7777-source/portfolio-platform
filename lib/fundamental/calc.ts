@@ -5,6 +5,7 @@
 
 import type { CodalN10Data, CodalN30Data, SalesTrendRow } from "./types";
 import { isMillionRialUnit } from "./units";
+import { monthlyCalendarKeys } from "../core/monthlyReport";
 
 function finiteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
@@ -149,7 +150,7 @@ export interface N30Derived {
   topProductName: string | null;
   topProductMonths: N30ProductMonth[];
   /** تولید در برابر فروش کل ماهانه (فقط محصولات هم‌واحد با محصول اول). */
-  prodVsSales: { month: string; production: number; sales: number }[];
+  prodVsSales: { month: string; production: number | null; sales: number | null }[];
 }
 
 /** مشتق‌های ن-۳۰ از چند گزارش ماهانه — ورودی تکراری/ناقص حذف می‌شود؛
@@ -164,6 +165,7 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
     if (!byMonth.has(month)) byMonth.set(month, r);
   }
   const sorted = [...byMonth.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const calendar = monthlyCalendarKeys([...byMonth.keys()]);
 
   const months: N30MonthPoint[] = sorted.map(([month, r]) => {
     let dom = 0, exp = 0;
@@ -198,8 +200,8 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
   // محصول پرفروش‌ترین: سری نرخ/مقدار ماهانه.
   const topProductName = rankedAll[0]?.[0] ?? null;
   const topProductMonths: N30ProductMonth[] = topProductName
-    ? sorted.map(([month, r]) => {
-        const p = r.products.find((x) => x.product_name === topProductName) ?? null;
+    ? calendar.map(month => {
+        const p = byMonth.get(month)?.products.find((x) => x.product_name === topProductName) ?? null;
         return {
           month,
           rate: p?.sales_rate ?? null,
@@ -209,20 +211,17 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
       })
     : [];
 
-  // تولید در برابر فروش — جمع مقادیر همهٔ محصولات دارای هر دو مقدار
-  // (واحدهای متفاوت در یک نماد معمولاً یکسان‌اند؛ اگر مقدار نبود آن ماه حذف).
-  const prodVsSales = sorted
-    .map(([month, r]) => {
-      let production = 0, sales = 0, seen = 0;
-      for (const p of r.products) {
-        if (p.production_qty == null || p.sales_qty == null) continue;
-        production += p.production_qty;
-        sales += p.sales_qty;
-        seen++;
-      }
-      return seen > 0 ? { month, production, sales } : null;
-    })
-    .filter((x): x is { month: string; production: number; sales: number } => x !== null);
+  // Quantity denominators are validated by the existing caller sanitizer.
+  // A missing report or incomplete pair remains a blank slot, never a partial total.
+  const prodVsSales = calendar.map(month => {
+    const rows = byMonth.get(month)?.products ?? [];
+    const complete = rows.length > 0 && rows.every(p => finiteNumber(p.production_qty) && finiteNumber(p.sales_qty));
+    return {
+      month,
+      production: complete ? rows.reduce((sum, p) => sum + p.production_qty!, 0) : null,
+      sales: complete ? rows.reduce((sum, p) => sum + p.sales_qty!, 0) : null,
+    };
+  });
 
   return {
     months,

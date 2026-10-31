@@ -340,6 +340,9 @@ function MixChart({ m }: { m: MonthlySales }) {
 /* ── چارت ۵: تولید در برابر فروش محصول اصلی ─────────────────────────────── */
 
 function ProdSalesChart({ m }: { m: MonthlySales }) {
+  if (!m.prodVsSales.some(p => p.production !== null && p.sales !== null)) {
+    return <p role="status">مقدار قابل‌مقایسهٔ تولید و فروش موجود نیست؛ دادهٔ مفقود یا واحد نامعلوم صفر نشده است.</p>;
+  }
   return (
     <div style={{ height: 280 }} dir="ltr">
       <ResponsiveContainer width="100%" height="100%">
@@ -445,7 +448,7 @@ export default function MonthlySalesCharts({
           <QCard
             id="q-prod-vs-sales"
             question="تولید و فروش هم‌خوان‌اند؟"
-            subtitle={`مقدار تولید و فروش «${m.mainProductName}» (محصول اصلی) — فقط ماه‌های دارای هر دو مقدار`}
+            subtitle={`مقدار تولید و فروش «${m.mainProductName}» (محصول اصلی) — ماه فاقد گزارش یا مقدار کامل روی محور خالی است؛ صفر گزارش‌شده حفظ می‌شود`}
             narrative={narrativeProdVsSales(m)}
           >
             <ProdSalesChart m={m} />
