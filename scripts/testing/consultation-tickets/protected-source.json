@@ -454,15 +454,15 @@
       },
       "scripts/testing/consultation-tickets/legacy-diagnostic-native.mjs": {
         "oldBlob": null,
-        "newBlob": "06625772298b17b16a0b275e77f2d03b0b031cfb"
+        "newBlob": "129f244492dedef1a3c39bc7a8d365e373331ec3"
       },
       "scripts/testing/consultation-tickets/legacy-diagnostic-native.test.mjs": {
         "oldBlob": null,
-        "newBlob": "0802cff78937bfb6067f91fb4150a8e6395f085e"
+        "newBlob": "31869d38296b00812c98dfbc6e910519aef2971a"
       },
       "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md": {
         "oldBlob": "17bbcb1a0f164774c38bb74222439fe20339b1df",
-        "newBlob": "84d4c919c83c1ca1b74d851fe927367954af9425"
+        "newBlob": "6aaa3949f5f81cf44bc8d0fc6923f8585fee5932"
       },
       ".github/workflows/p03-ticket-native.yml": {
         "oldBlob": "d2e755f422676c153ca65720eab46a3be75687b2",

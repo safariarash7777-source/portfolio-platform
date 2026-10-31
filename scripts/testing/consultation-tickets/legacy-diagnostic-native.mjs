@@ -21,6 +21,10 @@ async function exercise(ctx,s){
  const pass=(name,evidence={})=>{check(legacyDiagnosticChecks.includes(name)&&!checks.some(x=>x.name===name),'check_identity');checks.push({name,status:'PASS'});ctx.pass(name,evidence);};
  const requireOk=async(actor,path,body,status=body===undefined?200:201)=>{const r=await ctx.api(actor,path,body);check(r.status===status,'real_api_status');return r.value;};
  check(ctx.readerSha===legacyDiagnosticSha&&ctx.appliedMigrations().filter(x=>x.file===legacySqlPin.file&&x.sha256===legacySqlPin.sha256).length===1,'source_schema_pin');
+ // portfolio_precondition enables legacy default table grants later than the
+ // explicit profile. Observe them, then close only this owned fixture table.
+ const inheritedAcl={authenticatedSelect:sql("SELECT has_table_privilege('authenticated','public.entitlements','SELECT')::text")==='true',anonSelect:sql("SELECT has_table_privilege('anon','public.entitlements','SELECT')::text")==='true',authenticatedWrite:sql("SELECT has_table_privilege('authenticated','public.entitlements','INSERT,UPDATE,DELETE')::text")==='true'};
+ sql('REVOKE ALL ON public.entitlements FROM PUBLIC,anon,authenticated,service_role;');
  check(sql("SELECT has_table_privilege('authenticated','public.entitlements','SELECT')::text")==='false','strict_grant_baseline');
  check(sql('SELECT count(*) FROM auth.users')==='4','fresh_users_only');
  sql(`INSERT INTO public.consultation_advisors(user_id,display_name,enabled,is_owner) VALUES(${quote(users.owner.id)},'Synthetic legacy owner',true,true);`);
@@ -35,7 +39,7 @@ async function exercise(ctx,s){
  check(sql("SELECT has_table_privilege('authenticated','public.entitlements','SELECT') AND NOT has_table_privilege('authenticated','public.entitlements','INSERT,UPDATE,DELETE') AND NOT has_table_privilege('anon','public.entitlements','SELECT')")==='t','read_only_fixture_grant');
  const parent=await requireOk('a','/api/consultation?'+new URLSearchParams({relationshipId:relation,startOn:'2026-10-01',endOn:'2026-10-31'}));
  check(parent.selected?.clientId===users.a.id,'valid_parent_member');
- pass('immutable-source-default-closed',{readerSha:legacyDiagnosticSha,existingPhase11:true,strictBaselineStatus:403,tmpfsSelectGrantOnly:true,productServiceRight:'NOT_CONNECTED'});
+ pass('immutable-source-default-closed',{readerSha:legacyDiagnosticSha,existingPhase11:true,inheritedAclObserved:inheritedAcl,ownedTableExplicitlyClosed:true,strictBaselineStatus:403,tmpfsSelectGrantOnly:true,productServiceRight:'NOT_CONNECTED'});
  const own=await readDirect('a',users.a.id),other=await readDirect('a',users.b.id),bOwn=await readDirect('b',users.b.id);
  check(own.status===200&&own.rows.length===1&&own.rows[0].id===expired&&own.range?.endsWith('/1')&&other.status===200&&other.rows.length===0&&other.range?.endsWith('/0')&&bOwn.status===200&&bOwn.rows.length===1&&bOwn.rows[0].id===foreign,'own_foreign_rls');
  const auditPage=async state=>{const audit=await storageAudit(state.page,[...markers,...Object.values(users).flatMap(u=>[u.email,u.password,u.session.token,...sdkCookies(u.session.cookie).map(x=>x.value)])]);privateStorageHits+=audit.hits;privateUrlHits+=Number(audit.urlHit);};

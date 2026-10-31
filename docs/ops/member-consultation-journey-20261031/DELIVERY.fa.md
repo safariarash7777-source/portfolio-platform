@@ -104,3 +104,10 @@ schema همان phase11 موجود است. زیر پروفایل explicit-grant 
 
 
 مرور root روی source/test مستقل ab3b11a انجام شد؛ ۱۷ آزمون مستقل root و ۱۲۹ آزمون محلی PASS بودند. ثبت محدود hook موجود تأیید شد: job همان feedback-reader-compatibility؛ mode جدید فقط exact branch codex/p01-p03-legacy-native-20261031 است. old feedback699 با pin و هشت check قبلی فقط روی شاخه خودش اجرا می‌شود؛ اجرای موفق قدیمی ۲۷ API و ۱۱ DOM روی شاخه جدید تکرار نمی‌شود. vercel.json فقط false همین شاخه را افزوده است؛ cronها ثابت‌اند. خروجی عمومی hook فقط JSON پالوده است؛ نتیجه واقعی پس از اجرای عادی PR جدا تحویل خواهد شد. workflow_dispatch/manual rerun/Preview/primary انجام نمی‌شود.
+
+
+### نتیجهٔ اولین hook واقعی و اصلاح محدود fixture
+
+run41191240155/job124508287657 روی3fe1f02 در 31اکتبر پس از135+4آزمون آفلاین Linux، تأیید جداسازی و چهار حساب تازه در strict_grant_baseline متوقف شد؛ هنوز سناریوی محصول/خواندن legacy آغاز نشده بود. در10:06:10UTC پاک‌سازی هر6منبع و Chrome processStopped/contextsClosed/ownedTempRemoved=true ثبت شد؛ تکرار دستی صورت نگرفت و PASS صادر نشد.
+
+علت: sql/test/portfolio_precondition.sql:140–141 پس از پروفایل explicit، پیش‌فرض GRANT ALL برای جدول‌های بعدی می‌گذارد؛ phase11 بعداً entitlements را می‌سازد و این امتیاز را به ارث می‌برد. اصلاح فقط driver است: ACL ارث‌رسیده به‌صورت boolean مشاهده، فقط همان جدول درtmpfs برایPUBLIC/anon/authenticated/service_role بسته، سپس baselineمنفی403 وGRANT SELECTauthenticated مصوب آزموده می‌شود. default privilege/schema/RLS و SQL محصول و تمام منابع7b تغییر نمی‌کنند. fixtureanon همچنان از مقصد اصلی محدودتر است؛ نتیجه به مقصد تعمیم ندارد. child اصلاحی فقط از hook عادیPR اجرا می‌شود، نه بازاجرای دستی یا replay.
