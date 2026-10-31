@@ -11,7 +11,8 @@
   ],
   "git": {
     "deploymentEnabled": {
-      "codex/codal-stored-reader-v04-20261031": false
+      "codex/codal-stored-reader-v04-20261031": false,
+      "codex/codal-rejection-metadata-v04-20261031": false
     }
   }
 }
