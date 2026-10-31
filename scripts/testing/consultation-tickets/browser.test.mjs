@@ -39,5 +39,6 @@ test('fresh cookie handoff is origin scoped; no persistent storage fixture is su
  assert.doesNotMatch(source,/\.fulfill\(|Fetch\.fulfillRequest|Response\.json\(|new Response\(/);
  assert.match(source,/state=await preflight\(\)/);
  assert.equal(nativeAuthProfile('consultation-ticket').browserPhases,4);
- assert.match(source,/unknownIntentAfterDestroy:'NOT_IMPLEMENTED'/);
+ assert.match(source,/fullContextDestroyedBeforeConfirmation:true/);
+ assert.match(source,/unknown-preparation-destroy-no-command/);
 });

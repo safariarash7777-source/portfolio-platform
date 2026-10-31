@@ -4,7 +4,7 @@ import http from 'node:http';
 const origin='http://localhost:32189';
 export function gatewayProfile(profile){
  if(profile!=='consultation-ticket')throw Error('p03_ticket_native_unknown_profile');
- return {"identityPath": "/__p03_ticket_native_identity", "routes": ["/api/consultation", "/api/consultation/roster", "/api/consultation/replies", "/api/consultation/tickets", "/api/portfolio/holdings", "/api/portfolio/debts", "/api/personal-finance/cash-flow", "/api/personal-finance/goals"]};
+ return {"identityPath": "/__p03_ticket_native_identity", "routes": ["/api/consultation", "/api/consultation/roster", "/api/consultation/replies", "/api/consultation/tickets", "/api/consultation/ticket-attempts", "/api/portfolio/holdings", "/api/portfolio/debts", "/api/personal-finance/cash-flow", "/api/personal-finance/goals"]};
 }
 // Opt-in p09 page only. Raw paths are checked before URL normalization.
 export function browserRequestAllowed(value,method='GET'){

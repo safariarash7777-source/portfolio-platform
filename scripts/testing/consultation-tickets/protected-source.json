@@ -41,5 +41,115 @@
         "newBlob": "ec6d713620b0546667686aa0f710a093b14cb660"
       }
     }
+  },
+  "durabilityException": {
+    "base": "1636258dec1701c2c6edcc4d60050c94eb0db7d6",
+    "scope": "explicit root P03 same-owner durability allocation; three literal tests only; dependencies/lock fixed",
+    "testCoreAddedPaths": [
+      "lib/consultation/ticketAttemptStorageContracts.test.ts",
+      "lib/consultation/ticketAttemptStorageServer.test.ts",
+      "lib/consultation/ticketAttemptStorageRequest.test.ts"
+    ],
+    "files": {
+      "package.json": {
+        "oldBlob": "c74bba0f9b18689a5da0116c78e02e3105e4310a",
+        "newBlob": "4ffa710b9a1e4a6d3d6db96b000e3394eba88e43"
+      },
+      ".github/workflows/p03-ticket-native.yml": {
+        "oldBlob": "c197dcb0cd08052e45d312fc87345927bf289c45",
+        "newBlob": "602187f10a1456365f828a142919803c30e2d3d7"
+      },
+      "components/consultation/TicketRequestWorkspace.tsx": {
+        "oldBlob": "a8f7a4126b005001605f06ee7768cda330f7cc68",
+        "newBlob": "2785c3f86160786523ca1964d6851f731a52ce54"
+      },
+      "components/consultation/TicketRequestPanel.tsx": {
+        "oldBlob": "d9f438937f08b0ba49db621d61971b1d6d8d86f7",
+        "newBlob": "47d7b4715f3c16156a705426755a3a33fe160f05"
+      },
+      "components/consultation/ticket-storage-ui.test.tsx": {
+        "oldBlob": "ec6d713620b0546667686aa0f710a093b14cb660",
+        "newBlob": "720440c7346f014734c15b59b05080320c2a48da"
+      },
+      "sql/consultation_ticket_prepared_intents.sql": {
+        "oldBlob": null,
+        "newBlob": "93e3c06105201ca8250ea865d45a2496371a356e"
+      },
+      "app/api/consultation/ticket-attempts/route.ts": {
+        "oldBlob": null,
+        "newBlob": "18ba1ecaa9bc9e370a4f9639b7f2eb1245dd8dea"
+      },
+      "scripts/testing/consultation-tickets/native-auth-runtime.mjs": {
+        "oldBlob": "ad2119414ec7b0c0e4b08a9c7aec88e31c3b4a6d",
+        "newBlob": "389c768b6209ab1261c8df9f1ea64376f72af41e"
+      },
+      "scripts/testing/consultation-tickets/native-auth-gateway.mjs": {
+        "oldBlob": "230d3a1ca51f56ed59f06e10fcea5cf38aa361e9",
+        "newBlob": "de8dc7df3158780f7dafbea2204d82260ef8f1fc"
+      },
+      "scripts/testing/consultation-tickets/native.mjs": {
+        "oldBlob": "00f7a08f6426e3f95857db82f04a804fc22cd496",
+        "newBlob": "1eea0a583f6e3e04b856df3b8582264b55c9af4c"
+      },
+      "scripts/testing/consultation-tickets/durability-native.mjs": {
+        "oldBlob": null,
+        "newBlob": "3dac8c822248a1d696afed40303d070915f97c59"
+      },
+      "scripts/testing/consultation-tickets/browser.mjs": {
+        "oldBlob": "7826e0a8514ab15cbc6902af80ae25d24b94a54d",
+        "newBlob": "9b3908bfb313bf3faf2a7325eb30971b96574d02"
+      },
+      "scripts/testing/consultation-tickets/browser.test.mjs": {
+        "oldBlob": "6cda3f4956873ae46c5d5473302f0cd99fcdadf6",
+        "newBlob": "1f413f4cdce0438734951df0ff2fd0cfbea9f4d9"
+      },
+      "scripts/testing/consultation-tickets/native-infrastructure.test.mjs": {
+        "oldBlob": "bfbf4af0d2b550b9a111826b3415368ff3786541",
+        "newBlob": "75eece49af7cfe0e0f2e10d2627691b8ac6eb72e"
+      },
+      "scripts/testing/consultation-tickets/prepared-unit-fixture.ts": {
+        "oldBlob": null,
+        "newBlob": "03e4c3702a8a3776f95fd85b5a6d20a75b048c38"
+      },
+      "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md": {
+        "oldBlob": null,
+        "newBlob": "2f416d32437243cabf7751e3c477a5b760731c07"
+      },
+      "lib/consultation/ticketAttemptStorageContracts.ts": {
+        "oldBlob": null,
+        "newBlob": "b00d76fb261d929df1545ec0f2046aa66191f689"
+      },
+      "lib/consultation/ticketAttemptStorageContracts.test.ts": {
+        "oldBlob": null,
+        "newBlob": "37bb9a5ada31dde3e7b730f88e684d738b6048cc"
+      },
+      "lib/consultation/ticketAttemptStorageServer.ts": {
+        "oldBlob": null,
+        "newBlob": "e865f1e125d07696a4fac3a3f26e986b23f93ea2"
+      },
+      "lib/consultation/ticketAttemptStorageServer.test.ts": {
+        "oldBlob": null,
+        "newBlob": "0c25059166c229d20033e7900e0f6c8b0ca71070"
+      },
+      "lib/consultation/ticketAttemptStorageRequest.ts": {
+        "oldBlob": null,
+        "newBlob": "5e26a34ae2e43adea63f354569e58e7275127c10"
+      },
+      "lib/consultation/ticketAttemptStorageRequest.test.ts": {
+        "oldBlob": null,
+        "newBlob": "f20874004e702d58ed29cc0e21ca084431105f2d"
+      }
+    }
+  },
+  "unchangedFrom163": {
+    "sql/consultation_ticket_requests.sql": "7b2e25f25beba37f811fd848028e42126b596341",
+    "app/api/consultation/tickets/route.ts": "e77a535ba5d46b1df5483ddad0f2777a1f482251",
+    "lib/consultation/ticketStorageContracts.ts": "a4124687721596bf11e948eeed5f7a99d360c0ae",
+    "lib/consultation/ticketStorageServer.ts": "d3078145c90034eb1a50aad5c1d11234fea6255f",
+    "lib/consultation/ticketStorageRequest.ts": "524b392dfdbbf16eb849967a1375a1ca0bdbaee2",
+    "lib/auth": "c2ce5a4575854aaf26bdd5d443456737317962f9",
+    "lib/supabase": "b72330b321549b2c455ae114302c29191a2f40a6",
+    "middleware.ts": "c81b575cc7d947d2026036a46330db098273a263",
+    "package-lock.json": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305"
   }
 }
