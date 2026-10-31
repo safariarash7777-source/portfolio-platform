@@ -1,0 +1,46 @@
+{
+  "head": "9e70171beec560e7a343e2a842ce4e03365b1fd5",
+  "deployment": "dpl_QArH7kXHACS2ShJ4iwecugwZzTnh",
+  "scope": "bounded card/detail copy recheck; null-date range behavior unchanged",
+  "acceptedFiles": [
+    {
+      "name": "01-label-only-card-clarified.png",
+      "bytes": 145499,
+      "sha256": "33cbe62790f926c48ddf23f0b15c24d91dce6cf78e3b6c01c55f2730688f2f37"
+    },
+    {
+      "name": "02-label-only-detail-clarified.png",
+      "bytes": 82100,
+      "sha256": "b1f07f16350c6f4160454a0acafa2052c2e894ea27e482e411e131b002c619b1"
+    },
+    {
+      "name": "03-range-keeps-12-unknown-excluded.png",
+      "bytes": 55384,
+      "sha256": "a4b377e5337e3cb9deae757c9c542c12fc8f985a7fc2c2e598713658ba575f1d"
+    }
+  ],
+  "card": "legacy date text; verifiable time absent",
+  "detail": "source publication and sync unconfirmed; legacy label distinguished",
+  "validRange": "1404/01/01 through 1405/12/29 excludes all12 null timestamps with reason",
+  "clearRange": "12 cards restored; hash empty",
+  "mobile": "not rerun on9e; prior75 evidence remains source-bound",
+  "primary": "NOT_APPLIED",
+  "ci": {
+    "run": 41148598365,
+    "jobs": [
+      124379462557,
+      124379462817,
+      124379462885,
+      124379462893,
+      124380815596
+    ],
+    "conclusions": [
+      "success",
+      "success",
+      "success",
+      "success",
+      "success"
+    ]
+  },
+  "browserHandoff": "markDeliverable failed after successful DOM read: browser.user unavailable; review URL remains usable"
+}
