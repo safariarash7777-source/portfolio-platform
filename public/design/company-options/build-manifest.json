@@ -4,6 +4,8 @@
   "priorPreviewSnapshot": "5649582e7336608981614570048e2a4c54d4e4d1",
   "status": "NOT_FOR_MERGE",
   "dataKind": "authored_educational",
+  "quarterlyAxisBaseline": "0db38ff63d38b2ca98af5e29f5fe1345f58a4c45",
+  "quarterlyAxisDisplay": "toPersianDigits on three Y-axis ticks only; data/domain/scale/formulas unchanged",
   "financialEngineChanged": true,
   "financialChangeScope": "PR361/23 monthly outputs retained; shared calendar used for Fundamental N30 rate/quantity null slots; annual/quarterly/TTM unchanged",
   "rateCoreCandidate": "66765f75abf206a719b089cca6079d857f10b7c9",
@@ -21,16 +23,16 @@
     "chart-data.ts": "02930dc008064d2745c54bd6780b684acaaa798b5fc015778a468aabcdb5d6a9",
     "query-state.ts": "16016033b42b9318d30dc5f1dc37ea75ac95a9bfa3a511819be4f7dd7e07bf3a",
     "validate.ts": "e7501e871648345455f7952d007b8b68145fc4f91b62a353ec2533e1098eebd8",
-    "build.mjs": "aa526bf15addd1c3c8a7c68002abadecc5a4629bd6c466f281dd41337148f89e",
+    "build.mjs": "2fd87bb720a49f96120aee9d930aa89ca4e41776ecee8ce35ed924c5e361592f",
     "charts.input.css": "990860612b0a566a10358e4bd5e678a4d2623b3061e3817ac917ad38fb94ac1d",
-    "prototype.js": "1233b1ccdbe1a67ea0f381ac694b61f34afa876b96ae50d2009dfacd8224de5d",
+    "prototype.js": "9a2311c20dd3708027759812cb6781ff313d55b3dae0abcf6a6d582caf5b6ae7",
     "charts.css": "2b889abbebcee6926e167d5061a7d0b4184c32d77bdfcba262909f3c88d1deba",
     "decision.html": "506842c3365180723b303b8ae8f90dd90bc676bd2ff6b3c03023796f55a4b3ef",
     "dossier.html": "7730434b55131398f716cb3939451c5e307c6b15caf6da4655c006cc73615a20"
   },
   "reused": {
     "components/symbol/MonthlySalesCharts.tsx": "7cb8382298c475dab9c876355643a23e9ee9bacaa9cc3a8c48fedca5b4addc81",
-    "components/symbol/QuarterlyCharts.tsx": "527c0b485c7569b90f5fe78c12bae99305d7759a1b4687699c36d23f7424c8ae",
+    "components/symbol/QuarterlyCharts.tsx": "dfe7a555b44bbfc353bf735a4d50436390aac9234f512e8500fa7084bebb9cdb",
     "components/symbol/FundamentalCharts.tsx": "1f6baddd832baf17e37a0a8dac03e66efe632ff33f948f7ec2ad02244122c961",
     "components/terminal/HistoryChart.tsx": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3"
   },
@@ -49,5 +51,5 @@
     "postcss": "8.5.28"
   },
   "browserInputCount": 2091,
-  "bundleBytes": 841430
+  "bundleBytes": 841523
 }
