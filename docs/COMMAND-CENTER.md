@@ -46,6 +46,8 @@
 
 ### سه خروجی اکنون قابل بازکردن؛ پذیرش برنامه هنوز باز
 
+**P03 / اجرای نخست دوام intent شکست خورد؛ sourceقبلی محفوظ:** [366@55fb / بازخوانی مستقل root](plan/development-v04-20261029/evidence/P03-366-55fb-failed-root-20261031.json)، run41150197755/job124384649206 پساز۱۷phaseقدیمی درp03_durable_prepare_status متوقف شد؛ cleanup۶ownedموفق، native/Browserجدید پذیرفته نیستند. ترتیبpropertyهایfixture با frozencontract ناسازگار است؛ root کد وdiffdriver را خواند، اماHTTP/codeشکست نخست ثبت نشده، پس علتruntimeقطعی ادعا نمی‌شود. فقطتولیداولیهfixtureازvalidateTicketRequestموجود وdiagnosticمحدود بهBتأییدشد؛ bodyبازیابی‌شده/validator/API/SQL تغییرنمی‌کنند، sourceبعدی اجرای تازه می‌خواهد. حقمحصولبسته وprimaryNOT_APPLIED؛ اینشکست شاهد163 را حذف یا به55 منتقل نمی‌کند.
+
 **خروجی۳ اکنون شاهد مرورگر واقعی دارد، ماندگاری intent پس از destroy هنوز باز است:** [363@163 / root](plan/development-v04-20261029/evidence/P03-363-163-root-browser-20261031.json) درخواست۲۰۱باپاسخ‌گم‌شده، بازیابیGET-only، پاسخ/پیگیری مدیر/عضو، نشستSDKتازه وreload، منع عضو دیگر/لغو و ثبات مالی را درDB تازه آزمود؛ محیط آزمون پاک‌سازی شد و مقصد استفاده روزمره نیست. B در همانP03 شاخه codex/p03-ticket-durable-intent-20261031 را برای server-held intent آماده می‌کند؛ قبل فرمان باید prepare باGET تأیید شود، پسازdestroy فقطخواندن و retryصرفاًبااقدامصریح/مجوزتازه. حقمحصولبسته، API/kernelقبلی وSQLاصلی محفوظ؛ تستhandler جدید شاهدSQL/Auth/بستنcontextنیست.
 
 **P11 متن مبهم اصلاح و مستقل دیده شد:** [365@9e / تصاویرroot](plan/development-v04-20261029/evidence/P11-9e70-root-copy-20261031/REVIEW.fa.md) کارت/جزئیات را از زمان قابل‌فیلتر جدا کرد؛ بازه معتبر۱۲null را با دلیل کنارگذاشت وclearآن‌ها را برگرداند. این اصلاح متن، گیت داده تاریخ‌دار واقعی و خطایخواندن/insights را نمی‌بندد؛ 75 شاهد مستقل تاریخی می‌ماند.
