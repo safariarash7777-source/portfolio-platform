@@ -8,6 +8,60 @@ These review modes do not authorize the old apply path. The explicit candidate
 `-Profile CorrectedAcl19V2` below adds a separate archive profile; `LegacyV1`
 remains the default seven-file contract.
 
+## Candidate failed checkpoint profile v2 revision 2
+
+`-Profile CorrectedAcl19FailedV2R2` selects `corrected-acl19-failed-v2r2`
+explicitly. It preserves the original failed status, old strict V2 profile and
+LegacyV1's mandatory seven files. There is no automatic downgrade or missing-file
+fallback. This candidate is code/offline evidence only; native metadata,
+Capture/Verify, installation and operational acceptance require separate review.
+
+The independent raw canonical policy is
+`docs/ops/p15-webpack-cache-20261030/CORRECTED-FAILED-V2R2-POLICY.json`:
+4431 bytes, SHA256
+`6a1c0113a53a7ac4d8f1cc07e2514fec07f13ec7bd5c4d2987e87120102837cc`.
+Its exact bytes are embedded inside the authenticated manifest and pinned
+independently by the local and remote validators. Do not normalize policy or
+binding bytes. Only reviewed executable Python source is LF-normalized for its
+source pin. The immutable parent binding remains 2351 bytes/hash7819.
+
+The format has 17 role descriptors and 16 complete encrypted streams. Only
+`original.final_comparison` (`comparison.private.json`) may be absent: its
+length, SHA256, owner, cipher name/length/hash and header must be explicit nulls.
+Native absence means ENOENT opening that exact child of a checked root-owned,
+private, non-symlink directory under the shared release lock. Parent failure,
+permission error, symlink, unknown error, or a final file appearing (even empty)
+requires reconciliation. Absence is observed before/after metadata and each
+stream; capture signs both observations. It does not prove historical
+never-creation or no deletion; these remain null. New UTC observations must not
+be backdated to the historical producer failure.
+
+`original.pre_comparison` is the real, separately preserved
+`comparison-before-correction.private.json` (3707 bytes, hash2ca79419...). It is
+not an alias for the absent final comparison or either strict correction role.
+The source/correction/supplement/binding/attestation role identities, source
+hashes, revision and policy hash are bound into the manifest MAC and the
+present-file headers. Sixteen fixed flat `v2r2-00.enc` through `v2r2-15.enc`
+use unchanged crypto/DPAPI; no placeholder is encrypted for the absent role.
+Verify authenticates before parsing/decrypting and hashes all 16 full plaintext
+streams to memory. It does not rerun SSH or turn a historical observation fresh.
+
+Native metadata checks absence and pinned small inputs before the full frozen
+gate, then rereads small artifacts and absence afterward. Source/target identity
+and release lock checks remain. As with strict V2, each SSH segment has its own
+guard and the final metadata pass checks source consistency; there is no single
+continuous lock across local encryption. Storage/currentSQL/capacity stay
+`NOT_VERIFIED`, readiness/release stay false, and installer/app/SQL are unchanged.
+
+Offline Windows tests: `pwsh -NoProfile -File ./offline-profile-v2r2.ps1`.
+Stage the exact policy in Git first (`git add`); the test requires binary Git
+policy bytes and the historical binding from HEAD, with no fixture repinning.
+The test creates only synthetic data/DPAPI keys/ciphertexts in ignored
+`test-output`, exercises the actual wrapper in fresh processes, and constructs
+and parses an actual native packet without executing it. Python pure tests:
+`python -m unittest discover -s . -p test_checkpoint_profile_v2r2.py -v`.
+They never call remote `run`, the native gate, a model or a database.
+
 ## Candidate corrected archive profile 2 (offline validation only)
 
 `Capture` and `Verify` accept explicit `-Profile CorrectedAcl19V2`. This is an

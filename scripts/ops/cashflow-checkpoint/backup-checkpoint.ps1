@@ -229,7 +229,7 @@ function Invoke-V2([string]$Mode) {
   }
 }
 try{
-  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify','ReviewCorrectedCheckpoint') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper -or $Profile -cnotin @('LegacyV1','CorrectedAcl19V2')){throw 'parameters'}
+  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify','ReviewCorrectedCheckpoint') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper -or $Profile -cnotin @('LegacyV1','CorrectedAcl19V2','CorrectedAcl19FailedV2R2')){throw 'parameters'}
   $parsed=[datetime]::MinValue
   if(-not [datetime]::TryParseExact($CheckpointId,'yyyyMMddTHHmmssZ',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::None,[ref]$parsed)){throw 'date'}
   if($Action -ceq 'ReviewCorrectedCheckpoint'){
@@ -270,6 +270,14 @@ print(json.dumps(module.review('backup-checkpoint.review-corrected.v1',json.load
   if(('CheckpointCrypto' -as [type]) -or ('CheckpointSsh' -as [type])){throw 'preloaded type'}
   Add-Type -AssemblyName System.Security
   Add-Type -Path (Join-Path $PSScriptRoot 'CheckpointCrypto.cs')
+  if($Profile -ceq 'CorrectedAcl19FailedV2R2'){
+    . (Join-Path $PSScriptRoot 'checkpoint-profile-v2.ps1')
+    . (Join-Path $PSScriptRoot 'checkpoint-profile-v2r2.ps1')
+    . (Join-Path $PSScriptRoot 'checkpoint-profile-v2r2-runtime.ps1')
+    $r2Mode=if($OfflineFixture){'offline-synthetic-v2r2'}else{'native-ssh-v2r2'}
+    Invoke-V2R2 $r2Mode
+    return
+  }
   if($Profile -ceq 'CorrectedAcl19V2'){
     . (Join-Path $PSScriptRoot 'checkpoint-profile-v2.ps1')
     $v2Mode=if($OfflineFixture){'offline-synthetic-v2'}else{'native-ssh-v2'}
