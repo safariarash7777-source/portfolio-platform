@@ -66,6 +66,10 @@ nativeGateExecuted is false. Fixtures cannot override production pins or select
 SSH. `offline-tests.ps1` independently checks unchanged version 1 behavior. No
 live Capture/SSH/backup transfer/restore/DDL/env/deploy or new credential is
 authorized or executed by these tests. Root owns live review and fresh preflight.
+The final v2 suite has 29 checks, including JSON-parsed UTC DateTime, an explicit
++03:30 DateTimeOffset and rejection of an unspecified timezone. Gate freshness
+uses the original instant rather than a culture-dependent local string; it does
+not rewrite the archived attestation or change the frozen gate.
 
 This directory owns the wrapper, .NET crypto helper, synthetic tests and sanitized receipts. The initial implementation's evidence remains in `offline-receipt-20261020.json`. The 23 October revision pins the bounded recovery correction and allows 1800 seconds per file for the measured slow native transfer; connection and metadata deadlines are unchanged. Its 16-check offline suite passes. Before live Capture, the coordinator verifies exact code hashes and release preflight under existing authorization. `.gitattributes` preserves tested source bytes; synthetic fixtures, keys and ciphertext are excluded from Git.
 

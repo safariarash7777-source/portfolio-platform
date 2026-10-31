@@ -38,7 +38,17 @@ function Assert-V2Proof($Proof,[string]$Mode,[switch]$Fresh) {
       $Proof.originalReceiptSha256 -cne $p.hashes[6] -or $Proof.correctionReceiptSha256 -cne $p.hashes[9] -or
       -not (Test-V2Bool $Proof.proofStopped $true) -or $Proof.proofNetwork -cne 'none' -or -not (Test-V2Bool $Proof.proofPortsPublished $false) -or -not (Test-V2Bool $Proof.sourceHealthy $true)){throw 'v2 proof'}
     foreach($key in @('sqlExecuted','backupRetried','filesTransferred','releaseAuthorized','captureConsumerIntegrated','installerConsumerIntegrated')){if(-not (Test-V2Bool $Proof.$key $false)){throw 'v2 proof boundary'}}
-    if($Fresh){$at=[DateTimeOffset]::MinValue;if(-not [DateTimeOffset]::TryParse($Proof.at,[ref]$at) -or [math]::Abs(([DateTimeOffset]::UtcNow-$at).TotalSeconds) -gt 900){throw 'v2 stale gate'}}
+    if($Fresh){
+      # ConvertFrom-Json may already have parsed UTC into DateTime. Converting
+      # that object implicitly to a local string discards its UTC kind/offset.
+      $at=[DateTimeOffset]::MinValue
+      if($Proof.at -is [DateTimeOffset]){$at=$Proof.at}
+      elseif($Proof.at -is [datetime] -and $Proof.at.Kind -ne [DateTimeKind]::Unspecified){$at=[DateTimeOffset]::new($Proof.at)}
+      elseif($Proof.at -is [string] -and $Proof.at -cmatch '(Z|[+-]\d{2}:\d{2})$'){
+        if(-not [DateTimeOffset]::TryParse($Proof.at,[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::None,[ref]$at)){throw 'v2 gate time'}
+      }else{throw 'v2 gate time'}
+      if([math]::Abs(([DateTimeOffset]::UtcNow-$at).TotalSeconds) -gt 900){throw 'v2 stale gate'}
+    }
   }elseif($Mode -ceq 'offline-synthetic-v2'){
     if($Proof.status -cne 'PASS_SYNTHETIC_PROFILE_V2' -or -not (Test-V2Bool $Proof.synthetic $true) -or -not (Test-V2Bool $Proof.nativeGateExecuted $false) -or
       $Proof.originalStatus -cne 'failed' -or -not (Test-V2Bool $Proof.releaseAuthorized $false) -or -not (Test-V2Bool $Proof.readiness $false)){throw 'v2 synthetic proof'}

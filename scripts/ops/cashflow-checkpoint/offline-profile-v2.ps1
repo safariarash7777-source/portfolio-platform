@@ -68,6 +68,9 @@ try{
   # Pure native vectors use the immutable production pins; never a runtime fixture override.
   $native=@{status='PASS_PINNED_SQL_RESTORE_READ_GATE';checkpoint=$stamp;bindingSha256=$pins.binding;sourceId=$pins.source;targetId=$pins.target;dumpSha256=$pins.hashes[0];dumpBytes=[long]2406546295;originalStatus='failed';correctionStatus='PASS_OWNED_COPY_ACL19_RECONCILIATION';originalReceiptSha256=$pins.hashes[6];correctionReceiptSha256=$pins.hashes[9];proofStopped=$true;proofNetwork='none';proofPortsPublished=$false;sourceHealthy=$true;sqlExecuted=$false;backupRetried=$false;filesTransferred=$false;releaseAuthorized=$false;captureConsumerIntegrated=$false;installerConsumerIntegrated=$false;at=[datetime]::UtcNow.ToString('o')}
   Assert-V2Proof ([pscustomobject]$native) 'native-ssh-v2' -Fresh;Assert $true 'native pure vector accepts only fixed identity/pins/boundaries'
+  $parsedNative=Clone $native;Assert-V2Proof $parsedNative 'native-ssh-v2' -Fresh;Assert $true 'JSON-parsed UTC DateTime retains its instant in Tehran timezone'
+  $parsedNative.at=[DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromMinutes(210));Assert-V2Proof $parsedNative 'native-ssh-v2' -Fresh;Assert $true 'DateTimeOffset +03:30 retains the same fresh instant'
+  $parsedNative.at=[datetime]::SpecifyKind([datetime]::UtcNow,[DateTimeKind]::Unspecified);Rejected {Assert-V2Proof $parsedNative 'native-ssh-v2' -Fresh} 'unspecified timezone never guessed for fresh native gate'
   $native.bindingSha256='0'*64;Rejected {Assert-V2Proof ([pscustomobject]$native) 'native-ssh-v2'} 'native binding pin cannot be repinned'
   $native.bindingSha256=$pins.binding;$native.at='2020-01-01T00:00:00Z';Rejected {Assert-V2Proof ([pscustomobject]$native) 'native-ssh-v2' -Fresh} 'Capture requires fresh gate; archive Verify is historical'
   $phase='crypto'
