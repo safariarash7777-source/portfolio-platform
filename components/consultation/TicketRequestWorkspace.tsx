@@ -11,7 +11,8 @@ import { afterConfirmedTicketAbsence, prepareTicketStorageAttempt, readTicketSto
 import { ticketStorageParent, type TicketInboxItem, type TicketStorageCapability, type TicketStorageEnvelope } from "@/lib/consultation/ticketStorageContracts";
 import { bindOriginalPreparation, readTicketAttemptStorage, sendTicketPreparation } from "@/lib/consultation/ticketAttemptStorageRequest";
 import { restorePreparedTicketAttempt, type TicketAttemptMetadata, type TicketPrepared } from "@/lib/consultation/ticketAttemptStorageContracts";
-import TicketRequestPanel, { blankTicketDraft, type TicketDraft } from "./TicketRequestPanel";
+import { diagnoseTicketServiceRight } from "@/lib/consultation/ticketServiceRightDiagnostic";
+import TicketRequestPanel, { blankTicketDraft, type TicketDraft, type TicketLegacyDiagnosticView } from "./TicketRequestPanel";
 
 type Pending = "preparation_unknown" | "preparation_absent" | "none" | "uncertain" | "confirmed_absent" | "request_found" | "readback_pending" | "unavailable";
 export default function TicketRequestWorkspace({ expectedActorId, initialRelationshipId, initialRequestId }: { expectedActorId: string; initialRelationshipId?: string; initialRequestId?: string }) {
@@ -20,6 +21,8 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
   const [preparations, setPreparations] = useState<TicketAttemptMetadata[] | null>(null);
   const durable = useRef<TicketPrepared | null>(null), durabilityReady = useRef(false);
   const [capability, setCapability] = useState<TicketStorageCapability>({ state: "not_connected", runId: null });
+  const [legacyDiagnostic, setLegacyDiagnostic] = useState<TicketLegacyDiagnosticView | null>(null);
+  const [legacyLoading, setLegacyLoading] = useState(false);
   const [draft, setDraft] = useState<TicketDraft>(() => blankTicketDraft()), [dirty, setDirty] = useState(false);
   const [reading, setReading] = useState(false), [posting, setPosting] = useState(false), [needsRefresh, setNeedsRefresh] = useState(false);
   const [pendingState, setPendingState] = useState<Pending>("none"), [message, setMessage] = useState("");
@@ -28,7 +31,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
   const attempt = useRef<TicketStorageAttempt | null>(null), saved = useRef<TicketReceipt | null>(null), lastLookup = useRef<TicketStorageEnvelope | null>(null);
   const confirmedHistory = useRef<TicketRead | null>(null), dirtyRef = useRef(false);
   const invalidateWrites = useCallback(() => { writeSequence.current++; }, []);
-  const cancelReads = useCallback(() => { sequence.current++; abort.current?.abort(); }, []);
+  const cancelReads = useCallback(() => { sequence.current++; abort.current?.abort(); setLegacyDiagnostic(null); setLegacyLoading(false); }, []);
   const suspendIdentity = useCallback(() => {
     // Keep the same actor's intent/draft privately in memory, but remove every
     // rendered authorization result until a fresh parent read authorizes it.
@@ -52,9 +55,46 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
     if (next.history.state === "ready") confirmedHistory.current = next;
     setData(next);
   }, []);
+  const readLegacyDiagnostic = useCallback((parent: ConsultationRead, generation: number, parentSignal: AbortSignal) => {
+    if (parent.actor.id !== expectedActorId || parent.selected?.clientId !== expectedActorId) return;
+    const current = () => live.current && generation === sequence.current && !parentSignal.aborted;
+    if (!current()) return;
+    setLegacyLoading(true);
+    // This independent read cannot delay or authorize a ticket/history operation.
+    void withDeadline(async signal => {
+      const client = createClient();
+      const carrier = await client.auth.getSession();
+      if (signal.aborted || !current()) throw Error("legacy_read_cancelled");
+      if (carrier.error || !carrier.data.session?.access_token) throw Error("legacy_auth_unavailable");
+      // The session's user is not permission evidence. Bind Auth and the data
+      // request to the same validated token, without changing global client state.
+      const jwt = carrier.data.session.access_token;
+      const identity = await client.auth.getUser(jwt);
+      if (signal.aborted || !current()) throw Error("legacy_read_cancelled");
+      if (identity.error || !identity.data.user) throw Error("legacy_auth_unavailable");
+      if (identity.data.user.id !== expectedActorId) {
+        clearPrivate("حساب تغییر کرده است؛ دادهٔ خصوصی قبلی نمایش داده نمی‌شود.");
+        throw Error("legacy_actor_changed");
+      }
+      const result = await client.from("entitlements")
+        .select("id,user_id,kind,source,starts_at,expires_at,revoked_at", { count: "exact" })
+        .eq("user_id", identity.data.user.id).order("id", { ascending: true }).range(0, 999)
+        .retry(false).setHeader("Authorization", `Bearer ${jwt}`).abortSignal(signal);
+      if (signal.aborted || !current()) throw Error("legacy_read_cancelled");
+      const snapshot = result.error || !Array.isArray(result.data)
+        ? { state: "unavailable", rows: null }
+        : { state: "ready", rows: result.data, complete: Number.isSafeInteger(result.count) && result.count !== null && result.count >= 0 && result.count <= 1000 && result.count === result.data.length };
+      return diagnoseTicketServiceRight(snapshot, expectedActorId, new Date().toISOString());
+    }, 10_000, parentSignal).then(value => {
+      if (current()) setLegacyDiagnostic({ ownerId: expectedActorId, value });
+    }).catch(() => {
+      if (current()) setLegacyDiagnostic({ ownerId: expectedActorId, value: diagnoseTicketServiceRight({ state: "unavailable", rows: null }, expectedActorId, new Date().toISOString()) });
+    }).finally(() => { if (current()) setLegacyLoading(false); });
+  }, [clearPrivate, expectedActorId]);
   const load = useCallback(async (relationshipId?: string, requestId?: string) => {
     if (!live.current) return;
     const generation = ++sequence.current; abort.current?.abort(); const controller = new AbortController(); abort.current = controller;
+    setLegacyDiagnostic(null); setLegacyLoading(false);
     setReading(true); setNeedsRefresh(true);
     try {
       const parentRead = await readConsultation({ actorId: expectedActorId, relationshipId, signal: controller.signal });
@@ -74,6 +114,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
       const relationship = parent.selected.id;
       if (attempt.current && JSON.parse(attempt.current.intent.body).command.relationshipId !== relationship) { clearPrivate("رابطهٔ تلاش خصوصی تغییر کرده است؛ تلاش قبلی نمایش داده نمی‌شود."); return; }
       setSource(parent); setIdentity("ready");
+      readLegacyDiagnostic(parent, generation, controller.signal);
       relation.current = relationship;
       const inbox = await readTicketStorage({ mode: "inbox", relationshipId: relationship }, parent, { signal: controller.signal });
       if (!live.current || generation !== sequence.current) return;
@@ -135,7 +176,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
     } catch {
       if (live.current && generation === sequence.current) { suspendIdentity(); setMessage("بازخوانی معتبر انجام نشد؛ تاریخچهٔ قبلی جای نتیجهٔ تازه نیست. نشست را بررسی و دوباره بازخوانی کنید؛ ثبت تکرار نشود."); }
     } finally { if (generation === sequence.current) setReading(false); }
-  }, [clearPrivate, expectedActorId, keepHistory, setLocation, suspendIdentity]);
+  }, [clearPrivate, expectedActorId, keepHistory, readLegacyDiagnostic, setLocation, suspendIdentity]);
   useEffect(() => {
     let disposed = false;
     let unsubscribe = () => {};
@@ -245,7 +286,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
   };
   const restorePreparation = async (preparationId: string) => {
     if (!live.current || !source?.selected || reading || posting || attempt.current || dirtyRef.current) return;
-    const generation = ++sequence.current; abort.current?.abort(); const controller = new AbortController(); abort.current = controller; setReading(true); setNeedsRefresh(true);
+    const generation = ++sequence.current; abort.current?.abort(); const controller = new AbortController(); abort.current = controller; setLegacyDiagnostic(null); setLegacyLoading(false); setReading(true); setNeedsRefresh(true);
     try {
       const result = await readTicketAttemptStorage({ mode: "lookup", relationshipId: source.selected.id, preparationId }, source, { signal: controller.signal });
       if (!live.current || generation !== sequence.current) return;
@@ -274,7 +315,7 @@ export default function TicketRequestWorkspace({ expectedActorId, initialRelatio
     {posting && <p role="status">همان تلاش در حال ثبت است؛ موفقیت هنوز تأیید نشده است.</p>}
     <button type="button" className="btn btn-outline" disabled={reading || posting} onClick={() => void load(relation.current, selectedRequest.current)}>بازخوانی بدون ارسال دوباره</button>
     {["confirmed_absent", "request_found", "preparation_absent"].includes(pendingState) && <button type="button" className="btn btn-outline" disabled={reading || posting} onClick={() => void retryAbsent()}>{pendingState === "preparation_absent" ? "حفظ صریح دوباره با همان متن و شناسه" : "تلاش صریح پس از تأیید نبود ثبت، با همان شناسه"}</button>}
-    {source && <TicketRequestPanel source={source} items={items} data={data} preparedAttempts={preparations} onRestorePreparation={id => void restorePreparation(id)} capability={capability} draft={draft} locked={locked} selectionLocked={selectionLocked} needsRefresh={needsRefresh}
+    {source && <TicketRequestPanel source={source} items={items} data={data} preparedAttempts={preparations} onRestorePreparation={id => void restorePreparation(id)} capability={capability} legacyDiagnostic={legacyDiagnostic} legacyLoading={legacyLoading} draft={draft} locked={locked} selectionLocked={selectionLocked} needsRefresh={needsRefresh}
       onDraft={value => { if (!locked) { setDraft(value); dirtyRef.current = true; setDirty(true); } }} onSubmit={() => void submit()}
       onSelect={requestId => { if (!selectionLocked) { selectedRequest.current = requestId; confirmedHistory.current = null; setData(null); setLocation(relation.current, requestId); void load(relation.current, requestId); } }}
       onNew={() => { if (!selectionLocked) { selectedRequest.current = undefined; confirmedHistory.current = null; setData(null); setDraft(blankTicketDraft()); setLocation(relation.current); setNeedsRefresh(!durabilityReady.current); } }}
