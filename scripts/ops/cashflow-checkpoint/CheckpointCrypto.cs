@@ -5,6 +5,60 @@ using System.Diagnostics;
 using System.Threading;
 using System.Security.Cryptography;
 
+// Diagnostics contain observations only. Never retain an exception message, command,
+// stderr, header, path, key, plaintext or digest value in a public failure object.
+public enum CheckpointFailureCode { UNATTRIBUTED, INVALID_INPUT, INPUT_LENGTH_EXCEEDED, INPUT_EOF_LENGTH_MISMATCH, INPUT_SHA256_MISMATCH, UNEXPECTED_EOF, IO_FAILURE, CRYPTO_FAILURE, LENGTH_OVERFLOW, SSH_START_FAILED, SSH_STDIN_FAILED, SSH_METADATA_LIMIT, SSH_EXIT_WAIT_TIMEOUT, SSH_DEADLINE_TIMEOUT, SSH_NONZERO_EXIT }
+public enum CheckpointFailurePhase { UNKNOWN, ENCRYPT_HEADER, ENCRYPT_DESTINATION, ENCRYPT_FRAME, ENCRYPT_READ, ENCRYPT_WRITE, ENCRYPT_LENGTH, ENCRYPT_HASH, ENCRYPT_FINALIZE, SSH_START, SSH_STDIN, SSH_METADATA, SSH_EXIT }
+public enum CheckpointHashState { UNKNOWN, NOT_CHECKED, MATCH, MISMATCH }
+public sealed class CheckpointTransportState {
+    public int? ExitCode {get;} public bool? TimedOut {get;}
+    public CheckpointTransportState(int? exitCode,bool? timedOut){ExitCode=exitCode;TimedOut=timedOut;}
+}
+public interface ICheckpointTransportObservation { CheckpointTransportState ObserveTransport(); }
+public sealed class CheckpointDiagnosticException : Exception {
+    public CheckpointFailureCode Code {get;} public CheckpointFailurePhase Phase {get;}
+    public long? ExpectedLength {get;} public long? ObservedLength {get;}
+    public CheckpointHashState HashState {get;} public CheckpointTransportState Transport {get;}
+    public CheckpointDiagnosticException(CheckpointFailureCode code,CheckpointFailurePhase phase,long? expected=null,long? observed=null,CheckpointHashState hash=CheckpointHashState.UNKNOWN,CheckpointTransportState transport=null)
+        :base("CHECKPOINT_OPERATION_FAILED") {
+        Code=Enum.IsDefined(typeof(CheckpointFailureCode),code)?code:CheckpointFailureCode.UNATTRIBUTED;
+        Phase=Enum.IsDefined(typeof(CheckpointFailurePhase),phase)?phase:CheckpointFailurePhase.UNKNOWN;
+        HashState=Enum.IsDefined(typeof(CheckpointHashState),hash)?hash:CheckpointHashState.UNKNOWN;
+        ExpectedLength=expected>=0?expected:null;ObservedLength=observed>=0?observed:null;Transport=transport;
+    }
+}
+public sealed class CheckpointDiagnostic {
+    public int Version=>1;
+    public string Code {get;} public string Phase {get;} public long? ExpectedLength {get;} public long? ObservedLength {get;}
+    public string HashState {get;} public int? SshExitCode {get;} public bool? SshTimedOut {get;}
+    internal CheckpointDiagnostic(CheckpointDiagnosticException failure){
+        Code=failure.Code.ToString();Phase=failure.Phase.ToString();ExpectedLength=failure.ExpectedLength;ObservedLength=failure.ObservedLength;
+        HashState=failure.HashState.ToString();SshExitCode=failure.Transport?.ExitCode;SshTimedOut=failure.Transport?.TimedOut;
+    }
+}
+public static class CheckpointFailures {
+    public static CheckpointTransportState Observe(Stream input){
+        try{return (input as ICheckpointTransportObservation)?.ObserveTransport();}catch{return new CheckpointTransportState(null,null);}
+    }
+    public static CheckpointDiagnosticException Input(CheckpointFailureCode code,CheckpointFailurePhase phase,long expected,long observed,CheckpointHashState hash,Stream input)
+        =>new CheckpointDiagnosticException(code,phase,expected,observed,hash,Observe(input));
+    public static CheckpointDiagnosticException Wrap(Exception error,CheckpointFailurePhase phase,long expected,long observed,CheckpointHashState hash,Stream input){
+        var code=error is EndOfStreamException?CheckpointFailureCode.UNEXPECTED_EOF:error is IOException?CheckpointFailureCode.IO_FAILURE:
+            error is CryptographicException?CheckpointFailureCode.CRYPTO_FAILURE:error is OverflowException?CheckpointFailureCode.LENGTH_OVERFLOW:CheckpointFailureCode.UNATTRIBUTED;
+        return Input(code,phase,expected,observed,hash,input);
+    }
+    public static CheckpointDiagnosticException SshExit(bool waitExpired,bool deadlineExpired,int? exitCode)
+        =>new CheckpointDiagnosticException(waitExpired?CheckpointFailureCode.SSH_EXIT_WAIT_TIMEOUT:deadlineExpired?CheckpointFailureCode.SSH_DEADLINE_TIMEOUT:
+            exitCode.HasValue && exitCode.Value!=0?CheckpointFailureCode.SSH_NONZERO_EXIT:CheckpointFailureCode.UNATTRIBUTED,
+            CheckpointFailurePhase.SSH_EXIT,transport:new CheckpointTransportState(exitCode,deadlineExpired));
+    public static CheckpointDiagnostic Describe(Exception error){
+        // PowerShell may wrap a method exception. No Message, Data or StackTrace is inspected.
+        for(int i=0;error!=null && i<8;i++,error=error.InnerException)
+            if(error is CheckpointDiagnosticException known)return new CheckpointDiagnostic(known);
+        return new CheckpointDiagnostic(new CheckpointDiagnosticException(CheckpointFailureCode.UNATTRIBUTED,CheckpointFailurePhase.UNKNOWN));
+    }
+}
+
 // File framing only; encryption/authentication are the .NET AES/HMAC primitives.
 public static class CheckpointCrypto {
     public const int BufferSize = 65536;
@@ -33,23 +87,33 @@ public static class CheckpointCrypto {
     }
     public static void Encrypt(Stream input,string path,string header,long expectedLength,string expectedHash,byte[] master) {
         var encKey=Slice(master,0);var macKey=Slice(master,32);var buffer=new byte[BufferSize];
+        long count=0;var phase=CheckpointFailurePhase.ENCRYPT_HEADER;var hash=CheckpointHashState.NOT_CHECKED;
         try {
-            var headerBytes=Encoding.UTF8.GetBytes(header);if(headerBytes.Length>16384 || expectedLength<0)throw new InvalidDataException();
+            var headerBytes=Encoding.UTF8.GetBytes(header);if(headerBytes.Length>16384 || expectedLength<0)throw CheckpointFailures.Input(CheckpointFailureCode.INVALID_INPUT,phase,expectedLength,count,hash,input);
+            phase=CheckpointFailurePhase.ENCRYPT_DESTINATION;
             using var output=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None);
             using var mac=new HMACSHA256(macKey);using var writer=new MacWriter(output,mac);using var aes=Aes.Create();
             aes.KeySize=256;aes.Mode=CipherMode.CBC;aes.Padding=PaddingMode.PKCS7;aes.Key=encKey;aes.GenerateIV();
+            phase=CheckpointFailurePhase.ENCRYPT_FRAME;
             // Magic + little-endian UInt32 header size + exact UTF8 header + random IV.
             writer.Write(Magic,0,Magic.Length);var size=BitConverter.GetBytes(headerBytes.Length);if(!BitConverter.IsLittleEndian)Array.Reverse(size);
             writer.Write(size,0,4);writer.Write(headerBytes,0,headerBytes.Length);writer.Write(aes.IV,0,16);
-            using var sha=IncrementalHash.CreateHash(HashAlgorithmName.SHA256);long count=0;
+            using var sha=IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             using(var cipher=new CryptoStream(writer,aes.CreateEncryptor(),CryptoStreamMode.Write,true)) {
-                int n;while((n=input.Read(buffer,0,buffer.Length))>0){count=checked(count+n);if(count>expectedLength)throw new InvalidDataException();sha.AppendData(buffer,0,n);cipher.Write(buffer,0,n);}
+                phase=CheckpointFailurePhase.ENCRYPT_READ;
+                int n;while((n=input.Read(buffer,0,buffer.Length))>0){count=checked(count+n);if(count>expectedLength)throw CheckpointFailures.Input(CheckpointFailureCode.INPUT_LENGTH_EXCEEDED,phase,expectedLength,count,hash,input);sha.AppendData(buffer,0,n);phase=CheckpointFailurePhase.ENCRYPT_WRITE;cipher.Write(buffer,0,n);phase=CheckpointFailurePhase.ENCRYPT_READ;}
                 var actual=Convert.ToHexString(sha.GetHashAndReset()).ToLowerInvariant();
-                if(count!=expectedLength || actual!=expectedHash)throw new InvalidDataException();
+                phase=CheckpointFailurePhase.ENCRYPT_LENGTH;
+                if(count!=expectedLength)throw CheckpointFailures.Input(CheckpointFailureCode.INPUT_EOF_LENGTH_MISMATCH,phase,expectedLength,count,hash,input);
+                phase=CheckpointFailurePhase.ENCRYPT_HASH;hash=actual==expectedHash?CheckpointHashState.MATCH:CheckpointHashState.MISMATCH;
+                if(actual!=expectedHash)throw CheckpointFailures.Input(CheckpointFailureCode.INPUT_SHA256_MISMATCH,phase,expectedLength,count,hash,input);
+                phase=CheckpointFailurePhase.ENCRYPT_FINALIZE;
                 cipher.FlushFinalBlock();
             }
             mac.TransformFinalBlock(Array.Empty<byte>(),0,0);output.Write(mac.Hash,0,32);output.Flush(true);
-        } finally {CryptographicOperations.ZeroMemory(encKey);CryptographicOperations.ZeroMemory(macKey);CryptographicOperations.ZeroMemory(buffer);}
+        } catch(CheckpointDiagnosticException){throw;}
+        catch(Exception error){throw CheckpointFailures.Wrap(error,phase,expectedLength,count,hash,input);}
+        finally {CryptographicOperations.ZeroMemory(encKey);CryptographicOperations.ZeroMemory(macKey);CryptographicOperations.ZeroMemory(buffer);}
     }
     public static void Verify(string path,string expectedHeader,long expectedLength,string expectedHash,byte[] master) {
         var encKey=Slice(master,0);var macKey=Slice(master,32);var buffer=new byte[BufferSize];
@@ -81,18 +145,30 @@ public static class CheckpointCrypto {
 
 // Binary stdout never goes through PowerShell's text pipeline. Stderr is drained and discarded.
 public sealed class CheckpointSsh : IDisposable {
-    readonly Process process;readonly Timer deadline;bool timedOut;
-    public Stream Output=>process.StandardOutput.BaseStream;
+    readonly Process process;readonly Timer deadline;volatile bool timedOut;
+    public Stream Output=>new ObservedOutput(process.StandardOutput.BaseStream,ObserveTransport);
+    // Only inspect already available process state; no wait, read, retry or command.
+    CheckpointTransportState ObserveTransport(){int? exit=null;try{if(process.HasExited)exit=process.ExitCode;}catch{}return new CheckpointTransportState(exit,timedOut);}
+    sealed class ObservedOutput : Stream,ICheckpointTransportObservation {
+        readonly Stream input;readonly Func<CheckpointTransportState> observe;
+        public ObservedOutput(Stream input,Func<CheckpointTransportState> observe){this.input=input;this.observe=observe;}
+        public CheckpointTransportState ObserveTransport()=>observe();
+        public override int Read(byte[] b,int o,int n)=>input.Read(b,o,n);
+        public override bool CanRead=>input.CanRead;public override bool CanWrite=>input.CanWrite;public override bool CanSeek=>input.CanSeek;
+        public override long Length=>input.Length;public override long Position{get=>input.Position;set=>input.Position=value;}
+        public override void Flush()=>input.Flush();public override void Write(byte[] b,int o,int n)=>input.Write(b,o,n);
+        public override long Seek(long o,SeekOrigin so)=>input.Seek(o,so);public override void SetLength(long n)=>input.SetLength(n);
+    }
     public CheckpointSsh(string program,string script,int seconds) {
         var psi=new ProcessStartInfo("ssh.exe"){UseShellExecute=false,CreateNoWindow=true,RedirectStandardInput=true,RedirectStandardOutput=true,RedirectStandardError=true};
         foreach(var arg in new[]{"-T","-o","BatchMode=yes","-o","StrictHostKeyChecking=yes","-o","ConnectTimeout=15","-o","ConnectionAttempts=1","-o","ServerAliveInterval=15","-o","ServerAliveCountMax=2","-i","C:/Users/Asus/.ssh/codex-liara-portfolio","root@62.60.191.24",program})psi.ArgumentList.Add(arg);
         process=new Process{StartInfo=psi};process.ErrorDataReceived+=(s,e)=>{};
-        if(!process.Start())throw new IOException();process.BeginErrorReadLine();
+        try{if(!process.Start())throw new IOException();}catch{throw new CheckpointDiagnosticException(CheckpointFailureCode.SSH_START_FAILED,CheckpointFailurePhase.SSH_START);}process.BeginErrorReadLine();
         deadline=new Timer(_=>{timedOut=true;try{process.Kill(true);}catch{}},null,TimeSpan.FromSeconds(seconds),Timeout.InfiniteTimeSpan);
         try{process.StandardInput.Write(script);process.StandardInput.Close();}
-        catch{deadline.Dispose();try{process.Kill(true);}catch{}process.Dispose();throw;}
+        catch{var observed=ObserveTransport();deadline.Dispose();try{process.Kill(true);}catch{}process.Dispose();throw new CheckpointDiagnosticException(CheckpointFailureCode.SSH_STDIN_FAILED,CheckpointFailurePhase.SSH_STDIN,transport:observed);}
     }
-    public byte[] ReadMetadata(){using var output=new MemoryStream();var b=new byte[4096];int n;while((n=Output.Read(b,0,b.Length))>0){if(output.Length+n>65536)throw new InvalidDataException();output.Write(b,0,n);}Complete();return output.ToArray();}
-    public void Complete(){if(!process.WaitForExit(10000)){try{process.Kill(true);}catch{}throw new IOException();}if(timedOut || process.ExitCode!=0)throw new IOException();deadline.Change(Timeout.Infinite,Timeout.Infinite);}
+    public byte[] ReadMetadata(){using var output=new MemoryStream();var b=new byte[4096];int n;while((n=Output.Read(b,0,b.Length))>0){if(output.Length+n>65536)throw new CheckpointDiagnosticException(CheckpointFailureCode.SSH_METADATA_LIMIT,CheckpointFailurePhase.SSH_METADATA,transport:ObserveTransport());output.Write(b,0,n);}Complete();return output.ToArray();}
+    public void Complete(){if(!process.WaitForExit(10000)){try{process.Kill(true);}catch{}throw CheckpointFailures.SshExit(true,timedOut,ObserveTransport().ExitCode);}if(timedOut || process.ExitCode!=0)throw CheckpointFailures.SshExit(false,timedOut,process.ExitCode);deadline.Change(Timeout.Infinite,Timeout.Infinite);}
     public void Dispose(){deadline.Dispose();try{if(!process.HasExited)process.Kill(true);}catch{}process.Dispose();}
 }

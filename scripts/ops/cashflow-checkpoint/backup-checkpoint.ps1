@@ -8,11 +8,28 @@ param(
   [string]$Profile='LegacyV1'
 )
 $ErrorActionPreference='Stop'
-$stage='parameters';$master=$null;$macKey=$null
+$stage='parameters';$master=$null;$macKey=$null;$failureTypesLoaded=$false
 $approvedHelper='1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2'
 $files=@('postgres.dump','globals.private.sql','cron.private.json','source-inventory.private','target-inventory.private','comparison.private.json','receipt.json')
 $utf8=[Text.UTF8Encoding]::new($false,$true)
 $entropy=$utf8.GetBytes('cashflow-backup-checkpoint.v1')
+function SafeFailureStage([string]$Value){
+  $allowed=@('parameters','reviewed-consumer-source','read-only-consumer','fresh-process','metadata','destination','capture','manifest','manifest-authentication','verify','receipt',
+    'v2-metadata','v2-destination','v2-capture','v2-post-capture','v2-manifest','v2-manifest-authentication','v2-verify',
+    'r2-metadata','r2-destination','r2-capture','r2-post-capture','r2-manifest','r2-manifest-authentication','r2-verify')
+  if($Value -cin $allowed){return $Value};return 'unattributed'
+}
+function SafeFailureDetails([Exception]$Exception){
+  $detail=[ordered]@{version=1;code='UNATTRIBUTED';phase='UNKNOWN';expectedLength=$null;observedLength=$null;hashState='UNKNOWN';sshExitCode=$null;sshTimedOut=$null}
+  # The type is trusted only after this invocation compiled its reviewed source.
+  # Unknown exceptions never contribute their Message, Data, StackTrace or path.
+  if($script:failureTypesLoaded){try{
+    $known=[CheckpointFailures]::Describe($Exception)
+    $detail.code=$known.Code;$detail.phase=$known.Phase;$detail.expectedLength=$known.ExpectedLength;$detail.observedLength=$known.ObservedLength
+    $detail.hashState=$known.HashState;$detail.sshExitCode=$known.SshExitCode;$detail.sshTimedOut=$known.SshTimedOut
+  }catch{}}
+  return ($detail|ConvertTo-Json -Compress)
+}
 function JsonBytes($Value){return ,$utf8.GetBytes(($Value|ConvertTo-Json -Depth 12 -Compress))}
 function WriteNew([string]$Path,[byte[]]$Bytes){$f=[IO.File]::Open($Path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$f.Write($Bytes,0,$Bytes.Length);$f.Flush($true)}finally{$f.Dispose()}}
 function CheckPath([string]$Path){$p=[IO.Path]::GetFullPath($Path);$walk=$p;while($walk){if([IO.File]::Exists($walk) -or [IO.Directory]::Exists($walk)){if(([IO.File]::GetAttributes($walk) -band [IO.FileAttributes]::ReparsePoint)-ne 0){throw 'path'}};$walk=[IO.Path]::GetDirectoryName($walk)};return $p}
@@ -238,6 +255,7 @@ try{
     $stage='reviewed-consumer-source'
     if(('CheckpointCrypto' -as [type]) -or ('CheckpointSsh' -as [type])){throw 'preloaded type'}
     Add-Type -Path (Join-Path $PSScriptRoot 'CheckpointCrypto.cs')
+    $failureTypesLoaded=$true
     $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../..'))
     $gateRoot=Join-Path $repoRoot 'docs/ops/p15-webpack-cache-20261030'
     $consumerBytes=$utf8.GetBytes(([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'corrected-checkpoint-consumer.py'),$utf8)).Replace("`r`n","`n"))
@@ -270,6 +288,7 @@ print(json.dumps(module.review('backup-checkpoint.review-corrected.v1',json.load
   if(('CheckpointCrypto' -as [type]) -or ('CheckpointSsh' -as [type])){throw 'preloaded type'}
   Add-Type -AssemblyName System.Security
   Add-Type -Path (Join-Path $PSScriptRoot 'CheckpointCrypto.cs')
+  $failureTypesLoaded=$true
   if($Profile -ceq 'CorrectedAcl19FailedV2R2'){
     . (Join-Path $PSScriptRoot 'checkpoint-profile-v2.ps1')
     . (Join-Path $PSScriptRoot 'checkpoint-profile-v2r2.ps1')
@@ -341,7 +360,8 @@ print(json.dumps(module.review('backup-checkpoint.review-corrected.v1',json.load
     [Console]::WriteLine("CHECKPOINT_VERIFIED files=7 mode=$sourceMode")
   }
 }catch{
-  [Console]::Error.WriteLine("CHECKPOINT_FAILED stage=$stage code=OPERATION_FAILED")
+  $safeStage=SafeFailureStage $stage;$details=SafeFailureDetails $_.Exception
+  [Console]::Error.WriteLine("CHECKPOINT_FAILED stage=$safeStage code=OPERATION_FAILED diagnostic=$details")
   exit 1
 }finally{
   if($master){[Array]::Clear($master,0,$master.Length)}
