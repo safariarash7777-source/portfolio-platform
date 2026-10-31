@@ -333,5 +333,40 @@
         "baselineBlob": "5716086481f5d3e747d26a05ad9994a2065855ed"
       }
     }
+  },
+  "diagnosticException": {
+    "baseCandidate": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+    "helperCandidate": "f353300d61a4738b7b6bc2fd2177f9cdc5955a4b",
+    "registrationCandidate": "1ffa97a9f13692435fb3fbe9caa0528b711fafd0",
+    "files": {
+      "lib/consultation/ticketServiceRightDiagnostic.ts": {
+        "oldBlob": null,
+        "newBlob": "b6498e49effcb0bea49a9a3eed8a0abf79947663"
+      },
+      "lib/consultation/ticketServiceRightDiagnostic.test.ts": {
+        "oldBlob": null,
+        "newBlob": "708d54554465fa67d4b383d7ac15a1d926e4631a"
+      },
+      "package.json": {
+        "oldBlob": "376888d570892d780d5579144fa7d0881a383347",
+        "newBlob": "294d3cbe451a7f845890d64970eea1584ea9ac34"
+      },
+      "vercel.json": {
+        "oldBlob": "1fbca006e8c328a8429cfef51c81fd24fbeb0af9",
+        "newBlob": "4b7da304e8fe226c00d51901123c643e25e2ba59"
+      },
+      "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md": {
+        "oldBlob": "1f089ca2847f5134816412915e1efdcf632d61a7",
+        "newBlob": "6622b959630c87f958bf367f5691961f7dfbbfc3"
+      },
+      "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
+        "oldBlob": "43e96ed730ba7f863dd08b80ec9389151d541697",
+        "newBlob": "788a821abd4b888ae5c2c3a874aa991d4a211ae2"
+      }
+    },
+    "libTree": {
+      "oldBlob": "13348d2bdad83a92467382d3345073fa1f88c30e",
+      "newBlob": "db617582e6d7b477d24a8569c7dd382f4ee33e33"
+    }
   }
 }

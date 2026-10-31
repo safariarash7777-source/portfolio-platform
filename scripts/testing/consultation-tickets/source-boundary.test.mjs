@@ -38,11 +38,22 @@ test('release control is server-only and deployment stop names only the candidat
     assert.doesNotMatch(read(file), /consultationWriteRelease|CONSULTATION_P03_WRITES_RELEASE/);
   }
   const config = JSON.parse(read('vercel.json'));
-  assert.deepEqual(config.git.deploymentEnabled, { 'codex/p03-reader-release-20261031': false, 'codex/p03-feedback-reader-acceptance-20261031': false });
+  assert.deepEqual(config.git.deploymentEnabled, { 'codex/p03-reader-release-20261031': false, 'codex/p03-feedback-reader-acceptance-20261031': false, 'codex/p01-p05-service-right-diagnostic-20261031': false });
   assert.equal(config.crons.length, 2);
 });
 test('shared source stays on frozen 360; package hashes include only the approved browser driver delta', () => {
   const expected = JSON.parse(read('scripts/testing/consultation-tickets/protected-source.json'));
+  const diagnostic = expected.diagnosticException;
+  assert.equal(diagnostic.baseCandidate, '1bf8f86b7bcaaedcb8320e178b1589a33b88e306');
+  assert.equal(diagnostic.helperCandidate, 'f353300d61a4738b7b6bc2fd2177f9cdc5955a4b');
+  const historical = { ...expected }; delete historical.diagnosticException;
+  assert.equal(hash(JSON.stringify(historical, null, 2)+'\n'), '2bbacbfa3ead0f0dc7867bfb75ecde61f85d844a23bd0f00a35661832226046e', 'historical manifest changed');
+  const diagnosticHash = (path, baseline) => {
+    const entry = path === 'lib' ? diagnostic.libTree : diagnostic.files[path];
+    if (!entry) return baseline;
+    assert.equal(entry.oldBlob, baseline, 'diagnostic historical binding changed: '+path);
+    return entry.newBlob;
+  };
   const feedback = expected.feedbackAcceptanceException;
   assert.equal(feedback.baseCandidate, '699ea1677c21c216be52869318cf0ac1c4525744');
   const feedbackHash = (path, baseline) => {
@@ -69,39 +80,81 @@ test('shared source stays on frozen 360; package hashes include only the approve
   };
   for (const [path, object] of Object.entries(expected.objects)) {
     const current = execFileSync('git', ['rev-parse', `HEAD:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
-    assert.equal(current, feedbackHash(path, releaseHash(path, allocatedHash(path, object))), `shared object changed: ${path}`);
+    assert.equal(current, diagnosticHash(path, feedbackHash(path, releaseHash(path, allocatedHash(path, object)))), `shared object changed: ${path}`);
   }
   for (const [path, binding] of Object.entries(expected.consumerReauthException.files)) {
     const current = execFileSync('git', ['rev-parse', `HEAD:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
-    assert.equal(current, feedbackHash(path, releaseHash(path, allocatedHash(path, binding.newBlob))), `consumer identity fix changed beyond its reviewed binding: ${path}`);
+    assert.equal(current, diagnosticHash(path, feedbackHash(path, releaseHash(path, allocatedHash(path, binding.newBlob)))), `consumer identity fix changed beyond its reviewed binding: ${path}`);
   }
   for (const [path, binding] of Object.entries(allocation)) {
     const current = execFileSync('git', ['rev-parse', `HEAD:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
-    assert.equal(current, feedbackHash(path, releaseHash(path, binding.newBlob)), `reserved durability object changed: ${path}`);
+    assert.equal(current, diagnosticHash(path, feedbackHash(path, releaseHash(path, binding.newBlob))), `reserved durability object changed: ${path}`);
   }
   for (const [path, binding] of Object.entries(expected.unchangedFrom163)) {
     assert.equal(allocation[path], undefined, `frozen source cannot be allocated: ${path}`);
     const current = execFileSync('git', ['rev-parse', `HEAD:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
-    assert.equal(current, feedbackHash(path, releaseHash(path, binding)), `frozen 163 source changed: ${path}`);
+    assert.equal(current, diagnosticHash(path, feedbackHash(path, releaseHash(path, binding))), `frozen 163 source changed: ${path}`);
   }
   for (const [path, entry] of Object.entries(release.files)) {
     const current = execFileSync('git', ['rev-parse', `HEAD:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
-    assert.equal(current, feedbackHash(path, entry.newBlob), `reader release source changed: ${path}`);
+    assert.equal(current, diagnosticHash(path, feedbackHash(path, entry.newBlob)), `reader release source changed: ${path}`);
     if (entry.oldBlob !== null) {
       const old = execFileSync('git', ['rev-parse', `${release.baseCandidate}:${path}`], { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
       assert.equal(old, entry.oldBlob, `reader release previous source changed: ${path}`);
     } else assert.throws(() => execFileSync('git', ['cat-file', '-e', `${release.baseCandidate}:${path}`], { cwd: root, stdio: 'pipe', windowsHide: true }));
   }
   for (const [path, entry] of Object.entries(feedback.files)) {
-    assert.equal(execFileSync('git', ['rev-parse', 'HEAD:'+path], { cwd: root, encoding: 'utf8', windowsHide: true }).trim(), entry.newBlob, 'feedback candidate changed: '+path);
+    assert.equal(execFileSync('git', ['rev-parse', 'HEAD:'+path], { cwd: root, encoding: 'utf8', windowsHide: true }).trim(), diagnosticHash(path, entry.newBlob), 'feedback candidate changed: '+path);
     if(entry.oldBlob!==null) assert.equal(execFileSync('git', ['rev-parse', feedback.baseCandidate+':'+path], { cwd: root, encoding: 'utf8', windowsHide: true }).trim(), entry.oldBlob, 'feedback base changed: '+path);
     else assert.throws(()=>execFileSync('git',['cat-file','-e',feedback.baseCandidate+':'+path],{cwd:root,stdio:'pipe',windowsHide:true}));
   }
   for (const path of ['app','lib','components','public','middleware.ts','next.config.js','package.json','package-lock.json','sql','supabase']) {
     const current=execFileSync('git',['rev-parse','HEAD:'+path],{cwd:root,encoding:'utf8',windowsHide:true}).trim();
     const prior=execFileSync('git',['rev-parse',feedback.baseCandidate+':'+path],{cwd:root,encoding:'utf8',windowsHide:true}).trim();
-    assert.equal(current,prior,'reader699 or immutable SQL changed: '+path);
+    assert.equal(current,diagnosticHash(path,prior),'reader699 or immutable SQL changed: '+path);
   }
+
+  const git = args => execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
+  const helpers = {
+    'lib/consultation/ticketServiceRightDiagnostic.ts': 'b6498e49effcb0bea49a9a3eed8a0abf79947663',
+    'lib/consultation/ticketServiceRightDiagnostic.test.ts': '708d54554465fa67d4b383d7ac15a1d926e4631a',
+  };
+  assert.deepEqual(Object.keys(diagnostic.files).sort(), [...Object.keys(helpers), 'package.json', 'vercel.json', 'docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md', 'scripts/testing/consultation-tickets/source-boundary.test.mjs'].sort());
+  for (const [path, entry] of Object.entries(diagnostic.files)) {
+    assert.equal(git(['rev-parse', 'HEAD:'+path]), entry.newBlob, 'diagnostic candidate changed: '+path);
+    if (Object.hasOwn(helpers, path)) {
+      assert.equal(entry.oldBlob, null); assert.equal(entry.newBlob, helpers[path]);
+      assert.throws(() => execFileSync('git', ['cat-file', '-e', feedback.baseCandidate+':'+path], { cwd: root, stdio: 'pipe', windowsHide: true }));
+    } else {
+      const prior = feedback.files[path]?.newBlob ?? git(['rev-parse', feedback.baseCandidate+':'+path]);
+      assert.equal(entry.oldBlob, prior, 'diagnostic previous source changed: '+path);
+    }
+  }
+  // Compare every original lib blob/mode/path, not just an allowed tree label.
+  // The existing shallow CI already fetches699; no new history/network is needed.
+  const libRows = ref => git(['ls-tree', '-r', ref+':lib']).split('\n').sort();
+  const currentLib = libRows('HEAD'), helperRows = Object.entries(helpers).map(([path, blob]) => '100644 blob '+blob+'\t'+path.slice(4));
+  assert.deepEqual(currentLib, [...libRows(feedback.baseCandidate), ...helperRows].sort(), 'lib delta is not exactly the two frozen additions');
+  assert.equal(diagnostic.libTree.oldBlob, git(['rev-parse', feedback.baseCandidate+':lib']));
+  assert.equal(diagnostic.libTree.newBlob, 'db617582e6d7b477d24a8569c7dd382f4ee33e33');
+  const helper = read('lib/consultation/ticketServiceRightDiagnostic.ts');
+  assert.doesNotMatch(helper, /(?:from\s*|import\s*\(|require\s*\()["'][^"']*(?:scripts\/testing|owned-fixture|unit-fixture|supabase)/);
+  assert.doesNotMatch(helper, /process\.env|\bfetch\s*\(|\brpc\s*\(/);
+
+  const literal = 'lib/consultation/ticketServiceRightDiagnostic.test.ts';
+  const packageBefore = execFileSync('git', ['show', feedback.baseCandidate+':package.json'], { cwd: root, encoding: 'utf8', windowsHide: true }).replaceAll('\r\n', '\n');
+  const packageNow = read('package.json'), core = JSON.parse(packageNow).scripts['test:core'];
+  assert.equal(packageNow.split(literal).length, 2);
+  assert.ok(core.indexOf(literal) >= 0 && core.indexOf(literal) < core.indexOf(' && '));
+  assert.equal(packageNow.replace(' '+literal, ''), packageBefore, 'existing package bytes/literals changed');
+  const config = JSON.parse(read('vercel.json'));
+  delete config.git.deploymentEnabled['codex/p01-p05-service-right-diagnostic-20261031'];
+  delete config.git.deploymentEnabled['codex/p03-feedback-reader-acceptance-20261031'];
+  assert.deepEqual(config, JSON.parse(git(['show', feedback.baseCandidate+':vercel.json'])), 'old crons/config changed');
+  const delivery = 'docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md';
+  assert.ok(read(delivery).startsWith(execFileSync('git', ['show', feedback.baseCandidate+':'+delivery], { cwd: root, encoding: 'utf8', windowsHide: true }).replaceAll('\r\n', '\n')), 'historical delivery rewritten');
+  const exactPaths = [...new Set([...Object.keys(feedback.files), 'scripts/testing/consultation-tickets/protected-source.json', ...Object.keys(diagnostic.files)])].sort();
+  assert.deepEqual(git(['diff', '--name-only', feedback.baseCandidate, 'HEAD']).split('\n').sort(), exactPaths, 'unallocated repository source changed');
 
 });
 
