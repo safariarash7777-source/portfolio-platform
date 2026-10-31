@@ -64,7 +64,7 @@ SHA256 bytes اصلی Git برای requests برابر87a7a02774c8e215e2e72ae68d
 
 baseline موجود sql/consultation_workflow.sql پیش‌نیاز است؛ نامزد تازه‌ای برای replay همگانی نیست و خودش هر consultation collision را رد می‌کند. پیش‌نیازهای declared آن auth.uid، member_holding_versions، member_debt_positions، member_cash_flow_versions، member_cash_flow_entries، member_goals_versions، research_workbook_versions و research_workbook_reviews و نقش installer با superuser یا bypassrls هستند. نوع/ستون/توابع و ACL واقعی نیز باید با source بررسی شوند؛ فهرست نام‌ها کافی نیست. auth.users و نقش‌های موجود Supabase و UUID/hash/time توابع DB باید در همان مقصد معتبر باشند. grants/role ساختگیِ CI جایگزین این موجودی نیست.
 
-requests علاوه بر load_consultation و access/keys از reject_mutation، uid/txt/amount/state و جداول consultation موجود استفاده می‌کند. prepared به authorized/command/capability موجود و همان رابطه/lock/trigger وابسته است و command را اجرا نمی‌کند. roster و replies وابستگی SQL تازهٔ مستقیم این بسته نیستند؛ baseline سفر عضو باید محفوظ و سازگار بماند و این دو فایل به بهانهٔ P03 دوباره نصب نمی‌شوند. sql/test و bootstrap-fixture/owned-fixture، چهار کاربر تازه و حق run-owned، هیچ‌کدام ورودی نصب محصول نیستند.
+requests علاوه بر load_consultation و access/keys از reject_mutation، uid/txt/amount/state و جداول consultation موجود استفاده می‌کند. prepared به authorized/command/capability موجود و همان رابطه/lock/trigger وابسته است؛ command در این نام، validator است و prepared هرگز execute نویسنده را صدا نمی‌زند. roster و replies وابستگی SQL تازهٔ مستقیم این بسته نیستند؛ baseline سفر عضو باید محفوظ و سازگار بماند و این دو فایل به بهانهٔ P03 دوباره نصب نمی‌شوند. sql/test و bootstrap-fixture/owned-fixture، چهار کاربر تازه و حق run-owned، هیچ‌کدام ورودی نصب محصول نیستند.
 
 ### خوانندهٔ سازگار پیش از هر نویسندهٔ آینده
 
@@ -85,3 +85,267 @@ artifact فعلی GET و POST را در یک build دارد؛ binary مستقل 
 ### تحویل و تصمیم باز
 
 بسته برای بررسی مستقل root آماده می‌شود؛ manifest، commit مستندات، آرشیو Git، SQLهای عیناً برابر blob و رسیدهای رسمی را جدا مقید می‌کند. این تحویل در همان برگ P03 است و دفتر وضعیت موازی نمی‌سازد. دریافت پیام با پذیرش بسته/مقصد فرق دارد. کار بعدی root، تعیین target/caller و برنامهٔ نصب/برگشت سازگار و مرجع حق واقعی است؛ پذیرش انسانی آرش و چرخهٔ کامل محصول همچنان بازند. START-B در این تحویل SQL apply، تغییر env/installer، merge/main، deploy، فعال‌سازی حق یا اجرای دوبارهٔ آزمون موفق انجام نمی‌دهد.
+
+## پیوست تطبیق catalog؛ پیشنهاد خواندنی برای root، اجرا نشده توسط B
+
+root بستهٔ review-only با ZIP76244fe52ba94ac53e0704d80625d0eb15b57f5e54fb7736a41ec6b8d29a7d46 و manifest431902dde44f15cc273c36d36abe041e2751fd052db47c3089e704e9b0591aa5 را مستقل پذیرفت؛ این پذیرش install-ready نیست. آن بسته و manifest قبلی immutable می‌مانند؛ پیوست حاضر revision مستندات است و بایت کد/SQL c4 را تغییر نمی‌دهد. root گزارش کرد در ۳۱ اکتبر۲۰۲۶ ساعت۰۴:۲۵:۳۰ تهران، خواندن catalog از sourceID9193 فقط consultation_private، نوزده تابع baseline شامل دو wrapper عمومی و نه جدول FORCE RLS را نشان داده و namespace/RPC تیکت/prepared مشاهده نشده است. B این مشاهدهٔ مقصد را مستقلاً اجرا نکرده؛ نام/تعداد، انطباق دقیق baseline را اثبات نمی‌کند. هر دو caller خواندنی طبق گزارش root روی Linux او موفق‌اند؛ Capturev2/legacy apply هنوز متصل نیست.
+
+### مرز وابستگی و شاهد source
+
+مرجع قطعی این نقشه git c4، sql/consultation_ticket_requests.sql و sql/consultation_ticket_prepared_intents.sql با هش‌های بالا، sql/consultation_workflow.sql و دو adapter موجود ticketStorageServer.ts و ticketAttemptStorageServer.ts است. سه سطح را جدا مقایسه کنید:
+
+| سطح | واقعاً لازم | چیزی که از آن نتیجه نمی‌شود |
+| --- | --- | --- |
+| گارد نصب requests | load_consultation(uuid,date,date)، access(public.consultation_relationships,boolean,boolean)، keys(jsonb,text[],text[])؛ نبود کامل namespace consultation_ticket_private | این سه وجودسنجی تمام dependency/ACL/بدنه را کنترل نمی‌کنند |
+| SQL requests و prepared هنگام اجرا | توابع/ستون‌ها و ACL زیر؛ prepared پس از kernel دقیق؛ نبود هر collision تابع/جدول/نوع هم بررسی شود | وجود authorized/command/capability برای prepared به‌تنهایی کافی نیست |
+| هر GET و POST واقعی HTTP | auth.getUser سپس parent=load_consultation با p_relation و null برای هر دو تاریخ، validateConsultationRead و ticketStorageParent، سپس RPC تیکت | سلامت kernel مستقل، سلامت مسیر مالیِ parent را اثبات نمی‌کند |
+
+در دو candidate هیچ فراخوانی public.command_consultation، load_consultation_roster، load_consultation_replies یا command_consultation_reply وجود ندارد. load_consultation در گارد requests صرفاً وجودسنجی می‌شود ولی در هر مسیر HTTP dependency اجرایی اجباری است. خود parent به roster/replies ارجاع ندارد. نبود این دو ممکن است در سفر کامل عضو اثر بگذارد؛ این یک گیت محصول جداست و این نقشه آن را حذف یا موجود فرض نمی‌کند.
+
+### توابع baseline، ABI و semantics لازم
+
+| signature واقعی PostgreSQL | استفاده و رفتار لازم |
+| --- | --- |
+| auth.uid() → uuid | هویت واقعی session؛ بدنه/مالک/grants از Auth همان مقصد خوانده شود، نه تابع شبیه‌سازی sql/test. catalog مجوز یا معتبر بودن JWT واقعی را اثبات نمی‌کند |
+| consultation_private.keys(jsonb,text[],text[]) → void | رد کلید اضافه/کمبود؛ primitive مشترک command، capability و prepare |
+| consultation_private.txt(jsonb,integer,boolean) → text؛ default سوم false | همان trim و nullable/حدود؛ فراخوانی دوپارامتری به default متکی است |
+| consultation_private.uid(jsonb,boolean) → uuid؛ default دوم false | از txt(jsonb,integer,boolean) استفاده می‌کند؛ actor/relation/request/reference را اعتبارسنجی می‌کند |
+| consultation_private.amount(jsonb,boolean) → bigint؛ default دوم false | integer نامنفی و حد۲^۵۳−۱ برای version؛ default/return/بدنه اهمیت دارد |
+| consultation_private.access(public.consultation_relationships,boolean,boolean) → boolean؛ دو default false | SECURITY INVOKER و STABLE؛ auth.uid و revocations/advisors. read با false,false تاریخچهٔ خود عضو را پس revoke نگه می‌دارد، advisor لغوشده/disabled را رد می‌کند؛ write با true,false رضایت فعال می‌خواهد |
+| consultation_private.state(uuid) → text | SECURITY INVOKER و STABLE؛ آخرین event_no سشن را به draft/submitted/approved/published/withdrawn نگاشت می‌کند؛ published یا withdrawn همراه publication برای مرجع دقیق مجاز است، latest session جای reference دقیق نیست |
+| consultation_private.reject_mutation() → trigger | UPDATE/DELETE جدول‌های جدید را با42501 رد می‌کند؛ نباید no-op، definer ناسازگار یا تابع overload دیگری باشد |
+| public.load_consultation(uuid,date,date) → jsonb | ABI نام‌دار p_relation,p_start_on,p_end_on و هر سه defaultNULL؛ SQL SECURITY DEFINER و search_path خالی؛ private.load را صدا می‌زند. HTTP همین نام‌ها را به PostgREST می‌فرستد |
+| consultation_private.load(uuid,date,date) → jsonb | parent کامل، auth/ACL/قفل رابطه و locks مالی و تاریخ تهران، bounds و serialization؛ private.relation_json، access، period و state را می‌خواند |
+| consultation_private.relation_json(public.consultation_relationships) → jsonb | id/client/advisor/label/time/revoked قرارداد parent |
+| consultation_private.period(jsonb) → jsonb؛ day(jsonb,boolean) → date با defaultfalse | مسیر load→period→day→txt و keys؛ حدود روز و بازه و تقویم معتبر، بدون تبدیل unknown به تاریخ حدسی |
+
+همهٔ privateهای بالا طبق source SECURITY INVOKER و search_path خالی‌اند؛ فقط access/state/relation_json در این مجموعه STABLE‌اند و بقیه defaultVOLATILE. public.load_consultation wrapper DEFINER است. public.command_consultation و private.execute مستقیماً dependency اجرای تیکت نیستند، ولی برای هم‌زمانی، revoke/consent writer باید همان lock consultation_relation و ترتیب actor→relation را نگه دارد. تغییر بدنهٔ access یا writer قفل را با تطبیق signature نمی‌توان نادیده گرفت.
+
+در سطح kernel بعدی، requests دوازده تابع می‌سازد: هشت private شامل permission/capability/recommendation/command/authorized/history/load/execute و چهار wrapper عمومی. prepared هشت تابع اضافه می‌کند: پنج private شامل prepared_access/prepared_metadata/prepared_receipt/prepare/prepared_load و سه wrapper عمومی. prepared به authorized(uuid)، command(jsonb)، capability(uuid,uuid) و جدول‌های requests/events وابسته است؛ اجرای command(jsonb) فقط validate/normalize است و با execute(jsonb) نویسنده تفاوت دارد. permission محصول باید همان NOT_CONNECTED ثابت بماند؛ بدنهٔ owned_fixture اختلاف مجاز محصول نیست.
+
+ABI عمومی جدید: load_consultation_ticket_inbox(p_relationship uuid)، load_consultation_ticket(p_relationship uuid,p_request uuid)، lookup_consultation_ticket(p_relationship uuid,p_request uuid,p_client_token text)، command_consultation_ticket(p_request jsonb)، prepare_consultation_ticket_attempt(p_body text)، lookup_consultation_ticket_attempt(p_relationship uuid,p_preparation uuid,p_client_token text)، load_consultation_ticket_attempts(p_relationship uuid)، همگی →jsonb. نام آرگومان، نبود overload ناخواسته، SECURITY DEFINER، search_path خالی و lock_timeout=3s باید مقایسه شوند. وجود تابع با نوع آرگومان درست و نام آرگومان نادرست ممکن است PostgREST را بشکند.
+
+pg_catalog نیز لازم است: gen_random_uuid()→uuid، sha256(bytea)→bytea، convert_to(text,name)→bytea، encode(bytea,text)→text، hashtext(text)→integer، pg_advisory_xact_lock(integer,integer)→void و clock_timestamp()→timestamptz. query باید signature/نسخه/encoding را بخواند؛ نیازی به اجرای این توابع یا نصب pgcrypto در این طرح نیست. قفل‌ها از hashtext کلیدهای ثابت source استفاده می‌کنند؛ تغییر نامشان ناسازگاری semantics است.
+
+### جداول/ستون‌های مستقیم baseline و مسیر parent
+
+جدول زیر ستون‌هایی را نشان می‌دهد که واقعاً خوانده/ارجاع می‌شوند؛ این فهرست حداقل مصرف است، نه اجازهٔ صرف‌نظر از constraint، rowtype کامل، ordinal/type/nullability یا ستون اضافیِ ناسازگار. public.consultation_relationships و sessions در متغیرهای composite و SELECT* استفاده می‌شوند. FK جدید به auth.users(id) و consultation_relationships(id) علاوه بر نوع uuid به PK/UNIQUE معتبر و اختیار REFERENCES نصب‌کننده نیاز دارد.
+
+| جدول | ستون‌های مصرف‌شده و نوع source | مسیر |
+| --- | --- | --- |
+| auth.users | id uuid کلید معتبر | FK actor/opened_by؛ auth.uid وابستگی هویت جدا |
+| consultation_relationships | id/client_id/advisor_id uuid؛ created_at timestamptz؛ client_label text برای parent | authorized، actor/role، clock ordering، composite access؛ parent |
+| consultation_advisors | user_id uuid، enabled/is_owner boolean؛ display_name text برای parent | access و owner action و parent |
+| consultation_revocations | relationship_id uuid | access و relation_json؛ ستون‌های actor_id/revoked_at بخشی از baseline کامل‌اند ولی ticket مستقیم نمی‌خواند |
+| consultation_sessions | id/relationship_id uuid، version integer، content_hash text؛ session_key/actor_id uuid، body jsonb، created_at timestamptz در parent | reference دقیق و parent؛ خود تیکت body توصیه را بازنویسی نمی‌کند |
+| consultation_events | session_id uuid، kind text، event_no bigint؛ id/actor_id uuid، created_at timestamptz، note text در parent | state و parent؛ ترتیب event_no و uniqueness معتبر لازم است |
+| consultation_publications | session_id uuid | مرجع منتشرشده و parent؛ approval_id/actor_id/published_at برای upstream baseline حفظ شوند |
+| consultation_private_notes | session_id uuid، note text | فقط parent برای advisor مجاز |
+| consultation_actions | id/session_id/action_key/actor_id uuid، version integer، status/text text، created_at timestamptz | فقط parent؛ bound۵۰۰ |
+| member_holding_versions | id/user_id uuid، version integer | parent آخرین نسخه؛ rowtype کامل حفظ شود |
+| member_holding_positions | version_id uuid؛ position_key/title/manual_label/symbol/unit/valuation_source text؛ qty/ownership_pct numeric؛ declared_value bigint؛ valuation_as_of/as_of date | parent؛ title و valuation ستون‌های recovery موجود لازم‌اند؛ این جدول حتی در گارد اولیه workflow صریح چک نشده ولی runtime از آن می‌خواند |
+| member_debt_positions | version_id uuid؛ debt_key/title text؛ balance_toman/next_installment_toman bigint؛ balance_as_of/next_due_on date | parent، همان نسخهٔ دارایی |
+| member_cash_flow_versions | id/user_id uuid؛ period_start/period_end date؛ version/entry_count integer؛ account_definitions/scope_account_keys/opening/coverage jsonb | parent؛ count entries باید با entry_count سازگار باشد |
+| member_cash_flow_entries | version_id uuid؛ entry_key/basis/kind/category/note/account_key/from_account_key/to_account_key text؛ amount_toman bigint؛ occurred_on date؛ source jsonb | parent، serialization کامل رویدادها |
+| member_goals_versions | id/user_id uuid؛ version integer؛ payload jsonb | parent، rowtype کامل حفظ شود |
+
+نام‌های consultation در جدول بالا در schema public هستند؛ financialها هم public هستند. نهمین جدول baseline، consultation_command_receipts، مسیر writer اصلی است و parent/ticket از آن نمی‌خواند؛ با این وجود در snapshot کامل baseline باید PK(actor_id,client_token)، immutability، ACL/RLS و تعریفش حفظ شود. جدول‌های جدید requests/events/receipts و prepared_intents باید عین تعریف candidate با ستون‌های NOTNULL، PK/FK/UNIQUE/CHECK و index و trigger و RLS مقایسه شوند؛ گزارش فقط تعداد ستون کافی نیست.
+
+### کدام همراه CI بوده و چه چیزی upstream است
+
+sql/test/supabase_bootstrap.sql و profile_explicit_grants.sql نقش/Auth/profiles آزمایشگاهی می‌سازند؛ portfolio_precondition.sql شکل آزمونی portfolio و deny_mutation و وابستگی‌های دیگر را می‌سازد. اینها پیش‌شرط نصب محصول نیستند. bootstrap-fixture.sql فقط دو جدول خالی risk_assessments/risk_revalidations برای load_consultation_roster می‌سازد؛ هیچ مسیر ticket/attempt یا parent load به این دو دسترسی ندارد. owned-fixture.sql حق دو actor/relation در DB owned و توابع fixture را ایجاد می‌کند؛ نه dependency محصول است، نه ورودی apply.
+
+فایل‌های مالی phase32/recovery/cash-flow/goals در CI شکل baseline لازم برای parent را فراهم کردند؛ **جدول/قرارداد حاصل وابستگی runtime است، replay خود فایل‌های تاریخی لازم/مجاز فرض نمی‌شود**. phase34 research_workbook_versions/reviews برای نصب اصلی workflow و private.research_current و تأیید/انتشار upstream استفاده می‌شود؛ ticket/prepare و parent.load در source c4 مستقیماً research_current یا این دو جدول را صدا نمی‌زنند. profiles(role) نیز در policyهای پژوهش و endpointهای مالی/مرز نقش برنامه استفاده شده، اما خود دوcandidate یا parent.load آن را SELECT نمی‌کنند. امنیت Auth/role کل برنامه گیت جداگانهٔ خود را حفظ می‌کند. roster/replies همراه سفر و آزمون هستند؛ هیچ object آنها نباید بی‌دلیل به preflight مستقیم kernel افزوده یا برای عبور از آن ساخته شود.
+
+### ACL، مالک wrapper و FORCE RLS
+
+baseline source هر نه جدول public مشاوره را ENABLE+FORCE RLS، بدون policy و با REVOKE از PUBLIC/anon/authenticated/service_role می‌سازد؛ private schema و private functions نیز default-deny هستند. همهٔ جدول‌ها غیر از advisors، trigger UPDATE/DELETE و TRUNCATE به reject_mutation دارند. sequence consultation_events_event_no_seq هم direct grant به این چهار مقصد ندارد. private ticket schema و جدول‌های جدید ENABLE RLS دارند ولی FORCE در candidate نیامده؛ prepared هم همین است. تغییر FORCE/policy/trigger باید اختلاف ثبت شود، نه خودکار اصلاح شود.
+
+مالک واقعی هر SECURITY DEFINER wrapper هویت اجرایی آن است. اختیار لازم دو لایه دارد: USAGE schema/EXECUTE توابع private و auth.uid، SELECT تمام جدول‌های callgraph و INSERT جدول‌های نویسنده و اختیار default/sequence در صورت مصرف؛ و امکان عبور از FORCE RLS baseline. در baselineِ بدون policy، مالک عادی جدول با FORCE از RLS عبور نمی‌کند؛ rolsuper یا rolbypassrls واقعیِ خود نقش definer یا مسیر سیاستیِ جداگانه و بررسی‌شده لازم است. عضویت در نقشی که BYPASSRLS دارد به‌تنهایی آن attribute را ارث نمی‌دهد. BYPASSRLS هم جای SELECT/INSERT/EXECUTE SQL grant را نمی‌گیرد. این طرح برای کمبود اختیار GRANT/تغییرrole/کاهشRLS پیشنهاد یا اجرا نمی‌کند؛ اختلاف یک مانع release برای root است.
+
+authenticated فقط EXECUTE روی wrapperهای عمومی لازم و USAGE schema public/auth لازم را دارد؛ private EXECUTE/جدول/ستون نباید از PUBLIC، direct grant، نقش موروثی یا custom default privileges نشت کند. service_role هم با داشتن BYPASSRLS از منع EXECUTE خودکار عبور نمی‌کند. proacl=NULL یعنی defaultACL است، نه «بدون grant»؛ default اجرای FUNCTION می‌تواند PUBLIC باشد. ACL ستون را هم بخوانید: REVOKE جدول به‌تنهایی امتیاز SELECT ستونیِ جدا را نفی نمی‌کند. typacl/مالک rowtype، schema CREATE/USAGE، role membership و grant option هم در diff ثبت شوند. privilege خوانندهٔ catalog با privilege صاحب definer یا authenticated یکی نیست.
+
+### طرح query خواندنی؛ root پس از بررسی می‌تواند اجرا کند
+
+تمام کدهای زیر **پیشنهاد بررسی‌نشده روی مقصد** هستند؛ B آنها را حتی محلی روی DB اجرا نکرده است. هیچ query دادهٔ عضو، body، token، session/JWT، کلید یا جدول کسب‌وکار را SELECT نمی‌کند. function body فقط متن تعریف schema است و خروجی catalog باید خصوصی بماند. اجرای app RPC، auth.uid، SET ROLE، EXPLAIN ANALYZE، function test و هر DDL/DML خارج از این طرح‌اند. نام sourceID9193 را با receipt اتصال root مقید کنید؛ dbname به‌تنهایی شاهد هویت شبکه نیست. پیش از ادامه اگر شمار objectها غیرمنتظره/خروجی truncate شده است، توقف و scope review؛ LIMIT کور برای سبزکردن diff نگذارید.
+
+```sql
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SET LOCAL search_path = pg_catalog;
+SET LOCAL statement_timeout = '5s';
+SET LOCAL lock_timeout = '500ms';
+SELECT current_database() AS database_name, current_user AS catalog_reader,
+       session_user AS login_role,
+       current_setting('server_version_num') AS server_version_num,
+       current_setting('server_encoding') AS server_encoding,
+       current_setting('transaction_read_only') AS read_only;
+-- Continue the following SELECTs in this snapshot; COMMIT when all are captured.
+```
+
+۱. inventory بدون تکیه به وجود type یا RPC. نبود namespace/جدول باید ردیف absent بدهد؛ به‌ویژه برای access که آرگومان composite دارد، to_regprocedure روی type غایب می‌تواند خود query را خطادار کند، پس ابتدا جدول/type را بخوانید. scope مثبت baseline همان نه جدول است، نه شمارش همهٔ اسم‌های شبیه به consultation.
+
+```sql
+SELECT wanted.name, n.oid IS NOT NULL AS present,
+       owner.rolname AS owner, n.nspacl
+FROM (VALUES ('auth'),('public'),('consultation_private'),
+             ('consultation_ticket_private')) AS wanted(name)
+LEFT JOIN pg_namespace n ON n.nspname = wanted.name
+LEFT JOIN pg_roles owner ON owner.oid = n.nspowner
+ORDER BY wanted.name;
+
+WITH scope(schema_name,table_name) AS (VALUES
+ ('auth','users'),
+ ('public','consultation_advisors'),('public','consultation_relationships'),
+ ('public','consultation_revocations'),('public','consultation_sessions'),
+ ('public','consultation_private_notes'),('public','consultation_events'),
+ ('public','consultation_publications'),('public','consultation_actions'),
+ ('public','consultation_command_receipts'),
+ ('public','member_holding_versions'),('public','member_holding_positions'),
+ ('public','member_debt_positions'),('public','member_cash_flow_versions'),
+ ('public','member_cash_flow_entries'),('public','member_goals_versions'),
+ ('consultation_ticket_private','requests'),
+ ('consultation_ticket_private','events'),
+ ('consultation_ticket_private','receipts'),
+ ('consultation_ticket_private','prepared_intents')
+)
+SELECT s.schema_name, s.table_name, c.oid IS NOT NULL AS present,
+ c.relkind, owner.rolname AS owner, c.relrowsecurity, c.relforcerowsecurity,
+ c.relacl, c.reltype::regtype::text AS rowtype, t.typacl,
+ (SELECT jsonb_agg(jsonb_build_object(
+   'ordinal',a.attnum,'name',a.attname,
+   'type',format_type(a.atttypid,a.atttypmod),'notNull',a.attnotnull,
+   'identity',a.attidentity,'generated',a.attgenerated,'columnAcl',a.attacl,
+   'default',pg_get_expr(d.adbin,d.adrelid)) ORDER BY a.attnum)
+  FROM pg_attribute a LEFT JOIN pg_attrdef d
+   ON d.adrelid=a.attrelid AND d.adnum=a.attnum
+  WHERE a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped) AS columns,
+ (SELECT jsonb_agg(jsonb_build_object('name',k.conname,'type',k.contype,
+   'validated',k.convalidated,'deferrable',k.condeferrable,
+   'deferred',k.condeferred,'definition',pg_get_constraintdef(k.oid,false))
+   ORDER BY k.conname) FROM pg_constraint k WHERE k.conrelid=c.oid) AS constraints,
+ (SELECT jsonb_agg(jsonb_build_object('name',x.relname,'valid',i.indisvalid,
+   'ready',i.indisready,'definition',pg_get_indexdef(i.indexrelid))
+   ORDER BY x.relname) FROM pg_index i JOIN pg_class x ON x.oid=i.indexrelid
+   WHERE i.indrelid=c.oid) AS indexes,
+ (SELECT jsonb_agg(jsonb_build_object('name',g.tgname,'enabled',g.tgenabled,
+   'function',g.tgfoid::regprocedure::text,
+   'definition',pg_get_triggerdef(g.oid,false)) ORDER BY g.tgname)
+   FROM pg_trigger g WHERE g.tgrelid=c.oid AND NOT g.tgisinternal) AS triggers,
+ (SELECT jsonb_agg(jsonb_build_object('name',p.polname,'command',p.polcmd,
+   'permissive',p.polpermissive,
+   'roles',ARRAY(SELECT CASE WHEN rid=0 THEN 'PUBLIC'
+      ELSE pg_get_userbyid(rid)::text END FROM unnest(p.polroles) AS u(rid)),
+   'using',pg_get_expr(p.polqual,p.polrelid),
+   'check',pg_get_expr(p.polwithcheck,p.polrelid)) ORDER BY p.polname)
+   FROM pg_policy p WHERE p.polrelid=c.oid) AS policies
+FROM scope s LEFT JOIN pg_namespace n ON n.nspname=s.schema_name
+LEFT JOIN pg_class c ON c.relnamespace=n.oid AND c.relname=s.table_name
+LEFT JOIN pg_roles owner ON owner.oid=c.relowner
+LEFT JOIN pg_type t ON t.oid=c.reltype
+ORDER BY s.schema_name,s.table_name;
+```
+
+۲. متن و metadata توابع و امضای builtin. query نام‌محور overloadها را هم نشان می‌دهد؛ در scope حاضر هر تابعی که source انتظار ندارد اختلاف است. اگر baseline typeها موجودند، identity_arguments/result/argnames/defaults را با جدول ABI بالا و source تطبیق دهید. namespace ticket غایب در خروجی صفر تابع دارد و این به‌تنهایی فقدان wrapperهای public را اثبات نمی‌کند، بنابراین public جدا scope شده است.
+
+```sql
+SELECT n.nspname AS schema_name, p.proname,
+ pg_get_function_identity_arguments(p.oid) AS identity_arguments,
+ p.proargnames, p.pronargdefaults,
+ pg_get_function_arguments(p.oid) AS arguments_with_defaults,
+ pg_get_function_result(p.oid) AS result,
+ l.lanname AS language, p.prokind, p.prosecdef, p.provolatile,
+ p.proisstrict, p.proleakproof, p.proparallel, p.proretset,
+ p.proconfig, owner.rolname AS owner, owner.rolsuper, owner.rolbypassrls,
+ p.proacl, p.prosrc,
+ CASE WHEN p.prokind='f' THEN pg_get_functiondef(p.oid) END AS definition
+FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+JOIN pg_language l ON l.oid=p.prolang
+JOIN pg_roles owner ON owner.oid=p.proowner
+WHERE (
+ n.nspname IN ('consultation_private','consultation_ticket_private') OR
+ (n.nspname='auth' AND p.proname='uid') OR
+ (n.nspname='public' AND p.proname IN (
+  'load_consultation','command_consultation',
+  'load_consultation_ticket_inbox','load_consultation_ticket',
+  'lookup_consultation_ticket','command_consultation_ticket',
+  'prepare_consultation_ticket_attempt','lookup_consultation_ticket_attempt',
+  'load_consultation_ticket_attempts')))
+ORDER BY n.nspname,p.proname,identity_arguments;
+
+SELECT signature, to_regprocedure(signature) IS NOT NULL AS present
+FROM (VALUES ('pg_catalog.gen_random_uuid()'),
+ ('pg_catalog.sha256(bytea)'),('pg_catalog.convert_to(text,name)'),
+ ('pg_catalog.encode(bytea,text)'),('pg_catalog.hashtext(text)'),
+ ('pg_catalog.pg_advisory_xact_lock(integer,integer)'),
+ ('pg_catalog.clock_timestamp()')) AS wanted(signature)
+ORDER BY signature;
+```
+
+pg_get_functiondef فرمت canonical سرور است و با SHA فایل SQL Git مقایسهٔ مستقیم نمی‌شود. برای LANGUAGE sql/plpgsql با بدنهٔ dollar-quoted موجود در این source، prosrc را با **همان متن بین delimiterها در blob Git LF** و metadata declaration جدا مقایسه کنید؛ newline/trim را خودکار نرمال نکنید. تغییر صرف فرمت بیرون بدنه با تغییر lock/شرط/security یکی نیست؛ اختلاف باید با گزارش object/field/expected/observed طبقه‌بندی شود. auth.uid از release/Auth همان مقصد expected می‌گیرد، نه mock CI. signature موجود+body نامعلوم یعنی UNPROVEN، نهPASS. pg_depend در بدنه‌های string-based sql/plpgsql همهٔ ارجاع‌ها را ثبت نمی‌کند؛ absence در pg_depend این callgraph source را نفی نمی‌کند.
+
+۳. نقش‌ها، membership، default ACL و ACL مؤثر. نقش catalog_reader، wrapperowner مشاهده‌شده و هر deployment ownerِ مصوب root باید به scope نقش‌ها افزوده شوند؛ owner آینده هنوز تعیین نشده است. queryهای زیر wrapperهای موجود و خصوصی‌های مربوط را می‌گیرند و membership را فقط برای نقش‌های مؤثر همین scope باز می‌کنند؛ نقش جدید یا SET ROLE ندارند.
+
+```sql
+WITH RECURSIVE seeds(oid) AS (
+ SELECT oid FROM pg_roles WHERE rolname IN
+  ('anon','authenticated','service_role',current_user,session_user)
+ UNION SELECT p.proowner FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+ WHERE n.nspname IN ('consultation_private','consultation_ticket_private')
+    OR (n.nspname='public' AND p.proname IN
+      ('load_consultation','command_consultation',
+       'load_consultation_ticket_inbox','load_consultation_ticket',
+       'lookup_consultation_ticket','command_consultation_ticket',
+       'prepare_consultation_ticket_attempt','lookup_consultation_ticket_attempt',
+       'load_consultation_ticket_attempts'))
+), reachable(oid) AS (
+ SELECT oid FROM seeds UNION
+ SELECT m.roleid FROM pg_auth_members m JOIN reachable r ON m.member=r.oid
+)
+SELECT r.rolname,r.rolsuper,r.rolbypassrls,r.rolinherit,r.rolcanlogin,
+ (SELECT jsonb_agg(jsonb_build_object('parent',parent.rolname,
+   'adminOption',m.admin_option,
+   'inheritOption',to_jsonb(m)->>'inherit_option',
+   'setOption',to_jsonb(m)->>'set_option') ORDER BY parent.rolname)
+  FROM pg_auth_members m JOIN pg_roles parent ON parent.oid=m.roleid
+  WHERE m.member=r.oid) AS memberships
+FROM reachable x JOIN pg_roles r ON r.oid=x.oid ORDER BY r.rolname;
+
+SELECT creator.rolname AS creator, n.nspname AS schema_name,
+ d.defaclobjtype, d.defaclacl
+FROM pg_default_acl d JOIN pg_roles creator ON creator.oid=d.defaclrole
+LEFT JOIN pg_namespace n ON n.oid=d.defaclnamespace
+WHERE d.defaclnamespace=0 OR n.nspname IN
+ ('public','auth','consultation_private','consultation_ticket_private')
+ORDER BY creator.rolname,n.nspname,d.defaclobjtype;
+
+-- Expand each observed proacl using its actual owner and PostgreSQL defaults.
+SELECT n.nspname,p.proname,pg_get_function_identity_arguments(p.oid) AS args,
+ CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee)::text END AS grantee,
+ pg_get_userbyid(a.grantor) AS grantor,a.privilege_type,a.is_grantable
+FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+CROSS JOIN LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a
+WHERE n.nspname IN ('consultation_private','consultation_ticket_private')
+ OR (n.nspname='public' AND p.proname IN
+   ('load_consultation','command_consultation',
+    'load_consultation_ticket_inbox','load_consultation_ticket',
+    'lookup_consultation_ticket','command_consultation_ticket',
+    'prepare_consultation_ticket_attempt','lookup_consultation_ticket_attempt',
+    'load_consultation_ticket_attempts'))
+ORDER BY n.nspname,p.proname,args,grantee;
+```
+
+همین aclexplode را برای nspacl با acldefault('n',nspowner)، relacl جدول با acldefault('r',relowner)، sequence با acldefault('s',relowner) و typacl با acldefault('T',typowner) به‌کار ببرید؛ حروف کوچک/بزرگ مهم‌اند: s برای SEQUENCE است و S برای FOREIGN SERVER. attacl پیش‌فرضِ grant ستونی ندارد و null با آرایهٔ خالی aclitem[] جایگزین می‌شود. scope جدول همان جدول‌های query۱ است؛ sequence صریح public.consultation_events_event_no_seq و هر dependency واقعی از pg_depend برای defaultهاست. defaultACL خروجی همهٔ creatorهای مرتبط را می‌دهد؛ unrelated creator را با دلیل حذف کنید، نه با تصور owner یگانه.
+
+برای اثر عضویت/PUBLIC، علاوه بر ACL خام، ضرب نقش‌های شناخته‌شده در objectهای همان scope و توابع builtin/Auth را با has_schema_privilege(role_oid,nsp_oid,'USAGE')، has_schema_privilege(...,'CREATE')، has_function_privilege(role_oid,proc_oid,'EXECUTE')، has_table_privilege(role_oid,table_oid,privilege) برای هرکدام SELECT/INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER، has_any_column_privilege(...,'SELECT') و در صورت true ستون‌به‌ستون has_column_privilege(role_oid,table_oid,attnum,'SELECT') و has_sequence_privilege(...,'USAGE') بررسی کنید. oidها فقط از LEFT JOIN catalogِ موجود برداشته شوند؛ نقش یا object غایب را null/MISSING ثبت کنید و به has_* نفرستید. has_* تابع catalog است و app function را اجرا نمی‌کند؛ بااین‌حال این SELECTها هم اینجا صرفاً طرح هستند، نه شاهد runtime.
+
+برای definerowner، جدول‌های جدید نیازمند SELECT و INSERT و baseline فقط SELECT/EXECUTE است؛ برای ساخت candidate، CREATE schema/جدول/تابع و REFERENCESِ FK و زبان لازم، موضوع اختیار نصب‌کننده است که با اختیار runtime خلط نمی‌شود. querycatalog مجوز عملیاتی استفاده از این اختیار نیست. دسترسی runtime authenticated به تابع auth.uid و public wrapper را از دسترسی private جدا نگه دارید؛ در baseline app هیچ direct table/column/private EXECUTE نمی‌گیرد. خروجی role graph ممکن است مسیرهای غیرموروثی SET ROLE را نشان دهد؛ بدون آزمون یا تغییرrole، آن را grant مؤثر خودکار حساب نکنید.
+
+۴. جمع‌بندی snapshot با COMMIT؛ ثبت catalogdiff خارج DB. برای هر object: نام کامل+identity args، field، expected از blob c4 یا baseline موجودِ تأییدشده، observed از receipt همان snapshot، طبقهٔ EXACT/MISSING/DIFFERENT/UNOBSERVED و دلیل اثر. تعریف/owner/grant/نوع/constraint/index/trigger/RLS/policy/default/role context جدا مقایسه شوند؛ OID و شمارهٔ attnum مربوط به objectهای متفاوت بین دوDB را شناسهٔ جهانی فرض نکنید. attnum داخل همان rowtype ترتیب ستون را ثابت می‌کند. نتیجهٔ JSON null مثل policies=null را به معنای «خروجی query ناقص» یا «انطباق» حدس نزنید؛ presence/count و capture completeness جدا ثبت شوند.
+
+```sql
+COMMIT;
+```
+
+اگر private kernel کاملاً غایب است، catalogdiff جدیدها MISSING_EXPECTED_BEFORE_INSTALL و baseline هنوز NEEDS_EXACT_DIFF است؛ نصب آماده اعلام نمی‌شود. اگر schema یا بخشی از wrapper/type/table جدید وجود دارد، partial collision به معنای STOP_RECONCILE است، نه دستور ادامهٔ نیمهٔ دوم. تغییر RLS/owner/grants برای عبور از تفاوت، نصب roster/replies، replay مالی/پژوهش یا fixture، اجرای candidate، و تغییر Capturev2/legacy apply هیچ‌کدام بخشی از این تحویل نیست. root با همین نقشه می‌تواند گپ فنی baseline/caller را بررسی کند؛ تصمیم تازه‌ای از آرش برای صرفِ catalogdiff لازم فرض نشده است.
+
+مرجع semantics privilege/definer و RLS، مستندات رسمی Supabase است: https://supabase.com/docs/guides/database/functions و https://supabase.com/docs/guides/database/postgres/row-level-security . جزئیات acldefault/has_* در https://www.postgresql.org/docs/16/functions-info.html ، FORCE/BYPASS در https://www.postgresql.org/docs/16/ddl-rowsecurity.html و prosrc در https://www.postgresql.org/docs/16/catalog-pg-proc.html مستقلاً بررسی شد؛ نسخهٔ واقعی مقصد باید از catalog خوانده شود. این منابع جای readback خصوصی catalog یا پذیرش روی مقصد واقعی را نمی‌گیرند.
