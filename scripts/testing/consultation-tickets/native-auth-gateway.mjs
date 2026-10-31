@@ -8,7 +8,7 @@ export function gatewayProfile(profile){
 }
 // Opt-in p09 page only. Raw paths are checked before URL normalization.
 export function browserRequestAllowed(value,method='GET',acceptance='ticket'){
- if(!['ticket','feedback-reader-v1'].includes(acceptance)||!['GET','HEAD'].includes(method)||typeof value!=='string')return false;
+ if(!['ticket','feedback-reader-v1','legacy-diagnostic-v1'].includes(acceptance)||!['GET','HEAD'].includes(method)||typeof value!=='string')return false;
  try{
   const url=new URL(value,origin);if(url.origin!==origin||url.username||url.password||url.hash)return false;
   const raw=value.startsWith(origin)?value.slice(origin.length):value;
@@ -31,7 +31,7 @@ export async function startNativeAuthGateway(profile){
  const config=gatewayProfile(profile);
  const browserMode=process.env.NATIVE_AUTH_BROWSER_MODE==='true';
  const acceptance=process.env.NATIVE_AUTH_ACCEPTANCE_MODE??'ticket';
- if(!['ticket','feedback-reader-v1'].includes(acceptance)||(acceptance!=='ticket'&&!browserMode))throw Error('p03_feedback_gateway_mode');
+ if(!['ticket','feedback-reader-v1','legacy-diagnostic-v1'].includes(acceptance)||(acceptance!=='ticket'&&!browserMode))throw Error('p03_feedback_gateway_mode');
  if((process.env.NATIVE_AUTH_BROWSER_MODE!==undefined&&!['true','false'].includes(process.env.NATIVE_AUTH_BROWSER_MODE))||(browserMode&&profile!=='consultation-ticket'))throw Error('p09_browser_gateway_mode');
  if(process.platform!=='linux'||process.env.NATIVE_AUTH_PROFILE!==profile||process.env.NATIVE_AUTH_ORIGIN!==origin||!/^[a-f0-9]{40}$/.test(process.env.NATIVE_AUTH_SHA??''))throw Error('pf10_native_gateway_environment');
  const {default:next}=await import('next');

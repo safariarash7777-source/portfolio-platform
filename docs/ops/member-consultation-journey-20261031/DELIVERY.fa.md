@@ -90,3 +90,26 @@ helper هنوز caller محصول، DTO یا UI ندارد و writer را فعا
 - پس از guard/scans/diff و تطبیق byteها، ordinary push همان شاخه و Draft stacked روی PR377 با base303 مجاز است. CI عادی و hook خودکار موجود مجازند؛ rerun دستی، force/merge، تغییر تنظیم typecheck/cache/workflow یا انتشار مجاز نیست.
 - شاهد پایان ثبت در رسید بیرون مخزن: head/tree، raw source و patch، checksum، CI واقعی و commit/tree واقعی checkout؛ گزارش local-only به CI یا پذیرش runtime تبدیل نمی‌شود. full typecheck/build در runner تازه با همان گیت معمول اجرا می‌شود.
 - runtime UI/SSR/live query/Preview/env/service grant/مدل/SQL/main، مقصد واقعی و پذیرش آرش همچنان در مالکیت هماهنگ‌کننده است. مبلغ CI تا receipt واقعی نامعلوم می‌ماند؛ هزینهٔ زیرساخت، داده و مدل جدا گزارش می‌شود.
+
+
+## پذیرش مستقل خواندن تشخیصی قدیمی از 7b — آماده‌سازی ۳۱ اکتبر
+
+مسئله: برش UI پیشین شاهد SDK/RLS/DOM واقعی این خواندن مستقل نداشت. مخاطب عضو و بازبین فنی؛ مالک START-B؛ وابسته به Linux/GoTrue/PostgREST/Next و Chrome موجود. کد محصول، SQL، DTO، writer، package و lock عین 7b1f5c0 می‌مانند. mode جدید legacy-diagnostic-v1 نام و pin خواننده699 را تغییر نمی‌دهد.
+
+خروجی قابل مشاهدهٔ برنامه‌ریزی‌شده: درخواست هفت ستون با همان JWT تأییدشده در getUser، جداسازی ردیف خود/دیگری، نمایش منقضی/فعال/لغوشده و منشأ تأییدنشده در همان بخش، ثبت بسته، حق خدمت متصل‌نشده، صفر GET ردیف عضو دیگر برای مشاور و پاک‌شدن تشخیص با تغییر هویت/خروج SDK واقعی. معیار پایان آزمایش: رسید مستقل Linux و پاک‌سازی منابع owned؛ آزمون آفلاین به‌تنهایی این معیار نیست. در این مرحله اجرای واقعی هنوز انجام نشده و پذیرفته نشده است.
+
+schema همان phase11 موجود است. زیر پروفایل explicit-grant ابتدا فقدان SELECT و پاسخ منفی بررسی می‌شود؛ سپس فقط در tmpfs همان run به authenticated مجوز SELECT داده می‌شود، نه نوشتن یا حق اقتصادی. root در 09:33:47 UTC کاتالوگ مقصد واقعی را فقط‌خواندنی دیده است: authenticated SELECT=true و RLS/policy خود و admin موجود؛ anon SELECT=true آن مقصد در fixture بازسازی نمی‌شود، پس منفی anon یا 403/[] آزمایش به مقصد تعمیم داده نمی‌شود. رسید root: outputs/p15-root-native-capture-20261031/entitlement-select-catalog.json. این grant جزو قرارداد SQL phase11 یا نصب مقصد نیست.
+
+هیچ primary/query واقعی، credential واقعی، مدل، سرویس یا Preview جدید استفاده نمی‌شود. داده و حساب‌ها تازه و ساختگی‌اند. Artifact عمومی فقط وضعیت و شمارش و هش کد خواهد داشت؛ توکن، header، email، raw URL، storage، trace یا log خصوصی منتشر نمی‌شود. نصب و حق واقعی خدمت و پذیرش آرش UNOBSERVED/NOT_APPLIED می‌مانند.
+
+
+مرور root روی source/test مستقل ab3b11a انجام شد؛ ۱۷ آزمون مستقل root و ۱۲۹ آزمون محلی PASS بودند. ثبت محدود hook موجود تأیید شد: job همان feedback-reader-compatibility؛ mode جدید فقط exact branch codex/p01-p03-legacy-native-20261031 است. old feedback699 با pin و هشت check قبلی فقط روی شاخه خودش اجرا می‌شود؛ اجرای موفق قدیمی ۲۷ API و ۱۱ DOM روی شاخه جدید تکرار نمی‌شود. vercel.json فقط false همین شاخه را افزوده است؛ cronها ثابت‌اند. خروجی عمومی hook فقط JSON پالوده است؛ نتیجه واقعی پس از اجرای عادی PR جدا تحویل خواهد شد. workflow_dispatch/manual rerun/Preview/primary انجام نمی‌شود.
+
+
+### نتیجهٔ اولین hook واقعی و اصلاح محدود fixture
+
+run41191240155/job124508287657 روی3fe1f02 در 31اکتبر پس از135+4آزمون آفلاین Linux، تأیید جداسازی و چهار حساب تازه در strict_grant_baseline متوقف شد؛ هنوز سناریوی محصول/خواندن legacy آغاز نشده بود. در10:06:10UTC پاک‌سازی هر6منبع و Chrome processStopped/contextsClosed/ownedTempRemoved=true ثبت شد؛ تکرار دستی صورت نگرفت و PASS صادر نشد.
+
+علت: sql/test/portfolio_precondition.sql:140–141 پس از پروفایل explicit، پیش‌فرض GRANT ALL برای جدول‌های بعدی می‌گذارد؛ phase11 بعداً entitlements را می‌سازد و این امتیاز را به ارث می‌برد. اصلاح فقط driver است: ACL ارث‌رسیده به‌صورت boolean مشاهده، فقط همان جدول درtmpfs برایPUBLIC/anon/authenticated/service_role بسته، سپس baselineمنفی403 وGRANT SELECTauthenticated مصوب آزموده می‌شود. default privilege/schema/RLS و SQL محصول و تمام منابع7b تغییر نمی‌کنند. fixtureanon همچنان از مقصد اصلی محدودتر است؛ نتیجه به مقصد تعمیم ندارد. child اصلاحی فقط از hook عادیPR اجرا می‌شود، نه بازاجرای دستی یا replay.
+
+خواندن مستقل ACL در fixture به matrix صریح SELECT/DML برای anon/authenticated/service_role/PUBLIC پیش از محدودسازی، پس از REVOKE و پس از GRANT SELECT تکمیل شد. پس از REVOKE همه SELECT/DML بایدfalse و پس از GRANT تنها authenticated.SELECT بایدtrue باشد. RLS و forced و hash سیاست‌ها قبل/بعد دقیقاً ثابت می‌مانند. سه matrix و hash به‌صورت شاهد عمومی پالوده ثبت می‌شوند؛ هیچ row یا token در آن‌ها نیست. root نیز علت portfolio_precondition:140–141 و اصلاح محدود fixture را تأیید کرد.

@@ -33,7 +33,9 @@ test('derivative runtime and gateway match their pinned test-only lineage manife
     const name = file.path.split('/').at(-1);
     const delta=lineage.feedbackAcceptanceDelta.files[file.path];
     assert.equal(delta.oldDerivedSha256,file.derivedSha256);
-    assert.equal(createHash('sha256').update(read(name)).digest('hex'),delta.newDerivedSha256);
+    const legacy=lineage.legacyDiagnosticDelta.files[file.path];
+    if(legacy)assert.equal(legacy.oldDerivedSha256,delta.newDerivedSha256);
+    assert.equal(createHash('sha256').update(read(name)).digest('hex'),legacy?.newDerivedSha256??delta.newDerivedSha256);
     assert.match(file.sourceSha256, /^[a-f0-9]{64}$/);
   }
 });
