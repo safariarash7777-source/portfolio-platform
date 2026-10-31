@@ -85,7 +85,7 @@
       },
       "scripts/testing/consultation-tickets/native-auth-gateway.mjs": {
         "oldBlob": "230d3a1ca51f56ed59f06e10fcea5cf38aa361e9",
-        "newBlob": "de8dc7df3158780f7dafbea2204d82260ef8f1fc"
+        "newBlob": "3a95b8040e1d60d94cbbb487a09d7c441922264e"
       },
       "scripts/testing/consultation-tickets/native.mjs": {
         "oldBlob": "00f7a08f6426e3f95857db82f04a804fc22cd496",
@@ -113,7 +113,7 @@
       },
       "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md": {
         "oldBlob": null,
-        "newBlob": "53ffe027561f430e0e91b685dda5e8c65e1fc6ae"
+        "newBlob": "44e03c5f3e9956587e77e2dc28570862c0af0aa8"
       },
       "lib/consultation/ticketAttemptStorageContracts.ts": {
         "oldBlob": null,

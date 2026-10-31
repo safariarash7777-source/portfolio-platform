@@ -32,7 +32,9 @@ export async function startNativeAuthGateway(profile){
  if((process.env.NATIVE_AUTH_BROWSER_MODE!==undefined&&!['true','false'].includes(process.env.NATIVE_AUTH_BROWSER_MODE))||(browserMode&&profile!=='consultation-ticket'))throw Error('p09_browser_gateway_mode');
  if(process.platform!=='linux'||process.env.NATIVE_AUTH_PROFILE!==profile||process.env.NATIVE_AUTH_ORIGIN!==origin||!/^[a-f0-9]{40}$/.test(process.env.NATIVE_AUTH_SHA??''))throw Error('pf10_native_gateway_environment');
  const {default:next}=await import('next');
- const app=next({dev:true,hostname:'127.0.0.1',port:32189});
+ const {default:sourceConfig}=await import('./next.config.js');
+ // Keep the source config; suppress dev request/fetch URL logs containing correlation tokens.
+ const app=next({dev:true,hostname:'127.0.0.1',port:32189,conf:{...sourceConfig,logging:false}});
  await app.prepare();const handle=app.getRequestHandler(),allowed=new Set(config.routes);
 const server=http.createServer((req,res)=>{
  const path=new URL(req.url,origin).pathname;

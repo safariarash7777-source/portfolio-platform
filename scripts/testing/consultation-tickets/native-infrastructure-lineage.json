@@ -7,7 +7,8 @@
     "four-actor setup label",
     "matching gateway profile; default API mode remains closed to browser pages",
     "root-approved browser mode for the two real ticket pages; fixed existing Chrome/driver preflight and owned cleanup; original helpers unchanged",
-    "root-allocated durable preparations: raw postExact transport, new isolated candidate/route, 25 API phases and 11 browser criteria; primary/frozen helpers unchanged"
+    "root-allocated durable preparations: raw postExact transport, new isolated candidate/route, 25 API phases and 11 browser criteria; primary/frozen helpers unchanged",
+    "owned gateway loads unchanged source config with logging=false only; no request/fetch token URLs in private dev logs"
   ],
   "files": [
     {
@@ -20,7 +21,7 @@
       "path": "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
       "sourcePath": "scripts/isolated-e2e/native-auth-gateway.mjs",
       "sourceSha256": "d4b971d7f1770bd7e4d415d44a45f51a6e01f60a4b4737383040f1590b530867",
-      "derivedSha256": "e98dd407d067265ca4e09a1507cc0fcdf00a46491853f932a951d0904996d392"
+      "derivedSha256": "0ae807a2985d0648f588ef17ad48eaa78f0ab20a595c3609d2648d640c0c4ae2"
     },
     {
       "path": "scripts/testing/consultation-tickets/browser.mjs",
