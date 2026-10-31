@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { industrial, bank } from "./fixtures/n10-admission-fixtures.mjs";
-import { admissionCounts, admissionEvent } from "./codal-admission-diagnostics.mjs";
+import { admissionCounts, admissionEvent, ADMISSION_OBSERVATION_BYTES } from "./codal-admission-diagnostics.mjs";
 
 process.env.BRSAPI_KEY = "mock-key";
 process.env.BRSAPI_BASE = "https://provider.invalid";
@@ -13,6 +13,7 @@ process.env.CODAL_FEED_DL = "10";
 const codal = await import("./codal.mjs");
 const originalFetch = globalThis.fetch;
 let scenario = 0;
+const countersOnly = ({ version, totals, lastCycle }) => ({ version, totals, lastCycle });
 
 const announcement = (n, extra = {}) => ({
   l18: "نمونه", title: "اطلاعیه", link: `https://announcement.invalid/${n}`,
@@ -496,7 +497,7 @@ test("content-free diagnostics distinguish report failure stages in feed and bac
           assert.deepEqual(f.engine.engineStatus.failureDiagnostics, f.persisted.failureDiagnostics);
           const admission = admissionCounts();
           if (stage === "admission") admission["ن-۱۰"].scope_unsupported = 1;
-          assert.deepEqual(f.persisted.admissionDiagnostics, { version: 1, totals: admission, lastCycle: admission });
+          assert.deepEqual(countersOnly(f.persisted.admissionDiagnostics), { version: 1, totals: admission, lastCycle: admission });
           assert.equal(f.persisted.fails[a.link], 1, "one ledger attempt, including the existing three download tries");
           assert.equal(f.engine.engineStatus[route].parseFailed, 1);
           assert.equal(f.calls.excel.length, downloads);
@@ -576,7 +577,7 @@ test("reason diagnostics preserve retry/block, requests, ledger, state writes an
         const totals = admissionCounts(), lastCycle = admissionCounts();
         totals[kind][reason] = rejected;
         lastCycle[kind][reason] = attempt <= 3 ? 1 : 0;
-        assert.deepEqual(f.persisted.admissionDiagnostics, { version: 1, totals, lastCycle });
+        assert.deepEqual(countersOnly(f.persisted.admissionDiagnostics), { version: 1, totals, lastCycle });
         assert.deepEqual(f.engine.engineStatus.admissionDiagnostics, f.persisted.admissionDiagnostics);
         assert.equal(f.persisted.failureDiagnostics.totals.admission.rejected, rejected);
         assert.equal(f.calls.excel.length, rejected, "one existing download per rejected attempt; none after blocking");
@@ -589,7 +590,9 @@ test("reason diagnostics preserve retry/block, requests, ledger, state writes an
         assert.equal(f.engine.engineStatus[route].parseFailed, attempt <= 3 ? 1 : 0);
         assert.equal(f.persisted.backfillCursor, route === "feed" ? 0 : attempt);
         if (route === "feed") assert.equal(f.engine.engineStatus.feed.incompleteReason, attempt <= 3 ? "report_failure" : "blocked_report");
-        assert.doesNotMatch(JSON.stringify(f.persisted.admissionDiagnostics), /https|اطلاعیه|محصول|1404|scope.*html/i);
+        assert.doesNotMatch(JSON.stringify(countersOnly(f.persisted.admissionDiagnostics)), /https|اطلاعیه|محصول|1404|scope.*html/i);
+        assert.equal(f.persisted.admissionDiagnostics.observations.events.length, attempt <= 3 ? 1 : 0);
+        assert.equal(f.persisted.admissionDiagnostics.observations.omittedCount, 0);
       }
       const saved = structuredClone(f.persisted);
       // A new module instance with persisted mock state, not a service restart.
@@ -623,7 +626,7 @@ test("reason diagnostics whitelist persisted enums and safe bounded counters; le
   totals["ن-۱۰"].scope_unsupported = Number.MAX_SAFE_INTEGER;
   totals["ن-۳۰"].short_rows = 2;
   lastCycle["ن-۱۰"].scope_unsupported = 1;
-  assert.deepEqual(f.persisted.admissionDiagnostics, { version: 1, totals, lastCycle });
+  assert.deepEqual(countersOnly(f.persisted.admissionDiagnostics), { version: 1, totals, lastCycle });
   assert.equal(f.persisted.fails[a.link], 1);
   assert.equal(f.calls.saves.length, 1);
   assert.doesNotMatch(JSON.stringify(f.persisted.admissionDiagnostics), /SECRET|html|url|title|message|private|raw|secretKind/);
@@ -633,7 +636,7 @@ test("reason diagnostics whitelist persisted enums and safe bounded counters; le
   for (const admissionDiagnostics of [undefined, { version: 2, totals }]) {
     const legacy = await fixture({ pages: [[]], initialState: { watermark, backfillCursor: 7, fails: { [a.link]: 2 }, admissionDiagnostics } });
     await legacy.engine.runEngineCycle();
-    assert.deepEqual(legacy.persisted.admissionDiagnostics, { version: 1, totals: admissionCounts(), lastCycle: admissionCounts() });
+    assert.deepEqual(countersOnly(legacy.persisted.admissionDiagnostics), { version: 1, totals: admissionCounts(), lastCycle: admissionCounts() });
     assert.equal(legacy.persisted.backfillCursor, 7);
     assert.equal(legacy.persisted.fails[a.link], 2);
     assert.deepEqual(legacy.persisted.watermark, watermark);
@@ -679,4 +682,82 @@ test("observed equity title with در retains engine write identity and request 
       assert.equal(f.persisted.admissionDiagnostics.lastCycle["ن-۱۰"].capital_unverified, 1);
     }
   });
+});
+
+// All identifiers below are synthetic. Codal URLs are never fetched: only the
+// existing mocked Excel/storage transports run, with unmatched fetch denied.
+test("natural feed/backfill rejection is attributed once without adding requests or report writes", async t => {
+  const realTimeout = globalThis.setTimeout;
+  const delay = t.mock.method(globalThis, "setTimeout", (fn, _ms, ...args) => realTimeout(fn, 0, ...args));
+  const id = Buffer.from("synthetic-announcement-metadata").toString("base64");
+  try {
+    for (const lane of ["feed", "backfill"]) await t.test(lane, async () => {
+      const a = { ...financial(1), link: `https://codal.ir/Reports/Decision.aspx?LetterSerial=${encodeURIComponent(id)}&rt=0&let=6&ct=0&ft=-1`,
+        title: "PRIVATE_TITLE_DO_NOT_COPY", private: "PRIVATE_PAYLOAD", date_publish: "1405/07/01", time_publish: "10:00:00" };
+      const f = await fixture({ excelHtml: industrial({ period: "1404/12/29", months: 12, prior: false, scope: "" }),
+        pages: lane === "feed" ? [[a, boundary], []] : [[]],
+        ...(lane === "backfill" ? { backfillPages: [a], marketBody: [{ payload: { stocks: [{ id: a.l18, value: 1 }] } }] } : {}),
+      });
+      await f.engine.runEngineCycle();
+      const d = f.persisted.admissionDiagnostics, w = d.observations;
+      assert.equal(d.lastCycle["ن-۱۰"].scope_unknown, 1);
+      assert.equal(w.coverage, "observed"); assert.equal(w.limit, 22); assert.equal(w.events.length, 1); assert.equal(w.omittedCount, 0);
+      const e = w.events[0];
+      assert.equal(e.kind, "ن-۱۰"); assert.equal(e.reason, "scope_unknown"); assert.equal(e.lane, lane);
+      assert.equal(e.announcementRef, a.link); assert.equal(e.sourceAnnouncementId, id); assert.equal(e.reportId, null);
+      assert.equal(e.periodDeclaredText, "1404/12/29"); assert.equal(e.periodVerified, null); assert.equal(e.scopeVerified, null);
+      assert.equal(e.clocks.sourcePublishedAt, null); assert.equal(e.clocks.sourceSentAt, null);
+      assert.ok(e.clocks.attemptStartedAt >= w.cycleStartedAt && e.clocks.rejectedAt >= e.clocks.attemptStartedAt);
+      assert.equal(w.cycleStartedAt, new Date(f.engine.engineStatus.lastRun).toISOString());
+      assert.equal(f.calls.pages.length, lane === "feed" ? 2 : 3); assert.equal(f.calls.excel.length, 1);
+      assert.equal(f.calls.saves.length, 1); assert.equal(f.calls.reportWrites.length, 0);
+      assert.equal(f.persisted.fails[a.link], 1); assert.deepEqual(f.persisted.watermark, watermark);
+      assert.equal(f.persisted.backfillCursor, lane === "feed" ? 0 : 1);
+      assert.ok(Buffer.byteLength(JSON.stringify(w)) <= ADMISSION_OBSERVATION_BYTES);
+      assert.doesNotMatch(JSON.stringify(d), /PRIVATE|1405\/07\/01|10:00:00|lastSuccess/);
+    });
+  } finally { delay.mock.restore(); }
+});
+
+test("accepted, download exception, persistence exception and already blocked reports create no rejection metadata", async t => {
+  const realTimeout = globalThis.setTimeout;
+  const delay = t.mock.method(globalThis, "setTimeout", (fn, _ms, ...args) => realTimeout(fn, 0, ...args));
+  try {
+  for (const [name, options] of [
+    ["accepted", {}], ["download", { excelError: "synthetic transport" }],
+    ["persistence", { reportStatus: 503 }], ["blocked", { initialState: { watermark, backfillCursor: 0, fails: { [financial(1).link]: 3 } } }],
+  ]) await t.test(name, async () => {
+    const a = financial(1), f = await fixture({ pages: [[a, boundary], []], ...options });
+    await f.engine.runEngineCycle();
+    assert.equal(f.persisted.admissionDiagnostics.observations.events.length, 0);
+    assert.equal(f.persisted.admissionDiagnostics.observations.coverage, "observed");
+    assert.equal(f.persisted.admissionDiagnostics.observations.omittedCount, 0);
+    assert.deepEqual(f.persisted.admissionDiagnostics.lastCycle, admissionCounts());
+    assert.equal(f.calls.saves.length, 1);
+    assert.equal(f.calls.excel.length, name === "blocked" ? 0 : name === "download" ? 3 : 1, "existing download retries stay unchanged");
+    assert.equal(f.calls.reportWrites.length, ["accepted", "persistence"].includes(name) ? 1 : 0);
+  });
+  } finally { delay.mock.restore(); }
+});
+
+test("same announcement rejected in both existing lanes retains two attempts without inventing IDs or deduplicating counts", async t => {
+  const realTimeout = globalThis.setTimeout;
+  const delay = t.mock.method(globalThis, "setTimeout", (fn, _ms, ...args) => realTimeout(fn, 0, ...args));
+  try {
+    const id = Buffer.from("synthetic-two-natural-lanes").toString("base64");
+    const a = { ...financial(1), link: `https://codal.ir/Reports/Decision.aspx?LetterSerial=${encodeURIComponent(id)}` };
+    const f = await fixture({ pages: [[a, boundary], []], backfillPages: [a],
+      marketBody: [{ payload: { stocks: [{ id: a.l18, value: 1 }] } }],
+      excelHtml: industrial({ period: "1404/12/29", months: 12, prior: false, scope: "" }),
+    });
+    await f.engine.runEngineCycle();
+    const w = f.persisted.admissionDiagnostics.observations;
+    assert.deepEqual(w.events.map(e => e.lane), ["feed", "backfill"]);
+    assert.ok(w.events.every(e => e.sourceAnnouncementId === id && e.reportId === null && e.periodVerified === null && e.scopeVerified === null));
+    assert.equal(f.persisted.admissionDiagnostics.lastCycle["ن-۱۰"].scope_unknown, 2);
+    assert.equal(f.persisted.fails[a.link], 2);
+    assert.equal(f.calls.pages.length, 4); assert.equal(f.calls.excel.length, 2);
+    assert.equal(f.calls.saves.length, 1); assert.equal(f.calls.reportWrites.length, 0);
+    assert.equal(w.coverage, "observed"); assert.equal(w.omittedCount, 0);
+  } finally { delay.mock.restore(); }
 });
