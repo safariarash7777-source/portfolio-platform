@@ -1,0 +1,36 @@
+{
+  "head": "cd833d64df9cea9ad5e53a2a8bfc900b41a71605",
+  "deployment": "dpl_5kTfmJPkPYsTrLKHsz25kX9YnwS7",
+  "deploymentBinding": "root Vercel connector read: READY/Preview/target null/exact SHA",
+  "data": "P14-EDU-02 educational only",
+  "acceptedScreenshotArtifacts": [
+    {
+      "name": "02-rate-gap-plot-desktop.png",
+      "bytes": 44410,
+      "sha256": "ab93318b9d91afa7c3ef0b408bf533809750803530ed164df650c71788c7dc46"
+    },
+    {
+      "name": "03-source-panel-desktop.png",
+      "bytes": 52375,
+      "sha256": "838491388c477c7ed27f6666331a170e08ec732232501f7165d1dfe3ab017a29"
+    },
+    {
+      "name": "04-source-panel-mobile-390.png",
+      "bytes": 42509,
+      "sha256": "7ef6692cc701423ffb09518c2f86dce1ff59dab29c249b14c889d0520a3c0445"
+    },
+    {
+      "name": "05-source-panel-from-large-view.png",
+      "bytes": 54580,
+      "sha256": "5a9596672b9fa3b0888ffbd58b58f67229c62a3e9bd3e8ac2dc1c9f4ea50f455"
+    },
+    {
+      "name": "06-nested-button-close-keeps-large-view.png",
+      "bytes": 59480,
+      "sha256": "5e7f6745cbf498cb4ce585272ad698cc40cb88ef33140932092dfec3c926b5b4"
+    }
+  ],
+  "uiAcceptance": "PARTIAL_WITH_NESTED_ESCAPE_DEFECT",
+  "visualAcceptance": "OPEN",
+  "fullProductAcceptance": "OPEN"
+}

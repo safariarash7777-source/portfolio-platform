@@ -1,0 +1,11 @@
+{
+  "status": "READONLY_CONTEXT_BLOCKED",
+  "remoteStatus": "AUTH_SEQUENCE_CONTEXT_FAILED",
+  "stderrBytes": 173,
+  "sqlWrites": false,
+  "originalQuerySha256": "faa5c9e060eaf66e5c54f7bd17e377c50e0ffe14875c29ccc9ddfac0b1361503",
+  "originalQueryPreserved": true,
+  "localDiagnostic": "unbalanced closing parenthesis (-1); original SQLSTATE/stderr content not retained",
+  "nextChange": "remove one extra closing parenthesis; no permission/SQL semantics change",
+  "originalSQL": "BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;\nSET LOCAL search_path=pg_catalog;\nSET LOCAL statement_timeout='5s';\nSET LOCAL lock_timeout='500ms';\nSELECT jsonb_build_object('snapshot',pg_current_snapshot()::text,'readOnly',current_setting('transaction_read_only'),\n 'roles',(SELECT jsonb_agg(jsonb_build_object('role',r.rolname,'super',r.rolsuper,'bypass',r.rolbypassrls,'databaseCreate',has_database_privilege(r.oid,current_database(),'CREATE'),'publicCreate',has_schema_privilege(r.oid,'public','CREATE'),'authUsage',has_schema_privilege(r.oid,'auth','USAGE'),'authUidExecute',has_function_privilege(r.oid,'auth.uid()','EXECUTE'),'authUsersSelect',has_table_privilege(r.oid,'auth.users','SELECT'),'authUsersIdReferences',has_column_privilege(r.oid,'auth.users','id','REFERENCES')) ORDER BY r.rolname) FROM pg_roles r WHERE r.rolname IN('postgres','anon','authenticated','service_role')),\n 'sequences',(SELECT coalesce(jsonb_agg(jsonb_build_object('schema',n.nspname,'name',c.relname,'owner',pg_get_userbyid(c.relowner),'rawAcl',c.relacl,'roles',(SELECT jsonb_agg(jsonb_build_object('role',r.rolname,'usage',has_sequence_privilege(r.oid,c.oid,'USAGE'),'select',has_sequence_privilege(r.oid,c.oid,'SELECT'),'update',has_sequence_privilege(r.oid,c.oid,'UPDATE')) ORDER BY r.rolname) FROM pg_roles r WHERE r.rolname IN('postgres','anon','authenticated','service_role'))) ORDER BY n.nspname,c.relname),'[]'::jsonb) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='S' AND (n.nspname='consultation_ticket_private' OR (n.nspname='public' AND c.relname LIKE 'consultation_%')))))::text;\nCOMMIT;\n"
+}

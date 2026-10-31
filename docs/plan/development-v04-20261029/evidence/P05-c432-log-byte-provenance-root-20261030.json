@@ -1,0 +1,10 @@
+{
+  "jobId": 124138021436,
+  "downloadedResponseSha256": "298000f5b69f74cbffdeb2fc677fc17cc05e4ff2a297faf2cabc049fc690450b",
+  "downloadSavedWithWriteBytes": true,
+  "olderWindowsTextCopySha256": "a20b90d5cdf23e79369a21a1d6800a253d997e307df5a2895e3d9ab855c1c943",
+  "olderCopyUnchanged": true,
+  "olderCopyLfDerivedSha256": "298000f5b69f74cbffdeb2fc677fc17cc05e4ff2a297faf2cabc049fc690450b",
+  "hashMeaning": "Original receipt hash refers to downloaded UTF-8 log bytes, not the earlier Windows newline-converted disk copy.",
+  "rawLogContentPublished": false
+}

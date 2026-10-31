@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "task": "START-B",
+  "dateTehran": "2026-10-29",
+  "productSha": "e82ad88e5c27d2da17c8ce03edf8e25960913cd7",
+  "previewOnlySha": "e1140eee5f246e64b1c2fd1bb1434a9d779eb242",
+  "productPr": 330,
+  "previewOnlyPr": 333,
+  "environment": "Online Vercel Preview; synthetic browser-memory fixture; no Auth or real DB",
+  "url": "https://portfolio-platform-nyvysyeue-safariarash7777-4463s-projects.vercel.app/start-b-preview",
+  "observed": [
+    "Seeded synthetic v1 with one review; label explicitly says not Arash approval",
+    "Edited title and selected post-commit response loss",
+    "One POST version 2 caused unknown-result editor lock",
+    "Recovery made GET version 2; version 2/2 restored",
+    "Visible fixture receipt had two versions with same workbookId, one review for v1, modelCalls=0 and publications=0",
+    "Product final-head CI40890322501 independently read as success"
+  ],
+  "limits": [
+    "Memory fixture resets on reload; not native DB persistence acceptance",
+    "No production writer unfreeze, installation, workbook content approval or publication",
+    "Mobile on this preview: clientWidth375,scrollWidth438; overflow found and returned to owner for repair"
+  ],
+  "screenshots": [
+    "start-b-online-recovery-receipt.jpg",
+    "start-b-online-v2.jpg"
+  ]
+}

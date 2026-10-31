@@ -1,0 +1,79 @@
+{
+  "source": "6c42d1d7394ebb6af09b6282702fefd4e15c6c20",
+  "deployment": "dpl_EJ4NEnLqdiy7v9EbkP6Vi6gWZons",
+  "publishedAtUtc": "2026-10-31T10:02:27.997255+00:00",
+  "nativeImagesUnchanged": true,
+  "axNormalization": "LF and trailing whitespace only",
+  "files": [
+    {
+      "path": "company-desktop-width-probe.jpg",
+      "bytes": 73772,
+      "sha256": "1b2dbfede07d5dd5d7a44c529ac8e7fa2822cfe6eaa7b332535b0e66373530e9",
+      "format": "JPEG",
+      "width": 1265,
+      "height": 712
+    },
+    {
+      "path": "company-quarterly-same-preview.jpg",
+      "bytes": 73757,
+      "sha256": "265ed2fd79cc394336abaa5eb067946b870a04342ecf4dc09164374a7c5574fa",
+      "format": "JPEG",
+      "width": 1265,
+      "height": 712
+    },
+    {
+      "path": "company-same-preview.ax.txt",
+      "bytes": 26198,
+      "sha256": "01f782e31c72614ec998381845f309601e3e55f0adca4a2b99790cde4d3b9aae"
+    },
+    {
+      "path": "five-selected-mobile.jpg",
+      "bytes": 38503,
+      "sha256": "e4ecdaee99fb10cb85443ac57a5cff26908ddbb831467311355c131af706956d",
+      "format": "JPEG",
+      "width": 375,
+      "height": 811
+    },
+    {
+      "path": "five-selected-real.jpg",
+      "bytes": 74350,
+      "sha256": "9bdec86e9d68bc00de5e20cec293aeae21651868676d3cc8794f2c577b15b98b",
+      "format": "JPEG",
+      "width": 1265,
+      "height": 712
+    },
+    {
+      "path": "five-selected.ax.txt",
+      "bytes": 251125,
+      "sha256": "4fe610df64a7848691509daacd9dce4ff8fb11a2c3b176f2f217f529e2f25144"
+    },
+    {
+      "path": "five-selected.json",
+      "bytes": 5335,
+      "sha256": "831da5ec72f802f954d7b0609b915a2fc180618444c0731e113cc24471c87234"
+    },
+    {
+      "path": "funds-initial.ax.txt",
+      "bytes": 205097,
+      "sha256": "7e5d38f3f8da3d3cc813c47ac06346eb481b0866fa11e4da04b923b6b9cf08d7"
+    },
+    {
+      "path": "funds-real-340.jpg",
+      "bytes": 59777,
+      "sha256": "5b8db5841efbfd4b894be6a40f38f18434bfeaa31829cb6860137768dfc38b46",
+      "format": "JPEG",
+      "width": 1265,
+      "height": 712
+    },
+    {
+      "path": "observations.json",
+      "bytes": 7541,
+      "sha256": "48143e7e29fe7ae846a6c68c4a135ed511ba8d1cbb0b186d055f3631d50d3361"
+    },
+    {
+      "path": "REVIEW.fa.md",
+      "bytes": 5642,
+      "sha256": "14a130b0c5cd02759c443a923dbaa693cf1478314932f306cc56ae78d66df5fb"
+    }
+  ]
+}

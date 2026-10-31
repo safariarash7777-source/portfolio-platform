@@ -1,0 +1,99 @@
+{
+  "status": "READY_PREVIEW_EXACT_SHA_AND_EXISTING_SCOPE_READBACK",
+  "intent": {
+    "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+    "team": "team_yXFLU0BNAbLNZhWKcwpSpJxA",
+    "branch": "codex/p07-monthly-unit-ui-20261031",
+    "sha": "a3c9fdefce66a7413d108613df17162cff63337e",
+    "tree": "c74ff6e4f9e7b01f0ab29b6a0b0e4dfb74bee681",
+    "editFields": [
+      "gitBranch",
+      "comment"
+    ],
+    "valueOrKeyOrTypeOrTargetChanged": false,
+    "automaticRetry": false,
+    "rollbackBranch": "codex/p07-market-basis-20261031"
+  },
+  "before": {
+    "old": [
+      {
+        "id": "9NEamcg9U7e4wcSX",
+        "key": "FUNDAMENTAL_READ_URL",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "codex/p07-market-basis-20261031"
+      },
+      {
+        "id": "rbwHDphHrW3rf8Hk",
+        "key": "FUNDAMENTAL_READ_ANON_KEY",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "codex/p07-market-basis-20261031"
+      }
+    ],
+    "new": [],
+    "deployments": []
+  },
+  "after": [
+    {
+      "branch": "codex/p07-market-basis-20261031",
+      "env": []
+    },
+    {
+      "branch": "codex/p07-monthly-unit-ui-20261031",
+      "env": [
+        {
+          "id": "9NEamcg9U7e4wcSX",
+          "key": "FUNDAMENTAL_READ_URL",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-monthly-unit-ui-20261031"
+        },
+        {
+          "id": "rbwHDphHrW3rf8Hk",
+          "key": "FUNDAMENTAL_READ_ANON_KEY",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-monthly-unit-ui-20261031"
+        }
+      ]
+    }
+  ],
+  "deployment": {
+    "id": "dpl_H5yBSJA7DzHAFPbRrEK8dkcQEQYY",
+    "url": "portfolio-platform-kjqqnmcec-safariarash7777-4463s-projects.vercel.app",
+    "target": null,
+    "readyState": "READY",
+    "readyAt": 1793436431841,
+    "sha": "a3c9fdefce66a7413d108613df17162cff63337e",
+    "branch": "codex/p07-monthly-unit-ui-20261031"
+  },
+  "exactDeploymentList": [
+    {
+      "id": "dpl_H5yBSJA7DzHAFPbRrEK8dkcQEQYY",
+      "url": "portfolio-platform-kjqqnmcec-safariarash7777-4463s-projects.vercel.app",
+      "state": "READY",
+      "target": null,
+      "sha": "a3c9fdefce66a7413d108613df17162cff63337e",
+      "branch": "codex/p07-monthly-unit-ui-20261031"
+    }
+  ],
+  "newManualDeployments": 1,
+  "newCredential": false,
+  "newVariable": false,
+  "valueKeyTypeTargetChanged": false,
+  "productionOrAuthOrWriteSettingsChanged": false,
+  "projectSettingsOrRuntimeOverride": false,
+  "billingOrQuotaAmount": "NOT_QUERIED",
+  "upgradeOrPurchase": false,
+  "unknownWriteRetried": false,
+  "rollbackScope": "same two IDs can return to previous existing branch; no financial rollback or credential revocation claimed"
+}

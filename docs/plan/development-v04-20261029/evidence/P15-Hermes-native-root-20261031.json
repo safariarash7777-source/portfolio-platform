@@ -1,0 +1,362 @@
+{
+  "startedAtUtc": "2026-10-31T02:47:52.175928+00:00",
+  "endedAtUtc": "2026-10-31T02:47:57.087194+00:00",
+  "mode": "READ_ONLY_CAPACITY_AND_NAMED_RUNTIME_PATHS",
+  "host": {
+    "logicalCpu": 4,
+    "cpuWindowSeconds": 2.001,
+    "cpuBusyPercent": 16.051,
+    "loadAverage": [
+      2.4833984375,
+      2.28759765625,
+      2.06298828125
+    ],
+    "memory": {
+      "MemTotalBytes": 8276856832,
+      "MemAvailableBytes": 5727883264,
+      "SwapTotalBytes": 2147479552,
+      "SwapFreeBytes": 2145644544
+    },
+    "disk": {
+      "path": "/",
+      "totalBytes": 81839546368,
+      "freeBytes": 17531428864,
+      "availableBytes": 14052913152
+    }
+  },
+  "serviceStatsAtUtc": "2026-10-31T02:47:54.177452+00:00",
+  "serviceStatsStatus": "OBSERVED_SEPARATE_STATS_WINDOW",
+  "services": [
+    {
+      "BlockIO": "2.56MB / 0B",
+      "CPUPerc": "0.06%",
+      "Container": "eb410df96316dd2f381ef2906e50ffb2c1d17220b6643667c52ce1983979c303",
+      "ID": "eb410df96316",
+      "MemPerc": "11.04%",
+      "MemUsage": "42.38MiB / 384MiB",
+      "Name": "finance-dashboard-20261028-v12-130524",
+      "NetIO": "104kB / 6.11MB",
+      "PIDs": "5"
+    },
+    {
+      "BlockIO": "445MB / 122MB",
+      "CPUPerc": "0.86%",
+      "Container": "86b36fd6c88e7e13063a1ff127982cc7fb3f108972a021a2fc0a4fbee7c6b7dd",
+      "ID": "86b36fd6c88e",
+      "MemPerc": "3.49%",
+      "MemUsage": "275.6MiB / 7.708GiB",
+      "Name": "fx-dashboard",
+      "NetIO": "19.1MB / 47.9MB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "37.9MB / 0B",
+      "CPUPerc": "0.03%",
+      "Container": "1d5a241e4abc0385e70b895964cc0a0d2d59f27637bd8fa7f537369651313e4d",
+      "ID": "1d5a241e4abc",
+      "MemPerc": "7.78%",
+      "MemUsage": "9.961MiB / 128MiB",
+      "Name": "portfolio-auth219-20261002-auth",
+      "NetIO": "32.1kB / 13.7kB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "24.6kB / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "0bda5b6e655be081ac155d1a1402dcfe2e61732dfae011b989d09d02cd7b470a",
+      "ID": "0bda5b6e655b",
+      "MemPerc": "42.75%",
+      "MemUsage": "109.4MiB / 256MiB",
+      "Name": "portfolio-auth219-20261002-storage",
+      "NetIO": "1.88MB / 2.09MB",
+      "PIDs": "12"
+    },
+    {
+      "BlockIO": "34MB / 0B",
+      "CPUPerc": "0.20%",
+      "Container": "40ee88070d97c65ae95550ba78a2126151a4d08ed41ea49bd249abf4d7a515de",
+      "ID": "40ee88070d97",
+      "MemPerc": "13.17%",
+      "MemUsage": "16.86MiB / 128MiB",
+      "Name": "portfolio-auth219-20261002-rest",
+      "NetIO": "311kB / 94kB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "39.2MB / 0B",
+      "CPUPerc": "0.05%",
+      "Container": "f95ac1c3f5296eff739dd278b66db09dd87a7fe5982dbb6dd1eab868d65080df",
+      "ID": "f95ac1c3f529",
+      "MemPerc": "16.04%",
+      "MemUsage": "15.4MiB / 96MiB",
+      "Name": "portfolio-auth219-20261002-sink",
+      "NetIO": "9.15kB / 126B",
+      "PIDs": "4"
+    },
+    {
+      "BlockIO": "73.5MB / 614kB",
+      "CPUPerc": "0.00%",
+      "Container": "bc5659d6ed1e5b0eb52327c5b0cfa3eb37abd9d2080e7bc007305298c149eda1",
+      "ID": "bc5659d6ed1e",
+      "MemPerc": "6.02%",
+      "MemUsage": "30.82MiB / 512MiB",
+      "Name": "portfolio-auth219-20261002-db",
+      "NetIO": "2.21MB / 2.18MB",
+      "PIDs": "8"
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "e169f944e6ef5219bd41dd474a1f22253deb7d84110a5c21d6505d92b8f9f817",
+      "ID": "e169f944e6ef",
+      "MemPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "Name": "portfolio-demo844-app",
+      "NetIO": "0B / 0B",
+      "PIDs": "0"
+    },
+    {
+      "BlockIO": "319kB / 73.7kB",
+      "CPUPerc": "0.00%",
+      "Container": "81e25e71e292d89e5553c724dd839729dd8872c29a4e367acd055e333a09ff11",
+      "ID": "81e25e71e292",
+      "MemPerc": "17.83%",
+      "MemUsage": "11.41MiB / 64MiB",
+      "Name": "portfolio-demo844-gateway",
+      "NetIO": "1.19MB / 372kB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "9.42MB / 0B",
+      "CPUPerc": "0.09%",
+      "Container": "dc97a9f2fa456ebcf0eee40f125abe69e41838635a9ad7f9377092e30a334085",
+      "ID": "dc97a9f2fa45",
+      "MemPerc": "43.01%",
+      "MemUsage": "110.1MiB / 256MiB",
+      "Name": "portfolio-demo844-storage",
+      "NetIO": "2.83MB / 2.07MB",
+      "PIDs": "12"
+    },
+    {
+      "BlockIO": "49.2kB / 0B",
+      "CPUPerc": "0.15%",
+      "Container": "589bb20f155034c533890d2ebbb8edf8fe1d0b4870112023e736ea0264ddb53f",
+      "ID": "589bb20f1550",
+      "MemPerc": "14.04%",
+      "MemUsage": "17.97MiB / 128MiB",
+      "Name": "portfolio-demo844-rest",
+      "NetIO": "597kB / 38.8kB",
+      "PIDs": "13"
+    },
+    {
+      "BlockIO": "254kB / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "d5e1bd7888db941179d9eaae139a91030f9e5fb6ab6c54b3dd907a46d7ae982d",
+      "ID": "d5e1bd7888db",
+      "MemPerc": "6.95%",
+      "MemUsage": "8.895MiB / 128MiB",
+      "Name": "portfolio-demo844-auth",
+      "NetIO": "1MB / 13.7kB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "13.5MB / 614kB",
+      "CPUPerc": "0.01%",
+      "Container": "621e728807b042b5f801af8f94e96617efa017dbc938de4451b7970d94f368f7",
+      "ID": "621e728807b0",
+      "MemPerc": "5.57%",
+      "MemUsage": "28.51MiB / 512MiB",
+      "Name": "portfolio-demo844-db",
+      "NetIO": "2.59MB / 1.98MB",
+      "PIDs": "8"
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "706bdb909bc4415677eb8ffe13b3c0ab77f84091c5196d88faee4ff865d8fd80",
+      "ID": "706bdb909bc4",
+      "MemPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "Name": "portfolio-accept195-app",
+      "NetIO": "0B / 0B",
+      "PIDs": "0"
+    },
+    {
+      "BlockIO": "53.9MB / 65.5kB",
+      "CPUPerc": "0.00%",
+      "Container": "54e56f79d27d1ae01eca3a5a8f2548ff0d240c4f79114817b4c2c2b7bc9087ac",
+      "ID": "54e56f79d27d",
+      "MemPerc": "24.69%",
+      "MemUsage": "15.8MiB / 64MiB",
+      "Name": "portfolio-accept195-gateway",
+      "NetIO": "1.92MB / 1.67MB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "410kB / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "7aa46e2a59e3ff9fde0f19f3640b14a99c00fd760fc762eb5e379b53cfee3191",
+      "ID": "7aa46e2a59e3",
+      "MemPerc": "42.64%",
+      "MemUsage": "109.1MiB / 256MiB",
+      "Name": "portfolio-accept195-storage",
+      "NetIO": "2.92MB / 2.09MB",
+      "PIDs": "12"
+    },
+    {
+      "BlockIO": "0B / 0B",
+      "CPUPerc": "0.19%",
+      "Container": "40e5edf87a6ba429db281b869c09c3a1ad1d2063dd1627095248842e2e6c52e1",
+      "ID": "40e5edf87a6b",
+      "MemPerc": "11.24%",
+      "MemUsage": "14.39MiB / 128MiB",
+      "Name": "portfolio-accept195-rest",
+      "NetIO": "737kB / 69.4kB",
+      "PIDs": "14"
+    },
+    {
+      "BlockIO": "590kB / 0B",
+      "CPUPerc": "0.00%",
+      "Container": "1cab06fa6b45b5990dc473db88a93ea05d526bdf9cdf77b681c4590cdca5c813",
+      "ID": "1cab06fa6b45",
+      "MemPerc": "7.06%",
+      "MemUsage": "9.035MiB / 128MiB",
+      "Name": "portfolio-accept195-auth",
+      "NetIO": "1.08MB / 13.7kB",
+      "PIDs": "10"
+    },
+    {
+      "BlockIO": "13.1MB / 614kB",
+      "CPUPerc": "0.00%",
+      "Container": "b96b02607143553452f3226a76f77eb2b691d14dd40e392fdf5e1864995560d8",
+      "ID": "b96b02607143",
+      "MemPerc": "5.59%",
+      "MemUsage": "28.62MiB / 512MiB",
+      "Name": "portfolio-accept195-db",
+      "NetIO": "2.67MB / 2.11MB",
+      "PIDs": "8"
+    },
+    {
+      "BlockIO": "2.61MB / 0B",
+      "CPUPerc": "0.90%",
+      "Container": "10d8dd93463e5dfbdfd1f43bea9bec95e52def0654c0ffe1d840bca449b643be",
+      "ID": "10d8dd93463e",
+      "MemPerc": "0.19%",
+      "MemUsage": "15.21MiB / 7.708GiB",
+      "Name": "portfolio-stage-gateway-1",
+      "NetIO": "12.4GB / 12.4GB",
+      "PIDs": "17"
+    },
+    {
+      "BlockIO": "3.36MB / 0B",
+      "CPUPerc": "0.05%",
+      "Container": "d18e72a1f11e1e26c1bdce50584c41dd58870691bcde35d0de70f6fbf1280216",
+      "ID": "d18e72a1f11e",
+      "MemPerc": "0.14%",
+      "MemUsage": "11.31MiB / 7.708GiB",
+      "Name": "portfolio-stage-auth-1",
+      "NetIO": "5.68MB / 4.28MB",
+      "PIDs": "11"
+    },
+    {
+      "BlockIO": "721kB / 0B",
+      "CPUPerc": "0.19%",
+      "Container": "703c0d4a0273aa257df593633629936bad6703e74b2e4b9da87d82e7580cab41",
+      "ID": "703c0d4a0273",
+      "MemPerc": "1.05%",
+      "MemUsage": "83.03MiB / 7.708GiB",
+      "Name": "portfolio-stage-rest-1",
+      "NetIO": "12.4GB / 12.4GB",
+      "PIDs": "26"
+    },
+    {
+      "BlockIO": "235MB / 0B",
+      "CPUPerc": "38.40%",
+      "Container": "f44d402babd38a075567715e21a66397ec4439863d978e43df03112847afb9a1",
+      "ID": "f44d402babd3",
+      "MemPerc": "1.81%",
+      "MemUsage": "143.1MiB / 7.708GiB",
+      "Name": "portfolio-stage-storage-1",
+      "NetIO": "1.86MB / 2.08MB",
+      "PIDs": "19"
+    },
+    {
+      "BlockIO": "4GB / 7.84GB",
+      "CPUPerc": "0.05%",
+      "Container": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "ID": "9193dfe09afa",
+      "MemPerc": "3.28%",
+      "MemUsage": "258.6MiB / 7.708GiB",
+      "Name": "portfolio-stage-db-1",
+      "NetIO": "4.19GB / 8.3GB",
+      "PIDs": "20"
+    },
+    {
+      "BlockIO": "41.3MB / 795kB",
+      "CPUPerc": "0.00%",
+      "Container": "3433552f37e1ef3d3718aa00ff56a18d4066fce7ceb956abd09c426cb3d02f65",
+      "ID": "3433552f37e1",
+      "MemPerc": "0.27%",
+      "MemUsage": "21.56MiB / 7.708GiB",
+      "Name": "fx-dashboard-proxy",
+      "NetIO": "12.5GB / 5.2GB",
+      "PIDs": "13"
+    }
+  ],
+  "identities": [
+    {
+      "name": "portfolio-stage-db-1",
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "running": true,
+      "status": "running",
+      "health": "healthy",
+      "restartCount": 0
+    },
+    {
+      "name": "portfolio-recovery-proof-20261030t215307z",
+      "id": "833a8447c01570811d6a0ad50cafee00745614b811ef9668acb0d944e04b21f1",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "running": false,
+      "status": "exited",
+      "health": "unhealthy",
+      "restartCount": 0
+    }
+  ],
+  "hermesPresence": {
+    "defaultPathExecutable": null,
+    "checkedDirectories": {
+      "/root/.hermes": false,
+      "/root/hermes-agent": false,
+      "/opt/hermes-agent": false,
+      "/opt/hermes": false
+    },
+    "scope": "PATH plus four named directories only; no global installation/auth-store scan",
+    "pythonVersion": "3.12.3",
+    "pythonExecutable": "/usr/bin/python3"
+  },
+  "modelCalled": false,
+  "authCredentialsRead": false,
+  "serviceMutation": false,
+  "installedTransferredUpgraded": false,
+  "releaseAuthorized": false,
+  "evidence": {
+    "intent": {
+      "atUtc": "2026-10-31T02:47:49.121865+00:00",
+      "action": "READ_ONLY_CAPACITY_NAMED_PATHS",
+      "remoteSourceSha256": "a082125083ffae199c6a87c33880b9447d5a54ccdfaeabbf25a0fe92b7dbb2ea",
+      "modelCalled": false,
+      "authRead": false,
+      "mutations": false,
+      "retry": false
+    },
+    "resultSha256": "30a2732a6d8f61878b3d7e896bed68e0284821794d8c7413b86b81b672820761",
+    "sourceIdentityMatchesReviewedTarget": true,
+    "cpuWindowMeaning": "2.001 seconds only; not sustained spare capacity; service Docker CPU is one-core units in a separate observation window",
+    "byteUnits": "GiB = bytes / 1073741824; available disk uses f_bavail and excludes reserved blocks",
+    "presenceScope": "PATH and four named directories only, not exhaustive absence of Hermes on server",
+    "memoryAvailableGiB": 5.335,
+    "diskAvailableGiB": 13.088,
+    "diskHeadroomAbove10GiBGuard": 3.088
+  }
+}

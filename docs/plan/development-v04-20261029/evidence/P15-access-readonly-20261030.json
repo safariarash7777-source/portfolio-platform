@@ -1,0 +1,215 @@
+{
+  "at": "2026-10-30T07:36:39.314030+00:00",
+  "dateTehran": "2026-10-30",
+  "method": "one direct TCP/SSH banner probe after network path changed",
+  "host": "62.60.191.24",
+  "port": 22,
+  "tcpConnected": true,
+  "serverBanner": true,
+  "authenticationAttempted": false,
+  "guestProbeExecuted": false,
+  "serviceChanged": false,
+  "bannerProtocol": "SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.20",
+  "sshErrorType": "ModuleNotFoundError",
+  "nativeSshFollowup": {
+    "at": "2026-10-30T07:38:52.159511+00:00",
+    "strictExistingHostKey": true,
+    "existingPrivateKey": true,
+    "authenticationSucceeded": true,
+    "guestProbeExecuted": true,
+    "exitCode": 0,
+    "stdout": "2026-10-30T07:38:48Z\nubuntu-arsadata-backend\n4\n2.08 1.96 2.01 2/964 404842\n               total        used        free      shared  buff/cache   available\nMem:      8276856832  2719916032  2394075136   236011520  3753115648  5556940800\nSwap:     2147479552           0  2147479552\nFilesystem                          1B-blocks        Used  Available Use% Mounted on\n/dev/mapper/ubuntu--vg-ubuntu--lv 81839546368 71554011136 6807019520  92% /\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.05%\",\"Container\":\"eb410df96316dd2f381ef2906e50ffb2c1d17220b6643667c52ce1983979c303\",\"ID\":\"eb410df96316\",\"MemPerc\":\"11.04%\",\"MemUsage\":\"42.39MiB / 384MiB\",\"Name\":\"finance-dashboard-20261028-v12-130524\",\"NetIO\":\"99kB / 6.11MB\",\"PIDs\":\"5\"}\n{\"BlockIO\":\"443MB / 95.8MB\",\"CPUPerc\":\"0.88%\",\"Container\":\"86b36fd6c88e7e13063a1ff127982cc7fb3f108972a021a2fc0a4fbee7c6b7dd\",\"ID\":\"86b36fd6c88e\",\"MemPerc\":\"4.63%\",\"MemUsage\":\"365.3MiB / 7.708GiB\",\"Name\":\"fx-dashboard\",\"NetIO\":\"15.9MB / 18.6MB\",\"PIDs\":\"14\"}\n{\"BlockIO\":\"37.9MB / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"1d5a241e4abc0385e70b895964cc0a0d2d59f27637bd8fa7f537369651313e4d\",\"ID\":\"1d5a241e4abc\",\"MemPerc\":\"20.95%\",\"MemUsage\":\"26.81MiB / 128MiB\",\"Name\":\"portfolio-auth219-20261002-auth\",\"NetIO\":\"29.3kB / 13.7kB\",\"PIDs\":\"10\"}\n{\"BlockIO\":\"24.6kB / 0B\",\"CPUPerc\":\"0.01%\",\"Container\":\"0bda5b6e655be081ac155d1a1402dcfe2e61732dfae011b989d09d02cd7b470a\",\"ID\":\"0bda5b6e655b\",\"MemPerc\":\"42.36%\",\"MemUsage\":\"108.4MiB / 256MiB\",\"Name\":\"portfolio-auth219-20261002-storage\",\"NetIO\":\"1.48MB / 1.64MB\",\"PIDs\":\"12\"}\n{\"BlockIO\":\"34MB / 0B\",\"CPUPerc\":\"0.21%\",\"Container\":\"40ee88070d97c65ae95550ba78a2126151a4d08ed41ea49bd249abf4d7a515de\",\"ID\":\"40ee88070d97\",\"MemPerc\":\"25.27%\",\"MemUsage\":\"32.34MiB / 128MiB\",\"Name\":\"portfolio-auth219-20261002-rest\",\"NetIO\":\"308kB / 92.1kB\",\"PIDs\":\"14\"}\n{\"BlockIO\":\"39.2MB / 0B\",\"CPUPerc\":\"0.07%\",\"Container\":\"f95ac1c3f5296eff739dd278b66db09dd87a7fe5982dbb6dd1eab868d65080df\",\"ID\":\"f95ac1c3f529\",\"MemPerc\":\"30.34%\",\"MemUsage\":\"29.13MiB / 96MiB\",\"Name\":\"portfolio-auth219-20261002-sink\",\"NetIO\":\"7.56kB / 126B\",\"PIDs\":\"4\"}\n{\"BlockIO\":\"73.5MB / 614kB\",\"CPUPerc\":\"0.01%\",\"Container\":\"bc5659d6ed1e5b0eb52327c5b0cfa3eb37abd9d2080e7bc007305298c149eda1\",\"ID\":\"bc5659d6ed1e\",\"MemPerc\":\"10.77%\",\"MemUsage\":\"55.16MiB / 512MiB\",\"Name\":\"portfolio-auth219-20261002-db\",\"NetIO\":\"1.75MB / 1.78MB\",\"PIDs\":\"8\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"e169f944e6ef5219bd41dd474a1f22253deb7d84110a5c21d6505d92b8f9f817\",\"ID\":\"e169f944e6ef\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"portfolio-demo844-app\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"319kB / 57.3kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"81e25e71e292d89e5553c724dd839729dd8872c29a4e367acd055e333a09ff11\",\"ID\":\"81e25e71e292\",\"MemPerc\":\"18.08%\",\"MemUsage\":\"11.57MiB / 64MiB\",\"Name\":\"portfolio-demo844-gateway\",\"NetIO\":\"948kB / 350kB\",\"PIDs\":\"10\"}\n{\"BlockIO\":\"9.42MB / 0B\",\"CPUPerc\":\"0.09%\",\"Container\":\"dc97a9f2fa456ebcf0eee40f125abe69e41838635a9ad7f9377092e30a334085\",\"ID\":\"dc97a9f2fa45\",\"MemPerc\":\"43.01%\",\"MemUsage\":\"110.1MiB / 256MiB\",\"Name\":\"portfolio-demo844-storage\",\"NetIO\":\"2.23MB / 1.63MB\",\"PIDs\":\"12\"}\n{\"BlockIO\":\"49.2kB / 0B\",\"CPUPerc\":\"0.21%\",\"Container\":\"589bb20f155034c533890d2ebbb8edf8fe1d0b4870112023e736ea0264ddb53f\",\"ID\":\"589bb20f1550\",\"MemPerc\":\"14.06%\",\"MemUsage\":\"17.99MiB / 128MiB\",\"Name\":\"portfolio-demo844-rest\",\"NetIO\":\"494kB / 36.9kB\",\"PIDs\":\"13\"}\n{\"BlockIO\":\"254kB / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"d5e1bd7888db941179d9eaae139a91030f9e5fb6ab6c54b3dd907a46d7ae982d\",\"ID\":\"d5e1bd7888db\",\"MemPerc\":\"7.02%\",\"MemUsage\":\"8.98MiB / 128MiB\",\"Name\":\"portfolio-demo844-auth\",\"NetIO\":\"793kB / 13.7kB\",\"PIDs\":\"10\"}\n{\"BlockIO\":\"13.5MB / 614kB\",\"CPUPerc\":\"0.03%\",\"Container\":\"621e728807b042b5f801af8f94e96617efa017dbc938de4451b7970d94f368f7\",\"ID\":\"621e728807b0\",\"MemPerc\":\"5.57%\",\"MemUsage\":\"28.51MiB / 512MiB\",\"Name\":\"portfolio-demo844-db\",\"NetIO\":\"2.05MB / 1.59MB\",\"PIDs\":\"8\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"706bdb909bc4415677eb8ffe13b3c0ab77f84091c5196d88faee4ff865d8fd80\",\"ID\":\"706bdb909bc4\",\"MemPerc\":\"0.00%\",\"MemUsage\":\"0B / 0B\",\"Name\":\"portfolio-accept195-app\",\"NetIO\":\"0B / 0B\",\"PIDs\":\"0\"}\n{\"BlockIO\":\"53.9MB / 49.2kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"54e56f79d27d1ae01eca3a5a8f2548ff0d240c4f79114817b4c2c2b7bc9087ac\",\"ID\":\"54e56f79d27d\",\"MemPerc\":\"57.89%\",\"MemUsage\":\"37.05MiB / 64MiB\",\"Name\":\"portfolio-accept195-gateway\",\"NetIO\":\"1.48MB / 1.39MB\",\"PIDs\":\"10\"}\n{\"BlockIO\":\"410kB / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"7aa46e2a59e3ff9fde0f19f3640b14a99c00fd760fc762eb5e379b53cfee3191\",\"ID\":\"7aa46e2a59e3\",\"MemPerc\":\"42.10%\",\"MemUsage\":\"107.8MiB / 256MiB\",\"Name\":\"portfolio-accept195-storage\",\"NetIO\":\"2.29MB / 1.63MB\",\"PIDs\":\"12\"}\n{\"BlockIO\":\"0B / 0B\",\"CPUPerc\":\"0.16%\",\"Container\":\"40e5edf87a6ba429db281b869c09c3a1ad1d2063dd1627095248842e2e6c52e1\",\"ID\":\"40e5edf87a6b\",\"MemPerc\":\"11.24%\",\"MemUsage\":\"14.39MiB / 128MiB\",\"Name\":\"portfolio-accept195-rest\",\"NetIO\":\"626kB / 67.5kB\",\"PIDs\":\"14\"}\n{\"BlockIO\":\"590kB / 0B\",\"CPUPerc\":\"0.00%\",\"Container\":\"1cab06fa6b45b5990dc473db88a93ea05d526bdf9cdf77b681c4590cdca5c813\",\"ID\":\"1cab06fa6b45\",\"MemPerc\":\"7.25%\",\"MemUsage\":\"9.285MiB / 128MiB\",\"Name\":\"portfolio-accept195-auth\",\"NetIO\":\"846kB / 13.7kB\",\"PIDs\":\"10\"}\n{\"BlockIO\":\"13.1MB / 614kB\",\"CPUPerc\":\"0.00%\",\"Container\":\"b96b02607143553452f3226a76f77eb2b691d14dd40e392fdf5e1864995560d8\",\"ID\":\"b96b02607143\",\"MemPerc\":\"5.59%\",\"MemUsage\":\"28.62MiB / 512MiB\",\"Name\":\"portfolio-accept195-db\",\"NetIO\":\"2.11MB / 1.71MB\",\"PIDs\":\"8\"}\n{\"BlockIO\":\"2.61MB / 0B\",\"CPUPerc\":\"8.08%\",\"Container\":\"10d8dd93463e5dfbdfd1f43bea9bec95e52def0654c0ffe1d840bca449b643be\",\"ID\":\"10d8dd93463e\",\"MemPerc\":\"0.19%\",\"MemUsage\":\"14.95MiB / 7.708GiB\",\"Name\":\"portfolio-stage-gateway-1\",\"NetIO\":\"9.13GB / 9.13GB\",\"PIDs\":\"11\"}\n{\"BlockIO\":\"3.34MB / 0B\",\"CPUPerc\":\"7.34%\",\"Container\":\"d18e72a1f11e1e26c1bdce50584c41dd58870691bcde35d0de70f6fbf1280216\",\"ID\":\"d18e72a1f11e\",\"MemPerc\":\"0.16%\",\"MemUsage\":\"12.41MiB / 7.708GiB\",\"Name\":\"portfolio-stage-auth-1\",\"NetIO\":\"1.77MB / 1.34MB\",\"PIDs\":\"11\"}\n{\"BlockIO\":\"721kB / 0B\",\"CPUPerc\":\"13.17%\",\"Container\":\"703c0d4a0273aa257df593633629936bad6703e74b2e4b9da87d82e7580cab41\",\"ID\":\"703c0d4a0273\",\"MemPerc\":\"0.80%\",\"MemUsage\":\"63.51MiB / 7.708GiB\",\"Name\":\"portfolio-stage-rest-1\",\"NetIO\":\"9.16GB / 9.16GB\",\"PIDs\":\"26\"}\n{\"BlockIO\":\"235MB / 0B\",\"CPUPerc\":\"9.76%\",\"Container\":\"f44d402babd38a075567715e21a66397ec4439863d978e43df03112847afb9a1\",\"ID\":\"f44d402babd3\",\"MemPerc\":\"2.44%\",\"MemUsage\":\"192.6MiB / 7.708GiB\",\"Name\":\"portfolio-stage-storage-1\",\"NetIO\":\"1.46MB / 1.63MB\",\"PIDs\":\"13\"}\n{\"BlockIO\":\"1.62GB / 6.17GB\",\"CPUPerc\":\"13.57%\",\"Container\":\"9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c\",\"ID\":\"9193dfe09afa\",\"MemPerc\":\"3.52%\",\"MemUsage\":\"278.1MiB / 7.708GiB\",\"Name\":\"portfolio-stage-db-1\",\"NetIO\":\"3.28GB / 5.93GB\",\"PIDs\":\"20\"}\n{\"BlockIO\":\"41MB / 623kB\",\"CPUPerc\":\"0.06%\",\"Container\":\"3433552f37e1ef3d3718aa00ff56a18d4066fce7ceb956abd09c426cb3d02f65\",\"ID\":\"3433552f37e1\",\"MemPerc\":\"0.46%\",\"MemUsage\":\"36.25MiB / 7.708GiB\",\"Name\":\"fx-dashboard-proxy\",\"NetIO\":\"9.18GB / 3.99GB\",\"PIDs\":\"11\"}\nprocs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 3  0      0 2349700 229204 3435964    0    0     9   113 3736   12  8  9 83  0  0  0\n 0  0      0 2350052 229204 3436012    0    0     0     0 2022 2055  5  3 93  0  0  0\n",
+    "stderr": "",
+    "remoteCommands": "date/hostname/cpu count/loadavg/free/df/docker stats/vmstat only",
+    "serviceChanged": false,
+    "earlierNativeAttempt": "read-only free/df/docker output succeeded; final vmstat argument carried CRLF and failed; this bounded capture uses LF stdin, original failure preserved in chat tool result"
+  },
+  "measuredSummary": {
+    "guestAt": "2026-10-30T07:38:48Z",
+    "hostname": "ubuntu-arsadata-backend",
+    "cpuCount": 4,
+    "memTotalBytes": 8276856832,
+    "memAvailableBytes": 5556940800,
+    "diskFreeBytes": 6807019520,
+    "diskUsePercent": "92%",
+    "cpuOneSecondSample": {
+      "r": 0,
+      "b": 0,
+      "swpd": 0,
+      "free": 2350052,
+      "buff": 229204,
+      "cache": 3436012,
+      "si": 0,
+      "so": 0,
+      "bi": 0,
+      "bo": 0,
+      "in": 2022,
+      "cs": 2055,
+      "us": 5,
+      "sy": 3,
+      "id": 93,
+      "wa": 0,
+      "st": 0,
+      "gu": 0
+    },
+    "sampleNote": "one vmstat interval, rounded; not sustained utilization",
+    "services": [
+      {
+        "Name": "finance-dashboard-20261028-v12-130524",
+        "CPUPerc": "0.05%",
+        "MemUsage": "42.39MiB / 384MiB",
+        "PIDs": "5"
+      },
+      {
+        "Name": "fx-dashboard",
+        "CPUPerc": "0.88%",
+        "MemUsage": "365.3MiB / 7.708GiB",
+        "PIDs": "14"
+      },
+      {
+        "Name": "portfolio-auth219-20261002-auth",
+        "CPUPerc": "0.00%",
+        "MemUsage": "26.81MiB / 128MiB",
+        "PIDs": "10"
+      },
+      {
+        "Name": "portfolio-auth219-20261002-storage",
+        "CPUPerc": "0.01%",
+        "MemUsage": "108.4MiB / 256MiB",
+        "PIDs": "12"
+      },
+      {
+        "Name": "portfolio-auth219-20261002-rest",
+        "CPUPerc": "0.21%",
+        "MemUsage": "32.34MiB / 128MiB",
+        "PIDs": "14"
+      },
+      {
+        "Name": "portfolio-auth219-20261002-sink",
+        "CPUPerc": "0.07%",
+        "MemUsage": "29.13MiB / 96MiB",
+        "PIDs": "4"
+      },
+      {
+        "Name": "portfolio-auth219-20261002-db",
+        "CPUPerc": "0.01%",
+        "MemUsage": "55.16MiB / 512MiB",
+        "PIDs": "8"
+      },
+      {
+        "Name": "portfolio-demo844-app",
+        "CPUPerc": "0.00%",
+        "MemUsage": "0B / 0B",
+        "PIDs": "0"
+      },
+      {
+        "Name": "portfolio-demo844-gateway",
+        "CPUPerc": "0.00%",
+        "MemUsage": "11.57MiB / 64MiB",
+        "PIDs": "10"
+      },
+      {
+        "Name": "portfolio-demo844-storage",
+        "CPUPerc": "0.09%",
+        "MemUsage": "110.1MiB / 256MiB",
+        "PIDs": "12"
+      },
+      {
+        "Name": "portfolio-demo844-rest",
+        "CPUPerc": "0.21%",
+        "MemUsage": "17.99MiB / 128MiB",
+        "PIDs": "13"
+      },
+      {
+        "Name": "portfolio-demo844-auth",
+        "CPUPerc": "0.00%",
+        "MemUsage": "8.98MiB / 128MiB",
+        "PIDs": "10"
+      },
+      {
+        "Name": "portfolio-demo844-db",
+        "CPUPerc": "0.03%",
+        "MemUsage": "28.51MiB / 512MiB",
+        "PIDs": "8"
+      },
+      {
+        "Name": "portfolio-accept195-app",
+        "CPUPerc": "0.00%",
+        "MemUsage": "0B / 0B",
+        "PIDs": "0"
+      },
+      {
+        "Name": "portfolio-accept195-gateway",
+        "CPUPerc": "0.00%",
+        "MemUsage": "37.05MiB / 64MiB",
+        "PIDs": "10"
+      },
+      {
+        "Name": "portfolio-accept195-storage",
+        "CPUPerc": "0.00%",
+        "MemUsage": "107.8MiB / 256MiB",
+        "PIDs": "12"
+      },
+      {
+        "Name": "portfolio-accept195-rest",
+        "CPUPerc": "0.16%",
+        "MemUsage": "14.39MiB / 128MiB",
+        "PIDs": "14"
+      },
+      {
+        "Name": "portfolio-accept195-auth",
+        "CPUPerc": "0.00%",
+        "MemUsage": "9.285MiB / 128MiB",
+        "PIDs": "10"
+      },
+      {
+        "Name": "portfolio-accept195-db",
+        "CPUPerc": "0.00%",
+        "MemUsage": "28.62MiB / 512MiB",
+        "PIDs": "8"
+      },
+      {
+        "Name": "portfolio-stage-gateway-1",
+        "CPUPerc": "8.08%",
+        "MemUsage": "14.95MiB / 7.708GiB",
+        "PIDs": "11"
+      },
+      {
+        "Name": "portfolio-stage-auth-1",
+        "CPUPerc": "7.34%",
+        "MemUsage": "12.41MiB / 7.708GiB",
+        "PIDs": "11"
+      },
+      {
+        "Name": "portfolio-stage-rest-1",
+        "CPUPerc": "13.17%",
+        "MemUsage": "63.51MiB / 7.708GiB",
+        "PIDs": "26"
+      },
+      {
+        "Name": "portfolio-stage-storage-1",
+        "CPUPerc": "9.76%",
+        "MemUsage": "192.6MiB / 7.708GiB",
+        "PIDs": "13"
+      },
+      {
+        "Name": "portfolio-stage-db-1",
+        "CPUPerc": "13.57%",
+        "MemUsage": "278.1MiB / 7.708GiB",
+        "PIDs": "20"
+      },
+      {
+        "Name": "fx-dashboard-proxy",
+        "CPUPerc": "0.06%",
+        "MemUsage": "36.25MiB / 7.708GiB",
+        "PIDs": "11"
+      }
+    ],
+    "diskGuardBytes": 10737418240,
+    "diskGuardPassed": false,
+    "freshBackupRestoreVerified": false,
+    "hermesInstallPerformed": false,
+    "migrationInstallPerformed": false,
+    "providerVmIdRefreshed": false
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "source": "f353300d61a4738b7b6bc2fd2177f9cdc5955a4b",
+  "base": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+  "tree": "1d52f855114cafc3e15b8cb6981b2a292d2d2a1a",
+  "status": "ROOT_SCOPED_STATIC_AND_ARTIFACT_PASS_LOCAL_ONLY",
+  "archive": {
+    "bytes": 15758,
+    "sha256": "20253a289afa2912b9f27d7c5649310d0441c87663176a21768f0b1752d1659f",
+    "members": 15,
+    "all14ManifestHashesAndCrc": true
+  },
+  "patch": {
+    "bytes": 14609,
+    "sha256": "ba78369768ba7e2fa48c5f994e6b90cc5f757f40513b4ae465c230eab1b6aee4",
+    "rootPrivateIndexTree": "1d52f855114cafc3e15b8cb6981b2a292d2d2a1a"
+  },
+  "sourcePins": [
+    {
+      "path": "lib/consultation/ticketServiceRightDiagnostic.ts",
+      "oldBlob": null,
+      "newBlob": "b6498e49effcb0bea49a9a3eed8a0abf79947663",
+      "length": 3684,
+      "sha256": "c576c0f093c6847dfdc7fe3e547778354e050c3c015c9e026fe82ab4e53663bd"
+    },
+    {
+      "path": "lib/consultation/ticketServiceRightDiagnostic.test.ts",
+      "oldBlob": null,
+      "newBlob": "708d54554465fa67d4b383d7ac15a1d926e4631a",
+      "length": 10027,
+      "sha256": "68cd27fc842b7290c3182e7c3516db76d701bcb5ae442523ca0b3a639c172fa2"
+    }
+  ],
+  "rootStaticReview": [
+    "Read both full new source/test files. Existing classifier owns expiry and validation; no second provider or time engine.",
+    "Provenance is caller-reported/unverified; legacy active does not become service authority.",
+    "Unknown/incomplete/foreign/duplicate sources withhold metadata; quota, obligations and service identifier stay null.",
+    "Read-only diagnostic cannot substitute for storage capability or filter/rewrite original history/receipts."
+  ],
+  "ownerValidation": {
+    "unit": 15,
+    "failed": 0,
+    "skipped": 0,
+    "scopedTypecheck": 0,
+    "scopedLint": 0,
+    "rootRerun": false,
+    "nativeOrDBNewRun": false
+  },
+  "currentLimits": [
+    "Only local helper, no product caller or UI integration yet.",
+    "New test is not registered in normal CI yet; root will allocate exact registration before CI.",
+    "No service mapping/SQL/DTO/writer/grant/import/primary change or actual entitlement read."
+  ]
+}

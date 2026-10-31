@@ -1,0 +1,407 @@
+{
+  "status": "LIMITED_REAL_BROWSER_NATIVE_GATE_ACCEPTED",
+  "pr": 356,
+  "validationSource": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+  "releaseApplicationSource": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+  "ciRunId": 41089201613,
+  "nativeRunId": 41089201514,
+  "nativeJobId": 124178291400,
+  "jobs": {
+    "41089201613": [
+      {
+        "id": 124178828603,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124178829075,
+        "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124178829222,
+        "name": "Database RLS \u00b7 Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124178829241,
+        "name": "Secret scan \u00b7 SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124181260690,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "41089201514": [
+      {
+        "id": 124178291400,
+        "name": "postgres17-reopen",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "downloadedRawLogSha256": "56c6671d1635682078bdbdb4d191975ad1471820af36eba4df2f6b65d45b69ee",
+  "browserChecks": [
+    {
+      "name": "browser-preflight-before-provision",
+      "status": "PASS",
+      "driverVersion": "1.64.1",
+      "sourceExecutable": "/opt/google/chrome/chrome",
+      "sourceSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+      "executable": "/home/runner/work/_temp/p09b-BetOAv/chrome/chrome",
+      "ownedTemp": "/home/runner/work/_temp/p09b-BetOAv",
+      "ownerId": "c832ed03-b002-42d8-9ddc-92005e715803",
+      "chromeVersion": "Google Chrome 156.0.8078.47",
+      "chromeSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+      "closure": {
+        "sha256": "1a8fdce06cab9301fedda5587f6eabe6ad79f68ddd7ca11351e4163644dbfa78",
+        "entries": 260,
+        "bytes": 465722955,
+        "freeBeforeBytes": 90373332992,
+        "sourceStable": true,
+        "copyMatched": true,
+        "runtimeReadonly": true
+      },
+      "beforeProvision": true
+    },
+    {
+      "name": "real-next-workbook-page",
+      "status": "PASS",
+      "genuineSession": true,
+      "realPage": true,
+      "existingCasesNotMocked": true
+    },
+    {
+      "name": "save-response-real-tab-context-close",
+      "status": "PASS",
+      "pageClosed": true,
+      "contextClosed": true,
+      "actualResponseStatus": 201,
+      "transportFulfill": false,
+      "tcpDisconnectClaim": false
+    },
+    {
+      "name": "fresh-sdk-session-get-only-reopen",
+      "status": "PASS",
+      "sameIntent": true,
+      "freshPasswordAndSdkGetUser": true,
+      "automaticWorkbookPosts": 0,
+      "intentVersionId": null,
+      "intentWriteOutcome": "unknown"
+    },
+    {
+      "name": "real-reload-get-only",
+      "status": "PASS",
+      "actualReload": true,
+      "automaticWorkbookPosts": 0
+    },
+    {
+      "name": "private-storage-cache-url-absent",
+      "status": "PASS",
+      "privateStorageHits": 0,
+      "privateUrlHits": 0,
+      "cacheAuditComplete": true,
+      "storageAudits": [
+        {
+          "hits": 0,
+          "storageEntries": 0,
+          "indexedDbDatabases": 0,
+          "indexedDbRecords": 0,
+          "cacheStores": 0,
+          "cacheEntries": 0,
+          "urlHit": false
+        },
+        {
+          "hits": 0,
+          "storageEntries": 0,
+          "indexedDbDatabases": 0,
+          "indexedDbRecords": 0,
+          "cacheStores": 0,
+          "cacheEntries": 0,
+          "urlHit": false
+        }
+      ],
+      "httpCacheDisabledByTest": false,
+      "blockedPaths": [
+        "/_next/image"
+      ],
+      "v1ReviewPreserved": true
+    },
+    {
+      "name": "owned-browser-cleanup",
+      "status": "PASS",
+      "processStopped": true,
+      "contextsClosed": true,
+      "ownedTempRemoved": true,
+      "ownerId": "c832ed03-b002-42d8-9ddc-92005e715803"
+    }
+  ],
+  "nativeChecks": [
+    {
+      "name": "isolation-attested",
+      "status": "PASS",
+      "sha": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+      "runId": "p09-5357f6bf-4b4d-49cd-b264-b9f5e3c50bc6",
+      "images": {
+        "db": "postgres@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "auth": "supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "rest": "postgrest/postgrest@sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "node": "node@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34"
+      },
+      "restArtifact": {
+        "legacy": "sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272",
+        "index": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "manifest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+        "config": "sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9",
+        "version": "PostgREST 14.17",
+        "primaryArtifactMatch": "NOT_CLAIMED"
+      },
+      "database": "owned tmpfs",
+      "serviceNetwork": "internal/no host binds/no published service ports",
+      "ingress": "127.0.0.1:32190 only",
+      "app": "Linux runner loopback / sanitized env / exact Git archive",
+      "appDefaultRoutes": null,
+      "appNoEgressClaim": false
+    },
+    {
+      "name": "three-fresh-auth-users-and-sdk-getuser",
+      "status": "PASS",
+      "members": 1,
+      "admin": 2,
+      "memberTokenSource": "GoTrue password grant; no hand-signed member sub"
+    },
+    {
+      "name": "two-real-admins-canonical-v1-review-and-member-denial",
+      "status": "PASS",
+      "workbookId": "477fdb2e-1c17-4732-8e42-cbae4d1e5dcf",
+      "versionId": "3e10e56e-f7ce-4067-b179-5a8e4b5ba92f",
+      "reviewId": "50217f7e-f406-4236-9273-ff7386f4c11a",
+      "reviewVersion": 1
+    },
+    {
+      "name": "real-201-discard-fresh-session-component-remount-get-only",
+      "status": "PASS",
+      "newPasswordSession": true,
+      "postOnRemount": false,
+      "transportDiscard": true,
+      "browserOrTcpDisconnect": false
+    },
+    {
+      "name": "explicit-same-body-intent-replay-no-duplicate",
+      "status": "PASS",
+      "sameIntent": true,
+      "sameRequestBytes": true,
+      "versions": 2
+    },
+    {
+      "name": "actor-owned-journal-native-rls-and-member-service-denial",
+      "status": "PASS",
+      "otherAdminIntent": 404,
+      "member": 403,
+      "serviceJournal": 403,
+      "canonicalBackupRead": 200,
+      "invalidJwt": 401
+    },
+    {
+      "name": "prepared-absence-remount-explicit-ui-retry-exact-bytes",
+      "status": "PASS",
+      "automaticPost": false,
+      "explicitPosts": 1,
+      "sameIntent": true,
+      "sameRequestBytes": true
+    },
+    {
+      "name": "same-get-metadata-real-native-references-no-panel-request",
+      "status": "PASS",
+      "versionIds": [
+        "3e10e56e-f7ce-4067-b179-5a8e4b5ba92f",
+        "6b472477-0768-4209-b342-f7bdaa7e4856"
+      ],
+      "reviewId": "50217f7e-f406-4236-9273-ff7386f4c11a",
+      "reviewVersionId": "3e10e56e-f7ce-4067-b179-5a8e4b5ba92f",
+      "intentId": "f480ba8f-7d7e-4e3c-99d0-0346a5a64bda",
+      "preparedAt": "2026-10-30T16:23:35.751061+00:00",
+      "intentVersionId": null,
+      "intentWriteOutcome": "unknown",
+      "intentSource": "same_existing_native_get",
+      "extraGetStarts": 0,
+      "extraHttpRequests": 0,
+      "actorsDisclosed": false
+    },
+    {
+      "name": "native-append-only-original-history-and-version-bound-review",
+      "status": "PASS",
+      "originalVersionPreserved": true,
+      "reviewStillOnV1": true,
+      "v2Approved": false,
+      "modelCalls": 0,
+      "primaryTouched": false
+    }
+  ],
+  "nativeSummary": {
+    "sha": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+    "status": "PASS",
+    "scenarios": 9,
+    "cleanup": "REMOVED_OWNED_RESOURCES",
+    "memberAuth": "real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes",
+    "schema": "candidate in owned tmpfs only",
+    "targetInstall": "NOT_APPLIED",
+    "browser": "PASS",
+    "browserReceipt": {
+      "status": "PASS",
+      "driverVersion": "1.64.1",
+      "sourceExecutable": "/opt/google/chrome/chrome",
+      "sourceSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+      "executable": "/home/runner/work/_temp/p09b-BetOAv/chrome/chrome",
+      "ownedTemp": "/home/runner/work/_temp/p09b-BetOAv",
+      "ownerId": "c832ed03-b002-42d8-9ddc-92005e715803",
+      "chromeVersion": "Google Chrome 156.0.8078.47",
+      "chromeSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+      "closure": {
+        "sha256": "1a8fdce06cab9301fedda5587f6eabe6ad79f68ddd7ca11351e4163644dbfa78",
+        "entries": 260,
+        "bytes": 465722955,
+        "freeBeforeBytes": 90373332992,
+        "sourceStable": true,
+        "copyMatched": true,
+        "runtimeReadonly": true
+      },
+      "checks": [
+        {
+          "name": "browser-preflight-before-provision",
+          "status": "PASS"
+        },
+        {
+          "name": "real-next-workbook-page",
+          "status": "PASS"
+        },
+        {
+          "name": "save-response-real-tab-context-close",
+          "status": "PASS"
+        },
+        {
+          "name": "fresh-sdk-session-get-only-reopen",
+          "status": "PASS"
+        },
+        {
+          "name": "real-reload-get-only",
+          "status": "PASS"
+        },
+        {
+          "name": "private-storage-cache-url-absent",
+          "status": "PASS"
+        },
+        {
+          "name": "owned-browser-cleanup",
+          "status": "PASS"
+        }
+      ],
+      "pageClosed": true,
+      "contextClosed": true,
+      "freshLoginVerified": true,
+      "reloadGetOnly": true,
+      "automaticWorkbookPosts": 0,
+      "privateStorageHits": 0,
+      "privateUrlHits": 0,
+      "cacheAuditComplete": true,
+      "cleanup": {
+        "processStopped": true,
+        "contextsClosed": true,
+        "ownedTempRemoved": true,
+        "ownerId": "c832ed03-b002-42d8-9ddc-92005e715803"
+      }
+    },
+    "arashAcceptance": "UNOBSERVED",
+    "privateArtifactsUploaded": false
+  },
+  "nativeCleanup": {
+    "sha": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+    "runId": "p09-5357f6bf-4b4d-49cd-b264-b9f5e3c50bc6",
+    "status": "REMOVED_OWNED_RESOURCES",
+    "resources": 6
+  },
+  "chromeCleanup": {
+    "status": "REMOVED_OWNED_RESOURCES",
+    "processStopped": true,
+    "contextsClosed": true,
+    "ownedTempRemoved": true,
+    "ownerId": "c832ed03-b002-42d8-9ddc-92005e715803",
+    "processesObserved": 8
+  },
+  "p10IntentChecks": [
+    {
+      "profile": "legacy",
+      "intentIdentityMatched": true,
+      "preparedAtMatched": true,
+      "targetVersion": 2,
+      "versionId": null,
+      "extraRequests": 0,
+      "source": "existing_native_intent_list"
+    },
+    {
+      "profile": "explicit",
+      "intentIdentityMatched": true,
+      "preparedAtMatched": true,
+      "targetVersion": 2,
+      "versionId": null,
+      "extraRequests": 0,
+      "source": "existing_native_intent_list"
+    }
+  ],
+  "p10MetadataChecks": [
+    {
+      "profile": "legacy",
+      "versions": 2,
+      "reviews": 1,
+      "reviewVersion": 1,
+      "actorsDisclosed": false,
+      "extraRequests": 0,
+      "source": "existing_native_open_read"
+    },
+    {
+      "profile": "explicit",
+      "versions": 2,
+      "reviews": 1,
+      "reviewVersion": 1,
+      "actorsDisclosed": false,
+      "extraRequests": 0,
+      "source": "existing_native_open_read"
+    }
+  ],
+  "sqlArtifact": {
+    "id": 12992803850,
+    "digest": "sha256:0e8af114e682e15a2c82546010d41218253d44ce7cc39357ee20a17ebb25f998",
+    "downloadZipSha256": "0e8af114e682e15a2c82546010d41218253d44ce7cc39357ee20a17ebb25f998",
+    "workflowRun": 41089201514,
+    "head": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+    "expired": false,
+    "receipt": {
+      "status": "PASS",
+      "testedSha": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+      "postgresVersionNumber": 170011,
+      "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+      "environment": "disposable GitHub Actions PostgreSQL; synthetic data only",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "scenarios": [
+        "immutable native actor/hash/body",
+        "other-admin/member/anon and service-role BYPASSRLS denial",
+        "actual component destroyed after v2 commit and remounted; GET-only recovery",
+        "v1 and its review retained; v2 unapproved",
+        "private text read back exactly",
+        "candidate rerun preserves existing workbook/review INSERT freeze"
+      ],
+      "authBoundary": "synthetic claims exercised under native authenticated SQL role; no real user session",
+      "productionTouched": false,
+      "modelCalls": 0,
+      "browserPersistentPrivateBody": false
+    }
+  },
+  "primaryInstall": "NOT_APPLIED",
+  "realFinancialSource": "NOT_SUPPLIED",
+  "arashAcceptance": "UNOBSERVED",
+  "privateRawLogsPublished": false
+}

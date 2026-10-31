@@ -1,0 +1,72 @@
+{
+  "source": "e48eafa361198a2db24ea374232136bfce918f7e",
+  "candidate": "26732d43305a39e18469549630fdaed8d06c35b2",
+  "tree": "83b90c9a675160cce09d651db4da88b683625a1b",
+  "parents": [
+    "e48eafa361198a2db24ea374232136bfce918f7e"
+  ],
+  "owner": "C existing chat; execution receipt now received",
+  "status": "READY_FOR_SCOPED_CODE_REVIEW_NOT_RUNTIME_ACCEPTED",
+  "ownerHandoff": "https://github.com/safariarash7777-source/portfolio-platform/pull/364#issuecomment-6537785620",
+  "rootIndependent": {
+    "commitMetadataAndFiveFileList": true,
+    "functionalDeltaRead": [
+      "relay/codal-admission-diagnostics.mjs full119-line diff",
+      "relay/codal-engine.mjs full13-line diff"
+    ],
+    "observed": "two natural feed/backfill context hooks and existing-cycle reset, bounded nested observations and restore, outer counts v1 preserved, strict public Codal reference whitelist, unverified report/period/scope/source-clocks null, full counts with omitted/partial and byte/event caps",
+    "rootReranOwnerTests": false,
+    "fullParserOrOldBaselineAudit": false,
+    "staticConclusion": "no blocker identified in this scoped delta; fresh guarded Draft CI pending, not acceptance of natural future pipeline behavior"
+  },
+  "files": [
+    {
+      "path": "docs/ops/codal-stored-reader-v04-20261031/DELIVERY.fa.md",
+      "changes": 246
+    },
+    {
+      "path": "relay/codal-admission-diagnostics.mjs",
+      "changes": 119
+    },
+    {
+      "path": "relay/codal-engine-cycle.test.mjs",
+      "changes": 93
+    },
+    {
+      "path": "relay/codal-engine.mjs",
+      "changes": 13
+    },
+    {
+      "path": "relay/codal-n10-admission.test.mjs",
+      "changes": 157
+    }
+  ],
+  "ownerChecks": {
+    "mockAndSerializer": 173,
+    "engineUnit": 13,
+    "parserRegression": "ALL TESTS PASSED",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "secrets": "PASS",
+    "negativeControl": "deleting feed hook context fails that lane; restored exact source",
+    "attribution": "C reported; not root rerun"
+  },
+  "boundaries": {
+    "newTableApiStatekeyJournalOrPost": false,
+    "realCollectorProviderWriterSqlModel": false,
+    "historical18Reconstruction": false,
+    "archivePathCoverage": false,
+    "sourceClockOrLastFinancialSuccessProved": false,
+    "mainOrRuntimeDeployment": false
+  },
+  "next": {
+    "owner": "C guarded Draft, root review",
+    "branch": "codex/codal-rejection-metadata-v04-20261031",
+    "additionalReservation": "vercel.json exact git.deploymentEnabled branch entry false; preserve prior364 guard/crons/other fields",
+    "fiveCandidateFilesFrozen": true,
+    "publication": "assignment sent for additional guard commit and stacked Draft based on e48 branch; not assumed complete",
+    "noDeployProof": "explicit skip if observed, otherwise no matching deployment is bounded metadata only, not full no-deploy proof"
+  },
+  "canonical402": "separate existing codal_reports reader failure acknowledged by C; not changed or solved by this relay candidate",
+  "releaseAuthorized": false
+}

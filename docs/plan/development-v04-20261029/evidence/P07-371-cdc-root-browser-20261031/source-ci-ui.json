@@ -1,0 +1,95 @@
+{
+  "head": "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+  "base": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "pr": 371,
+  "status": "BLOCKED_CANONICAL_DATA_READ_402",
+  "deployment": {
+    "id": "dpl_FiYB4dCCDGkA5jokLD3PxBa4iWh3",
+    "url": "https://portfolio-platform-nkjelzkgz-safariarash7777-4463s-projects.vercel.app",
+    "state": "READY",
+    "target": null,
+    "sha": "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6"
+  },
+  "ci": {
+    "run": 41159464629,
+    "jobs": [
+      {
+        "id": 124413564447,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124413564776,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124413564787,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124413564894,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124414739745,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "checkout": {
+      "sha": "d59990c9791cabcfe17b1776c0ece5b88f8f59ce",
+      "tree": "f529202b137e8ba71f856759647b42c42f899d03",
+      "parents": [
+        "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+        "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6"
+      ]
+    },
+    "candidateTree": "f529202b137e8ba71f856759647b42c42f899d03",
+    "treeEqualsCandidate": true
+  },
+  "rootExportProof": "../P07-canonical-cdc-root-export-review-20261031.json",
+  "browser": {
+    "path": "/symbol/فولاد",
+    "actor": "anonymous existing public page; no login/write",
+    "overview": "market/current/history read failure, unknown price and receipt time, dash not zero",
+    "action": "Fundamental tab Enter",
+    "fundamental": "read failed notice; no charts rendered; not proof of no stored reports",
+    "fixtureInjection": false,
+    "productAccepted": false,
+    "tabMarkedDeliverable": true
+  },
+  "runtimeEvidence": {
+    "readOnlyLogs": true,
+    "deploymentId": "dpl_FiYB4dCCDGkA5jokLD3PxBa4iWh3",
+    "requestId": "cgjmh-1793413332699-b43b7a4f143b",
+    "observedAtUTC": "2026-10-31T02:22:13Z",
+    "entries": [
+      {
+        "at": "2026-10-31T02:22:13.312Z",
+        "event": "fundamental_read_failed",
+        "phase": "headers",
+        "status": 402,
+        "kind": "ن-۳۰"
+      },
+      {
+        "at": "2026-10-31T02:22:13.315Z",
+        "event": "fundamental_read_failed",
+        "phase": "headers",
+        "status": 402,
+        "kind": "ن-۱۰"
+      }
+    ],
+    "meaning": "existing reader got unsuccessful upstream headers; billing/credits/account cause not established",
+    "sourceContract": "unchanged lib/fundamental/supabase.ts: two codal_reports GETs, limits N10=400/N30=200, existing NEXT_PUBLIC pair; Auth/write/env not retargeted",
+    "furtherSourceRequestsByRoot": false
+  },
+  "limits": [
+    "actual canonical chart rendering, financial units/provenance and all prior feature behavior not accepted",
+    "source code CI/Preview presence is not usable chart delivery",
+    "real member-to-admin journey and service right remain separate open gates",
+    "no main merge, provider refresh, env change, new service or paid purchase"
+  ]
+}

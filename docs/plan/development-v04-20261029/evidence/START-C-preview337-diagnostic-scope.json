@@ -1,0 +1,60 @@
+{
+  "observedAt": "2026-10-29T18:30:18.694812+00:00",
+  "method": "root read-back of public PR331 description and precise owner clarification; root did not repeat remote data request",
+  "pr": 331,
+  "headSha": "4013c7c3e972e6b026e093d8dbf39d9df7776fc1",
+  "prBodySha256": "650de9716be24337c1ebff8d7d476d1c771992493a98701a65ff4b179007677c",
+  "diagnosticSectionFound": true,
+  "source": "existing START-C owner",
+  "previewTargetSha": "1d7b3586931548fe35f1d5cacbf4ad93771c3d30",
+  "reportedPublishedTarget": "legacy Supabase, not current Liara",
+  "reportedRead": {
+    "method": "GET",
+    "path": "/api/codal-list?symbol=Foolad (Persian symbol)",
+    "at": "2026-10-29T18:25:06Z",
+    "httpStatus": 502,
+    "upstreamStatus": 402,
+    "store": "codal_feed",
+    "wasFundSnapshotQuery": false
+  },
+  "notEstablished": [
+    "relay fallback outcome",
+    "actual absence of stored fund rows",
+    "admission rejection of fund rows",
+    "financial or billing cause of upstream402",
+    "successful primary financial ingest",
+    "interactive five-fund consumer acceptance"
+  ],
+  "diagMarketInvoked": false,
+  "reasonDiagNotInvoked": "existing route may read upstream and evaluate alerts; avoided blind refresh",
+  "newProductEndpoint": false,
+  "primaryEnvCredentialServiceChanged": false,
+  "ownerLocalJsonCommitted": false,
+  "scopeLimitation": "Owner local JSON is not committed; description is published and linked, and this coordinator receipt preserves the qualified report.",
+  "ownerFollowupExactSnapshotRead": {
+    "reportedBy": "existing START-C owner, completed turn 01a188ee-2cc3-7169-a26f-c6148c8bdfb4",
+    "at": "2026-10-29T18:32:32.251117Z",
+    "method": "one bounded GET, no retry",
+    "target": "same published legacy Supabase of exact Preview337",
+    "path": "/rest/v1/ir_market_snapshots?key=eq.latest&select=payload",
+    "httpStatus": 402,
+    "publicCode": null,
+    "credentialHandling": "existing published public anon credential in memory only; no value in receipt/log/argv",
+    "fundRows": null,
+    "payloadTimes": null,
+    "providerAlertRelayWritesInvoked": false,
+    "rootRepeatedQuery": false
+  },
+  "queryOutcomeNowEstablished": "exact configured snapshot SELECT failed with HTTP402; row absence not established",
+  "followupRecordedAt": "2026-10-29T18:34:20.659463+00:00",
+  "managementReadback": {
+    "at": "2026-10-29T18:37:49.409160+00:00",
+    "tool": "connected Supabase get_project, existing project ref only",
+    "readOnly": true,
+    "outcome": "connector transport failed before project metadata returned",
+    "projectStatus": null,
+    "causeOf402": null,
+    "configurationChanged": false,
+    "retryPerformed": false
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "observedBy": "Existing C owner in cloud; Python socket",
+  "ownerThread": "01a17a15-afff-7304-b058-4ee5d024a041",
+  "observedAt": "2026-10-30T15:16:20.797717Z",
+  "target": "62.60.191.24:22",
+  "attempts": 1,
+  "connectTimeoutSeconds": 5,
+  "bannerTimeoutSeconds": 3,
+  "bannerReadMaxBytes": 255,
+  "connect": "ConnectionRefusedError",
+  "errno": 111,
+  "elapsedMillisecondsApprox": 1,
+  "bannerRead": false,
+  "applicationBytesSent": 0,
+  "authOrKeyUsed": false,
+  "remoteCommandExecuted": false,
+  "repeated": false,
+  "rootIndependentSocketProbe": false,
+  "interpretation": "Cloud-path refusal is not proof of guest identity, sshd state, power state, key rejection or root cause; local/egress/intermediary rejection remains possible.",
+  "guestCpuRamDisk": "UNKNOWN",
+  "serverMutations": false
+}

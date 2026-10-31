@@ -1,0 +1,193 @@
+{
+  "source": "303f4c016505e9fdb8f12236168961f48a10ca0f",
+  "base": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+  "tree": "a41ec1bb2a8b2ceb82fcfc77863785140591ae93",
+  "pr": 377,
+  "status": "ROOT_STATIC_ARTIFACT_AND_ALL_5_CI_PASS_NOT_SERVICE_CONNECTION",
+  "changedPaths": [
+    "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md",
+    "lib/consultation/ticketServiceRightDiagnostic.test.ts",
+    "lib/consultation/ticketServiceRightDiagnostic.ts",
+    "package.json",
+    "scripts/testing/consultation-tickets/protected-source.json",
+    "scripts/testing/consultation-tickets/source-boundary.test.mjs",
+    "vercel.json"
+  ],
+  "twoHelperBlobsEqualF353": true,
+  "historicalProtectedMapExactBeforeExtension": true,
+  "oldProtectedRawSha256": "2bbacbfa3ead0f0dc7867bfb75ecde61f85d844a23bd0f00a35661832226046e",
+  "libDeltaOnlyTwoFrozenAdds": true,
+  "oldPackageExactAfterRemovingOneLiteral": true,
+  "vercelOnlyExactNewBranchFalse": true,
+  "deliveryAppendOnly": true,
+  "frozenTrees": [
+    "app",
+    "components",
+    "public",
+    "middleware.ts",
+    "next.config.js",
+    "package-lock.json",
+    "sql",
+    "supabase"
+  ],
+  "rootStaticGuardReview": "Read the full exception diff; original SQL/provider/consumer/reader maps remain, historical manifest is hash-pinned, every old lib blob/mode/path and exact new helpers are checked. No skip or broad ignore added.",
+  "ownerLocalValidation": {
+    "sourceBoundary": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "previousRed": {
+      "passed": 7,
+      "failed": 2
+    },
+    "rootRerun": false
+  },
+  "ci": {
+    "general": 41171275111,
+    "jobs": [
+      {
+        "id": 124449549463,
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124449549635,
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124449549719,
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124449549743,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124451010132,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "actualCheckout": "ac28e8ca2784864a014e20342064825a9cdf02ca",
+    "tree": "a41ec1bb2a8b2ceb82fcfc77863785140591ae93",
+    "parents": [
+      "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+      "303f4c016505e9fdb8f12236168961f48a10ca0f"
+    ],
+    "named15EachExactlyOnce": [
+      {
+        "name": "active legacy consulting reports original provenance but never a service right",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "future legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "expired legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "revoked legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "webinar legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "manual legacy record stays reported and inactive without granting this service",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "a complete empty legacy snapshot is not zero quota or evidence of absent service rights",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "unavailable, partial, missing or malformed snapshots withhold provenance and remain unknown",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "explicitly disconnected source remains disconnected without inventing an empty ledger",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "foreign, duplicate, mixed-invalid and corrupt rows never become a partial successful snapshot",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "the existing classifier retains inclusive start, exclusive end and microseconds across offsets",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "free source strings and smuggled admin/full or economic fields cannot establish service authority",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "diagnosis detaches immutable metadata and never mutates the caller snapshot",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "diagnostic metadata cannot substitute for the unchanged storage capability",
+        "subtests": 1,
+        "passes": 1
+      },
+      {
+        "name": "expired, revoked and unknown diagnostics leave original history and receipt recovery independent",
+        "subtests": 1,
+        "passes": 1
+      }
+    ],
+    "literalExactlyOnceBeforeFirstAnd": true,
+    "automaticP03": 41171275157,
+    "automaticNativeKind": "old 27API/11DOM profile; native source303; not service-right acceptance",
+    "nativeReceiptsRootOfficialLogMatched": true,
+    "feedbackCompatibility": "SKIPPED_BY_UNCHANGED_WORKFLOW",
+    "manualDispatch": false,
+    "status": "SUCCESS"
+  },
+  "notClaimed": [
+    "Actual service right/provider/mapping",
+    "UI or caller integration",
+    "Destination/primary acceptance",
+    "main/Production merge",
+    "Model/purchase/grant/import"
+  ],
+  "publicReviewPacket": {
+    "bytes": 107981,
+    "sha256": "229968b43ac158c22fa8f82f50e4b21d849ee977e7accd7c51dc52c1548f8877",
+    "members": 34,
+    "all33HashesCrcAndSevenGitSources": true,
+    "patchPrivateIndexTree": "a41ec1bb2a8b2ceb82fcfc77863785140591ae93"
+  },
+  "officialArtifact": {
+    "id": 13030968635,
+    "bytes": 2027,
+    "digest": "sha256:35184bbcd5e295ccf02fbb0db2a4443b956414b0168cca3430f2d8966d6327ad",
+    "expired": false,
+    "localZipHashEqualOfficialDigest": true,
+    "bothRawReceiptHashesAndOriginalLogValues": true
+  }
+}

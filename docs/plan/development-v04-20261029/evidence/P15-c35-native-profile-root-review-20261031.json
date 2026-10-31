@@ -1,0 +1,190 @@
+{
+  "head": "c35e98f00b97c6312e590370d908e33aaec1628f",
+  "priorHead": "ee70501f80edf16122e83dede628e402ac9ac931",
+  "pr": 369,
+  "status": "BLOCKED_NATIVE_PROFILE_COMPARISON_ARTIFACT_ABSENT",
+  "rootCodeRead": "ee705\u00e2\u2020\u2019c35 four-file delta read: corrected2351 guard, exact Git binary binding test and documentation; no changes to frozen binding/gate/crypto/consumer/installer",
+  "binding": {
+    "bytes": 2351,
+    "sha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
+    "oldIncorrectExpectedBytes": 2394,
+    "artifactChanged": false
+  },
+  "ownerTests": {
+    "v2": 34,
+    "v1Historical": 16,
+    "rootReran": false,
+    "exactGitBindingNativeBoundaryAdded": true
+  },
+  "ci": {
+    "run": 41158909261,
+    "jobs": [
+      {
+        "id": 124411804611,
+        "name": "Database RLS \u0622\u00b7 Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124411804870,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124411804905,
+        "name": "Typecheck \u0622\u00b7 Lint \u0622\u00b7 Tests \u0622\u00b7 Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124411804936,
+        "name": "Secret scan \u0622\u00b7 SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124412942408,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "checkout": {
+      "sha": "d66898da70f5973b9c30086348e0de3d9568479b",
+      "tree": "9cd769c0a5030fb79d7b48680717257e0f2ab461",
+      "parents": [
+        "1e572251d5f305b0beec66dc7a26893f10e31b01",
+        "c35e98f00b97c6312e590370d908e33aaec1628f"
+      ]
+    },
+    "candidateTree": "a5e618ba7f719b673edf09b90b5933e5f20154c3",
+    "allTenRelevantBlobsEqual": true,
+    "relevantBlobs": [
+      {
+        "path": "docs/ops/p15-webpack-cache-20261030/EXISTING-CONSUMERS.fa.md",
+        "sha": "d43804dcf62b2f4a919a09ed46ca68d772945698",
+        "size": 16627
+      },
+      {
+        "path": "docs/ops/p15-webpack-cache-20261030/RELEASE-BINDING-20261031.json",
+        "sha": "c5110f3e33af7037027d0fbc8bcc37ecfe865e87",
+        "size": 2351
+      },
+      {
+        "path": "docs/ops/p15-webpack-cache-20261030/checkpoint-read-gate.py",
+        "sha": "b8921383d6d2e6985ccaa006f91178579fcda66f",
+        "size": 12910
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/CheckpointCrypto.cs",
+        "sha": "1db5435dfc0cb0e5a32f2f13a25f705f43075c61",
+        "size": 9668
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/README.md",
+        "sha": "f1ef84c27ff0b41a143adf3941d02085ebdea247",
+        "size": 14239
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/backup-checkpoint.ps1",
+        "sha": "5a34cabd961f1e41ebab2760ebc967ddb9b2a0bc",
+        "size": 29181
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/checkpoint-profile-v2.ps1",
+        "sha": "ea6269f1e5a670b7b97cf8a16bc23a467155b870",
+        "size": 6831
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/corrected-checkpoint-consumer.py",
+        "sha": "37a679fb7e0ac3fe355387f75f448e87eb942e6e",
+        "size": 3784
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/offline-profile-v2.ps1",
+        "sha": "4da4341a3690be9f80b05b2b5278375432752bbd",
+        "size": 14126
+      },
+      {
+        "path": "scripts/testing/consultation/install-native.py",
+        "sha": "a3b9a6dad2a6ee04f18196a0ec912043f582c11e",
+        "size": 15623
+      }
+    ],
+    "wholeMergeTreeEqualsHead": false,
+    "wholeTreeDifference": "root base has newer evidence/docs; equality claimed only for the ten enumerated files"
+  },
+  "nativeMetadata": {
+    "owner": "B",
+    "attempts": 1,
+    "intentAtUTC": "2026-10-31T02:12:56.3924918Z",
+    "status": "FAILED_METADATA_HARNESS",
+    "phase": "ssh-metadata",
+    "error": "ReadMetadata IOException I/O error occurred",
+    "attestationReceived": false,
+    "remoteProcessState": "UNOBSERVED",
+    "preciseHistoricalFailureCause": "UNPROVEN; frozen C# discarded SSH stderr"
+  },
+  "rootIndependentTransport": "P15-c35-transport-diagnostic-root-20261031.json; same strict SSH fixed-print success, not profile acceptance",
+  "ownerSeparateDiagnostic": {
+    "result": "FileNotFoundError",
+    "phase": "preflight-stat-05",
+    "frozenGateLine": 136,
+    "missingFixedName": "comparison.private.json",
+    "elapsedSeconds": 3.031,
+    "gateRunCalls": 0,
+    "dumpRehashedInDiagnostic": false,
+    "sourceCodeAnd14PathsOfflineValidatedByOwner": true,
+    "stdoutBytes": 164,
+    "stderrBytes": 0,
+    "notProofOfHistoricalIOCause": true
+  },
+  "helperSourceRootIndependent": {
+    "path": "docs/ops/recovery-01/p01-scripts/liara-native-backup-restore.py",
+    "gitBytesSha256": "1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2",
+    "bytes": 20441,
+    "controlFlow": "target-inventory line241; comparison-before-correction line248; bounded ACL planner line250 may throw at86/88; final comparison.private.json only written line272; catch289 preserves failed"
+  },
+  "ownerDirectoryMetadata": {
+    "rootReran": false,
+    "scope": "same owned checkpoint, names/types/length/owner only; no contents/SQL/hashdump",
+    "beforeComparison": {
+      "name": "comparison-before-correction.private.json",
+      "bytes": 3707,
+      "ownerUid": 0,
+      "contentSha256": null
+    },
+    "finalComparison": {
+      "name": "comparison.private.json",
+      "state": "ABSENT"
+    },
+    "receipt": {
+      "name": "receipt.json",
+      "bytes": 893,
+      "ownerUid": 0
+    },
+    "meaning": "current metadata and original control flow support final artifact not produced before old failed planner; before and final names are distinct stages, not aliases"
+  },
+  "next": {
+    "owner": "B implementation, root review",
+    "decision": "APPROVED_FOR_CANDIDATE_CODE_TEST_AND_ONE_BOUNDED_SMALL_HASH_ONLY",
+    "profile": "corrected-acl19-failed-v2r2",
+    "scope": "17 roles/16 real streams; six original present and exact final-comparison slot observed_absent; original before-comparison and independent corrected strict comparisons preserved separately; absence length/hash/cipher null; explicit revision dispatch; same HMAC authenticates all descriptors and pinned policy supplement",
+    "smallRead": "one fixed3707-byte before-comparison raw SHA plus owned no-symlink path/stable fstat/shared lock/observed final absence/UTC; no raw contents, dump hash, SQL or mutation",
+    "policyBeforeHash": "2ca79419e1b2cb1baee866a3cf63f0ab8cdb0205079e900738de492e86a77d9a",
+    "policyApprovedForNative": false,
+    "preserved": "LegacyV1 seven mandatory files and existing strict c35 profile; helper/gate/binding/consumer/crypto/DPAPI; old failed receipts and attempts",
+    "nativeCaptureVerifyTransferOrKeyCreation": "NOT_AUTHORIZED_BY_THIS_ALLOCATION",
+    "implementation": "IN_PROGRESS_OWNER_REPORTED_SOURCE_NOT_YET_REVIEWED",
+    "noHistoricalNeverCreatedClaim": true,
+    "beforeHashEvidence": "P15-v2r2-smallhash-B-root-read-20261031.json"
+  },
+  "boundaries": {
+    "capture": false,
+    "verify": false,
+    "backupPayloadTransferred": false,
+    "masterCreated": false,
+    "dpapiCreated": false,
+    "sql": false,
+    "containerMutation": false,
+    "helperGateBindingCryptoChanged": false,
+    "nativeProfileAccepted": false,
+    "releaseAuthorized": false
+  }
+}

@@ -43,15 +43,24 @@ export interface CodalRow {
 
 const REVALIDATE_MS = 60 * 1000;
 const cache = new Map<string, { at: number; value: SymbolFundamentals | null }>();
+let activeBinding: string | null = null;
+let readRevision = 0;
+let appliedReadRevision = 0;
+let cacheEpoch = 0;
+
+/** Trusted server callers/tests may supply an isolated object; no global configuration is installed. */
+export interface FundamentalReadOptions {
+  environment: Readonly<Record<string, string | undefined>>;
+}
 
 export interface FundamentalRead {
   data: SymbolFundamentals | null;
   state: "ready" | "empty" | "error";
 }
 
-function env(): { url: string; anon: string } | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+function env(environment: FundamentalReadOptions["environment"]): { url: string; anon: string } | null {
+  const url = environment.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = environment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) return null;
   return { url: url.replace(/\/+$/, ""), anon };
 }
@@ -82,16 +91,14 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
   }));
 }
 
-async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
-  const e = env();
-  if (!e) {
-    console.warn("fundamental_read_failed", { phase: "configuration" });
-    return null;
-  }
+async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<CodalRow[] | null> {
   try {
     const parts = await Promise.all(
       fetchQueries(symbol).map(async ({ kind, qs }) => {
         const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
+          method: "GET",
+          redirect: "error",
+          credentials: "omit",
           headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
           signal: AbortSignal.timeout(8000),
           cache: "no-store",
@@ -107,7 +114,7 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
         }
         if (rows.length >= FETCH_LIMITS[kind]) {
           // برش رخ داد: قدیمی‌ترین دوره‌ها بیرون ماندند. بی‌صدا نباشد.
-          console.warn(`codal_reports: ${symbol} ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
+          console.warn(`codal_reports: ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
         }
         return rows;
       }),
@@ -115,7 +122,9 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
     if (parts.some((p) => p === null)) return null;
     return parts.flat() as CodalRow[];
   } catch (error) {
-    console.warn("fundamental_read_failed", { phase: "request-or-body", reason: error instanceof Error ? error.name : "read-error" });
+    const safeNames = ["AbortError", "TimeoutError", "TypeError", "SyntaxError"];
+    const reason = error instanceof Error && safeNames.includes(error.name) ? error.name : "read-error";
+    console.warn("fundamental_read_failed", { phase: "request-or-body", reason });
     return null;
   }
 }
@@ -442,18 +451,53 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
 /** دادهٔ بنیادی نماد از Supabase؛ نبودِ داده یا خطا → null (بدون عدد ساختگی). */
 export async function getFundamentalsFromSupabase(
   symbol: string,
+  options?: FundamentalReadOptions,
 ): Promise<SymbolFundamentals | null> {
-  return (await readFundamentalsFromSupabase(symbol)).data;
+  return (await readFundamentalsFromSupabase(symbol, options)).data;
 }
 
 /** Preserve read failures for the routed page; successful empty is a separate result. */
-export async function readFundamentalsFromSupabase(symbol: string): Promise<FundamentalRead> {
-  const hit = cache.get(symbol);
-  if (hit && Date.now() - hit.at < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
-  const rows = await fetchRows(symbol);
+export async function readFundamentalsFromSupabase(symbol: string, options?: FundamentalReadOptions): Promise<FundamentalRead> {
+  const revision = ++readRevision;
+  let selected: { url: string; anon: string; expiresAt?: number } | null = null;
+  let binding: string;
+  try {
+    const environment = options?.environment ?? process.env;
+    const pair = Object.freeze({ FUNDAMENTAL_READ_URL: environment.FUNDAMENTAL_READ_URL, FUNDAMENTAL_READ_ANON_KEY: environment.FUNDAMENTAL_READ_ANON_KEY });
+    const override = pair.FUNDAMENTAL_READ_URL !== undefined || pair.FUNDAMENTAL_READ_ANON_KEY !== undefined;
+    selected = override
+      ? (await import("./read-config.server")).fundamentalReadPair(pair)
+      : env(environment);
+    if (!selected) throw new Error("configuration");
+    // A non-reversible internal digest binds cache identity; no credential enters a cache key/value.
+    const material = new TextEncoder().encode(JSON.stringify([override ? "fundamental" : "legacy", selected.url, selected.anon]));
+    try {
+      const digest = await globalThis.crypto.subtle.digest("SHA-256", material);
+      binding = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    } finally { material.fill(0); }
+    if (selected.expiresAt !== undefined && selected.expiresAt <= Date.now() / 1000) throw new Error("configuration");
+  } catch {
+    if (revision > appliedReadRevision) { appliedReadRevision = revision; cache.clear(); activeBinding = null; cacheEpoch++; }
+    console.warn("fundamental_read_failed", { phase: "configuration" });
+    return { data: null, state: "error" };
+  }
+  // Only completed decisions supersede a binding; a merely-started read cannot disable a valid cache.
+  if (revision > appliedReadRevision) {
+    appliedReadRevision = revision;
+    if (activeBinding !== binding) { cache.clear(); activeBinding = binding; cacheEpoch++; }
+  }
+  if (activeBinding !== binding) {
+    console.warn("fundamental_read_failed", { phase: "configuration" });
+    return { data: null, state: "error" };
+  }
+  const requestEpoch = activeBinding === binding ? cacheEpoch : null;
+  const hit = activeBinding === binding ? cache.get(symbol) : undefined;
+  const age = hit ? Date.now() - hit.at : -1;
+  if (hit && age >= 0 && age < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
+  const rows = await fetchRows(symbol, selected);
   if (rows === null) return { data: null, state: "error" };
   const value = rows && rows.length > 0 ? buildFundamentals(symbol, rows) : null;
   // خطای شبکه (rows=null) کش نمی‌شود تا درخواست بعدی دوباره تلاش کند.
-  if (rows !== null) cache.set(symbol, { at: Date.now(), value });
+  if (activeBinding === binding && requestEpoch !== null && requestEpoch === cacheEpoch && (selected.expiresAt === undefined || selected.expiresAt > Date.now() / 1000)) cache.set(symbol, { at: Date.now(), value });
   return { data: value, state: value ? "ready" : "empty" };
 }

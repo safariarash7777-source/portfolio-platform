@@ -1,0 +1,241 @@
+{
+  "source": "d9043e7f0db91d2686af233e74b2749aea33b234",
+  "pr": 369,
+  "status": "SCOPED_CODE_CI_NATIVE_METADATA_ACCEPTED_IN_COORDINATOR_DRAFT_ONLY",
+  "rootIntegration": "eeae79157ac4cbef47aefcb575829a3c6d2cbf3d",
+  "ci": {
+    "run": 41161340980,
+    "jobs": [
+      {
+        "id": 124419344957,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124419345029,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124419345137,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124419345149,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124420246855,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "actualCheckout": "84f48a352e4deb1e2b3b3a248e9cdc43d827531c",
+    "tree": "d805ca4133cfb836188fb78c527c5a748f2c6654",
+    "parents": [
+      "216a53530b40ea24d684756d9bc35fe9788fd135",
+      "d9043e7f0db91d2686af233e74b2749aea33b234"
+    ],
+    "wholeIntegrationTreeEqualsCi": true,
+    "selectedBlobBindings": [
+      {
+        "path": "docs/ops/p15-webpack-cache-20261030/CORRECTED-FAILED-V2R2-POLICY.json",
+        "gitBlob": "a41485f3e6612c6cbc15338af725b75b848b31b5",
+        "bytes": 4431,
+        "sha256": "6a1c0113a53a7ac4d8f1cc07e2514fec07f13ec7bd5c4d2987e87120102837cc",
+        "ciBlob": "a41485f3e6612c6cbc15338af725b75b848b31b5",
+        "ciMode": "100644",
+        "ciSize": 4431,
+        "matches": true
+      },
+      {
+        "path": "docs/ops/p15-webpack-cache-20261030/EXISTING-CONSUMERS.fa.md",
+        "gitBlob": "d6d22f6a521a13a14572141a8557e6d3cb94a5dc",
+        "bytes": 22973,
+        "sha256": "d13f63a708c39222eef0b1e71f730f707597538f832068ee509bcdf0d1cc9b87",
+        "ciBlob": "d6d22f6a521a13a14572141a8557e6d3cb94a5dc",
+        "ciMode": "100644",
+        "ciSize": 22973,
+        "matches": true
+      },
+      {
+        "path": "docs/ops/p15-webpack-cache-20261030/RELEASE-BINDING-20261031.json",
+        "gitBlob": "c5110f3e33af7037027d0fbc8bcc37ecfe865e87",
+        "bytes": 2351,
+        "sha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
+        "ciBlob": "c5110f3e33af7037027d0fbc8bcc37ecfe865e87",
+        "ciMode": "100644",
+        "ciSize": 2351,
+        "matches": true
+      },
+      {
+        "path": "docs/ops/p15-webpack-cache-20261030/checkpoint-read-gate.py",
+        "gitBlob": "b8921383d6d2e6985ccaa006f91178579fcda66f",
+        "bytes": 12910,
+        "sha256": "9289f162919bd1b2e462d2c823758b7b693f27988562d3554be197c9b65666a3",
+        "ciBlob": "b8921383d6d2e6985ccaa006f91178579fcda66f",
+        "ciMode": "100644",
+        "ciSize": 12910,
+        "matches": true
+      },
+      {
+        "path": "docs/ops/recovery-01/p01-scripts/liara-native-backup-restore.py",
+        "gitBlob": "264b0c023c388317cda186f586de2e3f6a00ff11",
+        "bytes": 20441,
+        "sha256": "1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2",
+        "ciBlob": "264b0c023c388317cda186f586de2e3f6a00ff11",
+        "ciMode": "100644",
+        "ciSize": 20441,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/CheckpointCrypto.cs",
+        "gitBlob": "1db5435dfc0cb0e5a32f2f13a25f705f43075c61",
+        "bytes": 9668,
+        "sha256": "6cd46deb80af9341002c30bd05723cb503087b0ccc7ce1a3f66fd7e86317d3d7",
+        "ciBlob": "1db5435dfc0cb0e5a32f2f13a25f705f43075c61",
+        "ciMode": "100644",
+        "ciSize": 9668,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/README.md",
+        "gitBlob": "dadb7bb575f16e60cda16d4b04edfa2dcd93c0ac",
+        "bytes": 17694,
+        "sha256": "9c62aa090d3b571a327fdc46827f5f95a27a03a72dd33c4fe6635b5ea1347ae7",
+        "ciBlob": "dadb7bb575f16e60cda16d4b04edfa2dcd93c0ac",
+        "ciMode": "100644",
+        "ciSize": 17694,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/backup-checkpoint.ps1",
+        "gitBlob": "7c1a150c49a5dc29970eb762d5fb90ac2d3231fb",
+        "bytes": 29568,
+        "sha256": "67a0f9d9b0842fc2b4675e4fffc40c3d9c96822048af2ad396cde2ba0536fcc0",
+        "ciBlob": "7c1a150c49a5dc29970eb762d5fb90ac2d3231fb",
+        "ciMode": "100644",
+        "ciSize": 29568,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/checkpoint-profile-v2.ps1",
+        "gitBlob": "ea6269f1e5a670b7b97cf8a16bc23a467155b870",
+        "bytes": 6831,
+        "sha256": "6109500843eb95b338c02fdede9c941d1726ba495e255dfb3118ea40fab78cc1",
+        "ciBlob": "ea6269f1e5a670b7b97cf8a16bc23a467155b870",
+        "ciMode": "100644",
+        "ciSize": 6831,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/checkpoint-profile-v2r2-remote.py",
+        "gitBlob": "4138e7aad4689a9bb907bf4bf22e593b1010ddd0",
+        "bytes": 7965,
+        "sha256": "e5c8e4c9d95b46c9b34ddd95fc780bec7b431c1d87aebcea4077bd44b80900a1",
+        "ciBlob": "4138e7aad4689a9bb907bf4bf22e593b1010ddd0",
+        "ciMode": "100644",
+        "ciSize": 7965,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/checkpoint-profile-v2r2-runtime.ps1",
+        "gitBlob": "d67a2a48ee6c387cdbe0a01e06d182c082addf63",
+        "bytes": 11898,
+        "sha256": "dc9897674fb2a6885ed08847de2c2e9b8170322c8150f9be4de376619caf856e",
+        "ciBlob": "d67a2a48ee6c387cdbe0a01e06d182c082addf63",
+        "ciMode": "100644",
+        "ciSize": 11898,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/checkpoint-profile-v2r2.ps1",
+        "gitBlob": "a18a70c8eca9e182ab403ebee65b85503c16788b",
+        "bytes": 6697,
+        "sha256": "a4a38648e67dcd7d2931e46c7d5d973471e6268405c8f2c7a6bcfccbeb658afd",
+        "ciBlob": "a18a70c8eca9e182ab403ebee65b85503c16788b",
+        "ciMode": "100644",
+        "ciSize": 6697,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/corrected-checkpoint-consumer.py",
+        "gitBlob": "37a679fb7e0ac3fe355387f75f448e87eb942e6e",
+        "bytes": 3784,
+        "sha256": "18dcdff88cb8d41f8c5ee9e8236e0fdba9e7a212ef8c1044769165cc8010ac2c",
+        "ciBlob": "37a679fb7e0ac3fe355387f75f448e87eb942e6e",
+        "ciMode": "100644",
+        "ciSize": 3784,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/offline-profile-v2.ps1",
+        "gitBlob": "4da4341a3690be9f80b05b2b5278375432752bbd",
+        "bytes": 14126,
+        "sha256": "4f8188d0790d5ff77279d7b3502c1cf12618d28d199d01300ef369b1fba166c3",
+        "ciBlob": "4da4341a3690be9f80b05b2b5278375432752bbd",
+        "ciMode": "100644",
+        "ciSize": 14126,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/offline-profile-v2r2.ps1",
+        "gitBlob": "ef794958508b12696786a126e598d0b3c3b085e0",
+        "bytes": 21215,
+        "sha256": "d4d525aa3cf3b3f4222c4dfac82396fb067c13fd8e1033085f4415e2e59eb6b2",
+        "ciBlob": "ef794958508b12696786a126e598d0b3c3b085e0",
+        "ciMode": "100644",
+        "ciSize": 21215,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/offline-tests.ps1",
+        "gitBlob": "223039e039894d86899aca745183dfea5863f3a2",
+        "bytes": 9607,
+        "sha256": "6390272f5a332cc5fe683550e43f0532407f8397bc76aae0b12af1e2eb51b230",
+        "ciBlob": "223039e039894d86899aca745183dfea5863f3a2",
+        "ciMode": "100644",
+        "ciSize": 9607,
+        "matches": true
+      },
+      {
+        "path": "scripts/ops/cashflow-checkpoint/test_checkpoint_profile_v2r2.py",
+        "gitBlob": "d635eb16e61450fbc95381575baf44767af5fc8c",
+        "bytes": 6832,
+        "sha256": "556783084ff2dce6d9ed62e5c78a7dd809749af07bbe89c9681a04572460adf2",
+        "ciBlob": "d635eb16e61450fbc95381575baf44767af5fc8c",
+        "ciMode": "100644",
+        "ciSize": 6832,
+        "matches": true
+      },
+      {
+        "path": "scripts/testing/consultation/install-native.py",
+        "gitBlob": "a3b9a6dad2a6ee04f18196a0ec912043f582c11e",
+        "bytes": 15623,
+        "sha256": "563f144dcc7ee37b93ebd2965e624250a1b535fc677095281d7f4a09135596f6",
+        "ciBlob": "a3b9a6dad2a6ee04f18196a0ec912043f582c11e",
+        "ciMode": "100644",
+        "ciSize": 15623,
+        "matches": true
+      }
+    ]
+  },
+  "publicPacket": {
+    "bytes": 92743,
+    "members": 28,
+    "sha256": "663cf528f0f4ec68e7afa7d1991d0eab69889dd99865236b937dcf533e07920c",
+    "manifestSha256": "76e18f34d2bc9cfef602853630e5b3f2827cad19ea3a6999bdc01fc25b8376dd",
+    "selectedSourceMembersComparedWithGit": 18,
+    "crcAndPaths": "PASS"
+  },
+  "rootStaticScope": "new validators/runtime/remote/dispatch and policy; old crypto/gate not fully re-audited",
+  "advisorStaticScope": "remote Python + pure validators PowerShell + policy; no blocker identified; no own test/native/hash rerun",
+  "nativeReceipt": "P15-d904-root-native-metadata-20261031.json",
+  "captureRun": false,
+  "verifyRun": false,
+  "primaryInstall": false,
+  "mainMerge": false,
+  "releaseAuthorized": false
+}

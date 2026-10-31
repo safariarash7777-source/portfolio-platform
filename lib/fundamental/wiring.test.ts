@@ -21,7 +21,9 @@
  */
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { getFundamentalsFromSupabase, type CodalRow } from "./supabase";
+import { getFundamentalsFromSupabase as getReader, type CodalRow } from "./supabase";
+const fixtureEnvironment = Object.freeze({ NEXT_PUBLIC_SUPABASE_URL: "https://fixture.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-anon" });
+const getFundamentalsFromSupabase = (symbol: string) => getReader(symbol, { environment: fixtureEnvironment });
 import { deriveQuarters, type QuarterInput } from "@/lib/core/quarterly";
 
 const annual = (id: number, date: string, time: string, revenue: number, netProfit: number, consolidated = false): CodalRow => ({
@@ -65,12 +67,9 @@ const EARLY = annual(8275, "۱۴۰۴/۰۳/۰۶", "۱۷:۱۴:۲۵", 262_508_422, 
 const LATE = annual(8274, "۱۴۰۴/۰۴/۱۳", "۱۵:۱۴:۴۰", 262_955_304, 61_536_590, true);
 
 let realFetch: typeof fetch;
-const saved = { url: process.env.NEXT_PUBLIC_SUPABASE_URL, anon: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY };
 
 before(() => {
   realFetch = globalThis.fetch;
-  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://fixture.invalid";
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "fixture-anon";
   globalThis.fetch = miniPostgrest(() => DATASET) as typeof fetch;
 });
 
@@ -109,8 +108,6 @@ function miniPostgrest(data: () => CodalRow[]) {
 
 after(() => {
   globalThis.fetch = realFetch;
-  process.env.NEXT_PUBLIC_SUPABASE_URL = saved.url;
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = saved.anon;
 });
 
 /** Consumer contract: the page owner must forward unit and row scope (B2). */

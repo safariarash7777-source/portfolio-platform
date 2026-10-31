@@ -1,0 +1,79 @@
+# مصرف رسید تصحیح در دو ابزار موجود — فقط بررسی
+
+## رزرو candidate قرارداد failed-v2r2 پیش از ویرایش source
+
+root قرارداد corrected-acl19-failed-v2r2 را فقط برای کد/آزمون پذیرفت. مبنای محفوظc35e98f00b97c6312e590370d908e33aaec1628f در همانPR369 است. رزرو جدید B: checkpoint-profile-v2r2.ps1، checkpoint-profile-v2r2-runtime.ps1، checkpoint-profile-v2r2-remote.py، offline-profile-v2r2.ps1 وtest_checkpoint_profile_v2r2.py در scripts/ops/cashflow-checkpoint؛ policyخام canonical در همین پوشهops با نامCORRECTED-FAILED-V2R2-POLICY.json؛ dispatch صریح درbackup-checkpoint.ps1 وREADME و همین برگ. helper قدیمیV2، LegacyV1 و هفت mandatory، gate9289/consumer18dc/binding7819/helper1f14/C#/crypto/DPAPI/installer/SQL/app ثابت‌اند. هیچ برنامه/دفتر وضعیت جدید ایجاد نمی‌شود.
+
+پیش از policy، تنهاsmallhash مجاز باsharedreleaseLock، owned/non-symlink path، stablefstat قبل/بعد وreopen identity وabsence قبل/بعد انجام شد:SHA256=2ca79419e1b2cb1baee866a3cf63f0ab8cdb0205079e900738de492e86a77d9a،۳۷۰۷بایت،owner0،2026-10-31T02:33:07.223526+00:00 (۰۶:۰۳:۰۷تهران)،observedAbsence=true. فقطhash/length/owner/UTC/absence برگشت؛ محتوایفایل/SQL/dump/hashdump یاmutation نبود، retry نشد. NeverCreated و حذف‌نشدن تاریخی UNKNOWN/null‌اند؛ این timestamp مشاهدهٔ جدید است و جای زمان producer قدیمی نمی‌نشیند.
+
+candidate جدید فقط dispatcher نسخه‌دار۱۷role/۱۶stream با descriptorabsent دقیق وpolicy مستقل پین‌شده را پیاده می‌کند؛ HMAC manifest همهٔrole/descriptorها وbytes policy را می‌پوشاند. اصلbefore وstrictتصحیح جای هم نمی‌نشینند. آزمون رمزنگاری فقطsynthetic/ignored است؛ هیچCapture/Verifyبومی،master/آرشیوعملیاتی،SSHfullgate،backup/restore/SQL/env/deploy/mainmerge/خرید یاcredential تازه مجاز/اجرا نیست. metadatafullgate تنها بعدreviewrootکدمنجمد در برش جداست.
+
+### تحویل candidate کد/آفلاین failed-v2r2 در همان PR369
+
+مسئله حفظ checkpoint شکست‌خورده بدون جعل finalcomparison است؛ مخاطب root و مصرف‌کنندهٔ checkpoint، مالک START-B، وابستگی gate/consumer/binding/helper frozen وreview جداگانهٔ root است. خروجی قابل بررسی انتخاب صریح `CorrectedAcl19FailedV2R2`، سه helper جدید، policy و دو suite جدید در همان ابزار موجود است. معیار پایان این بسته تطبیق کد/بایت‌های frozen، آزمون مستقل integrity/dispatch و source-bound CI برای review است؛ Capture/Verify عملیاتی، install،P15 وپذیرش آرش خارج از پذیرش این بسته‌اند.
+
+policy canonical دقیق۴۴۳۱بایت باSHA256=`6a1c0113a53a7ac4d8f1cc07e2514fec07f13ec7bd5c4d2987e87120102837cc` در local وremote مستقلاً pin شده وrawbase64 آن درmanifestMAC قرار دارد.۱۷descriptor نقش ثابت و۱۶ciphertext flat دارد؛ فقطindex5 مربوط بهfinalcomparison اصلی absent باlength/hash/owner/cipher/header صریحnull است. beforeواقعیindex7 با3707/hash2ca… ودوstrictتصحیح مستقل محفوظ‌اند. Capture descriptorabsence قبل وپس را امضا می‌کند؛ native فقطchildENOENT درparent بررسی‌شده زیرsharedlock را absence می‌داند؛ parentmissing،permission،link/unknown وظهورحتیفایلصفر reconciliation می‌خواهند. NeverCreated/nohistoricaldeletion null باقی می‌مانند؛ زمان مشاهدهٔ جدید به producerقدیمی برگردانده نمی‌شود. هیچ pin artifact/binding normalize نمی‌شود؛ فقطexecutablePython برایpinمنبع LF می‌شود.
+
+شاهد نهایی آفلاین: **۵۳بررسی r2** باwrapperواقعی درfreshpwsh و۱۶plaintextکامل (CRLF/empty/سهbuffer)،policy/role/revision/absence،تغییرcipher وHMAC داخلی باouterMACمعتبر،کامل‌بودنplaintextSHA،dispatchقدیمی وظهورfinal/missingbefore موفق‌اند. **۱۳unitPython** برایchildENOENT دربرابرparentmissing/permission/ELOOP/I/O،Gitrawbinding/policy،precomparisonpin،توقف‌پیش‌ازfullgate وrereadپس‌ازgate موفق‌اند. دوخطای اولیه mockcontextmanager درharness محفوظ واصلاح شدند؛ gateواقعی اجرا نشد. رسیدهای۴۷و۵۲بررسی میانی محفوظ‌اند؛ guardمحلیpolicyبهR2Packet افزوده ونامزدنهایی۵۳تایی اجرا شد.
+
+loader آفلاین ازFunctionExtent واقعی wrapper، V2Packet را باfrozenconsumer/gate وbindingدقیق2351/hash7819 درsubtreeمصنوعی ساخت؛ R2Packet دقیقاًیکhashtable وبدونsuccessstreamاضافی برگرداند. policyخامGitindex باpin6a1c وremote source باpinاجرایی e5c8e4c9d95b46c9b34ddd95fc780bec7b431c1d87aebcea4077bd44b80900a1 بسته شد؛metadataPythonتولیدشده فقطparse شد، نهexec/SSH. builder،indexabsent وpolicy/bindingتغییریافته را پیش‌ازSSH/key ردکرد.
+
+با تغییرdispatch، **۱۶regressionLegacy و۳۴strictV2 واقعاً رویwrapperجدید** موفق‌اند؛ صرفhashقدیمی استفاده نشد. بعدازآن wrapper ثابت ماند. helperقدیمیV2،Crypto/DPAPI،gate9289/consumer18dc/binding7819/helper1f14 وinstaller/app/SQL همانGitobjectsاند. CIعمومیِheadجدید بایدجدا گزارش شود؛ CIقبلیc35 شاهداینcandidateنیست. هیچmodel/APIای فراخوانی،خریدیاcredentialسرویس‌تازه‌ای انجام نشده؛ key/cipher آزمایش فقطدرtest-output نادیده‌گرفته‌شده است. هزینهٔ اندازه‌گیری‌نشده null/نامعلوم می‌ماند. برش بعدی فقطreviewrootمنبعمنجمد است؛ nativefullmetadata به اختیار جداگانهٔ root نیازدارد،نه سکوت یا موفقیتآفلاین.
+
+## رزرو صریح نسخهٔ۲ پیش از ویرایش — START-B،۳۱اکتبر۲۰۲۶
+
+root ادامهٔ Capture/Verify تصحیحACL19 را به B تخصیص داد و ویرایش هم‌زمان wrapper را متوقف کرد. مبنا73b96d390e651b3b910bbfe170aa755241e6dde0 و شاخهٔ مستقل codex/ops-checkpoint-v2-20261031 در checkout موجود B است؛ c4/PR366 و doc23f9 تغییر نمی‌کنند. فایل‌های رزروشده: scripts/ops/cashflow-checkpoint/backup-checkpoint.ps1، README.md، helper خالص checkpoint-profile-v2.ps1 و آزمون offline-profile-v2.ps1 در همان پوشه؛ همین برگ ops برای قرارداد/تحویل. اگر تغییر فایل دیگری لازم شود، ابتدا دامنه با root تطبیق می‌شود.
+
+CheckpointCrypto.cs و crypto/AES/HMAC/DPAPI، helper بومی1f1454…، gate9289f…، consumer18dcd…، binding7819e…، install-native.py، SQL/app/حقوق خدمت فریزند. نسخه۲ انتخاب صریح دارد؛ نسخه۱ و آرشیوهای قدیم با همان قرارداد هفت‌فایل و همان entropy/رمزنگاری کار می‌کنند. هیچ failed به passed تبدیل نمی‌شود. allowlist نسخه۲ دقیقاً اصل۷فایل +۵artifact تصحیح +۲supplement بیرون checkpoint +binding خام دقیق +attestation تازه است؛ اسم/طول/هش تمام۱۶قلم در manifest احرازشده و headerهای رمزنگاری مقید می‌شوند. ciphertextها نام ثابت flat دارند؛ مسیرهای source از allowlist می‌آیند.
+
+Native Capture فقط از gate پین‌شدهٔ تازه زیر همان قفل اشتراکی و با هویت ثابت استفاده می‌کند؛ fixture آفلاین sourceMode صریح دارد و هیچ pin بومی را جایگزین نمی‌کند. Verify ابتدا HMAC manifest و هر ciphertext و سپس طول/SHA256 تمام plaintext را با همان crypto به sink حافظه کنترل می‌کند. این کد/آزمون آفلاین فقط نامزد بررسی است: SSH/Capture واقعی، انتقال پشتیبان، restore، DDL/env/deploy، خرید یا credential تازه اجرا نمی‌شود. readiness/release=false و گیت‌های currentSQL،Storage،snapshot،capacity،caller/reader/rollback مستقل‌اند؛ اجرای واقعی پس از review/preflight متعلق به root است.
+
+### نامزد پیاده‌سازی نسخه۲؛ شواهد صرفاً آفلاین
+
+انتخاب صریح `-Profile CorrectedAcl19V2` به همان Capture/Verify افزوده شد؛ default همان LegacyV1 است. helper خالص profile هیچ I/O یا SSH ندارد. format احرازشدهٔ manifest/header نسخه۲ است، ولی frame/AES/HMAC/DPAPI و entropy نسخه۱ بدون تغییرند.۱۶stream با نام منطقی fixed، طول و SHA256 به ciphertextهای flat v2-00.enc تا v2-15.enc مقیدند؛ اصل۷فایل و۵تصحیح و۲supplement وbinding وattestation حفظ می‌شوند. original receipt حتی در fixture باید failed باشد و native آن را با gate frozen و binding frozen کنترل می‌کند.
+
+در مسیر بومیِ نوشته‌شده، metadata زیر یک outer sharedlock همان release، gate تازه و hash کامل dump را می‌گیرد؛ هویت و stopped proof پیش/پس کنترل می‌شوند. هر stream اصلی همان قفل و identity/path guard را دوباره می‌گیرد و طول/hash و ثبات stat و خروج process را کنترل می‌کند. binding وattestation تولیدشده در حافظه می‌مانند تا رمز شوند. پس از انتقال، gate تازهٔ دوم و metadata باید اصل۱۴stream وbinding را یکسان بیابند؛ هر دو verdict در manifest امضاشده می‌مانند. این طراحی **یک قفل SSH پیوسته در تمام مدت رمزگذاری محلی نیست**؛ هر segment guard دارد و finalpass اختلاف را رد می‌کند. بخش بومی هنوز اجرا نشده است.
+
+Verify، HMAC manifest را پیش از parse و HMAC تک‌تک ciphertextها را پیش از decrypt کنترل می‌کند؛ تمامplaintextها با همان C# فقط در حافظه hash می‌شوند. Verify به SSH وصل نمی‌شود و تاریخ gate تاریخی را تازه نمی‌کند. `readiness=false` و`releaseAuthorized=false`، Storage/currentSQL/capacity=`NOT_VERIFIED` و snapshotCoverage محدود به exportedcore با globals/private جدا حفظ می‌شوند. مقدار false در gate frozenِ قدیمی بازنویسی نشده و با موفقیت قالب جدید به مجوز installer تبدیل نمی‌شود.
+
+آزمون نهایی این candidate:۲۶guard/roundtrip نسخه۲ با wrapper واقعی در freshpwsh، شامل۱۶plaintext/CRLF/empty/سهbuffer، failed غیرقابل‌تبدیل، no repin/sourceMode، stalegate، traversal/duplicate/missing، tampermanifest/attestation، HMAC داخلی حتی با outer hash/MAC دوباره‌ساخته‌شده و ردSHAplaintext با fileMAC معتبر؛۱۶regression نسخه۱ نیز روی همین wrapper موفق‌اند. vector بومی فقط تابع خالص را با همان pinهای ثابت می‌سنجد؛ هیچ fixture از ورودی runtime native عبور نکرد. syntax قطعهٔ Python بومی با compile صرف، بدون exec آن، بررسی شد. خروجی آموزشی/کلیدهای تصادفی آزمایش DPAPI/ciphertext همگی فقط درtest-output نادیده‌گرفته‌شده‌اند؛ credential سرویس/کلید واقعی تازه‌ای ساخته نشده است.
+
+در بازبینی بعدی a628، probe آفلاین نشان داد ConvertFrom-Json در pwsh این میزبان، atUTC را به DateTimeKindUtc تبدیل می‌کند؛ TryParse ضمنی روی رشتهٔ محلی، offset را از دست می‌داد و gate تازه را حدود۱۲۶۰۰ثانیه کهنه تشخیص می‌داد. این fail-closed بود و native اجرا نشده بود. helper اکنون DateTime با Kind مشخص و DateTimeOffset را با instant اصلی می‌خواند؛ string فقط با offset صریح/فرهنگInvariant پذیرفته می‌شود و Unspecified حدس زده نمی‌شود. سه regression JSON→DateTimeUTC، offset+03:30 و Unspecified افزوده شد؛ اجرای نهایی جدید **۲۹بررسی نسخه۲ موفق** است. رسید۲۶تایی a628 و شاهد probe محفوظ‌اند؛ wrapper و crypto و regression۱۶تایی نسخه۱ همان hash قبلی‌اند و تغییر نکرده‌اند.
+
+### اصلاح guard طول binding پس از stage واقعی root
+
+root ده فایل exactGit از ee705 را stage کرد؛ rawbinding با همانSHA7819 **۲۳۵۱بایت** است. عدد۲۳۹۴ در guard قبلی و گزارش/README من اشتباه بود؛ gate/consumer/hashbinding درست و ثابت بودند. pure native-entry probe با همین بایت واقعی، ردشدن آن را در ee705 با v2 native pin بازتولید کرد؛ fixture آموزشی مسیر native length را نمی‌سنجید و۲۹تست پیشین این نقص را پنهان گذاشته بود. ee705 و شواهد آن حفظ شدند و طبق دستور تازه root هیچ metadataبومی با آن source اجرا نشد؛ review مشاور فقط static بوده، نه قبول native.
+
+loader آفلاین B چهار FunctionExtent کامل با filename اصلی را بارگذاری و پنج پارامتر، packetHashtable، metadataString۵۱۵۵۱کاراکتری و خروجی ناخواسته صفر را اثبات کرد. harness نخست B در شمارش propertycollection پیش‌ازSSH خطا داشت؛ منبع/خطای خصوصی آن محفوظ و loader2 با شمارش صریح آرایه موفق شد. این تصحیح فقط harness بود. درباره علت خروجی بیش‌ازحد runner2 قبلی root، نتیجهٔ runtime تازه‌ای حدس زده نمی‌شود.
+
+با مجوز جدید root، فقط native length guard از۲۳۹۴ به۲۳۵۱ اصلاح شد؛ binding/hash7819 و تمام crypto/gate/consumer/installer ثابت‌اند. پنج regression به همان آزمون موجود افزوده شد: خواندن rawbinding از stdout باینری GitHEAD، کنترل۲۳۵۱/hash7819، عبور actualGitbytes از **native** entry validator، رد۲۳۹۴ قدیمی و طول+۱ باhashدرست وhashغلط باطولدرست. این مسیر از synthetic archive جداست و اگر Git/binding اصلی در دسترس نباشد fail می‌شود؛ هیچ normalize یا repin ندارد. نخست helper جدید آزمون، VoidTaskResult را همراهbyte[] به successstream داد و تست در exactbinding صریح شکست خورد؛ خروجیTask در همان helper آزمون سرکوب شد، نه payload تغییر کرد. اجرای اصلاحی نهایی **۳۴بررسیV2 موفق** است؛ wrapper ثابت و شاهد۱۶تاییV1 به همان hash باقی ماند. native بعدی طبق اختیار محدود root فقط metadata یک‌بار پس از guard درست است؛ Capture/Verify کامل، master/DPAPI، انتقال پشتیبان، SQL/DDL/container/env/deploy/حق تازه همچنان مجاز نیستند.
+
+آزمون۱۱تایی مصرف‌کننده frozen در checkout فعلی نخست یک خطای binding_changed داشت: بایت واقعی binding ویندوزی CRLF باSHA256=c4ac2888b055f06f22fbcdf82edc96b27586afd63eebb234c0f4a429fc03d251، دربرابر binding اصلی Git به طول۲۳۹۴ وSHA256=7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325. شکست محفوظ است؛ binding فعال تغییر نکرد و normalize نشد. همان۱۱آزمون روی کپی موقتِ دقیق Git73b96، بدون تغییر source یا pin و بدون اجرای gate، موفق شد. این دو شاهد جدا هستند، نه تبدیل شکست به موفقیت. مسیر native جدید هم bindingخام تغییرکرده را پیش از SSH رد می‌کند؛ root پیش از اجرای واقعی باید بایت‌های دقیق staged را مستقلاً بررسی کند.
+
+محدودهٔ این تحویل کد/آزمون/سند قابل بررسی است؛ nativeCapture/Verify، انتقال۲٫۴GB، backup/restore، نصب/caller و پذیرش آرش **NOT_RUN/UNOBSERVED** هستند. root اطلاع داد capture بعدیِ خواندنیAuth/sequence/context در snapshot جدا تکمیل شده؛ B برای این candidate SQL جدیدی اجرا نکرده و آن شاهد را به test fixture یا مجوز نصب تبدیل نمی‌کند. شاخه کد و Draft فقط همین پنج فایل رزروشده را می‌برند؛ app/SQL/installer و C#/gate/consumer/binding frozen می‌مانند. مالک اجرای واقعی و تصمیم پذیرش root است؛ برنامه/دفتر وضعیت تازه ایجاد نشده است.
+
+در۳۱اکتبر، مسیر بررسی صریح به همان ابزارهای پشتیبان و نصب مشاوره افزوده شد. هر دو روی Linux موجود اجرا شدند و [رسید مستقل اجرا](../../plan/development-v04-20261029/evidence/P15-existing-consumers-root-20261031.json) دارند: ابزار پشتیبان ساعت۰۴:۲۱:۵۵تهران و نصب‌کننده ساعت۰۴:۲۲:۴۴تهران. این تغییر کد و اجرای caller است؛ نصب یا قالب تازه پشتیبان نیست.
+
+## مسیر استفاده و نسخه
+
+- [backup-checkpoint.ps1](../../../scripts/ops/cashflow-checkpoint/backup-checkpoint.ps1)، کنش `ReviewCorrectedCheckpoint`، checkpoint ثابت `20261030T215307Z` و همان helper بررسی‌شده. این کنش Destination، Fixture و OfflineFixture نمی‌پذیرد و هیچ پوشه/کلید/فایل پشتیبان نمی‌سازد.
+- [install-native.py](../../../scripts/testing/consultation/install-native.py)، گزینه `--review-corrected-checkpoint`، فقط بسته بررسی‌شده را از stdin می‌خواند؛ پیش از مسیرهای قدیمی SQL/container برمی‌گردد. این گزینه با `--source` یا `--target-copy` ترکیب نمی‌شود.
+- [مصرف‌کننده مشترک نسخه۱](../../../scripts/ops/cashflow-checkpoint/corrected-checkpoint-consumer.py) برای هر دو نام caller مجاز است. کد آن با SHA ثابت، کد gate با SHA ثابت و binding تاریخی با SHA ثابت پین‌اند. packet شامل سه مقدار base64 به نام consumer، gate و binding است؛ ورودی نصب‌کننده حداکثر۱۲۸KiB است. ابزار پشتیبان همین بسته را از فایل‌های بررسی‌شده موجود می‌سازد؛ هیچ credential داخل packet نیست.
+
+```powershell
+pwsh -NoProfile -File scripts/ops/cashflow-checkpoint/backup-checkpoint.ps1 -Action ReviewCorrectedCheckpoint -CheckpointId 20261030T215307Z -ReviewedHelperSha256 1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2
+```
+
+کدها از طریق SSH در حافظه اجرا شدند؛ فایل منبع روی سرور نصب نشد. gate همان قفل اشتراکی، هویت مبدأ/کپی، کپی متوقف و بدون شبکه، اصل failed، تصحیح مستقل۱۹ACL و کل dump را تازه می‌خواند. هیچ نتیجه cached به‌جای بررسی زنده وارد نمی‌شود. زمان خروجی PowerShell ممکن است با منطقه محلی نمایش داده شود؛ hash اصل فایل‌های receipt مربوط به بایت‌های همان فایل‌هاست.
+
+## نتیجه آزمون
+
+۱۱ آزمون مرزی موفق‌اند: تغییر کد/binding، ورودی نامعتبر، نام caller خارج فهرست، بازبرچسب‌زدن failed، تغییر هویت/آرشیو/شبکه، ورود مجوز نوشتن و خروج زودهنگام مسیر بررسی از نصب‌کننده. این آزمون‌ها SSH/SQL/Docker ندارند. علاوه بر آن، هر دو caller واقعاً gate را روی Linux اجرا کردند و اصل failed و تصحیح مستقل را با هم مصرف کردند؛ dump کامل۲٬۴۰۶٬۵۴۶٬۲۹۵بایت در هر اجرای جدید خوانده شد. تکرار خواندن برای دو caller تازه است، نه بازاجرای backup/restore.
+
+هر۱۶ آزمون قدیمی Capture/Verify پس از این تغییر موفق‌اند؛ C# رمزگذاری، AES/HMAC/DPAPI، قالب هفت‌فایلی و شرط اصلی passed تغییر نکرده‌اند. نسخه و hash دقیق بایت‌های اجراشده در رسید است. داده/کلید/فایل رمزگذاری‌شده آموزشی آزمون داخل Git وارد نشد.
+
+## محدودیت باقی‌مانده و اقدام بعدی
+
+`readOnlyConsumerIntegrated=true` فقط همین دو مسیر بررسی است. `captureVerifyProfileIntegrated=false` و `legacyApplyPathIntegrated=false` صریح می‌مانند. اصل failed به passed تبدیل نمی‌شود؛ مسیر قدیمی Capture/Verify هنوز نمی‌تواند بسته تصحیح‌شده را آرشیو و تصدیق کند و مسیر اعمال قدیمی همچنان checkpoint۲۳اکتبر دارد. این گزینه جدید، راهی برای اعمال SQL جدید با آن نصب‌کننده قدیمی نیست.
+
+برای نصب، profile نسخه‌دار رمزگذاریِ همه رسیدهای وابسته، بازیابی مستقل، وضعیت schema/ظرفیت تازه، build متصل به مقصد، خواننده سازگار قبل از نویسنده، برگشت نسخه، Storage binary در صورت وابستگی و حق واقعی خدمت هنوز گیت جدا هستند. مسئول اتصال عملیاتی و مقصد root است؛ هیچ SQL، شروع/توقف container، انتقال پشتیبان، نصب، Hermes یا هزینه تازه از این دو اجرا انجام نشد.

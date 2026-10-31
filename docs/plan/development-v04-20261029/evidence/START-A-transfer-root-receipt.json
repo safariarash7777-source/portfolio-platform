@@ -1,0 +1,54 @@
+{
+  "observedAt": "2026-10-29T15:45:56.929585+00:00",
+  "reviewer": "existing-root-coordinator",
+  "productSourceSha": "b08687b233d5fe1317748b6adff61653d58dadd8",
+  "deliveryHead": "be92c661d0f56a665e9fe1d0b25d4f5151e13ec8",
+  "archive": "start-a-transfer-b08687b-r2.zip",
+  "archiveSha256": "a80c17f474a7a1aaa4109967f0f1347f763b867c1a6356f880abfd142ba5e827",
+  "manifestSha256": "04472080632276bc85fdacd826d9a631f852b4013b19df022f01289336e5d273",
+  "verifierSha256": "c3afd3f5e4e928767586e5d8cc0a8b0586dca1480a6ea73558444b4931c3de7d",
+  "independentChecks": [
+    {
+      "path": "sql/consultation_workflow.sql",
+      "sha256": "4b2ca76e7839caba226870b3e4235df7346b79deb85d10916916d572c73a6a91",
+      "size": 37663,
+      "gitSourceVerified": true
+    },
+    {
+      "path": "sql/consultation_roster.sql",
+      "sha256": "03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523",
+      "size": 6794,
+      "gitSourceVerified": true
+    },
+    {
+      "path": "sql/consultation_replies.sql",
+      "sha256": "57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a",
+      "size": 12054,
+      "gitSourceVerified": true
+    },
+    {
+      "path": "scripts/testing/consultation-next/install-native.py",
+      "sha256": "5b5b082907609f8834fdc0f785579a00cda60f4b5ae8512875b5ea2935be6e5f",
+      "size": 19839,
+      "gitSourceVerified": true
+    },
+    {
+      "path": "supabase/migrations/20261029142010_consultation_feedback_states.sql",
+      "sha256": "32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda",
+      "size": 12982,
+      "gitSourceVerified": true
+    },
+    {
+      "path": "docs/ops/start-a-finance-v04-20261029/rollback-candidate.sql",
+      "sha256": "aa1a278bb0b1cecfca8ae119919a11bdd762772950bd57d1f147d2ef20989ffa",
+      "size": 13060,
+      "gitSourceVerified": true
+    }
+  ],
+  "gitBundleVerification": "PASS_IN_OWNER_WORKTREE_WITH_REQUIRED_BASE",
+  "nativeOnlineAcceptance": false,
+  "linuxExecution": "NOT_RUN",
+  "installationExecuted": false,
+  "commercialEntitlement": "NOT_CONNECTED",
+  "ownerHistoricalPushFailure": "SUPERSEDED_BY_ROOT_PUSH_BE92C66"
+}

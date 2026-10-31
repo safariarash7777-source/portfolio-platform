@@ -1,0 +1,67 @@
+{
+  "source": "4b4a9aa3258cb6cfa0fde7f887bf5f6ae2cbadc9",
+  "pr": "https://github.com/safariarash7777-source/portfolio-platform/pull/358",
+  "draft": true,
+  "merged": false,
+  "rootIndependentLocalTests": {
+    "command": [
+      "node",
+      "--import",
+      "tsx",
+      "--test",
+      "lib/consultation/contracts.test.ts"
+    ],
+    "tests": 39,
+    "pass": 39,
+    "fail": 0,
+    "scope": "registered contracts entry, including 27 ticket cases and all 6 recovery access regressions; distinct from owner broader 68-test suite",
+    "sourceBeforeAfter": "4b4a9aa3258cb6cfa0fde7f887bf5f6ae2cbadc9",
+    "workingDiffEmptyBeforeAfter": true,
+    "rawLogSha256": "832db03e9e96f6c508b39011d1fc25593610c107a87e56e32da7db069f4f0207"
+  },
+  "ciRun": 41100118323,
+  "ciStatus": "in_progress",
+  "ciConclusion": null,
+  "ciJobs": [
+    {
+      "id": 124215753563,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 124215753695,
+      "name": "Dependencies",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124215753717,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 124215753773,
+      "name": "Secret scan · SQL validation",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "staticReview": "guard validates actor, exact relationship and advisor history access before recoverable catch; member revocation history preserved; private intent not returned on denied access",
+  "scope": "internal contract only; serviceRightState not_connected/writeEnabled false; no consumer/API/schema/DB writer, no primary or Arash acceptance",
+  "recordedAt": "2026-10-30T17:42:16.475513+00:00",
+  "status": "ACCESS_RECOVERY_FIX_REVIEWED_CI_NOT_ACCEPTED",
+  "registryFailure": {
+    "rawLogSha256": "cc83fa746911e31f2c193819e85e82bd670ad61f84a2de94b6d9defe1f0f2dcf",
+    "job": 124215753563,
+    "coreTests": 2098,
+    "corePass": 2097,
+    "coreFail": 1,
+    "failedTest": "every test file under lib/ is registered in an npm script and actually runs",
+    "location": "lib/desk/registry.test.ts:37",
+    "orphan": "lib/consultation/tickets.test.ts",
+    "requiredOwnerAction": "A adds only literal tickets.test.ts path to existing test:core and removes side-effect import from contracts.test.ts; registry guard and all dependencies/lock/other scripts unchanged",
+    "fixDelivery": "pending; new source requires independent CI acceptance"
+  }
+}

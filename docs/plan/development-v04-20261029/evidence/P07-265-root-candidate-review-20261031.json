@@ -1,0 +1,115 @@
+{
+  "source": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+  "base": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "parent": "f8a5eb460b2db1018c66e0fd7b0cb77ca5601463",
+  "tree": "5743c1af1c759b26e64a30a6b916f584fab84196",
+  "status": "ROOT_BYTES_TREE_AND_SCOPED_STATIC_REVIEW_PASS_CI_PENDING_NOT_PREVIEW",
+  "remoteReadback": {
+    "pr": 376,
+    "draft": true,
+    "head": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+    "base": "805a8d905c9d82697745988b21ff4f1222f8969d",
+    "changedFiles": 14,
+    "ciRun": 41170440614,
+    "ciStatus": "in_progress",
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/376"
+  },
+  "archive": {
+    "bytes": 105621,
+    "sha256": "28f8d934e9d429c3153090d7a2b869ffcf2bfb871e5c9c83c263a2bae065e4aa",
+    "entries": 27,
+    "all26ManifestMembersVerified": true,
+    "all14GitSourceBytesVerified": true
+  },
+  "patches": [
+    {
+      "base": "805a8d905c9d82697745988b21ff4f1222f8969d",
+      "bytes": 57994,
+      "sha256": "4f4550f9f2daf44e89db3f51b9502be0d3f35a17e34341aef1fa05aae3654bf0",
+      "rootPrivateIndexTree": "5743c1af1c759b26e64a30a6b916f584fab84196"
+    },
+    {
+      "base": "f8a5eb460b2db1018c66e0fd7b0cb77ca5601463",
+      "bytes": 2430,
+      "sha256": "c7780e086298e9105747cf938509b8457096e86d69d56b747d3714001ebb5028",
+      "rootPrivateIndexTree": "5743c1af1c759b26e64a30a6b916f584fab84196"
+    }
+  ],
+  "changedPaths": [
+    "app/symbol/[symbol]/page.test.ts",
+    "components/symbol/FundamentalCharts.tsx",
+    "components/symbol/MonthlySalesCharts.tsx",
+    "components/symbol/SymbolFundamentalCard.tsx",
+    "docs/ops/p07-fundamental-read-binding-20261031/DELIVERY.fa.md",
+    "lib/core/fundamentalCard.test.ts",
+    "lib/core/fundamentalCard.ts",
+    "lib/core/monthly-quantity.ts",
+    "lib/core/monthlyReport.test.ts",
+    "lib/core/monthlyReport.ts",
+    "lib/fundamental/calc.ts",
+    "lib/fundamental/n30.test.ts",
+    "lib/fundamental/types.ts",
+    "vercel.json"
+  ],
+  "childTwoPaths": [
+    "app/symbol/[symbol]/page.test.ts",
+    "components/symbol/MonthlySalesCharts.tsx"
+  ],
+  "frozenFiles": [
+    {
+      "path": "package.json",
+      "sha256": "f15021cf546e0b2883906975c0d628b557c2f423a32a8a69e81c94e5398f631b",
+      "equalBase": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "22dac96b6605e4aa207abae7e307528fe06e68cf2c5c0b54da3fec44252be8b3",
+      "equalBase": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "8717a68877cd94aa73c4f131848789947866eb395f5f1ba364103cafe0467180",
+      "equalBase": true
+    },
+    {
+      "path": "lib/fundamental/read-config.server.ts",
+      "sha256": "7a5c285f328460c16eeee5f041360cc0a3a15cd31c0179c108859105497bdfbb",
+      "equalBase": true
+    },
+    {
+      "path": "lib/fundamental/read-binding.test.ts",
+      "sha256": "4c436977dc059bf9ccf3046407e34100e7747463602c21a34c5899b63106fa5d",
+      "equalBase": true
+    },
+    {
+      "path": "lib/core/quarterly.ts",
+      "sha256": "8388f22c693cc0dd1399ac23cdca591a40f989320beb837183468c634a6e4742",
+      "equalBase": true
+    }
+  ],
+  "wholeQuantityGateFromUNITSByteEqual": true,
+  "vercelOnlyExactNewBranchFalse": true,
+  "rootStaticReview": [
+    "Read the complete 8 source/type/helper/UI diffs and all four existing test diffs.",
+    "Unknown or historical market labels cannot establish an export zero; verified services stay separate.",
+    "Only finite, complete and exactly reconciled header-basis rows permit the split. No tolerance guessed.",
+    "Signed adjustments retain raw money and require a separate unsupported-method reason, not false missing-source attribution.",
+    "Existing raw rate bucket identity, points and calendar slots stay intact; child resolves duplicate React keys.",
+    "No whole PR329/C42 transfer, source reparse, SQL, reader/cache/TTL or quarterly math changes."
+  ],
+  "ownerLocalEvidence": {
+    "models": 64,
+    "offlineUI": 18,
+    "redOnBase": 3,
+    "redRateIdentityOnParent": 1,
+    "guardReceipts": 8,
+    "allCountersZero": true,
+    "rootRerun": false
+  },
+  "limits": [
+    "No CI or actual Preview yet for this source.",
+    "No canonical unit metadata integration or source enrichment.",
+    "Not full P07 financial acceptance or visual choice.",
+    "No main/Production merge or primary/source-data modification."
+  ]
+}

@@ -1,0 +1,664 @@
+{
+  "exitCode": 0,
+  "readOnly": true,
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T12:01:55.812895+00:00",
+    "hostname": "ubuntu-arsadata-backend",
+    "cpuSampleSeconds": 1,
+    "cpuBusyPct": 11.79,
+    "cpuIdlePct": 88.21,
+    "iowaitPct": 0.0,
+    "memoryBytes": {
+      "MemTotal": 8276856832,
+      "MemAvailable": 5644038144,
+      "SwapFree": 2146955264
+    },
+    "diskAvailableBytes": 11405250560,
+    "tenGiBGuard": true,
+    "containers": [
+      {
+        "name": "finance-dashboard-20261028-v12-130524",
+        "imageId": "sha256:a258f0761090b3621f17e32d6fe953496f10b2786b75a08c53418b7747075c31",
+        "status": "running",
+        "startedAt": "2026-10-28T13:06:42.755467429Z",
+        "restartCount": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "finance-dashboard",
+        "imageId": "sha256:ca2c25e6b19d859af05f583287a6551a535d5c482b2a992e71f86978751f71ca",
+        "status": "exited",
+        "startedAt": "2026-10-28T12:52:13.734918064Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-recovery-proof-20261024t090243z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-24T09:20:42.731577784Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-recovery-proof-20261023t123955z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-23T12:52:55.532337345Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-media-proof-20261017t175048z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-17T17:51:59.142905065Z",
+        "restartCount": 0,
+        "health": "starting"
+      },
+      {
+        "name": "portfolio-recovery-proof-20261017t174657z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-17T17:48:08.427168352Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-research-restore-20261017t114842z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-17T12:00:54.315602979Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-recovery-proof-20261017t114409z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-17T11:45:23.708920094Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard",
+        "imageId": "sha256:f30408d1ed8c3197edff66ca4192106f1e8a924ba15aebedd05ca6e2f6c8e71d",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.911965398Z",
+        "restartCount": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "portfolio-frozen-proof-20261009t163452z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-09T16:50:38.16751268Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-security-proof-20261006t092801z-retry02",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-06T09:56:54.442705088Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-recovery-proof-20261006t092801z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-06T09:29:43.77149075Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-recovery-proof-20261003t101406z",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "exited",
+        "startedAt": "2026-10-03T10:57:07.213235628Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-tindex-20261013-backup",
+        "imageId": "sha256:486452d0eb49480e9821ca3a3c3898858954cd1325fd2f682ee0d7f99c00e6e6",
+        "status": "exited",
+        "startedAt": "2026-10-06T07:31:51.041593099Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-auth219-20261002-auth",
+        "imageId": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.478582747Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-auth219-20261002-app",
+        "imageId": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "status": "exited",
+        "startedAt": "2026-10-02T21:23:17.802213117Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-auth219-20261002-gateway",
+        "imageId": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "status": "exited",
+        "startedAt": "2026-10-03T09:41:33.819235797Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-auth219-20261002-storage",
+        "imageId": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.802523043Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-auth219-20261002-rest",
+        "imageId": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.02024331Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-auth219-20261002-sink",
+        "imageId": "sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:24.121533784Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-auth219-20261002-db",
+        "imageId": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:22.95208978Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-demo844-app",
+        "imageId": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "status": "restarting",
+        "startedAt": "2026-10-30T12:00:54.832713392Z",
+        "restartCount": 4296,
+        "health": null
+      },
+      {
+        "name": "portfolio-demo844-app-65c215b",
+        "imageId": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "status": "exited",
+        "startedAt": "2026-10-02T17:08:38.589238525Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-demo844-gateway",
+        "imageId": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.191351378Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-demo844-storage",
+        "imageId": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.098954125Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-demo844-rest",
+        "imageId": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.238087004Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-demo844-auth",
+        "imageId": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.814162909Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-demo844-db",
+        "imageId": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.981451261Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-accept195-app",
+        "imageId": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "status": "restarting",
+        "startedAt": "2026-10-30T12:00:52.317257628Z",
+        "restartCount": 4296,
+        "health": null
+      },
+      {
+        "name": "portfolio-accept195-gateway",
+        "imageId": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:22.83819321Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-accept195-storage",
+        "imageId": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:22.750797851Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-accept195-rest",
+        "imageId": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.342865774Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-accept195-auth",
+        "imageId": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:24.099307137Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "portfolio-accept195-db",
+        "imageId": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.927208443Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "fx-portable-linux-20261001-bce2e9e",
+        "imageId": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+        "status": "exited",
+        "startedAt": "2026-10-01T11:16:48.285006623Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-recovery01-status-backup",
+        "imageId": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+        "status": "exited",
+        "startedAt": "2026-09-30T22:16:12.768603987Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-agent-health",
+        "imageId": "sha256:c0fd00c903144f31c31a029d2ebcce76957a8b95c1117564ee3099287eddce57",
+        "status": "exited",
+        "startedAt": "2026-09-30T22:05:45.922421209Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-agent-bonds",
+        "imageId": "sha256:2a411df19f54fe01d0a6f57a0558c9b665be7a5e5f28a77452f81005881b1930",
+        "status": "exited",
+        "startedAt": "2026-09-30T19:37:13.253031319Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-precise-data",
+        "imageId": "sha256:fbd1447b162fa82147a7d2a1b19ebc7973785eb36a25574353fbbbbc42134802",
+        "status": "exited",
+        "startedAt": "2026-09-30T17:55:41.589422199Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-cbi-agent-ui",
+        "imageId": "sha256:ed894e2341a3470a2c228cab6810dd53627ddc1b6aa704a652d28b9daf444924",
+        "status": "exited",
+        "startedAt": "2026-09-30T17:43:48.519575748Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-agent-visibility",
+        "imageId": "sha256:4dd1cf930263aab0318485c3979707979a52c4a0c8e581b62ff46e6357633dda",
+        "status": "exited",
+        "startedAt": "2026-09-30T17:41:49.693833916Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-stage-gateway-1",
+        "imageId": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.882516391Z",
+        "restartCount": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "portfolio-stage-auth-1",
+        "imageId": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "status": "running",
+        "startedAt": "2026-10-27T09:31:02.900862847Z",
+        "restartCount": 1,
+        "health": "healthy"
+      },
+      {
+        "name": "fx-dashboard-before-annual-history",
+        "imageId": "sha256:cfb34a68d96c6f82c9384f057fba1d624aaec872cea85f868e958dd38e5f6a5c",
+        "status": "exited",
+        "startedAt": "2026-09-30T14:16:37.115880383Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-us-agent",
+        "imageId": "sha256:0ec05246beff220901532b1d22becc75a20d2308ad608c0058dd67fb63a6891a",
+        "status": "exited",
+        "startedAt": "2026-09-30T14:09:49.682910799Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-us-vintages",
+        "imageId": "sha256:bbfbc8934188de69252b3d0c397e1748e3b4ba251f45df1902b94092997c500a",
+        "status": "exited",
+        "startedAt": "2026-09-30T13:00:46.988331343Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "portfolio-stage-rest-1",
+        "imageId": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.786720439Z",
+        "restartCount": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "portfolio-stage-storage-1",
+        "imageId": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.83505757Z",
+        "restartCount": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "portfolio-stage-db-1",
+        "imageId": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.760313979Z",
+        "restartCount": 0,
+        "health": "healthy"
+      },
+      {
+        "name": "fx-dashboard-before-publications",
+        "imageId": "sha256:55ee8d1036c64e3e227fe02685ff05a5164023bb3281422cc15f4de5af561515",
+        "status": "exited",
+        "startedAt": "2026-09-30T09:13:50.934030049Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-before-maintenance",
+        "imageId": "sha256:30142768734f17d7e048325cc9e5ad4cdebe1a8728cc5093d6286ca0032b5b28",
+        "status": "exited",
+        "startedAt": "2026-09-30T08:14:56.765816618Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      },
+      {
+        "name": "fx-dashboard-proxy",
+        "imageId": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "status": "running",
+        "startedAt": "2026-10-27T09:30:23.966055926Z",
+        "restartCount": 0,
+        "health": null
+      },
+      {
+        "name": "fx-dashboard-before-display",
+        "imageId": "sha256:182da306f74eb9def812c5f40ecdc7bf58d3d612d524f7f750b9683c337e50a6",
+        "status": "exited",
+        "startedAt": "2026-09-29T20:41:17.386769921Z",
+        "restartCount": 0,
+        "health": "unhealthy"
+      }
+    ],
+    "services": [
+      {
+        "name": "finance-dashboard-20261028-v12-130524",
+        "cpuPercentOneCore": "0.06%",
+        "memoryUsageAndLimit": "42.39MiB / 384MiB"
+      },
+      {
+        "name": "fx-dashboard",
+        "cpuPercentOneCore": "0.70%",
+        "memoryUsageAndLimit": "368.7MiB / 7.708GiB"
+      },
+      {
+        "name": "portfolio-auth219-20261002-auth",
+        "cpuPercentOneCore": "0.02%",
+        "memoryUsageAndLimit": "26.83MiB / 128MiB"
+      },
+      {
+        "name": "portfolio-auth219-20261002-storage",
+        "cpuPercentOneCore": "0.02%",
+        "memoryUsageAndLimit": "108.6MiB / 256MiB"
+      },
+      {
+        "name": "portfolio-auth219-20261002-rest",
+        "cpuPercentOneCore": "0.15%",
+        "memoryUsageAndLimit": "32.36MiB / 128MiB"
+      },
+      {
+        "name": "portfolio-auth219-20261002-sink",
+        "cpuPercentOneCore": "0.04%",
+        "memoryUsageAndLimit": "29.62MiB / 96MiB"
+      },
+      {
+        "name": "portfolio-auth219-20261002-db",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "55.5MiB / 512MiB"
+      },
+      {
+        "name": "portfolio-demo844-app",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "0B / 0B"
+      },
+      {
+        "name": "portfolio-demo844-gateway",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "11.53MiB / 64MiB"
+      },
+      {
+        "name": "portfolio-demo844-storage",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "110.3MiB / 256MiB"
+      },
+      {
+        "name": "portfolio-demo844-rest",
+        "cpuPercentOneCore": "0.15%",
+        "memoryUsageAndLimit": "17.99MiB / 128MiB"
+      },
+      {
+        "name": "portfolio-demo844-auth",
+        "cpuPercentOneCore": "0.02%",
+        "memoryUsageAndLimit": "8.98MiB / 128MiB"
+      },
+      {
+        "name": "portfolio-demo844-db",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "28.51MiB / 512MiB"
+      },
+      {
+        "name": "portfolio-accept195-app",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "0B / 0B"
+      },
+      {
+        "name": "portfolio-accept195-gateway",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "37.05MiB / 64MiB"
+      },
+      {
+        "name": "portfolio-accept195-storage",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "108.2MiB / 256MiB"
+      },
+      {
+        "name": "portfolio-accept195-rest",
+        "cpuPercentOneCore": "0.13%",
+        "memoryUsageAndLimit": "14.39MiB / 128MiB"
+      },
+      {
+        "name": "portfolio-accept195-auth",
+        "cpuPercentOneCore": "0.03%",
+        "memoryUsageAndLimit": "9.316MiB / 128MiB"
+      },
+      {
+        "name": "portfolio-accept195-db",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "28.62MiB / 512MiB"
+      },
+      {
+        "name": "portfolio-stage-gateway-1",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "16.25MiB / 7.708GiB"
+      },
+      {
+        "name": "portfolio-stage-auth-1",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "14.96MiB / 7.708GiB"
+      },
+      {
+        "name": "portfolio-stage-rest-1",
+        "cpuPercentOneCore": "10.95%",
+        "memoryUsageAndLimit": "87.29MiB / 7.708GiB"
+      },
+      {
+        "name": "portfolio-stage-storage-1",
+        "cpuPercentOneCore": "0.02%",
+        "memoryUsageAndLimit": "191.1MiB / 7.708GiB"
+      },
+      {
+        "name": "portfolio-stage-db-1",
+        "cpuPercentOneCore": "0.09%",
+        "memoryUsageAndLimit": "283.7MiB / 7.708GiB"
+      },
+      {
+        "name": "fx-dashboard-proxy",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "41.03MiB / 7.708GiB"
+      }
+    ],
+    "serviceCommands": "inspect/stats only; no restart/stop/prune/install",
+    "cacheOperationReadback": {
+      "at": "2026-10-30T11:55:58.856684+00:00",
+      "status": "completed",
+      "removedPaths": [
+        "/opt/portfolio-accept195/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-accept195/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-accept195/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-accept195/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-accept195/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-accept195/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-auth219-20261002/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-auth219-20261002/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-auth219-20261002/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-auth219-20261002/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-auth219-20261002/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-candidate844-build/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-candidate844-build/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-candidate844-build/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-candidate844-build/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-candidate844-build/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-candidate844-build/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-candidate844-build/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-demo844/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-demo844/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-demo844/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-demo844/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-demo844/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-demo844/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-demo844/source/.next/cache/webpack/client-production/0.pack",
+        "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack/edge-server-production/index.pack",
+        "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack/edge-server-production/0.pack",
+        "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack/server-production/1.pack",
+        "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack/server-production/index.pack",
+        "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack/server-production/0.pack",
+        "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack/client-production/index.pack",
+        "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack/client-production/0.pack"
+      ],
+      "protectedAfter": {
+        "sha256": "3e120ae41a874ddcb847d2ea42c4b156111bf4077aa805d468584268fd181da9",
+        "preservedRuntimeFiles": 9223
+      },
+      "protectedUnchanged": true,
+      "availableBytesAfter": 11405430784,
+      "tenGiBGuard": true,
+      "serviceChanges": false
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-30T21:52:33.611300+00:00",
+  "mode": "readback_only",
+  "availableBytes": 18598998016,
+  "memAvailableBytes": 5731115008,
+  "operationDirectoryExists": false,
+  "helperHashMatches": true,
+  "helperSha256": "1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2",
+  "helperLockLines": [],
+  "releaseLockFileExists": true,
+  "releaseLockCurrentlyHeld": false,
+  "sourceIdentity": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+    "healthy": "healthy",
+    "name": "/portfolio-stage-db-1"
+  },
+  "nativeProgressCandidates": [],
+  "primarySqlWrites": false,
+  "receiptFiles": [],
+  "receiptStatuses": {},
+  "reviewedWrapperSha256": "ebc7bb7733a5452392db2025d5973d15a6d1e372011103709cbc9a02938a05ec"
+}

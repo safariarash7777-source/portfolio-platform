@@ -1,0 +1,105 @@
+{
+  "head": "5572742fee8b691cdc4e8f00541757c172511a30",
+  "base": "0db38ff63d38b2ca98af5e29f5fe1345f58a4c45",
+  "ciRun": 41157152691,
+  "jobs": [
+    {
+      "id": 124406348113,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124406348220,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124406348281,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124406348361,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124407445244,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "deployment": {
+    "id": "dpl_5WHu86Hqh4pCrT9r75G7CNsGxVjR",
+    "state": "READY",
+    "target": null,
+    "url": "https://portfolio-platform-rjlfwr9qo-safariarash7777-4463s-projects.vercel.app"
+  },
+  "codeReview": "one canonical QuarterlyCharts import plus three tickFormatters; remaining four prototype/docs files listed; no new formula/domain/rounding changes in functional delta",
+  "ui": {
+    "axes": {
+      "revenue": [
+        "۰",
+        "۸",
+        "۱۶",
+        "۲۴",
+        "۳۲"
+      ],
+      "margin": [
+        "۰",
+        "۱۰",
+        "۲۰",
+        "۳۰",
+        "۴۰"
+      ],
+      "ttm": [
+        "۰",
+        "۲",
+        "۴",
+        "۶",
+        "۸"
+      ]
+    },
+    "layouts": [
+      "decision",
+      "dossier"
+    ],
+    "mobileBoth": {
+      "viewport": 390,
+      "clientWidth": 375,
+      "scrollWidth": 375
+    },
+    "dossierExpandedMobile": {
+      "client": 358,
+      "scroll": 358,
+      "ttmTooltip": {
+        "quarter": "ف۱ ۱۴۰۵",
+        "value": "۵٫۸"
+      }
+    },
+    "range": "8→4→B→8→A; controls/URL preserve month-gap/fy1405/all/all",
+    "sampleMonthly": {
+      "rateBars": 5,
+      "quantityBars": 10,
+      "rateSvgSubpaths": 2
+    },
+    "viewportReset": true,
+    "deliverable": true
+  },
+  "limits": [
+    "EDU02 only, not real financial data or primary release/Arash acceptance",
+    "zero, fractional, negative and scientific tick values not generated in runtime; formatter passes String unchanged except digits",
+    "not a full tooltip/formula/accessibility re-audit"
+  ],
+  "rejectedCapture": "03-mobile-quarterly-revenue-axis.png captured before dialog settled, excluded from accepted manifest",
+  "interactionLimitation": "attempt to press Tab on noninteractive heading timed out; did not imply product defect; later semantic controls and native scroll worked",
+  "ciCheckout": {
+    "sha": "7f592c7fa7f1805e2444e92e8ef9cc6b0ea143f6",
+    "tree": "5eb5f8f296b2f76fb9385f6d746e6d9704d8cf98",
+    "parents": [
+      "0db38ff63d38b2ca98af5e29f5fe1345f58a4c45",
+      "5572742fee8b691cdc4e8f00541757c172511a30"
+    ]
+  },
+  "headTree": "5eb5f8f296b2f76fb9385f6d746e6d9704d8cf98"
+}

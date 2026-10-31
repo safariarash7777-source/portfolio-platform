@@ -1,0 +1,934 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "selected stopped proof mounts and backup file metadata only",
+  "result": {
+    "at": "2026-10-30T10:07:43.174838+00:00",
+    "mounts": [
+      {
+        "container": "portfolio-recovery-proof-20261003t101406z",
+        "mounts": [
+          {
+            "Type": "bind",
+            "Source": "/root/portfolio-recovery-backups/20261003T101406Z",
+            "Destination": "/recovery",
+            "Mode": "",
+            "RW": false,
+            "Propagation": "rprivate"
+          }
+        ]
+      },
+      {
+        "container": "portfolio-recovery-proof-20261024t090243z",
+        "mounts": [
+          {
+            "Type": "bind",
+            "Source": "/root/portfolio-recovery-backups/20261024T090243Z",
+            "Destination": "/recovery",
+            "Mode": "",
+            "RW": false,
+            "Propagation": "rprivate"
+          }
+        ]
+      },
+      {
+        "container": "portfolio-recovery-proof-20261023t123955z",
+        "mounts": [
+          {
+            "Type": "bind",
+            "Source": "/root/portfolio-recovery-backups/20261023T123955Z",
+            "Destination": "/recovery",
+            "Mode": "",
+            "RW": false,
+            "Propagation": "rprivate"
+          }
+        ]
+      },
+      {
+        "container": "portfolio-media-proof-20261017t175048z",
+        "mounts": [
+          {
+            "Type": "bind",
+            "Source": "/root/portfolio-recovery-backups/20261017T174657Z",
+            "Destination": "/recovery",
+            "Mode": "",
+            "RW": false,
+            "Propagation": "rprivate"
+          }
+        ]
+      },
+      {
+        "container": "portfolio-research-restore-20261017t114842z",
+        "mounts": [
+          {
+            "Type": "bind",
+            "Source": "/root/portfolio-recovery-backups/20261017T114409Z",
+            "Destination": "/recovery",
+            "Mode": "",
+            "RW": false,
+            "Propagation": "rprivate"
+          }
+        ]
+      },
+      {
+        "container": "portfolio-frozen-proof-20261009t163452z",
+        "mounts": [
+          {
+            "Type": "bind",
+            "Source": "/root/portfolio-recovery-backups/20261009T163452Z",
+            "Destination": "/recovery",
+            "Mode": "",
+            "RW": false,
+            "Propagation": "rprivate"
+          }
+        ]
+      },
+      {
+        "container": "portfolio-security-proof-20261006t092801z-retry02",
+        "mounts": [
+          {
+            "Type": "bind",
+            "Source": "/root/portfolio-recovery-backups/20261006T092801Z",
+            "Destination": "/recovery",
+            "Mode": "",
+            "RW": false,
+            "Propagation": "rprivate"
+          }
+        ]
+      }
+    ],
+    "archiveDirectories": [
+      {
+        "directory": "/root/portfolio-recovery-backups/20261003T101406Z",
+        "files": [
+          {
+            "name": "comparison-normalized.private.json",
+            "bytes": 42,
+            "mode": "0o644"
+          },
+          {
+            "name": "comparison.private.json",
+            "bytes": 9932,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron-target.private.json",
+            "bytes": 2,
+            "mode": "0o644"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6154,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2368435622,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 435,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 2034,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 149765,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 149765,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261006T092801Z",
+        "files": [
+          {
+            "name": "attempt01-receipt.json",
+            "bytes": 893,
+            "mode": "0o600"
+          },
+          {
+            "name": "attempt02-receipt.json",
+            "bytes": 1088,
+            "mode": "0o600"
+          },
+          {
+            "name": "comparison.private.json",
+            "bytes": 42,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6154,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2369907015,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 2622,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 1327,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-compat-catalog.private.json",
+            "bytes": 8735,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-compat-receipt.json",
+            "bytes": 1025,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-install-receipt.json",
+            "bytes": 1380,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-main-after-catalog.private.json",
+            "bytes": 8735,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-main-after-fingerprints.private.json",
+            "bytes": 411,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-main-before-catalog.private.json",
+            "bytes": 8191,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-main-before-fingerprints.private.json",
+            "bytes": 411,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-main-privileges.private.json",
+            "bytes": 6950,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261009T163452Z",
+        "files": [
+          {
+            "name": "comparison.private.json",
+            "bytes": 42,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "financial-fingerprints-before.private.json",
+            "bytes": 732,
+            "mode": "0o600"
+          },
+          {
+            "name": "frozen-schema-proof-attempt01.json",
+            "bytes": 549,
+            "mode": "0o600"
+          },
+          {
+            "name": "frozen-schema-proof.json",
+            "bytes": 1021,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6154,
+            "mode": "0o600"
+          },
+          {
+            "name": "main-fingerprints-before.private.json",
+            "bytes": 732,
+            "mode": "0o600"
+          },
+          {
+            "name": "main-frozen-schema-install.json",
+            "bytes": 885,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2372409614,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 7022,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 1261,
+            "mode": "0o600"
+          },
+          {
+            "name": "security-catalog-before.private.json",
+            "bytes": 8735,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 149988,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-security-catalog.private.json",
+            "bytes": 8735,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 149988,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261017T114409Z",
+        "files": [
+          {
+            "name": "comparison.private.json",
+            "bytes": 42,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6154,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2378622379,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 4500,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 1280,
+            "mode": "0o600"
+          },
+          {
+            "name": "research-live-install.json",
+            "bytes": 432,
+            "mode": "0o644"
+          },
+          {
+            "name": "research-rehearsal.json",
+            "bytes": 290,
+            "mode": "0o644"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 174003,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 174003,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261017T122931Z",
+        "files": [
+          {
+            "name": "comparison.private.json",
+            "bytes": 42,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6499,
+            "mode": "0o600"
+          },
+          {
+            "name": "operational-acceptance.json",
+            "bytes": 351,
+            "mode": "0o644"
+          },
+          {
+            "name": "operational-production-diff.private",
+            "bytes": 28,
+            "mode": "0o644"
+          },
+          {
+            "name": "operational-production.json",
+            "bytes": 329,
+            "mode": "0o644"
+          },
+          {
+            "name": "operational-rehearsal-diff.private",
+            "bytes": 28,
+            "mode": "0o644"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2378645484,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 2084,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 1263,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 176572,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 176572,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261017T174657Z",
+        "files": [
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6836,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2379114746,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 251,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 893,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 178505,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261023T123955Z",
+        "files": [
+          {
+            "name": "comparison.private.json",
+            "bytes": 1477,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6836,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2393040715,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 2165,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 1276,
+            "mode": "0o600"
+          },
+          {
+            "name": "reconciliation-receipt-v2.json",
+            "bytes": 471,
+            "mode": "0o600"
+          },
+          {
+            "name": "reconciliation-receipt.json",
+            "bytes": 238,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 185592,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory-reconciled.private",
+            "bytes": 185592,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 185801,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261023T125904Z",
+        "files": [
+          {
+            "name": "comparison-before-correction.private.json",
+            "bytes": 1477,
+            "mode": "0o600"
+          },
+          {
+            "name": "comparison.private.json",
+            "bytes": 42,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6836,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2393066233,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 2165,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 1899,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 185592,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory-before-correction.private",
+            "bytes": 185801,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 185592,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261023T154032Z",
+        "files": [
+          {
+            "name": "comparison-before-correction.private.json",
+            "bytes": 1584,
+            "mode": "0o600"
+          },
+          {
+            "name": "comparison-before-goals-reconcile.private.json",
+            "bytes": 1585,
+            "mode": "0o600"
+          },
+          {
+            "name": "comparison.private.json",
+            "bytes": 43,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6836,
+            "mode": "0o600"
+          },
+          {
+            "name": "goals-reconcile-plan.private.sql",
+            "bytes": 761,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2393290348,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 2165,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt-before-goals-reconcile.private.json",
+            "bytes": 893,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 2422,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 193230,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory-before-goals-reconcile.private",
+            "bytes": 193418,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 193230,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261023T204308Z",
+        "files": [
+          {
+            "name": "comparison-before-consultation-reconcile.private.json",
+            "bytes": 1684,
+            "mode": "0o600"
+          },
+          {
+            "name": "comparison-before-correction.private.json",
+            "bytes": 1683,
+            "mode": "0o600"
+          },
+          {
+            "name": "comparison.private.json",
+            "bytes": 43,
+            "mode": "0o600"
+          },
+          {
+            "name": "consultation-reconcile-plan.private.sql",
+            "bytes": 817,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6836,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2393665795,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 2165,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt-before-consultation-reconcile.private.json",
+            "bytes": 893,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 2449,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 196871,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory-before-consultation-reconcile.private",
+            "bytes": 197038,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 196871,
+            "mode": "0o600"
+          },
+          {
+            "name": "target.private.env",
+            "bytes": 94,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/20261024T090243Z",
+        "files": [
+          {
+            "name": "comparison-before-correction.private.json",
+            "bytes": 3707,
+            "mode": "0o600"
+          },
+          {
+            "name": "comparison.private.json",
+            "bytes": 36,
+            "mode": "0o600"
+          },
+          {
+            "name": "cron.private.json",
+            "bytes": 3,
+            "mode": "0o600"
+          },
+          {
+            "name": "globals.private.sql",
+            "bytes": 6836,
+            "mode": "0o600"
+          },
+          {
+            "name": "next-reconciliation-intent.json",
+            "bytes": 825,
+            "mode": "0o600"
+          },
+          {
+            "name": "postgres.dump",
+            "bytes": 2394735017,
+            "mode": "0o600"
+          },
+          {
+            "name": "private-errors.log",
+            "bytes": 2165,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt-before-next-reconciliation.json",
+            "bytes": 893,
+            "mode": "0o600"
+          },
+          {
+            "name": "receipt.json",
+            "bytes": 2475,
+            "mode": "0o600"
+          },
+          {
+            "name": "snapshot-private-errors.log",
+            "bytes": 0,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-consultation-supplement.private",
+            "bytes": 2434,
+            "mode": "0o600"
+          },
+          {
+            "name": "source-inventory.private",
+            "bytes": 209886,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-before-consultation-supplement.private",
+            "bytes": 2413,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-consultation-supplement.private",
+            "bytes": 2434,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory-before-next-reconciliation.private",
+            "bytes": 209881,
+            "mode": "0o600"
+          },
+          {
+            "name": "target-inventory.private",
+            "bytes": 209886,
+            "mode": "0o600"
+          }
+        ]
+      },
+      {
+        "directory": "/root/portfolio-recovery-backups/scripts",
+        "files": [
+          {
+            "name": "launcher-20261003.log",
+            "bytes": 850,
+            "mode": "0o644"
+          },
+          {
+            "name": "p01-native-backup-restore-20261003.py",
+            "bytes": 12334,
+            "mode": "0o600"
+          },
+          {
+            "name": "p01-native-restore-resume-20261003.py",
+            "bytes": 3515,
+            "mode": "0o644"
+          },
+          {
+            "name": "resume-20261003.log",
+            "bytes": 1312,
+            "mode": "0o644"
+          },
+          {
+            "name": "resume-private-errors.log",
+            "bytes": 427,
+            "mode": "0o644"
+          }
+        ]
+      }
+    ],
+    "contentsRead": false
+  }
+}

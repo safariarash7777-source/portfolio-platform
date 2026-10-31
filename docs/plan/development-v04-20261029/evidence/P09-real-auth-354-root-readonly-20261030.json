@@ -1,0 +1,109 @@
+{
+  "head": "c5e971dc2c9ce159773aab7cab30b4102bfc6495",
+  "runs": [
+    {
+      "id": 41067950157,
+      "headSha": "c5e971dc2c9ce159773aab7cab30b4102bfc6495",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 41067950291,
+      "headSha": "c5e971dc2c9ce159773aab7cab30b4102bfc6495",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "jobs": {
+    "41067950291": [
+      {
+        "id": 124104262884,
+        "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124104262975,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124104262976,
+        "name": "Secret scan \u00b7 SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124104263292,
+        "name": "Database RLS \u00b7 Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124106207851,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "41067950157": [
+      {
+        "id": 124104258297,
+        "name": "postgres17-reopen",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "nativeMarkers": [
+    "2026-10-30T14:01:05.8047861Z # tests 6",
+    "2026-10-30T14:01:05.8048577Z # pass 6",
+    "2026-10-30T14:01:05.8050303Z # fail 0",
+    "2026-10-30T14:01:05.8062392Z # skipped 0",
+    "2026-10-30T14:01:26.1145636Z P09_NATIVE_CHECK {\"name\":\"isolation-attested\",\"status\":\"PASS\",\"sha\":\"c5e971dc2c9ce159773aab7cab30b4102bfc6495\",\"runId\":\"p09-6ac9cfd5-4478-4a9c-905a-b09dbf60de8a\",\"images\":{\"db\":\"postgres@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24\",\"auth\":\"supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b\",\"rest\":\"postgrest/postgrest@sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c\",\"node\":\"node@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34\"},\"restArtifact\":{\"legacy\":\"sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272\",\"index\":\"sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c\",\"manifest\":\"sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0\",\"config\":\"sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9\",\"version\":\"PostgREST 14.17\",\"primaryArtifactMatch\":\"NOT_CLAIMED\"},\"database\":\"owned tmpfs\",\"serviceNetwork\":\"internal/no host binds/no published service ports\",\"ingress\":\"127.0.0.1:32190 only\",\"app\":\"Linux runner loopback / sanitized env / exact Git archive\",\"appDefaultRoutes\":null,\"appNoEgressClaim\":false}",
+    "2026-10-30T14:01:30.9001795Z P09_NATIVE_CHECK {\"name\":\"three-fresh-auth-users-and-sdk-getuser\",\"status\":\"PASS\",\"members\":1,\"admin\":2,\"memberTokenSource\":\"GoTrue password grant; no hand-signed member sub\"}",
+    "2026-10-30T14:01:32.0518809Z P09_NATIVE_CHECK {\"name\":\"two-real-admins-canonical-v1-review-and-member-denial\",\"status\":\"PASS\",\"workbookId\":\"bcfa64e2-6746-42c1-a5d3-d9ae3cba8d32\",\"versionId\":\"ee29c6e6-b59c-4e11-a6a5-56aca268397b\",\"reviewId\":\"26d41de4-390a-417a-8049-d259b2f90ffb\",\"reviewVersion\":1}",
+    "2026-10-30T14:01:33.9748717Z P09_NATIVE_CHECK {\"name\":\"real-201-discard-fresh-session-component-remount-get-only\",\"status\":\"PASS\",\"newPasswordSession\":true,\"postOnRemount\":false,\"transportDiscard\":true,\"browserOrTcpDisconnect\":false}",
+    "2026-10-30T14:01:34.3088925Z P09_NATIVE_CHECK {\"name\":\"explicit-same-body-intent-replay-no-duplicate\",\"status\":\"PASS\",\"sameIntent\":true,\"sameRequestBytes\":true,\"versions\":2}",
+    "2026-10-30T14:01:34.6546840Z P09_NATIVE_CHECK {\"name\":\"actor-owned-journal-native-rls-and-member-service-denial\",\"status\":\"PASS\",\"otherAdminIntent\":404,\"member\":403,\"serviceJournal\":403,\"canonicalBackupRead\":200,\"invalidJwt\":401}",
+    "2026-10-30T14:01:36.1902055Z P09_NATIVE_CHECK {\"name\":\"prepared-absence-remount-explicit-ui-retry-exact-bytes\",\"status\":\"PASS\",\"automaticPost\":false,\"explicitPosts\":1,\"sameIntent\":true,\"sameRequestBytes\":true}",
+    "2026-10-30T14:01:36.3606287Z P09_NATIVE_CHECK {\"name\":\"same-get-metadata-real-native-references-no-panel-request\",\"status\":\"PASS\",\"versionIds\":[\"ee29c6e6-b59c-4e11-a6a5-56aca268397b\",\"028f1dcc-a62b-4ae5-916d-a6d9d5b573da\"],\"reviewId\":\"26d41de4-390a-417a-8049-d259b2f90ffb\",\"reviewVersionId\":\"ee29c6e6-b59c-4e11-a6a5-56aca268397b\",\"extraHttpRequests\":0,\"actorsDisclosed\":false}",
+    "2026-10-30T14:01:36.5332206Z P09_NATIVE_CHECK {\"name\":\"native-append-only-original-history-and-version-bound-review\",\"status\":\"PASS\",\"originalVersionPreserved\":true,\"reviewStillOnV1\":true,\"v2Approved\":false,\"modelCalls\":0,\"primaryTouched\":false}",
+    "2026-10-30T14:01:45.5163427Z P09_NATIVE_CLEANUP {\"sha\":\"c5e971dc2c9ce159773aab7cab30b4102bfc6495\",\"runId\":\"p09-6ac9cfd5-4478-4a9c-905a-b09dbf60de8a\",\"status\":\"REMOVED_OWNED_RESOURCES\",\"resources\":6}",
+    "2026-10-30T14:01:45.5166178Z P09_NATIVE_AUTH {\"sha\":\"c5e971dc2c9ce159773aab7cab30b4102bfc6495\",\"status\":\"PASS\",\"scenarios\":9,\"cleanup\":\"REMOVED_OWNED_RESOURCES\",\"memberAuth\":\"real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes\",\"schema\":\"candidate in owned tmpfs only\",\"targetInstall\":\"NOT_APPLIED\",\"browser\":\"NOT_RUN\",\"arashAcceptance\":\"UNOBSERVED\",\"privateArtifactsUploaded\":false}"
+  ],
+  "artifactId": 12982753735,
+  "artifact": {
+    "workbook-native-receipt.json": {
+      "sha256": "47dca03eeb458ecd7511bcc4ecbed841cd9adf97f649957182c5a424af1fcffa",
+      "receipt": {
+        "status": "PASS",
+        "testedSha": "c5e971dc2c9ce159773aab7cab30b4102bfc6495",
+        "postgresVersionNumber": 170011,
+        "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+        "environment": "disposable GitHub Actions PostgreSQL; synthetic data only",
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "scenarios": [
+          "immutable native actor/hash/body",
+          "other-admin/member/anon and service-role BYPASSRLS denial",
+          "actual component destroyed after v2 commit and remounted; GET-only recovery",
+          "v1 and its review retained; v2 unapproved",
+          "private text read back exactly",
+          "candidate rerun preserves existing workbook/review INSERT freeze"
+        ],
+        "authBoundary": "synthetic claims exercised under native authenticated SQL role; no real user session",
+        "productionTouched": false,
+        "modelCalls": 0,
+        "browserPersistentPrivateBody": false
+      }
+    }
+  },
+  "logSha256": "2a4da03259db9a0a16e1ad586640cad67fda2e83ee4b6bba652abdca4e551219",
+  "authentication": "existing Git credential in memory if required",
+  "signedUrlsOrCredentialsExported": false,
+  "primaryInstall": "NOT_APPLIED",
+  "browser": "NOT_RUN"
+}

@@ -1,0 +1,97 @@
+{
+  "source": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "parent": "fa333ea75ce8ddb9f7d798179739677527a9891a",
+  "pr": 374,
+  "status": "ROOT_VERIFIED_SOURCE_CI_PLUS_SEPARATE_REAL_PREVIEW_READ",
+  "run": 41165825261,
+  "jobs": [
+    {
+      "id": 124433054213,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124433054361,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124433054415,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124433054542,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124434081880,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "actualCheckout": "97d343a62d134d89bed9ea4cd8f56b81dc12d36f",
+  "tree": "c5f20ab832ab985dd32190ee53d306a849ddbec0",
+  "parents": [
+    "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+    "805a8d905c9d82697745988b21ff4f1222f8969d"
+  ],
+  "treeEqualsSource": true,
+  "rootNamedTestProof": {
+    "binding": {
+      "count": 16,
+      "exactPassLinesFound": 16
+    },
+    "wiring": {
+      "count": 6,
+      "sourceTitlesAndCiPasses": [
+        {
+          "title": "کارت و فصل‌ها روی یک دوره یک گزارش را می‌بینند — گزارشِ جداگانهٔ شرکت، نه تلفیقیِ دیرتر",
+          "subtestFound": true,
+          "passFound": true
+        },
+        {
+          "title": "گزارشِ جداگانه بر تلفیقیِ همان دوره مقدم است — حتی اگر تلفیقی دیرتر آمده باشد",
+          "subtestFound": true,
+          "passFound": true
+        },
+        {
+          "title": "دورهٔ فقط‌تلفیقی: منبع با هشدار حفظ می‌شود ولی وارد فصل‌ها نمی‌شود",
+          "subtestFound": true,
+          "passFound": true
+        },
+        {
+          "title": "زنجیرهٔ فصلی دامنه‌ها را قاطی نمی‌کند: ۳ماههٔ جداگانه + ۶ماههٔ فقط‌تلفیقی ⇒ Q2 تهی",
+          "subtestFound": true,
+          "passFound": true
+        },
+        {
+          "title": "limit: رشدِ ردیف تازه‌ترین دوره را نمی‌اندازد (id کمتر ولی period_end تازه‌تر)",
+          "subtestFound": true,
+          "passFound": true
+        },
+        {
+          "title": "شپنا ۳ماههٔ ۱۴۰۳ (واقعی): Q1 از اصلاحیه، نه نسخهٔ اولیهٔ باطل — همان که کارت می‌بیند",
+          "subtestFound": true,
+          "passFound": true
+        }
+      ]
+    },
+    "validator": {
+      "count": 4,
+      "exactPassLinesFound": 4
+    },
+    "note": "owner artifact wiring titles had encoding differences; root matched six exact805 source titles to official CI pass names instead of reinterpreting corrupted titles"
+  },
+  "testGroups": {
+    "core": 2071,
+    "calc": 162,
+    "notUniqueCombinedTotal": true
+  },
+  "firstCiFailurePreserved": "P07-374-fa-first-ci-root-20261031.json",
+  "actualDataPreview": "P07-374-805-root-browser-20261031/REVIEW.fa.md",
+  "mainMerge": false,
+  "productionDeploy": false,
+  "wholeP07Accepted": false
+}

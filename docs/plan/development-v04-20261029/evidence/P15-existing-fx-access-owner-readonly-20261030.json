@@ -1,0 +1,18 @@
+{
+  "observer": "Existing FX owner, alternate existing access helper",
+  "ownerThread": "01a0ee66-26b5-7341-952a-1e3fc9e63544",
+  "turnStartedAtUtc": "2026-10-30T16:14:49+00:00",
+  "turnCompletedAtUtc": "2026-10-30T16:17:03+00:00",
+  "helper": "work/liara-deploy-20260929/vm_command.py",
+  "attempts": 1,
+  "helperExitCode": 1,
+  "serverOutputReceived": false,
+  "currentHostIdentityVerified": false,
+  "guestCpuRamDisk": "UNKNOWN",
+  "failureStage": "UNDETERMINED_FROM_SANITIZED_OUTPUT",
+  "networkKeyOrAuthenticationCause": "NOT_ESTABLISHED",
+  "remoteExecutionConfirmed": false,
+  "serverMutationRequested": false,
+  "retryRepairOrStateChangeReported": false,
+  "rootReusedOrCopiedCredentials": false
+}

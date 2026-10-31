@@ -1,0 +1,46 @@
+{
+  "sourceCommit": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+  "documentationCommit": "8a6edb43a6654cd8842bff7d706327c6db949394",
+  "documentationOnlyPath": "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md",
+  "packetBytes": 28932184,
+  "packetSha256": "76244fe52ba94ac53e0704d80625d0eb15b57f5e54fb7736a41ec6b8d29a7d46",
+  "manifestSha256": "431902dde44f15cc273c36d36abe041e2751fd052db47c3089e704e9b0591aa5",
+  "sourceArchiveSha256": "018789dfd39e76e412abdb70e4c2582e351f175f435881380950fefb017dc682",
+  "rootVerifiedPacketFiles": 20,
+  "rootVerifiedBlobsAgainstGitObjects": 1490,
+  "sourceTree": "5a22ab56f4260e40095c73eb813843a6958883aa",
+  "generalCI": {
+    "run": 41150876796,
+    "allFiveJobs": "SUCCESS",
+    "checkoutSeenInOfficialCoreLog": "49018a9b8eebfae59196095e5f84ee4f5859bcf8",
+    "checkoutTreeEqualsC4": true,
+    "databaseTestLog": {
+      "tests": 400,
+      "pass": 400,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "reviewOnlyPacket": "ACCEPTED_FOR_REVIEW_REFERENCE",
+  "targetReady": false,
+  "conditionalSql": [
+    "requests then prepared only if exact compatible baseline and no ticket kernel",
+    "prepared only if exact ticket kernel already exists",
+    "no DDL when both exact",
+    "collision/unknown requires catalog/readback; no replay"
+  ],
+  "rollback": "keep compatible c4 reader and stop writer; no proven alternative rollback build bundled",
+  "currentReadOnlySourceCatalog": {
+    "at": "2026-10-31T00:55:30.144303+00:00",
+    "schemas": [
+      "consultation_private"
+    ],
+    "functions": 19,
+    "tables": 9,
+    "ticketPreparedObserved": false,
+    "exactBaselineCompatible": "NOT_PROVEN"
+  },
+  "nextOwner": "B maps required baseline functions/columns/ACL to read-only catalog comparison; root archive profile/build/reader/installer/right gates",
+  "primary": "NOT_APPLIED",
+  "realRight": "NOT_CONNECTED"
+}

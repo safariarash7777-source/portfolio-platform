@@ -1,0 +1,47 @@
+{
+  "observedAt": "2026-10-29T17:12:19.221820+00:00",
+  "reviewer": "existing-root-coordinator",
+  "sourceSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "environment": "owned loopback native lab with four fresh synthetic GoTrue users; real PostgREST and Next routes",
+  "baselineOwnerReceipt": {
+    "status": "PASS_NATIVE_API",
+    "package": "start-a-native-20261029",
+    "scenarios": 24,
+    "postAttempts": 24,
+    "sessionVersions": 2,
+    "publishedVersions": 1,
+    "replyVersions": 2,
+    "feedbackEvents": 5,
+    "relationshipRevoked": true,
+    "financialLedgerWrites": 0,
+    "browser": "NOT_RUN",
+    "retirement": "PENDING_SEPARATE_HELPER",
+    "checkedAt": "2026-10-29T16:38:48.353Z",
+    "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "environment": "disposable-local-native"
+  },
+  "ownerArtifactContentValidatedByRoot": true,
+  "nativeMemberRevokeIndependentlyCheckedByRoot": true,
+  "nonzeroBeforeAfterDtoAndRowFingerprintsValidatedByRoot": true,
+  "metadataPostconditionsPassed": 9,
+  "gateEnabledAtEnd": false,
+  "strictVirginDefaultOff": false,
+  "strictVirginDefaultOffReason": "Synthetic activation audit metadata retained after disable; never cleared to manufacture a passing virgin-state assertion",
+  "firstNativeRollbackSqlState": "UNOBSERVED",
+  "rollbackDdlReplayed": false,
+  "nativePrimaryAcceptance": false,
+  "primaryTouched": false,
+  "arashAcceptance": false,
+  "images": [
+    {
+      "file": "START-A-native-history-320.png",
+      "sha256": "a641f77df9a54fa313bdc7e2e66bdfc2ebb627ace146ae52cc0a11798b70049c",
+      "bytes": 30323
+    },
+    {
+      "file": "START-A-native-history-390.png",
+      "sha256": "5d25989e863622a58fad1285c83b13913fe9e928070dabb160b94e7e79a8e527",
+      "bytes": 32493
+    }
+  ]
+}

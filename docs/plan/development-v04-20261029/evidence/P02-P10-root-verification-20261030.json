@@ -1,0 +1,108 @@
+{
+  "at": "2026-10-30T10:08:24.116Z",
+  "method": "Independent GitHub connector readback of exact workflow jobs and selected decoded log lines",
+  "debt": {
+    "pr": 344,
+    "head": "fa7303f2ae545cec6f444953eab3c5c83d45867e",
+    "run": 41037246430,
+    "jobs": [
+      {
+        "id": 124001009559,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124001009808,
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124001009832,
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124001010069,
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124002695752,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "nativeLog": {
+      "job": 124001009832,
+      "lines": [
+        "2026-10-30T09:59:49.1415255Z # Subtest: P02.4 synthetic debt partial correction / Postgres / legacy",
+        "2026-10-30T09:59:49.1505493Z ok 22 - P02.4 synthetic debt partial correction / Postgres / legacy",
+        "2026-10-30T09:59:49.1509284Z # Subtest: P02.4 synthetic debt partial correction / Postgres / explicit",
+        "2026-10-30T09:59:49.1517377Z ok 23 - P02.4 synthetic debt partial correction / Postgres / explicit",
+        "2026-10-30T10:00:15.4338170Z # tests 402",
+        "2026-10-30T10:00:15.4350604Z # pass 402",
+        "2026-10-30T10:00:15.4350964Z # fail 0",
+        "2026-10-30T10:00:15.4351621Z # skipped 0",
+        "2026-10-30T10:01:59.1324118Z # fail 0",
+        "2026-10-30T10:01:59.1324849Z # skipped 0"
+      ]
+    },
+    "scope": "CI-local Postgres / synthetic authentication adapter; not GoTrue/browser/primary acceptance"
+  },
+  "history": {
+    "pr": 343,
+    "head": "5983e14e7444e8d94a4fc074dda142b3b0395374",
+    "run": 41037154703,
+    "jobs": [
+      {
+        "id": 124000702711,
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124000702943,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124000702966,
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124000702990,
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124002473330,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "coreLog": {
+      "job": 124000702711,
+      "lines": [
+        "2026-10-30T09:58:42.6368063Z ok 1216 - v1 and v2 state observations dedupe across reads without fabricating transitions or success",
+        "2026-10-30T09:58:42.6423601Z ok 1219 - review of v1 after v2 creation stays on v1, independent of array order or latest version",
+        "2026-10-30T09:58:42.6447244Z ok 1224 - private body/title/note/prompt/credentials and raw errors are neither accessed nor copied",
+        "2026-10-30T09:58:57.8006832Z # tests 2065",
+        "2026-10-30T09:58:57.8007218Z # pass 2065",
+        "2026-10-30T09:58:57.8007399Z # fail 0"
+      ]
+    },
+    "scope": "pure metadata projection only; consumer/runtime/future append not connected"
+  },
+  "primaryChanged": false,
+  "merged": false
+}

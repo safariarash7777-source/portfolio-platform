@@ -31,6 +31,8 @@ import {
   narrativeProdVsSales,
   narrativeRate,
   type MonthlySales,
+  type RateSeries,
+  type ProdSalesPoint,
 } from "@/lib/core/monthlyReport";
 
 /* ── فرمت‌های نمایشی (فقط فرمت؛ محاسبه در lib/core) ─────────────────────── */
@@ -209,49 +211,71 @@ function CumulativeChart({ m }: { m: MonthlySales }) {
 
 const RATE_COLORS = ["var(--navy)", "var(--gold)", "var(--success)"] as const;
 
+function hasRateUnit(point: RateSeries["points"][number], unit = point.rateUnit?.denominator): boolean {
+  return typeof point.rate === "number" && Number.isFinite(point.rate)
+    && typeof unit === "string" && unit.length > 0
+    && point.rateUnit?.numerator === "ریال" && point.rateUnit.denominator === unit
+    && point.quantityUnit === unit;
+}
+
 function RateChart({ m }: { m: MonthlySales }) {
-  const labels = m.rateSeries[0]?.points.map((p) => p.monthLabel) ?? [];
-  const data = labels.map((label, i) => {
-    const row: Record<string, string | number | null> = { label };
-    m.rateSeries.forEach((s, si) => {
-      row[`s${si}`] = s.points[i]?.rate ?? null;
-    });
-    return row;
-  });
+  const units = [...new Set(m.rateSeries.flatMap(series => series.points
+    .filter(point => hasRateUnit(point)).map(point => point.rateUnit!.denominator)))];
+  const unverified = m.rateSeries.some(series => series.points.some(point => point.rate !== null && !hasRateUnit(point)));
   return (
-    <div style={{ height: 280 }} dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
-          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
-          <YAxis
-            tickFormatter={(v: number) => faDigits(Math.round(v).toLocaleString("en-US")).replace(/,/g, "٬")}
-            tick={{ fontSize: 10, fill: "var(--text-3)" }}
-            width={64}
-            orientation="right"
-          />
-          <Tooltip
-            contentStyle={tooltipStyle}
-            formatter={(v: unknown, name: unknown) => [
-              v == null ? "—" : `${faDigits(Math.round(Number(v)).toLocaleString("en-US")).replace(/,/g, "٬")} ریال`,
-              String(name),
-            ]}
-          />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-          {m.rateSeries.map((s, si) => (
-            <Line
-              key={s.label}
-              dataKey={`s${si}`}
-              name={s.label}
-              stroke={RATE_COLORS[si % RATE_COLORS.length]}
-              strokeWidth={2}
-              strokeDasharray={s.market === "صادراتی" ? "6 4" : undefined}
-              dot={{ r: 2.5 }}
-              connectNulls={false}
-            />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="space-y-4">
+      {units.length === 0 ? <p role="status">نرخ فروش با واحد معتبر موجود نیست؛ واحد نامعلوم یا دادهٔ مفقود صفر نشده است.</p> : null}
+      {units.map(unit => {
+        const series = m.rateSeries.map((value, index) => ({ value, index }))
+          .filter(({ value }) => value.points.some(point => hasRateUnit(point, unit)));
+        const data = (m.rateSeries[0]?.points ?? []).map((point, i) => {
+          const row: Record<string, string | number | null> = { label: point.monthLabel, monthKey: point.monthKey };
+          series.forEach(({ value, index }) => {
+            const observed = value.points[i];
+            row[`s${index}`] = observed && hasRateUnit(observed, unit) ? observed.rate : null;
+          });
+          return row;
+        });
+        const unitLabel = `ریال به ازای ${unit}`;
+        return <div key={unit} role="group" aria-label={`نرخ فروش — ${unitLabel}`}>
+          <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>واحد نرخ: {unitLabel}</p>
+          <div style={{ height: 280 }} dir="ltr">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
+                <YAxis
+                  tickFormatter={(v: number) => faDigits(Math.round(v).toLocaleString("en-US")).replace(/,/g, "٬")}
+                  tick={{ fontSize: 10, fill: "var(--text-3)" }}
+                  width={64}
+                  orientation="right"
+                />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  formatter={(v: unknown, name: unknown) => [
+                    v == null ? "—" : `${faDigits(Math.round(Number(v)).toLocaleString("en-US")).replace(/,/g, "٬")} ${unitLabel}`,
+                    String(name),
+                  ]}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                {series.map(({ value: s, index: si }) => (
+                  <Line
+                    key={`s${si}`}
+                    dataKey={`s${si}`}
+                    name={s.label}
+                    stroke={RATE_COLORS[si % RATE_COLORS.length]}
+                    strokeWidth={2}
+                    strokeDasharray={s.market === "صادراتی" ? "6 4" : undefined}
+                    dot={{ r: 2.5 }}
+                    connectNulls={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>;
+      })}
+      {unverified ? <p role="status" className="text-[12px]" style={{ color: "var(--text-3)" }}>نرخ‌های با واحد نامعلوم رسم نشده‌اند؛ واحدهای متفاوت در نمودارهای جدا نمایش داده می‌شوند و فاصله‌ها به هم وصل نمی‌شوند.</p> : null}
     </div>
   );
 }
@@ -269,6 +293,7 @@ const MIX_COLORS = [
 ] as const;
 
 function MixChart({ m }: { m: MonthlySales }) {
+  const smallPositiveExportShare = m.latestExportSharePct === 0 && m.latestExportAmount !== null && m.latestExportAmount > 0;
   const total = m.latestMix.reduce((a, x) => a + x.amount, 0);
   return (
     <div>
@@ -281,7 +306,7 @@ function MixChart({ m }: { m: MonthlySales }) {
       >
         {m.latestMix.map((x, i) => (
           <div
-            key={x.name + (x.market ?? "")}
+            key={x.name + (x.market ?? "") + i}
             style={{
               width: `${total > 0 ? (x.amount / total) * 100 : 0}%`,
               background: MIX_COLORS[i % MIX_COLORS.length],
@@ -292,7 +317,7 @@ function MixChart({ m }: { m: MonthlySales }) {
       </div>
       <ul className="mt-3 space-y-1.5">
         {m.latestMix.map((x, i) => (
-          <li key={x.name + (x.market ?? "") + "l"} className="flex items-center justify-between gap-2 text-[13px]">
+          <li key={x.name + (x.market ?? "") + i + "l"} className="flex items-center justify-between gap-2 text-[13px]">
             <span className="flex items-center gap-2" style={{ color: "var(--text-2)" }}>
               <span
                 className="inline-block h-2.5 w-2.5 rounded-sm"
@@ -302,7 +327,7 @@ function MixChart({ m }: { m: MonthlySales }) {
               {x.name}
               {x.market ? (
                 <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                  ({x.market})
+                  ({x.market === "نامشخص" ? "تفکیک نامعلوم" : x.market})
                 </span>
               ) : null}
             </span>
@@ -328,10 +353,14 @@ function MixChart({ m }: { m: MonthlySales }) {
           </span>
           {m.latestExportSharePct !== null ? (
             <span>
-              سهم صادرات: <b style={{ color: "var(--navy-ink)" }}>٪{faDigits(String(m.latestExportSharePct)).replace(".", "٫")}</b>
+              سهم صادرات: <b style={{ color: "var(--navy-ink)" }}>{smallPositiveExportShare ? `کمتر از ${faDigits("0.1").replace(".", "٫")}٪` : `٪${faDigits(String(m.latestExportSharePct)).replace(".", "٫")}`}</b>
             </span>
           ) : null}
         </div>
+      ) : m.marketUnavailableReason ? (
+        <p className="mt-3 text-[12px]" style={{ color: "var(--text-3)" }}>
+          {m.marketUnavailableReason === "unverified-market" ? "تفکیک بازار تأیید نشده" : m.marketUnavailableReason === "signed-market-adjustment" ? "محاسبهٔ سهم با مبلغ اصلاحی/منفی در روش فعلی پشتیبانی نمی‌شود" : "پوشش مبلغ ردیف‌های بازار کامل نیست"}؛ سهم صادرات نامعلوم است.
+        </p>
       ) : null}
     </div>
   );
@@ -339,28 +368,49 @@ function MixChart({ m }: { m: MonthlySales }) {
 
 /* ── چارت ۵: تولید در برابر فروش محصول اصلی ─────────────────────────────── */
 
+function hasQuantityUnit(point: ProdSalesPoint, unit = point.quantityUnit): boolean {
+  return typeof unit === "string" && unit.length > 0 && point.quantityUnit === unit
+    && point.unavailableReason === null
+    && typeof point.production === "number" && Number.isFinite(point.production)
+    && typeof point.sales === "number" && Number.isFinite(point.sales);
+}
+
 function ProdSalesChart({ m }: { m: MonthlySales }) {
+  const units = [...new Set(m.prodVsSales.filter(point => hasQuantityUnit(point)).map(point => point.quantityUnit!))];
+  if (units.length === 0) {
+    return <p role="status">مقدار قابل‌مقایسهٔ تولید و فروش موجود نیست؛ دادهٔ مفقود یا واحد نامعلوم صفر نشده است.</p>;
+  }
   return (
-    <div style={{ height: 280 }} dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={m.prodVsSales} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
-          <XAxis dataKey="monthLabel" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
-          <YAxis
-            tickFormatter={(v: number) => fmtQty(v)}
-            tick={{ fontSize: 10, fill: "var(--text-3)" }}
-            width={64}
-            orientation="right"
-          />
-          <Tooltip
-            contentStyle={tooltipStyle}
-            formatter={(v: unknown, name: unknown) => [v == null ? "—" : fmtQty(Number(v)), String(name)]}
-          />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="production" name="مقدار تولید" fill="var(--line-strong)" radius={[3, 3, 0, 0]} />
-          <Bar dataKey="sales" name="مقدار فروش" fill="var(--navy)" radius={[3, 3, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="space-y-4">
+      {units.map(unit => <div key={unit} role="group" aria-label={`تولید و فروش — ${unit}`}>
+        <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>واحد مقدار: {unit}</p>
+        <div style={{ height: 280 }} dir="ltr">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={m.prodVsSales.map(point => ({
+              ...point,
+              production: hasQuantityUnit(point, unit) ? point.production : null,
+              sales: hasQuantityUnit(point, unit) ? point.sales : null,
+            }))} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+              <XAxis dataKey="monthLabel" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
+              <YAxis
+                tickFormatter={(v: number) => fmtQty(v)}
+                tick={{ fontSize: 10, fill: "var(--text-3)" }}
+                width={64}
+                orientation="right"
+              />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                formatter={(v: unknown, name: unknown) => [v == null ? "—" : `${fmtQty(Number(v))} ${unit}`, String(name)]}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="production" name="مقدار تولید" fill="var(--line-strong)" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="sales" name="مقدار فروش" fill="var(--navy)" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>)}
+      {m.prodVsSales.some(point => !hasQuantityUnit(point)) ? <p role="status" className="text-[12px]" style={{ color: "var(--text-3)" }}>ماه فاقد مقدار کامل یا واحد معتبر خالی می‌ماند؛ واحدهای متفاوت در نمودارهای جدا نمایش داده می‌شوند.</p> : null}
     </div>
   );
 }
@@ -378,6 +428,11 @@ export default function MonthlySalesCharts({
 }) {
   const m = useMemo(() => buildMonthlySales(reports), [reports]);
   if (!m) return null;
+  const firstRate = m.rateSeries[0];
+  const rateNarrative = firstRate?.rateUnit && firstRate.points.every(point => point.rate === null || hasRateUnit(point, firstRate.rateUnit!.denominator))
+    ? narrativeRate(m) : null;
+  const lastQuantity = m.prodVsSales[m.prodVsSales.length - 1];
+  const quantityNarrative = lastQuantity && hasQuantityUnit(lastQuantity) ? narrativeProdVsSales(m) : null;
 
   return (
     <div className="space-y-5">
@@ -419,12 +474,12 @@ export default function MonthlySalesCharts({
           <CumulativeChart m={m} />
         </QCard>
 
-        {m.rateSeries.length > 0 && m.rateSeries.some((s) => s.points.some((p) => p.rate !== null)) ? (
+        {m.rateSeries.length > 0 ? (
           <QCard
             id="q-rate-trend"
             question="نرخ فروش چه روندی دارد؟"
-            subtitle="نرخ فروش (ریال بر واحد) محصولات پرسهم · خط‌چین = صادراتی · ماه بدون رکورد = گپ واقعی"
-            narrative={narrativeRate(m)}
+            subtitle="واحد نرخ کنار هر نمودار · واحدهای متفاوت جدا هستند · خط‌چین = صادراتی · ماه بدون رکورد = گپ واقعی"
+            narrative={rateNarrative}
           >
             <RateChart m={m} />
           </QCard>
@@ -445,8 +500,8 @@ export default function MonthlySalesCharts({
           <QCard
             id="q-prod-vs-sales"
             question="تولید و فروش هم‌خوان‌اند؟"
-            subtitle={`مقدار تولید و فروش «${m.mainProductName}» (محصول اصلی) — فقط ماه‌های دارای هر دو مقدار`}
-            narrative={narrativeProdVsSales(m)}
+            subtitle={`مقدار تولید و فروش «${m.mainProductName}» (محصول اصلی) — ماه فاقد گزارش یا مقدار کامل روی محور خالی است؛ صفر گزارش‌شده حفظ می‌شود`}
+            narrative={quantityNarrative}
           >
             <ProdSalesChart m={m} />
           </QCard>

@@ -1,0 +1,33 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "storage driver capability check; prior NoneType parse failure preserved separately",
+  "result": {
+    "dockerDriver": "overlayfs",
+    "containers": [
+      {
+        "name": "portfolio-recovery-proof-20261003t101406z",
+        "graphDriverMetadata": null,
+        "allocatedBytes": null
+      },
+      {
+        "name": "portfolio-security-proof-20261006t092801z-retry02",
+        "graphDriverMetadata": null,
+        "allocatedBytes": null
+      },
+      {
+        "name": "portfolio-frozen-proof-20261009t163452z",
+        "graphDriverMetadata": null,
+        "allocatedBytes": null
+      },
+      {
+        "name": "portfolio-research-restore-20261017t114842z",
+        "graphDriverMetadata": null,
+        "allocatedBytes": null
+      }
+    ],
+    "physicalAllocatedBytes": "UNOBSERVED: GraphDriver null; no guessed storage paths or broad scan",
+    "duExecuted": false,
+    "serviceChanged": false
+  }
+}

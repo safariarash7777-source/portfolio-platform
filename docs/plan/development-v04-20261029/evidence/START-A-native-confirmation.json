@@ -1,0 +1,121 @@
+{
+  "status": "PASS_READONLY_NATIVE_REVOKE_AND_FULL_ADAPTER_POSTSTATE",
+  "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "runId": "consultation-next-13fd82c5",
+  "checkedAt": "2026-10-29T16:55:45.492Z",
+  "ownerIdentity": "same synthetic owner verified through native GoTrue getUser",
+  "ownerGet": {
+    "status": 403,
+    "code": "FORBIDDEN"
+  },
+  "memberGet": {
+    "status": 200,
+    "revoked": true
+  },
+  "checks": {
+    "kernelBodies": true,
+    "kernelClosed": true,
+    "twoTablesForced": true,
+    "immutableHistory": true,
+    "directTablesClosed": true,
+    "feedbackConstraint": true,
+    "wrappersRestricted": true,
+    "privateSchemaClosed": true,
+    "privateFunctionsClosed": true
+  },
+  "actions": [
+    {
+      "id": "bd6da9c0-78f6-4698-bc20-f5f7c94b2470",
+      "sessionId": "2bb17d35-4ff8-40f2-a957-745de51e16b7",
+      "actionKey": "5c9c0850-b813-4a1a-a289-b60adcd7caf8",
+      "version": 1,
+      "status": "partial",
+      "actorId": "6ba90358-cac3-4848-b785-e7f181e2e4c6",
+      "textSha256": "ac6a9edf14940a64388aa8ed701d2ee57a9a5eed44a3f6c5ccf7d9e4fd41fcd9"
+    },
+    {
+      "id": "9f77738d-1d1a-46da-bf8d-7060c6696a5f",
+      "sessionId": "2bb17d35-4ff8-40f2-a957-745de51e16b7",
+      "actionKey": "5c9c0850-b813-4a1a-a289-b60adcd7caf8",
+      "version": 2,
+      "status": "not_done",
+      "actorId": "6ba90358-cac3-4848-b785-e7f181e2e4c6",
+      "textSha256": "eae60c849a08a216ee34474a89bd0db45920d48789839e69f0d44efca1978265"
+    }
+  ],
+  "historyAndFinancialFingerprint": {
+    "consultation_events": {
+      "count": 7,
+      "sha256": "790e41b378c4fdd2bcf488d80cbc5161379b565ffa3f60c3dedff3b6ef09281b"
+    },
+    "consultation_actions": {
+      "count": 7,
+      "sha256": "0ae768c9624e8204581de0e499c061d0aefaa9d55dd2c2841d34c7c36d03248a"
+    },
+    "consultation_advisors": {
+      "count": 2,
+      "sha256": "f08c8f47645b76beb0cd66ba853ca5a1814338d49b069da0baf367ad65b7d427"
+    },
+    "consultation_sessions": {
+      "count": 4,
+      "sha256": "3db0f1bb18bf60483b1c648370b39b001badc35cfa12024bffa67dcfecda0b0d"
+    },
+    "member_goals_versions": {
+      "count": 2,
+      "sha256": "c5b3665f68dcd30b277fba104d3d10c2ac88b7b0803ee8b827bc6497607b9edd"
+    },
+    "member_holding_versions": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "consultation_revocations": {
+      "count": 2,
+      "sha256": "8d780885b3a6e45259c27dc33ba86a9490011201f86eb768f0fcd90fb2a0bcb6"
+    },
+    "member_cash_flow_entries": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "member_holding_positions": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "consultation_publications": {
+      "count": 2,
+      "sha256": "2fec6ef2083070c71b8407daf179b9a5a423e756383e2712b754e61b37c1ece6"
+    },
+    "member_cash_flow_versions": {
+      "count": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "consultation_private_notes": {
+      "count": 4,
+      "sha256": "f311d53185fc93542eac17ffcd6d9c62461b460498f2779e20eaa159378f13da"
+    },
+    "consultation_relationships": {
+      "count": 2,
+      "sha256": "30efbbf83f7c036f1647cc3b11e5e4237c87fea46566cfaf46919fc829913641"
+    },
+    "consultation_reply_receipts": {
+      "count": 2,
+      "sha256": "4bc8f400708506c5c17455c431ba00781e5f1de0a7e0b929b46ecdb477c91258"
+    },
+    "consultation_reply_versions": {
+      "count": 2,
+      "sha256": "44041c81b095cbfd2f7c6693b67dcf1648235584cea7380a778ee03f1a569f75"
+    },
+    "consultation_command_receipts": {
+      "count": 22,
+      "sha256": "abe5e1be7b2eaa495aea53d574f2d47dce585835030663ba37d4badbe9642602"
+    }
+  },
+  "gateEnabled": false,
+  "strictRolloutDefaultOff": false,
+  "strictDefaultOffNote": "False is expected after synthetic activation: enabled is false, while reader_sha and reviewed_at audit metadata are preserved. They were not cleared to force a passing default-off assertion.",
+  "originalNativeRollbackSqlState": "UNOBSERVED",
+  "rollbackDdlReplayed": false,
+  "posts": 0,
+  "ddlRequests": 0,
+  "primaryInstallation": false,
+  "nativeOnlineAcceptance": false
+}

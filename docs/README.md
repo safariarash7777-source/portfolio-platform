@@ -1,5 +1,13 @@
 # نقشهٔ اسناد — از کجا شروع کنم؟
 
+## شروع اجرای بسته توسعه ۰٫۴ — ۲۰۲۶-۱۰-۲۹
+
+[وضعیت کل P00–P15، تعهدهای باز و سه خروجی بعدی — ۳۰اکتبر](COMMAND-CENTER.md#development-v04-program-20261030). سه START برش آغاز همین برنامه‌اند؛ کد/آزمون، پذیرش کامل بسته محسوب نمی‌شود.
+
+[ورودی اصلی و ترتیب خواندن](plan/development-v04-20261029/source/README.fa.md) · [مأموریت اجرا](plan/development-v04-20261029/source/DEVELOPER-HANDOFF-DRAFT.fa.md) · [دستورکار START-A/B/C و P00–P15](plan/development-v04-20261029/source/EXECUTION-BACKLOG.fa.md) · [سند مادر و پاسخ‌های محفوظ](plan/development-v04-20261029/source/ARASH-PLATFORM-WORKING-PLAN.fa.md) · [قرارداد فاز یک](plan/development-v04-20261029/source/PHASE-ONE-DELIVERY.fa.md).
+
+[قرارداد انتقال، تطبیق محدود و مالکیت](plan/development-v04-20261029/INTEGRATION.md) و [تفاوت/منشأ فایل‌ها](plan/development-v04-20261029/SOURCE-DIFF.json) اصل بسته را بدون جایگزینی اسناد قبلی نگه می‌دارند. [بازبینی تاریخی پیوست](plan/development-v04-20261029/source/HANDOFF-REVIEW.fa.md) شاهد runtime امروز نیست. وضعیت اجرا فقط در [COMMAND-CENTER](COMMAND-CENTER.md#development-v04-20261029)، حدود مجوز در [DECISION-LOG](DECISION-LOG.md#development-v04-start-20261029) و جهت در [PRODUCT-BLUEPRINT](PRODUCT-BLUEPRINT.md#development-v04-scope) است.
+
 ## مقایسه مشاهدات صندوق — ۲۰۲۶-۱۰-۲۴
 
 [گزارش بسته و حدود پذیرش](ops/fund-observation-comparison-20261024/DELIVERY.md): انتخاب دستی مشاهدات با کنترل آمادگی داده؛ طبقه واحد نامعلوم است و مقایسه عددی زنده ادعا نمی‌شود.

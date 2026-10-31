@@ -1,0 +1,77 @@
+{
+  "reviewer": "existing-root-coordinator",
+  "head": "37b0c1b9acdd7e38bcd6d39b31d4d847892fd321",
+  "base": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+  "pr": 349,
+  "ci": {
+    "run": 41047905475,
+    "jobs": [
+      {
+        "id": 124036439783,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124036440027,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124036440102,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124036440175,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124038244533,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "native": {
+    "run": 41047905364,
+    "jobs": [
+      {
+        "id": 124036438887,
+        "name": "postgres17-reopen",
+        "conclusion": "success"
+      }
+    ],
+    "observedLogMarkers": [
+      "2026-10-30T11:25:43.4563813Z # P10_NATIVE_METADATA_READ_CHECK {\"profile\":\"legacy\",\"versions\":2,\"reviews\":1,\"reviewVersion\":1,\"actorsDisclosed\":false,\"extraRequests\":0,\"source\":\"existing_native_open_read\"}",
+      "2026-10-30T11:25:47.5414780Z # P10_NATIVE_METADATA_READ_CHECK {\"profile\":\"explicit\",\"versions\":2,\"reviews\":1,\"reviewVersion\":1,\"actorsDisclosed\":false,\"extraRequests\":0,\"source\":\"existing_native_open_read\"}",
+      "2026-10-30T11:25:48.4682179Z # tests 6",
+      "2026-10-30T11:25:48.4690429Z # pass 6",
+      "2026-10-30T11:25:48.4690856Z # fail 0",
+      "2026-10-30T11:25:48.4691772Z # skipped 0"
+    ]
+  },
+  "preview": {
+    "id": "dpl_2365LFDdJddTVScCv8Y9y9795Qhd",
+    "url": "portfolio-platform-1462lpifp-safariarash7777-4463s-projects.vercel.app",
+    "state": "READY",
+    "sha": "37b0c1b9acdd7e38bcd6d39b31d4d847892fd321"
+  },
+  "codeReviewed": [
+    "openWorkbook additive metadata DTO from already-fetched rows",
+    "metadata adapter ignoring actor injection; actual UUIDs only",
+    "ResearchHistoryPanel no private body/note; null missing times and actors",
+    "ResearchWorkbook additive setters, invalid/unknown/error/stale separation",
+    "B writer/intent/recovery functions preserved apart from display state"
+  ],
+  "limits": {
+    "realAuth": "NOT_OBSERVED",
+    "primaryData": "NOT_OBSERVED",
+    "primaryInstall": "NOT_APPLIED",
+    "futureAppend": "NOT_STARTED",
+    "workerSources": "NOT_SUPPLIED",
+    "actors": "NOT_IN_READ_CONTRACT",
+    "additionalReadQueries": 0,
+    "privateBodyCopied": false
+  }
+}

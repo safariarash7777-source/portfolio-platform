@@ -1,0 +1,21 @@
+{
+  "head": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+  "packetBytes": 177001,
+  "packetSha256": "35f130e51506d3e0fac5d557a4a458f9c2c2c6b80f5ce9544fd30b89ce4637c3",
+  "members": 37,
+  "all36HashesCrcPaths": "PASS",
+  "manifestSha256": "10d34af9df6a79326d693bd98a43e0c2c12aa218a77165a97964480ccefd80c8",
+  "officialArtifact": {
+    "id": 13029826802,
+    "bytes": 1513,
+    "sha256": "936e94c93236686f506ef22f67a640c218bb4d0170658197b76f9215cd245119",
+    "rawReceiptBytes": 3312,
+    "rawReceiptSha256": "6ef5aa896294f0ec05359da4f5c229583d0a3b7385e7d86d2d16b777edcbd4a5",
+    "browserReceiptEqualsIndependentOfficialJobLog": true
+  },
+  "nativeProof": "P03-375-1bf8-root-native-20261031.json",
+  "nativeReexecuted": false,
+  "productServiceRight": "NOT_CONNECTED",
+  "targetInstall": "NOT_APPLIED",
+  "releaseAuthorized": false
+}

@@ -1,0 +1,103 @@
+{
+  "source": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+  "deployment": "dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA",
+  "images": [
+    {
+      "file": "quarterly-real.jpg",
+      "pixels": [
+        1265,
+        712
+      ],
+      "bytes": 74238,
+      "sha256": "595ee64e7d0287d750eaef593784f080133a0237be08c2c9fd7d1c5a19d9048d",
+      "reencoded": false
+    },
+    {
+      "file": "market-unknown.jpg",
+      "pixels": [
+        1265,
+        712
+      ],
+      "bytes": 69811,
+      "sha256": "9252a524b5bc8a22e9f2395251d998ce398ad24c02b31cf32a764b33826aa281",
+      "reencoded": false
+    },
+    {
+      "file": "reports-real.jpg",
+      "pixels": [
+        1265,
+        712
+      ],
+      "bytes": 84396,
+      "sha256": "120417e5c004100d5fae81019735d3a009b4020538cb81ea4a5f90e955776105",
+      "reencoded": false
+    },
+    {
+      "file": "reports-mobile.jpg",
+      "pixels": [
+        375,
+        811
+      ],
+      "bytes": 45743,
+      "sha256": "716103ed9d083f969946ba21ed7b04bc47da9a4a0e4c1240abafcb5f14d25cfa",
+      "reencoded": false
+    }
+  ],
+  "files": [
+    {
+      "file": "fundamental-actual.ax.txt",
+      "bytes": 30314,
+      "sha256": "1dbf9ccc892e9a5b6180885ad1427b40100b78659f43b4a4b1179015b89ef22b"
+    },
+    {
+      "file": "interaction-evidence.json",
+      "bytes": 53312,
+      "sha256": "518a2f96ee13b27a6f225e7add213d7e11b5bb3a5779ac1bbb1fd9b0936e8a6c"
+    },
+    {
+      "file": "market-unknown.jpg",
+      "bytes": 69811,
+      "sha256": "9252a524b5bc8a22e9f2395251d998ce398ad24c02b31cf32a764b33826aa281"
+    },
+    {
+      "file": "observations.json",
+      "bytes": 2832,
+      "sha256": "e637cc3514ac9ad89bf94202548919c21e3da67df780fd297f06173adb4eb96f"
+    },
+    {
+      "file": "quarterly-real.jpg",
+      "bytes": 74238,
+      "sha256": "595ee64e7d0287d750eaef593784f080133a0237be08c2c9fd7d1c5a19d9048d"
+    },
+    {
+      "file": "reports-actual.ax.txt",
+      "bytes": 18253,
+      "sha256": "90e9a361bc40d486052966b6d2c98802d45d784eda43c70da89c0fccb06c8e2f"
+    },
+    {
+      "file": "reports-mobile.jpg",
+      "bytes": 45743,
+      "sha256": "716103ed9d083f969946ba21ed7b04bc47da9a4a0e4c1240abafcb5f14d25cfa"
+    },
+    {
+      "file": "reports-real.jpg",
+      "bytes": 84396,
+      "sha256": "120417e5c004100d5fae81019735d3a009b4020538cb81ea4a5f90e955776105"
+    },
+    {
+      "file": "REVIEW.fa.md",
+      "bytes": 7783,
+      "sha256": "c3f9559de55bcbe412ae1367c1472a6f067b7f82f876f7737f692b16d4428a9d"
+    },
+    {
+      "file": "runtime-codal-list.txt",
+      "bytes": 225,
+      "sha256": "02c72c00e6fda3daf68e9087e2f6a77bc7032edaea3a524bfac7fed061e6e1ca"
+    },
+    {
+      "file": "runtime-symbol-detail.txt",
+      "bytes": 2250,
+      "sha256": "e21b8477e12a2bbfe84c001ed3254c44a0025e00c0b72ca8f2f57a06b9d35c1c"
+    }
+  ]
+}

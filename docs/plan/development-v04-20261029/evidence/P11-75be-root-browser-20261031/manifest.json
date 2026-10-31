@@ -1,0 +1,31 @@
+{
+  "head": "75be35c305cf76d62a091684e8bda532dac79beb",
+  "deployment": "dpl_4B85XSH43uK1kad92FndWfH2yL5f",
+  "data": "existing public snapshot; all12 timestamps null; no new dated runtime fixture",
+  "acceptedFiles": [
+    {
+      "name": "01-insights-source-read-error.png",
+      "bytes": 53020,
+      "sha256": "4c3268610ffa7375c0eefc538915c4b8ece7fc2bb07e658d70f2d63a50a268fa"
+    },
+    {
+      "name": "02-range-excludes-12-unknown-dates.png",
+      "bytes": 55178,
+      "sha256": "1f41550672a0cd59d15c0d9aa2789220afe1fc9662ff8036fa38f269049db35c"
+    },
+    {
+      "name": "03-inverted-range-error-preserves-filters.png",
+      "bytes": 54322,
+      "sha256": "db82630a9efdf2eed77171a6bc749fd493e1380d3d508710e7856d053604b846"
+    },
+    {
+      "name": "04-mobile-incomplete-date-390.png",
+      "bytes": 34519,
+      "sha256": "7251727f6c34da516a4f08b1589cd38ac2ee7aad0e370bec24f84c824b3358d8"
+    }
+  ],
+  "scope": "actual controls/unknown-date and error UI; live dated data not accepted",
+  "liveInsights": "read error, not empty",
+  "labelOnlyClarity": "OPEN; returned to A",
+  "primaryPublication": "NOT_APPLIED"
+}

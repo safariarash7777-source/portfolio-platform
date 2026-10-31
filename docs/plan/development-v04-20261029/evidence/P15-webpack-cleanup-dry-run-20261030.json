@@ -1,0 +1,34 @@
+{
+  "exitCode": 0,
+  "mode": "dry-run",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T11:54:38.137459+00:00",
+    "manifestSha256": "bd2e31e2602d563bb4fb152305015a322fe6c2999f2ab4d108c2506011df7da8",
+    "mode": "dry_run",
+    "packs": 76,
+    "logicalBytes": 4621794376,
+    "allocatedBytes": 4622016512,
+    "openPackDescriptors": 0,
+    "availableBytesBefore": 6783467520,
+    "protectedBefore": {
+      "sha256": "3e120ae41a874ddcb847d2ea42c4b156111bf4077aa805d468584268fd181da9",
+      "preservedRuntimeFiles": 9223
+    },
+    "sourceRoots": [
+      "/opt/portfolio-accept195/source",
+      "/opt/portfolio-auth-next-build-20261002/source",
+      "/opt/portfolio-auth219-20261002/profiles/default/source",
+      "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source",
+      "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source",
+      "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source",
+      "/opt/portfolio-auth219-20261002/source",
+      "/opt/portfolio-candidate844-build/source",
+      "/opt/portfolio-demo844/source-next-cfa4e21",
+      "/opt/portfolio-demo844/source",
+      "/opt/portfolio-p04-build-20261002/source"
+    ],
+    "serviceChanges": false,
+    "deletesOnlyOptionalWebpackPacks": true
+  }
+}

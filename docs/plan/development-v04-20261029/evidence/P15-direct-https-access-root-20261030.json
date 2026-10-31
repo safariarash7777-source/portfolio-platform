@@ -1,0 +1,16 @@
+{
+  "startedAt": "2026-10-30T15:59:47.902995+00:00",
+  "url": "https://62.60.191.24/liara-preview/rest/v1/",
+  "method": "HEAD",
+  "transport": "desktop direct/default TLS verification",
+  "credentialsSent": false,
+  "redirectsFollowed": false,
+  "serverMutation": false,
+  "httpStatus": null,
+  "tlsVerified": null,
+  "errorClass": "URLError",
+  "reasonClass": "TimeoutError",
+  "elapsedSeconds": 12.016,
+  "guestCpuRamDisk": "UNKNOWN",
+  "guestIdentityAndSshd": "NOT_ESTABLISHED"
+}

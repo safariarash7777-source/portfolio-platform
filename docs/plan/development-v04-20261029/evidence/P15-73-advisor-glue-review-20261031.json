@@ -1,0 +1,14 @@
+{
+  "source": "existing advisor chat 01a17cbc-0c65-75e2-a337-fed8b9c45148; direct delivered review message",
+  "reviewedCommit": "73b96d390e651b3b910bbfe170aa755241e6dde0",
+  "reviewedScope": "direct diff of backup-checkpoint.ps1, install-native.py and corrected-checkpoint-consumer.py",
+  "finding": "No new bypass identified within the glue delta",
+  "advisorRuntimeRerun": false,
+  "advisorOldGateFullAudit": false,
+  "limits": [
+    "read-only consumer adoption is not an installation gate",
+    "Capture/Verify/apply, baseline/catalog, Storage and reader-before-writer remain independent"
+  ],
+  "acceptedByRoot": "bounded code review feedback; no new install/release permission",
+  "notificationPolicy": "avoid routine glue announcements; report observable usable destination changes"
+}

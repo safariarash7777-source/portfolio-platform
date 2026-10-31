@@ -1,0 +1,21 @@
+{
+  "head": "5e8cb76138ebd3a424b4a37ca40bd3594b41e632",
+  "tree": "c26ae70b5e206b55ee19287d314e729ba2809ca6",
+  "sourceFiles": 5,
+  "manifestFiles": 19,
+  "archiveBytes": 50710,
+  "archiveSha256": "a017ed24391db10e2ccfc64d94c125a2fce3236f08faac299a79528844696e7a",
+  "privateIndexExact": true,
+  "status": "PASS_ROOT_LIMITED_STATIC_SOURCE_REVIEW_NOT_RUNTIME",
+  "parent": "beb2701a4f26983fff8aadb46806afe18134f6fd",
+  "rootReadFullAdapterTransportPage": true,
+  "legacyDefaultAndCachePreserved": true,
+  "ownerMockedTests": 24,
+  "rootLocalTestsRerun": false,
+  "normalCi": "Combined PR380 pending; source-only acceptance cannot substitute for CI/runtime.",
+  "remaining": [
+    "Actual stored rows/clock/readback not yet observed on this candidate",
+    "bulkReturns/Auth left unchanged; history source alignment not accepted",
+    "Class/vendor method/dividend/fees/total return remain unknown"
+  ]
+}

@@ -1,0 +1,49 @@
+## Runtime Logs
+
+**Project:** prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp
+**Deployment:** dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA
+**Time range:** 2026-10-31T05:16:56.994Z → 2026-10-31T05:46:56.994Z
+
+### 2026-10-31T05:45:27.619Z GET /api/symbol-detail [warn/function]
+dep=dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA branch=codex/p07-market-basis-20261031 request=rnllf-1793425527489-a9cf27636112 domain=portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 38,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-10-31T05:45:27.615Z GET /api/symbol-detail [warn/function]
+dep=dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA branch=codex/p07-market-basis-20261031 request=jhrf6-1793425527498-8adebf61f6bb domain=portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 31,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-10-31T05:43:27.617Z GET /api/symbol-detail [warn/function]
+dep=dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA branch=codex/p07-market-basis-20261031 request=frfvb-1793425407478-882032d3c340 domain=portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 26,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-10-31T05:43:27.595Z GET /api/symbol-detail [warn/function]
+dep=dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA branch=codex/p07-market-basis-20261031 request=6db5r-1793425407478-3215fc079c9b domain=portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 27,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }

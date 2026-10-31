@@ -1,0 +1,89 @@
+{
+  "head": "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df",
+  "base": "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29",
+  "deployment": {
+    "id": "dpl_9b8Ay5Pvd6pHjsQ3f3iH6czeSF1t",
+    "state": "READY",
+    "target": null,
+    "url": "https://portfolio-platform-bppaiit4n-safariarash7777-4463s-projects.vercel.app"
+  },
+  "ci": {
+    "run": 41153396422,
+    "head": "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 124394771691,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124394771807,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124394771809,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124394771823,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124396062286,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "actualCheckout": {
+      "sha": "5d647930e93b901ea9bec1213917556b6b679506",
+      "tree": "bafd774fbd49d9df779e2203937c0d592c87df10",
+      "parents": [
+        "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29",
+        "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df"
+      ]
+    },
+    "headTree": "bafd774fbd49d9df779e2203937c0d592c87df10"
+  },
+  "rootCodeReview": "functional patches to MonthlySalesCharts and monthlyReport, eleven-file list; not a full audit or repeat of owner108/520 compatibility cases",
+  "ui": {
+    "layouts": [
+      "decision",
+      "dossier"
+    ],
+    "selection": "month-gap/fy1405/warm sheet/domestic/range8/price12",
+    "quantity": "six calendar slots, Tir gap retained,10 bars for five complete months x two series",
+    "rate": "two SVG subpaths; old missing-month gap retained",
+    "tooltip": "Khordad2300production/2100sales; Tir axis click hides empty tooltip",
+    "switch": "A→B→A keeps selection",
+    "table": "five actual educational records, tons/rial-per-ton/million-rial explicit",
+    "source": "same first record/rawJSON, official report/url/clocks null and educational label visible",
+    "mobile": {
+      "viewport": 390,
+      "client": 375,
+      "scroll": 375,
+      "bars": 10,
+      "sourcePanelWidth": 366.4,
+      "sourcePanelClient": 350,
+      "sourcePanelScroll": 350
+    },
+    "nestedEscape": "after settling,2→1 source closes and parent remains, focus returns to source row",
+    "fundamental": "Enter navigation shows quarterly profit/margins/TTM and annual section; N30 gap guard remains open",
+    "viewportReset": true,
+    "tabMarkedDeliverable": true
+  },
+  "limitations": [
+    "EDU data; no real source/qty-unit acceptance or main deployment",
+    "quantity zero and incomplete last month covered by owner tests/code, not new DOM fixture",
+    "full keyboard chart navigation not accepted; repeated ArrowRight did not demonstrate multi-point movement",
+    "all Fundamental/price gaps, ASCII axes and full accessibility remain open",
+    "one pointer dispatch timed out after viewport reset; fresh DOM and Enter navigation recovered",
+    "initial unscoped SVG locator was ambiguous; screenshot still saved/seen; no fake passing assertion",
+    "immediate unsettled modal count was not used as acceptance; settled repeat used"
+  ],
+  "scope": "bounded Preview quantity-gap acceptance, not complete P07/P14 or Arash choice"
+}

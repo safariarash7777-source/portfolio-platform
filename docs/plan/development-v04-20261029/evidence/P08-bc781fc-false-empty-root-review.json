@@ -1,0 +1,101 @@
+{
+  "observedAt": "2026-10-29T18:44:51.073826+00:00",
+  "reviewer": "existing-root-coordinator",
+  "method": "read-only public GitHub API via existing proxy",
+  "pr": 337,
+  "prHead": "bc781fc62b956f422e09b1494b59d18da4f93905",
+  "draft": false,
+  "merged": false,
+  "sourceSha": "bc781fc62b956f422e09b1494b59d18da4f93905",
+  "ci": [
+    {
+      "id": 40933445968,
+      "sha": "bc781fc62b956f422e09b1494b59d18da4f93905",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Database RLS \u00b7 Integrity (Postgres)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Secret scan \u00b7 SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CI Gate",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "deployments": [
+    {
+      "id": 7421201846,
+      "sha": "bc781fc62b956f422e09b1494b59d18da4f93905",
+      "environment": "Preview",
+      "latest": {
+        "state": "success",
+        "environment_url": "https://portfolio-platform-f5c4yyk9e-safariarash7777-4463s-projects.vercel.app",
+        "created_at": "2026-10-29T18:45:13Z"
+      }
+    }
+  ],
+  "rootCodeReview": {
+    "scope": "fixed diff from1d7: page passes existing availability; board distinguishes failed/unknown from confirmed familyempty; real board/page tests and docs",
+    "dataQualityCoreChanged": false,
+    "newRuntimeFetch": false,
+    "newEndpointOrStorage": false,
+    "newProviderModelCredential": false,
+    "newHooks": false,
+    "existingComparisonGuardsPreserved": true,
+    "reactReview": "type-only server availability import; plain serialized existing data; existing hook order and no new effect/state/fetch"
+  },
+  "localTests": "owner report: baseline4fail to targeted28pass; fullcore2062+17+6+5/type/lint/build; root reviewed assertions, did not repeat suites",
+  "previewInteractiveAccepted": false,
+  "actualFiveFundsAccepted": false,
+  "primaryDeployed": false,
+  "causeOf402Resolved": false,
+  "arashVisualAcceptance": false,
+  "refreshedAt": "2026-10-29T18:46:57.777014+00:00",
+  "rootNewPreviewGuestReadback": {
+    "at": "2026-10-29T18:47:35.230810+00:00",
+    "method": "one unauthenticated GET of new exact-SHA product page; no cookies or refresh endpoint",
+    "requestedUrl": "https://portfolio-platform-f5c4yyk9e-safariarash7777-4463s-projects.vercel.app/market/funds",
+    "bodyStored": false,
+    "browserInteractionAccepted": false,
+    "status": 200,
+    "finalUrl": "https://portfolio-platform-f5c4yyk9e-safariarash7777-4463s-projects.vercel.app/market/funds",
+    "bytesRead": 56365,
+    "htmlSha256": "9555577096ab19d6f0a0a9705147ce227f39c6fc8856d66773b402d73c3d0f5e",
+    "title": "\u062f\u06cc\u062f\u0647\u200c\u0628\u0627\u0646 \u0635\u0646\u062f\u0648\u0642\u200c\u0647\u0627 \u00b7 \u0622\u0631\u0634 \u0635\u0641\u0631\u06cc",
+    "selectors": 0,
+    "readFailureMessageVisible": true,
+    "timeoutMessageVisible": false,
+    "sourceEmptinessUnconfirmedVisible": true,
+    "oldFalseEmptyVisible": false,
+    "confirmedEmptyMessageVisible": false,
+    "visibleState": "read failure or unavailable, source emptiness unconfirmed"
+  },
+  "ciFinalReadbackAt": "2026-10-29T18:50:09.635128+00:00",
+  "prFinalReadback": {
+    "title": "Compare five funds and distinguish read failures from empty sources",
+    "head": "bc781fc62b956f422e09b1494b59d18da4f93905",
+    "state": "open",
+    "merged": false,
+    "bodySha256": "67860848c02e8ad1c238c35ff0f4da919711b4b5a629a0fd14e82999f48c687f"
+  }
+}

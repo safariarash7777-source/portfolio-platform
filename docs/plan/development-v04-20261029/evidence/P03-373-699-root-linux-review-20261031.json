@@ -1,0 +1,242 @@
+{
+  "source": "699ea1677c21c216be52869318cf0ac1c4525744",
+  "pr": 373,
+  "base": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+  "status": "PASS_ISOLATED_READER_STOP_AND_UNKNOWN_RECOVERY_NOT_DESTINATION",
+  "rootEvidence": "independently read official job logs and selected functional server/client delta; did not rerun native tests",
+  "native": {
+    "run": 41164303537,
+    "job": 124428416152,
+    "checkout": "699ea1677c21c216be52869318cf0ac1c4525744",
+    "apiScenarios": 27,
+    "browserCriteria": 11,
+    "apiCleanupResources": 6,
+    "browserDbCleanupResources": 6,
+    "browserProcessCleanup": true,
+    "checks": [
+      {
+        "clock": "2026-10-31T03:26:23.2764372Z",
+        "marker": "NATIVE_CHECK",
+        "name": "server-release-default-closed-legacy-financial-and-consent-preserved",
+        "status": "PASS",
+        "newRequests": 0,
+        "newPreparations": 0,
+        "legacyFinancialWritesRetained": true,
+        "legacyConsentRetained": true
+      },
+      {
+        "clock": "2026-10-31T03:26:41.2249345Z",
+        "marker": "NATIVE_CHECK",
+        "name": "financial-rows-fingerprints-and-original-history-preserved",
+        "status": "PASS",
+        "fingerprintSha256": "7b88bcac2ebb002ea58fbc49db173f72a80d70cd32dabab467d8acd352f94fa6",
+        "holdingVersions": 1,
+        "cashVersions": 1,
+        "ticketVersions": 6,
+        "modelCalls": 0,
+        "targetInstall": "NOT_APPLIED",
+        "uiBrowser": "NOT_RUN"
+      },
+      {
+        "clock": "2026-10-31T03:26:59.6114923Z",
+        "marker": "NATIVE_CHECK",
+        "name": "closed-rollback-fresh-auth-original-prepared-and-receipt-get-only",
+        "status": "PASS",
+        "originalBodyHash": "94222908243c60d635d0b0111f2c5eaba9077daa3c574bb66a1f3505016c502e",
+        "unknownBeforeReleaseStop": true,
+        "firstReceiptReadAfterStop": true,
+        "sameReceipt": true,
+        "originalEffect": 1,
+        "additionalTicketPosts": 0,
+        "additionalPreparationPosts": 0,
+        "compatibleReaderRetained": true,
+        "productServiceRight": "NOT_CONNECTED"
+      },
+      {
+        "clock": "2026-10-31T03:27:19.2320375Z",
+        "marker": "BROWSER_CHECK",
+        "name": "browser-preflight-before-provision",
+        "status": "PASS",
+        "existingChromeHash": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+        "noBrowserDownload": true
+      },
+      {
+        "clock": "2026-10-31T03:28:00.0300204Z",
+        "marker": "BROWSER_CHECK",
+        "name": "real-member-page-default-right-closed",
+        "status": "PASS",
+        "actualDocument": 200,
+        "draftRetained": true,
+        "posts": 0,
+        "productRight": "NOT_CONNECTED"
+      },
+      {
+        "clock": "2026-10-31T03:28:02.5338269Z",
+        "marker": "BROWSER_CHECK",
+        "name": "real-201-discard-live-page-one-post",
+        "status": "PASS",
+        "actualStatus": 201,
+        "bodyDeliveryAborted": true,
+        "pageStayedOpen": true,
+        "ticketPosts": 1,
+        "storedEvents": 1,
+        "httpFulfill": false
+      },
+      {
+        "clock": "2026-10-31T03:28:03.6505092Z",
+        "marker": "BROWSER_CHECK",
+        "name": "same-attempt-get-only-recovery",
+        "status": "PASS",
+        "sameRequest": true,
+        "sameToken": true,
+        "sameEventId": "84426dd3-fc67-4886-aaf3-f9f1f92cb45a",
+        "postsAfterRecovery": 1,
+        "draftClearedOnlyAfterReadback": true
+      },
+      {
+        "clock": "2026-10-31T03:28:06.7028940Z",
+        "marker": "BROWSER_CHECK",
+        "name": "fresh-sdk-context-and-reload-get-only",
+        "status": "PASS",
+        "realSignout": true,
+        "newPasswordSession": true,
+        "sdkGetUser": true,
+        "oldContextClosed": true,
+        "actualReload": true,
+        "postsBefore": 1,
+        "postsAfter": 1,
+        "resourceHistoryOnly": true,
+        "unknownIntentAfterDestroy": "SEPARATE_DURABILITY_CRITERIA"
+      },
+      {
+        "clock": "2026-10-31T03:28:14.1201272Z",
+        "marker": "BROWSER_CHECK",
+        "name": "real-advisor-response-and-member-followup",
+        "status": "PASS",
+        "memberOpen": 1,
+        "ownerReply": 2,
+        "memberFollowup": 3,
+        "actualDomSubmits": 3,
+        "independentSameText": true
+      },
+      {
+        "clock": "2026-10-31T03:28:18.4113907Z",
+        "marker": "BROWSER_CHECK",
+        "name": "unconfirmed-command-destroy-and-server-intent-get-only",
+        "status": "PASS",
+        "real201BeforeBody": true,
+        "fullContextDestroyedBeforeConfirmation": true,
+        "newPasswordSdkSession": true,
+        "serverOriginalBodyTokenRestored": true,
+        "explicitSelection": true,
+        "commandEvents": 1,
+        "extraCommandPosts": 0,
+        "extraPreparationPosts": 0
+      },
+      {
+        "clock": "2026-10-31T03:28:22.4964924Z",
+        "marker": "BROWSER_CHECK",
+        "name": "unknown-preparation-destroy-no-command",
+        "status": "PASS",
+        "realPreparation201BeforeBody": true,
+        "fullContextDestroyed": true,
+        "originalBodyFromServer": true,
+        "commandEvents": 0,
+        "automaticPosts": 0,
+        "explicitRetryOfferedOnly": true
+      },
+      {
+        "clock": "2026-10-31T03:28:24.0266612Z",
+        "marker": "BROWSER_CHECK",
+        "name": "desktop-mobile-and-private-storage-cache-url",
+        "status": "PASS",
+        "widths": [
+          1440,
+          390
+        ],
+        "actualPages": 2,
+        "storageAudits": 2,
+        "privateHits": 0,
+        "urlHits": 0,
+        "cacheResponses": 69,
+        "cacheAuditComplete": true
+      },
+      {
+        "clock": "2026-10-31T03:28:29.3546436Z",
+        "marker": "BROWSER_CHECK",
+        "name": "real-revoke-and-private-fallback-denial",
+        "status": "PASS",
+        "disabledAdvisorCleared": true,
+        "revokedAdvisorCleared": true,
+        "otherMemberDenied": true,
+        "memberHistoryVersions": 3,
+        "memberWriteAbsent": true
+      },
+      {
+        "clock": "2026-10-31T03:28:29.8115189Z",
+        "marker": "BROWSER_CHECK",
+        "name": "owned-browser-cleanup",
+        "status": "PASS",
+        "processStopped": true,
+        "contextsClosed": true,
+        "ownedTempRemoved": true,
+        "ownerId": "292f5dd9-8822-4e8a-9000-ec410c3f0df9"
+      }
+    ]
+  },
+  "ci": {
+    "run": 41164303544,
+    "jobs": [
+      {
+        "id": 124428436771,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124428436894,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124428437030,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124428437054,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124429986674,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "actualCheckout": "5fc27d5fe6b29a5020e5594e1d09057c519771eb",
+    "tree": "e5b443044e76f81be8406223c31754bdb51f4473",
+    "parents": [
+      "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+      "699ea1677c21c216be52869318cf0ac1c4525744"
+    ],
+    "treeEqualsHead": true
+  },
+  "previousFailure": {
+    "source": "b9d311b6449e318137511fb5ba23495326fda38b",
+    "job": 124427027448,
+    "stage": "unit before provisioning, missing fixed23f9:package.json in shallow checkout",
+    "preserved": true,
+    "fix": "bounded --no-tags --depth=1 fetch of only immutable23f9 in two workflows, no HEAD change"
+  },
+  "coverageGap": {
+    "partialNotDoneNativeHistoryAcrossStop": "NOT_TESTED; only controlled connector mock currently",
+    "next": "B assigned narrow existing Linux runtime real POST/fresh Auth/GET/DOM test for immutable feedback states+guard SQL; no primary changes"
+  },
+  "productServiceRight": "NOT_CONNECTED",
+  "targetInstall": "NOT_APPLIED",
+  "mainMerge": false,
+  "productionDeploy": false,
+  "modelCalls": 0,
+  "arashAcceptance": "UNOBSERVED",
+  "releaseAuthorized": false
+}

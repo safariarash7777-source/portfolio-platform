@@ -1,0 +1,215 @@
+{
+  "startedAt": "2026-10-30T21:50:17.087799+00:00",
+  "finishedAt": "2026-10-30T21:50:26.913197+00:00",
+  "mode": "readonly",
+  "attempts": 1,
+  "target": "62.60.191.24:22",
+  "strictExistingHostKey": true,
+  "newCredentials": false,
+  "mutationsRequested": false,
+  "exitCode": 0,
+  "guestObserved": true,
+  "cpuBusyPercent": 36.5,
+  "cpuSampleSeconds": 0.35,
+  "loadAverage": [
+    0.611328125,
+    0.72265625,
+    0.9775390625
+  ],
+  "memoryBytes": {
+    "MemTotal": 8276856832,
+    "MemAvailable": 5732925440
+  },
+  "rootFilesystemBytes": {
+    "total": 81839546368,
+    "availableToRoot": 22077575168,
+    "availableUnprivileged": 18599059456
+  },
+  "serviceReadExitCodes": [
+    0,
+    0
+  ],
+  "services": [
+    {
+      "name": "finance-dashboard-20261028-v12-130524",
+      "image": "financial-engineering:20261028-v12-130524",
+      "status": "Up 2 days (healthy)",
+      "cpu": "0.08%",
+      "memoryUsageAndLimit": "42.41MiB / 384MiB"
+    },
+    {
+      "name": "fx-dashboard",
+      "image": "f30408d1ed8c",
+      "status": "Up 3 days (healthy)",
+      "cpu": "0.99%",
+      "memoryUsageAndLimit": "275.6MiB / 7.708GiB"
+    },
+    {
+      "name": "portfolio-auth219-20261002-auth",
+      "image": "public.ecr.aws/supabase/gotrue:v2.197.0",
+      "status": "Up 3 days",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "9.961MiB / 128MiB"
+    },
+    {
+      "name": "portfolio-auth219-20261002-storage",
+      "image": "public.ecr.aws/supabase/storage-api:v1.77.6",
+      "status": "Up 3 days",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "109.2MiB / 256MiB"
+    },
+    {
+      "name": "portfolio-auth219-20261002-rest",
+      "image": "docker-mirror.liara.ir/postgrest/postgrest:v14.17",
+      "status": "Up 3 days",
+      "cpu": "0.18%",
+      "memoryUsageAndLimit": "16.86MiB / 128MiB"
+    },
+    {
+      "name": "portfolio-auth219-20261002-sink",
+      "image": "python:3.12-slim",
+      "status": "Up 3 days",
+      "cpu": "0.06%",
+      "memoryUsageAndLimit": "15.4MiB / 96MiB"
+    },
+    {
+      "name": "portfolio-auth219-20261002-db",
+      "image": "postgres:17-alpine",
+      "status": "Up 3 days",
+      "cpu": "2.42%",
+      "memoryUsageAndLimit": "30.82MiB / 512MiB"
+    },
+    {
+      "name": "portfolio-demo844-app",
+      "image": "43ac6c60b8f8",
+      "status": "Restarting (1) 8 seconds ago",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "0B / 0B"
+    },
+    {
+      "name": "portfolio-demo844-gateway",
+      "image": "docker-mirror.liara.ir/library/caddy:2",
+      "status": "Up 3 days",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "11.41MiB / 64MiB"
+    },
+    {
+      "name": "portfolio-demo844-storage",
+      "image": "public.ecr.aws/supabase/storage-api:v1.77.6",
+      "status": "Up 3 days",
+      "cpu": "0.07%",
+      "memoryUsageAndLimit": "109.8MiB / 256MiB"
+    },
+    {
+      "name": "portfolio-demo844-rest",
+      "image": "docker-mirror.liara.ir/postgrest/postgrest:v14.17",
+      "status": "Up 3 days",
+      "cpu": "0.22%",
+      "memoryUsageAndLimit": "17.97MiB / 128MiB"
+    },
+    {
+      "name": "portfolio-demo844-auth",
+      "image": "public.ecr.aws/supabase/gotrue:v2.197.0",
+      "status": "Up 3 days",
+      "cpu": "0.05%",
+      "memoryUsageAndLimit": "8.863MiB / 128MiB"
+    },
+    {
+      "name": "portfolio-demo844-db",
+      "image": "postgres:17-alpine",
+      "status": "Up 3 days",
+      "cpu": "0.04%",
+      "memoryUsageAndLimit": "28.51MiB / 512MiB"
+    },
+    {
+      "name": "portfolio-accept195-app",
+      "image": "43ac6c60b8f8",
+      "status": "Restarting (1) 11 seconds ago",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "0B / 0B"
+    },
+    {
+      "name": "portfolio-accept195-gateway",
+      "image": "docker-mirror.liara.ir/library/caddy:2",
+      "status": "Up 3 days",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "15.85MiB / 64MiB"
+    },
+    {
+      "name": "portfolio-accept195-storage",
+      "image": "public.ecr.aws/supabase/storage-api:v1.77.6",
+      "status": "Up 3 days",
+      "cpu": "0.02%",
+      "memoryUsageAndLimit": "109MiB / 256MiB"
+    },
+    {
+      "name": "portfolio-accept195-rest",
+      "image": "docker-mirror.liara.ir/postgrest/postgrest:v14.17",
+      "status": "Up 3 days",
+      "cpu": "0.21%",
+      "memoryUsageAndLimit": "14.39MiB / 128MiB"
+    },
+    {
+      "name": "portfolio-accept195-auth",
+      "image": "public.ecr.aws/supabase/gotrue:v2.197.0",
+      "status": "Up 3 days",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "9.035MiB / 128MiB"
+    },
+    {
+      "name": "portfolio-accept195-db",
+      "image": "postgres:17-alpine",
+      "status": "Up 3 days",
+      "cpu": "0.01%",
+      "memoryUsageAndLimit": "28.62MiB / 512MiB"
+    },
+    {
+      "name": "portfolio-stage-gateway-1",
+      "image": "docker-mirror.liara.ir/library/caddy:2",
+      "status": "Up 3 days (healthy)",
+      "cpu": "0.06%",
+      "memoryUsageAndLimit": "13.88MiB / 7.708GiB"
+    },
+    {
+      "name": "portfolio-stage-auth-1",
+      "image": "public.ecr.aws/supabase/gotrue:v2.197.0",
+      "status": "Up 3 days (healthy)",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "11.31MiB / 7.708GiB"
+    },
+    {
+      "name": "portfolio-stage-rest-1",
+      "image": "docker-mirror.liara.ir/postgrest/postgrest:v14.17",
+      "status": "Up 3 days (healthy)",
+      "cpu": "0.22%",
+      "memoryUsageAndLimit": "66.67MiB / 7.708GiB"
+    },
+    {
+      "name": "portfolio-stage-storage-1",
+      "image": "public.ecr.aws/supabase/storage-api:v1.77.6",
+      "status": "Up 3 days (healthy)",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "127MiB / 7.708GiB"
+    },
+    {
+      "name": "portfolio-stage-db-1",
+      "image": "public.ecr.aws/supabase/postgres:17.6.1.167",
+      "status": "Up 3 days (healthy)",
+      "cpu": "0.05%",
+      "memoryUsageAndLimit": "232.8MiB / 7.708GiB"
+    },
+    {
+      "name": "fx-dashboard-proxy",
+      "image": "docker-mirror.liara.ir/library/caddy:2",
+      "status": "Up 3 days",
+      "cpu": "0.00%",
+      "memoryUsageAndLimit": "18.21MiB / 7.708GiB"
+    }
+  ],
+  "limitations": [
+    "point-in-time capacity before backup, not a reservation or long-term CPU average",
+    "two legacy app restart loops remain unchanged",
+    "no new credentials, service restart/upgrade/transfer or Hermes installation",
+    "current metrics do not establish product acceptance"
+  ]
+}

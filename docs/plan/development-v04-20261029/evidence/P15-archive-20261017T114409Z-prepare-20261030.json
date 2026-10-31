@@ -1,0 +1,72 @@
+{
+  "exitCode": 0,
+  "stamp": "20261017T114409Z",
+  "mode": "prepare",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T13:08:19.886073+00:00",
+    "stamp": "20261017T114409Z",
+    "rawPresent": true,
+    "gzipPresent": true,
+    "availableBytes": 16266883072,
+    "receipts": {
+      "prepare-intent.json": {
+        "at": "2026-10-30T13:04:47.076054+00:00",
+        "rawIdentity": [
+          64512,
+          2645201,
+          2378622379,
+          1792237500858872226
+        ],
+        "rawBytes": 2378622379,
+        "rawSha256": "1ed1428213f5e70d60c211984b4b1b1f661962dfe30912992ba3e0fc3059250f",
+        "otherFiles": {
+          "comparison.private.json": "a29daa6c57a0e4d14022ba44dbafddf8891ba11733ec41e46a7f2bf921e87c60",
+          "cron.private.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "globals.private.sql": "a5be3e474a5348449aa15bb0213294e5faca7e30aa966e9d804f507b11cebeab",
+          "private-errors.log": "c5a0968a515c356982736d6c1c80c6b19aa4a98872c6c24f6f190be3ed1c9da0",
+          "receipt.json": "321c2c2142d30e65c127d5e1e85a2b8cd4f17e41003f87637f56338c8a73ca00",
+          "research-live-install.json": "fb1cea0426cfacb0d6460f6d3be7fdd841cb742d54c22098e84f03470a15cbb2",
+          "research-rehearsal.json": "6ea54d672a04872bd3badd59a5acd02105e70a385e63aa9491216269c7d531bb",
+          "snapshot-private-errors.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "source-inventory.private": "8cdc6facbdc551a4b7b998e20f03a18dca8940b102390d776ae2d7e959bd25bc",
+          "target-inventory.private": "6931c644c42a2150511dddc498dad95b91bb707ceb7f63201eafbbd7b42063e1",
+          "target.private.env": "55c745d69fbcef0ea8307bcb9d945cd228c8cb8ea10ccc4cf985b1db2c70bfe1"
+        }
+      },
+      "prepared.json": {
+        "at": "2026-10-30T13:08:16.746877+00:00",
+        "rawIdentity": [
+          64512,
+          2645201,
+          2378622379,
+          1792237500858872226
+        ],
+        "rawBytes": 2378622379,
+        "rawSha256": "1ed1428213f5e70d60c211984b4b1b1f661962dfe30912992ba3e0fc3059250f",
+        "gzipBytes": 562610134,
+        "gzipSha256": "e64086bdc5a9a984ad8ac3676ec3a9669e84493d0fdb68bedab988d38187a2ca",
+        "otherFiles": {
+          "comparison.private.json": "a29daa6c57a0e4d14022ba44dbafddf8891ba11733ec41e46a7f2bf921e87c60",
+          "cron.private.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "globals.private.sql": "a5be3e474a5348449aa15bb0213294e5faca7e30aa966e9d804f507b11cebeab",
+          "private-errors.log": "c5a0968a515c356982736d6c1c80c6b19aa4a98872c6c24f6f190be3ed1c9da0",
+          "receipt.json": "321c2c2142d30e65c127d5e1e85a2b8cd4f17e41003f87637f56338c8a73ca00",
+          "research-live-install.json": "fb1cea0426cfacb0d6460f6d3be7fdd841cb742d54c22098e84f03470a15cbb2",
+          "research-rehearsal.json": "6ea54d672a04872bd3badd59a5acd02105e70a385e63aa9491216269c7d531bb",
+          "snapshot-private-errors.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "source-inventory.private": "8cdc6facbdc551a4b7b998e20f03a18dca8940b102390d776ae2d7e959bd25bc",
+          "target-inventory.private": "6931c644c42a2150511dddc498dad95b91bb707ceb7f63201eafbbd7b42063e1",
+          "target.private.env": "55c745d69fbcef0ea8307bcb9d945cd228c8cb8ea10ccc4cf985b1db2c70bfe1"
+        },
+        "decodedFullBytesAndHashEqual": true,
+        "actualTmpfsRawMaterialization": true,
+        "legacyPgRestoreListExit": 0,
+        "databaseRestore": false,
+        "toolSha256": "c184af5d422164dd865165cd80198dc1d2c659c972cb91553bee7daeb414b6d5",
+        "rawRetained": true,
+        "availableBytes": 16266887168
+      }
+    }
+  }
+}

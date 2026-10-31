@@ -1,0 +1,21 @@
+{
+  "pr": 366,
+  "head": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+  "base": "1636258dec1701c2c6edcc4d60050c94eb0db7d6",
+  "run": 41150197755,
+  "job": 124384649206,
+  "rootReview": "official decoded GitHub job log; current PR metadata; local uncommitted driver diff and existing frozen intent contracts",
+  "observedOldPhasePasses": 17,
+  "failure": "p03_durable_prepare_status",
+  "nativeDurability": "NOT_ACCEPTED",
+  "browserDurability": "NOT_RUN",
+  "ownedCleanup": {
+    "resources": 6,
+    "status": "REMOVED_OWNED_RESOURCES"
+  },
+  "diagnosis": "producer property order is inconsistent with existing frozen contract; supported by code and owner local diagnostic, original actual HTTP/code not recorded",
+  "approvedNextChange": "driver initial fixture serialization through existing validateTicketRequest; bounded status/code diagnostics; never recreate recovered body",
+  "apiSqlValidatorChange": false,
+  "primary": "NOT_APPLIED",
+  "realServiceRight": "NOT_CONNECTED"
+}
