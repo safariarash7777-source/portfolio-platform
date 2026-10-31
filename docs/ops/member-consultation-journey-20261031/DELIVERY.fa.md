@@ -90,3 +90,14 @@ helper هنوز caller محصول، DTO یا UI ندارد و writer را فعا
 - پس از guard/scans/diff و تطبیق byteها، ordinary push همان شاخه و Draft stacked روی PR377 با base303 مجاز است. CI عادی و hook خودکار موجود مجازند؛ rerun دستی، force/merge، تغییر تنظیم typecheck/cache/workflow یا انتشار مجاز نیست.
 - شاهد پایان ثبت در رسید بیرون مخزن: head/tree، raw source و patch، checksum، CI واقعی و commit/tree واقعی checkout؛ گزارش local-only به CI یا پذیرش runtime تبدیل نمی‌شود. full typecheck/build در runner تازه با همان گیت معمول اجرا می‌شود.
 - runtime UI/SSR/live query/Preview/env/service grant/مدل/SQL/main، مقصد واقعی و پذیرش آرش همچنان در مالکیت هماهنگ‌کننده است. مبلغ CI تا receipt واقعی نامعلوم می‌ماند؛ هزینهٔ زیرساخت، داده و مدل جدا گزارش می‌شود.
+
+
+## پذیرش مستقل خواندن تشخیصی قدیمی از 7b — آماده‌سازی ۳۱ اکتبر
+
+مسئله: برش UI پیشین شاهد SDK/RLS/DOM واقعی این خواندن مستقل نداشت. مخاطب عضو و بازبین فنی؛ مالک START-B؛ وابسته به Linux/GoTrue/PostgREST/Next و Chrome موجود. کد محصول، SQL، DTO، writer، package و lock عین 7b1f5c0 می‌مانند. mode جدید legacy-diagnostic-v1 نام و pin خواننده699 را تغییر نمی‌دهد.
+
+خروجی قابل مشاهدهٔ برنامه‌ریزی‌شده: درخواست هفت ستون با همان JWT تأییدشده در getUser، جداسازی ردیف خود/دیگری، نمایش منقضی/فعال/لغوشده و منشأ تأییدنشده در همان بخش، ثبت بسته، حق خدمت متصل‌نشده، صفر GET ردیف عضو دیگر برای مشاور و پاک‌شدن تشخیص با تغییر هویت/خروج SDK واقعی. معیار پایان آزمایش: رسید مستقل Linux و پاک‌سازی منابع owned؛ آزمون آفلاین به‌تنهایی این معیار نیست. در این مرحله اجرای واقعی هنوز انجام نشده و پذیرفته نشده است.
+
+schema همان phase11 موجود است. زیر پروفایل explicit-grant ابتدا فقدان SELECT و پاسخ منفی بررسی می‌شود؛ سپس فقط در tmpfs همان run به authenticated مجوز SELECT داده می‌شود، نه نوشتن یا حق اقتصادی. root در 09:33:47 UTC کاتالوگ مقصد واقعی را فقط‌خواندنی دیده است: authenticated SELECT=true و RLS/policy خود و admin موجود؛ anon SELECT=true آن مقصد در fixture بازسازی نمی‌شود، پس منفی anon یا 403/[] آزمایش به مقصد تعمیم داده نمی‌شود. رسید root: outputs/p15-root-native-capture-20261031/entitlement-select-catalog.json. این grant جزو قرارداد SQL phase11 یا نصب مقصد نیست.
+
+هیچ primary/query واقعی، credential واقعی، مدل، سرویس یا Preview جدید استفاده نمی‌شود. داده و حساب‌ها تازه و ساختگی‌اند. Artifact عمومی فقط وضعیت و شمارش و هش کد خواهد داشت؛ توکن، header، email، raw URL، storage، trace یا log خصوصی منتشر نمی‌شود. نصب و حق واقعی خدمت و پذیرش آرش UNOBSERVED/NOT_APPLIED می‌مانند.

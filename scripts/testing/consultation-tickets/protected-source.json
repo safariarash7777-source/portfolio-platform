@@ -415,5 +415,55 @@
         }
       }
     }
+  },
+  "legacyDiagnosticAcceptance": {
+    "baseCandidate": "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc",
+    "purpose": "Actual isolated legacy read only, never business right or primary acceptance",
+    "protectedObjects": {
+      "app": "1810b3289b17f933d355000dea770c239db132b4",
+      "lib": "db617582e6d7b477d24a8569c7dd382f4ee33e33",
+      "components": "0a36e45d8fb17b6fb640a04d9e44d7476ebb92e3",
+      "public": "c69d2a94f4f556d8baf6fdf4460fc54059814aca",
+      "middleware.ts": "c81b575cc7d947d2026036a46330db098273a263",
+      "next.config.js": "2127e13382e5c3cb7e622bdbba11a8e74f2cc991",
+      "package.json": "294d3cbe451a7f845890d64970eea1584ea9ac34",
+      "package-lock.json": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305",
+      "sql": "bed7834b9cdc3747f0c61242a59acc41c8c52661",
+      "supabase": "756c4f88111ce2034c4d9d2522036f20769837ba"
+    },
+    "files": {
+      "scripts/testing/consultation-tickets/native-auth-runtime.mjs": {
+        "oldBlob": "d0de805ddbee09f68090cdb8580b3813e2a6c13a",
+        "newBlob": "c4a0a334d0d31dfeb7e91d469c58a6d0ea59746a"
+      },
+      "scripts/testing/consultation-tickets/native-auth-gateway.mjs": {
+        "oldBlob": "3332b683df38b8821bf466ef02c5aaab5aa1b50f",
+        "newBlob": "7146977565d5d1b56a710caf3f6de18f087db460"
+      },
+      "scripts/testing/consultation-tickets/native-infrastructure-lineage.json": {
+        "oldBlob": "912842af95f7231dd1983c43dd4c99c22e60f0a7",
+        "newBlob": "9547f15e1a9beb7fc2aa38043841656feeb4e7f1"
+      },
+      "scripts/testing/consultation-tickets/native-infrastructure.test.mjs": {
+        "oldBlob": "2df9ef842d961206a4a5f11c092146888b97ec2a",
+        "newBlob": "ee237488b4f39b3b13539f586b2d486c22a5ff9d"
+      },
+      "scripts/testing/consultation-tickets/source-boundary.test.mjs": {
+        "oldBlob": "7a67f7013193c520fe1483187988b3a739596805",
+        "newBlob": "9f45d726b33433ddac03bd028f9211918ccf9779"
+      },
+      "scripts/testing/consultation-tickets/legacy-diagnostic-native.mjs": {
+        "oldBlob": null,
+        "newBlob": "06625772298b17b16a0b275e77f2d03b0b031cfb"
+      },
+      "scripts/testing/consultation-tickets/legacy-diagnostic-native.test.mjs": {
+        "oldBlob": null,
+        "newBlob": "0802cff78937bfb6067f91fb4150a8e6395f085e"
+      },
+      "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md": {
+        "oldBlob": "17bbcb1a0f164774c38bb74222439fe20339b1df",
+        "newBlob": "ca4cf64f6f8fe0d8dc327c308ed6cdc8845f83ee"
+      }
+    }
   }
 }

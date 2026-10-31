@@ -43,6 +43,11 @@ test('release control is server-only and deployment stop names only the candidat
 });
 test('shared source stays on frozen 360; package hashes include only the approved browser driver delta', () => {
   const expected = JSON.parse(read('scripts/testing/consultation-tickets/protected-source.json'));
+  const native = expected.legacyDiagnosticAcceptance; delete expected.legacyDiagnosticAcceptance;
+  assert.equal(native.baseCandidate, '7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc');
+  assert.equal(hash(JSON.stringify(expected,null,2)+'\n'), '79e1d3f37bd337b8ef3a9908565d457888f5e5b6195699c6c49d64d35242d984', 'accepted7b manifest changed');
+  const nativeHash = (path, baseline) => { const delta=native.files[path]; if(!delta)return baseline; assert.equal(delta.oldBlob,baseline,'native old binding changed: '+path);return delta.newBlob; };
+  for(const [path,object] of Object.entries(native.protectedObjects))assert.equal(execFileSync('git',['rev-parse','HEAD:'+path],{cwd:root,encoding:'utf8',windowsHide:true}).trim(),object,'frozen7b source changed: '+path);
   const consumer = expected.consumerDiagnosticException;
   const remote = consumer.remoteRegistration;
   assert.equal(remote.baseCandidate, 'be573950d0d8d7d4b91043b180e6f86e73b94fee');
@@ -51,9 +56,9 @@ test('shared source stays on frozen 360; package hashes include only the approve
   assert.deepEqual(Object.keys(remote.files).sort(), ['vercel.json', 'scripts/testing/consultation-tickets/source-boundary.test.mjs', 'docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md'].sort());
   const remoteHash = (path, baseline) => {
     const entry = remote.files[path];
-    if (!entry) return baseline;
+    if (!entry) return nativeHash(path,baseline);
     assert.equal(entry.oldBlob, baseline, 'remote registration historical binding changed: '+path);
-    return entry.newBlob;
+    return nativeHash(path,entry.newBlob);
   };
   assert.equal(consumer.baseCandidate, '303f4c016505e9fdb8f12236168961f48a10ca0f');
   const historical303 = { ...expected }; delete historical303.consumerDiagnosticException;
@@ -175,7 +180,7 @@ test('shared source stays on frozen 360; package hashes include only the approve
   assert.deepEqual(config, JSON.parse(git(['show', feedback.baseCandidate+':vercel.json'])), 'old crons/config changed');
   const delivery = 'docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md';
   assert.ok(read(delivery).startsWith(execFileSync('git', ['show', feedback.baseCandidate+':'+delivery], { cwd: root, encoding: 'utf8', windowsHide: true }).replaceAll('\r\n', '\n')), 'historical delivery rewritten');
-  const exactPaths = [...new Set([...Object.keys(feedback.files), 'scripts/testing/consultation-tickets/protected-source.json', ...Object.keys(diagnostic.files), ...Object.keys(consumer.files), ...Object.keys(remote.files)])].sort();
+  const exactPaths = [...new Set([...Object.keys(feedback.files), 'scripts/testing/consultation-tickets/protected-source.json', ...Object.keys(diagnostic.files), ...Object.keys(consumer.files), ...Object.keys(remote.files), ...Object.keys(native.files)])].sort();
   assert.deepEqual(git(['diff', '--name-only', feedback.baseCandidate, 'HEAD']).split('\n').sort(), exactPaths, 'unallocated repository source changed');
   const consumerPaths = ['components/consultation/TicketRequestWorkspace.tsx', 'components/consultation/TicketRequestPanel.tsx', 'components/consultation/ticket-storage-ui.test.tsx'];
   assert.deepEqual(Object.keys(consumer.files).sort(), [...consumerPaths, delivery, 'scripts/testing/consultation-tickets/source-boundary.test.mjs'].sort());
@@ -198,7 +203,14 @@ test('shared source stays on frozen 360; package hashes include only the approve
   }
   for (const [path, entry] of Object.entries(remote.files)) {
     assert.equal(entry.oldBlob, consumer.files[path]?.newBlob ?? diagnostic.files[path].newBlob, 'registration base blob changed: '+path);
-    assert.equal(git(['rev-parse', 'HEAD:'+path]), entry.newBlob, 'registration source changed: '+path);
+    assert.equal(git(['rev-parse', 'HEAD:'+path]), nativeHash(path,entry.newBlob), 'registration source changed: '+path);
+  }
+
+  for(const [path,entry] of Object.entries(native.files)){
+    assert.equal(git(['rev-parse','HEAD:'+path]),entry.newBlob,'native candidate changed: '+path);
+    const historical=remote.files[path]?.newBlob??consumer.files[path]?.newBlob??diagnostic.files[path]?.newBlob??feedback.files[path]?.newBlob;
+    if(historical!==undefined)assert.equal(entry.oldBlob,historical,'native prior binding changed: '+path);
+    else if(entry.oldBlob!==null)assert.match(entry.oldBlob,/^[a-f0-9]{40}$/);
   }
 
 });

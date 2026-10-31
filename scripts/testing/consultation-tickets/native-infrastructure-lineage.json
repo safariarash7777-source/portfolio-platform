@@ -48,5 +48,19 @@
         "newDerivedSha256": "102cb492f0dc33a09f386b8b59643acb1732f6eff7c515cdd2f8a0f9a2e588ea"
       }
     }
+  },
+  "legacyDiagnosticDelta": {
+    "baseCandidate": "7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc",
+    "purpose": "Owned tmpfs actual legacy SDK/RLS diagnostic only; reader699 remains pinned; primary NOT_APPLIED",
+    "files": {
+      "scripts/testing/consultation-tickets/native-auth-runtime.mjs": {
+        "oldDerivedSha256": "f5cb82ebd60e37a4e35ec6fd30b29d4e84c5985c5811b22cc78e1bf51c7b494b",
+        "newDerivedSha256": "6bae899b22fac1af36b2641e3eec0504a2622eaf23182964298c289f3c7f1d61"
+      },
+      "scripts/testing/consultation-tickets/native-auth-gateway.mjs": {
+        "oldDerivedSha256": "744e276b105fda182d6b8ba862daae76b888504d61f506fd7a43e3360fffee36",
+        "newDerivedSha256": "29c9c6a5c119c913f9c06c2dd9426f6bb46af3b39ea47f859d1fee31ba789c1c"
+      }
+    }
   }
 }
