@@ -26,7 +26,7 @@ import {
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
 import { readStoredReportCounts } from "./codal-coverage.mjs";
-import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
+import { resetAdmissionCycle, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -299,6 +299,7 @@ async function pollGlobalFeed() {
     st.downloaded = dl;
     let stage = "download";
     let rejection = null;
+    const attemptStartedAt = Date.now();
     try {
       const data = await downloadAndParse(a, kind, () => { stage = "admission"; },
         event => { rejection ??= admissionEvent(event, kind); });
@@ -308,7 +309,8 @@ async function pollGlobalFeed() {
         delete state.fails[a.link];
       } else {
         recordFailureDiagnostic("admission", "rejected");
-        recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
+        recordAdmissionRejection(state.admissionDiagnostics, kind, rejection,
+          { announcement: a, lane: "feed", attemptStartedAt, rejectedAt: Date.now() });
         st.parseFailed++;
         recordFail(a.link);
         st.complete = false; st.incompleteReason = "report_failure";
@@ -397,6 +399,7 @@ async function backfillSome() {
         dl++;
         let stage = "download";
         let rejection = null;
+        const attemptStartedAt = Date.now();
         try {
           const data = await downloadAndParse(a, kind, () => { stage = "admission"; },
             event => { rejection ??= admissionEvent(event, kind); });
@@ -406,7 +409,8 @@ async function backfillSome() {
             delete state.fails[a.link];
           } else {
             recordFailureDiagnostic("admission", "rejected");
-            recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
+            recordAdmissionRejection(state.admissionDiagnostics, kind, rejection,
+              { announcement: a, lane: "backfill", attemptStartedAt, rejectedAt: Date.now() });
             st.parseFailed++;
             recordFail(a.link);
           }
@@ -438,7 +442,8 @@ export async function runEngineCycle() {
   try { await loadState(); }
   catch (e) { engineStatus.lastError = `state load: ${e?.message ?? e}`; return; }
   state.failureDiagnostics.lastCycle = failureCounts();
-  state.admissionDiagnostics.lastCycle = admissionCounts();
+  resetAdmissionCycle(state.admissionDiagnostics,
+    { feedMaxDownloads: FEED_MAX_DL, backfillSymbols: BACKFILL_PER_CYCLE, backfillMaxDownloads: BACKFILL_MAX_DL }, engineStatus.lastRun);
   const watermarkBefore = state.watermark;
   try {
     await pollGlobalFeed();

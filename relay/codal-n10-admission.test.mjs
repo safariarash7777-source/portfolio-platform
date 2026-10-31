@@ -345,3 +345,160 @@ test("observed equity title with در preserves qualified proof and rejects inco
     assert.deepEqual(events, [{ kind: "ن-۱۰", reason: "capital_unverified" }]);
   });
 });
+
+// Serializer-only checks: synthetic metadata, no engine, provider or DB call.
+const diag = await import("./codal-admission-diagnostics.mjs");
+const counterPart = ({ version, totals, lastCycle }) => ({ version, totals, lastCycle });
+const syntheticSourceId = Buffer.from("synthetic-source-observation").toString("base64");
+const syntheticRef = `https://codal.ir/Reports/Decision.aspx?LetterSerial=${encodeURIComponent(syntheticSourceId)}&rt=0&let=6&ct=0&ft=-1`;
+function observations(limit = 10) {
+  const d = diag.readAdmissionDiagnostics(), now = Date.now();
+  diag.resetAdmissionCycle(d, { feedMaxDownloads: limit, backfillSymbols: 0, backfillMaxDownloads: 0 }, now - 1000);
+  return d;
+}
+function rejected(d, extra = {}, reason = "scope_unknown") {
+  const now = Date.now();
+  diag.recordAdmissionRejection(d, "ن-۱۰", { kind: "ن-۱۰", reason }, {
+    announcement: { link: syntheticRef, date_title: "۱۴۰۴/۱۲/۲۹" }, lane: "feed", attemptStartedAt: now - 100, rejectedAt: now - 50, ...extra,
+  });
+}
+
+test("legacy rejection counters survive without inventing historical report metadata", () => {
+  const totals = diag.admissionCounts(), lastCycle = diag.admissionCounts();
+  totals["ن-۱۰"].scope_unknown = 7; lastCycle["ن-۳۰"].unsupported_layout = 2;
+  const legacy = { version: 1, totals, lastCycle };
+  for (const observations of [undefined, { version: 99, events: [{ reportId: "private" }] }]) {
+    const read = diag.readAdmissionDiagnostics({ ...legacy, observations });
+    assert.deepEqual(counterPart(read), legacy);
+    assert.equal(read.observations.coverage, "unknown"); assert.equal(read.observations.limit, null);
+    assert.equal(read.observations.omittedCount, null); assert.deepEqual(read.observations.events, []);
+  }
+});
+
+test("bounded metadata roundtrips with same-source ID, declared text, null verified fields and real attempt clocks", () => {
+  const d = observations(); rejected(d);
+  const e = d.observations.events[0];
+  assert.equal(e.sourceAnnouncementId, syntheticSourceId); assert.equal(e.announcementRef, syntheticRef);
+  assert.equal(e.periodDeclaredText, "۱۴۰۴/۱۲/۲۹"); assert.equal(e.reportId, null);
+  assert.equal(e.periodVerified, null); assert.equal(e.scopeVerified, null);
+  assert.equal(e.clocks.sourcePublishedAt, null); assert.equal(e.clocks.sourceSentAt, null);
+  assert.deepEqual(diag.readAdmissionDiagnostics(structuredClone(d)), d);
+  const totals = structuredClone(d.totals);
+  diag.resetAdmissionCycle(d, { feedMaxDownloads: 10, backfillSymbols: 2, backfillMaxDownloads: 6 }, Date.now());
+  assert.equal(d.observations.limit, 22); assert.deepEqual(d.observations.events, []);
+  assert.equal(d.observations.coverage, "observed"); assert.deepEqual(d.totals, totals);
+});
+
+test("metadata cap cannot increase work budgets or conceal omitted rejection attempts", () => {
+  for (const limit of [0, 1, 2, 100]) {
+    const d = observations(limit);
+    for (let i = 0; i < 40; i++) rejected(d);
+    assert.equal(d.totals["ن-۱۰"].scope_unknown, 40); assert.equal(d.lastCycle["ن-۱۰"].scope_unknown, 40);
+    assert.ok(d.observations.events.length <= Math.min(limit, diag.ADMISSION_OBSERVATION_CAP));
+    assert.equal(d.observations.events.length + d.observations.omittedCount, 40);
+    assert.equal(d.observations.coverage, "partial");
+    assert.ok(Buffer.byteLength(JSON.stringify(d.observations)) <= diag.ADMISSION_OBSERVATION_BYTES);
+    assert.deepEqual(diag.readAdmissionDiagnostics(d), d);
+  }
+});
+
+test("invalid effective budget leaves observation coverage unknown while preserving rejection counters", () => {
+  for (const n of [NaN, Infinity, -1, 0.5, "10"]) {
+    const d = diag.readAdmissionDiagnostics();
+    diag.resetAdmissionCycle(d, { feedMaxDownloads: n, backfillSymbols: 2, backfillMaxDownloads: 6 }, Date.now());
+    rejected(d);
+    assert.equal(d.lastCycle["ن-۱۰"].scope_unknown, 1);
+    assert.equal(d.observations.coverage, "unknown"); assert.equal(d.observations.omittedCount, null);
+    assert.deepEqual(d.observations.events, []);
+  }
+});
+
+test("privacy whitelist rejects credentials, non-Codal and extra/duplicate query URLs without dropping the true reason", () => {
+  for (const link of [
+    "https://private.invalid/report?token=PRIVATE", syntheticRef + "&token=PRIVATE", syntheticRef + "&LetterSerial=PRIVATE",
+    syntheticRef.replace("codal.ir", "codal.ir.private.invalid"), syntheticRef.replace("https://", "https://user:PRIVATE@"),
+    syntheticRef.replace("https://", "http://"), syntheticRef + "#PRIVATE", "https://codal.ir/PRIVATE",
+    `\n${syntheticRef}`, `${syntheticRef}\n`,
+  ]) {
+    const d = observations(); rejected(d, { announcement: { link, title: "PRIVATE", rawHTML: "PRIVATE", date_title: "PRIVATE" } });
+    const e = d.observations.events[0];
+    assert.equal(e.reason, "scope_unknown"); assert.equal(e.announcementRef, null); assert.equal(e.sourceAnnouncementId, null);
+    assert.equal(e.periodDeclaredText, null); assert.doesNotMatch(JSON.stringify(d), /PRIVATE|token|user:/);
+  }
+  const d = observations(); rejected(d);
+  Object.assign(d.observations.events[0], { reportId: 999, scopeVerified: "standalone", periodVerified: "1405-03-31", rawHTML: "PRIVATE", headers: { Authorization: "PRIVATE" } });
+  d.observations.events[0].clocks.sourcePublishedAt = "2099-01-01T00:00:00.000Z";
+  const clean = diag.readAdmissionDiagnostics(d);
+  assert.equal(clean.observations.events[0].reportId, null); assert.equal(clean.observations.events[0].scopeVerified, null);
+  assert.equal(clean.observations.events[0].periodVerified, null); assert.equal(clean.observations.events[0].clocks.sourcePublishedAt, null);
+  assert.doesNotMatch(JSON.stringify(clean), /PRIVATE|"reportId":999|2099|standalone|1405-03-31/);
+});
+
+test("missing, future, invalid and reversed clocks never fall back to cycle/read time", () => {
+  const d = observations();
+  for (const clocks of [
+    { attemptStartedAt: null, rejectedAt: null }, { attemptStartedAt: "invalid", rejectedAt: "invalid" },
+    { attemptStartedAt: Date.now() + 60000, rejectedAt: Date.now() + 60001 },
+    { attemptStartedAt: Date.now() - 10, rejectedAt: Date.now() - 100 },
+    { attemptStartedAt: Date.now() - 2000, rejectedAt: Date.now() - 1500 },
+  ]) {
+    rejected(d, clocks);
+    const e = d.observations.events.at(-1);
+    assert.equal(e.clocks.attemptStartedAt, null); assert.equal(e.clocks.rejectedAt, null);
+  }
+  rejected(d, { announcement: { link: syntheticRef, title: "دوره۱۲ماهه", date_title: "1405/99/99" } });
+  assert.equal(d.observations.events.at(-1).periodDeclaredText, null);
+  assert.equal(d.observations.events.at(-1).periodVerified, null);
+});
+
+test("hostile optional observer metadata cannot change counts or throw into ingestion", () => {
+  const d = observations();
+  const announcement = { get link() { throw Error("PRIVATE getter"); } };
+  assert.doesNotThrow(() => rejected(d, { announcement }));
+  assert.equal(d.lastCycle["ن-۱۰"].scope_unknown, 1);
+  assert.equal(d.observations.events.length, 0); assert.equal(d.observations.omittedCount, 1);
+  assert.equal(d.observations.coverage, "partial");
+  assert.doesNotMatch(JSON.stringify(d), /PRIVATE/);
+});
+
+test("tampered/incomplete nested metadata restores as unknown instead of false empty or synthetic history", () => {
+  const original = observations(); rejected(original);
+  for (const mutate of [
+    w => { w.omittedCount = -1; }, w => { w.events = []; }, w => { w.limit = 100; },
+    w => { w.events[0].reason = "PRIVATE"; }, w => { w.events[0].kind = "ن-۳۰"; },
+    w => { w.events = Array(33).fill(w.events[0]); }, w => { w.cycleStartedAt = "2099-01-01T00:00:00.000Z"; },
+    w => { w.coverage = "complete"; },
+  ]) {
+    const input = structuredClone(original); mutate(input.observations);
+    const read = diag.readAdmissionDiagnostics(input);
+    assert.deepEqual(counterPart(read), counterPart(original));
+    assert.equal(read.observations.coverage, "unknown"); assert.deepEqual(read.observations.events, []);
+    assert.equal(read.observations.omittedCount, null);
+  }
+});
+
+test("UTF8 byte cap omits oversized observations before the record cap without losing counters", () => {
+  const id = "A".repeat(254) + "==";
+  let ref;
+  for (let encoded = 100; encoded >= 0; encoded--) {
+    const candidate = `https://codal.ir/Reports/Decision.aspx?LetterSerial=${"%41".repeat(encoded)}${"A".repeat(254 - encoded)}%3D%3D&rt=0&let=6&ct=0&ft=-1`;
+    if (candidate.length <= 512) { ref = candidate; break; }
+  }
+  const d = observations(100);
+  for (let i = 0; i < 40; i++) rejected(d, { announcement: { link: ref, date_title: "۱۴۰۴/۱۲/۲۹" } });
+  assert.equal(d.observations.events[0].sourceAnnouncementId, id);
+  assert.ok(d.observations.events.length < diag.ADMISSION_OBSERVATION_CAP, "byte cap must bind before count cap for this maximal fixture");
+  assert.equal(d.observations.events.length + d.observations.omittedCount, 40);
+  assert.equal(d.lastCycle["ن-۱۰"].scope_unknown, 40);
+  assert.ok(Buffer.byteLength(JSON.stringify(d.observations)) <= diag.ADMISSION_OBSERVATION_BYTES);
+  assert.deepEqual(diag.readAdmissionDiagnostics(d), d);
+});
+
+test("broken optional envelope cannot throw past the existing rejection count", () => {
+  const d = observations();
+  Object.defineProperty(d.observations, "events", { get() { throw Error("PRIVATE"); } });
+  assert.doesNotThrow(() => rejected(d));
+  assert.equal(d.lastCycle["ن-۱۰"].scope_unknown, 1);
+  assert.equal(d.observations.coverage, "unknown");
+  assert.deepEqual(d.observations.events, []);
+});
