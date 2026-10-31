@@ -1,0 +1,56 @@
+{
+  "source": "fa333ea75ce8ddb9f7d798179739677527a9891a",
+  "pr": 374,
+  "status": "FIRST_CI_FAILED_TEST_REGISTRATION_PRESERVED",
+  "run": 41165419219,
+  "jobs": [
+    {
+      "id": 124431821688,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "failure"
+    },
+    {
+      "id": 124431821879,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124431821887,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124431821895,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124432805994,
+      "name": "CI Gate",
+      "conclusion": "failure"
+    }
+  ],
+  "actualCheckout": "6523038cba7e7cea6f4e9328519036144e8046b6",
+  "tree": "df26fffdf622362aa13074d7f2a69487c90367b0",
+  "parents": [
+    "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+    "fa333ea75ce8ddb9f7d798179739677527a9891a"
+  ],
+  "equalsExportTree": true,
+  "typecheck": "PASS",
+  "lint": "PASS",
+  "core": {
+    "tests": 2071,
+    "pass": 2070,
+    "fail": 1,
+    "failure": "lib/desk/registry.test.ts:37 only unregistered lib/fundamental/read-binding.test.ts"
+  },
+  "subsequentQualitySteps": "SKIPPED including build; not accepted",
+  "local26Tests": "owner offline only, not yet all executed by this CI",
+  "rootAction": "narrow child allocated and sent to A: add only literal new test path to existing test:calc and update same DELIVERY; preserve fa/code/tests/guard/lock/workflows; new CI after commit allowed",
+  "nextCommit": "NOT_OBSERVED_YET",
+  "data402": "OPEN",
+  "envMutation": false,
+  "manualDeploy": false,
+  "releaseAuthorized": false
+}
