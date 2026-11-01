@@ -264,20 +264,30 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   // T5-2: فهرست گزارش‌های ذخیره‌شده (codal_reports) برای تب گزارش‌ها
   const storedReports: StoredReport[] = [];
   if (fundamentals?.n30) {
-    storedReports.push({
-      kind: "ن-۳۰",
-      title: fundamentals.n30.source.title,
-      periodEnd: fundamentals.n30.data[0]?.period_end ?? null,
-      url: fundamentals.n30.source.source_url ?? null,
-    });
+    const { source, data } = fundamentals.n30;
+    const records = source.records;
+    if (records?.length) {
+      storedReports.push(...records.map(record => ({
+        kind: "ن-۳۰", title: source.title,
+        periodEnd: record.financialPeriodEnd, url: record.sourceUrl, record,
+      })));
+    } else {
+      storedReports.push({ kind: "ن-۳۰", title: source.title,
+        periodEnd: data[0]?.period_end ?? null, url: source.source_url ?? null });
+    }
   }
   if (fundamentals?.n10) {
-    storedReports.push({
-      kind: "ن-۱۰",
-      title: fundamentals.n10.source.title,
-      periodEnd: fundamentals.n10.data.period_end ?? null,
-      url: fundamentals.n10.source.source_url ?? null,
-    });
+    const { source, data } = fundamentals.n10;
+    const records = source.records;
+    if (records?.length) {
+      storedReports.push(...records.map(record => ({
+        kind: "ن-۱۰", title: source.title,
+        periodEnd: record.financialPeriodEnd, url: record.sourceUrl, record,
+      })));
+    } else {
+      storedReports.push({ kind: "ن-۱۰", title: source.title,
+        periodEnd: data.period_end ?? null, url: source.source_url ?? null });
+    }
   }
 
   // WP-F: کارت بنیادی نمادمحور — موتور خالص lib/core/fundamentalCard (فقط وقتی ن-۳۰ هست)
