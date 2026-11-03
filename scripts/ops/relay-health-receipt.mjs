@@ -153,6 +153,25 @@ const CONTROL_PROJECT = 'https://api.liara.ir/v1/projects/arsadata';
 const CONTROL_RELEASES = CONTROL_PROJECT + '/releases?page=1&count=100';
 const releaseId = x => typeof x === 'string' && /^[a-f0-9]{24}$/.test(x) ? x : null;
 const releaseState = x => choice(x, ['READY', 'FAILED', 'UNHEALTHY', 'CANCELED', 'TIMEDOUT', 'DEPLOYING', 'BUILDING', 'QUEUED']);
+// Single approved value inspection in RAM. No URL normalization is accepted as
+// an exact match: whitespace, trailing slash, port aliases and dot paths differ.
+function reviewedBackendBinding(envs, namesComplete) {
+  const result = { present: false, parseValid: false, noCredentialsQueryHash: false, exactReviewedBackendMatch: false, duplicateNameRejected: false, reason: 'invalid_env_schema' };
+  if (!namesComplete) return result;
+  const matches = envs.filter(e => e.key === 'SUPABASE_URL');
+  result.present = matches.length > 0;
+  if (matches.length > 1) return { ...result, duplicateNameRejected: true, reason: 'duplicate_name' };
+  if (!matches.length) return { ...result, reason: 'missing' };
+  const value = matches[0].value;
+  if (typeof value !== 'string' || value !== value.trim() || /[\u0000-\u0020\u007f]/.test(value)) return { ...result, reason: 'invalid_url' };
+  let parsed;
+  try { parsed = new URL(value); } catch { return { ...result, reason: 'invalid_url' }; }
+  result.parseValid = true;
+  result.noCredentialsQueryHash = !parsed.username && !parsed.password && !value.includes('?') && !value.includes('#') && !value.slice(value.indexOf('://') + 3).split('/')[0].includes('@');
+  if (!result.noCredentialsQueryHash) return { ...result, reason: 'credentials_query_or_hash' };
+  result.exactReviewedBackendMatch = value === 'https://62.60.191.24/liara-preview';
+  return { ...result, reason: result.exactReviewedBackendMatch ? 'exact_match' : 'different_url' };
+}
 function projectMetadata(body) {
   const p = body?.project;
   if (!p || p.project_id !== 'arsadata') throw new Error('invalid_schema');
@@ -160,6 +179,7 @@ function projectMetadata(body) {
   return { projectId: 'arsadata', status: choice(p.status, ['running', 'stopped', 'starting', 'stopping', 'ready', 'failed']),
     // No verified CPU/RAM response contract in the installed CLI.
     cpuLimit: null, ramLimit: null,
+    reviewedBackendBinding: reviewedBackendBinding(p.envs, envNamesComplete),
     envNames: envNamesComplete ? [...new Set(p.envs.map(e => e.key))].sort() : null, envNamesComplete };
 }
 function releaseMetadata(body) {
@@ -196,7 +216,7 @@ export async function collectControlPlane({ token, fetchImpl = fetch, timeoutMs 
   };
   const [project, releases] = await Promise.all([request(CONTROL_PROJECT, true), request(CONTROL_RELEASES, false)]);
   return { project, releases, identity: project.status === 'read' && releases.status === 'read' && releases.data.match === 'exact' ? 'matched_control_plane_metadata' : 'unconfirmed',
-    limitations: ['Environment values arrive in API memory only; only validated names are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
+    limitations: ['Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
 }
 
 export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {

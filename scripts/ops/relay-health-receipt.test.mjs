@@ -274,3 +274,23 @@ test('environment names distinguish explicit empty from incomplete schema withou
     assert.deepEqual(out.project.data.envNames,expected);assert.equal(out.project.data.envNamesComplete,complete);assert.equal(JSON.stringify(out).includes(secret),false);
   }
 });
+
+test('reviewed backend binding inspects only the single URL in RAM and never emits it',async()=>{
+  const reviewed='https://62.60.191.24/liara-preview';
+  const cases=[
+    [undefined,'invalid_env_schema',false,false,false,false,false],
+    [[], 'missing',false,false,false,false,false],
+    [[{key:'SUPABASE_URL',value:null}],'invalid_url',true,false,false,false,false],
+    [[{key:'SUPABASE_URL',value:'not a URL'}],'invalid_url',true,false,false,false,false],
+    [[{key:'SUPABASE_URL',value:reviewed},{key:'SUPABASE_URL',value:reviewed}],'duplicate_name',true,false,false,false,true],
+    ...['https://other.invalid/liara-preview','https://62.60.191.24/other',reviewed+'/', 'https://62.60.191.24:443/liara-preview'].map(value=>[[{key:'SUPABASE_URL',value}],'different_url',true,true,true,false,false]),
+    ...['https://user:private@62.60.191.24/liara-preview',reviewed+'?private='+secret,reviewed+'#'+secret,reviewed+'?',reviewed+'#'].map(value=>[[{key:'SUPABASE_URL',value}],'credentials_query_or_hash',true,true,false,false,false]),
+    [[{key:'SUPABASE_URL',value:' '+reviewed}],'invalid_url',true,false,false,false,false],
+    [[{key:'SUPABASE_URL',value:reviewed},{key:'SERVICE_ROLE_KEY',value:secret}],'exact_match',true,true,true,true,false],
+  ];
+  for(const [envs,reason,present,parseValid,noCredentialsQueryHash,exactReviewedBackendMatch,duplicateNameRejected] of cases){
+    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{const body=controlBodies(url);if(body.project)body.project.envs=envs;return Response.json(body);}});
+    assert.deepEqual(out.project.data.reviewedBackendBinding,{present,parseValid,noCredentialsQueryHash,exactReviewedBackendMatch,duplicateNameRejected,reason});
+    const serialized=JSON.stringify(out);assert.equal(serialized.includes(reviewed),false);assert.equal(serialized.includes(secret),false);assert.equal(serialized.includes('user:private'),false);
+  }
+});
