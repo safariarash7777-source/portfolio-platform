@@ -23,9 +23,22 @@
     "catalogOnly": true,
     "rowAuthorizationBehavior": "NOT_TESTED"
   },
+  "freshPhaseProbe": {
+    "atUtc": "2026-11-03T13:22:11.435274Z",
+    "sshAuthenticationAccepted": true,
+    "remoteCommandDispatched": true,
+    "allThreeContainersRunning": true,
+    "authContainerId": "d18e72a1f11e1e26c1bdce50584c41dd58870691bcde35d0de70f6fbf1280216",
+    "authIp": "172.19.0.5",
+    "authPort": 9999,
+    "authDbHostMatchesPinnedDb": true,
+    "nativeAuthHealthStatus": 200,
+    "oldHelperIp": "172.19.0.4",
+    "serviceChanges": false
+  },
   "limits": {
-    "nativeAuthHealth": "NOT_CONFIRMED",
-    "exactAuthDbChannelBinding": "NOT_CONFIRMED",
+    "nativeAuthHealth": "CONFIRMED_AT_FRESH_PHASE_PROBE",
+    "exactAuthDbChannelBinding": "CONFIRMED_AT_FRESH_PHASE_PROBE",
     "sshFailureCause": "UNATTRIBUTED_INTERMITTENT",
     "accountCreated": false,
     "sessionCreated": false,
