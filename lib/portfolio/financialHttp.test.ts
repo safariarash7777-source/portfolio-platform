@@ -8,8 +8,57 @@ import { AuthSessionMissingError } from "@supabase/supabase-js";
 import { parseHoldingsCsv, previewHoldingsImport, IMPORT_FIELDS, canonicalPayload, positionWriteInput } from "./importPreview";
 import { positionFromStored } from "./balanceSheet";
 import { getFinancialSnapshot, lookupFinancialReceipt, type FinancialReadDb } from "./financialReadHttp";
+import { moneyInput, normalisePosition, numberInput } from "./financialInput";
 const request = (body: unknown) => new Request("http://localhost/api/portfolio/debts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 const payload = { base_version: 0, client_token: "synthetic", debts: [{ debt_key: "d", title: "وام نمونه", kind: "loan", balance: "۱۰۰۰", currency: "IRR", balance_as_of: "2026-09-30" }], user_id: "spoofed-owner" };
+
+test("localized financial input accepts well-grouped amounts and Persian decimal quantities", () => {
+  for (const value of ["۱٬۲۵۰٬۰۰۰", "١٬٢٥٠٬٠٠٠", "1,250,000", " ۱۲۵۰۰۰۰ "]) {
+    assert.equal(moneyInput(value, "IRT"), 1250000);
+    assert.equal(moneyInput(value, "IRR"), 125000);
+  }
+  assert.equal(numberInput("۱۲٫۵"), 12.5);
+  assert.equal(numberInput("۱٬۲۵۰٫۵"), 1250.5);
+  const position = normalisePosition({ position_key: "gold", manual_label: "طلای عضو", asset_class: "gold", unit: "گرم", qty: "۱۲٫۵", ownership_pct: "۵۰٫۲۵", valuation_mode: "unpriced", as_of: "2026-11-03" });
+  assert.equal(position.qty, 12.5);
+  assert.equal(position.ownership_pct, 50.25);
+  assert.equal(position.declared_value, null);
+});
+
+test("localized input rejects ambiguous grouping and preserves integer money constraints", () => {
+  for (const value of ["", " ", null, undefined, "۱۲,۵", "12,34", "1,23,456", "1٬234,567", "1,,234", "1,234,", "1.234,56", "۱٫۲٫۳", "1 234", "۱٬۰۰۰ تومان", "-1,000", "1e3"]) {
+    assert.ok(Number.isNaN(numberInput(value)), String(value));
+    assert.throws(() => moneyInput(value, "IRT"));
+  }
+  assert.throws(() => moneyInput("۱٬۰۰۰٫۵", "IRT"));
+  for (const currency of ["IRT", "IRR"]) {
+    assert.throws(() => moneyInput("۱٬۰۰۰٫۰۰۰۰۰۰۰۰۰۰۰۰۰۰۰۰۰۱", currency));
+    assert.throws(() => moneyInput("1000.00000000000000001", currency));
+  }
+  assert.equal(moneyInput("۱٬۰۰۰٫۰۰۰", "IRT"), 1000);
+  assert.throws(() => moneyInput("۱٬۰۰۱", "IRR"));
+  assert.throws(() => moneyInput("۹٬۰۰۷٬۱۹۹٬۲۵۴٬۷۴۰٬۹۹۲", "IRT"));
+  assert.equal(moneyInput("۰", "IRT"), 0);
+});
+
+test("debt HTTP stores grouped Persian money once in toman and never writes malformed grouping", async () => {
+  let writes = 0;
+  const source: FinancialDb = {
+    async authenticate() { return { user: { id: "actual-owner" }, error: false }; },
+    async rpc(name, args) {
+      writes++;
+      assert.equal(name, "record_member_debts");
+      const debt = (args.p_debts as Record<string, unknown>[])[0];
+      assert.equal(debt.balance_toman, 125000);
+      assert.equal(debt.next_installment_toman, 2500);
+      return { data: [{ version: 1, reused: false }], error: null };
+    },
+  };
+  const debt = { ...payload.debts[0], balance: "۱٬۲۵۰٬۰۰۰", next_installment: "۲۵٬۰۰۰", next_due_on: "2026-11-15" };
+  assert.equal((await postFinancialSnapshot(request({ ...payload, debts: [debt] }), "debts", async () => source)).status, 201);
+  assert.equal((await postFinancialSnapshot(request({ ...payload, debts: [{ ...debt, balance: "۱۲,۵" }] }), "debts", async () => source)).status, 400);
+  assert.equal(writes, 1);
+});
 test("financial HTTP denies expired sessions and preserves service failures without calling RPC", async () => {
   const cases: [unknown, number][] = [
     [new AuthSessionMissingError(), 401], [{ status: 401 }, 401], [{ status: 403 }, 401],
