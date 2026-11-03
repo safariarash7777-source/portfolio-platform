@@ -11,6 +11,7 @@
   ],
   "git": {
     "deploymentEnabled": {
+      "codex/p07-targeted-repair-20261104": false,
       "codex/p07-quantity-only-20261031": false,
       "codex/p06-selected-report-provenance-20261031": false,
       "codex/p15-checkpoint-safe-failure-20261031": false,

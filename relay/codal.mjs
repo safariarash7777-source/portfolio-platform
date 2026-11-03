@@ -886,13 +886,15 @@ function announcementRows(json) {
   return json.announcement;
 }
 
-async function downloadExcelHtml(url, onBody) {
+async function downloadExcelHtml(url, onBody, { maxAttempts = 3 } = {}) {
+  if (maxAttempts !== 1 && maxAttempts !== 3) throw new Error("invalid download attempt bound");
   // excel.codal.ir کُند است و گاه بار اول timeout می‌دهد — تا ۳ تلاش با مهلت فزاینده.
   let lastErr;
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const res = await fetch(url, {
         headers: { "User-Agent": BROWSER_UA, Accept: "*/*" },
+        ...(maxAttempts === 1 ? { redirect: "error" } : {}),
         signal: AbortSignal.timeout(30000 * attempt),
       });
       if (!res.ok) throw new Error(`excel HTTP ${res.status}`);
@@ -903,7 +905,7 @@ async function downloadExcelHtml(url, onBody) {
       return html;
     } catch (e) {
       lastErr = e;
-      if (attempt < 3) await sleep(3000 * attempt);
+      if (attempt < maxAttempts) await sleep(3000 * attempt);
     }
   }
   throw lastErr;
@@ -950,7 +952,7 @@ async function existingUrls(symbol) {
 
 // A zero insert count is a duplicate, not proof that parsed data was persisted.
 // Confirm the exact versioned identity; a same-URL metadata-only row is a failure.
-async function confirmStoredReport(row) {
+async function confirmStoredReport(row, { rejectRedirects = false } = {}) {
   try {
     const qs = new URLSearchParams({
       select: "source_url,symbol,data", source_url: `eq.${row.source_url}`,
@@ -958,6 +960,7 @@ async function confirmStoredReport(row) {
     });
     const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
       headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
+      ...(rejectRedirects ? { redirect: "error" } : {}),
     });
     if (!res.ok) throw new Error(`confirmation HTTP ${res.status}`);
     const rows = await res.json();
@@ -972,9 +975,11 @@ async function confirmStoredReport(row) {
   }
 }
 
-async function insertReport(row) {
+async function insertReport(row, { rejectRedirects = false } = {}) {
+  if (typeof rejectRedirects !== "boolean") throw new Error("invalid insert redirect bound");
   const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?on_conflict=source_url&select=source_url`, {
     method: "POST",
+    ...(rejectRedirects ? { redirect: "error" } : {}),
     headers: { ...SB_HDRS(), Prefer: "resolution=ignore-duplicates,return=representation" },
     body: JSON.stringify([row]),
     signal: AbortSignal.timeout(20000),
@@ -988,7 +993,7 @@ async function insertReport(row) {
       inserted.some(r => !r || r.source_url !== row.source_url)) {
     throw new Error("report insert invalid schema");
   }
-  if (inserted.length === 0) await confirmStoredReport(row);
+  if (inserted.length === 0) await confirmStoredReport(row, { rejectRedirects });
   return inserted.length;
 }
 
@@ -1089,9 +1094,9 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
 }
 
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
-export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
+export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected, options) {
   let body = null;
-  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
+  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined, options);
   // Stage boundary only: never pass report content to diagnostics.
   onDownloaded();
   const meta = metaFrom(a, kind);
@@ -1115,7 +1120,7 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
 /** Returns the actual 0/1 count; zero resolves only after confirming the exact
  * stored report with non-null data. Unconfirmed persistence rejects before any
  * caller can clear its failure ledger or mark the URL as known. */
-export async function insertParsedReport(a, kind, data) {
+export async function insertParsedReport(a, kind, data, options) {
   const meta = metaFrom(a, kind);
   const captured = data && typeof data === "object" ? monthlyQuantityCaptures.get(data) : null;
   const quantityCapture = kind === "ن-۳۰" && captured && captured.dataJson === JSON.stringify(data)
@@ -1147,7 +1152,7 @@ export async function insertParsedReport(a, kind, data) {
       ...(quantityCapture ? { quantity_capture: quantityCapture } : {}),
     },
   };
-  return await insertReport(row);
+  return await insertReport(row, options);
 }
 
 /** دامپ تشخیصی ساختار جدول‌های یک اکسل واقعی به Supabase — وقتی لبهٔ لیارا از خارج در دسترس نیست.
