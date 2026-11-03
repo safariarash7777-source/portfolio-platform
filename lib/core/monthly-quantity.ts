@@ -61,6 +61,22 @@ export interface MonthlyQuantityWitness {
   rowIndex: number;
   unitColumn: 1;
 }
+/** One internal producer receipt, not an independent attestation or a raw-HTML
+ * archive. The reader must compare this with the actual selected database row.
+ * No database row ID exists at capture time and none is invented here. */
+export interface MonthlyQuantityCaptureReceipt {
+  version: 1;
+  symbol: string;
+  report_kind: 'ن-۳۰';
+  announcement_link: string;
+  source_url: string;
+  link_excel: string;
+  response_url: string;
+  period_end_jalali: string;
+  parser_version: number;
+  html_sha256: string;
+  source: MonthlyQuantitySource;
+}
 export type QuantityWitnessedProduct = N30ProductRow & { quantity_witness?: MonthlyQuantityWitness | null };
 export type QuantityWitnessedReport = Omit<CodalN30Data, 'products'> & { quantity_source?: MonthlyQuantitySource | null; products: QuantityWitnessedProduct[] };
 

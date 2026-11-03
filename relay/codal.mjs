@@ -886,7 +886,7 @@ function announcementRows(json) {
   return json.announcement;
 }
 
-async function downloadExcelHtml(url) {
+async function downloadExcelHtml(url, onBody) {
   // excel.codal.ir کُند است و گاه بار اول timeout می‌دهد — تا ۳ تلاش با مهلت فزاینده.
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -896,7 +896,11 @@ async function downloadExcelHtml(url) {
         signal: AbortSignal.timeout(30000 * attempt),
       });
       if (!res.ok) throw new Error(`excel HTTP ${res.status}`);
-      return await res.text();
+      if (!onBody) return await res.text();
+      const htmlBytes = new Uint8Array(await res.arrayBuffer());
+      const html = new TextDecoder().decode(htmlBytes);
+      onBody({ htmlBytes, sourceRef: url, responseUrl: res.url });
+      return html;
     } catch (e) {
       lastErr = e;
       if (attempt < 3) await sleep(3000 * attempt);
@@ -1068,13 +1072,44 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
   return announcementRows(json);
 }
 
+// Only an unchanged object returned by this producer can carry a capture receipt
+// into the existing insert path. A copied or caller-authored hash is not a receipt.
+/** @type {WeakMap<object, {dataJson: string, receipt: import('../lib/core/monthly-quantity').MonthlyQuantityCaptureReceipt}>} */
+const monthlyQuantityCaptures = new WeakMap();
+
+function sameQuantityResponseSource(sourceRef, responseUrl) {
+  try {
+    const requested = new URL(sourceRef), received = new URL(responseUrl);
+    return typeof sourceRef === "string" && sourceRef.trim() === sourceRef
+      && requested.protocol === "https:" && requested.hostname === "excel.codal.ir"
+      && !requested.username && !requested.password && !requested.hash
+      && /^\/service\/Excel\/GetAll\/[^/]+\/0$/.test(requested.pathname)
+      && received.href === requested.href;
+  } catch { return false; }
+}
+
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
-  const html = await downloadExcelHtml(a.link_excel);
+  let body = null;
+  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
   // Stage boundary only: never pass report content to diagnostics.
   onDownloaded();
   const meta = metaFrom(a, kind);
-  return kind === "ن-۱۰" ? admitN10Html(html, meta, onRejected) : normalizeN30(parseHtmlTables(html), meta, onRejected);
+  if (kind === "ن-۱۰") return admitN10Html(html, meta, onRejected);
+  const source = body && sameQuantityResponseSource(body.sourceRef, body.responseUrl)
+    ? { version: 1, sourceId: body.sourceRef, htmlSha256: createHash("sha256").update(body.htmlBytes).digest("hex"),
+      htmlBytes: body.htmlBytes, symbol: meta.symbol, periodEnd: meta.period_end } : null;
+  const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, onRejected);
+  if (data?.quantity_source && typeof a.link === "string" && a.link.trim() && a.link.trim() === a.link) {
+    const receipt = {
+      version: 1, symbol: a.l18, report_kind: kind, announcement_link: a.link, source_url: versionedUrl(a.link),
+      link_excel: a.link_excel, response_url: body.responseUrl, period_end_jalali: meta.period_end,
+      parser_version: PARSER_VERSION, html_sha256: source.htmlSha256,
+      source: structuredClone(data.quantity_source),
+    };
+    monthlyQuantityCaptures.set(data, { dataJson: JSON.stringify(data), receipt });
+  }
+  return data;
 }
 
 /** Returns the actual 0/1 count; zero resolves only after confirming the exact
@@ -1082,6 +1117,12 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
  * caller can clear its failure ledger or mark the URL as known. */
 export async function insertParsedReport(a, kind, data) {
   const meta = metaFrom(a, kind);
+  const captured = data && typeof data === "object" ? monthlyQuantityCaptures.get(data) : null;
+  const quantityCapture = kind === "ن-۳۰" && captured && captured.dataJson === JSON.stringify(data)
+    && captured.receipt.symbol === a.l18 && captured.receipt.announcement_link === a.link
+    && captured.receipt.link_excel === a.link_excel && captured.receipt.period_end_jalali === meta.period_end
+    && captured.receipt.source_url === versionedUrl(a.link) && captured.receipt.parser_version === PARSER_VERSION
+    ? structuredClone(captured.receipt) : null;
   const row = {
     symbol: a.l18,
     company_name: meta.company_name,
@@ -1103,6 +1144,7 @@ export async function insertParsedReport(a, kind, data) {
       parser_version: PARSER_VERSION,
       announcement_link: a.link,
       discovered_by: "engine-v3",
+      ...(quantityCapture ? { quantity_capture: quantityCapture } : {}),
     },
   };
   return await insertReport(row);

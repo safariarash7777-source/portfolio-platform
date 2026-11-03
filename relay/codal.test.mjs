@@ -313,4 +313,7 @@ process.exitCode = failed === 0 ? 0 : 1;
 console.log(failed === 0 ? "QUANTITY_FIXTURE_TESTS_PASSED" : "QUANTITY_FIXTURE_TESTS_FAILED");
 process.exitCode = failed === 0 ? 0 : 1;
 
+// Registered in the existing test:relay entry, with no live transport.
+await import("./codal-quantity-producer.test.mjs");
+
 

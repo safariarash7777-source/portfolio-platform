@@ -4,8 +4,8 @@ import vm from "node:vm";
 import { createHash } from "node:crypto";
 import { notifyAdmissionRejection } from "../codal-admission-diagnostics.mjs";
 
-export function loadOfflineCodal() {
-  const counts = { network: 0, syntheticEnvironmentReads: 0 };
+export function loadOfflineCodal({ fetchFixture, environment = {} } = {}) {
+  const counts = { network: 0, fixtureTransportCalls: 0, syntheticEnvironmentReads: 0 };
   let source = readFileSync(new URL("../codal.mjs", import.meta.url), "utf8");
   const imports = [
     'import { brsFetch as fetch } from "./brsapi-transport.mjs";',
@@ -17,9 +17,12 @@ export function loadOfflineCodal() {
     source = source.replace(line, "");
   }
   source = source.replace(/^export /gm, "");
-  const syntheticProcess = { env: new Proxy({}, { get() { counts.syntheticEnvironmentReads++; return undefined; } }) };
-  const fetch = () => { counts.network++; throw new Error("Offline parser network denied"); };
-  const instantiate = vm.runInThisContext(`(function(fetch,notifyAdmissionRejection,process,console,createHash){\n${source}\nreturn {parseHtmlTables,normalizeN10,normalizeN10Bank,normalizeN30,unitFromHeader,unitFromArithmetic,resolveAmountUnit,PARSER_VERSION,metaFrom};\n})`, { filename: "actual-codal-offline.mjs" });
+  const syntheticProcess = { env: new Proxy({}, { get(_, key) { counts.syntheticEnvironmentReads++; return environment[key]; } }) };
+  const fetch = (...args) => {
+    if (fetchFixture) { counts.fixtureTransportCalls++; return fetchFixture(...args); }
+    counts.network++; throw new Error("Offline parser network denied");
+  };
+  const instantiate = vm.runInThisContext(`(function(fetch,notifyAdmissionRejection,process,console,createHash){\n${source}\nreturn {parseHtmlTables,normalizeN10,normalizeN10Bank,normalizeN30,unitFromHeader,unitFromArithmetic,resolveAmountUnit,PARSER_VERSION,metaFrom,downloadAndParse,insertParsedReport};\n})`, { filename: "actual-codal-offline.mjs" });
   return { parser: instantiate(fetch, notifyAdmissionRejection, syntheticProcess, console, createHash), counts };
 }
 
