@@ -37,6 +37,336 @@ OVERLAY_NAMES = {'assembled-auth-runtime.mjs', 'assembled-auth-gateway.mjs', 'as
                  'assembled-overlay-gate.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json'}
 
 
+# Failure diagnostics only. Literal codes from the reviewed frozen sources;
+# never forward an arbitrary exception/message or a regex-matching user string.
+NATIVE_FAILURE_CODES = frozenset({
+    "assembled_acceptance_boundary",
+    "assembled_canonical_receipts_required",
+    "assembled_check_shape",
+    "assembled_checkout_not_exact",
+    "assembled_checkout_read_failed",
+    "assembled_cleanup_incomplete",
+    "assembled_cleanup_shape",
+    "assembled_driver_contract_changed",
+    "assembled_driver_contract_identity",
+    "assembled_exact_candidate_required",
+    "assembled_existing_linux_ci_required",
+    "assembled_explicit_gate_required",
+    "assembled_external_gate_required",
+    "assembled_extra_bootstrap_set",
+    "assembled_financial_history_changed",
+    "assembled_git_read_failed",
+    "assembled_member_consultation_dom",
+    "assembled_member_exact_authorized_basis",
+    "assembled_member_holding_not_mounted",
+    "assembled_member_holdings_dom",
+    "assembled_member_http_status",
+    "assembled_member_independent_financial_readback",
+    "assembled_member_mobile_overflow",
+    "assembled_member_navigation_observation",
+    "assembled_member_private_audit",
+    "assembled_observation_shape",
+    "assembled_overlay_bytes",
+    "assembled_overlay_file_set",
+    "assembled_overlay_path",
+    "assembled_proof_incomplete",
+    "assembled_proof_nonzero",
+    "assembled_proof_shape",
+    "assembled_readback_failed",
+    "assembled_receipt_checks",
+    "assembled_receipt_identity",
+    "assembled_receipt_shape",
+    "assembled_registry_readback",
+    "assembled_repo_argument_required",
+    "assembled_runtime_image_changed",
+    "assembled_runtime_images",
+    "assembled_runtime_shape",
+    "assembled_runtime_target",
+    "assembled_runtime_unverified",
+    "assembled_source_contract_changed",
+    "assembled_source_file_changed",
+    "assembled_source_file_set",
+    "assembled_source_file_shape",
+    "assembled_source_identity",
+    "assembled_source_object_changed",
+    "assembled_source_object_set",
+    "assembled_working_source_changed",
+    "browser_operation_failed",
+    "net::ERR_ABORTED",
+    "net::ERR_CONNECTION_REFUSED",
+    "net::ERR_CONNECTION_RESET",
+    "net::ERR_EMPTY_RESPONSE",
+    "net::ERR_FAILED",
+    "net::ERR_NAME_NOT_RESOLVED",
+    "net::ERR_TIMED_OUT",
+    "p03_legacy_advisor_refresh",
+    "p03_legacy_browser_observation_failed",
+    "p03_legacy_browser_write",
+    "p03_legacy_dom_state",
+    "p03_legacy_identity_clear",
+    "p03_legacy_page_ready",
+    "p03_legacy_reader_source_changed",
+    "p03_legacy_receipt_checks",
+    "p03_legacy_receipt_chrome",
+    "p03_legacy_receipt_cleanup",
+    "p03_legacy_receipt_closure",
+    "p03_legacy_receipt_flow",
+    "p03_legacy_receipt_owned_path",
+    "p03_legacy_receipt_private_or_right",
+    "p03_legacy_receipt_shape",
+    "p03_legacy_signout_clear",
+    "p09_browser_advisor_followup_not_read",
+    "p09_browser_advisor_not_ready",
+    "p09_browser_advisor_reply_not_read",
+    "p09_browser_automatic_ticket_post",
+    "p09_browser_cdp_probe_unexpected",
+    "p09_browser_cdp_version",
+    "p09_browser_check_count",
+    "p09_browser_check_identity",
+    "p09_browser_checks_incomplete",
+    "p09_browser_chrome_version",
+    "p09_browser_cleanup_incomplete",
+    "p09_browser_cleanup_ownership",
+    "p09_browser_cleanup_path",
+    "p09_browser_cleanup_realpath",
+    "p09_browser_closed_draft_or_post",
+    "p09_browser_closure_budget",
+    "p09_browser_closure_bytes",
+    "p09_browser_closure_changed_bytes",
+    "p09_browser_closure_changed_path",
+    "p09_browser_closure_changed_type",
+    "p09_browser_closure_copy_path",
+    "p09_browser_closure_count_or_bytes",
+    "p09_browser_closure_depth",
+    "p09_browser_closure_directory",
+    "p09_browser_closure_file",
+    "p09_browser_closure_manifest_mismatch",
+    "p09_browser_closure_name",
+    "p09_browser_closure_path",
+    "p09_browser_closure_realpath",
+    "p09_browser_closure_symlink_escape",
+    "p09_browser_closure_type",
+    "p09_browser_command_context_not_destroyed",
+    "p09_browser_command_destroy_click",
+    "p09_browser_copy_permissions",
+    "p09_browser_copy_root_permissions",
+    "p09_browser_debug_logging_forbidden",
+    "p09_browser_destroy_command_duplicate",
+    "p09_browser_destroy_command_effect_count",
+    "p09_browser_destroy_command_missing",
+    "p09_browser_destroy_fresh_parent_not_ready",
+    "p09_browser_destroy_preparation_missing",
+    "p09_browser_destroy_real_logout",
+    "p09_browser_destroy_replayed_post",
+    "p09_browser_destroy_server_body_changed",
+    "p09_browser_destroy_server_original_not_confirmed",
+    "p09_browser_disabled_private_fallback",
+    "p09_browser_disabled_private_text",
+    "p09_browser_driver_version",
+    "p09_browser_exact_recovery_not_rendered",
+    "p09_browser_existing_chrome_missing",
+    "p09_browser_financial_fingerprint_changed",
+    "p09_browser_financial_independent_readback",
+    "p09_browser_first_context_not_closed",
+    "p09_browser_fixture_capability_not_read",
+    "p09_browser_followup_not_read",
+    "p09_browser_fresh_context_not_get_only",
+    "p09_browser_fresh_read_not_settled",
+    "p09_browser_fresh_sdk_login_missing",
+    "p09_browser_gateway_mode",
+    "p09_browser_horizontal_overflow",
+    "p09_browser_independent_receipt_not_exact",
+    "p09_browser_loopback_control",
+    "p09_browser_lost_actual_effect_count",
+    "p09_browser_lost_response_identity",
+    "p09_browser_member_reply_not_read",
+    "p09_browser_member_revoke_history",
+    "p09_browser_nonzero_basis_missing",
+    "p09_browser_options",
+    "p09_browser_original_case_reopened",
+    "p09_browser_other_actor_or_revoke_post",
+    "p09_browser_other_actor_private_fallback",
+    "p09_browser_owned_chrome_identity",
+    "p09_browser_owned_process",
+    "p09_browser_owned_process_cleanup",
+    "p09_browser_owned_temp",
+    "p09_browser_owned_temp_cleanup",
+    "p09_browser_owner_reopen_not_settled",
+    "p09_browser_preflight_context_cleanup",
+    "p09_browser_preparation_context_not_destroyed",
+    "p09_browser_preparation_destroy_click",
+    "p09_browser_private_http_cache",
+    "p09_browser_private_storage_or_url",
+    "p09_browser_product_right_not_closed",
+    "p09_browser_profile_mode",
+    "p09_browser_profile_outside_owned_temp",
+    "p09_browser_real_api_status",
+    "p09_browser_real_document_not_200",
+    "p09_browser_real_signout_failed",
+    "p09_browser_receipt_closure",
+    "p09_browser_receipt_flow",
+    "p09_browser_receipt_identity",
+    "p09_browser_receipt_missing",
+    "p09_browser_receipt_owned_path",
+    "p09_browser_recovery_not_same_get_only",
+    "p09_browser_reload_automatic_post",
+    "p09_browser_reload_not_settled",
+    "p09_browser_resource_url_not_preserved",
+    "p09_browser_response_interception_unsupported",
+    "p09_browser_revoked_private_fallback",
+    "p09_browser_revoked_private_text",
+    "p09_browser_sdk_cookie_invalid",
+    "p09_browser_sdk_cookie_missing",
+    "p09_browser_second_armed_post",
+    "p09_browser_socket_path_budget",
+    "p09_browser_source_binary_size",
+    "p09_browser_source_chrome_identity",
+    "p09_browser_uncertain_ui_not_seen",
+    "p09_browser_unknown_draft_or_duplicate",
+    "p09_browser_unknown_preparation_auto_post",
+    "p09_browser_unknown_preparation_created_command",
+    "p09_browser_unknown_preparation_fresh_parent",
+    "p09_browser_unknown_preparation_original_body_not_loaded",
+    "p09_browser_unknown_preparation_sent_command",
+    "p09_browser_versions_not_three",
+    "pf10_native_app_readiness",
+    "pf10_native_auth_create",
+    "pf10_native_auth_issued_identity",
+    "pf10_native_auth_issued_tokens",
+    "pf10_native_auth_login",
+    "pf10_native_auth_manifest_missing",
+    "pf10_native_auth_new_uuid",
+    "pf10_native_auth_pull_failed",
+    "pf10_native_auth_ready",
+    "pf10_native_auth_registry_denied",
+    "pf10_native_auth_registry_transport",
+    "pf10_native_auth_schema",
+    "pf10_native_cleanup_owner",
+    "pf10_native_container_identity",
+    "pf10_native_database_kernel_not_tmpfs",
+    "pf10_native_database_marker",
+    "pf10_native_database_readiness",
+    "pf10_native_db_manifest_missing",
+    "pf10_native_db_pull_failed",
+    "pf10_native_db_registry_denied",
+    "pf10_native_db_registry_transport",
+    "pf10_native_dependency_lock",
+    "pf10_native_dirty_source",
+    "pf10_native_docker_operation_failed",
+    "pf10_native_gateway_environment",
+    "pf10_native_guest_warmup",
+    "pf10_native_head_merge_tree_mismatch",
+    "pf10_native_host_bind",
+    "pf10_native_host_identity",
+    "pf10_native_http_destination",
+    "pf10_native_image_digest",
+    "pf10_native_incomplete_acceptance",
+    "pf10_native_ingress_exposure",
+    "pf10_native_ingress_identity",
+    "pf10_native_ingress_network",
+    "pf10_native_internal_network",
+    "pf10_native_member_token_must_come_from_auth",
+    "pf10_native_migration_not_in_profile",
+    "pf10_native_network_membership",
+    "pf10_native_node_manifest_missing",
+    "pf10_native_node_pull_failed",
+    "pf10_native_node_registry_denied",
+    "pf10_native_node_registry_transport",
+    "pf10_native_persistent_database",
+    "pf10_native_private_filename",
+    "pf10_native_private_path_redirect",
+    "pf10_native_private_temp_required",
+    "pf10_native_requires_existing_linux_ci",
+    "pf10_native_rest_manifest_missing",
+    "pf10_native_rest_platform_config",
+    "pf10_native_rest_platform_manifest",
+    "pf10_native_rest_pull_failed",
+    "pf10_native_rest_ready",
+    "pf10_native_rest_registry_denied",
+    "pf10_native_rest_registry_transport",
+    "pf10_native_rest_version",
+    "pf10_native_scenario_required",
+    "pf10_native_sdk_verified_identity",
+    "pf10_native_service_port",
+    "pf10_native_source_remote",
+    "pf10_native_source_sha",
+    "pf10_native_unknown_profile",
+    "pf10_native_write_outcome_unknown_stop_no_replay",
+    "playwright_timeout",
+    "selector_ambiguous",
+})
+
+CONTROLLER_FAILURE_CODES = frozenset({
+    "assembled_app_copy_not_exact",
+    "assembled_applied_sql_not_exact",
+    "assembled_artifact_location",
+    "assembled_browser_cleanup_unconfirmed",
+    "assembled_browser_owner_marker",
+    "assembled_browser_temp_owner",
+    "assembled_capsule_changed",
+    "assembled_capsule_members",
+    "assembled_capsule_path",
+    "assembled_capsule_size",
+    "assembled_child_birth_unconfirmed",
+    "assembled_child_identity",
+    "assembled_cleanup_object_identity",
+    "assembled_cleanup_owned_resource_required",
+    "assembled_control_location",
+    "assembled_docker_cleanup_unconfirmed",
+    "assembled_docker_object_id",
+    "assembled_driver_contract_changed",
+    "assembled_event_input_binding",
+    "assembled_execute_once_only",
+    "assembled_existing_chrome_pin_required",
+    "assembled_existing_failure_no_replay",
+    "assembled_existing_local_docker_required",
+    "assembled_existing_node_required",
+    "assembled_existing_receipt_binding",
+    "assembled_explicit_dispatch_required",
+    "assembled_finalization_failed",
+    "assembled_fresh_run_attempt_required",
+    "assembled_git_credential_not_allowed",
+    "assembled_helper_checkout_changed",
+    "assembled_intent_name",
+    "assembled_intent_source",
+    "assembled_local_command_failed",
+    "assembled_native_failed_no_replay",
+    "assembled_native_log_bound",
+    "assembled_native_not_accepted_see_receipt",
+    "assembled_native_not_confirmed",
+    "assembled_native_owner_marker",
+    "assembled_native_temp_ambiguous",
+    "assembled_native_temp_owner",
+    "assembled_operation_failed",
+    "assembled_private_binding_changed",
+    "assembled_private_ownership",
+    "assembled_product_post_or_replay",
+    "assembled_real_gha_linux_required",
+    "assembled_reviewed_allocation_required",
+    "assembled_sanitized_receipt_required",
+    "assembled_source_remote",
+    "assembled_sql_disk_changed",
+    "assembled_sql_pin_set",
+})
+
+OBSERVED_CHECKS = (
+    "isolation-attested",
+    "four-fresh-auth-users-and-sdk-getuser",
+    "assembled-financial-receipts-and-null-readback",
+    "assembled-consent-and-authorized-version-basis",
+    "immutable-source-default-closed",
+    "assembled-real-member-navigation-and-read-only-dom",
+    "actual-sdk-same-jwt-own-versus-foreign-rls",
+    "expired-source-unverified-dom",
+    "active-source-unverified-dom",
+    "revoked-source-unverified-dom",
+    "advisor-other-client-zero-side-get",
+    "actual-sdk-identity-clear",
+    "actual-sdk-signout-clear",
+    "private-storage-url-and-owned-cleanup",
+)
+
+
 def need(value, code):
     if not value:
         raise ValueError(code)
@@ -345,6 +675,146 @@ def write_outcome_unknown(state, raw):
     return bool((state.get('attempted') and interrupted) or b'write_outcome_unknown_stop_no_replay' in raw)
 
 
+def static_controller_error(error, default):
+    value = str(error)
+    return value if value in CONTROLLER_FAILURE_CODES else default
+
+
+def static_native_error(value):
+    if not isinstance(value, str):
+        return None
+    if value in NATIVE_FAILURE_CODES:
+        return value
+    # Frozen wait() composes a fixed stage with a fixed readiness reason.
+    # Project only the literal stage, never the raw composed string.
+    stages = ('pf10_native_app_readiness', 'pf10_native_auth_ready', 'pf10_native_rest_ready',
+              'pf10_native_database_readiness', 'pf10_native_auth_schema',
+              'p03_legacy_page_ready', 'p03_legacy_dom_state', 'p03_legacy_advisor_refresh',
+              'p03_legacy_identity_clear', 'p03_legacy_signout_clear',
+              'assembled_member_holdings_dom', 'assembled_member_consultation_dom')
+    for stage in stages:
+        if value.startswith(stage + '_'):
+            reason = value[len(stage) + 1:]
+            if reason in ('not_ready', 'read_failed') or (reason.startswith('pf10_native_') and reason in NATIVE_FAILURE_CODES):
+                return stage
+    return None
+
+
+def project_failure_log(raw):
+    result = {'logReadback': 'MISSING', 'observedPassedChecks': None,
+              'lastObservedPassedCheck': None, 'nativeFailureCode': None,
+              'malformedLogRecords': None, 'duplicatePassRecords': None}
+    if raw is None:
+        return result
+    if not isinstance(raw, bytes) or len(raw) > 64 * 1024 * 1024:
+        result['logReadback'] = 'UNAVAILABLE_OR_TOO_LARGE'
+        return result
+    result.update(logReadback='OBSERVED', observedPassedChecks=[],
+                  malformedLogRecords=False, duplicatePassRecords=False)
+    reasons = []
+    prefixes = ('P03_ASSEMBLED_NATIVE_CHECK ', 'P03_ASSEMBLED_FAILURE ')
+    for line in raw.decode('utf8', errors='replace').splitlines():
+        prefix = next((p for p in prefixes if line.startswith(p)), None)
+        if prefix is None:
+            continue
+        if len(line) > 65536:
+            result['malformedLogRecords'] = True
+            continue
+        try:
+            row = json.loads(line[len(prefix):])
+            if not isinstance(row, dict):
+                raise ValueError('not_a_record')
+        except (ValueError, TypeError):
+            result['malformedLogRecords'] = True
+            continue
+        if prefix == prefixes[0]:
+            name = row.get('name')
+            if name in OBSERVED_CHECKS and row.get('status') == 'PASS':
+                if name in result['observedPassedChecks']:
+                    result['duplicatePassRecords'] = True
+                else:
+                    result['observedPassedChecks'].append(name)
+                result['lastObservedPassedCheck'] = name
+        else:
+            reasons.append(static_native_error(row.get('reason')))
+    if len(reasons) == 1:
+        result['nativeFailureCode'] = reasons[0]
+    elif len(reasons) > 1:
+        result['malformedLogRecords'] = True
+    return result
+
+
+def project_attested_counts(data, private):
+    result = {'observedSqlAppliedCount': None, 'observedProductPostIntents': None,
+              'observedFinancialPostIntents': None, 'observedConsentPostIntents': None,
+              'observedOtherProductPostIntents': None}
+    if not isinstance(data, dict) or data.get('sha') != CANDIDATE:
+        return result
+    # Caller obtains data only through native_state(): exact own marker/local path.
+    try:
+        migrations = data.get('migrations')
+        expected = expected_sql(private)
+        if isinstance(migrations, list) and len(migrations) <= len(expected) and migrations == expected[:len(migrations)]:
+            result['observedSqlAppliedCount'] = len(migrations)
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    try:
+        local = Path(data['local'])
+        need(local.is_dir() and not local.is_symlink(), 'assembled_native_temp_owner')
+        # scandir failure is unavailable, not an empty successful glob result.
+        with os.scandir(local) as entries:
+            intent_paths = sorted(local / entry.name for entry in entries
+                                  if entry.name.startswith('intent-') and entry.name.endswith('.json'))
+        posts = Counter()
+        for path in intent_paths:
+            need(re.fullmatch(r'intent-[0-9]{3}\.json', path.name), 'assembled_intent_name')
+            owned(path)
+            value = json.loads(path.read_bytes())
+            need(isinstance(value, dict) and set(value) == {'sha', 'path', 'body'}
+                 and value['sha'] == CANDIDATE and isinstance(value['path'], str)
+                 and value['path'].startswith('/'), 'assembled_intent_source')
+            # Intents prove attempted POSTs, never committed financial effects.
+            if value['path'].startswith('/api/'):
+                posts[value['path']] += 1
+        financial = posts['/api/portfolio/holdings'] + posts['/api/personal-finance/cash-flow']
+        consent = posts['/api/consultation']
+        total = sum(posts.values())
+        result.update(observedProductPostIntents=total, observedFinancialPostIntents=financial,
+                      observedConsentPostIntents=consent, observedOtherProductPostIntents=total - financial - consent)
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    return result
+
+
+def failure_observation(state, temp, private):
+    # This path runs even if cleanup raised. It has no cleanup/account/network
+    # operations, and cannot change acceptance or replay an operation.
+    raw = None
+    try:
+        path = private / 'native.log'
+        if path.exists():
+            owned(path)
+            raw = path.read_bytes()
+    except (OSError, ValueError):
+        pass
+    result = project_failure_log(raw)
+    code = state.get('exitCode')
+    code = code if type(code) is int and -255 <= code <= 255 else None
+    timed_out = state.get('timedOutOrInterrupted')
+    if type(timed_out) is not bool:
+        timed_out = False if ('timedOutOrInterrupted' not in state and state.get('stage') == 'EXECUTED'
+                              and code is not None and code >= 0) else None
+    fallback = state.get('fallbackUsed')
+    result.update(actualExitCode=code, timedOutOrInterrupted=timed_out,
+                  fallbackUsed=fallback if type(fallback) is bool else None)
+    try:
+        data = native_state(temp, private, state)
+    except (OSError, ValueError, KeyError, TypeError):
+        data = None
+    result.update(project_attested_counts(data, private))
+    return result, raw
+
+
 def finalize():
     binding = actual_context()
     workspace, temp, private, app = paths()
@@ -377,10 +847,12 @@ def finalize():
         report.update(safe)
         report['privateLogSha256'] = sha(raw)
     except Exception as error:
-        report['failureCode'] = str(error) if re.fullmatch(r'assembled_[a-z_]+', str(error)) else 'assembled_finalization_failed'
+        report['failureCode'] = static_controller_error(error, 'assembled_finalization_failed')
         report.setdefault('ownedCleanupReadback', 'UNCONFIRMED')
-        raw = (private / 'native.log').read_bytes() if (private / 'native.log').exists() else b''
-        report['writeOutcomeUnknown'] = write_outcome_unknown(state, raw)
+        diagnostics, raw = failure_observation(state, temp, private)
+        report['failureDiagnostics'] = diagnostics
+        report['privateLogSha256'] = sha(raw) if raw is not None else None
+        report['writeOutcomeUnknown'] = write_outcome_unknown(state, raw if raw is not None else b'')
     # Only this freshly constructed projection is eligible for upload, never logs.
     private_json(report_path, report, True)
     state['stage'] = 'FINALIZED'
@@ -397,6 +869,6 @@ if __name__ == '__main__':
     try:
         print(json.dumps({'status': {'prepare': prepare, 'execute': execute, 'finalize': finalize}[args.action]()}))
     except Exception as error:
-        reason = str(error) if re.fullmatch(r'assembled_[a-z_]+', str(error)) else 'assembled_operation_failed'
+        reason = static_controller_error(error, 'assembled_operation_failed')
         print(json.dumps({'status': 'FAIL_NATIVE_NOT_ACCEPTED', 'reason': reason, 'automaticReplay': False}))
         sys.exit(1)

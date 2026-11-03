@@ -1,9 +1,11 @@
 """Offline contract tests only. No native, Docker, Auth, CI impersonation or network."""
 import copy
+import ast
 import hashlib
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -134,7 +136,7 @@ class CapsuleAndReceipt(unittest.TestCase):
             value = {'sha': runner.CANDIDATE, 'path': route,
                      'body': {'clientToken': '00000000-0000-4000-8000-' + str(index).zfill(12)}}
             (folder / ('intent-' + str(index).zfill(3) + '.json')).write_text(json.dumps(value))
-        return {'local': str(folder), 'id': 'assembled-member-admin-00000000-0000-4000-8000-000000000001',
+        return {'sha': runner.CANDIDATE, 'local': str(folder), 'id': 'assembled-member-admin-00000000-0000-4000-8000-000000000001',
                 'migrations': runner.expected_sql(self.private)}
 
     def test_exact_applied_sql_and_three_distinct_product_intents_are_required(self):
@@ -167,8 +169,146 @@ class CapsuleAndReceipt(unittest.TestCase):
         self.assertIn('pass 25', output)
         self.assertIn('fail 0', output)
 
+    def test_failure_counts_attest_partial_sql_and_intents_without_claiming_effects(self):
+        with tempfile.TemporaryDirectory() as folder:
+            data = self.intent_fixture(Path(folder))
+            data['migrations'] = data['migrations'][:2]
+            with patch.object(runner, 'owned', return_value=None):
+                values = runner.project_attested_counts(data, self.private)
+            self.assertEqual(values, {'observedSqlAppliedCount': 2, 'observedProductPostIntents': 3,
+                             'observedFinancialPostIntents': 2, 'observedConsentPostIntents': 1,
+                             'observedOtherProductPostIntents': 0})
+            self.assertNotIn('00000000', json.dumps(values))
+
+    def test_missing_unattested_or_unreadable_views_do_not_become_zero(self):
+        for data in [None, {}, {'sha': 'b' * 40}]:
+            self.assertTrue(all(value is None for value in runner.project_attested_counts(data, self.private).values()))
+        with tempfile.TemporaryDirectory() as folder:
+            data = self.intent_fixture(Path(folder))
+            with patch.object(runner.os, 'scandir', side_effect=PermissionError()):
+                values = runner.project_attested_counts(data, self.private)
+            self.assertEqual(values['observedSqlAppliedCount'], 18)
+            self.assertIsNone(values['observedProductPostIntents'])
+            (Path(folder) / 'intent-002.json').write_text('{incomplete')
+            with patch.object(runner, 'owned', return_value=None):
+                values = runner.project_attested_counts(data, self.private)
+            self.assertIsNone(values['observedFinancialPostIntents'])
+
+    def test_explicitly_observed_empty_intent_directory_is_distinct_from_missing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            data = {'sha': runner.CANDIDATE, 'local': folder, 'migrations': []}
+            values = runner.project_attested_counts(data, self.private)
+            self.assertEqual(values['observedSqlAppliedCount'], 0)
+            self.assertEqual(values['observedProductPostIntents'], 0)
+        missing = runner.project_attested_counts(data, self.private)
+        self.assertIsNone(missing['observedProductPostIntents'])
+
+    def test_failure_projection_survives_cleanup_failure_and_never_promotes_fourteen_names(self):
+        for cleanup_fails in [True, False]:
+            with self.subTest(cleanup_fails=cleanup_fails), tempfile.TemporaryDirectory() as folder:
+                workspace = Path(folder); private = workspace / 'private'; private.mkdir()
+                shutil.copytree(self.capsule, private / 'capsule')
+                native = workspace / 'native'; native.mkdir()
+                data = self.intent_fixture(native)
+                raw = '\n'.join('P03_ASSEMBLED_NATIVE_CHECK ' + json.dumps({'name': name, 'status': 'PASS', 'body': 'SYNTHETIC_PRIVATE_NEVER_FORWARD'}) for name in runner.OBSERVED_CHECKS)
+                raw += '\nP03_ASSEMBLED_FAILURE ' + json.dumps({'reason': 'playwright_timeout', 'body': 'SYNTHETIC_PRIVATE_NEVER_FORWARD'})
+                (private / 'native.log').write_bytes(raw.encode())
+                state = {'binding': {'synthetic': True}, 'stage': 'EXECUTED', 'attempted': True,
+                         'exitCode': 1, 'fallbackUsed': cleanup_fails}
+                error = ValueError('assembled_docker_cleanup_unconfirmed')
+                with patch.object(runner, 'actual_context', return_value=state['binding']), \
+                     patch.object(runner, 'paths', return_value=(workspace, workspace, private, workspace / 'app')), \
+                     patch.object(runner, 'load_state', return_value=state), \
+                     patch.object(runner, 'cleanup', side_effect=error if cleanup_fails else None, return_value=data), \
+                     patch.object(runner, 'native_state', return_value=data), \
+                     patch.object(runner, 'owned', return_value=None), \
+                     patch.object(runner, 'command', side_effect=AssertionError('no process/network expected')):
+                    with self.assertRaises(ValueError): runner.finalize()
+                public = json.loads((workspace / 'assembled-native-artifact/receipt.json').read_text())
+                self.assertEqual(public['status'], 'FAIL_NATIVE_NOT_ACCEPTED')
+                self.assertEqual(public['ownedCleanupReadback'], 'UNCONFIRMED' if cleanup_fails else 'CONFIRMED')
+                diag = public['failureDiagnostics']
+                self.assertEqual(diag['actualExitCode'], 1)
+                self.assertFalse(diag['timedOutOrInterrupted'])
+                self.assertEqual(diag['fallbackUsed'], cleanup_fails)
+                self.assertEqual(len(diag['observedPassedChecks']), 14)
+                self.assertEqual(diag['nativeFailureCode'], 'playwright_timeout')
+                self.assertEqual(diag['observedProductPostIntents'], 3)
+                self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(public))
+                self.assertEqual(public['privateLogSha256'], hashlib.sha256(raw.encode()).hexdigest())
+
+
+class FailureLog(unittest.TestCase):
+    def test_literal_codes_and_only_the_fixed_check_names_survive_projection(self):
+        raw = ('P03_ASSEMBLED_NATIVE_CHECK ' + json.dumps({'name': runner.OBSERVED_CHECKS[0], 'status': 'PASS', 'url': 'https://synthetic.invalid/private'})
+               + '\nP03_ASSEMBLED_NATIVE_CHECK ' + json.dumps({'name': 'SYNTHETIC_PRIVATE_NAME', 'status': 'PASS'})
+               + '\nP03_ASSEMBLED_FAILURE ' + json.dumps({'reason': 'assembled_member_http_status', 'token': 'SYNTHETIC_PRIVATE_TOKEN'})).encode()
+        result = runner.project_failure_log(raw)
+        self.assertEqual(result['observedPassedChecks'], [runner.OBSERVED_CHECKS[0]])
+        self.assertEqual(result['lastObservedPassedCheck'], runner.OBSERVED_CHECKS[0])
+        self.assertEqual(result['nativeFailureCode'], 'assembled_member_http_status')
+        self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(result))
+        self.assertNotIn('https:', json.dumps(result))
+
+    def test_unknown_or_regex_lookalike_errors_are_not_raw_public_codes(self):
+        for reason in ['assembled_private_unknown_payload', 'pf10_native_private_unknown_payload',
+                       'https://synthetic.invalid/private', {'body': 'SYNTHETIC_PRIVATE'}]:
+            raw = ('P03_ASSEMBLED_FAILURE ' + json.dumps({'reason': reason})).encode()
+            self.assertIsNone(runner.project_failure_log(raw)['nativeFailureCode'])
+        self.assertEqual(runner.static_controller_error(ValueError('assembled_private_unknown_payload'), 'assembled_finalization_failed'), 'assembled_finalization_failed')
+        self.assertEqual(runner.static_native_error('p03_legacy_page_ready_not_ready'), 'p03_legacy_page_ready')
+        self.assertIsNone(runner.static_native_error('p03_legacy_page_ready_private_payload'))
+
+    def test_missing_duplicate_and_malformed_records_keep_explicit_uncertainty(self):
+        self.assertIsNone(runner.project_failure_log(None)['observedPassedChecks'])
+        self.assertEqual(runner.project_failure_log(b'')['observedPassedChecks'], [])
+        line = 'P03_ASSEMBLED_NATIVE_CHECK ' + json.dumps({'name': runner.OBSERVED_CHECKS[0], 'status': 'PASS'})
+        result = runner.project_failure_log((line + '\n' + line + '\nP03_ASSEMBLED_FAILURE {bad').encode())
+        self.assertEqual(len(result['observedPassedChecks']), 1)
+        self.assertTrue(result['duplicatePassRecords'])
+        self.assertTrue(result['malformedLogRecords'])
+        self.assertIsNone(result['nativeFailureCode'])
+        raw = '\n'.join('P03_ASSEMBLED_FAILURE ' + json.dumps({'reason': code}) for code in ['playwright_timeout', 'selector_ambiguous'])
+        self.assertIsNone(runner.project_failure_log(raw.encode())['nativeFailureCode'])
+
+    def test_missing_flags_and_attestation_are_null_not_guessed_defaults(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)
+            with patch.object(runner, 'native_state', side_effect=ValueError('assembled_native_owner_marker')):
+                result, raw = runner.failure_observation({'stage': 'STARTING'}, path, path)
+            self.assertIsNone(raw)
+            for key in ['actualExitCode', 'timedOutOrInterrupted', 'fallbackUsed', 'observedSqlAppliedCount', 'observedProductPostIntents']:
+                self.assertIsNone(result[key])
+            with patch.object(runner, 'native_state', return_value=None):
+                result, _ = runner.failure_observation({'stage': 'EXECUTED', 'exitCode': -9}, path, path)
+            self.assertEqual(result['actualExitCode'], -9)
+            self.assertIsNone(result['timedOutOrInterrupted'])
+            with patch.object(runner, 'native_state', return_value=None):
+                result, _ = runner.failure_observation({'stage': 'EXECUTED', 'exitCode': 1,
+                    'timedOutOrInterrupted': 'SYNTHETIC_PRIVATE_INVALID_FLAG'}, path, path)
+            self.assertIsNone(result['timedOutOrInterrupted'])
+            self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(result))
+
 
 class Workflow(unittest.TestCase):
+    def test_success_criteria_private_flags_and_frame_remain_frozen(self):
+        receipt = (HERE / 'receipt.mjs').read_text(encoding='utf8')
+        literal = re.search(r'export const checks = Object\.freeze\(\[(.*?)\]\);', receipt, re.S).group(1)
+        self.assertEqual(tuple(re.findall(r"'([^']+)'", literal)), runner.OBSERVED_CHECKS)
+        self.assertEqual(len(set(runner.OBSERVED_CHECKS)), 14)
+        tree = ast.parse((HERE / 'run.py').read_text(encoding='utf8'))
+        names = {'context', 'actual_context', 'paths', 'private_json', 'safe_env', 'expected_sql',
+                 'prepare', 'load_state', 'execute', 'native_state', 'owned_docker_resource', 'cleanup',
+                 'verify_native_state', 'write_outcome_unknown', 'claim_execution', 'stop_child'}
+        parts = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
+        final = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'finalize')
+        parts.append(next(node for node in final.body if isinstance(node, ast.Try)).body)
+        parts.append(next(node for node in final.body if isinstance(node, ast.Assign)
+                          and any(isinstance(target, ast.Name) and target.id == 'report' for target in node.targets)))
+        text = repr([ast.dump(node, include_attributes=False) if isinstance(node, ast.AST)
+                     else [ast.dump(child, include_attributes=False) for child in node] for node in parts])
+        self.assertEqual(hashlib.sha256(text.encode()).hexdigest(), '23c8a3ff905dc217178b10d13ae335892d38a28eea64e0e7f3da455c7028b5d3')
+
     def test_ordinary_five_jobs_are_byte_equivalent_and_optional_job_is_explicit(self):
         text = (HERE.parents[2] / '.github/workflows/ci.yml').read_text(encoding='utf8')
         normal = text.split('jobs:\n', 1)[1].split('\n  # Optional native execution', 1)[0].rstrip() + '\n'
