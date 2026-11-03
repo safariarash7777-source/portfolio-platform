@@ -1,0 +1,72 @@
+{
+  "status": "PASS_BOUNDED_ACTUAL_MEDIA_PRODUCTION",
+  "atUtc": "2026-11-03T23:54:14.299Z",
+  "source": "a42c61c2739ea73aae071de7fa9ed2fa22041347",
+  "deployment": "dpl_c2yaNaH3ou5tsZNxyyEzEWct7i9f",
+  "url": "https://portfolio-platform-974tjjarr-safariarash7777-4463s-projects.vercel.app/insights",
+  "reader": "Production legacy, not Preview override",
+  "phases": [
+    {
+      "phase": "actual-production-legacy-read",
+      "receivedRows": 60,
+      "cards": 60,
+      "knownRecordedDates": 60,
+      "idSetSha256": "91984e46fd436b0a79c02fc6b466856e49e3928f0c8824f8d141cc60a75f9d08",
+      "layout": "1",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "phase": "7d",
+      "cards": 20,
+      "expectedCards": 20,
+      "membershipMatches": true,
+      "idSetSha256": "8c803b266959f21a08922fc63275ff15ea7f55987d39823d6c8d7ebaa6e36151"
+    },
+    {
+      "phase": "30d",
+      "cards": 60,
+      "expectedCards": 60,
+      "membershipMatches": true,
+      "idSetSha256": "91984e46fd436b0a79c02fc6b466856e49e3928f0c8824f8d141cc60a75f9d08"
+    },
+    {
+      "phase": "reload",
+      "period": "30d",
+      "cards": 60,
+      "sameMembership": true
+    },
+    {
+      "phase": "90d",
+      "cards": 60,
+      "expectedCards": 60,
+      "membershipMatches": true,
+      "idSetSha256": "91984e46fd436b0a79c02fc6b466856e49e3928f0c8824f8d141cc60a75f9d08"
+    },
+    {
+      "phase": "unknown",
+      "cards": 0,
+      "expectedCards": 0,
+      "membershipMatches": true,
+      "idSetSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "phase": "clear",
+      "cards": 60,
+      "sameMembership": true
+    },
+    {
+      "phase": "desktop",
+      "width": 1280,
+      "scroll": 1280,
+      "cards": 60
+    }
+  ],
+  "errors": [],
+  "writes": [],
+  "limits": [
+    "Loaded subset only; recorded dates are not verified source publication or synchronization.",
+    "Existing fallback appearance and raw URL title debts are not accepted as complete UX.",
+    "No private-service or full archive acceptance."
+  ]
+}
