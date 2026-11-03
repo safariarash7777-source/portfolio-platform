@@ -663,11 +663,33 @@ process.exit(Number(process.env.FAKE_EXIT));
 
 const HEALTH_WF = _rf(new URL("../../.github/workflows/relay-health.yml", import.meta.url), "utf8");
 
+function assertHealthCredentialScope(workflow) {
+  const normalized = workflow.replace(/\r\n/g, "\n");
+  const observer = [
+    "      - name: Single passive health and storage receipt",
+    "        if: always()",
+    "        env:",
+    "          RELAY_TOKEN: "+"$"+"{{ secrets.RELAY_TOKEN }}",
+    "          LIARA_API_TOKEN: "+"$"+"{{ secrets.LIARA_API_TOKEN }}",
+    "        run: node scripts/ops/relay-health-receipt.mjs",
+  ].join("\n");
+  assert.ok(normalized.includes(observer), "control-plane credential belongs only to the fixed passive observer step");
+  assert.ok(!normalized.replace(observer, "").includes("LIARA_API_TOKEN"), "no credential outside the observer step");
+  assert.ok(!/liara.*deploy|deploy --app|--path|method:\s*["'](?:POST|PUT|PATCH|DELETE)|(?:-X|--request)\s+(?:POST|PUT|PATCH|DELETE)/i.test(normalized), "no deployment or mutation commands in health workflow");
+}
+
+test("health credential scope rejects extra use and write commands", () => {
+  assertHealthCredentialScope(HEALTH_WF);
+  for (const suffix of ["\n    LIARA_API_TOKEN: forbidden", "\n        run: curl -X POST https://example.invalid", "\n        run: liara deploy"]) {
+    assert.throws(() => assertHealthCredentialScope(HEALTH_WF + suffix));
+  }
+});
+
 test("سلامت: یک workflowِ جدا هست که چیزی منتشر نمی‌کند", () => {
   // وگرنه تنها راهِ دیدنِ حالِ نسخهٔ مستقر «یک deploy دیگر» است، و چون
   // «استقرارِ بدونِ اختلال» خاموش است یعنی هر بررسی یک قطعیِ بی‌دلیل.
   assert.ok(!/liara.*deploy|deploy --app|--path/.test(HEALTH_WF), "این workflow نباید هیچ مسیرِ انتشاری داشته باشد");
-  assert.ok(!/LIARA_API_TOKEN/.test(HEALTH_WF), "به توکنِ انتشار هم نیازی ندارد");
+  assertHealthCredentialScope(HEALTH_WF);
   assert.match(HEALTH_WF, /healthz/);
   assert.match(HEALTH_WF, /workflow_dispatch/);
   assert.ok(!/workflow_run/.test(HEALTH_WF), "نباید خودکار روی هر CI بیفتد");
