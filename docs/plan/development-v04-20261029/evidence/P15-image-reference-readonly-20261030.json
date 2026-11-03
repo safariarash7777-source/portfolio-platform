@@ -1,0 +1,295 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "image IDs/tags/size and all current+stopped container references only; no image env/history dumped",
+  "result": {
+    "at": "2026-10-30T11:24:29.640057+00:00",
+    "images": [
+      {
+        "id": "sha256:a258f0761090b3621f17e32d6fe953496f10b2786b75a08c53418b7747075c31",
+        "repository": "financial-engineering",
+        "tag": "20261028-v12-130524",
+        "size": "185MB",
+        "createdAt": "2026-10-28 13:06:29 +0000 UTC",
+        "referencedBy": [
+          "finance-dashboard-20261028-v12-130524"
+        ]
+      },
+      {
+        "id": "sha256:ca2c25e6b19d859af05f583287a6551a535d5c482b2a992e71f86978751f71ca",
+        "repository": "financial-engineering",
+        "tag": "20261028-v12-125116",
+        "size": "185MB",
+        "createdAt": "2026-10-28 12:52:02 +0000 UTC",
+        "referencedBy": [
+          "finance-dashboard"
+        ]
+      },
+      {
+        "id": "sha256:f9eaba0089a0f92bebfa6fa35c8ae379bea0c385e469bd1724c882f9c2f8080c",
+        "repository": "financial-engineering",
+        "tag": "20261028-v12-124216",
+        "size": "185MB",
+        "createdAt": "2026-10-28 12:49:20 +0000 UTC",
+        "referencedBy": []
+      },
+      {
+        "id": "sha256:f30408d1ed8c3197edff66ca4192106f1e8a924ba15aebedd05ca6e2f6c8e71d",
+        "repository": "fx-dashboard",
+        "tag": "tindex-20261013",
+        "size": "1.18GB",
+        "createdAt": "2026-10-13 08:07:10 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard"
+        ]
+      },
+      {
+        "id": "sha256:486452d0eb49480e9821ca3a3c3898858954cd1325fd2f682ee0d7f99c00e6e6",
+        "repository": "fx-dashboard",
+        "tag": "recovery01-status-20261003",
+        "size": "1.18GB",
+        "createdAt": "2026-10-03 09:48:02 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-tindex-20261013-backup"
+        ]
+      },
+      {
+        "id": "sha256:763965b89c336abd2ffbf04d93987fd7952e07004c07041e31fd84b589bdfaf5",
+        "repository": "fx-dashboard",
+        "tag": "20261001-maintenance-candidate",
+        "size": "1.18GB",
+        "createdAt": "2026-10-01 09:22:15 +0000 UTC",
+        "referencedBy": []
+      },
+      {
+        "id": "sha256:833e161e172392df43e7bd95cb6b1d2884f863dfb54bf2234344668a8da31795",
+        "repository": "fx-dashboard",
+        "tag": "20261001-agent-health",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 22:14:55 +0000 UTC",
+        "referencedBy": [
+          "fx-portable-linux-20261001-bce2e9e",
+          "fx-dashboard-recovery01-status-backup"
+        ]
+      },
+      {
+        "id": "sha256:c0fd00c903144f31c31a029d2ebcce76957a8b95c1117564ee3099287eddce57",
+        "repository": "fx-dashboard",
+        "tag": "20261001-agent-bonds",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 22:04:20 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-agent-health"
+        ]
+      },
+      {
+        "id": "sha256:2a411df19f54fe01d0a6f57a0558c9b665be7a5e5f28a77452f81005881b1930",
+        "repository": "fx-dashboard",
+        "tag": "20260930-precise-data",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 19:33:38 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-agent-bonds"
+        ]
+      },
+      {
+        "id": "sha256:fbd1447b162fa82147a7d2a1b19ebc7973785eb36a25574353fbbbbc42134802",
+        "repository": "fx-dashboard",
+        "tag": "20260930-cbi-agent-ui",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 17:55:39 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-precise-data"
+        ]
+      },
+      {
+        "id": "sha256:ed894e2341a3470a2c228cab6810dd53627ddc1b6aa704a652d28b9daf444924",
+        "repository": "fx-dashboard",
+        "tag": "20260930-agent-visibility",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 17:40:54 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-cbi-agent-ui"
+        ]
+      },
+      {
+        "id": "sha256:4dd1cf930263aab0318485c3979707979a52c4a0c8e581b62ff46e6357633dda",
+        "repository": "fx-dashboard",
+        "tag": "20260930-annual-history",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 16:14:13 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-agent-visibility"
+        ]
+      },
+      {
+        "id": "sha256:cfb34a68d96c6f82c9384f057fba1d624aaec872cea85f868e958dd38e5f6a5c",
+        "repository": "fx-dashboard",
+        "tag": "20260930-us-agent",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 14:16:32 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-annual-history"
+        ]
+      },
+      {
+        "id": "sha256:0ec05246beff220901532b1d22becc75a20d2308ad608c0058dd67fb63a6891a",
+        "repository": "fx-dashboard",
+        "tag": "20260930-us-vintages",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 14:09:47 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-us-agent"
+        ]
+      },
+      {
+        "id": "sha256:bbfbc8934188de69252b3d0c397e1748e3b4ba251f45df1902b94092997c500a",
+        "repository": "fx-dashboard",
+        "tag": "20260930-publications",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 13:00:44 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-us-vintages"
+        ]
+      },
+      {
+        "id": "sha256:74ca2b64d9ac320faec7934d94424317b9e397608312737e2073eabbe26c3c65",
+        "repository": "fx-dashboard",
+        "tag": "20260930-maintenance",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 09:14:41 +0000 UTC",
+        "referencedBy": []
+      },
+      {
+        "id": "sha256:30142768734f17d7e048325cc9e5ad4cdebe1a8728cc5093d6286ca0032b5b28",
+        "repository": "fx-dashboard",
+        "tag": "20260930-display",
+        "size": "1.18GB",
+        "createdAt": "2026-09-30 08:14:55 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-maintenance"
+        ]
+      },
+      {
+        "id": "sha256:182da306f74eb9def812c5f40ecdc7bf58d3d612d524f7f750b9683c337e50a6",
+        "repository": "fx-dashboard",
+        "tag": "20260929-1790714144",
+        "size": "1.18GB",
+        "createdAt": "2026-09-29 20:39:44 +0000 UTC",
+        "referencedBy": [
+          "fx-dashboard-before-display"
+        ]
+      },
+      {
+        "id": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+        "repository": "docker-mirror.liara.ir/library/node",
+        "tag": "22-bookworm-slim",
+        "size": "329MB",
+        "createdAt": "2026-09-23 21:10:23 +0000 UTC",
+        "referencedBy": [
+          "portfolio-auth219-20261002-app",
+          "portfolio-demo844-app",
+          "portfolio-demo844-app-65c215b",
+          "portfolio-accept195-app"
+        ]
+      },
+      {
+        "id": "sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f",
+        "repository": "python",
+        "tag": "3.12-slim",
+        "size": "179MB",
+        "createdAt": "2026-09-19 01:07:11 +0000 UTC",
+        "referencedBy": [
+          "portfolio-auth219-20261002-sink"
+        ]
+      },
+      {
+        "id": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+        "repository": "docker-mirror.liara.ir/library/caddy",
+        "tag": "2",
+        "size": "88.8MB",
+        "createdAt": "2026-09-17 21:58:14 +0000 UTC",
+        "referencedBy": [
+          "portfolio-auth219-20261002-gateway",
+          "portfolio-demo844-gateway",
+          "portfolio-accept195-gateway",
+          "portfolio-stage-gateway-1",
+          "fx-dashboard-proxy"
+        ]
+      },
+      {
+        "id": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "repository": "postgres",
+        "tag": "17-alpine",
+        "size": "424MB",
+        "createdAt": "2026-09-17 21:31:32 +0000 UTC",
+        "referencedBy": [
+          "portfolio-auth219-20261002-db",
+          "portfolio-demo844-db",
+          "portfolio-accept195-db"
+        ]
+      },
+      {
+        "id": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+        "repository": "public.ecr.aws/supabase/storage-api",
+        "tag": "<none>",
+        "size": "1.3GB",
+        "createdAt": "2026-09-16 18:46:46 +0000 UTC",
+        "referencedBy": [
+          "portfolio-auth219-20261002-storage",
+          "portfolio-demo844-storage",
+          "portfolio-accept195-storage",
+          "portfolio-stage-storage-1"
+        ]
+      },
+      {
+        "id": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "repository": "public.ecr.aws/supabase/gotrue",
+        "tag": "<none>",
+        "size": "94.4MB",
+        "createdAt": "2026-09-09 15:34:47 +0000 UTC",
+        "referencedBy": [
+          "portfolio-auth219-20261002-auth",
+          "portfolio-demo844-auth",
+          "portfolio-accept195-auth",
+          "portfolio-stage-auth-1"
+        ]
+      },
+      {
+        "id": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+        "repository": "public.ecr.aws/supabase/postgres",
+        "tag": "17.6.1.167",
+        "size": "1.7GB",
+        "createdAt": "2026-08-28 13:42:31 +0000 UTC",
+        "referencedBy": [
+          "portfolio-recovery-proof-20261024t090243z",
+          "portfolio-recovery-proof-20261023t123955z",
+          "portfolio-media-proof-20261017t175048z",
+          "portfolio-recovery-proof-20261017t174657z",
+          "portfolio-research-restore-20261017t114842z",
+          "portfolio-recovery-proof-20261017t114409z",
+          "portfolio-frozen-proof-20261009t163452z",
+          "portfolio-security-proof-20261006t092801z-retry02",
+          "portfolio-recovery-proof-20261006t092801z",
+          "portfolio-recovery-proof-20261003t101406z",
+          "portfolio-stage-db-1"
+        ]
+      },
+      {
+        "id": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "repository": "docker-mirror.liara.ir/postgrest/postgrest",
+        "tag": "v14.17",
+        "size": "28MB",
+        "createdAt": "2025-07-10 07:36:53 +0000 UTC",
+        "referencedBy": [
+          "portfolio-auth219-20261002-rest",
+          "portfolio-demo844-rest",
+          "portfolio-accept195-rest",
+          "portfolio-stage-rest-1"
+        ]
+      }
+    ],
+    "deleted": false,
+    "allContainerReferencesProtected": true
+  }
+}

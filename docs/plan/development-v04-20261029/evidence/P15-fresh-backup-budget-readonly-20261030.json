@@ -1,0 +1,106 @@
+{
+  "exitCode": 0,
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T12:25:00.388625+00:00",
+    "sourceReadOnlyMetadata": {
+      "databaseBytes": 1425296531,
+      "serverVersion": "17.6",
+      "consultationReaderExists": true,
+      "feedbackGateExists": false,
+      "researchVersionsExists": true
+    },
+    "availableBytes": 11404615680,
+    "archiveCompressionSamples": [
+      {
+        "path": "/root/portfolio-recovery-backups/20261003T101406Z/postgres.dump",
+        "bytes": 2368435622,
+        "samples": [
+          {
+            "offset": 0,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1511928
+          },
+          {
+            "offset": 1180023507,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 2075822
+          },
+          {
+            "offset": 2360047014,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1828987
+          }
+        ]
+      },
+      {
+        "path": "/root/portfolio-recovery-backups/20261006T092801Z/postgres.dump",
+        "bytes": 2369907015,
+        "samples": [
+          {
+            "offset": 0,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1520128
+          },
+          {
+            "offset": 1180759203,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 2075197
+          },
+          {
+            "offset": 2361518407,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1876792
+          }
+        ]
+      },
+      {
+        "path": "/root/portfolio-recovery-backups/20261009T163452Z/postgres.dump",
+        "bytes": 2372409614,
+        "samples": [
+          {
+            "offset": 0,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1527401
+          },
+          {
+            "offset": 1182010503,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 2073845
+          },
+          {
+            "offset": 2364021006,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1897704
+          }
+        ]
+      },
+      {
+        "path": "/root/portfolio-recovery-backups/20261024T090243Z/postgres.dump",
+        "bytes": 2394735017,
+        "samples": [
+          {
+            "offset": 0,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1552969
+          },
+          {
+            "offset": 1193173204,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 2237015
+          },
+          {
+            "offset": 2386346409,
+            "sampleBytes": 8388608,
+            "compressedBytesLevel1": 1841555
+          }
+        ]
+      }
+    ],
+    "sampleIsNotWholeArchiveEstimate": true,
+    "writes": false,
+    "servicesChanged": false,
+    "freshBackupOrRestorePerformed": false,
+    "privateBytesExported": false
+  }
+}

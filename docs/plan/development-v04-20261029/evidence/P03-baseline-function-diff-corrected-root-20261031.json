@@ -1,0 +1,1842 @@
+{
+  "sourceCommit": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+  "at": "2026-10-31T01:05:56.357142+00:00",
+  "sourceFunctionReferencesCheckedAgainstGit": 39,
+  "bodyCounts": {
+    "DIFFERENT_BODY": 16,
+    "EXACT_BODY": 3,
+    "MISSING": 20
+  },
+  "baselineBodies": [
+    {
+      "name": "consultation_private.keys",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.txt",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.day",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.amount",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.source",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.uid",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.period",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.body",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.command",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.reject_mutation",
+      "rawStatus": "EXACT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "EXACT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.access",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.state",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.basis_current",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.research_current",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.execute",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.relation_json",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "consultation_private.load",
+      "rawStatus": "DIFFERENT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "public.command_consultation",
+      "rawStatus": "EXACT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "EXACT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    },
+    {
+      "name": "public.load_consultation",
+      "rawStatus": "EXACT_BODY",
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "EXACT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      },
+      "differentMetadata": []
+    }
+  ],
+  "definerOwners": [
+    {
+      "function": "public.command_consultation",
+      "owner": "postgres",
+      "super": false,
+      "bypass": true,
+      "definer": true
+    },
+    {
+      "function": "public.load_consultation",
+      "owner": "postgres",
+      "super": false,
+      "bypass": true,
+      "definer": true
+    }
+  ],
+  "missingRelations": [
+    "consultation_ticket_private.events",
+    "consultation_ticket_private.prepared_intents",
+    "consultation_ticket_private.receipts",
+    "consultation_ticket_private.requests"
+  ],
+  "rootComparisonScope": "Exact literal function bodies and enumerated metadata only; no full baseline acceptance",
+  "functions": [
+    {
+      "name": "consultation_private.keys",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "d5acc86fa77a95db7b348c226223e3493cf6fb054b31f83dfcd89b7be4a0496a",
+      "actualBodySha256": "c25fcbfe50b405e3fb8e2e19d2880dcce208641b9c4b8da08110814eaeeaeecd",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.txt",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "74cf96645b7183ea810fdeb396d9c81880085979f1d2a2b5ff49ebecb4a12998",
+      "actualBodySha256": "1c5202e55203913ba8682e26510ae3a07a2d9c4f0afa2fa8cd473141c27dc5b2",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 1,
+          "actual": 1,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.day",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "1d167dff8bbe3b814a0c4a9a59bd5950141a6c3d4ed3e55426dd7e987b860607",
+      "actualBodySha256": "2200b3e06bbb9b16ef89f78b77d5e720d589b113d0efc16e8e91695e46ae0b98",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 1,
+          "actual": 1,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.amount",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "b03f32ae7fc74c4f1a6dc50b43a70368781ad1b5fb6fb64063452093731bb9c8",
+      "actualBodySha256": "a90b020f4e03e724988f5e4bca67403c6022476f41d746dbd406f751b700a8d0",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 1,
+          "actual": 1,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.source",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "a1ca61e52d98ba31eb3f2ee5b25e45b92a458cbe04e7c4dcb682e5e9d0da93ec",
+      "actualBodySha256": "30d978994c456a72a3f83281a5623762b6744427b7374b1418efd97e034748b0",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.uid",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "384eb0815cf97776fa24b0619c7e4d7bc4b79c51e422ffa6fa8443de97c36ebc",
+      "actualBodySha256": "bca2c7baa271a5739212567d5f9a5672634f37e897c06c9e885de56a720135b3",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 1,
+          "actual": 1,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.period",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "5a4431a74fc5abefb177686bc2ffb4f4ed4b9bf4c08f0b2eca8b1447e4b1e7d2",
+      "actualBodySha256": "a68ac63db20286bead21c05163a3c9619234867e791034822740e325101f2a23",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.body",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "e758c41b32358a32f1b93d28baac3ab9e3ff1ee099c62e49cecb3ec4c7886159",
+      "actualBodySha256": "0305396120d86eef358daf3fe6650ab0c593136d114ef2b6a91adef0d77633a4",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.command",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "40107f08da6063eb83c90cceb87820264c843161887bc27f7898a93e340f1139",
+      "actualBodySha256": "2a61d49f103427d25da54f172ceccc785378b41832c4a5e63ee463d960e84503",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.reject_mutation",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "EXACT_BODY",
+      "expectedBodySha256": "687be19e04d07c7a442ee2996a702b62a116fc7edeb327543cc57c25e6c22687",
+      "actualBodySha256": "687be19e04d07c7a442ee2996a702b62a116fc7edeb327543cc57c25e6c22687",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "EXACT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.access",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "cb40e860a5618688530cf8d9d13e2cc7c3ed031beaed1c56638db9d368519c6f",
+      "actualBodySha256": "e2494c2695d15500391decc76d466a28001bcf05cc78a691baf743f73c775ec7",
+      "checkedMetadata": {
+        "language": {
+          "expected": "sql",
+          "actual": "sql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "s",
+          "actual": "s",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 2,
+          "actual": 2,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.state",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "21878cdb16be4d4d6c36fb7774db4ae0d448930bb96793a7c95fc5cafafd783f",
+      "actualBodySha256": "52a3898edd5f95a57d57afa1833c03b50ca5bc489aac0c51bc1c82bba412e455",
+      "checkedMetadata": {
+        "language": {
+          "expected": "sql",
+          "actual": "sql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "s",
+          "actual": "s",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.basis_current",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "3ea5613b779275863d998184a504c73a73ec9989c2a8c8aa0f20afc6a8c182f0",
+      "actualBodySha256": "840c9af000950f948161c70abfd807168403b43d1a00c637926b0c26959005bd",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.research_current",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "fbb85dfc985baa62de8c8f7c96ace03bb724effd2b5789f569667d35a06ff95e",
+      "actualBodySha256": "8287177302fba78442d40224fc18427630340ea60ec859ec1046acde59349dd5",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\"",
+            "lock_timeout=3s"
+          ],
+          "actual": [
+            "search_path=\"\"",
+            "lock_timeout=3s"
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.execute",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "df4757eeee9b0fcdb1e1265291ea06d16474a3951a79f7101fb1d5b232f13fb2",
+      "actualBodySha256": "8ebdb4d507d497bad00a27691288d72d30df34b47215f1f6102876a7974f8944",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.relation_json",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "0868e5e4f00772e9e05a55d2914edfc129dd4d66a52c957b6e9ee34214fc995b",
+      "actualBodySha256": "48965fd3d1422ca13ef12959cb810dfc45edff5be6cfe15d33208305d575baf1",
+      "checkedMetadata": {
+        "language": {
+          "expected": "sql",
+          "actual": "sql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "s",
+          "actual": "s",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_private.load",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "DIFFERENT_BODY",
+      "expectedBodySha256": "74cd9be6ad215c427e2ef9386db94eb715f943c5b3af0df051051997c05e4c8c",
+      "actualBodySha256": "49781d4971c39f1895022accf344015ccf87ebc028727529766760810eb4e12f",
+      "checkedMetadata": {
+        "language": {
+          "expected": "plpgsql",
+          "actual": "plpgsql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "DIFFERENT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "public.command_consultation",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "EXACT_BODY",
+      "expectedBodySha256": "fe0b1d040ebc3ee67c8ec93b128f4bc827ff9b1c83c4951fda1803100f4061ae",
+      "actualBodySha256": "fe0b1d040ebc3ee67c8ec93b128f4bc827ff9b1c83c4951fda1803100f4061ae",
+      "checkedMetadata": {
+        "language": {
+          "expected": "sql",
+          "actual": "sql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": true,
+          "actual": true,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 0,
+          "actual": 0,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "EXACT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "public.load_consultation",
+      "sourcePath": "sql/consultation_workflow.sql",
+      "bodyStatus": "EXACT_BODY",
+      "expectedBodySha256": "67db52c63b9cdac2335caa84bc8aae0bf4b432d4ce838bc14ca9e851e0ab2d77",
+      "actualBodySha256": "67db52c63b9cdac2335caa84bc8aae0bf4b432d4ce838bc14ca9e851e0ab2d77",
+      "checkedMetadata": {
+        "language": {
+          "expected": "sql",
+          "actual": "sql",
+          "status": "EXACT"
+        },
+        "prokind": {
+          "expected": "f",
+          "actual": "f",
+          "status": "EXACT"
+        },
+        "prosecdef": {
+          "expected": true,
+          "actual": true,
+          "status": "EXACT"
+        },
+        "provolatile": {
+          "expected": "v",
+          "actual": "v",
+          "status": "EXACT"
+        },
+        "proisstrict": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proleakproof": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "proparallel": {
+          "expected": "u",
+          "actual": "u",
+          "status": "EXACT"
+        },
+        "proretset": {
+          "expected": false,
+          "actual": false,
+          "status": "EXACT"
+        },
+        "pronargdefaults": {
+          "expected": 3,
+          "actual": 3,
+          "status": "EXACT"
+        },
+        "proconfig": {
+          "expected": [
+            "search_path=\"\""
+          ],
+          "actual": [
+            "search_path=\"\""
+          ],
+          "status": "EXACT"
+        }
+      },
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ],
+      "lineEndingDiagnostic": {
+        "rawBodyStatus": "EXACT_BODY",
+        "crlfToLfOnlyMatches": true,
+        "bareCrCount": 0,
+        "sourceOrDatabaseChanged": false
+      }
+    },
+    {
+      "name": "consultation_ticket_private.permission",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "1715c63f3b66c3ee64c314dd1850e458b04b2957774d1d063225525dde5c88b6",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.capability",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "95312c3c0422af11f23534a7f4b7878523f8a3a9686ef46efb2ef9d8e933814a",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.recommendation",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "691bf5ea243137efe6fbcccb23dcb65f5d4c039cb2c9708f5dfec9a3d2a82747",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.command",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "889a325593316f189ea48d8fd267f9343c786d167d10b908b60824d60a39c310",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.authorized",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "ffe059a3b245c27235852725ea7c558fe0307d0537080135c2df91bc3b5dfe70",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.history",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "9d60e0c8d3d58acac760e2bd7192c74a118ac27f322134aa4125b99c7c5cb519",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.load",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "f07642a0c5fcdffe85406998a2bea32b6f0819dc304ed06d8df0a84f1d3dd0d0",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.execute",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "336ff32c7aa6181da8f23a98e17d2085c0cff0cc9743afad4a7dfda63bbbaa98",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "public.load_consultation_ticket_inbox",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "d07b418a3652f15242d75e94604b7e0a94bc8945d61c63f9307e6a6ffe02ceab",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "public.load_consultation_ticket",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "2c1e6bd81716adf6e9218ab2e14b68e4c204f735caac4f06f270d015fc51cce9",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "public.lookup_consultation_ticket",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "8b5acdbbe8a5d2a9da6579ece9945cf1a6c07f7799b5b9f2905fd1ed4abdb80e",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "public.command_consultation_ticket",
+      "sourcePath": "sql/consultation_ticket_requests.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "3237baa686d01f5e4b4c75620d36bf5419712ba4cc1ab4db3d7930463ad0a81a",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.prepared_access",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "e3d7ad5416e82ea986f94b93cee2b6bafd7b8d21bc91e849d2bce5f9cb0ea58f",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.prepared_metadata",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "76ffa92947853f3537970e38852e4cd1a597628f2c4d2bd62dcd6b498f193abd",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.prepared_receipt",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "38a90f21367e9e5813956f2b2acbb74dececff7d5d4b53cf938b403e81c08fce",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.prepare",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "0880f8c1222221586bdda5e38b122923ce5709e8ed5f67b3e70a218079a9f657",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "consultation_ticket_private.prepared_load",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "59170736c59e71777f0a03484ed209c562529c852d7c9351ef66264d07ecf69a",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "public.prepare_consultation_ticket_attempt",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "d36f03d18b4f461b257fb7e4c08b2039f614360be6bbcb4a6cc115e3bedc446b",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "public.lookup_consultation_ticket_attempt",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "ac695155fa481a3415af59222b05fb8891fbd6f555fa77af94e03af5fd2caaa5",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    },
+    {
+      "name": "public.load_consultation_ticket_attempts",
+      "sourcePath": "sql/consultation_ticket_prepared_intents.sql",
+      "bodyStatus": "MISSING",
+      "expectedBodySha256": "57f9d08e36e5708ed45038badb62489cc40fa5508aec022505f4547149a30b32",
+      "actualBodySha256": null,
+      "checkedMetadata": {},
+      "metadataNotFullyCompared": [
+        "argument types/names/default expressions/result/owner/ACL are retained for separate field comparison"
+      ]
+    }
+  ],
+  "rootComparatorCorrection": {
+    "previousFile": "p03-baseline-function-diff-20261031.json",
+    "falsePositive": "research_current lock_timeout=3s was already in c4 source declaration; initial comparator omitted it",
+    "previousFilePreserved": true,
+    "fullProconfigCompared": true
+  }
+}

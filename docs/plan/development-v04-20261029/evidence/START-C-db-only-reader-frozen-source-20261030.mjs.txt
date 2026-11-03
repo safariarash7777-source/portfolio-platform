@@ -1,0 +1,176 @@
+// Local one-off, not a product API. Public Production assets stay in memory.
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
+import publicEnv from '../../../lib/liara-public-env.js';
+import { toMarket } from '../../../lib/market-ir.ts';
+import { iranReadQuality, parseSnapshotQuality, sourceTime, validTimestamp, withValidNav } from '../../../lib/market-quality.ts';
+const ORIGIN = 'https://portfolio-platform-fawn.vercel.app';
+const BASE = 'https://62.60.191.24/liara-preview';
+const DB = `${BASE}/rest/v1/ir_market_snapshots?${new URLSearchParams({ key: 'eq.latest', select: 'updated_at,receiptAt:payload->fetchedAt,quality:payload->snapshotQuality,funds:payload->funds', limit: '1' })}`;
+const hash = b => createHash('sha256').update(b).digest('hex');
+const stamp = () => new Date().toISOString();
+const iso = x => { const at = validTimestamp(x); return at === null ? null : new Date(at).toISOString(); };
+const text = x => typeof x === 'string' && x.length <= 100 ? x : null;
+
+// Existing business helpers reused; raw metadata presence is diagnostic only.
+export function projectStoredFunds(rows, now = Date.now()) {
+  if (!Array.isArray(rows) || rows.length > 1 || rows.some(x => !x || typeof x !== 'object' || Array.isArray(x))) throw new Error('invalid_rows');
+  if (!rows.length) return { status: 'not_found', rawFundRows: null, normalizedFundRows: null, family: null };
+  const row = rows[0];
+  if (!Array.isArray(row.funds)) return { status: 'funds_field_unavailable', rawFundRows: null, normalizedFundRows: null, family: null };
+  const market = toMarket({ funds: row.funds, fetchedAt: row.receiptAt, snapshotQuality: row.quality });
+  const family = iranReadQuality(market, now).families.funds;
+  const producer = parseSnapshotQuality(row.quality);
+  const validated = market.funds.map(f => withValidNav(f, null, now));
+  const rawRows = row.funds.filter(f => f && typeof f === 'object' && !Array.isArray(f));
+  const fields = ['sourceDate', 'sourceTime', 'date', 'date_update', 'time'];
+  const rawSourceFieldPresentCounts = Object.fromEntries(fields.map(key => [key, rawRows.filter(f => typeof f[key] === 'string' && f[key].trim()).length]));
+  const issues = [];
+  if (family.unknownTimeRows) issues.push('price_source_clock_unknown');
+  if (family.staleRows) issues.push('price_source_clock_old');
+  if (family.receivedAt === null) issues.push('family_receipt_unknown');
+  if (!producer?.families?.funds) issues.push('producer_fund_metadata_missing_or_invalid');
+  if (producer?.families?.funds?.retained || producer?.families?.funds?.state === 'stale') issues.push('producer_funds_retained_or_stale');
+  if (row.funds.length !== validated.length) issues.push('rows_rejected_by_existing_reader');
+  const units = { toman: 0, usd: 0 };
+  validated.forEach(f => units[f.unit]++);
+  return {
+    status: 'read', source: 'stored ir_market_snapshots/key=latest via existing anon SELECT; no fallback',
+    databaseUpdatedAt: typeof row.updated_at === 'string' && Number.isFinite(Date.parse(row.updated_at)) ? new Date(row.updated_at).toISOString() : null,
+    snapshotReceivedAt: iso(row.receiptAt),
+    rawFundRows: row.funds.length, normalizedFundRows: validated.length, rejectedFundRows: row.funds.length - validated.length,
+    rawSourceFieldPresentCounts, issues,
+    rawMetadataSamples: rawRows.slice(0, 5).map(f => ({ id: text(f.id), unit: ['toman', 'usd'].includes(f.unit) ? f.unit : null, ...Object.fromEntries(fields.map(key => [key, text(f[key])])) })),
+    normalizedPriceUnits: units, family: { ...family, receivedAtIso: iso(family.receivedAt), validAtIso: iso(family.validAt) },
+    producerSnapshotState: producer?.state ?? null, producerFundFamily: producer?.families?.funds ?? null,
+    samples: validated.slice(0, 5).map(f => ({ id: text(f.id), unit: f.unit, sourceDate: text(f.sourceDate), sourceTime: text(f.sourceTime),
+      sourceAtIso: (() => { const at = sourceTime(f.sourceDate, f.sourceTime); return at !== null && at <= now ? iso(at) : null; })(), navDate: text(f.navDate), navTime: text(f.navTime), navState: f.navState, navReason: text(f.navReason) })),
+  };
+}
+
+
+// No curlrc, direct-path bypass, redirect, retry, cookie, insecure TLS or key argv.
+async function boundedGet(url, limit, proxy, accept, anon) {
+  return await new Promise((resolve, reject) => {
+    const startedAt = stamp();
+    const child = spawn(process.platform === 'win32' ? 'curl.exe' : 'curl', [
+      '--disable', '--silent', '--show-error', '--request', 'GET', '--proxy', proxy,
+      '--noproxy', '', '--retry', '0', '--proto', '=https', '--max-redirs', '0',
+      '--connect-timeout', '3', '--max-time', '5', '--include', '--suppress-connect-headers',
+      '--header', '@-', '--write-out', '\nPUBLIC_STORED_HTTP_STATUS:%{http_code}', '--url', url,
+    ], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+    const chunks = []; let bytes = 0, finished = false;
+    const done = (error, value) => { if (finished) return; finished = true; clearTimeout(timer); error ? reject(error) : resolve(value); };
+    const timer = setTimeout(() => { child.kill(); done(new Error('local_deadline')); }, 8000);
+    child.stdout.on('data', b => { bytes += b.length; if (bytes > limit + 65536 + 80) { child.kill(); done(new Error('body_limit')); } else chunks.push(b); });
+    child.stderr.on('data', () => {});
+    child.on('error', () => done(new Error('curl_unavailable')));
+    child.stdin.on('error', () => {});
+    child.on('close', code => {
+      if (finished) return;
+      const all = Buffer.concat(chunks);
+      const marker = all.subarray(-80).toString('utf8').match(/\nPUBLIC_STORED_HTTP_STATUS:(\d{3})$/);
+      if (code !== 0) return done(Object.assign(new Error('transport_failed'), { curlExit: code, httpStatus: marker ? Number(marker[1]) : null }));
+      if (!marker) return done(new Error('http_status_missing'));
+      let rest = all.subarray(0, all.length - Buffer.byteLength(marker[0])), headers = '';
+      while (rest.subarray(0, 5).toString() === 'HTTP/') {
+        const boundary = rest.indexOf('\r\n\r\n');
+        if (boundary < 0 || boundary > 65536) return done(new Error('invalid_headers'));
+        headers = rest.subarray(0, boundary).toString('utf8'); rest = rest.subarray(boundary + 4);
+      }
+      if (!headers || rest.length > limit) return done(new Error('body_limit'));
+      const header = name => { const m = headers.match(new RegExp(`^${name}:\\s*([^\\r\\n]{0,120})$`, 'mi')); return m?.[1] ?? null; };
+      done(null, { body: rest, meta: { url, startedAt, finishedAt: stamp(), status: Number(marker[1]), bytes: rest.length,
+        sha256: hash(rest), responseDate: header('date'), lastModified: header('last-modified'), contentType: header('content-type') } });
+    });
+    child.stdin.end(`Accept: ${accept}\n${anon ? `apikey: ${anon}\nAuthorization: Bearer ${anon}\n` : ''}`);
+  });
+}
+
+export function selectAssetUrls(html) {
+  const urls = [];
+  for (const match of html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) {
+    try {
+      const u = new URL(match[1].replaceAll('&amp;', '&'), ORIGIN);
+      if (u.origin !== ORIGIN || u.username || u.password || u.hash || !u.pathname.startsWith('/_next/static/') || !u.pathname.endsWith('.js')) continue;
+      if (u.search && !/^\?dpl=dpl_[A-Za-z0-9]+$/.test(u.search)) continue;
+      if (!urls.includes(u.href)) urls.push(u.href);
+    } catch { /* Never execute HTML or follow an arbitrary source. */ }
+  }
+  const rank = s => /\/app\/.*login.*\/page-/.test(s) ? 0 : /\/app\/layout-/.test(s) ? 1 : 2;
+  return urls.sort((a, b) => rank(a) - rank(b)).slice(0, 3);
+}
+
+// Inspect only the payload role before recovering an accepted public anon key.
+// Do not collect service_role/secret strings, export keys or execute asset JS.
+function publicPair(body) {
+  const matches = body.matchAll(/["'](https:\/\/[^"'\\\s]{1,240})["']\s*,\s*["']eyJ[A-Za-z0-9_-]{1,2048}\.([A-Za-z0-9_-]{1,4096})\.[A-Za-z0-9_-]{1,2048}["']/g);
+  let accepted = null;
+  for (const m of matches) {
+    if (!/(?:createBrowserClient|createClient)\)?\s*\(\s*$/.test(body.slice(Math.max(0, m.index - 100), m.index))) continue;
+    let claims; try { claims = JSON.parse(Buffer.from(m[2], 'base64url').toString('utf8')); } catch { continue; }
+    if (claims?.role !== 'anon') continue;
+    const url = new URL(m[1]);
+    if (url.username || url.password || url.search || url.hash) throw new Error('public_endpoint_invalid');
+    if (url.href.replace(/\/+$/, '') !== BASE) throw new Error('public_endpoint_mismatch');
+    // Only now recover the explicitly anon token, in memory only.
+    const token = m[0].slice(m[0].indexOf(',') + 1).trim().slice(1, -1);
+    const checked = publicEnv.liaraPublicEnv({ NEXT_PUBLIC_LIARA_API_URL: BASE, NEXT_PUBLIC_LIARA_ANON_KEY: token });
+    if (accepted && accepted.token !== token) throw new Error('ambiguous_public_anon_pair');
+    accepted = { token: checked.NEXT_PUBLIC_SUPABASE_ANON_KEY, source: BASE, role: 'anon' };
+  }
+  return accepted;
+}
+
+export async function run(mode) {
+  const proxy = mode === '--cloud-read-once' ? 'http://proxy:8080' : mode === '--desktop-read-once' ? 'http://127.0.0.1:2080' : null;
+  const r = { schemaVersion: 1, startedAt: stamp(), mode, proxy, publicOrigin: ORIGIN, approvedDatabase: BASE,
+    maxAssets: 3, assets: [], publicConfigSource: null, publicAnonValidated: false, storedAttempts: 0,
+    noPrivateConfigOrEnvRead: true, noKeyPrintedStoredOrPassedInArgv: true, noFallback: true, noRetryOrRedirect: true,
+    lastSuccessfulFinancialIngestJob: 'UNKNOWN' };
+  try {
+    if (!proxy) throw new Error('explicit_mode_required');
+    const html = await boundedGet(`${ORIGIN}/login`, 512 * 1024, proxy, 'text/html');
+    r.publicHtml = html.meta;
+    if (html.meta.status !== 200) throw new Error('public_html_http_error');
+    const assets = selectAssetUrls(html.body.toString('utf8'));
+    r.assetsListed = assets.length;
+    let config = null;
+    for (const asset of assets) {
+      const data = await boundedGet(asset, 1024 * 1024, proxy, 'application/javascript');
+      r.assets.push({ ...data.meta, approvedEndpointLiteralPresent: data.body.includes(Buffer.from(BASE)), browserClientConstructorPresent: data.body.includes(Buffer.from('createBrowserClient')) });
+      if (data.meta.status !== 200) throw new Error('public_asset_http_error');
+      config = publicPair(data.body.toString('utf8'));
+      if (config) { r.publicConfigSource = data.meta.url; break; }
+    }
+    if (!config) throw new Error('public_anon_pair_not_found_in_bounded_assets');
+    r.publicAnonValidated = true; r.publicRole = config.role; r.publicEndpoint = config.source;
+    r.storedAttempts = 1;
+    // Intent is safe metadata only; no token, payload claims or private headers.
+    console.log(JSON.stringify({ intent: 'one existing stored funds SELECT', at: stamp(), endpoint: DB, proxy, publicRole: 'anon' }));
+    const stored = await boundedGet(DB, 2 * 1024 * 1024, proxy, 'application/json', config.token);
+    r.storedResponse = stored.meta;
+    let rows; try { rows = JSON.parse(stored.body.toString('utf8')); } catch { throw new Error('stored_invalid_json'); }
+    if (stored.meta.status !== 200) {
+      r.publicErrorCode = typeof rows?.code === 'string' && /^(PGRST\d{3}|[0-9A-Z]{5})$/.test(rows.code) ? rows.code : null;
+      throw new Error('stored_http_error');
+    }
+    r.stored = projectStoredFunds(rows);
+    r.status = r.stored.status;
+  } catch (error) {
+    const allowed = ['explicit_mode_required', 'local_deadline', 'body_limit', 'curl_unavailable', 'transport_failed', 'http_status_missing', 'invalid_headers',
+      'public_html_http_error', 'public_asset_http_error', 'public_endpoint_invalid', 'public_endpoint_mismatch', 'ambiguous_public_anon_pair',
+      'public_anon_pair_not_found_in_bounded_assets', 'stored_invalid_json', 'stored_http_error', 'invalid_rows'];
+    r.status = 'failed'; r.reason = allowed.includes(error?.message) ? error.message : 'public_config_invalid_or_local_failure';
+    if (Number.isInteger(error?.curlExit)) r.curlExit = error.curlExit;
+    if (Number.isInteger(error?.httpStatus)) r.httpStatus = error.httpStatus;
+  }
+  r.finishedAt = stamp();
+  r.limitations = ['Asset Date/Last-Modified are serving metadata, not financial source time.', 'Database updated_at and receipt are not quote freshness or ingestion job success.', 'This is an anon SELECT of the existing stored key, not provider refresh, fund comparison acceptance or production change.'];
+  return r;
+}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const result = await run(process.argv.length === 3 ? process.argv[2] : null);
+  console.log(JSON.stringify(result, null, 2)); if (result.status !== 'read') process.exitCode = 1;
+}

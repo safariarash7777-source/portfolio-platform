@@ -14,6 +14,7 @@ import Term from "@/components/learn/Term";
 import FundComparisonPanel from "./FundComparisonPanel";
 import type { FundComparisonRow } from "@/lib/core/fundComparison";
 import { marketQualityLabel, type DataQuality } from "@/lib/market-quality";
+import type { SourceAvailability } from "@/lib/market-bounded";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import {
   toPersianDigits,
@@ -131,12 +132,13 @@ function rowsOf<T>(arr: T[], cols: number): T[][] {
 interface Props {
   funds: FundRow[];
   fetchedAt: number | null;
+  availability?: SourceAvailability;
 }
 
 /** سقفِ ردیفِ جدول پیش از «نمایشِ بیشتر». */
 const ROW_PAGE = 60;
 
-export default function FundsFullBoard({ funds, fetchedAt }: Props) {
+export default function FundsFullBoard({ funds, fetchedAt, availability }: Props) {
   // دسته و جست‌وجو در URL می‌نشینند تا برگشت از صفحهٔ صندوق وضعیت را نگه دارد.
   const url = useUrlState();
   const typeFilter = url.get("type", ALL_CATEGORIES);
@@ -284,22 +286,32 @@ export default function FundsFullBoard({ funds, fetchedAt }: Props) {
     [filtered]
   );
 
-  // Empty state
+  // Zero displayed rows alone say nothing about source emptiness. Use the
+  // existing validated family quality; a failed read cannot confirm an empty.
   if (funds.length === 0) {
+    const quality = availability?.families?.funds.state;
+    const timedOut = availability?.state === "timeout" || availability?.reason === "read-timeout";
+    const readError = availability?.reason === "read-error";
+    const confirmedEmpty = quality === "empty" && !timedOut && !readError && availability?.state !== "error";
+    const message = confirmedEmpty ? "منبع صندوق‌ها پاسخ معتبر بدون ردیف داده است. فعلاً صندوقی برای نمایش موجود نیست."
+      : timedOut ? "دریافت دادهٔ صندوق‌ها در زمان مقرر کامل نشد؛ خالی‌بودن منبع تأیید نشده است."
+      : readError ? "خواندن دادهٔ صندوق‌ها ناموفق بود؛ خالی‌بودن منبع تأیید نشده است."
+      : quality === "unavailable" || availability?.state === "error" ? "دادهٔ صندوق‌ها در دسترس نیست؛ خالی‌بودن منبع تأیید نشده است."
+      : "وضعیت دریافت دادهٔ صندوق‌ها مشخص نیست؛ خالی‌بودن منبع تأیید نشده است.";
     return (
-      <div className="card p-6 flex items-start gap-3">
+      <div className="card min-w-0 p-6 flex items-start gap-3">
         <span
           className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
           style={{ background: "var(--gold-tint)", color: "var(--heading)" }}
         >
           <PieChart size={18} />
         </span>
-        <div>
+        <div className="min-w-0">
           <h3 className="font-display font-bold" style={{ color: "var(--heading)" }}>
             دیده‌بان صندوق‌ها
           </h3>
-          <p className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
-            اسنپ‌شات صندوق‌ها خالی است. تا وقتی ردیف معتبر نرسد، این صفحه عدد یا وضعیت ساختگی نشان نمی‌دهد.
+          <p role="status" className="text-sm mt-1 leading-7" style={{ color: "var(--text-2)" }}>
+            {message} تا وقتی ردیف معتبر نرسد، این صفحه عدد یا وضعیت ساختگی نشان نمی‌دهد.
           </p>
         </div>
       </div>

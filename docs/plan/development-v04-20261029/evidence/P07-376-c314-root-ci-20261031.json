@@ -1,0 +1,116 @@
+{
+  "source": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+  "reviewedCodeSource": "c1bb3fb9cc06850bda69af0d5c6703f411261303",
+  "pr": 376,
+  "run": 41172664940,
+  "status": "ALL_5_CI_SUCCESS_ROOT_OFFICIAL_LOG_AND_COMMIT_READBACK",
+  "jobs": [
+    {
+      "id": 124453742830,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124453742974,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124453743067,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124453743119,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124454729206,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "actualCheckout": "2fa15d29e82fd23964a6d21a715c99bc4f4341a9",
+  "tree": "94552f0738571a702942d7a9ef44d1f9f42ba843",
+  "parents": [
+    "805a8d905c9d82697745988b21ff4f1222f8969d",
+    "c314c6f0b6fbc64c45047c65d376250fe3dcf89f"
+  ],
+  "candidateTreeEqualsCheckout": true,
+  "docOnlyChildOfReviewedStack": true,
+  "rootReadOfficialJobs": [
+    124453743119,
+    124453742830
+  ],
+  "all10RouteCasesNamedExactlyOnce": [
+    {
+      "title": "announcement list reads feed metadata, including unparsed notices, without fetching financial reports or relay",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "missing symbol is rejected before DB or provider access",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "transport failure logs only an allowlisted cause and preserves the existing 502 response",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "diagnostic helper drops injected names/codes and cannot change responses if logging fails",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "existing fundamental pair supplies the one feed GET without forwarding incoming headers or mutating shared settings",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "partial/blank/malformed fundamental settings fail closed through the existing resolver without a legacy request",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "upstream 402 is still a headers-stage 502 and never a successful empty or freshness claim",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "only a successful empty stored read returns []; invalid body and transport remain errors without retry",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "missing or whitespace symbol and absent configuration never issue a request",
+      "subtests": 1,
+      "passes": 1
+    },
+    {
+      "title": "binding reuses the pinned resolver and introduces no third configuration/helper",
+      "subtests": 1,
+      "passes": 1
+    }
+  ],
+  "roundedPassLines": [
+    "2026-10-31T05:29:24.1938819Z ok 763 - rounded positive: narrative distinguishes small exports from observed zero without changing the model",
+    "2026-10-31T05:29:52.2485503Z     ok 1 - MonthlySalesCharts",
+    "2026-10-31T05:29:52.2487187Z     ok 2 - FundamentalCharts",
+    "2026-10-31T05:29:52.2498425Z     ok 3 - SymbolFundamentalCard",
+    "2026-10-31T05:29:52.2500198Z ok 17 - rounded positive: all three consumers keep positive rounded shares distinct from real zero",
+    "2026-10-31T05:29:55.7758557Z ok 31 - rounded positive: narrative distinguishes small exports from observed zero without changing the model"
+  ],
+  "static39": true,
+  "registrationUnchanged": true,
+  "appBuildIsNotHumanOrFinancialWholeAcceptance": true,
+  "primaryInstall": "NOT_APPLIED",
+  "serviceRight": "NOT_CONNECTED"
+}

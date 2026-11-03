@@ -1,0 +1,116 @@
+{
+  "exitCode": 0,
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T12:50:51.569194+00:00",
+    "schemas": [
+      {
+        "schema": "auth",
+        "owner": "supabase_admin",
+        "extensionOwned": false,
+        "relations": 28,
+        "functions": 4
+      },
+      {
+        "schema": "cash_flow_private",
+        "owner": "postgres",
+        "extensionOwned": false,
+        "relations": 0,
+        "functions": 8
+      },
+      {
+        "schema": "consultation_private",
+        "owner": "postgres",
+        "extensionOwned": false,
+        "relations": 0,
+        "functions": 17
+      },
+      {
+        "schema": "cron",
+        "owner": "supabase_admin",
+        "extensionOwned": true,
+        "relations": 4,
+        "functions": 7
+      },
+      {
+        "schema": "extensions",
+        "owner": "postgres",
+        "extensionOwned": false,
+        "relations": 2,
+        "functions": 74
+      },
+      {
+        "schema": "goals_private",
+        "owner": "postgres",
+        "extensionOwned": false,
+        "relations": 0,
+        "functions": 8
+      },
+      {
+        "schema": "graphql",
+        "owner": "supabase_admin",
+        "extensionOwned": false,
+        "relations": 1,
+        "functions": 6
+      },
+      {
+        "schema": "graphql_public",
+        "owner": "supabase_admin",
+        "extensionOwned": false,
+        "relations": 0,
+        "functions": 1
+      },
+      {
+        "schema": "net",
+        "owner": "supabase_admin",
+        "extensionOwned": true,
+        "relations": 3,
+        "functions": 12
+      },
+      {
+        "schema": "portfolio_private",
+        "owner": "postgres",
+        "extensionOwned": false,
+        "relations": 0,
+        "functions": 1
+      },
+      {
+        "schema": "portfolio_scope_private",
+        "owner": "postgres",
+        "extensionOwned": false,
+        "relations": 0,
+        "functions": 1
+      },
+      {
+        "schema": "public",
+        "owner": "pg_database_owner",
+        "extensionOwned": false,
+        "relations": 86,
+        "functions": 53
+      },
+      {
+        "schema": "realtime",
+        "owner": "supabase_admin",
+        "extensionOwned": false,
+        "relations": 0,
+        "functions": 0
+      },
+      {
+        "schema": "storage",
+        "owner": "supabase_admin",
+        "extensionOwned": false,
+        "relations": 8,
+        "functions": 19
+      },
+      {
+        "schema": "vault",
+        "owner": "supabase_admin",
+        "extensionOwned": false,
+        "relations": 2,
+        "functions": 5
+      }
+    ],
+    "readOnly": true,
+    "privateRowDataRead": false
+  }
+}

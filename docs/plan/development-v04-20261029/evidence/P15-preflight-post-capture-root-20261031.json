@@ -1,0 +1,545 @@
+{
+  "at": "2026-10-31T08:39:39.913344+00:00",
+  "status": "PASS_READONLY_DESTINATION_PREFLIGHT",
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "sourceHealthyBeforeAfter": true,
+  "catalog": {
+    "schemas": [
+      "consultation_private"
+    ],
+    "functions": [
+      {
+        "name": "access",
+        "schema": "consultation_private",
+        "arguments": "r consultation_relationships, active boolean, advisor_only boolean",
+        "definitionMd5": "3b811796d46463daaa0a2f97a5197100"
+      },
+      {
+        "name": "amount",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, signed boolean",
+        "definitionMd5": "a2b8e49ef37b8e2001a4598d3a3f0e4f"
+      },
+      {
+        "name": "basis_current",
+        "schema": "consultation_private",
+        "arguments": "client uuid, b jsonb",
+        "definitionMd5": "edcaeffa55dd29019d255dd7e543bfc4"
+      },
+      {
+        "name": "body",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "10559ed06201af3c5df7ec6ba0eff5a5"
+      },
+      {
+        "name": "command",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "9fb5f69a1f816bac7efe34e3841ad862"
+      },
+      {
+        "name": "day",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, nullable boolean",
+        "definitionMd5": "c97426f88638fe066c0b4618334b241b"
+      },
+      {
+        "name": "execute",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "8de4673d6860683c37f5ca7352f91913"
+      },
+      {
+        "name": "keys",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, allowed text[], required text[]",
+        "definitionMd5": "7977f918530c29d11053938fd79eb383"
+      },
+      {
+        "name": "load",
+        "schema": "consultation_private",
+        "arguments": "p_relation uuid, p_start_on date, p_end_on date",
+        "definitionMd5": "9e78d5f2fd8ede2002acf5d715616bc0"
+      },
+      {
+        "name": "period",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "fc9d25a0a922585c9e5b280eaf4edb77"
+      },
+      {
+        "name": "reject_mutation",
+        "schema": "consultation_private",
+        "arguments": "",
+        "definitionMd5": "0a7038ca3dc23635198494eb676c1edc"
+      },
+      {
+        "name": "relation_json",
+        "schema": "consultation_private",
+        "arguments": "r consultation_relationships",
+        "definitionMd5": "db03fa2fc26ec5a882c232995f06e9ec"
+      },
+      {
+        "name": "research_current",
+        "schema": "consultation_private",
+        "arguments": "ids jsonb",
+        "definitionMd5": "4fee96ae6509f65614ba0b15b0c007e2"
+      },
+      {
+        "name": "source",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "46e09633a5e23dc6fd7dd87325cd1a59"
+      },
+      {
+        "name": "state",
+        "schema": "consultation_private",
+        "arguments": "s uuid",
+        "definitionMd5": "7cb8d1c05c2bf682cc89705a4b2df82c"
+      },
+      {
+        "name": "txt",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, maximum integer, nullable boolean",
+        "definitionMd5": "ee9055b3d46d0e97b16a8ac6bd931e9d"
+      },
+      {
+        "name": "uid",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, nullable boolean",
+        "definitionMd5": "96079cb239975da6ed6c4ec30d3e9116"
+      },
+      {
+        "name": "command_consultation",
+        "schema": "public",
+        "arguments": "p_request jsonb",
+        "definitionMd5": "0cacbd26dcfee83a414b113e95181743"
+      },
+      {
+        "name": "load_consultation",
+        "schema": "public",
+        "arguments": "p_relation uuid, p_start_on date, p_end_on date",
+        "definitionMd5": "cb7bda131d878dfd807a18e91f72101d"
+      }
+    ],
+    "relations": [
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_actions",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_actions_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_advisor",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_advisors",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_advisors_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_client",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_command_receipts",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_command_receipts_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_events",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_events_event_no_key",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "S",
+        "name": "consultation_events_event_no_seq",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_events_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_events_session_id_kind_key",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_feedback_versions",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_one_owner",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_private_notes",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_private_notes_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_publications",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_publications_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_relationships",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_relationships_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_revocations",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_revocations_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_sessions",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_sessions_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_sessions_relationship_id_session_key_version_key",
+        "forced": false,
+        "schema": "public"
+      }
+    ]
+  },
+  "memoryBytes": {
+    "MemTotal": 8276856832,
+    "MemAvailable": 5716459520,
+    "SwapTotal": 2147479552,
+    "SwapFree": 2090856448
+  },
+  "cpuSample": {
+    "seconds": 1,
+    "busyPercent": 19.39,
+    "logicalCpus": 4,
+    "loadAverage": [
+      1.576171875,
+      1.1943359375,
+      1.43603515625
+    ]
+  },
+  "disk": {
+    "availableBytes": 14019182592,
+    "freeBytes": 17497698304,
+    "filesystemBytes": 81839546368,
+    "tenGiBGuardMet": true
+  },
+  "services": [
+    {
+      "Name": "finance-dashboard-20261028-v12-130524",
+      "CPUPerc": "0.09%",
+      "MemUsage": "42.41MiB / 384MiB",
+      "MemPerc": "11.05%",
+      "PIDs": "5",
+      "BlockIO": "2.67MB / 0B"
+    },
+    {
+      "Name": "fx-dashboard",
+      "CPUPerc": "0.86%",
+      "MemUsage": "275.6MiB / 7.708GiB",
+      "MemPerc": "3.49%",
+      "PIDs": "14",
+      "BlockIO": "445MB / 130MB"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "9.961MiB / 128MiB",
+      "MemPerc": "7.78%",
+      "PIDs": "10",
+      "BlockIO": "37.9MB / 0B"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-storage",
+      "CPUPerc": "0.06%",
+      "MemUsage": "109.9MiB / 256MiB",
+      "MemPerc": "42.92%",
+      "PIDs": "12",
+      "BlockIO": "24.6kB / 3.06MB"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-rest",
+      "CPUPerc": "0.16%",
+      "MemUsage": "17.96MiB / 128MiB",
+      "MemPerc": "14.03%",
+      "PIDs": "14",
+      "BlockIO": "34MB / 0B"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-sink",
+      "CPUPerc": "0.10%",
+      "MemUsage": "29.41MiB / 96MiB",
+      "MemPerc": "30.63%",
+      "PIDs": "4",
+      "BlockIO": "39.2MB / 0B"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-db",
+      "CPUPerc": "0.04%",
+      "MemUsage": "48.31MiB / 512MiB",
+      "MemPerc": "9.44%",
+      "PIDs": "8",
+      "BlockIO": "74.2MB / 2.25MB"
+    },
+    {
+      "Name": "portfolio-demo844-app",
+      "CPUPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "MemPerc": "0.00%",
+      "PIDs": "0",
+      "BlockIO": "0B / 0B"
+    },
+    {
+      "Name": "portfolio-demo844-gateway",
+      "CPUPerc": "0.00%",
+      "MemUsage": "11.5MiB / 64MiB",
+      "MemPerc": "17.97%",
+      "PIDs": "10",
+      "BlockIO": "319kB / 73.7kB"
+    },
+    {
+      "Name": "portfolio-demo844-storage",
+      "CPUPerc": "0.00%",
+      "MemUsage": "103.9MiB / 256MiB",
+      "MemPerc": "40.59%",
+      "PIDs": "12",
+      "BlockIO": "9.42MB / 63.5MB"
+    },
+    {
+      "Name": "portfolio-demo844-rest",
+      "CPUPerc": "0.20%",
+      "MemUsage": "17.99MiB / 128MiB",
+      "MemPerc": "14.06%",
+      "PIDs": "13",
+      "BlockIO": "49.2kB / 483kB"
+    },
+    {
+      "Name": "portfolio-demo844-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "8.93MiB / 128MiB",
+      "MemPerc": "6.98%",
+      "PIDs": "10",
+      "BlockIO": "254kB / 516kB"
+    },
+    {
+      "Name": "portfolio-demo844-db",
+      "CPUPerc": "0.00%",
+      "MemUsage": "27.29MiB / 512MiB",
+      "MemPerc": "5.33%",
+      "PIDs": "8",
+      "BlockIO": "14.4MB / 19.8MB"
+    },
+    {
+      "Name": "portfolio-accept195-app",
+      "CPUPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "MemPerc": "0.00%",
+      "PIDs": "0",
+      "BlockIO": "0B / 0B"
+    },
+    {
+      "Name": "portfolio-accept195-gateway",
+      "CPUPerc": "0.00%",
+      "MemUsage": "15.82MiB / 64MiB",
+      "MemPerc": "24.71%",
+      "PIDs": "10",
+      "BlockIO": "53.9MB / 65.5kB"
+    },
+    {
+      "Name": "portfolio-accept195-storage",
+      "CPUPerc": "0.00%",
+      "MemUsage": "109.6MiB / 256MiB",
+      "MemPerc": "42.82%",
+      "PIDs": "12",
+      "BlockIO": "410kB / 2.41MB"
+    },
+    {
+      "Name": "portfolio-accept195-rest",
+      "CPUPerc": "0.20%",
+      "MemUsage": "14.39MiB / 128MiB",
+      "MemPerc": "11.24%",
+      "PIDs": "14",
+      "BlockIO": "0B / 467kB"
+    },
+    {
+      "Name": "portfolio-accept195-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "9.172MiB / 128MiB",
+      "MemPerc": "7.17%",
+      "PIDs": "10",
+      "BlockIO": "590kB / 0B"
+    },
+    {
+      "Name": "portfolio-accept195-db",
+      "CPUPerc": "0.00%",
+      "MemUsage": "26.17MiB / 512MiB",
+      "MemPerc": "5.11%",
+      "PIDs": "8",
+      "BlockIO": "15.1MB / 16.4MB"
+    },
+    {
+      "Name": "portfolio-stage-gateway-1",
+      "CPUPerc": "0.00%",
+      "MemUsage": "14.09MiB / 7.708GiB",
+      "MemPerc": "0.18%",
+      "PIDs": "11",
+      "BlockIO": "2.62MB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-auth-1",
+      "CPUPerc": "0.07%",
+      "MemUsage": "11.39MiB / 7.708GiB",
+      "MemPerc": "0.14%",
+      "PIDs": "11",
+      "BlockIO": "3.51MB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-rest-1",
+      "CPUPerc": "10.09%",
+      "MemUsage": "75.97MiB / 7.708GiB",
+      "MemPerc": "0.96%",
+      "PIDs": "26",
+      "BlockIO": "819kB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-storage-1",
+      "CPUPerc": "6.15%",
+      "MemUsage": "129.6MiB / 7.708GiB",
+      "MemPerc": "1.64%",
+      "PIDs": "18",
+      "BlockIO": "235MB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-db-1",
+      "CPUPerc": "0.01%",
+      "MemUsage": "238.4MiB / 7.708GiB",
+      "MemPerc": "3.02%",
+      "PIDs": "20",
+      "BlockIO": "4.01GB / 8.34GB"
+    },
+    {
+      "Name": "fx-dashboard-proxy",
+      "CPUPerc": "0.00%",
+      "MemUsage": "24.6MiB / 7.708GiB",
+      "MemPerc": "0.31%",
+      "PIDs": "13",
+      "BlockIO": "41.3MB / 827kB"
+    }
+  ],
+  "sqlReadOnly": true,
+  "sqlWrites": false,
+  "containerMutations": false,
+  "serviceRestart": false,
+  "installation": false,
+  "limits": [
+    "Catalog presence/hash inventory only; exact baseline compatibility not proven",
+    "CPU is a one-second host sample, not a sustained benchmark",
+    "Storage binary and caller/build/right/reader gates remain independent"
+  ]
+}

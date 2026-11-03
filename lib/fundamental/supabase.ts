@@ -14,16 +14,20 @@ import type {
   CodalN30Data,
   SymbolFundamentals,
   ReportScope,
+  ReportSource,
 } from "./types";
 import { fiscalChainKey } from "../core/quarterly";
 import { isMillionRialUnit } from "./units";
 import { approvedCodalUrl } from "../desk/workspace-model";
+import { bindSelectedMonthlyQuantity } from "./monthly-quantity-binding";
+import type { MonthlyQuantityCaptureReceipt } from "../core/monthly-quantity";
 export { isMillionRialUnit } from "./units";
 
 export interface CodalRow {
   id: number;
   symbol: string;
   report_kind: string;
+  captured_at?: string | null;
   period_end: string | null;
   title: string | null;
   source_url: string | null;
@@ -34,6 +38,9 @@ export interface CodalRow {
     period_months?: number;
     period_end_jalali?: string;
     announcement_link?: string | null;
+    link_excel?: string | null;
+    /** Internal producer receipt; validated against the selected row before use. */
+    quantity_capture?: MonthlyQuantityCaptureReceipt | null;
     /** تاریخِ انتشار در کدال، جلالی با رقمِ فارسی — «۱۴۰۴/۰۴/۱۳». */
     date_publish?: string;
     /** ساعتِ انتشار در کدال، رقمِ فارسی — «۱۵:۱۴:۴۰». */
@@ -43,15 +50,24 @@ export interface CodalRow {
 
 const REVALIDATE_MS = 60 * 1000;
 const cache = new Map<string, { at: number; value: SymbolFundamentals | null }>();
+let activeBinding: string | null = null;
+let readRevision = 0;
+let appliedReadRevision = 0;
+let cacheEpoch = 0;
+
+/** Trusted server callers/tests may supply an isolated object; no global configuration is installed. */
+export interface FundamentalReadOptions {
+  environment: Readonly<Record<string, string | undefined>>;
+}
 
 export interface FundamentalRead {
   data: SymbolFundamentals | null;
   state: "ready" | "empty" | "error";
 }
 
-function env(): { url: string; anon: string } | null {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+function env(environment: FundamentalReadOptions["environment"]): { url: string; anon: string } | null {
+  const url = environment.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = environment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) return null;
   return { url: url.replace(/\/+$/, ""), anon };
 }
@@ -72,7 +88,7 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
   return (Object.keys(FETCH_LIMITS) as Array<keyof typeof FETCH_LIMITS>).map((kind) => ({
     kind,
     qs: new URLSearchParams({
-      select: "id,symbol,report_kind,period_end,title,source_url,data,raw",
+      select: "id,symbol,report_kind,period_end,title,source_url,data,raw,captured_at",
       symbol: `eq.${symbol}`,
       report_kind: `eq.${kind}`,
       data: "not.is.null",
@@ -82,16 +98,14 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
   }));
 }
 
-async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
-  const e = env();
-  if (!e) {
-    console.warn("fundamental_read_failed", { phase: "configuration" });
-    return null;
-  }
+async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<CodalRow[] | null> {
   try {
     const parts = await Promise.all(
       fetchQueries(symbol).map(async ({ kind, qs }) => {
         const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
+          method: "GET",
+          redirect: "error",
+          credentials: "omit",
           headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
           signal: AbortSignal.timeout(8000),
           cache: "no-store",
@@ -107,7 +121,7 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
         }
         if (rows.length >= FETCH_LIMITS[kind]) {
           // برش رخ داد: قدیمی‌ترین دوره‌ها بیرون ماندند. بی‌صدا نباشد.
-          console.warn(`codal_reports: ${symbol} ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
+          console.warn(`codal_reports: ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
         }
         return rows;
       }),
@@ -115,7 +129,9 @@ async function fetchRows(symbol: string): Promise<CodalRow[] | null> {
     if (parts.some((p) => p === null)) return null;
     return parts.flat() as CodalRow[];
   } catch (error) {
-    console.warn("fundamental_read_failed", { phase: "request-or-body", reason: error instanceof Error ? error.name : "read-error" });
+    const safeNames = ["AbortError", "TimeoutError", "TypeError", "SyntaxError"];
+    const reason = error instanceof Error && safeNames.includes(error.name) ? error.name : "read-error";
+    console.warn("fundamental_read_failed", { phase: "request-or-body", reason });
     return null;
   }
 }
@@ -201,6 +217,43 @@ export function publishKey(row: Pick<CodalRow, "raw">): string | null {
   if (!/^1[34]\d{2}\/(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])$/.test(d)) return null;
   if (!/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(t)) return null;
   return `${d} ${t}`;
+}
+
+/** Adapt the existing331 record projection without changing selection's legacy defaults. */
+function rowProvenance(row: CodalRow): NonNullable<ReportSource["records"]>[number] {
+  const stamp = row.captured_at;
+  const day = typeof stamp === "string" ? new Date(stamp.slice(0, 10) + "T00:00:00Z") : null;
+  const validCapture = !!day && Number.isFinite(day.getTime())
+    && day.toISOString().slice(0, 10) === stamp?.slice(0, 10)
+    && typeof stamp === "string"
+    && /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(stamp)
+    && Number.isFinite(Date.parse(stamp));
+  const version = parserVersion(row);
+  const rawVersion = row.raw?.parser_version;
+  const suffix = String(row.source_url ?? "").match(/#pv(\d+)$/);
+  const suffixVersion = suffix ? Number(suffix[1]) : null;
+  const explicitRaw = typeof rawVersion === "number" && Number.isSafeInteger(rawVersion) && rawVersion > 0 && rawVersion === version;
+  const explicitSuffix = suffixVersion !== null && Number.isSafeInteger(suffixVersion) && suffixVersion > 0 && suffixVersion === version;
+  // Only two bounded clock scalars, never the raw object/title/body. Preserve
+  // source digits/text; absent, non-string, blank or oversized input stays null.
+  const rawClock = (value: unknown): string | null =>
+    typeof value === "string" && value.trim() && value.length <= 64 ? value : null;
+  return {
+    id: Number.isSafeInteger(row.id) && row.id > 0 ? row.id : null,
+    sourceUrl: approvedCodalUrl(cleanUrl(row)),
+    storedPeriodEnd: typeof row.period_end === "string" ? row.period_end : null,
+    financialPeriodEnd: typeof row.data.period_end === "string" ? row.data.period_end : null,
+    publishedAt: publishKey(row),
+    publishedDateRaw: rawClock(row.raw?.date_publish),
+    publishedTimeRaw: rawClock(row.raw?.time_publish),
+    publishedAtUtc: null,
+    publicationUtcConfidence: "unknown",
+    capturedAtRaw: validCapture ? stamp! : null,
+    capturedAt: validCapture ? new Date(stamp!).toISOString() : null,
+    parserVersion: explicitRaw || explicitSuffix ? version : null,
+    parserVersionSource: explicitRaw ? "raw" : explicitSuffix ? "source_url" : null,
+    amendment: isAmendmentTitle(row.title),
+  };
 }
 
 /**
@@ -371,6 +424,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
         title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${faDigits(fyOf(d))}${consolidated ? " — گزارشِ تلفیقی" : ""} (کدال)`,
         source_url: approvedCodalUrl(cleanUrl(main)),
         publishedAt: publishKey(main),
+        records: [rowProvenance(main)],
         // «اعتبارسنجی متقاطع» فقط حسابی است (ناخالص = فروش − بها) و دامنه را اثبات
         // نمی‌کند؛ برای گزارشِ تلفیقی تیکِ سبز گمراه‌کننده بود (B-056).
         verified,
@@ -387,10 +441,11 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   let n30: SymbolFundamentals["n30"] = null;
   if (n30rows.length > 0) {
     n30 = {
-      data: n30rows.map((r) => r.data as CodalN30Data),
+      data: n30rows.map((r) => bindSelectedMonthlyQuantity(r, symbol)),
       source: {
         title: "گزارش‌های فعالیت ماهانه (ن-۳۰) کدال",
         source_url: approvedCodalUrl(cleanUrl(n30rows[0])),
+        records: n30rows.map(rowProvenance),
         verified: n30rows.every((row) =>
           ["arithmetic", "header+arithmetic"].includes((row.data as CodalN30Data).unit_basis ?? "")),
       },
@@ -442,18 +497,60 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
 /** دادهٔ بنیادی نماد از Supabase؛ نبودِ داده یا خطا → null (بدون عدد ساختگی). */
 export async function getFundamentalsFromSupabase(
   symbol: string,
+  options?: FundamentalReadOptions,
 ): Promise<SymbolFundamentals | null> {
-  return (await readFundamentalsFromSupabase(symbol)).data;
+  return (await readFundamentalsFromSupabase(symbol, options)).data;
 }
 
 /** Preserve read failures for the routed page; successful empty is a separate result. */
-export async function readFundamentalsFromSupabase(symbol: string): Promise<FundamentalRead> {
-  const hit = cache.get(symbol);
-  if (hit && Date.now() - hit.at < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
-  const rows = await fetchRows(symbol);
+export async function readFundamentalsFromSupabase(symbol: string, options?: FundamentalReadOptions): Promise<FundamentalRead> {
+  const revision = ++readRevision;
+  let selected: { url: string; anon: string; expiresAt?: number } | null = null;
+  let binding: string;
+  try {
+    // Keep direct public references so Next's approved build-time mapping is
+    // preserved. An alias of process.env would read legacy runtime values.
+    const environment = options?.environment ?? Object.freeze({
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      FUNDAMENTAL_READ_URL: process.env.FUNDAMENTAL_READ_URL,
+      FUNDAMENTAL_READ_ANON_KEY: process.env.FUNDAMENTAL_READ_ANON_KEY,
+    });
+    const pair = Object.freeze({ FUNDAMENTAL_READ_URL: environment.FUNDAMENTAL_READ_URL, FUNDAMENTAL_READ_ANON_KEY: environment.FUNDAMENTAL_READ_ANON_KEY });
+    const override = pair.FUNDAMENTAL_READ_URL !== undefined || pair.FUNDAMENTAL_READ_ANON_KEY !== undefined;
+    selected = override
+      ? (await import("./read-config.server")).fundamentalReadPair(pair)
+      : env(environment);
+    if (!selected) throw new Error("configuration");
+    // A non-reversible internal digest binds cache identity; no credential enters a cache key/value.
+    const material = new TextEncoder().encode(JSON.stringify([override ? "fundamental" : "legacy", selected.url, selected.anon]));
+    try {
+      const digest = await globalThis.crypto.subtle.digest("SHA-256", material);
+      binding = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    } finally { material.fill(0); }
+    if (selected.expiresAt !== undefined && selected.expiresAt <= Date.now() / 1000) throw new Error("configuration");
+  } catch {
+    if (revision > appliedReadRevision) { appliedReadRevision = revision; cache.clear(); activeBinding = null; cacheEpoch++; }
+    console.warn("fundamental_read_failed", { phase: "configuration" });
+    return { data: null, state: "error" };
+  }
+  // Only completed decisions supersede a binding; a merely-started read cannot disable a valid cache.
+  if (revision > appliedReadRevision) {
+    appliedReadRevision = revision;
+    if (activeBinding !== binding) { cache.clear(); activeBinding = binding; cacheEpoch++; }
+  }
+  if (activeBinding !== binding) {
+    console.warn("fundamental_read_failed", { phase: "configuration" });
+    return { data: null, state: "error" };
+  }
+  const requestEpoch = activeBinding === binding ? cacheEpoch : null;
+  const hit = activeBinding === binding ? cache.get(symbol) : undefined;
+  const age = hit ? Date.now() - hit.at : -1;
+  if (hit && age >= 0 && age < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
+  const rows = await fetchRows(symbol, selected);
   if (rows === null) return { data: null, state: "error" };
   const value = rows && rows.length > 0 ? buildFundamentals(symbol, rows) : null;
   // خطای شبکه (rows=null) کش نمی‌شود تا درخواست بعدی دوباره تلاش کند.
-  if (rows !== null) cache.set(symbol, { at: Date.now(), value });
+  if (activeBinding === binding && requestEpoch !== null && requestEpoch === cacheEpoch && (selected.expiresAt === undefined || selected.expiresAt > Date.now() / 1000)) cache.set(symbol, { at: Date.now(), value });
   return { data: value, state: value ? "ready" : "empty" };
 }

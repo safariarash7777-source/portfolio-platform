@@ -1,0 +1,26 @@
+{
+  "method": "Bounded journal read for previously observed owned stream SSH session PID and exact time window; message text discarded",
+  "pid": 3562413,
+  "exitCode": 0,
+  "events": [
+    {
+      "atUtc": "2026-10-31T08:24:52.809569+00:00",
+      "category": "PUBLIC_KEY_AUTH_ACCEPTED"
+    },
+    {
+      "atUtc": "2026-10-31T08:24:52.818485+00:00",
+      "category": "SESSION_OPENED"
+    },
+    {
+      "atUtc": "2026-10-31T08:35:18.722468+00:00",
+      "category": "SESSION_CLOSED"
+    }
+  ],
+  "sqlWrites": false,
+  "serviceChanges": false,
+  "rawLogPublished": false,
+  "limits": [
+    "Categories do not independently locate the cause in router, SSH, remote Python or client crypto.",
+    "No event is not proof that no transport problem occurred."
+  ]
+}

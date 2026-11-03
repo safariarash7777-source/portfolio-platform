@@ -1,0 +1,72 @@
+{
+  "source": "fffbdb611f57d571e1c4eeec8335c3af52de2347",
+  "base": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "tree": "b124e574709f8f9be8ffcbb13f3ace899cb4e333",
+  "status": "ROOT_ARTIFACT_AND_SCOPED_STATIC_REVIEW_PASS_NOT_LIVE_ACCEPTANCE",
+  "rootStaticReview": [
+    "Read the full route and all test diffs; only import/config selection changed from805.",
+    "The same existing server-only resolver is reused; absent overrides preserve the old route semantics, while invalid/partial overrides fail503 without legacy retry.",
+    "GET query, mapping, response, cache, timeout and diagnostics remain on805; incoming credentials are not forwarded.",
+    "10 owner offline VM tests are not root TSX/CI/browser acceptance; A will run the exact two files before combined CI."
+  ],
+  "integrationAllocation": "Exact two-file patch to A branch after rounded-positive local child; no standalone C branch/env/deployment",
+  "comment": "https://github.com/safariarash7777-source/portfolio-platform/pull/372#issuecomment-6539308654",
+  "patch": {
+    "bytes": 13055,
+    "sha256": "36e302ea43d4256ed64b4c5a8e7f481d694a3a580a75b4bf0e8be49ee6a12f1b"
+  },
+  "manifestSha256": "0260dac1500bac81d4adf8ecc12a7f77f531f405fe1183a2be9e743e04ceadf9",
+  "changedFiles": [
+    {
+      "path": "app/api/codal-list/route.test.ts",
+      "baseBlob": "882fd9dd9cbd0cd2616bb610b56d7112a72f8f27",
+      "blob": "9c9743c48bac8787984628355abcc473b30887c4",
+      "bytes": 14912,
+      "sha256": "f38ac33e2f2d1d8a373ba9668929393eacfedc43f6eaf4d526ac44f9d2359c46"
+    },
+    {
+      "path": "app/api/codal-list/route.ts",
+      "baseBlob": "4e329be1aa9ff909a47e1ee7640dbcefbf37129d",
+      "blob": "3077bd49b447720c43fd975b5ca0c6c35aecc1dd",
+      "bytes": 2947,
+      "sha256": "8e599e2d687d090ce93d64f903fc0027454cb2bdd36ab211723246502a552f11"
+    }
+  ],
+  "resolverUnchanged": {
+    "path": "lib/fundamental/read-config.server.ts",
+    "export": "fundamentalReadPair",
+    "unchangedBlob": "c92c70a00719c699936e9c01025bc8c99d9fca0b"
+  },
+  "ownerOfflineEvidence": {
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "realRuntimeRequests": 0,
+    "realEnvReads": 0,
+    "guard": {
+      "network": 0,
+      "childProcess": 0,
+      "sensitiveEnvironment": 0,
+      "privateFile": 0
+    },
+    "typecheckDiagnostics": 0,
+    "typecheckClosureSourceFiles": 6,
+    "completedAtUTC": "2026-10-31T04:55:22.677985+00:00",
+    "harness": "Actual test/route/resolver/pure helpers in VM with synthetic env; actual native Response/NextResponse, JSON decoded in VM realm; server-only marker test alias; no SSR.",
+    "scope": "Mocked fetch tests only; not browser/live acceptance."
+  },
+  "rootRerun": false,
+  "realRequests": 0,
+  "worktreeApplied": false,
+  "CI": false,
+  "deployment": false,
+  "lastFinancialSuccess": "UNKNOWN",
+  "normalDriverFollowup": {
+    "exactCIntegratedLocally": "17e6de8f95a7504dbc065179e851cc7d68e0636c",
+    "roundedParent": "d93adaa9f7881401bbb33957271d7da3a9a85d68",
+    "ownerReportedTSXGuard": "RED_10_TEST_HOOKS_DENIED_BEFORE_PRIVATE_ENV_VALUE",
+    "actualPrivateReads": 0,
+    "envWrites": 0,
+    "newAllocation": "A test-only child using existing805 VM pattern, all10 assertions preserved, route.ts exactC; source not yet live accepted"
+  }
+}

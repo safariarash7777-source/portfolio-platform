@@ -1,0 +1,84 @@
+{
+  "checkedAtUtc": "2026-10-31T03:06:06.980022+00:00",
+  "sourceReadOnly": true,
+  "stamp": {
+    "commit": "f42f579cf8bac4918ac9599bece71618afadd846",
+    "displayVersion": "0.21.5+4905.gf42f579",
+    "builtAt": "2026-09-30T08:43:46.307793+00:00",
+    "source": "git",
+    "dirty": false
+  },
+  "sourceRows": [
+    {
+      "path": "hermes_cli/auth_codex.py",
+      "sha256": "85c4644c052f5f5b3d4dc0f862592b5f13f286bf48d4d239015c3c74ae3f8e91",
+      "matchesInstalledGitCommit": true,
+      "markersPresent": [
+        "openai-codex"
+      ]
+    },
+    {
+      "path": "hermes_cli/auth_codex_browser.py",
+      "sha256": "07ef1319f3ee14b317fe240a9a4a0c1701512364d976113b369b4ceee00070f7",
+      "matchesInstalledGitCommit": true,
+      "markersPresent": [
+        "openai-codex"
+      ]
+    },
+    {
+      "path": "agent/transports/codex.py",
+      "sha256": "60e0bce12901552186e374ab48a5a7c39b06ac22cdc450290a03b3e652bb83c1",
+      "matchesInstalledGitCommit": true,
+      "markersPresent": [
+        "chatgpt.com/backend-api/codex"
+      ]
+    },
+    {
+      "path": "agent/transports/codex_app_server.py",
+      "sha256": "ea064ed203a1d133e0bdd06540b168bc6d373ff063153a01f8c9d92a553cd271",
+      "matchesInstalledGitCommit": true,
+      "markersPresent": []
+    },
+    {
+      "path": "agent/codex_responses_adapter.py",
+      "sha256": "8923e37047274207d8867f5ae92ad308ebaa5ee27f55fb2df5139a2ad8f3115a",
+      "matchesInstalledGitCommit": true,
+      "markersPresent": [
+        "openai-codex"
+      ]
+    }
+  ],
+  "launcher": {
+    "path": "C:\\Users\\Asus\\AppData\\Local\\hermes\\bin\\hermes.exe",
+    "bytes": 109288,
+    "sha256": "b15b47ded5cba8149e30683a0222d01b184fcdf46449b6e5d01a092e94d4210e",
+    "interpreterShebang": "C:\\Users\\Asus\\AppData\\Local\\hermes\\tools\\python-3.14.7+20260901-win32-x64\\python.exe -I",
+    "executed": false,
+    "entryImports": [
+      "hermes_constants",
+      "hermes_cli.main",
+      "pathlib",
+      "hermes_cli._launchers"
+    ]
+  },
+  "interpreterFileVersion": "3.14.7",
+  "interpretation": "markers are observations in five selected source modules only; no exhaustive SIWC compatibility conclusion, auth-store read or inference",
+  "existingResearchRepo": {
+    "path": "C:/Users/Asus/Documents/ChatGPT/\u062a\u0648\u0633\u0639\u0647 \u0633\u0627\u06cc\u062a/research-r2-r5-20261027",
+    "gitHead": "7cfe26122f5c1619ee1605d47d1df44ab1ca2118",
+    "provider": "openai-codex",
+    "model": "gpt-6.1-sol",
+    "policy": "hourly-deep-v1",
+    "effort": "high",
+    "maxTurns": 1,
+    "runSeconds": 180,
+    "timeoutMs": 210000,
+    "maxAttemptsRollingDay": 24,
+    "toolsets": "none",
+    "safeMode": true,
+    "modelAccessConfirmed": false
+  },
+  "authCredentialsRead": false,
+  "modelCalledByThisAudit": false,
+  "taskRunOrLockOrLedgerMutated": false
+}

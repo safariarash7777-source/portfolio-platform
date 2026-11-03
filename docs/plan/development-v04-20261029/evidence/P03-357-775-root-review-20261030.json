@@ -1,0 +1,77 @@
+{
+  "pr": 357,
+  "head": "7752638842c3f4c8a6984e3ec753a6c92aad80fc",
+  "base": "497ae4681783db7aa9bd9339993c36a29e93ed56",
+  "merge": "ac1c1026eb8158c45d669d8039f50848304e47b4",
+  "runId": 41086030631,
+  "status": "LIMITED_CODE_AND_CI_GATE_ACCEPTED",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 124168196952,
+      "name": "Secret scan \u00b7 SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124168197233,
+      "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124168197316,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124168197818,
+      "name": "Database RLS \u00b7 Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124171574324,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "browser": "NOT_RUN_QA_QUEUED",
+  "primaryInstall": "NOT_APPLIED",
+  "testedCheckout": "ac1c1026eb8158c45d669d8039f50848304e47b4",
+  "testedCheckoutParents": [
+    "497ae4681783db7aa9bd9339993c36a29e93ed56",
+    "7752638842c3f4c8a6984e3ec753a6c92aad80fc"
+  ],
+  "sourceTree": "2c45b51583ec75fdb6d32116714c83069fabafd6",
+  "testedTree": "2c45b51583ec75fdb6d32116714c83069fabafd6",
+  "treesEquivalent": true,
+  "changedPaths": [
+    "components/consultation/RepliesPanel.tsx",
+    "components/consultation/SessionCard.tsx",
+    "components/consultation/advisor-next-ui.test.tsx",
+    "components/consultation/consultation-ui.test.tsx",
+    "components/consultation/questionFollowUp.ts",
+    "docs/ops/p03-question-followup-20261030/DELIVERY.fa.md"
+  ],
+  "otherTrackedBlobsUnchangedFrom334": true,
+  "newTestsInExistingRegisteredCoreFiles": [
+    "components/consultation/advisor-next-ui.test.tsx",
+    "components/consultation/consultation-ui.test.tsx"
+  ],
+  "downloadedCiLogSha256": "f516d7f368bc6965de0afab114d9d6eaf69ee7d0be092530b56c16c3faa79cbb",
+  "selectedTestMarkers": [
+    "2026-10-30T16:03:56.6383920Z # Subtest: follow-up keeps distinct questions on one action and counts questions, not reply versions or done events",
+    "2026-10-30T16:03:56.6403662Z ok 145 - follow-up keeps distinct questions on one action and counts questions, not reply versions or done events",
+    "2026-10-30T16:03:56.6706200Z # Subtest: follow-up filter uses actual component handlers and cannot hide a question being edited",
+    "2026-10-30T16:03:56.6707991Z ok 148 - follow-up filter uses actual component handlers and cannot hide a question being edited",
+    "2026-10-30T16:03:56.7004532Z # Subtest: stale reply GET keeps receipt banner pending until exact reply effect is verified",
+    "2026-10-30T16:03:56.7005793Z ok 185 - stale reply GET keeps receipt banner pending until exact reply effect is verified"
+  ],
+  "serviceEntitlement": "NOT_CONNECTED",
+  "standaloneTicketLifecycle": "NOT_IMPLEMENTED",
+  "arashAcceptance": "UNOBSERVED",
+  "privateRawLogsPublished": false
+}

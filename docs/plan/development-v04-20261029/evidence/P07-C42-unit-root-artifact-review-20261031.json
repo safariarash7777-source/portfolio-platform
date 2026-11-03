@@ -1,0 +1,49 @@
+{
+  "head": "42af859a2ae95f486566e01c3f62137dba69d299",
+  "base": "9668620ab24ae6f1f6c11f7b12e19659a1f28bb5",
+  "tree": "32bffe8c38493cdaf281f75f39c5e9a10017561c",
+  "status": "SCOPED_METADATA_ARTIFACT_ROOT_VERIFIED_NOT_CANONICAL_INTEGRATED",
+  "comment": "https://github.com/safariarash7777-source/portfolio-platform/pull/372#issuecomment-6538729121",
+  "patch": {
+    "bytes": 17292,
+    "sha256": "81f852bb192f519c98077fda00f999b8a5f3bc5d20adc142b2cb47112c1546ee",
+    "rootPrivateIndexTreeEqualsCandidate": true
+  },
+  "manifestSha256": "9e9b6c8ca9bdf197af850350179416ae2d249ff8b1e18ecc8193de2a2a48d1f1",
+  "changedFiles": [
+    {
+      "path": "lib/core/monthlyReport.test.ts",
+      "baseBlob": "95593db4b63d06bef6587f7cad85a401f5ef5fa0",
+      "candidateBlob": "600e1892b4a4d39eff48f7a86b531166dcf544dd",
+      "bytes": 27460,
+      "sha256": "d0f02fa4c7d276d3bc6708a7dc4b39eee84c1f39bd7ac5492e97c58bf5b69914"
+    },
+    {
+      "path": "lib/core/monthlyReport.ts",
+      "baseBlob": "fe293e984fbc1436a64f258479b7482fffb66364",
+      "candidateBlob": "a340bb5d497963a7945b3369a02e6f59ce17537f",
+      "bytes": 26130,
+      "sha256": "d44e8d54e1866612a5c7001ef4416a324bcfd7e7aad6d288becf1acd7596d31d"
+    }
+  ],
+  "rootStaticScope": "full additive model delta and11 new tests read, existing329 unit helper read; no numeric mutation observed in delta",
+  "ownerTests": {
+    "pass": 34,
+    "fail": 0,
+    "skip": 0,
+    "numericParityCalls": 51,
+    "offlineGuard": "all zero",
+    "rootReexecuted": false
+  },
+  "limits": [
+    "not integrated with canonical371 null calendar slots/quantity gaps",
+    "unit metadata follows declared existing parser contract; economic accuracy of numeric rates is not accepted",
+    "no old pv2 enrichment, DB reparse, UI label or source.records integration",
+    "full test/build/destination/human acceptance remains open"
+  ],
+  "ownership": "C42 frozen; monthlyReport and test transferred to A market-basis child from805, C42 not blindly copied/merged",
+  "remoteGitRefUpdate": false,
+  "mainMerge": false,
+  "sqlOrProviderOrModel": false,
+  "releaseAuthorized": false
+}

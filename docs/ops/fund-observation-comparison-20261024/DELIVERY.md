@@ -62,3 +62,13 @@ http://127.0.0.1:3218/?width=320
 مبنای بسته `2d98df6a6f7615438882b0435b2211fcac392e87` است. تغییرات در صفحه صندوق، تابلوی صندوق، جزء مقایسه و تست آن، هسته مقایسه و تست آن، شناسنامه بازده تاریخی، ثبت آزمون‌ها و fixture محدود شده‌اند. تصاویر حساب واقعی، کلید، فایل محیط، داده کاربر و خروجی build در بسته قرار نمی‌گیرند. اسکن staged پیش از commit جدا اجرا می‌شود و نتیجه آن در PR گزارش خواهد شد.
 
 قدم بعدی پس از بازبینی کد و CI: شاهد طبقه واحد از مسیر داده مجاز و آزمون واقعی سه صندوق؛ تا آن زمان تکمیل F09 یا مقایسه عددی زنده ادعا نمی‌شود. بازگشت این تغییر، revert همین بسته است؛ migration یا داده ماندگار تازه‌ای وجود ندارد.
+
+
+## مونتاژ شرکت و صندوق برای CI — ۲۰۲۶-۱۰-۳۱
+
+- root کد و بستهٔ محلی صندوق5e8cb76138ebd3a424b4a37ca40bd3594b41e632 را پس از تطبیق مستقل منبع/patch/tree پذیرفتهٔ محدود دانست؛ این پذیرش، اتصال عملیاتی یا Preview نبود. مبنای صندوق،beb2701 و canonicalc314 است؛ پنج‌انتخاب و توضیح SourceAvailability از PR337@bc781 بدون بازسازی منتقل شده‌اند.
+- نسخهٔ شرکت a3c9fdefce66a7413d108613df17162cff63337e، PR379، با merge معمول و بدون force در همین شاخه وارد شد؛ merge 93b761eac9cb9f2ff9d125835966764dcd210418 با parents5e8+a3 وtree98039645a0d95379ab1344ae7ead711584db570c. هر10فایل صندوق عین5e8 وهر8فایل شرکت عینa3 بود. MonthlySalesCharts،متن/واحدها،metadata شرکت وC حفظ شده‌اند.
+- ثبت این child فقط یک guard دقیق deploymentEnabled برای codex/p08-funds-stored-binding-20261031=false و همین الحاقیه است؛ guardهای قبلی وcronها محفوظ‌اند. package.json عینa3 است؛ به جز literal آزمون chart موجودa3، هیچ ثبت تازه یا تغییر lock/workflow/dependency صورت نگرفته است.
+- اصل اتصال: adapter فقط‌سرور ازهمان fundamentalReadPair؛ partial/invalid صفرGET، explicit فقطstoredtable بدونrelay/retry/resultcache؛ deadline کلsnapshot5s وprice/NAV/receipt/read clock مستقل. مسیر بدون override وgetStored بی‌آرگومان همانlegacy است. bulkReturns وAuth تغییر نکرده‌اند؛ class/روشvendor/سودتقسیمی/بازدهکل ازاینbinding استنتاج نمی‌شوند.
+- 24 آزمون مشخص source5e8 قبلاً در VM خصوصی محلی موفق شدند؛ نتیجهٔ normalCI این مونتاژ باhead/tree/actualcheckout تازه در رسید بیرون مخزن گزارش می‌شود. CI قدیمی شرکت یا صندوق به این نسخه تعمیم داده نمی‌شود؛ هر24نام باید درCoreعادی اینhead دیده شود. هیچmanualhook یاrerun درخواست نشده است.
+- root مالک normalCI review،نسخهٔ مشترک یک Preview واقعی باهمان دوIDموجود،نصب وپذیرش است. معیار واقعی بعدی:storedrows باpriceclockunknownصادق،پنج انتخاب/منعششم/حذفپنجم/reset/reload وشرکتA3محفوظ؛ نهfixture، نه اثباتclass/totalreturn/dividend. هیچenv/SQL/Auth/provider/model/main یاPreview در کار مجری تغییر نمی‌کند. مبالغ نامعلوم هزینه صفر فرض نمی‌شوند.

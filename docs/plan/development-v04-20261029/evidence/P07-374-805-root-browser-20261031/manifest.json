@@ -1,0 +1,76 @@
+{
+  "source": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "files": [
+    {
+      "file": "fundamental-actual.ax.txt",
+      "bytes": 29403,
+      "sha256": "f9d7abbb9261fdd2de019f4f00734524adf481ba4d1afe7d83f4435c14c321e2"
+    },
+    {
+      "file": "monthly-real.jpg",
+      "bytes": 53566,
+      "sha256": "dc2735077de3262b6a9c9dd9beb1966cc228925b33a56fe61b93c235eb095bfb"
+    },
+    {
+      "file": "observations.json",
+      "bytes": 3635,
+      "sha256": "82c0e1b7b3484c3e6b3ce2b94e50b03cd3ae23eac41de21282f5d1619c70d6d7"
+    },
+    {
+      "file": "quarterly-real.jpg",
+      "bytes": 74711,
+      "sha256": "3a46e211b41b02ccec4bb8fab7e1c046f0bed2bad8e56ec6ca235d15fa3f0000"
+    },
+    {
+      "file": "reports-actual.ax.txt",
+      "bytes": 10213,
+      "sha256": "9a65d78ab89ef4f82445199cfd82b2de8bb325e3eec9e81155b2e282a500ac90"
+    },
+    {
+      "file": "reports-real.jpg",
+      "bytes": 57368,
+      "sha256": "25d4606c219cad7105f58d1bbfdc9f6c5e051a79d66a7cf1f7490795d3d73c2a"
+    },
+    {
+      "file": "REVIEW.fa.md",
+      "bytes": 9645,
+      "sha256": "7ac46dc47e52d2b775b29613d3e6b70c14ddce774281f4d6aadc281f3bad1134"
+    }
+  ],
+  "images": [
+    {
+      "file": "quarterly-real.jpg",
+      "bytes": 74711,
+      "sha256": "3a46e211b41b02ccec4bb8fab7e1c046f0bed2bad8e56ec6ca235d15fa3f0000",
+      "pixels": [
+        1265,
+        712
+      ],
+      "originalCaptureModifiedAtUtc": "2026-10-31T04:03:33.834722+00:00",
+      "reencoded": false
+    },
+    {
+      "file": "monthly-real.jpg",
+      "bytes": 53566,
+      "sha256": "dc2735077de3262b6a9c9dd9beb1966cc228925b33a56fe61b93c235eb095bfb",
+      "pixels": [
+        1265,
+        712
+      ],
+      "originalCaptureModifiedAtUtc": "2026-10-31T04:02:56.554321+00:00",
+      "reencoded": false
+    },
+    {
+      "file": "reports-real.jpg",
+      "bytes": 57368,
+      "sha256": "25d4606c219cad7105f58d1bbfdc9f6c5e051a79d66a7cf1f7490795d3d73c2a",
+      "pixels": [
+        1265,
+        712
+      ],
+      "originalCaptureModifiedAtUtc": "2026-10-31T04:19:07.998574+00:00",
+      "reencoded": false
+    }
+  ],
+  "scope": "actual public company Preview screenshot/AX evidence only, no personal account or credential body"
+}

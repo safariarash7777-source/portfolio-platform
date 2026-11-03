@@ -35,7 +35,10 @@ export function useUrlState() {
 
   const set = useCallback(
     (updates: Record<string, string | null>) => {
-      const next = new URLSearchParams(params.toString());
+      // A debounced writer can outlive its render's query snapshot. Merge the
+      // current URL so a newer comparison/filter is never silently discarded.
+      if (window.location.pathname !== pathname) return;
+      const next = new URLSearchParams(window.location.search);
       for (const [k, v] of Object.entries(updates)) {
         // مقدارِ پیش‌فرض در URL نمی‌ماند — URLِ تمیز، بدونِ پارامترِ بی‌معنی.
         if (v === null || v === "") next.delete(k);
@@ -44,7 +47,7 @@ export function useUrlState() {
       const qs = next.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
-    [params, pathname, router],
+    [pathname, router],
   );
 
   return { get, set };

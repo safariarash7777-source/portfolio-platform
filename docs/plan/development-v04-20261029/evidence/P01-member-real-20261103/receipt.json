@@ -1,0 +1,85 @@
+{
+  "atUtc": "2026-11-03T14:19:18.457020+00:00",
+  "status": "ACCEPTED_BOUNDED_BASE_LEDGER_ON_PRODUCTION",
+  "productionSha": "56c9818ccb9a546391c500efb9199f01b9ea4091",
+  "productionUrl": "https://portfolio-platform-fawn.vercel.app/dashboard/holdings",
+  "sourceOfInputs": "Only the separately owned ordinary QA account; all amounts/labels synthetic, no customer records",
+  "accountRole": "user",
+  "entitlementGranted": false,
+  "apiPhase": {
+    "postCount": 3,
+    "receiptsConfirmed": 3,
+    "versions": [
+      1,
+      2
+    ],
+    "canonicalIndependentGet": true
+  },
+  "uiPhase": {
+    "postCount": 3,
+    "receiptsConfirmed": 3,
+    "actualFormSubmit": [
+      "holdings",
+      "debts",
+      "scope"
+    ],
+    "versions": [
+      3,
+      4
+    ],
+    "firstDriverTimedOutAfterTwoConfirmedWrites": true,
+    "scopeHadNotBeenSent": true,
+    "recovery": "Reopened authoritative version4, kept the previous attempts, submitted only the previously unsent scope once"
+  },
+  "storedReadback": {
+    "holdingVersions": 4,
+    "positionRows": 4,
+    "debtRows": 3,
+    "scopeRows": 2,
+    "scopesBoundToVersions": [
+      2,
+      4
+    ],
+    "oldHistoryUnchanged": true,
+    "nullInstallmentPreserved": true
+  },
+  "freshLoginReadback": {
+    "status": "PASS_FRESH_LOGIN_CANONICAL_AND_BROWSER_READBACK",
+    "version": 4,
+    "assetValue": 2500000,
+    "debtValue": 500000,
+    "netWorth": 2000000,
+    "estimated": true,
+    "qty": 12.5,
+    "unknownInstallmentPreserved": true,
+    "scopeConfirmed": true,
+    "oldHistoryUnchanged": true,
+    "mobile": {
+      "viewport": 390,
+      "scroll": 390
+    },
+    "errors": [],
+    "financialWrites": 0,
+    "atUtc": "2026-11-03T14:14:57.744Z"
+  },
+  "logout": {
+    "firstActualDashboardLogoutAndGuestGate": "PASS",
+    "finalBrowserLogoutDriver": "UNCONFIRMED_TIMEOUT_PRESERVED",
+    "subsequentFreshPasswordLoginAndVersion4Readback": "PASS",
+    "finalRetirementGlobalLogoutStatus": 204
+  },
+  "retirement": {
+    "banned": true,
+    "sessions": 0,
+    "refreshTokens": 0,
+    "activeRefresh": 0,
+    "historyPreserved": true,
+    "banStatus": 200
+  },
+  "limits": [
+    "This accepts only the tested base-ledger path; consultation/service rights, cash flow, budgets and goals remain separate.",
+    "Initial Preview387 did not accept this native cookie (401); actual controlled writes and acceptance used exact production56c.",
+    "The final browser logout driver timed out; the earlier browser logout/guest gate passed. Native fresh login and final retirement were separately verified.",
+    "No manual human acceptance, migration, Hermes installation or new service cost is claimed."
+  ]
+}

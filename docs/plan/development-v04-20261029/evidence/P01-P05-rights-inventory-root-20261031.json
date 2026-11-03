@@ -1,0 +1,64 @@
+{
+  "version": "INVENTORY-v1",
+  "date": "2026-10-31",
+  "source": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+  "status": "SOURCE_INVENTORY_NOT_SERVICE_CONNECTION",
+  "owner": "existing START-B",
+  "rootEightSourceHashesVerified": {
+    "sql/consultation_ticket_requests.sql": "87a7a02774c8e215e2e72ae68de57a0083efa7de1420952275f43d5fcb20cbaa",
+    "sql/consultation_ticket_prepared_intents.sql": "60b66a3b52f76f4d3866b59a3a8e1fcf9ef823702a47200be0f17b0f929212e1",
+    "sql/phase11_access_tiers.sql": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc",
+    "sql/phase27_member_import.sql": "69507178be682e1437250292699648555c7e3491b4cad83b18b43019f3667148",
+    "app/api/admin/entitlements/route.ts": "ad51472ea0a1f5e742921a2a1678219183f9dc1664e6c0542dc4d3c3dbf52cbc",
+    "lib/access.ts": "ce00a4a1d2b9936074ced65b6e818f67db05a7bfb4fcd4cf4c658eb0bdeac7e8",
+    "lib/consultation/ticketStorageContracts.ts": "229d8d9f10b64d18066bb62ade9029bb2a2146aeab7acb8f0717984534dc1e96",
+    "lib/consultation/ticketAttemptStorageContracts.ts": "84b3efa5cec6fd631cb18fb0f8fe75d532d38db059857bd7e9bda9fc386cce4d"
+  },
+  "rootReadCriticalSources": [
+    "sql/phase11_access_tiers.sql",
+    "lib/consultation/tickets.ts:classifyLegacyConsultingAccess",
+    "app/api/admin/entitlements/route.ts"
+  ],
+  "findings": [
+    "Existing public.entitlements is the legacy reference: consulting/webinar/manual, dates and revocation. It lacks service/resource/terms/quota binding.",
+    "Existing classifyLegacyConsultingAccess already keeps legacy active separate from serviceRightState=not_connected and writeEnabled=false. It must be reused.",
+    "Admin grant has a default months value and a 50-row GET; neither proves approved service terms, a complete snapshot, or unknown-write recovery.",
+    "Ticket permission/capability, prepared and command contracts are fixture-only. A real right cannot be represented as owned_fixture or a fabricated fixtureRunId.",
+    "Payment settlement, analytical full/admin access, or legacy consulting alone cannot authorize this consultation service.",
+    "The already closed M2 webinar policy remains closed in its own scope; it is not generalized to consultation. No new price, duration or quota was selected."
+  ],
+  "ownerReportedReferences": {
+    "PR91": "open/unmerged@6f1dec09f15577e6b0b94ea01e91473d60dc0aa2",
+    "PR355": "Draft/unmerged@a482de1d94bbb3b90ea97303912c4d124ea9a891",
+    "existingDecision": "D024/O10 remain dependent only; M2-PACKAGE-POLICY-20261017 remains closed"
+  },
+  "nextAuthorizedScope": {
+    "owner": "B",
+    "base": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+    "branch": "codex/p01-p05-service-right-diagnostic-20261031",
+    "paths": [
+      "lib/consultation/ticketServiceRightDiagnostic.ts",
+      "lib/consultation/ticketServiceRightDiagnostic.test.ts"
+    ],
+    "stage": "LOCAL_PURE_READER_DIAGNOSTIC_ONLY",
+    "reuse": "classifyLegacyConsultingAccess",
+    "writeEnabled": false,
+    "SQL_or_DTO_UI_or_provider_activation": false
+  },
+  "open": [
+    "Approved binding of a particular existing right to the same service and operations, including open follow-up after expiry.",
+    "Actual destination catalog/rights and service provider remain UNOBSERVED/NOT_CONNECTED.",
+    "Reader-compatible receipt contract must precede a future writer; no blanket conversion of consulting."
+  ],
+  "operations": {
+    "DB": false,
+    "grant": false,
+    "import": false,
+    "purchase": false,
+    "model": false,
+    "SSH": false,
+    "env": false,
+    "deployment": false,
+    "rootReranTests": false
+  }
+}

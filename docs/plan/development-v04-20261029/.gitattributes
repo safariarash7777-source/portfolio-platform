@@ -1,0 +1,2 @@
+# Keep the handoff archive's exact bytes so MANIFEST remains valid on Windows.
+source/* -text

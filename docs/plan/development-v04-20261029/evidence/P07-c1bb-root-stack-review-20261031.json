@@ -1,0 +1,136 @@
+{
+  "source": "c1bb3fb9cc06850bda69af0d5c6703f411261303",
+  "base": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "priorRemoteHead": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+  "tree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf",
+  "pr": 376,
+  "status": "ROOT_BYTES_FIVE_PATCH_TREES_AND_SCOPED_STATIC_REVIEW_PASS_NOT_CI_OR_PREVIEW",
+  "archive": {
+    "bytes": 150644,
+    "sha256": "2bd65df73fa00776624336292b7e7f26e0d239436ace98927a57ad0cca3c31ae",
+    "members": 36,
+    "all35ManifestMembersAnd16GitSources": true
+  },
+  "commits": [
+    {
+      "sha": "d93adaa9f7881401bbb33957271d7da3a9a85d68",
+      "parent": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+      "tree": "46974d4037e1303e164d12aca079d579982195de",
+      "files": [
+        "components/symbol/MonthlySalesCharts.tsx",
+        "components/symbol/FundamentalCharts.tsx",
+        "components/symbol/SymbolFundamentalCard.tsx",
+        "lib/core/monthlyReport.ts",
+        "lib/core/monthlyReport.test.ts",
+        "app/symbol/[symbol]/page.test.ts"
+      ]
+    },
+    {
+      "sha": "17e6de8f95a7504dbc065179e851cc7d68e0636c",
+      "parent": "d93adaa9f7881401bbb33957271d7da3a9a85d68",
+      "tree": "1b73cf84651e38efb2777c403f1585d2d1476800",
+      "files": [
+        "app/api/codal-list/route.ts",
+        "app/api/codal-list/route.test.ts"
+      ]
+    },
+    {
+      "sha": "c1bb3fb9cc06850bda69af0d5c6703f411261303",
+      "parent": "17e6de8f95a7504dbc065179e851cc7d68e0636c",
+      "tree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf",
+      "files": [
+        "app/api/codal-list/route.test.ts"
+      ]
+    }
+  ],
+  "patches": [
+    {
+      "file": "rounded.patch",
+      "base": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+      "head": "d93adaa9f7881401bbb33957271d7da3a9a85d68",
+      "tree": "46974d4037e1303e164d12aca079d579982195de",
+      "bytes": 12502,
+      "sha256": "f4ff3d2e1f8cafd35c9a59cefc15a8cf27064ea93c4afb7e8395c17e80045e5c",
+      "privateIndexReadback": "PASS",
+      "rootPrivateIndexTree": "46974d4037e1303e164d12aca079d579982195de"
+    },
+    {
+      "file": "exact-c.patch",
+      "base": "d93adaa9f7881401bbb33957271d7da3a9a85d68",
+      "head": "17e6de8f95a7504dbc065179e851cc7d68e0636c",
+      "tree": "1b73cf84651e38efb2777c403f1585d2d1476800",
+      "bytes": 12639,
+      "sha256": "ebb2d6d415fb5186fa6969f9ef10f3e7b9897000bd0db30c7998bf840b9b34d2",
+      "privateIndexReadback": "PASS",
+      "rootPrivateIndexTree": "1b73cf84651e38efb2777c403f1585d2d1476800"
+    },
+    {
+      "file": "isolated-harness.patch",
+      "base": "17e6de8f95a7504dbc065179e851cc7d68e0636c",
+      "head": "c1bb3fb9cc06850bda69af0d5c6703f411261303",
+      "tree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf",
+      "bytes": 16833,
+      "sha256": "94f1622c45786853374473b3b2e257e64a1f5e2e578826c754709762b242af52",
+      "privateIndexReadback": "PASS",
+      "rootPrivateIndexTree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf"
+    },
+    {
+      "file": "cumulative-265.patch",
+      "base": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+      "head": "c1bb3fb9cc06850bda69af0d5c6703f411261303",
+      "tree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf",
+      "bytes": 31254,
+      "sha256": "d6bad67e146740b53fced1209a5db039dd4ddfe26d98643e150c144ff71acfed",
+      "privateIndexReadback": "PASS",
+      "rootPrivateIndexTree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf"
+    },
+    {
+      "file": "cumulative-805.patch",
+      "base": "805a8d905c9d82697745988b21ff4f1222f8969d",
+      "head": "c1bb3fb9cc06850bda69af0d5c6703f411261303",
+      "tree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf",
+      "bytes": 83902,
+      "sha256": "c52301f919e2661855718debe642bbc2942328794f134a1c8bdf868ef56b5ad8",
+      "privateIndexReadback": "PASS",
+      "rootPrivateIndexTree": "42fa608dac22ab114a4c28b56db6ffe2368b9adf"
+    }
+  ],
+  "protected265FilesExact": [
+    "lib/fundamental/types.ts",
+    "lib/fundamental/supabase.ts",
+    "lib/fundamental/read-binding.test.ts",
+    "lib/fundamental/read-config.server.ts",
+    "lib/liara-public-env.js",
+    "lib/codal-feed.ts",
+    "lib/stored-read-diagnostics.ts",
+    "lib/fundamental/calc.ts",
+    "lib/core/fundamentalCard.ts",
+    "lib/core/monthly-quantity.ts",
+    "package.json",
+    "package-lock.json",
+    ".github/workflows/ci.yml",
+    "vercel.json"
+  ],
+  "roundedSixFilesFrozenInLaterCommits": true,
+  "CProductionRouteExact": true,
+  "rootStaticReview": [
+    "Read all six rounded source/test diffs: positive tiny export now displays below0.1percent; exact zero stays zero, no pct/value/type/period change.",
+    "Latest-month consumers use the latest existing export amount; aggregate uses the existing whole interval.",
+    "Read the complete isolated-harness diff: real five production modules, actual NextResponse, synthetic context IO; no host private env snapshot/global resolver/fetch/console mutation.",
+    "All original C assertions and ten cases are preserved through IO aliasing; no skip or third configuration/helper."
+  ],
+  "ownerOfflineEvidence": {
+    "models": 65,
+    "pageTestsIncludingThreeConsumerSubtests": 22,
+    "actualTSXRoute": 10,
+    "originalCAssertions": 77,
+    "privateReadsAndWritesFinal": 0,
+    "rootRerun": false,
+    "exactCOriginalRedDeniedBeforeValue": 10
+  },
+  "limits": [
+    "No CI or actual Preview for this new head yet.",
+    "No source ingestion, quantity/rate/unit enrichment, lineage metadata UI or lastSuccess established.",
+    "No main/Production/primary SQL/Auth/model/Hermes change."
+  ]
+}

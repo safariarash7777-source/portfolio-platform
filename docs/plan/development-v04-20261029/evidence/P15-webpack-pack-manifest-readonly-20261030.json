@@ -1,0 +1,903 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "named webpack build-cache pack manifest and canonical package/build-ID hashes; no cache/runtime data or env exported",
+  "result": {
+    "at": "2026-10-30T11:37:47.545560+00:00",
+    "cacheRoots": [
+      {
+        "cacheRoot": "/opt/portfolio-accept195/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-accept195/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 1955561,
+            "device": 64512,
+            "mtimeNs": 1790947289349969197,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 1955560,
+            "device": 64512,
+            "mtimeNs": 1790947289349969197,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 28437114,
+            "inode": 1955555,
+            "device": 64512,
+            "mtimeNs": 1790947284145992397,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 258800752,
+            "inode": 1955554,
+            "device": 64512,
+            "mtimeNs": 1790947285110988098,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7717415,
+            "inode": 1956039,
+            "device": 64512,
+            "mtimeNs": 1790947324247812539,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 106756222,
+            "inode": 1956038,
+            "device": 64512,
+            "mtimeNs": 1790947324540811216,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "cf5e70348d22632cc05d24363f05885fddf52c4898ddf315077127b920fc99ae",
+            "bytes": 7707
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "ea89f718773979d70dd0f859349a76ba9da8bfb999930d08053e2c327c1252ea",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-auth-next-build-20261002/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-auth-next-build-20261002/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 1972209,
+            "device": 64512,
+            "mtimeNs": 1790966268856172876,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 1972208,
+            "device": 64512,
+            "mtimeNs": 1790966268856172876,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 228721648,
+            "inode": 1972202,
+            "device": 64512,
+            "mtimeNs": 1790966264432195922,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 29402850,
+            "inode": 1972203,
+            "device": 64512,
+            "mtimeNs": 1790966262115207990,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47691466,
+            "inode": 1972201,
+            "device": 64512,
+            "mtimeNs": 1790966262026208453,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7873840,
+            "inode": 1972692,
+            "device": 64512,
+            "mtimeNs": 1790966328417861860,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 110498042,
+            "inode": 1972691,
+            "device": 64512,
+            "mtimeNs": 1790966328830859698,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "75a4c8e055949ad7e7f65d018a404f22a3dd7aa23dc33bfdea4907cf924c8f9f",
+            "bytes": 7830
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "821cfe0c3eb0c39af22c5841fab9d8692331a7b27ea3c951e12640fd26ee4f59",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-auth219-20261002/profiles/default/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-auth219-20261002/profiles/default/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 2089391,
+            "device": 64512,
+            "mtimeNs": 1790970959790811052,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 2089390,
+            "device": 64512,
+            "mtimeNs": 1790970959789811058,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 228550283,
+            "inode": 2089384,
+            "device": 64512,
+            "mtimeNs": 1790970955482839591,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 29402853,
+            "inode": 2089385,
+            "device": 64512,
+            "mtimeNs": 1790970952654858319,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47833460,
+            "inode": 2089383,
+            "device": 64512,
+            "mtimeNs": 1790970952554858981,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7877816,
+            "inode": 2089874,
+            "device": 64512,
+            "mtimeNs": 1790971015262442494,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 110514150,
+            "inode": 2089873,
+            "device": 64512,
+            "mtimeNs": 1790971015688439656,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "75a4c8e055949ad7e7f65d018a404f22a3dd7aa23dc33bfdea4907cf924c8f9f",
+            "bytes": 7830
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "d5dfe39ad62a68c8b3b3a1cb3cce932c0e5dc32c38b8a00f3f835a1a6d30b660",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3/main/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 2092729,
+            "device": 64512,
+            "mtimeNs": 1790971751222435157,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 2092728,
+            "device": 64512,
+            "mtimeNs": 1790971751222435157,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 228541254,
+            "inode": 2092722,
+            "device": 64512,
+            "mtimeNs": 1790971745544474291,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 29462089,
+            "inode": 2092723,
+            "device": 64512,
+            "mtimeNs": 1790971742589494657,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47928144,
+            "inode": 2092721,
+            "device": 64512,
+            "mtimeNs": 1790971742497495289,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7873849,
+            "inode": 2093212,
+            "device": 64512,
+            "mtimeNs": 1790971810897023610,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 110498894,
+            "inode": 2093211,
+            "device": 64512,
+            "mtimeNs": 1790971811251021167,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "75a4c8e055949ad7e7f65d018a404f22a3dd7aa23dc33bfdea4907cf924c8f9f",
+            "bytes": 7830
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 2218396,
+            "device": 64512,
+            "mtimeNs": 1790975448645843244,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 2218395,
+            "device": 64512,
+            "mtimeNs": 1790975448645843244,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 228652155,
+            "inode": 2218389,
+            "device": 64512,
+            "mtimeNs": 1790975444464876356,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 29462083,
+            "inode": 2218390,
+            "device": 64512,
+            "mtimeNs": 1790975442221894134,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47901317,
+            "inode": 2218388,
+            "device": 64512,
+            "mtimeNs": 1790975442136894806,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7873840,
+            "inode": 2218879,
+            "device": 64512,
+            "mtimeNs": 1790975506472388321,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 110505983,
+            "inode": 2218878,
+            "device": 64512,
+            "mtimeNs": 1790975506881385123,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "75a4c8e055949ad7e7f65d018a404f22a3dd7aa23dc33bfdea4907cf924c8f9f",
+            "bytes": 7830
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "b3b851124d554dff3b4bc12283bfa5c79908bb70b3d42b0b3d33a849b3b78ab5",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5/main/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 2095954,
+            "device": 64512,
+            "mtimeNs": 1790972044827406383,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 2095953,
+            "device": 64512,
+            "mtimeNs": 1790972044827406383,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 228754132,
+            "inode": 2095947,
+            "device": 64512,
+            "mtimeNs": 1790972040922433420,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 29462092,
+            "inode": 2095948,
+            "device": 64512,
+            "mtimeNs": 1790972038620449359,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47747941,
+            "inode": 2095946,
+            "device": 64512,
+            "mtimeNs": 1790972038532449968,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7873840,
+            "inode": 2096437,
+            "device": 64512,
+            "mtimeNs": 1790972102623006073,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 110498790,
+            "inode": 2096436,
+            "device": 64512,
+            "mtimeNs": 1790972102992003516,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "75a4c8e055949ad7e7f65d018a404f22a3dd7aa23dc33bfdea4907cf924c8f9f",
+            "bytes": 7830
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "5cc5c5a7b26e476ee38565791c635ab3080da912c0c17a5bed3baa893e447fb5",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-auth219-20261002/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-auth219-20261002/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 2086054,
+            "device": 64512,
+            "mtimeNs": 1790967851498706777,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 2086053,
+            "device": 64512,
+            "mtimeNs": 1790967851498706777,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 228716154,
+            "inode": 2086048,
+            "device": 64512,
+            "mtimeNs": 1790967847240729780,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 29402851,
+            "inode": 2086047,
+            "device": 64512,
+            "mtimeNs": 1790967844773743106,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47684420,
+            "inode": 2086046,
+            "device": 64512,
+            "mtimeNs": 1790967844773743106,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7873840,
+            "inode": 2086537,
+            "device": 64512,
+            "mtimeNs": 1790967908274400039,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 110498860,
+            "inode": 2086056,
+            "device": 64512,
+            "mtimeNs": 1790967908674397878,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "75a4c8e055949ad7e7f65d018a404f22a3dd7aa23dc33bfdea4907cf924c8f9f",
+            "bytes": 7830
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "4f6ce0ab08a6a1f4da21ae8c7e380a6c1740daffc458fafb3a0d440bce931f12",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-candidate844-build/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-candidate844-build/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 1958870,
+            "device": 64512,
+            "mtimeNs": 1790958779270203315,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 1958869,
+            "device": 64512,
+            "mtimeNs": 1790958779270203315,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 225675396,
+            "inode": 1958864,
+            "device": 64512,
+            "mtimeNs": 1790958775026249416,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 28668953,
+            "inode": 1958863,
+            "device": 64512,
+            "mtimeNs": 1790958771683285829,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 46753683,
+            "inode": 1958862,
+            "device": 64512,
+            "mtimeNs": 1790958771682285840,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7758407,
+            "inode": 1959349,
+            "device": 64512,
+            "mtimeNs": 1790958838202576818,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 107283405,
+            "inode": 1959348,
+            "device": 64512,
+            "mtimeNs": 1790958838627572389,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "cf5e70348d22632cc05d24363f05885fddf52c4898ddf315077127b920fc99ae",
+            "bytes": 7707
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "301e8d5a95aa397544858628e41c402e1b253098413df451ad658bfd084c6078",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-demo844/source-next-cfa4e21/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-demo844/source-next-cfa4e21",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 1968864,
+            "device": 64512,
+            "mtimeNs": 1790962154544167309,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 1968863,
+            "device": 64512,
+            "mtimeNs": 1790962154544167309,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 228622614,
+            "inode": 1968857,
+            "device": 64512,
+            "mtimeNs": 1790962150183192798,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 29287263,
+            "inode": 1968858,
+            "device": 64512,
+            "mtimeNs": 1790962146710213094,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47709507,
+            "inode": 1968856,
+            "device": 64512,
+            "mtimeNs": 1790962146635213532,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7856566,
+            "inode": 1969347,
+            "device": 64512,
+            "mtimeNs": 1790962213628821473,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 110188184,
+            "inode": 1969346,
+            "device": 64512,
+            "mtimeNs": 1790962214039819064,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "75a4c8e055949ad7e7f65d018a404f22a3dd7aa23dc33bfdea4907cf924c8f9f",
+            "bytes": 7830
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "dd414ab851c2a93d0fdc8990dade1e589fe28d3070efee1c39750572e612b96d",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-demo844/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-demo844/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 1962298,
+            "device": 64512,
+            "mtimeNs": 1790960682849759328,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 1962297,
+            "device": 64512,
+            "mtimeNs": 1790960682849759328,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 225823519,
+            "inode": 1962291,
+            "device": 64512,
+            "mtimeNs": 1790960678620773920,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 28668952,
+            "inode": 1962292,
+            "device": 64512,
+            "mtimeNs": 1790960676297781897,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 46759135,
+            "inode": 1962290,
+            "device": 64512,
+            "mtimeNs": 1790960676265782006,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7758416,
+            "inode": 1962777,
+            "device": 64512,
+            "mtimeNs": 1790960741591547830,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 107329441,
+            "inode": 1962776,
+            "device": 64512,
+            "mtimeNs": 1790960742019546232,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "cf5e70348d22632cc05d24363f05885fddf52c4898ddf315077127b920fc99ae",
+            "bytes": 7707
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "0f8ce797bd891015c9bf68c8170f16afeb53a3af7adce61078fa7f0e2042a300",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      },
+      {
+        "cacheRoot": "/opt/portfolio-p04-build-20261002/source/.next/cache/webpack",
+        "sourceRoot": "/opt/portfolio-p04-build-20261002/source",
+        "recognizedPacks": [
+          {
+            "relativePath": "edge-server-production/index.pack",
+            "bytes": 2460,
+            "inode": 1965571,
+            "device": 64512,
+            "mtimeNs": 1790961616826251443,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "edge-server-production/0.pack",
+            "bytes": 276,
+            "inode": 1965570,
+            "device": 64512,
+            "mtimeNs": 1790961616826251443,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/1.pack",
+            "bytes": 226601954,
+            "inode": 1965564,
+            "device": 64512,
+            "mtimeNs": 1790961612890273401,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/index.pack",
+            "bytes": 28701222,
+            "inode": 1965565,
+            "device": 64512,
+            "mtimeNs": 1790961610405287259,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "server-production/0.pack",
+            "bytes": 47004997,
+            "inode": 1965563,
+            "device": 64512,
+            "mtimeNs": 1790961610315287760,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/index.pack",
+            "bytes": 7762308,
+            "inode": 1966052,
+            "device": 64512,
+            "mtimeNs": 1790961674806926602,
+            "regularCachePack": true
+          },
+          {
+            "relativePath": "client-production/0.pack",
+            "bytes": 108259919,
+            "inode": 1966051,
+            "device": 64512,
+            "mtimeNs": 1790961675196924408,
+            "regularCachePack": true
+          }
+        ],
+        "otherFilesNotEligible": [],
+        "canonicalFiles": {
+          "package.json": {
+            "sha256": "cf5e70348d22632cc05d24363f05885fddf52c4898ddf315077127b920fc99ae",
+            "bytes": 7707
+          },
+          "package-lock.json": {
+            "sha256": "237aa4c2ce42e501f10419c0ac96c57f7e2d73486ca839e44b7f5d4145e08f19",
+            "bytes": 263943
+          },
+          "next.config.js": {
+            "sha256": "e3678cc472545397ac8309c0b3a83bdf0655e0c069b264cf7d8f73fa7754c75d",
+            "bytes": 2858
+          },
+          ".next/BUILD_ID": {
+            "sha256": "b84712f9981920fd2a6920cd302922b06be3f371486062c7057a5c372c006344",
+            "bytes": 21
+          }
+        },
+        "startScriptClass": "production_next_start"
+      }
+    ],
+    "totalRecognizedLogicalBytes": 4621794376,
+    "deleted": false,
+    "noConfigEnvRead": true
+  }
+}

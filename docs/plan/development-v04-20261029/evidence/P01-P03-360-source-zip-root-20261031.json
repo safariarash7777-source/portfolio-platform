@@ -1,0 +1,23 @@
+{
+  "recordedAt": "2026-10-30T22:40:36.051963+00:00",
+  "status": "ROOT_SOURCE_ZIP_BYTE_EXACT_VERIFIED_NOT_INSTALL_BUILD",
+  "source": "a6ce468301eb2761bb730b38f68b487c52fdb234",
+  "sourceTree": "831c612a3f3c8b90889f2359726aad34c6a49ab8",
+  "archiveBytes": 28417428,
+  "archiveSha256": "8054af3d1d089f2010005d9d36654f9ca16bcee5b2186fe24bfb24ee34804031",
+  "files": 1447,
+  "everyArchiveFileGitBlobSha1Equal": true,
+  "duplicateAndTraversalChecks": true,
+  "knownLaboratoryRuntimeRoutesAbsent": true,
+  "sourceOnly": true,
+  "targetBound": false,
+  "buildRun": false,
+  "installRun": false,
+  "ciBuildPublicConfig": "placeholder; not usable for real backend install",
+  "limits": [
+    "source package is not a prebuilt install or SQL installer",
+    "real backend-bound artifact/runtime identity/rollback still required",
+    "request writer and same-service entitlement remain separate open gates",
+    "no deployment or Arash acceptance"
+  ]
+}

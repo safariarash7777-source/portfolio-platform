@@ -1,0 +1,54 @@
+{
+  "run": 41191240155,
+  "job": 124508287657,
+  "head": "3fe1f0291d2527506104ffdb8a2aba0367fcddaf",
+  "status": "FAIL_BEFORE_LEGACY_SCENARIOS",
+  "failure": [
+    {
+      "status": "FAIL",
+      "reason": "p03_legacy_strict_grant_baseline",
+      "automaticRetry": false,
+      "targetInstall": "NOT_APPLIED",
+      "productServiceRight": "NOT_CONNECTED"
+    }
+  ],
+  "completedChecks": [
+    {
+      "name": "isolation-attested",
+      "status": "PASS"
+    },
+    {
+      "name": "four-fresh-auth-users-and-sdk-getuser",
+      "status": "PASS"
+    }
+  ],
+  "legacyScenarios": "NOT_RUN",
+  "nativeCleanup": [
+    {
+      "sha": "3fe1f0291d2527506104ffdb8a2aba0367fcddaf",
+      "runId": "consultation-ticket-1fa1d120-18ea-4df9-9df2-87f3faaa1d78",
+      "status": "REMOVED_OWNED_RESOURCES",
+      "resources": 6
+    }
+  ],
+  "browserCleanup": [
+    {
+      "status": "REMOVED_OWNED_RESOURCES",
+      "processStopped": true,
+      "contextsClosed": true,
+      "ownedTempRemoved": true,
+      "ownerId": "fa2f70a7-e3ac-4a13-9988-dcc0993bb1d6",
+      "processesObserved": 5
+    }
+  ],
+  "automaticRetry": false,
+  "primaryInstall": "NOT_APPLIED",
+  "modelCalls": 0,
+  "productServiceRight": "NOT_CONNECTED",
+  "arashAcceptance": "UNOBSERVED",
+  "causeSource": {
+    "path": "sql/test/portfolio_precondition.sql",
+    "line": 140,
+    "description": "Legacy default table privileges inherited by later phase11 entitlements; fixture expected strict baseline without explicitly closing that table."
+  }
+}

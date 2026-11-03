@@ -1,0 +1,36 @@
+{
+  "acceptedImages": [
+    {
+      "name": "01-decision-quarterly-persian-axes.jpg",
+      "sha256": "71d7f6587c5002eee3f4b685defa9a5c477b6ea802a5521f4ee5d0a3058b86e8",
+      "bytes": 69040,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "name": "02-dossier-quarterly-persian-expanded.jpg",
+      "sha256": "fdbf92cfaa6cbceea5c6675aa0c649d0cd3e6679810c7919cbe8ad3e2a911dfc",
+      "bytes": 55521,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "name": "04-mobile-quarterly-expanded-stable.jpg",
+      "sha256": "435db360ac4991b1c256bfd4d01f0b0483f16750817bbd3267f825044da816b7",
+      "bytes": 37823,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "name": "05-mobile-margin-and-ttm-persian-axes.jpg",
+      "sha256": "29fee6f68cff014fe4c4d2e5419518efa213098107a47bafe493e72c9efce0ae",
+      "bytes": 29411,
+      "mimeType": "image/jpeg"
+    }
+  ],
+  "head": "5572742fee8b691cdc4e8f00541757c172511a30",
+  "target": null,
+  "viewportReset": true,
+  "deployment": "dpl_5WHu86Hqh4pCrT9r75G7CNsGxVjR",
+  "reviewTabMarkedDeliverable": true,
+  "data": "unchanged authored P14-EDU-02; not official reports or prices",
+  "base": "0db38ff63d38b2ca98af5e29f5fe1345f58a4c45",
+  "formatCorrection": "Screenshot API returned JPEG bytes despite original .png file name; extension corrected without re-encoding; exact bytes and hashes retained"
+}

@@ -1,0 +1,6 @@
+{
+  "exitCode": 1,
+  "serviceChanged": false,
+  "method": "allowlisted four stopped proof layer metadata/allocated disk blocks only",
+  "error": "Traceback (most recent call last):\n  File \"<stdin>\", line 5, in <module>\nAttributeError: 'NoneType' object has no attribute 'get'\n"
+}

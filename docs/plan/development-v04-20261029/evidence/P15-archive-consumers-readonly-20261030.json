@@ -1,0 +1,53 @@
+{
+  "exitCode": 0,
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T12:32:55.019222+00:00",
+    "readOnly": true,
+    "openArchiveDescriptors": [],
+    "containerMountConsumers": [
+      {
+        "container": "portfolio-frozen-proof-20261009t163452z",
+        "state": "exited",
+        "source": "/root/portfolio-recovery-backups/20261009T163452Z",
+        "destination": "/recovery",
+        "rw": false
+      },
+      {
+        "container": "portfolio-security-proof-20261006t092801z-retry02",
+        "state": "exited",
+        "source": "/root/portfolio-recovery-backups/20261006T092801Z",
+        "destination": "/recovery",
+        "rw": false
+      },
+      {
+        "container": "portfolio-recovery-proof-20261006t092801z",
+        "state": "exited",
+        "source": "/root/portfolio-recovery-backups/20261006T092801Z",
+        "destination": "/recovery",
+        "rw": false
+      },
+      {
+        "container": "portfolio-recovery-proof-20261003t101406z",
+        "state": "exited",
+        "source": "/root/portfolio-recovery-backups/20261003T101406Z",
+        "destination": "/recovery",
+        "rw": false
+      }
+    ],
+    "boundedAutomationReferences": [],
+    "automationScanScope": [
+      "/root/portfolio-recovery-tools",
+      "/etc/systemd/system",
+      "/etc/cron.d",
+      "/etc/crontab",
+      "/var/spool/cron/crontabs/root"
+    ],
+    "automationScanIsNotEntireFilesystemOrExternalConsumers": true,
+    "tmpfsAvailableBytes": 4138426368,
+    "diskAvailableBytes": 11404386304,
+    "privateBytesExported": false,
+    "servicesChanged": false,
+    "archiveChanged": false
+  }
+}

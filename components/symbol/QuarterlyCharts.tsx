@@ -19,6 +19,7 @@ import {
   YAxis,
 } from "recharts";
 import type { DerivedQuarter, TtmPoint } from "@/lib/core/quarterly";
+import { toPersianDigits } from "@/lib/format";
 
 const nf = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 0 });
 const nf1 = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 });
@@ -139,7 +140,7 @@ export default function QuarterlyCharts({
               <BarChart data={revData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
-                <YAxis tick={{ fontSize: 10 }} width={54} />
+                <YAxis tick={{ fontSize: 10 }} width={54} tickFormatter={(value: number) => toPersianDigits(String(value))} />
                 <Tooltip
                   formatter={(v: unknown, name: unknown) => [v == null ? "—" : `${nf1.format(Number(v))} میلیارد تومان`, String(name)]}
                   contentStyle={tooltipStyle}
@@ -162,7 +163,7 @@ export default function QuarterlyCharts({
               <LineChart data={marginData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
-                <YAxis tick={{ fontSize: 10 }} width={38} />
+                <YAxis tick={{ fontSize: 10 }} width={38} tickFormatter={(value: number) => toPersianDigits(String(value))} />
                 <Tooltip
                   formatter={(v: unknown, name: unknown) => [v == null ? "—" : `٪${nf1.format(Number(v))}`, String(name)]}
                   contentStyle={tooltipStyle}
@@ -197,7 +198,7 @@ export default function QuarterlyCharts({
                 <LineChart data={peData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
-                  <YAxis tick={{ fontSize: 10 }} width={38} />
+                  <YAxis tick={{ fontSize: 10 }} width={38} tickFormatter={(value: number) => toPersianDigits(String(value))} />
                   <Tooltip
                     formatter={(v: unknown, name: unknown) => [v == null ? "—" : nf1.format(Number(v)), String(name)]}
                     contentStyle={tooltipStyle}

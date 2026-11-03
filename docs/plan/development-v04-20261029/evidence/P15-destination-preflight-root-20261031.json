@@ -1,0 +1,552 @@
+{
+  "at": "2026-10-31T00:55:30.144303+00:00",
+  "status": "PASS_READONLY_DESTINATION_PREFLIGHT",
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "sourceHealthyBeforeAfter": true,
+  "catalog": {
+    "schemas": [
+      "consultation_private"
+    ],
+    "functions": [
+      {
+        "name": "access",
+        "schema": "consultation_private",
+        "arguments": "r consultation_relationships, active boolean, advisor_only boolean",
+        "definitionMd5": "3b811796d46463daaa0a2f97a5197100"
+      },
+      {
+        "name": "amount",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, signed boolean",
+        "definitionMd5": "a2b8e49ef37b8e2001a4598d3a3f0e4f"
+      },
+      {
+        "name": "basis_current",
+        "schema": "consultation_private",
+        "arguments": "client uuid, b jsonb",
+        "definitionMd5": "edcaeffa55dd29019d255dd7e543bfc4"
+      },
+      {
+        "name": "body",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "10559ed06201af3c5df7ec6ba0eff5a5"
+      },
+      {
+        "name": "command",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "9fb5f69a1f816bac7efe34e3841ad862"
+      },
+      {
+        "name": "day",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, nullable boolean",
+        "definitionMd5": "c97426f88638fe066c0b4618334b241b"
+      },
+      {
+        "name": "execute",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "8de4673d6860683c37f5ca7352f91913"
+      },
+      {
+        "name": "keys",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, allowed text[], required text[]",
+        "definitionMd5": "7977f918530c29d11053938fd79eb383"
+      },
+      {
+        "name": "load",
+        "schema": "consultation_private",
+        "arguments": "p_relation uuid, p_start_on date, p_end_on date",
+        "definitionMd5": "9e78d5f2fd8ede2002acf5d715616bc0"
+      },
+      {
+        "name": "period",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "fc9d25a0a922585c9e5b280eaf4edb77"
+      },
+      {
+        "name": "reject_mutation",
+        "schema": "consultation_private",
+        "arguments": "",
+        "definitionMd5": "0a7038ca3dc23635198494eb676c1edc"
+      },
+      {
+        "name": "relation_json",
+        "schema": "consultation_private",
+        "arguments": "r consultation_relationships",
+        "definitionMd5": "db03fa2fc26ec5a882c232995f06e9ec"
+      },
+      {
+        "name": "research_current",
+        "schema": "consultation_private",
+        "arguments": "ids jsonb",
+        "definitionMd5": "4fee96ae6509f65614ba0b15b0c007e2"
+      },
+      {
+        "name": "source",
+        "schema": "consultation_private",
+        "arguments": "p jsonb",
+        "definitionMd5": "46e09633a5e23dc6fd7dd87325cd1a59"
+      },
+      {
+        "name": "state",
+        "schema": "consultation_private",
+        "arguments": "s uuid",
+        "definitionMd5": "7cb8d1c05c2bf682cc89705a4b2df82c"
+      },
+      {
+        "name": "txt",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, maximum integer, nullable boolean",
+        "definitionMd5": "ee9055b3d46d0e97b16a8ac6bd931e9d"
+      },
+      {
+        "name": "uid",
+        "schema": "consultation_private",
+        "arguments": "p jsonb, nullable boolean",
+        "definitionMd5": "96079cb239975da6ed6c4ec30d3e9116"
+      },
+      {
+        "name": "command_consultation",
+        "schema": "public",
+        "arguments": "p_request jsonb",
+        "definitionMd5": "0cacbd26dcfee83a414b113e95181743"
+      },
+      {
+        "name": "load_consultation",
+        "schema": "public",
+        "arguments": "p_relation uuid, p_start_on date, p_end_on date",
+        "definitionMd5": "cb7bda131d878dfd807a18e91f72101d"
+      }
+    ],
+    "relations": [
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_actions",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_actions_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_advisor",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_advisors",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_advisors_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_client",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_command_receipts",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_command_receipts_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_events",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_events_event_no_key",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "S",
+        "name": "consultation_events_event_no_seq",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_events_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_events_session_id_kind_key",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_feedback_versions",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_one_owner",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_private_notes",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_private_notes_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_publications",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_publications_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_relationships",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_relationships_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_revocations",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_revocations_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "kind": "r",
+        "name": "consultation_sessions",
+        "forced": true,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_sessions_pkey",
+        "forced": false,
+        "schema": "public"
+      },
+      {
+        "rls": false,
+        "kind": "i",
+        "name": "consultation_sessions_relationship_id_session_key_version_key",
+        "forced": false,
+        "schema": "public"
+      }
+    ]
+  },
+  "memoryBytes": {
+    "MemTotal": 8276856832,
+    "MemAvailable": 5753114624,
+    "SwapTotal": 2147479552,
+    "SwapFree": 2145644544
+  },
+  "cpuSample": {
+    "seconds": 1,
+    "busyPercent": 0.25,
+    "logicalCpus": 4,
+    "loadAverage": [
+      1.82177734375,
+      1.5126953125,
+      1.41650390625
+    ]
+  },
+  "disk": {
+    "availableBytes": 14055817216,
+    "freeBytes": 17534332928,
+    "filesystemBytes": 81839546368,
+    "tenGiBGuardMet": true
+  },
+  "services": [
+    {
+      "Name": "finance-dashboard-20261028-v12-130524",
+      "CPUPerc": "0.07%",
+      "MemUsage": "42.41MiB / 384MiB",
+      "MemPerc": "11.04%",
+      "PIDs": "5",
+      "BlockIO": "2.56MB / 0B"
+    },
+    {
+      "Name": "fx-dashboard",
+      "CPUPerc": "0.82%",
+      "MemUsage": "275.6MiB / 7.708GiB",
+      "MemPerc": "3.49%",
+      "PIDs": "14",
+      "BlockIO": "445MB / 120MB"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "9.965MiB / 128MiB",
+      "MemPerc": "7.79%",
+      "PIDs": "10",
+      "BlockIO": "37.9MB / 0B"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-storage",
+      "CPUPerc": "0.02%",
+      "MemUsage": "109.3MiB / 256MiB",
+      "MemPerc": "42.70%",
+      "PIDs": "12",
+      "BlockIO": "24.6kB / 0B"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-rest",
+      "CPUPerc": "0.15%",
+      "MemUsage": "16.86MiB / 128MiB",
+      "MemPerc": "13.17%",
+      "PIDs": "14",
+      "BlockIO": "34MB / 0B"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-sink",
+      "CPUPerc": "0.08%",
+      "MemUsage": "15.4MiB / 96MiB",
+      "MemPerc": "16.04%",
+      "PIDs": "4",
+      "BlockIO": "39.2MB / 0B"
+    },
+    {
+      "Name": "portfolio-auth219-20261002-db",
+      "CPUPerc": "0.01%",
+      "MemUsage": "30.82MiB / 512MiB",
+      "MemPerc": "6.02%",
+      "PIDs": "8",
+      "BlockIO": "73.5MB / 614kB"
+    },
+    {
+      "Name": "portfolio-demo844-app",
+      "CPUPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "MemPerc": "0.00%",
+      "PIDs": "0",
+      "BlockIO": "0B / 0B"
+    },
+    {
+      "Name": "portfolio-demo844-gateway",
+      "CPUPerc": "0.00%",
+      "MemUsage": "11.41MiB / 64MiB",
+      "MemPerc": "17.83%",
+      "PIDs": "10",
+      "BlockIO": "319kB / 73.7kB"
+    },
+    {
+      "Name": "portfolio-demo844-storage",
+      "CPUPerc": "0.00%",
+      "MemUsage": "109.9MiB / 256MiB",
+      "MemPerc": "42.93%",
+      "PIDs": "12",
+      "BlockIO": "9.42MB / 0B"
+    },
+    {
+      "Name": "portfolio-demo844-rest",
+      "CPUPerc": "0.15%",
+      "MemUsage": "17.97MiB / 128MiB",
+      "MemPerc": "14.04%",
+      "PIDs": "13",
+      "BlockIO": "49.2kB / 0B"
+    },
+    {
+      "Name": "portfolio-demo844-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "8.895MiB / 128MiB",
+      "MemPerc": "6.95%",
+      "PIDs": "10",
+      "BlockIO": "254kB / 0B"
+    },
+    {
+      "Name": "portfolio-demo844-db",
+      "CPUPerc": "0.00%",
+      "MemUsage": "28.51MiB / 512MiB",
+      "MemPerc": "5.57%",
+      "PIDs": "8",
+      "BlockIO": "13.5MB / 614kB"
+    },
+    {
+      "Name": "portfolio-accept195-app",
+      "CPUPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "MemPerc": "0.00%",
+      "PIDs": "0",
+      "BlockIO": "0B / 0B"
+    },
+    {
+      "Name": "portfolio-accept195-gateway",
+      "CPUPerc": "0.00%",
+      "MemUsage": "15.79MiB / 64MiB",
+      "MemPerc": "24.68%",
+      "PIDs": "10",
+      "BlockIO": "53.9MB / 65.5kB"
+    },
+    {
+      "Name": "portfolio-accept195-storage",
+      "CPUPerc": "0.00%",
+      "MemUsage": "109.1MiB / 256MiB",
+      "MemPerc": "42.61%",
+      "PIDs": "12",
+      "BlockIO": "410kB / 0B"
+    },
+    {
+      "Name": "portfolio-accept195-rest",
+      "CPUPerc": "0.16%",
+      "MemUsage": "14.39MiB / 128MiB",
+      "MemPerc": "11.24%",
+      "PIDs": "14",
+      "BlockIO": "0B / 0B"
+    },
+    {
+      "Name": "portfolio-accept195-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "9.035MiB / 128MiB",
+      "MemPerc": "7.06%",
+      "PIDs": "10",
+      "BlockIO": "590kB / 0B"
+    },
+    {
+      "Name": "portfolio-accept195-db",
+      "CPUPerc": "0.00%",
+      "MemUsage": "28.62MiB / 512MiB",
+      "MemPerc": "5.59%",
+      "PIDs": "8",
+      "BlockIO": "13.1MB / 614kB"
+    },
+    {
+      "Name": "portfolio-stage-gateway-1",
+      "CPUPerc": "0.00%",
+      "MemUsage": "13.81MiB / 7.708GiB",
+      "MemPerc": "0.17%",
+      "PIDs": "11",
+      "BlockIO": "2.61MB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-auth-1",
+      "CPUPerc": "7.11%",
+      "MemUsage": "11.31MiB / 7.708GiB",
+      "MemPerc": "0.14%",
+      "PIDs": "11",
+      "BlockIO": "3.36MB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-rest-1",
+      "CPUPerc": "0.17%",
+      "MemUsage": "63.81MiB / 7.708GiB",
+      "MemPerc": "0.81%",
+      "PIDs": "26",
+      "BlockIO": "721kB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-storage-1",
+      "CPUPerc": "44.49%",
+      "MemUsage": "127.1MiB / 7.708GiB",
+      "MemPerc": "1.61%",
+      "PIDs": "12",
+      "BlockIO": "235MB / 0B"
+    },
+    {
+      "Name": "portfolio-stage-db-1",
+      "CPUPerc": "11.14%",
+      "MemUsage": "235.4MiB / 7.708GiB",
+      "MemPerc": "2.98%",
+      "PIDs": "20",
+      "BlockIO": "4GB / 7.68GB"
+    },
+    {
+      "Name": "fx-dashboard-proxy",
+      "CPUPerc": "0.00%",
+      "MemUsage": "21.5MiB / 7.708GiB",
+      "MemPerc": "0.27%",
+      "PIDs": "13",
+      "BlockIO": "41.3MB / 795kB"
+    }
+  ],
+  "sqlReadOnly": true,
+  "sqlWrites": false,
+  "containerMutations": false,
+  "serviceRestart": false,
+  "installation": false,
+  "limits": [
+    "Catalog presence/hash inventory only; exact baseline compatibility not proven",
+    "CPU is a one-second host sample, not a sustained benchmark",
+    "Storage binary and caller/build/right/reader gates remain independent"
+  ],
+  "rootReviewProvenance": {
+    "executedScriptSha256": "a7d2182be9d581baeec4b7836752de74b182413ae22821cdbbaaf421d91be578",
+    "catalogSQL": "BEGIN TRANSACTION READ ONLY;\nSET LOCAL statement_timeout='15s';\nSELECT jsonb_build_object(\n 'schemas',(SELECT coalesce(jsonb_agg(nspname ORDER BY nspname),'[]'::jsonb) FROM pg_namespace WHERE nspname LIKE 'consultation%'),\n 'relations',(SELECT coalesce(jsonb_agg(jsonb_build_object('schema',n.nspname,'name',c.relname,'kind',c.relkind,'rls',c.relrowsecurity,'forced',c.relforcerowsecurity) ORDER BY n.nspname,c.relname),'[]'::jsonb) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname LIKE 'consultation%' OR (n.nspname='public' AND c.relname LIKE 'consultation_%')),\n 'functions',(SELECT coalesce(jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.proname,'arguments',pg_get_function_identity_arguments(p.oid),'definitionMd5',md5(pg_get_functiondef(p.oid))) ORDER BY n.nspname,p.proname,p.oid),'[]'::jsonb) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.prokind IN('f','p') AND (n.nspname LIKE 'consultation%' OR (n.nspname='public' AND (p.proname LIKE '%consultation%' OR p.proname LIKE '%ticket%')))))::text;\nCOMMIT;",
+    "rowDataSelected": false,
+    "ssh": "existing strict-host-key/key access, no credential change",
+    "cpuAndDockerStatsSameSamplingWindow": false
+  }
+}
