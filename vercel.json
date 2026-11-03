@@ -3,7 +3,8 @@
     "deploymentEnabled": {
       "codex/member-financial-input-release-20261103": false,
       "codex/p01-member-ledger-risk-release-20261103": false,
-      "codex/consultation-list-recovery-20261103": false
+      "codex/consultation-list-recovery-20261103": false,
+      "codex/relay-health-codal-reasons-20261104": false
     }
   },
   "crons": [
