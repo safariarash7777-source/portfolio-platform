@@ -244,7 +244,7 @@ test('control-plane uses only two fixed GETs and projects exact current identity
   const calls=[];const out=await collectControlPlane({token:secret,fetchImpl:async(url,init)=>{calls.push([url,init]);return Response.json(controlBodies(url));}});
   assert.deepEqual(calls.map(c=>c[0]),['https://api.liara.ir/v1/projects/arsadata','https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100']);
   for(const [,init] of calls){assert.equal(init.method,'GET');assert.equal(init.redirect,'error');assert.equal(init.headers.Authorization,'Bearer '+secret);assert.ok(init.signal);}
-  assert.equal(out.identity,'matched_control_plane_metadata');assert.deepEqual(out.project.data.envNames,['BRSAPI_KEY','SUPABASE_URL']);assert.equal(out.project.data.cpuLimit,null);assert.equal(out.project.data.ramLimit,null);
+  assert.equal(out.identity,'matched_control_plane_metadata');assert.equal(out.project.data.envNames,null);assert.equal(out.project.data.envNamesComplete,false);assert.equal(out.project.data.cpuLimit,null);assert.equal(out.project.data.ramLimit,null);
   assert.equal(out.releases.data.release.id,currentId);assert.equal(out.releases.data.release.commit,'a'.repeat(40));assert.equal(JSON.stringify(out).includes(secret),false);
 });
 test('current release never falls back to newest and malformed or duplicate identities remain unconfirmed',async()=>{
@@ -266,4 +266,11 @@ test('control-plane body limit, stalled fetch/body deadlines and invalid schema 
 test('control-plane rejection does not alter passive acceptance and credentials never cross destinations',async()=>{
   const calls=[];const out=await collectReceipt({token:'relay-fixture',controlPlaneToken:secret,fetchImpl:async(url,init)=>{calls.push(url);if(url.startsWith('https://api.liara.ir/')){assert.equal(init.headers.Authorization,'Bearer '+secret);return new Response('private body',{status:403});}assert.equal(init.headers.Authorization,url.endsWith('/debug')?'Bearer relay-fixture':undefined);return new Response(url===storedUrl?JSON.stringify(storedBody):url.endsWith('/debug')?JSON.stringify(debug()):url.endsWith('/healthz')?'ok':'fixture');}});
   assert.equal(calls.length,6);assert.equal(out.debug.acceptance,'passed');assert.equal(out.storedRead.status,'read');assert.equal(out.controlPlane.identity,'unconfirmed');assert.equal(JSON.stringify(out).includes(secret),false);
+});
+
+test('environment names distinguish explicit empty from incomplete schema without inspecting values',async()=>{
+  for(const [envs,expected,complete] of [[undefined,null,false],[{},null,false],['invalid',null,false],[[{key:'VALID',value:secret},{}],null,false],[[{key:'VALID',value:secret},{key:1}],null,false],[[],[],true],[[{key:'B',value:secret},{key:'A',value:secret},{key:'B',value:secret}],['A','B'],true]]){
+    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{const body=controlBodies(url);if(body.project)body.project.envs=envs;return Response.json(body);}});
+    assert.deepEqual(out.project.data.envNames,expected);assert.equal(out.project.data.envNamesComplete,complete);assert.equal(JSON.stringify(out).includes(secret),false);
+  }
 });

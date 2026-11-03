@@ -156,10 +156,11 @@ const releaseState = x => choice(x, ['READY', 'FAILED', 'UNHEALTHY', 'CANCELED',
 function projectMetadata(body) {
   const p = body?.project;
   if (!p || p.project_id !== 'arsadata') throw new Error('invalid_schema');
+  const envNamesComplete = Array.isArray(p.envs) && p.envs.every(e => typeof e?.key === 'string' && /^[A-Z][A-Z0-9_]{0,79}$/.test(e.key));
   return { projectId: 'arsadata', status: choice(p.status, ['running', 'stopped', 'starting', 'stopping', 'ready', 'failed']),
     // No verified CPU/RAM response contract in the installed CLI.
     cpuLimit: null, ramLimit: null,
-    envNames: Array.isArray(p.envs) ? [...new Set(p.envs.map(e => e?.key).filter(k => typeof k === 'string' && /^[A-Z][A-Z0-9_]{0,79}$/.test(k)))].sort() : null };
+    envNames: envNamesComplete ? [...new Set(p.envs.map(e => e.key))].sort() : null, envNamesComplete };
 }
 function releaseMetadata(body) {
   if (!body || !Array.isArray(body.releases) || body.releases.length > 100) throw new Error('invalid_schema');
