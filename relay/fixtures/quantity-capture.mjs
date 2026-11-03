@@ -8,7 +8,7 @@ export async function capturedFoladRow(id = 701) {
     date_publish: "1405/07/01", time_publish: "11:12:13" };
   let stored = null;
   const { parser, counts } = loadOfflineCodal({
-    environment: { SUPABASE_URL: "https://quantity-store.invalid", SUPABASE_SERVICE_ROLE_KEY: "synthetic-test-only" },
+    environment: { SUPABASE_URL: "https://quantity-store.invalid", SUPABASE_SERVICE_ROLE_KEY: "dummy-quantity-test-only" },
     fetchFixture: async (url, init) => {
       if (url === announcement.link_excel && !init.method) {
         const response = new Response(fixture.bytes);

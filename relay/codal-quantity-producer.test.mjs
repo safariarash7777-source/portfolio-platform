@@ -10,7 +10,7 @@ function fixture({ responseUrl, bytes, textOnly = false, failFirstBody = false }
     link_excel: archived.origin.sourceId, date_title: "1405/06/31", title: "گزارش فعالیت ماهانه دوره ۱ ماهه" };
   const calls = { requests: [], writes: [], bytes: 0, text: 0 };
   const { parser, counts } = loadOfflineCodal({
-    environment: { SUPABASE_URL: "https://quantity-store.invalid", SUPABASE_SERVICE_ROLE_KEY: "synthetic-test-only" },
+    environment: { SUPABASE_URL: "https://quantity-store.invalid", SUPABASE_SERVICE_ROLE_KEY: "dummy-quantity-test-only" },
     fetchFixture: async (url, options) => {
       calls.requests.push({ url, method: options.method ?? "GET" });
       if (url === announcement.link_excel) {
