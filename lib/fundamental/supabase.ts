@@ -19,6 +19,8 @@ import type {
 import { fiscalChainKey } from "../core/quarterly";
 import { isMillionRialUnit } from "./units";
 import { approvedCodalUrl } from "../desk/workspace-model";
+import { bindSelectedMonthlyQuantity } from "./monthly-quantity-binding";
+import type { MonthlyQuantityCaptureReceipt } from "../core/monthly-quantity";
 export { isMillionRialUnit } from "./units";
 
 export interface CodalRow {
@@ -36,6 +38,9 @@ export interface CodalRow {
     period_months?: number;
     period_end_jalali?: string;
     announcement_link?: string | null;
+    link_excel?: string | null;
+    /** Internal producer receipt; validated against the selected row before use. */
+    quantity_capture?: MonthlyQuantityCaptureReceipt | null;
     /** تاریخِ انتشار در کدال، جلالی با رقمِ فارسی — «۱۴۰۴/۰۴/۱۳». */
     date_publish?: string;
     /** ساعتِ انتشار در کدال، رقمِ فارسی — «۱۵:۱۴:۴۰». */
@@ -436,7 +441,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   let n30: SymbolFundamentals["n30"] = null;
   if (n30rows.length > 0) {
     n30 = {
-      data: n30rows.map((r) => r.data as CodalN30Data),
+      data: n30rows.map((r) => bindSelectedMonthlyQuantity(r, symbol)),
       source: {
         title: "گزارش‌های فعالیت ماهانه (ن-۳۰) کدال",
         source_url: approvedCodalUrl(cleanUrl(n30rows[0])),

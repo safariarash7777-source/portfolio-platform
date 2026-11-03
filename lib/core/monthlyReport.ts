@@ -6,7 +6,7 @@
 // روایت‌ها فقط template‌ای و قطعی‌اند — هیچ ارزش‌داوری تجویزی.
 
 import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
-import { monthlyMarket, monthlyMarketUnavailableReason, withKnownMonthlyQuantities, type MonthlyMarketUnavailableReason } from "./monthly-quantity";
+import { monthlyMarket, monthlyMarketUnavailableReason, withKnownMonthlyQuantities, type MonthlyMarketUnavailableReason, type QuantityWitnessedReport, type QuantityWitnessedProduct, type MonthlyQuantityWitness } from "./monthly-quantity";
 
 /* ── انواع خروجی ─────────────────────────────────────────────────────────── */
 
@@ -65,6 +65,18 @@ export interface ProdSalesPoint {
   quantityUnit: string | null;
 }
 
+/** A scoped goods-market view, never a replacement for the old aggregate. */
+export interface QuantitySeries {
+  productName: string;
+  market: "داخلی" | "صادراتی";
+  label: string;
+  scope: "main-product-goods-market";
+  points: Array<ProdSalesPoint & {
+    scopeUnavailableReason: "missing-report" | "missing-source" | "missing-market-row" | "unverified-market" | "ambiguous-row" | "incomplete-source-coverage" | "incomplete-quantity" | null;
+    witnesses: MonthlyQuantityWitness[];
+  }>;
+}
+
 export interface MonthlySales {
   /** Common denominator of observed output contributors, not missing calendar slots. */
   quantityUnit: string | null;
@@ -93,6 +105,8 @@ export interface MonthlySales {
   /** تولید/فروش محصول اصلی روی محور تقویمی؛ دادهٔ ناقص null است. */
   mainProductName: string | null;
   prodVsSales: ProdSalesPoint[];
+  /** Present only for the new witnessed quantity path; services are separate. */
+  quantitySeries?: QuantitySeries[];
   /** تعداد گزارش‌های یکتای استفاده‌شده. */
   reportCount: number;
 }
@@ -118,7 +132,8 @@ function productUnitMetadata(
   if (!product) return { quantityUnit: null, rateUnit: null };
   const market = monthlyMarket(product);
   if (market !== "داخلی" && market !== "صادراتی") return { quantityUnit: null, rateUnit: null };
-  // Reuse the frozen validator in this exact row's scope. Explicit null cannot inherit.
+  // Quantity and rate use independent gates in this exact row's scope.
+  // Explicit null cannot inherit, and a quantity-only unit never supplies a rate.
   const checked = withKnownMonthlyQuantities({ ...report, products: [product] });
   const quantityUnit = checked.qty_unit ?? null;
   return {
@@ -414,6 +429,51 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     }
   }
 
+  const quantitySeries: QuantitySeries[] = [];
+  if (mainProductName) {
+    const markets = new Set<"داخلی" | "صادراتی">();
+    for (const key of sortedKeys) {
+      const r = byMonth.get(key)! as QuantityWitnessedReport;
+      const source = r.quantity_source;
+      if (source?.symbol !== r.symbol || source.periodEnd !== r.period_end || !Array.isArray(source.rows)) continue;
+      for (const row of source.rows) {
+        if (row?.productName === mainProductName && (row.market === "داخلی" || row.market === "صادراتی")
+          && typeof row.rawUnit === "string" && row.rawUnit.replace(/[\s\u200c]+/g, "") === "هزارتن") markets.add(row.market);
+      }
+    }
+    for (const market of markets) {
+      const points: QuantitySeries["points"] = rateMonthKeys.map(key => {
+        const r = byMonth.get(key) as QuantityWitnessedReport | undefined;
+        const source = r?.quantity_source;
+        const observations = source && Array.isArray(source.rows) ? source.rows.filter(row => row?.productName === mainProductName) : [];
+        const expected = observations.filter(row => row.market === market);
+        const mainRows = r?.products.filter(row => row.product_name === mainProductName) ?? [];
+        const rows = mainRows.filter(row => monthlyMarket(row) === market);
+        const rowIndices = rows.map(row => row.quantity_witness?.rowIndex);
+        const expectedIndices = expected.map(row => row.rowIndex);
+        const unit = r ? commonQuantityUnit(rows.map(row => productUnitMetadata(r, row, null).quantityUnit)) : null;
+        const reason: QuantitySeries["points"][number]["scopeUnavailableReason"] = !r ? "missing-report"
+          : !source || source.symbol !== r.symbol || source.periodEnd !== r.period_end ? "missing-source"
+          : observations.some(row => !["داخلی", "صادراتی", "خدمات"].includes(row.market)) || mainRows.some(row => monthlyMarket(row) === "نامشخص") ? "unverified-market"
+          : !expected.length ? "missing-market-row"
+          : new Set(rowIndices).size !== rowIndices.length || new Set(expectedIndices).size !== expectedIndices.length ? "ambiguous-row"
+          : expected.some(row => row.admitted !== true) || rows.length !== expected.length || rowIndices.some(index => !expectedIndices.includes(index!)) ? "incomplete-source-coverage"
+          : !unit || rows.some(row => !row.quantity_witness || row.production_qty === null || row.sales_qty === null
+            || !Number.isFinite(row.production_qty) || !Number.isFinite(row.sales_qty)) ? "incomplete-quantity" : null;
+        return {
+          monthKey: key, monthLabel: JALALI_MONTHS[Number(key.slice(5, 7)) - 1],
+          production: reason ? null : rows.reduce((sum, row) => sum + row.production_qty!, 0),
+          sales: reason ? null : rows.reduce((sum, row) => sum + row.sales_qty!, 0),
+          quantityUnit: reason ? null : unit,
+          unavailableReason: reason === "missing-report" ? "missing-report" : reason === "missing-market-row" ? "missing-product" : reason ? "incomplete-quantity" : null,
+          scopeUnavailableReason: reason,
+          witnesses: reason ? [] : rows.map(row => ({ ...(row as QuantityWitnessedProduct).quantity_witness! })),
+        };
+      });
+      quantitySeries.push({ productName: mainProductName, market, label: `${mainProductName} — کالای ${market}`, scope: "main-product-goods-market", points });
+    }
+  }
+
   return {
     quantityUnit: commonQuantityUnit([
       ...rateSeries.map(series => series.quantityUnit),
@@ -436,6 +496,7 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
     marketUnavailableReason,
     mainProductName,
     prodVsSales,
+    ...(quantitySeries.length ? { quantitySeries } : {}),
     reportCount: byMonth.size,
   };
 }

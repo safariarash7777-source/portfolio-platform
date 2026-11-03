@@ -1,5 +1,6 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
+import { createHash } from "node:crypto";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -685,9 +686,20 @@ export function normalizeN30(tables, meta, onRejected) {
   const skippedReasons = new Set(); // At most four fixed row-guard categories.
   let periodTotal = null;
   let fyCumulative = null;
+  let quantitySource = null;
+  // A claimed hash is not a byte witness. This optional internal candidate
+  // path binds both the hash and the exact tables to the supplied archived bytes.
+  // The current producer does not provide this hand-off; no runtime is enabled.
+  const origin = meta.quantity_source;
+  let byteBoundOrigin = false;
+  try {
+    byteBoundOrigin = origin?.htmlBytes instanceof Uint8Array && origin.htmlBytes.byteLength > 0
+      && createHash("sha256").update(origin.htmlBytes).digest("hex") === origin.htmlSha256
+      && JSON.stringify(parseHtmlTables(Buffer.from(origin.htmlBytes).toString("utf8"))) === JSON.stringify(tables);
+  } catch { /* Missing/malformed proof leaves quantity provenance unknown. */ }
 
   // جدول محصول: سطری با «نام محصول» دارد و سطر قبلش بلوک «دوره یک ماهه».
-  for (const t of tables) {
+  for (const [tableIndex, t] of tables.entries()) {
     const h1Idx = t.findIndex((r) => r.some((c) => normLabel(c) === normLabel("نام محصول")));
     if (h1Idx < 0) continue;
     const h0 = t[h1Idx - 1] ?? [];
@@ -701,11 +713,40 @@ export function normalizeN30(tables, meta, onRejected) {
     const M = { prod: 13, qty: 14, rate: 15, amount: 16 };
     const C = { qty: 18, amount: 20 };
 
+    // Optional internal hand-off only. The current downloader does not yet
+    // supply byte-bound origin metadata; absence must not certify a new unit.
+    const monthlyHeader = h0.find(c => c.includes("دوره یک ماهه") || c.includes("دوره یکماهه"));
+    const source = byteBoundOrigin && origin?.version === 1 && typeof origin.sourceId === "string" && origin.sourceId.length > 0
+      && origin.sourceId.trim() === origin.sourceId && origin.sourceId.length <= 4096
+      && typeof origin.htmlSha256 === "string" && /^[a-f0-9]{64}$/.test(origin.htmlSha256)
+      && typeof origin.symbol === "string" && origin.symbol.trim().length > 0 && origin.symbol.trim() === origin.symbol
+      && typeof origin.periodEnd === "string" && /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(origin.periodEnd)
+      && origin.symbol === meta.symbol && origin.periodEnd === meta.period_end && jalaliStr(monthlyHeader) === meta.period_end
+      && normLabel(t[h1Idx][1]) === normLabel("واحد")
+      && normLabel(t[h1Idx][M.prod]).includes("تولید")
+      && ["تعدادفروش", "مقدارفروش", "مقدار"].includes(normLabel(t[h1Idx][M.qty]))
+      ? { version: 1, sourceId: origin.sourceId, htmlSha256: origin.htmlSha256, symbol: meta.symbol, periodEnd: meta.period_end,
+        tableIndex, headerRowIndex: h1Idx, unitColumn: 1, productionColumn: M.prod, salesColumn: M.qty,
+        unitHeader: "واحد", productionHeader: t[h1Idx][M.prod].trim(), salesHeader: t[h1Idx][M.qty].trim(), rows: [] } : null;
+
     let cumTotal = null;
-    for (const row of t.slice(h1Idx + 1)) {
+    let sectionMarket = "نامشخص";
+    for (const [offset, row] of t.slice(h1Idx + 1).entries()) {
       const name = (row[0] || "").trim();
       if (!name) continue;
-      if (row.length < expectCols - 2) { skippedReasons.add("short_rows"); continue; } // سطرهای بخشی کوتاه‌ترند
+      if (name.endsWith(":")) {
+        const section = normLabel(name.slice(0, -1));
+        sectionMarket = section === normLabel("فروش داخلی") ? "داخلی"
+          : section === normLabel("فروش صادراتی") ? "صادراتی"
+          : section === normLabel("درآمد ارائه خدمات") ? "خدمات" : "نامشخص";
+        continue;
+      }
+      if (row.length < expectCols - 2) {
+        if (source && !name.includes("جمع")) source.rows.push({ rowIndex: h1Idx + 1 + offset, admitted: false,
+          productName: name, market: sectionMarket, rawUnit: row[1]?.trim() || "",
+          productionQty: cellNum(row[M.prod]), salesQty: cellNum(row[M.qty]) });
+        skippedReasons.add("short_rows"); continue;
+      } // سطرهای بخشی کوتاه‌ترند
       if (name.includes("جمع")) {
         const vM = cellNum(row[M.amount]);
         const vC = cellNum(row[C.amount]);
@@ -714,10 +755,12 @@ export function normalizeN30(tables, meta, onRejected) {
         if (vC !== null) cumTotal = vC;
         continue;
       }
-      if (name.endsWith(":")) continue; // عنوان بخش (فروش داخلی:/صادراتی:)
       const qty = cellNum(row[M.qty]);
       const amount = cellNum(row[M.amount]);
       const rate = cellNum(row[M.rate]);
+      const observation = source ? { rowIndex: h1Idx + 1 + offset, admitted: false, productName: name, market: sectionMarket,
+        rawUnit: row[1]?.trim() || "", productionQty: cellNum(row[M.prod]), salesQty: qty } : null;
+      if (observation) source.rows.push(observation);
       if (qty === null && amount === null) { skippedReasons.add("missing_sales"); continue; }
       if ((qty === 0 || qty === null) && (amount === 0 || amount === null)) { skippedReasons.add("zero_sales_only"); continue; } // بدون فروش در ماه
       // اعتبارسنجی مبلغ ≈ فروش×نرخ÷10^6 (مبلغ به میلیون ریال است).
@@ -725,17 +768,26 @@ export function normalizeN30(tables, meta, onRejected) {
         const calc = (qty * rate) / 1e6;
         if (calc > 0 && Math.abs(calc - amount) / Math.max(amount, 1) > 0.05) { skippedReasons.add("arithmetic_mismatch"); continue; } // ستون اشتباه — رد
       }
-      products.push({
+      const product = {
         product_name: name,
-        market: name.includes("صادرات") ? "صادراتی" : "داخلی",
+        market: sectionMarket,
+        market_basis: sectionMarket === "نامشخص" ? "unknown" : "section_header",
+        qty_unit: normLabel(row[1]) === normLabel("هزار تن") ? "هزار تن" : (row[1]?.trim() || null),
         production_qty: cellNum(row[M.prod]),
         sales_qty: qty,
         sales_rate: rate,
         sales_amount: amount,
-      });
+      };
+      if (source) {
+        const rowIndex = h1Idx + 1 + offset;
+        observation.admitted = true;
+        product.quantity_witness = { sourceId: source.sourceId, htmlSha256: source.htmlSha256, periodEnd: source.periodEnd,
+          tableIndex, rowIndex, unitColumn: 1 };
+      }
+      products.push(product);
     }
     if (cumTotal !== null) fyCumulative = cumTotal;
-    if (products.length) break; // فقط جدول محصول اصلی
+    if (products.length) { quantitySource = source; break; } // فقط جدول محصول اصلی
   }
 
   if (products.length === 0) return notifyAdmissionRejection(onRejected, "ن-۳۰",
@@ -761,7 +813,7 @@ export function normalizeN30(tables, meta, onRejected) {
     // ── واحدها: سه چیزِ متفاوت که نباید با هم قاطی شوند ─────────────────
     // `unit`            واحدِ **مبلغ** (میلیون ریال / هزار ریال / ریال)
     // `qty_unit`        واحدِ **مقدارِ کالا** — کدال آن را در ستونِ جدا می‌دهد
-    //                   و ما اینجا استخراجش نمی‌کنیم، پس `null` می‌ماند.
+    //                   از ستون همان ردیف؛ پذیرش واحد جدید نیازمند شاهد جداست.
     // `sales_rate`      نرخِ فروش، در خودِ هر محصول.
     //
     // `unit` از خودِ گزارش استخراج می‌شود، نه از عادت. `null` یعنی قابلِ اثبات
@@ -772,7 +824,8 @@ export function normalizeN30(tables, meta, onRejected) {
     unit_inferred: unitInfo.inferred,
     // ⚠️ صریح `null` است، نه غایب: «نمی‌دانیم» با «ندارد» فرق دارد و
     // خالی‌گذاشتنِ کلید، بعداً به «فرض کن دانه» تفسیر می‌شود.
-    qty_unit: null,
+    qty_unit: products[0].qty_unit && products.every(p => p.qty_unit === products[0].qty_unit) ? products[0].qty_unit : null,
+    quantity_source: quantitySource,
     // ن-۳۰ گزارش ماهانه است — دورهٔ مقایسه تعریفاً یک ماه.
     period_months: 1,
   };
@@ -833,7 +886,7 @@ function announcementRows(json) {
   return json.announcement;
 }
 
-async function downloadExcelHtml(url) {
+async function downloadExcelHtml(url, onBody) {
   // excel.codal.ir کُند است و گاه بار اول timeout می‌دهد — تا ۳ تلاش با مهلت فزاینده.
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -843,7 +896,11 @@ async function downloadExcelHtml(url) {
         signal: AbortSignal.timeout(30000 * attempt),
       });
       if (!res.ok) throw new Error(`excel HTTP ${res.status}`);
-      return await res.text();
+      if (!onBody) return await res.text();
+      const htmlBytes = new Uint8Array(await res.arrayBuffer());
+      const html = new TextDecoder().decode(htmlBytes);
+      onBody({ htmlBytes, sourceRef: url, responseUrl: res.url });
+      return html;
     } catch (e) {
       lastErr = e;
       if (attempt < 3) await sleep(3000 * attempt);
@@ -1015,13 +1072,44 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
   return announcementRows(json);
 }
 
+// Only an unchanged object returned by this producer can carry a capture receipt
+// into the existing insert path. A copied or caller-authored hash is not a receipt.
+/** @type {WeakMap<object, {dataJson: string, receipt: import('../lib/core/monthly-quantity').MonthlyQuantityCaptureReceipt}>} */
+const monthlyQuantityCaptures = new WeakMap();
+
+function sameQuantityResponseSource(sourceRef, responseUrl) {
+  try {
+    const requested = new URL(sourceRef), received = new URL(responseUrl);
+    return typeof sourceRef === "string" && sourceRef.trim() === sourceRef
+      && requested.protocol === "https:" && requested.hostname === "excel.codal.ir"
+      && !requested.username && !requested.password && !requested.hash
+      && /^\/service\/Excel\/GetAll\/[^/]+\/0$/.test(requested.pathname)
+      && received.href === requested.href;
+  } catch { return false; }
+}
+
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
-  const html = await downloadExcelHtml(a.link_excel);
+  let body = null;
+  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
   // Stage boundary only: never pass report content to diagnostics.
   onDownloaded();
   const meta = metaFrom(a, kind);
-  return kind === "ن-۱۰" ? admitN10Html(html, meta, onRejected) : normalizeN30(parseHtmlTables(html), meta, onRejected);
+  if (kind === "ن-۱۰") return admitN10Html(html, meta, onRejected);
+  const source = body && sameQuantityResponseSource(body.sourceRef, body.responseUrl)
+    ? { version: 1, sourceId: body.sourceRef, htmlSha256: createHash("sha256").update(body.htmlBytes).digest("hex"),
+      htmlBytes: body.htmlBytes, symbol: meta.symbol, periodEnd: meta.period_end } : null;
+  const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, onRejected);
+  if (data?.quantity_source && typeof a.link === "string" && a.link.trim() && a.link.trim() === a.link) {
+    const receipt = {
+      version: 1, symbol: a.l18, report_kind: kind, announcement_link: a.link, source_url: versionedUrl(a.link),
+      link_excel: a.link_excel, response_url: body.responseUrl, period_end_jalali: meta.period_end,
+      parser_version: PARSER_VERSION, html_sha256: source.htmlSha256,
+      source: structuredClone(data.quantity_source),
+    };
+    monthlyQuantityCaptures.set(data, { dataJson: JSON.stringify(data), receipt });
+  }
+  return data;
 }
 
 /** Returns the actual 0/1 count; zero resolves only after confirming the exact
@@ -1029,6 +1117,12 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
  * caller can clear its failure ledger or mark the URL as known. */
 export async function insertParsedReport(a, kind, data) {
   const meta = metaFrom(a, kind);
+  const captured = data && typeof data === "object" ? monthlyQuantityCaptures.get(data) : null;
+  const quantityCapture = kind === "ن-۳۰" && captured && captured.dataJson === JSON.stringify(data)
+    && captured.receipt.symbol === a.l18 && captured.receipt.announcement_link === a.link
+    && captured.receipt.link_excel === a.link_excel && captured.receipt.period_end_jalali === meta.period_end
+    && captured.receipt.source_url === versionedUrl(a.link) && captured.receipt.parser_version === PARSER_VERSION
+    ? structuredClone(captured.receipt) : null;
   const row = {
     symbol: a.l18,
     company_name: meta.company_name,
@@ -1050,6 +1144,7 @@ export async function insertParsedReport(a, kind, data) {
       parser_version: PARSER_VERSION,
       announcement_link: a.link,
       discovered_by: "engine-v3",
+      ...(quantityCapture ? { quantity_capture: quantityCapture } : {}),
     },
   };
   return await insertReport(row);
