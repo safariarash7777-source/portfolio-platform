@@ -2,7 +2,15 @@
   "git": {
     "deploymentEnabled": {
       "codex/member-financial-input-release-20261103": false,
-      "codex/p01-member-ledger-risk-release-20261103": false
+      "codex/p01-member-ledger-risk-release-20261103": false,
+      "codex/p07-quantity-only-20261031": false,
+      "codex/p06-selected-report-provenance-20261031": false,
+      "codex/p15-checkpoint-safe-failure-20261031": false,
+      "codex/p07-fundamental-read-binding-20261031": false,
+      "codex/p07-market-basis-20261031": false,
+      "codex/p07-monthly-unit-ui-20261031": false,
+      "codex/p08-funds-stored-binding-20261031": false,
+      "codex/handoff-v04-20261029": false
     }
   },
   "crons": [
@@ -14,15 +22,5 @@
       "path": "/api/cron/telegram-sync",
       "schedule": "0 3 * * *"
     }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "codex/p15-checkpoint-safe-failure-20261031": false,
-      "codex/p07-fundamental-read-binding-20261031": false,
-      "codex/p07-market-basis-20261031": false,
-      "codex/p07-monthly-unit-ui-20261031": false,
-      "codex/p08-funds-stored-binding-20261031": false,
-      "codex/handoff-v04-20261029": false
-    }
-  }
+  ]
 }

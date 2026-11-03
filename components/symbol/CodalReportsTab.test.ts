@@ -11,7 +11,41 @@ import CodalReportsTab from "./CodalReportsTab";
 import CodalSourceLink from "./CodalSourceLink";
 import { EMPTY_REPORT_FILTER } from "../../lib/core/companyReportDiscovery";
 import { mountComponent } from "../admin/p07-component-test-host";
+import type { StoredReport } from "./CodalReportsTab";
 Object.assign(globalThis, { React });
+
+const selectedRecord = (changes: Partial<NonNullable<StoredReport["record"]>> = {}): NonNullable<StoredReport["record"]> => ({
+  id: 101, sourceUrl: "/Reports/Decision.aspx?id=101", storedPeriodEnd: "1405-06-31", financialPeriodEnd: "1405-05-31",
+  publishedAt: "1405/07/30 14:37:13", publishedDateRaw: "1405/07/30", publishedTimeRaw: "14:37:13",
+  publishedAtUtc: null, publicationUtcConfidence: "unknown", capturedAtRaw: "2026-10-31T12:03:04.123456789+03:30",
+  capturedAt: "2026-10-31T08:33:04.123Z", parserVersion: 3, parserVersionSource: "raw", amendment: true,
+  ...changes,
+});
+
+test("selected report details preserve distinct periods raw publication and capture precision without inventing UTC publication or ingest success", () => {
+  const record = selectedRecord();
+  const html = renderToStaticMarkup(React.createElement(CodalReportsTab, { symbol: "نماد", stored: [
+    { kind: "ن-۳۰", title: "گزارش آزمون", periodEnd: record.financialPeriodEnd, url: record.sourceUrl, record },
+  ] }));
+  for (const value of ["منبع و زمان این گزارش", "شناسهٔ رکورد", "۱۰۱", "۱۴۰۵-۰۶-۳۱", "۱۴۰۵-۰۵-۳۱", "۱۴۰۵/۰۷/۳۰", "۱۴:۳۷:۱۳", record.capturedAtRaw!, record.capturedAt!, "۳؛ از متادیتای رکورد", "تبدیل معتبر ثبت نشده", "شاهد آخرین اجرای کامل دریافت داده نیست"]) assert.ok(html.includes(value), value);
+  assert.match(html, /<details/); assert.match(html, /نشانهٔ اصلاحیه/);
+  assert.doesNotMatch(html, /آخرین دریافت موفق|انتشار قطعی|source_url|publicationUtcConfidence/);
+});
+
+test("missing selected metadata remains unknown and unsafe text stays escaped while legacy cards keep their original presentation", () => {
+  const record = selectedRecord({ id: null, sourceUrl: null, storedPeriodEnd: null, financialPeriodEnd: null,
+    publishedAt: null, publishedDateRaw: "<img src=x onerror=alert()>", publishedTimeRaw: null,
+    capturedAtRaw: null, capturedAt: null, parserVersion: null, parserVersionSource: null, amendment: false });
+  const html = renderToStaticMarkup(React.createElement(CodalReportsTab, { symbol: "نماد", stored: [
+    { kind: "ن-۱۰", title: "گزارش آزمون", periodEnd: null, url: null, record },
+  ] }));
+  assert.ok((html.match(/نامعلوم/g) ?? []).length >= 7);
+  assert.ok(html.includes("&lt;img src=x onerror=alert()&gt;")); assert.doesNotMatch(html, /<img|نشانهٔ اصلاحیه|نسخهٔ پردازش<[^>]*>۱/);
+  const legacy = renderToStaticMarkup(React.createElement(CodalReportsTab, { symbol: "نماد", stored: [
+    { kind: "ن-۱۰", title: "گزارش قدیمی", periodEnd: "1405-03-31", url: null },
+  ] }));
+  assert.match(legacy, /دورهٔ مالی: ۱۴۰۵-۰۳-۳۱/); assert.doesNotMatch(legacy, /<details|شناسهٔ رکورد/);
+});
 
 test("shared Codal link fixes external navigation attributes and renders the supplied fallback verbatim", () => {
   const missing = React.createElement("span", { className: "missing-contract" }, "ناموجود");
