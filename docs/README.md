@@ -1,5 +1,9 @@
 # نقشهٔ اسناد — از کجا شروع کنم؟
 
+## پایلوت روش Spec Kit — ۳ نوامبر ۲۰۲۶
+
+[مشخصات تحویل پروندهٔ فولاد](../specs/001-foolad-research-delivery/spec.md)، [برنامه](../specs/001-foolad-research-delivery/plan.md) و [وظایف](../specs/001-foolad-research-delivery/tasks.md) با [قواعد پروژه](../.specify/memory/constitution.md) به منابع موجود متصل‌اند. این بسته صرفاً اتصال مستند روش است؛ Specify CLI یا فرمان‌های ایجنت نصب نشده‌اند. وضعیت همچنان فقط در COMMAND-CENTER و با مالک جاری آن ثبت می‌شود.
+
 ## مقایسه مشاهدات صندوق — ۲۰۲۶-۱۰-۲۴
 
 [گزارش بسته و حدود پذیرش](ops/fund-observation-comparison-20261024/DELIVERY.md): انتخاب دستی مشاهدات با کنترل آمادگی داده؛ طبقه واحد نامعلوم است و مقایسه عددی زنده ادعا نمی‌شود.
