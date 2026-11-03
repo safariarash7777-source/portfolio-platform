@@ -1,0 +1,39 @@
+{
+  "observedOn": "2026-11-03",
+  "productionSha": "56c9818ccb9a546391c500efb9199f01b9ea4091",
+  "publicClientBackend": "https://62.60.191.24/liara-preview",
+  "publicAsset": "/_next/static/chunks/app/(auth)/login/page-9b9b26cf6af7280e.js",
+  "sequence": [
+    {"atUtc": "2026-11-03T12:35:35.008104Z", "operation": "readonly SSH catalog/capacity", "result": "SSH_TIMEOUT_STAGE_UNKNOWN", "exitCode": 255},
+    {"operation": "public Auth user GET without credentials", "result": "TaskCanceledException", "certificateValidationUnchanged": true},
+    {"operation": "bounded TCP connectivity", "port22ConnectedMs": 53, "port443ConnectedMs": 55},
+    {"operation": "initial SSH banner only", "received": true, "bytes": 43, "authenticationAttempted": false},
+    {"atUtc": "2026-11-03T12:39:39.515525Z", "operation": "phase-instrumented readonly SSH catalog/capacity", "result": "PASS_READONLY_DESTINATION_PREFLIGHT"},
+    {"atUtc": "2026-11-03T12:41:00.321883Z", "operation": "native Auth container and health channel check", "result": "REMOTE_EXIT_1", "cause": "UNATTRIBUTED"},
+    {"operation": "allowlisted channel diagnostic", "result": "LOCAL_45_SECOND_DEADLINE", "nativeOutcome": "UNKNOWN_READONLY"}
+  ],
+  "successfulRead": {
+    "databaseContainer": "portfolio-stage-db-1",
+    "databaseId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthyBeforeAfter": true,
+    "availableDiskGiBApprox": 12.68,
+    "availableRamGiBApprox": 5.16,
+    "cpuOneSecondPercent": 25.64,
+    "existingRpcs": ["record_member_holdings", "record_member_debts", "record_member_investment_scope", "record_member_cash_flow", "record_member_goals"],
+    "catalogOnly": true,
+    "rowAuthorizationBehavior": "NOT_TESTED"
+  },
+  "limits": {
+    "nativeAuthHealth": "NOT_CONFIRMED",
+    "exactAuthDbChannelBinding": "NOT_CONFIRMED",
+    "sshFailureCause": "UNATTRIBUTED_INTERMITTENT",
+    "accountCreated": false,
+    "sessionCreated": false,
+    "financialWrite": false,
+    "sqlWrites": false,
+    "installationRestartUpgrade": false,
+    "rawStderrOrCredentialsPublished": false
+  },
+  "nextOwner": "existing root coordinator",
+  "nextAction": "Review the existing fresh-account helper and bind it to verified native Auth/DB channel and private supervisor before creating the owned QA account; independently continue the company reader and backup code."
+}
