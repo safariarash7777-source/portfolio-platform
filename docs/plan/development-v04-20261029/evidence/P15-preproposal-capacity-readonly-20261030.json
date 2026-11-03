@@ -1,0 +1,30 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "pinned SSH /proc one-second CPU and memory snapshot, df bytes/inodes; after bounded archive reads finished",
+  "result": {
+    "at": "2026-10-30T11:12:57.711039+00:00",
+    "cpuSampleSeconds": 1,
+    "cpuBusyPct": 6.33,
+    "cpuIdlePct": 93.67,
+    "iowaitPct": 0.0,
+    "memoryBytes": {
+      "MemTotal": 8276856832,
+      "MemAvailable": 5689851904,
+      "SwapTotal": 2147479552,
+      "SwapFree": 2146955264
+    },
+    "disk": {
+      "total": "81839546368",
+      "used": "71568019456",
+      "available": "6793011200",
+      "percent": "92%"
+    },
+    "inodes": [
+      "5057424",
+      "430632",
+      "4626792",
+      "9%"
+    ]
+  }
+}

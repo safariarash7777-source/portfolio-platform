@@ -1,0 +1,74 @@
+{
+  "source": "a3c9fdefce66a7413d108613df17162cff63337e",
+  "deployment": "dpl_H5yBSJA7DzHAFPbRrEK8dkcQEQYY",
+  "observedAtUtc": "2026-10-31T09:03:40.771063+00:00",
+  "nativeImagesUnchanged": true,
+  "axNormalization": "LF and trailing whitespace only",
+  "files": [
+    {
+      "path": "accordions-actual.ax.txt",
+      "bytes": 30851,
+      "sha256": "0dc3719b9ffff05155bf73f1b7bb6bbe071d510fab1a2b47a9faed5feb349c94"
+    },
+    {
+      "path": "fundamental-actual.ax.txt",
+      "bytes": 26230,
+      "sha256": "98db2dd645e2fa8b0a9effb598c2edb2ac5c862d969335495e94a49fb11818da"
+    },
+    {
+      "path": "observations.json",
+      "bytes": 1137,
+      "sha256": "3dcd7c261cfb8f1e6696893c95f000a4476cb0071b7fbde2053150e5a26a94ed"
+    },
+    {
+      "path": "quarterly-real.jpg",
+      "bytes": 73772,
+      "sha256": "1b2dbfede07d5dd5d7a44c529ac8e7fa2822cfe6eaa7b332535b0e66373530e9",
+      "format": "JPEG",
+      "width": 1265,
+      "height": 712
+    },
+    {
+      "path": "rate-and-quantity-unknown.jpg",
+      "bytes": 64712,
+      "sha256": "90a5bea3e4613f65e18d47607b0730797f440ca845396608474e7bc552d8833b",
+      "format": "JPEG",
+      "width": 1265,
+      "height": 712
+    },
+    {
+      "path": "reports-actual.ax.txt",
+      "bytes": 18195,
+      "sha256": "a4eaa67b6e3a7b206fef68d88bebdc7fba61b00093fc601c42bb1d041478243b"
+    },
+    {
+      "path": "reports-mobile-cleared.jpg",
+      "bytes": 29885,
+      "sha256": "e263022066a9cfeac23158f36b025c86851dcf33471ead4e329f3b614933ca79",
+      "format": "JPEG",
+      "width": 375,
+      "height": 811
+    },
+    {
+      "path": "reports-mobile.jpg",
+      "bytes": 32937,
+      "sha256": "407e2a3fdf27f48281ae1f7fc2f84aced52c676ddb121937962097e188bba2b2",
+      "format": "JPEG",
+      "width": 375,
+      "height": 811
+    },
+    {
+      "path": "reports-real.jpg",
+      "bytes": 73871,
+      "sha256": "f09322356b97bfc690dc51c99893da1e2c14988f257d2f48a19800d50b6f77cf",
+      "format": "JPEG",
+      "width": 1265,
+      "height": 712
+    },
+    {
+      "path": "REVIEW.fa.md",
+      "bytes": 6493,
+      "sha256": "01b60c13bd753ba71a97f196d158a52dfdf06011c7b655edc703b35fe2404405"
+    }
+  ]
+}

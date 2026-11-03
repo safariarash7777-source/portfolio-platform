@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "task": "START-C",
+  "dateTehran": "2026-10-29",
+  "codeSha": "0f9d6546101e84e5efa2d75b75a22efe28c92bdf",
+  "pr": 331,
+  "environment": "Vercel Preview; public guest session; independent IAB browser",
+  "url": "https://portfolio-platform-git-co-f5103e-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF#reports",
+  "observed": [
+    "Footer identifies preview 0f9d654",
+    "Reports tab displays 30-item / 60-row bounded coverage and no claim of complete history or freshness",
+    "Desktop 1265 px and mobile 390x844: scope text readable, no visible horizontal overflow",
+    "Processed-report read error is distinct from no reports; unavailable market values are not zeros",
+    "Keyboard navigation reaches official source link"
+  ],
+  "notAccepted": [
+    "Real collector/store/read cycle and freshness",
+    "Successful announcement list retrieval: button action showed no visible state/result in this check; owner notified",
+    "Owner visual approval",
+    "Primary-site publication"
+  ],
+  "screenshots": [
+    "start-c-desktop.jpg",
+    "start-c-mobile.jpg"
+  ]
+}

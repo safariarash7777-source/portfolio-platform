@@ -1,0 +1,212 @@
+{
+  "scope": "two existing tools adopt corrected receipts in explicit read-only review modes; encrypted Capture/Verify and legacy apply path still not integrated",
+  "backupCaller": {
+    "status": "PASS_CORRECTED_CHECKPOINT_CONSUMER_REVIEW",
+    "consumer": "backup-checkpoint.review-corrected.v1",
+    "consumerVersion": 1,
+    "gateSha256": "9289f162919bd1b2e462d2c823758b7b693f27988562d3554be197c9b65666a3",
+    "attestation": {
+      "at": "2026-10-31T04:21:55.4067+03:30",
+      "status": "PASS_PINNED_SQL_RESTORE_READ_GATE",
+      "checkpoint": "20261030T215307Z",
+      "originalStatus": "failed",
+      "correctionStatus": "PASS_OWNED_COPY_ACL19_RECONCILIATION",
+      "originalReceiptSha256": "b3cc167b604740207f884db3b037fea59e976fe296a72ed51527d79133d40aef",
+      "correctionReceiptSha256": "e4a794edff3bd2b626d41feb8f8ec5a520683b4b76b66bd6bad63cee18cccde9",
+      "bindingSha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
+      "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "targetId": "833a8447c01570811d6a0ad50cafee00745614b811ef9668acb0d944e04b21f1",
+      "dumpSha256": "87434f8c53cca9910cdbd953415ffed5e01d3aacb0db8c0702a4e164253c8c17",
+      "dumpBytes": 2406546295,
+      "proofStopped": true,
+      "proofNetwork": "none",
+      "proofPortsPublished": false,
+      "sourceHealthy": true,
+      "sqlExecuted": false,
+      "backupRetried": false,
+      "filesTransferred": false,
+      "captureConsumerIntegrated": false,
+      "installerConsumerIntegrated": false,
+      "releaseAuthorized": false,
+      "limits": [
+        "SQL restore attestation only",
+        "No Storage binary backup",
+        "Supplementary private catalog and globals do not share the exported core snapshot",
+        "Capture/installer must explicitly adopt this versioned attestation before use"
+      ]
+    },
+    "readOnlyConsumerIntegrated": true,
+    "captureVerifyProfileIntegrated": false,
+    "legacyApplyPathIntegrated": false,
+    "releaseAuthorized": false,
+    "limits": [
+      "Read-only consumer mode only; no SQL or encrypted archive transfer",
+      "Legacy seven-file Capture/Verify and old apply path remain unchanged",
+      "No current schema/capacity, Storage binary, deployed reader or service-right acceptance"
+    ]
+  },
+  "installerCaller": {
+    "status": "PASS_CORRECTED_CHECKPOINT_CONSUMER_REVIEW",
+    "consumer": "install-native.review-corrected.v1",
+    "consumerVersion": 1,
+    "gateSha256": "9289f162919bd1b2e462d2c823758b7b693f27988562d3554be197c9b65666a3",
+    "attestation": {
+      "at": "2026-10-31T00:52:44.003447+00:00",
+      "status": "PASS_PINNED_SQL_RESTORE_READ_GATE",
+      "checkpoint": "20261030T215307Z",
+      "originalStatus": "failed",
+      "correctionStatus": "PASS_OWNED_COPY_ACL19_RECONCILIATION",
+      "originalReceiptSha256": "b3cc167b604740207f884db3b037fea59e976fe296a72ed51527d79133d40aef",
+      "correctionReceiptSha256": "e4a794edff3bd2b626d41feb8f8ec5a520683b4b76b66bd6bad63cee18cccde9",
+      "bindingSha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
+      "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "targetId": "833a8447c01570811d6a0ad50cafee00745614b811ef9668acb0d944e04b21f1",
+      "dumpSha256": "87434f8c53cca9910cdbd953415ffed5e01d3aacb0db8c0702a4e164253c8c17",
+      "dumpBytes": 2406546295,
+      "proofStopped": true,
+      "proofNetwork": "none",
+      "proofPortsPublished": false,
+      "sourceHealthy": true,
+      "sqlExecuted": false,
+      "backupRetried": false,
+      "filesTransferred": false,
+      "captureConsumerIntegrated": false,
+      "installerConsumerIntegrated": false,
+      "releaseAuthorized": false,
+      "limits": [
+        "SQL restore attestation only",
+        "No Storage binary backup",
+        "Supplementary private catalog and globals do not share the exported core snapshot",
+        "Capture/installer must explicitly adopt this versioned attestation before use"
+      ]
+    },
+    "readOnlyConsumerIntegrated": true,
+    "captureVerifyProfileIntegrated": false,
+    "legacyApplyPathIntegrated": false,
+    "releaseAuthorized": false,
+    "limits": [
+      "Read-only consumer mode only; no SQL or encrypted archive transfer",
+      "Legacy seven-file Capture/Verify and old apply path remain unchanged",
+      "No current schema/capacity, Storage binary, deployed reader or service-right acceptance"
+    ],
+    "executedInstallerSha256": "563f144dcc7ee37b93ebd2965e624250a1b535fc677095281d7f4a09135596f6",
+    "remoteSourceFilesWritten": false
+  },
+  "sourceHashes": {
+    "scripts/ops/cashflow-checkpoint/backup-checkpoint.ps1": {
+      "sha256Executed": "7bd191e002bf7da039ebe6eea48dfbf2588c8c4fbb9b17e446992eb1c44396ba",
+      "hashBasis": "exact bytes"
+    },
+    "scripts/ops/cashflow-checkpoint/corrected-checkpoint-consumer.py": {
+      "sha256Executed": "18dcdff88cb8d41f8c5ee9e8236e0fdba9e7a212ef8c1044769165cc8010ac2c",
+      "hashBasis": "canonical LF bytes"
+    },
+    "scripts/ops/cashflow-checkpoint/test_corrected_checkpoint_consumer.py": {
+      "sha256Executed": "e390ed1c68c500d01aab62cc3e79d54f0d7ebdbbad4928092cd87029f0113f5d",
+      "hashBasis": "canonical LF bytes"
+    },
+    "scripts/testing/consultation/install-native.py": {
+      "sha256Executed": "563f144dcc7ee37b93ebd2965e624250a1b535fc677095281d7f4a09135596f6",
+      "hashBasis": "canonical LF bytes"
+    },
+    "scripts/ops/cashflow-checkpoint/CheckpointCrypto.cs": {
+      "sha256Executed": "6cd46deb80af9341002c30bd05723cb503087b0ccc7ce1a3f66fd7e86317d3d7",
+      "hashBasis": "exact bytes"
+    },
+    "docs/ops/p15-webpack-cache-20261030/checkpoint-read-gate.py": {
+      "sha256Executed": "9289f162919bd1b2e462d2c823758b7b693f27988562d3554be197c9b65666a3",
+      "hashBasis": "canonical LF bytes"
+    }
+  },
+  "guardTests": {
+    "platform": "Windows",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0
+  },
+  "legacyOfflineRegression": {
+    "status": "PASS",
+    "generatedAt": "2026-10-31T00:51:24.4439516Z",
+    "execution": "offline synthetic only",
+    "sshExecuted": false,
+    "databaseAccess": false,
+    "providerAccess": false,
+    "privateBackupDestinationWritten": false,
+    "bufferBytes": 65536,
+    "fixtureBytes": 196645,
+    "checks": [
+      {
+        "name": "seven allowlisted files; buffer-crossing and empty plaintext roundtrip",
+        "status": "PASS"
+      },
+      {
+        "name": "checkpoint has no local plaintext source files",
+        "status": "PASS"
+      },
+      {
+        "name": "core authenticates before decrypt: altered header",
+        "status": "PASS"
+      },
+      {
+        "name": "wrapper rejects altered header with stage-only output",
+        "status": "PASS"
+      },
+      {
+        "name": "core authenticates before decrypt: altered ciphertext",
+        "status": "PASS"
+      },
+      {
+        "name": "wrapper rejects altered ciphertext with stage-only output",
+        "status": "PASS"
+      },
+      {
+        "name": "core authenticates before decrypt: altered tag",
+        "status": "PASS"
+      },
+      {
+        "name": "wrapper rejects altered tag with stage-only output",
+        "status": "PASS"
+      },
+      {
+        "name": "core rejects wrong AES/HMAC master",
+        "status": "PASS"
+      },
+      {
+        "name": "wrapper rejects different DPAPI-wrapped master",
+        "status": "PASS"
+      },
+      {
+        "name": "wrapper rejects missing allowlisted ciphertext",
+        "status": "PASS"
+      },
+      {
+        "name": "manifest is authenticated",
+        "status": "PASS"
+      },
+      {
+        "name": "Capture refuses existing destination; preserved evidence",
+        "status": "PASS"
+      },
+      {
+        "name": "unreviewed helper hash rejected before capture",
+        "status": "PASS"
+      },
+      {
+        "name": "preloaded crypto type rejected before destination/key creation",
+        "status": "PASS"
+      },
+      {
+        "name": "source health failure rejected before destination/key creation",
+        "status": "PASS"
+      }
+    ],
+    "testOutput": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\company-tools-20261024\\scripts\\ops\\cashflow-checkpoint\\test-output\\fb8f2113afff4201978959fed0e16b2e",
+    "scriptSha256": "7bd191e002bf7da039ebe6eea48dfbf2588c8c4fbb9b17e446992eb1c44396ba",
+    "cryptoSha256": "6cd46deb80af9341002c30bd05723cb503087b0ccc7ce1a3f66fd7e86317d3d7"
+  },
+  "oldCaptureVerifyProfile": "unchanged7files/crypto",
+  "primarySqlExecuted": false,
+  "archiveTransferred": false,
+  "sourceFilesInstalledOnServer": false,
+  "readyToInstall": false
+}

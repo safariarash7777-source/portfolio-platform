@@ -1,0 +1,46 @@
+{
+  "pr": 364,
+  "head": "e48eafa361198a2db24ea374232136bfce918f7e",
+  "base": "f12ba71c353e135f83d136105380f20dd59a95e0",
+  "draft": true,
+  "guardDiff": [
+    {
+      "path": "vercel.json",
+      "patch": "@@ -8,5 +8,10 @@\n       \"path\": \"/api/cron/telegram-sync\",\n       \"schedule\": \"0 3 * * *\"\n     }\n-  ]\n+  ],\n+  \"git\": {\n+    \"deploymentEnabled\": {\n+      \"codex/codal-stored-reader-v04-20261031\": false\n+    }\n+  }\n }"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 124370157775,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124370157882,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124370157916,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124370158041,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124371351539,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "scope": "root independently read GitHub metadata and exact guard diff; earlier a13 code review retained",
+  "runtime": "NOT_RUN",
+  "envChanged": false,
+  "manualDeploy": false,
+  "primaryApplied": false,
+  "nextOwner": "C prepares existing P06 branch-only runtime binding; root owns review/execution",
+  "deploymentSkip": "owner observed no matching deployment; explicit skipped check UNOBSERVED"
+}

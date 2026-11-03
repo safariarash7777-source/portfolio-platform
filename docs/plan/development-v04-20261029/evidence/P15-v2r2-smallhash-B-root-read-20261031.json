@@ -1,0 +1,24 @@
+{
+  "source": "c35e98f00b97c6312e590370d908e33aaec1628f",
+  "owner": "B remote read; root read receipt and custom source, no repeat of SSH/hash",
+  "ownerReceiptSha256": "e3d83ae047e17d374ec340a0927b1a15c94cba20bc9d14ec7278f02792fe58b1",
+  "observation": {
+    "sha256": "2ca79419e1b2cb1baee866a3cf63f0ab8cdb0205079e900738de492e86a77d9a",
+    "length": 3707,
+    "owner": 0,
+    "atUtc": "2026-10-31T02:33:07.223526+00:00",
+    "observedAbsence": true
+  },
+  "atTehran": "2026-10-31T06:03:07.223526+03:30",
+  "rootStaticCheck": {
+    "sourceSha256": "18450ebc623462784d241f9dc350b78b6f53db32c04eef597a631cb9da5350a1",
+    "embeddedFrozenGateShaVerified": true,
+    "customBodyRead": true,
+    "gateRunCalled": false,
+    "readCapBytes": 3708,
+    "sharedLockOwnedNoSymlinkStableFstatBeforeAfterReopenAndIdentityChecks": "read in source; execution evidence remains owner result"
+  },
+  "meaning": "current observation for candidate policy pin; neverCreated/historicalNotDeleted unproven, original bytes not rewritten",
+  "nativePolicyApproved": false,
+  "nativeCaptureOrKeyOrTransferOrSql": false
+}

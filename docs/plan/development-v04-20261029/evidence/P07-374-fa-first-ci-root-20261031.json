@@ -1,0 +1,69 @@
+{
+  "source": "fa333ea75ce8ddb9f7d798179739677527a9891a",
+  "pr": 374,
+  "status": "FIRST_CI_FAILED_TEST_REGISTRATION_PRESERVED",
+  "run": 41165419219,
+  "jobs": [
+    {
+      "id": 124431821688,
+      "name": "Typecheck \u0622\u00b7 Lint \u0622\u00b7 Tests \u0622\u00b7 Build",
+      "conclusion": "failure"
+    },
+    {
+      "id": 124431821879,
+      "name": "Database RLS \u0622\u00b7 Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124431821887,
+      "name": "Secret scan \u0622\u00b7 SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124431821895,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124432805994,
+      "name": "CI Gate",
+      "conclusion": "failure"
+    }
+  ],
+  "actualCheckout": "6523038cba7e7cea6f4e9328519036144e8046b6",
+  "tree": "df26fffdf622362aa13074d7f2a69487c90367b0",
+  "parents": [
+    "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+    "fa333ea75ce8ddb9f7d798179739677527a9891a"
+  ],
+  "equalsExportTree": true,
+  "typecheck": "PASS",
+  "lint": "PASS",
+  "core": {
+    "tests": 2071,
+    "pass": 2070,
+    "fail": 1,
+    "failure": "lib/desk/registry.test.ts:37 only unregistered lib/fundamental/read-binding.test.ts"
+  },
+  "subsequentQualitySteps": "SKIPPED including build; not accepted",
+  "local26Tests": "owner offline only, not yet all executed by this CI",
+  "rootAction": "narrow child allocated and sent to A: add only literal new test path to existing test:calc and update same DELIVERY; preserve fa/code/tests/guard/lock/workflows; new CI after commit allowed",
+  "nextCommit": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "data402": "OPEN",
+  "envMutation": false,
+  "manualDeploy": false,
+  "releaseAuthorized": false,
+  "followUp": {
+    "tree": "c5f20ab832ab985dd32190ee53d306a849ddbec0",
+    "parent": "fa333ea75ce8ddb9f7d798179739677527a9891a",
+    "rootGitHubDiffRead": true,
+    "changedFiles": [
+      "package.json",
+      "docs/ops/p07-fundamental-read-binding-20261031/DELIVERY.fa.md"
+    ],
+    "packageDelta": "only literal lib/fundamental/read-binding.test.ts added to existing test:calc",
+    "newCi": 41165825261,
+    "newCiStatus": "IN_PROGRESS_NOT_ACCEPTED",
+    "appHelperTestsGuardLockWorkflowUnchanged": true
+  }
+}

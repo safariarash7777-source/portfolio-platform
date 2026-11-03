@@ -1,0 +1,458 @@
+{
+  "pr": 366,
+  "head": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+  "base": "1636258dec1701c2c6edcc4d60050c94eb0db7d6",
+  "draft": true,
+  "run": {
+    "id": 41150876762,
+    "head": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "job": 124386827174,
+  "reviewMethod": "root independently read official decoded GitHub job log, current PR head/base and exact55fb→c4 diff; no download of artifact ZIP or full changed-source audit",
+  "scope": "bounded acceptance of owned Linux/real Auth/API and consumer DOM durability; not production acceptance",
+  "nativeChecks": [
+    {
+      "name": "isolation-attested",
+      "status": "PASS",
+      "sha": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+      "runId": "consultation-ticket-727d4f61-3b3f-4875-bf0c-3c988963f415",
+      "images": {
+        "db": "postgres@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "auth": "supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "rest": "postgrest/postgrest@sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "node": "node@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34"
+      },
+      "restArtifact": {
+        "legacy": "sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272",
+        "index": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "manifest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+        "config": "sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9",
+        "version": "PostgREST 14.17",
+        "primaryArtifactMatch": "NOT_CLAIMED"
+      },
+      "database": "owned tmpfs",
+      "serviceNetwork": "internal/no host binds/no published service ports",
+      "ingress": "127.0.0.1:32190 only",
+      "app": "Linux runner loopback / sanitized env / exact Git archive",
+      "appDefaultRoutes": null,
+      "appNoEgressClaim": false
+    },
+    {
+      "name": "four-fresh-auth-users-and-sdk-getuser",
+      "status": "PASS",
+      "members": 2,
+      "admin": 2,
+      "memberTokenSource": "GoTrue password grant; no hand-signed member sub"
+    },
+    {
+      "name": "nonzero-dossier-and-real-consent",
+      "status": "PASS",
+      "holdingVersion": "87eb1513-9edc-4845-ab88-195e901fef33",
+      "cashVersion": "a49b271d-2e42-425b-bf77-ec472da21759",
+      "declaredToman": 1000000,
+      "closingToman": 580000,
+      "missingPlannedPreserved": true
+    },
+    {
+      "name": "product-default-closed-in-db-and-api",
+      "status": "PASS",
+      "memberDenied": true,
+      "ownerAdminDenied": true,
+      "requestsCreated": 0,
+      "realServiceRight": "NOT_CONNECTED"
+    },
+    {
+      "name": "explicit-isolated-db-grant-bound-to-run-and-actors",
+      "status": "PASS",
+      "runId": "consultation-ticket-727d4f61-3b3f-4875-bf0c-3c988963f415",
+      "actualActors": [
+        "b19b5fed-0b4e-4130-bfbb-7682099a49a6",
+        "4ee39b71-58a4-4a19-943e-9c326f2fd5b9"
+      ],
+      "sourceRight": "NOT_CONNECTED",
+      "fixtureImportedInProduct": false
+    },
+    {
+      "name": "real-lost-response-get-only-exact-recovery",
+      "status": "PASS",
+      "actualHeader": 201,
+      "discardedRealBody": true,
+      "ticketPostAttempts": 1,
+      "storedEvents": 1,
+      "recoveredEventId": "2f168011-b018-4c1b-afaa-d396e781d342"
+    },
+    {
+      "name": "real-provider-failure-preserves-authorized-history",
+      "status": "PASS",
+      "writeCapability": "unavailable",
+      "independentEventRead": true,
+      "originalFixtureProviderRestored": true
+    },
+    {
+      "name": "real-signout-new-password-session-sdk-getuser-and-readback",
+      "status": "PASS",
+      "sameActor": "b19b5fed-0b4e-4130-bfbb-7682099a49a6",
+      "exactEventId": "2f168011-b018-4c1b-afaa-d396e781d342",
+      "version": 1,
+      "browser": "NOT_RUN"
+    },
+    {
+      "name": "known-effect-idempotency-and-actor-cas-guards",
+      "status": "PASS",
+      "replayOnlyAfterConfirmedRead": true,
+      "canonicalReceiptSame": true,
+      "duplicateRequestDenied": true,
+      "actorFieldCannotGrant": true
+    },
+    {
+      "name": "actual-two-auth-actors-concurrent-cas",
+      "status": "PASS",
+      "statuses": [
+        409,
+        201
+      ],
+      "versions": [
+        1,
+        2
+      ],
+      "prefixRetained": true
+    },
+    {
+      "name": "real-versioned-submit-approve-publish-and-exact-ticket-link",
+      "status": "PASS",
+      "sessionId": "2ba2fae8-a796-4c4b-a553-7c0e03ca996b",
+      "sessionVersion": 1,
+      "linkedTicketVersion": 3,
+      "wrongHashDenied": true,
+      "realPersonalRecommendation": false
+    },
+    {
+      "name": "actual-shared-advisor-response-and-member-followup",
+      "status": "PASS",
+      "versions": [
+        4,
+        5
+      ],
+      "sameTextIndependentRead": true,
+      "privateNoteAbsent": true
+    },
+    {
+      "name": "other-member-unrelated-admin-and-direct-rpc-denial",
+      "status": "PASS",
+      "allDenied": true,
+      "applicationPrivateTableGrants": 0
+    },
+    {
+      "name": "close-appends-terminal-event-without-overwrite",
+      "status": "PASS",
+      "finalVersion": 6,
+      "lateAppendDenied": true
+    },
+    {
+      "name": "disabled-advisor-and-changed-relation-no-private-receipt",
+      "status": "PASS",
+      "disabledStatus": 403,
+      "changedRelationStatus": 409,
+      "memberHistoryRetained": true
+    },
+    {
+      "name": "real-revoke-member-history-and-advisor-denial",
+      "status": "PASS",
+      "memberVersions": 6,
+      "advisorDenied": true,
+      "memberWriteDenied": true
+    },
+    {
+      "name": "financial-rows-fingerprints-and-original-history-preserved",
+      "status": "PASS",
+      "fingerprintSha256": "e7f600ff00a585c85e662b6b76a56d50efabf75bd16d86eac0c33555748ede93",
+      "holdingVersions": 1,
+      "cashVersions": 1,
+      "ticketVersions": 6,
+      "modelCalls": 0,
+      "targetInstall": "NOT_APPLIED",
+      "uiBrowser": "NOT_RUN"
+    },
+    {
+      "name": "ungranted-relation-preparation-denied",
+      "status": "PASS",
+      "preparations": 0,
+      "commands": 0,
+      "adminRoleNotGrant": true
+    },
+    {
+      "name": "exact-server-utf8-hash-dbtime-and-metadata-only-list",
+      "status": "PASS",
+      "bodyHash": "85c4c355e0a14817b7a91e27801933427ec338fa9ad59acd9322fdacbca813a3",
+      "preparationId": "049d6ef9-c7d9-49cb-89db-e7de9fe79533",
+      "commandsAfterPreparation": 0,
+      "independentSqlExact": true
+    },
+    {
+      "name": "real-command-201-lost-fresh-sdk-server-intent-get-only",
+      "status": "PASS",
+      "commandPosts": 1,
+      "events": 1,
+      "originalBodyHash": "85c4c355e0a14817b7a91e27801933427ec338fa9ad59acd9322fdacbca813a3",
+      "restoredEventId": "3116661f-f96f-4f62-9f24-1e12e3ce8b41",
+      "browserDestroy": "SEPARATE_BROWSER_GATE"
+    },
+    {
+      "name": "unknown-preparation-fresh-sdk-zero-command",
+      "status": "PASS",
+      "preparationPosts": 1,
+      "commandEvents": 0,
+      "serverOriginalBodyFound": true
+    },
+    {
+      "name": "exact-token-changed-body-conflict-and-real-prepare-race",
+      "status": "PASS",
+      "sameTokenChangedBody": 409,
+      "raceStatuses": [
+        200,
+        201
+      ],
+      "preparationsForRace": 1
+    },
+    {
+      "name": "prepared-intents-do-not-bypass-current-command-cas",
+      "status": "PASS",
+      "preparedBoth": true,
+      "commandStatuses": [
+        201,
+        409
+      ],
+      "staleFreshPreparation": 409
+    },
+    {
+      "name": "prepared-acl-and-provider-independent-authorized-history",
+      "status": "PASS",
+      "otherMemberDenied": true,
+      "unrelatedAdminDenied": true,
+      "otherOwnerBodyDenied": true,
+      "directRpcDenied": true,
+      "changedRelation": 409,
+      "privateTableGrants": 0,
+      "providerFailureReadsRetained": true
+    },
+    {
+      "name": "prepared-revoke-member-history-and-financial-fingerprints",
+      "status": "PASS",
+      "memberOriginalBodyRetained": true,
+      "advisorDenied": true,
+      "newPreparationDenied": true,
+      "financialFingerprintUnchanged": true,
+      "modelCalls": 0,
+      "primaryInstall": "NOT_APPLIED"
+    }
+  ],
+  "browserChecks": [
+    {
+      "at": "2026-10-31T00:35:24.4055726Z",
+      "name": "browser-preflight-before-provision",
+      "status": "PASS",
+      "existingChromeHash": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+      "noBrowserDownload": true
+    },
+    {
+      "at": "2026-10-31T00:35:46.8307078Z",
+      "name": "real-member-page-default-right-closed",
+      "status": "PASS",
+      "actualDocument": 200,
+      "draftRetained": true,
+      "posts": 0,
+      "productRight": "NOT_CONNECTED"
+    },
+    {
+      "at": "2026-10-31T00:35:49.2986103Z",
+      "name": "real-201-discard-live-page-one-post",
+      "status": "PASS",
+      "actualStatus": 201,
+      "bodyDeliveryAborted": true,
+      "pageStayedOpen": true,
+      "ticketPosts": 1,
+      "storedEvents": 1,
+      "httpFulfill": false
+    },
+    {
+      "at": "2026-10-31T00:35:50.3908202Z",
+      "name": "same-attempt-get-only-recovery",
+      "status": "PASS",
+      "sameRequest": true,
+      "sameToken": true,
+      "sameEventId": "a5fdd86f-9d38-4a17-bcef-ca387eae4ba7",
+      "postsAfterRecovery": 1,
+      "draftClearedOnlyAfterReadback": true
+    },
+    {
+      "at": "2026-10-31T00:35:53.0456168Z",
+      "name": "fresh-sdk-context-and-reload-get-only",
+      "status": "PASS",
+      "realSignout": true,
+      "newPasswordSession": true,
+      "sdkGetUser": true,
+      "oldContextClosed": true,
+      "actualReload": true,
+      "postsBefore": 1,
+      "postsAfter": 1,
+      "resourceHistoryOnly": true,
+      "unknownIntentAfterDestroy": "SEPARATE_DURABILITY_CRITERIA"
+    },
+    {
+      "at": "2026-10-31T00:36:00.5826327Z",
+      "name": "real-advisor-response-and-member-followup",
+      "status": "PASS",
+      "memberOpen": 1,
+      "ownerReply": 2,
+      "memberFollowup": 3,
+      "actualDomSubmits": 3,
+      "independentSameText": true
+    },
+    {
+      "at": "2026-10-31T00:36:04.5399478Z",
+      "name": "unconfirmed-command-destroy-and-server-intent-get-only",
+      "status": "PASS",
+      "real201BeforeBody": true,
+      "fullContextDestroyedBeforeConfirmation": true,
+      "newPasswordSdkSession": true,
+      "serverOriginalBodyTokenRestored": true,
+      "explicitSelection": true,
+      "commandEvents": 1,
+      "extraCommandPosts": 0,
+      "extraPreparationPosts": 0
+    },
+    {
+      "at": "2026-10-31T00:36:08.3259518Z",
+      "name": "unknown-preparation-destroy-no-command",
+      "status": "PASS",
+      "realPreparation201BeforeBody": true,
+      "fullContextDestroyed": true,
+      "originalBodyFromServer": true,
+      "commandEvents": 0,
+      "automaticPosts": 0,
+      "explicitRetryOfferedOnly": true
+    },
+    {
+      "at": "2026-10-31T00:36:09.6428435Z",
+      "name": "desktop-mobile-and-private-storage-cache-url",
+      "status": "PASS",
+      "widths": [
+        1440,
+        390
+      ],
+      "actualPages": 2,
+      "storageAudits": 2,
+      "privateHits": 0,
+      "urlHits": 0,
+      "cacheResponses": 69,
+      "cacheAuditComplete": true
+    },
+    {
+      "at": "2026-10-31T00:36:14.7250034Z",
+      "name": "real-revoke-and-private-fallback-denial",
+      "status": "PASS",
+      "disabledAdvisorCleared": true,
+      "revokedAdvisorCleared": true,
+      "otherMemberDenied": true,
+      "memberHistoryVersions": 3,
+      "memberWriteAbsent": true
+    },
+    {
+      "at": "2026-10-31T00:36:15.1293179Z",
+      "name": "owned-browser-cleanup",
+      "status": "PASS",
+      "processStopped": true,
+      "contextsClosed": true,
+      "ownedTempRemoved": true,
+      "ownerId": "7014b92c-0376-492f-a8e6-88b724d8882c"
+    }
+  ],
+  "nativeCleanup": [
+    {
+      "at": "2026-10-31T00:35:17.0360413Z",
+      "sha": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+      "runId": "consultation-ticket-727d4f61-3b3f-4875-bf0c-3c988963f415",
+      "status": "REMOVED_OWNED_RESOURCES",
+      "resources": 6
+    },
+    {
+      "at": "2026-10-31T00:36:23.9191558Z",
+      "sha": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+      "runId": "consultation-ticket-7f06991c-86c1-4bd2-90e8-3d53d4e73957",
+      "status": "REMOVED_OWNED_RESOURCES",
+      "resources": 6
+    }
+  ],
+  "browserCleanup": [
+    {
+      "at": "2026-10-31T00:36:15.1292046Z",
+      "status": "REMOVED_OWNED_RESOURCES",
+      "processStopped": true,
+      "contextsClosed": true,
+      "ownedTempRemoved": true,
+      "ownerId": "7014b92c-0376-492f-a8e6-88b724d8882c",
+      "processesObserved": 17
+    }
+  ],
+  "diffFrom55": [
+    "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md",
+    "scripts/testing/consultation-tickets/durability-native.mjs",
+    "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
+    "scripts/testing/consultation-tickets/native-infrastructure-lineage.json",
+    "scripts/testing/consultation-tickets/protected-source.json"
+  ],
+  "diffNotes": [
+    "initial fixture serialization through existing validator; recovered original body untouched",
+    "anonymous denied status permits401/403; service_role remains403, no404/success; matches PostgREST14 documentation",
+    "owned test gateway loads unchanged source config plus logging=false, without auth/router/API/SQL changes",
+    "lineage source hashes updated for only the changed owned test files"
+  ],
+  "postgrestReference": "https://docs.postgrest.org/en/v14/references/errors.html",
+  "generalCi": {
+    "run": 41150876796,
+    "jobs": [
+      {
+        "id": 124386827298,
+        "name": "Typecheck · Lint · Tests · Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124386827437,
+        "name": "Secret scan · SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124386827516,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124386827574,
+        "name": "Database RLS · Integrity (Postgres)",
+        "status": "in_progress",
+        "conclusion": null
+      }
+    ]
+  },
+  "failed55Preserved": true,
+  "limits": [
+    "new SQL candidate only applied in fresh owned CI DB, no primary installation",
+    "test-only grants for exact actors/run; real service entitlement NOT_CONNECTED",
+    "full login-form UI NOT_RUN; actual SDK-null callback timing DOM UNOBSERVED",
+    "not current usable target: all owned test resources removed",
+    "PostgREST14.17 primary artifact equality not claimed",
+    "Storage binary/capacity/source schema/reader-before-writer/installer gates independent",
+    "no Arash visual/product acceptance"
+  ],
+  "nextOwner": "B freeze c4 and prepare existing P03 deployment delta/order/rollback packet; root actual destination and corrected-receipt consumer integration",
+  "unitTests": {
+    "tests": 89,
+    "pass": 89,
+    "source": "official job log"
+  }
+}

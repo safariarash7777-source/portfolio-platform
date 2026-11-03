@@ -1,0 +1,58 @@
+{
+  "sourceReportedByOwner": "5649582e7336608981614570048e2a4c54d4e4d1",
+  "tool": "IAB / cua_repl",
+  "sourceDeploymentBinding": "owner receipt; live UI checked by root",
+  "data": "P14-EDU-02 educational only",
+  "acceptedFiles": [
+    {
+      "name": "02-decision-selected-1440.png",
+      "bytes": 85750,
+      "sha256": "44faf13eb8da34386617b5030891df23ea5f5660e25e43c49fe815aa7a2c4274"
+    },
+    {
+      "name": "03-dossier-preserved-selection-1440.png",
+      "bytes": 85143,
+      "sha256": "a8afc690883216dab65fdacfa7ed7edd12926efcedbd85e942e357f4e4cf1193"
+    },
+    {
+      "name": "04-rate-point-tooltip-1440.png",
+      "bytes": 85673,
+      "sha256": "84c20c50e107e234f01d6e26865852cf2c0220373635cc50392215c356bba0dc"
+    },
+    {
+      "name": "05-quarterly-margins-tooltip-1440.png",
+      "bytes": 73690,
+      "sha256": "4cd54f4d51f9767855f60aa04ff17fb14282c111c2c152968c4399348c71438a"
+    },
+    {
+      "name": "06-quarter-source-record-1440.png",
+      "bytes": 83520,
+      "sha256": "0142810053927f743afdb40a4acbd75d35bdf07a09975acbf19e0f5a692f67bb"
+    },
+    {
+      "name": "07-quarter-large-view-1440.png",
+      "bytes": 66910,
+      "sha256": "ad3d2915364c0ad5fbd358512e517e864348b78db6bff4e12fc0c5de2d0867ff"
+    },
+    {
+      "name": "08-decision-mobile-390.png",
+      "bytes": 35414,
+      "sha256": "41a51c25ea6b049d9e81444134a04af6e5da271776379ab0e5762bf2c0a2903b"
+    },
+    {
+      "name": "09-month-gap-mobile-390.png",
+      "bytes": 48207,
+      "sha256": "412acb651dedab0b2437aee621f23b7fa0621c33f1e7aac77c7122ddf867d4da"
+    },
+    {
+      "name": "10-quarter-gap-mobile-390.png",
+      "bytes": 41498,
+      "sha256": "281277a8f5317f2f54f7fbdaef12712ee1757babd50443870cdd18629c86ad66"
+    }
+  ],
+  "rejectedFiles": [
+    "rejected-03-dossier-during-load.png"
+  ],
+  "rejectedReason": "loading frame; preserved outside repository",
+  "userVisualAcceptance": "OPEN"
+}

@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-10-29T18:12:59.257351+00:00",
+  "reviewer": "existing-root-coordinator",
+  "method": "read-only public GitHub API through existing proxy",
+  "pr": 331,
+  "sha": "4013c7c3e972e6b026e093d8dbf39d9df7776fc1",
+  "prOpen": true,
+  "merged": false,
+  "ciRun": 40906300708,
+  "ciConclusion": "success",
+  "allFiveJobsSuccess": true,
+  "primaryFinancialIngestLastSuccess": null,
+  "freshnessAccepted": false,
+  "primaryDeployed": false
+}

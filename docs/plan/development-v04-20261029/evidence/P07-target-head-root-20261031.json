@@ -1,0 +1,24 @@
+{
+  "target": "https://62.60.191.24/liara-preview/rest/v1/codal_reports?select=id&limit=0",
+  "startedAtUtc": "2026-10-31T03:41:12.816Z",
+  "endedAtUtc": "2026-10-31T03:41:13.323Z",
+  "method": "HEAD",
+  "requestCount": 1,
+  "authHeaders": false,
+  "credentials": "omit",
+  "redirect": "error",
+  "timeoutMs": 10000,
+  "runtime": "existing Node v24.22.1 on coordinator Windows",
+  "status": 401,
+  "tlsBypass": false,
+  "trustOrProxyConfigChanged": false,
+  "rowsFetched": 0,
+  "keyOrEnvRead": false,
+  "keyOrEnvInstalled": false,
+  "limits": [
+    "Local Node completed strict TLS to the fixed route and received an unauthenticated challenge only",
+    "This is not Vercel runtime TLS, signature or anonymous-key acceptance, successful data read or page render",
+    "Same-origin base HEAD separately returned200 HTML; it is not a database health or authorization proof",
+    "No model/provider/ingest, database, deployment or service mutation"
+  ]
+}

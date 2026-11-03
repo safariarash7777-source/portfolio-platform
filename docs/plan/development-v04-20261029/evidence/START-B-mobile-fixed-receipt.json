@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "task": "START-B",
+  "dateTehran": "2026-10-29",
+  "productSha": "54d7e41569032b2054ee0008f55027ec1449b2c4",
+  "previewOnlySha": "db7f72ae528439c2c603642ac3a5db561cb29291",
+  "url": "https://portfolio-platform-cbmdil8ll-safariarash7777-4463s-projects.vercel.app/start-b-preview",
+  "independentCoordinatorCheck": true,
+  "measurements": [
+    {
+      "client": 305,
+      "scroll": 305,
+      "width": 320,
+      "overflowingControls": 0
+    },
+    {
+      "client": 375,
+      "scroll": 375,
+      "width": 390,
+      "overflowingControls": 0
+    },
+    {
+      "client": 1265,
+      "scroll": 1265,
+      "width": 1280,
+      "overflowingControls": 0
+    }
+  ],
+  "privateFieldsExpanded": true,
+  "recoveryAt320": "Edited synthetic title; POST v2 loses response after commit; editor locks; GET v2 restores 2/2; review remains only on v1",
+  "scope": "Synthetic online interaction and layout; not native production persistence or owner acceptance",
+  "screenshots": [
+    "start-b-fixed-320.jpg",
+    "start-b-fixed-390.jpg"
+  ]
+}

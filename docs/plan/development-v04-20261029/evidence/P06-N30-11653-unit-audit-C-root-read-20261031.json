@@ -1,0 +1,46 @@
+{
+  "status": "OWNER_SOURCE_TO_SCREEN_AUDIT_ROOT_READ_NOT_ROOT_REEXECUTED",
+  "docCommit": "5f6971eb50e72f64f089c35b1d3a54dacb470cf7",
+  "docUrl": "https://github.com/safariarash7777-source/portfolio-platform/blob/5f6971eb50e72f64f089c35b1d3a54dacb470cf7/docs/ops/codal-stored-reader-v04-20261031/DELIVERY.fa.md#شاهد-مستقل-p06p07--واحدمنبع-تا-صفحه-ن۳۰-فولاد-۱۱۶۵۳--۳۱-اکتبر",
+  "rootReview": "read changed delivery source through GitHub commit; owner offline harness not independently rerun by root",
+  "reportId": 11653,
+  "officialCurrent": {
+    "getCount": 1,
+    "startedAtUTC": "2026-10-31T03:11:59.632856Z",
+    "endedAtUTC": "2026-10-31T03:12:05.589506Z",
+    "http": 503,
+    "bytes": 91,
+    "sha256": "2f85832e31ca57711e6107af6b142363351ae516adb71c69afc643fac26be7f6",
+    "originStatus": "UNKNOWN",
+    "excelGets": 0,
+    "retry": 0
+  },
+  "historical": {
+    "source": "PR329@9668620ab24ae6f1f6c11f7b12e19659a1f28bb5",
+    "bytes": 192342,
+    "sha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+    "fetchedAt": "2026-10-27T10:28:02.032Z",
+    "notFreshAccess": true
+  },
+  "observations": {
+    "financialPeriodEnd": "1405-06-31",
+    "amountUnit": "million IRR",
+    "quantityUnitHistoricalSource": "thousand tonnes",
+    "storedPv2QuantityUnit": null,
+    "storedPv2RatesAndQuantitiesRemainNull": true,
+    "monthlyTotalAmountUnchanged": 639418160,
+    "newParserAlreadyExists": "PR329, not new implementation",
+    "oldRowsNotEnrichedAutomatically": true,
+    "markets": "existing PR329 separates domestic/export/services in historical bytes",
+    "missingConsumer": "specific quantity/rate denominator metadata does not reach chart label; canonical source lacks records already available in lineage331",
+    "rateNumericCorrectness": "NOT_ACCEPTED",
+    "fullFinancialSuccess": "UNKNOWN"
+  },
+  "limits": {
+    "ssrHarness": "pure existing model/component, Recharts layout stub; not live browser",
+    "mainMerge": false,
+    "productMutation": false,
+    "sqlOrProviderOrModel": false,
+    "relayRollout": false
+  }
+}

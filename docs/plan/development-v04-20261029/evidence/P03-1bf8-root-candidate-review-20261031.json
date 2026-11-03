@@ -1,0 +1,160 @@
+{
+  "head": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+  "parent": "699ea1677c21c216be52869318cf0ac1c4525744",
+  "tree": "cbab32da172eb4483a1f9b652e48c53289ff82fa",
+  "status": "SCOPED_REVIEW_READY_FOR_EXISTING_LINUX_GATE_NOT_NATIVE_ACCEPTED",
+  "packet": {
+    "bytes": 131097,
+    "sha256": "7ee1225214f4c958a61f321c13797ecb3283fd8e0e49ca884a3809a6e7b94fb1",
+    "members": 25,
+    "all24Hashes": "PASS",
+    "crcAndPaths": "PASS"
+  },
+  "sourceExactGit": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 22457,
+      "sha256": "36d83968117153d23270fde3dc50d39c7cbbbfcbd9ced1b6ce967e9f700f5b46",
+      "exactGit": true
+    },
+    {
+      "path": ".github/workflows/p03-ticket-native.yml",
+      "bytes": 11509,
+      "sha256": "9f92e7467f4279079c2928390fa222481ebf1128a1300c1d2024cf853b4e94a1",
+      "exactGit": true
+    },
+    {
+      "path": "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md",
+      "bytes": 84191,
+      "sha256": "9775bb42f26fd21f17264c819fac7ab713c49f9d537074e84495642e9de37fab",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/browser.mjs",
+      "bytes": 44716,
+      "sha256": "102cb492f0dc33a09f386b8b59643acb1732f6eff7c515cdd2f8a0f9a2e588ea",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/feedback-reader-native.mjs",
+      "bytes": 20167,
+      "sha256": "18893829ff88c8e7853e925d7158dd8fd556dc12fb05a1cc661dba1f2316812d",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/feedback-reader-native.test.mjs",
+      "bytes": 6996,
+      "sha256": "9801e36eab8f7282ad894d90765ed921a699f61ba5ac015e4df312d3057a6fb5",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
+      "bytes": 4945,
+      "sha256": "744e276b105fda182d6b8ba862daae76b888504d61f506fd7a43e3360fffee36",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
+      "bytes": 34028,
+      "sha256": "f5cb82ebd60e37a4e35ec6fd30b29d4e84c5985c5811b22cc78e1bf51c7b494b",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-infrastructure-lineage.json",
+      "bytes": 3127,
+      "sha256": "e76629fe09d88f8cc59b34ecfbd172eaeb832dc979553033cbda30c34f1649dd",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-infrastructure.test.mjs",
+      "bytes": 2615,
+      "sha256": "65cc6d66603237fae02f9fd7d682966b4d7a494be3136fee8762d1a499435166",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/protected-source.json",
+      "bytes": 16186,
+      "sha256": "2bbacbfa3ead0f0dc7867bfb75ecde61f85d844a23bd0f00a35661832226046e",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/source-boundary.test.mjs",
+      "bytes": 9105,
+      "sha256": "dad80b2596a955ee8b5ba4b6d3cecb4eb54ca58f6151a5b45cc603354203d3c4",
+      "exactGit": true
+    },
+    {
+      "path": "vercel.json",
+      "bytes": 341,
+      "sha256": "3fc7db08405553976c22af01b63e0d2ecdca7a8864c81b3a8dc73929f0f90355",
+      "exactGit": true
+    }
+  ],
+  "preApplyPairs": {
+    "count": 13,
+    "sha256": "234848a0019d8944c57864c5913377d9c75dd6361a396746f4060238db15f5d9",
+    "allOldAndNewBlobsRawShaMatchGit": true
+  },
+  "rootPrivateIndexExactTree": true,
+  "frozenPaths": [
+    {
+      "path": "app",
+      "treeOrBlob": "1810b3289b17f933d355000dea770c239db132b4",
+      "unchanged": true
+    },
+    {
+      "path": "lib",
+      "treeOrBlob": "13348d2bdad83a92467382d3345073fa1f88c30e",
+      "unchanged": true
+    },
+    {
+      "path": "components",
+      "treeOrBlob": "b0855f82807faa1d3ec475e0558451778644dada",
+      "unchanged": true
+    },
+    {
+      "path": "public",
+      "treeOrBlob": "c69d2a94f4f556d8baf6fdf4460fc54059814aca",
+      "unchanged": true
+    },
+    {
+      "path": "middleware.ts",
+      "treeOrBlob": "c81b575cc7d947d2026036a46330db098273a263",
+      "unchanged": true
+    },
+    {
+      "path": "next.config.js",
+      "treeOrBlob": "2127e13382e5c3cb7e622bdbba11a8e74f2cc991",
+      "unchanged": true
+    },
+    {
+      "path": "package.json",
+      "treeOrBlob": "376888d570892d780d5579144fa7d0881a383347",
+      "unchanged": true
+    },
+    {
+      "path": "package-lock.json",
+      "treeOrBlob": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305",
+      "unchanged": true
+    },
+    {
+      "path": "sql",
+      "treeOrBlob": "bed7834b9cdc3747f0c61242a59acc41c8c52661",
+      "unchanged": true
+    },
+    {
+      "path": "supabase",
+      "treeOrBlob": "756c4f88111ce2034c4d9d2522036f20769837ba",
+      "unchanged": true
+    }
+  ],
+  "rootStatic": "full new scenario/10 offline guards, workflow/boundaries and narrow validator changes read; actor cookie/Origin/real endpoints bound by existing ctx.api and direct RPC actor JWT in runner",
+  "advisorStatic": "runtime/gateway/browser delta only; no fresh blocker; did not prove all API method/Origin/actor restrictions from gateway alone",
+  "ownerOffline": "125 pass/0fail/0skip; not independently rerun by root",
+  "nativeAuthSqlDom": "NOT_RUN",
+  "productServiceRight": "NOT_CONNECTED",
+  "primary": "NOT_APPLIED",
+  "mainMerge": false,
+  "deploy": false,
+  "releaseAuthorized": false
+}

@@ -1,0 +1,102 @@
+{
+  "source": "265556d15712e13e6bad987d7d0c55c9801dfba1",
+  "pr": 376,
+  "run": 41170440614,
+  "status": "CI_ALL_5_PASS_ROOT_OFFICIAL_LOGS_READ_FINANCIAL_PREVIEW_NOT_ACCEPTED",
+  "jobs": [
+    {
+      "id": 124447049562,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124447049709,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124447049724,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124447049725,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 124447982968,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "actualCheckout": "8c6af8ab1ba2db98c14cb166f917270c9ba5b7d9",
+  "actualTree": "5743c1af1c759b26e64a30a6b916f584fab84196",
+  "parents": [
+    "805a8d905c9d82697745988b21ff4f1222f8969d",
+    "265556d15712e13e6bad987d7d0c55c9801dfba1"
+  ],
+  "candidateTreeEqual": true,
+  "rootReadOfficialLogs": [
+    124447049562,
+    124447049725
+  ],
+  "rootNamedMarketPasses": [
+    "2026-10-31T04:56:19.6814273Z ok 652 - market basis: a historical domestic label is unknown without losing money or quantities",
+    "2026-10-31T04:56:19.6856329Z ok 653 - market basis: verified services are not domestic and only complete coverage permits zero",
+    "2026-10-31T04:56:21.3832271Z ok 754 - market basis: historical labels cannot establish a market split or erase valid rates",
+    "2026-10-31T04:56:21.3902722Z ok 755 - market basis: verified services, exact zero and incomplete coverage are distinct",
+    "2026-10-31T04:56:21.3908740Z ok 756 - market basis: two historical rate buckets keep their points and unknown rows stay outside other",
+    "2026-10-31T04:56:26.5535608Z ok 1054 - market basis: old labels do not manufacture zero exports in the aggregate",
+    "2026-10-31T04:56:26.5695437Z ok 1055 - market basis: a mixed interval is unknown while verified monthly amounts and product mix survive",
+    "2026-10-31T04:56:48.9303534Z ok 16 - market basis: all three actual consumers distinguish unknown, verified zero and incomplete coverage",
+    "2026-10-31T04:56:52.3672230Z ok 28 - market basis: historical labels cannot establish a market split or erase valid rates",
+    "2026-10-31T04:56:52.4202588Z ok 29 - market basis: verified services, exact zero and incomplete coverage are distinct",
+    "2026-10-31T04:56:52.4286890Z ok 30 - market basis: two historical rate buckets keep their points and unknown rows stay outside other",
+    "2026-10-31T04:56:53.8906799Z ok 107 - market basis: old labels do not manufacture zero exports in the aggregate",
+    "2026-10-31T04:56:53.8927850Z ok 108 - market basis: a mixed interval is unknown while verified monthly amounts and product mix survive"
+  ],
+  "staticBuild39": true,
+  "dbCountMarkers": [
+    "2026-10-31T04:57:19.5934823Z # tests 400",
+    "2026-10-31T04:57:19.5935522Z # pass 400",
+    "2026-10-31T04:57:19.5935874Z # fail 0",
+    "2026-10-31T04:57:19.5936640Z # skipped 0",
+    "2026-10-31T04:59:07.4391603Z # tests 38",
+    "2026-10-31T04:59:07.4392315Z # pass 38",
+    "2026-10-31T04:59:07.4392683Z # fail 0",
+    "2026-10-31T04:59:07.4393463Z # skipped 0"
+  ],
+  "knownFinding": {
+    "state": "BLOCKS_NEW_PREVIEW_ACCEPTANCE",
+    "example": {
+      "verifiedDomestic": 999999,
+      "verifiedExport": 1,
+      "total": 1000000,
+      "unroundedPct": 0.0001,
+      "existingRoundedPct": 0
+    },
+    "reason": "Rounded positive export share must not be narrated or displayed as observed exact zero.",
+    "next": "A local child in six existing paths, formulas/values/types unchanged, RED/GREEN for narrative and three consumers before remote CI/Preview."
+  },
+  "CIntegration": {
+    "candidate": "fffbdb611f57d571e1c4eeec8335c3af52de2347",
+    "rootBytesAndStaticReviewed": true,
+    "paths": [
+      "app/api/codal-list/route.ts",
+      "app/api/codal-list/route.test.ts"
+    ],
+    "next": "After rounded child, exact C two-file patch on same A branch; no third pair/resolver. Local artifact review then one CI and actual Preview."
+  },
+  "notPerformed": [
+    "new Preview for265",
+    "primary SQL",
+    "model/provider invocation",
+    "main/Production merge"
+  ]
+}

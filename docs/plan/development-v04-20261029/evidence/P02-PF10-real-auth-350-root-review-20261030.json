@@ -1,0 +1,59 @@
+{
+  "reviewer": "existing-root-coordinator",
+  "head": "80582f1103d4bc1a96511064e5a1b4260e41745b",
+  "productHead": "8feee51b11185ec60af7c71607654ee42bd2a91d",
+  "pr": 350,
+  "run": 41059080924,
+  "jobs": [
+    {
+      "id": 124073936578,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124073936831,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124073936838,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124073936923,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124076469893,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "nativeObservedMarkers": [
+    "2026-10-30T13:00:58.9318250Z PF10_NATIVE_CHECK {\"name\":\"isolation-attested\",\"status\":\"PASS\",\"sha\":\"80582f1103d4bc1a96511064e5a1b4260e41745b\",\"runId\":\"pf10-17a7b778-3686-4e08-a6f4-a9f531047479\",\"images\":{\"db\":\"postgres@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24\",\"auth\":\"supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b\",\"rest\":\"postgrest/postgrest@sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c\",\"node\":\"node@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34\"},\"restArtifact\":{\"legacy\":\"sha256:34f9a5ffb70a016155142dfeb103b89523384b3f8d1a3087250c758675bf9272\",\"index\":\"sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c\",\"manifest\":\"sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0\",\"config\":\"sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9\",\"version\":\"PostgREST 14.17\",\"primaryArtifactMatch\":\"NOT_CLAIMED\"},\"database\":\"owned tmpfs\",\"serviceNetwork\":\"internal/no host binds/no published service ports\",\"ingress\":\"127.0.0.1:32190 only\",\"app\":\"Linux runner loopback / sanitized env / exact Git archive\",\"appDefaultRoutes\":null,\"appNoEgressClaim\":false}",
+    "2026-10-30T13:01:04.7096248Z PF10_NATIVE_CHECK {\"name\":\"three-fresh-auth-users-and-sdk-getuser\",\"status\":\"PASS\",\"members\":2,\"admin\":1,\"memberTokenSource\":\"GoTrue password grant; no hand-signed member sub\"}",
+    "2026-10-30T13:01:06.0561160Z PF10_NATIVE_CHECK {\"name\":\"real-auth-reader-first-unavailable-writer-closed\",\"status\":\"PASS\"}",
+    "2026-10-30T13:01:07.7826213Z PF10_NATIVE_CHECK {\"name\":\"minimal-owner-acl-with-no-grant-repair\",\"status\":\"PASS\",\"forcedRls\":true,\"rpcExecute\":true,\"directWrite\":false,\"ownerSelect\":true,\"privateHelper\":false,\"serviceExecute\":false}",
+    "2026-10-30T13:01:08.5273062Z PF10_NATIVE_CHECK {\"name\":\"real-jwt-lost-response-fresh-session-get-exact-receipt\",\"status\":\"PASS\",\"sameReceipt\":true,\"sameIntent\":true,\"duplicateRows\":false}",
+    "2026-10-30T13:01:08.8889945Z PF10_NATIVE_CHECK {\"name\":\"two-real-jwt-expenses-link-to-known-installment\",\"status\":\"PASS\",\"declaredToman\":5000,\"allocation\":null,\"financialFingerprintUnchanged\":true}",
+    "2026-10-30T13:01:09.5110077Z PF10_NATIVE_CHECK {\"name\":\"two-members-independent-history-and-foreign-admin-denial\",\"status\":\"PASS\",\"nativePostgrestRls\":true,\"memberBHasOwnDeclaration\":true}",
+    "2026-10-30T13:01:09.6982083Z PF10_NATIVE_CHECK {\"name\":\"jwt-signature-verified-and-owner-select-only\",\"status\":\"PASS\",\"invalidSignature\":401,\"serviceRoleTableDenied\":403}",
+    "2026-10-30T13:01:10.2578753Z PF10_NATIVE_CHECK {\"name\":\"real-jwt-correction-history-and-financial-cf-fingerprints\",\"status\":\"PASS\",\"allFiveExistingTablesUnchanged\":true,\"nativeFinancialAndCashflowReadsUnchanged\":true}",
+    "2026-10-30T13:01:19.3037732Z PF10_NATIVE_CLEANUP {\"sha\":\"80582f1103d4bc1a96511064e5a1b4260e41745b\",\"runId\":\"pf10-17a7b778-3686-4e08-a6f4-a9f531047479\",\"status\":\"REMOVED_OWNED_RESOURCES\",\"resources\":6}",
+    "2026-10-30T13:01:19.3041253Z PF10_NATIVE_AUTH {\"sha\":\"80582f1103d4bc1a96511064e5a1b4260e41745b\",\"status\":\"PASS\",\"scenarios\":9,\"cleanup\":\"REMOVED_OWNED_RESOURCES\",\"memberAuth\":\"real GoTrue-issued JWT validated by PostgREST and native Next/SSR routes\",\"schema\":\"candidate in owned tmpfs only\",\"targetInstall\":\"NOT_APPLIED\",\"browser\":\"NOT_RUN\",\"arashAcceptance\":\"UNOBSERVED\",\"privateArtifactsUploaded\":false}"
+  ],
+  "limits": {
+    "primaryInstalled": false,
+    "primaryAuth": "UNOBSERVED",
+    "browser": "NOT_RUN",
+    "lost201": "HTTP_201_DISCARDED_AFTER_RECEIPT_NOT_TCP_DISCONNECT",
+    "testActors": "three fresh synthetic users with real GoTrue JWT",
+    "candidateSql": "OWNED_TMPFS_ONLY",
+    "sourceFinancialTablesChanged": false,
+    "grantRepair": false,
+    "restArtifactChange": "same version 14.17 official digest changed with root technical authorization; no primary artifact parity claim",
+    "mainMerged": false
+  }
+}

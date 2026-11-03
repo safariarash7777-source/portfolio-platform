@@ -1,0 +1,69 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "bounded first-level /opt directory allocation only; artifact ownership triage",
+  "result": {
+    "at": "2026-10-30T11:33:15.765349+00:00",
+    "exitCode": 0,
+    "directorySizes": [
+      {
+        "path": "/opt",
+        "allocatedBytes": 7286149120
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002",
+        "allocatedBytes": 3475148800
+      },
+      {
+        "path": "/opt/portfolio-accept195",
+        "allocatedBytes": 1251098624
+      },
+      {
+        "path": "/opt/portfolio-demo844",
+        "allocatedBytes": 983957504
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002",
+        "allocatedBytes": 496553984
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002",
+        "allocatedBytes": 490008576
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build",
+        "allocatedBytes": 489168896
+      },
+      {
+        "path": "/opt/fx-dashboard",
+        "allocatedBytes": 55689216
+      },
+      {
+        "path": "/opt/arsadata-backup-tools",
+        "allocatedBytes": 33599488
+      },
+      {
+        "path": "/opt/financial-dashboard",
+        "allocatedBytes": 10498048
+      },
+      {
+        "path": "/opt/portfolio-staging",
+        "allocatedBytes": 225280
+      },
+      {
+        "path": "/opt/portfolio-operational",
+        "allocatedBytes": 159744
+      },
+      {
+        "path": "/opt/portfolio-research",
+        "allocatedBytes": 24576
+      },
+      {
+        "path": "/opt/containerd",
+        "allocatedBytes": 12288
+      }
+    ],
+    "serviceChanged": false,
+    "fileBodiesRead": false
+  }
+}

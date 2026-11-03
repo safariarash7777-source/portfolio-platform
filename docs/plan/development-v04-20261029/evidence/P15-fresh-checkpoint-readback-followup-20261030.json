@@ -1,0 +1,7 @@
+{
+  "exitCode": 255,
+  "mode": "readback",
+  "wrapperSha256": "ebc7bb7733a5452392db2025d5973d15a6d1e372011103709cbc9a02938a05ec",
+  "stderr": "ssh: connect to host 62.60.191.24 port 22: Connection timed out\r\n",
+  "unparsedStdout": ""
+}

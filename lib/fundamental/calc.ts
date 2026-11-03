@@ -5,6 +5,8 @@
 
 import type { CodalN10Data, CodalN30Data, SalesTrendRow } from "./types";
 import { isMillionRialUnit } from "./units";
+import { monthlyCalendarKeys } from "../core/monthlyReport";
+import { monthlyMarket, monthlyMarketUnavailableReason, type MonthlyMarketUnavailableReason } from "../core/monthly-quantity";
 
 function finiteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
@@ -121,8 +123,8 @@ export interface N30MonthPoint {
   /** ماه جلالی مثل "1404-10" (از period_end جلالی داخل data). */
   month: string;
   totalAmount: number; // میلیون ریال
-  domesticAmount: number;
-  exportAmount: number;
+  domesticAmount: number | null;
+  exportAmount: number | null;
 }
 
 export interface N30ProductAgg {
@@ -145,11 +147,12 @@ export interface N30Derived {
   productMix: N30ProductAgg[];
   /** سهم صادرات از فروش کل بازه — null اگر فروش کل صفر. */
   exportSharePct: number | null;
+  marketUnavailableReason: MonthlyMarketUnavailableReason;
   /** سری ماهانهٔ نرخ/مقدار برای محصول پرفروش‌ترین بازه. */
   topProductName: string | null;
   topProductMonths: N30ProductMonth[];
   /** تولید در برابر فروش کل ماهانه (فقط محصولات هم‌واحد با محصول اول). */
-  prodVsSales: { month: string; production: number; sales: number }[];
+  prodVsSales: { month: string; production: number | null; sales: number | null }[];
 }
 
 /** مشتق‌های ن-۳۰ از چند گزارش ماهانه — ورودی تکراری/ناقص حذف می‌شود؛
@@ -164,15 +167,20 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
     if (!byMonth.has(month)) byMonth.set(month, r);
   }
   const sorted = [...byMonth.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const calendar = monthlyCalendarKeys([...byMonth.keys()]);
 
   const months: N30MonthPoint[] = sorted.map(([month, r]) => {
     let dom = 0, exp = 0;
     for (const p of r.products) {
       const amt = p.sales_amount ?? 0;
-      if (p.market === "صادراتی") exp += amt;
-      else dom += amt;
+      const market = monthlyMarket(p);
+      if (market === "صادراتی") exp += amt;
+      else if (market === "داخلی") dom += amt;
     }
-    return { month, totalAmount: r.period_total_amount ?? dom + exp, domesticAmount: dom, exportAmount: exp };
+    const unavailable = monthlyMarketUnavailableReason(r);
+    const splitUnavailable = unavailable !== null && unavailable !== "signed-market-adjustment";
+    return { month, totalAmount: r.period_total_amount ?? r.products.reduce((sum, p) => sum + (p.sales_amount ?? 0), 0),
+      domesticAmount: splitUnavailable ? null : dom, exportAmount: splitUnavailable ? null : exp };
   });
 
   // تجمیع محصولی در کل بازه.
@@ -192,14 +200,18 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
   }));
   if (rest > 0) productMix.push({ name: "سایر", amount: rest, sharePct: pct(rest, grand) });
 
-  const exportTotal = months.reduce((a, m) => a + m.exportAmount, 0);
-  const allTotal = months.reduce((a, m) => a + m.domesticAmount + m.exportAmount, 0);
+  const marketReasons = sorted.map(([, r]) => monthlyMarketUnavailableReason(r));
+  const marketUnavailableReason: MonthlyMarketUnavailableReason = marketReasons.includes("unverified-market") ? "unverified-market"
+    : marketReasons.includes("incomplete-market-coverage") ? "incomplete-market-coverage"
+    : marketReasons.includes("signed-market-adjustment") ? "signed-market-adjustment" : null;
+  const exportTotal = months.reduce((a, m) => a + (m.exportAmount ?? 0), 0);
+  const allTotal = months.reduce((a, m) => a + m.totalAmount, 0);
 
   // محصول پرفروش‌ترین: سری نرخ/مقدار ماهانه.
   const topProductName = rankedAll[0]?.[0] ?? null;
   const topProductMonths: N30ProductMonth[] = topProductName
-    ? sorted.map(([month, r]) => {
-        const p = r.products.find((x) => x.product_name === topProductName) ?? null;
+    ? calendar.map(month => {
+        const p = byMonth.get(month)?.products.find((x) => x.product_name === topProductName) ?? null;
         return {
           month,
           rate: p?.sales_rate ?? null,
@@ -209,25 +221,23 @@ export function deriveN30(reports: CodalN30Data[]): N30Derived {
       })
     : [];
 
-  // تولید در برابر فروش — جمع مقادیر همهٔ محصولات دارای هر دو مقدار
-  // (واحدهای متفاوت در یک نماد معمولاً یکسان‌اند؛ اگر مقدار نبود آن ماه حذف).
-  const prodVsSales = sorted
-    .map(([month, r]) => {
-      let production = 0, sales = 0, seen = 0;
-      for (const p of r.products) {
-        if (p.production_qty == null || p.sales_qty == null) continue;
-        production += p.production_qty;
-        sales += p.sales_qty;
-        seen++;
-      }
-      return seen > 0 ? { month, production, sales } : null;
-    })
-    .filter((x): x is { month: string; production: number; sales: number } => x !== null);
+  // Quantity denominators are validated by the existing caller sanitizer.
+  // A missing report or incomplete pair remains a blank slot, never a partial total.
+  const prodVsSales = calendar.map(month => {
+    const rows = byMonth.get(month)?.products ?? [];
+    const complete = rows.length > 0 && rows.every(p => finiteNumber(p.production_qty) && finiteNumber(p.sales_qty));
+    return {
+      month,
+      production: complete ? rows.reduce((sum, p) => sum + p.production_qty!, 0) : null,
+      sales: complete ? rows.reduce((sum, p) => sum + p.sales_qty!, 0) : null,
+    };
+  });
 
   return {
     months,
     productMix,
-    exportSharePct: allTotal > 0 ? pct(exportTotal, allTotal) : null,
+    exportSharePct: !marketUnavailableReason && allTotal > 0 ? pct(exportTotal, allTotal) : null,
+    marketUnavailableReason,
     topProductName,
     topProductMonths,
     prodVsSales,

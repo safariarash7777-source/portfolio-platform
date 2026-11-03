@@ -1,0 +1,31 @@
+{
+  "validationSource": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+  "releaseApplicationSource": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+  "changedPaths": [
+    ".github/workflows/research-workbook-native.yml",
+    "docs/ops/research-workbook-recovery-20261029/NATIVE-AUTH.md",
+    "docs/ops/research-workbook-recovery-20261029/RELEASE-a2d7108.md",
+    "package-lock.json",
+    "package.json",
+    "scripts/isolated-e2e/native-auth-gateway.mjs",
+    "scripts/isolated-e2e/native-auth-runtime.mjs",
+    "scripts/isolated-e2e/workbook-browser.mjs",
+    "scripts/isolated-e2e/workbook-native-auth.mjs",
+    "scripts/isolated-e2e/workbook-native-auth.test.mjs"
+  ],
+  "applicationLibrarySqlBlobsUnchanged": true,
+  "elevenConsumerBlobsStillEqual352": true,
+  "canonicalSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+  "productionDependenciesUnchanged": true,
+  "scriptRegistryUnchanged": true,
+  "onlyNewDevDependency": "playwright-core@1.64.1",
+  "previousLockPackagesUnchanged": true,
+  "profileBootstrapActorRoutesWarmupBlockUnchanged": true,
+  "helperLineage": {
+    "base": "353/0c6d6bc via a2",
+    "newRuntimeBlob": "cee0370fe8be0d21c263de5ddfd40aecb5d19ab0",
+    "newGatewayBlob": "63382febd6915d93a27d9b1434f07aed63a2976a"
+  },
+  "doesNotTransferWholeSourceAcceptance": true,
+  "primaryOrModelAction": false
+}

@@ -1,0 +1,96 @@
+{
+  "status": "READY_PREVIEW_EXACT_SHA",
+  "intent": {
+    "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+    "team": "team_yXFLU0BNAbLNZhWKcwpSpJxA",
+    "branch": "codex/p08-funds-stored-binding-20261031",
+    "sha": "6c42d1d7394ebb6af09b6282702fefd4e15c6c20",
+    "tree": "577b7e4399135be2173bae3599634200b0dd928e",
+    "editFields": [
+      "gitBranch",
+      "comment"
+    ],
+    "valueOrKeyOrTypeOrTargetChanged": false,
+    "automaticRetry": false,
+    "rollbackBranch": "codex/p07-monthly-unit-ui-20261031"
+  },
+  "before": {
+    "old": [
+      {
+        "id": "9NEamcg9U7e4wcSX",
+        "key": "FUNDAMENTAL_READ_URL",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "codex/p07-monthly-unit-ui-20261031"
+      },
+      {
+        "id": "rbwHDphHrW3rf8Hk",
+        "key": "FUNDAMENTAL_READ_ANON_KEY",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "codex/p07-monthly-unit-ui-20261031"
+      }
+    ],
+    "new": [],
+    "exactDeployments": []
+  },
+  "after": [
+    {
+      "branch": "codex/p07-monthly-unit-ui-20261031",
+      "env": []
+    },
+    {
+      "branch": "codex/p08-funds-stored-binding-20261031",
+      "env": [
+        {
+          "id": "9NEamcg9U7e4wcSX",
+          "key": "FUNDAMENTAL_READ_URL",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p08-funds-stored-binding-20261031"
+        },
+        {
+          "id": "rbwHDphHrW3rf8Hk",
+          "key": "FUNDAMENTAL_READ_ANON_KEY",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p08-funds-stored-binding-20261031"
+        }
+      ]
+    }
+  ],
+  "deployment": {
+    "id": "dpl_EJ4NEnLqdiy7v9EbkP6Vi6gWZons",
+    "url": "portfolio-platform-ncn0hijn3-safariarash7777-4463s-projects.vercel.app",
+    "readyState": "READY",
+    "target": null,
+    "readyAt": 1793437816011,
+    "sha": "6c42d1d7394ebb6af09b6282702fefd4e15c6c20",
+    "branch": "codex/p08-funds-stored-binding-20261031"
+  },
+  "newManualDeployments": 1,
+  "newVariableOrCredential": false,
+  "valueKeyTypeTargetChanged": false,
+  "productionOrAuthOrWriteSettingsChanged": false,
+  "projectSettingsOrRuntimeOverride": false,
+  "billingQuotaAmount": "NOT_QUERIED",
+  "upgradeOrPurchase": false,
+  "automaticRetry": false,
+  "rollbackScope": "same existing two IDs can return to existing PR379 branch; no financial rollback or credential revocation claimed",
+  "postQaAuthoritativeList": {
+    "count": 1,
+    "id": "dpl_EJ4NEnLqdiy7v9EbkP6Vi6gWZons",
+    "state": "READY",
+    "target": null,
+    "sha": "6c42d1d7394ebb6af09b6282702fefd4e15c6c20",
+    "branch": "codex/p08-funds-stored-binding-20261031"
+  }
+}

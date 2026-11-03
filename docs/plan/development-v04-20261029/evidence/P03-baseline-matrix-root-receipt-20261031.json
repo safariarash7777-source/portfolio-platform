@@ -1,0 +1,84 @@
+{
+  "purpose": "OFFLINE_REVIEW_ONLY; original source and target SQL unchanged; no SQL or test execution",
+  "sourceCommit": "c4c4c9f0416e6a10fad11b5c0a800f0675aa3697",
+  "documentationCommit": "23f9b93a6f40b201b66301bed5464b643d011a03",
+  "documentationParent": "0702d646ed221dd02c8e0fc7d4625883da69e122",
+  "changedRepositoryFiles": [
+    "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md"
+  ],
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "catalogSnapshot": [
+    {
+      "at": "2026-10-31T01:05:56.145447+00:00",
+      "id": "25961:25961:",
+      "readOnly": "on"
+    }
+  ],
+  "catalogReceiptSha256": "324baa92392f69b5fa8c483fe0864d99b4386276ff93e1671f57de695bfb178e",
+  "fieldDiffSha256": "a7da94d3658c5d6d1b383500ed722a4bd9728bc11b4bfef34af5e7bee369eefa",
+  "functionBodySummary": {
+    "exactBytes": 3,
+    "differentBytesCrlfOnlyDiagnostic": 16,
+    "missingBeforeInstall": 20,
+    "observedBodyChanged": false,
+    "sourceBodyChanged": false
+  },
+  "fieldSummary": {
+    "baselineFunctions": 19,
+    "functionMetadataFieldsCompared": 266,
+    "baselineTables": 9,
+    "baselineColumns": 46,
+    "financialParentTables": 6,
+    "financialFullColumns": 66,
+    "baselineConstraints": 34,
+    "financialKeyConstraints": 18,
+    "baselineIndexes": 16,
+    "baselineTriggers": 16,
+    "effectivePrivilegeRowsCompared": 118,
+    "differentFieldCount": 0,
+    "unexpectedBaselineObjects": 0,
+    "installReady": "NOT_ESTABLISHED",
+    "sqlExecutedByB": false,
+    "codeOrSqlChanged": false
+  },
+  "sqlExecutedByB": false,
+  "priorReceiptsPreserved": true,
+  "overallExact": false,
+  "installReady": false,
+  "deliveryAcceptance": "PENDING_ROOT_REVIEW",
+  "files": {
+    "compare-p03-received-catalog.py": {
+      "bytes": 23465,
+      "sha256": "ef81ba81bc20f2ea22019343884929b383009e3ddec07d5c74c9310a022413c8"
+    },
+    "dependency-field-diff.json": {
+      "bytes": 452525,
+      "sha256": "a7da94d3658c5d6d1b383500ed722a4bd9728bc11b4bfef34af5e7bee369eefa"
+    },
+    "DURABILITY.fa.md": {
+      "bytes": 68741,
+      "sha256": "e5ea1a5613829b9bf42bacfb2a6fb0d2ffdf361d7f133abb4f288f572cd3445d"
+    },
+    "historical-0702-source-reference.immutable-copy.json": {
+      "bytes": 69003,
+      "sha256": "df4722d4b0bc23ba1caa35b743da7a8c56d383601c18ba9e59823d4b2b7710a8"
+    },
+    "historical-root-initial-diagnostic.immutable-copy.json": {
+      "bytes": 48402,
+      "sha256": "807d1d3ce47de848ed68071c692148534bbd53d7f43cece5f123a398ccbc07e5"
+    },
+    "leaf-only.patch": {
+      "bytes": 14122,
+      "sha256": "5d316b13ff385ec6b0b6b167ef26fbc5ceb8c06f1242ff67e223e725d190fb7c"
+    },
+    "received-root-catalog.immutable-copy.json": {
+      "bytes": 256620,
+      "sha256": "324baa92392f69b5fa8c483fe0864d99b4386276ff93e1671f57de695bfb178e"
+    }
+  },
+  "rootReview": {
+    "scope": "packet hashes and byte-equality to root catalog checked; full field comparison authored by B; root function-source/code review separately recorded",
+    "overallExact": false,
+    "primaryInstall": false
+  }
+}

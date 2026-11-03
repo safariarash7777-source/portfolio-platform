@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-10-30T08:25:32.551261+00:00",
+  "frozenPrototypeHead": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+  "prototypeSource": "3291413ef8245c384271c37d0affbeac4268650b",
+  "currentPageUrl": "https://portfolio-platform-fawn.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+  "currentPageCapture": "C:\\Users\\Asus\\Documents\\ChatGPT\\\u062a\u0648\u0633\u0639\u0647 \u0633\u0627\u06cc\u062a\\outputs\\v04-program-20261030\\current-company-root.png",
+  "currentPageCaptureSha256": "d76df7670c8a9e717a1c160f1f72a4674479808eb736b15c0b635ad112647998",
+  "codeBasis": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "map": "current-capability-map.fa.md",
+  "mapSha256": "9ad6ae703e57ccc99c899faa08be67185140fc6dc7a450decd98c9cea48a9dcc",
+  "coverageRows": 10,
+  "scope": "structure/monthly-report subset with six educational rows; not a complete reconstruction of the current company page",
+  "currentScreenshotAndCodeDistinguished": true,
+  "realCurrentFiguresImportedToEducationalData": false,
+  "arashSelectionInferred": false,
+  "extensionAuthorizedByShortPhrase": false,
+  "wholeP071Accepted": false,
+  "codeChanged": false,
+  "repeatedGETs": 0,
+  "repeatedTestsOrCI": 0,
+  "mainChanged": false
+}

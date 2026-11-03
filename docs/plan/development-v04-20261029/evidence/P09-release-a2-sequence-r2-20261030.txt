@@ -1,0 +1,40 @@
+REVIEW PACKAGE a2d7108 — revision 2 (authorization/readiness wording only)
+Source/active ZIP unchanged. Source is not a prebuilt or install-ready binary.
+This package is evidence, not an independent grant of operational authority.
+
+AUTHORITY AND READINESS
+Existing documented user authorization and approved publication instructions remain
+valid. Operation owner is root. Missing approval fields in the old manifest mean
+not captured here, not revocation or a requirement to ask Arash again per command.
+Root verifies technical readiness within the existing authorized scope: actual
+target identity, current code/schema/ACL/freeze, backup+independent restore,
+capacity, authoritative outcomes and reader-before-DDL sequencing. Routine work
+within that scope does not need another human confirmation. Scope expansion,
+business decisions, new cost or Hermes activation goes through the advisor/Arash.
+The current START-B browser scope authorizes no primary mutation or deployment.
+
+SEQUENCE
+1. Fresh observed target/readiness records before action. Unknown remains null;
+   unknown writes require readback/reconciliation before any repeat.
+2. Canonical writer freeze stays closed. Publish the exact reviewed reader first
+   within the existing authorized release scope and root readiness gate. Preserve
+   old versions/reviews/nulls; unavailable journal is not an empty-success claim.
+3. Root reviews the exact intent candidate, existing schema and migration records
+   before authorized DDL. Missing phase34 closes dependent canonical-read/writer
+   gates; independent program work continues. Existing precondition/migration
+   files are review-only references here. No bootstrap/regrant runs on primary.
+4. Never rerun phase34 while frozen. Intent candidate does not reopen canonical
+   INSERT. Independently read schema/functions/constraints/ACL and existing rows;
+   HTTP200 or exit0 alone does not establish the result.
+5. Canonical writer activation and actual pilot remain separate scope/readiness
+   decisions. Intent metadata alone proves neither version save nor outcome.
+
+ROLLBACK preserves all intent/version/review history; no DROP/delete/reset or
+blind replay. Existing P07 freeze is the technical precondition before an old
+binary that ignores flags; its execution is governed by existing scope and root
+operation ownership. Previous deploy identity must be read, never guessed.
+
+All source bytes, archive hash and isolated a2 evidence are unchanged. Real
+browser/target data and Arash usability acceptance remain separate. Infrastructure,
+data and model billing amounts are unmeasured; this revision has no purchase or
+model/Hermes/primary action.

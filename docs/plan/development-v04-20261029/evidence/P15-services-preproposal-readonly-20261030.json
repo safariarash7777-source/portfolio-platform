@@ -1,0 +1,160 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "docker stats no-stream allowlisted counters only; CPU percent is per one core, snapshot not trend",
+  "result": {
+    "at": "2026-10-30T11:22:48.191536+00:00",
+    "services": [
+      {
+        "name": "finance-dashboard-20261028-v12-130524",
+        "cpuPercentOneCore": "0.08%",
+        "memoryUsageAndLimit": "42.39MiB / 384MiB",
+        "pids": "5"
+      },
+      {
+        "name": "fx-dashboard",
+        "cpuPercentOneCore": "0.87%",
+        "memoryUsageAndLimit": "368.6MiB / 7.708GiB",
+        "pids": "14"
+      },
+      {
+        "name": "portfolio-auth219-20261002-auth",
+        "cpuPercentOneCore": "0.03%",
+        "memoryUsageAndLimit": "26.83MiB / 128MiB",
+        "pids": "10"
+      },
+      {
+        "name": "portfolio-auth219-20261002-storage",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "108.6MiB / 256MiB",
+        "pids": "12"
+      },
+      {
+        "name": "portfolio-auth219-20261002-rest",
+        "cpuPercentOneCore": "0.14%",
+        "memoryUsageAndLimit": "32.36MiB / 128MiB",
+        "pids": "14"
+      },
+      {
+        "name": "portfolio-auth219-20261002-sink",
+        "cpuPercentOneCore": "0.05%",
+        "memoryUsageAndLimit": "29.62MiB / 96MiB",
+        "pids": "4"
+      },
+      {
+        "name": "portfolio-auth219-20261002-db",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "55.5MiB / 512MiB",
+        "pids": "8"
+      },
+      {
+        "name": "portfolio-demo844-app",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "0B / 0B",
+        "pids": "0"
+      },
+      {
+        "name": "portfolio-demo844-gateway",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "11.53MiB / 64MiB",
+        "pids": "10"
+      },
+      {
+        "name": "portfolio-demo844-storage",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "110.3MiB / 256MiB",
+        "pids": "12"
+      },
+      {
+        "name": "portfolio-demo844-rest",
+        "cpuPercentOneCore": "0.16%",
+        "memoryUsageAndLimit": "17.99MiB / 128MiB",
+        "pids": "13"
+      },
+      {
+        "name": "portfolio-demo844-auth",
+        "cpuPercentOneCore": "0.05%",
+        "memoryUsageAndLimit": "8.98MiB / 128MiB",
+        "pids": "10"
+      },
+      {
+        "name": "portfolio-demo844-db",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "28.51MiB / 512MiB",
+        "pids": "8"
+      },
+      {
+        "name": "portfolio-accept195-app",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "0B / 0B",
+        "pids": "0"
+      },
+      {
+        "name": "portfolio-accept195-gateway",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "37.05MiB / 64MiB",
+        "pids": "10"
+      },
+      {
+        "name": "portfolio-accept195-storage",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "108.1MiB / 256MiB",
+        "pids": "12"
+      },
+      {
+        "name": "portfolio-accept195-rest",
+        "cpuPercentOneCore": "0.14%",
+        "memoryUsageAndLimit": "14.39MiB / 128MiB",
+        "pids": "14"
+      },
+      {
+        "name": "portfolio-accept195-auth",
+        "cpuPercentOneCore": "0.02%",
+        "memoryUsageAndLimit": "9.316MiB / 128MiB",
+        "pids": "10"
+      },
+      {
+        "name": "portfolio-accept195-db",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "28.62MiB / 512MiB",
+        "pids": "8"
+      },
+      {
+        "name": "portfolio-stage-gateway-1",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "14.91MiB / 7.708GiB",
+        "pids": "11"
+      },
+      {
+        "name": "portfolio-stage-auth-1",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "12.59MiB / 7.708GiB",
+        "pids": "11"
+      },
+      {
+        "name": "portfolio-stage-rest-1",
+        "cpuPercentOneCore": "0.16%",
+        "memoryUsageAndLimit": "72.59MiB / 7.708GiB",
+        "pids": "27"
+      },
+      {
+        "name": "portfolio-stage-storage-1",
+        "cpuPercentOneCore": "27.22%",
+        "memoryUsageAndLimit": "191.1MiB / 7.708GiB",
+        "pids": "12"
+      },
+      {
+        "name": "portfolio-stage-db-1",
+        "cpuPercentOneCore": "11.05%",
+        "memoryUsageAndLimit": "279.1MiB / 7.708GiB",
+        "pids": "20"
+      },
+      {
+        "name": "fx-dashboard-proxy",
+        "cpuPercentOneCore": "0.00%",
+        "memoryUsageAndLimit": "36.43MiB / 7.708GiB",
+        "pids": "12"
+      }
+    ]
+  }
+}

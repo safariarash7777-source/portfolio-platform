@@ -1,0 +1,132 @@
+{
+  "status": "FRESH_SQL_RESTORE_VERIFIED_AFTER_BOUNDED_OWNED_COPY_ACL_RECONCILIATION",
+  "independentReadbackAt": "2026-10-31T01:49:45.216833+03:30",
+  "readbackMatchedLaunchReceipt": true,
+  "releaseLockHeld": false,
+  "sourceCurrent": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+    "healthy": "healthy"
+  },
+  "targetStopped": true,
+  "checkpoint": "20261030T215307Z",
+  "serverReceiptPath": "/root/portfolio-recovery-backups/20261030T215307Z/acl19-reconciliation-20261031/result.json",
+  "originalNativeStatus": "failed",
+  "originalWrapperStatus": "not_accepted",
+  "originalFailurePreserved": true,
+  "initialFailureCause": "Strict seven-pair planner rejected 17 observed core ACL discrepancies, including 10 consultation objects beyond its seven-pair allowlist; separate private read identified 2 private-schema owner ACL discrepancies",
+  "preflightAttempt1": "no remote reconciliation operation created and target stayed stopped; full live-source equality caught two append-only counters advancing",
+  "sourceComparisonPolicy": "restored target still equals complete captured snapshot inventory, including every rowcount/identity hash; current source allows only monotonic growth in ir_market_history/site_agent_runs counters, all other lines and private metadata remain equal",
+  "offlineGuardTests": {
+    "tests": 18,
+    "pass": 18,
+    "fail": 0,
+    "unknownAclIdentityCatalogCounterDriftDenied": true
+  },
+  "restoreResult": {
+    "at": "2026-10-31T01:46:39.018491+03:30",
+    "status": "PASS_OWNED_COPY_ACL19_RECONCILIATION",
+    "target": "portfolio-recovery-proof-20261030t215307z",
+    "targetId": "833a8447c01570811d6a0ad50cafee00745614b811ef9668acb0d944e04b21f1",
+    "sourceSqlWrites": false,
+    "helperReplaced": false,
+    "originalFailurePreserved": true,
+    "checkpoint": "20261030T215307Z",
+    "dumpSha256": "87434f8c53cca9910cdbd953415ffed5e01d3aacb0db8c0702a4e164253c8c17",
+    "objectCount": 19,
+    "strictCoreEqual": true,
+    "strictPrivateEqual": true,
+    "privateFunctions": 19,
+    "sourceCatalogUnchanged": true,
+    "sourceDataFrozen": false,
+    "liveSourceRowCountDriftBefore": [
+      {
+        "table": "public.ir_market_history",
+        "snapshotRows": 13636,
+        "currentRows": 13638
+      },
+      {
+        "table": "public.site_agent_runs",
+        "snapshotRows": 5388,
+        "currentRows": 5394
+      }
+    ],
+    "liveSourceRowCountDriftAfter": [
+      {
+        "table": "public.ir_market_history",
+        "snapshotRows": 13636,
+        "currentRows": 13638
+      },
+      {
+        "table": "public.site_agent_runs",
+        "snapshotRows": 5388,
+        "currentRows": 5394
+      }
+    ],
+    "network": "none",
+    "portsPublished": false,
+    "cronEnabled": false,
+    "originalReceiptSha256": "b3cc167b604740207f884db3b037fea59e976fe296a72ed51527d79133d40aef",
+    "sqlSha256": "25f3d5646b7075e2a928b6bd157fdd866688590036a56bd71f6668c6a9023be9",
+    "targetStopped": true,
+    "sourceIdentityUnchanged": true,
+    "sourceHealthyAfter": true,
+    "availableBytesAfter": 14066720768,
+    "materializationAndTenGiBReserveAfter": true,
+    "finishedAt": "2026-10-31T01:46:49.097023+03:30"
+  },
+  "strictCoreComparison": {
+    "equal": true,
+    "sourceLines": 2084,
+    "targetLines": 2084,
+    "sourceOnly": [],
+    "targetOnly": []
+  },
+  "strictPrivateComparison": {
+    "equal": true,
+    "functions": 19,
+    "schemas": 3,
+    "relations": 0
+  },
+  "correctionPlan": {
+    "at": "2026-10-31T01:46:44.334098+03:30",
+    "objects": [
+      "cash_flow_private",
+      "goals_private",
+      "public.admin_desk_preference_versions_revision_seq",
+      "public.ime_certificate_history_id_seq",
+      "public.ime_physical_trades_id_seq",
+      "public.media_layout_versions_version_seq",
+      "public.media_layout_versions",
+      "public.consultation_actions",
+      "public.consultation_advisors",
+      "public.consultation_command_receipts",
+      "public.consultation_events_event_no_seq",
+      "public.consultation_events",
+      "public.consultation_private_notes",
+      "public.consultation_publications",
+      "public.consultation_relationships",
+      "public.consultation_revocations",
+      "public.consultation_sessions",
+      "consultation_private",
+      "portfolio_private"
+    ],
+    "objectCount": 19,
+    "sqlSha256": "25f3d5646b7075e2a928b6bd157fdd866688590036a56bd71f6668c6a9023be9",
+    "beforeMismatchCounts": {
+      "sourceOnly": 17,
+      "targetOnly": 17
+    }
+  },
+  "reviewedSources": {
+    "helperSha256": "1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2",
+    "planSha256": "3402c6297539ae47124ecf861745abfbb2c9fc574040ab8d11bf65a048a43aad",
+    "runnerSha256": "9e7f084d1a185ce0d7a4cb1a1005182b70e96b9739b84825af44e359e6305d19"
+  },
+  "limits": [
+    "SQL database restore only; storage binary objects are not backed up by this helper",
+    "network-none proof stopped, not an app/test environment",
+    "no primary SQL write, credential transfer, old-service restart, Hermes install or new cost",
+    "reader deployment, migration acceptance, service entitlement and complete user journey remain open"
+  ]
+}

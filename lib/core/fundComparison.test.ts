@@ -75,8 +75,39 @@ test("same month label with different endpoints or mixed close/last_price cannot
   }
 });
 
-test("duplicate, single and more-than-three selections fail closed", () => {
-  for (const input of [[], [row("a")], [row("a"), row("a")], [row("a"), row("b"), row("c"), row("d")]]) {
+test("four and five attested funds compare with the same zero/null and immutable-input rules", () => {
+  for (const count of [4, 5]) {
+    const input = Array.from({ length: count }, (_, index) => row(`fund-${index}`));
+    const before = structuredClone(input), result = compareFunds(input);
+    assert.ok(!result.issues.some(issue => issue.metric === "group"));
+    assert.deepEqual(result.bubbles, Array(count).fill(0));
+    assert.deepEqual(result.returns.w1, Array(count).fill(0));
+    assert.deepEqual(result.returns.m1, Array(count).fill(null));
+    assert.deepEqual(input, before);
+  }
+});
+
+test("the fifth fund remains subject to class, currency, NAV clock and actual-period gates", () => {
+  const firstFour = [row("a"), row("b"), row("c"), row("d")];
+  for (const change of [{ classEvidence: null }, { unit: "usd" as const }, { type: "نوع دیگر" }]) {
+    const result = compareFunds([...firstFour, row("fifth", change)]);
+    assert.deepEqual(result.bubbles, Array(5).fill(null));
+    assert.deepEqual(result.returns.w1, Array(5).fill(null));
+    assert.ok(result.issues.some(issue => issue.metric === "group" && issue.ids.includes("fifth")));
+  }
+  for (const change of [{ navState: "stale" }, { navTime: null }]) {
+    const result = compareFunds([...firstFour, row("fifth", change)]);
+    assert.deepEqual(result.bubbles, Array(5).fill(null));
+    assert.deepEqual(result.returns.w1, Array(5).fill(0));
+  }
+  const result = compareFunds([...firstFour, row("fifth", { returnObservations: { w1: { ...row("a").returnObservations!.w1!, periodStart: "2026-09-22" } } })]);
+  assert.deepEqual(result.returns.w1, Array(5).fill(null));
+  assert.deepEqual(result.bubbles, Array(5).fill(0));
+  assert.ok(result.issues.some(issue => issue.code === "different-period"));
+});
+
+test("duplicate, single and more-than-five selections fail closed", () => {
+  for (const input of [[], [row("a")], [row("a"), row("a")], [row("a"), row("b"), row("c"), row("d"), row("e"), row("f")]]) {
     const result = compareFunds(input);
     assert.ok(result.issues.some(issue => issue.metric === "group"));
     assert.ok(result.bubbles.every(value => value === null));

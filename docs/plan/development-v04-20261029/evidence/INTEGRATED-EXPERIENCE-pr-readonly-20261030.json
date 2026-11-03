@@ -1,0 +1,292 @@
+{
+  "at": "2026-10-30T08:25:19.164423+00:00",
+  "method": "official GitHub API with existing repository credential in memory only; public unauthenticated rate limit observed; no credential value logged",
+  "previousReadAt": "2026-10-30T08:00:54.780420+00:00",
+  "pullRequests": [
+    {
+      "pr": 338,
+      "head": "732be473ce7c627599b986a081ebcf8a797236da",
+      "base": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+      "draft": false,
+      "merged": false,
+      "title": "P12: connect the existing admin desk to daily work routes",
+      "ci": [
+        {
+          "id": 41022401830,
+          "sha": "732be473ce7c627599b986a081ebcf8a797236da",
+          "status": "completed",
+          "conclusion": "success",
+          "jobs": [
+            {
+              "name": "Database RLS \u00b7 Integrity (Postgres)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+              "conclusion": "success"
+            },
+            {
+              "name": "Secret scan \u00b7 SQL validation",
+              "conclusion": "success"
+            },
+            {
+              "name": "CI Gate",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "deployments": [
+        {
+          "id": 7433426945,
+          "sha": "732be473ce7c627599b986a081ebcf8a797236da",
+          "state": "success",
+          "url": "https://portfolio-platform-eqxa3q2do-safariarash7777-4463s-projects.vercel.app"
+        }
+      ]
+    },
+    {
+      "pr": 339,
+      "head": "cb1b7b6d6466d91b0fe1d819ad3164b747b8af94",
+      "base": "732be473ce7c627599b986a081ebcf8a797236da",
+      "draft": false,
+      "merged": false,
+      "title": "DO NOT MERGE: synthetic admin workday walkthrough",
+      "ci": [
+        {
+          "id": 41022422492,
+          "sha": "cb1b7b6d6466d91b0fe1d819ad3164b747b8af94",
+          "status": "completed",
+          "conclusion": "success",
+          "jobs": [
+            {
+              "name": "Secret scan \u00b7 SQL validation",
+              "conclusion": "success"
+            },
+            {
+              "name": "Database RLS \u00b7 Integrity (Postgres)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+              "conclusion": "success"
+            },
+            {
+              "name": "Dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "CI Gate",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "deployments": [
+        {
+          "id": 7433448379,
+          "sha": "cb1b7b6d6466d91b0fe1d819ad3164b747b8af94",
+          "state": "success",
+          "url": "https://portfolio-platform-3ngzypjuu-safariarash7777-4463s-projects.vercel.app"
+        }
+      ]
+    },
+    {
+      "pr": 340,
+      "head": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+      "base": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+      "draft": true,
+      "merged": false,
+      "title": "DO NOT MERGE: two same-data company page design options (P14)",
+      "ci": [
+        {
+          "id": 41022604086,
+          "sha": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+          "status": "completed",
+          "conclusion": "success",
+          "jobs": [
+            {
+              "name": "Secret scan \u00b7 SQL validation",
+              "conclusion": "success"
+            },
+            {
+              "name": "Dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Database RLS \u00b7 Integrity (Postgres)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+              "conclusion": "success"
+            },
+            {
+              "name": "CI Gate",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "deployments": [
+        {
+          "id": 7433469978,
+          "sha": "5edf1491ad5df8b800bc4a0718857ef4f14ad2dc",
+          "state": "success",
+          "url": "https://portfolio-platform-j4gfjv8z9-safariarash7777-4463s-projects.vercel.app"
+        }
+      ]
+    },
+    {
+      "pr": 341,
+      "head": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "base": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+      "draft": true,
+      "merged": false,
+      "title": "Keep unknown member sessions recoverable and distinguish access standing",
+      "ci": [
+        {
+          "id": 41023293054,
+          "sha": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+          "status": "completed",
+          "conclusion": "success",
+          "jobs": [
+            {
+              "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+              "conclusion": "success"
+            },
+            {
+              "name": "Secret scan \u00b7 SQL validation",
+              "conclusion": "success"
+            },
+            {
+              "name": "Dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Database RLS \u00b7 Integrity (Postgres)",
+              "conclusion": "success"
+            },
+            {
+              "name": "CI Gate",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "deployments": [
+        {
+          "id": 7433518859,
+          "sha": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+          "state": "success",
+          "url": "https://portfolio-platform-bd8bm56sq-safariarash7777-4463s-projects.vercel.app"
+        }
+      ]
+    },
+    {
+      "pr": 342,
+      "head": "8f7835423cb68c5990e6b0d12d4cbaee6c68124a",
+      "base": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "draft": true,
+      "merged": false,
+      "title": "NOT_FOR_MERGE: synthetic member walkthrough with readable active-step focus",
+      "ci": [
+        {
+          "id": 41025829599,
+          "sha": "8f7835423cb68c5990e6b0d12d4cbaee6c68124a",
+          "status": "completed",
+          "conclusion": "success",
+          "jobs": [
+            {
+              "name": "Database RLS \u00b7 Integrity (Postgres)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+              "conclusion": "success"
+            },
+            {
+              "name": "Dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Secret scan \u00b7 SQL validation",
+              "conclusion": "success"
+            },
+            {
+              "name": "CI Gate",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "deployments": [
+        {
+          "id": 7433877936,
+          "sha": "8f7835423cb68c5990e6b0d12d4cbaee6c68124a",
+          "state": "success",
+          "url": "https://portfolio-platform-bbd8oyks2-safariarash7777-4463s-projects.vercel.app"
+        }
+      ]
+    }
+  ],
+  "rootCodeReview": {
+    "admin338": "actual authorized desk consumer only, no new reads; four routes verified at main; temporary priority/stop/proposed-owner notes explicit",
+    "member341": "existing deadline/session classifier; unknown auth cannot render children or load financial queries; redirects outside catch; access standing distinct, no new role or service right",
+    "prototype340": "local desktop A/B and mobile A reviewed; online A->B clicked; educational same-data scope monthly structure, full company feature parity not accepted"
+  },
+  "rootBrowserReview": {
+    "adminLab339": "opened; synthetic error then selected empty via AX; clear distinction; stop disabled without notes; no backend assignment",
+    "memberLab342": "latest8f opened online, step4 clicked; NOT_CONNECTED/consent separation visible; current4step DOM color248/250/252 on30/58/138 and final screenshot readable; earlierdf41 contrast defect retained",
+    "companyOptions": "A and B opened online, source labels visible, original production company also opened for comparison"
+  },
+  "primaryDeployed": false,
+  "realAuthAcceptance": false,
+  "humanVisualSelection": null,
+  "screenshots": {
+    "P12-admin-root.png": {
+      "sha256": "3a16abc8f988a62b91f0ad9101a10696b14c1890b1aa60cee902fb4da3247a6b",
+      "width": 65536,
+      "height": 4292542531,
+      "meaning": "raw browser screenshot of explicitly synthetic prototype, not real-account acceptance"
+    },
+    "P14-option-a-root.png": {
+      "sha256": "10cc8e9db2e781ff35f45ecc6236ca036d5897f95e8b8ea06ece6912f9d6808b",
+      "width": 65536,
+      "height": 4292542531,
+      "meaning": "raw browser screenshot of explicitly synthetic prototype, not real-account acceptance"
+    },
+    "P14-option-b-root.png": {
+      "sha256": "32eb92824b843db4aec841a0749a16f176087e6e8143c22056e85d80cfe6c70c",
+      "width": 65536,
+      "height": 4292542531,
+      "meaning": "raw browser screenshot of explicitly synthetic prototype, not real-account acceptance"
+    },
+    "P14-member-contrast-before-root.png": {
+      "sha256": "f1b66a80b634cb0b022f6e1ae4234b16b8900ff030e0c0a9fbfe14ab67365d6c",
+      "width": 65536,
+      "height": 4292542531,
+      "meaning": "raw browser screenshot of explicitly synthetic prototype, not real-account acceptance"
+    },
+    "P14-member-contrast-after-root.png": {
+      "sha256": "d16b210667d31afc8362003d3ff2c5e384a10d2bb6b821bad972f11495cc6d94",
+      "width": 65536,
+      "height": 4292542531,
+      "meaning": "raw browser screenshot of explicitly synthetic prototype, not real-account acceptance"
+    }
+  },
+  "currentCompanyBaseline": {
+    "url": "https://portfolio-platform-fawn.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+    "browserOpened": true,
+    "fourTabsObserved": true,
+    "sourcePriceTimeUnknownWarningVisible": true,
+    "privateAccountActions": false,
+    "publicMarketPayloadCopiedIntoEducationalFixture": false,
+    "userVisualApprovalInferred": false
+  },
+  "latestLabCiReadAt": "2026-10-30T08:32:51.111455+00:00"
+}

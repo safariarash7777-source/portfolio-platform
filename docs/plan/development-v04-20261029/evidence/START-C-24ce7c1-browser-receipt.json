@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "task": "START-C",
+  "dateTehran": "2026-10-29",
+  "codeSha": "24ce7c1d0ad621f135cc33df6f77a3d55015ee67",
+  "environment": "Online Vercel Preview; public guest session",
+  "observed": [
+    "Footer identifies preview 24ce7c1",
+    "Keyboard Enter on existing list control shows disabled loading state then explicit read error and enabled manual retry",
+    "No automatic retry, empty-list claim or numeric substitutes observed",
+    "Desktop and mobile390 rendering inspected"
+  ],
+  "limits": [
+    "Announcement retrieval failed; data correctness/freshness/natural collector cycle not accepted",
+    "Preview and Production endpoints differ; no credentials/environment settings changed",
+    "Source published-date rendering with real rows not accepted on this failed read"
+  ],
+  "screenshots": [
+    "start-c-24ce7c1-desktop.jpg",
+    "start-c-24ce7c1-mobile.jpg"
+  ]
+}

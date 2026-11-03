@@ -1,0 +1,131 @@
+{
+  "intent": {
+    "atUtc": "2026-10-31T05:35:28.849Z",
+    "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+    "teamId": "team_yXFLU0BNAbLNZhWKcwpSpJxA",
+    "branch": "codex/p07-market-basis-20261031",
+    "source": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+    "target": "preview",
+    "sourceTree": "94552f0738571a702942d7a9ef44d1f9f42ba843",
+    "CI": {
+      "run": 41172664940,
+      "all5Success": true,
+      "actualCheckout": "2fa15d29e82fd23964a6d21a715c99bc4f4341a9"
+    },
+    "envAction": "move only existing two Sensitive Preview IDs from frozen805 branch to existing376 branch; no value/key/type/target update",
+    "ids": [
+      "9NEamcg9U7e4wcSX",
+      "rbwHDphHrW3rf8Hk"
+    ],
+    "rollbackBranch": "codex/p07-fundamental-read-binding-20261031",
+    "publication": "one exact GitSource manual Preview, no projectSettings/runtime/plan override; main remains f93dbdc",
+    "financialWrites": false,
+    "providerModelCalls": false
+  },
+  "envBaseline": [
+    {
+      "branch": "codex/p07-fundamental-read-binding-20261031",
+      "rows": [
+        {
+          "id": "9NEamcg9U7e4wcSX",
+          "key": "FUNDAMENTAL_READ_URL",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+        },
+        {
+          "id": "rbwHDphHrW3rf8Hk",
+          "key": "FUNDAMENTAL_READ_ANON_KEY",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+        }
+      ]
+    },
+    {
+      "branch": "codex/p07-market-basis-20261031",
+      "rows": []
+    }
+  ],
+  "envEditSteps": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "isError": false
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "isError": false
+    }
+  ],
+  "envFinalReadback": [
+    {
+      "branch": "codex/p07-fundamental-read-binding-20261031",
+      "rows": []
+    },
+    {
+      "branch": "codex/p07-market-basis-20261031",
+      "rows": [
+        {
+          "id": "9NEamcg9U7e4wcSX",
+          "key": "FUNDAMENTAL_READ_URL",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-market-basis-20261031"
+        },
+        {
+          "id": "rbwHDphHrW3rf8Hk",
+          "key": "FUNDAMENTAL_READ_ANON_KEY",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-market-basis-20261031"
+        }
+      ]
+    }
+  ],
+  "exactDeployments": [
+    {
+      "id": "dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA",
+      "url": "portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app",
+      "readyState": "READY",
+      "target": null,
+      "sha": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+      "branch": "codex/p07-market-basis-20261031"
+    }
+  ],
+  "deployment": {
+    "id": "dpl_Dk2kUqnpQTVRDi91KhLRHEgsfDYA",
+    "url": "portfolio-platform-9bn08eb2l-safariarash7777-4463s-projects.vercel.app",
+    "target": null,
+    "readyState": "READY",
+    "sha": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+    "branch": "codex/p07-market-basis-20261031",
+    "readyAt": 1793425054940
+  },
+  "configurationRollbackPreviouslyRehearsed": "P15-Preview805-root-scope-20261031.json; same IDs reversible to existing805 branch",
+  "previewOnly": true,
+  "previewPublished": true,
+  "primaryReleaseAuthorized": false,
+  "nativeCaptureExecuted": false,
+  "archiveVerified": false,
+  "installerApplyIntegrated": false,
+  "noValueKeyTypeTargetUpdate": true,
+  "noProjectSettingsRuntimeBuildMachineOrPlanOverride": true,
+  "providerModelInvoked": false,
+  "storageDataOrSQLChanged": false,
+  "mainLastRead": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "cost": "CI/Preview quota monetary amount NOT_QUERIED; no purchase/plan upgrade",
+  "runtimeLogNotes": {
+    "codalList": "No matching console log; successful HTTP status not instrumented. Real UI21 rows is the acceptance evidence.",
+    "symbolDetail": "Still headers402 in same deployment; not billing attribution."
+  }
+}

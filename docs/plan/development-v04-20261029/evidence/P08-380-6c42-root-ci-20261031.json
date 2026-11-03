@@ -1,0 +1,227 @@
+{
+  "status": "PASS_ROOT_CI_SOURCE_AND_COMPOSITION_REVIEW",
+  "head": "6c42d1d7394ebb6af09b6282702fefd4e15c6c20",
+  "tree": "577b7e4399135be2173bae3599634200b0dd928e",
+  "pr": 380,
+  "base": "a3c9fdefce66a7413d108613df17162cff63337e",
+  "fundSource": "5e8cb76138ebd3a424b4a37ca40bd3594b41e632",
+  "run": 41186848559,
+  "jobs": [
+    {
+      "id": 124495414211,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124495414370,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124495414391,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124495414459,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124496263540,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "actualCheckout": "9d60935ededf175da5efe6a65f5e120b5cab13f0",
+  "actualTree": "577b7e4399135be2173bae3599634200b0dd928e",
+  "actualParents": [
+    "a3c9fdefce66a7413d108613df17162cff63337e",
+    "6c42d1d7394ebb6af09b6282702fefd4e15c6c20"
+  ],
+  "rootReadFullCoreAndDbLogs": true,
+  "namedFund24": [
+    {
+      "name": "stored zero individual counts remain observed zero while per-capita zero denominators remain unavailable",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "snapshot reader rejects non-positive quotes while preserving observed zero activity and clocks",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "stored snapshot reader bounds HTTP reads, isolates relay cache and preserves data clocks/units",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "actual adapter captures only the existing server pair and sends one scoped anonymous stored GET",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "partial blank invalid and expired overrides perform zero GET and never inspect legacy fields",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "absent adapter override delegates to unchanged legacy fallback while stored no-argument reads remain DB-only",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "same explicit pair shares only its inflight GET and successful results are never cached",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "different pairs and an A-to-B-to-A cycle cannot mix inflight results or cleanup",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "HTTP redirect malformed and absent reads never retry or become confirmed fund emptiness",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "a genuine family-empty snapshot stays distinct from unknown clocks partial rows and invalid payload",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "expiry during digest or body withholds data and delayed digest after deadline cannot launch GET",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "late body cleanup cannot erase a fresh same-pair inflight read and no raw response crosses timeout",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "explicit availability ignores legacy diagnostics and leaves the host environment and globals untouched",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "explicit pair is copied before digest and URL identity separates otherwise identical credentials",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "shared expiry and structured absent/body/HTTP results cannot borrow a previous successful read",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "actual funds page rejects raw bubbles with absent price clocks or rejected NAV before board/search/stats",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "actual funds page recomputes a synchronized fresh bubble and later removes it when NAV ages",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "actual funds page forwards the existing read/quality result without converting failed null data into confirmed empty",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "fund board describes only a confirmed family-empty response as no source rows, even with unrelated partial families",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "read-error and timeout override even an empty-family label and never claim an empty snapshot",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "unavailable, unknown, stale or rejected zero-row inputs never establish source emptiness",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "a failed read does not erase retained observations, invent missing values or bypass the five-fund comparison guards",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "actual adapter to actual funds page keeps stored unknown-price-clock rows, null bubble and five selectors without host globals",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "actual adapter and actual page separate absent or HTTP error from genuine validated family emptiness",
+      "subtests": 1,
+      "pass": 1
+    }
+  ],
+  "preservedCompanyUi8": [
+    {
+      "name": "monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "different valid rate denominators get separate axes and an unknown series cannot erase valid peers",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "mixed units within the main product keep valid market rates but cannot certify a quantity sum",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "unit changes split the existing calendar into separate plots and suppress cross-unit rate narrative",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "unknown numerator leaves valid quantity visible but cannot label a rate as rial",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "reported quantity zero stays zero, while missing quantities stay gaps",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "legacy, services, explicit null and out-of-catalog units remain honest unavailable states",
+      "subtests": 1,
+      "pass": 1
+    },
+    {
+      "name": "real Recharts SSR retains unit labels, source and explicit unavailable state without chart mocks",
+      "subtests": 1,
+      "pass": 1
+    }
+  ],
+  "coreFirstGroup": 2126,
+  "calc": 179,
+  "staticPages": 39,
+  "composition": {
+    "fund10Exact5e8": true,
+    "company7NonVercelExactA3": true,
+    "configOnlyOneNewFalseBranch": true,
+    "existingFundDeliveryAppendOnly": true
+  },
+  "packet": {
+    "bytes": 204293,
+    "manifestFiles": 42,
+    "sourceFiles": 19,
+    "sha256": "8c21fa2280df236983547927294e432d3d8ccc1404615183c0722340d28d3f80",
+    "privateIndexExact": true
+  },
+  "limits": [
+    "Source/CI alone is not live stored-read, five-fund or whole P08 acceptance.",
+    "The member reader 7b and service right are separate, not integrated by this fund candidate."
+  ]
+}

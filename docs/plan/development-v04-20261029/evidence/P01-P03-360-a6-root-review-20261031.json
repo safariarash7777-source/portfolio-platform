@@ -1,0 +1,90 @@
+{
+  "status": "LIMITED_COMBINED_SOURCE_AND_CI_VERIFIED_NOT_PRODUCT_ACCEPTANCE",
+  "recordedOn": "2026-10-31",
+  "pr": "https://github.com/safariarash7777-source/portfolio-platform/pull/360",
+  "head": "a6ce468301eb2761bb730b38f68b487c52fdb234",
+  "ciRun": 41134948037,
+  "ciJobs": [
+    {
+      "id": 124335000877,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124335001023,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124335001108,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124335001277,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124337605328,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "actualCiCheckout": "a8e03dc16323ee1cc1274f32780b460eef20ee08",
+  "ciParents": [
+    "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+    "a6ce468301eb2761bb730b38f68b487c52fdb234"
+  ],
+  "tree": "831c612a3f3c8b90889f2359726aad34c6a49ab8",
+  "actualCiTreeEqualsHead": true,
+  "independentRootSourceBinding": {
+    "status": "PASS_SOURCE_BINDING",
+    "candidateSha": "a6ce468301eb2761bb730b38f68b487c52fdb234",
+    "mergeSha": "109b5078ab9965257d29df363fc1eb25ba6edfa0",
+    "sourceParents": [
+      "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+      "7752638842c3f4c8a6984e3ec753a6c92aad80fc"
+    ],
+    "sourceMergeBase": "3acbab90d101620591f44ee9967adbac123d4a28",
+    "exactRootResolutions": {
+      "docs/README.md": "1c0e87d3a1246b23235e763cf4d7a9aa15d5e0e86638193845fa1ce2e5712538",
+      "package.json": "67aa6d16afc7b04b161c28be8d4020fc7967ee240bfb0c60510602698b146faa"
+    },
+    "allSourceLiteralTestsRetained": true,
+    "registeredLiteralTests": 171,
+    "requiredLiteralTests": 171,
+    "dependenciesAndLockUnchanged": true,
+    "reconstructedMergeTreeMatches": true,
+    "followupFiles": [
+      "docs/ops/member-consultation-journey-20261031/DELIVERY.fa.md",
+      "scripts/testing/member-consultation-journey/source-binding.mjs"
+    ],
+    "productExecution": "NOT_RUN",
+    "targetInstallation": "NOT_APPLIED",
+    "serviceRequest": "NOT_CONNECTED",
+    "sameServiceRight": "NOT_PROVEN",
+    "arashAcceptance": "UNOBSERVED"
+  },
+  "decodedLogWitnesses": {
+    "method": "GitHub connector decoded text; not original transport bytes",
+    "coreCheckout": [
+      "2026-10-30T21:59:05.6165689Z HEAD is now at a8e03dc Merge a6ce468301eb2761bb730b38f68b487c52fdb234 into f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc"
+    ],
+    "database": [
+      "2026-10-30T21:59:22.1132982Z HEAD is now at a8e03dc Merge a6ce468301eb2761bb730b38f68b487c52fdb234 into f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+      "2026-10-30T22:01:19.2858252Z # pass 400",
+      "2026-10-30T22:01:19.2858822Z # fail 0",
+      "2026-10-30T22:01:19.2859876Z # skipped 0"
+    ]
+  },
+  "sourceGuardCiRegistration": "standalone; not automatically registered in current CI",
+  "installBuildGap": "existing CI build uses placeholder public backend values; source ZIP and passing CI do not supply install artifact bound to real backend",
+  "limits": [
+    "target installation NOT_APPLIED",
+    "real Auth/browser/logout-login on this candidate NOT_RUN",
+    "independent request writer NOT_CONNECTED",
+    "service entitlement NOT_PROVEN",
+    "no primary deployment, new service cost or Arash acceptance"
+  ]
+}

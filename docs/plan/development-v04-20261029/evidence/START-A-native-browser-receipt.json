@@ -1,0 +1,35 @@
+{
+  "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "environment": "owned local native Auth/API/DB",
+  "screenshots": [
+    "native-history-390.png",
+    "native-history-320.png"
+  ],
+  "viewports": [
+    {
+      "requestedWidth": 390,
+      "dir": "rtl",
+      "notDoneVisible": true,
+      "partialVisible": true,
+      "privateCanaryVisible": false,
+      "scrollWidth": 375,
+      "width": 375,
+      "writeButtonsVisible": false
+    },
+    {
+      "requestedWidth": 320,
+      "dir": "rtl",
+      "notDoneVisible": true,
+      "partialVisible": true,
+      "privateCanaryVisible": false,
+      "scrollWidth": 305,
+      "width": 305,
+      "writeButtonsVisible": false
+    }
+  ],
+  "story": "Member B reads exact partial/not_done history after revoke; private note and writer buttons absent",
+  "databaseWritesByBrowser": 0,
+  "nativeOnlineAcceptance": false,
+  "primaryInstallation": false,
+  "checkedAt": "2026-10-29T16:56:37.455Z"
+}
