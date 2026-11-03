@@ -147,7 +147,58 @@ async function readBounded(response, maxBytes) {
     return Buffer.concat(chunks).toString('utf8');
   } finally { await reader.cancel().catch(() => {}); }
 }
-export async function collectReceipt({ token, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
+// CLI 9.5.1: env/list.js project.envs; app/logs.js releases/currentRelease.
+// The API sends env values too: memory only, never serialized or logged here.
+const CONTROL_PROJECT = 'https://api.liara.ir/v1/projects/arsadata';
+const CONTROL_RELEASES = CONTROL_PROJECT + '/releases?page=1&count=100';
+const releaseId = x => typeof x === 'string' && /^[a-f0-9]{24}$/.test(x) ? x : null;
+const releaseState = x => choice(x, ['READY', 'FAILED', 'UNHEALTHY', 'CANCELED', 'TIMEDOUT', 'DEPLOYING', 'BUILDING', 'QUEUED']);
+function projectMetadata(body) {
+  const p = body?.project;
+  if (!p || p.project_id !== 'arsadata') throw new Error('invalid_schema');
+  return { projectId: 'arsadata', status: choice(p.status, ['running', 'stopped', 'starting', 'stopping', 'ready', 'failed']),
+    // No verified CPU/RAM response contract in the installed CLI.
+    cpuLimit: null, ramLimit: null,
+    envNames: Array.isArray(p.envs) ? [...new Set(p.envs.map(e => e?.key).filter(k => typeof k === 'string' && /^[A-Z][A-Z0-9_]{0,79}$/.test(k)))].sort() : null };
+}
+function releaseMetadata(body) {
+  if (!body || !Array.isArray(body.releases) || body.releases.length > 100) throw new Error('invalid_schema');
+  const currentReleaseId = releaseId(body.currentRelease);
+  const matched = currentReleaseId ? body.releases.filter(r => r?._id === currentReleaseId) : [];
+  const r = matched.length === 1 ? matched[0] : null;
+  return { currentReleaseId, match: r ? 'exact' : currentReleaseId ? 'unresolved' : 'unknown',
+    release: r ? { id: currentReleaseId, state: releaseState(r.state), createdAt: clock(r.createdAt), finishedAt: clock(r.finishedAt),
+      commit: typeof r.gitInfo?.commit === 'string' && /^[a-f0-9]{40}$/.test(r.gitInfo.commit) ? r.gitInfo.commit : null,
+      branch: typeof r.gitInfo?.branch === 'string' && /^(?:main|master|codex\/[a-z0-9-]{1,100})$/.test(r.gitInfo.branch) ? r.gitInfo.branch : null } : null };
+}
+export async function collectControlPlane({ token, fetchImpl = fetch, timeoutMs = 10000 } = {}) {
+  const request = async (url, project) => {
+    if (!token) return { status: 'missing_credential', httpStatus: null, data: null };
+    const controller = new AbortController(); let timer;
+    const work = async () => {
+      const response = await fetchImpl(url, { method: 'GET', redirect: 'error', signal: controller.signal, headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' } });
+      if (!response.ok) {
+        void response.body?.cancel().catch(() => {});
+        return { status: response.status === 401 || response.status === 403 ? 'endpoint_authorization_rejected' : response.status === 404 ? 'endpoint_not_found' : 'endpoint_http_error', httpStatus: response.status, data: null };
+      }
+      const raw = await readBounded(response, 1024 * 1024);
+      let data;
+      try { const parsed = JSON.parse(raw); data = project ? projectMetadata(parsed) : releaseMetadata(parsed); }
+      catch { return { status: 'invalid_schema', httpStatus: response.status, data: null }; }
+      return { status: 'read', httpStatus: response.status, data };
+    };
+    try {
+      return await Promise.race([work(), new Promise(resolve => { timer = setTimeout(() => { controller.abort(); resolve({ status: 'timeout', httpStatus: null, data: null }); }, timeoutMs); })]);
+    } catch (error) {
+      return { status: error?.message === 'response_limit' ? 'response_too_large' : 'request_or_body_failed', httpStatus: null, data: null };
+    } finally { clearTimeout(timer); controller.abort(); }
+  };
+  const [project, releases] = await Promise.all([request(CONTROL_PROJECT, true), request(CONTROL_RELEASES, false)]);
+  return { project, releases, identity: project.status === 'read' && releases.status === 'read' && releases.data.match === 'exact' ? 'matched_control_plane_metadata' : 'unconfirmed',
+    limitations: ['Environment values arrive in API memory only; only validated names are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
+}
+
+export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
   const request = async (url, kind) => {
     if (kind === 'debug' && !token) return { status: 'missing_credential', httpStatus: null, error: null };
     try {
@@ -173,13 +224,13 @@ export async function collectReceipt({ token, fetchImpl = fetch, now = () => new
     } catch (error) { return { status: 'connection_error', httpStatus: null, error: transportError(error) }; }
   };
   const startedAt = now();
-  const [health, debug, backend, storedRead] = await Promise.all([request(HEALTH, 'health'), request(DEBUG, 'debug'), request(BACKEND, 'backend'), request(STORED_READ, 'storedRead')]);
-  return { schemaVersion: 1, startedAt, completedAt: now(), sampleCount: 1, mode: 'passive', health, debug, backend, storedRead,
+  const [health, debug, backend, storedRead, controlPlane] = await Promise.all([request(HEALTH, 'health'), request(DEBUG, 'debug'), request(BACKEND, 'backend'), request(STORED_READ, 'storedRead'), collectControlPlane({ token: controlPlaneToken, fetchImpl })]);
+  return { schemaVersion: 1, startedAt, completedAt: now(), sampleCount: 1, mode: 'passive', health, debug, backend, storedRead, controlPlane,
     limitations: ['No source quote clocks are exposed by this debug contract; receipt time is not source time.', 'Process counters are not provider account usage or Liara billing.', 'Backend root HTTP 401 is an expected authentication challenge; HTTP 2xx or 401 alone do not prove database health. A successful stored Codal read proves that bounded public read only, may be cached, and does not prove all database services, deployed identity or fresh/complete reports.'] };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN });
+    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN });
     await writeFile('relay-health-receipt.json', JSON.stringify(receipt, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify(receipt));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, '```json\n' + JSON.stringify(receipt, null, 2) + '\n```\n');
