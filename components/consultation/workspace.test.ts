@@ -18,7 +18,7 @@ type Element = React.ReactElement<Record<string, unknown>>;
 function nodes(tree: unknown): Element[] { if (Array.isArray(tree)) return tree.flatMap(nodes); if (!React.isValidElement(tree)) return []; const node = tree as Element; const content = typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children; return [node, ...nodes(content)]; }
 function text(tree: unknown): string { if (Array.isArray(tree)) return tree.map(text).join(""); if (!React.isValidElement(tree)) return typeof tree === "string" || typeof tree === "number" ? String(tree) : ""; const node = tree as Element; return text(typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children); }
 /** Actual workspace handlers/effects; controlled auth and transport seams, no DOM/RLS claim. */
-function mount(reads: unknown[], writes: unknown[]) {
+function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: string) {
   const slots: unknown[] = [], effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: unknown[] = [], attempts: unknown[] = [], writeCalls: unknown[][] = [];
   let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
   const hooks = { ...React,
@@ -33,7 +33,7 @@ function mount(reads: unknown[], writes: unknown[]) {
   const load = (name: string) => name === "react" ? hooks : name === "@/lib/consultation/request" ? request : name === "./ConsultationPanel" ? { __esModule: true, default: (props: object) => React.createElement("test-panel", props) } : name === "@/lib/supabase/client" ? { createClient: () => ({ auth: { onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; } } }) } : local(name.startsWith("@/") ? resolve(name.slice(2)) : name);
   const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
   new Function("require", "module", "exports", "React", "window", code)(load, taskModule, taskModule.exports, React, browser);
-  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedActorId: actor }); effects.splice(0).forEach(fn => fn()); };
+  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedActorId: actor, initialRelationshipId }); effects.splice(0).forEach(fn => fn()); };
   const flush = async () => { for (let i = 0; i < 4; i++) { await new Promise(resolve => setImmediate(resolve)); render(); } };
   const panel = () => { const item = nodes(tree).find(node => node.type === "test-panel"); assert.ok(item); return item; };
   const button = (label: string) => { const item = nodes(tree).find(node => node.type === "button" && text(node).includes(label)); assert.ok(item, label); return item; };
@@ -70,4 +70,55 @@ test("owner change clears pending private state and ignores delayed receipt", as
 });
 test("synchronous duplicate click cannot create a second request", async () => {
   const late = deferred<unknown>(); const view = mount([result(), result(readback())], [late.promise]); await view.auth(); view.send(); view.send(); assert.equal(view.attempts.length, 1); assert.equal(view.writeCalls.length, 1); late.done({ status: "saved", receipt }); await view.flush(); view.unmount();
+});
+
+const backToList = "بازگشت به پرونده‌های مجاز";
+const denied = (httpStatus: number) => ({ status: "error", httpStatus, error: { code: httpStatus === 403 ? "FORBIDDEN" : "NOT_FOUND" } });
+for (const status of [403, 404]) test(`selected ${status} can recover the same actor's list with no write or denied period`, async () => {
+  const selected = readback(); selected.selected = selected.relationships[0];
+  selected.dossier = { basis: { holdingsVersionId: null, cashFlowVersionId: null, goalsVersionId: null, cashFlowPeriod: { startOn: "2026-10-01", endOn: "2026-10-31" } }, holdings: null, cashFlow: null, goals: null };
+  const view = mount([result(selected), denied(status), result()], [], relation);
+  await view.auth();
+  (view.panel().props.onPeriod as (p: unknown) => void)({ startOn: "2026-11-01", endOn: "2026-11-30" });
+  await view.flush(); assert.throws(() => view.panel(), "denied dossier is removed");
+  await view.click(backToList);
+  const recovered = view.readCalls[2] as Record<string, unknown>;
+  assert.equal(recovered.actorId, actor); assert.equal(recovered.relationshipId, undefined);
+  assert.equal(recovered.startOn, undefined); assert.equal(recovered.endOn, undefined);
+  assert.equal((view.panel().props.data as ConsultationRead).selected, null);
+  assert.equal(view.writeCalls.length, 0); assert.equal(view.attempts.length, 0);
+  view.unmount();
+});
+
+test("denied selection recovery cannot use a captured click after identity changes", async () => {
+  const view = mount([denied(403)], [], relation); await view.auth();
+  const click = view.button(backToList).props.onClick as () => void;
+  await view.auth("SIGNED_IN", advisor); click(); await view.flush();
+  assert.equal(view.readCalls.length, 1); assert.equal(view.writeCalls.length, 0);
+  assert.match(view.text(), /حساب یا نشست تغییر کرد/); view.unmount();
+});
+
+test("late list recovery cannot restore the previous actor's dossier after signout", async () => {
+  const late = deferred<unknown>(); const view = mount([denied(404), late.promise], [], relation);
+  await view.auth(); await view.click(backToList); assert.equal(view.readCalls.length, 2);
+  await view.auth("SIGNED_OUT", null); late.done(result(readback())); await view.flush();
+  assert.throws(() => view.panel()); assert.match(view.text(), /حساب یا نشست تغییر کرد/);
+  assert.equal(view.readCalls.length, 2); assert.equal(view.writeCalls.length, 0); view.unmount();
+});
+
+test("a confirmed receipt with forbidden readback cannot be discarded to recover another list", async () => {
+  const view = mount([result(), denied(403), result(readback())], [{ status: "saved", receipt }]);
+  await view.auth(); view.send(); await view.flush();
+  assert.throws(() => view.button(backToList)); assert.equal(view.writeCalls.length, 1);
+  await view.click("دوباره خواندن پرونده");
+  assert.equal(view.readCalls.length, 3); assert.equal(view.writeCalls.length, 1);
+  await view.click("ادامه با پروندهٔ بازخوانی‌شده");
+  assert.equal(view.panel().props.locked, false); view.unmount();
+});
+
+test("unknown write never offers list recovery or drops the frozen attempt", async () => {
+  const view = mount([result(), result(readback())], [{ status: "uncertain" }, { status: "saved", receipt }]);
+  await view.auth(); view.send(); await view.flush(); assert.throws(() => view.button(backToList));
+  await view.click("بررسی دوبارهٔ همین ثبت");
+  assert.equal(view.attempts.length, 1); assert.equal(view.writeCalls[0][0], view.writeCalls[1][0]); view.unmount();
 });

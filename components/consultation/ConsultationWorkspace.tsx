@@ -13,6 +13,7 @@ type Command = Parameters<typeof createConsultationAttempt>[0]["command"];
 export default function ConsultationWorkspace({ expectedActorId, initialRelationshipId }: { expectedActorId: string; initialRelationshipId?: string }) {
   const [identity, setIdentity] = useState<"checking" | "ready" | "changed" | "error">("checking");
   const [data, setData] = useState<Read | null>(null), [reading, setReading] = useState(false), [error, setError] = useState("");
+  const [selectionDenied, setSelectionDenied] = useState(false);
   const [saving, setSaving] = useState(false), [uncertain, setUncertain] = useState(false), [confirmed, setConfirmed] = useState(false);
   const [readbackVerified, setReadbackVerified] = useState(false);
   const [message, setMessage] = useState(""), [dirty, setDirty] = useState(false), [revision, setRevision] = useState(0);
@@ -23,18 +24,18 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
   const abortReads = useCallback(() => { sequence.current++; abort.current?.abort(); }, []);
   const clearIdentity = useCallback(() => {
     live.current = false; revoked.current = true; abortReads(); pending.current = null; receiptRef.current = null;
-    setData(null); setMessage(""); setError(""); setDirty(false); setSaving(false); setReading(false); setUncertain(false); setConfirmed(false); setReadbackVerified(false); setIdentity("changed");
+    setData(null); setMessage(""); setError(""); setSelectionDenied(false); setDirty(false); setSaving(false); setReading(false); setUncertain(false); setConfirmed(false); setReadbackVerified(false); setIdentity("changed");
   }, [abortReads]);
   const load = useCallback(async (relationshipId?: string) => {
     if (!live.current || revoked.current) return false;
     const generation = ++sequence.current; abort.current?.abort(); const controller = new AbortController(); abort.current = controller;
-    selected.current = relationshipId; if (receiptRef.current) setReadbackVerified(false); setReading(true); setError("");
+    selected.current = relationshipId; if (receiptRef.current) setReadbackVerified(false); setReading(true); setError(""); setSelectionDenied(false);
     try {
       const result = await readConsultation({ relationshipId, actorId: expectedActorId, ...period.current, signal: controller.signal });
       if (!live.current || revoked.current || generation !== sequence.current) return false;
       if (result.status === "error") {
         if (result.error.code === "AUTH_REQUIRED" || result.error.code === "ACTOR_CHANGED") { clearIdentity(); return false; }
-        if (result.httpStatus === 403 || result.httpStatus === 404) { setData(null); setDirty(false); }
+        if (result.httpStatus === 403 || result.httpStatus === 404) { setData(null); setDirty(false); setSelectionDenied(Boolean(relationshipId)); }
         setError("خواندن پرونده انجام نشد؛ نبود اطلاعات یا دسترسی تأیید نشده است. نتیجهٔ قبلی، خواندن تازه نیست."); return false;
       }
       if (result.data.actor.id !== expectedActorId) { clearIdentity(); return false; }
@@ -62,6 +63,11 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
     window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn);
   }, [dirty, saving, uncertain]);
+  const recoverList = () => {
+    if (!live.current || revoked.current || !selectionDenied || lock.current || pending.current || receiptRef.current || saving || reading || uncertain || dirty) return;
+    period.current = {}; // A denied dossier's period is not a new list request.
+    void load();
+  };
   const send = async (command?: Command) => {
     if (!live.current || revoked.current || lock.current || confirmed || reading || error) return false;
     if (!pending.current) {
@@ -91,7 +97,9 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
   const locked = saving || reading || uncertain || confirmed || Boolean(error);
   return <div className="min-w-0 space-y-5">
     {reading && <p role="status">در حال خواندن پرونده و مجوز جاری…</p>}
-    {error && <section className="card space-y-3 p-4"><p role="alert">{error}</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={reading || saving || uncertain || dirty} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button></section>}
+    {error && <section className="card space-y-3 p-4"><p role="alert">{error}</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={reading || saving || uncertain || dirty} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button>
+      {selectionDenied && !pending.current && !receiptRef.current && <button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={reading || saving || uncertain || dirty} onClick={recoverList}>بازگشت به پرونده‌های مجاز</button>}
+    </section>}
     {message && <p className="card p-4 text-sm leading-7" role="status">{message}</p>}
     {saving && <p role="status">در حال ثبت همان درخواست؛ هنوز موفقیت اعلام نشده است.</p>}
     {uncertain && <section className="card space-y-3 p-5"><p>تا تعیین تکلیف، ویرایش و تغییر پرونده بسته است؛ توکن و محتوای همان تلاش حفظ شده‌اند.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving || reading} onClick={() => void send()}>بررسی دوبارهٔ همین ثبت</button></section>}
