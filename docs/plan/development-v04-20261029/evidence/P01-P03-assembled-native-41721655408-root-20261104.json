@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "workflowRunUrl": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41721655408",
+  "nativeJobId": 126218289352,
+  "safeArtifactId": 13273581441,
+  "safeArtifactSha256": "d578053b04156acb79814402cad3ab5337c9280601ddf3af5211bef8337c96e1",
+  "exactReceiptSha256": "1cd43d828b9bae6a0c0f012b0a9d0f0623cae5dd4bf6f03d7989ea58a36b3d49",
+  "receipt": {
+    "arashAcceptance": "UNOBSERVED",
+    "automaticReplay": false,
+    "binding": {
+      "allocationId": "2de83b9c-c33a-4303-b310-be90f9628ec5",
+      "attempt": 1,
+      "executionAllocationId": "c6ceef52-bdda-5cf8-9b50-e6cd74c3c14a",
+      "repository": "safariarash7777-source/portfolio-platform",
+      "runId": "41721655408",
+      "workflowCommit": "d738e083f78f0d36781327042a841dae855caef0"
+    },
+    "failureCode": "assembled_native_not_confirmed",
+    "nativeAttempted": true,
+    "ownedCleanupReadback": "CONFIRMED",
+    "privateArtifactsUploaded": false,
+    "schemaVersion": "assembled-native-ci.v1",
+    "source": {
+      "capsuleSha256": "f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc",
+      "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+      "driverContractSha256": "4c661f7d3cf8aa75f1185e7496c35a4ca766501af9be25d227fbab2e75160a9c",
+      "tree": "c96d462d72505f2471c54c8e7e5293fe2b39b3d1"
+    },
+    "status": "FAIL_NATIVE_NOT_ACCEPTED",
+    "targetInstall": "NOT_APPLIED",
+    "writeOutcomeUnknown": false
+  },
+  "innerFailureReason": null,
+  "financialPostCount": null,
+  "limitations": [
+    "Native execution actually ran and failed; no inner failed-check name is exposed by this old safe receipt.",
+    "Confirmed owned cleanup and false unknown-write do not imply accepted application flow.",
+    "Old allocation is not replayed; failure-only diagnostic source child is reviewed before any new isolated allocation.",
+    "Service rights NOT_CONNECTED; primary consultation install NOT_APPLIED."
+  ]
+}
