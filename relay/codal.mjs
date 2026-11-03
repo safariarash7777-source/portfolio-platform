@@ -886,13 +886,15 @@ function announcementRows(json) {
   return json.announcement;
 }
 
-async function downloadExcelHtml(url, onBody) {
+async function downloadExcelHtml(url, onBody, { maxAttempts = 3 } = {}) {
+  if (maxAttempts !== 1 && maxAttempts !== 3) throw new Error("invalid download attempt bound");
   // excel.codal.ir کُند است و گاه بار اول timeout می‌دهد — تا ۳ تلاش با مهلت فزاینده.
   let lastErr;
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const res = await fetch(url, {
         headers: { "User-Agent": BROWSER_UA, Accept: "*/*" },
+        ...(maxAttempts === 1 ? { redirect: "error" } : {}),
         signal: AbortSignal.timeout(30000 * attempt),
       });
       if (!res.ok) throw new Error(`excel HTTP ${res.status}`);
@@ -903,7 +905,7 @@ async function downloadExcelHtml(url, onBody) {
       return html;
     } catch (e) {
       lastErr = e;
-      if (attempt < 3) await sleep(3000 * attempt);
+      if (attempt < maxAttempts) await sleep(3000 * attempt);
     }
   }
   throw lastErr;
@@ -1089,9 +1091,9 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
 }
 
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
-export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
+export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected, options) {
   let body = null;
-  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
+  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined, options);
   // Stage boundary only: never pass report content to diagnostics.
   onDownloaded();
   const meta = metaFrom(a, kind);
