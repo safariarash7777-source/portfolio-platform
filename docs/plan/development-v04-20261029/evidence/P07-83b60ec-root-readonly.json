@@ -1,0 +1,73 @@
+{
+  "observedAt": "2026-10-29T18:19:44.223072+00:00",
+  "method": "read-only public GitHub API via existing proxy",
+  "reviewer": "existing-root-coordinator",
+  "sourceSha": "83b60ec3e5ca6c0f9581ec1afcd3c47d97fe9789",
+  "branch": "codex/p07-company-v04-20261029",
+  "pullRequests": [
+    {
+      "number": 336,
+      "head": "83b60ec3e5ca6c0f9581ec1afcd3c47d97fe9789",
+      "draft": true,
+      "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/336"
+    }
+  ],
+  "ci": [
+    {
+      "id": 40929370887,
+      "sha": "83b60ec3e5ca6c0f9581ec1afcd3c47d97fe9789",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Database RLS \u00b7 Integrity (Postgres)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Secret scan \u00b7 SQL validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "CI Gate",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "deployments": [
+    {
+      "id": 7420575479,
+      "sha": "83b60ec3e5ca6c0f9581ec1afcd3c47d97fe9789",
+      "environment": "Preview",
+      "latest": {
+        "state": "success",
+        "environment_url": "https://portfolio-platform-1594t2yx9-safariarash7777-4463s-projects.vercel.app",
+        "created_at": "2026-10-29T18:16:50Z"
+      }
+    }
+  ],
+  "mainMerged": false,
+  "primaryInstallation": false,
+  "realFinancialAcceptance": false,
+  "arashVisualAcceptance": false,
+  "rootReview": {
+    "reviewed": "fixed-commit product diff, real component test assertions and shared CodalSourceLink contract",
+    "productScope": "two monthly consumers reuse existing helper; no core/C/API/SQL/package delta",
+    "localTests": "owner receipt: RED17/2 then GREEN19/0 and regression16/0; root did not rerun",
+    "visualPreviewAccepted": false
+  },
+  "ciRefreshedAt": "2026-10-29T18:24:07.342656+00:00"
+}

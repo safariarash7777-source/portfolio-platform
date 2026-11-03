@@ -1,0 +1,57 @@
+{
+  "head": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+  "rootIndependentGitBlobChecks": {
+    "components/admin/ResearchHistoryPanel.test.tsx": "ce3480c4028a94e90effd7a417a895d70310c0ba",
+    "components/admin/ResearchHistoryPanel.tsx": "93cfb1fcc060286d10ddd4192a3535e7c4cfe1c0",
+    "components/admin/ResearchWorkbook.test.ts": "bf7cce89853dfd1082ef5d9aa0c6293419c2c036",
+    "components/admin/ResearchWorkbook.tsx": "5e21eef71e3004ded0cecf8c4253683c996f95ea",
+    "docs/ops/research-intent-history-v04-20261030/DELIVERY.fa.md": "cd77a36fff9b1ee99caf0a5c4f80b2d4f0ec9e38",
+    "docs/ops/research-intent-history-v04-20261030/READ-BOUNDARY.json": "3216532f29bb76fd0cb5102738026cf65174bb80",
+    "docs/ops/research-intent-history-v04-20261030/SPEC.fa.md": "087d537f74e6b1d5bf3cb534ff372eb6578bd73e",
+    "lib/intelligence/research-history-metadata.ts": "caed02b69ce74570cfdf55542b87bb2767e4091d",
+    "lib/intelligence/research-history.test.ts": "102d07d7f9fc2c25cf5613d971c85696fdb1927f",
+    "lib/intelligence/research-history.ts": "d3873954d7cb420aa17774a60643814c8052792f",
+    "lib/intelligence/workbook-intent.integration.test.ts": "a239977c274ac673790758113aad3ab9cd459859"
+  },
+  "unchangedFromStandalone": [
+    "package.json",
+    ".github/workflows/research-workbook-native.yml",
+    "scripts/isolated-e2e/native-auth-runtime.mjs",
+    "scripts/isolated-e2e/native-auth-gateway.mjs",
+    "lib/intelligence/workbook-store.ts",
+    "lib/intelligence/workbook-intent-store.ts",
+    "app/api/admin/intelligence/workbooks/route.ts",
+    "lib/intelligence/p07-workflow-fixture.ts",
+    "docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql"
+  ],
+  "canonicalSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+  "nativeChecks": 9,
+  "nativeCleanupResources": 6,
+  "p10Profiles": [
+    "legacy",
+    "explicit"
+  ],
+  "nativePanel": {
+    "name": "same-get-metadata-real-native-references-no-panel-request",
+    "status": "PASS",
+    "versionIds": [
+      "7bdd7c54-091f-40ef-8ca0-d2caa6626ca7",
+      "ff3a9561-2921-40f2-b00c-3ec59ca41351"
+    ],
+    "reviewId": "77107b99-2257-4853-9940-5e392cb000fc",
+    "reviewVersionId": "7bdd7c54-091f-40ef-8ca0-d2caa6626ca7",
+    "intentId": "6ee552e6-ed7e-43a5-ba45-e8a8a88aab9f",
+    "preparedAt": "2026-10-30T14:28:04.689011+00:00",
+    "intentVersionId": null,
+    "intentWriteOutcome": "unknown",
+    "intentSource": "same_existing_native_get",
+    "extraGetStarts": 0,
+    "extraHttpRequests": 0,
+    "actorsDisclosed": false
+  },
+  "acceptance": "LIMITED_COMBINED_SOURCE_NATIVE_GATE_PASS",
+  "primaryInstall": "NOT_APPLIED",
+  "realBrowserCloseReopen": "NOT_RUN",
+  "realFinancialSource": "NOT_SUPPLIED",
+  "arashAcceptance": "UNOBSERVED"
+}

@@ -1,0 +1,195 @@
+{
+  "source": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "deployment": {
+    "id": "dpl_8JqHf76mhDZiw5SMLqpDtMvpkjfR",
+    "target": null,
+    "readyState": "READY",
+    "branch": "codex/p07-fundamental-read-binding-20261031",
+    "sha": "805a8d905c9d82697745988b21ff4f1222f8969d",
+    "readyAtUtc": "2026-10-31T03:59:14.938Z"
+  },
+  "createdNamesAndScope": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+    }
+  ],
+  "reuse": "existing same-project anon read pair, claims/shape checked, value never published, actual read later rendered both families",
+  "limits": [
+    "configuration scope rollback and restore passed; no inactive-scope runtime rebuild",
+    "permanent env deletion and credential revocation not performed; current review Preview retained",
+    "no financial/primary/Production rollback or release acceptance",
+    "main/SQL/Auth/primary service/Hermes/model untouched; no value/type update was sent",
+    "CI/Preview existing-quota monetary cost not queried; no purchase/plan upgrade"
+  ],
+  "releaseAuthorized": false,
+  "initialRejectedAttempts": {
+    "atUtc": "2026-10-31T04:10:05.189Z",
+    "rows": [
+      {
+        "id": "9NEamcg9U7e4wcSX",
+        "key": "FUNDAMENTAL_READ_URL",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+      },
+      {
+        "id": "rbwHDphHrW3rf8Hk",
+        "key": "FUNDAMENTAL_READ_ANON_KEY",
+        "type": "sensitive",
+        "target": [
+          "preview"
+        ],
+        "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+      }
+    ],
+    "status": "ORIGINAL_TWO_SCOPED_VARIABLES_RETAINED_NO_ROLLBACK_CLAIM",
+    "permanentDelete": false,
+    "deleteDialogCancelled": true,
+    "rejectedEdits": [
+      {
+        "field": "key",
+        "status": 400,
+        "reason": "sensitive variables cannot be renamed",
+        "ids": [
+          "9NEamcg9U7e4wcSX",
+          "rbwHDphHrW3rf8Hk"
+        ]
+      },
+      {
+        "field": "gitBranch",
+        "status": 400,
+        "reason": "inactive proposed Git branch absent; no branch created",
+        "ids": [
+          "9NEamcg9U7e4wcSX"
+        ]
+      }
+    ],
+    "noSourceKeyTypeValueOrScopeChange": true,
+    "newBuildsOrEnvEditsStopped": true,
+    "currentPreviewRetained": true,
+    "productionRollback": "NOT_APPLICABLE_NO_PRODUCTION_CHANGE",
+    "financialWriteRollback": "NOT_CLAIMED"
+  },
+  "scopeRollbackRehearsal": {
+    "status": "PASS_REVERSIBLE_SCOPE_ROLLBACK_AND_RESTORE_ONLY",
+    "atUtc": "2026-10-31T04:35:26.068Z",
+    "events": [
+      {
+        "id": "9NEamcg9U7e4wcSX",
+        "key": "FUNDAMENTAL_READ_URL",
+        "from": "codex/p07-fundamental-read-binding-20261031",
+        "to": "codex/p07-canonical-chart-integration-20261031",
+        "atUtc": "2026-10-31T04:34:41.432Z",
+        "isError": false
+      },
+      {
+        "id": "rbwHDphHrW3rf8Hk",
+        "key": "FUNDAMENTAL_READ_ANON_KEY",
+        "from": "codex/p07-fundamental-read-binding-20261031",
+        "to": "codex/p07-canonical-chart-integration-20261031",
+        "atUtc": "2026-10-31T04:34:42.268Z",
+        "isError": false
+      },
+      {
+        "id": "9NEamcg9U7e4wcSX",
+        "key": "FUNDAMENTAL_READ_URL",
+        "from": "codex/p07-canonical-chart-integration-20261031",
+        "to": "codex/p07-fundamental-read-binding-20261031",
+        "atUtc": "2026-10-31T04:35:21.952Z",
+        "isError": false
+      },
+      {
+        "id": "rbwHDphHrW3rf8Hk",
+        "key": "FUNDAMENTAL_READ_ANON_KEY",
+        "from": "codex/p07-canonical-chart-integration-20261031",
+        "to": "codex/p07-fundamental-read-binding-20261031",
+        "atUtc": "2026-10-31T04:35:22.798Z",
+        "isError": false
+      }
+    ],
+    "inactiveConsumer": {
+      "gitRef": "codex/p07-canonical-chart-integration-20261031",
+      "sha": "cdc7cb7eace650ab1f7668739af38ea7e9f7bcb6",
+      "literalUseInAppLibComponents": 0,
+      "existingEnvBefore": []
+    },
+    "inactiveReadback": {
+      "atUtc": "2026-10-31T04:35:20.810Z",
+      "activeBranchRows": [],
+      "inactiveBranchRows": [
+        {
+          "id": "9NEamcg9U7e4wcSX",
+          "key": "FUNDAMENTAL_READ_URL",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-canonical-chart-integration-20261031"
+        },
+        {
+          "id": "rbwHDphHrW3rf8Hk",
+          "key": "FUNDAMENTAL_READ_ANON_KEY",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-canonical-chart-integration-20261031"
+        }
+      ],
+      "originalNamesAbsentFrom805": true,
+      "bothOwnedIdsOnFrozenNonConsumer": true
+    },
+    "restored": {
+      "active805Rows": [
+        {
+          "id": "9NEamcg9U7e4wcSX",
+          "key": "FUNDAMENTAL_READ_URL",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+        },
+        {
+          "id": "rbwHDphHrW3rf8Hk",
+          "key": "FUNDAMENTAL_READ_ANON_KEY",
+          "type": "sensitive",
+          "target": [
+            "preview"
+          ],
+          "gitBranch": "codex/p07-fundamental-read-binding-20261031"
+        }
+      ],
+      "inactive371Rows": []
+    },
+    "sameTwoIdsNamesTypesTargets": true,
+    "keyOrTypeOrValueUpdateSent": false,
+    "noPermanentDeleteOrNewGitBranch": true,
+    "codeSqlAuthServiceOrProductionChanged": false,
+    "newBuildDuringRehearsal": false,
+    "immutable805PreviewRetained": true,
+    "limits": [
+      "configuration scope rollback and restore proven, no inactive-scope runtime build was exercised",
+      "sensitive values cannot be rehashed; edit payload touched only gitBranch/comment",
+      "permanent env deletion, credential revocation and financial/primary rollback not performed"
+    ]
+  },
+  "currentState": "same two IDs/names/Sensitive/Preview restored on frozen805 branch; no residual pair on371"
+}

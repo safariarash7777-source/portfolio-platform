@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "artifact": 12982753735,
+      "workflowRun": 41067950157,
+      "head": "c5e971dc2c9ce159773aab7cab30b4102bfc6495",
+      "expired": false,
+      "artifactDigest": "sha256:19de3552696a0c8c420d19ee575bb12fffadb5129ee8c62998b5f7f4b9c54602",
+      "candidateCanonicalGitSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+      "binding": "matched"
+    },
+    {
+      "artifact": 12979492304,
+      "workflowRun": 41062421488,
+      "head": "6e97d95decdae6e3f8411b2404aa540549a931d0",
+      "expired": false,
+      "artifactDigest": "sha256:1b5598f85e0acf6edac75edaba1a7edd715704435625a2da027350a9a3c91775",
+      "candidateCanonicalGitSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+      "binding": "matched"
+    }
+  ]
+}

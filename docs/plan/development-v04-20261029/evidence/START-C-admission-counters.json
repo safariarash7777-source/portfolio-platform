@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "task": "START-C",
+  "dateTehran": "2026-10-29",
+  "access": "Existing SSH; explicit BEGIN READ ONLY; 5s statement timeout; aggregate metadata only",
+  "snapshotUpdatedAt": "2026-10-29T12:12:11.535Z",
+  "failureStages": {
+    "download": {
+      "exception": 0
+    },
+    "admission": {
+      "rejected": 22,
+      "exception": 0
+    },
+    "persistence": {
+      "exception": 0
+    }
+  },
+  "admissionReasons": {
+    "N10": {
+      "context_invalid": 3,
+      "scope_unsupported": 6,
+      "scope_unknown": 7
+    },
+    "N30": {
+      "short_rows": 1,
+      "unsupported_layout": 5
+    }
+  },
+  "limits": [
+    "Aggregate may include feed and backfill; not an exact mapping to 10 parseFailed items",
+    "updatedAt is activity time, not lastSuccess",
+    "No access policy, gate, records or service settings were changed"
+  ],
+  "relatedReadReceipts": {
+    "vm": 40891802408,
+    "naturalStoreAndConsumer": 40891807573
+  }
+}

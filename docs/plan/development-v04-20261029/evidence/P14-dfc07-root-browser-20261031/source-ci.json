@@ -1,0 +1,79 @@
+{
+  "head": "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29",
+  "deployment": {
+    "id": "dpl_9xD89TtRmSjXLQNx3vULPLjd2rwW",
+    "url": "portfolio-platform-kck474zan-safariarash7777-4463s-projects.vercel.app",
+    "state": "READY",
+    "target": null,
+    "gitRef": "codex/p14-company-options-20261030",
+    "observedBy": "root Vercel connector"
+  },
+  "ci": {
+    "run": 41144008341,
+    "jobs": [
+      {
+        "id": 124364709468,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124364709784,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124364709822,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124364709859,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124365983009,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "actualCheckoutSeenInDecodedCoreLog": "a181d563e7addb015dc106c9b128e4b37fb68429",
+    "parents": [
+      "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+      "dfc07c7309cdbaa3fec3cca93e20ef35e9332b29"
+    ],
+    "mergeTree": "372ed6b3b2b55cee39c5a71e95a6d6b1d29ef7fe",
+    "headTree": "372ed6b3b2b55cee39c5a71e95a6d6b1d29ef7fe"
+  },
+  "codeDeltaVsCd": [
+    "Source onCancel/onClose propagation only",
+    "generated bundle and manifest"
+  ],
+  "actualUi": {
+    "bothLayoutsNestedEscape": {
+      "dialogsBefore": 2,
+      "dialogsAfter": 1,
+      "remaining": "expanded quarterly chart",
+      "focus": "same Q4 FY1404 source button"
+    },
+    "bothLayoutsNestedButton": "same parent chart and row focus retained",
+    "decisionRateGap": "two visible SVG subpaths with Tir1405 axis retained; not zero",
+    "dossierMobile": {
+      "viewport": 390,
+      "pageWidth": 375,
+      "sourceWidth": 366.4,
+      "sourceScrollWidth": 350,
+      "sourceClientWidth": 350
+    },
+    "dossierOrdinaryMobileEscape": "closed source and returned focus to same row",
+    "viewportReset": true
+  },
+  "limits": [
+    "all data authored EDU-02",
+    "P3 ASCII quarterly axes open",
+    "quantity/Fundamental/price gap not solved here",
+    "visual choice and full accessibility audit open",
+    "no main merge or production release",
+    "no financial source or user-journey acceptance inferred"
+  ]
+}

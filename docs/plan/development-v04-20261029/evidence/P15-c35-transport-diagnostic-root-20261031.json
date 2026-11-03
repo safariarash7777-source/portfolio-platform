@@ -1,0 +1,14 @@
+{
+  "intent": "transport-diagnostic-after-c35-metadata-io-failure",
+  "startedAt": "2026-10-31T02:14:46.387252+00:00",
+  "scope": "one existing SSH/strict knownhost + fixed Python print, no checkpoint/gate/dump/container/SQL",
+  "metadataRetried": false,
+  "backupTransferred": false,
+  "releaseAuthorized": false,
+  "exitCode": 0,
+  "stdoutMatched": true,
+  "stderrBytes": 0,
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "status": "PASS_FIXED_PRINT_ONLY",
+  "endedAt": "2026-10-31T02:14:49.195969+00:00"
+}

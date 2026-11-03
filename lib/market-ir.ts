@@ -1,4 +1,4 @@
-import { withDeadline } from "./deadline";
+import { withDeadline, DeadlineError } from "./deadline";
 import { hasRealPrice } from "./market-price";
 import { validTimestamp, parseSnapshotQuality, type SnapshotQuality } from "./market-quality";
 // دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
@@ -426,9 +426,9 @@ export function toMarket(payload: unknown): IrMarket {
 }
 
 /** منبعِ اول: آخرین اسنپ‌شاتِ بازار از Supabase (از همه‌جای دنیا در دسترس). */
-async function readSupabase(diag: IrDiag, signal: AbortSignal): Promise<IrMarket | null> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+async function readSupabase(diag: IrDiag, signal: AbortSignal, explicit?: StoredTransport): Promise<IrMarket | null> {
+  const url = explicit === undefined ? process.env.NEXT_PUBLIC_SUPABASE_URL : explicit.pair.url;
+  const anon = explicit === undefined ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : explicit.pair.anon;
   if (!url || !anon) return null;
   diag.supabaseConfigured = true;
   const res = await fetch(
@@ -437,14 +437,19 @@ async function readSupabase(diag: IrDiag, signal: AbortSignal): Promise<IrMarket
       headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
       cache: "no-store",
       signal,
+      ...(explicit === undefined ? {} : { method: "GET", redirect: "error" as const, credentials: "omit" as const }),
     }
   );
   diag.reached = true;
   diag.status = res.status;
-  if (!res.ok) { diag.error = `http_${res.status}`; return null; }
+  if (!res.ok) { diag.error = `http_${res.status}`; if (explicit) explicit.reason = "http"; return null; }
+  if (explicit) explicit.reason = "body";
   const rows = (await res.json()) as Array<{ payload?: unknown }>;
+  if (explicit && (!Array.isArray(rows) || rows.length > 1 || (rows.length === 1 && (!rows[0] || typeof rows[0] !== "object" || Array.isArray(rows[0]) || !Object.hasOwn(rows[0], "payload"))))) {
+    diag.error = "empty_source"; return null;
+  }
   const payload = Array.isArray(rows) && rows[0] ? rows[0].payload : null;
-  if (!payload) { diag.error = "empty_source"; return null; }
+  if (!payload) { diag.error = "empty_source"; if (explicit) explicit.reason = payload == null ? "absent" : "body"; return null; }
   const data = toMarket(payload);
   if (!data.ok) diag.error = "empty_source";
   return data.ok ? data : null;
@@ -453,7 +458,10 @@ async function readSupabase(diag: IrDiag, signal: AbortSignal): Promise<IrMarket
 // DB-only views must not borrow the legacy reader's relay cache or in-flight job.
 let storedInflight: Promise<IrMarket | null> | null = null;
 /** Read the stored snapshot only; any failed/absent read remains unavailable. */
-export function getStoredIrMarket(): Promise<IrMarket | null> {
+export function getStoredIrMarket(): Promise<IrMarket | null>;
+export function getStoredIrMarket(options: StoredMarketReadOverride): Promise<StoredMarketReadResult>;
+export function getStoredIrMarket(options?: StoredMarketReadOverride): Promise<IrMarket | null> | Promise<StoredMarketReadResult> {
+  if (options !== undefined) return readExplicitStoredMarket(options);
   if (storedInflight) return storedInflight;
   const diag: IrDiag = {
     at: Date.now(), source: null, supabaseConfigured: false, relayUrlConfigured: false,
@@ -465,6 +473,73 @@ export function getStoredIrMarket(): Promise<IrMarket | null> {
     return signal.aborted ? null : data;
   }, READ_TIMEOUT_MS).catch(() => null).finally(() => { storedInflight = null; });
   return storedInflight;
+}
+
+/** Explicit transport input from a trusted server selector; no environment resolution here. */
+export interface StoredMarketReadOverride {
+  readonly pair: Readonly<{ url: string; anon: string; expiresAt: number }> | null;
+}
+export interface StoredMarketReadResult {
+  readonly data: IrMarket | null;
+  readonly state: "read" | "absent" | "error" | "timeout";
+  readonly reason: "configuration" | "http" | "body" | "request" | "absent" | "deadline" | null;
+  readonly status: number | null;
+  readonly readAt: number;
+}
+type StoredPair = NonNullable<StoredMarketReadOverride["pair"]>;
+interface StoredTransport { pair: StoredPair; reason: StoredMarketReadResult["reason"] }
+// No result cache. Separate from all legacy cache, cooldown, diagnostics and inflight state.
+const explicitStoredInflight = new Map<string, Promise<StoredMarketReadResult>>();
+const storedResult = (state: StoredMarketReadResult["state"], reason: StoredMarketReadResult["reason"], status: number | null = null, data: IrMarket | null = null): StoredMarketReadResult => ({ data, state, reason, status, readAt: Date.now() });
+const unexpired = (pair: StoredPair) => pair.expiresAt > Date.now() / 1000;
+function captureStoredPair(options: StoredMarketReadOverride): StoredPair | null {
+  try {
+    const { url, anon, expiresAt } = options.pair!;
+    if (typeof url !== "string" || url !== url.trim() || typeof anon !== "string" || !anon || anon !== anon.trim() || !Number.isFinite(expiresAt)) return null;
+    const target = new URL(url);
+    if (target.protocol !== "https:" || target.username || target.password || target.search || target.hash) return null;
+    const pair = Object.freeze({ url, anon, expiresAt });
+    return unexpired(pair) ? pair : null;
+  } catch { return null; }
+}
+async function readExplicitStoredMarket(options: StoredMarketReadOverride): Promise<StoredMarketReadResult> {
+  // Capture before the first asynchronous boundary; never retain caller-owned options.
+  const pair = captureStoredPair(options);
+  if (!pair) return storedResult("error", "configuration");
+  const started = performance.now();
+  try {
+    return await withDeadline(async signal => {
+      const material = new TextEncoder().encode(JSON.stringify(["explicit-stored", pair.url, pair.anon]));
+      let digest: ArrayBuffer;
+      try { digest = await globalThis.crypto.subtle.digest("SHA-256", material); }
+      finally { material.fill(0); }
+      if (signal.aborted) return storedResult("timeout", "deadline");
+      if (!unexpired(pair)) return storedResult("error", "configuration");
+      const binding = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+      let task = explicitStoredInflight.get(binding);
+      if (!task) {
+        const remaining = READ_TIMEOUT_MS - (performance.now() - started);
+        if (remaining <= 0) return storedResult("timeout", "deadline");
+        const diag: IrDiag = { at: Date.now(), source: null, supabaseConfigured: false, relayUrlConfigured: false, reached: false, status: null, ok: false, fromCache: false, ageSec: null, counts: null, error: null, ms: 0 };
+        const transport: StoredTransport = { pair, reason: "request" };
+        const owned = withDeadline(async taskSignal => {
+          if (taskSignal.aborted) return storedResult("timeout", "deadline");
+          if (!unexpired(pair)) return storedResult("error", "configuration");
+          const data = await readSupabase(diag, taskSignal, transport);
+          if (taskSignal.aborted) return storedResult("timeout", "deadline", diag.status);
+          if (!unexpired(pair)) return storedResult("error", "configuration", diag.status);
+          return data ? storedResult("read", null, diag.status, data) : storedResult(transport.reason === "absent" ? "absent" : "error", transport.reason, diag.status);
+        }, remaining).catch(error => storedResult(error instanceof DeadlineError ? "timeout" : "error", error instanceof DeadlineError ? "deadline" : transport.reason, diag.status));
+        task = owned.finally(() => { if (explicitStoredInflight.get(binding) === task) explicitStoredInflight.delete(binding); });
+        explicitStoredInflight.set(binding, task);
+      }
+      const result = await task;
+      if (signal.aborted) return storedResult("timeout", "deadline");
+      return unexpired(pair) ? result : storedResult("error", "configuration");
+    }, READ_TIMEOUT_MS);
+  } catch (error) {
+    return storedResult(error instanceof DeadlineError ? "timeout" : "error", error instanceof DeadlineError ? "deadline" : "configuration");
+  }
 }
 
 /** منبعِ دوم (فقط وقتی Supabase نبود/خالی بود): fetchِ زندهٔ رله. */

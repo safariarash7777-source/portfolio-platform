@@ -1,0 +1,18 @@
+{
+  "at": "2026-10-30T12:46:34.753196+00:00",
+  "readOnly": true,
+  "repositoryVisibilityVerified": "public",
+  "productReadiness": "NOT_READY_FOR_RELEASE",
+  "primaryChanged": false,
+  "callbackOrProviderCalled": false,
+  "checksPerformed": [
+    "installed ACL",
+    "RLS policy and trigger presence",
+    "canonical payment schema"
+  ],
+  "finding": "trusted server-issued purchase binding still requires remediation; no live exploit claimed",
+  "privateWitnessSha256": "8e566e1a86dc7a92c0bb7423f498789d0b6546046dab650ab6547622310ecfbe",
+  "ownerReviewPath": "C:\\Users\\Asus\\Documents\\ChatGPT\\\u062a\u0648\u0633\u0639\u0647 \u0633\u0627\u06cc\u062a\\outputs\\p05-webinar-callback-binding-20261030\\p05-selfhost-schema-acl-root-full-20261030.json",
+  "remediationOwner": "existing A",
+  "publicDetailPolicy": "redacted active-service security witness; original is retained for owner/advisor review"
+}

@@ -5,6 +5,7 @@ coordinator independently verifies the encrypted backup. This script cannot
 attest local DPAPI. No automatic replay, no role/registry bootstrap or rollback.
 """
 import datetime
+import base64
 import hashlib
 import json
 import os
@@ -12,6 +13,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import types
 
 SOURCE = 'portfolio-stage-db-1'
 SOURCE_ID = '9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c'
@@ -23,6 +25,27 @@ HELPER_SHA = '1f1454f9aea632609c002335e628c2f463f96f28cb131bc95c2ff6f2bda2a9f2'
 CHECKPOINT = Path('/root/portfolio-recovery-backups') / STAMP
 ARTIFACTS = CHECKPOINT / 'consultation-install'
 REPO = Path(__file__).resolve().parents[3]
+REVIEW_CONSUMER_SHA = '18dcdff88cb8d41f8c5ee9e8236e0fdba9e7a212ef8c1044769165cc8010ac2c'
+
+
+def review_corrected_checkpoint():
+    """Explicit read-only mode, independent of the frozen old apply checkpoint.
+
+    Only a pinned in-memory bundle is accepted on stdin. It cannot authorize or
+    reach the SQL/container mutation branches below. It writes no receipt file.
+    """
+    raw = sys.stdin.buffer.read(131073)
+    check(len(raw) <= 131072, 'review_payload_size')
+    packet = json.loads(raw)
+    check(type(packet) is dict and set(packet) == {'consumer', 'gate', 'binding'}, 'review_payload_keys')
+    check(isinstance(packet['consumer'], str) and len(packet['consumer']) <= 65536,
+          'review_consumer_size')
+    code = base64.b64decode(packet['consumer'], validate=True)
+    check(digest(code) == REVIEW_CONSUMER_SHA, 'review_consumer_changed')
+    module = types.ModuleType('reviewed_checkpoint_consumer')
+    exec(compile(code, '/in-memory/corrected-checkpoint-consumer.py', 'exec'), module.__dict__)
+    return module.review('install-native.review-corrected.v1',
+                         {'gate': packet['gate'], 'binding': packet['binding']})
 
 # Full preexisting definitions/ACL inventory, excluding ONLY this package's
 # separately collision-checked namespace and public objects. No table row data.
@@ -122,6 +145,9 @@ def digest(value):
 
 
 def main():
+    if sys.argv[1:] == ['--review-corrected-checkpoint']:
+        print(json.dumps(review_corrected_checkpoint()))
+        return
     import fcntl
     check(sys.argv[1:] in (['--target-copy'], ['--source']), 'explicit_execution_mode_required')
     mode = 'copy' if sys.argv[1] == '--target-copy' else 'source'

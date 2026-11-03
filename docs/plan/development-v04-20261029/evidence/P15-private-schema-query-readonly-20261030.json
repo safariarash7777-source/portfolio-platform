@@ -1,0 +1,20 @@
+{
+  "exitCode": 0,
+  "schemas": 3,
+  "relations": 0,
+  "functions": 19,
+  "canonicalSha256": "2ffde478e069062cbe246498d8f878fb015125e449dd4d4bcafc69886e63e602",
+  "fields": [
+    "acl",
+    "name",
+    "owner",
+    "schema",
+    "arguments",
+    "proconfig",
+    "dependencies",
+    "definitionMd5",
+    "securityDefiner",
+    "effectiveRoleExecute"
+  ],
+  "readOnly": true
+}

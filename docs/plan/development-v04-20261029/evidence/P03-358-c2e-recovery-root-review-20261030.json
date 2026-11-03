@@ -1,0 +1,23 @@
+{
+  "status": "CHANGES_REQUESTED_STATIC_CONTRACT_REVIEW",
+  "pr": "https://github.com/safariarash7777-source/portfolio-platform/pull/358",
+  "reviewedSource": "c2eeb8bfec0265e551e619083edc705a79b9b971",
+  "method": "Read pinned Git source; no runtime reproduction or destination acceptance claimed",
+  "file": "lib/consultation/ticketIntent.ts",
+  "function": "recoverTicketIntent",
+  "finding": "Only actor identity is checked before try. Revoked/disabled advisor or changed selected relationship can fail parent/lookup validation inside try, then catch returns the preserved private intent and known receipt as pending. Permission loss and relationship change must not be collapsed into ordinary readback unavailability.",
+  "requiredChange": "Authorize the same relationship and history visibility before any return of private intent, outside the catch for recoverable lookup failures. Preserve member-owned history after consent revocation; deny revoked/disabled advisor and changed relationship without returning private body.",
+  "requestedVerification": [
+    "same advisor identity with revoked relationship",
+    "same advisor identity with disabled advisor role",
+    "same identity with changed selected relationship",
+    "member retains own history after revocation",
+    "authorized unavailable read preserves exact intent bytes and existing receipt"
+  ],
+  "owner": "existing A",
+  "handoff": "sent to existing A thread; not a completed fix",
+  "serviceRightState": "not_connected",
+  "writeEnabled": false,
+  "backendApiSchemaOrWriterAuthorized": false,
+  "destinationMutation": false
+}

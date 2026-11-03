@@ -13,8 +13,8 @@
 //   sales_rate «ریال بر واحد» — بدون تبدیل، فقط برچسب.
 // - خروجی متن با ارقام لاتین؛ لایهٔ UI با toPersianDigits نمایش می‌دهد.
 
-import type { CodalN30Data } from "@/lib/fundamental/types";
-import { withKnownMonthlyQuantities } from './monthly-quantity';
+import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
+import { withKnownMonthlyQuantities, monthlyMarket, monthlyMarketUnavailableReason, type MonthlyMarketUnavailableReason } from './monthly-quantity';
 import { meaningfulRate } from './monthlyReport';
 
 /* ── واحدها ── */
@@ -49,13 +49,13 @@ export interface CardMonth {
   month: string;
   /** فروش ماه — میلیون ریال (واحد مبدأ) */
   totalAmount: number;
-  domesticAmount: number;
-  exportAmount: number;
+  domesticAmount: number | null;
+  exportAmount: number | null;
 }
 
 export interface CardProduct {
   name: string;
-  market: "داخلی" | "صادراتی";
+  market: N30Market;
   productionQty: number | null;
   salesQty: number | null;
   salesRate: number | null; // ریال بر واحد
@@ -74,6 +74,7 @@ export interface FundamentalCardData {
   topProductName: string | null;
   /** سهم صادرات از فروش آخرین ماه (٪) */
   exportSharePct: number | null;
+  marketUnavailableReason: MonthlyMarketUnavailableReason;
   /** روایت لایهٔ ۱ — template قطعی؛ دادهٔ غایب = بند حذف */
   narrative: string | null;
   /** سری ۱۲ ماه اخیر (قدیم←جدید) برای روند لایهٔ ۲ */
@@ -185,14 +186,17 @@ export function buildFundamentalCard(
     let dom = 0, exp = 0;
     for (const p of r.products) {
       const amt = p.sales_amount ?? 0;
-      if (p.market === "صادراتی") exp += amt;
-      else dom += amt;
+      const market = monthlyMarket(p);
+      if (market === "صادراتی") exp += amt;
+      else if (market === "داخلی") dom += amt;
     }
+    const unavailable = monthlyMarketUnavailableReason(r);
+    const splitUnavailable = unavailable !== null && unavailable !== "signed-market-adjustment";
     return {
       month,
-      totalAmount: r.period_total_amount ?? dom + exp,
-      domesticAmount: dom,
-      exportAmount: exp,
+      totalAmount: r.period_total_amount ?? r.products.reduce((sum, p) => sum + (p.sales_amount ?? 0), 0),
+      domesticAmount: splitUnavailable ? null : dom,
+      exportAmount: splitUnavailable ? null : exp,
     };
   });
 
@@ -211,6 +215,7 @@ export function buildFundamentalCard(
   let topProductRate: number | null = null;
   let exportSharePct: number | null = null;
   let prodSalesGap: number | null = null;
+  const marketUnavailableReason = latest ? monthlyMarketUnavailableReason(latest) : null;
   const latestProducts: CardProduct[] = [];
   if (latest) {
     let best = -Infinity;
@@ -219,7 +224,7 @@ export function buildFundamentalCard(
     for (const p of latest.products) {
       latestProducts.push({
         name: p.product_name,
-        market: p.market,
+        market: monthlyMarket(p),
         productionQty: p.production_qty,
         salesQty: p.sales_qty,
         salesRate: p.sales_rate,
@@ -228,7 +233,7 @@ export function buildFundamentalCard(
       const amt = p.sales_amount ?? null;
       if (amt != null) {
         all += amt;
-        if (p.market === "صادراتی") exp += amt;
+        if (monthlyMarket(p) === "صادراتی") exp += amt;
         if (amt > best) {
           best = amt;
           topProductName = p.product_name;
@@ -240,7 +245,7 @@ export function buildFundamentalCard(
         gapSeen++;
       }
     }
-    exportSharePct = all > 0 ? pctOf(exp, all) : null;
+    exportSharePct = !marketUnavailableReason && all > 0 ? pctOf(exp, all) : null;
     prodSalesGap = gapSeen > 0 ? gap : null;
   }
 
@@ -265,6 +270,7 @@ export function buildFundamentalCard(
     topProductName,
     exportSharePct,
     narrative,
+    marketUnavailableReason,
     months12,
     monthlyYoY,
     prodSalesGap,

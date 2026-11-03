@@ -1,0 +1,31 @@
+{
+  "source": "6ccb106ace4711be7359c7fc8c8d6ab33670f719",
+  "officialFilesUnchanged": true,
+  "files": [
+    {
+      "path": "official-p03-legacy-diagnostic-receipt.zip",
+      "bytes": 1601,
+      "sha256": "531f8ba942e7b49e1dd4fbd0366dddb1cf5135e9351432eef11d2c5bf2afb60b"
+    },
+    {
+      "path": "official-p03-legacy-diagnostic-receipt.json",
+      "bytes": 3683,
+      "sha256": "5e5eceeb341ff20f1712e872f7ee63e22af2867caf27205fe9176abaff2a16fe"
+    },
+    {
+      "path": "first-run-failure-sanitized.json",
+      "bytes": 1500,
+      "sha256": "36befae6b4369d735602254157510cd63eadf4979fbe5c6b503ca850f809b60a"
+    },
+    {
+      "path": "successful-run-sanitized.json",
+      "bytes": 9419,
+      "sha256": "4dfb1b679b535e1ed36d83997f3598132513a3268481bb66c03e6978592891d8"
+    },
+    {
+      "path": "REVIEW.fa.md",
+      "bytes": 6121,
+      "sha256": "0dc61ad5fb3d2323c051974bcf3ada8035fee6020219915cdccb07256d80ac30"
+    }
+  ]
+}

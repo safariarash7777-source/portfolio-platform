@@ -1,0 +1,17 @@
+{
+  "status": "INTEGRATED_DRAFT_ONLY_NOT_ROOT_RUNTIME_ACCEPTED",
+  "head": "261c667fab744f2d16ed7099545d427268e88195",
+  "tree": "e91b5dfa004fdf76a90afc12c11367b89650323f",
+  "source": "6c42d1d7394ebb6af09b6282702fefd4e15c6c20",
+  "parent": "c6b0fa0794195269f7b5fbb841fff9d081a2f57e",
+  "reviewedPaths": 19,
+  "nonConfig18ExactSource": true,
+  "configResolution": "union of five false branch stops; all other settings and two crons unchanged",
+  "member7bMerged": false,
+  "mainProductionChanged": false,
+  "mergedTreeCi": "PENDING_AFTER_PUSH",
+  "limits": [
+    "Preview acceptance belongs to 6c42, not this integrated root tree",
+    "No member, primary install or business service entitlement acceptance"
+  ]
+}

@@ -1,0 +1,876 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "bounded build-directory allocation and exact mount/cwd dependency metadata; no command lines/env/files dumped",
+  "result": {
+    "at": "2026-10-30T11:34:56.861332+00:00",
+    "duExitCode": 0,
+    "directorySizes": [
+      {
+        "path": "/opt/portfolio-auth219-20261002/releases/9b33fe4dacbddabf96dce0c6a27d8e9a9f03c4f5",
+        "allocatedBytes": 993402880
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/releases/07f05bdf1f1e2c459786e307cf8c3d0fc324eef3",
+        "allocatedBytes": 494751744
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2",
+        "allocatedBytes": 993542144
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/releases",
+        "allocatedBytes": 2481700864
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/profiles/default",
+        "allocatedBytes": 496521216
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/profiles",
+        "allocatedBytes": 496525312
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/public/auth-profiles",
+        "allocatedBytes": 53248
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/public",
+        "allocatedBytes": 73728
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/private",
+        "allocatedBytes": 225280
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/docs",
+        "allocatedBytes": 39022592
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/node_modules",
+        "allocatedBytes": 4096
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/app",
+        "allocatedBytes": 1576960
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/supabase",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/.claude",
+        "allocatedBytes": 1933312
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/scripts",
+        "allocatedBytes": 1531904
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/.github",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/services",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/.planning",
+        "allocatedBytes": 155648
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/.next",
+        "allocatedBytes": 444538880
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/public",
+        "allocatedBytes": 1286144
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/relay",
+        "allocatedBytes": 913408
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/sql",
+        "allocatedBytes": 520192
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/components",
+        "allocatedBytes": 1556480
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source/lib",
+        "allocatedBytes": 2908160
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002/source",
+        "allocatedBytes": 496513024
+      },
+      {
+        "path": "/opt/portfolio-auth219-20261002",
+        "allocatedBytes": 3475148800
+      },
+      {
+        "path": "/opt/portfolio-accept195/private",
+        "allocatedBytes": 65536
+      },
+      {
+        "path": "/opt/portfolio-accept195/cache/images",
+        "allocatedBytes": 28672
+      },
+      {
+        "path": "/opt/portfolio-accept195/cache/fetch-cache",
+        "allocatedBytes": 53248
+      },
+      {
+        "path": "/opt/portfolio-accept195/cache",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/docs",
+        "allocatedBytes": 37642240
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/node_modules",
+        "allocatedBytes": 739893248
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/app",
+        "allocatedBytes": 1564672
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/supabase",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/.claude",
+        "allocatedBytes": 1933312
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/scripts",
+        "allocatedBytes": 1482752
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/.github",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/services",
+        "allocatedBytes": 65536
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/.planning",
+        "allocatedBytes": 155648
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/.next",
+        "allocatedBytes": 421769216
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/public",
+        "allocatedBytes": 1286144
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/relay",
+        "allocatedBytes": 913408
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/sql",
+        "allocatedBytes": 520192
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/components",
+        "allocatedBytes": 1486848
+      },
+      {
+        "path": "/opt/portfolio-accept195/source/lib",
+        "allocatedBytes": 2793472
+      },
+      {
+        "path": "/opt/portfolio-accept195/source",
+        "allocatedBytes": 1211998208
+      },
+      {
+        "path": "/opt/portfolio-accept195",
+        "allocatedBytes": 1251098624
+      },
+      {
+        "path": "/opt/portfolio-demo844/cache-next-cfa4e21/images",
+        "allocatedBytes": 20480
+      },
+      {
+        "path": "/opt/portfolio-demo844/cache-next-cfa4e21",
+        "allocatedBytes": 24576
+      },
+      {
+        "path": "/opt/portfolio-demo844/public",
+        "allocatedBytes": 8192
+      },
+      {
+        "path": "/opt/portfolio-demo844/private",
+        "allocatedBytes": 73728
+      },
+      {
+        "path": "/opt/portfolio-demo844/cache/images",
+        "allocatedBytes": 20480
+      },
+      {
+        "path": "/opt/portfolio-demo844/cache",
+        "allocatedBytes": 24576
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/docs",
+        "allocatedBytes": 39010304
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/node_modules",
+        "allocatedBytes": 4096
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/app",
+        "allocatedBytes": 1576960
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/supabase",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/.claude",
+        "allocatedBytes": 1933312
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/scripts",
+        "allocatedBytes": 1507328
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/.github",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/services",
+        "allocatedBytes": 65536
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/.planning",
+        "allocatedBytes": 155648
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/.next",
+        "allocatedBytes": 444010496
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/public",
+        "allocatedBytes": 1286144
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/relay",
+        "allocatedBytes": 913408
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/sql",
+        "allocatedBytes": 520192
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/components",
+        "allocatedBytes": 1556480
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21/lib",
+        "allocatedBytes": 2899968
+      },
+      {
+        "path": "/opt/portfolio-demo844/source-next-cfa4e21",
+        "allocatedBytes": 495935488
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/docs",
+        "allocatedBytes": 38604800
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/node_modules",
+        "allocatedBytes": 4096
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/app",
+        "allocatedBytes": 1568768
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/supabase",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/.claude",
+        "allocatedBytes": 1933312
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/scripts",
+        "allocatedBytes": 1507328
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/.github",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/services",
+        "allocatedBytes": 65536
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/.planning",
+        "allocatedBytes": 155648
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/.next",
+        "allocatedBytes": 436457472
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/public",
+        "allocatedBytes": 1286144
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/relay",
+        "allocatedBytes": 913408
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/sql",
+        "allocatedBytes": 520192
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/components",
+        "allocatedBytes": 1503232
+      },
+      {
+        "path": "/opt/portfolio-demo844/source/lib",
+        "allocatedBytes": 2801664
+      },
+      {
+        "path": "/opt/portfolio-demo844/source",
+        "allocatedBytes": 487817216
+      },
+      {
+        "path": "/opt/portfolio-demo844",
+        "allocatedBytes": 983957504
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/private",
+        "allocatedBytes": 20480
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/docs",
+        "allocatedBytes": 39022592
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/node_modules",
+        "allocatedBytes": 4096
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/app",
+        "allocatedBytes": 1576960
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/supabase",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/.claude",
+        "allocatedBytes": 1933312
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/scripts",
+        "allocatedBytes": 1531904
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/.github",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/services",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/.planning",
+        "allocatedBytes": 155648
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/.next",
+        "allocatedBytes": 444551168
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/public",
+        "allocatedBytes": 1286144
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/relay",
+        "allocatedBytes": 913408
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/sql",
+        "allocatedBytes": 520192
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/components",
+        "allocatedBytes": 1556480
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source/lib",
+        "allocatedBytes": 2908160
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002/source",
+        "allocatedBytes": 496525312
+      },
+      {
+        "path": "/opt/portfolio-auth-next-build-20261002",
+        "allocatedBytes": 496553984
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/docs",
+        "allocatedBytes": 37961728
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/node_modules",
+        "allocatedBytes": 4096
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/app",
+        "allocatedBytes": 1572864
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/supabase",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/.claude",
+        "allocatedBytes": 1933312
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/scripts",
+        "allocatedBytes": 1482752
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/.github",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/services",
+        "allocatedBytes": 65536
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/.planning",
+        "allocatedBytes": 155648
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/.next",
+        "allocatedBytes": 438530048
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/public",
+        "allocatedBytes": 1286144
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/relay",
+        "allocatedBytes": 913408
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/sql",
+        "allocatedBytes": 520192
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/components",
+        "allocatedBytes": 1503232
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source/lib",
+        "allocatedBytes": 2834432
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002/source",
+        "allocatedBytes": 489254912
+      },
+      {
+        "path": "/opt/portfolio-p04-build-20261002",
+        "allocatedBytes": 490008576
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/docs",
+        "allocatedBytes": 38588416
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/node_modules",
+        "allocatedBytes": 4096
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/app",
+        "allocatedBytes": 1568768
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/supabase",
+        "allocatedBytes": 86016
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/.claude",
+        "allocatedBytes": 1933312
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/scripts",
+        "allocatedBytes": 1503232
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/.github",
+        "allocatedBytes": 69632
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/services",
+        "allocatedBytes": 65536
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/.planning",
+        "allocatedBytes": 155648
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/.next",
+        "allocatedBytes": 436240384
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/public",
+        "allocatedBytes": 1286144
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/relay",
+        "allocatedBytes": 913408
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/sql",
+        "allocatedBytes": 520192
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/components",
+        "allocatedBytes": 1503232
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source/lib",
+        "allocatedBytes": 2801664
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build/source",
+        "allocatedBytes": 487579648
+      },
+      {
+        "path": "/opt/portfolio-candidate844-build",
+        "allocatedBytes": 489168896
+      }
+    ],
+    "optMounts": [
+      {
+        "container": "fx-dashboard",
+        "state": "running",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-tindex-20261013-backup",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "portfolio-auth219-20261002-app",
+        "state": "exited",
+        "source": "/opt/portfolio-auth219-20261002/releases/2e44dc1d7008acf0b0c76e8679238514f4f7bab2/main/source",
+        "destination": "/app",
+        "rw": true
+      },
+      {
+        "container": "portfolio-auth219-20261002-app",
+        "state": "exited",
+        "source": "/opt/portfolio-accept195/source/node_modules",
+        "destination": "/app/node_modules",
+        "rw": false
+      },
+      {
+        "container": "portfolio-auth219-20261002-app",
+        "state": "exited",
+        "source": "/opt/portfolio-auth219-20261002/egress-guard.cjs",
+        "destination": "/guard.cjs",
+        "rw": false
+      },
+      {
+        "container": "portfolio-auth219-20261002-gateway",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/62.60.191.24/62.60.191.24.crt",
+        "destination": "/cert/leaf.crt",
+        "rw": false
+      },
+      {
+        "container": "portfolio-auth219-20261002-gateway",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/62.60.191.24/62.60.191.24.key",
+        "destination": "/cert/leaf.key",
+        "rw": false
+      },
+      {
+        "container": "portfolio-auth219-20261002-gateway",
+        "state": "exited",
+        "source": "/opt/portfolio-auth219-20261002/public",
+        "destination": "/demo",
+        "rw": false
+      },
+      {
+        "container": "portfolio-auth219-20261002-gateway",
+        "state": "exited",
+        "source": "/opt/portfolio-auth219-20261002/Caddyfile",
+        "destination": "/etc/caddy/Caddyfile",
+        "rw": false
+      },
+      {
+        "container": "portfolio-auth219-20261002-sink",
+        "state": "running",
+        "source": "/opt/portfolio-auth219-20261002/source",
+        "destination": "/source",
+        "rw": false
+      },
+      {
+        "container": "portfolio-auth219-20261002-sink",
+        "state": "running",
+        "source": "/opt/portfolio-auth219-20261002/private",
+        "destination": "/private",
+        "rw": true
+      },
+      {
+        "container": "portfolio-auth219-20261002-sink",
+        "state": "running",
+        "source": "/opt/portfolio-auth219-20261002/sink.py",
+        "destination": "/sink.py",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-app",
+        "state": "restarting",
+        "source": "/opt/portfolio-demo844/source-next-cfa4e21",
+        "destination": "/app",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-app",
+        "state": "restarting",
+        "source": "/opt/portfolio-demo844/cache-next-cfa4e21",
+        "destination": "/app/.next/cache",
+        "rw": true
+      },
+      {
+        "container": "portfolio-demo844-app",
+        "state": "restarting",
+        "source": "/opt/portfolio-accept195/source/node_modules",
+        "destination": "/app/node_modules",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-app",
+        "state": "restarting",
+        "source": "/opt/portfolio-demo844/egress-guard.cjs",
+        "destination": "/sandbox/egress-guard.cjs",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-app-65c215b",
+        "state": "exited",
+        "source": "/opt/portfolio-demo844/source",
+        "destination": "/app",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-app-65c215b",
+        "state": "exited",
+        "source": "/opt/portfolio-demo844/cache",
+        "destination": "/app/.next/cache",
+        "rw": true
+      },
+      {
+        "container": "portfolio-demo844-app-65c215b",
+        "state": "exited",
+        "source": "/opt/portfolio-accept195/source/node_modules",
+        "destination": "/app/node_modules",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-app-65c215b",
+        "state": "exited",
+        "source": "/opt/portfolio-demo844/egress-guard.cjs",
+        "destination": "/sandbox/egress-guard.cjs",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-gateway",
+        "state": "running",
+        "source": "/opt/fx-dashboard/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/62.60.191.24/62.60.191.24.crt",
+        "destination": "/cert/leaf.crt",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-gateway",
+        "state": "running",
+        "source": "/opt/fx-dashboard/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/62.60.191.24/62.60.191.24.key",
+        "destination": "/cert/leaf.key",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-gateway",
+        "state": "running",
+        "source": "/opt/portfolio-demo844/public",
+        "destination": "/demo",
+        "rw": false
+      },
+      {
+        "container": "portfolio-demo844-gateway",
+        "state": "running",
+        "source": "/opt/portfolio-demo844/Caddyfile",
+        "destination": "/etc/caddy/Caddyfile",
+        "rw": false
+      },
+      {
+        "container": "portfolio-accept195-app",
+        "state": "restarting",
+        "source": "/opt/portfolio-accept195/source",
+        "destination": "/app",
+        "rw": false
+      },
+      {
+        "container": "portfolio-accept195-app",
+        "state": "restarting",
+        "source": "/opt/portfolio-accept195/cache",
+        "destination": "/app/.next/cache",
+        "rw": true
+      },
+      {
+        "container": "portfolio-accept195-app",
+        "state": "restarting",
+        "source": "/opt/portfolio-accept195/egress-guard.cjs",
+        "destination": "/sandbox/egress-guard.cjs",
+        "rw": false
+      },
+      {
+        "container": "portfolio-accept195-gateway",
+        "state": "running",
+        "source": "/opt/fx-dashboard/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/62.60.191.24/62.60.191.24.crt",
+        "destination": "/cert/leaf.crt",
+        "rw": false
+      },
+      {
+        "container": "portfolio-accept195-gateway",
+        "state": "running",
+        "source": "/opt/fx-dashboard/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/62.60.191.24/62.60.191.24.key",
+        "destination": "/cert/leaf.key",
+        "rw": false
+      },
+      {
+        "container": "portfolio-accept195-gateway",
+        "state": "running",
+        "source": "/opt/portfolio-accept195/Caddyfile",
+        "destination": "/etc/caddy/Caddyfile",
+        "rw": false
+      },
+      {
+        "container": "fx-dashboard-recovery01-status-backup",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-agent-health",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-agent-bonds",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-precise-data",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-cbi-agent-ui",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-agent-visibility",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "portfolio-stage-gateway-1",
+        "state": "running",
+        "source": "/opt/portfolio-staging/Preview.Caddyfile",
+        "destination": "/etc/caddy/Caddyfile",
+        "rw": false
+      },
+      {
+        "container": "fx-dashboard-before-annual-history",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-us-agent",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-us-vintages",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-before-publications",
+        "state": "exited",
+        "source": "/opt/fx-dashboard/data-health",
+        "destination": "/data-health",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-proxy",
+        "state": "running",
+        "source": "/opt/fx-dashboard/caddy-config",
+        "destination": "/config",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-proxy",
+        "state": "running",
+        "source": "/opt/fx-dashboard/caddy-data",
+        "destination": "/data",
+        "rw": true
+      },
+      {
+        "container": "fx-dashboard-proxy",
+        "state": "running",
+        "source": "/opt/fx-dashboard/config/Caddyfile",
+        "destination": "/etc/caddy/Caddyfile",
+        "rw": false
+      }
+    ],
+    "candidateRootProcesses": [],
+    "processArgumentsOrEnvRead": false,
+    "deleted": false
+  }
+}

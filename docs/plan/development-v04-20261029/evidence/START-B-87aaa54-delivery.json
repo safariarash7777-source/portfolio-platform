@@ -1,0 +1,74 @@
+{
+  "checkedAt": "2026-10-29T16:24:36.601437+00:00",
+  "owner": "01a17cdc-cf6b-7b82-882f-e5d04e837353/local",
+  "productSha": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+  "pullRequest": "https://github.com/safariarash7777-source/portfolio-platform/pull/330",
+  "merged": false,
+  "descriptionReadbackSha256": "4449fd5417c0e9f1a2c020d636c70505ce439ea3e192b1167a4a003595ef1b67",
+  "standardCI": {
+    "id": 40910174737,
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40910174737",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 123576022569,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 123576023175,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 123576023283,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 123576023659,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 123578748139,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "postgres17": {
+    "id": 40910174804,
+    "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40910174804",
+    "conclusion": "success",
+    "artifactId": 12914180306,
+    "artifactDownloadedAndRead": true,
+    "status": "PASS",
+    "testedSha": "87aaa541618a26e4d7ba9756e62114c1279e6939",
+    "postgresVersionNumber": 170011,
+    "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+    "environment": "disposable GitHub Actions PostgreSQL; synthetic data only",
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "scenarios": [
+      "immutable native actor/hash/body",
+      "other-admin/member/anon and service-role BYPASSRLS denial",
+      "actual component destroyed after v2 commit and remounted; GET-only recovery",
+      "v1 and its review retained; v2 unapproved",
+      "private text read back exactly",
+      "candidate rerun preserves existing workbook/review INSERT freeze"
+    ],
+    "authBoundary": "synthetic claims exercised under native authenticated SQL role; no real user session",
+    "productionTouched": false,
+    "modelCalls": 0,
+    "browserPersistentPrivateBody": false
+  },
+  "installation": "NOT_APPLIED",
+  "realAuthSession": "NOT_TESTED",
+  "productionBehavior": "NOT_VERIFIED",
+  "arashAcceptance": "NOT_ESTABLISHED",
+  "primaryTouched": false,
+  "modelCalls": 0,
+  "costBoundary": "Existing CI used; incremental infrastructure cost not assessed; no new paid service or model call"
+}

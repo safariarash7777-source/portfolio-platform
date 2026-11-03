@@ -1,0 +1,29 @@
+{
+  "status": "PASS_ROOT_EXACT_REUSE_REVIEW",
+  "head": "beb2701a4f26983fff8aadb46806afe18134f6fd",
+  "tree": "ae53145a5ea23880b504e31437efe59421092725",
+  "base": "c314c6f0b6fbc64c45047c65d376250fe3dcf89f",
+  "reused337": "bc781fc62b956f422e09b1494b59d18da4f93905",
+  "sourceFiles": [
+    "app/market/funds/page.test.ts",
+    "app/market/funds/page.tsx",
+    "components/market/FundComparisonPanel.test.tsx",
+    "components/market/FundComparisonPanel.tsx",
+    "components/market/FundsFullBoard.tsx",
+    "lib/core/fundComparison.test.ts",
+    "lib/core/fundComparison.ts"
+  ],
+  "allSevenCanonicalBaseBlobsEqualHistoricalBase": true,
+  "allSevenFinalBlobsEqualExisting337": true,
+  "privateIndexExact": true,
+  "manifestFiles": 27,
+  "zipSha256": "b2b061bf9d6736701bb32828db7990c84b7da9084024b0f65b48c356263ea1b6",
+  "sourceMutation": false,
+  "runtimeRead": false,
+  "ciOrPreview": false,
+  "limits": [
+    "Owner 22 mock/component/page cases are not live five-fund/browser acceptance.",
+    "342 stored rows receipt is historical; clocks and class unknown do not themselves drop rows.",
+    "Actual active build binding and actual cause of missing rows not attributed; new binding is a separate bounded child."
+  ]
+}

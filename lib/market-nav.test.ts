@@ -1,5 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
+import ts from "typescript";
 import {
   MARKET_SECTIONS,
   normalizeFa,
@@ -12,6 +15,43 @@ import {
   FUND_SORT_KEYS,
   type MarketSearchEntry,
 } from "./market-nav";
+
+test("a delayed real URL hook writer preserves a comparison selected after its render", () => {
+  const source = readFileSync(new URL("./useUrlState.ts", import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+  const targets: string[] = [];
+  const location = { pathname: "/market/funds", search: "?sort=faName" };
+  const hookModule = { exports: {} as { useUrlState: () => { set: (updates: Record<string, string | null>) => void } } };
+  runInNewContext(output, {
+    module: hookModule, exports: hookModule.exports, URLSearchParams, window: { location },
+    require: (name: string) => {
+      if (name === "react") return { useCallback: (fn: unknown) => fn };
+      if (name === "next/navigation") return {
+        useRouter: () => ({ replace: (href: string) => targets.push(href) }),
+        usePathname: () => "/market/funds", useSearchParams: () => new URLSearchParams("sort=faName"),
+      };
+      throw new Error(`unexpected import: ${name}`);
+    },
+  });
+  const delayedWriter = hookModule.exports.useUrlState().set;
+  const selection = JSON.stringify(["عیار", "طلا", "", "", ""]);
+  location.search = `?sort=faName&compare=${encodeURIComponent(selection)}`;
+  delayedWriter({ q: "طلا" });
+  const result = new URL(targets[0], "https://site.test");
+  assert.equal(result.searchParams.get("compare"), selection);
+  assert.equal(result.searchParams.get("q"), "طلا");
+  assert.equal(result.searchParams.get("sort"), "faName");
+});
+
+test("fund comparison selections survive the existing validated symbol/account return path", () => {
+  const compare = JSON.stringify(["عیار", "طلا", "", "", ""]);
+  const path = resolveBackTarget(`/market/funds?compare=${encodeURIComponent(compare)}&q=طلا&dir=asc`, { href: "/market", label: "بازار" });
+  const url = new URL(path.href, "https://site.test");
+  assert.equal(url.searchParams.get("compare"), compare);
+  assert.equal(url.searchParams.get("q"), "طلا");
+  assert.equal(url.searchParams.get("dir"), "asc");
+  assert.equal(new URL(resolveBackTarget(`/market/stocks?compare=${encodeURIComponent(compare)}`, { href: "/market", label: "بازار" }).href, "https://site.test").searchParams.has("compare"), false);
+});
 
 /* ── بخش‌ها ───────────────────────────────────────────────────────────────── */
 

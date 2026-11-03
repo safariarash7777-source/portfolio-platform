@@ -1,0 +1,60 @@
+{
+  "status": "PASS_LIMITED_REVIEW_AND_DRAFT_INTEGRATION",
+  "head": "55b35211acb30f8d2c7632eb014daf95065d47ab",
+  "headTree": "476ea8086ed4aa46e60c452345d07a177533cb3d",
+  "source": "d480954ad578a9ce1f6a77c81471e6e446de385b",
+  "run": 41191281868,
+  "pr": 382,
+  "actualCheckout": "f963583e7bc07fdc67375f4b774f204b279991e8",
+  "actualTree": "e0d10b1b49cafd429dcbba09bb0f526d048c6aa2",
+  "actualParents": [
+    "26270dff4ed835b715f131356d1bd715d2b35adc",
+    "55b35211acb30f8d2c7632eb014daf95065d47ab"
+  ],
+  "rootDraftIntegration": "953ae54914f2255813268d3eef8039bd88ae6294",
+  "rootIntegrationTreeExactActualCi": true,
+  "changedPaths": 9,
+  "ops8ExactSource": true,
+  "configOnlyNewFalseBranch": true,
+  "fullCoreAndDbLogsReadByRoot": true,
+  "jobs": [
+    {
+      "id": 124508415145,
+      "conclusion": "success"
+    },
+    {
+      "id": 124508415291,
+      "conclusion": "success"
+    },
+    {
+      "id": 124508415348,
+      "conclusion": "success"
+    },
+    {
+      "id": 124508415404,
+      "conclusion": "success"
+    },
+    {
+      "id": 124509399977,
+      "conclusion": "success"
+    }
+  ],
+  "independentOfflineReviewer": "existing advisor; fresh processes Windows",
+  "offlineSuites": [
+    55,
+    16,
+    34,
+    53
+  ],
+  "sourcePacketSha256": "379fb64ab705c6606be83b98659fce3b813b6c79ede8db65c6b75ee3b6f9e0f5",
+  "cryptoFramingVerifyAuthBeforeDecryptPinsPolicyTimersSshDestinationPreserved": true,
+  "outputOnlyTypedEnumsAndNullableObservations": true,
+  "noRawStderrOrExceptionText": true,
+  "nativeProcessOrDeadlineTest": "NOT_RUN",
+  "pastCaptureCause": "UNATTRIBUTED",
+  "newCaptureOrVerifyExecuted": false,
+  "newAttemptPolicy": "REVIEW_ONLY",
+  "primaryInstall": "NOT_APPLIED",
+  "hermesChanged": false,
+  "mainProductionChanged": false
+}

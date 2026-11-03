@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "path": "femeli-fundamental-mobile.png",
+      "bytes": 599390,
+      "sha256": "770c198ef0c497c041384c69f29fcbba24599a81a542cc98ac15e4310e33896a"
+    },
+    {
+      "path": "folad-fundamental-desktop.png",
+      "bytes": 673646,
+      "sha256": "7d9cf1154b2625ff145f9ca2e8c863babda39dc2dde675028da663618c0fb8e3"
+    },
+    {
+      "path": "folad-source-open.png",
+      "bytes": 322937,
+      "sha256": "09a6174ee351210c3b636f77f7767255c52c4eed86677d9c90f0e39f54529d11"
+    },
+    {
+      "path": "funds-five-mobile.png",
+      "bytes": 1608560,
+      "sha256": "6af22ce622ea8c3eb61c55d38de37147374e9ab3430158ef50ff5536bd260a92"
+    },
+    {
+      "path": "receipt.json",
+      "bytes": 6801,
+      "sha256": "5a2e791e3e74f725becfb9521b2d941597384f29547e5cac97e980fe2451dee9"
+    },
+    {
+      "path": "REVIEW.fa.md",
+      "bytes": 3927,
+      "sha256": "6b47e80937c34afc40db9d91b7f3eb84fd00b5b14b51ffa50a70d55fc800e6d0"
+    }
+  ]
+}

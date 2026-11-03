@@ -1,0 +1,102 @@
+{
+  "head": "6e97d95decdae6e3f8411b2404aa540549a931d0",
+  "runs": [
+    {
+      "id": 41062421473,
+      "headSha": "6e97d95decdae6e3f8411b2404aa540549a931d0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 41062421488,
+      "headSha": "6e97d95decdae6e3f8411b2404aa540549a931d0",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "jobs": {
+    "41062421473": [
+      {
+        "id": 124085727272,
+        "name": "Database RLS \u00b7 Integrity (Postgres)",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124085727671,
+        "name": "Secret scan \u00b7 SQL validation",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124085727773,
+        "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124085728420,
+        "name": "Dependencies",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 124087836004,
+        "name": "CI Gate",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "41062421488": [
+      {
+        "id": 124085209159,
+        "name": "postgres17-reopen",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "nativeMarkers": [
+    "2026-10-30T13:21:29.5166026Z # P10_NATIVE_INTENT_READ_CHECK {\"profile\":\"legacy\",\"intentIdentityMatched\":true,\"preparedAtMatched\":true,\"targetVersion\":2,\"versionId\":null,\"extraRequests\":0,\"source\":\"existing_native_intent_list\"}",
+    "2026-10-30T13:21:29.5167757Z # P10_NATIVE_METADATA_READ_CHECK {\"profile\":\"legacy\",\"versions\":2,\"reviews\":1,\"reviewVersion\":1,\"actorsDisclosed\":false,\"extraRequests\":0,\"source\":\"existing_native_open_read\"}",
+    "2026-10-30T13:21:33.9732603Z # P10_NATIVE_INTENT_READ_CHECK {\"profile\":\"explicit\",\"intentIdentityMatched\":true,\"preparedAtMatched\":true,\"targetVersion\":2,\"versionId\":null,\"extraRequests\":0,\"source\":\"existing_native_intent_list\"}",
+    "2026-10-30T13:21:33.9734440Z # P10_NATIVE_METADATA_READ_CHECK {\"profile\":\"explicit\",\"versions\":2,\"reviews\":1,\"reviewVersion\":1,\"actorsDisclosed\":false,\"extraRequests\":0,\"source\":\"existing_native_open_read\"}",
+    "2026-10-30T13:21:35.0345666Z # tests 6",
+    "2026-10-30T13:21:35.0346098Z # pass 6",
+    "2026-10-30T13:21:35.0346258Z # fail 0",
+    "2026-10-30T13:21:35.0346638Z # skipped 0"
+  ],
+  "artifactId": 12979492304,
+  "artifact": {
+    "workbook-native-receipt.json": {
+      "sha256": "061b24c6f5b2e1d5c870550bed1b5b736b730772cd6ad78bc761dce776bfd67d",
+      "receipt": {
+        "status": "PASS",
+        "testedSha": "6e97d95decdae6e3f8411b2404aa540549a931d0",
+        "postgresVersionNumber": 170011,
+        "candidateSqlSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+        "environment": "disposable GitHub Actions PostgreSQL; synthetic data only",
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "scenarios": [
+          "immutable native actor/hash/body",
+          "other-admin/member/anon and service-role BYPASSRLS denial",
+          "actual component destroyed after v2 commit and remounted; GET-only recovery",
+          "v1 and its review retained; v2 unapproved",
+          "private text read back exactly",
+          "candidate rerun preserves existing workbook/review INSERT freeze"
+        ],
+        "authBoundary": "synthetic claims exercised under native authenticated SQL role; no real user session",
+        "productionTouched": false,
+        "modelCalls": 0,
+        "browserPersistentPrivateBody": false
+      }
+    }
+  },
+  "logSha256": "5e9d10c0f4b53ca22455a3569b88f0a13c322f44d4efae26f012123be3483e49",
+  "authentication": "existing Git credential in memory if required",
+  "signedUrlsOrCredentialsExported": false,
+  "primaryInstall": "NOT_APPLIED",
+  "browser": "NOT_RUN"
+}

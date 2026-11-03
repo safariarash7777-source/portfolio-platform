@@ -1,0 +1,233 @@
+{
+  "releaseAuthorized": false,
+  "backupStreamTransferred": false,
+  "captureRun": false,
+  "attestationRawSha256": "4f8d7ecf251575e5b0f28e498a1bc4af7974172672d385a955e8e06c2b1372df",
+  "startedAtUtc": "2026-10-31T02:59:20.0324729+00:00",
+  "scope": "exact production R2 packet/metadata functions; wrapper entry/Capture/Verify not invoked",
+  "artifacts": [
+    {
+      "role": "original.dump",
+      "name": "postgres.dump",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 2406546295,
+      "sha256": "87434f8c53cca9910cdbd953415ffed5e01d3aacb0db8c0702a4e164253c8c17",
+      "owner": 0
+    },
+    {
+      "role": "original.globals",
+      "name": "globals.private.sql",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 6836,
+      "sha256": "8f40c6104fc3ebe6b3a09189c5f43cb1ef897c115adec9ab32abe8e6eb049d4e",
+      "owner": 0
+    },
+    {
+      "role": "original.cron",
+      "name": "cron.private.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "owner": 0
+    },
+    {
+      "role": "original.source_inventory",
+      "name": "source-inventory.private",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 209888,
+      "sha256": "e88607ad044151ec11678aa1f8427567d10cee2b23c2fa57ff982c65b41a76a7",
+      "owner": 0
+    },
+    {
+      "role": "original.target_inventory",
+      "name": "target-inventory.private",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 209883,
+      "sha256": "409997260af37e165da2e737501ab61078f60acfc6dfffff050da4c54ebdb8db",
+      "owner": 0
+    },
+    {
+      "role": "original.final_comparison",
+      "name": "comparison.private.json",
+      "origin": "checkpoint",
+      "state": "absent",
+      "length": null,
+      "sha256": null,
+      "owner": null,
+      "observation": {
+        "atUtc": "2026-10-31T06:29:23.726573+03:30",
+        "method": "OWNED_PARENT_CHILD_ENOENT_SHARED_LOCK",
+        "neverCreated": null,
+        "historicalNotDeleted": null
+      }
+    },
+    {
+      "role": "original.receipt",
+      "name": "receipt.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 893,
+      "sha256": "b3cc167b604740207f884db3b037fea59e976fe296a72ed51527d79133d40aef",
+      "owner": 0
+    },
+    {
+      "role": "original.pre_comparison",
+      "name": "comparison-before-correction.private.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 3707,
+      "sha256": "2ca79419e1b2cb1baee866a3cf63f0ab8cdb0205079e900738de492e86a77d9a",
+      "owner": 0
+    },
+    {
+      "role": "correction.intent",
+      "name": "acl19-reconciliation-20261031/intent.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 646,
+      "sha256": "5b1f294617e3242765e6676af3ffcc359e2a907184bcc279a78eded7a0cd8574",
+      "owner": 0
+    },
+    {
+      "role": "correction.plan",
+      "name": "acl19-reconciliation-20261031/plan.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 965,
+      "sha256": "ac02b84f75517031420296097d3a756bd190a6ca6e505ab0e437b6d555da76e9",
+      "owner": 0
+    },
+    {
+      "role": "correction.result",
+      "name": "acl19-reconciliation-20261031/result.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 1614,
+      "sha256": "e4a794edff3bd2b626d41feb8f8ec5a520683b4b76b66bd6bad63cee18cccde9",
+      "owner": 0
+    },
+    {
+      "role": "correction.strict_core",
+      "name": "acl19-reconciliation-20261031/strict-core-comparison.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 105,
+      "sha256": "74baf16c5cc1841e9de4471b0faf5405caab88848c4ad725e8b1f6c93c95516c",
+      "owner": 0
+    },
+    {
+      "role": "correction.strict_private",
+      "name": "acl19-reconciliation-20261031/strict-private-comparison.json",
+      "origin": "checkpoint",
+      "state": "present",
+      "length": 72,
+      "sha256": "8ee8848b26b9024a3467006ace126ff84c2a5cc78ca5f136f020a76014d5bbce",
+      "owner": 0
+    },
+    {
+      "role": "supplement.private_before",
+      "name": "v04-fresh-checkpoint-20261030/private-before.json",
+      "origin": "external",
+      "state": "present",
+      "length": 14642,
+      "sha256": "a9fe3c6837ae92ce03ff007a650e2c92e23b134697e54658e4d6be140634c641",
+      "owner": 0
+    },
+    {
+      "role": "supplement.failed_wrapper",
+      "name": "v04-fresh-checkpoint-20261030/result.json",
+      "origin": "external",
+      "state": "present",
+      "length": 446,
+      "sha256": "70e67bbdd0813f27ed866c3c1152ff22606856ef09875f069393801cad643cae",
+      "owner": 0
+    },
+    {
+      "role": "binding.original",
+      "name": "release-binding.json",
+      "origin": "memory",
+      "state": "present",
+      "length": 2351,
+      "sha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
+      "owner": null
+    },
+    {
+      "role": "attestation.read_gate",
+      "name": "read-attestation.json",
+      "origin": "memory",
+      "state": "present",
+      "length": 1215,
+      "sha256": "4f8d7ecf251575e5b0f28e498a1bc4af7974172672d385a955e8e06c2b1372df",
+      "owner": null
+    }
+  ],
+  "streams": 16,
+  "masterCreated": false,
+  "originalStatus": "failed",
+  "verifyRun": false,
+  "readiness": false,
+  "policySha256": "6a1c0113a53a7ac4d8f1cc07e2514fec07f13ec7bd5c4d2987e87120102837cc",
+  "status": "PASS_NATIVE_R2_METADATA_ONLY",
+  "records": 17,
+  "sql": false,
+  "containerMutation": false,
+  "attestation": {
+    "at": "2026-10-31T06:29:34.130229+03:30",
+    "status": "PASS_PINNED_SQL_RESTORE_READ_GATE",
+    "checkpoint": "20261030T215307Z",
+    "originalStatus": "failed",
+    "correctionStatus": "PASS_OWNED_COPY_ACL19_RECONCILIATION",
+    "originalReceiptSha256": "b3cc167b604740207f884db3b037fea59e976fe296a72ed51527d79133d40aef",
+    "correctionReceiptSha256": "e4a794edff3bd2b626d41feb8f8ec5a520683b4b76b66bd6bad63cee18cccde9",
+    "bindingSha256": "7819e0fb16bbb2c9171099cab07953c3137634d665616af509d4061306af9325",
+    "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "targetId": "833a8447c01570811d6a0ad50cafee00745614b811ef9668acb0d944e04b21f1",
+    "dumpSha256": "87434f8c53cca9910cdbd953415ffed5e01d3aacb0db8c0702a4e164253c8c17",
+    "dumpBytes": 2406546295,
+    "proofStopped": true,
+    "proofNetwork": "none",
+    "proofPortsPublished": false,
+    "sourceHealthy": true,
+    "sqlExecuted": false,
+    "backupRetried": false,
+    "filesTransferred": false,
+    "captureConsumerIntegrated": false,
+    "installerConsumerIntegrated": false,
+    "releaseAuthorized": false,
+    "limits": [
+      "SQL restore attestation only",
+      "No Storage binary backup",
+      "Supplementary private catalog and globals do not share the exported core snapshot",
+      "Capture/installer must explicitly adopt this versioned attestation before use"
+    ]
+  },
+  "endedAtUtc": "2026-10-31T02:59:33.8334222+00:00",
+  "source": "d9043e7f0db91d2686af233e74b2749aea33b234",
+  "policyBytes": 4431,
+  "dpapiCreated": false,
+  "rootEvidence": {
+    "resultSha256": "457271e311cf0e87c563cc0e2d2f60e015364e05ef56a1cbabaa56e0cb240272",
+    "localIntegrationCommit": "eeae79157ac4cbef47aefcb575829a3c6d2cbf3d",
+    "integrationTree": "d805ca4133cfb836188fb78c527c5a748f2c6654",
+    "exactTestedCiCheckout": "84f48a352e4deb1e2b3b3a248e9cdc43d827531c",
+    "entireIntegrationTreeEqualsTestedCi": true,
+    "stagedFilesExactGitBeforeAfter": 18,
+    "policyRawBytes": 4431,
+    "bindingRawBytes": 2351,
+    "rootReview": "full new validators/runtime/remote and dispatch delta read; no complete re-audit of old gate/Crypto",
+    "advisorReview": "three-file static scoped review, no blocker identified; no byte-hash/test/native rerun by advisor",
+    "ownerTests": "53 R2 + 13 Python + 16 Legacy + 34 strictV2 on new wrapper, not rerun by root",
+    "sourceTimestamps": "explicit offsets retained; public JSON DateTime rendering differs from raw wire formatting; raw attestation SHA remains exact; host clock synchronization not measured",
+    "limits": [
+      "metadata-only functions invoked, not full wrapper Capture/Verify",
+      "dump bytes hashed on server, backup payload not transferred",
+      "current SQL/catalog, Storage binary, deployed reader, service right, rollback and Arash acceptance not closed",
+      "original failed receipt and observed absence not rewritten into historic success"
+    ]
+  }
+}
