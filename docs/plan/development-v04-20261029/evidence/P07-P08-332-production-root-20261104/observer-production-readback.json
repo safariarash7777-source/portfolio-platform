@@ -1,0 +1,12 @@
+{
+  "id": "dpl_EQmjDFccs6WKo7kHzY3zJFEaUpDX",
+  "status": "READY",
+  "target": "production",
+  "sha": "78c3054e2c3e9decd7dc2fe5988fef3f67b068d6",
+  "url": "portfolio-platform-bo98razhx-safariarash7777-4463s-projects.vercel.app",
+  "scope": "PRODUCTION_IDENTITY_AFTER_PASSIVE_OBSERVER_MERGE",
+  "websiteAppComponentLibraryRelayWorkflowDiffFromReviewed19ccd": [],
+  "browserAcceptanceOfThisDeployment": false,
+  "priorActualBrowserSource": "a86ca24598da0aebab0a1d19df83840cb3b99425",
+  "note": "Only the two passive observer files and Vercel branch stop differ. Prior immutable deployment remains available. Source identity continuity is not a second authenticated/browser acceptance."
+}

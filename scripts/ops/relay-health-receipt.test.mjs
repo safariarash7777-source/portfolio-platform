@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { collectReceipt, sanitizeDebug, errorCategory, transportError } from './relay-health-receipt.mjs';
+import { collectControlPlane, collectReceipt, sanitizeDebug, errorCategory, transportError } from './relay-health-receipt.mjs';
 const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
@@ -170,7 +170,7 @@ test('actual CLI accepts protected root401 only with valid public stored read; r
       let exitCode = 0;
       try {
         await promisify(execFile)(process.execPath, ['--import', pathToFileURL(preload).href, script], {
-          cwd: directory, env: { ...process.env, RELAY_TOKEN: 'synthetic', GITHUB_STEP_SUMMARY: '' }, timeout: 10000,
+          cwd: directory, env: { ...process.env, RELAY_TOKEN: 'synthetic', LIARA_API_TOKEN: '', GITHUB_STEP_SUMMARY: '' }, timeout: 10000,
         });
       } catch (error) { exitCode = error.code; }
       assert.equal(exitCode, expectedExit);
@@ -233,5 +233,44 @@ test('HTTP and SQL details require fixed producer prefixes and exact code allowl
   for(const body of ['{"code":"PGRST202 '+secret+'"}', '{"message":"PGRST202"}', '{"code":"PGRST202",', 'null']) {
     const out=project('rpc brsapi_budget_release → 503: '+body);
     assert.equal(out.httpStatus,503);assert.equal(out.sqlCode,null);assert.equal(JSON.stringify(out).includes(secret),false);
+  }
+});
+
+const currentId = '0123456789abcdef01234567';
+function controlBodies(url) {
+  return url.includes('/releases?') ? {currentRelease:currentId,releases:[{_id:currentId,state:'READY',createdAt:'2026-11-04T00:00:00Z',finishedAt:null,imageName:secret,gitInfo:{commit:'a'.repeat(40),branch:'main',message:secret,author:{email:secret}}}]} : {project:{project_id:'arsadata',status:'running',envs:[{key:'SUPABASE_URL',value:secret},{key:'BRSAPI_KEY',value:secret},{key:'bad key '+secret,value:secret}],password:secret}};
+}
+test('control-plane uses only two fixed GETs and projects exact current identity without values or image strings',async()=>{
+  const calls=[];const out=await collectControlPlane({token:secret,fetchImpl:async(url,init)=>{calls.push([url,init]);return Response.json(controlBodies(url));}});
+  assert.deepEqual(calls.map(c=>c[0]),['https://api.liara.ir/v1/projects/arsadata','https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100']);
+  for(const [,init] of calls){assert.equal(init.method,'GET');assert.equal(init.redirect,'error');assert.equal(init.headers.Authorization,'Bearer '+secret);assert.ok(init.signal);}
+  assert.equal(out.identity,'matched_control_plane_metadata');assert.equal(out.project.data.envNames,null);assert.equal(out.project.data.envNamesComplete,false);assert.equal(out.project.data.cpuLimit,null);assert.equal(out.project.data.ramLimit,null);
+  assert.equal(out.releases.data.release.id,currentId);assert.equal(out.releases.data.release.commit,'a'.repeat(40));assert.equal(JSON.stringify(out).includes(secret),false);
+});
+test('current release never falls back to newest and malformed or duplicate identities remain unconfirmed',async()=>{
+  for(const kind of ['absent','duplicate','unknown','wrong-project']){
+    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{const b=controlBodies(url);if(b.releases){if(kind==='absent')b.currentRelease='b'.repeat(24);if(kind==='duplicate')b.releases.push(b.releases[0]);if(kind==='unknown')b.currentRelease=secret;}else if(kind==='wrong-project')b.project.project_id='another-app';return Response.json(b);}});
+    assert.equal(out.identity,'unconfirmed');if(kind!=='wrong-project')assert.equal(out.releases.data.release,null);assert.equal(JSON.stringify(out).includes(secret),false);
+  }
+});
+test('control-plane error responses are endpoint scoped and discarded without retry',async()=>{
+  for(const status of [401,403,404,307,308,500]){let calls=0;const out=await collectControlPlane({token:secret,fetchImpl:async()=>{calls++;return new Response(secret,{status});}});assert.equal(calls,2);assert.equal(out.identity,'unconfirmed');assert.equal(out.project.httpStatus,status);assert.equal(out.project.status,[401,403].includes(status)?'endpoint_authorization_rejected':status===404?'endpoint_not_found':'endpoint_http_error');assert.equal(JSON.stringify(out).includes(secret),false);}
+  let calls=0;const missing=await collectControlPlane({fetchImpl:async()=>{calls++;throw Error(secret);}});assert.equal(calls,0);assert.equal(missing.identity,'unconfirmed');
+});
+test('control-plane body limit, stalled fetch/body deadlines and invalid schema fail closed',async()=>{
+  for(const mode of ['large','invalid','fetch-stall','body-stall','reject']){
+    let calls=0;const out=await collectControlPlane({token:secret,timeoutMs:20,fetchImpl:async()=>{calls++;if(mode==='fetch-stall')return new Promise(()=>{});if(mode==='reject')throw Error(secret);if(mode==='body-stall')return new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode('{'));}}));return new Response(mode==='large'?'x'.repeat(1024*1024+1):'{invalid '+secret);}});
+    assert.equal(calls,2);assert.equal(out.identity,'unconfirmed');assert.equal(out.project.status,mode==='large'?'response_too_large':mode==='invalid'?'invalid_schema':mode==='reject'?'request_or_body_failed':'timeout');assert.equal(JSON.stringify(out).includes(secret),false);
+  }
+});
+test('control-plane rejection does not alter passive acceptance and credentials never cross destinations',async()=>{
+  const calls=[];const out=await collectReceipt({token:'relay-fixture',controlPlaneToken:secret,fetchImpl:async(url,init)=>{calls.push(url);if(url.startsWith('https://api.liara.ir/')){assert.equal(init.headers.Authorization,'Bearer '+secret);return new Response('private body',{status:403});}assert.equal(init.headers.Authorization,url.endsWith('/debug')?'Bearer relay-fixture':undefined);return new Response(url===storedUrl?JSON.stringify(storedBody):url.endsWith('/debug')?JSON.stringify(debug()):url.endsWith('/healthz')?'ok':'fixture');}});
+  assert.equal(calls.length,6);assert.equal(out.debug.acceptance,'passed');assert.equal(out.storedRead.status,'read');assert.equal(out.controlPlane.identity,'unconfirmed');assert.equal(JSON.stringify(out).includes(secret),false);
+});
+
+test('environment names distinguish explicit empty from incomplete schema without inspecting values',async()=>{
+  for(const [envs,expected,complete] of [[undefined,null,false],[{},null,false],['invalid',null,false],[[{key:'VALID',value:secret},{}],null,false],[[{key:'VALID',value:secret},{key:1}],null,false],[[],[],true],[[{key:'B',value:secret},{key:'A',value:secret},{key:'B',value:secret}],['A','B'],true]]){
+    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{const body=controlBodies(url);if(body.project)body.project.envs=envs;return Response.json(body);}});
+    assert.deepEqual(out.project.data.envNames,expected);assert.equal(out.project.data.envNamesComplete,complete);assert.equal(JSON.stringify(out).includes(secret),false);
   }
 });

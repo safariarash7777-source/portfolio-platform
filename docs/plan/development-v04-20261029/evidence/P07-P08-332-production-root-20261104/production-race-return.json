@@ -1,0 +1,59 @@
+{
+  "atUtc": "2026-11-03T21:44:30.568Z",
+  "source": "a86ca24598da0aebab0a1d19df83840cb3b99425",
+  "deployment": "dpl_EK9Lp28bbpAGfPy7yVNoA7i8DSce",
+  "status": "PASS",
+  "phases": [
+    {
+      "phase": "typed-then-selected-before-debounce",
+      "deltaMs": 58.200000047683716,
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds?sort=faName&dir=asc&compare=%5B%22%D8%B9%DB%8C%D8%A7%D8%B1%22%2C%22%22%2C%22%22%2C%22%22%2C%22%22%5D&q=%D8%B7%D9%84%D8%A7",
+      "ids": [
+        "عیار",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "phase": "reload",
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds?sort=faName&dir=asc&compare=%5B%22%D8%B9%DB%8C%D8%A7%D8%B1%22%2C%22%22%2C%22%22%2C%22%22%2C%22%22%5D&q=%D8%B7%D9%84%D8%A7",
+      "q": "طلا",
+      "ids": [
+        "عیار",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    {
+      "phase": "symbol-and-return",
+      "from": "/market/funds?sort=faName&dir=asc&compare=%5B%22%D8%B9%DB%8C%D8%A7%D8%B1%22%2C%22%22%2C%22%22%2C%22%22%2C%22%22%5D&q=%D8%B7%D9%84%D8%A7",
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%B9%DB%8C%D8%A7%D8%B1%22%2C%22%22%2C%22%22%2C%22%22%2C%22%22%5D&dir=asc&q=%D8%B7%D9%84%D8%A7&sort=faName",
+      "ids": [
+        "عیار",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "width": 390
+    },
+    {
+      "phase": "clear-retains-filters",
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds?dir=asc&q=%D8%B7%D9%84%D8%A7&sort=faName",
+      "ids": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    }
+  ],
+  "errors": [],
+  "writes": [],
+  "accountReturnAcceptance": "NOT_EXECUTED"
+}

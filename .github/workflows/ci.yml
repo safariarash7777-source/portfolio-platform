@@ -17,11 +17,25 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      assembled_native:
+        description: Run the separately allocated bounded assembled native acceptance
+        type: boolean
+        required: false
+        default: false
+      allocation_id:
+        description: Coordinator allocation UUID for this one fresh native run
+        type: string
+        required: false
+      reviewed_helper_sha:
+        description: Exact reviewed commit containing this workflow and sealed helpers
+        type: string
+        required: false
 
 # اجراهای قدیمیِ همان شاخه لغو می‌شوند تا دقیقهٔ رایگان هدر نرود.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'workflow_dispatch' && inputs.assembled_native && format('assembled-native-{0}', github.run_id) || github.ref }}
+  cancel-in-progress: ${{ !(github.event_name == 'workflow_dispatch' && inputs.assembled_native) }}
 
 permissions:
   contents: read
@@ -350,4 +364,56 @@ jobs:
             exit 1
           fi
           echo "همهٔ گیت‌ها سبز."
+
+  # Optional native execution is separate from the unchanged ordinary CI gate.
+  assembled-native-bounded:
+    name: Assembled native · explicit allocation only
+    needs: [ci]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.assembled_native == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: control
+    env:
+      ASSEMBLED_ALLOCATION_ID: ${{ inputs.allocation_id }}
+      ASSEMBLED_REVIEWED_SHA: ${{ inputs.reviewed_helper_sha }}
+    steps:
+      - name: Exact workflow and detached controller source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Exact isolated app and SQL Git copy
+        uses: actions/checkout@v4
+        with:
+          ref: 4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a
+          path: assembled-candidate
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: assembled-candidate/package-lock.json
+      - name: Offline allocation and receipt boundaries only
+        run: python3 scripts/testing/assembled-native-ci/test_run.py -v
+      - name: Bind allocation, verify sealed capsule and prepare the exact copy
+        run: python3 scripts/testing/assembled-native-ci/run.py prepare
+      - name: Existing dependency lock only
+        working-directory: assembled-candidate
+        run: npm ci
+      - name: One bounded owned native attempt with private stdout
+        run: python3 scripts/testing/assembled-native-ci/run.py execute
+      - name: Attest owned cleanup and project a strict public receipt
+        if: always()
+        run: python3 scripts/testing/assembled-native-ci/run.py finalize
+      - name: Upload only the sanitized receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: assembled-native-${{ github.run_id }}-${{ github.run_attempt }}
+          path: assembled-native-artifact/receipt.json
+          if-no-files-found: error
+          retention-days: 7
 

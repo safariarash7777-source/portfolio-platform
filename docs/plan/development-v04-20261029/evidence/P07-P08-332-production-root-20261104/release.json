@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "source": "a86ca24598da0aebab0a1d19df83840cb3b99425",
+  "tree": "8f44af97c781a22c20c2c4a30c67555355aa62a4",
+  "reviewedHead": "19ccd969158db6610e7fd4a5ba9fd92a2b00d9f9",
+  "pullRequest": 332,
+  "ciRun": 41721062614,
+  "production": {
+    "id": "dpl_EK9Lp28bbpAGfPy7yVNoA7i8DSce",
+    "status": "READY",
+    "immutableUrl": "https://portfolio-platform-qzpmj4fg2-safariarash7777-4463s-projects.vercel.app",
+    "alias": "https://portfolio-platform-fawn.vercel.app"
+  },
+  "actualBrowser": "installed Chrome, isolated Playwright context; real Production GETs; no authenticated account or product POST",
+  "acceptedSlice": [
+    "existing company fundamental tab and real data rendering",
+    "company tab hydrated reload and 390px width",
+    "five public fund selections restored from URL",
+    "search/select before debounce retains both writes",
+    "reload and actual symbol/return navigation retain comparison/search/sort",
+    "clear comparison preserves unrelated filters"
+  ],
+  "limits": [
+    "human choice between two complete P14 styles remains open",
+    "unverified quantity/rate and unsupported units stay unavailable",
+    "two new financial reports are not confirmed ingested",
+    "source quote clocks are not inferred from receipt time",
+    "account/authentication return path was not executed",
+    "whole P07/P08/P14 not accepted"
+  ],
+  "productionBindingAbsenceAttested": false,
+  "bindingLimit": "Truncated environment metadata does not prove absence of a Production FUNDAMENTAL override. Compiled default-binding regression and real Production rendering are distinct evidence."
+}
