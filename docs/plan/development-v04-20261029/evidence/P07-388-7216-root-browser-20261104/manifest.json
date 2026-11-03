@@ -22,13 +22,13 @@
     },
     {
       "path": "receipt.json",
-      "bytes": 6921,
-      "sha256": "05e3e390078527b6879832a7d327b9827be510502ed53337e1a08416433d72ca"
+      "bytes": 6801,
+      "sha256": "5a2e791e3e74f725becfb9521b2d941597384f29547e5cac97e980fe2451dee9"
     },
     {
       "path": "REVIEW.fa.md",
-      "bytes": 3894,
-      "sha256": "c8539c4eabfe5d17f51bd19011b38a361fb92238bae655b5d86eaf9f62502280"
+      "bytes": 3927,
+      "sha256": "6b47e80937c34afc40db9d91b7f3eb84fd00b5b14b51ffa50a70d55fc800e6d0"
     }
   ]
 }

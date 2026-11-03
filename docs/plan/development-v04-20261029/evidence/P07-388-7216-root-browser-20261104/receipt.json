@@ -149,12 +149,15 @@
   },
   "observations": {
     "fundRows": 345,
-    "companyChartCountEach": 8,
     "liveQuantityReceipt": "NOT_ESTABLISHED",
     "missingRateOrQuantity": "NULL_WITH_REASON",
     "marketQuoteOnPreview": "UNAVAILABLE",
     "publishedUtcWithoutConversion": "UNKNOWN",
-    "productionChangedByThisPreview": false
+    "productionChangedByThisPreview": false,
+    "companyChartCounts": {
+      "فولاد": 8,
+      "فملی": 7
+    }
   },
   "limits": [
     "Existing financial periods are historical; no producer ingest executed by this check.",
