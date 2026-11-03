@@ -177,7 +177,7 @@ function fixture(): Record<string, Result> {
     portfolio_snapshots: ok(snapshots), transactions: ok([transaction]), telegram_links: ok({ user_id: 'member' }),
     payments: ok({ status: 'paid', invite_link: 'https://example.invalid/channel', ref_id: 'synthetic' }), risk_revalidations: ok(null), announcements: ok([]), announcement_deliveries: ok([]) };
 }
-async function render(results = fixture(), member = "member", queries: { table: string; filters: [string, unknown][] }[] = []) {
+async function render(results = fixture(), member = "member", queries: { table: string; filters: [string, unknown][] }[] = [], access = { level: "full", standing: "active" }) {
   const loaded = new Map<string, { exports: Record<string, unknown> }>();
   const leaf = (name: string) => function FinancialLeaf(props: Props) { return React.createElement('output', { 'data-component': name },
     name === 'KpiCard' ? `${props.label}: ${props.value}` : ['PerformanceChart', 'AllocationDonut'].includes(name) ? JSON.stringify(props.data) : name === 'HoldingsTable' ? 'دارایی سالم' : name); };
@@ -195,7 +195,7 @@ async function render(results = fixture(), member = "member", queries: { table: 
       if (name === '@/lib/format') return format;
       if (name === '@/lib/deadline') return { withDeadline };
       if (name === '@/components/quiz/quizData') return { RISK_PROFILES: {} };
-      if (name === '@/lib/access') return { getAccess: async () => ({ level: 'full', standing: 'active' }) };
+      if (name === '@/lib/access') return { getAccess: async () => access };
       if (name === '@/lib/supabase/server') return { createClient: async () => ({ auth: { getUser: async () => ({ data: { user: { id: member, email: 'synthetic@example.invalid' } }, error: null }) }, from(table: string) {
         let selected = '', ordered = '', ascending = true, maximum = Infinity, single = false;
         const filters: [string, unknown][] = []; queries.push({ table, filters });
@@ -214,7 +214,7 @@ async function render(results = fixture(), member = "member", queries: { table: 
           } }; return query;
       } }) };
       if (name === '@/lib/supabase/client') return { createClient() { throw Error('No client writes in render test'); } };
-      const actual: Record<string, string> = { './DashboardClient': 'app/(protected)/dashboard/DashboardClient.tsx', '@/components/dashboard/LivePortfolio': 'components/dashboard/LivePortfolio.tsx', '@/components/dashboard/AccessCards': 'components/dashboard/AccessCards.tsx', '@/components/dashboard/ReadError': 'components/dashboard/ReadError.tsx', './ReadError': 'components/dashboard/ReadError.tsx' };
+      const actual: Record<string, string> = { '@/components/dashboard/PersonalFinance': 'components/dashboard/PersonalFinance.tsx', './DashboardClient': 'app/(protected)/dashboard/DashboardClient.tsx', '@/components/dashboard/LivePortfolio': 'components/dashboard/LivePortfolio.tsx', '@/components/dashboard/AccessCards': 'components/dashboard/AccessCards.tsx', '@/components/dashboard/ReadError': 'components/dashboard/ReadError.tsx', './ReadError': 'components/dashboard/ReadError.tsx' };
       if (actual[name]) return load(actual[name]);
       if (name.startsWith('@/lib/portfolio/') || name === '@/lib/read-state' || name.startsWith('.') && file.startsWith('lib/')) {
         const target = name.startsWith('@/') ? name.slice(2) : posix.join(posix.dirname(file), name);
@@ -430,4 +430,47 @@ test('canonical readers follow each authenticated session and only the chosen ow
       assert.ok(queries.some(q => q.table === table && q.filters.some(([key, value]) => key === 'version_id' && value === `${member}-v${member === 'member-A' ? 2 : 9}`)), table);
     }
   }
+});
+
+
+function assertBaseLedgerRoutes(html: string) {
+  for (const href of ['/dashboard/holdings','/dashboard/cashflow','/dashboard/cashflow#period-budget','/dashboard/goals']) {
+    assert.ok(html.includes(`href="${href}"`), `base ledger route missing: ${href}`);
+  }
+}
+for (const failed of ['risk_assessments','risk_history']) test(`risk read failure ${failed} preserves the independently confirmed base ledger`, async () => {
+  const f = canonicalFixture(); f[failed] = { data: failed === 'risk_assessments' ? assessment : [assessment], error: { code: '503' } };
+  const html = await render(f);
+  assertBaseLedgerRoutes(html); assert.match(html, /وضعیت مالی شخصی/); assert.match(html, /۱ قلم در آخرین نسخه/);
+  assert.match(html, /اطلاعات پروفایل یا سابقهٔ ارزیابی ریسک دریافت نشد/);
+  assert.doesNotMatch(html, /RiskProfileQuiz|RiskPlanCard|ScoreEvolution/);
+});
+for (const failure of ['missing','error']) test(`profile ${failure} preserves owner ledger without disclosing unconfirmed profile data`, async () => {
+  const f = canonicalFixture(); f.profiles = failure === 'missing' ? ok(null) : { data: { full_name: 'UNCONFIRMED_PRIVATE_PROFILE', role: 'admin' }, error: { code: '503' } };
+  const html = await render(f); assertBaseLedgerRoutes(html); assert.match(html, /۱ قلم در آخرین نسخه/);
+  assert.doesNotMatch(html, /UNCONFIRMED_PRIVATE_PROFILE|RiskProfileQuiz/);
+});
+test('risk failure plus failed canonical ledger read stays unknown and keeps base ledger entry points', async () => {
+  const f = canonicalFixture(); f.risk_assessments.error = { code: '503' }; f.member_holding_versions.error = { code: '503' };
+  const html = await render(f); assertBaseLedgerRoutes(html); assert.match(html, /ثبت‌های دارایی/);
+  assert.doesNotMatch(html, /۱ قلم در آخرین نسخه|هنوز نسخه‌ای از دارایی‌ها|۰ قلم|RiskProfileQuiz/);
+});
+for (const standing of ['expired','revoked']) test(`registered ${standing} analytical access preserves the base ledger routes`, async () => {
+  const html = await render(canonicalFixture(),'member',[],{level:'registered',standing});
+  assertBaseLedgerRoutes(html); assert.match(html, /۱ قلم در آخرین نسخه/);
+});
+
+test('risk failure fallback keeps mixed-owner versions and positions isolated to the verified member', async () => {
+  const own = canonicalFixture('member-A', 2), foreign = canonicalFixture('member-B', 9);
+  own.risk_assessments.error = { code: '503' };
+  own.member_holding_versions = ok([...(own.member_holding_versions.data as unknown[]), ...(foreign.member_holding_versions.data as unknown[])]);
+  own.member_holding_positions = ok([...(own.member_holding_positions.data as unknown[]), ...(foreign.member_holding_positions.data as unknown[])]);
+  const queries: { table: string; filters: [string, unknown][] }[] = [];
+  const html = await render(own, 'member-A', queries);
+  assertBaseLedgerRoutes(html);
+  assert.match(html, /نسخهٔ ۲/);
+  assert.match(html, /۱ قلم در آخرین نسخه/);
+  assert.doesNotMatch(html, /نسخهٔ ۹|RiskProfileQuiz/);
+  assert.ok(queries.some(q => q.table === 'member_holding_versions' && q.filters.some(([key, value]) => key === 'user_id' && value === 'member-A')));
+  assert.ok(queries.some(q => q.table === 'member_holding_positions' && q.filters.some(([key, value]) => key === 'version_id' && value === 'member-A-v2')));
 });
