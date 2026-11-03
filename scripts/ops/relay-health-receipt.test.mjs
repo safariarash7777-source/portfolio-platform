@@ -5,7 +5,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { collectReceipt, sanitizeDebug, errorCategory, transportError } from './relay-health-receipt.mjs';
 const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
@@ -169,7 +169,7 @@ test('actual CLI accepts protected root401 only with valid public stored read; r
       };`);
       let exitCode = 0;
       try {
-        await promisify(execFile)(process.execPath, ['--import', preload, script], {
+        await promisify(execFile)(process.execPath, ['--import', pathToFileURL(preload).href, script], {
           cwd: directory, env: { ...process.env, RELAY_TOKEN: 'synthetic', GITHUB_STEP_SUMMARY: '' }, timeout: 10000,
         });
       } catch (error) { exitCode = error.code; }
@@ -182,4 +182,56 @@ test('actual CLI accepts protected root401 only with valid public stored read; r
       assert.ok(receipt.limitations.some(text => text.includes('do not prove database health')));
     }
   } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('Codal exact reasons and versioned diagnostics preserve real counts without names or success inference', () => {
+  const input = { codalEngine: { lastRun: 1793066300000, feed: { incompleteReason: 'invalid_order_or_identity' },
+    admissionDiagnostics: { version: 1, lastCycle: { 'ن-۱۰': { scope_unknown: 6, unit_unverified: 0, private: secret } } },
+    failureDiagnostics: { version: 1, totals: { persistence: { exception: 2 } } } },
+    codalArchive: { ok: false, lastRun: 1793066400000, usedToday: 3, lastCycle: { symbols: [secret], pages: 2, persistenceUnconfirmed: 1 }, coverage: { n10Symbols: 20 } } };
+  const out = sanitizeDebug(input).codal;
+  assert.equal(out.feed.incompleteReasonCode, 'invalid_order_or_identity');
+  assert.equal(out.feed.incompleteReason, 'invalid_or_empty_response');
+  assert.equal(out.lastAttemptStartedAt, new Date(input.codalEngine.lastRun).toISOString());
+  assert.equal(out.archive.lastAttemptFinishedAt, new Date(input.codalArchive.lastRun).toISOString());
+  assert.equal(out.admissionDiagnostics.lastCycle['ن-۱۰'].scope_unknown, 6);
+  assert.equal(out.admissionDiagnostics.lastCycle['ن-۱۰'].unit_unverified, 0);
+  assert.equal(out.admissionDiagnostics.lastCycle['ن-۳۰'].short_rows, null);
+  assert.equal(out.failureDiagnostics.totals.persistence.exception, 2);
+  assert.equal(out.archive.lastCycle.persistenceUnconfirmed, 1);
+  assert.equal(out.archive.lastCycle.downloaded, null);
+  assert.equal(JSON.stringify(out).includes(secret), false);
+  for (const reason of ['page_limit', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure']) {
+    assert.equal(sanitizeDebug({codalEngine:{feed:{incompleteReason:reason}}}).codal.feed.incompleteReasonCode, reason);
+  }
+});
+
+test('Codal diagnostics drop unknown versions, malformed counters and secret-bearing reason strings', () => {
+  for (const bad of [-1, 1.5, Number.MAX_SAFE_INTEGER + 1, Infinity, '3', null]) {
+    const out = sanitizeDebug({codalEngine:{feed:{incompleteReason:'invalid_order_or_identity '+secret}, admissionDiagnostics:{version:1,lastCycle:{'ن-۱۰':{scope_unknown:bad}}}},codalArchive:{usedToday:bad}}).codal;
+    assert.equal(out.feed.incompleteReasonCode,null);
+    assert.equal(out.admissionDiagnostics.lastCycle['ن-۱۰'].scope_unknown,null);
+    assert.equal(out.archive.usedToday,null);
+    assert.equal(JSON.stringify(out).includes(secret),false);
+  }
+  const missing=sanitizeDebug({}).codal;
+  assert.equal(missing.lastAttemptStartedAt,null);
+  assert.equal(missing.archive.lastAttemptFinishedAt,null);
+  assert.equal(missing.admissionDiagnostics.version,null);
+  assert.equal(sanitizeDebug({codalEngine:{failureDiagnostics:{version:2,totals:{download:{exception:0}}}}}).codal.failureDiagnostics.totals.download.exception,null);
+});
+
+test('HTTP and SQL details require fixed producer prefixes and exact code allowlists, never raw error scans', () => {
+  const project = value => sanitizeDebug({brsapiLegacy:{budget:{store:{lastError:value}}}}).budget.legacy.budget.store;
+  const known=project('rpc brsapi_budget_lease → 404: '+JSON.stringify({code:'PGRST202',message:secret,details:'https://private.invalid/'+secret}));
+  assert.equal(known.httpStatus,404);assert.equal(known.sqlCode,'PGRST202');assert.equal(JSON.stringify(known).includes(secret),false);
+  const feed=sanitizeDebug({codalEngine:{feedTable:{lastError:'codal_feed HTTP 403: {"code":"42501"}'}}}).codal.feedTable;
+  assert.equal(feed.httpStatus,403);assert.equal(feed.sqlCode,'42501');
+  for(const message of [secret+' HTTP 403 PGRST202','rpc unknown → 404: {"code":"PGRST202"}','rpc brsapi_budget_lease → 499: {"code":"PGRST202"}']) {
+    assert.equal(project(message).httpStatus,null);assert.equal(project(message).sqlCode,null);
+  }
+  for(const body of ['{"code":"PGRST202 '+secret+'"}', '{"message":"PGRST202"}', '{"code":"PGRST202",', 'null']) {
+    const out=project('rpc brsapi_budget_release → 503: '+body);
+    assert.equal(out.httpStatus,503);assert.equal(out.sqlCode,null);assert.equal(JSON.stringify(out).includes(secret),false);
+  }
 });

@@ -1,6 +1,7 @@
 /** Passive, fixed-destination receipt. Raw /debug is kept in memory only. */
 import { appendFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { ADMISSION_REASONS } from '../../relay/codal-admission-diagnostics.mjs';
 import { evaluateDebug } from '../deploy/relay-gate.mjs';
 
 const DEBUG = 'https://arsadata.liara.run/debug';
@@ -39,8 +40,49 @@ export function errorCategory(value) {
   if (/fetch|network|connect|socket/i.test(text)) return 'network';
   return 'other';
 }
+// Decode only fixed producer templates; never scan arbitrary messages for codes.
+const httpCodes = [400, 401, 402, 403, 404, 408, 409, 422, 429, 500, 502, 503, 504];
+const sqlCodes = ['42501', '42P01', '42703', '23505', 'PGRST202', 'PGRST204', 'PGRST205', 'PGRST301'];
+function safeErrorCodes(value) {
+  const unknown = { httpStatus: null, sqlCode: null };
+  if (typeof value !== 'string' || value.length > 1000) return unknown;
+  for (const prefix of ['rpc brsapi_budget_lease → ', 'rpc brsapi_budget_release → ', 'codal_feed HTTP ']) {
+    for (const status of httpCodes) {
+      const header = prefix + status + ': ';
+      if (!value.startsWith(header)) continue;
+      let sqlCode = null;
+      try { const body = JSON.parse(value.slice(header.length)); sqlCode = choice(body?.code, sqlCodes); } catch { /* Truncated body stays unknown. */ }
+      return { httpStatus: status, sqlCode };
+    }
+  }
+  return unknown;
+}
+const integer = x => Number.isSafeInteger(x) && x >= 0 ? x : null;
+const integerCounts = (value, names) => Object.fromEntries(names.map(name => [name, integer(value?.[name])]));
+const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure'];
+function diagnostics(value, shape) {
+  const valid = value?.version === 1;
+  const project = name => Object.fromEntries(Object.entries(shape).map(([group, names]) =>
+    [group, integerCounts(valid ? value?.[name]?.[group] : null, names)]));
+  return { version: valid ? 1 : null, totals: project('totals'), lastCycle: project('lastCycle') };
+}
+function codalDetails(engine, archive) {
+  return {
+    // Attempt clocks are not successful ingestion receipts.
+    lastAttemptStartedAt: clock(engine?.lastRun),
+    failureDiagnostics: diagnostics(engine?.failureDiagnostics, { download: ['exception'], admission: ['rejected', 'exception'], persistence: ['exception'] }),
+    admissionDiagnostics: diagnostics(engine?.admissionDiagnostics, ADMISSION_REASONS),
+    archive: {
+      ok: boolean(archive?.ok), lastAttemptFinishedAt: clock(archive?.lastRun), error: errorCategory(archive?.lastError),
+      budgetDate: date(archive?.budgetDate), ...integerCounts(archive, ['dailyCap', 'usedToday', 'cursor', 'queueSize', 'doneSymbols']),
+      lastCycle: integerCounts(archive?.lastCycle, ['pages', 'downloaded', 'inserted', 'parseFailed', 'persistenceUnconfirmed']),
+      coverage: { ...integerCounts(archive?.coverage, ['n30Symbols', 'n10Symbols']), lastChecked: clock(archive?.coverage?.lastChecked) },
+    },
+  };
+}
+
 const operation = x => ({ ok: boolean(x?.ok), lastRun: clock(x?.lastRun), lastDate: date(x?.lastDate ?? x?.lastJdate), rows: number(x?.rows), error: errorCategory(x?.error ?? x?.lastError), skipped: x?.skipped == null ? null : true });
-const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError) } });
+const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
 
 // IME scheduling days are Gregorian Tehran days, not timestamps. Target
 // disclosure dates are Jalali days. Preserve both precisions explicitly.
@@ -82,7 +124,7 @@ export function sanitizeDebug(d) {
     baseline: { state: choice(d?.baseline?.state, ['unknown', 'loaded', 'absent', 'failed']), error: errorCategory(d?.baseline?.error) },
     sources: Object.fromEntries(sources.map(k => [k, { ok: boolean(d?.sources?.[k]?.ok), ...counts(d?.sources?.[k], ['gold', 'currency', 'stocks', 'funds', 'cached', 'updated', 'failed']), error: errorCategory(d?.sources?.[k]?.error) }])),
     storage: { enabled: boolean(d?.supabase?.enabled), ok: boolean(d?.supabase?.ok), httpStatus: number(d?.supabase?.status), at: clock(d?.supabase?.at), error: errorCategory(d?.supabase?.error) },
-    codal: { ...operation(d?.codalEngine), feed: { ...counts(d?.codalEngine?.feed, ['pages', 'seen', 'matched', 'downloaded', 'inserted', 'parseFailed']), complete: boolean(d?.codalEngine?.feed?.complete), incompleteReason: errorCategory(d?.codalEngine?.feed?.incompleteReason) }, feedTable: { ...counts(d?.codalEngine?.feedTable, ['attempted', 'inserted', 'duplicates']), error: errorCategory(d?.codalEngine?.feedTable?.lastError) }, backfill: counts(d?.codalEngine?.backfill, ['queueSize', 'inserted', 'parseFailed', 'skippedCovered']) },
+    codal: { ...operation(d?.codalEngine), ...codalDetails(d?.codalEngine, d?.codalArchive), feed: { ...counts(d?.codalEngine?.feed, ['pages', 'seen', 'matched', 'downloaded', 'inserted', 'parseFailed']), complete: boolean(d?.codalEngine?.feed?.complete), incompleteReason: errorCategory(d?.codalEngine?.feed?.incompleteReason), incompleteReasonCode: choice(d?.codalEngine?.feed?.incompleteReason, incompleteReasons) }, feedTable: { ...counts(d?.codalEngine?.feedTable, ['attempted', 'inserted', 'duplicates']), error: errorCategory(d?.codalEngine?.feedTable?.lastError), ...safeErrorCodes(d?.codalEngine?.feedTable?.lastError) }, backfill: counts(d?.codalEngine?.backfill, ['queueSize', 'inserted', 'parseFailed', 'skippedCovered']) },
     history: Object.fromEntries(['eodHistory', 'indexHistory', 'marketBreadth', 'historyPrune'].map(k => [k, operation(d?.[k])])),
     commodity: { enabled: boolean(d?.commodity?.enabled), ...counts(d?.commodity, ['rows', 'reqToday', 'dailyCap', 'remaining']), lastFetchAt: clock(d?.commodity?.lastFetchAt), counterScope: choice(d?.commodity?.counterScope, ['process']), dayKey: date(d?.commodity?.dayKey), error: errorCategory(d?.commodity?.lastError) },
     ime: imeReceipt(d?.ime),
