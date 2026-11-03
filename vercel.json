@@ -1,4 +1,9 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "codex/member-financial-input-release-20261103": false
+    }
+  },
   "crons": [
     {
       "path": "/api/cron/alerts",
