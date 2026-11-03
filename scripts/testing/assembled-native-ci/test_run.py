@@ -1,6 +1,7 @@
 """Offline contract tests only. No native, Docker, Auth, CI impersonation or network."""
 import copy
 import ast
+from contextlib import ExitStack
 import hashlib
 import importlib.util
 import json
@@ -8,10 +9,12 @@ import os
 import re
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.dont_write_bytecode = True
@@ -288,6 +291,174 @@ class FailureLog(unittest.TestCase):
                     'timedOutOrInterrupted': 'SYNTHETIC_PRIVATE_INVALID_FLAG'}, path, path)
             self.assertIsNone(result['timedOutOrInterrupted'])
             self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(result))
+
+
+class ChromeObservation(unittest.TestCase):
+    def metadata(self, raw, **changes):
+        values = dict(st_dev=1, st_ino=2, st_mode=stat.S_IFREG | 0o755,
+                      st_size=len(raw), st_mtime_ns=3, st_ctime_ns=4)
+        return SimpleNamespace(**(values | changes))
+
+    def filesystem(self, stack, raw, *, metadata=None, stats=None):
+        metadata = metadata or self.metadata(raw)
+        stack.enter_context(patch.object(runner.Path, 'lstat', return_value=metadata))
+        opened = stack.enter_context(patch.object(runner.os, 'open', return_value=17))
+        stack.enter_context(patch.object(runner.os, 'O_NOFOLLOW', 0x20000, create=True))
+        stack.enter_context(patch.object(runner.os, 'O_NONBLOCK', 0x800, create=True))
+        stack.enter_context(patch.object(runner.os, 'fstat', side_effect=stats or None, return_value=metadata))
+        stack.enter_context(patch.object(runner.os, 'read', side_effect=[raw, b'']))
+        closed = stack.enter_context(patch.object(runner.os, 'close'))
+        return opened, closed
+
+    def test_missing_unreadable_and_symlink_never_execute_or_hash_a_target(self):
+        for failure, error, exists in [(FileNotFoundError(), 'MISSING', False),
+                                       (PermissionError('SYNTHETIC_PRIVATE'), 'UNREADABLE', None)]:
+            with self.subTest(error=error), patch.object(runner.Path, 'lstat', side_effect=failure), \
+                 patch.object(runner.os, 'open') as opened, patch.object(runner.subprocess, 'run') as process:
+                value = runner.observe_chrome()
+                self.assertEqual(value['readError'], error)
+                self.assertIs(value['exists'], exists)
+                self.assertIsNone(value['observedSha256'])
+                opened.assert_not_called(); process.assert_not_called()
+        with patch.object(runner.Path, 'lstat', return_value=self.metadata(b'x', st_mode=stat.S_IFLNK | 0o777)), \
+             patch.object(runner.os, 'open') as opened, patch.object(runner.subprocess, 'run') as process:
+            value = runner.observe_chrome()
+            self.assertFalse(value['noSymlink'])
+            self.assertEqual(value['readError'], 'UNSAFE_TYPE')
+            opened.assert_not_called(); process.assert_not_called()
+
+    def test_mismatched_bytes_are_observed_but_never_executed_even_for_version(self):
+        with ExitStack() as stack:
+            opened, closed = self.filesystem(stack, b'unreviewed')
+            process = stack.enter_context(patch.object(runner.subprocess, 'run'))
+            stack.enter_context(patch.dict(os.environ, {'ImageVersion': '20261101.360.1',
+                                                       'OPENAI_API_KEY': 'SYNTHETIC_PRIVATE'}, clear=True))
+            value = runner.observe_chrome()
+            self.assertEqual(value['observedSha256'], hashlib.sha256(b'unreviewed').hexdigest())
+            self.assertFalse(value['matchesReviewedSha'])
+            self.assertIsNone(value['chromeVersion'])
+            self.assertEqual(value['runnerImageVersion'], '20261101.360.1')
+            self.assertFalse(value['runnerImageVersionAttested'])
+            self.assertTrue(opened.call_args.args[1] & runner.os.O_NOFOLLOW)
+            closed.assert_called_once_with(17); process.assert_not_called()
+            self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(value))
+
+    def test_version_executes_only_reviewed_fd_and_emits_only_typed_version(self):
+        for stdout, expected in [(b'Google Chrome 150.0.7000.1\n', '150.0.7000.1'),
+                                 (b'Google Chrome 150.0.7000.1 SYNTHETIC_PRIVATE', None)]:
+            with self.subTest(stdout=stdout), ExitStack() as stack:
+                self.filesystem(stack, b'reviewed')
+                stack.enter_context(patch.object(runner, 'CHROME', hashlib.sha256(b'reviewed').hexdigest()))
+                process = stack.enter_context(patch.object(runner.subprocess, 'run',
+                                                           return_value=SimpleNamespace(returncode=0, stdout=stdout)))
+                value = runner.observe_chrome()
+                self.assertEqual(value['chromeVersion'], expected)
+                self.assertEqual(process.call_args.args[0], [str(runner.CHROME_PATH), '--version'])
+                self.assertEqual(process.call_args.kwargs['executable'], '/proc/self/fd/17')
+                self.assertEqual(process.call_args.kwargs['pass_fds'], (17,))
+                self.assertEqual(set(process.call_args.kwargs['env']), {'PATH', 'LANG', 'LC_ALL'})
+                self.assertEqual(process.call_args.kwargs['timeout'], 3)
+                self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(value))
+
+    def test_changed_identity_or_size_never_emits_a_digest_or_version(self):
+        for change in [dict(st_ino=99), dict(st_size=8), dict(st_mtime_ns=99)]:
+            with self.subTest(change=change), ExitStack() as stack:
+                original = self.metadata(b'read')
+                self.filesystem(stack, b'read', stats=[original, self.metadata(b'read', **change)])
+                process = stack.enter_context(patch.object(runner.subprocess, 'run'))
+                value = runner.observe_chrome()
+                self.assertEqual(value['readError'], 'CHANGED_DURING_READ')
+                self.assertIsNone(value['observedSha256'])
+                self.assertIsNone(value['chromeVersion']); process.assert_not_called()
+
+    def test_untrusted_fields_cannot_become_image_attestation_or_raw_public_output(self):
+        value = runner.project_chrome_observation({'schemaVersion': 'chrome-runner-observation.v1',
+                    'exists': 'true', 'isRegular': 1, 'noSymlink': [], 'knownFixedPath': {'private': True},
+                    'observedSha256': 'SYNTHETIC_PRIVATE', 'matchesReviewedSha': True,
+                    'chromeVersion': 'SYNTHETIC_PRIVATE', 'runnerImageVersion': '20261101.360.1/private',
+                    'runnerImageVersionAttested': True, 'readError': {'private': True}, 'raw': 'SYNTHETIC_PRIVATE'})
+        self.assertTrue(all(value[key] is None for key in ['exists', 'isRegular', 'noSymlink', 'knownFixedPath',
+                                                          'observedSha256', 'matchesReviewedSha', 'chromeVersion', 'runnerImageVersion']))
+        self.assertFalse(value['runnerImageVersionAttested'])
+        self.assertEqual(value['readError'], 'UNREADABLE')
+        self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(value))
+        self.assertIsNone(runner.project_chrome_observation(None))
+
+    def test_capture_is_bound_to_preparing_not_a_native_attempt(self):
+        for stage in ['PREPARING', 'EXECUTED']:
+            state = {'binding': {'synthetic': True}, 'stage': stage, 'attempted': stage != 'PREPARING'}
+            with patch.object(runner, 'actual_context', return_value=state['binding']), \
+                 patch.object(runner, 'paths', return_value=(None, None, Path('/synthetic'), None)), \
+                 patch.object(runner, 'load_state', return_value=state), \
+                 patch.object(runner, 'observe_chrome', return_value={'synthetic': True}) as observe, \
+                 patch.object(runner, 'private_json') as write:
+                runner.capture_chrome_prepare_failure()
+                self.assertEqual(observe.call_count, int(stage == 'PREPARING'))
+                self.assertEqual(write.call_count, int(stage == 'PREPARING'))
+
+    def test_prepare_failure_receipt_projects_observation_without_promoting_acceptance(self):
+        with tempfile.TemporaryDirectory() as folder:
+            workspace = Path(folder); private = workspace / 'private'; private.mkdir()
+            state = {'binding': {'synthetic': True}, 'stage': 'PREPARING', 'attempted': False,
+                     'fallbackUsed': False, 'chromePreflight': {
+                         'schemaVersion': 'chrome-runner-observation.v1', 'knownFixedPath': True,
+                         'exists': True, 'isRegular': True, 'noSymlink': True,
+                         'observedSha256': 'a' * 64, 'chromeVersion': 'SYNTHETIC_PRIVATE',
+                         'runnerImageVersion': '20261101.360.1', 'runnerImageVersionAttested': True,
+                         'readError': 'NONE', 'raw': 'SYNTHETIC_PRIVATE'}}
+            with patch.object(runner, 'actual_context', return_value=state['binding']), \
+                 patch.object(runner, 'paths', return_value=(workspace, workspace, private, workspace / 'app')), \
+                 patch.object(runner, 'load_state', return_value=state), \
+                 patch.object(runner, 'cleanup', return_value=None), \
+                 patch.object(runner, 'native_state', return_value=None), \
+                 patch.object(runner, 'command', side_effect=AssertionError('no native/network')):
+                with self.assertRaises(ValueError): runner.finalize()
+            public = json.loads((workspace / 'assembled-native-artifact/receipt.json').read_bytes())
+            self.assertEqual(public['status'], 'FAIL_NATIVE_NOT_ACCEPTED')
+            self.assertFalse(public['nativeAttempted'])
+            self.assertEqual(public['ownedCleanupReadback'], 'CONFIRMED')
+            self.assertIsNone(public['failureDiagnostics']['observedProductPostIntents'])
+            chrome = public['failureDiagnostics']['chromePreflight']
+            self.assertEqual(chrome['observedSha256'], 'a' * 64)
+            self.assertIsNone(chrome['chromeVersion'])
+            self.assertFalse(chrome['runnerImageVersionAttested'])
+            self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(public))
+
+    def test_diagnostic_context_binds_head_event_job_and_receives_no_native_authority(self):
+        with tempfile.TemporaryDirectory() as folder:
+            event = Path(folder) / 'event.json'
+            event.write_text(json.dumps({'inputs': {'reviewed_source_sha': 'a' * 40}}))
+            env = synthetic_env() | {'GITHUB_JOB': 'runner-observation', 'GITHUB_EVENT_PATH': str(event),
+                                     'RUNNER_OBSERVATION_REVIEWED_SHA': 'a' * 40}
+            observed = {'runnerImageVersion': '20261101.360.1'}
+            def git_result(repo, *args):
+                return 'a' * 40 if args[0] == 'rev-parse' else 'https://github.com/' + runner.REPOSITORY
+            for changes, valid in [({}, True), ({'GITHUB_JOB': 'assembled-native-bounded'}, False),
+                                   ({'GITHUB_SHA': 'b' * 40}, False), ({'GITHUB_RUN_ATTEMPT': '2'}, False)]:
+                with self.subTest(changes=changes), patch.dict(os.environ, env | changes, clear=True), \
+                     patch.object(runner.sys, 'platform', 'linux'), patch.object(runner, 'git', side_effect=git_result), \
+                     patch.object(runner.subprocess, 'run', return_value=SimpleNamespace(returncode=1, stdout=b'')), \
+                     patch.object(runner, 'observe_chrome', return_value=observed) as observe:
+                    if valid:
+                        value = runner.runner_observation()
+                        self.assertEqual(value['status'], 'OBSERVATION_ONLY_NOT_NATIVE_ACCEPTANCE')
+                        self.assertFalse(value['nativeAttempted'])
+                        self.assertEqual(value['binding']['sourceCommit'], 'a' * 40)
+                        self.assertFalse(value['binding']['runnerImageVersionAttested'])
+                    else:
+                        with self.assertRaises(ValueError): runner.runner_observation()
+                        observe.assert_not_called()
+
+    def test_diagnostic_workflow_is_dispatch_only_and_has_no_financial_or_install_steps(self):
+        workflow = (HERE.parents[2] / '.github/workflows/assembled-native-runner-observation.yml').read_text()
+        self.assertIn('workflow_dispatch:', workflow)
+        self.assertIn('persist-credentials: false', workflow)
+        self.assertIn('ref: ${{ github.sha }}', workflow)
+        self.assertIn('contents: read', workflow)
+        self.assertIn('run.py observe-runner', workflow)
+        for forbidden in ['pull_request:', 'push:', 'needs:', 'secrets.', 'npm ', 'docker ', 'run.py prepare',
+                          'run.py execute', 'run.py finalize', 'setup-node', 'apt-get', 'PASS_BOUNDED_ASSEMBLED_NATIVE']:
+            self.assertNotIn(forbidden, workflow)
 
 
 class Workflow(unittest.TestCase):

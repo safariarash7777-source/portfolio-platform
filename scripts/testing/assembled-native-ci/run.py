@@ -32,6 +32,11 @@ LABEL = 'p03.assembled-native-lab'
 PREFIX = 'assembled-member-admin-'
 UUID = re.compile(r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}')
 HEX = re.compile(r'[a-f0-9]{64}')
+CHROME_PATH = Path('/opt/google/chrome/chrome')
+CHROME_VERSION = re.compile(r'[0-9]{1,4}(?:\.[0-9]{1,4}){3}')
+IMAGE_VERSION = re.compile(r'[0-9]{8}\.[0-9]{1,5}\.[0-9]{1,5}')
+CHROME_READ_ERRORS = frozenset({'NONE', 'MISSING', 'UNREADABLE', 'UNSAFE_TYPE',
+                              'CHANGED_DURING_READ', 'FILE_BOUND', 'VERSION_UNAVAILABLE'})
 OVERLAY_NAMES = {'assembled-auth-runtime.mjs', 'assembled-auth-gateway.mjs', 'assembled-native.mjs',
                  'assembled-member-scenario.mjs', 'assembled-observer-policy.mjs',
                  'assembled-overlay-gate.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json'}
@@ -374,6 +379,144 @@ def need(value, code):
 
 def sha(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+def project_chrome_observation(value):
+    if not isinstance(value, dict) or value.get('schemaVersion') != 'chrome-runner-observation.v1':
+        return None
+    result = {'schemaVersion': 'chrome-runner-observation.v1'}
+    for key in ['exists', 'isRegular', 'noSymlink', 'knownFixedPath']:
+        item = value.get(key)
+        result[key] = item if type(item) is bool else None
+    digest = value.get('observedSha256')
+    digest = digest if isinstance(digest, str) and HEX.fullmatch(digest) else None
+    result['observedSha256'] = digest
+    result['matchesReviewedSha'] = digest == CHROME if digest is not None else None
+    version = value.get('chromeVersion')
+    result['chromeVersion'] = (version if result['matchesReviewedSha'] is True
+                              and result['noSymlink'] is True and isinstance(version, str)
+                              and CHROME_VERSION.fullmatch(version) else None)
+    image = value.get('runnerImageVersion')
+    result['runnerImageVersion'] = image if isinstance(image, str) and IMAGE_VERSION.fullmatch(image) else None
+    # The coordinator must independently compare the same job's Set up job log.
+    result['runnerImageVersionAttested'] = False
+    error = value.get('readError')
+    result['readError'] = error if isinstance(error, str) and error in CHROME_READ_ERRORS else 'UNREADABLE'
+    return result
+
+
+def file_identity(metadata):
+    return tuple(getattr(metadata, key) for key in
+                 ['st_dev', 'st_ino', 'st_mode', 'st_size', 'st_mtime_ns', 'st_ctime_ns'])
+
+
+def observe_chrome():
+    result = {'schemaVersion': 'chrome-runner-observation.v1', 'knownFixedPath': True,
+              'exists': None, 'isRegular': None, 'noSymlink': None,
+              'observedSha256': None, 'chromeVersion': None,
+              'runnerImageVersion': os.environ.get('ImageVersion'), 'readError': 'UNREADABLE'}
+    descriptor = None
+    try:
+        metadata = CHROME_PATH.lstat()
+        result.update(exists=True, isRegular=stat.S_ISREG(metadata.st_mode))
+        chain = [*reversed(CHROME_PATH.parents), CHROME_PATH]
+        if any(stat.S_ISLNK(path.lstat().st_mode) for path in chain):
+            result.update(noSymlink=False, readError='UNSAFE_TYPE')
+            return project_chrome_observation(result)
+        result['noSymlink'] = True
+        if not result['isRegular'] or not hasattr(os, 'O_NOFOLLOW'):
+            result['readError'] = 'UNSAFE_TYPE'
+            return project_chrome_observation(result)
+        descriptor = os.open(CHROME_PATH, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode) or file_identity(before) != file_identity(metadata):
+            result['readError'] = 'CHANGED_DURING_READ'
+            return project_chrome_observation(result)
+        if not 0 < before.st_size <= 512 * 1024 * 1024:
+            result['readError'] = 'FILE_BOUND'
+            return project_chrome_observation(result)
+        digest, total = hashlib.sha256(), 0
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            total += len(chunk)
+            if total > before.st_size:
+                result['readError'] = 'CHANGED_DURING_READ'
+                return project_chrome_observation(result)
+            digest.update(chunk)
+        after = os.fstat(descriptor)
+        if (total != before.st_size or file_identity(before) != file_identity(after)
+                or file_identity(after) != file_identity(CHROME_PATH.lstat())
+                or any(stat.S_ISLNK(path.lstat().st_mode) for path in chain)):
+            result['readError'] = 'CHANGED_DURING_READ'
+            return project_chrome_observation(result)
+        result.update(observedSha256=digest.hexdigest(), readError='NONE')
+        if result['observedSha256'] == CHROME:
+            # Execute only the exact reviewed bytes, through the still-open FD.
+            # A mismatched browser is never executed, even for --version.
+            try:
+                version = subprocess.run([str(CHROME_PATH), '--version'],
+                                        executable='/proc/self/fd/' + str(descriptor), pass_fds=(descriptor,),
+                                        cwd='/', env={'PATH': '/usr/bin:/bin', 'LANG': 'C', 'LC_ALL': 'C'},
+                                        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=3)
+                match = (re.fullmatch(rb'Google Chrome ([0-9]{1,4}(?:\.[0-9]{1,4}){3})\s*', version.stdout)
+                         if version.returncode == 0 and len(version.stdout) <= 256 else None)
+                if match and file_identity(after) == file_identity(os.fstat(descriptor)):
+                    result['chromeVersion'] = match.group(1).decode('ascii')
+                else:
+                    result['readError'] = 'VERSION_UNAVAILABLE'
+            except (OSError, subprocess.SubprocessError):
+                result['readError'] = 'VERSION_UNAVAILABLE'
+    except FileNotFoundError:
+        if result['exists'] is None:
+            result.update(exists=False, readError='MISSING')
+        else:
+            result['readError'] = 'CHANGED_DURING_READ'
+    except OSError:
+        result['readError'] = 'UNREADABLE'
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+    return project_chrome_observation(result)
+
+
+def capture_chrome_prepare_failure():
+    binding = actual_context()
+    _, _, private, _ = paths()
+    state = load_state(binding, private)
+    if state.get('stage') == 'PREPARING' and state.get('attempted') is False:
+        state['chromePreflight'] = observe_chrome()
+        private_json(private / 'state.json', state)
+
+
+def runner_observation():
+    env = os.environ
+    need(sys.platform == 'linux' and env.get('RUNNER_OS') == 'Linux'
+         and env.get('CI') == 'true' and env.get('GITHUB_ACTIONS') == 'true'
+         and env.get('GITHUB_EVENT_NAME') == 'workflow_dispatch'
+         and env.get('GITHUB_REPOSITORY') == REPOSITORY
+         and env.get('GITHUB_JOB') == 'runner-observation'
+         and env.get('GITHUB_RUN_ATTEMPT') == '1'
+         and re.fullmatch(r'[1-9][0-9]{0,19}', env.get('GITHUB_RUN_ID', '')),
+         'runner_observation_binding_invalid')
+    reviewed = env.get('RUNNER_OBSERVATION_REVIEWED_SHA', '')
+    event = json.loads(Path(env['GITHUB_EVENT_PATH']).read_bytes())
+    need(re.fullmatch(r'[a-f0-9]{40}', reviewed) and reviewed == env.get('GITHUB_SHA')
+         and event.get('inputs', {}).get('reviewed_source_sha') == reviewed
+         and git(CONTROL, 'rev-parse', 'HEAD') == reviewed
+         and git(CONTROL, 'remote', 'get-url', 'origin').removesuffix('.git') == 'https://github.com/' + REPOSITORY,
+         'runner_observation_source_unbound')
+    credential = subprocess.run(['git', 'config', '--local', '--get-regexp', r'^(credential\.|http\..*extraheader)'],
+                                cwd=CONTROL, capture_output=True)
+    need(credential.returncode == 1 and not credential.stdout, 'runner_observation_credentials_present')
+    observation = observe_chrome()
+    return {'schemaVersion': 'assembled-runner-observation.v1', 'status': 'OBSERVATION_ONLY_NOT_NATIVE_ACCEPTANCE',
+            'binding': {'repository': REPOSITORY, 'runId': env['GITHUB_RUN_ID'], 'attempt': 1,
+                        'job': env['GITHUB_JOB'], 'sourceCommit': reviewed,
+                        'runnerImageVersion': observation['runnerImageVersion'], 'runnerImageVersionAttested': False},
+            'chrome': observation, 'nativeAttempted': False, 'targetInstall': 'NOT_APPLIED',
+            'arashAcceptance': 'UNOBSERVED', 'automaticReplay': False}
 
 
 def context(env, platform):
@@ -812,6 +955,7 @@ def failure_observation(state, temp, private):
     except (OSError, ValueError, KeyError, TypeError):
         data = None
     result.update(project_attested_counts(data, private))
+    result['chromePreflight'] = project_chrome_observation(state.get('chromePreflight'))
     return result, raw
 
 
@@ -864,11 +1008,23 @@ def finalize():
 if __name__ == '__main__':
     os.umask(0o077)
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=['prepare', 'execute', 'finalize'])
+    parser.add_argument('action', choices=['prepare', 'execute', 'finalize', 'observe-runner'])
     args = parser.parse_args()
     try:
-        print(json.dumps({'status': {'prepare': prepare, 'execute': execute, 'finalize': finalize}[args.action]()}))
+        if args.action == 'observe-runner':
+            print(json.dumps(runner_observation(), sort_keys=True))
+        else:
+            print(json.dumps({'status': {'prepare': prepare, 'execute': execute, 'finalize': finalize}[args.action]()}))
     except Exception as error:
+        if args.action == 'observe-runner':
+            print(json.dumps({'status': 'FAIL_RUNNER_OBSERVATION', 'failureCode': 'runner_observation_unavailable',
+                              'nativeAttempted': False, 'automaticReplay': False}))
+            sys.exit(1)
         reason = static_controller_error(error, 'assembled_operation_failed')
+        if args.action == 'prepare' and reason == 'assembled_existing_chrome_pin_required':
+            try:
+                capture_chrome_prepare_failure()
+            except Exception:
+                pass  # Preserve the original failure; never emit raw observation errors.
         print(json.dumps({'status': 'FAIL_NATIVE_NOT_ACCEPTED', 'reason': reason, 'automaticReplay': False}))
         sys.exit(1)
