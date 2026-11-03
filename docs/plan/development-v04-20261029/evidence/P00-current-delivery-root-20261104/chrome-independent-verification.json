@@ -1,0 +1,57 @@
+{
+  "schema": "assembled-runner-independent-observation-verification.v1",
+  "status": "ARTIFACT_SOURCE_BOUND_IMAGE_ENV_NOT_ATTESTED",
+  "run": 41737554503,
+  "attempt": 1,
+  "job": 126270542943,
+  "event": "workflow_dispatch",
+  "runAndJobConclusion": "SUCCESS",
+  "actualCheckout": "d34ad352c0124cbf07442db3e136ca51f0f52729",
+  "artifact": {
+    "id": 13279966256,
+    "zipBytes": 635,
+    "zipSha256": "58828b44238d5905cbfd6c62e84d4c0483e73d3995971ed02cf9daa0de8fa7ac",
+    "onlyMember": "observation.json",
+    "observationSha256": "be051beb71a6dd6e0aace651dd07d3a8d591aacf87f7174f46835124c1d911cb",
+    "originalObservationUnmodified": true
+  },
+  "sourceClosure": {
+    "baseline": "fdeac08dcd8efda2f54fc1c8928c398df2354111",
+    "independentGitHubTreeBlobsEqualBaseline": true,
+    "blobs": {
+      "scripts/testing/assembled-native-ci/run.py": "c45e9b0502721f4b3566861aab9cbfac3390fd15",
+      "scripts/testing/assembled-native-ci/test_run.py": "c6c7e58253139de05c9d046493bf5381dd7c3834",
+      ".github/workflows/assembled-native-runner-observation.yml": "8922bb753e32d114f8b430e6c68ea055acb601b6"
+    }
+  },
+  "chrome": {
+    "fixedPathFromReviewedSource": "/opt/google/chrome/chrome",
+    "chromeVersion": "156.0.8078.47",
+    "exists": true,
+    "isRegular": true,
+    "knownFixedPath": true,
+    "matchesReviewedSha": true,
+    "noSymlink": true,
+    "observedSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+    "readError": "NONE",
+    "runnerImageVersion": "20261026.354.1",
+    "runnerImageVersionAttested": false,
+    "schemaVersion": "chrome-runner-observation.v1"
+  },
+  "imageReadback": {
+    "sameJobSetupImage": "ubuntu-24.04",
+    "sameJobSetupImageVersion": "20261025.353.1",
+    "sameJobSetupProvisioner": "20261021.618",
+    "artifactEnvironmentImageVersion": "20261026.354.1",
+    "versionsMatch": false,
+    "originalAttestedFalsePreserved": true,
+    "crossSourceImageAttestation": "NOT_ESTABLISHED"
+  },
+  "limits": [
+    "This observation proves only this run/job and source.",
+    "Previous run41729546426 Chrome bytes/version or exact prepare failure cause are not established.",
+    "No pin, capsule or helper changed; no new source patch, dispatch, native, SQL, Auth, Docker or install performed by START-B.",
+    "Target installation and Arash usability acceptance are not established."
+  ],
+  "nextOwner": "root coordinator decides compatibility from actual evidence without automatic pin replacement."
+}

@@ -1,0 +1,19 @@
+# تحویل جاری هماهنگ‌کننده — ۴ نوامبر تهران
+
+این پوشه شاهد همان COMMAND-CENTER است؛ دفتر وضعیت یا برنامهٔ تازه نیست. مسیرهای محصول، آزمایش مستقل و پذیرش مقصد از هم جدا هستند.
+
+| خروجی | مسیر بازکردن و نسخه | نتیجه واقعی | محدودیت و اقدام مسئول |
+|---|---|---|---|
+| شرکت/صندوق موجود | [فولاد](https://portfolio-platform-fawn.vercel.app/symbol/فولاد#fundamental)، [فملی](https://portfolio-platform-fawn.vercel.app/symbol/فملی#fundamental)، [مقایسه صندوق](https://portfolio-platform-fawn.vercel.app/market/funds)؛ Production d34 | کد محصول همان نسخه بازار آزموده‌شده a86 است؛ PR395 فقط ابزار و اسناد، actual alias/READY بازخوانی شد | دو گزارش جدید و نرخ/مقدار بی‌واحد معتبر باز؛ A اصلاح prefix در394، root هویت runtime/بودجه را پیش از فعال‌سازی می‌بندد |
+| رسانه واقعی | [Preview f0a98 / insights](https://portfolio-platform-ln4vuboil-safariarash7777-4463s-projects.vercel.app/insights) | ۶۰ کارت؛ هفت‌روزه۲۰ عضو دقیق؛ سی‌روزه/reload۶۰؛ unknown۰ و clear۶۰؛ عرض۳۹۰/۱۲۸۰؛ errors/POST صفر | layout=fallback با هشدار؛ تاریخ ثبت‌شده، نه انتشار مستقل تأییدشده؛ سقف۶۰. مجری موجود merge main/CI؛ root ساخت تازه Production و پذیرش مسیر legacy، بدون promote کردن Previewenv |
+| تمرین بازیابی SQL تازه | checkpoint20261103T222239Z؛ dump7bd80f… /۲٬۴۱۵٬۶۵۴٬۶۰۰byte | core۲۰۸۴ خط با اختلاف۰/۰؛ private۳schema/۱۹function/۰relation با equality لفظی/هش؛ بازخوانی مستقل۲۳:۳۸UTC | فقط کپی جدا و SQL؛ source سالم/restart۰، target متوقف؛ consumer=None و primary install باز. P15/root اتصال receipt به gate پس از source review؛ storage binary و حق خدمت جدا باز |
+| مسیر مونتاژ عضو/مدیر | [Linux run41740353457](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41740353457)، candidate4dc، controllerFDE | پنج بررسی اولیه PASS؛ nativeAttempted=true، شکست playwright_timeout پس از immutable-source-default-closed؛ cleanupCONFIRMED/unknownfalse | ۹ بررسی مرورگر PASS نشده، جزئیات selector نامعلوم؛ B تحلیل همان driver و تشخیص محدود. این اجرا نصب/مسیر کامل مشاوره/حق خدمت نیست |
+| ردیابی داده | [probe41737562618](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41737562618)، مشاهده۲۳:۱۵UTC | control-plane arsadata/release6ad37ec877b9f9b4324de29e READY، تاریخ انتشار۱۷اکتبر؛ feed invalid_order_or_identity، budgetHTTP404 | commit runtime نامعلوم؛ metadata با file hash یکی نیست. دو report جدید و آخرین complete مالی UNKNOWN؛ VPS فاقد دو budgetRPC است ولی backend PaaS=VPS اثبات نشده |
+
+[رسید رسانه](media-preview.json) · [موبایل](media-mobile.png) · [دسکتاپ](media-desktop.png) · [Linux receipt](native-receipt.json) · [بازیابی و ظرفیت مستقل](sql-restore-independent-readback.json) · [control-plane](control-plane.json) · [هویت انتشار ابزار](production-identity.json).
+
+Chrome فقط در job مشاهده41737554503 با SHA95dc9473… و version156.0.8078.47 ثبت شد؛ env ImageVersion و Setup log متفاوت‌اند و attested=false محفوظ است. در native417403 Chromeprepare گذشت، ولی chromePreflight در receipt null است؛ مشاهدهٔ یک job به job دیگر یا علت تاریخی شکست prepare تعمیم داده نمی‌شود.
+
+نام playwright_timeout علت دقیق را اثبات نمی‌کند: کد موجود خطای TimeoutError درخواست REST با AbortSignal۱۵ثانیه را هم به همین enum می‌برد. نخستین await پس از آخرین PASS، readDirect است و پیش از بازکردن مرورگر قرار دارد؛ معلوم نیست شکست واقعاً در REST یا مرورگر بوده است. stage غیرحساس در child منبع برای تشخیص آماده می‌شود؛ اجرای تازه خودکار نیست. در بررسی تصویر موبایل نیز عنوان URL خامِ برخی محتواها در بخش برجسته بریده دیده می‌شود؛ این پذیرش محدودِ دریافت/فیلتر است و تأیید کامل عنوان‌گذاری/چیدمان نیست.
+
+سه اقدام قابل مشاهده بعدی: رسانه390 پس از merge/CI روی Production و آزمون واقعی؛ B رفع/تشخیص دقیق timeout همان جریان بدون کاهش معیار؛ A/root اتصال نسخه واقعاً اجراشده و بودجه معتبر به دریافت و بازخوانی دو گزارش. P15 gate خواندنی مستقل از این سه ادامه دارد؛ Hermes نصب/انتقال/مدل/خرید تازه ندارد.
