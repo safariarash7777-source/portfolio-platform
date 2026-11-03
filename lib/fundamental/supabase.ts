@@ -14,6 +14,7 @@ import type {
   CodalN30Data,
   SymbolFundamentals,
   ReportScope,
+  ReportSource,
 } from "./types";
 import { fiscalChainKey } from "../core/quarterly";
 import { isMillionRialUnit } from "./units";
@@ -24,6 +25,7 @@ export interface CodalRow {
   id: number;
   symbol: string;
   report_kind: string;
+  captured_at?: string | null;
   period_end: string | null;
   title: string | null;
   source_url: string | null;
@@ -81,7 +83,7 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
   return (Object.keys(FETCH_LIMITS) as Array<keyof typeof FETCH_LIMITS>).map((kind) => ({
     kind,
     qs: new URLSearchParams({
-      select: "id,symbol,report_kind,period_end,title,source_url,data,raw",
+      select: "id,symbol,report_kind,period_end,title,source_url,data,raw,captured_at",
       symbol: `eq.${symbol}`,
       report_kind: `eq.${kind}`,
       data: "not.is.null",
@@ -210,6 +212,43 @@ export function publishKey(row: Pick<CodalRow, "raw">): string | null {
   if (!/^1[34]\d{2}\/(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])$/.test(d)) return null;
   if (!/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(t)) return null;
   return `${d} ${t}`;
+}
+
+/** Adapt the existing331 record projection without changing selection's legacy defaults. */
+function rowProvenance(row: CodalRow): NonNullable<ReportSource["records"]>[number] {
+  const stamp = row.captured_at;
+  const day = typeof stamp === "string" ? new Date(stamp.slice(0, 10) + "T00:00:00Z") : null;
+  const validCapture = !!day && Number.isFinite(day.getTime())
+    && day.toISOString().slice(0, 10) === stamp?.slice(0, 10)
+    && typeof stamp === "string"
+    && /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(stamp)
+    && Number.isFinite(Date.parse(stamp));
+  const version = parserVersion(row);
+  const rawVersion = row.raw?.parser_version;
+  const suffix = String(row.source_url ?? "").match(/#pv(\d+)$/);
+  const suffixVersion = suffix ? Number(suffix[1]) : null;
+  const explicitRaw = typeof rawVersion === "number" && Number.isSafeInteger(rawVersion) && rawVersion > 0 && rawVersion === version;
+  const explicitSuffix = suffixVersion !== null && Number.isSafeInteger(suffixVersion) && suffixVersion > 0 && suffixVersion === version;
+  // Only two bounded clock scalars, never the raw object/title/body. Preserve
+  // source digits/text; absent, non-string, blank or oversized input stays null.
+  const rawClock = (value: unknown): string | null =>
+    typeof value === "string" && value.trim() && value.length <= 64 ? value : null;
+  return {
+    id: Number.isSafeInteger(row.id) && row.id > 0 ? row.id : null,
+    sourceUrl: approvedCodalUrl(cleanUrl(row)),
+    storedPeriodEnd: typeof row.period_end === "string" ? row.period_end : null,
+    financialPeriodEnd: typeof row.data.period_end === "string" ? row.data.period_end : null,
+    publishedAt: publishKey(row),
+    publishedDateRaw: rawClock(row.raw?.date_publish),
+    publishedTimeRaw: rawClock(row.raw?.time_publish),
+    publishedAtUtc: null,
+    publicationUtcConfidence: "unknown",
+    capturedAtRaw: validCapture ? stamp! : null,
+    capturedAt: validCapture ? new Date(stamp!).toISOString() : null,
+    parserVersion: explicitRaw || explicitSuffix ? version : null,
+    parserVersionSource: explicitRaw ? "raw" : explicitSuffix ? "source_url" : null,
+    amendment: isAmendmentTitle(row.title),
+  };
 }
 
 /**
@@ -380,6 +419,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
         title: `صورت‌های مالی ${periodLabel} ${d.audited ? "حسابرسی‌شدهٔ" : "حسابرسی‌نشدهٔ"} سال مالی ${faDigits(fyOf(d))}${consolidated ? " — گزارشِ تلفیقی" : ""} (کدال)`,
         source_url: approvedCodalUrl(cleanUrl(main)),
         publishedAt: publishKey(main),
+        records: [rowProvenance(main)],
         // «اعتبارسنجی متقاطع» فقط حسابی است (ناخالص = فروش − بها) و دامنه را اثبات
         // نمی‌کند؛ برای گزارشِ تلفیقی تیکِ سبز گمراه‌کننده بود (B-056).
         verified,
@@ -400,6 +440,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
       source: {
         title: "گزارش‌های فعالیت ماهانه (ن-۳۰) کدال",
         source_url: approvedCodalUrl(cleanUrl(n30rows[0])),
+        records: n30rows.map(rowProvenance),
         verified: n30rows.every((row) =>
           ["arithmetic", "header+arithmetic"].includes((row.data as CodalN30Data).unit_basis ?? "")),
       },
