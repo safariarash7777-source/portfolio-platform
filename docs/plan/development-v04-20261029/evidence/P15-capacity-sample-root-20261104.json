@@ -1,0 +1,220 @@
+{
+  "status": "PASS_SHORT_READ_ONLY_SAMPLE",
+  "at": "2026-11-03T22:13:04.672551+00:00",
+  "sampleSeconds": 2.000942107057199,
+  "logicalCores": 4,
+  "hostCpu": {
+    "busyExcludingIowaitPercentOfAllCores": 8.524173027989821,
+    "iowaitPercentOfAllCores": 1.272264631043257,
+    "stealPercentOfAllCores": 0.0,
+    "denominator": "sum of ticks across all logical cores; guest ticks not double-counted"
+  },
+  "memoryBytes": {
+    "MemTotal": 8276856832,
+    "MemAvailable": 5992955904,
+    "SwapTotal": 2147479552,
+    "SwapFree": 1781788672
+  },
+  "filesystemBytes": {
+    "total": 81839546368,
+    "free": 22493642752,
+    "available": 19015127040
+  },
+  "dockerStats": [
+    {
+      "ID": "eb410df96316",
+      "Name": "finance-dashboard-20261028-v12-130524",
+      "CPUPerc": "30.92%",
+      "MemUsage": "36.69MiB / 384MiB",
+      "MemPerc": "9.56%"
+    },
+    {
+      "ID": "86b36fd6c88e",
+      "Name": "fx-dashboard",
+      "CPUPerc": "0.82%",
+      "MemUsage": "259.6MiB / 7.708GiB",
+      "MemPerc": "3.29%"
+    },
+    {
+      "ID": "1d5a241e4abc",
+      "Name": "portfolio-auth219-20261002-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "10.56MiB / 128MiB",
+      "MemPerc": "8.25%"
+    },
+    {
+      "ID": "0bda5b6e655b",
+      "Name": "portfolio-auth219-20261002-storage",
+      "CPUPerc": "0.00%",
+      "MemUsage": "88.13MiB / 256MiB",
+      "MemPerc": "34.43%"
+    },
+    {
+      "ID": "40ee88070d97",
+      "Name": "portfolio-auth219-20261002-rest",
+      "CPUPerc": "0.22%",
+      "MemUsage": "9.188MiB / 128MiB",
+      "MemPerc": "7.18%"
+    },
+    {
+      "ID": "f95ac1c3f529",
+      "Name": "portfolio-auth219-20261002-sink",
+      "CPUPerc": "0.06%",
+      "MemUsage": "10.85MiB / 96MiB",
+      "MemPerc": "11.30%"
+    },
+    {
+      "ID": "bc5659d6ed1e",
+      "Name": "portfolio-auth219-20261002-db",
+      "CPUPerc": "0.00%",
+      "MemUsage": "14.7MiB / 512MiB",
+      "MemPerc": "2.87%"
+    },
+    {
+      "ID": "e169f944e6ef",
+      "Name": "portfolio-demo844-app",
+      "CPUPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "MemPerc": "0.00%"
+    },
+    {
+      "ID": "81e25e71e292",
+      "Name": "portfolio-demo844-gateway",
+      "CPUPerc": "0.00%",
+      "MemUsage": "10.64MiB / 64MiB",
+      "MemPerc": "16.62%"
+    },
+    {
+      "ID": "dc97a9f2fa45",
+      "Name": "portfolio-demo844-storage",
+      "CPUPerc": "0.00%",
+      "MemUsage": "87.81MiB / 256MiB",
+      "MemPerc": "34.30%"
+    },
+    {
+      "ID": "589bb20f1550",
+      "Name": "portfolio-demo844-rest",
+      "CPUPerc": "0.22%",
+      "MemUsage": "8.5MiB / 128MiB",
+      "MemPerc": "6.64%"
+    },
+    {
+      "ID": "d5e1bd7888db",
+      "Name": "portfolio-demo844-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "6.672MiB / 128MiB",
+      "MemPerc": "5.21%"
+    },
+    {
+      "ID": "621e728807b0",
+      "Name": "portfolio-demo844-db",
+      "CPUPerc": "0.02%",
+      "MemUsage": "9.195MiB / 512MiB",
+      "MemPerc": "1.80%"
+    },
+    {
+      "ID": "706bdb909bc4",
+      "Name": "portfolio-accept195-app",
+      "CPUPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "MemPerc": "0.00%"
+    },
+    {
+      "ID": "54e56f79d27d",
+      "Name": "portfolio-accept195-gateway",
+      "CPUPerc": "0.00%",
+      "MemUsage": "20.14MiB / 64MiB",
+      "MemPerc": "31.46%"
+    },
+    {
+      "ID": "7aa46e2a59e3",
+      "Name": "portfolio-accept195-storage",
+      "CPUPerc": "0.02%",
+      "MemUsage": "88.69MiB / 256MiB",
+      "MemPerc": "34.65%"
+    },
+    {
+      "ID": "40e5edf87a6b",
+      "Name": "portfolio-accept195-rest",
+      "CPUPerc": "0.21%",
+      "MemUsage": "8.625MiB / 128MiB",
+      "MemPerc": "6.74%"
+    },
+    {
+      "ID": "1cab06fa6b45",
+      "Name": "portfolio-accept195-auth",
+      "CPUPerc": "0.00%",
+      "MemUsage": "7.051MiB / 128MiB",
+      "MemPerc": "5.51%"
+    },
+    {
+      "ID": "b96b02607143",
+      "Name": "portfolio-accept195-db",
+      "CPUPerc": "2.41%",
+      "MemUsage": "9.977MiB / 512MiB",
+      "MemPerc": "1.95%"
+    },
+    {
+      "ID": "10d8dd93463e",
+      "Name": "portfolio-stage-gateway-1",
+      "CPUPerc": "0.00%",
+      "MemUsage": "13.1MiB / 7.708GiB",
+      "MemPerc": "0.17%"
+    },
+    {
+      "ID": "d18e72a1f11e",
+      "Name": "portfolio-stage-auth-1",
+      "CPUPerc": "0.13%",
+      "MemUsage": "13.84MiB / 7.708GiB",
+      "MemPerc": "0.18%"
+    },
+    {
+      "ID": "703c0d4a0273",
+      "Name": "portfolio-stage-rest-1",
+      "CPUPerc": "0.19%",
+      "MemUsage": "85.04MiB / 7.708GiB",
+      "MemPerc": "1.08%"
+    },
+    {
+      "ID": "f44d402babd3",
+      "Name": "portfolio-stage-storage-1",
+      "CPUPerc": "0.02%",
+      "MemUsage": "117MiB / 7.708GiB",
+      "MemPerc": "1.48%"
+    },
+    {
+      "ID": "9193dfe09afa",
+      "Name": "portfolio-stage-db-1",
+      "CPUPerc": "10.93%",
+      "MemUsage": "373.6MiB / 7.708GiB",
+      "MemPerc": "4.73%"
+    },
+    {
+      "ID": "3433552f37e1",
+      "Name": "fx-dashboard-proxy",
+      "CPUPerc": "0.00%",
+      "MemUsage": "23.36MiB / 7.708GiB",
+      "MemPerc": "0.30%"
+    }
+  ],
+  "dockerCpuDenominator": "100 percent equals one logical core; separate Docker short sample",
+  "currentDatabaseSize": {
+    "databaseBytes": 1433242771
+  },
+  "sourceBefore": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "sourceAfter": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "sustainedCapacityProven": false,
+  "modelsOrServicesChanged": false,
+  "observedAtUtc": "2026-11-03T22:13:04.104604+00:00",
+  "payloadSha256": "10c0df1d6977e68d6199b6ca2372c61e3ff54b7fef251bc8c5e05e36a424f71f",
+  "remoteWrites": false,
+  "automaticRetry": false
+}
