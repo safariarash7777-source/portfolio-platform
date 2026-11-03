@@ -5,8 +5,12 @@ export const DEBT_LABELS: Record<DebtKind, string> = { loan: "وام", personal:
 export function text(value: unknown): string { return typeof value === "string" ? value.trim() : ""; }
 export function numberInput(value: unknown): number {
   if (typeof value === "number") return value;
-  const raw = toLatinDigits(text(value));
-  return /^\d+(?:\.\d+)?$/.test(raw) ? Number(raw) : NaN;
+  const raw = toLatinDigits(text(value)).replace(/٫/g, ".");
+  // Validate grouping before removing it: "12,34" must never become 1234.
+  // A comma is a thousands separator here, never an inferred decimal mark.
+  const plain = /^\d+(?:\.\d+)?$/;
+  const grouped = /^\d{1,3}([,٬])\d{3}(?:\1\d{3})*(?:\.\d+)?$/;
+  return plain.test(raw) || grouped.test(raw) ? Number(raw.replace(/[,٬]/g, "")) : NaN;
 }
 export function dateInput(value: unknown): string {
   const date = toLatinDigits(text(value));
@@ -15,6 +19,9 @@ export function dateInput(value: unknown): string {
 }
 export function moneyInput(value: unknown, currency: unknown): number {
   if (currency !== "IRR" && currency !== "IRT") throw new Error("واحد پول باید ریال یا تومان باشد.");
+  // Reject a nonzero textual fraction before Number can round it to an integer.
+  const fraction = toLatinDigits(text(value)).split(/[.٫]/)[1];
+  if (fraction && /[1-9]/.test(fraction)) throw new Error("مبلغ باید عدد صحیح نامنفی و در محدودهٔ قابل محاسبه باشد.");
   const n = numberInput(value);
   if (!Number.isSafeInteger(n) || n < 0) throw new Error("مبلغ باید عدد صحیح نامنفی و در محدودهٔ قابل محاسبه باشد.");
   const toman = currency === "IRR" ? n / 10 : n;
