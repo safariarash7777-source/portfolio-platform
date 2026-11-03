@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import vm from 'node:vm';
+import { createHash } from 'node:crypto';
 import ts from 'typescript';
 import { toMarket } from './market-ir';
 import { iranReadQuality } from './market-quality';
@@ -111,7 +112,13 @@ function privateReader(environment: Environment = {}, cap = 5000) {
   const modules = new Map<string, Record<string, unknown>>(), calls: {url:URL;init:RequestInit}[] = [], deadlines:number[]=[];
   const clock={now:Date.parse('2026-10-31T08:00:00Z')};
   let responder: (url:string,init:RequestInit)=>Promise<Response> = async()=>Response.json([{payload:snapshot()}]);
-  let digester: (algorithm:AlgorithmIdentifier,data:BufferSource)=>Promise<ArrayBuffer> = (algorithm,data)=>globalThis.crypto.subtle.digest(algorithm,data);
+  // Real SHA-256, without thread-pool scheduling in cache-order tests. Slow
+  // digest/expiry scenarios still supply their explicit deferred overrides.
+  let digester: (algorithm:AlgorithmIdentifier,data:BufferSource)=>Promise<ArrayBuffer> = async(algorithm,data)=>{
+    assert.equal(algorithm,'SHA-256');
+    const bytes=ArrayBuffer.isView(data)?new Uint8Array(data.buffer,data.byteOffset,data.byteLength):new Uint8Array(data);
+    return Uint8Array.from(createHash('sha256').update(bytes).digest()).buffer;
+  };
   class PrivateDate extends Date { constructor(value?: string | number) { super(value ?? clock.now); } static now(){return clock.now;} }
   const load = (file:string):Record<string,unknown> => {
     const cached=modules.get(file);if(cached)return cached;
