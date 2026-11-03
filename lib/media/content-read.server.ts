@@ -22,9 +22,9 @@ function contentRows(value: unknown): ContentItem[] | null {
   }] : []);
 }
 
-/** The optional binding affects public content only. With no override, the caller's
- * unchanged session/RLS query retains the same whole-operation four-second bound.
- * An explicitly invalid binding or a failed public read never falls back to it.
+/** The optional binding affects Preview public content only. Outside Preview or
+ * with no override, the unchanged session/RLS query keeps its four-second bound.
+ * In Preview an explicitly invalid binding or failed public read never falls back.
  */
 export async function readMediaContent(legacyRead: LegacyRead, options?: ContentReadOptions): Promise<ContentReadResult> {
   const failed: ContentReadResult = { data: null, error: true };
@@ -32,14 +32,16 @@ export async function readMediaContent(legacyRead: LegacyRead, options?: Content
   try {
     // Direct field access is deliberate: build-time env replacement must see it.
     const environment = options?.environment ?? Object.freeze({
+      VERCEL_ENV: process.env.VERCEL_ENV,
       FUNDAMENTAL_READ_URL: process.env.FUNDAMENTAL_READ_URL,
       FUNDAMENTAL_READ_ANON_KEY: process.env.FUNDAMENTAL_READ_ANON_KEY,
     });
     const captured = Object.freeze({
+      VERCEL_ENV: environment.VERCEL_ENV,
       FUNDAMENTAL_READ_URL: environment.FUNDAMENTAL_READ_URL,
       FUNDAMENTAL_READ_ANON_KEY: environment.FUNDAMENTAL_READ_ANON_KEY,
     });
-    if (captured.FUNDAMENTAL_READ_URL === undefined && captured.FUNDAMENTAL_READ_ANON_KEY === undefined) {
+    if (captured.VERCEL_ENV !== "preview" || (captured.FUNDAMENTAL_READ_URL === undefined && captured.FUNDAMENTAL_READ_ANON_KEY === undefined)) {
       return await withDeadline(signal => Promise.resolve(legacyRead(signal)), 4000).catch(() => failed);
     }
     pair = fundamentalReadPair(captured);

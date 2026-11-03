@@ -20,7 +20,7 @@ const jwt = (claims: Record<string, unknown> = {}, alg = "HS256") => [
   Buffer.from(JSON.stringify({ role: "anon", iss: "supabase", exp: 4102444800, ...claims })).toString("base64url"),
   Buffer.from("synthetic-signature").toString("base64url"),
 ].join(".");
-const pair = (key = jwt()) => ({ FUNDAMENTAL_READ_URL: origin, FUNDAMENTAL_READ_ANON_KEY: key });
+const pair = (key = jwt()) => ({ VERCEL_ENV: "preview", FUNDAMENTAL_READ_URL: origin, FUNDAMENTAL_READ_ANON_KEY: key });
 const row = (id = "synthetic-id") => ({ id, platform: "telegram", kind: "post", content_url: "https://t.me/example/1", title: "synthetic", description: null, published_at: "2026-11-04T12:00:00Z" });
 
 function evaluate(text: string, imports: Record<string, unknown>, context: Record<string, unknown> = {}) {
@@ -77,7 +77,7 @@ test("approved binding sends one exact bounded anonymous GET and preserves the e
 
 test("both overrides absent preserve the legacy result, session query and four-second bound with no public GET", async () => {
   const limits: number[] = [], legacyError = { code: "synthetic-RLS-error" };
-  const read = reader(async () => { throw new Error("unexpected public fetch"); }, {}, (load, ms) => { limits.push(ms); return withDeadline(load, ms); });
+  const read = reader(async () => { throw new Error("unexpected public fetch"); }, { VERCEL_ENV: "preview" }, (load, ms) => { limits.push(ms); return withDeadline(load, ms); });
   let calls = 0;
   const result = await read(async signal => { calls++; assert(signal instanceof AbortSignal); return { data: null, error: legacyError }; });
   assert.equal(result.error, legacyError); assert.equal(calls, 1); assert.deepEqual(limits, [4000]);
@@ -85,6 +85,19 @@ test("both overrides absent preserve the legacy result, session query and four-s
   assert.equal(empty.data?.length, 0); assert.equal(empty.error, null);
   const thrown = await read(async () => { throw new Error("synthetic legacy failure"); });
   assert.equal(thrown.data, null); assert.equal(thrown.error, true);
+});
+
+test("Production and unknown/local default environments always use exact legacy results regardless of FUND overrides", async () => {
+  let network = 0, legacy = 0;
+  for (const vercelEnv of ["production", undefined, "development", "local", "", "Preview"]) {
+    for (const binding of [pair(), pair("invalid"), { FUNDAMENTAL_READ_URL: origin }, {}]) {
+      const read = reader(async () => { network++; return Response.json([]); }, { ...binding, VERCEL_ENV: vercelEnv });
+      const legacyResult = { data: null, error: { code: "synthetic-session-result" } };
+      const result = await read(async signal => { legacy++; assert(signal instanceof AbortSignal); return legacyResult; });
+      assert.equal(result, legacyResult);
+    }
+  }
+  assert.equal(network, 0); assert.equal(legacy, 24);
 });
 
 test("any partial blank invalid expired or privileged override fails closed with zero network and zero legacy requests", async () => {
@@ -97,7 +110,7 @@ test("any partial blank invalid expired or privileged override fails closed with
     ...["", " ", "invalid", jwt({ role: "service_role" }), jwt({ iss: "other" }), jwt({ exp: 1 }), jwt({}, "none")].map(key => pair(key)),
   ];
   for (const environment of invalid) {
-    const result = await read(async () => { legacy++; return { data: [], error: null }; }, { environment });
+    const result = await read(async () => { legacy++; return { data: [], error: null }; }, { environment: { ...environment, VERCEL_ENV: "preview" } });
     assert.equal(result.data, null); assert.equal(result.error, true);
   }
   assert.equal(network, 0); assert.equal(legacy, 0);
@@ -147,6 +160,7 @@ test("concurrent reads capture their own pairs before await and do not mutate or
   });
   const first = read(forbiddenLegacy, { environment: firstEnvironment });
   firstEnvironment.FUNDAMENTAL_READ_ANON_KEY = "invalid-after-call";
+  firstEnvironment.VERCEL_ENV = "production";
   const second = read(forbiddenLegacy, { environment: secondEnvironment });
   const results = await Promise.all([first, second]);
   assert.deepEqual(calls, [firstKey, secondKey]);
@@ -167,6 +181,7 @@ test("compiled default reader captures direct binding fields rather than unmappe
       output: { path: temporary, filename: "reader.cjs", library: { type: "commonjs2" } },
       externals: [({ request }: { request?: string }, callback: (error?: Error | null, result?: string) => void) => callback(null, request?.startsWith(".") || request === "server-only" ? `commonjs ${request}` : undefined)],
       plugins: [new webpack.DefinePlugin({
+        "process.env.VERCEL_ENV": JSON.stringify("preview"),
         "process.env.FUNDAMENTAL_READ_URL": JSON.stringify(origin),
         "process.env.FUNDAMENTAL_READ_ANON_KEY": JSON.stringify(key),
       })],
@@ -181,7 +196,7 @@ test("compiled default reader captures direct binding fields rather than unmappe
       calls++; assert.equal(new URL(String(input)).origin + new URL(String(input)).pathname, `${origin}/rest/v1/content_hub`);
       assert.equal(new Headers(init?.headers).get("apikey"), key);
       return Response.json([]);
-    }, { FUNDAMENTAL_READ_URL: "https://unmapped-runtime.invalid", FUNDAMENTAL_READ_ANON_KEY: "invalid-runtime" }, withDeadline, await readFile(join(temporary, "reader.cjs"), "utf8"));
+    }, { VERCEL_ENV: "production", FUNDAMENTAL_READ_URL: "https://unmapped-runtime.invalid", FUNDAMENTAL_READ_ANON_KEY: "invalid-runtime" }, withDeadline, await readFile(join(temporary, "reader.cjs"), "utf8"));
     const result = await read(forbiddenLegacy);
     assert.equal(result.error, null); assert.equal(result.data?.length, 0); assert.equal(calls, 1);
   } finally {
