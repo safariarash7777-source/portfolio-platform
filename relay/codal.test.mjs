@@ -1,9 +1,12 @@
 // تست واحد پارسر کدال — نمونه‌ها بازتولید ساختار واقعیِ تأییدشده از اکسل کدال است
 // (شبندر: ن-۱۰ سه‌ماههٔ ۱۴۰۴/۰۳/۳۱ و ن-۳۰ ماهانهٔ ۱۴۰۵/۰۳). اجرا: node codal.test.mjs
-import { parseHtmlTables, normalizeN10, normalizeN10Bank, normalizeN30, unitFromHeader, unitFromArithmetic, resolveAmountUnit } from "./codal.mjs";
+import { loadOfflineCodal, foladQuantityFixture } from "./fixtures/codal-offline.mjs";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+const { parser, counts } = loadOfflineCodal();
+const { parseHtmlTables, normalizeN10, normalizeN10Bank, normalizeN30, unitFromHeader, unitFromArithmetic, resolveAmountUnit } = parser;
 
 let failed = 0;
 function check(name, cond, extra = "") {
@@ -237,7 +240,7 @@ if (n30) {
   check("واحدِ ن-۳۰ از خودِ گزارش استخراج شد", n30.unit === "میلیون ریال", String(n30.unit));
   check("پایهٔ اثباتِ واحد ثبت شد", typeof n30.unit_basis === "string" && n30.unit_basis.length > 0, String(n30.unit_basis));
   check("دورهٔ مقایسه یک ماه است", n30.period_months === 1);
-  check("واحدِ مقدارِ کالا استخراج نشده و صریح null است", n30.qty_unit === null, String(n30.qty_unit));
+  check("واحد مقدار از ستون همان ردیف استخراج می‌شود", n30.products.every(p => p.qty_unit === "متر مکعب"), String(n30.qty_unit));
   check("واحدِ مبلغ با واحدِ مقدار قاطی نشده", n30.unit !== n30.qty_unit);
 }
 
@@ -252,6 +255,62 @@ if (n30) {
 
 
 console.log(failed === 0 ? "\nALL TESTS PASSED" : `\n${failed} TESTS FAILED`);
-process.exit(failed === 0 ? 0 : 1);
+process.exitCode = failed === 0 ? 0 : 1;
+
+// Real archived bytes, existing pure parser, synthetic origin hand-off only.
+{
+  const fixture = foladQuantityFixture();
+  const parsed = fixture.report;
+  check("actual N30 keeps the exact archived HTML hash", fixture.origin.htmlSha256 === "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62");
+  check("actual N30 preserves reported monthly and cumulative money", parsed.period_total_amount === 639418160 && parsed.fy_cumulative_amount === 2509422184);
+  check("actual N30 raw quantity and rate cells are unchanged", parsed.products[0].sales_qty === 138 && parsed.products[0].sales_rate === 1084861500000);
+  check("actual N30 preserves section provenance", parsed.products.every(p => p.market_basis === "section_header") && parsed.products.filter(p => p.market === "صادراتی").length === 4 && parsed.products.filter(p => p.market === "خدمات").length === 1);
+  check("actual N30 binds source identity period and row", parsed.quantity_source.sourceId === fixture.origin.sourceId && parsed.quantity_source.periodEnd === "1405-06-31" && parsed.products[0].quantity_witness.rowIndex === 3 && parsed.products[0].quantity_witness.unitColumn === 1);
+  const absent = fixture.parser.normalizeN30(fixture.tables, { symbol: "فولاد", period_end: "1405-06-31" });
+  check("default normalizer does not invent a byte-bound source context", absent.quantity_source === null && absent.products.every(p => p.quantity_witness === undefined));
+  const badOrigins = [
+    ["claimed hash without bytes", { ...fixture.origin }],
+    ["wrong hash", { ...fixture.meta.quantity_source, htmlSha256: "0".repeat(64) }],
+    ["wrong bytes", { ...fixture.meta.quantity_source, htmlBytes: Buffer.from("different") }],
+    ["missing source reference", { ...fixture.meta.quantity_source, sourceId: undefined }],
+    ["blank source reference", { ...fixture.meta.quantity_source, sourceId: " " }],
+    ["oversized source reference", { ...fixture.meta.quantity_source, sourceId: "a".repeat(4097) }],
+    ["mismatched symbol", { ...fixture.meta.quantity_source, symbol: "دیگر" }],
+    ["mismatched period", { ...fixture.meta.quantity_source, periodEnd: "1405-05-31" }],
+    ["missing version", { ...fixture.meta.quantity_source, version: undefined }],
+  ];
+  for (const [name, quantity_source] of badOrigins) {
+    const r = fixture.parser.normalizeN30(fixture.tables, { ...fixture.meta, quantity_source });
+    check(`${name} cannot create quantity witnesses`, r.quantity_source === null && r.products.every(p => p.quantity_witness === undefined));
+    check(`${name} cannot rewrite raw money or values`, r.period_total_amount === parsed.period_total_amount && r.products[0].sales_qty === 138 && r.products[0].sales_rate === 1084861500000);
+  }
+  const missingSymbols = fixture.parser.normalizeN30(fixture.tables, { ...fixture.meta, symbol: undefined, quantity_source: { ...fixture.meta.quantity_source, symbol: undefined } });
+  check("two missing symbol fields cannot certify a source", missingSymbols.quantity_source === null);
+  const changedTables = structuredClone(fixture.tables);changedTables[0][3][14] = "139";
+  check("matching claimed hash cannot authenticate different tables", fixture.parser.normalizeN30(changedTables, fixture.meta).quantity_source === null);
+  // Changed HTML below is synthetic: test actual byte-to-table binding and fail-closed coverage.
+  const synthetic = (tables) => {
+    const htmlBytes = Buffer.from(tables.map(table => `<table>${table.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")}</table>`).join(""));
+    const htmlSha256 = createHash("sha256").update(htmlBytes).digest("hex");
+    return fixture.parser.normalizeN30(fixture.parser.parseHtmlTables(htmlBytes.toString("utf8")), { ...fixture.meta, quantity_source: { ...fixture.origin, htmlBytes, htmlSha256 } });
+  };
+  const missingUnit = structuredClone(fixture.tables);missingUnit[0][1][1] = "";
+  check("byte-bound tables without the unit header cannot create a source witness", synthetic(missingUnit).quantity_source === null);
+  const missingProduction = structuredClone(fixture.tables);missingProduction[0][1][13] = "نرخ";
+  check("byte-bound wrong production column cannot create a source witness", synthetic(missingProduction).quantity_source === null);
+  const missingSales = structuredClone(fixture.tables);missingSales[0][1][14] = "نرخ";
+  check("byte-bound wrong sales column cannot create a source witness", synthetic(missingSales).quantity_source === null);
+  const short = structuredClone(fixture.tables);short[0].splice(5, 0, ["محصولات گرم", "هزار تن"]);
+  const shortResult = synthetic(short);
+  check("a short physical product row remains an explicit unadmitted coverage observation", shortResult.quantity_source.rows.some(row => row.rowIndex === 5 && row.productName === "محصولات گرم" && row.admitted === false));
+  const wrongPeriod = fixture.parser.normalizeN30(fixture.tables, { ...fixture.meta, period_end: "1405-05-31", quantity_source: { ...fixture.origin, periodEnd: "1405-05-31" } });
+  check("a claimed period cannot replace the actual monthly header", wrongPeriod.quantity_source === null);
+  const unknown = structuredClone(fixture.tables);unknown[0][2] = ["بخش ناشناخته:"];
+  const unknownParsed = fixture.parser.normalizeN30(unknown, fixture.meta);
+  check("unknown section cannot inherit a domestic market", unknownParsed.products[0].market === "نامشخص" && unknownParsed.products[0].market_basis === "unknown");
+  check("offline actual parser never requests a provider", fixture.counts.network === 0 && counts.network === 0);
+}
+console.log(failed === 0 ? "QUANTITY_FIXTURE_TESTS_PASSED" : "QUANTITY_FIXTURE_TESTS_FAILED");
+process.exitCode = failed === 0 ? 0 : 1;
 
 

@@ -1,5 +1,6 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
+import { createHash } from "node:crypto";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -685,9 +686,20 @@ export function normalizeN30(tables, meta, onRejected) {
   const skippedReasons = new Set(); // At most four fixed row-guard categories.
   let periodTotal = null;
   let fyCumulative = null;
+  let quantitySource = null;
+  // A claimed hash is not a byte witness. This optional internal candidate
+  // path binds both the hash and the exact tables to the supplied archived bytes.
+  // The current producer does not provide this hand-off; no runtime is enabled.
+  const origin = meta.quantity_source;
+  let byteBoundOrigin = false;
+  try {
+    byteBoundOrigin = origin?.htmlBytes instanceof Uint8Array && origin.htmlBytes.byteLength > 0
+      && createHash("sha256").update(origin.htmlBytes).digest("hex") === origin.htmlSha256
+      && JSON.stringify(parseHtmlTables(Buffer.from(origin.htmlBytes).toString("utf8"))) === JSON.stringify(tables);
+  } catch { /* Missing/malformed proof leaves quantity provenance unknown. */ }
 
   // جدول محصول: سطری با «نام محصول» دارد و سطر قبلش بلوک «دوره یک ماهه».
-  for (const t of tables) {
+  for (const [tableIndex, t] of tables.entries()) {
     const h1Idx = t.findIndex((r) => r.some((c) => normLabel(c) === normLabel("نام محصول")));
     if (h1Idx < 0) continue;
     const h0 = t[h1Idx - 1] ?? [];
@@ -701,11 +713,40 @@ export function normalizeN30(tables, meta, onRejected) {
     const M = { prod: 13, qty: 14, rate: 15, amount: 16 };
     const C = { qty: 18, amount: 20 };
 
+    // Optional internal hand-off only. The current downloader does not yet
+    // supply byte-bound origin metadata; absence must not certify a new unit.
+    const monthlyHeader = h0.find(c => c.includes("دوره یک ماهه") || c.includes("دوره یکماهه"));
+    const source = byteBoundOrigin && origin?.version === 1 && typeof origin.sourceId === "string" && origin.sourceId.length > 0
+      && origin.sourceId.trim() === origin.sourceId && origin.sourceId.length <= 4096
+      && typeof origin.htmlSha256 === "string" && /^[a-f0-9]{64}$/.test(origin.htmlSha256)
+      && typeof origin.symbol === "string" && origin.symbol.trim().length > 0 && origin.symbol.trim() === origin.symbol
+      && typeof origin.periodEnd === "string" && /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/.test(origin.periodEnd)
+      && origin.symbol === meta.symbol && origin.periodEnd === meta.period_end && jalaliStr(monthlyHeader) === meta.period_end
+      && normLabel(t[h1Idx][1]) === normLabel("واحد")
+      && normLabel(t[h1Idx][M.prod]).includes("تولید")
+      && ["تعدادفروش", "مقدارفروش", "مقدار"].includes(normLabel(t[h1Idx][M.qty]))
+      ? { version: 1, sourceId: origin.sourceId, htmlSha256: origin.htmlSha256, symbol: meta.symbol, periodEnd: meta.period_end,
+        tableIndex, headerRowIndex: h1Idx, unitColumn: 1, productionColumn: M.prod, salesColumn: M.qty,
+        unitHeader: "واحد", productionHeader: t[h1Idx][M.prod].trim(), salesHeader: t[h1Idx][M.qty].trim(), rows: [] } : null;
+
     let cumTotal = null;
-    for (const row of t.slice(h1Idx + 1)) {
+    let sectionMarket = "نامشخص";
+    for (const [offset, row] of t.slice(h1Idx + 1).entries()) {
       const name = (row[0] || "").trim();
       if (!name) continue;
-      if (row.length < expectCols - 2) { skippedReasons.add("short_rows"); continue; } // سطرهای بخشی کوتاه‌ترند
+      if (name.endsWith(":")) {
+        const section = normLabel(name.slice(0, -1));
+        sectionMarket = section === normLabel("فروش داخلی") ? "داخلی"
+          : section === normLabel("فروش صادراتی") ? "صادراتی"
+          : section === normLabel("درآمد ارائه خدمات") ? "خدمات" : "نامشخص";
+        continue;
+      }
+      if (row.length < expectCols - 2) {
+        if (source && !name.includes("جمع")) source.rows.push({ rowIndex: h1Idx + 1 + offset, admitted: false,
+          productName: name, market: sectionMarket, rawUnit: row[1]?.trim() || "",
+          productionQty: cellNum(row[M.prod]), salesQty: cellNum(row[M.qty]) });
+        skippedReasons.add("short_rows"); continue;
+      } // سطرهای بخشی کوتاه‌ترند
       if (name.includes("جمع")) {
         const vM = cellNum(row[M.amount]);
         const vC = cellNum(row[C.amount]);
@@ -714,10 +755,12 @@ export function normalizeN30(tables, meta, onRejected) {
         if (vC !== null) cumTotal = vC;
         continue;
       }
-      if (name.endsWith(":")) continue; // عنوان بخش (فروش داخلی:/صادراتی:)
       const qty = cellNum(row[M.qty]);
       const amount = cellNum(row[M.amount]);
       const rate = cellNum(row[M.rate]);
+      const observation = source ? { rowIndex: h1Idx + 1 + offset, admitted: false, productName: name, market: sectionMarket,
+        rawUnit: row[1]?.trim() || "", productionQty: cellNum(row[M.prod]), salesQty: qty } : null;
+      if (observation) source.rows.push(observation);
       if (qty === null && amount === null) { skippedReasons.add("missing_sales"); continue; }
       if ((qty === 0 || qty === null) && (amount === 0 || amount === null)) { skippedReasons.add("zero_sales_only"); continue; } // بدون فروش در ماه
       // اعتبارسنجی مبلغ ≈ فروش×نرخ÷10^6 (مبلغ به میلیون ریال است).
@@ -725,17 +768,26 @@ export function normalizeN30(tables, meta, onRejected) {
         const calc = (qty * rate) / 1e6;
         if (calc > 0 && Math.abs(calc - amount) / Math.max(amount, 1) > 0.05) { skippedReasons.add("arithmetic_mismatch"); continue; } // ستون اشتباه — رد
       }
-      products.push({
+      const product = {
         product_name: name,
-        market: name.includes("صادرات") ? "صادراتی" : "داخلی",
+        market: sectionMarket,
+        market_basis: sectionMarket === "نامشخص" ? "unknown" : "section_header",
+        qty_unit: normLabel(row[1]) === normLabel("هزار تن") ? "هزار تن" : (row[1]?.trim() || null),
         production_qty: cellNum(row[M.prod]),
         sales_qty: qty,
         sales_rate: rate,
         sales_amount: amount,
-      });
+      };
+      if (source) {
+        const rowIndex = h1Idx + 1 + offset;
+        observation.admitted = true;
+        product.quantity_witness = { sourceId: source.sourceId, htmlSha256: source.htmlSha256, periodEnd: source.periodEnd,
+          tableIndex, rowIndex, unitColumn: 1 };
+      }
+      products.push(product);
     }
     if (cumTotal !== null) fyCumulative = cumTotal;
-    if (products.length) break; // فقط جدول محصول اصلی
+    if (products.length) { quantitySource = source; break; } // فقط جدول محصول اصلی
   }
 
   if (products.length === 0) return notifyAdmissionRejection(onRejected, "ن-۳۰",
@@ -761,7 +813,7 @@ export function normalizeN30(tables, meta, onRejected) {
     // ── واحدها: سه چیزِ متفاوت که نباید با هم قاطی شوند ─────────────────
     // `unit`            واحدِ **مبلغ** (میلیون ریال / هزار ریال / ریال)
     // `qty_unit`        واحدِ **مقدارِ کالا** — کدال آن را در ستونِ جدا می‌دهد
-    //                   و ما اینجا استخراجش نمی‌کنیم، پس `null` می‌ماند.
+    //                   از ستون همان ردیف؛ پذیرش واحد جدید نیازمند شاهد جداست.
     // `sales_rate`      نرخِ فروش، در خودِ هر محصول.
     //
     // `unit` از خودِ گزارش استخراج می‌شود، نه از عادت. `null` یعنی قابلِ اثبات
@@ -772,7 +824,8 @@ export function normalizeN30(tables, meta, onRejected) {
     unit_inferred: unitInfo.inferred,
     // ⚠️ صریح `null` است، نه غایب: «نمی‌دانیم» با «ندارد» فرق دارد و
     // خالی‌گذاشتنِ کلید، بعداً به «فرض کن دانه» تفسیر می‌شود.
-    qty_unit: null,
+    qty_unit: products[0].qty_unit && products.every(p => p.qty_unit === products[0].qty_unit) ? products[0].qty_unit : null,
+    quantity_source: quantitySource,
     // ن-۳۰ گزارش ماهانه است — دورهٔ مقایسه تعریفاً یک ماه.
     period_months: 1,
   };

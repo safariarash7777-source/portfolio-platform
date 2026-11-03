@@ -8,6 +8,8 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { buildMonthlySales, narrativeRate } from "../../lib/core/monthlyReport";
 import type { CodalN30Data, N30ProductRow } from "../../lib/fundamental/types";
+import { withKnownMonthlyQuantities, type QuantityWitnessedReport } from "../../lib/core/monthly-quantity";
+import { foladQuantityFixture } from "../../relay/fixtures/codal-offline.mjs";
 
 type Trace = { component: string; props: Record<string, unknown> };
 const require = createRequire(import.meta.url);
@@ -168,4 +170,53 @@ test("real Recharts SSR retains unit labels, source and explicit unavailable sta
   assert.ok(ready.includes("گزارش همان شرکت"));
   const unknown = renderChart([report("1405-01-31", [product({ qty_unit: null })])], false).html;
   assert.ok(unknown.includes('role="status"')); assert.ok(unknown.includes("واحد نامعلوم"));
+});
+
+test("actual archived HTML through parser, quantity gate, core and UI renders goods markets separately while rates stay unknown", () => {
+  const fixture = foladQuantityFixture();
+  const reports = [withKnownMonthlyQuantities(fixture.report)];
+  const { html, traces } = renderChart(reports);
+  assert.ok(html.includes('محصولات گرم — کالای داخلی'));assert.ok(html.includes('محصولات گرم — کالای صادراتی'));
+  assert.ok(html.includes('خدمات در این نمودار نیست'));assert.ok(html.includes('هر نمودار فقط کالای همان بازار است'));
+  assert.ok(html.includes('واحد مقدار: هزار تن'));assert.ok(html.includes('نرخ فروش با واحد معتبر موجود نیست'));
+  assert.ok(!html.includes('واحد نرخ: ریال'));assert.ok(!html.includes('افزایش موجودی'));
+  const charts = traces.filter(t => t.component === 'BarChart');
+  assert.equal(charts.length, 2);
+  assert.deepEqual(values(charts[0], 'production'), [279]);assert.deepEqual(values(charts[0], 'sales'), [238]);
+  assert.deepEqual(values(charts[1], 'production'), [0]);assert.deepEqual(values(charts[1], 'sales'), [66]);
+  assert.equal(traces.filter(t => t.component === 'LineChart').length, 1, 'Only cumulative money, no new-unit rate lines');
+  const tooltips = traces.filter(t => t.component === 'Tooltip');
+  assert.equal(formatter(tooltips.at(-1)!)(0, 'تولید')[0], '۰ هزار تن');
+  assert.equal(formatter(tooltips.at(-2)!)(279, 'تولید')[0], '۲۷۹ هزار تن');
+  assert.equal(fixture.counts.network, 0);
+  const real = renderChart(reports, false).html;
+  assert.ok(real.includes('محصولات گرم — کالای داخلی'));assert.ok(real.includes('واحد مقدار: هزار تن'));
+});
+
+test("a failed scoped witness cannot turn into a goods-and-service aggregate or erase a healthy market", () => {
+  const raw = foladQuantityFixture().report as QuantityWitnessedReport;
+  const domestic = raw.products.find(p => p.product_name === 'محصولات گرم' && p.market === 'داخلی')!;
+  domestic.quantity_witness!.htmlSha256 = '0'.repeat(64);
+  const { html, traces } = renderChart([withKnownMonthlyQuantities(raw)]);
+  assert.ok(html.includes('محصولات گرم — کالای داخلی: مقدار قابل‌مقایسهٔ تولید و فروش موجود نیست'));
+  assert.ok(html.includes('محصولات گرم — کالای صادراتی'));
+  const charts = traces.filter(t => t.component === 'BarChart');
+  assert.equal(charts.length, 1);assert.deepEqual(values(charts[0], 'production'), [0]);
+  assert.deepEqual(values(charts[0], 'sales'), [66]);
+  assert.ok(!html.includes('افزایش موجودی'));assert.ok(!html.includes('واحد نرخ: ریال'));
+});
+
+test("scoped UI preserves the existing calendar gaps and never borrows a witness from an older amendment", () => {
+  const raw = foladQuantityFixture().report as QuantityWitnessedReport;
+  const earlier = structuredClone(raw);earlier.period_end = '1405-04-31';earlier.quantity_source!.periodEnd = earlier.period_end;
+  for (const p of earlier.products) p.quantity_witness!.periodEnd = earlier.period_end;
+  const amendment = structuredClone(raw);
+  delete amendment.products.find(p => p.product_name === 'محصولات گرم' && p.market === 'داخلی')!.quantity_witness;
+  const { html, traces } = renderChart([amendment, raw, earlier].map(withKnownMonthlyQuantities));
+  assert.ok(html.includes('ماه فاقد مقدار کامل یا واحد معتبر خالی می‌ماند'));
+  const charts = traces.filter(t => t.component === 'BarChart');
+  assert.deepEqual(values(charts[0], 'production'), [279, null, null]);
+  assert.deepEqual(values(charts[0], 'sales'), [238, null, null]);
+  assert.deepEqual(values(charts[1], 'production'), [0, null, 0]);
+  assert.deepEqual(values(charts[1], 'sales'), [66, null, 66]);
 });

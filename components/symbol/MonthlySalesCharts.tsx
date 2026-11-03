@@ -375,18 +375,19 @@ function hasQuantityUnit(point: ProdSalesPoint, unit = point.quantityUnit): bool
     && typeof point.sales === "number" && Number.isFinite(point.sales);
 }
 
-function ProdSalesChart({ m }: { m: MonthlySales }) {
-  const units = [...new Set(m.prodVsSales.filter(point => hasQuantityUnit(point)).map(point => point.quantityUnit!))];
+function ProdSalesChart({ points, label }: { points: ProdSalesPoint[]; label?: string }) {
+  const units = [...new Set(points.filter(point => hasQuantityUnit(point)).map(point => point.quantityUnit!))];
   if (units.length === 0) {
-    return <p role="status">مقدار قابل‌مقایسهٔ تولید و فروش موجود نیست؛ دادهٔ مفقود یا واحد نامعلوم صفر نشده است.</p>;
+    return <p role="status">{label ? `${label}: ` : ""}مقدار قابل‌مقایسهٔ تولید و فروش موجود نیست؛ دادهٔ مفقود یا واحد نامعلوم صفر نشده است.</p>;
   }
   return (
     <div className="space-y-4">
-      {units.map(unit => <div key={unit} role="group" aria-label={`تولید و فروش — ${unit}`}>
+      {label ? <p className="text-[13px] font-bold">{label}</p> : null}
+      {units.map(unit => <div key={unit} role="group" aria-label={`${label ?? "تولید و فروش"} — ${unit}`}>
         <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>واحد مقدار: {unit}</p>
         <div style={{ height: 280 }} dir="ltr">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={m.prodVsSales.map(point => ({
+            <BarChart data={points.map(point => ({
               ...point,
               production: hasQuantityUnit(point, unit) ? point.production : null,
               sales: hasQuantityUnit(point, unit) ? point.sales : null,
@@ -410,7 +411,7 @@ function ProdSalesChart({ m }: { m: MonthlySales }) {
           </ResponsiveContainer>
         </div>
       </div>)}
-      {m.prodVsSales.some(point => !hasQuantityUnit(point)) ? <p role="status" className="text-[12px]" style={{ color: "var(--text-3)" }}>ماه فاقد مقدار کامل یا واحد معتبر خالی می‌ماند؛ واحدهای متفاوت در نمودارهای جدا نمایش داده می‌شوند.</p> : null}
+      {points.some(point => !hasQuantityUnit(point)) ? <p role="status" className="text-[12px]" style={{ color: "var(--text-3)" }}>ماه فاقد مقدار کامل یا واحد معتبر خالی می‌ماند؛ واحدهای متفاوت در نمودارهای جدا نمایش داده می‌شوند.</p> : null}
     </div>
   );
 }
@@ -432,7 +433,7 @@ export default function MonthlySalesCharts({
   const rateNarrative = firstRate?.rateUnit && firstRate.points.every(point => point.rate === null || hasRateUnit(point, firstRate.rateUnit!.denominator))
     ? narrativeRate(m) : null;
   const lastQuantity = m.prodVsSales[m.prodVsSales.length - 1];
-  const quantityNarrative = lastQuantity && hasQuantityUnit(lastQuantity) ? narrativeProdVsSales(m) : null;
+  const quantityNarrative = !m.quantitySeries?.length && lastQuantity && hasQuantityUnit(lastQuantity) ? narrativeProdVsSales(m) : null;
 
   return (
     <div className="space-y-5">
@@ -500,10 +501,14 @@ export default function MonthlySalesCharts({
           <QCard
             id="q-prod-vs-sales"
             question="تولید و فروش هم‌خوان‌اند؟"
-            subtitle={`مقدار تولید و فروش «${m.mainProductName}» (محصول اصلی) — ماه فاقد گزارش یا مقدار کامل روی محور خالی است؛ صفر گزارش‌شده حفظ می‌شود`}
+            subtitle={m.quantitySeries?.length
+              ? `مقدار کالای «${m.mainProductName}» به تفکیک بازار؛ خدمات در این نمودار نیست. هر نمودار فقط کالای همان بازار است؛ ماه فاقد شاهد کامل خالی می‌ماند و صفر گزارش‌شده حفظ می‌شود`
+              : `مقدار تولید و فروش «${m.mainProductName}» (محصول اصلی) — ماه فاقد گزارش یا مقدار کامل روی محور خالی است؛ صفر گزارش‌شده حفظ می‌شود`}
             narrative={quantityNarrative}
           >
-            <ProdSalesChart m={m} />
+            {m.quantitySeries?.length ? <div className="space-y-6">{m.quantitySeries.map(series => (
+              <ProdSalesChart key={series.market} points={series.points} label={series.label} />
+            ))}</div> : <ProdSalesChart points={m.prodVsSales} />}
           </QCard>
         ) : null}
       </div>
