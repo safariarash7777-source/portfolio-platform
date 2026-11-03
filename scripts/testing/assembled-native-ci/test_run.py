@@ -69,6 +69,14 @@ class Binding(unittest.TestCase):
             state['stage'] = 'PREPARED'
             with self.assertRaises(FileExistsError): runner.claim_execution(private, {}, state)
 
+    def test_interrupted_or_killed_attempt_keeps_write_outcome_unknown(self):
+        for state in [{'stage': 'STARTING', 'attempted': True}, {'stage': 'RUNNING', 'attempted': True},
+                      {'stage': 'EXECUTED', 'attempted': True, 'timedOutOrInterrupted': True},
+                      {'stage': 'EXECUTED', 'attempted': True, 'exitCode': -9}]:
+            self.assertTrue(runner.write_outcome_unknown(state, b''))
+        self.assertTrue(runner.write_outcome_unknown({'stage': 'EXECUTED'}, b'pf10_native_write_outcome_unknown_stop_no_replay'))
+        self.assertFalse(runner.write_outcome_unknown({'stage': 'PREPARING', 'attempted': False}, b''))
+
 
 class CleanupOwnership(unittest.TestCase):
     def setUp(self):
@@ -76,6 +84,10 @@ class CleanupOwnership(unittest.TestCase):
         self.row = {'Id': 'a' * 64, 'Name': '/' + self.run + '-db', 'Config': {'Labels': {runner.LABEL: self.run}}}
 
     def test_exact_owned_resource_is_selected_by_full_inspected_id(self):
+        self.assertEqual(runner.owned_docker_resource('container', self.row, self.run, 'a' * 12), 'a' * 64)
+
+    def test_frozen_postgrest_version_probe_uses_the_same_exact_owner_gate(self):
+        self.row['Name'] = '/' + self.run + '-rest-version'
         self.assertEqual(runner.owned_docker_resource('container', self.row, self.run, 'a' * 12), 'a' * 64)
 
     def test_foreign_label_name_or_object_id_cannot_be_removed(self):

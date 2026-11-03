@@ -272,7 +272,7 @@ def owned_docker_resource(role, row, run_id, query_id):
     need(isinstance(row.get('Id'), str) and HEX.fullmatch(row['Id']) and row['Id'].startswith(query_id), 'assembled_cleanup_object_identity')
     labels = row['Config']['Labels'] if role == 'container' else row['Labels']
     name = row['Name'].lstrip('/')
-    allowed = [run_id + '-' + end for end in (['db', 'auth', 'rest', 'ingress'] if role == 'container' else ['internal', 'edge'])]
+    allowed = [run_id + '-' + end for end in (['db', 'auth', 'rest', 'ingress', 'rest-version'] if role == 'container' else ['internal', 'edge'])]
     need(labels.get(LABEL) == run_id and name in allowed, 'assembled_cleanup_owned_resource_required')
     return row['Id']
 
@@ -339,6 +339,12 @@ def verify_native_state(data, private):
             'fallbackUsed': False, 'sqlFilesVerified': 18, 'financialPosts': 2, 'consentPosts': 1, 'replayedProductPosts': 0}
 
 
+def write_outcome_unknown(state, raw):
+    interrupted = state.get('timedOutOrInterrupted') or state.get('stage') in ('STARTING', 'RUNNING')
+    interrupted = interrupted or (isinstance(state.get('exitCode'), int) and state['exitCode'] < 0)
+    return bool((state.get('attempted') and interrupted) or b'write_outcome_unknown_stop_no_replay' in raw)
+
+
 def finalize():
     binding = actual_context()
     workspace, temp, private, app = paths()
@@ -373,9 +379,8 @@ def finalize():
     except Exception as error:
         report['failureCode'] = str(error) if re.fullmatch(r'assembled_[a-z_]+', str(error)) else 'assembled_finalization_failed'
         report.setdefault('ownedCleanupReadback', 'UNCONFIRMED')
-        if (private / 'native.log').exists():
-            raw = (private / 'native.log').read_bytes()
-            report['writeOutcomeUnknown'] = b'write_outcome_unknown_stop_no_replay' in raw
+        raw = (private / 'native.log').read_bytes() if (private / 'native.log').exists() else b''
+        report['writeOutcomeUnknown'] = write_outcome_unknown(state, raw)
     # Only this freshly constructed projection is eligible for upload, never logs.
     private_json(report_path, report, True)
     state['stage'] = 'FINALIZED'
