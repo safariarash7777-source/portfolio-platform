@@ -508,7 +508,14 @@ export async function readFundamentalsFromSupabase(symbol: string, options?: Fun
   let selected: { url: string; anon: string; expiresAt?: number } | null = null;
   let binding: string;
   try {
-    const environment = options?.environment ?? process.env;
+    // Keep direct public references so Next's approved build-time mapping is
+    // preserved. An alias of process.env would read legacy runtime values.
+    const environment = options?.environment ?? Object.freeze({
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      FUNDAMENTAL_READ_URL: process.env.FUNDAMENTAL_READ_URL,
+      FUNDAMENTAL_READ_ANON_KEY: process.env.FUNDAMENTAL_READ_ANON_KEY,
+    });
     const pair = Object.freeze({ FUNDAMENTAL_READ_URL: environment.FUNDAMENTAL_READ_URL, FUNDAMENTAL_READ_ANON_KEY: environment.FUNDAMENTAL_READ_ANON_KEY });
     const override = pair.FUNDAMENTAL_READ_URL !== undefined || pair.FUNDAMENTAL_READ_ANON_KEY !== undefined;
     selected = override

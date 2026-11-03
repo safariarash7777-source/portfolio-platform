@@ -2,9 +2,68 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { basename, dirname, join, resolve } from "node:path";
+import { runInNewContext } from "node:vm";
+import { webcrypto } from "node:crypto";
+import ts from "typescript";
 import { readFundamentalsFromSupabase, type CodalRow } from "./supabase";
 
 const require = createRequire(import.meta.url);
+
+test("compiled default reader uses the mapped public binding when runtime legacy values differ", async () => {
+  const temporary = await mkdtemp(join(tmpdir(), "fundamental-build-binding-"));
+  const bundled = require("next/dist/compiled/webpack/webpack");
+  bundled.init();
+  const webpack = bundled.webpack;
+  const calls: { url: string; key: string }[] = [];
+  try {
+    const source = await readFile(new URL("./supabase.ts", import.meta.url), "utf8");
+    await writeFile(join(temporary, "entry.js"), ts.transpileModule(source, {
+      compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
+    }).outputText);
+    const compiler = webpack({
+      mode: "development", target: "node", devtool: false, entry: join(temporary, "entry.js"),
+      output: { path: temporary, filename: "reader.cjs", library: { type: "commonjs2" } },
+      externals: [({ request }: { request?: string }, callback: (error?: Error | null, result?: string) => void) => {
+        callback(null, request?.startsWith(".") ? `commonjs ${request}` : undefined);
+      }],
+      plugins: [new webpack.DefinePlugin({
+        "process.env.NEXT_PUBLIC_SUPABASE_URL": JSON.stringify("https://mapped-build.invalid"),
+        "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY": JSON.stringify("synthetic-mapped-anon"),
+      })],
+    });
+    try {
+      await new Promise<void>((accept, reject) => compiler.run((error: Error | null, stats?: { hasErrors: () => boolean; toString: () => string }) => {
+        if (error || !stats || stats.hasErrors()) reject(error ?? new Error(stats?.toString() ?? "missing compiler stats"));
+        else accept();
+      }));
+    } finally { await new Promise<void>((accept, reject) => compiler.close((error?: Error) => error ? reject(error) : accept())); }
+    const readerModule = { exports: {} as { readFundamentalsFromSupabase: (symbol: string) => Promise<{ state: string }> } };
+    runInNewContext(await readFile(join(temporary, "reader.cjs"), "utf8"), {
+      module: readerModule, exports: readerModule.exports, URLSearchParams, TextEncoder, AbortSignal, crypto: webcrypto,
+      process: { env: { NEXT_PUBLIC_SUPABASE_URL: "https://unmapped-runtime.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "synthetic-runtime-anon" } },
+      require: (specifier: string) => {
+        assert(["../core/quarterly", "./units", "../desk/workspace-model", "./monthly-quantity-binding", "./read-config.server"].includes(specifier));
+        return {};
+      },
+      console: { warn: () => {} },
+      fetch: async (url: string, init: { headers: { apikey: string } }) => {
+        calls.push({ url, key: init.headers.apikey });
+        return { ok: true, json: async () => [] };
+      },
+    });
+    assert.equal((await readerModule.exports.readFundamentalsFromSupabase("build-binding-synthetic")).state, "empty");
+    assert.equal(calls.length, 2);
+    assert(calls.every(call => new URL(call.url).origin === "https://mapped-build.invalid"));
+    assert(calls.every(call => call.key === "synthetic-mapped-anon"));
+  } finally {
+    assert.equal(dirname(resolve(temporary)), resolve(tmpdir()));
+    assert(basename(temporary).startsWith("fundamental-build-binding-"));
+    await rm(temporary, { recursive: true, force: true });
+  }
+});
 const resolver = require("node:module") as { _resolveFilename: (specifier: string, ...args: unknown[]) => string };
 const originalResolve = resolver._resolveFilename;
 resolver._resolveFilename = function (specifier, ...args) {
