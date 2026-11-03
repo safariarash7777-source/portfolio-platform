@@ -1,0 +1,166 @@
+{
+  "checkedAtUtc": "2026-11-03T20:34:14.661Z",
+  "sourceSha": "7216a1bac6cb393ff87ad9798e439de361092303",
+  "treeSha": "72afe591b335b185f422009988da7e1c80e47e00",
+  "deployment": "dpl_Dmsdvy3JMpxzfYZRekeyPPhrv78s",
+  "preview": "https://portfolio-platform-ph6aqz9zk-safariarash7777-4463s-projects.vercel.app",
+  "ci": {
+    "runId": 41710207819,
+    "checkoutSha": "f6e484c674a35c8d99f02295d01a7d7d492578fa",
+    "allFive": "PASS",
+    "coreJob": 126175982341,
+    "databaseJob": 126175982786,
+    "headAndRunnerTreesEqual": true
+  },
+  "browser": {
+    "isolatedInstalledChrome": true,
+    "sharedDesktopSession": false,
+    "accountUsed": false,
+    "checks": [
+      {
+        "kind": "fundamental",
+        "symbol": "فولاد",
+        "status": 200,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scrollWidth": 1440,
+        "chartCount": 8
+      },
+      {
+        "kind": "reports",
+        "symbol": "فولاد",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scrollWidth": 1440,
+        "chartCount": 0
+      },
+      {
+        "kind": "mobile",
+        "symbol": "فولاد",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "chartCount": 8
+      },
+      {
+        "kind": "reload",
+        "symbol": "فولاد",
+        "scrollWidth": 390,
+        "selectedTab": "بنیادی",
+        "hash": "#fundamental"
+      },
+      {
+        "kind": "fundamental",
+        "symbol": "فملی",
+        "status": 200,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scrollWidth": 1440,
+        "chartCount": 7
+      },
+      {
+        "kind": "reports",
+        "symbol": "فملی",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scrollWidth": 1440,
+        "chartCount": 0
+      },
+      {
+        "kind": "mobile",
+        "symbol": "فملی",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "chartCount": 7
+      },
+      {
+        "kind": "reload",
+        "symbol": "فملی",
+        "scrollWidth": 390,
+        "selectedTab": "بنیادی",
+        "hash": "#fundamental"
+      },
+      {
+        "kind": "funds",
+        "status": 200,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "scrollWidth": 1440,
+        "chartCount": 0
+      }
+    ],
+    "details": [
+      {
+        "kind": "company-source-table",
+        "symbol": "فولاد",
+        "count": 11,
+        "details": [
+          "منبع و زمان این گزارش\nشناسهٔ رکورد\n۱۱۶۵۳\nپایان دورهٔ ذخیره‌شده\n۲۰۲۶-۰۹-۲۲\nپایان دورهٔ داخل گزارش\n۱۴۰۵-۰۶-۳۱\nتاریخ ارسال منبع\n۱۴۰۵/۰۷/۲۹\nساعت ارسال منبع\n۲۰:۵۰:۲۶\nزمان انتشار به UTC\nنامعلوم؛ تبدیل معتبر ثبت نشده\nدریافت رکورد؛ متن اصلی منبع\n2026-10-25T10:15:56.894105+00:00\nدریافت رکورد؛ UTC با دقت میلی‌ثانیه\n2026-10-25T10:15:56.894Z\nنسخهٔ پردازش\n۲؛ از متادیتای رکورد\n\nنشانهٔ اصلاحیه در این رکورد ثبت شده است.",
+          "منبع و زمان این گزارش\nشناسهٔ رکورد\n۱۱۶۵۵\nپایان دورهٔ ذخیره‌شده\n۲۰۲۵-۰۲-۱۸\nپایان دورهٔ داخل گزارش\n۱۴۰۳-۱۱-۳۰\nتاریخ ارسال منبع\n۱۴۰۳/۱۲/۰۷\nساعت ارسال منبع\n۱۶:۱۱:۰۰\nزمان انتشار به UTC\nنامعلوم؛ تبدیل معتبر ثبت نشده\nدریافت رکورد؛ متن اصلی منبع\n2026-10-25T10:16:08.132585+00:00\nدریافت رکورد؛ UTC با دقت میلی‌ثانیه\n2026-10-25T10:16:08.132Z\nنسخهٔ پردازش\n۲؛ از متادیتای رکورد"
+        ],
+        "rawTableCount": 1
+      },
+      {
+        "kind": "company-source-table",
+        "symbol": "فملی",
+        "count": 9,
+        "details": [
+          "منبع و زمان این گزارش\nشناسهٔ رکورد\n۱۱۶۹۲\nپایان دورهٔ ذخیره‌شده\n۲۰۲۶-۰۹-۲۲\nپایان دورهٔ داخل گزارش\n۱۴۰۵-۰۶-۳۱\nتاریخ ارسال منبع\n۱۴۰۵/۰۷/۳۰\nساعت ارسال منبع\n۱۲:۳۱:۰۵\nزمان انتشار به UTC\nنامعلوم؛ تبدیل معتبر ثبت نشده\nدریافت رکورد؛ متن اصلی منبع\n2026-10-27T11:26:49.238312+00:00\nدریافت رکورد؛ UTC با دقت میلی‌ثانیه\n2026-10-27T11:26:49.238Z\nنسخهٔ پردازش\n۲؛ از متادیتای رکورد\n\nنشانهٔ اصلاحیه در این رکورد ثبت شده است.",
+          "منبع و زمان این گزارش\nشناسهٔ رکورد\n۱۰۱۲۶\nپایان دورهٔ ذخیره‌شده\n۲۰۲۵-۰۶-۲۱\nپایان دورهٔ داخل گزارش\n۱۴۰۴-۰۳-۳۱\nتاریخ ارسال منبع\n۱۴۰۴/۰۴/۰۷\nساعت ارسال منبع\n۱۵:۴۰:۵۳\nزمان انتشار به UTC\nنامعلوم؛ تبدیل معتبر ثبت نشده\nدریافت رکورد؛ متن اصلی منبع\n2026-10-06T14:22:53.978883+00:00\nدریافت رکورد؛ UTC با دقت میلی‌ثانیه\n2026-10-06T14:22:53.978Z\nنسخهٔ پردازش\n۲؛ از متادیتای رکورد"
+        ],
+        "rawTableCount": 1
+      }
+    ],
+    "funds": {
+      "beforeReload": [
+        "عیار",
+        "طلا",
+        "کهربا",
+        "مثقال",
+        "رز ترنج"
+      ],
+      "afterReload": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "mobileWidth": 390,
+      "selectionPersists": false
+    },
+    "pageErrors": [],
+    "blockedWrites": []
+  },
+  "observations": {
+    "fundRows": 345,
+    "companyChartCountEach": 8,
+    "liveQuantityReceipt": "NOT_ESTABLISHED",
+    "missingRateOrQuantity": "NULL_WITH_REASON",
+    "marketQuoteOnPreview": "UNAVAILABLE",
+    "publishedUtcWithoutConversion": "UNKNOWN",
+    "productionChangedByThisPreview": false
+  },
+  "limits": [
+    "Existing financial periods are historical; no producer ingest executed by this check.",
+    "Nonempty fund comparison selections were lost on reload; root owns the P08.3 repair.",
+    "Eight rendered charts do not establish every requested quantity/rate chart.",
+    "Initial unsynchronized select driver discarded; final five distinct same-type selections were confirmed after hydration.",
+    "Whole P07/P08/P14 and human visual acceptance remain open."
+  ]
+}

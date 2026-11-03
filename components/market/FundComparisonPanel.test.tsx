@@ -5,7 +5,32 @@ import { renderToStaticMarkup } from "react-dom/server";
 import FundComparisonPanel, { FundComparisonDetails } from "./FundComparisonPanel";
 import { formatSignedPercent, formatToman } from "../../lib/format";
 import type { FundComparisonRow } from "../../lib/core/fundComparison";
+import { restoreFundSelection, fundSelectionHref, isFundSelectionValue } from "../../lib/core/fund-comparison-selection";
 Object.assign(globalThis, { React });
+
+test("five public selections survive a URL roundtrip without replacing filters, hash or history state", () => {
+  const ids = ["عیار", "طلا", "کهربا", "مثقال", "رز ترنج"];
+  const href = fundSelectionHref("https://site.test/market/funds?q=طلا&sort=faName#table", ids);
+  const url = new URL(href, "https://site.test");
+  assert.equal(url.searchParams.get("q"), "طلا");
+  assert.equal(url.searchParams.get("sort"), "faName");
+  assert.equal(url.hash, "#table");
+  assert.deepEqual(restoreFundSelection(url.searchParams.get("compare"), []).ids, ids);
+  const cleared = new URL(fundSelectionHref(href, ["", "", "", "", ""]), "https://site.test");
+  assert.equal(cleared.searchParams.has("compare"), false);
+  assert.equal(cleared.searchParams.get("q"), "طلا");
+});
+
+test("restored links reject duplicate, malformed and mixed type/currency selections without inventing replacements", () => {
+  for (const value of ['["x","x","","",""]', '["x"]', '{}', '["<script>","","","",""]', JSON.stringify(["x".repeat(81), "", "", "", ""])]) {
+    assert.equal(isFundSelectionValue(value), false);
+    assert.equal(restoreFundSelection(value, []).rejected, true);
+  }
+  const funds = [{ ...row, id: "a", type: "طلا" }, { ...row, id: "b", type: "سهام" }, { ...row, id: "c", type: "طلا", unit: "usd" as const }];
+  const restored = restoreFundSelection(JSON.stringify(["a", "b", "missing", "c", ""]), funds);
+  assert.deepEqual(restored.ids, ["a", "", "missing", "", ""]);
+  assert.equal(restored.rejected, true);
+});
 
 const row: FundComparisonRow = {
   id: "نمونه-آزمون", type: "اهرمی", unit: "toman", price: 900, closingPrice: 110, nav: 100,
