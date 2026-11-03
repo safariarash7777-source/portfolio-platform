@@ -57,7 +57,8 @@ async function fixture() {
       assert.equal(a.date_title,null);assert.equal(a.time_publish,null);assert.equal(a.date_publish,c.publishDate);
       events.push('download:'+c.feedId);onDownloaded();const data=makeData(c);objects.set(c.feedId,data);return data;
     },
-    insertParsedReport:async(a,kind,data)=>{
+    insertParsedReport:async(a,kind,data,options)=>{
+      assert.deepEqual(Object.keys(options),['rejectRedirects']);assert.equal(options.rejectRedirects,true);
       const c=m.candidates.find(c=>c.link===a.link);assert.equal(kind,c.kind);assert.equal(data,objects.get(c.feedId));
       events.push('append:'+c.feedId);rows.set(c.feedId,[makeRow(c,data)]);return 1;
     },
@@ -206,7 +207,7 @@ test('actual N30 producer and insert retain byte receipt through targeted orches
   const actual=actualProducer(async(url,init)=>{
     if(url===c.excelUrl){requests++;assert.equal(init.redirect,'error');const r=new Response(html);Object.defineProperty(r,'url',{value:url});return r;}
     assert.equal(url,'https://repair-store.invalid/rest/v1/codal_reports?on_conflict=source_url&select=source_url');
-    assert.equal(init.method,'POST');post++;const [stored]=JSON.parse(init.body);if(dropReceipt)delete stored.raw.quantity_capture;
+    assert.equal(init.method,'POST');assert.equal(init.redirect,'error');post++;const [stored]=JSON.parse(init.body);if(dropReceipt)delete stored.raw.quantity_capture;
     f.rows.set(c.feedId,[{...stored,id:12345}]);return Response.json([{source_url:stored.source_url}]);
   });
   f.ports.producer={...actual,downloadAndParse:async(a,kind,...rest)=>kind==='ن-۱۰'?null:actual.downloadAndParse(a,kind,...rest)};
@@ -303,4 +304,61 @@ test('actual operator rechecks capsule expiration after collection and stops bef
   f.operatorProducer.downloadAndParse=async(...args)=>{const data=await parse(...args);f.clock.now=f.capsule.expiresAt;return data;};
   const r=await f.run();assert.equal(r.state,'expired_capsule');assert.equal(r.downloads,1);assert.equal(r.appends,0);
   assert.equal(f.io.some(e=>e.operation==='POST'),false);assert.equal([...f.files.keys()].filter(k=>k.endsWith('.claim.json')).length,2);
+});
+
+test('actual producer rejects 307/308 POST responses and fetch redirect errors without a second write or success claim',async()=>{
+  // Real Response redirect statuses through the actual producer; transport is
+  // synthetic under B2. The redirect option also covers native Fetch rejecting
+  // before returning a Response. No local server or real network is opened.
+  for(const status of [307,308])for(const nativeReject of [false,true]) {
+    const f=await fixture(),c=f.m.candidates[0];let requests=0,forwarded=0;
+    const actual=actualProducer(async(url,init)=>{
+      requests++;assert.equal(init.method,'POST');
+      assert.equal(url,'https://repair-store.invalid/rest/v1/codal_reports?on_conflict=source_url&select=source_url');
+      assert.equal(init.headers.apikey,'dummy-repair-test-only');
+      if(init.redirect!=='error'){forwarded++;throw Error('synthetic redirected second write');}
+      if(nativeReject)throw new TypeError('fetch failed');
+      return new Response(null,{status,headers:{Location:'https://redirect-target.invalid/second-write'}});
+    });
+    f.ports.producer.insertParsedReport=actual.insertParsedReport;
+    const result=await f.run();assert.equal(result.state,'stopped_after_unknown_write');
+    assert.deepEqual(result.results,[{feedId:c.feedId,state:'write_unknown_no_replay'}]);
+    assert.equal(result.downloads,1);assert.equal(result.appends,1);assert.equal(requests,1);assert.equal(forwarded,0);
+    assert.equal(f.events.filter(e=>e==='read:'+c.feedId).length,3,'preflight, prewrite, authoritative readback once');
+    assert.equal(f.rows.size,0);const again=await f.run();assert.equal(again.state,'reconciliation_only');
+    assert.equal(again.appends,0);assert.equal(again.downloads,0);assert.equal(requests,1);
+    assert.equal(again.results[0].state,'unresolved_no_replay');
+  }
+});
+
+test('targeted duplicate confirmation rejects 307/308 without forwarding credentials or confirming storage',async()=>{
+  for(const status of [307,308]) {
+    const f=await fixture();let posts=0,gets=0;
+    const actual=actualProducer(async(url,init)=>{
+      assert.equal(new URL(url).origin,'https://repair-store.invalid');assert.equal(init.redirect,'error');
+      if(init.method==='POST'){posts++;return Response.json([]);}
+      gets++;return new Response(null,{status,headers:{Location:'https://redirect-target.invalid/read'}});
+    });
+    f.ports.producer.insertParsedReport=actual.insertParsedReport;
+    const result=await f.run();assert.equal(result.state,'stopped_after_unknown_write');
+    assert.equal(result.results[0].state,'write_unknown_no_replay');assert.equal(posts,1);assert.equal(gets,1);
+    const again=await f.run();assert.equal(again.state,'reconciliation_only');assert.equal(posts,1);assert.equal(gets,1);
+  }
+});
+
+test('legacy insert and duplicate confirmation keep default redirect behavior and invalid bounds do no I/O',async()=>{
+  const f=await fixture(),c=f.m.candidates[0],a={l18:c.symbol,l30:c.symbol,title:c.title,code:c.kind,
+    link:c.link,link_excel:c.excelUrl,date_title:null,date_publish:c.publishDate,time_publish:null};
+  for(const options of [undefined,{rejectRedirects:false}]) {
+    let posts=0,gets=0;
+    const actual=actualProducer(async(_url,init)=>{
+      assert.equal(Object.hasOwn(init,'redirect'),false);
+      if(init.method==='POST'){posts++;return Response.json([]);}
+      gets++;return Response.json([{source_url:c.link+'#pv2',symbol:c.symbol,data:f.makeData(c)}]);
+    });
+    assert.equal(await actual.insertParsedReport(a,c.kind,f.makeData(c),options),0);assert.equal(posts,1);assert.equal(gets,1);
+  }
+  let calls=0;const actual=actualProducer(async()=>{calls++;throw Error('unexpected transport');});
+  for(const rejectRedirects of ['error',1,null])await assert.rejects(actual.insertParsedReport(a,c.kind,f.makeData(c),{rejectRedirects}));
+  assert.equal(calls,0);
 });

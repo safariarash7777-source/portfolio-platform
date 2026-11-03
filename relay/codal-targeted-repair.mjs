@@ -164,7 +164,7 @@ export async function runTargetedRepair(request={}, suppliedPorts) {
       p.write={...p.base,dataHash:fingerprintJson(data)};
       await ports.writeJournal(p.key,'write',p.write);
       active(capsule);receipt.appends++;
-      try { await ports.producer.insertParsedReport(p.a,p.c.kind,data); } catch { /* Read back once; never replay POST. */ }
+      try { await ports.producer.insertParsedReport(p.a,p.c.kind,data,{rejectRedirects:true}); } catch { /* Read back once; never replay POST. */ }
       let result={feedId:p.c.feedId,state:'write_unknown_no_replay'};
       try { if(confirmed(await ports.readReports(p.c),p.c,p.write,ports.producer)) result={feedId:p.c.feedId,state:'stored_confirmed'}; } catch { /* Intent remains authoritative for recovery. */ }
       await ports.writeJournal(p.key,'outcome',result);
