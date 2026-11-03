@@ -77,8 +77,23 @@ export interface MonthlyQuantityCaptureReceipt {
   html_sha256: string;
   source: MonthlyQuantitySource;
 }
+/** Reader-created lineage only. Stored copies are discarded by the reader. */
+export interface MonthlyQuantitySelectedBinding {
+  reportId: number;
+  symbol: string;
+  periodEnd: string;
+  sourceUrl: string;
+  sourceRef: string;
+  parserVersion: number;
+  htmlSha256: string;
+}
 export type QuantityWitnessedProduct = N30ProductRow & { quantity_witness?: MonthlyQuantityWitness | null };
-export type QuantityWitnessedReport = Omit<CodalN30Data, 'products'> & { quantity_source?: MonthlyQuantitySource | null; products: QuantityWitnessedProduct[] };
+export type QuantityWitnessedReport = Omit<CodalN30Data, 'products'> & {
+  quantity_source?: MonthlyQuantitySource | null;
+  /** Absent only in the internal parser hand-off; database reads always set this. */
+  quantity_binding?: MonthlyQuantitySelectedBinding | null;
+  products: QuantityWitnessedProduct[];
+};
 
 function thousandTonnes(value: unknown): boolean {
   return typeof value === 'string' && value.trim().replace(/[\s\u200c]+/g, ' ').replace(/^هزارتن$/, 'هزار تن') === 'هزار تن';
@@ -92,6 +107,14 @@ function quantityRow(report: CodalN30Data, product: N30ProductRow): MonthlyQuant
   const source = (report as QuantityWitnessedReport).quantity_source;
   const witness = (product as QuantityWitnessedProduct).quantity_witness;
   if (!source || !witness || source.version !== 1 || !Object.prototype.hasOwnProperty.call(product, 'qty_unit')) return null;
+  if (Object.prototype.hasOwnProperty.call(report, 'quantity_binding')) {
+    const binding = (report as QuantityWitnessedReport).quantity_binding;
+    if (!binding || !Number.isSafeInteger(binding.reportId) || binding.reportId <= 0
+      || binding.symbol !== report.symbol || binding.periodEnd !== report.period_end
+      || binding.sourceRef !== source.sourceId || binding.htmlSha256 !== source.htmlSha256
+      || typeof binding.sourceUrl !== 'string' || !binding.sourceUrl
+      || !Number.isSafeInteger(binding.parserVersion) || binding.parserVersion <= 0) return null;
+  }
   if (typeof source.sourceId !== 'string' || !source.sourceId || source.sourceId.trim() !== source.sourceId || source.sourceId.length > 4096
     || typeof source.htmlSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(source.htmlSha256)
     || typeof source.symbol !== 'string' || !source.symbol.trim() || source.symbol.trim() !== source.symbol
