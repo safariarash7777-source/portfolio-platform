@@ -1,0 +1,39 @@
+{
+  "exitCode": 0,
+  "stderr": "",
+  "result": {
+    "at": "2026-10-30T13:03:08.252604+00:00",
+    "readOnly": true,
+    "openArchiveDescriptors": [],
+    "containerMountConsumers": [
+      {
+        "container": "portfolio-research-restore-20261017t114842z",
+        "state": "exited",
+        "source": "/root/portfolio-recovery-backups/20261017T114409Z",
+        "destination": "/recovery",
+        "rw": false
+      },
+      {
+        "container": "portfolio-recovery-proof-20261017t114409z",
+        "state": "exited",
+        "source": "/root/portfolio-recovery-backups/20261017T114409Z",
+        "destination": "/recovery",
+        "rw": false
+      }
+    ],
+    "boundedAutomationReferences": [],
+    "automationScanScope": [
+      "/root/portfolio-recovery-tools",
+      "/etc/systemd/system",
+      "/etc/cron.d",
+      "/etc/crontab",
+      "/var/spool/cron/crontabs/root"
+    ],
+    "automationScanIsNotEntireFilesystemOrExternalConsumers": true,
+    "tmpfsAvailableBytes": 4138426368,
+    "diskAvailableBytes": 16829751296,
+    "privateBytesExported": false,
+    "servicesChanged": false,
+    "archiveChanged": false
+  }
+}

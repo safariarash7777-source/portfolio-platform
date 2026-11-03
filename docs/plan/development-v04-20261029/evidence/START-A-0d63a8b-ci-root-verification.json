@@ -1,0 +1,22 @@
+{
+  "mode": "read_only_public_github_api",
+  "reviewer": "existing-root-coordinator",
+  "observedAt": "2026-10-29T16:38:35.715386Z",
+  "tehranTime": "2026-10-29 20:08:35",
+  "testedSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "runId": 40911872278,
+  "url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/40911872278",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {"id": 123581697368, "name": "Secret scan / SQL validation", "conclusion": "success"},
+    {"id": 123581698005, "name": "Dependencies", "conclusion": "success"},
+    {"id": 123581698222, "name": "Typecheck / Lint / Tests / Build", "conclusion": "success"},
+    {"id": 123581698242, "name": "Database RLS / Integrity", "conclusion": "success"},
+    {"id": 123585616219, "name": "CI Gate", "conclusion": "success"}
+  ],
+  "nativeAuthApiAcceptance": false,
+  "primaryInstallation": false,
+  "primaryGateActivated": false,
+  "commercialEntitlement": "NOT_CONNECTED"
+}

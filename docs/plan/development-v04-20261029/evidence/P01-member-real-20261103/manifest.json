@@ -1,0 +1,14 @@
+[
+  {
+    "name": "desktop.png",
+    "bytes": 518555,
+    "sha256": "09b253ae3e155a28f1be731a7a713134bea6dcf1abb391e9e898f220449e1e64",
+    "source": "Native screenshot of owned synthetic QA account on actual production"
+  },
+  {
+    "name": "mobile.png",
+    "bytes": 534748,
+    "sha256": "9064ede1af37d09334679e99f0c775904e4bce1ac334586575b9dd81e3f00801",
+    "source": "Native screenshot of owned synthetic QA account on actual production"
+  }
+]

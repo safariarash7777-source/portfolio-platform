@@ -1,0 +1,411 @@
+{
+  "codal-two-candidates-public.json": {
+    "atUtc": "2026-11-03T20:44:23.260953+00:00",
+    "exitCode": 0,
+    "readOnly": true,
+    "fieldMapping": {
+      "l18": "symbol",
+      "code": "report_code",
+      "date_publish": "publish_date",
+      "date_send": "sent_date",
+      "time_send": "sent_time"
+    },
+    "missingSourceFields": [
+      "date_title",
+      "time_publish"
+    ],
+    "limitation": "Missing fields remain null; sent time is not publication time. No report body fetched.",
+    "candidates": [
+      {
+        "l18": "فولاد",
+        "code": "ن-۱۰",
+        "link": "https://codal.ir/Reports/Decision.aspx?LetterSerial=qV4MKXMUUbQQQaQQQ9cOOObOOO8qmo3wRg%3d%3d&rt=0&let=6&ct=0&ft=-1",
+        "title": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۶ ماهه منتهی به  ۱۴۰۵/۰۶/۳۱ (حسابرسی نشده)",
+        "feed_id": 19270,
+        "date_send": "۱۴۰۵/۰۷/۳۰",
+        "time_send": "۱۴:۳۷:۱۳",
+        "date_title": null,
+        "link_excel": "https://excel.codal.ir/service/Excel/GetAll/qV4MKXMUUbQQQaQQQ9cOOObOOO8qmo3wRg%3d%3d/0",
+        "date_publish": "۱۴۰۵/۰۷/۳۰",
+        "time_publish": null,
+        "feed_created_at": "2026-10-22T14:01:13.583095+00:00",
+        "md5canonicalbase": "801696ae4fb5a8d3eceacba75a2ba5cb",
+        "exact_report_count": 0
+      },
+      {
+        "l18": "فملی",
+        "code": "ن-۳۰",
+        "link": "https://codal.ir/Reports/Decision.aspx?LetterSerial=JBfVmcnpL78zPxQXZY2VzQ%3d%3d&rt=0&let=58&ct=0&ft=-1",
+        "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۷/۳۰",
+        "feed_id": 22948,
+        "date_send": "۱۴۰۵/۰۸/۰۶",
+        "time_send": "۱۴:۵۷:۲۲",
+        "date_title": null,
+        "link_excel": "https://excel.codal.ir/service/Excel/GetAll/JBfVmcnpL78zPxQXZY2VzQ%3d%3d/0",
+        "date_publish": "۱۴۰۵/۰۸/۰۶",
+        "time_publish": null,
+        "feed_created_at": "2026-10-28T12:12:31.55408+00:00",
+        "md5canonicalbase": "9eb6811e370dc272276ccae046471904",
+        "exact_report_count": 0
+      }
+    ],
+    "afterReadCounts": [
+      {
+        "feed_id": 19270,
+        "exact_report_count": 0
+      },
+      {
+        "feed_id": 22948,
+        "exact_report_count": 0
+      }
+    ],
+    "observedAtUtc": "2026-11-03T20:44:22.949658+00:00",
+    "payloadSha256": "ed7f53184b65526fb36d8e4a7033a49e465ec877708e7db759bcd958861570a9",
+    "remoteWrites": false,
+    "automaticRetry": false
+  },
+  "exact-state.json": {
+    "atUtc": "2026-11-03T20:34:06.946630+00:00",
+    "exitCode": 0,
+    "readOnly": true,
+    "failureReasonAttribution": "NO_AGGREGATE_ATTRIBUTION",
+    "metadata": {
+      "candidates": [
+        {
+          "feedId": 19270,
+          "symbol": "فولاد",
+          "sentDate": "۱۴۰۵/۰۷/۳۰",
+          "sentTime": "۱۴:۳۷:۱۳",
+          "reportCode": "ن-۱۰",
+          "engineFails": null,
+          "publishDate": "۱۴۰۵/۰۷/۳۰",
+          "archiveFails": null,
+          "feedCreatedAt": "2026-10-22T14:01:13.583095+00:00",
+          "linkFingerprint": "801696ae4fb5a8d3eceacba75a2ba5cb",
+          "excelLinkPresent": true,
+          "reportRowsExactLink": 0
+        },
+        {
+          "feedId": 22948,
+          "symbol": "فملی",
+          "sentDate": "۱۴۰۵/۰۸/۰۶",
+          "sentTime": "۱۴:۵۷:۲۲",
+          "reportCode": "ن-۳۰",
+          "engineFails": null,
+          "publishDate": "۱۴۰۵/۰۸/۰۶",
+          "archiveFails": null,
+          "feedCreatedAt": "2026-10-28T12:12:31.55408+00:00",
+          "linkFingerprint": "9eb6811e370dc272276ccae046471904",
+          "excelLinkPresent": true,
+          "reportRowsExactLink": 0
+        }
+      ],
+      "stateMetadata": [
+        {
+          "key": "codal_engine_state",
+          "budget": null,
+          "cursor": null,
+          "updatedAt": "2026-11-03T18:11:57.606+00:00",
+          "foladCursor": null,
+          "fameliCursor": null,
+          "topLevelKeys": [
+            "fails",
+            "watermark",
+            "backfillCursor",
+            "failureDiagnostics",
+            "admissionDiagnostics"
+          ],
+          "watermarkKey": 14050721232817,
+          "backfillCursor": 1109
+        },
+        {
+          "key": "codal_archive_state",
+          "budget": {
+            "date": "2026-11-03",
+            "used": 198
+          },
+          "cursor": 126,
+          "updatedAt": "2026-11-03T20:26:41.826+00:00",
+          "foladCursor": {
+            "p1": 1,
+            "p3": 4,
+            "done1": false,
+            "done3": false
+          },
+          "fameliCursor": {
+            "p1": 3,
+            "p3": 4,
+            "done1": false,
+            "done3": false
+          },
+          "topLevelKeys": [
+            "fails",
+            "budget",
+            "cursor",
+            "perSymbol"
+          ],
+          "watermarkKey": null,
+          "backfillCursor": null
+        }
+      ]
+    },
+    "observedAtUtc": "2026-11-03T20:34:06.625310+00:00",
+    "payloadSha256": "14c39f6b78c885411018a2c40321feecddc23e670dcc4a7cb7cd3a2ef1398aad",
+    "remoteWrites": false,
+    "automaticRetry": false
+  },
+  "codal-selected.json": {
+    "atUtc": "2026-11-03T20:24:42.396962+00:00",
+    "exitCode": 0,
+    "readOnly": true,
+    "lastSuccessfulIngestReceipt": null,
+    "rejectionReason": null,
+    "receiptLimitation": "No dedicated codal ingest/receipt/rejection relation found; captured_at proves stored row timestamp only.",
+    "rows": [
+      {
+        "id": 4226,
+        "symbol": "فملی",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2026-06-21",
+        "captured_at": "2026-08-14T02:10:45.571288+00:00",
+        "period_rank": 1,
+        "report_kind": "ن-۱۰",
+        "source_code": "ن-۱۰",
+        "source_host": "codal.ir",
+        "capture_rank": 4,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۵/۰۴/۳۰",
+        "source_time_publish": "۲۰:۵۳:۲۳",
+        "source_url_fingerprint": "7c36987542f062840f6f7485febd323e"
+      },
+      {
+        "id": 9045,
+        "symbol": "فملی",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2024-09-21",
+        "captured_at": "2026-09-16T01:46:59.642126+00:00",
+        "period_rank": 20,
+        "report_kind": "ن-۱۰",
+        "source_code": "ن-۱۰",
+        "source_host": "codal.ir",
+        "capture_rank": 1,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۳/۰۷/۲۹",
+        "source_time_publish": "۲۲:۰۵:۲۵",
+        "source_url_fingerprint": "6529d1973cc566d1ef1734011255bf8c"
+      },
+      {
+        "id": 11692,
+        "symbol": "فملی",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2026-09-22",
+        "captured_at": "2026-10-27T11:26:49.238312+00:00",
+        "period_rank": 1,
+        "report_kind": "ن-۳۰",
+        "source_code": "ن-۳۰",
+        "source_host": "codal.ir",
+        "capture_rank": 6,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۵/۰۷/۳۰",
+        "source_time_publish": "۱۲:۳۱:۰۵",
+        "source_url_fingerprint": "4851f84f5f52ab8f731889a4706b3dbb"
+      },
+      {
+        "id": 11697,
+        "symbol": "فملی",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2023-11-21",
+        "captured_at": "2026-10-27T11:27:22.233852+00:00",
+        "period_rank": 55,
+        "report_kind": "ن-۳۰",
+        "source_code": "ن-۳۰",
+        "source_host": "codal.ir",
+        "capture_rank": 1,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۲/۰۹/۰۵",
+        "source_time_publish": "۱۷:۱۰:۴۰",
+        "source_url_fingerprint": "1f9847c636c269ddc49f5c418adc9ad5"
+      },
+      {
+        "id": 4048,
+        "symbol": "فولاد",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2026-06-21",
+        "captured_at": "2026-08-12T23:10:45.84194+00:00",
+        "period_rank": 1,
+        "report_kind": "ن-۱۰",
+        "source_code": "ن-۱۰",
+        "source_host": "codal.ir",
+        "capture_rank": 15,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۵/۰۴/۳۰",
+        "source_time_publish": "۲۲:۰۷:۳۵",
+        "source_url_fingerprint": "e174b024e073ebb32ea6ae8024b9c67a"
+      },
+      {
+        "id": 10092,
+        "symbol": "فولاد",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2023-03-20",
+        "captured_at": "2026-10-06T07:38:40.413294+00:00",
+        "period_rank": 34,
+        "report_kind": "ن-۱۰",
+        "source_code": "ن-۱۰",
+        "source_host": "codal.ir",
+        "capture_rank": 1,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۲/۰۴/۲۶",
+        "source_time_publish": "۲۱:۴۹:۵۲",
+        "source_url_fingerprint": "e07bcfbf508a45c05bde0e960d6df911"
+      },
+      {
+        "id": 11654,
+        "symbol": "فولاد",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2026-09-22",
+        "captured_at": "2026-10-25T10:15:58.441485+00:00",
+        "period_rank": 1,
+        "report_kind": "ن-۳۰",
+        "source_code": "ن-۳۰",
+        "source_host": "codal.ir",
+        "capture_rank": 18,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۵/۰۷/۰۷",
+        "source_time_publish": "۱۸:۵۵:۳۴",
+        "source_url_fingerprint": "1eb19dc58a64c971de7189707343bf5d"
+      },
+      {
+        "id": 11722,
+        "symbol": "فولاد",
+        "raw_keys": [
+          "code",
+          "audited",
+          "link_pdf",
+          "link_excel",
+          "date_publish",
+          "time_publish",
+          "discovered_by",
+          "period_months",
+          "parser_version",
+          "announcement_link",
+          "period_end_jalali"
+        ],
+        "period_end": "2023-12-21",
+        "captured_at": "2026-10-27T15:57:01.846099+00:00",
+        "period_rank": 51,
+        "report_kind": "ن-۳۰",
+        "source_code": "ن-۳۰",
+        "source_host": "codal.ir",
+        "capture_rank": 1,
+        "published_at": null,
+        "discovered_by": "engine-v3",
+        "parser_version": "2",
+        "source_date_publish": "۱۴۰۲/۱۱/۰۴",
+        "source_time_publish": "۱۴:۲۶:۴۲",
+        "source_url_fingerprint": "c6b62a7ef0267ed6645deabf680e6f65"
+      }
+    ],
+    "observedAtUtc": "2026-11-03T20:24:41.763793+00:00",
+    "payloadSha256": "0caa5f26f08f691a9bd9560c1bad2ec29a7c79e4010332dec7894c719445af52",
+    "remoteWrites": false,
+    "automaticRetry": false
+  }
+}

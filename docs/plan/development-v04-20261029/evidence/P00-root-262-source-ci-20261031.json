@@ -1,0 +1,50 @@
+{
+  "status": "PASS_ROOT_INDEPENDENT_SOURCE_CI_REVIEW",
+  "head": "26270dff4ed835b715f131356d1bd715d2b35adc",
+  "tree": "00132ddb97ff190acac87bd68ac065c6b8352c19",
+  "run": 41191199280,
+  "actualCheckout": "8b0848907c56f025378b1ad9b9bddb447fcbcf42",
+  "actualTree": "00132ddb97ff190acac87bd68ac065c6b8352c19",
+  "actualParents": [
+    "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+    "26270dff4ed835b715f131356d1bd715d2b35adc"
+  ],
+  "jobs": [
+    {
+      "id": 124508167709,
+      "name": "Secret scan · SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124508167827,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124508167902,
+      "name": "Database RLS · Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124508167965,
+      "name": "Typecheck · Lint · Tests · Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124509151234,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "fullCoreAndDbLogsRead": true,
+  "coreFirstGroup": 2127,
+  "companyPage": 22,
+  "calc": 179,
+  "staticPages": 39,
+  "company8AndFund24NamesExactlyOnce": true,
+  "memberMerged": false,
+  "primaryInstall": "NOT_APPLIED",
+  "limits": [
+    "CI of exact source/config, not primary, service right, user acceptance or all P00-P15"
+  ]
+}

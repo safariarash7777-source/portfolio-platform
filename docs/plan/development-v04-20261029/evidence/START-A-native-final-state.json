@@ -1,0 +1,22 @@
+{
+  "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "runId": "consultation-next-13fd82c5",
+  "capturedAt": "2026-10-29T17:04:06.674701+00:00",
+  "counts": {
+    "users": 4,
+    "feedback": 9,
+    "sessions": 5,
+    "positions": 1,
+    "gateEnabled": false,
+    "goalsVersions": 2,
+    "cashflowEntries": 2,
+    "cashflowVersions": 1,
+    "holdingsVersions": 1,
+    "activeRelationships": 0
+  },
+  "privateDumpSha256": "5ac519a3ecd7d137f3b099d8f8a764b1ee58db6536cece9d0784babb24c5ed29",
+  "privateDumpBytes": 328376,
+  "dumpContainsOnlyOwnedSyntheticAccounts": true,
+  "privateDumpPublished": false,
+  "cleanup": "PENDING_OWNER_ONLY"
+}

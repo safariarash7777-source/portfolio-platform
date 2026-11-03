@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-30T08:32:18.569710+00:00",
+  "readOnly": true,
+  "scopes": [
+    {
+      "path": "portfolio-p09-partners-20261002",
+      "exists": true,
+      "validCheckoutRoot": false
+    },
+    {
+      "path": "portfolio-p04-canonical-20261002",
+      "exists": true,
+      "validCheckoutRoot": false
+    },
+    {
+      "path": "arash-media-redesign-20261017",
+      "exists": true,
+      "validCheckoutRoot": false
+    }
+  ],
+  "meaning": "potential reuse inventory, not active execution/acceptance; no checkout changed"
+}

@@ -1,0 +1,47 @@
+{
+  "observedAt": "2026-10-30 13:49:06 UTC",
+  "lastSuccessfulServerRead": {
+    "at": "2026-10-30T13:12:33Z",
+    "availableBytes": 18636984320
+  },
+  "currentCpuRamDisk": "UNOBSERVED_AFTER_ACCESS_REGRESSION",
+  "freshCheckpointAttempt": {
+    "exitCode": 255,
+    "stage": "TCP_CONNECT_BEFORE_AUTHENTICATION",
+    "remoteExecutionByThisAttempt": false,
+    "automaticWriteRetry": false,
+    "serverIntentReadback": "UNOBSERVED",
+    "receipts": [
+      "P15-fresh-checkpoint-run-20261030.json",
+      "P15-fresh-checkpoint-readback-20261030.json"
+    ]
+  },
+  "existingProxySsh": {
+    "stage": "BANNER_EXCHANGE_TIMEOUT",
+    "pinnedHostKey": true,
+    "serviceOrProxyConfigurationChanged": false,
+    "receipt": "P15-existing-proxy-ssh-readonly-20261030.json"
+  },
+  "browser": {
+    "consoleTabUrlObserved": "https://console.liara.ir/apps",
+    "consoleBodyOrAuthenticatedAccountVerified": false,
+    "controlStopped": "WINDOWS_BROWSER_URL_COULD_NOT_BE_VERIFIED",
+    "policyBypassed": false,
+    "adminUiMutation": false
+  },
+  "github": {
+    "existingLoopbackProxy": "per-command only",
+    "pushVerified": "b96901bd545e0676d45d0151f5340caf4342e237",
+    "main": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+    "merged": false
+  },
+  "remainingGates": [
+    "fresh native DB backup and full restore plus private-schema comparison",
+    "compatible deployed reader before new statuses",
+    "primary installation and fresh-account acceptance",
+    "service entitlement binding",
+    "Hermes supported model connection and bounded deployment feasibility"
+  ],
+  "nextActionOwner": "existing root coordinator; independent A/B/C continue",
+  "newCostOrUpgrade": false
+}

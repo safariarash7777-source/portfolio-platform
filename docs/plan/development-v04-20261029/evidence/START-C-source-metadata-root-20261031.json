@@ -1,0 +1,185 @@
+{
+  "startedAt": "2026-10-30T22:28:12.472545+00:00",
+  "finishedAt": "2026-10-30T22:28:12.957814+00:00",
+  "sourceContainerId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "exitCode": 0,
+  "rows": [
+    {
+      "kind": "header",
+      "note": "updated_at/read time/cron success are not complete financial pipeline success",
+      "database": "postgres",
+      "readOnly": "on",
+      "observedAt": "2026-10-30T22:28:12.726669+00:00"
+    },
+    {
+      "kind": "marketMetadata",
+      "rows": [
+        {
+          "funds": {
+            "state": "received",
+            "retained": false,
+            "receivedAt": 1793399205497
+          },
+          "stocks": {
+            "state": "received",
+            "retained": false,
+            "receivedAt": 1793399205497
+          },
+          "fooladShare": {
+            "id": "فولاد",
+            "unit": "toman",
+            "sourceDate": null,
+            "sourceTime": "12:30:01",
+            "rawDatePresent": false,
+            "rawDateUpdatePresent": false
+          },
+          "producerState": "complete",
+          "producerVersion": 1,
+          "databaseUpdatedAt": "2026-10-30T22:26:45.813+00:00",
+          "snapshotReceivedAt": 1793399205497,
+          "producerAttemptedAt": 1793399205497,
+          "lastCompletePipelineSuccess": null
+        }
+      ],
+      "observedAt": "2026-10-30T22:28:12.726669+00:00"
+    },
+    {
+      "kind": "codalStateMetadata",
+      "rows": [
+        {
+          "databaseUpdatedAt": "2026-10-30T21:12:09.793+00:00",
+          "lastCycleCounters": {
+            "n30ShortRows": 0,
+            "n10ScopeUnknown": 2,
+            "admissionRejected": 18,
+            "downloadException": 0,
+            "n10ContextInvalid": 0,
+            "n10UnitUnverified": 0,
+            "admissionException": 0,
+            "n10PeriodUnverified": 0,
+            "n10ScopeUnsupported": 13,
+            "n30UnsupportedLayout": 3,
+            "persistenceException": 0,
+            "n30ArithmeticMismatch": 0
+          },
+          "lastSourceAttemptAt": null,
+          "lastSuccessFieldPresent": false,
+          "runtimeLastRunPersisted": false,
+          "lastCompletePipelineSuccess": null
+        }
+      ]
+    },
+    {
+      "kind": "fooladReportMetadata",
+      "rows": [
+        {
+          "id": 10092,
+          "unit": "میلیون ریال",
+          "title": "صورت‌های مالی تلفیقی سال مالی منتهی به ۱۴۰۱/۱۲/۲۹ (حسابرسی شده)",
+          "symbol": "فولاد",
+          "selection": "latestStoredForKind",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=SS97V5jtRN0QQQaQQQscZebQQQaQQQvRwg%3d%3d&rt=0&let=6&ct=0&ft=-1#pv2",
+          "unitBasis": null,
+          "capturedAt": "2026-10-06T07:38:40.413294+00:00",
+          "reportKind": "ن-۱۰",
+          "publishedAt": null,
+          "periodMonths": 12,
+          "quantityUnit": null,
+          "parserVersion": 2,
+          "storedPeriodEnd": "2023-03-20",
+          "financialPeriodEnd": "1401-12-29",
+          "rawPublicationDate": "۱۴۰۲/۰۴/۲۶",
+          "rawPublicationTime": "۲۱:۴۹:۵۲",
+          "lastCompletePipelineSuccess": null
+        },
+        {
+          "id": 4047,
+          "unit": "میلیون ریال",
+          "title": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۳ ماهه منتهی به  ۱۴۰۵/۰۳/۳۱ (حسابرسی نشده)(اصلاحیه)",
+          "symbol": "فولاد",
+          "selection": "pinnedSourcePreviouslyRead",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1#pv2",
+          "unitBasis": null,
+          "capturedAt": "2026-08-12T23:10:45.09058+00:00",
+          "reportKind": "ن-۱۰",
+          "publishedAt": null,
+          "periodMonths": 3,
+          "quantityUnit": null,
+          "parserVersion": 2,
+          "storedPeriodEnd": "2026-06-21",
+          "financialPeriodEnd": "1405-03-31",
+          "rawPublicationDate": "۱۴۰۵/۰۵/۰۳",
+          "rawPublicationTime": "۱۶:۵۴:۵۳",
+          "lastCompletePipelineSuccess": null
+        },
+        {
+          "id": 11722,
+          "unit": "میلیون ریال",
+          "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۲/۰۹/۳۰(اصلاحیه)",
+          "symbol": "فولاد",
+          "selection": "latestStoredForKind",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=pWgH1WP5bSLllxPX5sJp6w%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "unitBasis": "header+arithmetic",
+          "capturedAt": "2026-10-27T15:57:01.846099+00:00",
+          "reportKind": "ن-۳۰",
+          "publishedAt": null,
+          "periodMonths": 1,
+          "quantityUnit": null,
+          "parserVersion": 2,
+          "storedPeriodEnd": "2023-12-21",
+          "financialPeriodEnd": "1402-09-30",
+          "rawPublicationDate": "۱۴۰۲/۱۱/۰۴",
+          "rawPublicationTime": "۱۴:۲۶:۴۲",
+          "lastCompletePipelineSuccess": null
+        },
+        {
+          "id": 11653,
+          "unit": "میلیون ریال",
+          "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۶/۳۱(اصلاحیه)",
+          "symbol": "فولاد",
+          "selection": "pinnedSourcePreviouslyRead",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "unitBasis": "header+arithmetic",
+          "capturedAt": "2026-10-25T10:15:56.894105+00:00",
+          "reportKind": "ن-۳۰",
+          "publishedAt": null,
+          "periodMonths": 1,
+          "quantityUnit": null,
+          "parserVersion": 2,
+          "storedPeriodEnd": "2026-09-22",
+          "financialPeriodEnd": "1405-06-31",
+          "rawPublicationDate": "۱۴۰۵/۰۷/۲۹",
+          "rawPublicationTime": "۲۰:۵۰:۲۶",
+          "lastCompletePipelineSuccess": null
+        }
+      ]
+    },
+    {
+      "kind": "sourceCron",
+      "rows": []
+    },
+    {
+      "kind": "sourceCronLastRuns",
+      "rows": []
+    }
+  ],
+  "unparsedLineCount": 0,
+  "stderr": "",
+  "sourceSqlWrites": false,
+  "sqlSha256": "8eed0bb196870dd98f8ceb6737a637f44f7d95b47f9435db2f8921cec35456f7",
+  "attempts": 1,
+  "status": "BOUNDED_SOURCE_METADATA_READ_CONFIRMED",
+  "sourceOwner": "existing C; exact SQL from PR331 body",
+  "reviewAndExecution": "root on pinned real source container, no restore destination",
+  "sourceSqlAttempts": 1,
+  "clientLaunches": 2,
+  "clientTransportCorrection": "first launch failed local cp1256 encoding before stdin bytes; UTF-8 fixed, no SQL delivered on first launch",
+  "limits": [
+    "latestStoredForKind is ordered by captured_at, not newest financial period",
+    "producer attemptedAt is the snapshot-cycle timestamp, not separate provider/N10/N30/NAV attempt proof",
+    "18 admission rejections describe stored last-cycle counters, not individually linked report decisions",
+    "empty matching pg_cron rows do not rule out Node/PaaS or other timers",
+    "full pipeline last successful completion remains null/UNKNOWN",
+    "no full fund payload, provider refresh, model, credential or financial amounts read"
+  ]
+}

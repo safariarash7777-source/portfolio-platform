@@ -1,0 +1,79 @@
+{
+  "mode": "read_only_access_recheck",
+  "coordinator": "01a187f6-30e9-7fb1-8cde-d60fd036f76b/local",
+  "dateInTehran": "2026-10-29",
+  "knownTarget": {
+    "name": "arsadata-backend",
+    "knownVmId": "6aba73dd7622ce31c95d80ef",
+    "knownPublicIp": "62.60.191.24",
+    "currentIdentityIndependentlyRefreshed": false
+  },
+  "probes": [
+    {
+      "kind": "direct_ssh",
+      "connectTimeoutSeconds": 8,
+      "hostKeyPolicy": "StrictHostKeyChecking=yes",
+      "authenticationPolicy": "BatchMode=yes; existing key only; no agent",
+      "result": "TCP_CONNECTION_TIMEOUT_BEFORE_BANNER",
+      "remoteCommandExecuted": false
+    },
+    {
+      "at": "2026-10-29T15:52:05.059426Z",
+      "kind": "existing_management_api_via_existing_proxy",
+      "httpStatus": 401,
+      "credentialChanged": false,
+      "rawCredentialOrResponseStored": false
+    },
+    {
+      "at": "2026-10-29T15:52:43.022859Z",
+      "kind": "existing_proxy_connect_ssh22",
+      "connectStatus": "HTTP/1.1 200 Connection established",
+      "bannerResult": "timeout_before_authentication",
+      "remoteCommandExecuted": false
+    },
+    {
+      "kind": "existing_native_console_window",
+      "result": "WINDOW_ACTIVATION_TIMED_OUT",
+      "consoleOpened": false,
+      "remoteCommandExecuted": false
+    }
+  ],
+  "followupDirectSsh": {
+    "observedAt": "2026-10-29T16:29:11Z",
+    "connectTimeoutSeconds": 8,
+    "result": "TCP_CONNECTION_TIMEOUT_BEFORE_BANNER",
+    "remoteResourceProbeExecuted": false,
+    "tehranTime": "2026-10-29 19:59:11"
+  },
+  "followupProxyDiagnostics": {
+    "httpRootRead": {"observedAt": "2026-10-29T16:59:49.890092Z", "status": 200, "bodyStored": false},
+    "socks5Connect": {"observedAt": "2026-10-29T17:00:56.827828Z", "replyCode": 0, "bannerResult": "timeout_before_authentication"},
+    "fullSshObservedAt": "2026-10-29T17:03:42.140406Z",
+    "clientErrorType": "SSHException",
+    "serverBannerReceived": false,
+    "keyExchangeCompleted": false,
+    "sshAuthenticated": false,
+    "remoteResourceProbeExecuted": false,
+    "existingLocalTrustStoreLoad": "PASS_OFFLINE",
+    "hostKeyPolicyWeakened": false,
+    "networkOrServerSettingsChanged": false,
+    "limits": "HTTP200 and proxy CONNECT success do not establish VM identity, guest health, SSH cause or resource capacity. No authentication rejection was observed."
+  },
+  "cpuUsage": null,
+  "availableMemoryBytes": null,
+  "freeDiskBytes": null,
+  "freshBackupRestoreVerified": false,
+  "historicalBackupEvidence": "MIGRATION-LEDGER records restore/encryption receipts dated 2026-10-23; not a fresh checkpoint or current capacity proof",
+  "notEstablished": [
+    "SSH key rejection",
+    "sshd failure",
+    "firewall cause",
+    "resource exhaustion",
+    "current public IP match",
+    "fresh recoverable backup"
+  ],
+  "sourceMutations": 0,
+  "independentWorkContinues": ["START-A Linux verification and isolated installation/rollback", "START-B durable recovery", "START-C source/reader reconciliation"],
+  "nextActionOwner": "existing-root-coordinator",
+  "nextAction": "Recover read-only guest or supported console access, verify current destination identity, measure capacity, then verify a fresh encrypted checkpoint and isolated restore before any destination install; do not repeat DDL or reduce gates"
+}

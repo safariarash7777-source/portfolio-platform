@@ -1,0 +1,41 @@
+{
+  "source": "a3c9fdefce66a7413d108613df17162cff63337e",
+  "deployment": "dpl_H5yBSJA7DzHAFPbRrEK8dkcQEQYY",
+  "realMonthlyReports": 10,
+  "latestN30Period": "1405-06-31",
+  "mainN10Period": "1405-03-31",
+  "rawN10Publication": "1405/05/03 16:54:53",
+  "realSalesHeadlineBillionToman": 63941.8,
+  "unknownMarketRetained": true,
+  "validQuantityAndRateData": false,
+  "explicitFeedClicks": 1,
+  "receivedAnnouncements": 21,
+  "filteredAmendments": 8,
+  "cleared": 21,
+  "filterClearFirstLocatorHadNoVisibleEffect": true,
+  "freshAxNativeClearSucceeded": true,
+  "expanded": {
+    "trend": "true",
+    "raw": "true"
+  },
+  "mobile390": {
+    "reports": {
+      "bodyScrollWidth": 375,
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "viewportWidth": 390
+    },
+    "fundamental": {
+      "bodyScrollWidth": 375,
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "viewportWidth": 390
+    }
+  },
+  "viewportReset": true,
+  "deepLinkReloadSelectedFundamental": true,
+  "sourceMetadataAc416Deployed": false,
+  "lastCompleteFinancialIngest": "UNKNOWN",
+  "primaryAcceptance": "NOT_APPLIED",
+  "syntheticDataInserted": false
+}

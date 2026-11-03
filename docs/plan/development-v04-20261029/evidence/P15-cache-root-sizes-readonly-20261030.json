@@ -1,0 +1,42 @@
+{
+  "exitCode": 0,
+  "serviceChanged": false,
+  "method": "bounded low-priority sizes of known cache/temp/build roots; no deletions or content dump",
+  "result": {
+    "at": "2026-10-30T11:29:13.378859+00:00",
+    "exitCode": 0,
+    "directorySizes": [
+      {
+        "path": "/var/cache/apt/archives",
+        "allocatedBytes": 73728
+      },
+      {
+        "path": "/var/lib/apt/lists",
+        "allocatedBytes": 213831680
+      },
+      {
+        "path": "/root/.cache",
+        "allocatedBytes": 4096
+      },
+      {
+        "path": "/root/.npm",
+        "allocatedBytes": 390754304
+      },
+      {
+        "path": "/tmp",
+        "allocatedBytes": 4001792
+      },
+      {
+        "path": "/var/tmp",
+        "allocatedBytes": 61440
+      },
+      {
+        "path": "/opt",
+        "allocatedBytes": 7286149120
+      }
+    ],
+    "contentsListedOrRead": false,
+    "deleted": false,
+    "cachesNotYetApprovedForCleanup": true
+  }
+}

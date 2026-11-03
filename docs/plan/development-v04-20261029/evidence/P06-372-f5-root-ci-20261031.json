@@ -1,0 +1,72 @@
+{
+  "head": "f5d8b854702b81ca9e81048f0bd15a5fcd59399b",
+  "base": "e48eafa361198a2db24ea374232136bfce918f7e",
+  "baseRef": "codex/codal-stored-reader-v04-20261031",
+  "pr": 372,
+  "draft": true,
+  "status": "SCOPED_CODE_AND_CI_READY_NOT_DEPLOYED_OR_RUNTIME_ACCEPTED",
+  "source267": "26732d43305a39e18469549630fdaed8d06c35b2",
+  "guardDeltaRootRead": [
+    {
+      "path": "vercel.json",
+      "patch": "@@ -11,7 +11,8 @@\n   ],\n   \"git\": {\n     \"deploymentEnabled\": {\n-      \"codex/codal-stored-reader-v04-20261031\": false\n+      \"codex/codal-stored-reader-v04-20261031\": false,\n+      \"codex/codal-rejection-metadata-v04-20261031\": false\n     }\n   }\n }"
+    }
+  ],
+  "functionalCandidateRootReview": "P06-267-C-root-source-review-20261031.json",
+  "ci": {
+    "run": 41160895828,
+    "jobs": [
+      {
+        "id": 124417979260,
+        "name": "Secret scan · SQL validation",
+        "conclusion": "success"
+      },
+      {
+        "id": 124417979517,
+        "name": "Typecheck · Lint · Tests · Build",
+        "conclusion": "success"
+      },
+      {
+        "id": 124417979549,
+        "name": "Dependencies",
+        "conclusion": "success"
+      },
+      {
+        "id": 124417979560,
+        "name": "Database RLS · Integrity (Postgres)",
+        "conclusion": "success"
+      },
+      {
+        "id": 124419022477,
+        "name": "CI Gate",
+        "conclusion": "success"
+      }
+    ],
+    "actualCheckout": {
+      "sha": "d4c3679a2334f23558fff8fb780ad674ba9c44f9",
+      "tree": "afc963aeaff2aff06100de6d93f2a7bbcdcac3ed",
+      "parents": [
+        "e48eafa361198a2db24ea374232136bfce918f7e",
+        "f5d8b854702b81ca9e81048f0bd15a5fcd59399b"
+      ]
+    },
+    "equalsHeadTree": true
+  },
+  "deploymentMetadataObservation": {
+    "count": 0,
+    "pagination": {
+      "count": 0
+    },
+    "scope": "current project+exact branch+SHA filter only; explicit Vercel skip not observed"
+  },
+  "explicitVercelSkip": "UNOBSERVED",
+  "ownerTests": "173 mock/serializer +13 engine/parser regression, not root rerun",
+  "operations": {
+    "envMutation": false,
+    "manualDeploy": false,
+    "primarySqlOrProviderOrModelOrPipelineReplay": false,
+    "mainMerge": false
+  },
+  "next": "C bounded public-source N30 unit/period/market audit of existing pinned report11653, two GET maximum, no new parser/producer/provider job or DB write; deployment review remains separate",
+  "releaseAuthorized": false
+}

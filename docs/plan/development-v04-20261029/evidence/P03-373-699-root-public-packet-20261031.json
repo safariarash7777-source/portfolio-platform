@@ -1,0 +1,222 @@
+{
+  "source": "699ea1677c21c216be52869318cf0ac1c4525744",
+  "packetBytes": 224155,
+  "packetSha256": "ba9b515ea0fc94e322ee04abc7a8c43eabb5b886670bdba44633eed96f03b92d",
+  "members": 48,
+  "manifestSha256": "421f5a33f70e449e82ec0c720469ae47b30a31a90664d10c47b646791822d111",
+  "all47MemberLengthsAndHashes": "PASS",
+  "zipCrcPathsAndDuplicates": "PASS",
+  "publicSourceExactGit": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 22313,
+      "sha256": "515f75edaf3ea13c02d5d6d428baf7a691e2ec8ecb5a9ad09adf6592cba3906d",
+      "exactGit": true
+    },
+    {
+      "path": ".github/workflows/p03-ticket-native.yml",
+      "bytes": 6092,
+      "sha256": "7a74b1a2a0aed30ba68945bda631a39bfeb8a3cc422f52806168ea8c054fc7f6",
+      "exactGit": true
+    },
+    {
+      "path": "docs/ops/p03-ticket-storage-20261031/DURABILITY.fa.md",
+      "bytes": 78671,
+      "sha256": "d0f16af2354afaa8583556c50cfe63a8865c96aaa8b9c0753fe12b1883286738",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/consultationWriteRelease.test.ts",
+      "bytes": 12472,
+      "sha256": "f615e5debe0808e29e0b369a8e9bb510e3ead72e593645a6b3afeccd6dd48812",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/consultationWriteRelease.ts",
+      "bytes": 462,
+      "sha256": "22e7b893c081acf49bd6060a654cab1ad6ad7e3882b35a53d01d4ccea180664a",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/contracts.ts",
+      "bytes": 20804,
+      "sha256": "aecf9ac39b0ad2e7775d45442c0c4fcd549b7a53949f88834f8c0f1b4f14bb75",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/errors.ts",
+      "bytes": 2220,
+      "sha256": "3a09149c3d9ff86db879e2af3eace3b28dab5146630e13093cd2012ac9a52518",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/server.test.ts",
+      "bytes": 7837,
+      "sha256": "c1030e8b7c59eb1ff581e2e0cf31fa068d25d6ed32d78062c761118b22386a14",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/server.ts",
+      "bytes": 8073,
+      "sha256": "29fd796d94c409861b484a12dbdd89f4714fbdc51cd64245c08dd75cc7d639d2",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageRequest.ts",
+      "bytes": 5088,
+      "sha256": "b3f3c69f0e48594c834bfcad8f6ba43c10d35fbf758b05a667a1d46739462d5a",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageServer.test.ts",
+      "bytes": 5072,
+      "sha256": "4a7c2be6b8caa793d19a88888c83cc58a1013670ed615107233dc99ff718f135",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageServer.ts",
+      "bytes": 8112,
+      "sha256": "21c82f0b21cc1a181e2fb51f4e0d304a72e7878bd318cec0e967b54ef9a3123f",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketIntent.ts",
+      "bytes": 4545,
+      "sha256": "935892d47546d6a73344e33b5973e57b32a4aa37ec0182e1a9c8430ea4b5b55e",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketStorageContracts.ts",
+      "bytes": 10403,
+      "sha256": "229d8d9f10b64d18066bb62ade9029bb2a2146aeab7acb8f0717984534dc1e96",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketStorageRequest.ts",
+      "bytes": 7741,
+      "sha256": "97b11835453d80fae5ca91880a412894e03ce7611a748982a17c0d5506a10f43",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketStorageServer.test.ts",
+      "bytes": 4588,
+      "sha256": "bc309a92f5e262be13f344ffa419d98b1a5a8690c620938f702ee18b7329044c",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/ticketStorageServer.ts",
+      "bytes": 8030,
+      "sha256": "54b54227d8761403ea49892c83e7b52a95bf5c037af65c52be46ef03f8da7fea",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/tickets.test.ts",
+      "bytes": 29649,
+      "sha256": "3581e23dfba079d4f13a618567db6450c7ac5b7db254c2d8779315f772ed2049",
+      "exactGit": true
+    },
+    {
+      "path": "lib/consultation/tickets.ts",
+      "bytes": 21287,
+      "sha256": "ec38c3a36918ca504c2b7cf8adc79521a47c9b21d8ff5bb7cf9dcb09d8ac16f1",
+      "exactGit": true
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 265076,
+      "sha256": "98819c5b5297d75054bdb70d8e98c81caa5b16c4bde3f80a97e9628d322ff6e5",
+      "exactGit": true
+    },
+    {
+      "path": "package.json",
+      "bytes": 11579,
+      "sha256": "0ab922c60f626ce94154253853f14672bc195a73ff48fa2668ef5e2caf3dcb1d",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/browser.mjs",
+      "bytes": 44664,
+      "sha256": "daa58cb77b2d275f2e5d66387608874a937cfac4fac4040272aa79072fdd7989",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/durability-native.mjs",
+      "bytes": 15018,
+      "sha256": "a82a8ad714db8d737020479de6ab55c46bea13f661c3f4ec9d13aee479fa54fd",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
+      "bytes": 28690,
+      "sha256": "907cf8b21adecf9bbbed1125bf384247baa284a32bcc47182caea5a3eb07e9e3",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-infrastructure-lineage.json",
+      "bytes": 2075,
+      "sha256": "d12aee27956fd091f0de7df4e6736a12b2115a449ef53a6408668681f96b5b18",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-infrastructure.test.mjs",
+      "bytes": 2485,
+      "sha256": "50e3e6cd278c17537425928b2e35dcee47ec1870996a3ff72ab5eb61b51e1dc7",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native.mjs",
+      "bytes": 28409,
+      "sha256": "77bf46c99c7037a68a804e92e50d65ce99d81b091fde06e650cad1bfe55d3479",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/owned-fixture.sql",
+      "bytes": 2990,
+      "sha256": "811f55854b969761792ca809a1edd1d38155272241c31cd9cb36ba95aed04bd6",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/protected-source.json",
+      "bytes": 12891,
+      "sha256": "3758172303c6317063dccc5b203a71b6eb46bb63bceac9047af13ae970977d9d",
+      "exactGit": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/source-boundary.test.mjs",
+      "bytes": 7260,
+      "sha256": "937bcf192df8a734d55e603bb62370a6d4adc88afa4c66546afe439f6d9a29c3",
+      "exactGit": true
+    },
+    {
+      "path": "sql/consultation_ticket_prepared_intents.sql",
+      "bytes": 12838,
+      "sha256": "60b66a3b52f76f4d3866b59a3a8e1fcf9ef823702a47200be0f17b0f929212e1",
+      "exactGit": true
+    },
+    {
+      "path": "sql/consultation_ticket_requests.sql",
+      "bytes": 19388,
+      "sha256": "87a7a02774c8e215e2e72ae68de57a0083efa7de1420952275f43d5fcb20cbaa",
+      "exactGit": true
+    },
+    {
+      "path": "vercel.json",
+      "bytes": 279,
+      "sha256": "4c85b205dceeef10f01bfe6be4688ee88d45bcc2cb60196db9c6b4b629039fb2",
+      "exactGit": true
+    }
+  ],
+  "officialArtifact": {
+    "id": 13028395923,
+    "bytes": 2029,
+    "sha256": "30febccc1c6812eafa6c93cc5fc3aefb6419807d9077aa0367a507c00baddcb4",
+    "twoRawFilesExact": true,
+    "officialMetadataDigest": "owner readback, root compared pinned supplied digest and official log upload marker"
+  },
+  "rootLinuxLogReview": "P03-373-699-root-linux-review-20261031.json",
+  "productServiceRight": "NOT_CONNECTED",
+  "targetInstall": "NOT_APPLIED",
+  "extendedFeedbackRealRollback": "NOT_COVERED",
+  "fullReexecution": false,
+  "releaseAuthorized": false
+}

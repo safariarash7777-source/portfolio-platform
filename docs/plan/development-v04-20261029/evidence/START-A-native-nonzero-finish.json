@@ -1,0 +1,145 @@
+{
+  "status": "PASS_NATIVE_POPULATED_FINANCIAL_LEDGER_PRESERVATION",
+  "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "runId": "consultation-next-13fd82c5",
+  "checkedAt": "2026-10-29T17:01:30.587Z",
+  "relationshipId": "f3c5b7b9-cf59-40bf-9d73-d5d1963d2aa0",
+  "memberId": "6ba90358-cac3-4848-b785-e7f181e2e4c6",
+  "syntheticFinancialWrites": 2,
+  "holdingRows": 1,
+  "cashFlowEntryRows": 2,
+  "before": {
+    "holdingVersion": {
+      "id": "dbde918a-bbe6-451f-b67a-651e46b30d8a",
+      "version": 1
+    },
+    "cashVersion": {
+      "id": "c2ad91bb-0085-4b7d-ac47-4a82a2a5b341",
+      "version": 1
+    },
+    "holdingsDtoSha256": "f8e69d707f4f2df6094b62b8044ae5017fedec72a9b4c77e73f9830dda477c97",
+    "cashDtoSha256": "e4165be6b3df45f005344e3d1eba3e64aaba24d8342dda8bc4c73316684e0d93",
+    "financialFingerprint": {
+      "member_goals_versions": {
+        "count": 2,
+        "sha256": "59cf46f743d736558a5e69577d018782a23ce86cb100d9b80a09401e4ca8b340"
+      },
+      "member_holding_versions": {
+        "count": 1,
+        "sha256": "27a3bfe69f81f08b3166d342c77ae2a72774ac952bd358ea6ea83651ba8b82a3"
+      },
+      "member_cash_flow_entries": {
+        "count": 2,
+        "sha256": "081e5b8eb63c705dfa265a36e3bf9d9cb2fccf679bb047ddb24bd13f14e85a1e"
+      },
+      "member_holding_positions": {
+        "count": 1,
+        "sha256": "e82a887d87f18bb45c2bb5d846a9127c959f24c9df462186421fdf2697cb13af"
+      },
+      "member_cash_flow_versions": {
+        "count": 1,
+        "sha256": "7233f5c81cd1768ff8e58f700985c956a721d226b914a1e82ac424f521095744"
+      }
+    }
+  },
+  "cases": [
+    {
+      "status": "partial",
+      "receiptId": "02f9f013-2519-4dc1-8917-29119ac8ac33",
+      "feedbackVersion": 1,
+      "holdingVersion": {
+        "id": "dbde918a-bbe6-451f-b67a-651e46b30d8a",
+        "version": 1
+      },
+      "cashVersion": {
+        "id": "c2ad91bb-0085-4b7d-ac47-4a82a2a5b341",
+        "version": 1
+      },
+      "declaredValueToman": 1000000,
+      "openingToman": 500000,
+      "actualNetToman": 80000,
+      "actualClosingToman": 580000,
+      "plannedNetToman": null,
+      "holdingsDtoSha256": "f8e69d707f4f2df6094b62b8044ae5017fedec72a9b4c77e73f9830dda477c97",
+      "cashDtoSha256": "e4165be6b3df45f005344e3d1eba3e64aaba24d8342dda8bc4c73316684e0d93",
+      "financialFingerprint": {
+        "member_goals_versions": {
+          "count": 2,
+          "sha256": "59cf46f743d736558a5e69577d018782a23ce86cb100d9b80a09401e4ca8b340"
+        },
+        "member_holding_versions": {
+          "count": 1,
+          "sha256": "27a3bfe69f81f08b3166d342c77ae2a72774ac952bd358ea6ea83651ba8b82a3"
+        },
+        "member_cash_flow_entries": {
+          "count": 2,
+          "sha256": "081e5b8eb63c705dfa265a36e3bf9d9cb2fccf679bb047ddb24bd13f14e85a1e"
+        },
+        "member_holding_positions": {
+          "count": 1,
+          "sha256": "e82a887d87f18bb45c2bb5d846a9127c959f24c9df462186421fdf2697cb13af"
+        },
+        "member_cash_flow_versions": {
+          "count": 1,
+          "sha256": "7233f5c81cd1768ff8e58f700985c956a721d226b914a1e82ac424f521095744"
+        }
+      },
+      "exactFinancialReadbackUnchanged": true
+    },
+    {
+      "status": "not_done",
+      "receiptId": "bcc0004f-e082-48e1-9f0a-6d5c302cd8d9",
+      "feedbackVersion": 2,
+      "holdingVersion": {
+        "id": "dbde918a-bbe6-451f-b67a-651e46b30d8a",
+        "version": 1
+      },
+      "cashVersion": {
+        "id": "c2ad91bb-0085-4b7d-ac47-4a82a2a5b341",
+        "version": 1
+      },
+      "declaredValueToman": 1000000,
+      "openingToman": 500000,
+      "actualNetToman": 80000,
+      "actualClosingToman": 580000,
+      "plannedNetToman": null,
+      "holdingsDtoSha256": "f8e69d707f4f2df6094b62b8044ae5017fedec72a9b4c77e73f9830dda477c97",
+      "cashDtoSha256": "e4165be6b3df45f005344e3d1eba3e64aaba24d8342dda8bc4c73316684e0d93",
+      "financialFingerprint": {
+        "member_goals_versions": {
+          "count": 2,
+          "sha256": "59cf46f743d736558a5e69577d018782a23ce86cb100d9b80a09401e4ca8b340"
+        },
+        "member_holding_versions": {
+          "count": 1,
+          "sha256": "27a3bfe69f81f08b3166d342c77ae2a72774ac952bd358ea6ea83651ba8b82a3"
+        },
+        "member_cash_flow_entries": {
+          "count": 2,
+          "sha256": "081e5b8eb63c705dfa265a36e3bf9d9cb2fccf679bb047ddb24bd13f14e85a1e"
+        },
+        "member_holding_positions": {
+          "count": 1,
+          "sha256": "e82a887d87f18bb45c2bb5d846a9127c959f24c9df462186421fdf2697cb13af"
+        },
+        "member_cash_flow_versions": {
+          "count": 1,
+          "sha256": "7233f5c81cd1768ff8e58f700985c956a721d226b914a1e82ac424f521095744"
+        }
+      },
+      "exactFinancialReadbackUnchanged": true
+    }
+  ],
+  "continuation": "Known private filename rejection; readback matched exact original intent/receipt and complete financial snapshot, then only closed gate and revoked relationship",
+  "financialPostReplayed": false,
+  "feedbackPostReplayed": false,
+  "gateEnabledOnlyInSyntheticDatabase": true,
+  "gateClosedAtEnd": true,
+  "relationshipRevokedAtEnd": true,
+  "ownerAfterRevoke": {
+    "status": 403,
+    "code": "FORBIDDEN"
+  },
+  "primaryInstallation": false,
+  "nativeOnlineAcceptance": false
+}

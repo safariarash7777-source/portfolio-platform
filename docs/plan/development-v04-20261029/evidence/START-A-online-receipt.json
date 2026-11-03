@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "task": "START-A",
+  "dateTehran": "2026-10-29",
+  "productSha": "b08687b233d5fe1317748b6adff61653d58dadd8",
+  "productPr": 334,
+  "basePr": 314,
+  "previewOnlySha": "8af477606e9a1e602c60073f00408c2a1b7ad10a",
+  "previewOnlyPr": 335,
+  "url": "https://portfolio-platform-4briti2ru-safariarash7777-4463s-projects.vercel.app/preview/start-a",
+  "environment": "Online Vercel synthetic preview; no account/API/database; refresh resets interactions",
+  "observed": [
+    "Partial feedback retains explanation on simulated save failure",
+    "Successful same explanation appears in versioned history",
+    "Concurrent feedback makes stale draft read-only, preserves text, disables submit; no silent rebase",
+    "Explicit cancel and reopen permits not_done with new version; history contains partial, doing and not_done",
+    "Member B fixture hides dossier A; advisor fixture with revoked consent hides dossier",
+    "Financial basis v2 shows v1 mismatch warning and v2 draft without transferred approval",
+    "All controls inspected within page bounds at 320/390/1280; advisor v2 also fits390"
+  ],
+  "measurements": [
+    {
+      "overflowingControls": 0,
+      "client": 305,
+      "scroll": 305,
+      "width": 320
+    },
+    {
+      "overflowingControls": 0,
+      "client": 375,
+      "scroll": 375,
+      "width": 390
+    },
+    {
+      "overflowingControls": 0,
+      "client": 1265,
+      "scroll": 1265,
+      "width": 1280
+    }
+  ],
+  "ci": {
+    "conclusion": "success",
+    "independentlyRead": true,
+    "run": 40895274214
+  },
+  "limits": [
+    "Fixture does not prove native Auth/RLS or persistent financial reload",
+    "Candidate SQL is NOT_APPLIED; no real recommendation or member message",
+    "Commercial entitlement remains unconnected at consultation boundary",
+    "Owner visual/content acceptance and Production release remain separate"
+  ],
+  "screenshots": [
+    "start-a-online-desktop.jpg",
+    "start-a-online-mobile.jpg"
+  ]
+}

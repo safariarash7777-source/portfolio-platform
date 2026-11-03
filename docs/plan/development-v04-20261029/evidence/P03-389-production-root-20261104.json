@@ -1,0 +1,35 @@
+{
+  "observedAtUtc": "2026-11-03T20:57:23.910569+00:00",
+  "pr": 389,
+  "sourceSha": "186d482185b13a827556580e48b24bee232a613f",
+  "testedTree": "e75ef3d2a4335ec825acdff90c42a581583984db",
+  "ciRun": 41711459764,
+  "ciAllFive": "PASS",
+  "rootReadFullCoreAndDatabaseLogs": true,
+  "ciCheckout": "af3b09fa941640db6355f638de05f1353e9d78a4",
+  "mainSha": "6fec6c1f8be56d57f161ec5ec80f67f59f58decd",
+  "deployment": "dpl_7aNDuh5mfRBcEt4sG5KhQhNDJU9V",
+  "state": "READY",
+  "target": "production",
+  "alias": "portfolio-platform-fawn.vercel.app",
+  "immutable": "https://portfolio-platform-485vo2hjt-safariarash7777-4463s-projects.vercel.app",
+  "previewGuest": {
+    "atUtc": "2026-11-03T20:52:35.339Z",
+    "source": "186d482185b13a827556580e48b24bee232a613f",
+    "deployment": "dpl_DJSZQiAJqnmCjUkoxKCEq2nSrUZi",
+    "target": "preview",
+    "status": 200,
+    "url": "https://portfolio-platform-jq888dk9w-safariarash7777-4463s-projects.vercel.app/login?next=%2Fdashboard%2Fconsultation",
+    "title": "آرش صفری · تحلیلگر و مشاور سرمایه‌گذاری",
+    "headings": [
+      "خوش آمدید"
+    ],
+    "errors": [],
+    "writes": [],
+    "scrollWidth": 390,
+    "authenticatedDenialToOwnList": "NOT_EXECUTED",
+    "nativeConsultationAcceptance": "NOT_ESTABLISHED"
+  },
+  "authenticatedDenialRecoveryAcceptance": "NOT_EXECUTED",
+  "wholeConsultationAcceptance": "NOT_ESTABLISHED"
+}

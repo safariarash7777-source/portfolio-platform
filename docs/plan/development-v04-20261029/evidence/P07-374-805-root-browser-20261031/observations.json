@@ -1,0 +1,83 @@
+{
+  "source": "805a8d905c9d82697745988b21ff4f1222f8969d",
+  "tree": "c5f20ab832ab985dd32190ee53d306a849ddbec0",
+  "status": "PASS_BOUNDED_REAL_N10_N30_READ_AND_RENDER_NOT_FULL_P07",
+  "previewUrl": "https://portfolio-platform-c19w20kgz-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF#fundamental",
+  "deployment": {
+    "id": "dpl_8JqHf76mhDZiw5SMLqpDtMvpkjfR",
+    "target": null,
+    "readyState": "READY",
+    "branch": "codex/p07-fundamental-read-binding-20261031",
+    "sha": "805a8d905c9d82697745988b21ff4f1222f8969d",
+    "readyAtUtc": "2026-10-31T03:59:14.938Z"
+  },
+  "observed": {
+    "realOfficialN30AndN10Rendered": true,
+    "fixtureImportedIntoProduct": false,
+    "monthlyReportCount": 10,
+    "n30Period": "1405-06-31",
+    "n10Period": "1405-03-31",
+    "n10RawPublicationAsDisplayed": "1405/05/03 16:54:53",
+    "amountUnit": "million IRR, displayed billion/trillion IRT",
+    "chartsSeen": [
+      "monthly monetary sales",
+      "quarterly revenue/net profit",
+      "quarterly margins",
+      "period profit/margin comparison",
+      "annual revenue/gross margin"
+    ],
+    "underlyingSuccessfulReadHttpStatus": "NOT_INSTRUMENTED; rendered actual validated response contract, no invented200 receipt",
+    "nullQuantityRatePreserved": true,
+    "quarterlyMissingChainsRetainGaps": true,
+    "consolidatedExcludedAsDisplayed": 3,
+    "controls": {
+      "monthlyTrendAccordion": true,
+      "monthlyRawProductTable": true,
+      "fourTabLabelsPresent": true,
+      "switchedFundamentalReportsAndBack": true,
+      "storedFeedListClickedOnce": true,
+      "meetingsTabActualBehavior": "NOT_TESTED",
+      "plotClickProducedTooltip": "NOT_OBSERVED"
+    }
+  },
+  "knownBlockers": {
+    "legacyUnverifiedMarketSplit": {
+      "observed": "export0 and all domestic in three consumers",
+      "accepted": false,
+      "contradictedBy": "pinned official-source historical report11653 has domestic/export/services; raw pv2 has no verified market_basis",
+      "owner": "A scoped market-basis child"
+    },
+    "quantityRate": "unit unknown on storedpv2, old data not enriched/reparsed",
+    "pricesHistory": "independent legacy read unavailable, symbol-detail headers402",
+    "storedCodalFeed": {
+      "ui": "stored list retrieval failed",
+      "atUtc": "2026-10-31T04:16:38.830Z",
+      "requestId": "6m4fr-1793420198703-dbc0467de27f",
+      "route": "codal-list",
+      "phase": "headers",
+      "upstreamStatus": 402,
+      "elapsedMs": 32,
+      "owner": "C reuse existing resolver in same route"
+    },
+    "freshness": "capture/publication and lastCompletePipelineSuccess not made current by browser read; full success UNKNOWN"
+  },
+  "runtimeLabels": {
+    "prior371": "nodejs26.x",
+    "new805": "nodejs26.x",
+    "getProjectNodeVersion": "24.x",
+    "operatorChangedRuntime": false
+  },
+  "operations": {
+    "branchScopedReadPairCreated": 2,
+    "source": "existing Vercel project anon read pair reused, no credential signing/rotation",
+    "scope": "Sensitive, Preview only, exact frozen805 branch",
+    "manualPreviewCreated": 1,
+    "productionAliasOrMainChanged": false,
+    "authOrWriterOrSqlOrIngestOrModelOrHermesChanged": false
+  },
+  "rollback": "PASS bounded configuration-scope rollback and restore; see ../P15-Preview805-root-scope-20261031.json. No new runtime build/financial rollback/permanent deletion.",
+  "wholeP07Accepted": false,
+  "arashAcceptance": "UNOBSERVED",
+  "releaseAuthorized": false,
+  "textExportFormatting": "AX text stored with LF and trailing line whitespace removed for Git; screenshots are byte-identical captures and were not reencoded."
+}

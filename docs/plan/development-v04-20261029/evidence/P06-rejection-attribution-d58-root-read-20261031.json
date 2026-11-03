@@ -1,0 +1,36 @@
+{
+  "source": "e48eafa361198a2db24ea374232136bfce918f7e",
+  "ownerDocument": "d58d261f09791eaef9dfc71a60972d014b88b30c:docs/ops/codal-stored-reader-v04-20261031/DELIVERY.fa.md",
+  "status": "SOURCE_GAP_CONFIRMED_CANDIDATE_ASSIGNED_NOT_DEPLOYED",
+  "rootIndependentSourceRead": [
+    "relay/codal-admission-diagnostics.mjs:24-43 retains counters only; admissionEvent and notify drop extra identity/clocks",
+    "relay/codal-engine.mjs:120-145 restore uses same serializer and save writes same state payload",
+    "relay/codal-engine.mjs:298-315 and 396-414 contain announcement and first rejection in feed/backfill, then persist only reason counters",
+    "relay/codal.mjs:1019-1024 passes parser observer; 1030-1055 report row created on accepted insert path"
+  ],
+  "historical18": {
+    "scopeUnknown": 2,
+    "scopeUnsupported": 13,
+    "unsupportedLayout": 3,
+    "reportId": null,
+    "periodVerified": null,
+    "scopeVerified": null,
+    "perAttemptClock": null,
+    "rootReranLiveQuery": false,
+    "warning": "aggregate from existing dated receipt, not 18 reconstructed events; scopeUnsupported does not prove 13 consolidated reports"
+  },
+  "pr329": "C source-diff attribution only: market/unit fix inside recognized N30 layout does not close these N10 scope/N30 header gates; root did not re-audit full PR329 here",
+  "lastCompleteFinancialSuccess": null,
+  "sameProgramNext": {
+    "owner": "C",
+    "files": ["relay/codal-engine.mjs", "relay/codal-admission-diagnostics.mjs", "related existing tests", "same DELIVERY leaf"],
+    "scope": "code/mock tests only; connect first natural rejection to bounded same-observation metadata in existing state payload and restore, with nested version, honest coverage/omitted and legacy null/unknown",
+    "protected": "parser/codal.mjs, unit/formulas, PR329, archive, known/ledger/watermark, provider/fetch/retry/scheduler/budget, A canonical chart files",
+    "runtimeExecution": false,
+    "sqlOrProviderOrModelReplay": false,
+    "newStateTableApiOrJournal": false,
+    "historicalReconstruction": false
+  },
+  "previewBinding": "NOT_EXECUTED: existing authenticated exact-ID env/deployment cleanup capability remains unproven; this blocks only dependent runtime binding",
+  "releaseAuthorized": false
+}

@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-30T07:52:17.374723+00:00",
+  "method": "pinned existing SSH; docker system df and selected compose ownership labels only",
+  "exitCode": 0,
+  "stdout": "{\"Active\":\"24\",\"Reclaimable\":\"18.37GB (91%)\",\"Size\":\"20.01GB\",\"TotalCount\":\"31\",\"Type\":\"Images\"}\n{\"Active\":\"25\",\"Reclaimable\":\"14.85GB (99%)\",\"Size\":\"14.86GB\",\"TotalCount\":\"53\",\"Type\":\"Containers\"}\n{\"Active\":\"7\",\"Reclaimable\":\"121.3MB (6%)\",\"Size\":\"1.819GB\",\"TotalCount\":\"10\",\"Type\":\"Local Volumes\"}\n{\"Active\":\"0\",\"Reclaimable\":\"0B\",\"Size\":\"0B\",\"TotalCount\":\"0\",\"Type\":\"Build Cache\"}\n/portfolio-stage-db-1|0|portfolio-stage|/opt/portfolio-staging|unless-stopped\n/portfolio-demo844-app|4057|||unless-stopped\n/portfolio-accept195-app|4057|||unless-stopped\n",
+  "stderr": "",
+  "deletedOrStopped": false,
+  "decision": "reclaimable label alone does not prove safe cleanup; no prune, volume deletion, restart or upgrade"
+}

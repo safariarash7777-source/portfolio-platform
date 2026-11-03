@@ -1,0 +1,61 @@
+{
+  "status": "FAILED_PARTIAL_FIRST_STREAM_PRESERVED",
+  "intent": {
+    "atUtc": "2026-10-31T08:24:29.927071+00:00",
+    "action": "READONLY_PREFLIGHT_THEN_EXISTING_ENCRYPTED_CAPTURE",
+    "source": "d9043e7f0db91d2686af233e74b2749aea33b234",
+    "checkedSourceFiles": 18,
+    "profile": "CorrectedAcl19FailedV2R2",
+    "checkpoint": "20261030T215307Z",
+    "existingDestinationAbsent": true,
+    "localFreeBytes": 78795915264,
+    "sqlWrites": false,
+    "serviceRestart": false,
+    "installation": false,
+    "modelCall": false,
+    "automaticRetry": false
+  },
+  "start": {
+    "atUtc": "2026-10-31T08:24:36.346317+00:00",
+    "freshProcess": true,
+    "profile": "CorrectedAcl19FailedV2R2",
+    "sourceFilesVerified": 18,
+    "automaticRetry": false
+  },
+  "result": {
+    "atUtc": "2026-10-31T08:35:18.081162+00:00",
+    "exitCode": 1,
+    "captureCompleteReceiptPresent": false,
+    "verifiedReceiptPresent": false,
+    "automaticRetry": false,
+    "partialEvidencePreserved": true,
+    "primarySqlWrites": false,
+    "installation": false
+  },
+  "failedStage": "r2-capture",
+  "sanitizedToolError": "CHECKPOINT_FAILED stage=r2-capture code=OPERATION_FAILED",
+  "partialEncryptedStreamBytes": 327811580,
+  "expectedOriginalDumpPlaintextBytes": 2406546295,
+  "captureManifestPresent": false,
+  "captureCompleteReceiptPresent": false,
+  "verifiedReceiptPresent": false,
+  "verifyStarted": false,
+  "automaticRetry": false,
+  "privateCiphertextAndDpapiKeyPublished": false,
+  "failureCause": "UNATTRIBUTED: reviewed wrapper discards SSH stderr and exposes a constant failure; timeout/authentication/remote/process/stream-integrity causes not independently separated",
+  "freshPostFailureIdentityAndCapacity": "P15-preflight-post-capture-root-20261031.json",
+  "sourceHealthyAfter": true,
+  "primarySqlWrites": false,
+  "installation": false,
+  "archiveVerified": false,
+  "releaseAuthorized": false,
+  "remainingAction": {
+    "owner": "root",
+    "action": "Reconcile the retained failed attempt, add bounded non-secret transport/failure classification and a reviewed non-overwriting attempt policy before any retry; then complete Capture/Verify and separate restore/current SQL/Storage/reader/right gates."
+  },
+  "limits": [
+    "A failed partial ciphertext is not a recoverable verified backup.",
+    "A successful fresh SSH command after failure is not a diagnosis of that stream failure.",
+    "Original checkpoint is the frozen prior core snapshot, not a fresh current database/Storage backup."
+  ]
+}

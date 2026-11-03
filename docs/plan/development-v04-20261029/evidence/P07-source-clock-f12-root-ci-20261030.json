@@ -1,0 +1,36 @@
+{
+  "pr": 331,
+  "head": "f12ba71c353e135f83d136105380f20dd59a95e0",
+  "runId": 41077382460,
+  "jobs": [
+    {
+      "id": 124137065648,
+      "name": "Dependencies",
+      "conclusion": "success"
+    },
+    {
+      "id": 124137066010,
+      "name": "Typecheck \u00b7 Lint \u00b7 Tests \u00b7 Build",
+      "conclusion": "success"
+    },
+    {
+      "id": 124137066323,
+      "name": "Database RLS \u00b7 Integrity (Postgres)",
+      "conclusion": "success"
+    },
+    {
+      "id": 124137066381,
+      "name": "Secret scan \u00b7 SQL validation",
+      "conclusion": "success"
+    },
+    {
+      "id": 124139538944,
+      "name": "CI Gate",
+      "conclusion": "success"
+    }
+  ],
+  "browser": "NOT_YET_OBSERVED",
+  "sourceFinancialIngest": "UNKNOWN",
+  "primaryMerge": false,
+  "fundsAcceptance": "UNKNOWN"
+}

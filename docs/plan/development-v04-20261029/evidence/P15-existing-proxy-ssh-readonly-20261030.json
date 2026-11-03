@@ -1,0 +1,5 @@
+{
+  "exitCode": 255,
+  "method": "existing loopback HTTP proxy CONNECT; pinned host key; no proxy/service configuration changed",
+  "stderr": "Connection timed out during banner exchange\r\nConnection to UNKNOWN port 65535 timed out\r\n"
+}

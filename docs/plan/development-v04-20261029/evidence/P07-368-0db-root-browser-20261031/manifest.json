@@ -1,0 +1,36 @@
+{
+  "acceptedImages": [
+    {
+      "name": "01-decision-fundamental-n30-gap.jpg",
+      "sha256": "fd8a91c3062a87bfa8afe50e8052b172bc298551b4f3acaef314491423022a3d",
+      "bytes": 64207,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "name": "02-dossier-fundamental-quantity-gap.jpg",
+      "sha256": "ff21aeefe70e837d60fe0a8b9e2a7a653aed36d3b96897a108086dab7098b3d5",
+      "bytes": 62964,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "name": "03-dossier-mobile-n30-rate-gap.jpg",
+      "sha256": "a4a465b262877f976843ce9a4e24c936ef7710aa1bf6f8c45abbc3e45157f737",
+      "bytes": 26085,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "name": "04-mobile-fundamental-source-panel.jpg",
+      "sha256": "5572915afeab1eb4ae2d3dfd2add97f0d73d297c4014a0595dfb56d9b3e4513d",
+      "bytes": 42639,
+      "mimeType": "image/jpeg"
+    }
+  ],
+  "head": "0db38ff63d38b2ca98af5e29f5fe1345f58a4c45",
+  "target": null,
+  "viewportReset": true,
+  "deployment": "dpl_4FhukUYKKhQCW5z7HPTMkaB1FXds",
+  "reviewTabMarkedDeliverable": true,
+  "data": "unchanged authored P14-EDU-02; not official reports or prices",
+  "base": "23fffa5bb0ee9c7b16bffc7c341afc5d567d97df",
+  "formatCorrection": "Screenshot API returned JPEG bytes despite original .png file name; extension corrected without re-encoding; exact bytes and hashes retained"
+}
