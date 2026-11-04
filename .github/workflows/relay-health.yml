@@ -134,6 +134,10 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Offline egress observer boundary tests
+        if: inputs.metadata_only == true
+        run: node --test scripts/ops/relay-egress-inventory.test.mjs
+
       - name: Existing account egress configuration only
         if: inputs.metadata_only == true
         env:
