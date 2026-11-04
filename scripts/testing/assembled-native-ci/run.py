@@ -45,6 +45,14 @@ OVERLAY_NAMES = {'assembled-auth-runtime.mjs', 'assembled-auth-gateway.mjs', 'as
 # Failure diagnostics only. Literal codes from the reviewed frozen sources;
 # never forward an arbitrary exception/message or a regex-matching user string.
 NATIVE_FAILURE_CODES = frozenset({
+    'p03_composition_shared_admission_stopped',
+    'p03_composition_stopped',
+    'p03_composition_result_shape',
+    'p03_composition_result_binding',
+    'p03_composition_journal_failed_stop',
+    'p03_composition_transport_poisoned',
+    'p03_composition_transport_rejection_journal_failed',
+
     "p03_composition_default_form_exposed",
     "p03_composition_default_prepare_not_closed",
     "assembled_stage_invalid",
@@ -1165,6 +1173,60 @@ def project_attested_counts(data, private):
     return result
 
 
+def project_default_prepare_status(data, observation):
+    # Failure-only local response observation, never proof of a committed write.
+    # Exact ordinal12: attested initial8 Auth POSTs +3 product POSTs +negative prepare.
+    if (SELECTED_PROFILE != COMPOSITION or not isinstance(data, dict)
+            or data.get('sha') != CANDIDATE or not isinstance(observation, dict)
+            or observation.get('stageReadback') != 'OBSERVED'
+            or observation.get('malformedStageRecords') is not False
+            or observation.get('lastObservedStage') != 'composition-default-prepare'
+            or observation.get('lastObservedStageEdge') != 'before'):
+        return None
+    try:
+        local = Path(data['local'])
+        binding, _ = composition_read(local, 'composition-binding.json')
+        admission, _ = composition_read(local, 'composition-intent-004.json')
+        if (not isinstance(binding, dict) or binding.get('schema') != 'p03-composition-binding.v1'
+                or binding.get('appSha') != CANDIDATE or binding.get('appTree') != COMPOSITION_SPEC['tree']
+                or binding.get('runId') != data.get('id') or binding.get('databaseMarker') != data.get('id')
+                or binding.get('local') != str(local) or binding.get('profile') != 'consultation-ticket'
+                or not isinstance(binding.get('transportInitial'), dict)
+                or type(binding['transportInitial'].get('authorizedPostRequests')) is not int
+                or binding['transportInitial']['authorizedPostRequests'] != 8
+                or binding['transportInitial'].get('poisoned') is not False
+                or not isinstance(admission, dict)
+                or set(admission) != {'kind','ordinal','actor','path','body','bodySha256','token'}
+                or admission['kind'] != 'intent' or type(admission['ordinal']) is not int
+                or admission['ordinal'] != 4 or admission['actor'] != 'a'
+                or admission['path'] != '/api/consultation/ticket-attempts'
+                or not isinstance(admission['body'], str)
+                or sha(admission['body'].encode()) != admission['bodySha256']):
+            return None
+        admitted_body = composition_json(admission['body'].encode())
+        intent, _ = composition_read(local, 'intent-012.json')
+        result, _ = composition_read(local, 'transport-result-012.json')
+        route = '/api/consultation/ticket-attempts'
+        if (not isinstance(intent, dict) or set(intent) != {'sha', 'path', 'body'}
+                or intent['sha'] != CANDIDATE or intent['path'] != route
+                or json.dumps(intent['body'],sort_keys=True,ensure_ascii=False) != json.dumps(admitted_body,sort_keys=True,ensure_ascii=False)
+                or not isinstance(admitted_body, dict) or admitted_body.get('clientToken') != admission['token']
+                or not isinstance(binding.get('authCreatedIds'), list)
+                or admitted_body.get('expectedActorId') not in binding['authCreatedIds']
+                or not isinstance(intent['body'], dict)
+                or intent['body'].get('contractVersion') != 'consultation-ticket-request.v1'
+                or not isinstance(intent['body'].get('command'), dict)
+                or intent['body']['command'].get('kind') != 'open'
+                or not isinstance(result, dict) or set(result) != {'ordinal', 'path', 'status', 'sha'}
+                or type(result['ordinal']) is not int or result['ordinal'] != 12
+                or result['sha'] != CANDIDATE or result['path'] != route
+                or type(result['status']) is not int or not 100 <= result['status'] <= 599):
+            return None
+        return result['status']
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
 def failure_observation(state, temp, private):
     # This path runs even if cleanup raised. It has no cleanup/account/network
     # operations, and cannot change acceptance or replay an operation.
@@ -1192,6 +1254,7 @@ def failure_observation(state, temp, private):
         data = None
     result.update(project_attested_counts(data, private))
     result.update(project_stage_log(raw))
+    result['observedDefaultPrepareHttpStatus'] = project_default_prepare_status(data, result)
     result['chromePreflight'] = project_chrome_observation(state.get('chromePreflight'))
     return result, raw
 

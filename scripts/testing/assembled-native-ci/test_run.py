@@ -336,6 +336,62 @@ class CapsuleAndReceipt(unittest.TestCase):
 
 
 class FailureLog(unittest.TestCase):
+    def test_default_prepare_status_exact_local_binding_and_redaction(self):
+        candidate=runner.COMPOSITION_SPEC['application']
+        data={'sha':candidate,'local':'synthetic-owned','id':'synthetic-owned-run'}
+        observation={'stageReadback':'OBSERVED','malformedStageRecords':False,'lastObservedStage':'composition-default-prepare','lastObservedStageEdge':'before'}
+        intent={'sha':candidate,'path':'/api/consultation/ticket-attempts','body':{'contractVersion':'consultation-ticket-request.v1','clientToken':'synthetic-token','expectedActorId':'synthetic-actor','command':{'kind':'open'},'secret':'SYNTHETIC_PRIVATE'}}
+        result={'sha':candidate,'path':intent['path'],'ordinal':12,'status':503}
+        def read(rows):return lambda local,name:(rows[name],'unused')
+        with patch.object(runner,'SELECTED_PROFILE',runner.COMPOSITION),patch.object(runner,'CANDIDATE',candidate):
+            body=json.dumps(intent['body']);binding={'schema':'p03-composition-binding.v1','appSha':candidate,'appTree':runner.COMPOSITION_SPEC['tree'],'runId':data['id'],'databaseMarker':data['id'],'local':data['local'],'profile':'consultation-ticket','transportInitial':{'authorizedPostRequests':8,'poisoned':False},'authCreatedIds':['synthetic-actor']}
+            admission={'kind':'intent','ordinal':4,'actor':'a','path':intent['path'],'body':body,'bodySha256':hashlib.sha256(body.encode()).hexdigest(),'token':'synthetic-token'}
+            rows={'composition-binding.json':binding,'composition-intent-004.json':admission,'intent-012.json':intent,'transport-result-012.json':result}
+            for status in [100,200,401,500,503,599]:
+                with patch.object(runner,'composition_read',side_effect=read({**rows,'transport-result-012.json':{**result,'status':status}})) as reader:
+                    out=runner.project_default_prepare_status(data,observation)
+                    self.assertEqual(out,status);self.assertNotIn('SYNTHETIC_PRIVATE',json.dumps(out))
+                    self.assertEqual([call.args[1] for call in reader.call_args_list],['composition-binding.json','composition-intent-004.json','intent-012.json','transport-result-012.json'])
+            for key,bad in [('ordinal',11),('ordinal',True),('ordinal','12'),('sha','0'*40),('path','/api/consultation/tickets'),('status',True),('status','503'),('status',99),('status',600)]:
+                with patch.object(runner,'composition_read',side_effect=read({**rows,'transport-result-012.json':{**result,key:bad}})):
+                    self.assertIsNone(runner.project_default_prepare_status(data,observation))
+            for bad in [{**intent,'sha':'0'*40},{**intent,'path':'/wrong'},{**intent,'extra':'SYNTHETIC_PRIVATE'},{**intent,'body':None}]:
+                with patch.object(runner,'composition_read',side_effect=read({**rows,'intent-012.json':bad})):
+                    self.assertIsNone(runner.project_default_prepare_status(data,observation))
+            for bad in [{**binding,'runId':'other'},{**binding,'local':'other'},{**binding,'transportInitial':{'authorizedPostRequests':True,'poisoned':False}},{**binding,'transportInitial':{'authorizedPostRequests':9,'poisoned':False}},{**binding,'authCreatedIds':[]}]:
+                with patch.object(runner,'composition_read',side_effect=read({**rows,'composition-binding.json':bad})):
+                    self.assertIsNone(runner.project_default_prepare_status(data,observation))
+            for bad in [{**admission,'ordinal':3},{**admission,'actor':'owner'},{**admission,'bodySha256':'0'*64},{**admission,'token':'wrong'}]:
+                with patch.object(runner,'composition_read',side_effect=read({**rows,'composition-intent-004.json':bad})):
+                    self.assertIsNone(runner.project_default_prepare_status(data,observation))
+            for missing in rows:
+                with patch.object(runner,'composition_read',side_effect=read({k:v for k,v in rows.items() if k!=missing})):
+                    self.assertIsNone(runner.project_default_prepare_status(data,observation))
+            with patch.object(runner,'composition_read',side_effect=PermissionError('SYNTHETIC_PRIVATE')):
+                self.assertIsNone(runner.project_default_prepare_status(data,observation))
+    def test_default_prepare_status_requires_verified_stage_and_current_owner_before_read(self):
+        candidate=runner.COMPOSITION_SPEC['application'];good={'stageReadback':'OBSERVED','malformedStageRecords':False,'lastObservedStage':'composition-default-prepare','lastObservedStageEdge':'before'}
+        with patch.object(runner,'SELECTED_PROFILE',runner.COMPOSITION),patch.object(runner,'CANDIDATE',candidate),patch.object(runner,'composition_read',side_effect=AssertionError('must not read')):
+            for data,obs in [(None,good),({'sha':'0'*40},good),({'sha':candidate},{}),({'sha':candidate},{**good,'lastObservedStageEdge':'after'}),({'sha':candidate},{**good,'malformedStageRecords':True})]:
+                self.assertIsNone(runner.project_default_prepare_status(data,obs))
+            with patch.object(runner,'SELECTED_PROFILE','assembled-member-admin-v1'):
+                self.assertIsNone(runner.project_default_prepare_status({'sha':candidate},good))
+
+    def test_default_prepare_static_callchain_codes_are_exact_and_redacted(self):
+        codes=['p03_composition_shared_admission_stopped', 'p03_composition_stopped', 'p03_composition_result_shape', 'p03_composition_result_binding', 'p03_composition_journal_failed_stop', 'p03_composition_transport_poisoned', 'p03_composition_transport_rejection_journal_failed']
+        for code in codes:
+            raw=('P03_ASSEMBLED_FAILURE '+json.dumps({'reason':code,'body':'SYNTHETIC_PRIVATE_NEVER_FORWARD','token':'SYNTHETIC_PRIVATE_TOKEN'})).encode()
+            result=runner.project_failure_log(raw)
+            self.assertEqual(result['nativeFailureCode'],code)
+            self.assertNotIn('SYNTHETIC_PRIVATE',json.dumps(result))
+            for unknown in [code+'_SYNTHETIC_PRIVATE',code.upper(),{'reason':code},None]:
+                value=runner.project_failure_log(('P03_ASSEMBLED_FAILURE '+json.dumps({'reason':unknown})).encode())
+                self.assertIsNone(value['nativeFailureCode'])
+                self.assertNotIn('SYNTHETIC_PRIVATE',json.dumps(value))
+        duplicate=('P03_ASSEMBLED_FAILURE '+json.dumps({'reason':codes[0]})+'\n')*2
+        value=runner.project_failure_log(duplicate.encode())
+        self.assertIsNone(value['nativeFailureCode']);self.assertTrue(value['malformedLogRecords'])
+
     def test_literal_codes_and_only_the_fixed_check_names_survive_projection(self):
         raw = ('P03_ASSEMBLED_NATIVE_CHECK ' + json.dumps({'name': runner.OBSERVED_CHECKS[0], 'status': 'PASS', 'url': 'https://synthetic.invalid/private'})
                + '\nP03_ASSEMBLED_NATIVE_CHECK ' + json.dumps({'name': 'SYNTHETIC_PRIVATE_NAME', 'status': 'PASS'})
