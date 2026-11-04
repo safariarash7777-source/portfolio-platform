@@ -14,3 +14,16 @@ p08-prod-1ceba-* -text -whitespace
 data-chain-* -text -whitespace
 nav-410-* -text -whitespace
 p07-rejected-* -text -whitespace
+
+p03-r5-* -text -whitespace
+p03-native-417977-* -text -whitespace
+p03-native-new-* -text -whitespace
+p03-stage-diagnostic-* -text -whitespace
+p03-roster-fix-* -text -whitespace
+liara-run-418002-* -text -whitespace
+liara-cli-contract-* -text -whitespace
+liara-framing-* -text -whitespace
+p07-monthly-audit-* -text -whitespace
+p07-rate-* -text -whitespace
+p07-single-report-* -text -whitespace
+production-ops-* -text -whitespace

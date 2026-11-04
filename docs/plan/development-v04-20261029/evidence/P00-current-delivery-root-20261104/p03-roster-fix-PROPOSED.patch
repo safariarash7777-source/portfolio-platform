@@ -1,0 +1,16 @@
+--- a/scripts/testing/assembled-native-ci/test_run.py
++++ b/scripts/testing/assembled-native-ci/test_run.py
+@@ -323,7 +323,12 @@
+                 self.assertEqual(diag['actualExitCode'], 1)
+                 self.assertFalse(diag['timedOutOrInterrupted'])
+                 self.assertEqual(diag['fallbackUsed'], cleanup_fails)
+-                self.assertEqual(len(diag['observedPassedChecks']), 14)
++                historical_checks = ['isolation-attested', 'four-fresh-auth-users-and-sdk-getuser', 'assembled-financial-receipts-and-null-readback', 'assembled-consent-and-authorized-version-basis', 'immutable-source-default-closed', 'assembled-real-member-navigation-and-read-only-dom', 'actual-sdk-same-jwt-own-versus-foreign-rls', 'expired-source-unverified-dom', 'active-source-unverified-dom', 'revoked-source-unverified-dom', 'advisor-other-client-zero-side-get', 'actual-sdk-identity-clear', 'actual-sdk-signout-clear', 'private-storage-url-and-owned-cleanup']
++                self.assertEqual(diag['observedPassedChecks'],
++                                 ['browser-owned-nonzero-dossier-real-consent'] + historical_checks)
++                self.assertEqual(len(diag['observedPassedChecks']), 15)
++                self.assertEqual(diag['observedPassedChecks'][0], 'browser-owned-nonzero-dossier-real-consent')
++                self.assertEqual(diag['observedPassedChecks'][1:], historical_checks)
+                 self.assertEqual(diag['nativeFailureCode'], 'playwright_timeout')
+                 self.assertEqual(diag['observedProductPostIntents'], 3)
+                 self.assertNotIn('SYNTHETIC_PRIVATE', json.dumps(public))

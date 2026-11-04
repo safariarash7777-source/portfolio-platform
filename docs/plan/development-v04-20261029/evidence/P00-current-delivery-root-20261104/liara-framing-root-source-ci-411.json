@@ -1,0 +1,28 @@
+{
+  "schema": "root-liara-framing-source-ci-review.v1",
+  "atUtc": "2026-11-04T09:08:03.130631+00:00",
+  "pr": 411,
+  "source": "638f83a07db18917bb6cc0263cda386821be79e3",
+  "sourceTree": "c4bde338b6bd9057d5cb7423914f6b778626231f",
+  "actualCiCheckout": "97ab96dba7d8ebb3d575cec14e3e807d90e8cf09",
+  "actualCiTree": "c4bde338b6bd9057d5cb7423914f6b778626231f",
+  "wholeTreeEqual": true,
+  "ci": 41798644203,
+  "requiredJobs": "5_SUCCESS",
+  "fullDecodedLogsRead": [
+    {
+      "job": 126468710790,
+      "characters": 1282220
+    },
+    {
+      "job": 126468710866,
+      "characters": 3280871
+    }
+  ],
+  "mergedMain": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "subsequentReadOnlyRun": 41800223050,
+  "quotaFixed": false,
+  "bindingAttested": false,
+  "remoteHalt": "unknown",
+  "protocolAcceptanceRelaxed": false
+}

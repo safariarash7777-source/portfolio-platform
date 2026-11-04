@@ -1,0 +1,43 @@
+{
+  "schema": "p03-root-ordinary-linux-review.v1",
+  "source": "8f2b6bd51460e097b8676efbe51ca8e6b09c3ffa",
+  "sourceTree": "17b91c9f0ee2d3aee80ef65fa7cb4baa4c7c1d70",
+  "ci": 41796171731,
+  "actualCiCheckout": "b0dbe029805f046deaefb55140c978fec2811e75",
+  "actualCiParents": [
+    "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+    "8f2b6bd51460e097b8676efbe51ca8e6b09c3ffa"
+  ],
+  "actualCiTree": "17b91c9f0ee2d3aee80ef65fa7cb4baa4c7c1d70",
+  "wholeTreeEqual": true,
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "fullLogsRead": [
+    {
+      "job": 126460695818,
+      "characters": 1281555
+    },
+    {
+      "job": 126460695441,
+      "characters": 3280572
+    }
+  ],
+  "rawLogsLocallyArchived": false,
+  "ordinaryOfflineStep": {
+    "command": "python3 scripts/testing/assembled-native-ci/test_run.py",
+    "startedAt": "2026-11-04T08:04:11.4495969Z",
+    "finishedAt": "2026-11-04T08:04:12.1696770Z",
+    "pythonTests": 59,
+    "result": "OK",
+    "nodeGuardProbes": 4,
+    "pureNodeCases": 31,
+    "nodeResultsVisibility": "captured internally and asserted by the passing Python test; not separately printed as a native receipt"
+  },
+  "peerIntegrationDelta": "two scoped raw-byte attributes and README accepted by existing independent peer; no runtime/capsule changes",
+  "nativeRunSeparatelyAllocated": 41797748222,
+  "allocation": "260d9c06-11a5-4813-9c5a-935853237891",
+  "nativeStateAtRecord": "IN_PROGRESS",
+  "primaryInstall": "NOT_APPLIED",
+  "serviceEntitlement": "NOT_CONNECTED",
+  "fullProductAcceptance": "NOT_ACCEPTED"
+}

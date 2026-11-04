@@ -1,0 +1,24 @@
+{
+  "schema": "p03-diagnostic-root-linux-review.v1",
+  "source": "7d55be89f922ddd05022a012baedbdbdafc45513",
+  "run": 41802519558,
+  "overall": "FAIL_NOT_NATIVE_ELIGIBLE",
+  "coreJob": 126481488572,
+  "fullDecodedLogCharacters": 1271654,
+  "actualCiCheckout": "05ca8f51b36896d4a9e17353a17bbd6058f59484",
+  "ordinaryPython": {
+    "tests": 65,
+    "failures": 2,
+    "failedMethod": "CapsuleAndReceipt.test_failure_projection_survives_cleanup_failure_and_never_promotes_fourteen_names",
+    "subTests": [
+      true,
+      false
+    ],
+    "cause": "diagnostic projection has 15 fixed observed names but the old test still expects 14"
+  },
+  "sourceFixOwner": "C test-only packet; root adoption",
+  "nativeExecutedOnThisSource": false,
+  "oldNativeRun": 41797748222,
+  "oldNativeReplay": false,
+  "acceptanceProtocolUnchanged": true
+}

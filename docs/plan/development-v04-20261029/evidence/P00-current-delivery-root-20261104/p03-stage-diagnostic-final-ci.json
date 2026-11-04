@@ -1,0 +1,32 @@
+{
+  "schema": "p03-diagnostic-root-full-ordinary-linux-review.v1",
+  "atUtc": "2026-11-04T09:11:08.229563+00:00",
+  "source": "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e",
+  "sourceTree": "85698c8c220ac71955fa2eaa55bbc518b2f6942b",
+  "run": 41804303212,
+  "actualCiCheckout": "698cc9bf6f141f690a86d590ec9d3f350afb74b2",
+  "actualCiParents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e"
+  ],
+  "actualCiTree": "85698c8c220ac71955fa2eaa55bbc518b2f6942b",
+  "wholeTreeEqual": true,
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "fullDecodedLogsRead": [
+    {
+      "job": 126487401695,
+      "characters": 1282905
+    },
+    {
+      "job": 126487401740,
+      "characters": 3279947
+    }
+  ],
+  "ordinaryPythonTests": 65,
+  "ordinaryResult": "PASS",
+  "privateArtifactsUploaded": false,
+  "nativeOnThisSource": "NOT_RUN_AT_REVIEW",
+  "oldRun": 41797748222,
+  "oldRunReplay": false
+}

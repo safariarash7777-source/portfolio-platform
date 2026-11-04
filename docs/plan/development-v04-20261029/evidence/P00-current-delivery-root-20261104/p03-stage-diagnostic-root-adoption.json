@@ -1,0 +1,24 @@
+{
+  "schema": "p03-root-stage-diagnostic-adoption.v1",
+  "atUtc": "2026-11-04T08:49:46.146047+00:00",
+  "base": "b670dadb00769668703c7bfc95d18d982b744635",
+  "reviewedController": "8f2b6bd51460e097b8676efbe51ca8e6b09c3ffa",
+  "currentMainMerged": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "exactChangedPaths": [
+    "scripts/testing/assembled-native-ci/run.py",
+    "scripts/testing/assembled-native-ci/test_run.py",
+    "scripts/testing/assembled-native-ci/sealed-p03-composition-e0-v1.tar"
+  ],
+  "unchangedOperationBytes": true,
+  "changedCapsuleMembers": [
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json",
+    "overlay/scripts/testing/consultation-tickets/composition-browser-case.mjs"
+  ],
+  "capsuleSha256": "67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb",
+  "driverSha256": "3da3f5babd4e668ca5f53d652efaca721bba2594b91d29c131b46d842e4a7d34",
+  "failedRunRetained": 41797748222,
+  "failedRunReplay": false,
+  "runtimeCause": "UNKNOWN",
+  "nativeExecuted": false,
+  "CI": "PENDING_ORDINARY_PR"
+}

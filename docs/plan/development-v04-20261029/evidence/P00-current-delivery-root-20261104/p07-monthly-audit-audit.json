@@ -1,0 +1,542 @@
+{
+  "sourceHead": "e9ce72bf8c40eaa96f8202dfc4cc41c72fa37159",
+  "mode": "OFFLINE_NO_RUNTIME_OR_DATABASE_CHANGE",
+  "storedSnapshot": {
+    "readAt": "2026-10-27T10:14:16.301Z",
+    "sha256": "e6f305896b95313e63551ca33bf6e8423540ebd2aab9283b8a22f07a011173f7",
+    "limitation": "Historical stored-row packet, not a fresh production query"
+  },
+  "primary": {
+    "version": 1,
+    "sourceId": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+    "htmlSha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+    "symbol": "فولاد",
+    "periodEnd": "1405-06-31",
+    "bytes": 192342,
+    "headerRowIndex": 1,
+    "headers": [
+      {
+        "column": 1,
+        "text": "واحد"
+      },
+      {
+        "column": 13,
+        "text": "تعداد تولید"
+      },
+      {
+        "column": 14,
+        "text": "تعداد فروش"
+      },
+      {
+        "column": 15,
+        "text": "نرخ فروش (ریال)"
+      },
+      {
+        "column": 16,
+        "text": "مبلغ فروش (میلیون ریال)"
+      }
+    ],
+    "firstObservedGoods": [
+      {
+        "rowIndex": 4,
+        "market": "داخلی",
+        "unit": "هزار تن",
+        "production": 279,
+        "sales": 238,
+        "rateCell": "۹۲۱,۲۵۶,۴۸۷,۳۹۵",
+        "amountCell": "۲۱۹,۲۵۹,۰۴۴"
+      },
+      {
+        "rowIndex": 12,
+        "market": "صادراتی",
+        "unit": "هزار تن",
+        "production": 0,
+        "sales": 66,
+        "rateCell": "۷۹۷,۷۱۸,۷۷۲,۷۲۷",
+        "amountCell": "۵۲,۶۴۹,۴۳۹"
+      },
+      {
+        "rowIndex": 19,
+        "market": "خدمات",
+        "unit": "هزار تن",
+        "production": 150,
+        "sales": 140,
+        "rateCell": "۹۱۲,۵۴۳,۷۲۸,۵۷۱",
+        "amountCell": "۱۲۷,۷۵۶,۱۲۲"
+      }
+    ]
+  },
+  "storedLegacy": {
+    "identity": {
+      "id": 11653,
+      "period": "2026-09-22",
+      "financialPeriod": "1405-06-31",
+      "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+      "capturedAt": "2026-10-25T10:15:56.894105+00:00",
+      "parserVersion": 2
+    },
+    "gates": {
+      "amountUnit": "میلیون ریال",
+      "reportQtyUnit": null,
+      "hasSource": false,
+      "hasReceipt": false,
+      "binding": null
+    },
+    "products": [
+      {
+        "name": "محصولات سرد",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 128,
+        "rawSales": 138,
+        "rawRate": 1084861500000,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات گرم",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 279,
+        "rawSales": 238,
+        "rawRate": 921256487395,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات پوشش دار",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 22,
+        "rawSales": 22,
+        "rawRate": 1765051954545,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "تختال",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 7,
+        "rawSales": 22,
+        "rawRate": 660313000000,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "گندله",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 110,
+        "rawSales": 110,
+        "rawRate": 92758227273,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات پوشش دار",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 0,
+        "rawSales": 2,
+        "rawRate": 950737000000,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات گرم",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 0,
+        "rawSales": 66,
+        "rawRate": 797718772727,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات سرد",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 0,
+        "rawSales": 3,
+        "rawRate": 781581333333,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "تختال",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 0,
+        "rawSales": 31,
+        "rawRate": 717258580645,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات گرم",
+        "market": "داخلی",
+        "marketBasis": null,
+        "unit": null,
+        "rawProduction": 150,
+        "rawSales": 140,
+        "rawRate": 912543728571,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      }
+    ],
+    "model": {
+      "quantityUnit": null,
+      "prodVsSales": [
+        {
+          "monthKey": "1405-06",
+          "monthLabel": "شهریور",
+          "production": null,
+          "sales": null,
+          "unavailableReason": "incomplete-quantity",
+          "quantityUnit": null
+        }
+      ],
+      "quantitySeries": [],
+      "rateSeries": [
+        {
+          "product": "محصولات گرم",
+          "market": "نامشخص",
+          "rateUnit": null,
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "rate": null,
+              "quantityUnit": null,
+              "rateUnit": null
+            }
+          ]
+        },
+        {
+          "product": "محصولات سرد",
+          "market": "نامشخص",
+          "rateUnit": null,
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "rate": null,
+              "quantityUnit": null,
+              "rateUnit": null
+            }
+          ]
+        },
+        {
+          "product": "محصولات پوشش دار",
+          "market": "نامشخص",
+          "rateUnit": null,
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "rate": null,
+              "quantityUnit": null,
+              "rateUnit": null
+            }
+          ]
+        }
+      ]
+    },
+    "monetaryValuesPreserved": true
+  },
+  "currentProducer": {
+    "identity": {
+      "id": 701,
+      "period": "2026-09-22",
+      "financialPeriod": "1405-06-31",
+      "sourceUrl": "https://codal.ir/Reports/quantity-reader-offline-test#pv2",
+      "capturedAt": "2026-10-31T10:20:30.123456+03:30",
+      "parserVersion": 2
+    },
+    "gates": {
+      "amountUnit": "میلیون ریال",
+      "reportQtyUnit": "هزار تن",
+      "hasSource": true,
+      "hasReceipt": true,
+      "binding": {
+        "reportId": 701,
+        "symbol": "فولاد",
+        "periodEnd": "1405-06-31",
+        "sourceUrl": "https://codal.ir/Reports/quantity-reader-offline-test#pv2",
+        "sourceRef": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+        "parserVersion": 2,
+        "htmlSha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62"
+      }
+    },
+    "products": [
+      {
+        "name": "محصولات سرد",
+        "market": "داخلی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 128,
+        "rawSales": 138,
+        "rawRate": 1084861500000,
+        "checkedProduction": 128,
+        "checkedSales": 138,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات گرم",
+        "market": "داخلی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 279,
+        "rawSales": 238,
+        "rawRate": 921256487395,
+        "checkedProduction": 279,
+        "checkedSales": 238,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات پوشش دار",
+        "market": "داخلی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 22,
+        "rawSales": 22,
+        "rawRate": 1765051954545,
+        "checkedProduction": 22,
+        "checkedSales": 22,
+        "checkedRate": null
+      },
+      {
+        "name": "تختال",
+        "market": "داخلی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 7,
+        "rawSales": 22,
+        "rawRate": 660313000000,
+        "checkedProduction": 7,
+        "checkedSales": 22,
+        "checkedRate": null
+      },
+      {
+        "name": "گندله",
+        "market": "داخلی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 110,
+        "rawSales": 110,
+        "rawRate": 92758227273,
+        "checkedProduction": 110,
+        "checkedSales": 110,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات پوشش دار",
+        "market": "صادراتی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 0,
+        "rawSales": 2,
+        "rawRate": 950737000000,
+        "checkedProduction": 0,
+        "checkedSales": 2,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات گرم",
+        "market": "صادراتی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 0,
+        "rawSales": 66,
+        "rawRate": 797718772727,
+        "checkedProduction": 0,
+        "checkedSales": 66,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات سرد",
+        "market": "صادراتی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 0,
+        "rawSales": 3,
+        "rawRate": 781581333333,
+        "checkedProduction": 0,
+        "checkedSales": 3,
+        "checkedRate": null
+      },
+      {
+        "name": "تختال",
+        "market": "صادراتی",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 0,
+        "rawSales": 31,
+        "rawRate": 717258580645,
+        "checkedProduction": 0,
+        "checkedSales": 31,
+        "checkedRate": null
+      },
+      {
+        "name": "محصولات گرم",
+        "market": "خدمات",
+        "marketBasis": "section_header",
+        "unit": "هزار تن",
+        "rawProduction": 150,
+        "rawSales": 140,
+        "rawRate": 912543728571,
+        "checkedProduction": null,
+        "checkedSales": null,
+        "checkedRate": null
+      }
+    ],
+    "model": {
+      "quantityUnit": null,
+      "prodVsSales": [
+        {
+          "monthKey": "1405-06",
+          "monthLabel": "شهریور",
+          "production": null,
+          "sales": null,
+          "unavailableReason": "incomplete-quantity",
+          "quantityUnit": null
+        }
+      ],
+      "quantitySeries": [
+        {
+          "productName": "محصولات گرم",
+          "market": "داخلی",
+          "label": "محصولات گرم — کالای داخلی",
+          "scope": "main-product-goods-market",
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "production": 279,
+              "sales": 238,
+              "quantityUnit": "هزار تن",
+              "unavailableReason": null,
+              "scopeUnavailableReason": null,
+              "witnesses": [
+                {
+                  "sourceId": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+                  "htmlSha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+                  "periodEnd": "1405-06-31",
+                  "tableIndex": 0,
+                  "rowIndex": 4,
+                  "unitColumn": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "productName": "محصولات گرم",
+          "market": "صادراتی",
+          "label": "محصولات گرم — کالای صادراتی",
+          "scope": "main-product-goods-market",
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "production": 0,
+              "sales": 66,
+              "quantityUnit": "هزار تن",
+              "unavailableReason": null,
+              "scopeUnavailableReason": null,
+              "witnesses": [
+                {
+                  "sourceId": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+                  "htmlSha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+                  "periodEnd": "1405-06-31",
+                  "tableIndex": 0,
+                  "rowIndex": 12,
+                  "unitColumn": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "rateSeries": [
+        {
+          "product": "محصولات گرم",
+          "market": "داخلی",
+          "rateUnit": null,
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "rate": null,
+              "quantityUnit": "هزار تن",
+              "rateUnit": null
+            }
+          ]
+        },
+        {
+          "product": "محصولات سرد",
+          "market": "داخلی",
+          "rateUnit": null,
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "rate": null,
+              "quantityUnit": "هزار تن",
+              "rateUnit": null
+            }
+          ]
+        },
+        {
+          "product": "محصولات گرم",
+          "market": "خدمات",
+          "rateUnit": null,
+          "points": [
+            {
+              "monthKey": "1405-06",
+              "monthLabel": "شهریور",
+              "rate": null,
+              "quantityUnit": null,
+              "rateUnit": null
+            }
+          ]
+        }
+      ]
+    },
+    "monetaryValuesPreserved": true
+  },
+  "producerIdentityLimitation": "Archived HTML genuine; transport, database id701, captured_at and test announcement/publication values synthetic as explicitly defined in existing quantity-capture.mjs. Not an ingestion receipt.",
+  "networkGuards": {
+    "primary": {
+      "network": 0,
+      "fixtureTransportCalls": 0,
+      "syntheticEnvironmentReads": 5
+    },
+    "producer": {
+      "network": 0,
+      "fixtureTransportCalls": 2,
+      "syntheticEnvironmentReads": 5
+    }
+  },
+  "unchangedStoredInput": true
+}

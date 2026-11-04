@@ -1,0 +1,9 @@
+{
+  "atUtc": "2026-11-04T09:11:22.363804+00:00",
+  "workflow": "ci.yml",
+  "ref": "codex/assembled-native-ci-20261104",
+  "expectedHead": "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e",
+  "automaticRetry": false,
+  "httpStatus": 204,
+  "state": "DISPATCH_ACCEPTED_RUN_READBACK_REQUIRED"
+}

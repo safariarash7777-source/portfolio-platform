@@ -1,0 +1,60 @@
+{
+  "schema": "p07-single-report-root-full-linux-ci-review.v1",
+  "atUtc": "2026-11-04T09:08:03.130631+00:00",
+  "pr": 412,
+  "source": "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec",
+  "run": 41803924608,
+  "actualCiCheckout": "24f1b7ff2e804ffc185f3cabff0703ed4d5aa7b1",
+  "actualCiParents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec"
+  ],
+  "sourceTree": "cb788dd112f323764e57935571585f5a664de064",
+  "actualCiTree": "b373a16f64fdae7e9dc45c6e9a1d957e7bc113cd",
+  "wholeTreeEqual": false,
+  "allTenChangedFilesByteEqual": [
+    ".github/workflows/ci.yml",
+    "docs/ops/p07-single-report-20261104/DELIVERY.fa.md",
+    "lib/fundamental/codal-reinterpretation.integration.test.ts",
+    "package.json",
+    "relay/codal-reinterpretation.mjs",
+    "relay/codal-reinterpretation.test.mjs",
+    "relay/codal.mjs",
+    "relay/fixtures/codal-offline.mjs",
+    "relay/fixtures/reinterpretation.mjs",
+    "sql/codal_single_report_reinterpretation_20261104.sql"
+  ],
+  "onlyOtherDifferences": [
+    ".github/workflows/relay-health.yml",
+    "scripts/ops/liara-binding-discovery.mjs",
+    "scripts/ops/liara-binding-discovery.test.mjs",
+    "scripts/ops/liara-discovery-source.json"
+  ],
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "fullDecodedLogsRead": [
+    {
+      "job": 126486159522,
+      "characters": 1285784
+    },
+    {
+      "job": 126486159496,
+      "characters": 3369864
+    }
+  ],
+  "isolatedSQL": {
+    "pass": 9,
+    "fail": 0,
+    "existingIntegrationPass": 400,
+    "existingIntegrationFail": 0
+  },
+  "firstFailuresRetained": [
+    41801373264,
+    41802220275
+  ],
+  "primaryInstall": "NOT_APPLIED",
+  "collectorDeployed": false,
+  "actualSourceIngestion": "NOT_RUN",
+  "rateDenominator": null,
+  "productAcceptance": "NOT_ACCEPTED"
+}

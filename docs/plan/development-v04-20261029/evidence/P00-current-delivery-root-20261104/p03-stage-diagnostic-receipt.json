@@ -1,0 +1,85 @@
+{
+  "version": 2,
+  "createdAtUtc": "2026-11-04T08:38:18.759342+00:00",
+  "verdict": "NOT_DEPLOYED",
+  "baseControllerCommit": "8f2b6bd51460e097b8676efbe51ca8e6b09c3ffa",
+  "runtimeCause": "UNKNOWN",
+  "noReplay": true,
+  "changedFiles": {
+    "scripts/testing/assembled-native-ci/run.py": {
+      "baseSha256": "9bae2b2ec306e33fb5aecbac644694632833098994758c0ba5c5bcbe783091a5",
+      "proposedSha256": "6083170bbde82defac802a2db7d6ff066fdc8bdf49129b35ab3f0eb333619a47"
+    },
+    "scripts/testing/assembled-native-ci/test_run.py": {
+      "baseSha256": "26c3eb20d6897ba8985da5357b57ca812eff29978ca1a5b7d78c5ac73347bcd3",
+      "proposedSha256": "125118c31e136ba3046750589f9e028920f86fd0dc4e8b2aedc3f35c5d41cde7"
+    },
+    "scripts/testing/assembled-native-ci/sealed-p03-composition-e0-v1.tar": {
+      "baseSha256": "f03a1e3528374db1ba45a48d1c6cc550df71b0e95de6604434834afca31e7711",
+      "proposedSha256": "67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb"
+    }
+  },
+  "capsuleChangedMembers": [
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json",
+    "overlay/scripts/testing/consultation-tickets/composition-browser-case.mjs"
+  ],
+  "unchangedCopiedPaths": [
+    ".gitattributes",
+    ".github/workflows/ci.yml",
+    "scripts/testing/assembled-native-ci/pure-node-guard.cjs",
+    "scripts/testing/assembled-native-ci/pure-node-guard.test.mjs",
+    "scripts/testing/assembled-native-ci/README.md",
+    "scripts/testing/assembled-native-ci/receipt.mjs",
+    "scripts/testing/assembled-native-ci/receipt.test.mjs",
+    "scripts/testing/assembled-native-ci/sealed-v2.tar",
+    "scripts/testing/assembled-native-ci/sealed-v3-stage-observation.tar",
+    "scripts/testing/assembled-native-ci/sealed-v4b-app-f07.tar",
+    "scripts/testing/assembled-native-ci/stages.test.mjs",
+    "scripts/testing/assembled-native-ci/fixtures/run-d253.py.txt"
+  ],
+  "fullPatchSha256": "9a96121d6e91c6e009bc45078540896bd5d551b201ae78ccade2e3a245afc018",
+  "manifestSha256": "10da3edeea87f2fd5d8c25345c7cf2ca297e04a0635809e664f5868b658ce214",
+  "readmeSha256": "9f3c1a657297fae10e08bad80e8d9ccde89f14825ecd0a354a975c045e49d050",
+  "tests": {
+    "diagnosticRegistration": {
+      "pass": 6,
+      "fail": 0,
+      "includesPurePython": 5,
+      "includesGuardedNode": 2,
+      "guardProbe": 4,
+      "unittestInterpretation": "5 Python pure +1 wrapper containing2 guarded Node cases"
+    },
+    "relatedInitial": {
+      "pass": 16,
+      "fail": 3
+    },
+    "historicalGateClosure": {
+      "pass": 10,
+      "fail": 0
+    },
+    "localNode": "24.22.1",
+    "linuxNode22CI": "NOT_RUN",
+    "uniqueUnittestCases": 25,
+    "enumPrefixClosure": {
+      "pass": 1,
+      "fail": 0,
+      "repeatOfOneHistoricalCase": true
+    }
+  },
+  "logs": {
+    "diagnostic-ci-registration-tests.txt": "43e9e7e14872db87e7e0850d1c4de6a282d96b4d0a17ffeff746c23442ee338c",
+    "exact-enum-prefix-closure.txt": "3cf9954ddcf4b68e3854b6eb2c29ca15ab187c8dc51c80627aa402562a82b481",
+    "git-apply-check.txt": "3c7efddca0796991209eaf7ee7371c8b811fcaeddaf0c8ff088eea1680953525",
+    "historical-gates-closure.txt": "74e66da65e945dd645d1e549ea077ddc9dcb73520c4bd00126f003cd4010f682",
+    "related-regression-tests.txt": "a27bfba4108671627cb95be4a3bd5312eb26421e10bd112f5ecd03ce722bdb75"
+  },
+  "liveActions": false,
+  "allocationChanged": false,
+  "workflowChanged": false,
+  "independentReview": "PENDING",
+  "gitApplyCheck": {
+    "exit": 0,
+    "binaryIncluded": true,
+    "skippedPatches": false
+  }
+}

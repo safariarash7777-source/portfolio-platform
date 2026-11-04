@@ -1,0 +1,98 @@
+{
+  "inspectedAt": "2026-11-04T08:31:52.544Z",
+  "scope": "one announcement, N30 Folad period1405-06-31",
+  "archive": {
+    "path": "relay/fixtures/folad-n30-primary.html",
+    "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+    "announcementUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+    "hash": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+    "bytes": 192342,
+    "historicalFetchedAt": "2026-10-27T10:28:02.032Z",
+    "fetchedAtEvidence": "P06-N30-11653-unit-audit-C-root-read-20261031.json; not fresh network",
+    "formVersion": null,
+    "formVersionReason": "No explicit version/ProgId/Generator/formula declaration in retained export"
+  },
+  "header": [
+    "نام محصول",
+    "واحد",
+    "تعداد تولید",
+    "تعداد فروش",
+    "نرخ فروش (ریال)",
+    "مبلغ فروش (میلیون ریال)",
+    "تعداد تولید",
+    "تعداد فروش",
+    "مبلغ فروش (میلیون ریال)",
+    "تعداد تولید",
+    "تعداد فروش",
+    "نرخ فروش (ریال)",
+    "مبلغ فروش (میلیون ریال)",
+    "تعداد تولید",
+    "تعداد فروش",
+    "نرخ فروش (ریال)",
+    "مبلغ فروش (میلیون ریال)",
+    "تعداد تولید",
+    "تعداد فروش",
+    "نرخ فروش (ریال)",
+    "مبلغ فروش (میلیون ریال)",
+    "تعداد تولید",
+    "تعداد فروش",
+    "نرخ فروش (ریال)",
+    "مبلغ فروش (میلیون ریال)"
+  ],
+  "currentPeriod": "دوره یک ماهه منتهی به ۱۴۰۵/۰۶/۳۱",
+  "unitValues": [
+    "هزار تن",
+    "هزارتن"
+  ],
+  "notes": [
+    [
+      "کادر توضیحات در مورد اصلاحات"
+    ],
+    [
+      "مقدار مصرف در ستون اصلاحات جدول خرید مواد اولیه و انرژی و سیالات به دلیل عدم امکان ثبت مقدار عدد صفر، عدد یک ثبت شده است."
+    ],
+    [
+      "کادر توضیحی مربوط به اطلاعات دوره ۱ ماهه منتهی به ۱۴۰۵/۰۶/۳۱"
+    ],
+    [
+      "درآمد حاصل از ارائه خدمات مربوط به عملکرد شرکت نورد فولاد سبا اصفهان می باشد."
+    ],
+    [
+      "کادر توضیحی مربوط اطلاعات تجمعی از ابتدای سال تا پایان مورخ ۱۴۰۵/۰۶/۳۱"
+    ],
+    [
+      "مقادیر مربوط به مصرف آب، برق و گاز بر اساس صورت‌حساب‌های مربوطه تعیین شده است. با توجه به اینکه بخشی از هزینه‌های انرژی مربوط به واحدهای توسعه و بازسازی بوده و به‌منظور انطباق مبالغ با صورت‌های مالی، ارقام مذکور اصلاح گردید."
+    ]
+  ],
+  "formulaAttributes": [],
+  "observedNumerator": "ریال",
+  "quantityUnit": "هزار تن",
+  "rateDenominator": null,
+  "explicitDenominatorPhrases": [],
+  "conclusions": {
+    "numeratorObserved": true,
+    "independentRateDenominatorFound": false,
+    "arithmeticUsedAsDenominatorEvidence": false,
+    "borrowedOtherIssuerOrPeriod": false,
+    "oldBodyHash": null,
+    "existingArchiveRedownloaded": false,
+    "productCodeChanged": false
+  },
+  "officialGet": {
+    "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+    "startedAt": "2026-11-04T08:31:52.551Z",
+    "limitMs": 12000,
+    "limitBytes": 8388608,
+    "redirect": "error",
+    "attempts": 1,
+    "error": "fetch failed",
+    "originAccepted": false,
+    "durationMs": 337,
+    "endedAt": "2026-11-04T08:31:52.888Z"
+  },
+  "search": {
+    "officialDomainQueries": 3,
+    "matchedResults": 0,
+    "nonOfficialResultsRejected": true
+  }
+}

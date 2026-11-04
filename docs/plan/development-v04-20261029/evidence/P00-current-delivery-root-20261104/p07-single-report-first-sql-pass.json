@@ -1,0 +1,55 @@
+{
+  "schema": "p07-single-report-root-linux-review.v1",
+  "pr": 412,
+  "source": "df56dddb79073dd5985663822330da2795d72e62",
+  "run": 41802220275,
+  "overall": "FAIL_NOT_RELEASE_READY",
+  "fullDecodedLogsRead": [
+    {
+      "job": 126480497893,
+      "characters": 17070
+    },
+    {
+      "job": 126480497906,
+      "characters": 537612
+    }
+  ],
+  "actualCiCheckout": "ac9100c4bbfe93779c8e3a3424094e028240ce2f",
+  "newIsolatedPostgres": {
+    "tests": 9,
+    "pass": 9,
+    "fail": 0,
+    "lines": [
+      "2026-11-04T08:48:55.6811835Z ok 1 - SQL candidate is invoker with narrow lock helper; no public execute or mutation grants",
+      "2026-11-04T08:48:55.6817214Z ok 2 - real archive adoption, exact idempotency and selected-row quantity binding",
+      "2026-11-04T08:48:55.6837071Z ok 3 - version collision, stale baseline, changed money and foreign identity have no effect",
+      "2026-11-04T08:48:55.6842676Z ok 4 - forward restore is appended, exactly idempotent, preserves every old row and reader selection",
+      "2026-11-04T08:48:55.6845452Z ok 5 - pre-commit rollback leaves no row and amendment remains reader winner",
+      "2026-11-04T08:48:55.6849230Z ok 6 - deadline must be armed before statement; missing timeout has no effect",
+      "2026-11-04T08:48:57.9725079Z ok 7 - ordinary legacy INSERT lock blocks CAS; bounded busy fails without insertion",
+      "2026-11-04T08:48:58.1119355Z ok 8 - ordinary INSERT committed while waiting invalidates baseline inside locked transaction",
+      "2026-11-04T08:48:58.2981962Z ok 9 - concurrent identical requests append once; newer amendment remains winner"
+    ]
+  },
+  "previousDatabaseRegression": {
+    "tests": 400,
+    "pass": 399,
+    "fail": 1,
+    "error": "create-payment-containment.integration.test.ts:322 bootstrap role INHERIT=t; expected NOINHERIT=f",
+    "cause": "new harness creates previously absent cluster roles with PostgreSQL default INHERIT before existing bootstrap can create NOINHERIT roles"
+  },
+  "typecheck": {
+    "status": "FAIL",
+    "cause": "filtered Object.fromEntries environment inference loses required NODE_ENV; TypeScript execFile overloads fail"
+  },
+  "sourceFixOwner": "A",
+  "ciIntegrationOwner": "root",
+  "primarySql": "NOT_APPLIED",
+  "collectorDeployed": false,
+  "sourceRate": "null",
+  "notes": [
+    "Nine actual isolated SQL tests are not full CI acceptance or a production adoption receipt.",
+    "Preserve first run41801373264 hook failures and this run; no unchanged rerun."
+  ],
+  "recordedAtUtc": "2026-11-04T09:08:03.130631+00:00"
+}

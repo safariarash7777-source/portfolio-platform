@@ -1,0 +1,42 @@
+{
+  "schema": "p03-root-r5-source-adoption.v1",
+  "atUtc": "2026-11-04T08:00:01.213905+00:00",
+  "integrationBase": "940f8a85ba0d4a82b65793c8ff33b8a2cf030cea",
+  "frozenReviewedParent": "d253d14afb8c4bea4ca7670093141bc3b9f7a42c",
+  "currentMainMerged": "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+  "sourcePatchSha256": "bacbfce8cba0bb31138b01c408790e73bc0d2ba0a282c3fdf91b478a5d8d6926",
+  "capsuleSha256": "f03a1e3528374db1ba45a48d1c6cc550df71b0e95de6604434834afca31e7711",
+  "driverSha256": "fe100232e61504d2228c7ca6ea1108e64e1f35bff3011691065d849de83b22f4",
+  "sourcePaths": [
+    ".gitattributes",
+    ".github/workflows/ci.yml",
+    "scripts/testing/assembled-native-ci/README.md",
+    "scripts/testing/assembled-native-ci/fixtures/run-d253.py.txt",
+    "scripts/testing/assembled-native-ci/pure-node-guard.cjs",
+    "scripts/testing/assembled-native-ci/pure-node-guard.test.mjs",
+    "scripts/testing/assembled-native-ci/run.py",
+    "scripts/testing/assembled-native-ci/sealed-p03-composition-e0-v1.tar",
+    "scripts/testing/assembled-native-ci/test_run.py"
+  ],
+  "indexHashes": {
+    ".gitattributes": "00f183b5f9987ad2b124cb621990ad0edfcf35a75d1e8e710c6474df96d96fdf",
+    ".github/workflows/ci.yml": "8bbb301b8aeb8d551f44afefe208bf6c4f9cd3a9acd7762bbb39c132cd1b52a1",
+    "scripts/testing/assembled-native-ci/README.md": "6bd7e3526fd046088f13943f6570bf85ad1f5eef0179f0ce3675f8c96d2f6638",
+    "scripts/testing/assembled-native-ci/fixtures/run-d253.py.txt": "097ed514103524b5cfb1df9c82a690752e39652639504178c1c971c5ad654153",
+    "scripts/testing/assembled-native-ci/pure-node-guard.cjs": "4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028",
+    "scripts/testing/assembled-native-ci/pure-node-guard.test.mjs": "a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72",
+    "scripts/testing/assembled-native-ci/run.py": "9bae2b2ec306e33fb5aecbac644694632833098994758c0ba5c5bcbe783091a5",
+    "scripts/testing/assembled-native-ci/sealed-p03-composition-e0-v1.tar": "f03a1e3528374db1ba45a48d1c6cc550df71b0e95de6604434834afca31e7711",
+    "scripts/testing/assembled-native-ci/test_run.py": "26c3eb20d6897ba8985da5357b57ca812eff29978ca1a5b7d78c5ac73347bcd3"
+  },
+  "runtimeWorkflowTestsFixtureGuardsByteEqualToPeerPacket": true,
+  "integrationOnlyDelta": [
+    "two scoped -text attributes for raw-pinned guard/probe",
+    "existing README profile and acceptance limits"
+  ],
+  "nativeExecuted": false,
+  "sqlExecuted": false,
+  "CI": "PENDING_ORDINARY_PR",
+  "targetInstall": "NOT_APPLIED",
+  "fullMemberFlow": "NOT_ACCEPTED"
+}

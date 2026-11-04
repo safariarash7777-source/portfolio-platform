@@ -1,0 +1,27 @@
+{
+  "schema": "p03-root-test-roster-adoption.v1",
+  "atUtc": "2026-11-04T09:03:18.760994+00:00",
+  "source": "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e",
+  "base": "7d55be89f922ddd05022a012baedbdbdafc45513",
+  "changedPath": "scripts/testing/assembled-native-ci/test_run.py",
+  "changedFileSha256": "51d3230c1999dcf5c22090fa6411099daf7f935fc43b97a4f3143da9d8d87be0",
+  "fullOfflineTests": {
+    "count": 65,
+    "result": "PASS",
+    "logSha256": "914821d193395af9ace1b257172205b68ef4ad7b58473c945b843e4aa5ec1d93"
+  },
+  "observedDiagnosticRoster": 15,
+  "runtimeChanged": false,
+  "capsuleChanged": false,
+  "workflowChanged": false,
+  "nativeExecuted": false,
+  "oldRunReplay": false,
+  "ordinaryCi": "PENDING",
+  "historicalDiagnosticSuffixCount": 14,
+  "compositionAcceptanceExpected": {
+    "nativeChecks": 13,
+    "browserChecks": 11
+  },
+  "acceptanceProtocolUnchanged": true,
+  "clarificationAtUtc": "2026-11-04T09:08:03.130631+00:00"
+}

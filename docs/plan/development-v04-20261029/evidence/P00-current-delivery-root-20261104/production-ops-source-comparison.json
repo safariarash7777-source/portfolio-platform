@@ -1,0 +1,14 @@
+{
+  "metadataSource": "production-ops-5ec-metadata.json",
+  "currentProduction": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "priorFundsBrowserSource": "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+  "exactChangedPaths": [
+    ".github/workflows/relay-health.yml",
+    "scripts/ops/liara-binding-discovery.mjs",
+    "scripts/ops/liara-binding-discovery.test.mjs",
+    "scripts/ops/liara-discovery-source.json"
+  ],
+  "allOtherTrackedSourceBytesEqual": true,
+  "newBrowserAcceptance": false,
+  "note": "Prior funds browser receipt remains tied to 1ceba; ops-only source equality does not create a new runtime acceptance receipt."
+}

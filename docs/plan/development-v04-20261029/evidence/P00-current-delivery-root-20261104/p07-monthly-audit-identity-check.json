@@ -1,0 +1,27 @@
+{
+  "snapshotReadAt": "2026-10-27T10:14:16.301Z",
+  "oldId": 11653,
+  "oldRowCanonicalHash": "353999d1b6404852936b7e92e9342821e1810d79185ae2268bfd5748e6101fa1",
+  "canonicalization": "JSON keys sorted recursively, arrays preserved, UTF8 JSON.stringify; applies to historical packet only",
+  "archive": {
+    "sourceId": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+    "htmlSha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+    "bytes": 192342,
+    "period": "1405-06-31"
+  },
+  "metadataChecks": {
+    "sameExcelUrl": true,
+    "sameAnnouncementSerial": true,
+    "sourceIsAnnouncementPv2": true,
+    "sameSymbol": true,
+    "sameJalaliPeriod": true,
+    "sameGregorianPeriod": true,
+    "sameReportKind": true,
+    "monthly": true
+  },
+  "oldStoredBodyHash": null,
+  "oldStoredBodyEquality": "UNKNOWN: old row did not retain original response bytes/hash. URL/period match and arithmetic agreement do not prove original-body equality.",
+  "allowedInterpretation": "Archived bytes can support a separately reviewed candidate for this exact announcement only; not enrichment/authentication of old row or any other period.",
+  "primaryNetworkCalls": 0,
+  "productionWriteExecuted": false
+}

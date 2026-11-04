@@ -1,0 +1,41 @@
+{
+  "pins": {
+    "current": "e9ce72bf8c40eaa96f8202dfc4cc41c72fa37159",
+    "pr394": "5b5974405a952fe782419a23ca03134c7247cd7e",
+    "pr406": "133154bef69eb88c6b03ac807842ff22bdd8f2aa"
+  },
+  "mode": "LOCAL_GIT_OBJECTS_ONLY",
+  "functions": {
+    "current": {
+      "normalizeN30": "4d00aa62a959dcd38f8debf8da8688a7de9526f889e3c2c6d28100b0e900f43b",
+      "downloadAndParse": "8ad382ff883272cf43dd0c70fd251d8334ce77275273b68edd749cb7a48590a3",
+      "insertParsedReport": "bf08b9187905ca60d0ebd99bacae8c745bacec2d923810e1187a63177d056e40"
+    },
+    "pr394": {
+      "normalizeN30": "4d00aa62a959dcd38f8debf8da8688a7de9526f889e3c2c6d28100b0e900f43b",
+      "downloadAndParse": "8ad382ff883272cf43dd0c70fd251d8334ce77275273b68edd749cb7a48590a3",
+      "insertParsedReport": "bf08b9187905ca60d0ebd99bacae8c745bacec2d923810e1187a63177d056e40"
+    },
+    "pr406": {
+      "normalizeN30": "4d00aa62a959dcd38f8debf8da8688a7de9526f889e3c2c6d28100b0e900f43b",
+      "downloadAndParse": "8ad382ff883272cf43dd0c70fd251d8334ce77275273b68edd749cb7a48590a3",
+      "insertParsedReport": "bf08b9187905ca60d0ebd99bacae8c745bacec2d923810e1187a63177d056e40"
+    }
+  },
+  "bindingFiles": {
+    "current": {
+      "lib/core/monthly-quantity.ts": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "lib/fundamental/monthly-quantity-binding.ts": "e7ece2c8c84048b3dac506bdb9a748a32dcfd0b7d496c8ceade346913f60f7b9"
+    },
+    "pr394": {
+      "lib/core/monthly-quantity.ts": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "lib/fundamental/monthly-quantity-binding.ts": "e7ece2c8c84048b3dac506bdb9a748a32dcfd0b7d496c8ceade346913f60f7b9"
+    },
+    "pr406": {
+      "lib/core/monthly-quantity.ts": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "lib/fundamental/monthly-quantity-binding.ts": "e7ece2c8c84048b3dac506bdb9a748a32dcfd0b7d496c8ceade346913f60f7b9"
+    }
+  },
+  "n30FunctionsIdentical": true,
+  "bindingFilesIdentical": true
+}

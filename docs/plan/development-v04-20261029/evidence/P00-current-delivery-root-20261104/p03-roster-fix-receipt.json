@@ -1,0 +1,26 @@
+{
+  "createdAtUtc": "2026-11-04T09:00:45.135909+00:00",
+  "verdict": "SOURCE_TEST_FIX_NOT_DEPLOYED",
+  "baseCommit": "7d55be89f922ddd05022a012baedbdbdafc45513",
+  "changedPath": "scripts/testing/assembled-native-ci/test_run.py",
+  "baseSha256": "125118c31e136ba3046750589f9e028920f86fd0dc4e8b2aedc3f35c5d41cde7",
+  "proposedSha256": "51d3230c1999dcf5c22090fa6411099daf7f935fc43b97a4f3143da9d8d87be0",
+  "patchSha256": "199aeb10da65cba7638b3ab858b81aeb6a6f66bea7435ff48d086d61b6aabe86",
+  "testLogSha256": "e3201c59a113649cb611f38c686b1e23899fa2c04efe8a631139fe28a37e0acb",
+  "test": {
+    "method": "CapsuleAndReceipt.test_failure_projection_survives_cleanup_failure_and_never_promotes_fourteen_names",
+    "methods": 1,
+    "subCases": {
+      "cleanup_fails_true": "PASS",
+      "cleanup_fails_false": "PASS"
+    },
+    "fail": 0,
+    "assertion": "exact15 roster, exact new prefix, explicit historical14 suffix; FAIL_NATIVE_NOT_ACCEPTED unchanged"
+  },
+  "runtimeChanged": false,
+  "workflowChanged": false,
+  "capsuleChanged": false,
+  "nativeExecuted": false,
+  "networkExecuted": false,
+  "dispatch": false
+}

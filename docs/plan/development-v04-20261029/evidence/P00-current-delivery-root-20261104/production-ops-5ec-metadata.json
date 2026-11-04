@@ -1,0 +1,48 @@
+{
+  "schema": "root-production-metadata-after-ops-only.v1",
+  "metadata": {
+    "id": "dpl_7xN2JMsjR64hAsb7g3S61wMtygth",
+    "name": "portfolio-platform",
+    "url": "portfolio-platform-d8ru9ttuq-safariarash7777-4463s-projects.vercel.app",
+    "type": "LAMBDAS",
+    "state": "READY",
+    "createdAt": 1793781023330,
+    "creator": {
+      "uid": "JAB7MUAlhEWYHqcOsETAmIyD",
+      "username": "safariarash7777-4463"
+    },
+    "project": {
+      "id": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+      "name": "portfolio-platform",
+      "framework": "nextjs"
+    },
+    "meta": {
+      "githubCommitRef": "main",
+      "githubCommitSha": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+      "githubCommitMessage": "Merge pull request #411 from safariarash7777-source/codex/liara-framing-diagnostic-20261104\n\nfix(ops): classify rejected Liara framing without exposing response content",
+      "githubRepo": "portfolio-platform",
+      "githubOrg": "safariarash7777-source"
+    },
+    "alias": [
+      "portfolio-platform-fawn.vercel.app",
+      "portfolio-platform-safariarash7777-4463s-projects.vercel.app",
+      "portfolio-platform-git-main-safariarash7777-4463s-projects.vercel.app"
+    ],
+    "target": "production",
+    "regions": [
+      "iad1"
+    ],
+    "buildingAt": 1793781024429,
+    "ready": 1793781093527,
+    "readyState": "READY",
+    "source": "git",
+    "aliasError": null
+  },
+  "originalFundsBrowserReceipt": {
+    "source": "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+    "deployment": "dpl_9mDrtmwd7pRW6pW9BPYP8RAs3Ksa",
+    "receiptSha256": "5b485273d446a829e3847d97dd5733bc68b706ede500d87510d231d2297bca05"
+  },
+  "newBrowserAcceptance": false,
+  "sourceByteComparison": "To be independently recorded by git diff; metadata alone is not browser acceptance."
+}
