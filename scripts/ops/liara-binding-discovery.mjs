@@ -1,7 +1,7 @@
 /** Closed discovery protocol. Candidate hypotheses are not attestation or adoption. */
 import { createHash } from 'node:crypto';
 import { FIXED_DISCOVERY_SOURCE } from './liara-binding-discovery-command.mjs';
-const DISCOVERY_ADOPTED = false; // Requires a new reviewed source change, never caller configuration.
+const DISCOVERY_ADOPTED = true; // Requires a new reviewed source change, never caller configuration.
 const RELEASES = 'https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100';
 export const commandSha256 = createHash('sha256').update(FIXED_DISCOVERY_SOURCE).digest('hex');
 const fail = () => { throw Error('rejected'); };
@@ -21,9 +21,12 @@ function strictJson(raw) {
   return value;
 }
 function receipt(raw, nonce) {
-  if(typeof raw!=='string' || Buffer.byteLength(raw)>8192 || /[\u0000-\u0008\u000b-\u001f\u007f]/.test(raw))fail();
-  const x=strictJson(raw);
-  if(JSON.stringify(x)!==raw.trim() || !exactKeys(x,['version','nonce','state','reason','count','pid','startTicks','exeKind','cwdKind','entryKind']) || x.version!==1 || x.nonce!==nonce)fail();
+  if(typeof raw!=='string' || Buffer.byteLength(raw)>8192)fail();
+  // Exactly one optional LF or CRLF terminator, never generic trimming.
+  const framed=raw.endsWith('\r\n')?raw.slice(0,-2):raw.endsWith('\n')?raw.slice(0,-1):raw;
+  if(/[\u0000-\u001f\u007f]/.test(framed))fail();
+  const x=strictJson(framed);
+  if(JSON.stringify(x)!==framed || !exactKeys(x,['version','nonce','state','reason','count','pid','startTicks','exeKind','cwdKind','entryKind']) || x.version!==1 || x.nonce!==nonce)fail();
   if(x.state==='discovered_candidate') {
     if(x.reason!=='stable_candidate' || x.count!==1 || !Number.isSafeInteger(x.pid) || x.pid<1 || x.pid>999999999 || typeof x.startTicks!=='string' || !/^[0-9]{1,20}$/.test(x.startTicks) || !['node_usr_local','node_usr'].includes(x.exeKind) || !['app','usr_src_app','usr_src_relay'].includes(x.cwdKind) || !['relative_server','absolute_server'].includes(x.entryKind))fail();
   } else if(x.state!=='unresolved' || !(x.count===null || (Number.isSafeInteger(x.count)&&x.count>=0&&x.count<=4096&&x.count!==1)) || ['pid','startTicks','exeKind','cwdKind','entryKind'].some(k=>x[k]!==null))fail();

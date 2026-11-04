@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import { discoverBinding } from './liara-binding-discovery.mjs';
 import { createDiscoveryConnect } from './liara-discovery-websocket.mjs';
 
-const CALLER_ADOPTED = false;
+const CALLER_ADOPTED = true;
 export const SOURCE_FILES = Object.freeze([
   'scripts/ops/liara-binding-discovery-command.mjs',
   'scripts/ops/liara-binding-discovery.mjs',
