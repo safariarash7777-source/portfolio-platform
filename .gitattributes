@@ -6,3 +6,6 @@ scripts/testing/assembled-native-ci/canonical-validator.test.cjs -text
 
 /scripts/testing/assembled-native-ci/summary-await.test.cjs -text -whitespace
 /scripts/testing/assembled-native-ci/fixtures/summary-await/* -text -whitespace
+
+/scripts/testing/assembled-native-ci/summary-history.test.cjs -text -whitespace
+/scripts/testing/assembled-native-ci/fixtures/summary-history/* -text -whitespace

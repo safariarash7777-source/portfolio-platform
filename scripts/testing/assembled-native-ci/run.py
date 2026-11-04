@@ -53,6 +53,8 @@ NATIVE_FAILURE_CODES = frozenset({
     'p03_composition_published_basis',
     'p03_composition_ticket_link_version',
     'p03_composition_foreign_rpc_denial',
+    'p03_composition_feedback_session_article_not_unique',
+    'p03_composition_feedback_history_summary_not_unique',
     'p03_composition_feedback_rows',
     'p03_composition_feedback_financial_change',
     'p09_browser_fixture_capability_not_read_not_ready',
@@ -408,7 +410,7 @@ COMPOSITION = 'p03-composition-e0-v1'
 SELECTED_PROFILE = 'assembled-member-admin-v1'
 CAPSULE_FILE = 'sealed-v4b-app-f07.tar'
 NATIVE_GLOB = 'assembled-member-admin-native-*'
-COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': 'f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486', 'driverSha256': '924500227397f6a72e99766238fb828e6d00f13842d763bada5d660c54242d3a', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
+COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': 'c3bbd84d308774e2775f7fa267b652e90036e52be9794450275bd52aae5b1e90', 'driverSha256': '9d58d2714bca03aea2808bbf5fa413a0508b1e788344e2395bc5bdbf4a5a5b8d', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
 
 
 def composition_json(raw):

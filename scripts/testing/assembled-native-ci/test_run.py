@@ -1090,6 +1090,7 @@ class SummaryPreparationAwait(unittest.TestCase):
             'fixtures/summary-await/canonical-validator-fixture.json':'deb5aab9f73c7ecdec81beb12bea1a51df435df985762434a262e88247d1528a',
             'fixtures/summary-await/capsule-manifest.json':'4e9f29a20ef0512dac57ae5f295d0950551bd477456348f251ab147922db119a',
             'fixtures/summary-await/base-capsule54.tar':'54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255',
+            'fixtures/summary-await/await-fixed-f41.tar':'f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486',
             'pure-node-guard.cjs':'4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028',
             'pure-node-guard.test.mjs':'a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72',
         }
@@ -1102,7 +1103,7 @@ class SummaryPreparationAwait(unittest.TestCase):
                 (fixed/'capsule-manifest.json','capsule-manifest.json'),
                 (fixed/'canonical-validator-fixture.json','canonical-validator-fixture.json'),
                 (fixed/'base-capsule54.tar','base-capsule54.tar'),
-                (HERE/'sealed-p03-composition-e0-v1.tar','sealed-p03-composition-e0-await-v1.tar'),
+                (fixed/'await-fixed-f41.tar','sealed-p03-composition-e0-await-v1.tar'),
                 (HERE/'pure-node-guard.cjs','pure-node-guard.cjs'),
                 (HERE/'pure-node-guard.test.mjs','pure-node-guard.test.mjs'),
             ]:
@@ -1120,6 +1121,8 @@ class SummaryBoundedFailureProjection(unittest.TestCase):
             'p03_composition_http_200', 'p03_composition_http_201',
             'p03_composition_summary_missing', 'p03_composition_published_basis',
             'p03_composition_ticket_link_version', 'p03_composition_foreign_rpc_denial',
+            'p03_composition_feedback_session_article_not_unique',
+            'p03_composition_feedback_history_summary_not_unique',
             'p03_composition_feedback_rows', 'p03_composition_feedback_financial_change',
             'p09_browser_fixture_capability_not_read_not_ready',
             'p09_browser_fixture_capability_not_read_read_failed',
@@ -1143,6 +1146,58 @@ class SummaryBoundedFailureProjection(unittest.TestCase):
                 self.assertIsNone(result['nativeFailureCode'])
                 self.assertNotIn('PRIVATE_DO_NOT_PROJECT', json.dumps(result))
 
+
+
+class SummaryHistorySelector(unittest.TestCase):
+    def test_live_capsule_keeps_await_and_selects_only_same_card_history(self):
+        fixed=HERE/'fixtures/summary-history'
+        expected={
+            'summary-history.test.cjs':'6527463ddce8dce8a6cd9beb082f5e4c630596dbc67a6d41f7a58c219798e782',
+            'fixtures/summary-history/actual-component-fixture.json':'aea6e94f487aa1a00188ac9ae7999f2c1622770b35edeb26f53822542279f861',
+            'fixtures/summary-history/capsule-manifest.json':'f298faa844508bc5a70b02ddc1d5a921d759b84780fe3dac94079eb5197f22da',
+            'fixtures/summary-await/await-fixed-f41.tar':'f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486',
+        }
+        for name,digest in expected.items():
+            self.assertEqual(hashlib.sha256((HERE/name).read_bytes()).hexdigest(),digest,name)
+        manifest=json.loads((fixed/'capsule-manifest.json').read_bytes())
+        fixture=json.loads((fixed/'actual-component-fixture.json').read_bytes())
+        live=(HERE/'sealed-p03-composition-e0-v1.tar').read_bytes()
+        self.assertEqual(hashlib.sha256(live).hexdigest(),manifest['capsuleSha256'])
+        def members(raw):
+            with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
+                rows=archive.getmembers()
+                self.assertTrue(all(r.isfile() for r in rows))
+                self.assertEqual(len({r.name for r in rows}),len(rows))
+                return {r.name:archive.extractfile(r).read() for r in rows}
+        before=members((HERE/'fixtures/summary-await/await-fixed-f41.tar').read_bytes())
+        after=members(live)
+        self.assertEqual(set(before),set(after))
+        prefix='overlay/scripts/testing/consultation-tickets/'
+        self.assertEqual(sorted(p for p in before if before[p]!=after[p]),sorted([prefix+'assembled-overlay.json',prefix+'composition-member-phase.mjs']))
+        for name,data in after.items():
+            self.assertEqual(hashlib.sha256(data).hexdigest(),manifest['members'][name]['sha256'])
+            self.assertEqual(len(data),manifest['members'][name]['bytes'])
+        base=before[prefix+'composition-member-phase.mjs'].decode()
+        current=after[prefix+'composition-member-phase.mjs'].decode()
+        self.assertEqual(current,fixture['phase']['candidate'])
+        self.assertEqual(base,fixture['phase']['base'])
+        self.assertEqual(current.replace(manifest['newLine'],manifest['oldLine']),base)
+        self.assertEqual(current.count('const prepared=await preparation.validateTicketPreparationReceipt('),1)
+        with tempfile.TemporaryDirectory(prefix='p03-summary-history-pure-') as folder:
+            local=Path(folder)
+            for source,name in [
+                (HERE/'summary-history.test.cjs','history-selector.test.cjs'),
+                (fixed/'capsule-manifest.json','capsule-manifest.json'),
+                (fixed/'actual-component-fixture.json','actual-component-fixture.json'),
+                (HERE/'pure-node-guard.cjs','pure-node-guard.cjs'),
+                (HERE/'pure-node-guard.test.mjs','pure-node-guard.test.mjs'),
+            ]:
+                (local/name).write_bytes(source.read_bytes())
+            env={k:v for k,v in os.environ.items() if k.upper() in ['PATH','SYSTEMROOT','TEMP','TMP']}
+            result=subprocess.run([shutil.which('node'),'--test-reporter=tap','--require',str(local/'pure-node-guard.cjs'),'--import',(local/'pure-node-guard.test.mjs').as_uri(),str(local/'history-selector.test.cjs'),'--control-root='+str(HERE.parents[2])],env=env,capture_output=True,timeout=60)
+            output=result.stdout.decode('utf8')+result.stderr.decode('utf8')
+            self.assertEqual(result.returncode,0,output)
+            self.assertTrue(valid_guarded_pure_output(output,8),output)
 
 if __name__ == '__main__':
     unittest.main()
