@@ -1,0 +1,102 @@
+{
+  "launchId": "a56cee30db354751a28f583d31f520a5",
+  "at": "2026-11-04T00:20:35.320317+00:00",
+  "pid": 2204288,
+  "startTicks": "65824298",
+  "sourceHashes": {
+    "installer": "9df4eeb8535f3fa01ee29bbed06b4d10082a285e37eb9fb56b5bece29e1ed2dd",
+    "consumer": "1a55c28349182d1b52461ef85871a9d03f4cc480c7b0fed5c463bb7f3e40d2af",
+    "gate": "a90996ce371a97701c50d5937fa11f866911f9387cbf9f4a1b130e4563c1fc3a",
+    "binding": "390fc73da29c3b53e267c4566eb538ebb0142c6426a032b41e27e969eaa5ac27"
+  },
+  "serverFilesWritten": false,
+  "sqlCalls": 0,
+  "startStopCalls": 0,
+  "status": "INSTALLER_REVIEW_RETURNED",
+  "receipt": {
+    "status": "PASS_CORRECTED_CHECKPOINT_CONSUMER_REVIEW",
+    "consumer": "install-native.review-corrected.v2",
+    "consumerVersion": 2,
+    "gateSha256": "a90996ce371a97701c50d5937fa11f866911f9387cbf9f4a1b130e4563c1fc3a",
+    "readOnlyConsumerIntegrated": true,
+    "captureVerifyProfileIntegrated": false,
+    "legacyApplyPathIntegrated": false,
+    "releaseAuthorized": false,
+    "attestation": {
+      "at": "2026-11-04T00:20:45.903133+00:00",
+      "status": "PASS_PINNED_SQL_RESTORE_READ_GATE",
+      "checkpoint": "20261103T222239Z",
+      "originalStatus": "failed",
+      "correctionStatus": "PASS_OWNED_COPY_PRIVATE2_RECONCILIATION",
+      "originalReceiptSha256": "695848a3f26da875b859c6589952eb9154ed0fae36f365b254b20e881cc793d6",
+      "correctionReceiptSha256": "fda8610f0b849a799cf1c3d593d41ab918d687f5f5bf89a9d53a2e392897e106",
+      "bindingSha256": "390fc73da29c3b53e267c4566eb538ebb0142c6426a032b41e27e969eaa5ac27",
+      "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "targetId": "458c668152b9bab455512c440889229452e0f3b23297bda236936fb2d1f8a065",
+      "dumpSha256": "7bd80f0749d0c898def87091584fa6fd0cb0e50f08196dfd76c9f051ce0adfea",
+      "dumpBytes": 2415654600,
+      "proofStopped": true,
+      "proofNetwork": "none",
+      "proofPortsPublished": false,
+      "sourceHealthy": true,
+      "sqlExecuted": false,
+      "backupRetried": false,
+      "filesTransferred": false,
+      "captureConsumerIntegrated": false,
+      "installerConsumerIntegrated": false,
+      "releaseAuthorized": false,
+      "limits": [
+        "SQL restore attestation only",
+        "No Storage binary backup",
+        "Supplementary private catalog and globals do not share the exported core snapshot",
+        "Capture/installer must explicitly adopt this versioned attestation before use"
+      ]
+    }
+  },
+  "localIntent": {
+    "launchId": "a56cee30db354751a28f583d31f520a5",
+    "at": "2026-11-04T00:20:32.212084+00:00",
+    "manifest": {
+      "sourceCommit": "74011b57af11051b605a504054e6afad3bd89ff6",
+      "observedOriginMain": "74011b57af11051b605a504054e6afad3bd89ff6",
+      "sources": {
+        "installer": {
+          "origin": "git",
+          "gitCommit": "74011b57af11051b605a504054e6afad3bd89ff6",
+          "zipSha256": null,
+          "path": "scripts/testing/consultation/install-native.py",
+          "bytes": 16931,
+          "sha256": "9df4eeb8535f3fa01ee29bbed06b4d10082a285e37eb9fb56b5bece29e1ed2dd"
+        },
+        "consumer": {
+          "origin": "git",
+          "gitCommit": "74011b57af11051b605a504054e6afad3bd89ff6",
+          "zipSha256": null,
+          "path": "scripts/ops/cashflow-checkpoint/corrected-checkpoint-consumer-v2.py",
+          "bytes": 3570,
+          "sha256": "1a55c28349182d1b52461ef85871a9d03f4cc480c7b0fed5c463bb7f3e40d2af"
+        },
+        "gate": {
+          "origin": "reviewed_zip",
+          "gitCommit": null,
+          "zipSha256": "2dedf16fafde50d28dae9748be46bb0099ded1faecf139914c1a68ce2991bddf",
+          "path": "checkpoint-read-gate.py",
+          "bytes": 16518,
+          "sha256": "a90996ce371a97701c50d5937fa11f866911f9387cbf9f4a1b130e4563c1fc3a"
+        },
+        "binding": {
+          "origin": "reviewed_zip",
+          "gitCommit": null,
+          "zipSha256": "2dedf16fafde50d28dae9748be46bb0099ded1faecf139914c1a68ce2991bddf",
+          "path": "binding.json",
+          "bytes": 2628,
+          "sha256": "390fc73da29c3b53e267c4566eb538ebb0142c6426a032b41e27e969eaa5ac27"
+        }
+      },
+      "remoteLauncherSha256": "00e2d908633ffa3ac43cbc01e554ee5375bee8377a641a114dd8033cca471e58",
+      "payloadSha256": "c448f38c1dc056fe6f41f3aa1ff62a44f4af6a8f42a0d5f595c853be01625a74"
+    },
+    "localLauncherSha256": "e332c7e94662ef995081ea01dbd05f11fb985f1b936ba67c0029176fb2aa8a79",
+    "retryForbidden": true
+  }
+}

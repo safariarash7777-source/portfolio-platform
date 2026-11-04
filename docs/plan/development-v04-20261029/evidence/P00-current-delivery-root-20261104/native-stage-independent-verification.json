@@ -1,0 +1,80 @@
+{
+  "schema": "assembled-native-stage-independent-readback.v1",
+  "run": 41745964437,
+  "attempt": 1,
+  "nativeJob": 126301088472,
+  "artifactId": 13283228437,
+  "zipSha256": "737bace86ed7a318fcb7dbb158d778c8d27164010a85793a0df2f6e036442252",
+  "receiptSha256": "edfdf9da9938d6257a5bd0f9bb2d001fc63cd356a63b78e4f92d2fa0de4e1873",
+  "exactBinding": {
+    "allocationId": "9abe1fa5-9d75-4bfe-a570-e01ccf4b6d80",
+    "attempt": 1,
+    "executionAllocationId": "7ee07cdb-76b6-52f6-8436-43c76b97ef98",
+    "repository": "safariarash7777-source/portfolio-platform",
+    "runId": "41745964437",
+    "workflowCommit": "13343c635ce353b74702795eb49b0913bd61a55b"
+  },
+  "exactFrozenSource": {
+    "capsuleSha256": "57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81",
+    "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+    "driverContractSha256": "94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511",
+    "tree": "c96d462d72505f2471c54c8e7e5293fe2b39b3d1"
+  },
+  "status": "FAIL_NATIVE_NOT_ACCEPTED",
+  "nativeAttempted": true,
+  "ownedCleanupReadback": "CONFIRMED",
+  "writeOutcomeUnknown": false,
+  "failureDiagnostics": {
+    "actualExitCode": 1,
+    "chromePreflight": null,
+    "duplicatePassRecords": false,
+    "fallbackUsed": false,
+    "lastObservedPassedCheck": "immutable-source-default-closed",
+    "lastObservedStage": "member-consultation-link",
+    "lastObservedStageEdge": "before",
+    "logReadback": "OBSERVED",
+    "malformedLogRecords": false,
+    "malformedStageRecords": false,
+    "nativeFailureCode": "playwright_timeout",
+    "observedConsentPostIntents": 1,
+    "observedFinancialPostIntents": 2,
+    "observedOtherProductPostIntents": 0,
+    "observedPassedChecks": [
+      "isolation-attested",
+      "four-fresh-auth-users-and-sdk-getuser",
+      "assembled-financial-receipts-and-null-readback",
+      "assembled-consent-and-authorized-version-basis",
+      "immutable-source-default-closed"
+    ],
+    "observedProductPostIntents": 3,
+    "observedSqlAppliedCount": 18,
+    "stageReadback": "OBSERVED",
+    "timedOutOrInterrupted": false
+  },
+  "stageSourceBinding": {
+    "path": "scripts/testing/consultation-tickets/assembled-member-scenario.mjs",
+    "sha256": "2be76620ad4246d7d8312bf5b9a8a6bd567a6c9113534c62f68d6fd775ff2e58",
+    "line": 113,
+    "statement": "await observedAwait('member-consultation-link', () => page.locator('a[href=\"/dashboard/consultation\"]').first().click());",
+    "meaning": "That browser click was entered and no completion marker was observed. Element presence, visibility, current route and click failure reason are not established."
+  },
+  "publicJobLog": {
+    "controllerCheckout": "13343c635ce353b74702795eb49b0913bd61a55b",
+    "appCheckout": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+    "offlinePythonTests": 41,
+    "offlinePrepareNpmConclusion": "SUCCESS",
+    "nativeStartedUtc": "2026-11-04T00:25:28Z",
+    "nativeCompletedUtc": "2026-11-04T00:27:09Z",
+    "setupImage": "ubuntu-24.04",
+    "setupImageVersion": "20261025.353.1",
+    "setupProvisioner": "20261021.618",
+    "environmentImageVersionInReceipt": null
+  },
+  "scopeLimits": [
+    "Five native checks observed PASS; full navigation/native14/browser9 not accepted.",
+    "Counts describe attested write intents, not a new claim about committed effects.",
+    "No failed run was replayed; no new dispatch/source patch/primarySQL/provider/model/install performed for this readback.",
+    "Target install NOT_APPLIED and human acceptance UNOBSERVED."
+  ],
+  "originalReceiptPreserved": true
+}

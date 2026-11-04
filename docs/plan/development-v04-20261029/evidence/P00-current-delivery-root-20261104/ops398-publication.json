@@ -1,0 +1,20 @@
+{
+  "status": "ACTUAL_SOURCE_CI_MAIN_AND_PRODUCTION_IDENTITY",
+  "pr": 398,
+  "head": "13343c635ce353b74702795eb49b0913bd61a55b",
+  "ciRun": 41745101563,
+  "ciCheckout": "bcc120643e03c84b1589275e0a25781c3e8e89f4",
+  "tree": "85879b8bfe68e14fe1cfd4b2cca0509eab539bb5",
+  "main": "093d140f91903a742e1ff54efe4c19ed860e3651",
+  "fiveOrdinaryJobs": "SUCCESS",
+  "optionalNative": "SKIPPED_NOT_ACCEPTANCE",
+  "productionDeployment": "dpl_7q3X3nfkPdxkqz9gj3hDsLP2pLw9",
+  "productionUrl": "https://portfolio-platform-dsa3pkcd0-safariarash7777-4463s-projects.vercel.app",
+  "alias": "https://portfolio-platform-fawn.vercel.app",
+  "target": "production",
+  "state": "READY",
+  "aliasMatches": true,
+  "productBlobsEqualAcceptedA42": true,
+  "newBrowserAcceptanceClaimed": false,
+  "primaryInstall": "NOT_APPLIED"
+}

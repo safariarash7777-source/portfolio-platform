@@ -1,0 +1,2787 @@
+{
+  "schema": "assembled-candidate-source093-inventory.v1",
+  "status": "SOURCE_GATE_ANOMALY_NOT_ADOPTED",
+  "old": {
+    "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+    "tree": "c96d462d72505f2471c54c8e7e5293fe2b39b3d1"
+  },
+  "proposed": {
+    "commit": "093d140f91903a742e1ff54efe4c19ed860e3651",
+    "tree": "85879b8bfe68e14fe1cfd4b2cca0509eab539bb5"
+  },
+  "graph": {
+    "oldAncestorProposed": false,
+    "proposedAncestorOld": false,
+    "mergeBase": "928609f0b92703b6b1671cb22bea9c227af08eae"
+  },
+  "countClarification": "The 27 source/SQL fingerprints are 26 source manifest entries plus one bootstrap addition, not 27 individual app files. Explicit file pins from protected-source objects/exception maps yield28 app/lib/component files plus protected trees; both sets are inventoried separately.",
+  "fingerprints27": [
+    {
+      "path": "sql/test/supabase_bootstrap.sql",
+      "old": {
+        "type": "blob",
+        "object": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e",
+        "bytes": 7331,
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e",
+        "bytes": 7331,
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/test/supabase_bootstrap.sql",
+        "blob": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e",
+        "bytes": 7331,
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9"
+      }
+    },
+    {
+      "path": "sql/test/profile_explicit_grants.sql",
+      "old": {
+        "type": "blob",
+        "object": "94639f289300a48d388b47ab2cc5da6868f8894c",
+        "bytes": 1850,
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "94639f289300a48d388b47ab2cc5da6868f8894c",
+        "bytes": 1850,
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/test/profile_explicit_grants.sql",
+        "blob": "94639f289300a48d388b47ab2cc5da6868f8894c",
+        "bytes": 1850,
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3"
+      }
+    },
+    {
+      "path": "sql/test/portfolio_precondition.sql",
+      "old": {
+        "type": "blob",
+        "object": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89",
+        "bytes": 7877,
+        "sha256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89",
+        "bytes": 7877,
+        "sha256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/test/portfolio_precondition.sql",
+        "blob": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89",
+        "bytes": 7877,
+        "sha256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b"
+      }
+    },
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "old": {
+        "type": "blob",
+        "object": "e169d733e75f523597baeb8560fd46f8662d95a5",
+        "bytes": 20231,
+        "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "e169d733e75f523597baeb8560fd46f8662d95a5",
+        "bytes": 20231,
+        "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/phase32_member_holdings.sql",
+        "blob": "e169d733e75f523597baeb8560fd46f8662d95a5",
+        "bytes": 20231,
+        "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+      }
+    },
+    {
+      "path": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "old": {
+        "type": "blob",
+        "object": "2553c1585912156506476025a36ce5b93d5babbd",
+        "bytes": 11955,
+        "sha256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "2553c1585912156506476025a36ce5b93d5babbd",
+        "bytes": 11955,
+        "sha256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+        "blob": "2553c1585912156506476025a36ce5b93d5babbd",
+        "bytes": 11955,
+        "sha256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+      }
+    },
+    {
+      "path": "supabase/migrations/20261019215549_personal_cash_flow_versions.sql",
+      "old": {
+        "type": "blob",
+        "object": "dc362934548485d6b2b3910a95bc074b8b13461e",
+        "bytes": 19276,
+        "sha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "dc362934548485d6b2b3910a95bc074b8b13461e",
+        "bytes": 19276,
+        "sha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "supabase/migrations/20261019215549_personal_cash_flow_versions.sql",
+        "blob": "dc362934548485d6b2b3910a95bc074b8b13461e",
+        "bytes": 19276,
+        "sha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d"
+      }
+    },
+    {
+      "path": "sql/member_goals_versions_20261023.sql",
+      "old": {
+        "type": "blob",
+        "object": "29c962bf30cfc80a0c0a7f9a6f86c4cea42627e3",
+        "bytes": 10048,
+        "sha256": "d4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "29c962bf30cfc80a0c0a7f9a6f86c4cea42627e3",
+        "bytes": 10048,
+        "sha256": "d4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/member_goals_versions_20261023.sql",
+        "blob": "29c962bf30cfc80a0c0a7f9a6f86c4cea42627e3",
+        "bytes": 10048,
+        "sha256": "d4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6"
+      }
+    },
+    {
+      "path": "sql/phase34_research_workbook_versions.sql",
+      "old": {
+        "type": "blob",
+        "object": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+        "bytes": 15203,
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+        "bytes": 15203,
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/phase34_research_workbook_versions.sql",
+        "blob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+        "bytes": 15203,
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/bootstrap-fixture.sql",
+      "old": {
+        "type": "blob",
+        "object": "c66fcc16b14f06efe0e6009d935258b43313529f",
+        "bytes": 865,
+        "sha256": "86d4eb01b3101d26942a9d99b09b07b0d32a0b205af9ac2ba84cd5d55b3b0777"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b5d4c475728cb11db9ab2520145143053013081f",
+        "date": "2026-10-31",
+        "subject": "Connect real ticket consumers and isolated SQL Auth acceptance"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/bootstrap-fixture.sql",
+        "blob": "c66fcc16b14f06efe0e6009d935258b43313529f",
+        "bytes": 865,
+        "sha256": "86d4eb01b3101d26942a9d99b09b07b0d32a0b205af9ac2ba84cd5d55b3b0777"
+      }
+    },
+    {
+      "path": "sql/consultation_workflow.sql",
+      "old": {
+        "type": "blob",
+        "object": "c43f9ed61465bf6fb7781276d2c854307f38485a",
+        "bytes": 37349,
+        "sha256": "4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "c43f9ed61465bf6fb7781276d2c854307f38485a",
+        "bytes": 37349,
+        "sha256": "4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/consultation_workflow.sql",
+        "blob": "c43f9ed61465bf6fb7781276d2c854307f38485a",
+        "bytes": 37349,
+        "sha256": "4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236"
+      }
+    },
+    {
+      "path": "sql/consultation_roster.sql",
+      "old": {
+        "type": "blob",
+        "object": "fd33825603432759725e0820de754660d880ea6b",
+        "bytes": 6794,
+        "sha256": "03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "03880f13e54cca4a6542d1136267f65b8013da64",
+        "date": "2026-10-24",
+        "subject": "Add consent-scoped advisor filters and versioned member replies"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "sql/consultation_roster.sql",
+        "blob": "fd33825603432759725e0820de754660d880ea6b",
+        "bytes": 6794,
+        "sha256": "03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523"
+      }
+    },
+    {
+      "path": "sql/consultation_replies.sql",
+      "old": {
+        "type": "blob",
+        "object": "f3881a5510bfd7c00ccac75f5ae22fb398f6007a",
+        "bytes": 12054,
+        "sha256": "57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "03880f13e54cca4a6542d1136267f65b8013da64",
+        "date": "2026-10-24",
+        "subject": "Add consent-scoped advisor filters and versioned member replies"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "sql/consultation_replies.sql",
+        "blob": "f3881a5510bfd7c00ccac75f5ae22fb398f6007a",
+        "bytes": 12054,
+        "sha256": "57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a"
+      }
+    },
+    {
+      "path": "sql/consultation_ticket_requests.sql",
+      "old": {
+        "type": "blob",
+        "object": "7b2e25f25beba37f811fd848028e42126b596341",
+        "bytes": 19388,
+        "sha256": "87a7a02774c8e215e2e72ae68de57a0083efa7de1420952275f43d5fcb20cbaa"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b5d4c475728cb11db9ab2520145143053013081f",
+        "date": "2026-10-31",
+        "subject": "Connect real ticket consumers and isolated SQL Auth acceptance"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "sql/consultation_ticket_requests.sql",
+        "blob": "7b2e25f25beba37f811fd848028e42126b596341",
+        "bytes": 19388,
+        "sha256": "87a7a02774c8e215e2e72ae68de57a0083efa7de1420952275f43d5fcb20cbaa"
+      }
+    },
+    {
+      "path": "sql/consultation_ticket_prepared_intents.sql",
+      "old": {
+        "type": "blob",
+        "object": "93e3c06105201ca8250ea865d45a2496371a356e",
+        "bytes": 12838,
+        "sha256": "60b66a3b52f76f4d3866b59a3a8e1fcf9ef823702a47200be0f17b0f929212e1"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "sql/consultation_ticket_prepared_intents.sql",
+        "blob": "93e3c06105201ca8250ea865d45a2496371a356e",
+        "bytes": 12838,
+        "sha256": "60b66a3b52f76f4d3866b59a3a8e1fcf9ef823702a47200be0f17b0f929212e1"
+      }
+    },
+    {
+      "path": "supabase/migrations/20261029142010_consultation_feedback_states.sql",
+      "old": {
+        "type": "blob",
+        "object": "ec8081c45d8a29842a7b8acb477205923c3d8a6c",
+        "bytes": 12982,
+        "sha256": "32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b08687b233d5fe1317748b6adff61653d58dadd8",
+        "date": "2026-10-29",
+        "subject": "Add versioned partial and not-done consultation action feedback"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "supabase/migrations/20261029142010_consultation_feedback_states.sql",
+        "blob": "ec8081c45d8a29842a7b8acb477205923c3d8a6c",
+        "bytes": 12982,
+        "sha256": "32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda"
+      }
+    },
+    {
+      "path": "supabase/migrations/20261029160723_consultation_feedback_rollout_guard.sql",
+      "old": {
+        "type": "blob",
+        "object": "ce86813dc884fa665b535b76b338bfd9a02283f7",
+        "bytes": 18228,
+        "sha256": "5b3538d2a4526c91ac0af092b86a81b3e7bb140dab88ad20aef30abff2ff03e2"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+        "date": "2026-10-29",
+        "subject": "Gate extended feedback atomically and rehearse guarded adapter"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "supabase/migrations/20261029160723_consultation_feedback_rollout_guard.sql",
+        "blob": "ce86813dc884fa665b535b76b338bfd9a02283f7",
+        "bytes": 18228,
+        "sha256": "5b3538d2a4526c91ac0af092b86a81b3e7bb140dab88ad20aef30abff2ff03e2"
+      }
+    },
+    {
+      "path": "sql/phase11_access_tiers.sql",
+      "old": {
+        "type": "blob",
+        "object": "30a1b397ef6026ac7dcf29a7739583a871fcc621",
+        "bytes": 5286,
+        "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "30a1b397ef6026ac7dcf29a7739583a871fcc621",
+        "bytes": 5286,
+        "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "sql/phase11_access_tiers.sql",
+        "blob": "30a1b397ef6026ac7dcf29a7739583a871fcc621",
+        "bytes": 5286,
+        "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
+      "old": {
+        "type": "blob",
+        "object": "c4a0a334d0d31dfeb7e91d469c58a6d0ea59746a",
+        "bytes": 38649,
+        "sha256": "6bae899b22fac1af36b2641e3eec0504a2622eaf23182964298c289f3c7f1d61"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "ab3b11a3950f7ca120dc3735050e7e041c282008",
+        "date": "2026-10-31",
+        "subject": "test(consultation): prepare pinned legacy SDK RLS acceptance"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
+        "blob": "c4a0a334d0d31dfeb7e91d469c58a6d0ea59746a",
+        "bytes": 38649,
+        "sha256": "6bae899b22fac1af36b2641e3eec0504a2622eaf23182964298c289f3c7f1d61"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
+      "old": {
+        "type": "blob",
+        "object": "7146977565d5d1b56a710caf3f6de18f087db460",
+        "bytes": 4991,
+        "sha256": "29c9c6a5c119c913f9c06c2dd9426f6bb46af3b39ea47f859d1fee31ba789c1c"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "ab3b11a3950f7ca120dc3735050e7e041c282008",
+        "date": "2026-10-31",
+        "subject": "test(consultation): prepare pinned legacy SDK RLS acceptance"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/native-auth-gateway.mjs",
+        "blob": "7146977565d5d1b56a710caf3f6de18f087db460",
+        "bytes": 4991,
+        "sha256": "29c9c6a5c119c913f9c06c2dd9426f6bb46af3b39ea47f859d1fee31ba789c1c"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/browser.mjs",
+      "old": {
+        "type": "blob",
+        "object": "5c8d68355115fb0095842ff5a28cc823cf367060",
+        "bytes": 44716,
+        "sha256": "102cb492f0dc33a09f386b8b59643acb1732f6eff7c515cdd2f8a0f9a2e588ea"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+        "date": "2026-10-31",
+        "subject": "test(consultation): isolate frozen-reader feedback acceptance candidate"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/browser.mjs",
+        "blob": "5c8d68355115fb0095842ff5a28cc823cf367060",
+        "bytes": 44716,
+        "sha256": "102cb492f0dc33a09f386b8b59643acb1732f6eff7c515cdd2f8a0f9a2e588ea"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/legacy-diagnostic-native.mjs",
+      "old": {
+        "type": "blob",
+        "object": "634ad8a8050f0ebc496b4aeb9ba9cd3018e2bfe6",
+        "bytes": 16771,
+        "sha256": "c284b252e7e8e01755dc34122bd4877c4f5c2777a933d61ad45a82975e8f3de5"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "6ccb106ace4711be7359c7fc8c8d6ab33670f719",
+        "date": "2026-10-31",
+        "subject": "test(consultation): attest fixture ACL and preserve RLS policy hashes"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/legacy-diagnostic-native.mjs",
+        "blob": "634ad8a8050f0ebc496b4aeb9ba9cd3018e2bfe6",
+        "bytes": 16771,
+        "sha256": "c284b252e7e8e01755dc34122bd4877c4f5c2777a933d61ad45a82975e8f3de5"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/feedback-reader-native.mjs",
+      "old": {
+        "type": "blob",
+        "object": "abd222db5c647290376c1958c73d1e0fd3a82ad0",
+        "bytes": 20167,
+        "sha256": "18893829ff88c8e7853e925d7158dd8fd556dc12fb05a1cc661dba1f2316812d"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+        "date": "2026-10-31",
+        "subject": "test(consultation): isolate frozen-reader feedback acceptance candidate"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/feedback-reader-native.mjs",
+        "blob": "abd222db5c647290376c1958c73d1e0fd3a82ad0",
+        "bytes": 20167,
+        "sha256": "18893829ff88c8e7853e925d7158dd8fd556dc12fb05a1cc661dba1f2316812d"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/protected-source.json",
+      "old": {
+        "type": "blob",
+        "object": "fcf8fbfc0c8c39c063f75f43790e809fcdc2e9c5",
+        "bytes": 22556,
+        "sha256": "cf1e16d3df79792db80e7c49ac8c9d1b145290c7b58aba53e37ccb45ec690950"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "6ccb106ace4711be7359c7fc8c8d6ab33670f719",
+        "date": "2026-10-31",
+        "subject": "test(consultation): attest fixture ACL and preserve RLS policy hashes"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/protected-source.json",
+        "blob": "fcf8fbfc0c8c39c063f75f43790e809fcdc2e9c5",
+        "bytes": 22556,
+        "sha256": "cf1e16d3df79792db80e7c49ac8c9d1b145290c7b58aba53e37ccb45ec690950"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/contract-source.json",
+      "old": {
+        "type": "blob",
+        "object": "dd3b5fabc9b0eb9cfa0ecc142055c04802b6e321",
+        "bytes": 758,
+        "sha256": "23b573afbe227eb71c46c8a25165a3d85d3b5d643c825da43a5b5d008c87ca2e"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b3a632b07b5b79919a3868cec1dce84d846582cd",
+        "date": "2026-10-31",
+        "subject": "Add default-closed ticket storage API and exact request recovery"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/contract-source.json",
+        "blob": "dd3b5fabc9b0eb9cfa0ecc142055c04802b6e321",
+        "bytes": 758,
+        "sha256": "23b573afbe227eb71c46c8a25165a3d85d3b5d643c825da43a5b5d008c87ca2e"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/native-infrastructure-lineage.json",
+      "old": {
+        "type": "blob",
+        "object": "9547f15e1a9beb7fc2aa38043841656feeb4e7f1",
+        "bytes": 3905,
+        "sha256": "98829be0219fad6e1f3a41d26a5be03fa607892613eede086adca3f867e9e356"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "ab3b11a3950f7ca120dc3735050e7e041c282008",
+        "date": "2026-10-31",
+        "subject": "test(consultation): prepare pinned legacy SDK RLS acceptance"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/native-infrastructure-lineage.json",
+        "blob": "9547f15e1a9beb7fc2aa38043841656feeb4e7f1",
+        "bytes": 3905,
+        "sha256": "98829be0219fad6e1f3a41d26a5be03fa607892613eede086adca3f867e9e356"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/owned-fixture.sql",
+      "old": {
+        "type": "blob",
+        "object": "aa900e3b3653d2bb7451d038ca0737d4242c6399",
+        "bytes": 2990,
+        "sha256": "811f55854b969761792ca809a1edd1d38155272241c31cd9cb36ba95aed04bd6"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b3a632b07b5b79919a3868cec1dce84d846582cd",
+        "date": "2026-10-31",
+        "subject": "Add default-closed ticket storage API and exact request recovery"
+      },
+      "proposedLastChange": null,
+      "reviewedPin": {
+        "path": "scripts/testing/consultation-tickets/owned-fixture.sql",
+        "blob": "aa900e3b3653d2bb7451d038ca0737d4242c6399",
+        "bytes": 2990,
+        "sha256": "811f55854b969761792ca809a1edd1d38155272241c31cd9cb36ba95aed04bd6"
+      }
+    },
+    {
+      "path": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "old": {
+        "type": "blob",
+        "object": "49f473822d107c6fada8a2801bdfbc6143b3cdcd",
+        "bytes": 7328,
+        "sha256": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "49f473822d107c6fada8a2801bdfbc6143b3cdcd",
+        "bytes": 7328,
+        "sha256": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+      },
+      "status": "SAME",
+      "reviewedPin": {
+        "path": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+        "bytes": 7328,
+        "sha256": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+      }
+    }
+  ],
+  "fingerprintCounts": {
+    "MISSING_IN_PROPOSED": 16,
+    "SAME": 11
+  },
+  "bootstrapSql18": [
+    {
+      "path": "sql/test/supabase_bootstrap.sql",
+      "old": {
+        "type": "blob",
+        "object": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e",
+        "bytes": 7331,
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e",
+        "bytes": 7331,
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "sql/test/profile_explicit_grants.sql",
+      "old": {
+        "type": "blob",
+        "object": "94639f289300a48d388b47ab2cc5da6868f8894c",
+        "bytes": 1850,
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "94639f289300a48d388b47ab2cc5da6868f8894c",
+        "bytes": 1850,
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "sql/test/portfolio_precondition.sql",
+      "old": {
+        "type": "blob",
+        "object": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89",
+        "bytes": 7877,
+        "sha256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "1e2cfa90fadd697367a292db2a2642e8c3b3ba89",
+        "bytes": 7877,
+        "sha256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "old": {
+        "type": "blob",
+        "object": "e169d733e75f523597baeb8560fd46f8662d95a5",
+        "bytes": 20231,
+        "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "e169d733e75f523597baeb8560fd46f8662d95a5",
+        "bytes": 20231,
+        "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "old": {
+        "type": "blob",
+        "object": "2553c1585912156506476025a36ce5b93d5babbd",
+        "bytes": 11955,
+        "sha256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "2553c1585912156506476025a36ce5b93d5babbd",
+        "bytes": 11955,
+        "sha256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "supabase/migrations/20261019215549_personal_cash_flow_versions.sql",
+      "old": {
+        "type": "blob",
+        "object": "dc362934548485d6b2b3910a95bc074b8b13461e",
+        "bytes": 19276,
+        "sha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "dc362934548485d6b2b3910a95bc074b8b13461e",
+        "bytes": 19276,
+        "sha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "sql/member_goals_versions_20261023.sql",
+      "old": {
+        "type": "blob",
+        "object": "29c962bf30cfc80a0c0a7f9a6f86c4cea42627e3",
+        "bytes": 10048,
+        "sha256": "d4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "29c962bf30cfc80a0c0a7f9a6f86c4cea42627e3",
+        "bytes": 10048,
+        "sha256": "d4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "sql/phase34_research_workbook_versions.sql",
+      "old": {
+        "type": "blob",
+        "object": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+        "bytes": 15203,
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba",
+        "bytes": 15203,
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/bootstrap-fixture.sql",
+      "old": {
+        "type": "blob",
+        "object": "c66fcc16b14f06efe0e6009d935258b43313529f",
+        "bytes": 865,
+        "sha256": "86d4eb01b3101d26942a9d99b09b07b0d32a0b205af9ac2ba84cd5d55b3b0777"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b5d4c475728cb11db9ab2520145143053013081f",
+        "date": "2026-10-31",
+        "subject": "Connect real ticket consumers and isolated SQL Auth acceptance"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "sql/consultation_workflow.sql",
+      "old": {
+        "type": "blob",
+        "object": "c43f9ed61465bf6fb7781276d2c854307f38485a",
+        "bytes": 37349,
+        "sha256": "4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "c43f9ed61465bf6fb7781276d2c854307f38485a",
+        "bytes": 37349,
+        "sha256": "4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "sql/consultation_roster.sql",
+      "old": {
+        "type": "blob",
+        "object": "fd33825603432759725e0820de754660d880ea6b",
+        "bytes": 6794,
+        "sha256": "03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "03880f13e54cca4a6542d1136267f65b8013da64",
+        "date": "2026-10-24",
+        "subject": "Add consent-scoped advisor filters and versioned member replies"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "sql/consultation_replies.sql",
+      "old": {
+        "type": "blob",
+        "object": "f3881a5510bfd7c00ccac75f5ae22fb398f6007a",
+        "bytes": 12054,
+        "sha256": "57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "03880f13e54cca4a6542d1136267f65b8013da64",
+        "date": "2026-10-24",
+        "subject": "Add consent-scoped advisor filters and versioned member replies"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "sql/consultation_ticket_requests.sql",
+      "old": {
+        "type": "blob",
+        "object": "7b2e25f25beba37f811fd848028e42126b596341",
+        "bytes": 19388,
+        "sha256": "87a7a02774c8e215e2e72ae68de57a0083efa7de1420952275f43d5fcb20cbaa"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b5d4c475728cb11db9ab2520145143053013081f",
+        "date": "2026-10-31",
+        "subject": "Connect real ticket consumers and isolated SQL Auth acceptance"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "sql/consultation_ticket_prepared_intents.sql",
+      "old": {
+        "type": "blob",
+        "object": "93e3c06105201ca8250ea865d45a2496371a356e",
+        "bytes": 12838,
+        "sha256": "60b66a3b52f76f4d3866b59a3a8e1fcf9ef823702a47200be0f17b0f929212e1"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "supabase/migrations/20261029142010_consultation_feedback_states.sql",
+      "old": {
+        "type": "blob",
+        "object": "ec8081c45d8a29842a7b8acb477205923c3d8a6c",
+        "bytes": 12982,
+        "sha256": "32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b08687b233d5fe1317748b6adff61653d58dadd8",
+        "date": "2026-10-29",
+        "subject": "Add versioned partial and not-done consultation action feedback"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "supabase/migrations/20261029160723_consultation_feedback_rollout_guard.sql",
+      "old": {
+        "type": "blob",
+        "object": "ce86813dc884fa665b535b76b338bfd9a02283f7",
+        "bytes": 18228,
+        "sha256": "5b3538d2a4526c91ac0af092b86a81b3e7bb140dab88ad20aef30abff2ff03e2"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+        "date": "2026-10-29",
+        "subject": "Gate extended feedback atomically and rehearse guarded adapter"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "sql/phase11_access_tiers.sql",
+      "old": {
+        "type": "blob",
+        "object": "30a1b397ef6026ac7dcf29a7739583a871fcc621",
+        "bytes": 5286,
+        "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "30a1b397ef6026ac7dcf29a7739583a871fcc621",
+        "bytes": 5286,
+        "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "old": {
+        "type": "blob",
+        "object": "49f473822d107c6fada8a2801bdfbc6143b3cdcd",
+        "bytes": 7328,
+        "sha256": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "49f473822d107c6fada8a2801bdfbc6143b3cdcd",
+        "bytes": 7328,
+        "sha256": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067"
+      },
+      "status": "SAME"
+    }
+  ],
+  "bootstrapSqlCounts": {
+    "MISSING_IN_PROPOSED": 7,
+    "SAME": 11
+  },
+  "explicitProtectedAppFiles": [
+    {
+      "path": "app/api/consultation/ticket-attempts/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "18ba1ecaa9bc9e370a4f9639b7f2eb1245dd8dea",
+        "bytes": 496,
+        "sha256": "6d3f101dc41a4590c3fdcedce2321e03c41e79e77d963d1b56f9e969168617d2"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "app/api/consultation/tickets/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "e77a535ba5d46b1df5483ddad0f2777a1f482251",
+        "bytes": 456,
+        "sha256": "f6947d245372d51a09faee537122f58851d51d345e82f8abaee8173d01e54cdc"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b3a632b07b5b79919a3868cec1dce84d846582cd",
+        "date": "2026-10-31",
+        "subject": "Add default-closed ticket storage API and exact request recovery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "components/consultation/ConsultationPanel.tsx",
+      "old": {
+        "type": "blob",
+        "object": "d2ba62e491627f001720677fe8e53842d81c8730",
+        "bytes": 13398,
+        "sha256": "255677d10145dd39d34164debfb3dbf70721b850b3eae3616b08803c62db228a"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "cb2d2cfb294518c58349f9b8edc66db9db9b00de",
+        "bytes": 11505,
+        "sha256": "f7502dfc66620cd1a77d0963fc4f4af0d148c7f23016f97d8e06a90c217a8b87"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+        "date": "2026-10-29",
+        "subject": "Preserve member filters across consultation selection and editor reset"
+      },
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "path": "components/consultation/ConsultationWorkspace.tsx",
+      "old": {
+        "type": "blob",
+        "object": "a10e06ca5982c7d8184e34913c782c4528074fbd",
+        "bytes": 16184,
+        "sha256": "4f0cca9b17f0a11632d08048285c157088b6a3da8e1d0a00f0a8c0ecbfa12390"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "4016b101bd9189b9dc84b657c55ea83a4277bee9",
+        "bytes": 12909,
+        "sha256": "ebaa154ede1d671fc30b09129e3fa292e6a7a4fb15d5e33b49ea66901740b8f8"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+        "date": "2026-10-29",
+        "subject": "Preserve member filters across consultation selection and editor reset"
+      },
+      "proposedLastChange": {
+        "commit": "186d482185b13a827556580e48b24bee232a613f",
+        "date": "2026-11-03",
+        "subject": "fix(consultation): recover own list after selected access denial"
+      }
+    },
+    {
+      "path": "components/consultation/RosterPanel.tsx",
+      "old": {
+        "type": "blob",
+        "object": "9407407c8a420b70463caf79101806116bd38b95",
+        "bytes": 10604,
+        "sha256": "9506d0347dd335c90e5ff9be3fc6bc2b7c8dbd533129fd18679ffa0a89341277"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "03880f13e54cca4a6542d1136267f65b8013da64",
+        "date": "2026-10-24",
+        "subject": "Add consent-scoped advisor filters and versioned member replies"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "components/consultation/TicketRequestPanel.tsx",
+      "old": {
+        "type": "blob",
+        "object": "0773e35aa429c0d06ba2cb2ac67b958b844b823d",
+        "bytes": 14890,
+        "sha256": "32da415fe8070ad05be3e1ab5049ec9e2a4d2690d0326f49209fa934aa6e21e2"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "be573950d0d8d7d4b91043b180e6f86e73b94fee",
+        "date": "2026-10-31",
+        "subject": "Show self-owned legacy access diagnostic without service authority"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "components/consultation/TicketRequestWorkspace.tsx",
+      "old": {
+        "type": "blob",
+        "object": "7c123c2e3dde795bd0964d030743f509f8e4cfeb",
+        "bytes": 34343,
+        "sha256": "8f1ff878004ca9b94582a13fe2e2abdd69bbde77df99f91e43c2e722fc2b92cc"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "be573950d0d8d7d4b91043b180e6f86e73b94fee",
+        "date": "2026-10-31",
+        "subject": "Show self-owned legacy access diagnostic without service authority"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "components/consultation/ticket-storage-ui.test.tsx",
+      "old": {
+        "type": "blob",
+        "object": "745f03c94a9e7e98be4614551d3950f7236b8159",
+        "bytes": 37422,
+        "sha256": "d301e16dc07b952090e3a0361fe203d219ea7c995bae6b7758ce36953c5b74a5"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "be573950d0d8d7d4b91043b180e6f86e73b94fee",
+        "date": "2026-10-31",
+        "subject": "Show self-owned legacy access diagnostic without service authority"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "components/symbol/FundamentalCharts.tsx",
+      "old": {
+        "type": "blob",
+        "object": "89bbd9ee77e47a843f5a3e78184b64e72e82e42a",
+        "bytes": 35317,
+        "sha256": "6efc28532453577985efbd6254f1cc6c45b6e8f2d8ff5d43f5c62e5df9093628"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "89bbd9ee77e47a843f5a3e78184b64e72e82e42a",
+        "bytes": 35317,
+        "sha256": "6efc28532453577985efbd6254f1cc6c45b6e8f2d8ff5d43f5c62e5df9093628"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "components/symbol/MonthlySalesCharts.tsx",
+      "old": {
+        "type": "blob",
+        "object": "7221d7bbec0fb4005c970341979b440dd8b6931f",
+        "bytes": 22399,
+        "sha256": "7dfb3746ffffcdc64168890be4d9c463b121e2bef467e69a94601fc9a86e208f"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "77b3d83619c931b29d7a828d74887f48ebb72b49",
+        "bytes": 23141,
+        "sha256": "292af7cfa4aa870a6506df7b23a5ac2e780f34b9f0deb729c3bb0de7cd40b22a"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "153e751fa6c7943cca4d2532b627429c4ec5a80a",
+        "date": "2026-10-31",
+        "subject": "Render monthly rate and quantity charts only within proven units"
+      },
+      "proposedLastChange": {
+        "commit": "1ca0687a2d7be479c15da42f6a1e5b940d6cc093",
+        "date": "2026-11-03",
+        "subject": "Add source-witnessed monthly quantity chart scopes"
+      }
+    },
+    {
+      "path": "components/symbol/QuarterlyCharts.tsx",
+      "old": {
+        "type": "blob",
+        "object": "4f7cfa1ee47d6163d859c46cf0afdbcd6f62c61c",
+        "bytes": 10211,
+        "sha256": "dfe7a555b44bbfc353bf735a4d50436390aac9234f512e8500fa7084bebb9cdb"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "4f7cfa1ee47d6163d859c46cf0afdbcd6f62c61c",
+        "bytes": 10211,
+        "sha256": "dfe7a555b44bbfc353bf735a4d50436390aac9234f512e8500fa7084bebb9cdb"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "components/terminal/HistoryChart.tsx",
+      "old": {
+        "type": "blob",
+        "object": "239905661393b014dea2c6dee027db858d0c349c",
+        "bytes": 4045,
+        "sha256": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "239905661393b014dea2c6dee027db858d0c349c",
+        "bytes": 4045,
+        "sha256": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "lib/consultation/consultationWriteRelease.test.ts",
+      "old": {
+        "type": "blob",
+        "object": "7d81ca75b67b7ec804d4b9468279aafa1359afec",
+        "bytes": 12472,
+        "sha256": "f615e5debe0808e29e0b369a8e9bb510e3ead72e593645a6b3afeccd6dd48812"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/consultationWriteRelease.ts",
+      "old": {
+        "type": "blob",
+        "object": "c94d7134e1335cf9771fd345db999f0b6e54dab5",
+        "bytes": 462,
+        "sha256": "22e7b893c081acf49bd6060a654cab1ad6ad7e3882b35a53d01d4ccea180664a"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/server.test.ts",
+      "old": {
+        "type": "blob",
+        "object": "87d4ca6ab3bc3a689fbfe7fe257f2071c3a3cee0",
+        "bytes": 7837,
+        "sha256": "c1030e8b7c59eb1ff581e2e0cf31fa068d25d6ed32d78062c761118b22386a14"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "aa1ae7f9d3f794d99633470a827a61c1e9737692",
+        "bytes": 5511,
+        "sha256": "ccbfb7cb740ef6071fab844185f258cf800be9de18e5b0c9a906a6443d970d0b"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "path": "lib/consultation/server.ts",
+      "old": {
+        "type": "blob",
+        "object": "83f8acbb03849801e76a08d08683dae0d091b382",
+        "bytes": 8073,
+        "sha256": "29fd796d94c409861b484a12dbdd89f4714fbdc51cd64245c08dd75cc7d639d2"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "3a1c22d84b8212d25ffa67afbd4035adbf600116",
+        "bytes": 6895,
+        "sha256": "c17f7a068bbdb65d1ca602315bb9d90bd83e45614bd40fd0d4f548b8a0329a20"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageContracts.test.ts",
+      "old": {
+        "type": "blob",
+        "object": "37bb9a5ada31dde3e7b730f88e684d738b6048cc",
+        "bytes": 4604,
+        "sha256": "2e5888ae505f076aabaa2b984e2949da4ad7be5fe6698ace25159267e73e8bb8"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageContracts.ts",
+      "old": {
+        "type": "blob",
+        "object": "b00d76fb261d929df1545ec0f2046aa66191f689",
+        "bytes": 10465,
+        "sha256": "84b3efa5cec6fd631cb18fb0f8fe75d532d38db059857bd7e9bda9fc386cce4d"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageRequest.test.ts",
+      "old": {
+        "type": "blob",
+        "object": "f20874004e702d58ed29cc0e21ca084431105f2d",
+        "bytes": 3341,
+        "sha256": "7536508b296a13ab0f9aa623862b35d83ff5bddde6ab2568f16fde054a1a2fd2"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageRequest.ts",
+      "old": {
+        "type": "blob",
+        "object": "63e757f199a4f202a18f6326fac50ffaf33b9b54",
+        "bytes": 5088,
+        "sha256": "b3f3c69f0e48594c834bfcad8f6ba43c10d35fbf758b05a667a1d46739462d5a"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageServer.test.ts",
+      "old": {
+        "type": "blob",
+        "object": "599411a844ef92e43e4568d2e23158bd3e867cb3",
+        "bytes": 5072,
+        "sha256": "4a7c2be6b8caa793d19a88888c83cc58a1013670ed615107233dc99ff718f135"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageServer.ts",
+      "old": {
+        "type": "blob",
+        "object": "3d38eed5aa8944e2255cbed97695be32de0022c2",
+        "bytes": 8112,
+        "sha256": "21c82f0b21cc1a181e2fb51f4e0d304a72e7878bd318cec0e967b54ef9a3123f"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketServiceRightDiagnostic.test.ts",
+      "old": {
+        "type": "blob",
+        "object": "708d54554465fa67d4b383d7ac15a1d926e4631a",
+        "bytes": 10027,
+        "sha256": "68cd27fc842b7290c3182e7c3516db76d701bcb5ae442523ca0b3a639c172fa2"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "f353300d61a4738b7b6bc2fd2177f9cdc5955a4b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): add read-only legacy service-right diagnostic"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketServiceRightDiagnostic.ts",
+      "old": {
+        "type": "blob",
+        "object": "b6498e49effcb0bea49a9a3eed8a0abf79947663",
+        "bytes": 3684,
+        "sha256": "c576c0f093c6847dfdc7fe3e547778354e050c3c015c9e026fe82ab4e53663bd"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "f353300d61a4738b7b6bc2fd2177f9cdc5955a4b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): add read-only legacy service-right diagnostic"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketStorageContracts.ts",
+      "old": {
+        "type": "blob",
+        "object": "f075ab28903e651e1d4b4ae7f69b3a1a068aba07",
+        "bytes": 10403,
+        "sha256": "229d8d9f10b64d18066bb62ade9029bb2a2146aeab7acb8f0717984534dc1e96"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketStorageRequest.ts",
+      "old": {
+        "type": "blob",
+        "object": "30bc80bac06fcf2d093fb0fa6a98c8a52497cf4e",
+        "bytes": 7741,
+        "sha256": "97b11835453d80fae5ca91880a412894e03ce7611a748982a17c0d5506a10f43"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketStorageServer.test.ts",
+      "old": {
+        "type": "blob",
+        "object": "dc5a66c9935206a8226c31eecdc2d2a902cf63f2",
+        "bytes": 4588,
+        "sha256": "bc309a92f5e262be13f344ffa419d98b1a5a8690c620938f702ee18b7329044c"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "lib/consultation/ticketStorageServer.ts",
+      "old": {
+        "type": "blob",
+        "object": "ed44db703f5b187fd5eb6d3a8c20b6e617073803",
+        "bytes": 8030,
+        "sha256": "54b54227d8761403ea49892c83e7b52a95bf5c037af65c52be46ef03f8da7fea"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b9d311b6449e318137511fb5ba23495326fda38b",
+        "date": "2026-10-31",
+        "subject": "feat(consultation): release compatible reader before new writers"
+      },
+      "proposedLastChange": null
+    }
+  ],
+  "explicitProtectedAppCounts": {
+    "CHANGED_OR_ADDED": 5,
+    "MISSING_IN_PROPOSED": 20,
+    "SAME": 3
+  },
+  "protectedAppTrees": [
+    {
+      "path": "lib/auth",
+      "old": {
+        "type": "tree",
+        "object": "c2ce5a4575854aaf26bdd5d443456737317962f9"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "c2ce5a4575854aaf26bdd5d443456737317962f9"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "lib/core",
+      "old": {
+        "type": "tree",
+        "object": "d363c94bc20eb32cf0651469b21b6584171d5a32"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "8bdf724b93d69eb1ae1d0b6938e9716e28ebf751"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "93b761eac9cb9f2ff9d125835966764dcd210418",
+        "date": "2026-10-31",
+        "subject": "Merge reviewed company A3 into the funds stored-binding candidate"
+      },
+      "proposedLastChange": {
+        "commit": "9c32fb05dd0dd96c005b8cad4865ba0c7921aad4",
+        "date": "2026-11-04",
+        "subject": "Preserve fund comparisons across reload and reconcile v04 delivery evidence"
+      }
+    },
+    {
+      "path": "lib/portfolio",
+      "old": {
+        "type": "tree",
+        "object": "84d5256e47101bcc7787b7d55bfbf7e83d6e7cfd"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "cf3a29eb9882911f2e1f0ba4d7e2ba9fff840c74"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "f3498c8aac910ee37058f59f4fe798120d33e0ec",
+        "date": "2026-10-23",
+        "subject": "Add period budgets and versioned member savings goals"
+      },
+      "proposedLastChange": {
+        "commit": "7b565c263e8594ade064f0a2ce1b33c9cca6906f",
+        "date": "2026-11-03",
+        "subject": "Fix localized member financial amount parsing"
+      }
+    },
+    {
+      "path": "lib/supabase",
+      "old": {
+        "type": "tree",
+        "object": "b72330b321549b2c455ae114302c29191a2f40a6"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "b72330b321549b2c455ae114302c29191a2f40a6"
+      },
+      "status": "SAME"
+    }
+  ],
+  "sourceRootObjects": [
+    {
+      "path": "app",
+      "old": {
+        "type": "tree",
+        "object": "bde7fe0fe3653b82f34a5db8143676107913b921"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "e1e47ef426e31264a0477bd675279060ef2edb27"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "419c39875290068bef0f37615e7e0b7693d4403b",
+        "date": "2026-10-31",
+        "subject": "merge: assemble frozen member experience with reviewed root928"
+      },
+      "proposedLastChange": {
+        "commit": "f0a98c7f8d04100b4f63f5a3a854858ce330912b",
+        "date": "2026-11-04",
+        "subject": "test(media): inject real server reader in existing page harnesses"
+      }
+    },
+    {
+      "path": "components",
+      "old": {
+        "type": "tree",
+        "object": "5fd56d998bbb3da13058f4e0cd27edd3ec3e68de"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "6c7cb26b82d3bcc30fb25a700b57cc1a8f5c96b7"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "419c39875290068bef0f37615e7e0b7693d4403b",
+        "date": "2026-10-31",
+        "subject": "merge: assemble frozen member experience with reviewed root928"
+      },
+      "proposedLastChange": {
+        "commit": "7b7e15037d38534892b91f3a8b96c2b99fb9885c",
+        "date": "2026-11-04",
+        "subject": "merge: integrate reviewed media filters with current main"
+      }
+    },
+    {
+      "path": "lib",
+      "old": {
+        "type": "tree",
+        "object": "d21127643356f8c4ac7b9b947f61e9edb94f0848"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "e766de364f230b57957fcd7e794cd10395d15efe"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "419c39875290068bef0f37615e7e0b7693d4403b",
+        "date": "2026-10-31",
+        "subject": "merge: assemble frozen member experience with reviewed root928"
+      },
+      "proposedLastChange": {
+        "commit": "f0a98c7f8d04100b4f63f5a3a854858ce330912b",
+        "date": "2026-11-04",
+        "subject": "test(media): inject real server reader in existing page harnesses"
+      }
+    },
+    {
+      "path": "public",
+      "old": {
+        "type": "tree",
+        "object": "c69d2a94f4f556d8baf6fdf4460fc54059814aca"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "c69d2a94f4f556d8baf6fdf4460fc54059814aca"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "middleware.ts",
+      "old": {
+        "type": "blob",
+        "object": "c81b575cc7d947d2026036a46330db098273a263",
+        "bytes": 4236,
+        "sha256": "c8fba36a5c59f6fdd39d36498f697466735880e5932e5aaddb829a91695313c2"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "c81b575cc7d947d2026036a46330db098273a263",
+        "bytes": 4236,
+        "sha256": "c8fba36a5c59f6fdd39d36498f697466735880e5932e5aaddb829a91695313c2"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "next.config.js",
+      "old": {
+        "type": "blob",
+        "object": "2127e13382e5c3cb7e622bdbba11a8e74f2cc991",
+        "bytes": 2922,
+        "sha256": "86b8e00ffa1a433775a13f7b7bffc74c493952bb75703ff92832161f9b38b4e7"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "2127e13382e5c3cb7e622bdbba11a8e74f2cc991",
+        "bytes": 2922,
+        "sha256": "86b8e00ffa1a433775a13f7b7bffc74c493952bb75703ff92832161f9b38b4e7"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "tsconfig.json",
+      "old": {
+        "type": "blob",
+        "object": "42f1dd0686fbf80689e660029880031c214f51bf",
+        "bytes": 583,
+        "sha256": "1f12acb5c6253675358a6fbdb79fbd146ed77b814b09647b1cae618033c6a970"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "42f1dd0686fbf80689e660029880031c214f51bf",
+        "bytes": 583,
+        "sha256": "1f12acb5c6253675358a6fbdb79fbd146ed77b814b09647b1cae618033c6a970"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "tailwind.config.js",
+      "old": {
+        "type": "blob",
+        "object": "41a9d48c569573c548046a21c1f7550110ee042a",
+        "bytes": 1166,
+        "sha256": "f9f39f6e037fed77853d2554cffeab3e97a2f17b26049b8aaac15bd1b0bc8f84"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "41a9d48c569573c548046a21c1f7550110ee042a",
+        "bytes": 1166,
+        "sha256": "f9f39f6e037fed77853d2554cffeab3e97a2f17b26049b8aaac15bd1b0bc8f84"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "postcss.config.js",
+      "old": {
+        "type": "blob",
+        "object": "a1b36d24e45d09a3126d96cc009fb744b40a3181",
+        "bytes": 89,
+        "sha256": "b78f5d0a0a449ecf58b6b6252e26cd2216c7aa41235e2d6d01a26b9a065cd439"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "a1b36d24e45d09a3126d96cc009fb744b40a3181",
+        "bytes": 89,
+        "sha256": "b78f5d0a0a449ecf58b6b6252e26cd2216c7aa41235e2d6d01a26b9a065cd439"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "package.json",
+      "old": {
+        "type": "blob",
+        "object": "92037536cc238a126414908dc0e2acf08681e2f7",
+        "bytes": 11716,
+        "sha256": "29967c289f51fb8b259545dfdcf8aea9d4f3d4c2cf898cb2b57a50c7dc222cb5"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "1e6a385b39c39ba877989c322a998ab87a69c9fa",
+        "bytes": 10796,
+        "sha256": "16a8d499874f00f83d8a0e7a875fff038c21c444dd6a6f55abaf65f1805de1b1"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "419c39875290068bef0f37615e7e0b7693d4403b",
+        "date": "2026-10-31",
+        "subject": "merge: assemble frozen member experience with reviewed root928"
+      },
+      "proposedLastChange": {
+        "commit": "b49487c667acb9b97fd2ec4ab1f072b88f9daa66",
+        "date": "2026-11-04",
+        "subject": "feat(media): bind public content read to approved anonymous pair"
+      }
+    },
+    {
+      "path": "package-lock.json",
+      "old": {
+        "type": "blob",
+        "object": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305",
+        "bytes": 265076,
+        "sha256": "98819c5b5297d75054bdb70d8e98c81caa5b16c4bde3f80a97e9628d322ff6e5"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "eeaf77d790d7af8692110a06e22731dd9edeee61",
+        "bytes": 264596,
+        "sha256": "22dac96b6605e4aa207abae7e307528fe06e68cf2c5c0b54da3fec44252be8b3"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "a06f2738a5cb7ee49c12284910ed4b077289f6f0",
+        "date": "2026-10-31",
+        "subject": "Gate request reauthentication and exercise real ticket pages in isolated Chrome"
+      },
+      "proposedLastChange": {
+        "commit": "ced07baa1934c21c2784659e741d5d069505edeb",
+        "date": "2026-10-23",
+        "subject": "fix(deps): patch Next.js critical image optimization advisory"
+      }
+    },
+    {
+      "path": "sql",
+      "old": {
+        "type": "tree",
+        "object": "bed7834b9cdc3747f0c61242a59acc41c8c52661"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "c62a174d5da7a5495174e4ee5ff9a9fd09df3b1a"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "path": "supabase",
+      "old": {
+        "type": "tree",
+        "object": "756c4f88111ce2034c4d9d2522036f20769837ba"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "985c2d135a6f779add7e092adad4e9806b472da4"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+        "date": "2026-10-29",
+        "subject": "Gate extended feedback atomically and rehearse guarded adapter"
+      },
+      "proposedLastChange": {
+        "commit": "e886d52ce7b14d92494f9ecc5fdd59f1a1c17cea",
+        "date": "2026-10-20",
+        "subject": "feat: stage isolated cash-flow persistence candidate"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation",
+      "old": {
+        "type": "tree",
+        "object": "03676ecd20860105c070cb6b2733a292b93dc12b"
+      },
+      "proposed": {
+        "type": "tree",
+        "object": "fe9858e8fe3bb771d0b64408cf3be8d4f1437e13"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "419c39875290068bef0f37615e7e0b7693d4403b",
+        "date": "2026-10-31",
+        "subject": "merge: assemble frozen member experience with reviewed root928"
+      },
+      "proposedLastChange": {
+        "commit": "1bc3763dc0615aca331e1ed38a6e8a7468ecb0f7",
+        "date": "2026-11-04",
+        "subject": "Record live media acceptance and add versioned read-only restore review"
+      }
+    },
+    {
+      "path": "scripts/testing/consultation-tickets",
+      "old": {
+        "type": "tree",
+        "object": "8eb0870621814115f90ba7e20b5ed5e68a7e1c00"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+        "date": "2026-10-31",
+        "subject": "test(assembly): separate frozen export checks from actual semantics"
+      },
+      "proposedLastChange": null
+    }
+  ],
+  "actualApiRouteFiles": [
+    {
+      "path": "app/api/consultation/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "db5e581818e08a19e2fb75e5055e759fdb5ff39d",
+        "bytes": 437,
+        "sha256": "e23561518f7d0417dd1499a83ee8d766e370caf6e4d6c7806bb19e3e5351e820"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "db5e581818e08a19e2fb75e5055e759fdb5ff39d",
+        "bytes": 437,
+        "sha256": "e23561518f7d0417dd1499a83ee8d766e370caf6e4d6c7806bb19e3e5351e820"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "app/api/consultation/roster/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "c50e86406d17792a91f428a71ecc4e9d5e6814eb",
+        "bytes": 284,
+        "sha256": "a303fbdb2049d81dbda4cfba2c5c1395ad119bb51014b424e1de317f1aed1320"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "03880f13e54cca4a6542d1136267f65b8013da64",
+        "date": "2026-10-24",
+        "subject": "Add consent-scoped advisor filters and versioned member replies"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "app/api/consultation/replies/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "c862fca9f8a86f57e25d8171049fa004e38cf16c",
+        "bytes": 406,
+        "sha256": "091e8e855d3a9d77aa96b886bfa52850df8b874cc7046667894f5c38b6f0dff3"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "03880f13e54cca4a6542d1136267f65b8013da64",
+        "date": "2026-10-24",
+        "subject": "Add consent-scoped advisor filters and versioned member replies"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "app/api/consultation/tickets/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "e77a535ba5d46b1df5483ddad0f2777a1f482251",
+        "bytes": 456,
+        "sha256": "f6947d245372d51a09faee537122f58851d51d345e82f8abaee8173d01e54cdc"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b3a632b07b5b79919a3868cec1dce84d846582cd",
+        "date": "2026-10-31",
+        "subject": "Add default-closed ticket storage API and exact request recovery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "app/api/consultation/ticket-attempts/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "18ba1ecaa9bc9e370a4f9639b7f2eb1245dd8dea",
+        "bytes": 496,
+        "sha256": "6d3f101dc41a4590c3fdcedce2321e03c41e79e77d963d1b56f9e969168617d2"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "55fb4293cb28c767290bd4e6890b100a4f340c04",
+        "date": "2026-10-31",
+        "subject": "Retain exact ticket intents on the server before command delivery"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "app/api/portfolio/holdings/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "fd7dd869b6b275edf84282bbd394c49efd357700",
+        "bytes": 886,
+        "sha256": "0f966eba9ae3e0349401b4aef8e336a40b339acbdf13c34b26b2e1d0888e6d15"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "fd7dd869b6b275edf84282bbd394c49efd357700",
+        "bytes": 886,
+        "sha256": "0f966eba9ae3e0349401b4aef8e336a40b339acbdf13c34b26b2e1d0888e6d15"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "app/api/portfolio/debts/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "4d83b5649dff9a8e42e723786c1647f508561f49",
+        "bytes": 578,
+        "sha256": "a05d6276b59ed4c0e57084c786e6bc5cd144b94d0a044ad99aa885eef007a509"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "4d83b5649dff9a8e42e723786c1647f508561f49",
+        "bytes": 578,
+        "sha256": "a05d6276b59ed4c0e57084c786e6bc5cd144b94d0a044ad99aa885eef007a509"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "app/api/personal-finance/cash-flow/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "b6ae6247726b89f2ca6a0e8600483a7b96e16b52",
+        "bytes": 419,
+        "sha256": "d3ca0f796204aa138c37deb13c5756458f8cebbe23bbc27a132023e3cf3c427e"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "b6ae6247726b89f2ca6a0e8600483a7b96e16b52",
+        "bytes": 419,
+        "sha256": "d3ca0f796204aa138c37deb13c5756458f8cebbe23bbc27a132023e3cf3c427e"
+      },
+      "status": "SAME"
+    },
+    {
+      "path": "app/api/personal-finance/goals/route.ts",
+      "old": {
+        "type": "blob",
+        "object": "bab939245dcce737aae6d39670149f15d180815a",
+        "bytes": 398,
+        "sha256": "631b2f14c168537d5407b2af34526d13c3b3b4637178055181e20ad5e2283a51"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "bab939245dcce737aae6d39670149f15d180815a",
+        "bytes": 398,
+        "sha256": "631b2f14c168537d5407b2af34526d13c3b3b4637178055181e20ad5e2283a51"
+      },
+      "status": "SAME"
+    }
+  ],
+  "actualPagesAndFinancialComponents": [
+    {
+      "path": "app/(protected)/dashboard/consultation/requests/page.tsx",
+      "old": {
+        "type": "blob",
+        "object": "a6e0eabd21ebb46af10425ace0f8460513af505f",
+        "bytes": 2658,
+        "sha256": "8b80054321c97d14044ab96b7acb2ac086bddc017b57f311a8cadae2a1a6f717"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b5d4c475728cb11db9ab2520145143053013081f",
+        "date": "2026-10-31",
+        "subject": "Connect real ticket consumers and isolated SQL Auth acceptance"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "app/(protected)/admin/consultation/requests/page.tsx",
+      "old": {
+        "type": "blob",
+        "object": "2b1b45c0b36d9a7569e9fdb670a97940c36f44f9",
+        "bytes": 2290,
+        "sha256": "9466b59240a1ccd9e555705accd1a52cb93ffd9b566ec99f1341055c1b5ca195"
+      },
+      "proposed": null,
+      "status": "MISSING_IN_PROPOSED",
+      "oldLastChange": {
+        "commit": "b5d4c475728cb11db9ab2520145143053013081f",
+        "date": "2026-10-31",
+        "subject": "Connect real ticket consumers and isolated SQL Auth acceptance"
+      },
+      "proposedLastChange": null
+    },
+    {
+      "path": "app/(protected)/dashboard/page.tsx",
+      "old": {
+        "type": "blob",
+        "object": "325e684c7bba04813b9092e5d029ae0f2822cc05",
+        "bytes": 9889,
+        "sha256": "dab4e739470b6ea1771fba46a3b160b19940d47fc42409613d6c3ec2c277814c"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "3055f2bdb9abfb699b821055b8f4a1eb2f3ee7cd",
+        "bytes": 8702,
+        "sha256": "8920621256f1509f62993449d8ac5fad3f3936fb669e549fb826884f5067429c"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+        "date": "2026-10-30",
+        "subject": "Preserve unknown member sessions and clarify service access"
+      },
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    },
+    {
+      "path": "app/(protected)/dashboard/DashboardClient.tsx",
+      "old": {
+        "type": "blob",
+        "object": "95c3a37ce4dc83219d72c36228d0fa60ed395831",
+        "bytes": 28994,
+        "sha256": "3521a67ff543462ca5304142190fc64f4ee052436ce7a3c58deb55ee7a314175"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "40a552326abca203cac9b6b423429dae32ae4e3a",
+        "bytes": 22383,
+        "sha256": "11466d8cb7d643321c14bac1b32d6b22e64d0741c1a20c5c5196f467ad90ff81"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      },
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    },
+    {
+      "path": "components/dashboard/AccessStatusCard.tsx",
+      "old": {
+        "type": "blob",
+        "object": "6210157660adff0fa5ba1673468957cbe13e5fec",
+        "bytes": 3353,
+        "sha256": "e0355db608d4a25f3e9d0822e61bd2749fad1d7dc9b1db7cd287825897310092"
+      },
+      "proposed": {
+        "type": "blob",
+        "object": "7fd0078791d2d9550837325749c632bbb6535953",
+        "bytes": 4920,
+        "sha256": "d45d1ff169c0e7f7e6946eac9543802035d3db1ac3f36c4eaae90854bdd73a2a"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": {
+        "commit": "c0eadaba4be1a070d3f93b2c9706e2c13e9a20f3",
+        "date": "2026-10-30",
+        "subject": "Preserve unknown member sessions and clarify service access"
+      },
+      "proposedLastChange": {
+        "commit": "9c62937ec3003768c636cdc281c3b502d0bf709a",
+        "date": "2026-07-16",
+        "subject": "feat: بانک دادهٔ عمومی، طبقه‌بندی دسترسی، موتور بک‌تست، رژیم بازار و واچ‌لیست امتیازی"
+      }
+    },
+    {
+      "path": "components/dashboard/PersonalFinance.tsx",
+      "old": null,
+      "proposed": {
+        "type": "blob",
+        "object": "554046264caf966358d17ab4c89bfb285947fa5f",
+        "bytes": 6947,
+        "sha256": "50d94373b06e6e23b74446a957a7a7a67fc0674c0225ce672e6ea999ef250897"
+      },
+      "status": "CHANGED_OR_ADDED",
+      "oldLastChange": null,
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    }
+  ],
+  "dependencyVersions": {
+    "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a": {
+      "playwright-core": {
+        "declaredDependency": null,
+        "declaredDevDependency": "1.64.1",
+        "lockedVersion": "1.64.1"
+      },
+      "esbuild": {
+        "declaredDependency": null,
+        "declaredDevDependency": null,
+        "lockedVersion": "0.28.1"
+      },
+      "tsx": {
+        "declaredDependency": null,
+        "declaredDevDependency": "^4.23.0",
+        "lockedVersion": "4.23.0"
+      }
+    },
+    "093d140f91903a742e1ff54efe4c19ed860e3651": {
+      "playwright-core": {
+        "declaredDependency": null,
+        "declaredDevDependency": null,
+        "lockedVersion": null
+      },
+      "esbuild": {
+        "declaredDependency": null,
+        "declaredDevDependency": null,
+        "lockedVersion": "0.28.1"
+      },
+      "tsx": {
+        "declaredDependency": null,
+        "declaredDevDependency": "^4.23.0",
+        "lockedVersion": "4.23.0"
+      }
+    }
+  },
+  "entireAppComponentsLibDelta": [
+    {
+      "comparisonStatus": "D",
+      "path": "app/(protected)/admin/consultation/requests/page.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "app/(protected)/dashboard/DashboardClient.tsx",
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "app/(protected)/dashboard/consultation/requests/page.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "app/(protected)/dashboard/page.tsx",
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "app/(protected)/layout.tsx",
+      "proposedLastChange": {
+        "commit": "9abe7e9dff5c1ff1dee1353d9224487484d10cde",
+        "date": "2026-07-20",
+        "subject": "WP-D: حذف پرچم TERMINAL_PREVIEW_OPEN (گیت ترمینال فقط DB-محور) + حذف کامپوننت مردهٔ LandingNav"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "app/api/consultation/replies/route.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "app/api/consultation/roster/route.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "app/api/consultation/ticket-attempts/route.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "app/api/consultation/tickets/route.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "app/codal/page.test.ts",
+      "proposedLastChange": {
+        "commit": "f0a98c7f8d04100b4f63f5a3a854858ce330912b",
+        "date": "2026-11-04",
+        "subject": "test(media): inject real server reader in existing page harnesses"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "app/insights/page.tsx",
+      "proposedLastChange": {
+        "commit": "b49487c667acb9b97fd2ec4ab1f072b88f9daa66",
+        "date": "2026-11-04",
+        "subject": "feat(media): bind public content read to approved anonymous pair"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "app/symbol/[symbol]/page.test.ts",
+      "proposedLastChange": {
+        "commit": "b387d4807953b4294f686be816bea8190211986e",
+        "date": "2026-11-01",
+        "subject": "Show each selected financial report with its own provenance"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "app/symbol/[symbol]/page.tsx",
+      "proposedLastChange": {
+        "commit": "b387d4807953b4294f686be816bea8190211986e",
+        "date": "2026-11-01",
+        "subject": "Show each selected financial report with its own provenance"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/ActionFeedback.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/consultation/ConsultationPanel.tsx",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/consultation/ConsultationWorkspace.tsx",
+      "proposedLastChange": {
+        "commit": "186d482185b13a827556580e48b24bee232a613f",
+        "date": "2026-11-03",
+        "subject": "fix(consultation): recover own list after selected access denial"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/RepliesPanel.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/RosterPanel.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/consultation/SessionCard.tsx",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/TicketRequestPanel.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/TicketRequestWorkspace.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/advisor-next-ui.test.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/consultation/consultation-ui.test.tsx",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/questionFollowUp.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "components/consultation/ticket-storage-ui.test.tsx",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/consultation/workspace.test.ts",
+      "proposedLastChange": {
+        "commit": "186d482185b13a827556580e48b24bee232a613f",
+        "date": "2026-11-03",
+        "subject": "fix(consultation): recover own list after selected access denial"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/dashboard/AccessStatusCard.tsx",
+      "proposedLastChange": {
+        "commit": "9c62937ec3003768c636cdc281c3b502d0bf709a",
+        "date": "2026-07-16",
+        "subject": "feat: بانک دادهٔ عمومی، طبقه‌بندی دسترسی، موتور بک‌تست، رژیم بازار و واچ‌لیست امتیازی"
+      }
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "components/dashboard/PersonalFinance.tsx",
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/dashboard/cashFlowDiscovery.test.ts",
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/dashboard/saveRiskAssessment.test.ts",
+      "proposedLastChange": {
+        "commit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+        "date": "2026-11-03",
+        "subject": "fix(member): keep base ledger available after risk read failure"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/insights/MediaHub.tsx",
+      "proposedLastChange": {
+        "commit": "0a72239115e3bce3a5ec099e63962547a5f1d714",
+        "date": "2026-11-03",
+        "subject": "feat(media): filter loaded archive by recorded date"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/market/FundComparisonPanel.test.tsx",
+      "proposedLastChange": {
+        "commit": "9c32fb05dd0dd96c005b8cad4865ba0c7921aad4",
+        "date": "2026-11-04",
+        "subject": "Preserve fund comparisons across reload and reconcile v04 delivery evidence"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/market/FundComparisonPanel.tsx",
+      "proposedLastChange": {
+        "commit": "9c32fb05dd0dd96c005b8cad4865ba0c7921aad4",
+        "date": "2026-11-04",
+        "subject": "Preserve fund comparisons across reload and reconcile v04 delivery evidence"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/symbol/CodalReportsTab.test.ts",
+      "proposedLastChange": {
+        "commit": "b387d4807953b4294f686be816bea8190211986e",
+        "date": "2026-11-01",
+        "subject": "Show each selected financial report with its own provenance"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/symbol/CodalReportsTab.tsx",
+      "proposedLastChange": {
+        "commit": "b387d4807953b4294f686be816bea8190211986e",
+        "date": "2026-11-01",
+        "subject": "Show each selected financial report with its own provenance"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/symbol/MonthlySalesCharts.test.tsx",
+      "proposedLastChange": {
+        "commit": "1ca0687a2d7be479c15da42f6a1e5b940d6cc093",
+        "date": "2026-11-03",
+        "subject": "Add source-witnessed monthly quantity chart scopes"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "components/symbol/MonthlySalesCharts.tsx",
+      "proposedLastChange": {
+        "commit": "1ca0687a2d7be479c15da42f6a1e5b940d6cc093",
+        "date": "2026-11-03",
+        "subject": "Add source-witnessed monthly quantity chart scopes"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/consultationWriteRelease.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/consultationWriteRelease.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/consultation/contracts.test.ts",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/consultation/contracts.ts",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/consultation/errors.ts",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/replies.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/repliesRequest.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/repliesServer.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/roster.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/rosterContracts.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/rosterServer.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/consultation/server.test.ts",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/consultation/server.ts",
+      "proposedLastChange": {
+        "commit": "2eacefe83918cb450b608d0fa645bb67a5f8b5b4",
+        "date": "2026-10-24",
+        "subject": "Add consent-based advisor desk and owner-approved recommendations (#312)"
+      }
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketAttemptStorageContracts.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketAttemptStorageContracts.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketAttemptStorageRequest.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketAttemptStorageRequest.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketAttemptStorageServer.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketAttemptStorageServer.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketIntent.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketServiceRightDiagnostic.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketServiceRightDiagnostic.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketStorageContracts.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketStorageRequest.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketStorageRequest.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketStorageServer.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/ticketStorageServer.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/tickets.test.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "D",
+      "path": "lib/consultation/tickets.ts",
+      "proposedLastChange": null
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "lib/core/fund-comparison-selection.ts",
+      "proposedLastChange": {
+        "commit": "9c32fb05dd0dd96c005b8cad4865ba0c7921aad4",
+        "date": "2026-11-04",
+        "subject": "Preserve fund comparisons across reload and reconcile v04 delivery evidence"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/core/monthly-quantity.ts",
+      "proposedLastChange": {
+        "commit": "ef6a6eb3cb398db6a877a9c0f3b200e5361d935c",
+        "date": "2026-11-03",
+        "subject": "Bind monthly quantity evidence to the selected report"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/core/monthlyReport.test.ts",
+      "proposedLastChange": {
+        "commit": "1ca0687a2d7be479c15da42f6a1e5b940d6cc093",
+        "date": "2026-11-03",
+        "subject": "Add source-witnessed monthly quantity chart scopes"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/core/monthlyReport.ts",
+      "proposedLastChange": {
+        "commit": "1ca0687a2d7be479c15da42f6a1e5b940d6cc093",
+        "date": "2026-11-03",
+        "subject": "Add source-witnessed monthly quantity chart scopes"
+      }
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "lib/fundamental/monthly-quantity-binding.test.ts",
+      "proposedLastChange": {
+        "commit": "ef6a6eb3cb398db6a877a9c0f3b200e5361d935c",
+        "date": "2026-11-03",
+        "subject": "Bind monthly quantity evidence to the selected report"
+      }
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "lib/fundamental/monthly-quantity-binding.ts",
+      "proposedLastChange": {
+        "commit": "ef6a6eb3cb398db6a877a9c0f3b200e5361d935c",
+        "date": "2026-11-03",
+        "subject": "Bind monthly quantity evidence to the selected report"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/fundamental/read-binding.test.ts",
+      "proposedLastChange": {
+        "commit": "19ccd969158db6610e7fd4a5ba9fd92a2b00d9f9",
+        "date": "2026-11-04",
+        "subject": "Preserve the mapped public backend in default fundamental reads"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/fundamental/supabase.ts",
+      "proposedLastChange": {
+        "commit": "19ccd969158db6610e7fd4a5ba9fd92a2b00d9f9",
+        "date": "2026-11-04",
+        "subject": "Preserve the mapped public backend in default fundamental reads"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/fundamental/types.ts",
+      "proposedLastChange": {
+        "commit": "d21312492f4d7b5020a67f7893726e2fbbfede0a",
+        "date": "2026-10-31",
+        "subject": "Reuse reviewed selected-report provenance from START-C"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/market-nav.test.ts",
+      "proposedLastChange": {
+        "commit": "9c32fb05dd0dd96c005b8cad4865ba0c7921aad4",
+        "date": "2026-11-04",
+        "subject": "Preserve fund comparisons across reload and reconcile v04 delivery evidence"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/market-nav.ts",
+      "proposedLastChange": {
+        "commit": "9c32fb05dd0dd96c005b8cad4865ba0c7921aad4",
+        "date": "2026-11-04",
+        "subject": "Preserve fund comparisons across reload and reconcile v04 delivery evidence"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/market-stored.test.ts",
+      "proposedLastChange": {
+        "commit": "7216a1bac6cb393ff87ad9798e439de361092303",
+        "date": "2026-11-03",
+        "subject": "Make stored-market test hashing independent of thread-pool timing"
+      }
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "lib/media/archive-filters.test.ts",
+      "proposedLastChange": {
+        "commit": "0a72239115e3bce3a5ec099e63962547a5f1d714",
+        "date": "2026-11-03",
+        "subject": "feat(media): filter loaded archive by recorded date"
+      }
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "lib/media/archive-filters.ts",
+      "proposedLastChange": {
+        "commit": "0a72239115e3bce3a5ec099e63962547a5f1d714",
+        "date": "2026-11-03",
+        "subject": "feat(media): filter loaded archive by recorded date"
+      }
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "lib/media/content-read.server.ts",
+      "proposedLastChange": {
+        "commit": "aafd6ac60a922de75c1f94152181a6764044f20d",
+        "date": "2026-11-04",
+        "subject": "fix(media): restrict anonymous content override to Preview"
+      }
+    },
+    {
+      "comparisonStatus": "A",
+      "path": "lib/media/content-read.test.ts",
+      "proposedLastChange": {
+        "commit": "aafd6ac60a922de75c1f94152181a6764044f20d",
+        "date": "2026-11-04",
+        "subject": "fix(media): restrict anonymous content override to Preview"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/media/global-layout.test.mjs",
+      "proposedLastChange": {
+        "commit": "f0a98c7f8d04100b4f63f5a3a854858ce330912b",
+        "date": "2026-11-04",
+        "subject": "test(media): inject real server reader in existing page harnesses"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/portfolio/financialHttp.test.ts",
+      "proposedLastChange": {
+        "commit": "7b565c263e8594ade064f0a2ce1b33c9cca6906f",
+        "date": "2026-11-03",
+        "subject": "Fix localized member financial amount parsing"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/portfolio/financialInput.ts",
+      "proposedLastChange": {
+        "commit": "7b565c263e8594ade064f0a2ce1b33c9cca6906f",
+        "date": "2026-11-03",
+        "subject": "Fix localized member financial amount parsing"
+      }
+    },
+    {
+      "comparisonStatus": "M",
+      "path": "lib/useUrlState.ts",
+      "proposedLastChange": {
+        "commit": "9c32fb05dd0dd96c005b8cad4865ba0c7921aad4",
+        "date": "2026-11-04",
+        "subject": "Preserve fund comparisons across reload and reconcile v04 delivery evidence"
+      }
+    }
+  ],
+  "entireDeltaCounts": {
+    "A": 8,
+    "M": 40,
+    "D": 38
+  },
+  "interpretation": [
+    "A D in this cross-branch comparison means absent from proposed main, not proof that a published deletion occurred. File history and branch ancestry are recorded separately.",
+    "Seven required bootstrap files and P03 consumer/API/storage contracts are absent, so adopting proposed main unchanged cannot preserve the existing18SQL/14native/9browser program.",
+    "The allowed condition only reviewed386/387/389 fixes is not satisfied by this inventory. No source was accepted merely because it is published main.",
+    "Do not drop protected pins, copy product files, fabricate grants/data, install browser dependencies or weaken accepted cases to force compatibility."
+  ],
+  "actions": {
+    "fetchOnly": true,
+    "branchHeadUnchanged": "13343c635ce353b74702795eb49b0913bd61a55b",
+    "workingTreeClean": true,
+    "ffPerformed": false,
+    "v4Built": false,
+    "productChanged": false,
+    "dispatch": false,
+    "native": false,
+    "SQL": false,
+    "modelProviderInstall": false
+  },
+  "decisionOwner": "Root coordinator must revise source/assembly scope and reconcile existing owner before any adoption. Existing v2/v3 and receipts remain frozen."
+}

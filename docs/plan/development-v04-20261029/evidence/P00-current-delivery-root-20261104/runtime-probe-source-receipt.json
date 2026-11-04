@@ -1,0 +1,87 @@
+{
+  "atUtc": "2026-11-04T00:16:27.4Z",
+  "commit": "a5f32317a5fc3441478b5e96260f793acd920654",
+  "tree": "0a6f0e30ab493cea391a5ad2627468ba1f39edf1",
+  "parent": "af4ebc6b2643546397d0a9295dd9bbd013cd2e01",
+  "clean": true,
+  "files": {
+    "scripts/ops/liara-runtime-probe.mjs": {
+      "gitSha256": "e6942be0bf505fde869e600e47c161c14988268866cd4ab14ce73a3b8627d1e0",
+      "workingSha256": "be26bb55906bdfb9fddfd9b062b1fded4f10823bbbd49a6cd456d33bf15824a6"
+    },
+    "scripts/ops/liara-runtime-probe-command.mjs": {
+      "gitSha256": "c63d4e5695a40a0b948b40f42eaa88253532503eef75ddd129eb6ac9c231a292",
+      "workingSha256": "6ea1539c396eeca19ae2a27282643cc16684c27f9771516192d7b4eb3368818e"
+    },
+    "scripts/ops/liara-runtime-probe.test.mjs": {
+      "gitSha256": "4af3ce28bc5f71069be5a9985dd8035742a8baaccd69edd45dc4d126b9b81d0e",
+      "workingSha256": "4af3ce28bc5f71069be5a9985dd8035742a8baaccd69edd45dc4d126b9b81d0e"
+    }
+  },
+  "validation": {
+    "targetedTests": "13/13 PASS fail0 skip0; 359.8573ms; mock only",
+    "lint": "2 changed files PASS",
+    "stagedSecrets": "2 files PASS",
+    "diffCheck": "PASS"
+  },
+  "closed": true,
+  "liveRequests": 0,
+  "pushed": true,
+  "protocol": {
+    "getCountWhenFutureAdopted": 2,
+    "endpoint": "fixed arsadata releases before/after only",
+    "wsMaximum": 1,
+    "startMaximum": 1,
+    "totalDeadlineMs": 15000,
+    "frameMaximum": 1,
+    "frameAndTotalBytes": 8192,
+    "identityBodyBytes": 1048576,
+    "pidEntryMaximum": 4096,
+    "commandElapsedBudgetMs": 1000
+  },
+  "limitations": [
+    "Frozen binding is null and public gate false: zero GET/WS even with caller transports. Requires new reviewed source adoption, no runtime override.",
+    "Disk hashes and process initial OS environment do not prove loaded JS or mutated effective environment.",
+    "Current CLI sends query-token; gateway/provider logging cannot be verified locally.",
+    "Fixed command shell quoting/PTY one-frame clean completion has not been live verified. Banners/ANSI/chunked/multiple frames reject.",
+    "No package test entry or workflow/live entrypoint added. Root owns integration.",
+    "First combined edit/test exec was policy-rejected; subsequent apply_patch and separate mocked test execution allowed.",
+    "O_NONBLOCK avoids FIFO open blocking but cannot preempt every synchronous kernel/filesystem operation; elapsed budget checked between calls only. Remote halt remains UNKNOWN even after local socket close/deadline. No kill/watchdog/retry.",
+    "Process environ is initial exec environment, ptrace permissions may deny it. Disk file hashes cover only five named source files, not full release or loaded JS."
+  ],
+  "commandTemplateSha256": "0c98c16f70760cb45f0e69021ed3cd18247f7f0d9bec9a6cc468428617b4ae14",
+  "initialCommit": "c306d85a953f5ec880f7c66f54c382b88abf43f1",
+  "initialValidation": {
+    "targetedTests": "9/9 PASS fail0 skip0; 311.9854ms; mock transports and mock fs only",
+    "lint": "3 new files PASS --max-warnings=0",
+    "stagedSecrets": "3 files PASS",
+    "diffCheck": "PASS"
+  },
+  "updatedAtUtc": "2026-11-04T00:33:29.4306600Z",
+  "closures": [
+    "O_NONBLOCK and regular-file/fstat validation; max4096 proc entries; monotonic1000ms command budget checked between operations.",
+    "Any unreadable process identity remains unresolved before env/code, never silently excluded.",
+    "Starttime brackets initial exe/cwd/argv capture; starttime/exe/cwd/exactargv rechecked after data reads.",
+    "Bounded strict release JSON duplicate-key rejection, including escaped keys; ordinary whitespace accepted.",
+    "Closed public gate precedes all caller property access.",
+    "Incremental opendirSync/Dir.readSync census: no directory array; reject4097th entry; finally closes directory on all exits, deadline checked each iteration."
+  ],
+  "nextProposalOnly": "Separate explicitly reviewed bounded discovery, distinct from attestation and source adoption. Inspect argv only in RAM; emit only approved shape enums/booleans, never raw argv, argument values or secret hashes. Any nonsecret executable/cwd path output requires a new explicit allowlist review. Current candidate implements no discovery or path/argv output. Discovery does not activate attestation; frozen binding adoption requires a separate source review with no automatic activation.",
+  "previousClosureCommit": "af4ebc6b2643546397d0a9295dd9bbd013cd2e01",
+  "previousClosureValidation": {
+    "targetedTests": "12/12 PASS fail0 skip0; 247.311ms; mock transports/filesystem only",
+    "lint": "3 files PASS --max-warnings=0",
+    "stagedSecrets": "3 files PASS",
+    "diffCheck": "PASS"
+  },
+  "delivery": {
+    "branch": "codex/liara-control-plane-receipt-20261104",
+    "remoteHead": "a5f32317a5fc3441478b5e96260f793acd920654",
+    "remoteReadback": "GitHub ref exact match",
+    "integrationOwner": "existing coordinator PR399",
+    "finalCI": "pending root integration and test registration",
+    "newPullRequest": false,
+    "localTestsRepeated": false,
+    "liveOperations": false
+  }
+}
