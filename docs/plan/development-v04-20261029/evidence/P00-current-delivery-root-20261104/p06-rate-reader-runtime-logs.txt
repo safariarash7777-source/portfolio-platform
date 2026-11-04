@@ -1,0 +1,49 @@
+## Runtime Logs
+
+**Project:** prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp
+**Time range:** 2026-11-04T18:06:40.380Z → 2026-11-04T18:21:40.380Z
+
+### 2026-11-04T18:20:05.759Z GET /api/symbol-detail [warn/function]
+dep=dpl_APD1pnKSTLpngsopBUvytrxZQg3C branch=main request=g484g-1793816395161-e69551e86abf domain=portfolio-platform-fawn.vercel.app environment=production region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'request',
+      elapsedMs: 10490,
+      upstreamStatus: null,
+      errorName: 'TypeError',
+      causeCode: 'UND_ERR_CONNECT_TIMEOUT'
+    }
+
+### 2026-11-04T18:19:49.007Z GET /api/codal-list [warn/function]
+dep=dpl_APD1pnKSTLpngsopBUvytrxZQg3C branch=main request=ckncr-1793816378399-ec99d70a7b88 domain=portfolio-platform-fawn.vercel.app environment=production region=cle1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'codal-list',
+      phase: 'request',
+      elapsedMs: 10485,
+      upstreamStatus: null,
+      errorName: 'TypeError',
+      causeCode: 'UND_ERR_CONNECT_TIMEOUT'
+    }
+
+### 2026-11-04T18:18:46.733Z GET /api/symbol-detail [warn/function]
+dep=dpl_APD1pnKSTLpngsopBUvytrxZQg3C branch=main request=vkz9z-1793816315984-b0db81738ada domain=portfolio-platform-fawn.vercel.app environment=production region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'request',
+      elapsedMs: 10490,
+      upstreamStatus: null,
+      errorName: 'TypeError',
+      causeCode: 'UND_ERR_CONNECT_TIMEOUT'
+    }
+
+### 2026-11-04T18:16:07.242Z GET /api/symbol-detail [warn/function]
+dep=dpl_APD1pnKSTLpngsopBUvytrxZQg3C branch=main request=vwgk7-1793816156380-811028ed7597 domain=portfolio-platform-fawn.vercel.app environment=production region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'request',
+      elapsedMs: 10505,
+      upstreamStatus: null,
+      errorName: 'TypeError',
+      causeCode: 'UND_ERR_CONNECT_TIMEOUT'
+    }
+

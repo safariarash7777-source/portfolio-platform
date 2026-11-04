@@ -1,0 +1,37 @@
+{
+  "readOnly": true,
+  "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "currentProduction": {
+    "id": "dpl_APD1pnKSTLpngsopBUvytrxZQg3C",
+    "sourceCommit": "281d84fb8cbdd9db1294ab90f68dbcc4f9f71f34",
+    "target": "production",
+    "readyState": "READY"
+  },
+  "environmentMetadata": {
+    "decrypt": false,
+    "totalRowsReturned": 47,
+    "rowsWithRecognizableIdentity": 38,
+    "responseTruncated": true,
+    "truncation": {
+      "arrays": 0,
+      "omittedArrayItems": 0,
+      "objects": 0,
+      "omittedObjectKeys": 0,
+      "strings": 98,
+      "omittedStringChars": 8063,
+      "depth": 0,
+      "budget": 0
+    },
+    "productionConfigurationEquality": "UNCONFIRMED_INCOMPLETE_METADATA",
+    "valuesPublished": false
+  },
+  "trace": {
+    "requestId": "g484g-1793816395161-e69551e86abf",
+    "httpStatus": 403,
+    "result": "FORBIDDEN",
+    "sameRequestRetried": false,
+    "existingCliInPath": false,
+    "existingCliAuthFilesFound": false
+  },
+  "rootCauseBoundary": "UND_ERR_CONNECT_TIMEOUT at stored-read request phase; no upstream HTTP response. This does not identify the ultimate network/configuration cause or prove a BRSAPI failure."
+}

@@ -1,0 +1,130 @@
+{
+  "atUtc": "2026-11-04T18:23:09.115488+00:00",
+  "readOnly": true,
+  "automaticRetry": false,
+  "database": {
+    "schema": "production-natural-market-cycle-readonly.v1",
+    "atUtc": "2026-11-04T18:23:12.164118+00:00",
+    "readOnly": true,
+    "providerRequests": 0,
+    "sqlWrites": false,
+    "serviceOrScheduleChanged": false,
+    "environmentValuesRead": false,
+    "naturalCyclesAccepted": 0,
+    "before": {
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "health": "healthy",
+      "restartCount": 0
+    },
+    "market": {
+      "key": "latest",
+      "updatedAt": "2026-11-04T18:18:56.691+00:00",
+      "fetchedAt": 1793816336470,
+      "quality": {
+        "state": "complete",
+        "attemptedAt": 1793816336470,
+        "families": {
+          "gold": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793816336470
+          },
+          "funds": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793816336470
+          },
+          "crypto": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793816336470
+          },
+          "stocks": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793816336470
+          },
+          "indices": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793816336470
+          },
+          "options": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793816336470
+          },
+          "currency": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793816336470
+          }
+        }
+      },
+      "stockRows": 764,
+      "fundRows": 345
+    },
+    "details": {
+      "updatedAt": "2026-11-04T18:19:31.407+00:00",
+      "batchAt": 1793816365784,
+      "foladAt": 1793816351345,
+      "foladHasData": true
+    },
+    "status": "READ_ONLY_MARKET_AND_DETAIL_METADATA_OBSERVED",
+    "after": {
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "health": "healthy",
+      "restartCount": 0
+    },
+    "completedAtUtc": "2026-11-04T18:23:12.970124+00:00"
+  },
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "publicReads": [
+    {
+      "name": "funds",
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds",
+      "startedAtUtc": "2026-11-04T18:23:12.328662+00:00",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vercelCache": "MISS",
+      "vercelRequestId": "fra1::iad1::89tnc-1793816593438-03bbc1f52511",
+      "cspAllowsReviewedVps": true,
+      "bodyBytes": 1172791,
+      "bodySha256": "6215a99015cc16fbdc353d75d0fb17dd09e86739540cafc5daf2a13f07e808c3",
+      "hasFundsTitle": true,
+      "receivedClocks": [
+        1793816336470
+      ],
+      "completedAtUtc": "2026-11-04T18:23:32.969428+00:00"
+    },
+    {
+      "name": "symbol-detail",
+      "url": "https://portfolio-platform-fawn.vercel.app/api/symbol-detail?l18=%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "startedAtUtc": "2026-11-04T18:23:32.969428+00:00",
+      "httpStatus": 502,
+      "contentType": "application/json",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "vercelCache": "MISS",
+      "vercelRequestId": "fra1::iad1::4lvz8-1793816614367-c0b855340a28",
+      "cspAllowsReviewedVps": true,
+      "bodyBytes": 24,
+      "bodySha256": "76e6be68d64c5c7aca44e885e1c05021fc79c7c1cef1ec7ee4ef916c262d3996",
+      "hasData": false,
+      "rowAt": null,
+      "errorCode": "fetch failed",
+      "completedAtUtc": "2026-11-04T18:23:44.409523+00:00"
+    }
+  ],
+  "completedAtUtc": "2026-11-04T18:23:44.409523+00:00"
+}

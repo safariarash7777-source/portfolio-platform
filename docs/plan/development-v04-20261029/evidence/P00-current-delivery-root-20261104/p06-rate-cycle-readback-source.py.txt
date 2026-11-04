@@ -1,0 +1,39 @@
+from pathlib import Path
+import datetime,hashlib,json,os,re,subprocess,urllib.request,urllib.error,uuid
+ROOT=Path(__file__).resolve().parent
+out=ROOT/('rate-production-cycle-'+uuid.uuid4().hex);out.mkdir()
+payload=(ROOT/'production-market-cycle-readonly-body-20261104.py').read_bytes()
+intent={'atUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'payloadSha256':hashlib.sha256(payload).hexdigest(),'readOnly':True,'operation':'pinned DB snapshot metadata then one Production funds HTML and one stored symbol-detail GET','providerRequestsDirect':0,'sqlWrites':False,'automaticRetry':False}
+with (out/'intent.json').open('x',encoding='utf8') as f:json.dump(intent,f,indent=2);f.flush();os.fsync(f.fileno())
+args=['ssh.exe','-v','-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=8','-o','ConnectionAttempts=1','-o','ServerAliveInterval=5','-o','ServerAliveCountMax=1','-i','C:/Users/Asus/.ssh/codex-liara-portfolio','root@62.60.191.24','python3 -']
+result={'atUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'readOnly':True,'automaticRetry':False}
+try:
+ p=subprocess.run(args,input=payload,capture_output=True,timeout=28);stderr=p.stderr.decode('utf8','replace')
+ if p.returncode==0:result['database']=json.loads(p.stdout)
+ else:result['database']={'status':'SSH_READ_UNCONFIRMED','failureClass':'KEY_EXCHANGE_FAILED' if 'kex_exchange_identification' in stderr else 'AUTH_DENIED' if 'Permission denied' in stderr else 'SSH_TIMEOUT' if 'timed out' in stderr.lower() else 'UNKNOWN','sshExit':p.returncode}
+ result.update(authenticatedObserved='Authenticated to ' in stderr,commandSentObserved='Sending command:' in stderr)
+except subprocess.TimeoutExpired:result['database']={'status':'LOCAL_SSH_DEADLINE','remoteReadOutcome':'UNKNOWN'}
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+ def redirect_request(self,*a,**k):return None
+result['publicReads']=[]
+for name,path in [('funds','/market/funds'),('symbol-detail','/api/symbol-detail?l18=%D9%81%D9%88%D9%84%D8%A7%D8%AF')]:
+ row={'name':name,'url':'https://portfolio-platform-fawn.vercel.app'+path,'startedAtUtc':datetime.datetime.now(datetime.timezone.utc).isoformat()}
+ try:
+  req=urllib.request.Request(row['url'],headers={'Accept':'text/html' if name=='funds' else 'application/json','User-Agent':'Arash-authorized-passive-release-readback/1'})
+  try:response=urllib.request.build_opener(NoRedirect).open(req,timeout=25)
+  except urllib.error.HTTPError as e:response=e
+  with response:
+   raw=response.read(3145729);row.update(httpStatus=response.code,contentType=response.headers.get('Content-Type'),cacheControl=response.headers.get('Cache-Control'),vercelCache=response.headers.get('X-Vercel-Cache'),vercelRequestId=response.headers.get('X-Vercel-Id'),cspAllowsReviewedVps='https://62.60.191.24' in response.headers.get('Content-Security-Policy',''))
+  if len(raw)>3145728:raise ValueError('RESPONSE_LIMIT')
+  row.update(bodyBytes=len(raw),bodySha256=hashlib.sha256(raw).hexdigest())
+  if name=='funds':
+   html=raw.decode('utf8');flat=html.replace('\\"','"')
+   row.update(hasFundsTitle='دیده‌بان صندوق' in html,receivedClocks=sorted(set(int(x) for x in re.findall(r'"(?:fetchedAt|receivedAt)":(\d{12,14})',flat))))
+   (out/'funds.html').write_bytes(raw)
+  else:
+   data=json.loads(raw);row.update(hasData=isinstance(data,dict) and data.get('data') is not None,rowAt=data.get('at'),errorCode=data.get('error') if data.get('error') in ('not in rotation','supabase 402','supabase 401','supabase 403','fetch failed') else None)
+ except Exception as e:row['errorClass']=str(e) if re.fullmatch('[A-Z_]+',str(e)) else type(e).__name__
+ row['completedAtUtc']=datetime.datetime.now(datetime.timezone.utc).isoformat();result['publicReads'].append(row)
+result['completedAtUtc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+with (out/'result.json').open('x',encoding='utf8') as f:json.dump(result,f,indent=2);f.flush();os.fsync(f.fileno())
+print(json.dumps({'resultPath':str(out/'result.json'),'result':result},ensure_ascii=False))

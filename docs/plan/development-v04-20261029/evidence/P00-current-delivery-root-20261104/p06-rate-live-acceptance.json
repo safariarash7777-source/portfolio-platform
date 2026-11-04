@@ -1,0 +1,97 @@
+{
+  "atUtc": "2026-11-04T18:30:14.318752+00:00",
+  "source": "9abe32f717345dbac113406d101972ee5be7466c",
+  "main": "281d84fb8cbdd9db1294ab90f68dbcc4f9f71f34",
+  "linuxCi": {
+    "runId": 41883752418,
+    "conclusion": "success",
+    "requiredJobs": 5,
+    "nativeAllocation": "skipped",
+    "coreLogExactCheckoutIndependentlyRead": true
+  },
+  "publish": {
+    "runId": 41884831524,
+    "jobId": 126766392581,
+    "attempt": 1,
+    "conclusion": "success",
+    "publishedAtUtc": "2026-11-04T18:13:26Z",
+    "policyAcceptance": "passed",
+    "deploymentId": 7554117407,
+    "releaseId": "6aeb75adc7bc237c1dd016af",
+    "image": "apps/6a5351feb95bf1e50c1ee34f:hyeik8gfsagw",
+    "liaraMetadataReadbackRun": 41885050277
+  },
+  "boundedAcceptance": "PASS_EXISTING_MANAGED_RELAY_RATE_POLICY_AND_TWO_NATURAL_MARKET_CYCLES_TO_PRODUCTION_FUNDS",
+  "naturalCycles": [
+    {
+      "runId": 41885934483,
+      "sourceReceivedAt": "2026-11-04T18:18:56.470Z",
+      "receivedEpochMs": 1793816336470,
+      "databaseUpdatedAt": "2026-11-04T18:18:56.691+00:00",
+      "families": [
+        "crypto",
+        "currency",
+        "funds",
+        "gold",
+        "indices",
+        "options",
+        "stocks"
+      ],
+      "allReceived": true,
+      "stockRows": 764,
+      "fundRows": 345,
+      "storageHttpStatus": 200,
+      "productionFundsHttpStatus": 200,
+      "productionFundsClockExactMatch": true,
+      "transportSent": 120,
+      "minStartGapMs": 316.72513699997216,
+      "fullHealthWorkflowConclusion": "failure",
+      "reasonFullHealthNotAccepted": "storedRead HTTP 502",
+      "storedDetailHttpStatus": 502
+    },
+    {
+      "runId": 41886816744,
+      "sourceReceivedAt": "2026-11-04T18:23:56.662Z",
+      "receivedEpochMs": 1793816636662,
+      "databaseUpdatedAt": "2026-11-04T18:23:56.819+00:00",
+      "families": [
+        "crypto",
+        "currency",
+        "funds",
+        "gold",
+        "indices",
+        "options",
+        "stocks"
+      ],
+      "allReceived": true,
+      "stockRows": 764,
+      "fundRows": 345,
+      "storageHttpStatus": 200,
+      "productionFundsHttpStatus": 200,
+      "productionFundsClockExactMatch": true,
+      "transportSent": 421,
+      "minStartGapMs": 316.67943999997806,
+      "fullHealthWorkflowConclusion": "failure",
+      "reasonFullHealthNotAccepted": "storedRead HTTP 502",
+      "storedDetailHttpStatus": 502
+    }
+  ],
+  "cycleDeltaMs": 300192,
+  "providerTestOrManualCollectorCalls": 0,
+  "sqlApplied": false,
+  "quotaReset": false,
+  "newHostingOrPlanCost": false,
+  "globalEnforced": false,
+  "providerAccountDailyUsage": null,
+  "fullStoredConsumerAcceptance": false,
+  "fullProgramAcceptance": false,
+  "visualOrOpenBrowserAutomaticRefreshAcceptance": false,
+  "databasePhysicalHttpHopAttested": false,
+  "remaining": [
+    "Production symbol-detail/codal-list stored backend connection timeout; upstream HTTP not reached.",
+    "Daily quota schema/baseline unknown; enforcement flags remain off and 404 not treated as zero.",
+    "Unknown external same-key consumers not attested.",
+    "NAV partial and full financial ingestion not accepted; current Codal cycle 0 inserts/10 rejected.",
+    "Fresh restorable primary DB backup remains unconfirmed; no migration or entitlement activation."
+  ]
+}

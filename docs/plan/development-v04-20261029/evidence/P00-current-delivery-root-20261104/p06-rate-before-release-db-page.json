@@ -1,0 +1,126 @@
+{
+  "atUtc": "2026-11-04T18:11:20.841572+00:00",
+  "readOnly": true,
+  "automaticRetry": false,
+  "database": {
+    "schema": "production-natural-market-cycle-readonly.v1",
+    "atUtc": "2026-11-04T18:11:24.980763+00:00",
+    "readOnly": true,
+    "providerRequests": 0,
+    "sqlWrites": false,
+    "serviceOrScheduleChanged": false,
+    "environmentValuesRead": false,
+    "naturalCyclesAccepted": 0,
+    "before": {
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "health": "healthy",
+      "restartCount": 0
+    },
+    "market": {
+      "key": "latest",
+      "updatedAt": "2026-11-04T18:06:54.277+00:00",
+      "fetchedAt": 1793815614051,
+      "quality": {
+        "state": "complete",
+        "attemptedAt": 1793815614051,
+        "families": {
+          "gold": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793815614051
+          },
+          "funds": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793815614051
+          },
+          "crypto": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793815614051
+          },
+          "stocks": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793815614051
+          },
+          "indices": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793815614051
+          },
+          "options": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793815614051
+          },
+          "currency": {
+            "state": "received",
+            "hasError": false,
+            "retained": false,
+            "receivedAt": 1793815614051
+          }
+        }
+      },
+      "stockRows": 764,
+      "fundRows": 345
+    },
+    "details": {
+      "updatedAt": "2026-11-04T18:06:56.736+00:00",
+      "batchAt": 1793815615428,
+      "foladAt": 1793814113913,
+      "foladHasData": true
+    },
+    "status": "READ_ONLY_MARKET_AND_DETAIL_METADATA_OBSERVED",
+    "after": {
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "health": "healthy",
+      "restartCount": 0
+    },
+    "completedAtUtc": "2026-11-04T18:11:25.776739+00:00"
+  },
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "publicReads": [
+    {
+      "name": "funds",
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds",
+      "startedAtUtc": "2026-11-04T18:11:25.117015+00:00",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate",
+      "vercelCache": "MISS",
+      "bodyBytes": 1319879,
+      "bodySha256": "6562a978c43678bd75e1b1cb3d9aa0cf5aa826da91c5eb782692ec0e23de31b3",
+      "hasFundsTitle": true,
+      "receivedClocks": [
+        1793815614051
+      ],
+      "completedAtUtc": "2026-11-04T18:11:48.474000+00:00"
+    },
+    {
+      "name": "symbol-detail",
+      "url": "https://portfolio-platform-fawn.vercel.app/api/symbol-detail?l18=%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "startedAtUtc": "2026-11-04T18:11:48.474000+00:00",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "cacheControl": "no-store",
+      "vercelCache": "MISS",
+      "bodyBytes": 32182,
+      "bodySha256": "78eb89488858d05cb9377919f9c0e9d7856b8d26d1b5e85ee32521ac75e2bd77",
+      "hasData": true,
+      "rowAt": 1793814113913,
+      "errorCode": null,
+      "completedAtUtc": "2026-11-04T18:11:51.105741+00:00"
+    }
+  ],
+  "completedAtUtc": "2026-11-04T18:11:51.105741+00:00"
+}
