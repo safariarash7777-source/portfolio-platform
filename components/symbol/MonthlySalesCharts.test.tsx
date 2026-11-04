@@ -11,10 +11,22 @@ import type { CodalN30Data, N30ProductRow } from "../../lib/fundamental/types";
 import { withKnownMonthlyQuantities, type QuantityWitnessedReport } from "../../lib/core/monthly-quantity";
 import { foladQuantityFixture } from "../../relay/fixtures/codal-offline.mjs";
 import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
+import type { MonthlySourceRecord } from "./monthly-point-provenance";
 
 type Trace = { component: string; props: Record<string, unknown> };
 const require = createRequire(import.meta.url);
-function renderChart(reports: CodalN30Data[], capture = true, previewSelection?: [string, string]) {
+function loadTooltipDependency(name: "MonthlyPointSourceLabel" | "CodalSourceLink") {
+  const source = readFileSync(new URL(`./${name}.tsx`, import.meta.url), "utf8");
+  const javascript = ts.transpileModule(source, { compilerOptions: {
+    jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
+  } }).outputText;
+  const compiledModule = { exports: {} };
+  const resolve = (id: string) => id === "./CodalSourceLink" ? loadTooltipDependency("CodalSourceLink")
+    : require(id.startsWith("@/") ? `../../${id.slice(2)}` : id);
+  vm.runInNewContext(javascript, { module: compiledModule, exports: compiledModule.exports, require: resolve, React }, { filename: `actual-${name}.tsx` });
+  return compiledModule.exports;
+}
+function renderChart(reports: CodalN30Data[], capture = true, previewSelection?: [string, string], sourceRecords?: MonthlySourceRecord[]) {
   const traces: Trace[] = [];
   const source = readFileSync(new URL("./MonthlySalesCharts.tsx", import.meta.url), "utf8");
   const javascript = ts.transpileModule(source, { compilerOptions: {
@@ -26,9 +38,10 @@ function renderChart(reports: CodalN30Data[], capture = true, previewSelection?:
     traces.push({ component, props });
     return React.createElement("div", { "data-test-chart": component }, props.children);
   }]));
-  const chartModule = { exports: {} as { default: React.ComponentType<{ reports: CodalN30Data[]; sourceTitle: string; sourceUrl: string | null; previewControls?: boolean }> } };
+  const chartModule = { exports: {} as { default: React.ComponentType<{ reports: CodalN30Data[]; sourceTitle: string; sourceUrl: string | null; previewControls?: boolean; sourceRecords?: MonthlySourceRecord[] }> } };
   let stateIndex = 0;
   const isolatedRequire = (id: string) => {
+    if (id === "./MonthlyPointSourceLabel") return loadTooltipDependency("MonthlyPointSourceLabel");
     if (id === 'react' && previewSelection) return { ...React, useEffect() {}, useState: () => [previewSelection[stateIndex++], () => {}] };
     // These are data/format tests, not layout tests. Exercise the real gate in
     // SSR mode; chart traces bypass measurement just as they stub Recharts.
@@ -43,6 +56,7 @@ function renderChart(reports: CodalN30Data[], capture = true, previewSelection?:
   const html = renderToStaticMarkup(React.createElement(chartModule.exports.default, {
     reports, sourceTitle: "گزارش همان شرکت", sourceUrl: "https://codal.ir/Reports/fixture",
     previewControls: previewSelection !== undefined,
+    sourceRecords,
   }));
   assert.deepEqual(reports, before, "Rendering must not mutate reports or backfill units");
   return { html, traces };
@@ -81,6 +95,67 @@ function report(date: string, products = [product()], overrides: Partial<CodalN3
 const chartData = (trace: Trace) => trace.props.data as Array<Record<string, string | number | null>>;
 const values = (trace: Trace, key: string) => Array.from(chartData(trace), row => row[key]);
 const formatter = (trace: Trace) => trace.props.formatter as (value: unknown, name: unknown) => [string, string];
+
+function sourceRecord(period: string, id: number): MonthlySourceRecord {
+  return { id, financialPeriodEnd: period, storedPeriodEnd: null,
+    sourceUrl: `https://codal.ir/Reports/Decision.aspx?LetterSerial=point-${id}`,
+    publishedAt: `${period.replaceAll('-', '/')} 14:15:16`, publishedDateRaw: null, publishedTimeRaw: null,
+    publishedAtUtc: null, publicationUtcConfidence: "unknown",
+    capturedAtRaw: "2026-11-04T13:22:33.123456+03:30", capturedAt: "2026-11-04T09:52:33.123Z",
+    parserVersion: 2, parserVersionSource: "raw", amendment: false };
+}
+
+test("Preview monthly and cumulative tooltips bind current/prior point identities after year selection", () => {
+  const reports = [report("1405-01-31"), report("1404-03-31"), report("1403-03-31")];
+  const records = reports.map((r, i) => sourceRecord(r.period_end, i + 1));
+  const shown = renderChart(reports, true, ["1404", "all"], records);
+  const charts = shown.traces.filter(t => t.component === "ComposedChart" || t.component === "LineChart");
+  const tooltips = shown.traces.filter(t => t.component === "Tooltip");
+  for (const index of [0, 1]) {
+    const point = chartData(charts[index])[2];
+    assert.equal(point.currentMonthKey, "1404-03");assert.equal(point.priorMonthKey, "1403-03");
+    const label = tooltips[index].props.labelFormatter as (label: string, payload: unknown[]) => React.ReactElement;
+    const html = renderToStaticMarkup(label("خرداد", [
+      { dataKey: "current", name: "سال جاری", value: point.current, payload: point },
+      { dataKey: "prior", name: "سال قبل", value: point.prior, payload: point },
+    ]));
+    assert.ok(html.includes("point-2") && html.includes("point-3"));assert.ok(!html.includes("point-1"));
+    assert.ok(html.includes("۱۴۰۴/۰۳/۳۱ ۱۴:۱۵:۱۶"));assert.ok(html.includes("۱۴۰۳/۰۳/۳۱ ۱۴:۱۵:۱۶"));
+    assert.ok(html.includes("2026-11-04T13:22:33.123456+03:30"));assert.ok(html.includes("2026-11-04T09:52:33.123Z"));
+    assert.ok(html.includes("واحد مبلغ گزارش: میلیون ریال"));
+    assert.ok(!html.includes("https://codal.ir/Reports/fixture"), "bundle reference is never a point source");
+  }
+});
+
+test("Preview tooltip keeps reported zero and null metadata distinct from missing point and unsafe link", () => {
+  const reports = [report("1404-01-31", [], { period_total_amount: 0, unit: null })];
+  const record = { ...sourceRecord("1404-01-31", 1), sourceUrl: "javascript:alert(1)", publishedAt: null, capturedAtRaw: null, capturedAt: null };
+  const shown = renderChart(reports, true, ["1404", "all"], [record]);
+  const point = chartData(shown.traces.find(t => t.component === "ComposedChart")!)[0];
+  const label = shown.traces.find(t => t.component === "Tooltip")!.props.labelFormatter as (label: string, payload: unknown[]) => React.ReactElement;
+  const html = renderToStaticMarkup(label("فروردین", [
+    { dataKey: "current", name: "صفر گزارش‌شده", value: 0, payload: point },
+    { dataKey: "prior", name: "داده غایب", value: null, payload: point },
+  ]));
+  assert.ok(html.includes("منشأ صفر گزارش‌شده"));assert.ok(!html.includes("منشأ داده غایب"));
+  assert.ok(html.includes("واحد مبلغ گزارش: نامعلوم"));assert.ok(html.includes("انتشار در کدال (زمان محلی): نامعلوم"));
+  assert.ok(html.includes("پیوند دقیق این رکورد نامعلوم است"));assert.ok(!html.includes("javascript:"));
+  assert.ok(!html.includes("https://codal.ir/Reports/fixture"));
+  const noRecords = renderChart(reports, true, ["1404", "all"]);
+  const unknownLabel = noRecords.traces.find(t => t.component === "Tooltip")!.props.labelFormatter as typeof label;
+  const unknown = renderToStaticMarkup(unknownLabel("فروردین", [{ dataKey: "current", value: 0, payload: point }]));
+  assert.ok(unknown.includes("منشأ دقیق این نقطه نامعلوم است"));assert.ok(!unknown.includes("اطلاعیهٔ همین رکورد"));
+});
+
+test("non-Preview monthly charts ignore supplied point records and retain original tooltip/data shape", () => {
+  const reports = [report("1404-01-31")], records = [sourceRecord("1404-01-31", 1)];
+  const shown = renderChart(reports, true, undefined, records);
+  for (const tooltip of shown.traces.filter(t => t.component === "Tooltip").slice(0, 2)) {
+    assert.equal(tooltip.props.labelFormatter, undefined);assert.equal(tooltip.props.wrapperStyle, undefined);
+  }
+  const point = chartData(shown.traces.find(t => t.component === "ComposedChart")!)[0];
+  assert.equal(Object.hasOwn(point, "currentMonthKey"), false);assert.equal(Object.hasOwn(point, "priorMonthKey"), false);
+});
 
 test("monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips", () => {
   const reports = [report("1405-01-31"), report("1405-03-31", [product({ sales_rate: 200 })])];

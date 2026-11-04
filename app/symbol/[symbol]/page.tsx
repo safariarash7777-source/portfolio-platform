@@ -339,6 +339,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
             reports={fundamentals.n30.data}
             sourceTitle={fundamentals.n30.source.title}
             sourceUrl={fundamentals.n30.source.source_url}
+            sourceRecords={previewView ? fundamentals.n30.source.records : undefined}
           />
         </section>
       ) : null}

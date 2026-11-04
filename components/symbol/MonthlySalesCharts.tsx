@@ -21,6 +21,8 @@ import {
   YAxis,
 } from "recharts";
 import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
+import MonthlyPointSourceLabel from "./MonthlyPointSourceLabel";
+import { monthlyPointSources, type MonthlyPointSource, type MonthlySourceRecord } from "./monthly-point-provenance";
 import { toPersianDigits } from "@/lib/format";
 import type { CodalN30Data } from "@/lib/fundamental/types";
 import {
@@ -117,11 +119,12 @@ const tooltipStyle = {
 
 /* ── چارت ۱: فروش ماهانه سال جاری در برابر سال قبل + خط میانگین ─────────── */
 
-function MonthlyBars({ m }: { m: MonthlySales }) {
+function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<string, MonthlyPointSource> }) {
   const data = m.currentMonths.map((cm, i) => ({
     label: cm.monthLabel,
     current: cm.amount,
     prior: m.priorMonths ? m.priorMonths[i].amount : null,
+    ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
     <div style={{ height: 280 }} dir="ltr">
@@ -137,6 +140,8 @@ function MonthlyBars({ m }: { m: MonthlySales }) {
           />
           <Tooltip
             contentStyle={tooltipStyle}
+            wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+            labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
             formatter={(v: unknown, name: unknown) => [v == null ? "—" : fmtMR(Number(v)), String(name)]}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -160,11 +165,12 @@ function MonthlyBars({ m }: { m: MonthlySales }) {
 
 /* ── چارت ۲: تجمیعی از ابتدای سال مالی، جاری در برابر قبل ──────────────── */
 
-function CumulativeChart({ m }: { m: MonthlySales }) {
+function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<string, MonthlyPointSource> }) {
   const data = m.currentMonths.map((cm, i) => ({
     label: cm.monthLabel,
     current: cm.cumulative,
     prior: m.priorMonths ? m.priorMonths[i].cumulative : null,
+    ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
     <div style={{ height: 280 }} dir="ltr">
@@ -180,6 +186,8 @@ function CumulativeChart({ m }: { m: MonthlySales }) {
           />
           <Tooltip
             contentStyle={tooltipStyle}
+            wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+            labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
             formatter={(v: unknown, name: unknown) => [v == null ? "—" : fmtMR(Number(v)), String(name)]}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -422,17 +430,20 @@ export default function MonthlySalesCharts({
   reports,
   sourceTitle,
   sourceUrl,
+  sourceRecords,
   previewControls = false,
 }: {
   reports: CodalN30Data[];
   sourceTitle: string;
   sourceUrl: string | null;
+  sourceRecords?: MonthlySourceRecord[];
   previewControls?: boolean;
 }) {
   const years = useMemo(() => previewControls ? [...new Set((reports ?? []).flatMap(report =>
     typeof report?.period_end === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(report.period_end) ? [report.period_end.slice(0, 4)] : []))].sort().reverse() : [], [reports, previewControls]);
   const [year, setYear] = useState('');
   const [rateIndex, setRateIndex] = useState('all');
+  const pointSources = useMemo(() => previewControls ? monthlyPointSources(reports, sourceRecords) : undefined, [reports, sourceRecords, previewControls]);
   useEffect(() => {
     if (!previewControls) return;
     const restore = () => { const query = new URLSearchParams(window.location.search); setYear(query.get('monthlyYear') ?? ''); setRateIndex(query.get('rateSeries') ?? 'all'); };
@@ -500,7 +511,7 @@ export default function MonthlySalesCharts({
           subtitle={`درآمد ماهانهٔ سال ${faDigits(m.currentFY)}${m.priorFY ? ` در کنار سال ${faDigits(m.priorFY)}` : ""} · خط طلایی: میانگین سال جاری · ماه بدون گزارش خالی است`}
           narrative={narrativeMonthlyVsAvg(m)}
         >
-          <MonthlyBars m={m} />
+          <MonthlyBars m={m} sources={pointSources} />
         </QCard>
 
         <QCard
@@ -509,7 +520,7 @@ export default function MonthlySalesCharts({
           subtitle={`فروش تجمیعی (fy_cumulative از خود گزارش) — سال ${faDigits(m.currentFY)}${m.priorFY ? ` در برابر ${faDigits(m.priorFY)}` : ""}`}
           narrative={narrativeCumulative(m)}
         >
-          <CumulativeChart m={m} />
+          <CumulativeChart m={m} sources={pointSources} />
         </QCard>
 
         {m.rateSeries.length > 0 ? (
