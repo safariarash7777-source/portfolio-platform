@@ -37,8 +37,14 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
   const slots: unknown[] = [], effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: unknown[] = [], writeCalls: unknown[][] = [], urls: string[] = [];
   const prepReadCalls: unknown[][] = [], prepWriteCalls: unknown[][] = [], preparedStore = preparationOptions.store ?? new Map<string, TicketPrepared>();
   let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
+  const operationListeners = new Set<() => void>();
+  let notifyChange = () => {}, writeFailure: { error: unknown } | null = null;
+  const trackWrite = async (operation: () => Promise<unknown>) => {
+    try { return await operation(); }
+    catch (error) { writeFailure = { error }; notifyChange(); throw error; }
+  };
   const hooks = { ...React,
-    useState(initial: unknown) { const i = cursor++; if (!(i in slots)) slots[i] = typeof initial === "function" ? initial() : initial; return [slots[i], (next: unknown) => { slots[i] = typeof next === "function" ? next(slots[i]) : next; }]; },
+    useState(initial: unknown) { const i = cursor++; if (!(i in slots)) slots[i] = typeof initial === "function" ? initial() : initial; return [slots[i], (next: unknown) => { slots[i] = typeof next === "function" ? next(slots[i]) : next; notifyChange(); }]; },
     useRef(initial: unknown) { const i = cursor++; if (!(i in slots)) slots[i] = { current: initial }; return slots[i]; },
     useCallback(fn: unknown, deps: unknown[]) { const i = cursor++, prior = slots[i] as { fn: unknown; deps: unknown[] } | undefined; if (!prior || deps.some((dep, n) => !Object.is(dep, prior.deps[n]))) slots[i] = { fn, deps }; return (slots[i] as { fn: unknown }).fn; },
     useEffect(fn: () => void | (() => void), deps: unknown[]) { const i = cursor++, prior = slots[i] as { deps: unknown[]; cleanup?: () => void } | undefined; if (!prior || deps.some((dep, n) => !Object.is(dep, prior.deps[n]))) effects.push(() => { prior?.cleanup?.(); const cleanup = fn(); slots[i] = { deps, cleanup }; if (cleanup) cleanups.push(cleanup); }); },
@@ -66,7 +72,7 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
   } };
   const calls = { ...storageClient,
     async readTicketStorage(...args: unknown[]) { readCalls.push(args); return consume(reads, args); },
-    async sendTicketStorageAttempt(...args: unknown[]) { writeCalls.push(args); return consume(writes, args); },
+    async sendTicketStorageAttempt(...args: unknown[]) { writeCalls.push(args); return trackWrite(() => consume(writes, args)); },
   };
   const preservationCalls = { ...attemptClient,
     async readTicketAttemptStorage(selection: TicketAttemptSelection, _parent: unknown, options: unknown) {
@@ -79,10 +85,12 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
     },
     async sendTicketPreparation(...args: unknown[]) {
       prepWriteCalls.push(args);
-      if (preparationOptions.writes) return consume(preparationOptions.writes, args);
-      const attempt = args[0] as { intent: { body: string } }, p = await prepared(JSON.parse(attempt.intent.body));
-      assert.equal(p.body, attempt.intent.body); preparedStore.set(p.clientToken, p);
-      return { status: "saved", receipt: preparationReceipt(p) };
+      return trackWrite(async () => {
+        if (preparationOptions.writes) return consume(preparationOptions.writes, args);
+        const attempt = args[0] as { intent: { body: string } }, p = await prepared(JSON.parse(attempt.intent.body));
+        assert.equal(p.body, attempt.intent.body); preparedStore.set(p.clientToken, p);
+        return { status: "saved", receipt: preparationReceipt(p) };
+      });
     },
   };
   const browser = Object.assign(new EventTarget(), { location: { href: "http://localhost:32189/dashboard/consultation/requests" }, history: { replaceState(_state: unknown, _title: string, url: URL) { urls.push(String(url)); browser.location.href = String(url); } } });
@@ -95,6 +103,21 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
   new Function("require", "module", "exports", "React", "window", code)(dependencies, taskModule, taskModule.exports, React, browser);
   const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedActorId: actor, initialRelationshipId: opening().command.relationshipId, initialRequestId: requestId }); effects.splice(0).forEach(fn => fn()); };
   const flush = async () => { for (let i = 0; i < 50; i++) { await new Promise(resolve => setImmediate(resolve)); render(); } };
+  notifyChange = () => { for (const listener of operationListeners) queueMicrotask(listener); };
+  const waitFor = (condition: () => boolean, label: string) => new Promise<void>((resolve, reject) => {
+    let settled = false;
+    const finish = (failure?: { error: unknown }) => {
+      if (settled) return; settled = true; clearTimeout(deadline); operationListeners.delete(inspect);
+      if (failure) reject(failure.error); else resolve();
+    };
+    const inspect = () => {
+      if (settled) return;
+      try { render(); if (writeFailure) finish(writeFailure); else if (condition()) finish(); }
+      catch (error) { finish({ error }); }
+    };
+    const deadline = setTimeout(() => finish({ error: Error(`unit operation did not reach ${label}; reads=${readCalls.length}, preparations=${prepWriteCalls.length}, commands=${writeCalls.length}`) }), 5000);
+    operationListeners.add(inspect); inspect();
+  });
   const panel = () => { const item = nodes(tree).find(node => node.type === "test-ticket-panel"); assert.ok(item); return item; };
   render();
   return {
@@ -102,7 +125,11 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
     async auth(event = "INITIAL_SESSION", id: string | null = actor) { callback(event, id ? { user: { id } } : null); render(); await flush(); },
     edit(value = "SYNTHETIC_PRIVATE_DRAFT") { (panel().props.onDraft as (draft: unknown) => void)({ ...blankTicketDraft(), subject: "Synthetic subject", text: value }); render(); },
     async restorePreparation(id: string) { (panel().props.onRestorePreparation as (id: string) => void)(id); render(); await flush(); },
-    async submit() { (panel().props.onSubmit as () => void)(); render(); await flush(); },
+    async submit(waitForWriteStart = false) {
+      const priorWrites = writeCalls.length;
+      (panel().props.onSubmit as () => void)(); render();
+      await waitFor(() => waitForWriteStart ? writeCalls.length > priorWrites : !text(tree).includes("همان تلاش در حال ثبت است"), waitForWriteStart ? "command transport entry" : "submission settlement");
+    },
     async reload() { const button = nodes(tree).find(node => node.type === "button" && text(node).includes("بازخوانی بدون ارسال")); assert.ok(button); assert.ok(!button.props.disabled); (button.props.onClick as () => void)(); render(); await flush(); },
     async verify() { const button = nodes(tree).find(node => node.type === "button" && text(node).includes("بررسی نشست و بازخوانی")); assert.ok(button); (button.props.onClick as () => void)(); render(); await flush(); },
     unmount() { cleanups.forEach(fn => fn()); },
@@ -136,7 +163,7 @@ test("a denied fresh write keeps text and requires refresh rather than overwriti
 });
 test("changed identity clears private state and ignores a delayed write receipt", async () => {
   const late = deferred<unknown>(), view = mount([ready(parent())], [ready(inbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input)], [late.promise]);
-  await view.auth(); view.edit(); await view.submit(); assert.equal(view.writeCalls.length, 1);
+  await view.auth(); view.edit(); await view.submit(true); assert.equal(view.writeCalls.length, 1);
   const attempt = view.writeCalls[0][0] as { intent: { body: string } };
   await view.auth("SIGNED_IN", O); assert.throws(() => view.panel());
   late.done({ status: "saved", receipt: receipt(JSON.parse(attempt.intent.body)) }); await view.flush();
@@ -191,7 +218,7 @@ test("deferred fresh authorization denied or unavailable never restores old advi
 test("late write during unknown identity stays hidden and same-actor recovery is GET only", async () => {
   const fresh = parentGate(), late = deferred<unknown>();
   const view = mount([ready(parent()), fresh.read], [ready(inbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input), ready(inbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input, true)], [late.promise]);
-  await view.auth(); view.edit(); await view.submit();
+  await view.auth(); view.edit(); await view.submit(true);
   const attempt = view.writeCalls[0][0] as { intent: { body: string } };
   await view.auth("TOKEN_REFRESHED", null); await view.auth(); await fresh.entered;
   late.done({ status: "saved", receipt: receipt(JSON.parse(attempt.intent.body)) }); await view.flush();
@@ -353,6 +380,27 @@ test("actual panel escapes long unverified sources and preserves responsive RTL 
 });
 
 const actualPanelMarkup = (view: ReturnType<typeof mount>) => renderToStaticMarkup(React.createElement(TicketRequestPanel, view.panel().props as React.ComponentProps<typeof TicketRequestPanel>));
+test("submission assertions wait for the actual preparation outcome rather than an event-loop tick count", async () => {
+  const entered = deferred<void>(), pending = deferred<unknown>();
+  const view = mount([ready(parent())], [ready(inbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input)], [], M, undefined,
+    { writes: [() => { entered.done(undefined); return pending.promise; }] });
+  await view.auth(); view.edit("DEFERRED_PREPARATION_DRAFT");
+  let settled = false; const submission = view.submit().then(() => { settled = true; });
+  await entered.promise; await view.flush(); assert.equal(settled, false); assert.equal(view.writeCalls.length, 0);
+  pending.done({ status: "uncertain", error: { state: "error", code: "WRITE_UNAVAILABLE", error: "unit deferred preparation" } });
+  await submission; assert.equal(settled, true); assert.equal(view.prepWriteCalls.length, 1); assert.equal(view.writeCalls.length, 0);
+  assert.equal((view.panel().props.draft as { text: string }).text, "DEFERRED_PREPARATION_DRAFT");
+  assert.match(view.text(), /حفظ متن اصلی نامعلوم/); view.unmount();
+});
+test("a rejected preparation terminates the unit wait as a failure rather than a success or timeout", async () => {
+  const entered = deferred<void>(), pending = deferred<unknown>(), failure = Error("SYNTHETIC_PREPARATION_FAILURE");
+  const view = mount([ready(parent())], [ready(inbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input)], [], M, undefined,
+    { writes: [() => { entered.done(undefined); return pending.promise; }] });
+  await view.auth(); view.edit();
+  const rejected = assert.rejects(view.submit(), error => error === failure);
+  await entered.promise; pending.fail(failure); await rejected; await view.flush();
+  assert.equal(view.writeCalls.length, 0); assert.equal((view.panel().props.draft as { text: string }).text, "SYNTHETIC_PRIVATE_DRAFT"); view.unmount();
+});
 for (const state of ["not_connected", "unavailable"] as const) {
   const capability = { state, runId: null };
   const disconnectedInbox = (): TicketStorageEnvelope => ({ ...inbox(), capability });
@@ -365,6 +413,7 @@ for (const state of ["not_connected", "unavailable"] as const) {
     assert.match(html, /متن آماده‌شدهٔ شما محفوظ است/);
     assert.match(html, state === "not_connected" ? /ثبت درخواست جدید فعلاً در دسترس نیست/ : /امکان ثبت درخواست بررسی نشد/);
     await view.submit(); // Even a retained callback cannot obtain a real write from this capability.
+    assert.match(view.text(), /حق همان خدمت متصل نیست؛ متن حفظ شد و ثبت ارسال نشد/);
     assert.equal(view.prepWriteCalls.length, 0); assert.equal(view.writeCalls.length, 0);
     assert.equal((view.panel().props.draft as { text: string }).text, "PRESERVED_NONTEST_DRAFT");
     assert.ok(view.urls.every(url => !url.includes("PRESERVED_NONTEST_DRAFT"))); view.unmount();
