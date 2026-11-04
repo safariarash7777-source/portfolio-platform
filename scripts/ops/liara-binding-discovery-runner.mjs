@@ -1,6 +1,6 @@
 /** Source-only caller. Activation requires a separately reviewed source change. */
 import { randomBytes, createHash } from 'node:crypto';
-import { readFileSync, appendFileSync } from 'node:fs';
+import { constants, lstatSync, openSync, fstatSync, readSync, closeSync, appendFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -44,6 +44,7 @@ export async function runDiscovery(options = {}) {
     // Independently closed protocol gate must stop before credential access.
     const gate = await discoverBinding();
     if (gate.state === 'discovery_not_adopted') return { state:gate.state, authorized:false, remoteHalt:'not_started' };
+    if (gate.state !== 'invalid_input') return {state:'caller_rejected',authorized:false,remoteHalt:'not_started'};
     if (options.preflight) return { state:'source_identity_verified', authorized:true, remoteHalt:'not_started' };
     const nonce = randomBytes(16).toString('hex');
     const token = options.readToken();
@@ -52,16 +53,22 @@ export async function runDiscovery(options = {}) {
   } catch { return { state:'caller_rejected', authorized:false, remoteHalt:'unknown' }; }
 }
 
+export function readBoundedCode(path, cap) {
+  const full=resolve(path), parts=full.split(/[/\\]/);
+  for(let i=1;i<parts.length;i++) { const parent=parts.slice(0,i).join('/') || '/'; const s=lstatSync(parent); if(!s.isDirectory() || s.isSymbolicLink()) reject(); }
+  const fd=openSync(full,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK);
+  try { const before=fstatSync(fd); if(!before.isFile() || before.size>cap) reject(); const bytes=Buffer.alloc(before.size+1); const n=readSync(fd,bytes,0,bytes.length,0), after=fstatSync(fd); if(n!==before.size || before.size!==after.size || before.ino!==after.ino || before.mtimeMs!==after.mtimeMs || before.ctimeMs!==after.ctimeMs) reject(); return bytes.subarray(0,n); }
+  finally { closeSync(fd); }
+}
 function localIdentity() {
   const control = resolve('control'), source = resolve('reviewed');
   const git = (cwd, args) => execFileSync('git',args,{cwd,encoding:'utf8',stdio:['ignore','pipe','ignore'],timeout:1000,maxBuffer:4096}).trim();
-  const manifestBytes = readFileSync(resolve(control,'scripts/ops/liara-discovery-source.json'));
-  if (manifestBytes.length > 8192) reject();
+  const manifestBytes = readBoundedCode(resolve(control,'scripts/ops/liara-discovery-source.json'),8192);
   return {
     context:{repository:process.env.GITHUB_REPOSITORY,event:process.env.GITHUB_EVENT_NAME,ref:process.env.GITHUB_REF,attempt:process.env.GITHUB_RUN_ATTEMPT,operation:process.env.DISCOVERY_OPERATION,workflowSha:process.env.GITHUB_WORKFLOW_SHA,sha:process.env.GITHUB_SHA},
     manifest:JSON.parse(manifestBytes.toString('utf8')),
     controlHead:git(control,['rev-parse','HEAD']), sourceHead:git(source,['rev-parse','HEAD']),
-    readSource:path => readFileSync(resolve(source,path)), sourceBlob:path => git(source,['rev-parse','HEAD:'+path]),
+    readSource:path => readBoundedCode(resolve(source,path),131072), sourceBlob:path => git(source,['rev-parse','HEAD:'+path]),
   };
 }
 // No import-time transport, credential lookup or execution. Fixed workflow entry only.

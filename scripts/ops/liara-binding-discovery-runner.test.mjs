@@ -27,6 +27,7 @@ test('offline future caller rejects identity and independent protocol gate befor
   const deny=()=>{throw Error(secret);};
   const r=await offlineCaller(deny)({identity:()=>({...fixture(),sourceHead:'bad'}),readToken:deny});assert.equal(r.state,'source_identity_rejected');
   const closed=await offlineCaller(async()=>({state:'discovery_not_adopted'}))({identity:fixture,readToken:deny,get WebSocketClass(){throw Error(secret);}});assert.equal(closed.state,'discovery_not_adopted');
+  for(const state of ['deadline','unresolved','candidate_only_not_adopted']) assert.equal((await offlineCaller(async()=>({state}))({identity:fixture,readToken:deny})).state,'caller_rejected');
 });
 test('offline future preflight uses no token/transport; execute generates fixed length fresh nonce',async()=>{
   let calls=0,tokens=0;
@@ -53,4 +54,5 @@ test('adapter rejects Blob, oversize, native errors and construction failure wit
   const f=socketFixture();f.fire('error',{message:secret});assert.equal(JSON.stringify(f.events).includes(secret),false);
   assert.throws(()=>createDiscoveryConnect(class{constructor(){throw Error(secret);}})('wss://api.iran.liara.ir/v1/exec'),/^Error: transport_rejected$/);
   assert.throws(()=>createDiscoveryConnect(class{})('wss://other.invalid/v1/exec'),/^Error: transport_rejected$/);
+  for(const endpoint of [secret,'wss://user:password@api.iran.liara.ir/v1/exec']) assert.throws(()=>createDiscoveryConnect(class{})(endpoint),/^Error: transport_rejected$/);
 });

@@ -1,8 +1,9 @@
 /** Native Node 22 adapter; constructing the factory never opens a connection. */
 export function createDiscoveryConnect(WebSocketClass) {
   return endpoint => {
-    const url = new URL(endpoint);
-    if (url.origin !== 'wss://api.iran.liara.ir' || url.pathname !== '/v1/exec' || url.hash || typeof WebSocketClass !== 'function') throw Error('transport_rejected');
+    let url;
+    try { url = new URL(endpoint); } catch { throw Error('transport_rejected'); }
+    if (url.origin !== 'wss://api.iran.liara.ir' || url.pathname !== '/v1/exec' || url.hash || url.username || url.password || typeof WebSocketClass !== 'function') throw Error('transport_rejected');
     const listeners = new Map();
     let socket;
     const emit = (name, value) => { for (const listener of listeners.get(name) || []) listener(value); };
