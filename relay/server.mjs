@@ -1,3 +1,4 @@
+import { createMcpQuoteBridge } from './mcpfarsi-quote.mjs';
 import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics, waitForBrsReadiness } from "./brsapi-transport.mjs";
@@ -1285,6 +1286,7 @@ async function codalFetchBridge() {
 }
 
 // ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
+const mcpQuotes = createMcpQuoteBridge();
 let refreshing = null;
 function refresh() {
   if (refreshing) return refreshing;
@@ -1292,6 +1294,8 @@ function refresh() {
     try {
       resetBudgetStop();
       await hydrateBaseline();
+      // Independent, bounded MCP quote cache; readers never call the router.
+      void mcpQuotes.refresh();
       const { payload, outcomes } = await buildPayload();
       const attemptedAt = Date.now();
       const result = retainMarketFamilies(cache ? JSON.parse(cache.body) : null, payload, outcomes, attemptedAt);
@@ -1398,6 +1402,7 @@ function debugPayload() {
     historySections: { written: HISTORY_SECTIONS, missing: historyMissingSections },
     brsapiClient: brs ? brs.metrics() : { enabled: false },
     brsapiTransport: brsTransportMetrics(),
+    mcpfarsiQuote: mcpQuotes.status(),
     // مصرفِ مسیرِ **قدیمی** — همان چیزی که تا امروز نامرئی بود. اگر پرچم
     // خاموش باشد `brsapiClient.enabled=false` است ولی این بلوک همچنان
     // می‌گوید روز چقدر خرج شده و چقدرش از سقف رد شده.
