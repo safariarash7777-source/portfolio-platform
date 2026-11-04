@@ -64,7 +64,8 @@ export class LegacyMeter {
    * یک واحدِ مصرفِ مسیرِ قدیمی را ثبت می‌کند.
    * در حالتِ اجرا، وقتی بودجه اجازه ندهد `LegacyBudgetError` پرتاب می‌شود.
    */
-  async count(producer, budgetClass = "standard") {
+  async count(producer, budgetClass = "standard", { requireAdmission = false } = {}) {
+    if (typeof requireAdmission !== "boolean") throw new Error("requireAdmission must be boolean");
     const b = this.getBudget();
     if (!b) {
       // بدونِ شمارنده، این مصرف واقعاً دیده نمی‌شود. **پنهانش نمی‌کنیم** —
@@ -77,7 +78,7 @@ export class LegacyMeter {
       // بدترین ترکیب است: هم ادعای کنترل داریم، هم هیچ کنترلی نداریم.
       // پس در این حالت **متوقف** می‌شویم و سایت دادهٔ کهنه نشان می‌دهد.
       // دادهٔ کهنهٔ برچسب‌خورده از عبورِ نامحدود بهتر است.
-      if (this.isEnforced()) throw new BudgetUnavailableError(producer);
+      if (requireAdmission || this.isEnforced()) throw new BudgetUnavailableError(producer);
       return;
     }
     if (typeof b.ensure === "function") await b.ensure();
@@ -86,7 +87,7 @@ export class LegacyMeter {
     if (admitted) return;
 
     this.#bump(this.rejected, producer);
-    if (this.isEnforced()) throw new LegacyBudgetError(producer);
+    if (requireAdmission || this.isEnforced()) throw new LegacyBudgetError(producer);
     this.#bump(this.overBudgetPassed, producer);
   }
 

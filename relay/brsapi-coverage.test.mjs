@@ -34,6 +34,7 @@ export const CALL_SITES = [
   ["gold-currency",    "server.mjs",           "Market/Gold_Currency.php","main",     "critical"],
   ["all-symbols",      "server.mjs",           "Tsetmc/AllSymbols.php",   "main",     "critical"],
   ["nav-bulk",         "server.mjs",           "Tsetmc/Nav.php",          "main",     "standard"],
+  ["nav-single",       "server.mjs",           "Tsetmc/Nav.php",          "main",     "standard"],
   ["nav-completion",   "server.mjs",           "Tsetmc/Nav.php",          "main",     "bulk"],
   ["fund-meta",        "server.mjs",           "Tsetmc/Symbol.php",       "main",     "bulk"],
   ["symbol-detail",    "symbol-detail.mjs",    "Tsetmc/Symbol.php",       "main",     "bulk"],
@@ -73,7 +74,7 @@ t("parser strategy is not a provider call; new transport or import removes its n
 t("شمارش‌ها با هم قاطی نمی‌شوند — call site و endpoint و کلید سه چیزند", () => {
   const endpoints = new Set(CALL_SITES.map((r) => r[2]));
   const keys = new Set(CALL_SITES.map((r) => r[3]));
-  assert.equal(CALL_SITES.length, 14, "۱۴ نقطهٔ تماس");
+  assert.equal(CALL_SITES.length, 15, "۱۵ نقطهٔ تماس؛ مسیر تک‌نمادی NAV اکنون مستقل شمرده می‌شود");
   assert.equal(endpoints.size, 11, "۱۱ endpointِ یکتا — چون Nav و Symbol و Announcement هرکدام دو نقطه دارند");
   assert.equal(keys.size, 2, "۲ کلیدِ سهمیه — اصلی و کامودیتی");
 });

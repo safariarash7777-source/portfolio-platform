@@ -533,13 +533,15 @@ export class BrsApiClient {
   /** تنها راهِ تماس با BrsApi. */
   async request({ endpoint, params = {}, producer = "unknown",
                   priority = "background", budgetClass = "standard",
-                  dedupeTtlMs = 0, timeoutMs }) {
+                  dedupeTtlMs = 0, timeoutMs, noRetry = false }) {
     if (!endpoint) throw new Error("endpoint required");
     if ("key" in params) throw new Error("کلیدِ API نباید در params باشد");
     if (!BUDGET_CLASSES.includes(budgetClass)) {
       throw new Error(`budgetClass نامعتبر: ${budgetClass}`);
     }
-    const dk = dedupeKey(endpoint, params);
+    if (typeof noRetry !== "boolean") throw new Error("noRetry must be boolean");
+    // A one-attempt caller must not join a retrying in-flight job.
+    const dk = dedupeKey(endpoint, params) + (noRetry ? "#one-attempt" : "");
 
     if (dedupeTtlMs > 0) {
       const c = this.cache.get(dk);
@@ -567,7 +569,7 @@ export class BrsApiClient {
       throw error;
     }
 
-    const p = this.#run({ endpoint, params, producer, priority, budgetClass, dedupeTtlMs, dk, timeoutMs })
+    const p = this.#run({ endpoint, params, producer, priority, budgetClass, dedupeTtlMs, dk, timeoutMs, noRetry })
       .finally(() => this.inFlight.delete(dk));
     this.inFlight.set(dk, p);
     return p;
@@ -623,7 +625,7 @@ export class BrsApiClient {
   }
 
   async #attempt(job) {
-    const maxAttempts = job.priority === "interactive"
+    const maxAttempts = job.noRetry ? 1 : job.priority === "interactive"
       ? this.o.maxAttemptsInteractive : this.o.maxAttemptsBackground;
     let lastErr = null;
 
