@@ -1,3 +1,9 @@
+## پیش‌نمایش عضو، ۴ نوامبر — تحویل تازه
+
+[داشبورد](https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/dashboard)، [درخواست عضو](https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/dashboard/consultation/requests)، [میز مدیر](https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/admin/consultation/requests): نسخهٔ ثابت f07، Preview READY و [پنج CI با بررسی مستقل root](member-preview-f07-root-review.json). [GET بدون نشست](member-preview-f07-http.json) برای هر سه مسیر به ورود هدایت و next حفظ شد؛ این پذیرش مسیر احرازشده نیست. آزمایش Linux تازه، حق خدمت و نصب اصلی بازند.
+
+[نقص test harness ویندوز](windows-harness-crlf-root-review.json) با اجرای واقعی CRLF بسته شد؛ وارد Previewf07 نشده و runtime را تغییر نمی‌دهد. [Production400](production400-current.json) READY است؛ ابزار زنده اجرا نشده.
+
 **تازه‌تر، ۰۱:۳۴UTC:** [PR400 و پنج CI واقعی](ops400-source-acceptance.json) در main5eda ادغام شدند؛ ابزار همچنان بسته و اجرای زنده صفر است. alias در این مشاهده ff5/READY بود؛ انتشار تازه هنوز اثبات نشده.
 
 ## تازه‌سازی ۰۱:۲۵UTC — ۴ نوامبر

@@ -23,6 +23,8 @@
   "media-production-binding.json": "956f1e37164eb8852f5eb2ffbcaff1a4ac1e06fbb6b4c36df82de2b84f1c93eb",
   "media-production-desktop.png": "41f5845d696e339f8f55d8e3c941b691ce1574677d3e867d544d7fe3ca73574b",
   "media-production-mobile.png": "6724d1face5767e9ee6bc6840265c1b54db27f3f3db5cc007dac158eb13b67b0",
+  "member-preview-f07-http.json": "5b1347aebc06cc477bc5db133ffd25495a6d324119964de4a58dbf5df9c884bb",
+  "member-preview-f07-root-review.json": "8f85091bc55086c15a36d7ab4ad4bec2094203143ab7116a15f72c1b0afba029",
   "native-independent-verification.json": "26888e4c4458ef2e472606a9689a8ce90e5171fcca75c058e33eb008161f1f30",
   "native-receipt.json": "ac0230e45635b5bd51a0538d93c3d92b6b565a1403da2144b4cc4781dbd4373e",
   "native-stage-independent-verification.json": "3343ad37450139265a68172b81d7dc16666c1a873266515d6f463b5f32333970",
@@ -32,9 +34,11 @@
   "ops399-publication.json": "5873663dc23aa43986594e755e1b240d349ea048fe20eb09b2ce1515190534a0",
   "ops400-source-acceptance.json": "4ff55ec406fd9e86fc6a7967f38f853a6547dc5a6bad9b289dea7d6b2dd6097d",
   "production-identity.json": "c50afd97d129f0b1beaba9f78c53fd8650834751a8e9ca412bf06eaf3d80397d",
-  "REVIEW.fa.md": "ac7c9dc0150aa92e0fcf7174d9cf504d3090085663b263d7910e8d7d46befae6",
+  "production400-current.json": "d90b969a04087c2ff551ae095234a68ea70b2d9aede8152fe4c8e3fe503e081e",
+  "REVIEW.fa.md": "469d61b52c228983c875aa81315909a0c4b6af944f4467a1b1096af3fca3310e",
   "runtime-probe-source-receipt.json": "e96ff55a70818598ca913089a7979946b2dffe9275a18e2a07630c68b5aeba58",
   "sql-restore-execution.json": "f90969dcdd25a597278ca07c4958d59da3988a651ff64c29950d3b6b9ea86e30",
   "sql-restore-independent-readback.json": "3f6143072377730be2aef3934cf803356bd246c055c73c14af3bf44cc554c54b",
-  "sql-restore-pinned-readgate.json": "df3fe66885fa1a1f21e2f21e61bbbcf05129a24a1734e443625e7a061a184140"
+  "sql-restore-pinned-readgate.json": "df3fe66885fa1a1f21e2f21e61bbbcf05129a24a1734e443625e7a061a184140",
+  "windows-harness-crlf-root-review.json": "01c5901332ef3228f327e35e94f81cae90cac07854feb125fb927fb4c80938b9"
 }
