@@ -36,6 +36,7 @@ async function fixture(options = {}) {
   let rejectSave = !!options.rejectSave;
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
     calls.pages.push(Number(job.params.page));
+    if (options.pageErrorAt === Number(job.params.page)) throw options.pageError;
     if (options.backfillPages && job.params.l18) {
       return { announcement: job.params.category === "1" ? options.backfillPages : [] };
     }
@@ -208,6 +209,129 @@ test("unorderable or unsorted announcements fail without acknowledging them", as
     assert.equal(f.engine.engineStatus.ok, false);
     assert.deepEqual(f.persisted.watermark, watermark);
   }
+});
+
+test("invalid identity or ordering processes only the validated prefix without acknowledging the gap", async t => {
+  for (const [name, bad] of [
+    ["invalid date", financial(2)],
+    ["invalid time", { ...financial(2), time_send: "25:00:00" }],
+    ["out of order", financial(4)],
+  ]) await t.test(name, async () => {
+    const first = financial(3), afterGap = financial(1);
+    const invalid = name === "invalid date" ? { ...bad, date_send: "invalid" } : bad;
+    const f = await fixture({ pages: [[first, invalid, afterGap], [boundary]] });
+    await f.engine.runEngineCycle();
+    assert.deepEqual(f.calls.pages, [1], "never fetch beyond the first invalid row");
+    assert.deepEqual(f.calls.feedWrites[0].rows.map(r => r.link), [first.link]);
+    assert.deepEqual(f.calls.excel, ["/3"]);
+    assert.deepEqual(f.calls.reportWrites.map(rows => rows[0].source_url), [first.link + "#pv2"]);
+    assert.equal(f.engine.engineStatus.feed.seen, 2);
+    assert.equal(f.engine.engineStatus.feed.matched, 1);
+    assert.equal(f.engine.engineStatus.feed.inserted, 1);
+    assert.equal(f.engine.engineStatus.feed.complete, false);
+    assert.equal(f.engine.engineStatus.feed.incompleteReason, "invalid_order_or_identity");
+    assert.equal(f.engine.engineStatus.ok, false);
+    assert.deepEqual(f.persisted.watermark, watermark);
+    assert.equal(f.persisted.fails[invalid.link], undefined, "invalid row is not a report failure or quarantine");
+    await f.engine.runEngineCycle();
+    assert.equal(f.calls.excel.length, 1, "stored prefix is deduplicated next cycle");
+    assert.equal(f.calls.reportWrites.length, 1);
+    assert.deepEqual(f.persisted.watermark, watermark);
+    assert.equal(f.engine.engineStatus.feed.complete, false);
+  });
+});
+
+test("invalid first row writes no prefix and an incomplete same-time group stays exactly unacknowledged", async () => {
+  const empty = await fixture({ pages: [[{ ...financial(2), date_send: "invalid" }, financial(1)]] });
+  await empty.engine.runEngineCycle();
+  assert.equal(empty.calls.feedWrites.length, 0); assert.equal(empty.calls.excel.length, 0);
+  assert.deepEqual(empty.persisted.watermark, watermark);
+  const fresh = { ...boundary, link: "https://announcement.invalid/new-same-time" };
+  const bad = { ...boundary, link: "https://announcement.invalid/bad-date", date_send: "invalid" };
+  const f = await fixture({ pages: [[boundary, fresh, bad, { ...fresh, link: "https://announcement.invalid/after-gap" }]] });
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.calls.feedWrites[0].rows.map(r => r.link), [fresh.link]);
+  assert.deepEqual(f.persisted.watermark, watermark, "new same-time link is not acknowledged on an incomplete scan");
+  assert.equal(f.engine.engineStatus.feed.complete, false);
+});
+
+test("prefix download cap and subsequent failures preserve the original scan reason and watermark", async t => {
+  const prefix = Array.from({ length: 11 }, (_, i) => financial(12 - i));
+  const bad = { ...financial(1), date_send: "invalid" };
+  for (const [name, options, expectedDownloads, expectedInserted] of [
+    ["existing ten-report cap", {}, 10, 10],
+    ["feed write failure", { rejectFeed: true }, 0, 0],
+    ["admission rejection", { excelHtml: "<table></table>" }, 10, 0],
+    ["persistence failure", { reportStatus: 503 }, 10, 0],
+    ["state save failure", { rejectSave: true }, 10, 10],
+  ]) await t.test(name, async () => {
+    const f = await fixture({ pages: [[...prefix, bad]], ...options });
+    await f.engine.runEngineCycle();
+    assert.equal(f.calls.excel.length, expectedDownloads);
+    assert.equal(f.engine.engineStatus.feed.inserted, expectedInserted);
+    assert.equal(f.engine.engineStatus.feed.complete, false);
+    assert.equal(f.engine.engineStatus.feed.incompleteReason, "invalid_order_or_identity");
+    assert.equal(f.engine.engineStatus.ok, false);
+    assert.deepEqual(f.persisted.watermark, watermark);
+    if (f.calls.saves.length) assert.deepEqual(f.calls.saves.at(-1).watermark, watermark);
+  });
+});
+
+test("blocked prefix remains blocked and a missing watermark stays null until a complete scan", async () => {
+  const a = financial(2), bad = { ...financial(1), date_send: "invalid" };
+  const blocked = await fixture({ pages: [[a, bad]], initialState: { watermark, backfillCursor: 0, fails: { [a.link]: 3 } } });
+  await blocked.engine.runEngineCycle();
+  assert.equal(blocked.calls.excel.length, 0); assert.equal(blocked.persisted.fails[a.link], 3);
+  assert.equal(blocked.engine.engineStatus.feed.incompleteReason, "invalid_order_or_identity");
+  assert.deepEqual(blocked.persisted.watermark, watermark);
+  const pages = [[a, bad]], f = await fixture({ pages, initialState: { watermark: null, backfillCursor: 0, fails: {} } });
+  await f.engine.runEngineCycle();
+  assert.equal(f.persisted.watermark, null); assert.equal(f.engine.engineStatus.feed.complete, false);
+  pages[0] = [a]; pages[1] = [];
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.feed.complete, true);
+  assert.equal(f.persisted.watermark.key, 14050701000002);
+  assert.deepEqual(f.persisted.watermark.links, [a.link]);
+  assert.equal(f.calls.excel.length, 1);
+});
+
+test("provider budget or schema exceptions do not unlock prefix processing", async () => {
+  for (const name of ["BudgetUnavailableError", "AnnouncementSchemaError"]) {
+    const error = Object.assign(new Error("synthetic provider refusal"), { name });
+    const f = await fixture({ pages: [[financial(2)]], pageErrorAt: 2, pageError: error });
+    await f.engine.runEngineCycle();
+    assert.equal(f.calls.feedWrites.length, 0); assert.equal(f.calls.excel.length, 0);
+    assert.equal(f.calls.reportWrites.length, 0); assert.equal(f.engine.engineStatus.feed.complete, false);
+    assert.equal(f.engine.engineStatus.ok, false); assert.deepEqual(f.persisted.watermark, watermark);
+  }
+});
+
+test("a malformed page link still fails upstream schema validation without processing any prefix", async () => {
+  const f = await fixture({ pages: [[financial(2), { ...financial(1), link: "" }]] });
+  await f.engine.runEngineCycle();
+  assert.match(f.engine.engineStatus.lastError, /schema/);
+  assert.equal(f.calls.feedWrites.length, 0); assert.equal(f.calls.excel.length, 0);
+  assert.equal(f.calls.reportWrites.length, 0); assert.equal(f.engine.engineStatus.feed.complete, false);
+  assert.deepEqual(f.persisted.watermark, watermark);
+});
+
+test("three-page 52-seen discovery failure processes the validated prefix within the existing ten-download cap", async () => {
+  const all = Array.from({ length: 60 }, (_, i) => i < 12 ? financial(60 - i) : announcement(60 - i));
+  all[51] = { ...all[51], date_send: "invalid" };
+  const f = await fixture({ pages: [all.slice(0, 20), all.slice(20, 40), all.slice(40)] });
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.calls.pages, [1, 2, 3]);
+  assert.equal(f.engine.engineStatus.feed.seen, 52); assert.equal(f.engine.engineStatus.feed.matched, 12);
+  assert.equal(f.calls.feedWrites[0].rows.length, 51);
+  assert.equal(f.calls.excel.length, 10); assert.equal(f.engine.engineStatus.feed.inserted, 10);
+  assert.equal(f.calls.reportWrites.length, 10);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason, "invalid_order_or_identity");
+  assert.equal(f.engine.engineStatus.feed.complete, false); assert.deepEqual(f.persisted.watermark, watermark);
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length, 12); assert.equal(f.calls.reportWrites.length, 12);
+  assert.equal(f.engine.engineStatus.feed.inserted, 2);
+  assert.equal(f.engine.engineStatus.feed.complete, false); assert.deepEqual(f.persisted.watermark, watermark);
+  assert.equal(f.calls.reportWrites.some(rows => rows[0].source_url === all[51].link + "#pv2"), false);
 });
 
 test("state save failure rolls back the in-memory acknowledgement for retry", async () => {

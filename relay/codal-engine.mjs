@@ -266,8 +266,11 @@ async function pollGlobalFeed() {
       st.seen++;
       const k = sentKey(a);
       if (!k || typeof a.link !== "string" || !a.link.trim() || k > previousKey) {
+        st.complete = false;
         st.incompleteReason = "invalid_order_or_identity";
-        throw new Error("announcement invalid date/link or feed order");
+        // Keep only the validated prefix. Never sort, accept the bad row or
+        // scan beyond the gap; an incomplete scan cannot advance the watermark.
+        break outer;
       }
       previousKey = k;
       // Only an older timestamp proves the same-time group is exhausted.
@@ -283,9 +286,13 @@ async function pollGlobalFeed() {
     }
   }
 
+  // Preserve the discovery failure even if prefix processing also hits a cap
+  // or fails. Those later failures still keep their existing counters/errors.
+  const scanFailure = st.incompleteReason === "invalid_order_or_identity" ? st.incompleteReason : null;
+
   // M4: فید عمومی کدال — متادیتا قبل از دانلودها درج می‌شود تا فید عقب نماند
   try { await pushFeedRows(feedItems); }
-  catch (e) { st.complete = false; st.incompleteReason = "feed_write_failure"; throw e; }
+  catch (e) { st.complete = false; st.incompleteReason = scanFailure ?? "feed_write_failure"; throw e; }
 
   // دانلود و درج (جدیدترین‌ها اول)
   let dl = 0;
@@ -293,8 +300,8 @@ async function pollGlobalFeed() {
     // dedup با ردیف‌های موجودِ همان نماد
     const known = await existingUrlsFor(a.l18);
     if (known.has(a.link)) { delete state.fails[a.link]; continue; }
-    if (isBlocked(a.link)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
-    if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
+    if (isBlocked(a.link)) { st.complete = false; st.incompleteReason = scanFailure ?? "blocked_report"; continue; }
+    if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = scanFailure ?? "download_limit"; break; }
     dl++;
     st.downloaded = dl;
     let stage = "download";
@@ -311,13 +318,13 @@ async function pollGlobalFeed() {
         recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
         st.parseFailed++;
         recordFail(a.link);
-        st.complete = false; st.incompleteReason = "report_failure";
+        st.complete = false; st.incompleteReason = scanFailure ?? "report_failure";
       }
     } catch (e) {
       recordFailureDiagnostic(stage, "exception");
       st.parseFailed++;
       recordFail(a.link);
-      st.complete = false; st.incompleteReason = "report_failure";
+      st.complete = false; st.incompleteReason = scanFailure ?? "report_failure";
       console.error(`codal-engine report failure: ${stage}/exception`);
     }
   }

@@ -1,6 +1,7 @@
 {
   "git": {
     "deploymentEnabled": {
+      "codex/p07-recurring-prefix-20261104": false,
       "codex/media-archive-filters-20261103": false,
       "codex/member-financial-input-release-20261103": false,
       "codex/p01-member-ledger-risk-release-20261103": false,
