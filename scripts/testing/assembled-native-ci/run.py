@@ -45,6 +45,8 @@ OVERLAY_NAMES = {'assembled-auth-runtime.mjs', 'assembled-auth-gateway.mjs', 'as
 # Failure diagnostics only. Literal codes from the reviewed frozen sources;
 # never forward an arbitrary exception/message or a regex-matching user string.
 NATIVE_FAILURE_CODES = frozenset({
+    "p03_composition_default_form_exposed",
+    "p03_composition_default_prepare_not_closed",
     "assembled_stage_invalid",
     "assembled_acceptance_boundary",
     "assembled_canonical_receipts_required",
@@ -357,6 +359,7 @@ CONTROLLER_FAILURE_CODES = frozenset({
 })
 
 OBSERVED_CHECKS = (
+    "browser-owned-nonzero-dossier-real-consent",
     "isolation-attested",
     "four-fresh-auth-users-and-sdk-getuser",
     "assembled-financial-receipts-and-null-readback",
@@ -379,7 +382,7 @@ COMPOSITION = 'p03-composition-e0-v1'
 SELECTED_PROFILE = 'assembled-member-admin-v1'
 CAPSULE_FILE = 'sealed-v4b-app-f07.tar'
 NATIVE_GLOB = 'assembled-member-admin-native-*'
-COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': 'f03a1e3528374db1ba45a48d1c6cc550df71b0e95de6604434834afca31e7711', 'driverSha256': 'fe100232e61504d2228c7ca6ea1108e64e1f35bff3011691065d849de83b22f4', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
+COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': '67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb', 'driverSha256': '3da3f5babd4e668ca5f53d652efaca721bba2594b91d29c131b46d842e4a7d34', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
 
 
 def composition_json(raw):
@@ -1033,7 +1036,7 @@ def static_native_error(value):
     return None
 
 
-OBSERVED_STAGES = ('rest-baseline-denial', 'rest-own', 'rest-foreign', 'rest-second-own', 'legacy-open', 'legacy-ready', 'legacy-context', 'legacy-cookies', 'legacy-page', 'legacy-routes', 'legacy-document', 'legacy-section-ready', 'legacy-state-ready', 'legacy-service-label', 'legacy-write-disabled', 'legacy-details-open', 'legacy-source-text', 'legacy-images', 'legacy-body', 'member-context', 'member-cookies', 'member-page', 'member-routes', 'member-dashboard', 'member-holdings-link', 'member-holdings-ready', 'member-holdings-body', 'member-dashboard-link', 'member-consultation-link', 'member-consultation-ready', 'member-viewport', 'member-storage-audit', 'member-context-close')
+OBSERVED_STAGES = ('composition-financial-before-write', 'composition-context-binding', 'composition-fixture-apply', 'composition-fixture-binding', 'composition-default-prepare', 'composition-default-page', 'rest-baseline-denial', 'rest-own', 'rest-foreign', 'rest-second-own', 'legacy-open', 'legacy-ready', 'legacy-context', 'legacy-cookies', 'legacy-page', 'legacy-routes', 'legacy-document', 'legacy-section-ready', 'legacy-state-ready', 'legacy-service-label', 'legacy-write-disabled', 'legacy-details-open', 'legacy-source-text', 'legacy-images', 'legacy-body', 'member-context', 'member-cookies', 'member-page', 'member-routes', 'member-dashboard', 'member-holdings-link', 'member-holdings-ready', 'member-holdings-body', 'member-dashboard-link', 'member-consultation-link', 'member-consultation-ready', 'member-viewport', 'member-storage-audit', 'member-context-close')
 
 
 def project_stage_log(raw):

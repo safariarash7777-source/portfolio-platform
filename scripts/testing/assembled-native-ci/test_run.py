@@ -622,22 +622,28 @@ class StageProjection(unittest.TestCase):
         with tarfile.open(HERE / 'sealed-v3-stage-observation.tar') as archive:
             source = archive.extractfile('overlay/scripts/testing/consultation-tickets/assembled-member-scenario.mjs').read().decode('utf8')
         table = json.loads(re.search(r'assembledStageNames = Object.freeze\((\[.*?\])\);', source, re.S).group(1))
-        self.assertEqual(tuple(table), runner.OBSERVED_STAGES)
+        self.assertEqual(tuple(table), runner.OBSERVED_STAGES[6:])
+        self.assertEqual(len(runner.OBSERVED_STAGES),len(table)+6)
+        self.assertEqual(runner.OBSERVED_STAGES[:6],('composition-financial-before-write', 'composition-context-binding', 'composition-fixture-apply', 'composition-fixture-binding', 'composition-default-prepare', 'composition-default-page'))
         self.assertEqual(len(set(table)), 33)
 
     def test_existing_chrome_app_tree_and_fourteen_native_checks_are_pinned(self):
         self.assertEqual(runner.CHROME, '95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72')
         self.assertEqual(runner.CANDIDATE, 'f07e0543c46cea88822dc0d400080b5bb94bef91')
         self.assertEqual(runner.TREE, '8e43eab0bd66705b5455713ea15dd5c1d9c5f81a')
-        self.assertEqual(len(set(runner.OBSERVED_CHECKS)), 14)
+        self.assertEqual(len(set(runner.OBSERVED_CHECKS[1:])), 14)
+        self.assertEqual(runner.OBSERVED_CHECKS[0], "browser-owned-nonzero-dossier-real-consent")
+        self.assertEqual(len(runner.OBSERVED_CHECKS),15)
 
 
 class Workflow(unittest.TestCase):
     def test_success_criteria_private_flags_and_frame_remain_frozen(self):
         receipt = (HERE / 'receipt.mjs').read_text(encoding='utf8')
         literal = re.search(r'export const checks = Object\.freeze\(\[(.*?)\]\);', receipt, re.S).group(1)
-        self.assertEqual(tuple(re.findall(r"'([^']+)'", literal)), runner.OBSERVED_CHECKS)
-        self.assertEqual(len(set(runner.OBSERVED_CHECKS)), 14)
+        self.assertEqual(tuple(re.findall(r"'([^']+)'", literal)), runner.OBSERVED_CHECKS[1:])
+        self.assertEqual(len(set(runner.OBSERVED_CHECKS[1:])), 14)
+        self.assertEqual(runner.OBSERVED_CHECKS[0], "browser-owned-nonzero-dossier-real-consent")
+        self.assertEqual(len(runner.OBSERVED_CHECKS),15)
         historical = (HERE / 'fixtures/run-d253.py.txt').read_bytes()
         self.assertEqual(hashlib.sha256(historical).hexdigest(), '097ed514103524b5cfb1df9c82a690752e39652639504178c1c971c5ad654153')
         tree = ast.parse(historical.decode('utf8'))
@@ -928,6 +934,61 @@ class CompositionCapsulePureCI(unittest.TestCase):
                     self.assertEqual(result.returncode,0,output)
                     self.assertTrue(valid_guarded_pure_output(output,count),output)
 
+
+
+# Source-only diagnostic regressions, in the existing ordinary CI entrypoint.
+def post_member_case_source():
+    raw=(HERE/'sealed-p03-composition-e0-v1.tar').read_bytes()
+    if hashlib.sha256(raw).hexdigest()!=runner.COMPOSITION_SPEC['capsuleSha256']:raise ValueError('capsule_pin')
+    prefix='overlay/scripts/testing/consultation-tickets/'
+    with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
+        contract_raw=archive.extractfile(prefix+'assembled-overlay.json').read()
+        if hashlib.sha256(contract_raw).hexdigest()!=runner.COMPOSITION_SPEC['driverSha256']:raise ValueError('driver_pin')
+        contract=runner.composition_json(contract_raw)
+        pins=[row for row in contract['files'] if row['path']=='scripts/testing/consultation-tickets/composition-browser-case.mjs']
+        if len(pins)!=1:raise ValueError('case_pin')
+        data=archive.extractfile(prefix+'composition-browser-case.mjs').read()
+        if len(data)!=pins[0]['bytes'] or hashlib.sha256(data).hexdigest()!=pins[0]['sha256']:raise ValueError('case_pin')
+        return data
+
+class PostMemberDiagnostic(unittest.TestCase):
+    def test_new_pass_and_redaction(self):
+        raw=b'P03_ASSEMBLED_NATIVE_CHECK {"name":"browser-owned-nonzero-dossier-real-consent","status":"PASS","secret":"DO_NOT_OUTPUT"}'
+        out=runner.project_failure_log(raw)
+        self.assertEqual(out['lastObservedPassedCheck'],'browser-owned-nonzero-dossier-real-consent')
+        self.assertNotIn('DO_NOT_OUTPUT',json.dumps(out))
+    def test_each_bounded_stage_before_and_after(self):
+        for stage in ['composition-financial-before-write', 'composition-context-binding', 'composition-fixture-apply', 'composition-fixture-binding', 'composition-default-prepare', 'composition-default-page']:
+            before=('P03_ASSEMBLED_STAGE '+json.dumps({'stage':stage,'edge':'before'})+'\n').encode()
+            self.assertEqual(runner.project_stage_log(before)['lastObservedStageEdge'],'before')
+            after=('P03_ASSEMBLED_STAGE '+json.dumps({'stage':stage,'edge':'after'})+'\n').encode()
+            result=runner.project_stage_log(before+after)
+            self.assertEqual(result['lastObservedStageEdge'],'after');self.assertFalse(result['malformedStageRecords'])
+    def test_unknown_stage_and_extra_payload_rejected(self):
+        for row in [{'stage':'DO_NOT_OUTPUT','edge':'before'},{'stage':'composition-fixture-apply','edge':'before','secret':'DO_NOT_OUTPUT'}]:
+            out=runner.project_stage_log(('P03_ASSEMBLED_STAGE '+json.dumps(row)).encode())
+            self.assertTrue(out['malformedStageRecords']);self.assertNotIn('DO_NOT_OUTPUT',json.dumps(out))
+    def test_fixed_failure_codes_only(self):
+        for code in ['p03_composition_default_form_exposed','p03_composition_default_prepare_not_closed']:
+            self.assertEqual(runner.project_failure_log(('P03_ASSEMBLED_FAILURE '+json.dumps({'reason':code})).encode())['nativeFailureCode'],code)
+        self.assertIsNone(runner.project_failure_log(b'P03_ASSEMBLED_FAILURE {"reason":"p03_composition_secret_DO_NOT_OUTPUT"}')['nativeFailureCode'])
+    def test_product_statements_byte_exact(self):
+        after=post_member_case_source()
+        cleaned=b''.join(line for line in after.splitlines(keepends=True) if not line.startswith(b" console.log('P03_ASSEMBLED_STAGE '+"))
+        self.assertEqual(hashlib.sha256(cleaned).hexdigest(),'f2bc233694297d150e577534c2ce6c8bfc704678518ece16ff517e4b4996a0da')
+    def test_two_guarded_mock_operation_boundaries(self):
+        guard=HERE/'pure-node-guard.cjs';probe=HERE/'pure-node-guard.test.mjs'
+        self.assertEqual(hashlib.sha256(guard.read_bytes()).hexdigest(),'4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028')
+        self.assertEqual(hashlib.sha256(probe.read_bytes()).hexdigest(),'a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72')
+        with tempfile.TemporaryDirectory(prefix='p03-stage-pure-') as folder:
+            local=Path(folder);(local/'case-source.txt').write_bytes(post_member_case_source())
+            entry=local/'stage-pure.mjs';entry.write_bytes('import test from \'node:test\';\nimport assert from \'node:assert/strict\';\nimport vm from \'node:vm\';\nimport {readFileSync} from \'node:fs\';\nconst source=readFileSync(new URL(\'./case-source.txt\',import.meta.url),\'utf8\');\nconst block=stage=>{const start=source.indexOf(" console.log(\'P03_ASSEMBLED_STAGE \'+JSON.stringify({stage:\'"+stage+"\',edge:\'before\'}));");const end=source.indexOf("edge:\'after\'}));",start)+"edge:\'after\'}));".length;assert.ok(start>=0&&end>start);return source.slice(start,end);};\ntest(\'negative prepare source sends once and records after only for accepted result\',async()=>{\n for(const mode of [\'valid\',\'wrong_status\',\'throw\']){const rows=[];let calls=0;\n const ctx={api:async()=>{calls++;if(mode===\'throw\')throw Error(\'PRIVATE\');return {status:mode===\'valid\'?503:200,value:{code:\'SERVICE_RIGHT_NOT_CONNECTED\'}};}};\n const result=vm.runInNewContext(\'(async()=>{\'+block(\'composition-default-prepare\')+\'})()\', {ctx,denied:{},check:(v)=>{if(!v)throw Error(\'PRIVATE\');},console:{log:x=>rows.push(x)}});\n if(mode===\'valid\')await result;else await assert.rejects(result);\n assert.equal(calls,1);assert.equal(rows.length,mode===\'valid\'?2:1);assert.ok(rows.every(x=>!x.includes(\'PRIVATE\')));\n }\n});\ntest(\'fixture apply source preserves one synchronous call and no after on failure\',()=>{\n for(const fail of [false,true]){let calls=0;const rows=[];const context={ctx:{apply:()=>{calls++;if(fail)throw Error(\'PRIVATE\');}},console:{log:x=>rows.push(x)}};\n if(fail)assert.throws(()=>vm.runInNewContext(block(\'composition-fixture-apply\'),context));else vm.runInNewContext(block(\'composition-fixture-apply\'),context);\n assert.equal(calls,1);assert.equal(rows.length,fail?1:2);assert.ok(rows.every(x=>!x.includes(\'PRIVATE\')));\n }\n});\n'.encode())
+            env={k:v for k,v in os.environ.items() if k.upper() in ['PATH','SYSTEMROOT','TEMP','TMP']}
+            for script,count in [(probe,4),(entry,2)]:
+                result=subprocess.run([shutil.which('node'),'--test-reporter=tap','--require',str(guard),str(script)],env=env,capture_output=True,timeout=60)
+                output=result.stdout.decode('utf8')+result.stderr.decode('utf8')
+                self.assertEqual(result.returncode,0,output)
+                self.assertTrue(valid_guarded_pure_output(output,count),output)
 
 if __name__ == '__main__':
     unittest.main()
