@@ -36,7 +36,7 @@ function receipt(raw, nonce) {
   }
   return x;
 }
-async function identity(fetchImpl, token, signal, diagnostic) {
+async function identity(fetchImpl, token, signal, diagnostic, captureFailure) {
   diagnostic.fetchCalls=(diagnostic.fetchCalls??0)+1;
   const response=await fetchImpl(RELEASES,{method:'GET',redirect:'error',signal,headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
   diagnostic.fetchReturns=(diagnostic.fetchReturns??0)+1;
@@ -45,7 +45,7 @@ async function identity(fetchImpl, token, signal, diagnostic) {
   if(!response.ok || !response.body) fail();
   diagnostic.phase=diagnostic.phase==='pre_release_fetch'?'pre_release_body':'post_release_body';
   const reader=response.body.getReader();const chunks=[];let total=0;
-  try{while(true){const {done,value}=await reader.read();if(done){diagnostic.bodyBytesCapped1048577=Math.min(total,1048577);break;}total+=value.byteLength;diagnostic.bodyBytesCapped1048577=Math.min(total,1048577);if(total>1048576)fail();chunks.push(Buffer.from(value));}}finally{void reader.cancel().catch(()=>{});}
+  try{while(true){const {done,value}=await reader.read();if(done){diagnostic.bodyBytesCapped1048577=Math.min(total,1048577);break;}total+=value.byteLength;diagnostic.bodyBytesCapped1048577=Math.min(total,1048577);if(total>1048576)fail();chunks.push(Buffer.from(value));}}catch(error){captureFailure();throw error;}finally{void reader.cancel().catch(()=>{});}
   diagnostic.phase=diagnostic.phase==='pre_release_body'?'pre_release_validate':'post_release_validate';
   const body=strictJson(Buffer.concat(chunks).toString('utf8'));
   if(!/^[a-f0-9]{24}$/.test(body?.currentRelease) || !Array.isArray(body.releases) || body.releases.length>100)fail();
@@ -80,12 +80,12 @@ export async function discoverBinding(options={}) {
   let failureDiagnostic;
   const captureFailure=()=>failureDiagnostic??=(Object.freeze({...diagnostic}));
   const work=async()=>{
-    const pre=await identity(fetchImpl,token,controller.signal,diagnostic);
+    const pre=await identity(fetchImpl,token,controller.signal,diagnostic,captureFailure);
     if(controller.signal.aborted)fail();
     const result=await socketReceipt(connect,token,nonce,controller.signal,s=>{socket=s;},diagnostic,captureFailure);
     if(controller.signal.aborted)fail();
     diagnostic.phase='post_release_fetch';diagnostic.httpStatusClass=null;diagnostic.bodyBytesCapped1048577=null;
-    const post=await identity(fetchImpl,token,controller.signal,diagnostic);
+    const post=await identity(fetchImpl,token,controller.signal,diagnostic,captureFailure);
     if(pre!==post || controller.signal.aborted)fail();
     return {state:result.state==='discovered_candidate'?'candidate_only_not_adopted':'unresolved',remoteHalt:'unknown',releaseId:pre,receipt:result};
   };

@@ -126,3 +126,14 @@ test('late settled socket events cannot replace post-fetch failure phase',async(
 test('throwing diagnostic-only HTTP status getter is read once and cannot reject valid transport',async()=>{
   const p=await protocol('status-throws');assert.equal(p.r.state,'candidate_only_not_adopted');assert.deepEqual(Object.keys(p.r),['state','remoteHalt','releaseId','receipt']);assert.equal(p.statusReads,2);
 });
+
+test('pre/post body read failure captures first observation before failure-triggered cancellation',async()=>{
+  const source=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
+  const context=vm.createContext({Buffer,createHash,FIXED_DISCOVERY_SOURCE});vm.runInContext(source,context);const readIdentity=vm.runInContext('identity',context);
+  for(const prefix of ['pre','post'])for(const mode of ['read-failure','body-limit']){
+    const order=[],diagnostic={phase:prefix+'_release_fetch',fetchCalls:null,fetchReturns:null,httpStatusClass:null,bodyBytesCapped1048577:null};let captured;
+    const response={ok:true,status:200,body:{getReader:()=>({read:async()=>{if(mode==='read-failure')throw Error(secret);return {done:false,value:new Uint8Array(1048577)};},cancel:async()=>{order.push('cancel');diagnostic.phase='late_cleanup';}})}};
+    await assert.rejects(readIdentity(async()=>response,'fixture',new AbortController().signal,diagnostic,()=>{order.push('capture');captured={...diagnostic};}));
+    assert.deepEqual(order,['capture','cancel']);assert.equal(captured.phase,prefix+'_release_body');assert.equal(captured.bodyBytesCapped1048577,mode==='read-failure'?null:1048577);assert.equal(JSON.stringify(captured).includes(secret),false);
+  }
+});
