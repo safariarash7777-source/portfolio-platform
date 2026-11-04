@@ -6,6 +6,20 @@ const RELEASES = 'https://api.liara.ir/v1/projects/arsadata/releases?page=1&coun
 export const commandSha256 = createHash('sha256').update(FIXED_PROBE_SOURCE).digest('hex');
 const fail = () => { throw Error('rejected'); };
 const exactKeys = (x, names) => x && typeof x === 'object' && !Array.isArray(x) && Object.keys(x).length === names.length && names.every(n => Object.hasOwn(x,n));
+// Native JSON validates grammar; a bounded token walk rejects duplicate keys,
+// including escaped spellings. Ordinary whitespace is accepted.
+function strictJson(raw) {
+  const value=JSON.parse(raw), stack=[];
+  const tokens=raw.match(/"(?:[^"\\]|\\.)*"|[{}\[\]:,]|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null/g) || [];
+  if(tokens.length>100000)fail();
+  for(const token of tokens){
+    if(token==='{' || token==='['){stack.push({object:token==='{',keys:new Set(),key:true});if(stack.length>64)fail();}
+    else if(token==='}' || token===']')stack.pop();
+    else if(token===','){if(stack.at(-1)?.object)stack.at(-1).key=true;}
+    else if(token.startsWith('"') && stack.at(-1)?.object && stack.at(-1).key){const frame=stack.at(-1),key=JSON.parse(token);if(frame.keys.has(key))fail();frame.keys.add(key);frame.key=false;}
+  }
+  return value;
+}
 function receipt(raw, nonce) {
   if (typeof raw !== 'string' || Buffer.byteLength(raw)>8192 || /[\u0000-\u0008\u000b-\u001f\u007f]/.test(raw)) fail();
   const x=JSON.parse(raw);
@@ -14,7 +28,7 @@ function receipt(raw, nonce) {
   if(x.state==='disk_and_initial_environment_observed') {
     if(x.collector!=='one' || x.files.length!==PROBE_FILE_NAMES.length) fail();
     x.files.forEach((f,i)=>{if(!exactKeys(f,['name','sha256','bytes']) || f.name!==PROBE_FILE_NAMES[i] || !/^[a-f0-9]{64}$/.test(f.sha256) || !Number.isSafeInteger(f.bytes) || f.bytes<0 || f.bytes>1048576) fail();});
-  } else if(x.files.length || x.initialBackendMatch!==null || (x.state==='collector_unresolved' ? !['zero','multiple'].includes(x.collector) : x.collector!=='unresolved')) fail();
+  } else if(x.files.length || x.initialBackendMatch!==null || (x.state==='collector_unresolved' ? !['zero','multiple','unresolved'].includes(x.collector) : x.collector!=='unresolved')) fail();
   return x;
 }
 async function identity(fetchImpl, token, signal) {
@@ -22,7 +36,7 @@ async function identity(fetchImpl, token, signal) {
   if(!response.ok || !response.body) fail();
   const reader=response.body.getReader();const chunks=[];let total=0;
   try{while(true){const {done,value}=await reader.read();if(done)break;total+=value.byteLength;if(total>1048576)fail();chunks.push(Buffer.from(value));}}finally{void reader.cancel().catch(()=>{});}
-  const body=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  const body=strictJson(Buffer.concat(chunks).toString('utf8'));
   if(!/^[a-f0-9]{24}$/.test(body?.currentRelease) || !Array.isArray(body.releases) || body.releases.length>100)fail();
   const matches=body.releases.filter(r=>r?._id===body.currentRelease);
   if(matches.length!==1 || matches[0].state!=='READY')fail();
@@ -44,9 +58,10 @@ function socketReceipt(connect, token, nonce, signal, remember) {
     socket.on('close',code=>{signal.removeEventListener('abort',rejectSafe);if(settled)return;if(code!==1000 || !result)return rejectSafe();settled=true;resolve(result);});
   });
 }
-export async function inspectRuntime({token,nonce,fetchImpl,connect}={}) {
+export async function inspectRuntime(options={}) {
   // Closed even when transports and credentials are supplied.
-  if(!BINDING_ADOPTED)return {state:'binding_not_adopted',commandSha256};
+  if(!BINDING_ADOPTED)return {state:'binding_not_adopted',remoteHalt:'not_started',commandSha256};
+  const {token,nonce,fetchImpl,connect}=options;
   if(typeof token!=='string' || !token || !/^[a-f0-9]{32}$/.test(nonce||'') || typeof fetchImpl!=='function' || typeof connect!=='function')return {state:'invalid_input',commandSha256};
   const controller=new AbortController();let timer,socket;
   const work=async()=>{
@@ -56,9 +71,10 @@ export async function inspectRuntime({token,nonce,fetchImpl,connect}={}) {
     if(controller.signal.aborted)fail();
     const post=await identity(fetchImpl,token,controller.signal);
     if(pre!==post || controller.signal.aborted)fail();
-    return {state:result.state==='disk_and_initial_environment_observed'?'observed_disk_and_initial_environment':'unresolved',releaseId:pre,commandSha256,receipt:result};
+    return {state:result.state==='disk_and_initial_environment_observed'?'observed_disk_and_initial_environment':'unresolved',remoteHalt:'unknown',releaseId:pre,commandSha256,receipt:result};
   };
-  try{return await Promise.race([work(),new Promise(resolve=>{timer=setTimeout(()=>{controller.abort();try{socket?.close();}catch{/* no output */}resolve({state:'deadline',commandSha256});},15000);})]);}
-  catch{return {state:'protocol_rejected',commandSha256};}
+  // Closing the local socket does not prove remote process termination.
+  try{return await Promise.race([work(),new Promise(resolve=>{timer=setTimeout(()=>{controller.abort();try{socket?.close();}catch{/* no output */}resolve({state:'deadline',remoteHalt:'unknown',commandSha256});},15000);})]);}
+  catch{return {state:'protocol_rejected',remoteHalt:'unknown',commandSha256};}
   finally{clearTimeout(timer);controller.abort();try{socket?.close();}catch{/* no output */}}
 }
