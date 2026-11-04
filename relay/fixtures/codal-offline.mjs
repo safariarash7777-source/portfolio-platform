@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { createHash } from "node:crypto";
 import { notifyAdmissionRejection } from "../codal-admission-diagnostics.mjs";
+import { readN10ReportMetadata } from "../codal-report-metadata.mjs";
 
 export function loadOfflineCodal({ fetchFixture, environment = {} } = {}) {
   const counts = { network: 0, fixtureTransportCalls: 0, syntheticEnvironmentReads: 0 };
@@ -11,6 +12,7 @@ export function loadOfflineCodal({ fetchFixture, environment = {} } = {}) {
     'import { brsFetch as fetch } from "./brsapi-transport.mjs";',
     'import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";',
     'import { createHash } from "node:crypto";',
+    'import { readN10ReportMetadata } from "./codal-report-metadata.mjs";',
   ];
   for (const line of imports) {
     if (!source.includes(line)) throw new Error("Offline loader import boundary changed");
@@ -22,8 +24,8 @@ export function loadOfflineCodal({ fetchFixture, environment = {} } = {}) {
     if (fetchFixture) { counts.fixtureTransportCalls++; return fetchFixture(...args); }
     counts.network++; throw new Error("Offline parser network denied");
   };
-  const instantiate = vm.runInThisContext(`(function(fetch,notifyAdmissionRejection,process,console,createHash){\n${source}\nreturn {parseHtmlTables,normalizeN10,normalizeN10Bank,normalizeN30,unitFromHeader,unitFromArithmetic,resolveAmountUnit,PARSER_VERSION,metaFrom,downloadAndParse,insertParsedReport};\n})`, { filename: "actual-codal-offline.mjs" });
-  return { parser: instantiate(fetch, notifyAdmissionRejection, syntheticProcess, console, createHash), counts };
+  const instantiate = vm.runInThisContext(`(function(fetch,notifyAdmissionRejection,process,console,createHash,readN10ReportMetadata){\n${source}\nreturn {parseHtmlTables,normalizeN10,normalizeN10Bank,normalizeN30,unitFromHeader,unitFromArithmetic,resolveAmountUnit,PARSER_VERSION,metaFrom,downloadAndParse,insertParsedReport};\n})`, { filename: "actual-codal-offline.mjs" });
+  return { parser: instantiate(fetch, notifyAdmissionRejection, syntheticProcess, console, createHash, readN10ReportMetadata), counts };
 }
 
 export function foladQuantityFixture() {

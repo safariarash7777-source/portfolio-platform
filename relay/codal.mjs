@@ -1,6 +1,7 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
+import { readN10ReportMetadata } from "./codal-report-metadata.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -471,14 +472,17 @@ function n10Dates(text) {
     .map(m => `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`);
 }
 
-function n10Period(context, meta, coreRows) {
+function n10Period(context, meta, coreRows, binding = null) {
   const firstData = Math.min(...coreRows.map(r => context.rows.indexOf(r)));
   const headers = context.rows.slice(0, firstData);
   const current = [...new Set(headers.flatMap(r => n10Dates(r[1] ?? "")))];
   const prior = [...new Set(headers.flatMap(r => n10Dates(r[2] ?? "")))];
   const getMonths = text => [...faToEnDigits(text).matchAll(/دوره\s*(\d{1,2})\s*ماهه/g)].map(m => +m[1]);
   const contextMonths = getMonths(context.localTitle + " " + context.localDescription);
-  const months = [...contextMonths, ...getMonths(headers.map(r => r[1] ?? "").join(" "))];
+  // Report duration is evidence for B only. Never add it to contextMonths:
+  // that would silently certify C's otherwise unknown comparative duration.
+  const months = [...contextMonths, ...getMonths(headers.map(r => r[1] ?? "").join(" ")),
+    ...(binding?.context === context ? [binding.period.months] : [])];
   if (current.length !== 1 || current[0] !== meta.period_end || !months.length ||
       months.some(n => n !== meta.period_months) || ![1, 3, 6, 9, 12].includes(meta.period_months) || prior.length > 1) return null;
   if (prior.length) {
@@ -508,20 +512,95 @@ function n10Core(rows, bankKind) {
   };
 }
 
+/** Strict calendar validation for new report metadata evidence. Reuse the
+ * existing conversion, including its year boundary, without changing legacy
+ * date normalization. A six-month cumulative report is not a quarter. */
+function n10BindingDate(value) {
+  if (typeof value !== "string") return null;
+  const m = faToEnDigits(value).match(/^(1[34]\d{2})[/-](\d{2})[/-](\d{2})$/);
+  if (!m) return null;
+  const [y, mo, d] = m.slice(1).map(Number);
+  const yearDays = (Date.parse(jalaliToGregorian(y + 1, 1, 1)) - Date.parse(jalaliToGregorian(y, 1, 1))) / 86400000;
+  const max = mo <= 6 ? 31 : mo < 12 ? 30 : yearDays === 366 ? 30 : 29;
+  return mo >= 1 && mo <= 12 && d >= 1 && d <= max ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+function resolveN10ReportBinding(html, meta, sources, contexts) {
+  const source = readN10ReportMetadata(sources, html, meta,
+    { text:n10Text, norm:value => normLabel(faToEnDigits(value)), date:n10BindingDate });
+  if (!source.ok) return source;
+  const { root, sheet, table, end, yearEnd } = source;
+  const reject = reason => ({ok:false, reason});
+  const matches = contexts.filter(c => normLabel(c.localTitle) === normLabel(table.title_Fa) &&
+    normLabel(c.localDescription) === normLabel(table.description));
+  if (matches.length !== 1) return reject("context_ambiguous");
+  const context = matches[0];
+  if (!context.contextValid || context.columnsAmbiguous || !findIncomeTable([context.rows]) || findBankIncomeTable([context.rows])) return reject("context_invalid");
+  const localScope = n10Scope(context);
+  const scopeText = [context.localTitle, context.localDescription, ...n10Headers(context).flat()].map(normLabel).join(" ");
+  if (localScope === "consolidated" || (localScope === null && /تلفیقی|جداگانه|مستقل|شرکتاصلی|زیرمجموعه|نیست|نمیباشد/.test(scopeText))) return reject("scope_conflict");
+  const rawScopeText = [table.title_Fa, table.description, ...table.cells.filter(c => c.isVisible && c.cellGroupName === "Header").map(c => c.value)].map(normLabel).join(" ");
+  if (/تلفیقی/.test(rawScopeText.replace(/غیرتلفیقی/g, "")) || /نیست|نمیباشد|زیرمجموعه|غیرمستقل/.test(rawScopeText)) return reject("scope_conflict");
+  if (!n10Million(context)) return reject("unit_unverified");
+  const currentHeaders = table.cells.filter(c => c.address === "B1" || c.address === "B2");
+  for (const cell of currentHeaders) {
+    const before = table.cells.filter(c => c.isVisible && c.rowSequence === cell.rowSequence && c.columnSequence < cell.columnSequence);
+    if (before.some(c => c.colSpan !== 1) || normLabel(faToEnDigits(context.rows[cell.rowSequence - 1]?.[before.length])) !== normLabel(faToEnDigits(cell.value))) return reject("column_identity");
+  }
+  // Independent visible label/value anchors tie JSON to the selected Excel
+  // table without claiming equality of hidden or blank percentage cells.
+  const core = n10Core(context.rows, null);
+  for (const row of Object.values(core)) {
+    if (!row) return reject("row_identity");
+    const labels = table.cells.filter(c => c.columnSequence === 1 && c.isVisible && c.cellGroupName === "Body" && normLabel(c.value) === normLabel(row[0]));
+    if (labels.length !== 1) return reject("row_identity");
+    const cells = table.cells.filter(c => c.columnSequence === 2 && c.rowSequence === labels[0].rowSequence && c.isVisible && c.cellGroupName === "Body");
+    if (cells.length !== 1 || cells[0].colSpan !== 1 || cells[0].rowSpan !== 1 ||
+        cellNum(cells[0].value) !== cellNum(row[1]) || !Number.isFinite(cellNum(row[1]))) return reject("row_identity");
+  }
+  const localMonths = [...faToEnDigits([context.localTitle,context.localDescription,...n10Headers(context).map(r => r[1] ?? "")].join(" ")).matchAll(/(?:دوره\s*)?(\d{1,2})\s*ماهه/g)].map(m => +m[1]);
+  if (localMonths.some(n => n !== root.period)) return reject("period_conflict");
+  const firstDates = n10Dates(n10Headers(context).map(r => r[1] ?? "").join(" "));
+  if (new Set(firstDates).size !== 1 || firstDates[0] !== end) return reject("period_conflict");
+  return {ok:true,context,sheetCode:sheet.code,tableCode:table.code,metaTableId:table.metaTableId,
+    scope:"standalone",period:{calendar:"jalali",periodKind:"cumulative",months:root.period,end,yearEnd},
+    source:source.source};
+}
+
+/** Reviewable partial witness only, NOT CodalN10Data. All amounts and unknown
+ * dimensions remain absent. Only admitN10Html may attempt full admission using
+ * the same private resolver; consumers must not persist this inspection. */
+export function inspectN10ReportBinding(html, meta, sources) {
+  try {
+    const binding = resolveN10ReportBinding(html, meta, sources, extractN10Tables(html));
+    if (!binding.ok) return {status:"rejected",reason:binding.reason,data:null};
+    return {status:"current-column-bound",data:null,scope:binding.scope,
+      target:{sheetCode:binding.sheetCode,tableCode:binding.tableCode,metaTableId:binding.metaTableId,
+        excelContextIndex:binding.context.index,column:"B"},period:binding.period,
+      priorDuration:null,otherColumnDurations:null,capital:null,
+      fullReportAccepted:false,hiddenCellsAccepted:false,blankCellsReplaced:false};
+  } catch { return {status:"rejected",reason:"metadata_invalid",data:null}; }
+}
+
 /** Strictly restrict new admission; never synthesize nullable fields or alter a
  * valid pv2 numeric result. Unknown/incompatible contexts return null. */
-export function admitN10Html(html, meta, onRejected) {
+export function admitN10Html(html, meta, onRejected, reportSources) {
   const reject = reason => notifyAdmissionRejection(onRejected, "ن-۱۰", reason);
   try {
     const contexts = extractN10Tables(html);
+    // Existing download/engine callers do not supply reportSources. This opt-in
+    // path consumes captured bytes only and adds no collection or activation.
+    const binding = reportSources === undefined ? null : resolveN10ReportBinding(html, meta, reportSources, contexts);
+    if (binding && !binding.ok) return reject("scope_unknown");
+    const scope = context => binding?.context === context ? binding.scope : n10Scope(context);
     const incomes = contexts.filter(c => findIncomeTable([c.rows]) || findBankIncomeTable([c.rows]));
     let contextReason;
     if (incomes.some(c => {
-      const invalid = !c.contextValid || c.columnsAmbiguous || !n10Scope(c);
+      const invalid = !c.contextValid || c.columnsAmbiguous || !scope(c);
       if (invalid) contextReason = !c.contextValid ? "context_invalid" : c.columnsAmbiguous ? "geometry_ambiguous" : "scope_unknown";
       return invalid;
     })) return reject(contextReason);
-    const independent = incomes.filter(c => n10Scope(c) === "standalone");
+    const independent = incomes.filter(c => scope(c) === "standalone");
     if (independent.length !== 1) return reject(independent.length === 0 ? "scope_unsupported" : "statement_ambiguous");
     const inc = independent[0];
     if (!n10Million(inc)) return reject("unit_unverified");
@@ -530,7 +609,7 @@ export function admitN10Html(html, meta, onRejected) {
     const bankKind = isBank ? (inc.rows.some(r => normLabel(r[0]).startsWith(normLabel("درآمد حق بیمه"))) ? "insurance" : "bank") : null;
     const core = n10Core(inc.rows, bankKind);
     if (Object.values(core).some(r => !r || !Number.isFinite(cellNum(r[1])))) return reject("values_unobserved");
-    const period = n10Period(inc, meta, Object.values(core));
+    const period = n10Period(inc, meta, Object.values(core), binding);
     if (!period) return reject("period_unverified");
     if (period.prior && Object.values(core).some(r => !Number.isFinite(cellNum(r[2])))) return reject("values_unobserved");
     for (const col of period.prior ? [1, 2] : [1]) {
