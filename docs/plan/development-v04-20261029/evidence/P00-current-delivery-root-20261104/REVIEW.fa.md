@@ -1,3 +1,17 @@
+## نتیجهٔ اجرای عملی Linux — 41816967134، پایان۱۰:۵۹UTC
+
+**اصلاح کنترل‌گر کار کرد؛ مسیر کامل عضو هنوز مردود است.** [تلاش تازه41816967134](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41816967134) با sourceدقیقd6، attempt1 و allocation5a278 از نصب lock کنترل‌گر،۶۹گارد آفلاین، prepare و lock برنامه عبور کرد و native واقعاً اجرا شد. [رسید خام امن](p03-native-418169-receipt.json)، [ZIP اصلی](p03-native-418169-safe-artifact.zip) و [بازخوانی مستقل root](p03-native-418169-independent-readback.json) باrun/source/allocation/executionUUID وdigest تطبیق شدند.
+
+نتیجهFAIL_NATIVE_NOT_ACCEPTED، exit1 وtimeoutfalse است. ۱۹SQL به‌ترتیب پین‌شده، شامل fixture ایزوله، مشاهده شد. ۱۰intent مستقیم محصول ثبت شده:۲مالی،۵مسیرparentمشاوره و۳مسیر دیگر؛ این‌ها تعداد اثر موفق، رضایت‌های مستقل یا تمام تلاش‌هایCDPمرورگر نیستند. آخرین PASS از prefix بررسی‌شده browser-owned-nonzero-dossier-real-consent و آخرین stage ثبت‌شده composition-fixture-binding/after است. **این stage محل قطعی خطا نیست**؛ بعد از آن در source مراحل دیگری بدون stage marker وجود دارد.
+
+nativeFailureCode و observedDefaultPrepareHttpStatus هر دوnull هستند؛ از اینnull یا تعدادintent، علت یا status خاص نتیجه نمی‌شود. contractتولید رسید فقطstageها/enumهای ثابت را منتشر می‌کند و تعدادی از کدهای مرحلهٔ composition و suffixهایwait در آن نگاشته نشده‌اند. peerموجود وroot فقط همانsource را بررسی می‌کنند؛ پیش از تخصیص بعدی باید نقص قراردادی قابل‌بازتولید یا کمترین projection ثابت و پیوندشده آماده شود. هیچ regex آزاد، بدنه، متن خصوصی یا rawnative.log خوانده/منتشر نشده است.
+
+پاک‌سازیowned مستقلCONFIRMED، writeOutcomeUnknown=null وautomaticReplay=false است؛ این receipt مجوز تکرار تلاش قبلی نیست. نصب اصلیNOT_APPLIED، حق خدمتNOT_CONNECTED و پذیرش آرشUNOBSERVED باقی‌اند. sourcee0/capsule54/driverE8 ثابت‌اند. لاگ عمومی job126532122259 کامل،۴۶۸۰۳کاراکتر، خوانده شد؛ علت واقعی شکست با شواهد فعلی **UNKNOWN** است.
+
+خروجی قابل استفاده همچنان دوPreview واقعی شرکت و صندوقProduction با حدود ثبت‌شده‌اند. **اقدام بعدیroot/C:** تشخیص source و اصلاحِ محدود پیش از اجرای تازه؛ **C/root:** تکمیل backup/restore/reader-history کپی START-A؛ **A/root:** نگاشت منبع/زمان/واحد نمودارها و شاهد مالی ناقص. هیچ کار مستقل به این شکست وابسته نشده است.
+
+### رسید پیشین؛ وضعیت در زمان خود
+
 ## ادامهٔ عملی ۴ نوامبر، پس از۱۰:۵۱UTC
 
 **صفحهٔ شرکت قابل بازکردن است:** همان [دو Preview با نمودار واقعی فولاد](https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=decision&monthlyYear=1403&quarters=8#fundamental) درsource7fd/PR408 باقی است؛ [نمای پرونده](https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental) و رسید مرورگر پایین همین سند‌اند. پذیرش محدود۸نمودار/تعامل/موبایل به انتخاب ظاهر یا پذیرش کلP14 تبدیل نشده است.
