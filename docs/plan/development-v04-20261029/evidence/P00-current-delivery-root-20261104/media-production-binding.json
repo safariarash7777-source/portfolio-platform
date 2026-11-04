@@ -1,0 +1,22 @@
+{
+  "status": "ACTUAL_REVIEWED_MEDIA_PRODUCTION_AND_ALIAS",
+  "pr": 390,
+  "main": "a42c61c2739ea73aae071de7fa9ed2fa22041347",
+  "reviewedHead": "045783a1f89871f9d4b2b6c4478e6112293c79b3",
+  "tree": "8b35cc0de84c2e4ce48754dbe1fd007c16357fe9",
+  "ciRun": 41741561164,
+  "ciCheckout": "e33d6c92bf20dc03cb31503a605a19f1277ab54a",
+  "ordinaryFiveJobs": "SUCCESS",
+  "allocatedNativeJob": "SKIPPED_NOT_ACCEPTANCE",
+  "deployment": "dpl_c2yaNaH3ou5tsZNxyyEzEWct7i9f",
+  "target": "production",
+  "state": "READY",
+  "immutableUrl": "https://portfolio-platform-974tjjarr-safariarash7777-4463s-projects.vercel.app/insights",
+  "alias": "https://portfolio-platform-fawn.vercel.app/insights",
+  "aliasReadbackMatches": true,
+  "previewBuildPromoted": false,
+  "reader": "Legacy Production query; Preview override not used",
+  "productBlobsIdenticalToAcceptedF0": true,
+  "humanAppearanceAcceptance": "OPEN",
+  "acceptanceReceipt": "media-production-acceptance.json"
+}

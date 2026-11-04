@@ -1,0 +1,19 @@
+{
+  "status": "SOURCE_INTEGRATED_NOT_NATIVE_EXECUTED",
+  "installer": "scripts/testing/consultation/install-native.py",
+  "installerSha256": "9df4eeb8535f3fa01ee29bbed06b4d10082a285e37eb9fb56b5bece29e1ed2dd",
+  "newVersionedHelper": "scripts/ops/cashflow-checkpoint/corrected-checkpoint-consumer-v2.py",
+  "helperSha256": "1a55c28349182d1b52461ef85871a9d03f4cc480c7b0fed5c463bb7f3e40d2af",
+  "legacyHelperUnchanged": true,
+  "oldApplyAndLegacyReviewUnchanged": true,
+  "reviewer": "Existing financial source reviewer via existing coordinator",
+  "sourceTests": 18,
+  "sourceTestsReexecutedByRoot": false,
+  "nativeInstallerModeExecuted": false,
+  "newMode": "--review-corrected-checkpoint-v2",
+  "gate": "a90996ce371a97701c50d5937fa11f866911f9387cbf9f4a1b130e4563c1fc3a",
+  "binding": "390fc73da29c3b53e267c4566eb538ebb0142c6426a032b41e27e969eaa5ac27",
+  "captureVerifyProfileIntegrated": false,
+  "legacyApplyPathIntegrated": false,
+  "releaseAuthorized": false
+}

@@ -1,0 +1,53 @@
+{
+  "status": "PASS_INDEPENDENT_READBACK_NOT_ACTIVATION",
+  "verdict": {
+    "originalStatus": "failed",
+    "correctionStatus": "PASS_OWNED_COPY_PRIVATE2_RECONCILIATION",
+    "originalReceiptSha256": "695848a3f26da875b859c6589952eb9154ed0fae36f365b254b20e881cc793d6",
+    "correctionReceiptSha256": "fda8610f0b849a799cf1c3d593d41ab918d687f5f5bf89a9d53a2e392897e106"
+  },
+  "artifactHashes": {
+    "acl17-reconciliation-20261104/strict-core-comparison.json": "74baf16c5cc1841e9de4471b0faf5405caab88848c4ad725e8b1f6c93c95516c",
+    "private2-reconciliation-20261104/private-restored.json": "a9fe3c6837ae92ce03ff007a650e2c92e23b134697e54658e4d6be140634c641",
+    "source-inventory.private": "5649143950763b044dd46221bb4d86ab0715a384927fc0ef5d0a70c3c7acb32a",
+    "acl17-reconciliation-20261104/plan.json": "b6534500bf0acc823c237b88c9482c5cb825f07cde46889a5800cdab3b8781b1",
+    "receipt.json": "695848a3f26da875b859c6589952eb9154ed0fae36f365b254b20e881cc793d6",
+    "acl17-reconciliation-20261104/private-restored.json": "5f7380c287780edcd3d94ba44da09d5f8f6f6014288d1f74145d4c6b96f9b3d2",
+    "private2-reconciliation-20261104/strict-private-comparison.json": "8ee8848b26b9024a3467006ace126ff84c2a5cc78ca5f136f020a76014d5bbce",
+    "acl17-reconciliation-20261104/intent.json": "f4d919428ccb6fe310bde105120b0cd64503670fbb2df7f6b6e68f7ba565c412",
+    "acl17-reconciliation-20261104/result.json": "39ba68d3d3b4aa14f91d76ae0e372863301761a429f23fab299072468921a327",
+    "target-inventory.private": "e29906a1cd94b962888361a91b96ace6a7c1b8d9472122bbf20358c32fe1178a",
+    "private2-reconciliation-20261104/plan.json": "b5e6fa5a890408bef62236cfcd8b55fa5301ca6d5fcafc34d577b4ffc393c1b6",
+    "acl17-reconciliation-20261104/strict-private-comparison.json": "06d67343800c9dabffe14af24628d7539f04101d611139edb7306ecf6dfad0f5",
+    "private2-reconciliation-20261104/intent.json": "be2432cf4724fd4446fb54581234f8cf30e669d808313382b6e000590d6cf990",
+    "private2-reconciliation-20261104/result.json": "fda8610f0b849a799cf1c3d593d41ab918d687f5f5bf89a9d53a2e392897e106",
+    "private2-reconciliation-20261104/strict-core-comparison.json": "74baf16c5cc1841e9de4471b0faf5405caab88848c4ad725e8b1f6c93c95516c",
+    "comparison-before-correction.private.json": "2ca79419e1b2cb1baee866a3cf63f0ab8cdb0205079e900738de492e86a77d9a"
+  },
+  "externalHashes": {
+    "v04-fresh-checkpoint-20261104/intent.json": "657d3fdd9040f2228d6928339f08523f69f62dc3b8bcbf1134c9725a6c7cd89b",
+    "v04-fresh-checkpoint-20261104/native-receipt.json": "695848a3f26da875b859c6589952eb9154ed0fae36f365b254b20e881cc793d6",
+    "v04-fresh-checkpoint-20261104/private-before.json": "a9fe3c6837ae92ce03ff007a650e2c92e23b134697e54658e4d6be140634c641",
+    "v04-fresh-checkpoint-20261104/result.json": "129d03372228638911938f8e7b866c7c37db40b469ff2c335da268d1163da104"
+  },
+  "fullDumpSha256": "7bd80f0749d0c898def87091584fa6fd0cb0e50f08196dfd76c9f051ce0adfea",
+  "dumpBytes": 2415654600,
+  "privateLiteralEqual": true,
+  "coreLines": 2084,
+  "coreSourceOnly": 0,
+  "coreTargetOnly": 0,
+  "sourceHealthy": true,
+  "targetStopped": true,
+  "network": "none",
+  "portsPublished": false,
+  "freeBytes": 14455828480,
+  "consumerActivated": false,
+  "bindingStillNone": true,
+  "sqlCalls": 0,
+  "startStopCalls": 0,
+  "releaseAuthorized": false,
+  "observedAtUtc": "2026-11-03T23:38:17.759734+00:00",
+  "payloadSha256": "56779aeb6bf92eb8659595512cd1fa47c71da40e77a1ea49236a6c618adfcca4",
+  "remoteWrites": false,
+  "automaticRetry": false
+}
