@@ -1,0 +1,23 @@
+{
+  "schema": "root-m1-phase-filename-adoption.v1",
+  "atUtc": "2026-11-04T14:02:27.427100+00:00",
+  "base": "499166f81d1074ec7c906bac49706507b253fee1",
+  "tree": "f5f1c9cdb1ca348d01ea0b8c5be6886244bf5f79",
+  "packetReceiptSha256": "3ca6f3d6f10cf5ef59c0998a0f3d77a25398366cf9dc0ace3956bf7094b828fc",
+  "patchSha256": "998988c186994a772038db3f8c8355783d8df893f7651f09acf2f52ab5227945",
+  "changed": [
+    "scripts/testing/assembled-native-ci/run.py",
+    "scripts/testing/assembled-native-ci/test_run.py"
+  ],
+  "all88OriginalTestMethodsAstUnchanged": true,
+  "newRegressionMethods": 2,
+  "localWindowsOfflineMethodsPassed": 90,
+  "linuxAcceptance": "PENDING_FRESH_CI_AND_NEW_ALLOCATION",
+  "strictAdapterNamespaceUnchanged": true,
+  "phaseValuesUnchanged": true,
+  "sourceFix": "closed enum filename lookup encodes underscore as dash; public phase values stay unchanged",
+  "previousFailureRun": 41838229728,
+  "oldAllocationReplayed": false,
+  "productionChanged": false,
+  "serviceEntitlement": "NOT_CONNECTED"
+}

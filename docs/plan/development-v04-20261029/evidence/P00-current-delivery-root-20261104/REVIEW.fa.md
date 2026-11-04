@@ -1,3 +1,9 @@
+# اصلاح نام مرحله ثبت شد؛ موفقیت نصب هنوز باز است
+
+کنترل‌کنندهٔ همان [PR403](https://github.com/safariarash7777-source/portfolio-platform/pull/403) به **45c5a8b86b1ef1f38cf74463e9891db4aa3922fb** / treef5f1c9cdb1ca348d01ea0b8c5be6886244bf5f79 رسید و remote دقیق تأیید شد. [مرور root](m1-phase-fix-source-review.json)، [patch](m1-phase-fix-PROPOSED.patch) و [رسید مجری](m1-phase-fix-receipt.json): فقط run.py/test_run.py، نام فایل از lookup همان enum با dash ساخته می‌شود؛ مقدار phase و validator سخت‌گیر adapter88da، workflow و capsule دست‌نخورده‌اند. همه۸۸متد قبلی AST عینقبل و دو regression تازه، [۹۰آزمون آفلاین Windows](m1-phase-fix-root-90-tests.log) موفق‌اند. این Linux/restore/native acceptance نیست؛ CI تازه در جریان و native تازه هنوز اجرا نشده است. شکست418382 با cleanup تأیید محفوظ است و replay نشده. root پس CI/مرور و با تخصیص تازه تمرین نصب را ادامه می‌دهد؛ C هم‌بندیP09 را مستقل seal می‌کند. نصب اصلیNOT_APPLIED، حق خدمتNOT_CONNECTED، دریافت کامل BRS و بستن مرورگر پژوهش بازند.
+
+### تحویل قبلی با شاهد نسخهٔ خودش
+
 # تحویل جاری ۴ نوامبر؛ منشأ سود قابل استفاده، تمرین نصب ناموفق و دریافت ذخیره‌شده
 
 **مأموریت همان۰٫۴ است؛ دریافت در همین چت هماهنگ‌کننده تأیید شد.** A مالک صفحه/قرارداد مالی، C ابزار و مسیر داده، root هماهنگی/اتصال/پذیرش است. B/P15 فعلاً محدودیت مصرف دارند؛ کد موجود پژوهش حفظ و با main ترکیب شد. ۱۶بسته و۸۵تعهد تغییر نکردند.

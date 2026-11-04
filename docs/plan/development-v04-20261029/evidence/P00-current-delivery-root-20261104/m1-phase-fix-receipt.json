@@ -1,0 +1,54 @@
+{
+  "status": "SOURCE_ONLY_NOT_ADOPTED",
+  "base": "499166f81d1074ec7c906bac49706507b253fee1",
+  "baseTree": "c4d4046e8e15ad4539975a173bd57eb2c27b6459",
+  "changedPaths": [
+    "scripts/testing/assembled-native-ci/run.py",
+    "scripts/testing/assembled-native-ci/test_run.py"
+  ],
+  "pins": {
+    "scripts/testing/assembled-native-ci/run.py": {
+      "baseGitBlob": "0dc20551284913744cb6a141ed61948f0f518185",
+      "baseSha256": "eb092aa4568fa5dfb9f8a09a4e35c5e6d06b43537dba245d9001184cd684a33f",
+      "proposedSha256": "6ebb43686eebca6e3fd846f32f69c85c1350918ba2c6e9da5281c31a5ec4891c",
+      "proposedGitBlob": "28ff75e129ace30b57f8c868175df4a1a48a366d"
+    },
+    "scripts/testing/assembled-native-ci/test_run.py": {
+      "baseGitBlob": "66d6bcb0e547b50ed1f7597ea460c3884970cd7b",
+      "baseSha256": "9fa69a9d519e462df039ddbd717c59ccf312806f668fdf6c660267f4eb64b1e4",
+      "proposedSha256": "c479e8ca1cd7a4eb49cf2b1b7054d6afb880d5999d416a18993954f13a038132",
+      "proposedGitBlob": "22a423f19e673a8c60e756b32ef651f1fefcae43"
+    },
+    "scripts/testing/consultation-feedback/install-feedback.py": {
+      "baseGitBlob": "dc6989a882a2d7535c1b07b998c93a8957236f65",
+      "baseSha256": "88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353",
+      "proposedSha256": "88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353"
+    }
+  },
+  "patchSha256": "998988c186994a772038db3f8c8355783d8df893f7651f09acf2f52ab5227945",
+  "proofSha256": "8b165c2a466f708c70ddf84b56fb3003f29e020891fa6f8b287334849f92a235",
+  "rawGitApplyCachedWhitespaceError": "PASS",
+  "appliedPrivateTree": "f5f1c9cdb1ca348d01ea0b8c5be6886244bf5f79",
+  "tests": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "phaseNamesValidated": 11,
+    "actualValidator": true,
+    "validatorConstructedWithoutFilesystem": true,
+    "oldFirstNameRejected": true,
+    "uniqueNames": true,
+    "unknownAliasesRejected": true,
+    "externalOrFilesystemBoundaryAttempts": 0,
+    "finalLogSha256": "1b6b8d9ca09980a236e6522576489787656d4c94fb51796676874ac09f5f3b90",
+    "initialAssemblySyntaxErrorLogRetained": true,
+    "initialLogSha256": "0c5b4acabb480f1c41d6099c8299586e7fa74c112043325318beff76e307f0b5"
+  },
+  "phaseEnumUnchanged": true,
+  "adapterValidatorUnchanged": true,
+  "sharedSourceIndexRefsModified": false,
+  "nativeExecuted": false,
+  "networkExecuted": false,
+  "primary": "NOT_APPLIED",
+  "fullConsumer": "NOT_WIRED"
+}
