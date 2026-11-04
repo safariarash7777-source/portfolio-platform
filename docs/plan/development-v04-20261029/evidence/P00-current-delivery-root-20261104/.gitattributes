@@ -27,3 +27,6 @@ p07-monthly-audit-* -text -whitespace
 p07-rate-* -text -whitespace
 p07-single-report-* -text -whitespace
 production-ops-* -text -whitespace
+
+p03-native-418053-* -text -whitespace
+liara-rest-contract-* -text -whitespace

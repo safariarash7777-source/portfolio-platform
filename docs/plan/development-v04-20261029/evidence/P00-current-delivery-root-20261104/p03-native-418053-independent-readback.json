@@ -1,0 +1,59 @@
+{
+  "schema": "root-p03-fresh-native-independent-review.v1",
+  "atUtc": "2026-11-04T09:21:54.176475+00:00",
+  "run": 41805399352,
+  "artifact": 13309058999,
+  "zipSha256": "d4f3af5956daf72740c4717cb68404e99478fb0a7cc7f989696adeb6c630fc27",
+  "receiptSha256": "f24f70358109df16253a77b9cedec40ad08c0eb90f842b71af0e7ea7153c1418",
+  "binding": {
+    "acceptanceProfile": "p03-composition-e0-v1",
+    "allocationId": "ac782b76-5971-4b6b-9de9-05d570f596dc",
+    "attempt": 1,
+    "candidateCommit": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+    "capsuleSha256": "67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb",
+    "driverContractSha256": "3da3f5babd4e668ca5f53d652efaca721bba2594b91d29c131b46d842e4a7d34",
+    "executionAllocationId": "2402a125-0514-5613-ab59-e7af7536475a",
+    "repository": "safariarash7777-source/portfolio-platform",
+    "runId": "41805399352",
+    "workflowCommit": "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e"
+  },
+  "overall": "FAIL_NATIVE_NOT_ACCEPTED",
+  "nativeAttempted": true,
+  "ownedCleanupReadback": "CONFIRMED",
+  "writeOutcomeUnknown": null,
+  "failureDiagnostics": {
+    "actualExitCode": 1,
+    "chromePreflight": null,
+    "duplicatePassRecords": false,
+    "fallbackUsed": false,
+    "lastObservedPassedCheck": "browser-owned-nonzero-dossier-real-consent",
+    "lastObservedStage": "composition-default-prepare",
+    "lastObservedStageEdge": "before",
+    "logReadback": "OBSERVED",
+    "malformedLogRecords": false,
+    "malformedStageRecords": false,
+    "nativeFailureCode": null,
+    "observedConsentPostIntents": 1,
+    "observedFinancialPostIntents": 2,
+    "observedOtherProductPostIntents": 1,
+    "observedPassedChecks": [
+      "isolation-attested",
+      "four-fresh-auth-users-and-sdk-getuser",
+      "assembled-real-member-navigation-and-read-only-dom",
+      "browser-owned-nonzero-dossier-real-consent"
+    ],
+    "observedProductPostIntents": 4,
+    "observedSqlAppliedCount": 18,
+    "stageReadback": "OBSERVED",
+    "timedOutOrInterrupted": false
+  },
+  "oldRunReplay": false,
+  "privateLogReadOrPublished": false,
+  "fullPublicNativeJobLogRead": {
+    "job": 126493540086,
+    "characters": 44411
+  },
+  "rootCause": "UNKNOWN; bounded call-site now composition-default-prepare/before",
+  "primaryInstall": "NOT_APPLIED",
+  "serviceEntitlement": "NOT_CONNECTED"
+}

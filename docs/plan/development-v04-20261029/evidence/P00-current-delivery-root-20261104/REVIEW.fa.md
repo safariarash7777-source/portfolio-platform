@@ -1,3 +1,15 @@
+## نتیجهٔ اجرای تازهٔ عضو — ۰۹:۱۸UTC
+
+[اجرای41805399352](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41805399352) رویc5d6، با allocation/ac782 و execution/2402 مستقل، **FAIL_NATIVE_NOT_ACCEPTED** شد. [رسید خام امن](p03-native-418053-receipt.json)، [ZIP اصلی](p03-native-418053-safe-artifact.zip) و [readback مستقل root](p03-native-418053-independent-readback.json) به همین پرونده افزوده شدند. پنج بررسی عادی قبل از native موفق بودند؛ قبولی آن‌ها نتیجهٔ native را تغییر نمی‌دهد.
+
+پیشرفتِ مشاهده‌شده نسبت به projection قدیمی: browser-owned-nonzero-dossier-real-consent آخرین PASS است؛ آخرین مرز composition-default-prepare/before، نه صرفاً member-context-close.۱۸SQL و۴POST intent (۲مالی/۱رضایت/۱دیگر) ثبت‌اند؛ اثرِ هر POST از شمارنده استنتاج نمی‌شود. exit1، timeout=false، nativeFailureCode=null و علت داخلی هنوز UNKNOWN است. cleanup **CONFIRMED** و writeOutcomeUnknown **null** است؛ null=false نیست. اجرای قبلی یا همین namespace تکرار نشده و نخواهد شد؛ لاگ خصوصی منتشر نشده است. root/C همان callchain آماده‌سازی default را آفلاین بررسی می‌کنند؛ تغییر source یا مشاهدهٔ تازه باید گیت مشخصی ببندد.
+
+[قرارداد REST موجود CLI](liara-rest-contract-offline.md) نیز فقط source-only بررسی شد: metadata برنامه/release/log می‌تواند شاهد کنترل‌پلین دهد، نه هویت DB مؤثر، سهمیه BRSAPI یا مصرف واقعی. CLIlogs ممکن است حلقه و درخواست‌های جانبی داشته باشد؛ اجرا نشده و هیچ GET/WS/START تازه‌ای برای این سند انجام نشده است.
+
+پذیرش مقصد، پاسخ/پیگیری و بازخوانیِ کل مسیر عضو، بستن صفحهٔ پژوهش و حق خدمت هنوز بازند؛ نصب اصلی **NOT_APPLIED** و حق خدمت **NOT_CONNECTED**. تمرین نصب و برگشت تک‌گزارش PR412/5fe با CI41803924608 پذیرفتهٔ Linux/source است؛ دو نمای واقعی شرکت و اصلاح صندوق سایت اصلی همان لینک‌های پایین را دارند. A هم‌زمان اصلاح هشدارهای نمودار را روی source آماده می‌کند؛ C/root مانع دقیق default-prepare را ادامه می‌دهند. نصب/مدل/انتقال Hermes و هزینه تازه انجام نشده است.
+
+### رسید پیشین؛ وضعیت در زمان ثبت
+
 ## نتیجهٔ تازهٔ Linux و دسترسی — ۴ نوامبر، پس از ۰۹:۰۳UTC
 
 **تمرین نصب و برگشت روی کپی مستقل Linux پذیرفته شد.** [PR412](https://github.com/safariarash7777-source/portfolio-platform/pull/412)، نسخهٔ5fe459f در [CI41803924608](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41803924608) هر۵job موفق دارد؛ native اختیاری SKIPPED است. [root: لاگ کامل و تطبیق۱۰فایل source/CI](p07-single-report-final-linux-ci.json): هر۹آزمون واقعی Postgres برای نصب candidate، بازخوانی/انتخاب reader، idempotency، baseline CAS، برگشت پیش از commit، برگشت روبه‌جلوی append-only، deadline و قفل و سپس۴۰۰آزمون integration قبلی گذشتند. دو شکست محیط آزمون در df56 حفظ و در5fe اصلاح شدند؛ [رسید شکست قبلی](p07-single-report-first-sql-pass.json). این پذیرش Linux/source است؛ نصب اصلی، ingest واقعی و نمایش مقصد انجام نشده، candidate **NOT_APPLIED** و collector نصب نشده است.
