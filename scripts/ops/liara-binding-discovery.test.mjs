@@ -5,7 +5,6 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {EventEmitter} from 'node:events';
 import {FIXED_DISCOVERY_SOURCE} from './liara-binding-discovery-command.mjs';
-import {discoverBinding} from './liara-binding-discovery.mjs';
 const nonce='a'.repeat(32),secret='NEVER_EMIT_PRIVATE_VALUE',release='b'.repeat(24);
 const node=(extra={})=>({exe:'/usr/bin/node',cwd:'/app',argv:['node','server.mjs'],...extra});
 function command(processes={},mode='ok'){
@@ -49,24 +48,51 @@ test('incremental census is capped and closed on elapsed deadline without app/en
   assert.ok(command({'7':node()}).reads.every(p=>/^\/proc\/7\/(stat|cmdline)$/.test(p)));
 });
 test('public discovery gate is closed before getters, with no activation options',async()=>{
-  const r=await discoverBinding(new Proxy({},{get(){throw Error(secret);}}));assert.equal(r.state,'discovery_not_adopted');assert.equal(r.remoteHalt,'not_started');
+  const r=await offline(false)(new Proxy({},{get(){throw Error(secret);}}));assert.equal(r.state,'discovery_not_adopted');assert.equal(r.remoteHalt,'not_started');
 });
 test('fixed reasons identify failure categories without raw messages or candidate identity',()=>{
   for(const [processes,mode,reason] of [[{},'proc-unavailable','proc_unavailable'],[{'7':node({unreadable:true})},'ok','identity_unreadable'],[{'7':node({exe:'/other/nodejs'})},'ok','node_exe_outside_allowlist'],[{'7':node({cwd:'/other'})},'ok','node_cwd_outside_allowlist'],[{'7':node({argv:['node','bad.mjs']})},'ok','node_entry_outside_allowlist'],[{},'ok','zero_candidate'],[{'7':node(),'8':node()},'ok','multiple_candidates']]){
     const r=command(processes,mode).receipt;assert.equal(r.reason,reason);assert.equal(r.state,'unresolved');for(const k of ['pid','startTicks','exeKind','cwdKind','entryKind'])assert.equal(r[k],null);
   }
 });
-function offline(){const s=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace('const DISCOVERY_ADOPTED = false','const DISCOVERY_ADOPTED = true').replace('},15000)','},20)');const c=vm.createContext({createHash,FIXED_DISCOVERY_SOURCE,Buffer,URL,URLSearchParams,TextDecoder,AbortController,setTimeout,clearTimeout});vm.runInContext(s,c);return vm.runInContext('discoverBinding',c);}
+function offline(adopted=true){const s=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace(/const DISCOVERY_ADOPTED = (?:false|true)/,'const DISCOVERY_ADOPTED = '+adopted).replace('},15000)','},20)');const c=vm.createContext({createHash,FIXED_DISCOVERY_SOURCE,Buffer,URL,URLSearchParams,TextDecoder,AbortController,setTimeout,clearTimeout});vm.runInContext(s,c);return vm.runInContext('discoverBinding',c);}
 async function protocol(mode='ok'){
   let gets=0,ws=0,starts=0;
   const r=await offline()({token:secret,nonce,fetchImpl:async(url,init)=>{gets++;assert.equal(url,'https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100');assert.equal(init.method,'GET');assert.equal(init.redirect,'error');if(mode==='get-stall'||(mode==='post-stall'&&gets===2))return new Promise(()=>{});if(mode==='http')return new Response(secret,{status:401});const id=mode==='release-change'&&gets===2?'c'.repeat(24):release;let text=JSON.stringify({currentRelease:id,releases:[{_id:id,state:'READY'}]});if(mode==='duplicate-release')text=text.replace('"currentRelease":','"currentRelease":"'+release+'","currentRelease":');return new Response(mode==='body-limit'?'x'.repeat(1048577):text);},connect:url=>{
     ws++;const u=new URL(url);assert.equal(u.origin,'wss://api.iran.liara.ir');assert.equal(u.searchParams.get('project_id'),'arsadata');assert.equal(u.searchParams.get('token'),secret);assert.equal(u.searchParams.get('cmd').includes(secret),false);
     const socket=new EventEmitter();socket.close=()=>{};socket.send=text=>{starts++;assert.equal(JSON.parse(text).action,'start');queueMicrotask(()=>{if(mode==='ws-stall')return;if(mode==='empty'){socket.emit('close',1000);return;}let text=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
-      if(mode==='nonce')text=text.replace(nonce,'d'.repeat(32));if(mode==='duplicate-frame-key')text=text.replace('"version":1','"version":1,"version":1');if(mode==='secret-field')text=text.replace('"version":1','"version":1,"argv":"'+secret+'"');if(mode==='ansi')text='\u001b[0m'+text;if(mode==='frame-limit')text='x'.repeat(8193);
-      socket.emit('message',text);if(mode==='extra-frame')socket.emit('message',text);if(mode==='socket-error')socket.emit('error',Error(secret));socket.emit('close',mode==='unclean'?1006:1000);
+      if(mode==='nonce')text=text.replace(nonce,'d'.repeat(32));if(mode==='duplicate-frame-key')text=text.replace('"version":1','"version":1,"version":1');if(mode==='secret-field')text=text.replace('"version":1','"version":1,"argv":"'+secret+'"');if(mode==='crlf')text+='\r\n';if(mode==='ansi')text='\u001b[0m'+text;if(mode==='frame-limit')text='x'.repeat(8193);
+      if(mode==='split-frame'){socket.emit('message',text.slice(0,10));socket.emit('message',text.slice(10));}else if(mode==='truncated-utf8')socket.emit('message',new Uint8Array([0xc3]));else socket.emit('message',text);if(mode==='extra-frame')socket.emit('message',text);if(mode==='socket-error')socket.emit('error',Error(secret));socket.emit('close',mode==='unclean'?1006:1000);
     });};queueMicrotask(()=>socket.emit('open'));return socket;
   }});assert.equal(JSON.stringify(r).includes(secret),false);assert.equal(JSON.stringify(r).includes('Sha256'),false);assert.equal(r.remoteHalt,'unknown');assert.ok(gets<=2&&ws<=1&&starts<=1);return {r,gets,ws,starts};
 }
-test('offline protocol has exactly two release GETs, one socket/start and no automatic adoption',async()=>{const p=await protocol();assert.equal(p.r.state,'candidate_only_not_adopted');assert.equal(p.gets,2);assert.equal(p.ws,1);assert.equal(p.starts,1);assert.equal((await discoverBinding()).state,'discovery_not_adopted');});
+test('offline protocol has exactly two release GETs, one socket/start and no automatic adoption',async()=>{const p=await protocol();assert.equal(p.r.state,'candidate_only_not_adopted');assert.equal(p.gets,2);assert.equal(p.ws,1);assert.equal(p.starts,1);assert.equal((await offline()()).state,'invalid_input');});
 test('protocol adversarial schema/frames/identity/errors are redacted and fail closed',async()=>{for(const mode of ['http','body-limit','duplicate-release','release-change','nonce','duplicate-frame-key','secret-field','ansi','frame-limit','extra-frame','socket-error','empty','unclean'])assert.equal((await protocol(mode)).r.state,'protocol_rejected',mode);});
 test('deadline covers preflight, socket and postflight, no remote stop claim or retry',async()=>{for(const mode of ['get-stall','ws-stall','post-stall'])assert.ok(['deadline','protocol_rejected'].includes((await protocol(mode)).r.state));});
+
+// Pure framing evaluation: no native transport, CLI entry or credential lookup.
+function framingFixture(){
+  let parses=0;
+  const source=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
+  const context=vm.createContext({Buffer,createHash,FIXED_DISCOVERY_SOURCE,JSON:{stringify:JSON.stringify,parse:s=>{parses++;return JSON.parse(s);}}});
+  vm.runInContext(source,context);
+  return {read:vm.runInContext('receipt',context),parses:()=>parses};
+}
+const canonicalReceipt=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
+test('framing accepts exactly no terminator or one LF/CRLF and rejects whitespace/control/text extras',()=>{
+  for(const raw of [canonicalReceipt,canonicalReceipt+'\n',canonicalReceipt+'\r\n'])assert.equal(framingFixture().read(raw,nonce).reason,'stable_candidate');
+  for(const raw of [canonicalReceipt+'\n\n',canonicalReceipt+'\r\n\r\n',canonicalReceipt+'\r',canonicalReceipt.replace('stable_candidate','stable\rcandidate'),'prompt>'+canonicalReceipt,canonicalReceipt+'prompt>',canonicalReceipt+canonicalReceipt,' '+canonicalReceipt,canonicalReceipt+' ','\x1b[0m'+canonicalReceipt])assert.throws(()=>framingFixture().read(raw,nonce));
+});
+test('raw8192 UTF8-byte cap precedes terminator removal and strict nonce/schema validation',()=>{
+  for(const bytes of [8192,8193]){
+    const f=framingFixture(),prefix=canonicalReceipt.slice(0,-1)+',"extra":"',suffix='"}\r\n',raw=prefix+'x'.repeat(bytes-Buffer.byteLength(prefix+suffix))+suffix;
+    assert.equal(Buffer.byteLength(raw),bytes);assert.throws(()=>f.read(raw,nonce));assert.equal(f.parses()>0,bytes===8192);
+  }
+  const f=framingFixture();assert.throws(()=>f.read('é'.repeat(4096)+'\r\n',nonce));assert.equal(f.parses(),0);
+  assert.throws(()=>framingFixture().read(canonicalReceipt+'\r\n','c'.repeat(32)));
+  assert.throws(()=>framingFixture().read(canonicalReceipt.replace('"version":1','"version":1,"version":1')+'\r\n',nonce));
+});
+test('CRLF stays single-frame candidate-only; split frames and truncated UTF8 fail without retry',async()=>{
+  const ok=await protocol('crlf');assert.equal(ok.r.state,'candidate_only_not_adopted');assert.equal(ok.gets,2);assert.equal(ok.r.remoteHalt,'unknown');
+  for(const mode of ['split-frame','truncated-utf8']){const failed=await protocol(mode);assert.equal(failed.r.state,'protocol_rejected');assert.equal(failed.gets,1);assert.equal(failed.ws,1);assert.equal(failed.starts,1);}
+});
