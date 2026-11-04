@@ -192,3 +192,26 @@ test("HTTP 200 cannot freshen old, missing, future or mixed price clocks", async
     for (const key of keys) { if (saved[key] === undefined) delete process.env[key]; else process.env[key] = saved[key]; }
   }
 });
+
+
+test('restart NAV actual reader cannot promote retained values without a true NAV receipt', async () => {
+  const { retainMarketFamilies } = createRequire(import.meta.url)('../relay/market-retention.mjs');
+  const { toMarket } = await import('./market-ir');
+  const families = ['gold','currency','crypto','stocks','funds','options','indices'];
+  const fixture = () => ({ gold: [], currency: [], crypto: [], stocks: [], funds: [], options: [], indices: null, fetchedAt: navNow });
+  const outcomes = Object.fromEntries(families.map(name => [name, { ok: true }]));
+  for (const receivedAt of [undefined,null,0,'123',NaN,Infinity,navNow+1]) {
+    const previous = { ...fixture(), funds: [{ ...navRow, navReceivedAt: receivedAt }] };
+    const freshPrice = Object.fromEntries(Object.entries(navRow).filter(([key]) => !['nav','navIssue','navDate','navTime','bubblePercent'].includes(key)));
+    const candidate = { ...fixture(), funds: [freshPrice] };
+    const payload = retainMarketFamilies(previous,candidate,outcomes,navNow).payload;
+    const parsed = toMarket(payload).funds[0];
+    assert.equal(parsed.nav,null);
+    const quality = withValidNav(parsed,navNow,navNow);
+    assert.equal(quality.bubblePercent,null); assert.notEqual(quality.navState,'ready');
+  }
+  const previous = { ...fixture(), funds: [{ ...navRow, navReceivedAt: navNow-1000 }] };
+  const freshPrice = Object.fromEntries(Object.entries(navRow).filter(([key]) => !['nav','navIssue','navDate','navTime','bubblePercent'].includes(key)));
+  const parsed = toMarket(retainMarketFamilies(previous,{...fixture(),funds:[freshPrice]},outcomes,navNow).payload).funds[0];
+  assert.equal(parsed.nav,100); assert.equal(withValidNav(parsed,navNow,navNow).navState,'ready');
+});

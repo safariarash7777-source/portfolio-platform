@@ -46,6 +46,8 @@ async function probe(scenario) {
           }));
           return reply(phase===1&&scenario==='authoritative-empty'?{gold:[],currency:[],cryptocurrency:[]}:phase===1&&scenario==='missing-currency'?{gold:gc.gold,cryptocurrency:gc.cryptocurrency}:{...gc,currency});
         }
+        if(/Nav/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply(u.searchParams.has('l18')?{predtran:0}:[{l18:fund.l18,predtran:1200,psubtran:1210,date:'1405-07-14',time:'09:30:00'},{l18:'unavailable-fund',predtran:0}]);
+        if(/AllSymbols/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply([stock,fund,{...fund,l18:'isolated-second-fund'}]);
         if(/AllSymbols/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:phase===1&&scenario==='invalid-fund'?[stock,{...fund,pl:0}]:[stock,fund]);
         if(/Index/.test(u.pathname))return reply({index:100,index_change:0,date:'1405-07-14',time:'09:30:00'});
         if(/Option/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:[{...option,pl:2000+phase*1000}]);
@@ -73,6 +75,10 @@ async function probe(scenario) {
         initialReads++;
         if(scenario==='unknown-baseline'||scenario==='retry-baseline'&&phase===0)failure();
         if(scenario==='malformed-baseline')return reply([{payload:{}}]);
+        if(scenario.startsWith('nav-restart'))return reply([{payload:{...gc,crypto:gc.cryptocurrency,stocks:[],options:[],indices:null,
+          funds:[fund.l18,'isolated-second-fund'].map(id=>({id,faName:'Synthetic retained fund',unit:'toman',price:100,nav:100,navIssue:101,
+            navDate:'1405-07-14',navTime:'08:00:00',...(scenario==='nav-restart-partial'?{navReceivedAt:start-3600000}:{})})),fetchedAt:start-3600000,
+          snapshotQuality:{families:{funds:{state:'received',receivedAt:start-3600000,retained:false}}}}}]);
         if(scenario==='hydrated-partial'||scenario==='retry-baseline')return reply([{payload:{...gc,crypto:gc.cryptocurrency,
           stocks:[stock],funds:[fund],options:[option],indices:{date:'1405-07-14',time:'09:30:00'},fetchedAt:start-3600000}}]);
       }
@@ -87,6 +93,10 @@ async function probe(scenario) {
     await new Promise(r=>server.listen(0,'127.0.0.1',r));
     if(scenario==='hydrated-partial')phase=1;
     await refresh();
+    if(scenario.startsWith('nav-restart'))for(let i=0;i<100;i++) {
+      if((await get('/debug')).body.sources.brsapi_nav?.updated===1)break;
+      await new Promise(r=>setTimeout(r,5));if(i===99)throw Error('offline NAV round did not complete');
+    }
     const first=await get('/market.json');
     if(scenario.startsWith('client-')) {
       for(let i=0;i<500;i++) {
@@ -286,4 +296,19 @@ test('actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial u
   assert.equal(r.writesAfterSecond,2);
   assert.equal(r.second.body.options[0].price,300);
   assert.deepEqual(r.second.body.stocks,r.first.body.stocks);
+});
+
+
+for(const scenario of ['nav-restart-partial','nav-restart-legacy'])test(`restart NAV actual server: ${scenario} retains only truly received NAV through partial fresh rotation`,async()=>{
+  const r=await probe(scenario);assert.equal(r.blockedHosts,0);assert.equal(r.initialReads,1);
+  const row=r.second.body.funds.find(f=>f.id==='isolated-second-fund');
+  assert.equal(row.price,100); assert.equal(row.unit,'toman');
+  if(scenario==='nav-restart-partial') {
+    assert.equal(row.nav,100); assert.equal(row.navIssue,101); assert.equal(row.navDate,'1405-07-14');
+    assert.equal(row.navTime,'08:00:00'); assert.equal(row.navRetained,true); assert.equal(row.navReceivedAt,r.start-3600000);
+  } else { assert.equal(row.nav,undefined); assert.equal(row.navDate,undefined); assert.equal(row.navReceivedAt,undefined); }
+  assert.equal(r.second.body.funds.find(f=>f.id==='isolated-fund').nav,120);
+  assert.equal(r.second.body.funds.find(f=>f.id==='isolated-fund').navReceivedAt,r.start);
+  assert.equal(r.latest.at(-1).funds.find(f=>f.id==='isolated-second-fund').navReceivedAt,row.navReceivedAt);
+  assert.equal(r.second.body.snapshotQuality.families.funds.receivedAt,r.now);
 });

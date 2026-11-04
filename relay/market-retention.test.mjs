@@ -103,3 +103,45 @@ test('error categories never disclose raw provider exception text', () => {
   assert.equal(sourceErrorCategory('family schema invalid'), 'schema');
   assert.equal(sourceErrorCategory('arbitrary private message'), 'source-failed');
 });
+
+
+test('restart NAV: successful fresh fund prices retain untouched NAV receipts, not fresh history NAV', () => {
+  const previous = fixture(now - 3600000), candidate = fixture(now);
+  previous.funds = [{ id: 'a', price: 100, unit: 'toman', nav: 100, navIssue: 101, navDate: '1404-11-14', navTime: '10:00:00', navReceivedAt: now - 3600000 }];
+  candidate.funds = [{ id: 'a', price: 110, unit: 'toman', sourceDate: '1404-11-14', sourceTime: '11:00:00' }];
+  const result = retainMarketFamilies(previous, candidate, outcomes(true), now);
+  const row = result.payload.funds[0];
+  assert.equal(row.nav, 100); assert.equal(row.navIssue, 101); assert.equal(row.price, 110);
+  assert.equal(row.unit, 'toman'); assert.equal(row.navDate, '1404-11-14'); assert.equal(row.navTime, '10:00:00');
+  assert.equal(row.navReceivedAt, now - 3600000); assert.equal(row.navRetained, true); assert.equal(row.bubblePercent, null);
+  assert.equal(result.payload.snapshotQuality.families.funds.receivedAt, now);
+  assert.equal(result.fresh.funds[0].nav, undefined); assert.equal(candidate.funds[0].nav, undefined);
+});
+
+test('restart NAV: new accepted NAV wins; explicit empty/invalid unit/ratio/expired receipt never revives old NAV', () => {
+  const previous = fixture(now), candidate = fixture(now);
+  const old = { id: 'a', unit: 'toman', price: 100, nav: 100, navReceivedAt: now - 1000 };
+  previous.funds = [old]; candidate.funds = [{ id: 'a', unit: 'toman', price: 110, nav: 105, navDate: '1404-11-14', navReceivedAt: now }];
+  assert.deepEqual(retainMarketFamilies(previous, candidate, outcomes(true), now).payload.funds, candidate.funds);
+  candidate.funds = [];
+  assert.deepEqual(retainMarketFamilies(previous, candidate, outcomes(true), now).payload.funds, []);
+  for (const patch of [{unit:'rial'}, {nav:true}, {nav:0}, {navReceivedAt:now-24*3600000-1}, {navStatus:'invalid-unit'}]) {
+    previous.funds=[{...old,...patch}];candidate.funds=[{id:'a',unit:'toman',price:110}];
+    assert.equal(retainMarketFamilies(previous,candidate,outcomes(true),now).payload.funds[0].nav,undefined);
+  }
+  previous.funds=[old];candidate.funds=[{id:'a',unit:'toman',price:300}];
+  assert.equal(retainMarketFamilies(previous,candidate,outcomes(true),now).payload.funds[0].nav,undefined);
+});
+
+test('restart NAV: unknown/invalid/future NAV receipt cannot retain a NAV through fresh snapshots', () => {
+  for (const received of [undefined,null,0,'123',NaN,Infinity,now+1]) {
+    const previous=fixture(now-1000),candidate=fixture(now);
+    previous.funds=[{id:'a',unit:'toman',price:100,nav:100,navDate:null,navTime:null,navReceivedAt:received}];
+    candidate.funds=[{id:'a',unit:'toman',price:110}];
+    let result=retainMarketFamilies(previous,candidate,outcomes(true),now);
+    assert.equal(result.payload.funds[0].nav,undefined); assert.equal(result.payload.funds[0].navReceivedAt,undefined);
+    assert.equal(result.payload.funds[0].navDate,undefined); assert.equal(result.payload.funds[0].navTime,undefined);
+    result=retainMarketFamilies(result.payload,candidate,outcomes(true),now+60000);
+    assert.equal(result.payload.funds[0].nav,undefined); assert.equal(result.payload.funds[0].navReceivedAt,undefined);
+  }
+});
