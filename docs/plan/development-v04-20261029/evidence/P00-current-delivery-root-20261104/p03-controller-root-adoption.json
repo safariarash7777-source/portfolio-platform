@@ -1,0 +1,26 @@
+{
+  "schema": "root-p03-controller-dependency-fix.v1",
+  "atUtc": "2026-11-04T10:39:01.058000+00:00",
+  "base": "7cab80d679686bb09f7c1e1124fa2a9c3649ae05",
+  "source": "ffbb1d202b7913a6fafdcd66c557b70e9b3b8593",
+  "sourceTree": "05dc24cde8664038a69d9b3073e7e2d5050848bf",
+  "exactPath": ".github/workflows/ci.yml",
+  "onlyDelta": "      - name: Existing controller dependency lock only\n        run: npm ci --ignore-scripts\n",
+  "ordinaryFiveJobsByteIdentical": true,
+  "noNewPackageOrLockVersion": true,
+  "lifecycleScriptsDisabledForControl": true,
+  "nativeSourceAndAppCapsuleUnchanged": true,
+  "reviewedCapsule": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255",
+  "reviewedDriver": "e8b12e8f44e80e6fc41719028769ea126a16a4250f0a6b0e2433d8481b643850",
+  "targetedWorkflowTests": {
+    "pass": 3,
+    "fail": 0
+  },
+  "oldRun": 41814064547,
+  "oldNativeExecutionStep": "SKIPPED",
+  "oldReceiptExists": false,
+  "firstWorkflowFailurePreserved": true,
+  "newNativeAfterFix": "NOT_RUN",
+  "ci": "PENDING",
+  "primaryInstall": "NOT_APPLIED"
+}

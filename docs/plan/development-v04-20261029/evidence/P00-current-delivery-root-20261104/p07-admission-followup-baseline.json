@@ -1,0 +1,29 @@
+{
+  "base": "133154bef69eb88c6b03ac807842ff22bdd8f2aa",
+  "source": "99a6d1e4a8a328ea92e0bf63ffeee38fc690da12",
+  "checkoutHead": "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec",
+  "checkoutStatus": "",
+  "files": [
+    {
+      "path": "relay/codal.mjs",
+      "sha256": "e21379a7b33ec196739962acfae436f99a4b18a386fa1aac84d36f51aef66c24",
+      "bytes": 75027
+    },
+    {
+      "path": "relay/codal-report-metadata.mjs",
+      "sha256": "119df5ab173239a0626c626b5973eba0623670e673a907048cf0fc3f488c8e57",
+      "bytes": 13387
+    },
+    {
+      "path": "relay/brsapi-transport.mjs",
+      "sha256": "ef39fe6b630698599ed887830e30b3258b5d24f008fa6ba5b8be880f15610205",
+      "bytes": 2295
+    },
+    {
+      "path": "relay/codal-admission-diagnostics.mjs",
+      "sha256": "0e06c71bfc2aba4bf05ddf1b3c774ef4d70f942dc385a0173ff62902de36a4fb",
+      "bytes": 2456
+    }
+  ],
+  "network": false
+}

@@ -1,3 +1,23 @@
+## ادامهٔ عملی ۴ نوامبر، پس از۱۰:۵۱UTC
+
+**صفحهٔ شرکت قابل بازکردن است:** همان [دو Preview با نمودار واقعی فولاد](https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=decision&monthlyYear=1403&quarters=8#fundamental) درsource7fd/PR408 باقی است؛ [نمای پرونده](https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental) و رسید مرورگر پایین همین سند‌اند. پذیرش محدود۸نمودار/تعامل/موبایل به انتخاب ظاهر یا پذیرش کلP14 تبدیل نشده است.
+
+**مسیر عضو، عیب قبلی اصلاح و اجرای تازه آغاز شد:** بدنهٔ denied اکنون با validator واقعیe0، پیش از ثبت intent وPOST، canonical می‌شود. [بازبینی مستقل۱۷module عینGit و دو عضو تغییرکرده capsule](p03-canonical-r3-root-adoption.json)، [source7cab منتشرشده](p03-canonical-r3-root-publication.json) و [۶۹آزمون واقعیLinux/CI41812805098](p03-canonical-r3-root-ordinary-linux-review.json) موجودند؛ validator، انتظار۵۰۳،SQL/Auth/budget و شمار تلاش‌ها تغییر نکردند.
+
+تلاش [41814064547](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41814064547) با source7cab در preflight کنترل‌گر به «Cannot find module 'typescript'» خورد: prepare/execute انجام نشد، artifact/receipt ندارد و cleanup مشاهده‌شده ادعا نمی‌شود. [شاهد شکست](p03-controller-failed-run-41814064547.json). اصلاح فقط دوخطِ نصب lock موجود کنترل‌گر با npm ci --ignore-scripts پیش از preflight است؛ وابستگی/نسخه تازه اضافه نشد، پنج job عادی عیناً ثابت‌اند. [root adoption](p03-controller-root-adoption.json)، [تطبیق انتشارAPI و CI](p03-controller-api-publication-review.json): localffbb منتشر نشد، API source دقیقd6 و tree05dc برابر آن است. CI41815979013 هر۵job موفق و nativeSKIPPED، لاگ کاملCore/DB مستقل خوانده و tree واقعیdcb برابرd6 است.
+
+مسیر مستقیم Git مدتی اتصال443 نداشت ولی API متصل بود؛ بررسی head در dispatcher به GET احرازشدهٔ ref واقعی با تطبیق ref/type/SHA منتقل شد، دو بار پیش ازPOST و با fail-closed. شش حالت معتبر/مخدوش/عدم‌دسترسی آفلاین بررسی شدند؛ خطای خواندن با تغییرhead یکی نیست. [operator بدونsecret](p03-fresh-dispatch-operator.py) و proof مربوط در APIreview‌اند.
+
+اجرای تازه [41816967134](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41816967134)، sourced6، attempt1 و allocation5a278، فقط یک dispatchHTTP204 دارد. [بازخوانی run](p03-fresh-run-readback.json) فعلاً شروع workflow را ثابت می‌کند، نه پایان native یا پذیرش. تخصیص و binding نهایی باید از receipt مستقل بازخوانی شوند. runهای پیشین تکرار نشدند؛ نصب اصلیNOT_APPLIED، حق خدمتNOT_CONNECTED و مسیر کاملNOT_ACCEPTED.
+
+**داده: دو EPS گزارش روشن، admission همچنان بسته:** [گزارش تفصیلیA](p07-admission-followup-RESULT.fa.md)، [۲۳fragment بایت‌محور](p07-admission-followup-exact-fragments.json)، [نتیجه۶آزمون مستقل](p07-admission-followup-actual-archive-test-final.log) و [بررسیroot](p07-admission-followup-root-review.json). ردیف «سود پایه هر سهم»۳۰۸ با «سود خالص هر سهم–ریال»۳۰۶ یکی نیست؛ واحد صریح ریال برای۳۰۶ موجود است و ادعای نبود ردیف/واحدEPS تصحیح شد. فرمول‌های متن ناشر اجرا نشدند و hidden1000 معنای اسمی/تعداد سهام نیافت. مدتC و هویت/scope جدول سرمایه هنوز شاهد کافی ندارند؛ پایان دوره یا برابری عدد به‌جای provenance ننشست. data:null/period_unverified حفظ شد و runtimepatch تهی است. append سند همان [PR406/source-doc a67](https://github.com/safariarash7777-source/portfolio-platform/pull/406) با readback دقیق ثبت شد؛ CI قبلی به99a6 تعلق دارد، نه خودکار بهa67.
+
+**تعهد بسته‌شده و باز:** اصلاح قالب بدنهٔ آزمون و وابستگی کنترل‌گر، شواهد فنیِ Linux دارند؛ این‌ها پایانP03 نیستند. نمودارهای واقعیِ Preview قابل استفادهٔ محدودند؛ نرخ/واحدمقدار/بازار/قیمت‌روز، دریافت کامل تازه و انتخاب بصری بازند. Linux نصب/برگشت تک‌گزارشPR412 بستهٔ فنی مستقل دارد، ولی SQL اصلی نصب نیست. درSTART-A، C همان installer رسمیfeedback@0d63 و helperپین‌شدهPR314 را برایowned-copy آماده می‌کند؛ guard به‌تنهایی تمرین نصب نیست و اجرای آن هنوز به caller و backup/readback/history proof وابسته است. هیچ authority ویندوزی، کلید، mainDB یا Hermes فعال نشده است.
+
+سه خروجی بعدی همان برنامه: **root/C** رسید واقعی اجرای تازهٔ عضو و رفع نقصِ مشاهده‌شده؛ **C/root** تمرین نصب و برگشتِ START-A رویکپیLinux با readerسازگار و حفظ تاریخچه؛ **A/root** رفع provenance مدتC/سرمایه و عرضهٔ نمودارهای معتبرِ باقیمانده، با پذیرش بصری جدا. موانع فقط بخش وابسته را متوقف می‌کنند.
+
+### رسید پیشین؛ وضعیت در زمان خود
+
 ## خروجی قابل استفادهٔ تازه — ۴ نوامبر، آزمون۰۹:۵۲–۰۹:۵۵UTC
 
 **شرکت: هشت نمودار واقعی روی دو چیدمان، در مرورگر پذیرفتهٔ محدود شدند.** source7fd355b8 در [PR408](https://github.com/safariarash7777-source/portfolio-platform/pull/408)، Preview dpl_Hqnmqm3e6VyfY8s7X8YXUKGbttAq:

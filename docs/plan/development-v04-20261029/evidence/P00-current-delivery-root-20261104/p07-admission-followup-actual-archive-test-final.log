@@ -1,0 +1,15 @@
+✔ official captured bytes and exact reviewed producer snapshots match their hashes (3.7113ms)
+✔ real report binds only current B and does not certify C, capital or hidden cells (94.736ms)
+✔ actual full admission remains null at comparative-duration gate; legacy input also stays closed (169.5459ms)
+✔ C1/C2 supply end and year-end but no duration; note table is not the bound income context (0.4524ms)
+✔ visible reported EPS rows remain distinct; hidden nominal input is evidence only, never executed (0.2778ms)
+✔ capital is observed at an as-of date; matching balances do not establish standalone table identity (0.3019ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 275.2459
+P07_OFFLINE_GUARD {"network":0,"childProcess":0}

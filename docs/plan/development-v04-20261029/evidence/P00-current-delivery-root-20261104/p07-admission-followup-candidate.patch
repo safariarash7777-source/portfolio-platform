@@ -1,0 +1,17 @@
+diff --git a/docs/plan/development-v04-20261029/evidence/P07-report-metadata-binding-source-20261104.md b/docs/plan/development-v04-20261029/evidence/P07-report-metadata-binding-source-20261104.md
+--- a/docs/plan/development-v04-20261029/evidence/P07-report-metadata-binding-source-20261104.md
++++ b/docs/plan/development-v04-20261029/evidence/P07-report-metadata-binding-source-20261104.md
+@@ -54,3 +54,13 @@
+ این نتیجه متعلق به نسخه کدی 99a6 است؛ commit تکمیلی حاضر فقط همین سند را تغییر می‌دهد. SHA جدید مستندات و وضعیت CI احتمالی آن جداگانه در بدنه PR406 ثبت می‌شوند و با نتیجه CI بالا یکسان فرض نمی‌شوند.
+ 
+ پاس‌شدن آزمون‌ها/CI مجوز merge یا فعال‌سازی نیست. این برش هیچ DB، relay، Production، محیط یا داده‌ای را تغییر نمی‌دهد. اتصال عملیاتی منبع، کنترل مدت C و سرمایه و بازبینی مصرف‌کننده گیت‌های بازند.
++
++## ادامه بررسی actual archive — ۴ نوامبر، بدون تغییر admission
++
++بسته محلی outputs/p07-admission-followup-20261104/ روی همین source99/doc133 آماده شد. شش آزمون actual archive موفق و guard شبکه/child process صفر است؛ runtime تغییر نکرد و full admission همچنان data:null / period_unverified است. نسخه PR412/5fe و P14 دست‌نخورده ماندند.
++
++کمترین علت نخست: table904/C1 وC2 فقط پایان دوره1404/06/31 و پایان سال مالی1404/12/29 دارند؛ مدت یا شروع در metadata و متن محلی این ستون نیست. شش‌ماهه صریح context9 به‌دلیل هندسه merged و فقدان اتصال metadata به C منتقل نشد. JSON رسمی منتخب فقط table904/941 را دارد؛ context4/5 سرمایه هنوز هویت مستقل table/scope ندارند. برابری سه مبلغ سرمایه جای stock/asOf و احراز هویت را نمی‌گیرد.
++
++شاهد تازه EPS: A27/B27 سود پایه هر سهم308 و A28/B28 سود خالص هر سهم با واحد صریح ریال306 در JSON و Excel جدا هستند. B28 فرمول متنی =ROUND((B21/B29)*A30,0) و C28 فرمول =ROUND((C21/C29)*B30,0) دارد؛ A30/B30 مقدار1000 اما isVisible=false هستند. هیچ فرمول یا hidden cell اجرا/فعال نشده و این دو مفهوم EPS یکسان نشدند. وجود EPS صریح تأیید است، اما admission و EPS TTM همچنان جدا بازند.
++
++در بسته23fragment با بازه UTF-8 و SHA256 و RESULT.fa.md ثبت شده است. اقدام بعدی مالک منبع: شاهد رسمی مدت همان C یا اتصال رسمی قالب/گروه ستون یادداشت، و هویت مستقل جدول سرمایه با stock/asOf. این بسته مجوز دریافت، SQL، انتشار یا تغییر قرارداد partial نیست؛ CI/integration و مرجع وضعیت با هماهنگ‌کننده است.

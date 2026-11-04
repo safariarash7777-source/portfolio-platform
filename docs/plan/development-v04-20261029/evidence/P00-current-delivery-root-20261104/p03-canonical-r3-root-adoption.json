@@ -1,0 +1,140 @@
+{
+  "schema": "root-p03-canonical-negative-adoption.v1",
+  "atUtc": "2026-11-04T10:13:43.043451+00:00",
+  "base": "af41371715f7b905d65876d0362b4a4dbd432041",
+  "source": "7cab80d679686bb09f7c1e1124fa2a9c3649ae05",
+  "sourceTree": "7e0f6a3431f28ddeecae1e7eb97b05706af80d7e",
+  "paths": [
+    ".gitattributes",
+    "scripts/testing/assembled-native-ci/run.py",
+    "scripts/testing/assembled-native-ci/test_run.py",
+    "scripts/testing/assembled-native-ci/canonical-validator.test.cjs",
+    "scripts/testing/assembled-native-ci/fixtures/validator-e0-source.json",
+    "scripts/testing/assembled-native-ci/sealed-p03-composition-e0-v1.tar"
+  ],
+  "fixtureModulesIndependentlyComparedToGit": [
+    {
+      "path": "lib/auth/session-error.ts",
+      "bytes": 997,
+      "sha256": "eb0748d2f3a8753f60ad79aa6fd717ac2c4f457f2439dc3ab3629b9b8d72bd80",
+      "gitBlob": "21cec39715c005b3f89638f76b1dc575bd545851"
+    },
+    {
+      "path": "lib/consultation/consultationWriteRelease.ts",
+      "bytes": 462,
+      "sha256": "22e7b893c081acf49bd6060a654cab1ad6ad7e3882b35a53d01d4ccea180664a",
+      "gitBlob": "c94d7134e1335cf9771fd345db999f0b6e54dab5"
+    },
+    {
+      "path": "lib/consultation/contracts.ts",
+      "bytes": 20804,
+      "sha256": "aecf9ac39b0ad2e7775d45442c0c4fcd549b7a53949f88834f8c0f1b4f14bb75",
+      "gitBlob": "72933931f016e4f0a7c52821bb6d8b42f7b2fd9b"
+    },
+    {
+      "path": "lib/consultation/errors.ts",
+      "bytes": 2220,
+      "sha256": "3a09149c3d9ff86db879e2af3eace3b28dab5146630e13093cd2012ac9a52518",
+      "gitBlob": "ecccc0b1647d1ea9f5045f12cfa123fde64d6c82"
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageContracts.ts",
+      "bytes": 10465,
+      "sha256": "84b3efa5cec6fd631cb18fb0f8fe75d532d38db059857bd7e9bda9fc386cce4d",
+      "gitBlob": "b00d76fb261d929df1545ec0f2046aa66191f689"
+    },
+    {
+      "path": "lib/consultation/ticketAttemptStorageServer.ts",
+      "bytes": 8112,
+      "sha256": "21c82f0b21cc1a181e2fb51f4e0d304a72e7878bd318cec0e967b54ef9a3123f",
+      "gitBlob": "3d38eed5aa8944e2255cbed97695be32de0022c2"
+    },
+    {
+      "path": "lib/consultation/ticketIntent.ts",
+      "bytes": 4545,
+      "sha256": "935892d47546d6a73344e33b5973e57b32a4aa37ec0182e1a9c8430ea4b5b55e",
+      "gitBlob": "ac396b37d08ee323d833485c1ef143b528951296"
+    },
+    {
+      "path": "lib/consultation/ticketStorageContracts.ts",
+      "bytes": 10403,
+      "sha256": "229d8d9f10b64d18066bb62ade9029bb2a2146aeab7acb8f0717984534dc1e96",
+      "gitBlob": "f075ab28903e651e1d4b4ae7f69b3a1a068aba07"
+    },
+    {
+      "path": "lib/consultation/ticketStorageRequest.ts",
+      "bytes": 7741,
+      "sha256": "97b11835453d80fae5ca91880a412894e03ce7611a748982a17c0d5506a10f43",
+      "gitBlob": "30bc80bac06fcf2d093fb0fa6a98c8a52497cf4e"
+    },
+    {
+      "path": "lib/consultation/tickets.ts",
+      "bytes": 21287,
+      "sha256": "ec38c3a36918ca504c2b7cf8adc79521a47c9b21d8ff5bb7cf9dcb09d8ac16f1",
+      "gitBlob": "b5d5d5f11e74b07fac5944d391a5ba61ba0ae5b0"
+    },
+    {
+      "path": "lib/deadline.ts",
+      "bytes": 1048,
+      "sha256": "9630550571134fa0dffd4cdea85e1479cc3dc91025a58f2cf2f75d0880ea4099",
+      "gitBlob": "21a5435986ecd0eff7a8b97f1e8c133d77e226ea"
+    },
+    {
+      "path": "lib/format.ts",
+      "bytes": 12112,
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5",
+      "gitBlob": "73c303df57c41cb472013cbf678e070c3652a3c7"
+    },
+    {
+      "path": "lib/portfolio/cashFlow.ts",
+      "bytes": 9793,
+      "sha256": "765cb562b7216c6931800a7b8e48252ade09bfb6ee139e39bbf31fe383ce035b",
+      "gitBlob": "1aecadca9c8f67dc8359fd274cae8d95fc27e760"
+    },
+    {
+      "path": "lib/portfolio/cashFlowApiContract.ts",
+      "bytes": 16327,
+      "sha256": "6b6fc6450d326f59c2519d9036dfa2b94a39156feabc466ee77687c905696ff7",
+      "gitBlob": "b5a8ffbe9e1dce9749fe802d795bcf1f906512e9"
+    },
+    {
+      "path": "lib/portfolio/financialInput.ts",
+      "bytes": 5987,
+      "sha256": "53cc2ce15a8ef6849dadf1933b6ea5102d7abd4161994f6539053335f6ff4ad6",
+      "gitBlob": "32bd743de3b8b3f8b35098a3bd1694d4a82dbeea"
+    },
+    {
+      "path": "lib/portfolio/goals.ts",
+      "bytes": 860,
+      "sha256": "908207d8d04c0edc4ae0e463a9613744c44feca8e541fe9b3f52a3e703a6abcf",
+      "gitBlob": "43a1fed93bab140736233fcba06958d48d30098f"
+    },
+    {
+      "path": "lib/portfolio/goalsApiContract.ts",
+      "bytes": 9367,
+      "sha256": "e255f320e514700bb2e239f0774f0d89d8edbbfbf7152aed1351e6a19816048c",
+      "gitBlob": "625c016899e41b415f0d471fe0a3cb6dbd6ff42c"
+    }
+  ],
+  "fixtureModules": 17,
+  "capsuleChangedMembers": [
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json",
+    "overlay/scripts/testing/consultation-tickets/composition-browser-case.mjs"
+  ],
+  "onlyCaseDelta": "actual validator import and canonicalization before admission/journal/POST",
+  "oldProbe400Regression": "actual exact e0 server handler returns400 before parent/prepare; canonical frozen-intent validation passes",
+  "accept400AsSuccess": false,
+  "productRuntimeOrValidatorChanged": false,
+  "workflowChanged": false,
+  "sqlAuthBudgetNoReplayChanged": false,
+  "capsuleSha256": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255",
+  "driverSha256": "e8b12e8f44e80e6fc41719028769ea126a16a4250f0a6b0e2433d8481b643850",
+  "peerFullOfflineTests": 69,
+  "peerLint": "PASS_ACTUAL_CONFIG",
+  "rootRepeatedSameOfflineTests": false,
+  "nativeAfterFix": "NOT_RUN",
+  "primaryInstall": "NOT_APPLIED",
+  "serviceEntitlement": "NOT_CONNECTED",
+  "wholeProductAcceptance": "NOT_ACCEPTED",
+  "publication": "PENDING_SEPARATE_READBACK"
+}

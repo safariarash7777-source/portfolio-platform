@@ -1,0 +1,284 @@
+{
+  "sourceHashes": {
+    "excel": "11349a3f2603ffee7949334e726dae7e6e33b9867e9828b67af3c638a6adda9d",
+    "decision": "1a4904c496c09cf091c12ea14f40cc58c0777726d02761dd450487c0e857b1a2"
+  },
+  "items": [
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 54049,
+        "end": 54615,
+        "endExclusive": true
+      },
+      "sha256": "98b8365b593a2a3bd8cb9b566cf4f57ad0cf91b23a19471080a2257d5a0a1f3a",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"C1\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Header\",\"rowSpan\":1,\"rowCode\":1,\"rowSequence\":1,\"colSpan\":1,\"columnCode\":3,\"columnSequence\":3,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"تجديد ارائه شده دوره منتهي به 1404/06/31\",\"valueTypeName\":\"TextComponents\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"1404/06/31\",\"yearEndToDate\":\"1404/12/29\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "C1",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 54616,
+        "end": 55133,
+        "endExclusive": true
+      },
+      "sha256": "cee2061e1214a0adb511436aedfd56066812d163fb85be303deeeb9a7e568a3d",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"C2\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Header\",\"rowSpan\":1,\"rowCode\":2,\"rowSequence\":2,\"colSpan\":1,\"columnCode\":3,\"columnSequence\":3,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"حسابرسی شده\",\"valueTypeName\":\"Component\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"1404/06/31\",\"yearEndToDate\":\"1404/12/29\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":true}",
+      "address": "C2",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 36574,
+        "end": 37095,
+        "endExclusive": true
+      },
+      "sha256": "0848b337d5023b62df5e68d28cbce997427225abae559137309e9f392ca7cf41",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A27\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":21,\"rowSequence\":27,\"colSpan\":1,\"columnCode\":1,\"columnSequence\":1,\"cssClass\":\"dynamic_comp\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"سود(زيان) پايه هر سهم\",\"valueTypeName\":\"Fix\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"\",\"yearEndToDate\":\"\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "A27",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 51975,
+        "end": 52493,
+        "endExclusive": true
+      },
+      "sha256": "0072d8eb6128894c616515e90869f064b8b474b1a38e42c5a8c107161c71ead2",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"B27\",\"formula\":\"SUM(B25:B26)\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":21,\"rowSequence\":27,\"colSpan\":1,\"columnCode\":2,\"columnSequence\":2,\"cssClass\":\"dynamic_comp\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"308\",\"valueTypeName\":\"-1\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "B27",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 37096,
+        "end": 37631,
+        "endExclusive": true
+      },
+      "sha256": "4595c4f111c018a2575bc1c8fa41e55f17e5f831e2a37eb706d8456eacf3ec6d",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A28\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":41,\"rowSequence\":28,\"colSpan\":1,\"columnCode\":1,\"columnSequence\":1,\"cssClass\":\"dynamic_comp\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"سود (زيان) خالص هر سهم – ريال\",\"valueTypeName\":\"Fix\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"\",\"yearEndToDate\":\"\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "A28",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 52494,
+        "end": 53023,
+        "endExclusive": true
+      },
+      "sha256": "0f9a25cbb749a015126921a2f7cf91f62937b624dde99c9bb6f72889470640c5",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"B28\",\"formula\":\"=ROUND((B21/B29)*A30,0)\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":41,\"rowSequence\":28,\"colSpan\":1,\"columnCode\":2,\"columnSequence\":2,\"cssClass\":\"dynamic_comp\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"306\",\"valueTypeName\":\"-1\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "B28",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 67962,
+        "end": 68491,
+        "endExclusive": true
+      },
+      "sha256": "2d267e4ae33001d4dd3ac70b88829c430ed192c7bb2406b7131d2ccaa5a8d8fc",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"C28\",\"formula\":\"=ROUND((C21/C29)*B30,0)\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":41,\"rowSequence\":28,\"colSpan\":1,\"columnCode\":3,\"columnSequence\":3,\"cssClass\":\"dynamic_comp\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"131\",\"valueTypeName\":\"-1\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"1404/06/31\",\"yearEndToDate\":\"1404/12/29\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "C28",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 37632,
+        "end": 38116,
+        "endExclusive": true
+      },
+      "sha256": "c9b76348a17d955ded6356d7f5a52d36cd8152eff83dbb8ef91c8f4d28c476cd",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A29\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":42,\"rowSequence\":29,\"colSpan\":1,\"columnCode\":1,\"columnSequence\":1,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"سرمايه\",\"valueTypeName\":\"Fix\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"\",\"yearEndToDate\":\"\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "A29",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 53024,
+        "end": 53539,
+        "endExclusive": true
+      },
+      "sha256": "a56df3ba694049e3bad9e1a6cb46b55532ce6b0b941fad757bb9268975484511",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"B29\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":42,\"rowSequence\":29,\"colSpan\":1,\"columnCode\":2,\"columnSequence\":2,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"1935000000\",\"valueTypeName\":\"FormControl\",\"dataTypeName\":\"Integer\",\"decimalPlace\":0,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "B29",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 38117,
+        "end": 38605,
+        "endExclusive": true
+      },
+      "sha256": "9c1266d34b69cd30ce8aa50d48ced3c12e796a85b35d0922d80c0e348a5b56e1",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A30\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":43,\"rowSequence\":30,\"colSpan\":1,\"columnCode\":1,\"columnSequence\":1,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":false,\"value\":\"1000\",\"valueTypeName\":\"TextComponents\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"\",\"yearEndToDate\":\"\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "A30",
+      "tableCode": 904
+    },
+    {
+      "source": "decision",
+      "utf8Span": {
+        "start": 53540,
+        "end": 54048,
+        "endExclusive": true
+      },
+      "sha256": "9dc40d259193a6b0f0a483006ca217ffd6062351a2f12977f2ec8e8f23d20921",
+      "raw": "{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"B30\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":43,\"rowSequence\":30,\"colSpan\":1,\"columnCode\":2,\"columnSequence\":2,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":false,\"value\":\"1000\",\"valueTypeName\":\"TextComponents\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}",
+      "address": "B30",
+      "tableCode": 904
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 2183,
+        "end": 2872,
+        "endExclusive": true
+      },
+      "sha256": "653351fcc127b26119c3702a29ebc84e9e4fa98cec0c33b8423ee524a14d81ef",
+      "raw": "<tr _ngcontent-yrr-c3=\"\"><!----><th _ngcontent-yrr-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-yrr-c3=\"\">شرح</span></th><th _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yrr-c3=\"\">دوره منتهي به ۱۴۰۵/۰۶/۳۱</span></th><th _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yrr-c3=\"\">تجديد ارائه شده دوره منتهي به ۱۴۰۴/۰۶/۳۱</span></th><th _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yrr-c3=\"\">تجديد ارائه شده دوره منتهي به ۱۴۰۴/۱۲/۲۹</span></th><th _ngcontent-yrr-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-yrr-c3=\"\">درصد تغيير</span></th></tr>",
+      "context": 0,
+      "rowIndex": 0
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 22310,
+        "end": 23091,
+        "endExclusive": true
+      },
+      "sha256": "d4d8863400746d29a32639a065db00a437f8d28bff271dee8051bf3f5aff4bc4",
+      "raw": "<tr _ngcontent-yrr-c3=\"\"><!----><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp right-aligne\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">سود(زيان) پايه هر سهم </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۳۰۸ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۱۳۲ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۵۲۲ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۱۳۳ </span></td></tr>",
+      "context": 0,
+      "rowIndex": 26
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 23091,
+        "end": 23886,
+        "endExclusive": true
+      },
+      "sha256": "c6e8312ace33b62cac350cf9c4221a46cee8164b31453e679f1dc34a1609a7ab",
+      "raw": "<tr _ngcontent-yrr-c3=\"\"><!----><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp right-aligne\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">سود (زيان) خالص هر سهم – ريال </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۳۰۶ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۱۳۱ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۵۱۸ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۱۳۴ </span></td></tr>",
+      "context": 0,
+      "rowIndex": 27
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 23886,
+        "end": 24628,
+        "endExclusive": true
+      },
+      "sha256": "1725be3b120c77d1a052ead822050829343ebf9e382a73355817a9b32dae4a9f",
+      "raw": "<tr _ngcontent-yrr-c3=\"\"><!----><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">سرمايه </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۱,۹۳۵,۰۰۰,۰۰۰ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۱,۹۳۵,۰۰۰,۰۰۰ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۱,۹۳۵,۰۰۰,۰۰۰ </span></td><td _ngcontent-yrr-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yrr-c3=\"\" style=\"color: #055274;\">۰ </span></td></tr>",
+      "context": 0,
+      "rowIndex": 28
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 39704,
+        "end": 40366,
+        "endExclusive": true
+      },
+      "sha256": "453f698494e75da604caa66b2739aeb825538e78e29cafb3b5aa6dae2b53cd06",
+      "raw": "<tr _ngcontent-ctj-c3=\"\"><!----><th _ngcontent-ctj-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-ctj-c3=\"\">شرح</span></th><th _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-ctj-c3=\"\">به تاريخ ۱۴۰۵/۰۶/۳۱</span></th><th _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-ctj-c3=\"\">تجديد ارائه شده به تاريخ ۱۴۰۴/۱۲/۲۹</span></th><th _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-ctj-c3=\"\">تجديد ارائه شده به تاريخ ۱۴۰۴/۰۱/۰۱</span></th><th _ngcontent-ctj-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-ctj-c3=\"\">درصد تغيير</span></th></tr>",
+      "context": 4,
+      "rowIndex": 0
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 57910,
+        "end": 58652,
+        "endExclusive": true
+      },
+      "sha256": "a9046ff85e3f96c0fa55a4e967cabd922938bafebbc52d17612f3095b2ac0e29",
+      "raw": "<tr _ngcontent-ctj-c3=\"\"><!----><td _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-ctj-c3=\"\" style=\"color: #055274;\">سرمايه </span></td><td _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-ctj-c3=\"\" style=\"color: #055274;\">۱,۹۳۵,۰۰۰,۰۰۰ </span></td><td _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-ctj-c3=\"\" style=\"color: #055274;\">۱,۹۳۵,۰۰۰,۰۰۰ </span></td><td _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-ctj-c3=\"\" style=\"color: #055274;\">۱,۵۰۰,۰۰۰,۰۰۰ </span></td><td _ngcontent-ctj-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-ctj-c3=\"\" style=\"color: #055274;\">۰ </span></td></tr>",
+      "context": 4,
+      "rowIndex": 24
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 81748,
+        "end": 83157,
+        "endExclusive": true
+      },
+      "sha256": "8a4ba8a9b8b252c83f77f2f29d591698e1fab8fb9aa53989c1037207d28bd231",
+      "raw": "<tr _ngcontent-yak-c3=\"\"><!----><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">شرح</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">سرمايه</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">افزايش سرمايه در جريان</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">صرف سهام</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">صرف سهام خزانه</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">اندوخته قانوني</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">ساير اندوخته‌ها</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">مازاد تجديد ارزيابي دارايي‌ها</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">تفاوت تسعير ارز عمليات خارجي</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">سود انباشته</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">سهام خزانه</span></th><th _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-yak-c3=\"\">جمع کل</span></th></tr>",
+      "context": 5,
+      "rowIndex": 0
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 83200,
+        "end": 84929,
+        "endExclusive": true
+      },
+      "sha256": "ae012c68176e6ce40ff9940512617e90e59c81671630427a14fe66b759a7a869",
+      "raw": "<tr _ngcontent-yak-c3=\"\"><!----><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">مانده در ۱۴۰۴/۰۱/۰۱ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱,۵۰۰,۰۰۰,۰۰۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱۱,۹۶۸,۳۹۱ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱۵۰,۰۰۰,۰۰۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱,۰۴۱,۷۷۹,۴۸۹ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\" class=\"is-negative\">(۲۳,۸۱۱,۱۹۸) </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۲,۶۷۹,۹۳۶,۶۸۲ </span></td></tr>",
+      "context": 5,
+      "rowIndex": 1
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 104015,
+        "end": 105695,
+        "endExclusive": true
+      },
+      "sha256": "7ea46c01d37f2ef1a4052713c21368651404ebaa41454476c9e1fad96aa54f5d",
+      "raw": "<tr _ngcontent-yak-c3=\"\"><!----><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">افزايش سرمايه </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۴۳۵,۰۰۰,۰۰۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\"> </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\"> </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\"> </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\"> </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\" class=\"is-negative\">(۴۳۵,۰۰۰,۰۰۰) </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\"> </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td></tr>",
+      "context": 5,
+      "rowIndex": 13
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 138519,
+        "end": 140381,
+        "endExclusive": true
+      },
+      "sha256": "8d08cd7088379f3410158a42cdec5e410b319225e72a68c09b403ed320c82bcf",
+      "raw": "<tr _ngcontent-yak-c3=\"\"><!----><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp right-aligne right-aligne\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">مانده در ۱۴۰۵/۰۶/۳۱ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱,۹۳۵,۰۰۰,۰۰۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱۳,۵۶۲,۵۴۴ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱۹۳,۵۰۰,۰۰۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۱,۶۳۵,۲۰۳,۱۰۰ </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\" class=\"is-negative\">(۲۹,۰۰۲,۱۹۸) </span></td><td _ngcontent-yak-c3=\"\" rowspan=\"1\" colspan=\"1\" class=\"dynamic_comp\"><span _ngcontent-yak-c3=\"\" style=\"color: #055274;\">۳,۷۴۸,۲۶۳,۴۴۶ </span></td></tr>",
+      "context": 5,
+      "rowIndex": 33
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 183310,
+        "end": 184363,
+        "endExclusive": true
+      },
+      "sha256": "7e7bb072119330fa5bd819bdb6680d3c8f4f95ec0bffff1cf4a2d464b04ff39f",
+      "raw": "<tr _ngcontent-prr-c3=\"\"><!----><th _ngcontent-prr-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">نوع کالا</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">واحد</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">ظرفیت عملی</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"2\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">مبانی و مرجع قیمت گذاری</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"2\"><span _ngcontent-prr-c3=\"\">دوره ۶ ماهه منتهی به ۱۴۰۴/۰۶/۳۱</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"6\"><span _ngcontent-prr-c3=\"\">سال مالی منتهی به ۱۴۰۴/۱۲/۲۹</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"6\"><span _ngcontent-prr-c3=\"\">دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"4\"><span _ngcontent-prr-c3=\"\">برآورد دوره ۶ ماهه منتهی به ۱۴۰۵/۱۲/۲۹</span></th></tr>",
+      "context": 9,
+      "rowIndex": 0
+    },
+    {
+      "source": "excel",
+      "utf8Span": {
+        "start": 184363,
+        "end": 186340,
+        "endExclusive": true
+      },
+      "sha256": "c03b058a8e6e88114788b4606698144e91a2db08f655ea3946ca7717f257db69",
+      "raw": "<tr _ngcontent-prr-c3=\"\"><!----><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">تعداد فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">مبلغ فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">تعداد تولید</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">تعداد فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">نرخ فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">مبلغ فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">مبلغ بهای تمام شده</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">سود ناخالص</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">تعداد تولید</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">تعداد فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">نرخ فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">مبلغ فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">مبلغ بهای تمام شده</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">سود ناخالص</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">تعداد تولید</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">تعداد فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">نرخ فروش</span></th><th _ngcontent-prr-c3=\"\" rowspan=\"1\" colspan=\"1\"><span _ngcontent-prr-c3=\"\">مبلغ فروش</span></th></tr>",
+      "context": 9,
+      "rowIndex": 1
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "root-p03-controller-api-publication-review.v1",
+  "atUtc": "2026-11-04T10:50:53.989707+00:00",
+  "readOnly": true,
+  "automaticRetry": false,
+  "source": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+  "tree": "05dc24cde8664038a69d9b3073e7e2d5050848bf",
+  "parents": [
+    "7cab80d679686bb09f7c1e1124fa2a9c3649ae05"
+  ],
+  "sameTreeAsLocalUnpublishedCommit": "ffbb1d202b7913a6fafdcd66c557b70e9b3b8593",
+  "localCommitNotPublished": true,
+  "ci": {
+    "runId": 41815979013,
+    "status": "completed",
+    "conclusion": "success",
+    "actualCheckout": "dcb163244e1f563fdb393edc7fee0c958f5e72c4",
+    "tree": "05dc24cde8664038a69d9b3073e7e2d5050848bf",
+    "parents": [
+      "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+      "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9"
+    ],
+    "fullRootLogsRead": [
+      126526709781,
+      126526710779
+    ]
+  },
+  "remoteRef": "refs/heads/codex/assembled-native-ci-20261104",
+  "remoteHead": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+  "dispatcherSha256": "fa51b8b4bf9fbed5c3e4b49d971725fa2021e4a7d194daec8b34024e560942fc",
+  "dispatcherOfflineHeadChecks": [
+    {
+      "case": "valid",
+      "result": "PASS",
+      "expected": null
+    },
+    {
+      "case": "wrong_head",
+      "result": "PASS",
+      "expected": "REMOTE_HEAD_CHANGED"
+    },
+    {
+      "case": "wrong_ref",
+      "result": "PASS",
+      "expected": "REMOTE_HEAD_READ_UNAVAILABLE"
+    },
+    {
+      "case": "tag_not_commit",
+      "result": "PASS",
+      "expected": "REMOTE_HEAD_READ_UNAVAILABLE"
+    },
+    {
+      "case": "malformed_sha",
+      "result": "PASS",
+      "expected": "REMOTE_HEAD_READ_UNAVAILABLE"
+    },
+    {
+      "case": "unavailable",
+      "result": "PASS",
+      "expected": "REMOTE_HEAD_READ_UNAVAILABLE"
+    }
+  ],
+  "nativeExecution": "NOT_RUN_AFTER_DEPENDENCY_FIX",
+  "primaryInstall": "NOT_APPLIED"
+}

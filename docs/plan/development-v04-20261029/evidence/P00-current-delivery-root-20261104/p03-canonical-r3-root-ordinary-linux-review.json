@@ -1,0 +1,36 @@
+{
+  "schema": "root-p03-canonical-ordinary-linux-review.v1",
+  "atUtc": "2026-11-04T10:22:01.562466+00:00",
+  "source": "7cab80d679686bb09f7c1e1124fa2a9c3649ae05",
+  "sourceTree": "7e0f6a3431f28ddeecae1e7eb97b05706af80d7e",
+  "run": 41812805098,
+  "actualCiCheckout": "c7226c188fdfe79200bf1dd898776170c28668b6",
+  "actualCiParents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "7cab80d679686bb09f7c1e1124fa2a9c3649ae05"
+  ],
+  "actualCiTree": "7e0f6a3431f28ddeecae1e7eb97b05706af80d7e",
+  "wholeTreeEqual": true,
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "fullDecodedLogsRead": [
+    {
+      "job": 126515984884,
+      "characters": 1282621
+    },
+    {
+      "job": 126515984738,
+      "characters": 3280372
+    }
+  ],
+  "ordinaryPythonTests": 69,
+  "ordinaryResult": "PASS",
+  "privateArtifactsUploaded": false,
+  "newNativeOnThisSource": "NOT_RUN_AT_REVIEW",
+  "oldNativeRuns": [
+    41797748222,
+    41805399352,
+    41809710663
+  ],
+  "oldRunReplay": false
+}

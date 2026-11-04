@@ -34,3 +34,8 @@ liara-rest-contract-* -text -whitespace
 p14-measured-* -text -whitespace
 p03-status-v2-* -text -whitespace
 p03-native-418097-* -text -whitespace
+
+p03-canonical-r3-* -text -whitespace
+p03-controller-* -text -whitespace
+p03-fresh-* -text -whitespace
+p07-admission-followup-* -text -whitespace

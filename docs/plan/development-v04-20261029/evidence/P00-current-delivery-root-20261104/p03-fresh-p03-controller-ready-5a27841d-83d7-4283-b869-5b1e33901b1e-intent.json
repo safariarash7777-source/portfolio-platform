@@ -1,0 +1,20 @@
+{
+  "atUtc": "2026-11-04T10:51:28.537615+00:00",
+  "request": {
+    "workflow": "ci.yml",
+    "ref": "codex/assembled-native-ci-20261104",
+    "expectedHead": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+    "inputs": {
+      "assembled_native": "true",
+      "allocation_id": "5a27841d-83d7-4283-b869-5b1e33901b1e",
+      "reviewed_helper_sha": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+      "acceptance_profile": "p03-composition-e0-v1",
+      "candidate_sha": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+      "capsule_sha256": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255",
+      "driver_sha256": "e8b12e8f44e80e6fc41719028769ea126a16a4250f0a6b0e2433d8481b643850"
+    },
+    "purpose": "BOUNDED_OWNED_LINUX_P03_COMPOSITION"
+  },
+  "automaticRetry": false,
+  "credentialSource": "EXISTING_GIT_CREDENTIAL_MEMORY_ONLY"
+}

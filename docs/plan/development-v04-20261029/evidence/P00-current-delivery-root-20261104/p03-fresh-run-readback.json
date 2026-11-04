@@ -1,0 +1,20 @@
+{
+  "atUtc": "2026-11-04T10:51:49.227790+00:00",
+  "readOnly": true,
+  "automaticRetry": false,
+  "allocationId": "5a27841d-83d7-4283-b869-5b1e33901b1e",
+  "note": null,
+  "run": {
+    "id": 41816967134,
+    "head_sha": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+    "head_branch": "codex/assembled-native-ci-20261104",
+    "event": "workflow_dispatch",
+    "status": "in_progress",
+    "conclusion": null,
+    "run_attempt": 1,
+    "created_at": "2026-11-04T10:51:31Z",
+    "updated_at": "2026-11-04T10:51:41Z",
+    "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41816967134"
+  },
+  "allocationBinding": "REQUEST_ASSOCIATION_ONLY_UNTIL_INDEPENDENT_ARTIFACT_READBACK"
+}

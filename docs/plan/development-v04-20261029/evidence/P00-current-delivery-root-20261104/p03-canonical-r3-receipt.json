@@ -1,0 +1,92 @@
+{
+  "version": 3,
+  "createdAtUtc": "2026-11-04T10:10:58.314478+00:00",
+  "verdict": "SOURCE_CI_PROPOSAL_NOT_DEPLOYED",
+  "baseController": "af41371715f7b905d65876d0362b4a4dbd432041",
+  "capsulePins": {
+    "baseController": "af41371715f7b905d65876d0362b4a4dbd432041",
+    "baseCapsule": "67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb",
+    "capsule": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255",
+    "driver": "e8b12e8f44e80e6fc41719028769ea126a16a4250f0a6b0e2433d8481b643850",
+    "fixture": "b3f545fe86f0f7150657809f3fdb2f2f1e602d750505a83dbc7bca85a8bfb048",
+    "members": 17,
+    "fixtureModules": 17
+  },
+  "files": {
+    ".gitattributes": {
+      "baseSha256": "00f183b5f9987ad2b124cb621990ad0edfcf35a75d1e8e710c6474df96d96fdf",
+      "proposedSha256": "8cc07bd248cf318dea931fae4b1eb4ddc4faad76db439e597fdfefc716896aa1"
+    },
+    "scripts/testing/assembled-native-ci/run.py": {
+      "baseSha256": "4536ba9b55a3267b76efac0c9d4817b664ddf1763863546a88fe751897902f2a",
+      "proposedSha256": "79441ee80b1730eac5a96c78a3af510964d9f819749e89ce251ba7830b284a5a"
+    },
+    "scripts/testing/assembled-native-ci/test_run.py": {
+      "baseSha256": "477fc2534254248c331acc71aa8ec548f871ca2097afbd6f5bb2ab30bb4d55a7",
+      "proposedSha256": "6f98fc21d40757d96ed78ba01ed4ac9cd5144547cc8826ef8c8426de395b690a"
+    },
+    "scripts/testing/assembled-native-ci/canonical-validator.test.cjs": {
+      "baseSha256": null,
+      "proposedSha256": "bd92e5cd50b19d63a556e74351f49511a9d8a639a165ca7ff7174d7943e6089e"
+    },
+    "scripts/testing/assembled-native-ci/fixtures/validator-e0-source.json": {
+      "baseSha256": null,
+      "proposedSha256": "b3f545fe86f0f7150657809f3fdb2f2f1e602d750505a83dbc7bca85a8bfb048"
+    },
+    "scripts/testing/assembled-native-ci/sealed-p03-composition-e0-v1.tar": {
+      "baseSha256": "67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb",
+      "proposedSha256": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255"
+    }
+  },
+  "unchangedCopiedPaths": [
+    ".github/workflows/assembled-native-runner-observation.yml",
+    ".github/workflows/ci.yml",
+    "scripts/testing/assembled-native-ci/pure-node-guard.cjs",
+    "scripts/testing/assembled-native-ci/pure-node-guard.test.mjs",
+    "scripts/testing/assembled-native-ci/README.md",
+    "scripts/testing/assembled-native-ci/receipt.mjs",
+    "scripts/testing/assembled-native-ci/receipt.test.mjs",
+    "scripts/testing/assembled-native-ci/sealed-v2.tar",
+    "scripts/testing/assembled-native-ci/sealed-v3-stage-observation.tar",
+    "scripts/testing/assembled-native-ci/sealed-v4b-app-f07.tar",
+    "scripts/testing/assembled-native-ci/stages.test.mjs",
+    "scripts/testing/assembled-native-ci/fixtures/run-d253.py.txt"
+  ],
+  "fullPatchSha256": "4b553959cf37745fbe6ca099b1a1dd4c386e9e0106942a5e05124f2a30cdf96f",
+  "readmeSha256": "a1b002956b3c04cbcabdf15d7325be49ad082716b9e02d1b8eff09711c78aaa9",
+  "logs": {
+    "full-suite.txt": "726d51fb6049d58e1f234bc13c08bf7f3463452a8b9e32cbeb7ac2dd226281eb",
+    "git-apply-check.txt": "933916e956080efcc1e21da4c25ee12755cf4dd82b158dd823b3698c4eb8c295",
+    "lint-canonical-validator.txt": "152aa91a9694a094f1523fcf1c6ce7feee547141903411f4757f9baeabf62485",
+    "lint-canonical-validator2.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "tests": {
+    "unittest": 69,
+    "pass": 69,
+    "fail": 0,
+    "errors": 0,
+    "skip": 0,
+    "newWrapper": 1,
+    "newActualNodeCases": 3,
+    "node": "24.22.1",
+    "node22CI": "NOT_RUN",
+    "uniqueUnittestCases": 69,
+    "fullSuiteFirstAttempt": "PASS"
+  },
+  "gitApplyCheck": {
+    "exit": 0,
+    "skipped": false
+  },
+  "nativeNetworkSql": false,
+  "noReplay": true,
+  "independentReview": "PENDING",
+  "deterministicRepackByteEqual": true,
+  "deltaSha256": "706c8c344c16094eb64cee6ecabab4c0d2466dd883cf9bb7a3666fe4b693618e",
+  "lint": {
+    "exit": 0,
+    "mode": "stdin exact source; repository relative filename; actual existing config",
+    "configSha256": "260e923110aafd18906fbfccea289637f6fdbb83d2dbd74af7d74958e9ca3b83",
+    "initialOutputCwdDependencyResolutionFailed": true
+  },
+  "priorReceiptSha256": "a7380652153850dc913d1f1fb5d664508cc9ae72b3b659ac9db9f6c308a974e0"
+}

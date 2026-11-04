@@ -1,0 +1,104 @@
+{
+  "status": "EVIDENCE_COMPLETE_FULL_ADMISSION_STILL_NULL",
+  "base": "133154bef69eb88c6b03ac807842ff22bdd8f2aa",
+  "runtimeChanges": [],
+  "patchScope": "append-only existing PR406 source document",
+  "patchStats": "10\t0\tdocs/plan/development-v04-20261029/evidence/P07-report-metadata-binding-source-20261104.md",
+  "tests": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "networkAttempts": 0,
+    "childProcessAttempts": 0
+  },
+  "fragments": 23,
+  "checkoutHead": "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec",
+  "checkoutStatus": "",
+  "files": [
+    {
+      "path": "actual-archive-test-final.log",
+      "sha256": "27ebf0c5969c5e8c4bc41f1d3c0040bafb02c7bee93cef36cc78ed08b3a4a8f8",
+      "bytes": 813
+    },
+    {
+      "path": "actual-archive-test.log",
+      "sha256": "a50fc3d48b7383a000b817fd4d6390ee1386210a2f4b1482270f4bca02027dc6",
+      "bytes": 814
+    },
+    {
+      "path": "actual-archive.test.mjs",
+      "sha256": "14c8cb277b47d5b98f11d44c6fcc29408ee88e1c13e3c3e105c73e6b6ae8ef9d",
+      "bytes": 6061
+    },
+    {
+      "path": "archive-evidence.json",
+      "sha256": "87d9b8e93c8194473e01d94b1304523c3c23929dbf734a9a108f162791466244",
+      "bytes": 104825
+    },
+    {
+      "path": "baseline.json",
+      "sha256": "64fa56284f7c906a50edade4a39dcf20fd9f7b959c2124d229e1890916512d74",
+      "bytes": 887
+    },
+    {
+      "path": "baseline/docs/plan/development-v04-20261029/evidence/P07-report-metadata-binding-source-20261104.md",
+      "sha256": "d4f604b9a8ad7efcaa397c5e96e2f976cef4e4b3bdb9d672601702fc3d04fdc7",
+      "bytes": 10092
+    },
+    {
+      "path": "baseline/relay/brsapi-transport.mjs",
+      "sha256": "ef39fe6b630698599ed887830e30b3258b5d24f008fa6ba5b8be880f15610205",
+      "bytes": 2295
+    },
+    {
+      "path": "baseline/relay/codal-admission-diagnostics.mjs",
+      "sha256": "0e06c71bfc2aba4bf05ddf1b3c774ef4d70f942dc385a0173ff62902de36a4fb",
+      "bytes": 2456
+    },
+    {
+      "path": "baseline/relay/codal-report-metadata.mjs",
+      "sha256": "119df5ab173239a0626c626b5973eba0623670e673a907048cf0fc3f488c8e57",
+      "bytes": 13387
+    },
+    {
+      "path": "baseline/relay/codal.mjs",
+      "sha256": "e21379a7b33ec196739962acfae436f99a4b18a386fa1aac84d36f51aef66c24",
+      "bytes": 75027
+    },
+    {
+      "path": "candidate.patch",
+      "sha256": "69e225e4b6e4dab2b7c728640b3625b66fc9c86b14cfcf4a6c0c5288e0967032",
+      "bytes": 3176
+    },
+    {
+      "path": "exact-fragments.json",
+      "sha256": "7792593ccf2f5d1ca129e9e72e6ea12d0978b26c01c3ea00e8a09d801606364c",
+      "bytes": 28549
+    },
+    {
+      "path": "fragments.mjs",
+      "sha256": "36ff0ec97a8be919d70ac423e2032df7968921c780df3997b3e0e555b686ddb4",
+      "bytes": 2469
+    },
+    {
+      "path": "inspect.mjs",
+      "sha256": "fbdf39fe0106d5d212b9e7ce30eb3e7bc4bce049a0df022d1086e33f0539662e",
+      "bytes": 3043
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "6659495e97b83e50558ee5d03174e8a8158b91707da69f4711db3a918798d88c",
+      "bytes": 1189
+    },
+    {
+      "path": "RESULT.fa.md",
+      "sha256": "b198c68d97778d54e7bb82bb5871219371e871d23cd36d0dc07883a2ac69d08e",
+      "bytes": 8226
+    },
+    {
+      "path": "seal.mjs",
+      "sha256": "7fc48e24232d528a3f4897bd3f86621065df7c65de6120a049eb7bbc47e1a6b1",
+      "bytes": 4501
+    }
+  ]
+}

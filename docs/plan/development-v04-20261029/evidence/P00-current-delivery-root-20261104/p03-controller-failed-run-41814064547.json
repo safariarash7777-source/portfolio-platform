@@ -1,0 +1,92 @@
+{
+  "schema": "root-p03-native-preflight-failure.v1",
+  "source": "7cab80d679686bb09f7c1e1124fa2a9c3649ae05",
+  "run": 41814064547,
+  "job": 126522167212,
+  "allocation": "25191838-12b9-4c9b-8d63-ec8e25124fc5",
+  "phase": "OFFLINE_INVARIANTS_BEFORE_PREPARE",
+  "status": "FAIL_NOT_NATIVE_ACCEPTANCE",
+  "fullPublicJobLogReadCharacters": 44166,
+  "failureLiteral": "Cannot find module 'typescript'",
+  "rootCause": "the separate control checkout has no node_modules before its new actual-validator preflight; ordinary CI had npm ci and passed",
+  "nativeAttempted": false,
+  "steps": [
+    {
+      "name": "Set up job",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Exact workflow and detached controller source",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Exact isolated app and SQL Git copy",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run actions/setup-node@v4",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Offline allocation and receipt boundaries only",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Bind allocation, verify sealed capsule and prepare the exact copy",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Existing dependency lock only",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "One bounded owned native attempt with private stdout",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Attest owned cleanup and project a strict public receipt",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Upload only the sanitized receipt",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Post Run actions/setup-node@v4",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Post Exact isolated app and SQL Git copy",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Post Exact workflow and detached controller source",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Complete job",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "artifactListObserved": [],
+  "receiptUploaded": false,
+  "cleanupReceipt": "UNOBSERVED",
+  "writeOutcomeUnknown": null,
+  "priorRunsReplayed": false,
+  "primaryInstall": "NOT_APPLIED",
+  "proposedFix": "install existing control package-lock using npm ci --ignore-scripts before existing offline preflight; no package/lock/runtime/acceptance change"
+}

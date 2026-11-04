@@ -1,0 +1,30 @@
+{
+  "schema": "root-p07-admission-followup-review.v1",
+  "atUtc": "2026-11-04T10:55:07.331209+00:00",
+  "source": "99a6d1e4a8a328ea92e0bf63ffeee38fc690da12",
+  "baseDocument": "133154bef69eb88c6b03ac807842ff22bdd8f2aa",
+  "publishedDocument": "a67d444a4a84366829ad0ebec864cf69afb3ca38",
+  "publishedDocumentBlob": "4f62456646f2e3669d066b46130a0fb62d1c258d",
+  "remoteUtf8Readback": "EXACT",
+  "manifestSha256": "4803f628b14825b2168055a65e826bec5c7da874b5ea3456067850f7c2b2a321",
+  "verifiedFiles": 17,
+  "uniqueTests": 6,
+  "fragments": 23,
+  "runtimePatch": [],
+  "networkAttempts": 0,
+  "childProcessAttempts": 0,
+  "fullAdmission": "data:null / period_unverified",
+  "explicitEpsRows": {
+    "basic": 308,
+    "netProfitPerShareRial": 306,
+    "priorNetProfitPerShareRial": 131
+  },
+  "formulaExecuted": false,
+  "open": [
+    "prior C duration/start provenance",
+    "capital table identity/scope/stock-asOf",
+    "full consumer acceptance"
+  ],
+  "newFollowupCi": "NOT_REVIEWED",
+  "primarySql": "NOT_APPLIED"
+}
