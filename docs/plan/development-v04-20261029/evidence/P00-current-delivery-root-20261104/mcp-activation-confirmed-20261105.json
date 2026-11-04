@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-04T23:24:16.4569598Z",
+  "run": 41933400601,
+  "receipt": {
+    "version": 1,
+    "project": "arsadata",
+    "state": "configuration_confirmed_restart_unproven",
+    "providerCalls": 0,
+    "postAttempts": 1,
+    "postAcknowledged": true,
+    "automaticRetry": false,
+    "rawValuesPublished": false,
+    "keyHashesPublished": false,
+    "plaintextSnapshotWritten": false,
+    "beforeBackendMatched": true,
+    "beforeReleaseMatched": true,
+    "concurrentEnvChangeDetected": false,
+    "existingValuesAndOrderPreserved": true,
+    "desiredConfigurationObserved": true,
+    "afterBackendMatched": true,
+    "afterReleaseMatched": true,
+    "remoteRestartVerified": false,
+    "rollbackRequiresSeparateRootAction": true
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "at": "2026-11-04T23:18:58.557Z",
+  "valid": true,
+  "attempts": 4,
+  "statuses": [
+    200,
+    202,
+    200,
+    200
+  ],
+  "quote": {
+    "router": "https://mcp.mcpfarsi.ir/mcp",
+    "server": "tsetmc-mcp",
+    "tool": "ts_get_quote",
+    "sourceUrl": "https://www.tsetmc.com/",
+    "sourceOfficial": true,
+    "connectorOfficial": false,
+    "receivedAtUtc": "2026-11-04T23:18:58.556Z",
+    "sourceAtUtc": null,
+    "freshness": "unknown",
+    "coverage": "partial",
+    "symbol": "فملی",
+    "instrumentCode": "35425587644337450",
+    "unit": "rial",
+    "sourceDateRaw": "2026-11-04",
+    "sourceDateCalendar": "gregorian",
+    "sourceTimeRaw": "13:16:54",
+    "last": 29170,
+    "close": 29090,
+    "lastRial": 29170,
+    "lastToman": 2917,
+    "closeRial": 29090,
+    "closeToman": 2909,
+    "volume": 943595048,
+    "valueRial": 27446282810280,
+    "trades": 50858,
+    "lastChangePct": 2.97,
+    "closeChangePct": 2.68
+  },
+  "provider": "mcpfarsi",
+  "brsCalls": 0,
+  "productionWrites": 0
+}
