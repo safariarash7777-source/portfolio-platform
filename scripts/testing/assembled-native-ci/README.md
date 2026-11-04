@@ -1,6 +1,6 @@
 # Optional assembled native dispatch
 
-This controller connects the reviewed v2 capsule to the existing GitHub Actions
+This controller connects the reviewed v3 stage-observation capsule to the existing GitHub Actions
 Linux runner. It never runs on a PR, ordinary push or default manual dispatch.
 The existing five ordinary CI jobs retain their full original content and gate.
 
@@ -25,9 +25,12 @@ Two checkouts keep the workflow/controller separate from product source. The
 app/SQL checkout must be exact commit
 `4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a`, tree
 `c96d462d72505f2471c54c8e7e5293fe2b39b3d1`. The sealed capsule SHA256 is
-`f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc`;
+`57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81`
+(`sealed-v3-stage-observation.tar`);
 its detached eight-helper contract is
-`4c661f7d3cf8aa75f1185e7496c35a4ca766501af9be25d227fbab2e75160a9c`.
+`94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511`.
+The parent `sealed-v2.tar` remains preserved with SHA256
+`f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc`.
 The capsule and original materializer are verified before copying new helpers.
 The tracked app, SQL, package/lock, old profiles and protected pins stay exact.
 The existing dependency lock is installed with the same `npm ci` as prior CI;
@@ -61,6 +64,15 @@ sessions, tokens, intent bodies, host paths, browser capabilities and headers ar
 not artifact paths. Failure receipts retain explicit failure/unknown and cleanup
 status. If allocation/environment validation fails before private state exists,
 the job fails and no accepted artifact can be produced.
+
+The v3 child adds only fixed `stage`/`edge` markers around existing REST and
+browser awaits. It never logs the operation's arguments, result or error.
+Failure projection exposes the last observed stage and whether it began or
+completed; malformed, unknown or out-of-order stage records remain unverified.
+An incomplete `before` marker does not prove the underlying failure cause.
+These markers are not acceptance checks, do not alter timeouts and cannot turn
+a failure into a pass. The browser failure code `playwright_timeout` can also
+classify a fetch `TimeoutError`; the stage separates those operations.
 
 Successful status is only `PASS_BOUNDED_ASSEMBLED_NATIVE`, with
 `fullAssembledAcceptance=NOT_ESTABLISHED` and `arashAcceptance=UNOBSERVED`.

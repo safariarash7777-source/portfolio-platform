@@ -25,8 +25,8 @@ CONTROL = HERE.parents[2]
 REPOSITORY = 'safariarash7777-source/portfolio-platform'
 CANDIDATE = '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a'
 TREE = 'c96d462d72505f2471c54c8e7e5293fe2b39b3d1'
-CAPSULE = 'f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc'
-DRIVER = '4c661f7d3cf8aa75f1185e7496c35a4ca766501af9be25d227fbab2e75160a9c'
+CAPSULE = '57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81'
+DRIVER = '94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511'
 CHROME = '95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72'
 LABEL = 'p03.assembled-native-lab'
 PREFIX = 'assembled-member-admin-'
@@ -45,6 +45,7 @@ OVERLAY_NAMES = {'assembled-auth-runtime.mjs', 'assembled-auth-gateway.mjs', 'as
 # Failure diagnostics only. Literal codes from the reviewed frozen sources;
 # never forward an arbitrary exception/message or a regex-matching user string.
 NATIVE_FAILURE_CODES = frozenset({
+    "assembled_stage_invalid",
     "assembled_acceptance_boundary",
     "assembled_canonical_receipts_required",
     "assembled_check_shape",
@@ -644,7 +645,7 @@ def prepare():
         need(config.returncode == 1 and not config.stdout, 'assembled_git_credential_not_allowed')
     capsule_dir = private / 'capsule'
     capsule_dir.mkdir(mode=0o700)
-    unpack_capsule((HERE / 'sealed-v2.tar').read_bytes(), capsule_dir)
+    unpack_capsule((HERE / 'sealed-v3-stage-observation.tar').read_bytes(), capsule_dir)
     need(Path('/opt/google/chrome/chrome').is_file()
          and sha(Path('/opt/google/chrome/chrome').read_bytes()) == CHROME, 'assembled_existing_chrome_pin_required')
     need(Path('/var/run/docker.sock').is_socket(), 'assembled_existing_local_docker_required')
@@ -843,6 +844,49 @@ def static_native_error(value):
     return None
 
 
+OBSERVED_STAGES = ('rest-baseline-denial', 'rest-own', 'rest-foreign', 'rest-second-own', 'legacy-open', 'legacy-ready', 'legacy-context', 'legacy-cookies', 'legacy-page', 'legacy-routes', 'legacy-document', 'legacy-section-ready', 'legacy-state-ready', 'legacy-service-label', 'legacy-write-disabled', 'legacy-details-open', 'legacy-source-text', 'legacy-images', 'legacy-body', 'member-context', 'member-cookies', 'member-page', 'member-routes', 'member-dashboard', 'member-holdings-link', 'member-holdings-ready', 'member-holdings-body', 'member-dashboard-link', 'member-consultation-link', 'member-consultation-ready', 'member-viewport', 'member-storage-audit', 'member-context-close')
+
+
+def project_stage_log(raw):
+    result = {'stageReadback': 'MISSING', 'lastObservedStage': None,
+              'lastObservedStageEdge': None, 'malformedStageRecords': None}
+    if raw is None:
+        return result
+    if not isinstance(raw, bytes) or len(raw) > 64 * 1024 * 1024:
+        result['stageReadback'] = 'UNAVAILABLE_OR_TOO_LARGE'
+        return result
+    result.update(stageReadback='NO_STAGE_RECORDS', malformedStageRecords=False)
+    stack = []
+    def unique_object(pairs):
+        row = dict(pairs)
+        if len(row) != len(pairs):
+            raise ValueError('stage_duplicate_key')
+        return row
+    for line in raw.decode('utf8', errors='replace').splitlines():
+        prefix = 'P03_ASSEMBLED_STAGE '
+        if not line.startswith(prefix):
+            continue
+        try:
+            if len(line) > 1024:
+                raise ValueError('stage_bound')
+            row = json.loads(line[len(prefix):], object_pairs_hook=unique_object)
+            if (not isinstance(row, dict) or set(row) != {'stage', 'edge'}
+                    or row['stage'] not in OBSERVED_STAGES or row['edge'] not in ('before', 'after')):
+                raise ValueError('stage_shape')
+            if row['edge'] == 'before':
+                if len(stack) >= 16:
+                    raise ValueError('stage_depth')
+                stack.append(row['stage'])
+            elif not stack or stack.pop() != row['stage']:
+                raise ValueError('stage_order')
+        except (ValueError, TypeError):
+            result.update(stageReadback='UNVERIFIED_STAGE_RECORD', malformedStageRecords=True,
+                          lastObservedStage=None, lastObservedStageEdge=None)
+            return result
+        result.update(stageReadback='OBSERVED', lastObservedStage=row['stage'], lastObservedStageEdge=row['edge'])
+    return result
+
+
 def project_failure_log(raw):
     result = {'logReadback': 'MISSING', 'observedPassedChecks': None,
               'lastObservedPassedCheck': None, 'nativeFailureCode': None,
@@ -955,6 +999,7 @@ def failure_observation(state, temp, private):
     except (OSError, ValueError, KeyError, TypeError):
         data = None
     result.update(project_attested_counts(data, private))
+    result.update(project_stage_log(raw))
     result['chromePreflight'] = project_chrome_observation(state.get('chromePreflight'))
     return result, raw
 
