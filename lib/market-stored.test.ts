@@ -108,8 +108,11 @@ const snapshot = (id = 'only-test', sourceDate: string | null = null) => ({
   funds:[{id,faName:'Synthetic fund only',price:101,unit:'toman',sourceDate,sourceTime:'11:30:00',nav:100,navDate:'1405-08-09',navTime:'11:30:00'}],
 });
 function deferred<T>() { let done!: (value:T)=>void; const promise=new Promise<T>(resolve=>{done=resolve;});return{promise,done}; }
+const observationKeys = ['event','selector','scope','state','reason','status','readAt','urlPresent','keyPresent','selectedPair','fundCount'].sort();
 function privateReader(environment: Environment = {}, cap = 5000) {
   const modules = new Map<string, Record<string, unknown>>(), calls: {url:URL;init:RequestInit}[] = [], deadlines:number[]=[];
+  const observations: Readonly<Record<string, unknown>>[] = [];
+  let warningSink = (_record: Readonly<Record<string, unknown>>) => {};
   const clock={now:Date.parse('2026-10-31T08:00:00Z')};
   let responder: (url:string,init:RequestInit)=>Promise<Response> = async()=>Response.json([{payload:snapshot()}]);
   // Real SHA-256, without thread-pool scheduling in cache-order tests. Slow
@@ -137,13 +140,18 @@ function privateReader(environment: Environment = {}, cap = 5000) {
       crypto:{subtle:{digest:(algorithm:AlgorithmIdentifier,data:BufferSource)=>digester(algorithm,data)}},
       fetch:(url:string,init:RequestInit)=>{calls.push({url:new URL(String(url)),init});return responder(String(url),init);},
       setTimeout:(fn:()=>void,ms:number)=>{deadlines.push(ms);return setTimeout(fn,Math.min(ms,cap));},clearTimeout,
-      console:{warn(){throw Error('unexpected raw log');},log(){throw Error('unexpected raw log');}},
+      console:{warn(...args: unknown[]){
+        assert.equal(args.length,1);const record=args[0] as Readonly<Record<string,unknown>>;
+        assert.deepEqual(Object.keys(record).sort(),observationKeys);assert.equal(record.event,'funds_read_failure');assert.ok(Object.isFrozen(record));
+        observations.push(record);warningSink(record);
+      },log(){throw Error('unexpected raw log');}},
     },{filename});return taskModule.exports;
   };
-  return {clock,calls,deadlines,
+  return {clock,calls,deadlines,observations,
     market:load('lib/market-ir.ts') as unknown as typeof import('./market-ir'),
     readFunds:(options?:import('./market-funds-read.server').FundsMarketReadOptions)=>(load('lib/market-funds-read.server.ts') as unknown as typeof import('./market-funds-read.server')).readFundsMarket(options),
     respond(fn:typeof responder){responder=fn;},digest(fn:typeof digester){digester=fn;},
+    warn(fn:typeof warningSink){warningSink=fn;},
   };
 }
 
@@ -271,4 +279,128 @@ test('shared expiry and structured absent/body/HTTP results cannot borrow a prev
     h.respond(async()=>Response.json(value));const result=await h.market.getStoredIrMarket(transportPair());assert.equal(result.state,state);assert.equal(result.reason,reason);assert.equal(result.status,200);assert.equal(result.data,null);
   }
   h.respond(async()=>new Response(null,{status:402}));const denied=await h.market.getStoredIrMarket(transportPair());assert.equal(denied.reason,'http');assert.equal(denied.status,402);
+});
+
+test('fund failure observation preserves real explicit HTTP body request absent and timeout results without leaking inputs', async()=>{
+  const secret='PRIVATE_SENTINEL_NOT_FOR_LOGS';
+  for(const kind of ['http','body','request','absent','timeout'] as const){
+    const h=privateReader({},kind==='timeout'?15:5000);
+    h.respond(async()=>{
+      if(kind==='http')return new Response(secret,{status:402});
+      if(kind==='body')return new Response(secret,{status:200});
+      if(kind==='request')throw new Error(secret);
+      if(kind==='absent')return Response.json([]);
+      return new Promise<Response>(()=>{});
+    });
+    const result=await h.readFunds({environment:environmentPair(syntheticKey(secret))});
+    assert.equal(h.calls.length,1);assert.equal(result.data,null);assert.equal(h.observations.length,1);
+    const observation=h.observations[0];
+    assert.equal(observation.selector,'explicit');assert.equal(observation.scope,'stored-read-result');
+    assert.equal(observation.state,kind==='timeout'?'timeout':kind==='absent'?'absent':'error');
+    assert.equal(observation.reason,kind==='timeout'?'deadline':kind);
+    assert.equal(observation.status,kind==='http'?402:kind==='body'||kind==='absent'?200:null);
+    assert.equal(observation.readAt,h.clock.now);assert.equal(observation.fundCount,null);
+    assert.equal(observation.urlPresent,true);assert.equal(observation.keyPresent,true);assert.equal(observation.selectedPair,true);
+    assert.doesNotMatch(JSON.stringify(observation),new RegExp(secret+'|liara-preview|synthetic-signature|Bearer|apikey|https:'));
+    assert.deepEqual(Object.keys(result).sort(),['availability','data']);
+    assert.equal(result.availability.reason,kind==='timeout'?'read-timeout':kind==='absent'?undefined:'read-error');
+    assert.equal(result.availability.state,kind==='timeout'?'timeout':'error');
+  }
+});
+
+test('fund observation distinguishes configuration presence from a selected pair with zero extra reads', async()=>{
+  const secret='PRIVATE_CONFIG_SENTINEL';
+  const cases: [Environment,boolean|null,boolean|null][]=[
+    [{FUNDAMENTAL_READ_URL:secret},true,false],
+    [{FUNDAMENTAL_READ_ANON_KEY:secret},false,true],
+    [{FUNDAMENTAL_READ_URL:'',FUNDAMENTAL_READ_ANON_KEY:''},true,true],
+    [{...environmentPair(syntheticKey('expired',1))},true,true],
+    [{get FUNDAMENTAL_READ_URL():string{throw Error(secret);}},null,null],
+  ];
+  for(const [environment,urlPresent,keyPresent] of cases){
+    const h=privateReader();const result=await h.readFunds({environment});
+    assert.equal(h.calls.length,0);assert.equal(result.availability.state,'error');assert.equal(result.availability.reason,undefined);
+    assert.equal(h.observations.length,1);const event=h.observations[0];
+    assert.equal(event.reason,'configuration');assert.equal(event.state,'error');assert.equal(event.status,null);
+    assert.equal(event.urlPresent,urlPresent);assert.equal(event.keyPresent,keyPresent);assert.equal(event.selectedPair,false);
+    assert.equal(event.fundCount,null);assert.doesNotMatch(JSON.stringify(event),new RegExp(secret+'|https:|signature'));
+  }
+});
+
+test('successful empty and unknown-clock reads remain silent with unchanged explicit and legacy read policies', async()=>{
+  for(const mode of ['explicit','legacy'] as const){
+    for(const kind of ['rows','empty','unknown-clock'] as const){
+      const h=privateReader({NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'test-only',IR_MARKET_RELAY_URL:'https://relay.invalid'});
+      const at=h.clock.now;
+      const payload=kind==='empty'?{...snapshot(),funds:[],snapshotQuality:{version:1,state:'partial',families:{funds:{state:'empty',receivedAt:at,retained:false}}}}:snapshot('PRIVATE_PAYLOAD_SENTINEL',kind==='rows'?'1405-08-09':null);
+      h.respond(async()=>Response.json([{payload}]));
+      const result=await h.readFunds({environment:mode==='explicit'?environmentPair():{}});
+      assert.equal(h.calls.length,1);assert.equal(result.data?.funds.length,kind==='empty'?0:1);assert.equal(h.observations.length,0);
+      assert.equal(result.availability.families?.funds.state,kind==='empty'?'empty':kind==='rows'?'ready':'unknown-time');
+    }
+  }
+});
+
+test('legacy failures label shared observation scope, preserve fallback and cooldown, and sanitize raw errors', async()=>{
+  const secret='PRIVATE_LEGACY_SENTINEL';
+  const h=privateReader({NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:secret,IR_MARKET_RELAY_URL:'https://relay.invalid',IR_MARKET_RELAY_TOKEN:secret});
+  h.respond(async url=>{if(url.startsWith('https://relay.invalid'))throw new Error(secret);return new Response(null,{status:503});});
+  const first=await h.readFunds({environment:{}});
+  assert.equal(h.calls.length,2);assert.equal(first.availability.reason,'read-error');assert.equal(first.data,null);
+  assert.equal(h.observations.length,1);const event=h.observations[0];
+  assert.equal(event.selector,'legacy');assert.equal(event.scope,'shared-last-observation');assert.equal(event.status,503);
+  assert.equal(event.state,'error');assert.equal(event.reason,'read-error');assert.equal(event.fundCount,null);
+  assert.equal(event.urlPresent,false);assert.equal(event.keyPresent,false);assert.equal(event.selectedPair,false);
+  await h.readFunds({environment:{}});assert.equal(h.calls.length,2,'failure observation must not bypass cooldown');
+  assert.equal(h.observations.length,2);assert.doesNotMatch(JSON.stringify(h.observations),new RegExp(secret+'|https:|Bearer'));
+});
+
+test('throwing or mutating the logging sink cannot change result identity, retained rows or read counts', async()=>{
+  for(const selector of ['explicit','legacy'] as const){
+    const environment={NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'test-only',IR_MARKET_RELAY_URL:'https://relay.invalid'};
+    const h=privateReader(environment);
+    h.respond(async()=>Response.json([{payload:snapshot()}]));
+    if(selector==='legacy'){await h.readFunds({environment:{}});h.clock.now+=61000;}
+    h.respond(async()=>new Response(null,{status:503}));
+    h.warn(record=>{assert.throws(()=>{(record as Record<string,unknown>).reason='changed';},TypeError);throw Error('LOGGER_PRIVATE_SENTINEL');});
+    const result=await h.readFunds({environment:selector==='explicit'?environmentPair():{}});
+    assert.equal(result.availability.reason,'read-error');assert.equal(result.data?.funds.length??null,selector==='legacy'?1:null);
+    assert.equal(h.calls.length,selector==='legacy'?3:1);assert.equal(h.observations.length,1);
+    const event=h.observations[0];assert.equal(event.reason,selector==='legacy'?'read-error':'http');assert.equal(event.fundCount,selector==='legacy'?1:null);
+    if(result.data){result.data.funds.length=0;assert.equal(event.fundCount,1,'record must copy scalars, not retain source references');}
+    assert.doesNotMatch(JSON.stringify(result),/LOGGER_PRIVATE_SENTINEL|funds_read_failure/);
+  }
+});
+
+test('unknown diagnostic scalars cannot become log values and a throwing sink leaves the original availability unchanged', async()=>{
+  const h=privateReader(),secret='PRIVATE_UNKNOWN_SENTINEL';
+  // Adversarial result at the existing reader boundary; all transport cases above use real modules.
+  h.market.getStoredIrMarket=(()=>Promise.resolve({data:null,state:secret,reason:secret,status:secret,readAt:NaN})) as unknown as typeof h.market.getStoredIrMarket;
+  h.warn(()=>{throw Error(secret);});
+  const result=await h.readFunds({environment:environmentPair()});
+  assert.equal(h.calls.length,0);assert.equal(h.observations.length,1);
+  const event=h.observations[0];assert.equal(event.state,'unknown');assert.equal(event.reason,'unknown');assert.equal(event.status,null);assert.equal(event.readAt,null);
+  assert.doesNotMatch(JSON.stringify(event),new RegExp(secret));assert.equal(result.availability.state,'error');assert.equal(result.availability.reason,'read-error');
+  assert.ok(Number.isNaN(result.availability.readAt),'observation must not rewrite the existing read contract');
+});
+
+test('unknown proxy counts are logged as null without coercion or changing the original read result', async()=>{
+  const secret='PRIVATE_COUNT_SENTINEL';
+  const opaque={toString(){throw Error(secret);},valueOf(){throw Error(secret);}};
+  for(const count of [secret,opaque,null,undefined,NaN,Infinity,-1,0.5,Number.MAX_SAFE_INTEGER+1,0]){
+    const h=privateReader(),data=toMarket(snapshot()),target=data.funds;
+    let reads=0,writes=0;
+    const funds=new Proxy(target,{
+      get(array,key,receiver){if(key==='length'){reads++;return count;}return Reflect.get(array,key,receiver);},
+      set(){writes++;throw Error('observation must not mutate source');},
+    });
+    data.funds=funds;
+    // Fault injection only at the stored-result boundary, with an actual Array proxy.
+    h.market.getStoredIrMarket=(()=>Promise.resolve({data,state:'error',reason:'request',status:null,readAt:h.clock.now})) as unknown as typeof h.market.getStoredIrMarket;
+    const result=await h.readFunds({environment:environmentPair()});
+    assert.equal(h.calls.length,0);assert.equal(h.observations.length,1);
+    assert.equal(h.observations[0].fundCount,count===0?0:null);assert.doesNotMatch(JSON.stringify(h.observations[0]),new RegExp(secret));
+    assert.equal(result.data,data);assert.equal(result.data.funds,funds);assert.equal(target.length,1);
+    assert.equal(reads,1);assert.equal(writes,0);assert.equal(result.availability.state,'error');assert.equal(result.availability.reason,'read-error');
+  }
 });
