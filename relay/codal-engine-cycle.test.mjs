@@ -227,6 +227,17 @@ test("unorderable or unsorted announcements fail without acknowledging them", as
   }
 });
 
+test('order failure stores only the verified prefix and keeps the resume watermark', async () => {
+  const good = announcement(3), bad = announcement(4), after = announcement(2);
+  const f = await fixture({ pages: [[good, bad, after]] });
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.ok, false);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'invalid_order_or_identity');
+  assert.deepEqual(f.calls.feedWrites[0].rows.map(r => r.link), [good.link]);
+  assert.deepEqual(f.persisted.watermark, watermark);
+  assert.deepEqual(f.persisted.fails, {});
+});
+
 test("state save failure rolls back the in-memory acknowledgement for retry", async () => {
   const f = await fixture({ pages: [[announcement(1), boundary], []], rejectSave: true });
   await f.engine.runEngineCycle();
