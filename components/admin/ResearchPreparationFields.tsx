@@ -4,7 +4,7 @@ import type { ManualIntake } from '@/lib/intelligence/manual-intake';
 import type { ResearchEvidence } from '@/lib/intelligence/research-workbook';
 
 const empty: ManualIntake = { kind: 'text', text: '', transcriptConfirmed: false, claims: [], ambiguities: [] };
-const control = 'w-full min-h-11 rounded-lg border px-3 py-2 text-base';
+const control = 'w-full min-w-0 max-w-full min-h-11 rounded-lg border px-3 py-2 text-base';
 const style = { background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--line)' };
 
 /** Fields of the existing private workbook, not a separate composer or publication. */
